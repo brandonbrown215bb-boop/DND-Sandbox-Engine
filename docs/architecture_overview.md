@@ -68,3 +68,23 @@ The statistics models handle character sheets and progression rules.
 - **[CombatState](file:///run/media/pigeon/890dd7cb-9753-4f6b-b8e6-58c98e531754/Projects/Top Down Party Game/src/combat/combat_state.gd)**: Manages the tactical grid, initiative turn order queue, monster AI execution, and win/lose evaluations.
   - **Equipped weapon + range**: The combat HUD sidebar shows the active character's equipped weapon and its range (`Weapon: <name> (melee/reach 1)` or `range N hexes`), read from the weapon item's `range` field. Attacks are range-gated: clicking a monster outside the weapon's range is rejected with an "out of range" log (the attack highlight already only marks in-range targets; execution now enforces it too).
 - **[CombatAction](file:///run/media/pigeon/890dd7cb-9753-4f6b-b8e6-58c98e531754/Projects/Top Down Party Game/src/combat/combat_action.gd)**: Handles attack rolls, spell effects, constitution checks for concentration, evasion saves, and reaction spell queries (Shield, Counterspell, and Uncanny Dodge).
+
+---
+
+## 5. Testing & Verification
+
+Two harnesses gate every change:
+
+### Logic suite — `test_runner.tscn` (GUT)
+Standard GUT test scene. Pure-logic tests (resolvers, AI decisions, data integrity, save/load round-trips). Runs headless, fast (~30s), exits cleanly. This is the first gate in `run_tests.sh`.
+
+### Viewport harness — `src/viewport_harness.gd`
+Instantiates the **real** combat / overworld / dungeon / event / shop / character-creation scenes inside a headless `SubViewport` and asserts `_ready` wiring actually executed (grid build, HUD signal connect, spawn, initiative, fog update, event plumbing). It is a single ~650-line `Node` whose entire flow lives in one `_ready()` coroutine: ~15 sequential "beats" inline, each `await`ing a Godot timer (`get_tree().create_timer`) to let a scene settle before poking it.
+
+**Where it costs time (known friction):**
+- *Parse errors don't fail fast.* A typo in any touched script isn't caught by the suite until the engine loads that script — and a broken script reference makes the harness scene itself fail to parse, which then **hangs** (the process idles at ~0.6% CPU) rather than erroring out. Diagnosis requires killing the run and launching the scene directly to read the buffered error. (Mitigation in practice: run `godot --check-only --script res://<file>` per changed file before the full suite.)
+- *No isolation between beats.* Every beat is inline in one coroutine. A late failure can't be attributed without reading the whole chain, and a stall in one beat blocks everything after it.
+- *Timing-dependent.* Beats rely on fixed `await` durations; a turn that doesn't resolve within the window silently desyncs the assertions that follow.
+- *No result until the end.* `ALL TESTS PASSED` only prints after the logic suite *and* the full viewport chain, so a single late parse error forces re-running the entire ~3.5-min logic pass first.
+
+**Candidate restructure (not yet adopted):** split the monolithic `_ready()` into discrete, individually-named test methods (`test_combat_boot`, `test_weapon_range`, `test_p1_intent`, …), each self-contained with its own SubViewport + teardown, so a failure reports a named test instead of stalling the chain; add a pre-flight parse pass over all `src/**/*.gd` (the `--check-only` loop) as a first, fast gate before booting any scene; and prefer direct method calls + state inspection over `await`-based settling wherever possible to remove timing flakiness.

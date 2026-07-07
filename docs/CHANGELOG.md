@@ -72,3 +72,19 @@
 ### Tests
 - `GameManager.test_mode` flag added (set by `viewport_harness._setup_world`) so end-of-battle flows resolve instantly.
 - `viewport_harness.gd` combat beat extended: asserts `FxLayer`/`Camera2D` resolve, floating text spawns (and is suppressed when the setting is off), and the battle-result overlay presents + emits resolution without hanging.
+
+### 2026-07-07 (later) — P1: combat readability
+
+**Enemy intent preview.** At the start of a monster turn, the planned action is computed via `AIController.get_monster_action` and stored on the monster as `intent`; `hex_grid._draw()` renders a badge above the token — *Move*, *Attack X*, *Move + Attack X*, or *Hold* — so the player can read the threat before it resolves.
+
+**Move-path preview.** Hovering a reachable hex draws the A* route (yellow PATH color) before committing; cleared on action select / turn change. No blind moves.
+
+**Attack-range ring.** Selecting Attack now highlights the weapon's reach as a subtle red ring (plus brighter in-range target highlights). Melee reads as a tight cluster; ranged as a wide field.
+
+**First-turn hint.** A dismissible `HintLabel` in the combat HUD shows once on the opening player turn (moves / paths / attack range / intent) and hides on the first action.
+
+**HexGrid API:** added `clear_highlight(hex)` and `get_highlight_count()` to support per-hex path teardown and test assertions.
+
+### Tests
+- Full suite green (`RUN_TESTS_EXIT 0`): logic suite 229/0, viewport harness 0 failed.
+- `viewport_harness.gd` combat beat extended with P1 assertions: intent descriptions correct (move+attack / attack / move / hold), hover populates a movement path, attack select highlights weapon range hexes, hint text configured + show/hide mechanism works.
