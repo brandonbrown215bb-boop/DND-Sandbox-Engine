@@ -48,6 +48,10 @@ var transition_context: Dictionary = {}
 ## Whether the game is currently in progress.
 var game_in_progress: bool = false
 
+## When true, end-of-battle flows resolve instantly (no human button press).
+## Set by the headless test harness so battles don't hang awaiting input.
+var test_mode: bool = false
+
 
 func _ready() -> void:
 	pass

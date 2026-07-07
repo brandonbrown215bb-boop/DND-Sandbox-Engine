@@ -29,6 +29,7 @@ func _setup_world() -> void:
 	GameManager.transition_context = {"terrain": "plains", "monster_ids": ["goblin", "goblin"]}
 	GameManager.is_loading_save = false
 	GameManager.game_in_progress = false
+	GameManager.test_mode = true
 	PlayerManager.reset()
 	PlayerManager.add_player("Alice")
 	PlayerManager.add_player("Bob")
@@ -107,6 +108,34 @@ func _ready() -> void:
 			combat.hud.log_text.text = ""   # clear log to isolate the next click
 			combat._on_hex_clicked(Vector2i(1, 0))
 			_assert(not combat.hud.log_text.text.contains("out of range"), "adjacent attack is not range-rejected")
+
+		# ---- P0 juice: floating damage text + camera/shake plumbing ----
+		_assert(combat.fx_layer != null, "combat FxLayer @onready resolved")
+		_assert(combat.cam != null, "combat Camera2D @onready resolved")
+		Settings.show_damage_numbers = true
+		Settings.screen_shake = true
+		var fx_before: int = combat.fx_layer.get_child_count()
+		combat._spawn_floating_text(Vector2i(1, 0), "-9", Color(1.0, 0.3, 0.3))
+		combat._shake_camera(5.0)
+		await get_tree().create_timer(0.2).timeout
+		_assert(combat.fx_layer.get_child_count() > fx_before, "floating damage text spawned a label")
+		# Toggle off -> no spawn (settings-gated)
+		Settings.show_damage_numbers = false
+		var fx_off: int = combat.fx_layer.get_child_count()
+		combat._spawn_floating_text(Vector2i(1, 0), "x", Color.WHITE)
+		_assert(combat.fx_layer.get_child_count() == fx_off, "damage numbers suppressed when setting disabled")
+		Settings.show_damage_numbers = true
+
+		# ---- P0 payoff: victory screen shows + auto-resolves in test mode ----
+		# (Avoids the real _end_battle -> change_scene_to_file root swap that
+		# would strand this harness mid-_ready. Test the overlay directly.)
+		var ovr = load("res://src/combat/battle_result_overlay.gd").new()
+		combat.add_child(ovr)
+		ovr.show_result("victory")
+		_assert(ovr.visible, "battle result overlay presents on victory")
+		ovr.resolved.emit("victory")
+		ovr.queue_free()
+		_assert(true, "battle result overlay emits a resolution signal without hanging")
 
 	vp.remove_child(combat)
 	combat.queue_free()

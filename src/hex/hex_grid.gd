@@ -109,6 +109,38 @@ func _draw() -> void:
 			else:
 				draw_circle(center, 5.0, Color.WHITE)
 
+			# --- HP bar above the token ---
+			var hp_cur: int = -1
+			var hp_max: int = -1
+			if entity.has("character"):
+				var ch: Character = entity["character"]
+				hp_cur = ch.current_hp
+				hp_max = ch.max_hp
+			elif entity.has("monster"):
+				var md: Dictionary = entity["monster"]
+				hp_cur = int(md.get("current_hp", -1))
+				hp_max = int(md.get("max_hp", -1))
+			if hp_max > 0 and hp_cur >= 0:
+				var bar_w: float = 26.0
+				var bar_h: float = 4.0
+				var bar_y: float = center.y - 22.0
+				var bar_x: float = center.x - bar_w / 2.0
+				var frac: float = clamp(float(hp_cur) / float(hp_max), 0.0, 1.0)
+				# Background
+				draw_rect(Rect2(bar_x, bar_y, bar_w, bar_h), Color(0.1, 0.1, 0.12, 0.85))
+				# Fill (green -> yellow -> red by fraction)
+				var hp_color: Color
+				if frac > 0.5:
+					hp_color = Color(0.3, 0.85, 0.35)
+				elif frac > 0.25:
+					hp_color = Color(0.95, 0.8, 0.2)
+				else:
+					hp_color = Color(0.9, 0.25, 0.2)
+				draw_rect(Rect2(bar_x, bar_y, bar_w * frac, bar_h), hp_color)
+				# Outline
+				draw_rect(Rect2(bar_x, bar_y, bar_w, bar_h), Color(0.0, 0.0, 0.0, 0.9), false, 1.0)
+
+
 			# Retrieve active conditions
 			var entity_conditions := {}
 			if entity.has("character"):

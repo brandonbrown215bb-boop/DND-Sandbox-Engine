@@ -49,3 +49,26 @@
 - No in-combat save button (save works from overworld HUD + settings overlay only).
 - Settings overlay Save writes a `quicksave` slot; slot selection in the overlay list is for Load/Delete.
 - Ambush always uses the wilderness monster pool (`goblin`, `wolf`, `bandit`, `giant_spider`, `skeleton`) regardless of terrain.
+
+### 2026-07-07 (later) — P0: combat feel + demo payoff
+
+**Floating damage numbers + screen shake (previously toggles with no wiring).**
+- `combat.tscn` gained a `Camera2D` (for shake) and an `FxLayer` `Node2D` (for floating text). `combat_state.gd` `@onready`s both.
+- `_spawn_floating_text(coord, text, color)`: pops a Label at a hex, floats up + fades (tween, fire-and-forget). Gated by `Settings.show_damage_numbers`.
+- `_shake_camera(intensity)`: brief offset shake on the Camera2D. Gated by `Settings.screen_shake`.
+- `_flash_hex(coord, color)`: brief highlight pulse on impact.
+- Wired into: player weapon attacks (incl. crit color + CRIT label), monster attacks, and poison ticks (green).
+
+**Health bars over every unit.**
+- `hex_grid._draw()` now renders an HP bar above each token (reads `current_hp`/`max_hp` from the Character or monster dict), color-coded green → yellow → red by fraction. HP at a glance, no more sidebar-only guessing.
+
+**Victory / Defeat payoff screen (was a silent 2s wait + snap to menu).**
+- New `BattleResultOverlay` (`src/combat/battle_result_overlay.gd`, code-built CanvasLayer, `PROCESS_MODE_ALWAYS`): shows VICTORY/DEFEAT with flavor, plus **Continue** (resolves combat) and **Main Menu** (abort) buttons.
+- `CombatState._end_battle` now presents the overlay and awaits the player's choice instead of the silent timer. Under `GameManager.test_mode` it auto-resolves (so the headless harness never hangs on a button).
+
+**Demo arc: visible objective tracker.**
+- `OverworldHUD` gained an `ObjectiveLabel`; `_update_objective()` reads `GameManager.get_win_condition()` and renders the active goals (e.g. "Defeat Goblin King"), so the player knows what they're working toward. Null-guarded for the dungeon HUD (shared script, no such node there yet).
+
+### Tests
+- `GameManager.test_mode` flag added (set by `viewport_harness._setup_world`) so end-of-battle flows resolve instantly.
+- `viewport_harness.gd` combat beat extended: asserts `FxLayer`/`Camera2D` resolve, floating text spawns (and is suppressed when the setting is off), and the battle-result overlay presents + emits resolution without hanging.

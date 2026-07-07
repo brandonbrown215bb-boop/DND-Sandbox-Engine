@@ -14,6 +14,7 @@ signal sheet_pressed
 @onready var player_list_container: VBoxContainer = $MarginContainer/HBoxContainer/Sidebar/ScrollContainer/PlayerList
 @onready var active_player_name: Label = $MarginContainer/HBoxContainer/MainArea/Header/MarginContainer/VBoxContainer/ActivePlayerName
 @onready var active_player_stats: Label = $MarginContainer/HBoxContainer/MainArea/Header/MarginContainer/VBoxContainer/ActivePlayerStats
+@onready var objective_label: Label = $MarginContainer/HBoxContainer/MainArea/Header/MarginContainer/VBoxContainer/ObjectiveLabel
 @onready var log_text: RichTextLabel = $MarginContainer/HBoxContainer/MainArea/LogBox/LogText
 @onready var btn_end_turn: Button = $MarginContainer/HBoxContainer/Sidebar/BtnEndTurn
 @onready var btn_rest: Button = $MarginContainer/HBoxContainer/Sidebar/BtnRest
@@ -38,6 +39,7 @@ func _ready() -> void:
 func update_hud() -> void:
 	_update_party_sidebar()
 	_update_active_player_display()
+	_update_objective()
 
 
 ## Add a log message to the log box.
@@ -130,3 +132,32 @@ func _update_active_player_display() -> void:
 		char_data.level,
 		char_data.speed
 	]
+
+
+## Show the active campaign objective (demo arc) so the player knows the goal.
+func _update_objective() -> void:
+	if objective_label == null:
+		return
+	var win_cond: Dictionary = GameManager.get_win_condition()
+	if win_cond.is_empty():
+		objective_label.text = "Objective: Free roam"
+		return
+	var goals: Array = win_cond.get("goals", [])
+	var parts: Array[String] = []
+	for g in goals:
+		match g.get("type", ""):
+			"defeat_monster":
+				var m_id: String = g.get("monster_id", "?")
+				var md: Dictionary = DataLoader.get_monster(m_id)
+				var name: String = md.get("name", m_id) if not md.is_empty() else m_id
+				parts.append("Defeat %s" % name)
+			"collect_item":
+				var i_id: String = g.get("item_id", "?")
+				var it: Dictionary = DataLoader.get_item(i_id)
+				var iname: String = it.get("name", i_id) if not it.is_empty() else i_id
+				parts.append("Find %s" % iname)
+			"reach_tile":
+				parts.append("Reach the objective")
+			_:
+				parts.append(g.get("type", "objective"))
+	objective_label.text = "Objective: " + " • ".join(parts)

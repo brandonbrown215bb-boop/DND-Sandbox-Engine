@@ -68,6 +68,13 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.65, 0.65, 0.65, 1)
 text = "Stats detail"
 
+[node name="ObjectiveLabel" type="Label" parent="OverworldHUD/MarginContainer/HBoxContainer/MainArea/Header/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1.0, 0.85, 0.4, 1)
+theme_override_font_sizes/font_size = 14
+autowrap_mode = 2
+text = "Objective: —"
+
 [node name="Control" type="Control" parent="OverworldHUD/MarginContainer/HBoxContainer/MainArea"]
 layout_mode = 2
 size_flags_vertical = 3

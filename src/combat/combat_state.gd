@@ -5,6 +5,10 @@ extends Node2D
 
 @onready var hex_grid: HexGrid = $HexGrid
 @onready var hud: CombatHUD = $CombatHUD
+@onready var cam: Camera2D = $Camera2D
+@onready var fx_layer: Node2D = $FxLayer
+
+const BattleResultOverlayScript := preload("res://src/combat/battle_result_overlay.gd")
 
 # Initiative queue
 var tracker: InitiativeTracker = InitiativeTracker.new()
@@ -88,6 +92,60 @@ func _update_grid_entities() -> void:
 				"is_player": false,
 				"monster": m
 			})
+
+
+## --- Combat feedback / juice -------------------------------------------
+## Spawn a floating combat-text label at a hex (damage numbers, misses, crits).
+## Gated by Settings.show_damage_numbers (a toggle in the settings overlay).
+func _spawn_floating_text(coord: Vector2i, text: String, color: Color) -> void:
+	if not Settings.show_damage_numbers:
+		return
+	if fx_layer == null:
+		return
+	var center := HexUtils.hex_to_pixel(coord)
+	var label := Label.new()
+	label.text = text
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.add_theme_color_override("font_color", color)
+	label.add_theme_font_size_override("font_size", 22)
+	label.position = center - Vector2(0, 24)
+	label.z_index = 100
+	fx_layer.add_child(label)
+	# Pop + float up + fade. No await on the main beat (tween is fire-and-forget).
+	var tween := create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(label, "position:y", center.y - 64.0, 0.9).set_ease(Tween.EASE_OUT)
+	tween.tween_property(label, "modulate:a", 0.0, 0.9).set_ease(Tween.EASE_IN)
+	tween.tween_property(label, "scale", Vector2(1.25, 1.25), 0.15).from(Vector2(0.6, 0.6))
+	tween.chain().tween_callback(label.queue_free)
+
+## Brief camera shake on impact. Gated by Settings.screen_shake.
+func _shake_camera(intensity: float = 6.0) -> void:
+	if not Settings.screen_shake:
+		return
+	if cam == null:
+		return
+	var base := Vector2(640, 360)
+	var tween := create_tween()
+	for i in 5:
+		var off := Vector2(randf_range(-intensity, intensity), randf_range(-intensity, intensity))
+		tween.tween_property(cam, "position", base + off, 0.04)
+	tween.tween_property(cam, "position", base, 0.06)
+
+## Flash a hex's occupant by briefly re-highlighting it (cheap hit feedback).
+func _flash_hex(coord: Vector2i, color: Color) -> void:
+	if hex_grid == null:
+		return
+	hex_grid.add_highlight(coord, color)
+	await get_tree().create_timer(0.12).timeout
+	hex_grid.clear_highlights()
+	# Restore any action-specific highlights for the active player.
+	if pending_action_type == "attack":
+		_highlight_attack_targets()
+	elif pending_action_type == "spell":
+		_highlight_spell_targets()
+	else:
+		_highlight_reachable()
 
 
 func _setup_combat_players() -> void:
@@ -226,6 +284,9 @@ func _start_combat_turn() -> void:
 			var dmg := Dice.roll(4) # 1d4 poison damage
 			var actual := active_character.take_damage(dmg)
 			hud.add_log("[color=red]%s took %d poison damage from being poisoned![/color]" % [active_character.character_name, actual])
+			var ppos: Vector2i = player_entities[current_player_idx]["hex_position"]
+			_spawn_floating_text(ppos, "-%d" % actual, Color(0.3, 1.0, 0.3))
+			_flash_hex(ppos, Color(0.3, 1.0, 0.3, 0.5))
 			if not active_character.is_alive:
 				hud.add_log("[color=red]%s was knocked out by poison![/color]" % active_character.character_name)
 				await get_tree().create_timer(1.0).timeout
@@ -387,7 +448,20 @@ func _execute_monster_attack(monster: Dictionary, target_player_name: String, at
 	)
 
 	hud.add_log(result.get("message", "Miss!"))
-	
+
+	# --- Feedback / juice ---
+	var m_dmg: int = int(result.get("damage", 0))
+	if result.get("hit", false) and m_dmg > 0:
+		var m_crit: bool = result.get("crit", false)
+		var m_color := Color.GOLD if m_crit else Color(1.0, 0.3, 0.3)
+		var m_txt := ("CRIT %d!" % m_dmg) if m_crit else ("-%d" % m_dmg)
+		_spawn_floating_text(target_pos, m_txt, m_color)
+		_shake_camera(9.0 if m_crit else 5.0)
+		_flash_hex(target_pos, Color(1.0, 0.3, 0.3, 0.6))
+	else:
+		_spawn_floating_text(target_pos, "Miss", Color(0.7, 0.7, 0.7, 0.9))
+	# ---
+
 	# Check if target died
 	if not target_char.is_alive:
 		hud.add_log("[color=red]%s has been knocked out![/color]" % target_char.character_name)
@@ -560,7 +634,20 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 			active_character.feature_uses["sneak_attack_used_this_turn"] = 1
 
 		hud.add_log(result.get("message", "Miss!"))
-		
+
+		# --- Feedback / juice ---
+		var dmg_dealt: int = int(result.get("damage", 0))
+		if result.get("hit", false) and dmg_dealt > 0:
+			var crit: bool = result.get("crit", false)
+			var dmg_color := Color.GOLD if crit else Color(1.0, 0.4, 0.3)
+			var txt := ("CRIT %d!" % dmg_dealt) if crit else ("-%d" % dmg_dealt)
+			_spawn_floating_text(coord, txt, dmg_color)
+			_shake_camera(9.0 if crit else 5.0)
+			_flash_hex(coord, Color(1.0, 0.3, 0.3, 0.6))
+		else:
+			_spawn_floating_text(coord, "Miss", Color(0.7, 0.7, 0.7, 0.9))
+		# ---
+
 		# Check if dead
 		if int(clicked_monster.get("current_hp", 0)) <= 0:
 			clicked_monster["is_alive"] = false
@@ -786,9 +873,21 @@ func _check_battle_end_conditions() -> bool:
 
 func _end_battle(result: String) -> void:
 	set_process_input(false)
-	# Display victory/defeat pop-up and return
-	await get_tree().create_timer(2.0).timeout
-	GameManager.exit_combat(result)
+	# Show a payoff screen instead of a silent snap back to the menu.
+	var overlay := BattleResultOverlayScript.new()
+	add_child(overlay)
+	overlay.show_result(result)
+	if GameManager.test_mode:
+		# Headless / test: never block on a button press.
+		overlay.queue_free()
+		GameManager.exit_combat(result)
+		return
+	var choice: String = await overlay.resolved
+	overlay.queue_free()
+	if choice == "menu":
+		GameManager.return_to_menu()
+	else:
+		GameManager.exit_combat(result)
 
 
 func _execute_class_feature(feature: Dictionary) -> void:
