@@ -137,6 +137,54 @@ func _ready() -> void:
 		ovr.queue_free()
 		_assert(true, "battle result overlay emits a resolution signal without hanging")
 
+		# ---- P1 readability ----
+
+		# 1) Enemy intent preview: pure-logic description is correct.
+		_assert(combat._describe_intent({"name":"Goblin"},
+			{"action":"move_attack","target_id":"Thorne"}) == "Move + Attack Thorne",
+			"intent describes move+attack")
+		_assert(combat._describe_intent({"name":"Goblin"},
+			{"action":"attack","target_id":"Brunhild"}) == "Attack Brunhild",
+			"intent describes attack")
+		_assert(combat._describe_intent({"name":"Goblin"},
+			{"action":"move"}) == "Move", "intent describes move")
+		_assert(combat._describe_intent({"name":"Goblin"},
+			{"action":"none"}) == "Hold", "intent describes hold")
+
+		# 2) Move-path preview: hovering a reachable hex populates the path overlay.
+		combat.pending_action_type = ""
+		combat.remaining_speed = float(combat.active_character.speed)
+		var ppos: Vector2i = combat.player_entities[combat.current_player_idx]["hex_position"]
+		var reach: Dictionary = combat.hex_grid.get_reachable(ppos, combat.remaining_speed)
+		var some_hex: Vector2i = Vector2i.ZERO
+		for h in reach:
+			if h != ppos:
+				some_hex = h
+				break
+		combat._path_preview_hexes.clear()
+		if some_hex != Vector2i.ZERO:
+			combat._on_hex_hovered(some_hex)
+			_assert(combat._path_preview_hexes.size() > 0, "hovering a reachable hex previews a movement path")
+		else:
+			_assert(false, "expected at least one reachable hex for path-preview test")
+
+		# 3) Attack-range ring: selecting attack highlights the weapon's reach hexes.
+		combat.pending_action_type = "attack"
+		combat._highlight_attack_targets()
+		# A melee weapon (range 1) should highlight at least the surrounding ring.
+		_assert(combat.hex_grid.get_highlight_count() > 0, "attack select highlights weapon range hexes")
+
+		# 4) First-turn hint: the opening-turn hint was configured and shown.
+		# (It is dismissed on the first player action, so by now visible may be
+		# false — the persistent text proves it was shown; verify the show/hide
+		# mechanism deterministically instead of relying on turn timing.)
+		_assert(not combat.hud.hint_label.text.is_empty(), "first-turn hint was configured with guidance text")
+		_assert(combat._hint_shown, "first-turn hint flag set (shown once per battle)")
+		combat.hud.show_hint("test")
+		_assert(combat.hud.hint_label.visible, "hint show() makes the banner visible")
+		combat.hud.hide_hint()
+		_assert(not combat.hud.hint_label.visible, "hint hide() hides the banner")
+
 	vp.remove_child(combat)
 	combat.queue_free()
 

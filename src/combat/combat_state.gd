@@ -32,6 +32,15 @@ var pending_spell_data: Dictionary = {}
 # Guards against double-triggering battle end (victory/defeat).
 var _battle_ending := false
 
+# Last computed enemy intent preview text (drawn above monster tokens).
+var _intent_preview: String = ""
+
+# Hexes currently showing the move-path preview (cleared before redraw).
+var _path_preview_hexes: Array[Vector2i] = []
+
+# Whether the first-turn hint has been shown (show once per battle).
+var _hint_shown := false
+
 
 func _ready() -> void:
 	# Connect HUD action selectors
@@ -146,6 +155,26 @@ func _flash_hex(coord: Vector2i, color: Color) -> void:
 		_highlight_spell_targets()
 	else:
 		_highlight_reachable()
+
+
+## Build a human-readable intent string for a monster's planned action.
+func _describe_intent(monster: Dictionary, intent: Dictionary) -> String:
+	if intent.is_empty():
+		return ""
+	var action: String = intent.get("action", "none")
+	match action:
+		"attack", "move_attack":
+			var tid: String = intent.get("target_id", "?")
+			if action == "move_attack":
+				return "Move + Attack %s" % tid
+			return "Attack %s" % tid
+		"move":
+			return "Move"
+		"none":
+			return "Hold"
+		_:
+			return action.capitalize()
+	return ""
 
 
 func _setup_combat_players() -> void:
@@ -268,6 +297,7 @@ func _start_combat_turn() -> void:
 	# Clear targeting highlights
 	pending_action_type = ""
 	hex_grid.clear_highlights()
+	_clear_path_preview()
 
 	var is_player: bool = active_combatant["is_player"]
 	if is_player:
@@ -329,6 +359,10 @@ func _start_combat_turn() -> void:
 		hud.update_hud(active_character, tracker)
 		hud.set_controls_disabled(false)
 		hud.add_log("[color=yellow]=== Turn: %s (Player) ===[/color]" % active_character.character_name)
+		# First-turn contextual hint (P1 readability), shown once per battle.
+		if not _hint_shown:
+			_hint_shown = true
+			hud.show_hint("Your turn. Click a highlighted hex to move (path previews on hover). Click Attack to strike in range — red hexes show your reach. Enemies show their intent above their token.")
 		_highlight_reachable()
 	else:
 		# Monster Turn
@@ -361,7 +395,18 @@ func _start_combat_turn() -> void:
 		hud.update_hud(null, tracker)
 		hud.set_controls_disabled(true)
 		hud.add_log("[color=red]=== Turn: %s (Monster) ===[/color]" % active_combatant["name"])
-		
+
+		# --- Enemy intent preview (P1 readability) ---
+		# Compute the monster's planned action from current state and surface it
+		# above the token so the player can read what's coming.
+		var monster_coord: Vector2i = monster.get("hex_position", Vector2i.ZERO)
+		var intent := AIController.get_monster_action(monster, monster_coord, hex_grid, player_entities)
+		monster["intent"] = intent
+		_intent_preview = _describe_intent(monster, intent)
+		# Re-draw so the badge appears immediately.
+		hex_grid.queue_redraw()
+		_update_grid_entities()
+
 		await get_tree().create_timer(1.0).timeout
 		_run_monster_ai()
 
@@ -481,6 +526,7 @@ func _make_temp_monster_character(m: Dictionary) -> Character:
 
 
 func _highlight_reachable() -> void:
+	_clear_path_preview()
 	var pos: Vector2i = player_entities[current_player_idx]["hex_position"]
 	var reachable := hex_grid.get_reachable(pos, remaining_speed)
 	
@@ -506,6 +552,9 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 		hud.add_log("You have already taken an action this turn!")
 		return
 
+	# Dismiss the first-turn hint once the player acts.
+	hud.hide_hint()
+
 	match action_type:
 		"attack":
 			pending_action_type = "attack"
@@ -529,7 +578,14 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 			_end_active_turn()
 
 
+func _clear_path_preview() -> void:
+	for h in _path_preview_hexes:
+		hex_grid.clear_highlight(h)
+	_path_preview_hexes.clear()
+
+
 func _highlight_attack_targets() -> void:
+	_clear_path_preview()
 	hex_grid.clear_highlights()
 	
 	var pos: Vector2i = player_entities[current_player_idx]["hex_position"]
@@ -538,6 +594,14 @@ func _highlight_attack_targets() -> void:
 	var max_range := int(weapon.get("range", 1))
 
 	var highlights := {}
+	# Show the weapon's reach as a ring of highlighted hexes (P1 readability),
+	# so the player can see engagement range at a glance.
+	if max_range >= 1:
+		var ring := HexUtils.get_hexes_in_range(pos, max_range)
+		for h in ring:
+			if h == pos: continue
+			# Subtle fill for range; targets keep the brighter attack color below.
+			highlights[h] = Color(0.35, 0.07, 0.07, 0.35)
 	for m in monster_entities:
 		if not m["is_alive"]: continue
 		var m_pos: Vector2i = m["hex_position"]
@@ -777,7 +841,22 @@ func _execute_player_spell(target_coord: Vector2i) -> void:
 
 
 func _on_hex_hovered(coord: Vector2i) -> void:
-	# Standard movement A* trace handled by state.
+	# --- Move-path preview (P1 readability) ---
+	# When no offensive action is pending, show the route to the hovered
+	# reachable hex so the player commits with eyes open (no blind teleport).
+	if pending_action_type == "" and active_character != null and not _battle_ending:
+		_clear_path_preview()
+		var player_pos: Vector2i = player_entities[current_player_idx]["hex_position"]
+		if coord != player_pos and active_character.is_alive:
+			var reachable := hex_grid.get_reachable(player_pos, remaining_speed)
+			if coord in reachable:
+				var path := hex_grid.find_path(player_pos, coord)
+				for h in path:
+					if h != player_pos:
+						hex_grid.add_highlight(h, HexHighlight.HIGHLIGHT_COLORS[HexHighlight.HighlightType.PATH])
+						_path_preview_hexes.append(h)
+		return
+
 	# For spell casting, overlay targeting shapes (e.g. highlight AoE sphere or cone on hover)
 	if pending_action_type == "spell":
 		var target_type: String = pending_spell_data.get("target", "single")

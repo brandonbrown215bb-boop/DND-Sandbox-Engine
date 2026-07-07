@@ -29,6 +29,7 @@ signal sheet_pressed
 @onready var info_label: Label = $MarginContainer/HBoxContainer/Sidebar/ScrollContainer/EntityInfo
 @onready var weapon_info: Label = $MarginContainer/HBoxContainer/Sidebar/ScrollContainer/WeaponInfo
 @onready var initiative_bar: RichTextLabel = $MarginContainer/HBoxContainer/ControlArea/VBoxContainer/InitiativePanel/InitiativeBar
+@onready var hint_label: Label = $MarginContainer/HBoxContainer/ControlArea/VBoxContainer/HintLabel
 @onready var log_text: RichTextLabel = $MarginContainer/HBoxContainer/ControlArea/VBoxContainer/LogBox/LogText
 
 var active_character: Character
@@ -83,6 +84,19 @@ func set_controls_disabled(disabled: bool) -> void:
 	btn_features.disabled = disabled
 	btn_dodge.disabled = disabled
 	btn_end_turn.disabled = disabled
+
+
+## Show a contextual hint banner (dismissible guidance on first turns).
+func show_hint(msg: String) -> void:
+	if hint_label == null: return
+	hint_label.text = msg
+	hint_label.visible = true
+
+
+## Hide the hint banner.
+func hide_hint() -> void:
+	if hint_label == null: return
+	hint_label.visible = false
 
 
 ## Draw/update the HUD.

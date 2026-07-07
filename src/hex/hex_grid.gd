@@ -177,6 +177,23 @@ func _draw() -> void:
 					draw_circle(dot_pos, 3.5, dot_color)
 					draw_circle(dot_pos, 3.5, Color.BLACK, false, 1.0)
 
+					# --- Enemy intent preview (P1 readability) ---
+					var intent_text: String = ""
+					if entity.has("monster"):
+						var mdict: Dictionary = entity["monster"]
+						intent_text = mdict.get("intent", "")
+					elif entity.has("intent"):
+						intent_text = entity.get("intent", "")
+					if not intent_text.is_empty():
+						var fnt := ThemeDB.fallback_font
+						var fs := 11
+						var tpos := Vector2(center.x, center.y - 34.0)
+						var tsize := fnt.get_string_size(intent_text, HORIZONTAL_ALIGNMENT_CENTER, -1, fs)
+						# Badge background
+						draw_rect(Rect2(tpos.x - tsize.x / 2.0 - 3.0, tpos.y - 2.0, tsize.x + 6.0, fs + 4.0), Color(0.08, 0.08, 0.12, 0.85))
+						draw_rect(Rect2(tpos.x - tsize.x / 2.0 - 3.0, tpos.y - 2.0, tsize.x + 6.0, fs + 4.0), Color(1.0, 0.5, 0.3, 0.9), false, 1.0)
+						draw_string(fnt, tpos, intent_text, HORIZONTAL_ALIGNMENT_CENTER, -1, fs, Color(1.0, 0.8, 0.6))
+
 
 ## Generate the pointy-top hex polygon vertices.
 func _get_hex_points(center: Vector2, size: float) -> PackedVector2Array:
@@ -268,6 +285,18 @@ func clear_highlights() -> void:
 func add_highlight(coord: Vector2i, color: Color) -> void:
 	_highlighted_hexes[coord] = color
 	queue_redraw()
+
+
+## Clear a single highlighted hex (used for path-preview teardown).
+func clear_highlight(coord: Vector2i) -> void:
+	if _highlighted_hexes.has(coord):
+		_highlighted_hexes.erase(coord)
+		queue_redraw()
+
+
+## Number of currently highlighted hexes.
+func get_highlight_count() -> int:
+	return _highlighted_hexes.size()
 
 
 ## Reveal a tile (remove fog of war).
