@@ -1,0 +1,134 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Campaign",
+  "type": "object",
+  "required": ["id", "name", "win_condition", "map", "dungeons"],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "player_count": {
+      "type": "object",
+      "properties": {
+        "min": { "type": "integer", "default": 2 },
+        "max": { "type": "integer", "default": 4 }
+      }
+    },
+    "starting_level": {
+      "type": "integer",
+      "default": 1
+    },
+    "max_level": {
+      "type": "integer",
+      "default": 5
+    },
+    "win_condition": {
+      "type": "object",
+      "required": ["type", "goals"],
+      "properties": {
+        "type": { "type": "string" },
+        "goals": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["type"],
+            "properties": {
+              "type": { "type": "string", "enum": ["collect_item", "defeat_monster"] },
+              "item_id": { "type": "string" },
+              "count": { "type": "integer" },
+              "monster_id": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "milestones": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["trigger", "effects"],
+        "properties": {
+          "trigger": { "type": "string" },
+          "effects": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["type"],
+              "properties": {
+                "type": { "type": "string", "enum": ["level_up"] }
+              }
+            }
+          },
+          "description": { "type": "string" }
+        }
+      }
+    },
+    "map": {
+      "type": "object",
+      "required": ["tiles"],
+      "properties": {
+        "type": { "type": "string", "enum": ["hex_grid"] },
+        "tiles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["q", "r", "terrain"],
+            "properties": {
+              "q": { "type": "integer" },
+              "r": { "type": "integer" },
+              "terrain": { "type": "string", "enum": ["plains", "forest", "mountain", "water", "town", "dungeon_entrance", "swamp", "desert", "road"] },
+              "name": { "type": "string" },
+              "dungeon_id": { "type": "string" },
+              "start": { "type": "boolean" }
+            }
+          }
+        }
+      }
+    },
+    "dungeons": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["name", "room_count", "monster_pool", "boss"],
+        "properties": {
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "difficulty": { "type": "integer" },
+          "room_count": { "type": "integer" },
+          "milestone_enter": { "type": ["string", "null"] },
+          "milestone_clear": { "type": ["string", "null"] },
+          "monster_pool": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "boss": {
+            "type": "object",
+            "required": ["monster_id"],
+            "properties": {
+              "monster_id": { "type": "string" },
+              "name": { "type": "string" },
+              "bonus_hp": { "type": "integer" }
+            }
+          },
+          "loot": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["item_id"],
+              "properties": {
+                "item_id": { "type": "string" }
+              }
+            }
+          },
+          "event_table": { "type": "string" }
+        }
+      }
+    }
+  }
+}

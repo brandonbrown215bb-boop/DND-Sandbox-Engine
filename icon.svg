@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a0a2e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#16213e;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="16" fill="url(#bg)"/>
+  <!-- Hex shape -->
+  <polygon points="64,20 98,38 98,74 64,92 30,74 30,38" fill="none" stroke="#ffd700" stroke-width="3"/>
+  <!-- D20 face lines -->
+  <line x1="64" y1="20" x2="64" y2="92" stroke="#ffd700" stroke-width="1.5" opacity="0.5"/>
+  <line x1="30" y1="38" x2="98" y2="74" stroke="#ffd700" stroke-width="1.5" opacity="0.5"/>
+  <line x1="98" y1="38" x2="30" y2="74" stroke="#ffd700" stroke-width="1.5" opacity="0.5"/>
+  <!-- "20" text -->
+  <text x="64" y="62" font-family="serif" font-size="24" font-weight="bold" fill="#ffd700" text-anchor="middle" dominant-baseline="central">20</text>
+  <!-- Crown on top -->
+  <polygon points="44,105 50,96 57,102 64,94 71,102 78,96 84,105" fill="#ffd700"/>
+</svg>

@@ -1,0 +1,132 @@
+## Overworld HUD Controller
+## Displays party statuses, turn status, active player, logs, and handles End Turn requests.
+class_name OverworldHUD
+extends CanvasLayer
+
+signal end_turn_pressed
+signal rest_pressed
+signal save_pressed
+signal menu_pressed
+signal settings_pressed
+signal sheet_pressed
+
+# Node references
+@onready var player_list_container: VBoxContainer = $MarginContainer/HBoxContainer/Sidebar/ScrollContainer/PlayerList
+@onready var active_player_name: Label = $MarginContainer/HBoxContainer/MainArea/Header/MarginContainer/VBoxContainer/ActivePlayerName
+@onready var active_player_stats: Label = $MarginContainer/HBoxContainer/MainArea/Header/MarginContainer/VBoxContainer/ActivePlayerStats
+@onready var log_text: RichTextLabel = $MarginContainer/HBoxContainer/MainArea/LogBox/LogText
+@onready var btn_end_turn: Button = $MarginContainer/HBoxContainer/Sidebar/BtnEndTurn
+@onready var btn_rest: Button = $MarginContainer/HBoxContainer/Sidebar/BtnRest
+@onready var btn_save: Button = $MarginContainer/HBoxContainer/Sidebar/BtnSave
+@onready var btn_menu: Button = $MarginContainer/HBoxContainer/Sidebar/BtnMenu
+@onready var btn_settings: Button = $MarginContainer/HBoxContainer/Sidebar/BtnSettings
+@onready var btn_sheet: Button = $MarginContainer/HBoxContainer/Sidebar/BtnSheet
+
+
+func _ready() -> void:
+	btn_end_turn.pressed.connect(func(): end_turn_pressed.emit())
+	btn_rest.pressed.connect(func(): rest_pressed.emit())
+	btn_save.pressed.connect(func(): save_pressed.emit())
+	btn_menu.pressed.connect(func(): menu_pressed.emit())
+	btn_settings.pressed.connect(func(): settings_pressed.emit())
+	btn_sheet.pressed.connect(func(): sheet_pressed.emit())
+	clear_logs()
+	update_hud()
+
+
+## Refresh HUD elements with current player and party information.
+func update_hud() -> void:
+	_update_party_sidebar()
+	_update_active_player_display()
+
+
+## Add a log message to the log box.
+func add_log(msg: String) -> void:
+	if log_text == null: return
+	log_text.text += msg + "\n"
+	# Auto-scroll to bottom
+	var scroll = log_text.get_v_scroll_bar()
+	if scroll:
+		scroll.value = scroll.max_value
+
+
+## Clear all logs.
+func clear_logs() -> void:
+	if log_text != null:
+		log_text.text = ""
+
+
+func _update_party_sidebar() -> void:
+	# Clear sidebar list
+	for child in player_list_container.get_children():
+		child.queue_free()
+
+	# Build status bar for each player
+	var player_count := PlayerManager.get_player_count()
+	var active_idx := PlayerManager.active_player_index
+	
+	for i in player_count:
+		var player := PlayerManager.get_player(i)
+		var char_data: Character = player.get("character")
+		if char_data == null: continue
+
+		var card := PanelContainer.new()
+		var vbox := VBoxContainer.new()
+		vbox.add_theme_constant_override("separation", 5)
+		card.add_child(vbox)
+
+		# Name & class
+		var name_lbl := Label.new()
+		name_lbl.text = "%s (%s)" % [char_data.character_name, DataLoader.get_character_class(char_data.class_id).get("name", "Class")]
+		if i == active_idx:
+			name_lbl.text = "➔ " + name_lbl.text
+			# Add subtle active color
+			name_lbl.add_theme_color_override("font_color", Color.YELLOW)
+		else:
+			name_lbl.add_theme_color_override("font_color", player.get("color", Color.WHITE))
+		vbox.add_child(name_lbl)
+
+		# HP Bar/Text
+		var hp_lbl := Label.new()
+		hp_lbl.text = "HP: %d / %d | Gold: %d | Level %d" % [char_data.current_hp, char_data.max_hp, char_data.inventory.gold, char_data.level]
+		vbox.add_child(hp_lbl)
+
+		# Show spell slots if any
+		if not char_data.spell_slots.is_empty():
+			var slots_lbl := Label.new()
+			var slots_str := "Spell Slots: "
+			var has_slots := false
+			for lvl in char_data.spell_slots:
+				slots_str += "L%s: %d  " % [lvl, char_data.spell_slots[lvl]]
+				has_slots = true
+			if has_slots:
+				slots_lbl.text = slots_str
+				slots_lbl.add_theme_color_override("font_color", Color(0.6, 0.8, 1.0))
+				vbox.add_child(slots_lbl)
+
+		# Show active conditions
+		if not char_data.conditions.is_empty():
+			var cond_lbl := Label.new()
+			var conds_str := "Conditions: "
+			for cond in char_data.conditions:
+				conds_str += "%s (%d) " % [cond, char_data.conditions[cond]]
+			cond_lbl.text = conds_str
+			cond_lbl.add_theme_color_override("font_color", Color(0.9, 0.4, 0.4))
+			vbox.add_child(cond_lbl)
+
+		player_list_container.add_child(card)
+
+
+func _update_active_player_display() -> void:
+	var player := PlayerManager.get_active_player()
+	var char_data: Character = player.get("character")
+	if char_data == null: return
+
+	active_player_name.text = "Current Turn: %s" % char_data.character_name
+	active_player_name.add_theme_color_override("font_color", player.get("color", Color.WHITE))
+	
+	active_player_stats.text = "Race: %s | Level: %d | Speed: %d hexes" % [
+		DataLoader.get_race(char_data.race_id).get("name", ""),
+		char_data.level,
+		char_data.speed
+	]

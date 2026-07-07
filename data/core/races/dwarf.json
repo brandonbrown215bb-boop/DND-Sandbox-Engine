@@ -1,0 +1,39 @@
+{
+  "id": "dwarf",
+  "name": "Dwarf",
+  "description": "Dwarf race. Source: XPHB.",
+  "ability_bonuses": {},
+  "speed": 6,
+  "size": "medium",
+  "languages": [
+    "Common"
+  ],
+  "proficiencies": [],
+  "traits": [
+    {
+      "id": "dwarf_darkvision",
+      "name": "Darkvision",
+      "description": "You have {@sense Darkvision} with a range of 120 feet.",
+      "effects": []
+    },
+    {
+      "id": "dwarf_dwarven_resilience",
+      "name": "Dwarven Resilience",
+      "description": "You have Resistance to Poison damage. You also have Advantage on saving throws you make to avoid or end the Poisoned condition.",
+      "effects": []
+    },
+    {
+      "id": "dwarf_dwarven_toughness",
+      "name": "Dwarven Toughness",
+      "description": "Your Hit Points Point maximum increases by 1, and it increases by 1 again whenever you gain a level.",
+      "effects": []
+    },
+    {
+      "id": "dwarf_stonecunning",
+      "name": "Stonecunning",
+      "description": "As a Bonus Action, you gain {@sense Tremorsense} with a range of 60 feet for 10 minutes. You must be on a stone surface or touching a stone surface to use this {@sense Tremorsense}. The stone can be natural or worked. You can use this Bonus Action a number of times equal to your Proficiency Bonus, and you regain all expended uses when you finish a Long Rest.",
+      "effects": []
+    }
+  ],
+  "darkvision": true
+}

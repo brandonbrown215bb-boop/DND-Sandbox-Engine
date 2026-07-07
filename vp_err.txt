@@ -1,0 +1,32 @@
+SCRIPT ERROR: Parse Error: Cannot pass a value of type "null" as "Dictionary".
+          at: GDScript::reload (res://src/combat/combat_state.gd:652)
+          GDScript backtrace (most recent call first):
+              [0] _ready (res://src/viewport_harness.gd:50)
+SCRIPT ERROR: Parse Error: Invalid argument for "_handle_spell_effects()" function: argument 2 should be "Dictionary" but is "null".
+          at: GDScript::reload (res://src/combat/combat_state.gd:652)
+          GDScript backtrace (most recent call first):
+              [0] _ready (res://src/viewport_harness.gd:50)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "success" variable because the value doesn't have a set type.
+          at: GDScript::reload (res://src/combat/combat_state.gd:873)
+          GDScript backtrace (most recent call first):
+              [0] _ready (res://src/viewport_harness.gd:50)
+SCRIPT ERROR: Parse Error: The variable type is being inferred from a Variant value, so it will be typed as Variant. (Warning treated as error.)
+          at: GDScript::reload (res://src/combat/combat_state.gd:871)
+          GDScript backtrace (most recent call first):
+              [0] _ready (res://src/viewport_harness.gd:50)
+SCRIPT ERROR: Parse Error: The variable type is being inferred from a Variant value, so it will be typed as Variant. (Warning treated as error.)
+          at: GDScript::reload (res://src/combat/combat_state.gd:884)
+          GDScript backtrace (most recent call first):
+              [0] _ready (res://src/viewport_harness.gd:50)
+SCRIPT ERROR: Parse Error: The variable type is being inferred from a Variant value, so it will be typed as Variant. (Warning treated as error.)
+          at: GDScript::reload (res://src/combat/combat_state.gd:911)
+          GDScript backtrace (most recent call first):
+              [0] _ready (res://src/viewport_harness.gd:50)
+ERROR: Failed to load script "res://src/combat/combat_state.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript_resource_format.cpp:46)
+   GDScript backtrace (most recent call first):
+       [0] _ready (res://src/viewport_harness.gd:50)
+SCRIPT ERROR: Invalid access to property or key 'hex_grid' on a base object of type 'Node2D'.
+          at: _ready (res://src/viewport_harness.gd:58)
+          GDScript backtrace (most recent call first):
+              [0] _ready (res://src/viewport_harness.gd:58)

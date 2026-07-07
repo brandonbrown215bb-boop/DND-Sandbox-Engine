@@ -1,0 +1,167 @@
+{
+  "id": "bard",
+  "name": "Bard",
+  "description": "Bard class. Source: PHB.",
+  "hit_die": "d1",
+  "primary_ability": "CHA",
+  "saving_throw_proficiencies": [
+    "DEX",
+    "CHA"
+  ],
+  "armor_proficiencies": [
+    "light",
+    "medium"
+  ],
+  "weapon_proficiencies": [
+    "simple"
+  ],
+  "skill_choices": {
+    "pick": 2,
+    "from": [
+      "Athletics",
+      "Acrobatics",
+      "Insight",
+      "Perception",
+      "History",
+      "Arcana",
+      "Stealth"
+    ]
+  },
+  "starting_equipment": [
+    "leather_armor",
+    "shield"
+  ],
+  "spell_slots_by_level": {
+    "1": [
+      2
+    ],
+    "2": [
+      3
+    ],
+    "3": [
+      4,
+      2
+    ],
+    "4": [
+      4,
+      3
+    ],
+    "5": [
+      4,
+      3,
+      2
+    ]
+  },
+  "cantrips_known": [],
+  "spells_known_by_level": {
+    "1": [],
+    "2": [],
+    "3": []
+  },
+  "features_by_level": {
+    "1": [
+      {
+        "id": "bard_bardic_inspiration",
+        "name": "Bardic Inspiration",
+        "description": "You can inspire others through stirring words or music. To do so, you use a bonus action on your turn to choose one creature other than yourself within 60 feet of you who can hear you. That creature gains one Bardic Inspiration die, a d6. Once within the next 10 minutes, the creature can roll the di...",
+        "type": "active",
+        "effects": [],
+        "action_cost": "bonus_action",
+        "uses": 1,
+        "uses_per": "combat"
+      },
+      {
+        "id": "bard_spellcasting",
+        "name": "Spellcasting",
+        "description": "You have learned to untangle and reshape the fabric of reality in harmony with your wishes and music. Your spells are part of your vast repertoire, magic that you can tune to different situations. See chapter 10 for the general rules of spellcasting and chapter 11 for the {@filter bard spell list=ba...",
+        "type": "passive",
+        "effects": []
+      }
+    ],
+    "2": [
+      {
+        "id": "bard_jack_of_all_trades",
+        "name": "Jack of All Trades",
+        "description": "Starting at 2nd level, you can add half your proficiency bonus, rounded down, to any ability check you make that doesn't already include your proficiency bonus.",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "bard_magical_inspiration",
+        "name": "Magical Inspiration",
+        "description": "{@i 2nd-level bard optional class features feature} If a creature has a Bardic Inspiration die from you and casts a spell that restores hit points or deals damage, the creature can roll that die and choose a target affected by the spell. Add the number rolled as a bonus to the hit points regained or...",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "bard_song_of_rest_(d6)",
+        "name": "Song of Rest (d6)",
+        "description": "Beginning at 2nd level, you can use soothing music or oration to help revitalize your wounded allies during a short rest. If you or any friendly creatures who can hear your performance regain hit points by spending Hit Dice at the end of the short rest, each of those creatures regains an extra 1d6 h...",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "bard_expertise",
+        "name": "Expertise",
+        "description": "You gain Expertise in two of your skill proficiencies of your choice. {@skill Performance} and {@skill Persuasion} are recommended if you have proficiency in them. At Bard level 9, you gain Expertise in two more of your skill proficiencies of your choice.",
+        "type": "passive",
+        "effects": []
+      }
+    ],
+    "3": [
+      {
+        "id": "bard_bard_college",
+        "name": "Bard College",
+        "description": "At 3rd level, you delve into the advanced techniques of a bard college of your choice from the list of available colleges. Your choice grants you features at 3rd level and again at 6th and 14th level.",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "bard_expertise",
+        "name": "Expertise",
+        "description": "At 3rd level, choose two of your skill proficiencies. Your proficiency bonus is doubled for any ability check you make that uses either of the chosen proficiencies. At 10th level, you can choose another two skill proficiencies to gain this benefit.",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "bard_bard_subclass",
+        "name": "Bard Subclass",
+        "description": "You gain a Bard subclass of your choice. A subclass is a specialization that grants you features at certain Bard levels. For the rest of your career, you gain each of your subclass's features that are of your Bard level or lower.",
+        "type": "passive",
+        "effects": []
+      }
+    ],
+    "4": [
+      {
+        "id": "bard_ability_score_improvement",
+        "name": "Ability Score Improvement",
+        "description": "When you reach 4th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature. If your DM allows the use of feats, you may instead take a {@5etools feat.html}.",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "bard_bardic_versatility",
+        "name": "Bardic Versatility",
+        "description": "{@i 4th-level bard optional class features feature} Whenever you reach a level in this class that grants the Ability Score Improvement feature, you can do one of the following, representing a change in focus as you use your skills and magic: {'type': 'list', 'items': [\"Replace one of the skills you ...",
+        "type": "passive",
+        "effects": []
+      }
+    ],
+    "5": [
+      {
+        "id": "bard_bardic_inspiration_(d8)",
+        "name": "Bardic Inspiration (d8)",
+        "description": "At 5th level, your Bardic Inspiration die changes to a d8.",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "bard_font_of_inspiration",
+        "name": "Font of Inspiration",
+        "description": "Beginning when you reach 5th level, you regain all of your expended uses of Bardic Inspiration when you finish a short or long rest.",
+        "type": "passive",
+        "effects": []
+      }
+    ]
+  }
+}

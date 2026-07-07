@@ -1,0 +1,60 @@
+{
+  "id": "half-orc",
+  "name": "Half-Orc",
+  "description": "Half-Orc race. Source: PHB.",
+  "ability_bonuses": {
+    "STR": 2,
+    "CON": 1
+  },
+  "speed": 6,
+  "size": "medium",
+  "languages": [
+    "Common"
+  ],
+  "proficiencies": [],
+  "traits": [
+    {
+      "id": "half-orc_age",
+      "name": "Age",
+      "description": "Half-orcs mature a little faster than humans, reaching adulthood around age 14. They age noticeably faster and rarely live longer than 75 years.",
+      "effects": []
+    },
+    {
+      "id": "half-orc_size",
+      "name": "Size",
+      "description": "Half-orcs are somewhat larger and bulkier than humans, and they range from 5 to well over 6 feet tall. Your size is Medium.",
+      "effects": []
+    },
+    {
+      "id": "half-orc_darkvision",
+      "name": "Darkvision",
+      "description": "Thanks to your orc blood, you have superior vision in dark and dim conditions. You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light. You can't discern color in darkness, only shades of gray.",
+      "effects": []
+    },
+    {
+      "id": "half-orc_menacing",
+      "name": "Menacing",
+      "description": "You gain proficiency in the {@skill Intimidation} skill.",
+      "effects": []
+    },
+    {
+      "id": "half-orc_relentless_endurance",
+      "name": "Relentless Endurance",
+      "description": "When you are reduced to 0 hit points but not killed outright, you can drop to 1 hit point instead. You can't use this feature again until you finish a long rest.",
+      "effects": []
+    },
+    {
+      "id": "half-orc_savage_attacks",
+      "name": "Savage Attacks",
+      "description": "When you score a critical hit with a melee weapon attack, you can roll one of the weapon's damage dice one additional time and add it to the extra damage of the critical hit.",
+      "effects": []
+    },
+    {
+      "id": "half-orc_languages",
+      "name": "Languages",
+      "description": "You can speak, read, and write Common and Orc. Orc is a harsh, grating language with hard consonants. It has no script of its own but is written in the Dwarvish script.",
+      "effects": []
+    }
+  ],
+  "darkvision": true
+}

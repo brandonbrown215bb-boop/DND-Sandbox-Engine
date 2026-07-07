@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Monster",
+  "type": "object",
+  "required": ["id", "name", "hit_points", "armor_class", "speed", "attacks", "ai_behavior"],
+  "properties": {
+    "id": { "type": "string" },
+    "name": { "type": "string" },
+    "hit_points": { "type": "string" },
+    "armor_class": { "type": "integer" },
+    "speed": { "type": "integer" },
+    "ai_behavior": { "type": "string", "enum": ["aggressive", "defensive", "support"] },
+    "ability_scores": {
+      "type": "object",
+      "required": ["STR", "DEX", "CON", "INT", "WIS", "CHA"],
+      "properties": {
+        "STR": { "type": "integer" },
+        "DEX": { "type": "integer" },
+        "CON": { "type": "integer" },
+        "INT": { "type": "integer" },
+        "WIS": { "type": "integer" },
+        "CHA": { "type": "integer" }
+      }
+    },
+    "attacks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "ability", "damage", "range", "damage_type"],
+        "properties": {
+          "name": { "type": "string" },
+          "ability": { "type": "string", "enum": ["STR", "DEX", "CON", "INT", "WIS", "CHA"] },
+          "damage": { "type": "string" },
+          "range": { "type": "integer" },
+          "damage_type": { "type": "string" }
+        }
+      }
+    }
+  }
+}

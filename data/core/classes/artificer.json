@@ -1,0 +1,173 @@
+{
+  "id": "artificer",
+  "name": "Artificer",
+  "description": "Artificer class. Source: TCE.",
+  "hit_die": "d1",
+  "primary_ability": "INT",
+  "saving_throw_proficiencies": [
+    "CON",
+    "INT"
+  ],
+  "armor_proficiencies": [
+    "light",
+    "medium",
+    "heavy",
+    "shields"
+  ],
+  "weapon_proficiencies": [
+    "simple",
+    "martial"
+  ],
+  "skill_choices": {
+    "pick": 2,
+    "from": [
+      "Athletics",
+      "Acrobatics",
+      "Insight",
+      "Perception",
+      "History",
+      "Arcana",
+      "Stealth"
+    ]
+  },
+  "starting_equipment": [
+    "leather_armor",
+    "shield"
+  ],
+  "spell_slots_by_level": {
+    "1": [
+      0
+    ],
+    "2": [
+      2
+    ],
+    "3": [
+      3
+    ],
+    "4": [
+      3
+    ],
+    "5": [
+      4,
+      2
+    ]
+  },
+  "cantrips_known": [],
+  "spells_known_by_level": {
+    "1": [],
+    "2": [],
+    "3": []
+  },
+  "features_by_level": {
+    "1": [
+      {
+        "id": "artificer_spellcasting",
+        "name": "Spellcasting",
+        "description": "You have learned how to channel magical energy through objects. See the Player's Handbook for the rules on spellcasting. The information below details how you use those rules with Artificer spells, which appear in the {@filter Artificer spell list=Artificer} later in the class's description. {'type'...",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "artificer_tinker's_magic",
+        "name": "Tinker's Magic",
+        "description": "You know the Mending cantrip. As a {@action Magic} action while holding Tinker's Tools, you can create one item in an unoccupied space within 5 feet of yourself, choosing the item from the following list: {'type': 'list', 'style': 'list-hang', 'columns': 3, 'items': ['Ball Bearings', 'Basket', 'Bedr...",
+        "type": "active",
+        "effects": [],
+        "action_cost": "action",
+        "uses": 1,
+        "uses_per": "combat"
+      },
+      {
+        "id": "artificer_magical_tinkering",
+        "name": "Magical Tinkering",
+        "description": "{@i 1st-level artificer feature} You've learned how to invest a spark of magic into mundane objects. To use this ability, you must have thieves' tools or artisan's tools in hand. You then touch a Tiny nonmagical object as an action and give it one of the following magical properties of your choice: ...",
+        "type": "active",
+        "effects": [],
+        "action_cost": "action",
+        "uses": 1,
+        "uses_per": "combat"
+      },
+      {
+        "id": "artificer_optional_rule:_firearm_proficiency",
+        "name": "Optional Rule: Firearm Proficiency",
+        "description": "The secrets of creating and operating gunpowder weapons have been discovered in various corners of the D&D multiverse. If your Dungeon Master uses the rules on firearms in chapter 9 of the Dungeon Master's Guide and your artificer has been exposed to the operation of such weapons, your artificer is ...",
+        "type": "passive",
+        "effects": []
+      }
+    ],
+    "2": [
+      {
+        "id": "artificer_replicate_magic_item",
+        "name": "Replicate Magic Item",
+        "description": "You have learned arcane plans that you use to make magic items. {'type': 'entries', 'entries': [{'type': 'entries', 'name': 'Plans Known', 'entries': [\"When you gain this feature, choose four plans to learn from the Magic Item Plans (Artificer Level 2+) table (see the Dungeon Master's Guide for the ...",
+        "type": "active",
+        "effects": [],
+        "action_cost": "action",
+        "uses": 1,
+        "uses_per": "combat"
+      },
+      {
+        "id": "artificer_infuse_item",
+        "name": "Infuse Item",
+        "description": "{@i 2nd-level artificer feature} You've gained the ability to imbue mundane items with certain magical infusions, turning those objects into magic items. {'type': 'refClassFeature', 'classFeature': 'Infusions Known'} {'type': 'inset', 'name': 'Artificer Infusions', 'entries': ['Artificers have inven...",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "artificer_infusions_known",
+        "name": "Infusions Known",
+        "description": "When you gain this feature, pick four artificer infusions to learn, choosing from the \"{@filter Artificer Infusions type=ai=TCE}\" section at the end of the class's description. You learn additional infusions of your choice when you reach certain levels in this class, as shown in the Infusions Known ...",
+        "type": "passive",
+        "effects": []
+      }
+    ],
+    "3": [
+      {
+        "id": "artificer_artificer_subclass",
+        "name": "Artificer Subclass",
+        "description": "You gain an Artificer subclass of your choice. The {@subclass Alchemist}, {@subclass Armorer}, {@subclass Artillerist}, and {@subclass Battle Smith}, and {@subclass Cartographer} subclasses are detailed after this class's description. A subclass is a specialization that grants you features at certai...",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "artificer_artificer_specialist",
+        "name": "Artificer Specialist",
+        "description": "{@i 3rd-level artificer feature} Choose the type of specialist you are, each of which is detailed at the end of the class's description. Your choice grants you features at 5th level and again at 9th and 15th level.",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "artificer_the_right_tool_for_the_job",
+        "name": "The Right Tool for the Job",
+        "description": "{@i 3rd-level artificer feature} You've learned how to produce exactly the tool you need: with thieves' tools or artisan's tools in hand, you can magically create one set of artisan's tools in an unoccupied space within 5 feet of you. This creation requires 1 hour of uninterrupted work, which can co...",
+        "type": "passive",
+        "effects": []
+      }
+    ],
+    "4": [
+      {
+        "id": "artificer_ability_score_improvement",
+        "name": "Ability Score Improvement",
+        "description": "You gain the {@feat Ability Score Improvement} feat or another feat of your choice for which you qualify. You gain this feature again at Artificer levels 8, 12, and 16.",
+        "type": "passive",
+        "effects": []
+      }
+    ],
+    "5": [
+      {
+        "id": "artificer_subclass_feature",
+        "name": "Subclass feature",
+        "description": "You gain a feature from your Artificer Subclass.",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "artificer_artificer_specialist_feature",
+        "name": "Artificer Specialist Feature",
+        "description": "{@i 5th-level artificer feature} You gain a feature granted by your Artificer Specialist choice.",
+        "type": "passive",
+        "effects": []
+      }
+    ]
+  }
+}

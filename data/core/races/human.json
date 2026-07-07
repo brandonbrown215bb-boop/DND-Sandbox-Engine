@@ -1,0 +1,26 @@
+{
+  "id": "human",
+  "name": "Human",
+  "description": "Versatile and ambitious, humans are the most adaptable of all races.",
+  "ability_bonuses": {
+    "STR": 1,
+    "DEX": 1,
+    "CON": 1,
+    "INT": 1,
+    "WIS": 1,
+    "CHA": 1
+  },
+  "speed": 6,
+  "size": "medium",
+  "languages": ["Common", "Choice"],
+  "proficiencies": [],
+  "traits": [
+    {
+      "id": "human_versatility",
+      "name": "Versatile",
+      "description": "+1 to all ability scores. Gain proficiency in one extra skill of your choice.",
+      "effects": [{"type": "bonus_skill_proficiency", "count": 1}]
+    }
+  ],
+  "darkvision": false
+}

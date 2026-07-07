@@ -1,0 +1,127 @@
+{
+  "id": "mystic",
+  "name": "Mystic",
+  "description": "Mystic class. Source: UATheMysticClass.",
+  "hit_die": "d1",
+  "primary_ability": "INT",
+  "saving_throw_proficiencies": [
+    "INT",
+    "WIS"
+  ],
+  "armor_proficiencies": [
+    "light",
+    "medium",
+    "heavy",
+    "shields"
+  ],
+  "weapon_proficiencies": [
+    "simple",
+    "martial"
+  ],
+  "skill_choices": {
+    "pick": 2,
+    "from": [
+      "Athletics",
+      "Acrobatics",
+      "Insight",
+      "Perception",
+      "History",
+      "Arcana",
+      "Stealth"
+    ]
+  },
+  "starting_equipment": [
+    "leather_armor",
+    "shield"
+  ],
+  "spell_slots_by_level": {},
+  "cantrips_known": [],
+  "spells_known_by_level": {
+    "1": [],
+    "2": [],
+    "3": []
+  },
+  "features_by_level": {
+    "1": [
+      {
+        "id": "mystic_mystic_order",
+        "name": "Mystic Order",
+        "description": "At 1st level, you choose a Mystic Order from the list of available orders. Each order specializes in a specific approach to psionics. Your order gives you features when you choose it at 1st level and additional features at 3rd, 6th, and 14th level.",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "mystic_psionic_disciplines_and_talents",
+        "name": "Psionic Disciplines and Talents",
+        "description": "{@filter Psionic talents=T} and {@filter disciplines=D} are the heart of a mystic's craft. They are the mental exercises and psionic formulae used to forge will into tangible, magical effects. Psionic disciplines were each discovered by different orders and tend to reflect their creators' specialtie...",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "mystic_psionics",
+        "name": "Psionics",
+        "description": "As a student of psionics, you can master and use psionic talents and disciplines, the rules for which appear at the end of this document. Psionics is a special form of magic use, distinct from spellcasting. {'type': 'entries', 'name': 'Psionic Talents', 'entries': ['A {@filter psionic talent=T} is a...",
+        "type": "active",
+        "effects": [],
+        "action_cost": "bonus_action",
+        "uses": 1,
+        "uses_per": "combat"
+      },
+      {
+        "id": "mystic_using_a_discipline",
+        "name": "Using a Discipline",
+        "description": "Each psionic discipline has several ways you can use it, all contained in its description. The discipline specifies the type of action and number of psi points it requires. It also details whether you must concentrate on its effects, how many targets it affects, what saving throws it requires, and s...",
+        "type": "active",
+        "effects": [],
+        "action_cost": "action",
+        "uses": 1,
+        "uses_per": "combat"
+      }
+    ],
+    "2": [
+      {
+        "id": "mystic_mystical_recovery",
+        "name": "Mystical Recovery",
+        "description": "Starting at 2nd level, you can draw vigor from the psi energy you use to power your psionic disciplines. Immediately after you spend psi points on a psionic discipline, you can take a bonus action to regain hit points equal to the number of psi points you spent.",
+        "type": "active",
+        "effects": [],
+        "action_cost": "bonus_action",
+        "uses": 1,
+        "uses_per": "combat"
+      },
+      {
+        "id": "mystic_telepathy",
+        "name": "Telepathy",
+        "description": "At 2nd level, your mind awakens to the ability to communicate via telepathy. You can telepathically speak to any creature you can see within 120 feet of you in this manner. You don't need to share a language with the creature for it to understand your telepathic messages, but the creature must be ab...",
+        "type": "passive",
+        "effects": []
+      }
+    ],
+    "3": [
+      {
+        "id": "mystic_mystic_order_feature",
+        "name": "Mystic Order feature",
+        "description": "At 3rd level, you gain another feature from your Mystic Order.",
+        "type": "passive",
+        "effects": []
+      }
+    ],
+    "4": [
+      {
+        "id": "mystic_ability_score_improvement",
+        "name": "Ability Score Improvement",
+        "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "mystic_strength_of_mind",
+        "name": "Strength of Mind",
+        "description": "Even the simplest psionic technique requires a deep understanding of how psionic energy can augment mind and body. This understanding allows you to alter your defenses to better deal with threats. Starting at 4th level, you can replace your proficiency in Wisdom saving throws whenever you finish a s...",
+        "type": "passive",
+        "effects": []
+      }
+    ],
+    "5": []
+  }
+}

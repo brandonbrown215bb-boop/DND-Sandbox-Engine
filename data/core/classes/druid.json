@@ -1,0 +1,173 @@
+{
+  "id": "druid",
+  "name": "Druid",
+  "description": "Druid class. Source: PHB.",
+  "hit_die": "d1",
+  "primary_ability": "WIS",
+  "saving_throw_proficiencies": [
+    "INT",
+    "WIS"
+  ],
+  "armor_proficiencies": [
+    "light",
+    "medium"
+  ],
+  "weapon_proficiencies": [
+    "simple"
+  ],
+  "skill_choices": {
+    "pick": 2,
+    "from": [
+      "Athletics",
+      "Acrobatics",
+      "Insight",
+      "Perception",
+      "History",
+      "Arcana",
+      "Stealth"
+    ]
+  },
+  "starting_equipment": [
+    "leather_armor",
+    "shield"
+  ],
+  "spell_slots_by_level": {
+    "1": [
+      2
+    ],
+    "2": [
+      3
+    ],
+    "3": [
+      4,
+      2
+    ],
+    "4": [
+      4,
+      3
+    ],
+    "5": [
+      4,
+      3,
+      2
+    ]
+  },
+  "cantrips_known": [],
+  "spells_known_by_level": {
+    "1": [],
+    "2": [],
+    "3": []
+  },
+  "features_by_level": {
+    "1": [
+      {
+        "id": "druid_druidic",
+        "name": "Druidic",
+        "description": "You know {@language Druidic}, the secret language of druids. You can speak the language and use it to leave hidden messages. You and others who know this language automatically spot such a message. Others spot the message's presence with a successful 15 Wisdom ({@skill Perception}) check but can't d...",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "druid_spellcasting",
+        "name": "Spellcasting",
+        "description": "Drawing on the divine essence of nature itself, you can cast spells to shape that essence to your will. See chapter 10 for the general rules of spellcasting and chapter 11 for the {@filter druid spell list=druid}. {'type': 'entries', 'name': 'Cantrips', 'entries': ['At 1st level, you know two cantri...",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "druid_magician",
+        "name": "Magician",
+        "description": "You know one extra cantrip from the {@filter Druid spell list=Druid}. In addition, your mystical connection to nature gives you a bonus to your Intelligence ({@skill Arcana} or {@skill Nature}) checks. The bonus equals your Wisdom modifier (minimum bonus of +1).",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "druid_primal_order",
+        "name": "Primal Order",
+        "description": "You have dedicated yourself to one of the following sacred roles of your choice. {'type': 'entries', 'entries': [{'type': 'options', 'count': 1, 'entries': [{'type': 'refClassFeature', 'classFeature': 'Magician'}, {'type': 'refClassFeature', 'classFeature': 'Warden'}]}]}",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "druid_warden",
+        "name": "Warden",
+        "description": "Trained for battle, you gain proficiency with {@filter Martial weapons=martial weapon} and training with {@filter Medium armor=Medium Armor}.",
+        "type": "passive",
+        "effects": []
+      }
+    ],
+    "2": [
+      {
+        "id": "druid_druid_circle",
+        "name": "Druid Circle",
+        "description": "At 2nd level, you choose to identify with a circle of druids from the list of available circles. Your choice grants you features at 2nd level and again at 6th, 10th, and 14th level.",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "druid_wild_companion",
+        "name": "Wild Companion",
+        "description": "{@i 2nd-level druid optional class features feature} You gain the ability to summon a spirit that assumes an animal form: as an action, you can expend a use of your Wild Shape feature to cast the find familiar spell, without material components. When you cast the spell in this way, the familiar is a...",
+        "type": "active",
+        "effects": [],
+        "action_cost": "action",
+        "uses": 1,
+        "uses_per": "combat"
+      },
+      {
+        "id": "druid_wild_shape",
+        "name": "Wild Shape",
+        "description": "Starting at 2nd level, you can use your action to magically assume the shape of a beast that you have seen before. You can use this feature twice. You regain expended uses when you finish a short or long rest. Your druid level determines the beasts you can transform into, as shown in the Beast Shape...",
+        "type": "active",
+        "effects": [],
+        "action_cost": "bonus_action",
+        "uses": 1,
+        "uses_per": "combat"
+      }
+    ],
+    "3": [
+      {
+        "id": "druid_druid_subclass",
+        "name": "Druid Subclass",
+        "description": "You gain a Druid subclass of your choice. A subclass is a specialization that grants you features at certain Druid levels. For the rest of your career, you gain each of your subclass's features that are of your Druid level or lower.",
+        "type": "passive",
+        "effects": []
+      }
+    ],
+    "4": [
+      {
+        "id": "druid_ability_score_improvement",
+        "name": "Ability Score Improvement",
+        "description": "When you reach 4th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature. If your DM allows the use of feats, you may instead take a {@5etools feat.html}.",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "druid_cantrip_versatility",
+        "name": "Cantrip Versatility",
+        "description": "{@i 4th-level druid optional class features feature} Whenever you reach a level in this class that grants the Ability Score Improvement feature, you can replace one cantrip you learned from this class's Spellcasting feature with another cantrip from the {@filter druid spell list=0=Druid}.",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "druid_wild_shape_improvement",
+        "name": "Wild Shape Improvement",
+        "description": "At 4th level, your Wild Shape improves as shown on the Beast Shapes table.",
+        "type": "passive",
+        "effects": []
+      }
+    ],
+    "5": [
+      {
+        "id": "druid_wild_resurgence",
+        "name": "Wild Resurgence",
+        "description": "Once on each of your turns, if you have no uses of Wild Shape left, you can give yourself one use by expending a spell slot (no action required). In addition, you can expend one use of Wild Shape (no action required) to give yourself a level 1 spell slot, but you can't do so again until you finish a...",
+        "type": "active",
+        "effects": [],
+        "action_cost": "action",
+        "uses": 1,
+        "uses_per": "combat"
+      }
+    ]
+  }
+}

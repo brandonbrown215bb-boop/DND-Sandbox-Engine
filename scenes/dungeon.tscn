@@ -1,0 +1,125 @@
+[gd_scene load_steps=4 format=3 uid="uid://e456789f4c5d6"]
+
+[ext_resource type="Script" path="res://src/dungeon/dungeon_state.gd" id="1_dungeon"]
+[ext_resource type="Script" path="res://src/hex/hex_grid.gd" id="2_grid"]
+[ext_resource type="Script" path="res://src/overworld/overworld_hud.gd" id="3_hud"]
+
+[node name="Dungeon" type="Node2D"]
+script = ExtResource("1_dungeon")
+
+[node name="HexGrid" type="Node2D" parent="."]
+script = ExtResource("2_grid")
+
+[node name="DungeonHUD" type="CanvasLayer" parent="."]
+script = ExtResource("3_hud")
+
+[node name="MarginContainer" type="MarginContainer" parent="DungeonHUD"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+mouse_filter = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="DungeonHUD/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+mouse_filter = 2
+
+[node name="MainArea" type="VBoxContainer" parent="DungeonHUD/MarginContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="Header" type="PanelContainer" parent="DungeonHUD/MarginContainer/HBoxContainer/MainArea"]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="DungeonHUD/MarginContainer/HBoxContainer/MainArea/Header"]
+layout_mode = 2
+theme_override_constants/margin_left = 15
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 15
+theme_override_constants/margin_bottom = 10
+
+[node name="VBoxContainer" type="VBoxContainer" parent="DungeonHUD/MarginContainer/HBoxContainer/MainArea/Header/MarginContainer"]
+layout_mode = 2
+
+[node name="ActivePlayerName" type="Label" parent="DungeonHUD/MarginContainer/HBoxContainer/MainArea/Header/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Dungeon Crawler Mode"
+
+[node name="ActivePlayerStats" type="Label" parent="DungeonHUD/MarginContainer/HBoxContainer/MainArea/Header/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.65, 0.65, 1)
+text = "Explore room-by-room to find the crown fragment."
+
+[node name="Control" type="Control" parent="DungeonHUD/MarginContainer/HBoxContainer/MainArea"]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+
+[node name="LogBox" type="PanelContainer" parent="DungeonHUD/MarginContainer/HBoxContainer/MainArea"]
+custom_minimum_size = Vector2(0, 150)
+layout_mode = 2
+
+[node name="LogText" type="RichTextLabel" parent="DungeonHUD/MarginContainer/HBoxContainer/MainArea/LogBox"]
+layout_mode = 2
+bbcode_enabled = true
+text = "Entering depths..."
+scroll_following = true
+
+[node name="Sidebar" type="VBoxContainer" parent="DungeonHUD/MarginContainer/HBoxContainer"]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="PartyHeader" type="Label" parent="DungeonHUD/MarginContainer/HBoxContainer/Sidebar"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Party Status"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="DungeonHUD/MarginContainer/HBoxContainer/Sidebar"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="PlayerList" type="VBoxContainer" parent="DungeonHUD/MarginContainer/HBoxContainer/Sidebar/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="BtnEndTurn" type="Button" parent="DungeonHUD/MarginContainer/HBoxContainer/Sidebar"]
+visible = false
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+text = "End Turn"
+
+[node name="BtnRest" type="Button" parent="DungeonHUD/MarginContainer/HBoxContainer/Sidebar"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "Rest (may be ambushed)"
+
+[node name="BtnSave" type="Button" parent="DungeonHUD/MarginContainer/HBoxContainer/Sidebar"]
+custom_minimum_size = Vector2(0, 45)
+layout_mode = 2
+text = "Save Game"
+
+[node name="BtnMenu" type="Button" parent="DungeonHUD/MarginContainer/HBoxContainer/Sidebar"]
+custom_minimum_size = Vector2(0, 45)
+layout_mode = 2
+text = "Quit to Menu"
+
+[node name="BtnSettings" type="Button" parent="DungeonHUD/MarginContainer/HBoxContainer/Sidebar"]
+custom_minimum_size = Vector2(0, 45)
+layout_mode = 2
+text = "Settings ⚙"
+
+[node name="BtnSheet" type="Button" parent="DungeonHUD/MarginContainer/HBoxContainer/Sidebar"]
+custom_minimum_size = Vector2(0, 45)
+layout_mode = 2
+text = "Character Sheet"

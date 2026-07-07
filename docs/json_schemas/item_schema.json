@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Item",
+  "type": "object",
+  "required": ["id", "name", "type", "value"],
+  "properties": {
+    "id": { "type": "string" },
+    "name": { "type": "string" },
+    "description": { "type": "string" },
+    "type": { "type": "string", "enum": ["weapon", "armor", "shield", "consumable", "tool", "currency"] },
+    "value": { "type": "integer" },
+    "damage": { "type": "string" },
+    "damage_type": { "type": "string" },
+    "ability": { "type": "string", "enum": ["STR", "DEX"] },
+    "range": { "type": "integer" },
+    "ac": { "type": "integer" },
+    "ac_bonus": { "type": "integer" },
+    "armor_type": { "type": "string", "enum": ["light", "medium", "heavy"] },
+    "stealth_disadvantage": { "type": "boolean" },
+    "action_cost": { "type": "string", "enum": ["action", "bonus", "reaction", "free"] },
+    "effects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type"],
+        "properties": {
+          "type": { "type": "string" },
+          "value": { "type": ["integer", "string"] },
+          "duration": { "type": "integer" },
+          "condition": { "type": "string" }
+        }
+      }
+    }
+  }
+}

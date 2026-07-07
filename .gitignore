@@ -1,0 +1,29 @@
+# Godot 4 editor cache (imported resources, .uid cache, etc.)
+.godot/
+
+# Godot 3 import metadata (kept for compatibility)
+.import/
+
+# Exported builds / presets
+export.cfg
+export_presets.cfg
+/builds/
+/exports/
+
+# Mono / C# (if enabled later)
+.mono/
+data_*/
+mono_crash.*.json
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*~
+*.tmp
+
+# Local save slots (user://saves are runtime data, not source)
+saves/
+*.sav
+
+# Embedded external repo (codegraph tooling) — not part of the game
+codegraph_setup/

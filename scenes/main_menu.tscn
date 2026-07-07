@@ -1,0 +1,154 @@
+[gd_scene load_steps=2 format=3 uid="uid://c23456789def0"]
+
+[ext_resource type="Script" path="res://src/ui/main_menu.gd" id="1_menu"]
+
+[node name="MainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_menu")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0862745, 0.0784314, 0.117647, 1)
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 40
+theme_override_constants/margin_right = 40
+theme_override_constants/margin_bottom = 40
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 40
+
+[node name="LeftPanel" type="VBoxContainer" parent="MarginContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.2
+theme_override_constants/separation = 20
+
+[node name="TitleLabel" type="Label" parent="MarginContainer/HBoxContainer/LeftPanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "Top-Down Party Game"
+
+[node name="SubtitleLabel" type="Label" parent="MarginContainer/HBoxContainer/LeftPanel"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.6, 0.6, 1)
+text = "A moddable D&D 5e-inspired turn-based experience"
+
+[node name="CampaignSection" type="VBoxContainer" parent="MarginContainer/HBoxContainer/LeftPanel"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="SectionLabel" type="Label" parent="MarginContainer/HBoxContainer/LeftPanel/CampaignSection"]
+layout_mode = 2
+text = "Choose Campaign:"
+
+[node name="CampaignList" type="ItemList" parent="MarginContainer/HBoxContainer/LeftPanel/CampaignSection"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ModSection" type="VBoxContainer" parent="MarginContainer/HBoxContainer/LeftPanel"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.5
+
+[node name="ModLabel" type="Label" parent="MarginContainer/HBoxContainer/LeftPanel/ModSection"]
+layout_mode = 2
+text = "Mod Loading Log:"
+
+[node name="ErrorLog" type="RichTextLabel" parent="MarginContainer/HBoxContainer/LeftPanel/ModSection"]
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+text = "Loading mods..."
+
+[node name="RightPanel" type="Panel" parent="MarginContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/HBoxContainer/RightPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 30
+
+[node name="DescText" type="RichTextLabel" parent="MarginContainer/HBoxContainer/RightPanel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+text = "Select a campaign to see details."
+
+[node name="PlayerCountSection" type="VBoxContainer" parent="MarginContainer/HBoxContainer/RightPanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/HBoxContainer/RightPanel/VBoxContainer/PlayerCountSection"]
+layout_mode = 2
+text = "Party Size:"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/HBoxContainer/RightPanel/VBoxContainer/PlayerCountSection"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="BtnMinus" type="Button" parent="MarginContainer/HBoxContainer/RightPanel/VBoxContainer/PlayerCountSection/HBoxContainer"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+text = "-"
+
+[node name="PlayerCountLabel" type="Label" parent="MarginContainer/HBoxContainer/RightPanel/VBoxContainer/PlayerCountSection/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "2 Players"
+horizontal_alignment = 1
+
+[node name="BtnPlus" type="Button" parent="MarginContainer/HBoxContainer/RightPanel/VBoxContainer/PlayerCountSection/HBoxContainer"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+text = "+"
+
+[node name="BtnLoad" type="Button" parent="MarginContainer/HBoxContainer/RightPanel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "Load Game"
+
+[node name="LoadSection" type="VBoxContainer" parent="MarginContainer/HBoxContainer/RightPanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="LoadLabel" type="Label" parent="MarginContainer/HBoxContainer/RightPanel/VBoxContainer/LoadSection"]
+layout_mode = 2
+text = "Saved Games:"
+
+[node name="SaveSlotList" type="ItemList" parent="MarginContainer/HBoxContainer/RightPanel/VBoxContainer/LoadSection"]
+layout_mode = 2
+size_flags_vertical = 3
+custom_minimum_size = Vector2(0, 120)
+
+[node name="StartButton" type="Button" parent="MarginContainer/HBoxContainer/RightPanel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Start Game"

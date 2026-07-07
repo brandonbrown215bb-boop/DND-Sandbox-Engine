@@ -1,0 +1,86 @@
+[
+  {
+    "id": "potion_healing",
+    "name": "Potion of Healing",
+    "description": "A vial of glowing red liquid. Heals 2d4 + 2 hit points.",
+    "type": "consumable",
+    "action_cost": "action",
+    "effects": [{"type": "heal", "value": "2d4 + 2"}],
+    "value": 50
+  },
+  {
+    "id": "potion_greater_healing",
+    "name": "Potion of Greater Healing",
+    "description": "A larger vial of potent red liquid. Heals 4d4 + 4 hit points.",
+    "type": "consumable",
+    "action_cost": "action",
+    "effects": [{"type": "heal", "value": "4d4 + 4"}],
+    "value": 150
+  },
+  {
+    "id": "antidote",
+    "name": "Antidote",
+    "description": "Cures the poisoned condition.",
+    "type": "consumable",
+    "action_cost": "action",
+    "effects": [{"type": "remove_condition", "condition": "poisoned"}],
+    "value": 25
+  },
+  {
+    "id": "torch",
+    "name": "Torch",
+    "description": "A stick wrapped in oil-soaked cloth. Provides light and +1 vision range for 10 turns.",
+    "type": "consumable",
+    "action_cost": "free",
+    "effects": [{"type": "vision_bonus", "value": 1, "duration": 10}],
+    "value": 1
+  },
+  {
+    "id": "rope",
+    "name": "Rope (50 ft)",
+    "description": "Hempen rope. Useful for climbing and certain event skill checks.",
+    "type": "tool",
+    "effects": [{"type": "skill_bonus", "skill": "Athletics", "bonus": 2, "context": "climbing"}],
+    "value": 1
+  },
+  {
+    "id": "thieves_tools",
+    "name": "Thieves' Tools",
+    "description": "A set of lockpicks and tools for disarming traps.",
+    "type": "tool",
+    "effects": [{"type": "enable_check", "check_type": "lockpick"}],
+    "value": 25
+  },
+  {
+    "id": "component_pouch",
+    "name": "Component Pouch",
+    "description": "A pouch containing material components for spellcasting.",
+    "type": "tool",
+    "effects": [{"type": "spellcasting_focus"}],
+    "value": 25
+  },
+  {
+    "id": "spellbook",
+    "name": "Spellbook",
+    "description": "A leather-bound tome containing your wizard spells.",
+    "type": "tool",
+    "effects": [{"type": "spellbook"}],
+    "value": 50
+  },
+  {
+    "id": "gold_50",
+    "name": "Gold Pouch",
+    "description": "A small pouch containing 50 gold coins.",
+    "type": "currency",
+    "effects": [{"type": "gold", "value": 50}],
+    "value": 50
+  },
+  {
+    "id": "gold_100",
+    "name": "Gold Sack",
+    "description": "A hefty sack of 100 gold coins.",
+    "type": "currency",
+    "effects": [{"type": "gold", "value": 100}],
+    "value": 100
+  }
+]

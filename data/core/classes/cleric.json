@@ -1,0 +1,197 @@
+{
+  "id": "cleric",
+  "name": "Cleric",
+  "description": "Cleric class. Source: PHB.",
+  "hit_die": "d1",
+  "primary_ability": "WIS",
+  "saving_throw_proficiencies": [
+    "WIS",
+    "CHA"
+  ],
+  "armor_proficiencies": [
+    "light",
+    "medium"
+  ],
+  "weapon_proficiencies": [
+    "simple"
+  ],
+  "skill_choices": {
+    "pick": 2,
+    "from": [
+      "Athletics",
+      "Acrobatics",
+      "Insight",
+      "Perception",
+      "History",
+      "Arcana",
+      "Stealth"
+    ]
+  },
+  "starting_equipment": [
+    "leather_armor",
+    "shield"
+  ],
+  "spell_slots_by_level": {
+    "1": [
+      2
+    ],
+    "2": [
+      3
+    ],
+    "3": [
+      4,
+      2
+    ],
+    "4": [
+      4,
+      3
+    ],
+    "5": [
+      4,
+      3,
+      2
+    ]
+  },
+  "cantrips_known": [],
+  "spells_known_by_level": {
+    "1": [],
+    "2": [],
+    "3": []
+  },
+  "features_by_level": {
+    "1": [
+      {
+        "id": "cleric_divine_domain",
+        "name": "Divine Domain",
+        "description": "Choose one domain related to your deity from the list of available domains. Each domain is detailed in their own feature, and each one provides examples of gods associated with it. Your choice grants you domain spells and other features when you choose it at 1st level. It also grants you additional ...",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "cleric_spellcasting",
+        "name": "Spellcasting",
+        "description": "As a conduit for divine power, you can cast cleric spells. See chapter 10 for the general rules of spellcasting and chapter 11 for a selection of {@filter cleric spells=cleric}. {'type': 'entries', 'name': 'Cantrips', 'entries': ['At 1st level, you know three cantrips of your choice from the cleric ...",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "cleric_divine_order",
+        "name": "Divine Order",
+        "description": "You have dedicated yourself to one of the following sacred roles of your choice. {'type': 'entries', 'entries': [{'type': 'options', 'count': 1, 'entries': [{'type': 'refClassFeature', 'classFeature': 'Protector'}, {'type': 'refClassFeature', 'classFeature': 'Thaumaturge'}]}]}",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "cleric_protector",
+        "name": "Protector",
+        "description": "Trained for battle, you gain proficiency with {@filter Martial weapons=martial weapon} and training with {@filter Heavy armor=Heavy Armor}.",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "cleric_thaumaturge",
+        "name": "Thaumaturge",
+        "description": "You know one extra cantrip from the {@filter Cleric spell list=Cleric}. In addition, your mystical connection to the divine gives you a bonus to your Intelligence ({@skill Arcana} or {@skill Religion}) checks. The bonus equals your Wisdom modifier (minimum of +1).",
+        "type": "passive",
+        "effects": []
+      }
+    ],
+    "2": [
+      {
+        "id": "cleric_channel_divinity",
+        "name": "Channel Divinity",
+        "description": "At 2nd level, you gain the ability to channel divine energy directly from your deity, using that energy to fuel magical effects. You start with two such effects: Turn Undead and an effect determined by your domain. Some domains grant you additional effects as you advance in levels, as noted in the d...",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "cleric_channel_divinity:_harness_divine_power",
+        "name": "Channel Divinity: Harness Divine Power",
+        "description": "{@i 2nd-level cleric optional class features feature} You can expend a use of your Channel Divinity to fuel your spells. As a bonus action, you touch your holy symbol, utter a prayer, and regain one expended spell slot, the level of which can be no higher than half your proficiency bonus (rounded up...",
+        "type": "active",
+        "effects": [],
+        "action_cost": "bonus_action",
+        "uses": 1,
+        "uses_per": "combat"
+      },
+      {
+        "id": "cleric_channel_divinity:_turn_undead",
+        "name": "Channel Divinity: Turn Undead",
+        "description": "As an action, you present your holy symbol and speak a prayer censuring the undead. Each undead that can see or hear you within 30 feet of you must make a Wisdom saving throw. If the creature fails its saving throw, it is turned for 1 minute or until it takes any damage. A turned creature must spend...",
+        "type": "active",
+        "effects": [],
+        "action_cost": "reaction",
+        "uses": 1,
+        "uses_per": "combat"
+      },
+      {
+        "id": "cleric_divine_domain_feature",
+        "name": "Divine Domain feature",
+        "description": "At 2nd level, you gain a feature from your Divine Domain.",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "cleric_divine_spark",
+        "name": "Divine Spark",
+        "description": "As a {@action Magic} action, you point your Holy Symbol at another creature you can see within 30 feet of yourself and focus divine energy at it. Roll 1d8 and add your Wisdom modifier. You either restore Hit Points to the creature equal to that total or force the creature to make a Constitution savi...",
+        "type": "active",
+        "effects": [],
+        "action_cost": "action",
+        "uses": 1,
+        "uses_per": "combat"
+      },
+      {
+        "id": "cleric_turn_undead",
+        "name": "Turn Undead",
+        "description": "As a {@action Magic} action, you present your Holy Symbol and censure Undead creatures. Each Undead of your choice within 30 feet of you must make a Wisdom saving throw. If the creature fails its save, it has the Frightened and Incapacitated conditions for 1 minute. For that duration, it tries to mo...",
+        "type": "active",
+        "effects": [],
+        "action_cost": "action",
+        "uses": 1,
+        "uses_per": "combat"
+      }
+    ],
+    "3": [
+      {
+        "id": "cleric_cleric_subclass",
+        "name": "Cleric Subclass",
+        "description": "You gain a Cleric subclass of your choice. A subclass is a specialization that grants you features at certain Cleric levels. For the rest of your career, you gain each of your subclass's features that are of your Cleric level or lower.",
+        "type": "passive",
+        "effects": []
+      }
+    ],
+    "4": [
+      {
+        "id": "cleric_ability_score_improvement",
+        "name": "Ability Score Improvement",
+        "description": "When you reach 4th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature. If your DM allows the use of feats, you may instead take a {@5etools feat.html}.",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "cleric_cantrip_versatility",
+        "name": "Cantrip Versatility",
+        "description": "{@i 4th-level cleric optional class features feature} Whenever you reach a level in this class that grants the Ability Score Improvement feature, you can replace one cantrip you learned from this class's Spellcasting feature with another cantrip from the {@filter cleric spell list=0=Cleric}.",
+        "type": "passive",
+        "effects": []
+      }
+    ],
+    "5": [
+      {
+        "id": "cleric_destroy_undead_(cr_1/2)",
+        "name": "Destroy Undead (CR 1/2)",
+        "description": "Starting at 5th level, when an {@filter undead of CR 1/2 or lower rating=[&0;&1/2]=undead=!swarm} fails its saving throw against your Turn Undead feature, the creature is instantly destroyed.",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "cleric_sear_undead",
+        "name": "Sear Undead",
+        "description": "Whenever you use Turn Undead, you can roll a number of d8s equal to your Wisdom modifier (minimum of 1d8) and add the rolls together. Each Undead that fails its saving throw against that use of Turn Undead takes Radiant damage equal to the roll's total. This damage doesn't end the turn effect.",
+        "type": "passive",
+        "effects": []
+      }
+    ]
+  }
+}

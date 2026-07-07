@@ -1,0 +1,135 @@
+{
+  "table_id": "forest_events",
+  "terrain_type": "forest",
+  "events": [
+    {
+      "id": "goblin_ambush",
+      "name": "Goblin Ambush!",
+      "weight": 20,
+      "description": "Arrows fly from the undergrowth! A band of goblins springs from the shadows!",
+      "type": "combat",
+      "data": {"monsters": ["goblin", "goblin", "goblin"], "surprise": true}
+    },
+    {
+      "id": "wandering_merchant",
+      "name": "Wandering Merchant",
+      "weight": 15,
+      "description": "A cheerful halfling merchant rounds the bend with a mule laden with goods. 'Fine wares for fine adventurers!'",
+      "type": "shop",
+      "data": {"items": ["potion_healing", "torch", "rope", "antidote", "dagger"], "price_modifier": 1.2}
+    },
+    {
+      "id": "mysterious_shrine",
+      "name": "Mysterious Shrine",
+      "weight": 10,
+      "description": "You discover an ancient shrine covered in moss. Strange runes glow faintly in the dappled light. Do you dare approach?",
+      "type": "choice",
+      "choices": [
+        {
+          "text": "Pray at the shrine",
+          "check": {"ability": "WIS", "dc": 12},
+          "success": {"description": "The shrine pulses with warm light. You feel the blessing of a forgotten god wash over you.", "effects": [{"type": "heal", "value": "2d6"}, {"type": "grant_condition", "condition": "blessed", "duration": 5}]},
+          "failure": {"description": "The runes flare angrily. Dark energy lashes out!", "effects": [{"type": "damage", "value": "1d6", "damage_type": "necrotic"}]}
+        },
+        {
+          "text": "Investigate the runes",
+          "check": {"ability": "INT", "dc": 14},
+          "success": {"description": "You decipher the ancient text and discover a hidden compartment!", "effects": [{"type": "give_item", "item_id": "potion_healing"}, {"type": "give_item", "item_id": "gold_50"}]},
+          "failure": {"description": "The runes make no sense to you. You move on."}
+        },
+        {
+          "text": "Leave it alone",
+          "description": "Wisdom is knowing when not to touch ancient magic.",
+          "effects": []
+        }
+      ]
+    },
+    {
+      "id": "hidden_cache",
+      "name": "Hidden Cache",
+      "weight": 15,
+      "description": "You notice a hollow tree stump partially concealed by ferns. Something glints inside.",
+      "type": "skill_check",
+      "check": {"ability": "INT", "dc": 10},
+      "success": {"description": "Inside the stump you find a small cache of supplies left by a previous traveler.", "effects": [{"type": "give_item", "item_id": "gold_50"}, {"type": "give_item", "item_id": "potion_healing"}]},
+      "failure": {"description": "You reach inside but find only rotting leaves and disappointed spiders."}
+    },
+    {
+      "id": "wolf_pack",
+      "name": "Hungry Wolf Pack",
+      "weight": 15,
+      "description": "Low growls echo through the trees. A pack of wolves emerges, eyes gleaming with hunger.",
+      "type": "choice",
+      "choices": [
+        {
+          "text": "Stand your ground and fight",
+          "effects": [{"type": "start_combat", "monsters": ["wolf", "wolf", "wolf"]}]
+        },
+        {
+          "text": "Try to scare them off",
+          "check": {"ability": "CHA", "dc": 13},
+          "success": {"description": "You roar and wave your arms. The wolves whimper and scatter into the undergrowth."},
+          "failure": {"description": "The wolves are not impressed. They attack!", "effects": [{"type": "start_combat", "monsters": ["wolf", "wolf", "wolf"]}]}
+        }
+      ]
+    },
+    {
+      "id": "fairy_ring",
+      "name": "Fairy Ring",
+      "weight": 5,
+      "description": "A perfect circle of luminescent mushrooms pulses with arcane energy. The air shimmers and hums.",
+      "type": "chain",
+      "effects": [{"type": "teleport_random"}],
+      "chain_event": {
+        "id": "fairy_court",
+        "name": "The Fairy Court",
+        "description": "You materialize in a moonlit glade. Tiny winged figures dance around you. A fairy queen approaches.",
+        "type": "choice",
+        "choices": [
+          {
+            "text": "Accept her gift",
+            "effects": [{"type": "grant_condition", "condition": "fairy_luck", "duration": 10}, {"type": "heal", "value": "3d6"}]
+          },
+          {
+            "text": "Politely decline",
+            "description": "The fairy queen nods respectfully. 'Wise, perhaps. Or foolish.' You find yourself back where you started."
+          },
+          {
+            "text": "Try to steal fairy treasure",
+            "check": {"ability": "DEX", "dc": 16},
+            "success": {"description": "Quick as a shadow, you pocket a handful of glittering fairy dust!", "effects": [{"type": "give_item", "item_id": "gold_100"}]},
+            "failure": {"description": "The fairies catch you! They curse you with bad luck and eject you from the glade.", "effects": [{"type": "grant_condition", "condition": "cursed", "duration": 5}]}
+          }
+        ]
+      }
+    },
+    {
+      "id": "fallen_traveler",
+      "name": "Fallen Traveler",
+      "weight": 10,
+      "description": "You find a wounded traveler slumped against a tree, clutching a bloodied map.",
+      "type": "choice",
+      "choices": [
+        {
+          "text": "Heal and help them",
+          "check": {"ability": "WIS", "dc": 10},
+          "success": {"description": "The traveler recovers and thanks you profusely. 'Take this — it leads to treasure.' They hand you the map.", "effects": [{"type": "give_item", "item_id": "gold_50"}]},
+          "failure": {"description": "Despite your best efforts, the traveler has already passed. You close their eyes."}
+        },
+        {
+          "text": "Search their belongings",
+          "description": "A grim choice. You find some coins and a battered journal.",
+          "effects": [{"type": "give_item", "item_id": "gold_50"}]
+        }
+      ]
+    },
+    {
+      "id": "spider_nest",
+      "name": "Spider Nest",
+      "weight": 10,
+      "description": "Thick webs stretch between the trees. Movement stirs in the canopy above...",
+      "type": "combat",
+      "data": {"monsters": ["giant_spider"], "surprise": false}
+    }
+  ]
+}

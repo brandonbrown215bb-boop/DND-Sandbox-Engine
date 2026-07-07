@@ -1,0 +1,110 @@
+{
+  "table_id": "dungeon_events",
+  "terrain_type": "dungeon",
+  "events": [
+    {
+      "id": "trapped_chest",
+      "name": "Trapped Chest",
+      "weight": 20,
+      "description": "A heavy iron chest sits in the corner. It looks valuable... and suspicious.",
+      "type": "choice",
+      "choices": [
+        {
+          "text": "Check for traps first",
+          "check": {"ability": "INT", "dc": 13},
+          "success": {"description": "You find and disarm a poison dart trap! The chest contains treasure.", "effects": [{"type": "give_item", "item_id": "gold_100"}, {"type": "give_item", "item_id": "potion_healing"}]},
+          "failure": {"description": "You don't notice the trap. A dart shoots out as you open the chest!", "effects": [{"type": "damage", "value": "1d6", "damage_type": "poison"}, {"type": "grant_condition", "condition": "poisoned", "duration": 3}, {"type": "give_item", "item_id": "gold_50"}]}
+        },
+        {
+          "text": "Just open it",
+          "effects": [{"type": "damage", "value": "1d6", "damage_type": "poison"}, {"type": "grant_condition", "condition": "poisoned", "duration": 3}, {"type": "give_item", "item_id": "gold_100"}],
+          "description": "A dart shoots out and hits you! But at least the treasure is yours."
+        },
+        {
+          "text": "Leave it alone",
+          "effects": [],
+          "description": "Sometimes the best treasure is the one you don't open."
+        }
+      ]
+    },
+    {
+      "id": "undead_ambush",
+      "name": "Undead Ambush",
+      "weight": 25,
+      "description": "The walls groan and crack. Skeletal hands burst from the stonework!",
+      "type": "combat",
+      "data": {"monsters": ["skeleton", "skeleton", "zombie"], "surprise": true}
+    },
+    {
+      "id": "mysterious_fountain",
+      "name": "Mysterious Fountain",
+      "weight": 10,
+      "description": "A fountain of shimmering liquid stands in the center of this room. The liquid changes color as you watch.",
+      "type": "choice",
+      "choices": [
+        {
+          "text": "Drink the blue liquid",
+          "effects": [{"type": "heal", "value": "3d8"}],
+          "description": "The liquid tastes of mint and starlight. Your wounds close."
+        },
+        {
+          "text": "Drink the red liquid",
+          "effects": [{"type": "grant_condition", "condition": "strengthened", "duration": 5}],
+          "description": "Fire courses through your veins! You feel powerful."
+        },
+        {
+          "text": "Drink the green liquid",
+          "description": "The liquid tastes awful. Your stomach churns.",
+          "effects": [{"type": "damage", "value": "2d6", "damage_type": "poison"}, {"type": "grant_condition", "condition": "poisoned", "duration": 3}]
+        }
+      ]
+    },
+    {
+      "id": "cave_in",
+      "name": "Cave-In!",
+      "weight": 15,
+      "description": "The ceiling groans ominously. Dust rains down and then — CRASH!",
+      "type": "skill_check",
+      "check": {"ability": "DEX", "dc": 14},
+      "success": {"description": "You roll out of the way as tons of rubble crash down behind you."},
+      "failure": {"description": "Rocks pummel you before you can escape!", "effects": [{"type": "damage", "value": "3d6", "damage_type": "bludgeoning"}]}
+    },
+    {
+      "id": "ghostly_warning",
+      "name": "Ghostly Warning",
+      "weight": 10,
+      "description": "A translucent figure materializes before you. It points deeper into the dungeon and whispers...",
+      "type": "choice",
+      "choices": [
+        {
+          "text": "Listen to the ghost",
+          "check": {"ability": "WIS", "dc": 11},
+          "success": {"description": "The ghost reveals the location of traps and enemies ahead.", "effects": [{"type": "grant_condition", "condition": "forewarned", "duration": 5}]},
+          "failure": {"description": "The ghost's whispers are incomprehensible. It fades away."}
+        },
+        {
+          "text": "Banish it",
+          "check": {"ability": "CHA", "dc": 13},
+          "success": {"description": "The ghost bows and dissipates. A gold coin materializes where it stood.", "effects": [{"type": "give_item", "item_id": "gold_50"}]},
+          "failure": {"description": "The ghost shrieks in anger. You feel a cold chill!", "effects": [{"type": "damage", "value": "1d8", "damage_type": "necrotic"}]}
+        }
+      ]
+    },
+    {
+      "id": "treasure_room",
+      "name": "Hidden Treasure Room",
+      "weight": 5,
+      "description": "Behind a crumbling wall, you discover a forgotten treasure room! Gold coins and dusty gems litter the floor.",
+      "type": "loot",
+      "effects": [{"type": "give_item", "item_id": "gold_100"}, {"type": "give_item", "item_id": "gold_100"}, {"type": "give_item", "item_id": "potion_greater_healing"}]
+    },
+    {
+      "id": "ooze_encounter",
+      "name": "Slime!",
+      "weight": 15,
+      "description": "The floor squelches underfoot. What you thought was a puddle of water begins to move...",
+      "type": "combat",
+      "data": {"monsters": ["ooze", "ooze"], "surprise": false}
+    }
+  ]
+}

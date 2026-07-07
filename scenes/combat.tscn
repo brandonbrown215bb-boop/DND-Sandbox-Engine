@@ -1,0 +1,180 @@
+[gd_scene load_steps=5 format=3 uid="uid://e456789f3b4c5"]
+
+[ext_resource type="Script" path="res://src/combat/combat_state.gd" id="1_combat"]
+[ext_resource type="Script" path="res://src/hex/hex_grid.gd" id="2_grid"]
+[ext_resource type="Script" path="res://src/combat/combat_hud.gd" id="3_combat_hud"]
+[ext_resource type="PackedScene" uid="uid://e456789f5d6e7" path="res://scenes/ui/dice_roll_display.tscn" id="4_dice_display"]
+
+[node name="Combat" type="Node2D"]
+script = ExtResource("1_combat")
+
+[node name="HexGrid" type="Node2D" parent="."]
+script = ExtResource("2_grid")
+
+[node name="CombatHUD" type="CanvasLayer" parent="."]
+script = ExtResource("3_combat_hud")
+
+[node name="MarginContainer" type="MarginContainer" parent="CombatHUD"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+mouse_filter = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CombatHUD/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+mouse_filter = 2
+
+[node name="Sidebar" type="PanelContainer" parent="CombatHUD/MarginContainer/HBoxContainer"]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="CombatHUD/MarginContainer/HBoxContainer/Sidebar"]
+layout_mode = 2
+
+[node name="WeaponInfo" type="Label" parent="CombatHUD/MarginContainer/HBoxContainer/Sidebar/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 16
+theme_override_colors/default_color = Color(0.6, 0.9, 1, 1)
+text = "Weapon: —"
+autowrap_mode = 2
+
+[node name="EntityInfo" type="Label" parent="CombatHUD/MarginContainer/HBoxContainer/Sidebar/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 15
+text = "Active Combatant details..."
+autowrap_mode = 2
+
+[node name="ControlArea" type="Control" parent="CombatHUD/MarginContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 15
+mouse_filter = 2
+
+[node name="InitiativePanel" type="PanelContainer" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea/VBoxContainer"]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+
+[node name="InitiativeBar" type="RichTextLabel" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea/VBoxContainer/InitiativePanel"]
+layout_mode = 2
+bbcode_enabled = true
+text = "Initiative Tracker List"
+
+[node name="Spacer" type="Control" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+
+[node name="LogBox" type="PanelContainer" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea/VBoxContainer"]
+custom_minimum_size = Vector2(0, 150)
+layout_mode = 2
+
+[node name="LogText" type="RichTextLabel" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea/VBoxContainer/LogBox"]
+layout_mode = 2
+bbcode_enabled = true
+text = "Combat started!"
+
+[node name="ActionMenu" type="PanelContainer" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea/VBoxContainer"]
+layout_mode = 2
+
+[node name="GridContainer" type="GridContainer" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea/VBoxContainer/ActionMenu"]
+layout_mode = 2
+theme_override_constants/h_separation = 15
+theme_override_constants/v_separation = 10
+columns = 5
+
+[node name="BtnAttack" type="Button" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea/VBoxContainer/ActionMenu/GridContainer"]
+custom_minimum_size = Vector2(0, 45)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Attack"
+
+[node name="BtnSpell" type="Button" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea/VBoxContainer/ActionMenu/GridContainer"]
+custom_minimum_size = Vector2(0, 45)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Spell"
+
+[node name="BtnFeatures" type="Button" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea/VBoxContainer/ActionMenu/GridContainer"]
+custom_minimum_size = Vector2(0, 45)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Features"
+
+[node name="BtnDodge" type="Button" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea/VBoxContainer/ActionMenu/GridContainer"]
+custom_minimum_size = Vector2(0, 45)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Dodge"
+
+[node name="BtnEndTurn" type="Button" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea/VBoxContainer/ActionMenu/GridContainer"]
+custom_minimum_size = Vector2(0, 45)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "End Turn"
+
+[node name="BtnSettings" type="Button" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea/VBoxContainer"]
+custom_minimum_size = Vector2(0, 45)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Settings ⚙"
+
+[node name="BtnSheet" type="Button" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea/VBoxContainer"]
+custom_minimum_size = Vector2(0, 45)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Character Sheet"
+
+[node name="SpellMenu" type="PanelContainer" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea/VBoxContainer"]
+visible = false
+layout_mode = 2
+
+[node name="SpellList" type="ItemList" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea/VBoxContainer/SpellMenu"]
+custom_minimum_size = Vector2(0, 150)
+layout_mode = 2
+
+[node name="BtnCancelSpell" type="Button" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea/VBoxContainer/SpellMenu"]
+layout_mode = 2
+size_flags_vertical = 8
+text = "Cancel"
+
+[node name="FeatureMenu" type="PanelContainer" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea/VBoxContainer"]
+visible = false
+layout_mode = 2
+
+[node name="FeatureList" type="ItemList" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea/VBoxContainer/FeatureMenu"]
+custom_minimum_size = Vector2(0, 150)
+layout_mode = 2
+
+[node name="BtnCancelFeatures" type="Button" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea/VBoxContainer/FeatureMenu"]
+layout_mode = 2
+size_flags_vertical = 8
+text = "Cancel"
+
+[node name="DiceRollDisplay" parent="CombatHUD" instance=ExtResource("4_dice_display")]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2

@@ -1,0 +1,140 @@
+{
+  "id": "barbarian",
+  "name": "Barbarian",
+  "description": "Barbarian class. Source: PHB.",
+  "hit_die": "d1",
+  "primary_ability": "STR",
+  "saving_throw_proficiencies": [
+    "STR",
+    "CON"
+  ],
+  "armor_proficiencies": [
+    "light",
+    "medium",
+    "heavy",
+    "shields"
+  ],
+  "weapon_proficiencies": [
+    "simple",
+    "martial"
+  ],
+  "skill_choices": {
+    "pick": 2,
+    "from": [
+      "Athletics",
+      "Acrobatics",
+      "Insight",
+      "Perception",
+      "History",
+      "Arcana",
+      "Stealth"
+    ]
+  },
+  "starting_equipment": [
+    "chain_mail",
+    "shield",
+    "longsword"
+  ],
+  "spell_slots_by_level": {},
+  "cantrips_known": [],
+  "spells_known_by_level": {
+    "1": [],
+    "2": [],
+    "3": []
+  },
+  "features_by_level": {
+    "1": [
+      {
+        "id": "barbarian_rage",
+        "name": "Rage",
+        "description": "In battle, you fight with primal ferocity. On your turn, you can enter a rage as a bonus action. While raging, you gain the following benefits if you aren't wearing heavy armor: {'type': 'list', 'items': ['You have advantage on Strength checks and Strength saving throws.', 'When you make a melee wea...",
+        "type": "active",
+        "effects": [],
+        "action_cost": "bonus_action",
+        "uses": 1,
+        "uses_per": "combat"
+      },
+      {
+        "id": "barbarian_unarmored_defense",
+        "name": "Unarmored Defense",
+        "description": "While you are not wearing any armor, your Armor Class equals 10 + your Dexterity modifier + your Constitution modifier. You can use a shield and still gain this benefit.",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "barbarian_weapon_mastery",
+        "name": "Weapon Mastery",
+        "description": "Your training with weapons allows you to use the weapon mastery properties properties of two kinds of {@filter Simple=simple weapon;melee weapon=sand} or {@filter Martial Melee weapons=martial weapon;melee weapon=sand} of your choice, such as Greataxe and Handaxe. Whenever you finish a Long Rest, yo...",
+        "type": "passive",
+        "effects": []
+      }
+    ],
+    "2": [
+      {
+        "id": "barbarian_danger_sense",
+        "name": "Danger Sense",
+        "description": "At 2nd level, you gain an uncanny sense of when things nearby aren't as they should be, giving you an edge when you dodge away from danger. You have advantage on Dexterity saving throws against effects that you can see, such as traps and spells. To gain this benefit, you can't be blinded, deafened, ...",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "barbarian_reckless_attack",
+        "name": "Reckless Attack",
+        "description": "Starting at 2nd level, you can throw aside all concern for defense to attack with fierce desperation. When you make your first attack on your turn, you can decide to attack recklessly. Doing so gives you advantage on melee weapon attack rolls using Strength during this turn, but attack rolls against...",
+        "type": "passive",
+        "effects": []
+      }
+    ],
+    "3": [
+      {
+        "id": "barbarian_primal_knowledge",
+        "name": "Primal Knowledge",
+        "description": "{@i 3rd-level barbarian optional class features feature} When you reach 3rd level and again at 10th level, you gain proficiency in one skill of your choice from the list of skills available to barbarians at 1st level.",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "barbarian_primal_path",
+        "name": "Primal Path",
+        "description": "At 3rd level, you choose a path that shapes the nature of your rage from the list of available paths. Your choice grants you features at 3rd level and again at 6th, 10th, and 14th levels.",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "barbarian_barbarian_subclass",
+        "name": "Barbarian Subclass",
+        "description": "You gain a Barbarian subclass of your choice. A subclass is a specialization that grants you features at certain Barbarian levels. For the rest of your career, you gain each of your subclass's features that are of your Barbarian level or lower.",
+        "type": "passive",
+        "effects": []
+      }
+    ],
+    "4": [
+      {
+        "id": "barbarian_ability_score_improvement",
+        "name": "Ability Score Improvement",
+        "description": "When you reach 4th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature. If your DM allows the use of feats, you may instead take a {@5etools feat.html}.",
+        "type": "passive",
+        "effects": []
+      }
+    ],
+    "5": [
+      {
+        "id": "barbarian_extra_attack",
+        "name": "Extra Attack",
+        "description": "Beginning at 5th level, you can attack twice, instead of once, whenever you take the {@action Attack} action on your turn.",
+        "type": "active",
+        "effects": [],
+        "action_cost": "action",
+        "uses": 1,
+        "uses_per": "combat"
+      },
+      {
+        "id": "barbarian_fast_movement",
+        "name": "Fast Movement",
+        "description": "Starting at 5th level, your speed increases by 10 feet while you aren't wearing heavy armor.",
+        "type": "passive",
+        "effects": []
+      }
+    ]
+  }
+}

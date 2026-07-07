@@ -1,0 +1,108 @@
+{
+  "table_id": "mountain_events",
+  "terrain_type": "mountain",
+  "events": [
+    {
+      "id": "rockslide",
+      "name": "Rockslide!",
+      "weight": 20,
+      "description": "The ground trembles and rocks cascade down the mountainside!",
+      "type": "skill_check",
+      "check": {"ability": "DEX", "dc": 13},
+      "success": {"description": "You dive out of the way just in time. Dust settles around you."},
+      "failure": {"description": "Rocks slam into you before you can dodge!", "effects": [{"type": "damage", "value": "2d6", "damage_type": "bludgeoning"}]}
+    },
+    {
+      "id": "mountain_hermit",
+      "name": "Mountain Hermit",
+      "weight": 10,
+      "description": "A weathered old hermit sits cross-legged on a rocky outcrop. 'Sit, adventurer. I have wisdom to share... for a price.'",
+      "type": "choice",
+      "choices": [
+        {
+          "text": "Pay 50 gold for wisdom",
+          "condition": {"type": "has_gold", "amount": 50},
+          "effects": [{"type": "take_gold", "value": 50}, {"type": "reveal_map", "radius": 3}],
+          "description": "The hermit reveals the surrounding terrain on your map."
+        },
+        {
+          "text": "Ask for a blessing instead",
+          "check": {"ability": "CHA", "dc": 14},
+          "success": {"description": "Impressed by your charm, the hermit blesses you freely.", "effects": [{"type": "grant_condition", "condition": "blessed", "duration": 5}]},
+          "failure": {"description": "The hermit snorts. 'Charisma won't buy bread.' You move on."}
+        },
+        {
+          "text": "Move along",
+          "effects": []
+        }
+      ]
+    },
+    {
+      "id": "eagle_nest",
+      "name": "Eagle's Nest",
+      "weight": 15,
+      "description": "You spot a massive eagle's nest on a nearby ledge. Something sparkles within.",
+      "type": "skill_check",
+      "check": {"ability": "DEX", "dc": 14},
+      "success": {"description": "You carefully climb to the nest and find a golden trinket!", "effects": [{"type": "give_item", "item_id": "gold_100"}]},
+      "failure": {"description": "The mother eagle returns! Her talons rake your arm as you scramble away.", "effects": [{"type": "damage", "value": "1d6", "damage_type": "slashing"}]}
+    },
+    {
+      "id": "bandit_camp",
+      "name": "Bandit Camp",
+      "weight": 20,
+      "description": "Smoke rises from behind a rocky outcrop. You've stumbled upon a bandit hideout!",
+      "type": "choice",
+      "choices": [
+        {
+          "text": "Attack the camp",
+          "effects": [{"type": "start_combat", "monsters": ["bandit", "bandit", "bandit"]}]
+        },
+        {
+          "text": "Sneak around",
+          "check": {"ability": "DEX", "dc": 12},
+          "success": {"description": "You slip past undetected."},
+          "failure": {"description": "A bandit spots you! 'Intruder!' they cry.", "effects": [{"type": "start_combat", "monsters": ["bandit", "bandit"]}]}
+        }
+      ]
+    },
+    {
+      "id": "mountain_spring",
+      "name": "Crystal Spring",
+      "weight": 15,
+      "description": "A pristine spring bubbles from the rock, its water shimmering with magical energy.",
+      "type": "choice",
+      "choices": [
+        {
+          "text": "Drink from the spring",
+          "effects": [{"type": "heal", "value": "2d8"}, {"type": "remove_condition", "condition": "poisoned"}],
+          "description": "The water is cool and refreshing. You feel rejuvenated."
+        },
+        {
+          "text": "Fill your waterskin for later",
+          "effects": [{"type": "give_item", "item_id": "potion_healing"}]
+        }
+      ]
+    },
+    {
+      "id": "collapsed_mine",
+      "name": "Collapsed Mine Entrance",
+      "weight": 10,
+      "description": "You find the entrance to an old mine, partially blocked by rubble. Strange sounds echo from within.",
+      "type": "skill_check",
+      "check": {"ability": "STR", "dc": 14},
+      "success": {"description": "You clear enough rubble to squeeze through and find abandoned mining supplies!", "effects": [{"type": "give_item", "item_id": "gold_100"}, {"type": "give_item", "item_id": "torch"}]},
+      "failure": {"description": "The rubble shifts dangerously. Best not to risk it."}
+    },
+    {
+      "id": "mountain_storm",
+      "name": "Sudden Storm",
+      "weight": 10,
+      "description": "Dark clouds roll in fast. Lightning cracks across the sky and the wind howls!",
+      "type": "skill_check",
+      "check": {"ability": "CON", "dc": 12},
+      "success": {"description": "You find shelter in a rocky overhang and wait out the storm."},
+      "failure": {"description": "Caught in the open, the storm batters you mercilessly.", "effects": [{"type": "damage", "value": "1d8", "damage_type": "lightning"}, {"type": "reduce_speed", "value": 2, "duration": 1}]}
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "id": "halfling",
+  "name": "Halfling",
+  "description": "Halfling race. Source: XPHB.",
+  "ability_bonuses": {},
+  "speed": 6,
+  "size": "small",
+  "languages": [
+    "Common"
+  ],
+  "proficiencies": [],
+  "traits": [
+    {
+      "id": "halfling_brave",
+      "name": "Brave",
+      "description": "You have Advantage on saving throws you make to avoid or end the Frightened condition.",
+      "effects": []
+    },
+    {
+      "id": "halfling_halfling_nimbleness",
+      "name": "Halfling Nimbleness",
+      "description": "You can move through the space of any creature that is a size larger than you, but you can't stop in the same space.",
+      "effects": []
+    },
+    {
+      "id": "halfling_luck",
+      "name": "Luck",
+      "description": "When you roll a 1 on the d20 of a D20 Test, you can reroll the die, and you must use the new roll.",
+      "effects": []
+    },
+    {
+      "id": "halfling_naturally_stealthy",
+      "name": "Naturally Stealthy",
+      "description": "You can take the {@action Hide} action even when you are obscured only by a creature that is at least one size larger than you.",
+      "effects": []
+    }
+  ],
+  "darkvision": false
+}

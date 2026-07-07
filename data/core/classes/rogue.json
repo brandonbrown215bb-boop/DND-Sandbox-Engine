@@ -1,0 +1,169 @@
+{
+  "id": "rogue",
+  "name": "Rogue",
+  "description": "Rogue class. Source: PHB.",
+  "hit_die": "d1",
+  "primary_ability": "DEX",
+  "saving_throw_proficiencies": [
+    "DEX",
+    "INT"
+  ],
+  "armor_proficiencies": [
+    "light",
+    "medium",
+    "heavy",
+    "shields"
+  ],
+  "weapon_proficiencies": [
+    "simple",
+    "martial"
+  ],
+  "skill_choices": {
+    "pick": 2,
+    "from": [
+      "Athletics",
+      "Acrobatics",
+      "Insight",
+      "Perception",
+      "History",
+      "Arcana",
+      "Stealth"
+    ]
+  },
+  "starting_equipment": [
+    "leather_armor",
+    "shield"
+  ],
+  "spell_slots_by_level": {},
+  "cantrips_known": [],
+  "spells_known_by_level": {
+    "1": [],
+    "2": [],
+    "3": []
+  },
+  "features_by_level": {
+    "1": [
+      {
+        "id": "rogue_expertise",
+        "name": "Expertise",
+        "description": "At 1st level, choose two of your skill proficiencies, or one of your skill proficiencies and your proficiency with thieves' tools. Your proficiency bonus is doubled for any ability check you make that uses either of the chosen proficiencies. At 6th level, you can choose two more of your proficiencie...",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "rogue_sneak_attack",
+        "name": "Sneak Attack",
+        "description": "Beginning at 1st level, you know how to strike subtly and exploit a foe's distraction. Once per turn, you can deal an extra 1d6 damage to one creature you hit with an attack if you have advantage on the attack roll. The attack must use a finesse or a ranged weapon. You don't need advantage on the at...",
+        "type": "active",
+        "effects": [],
+        "action_cost": "action",
+        "uses": 1,
+        "uses_per": "combat"
+      },
+      {
+        "id": "rogue_thieves'_cant",
+        "name": "Thieves' Cant",
+        "description": "During your rogue training you learned thieves' cant, a secret mix of dialect, jargon, and code that allows you to hide messages in seemingly normal conversation. Only another creature that knows thieves' cant understands such messages. It takes four times longer to convey such a message than it doe...",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "rogue_weapon_mastery",
+        "name": "Weapon Mastery",
+        "description": "Your training with weapons allows you to use the weapon mastery properties properties of two kinds of {@filter weapons=simple weapon;martial weapon} of your choice with which you have proficiency, such as Dagger and Shortbow. Whenever you finish a Long Rest, you can change the kinds of weapons you c...",
+        "type": "passive",
+        "effects": []
+      }
+    ],
+    "2": [
+      {
+        "id": "rogue_cunning_action",
+        "name": "Cunning Action",
+        "description": "Starting at 2nd level, your quick thinking and agility allow you to move and act quickly. You can take a bonus action on each of your turns in combat. This action can be used only to take the {@action Dash}, {@action Disengage}, or {@action Hide} action.",
+        "type": "active",
+        "effects": [],
+        "action_cost": "bonus_action",
+        "uses": 1,
+        "uses_per": "combat"
+      }
+    ],
+    "3": [
+      {
+        "id": "rogue_roguish_archetype",
+        "name": "Roguish Archetype",
+        "description": "At 3rd level, you choose an archetype that you emulate in the exercise of your rogue abilities from the list of available archetypes. Your archetype choice grants you features at 3rd level and then again at 9th, 13th, and 17th level.",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "rogue_steady_aim",
+        "name": "Steady Aim",
+        "description": "{@i 3rd-level rogue optional class features feature} As a bonus action, you give yourself advantage on your next attack roll on the current turn. You can use this bonus action only if you haven't moved during this turn, and after you use the bonus action, your speed is 0 until the end of the current...",
+        "type": "active",
+        "effects": [],
+        "action_cost": "bonus_action",
+        "uses": 1,
+        "uses_per": "combat"
+      },
+      {
+        "id": "rogue_rogue_subclass",
+        "name": "Rogue Subclass",
+        "description": "You gain a Rogue subclass of your choice. A subclass is a specialization that grants you features at certain Rogue levels. For the rest of your career, you gain each of your subclass's features that are of your Rogue level or lower.",
+        "type": "passive",
+        "effects": []
+      }
+    ],
+    "4": [
+      {
+        "id": "rogue_ability_score_improvement",
+        "name": "Ability Score Improvement",
+        "description": "When you reach 4th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature. If your DM allows the use of feats, you may instead take a {@5etools feat.html}.",
+        "type": "passive",
+        "effects": []
+      }
+    ],
+    "5": [
+      {
+        "id": "rogue_uncanny_dodge",
+        "name": "Uncanny Dodge",
+        "description": "Starting at 5th level, when an attacker that you can see hits you with an attack, you can use your reaction to halve the attack's damage against you.",
+        "type": "active",
+        "effects": [],
+        "action_cost": "reaction",
+        "uses": 1,
+        "uses_per": "combat"
+      },
+      {
+        "id": "rogue_cunning_strike",
+        "name": "Cunning Strike",
+        "description": "You've developed cunning ways to use your Sneak Attack. When you deal Sneak Attack damage, you can add one of the following Cunning Strike effects. Each effect has a die cost, which is the number of Sneak Attack damage dice you must forgo to add the effect. You remove the die before rolling, and the...",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "rogue_poison_(cost:_1d6)",
+        "name": "Poison (Cost: 1d6)",
+        "description": "You add a toxin to your strike, forcing the target to make a Constitution saving throw. On a failed save, the target has the Poisoned condition for 1 minute. At the end of each of its turns, the Poisoned target repeats the save, ending the effect on itself on a success. To use this effect, you must ...",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "rogue_trip_(cost:_1d6)",
+        "name": "Trip (Cost: 1d6)",
+        "description": "If the target is Large or smaller, it must succeed on a Dexterity saving throw or have the Prone condition.",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "rogue_withdraw_(cost:_1d6)",
+        "name": "Withdraw (Cost: 1d6)",
+        "description": "Immediately after the attack, you move up to half your Speed without provoking {@action Opportunity Attack Attacks}.",
+        "type": "active",
+        "effects": [],
+        "action_cost": "action",
+        "uses": 1,
+        "uses_per": "combat"
+      }
+    ]
+  }
+}

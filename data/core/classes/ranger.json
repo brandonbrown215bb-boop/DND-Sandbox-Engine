@@ -1,0 +1,198 @@
+{
+  "id": "ranger",
+  "name": "Ranger",
+  "description": "Ranger class. Source: PHB.",
+  "hit_die": "d1",
+  "primary_ability": "DEX",
+  "saving_throw_proficiencies": [
+    "STR",
+    "DEX"
+  ],
+  "armor_proficiencies": [
+    "light",
+    "medium",
+    "heavy",
+    "shields"
+  ],
+  "weapon_proficiencies": [
+    "simple",
+    "martial"
+  ],
+  "skill_choices": {
+    "pick": 2,
+    "from": [
+      "Athletics",
+      "Acrobatics",
+      "Insight",
+      "Perception",
+      "History",
+      "Arcana",
+      "Stealth"
+    ]
+  },
+  "starting_equipment": [
+    "leather_armor",
+    "shield"
+  ],
+  "spell_slots_by_level": {
+    "1": [
+      0
+    ],
+    "2": [
+      2
+    ],
+    "3": [
+      3
+    ],
+    "4": [
+      3
+    ],
+    "5": [
+      4,
+      2
+    ]
+  },
+  "cantrips_known": [],
+  "spells_known_by_level": {
+    "1": [],
+    "2": [],
+    "3": []
+  },
+  "features_by_level": {
+    "1": [
+      {
+        "id": "ranger_deft_explorer",
+        "name": "Deft Explorer",
+        "description": "{@i 1st-level ranger optional class features feature, which replaces the Natural Explorer feature} You are an unsurpassed explorer and survivor, both in the wilderness and in dealing with others on your travels. You gain the Canny benefit below, and you gain an additional benefit below when you reac...",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "ranger_favored_enemy",
+        "name": "Favored Enemy",
+        "description": "Beginning at 1st level, you have significant experience studying, tracking, hunting, and even talking to a certain type of enemy. Choose a type of favored enemy: {@filter aberrations=aberration}, {@filter beasts=beast}, {@filter celestials=celestial}, {@filter constructs=construct}, {@filter dragons...",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "ranger_favored_foe",
+        "name": "Favored Foe",
+        "description": "{@i 1st-level ranger optional class features feature, which replaces the Favored Enemy feature and works with the Foe Slayer feature} When you hit a creature with an attack roll, you can call on your mystical bond with nature to mark the target as your favored enemy for 1 minute or until you lose yo...",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "ranger_natural_explorer",
+        "name": "Natural Explorer",
+        "description": "You are particularly familiar with one type of natural environment and are adept at traveling and surviving in such regions. Choose one type of favored terrain: arctic, coast, desert, forest, grassland, mountain, swamp, or the Underdark. When you make an Intelligence or Wisdom check related to your ...",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "ranger_spellcasting",
+        "name": "Spellcasting",
+        "description": "You have learned to channel the magical essence of nature to cast spells. See chapter 7 for the rules on spellcasting. The information below details how you use those rules with Ranger spells, which appear in the {@filter Ranger spell list=Ranger} later in the class's description. {'type': 'entries'...",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "ranger_weapon_mastery",
+        "name": "Weapon Mastery",
+        "description": "Your training with weapons allows you to use the weapon mastery properties properties of two kinds of {@filter weapons=simple weapon;martial weapon} of your choice with which you have proficiency, such as Longbow and Shortsword. Whenever you finish a Long Rest, you can change the kinds of weapons yo...",
+        "type": "passive",
+        "effects": []
+      }
+    ],
+    "2": [
+      {
+        "id": "ranger_fighting_style",
+        "name": "Fighting Style",
+        "description": "At 2nd level, you adopt a particular style of fighting as your specialty. Choose one of the following options. You can't take a Fighting Style option more than once, even if you later get to choose again. {'type': 'options', 'count': 1, 'entries': [{'type': 'refOptionalfeature', 'optionalfeature': '...",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "ranger_spellcasting",
+        "name": "Spellcasting",
+        "description": "By the time you reach 2nd level, you have learned to use the magical essence of nature to cast spells, much as a druid does. See chapter 10 for the general rules of spellcasting and chapter 11 for the {@filter ranger spell list=ranger}. {'type': 'entries', 'name': 'Spell Slots', 'entries': [\"The Ran...",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "ranger_spellcasting_focus",
+        "name": "Spellcasting Focus",
+        "description": "{@i 2nd-level ranger optional class features feature} You can use a druidic focus as a spellcasting focus for your ranger spells. A druidic focus might be a sprig of mistletoe or holly, a wand or rod made of yew or another special wood, a staff drawn whole from a living tree, or an object incorporat...",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "ranger_deft_explorer",
+        "name": "Deft Explorer",
+        "description": "Thanks to your travels, you gain the following benefits. {'type': 'entries', 'entries': [{'type': 'entries', 'name': 'Expertise', 'entries': ['Choose one of your skill proficiencies with which you lack Expertise. You gain Expertise in that skill.']}, {'type': 'entries', 'name': 'Languages', 'entries...",
+        "type": "passive",
+        "effects": []
+      }
+    ],
+    "3": [
+      {
+        "id": "ranger_primal_awareness",
+        "name": "Primal Awareness",
+        "description": "{@i 3rd-level ranger optional class features feature, which replaces the Primeval Awareness feature} You can focus your awareness through the interconnections of nature: you learn additional spells when you reach certain levels in this class if you don't already know them, as shown in the Primal Awa...",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "ranger_primeval_awareness",
+        "name": "Primeval Awareness",
+        "description": "Beginning at 3rd level, you can use your action and expend one ranger spell slot to focus your awareness on the region around you. For 1 minute per level of the spell slot you expend, you can sense whether the following types of creatures are present within 1 mile of you (or within up to 6 miles if ...",
+        "type": "active",
+        "effects": [],
+        "action_cost": "action",
+        "uses": 1,
+        "uses_per": "combat"
+      },
+      {
+        "id": "ranger_ranger_archetype",
+        "name": "Ranger Archetype",
+        "description": "At 3rd level, you choose an archetype that you strive to emulate from the list of available archetypes. Your choice grants features at 3rd level, and again at 7th, 11th, and 15th level.",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "ranger_ranger_subclass",
+        "name": "Ranger Subclass",
+        "description": "You gain a Ranger subclass of your choice. A subclass is a specialization that grants you features at certain Ranger levels. For the rest of your career, you gain each of your subclass's features that are of your Ranger level or lower.",
+        "type": "passive",
+        "effects": []
+      }
+    ],
+    "4": [
+      {
+        "id": "ranger_ability_score_improvement",
+        "name": "Ability Score Improvement",
+        "description": "When you reach 4th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature. If your DM allows the use of feats, you may instead take a {@5etools feat.html}.",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "ranger_martial_versatility",
+        "name": "Martial Versatility",
+        "description": "{@i 4th-level ranger optional class features feature} Whenever you reach a level in this class that grants the Ability Score Improvement feature, you can replace a fighting style you know with another fighting style available to rangers. This replacement represents a shift of focus in your martial p...",
+        "type": "passive",
+        "effects": []
+      }
+    ],
+    "5": [
+      {
+        "id": "ranger_extra_attack",
+        "name": "Extra Attack",
+        "description": "Beginning at 5th level, you can attack twice, instead of once, whenever you take the {@action Attack} action on your turn.",
+        "type": "active",
+        "effects": [],
+        "action_cost": "action",
+        "uses": 1,
+        "uses_per": "combat"
+      }
+    ]
+  }
+}

@@ -1,0 +1,134 @@
+[gd_scene format=3 uid="uid://barcm7c6h38lf"]
+
+[ext_resource type="Script" path="res://src/ui/shop.gd" id="1_shop"]
+
+[node name="Shop" type="PanelContainer"]
+custom_minimum_size = Vector2(700, 480)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -350.0
+offset_top = -240.0
+offset_right = 350.0
+offset_bottom = 240.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+script = ExtResource("1_shop")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="Header" type="VBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="TitleLabel" type="Label" parent="MarginContainer/VBoxContainer/Header"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "MERCHANT & TAVERN"
+horizontal_alignment = 1
+
+[node name="LocationLabel" type="Label" parent="MarginContainer/VBoxContainer/Header"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.65, 0.65, 1)
+text = "Town: Elderwick"
+horizontal_alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/Header"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/Header/HBoxContainer"]
+layout_mode = 2
+text = "Shopper: "
+
+[node name="PlayerSelector" type="OptionButton" parent="MarginContainer/VBoxContainer/Header/HBoxContainer"]
+custom_minimum_size = Vector2(200, 30)
+layout_mode = 2
+
+[node name="VSeparator" type="VSeparator" parent="MarginContainer/VBoxContainer/Header/HBoxContainer"]
+custom_minimum_size = Vector2(20, 0)
+layout_mode = 2
+
+[node name="GoldLabel" type="Label" parent="MarginContainer/VBoxContainer/Header/HBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.75, 0.2, 1)
+text = "Gold: 0 gp"
+
+[node name="Body" type="Control" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/Body"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 20
+
+[node name="ItemListContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/Body/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/Body/HBoxContainer/ItemListContainer"]
+layout_mode = 2
+text = "Items for Sale"
+
+[node name="ItemList" type="ItemList" parent="MarginContainer/VBoxContainer/Body/HBoxContainer/ItemListContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="DetailContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/Body/HBoxContainer"]
+custom_minimum_size = Vector2(320, 0)
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ItemNameLabel" type="Label" parent="MarginContainer/VBoxContainer/Body/HBoxContainer/DetailContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Select an Item"
+
+[node name="PriceLabel" type="Label" parent="MarginContainer/VBoxContainer/Body/HBoxContainer/DetailContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.75, 0.2, 1)
+text = "Cost: - gp"
+
+[node name="ItemDescLabel" type="RichTextLabel" parent="MarginContainer/VBoxContainer/Body/HBoxContainer/DetailContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+text = "Item details will be shown here..."
+
+[node name="BtnBuy" type="Button" parent="MarginContainer/VBoxContainer/Body/HBoxContainer/DetailContainer"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+text = "Purchase Item"
+
+[node name="Footer" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="BtnRest" type="Button" parent="MarginContainer/VBoxContainer/Footer"]
+custom_minimum_size = Vector2(300, 45)
+layout_mode = 2
+text = "Rest at Tavern"
+
+[node name="BtnClose" type="Button" parent="MarginContainer/VBoxContainer/Footer"]
+custom_minimum_size = Vector2(150, 45)
+layout_mode = 2
+text = "Leave Town"

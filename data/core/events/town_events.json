@@ -1,0 +1,112 @@
+{
+  "table_id": "town_events",
+  "terrain_type": "town",
+  "events": [
+    {
+      "id": "tavern_brawl",
+      "name": "Tavern Brawl",
+      "weight": 15,
+      "description": "You enter a tavern for a drink. A surly dwarf takes offense at your presence and throws a mug at your head!",
+      "type": "choice",
+      "choices": [
+        {
+          "text": "Fight back!",
+          "check": {"ability": "STR", "dc": 11},
+          "success": {"description": "You knock the dwarf flat. The tavern cheers! Free drinks for the rest of the night.", "effects": [{"type": "heal", "value": "1d6"}, {"type": "give_item", "item_id": "gold_50"}]},
+          "failure": {"description": "The dwarf is surprisingly strong. You end up face-first on the floor.", "effects": [{"type": "damage", "value": "1d4", "damage_type": "bludgeoning"}]}
+        },
+        {
+          "text": "Talk them down",
+          "check": {"ability": "CHA", "dc": 12},
+          "success": {"description": "You buy the dwarf a drink and end up hearing an interesting rumor about a nearby dungeon.", "effects": [{"type": "reveal_map", "radius": 2}]},
+          "failure": {"description": "Your words only make the dwarf angrier. You leave quickly."}
+        },
+        {
+          "text": "Duck and leave",
+          "effects": [],
+          "description": "You dodge the mug and slip out. Not worth the trouble."
+        }
+      ]
+    },
+    {
+      "id": "town_merchant",
+      "name": "Town Market",
+      "weight": 25,
+      "description": "The town's marketplace bustles with activity. Merchants call out their wares from colorful stalls.",
+      "type": "shop",
+      "data": {
+        "items": ["potion_healing", "potion_greater_healing", "antidote", "torch", "rope", "dagger", "shortbow", "leather_armor", "scale_mail"],
+        "price_modifier": 1.0
+      }
+    },
+    {
+      "id": "town_healer",
+      "name": "Temple Healer",
+      "weight": 15,
+      "description": "A kindly cleric at the local temple offers healing to weary travelers.",
+      "type": "choice",
+      "choices": [
+        {
+          "text": "Accept free basic healing",
+          "effects": [{"type": "heal", "value": "2d8"}],
+          "description": "The cleric lays hands on you and warm light flows through your body."
+        },
+        {
+          "text": "Pay 25 gold for full restoration",
+          "condition": {"type": "has_gold", "amount": 25},
+          "effects": [{"type": "take_gold", "value": 25}, {"type": "full_heal"}, {"type": "remove_all_conditions"}],
+          "description": "The cleric performs a thorough healing ritual. All wounds and ailments are cured."
+        }
+      ]
+    },
+    {
+      "id": "pickpocket",
+      "name": "Pickpocket!",
+      "weight": 15,
+      "description": "A nimble street urchin bumps into you. Wait — where's your coin purse?!",
+      "type": "skill_check",
+      "check": {"ability": "DEX", "dc": 13},
+      "success": {"description": "You catch the urchin's hand in your pocket. They squirm free and flee."},
+      "failure": {"description": "By the time you notice, the urchin is gone — along with some of your gold!", "effects": [{"type": "take_gold", "value": 25}]}
+    },
+    {
+      "id": "quest_board",
+      "name": "Adventurer's Quest Board",
+      "weight": 15,
+      "description": "A wooden board covered in notices stands in the town square. One posting catches your eye.",
+      "type": "choice",
+      "choices": [
+        {
+          "text": "Accept the bounty: Clear the goblin camp (combat)",
+          "effects": [{"type": "start_combat", "monsters": ["goblin", "goblin", "goblin_chief"]}],
+          "reward": {"type": "give_item", "item_id": "gold_100"}
+        },
+        {
+          "text": "Read the rumors instead",
+          "effects": [{"type": "reveal_map", "radius": 3}],
+          "description": "You scan the board and learn about the surrounding area."
+        }
+      ]
+    },
+    {
+      "id": "town_rest",
+      "name": "Rest at the Inn",
+      "weight": 15,
+      "description": "The 'Sleepy Dragon Inn' has a warm fire, soft beds, and hearty stew.",
+      "type": "choice",
+      "choices": [
+        {
+          "text": "Rest for the night (free)",
+          "effects": [{"type": "heal", "value": "3d8"}, {"type": "rest"}],
+          "description": "You enjoy a peaceful night's rest and a hot breakfast."
+        },
+        {
+          "text": "Pay 10 gold for the luxury suite",
+          "condition": {"type": "has_gold", "amount": 10},
+          "effects": [{"type": "take_gold", "value": 10}, {"type": "full_heal"}, {"type": "rest"}, {"type": "grant_condition", "condition": "well_rested", "duration": 5}],
+          "description": "The finest room in the house! You awake feeling incredible."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,215 @@
+{
+  "id": "paladin",
+  "name": "Paladin",
+  "description": "Paladin class. Source: PHB.",
+  "hit_die": "d1",
+  "primary_ability": "STR",
+  "saving_throw_proficiencies": [
+    "WIS",
+    "CHA"
+  ],
+  "armor_proficiencies": [
+    "light",
+    "medium",
+    "heavy",
+    "shields"
+  ],
+  "weapon_proficiencies": [
+    "simple",
+    "martial"
+  ],
+  "skill_choices": {
+    "pick": 2,
+    "from": [
+      "Athletics",
+      "Acrobatics",
+      "Insight",
+      "Perception",
+      "History",
+      "Arcana",
+      "Stealth"
+    ]
+  },
+  "starting_equipment": [
+    "chain_mail",
+    "shield",
+    "longsword"
+  ],
+  "spell_slots_by_level": {
+    "1": [
+      0
+    ],
+    "2": [
+      2
+    ],
+    "3": [
+      3
+    ],
+    "4": [
+      3
+    ],
+    "5": [
+      4,
+      2
+    ]
+  },
+  "cantrips_known": [],
+  "spells_known_by_level": {
+    "1": [],
+    "2": [],
+    "3": []
+  },
+  "features_by_level": {
+    "1": [
+      {
+        "id": "paladin_divine_sense",
+        "name": "Divine Sense",
+        "description": "The presence of strong evil registers on your senses like a noxious odor, and powerful good rings like heavenly music in your ears. As an action, you can open your awareness to detect such forces. Until the end of your next turn, you know the location of any celestial, fiend, or undead within 60 fee...",
+        "type": "active",
+        "effects": [],
+        "action_cost": "action",
+        "uses": 1,
+        "uses_per": "combat"
+      },
+      {
+        "id": "paladin_lay_on_hands",
+        "name": "Lay on Hands",
+        "description": "Your blessed touch can heal wounds. You have a pool of healing power that replenishes when you take a long rest. With that pool, you can restore a total number of hit points equal to your paladin level \u00d7 5. As an action, you can touch a creature and draw power from the pool to restore a number of hi...",
+        "type": "active",
+        "effects": [],
+        "action_cost": "action",
+        "uses": 1,
+        "uses_per": "combat"
+      },
+      {
+        "id": "paladin_spellcasting",
+        "name": "Spellcasting",
+        "description": "You have learned to cast spells through prayer and meditation. See chapter 7 for the rules on spellcasting. The information below details how you use those rules with Paladin spells, which appear in the {@filter Paladin spell list=Paladin} later in the class's description. {'type': 'entries', 'entri...",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "paladin_weapon_mastery",
+        "name": "Weapon Mastery",
+        "description": "Your training with weapons allows you to use the weapon mastery properties properties of two kinds of {@filter weapons=simple weapon;martial weapon} of your choice with which you have proficiency, such as Longsword and Javelin. Whenever you finish a Long Rest, you can change the kinds of weapons you...",
+        "type": "passive",
+        "effects": []
+      }
+    ],
+    "2": [
+      {
+        "id": "paladin_divine_smite",
+        "name": "Divine Smite",
+        "description": "Starting at 2nd level, when you hit a creature with a melee weapon attack, you can expend one spell slot to deal radiant damage to the target, in addition to the weapon's damage. The extra damage is 2d8 for a 1st-level spell slot, plus 1d8 for each spell level higher than 1st, to a maximum of 5d8. T...",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "paladin_fighting_style",
+        "name": "Fighting Style",
+        "description": "At 2nd level, you adopt a particular style of fighting as your specialty. Choose one of the following options. You can't take the same Fighting Style option more than once, even if you get to choose again. {'type': 'options', 'count': 1, 'entries': [{'type': 'refOptionalfeature', 'optionalfeature': ...",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "paladin_spellcasting",
+        "name": "Spellcasting",
+        "description": "By 2nd level, you have learned to draw on divine magic through meditation and prayer to cast spells as a cleric does. See chapter 10 for the general rules of spellcasting and chapter 11 for the {@filter paladin spell list=paladin}. {'type': 'entries', 'name': 'Preparing and Casting Spells', 'entries...",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "paladin_paladin's_smite",
+        "name": "Paladin's Smite",
+        "description": "You always have the Divine Smite spell prepared. In addition, you can cast it without expending a spell slot, but you must finish a Long Rest before you can cast it in this way again.",
+        "type": "passive",
+        "effects": []
+      }
+    ],
+    "3": [
+      {
+        "id": "paladin_channel_divinity",
+        "name": "Channel Divinity",
+        "description": "Your oath allows you to channel divine energy to fuel magical effects. Each Channel Divinity option provided by your oath explains how to use it. When you use your Channel Divinity, you choose which option to use. You must then finish a short or long rest to use your Channel Divinity again. Some Cha...",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "paladin_channel_divinity:_harness_divine_power",
+        "name": "Channel Divinity: Harness Divine Power",
+        "description": "{@i 3rd-level paladin optional class features feature} You can expend a use of your Channel Divinity to fuel your spells. As a bonus action, you touch your holy symbol, utter a prayer, and regain one expended spell slot, the level of which can be no higher than half your proficiency bonus (rounded u...",
+        "type": "active",
+        "effects": [],
+        "action_cost": "bonus_action",
+        "uses": 1,
+        "uses_per": "combat"
+      },
+      {
+        "id": "paladin_divine_health",
+        "name": "Divine Health",
+        "description": "By 3rd level, the divine magic flowing through you makes you immune to disease.",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "paladin_sacred_oath",
+        "name": "Sacred Oath",
+        "description": "When you reach 3rd level, you swear the oath that binds you as a paladin forever. Up to this time you have been in a preparatory stage, committed to the path but not yet sworn to it. Now you choose from the list of available oaths. Your choice grants you features at 3rd level and again at 7th, 15th,...",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "paladin_divine_sense",
+        "name": "Divine Sense",
+        "description": "As a Bonus Action, you can open your awareness to detect Celestials, Fiends, and Undead. For the next 10 minutes or until you have the Incapacitated condition, you know the location of any creature of those types within 60 feet of yourself, and you know its creature type. Within the same radius, you...",
+        "type": "active",
+        "effects": [],
+        "action_cost": "bonus_action",
+        "uses": 1,
+        "uses_per": "combat"
+      },
+      {
+        "id": "paladin_paladin_subclass",
+        "name": "Paladin Subclass",
+        "description": "You gain a Paladin subclass of your choice. A subclass is a specialization that grants you features at certain Paladin levels. For the rest of your career, you gain each of your subclass's features that are of your Paladin level or lower. {'type': 'inset', 'name': 'Breaking Your Oath', 'entries': ['...",
+        "type": "passive",
+        "effects": []
+      }
+    ],
+    "4": [
+      {
+        "id": "paladin_ability_score_improvement",
+        "name": "Ability Score Improvement",
+        "description": "When you reach 4th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature. If your DM allows the use of feats, you may instead take a {@5etools feat.html}.",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "paladin_martial_versatility",
+        "name": "Martial Versatility",
+        "description": "{@i 4th-level paladin optional class features feature} Whenever you reach a level in this class that grants the Ability Score Improvement feature, you can replace a {@filter fighting style type=FS:P} you know with another fighting style available to paladins. This replacement represents a shift of f...",
+        "type": "passive",
+        "effects": []
+      }
+    ],
+    "5": [
+      {
+        "id": "paladin_extra_attack",
+        "name": "Extra Attack",
+        "description": "Beginning at 5th level, you can attack twice, instead of once, whenever you take the {@action Attack} action on your turn.",
+        "type": "active",
+        "effects": [],
+        "action_cost": "action",
+        "uses": 1,
+        "uses_per": "combat"
+      },
+      {
+        "id": "paladin_faithful_steed",
+        "name": "Faithful Steed",
+        "description": "You can call on the aid of an otherworldly steed. You always have the Find Steed spell prepared. You can also cast the spell once without expending a spell slot, and you regain the ability to do so when you finish a Long Rest.",
+        "type": "passive",
+        "effects": []
+      }
+    ]
+  }
+}

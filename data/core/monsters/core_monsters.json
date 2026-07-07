@@ -1,0 +1,248 @@
+[
+  {
+    "id": "goblin",
+    "name": "Goblin",
+    "description": "A small, sneaky creature that attacks in groups.",
+    "size": "small",
+    "challenge_rating": 0.25,
+    "hit_points": "2d6",
+    "armor_class": 13,
+    "speed": 6,
+    "ability_scores": {"STR": 8, "DEX": 14, "CON": 10, "INT": 10, "WIS": 8, "CHA": 8},
+    "attacks": [
+      {"name": "Scimitar", "ability": "DEX", "damage": "1d6", "damage_type": "slashing", "range": 1},
+      {"name": "Shortbow", "ability": "DEX", "damage": "1d6", "damage_type": "piercing", "range": 6}
+    ],
+    "ai_behavior": "aggressive",
+    "special_abilities": [
+      {"id": "nimble_escape", "name": "Nimble Escape", "description": "Can Disengage or Hide as a bonus action."}
+    ],
+    "loot_table": [
+      {"item_id": "gold_50", "chance": 0.3},
+      {"item_id": "dagger", "chance": 0.2}
+    ],
+    "xp": 50
+  },
+  {
+    "id": "goblin_chief",
+    "name": "Goblin Chief",
+    "description": "A larger, meaner goblin that leads raiding parties.",
+    "size": "small",
+    "challenge_rating": 1,
+    "hit_points": "6d6 + 6",
+    "armor_class": 15,
+    "speed": 6,
+    "ability_scores": {"STR": 12, "DEX": 14, "CON": 12, "INT": 12, "WIS": 10, "CHA": 12},
+    "attacks": [
+      {"name": "Morningstar", "ability": "STR", "damage": "1d8 + 1", "damage_type": "bludgeoning", "range": 1}
+    ],
+    "ai_behavior": "aggressive",
+    "special_abilities": [
+      {"id": "multiattack", "name": "Multiattack", "description": "Makes two melee attacks."},
+      {"id": "rally", "name": "Rally", "description": "Grants nearby goblins advantage on their next attack."}
+    ],
+    "loot_table": [
+      {"item_id": "gold_100", "chance": 0.5},
+      {"item_id": "potion_healing", "chance": 0.3}
+    ],
+    "xp": 200
+  },
+  {
+    "id": "skeleton",
+    "name": "Skeleton",
+    "description": "An undead warrior animated by dark magic.",
+    "size": "medium",
+    "challenge_rating": 0.25,
+    "hit_points": "2d8 + 4",
+    "armor_class": 13,
+    "speed": 6,
+    "ability_scores": {"STR": 10, "DEX": 14, "CON": 15, "INT": 6, "WIS": 8, "CHA": 5},
+    "damage_vulnerabilities": ["bludgeoning"],
+    "damage_immunities": ["poison"],
+    "condition_immunities": ["exhaustion", "poisoned"],
+    "attacks": [
+      {"name": "Shortsword", "ability": "DEX", "damage": "1d6", "damage_type": "piercing", "range": 1},
+      {"name": "Shortbow", "ability": "DEX", "damage": "1d6", "damage_type": "piercing", "range": 6}
+    ],
+    "ai_behavior": "aggressive",
+    "loot_table": [
+      {"item_id": "gold_50", "chance": 0.2}
+    ],
+    "xp": 50
+  },
+  {
+    "id": "zombie",
+    "name": "Zombie",
+    "description": "A shambling corpse driven by necrotic energy.",
+    "size": "medium",
+    "challenge_rating": 0.25,
+    "hit_points": "3d8 + 9",
+    "armor_class": 8,
+    "speed": 4,
+    "ability_scores": {"STR": 13, "DEX": 6, "CON": 16, "INT": 3, "WIS": 6, "CHA": 5},
+    "damage_immunities": ["poison"],
+    "condition_immunities": ["poisoned"],
+    "attacks": [
+      {"name": "Slam", "ability": "STR", "damage": "1d6 + 1", "damage_type": "bludgeoning", "range": 1}
+    ],
+    "ai_behavior": "aggressive",
+    "special_abilities": [
+      {"id": "undead_fortitude", "name": "Undead Fortitude", "description": "When reduced to 0 HP, makes a CON save (DC 5 + damage taken). On success, drops to 1 HP instead. Doesn't work against radiant damage or critical hits."}
+    ],
+    "loot_table": [],
+    "xp": 50
+  },
+  {
+    "id": "wolf",
+    "name": "Wolf",
+    "description": "A fierce predator that hunts in packs.",
+    "size": "medium",
+    "challenge_rating": 0.25,
+    "hit_points": "2d8 + 2",
+    "armor_class": 13,
+    "speed": 8,
+    "ability_scores": {"STR": 12, "DEX": 15, "CON": 12, "INT": 3, "WIS": 12, "CHA": 6},
+    "attacks": [
+      {"name": "Bite", "ability": "STR", "damage": "2d4 + 1", "damage_type": "piercing", "range": 1}
+    ],
+    "ai_behavior": "aggressive",
+    "special_abilities": [
+      {"id": "pack_tactics", "name": "Pack Tactics", "description": "Has advantage on attack rolls against a creature if at least one ally is within 1 hex of the target."}
+    ],
+    "loot_table": [],
+    "xp": 50
+  },
+  {
+    "id": "bandit",
+    "name": "Bandit",
+    "description": "A common thug who preys on travelers.",
+    "size": "medium",
+    "challenge_rating": 0.125,
+    "hit_points": "2d8 + 2",
+    "armor_class": 12,
+    "speed": 6,
+    "ability_scores": {"STR": 11, "DEX": 12, "CON": 12, "INT": 10, "WIS": 10, "CHA": 10},
+    "attacks": [
+      {"name": "Scimitar", "ability": "DEX", "damage": "1d6", "damage_type": "slashing", "range": 1},
+      {"name": "Light Crossbow", "ability": "DEX", "damage": "1d8", "damage_type": "piercing", "range": 6}
+    ],
+    "ai_behavior": "defensive",
+    "loot_table": [
+      {"item_id": "gold_50", "chance": 0.4}
+    ],
+    "xp": 25
+  },
+  {
+    "id": "giant_spider",
+    "name": "Giant Spider",
+    "description": "A monstrous arachnid that lurks in dark places.",
+    "size": "large",
+    "challenge_rating": 1,
+    "hit_points": "4d10 + 4",
+    "armor_class": 14,
+    "speed": 6,
+    "ability_scores": {"STR": 14, "DEX": 16, "CON": 12, "INT": 2, "WIS": 11, "CHA": 4},
+    "attacks": [
+      {"name": "Bite", "ability": "DEX", "damage": "1d8 + 2", "damage_type": "piercing", "range": 1, "extra_effects": [{"type": "poison_save", "dc": 11, "damage": "2d8", "damage_type": "poison"}]},
+      {"name": "Web", "ability": "DEX", "damage": "0", "damage_type": "none", "range": 4, "extra_effects": [{"type": "restrain", "save": "STR", "dc": 12}]}
+    ],
+    "ai_behavior": "aggressive",
+    "special_abilities": [
+      {"id": "spider_climb", "name": "Spider Climb", "description": "Can climb difficult surfaces without needing to make an ability check."},
+      {"id": "web_sense", "name": "Web Sense", "description": "Knows the location of any creature in contact with the same web."}
+    ],
+    "loot_table": [
+      {"item_id": "gold_50", "chance": 0.3},
+      {"item_id": "antidote", "chance": 0.2}
+    ],
+    "xp": 200
+  },
+  {
+    "id": "ooze",
+    "name": "Gray Ooze",
+    "description": "A blob of living slime that dissolves organic matter.",
+    "size": "medium",
+    "challenge_rating": 0.5,
+    "hit_points": "3d8 + 9",
+    "armor_class": 8,
+    "speed": 2,
+    "ability_scores": {"STR": 12, "DEX": 6, "CON": 16, "INT": 1, "WIS": 6, "CHA": 2},
+    "damage_immunities": ["fire", "acid"],
+    "condition_immunities": ["blinded", "charmed", "deafened", "frightened", "prone"],
+    "attacks": [
+      {"name": "Pseudopod", "ability": "STR", "damage": "1d6 + 1", "damage_type": "acid", "range": 1, "extra_effects": [{"type": "corrode_armor"}]}
+    ],
+    "ai_behavior": "aggressive",
+    "loot_table": [],
+    "xp": 100
+  },
+  {
+    "id": "wight",
+    "name": "Wight",
+    "description": "An undead warrior possessed by a malevolent spirit.",
+    "size": "medium",
+    "challenge_rating": 3,
+    "hit_points": "6d8 + 18",
+    "armor_class": 14,
+    "speed": 6,
+    "ability_scores": {"STR": 15, "DEX": 14, "CON": 16, "INT": 10, "WIS": 13, "CHA": 15},
+    "damage_immunities": ["poison"],
+    "condition_immunities": ["exhaustion", "poisoned"],
+    "attacks": [
+      {"name": "Life Drain", "ability": "STR", "damage": "1d6 + 2", "damage_type": "necrotic", "range": 1, "extra_effects": [{"type": "reduce_max_hp", "value": "damage_dealt"}]},
+      {"name": "Longsword", "ability": "STR", "damage": "1d8 + 2", "damage_type": "slashing", "range": 1},
+      {"name": "Longbow", "ability": "DEX", "damage": "1d8 + 2", "damage_type": "piercing", "range": 8}
+    ],
+    "ai_behavior": "aggressive",
+    "special_abilities": [
+      {"id": "multiattack", "name": "Multiattack", "description": "Makes two longsword attacks or two longbow attacks."},
+      {"id": "sunlight_sensitivity", "name": "Sunlight Sensitivity", "description": "Disadvantage on attack rolls in sunlight."}
+    ],
+    "loot_table": [
+      {"item_id": "longsword", "chance": 0.3},
+      {"item_id": "gold_100", "chance": 0.5}
+    ],
+    "xp": 700
+  },
+  {
+    "id": "lich_king",
+    "name": "The Lich King",
+    "description": "An ancient and powerful undead sorcerer who seeks the Crown of Ages to dominate the living.",
+    "size": "medium",
+    "challenge_rating": 8,
+    "hit_points": "18d8 + 54",
+    "armor_class": 17,
+    "speed": 6,
+    "ability_scores": {"STR": 11, "DEX": 16, "CON": 16, "INT": 20, "WIS": 14, "CHA": 16},
+    "damage_immunities": ["poison", "necrotic"],
+    "condition_immunities": ["charmed", "exhaustion", "frightened", "paralyzed", "poisoned"],
+    "saving_throw_bonuses": {"CON": 5, "INT": 8, "WIS": 4},
+    "attacks": [
+      {"name": "Paralyzing Touch", "ability": "INT", "damage": "3d6", "damage_type": "necrotic", "range": 1, "extra_effects": [{"type": "paralyze_save", "dc": 15, "save": "CON", "duration": 1}]}
+    ],
+    "spells": [
+      {"id": "fire_bolt", "type": "cantrip"},
+      {"id": "ray_of_frost", "type": "cantrip"},
+      {"id": "magic_missile", "type": "spell", "level": 1},
+      {"id": "shield", "type": "spell", "level": 1},
+      {"id": "scorching_ray", "type": "spell", "level": 2},
+      {"id": "fireball", "type": "spell", "level": 3},
+      {"id": "counterspell", "type": "spell", "level": 3}
+    ],
+    "spell_slots": {"1": 4, "2": 3, "3": 3},
+    "ai_behavior": "defensive",
+    "special_abilities": [
+      {"id": "legendary_resistance", "name": "Legendary Resistance (3/Day)", "description": "If the Lich King fails a saving throw, it can choose to succeed instead.", "uses": 3},
+      {"id": "turn_resistance", "name": "Turn Resistance", "description": "Has advantage on saving throws against effects that turn undead."},
+      {"id": "rejuvenation", "name": "Rejuvenation", "description": "If it has a phylactery, the Lich King gains a new body in 1d10 days, regaining all hit points."}
+    ],
+    "loot_table": [
+      {"item_id": "crown_fragment", "chance": 1.0},
+      {"item_id": "gold_100", "chance": 1.0},
+      {"item_id": "gold_100", "chance": 1.0},
+      {"item_id": "potion_greater_healing", "chance": 1.0}
+    ],
+    "xp": 3900,
+    "is_boss": true
+  }
+]
