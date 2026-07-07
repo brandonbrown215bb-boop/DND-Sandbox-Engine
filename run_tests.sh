@@ -43,6 +43,43 @@ run_harness() {
   return 1
 }
 
+# ---------------------------------------------------------------------------
+# Pre-flight parse gate: syntax-check EVERY script in the project before
+# booting any scene. A typo only surfaces at runtime otherwise, and a broken
+# script referenced by a harness scene makes that scene fail to parse -> the
+# run hangs (engine idles) instead of erroring.
+#
+# NOTE: a whole-project `--check-only` HANGS on a broken script (does not fail
+# fast), so we check file-by-file. Each file gets its own `timeout` guard so a
+# single file that hangs still aborts instead of stalling the whole gate.
+# Per-file `--check-only --script` returns in ~0.3s and prints the error.
+# ---------------------------------------------------------------------------
+echo "=================================================================="
+echo ">> Pre-flight: parsing all scripts (--check-only, per-file)"
+echo "=================================================================="
+PARSE_FAILS=0
+# Collect every .gd under src/ and scenes/.
+mapfile -t GD_FILES < <(find "$PROJECT/src" "$PROJECT/scenes" -name '*.gd' 2>/dev/null | sort)
+for f in "${GD_FILES[@]}"; do
+  rel="res://$(realpath --relative-to="$PROJECT" "$f")"
+  # Single per-file parse check with a hard timeout so a hanging file cannot
+  # stall the gate. ~0.3s per file when clean; prints the error if broken.
+  out="$(timeout 25 "$GODOT" --headless --path "$PROJECT" --check-only --script "$rel" 2>&1)"
+  rc=$?
+  err="$(echo "$out" | grep -iE 'Parse Error|Expected .* but found|SCRIPT ERROR.*Parse' | head -1)"
+  if [ -n "$err" ] || [ "$rc" -eq 124 ]; then
+    echo "  [BAD] $rel"
+    [ -n "$err" ] && echo "        $err"
+    [ "$rc" -eq 124 ] && echo "        (timed out — likely a hang/parse loop)"
+    PARSE_FAILS=$((PARSE_FAILS + 1))
+  fi
+done
+if [ "$PARSE_FAILS" -ne 0 ]; then
+  echo ">> Pre-flight: FAILED ($PARSE_FAILS script(s) with parse errors) — aborting before scene boot."
+  exit 1
+fi
+echo ">> Pre-flight: all ${#GD_FILES[@]} scripts parsed clean"
+
 FAILED=0
 
 run_harness "res://scenes/test_runner.tscn" "ALL TESTS PASSED" || FAILED=1
