@@ -27,6 +27,7 @@ signal sheet_pressed
 @onready var btn_cancel_features: Button = $MarginContainer/HBoxContainer/ControlArea/VBoxContainer/FeatureMenu/BtnCancelFeatures
 
 @onready var info_label: Label = $MarginContainer/HBoxContainer/Sidebar/ScrollContainer/EntityInfo
+@onready var entity_hp_bar = $MarginContainer/HBoxContainer/Sidebar/ScrollContainer/EntityHpBar
 @onready var weapon_info: Label = $MarginContainer/HBoxContainer/Sidebar/ScrollContainer/WeaponInfo
 @onready var initiative_bar: RichTextLabel = $MarginContainer/HBoxContainer/ControlArea/VBoxContainer/InitiativePanel/InitiativeBar
 @onready var hint_label: Label = $MarginContainer/HBoxContainer/ControlArea/VBoxContainer/HintLabel
@@ -180,6 +181,10 @@ func _update_sidebar_stats() -> void:
 			text += "- %s (%d turns)\n" % [cond, active_character.conditions[cond]]
 
 	info_label.text = text
+
+	if entity_hp_bar != null and active_character != null:
+		entity_hp_bar.configure("HP", active_character.max_hp)
+		entity_hp_bar.set_value(active_character.current_hp)
 
 
 ## Show the active character's equipped weapon and its range in the sidebar.

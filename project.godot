@@ -43,6 +43,7 @@ window/stretch/mode="viewport"
 
 [gui]
 
+theme = "res://theme/main_theme.tres"
 theme/default_font_antialiasing=0
 theme/default_font_subpixel_positioning=0
 

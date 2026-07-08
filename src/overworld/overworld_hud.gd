@@ -77,6 +77,12 @@ func _update_party_sidebar() -> void:
 		vbox.add_theme_constant_override("separation", 5)
 		card.add_child(vbox)
 
+		# HP bar (Rook's Touch: visual vitals, not text-only)
+		var hp_bar = load("res://scenes/ui/stat_bar.tscn").instantiate()
+		vbox.add_child(hp_bar)
+		hp_bar.configure("HP", char_data.max_hp)
+		hp_bar.set_value(char_data.current_hp)
+
 		# Name & class
 		var name_lbl := Label.new()
 		name_lbl.text = "%s (%s)" % [char_data.character_name, DataLoader.get_character_class(char_data.class_id).get("name", "Class")]

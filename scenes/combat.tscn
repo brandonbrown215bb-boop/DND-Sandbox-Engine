@@ -4,6 +4,7 @@
 [ext_resource type="Script" path="res://src/hex/hex_grid.gd" id="2_grid"]
 [ext_resource type="Script" path="res://src/combat/combat_hud.gd" id="3_combat_hud"]
 [ext_resource type="PackedScene" uid="uid://e456789f5d6e7" path="res://scenes/ui/dice_roll_display.tscn" id="4_dice_display"]
+[ext_resource type="PackedScene" uid="uid://rookstatbar1" path="res://scenes/ui/stat_bar.tscn" id="5_statbar"]
 
 [node name="Combat" type="Node2D"]
 script = ExtResource("1_combat")
@@ -50,6 +51,9 @@ theme_override_font_sizes/font_size = 16
 theme_override_colors/default_color = Color(0.6, 0.9, 1, 1)
 text = "Weapon: —"
 autowrap_mode = 2
+
+[node name="EntityHpBar" parent="CombatHUD/MarginContainer/HBoxContainer/Sidebar/ScrollContainer" instance=ExtResource("5_statbar")]
+layout_mode = 2
 
 [node name="EntityInfo" type="Label" parent="CombatHUD/MarginContainer/HBoxContainer/Sidebar/ScrollContainer"]
 layout_mode = 2

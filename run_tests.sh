@@ -58,8 +58,9 @@ echo "=================================================================="
 echo ">> Pre-flight: parsing all scripts (--check-only, per-file)"
 echo "=================================================================="
 PARSE_FAILS=0
-# Collect every .gd under src/ and scenes/.
-mapfile -t GD_FILES < <(find "$PROJECT/src" "$PROJECT/scenes" -name '*.gd' 2>/dev/null | sort)
+# Collect every .gd under src/ and scenes/ (exclude theme/ dev utilities which
+# use project class_names and are not game code).
+mapfile -t GD_FILES < <(find "$PROJECT/src" "$PROJECT/scenes" -name '*.gd' 2>/dev/null | grep -vE "/theme/" | sort)
 for f in "${GD_FILES[@]}"; do
   rel="res://$(realpath --relative-to="$PROJECT" "$f")"
   # Single per-file parse check with a hard timeout so a hanging file cannot
