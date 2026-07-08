@@ -31,7 +31,14 @@ signal sheet_pressed
 @onready var weapon_info: Label = $MarginContainer/HBoxContainer/Sidebar/ScrollContainer/WeaponInfo
 @onready var initiative_bar: RichTextLabel = $MarginContainer/HBoxContainer/ControlArea/VBoxContainer/InitiativePanel/InitiativeBar
 @onready var hint_label: Label = $MarginContainer/HBoxContainer/ControlArea/VBoxContainer/HintLabel
+@onready var mode_banner: Label = $MarginContainer/HBoxContainer/ControlArea/VBoxContainer/ModeBanner
 @onready var log_text: RichTextLabel = $MarginContainer/HBoxContainer/ControlArea/VBoxContainer/LogBox/LogText
+
+## Rook's Touch: combat UI mode state machine. Centralizes the scattered
+## show/hide of action menu vs spell/feature panels so the player always
+## knows what state they're in (the banner makes it legible).
+enum Mode { SELECT, SPELL, FEATURE }
+var current_mode := Mode.SELECT
 
 var active_character: Character
 var spells_registered: Array[Dictionary] = []
@@ -56,10 +63,16 @@ func _ready() -> void:
 	btn_settings.pressed.connect(func(): settings_pressed.emit())
 	btn_sheet.pressed.connect(func(): sheet_pressed.emit())
 
-	# Start hidden
-	spell_menu.visible = false
-	feature_menu.visible = false
+	# Start in SELECT mode with the banner set.
+	set_mode(Mode.SELECT)
 	clear_logs()
+
+
+## Esc / escape-hatch handling: back out of any sub-menu to SELECT.
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel"):
+		if current_mode != Mode.SELECT:
+			set_mode(Mode.SELECT)
 
 
 ## Clear all logs.
@@ -100,9 +113,23 @@ func hide_hint() -> void:
 	hint_label.visible = false
 
 
+## Set the combat UI mode. Centralizes panel visibility so the player
+## always sees one coherent state. The banner echoes it.
+func set_mode(m: Mode) -> void:
+	current_mode = m
+	action_panel.visible = (m == Mode.SELECT)
+	spell_menu.visible = (m == Mode.SPELL)
+	feature_menu.visible = (m == Mode.FEATURE)
+	match m:
+		Mode.SELECT: mode_banner.text = "● SELECT — choose an action"
+		Mode.SPELL: mode_banner.text = "● SPELL — pick a spell (Esc/Cancel to back out)"
+		Mode.FEATURE: mode_banner.text = "● FEATURE — pick a class feature"
+
+
 ## Draw/update the HUD.
 func update_hud(active_char: Character, tracker: InitiativeTracker) -> void:
 	active_character = active_char
+	set_mode(Mode.SELECT)
 	_update_initiative_list(tracker)
 	_update_sidebar_stats()
 	_update_weapon_info(active_char)
@@ -133,13 +160,16 @@ func update_hud(active_char: Character, tracker: InitiativeTracker) -> void:
 
 
 func _update_initiative_list(tracker: InitiativeTracker) -> void:
-	var init_text := "[b]Initiative Order:[/b]\n"
+	# Compact single-line strip: active combatant leads with a ➔, others follow.
+	# Players gold, monsters red. Keeps the turn order legible without eating
+	# vertical space (Rook's Touch: one row, not a stacked list).
+	var chips: Array[String] = []
 	for i in tracker.combatants.size():
 		var c := tracker.combatants[i]
-		var pointer := " ➔ " if i == tracker.active_index else "    "
-		var color := "yellow" if c["is_player"] else "red"
-		init_text += "%s[color=%s]%s[/color] (Roll: %d)\n" % [pointer, color, c["name"], c["roll"]]
-	initiative_bar.text = init_text
+		var lead := "➔ " if i == tracker.active_index else ""
+		var color := "gold" if c["is_player"] else "indianred"
+		chips.append("%s[color=%s]%s[/color]" % [lead, color, c["name"]])
+	initiative_bar.text = "[b]Order:[/b]  " + "  ›  ".join(chips)
 
 
 func _update_sidebar_stats() -> void:
@@ -211,9 +241,7 @@ func _update_weapon_info(active_char: Character) -> void:
 func _show_spell_selection() -> void:
 	if active_character == null: return
 	
-	action_panel.visible = false
-	spell_menu.visible = true
-	spell_list.clear()
+	set_mode(Mode.SPELL)
 	spells_registered.clear()
 
 	# Retrieve list of spells known
@@ -259,8 +287,7 @@ func _show_spell_selection() -> void:
 
 
 func _hide_spell_selection() -> void:
-	spell_menu.visible = false
-	action_panel.visible = true
+	set_mode(Mode.SELECT)
 
 
 func _on_spell_selected(index: int) -> void:
@@ -275,10 +302,8 @@ func _on_spell_selected(index: int) -> void:
 func _show_feature_selection() -> void:
 	if active_character == null: return
 	
-	action_panel.visible = false
-	feature_menu.visible = true
+	set_mode(Mode.FEATURE)
 	feature_list.clear()
-	features_registered.clear()
 
 	for f in active_character.features:
 		if f.get("type", "") != "active": continue
@@ -301,8 +326,7 @@ func _show_feature_selection() -> void:
 
 
 func _hide_feature_selection() -> void:
-	feature_menu.visible = false
-	action_panel.visible = true
+	set_mode(Mode.SELECT)
 
 
 func _on_feature_selected(index: int) -> void:
