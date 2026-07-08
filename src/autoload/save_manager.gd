@@ -88,13 +88,50 @@ func load_game(slot_name: String) -> bool:
 
 	GameManager.game_in_progress = true
 
-	# Restore game state scene
+	# Refuse to "resume" a save that has no in-progress game (e.g. a menu-only
+	# quicksave). Loading it would call change_state(MAIN_MENU) from the menu —
+	# a silent no-op that just confuses the player.
 	var loaded_state: GameManager.GameState = save_data.get("current_state", int(GameManager.GameState.OVERWORLD)) as GameManager.GameState
-	
+	if loaded_state == GameManager.GameState.MAIN_MENU:
+		push_warning("[SaveManager] Save '%s' has no in-progress game (MAIN_MENU state) — not resuming." % slot_name)
+		GameManager.is_loading_save = false
+		return false
+
 	# Transition
 	GameManager.change_state(loaded_state)
 	print("[SaveManager] Successfully loaded game from %s" % file_path)
 	return true
+
+
+## Returns true if a save slot holds a resumable game (i.e. it is not a
+## menu-only/empty save). A save whose current_state is MAIN_MENU has no in-
+## progress game to return to, so loading it is a silent no-op — treat it as
+## non-resumable so the menu can disable Load instead of confusing the player.
+func is_save_resumable(slot_name: String) -> bool:
+	var file_path := SAVE_DIR + slot_name + ".sav"
+	if not FileAccess.file_exists(file_path):
+		return false
+	var file := FileAccess.open(file_path, FileAccess.READ)
+	if file == null:
+		return false
+	var text := file.get_as_text()
+	file.close()
+	var json := JSON.new()
+	if json.parse(text) != OK:
+		return false
+	var save_data: Dictionary = json.data
+	var state: int = int(save_data.get("current_state", int(GameManager.GameState.MAIN_MENU)))
+	return state != GameManager.GameState.MAIN_MENU
+
+
+## Get list of save slots that hold a resumable game (not menu-only saves).
+func get_resumable_saves() -> Array[String]:
+	var all := get_available_saves()
+	var resumable: Array[String] = []
+	for slot in all:
+		if is_save_resumable(slot):
+			resumable.append(slot)
+	return resumable
 
 
 ## Get list of all available save slots.

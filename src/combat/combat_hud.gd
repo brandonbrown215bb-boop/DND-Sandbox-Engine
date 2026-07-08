@@ -31,6 +31,7 @@ signal cancel_pressed
 @onready var initiative_bar: RichTextLabel = $MarginContainer/HBoxContainer/ControlArea/VBoxContainer/InitiativePanel/InitiativeBar
 @onready var hint_label: Label = $MarginContainer/HBoxContainer/ControlArea/VBoxContainer/HintLabel
 @onready var mode_banner: Label = $MarginContainer/HBoxContainer/ControlArea/VBoxContainer/ModeBanner
+@onready var dice_display: Node = null
 
 ## Rook's Touch: combat UI mode state machine. Centralizes the scattered
 ## show/hide of action menu vs spell/feature panels so the player always
@@ -64,6 +65,10 @@ func _ready() -> void:
 
 	# Assign the inherited log_text (declared in BaseHUD, not re-declared here).
 	log_text = $MarginContainer/HBoxContainer/ControlArea/VBoxContainer/LogBox/LogText
+
+	# Dice roll overlay is a sibling node; hide it on demand (e.g. when an
+	# attack is cancelled mid-roll-fade so it doesn't linger over the board).
+	dice_display = get_node_or_null("DiceRollDisplay")
 
 	# Start in SELECT mode with the banner set.
 	set_mode(Mode.SELECT)
@@ -101,6 +106,13 @@ func show_hint(msg: String) -> void:
 func hide_hint() -> void:
 	if hint_label == null: return
 	hint_label.visible = false
+
+
+## Hide the dice-roll overlay immediately (e.g. when an attack is cancelled
+## while the previous roll is still fading, so it doesn't linger over the board).
+func hide_dice() -> void:
+	if dice_display != null and dice_display.has_method("hide"):
+		dice_display.visible = false
 
 
 ## Set the combat UI mode. Centralizes panel visibility so the player

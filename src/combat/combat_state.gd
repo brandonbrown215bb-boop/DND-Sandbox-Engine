@@ -594,6 +594,7 @@ func _cancel_pending_action() -> void:
 	hex_grid.clear_highlights()
 	_clear_path_preview()
 	_highlight_reachable()
+	hud.hide_dice()
 	hud.add_log("[color=yellow]Cancelled %s targeting.[/color]" % old)
 
 

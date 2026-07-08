@@ -39,7 +39,11 @@ func _on_dice_rolled(data: Dictionary) -> void:
 	# Start rolling animation
 	visible = true
 	animation_ticks = 0
-	animation_timer.start(0.06)
+	# The display may receive a roll before it is parented in the tree (e.g.
+	# when spawned inside a SubViewport harness where the timer node isn't
+	# ready yet). Guard so we never throw "Unable to start the timer".
+	if is_inside_tree():
+		animation_timer.start(0.06)
 
 
 func _on_animation_tick() -> void:

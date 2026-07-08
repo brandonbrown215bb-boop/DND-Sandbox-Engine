@@ -114,28 +114,32 @@ func _on_start_pressed() -> void:
 		GameManager.start_new_game(campaign_id, selected_player_count)
 
 
-## Populate the saved-game list.
+## Populate the saved-game list. Only lists saves that actually hold an
+## in-progress game (resumable); a menu-only quicksave is hidden so the player
+## can't click Load and get a silent no-op.
 func _refresh_save_slots() -> void:
 	save_slot_list.clear()
-	var saves := SaveManager.get_available_saves()
-	if saves.is_empty():
+	var resumable := SaveManager.get_resumable_saves()
+	if resumable.is_empty():
 		save_slot_list.add_item("(no saved games)")
 		save_slot_list.set_item_disabled(0, true)
 		btn_load.disabled = true
 	else:
-		for s in saves:
+		for s in resumable:
 			save_slot_list.add_item(s)
 		btn_load.disabled = false
 
 
 ## Load the selected save (or the first if none selected) into the game.
 func _on_load_pressed() -> void:
-	var saves := SaveManager.get_available_saves()
-	if saves.is_empty():
+	var resumable := SaveManager.get_resumable_saves()
+	if resumable.is_empty():
 		return
 	var slot: String
 	if save_slot_list.is_anything_selected():
 		slot = save_slot_list.get_item_text(save_slot_list.get_selected_items()[0])
 	else:
-		slot = saves[0]
+		slot = resumable[0]
+	if not SaveManager.is_save_resumable(slot):
+		return
 	SaveManager.load_game(slot)

@@ -216,22 +216,28 @@ func _build_class_selection_ui() -> void:
 		class_grid.add_child(panel)
 
 
+var _stat_row_refs: Dictionary = {}  # ability -> {val: Label, dec: Button, inc: Button}
+
+
 func _build_stats_point_buy_ui() -> void:
+	# Build the stat rows ONCE. Rapid + / - clicks must not destroy and
+	# recreate the buttons (queue_free mid-click storm drops every click but
+	# the first). We keep stable references and only refresh their labels /
+	# disabled state in _refresh_stats_ui().
+	if not _stat_row_refs.is_empty():
+		_refresh_stats_ui()
+		return
+
 	var remaining_points := AbilityScores.POINT_BUY_TOTAL - selected_stats.get_point_buy_cost()
 	stat_points_label.text = "Remaining Points: %d / %d" % [remaining_points, AbilityScores.POINT_BUY_TOTAL]
 
-	# Clear rows and rebuild them
-	for child in stat_rows.get_children():
-		child.queue_free()
-
-	# Create a row for each ability
 	for ability in AbilityScores.ABILITIES:
 		var val := selected_stats.get_score(ability)
 		var mod := AbilityScores.get_modifier(val)
-		
+
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 15)
-		
+
 		var lbl_name := Label.new()
 		lbl_name.text = ability
 		lbl_name.custom_minimum_size = Vector2(60, 0)
@@ -240,15 +246,13 @@ func _build_stats_point_buy_ui() -> void:
 		var btn_dec := Button.new()
 		btn_dec.text = "-"
 		btn_dec.custom_minimum_size = Vector2(30, 30)
-		btn_dec.disabled = (val <= 8)
 		btn_dec.pressed.connect(func():
-			selected_stats.set_score(ability, val - 1)
-			_update_step_ui()
+			selected_stats.set_score(ability, selected_stats.get_score(ability) - 1)
+			_refresh_stats_ui()
 		)
 		row.add_child(btn_dec)
 
 		var lbl_val := Label.new()
-		lbl_val.text = "%d (%s)" % [val, AbilityScores.format_modifier(mod)]
 		lbl_val.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		lbl_val.custom_minimum_size = Vector2(80, 0)
 		row.add_child(lbl_val)
@@ -256,20 +260,36 @@ func _build_stats_point_buy_ui() -> void:
 		var btn_inc := Button.new()
 		btn_inc.text = "+"
 		btn_inc.custom_minimum_size = Vector2(30, 30)
-		
-		# Check if we can afford the next point
-		var cost_now = AbilityScores.POINT_BUY_COSTS.get(val, 0)
-		var cost_next = AbilityScores.POINT_BUY_COSTS.get(val + 1, 999)
-		var cost_diff = cost_next - cost_now
-		btn_inc.disabled = (val >= 15 or remaining_points < cost_diff)
-		
 		btn_inc.pressed.connect(func():
-			selected_stats.set_score(ability, val + 1)
-			_update_step_ui()
+			selected_stats.set_score(ability, selected_stats.get_score(ability) + 1)
+			_refresh_stats_ui()
 		)
 		row.add_child(btn_inc)
 
 		stat_rows.add_child(row)
+		_stat_row_refs[ability] = {"val": lbl_val, "dec": btn_dec, "inc": btn_inc}
+
+	_refresh_stats_ui()
+
+
+## Update the stat row labels / disabled states in place (no rebuild), so
+## rapid clicks on the same + / - button all register.
+func _refresh_stats_ui() -> void:
+	var remaining_points := AbilityScores.POINT_BUY_TOTAL - selected_stats.get_point_buy_cost()
+	stat_points_label.text = "Remaining Points: %d / %d" % [remaining_points, AbilityScores.POINT_BUY_TOTAL]
+	for ability in AbilityScores.ABILITIES:
+		var refs: Dictionary = _stat_row_refs.get(ability, {})
+		if refs.is_empty():
+			continue
+		var val := selected_stats.get_score(ability)
+		var mod := AbilityScores.get_modifier(val)
+		refs["val"].text = "%d (%s)" % [val, AbilityScores.format_modifier(mod)]
+		refs["dec"].disabled = (val <= 8)
+		var cost_now = AbilityScores.POINT_BUY_COSTS.get(val, 0)
+		var cost_next = AbilityScores.POINT_BUY_COSTS.get(val + 1, 999)
+		var cost_diff = cost_next - cost_now
+		refs["inc"].disabled = (val >= 15 or remaining_points < cost_diff)
+	_check_next_step_validity()
 
 
 func _build_equipment_ui() -> void:
