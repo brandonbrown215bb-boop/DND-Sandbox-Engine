@@ -124,6 +124,11 @@ func set_mode(m: Mode) -> void:
 		Mode.SELECT: mode_banner.text = "● SELECT — choose an action"
 		Mode.SPELL: mode_banner.text = "● SPELL — pick a spell (Esc/Cancel to back out)"
 		Mode.FEATURE: mode_banner.text = "● FEATURE — pick a class feature"
+	# Brief emphasis pulse so the mode change reads at a glance.
+	if mode_banner != null and is_instance_valid(mode_banner):
+		var t := create_tween()
+		t.tween_property(mode_banner, "modulate:a", 0.35, 0.0)
+		t.tween_property(mode_banner, "modulate:a", 1.0, 0.25)
 
 
 ## Draw/update the HUD.

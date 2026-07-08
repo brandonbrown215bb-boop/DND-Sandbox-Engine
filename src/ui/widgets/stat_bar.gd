@@ -15,6 +15,8 @@ func _ready() -> void:
 	_bar.min_value = 0
 	_bar.max_value = 1
 	_bar.show_percentage = false
+	# Tabular numerals: the "12/20" count doesn't jitter width as digits change.
+	_label.add_theme_font_features_override("tnum")
 
 ## Configure the bar. `color` tints the fill (vitals green / mana blue / etc).
 func configure(label: String, max_value: int, color: Color = Color(0.42, 0.70, 0.38)) -> void:
