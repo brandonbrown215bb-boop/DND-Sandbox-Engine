@@ -3,11 +3,72 @@
 > Scope: the user finds the current UI "far too cluttered and unintuitive."
 > This doc (1) audits what the code actually does, (2) reviews Godot 4 UI
 > patterns that fix the specific problems, and (3) lays out a concrete overhaul
-> plan. Nothing here is implemented yet — it is a proposal for sign-off.
+> plan.
+
+> **STATUS (2026-07-07):** Phases 0–4 have shipped — `main_theme.tres`, the
+> `StatBar` widget, combat HUD modes/banners, enemy intent, path/range preview,
+> floating damage numbers, unit HP bars, and the Battle Result overlay are all
+> live. This is no longer a proposal; it is a record of what was planned vs.
+> what actually landed. See **§0 Status** for the gaps. The original audit (§1)
+> described the *pre-overhaul* state and is kept for historical context only.
 
 ---
 
-## 1. Current-state audit (what the code really looks like)
+## 0. Status — planned vs. landed (2026-07-07)
+
+The overhaul ran. Verified by booting the project in Godot 4.7 stable
+(`/home/pigeon/Desktop/Godot_v4.7-stable_linux.x86_64`) and running the suite:
+logic suite reports `ALL TESTS PASSED`; viewport harness reports
+`0 failed (12 tests run)`.
+
+**Shipped & verified:**
+- **Phase 0** — `res://theme/main_theme.tres` exists and is applied; colors moved
+  out of code. (Pattern A ✓)
+- **Phase 4** — floating damage numbers, screen shake, unit HP bars, victory/defeat
+  overlay, move-path preview, attack-range ring, enemy intent badges, first-turn
+  hint. (Patterns C/D/G largely ✓)
+- **StatBar widget** (`src/ui/widgets/stat_bar.gd` + `scenes/ui/stat_bar.tscn`)
+  ships and is used by Combat/Overworld HUDs. (Pattern D ✓)
+
+**Planned but NOT delivered (as of 2026-07-07 research writeup):**
+- **Pattern H — real `BaseHUD` extraction.** `DungeonHUD` exists as a *class*
+  (`src/dungeon/dungeon_hud.gd`) but still `extends OverworldHUD` and still calls
+  `btn_end_turn.visible = false` in `_ready` (and `dungeon_state.gd:20` hides it
+  again). Anti-pattern #9 is **cosmetically patched, not fixed** — the
+  `btn_end_turn.hide()` hack the plan said would be *removed* is still present.
+- **Phase 1 `LogPanel` / `ActionBar` widgets**, **icon+label buttons** (Pattern E),
+  and a true contextual **action bar** across screens were not extracted; the HUDs
+  still hand-build their button rows.
+
+**Corrections (2026-07-08 — reconciled against CHANGELOG + live code):**
+- **`BaseHUD` extraction — DONE.** `src/ui/base_hud.gd` exists; Combat/Dungeon/
+  Overworld HUDs `extends BaseHUD`; the `btn_end_turn.hide()` hack was removed
+  (CHANGELOG 2026-07-07). The research writeup above predates that fix.
+- **`stat_bar.gd` font defect — DONE.** The `add_theme_font_features_override`
+  call was replaced with a `FontVariation` tnum setting (CHANGELOG 2026-07-07);
+  the 10× `Nonexistent function` error no longer fires. §0.1 is resolved.
+- **`LogPanel` / `ActionBar` widgets — DONE (components).** `LogPanel` is wired
+  into all four HUD scenes as the `LogText` node. `ActionBar` (`src/ui/widgets/
+  action_bar.gd`) is built and unit-tested but **not yet mounted** into HUD scenes
+  (pending icon-art direction — see §6 open question 2). The HUDs still hand-build
+  their button rows *except* the shared log, which now goes through `LogPanel`.
+
+**Defect the harness does NOT catch:**
+- `stat_bar.gd:19` calls `add_theme_font_features_override("tnum")` on a `Label`.
+  That method does not exist in Godot 4.7 stable → the engine logs
+  `Nonexistent function 'add_theme_font_features_override' in base 'Label'`
+  **10× during the viewport harness boot**. The StatBar still works (the call
+  errors in `_ready`), so no assertion fails and the harness reports green.
+  See §0.1.
+
+### §0.1 Known runtime error (open)
+`src/ui/widgets/stat_bar.gd:19` — `Label.add_theme_font_features_override` is not a
+valid Godot 4.7 API. Fix: guard the call (`if _label.has_method(...)`) or apply
+tabular numerals via the `Theme` / `font_variation` instead. *Not yet patched.*
+
+---
+
+## 1. Current-state audit (what the code really looked like pre-overhaul)
 
 ### Screens in the project (13 .tscn)
 - `main_menu`, `main`
@@ -17,10 +78,12 @@
 
 ### HUD architecture (read directly)
 - `CombatHUD` and `OverworldHUD` both `extends CanvasLayer`.
-- **`DungeonState` does NOT have its own HUD** — it references `$DungeonHUD` but
-  types it `OverworldHUD` and just hides `btn_end_turn`. So the dungeon shows an
-  overworld HUD (party list, rest/save/menu/settings/sheet buttons, a turn
-  header) bolted onto a room map. That is a real smell, not a styling nit.
+- **Dungeon HUD (pre-overhaul):** `DungeonState` referenced `$DungeonHUD` but
+  typed it `OverworldHUD` and just hid `btn_end_turn` — an overworld HUD bolted
+  onto a room map. **Current state (2026-07-07):** `DungeonHUD` is now its own
+  class (`src/dungeon/dungeon_hud.gd`, `extends OverworldHUD`), but it *still*
+  hides `btn_end_turn` in `_ready` and `dungeon_state.gd:20` hides it again. So the
+  "split" is a rename, not a real abstraction — see §0 (Pattern H not delivered).
 
 ### Concrete anti-patterns found in the code
 
@@ -191,9 +254,13 @@ for StatBars / modes as they land.
 - `set_mode(SELECT/TARGET/INSPECT/MENU)`; collapse spell/feature into popovers;
   initiative strip; StatBars for vitals. Harness updated.
 
-**Phase 3 — Overworld/Dungeon parity + new DungeonHUD**
+**Phase 3 — Overworld/Dungeon parity + DungeonHUD (PARTIAL)**
 - Party cards → StatBars + condition chips; objective top; consistent action
-  bar. `DungeonHUD` split out (removes the `btn_end_turn.hide()` hack).
+  bar. ✅ Shipped.
+- `DungeonHUD` split out — ⚠️ **PARTIAL / cosmetic only.** A `DungeonHUD` class
+  exists, but it `extends OverworldHUD` and the `btn_end_turn.hide()` hack the plan
+  promised to *remove* is still present (in both `dungeon_hud.gd:15` and
+  `dungeon_state.gd:20`). The real fix (Pattern H: extract `BaseHUD`) was not done.
 
 **Phase 4 — Polish pass**
 - Motion on mode/popup swaps, pressed states, concentric radius, tabular nums.

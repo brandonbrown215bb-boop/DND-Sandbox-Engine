@@ -45,6 +45,7 @@ var _hint_shown := false
 func _ready() -> void:
 	# Connect HUD action selectors
 	hud.action_selected.connect(_on_hud_action)
+	hud.cancel_pressed.connect(_cancel_pending_action)
 	hud.settings_pressed.connect(func(): Settings.open_settings(self))
 	hud.sheet_pressed.connect(func(): CharacterSheet.show_sheet(active_character))
 	hex_grid.hex_clicked.connect(_on_hex_clicked)
@@ -556,6 +557,9 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 	hud.hide_hint()
 
 	match action_type:
+		"cancel":
+			_cancel_pending_action()
+			return
 		"attack":
 			pending_action_type = "attack"
 			hud.add_log("Click on an enemy to Attack.")
@@ -570,12 +574,27 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 			var feature: Dictionary = extra_data.get("feature", {})
 			_execute_class_feature(feature)
 		"dodge":
+			pending_action_type = ""
 			active_character.add_condition("dodging", 1)
 			hud.add_log("%s is dodging (Attacks against them have disadvantage)." % active_character.character_name)
 			has_acted_this_turn = true
 			_highlight_reachable()
 		"end_turn":
 			_end_active_turn()
+
+
+## Cancel any in-progress targeting (attack/spell) and return to movement.
+## Bound to the HUD Cancel button and the Esc key so the player is never
+## trapped in targeting mode with no way back to movement.
+func _cancel_pending_action() -> void:
+	if pending_action_type.is_empty():
+		return
+	var old := pending_action_type
+	pending_action_type = ""
+	hex_grid.clear_highlights()
+	_clear_path_preview()
+	_highlight_reachable()
+	hud.add_log("[color=yellow]Cancelled %s targeting.[/color]" % old)
 
 
 func _clear_path_preview() -> void:

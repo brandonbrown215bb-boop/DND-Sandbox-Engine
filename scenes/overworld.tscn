@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://e4567890f1a2b"]
+[gd_scene load_steps=8 format=3 uid="uid://e4567890f1a2b"]
 
 [ext_resource type="Script" path="res://src/overworld/overworld_state.gd" id="1_overworld"]
 [ext_resource type="Script" path="res://src/hex/hex_grid.gd" id="2_hexgrid"]
@@ -6,6 +6,7 @@
 [ext_resource type="Script" path="res://src/overworld/overworld_hud.gd" id="4_hud"]
 [ext_resource type="PackedScene" uid="uid://e456789f5d6e7" path="res://scenes/ui/dice_roll_display.tscn" id="5_dice_display"]
 [ext_resource type="Script" path="res://src/ui/camera_controller.gd" id="6_camera"]
+[ext_resource type="Script" path="res://src/ui/widgets/log_panel.gd" id="7_logpanel"]
 
 [node name="Overworld" type="Node2D"]
 script = ExtResource("1_overworld")
@@ -85,6 +86,7 @@ custom_minimum_size = Vector2(0, 150)
 layout_mode = 2
 
 [node name="LogText" type="RichTextLabel" parent="OverworldHUD/MarginContainer/HBoxContainer/MainArea/LogBox"]
+script = ExtResource("7_logpanel")
 layout_mode = 2
 bbcode_enabled = true
 text = "Exploring overworld..."

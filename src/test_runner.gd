@@ -27,6 +27,7 @@ func _ready() -> void:
 	_test_fog_of_war()
 	_test_hexutils()
 	_test_save_load()
+	_test_widgets()
 	_report()
 	get_tree().quit(1 if _failed > 0 else 0)
 
@@ -450,3 +451,38 @@ func _test_save_load() -> void:
 	var saves2: Array[String] = SaveManager.get_available_saves()
 	_assert(slot not in saves2, "slot gone after delete")
 	GameManager.game_in_progress = false
+
+func _test_widgets() -> void:
+	print("\n[Group] UI Widgets")
+	# LogPanel: severity-aware RichTextLabel wrapper, backwards-compatible with
+	# the BaseHUD log_text contract (.text still holds the rendered log).
+	var lp: LogPanel = LogPanel.new()
+	add_child(lp)
+	_assert(lp is RichTextLabel, "LogPanel is a RichTextLabel (HUD log_text contract survives)")
+	lp.clear_logs()
+	lp.log_info("scout moved")
+	lp.log_danger("trap! 3 dmg")
+	lp.add_log("legacy call still works")
+	_assert(lp.text.contains("scout moved"), "LogPanel log_info appends text")
+	_assert(lp.text.contains("trap! 3 dmg"), "LogPanel log_danger appends text")
+	_assert(lp.text.contains("legacy call still works"), "LogPanel add_log shim works")
+	lp.clear_logs()
+	_assert(lp.text == "", "LogPanel clear_logs empties the log")
+	lp.free()
+	# ActionBar: consistent icon+label action row (icon optional).
+	var bar: ActionBar = ActionBar.new()
+	add_child(bar)
+	_assert(bar is HBoxContainer, "ActionBar is an HBoxContainer")
+	var rest_btn: Button = bar.add_action("rest", "Rest", null, func(): pass)
+	_assert(rest_btn != null and rest_btn.text == "Rest", "ActionBar.add_action creates a labeled button")
+	_assert(rest_btn.name == "Action_rest", "ActionBar button named Action_<id>")
+	bar.push_right()
+	var sheet_btn: Button = bar.add_action("sheet", "Sheet")
+	_assert(sheet_btn != null, "ActionBar.add_action works icon-less (no art required)")
+	var fired_state := {"id": ""}
+	bar.action_pressed.connect(func(id: String): fired_state.id = id)
+	bar.trigger("sheet")
+	_assert(fired_state.id == "sheet", "ActionBar.trigger emits action_pressed with the action id")
+	bar.clear_actions()
+	_assert(bar.get_child_count() == 0, "ActionBar.clear_actions removes buttons")
+	bar.free()

@@ -67,15 +67,15 @@ All D&D-inspired core tactical combat features, conditions, spells, reactions, a
 
 ---
 
-## Phase 2: Progression & Metagame
+## Phase 2: Progression & Metagame — [x] COMPLETE
 
 *Goal*: Build the loop connecting exploration, rewards, and character maintenance.
 
-| Feature | Description | Target Files |
+| Feature | Status | Target Files |
 | :--- | :--- | :--- |
-| **Overworld resting** | Allow players to rest on the overworld map. Resting in towns is safe. Resting in wilderness triggers an encounter check (ambush). | [overworld_state.gd](file:///run/media/pigeon/890dd7cb-9753-4f6b-b8e6-58c98e531754/Projects/Top Down Party Game/src/overworld/overworld_state.gd) |
-| **Town Shops / Trading** | Spend collected gold. Buy consumables, better armor (Heavy/Medium), or martial weapons. | New `shop.tscn`, [overworld_state.gd](file:///run/media/pigeon/890dd7cb-9753-4f6b-b8e6-58c98e531754/Projects/Top Down Party Game/src/overworld/overworld_state.gd) |
-| **Campaign Save/Load** | Persist campaign progress, player levels, locations, and inventory to file system. | New `save_manager.gd`, [game_manager.gd](file:///run/media/pigeon/890dd7cb-9753-4f6b-b8e6-58c98e531754/Projects/Top Down Party Game/src/autoload/game_manager.gd) |
+| **Overworld resting** | [x] Done — safe rests in towns; wilderness rest rolls an encounter check. | [overworld_state.gd](file:///run/media/pigeon/890dd7cb-9753-4f6b-b8e6-58c98e531754/Projects/Top Down Party Game/src/overworld/overworld_state.gd) |
+| **Town Shops / Trading** | [x] Done — `shop.tscn` + `ShopUI`: buy consumables, armor tiers, martial weapons with gold. | [shop.tscn](file:///run/media/pigeon/890dd7cb-9753-4f6b-b8e6-58c98e531754/Projects/Top Down Party Game/scenes/ui/shop.tscn), [overworld_state.gd](file:///run/media/pigeon/890dd7cb-9753-4f6b-b8e6-58c98e531754/Projects/Top Down Party Game/src/overworld/overworld_state.gd) |
+| **Campaign Save/Load** | [x] Done — `save_manager.gd` persists progress, levels, locations, inventory, achievements. Harness-verified. | [save_manager.gd](file:///run/media/pigeon/890dd7cb-9753-4f6b-b8e6-58c98e531754/Projects/Top Down Party Game/src/autoload/save_manager.gd), [game_manager.gd](file:///run/media/pigeon/890dd7cb-9753-4f6b-b8e6-58c98e531754/Projects/Top Down Party Game/src/autoload/game_manager.gd) |
 
 ---
 
@@ -117,3 +117,19 @@ All D&D-inspired core tactical combat features, conditions, spells, reactions, a
 - **Visual Editors**:
   - Map/Campaign Creator: Paint hex terrains, place town/dungeon locations, and specify custom milestone events.
   - Character Class / Monster builder.
+
+---
+
+## Cross-Cutting: UI Widget Library & Test Infrastructure — [x] PARTIAL
+
+*Goal*: Reusable, consistent UI components + a trustworthy test gate.
+
+| Component | Status | Notes |
+| :--- | :--- | :--- |
+| **`BaseHUD`** | [x] Done | Shared HUD base (log contract, banner, signal names). `src/ui/base_hud.gd`. |
+| **`LogPanel`** | [x] Done | Severity-aware (`log_info`/`log_danger`/`add_log`) RichTextLabel wrapper. Wired into all 4 HUD scenes (`combat`/`dungeon`/`dungeon_hud`/`overworld`) as the `LogText` node. `src/ui/widgets/log_panel.gd`. |
+| **`ActionBar`** | [x] Done (component) | Consistent icon+label action row, **icon-optional** (works without art). `add_action()` / `push_right()` / `trigger()` / `clear_actions()`. `src/ui/widgets/action_bar.gd`. *Not yet mounted into HUD scenes* — pending art direction on the icon source (see UI_OVERHAUL_RESEARCH.md §6, open question 2). |
+| **Boot-error gate** | [x] Done | `run_tests.sh` now boots `main.tscn` headless and fails on any `SCRIPT ERROR` / `Nonexistent function` / `Parse Error` — closes the "0 failed ≠ no errors" gap called out in CHANGELOG 2026-07-07. |
+| **Widget tests** | [x] Done | `test_runner.gd` `_test_widgets()` group covers `LogPanel` + `ActionBar` (244 logic tests total). |
+
+*Still open (needs sign-off / assets):* Phase 3 VFX/audio (no art or audio files yet), Phase 5 Mod Manager UI + visual editors (no art), `ActionBar` HUD mounting (needs icon art direction).

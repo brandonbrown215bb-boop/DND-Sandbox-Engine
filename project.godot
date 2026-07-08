@@ -8,10 +8,6 @@
 
 config_version=5
 
-[gd_script]
-
-treat_warnings_as_errors=false
-
 [animation]
 
 compatibility/default_parent_skeleton_in_mesh_instance_3d=true
@@ -34,6 +30,12 @@ AudioManager="*res://src/autoload/audio_manager.gd"
 SaveManager="*res://src/autoload/save_manager.gd"
 Settings="*res://src/autoload/settings.gd"
 CharacterSheet="*res://src/autoload/character_sheet.gd"
+BeckettRuntime="*uid://dspgi2nxto4e8"
+
+[beckett]
+
+effort_schema=2
+dock_revealed=true
 
 [display]
 
@@ -41,11 +43,19 @@ window/size/viewport_width=1280
 window/size/viewport_height=720
 window/stretch/mode="viewport"
 
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/beckett/plugin.cfg")
+
+[gd_script]
+
+treat_warnings_as_errors=false
+
 [gui]
 
-theme = "res://theme/main_theme.tres"
 theme/default_font_antialiasing=0
 theme/default_font_subpixel_positioning=0
+theme="res://theme/main_theme.tres"
 
 [input]
 

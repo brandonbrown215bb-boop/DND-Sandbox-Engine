@@ -1,21 +1,15 @@
 ## Overworld HUD Controller
 ## Displays party statuses, turn status, active player, logs, and handles End Turn requests.
 class_name OverworldHUD
-extends CanvasLayer
+extends BaseHUD
 
 signal end_turn_pressed
-signal rest_pressed
-signal save_pressed
-signal menu_pressed
-signal settings_pressed
-signal sheet_pressed
 
 # Node references
 @onready var player_list_container: VBoxContainer = $MarginContainer/HBoxContainer/Sidebar/ScrollContainer/PlayerList
 @onready var active_player_name: Label = $MarginContainer/HBoxContainer/MainArea/Header/MarginContainer/VBoxContainer/ActivePlayerName
 @onready var active_player_stats: Label = $MarginContainer/HBoxContainer/MainArea/Header/MarginContainer/VBoxContainer/ActivePlayerStats
 @onready var objective_label: Label = $MarginContainer/HBoxContainer/MainArea/Header/MarginContainer/VBoxContainer/ObjectiveLabel
-@onready var log_text: RichTextLabel = $MarginContainer/HBoxContainer/MainArea/LogBox/LogText
 @onready var btn_end_turn: Button = $MarginContainer/HBoxContainer/Sidebar/BtnEndTurn
 @onready var btn_rest: Button = $MarginContainer/HBoxContainer/Sidebar/BtnRest
 @onready var btn_save: Button = $MarginContainer/HBoxContainer/Sidebar/BtnSave
@@ -31,32 +25,17 @@ func _ready() -> void:
 	btn_menu.pressed.connect(func(): menu_pressed.emit())
 	btn_settings.pressed.connect(func(): settings_pressed.emit())
 	btn_sheet.pressed.connect(func(): sheet_pressed.emit())
+	log_text = $MarginContainer/HBoxContainer/MainArea/LogBox/LogText
 	clear_logs()
 	update_hud()
 
 
 ## Refresh HUD elements with current player and party information.
+## (log_text, clear_logs(), add_log() inherited from BaseHUD.)
 func update_hud() -> void:
 	_update_party_sidebar()
 	_update_active_player_display()
 	_update_objective()
-
-
-## Add a log message to the log box.
-func add_log(msg: String) -> void:
-	if log_text == null: return
-	log_text.text += msg + "\n"
-	# Auto-scroll to bottom
-	var scroll = log_text.get_v_scroll_bar()
-	if scroll:
-		scroll.value = scroll.max_value
-
-
-## Clear all logs.
-func clear_logs() -> void:
-	if log_text != null:
-		log_text.text = ""
-
 
 func _update_party_sidebar() -> void:
 	# Clear sidebar list

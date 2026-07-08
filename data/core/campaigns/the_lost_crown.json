@@ -3,123 +3,123 @@
   "name": "The Lost Crown",
   "description": "An ancient Crown of Ages has been shattered into three fragments, each hidden in a dangerous dungeon. Recover all three and defeat the Lich King who seeks to reassemble it for his own dark purposes.",
   "win_condition": {
-    "type": "goal",
-    "goals": [
-      {"type": "collect_item", "item_id": "crown_fragment", "count": 3},
-      {"type": "defeat_monster", "monster_id": "lich_king"}
-    ]
+	"type": "goal",
+	"goals": [
+	  {"type": "collect_item", "item_id": "crown_fragment", "count": 3},
+	  {"type": "defeat_monster", "monster_id": "lich_king"}
+	]
   },
   "player_count": {"min": 2, "max": 4},
   "starting_level": 1,
   "max_level": 5,
   "milestones": [
-    {"trigger": "enter_dungeon_1", "effects": [{"type": "level_up"}], "description": "The party enters the Ruins of Ashvale"},
-    {"trigger": "clear_dungeon_1", "effects": [{"type": "level_up"}], "description": "The party clears the Ruins of Ashvale"},
-    {"trigger": "clear_dungeon_2", "effects": [{"type": "level_up"}], "description": "The party clears the Caverns of Gloom"},
-    {"trigger": "enter_dungeon_3", "effects": [{"type": "level_up"}], "description": "The party enters the Tower of the Lich"}
+	{"trigger": "enter_dungeon_1", "effects": [{"type": "level_up"}], "description": "The party enters the Ruins of Ashvale"},
+	{"trigger": "clear_dungeon_1", "effects": [{"type": "level_up"}], "description": "The party clears the Ruins of Ashvale"},
+	{"trigger": "clear_dungeon_2", "effects": [{"type": "level_up"}], "description": "The party clears the Caverns of Gloom"},
+	{"trigger": "enter_dungeon_3", "effects": [{"type": "level_up"}], "description": "The party enters the Tower of the Lich"}
   ],
   "interaction_mode": "cooperative_optional_pvp",
   "map": {
-    "type": "hex_grid",
-    "tiles": [
-      {"q": 0, "r": 0, "terrain": "town", "name": "Elderwick", "start": true},
-      {"q": 1, "r": 0, "terrain": "plains"},
-      {"q": 2, "r": 0, "terrain": "forest"},
-      {"q": 3, "r": 0, "terrain": "forest"},
-      {"q": 4, "r": 0, "terrain": "forest"},
-      {"q": 5, "r": 0, "terrain": "mountain"},
-      {"q": -1, "r": 0, "terrain": "plains"},
-      {"q": -2, "r": 0, "terrain": "forest"},
-      {"q": -3, "r": 0, "terrain": "mountain"},
+	"type": "hex_grid",
+	"tiles": [
+	  {"q": 0, "r": 0, "terrain": "town", "name": "Elderwick", "start": true},
+	  {"q": 1, "r": 0, "terrain": "plains"},
+	  {"q": 2, "r": 0, "terrain": "forest"},
+	  {"q": 3, "r": 0, "terrain": "forest"},
+	  {"q": 4, "r": 0, "terrain": "forest"},
+	  {"q": 5, "r": 0, "terrain": "mountain"},
+	  {"q": -1, "r": 0, "terrain": "plains"},
+	  {"q": -2, "r": 0, "terrain": "forest"},
+	  {"q": -3, "r": 0, "terrain": "mountain"},
 
-      {"q": 0, "r": -1, "terrain": "plains"},
-      {"q": 1, "r": -1, "terrain": "forest"},
-      {"q": 2, "r": -1, "terrain": "forest"},
-      {"q": 3, "r": -1, "terrain": "dungeon_entrance", "name": "Ruins of Ashvale", "dungeon_id": "ruins_of_ashvale"},
-      {"q": -1, "r": -1, "terrain": "plains"},
-      {"q": -2, "r": -1, "terrain": "mountain"},
+	  {"q": 0, "r": -1, "terrain": "plains"},
+	  {"q": 1, "r": -1, "terrain": "forest"},
+	  {"q": 2, "r": -1, "terrain": "forest"},
+	  {"q": 3, "r": -1, "terrain": "dungeon_entrance", "name": "Ruins of Ashvale", "dungeon_id": "ruins_of_ashvale"},
+	  {"q": -1, "r": -1, "terrain": "plains"},
+	  {"q": -2, "r": -1, "terrain": "mountain"},
 
-      {"q": 0, "r": 1, "terrain": "forest"},
-      {"q": 1, "r": 1, "terrain": "plains"},
-      {"q": 2, "r": 1, "terrain": "town", "name": "Thornhaven"},
-      {"q": -1, "r": 1, "terrain": "forest"},
-      {"q": -2, "r": 1, "terrain": "forest"},
-      {"q": -3, "r": 1, "terrain": "swamp"},
+	  {"q": 0, "r": 1, "terrain": "forest"},
+	  {"q": 1, "r": 1, "terrain": "plains"},
+	  {"q": 2, "r": 1, "terrain": "town", "name": "Thornhaven"},
+	  {"q": -1, "r": 1, "terrain": "forest"},
+	  {"q": -2, "r": 1, "terrain": "forest"},
+	  {"q": -3, "r": 1, "terrain": "swamp"},
 
-      {"q": 0, "r": 2, "terrain": "forest"},
-      {"q": 1, "r": 2, "terrain": "swamp"},
-      {"q": -1, "r": 2, "terrain": "forest"},
-      {"q": -2, "r": 2, "terrain": "swamp"},
-      {"q": -3, "r": 2, "terrain": "dungeon_entrance", "name": "Caverns of Gloom", "dungeon_id": "caverns_of_gloom"},
+	  {"q": 0, "r": 2, "terrain": "forest"},
+	  {"q": 1, "r": 2, "terrain": "swamp"},
+	  {"q": -1, "r": 2, "terrain": "forest"},
+	  {"q": -2, "r": 2, "terrain": "swamp"},
+	  {"q": -3, "r": 2, "terrain": "dungeon_entrance", "name": "Caverns of Gloom", "dungeon_id": "caverns_of_gloom"},
 
-      {"q": 0, "r": -2, "terrain": "mountain"},
-      {"q": 1, "r": -2, "terrain": "mountain"},
-      {"q": 2, "r": -2, "terrain": "plains"},
-      {"q": -1, "r": -2, "terrain": "mountain"},
+	  {"q": 0, "r": -2, "terrain": "mountain"},
+	  {"q": 1, "r": -2, "terrain": "mountain"},
+	  {"q": 2, "r": -2, "terrain": "plains"},
+	  {"q": -1, "r": -2, "terrain": "mountain"},
 
-      {"q": 0, "r": -3, "terrain": "mountain"},
-      {"q": 1, "r": -3, "terrain": "mountain"},
-      {"q": 2, "r": -3, "terrain": "mountain"},
-      {"q": 3, "r": -3, "terrain": "dungeon_entrance", "name": "Tower of the Lich", "dungeon_id": "tower_of_the_lich"},
+	  {"q": 0, "r": -3, "terrain": "mountain"},
+	  {"q": 1, "r": -3, "terrain": "mountain"},
+	  {"q": 2, "r": -3, "terrain": "mountain"},
+	  {"q": 3, "r": -3, "terrain": "dungeon_entrance", "name": "Tower of the Lich", "dungeon_id": "tower_of_the_lich"},
 
-      {"q": -1, "r": 3, "terrain": "plains"},
-      {"q": 0, "r": 3, "terrain": "town", "name": "Bogwater"},
-      {"q": 1, "r": 3, "terrain": "swamp"},
+	  {"q": -1, "r": 3, "terrain": "plains"},
+	  {"q": 0, "r": 3, "terrain": "town", "name": "Bogwater"},
+	  {"q": 1, "r": 3, "terrain": "swamp"},
 
-      {"q": 4, "r": -1, "terrain": "mountain"},
-      {"q": 5, "r": -1, "terrain": "mountain"},
-      {"q": 4, "r": -2, "terrain": "mountain"},
+	  {"q": 4, "r": -1, "terrain": "mountain"},
+	  {"q": 5, "r": -1, "terrain": "mountain"},
+	  {"q": 4, "r": -2, "terrain": "mountain"},
 
-      {"q": 3, "r": 1, "terrain": "plains"},
-      {"q": 4, "r": 1, "terrain": "desert"},
-      {"q": 5, "r": 1, "terrain": "desert"}
-    ],
-    "event_tables": {
-      "forest": "forest_events",
-      "mountain": "mountain_events",
-      "town": "town_events",
-      "dungeon": "dungeon_events",
-      "plains": "forest_events",
-      "swamp": "forest_events",
-      "desert": "mountain_events"
-    }
+	  {"q": 3, "r": 1, "terrain": "plains"},
+	  {"q": 4, "r": 1, "terrain": "desert"},
+	  {"q": 5, "r": 1, "terrain": "desert"}
+	],
+	"event_tables": {
+	  "forest": "forest_events",
+	  "mountain": "mountain_events",
+	  "town": "town_events",
+	  "dungeon": "dungeon_events",
+	  "plains": "forest_events",
+	  "swamp": "forest_events",
+	  "desert": "mountain_events"
+	}
   },
   "dungeons": {
-    "ruins_of_ashvale": {
-      "name": "Ruins of Ashvale",
-      "description": "An ancient temple overrun by the undead. The first fragment of the Crown lies within.",
-      "difficulty": 1,
-      "room_count": 5,
-      "milestone_enter": "enter_dungeon_1",
-      "milestone_clear": "clear_dungeon_1",
-      "monster_pool": ["skeleton", "skeleton", "zombie", "zombie", "wight"],
-      "boss": {"monster_id": "wight", "name": "Ashvale Guardian"},
-      "loot": [{"item_id": "crown_fragment"}, {"item_id": "gold_100"}],
-      "event_table": "dungeon_events"
-    },
-    "caverns_of_gloom": {
-      "name": "Caverns of Gloom",
-      "description": "Dark, twisting caverns filled with goblins and oozes. The second fragment awaits in the depths.",
-      "difficulty": 2,
-      "room_count": 6,
-      "milestone_enter": null,
-      "milestone_clear": "clear_dungeon_2",
-      "monster_pool": ["goblin", "goblin", "goblin_chief", "ooze", "giant_spider"],
-      "boss": {"monster_id": "goblin_chief", "name": "Chief Skullcrush", "bonus_hp": 20},
-      "loot": [{"item_id": "crown_fragment"}, {"item_id": "gold_100"}, {"item_id": "potion_greater_healing"}],
-      "event_table": "dungeon_events"
-    },
-    "tower_of_the_lich": {
-      "name": "Tower of the Lich",
-      "description": "The Lich King's stronghold. Only the bravest heroes dare enter. The final fragment — and the Lich King himself — await at the top.",
-      "difficulty": 3,
-      "room_count": 7,
-      "milestone_enter": "enter_dungeon_3",
-      "milestone_clear": null,
-      "monster_pool": ["skeleton", "zombie", "wight", "wight"],
-      "boss": {"monster_id": "lich_king", "name": "The Lich King"},
-      "loot": [{"item_id": "crown_fragment"}],
-      "event_table": "dungeon_events"
-    }
+	"ruins_of_ashvale": {
+	  "name": "Ruins of Ashvale",
+	  "description": "An ancient temple overrun by the undead. The first fragment of the Crown lies within.",
+	  "difficulty": 1,
+	  "room_count": 5,
+	  "milestone_enter": "enter_dungeon_1",
+	  "milestone_clear": "clear_dungeon_1",
+	  "monster_pool": ["skeleton", "skeleton", "zombie", "zombie", "wight"],
+	  "boss": {"monster_id": "wight", "name": "Ashvale Guardian"},
+	  "loot": [{"item_id": "crown_fragment"}, {"item_id": "gold_100"}],
+	  "event_table": "dungeon_events"
+	},
+	"caverns_of_gloom": {
+	  "name": "Caverns of Gloom",
+	  "description": "Dark, twisting caverns filled with goblins and oozes. The second fragment awaits in the depths.",
+	  "difficulty": 2,
+	  "room_count": 6,
+	  "milestone_enter": null,
+	  "milestone_clear": "clear_dungeon_2",
+	  "monster_pool": ["goblin", "goblin", "goblin_chief", "ooze", "giant_spider"],
+	  "boss": {"monster_id": "goblin_chief", "name": "Chief Skullcrush", "bonus_hp": 20},
+	  "loot": [{"item_id": "crown_fragment"}, {"item_id": "gold_100"}, {"item_id": "potion_greater_healing"}],
+	  "event_table": "dungeon_events"
+	},
+	"tower_of_the_lich": {
+	  "name": "Tower of the Lich",
+	  "description": "The Lich King's stronghold. Only the bravest heroes dare enter. The final fragment — and the Lich King himself — await at the top.",
+	  "difficulty": 3,
+	  "room_count": 7,
+	  "milestone_enter": "enter_dungeon_3",
+	  "milestone_clear": null,
+	  "monster_pool": ["skeleton", "zombie", "wight", "wight"],
+	  "boss": {"monster_id": "lich_king", "name": "The Lich King"},
+	  "loot": [{"item_id": "crown_fragment"}],
+	  "event_table": "dungeon_events"
+	}
   }
 }

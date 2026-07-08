@@ -81,10 +81,38 @@ if [ "$PARSE_FAILS" -ne 0 ]; then
 fi
 echo ">> Pre-flight: all ${#GD_FILES[@]} scripts parsed clean"
 
+# ---------------------------------------------------------------------------
+# Boot-error gate: a harness can report "0 failed" while the engine still
+# logged SCRIPT ERRORs the assertions never tripped (see CHANGELOG 2026-07-07
+# honesty addendum). A real headless boot surfaces those. Fail the run if any
+# runtime error/parse error fires during boot. The game does not self-terminate,
+# so the boot is wrapped in `timeout 30` (we only need the first frames of
+# startup to surface scene-parse / script errors). Filter the harmless headless
+# teardown leaks (no display -> leaked RIDs on quit).
+# ---------------------------------------------------------------------------
+echo ""
+echo "=================================================================="
+echo ">> Boot-error gate: booting main.tscn headless, scanning for errors"
+echo "=================================================================="
+BOOT_OUT="$(timeout 30 "$GODOT" --headless --path "$PROJECT" "res://scenes/main.tscn" 2>&1 | grep -vE "$REDACT")"
+BOOT_ERR="$(echo "$BOOT_OUT" | grep -iE 'SCRIPT ERROR|Nonexistent function|Parse Error|Cannot infer' | grep -v 'leaked' | head -5)"
+BOOT_GATE_FAIL=0
+if [ -n "$BOOT_ERR" ]; then
+  echo ">> Boot-error gate: FAILED — engine logged runtime/parse errors:"
+  echo "$BOOT_ERR" | sed 's/^/    /'
+  BOOT_GATE_FAIL=1
+else
+  echo ">> Boot-error gate: clean (no SCRIPT ERROR / Nonexistent function / Parse Error)"
+fi
+
 FAILED=0
 
 run_harness "res://scenes/test_runner.tscn" "ALL TESTS PASSED" || FAILED=1
 run_harness "res://scenes/viewport_harness.tscn" "VIEWPORT TESTS PASSED" || FAILED=1
+
+if [ "$BOOT_GATE_FAIL" -ne 0 ]; then
+  FAILED=1
+fi
 
 echo ""
 if [ "$FAILED" -ne 0 ]; then

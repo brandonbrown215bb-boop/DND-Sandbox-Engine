@@ -73,18 +73,49 @@ The statistics models handle character sheets and progression rules.
 
 ## 5. Testing & Verification
 
-Two harnesses gate every change:
+`run_tests.sh` is the single gate. It runs three stages in order and exits
+non-zero on any failure:
 
-### Logic suite — `test_runner.tscn` (GUT)
-Standard GUT test scene. Pure-logic tests (resolvers, AI decisions, data integrity, save/load round-trips). Runs headless, fast (~30s), exits cleanly. This is the first gate in `run_tests.sh`.
+1. **Pre-flight parse gate** — every `.gd` under `src/` and `scenes/` is
+   syntax-checked file-by-file with `godot --check-only --script` (each wrapped
+   in `timeout 25`). A broken script makes a harness scene fail to parse and
+   *hang* rather than error, so this catches it fast, first.
+2. **Boot-error gate** — boots `res://scenes/main.tscn` headless (bounded by
+   `timeout 30`, since the game doesn't self-terminate) and fails the run if the
+   engine logs any `SCRIPT ERROR` / `Nonexistent function` / `Parse Error` /
+   `Cannot infer`. Closes the "0 failed ≠ no errors" gap (CHANGELOG 2026-07-07
+   honesty addendum): an assertion can pass while the engine still logged a
+   runtime error the harness never tripped.
+3. **Two harnesses**, both real-engine boots (not Python mirrors):
+
+### Logic suite — `test_runner.tscn`
+Custom (non-GUT) scene that runs inside the normal project boot, so autoloads
+and `class_name` globals are live. Pure-logic tests: resolvers, AI decisions,
+data integrity, save/load round-trips, and the UI-widget group (`LogPanel`,
+`ActionBar`). Runs headless, ~3.5 min, quits with the pass/fail count.
 
 ### Viewport harness — `src/viewport_harness.gd`
-Instantiates the **real** combat / overworld / dungeon / event / shop / character-creation scenes inside a headless `SubViewport` and asserts `_ready` wiring actually executed (grid build, HUD signal connect, spawn, initiative, fog update, event plumbing). It is a single ~650-line `Node` whose entire flow lives in one `_ready()` coroutine: ~15 sequential "beats" inline, each `await`ing a Godot timer (`get_tree().create_timer`) to let a scene settle before poking it.
+Instantiates the **real** combat / overworld / dungeon / event / shop /
+character-creation scenes inside a headless `SubViewport` and asserts `_ready`
+wiring actually executed (grid build, HUD signal connect, spawn, initiative, fog
+update, event plumbing). It is a single ~650-line `Node` whose entire flow lives
+in one `_ready()` coroutine: ~15 sequential "beats" inline, each `await`ing a
+Godot timer (`get_tree().create_timer`) to let a scene settle before poking it.
 
 **Where it costs time (known friction):**
-- *Parse errors don't fail fast.* A typo in any touched script isn't caught by the suite until the engine loads that script — and a broken script reference makes the harness scene itself fail to parse, which then **hangs** (the process idles at ~0.6% CPU) rather than erroring out. Diagnosis requires killing the run and launching the scene directly to read the buffered error. (Mitigation in practice: run `godot --check-only --script res://<file>` per changed file before the full suite.)
-- *No isolation between beats.* Every beat is inline in one coroutine. A late failure can't be attributed without reading the whole chain, and a stall in one beat blocks everything after it.
-- *Timing-dependent.* Beats rely on fixed `await` durations; a turn that doesn't resolve within the window silently desyncs the assertions that follow.
-- *No result until the end.* `ALL TESTS PASSED` only prints after the logic suite *and* the full viewport chain, so a single late parse error forces re-running the entire ~3.5-min logic pass first.
+- *Parse errors don't fail fast.* (Mitigated by stage 1 pre-flight above.)
+- *No isolation between beats.* Every beat is inline in one coroutine. A late
+  failure can't be attributed without reading the whole chain, and a stall in one
+  beat blocks everything after it.
+- *Timing-dependent.* Beats rely on fixed `await` durations; a turn that doesn't
+  resolve within the window silently desyncs the assertions that follow.
+- *No result until the end.* `ALL TESTS PASSED` only prints after the logic suite
+  *and* the full viewport chain, so a single late parse error forces re-running
+  the entire ~3.5-min logic pass first.
 
-**Candidate restructure (not yet adopted):** split the monolithic `_ready()` into discrete, individually-named test methods (`test_combat_boot`, `test_weapon_range`, `test_p1_intent`, …), each self-contained with its own SubViewport + teardown, so a failure reports a named test instead of stalling the chain; add a pre-flight parse pass over all `src/**/*.gd` (the `--check-only` loop) as a first, fast gate before booting any scene; and prefer direct method calls + state inspection over `await`-based settling wherever possible to remove timing flakiness.
+**Candidate restructure (not yet adopted):** split the monolithic `_ready()` into
+discrete, individually-named test methods (`test_combat_boot`, `test_weapon_range`,
+`test_p1_intent`, …), each self-contained with its own SubViewport + teardown, so
+a failure reports a named test instead of stalling the chain; and prefer direct
+method calls + state inspection over `await`-based settling wherever possible to
+remove timing flakiness.

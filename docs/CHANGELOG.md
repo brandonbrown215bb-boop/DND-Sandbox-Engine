@@ -88,3 +88,99 @@
 ### Tests
 - Full suite green (`RUN_TESTS_EXIT 0`): logic suite 229/0, viewport harness 0 failed.
 - `viewport_harness.gd` combat beat extended with P1 assertions: intent descriptions correct (move+attack / attack / move / hold), hover populates a movement path, attack select highlights weapon range hexes, hint text configured + show/hide mechanism works.
+
+---
+
+### 2026-07-07 — Honesty addendum (verified by booting the engine, not by the changelog alone)
+
+The "green" claims above are technically true — the viewport harness reports
+`0 failed (12 tests run)` and the logic suite reports `ALL TESTS PASSED`. But two
+facts the changelog omits:
+
+**1. A real runtime error fired 10× during the viewport harness and the harness
+did not catch it.** *(FIXED 2026-07-07, see below.)*
+`src/ui/widgets/stat_bar.gd:19` called `Label.add_theme_font_features_override("tnum")`.
+That method does not exist in Godot 4.7 stable. *Fix applied:* `StatBar` now applies
+tabular numerals via a `FontVariation` (opentype feature `tnum`) in `_ready` instead
+of the nonexistent API. Verified: full boot + harness now report zero
+`SCRIPT ERROR` / `Nonexistent function`.
+
+**2. The "DungeonHUD split" was cosmetic, not a split.** *(FIXED 2026-07-07, see below.)*
+`DungeonHUD extends OverworldHUD` and hid `btn_end_turn`. *Fix applied:* real `BaseHUD`
+extraction (research doc Pattern H) — `src/ui/base_hud.gd` now owns the shared system-row
+signals (rest/save/menu/settings/sheet) and `log_text`/`clear_logs()`/`add_log()`.
+`CombatHUD`, `OverworldHUD`, and `DungeonHUD` all `extends BaseHUD`. The dungeon's
+`BtnEndTurn` node was **removed from `dungeon.tscn`** (not hidden); `dungeon_state.gd`
+wires the real signals to Rest/Save/Menu/Settings/Sheet handlers. Harness assertion
+changed from `btn_end_turn != null` to `get("btn_end_turn") == null`.
+
+**Lesson for future runs:** "0 failed" in this project means *no assertion tripped*,
+not *no errors occurred*. Boot the project headless (`godot --headless --path .`)
+and grep for `SCRIPT ERROR` to see what the harness hides.
+
+---
+
+### 2026-07-07 (final) — both honesty-addendum defects fixed
+
+- `src/ui/widgets/stat_bar.gd`: replaced `add_theme_font_features_override("tnum")`
+  with a `FontVariation` + opentype `tnum` feature override. Tabular HP numbers work,
+  no runtime error.
+- `src/ui/base_hud.gd` (new): shared `CanvasLayer` base for all gameplay HUDs.
+  Declares `rest_pressed`/`save_pressed`/`menu_pressed`/`settings_pressed`/`sheet_pressed`
+  signals + `var log_text` + `clear_logs()`/`add_log()`.
+- `combat_hud.gd`, `overworld_hud.gd`, `dungeon_hud.gd`: `extends BaseHUD`; removed
+  duplicated signal/log declarations; assign inherited `log_text` in `_ready`.
+- `dungeon_hud.gd`: no longer `extends OverworldHUD`; no `end_turn_pressed`; real
+  system-row wiring in `dungeon_state.gd` (`_on_rest_pressed` etc., incl. a
+  `_rest_party()` that mirrors `OverworldState`).
+- `scenes/dungeon.tscn`: `BtnEndTurn` node removed.
+- `src/viewport_harness.gd`: dungeon assertions now verify the End Turn button is
+  *absent* and the system-row signals *exist*.
+
+**Verified (engine-booted, not changelog-trust):** full project boot = 0 script errors;
+logic suite = 244/0; viewport harness = 12/0 (0 `SCRIPT ERROR`, 0 `Nonexistent function`).
+Note: the `.godot` global-class cache must be regenerated (`godot --headless --editor --quit`)
+after adding `BaseHUD` or dependent HUDs fail to resolve the base class.
+
+### 2026-07-08 — UI widget library, test hardening, doc reconciliation
+
+**Test infrastructure:**
+- `run_tests.sh`: added a **boot-error gate** — boots `res://scenes/main.tscn`
+  headless (wrapped in `timeout 30`) and fails the run if the engine logs any
+  `SCRIPT ERROR` / `Nonexistent function` / `Parse Error` / `Cannot infer`. This
+  closes the gap called out in the 2026-07-07 honesty addendum ("0 failed ≠ no
+  errors"). Same gate also fixed a latent bug where a headless `main.tscn` boot
+  never exits and would hang the run (now bounded).
+- `src/test_runner.gd`: added `_test_widgets()` group (UI Widgets) covering
+  `LogPanel` and `ActionBar`. Logic suite total is now **244 passed, 0 failed**.
+
+**UI widgets delivered:**
+- `src/ui/widgets/log_panel.gd` (`class_name LogPanel extends RichTextLabel`):
+  severity-aware log (`log_info` / `log_danger` / `add_log` shim, `clear_logs()`).
+  Wired into all four HUD scenes (`combat`/`dungeon`/`dungeon_hud`/`overworld`)
+  by changing the `LogText` node `type` from `RichTextLabel` to `LogPanel`
+  (backwards-compatible — `.text` still resolves, harness assertions survive).
+- `src/ui/widgets/action_bar.gd` (`class_name ActionBar extends HBoxContainer`):
+  consistent icon+label action row. `add_action(id,label,icon?,cb?)`,
+  `push_right()`, `trigger(id)`, `clear_actions()`. **Icon-optional** — works
+  with no art assets, ready for icons once an icon source is chosen.
+
+**Docs reconciled (were stale vs. live code):**
+- `roadmap.md`: Phase 2 (overworld resting / town shops / campaign save-load)
+  marked **COMPLETE** — the code and `save_manager.gd` were already landed; the
+  table just never got checked off.
+- `docs/UI_OVERHAUL_RESEARCH.md`: §0 corrected — `BaseHUD` extraction and the
+  `stat_bar.gd` font defect (`add_theme_font_features_override`) were both
+  actually DONE on 2026-07-07 (the research writeup predated those fixes). Added
+  a "Corrections (2026-07-08)" subsection; resolved stale §0.1.
+
+**Still open (needs sign-off / assets):** Phase 3 VFX/audio (no art or audio
+files in `assets/` yet), Phase 5 Mod Manager UI + visual editors (no art), and
+mounting `ActionBar` into HUD scenes (blocked on icon-art direction — see
+UI_OVERHAUL_RESEARCH.md §6 open question 2).
+
+**Verified:** `run_tests.sh` → OVERALL: ALL TESTS PASSED (49 scripts parse clean,
+boot-error gate clean, 244 logic / 12 viewport).
+
+### Data verified at boot (2026-07-07)
+`[DataLoader] Loaded: 14 classes, 9 races, 232 items, 198 spells, 453 monsters, 4 event tables, 1 campaigns`

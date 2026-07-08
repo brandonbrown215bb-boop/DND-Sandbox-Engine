@@ -4,7 +4,7 @@ class_name DungeonState
 extends Node2D
 
 @onready var hex_grid: HexGrid = $HexGrid
-@onready var hud: OverworldHUD = $DungeonHUD
+@onready var hud: DungeonHUD = $DungeonHUD
 @onready var event_dialog_scene := preload("res://scenes/ui/event_dialog.tscn")
 
 var dungeon_id: String = ""
@@ -17,7 +17,15 @@ var boss_defeated := false
 func _ready() -> void:
 	# Connect grid click signals
 	hex_grid.hex_clicked.connect(_on_room_clicked)
-	hud.btn_end_turn.visible = false # Not turn-based in overworld sense; players move as a single party
+
+	# Wire the dungeon HUD's system row (Rest/Save/Menu/Settings/Sheet).
+	# No End Turn — the dungeon is not turn-based. Real BaseHUD split, not a
+	# hidden button (the BtnEndTurn node no longer exists in dungeon.tscn).
+	hud.rest_pressed.connect(_on_rest_pressed)
+	hud.save_pressed.connect(_on_save_pressed)
+	hud.menu_pressed.connect(_on_menu_pressed)
+	hud.settings_pressed.connect(_on_settings_pressed)
+	hud.sheet_pressed.connect(_on_sheet_pressed)
 
 	# Center the hex grid in the visible area to the left of the sidebar
 	hex_grid.position = Vector2(515, 295)
@@ -286,6 +294,50 @@ func _clear_dungeon_successfully() -> void:
 	await get_tree().create_timer(3.0).timeout
 	GameManager.exit_dungeon()
 
+
+## --- System-row handlers (mirror OverworldState) ---
+
+func _on_rest_pressed() -> void:
+	_rest_party()
+	hud.add_log("[color=green]The party makes camp and rests. HP, spell slots, and feature uses restored.[/color]")
+	hud.update_hud()
+
+func _on_save_pressed() -> void:
+	if not GameManager.game_in_progress:
+		hud.add_log("[color=orange]Nothing to save yet.[/color]")
+		return
+	var ok := SaveManager.save_game("quicksave")
+	if ok:
+		hud.add_log("[color=green]Game saved to 'quicksave'.[/color]")
+	else:
+		hud.add_log("[color=red]Save failed (see logs).[/color]")
+
+func _on_menu_pressed() -> void:
+	hud.add_log("[color=yellow]Returning to main menu...[/color]")
+	hex_grid.set_process_input(false)
+	GameManager.return_to_menu()
+
+func _on_settings_pressed() -> void:
+	Settings.open_settings(self)
+
+func _on_sheet_pressed() -> void:
+	CharacterSheet.show_active()
+
+## Heal and restore the whole party (no gold cost). Mirrors ShopUI/OverworldState.
+func _rest_party() -> void:
+	var player_count := PlayerManager.get_player_count()
+	for i in player_count:
+		var char_data: Character = PlayerManager.get_player(i).get("character")
+		if char_data == null:
+			continue
+		char_data.current_hp = char_data.max_hp
+		char_data.is_alive = true
+		for f_id in char_data.feature_uses:
+			for f in char_data.features:
+				if f.get("id", "") == f_id:
+					char_data.feature_uses[f_id] = f.get("uses", 1)
+					break
+		char_data._update_spell_slots()
 
 func _save_dungeon_state_to_manager() -> void:
 	GameManager.active_dungeon_state = {

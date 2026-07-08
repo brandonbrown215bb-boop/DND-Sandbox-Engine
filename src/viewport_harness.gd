@@ -93,6 +93,8 @@ func _ready() -> void:
 	_setup_world()
 
 	await test_combat()
+	await test_combat_ai_loop()
+	await test_combat_victory()
 	await test_overworld()
 	await test_main_menu_load()
 	await test_dungeon()
@@ -159,6 +161,10 @@ func test_combat() -> void:
 			var hp_after: int = int(m0.get("current_hp", 0))
 			_assert(hp_before == hp_after, "out-of-range attack does NOT deal damage (range enforced)")
 			_assert(combat.hud.log_text.text.contains("out of range"), "out-of-range attack logged a range rejection")
+			# ---- Bug fix: out-of-range attack must NOT trap the player in targeting mode ----
+			_assert(combat.pending_action_type == "attack", "still targeting after an out-of-range click (pre-condition)")
+			combat._cancel_pending_action()
+			_assert(combat.pending_action_type == "", "cancel clears pending targeting (player can return to movement)")
 			m0["hex_position"] = Vector2i(1, 0)
 			combat.hud.log_text.text = ""
 			combat._on_hex_clicked(Vector2i(1, 0))
@@ -328,7 +334,10 @@ func test_dungeon() -> void:
 	_assert(dungeon.hex_grid != null, "dungeon HexGrid @onready resolved")
 	_assert(dungeon.hex_grid.tiles.size() > 0, "dungeon rooms generated (got %d)" % dungeon.hex_grid.tiles.size())
 	_assert(dungeon.hud != null, "dungeon HUD @onready resolved")
-	_assert(dungeon.hud.btn_end_turn != null, "dungeon HUD end-turn button exists")
+	_assert(dungeon.hud.get("btn_end_turn") == null, "dungeon HUD truly has NO end-turn button (real BaseHUD split, not hidden)")
+	_assert(dungeon.hud.has_signal("rest_pressed"), "dungeon HUD exposes rest_pressed signal")
+	_assert(dungeon.hud.has_signal("save_pressed"), "dungeon HUD exposes save_pressed signal")
+	_assert(dungeon.hud.has_signal("menu_pressed"), "dungeon HUD exposes menu_pressed signal")
 	var has_entrance := false
 	var has_boss := false
 	for coord in dungeon.rooms:
@@ -624,6 +633,159 @@ func test_character_sheet() -> void:
 	_assert(CharacterSheet._layer == null or not CharacterSheet._layer.visible, "character sheet layer hidden after close")
 	PlayerManager.reset()
 	_exit_test()
+
+# --- combat turn-loop integration (closes AIController-not-driven gap) ------
+
+## Drive the REAL combat turn loop and prove AIController's decision produces a
+## real, observable monster action (move toward / attack a player) and that the
+## live intent preview is wired to the actual AI, not a stub.
+func test_combat_ai_loop() -> void:
+	_enter_test("combat_ai_loop")
+	_setup_world()
+	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 3.5)
+	await get_tree().create_timer(0.5).timeout
+
+	var initial_positions: Array = []
+	for m in combat.monster_entities:
+		initial_positions.append(m["hex_position"])
+	var initial_hp: int = 0
+	for p in combat.player_entities:
+		initial_hp += int(p["character"].current_hp)
+
+	var saw_intent := false
+	var monster_moved := false
+	var player_damaged := false
+	var polls := 0
+	while polls < 120 and not combat._battle_ending:
+		var ac: Dictionary = combat.active_combatant
+		if not ac.is_empty() and not ac.get("is_player", true):
+			var ent: Dictionary = ac.get("entity", {})
+			if ent.get("intent", {}).size() > 0:
+				saw_intent = true
+		if not ac.is_empty() and ac.get("is_player", false):
+			combat._on_hud_action("end_turn", {})
+		await get_tree().create_timer(0.3).timeout
+		polls += 1
+		for i in combat.monster_entities.size():
+			if combat.monster_entities[i]["hex_position"] != initial_positions[i]:
+				monster_moved = true
+		var cur_hp: int = 0
+		for p in combat.player_entities:
+			cur_hp += int(p["character"].current_hp)
+		if cur_hp < initial_hp:
+			player_damaged = true
+		if saw_intent and (monster_moved or player_damaged):
+			break
+
+	_assert(saw_intent, "live monster turn computed an AIController intent (monster['intent'] set in-loop)")
+	_assert(monster_moved or player_damaged, "AIController decision produced a real effect (monster moved toward player or dealt damage) through the live turn loop")
+	_assert(combat.tracker.current_round >= 1, "combat turn loop advanced at least one round")
+
+	_teardown_scene(combat)
+	_exit_test()
+
+
+## Drive the REAL combat turn loop to a resolved end state: equip players,
+## weaken + adjacent the monsters, then have players attack through the actual
+## input handlers until victory fires via the shared _check_battle_end_conditions
+## chokepoint (not a stubbed 'didn't crash').
+func test_combat_victory() -> void:
+	_enter_test("combat_victory")
+	_setup_world()
+	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 3.5)
+	await get_tree().create_timer(0.5).timeout
+
+	# Equip players so weapon range resolves; weaken + place monsters adjacent.
+	for i in combat.player_entities.size():
+		var pc: Character = combat.player_entities[i]["character"]
+		pc.inventory.equip(Inventory.Slot.WEAPON, "longsword")
+	for i in combat.monster_entities.size():
+		var m: Dictionary = combat.monster_entities[i]
+		var ppos: Vector2i = combat.player_entities[i % combat.player_entities.size()]["hex_position"]
+		var spot: Vector2i = ppos
+		for n in HexUtils.get_neighbors(ppos):
+			if combat.hex_grid.has_tile(n) and combat.hex_grid.is_hex_passable(n):
+				spot = n
+				break
+		m["hex_position"] = spot
+		m["current_hp"] = 1
+		m["max_hp"] = 1
+		m["is_alive"] = true
+	combat._update_grid_entities()
+
+	var rounds := 0
+	while rounds < 6 and not combat._battle_ending:
+		var start_round: int = combat.tracker.current_round
+		var guard := 0
+		while not combat._battle_ending and combat.tracker.current_round == start_round and guard < 12:
+			var ac: Dictionary = combat.active_combatant
+			if not ac.is_empty() and ac.get("is_player", false):
+				_drive_player_attack_turn(combat)
+			await get_tree().create_timer(2.5).timeout
+			guard += 1
+		rounds += 1
+
+	var alive_monsters := 0
+	for m in combat.monster_entities:
+		if m["is_alive"]:
+			alive_monsters += 1
+	_assert(combat._battle_ending, "battle reached an end state through the live turn loop")
+	_assert(alive_monsters == 0, "victory: all monsters defeated (got %d alive)" % alive_monsters)
+	_assert(GameManager.defeated_monsters.has("goblin"), "victory registered defeated monsters in GameManager")
+
+	_teardown_scene(combat)
+	_exit_test()
+
+
+## Helper: play one player's turn in the live combat scene by driving the real
+## movement + attack input handlers toward the nearest alive monster.
+func _drive_player_attack_turn(combat: Node) -> void:
+	var pidx: int = combat.current_player_idx
+	if pidx < 0 or pidx >= combat.player_entities.size():
+		return
+	var p: Dictionary = combat.player_entities[pidx]
+	var pchar: Character = p["character"]
+	if pchar == null or not pchar.is_alive:
+		combat._on_hud_action("end_turn", {})
+		return
+	var nearest = null
+	var nd := 9999
+	for m in combat.monster_entities:
+		if not m["is_alive"]:
+			continue
+		var d: int = HexUtils.get_distance(p["hex_position"], m["hex_position"])
+		if d < nd:
+			nd = d
+			nearest = m
+	if nearest == null:
+		combat._on_hud_action("end_turn", {})
+		return
+	var mpos: Vector2i = nearest["hex_position"]
+	var weapon_id: String = pchar.inventory.get_weapon()
+	var weapon: Dictionary = DataLoader.get_item(weapon_id)
+	var max_range: int = int(weapon.get("range", 1))
+	if HexUtils.get_distance(p["hex_position"], mpos) <= max_range:
+		combat.pending_action_type = "attack"
+		combat._on_hex_clicked(mpos)
+		if not combat._battle_ending:
+			combat._on_hud_action("end_turn", {})
+		return
+	var reach: Dictionary = combat.hex_grid.get_reachable(p["hex_position"], combat.remaining_speed)
+	var best_step: Vector2i = p["hex_position"]
+	var best_d: int = nd
+	for h in reach:
+		var d: int = HexUtils.get_distance(h, mpos)
+		if d < best_d:
+			best_d = d
+			best_step = h
+	if best_step != p["hex_position"]:
+		combat._on_hex_clicked(best_step)
+	if HexUtils.get_distance(combat.player_entities[pidx]["hex_position"], mpos) <= max_range:
+		combat.pending_action_type = "attack"
+		combat._on_hex_clicked(mpos)
+	if not combat._battle_ending:
+		combat._on_hud_action("end_turn", {})
+
 
 # --- reporting --------------------------------------------------------------
 

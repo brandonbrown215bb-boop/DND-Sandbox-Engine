@@ -1,12 +1,10 @@
 ## Combat HUD Controller
 ## Manages combat interfaces: action selection, spell registers, logs, and initiative track.
 class_name CombatHUD
-extends CanvasLayer
+extends BaseHUD
 
 signal action_selected(action_type: String, extra_data: Dictionary)
-
-signal settings_pressed
-signal sheet_pressed
+signal cancel_pressed
 
 # Node references
 @onready var action_panel: PanelContainer = $MarginContainer/HBoxContainer/ControlArea/VBoxContainer/ActionMenu
@@ -14,6 +12,7 @@ signal sheet_pressed
 @onready var btn_spell: Button = $MarginContainer/HBoxContainer/ControlArea/VBoxContainer/ActionMenu/GridContainer/BtnSpell
 @onready var btn_dodge: Button = $MarginContainer/HBoxContainer/ControlArea/VBoxContainer/ActionMenu/GridContainer/BtnDodge
 @onready var btn_end_turn: Button = $MarginContainer/HBoxContainer/ControlArea/VBoxContainer/ActionMenu/GridContainer/BtnEndTurn
+@onready var btn_cancel: Button = $MarginContainer/HBoxContainer/ControlArea/VBoxContainer/ActionMenu/GridContainer/BtnCancel
 
 @onready var spell_menu: PanelContainer = $MarginContainer/HBoxContainer/ControlArea/VBoxContainer/SpellMenu
 @onready var spell_list: ItemList = $MarginContainer/HBoxContainer/ControlArea/VBoxContainer/SpellMenu/SpellList
@@ -32,7 +31,6 @@ signal sheet_pressed
 @onready var initiative_bar: RichTextLabel = $MarginContainer/HBoxContainer/ControlArea/VBoxContainer/InitiativePanel/InitiativeBar
 @onready var hint_label: Label = $MarginContainer/HBoxContainer/ControlArea/VBoxContainer/HintLabel
 @onready var mode_banner: Label = $MarginContainer/HBoxContainer/ControlArea/VBoxContainer/ModeBanner
-@onready var log_text: RichTextLabel = $MarginContainer/HBoxContainer/ControlArea/VBoxContainer/LogBox/LogText
 
 ## Rook's Touch: combat UI mode state machine. Centralizes the scattered
 ## show/hide of action menu vs spell/feature panels so the player always
@@ -50,6 +48,7 @@ func _ready() -> void:
 	btn_attack.pressed.connect(func(): action_selected.emit("attack", {}))
 	btn_dodge.pressed.connect(func(): action_selected.emit("dodge", {}))
 	btn_end_turn.pressed.connect(func(): action_selected.emit("end_turn", {}))
+	btn_cancel.pressed.connect(func(): cancel_pressed.emit())
 
 	# Connect spell panel
 	btn_spell.pressed.connect(_show_spell_selection)
@@ -63,35 +62,26 @@ func _ready() -> void:
 	btn_settings.pressed.connect(func(): settings_pressed.emit())
 	btn_sheet.pressed.connect(func(): sheet_pressed.emit())
 
+	# Assign the inherited log_text (declared in BaseHUD, not re-declared here).
+	log_text = $MarginContainer/HBoxContainer/ControlArea/VBoxContainer/LogBox/LogText
+
 	# Start in SELECT mode with the banner set.
 	set_mode(Mode.SELECT)
 	clear_logs()
 
 
-## Esc / escape-hatch handling: back out of any sub-menu to SELECT.
+## Esc / escape-hatch handling: back out of any sub-menu to SELECT, AND cancel
+## any in-progress combat targeting (attack/spell) via cancel_pressed.
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
+		cancel_pressed.emit()
 		if current_mode != Mode.SELECT:
 			set_mode(Mode.SELECT)
 
 
 ## Clear all logs.
-func clear_logs() -> void:
-	if log_text != null:
-		log_text.text = ""
-
-
-## Add a log entry.
-func add_log(msg: String) -> void:
-	if log_text == null: return
-	log_text.text += msg + "\n"
-	# Auto scroll
-	var scroll = log_text.get_v_scroll_bar()
-	if scroll:
-		scroll.value = scroll.max_value
-
-
 ## Enable or disable character controls.
+## (log_text, clear_logs(), add_log() inherited from BaseHUD.)
 func set_controls_disabled(disabled: bool) -> void:
 	btn_attack.disabled = disabled
 	btn_spell.disabled = disabled
