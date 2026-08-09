@@ -10,6 +10,7 @@ engine errors treated as failures.
 - Engine: `Godot 4.7.stable.official.5b4e0cb0f`
 - Project: Godot 4.7, GL Compatibility
 - DataLoader: 14 classes, 9 races, 232 items, 198 spells, 453 monsters, 4 event tables, 1 campaign
+- Cache-free project bootstrap: pass
 - Parse gate: 51 scripts loaded
 - Supported Windows runner: `run_tests.ps1`
 - Compatibility-only shell runner: `run_tests.sh` (not Gate 1 evidence)
@@ -22,6 +23,7 @@ directory; the durable evidence is the enumerated result below.
 
 | Check | Result |
 |---|---|
+| Cache-free project bootstrap | Pass - `PROJECT BOOTSTRAP PASSED` |
 | Project-context parse | Pass - `PARSE GATE PASSED: 51 scripts loaded` |
 | Production boot | Pass - `BOOT GATE PASSED: main scene settled for 3.0 seconds` |
 | Logic suite | Pass - `263 passed, 0 failed` |
@@ -50,6 +52,9 @@ runner uses disposable `XDG_*` roots for the same contract.
 - The parse gate loads scripts from a running project scene, so autoload and
   `class_name` dependencies resolve in project context. A missing script load
   is reported as a parse-gate failure.
+- Before parsing, a recovery-mode editor scan creates the ignored `.godot`
+  class-name and import caches required by a first run. Editor plugins remain
+  disabled during this bootstrap, and the step has its own timeout and marker.
 - Every case has a hard timeout and explicit marker. A timeout is a failure;
   the runner continues enumerating later cases and reports their markers.
 - The Windows helper owns raw Godot stream capture and propagates Godot's real

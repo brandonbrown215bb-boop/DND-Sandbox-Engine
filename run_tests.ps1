@@ -31,6 +31,7 @@ if (-not (Test-Path -LiteralPath $GodotPath -PathType Leaf)) {
     exit 2
 }
 
+$bootstrapTimeout = if ($env:BOOTSTRAP_TIMEOUT_SECONDS) { [int]$env:BOOTSTRAP_TIMEOUT_SECONDS } else { 120 }
 $parseTimeout = if ($env:PARSE_TIMEOUT_SECONDS) { [int]$env:PARSE_TIMEOUT_SECONDS } else { 60 }
 $bootTimeout = if ($env:BOOT_TIMEOUT_SECONDS) { [int]$env:BOOT_TIMEOUT_SECONDS } else { 30 }
 $logicTimeout = if ($env:LOGIC_TIMEOUT_SECONDS) { [int]$env:LOGIC_TIMEOUT_SECONDS } else { 300 }
@@ -49,7 +50,14 @@ function Quote-ProcessArgument([string]$Value) {
 }
 
 function Invoke-GodotCase {
-    param([string]$Name, [string]$Scene, [string]$Marker, [int]$TimeoutSeconds, [string[]]$ExtraArguments = @())
+    param(
+        [string]$Name,
+        [string]$Scene,
+        [string]$Marker,
+        [int]$TimeoutSeconds,
+        [string[]]$ExtraArguments = @(),
+        [ValidateSet("Scene", "EditorBootstrap")][string]$Mode = "Scene"
+    )
     $stdoutPath = Join-Path $logDirectory ("{0}.stdout.log" -f $Name)
     $stderrPath = Join-Path $logDirectory ("{0}.stderr.log" -f $Name)
     $godotLogPath = Join-Path $logDirectory ("{0}.godot.log" -f $Name)
@@ -63,11 +71,13 @@ function Invoke-GodotCase {
         "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", $helperPath,
         "-GodotPath", $GodotPath,
         "-Project", $Project,
-        "-Scene", $Scene,
+        "-Mode", $Mode,
         "-GodotLogPath", $godotLogPath,
         "-StdoutPath", $stdoutPath,
         "-StderrPath", $stderrPath
     )
+    if ($Mode -eq "EditorBootstrap") { $arguments += @("-SuccessMarker", $Marker) }
+    if (-not [string]::IsNullOrWhiteSpace($Scene)) { $arguments += @("-Scene", $Scene) }
     if (-not [string]::IsNullOrEmpty($extraArgumentsEncoded)) {
         $arguments += @("-ExtraArgumentsEncoded", $extraArgumentsEncoded)
     }
@@ -102,7 +112,11 @@ function Invoke-GodotCase {
         # Terminate the exact process tree so a timeout cannot strand a child
         # process or produce a delayed native crash dialog.
         $taskkill = Join-Path $env:SystemRoot "System32\taskkill.exe"
-        & $taskkill /PID $process.Id /T /F 2>$null | Out-Null
+        $cleanup = Start-Process -FilePath $taskkill -ArgumentList @("/PID", $process.Id, "/T", "/F") `
+            -WindowStyle Hidden -Wait -PassThru
+        if ($cleanup.ExitCode -ne 0 -and -not $process.HasExited) {
+            Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+        }
         $null = $process.WaitForExit(5000)
         $exitCode = 124
     } else {
@@ -134,6 +148,8 @@ function Invoke-GodotCase {
 }
 
 $failed = $false
+if (-not (Invoke-GodotCase -Name "project_bootstrap" -Scene "" -Marker "PROJECT BOOTSTRAP PASSED" `
+    -TimeoutSeconds $bootstrapTimeout -Mode "EditorBootstrap")) { $failed = $true }
 if (-not (Invoke-GodotCase "parse_gate" "res://scenes/parse_gate.tscn" "PARSE GATE PASSED" $parseTimeout)) { $failed = $true }
 if (-not (Invoke-GodotCase "boot_gate" "res://scenes/boot_gate.tscn" "BOOT GATE PASSED" $bootTimeout)) { $failed = $true }
 $runLogic = $Suite -in @("all", "logic")

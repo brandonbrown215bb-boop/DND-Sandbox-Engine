@@ -11,6 +11,11 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\run_tests.ps1
 `run_tests.sh` remains available as compatibility tooling, but native Linux
 execution is not part of Gate 1 completion evidence.
 
+The first case runs a headless recovery-mode editor scan. This creates the
+ignored `.godot` class-name and import caches required by a clean checkout
+without activating editor plugins. The parse gate then evaluates the project
+with the same class registry a normal first editor launch would create.
+
 The gate stops on a non-zero process exit, timeout, missing result marker, or
 unexpected Godot error. Each scenario receives a disposable `user://` root;
 the PowerShell runner redirects Windows profile roots. Logs are written to a
@@ -24,6 +29,7 @@ The gate-case manifest is:
 
 | Case | Contract |
 |---|---|
+| `project_bootstrap` | A cache-free checkout can build Godot's generated class/import state |
 | `parse_gate` | Every project script loads with autoload and `class_name` dependencies available |
 | `boot_gate` | The production main scene settles without an unexpected engine error |
 | `logic` | Data loading, character creation, dice, combat actions, spellcasting, AI, inventory, conditions, serialization, players, events, fog, hex math, saves, and UI widget contracts |

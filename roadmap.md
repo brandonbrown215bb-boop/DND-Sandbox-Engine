@@ -128,11 +128,11 @@ Gates are sequential on the critical path. Work may be prepared in parallel, but
 
 **Objective:** A green test command must mean the project parsed, booted, executed every named scenario, and exited without unexpected engine errors.
 
-**Current evidence:** [Gate 1 evidence](docs/gate1_evidence.md). Status: `done`; the complete isolated suite is green with 263 stable logic assertions (the earlier 242 note was stale), explicit scenario markers, hard timeouts, and disposable save/settings roots.
+**Current evidence:** [Gate 1 evidence](docs/gate1_evidence.md). Status: `done`; the complete isolated suite is green from a cache-free committed tree with a recovery-mode first scan, 263 stable logic assertions (the earlier 242 note was stale), explicit scenario markers, hard timeouts, and disposable save/settings roots.
 
 | ID | Priority | Task | Acceptance criteria |
 |---|---:|---|---|
-| TEST-01 | P0 | Replace file-by-file `--script` preflight | Parse in project context so autoload identifiers resolve. The gate reports real parse failures without falsely rejecting valid project scripts. |
+| TEST-01 | P0 | Replace file-by-file `--script` preflight | Bootstrap a clean checkout's ignored Godot class cache, then parse in project context so autoload identifiers resolve. The gate reports real parse failures without falsely rejecting valid project scripts. |
 | TEST-02 | P0 | Isolate viewport scenarios | Combat boot, AI loop, victory, overworld, dungeon, event, character creation, shop, save/load, settings, and character sheet each run in a fresh Godot process or fully isolated tree. |
 | TEST-03 | P0 | Add hard timeouts and result markers | Every scenario has a bounded runtime, explicit pass marker, non-zero failure exit, and captured log. Timeout is a failure, never an apparent success. |
 | TEST-04 | P0 | Treat engine errors as failures | Unexpected `SCRIPT ERROR`, parse errors, invalid calls, leaked test-owned nodes, and resource errors fail the owning scenario. Document narrowly allowed warnings. |

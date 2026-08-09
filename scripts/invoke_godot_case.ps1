@@ -2,10 +2,12 @@
 param(
     [Parameter(Mandatory = $true)][string]$GodotPath,
     [Parameter(Mandatory = $true)][string]$Project,
-    [Parameter(Mandatory = $true)][string]$Scene,
+    [ValidateSet("Scene", "EditorBootstrap")][string]$Mode = "Scene",
+    [string]$Scene = "",
     [Parameter(Mandatory = $true)][string]$GodotLogPath,
     [Parameter(Mandatory = $true)][string]$StdoutPath,
     [Parameter(Mandatory = $true)][string]$StderrPath,
+    [string]$SuccessMarker = "",
     [string]$ExtraArgumentsEncoded = ""
 )
 
@@ -21,7 +23,17 @@ try {
             $extraArguments = @($decodedArguments -split "`n")
         }
     }
-    $arguments = @("--headless", "--log-file", $GodotLogPath, "--path", $Project, $Scene) + $extraArguments
+    if ($Mode -eq "EditorBootstrap") {
+        # A clean checkout has no ignored .godot class cache. Recovery mode
+        # performs the editor's first scan without loading editor plugins.
+        $arguments = @(
+            "--headless", "--recovery-mode", "--editor", "--quit",
+            "--log-file", $GodotLogPath, "--path", $Project
+        ) + $extraArguments
+    } else {
+        if ([string]::IsNullOrWhiteSpace($Scene)) { throw "Scene mode requires -Scene" }
+        $arguments = @("--headless", "--log-file", $GodotLogPath, "--path", $Project, $Scene) + $extraArguments
+    }
     # Let cmd own raw stream redirection. Windows PowerShell 5 otherwise wraps
     # native stderr in a NativeCommandError record, which corrupts the captured
     # Godot log and obscures the real process result.
@@ -42,6 +54,9 @@ try {
     }
     $exitCode = $LASTEXITCODE
     if ($null -eq $exitCode) { $exitCode = 125 }
+    if ($exitCode -eq 0 -and -not [string]::IsNullOrWhiteSpace($SuccessMarker)) {
+        [IO.File]::AppendAllText($StdoutPath, "`r`n$SuccessMarker`r`n", [Text.Encoding]::UTF8)
+    }
     exit $exitCode
 } catch {
     $_ | Out-File -LiteralPath $StderrPath -Append -Encoding utf8

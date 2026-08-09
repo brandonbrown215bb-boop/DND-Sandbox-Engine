@@ -9,6 +9,9 @@ history. [Gate 1 evidence](gate1_evidence.md) records the later repaired,
 isolated 263-assertion run. See the [defect register](defect_register.md) for
 which baseline defects closed and which remain open.
 
+The Windows gate begins with a recovery-mode editor scan so a clean checkout
+does not depend on a pre-existing ignored `.godot` class cache.
+
 ## 2026-07-07
 
 ### UX / systems — three gaps closed

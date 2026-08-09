@@ -5,6 +5,10 @@ production boot, the fast logic suite, and each named viewport scenario in a
 fresh Godot process with a timeout, result marker, captured log, and isolated
 save/settings data root.
 
+The Windows runner first performs a recovery-mode editor scan, so the same
+command works before a clean checkout has generated its ignored `.godot`
+class/import caches. Recovery mode keeps editor plugins out of that bootstrap.
+
 ## Windows (supported gate)
 
 ```powershell

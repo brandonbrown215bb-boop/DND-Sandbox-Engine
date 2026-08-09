@@ -79,13 +79,15 @@ the real Godot exit code to the timeout supervisor.
 
 The gate runs, in order:
 
-1. `parse_gate.tscn` loads every `.gd` under `src/` and `scenes/` from a live
+1. A headless recovery-mode editor scan creates ignored first-run class and
+   import caches without activating editor plugins.
+2. `parse_gate.tscn` loads every `.gd` under `src/` and `scenes/` from a live
    project scene, keeping autoloads and project `class_name` declarations in
    scope.
-2. `boot_gate.tscn` instantiates production `main.tscn`, waits for a short
+3. `boot_gate.tscn` instantiates production `main.tscn`, waits for a short
    settle period, and exits with `BOOT GATE PASSED`. A timeout is a failure.
-3. `test_runner.tscn` runs the logic suite and must print `ALL TESTS PASSED`.
-4. `viewport_harness.tscn` runs each named integration scenario in a fresh
+4. `test_runner.tscn` runs the logic suite and must print `ALL TESTS PASSED`.
+5. `viewport_harness.tscn` runs each named integration scenario in a fresh
    Godot process using `--scenario=<name>`. A failed or hung scenario cannot
    hide the result of later scenarios. The harness retains `all` mode for local
    debugging, but the repository gate uses isolated mode.
