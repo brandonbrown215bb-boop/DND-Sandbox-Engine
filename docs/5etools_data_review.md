@@ -24,7 +24,7 @@ We can convert these raw classes to our target format (`data/core/classes/`) usi
 - **Features by Level**: Collect features from `classFeature` matching the class ID and index them by level (1 to 5).
 
 > [!WARNING]
-> While we can auto-import all descriptions and UI components of features, class features with active mechanical effects (like a Barbarian's *Rage* resistance or a Cleric's *Turn Undead*) will need custom code bindings in the combat actions script ([combat_action.gd](file:///run/media/pigeon/890dd7cb-9753-4f6b-b8e6-58c98e531754/Projects/Top Down Party Game/src/combat/combat_action.gd)) to function in battle.
+> While we can auto-import all descriptions and UI components of features, class features with active mechanical effects (like a Barbarian's *Rage* resistance or a Cleric's *Turn Undead*) will need custom code bindings in the combat actions script ([combat_action.gd](../src/combat/combat_action.gd)) to function in battle.
 
 ---
 
@@ -79,4 +79,4 @@ If we decide to proceed, the recommended development timeline is:
 | :--- | :--- | :--- |
 | **Step 1: Class Converter** | Parse `5etools raw/class/` to generate standard classes (`fighter`, `cleric`, `wizard`, etc.) up to Level 5. | 2–3 hours |
 | **Step 2: Spells & Bestiary Converter** | Process spells and bestiary files, exporting clean, modular JSON arrays. | 2–3 hours |
-| **Step 3: Core Engine Bindings** | Update [combat_action.gd](file:///run/media/pigeon/890dd7cb-9753-4f6b-b8e6-58c98e531754/Projects/Top Down Party Game/src/combat/combat_action.gd) to support the new spell effects and monster attacks. | 4–5 hours |
+| **Step 3: Core Engine Bindings** | Update [combat_action.gd](../src/combat/combat_action.gd) to support the new spell effects and monster attacks. | 4–5 hours |

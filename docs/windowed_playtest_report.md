@@ -1,5 +1,8 @@
 # Windowed Playtest Report — Top Down Party Game
 
+> Historical Linux/Xvfb playtest artifact. It is not current supported-host or
+> Gate 1 completion evidence; current validation is Windows-based.
+
 **Date:** 2026-07-06
 **Method:** Real *windowed* Godot 4.7 (x11 display driver) running under a virtual X server, with synthetic input. This is a genuine rendered playthrough — not the headless harness.
 
@@ -9,7 +12,7 @@
 
 | Component | Value |
 |---|---|
-| Godot binary | `/home/pigeon/Desktop/Godot_v4.7-stable_linux.x86_64` |
+| Godot binary | Godot 4.7 stable Linux x86_64 (historical machine-specific path omitted) |
 | Display | `Xvfb :99`, 1280×720×24, `+extension GLX +render`, llvmpipe (LLVM 22.1.5, 256 bits) software GL |
 | Launch flags | `DISPLAY=:99 Godot --display-driver x11 --rendering-driver opengl3 --path . --resolution 1280x720 --windowed` |
 | Input | `xdotool` — `mousemove` → `mousedown` → dwell (0.6s) → `mouseup`. A fast `xdotool click` is **dropped** under the slow software-GL frame rate; the press and release land in different frames and Godot misses it. |

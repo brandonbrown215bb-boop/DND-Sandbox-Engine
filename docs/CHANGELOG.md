@@ -1,5 +1,14 @@
 # Changelog — Top Down Party Game
 
+## Gate 0 baseline note — 2026-08-09
+
+The historical “full suite green” entries below describe earlier snapshots and
+are not current completion claims. The initial Godot 4.7 inventory is recorded
+in [Gate 0 evidence](gate0_evidence.md); its failures are retained as baseline
+history. [Gate 1 evidence](gate1_evidence.md) records the later repaired,
+isolated 263-assertion run. See the [defect register](defect_register.md) for
+which baseline defects closed and which remain open.
+
 ## 2026-07-07
 
 ### UX / systems — three gaps closed

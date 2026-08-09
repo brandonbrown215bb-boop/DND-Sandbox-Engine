@@ -38,6 +38,7 @@ func _fresh_char(name: String, race: String, klass: String, sd: Dictionary) -> C
 func _setup_world() -> void:
 	var camp = DataLoader.campaigns.values()[0]
 	GameManager.active_campaign = camp
+	GameManager.current_state = GameManager.GameState.OVERWORLD
 	GameManager.transition_context = {"terrain": "plains", "monster_ids": ["goblin", "goblin"]}
 	GameManager.is_loading_save = false
 	GameManager.game_in_progress = false
@@ -92,6 +93,29 @@ func _ready() -> void:
 	print("==================================================")
 	_setup_world()
 
+	var scenario := _requested_scenario()
+	if scenario == "all":
+		await _run_all_scenarios()
+	else:
+		await _run_scenario(scenario)
+
+	_report()
+	if _fail == 0:
+		print("SCENARIO PASSED: %s" % scenario)
+	else:
+		print("SCENARIO FAILED: %s" % scenario)
+	get_tree().quit(1 if _fail > 0 else 0)
+
+func _requested_scenario() -> String:
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--scenario="):
+			return arg.trim_prefix("--scenario=")
+	for arg in OS.get_cmdline_args():
+		if arg.begins_with("--scenario="):
+			return arg.trim_prefix("--scenario=")
+	return "all"
+
+func _run_all_scenarios() -> void:
 	await test_combat()
 	await test_combat_ai_loop()
 	await test_combat_victory()
@@ -107,8 +131,25 @@ func _ready() -> void:
 	await test_event_dialog_choice_click()
 	await test_character_sheet()
 
-	_report()
-	get_tree().quit(1 if _fail > 0 else 0)
+func _run_scenario(scenario: String) -> void:
+	match scenario:
+		"combat": await test_combat()
+		"combat_ai_loop": await test_combat_ai_loop()
+		"combat_victory": await test_combat_victory()
+		"overworld": await test_overworld()
+		"main_menu_load": await test_main_menu_load()
+		"dungeon": await test_dungeon()
+		"event_dialog": await test_event_dialog()
+		"character_creation": await test_character_creation()
+		"shop": await test_shop()
+		"save_load": await test_save_load()
+		"combat_resolution": await test_combat_resolution()
+		"event_choice_resolution": await test_event_choice_resolution()
+		"event_dialog_choice_click": await test_event_dialog_choice_click()
+		"character_sheet": await test_character_sheet()
+		_:
+			_fail += 1
+			_failures.append("[harness] unknown scenario '%s'" % scenario)
 
 # --- tests ------------------------------------------------------------------
 
@@ -484,6 +525,7 @@ func test_shop() -> void:
 func test_save_load() -> void:
 	_enter_test("save_load")
 	GameManager.active_campaign = DataLoader.campaigns.values()[0]
+	GameManager.current_state = GameManager.GameState.OVERWORLD
 	GameManager.game_in_progress = true
 	GameManager.defeated_monsters.clear()
 	GameManager.defeated_monsters.append("goblin")
@@ -509,6 +551,7 @@ func test_save_load() -> void:
 	var del_ok: bool = SaveManager.delete_save("harness_test_slot")
 	_assert(del_ok, "SaveManager.delete_save returned true")
 	_assert(not SaveManager.get_available_saves().has("harness_test_slot"), "save slot gone after delete")
+	await get_tree().process_frame
 	_exit_test()
 
 ## Combat resolution: attack -> damage -> kill (pure logic, no scene).
@@ -604,6 +647,9 @@ func test_event_dialog_choice_click() -> void:
 ## Character Sheet overlay: show + render sections + close.
 func test_character_sheet() -> void:
 	_enter_test("character_sheet")
+	# The harness itself is the scene root; wait until its _ready() child setup
+	# has finished before the autoload adds its CanvasLayer to the root.
+	await get_tree().process_frame
 	PlayerManager.reset()
 	PlayerManager.add_player("SheetHero")
 	var sheet_scores := AbilityScores.new()
@@ -631,6 +677,8 @@ func test_character_sheet() -> void:
 	CharacterSheet.close_sheet()
 	_assert(not CharacterSheet.is_open(), "character sheet closes (is_open false)")
 	_assert(CharacterSheet._layer == null or not CharacterSheet._layer.visible, "character sheet layer hidden after close")
+	CharacterSheet.teardown_for_tests()
+	await get_tree().process_frame
 	PlayerManager.reset()
 	_exit_test()
 
@@ -653,6 +701,7 @@ func test_combat_ai_loop() -> void:
 		initial_hp += int(p["character"].current_hp)
 
 	var saw_intent := false
+	var saw_intent_text := false
 	var monster_moved := false
 	var player_damaged := false
 	var polls := 0
@@ -662,6 +711,8 @@ func test_combat_ai_loop() -> void:
 			var ent: Dictionary = ac.get("entity", {})
 			if ent.get("intent", {}).size() > 0:
 				saw_intent = true
+			if not str(ent.get("intent_text", "")).is_empty():
+				saw_intent_text = true
 		if not ac.is_empty() and ac.get("is_player", false):
 			combat._on_hud_action("end_turn", {})
 		await get_tree().create_timer(0.3).timeout
@@ -678,6 +729,7 @@ func test_combat_ai_loop() -> void:
 			break
 
 	_assert(saw_intent, "live monster turn computed an AIController intent (monster['intent'] set in-loop)")
+	_assert(saw_intent_text, "live monster turn published renderable intent text")
 	_assert(monster_moved or player_damaged, "AIController decision produced a real effect (monster moved toward player or dealt damage) through the live turn loop")
 	_assert(combat.tracker.current_round >= 1, "combat turn loop advanced at least one round")
 
@@ -695,10 +747,16 @@ func test_combat_victory() -> void:
 	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 3.5)
 	await get_tree().create_timer(0.5).timeout
 
-	# Equip players so weapon range resolves; weaken + place monsters adjacent.
+	# Equip durable players so this scenario can only end in victory. The live
+	# turn loop, targeting, attack resolver, death handling, and battle-end
+	# chokepoint still run; fixture randomness cannot turn the proof into a TPK.
 	for i in combat.player_entities.size():
 		var pc: Character = combat.player_entities[i]["character"]
 		pc.inventory.equip(Inventory.Slot.WEAPON, "longsword")
+		pc.base_ac = 1000
+		pc.max_hp = 10000
+		pc.current_hp = 10000
+		pc.is_alive = true
 	for i in combat.monster_entities.size():
 		var m: Dictionary = combat.monster_entities[i]
 		var ppos: Vector2i = combat.player_entities[i % combat.player_entities.size()]["hex_position"]
@@ -710,8 +768,11 @@ func test_combat_victory() -> void:
 		m["hex_position"] = spot
 		m["current_hp"] = 1
 		m["max_hp"] = 1
+		m["armor_class"] = -100
 		m["is_alive"] = true
+		m["conditions"] = {"prone": 99}
 	combat._update_grid_entities()
+	seed(424242)
 
 	var rounds := 0
 	while rounds < 6 and not combat._battle_ending:

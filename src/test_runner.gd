@@ -149,9 +149,10 @@ func _test_combat_action() -> void:
 		var res: Dictionary = CombatAction.resolve_weapon_attack(atk, mi, weapon)
 		_assert(typeof(res) == TYPE_DICTIONARY, "attack returns a dictionary")
 		_assert(res.has("hit") and res.has("message"), "attack result has hit + message keys")
+		_assert(not res.get("hit", false) or int(res.get("damage", -1)) >= 0,
+			"hit deals non-negative damage when present")
 		if res.get("hit", false):
 			saw_hit = true
-			_assert(int(res.get("damage", -1)) >= 0, "hit deals non-negative damage")
 		else:
 			saw_miss = true
 	_assert(saw_hit, "observed at least one hit across 50 attacks")
@@ -233,6 +234,7 @@ func _test_ai_controller() -> void:
 	# no players alive -> none
 	var d4: Dictionary = AIController.get_monster_action(mon_aggr, mon_aggr["hex_position"], grid, [])
 	_assert(d4["action"] == "none", "no alive players -> action 'none'")
+	grid.free()
 
 func _test_inventory() -> void:
 	print("\n[Group] Inventory")
@@ -404,6 +406,8 @@ func _test_fog_of_war() -> void:
 	var far_visible := far.is_visible
 	# radius 2 vision from origin cannot reach (3,0) (distance 3)
 	_assert(not far_visible, "tile beyond vision radius is not visible")
+	grid.free()
+	grid2.free()
 
 func _test_hexutils() -> void:
 	print("\n[Group] HexUtils")
@@ -434,6 +438,7 @@ func _test_save_load() -> void:
 	# Set up minimal game-in-progress state
 	var camp: Dictionary = DataLoader.campaigns.values()[0]
 	GameManager.active_campaign = camp
+	GameManager.current_state = GameManager.GameState.OVERWORLD
 	GameManager.game_in_progress = true
 	PlayerManager.reset()
 	PlayerManager.add_player("Sava")

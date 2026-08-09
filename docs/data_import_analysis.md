@@ -1,6 +1,6 @@
 # Data Import Analysis: 5eTools JSON Format
 
-This report investigates the format of the four newly added JSON files at the root of the project: [items.json](file:///run/media/pigeon/890dd7cb-9753-4f6b-b8e6-58c98e531754/Projects/Top Down Party Game/items.json), [loot.json](file:///run/media/pigeon/890dd7cb-9753-4f6b-b8e6-58c98e531754/Projects/Top Down Party Game/loot.json), [races.json](file:///run/media/pigeon/890dd7cb-9753-4f6b-b8e6-58c98e531754/Projects/Top Down Party Game/races.json), and [skills.json](file:///run/media/pigeon/890dd7cb-9753-4f6b-b8e6-58c98e531754/Projects/Top Down Party Game/skills.json).
+This report investigates the format of the four newly added JSON files at the root of the project: [items.json](../items.json), [loot.json](../loot.json), [races.json](../races.json), and [skills.json](../skills.json).
 
 ---
 
@@ -141,7 +141,7 @@ Importing this base content is a **medium-sized development lift** overall, depe
 ### Level 2: Engine Integration & Parsing (Medium Lift: ~4–6 hours)
 - **Tasks**:
   - **Item Properties**: Update inventory AC and weapon attack resolution routines to handle items dynamically loaded from the new database instead of hardcoded starter weapons.
-  - **Random Loot drops**: Write a Godot parser to resolve `loot.json` ranges and roll formulas (e.g. `4d6*10`) to calculate dropped gold upon victory in [combat_state.gd](file:///run/media/pigeon/890dd7cb-9753-4f6b-b8e6-58c98e531754/Projects/Top Down Party Game/src/combat/combat_state.gd).
+  - **Random Loot drops**: Write a Godot parser to resolve `loot.json` ranges and roll formulas (e.g. `4d6*10`) to calculate dropped gold upon victory in [combat_state.gd](../src/combat/combat_state.gd).
 
 ### Level 3: Advanced Integration (High Lift: ~10–12 hours)
 - **Tasks**: Implement character sheets and event logs that read `skills.json` details dynamically, and build out complete shopping UI categories with tabs filtering weapons, armor, and tools dynamically.

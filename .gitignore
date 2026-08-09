@@ -20,10 +20,16 @@ mono_crash.*.json
 Thumbs.db
 *~
 *.tmp
+.vscode/
 
 # Local save slots (user://saves are runtime data, not source)
 saves/
 *.sav
+dogfood-output/gate1-*/
+
+# Disposable legacy diagnostics belong in runner-owned temporary directories.
+/combat_err.txt
+/vp_err.txt
 
 # Embedded external repo (codegraph tooling) — not part of the game
 codegraph_setup/

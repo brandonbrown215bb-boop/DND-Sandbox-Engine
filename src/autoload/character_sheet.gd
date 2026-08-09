@@ -116,6 +116,19 @@ func close_sheet() -> void:
 	sheet_closed.emit()
 
 
+## Release the lazily-created overlay for isolated engine tests. Production
+## keeps the layer hidden for reuse between opens.
+func teardown_for_tests() -> void:
+	if not GameManager.test_mode:
+		return
+	if _layer != null:
+		_layer.queue_free()
+	_layer = null
+	_content = null
+	_title = null
+	_open_char = null
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if _open_char != null and event is InputEventKey:
 		var key := event as InputEventKey

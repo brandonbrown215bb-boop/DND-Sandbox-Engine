@@ -2,39 +2,40 @@
 
 This document details the high-level architecture and design of the Top Down Party Game's engines, singletons, models, and state loops.
 
+The current implementation baseline is recorded in [Gate 0 evidence](gate0_evidence.md), [the feature matrix](feature_matrix.md), and [the defect register](defect_register.md). The paths below describe reachable code, not completed campaign contracts.
+
 ---
 
 ## 1. Global Managers (Autoload Singletons)
 
 These persistent systems manage cross-scene states and global services.
 
-### [GameManager](file:///run/media/pigeon/890dd7cb-9753-4f6b-b8e6-58c98e531754/Projects/Top Down Party Game/src/autoload/game_manager.gd)
+### [GameManager](../src/autoload/game_manager.gd)
 - **Role**: Coordinates the primary state machine (`GameState` enum) and orchestrates fades and scene transitions between menus, overworld, dungeons, and combat.
-- **Victory Condition Check**: Evaluates active campaign victory goals (`check_campaign_victory()`), tallying quest items across party inventories and verifying boss defeats.
+- **Victory Condition Check**: Evaluates active campaign victory goals (`check_campaign_victory()`), tallying quest items across party inventories and verifying boss defeats. The terminal `GAME_OVER` scene is not yet mapped.
 - **Milestones**: Resolves campaign triggers to apply party level-ups dynamically.
 
-### [PlayerManager](file:///run/media/pigeon/890dd7cb-9753-4f6b-b8e6-58c98e531754/Projects/Top Down Party Game/src/autoload/player_manager.gd)
+### [PlayerManager](../src/autoload/player_manager.gd)
 - **Role**: Tracks active player indices, colors, names, coordinates, and alive states for hot-seat local multiplayer.
 - **Serialization**: Provides `serialize()` and `deserialize()` to flatten player slots and character sheets.
 
-### [DataLoader](file:///run/media/pigeon/890dd7cb-9753-4f6b-b8e6-58c98e531754/Projects/Top Down Party Game/src/autoload/data_loader.gd)
+### [DataLoader](../src/autoload/data_loader.gd)
 - **Role**: Recursively scans and registers all JSON file data from `res://data/core/` and overrides them with any assets loaded from `res://data/mods/` with identical IDs.
 - **Registries**: Manages registries for classes, races, items, spells, monsters, event tables, and campaigns.
 
-### [SaveManager](file:///run/media/pigeon/890dd7cb-9753-4f6b-b8e6-58c98e531754/Projects/Top Down Party Game/src/autoload/save_manager.gd)
+### [SaveManager](../src/autoload/save_manager.gd)
 - **Role**: Handles persistence. Serializes campaign metadata, active dungeon crawl states, round counters, player coordinates, and character lists to `user://saves/` as JSON-formatted files.
-- **Slots**: `get_available_saves()` lists all `*.sav` slots; `save_game(slot)` and `load_game(slot)` read/write named slots. The overworld "Save Game" button writes a `quicksave` slot; the main menu "Load Game" picker reads any slot.
+- **Slots**: `get_available_saves()` lists all `*.sav` slots; `save_game(slot)` and `load_game(slot)` read/write named slots.
 
-### [Settings](file:///run/media/pigeon/890dd7cb-9753-4f6b-b8e6-58c98e531754/Projects/Top Down Party Game/src/autoload/settings.gd)
-- **Role**: Persistent player options + the save/load-anywhere API used by the settings overlay. Writes player settings (master/sfx/music volume, screen shake, high contrast, damage numbers, tooltip delay) to `user://settings.cfg` as JSON.
-- **Save/Load delegation**: `save_game(slot)` / `load_game(slot)` / `get_saves()` wrap `SaveManager` so saving and loading work from anywhere a game is in progress (overworld, combat, or the main menu).
-- **Pause overlay**: `open_settings()` pauses the tree (`get_tree().paused = true`) and mounts `scenes/ui/settings_overlay.tscn` on a high `CanvasLayer` (`process_mode = ALWAYS`). `close_settings()` resumes the tree. The gear button (`Settings ⚙`) in the overworld and combat HUDs opens it.
+### [Settings](../src/autoload/settings.gd)
+- **Role**: Persistent player options and the settings overlay.
+- **Pause overlay**: `open_settings()` pauses the tree and mounts `scenes/ui/settings_overlay.tscn` on a high `CanvasLayer`; `close_settings()` resumes it.
 
-### [CharacterSheet](file:///run/media/pigeon/890dd7cb-9753-4f6b-b8e6-58c98e531754/Projects/Top Down Party Game/src/autoload/character_sheet.gd)
-- **Role**: Read-only overlay rendering a character's full stats/variables — ability scores + modifiers, HP/AC/speed/proficiency, saving throws, all 18 skills, equipment + backpack, active conditions, spell slots/known spells, and class features with remaining uses.
-- **Access**: A "Character Sheet" button is wired into the **overworld**, **dungeon** (`OverworldHUD`), and **combat** (`CombatHUD`) HUDs. Overworld/dungeon open the active player (`show_active()`); combat opens the turn's active character (`show_sheet(active_character)`). The overlay (CanvasLayer drawn above scene HUD, dismiss with the close button or Esc) does not pause the game.
+### [CharacterSheet](../src/autoload/character_sheet.gd)
+- **Role**: Read-only overlay rendering a character's stats, inventory, conditions, spells, and features.
+- **Access**: The overworld, dungeon, and combat HUDs open it for the active or current-turn character.
 
-### [Dice](file:///run/media/pigeon/890dd7cb-9753-4f6b-b8e6-58c98e531754/Projects/Top Down Party Game/src/autoload/dice.gd)
+### [Dice](../src/autoload/dice.gd)
 - **Role**: Evaluates advantage/disadvantage rolls and parses mathematical dice string formulas (e.g. `2d6 + STR`).
 
 ---
@@ -43,79 +44,53 @@ These persistent systems manage cross-scene states and global services.
 
 Coordinate-based modules manage spatial pathfinding and rendering on the overworld map and dungeon layouts.
 
-- **[HexGrid](file:///run/media/pigeon/890dd7cb-9753-4f6b-b8e6-58c98e531754/Projects/Top Down Party Game/src/hex/hex_grid.gd)**: Manages a collection of tiles mapped by axial coordinates (`Vector2i`), generating highlight overlays and calculating A* paths.
-- **[HexTile](file:///run/media/pigeon/890dd7cb-9753-4f6b-b8e6-58c98e531754/Projects/Top Down Party Game/src/hex/hex_tile.gd)**: Encapsulates individual cell parameters, such as terrain type (move cost and terrain color representation), Fog of War visibility, location names, and custom properties.
-- **[HexUtils](file:///run/media/pigeon/890dd7cb-9753-4f6b-b8e6-58c98e531754/Projects/Top Down Party Game/src/hex/hex_utils.gd)**: Axial coordinate arithmetic mapping directions, neighbors, and distances.
+- **[HexGrid](../src/hex/hex_grid.gd)**: Manages tiles, highlight overlays, and paths.
+- **[HexTile](../src/hex/hex_tile.gd)**: Encapsulates terrain, fog-of-war visibility, and tile properties.
+- **[HexUtils](../src/hex/hex_utils.gd)**: Provides axial coordinate arithmetic, neighbors, and distances.
 
 ---
 
 ## 3. Characters and Statistics
 
-The statistics models handle character sheets and progression rules.
-
-- **[Character](file:///run/media/pigeon/890dd7cb-9753-4f6b-b8e6-58c98e531754/Projects/Top Down Party Game/src/characters/character.gd)**: Core stats container managing level, XP, hit point thresholds, spell slot structures, passive features list, and status conditions.
-- **[AbilityScores](file:///run/media/pigeon/890dd7cb-9753-4f6b-b8e6-58c98e531754/Projects/Top Down Party Game/src/characters/ability_scores.gd)**: Holds raw scores for the six core attributes (STR, DEX, CON, INT, WIS, CHA) and manages point-buy costs and modifiers.
-- **[Inventory](file:///run/media/pigeon/890dd7cb-9753-4f6b-b8e6-58c98e531754/Projects/Top Down Party Game/src/characters/inventory.gd)**: Manages gold balance, backpack slots, and equipment slots.
+- **[Character](../src/characters/character.gd)**: Core stats, hit points, spell slots, features, and conditions.
+- **[AbilityScores](../src/characters/ability_scores.gd)**: Raw ability scores, point-buy costs, and modifiers.
+- **[Inventory](../src/characters/inventory.gd)**: Gold, backpack slots, and equipment slots.
 
 ---
 
 ## 4. Local States (Game Loops)
 
-- **[OverworldState](file:///run/media/pigeon/890dd7cb-9753-4f6b-b8e6-58c98e531754/Projects/Top Down Party Game/src/overworld/overworld_state.gd)**: Implements overworld navigation, Fog of War, camera tracking, and destination resolution (dungeons, event cards, and towns).
-  - **Wilderness rest + ambush**: The overworld HUD "Rest" button heals the whole party and restores spell slots / per-rest feature uses for free, then rolls a **Stealth check** to avoid an ambush. The best party Stealth bonus (DEX modifier + proficiency if Stealth-trained) is rolled against a DC of `12 + (party_size − 1)`. Success = peaceful night; failure = a surprise encounter (`enter_combat(..., surprise=true)`). This replaced the earlier flat 40% ambush roll.
-  - **HUD buttons** (sidebar): End Turn, Rest, Save Game (`quicksave` slot), Quit to Menu, and Settings (`Settings.open_settings`).
-- **[DungeonState](file:///run/media/pigeon/890dd7cb-9753-4f6b-b8e6-58c98e531754/Projects/Top Down Party Game/src/dungeon/dungeon_state.gd)**: Drives room-based dungeon crawls, handling traps, loot chests, and spawning dungeon monster lists.
-- **[CombatState](file:///run/media/pigeon/890dd7cb-9753-4f6b-b8e6-58c98e531754/Projects/Top Down Party Game/src/combat/combat_state.gd)**: Manages the tactical grid, initiative turn order queue, monster AI execution, and win/lose evaluations.
-  - **Equipped weapon + range**: The combat HUD sidebar shows the active character's equipped weapon and its range (`Weapon: <name> (melee/reach 1)` or `range N hexes`), read from the weapon item's `range` field. Attacks are range-gated: clicking a monster outside the weapon's range is rejected with an "out of range" log (the attack highlight already only marks in-range targets; execution now enforces it too).
-- **[CombatAction](file:///run/media/pigeon/890dd7cb-9753-4f6b-b8e6-58c98e531754/Projects/Top Down Party Game/src/combat/combat_action.gd)**: Handles attack rolls, spell effects, constitution checks for concentration, evasion saves, and reaction spell queries (Shield, Counterspell, and Uncanny Dodge).
+- **[OverworldState](../src/overworld/overworld_state.gd)**: Overworld navigation, fog of war, rest, and destination resolution.
+- **[DungeonState](../src/dungeon/dungeon_state.gd)**: Room-based dungeon traversal, traps, loot, and encounters.
+- **[CombatState](../src/combat/combat_state.gd)**: Tactical grid, initiative, monster AI, and win/lose evaluation.
+- **[CombatAction](../src/combat/combat_action.gd)**: Attack rolls, spell effects, concentration checks, saves, and reactions.
 
 ---
 
 ## 5. Testing & Verification
 
-`run_tests.sh` is the single gate. It runs three stages in order and exits
-non-zero on any failure:
+`run_tests.ps1` is the supported Windows test gate. `run_tests.sh` retains the
+same case structure as compatibility tooling. Both resolve Godot from an
+explicit argument, `GODOT_BIN`, or `godot`/`godot4` on `PATH`; neither contains
+a developer-specific executable path. Each stage has its own bounded process,
+result marker, captured log, and exit code. On Windows,
+`scripts/invoke_godot_case.ps1` isolates raw native stream capture and returns
+the real Godot exit code to the timeout supervisor.
 
-1. **Pre-flight parse gate** — every `.gd` under `src/` and `scenes/` is
-   syntax-checked file-by-file with `godot --check-only --script` (each wrapped
-   in `timeout 25`). A broken script makes a harness scene fail to parse and
-   *hang* rather than error, so this catches it fast, first.
-2. **Boot-error gate** — boots `res://scenes/main.tscn` headless (bounded by
-   `timeout 30`, since the game doesn't self-terminate) and fails the run if the
-   engine logs any `SCRIPT ERROR` / `Nonexistent function` / `Parse Error` /
-   `Cannot infer`. Closes the "0 failed ≠ no errors" gap (CHANGELOG 2026-07-07
-   honesty addendum): an assertion can pass while the engine still logged a
-   runtime error the harness never tripped.
-3. **Two harnesses**, both real-engine boots (not Python mirrors):
+The gate runs, in order:
 
-### Logic suite — `test_runner.tscn`
-Custom (non-GUT) scene that runs inside the normal project boot, so autoloads
-and `class_name` globals are live. Pure-logic tests: resolvers, AI decisions,
-data integrity, save/load round-trips, and the UI-widget group (`LogPanel`,
-`ActionBar`). Runs headless, ~3.5 min, quits with the pass/fail count.
+1. `parse_gate.tscn` loads every `.gd` under `src/` and `scenes/` from a live
+   project scene, keeping autoloads and project `class_name` declarations in
+   scope.
+2. `boot_gate.tscn` instantiates production `main.tscn`, waits for a short
+   settle period, and exits with `BOOT GATE PASSED`. A timeout is a failure.
+3. `test_runner.tscn` runs the logic suite and must print `ALL TESTS PASSED`.
+4. `viewport_harness.tscn` runs each named integration scenario in a fresh
+   Godot process using `--scenario=<name>`. A failed or hung scenario cannot
+   hide the result of later scenarios. The harness retains `all` mode for local
+   debugging, but the repository gate uses isolated mode.
 
-### Viewport harness — `src/viewport_harness.gd`
-Instantiates the **real** combat / overworld / dungeon / event / shop /
-character-creation scenes inside a headless `SubViewport` and asserts `_ready`
-wiring actually executed (grid build, HUD signal connect, spawn, initiative, fog
-update, event plumbing). It is a single ~650-line `Node` whose entire flow lives
-in one `_ready()` coroutine: ~15 sequential "beats" inline, each `await`ing a
-Godot timer (`get_tree().create_timer`) to let a scene settle before poking it.
-
-**Where it costs time (known friction):**
-- *Parse errors don't fail fast.* (Mitigated by stage 1 pre-flight above.)
-- *No isolation between beats.* Every beat is inline in one coroutine. A late
-  failure can't be attributed without reading the whole chain, and a stall in one
-  beat blocks everything after it.
-- *Timing-dependent.* Beats rely on fixed `await` durations; a turn that doesn't
-  resolve within the window silently desyncs the assertions that follow.
-- *No result until the end.* `ALL TESTS PASSED` only prints after the logic suite
-  *and* the full viewport chain, so a single late parse error forces re-running
-  the entire ~3.5-min logic pass first.
-
-**Candidate restructure (not yet adopted):** split the monolithic `_ready()` into
-discrete, individually-named test methods (`test_combat_boot`, `test_weapon_range`,
-`test_p1_intent`, …), each self-contained with its own SubViewport + teardown, so
-a failure reports a named test instead of stalling the chain; and prefer direct
-method calls + state inspection over `await`-based settling wherever possible to
-remove timing flakiness.
+The runners fail on non-zero exits, missing markers, timeouts, and unexpected
+Godot error lines. The exact Windows certificate-store warning is the only
+current allowlist; teardown leaks and resource errors fail their owning case.
+See [Testing](testing.md) for the command and scenario manifest.

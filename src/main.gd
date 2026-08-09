@@ -10,5 +10,9 @@ func _ready() -> void:
 	# Small delay to ensure singletons are fully ready
 	await get_tree().create_timer(0.1).timeout
 	
+	if GameManager.test_mode:
+		print("[Main] Boot gate mode: leaving production scene in place")
+		return
+
 	# Transition to Main Menu
 	GameManager.change_state(GameManager.GameState.MAIN_MENU)

@@ -404,6 +404,7 @@ func _start_combat_turn() -> void:
 		var intent := AIController.get_monster_action(monster, monster_coord, hex_grid, player_entities)
 		monster["intent"] = intent
 		_intent_preview = _describe_intent(monster, intent)
+		monster["intent_text"] = _intent_preview
 		# Re-draw so the badge appears immediately.
 		hex_grid.queue_redraw()
 		_update_grid_entities()
@@ -979,7 +980,10 @@ func _end_battle(result: String) -> void:
 	if GameManager.test_mode:
 		# Headless / test: never block on a button press.
 		overlay.queue_free()
-		GameManager.exit_combat(result)
+		# The viewport harness owns the scene tree. A real scene transition here
+		# would replace that supervisor before it can publish its result marker.
+		# The battle has already resolved and registered its defeated monsters.
+		print("[CombatState] Test mode: skipping post-battle scene transition")
 		return
 	var choice: String = await overlay.resolved
 	overlay.queue_free()

@@ -97,6 +97,15 @@ func load_game(slot_name: String) -> bool:
 		GameManager.is_loading_save = false
 		return false
 
+	# The isolated viewport harness owns the scene tree. Restore the logical
+	# state without replacing that supervisor; production loads still perform
+	# the normal scene transition.
+	if GameManager.test_mode:
+		GameManager.current_state = loaded_state
+		GameManager.is_loading_save = false
+		print("[SaveManager] Test mode: restored save state without scene transition")
+		return true
+
 	# Transition
 	GameManager.change_state(loaded_state)
 	print("[SaveManager] Successfully loaded game from %s" % file_path)

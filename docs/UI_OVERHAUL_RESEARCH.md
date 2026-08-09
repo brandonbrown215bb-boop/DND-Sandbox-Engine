@@ -12,12 +12,19 @@
 > what actually landed. See **§0 Status** for the gaps. The original audit (§1)
 > described the *pre-overhaul* state and is kept for historical context only.
 
+> **Gate 0 reconciliation (2026-08-09):** The status above is historical
+> project context, not current completion evidence. The current Godot 4.7
+> baseline and open runtime defects are recorded in [Gate 0 evidence](gate0_evidence.md)
+> and the [defect register](defect_register.md). The old machine-specific
+> executable path is intentionally not reproduced here.
+
 ---
 
 ## 0. Status — planned vs. landed (2026-07-07)
 
-The overhaul ran. Verified by booting the project in Godot 4.7 stable
-(`/home/pigeon/Desktop/Godot_v4.7-stable_linux.x86_64`) and running the suite:
+The overhaul ran. Its historical verification used Godot 4.7 stable; current
+engine evidence is maintained in [Gate 0 evidence](gate0_evidence.md) and is
+reproduced with the repository runner through `GODOT_BIN`:
 logic suite reports `ALL TESTS PASSED`; viewport harness reports
 `0 failed (12 tests run)`.
 

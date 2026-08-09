@@ -181,7 +181,7 @@ func _draw() -> void:
 					var intent_text: String = ""
 					if entity.has("monster"):
 						var mdict: Dictionary = entity["monster"]
-						intent_text = mdict.get("intent", "")
+						intent_text = str(mdict.get("intent_text", ""))
 					elif entity.has("intent"):
 						intent_text = entity.get("intent", "")
 					if not intent_text.is_empty():

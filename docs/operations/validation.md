@@ -1,0 +1,49 @@
+# Validation
+
+Gate 1 is the supported developer loop. It runs project-context parsing,
+production boot, the fast logic suite, and each named viewport scenario in a
+fresh Godot process with a timeout, result marker, captured log, and isolated
+save/settings data root.
+
+## Windows (supported gate)
+
+```powershell
+$env:GODOT_BIN = 'C:\path\to\Godot_v4.7-stable_win64_console.exe'
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\run_tests.ps1
+```
+
+The runner also accepts the portable executable as its first argument or finds
+`godot`/`godot4` on `PATH`. It redirects `APPDATA` and `LOCALAPPDATA` to a
+disposable per-scenario directory while Godot runs.
+
+## Shell compatibility
+
+```bash
+GODOT_BIN=/path/to/godot bash ./run_tests.sh
+```
+
+The shell runner is retained for compatible environments and uses per-scenario
+`XDG_*` data, config, cache, and state roots. It is not a supported-host Gate 1
+requirement and native Linux execution is not required evidence. Set
+`TEST_LOG_DIR` to retain logs at a chosen location; otherwise logs are created
+under the operating system temporary directory.
+
+## Targeted controls
+
+```powershell
+$env:PARSE_TIMEOUT_SECONDS = '10'
+$env:SCENARIO_TIMEOUT_SECONDS = '1'
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\run_tests.ps1
+```
+
+For focused work, pass `-Suite logic` or `-Suite integration` to the
+PowerShell runner. The compatibility shell runner accepts the matching
+`TEST_SUITE=logic` or `TEST_SUITE=integration` environment variable. `all` is
+the Gate 1 completion command. The fixed-seed campaign smoke is introduced and
+owned by Gate 7, not deferred Gate 1 work.
+
+A missing marker, assertion failure, unexpected Godot error, non-zero process
+exit, or timeout fails the owning case. The Windows Godot build used on this
+host emits `Failed to read the root certificate store`; that exact platform
+warning is allowlisted. Test-owned leaks, resource errors, parse errors, and
+generic `ERROR:` output are not allowlisted.
