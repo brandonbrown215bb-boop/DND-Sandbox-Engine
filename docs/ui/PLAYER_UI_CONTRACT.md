@@ -1,6 +1,6 @@
 # Player UI Contract
 
-- Status: Proposed for player review
+- Status: Accepted for implementation
 - Decision basis: [ADR-0003](../decisions/0003-player-vtt-shell-and-activity-history.md)
 - Target: desktop monitor, mouse primary, 1280 x 720 minimum composition
 - History capacity: 200 top-level activity records per campaign
@@ -20,6 +20,12 @@ This contract covers:
 - shared component, interaction, modal, accessibility, and theme boundaries;
 - the player-facing shape of menus and secondary gameplay screens; and
 - evidence required before the redesign can be called shipped.
+
+Implementation checkpoint: the versioned `ActivityRecord` boundary, bounded
+`ActivityHistory` campaign store, and `SaveManager` round trip are implemented.
+Resolver publication, the activity rail, the shared shell, and the visual
+acceptance evidence remain future slices; this contract does not claim those
+surfaces are shipped yet.
 
 It does not add network multiplayer, split-screen, controller support, chat,
 GM-only information, private rolls, or third-party theme packaging.

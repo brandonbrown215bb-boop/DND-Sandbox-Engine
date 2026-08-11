@@ -31,6 +31,7 @@ func _ready() -> void:
 	_test_fog_of_war()
 	_test_hexutils()
 	_test_dungeon_lifecycle()
+	_test_activity_history()
 	_test_save_load()
 	_test_widgets()
 	_report()
@@ -88,6 +89,42 @@ func _monster_inst(id: String) -> Dictionary:
 		"loot_table": m.get("loot_table", []).duplicate(true), "is_boss": bool(m.get("is_boss", false)), "creature_type": str(m.get("creature_type", "")),
 		"ai_behavior": m.get("ai_behavior", "aggressive"),
 		"hex_position": Vector2i(3, 0), "is_alive": true, "conditions": {}
+	}
+
+
+func _activity_attack_draft(title: String = "Longsword") -> Dictionary:
+	return {
+		"category": "roll",
+		"kind": "attack",
+		"actor": {"id": "pc-elowen", "name": "Elowen"},
+		"targets": [{"id": "goblin-3", "name": "Goblin"}],
+		"title": title,
+		"summary": "17 vs AC 14 - Hit",
+		"outcome": {"code": "hit", "label": "Hit"},
+		"visibility": "public",
+		"payload": {
+			"formula": "1d20 + 3 + 2",
+			"dice_terms": [{
+				"count": 1,
+				"sides": 20,
+				"results": [12],
+				"kept": [true],
+				"label": "d20",
+				"subtotal": 12,
+			}],
+			"modifiers": [
+				{"label": "Strength", "value": 3},
+				{"label": "Proficiency", "value": 2},
+			],
+			"natural_total": 12,
+			"final_total": 17,
+			"comparison": {
+				"kind": "armor_class",
+				"target": 14,
+				"margin": 3,
+				"result": "hit",
+			},
+		},
 	}
 
 # ---- groups ----
@@ -1194,6 +1231,49 @@ func _test_hexutils() -> void:
 		func(h: Vector2i) -> bool: return true, func(h: Vector2i) -> float: return 1.0, 100)
 	_assert(path.size() >= 2 and path[0] == Vector2i.ZERO and path[-1] == Vector2i(3, 0), "static find_path endpoints correct")
 
+func _test_activity_history() -> void:
+	print("\n[Group] Activity history")
+	ActivityHistory.clear()
+	var draft := _activity_attack_draft()
+	var published: Dictionary = ActivityHistory.publish(draft)
+	_assert(int(published.get("sequence", 0)) == 1 and published.get("id", "") == "activity-000001", "activity store assigns stable campaign sequence and id")
+	_assert(int(published.get("payload", {}).get("final_total", 0)) == 17, "activity record preserves authoritative resolved total")
+	draft["payload"]["final_total"] = 99
+	published["payload"]["final_total"] = 88
+	_assert(int(ActivityHistory.get_records()[0]["payload"]["final_total"]) == 17, "published activity is isolated from caller mutation")
+	var returned_records := ActivityHistory.get_records()
+	returned_records[0]["summary"] = "mutated"
+	_assert(ActivityHistory.get_records()[0]["summary"] == "17 vs AC 14 - Hit", "activity queries return immutable copies")
+
+	var malformed := published.duplicate(true)
+	malformed.erase("payload")
+	var future := published.duplicate(true)
+	future["schema_version"] = ActivityRecord.SCHEMA_VERSION + 1
+	var prepared := ActivityHistory.prepare_snapshot({
+		"schema_version": ActivityHistory.STORE_SCHEMA_VERSION,
+		"next_sequence": 41,
+		"records": [published, malformed, future],
+	})
+	_assert(prepared.get("records", []).size() == 1, "snapshot preparation skips malformed and future activity records")
+	_assert(prepared.get("diagnostics", []).size() == 2 and not prepared.get("notices", []).is_empty(), "skipped activity records retain diagnostics and a player-safe notice")
+	ActivityHistory.apply_prepared_snapshot(prepared)
+	_assert(ActivityHistory.get_next_sequence() == 41, "activity snapshot preserves the next campaign sequence")
+
+	ActivityHistory.clear()
+	var all_published: Array[Dictionary] = []
+	for index in 201:
+		all_published.append(ActivityHistory.publish(_activity_attack_draft("Attack %d" % (index + 1))))
+	var bounded_records := ActivityHistory.get_records()
+	_assert(bounded_records.size() == ActivityHistory.CAPACITY, "activity store retains at most 200 top-level records")
+	_assert(int(bounded_records.front().get("sequence", 0)) == 2 and int(bounded_records.back().get("sequence", 0)) == 201, "the 201st activity trims exactly the oldest complete record")
+	_assert(ActivityHistory.get_next_sequence() == 202, "activity sequence remains monotonic after trimming")
+	var loaded_over_capacity := ActivityHistory.prepare_snapshot({"schema_version": 1, "next_sequence": 202, "records": all_published})
+	_assert(loaded_over_capacity.get("records", []).size() == ActivityHistory.CAPACITY and int(loaded_over_capacity.get("records", []).front().get("sequence", 0)) == 2, "snapshot loader also clamps externally oversized history to the newest 200 records")
+	var serialized_text := JSON.stringify(ActivityHistory.serialize())
+	_assert(not serialized_text.contains("<RefCounted") and not serialized_text.contains("Object("), "activity history serializes as plain JSON-safe DTO data")
+	ActivityHistory.clear()
+
+
 func _test_save_load() -> void:
 	print("\n[Group] Save/Load")
 	# Set up minimal game-in-progress state
@@ -1206,6 +1286,9 @@ func _test_save_load() -> void:
 	var sc: Character = _fresh_char("Sava", "human", "fighter", {"STR":15,"DEX":14,"CON":13,"INT":12,"WIS":10,"CHA":8})
 	PlayerManager.set_player_character(0, sc)
 	PartyManager.sync_from_player_manager()
+	ActivityHistory.clear()
+	var published_activity := ActivityHistory.publish(_activity_attack_draft("Opening Longsword"))
+	_assert(not published_activity.is_empty(), "deterministic activity fixture publishes before save")
 	var slot := "rook_test_slot"
 	# clean any prior
 	SaveManager.delete_save(slot)
@@ -1217,6 +1300,20 @@ func _test_save_load() -> void:
 	if saved_file != null: saved_file.close()
 	var saved_dto: Dictionary = saved_json.data if saved_parse == OK and saved_json.data is Dictionary else {}
 	_assert(SaveManager._validate_save_data(saved_dto).is_empty(), "saved party DTO passes structural validation")
+	_assert(saved_dto.get("activity_history", {}).get("records", []).size() == 1, "save DTO contains campaign activity history")
+	var malformed_activity_slot := "rook_activity_malformed"
+	SaveManager.delete_save(malformed_activity_slot)
+	var malformed_activity_save := saved_dto.duplicate(true)
+	malformed_activity_save["activity_history"]["records"].append({"schema_version": 1})
+	var malformed_activity_file := FileAccess.open("user://saves/%s.sav" % malformed_activity_slot, FileAccess.WRITE)
+	if malformed_activity_file != null:
+		malformed_activity_file.store_string(JSON.stringify(malformed_activity_save))
+		malformed_activity_file.close()
+	ActivityHistory.clear()
+	GameManager.test_mode = true
+	_assert(SaveManager.load_game(malformed_activity_slot), "one malformed activity record does not reject the campaign save")
+	_assert(ActivityHistory.get_records().size() == 1 and not ActivityHistory.get_diagnostics().is_empty(), "load skips malformed activity and retains the readable record with diagnostics")
+	SaveManager.delete_save(malformed_activity_slot)
 	var backup_text := FileAccess.get_file_as_string("user://saves/%s.sav" % slot)
 	var backup_file := FileAccess.open("user://saves/%s.sav.bak" % slot, FileAccess.WRITE)
 	if backup_file != null:
@@ -1226,9 +1323,11 @@ func _test_save_load() -> void:
 	if interrupted_file != null:
 		interrupted_file.store_string("{\"schema_version\":")
 		interrupted_file.close()
+	ActivityHistory.clear()
 	GameManager.test_mode = true
 	_assert(SaveManager.load_game(slot), "interrupted primary save falls back to the last committed backup")
 	_assert(GameManager.current_state == GameManager.GameState.OVERWORLD, "backup recovery restores a resumable state")
+	_assert(ActivityHistory.get_records().size() == 1 and int(ActivityHistory.get_records()[0]["payload"]["final_total"]) == 17, "activity arithmetic survives SaveManager round trip")
 	_assert(slot in SaveManager.get_available_saves(), "backup-only recovery keeps the save slot discoverable")
 	var fixture_file := FileAccess.open("res://data/fixtures/save_v1_compat.json", FileAccess.READ)
 	var fixture_json := JSON.new()
@@ -1284,6 +1383,7 @@ func _test_save_load() -> void:
 	_assert(deleted, "delete_save returns true for existing slot")
 	var saves2: Array[String] = SaveManager.get_available_saves()
 	_assert(slot not in saves2, "slot gone after delete")
+	ActivityHistory.clear()
 	GameManager.game_in_progress = false
 
 

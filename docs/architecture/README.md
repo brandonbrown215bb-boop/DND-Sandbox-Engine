@@ -20,6 +20,13 @@ the same project context through `scenes/parse_gate.tscn`,
 Autoloads under `src/autoload/` own cross-scene state and services such as
 `GameManager`, `PlayerManager`, `PartyManager`, `SaveManager`, `Settings`, and
 `DataLoader`.
+
+`ActivityHistory` owns the campaign-scoped player activity ledger. It assigns
+stable monotonic sequence IDs, retains immutable copies of at most 200
+top-level records, and exposes versioned JSON-safe snapshots. `ActivityRecord`
+validates the shared DTO and the resolved roll payload; gameplay resolvers,
+rather than `Dice` or presentation code, remain responsible for publishing
+final outcomes.
 Gameplay scenes under `scenes/` coordinate domain objects and UI modules under
 `src/ui/`. `src/viewport_harness.gd` is test code: it instantiates real scenes
 inside isolated `SubViewport` trees and never replaces its supervisor during a
@@ -35,6 +42,9 @@ resolver or effect is curated.
 from overworld or dungeon-entry checkpoint states. Campaign ledgers and
 dungeon rooms are stored by stable IDs and arrays, never as live Godot objects.
 Corrupt or unsupported saves are validated before active managers are changed.
+Activity snapshots are prepared before manager mutation; malformed or future
+activity records are omitted with diagnostics without rejecting a readable
+campaign save.
 
 `PartyManager` owns four stable party slots, character identity, companion
 recruitment state, leadership, and the assignment of slots to local player

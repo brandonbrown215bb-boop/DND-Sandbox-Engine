@@ -30,6 +30,7 @@ func save_game(slot_name: String) -> bool:
 		"current_state": int(GameManager.current_state),
 		"defeated_monsters": GameManager.defeated_monsters.duplicate(),
 		"campaign_ledger": _serialize_campaign_ledger(),
+		"activity_history": ActivityHistory.serialize(),
 		"party": PartyManager.serialize(),
 		"active_dungeon_state": _serialize_dungeon_state(GameManager.active_dungeon_state),
 		"players": PlayerManager.serialize(),
@@ -123,6 +124,7 @@ func load_game(slot_name: String) -> bool:
 
 	var loaded_campaign: Dictionary = DataLoader.get_campaign(str(save_data.get("campaign_id", "")))
 	var loaded_state := int(save_data.get("current_state", int(GameManager.GameState.OVERWORLD)))
+	var prepared_activity: Dictionary = ActivityHistory.prepare_snapshot(save_data.get("activity_history", {}))
 	GameManager.is_loading_save = true
 	GameManager.active_campaign = loaded_campaign
 	GameManager.defeated_monsters.assign(_string_array(save_data.get("defeated_monsters", [])))
@@ -136,6 +138,7 @@ func load_game(slot_name: String) -> bool:
 		PartyManager.sync_from_player_manager()
 	PlayerManager.current_round = int(save_data.get("current_round", 1))
 	PlayerManager.active_player_index = int(save_data.get("active_player_index", 0))
+	ActivityHistory.apply_prepared_snapshot(prepared_activity)
 	GameManager.game_in_progress = true
 
 	if GameManager.test_mode:

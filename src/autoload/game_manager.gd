@@ -124,6 +124,7 @@ func start_new_game(campaign_id: String, player_count: int) -> void:
 	# Reset player manager
 	PlayerManager.reset()
 	PartyManager.reset()
+	ActivityHistory.clear()
 	player_count = clampi(player_count, PlayerManager.MIN_PLAYERS, PlayerManager.MAX_PLAYERS)
 	_reset_campaign_ledgers()
 	for i in player_count:
@@ -195,6 +196,7 @@ func return_to_menu() -> void:
 	game_in_progress = false
 	PlayerManager.reset()
 	PartyManager.reset()
+	ActivityHistory.clear()
 	active_campaign = {}
 	transition_context = {}
 	active_dungeon_state.clear()

@@ -32,7 +32,7 @@ The gate-case manifest is:
 | `project_bootstrap` | A cache-free checkout can build Godot's generated class/import state |
 | `parse_gate` | Every project script loads with autoload and `class_name` dependencies available |
 | `boot_gate` | The production main scene settles without an unexpected engine error |
-| `logic` | Data loading, character creation, dice, validated combat/player commands, spellcasting, action economy, AI, inventory, conditions, serialization, players, events, fog, hex math, saves, and UI widget contracts |
+| `logic` | Data loading, character creation, dice, validated combat/player commands, spellcasting, action economy, AI, inventory, conditions, serialization, players, events, fog, hex math, bounded activity history, saves, and UI widget contracts |
 
 The current integration scenario manifest is:
 
