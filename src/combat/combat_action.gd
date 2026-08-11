@@ -211,26 +211,38 @@ static func resolve_hunters_mark_damage(attacker: Character, target_entity: Dict
 ## Returns a result dictionary describing the hit, miss, crit, damage, and logs.
 static func resolve_weapon_attack(attacker: Character, target_entity, weapon_data: Dictionary, advantage: bool = false, disadvantage: bool = false, reaction_decisions: Dictionary = {}) -> Dictionary:
 	var ability: String = weapon_data.get("ability", "STR")
-	
-	# Roll attack
-	var attack_result := attacker.make_attack_roll(ability, advantage, disadvantage, weapon_data)
-	if attack_result["is_miss"]:
-		return {"hit": false, "message": "Miss! (Natural 1)"}
-	var bardic_bonus := 0
-	var bardic_message := ""
-	if attacker is Character and bool(reaction_decisions.get("bardic_inspiration", false)):
-		var inspiration := consume_bardic_inspiration(attacker)
-		if inspiration.get("success", false):
-			bardic_bonus = int(inspiration.get("bonus", 0))
-			attack_result["total"] += bardic_bonus
-			bardic_message = " [color=cyan]%s[/color]" % inspiration.get("message", "Bardic Inspiration")
 
-	# Check target AC
+	# Resolve the comparison target before any terminal outcome so even natural
+	# misses carry the same authoritative activity shape as ordinary attacks.
 	var target_ac := 10
 	if target_entity is Character:
 		target_ac = target_entity.get_ac()
 	elif target_entity is Dictionary:
 		target_ac = int(target_entity.get("armor_class", 10))
+
+	# Roll attack
+	var attack_result := attacker.make_attack_roll(ability, advantage, disadvantage, weapon_data)
+	if attack_result["is_miss"]:
+		return {
+			"hit": false,
+			"attack_roll": attack_result["total"],
+			"target_ac": target_ac,
+			"activity_roll": _attack_activity_roll(attack_result, target_ac, false),
+			"activity_damage": {},
+			"message": "Miss! (Natural 1)",
+		}
+	var bardic_bonus := 0
+	var bardic_message := ""
+	var bardic_die := ""
+	if attacker is Character and bool(reaction_decisions.get("bardic_inspiration", false)):
+		var inspiration := consume_bardic_inspiration(attacker)
+		if inspiration.get("success", false):
+			bardic_bonus = int(inspiration.get("bonus", 0))
+			bardic_die = str(inspiration.get("die", "1d6"))
+			attack_result["total"] += bardic_bonus
+			bardic_message = " [color=cyan]%s[/color]" % inspiration.get("message", "Bardic Inspiration")
+			var bardic_sides := int(bardic_die.to_lower().trim_prefix("1d"))
+			attack_result["bonus_dice_terms"].append({"count": 1, "sides": bardic_sides, "results": [bardic_bonus], "kept": [true], "label": "Bardic Inspiration", "subtotal": bardic_bonus})
 
 	var is_crit := bool(attack_result["is_crit"])
 	var is_hit: bool = is_crit or (attack_result["total"] >= target_ac)
@@ -250,6 +262,9 @@ static func resolve_weapon_attack(attacker: Character, target_entity, weapon_dat
 		return {
 			"hit": false,
 			"attack_roll": attack_result["total"],
+			"target_ac": target_ac,
+			"activity_roll": _attack_activity_roll(attack_result, target_ac, false),
+			"activity_damage": {},
 			"message": reaction_msg + "Miss! Attack roll %d vs AC %d" % [attack_result["total"], target_ac]
 		}
 
@@ -260,24 +275,38 @@ static func resolve_weapon_attack(attacker: Character, target_entity, weapon_dat
 	var mod := attacker.ability_scores.get_ability_modifier(ability)
 	var modifiers := {"STR": mod, "DEX": mod}
 	
-	var damage_roll := Dice.parse_dice_string(damage_str, modifiers)
+	var damage_detail: Dictionary = Dice.parse_dice_details(damage_str, modifiers)
+	var damage_roll := int(damage_detail.get("final_total", 0))
 	if damage_type in ["bludgeoning", "piercing", "slashing"] and attacker is Character:
-		damage_roll += attacker.get_modifier("stat", "damage:physical")
+		var physical_modifier := attacker.get_modifier("stat", "damage:physical")
+		damage_roll += physical_modifier
+		if physical_modifier != 0:
+			damage_detail["modifiers"].append({"label": "Physical damage", "value": physical_modifier})
 	
 	# Crits double damage dice
 	if attack_result["is_crit"]:
 		# Roll damage dice a second time
-		damage_roll += Dice.parse_dice_string(damage_str, {"STR": 0, "DEX": 0})
+		var critical_detail: Dictionary = Dice.parse_dice_details(damage_str, {"STR": 0, "DEX": 0})
+		damage_roll += int(critical_detail.get("final_total", 0))
+		for critical_term in critical_detail.get("dice_terms", []):
+			var labeled_term: Dictionary = critical_term.duplicate(true)
+			labeled_term["label"] = "Critical %s" % str(labeled_term.get("label", "damage die"))
+			damage_detail["dice_terms"].append(labeled_term)
 
+	var rolled_damage := damage_roll
+	var mitigation: Array[Dictionary] = []
 	# Uncanny Dodge Reaction
 	if target_entity is Character and target_entity.reaction_available and (target_entity.has_feature("uncanny_dodge") or target_entity.has_feature("rogue_uncanny_dodge")) and _reaction_accepted("uncanny_dodge", reaction_decisions):
 		target_entity.reaction_available = false
 		damage_roll = int(floor(float(damage_roll) / 2.0))
+		mitigation.append({"label": "Uncanny Dodge", "from": rolled_damage, "to": damage_roll})
 		reaction_msg += "[color=cyan]%s uses Uncanny Dodge as a reaction to halve the incoming damage![/color]\n" % target_entity.character_name
 
 	# Rage resistance applies to physical weapon damage.
 	if target_entity is Character and target_entity.has_condition("raging") and damage_type in ["bludgeoning", "piercing", "slashing"]:
+		var before_resistance := damage_roll
 		damage_roll = int(floor(float(damage_roll) / 2.0))
+		mitigation.append({"label": "Rage resistance", "from": before_resistance, "to": damage_roll})
 
 	# Apply damage
 	var actual_dealt := 0
@@ -289,14 +318,59 @@ static func resolve_weapon_attack(attacker: Character, target_entity, weapon_dat
 		target_entity["current_hp"] = hp - actual_dealt
 
 	var crit_prefix := "CRITICAL HIT! " if attack_result["is_crit"] else ""
+	damage_detail["rolled_total"] = rolled_damage
+	damage_detail["resolved_total"] = damage_roll
+	damage_detail["applied"] = actual_dealt
+	damage_detail["type"] = damage_type
+	damage_detail["mitigation"] = mitigation
 	return {
 		"hit": true,
 		"crit": attack_result["is_crit"],
 		"damage": actual_dealt,
 		"damage_type": damage_type,
 		"attack_roll": attack_result["total"],
+		"target_ac": target_ac,
 		"bardic_bonus": bardic_bonus,
+		"bardic_die": bardic_die,
+		"activity_roll": _attack_activity_roll(attack_result, target_ac, true),
+		"activity_damage": damage_detail,
+		"damage_components": [{"label": "%s damage" % damage_type.capitalize(), "value": actual_dealt, "type": damage_type}],
 		"message": reaction_msg + bardic_message + "%sHit! (%d vs AC %d) Dealing %d %s damage." % [crit_prefix, attack_result["total"], target_ac, actual_dealt, damage_type]
+	}
+
+
+## Convert the final attack comparison into the immutable roll payload contract.
+static func _attack_activity_roll(attack_result: Dictionary, target_ac: int, is_hit: bool) -> Dictionary:
+	var results: Array = attack_result.get("roll_results", [attack_result.get("natural", 0)]).duplicate()
+	var kept: Array = attack_result.get("roll_kept", [true]).duplicate()
+	var dice_terms: Array = [{
+		"count": results.size(),
+		"sides": 20,
+		"results": results,
+		"kept": kept,
+		"label": "d20",
+		"subtotal": int(attack_result.get("natural", 0)),
+	}]
+	for bonus_term in attack_result.get("bonus_dice_terms", []):
+		dice_terms.append(bonus_term.duplicate(true))
+	var formula_parts: Array[String] = ["2d20kh1" if bool(attack_result.get("advantage", false)) else ("2d20kl1" if bool(attack_result.get("disadvantage", false)) else "1d20")]
+	for modifier in attack_result.get("activity_modifiers", []):
+		formula_parts.append("%+d" % int(modifier.get("value", 0)))
+	for bonus_term in attack_result.get("bonus_dice_terms", []):
+		formula_parts.append("+ %dd%d" % [int(bonus_term.get("count", 1)), int(bonus_term.get("sides", 0))])
+	var final_total := int(attack_result.get("total", 0))
+	return {
+		"formula": " ".join(formula_parts),
+		"dice_terms": dice_terms,
+		"modifiers": attack_result.get("activity_modifiers", []).duplicate(true),
+		"natural_total": int(attack_result.get("natural", 0)),
+		"final_total": final_total,
+		"comparison": {
+			"kind": "armor_class",
+			"target": target_ac,
+			"margin": final_total - target_ac,
+			"result": "hit" if is_hit else "miss",
+		},
 	}
 
 

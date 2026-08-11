@@ -504,12 +504,24 @@ func test_ranger_action_flow() -> void:
 	target["hex_position"] = target_coord
 	target["current_hp"] = 999
 	target["is_alive"] = true
+	ActivityHistory.clear()
+	var hp_before_attack := int(target["current_hp"])
 	await combat._on_hex_clicked(target_coord)
 	_assert(not combat.turn_budget.action_available and combat.turn_budget.has_acted_this_turn, "a valid target click commits exactly one Attack action")
 	_assert(combat.pending_action_type.is_empty(), "committed attack clears targeting before optional prompts can yield")
 	var hp_after_first_click := int(target["current_hp"])
+	var attack_records := ActivityHistory.get_records()
+	_assert(attack_records.size() == 1, "production Attack action publishes one top-level activity record")
+	if attack_records.size() == 1:
+		var attack_record: Dictionary = attack_records[0]
+		var comparison: Dictionary = attack_record.get("payload", {}).get("comparison", {})
+		var attacks: Array = attack_record.get("payload", {}).get("sections", {}).get("attacks", [])
+		var recorded_damage := int(attacks[0].get("applied_damage", -1)) if not attacks.is_empty() else -1
+		_assert(int(comparison.get("margin", 0)) == int(attack_record.get("payload", {}).get("final_total", 0)) - int(comparison.get("target", 0)), "production attack activity preserves the settled AC margin")
+		_assert(recorded_damage == hp_before_attack - hp_after_first_click, "production attack activity damage equals the target HP change")
 	await combat._on_hex_clicked(target_coord)
 	_assert(int(target["current_hp"]) == hp_after_first_click, "a repeated target click cannot resolve a second attack")
+	_assert(ActivityHistory.get_records().size() == 1, "a repeated target click cannot publish a duplicate activity record")
 
 	_teardown_scene(combat)
 	_setup_world()
@@ -1632,7 +1644,11 @@ func test_character_sheet_contexts() -> void:
 	GameManager.current_state = GameManager.GameState.COMBAT
 	GameManager.transition_context = {"monster_ids": ["goblin"], "terrain": "plains", "return_state": GameManager.GameState.OVERWORLD}
 	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 1.0)
-	var combat_char: Character = combat.active_character
+	# Initiative is intentionally random. Pin this UI assertion to a real player
+	# turn so a monster opening the round cannot turn null == null into a pass.
+	var combat_char: Character = combat.player_entities[0].get("character")
+	combat.current_player_idx = 0
+	combat.active_character = combat_char
 	combat.hud.btn_sheet.pressed.emit()
 	await get_tree().process_frame
 	_assert(CharacterSheet.is_open(), "combat Sheet button opens the character sheet")

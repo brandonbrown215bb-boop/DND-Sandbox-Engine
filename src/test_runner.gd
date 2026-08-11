@@ -1259,6 +1259,28 @@ func _test_activity_history() -> void:
 	ActivityHistory.apply_prepared_snapshot(prepared)
 	_assert(ActivityHistory.get_next_sequence() == 41, "activity snapshot preserves the next campaign sequence")
 
+	# Deterministic resolver-to-record proof: the activity builder copies the
+	# settled roll, comparison, and damage instead of reconstructing any math.
+	ActivityHistory.clear()
+	seed(4242)
+	var activity_attacker := _fresh_char("Record Fighter", "human", "fighter", {"STR": 16, "DEX": 10, "CON": 14, "INT": 10, "WIS": 10, "CHA": 8})
+	activity_attacker.character_id = "pc-record-fighter"
+	var activity_target := {"id": "monster-record-target", "name": "Training Ogre", "armor_class": -100, "current_hp": 999, "is_alive": true}
+	var activity_weapon: Dictionary = DataLoader.get_item("longsword")
+	var resolver_result := CombatAction.resolve_weapon_attack(activity_attacker, activity_target, activity_weapon)
+	var resolver_draft := CombatActivityRecord.attack_action(activity_attacker, activity_target, activity_weapon, [resolver_result], "the_lost_crown", 3)
+	var resolver_record := ActivityHistory.publish(resolver_draft)
+	_assert(ActivityHistory.get_records().size() == 1, "one resolved Attack action publishes exactly one top-level activity record")
+	_assert(resolver_record.get("payload", {}).get("dice_terms", []) == resolver_result.get("activity_roll", {}).get("dice_terms", []), "activity record dice and kept flags equal the resolver output")
+	_assert(int(resolver_record.get("payload", {}).get("final_total", 0)) == int(resolver_result.get("attack_roll", 0)), "activity record final attack total equals the resolver output")
+	_assert(resolver_record.get("payload", {}).get("comparison", {}) == resolver_result.get("activity_roll", {}).get("comparison", {}), "activity record target, margin, and outcome equal the resolver output")
+	var resolver_attacks: Array = resolver_record.get("payload", {}).get("sections", {}).get("attacks", [])
+	_assert(not resolver_attacks.is_empty() and int(resolver_attacks[0].get("applied_damage", -1)) == int(resolver_result.get("damage", -2)), "activity record applied damage equals the resolver output")
+	var grouped_draft := CombatActivityRecord.attack_action(activity_attacker, activity_target, activity_weapon, [resolver_result, resolver_result.duplicate(true)], "the_lost_crown", 3)
+	ActivityHistory.clear()
+	var grouped_record := ActivityHistory.publish(grouped_draft)
+	_assert(grouped_record.get("payload", {}).get("sections", {}).get("attacks", []).size() == 2 and ActivityHistory.get_records().size() == 1, "Extra Attack swings remain children of one top-level Attack action record")
+
 	ActivityHistory.clear()
 	var all_published: Array[Dictionary] = []
 	for index in 201:

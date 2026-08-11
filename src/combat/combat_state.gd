@@ -3,6 +3,8 @@
 class_name CombatState
 extends Node2D
 
+const CombatActivityRecordModel = preload("res://src/activity/combat_activity_record.gd")
+
 @onready var hex_grid: HexGrid = $HexGrid
 @onready var hud: CombatHUD = $CombatHUD
 @onready var cam: Camera2D = $Camera2D
@@ -996,6 +998,7 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 
 		# Resolve weapon attack
 		var result := CombatAction.resolve_weapon_attack(active_character, clicked_monster, weapon, has_advantage, has_disadvantage, attack_reaction_decisions)
+		var attack_results: Array[Dictionary] = [result]
 
 		# Ranger Favored Foe is offered on a confirmed hit. Marking replaces any
 		# prior concentration-bound mark; the shared resolver owns the bonus damage.
@@ -1013,12 +1016,14 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 			var favored_damage := CombatAction.resolve_favored_foe_damage(active_character, clicked_monster)
 			if favored_damage.get("success", false):
 				result["damage"] = int(result.get("damage", 0)) + int(favored_damage.get("damage", 0))
+				result.get_or_add("damage_components", []).append({"label": "Favored Foe", "value": int(favored_damage.get("damage", 0)), "type": str(result.get("damage_type", "")), "formula": str(favored_damage.get("dice", ""))})
 				result["message"] += " [color=green]%s[/color]" % favored_damage.get("message", "Favored Foe!")
 
 		if result.get("hit", false):
 			var hunters_mark_damage := CombatAction.resolve_hunters_mark_damage(active_character, clicked_monster)
 			if hunters_mark_damage.get("success", false):
 				result["damage"] = int(result.get("damage", 0)) + int(hunters_mark_damage.get("damage", 0))
+				result.get_or_add("damage_components", []).append({"label": "Hunter's Mark", "value": int(hunters_mark_damage.get("damage", 0)), "type": str(result.get("damage_type", "")), "formula": str(hunters_mark_damage.get("dice", ""))})
 				result["message"] += " [color=green]%s[/color]" % hunters_mark_damage.get("message", "Hunter's Mark!")
 
 		# Paladin Divine Smite is offered after a melee hit and before the
@@ -1031,6 +1036,7 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 					var smite_result := CombatAction.resolve_divine_smite(active_character, clicked_monster, smite_slot)
 					if smite_result.get("success", false):
 						result["damage"] = int(result.get("damage", 0)) + int(smite_result.get("damage", 0))
+						result.get_or_add("damage_components", []).append({"label": "Divine Smite", "value": int(smite_result.get("damage", 0)), "type": str(smite_result.get("damage_type", "radiant")), "formula": "%dd8" % mini(5, int(smite_result.get("slot_level", 1)) + 1)})
 						result["message"] += " [color=gold]%s[/color]" % smite_result.get("message", "Divine Smite!")
 		
 		# Check for Rogue Sneak Attack on a hit
@@ -1045,6 +1051,7 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 			var actual_sa_dealt := mini(sa_damage, hp)
 			clicked_monster["current_hp"] = hp - actual_sa_dealt
 			result["damage"] = result.get("damage", 0) + actual_sa_dealt
+			result.get_or_add("damage_components", []).append({"label": "Sneak Attack", "value": actual_sa_dealt, "type": str(result.get("damage_type", "")), "formula": sa_dice})
 			result["message"] += " [color=orange]Sneak Attack! Deals +%d damage (%s).[/color]" % [actual_sa_dealt, sa_dice]
 			
 			active_character.feature_uses["sneak_attack_used_this_turn"] = 1
@@ -1076,11 +1083,19 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 			if not clicked_monster.get("is_alive", false):
 				break
 			var extra_result := CombatAction.resolve_weapon_attack(active_character, clicked_monster, weapon, has_advantage, has_disadvantage)
+			attack_results.append(extra_result)
 			hud.add_log("[color=cyan]Extra Attack %d: %s[/color]" % [extra_index + 1, extra_result.get("message", "Miss!")])
 			if int(clicked_monster.get("current_hp", 0)) <= 0:
 				clicked_monster["is_alive"] = false
 				hud.add_log("[color=green]%s was defeated![/color]" % clicked_monster["name"])
 				tracker.remove_combatant(clicked_monster["id"])
+
+		# The Attack action is now fully settled. Publish once, grouping Extra
+		# Attack swings and every applied damage rider under the same intent.
+		var campaign_id := str(GameManager.active_campaign.get("id", ""))
+		var activity_draft := CombatActivityRecordModel.attack_action(active_character, clicked_monster, weapon, attack_results, campaign_id, tracker.current_round)
+		if not activity_draft.is_empty():
+			ActivityHistory.publish(activity_draft)
 
 		_check_battle_end_conditions()
 		_highlight_reachable()

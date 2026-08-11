@@ -1,6 +1,6 @@
 ---
 kind: architecture
-verified_at_commit: working-tree-2026-08-10
+verified_at_commit: working-tree-2026-08-11
 scope:
   - src/**
 ---
@@ -26,7 +26,10 @@ stable monotonic sequence IDs, retains immutable copies of at most 200
 top-level records, and exposes versioned JSON-safe snapshots. `ActivityRecord`
 validates the shared DTO and the resolved roll payload; gameplay resolvers,
 rather than `Dice` or presentation code, remain responsible for publishing
-final outcomes.
+final outcomes. `CombatAction` returns the settled attack and damage facts;
+`CombatActivityRecord` maps them without rerolling or recomputing; and
+`CombatState` publishes once after optional damage riders and Extra Attack
+swings have settled.
 Gameplay scenes under `scenes/` coordinate domain objects and UI modules under
 `src/ui/`. `src/viewport_harness.gd` is test code: it instantiates real scenes
 inside isolated `SubViewport` trees and never replaces its supervisor during a

@@ -22,10 +22,12 @@ This contract covers:
 - evidence required before the redesign can be called shipped.
 
 Implementation checkpoint: the versioned `ActivityRecord` boundary, bounded
-`ActivityHistory` campaign store, and `SaveManager` round trip are implemented.
-Resolver publication, the activity rail, the shared shell, and the visual
-acceptance evidence remain future slices; this contract does not claim those
-surfaces are shipped yet.
+`ActivityHistory` campaign store, `SaveManager` round trip, and exactly-once
+weapon-attack publication are implemented. Attack records preserve the final
+d20 terms, modifiers, AC comparison, applied damage, and grouped Extra Attack
+swings. Other resolver publication, the activity rail, the shared shell, and
+the visual acceptance evidence remain future slices; this contract does not
+claim those surfaces are shipped yet.
 
 It does not add network multiplayer, split-screen, controller support, chat,
 GM-only information, private rolls, or third-party theme packaging.

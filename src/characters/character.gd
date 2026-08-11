@@ -384,24 +384,50 @@ func make_attack_roll(ability: String = "STR", advantage: bool = false, disadvan
 		disadvantage = true
 
 	var natural_roll: int
+	var roll_results: Array = []
+	var roll_kept: Array = []
 	if advantage and not disadvantage:
-		natural_roll = Dice.roll_with_advantage(20)
+		var advantage_roll: Dictionary = Dice.roll_with_advantage_details(20)
+		natural_roll = int(advantage_roll.get("total", 0))
+		roll_results = advantage_roll.get("rolls", []).duplicate()
+		roll_kept = advantage_roll.get("kept", []).duplicate()
 	elif disadvantage and not advantage:
-		natural_roll = Dice.roll_with_disadvantage(20)
+		var disadvantage_roll: Dictionary = Dice.roll_with_disadvantage_details(20)
+		natural_roll = int(disadvantage_roll.get("total", 0))
+		roll_results = disadvantage_roll.get("rolls", []).duplicate()
+		roll_kept = disadvantage_roll.get("kept", []).duplicate()
 	else:
 		natural_roll = Dice.roll(20)
+		roll_results = [natural_roll]
+		roll_kept = [true]
 
-	var mod := ability_scores.get_ability_modifier(ability) + proficiency_bonus
+	var ability_modifier := ability_scores.get_ability_modifier(ability)
+	var mod := ability_modifier + proficiency_bonus
 	var is_crit := natural_roll >= crit_range
 	var is_miss := natural_roll == 1
 
 	var total := natural_roll + mod
 	var style_bonus := get_attack_style_bonus(weapon_data)
 	total += style_bonus
+	var bonus_dice_terms: Array[Dictionary] = []
 	if has_condition("blessed"):
-		total += Dice.roll(4)
-	total += get_modifier("roll", "attack")
-	total += get_modifier("roll", "attack:%s" % ability.to_upper())
+		var bless_roll := Dice.roll(4)
+		total += bless_roll
+		bonus_dice_terms.append({"count": 1, "sides": 4, "results": [bless_roll], "kept": [true], "label": "Bless", "subtotal": bless_roll})
+	var global_attack_modifier := get_modifier("roll", "attack")
+	var ability_attack_modifier := get_modifier("roll", "attack:%s" % ability.to_upper())
+	total += global_attack_modifier
+	total += ability_attack_modifier
+	var activity_modifiers: Array[Dictionary] = [
+		{"label": ability.to_upper(), "value": ability_modifier},
+		{"label": "Proficiency", "value": proficiency_bonus},
+	]
+	if style_bonus != 0:
+		activity_modifiers.append({"label": "Fighting Style", "value": style_bonus})
+	if global_attack_modifier != 0:
+		activity_modifiers.append({"label": "Attack modifier", "value": global_attack_modifier})
+	if ability_attack_modifier != 0:
+		activity_modifiers.append({"label": "%s attack modifier" % ability.to_upper(), "value": ability_attack_modifier})
 
 	return {
 		"natural": natural_roll,
@@ -409,6 +435,11 @@ func make_attack_roll(ability: String = "STR", advantage: bool = false, disadvan
 		"modifier": mod + style_bonus,
 		"feature_bonus": style_bonus,
 		"advantage": advantage and not disadvantage,
+		"disadvantage": disadvantage and not advantage,
+		"roll_results": roll_results,
+		"roll_kept": roll_kept,
+		"bonus_dice_terms": bonus_dice_terms,
+		"activity_modifiers": activity_modifiers,
 		"is_crit": is_crit,
 		"is_miss": is_miss,
 	}

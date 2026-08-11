@@ -31,31 +31,50 @@ func roll_multiple(count: int, sides: int) -> Array[int]:
 
 ## Roll with advantage: roll twice, return the higher result.
 func roll_with_advantage(sides: int) -> int:
+	return int(roll_with_advantage_details(sides).get("total", 0))
+
+
+## Roll with advantage and retain both dice plus the kept flags for activity records.
+func roll_with_advantage_details(sides: int) -> Dictionary:
 	var a := randi_range(1, sides)
 	var b := randi_range(1, sides)
 	var result := maxi(a, b)
 	dice_rolled.emit({"type": "advantage", "sides": sides, "rolls": [a, b], "total": result})
-	return result
+	return {"rolls": [a, b], "kept": [a >= b, b > a], "total": result}
 
 
 ## Roll with disadvantage: roll twice, return the lower result.
 func roll_with_disadvantage(sides: int) -> int:
+	return int(roll_with_disadvantage_details(sides).get("total", 0))
+
+
+## Roll with disadvantage and retain both dice plus the kept flags for activity records.
+func roll_with_disadvantage_details(sides: int) -> Dictionary:
 	var a := randi_range(1, sides)
 	var b := randi_range(1, sides)
 	var result := mini(a, b)
 	dice_rolled.emit({"type": "disadvantage", "sides": sides, "rolls": [a, b], "total": result})
-	return result
+	return {"rolls": [a, b], "kept": [a <= b, b < a], "total": result}
 
 
 ## Parse and evaluate a dice string expression like "2d6 + 3" or "1d20 + STR".
 ## The optional `modifiers` dictionary maps names to integer values (e.g., {"STR": 3, "level": 5}).
 func parse_dice_string(dice_string: String, modifiers: Dictionary = {}) -> int:
+	return int(parse_dice_details(dice_string, modifiers).get("final_total", 0))
+
+
+## Evaluate a dice expression while retaining the exact dice and modifiers used.
+func parse_dice_details(dice_string: String, modifiers: Dictionary = {}) -> Dictionary:
 	var total := 0
 	var expression := dice_string.strip_edges().to_upper()
+	var resolved_modifiers: Array[Dictionary] = []
 
 	# Replace named modifiers with their values
 	for key in modifiers:
-		expression = expression.replace(key.to_upper(), str(modifiers[key]))
+		var key_name := str(key).to_upper()
+		if key_name in expression:
+			resolved_modifiers.append({"label": key_name, "value": int(modifiers[key])})
+			expression = expression.replace(key_name, str(modifiers[key]))
 
 	expression = expression.replace(" ", "")
 	while "+-" in expression or "--" in expression or "-+" in expression or "++" in expression:
@@ -67,6 +86,7 @@ func parse_dice_string(dice_string: String, modifiers: Dictionary = {}) -> int:
 	# Split on + and - while keeping the operator
 	var tokens := _tokenize_expression(expression)
 
+	var dice_terms: Array[Dictionary] = []
 	for token in tokens:
 		token = token.strip_edges()
 		if token.is_empty():
@@ -93,10 +113,26 @@ func parse_dice_string(dice_string: String, modifiers: Dictionary = {}) -> int:
 				for r in rolls:
 					roll_total += r
 				total += sign * roll_total
+				var kept: Array[bool] = []
+				for roll_value in rolls:
+					kept.append(true)
+				dice_terms.append({
+					"count": count,
+					"sides": sides,
+					"results": rolls.duplicate(),
+					"kept": kept,
+					"label": "%sd%d" % ["-" if sign < 0 else "", sides],
+					"subtotal": sign * roll_total,
+				})
 		elif token.is_valid_int():
 			total += sign * token.to_int()
 
-	return total
+	return {
+		"formula": dice_string.strip_edges(),
+		"dice_terms": dice_terms,
+		"modifiers": resolved_modifiers,
+		"final_total": total,
+	}
 
 
 ## Tokenize a dice expression string into individual terms.
