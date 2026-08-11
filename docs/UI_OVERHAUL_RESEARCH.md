@@ -1,5 +1,12 @@
 # UI Overhaul — Research & Plan
 
+> **Target contract (2026-08-10):** The approved desktop VTT direction and the
+> proposed concrete player-facing contract now live in
+> [ADR-0003](decisions/0003-player-vtt-shell-and-activity-history.md) and the
+> [Player UI Contract](ui/PLAYER_UI_CONTRACT.md). This document remains the
+> historical audit and research record; it is not the current target-state
+> authority.
+
 > Scope: the user finds the current UI "far too cluttered and unintuitive."
 > This doc (1) audits what the code actually does, (2) reviews Godot 4 UI
 > patterns that fix the specific problems, and (3) lays out a concrete overhaul
