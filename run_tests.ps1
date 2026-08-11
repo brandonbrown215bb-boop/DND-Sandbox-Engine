@@ -159,7 +159,7 @@ if ($runLogic) {
     if (-not (Invoke-GodotCase "logic" "res://scenes/test_runner.tscn" "ALL TESTS PASSED" $logicTimeout)) { $failed = $true }
 }
 if ($runIntegration) {
-	$scenarios = @("combat", "party_combat", "crown_smoke", "crown_balance_fixture", "combat_ai_loop", "combat_victory", "combat_defeat", "final_encounter_round_trip", "mixed_mechanics_encounter", "overworld", "companion_lifecycle", "crown_composition_solo_two", "crown_composition_three_four", "main_menu_load", "dungeon", "event_dialog", "crown_event_fairy_ring", "dungeon_reentry_round_trip", "character_creation", "normal_creation_matrix", "shop", "save_load", "action_resource_round_trip", "combat_resolution", "event_choice_resolution", "event_dialog_choice_click", "character_sheet", "character_sheet_contexts", "character_value_audit")
+	$scenarios = @("combat", "party_combat", "crown_smoke", "crown_balance_fixture", "combat_ai_loop", "combat_victory", "combat_defeat", "final_encounter_round_trip", "mixed_mechanics_encounter", "ranger_action_flow", "overworld", "companion_lifecycle", "crown_composition_solo_two", "crown_composition_three_four", "main_menu_load", "dungeon", "event_dialog", "crown_event_fairy_ring", "dungeon_reentry_round_trip", "character_creation", "normal_creation_matrix", "shop", "save_load", "action_resource_round_trip", "combat_resolution", "event_choice_resolution", "event_dialog_choice_click", "character_sheet", "character_sheet_contexts", "character_value_audit")
     if (-not [string]::IsNullOrWhiteSpace($Scenario)) {
         if ($scenarios -notcontains $Scenario) { Write-Error "Unknown integration scenario: $Scenario" }
         $scenarios = @($Scenario)

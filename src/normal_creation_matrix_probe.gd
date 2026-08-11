@@ -43,7 +43,7 @@ func _run() -> void:
 		await _run_player_count(player_count)
 	await _run_class_equipment_smoke("Fighter", ["chain_mail", "shield", "longsword"])
 	await _run_class_equipment_smoke("Barbarian", ["chain_mail", "shield", "longsword"])
-	await _run_class_equipment_smoke("Rogue", ["leather_armor", "shield"])
+	await _run_class_equipment_smoke("Rogue", ["leather_armor", "rapier", "shortbow", "dagger", "thieves_tools"])
 	await _run_class_equipment_smoke("Wizard", ["leather_armor", "dagger"], ["fire_bolt", "magic_missile"])
 	await _run_class_equipment_smoke("Warlock", ["leather_armor", "dagger"])
 	await _run_class_equipment_smoke("Sorcerer", ["leather_armor", "dagger"])
@@ -202,7 +202,10 @@ func _run_class_equipment_smoke(target_class: String, expected_equipment: Array[
 		_check(character.has_feature("barbarian_unarmored_defense") and character.get_ac() == expected_unarmored_ac, "normal Barbarian uses shield-compatible Unarmored Defense after armor removal")
 	elif target_class == "Rogue":
 		_check(character.inventory.get_armor() == "leather_armor", "normal Rogue equips leather armor")
-		_check(character.inventory.get_equipped(Inventory.Slot.SHIELD) == "shield", "normal Rogue equips a shield")
+		_check(character.inventory.get_weapon() == "rapier", "normal Rogue equips a rapier")
+		_check(character.inventory.has_item("shortbow"), "normal Rogue carries a shortbow")
+		_check(character.inventory.has_item("dagger"), "normal Rogue carries a dagger")
+		_check(character.inventory.has_item("thieves_tools"), "normal Rogue carries thieves' tools")
 	elif target_class == "Wizard":
 		_check(character.inventory.get_armor() == "leather_armor", "normal Wizard equips leather armor")
 		_check(character.inventory.get_weapon() == "dagger", "normal Wizard equips a dagger")

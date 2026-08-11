@@ -743,11 +743,18 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 			hud.add_log("Click on an enemy to Attack.")
 			_highlight_attack_targets()
 		"cast_spell":
-			if str(extra_data.get("spell", {}).get("casting_time", "action")) == "reaction":
+			var spell_info: Dictionary = extra_data.get("spell", {})
+			if str(spell_info.get("casting_time", "action")) == "reaction":
 				hud.add_log("That spell is reaction-only and is offered when its trigger occurs.")
 				return
+			var spell_lvl: int = int(spell_info.get("level", 0))
+			if spell_lvl > 0 and active_character != null:
+				var slot_key := str(CombatAction.get_spell_slot_level(active_character, spell_info))
+				if active_character.spell_slots.get(slot_key, 0) <= 0:
+					hud.add_log("[color=orange]No level %s spell slots remaining for %s.[/color]" % [slot_key, spell_info.get("name", "this spell")])
+					return
 			pending_action_type = "spell"
-			pending_spell_data = extra_data.get("spell", {})
+			pending_spell_data = spell_info
 			var spell_name: String = pending_spell_data.get("name", "Spell")
 			hud.add_log("Casting %s. Select target hex." % spell_name)
 			_highlight_spell_targets()
@@ -797,6 +804,7 @@ func _cancel_pending_action() -> void:
 		return
 	var old := pending_action_type
 	pending_action_type = ""
+	pending_spell_data = {}
 	pending_feature_data = {}
 	hex_grid.clear_highlights()
 	_clear_path_preview()
@@ -939,6 +947,12 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 			hud.add_log("[color=red]%s is out of range of %s (distance %d, range %d).[/color]" % [clicked_monster["name"], w_name, atk_dist, max_range])
 			return # out of range — do not resolve the attack
 
+		# A valid target commits the Attack action before any optional prompts
+		# yield. Clearing targeting here prevents a second click from starting a
+		# concurrent attack while an optional feature decision is open.
+		pending_action_type = ""
+		_spend_action_cost("action")
+
 		# (weapon / weapon_id already resolved above; reused for the attack roll)
 		
 		# Determine advantage/disadvantage based on conditions
@@ -969,7 +983,7 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 		# turn, while the activating attack itself gains advantage below.
 		if active_character.has_feature("barbarian_reckless_attack") and active_character.level >= 2 and int(weapon.get("range", 1)) <= 1 and str(weapon.get("ability", "STR")) == "STR" and int(active_character.feature_uses.get("barbarian_reckless_attack_used_this_turn", 0)) <= 0:
 			var reckless_detail := "Gain Advantage on Strength melee attacks this turn; enemies gain Advantage against you until your next turn."
-			if await hud.request_reaction(_owner_label_for_character(active_character), "reckless_attack", reckless_detail, "Attack recklessly?"):
+			if await hud.request_reaction(_owner_label_for_character(active_character), "reckless_attack", reckless_detail, "Attack recklessly?", "Reckless Attack", "Reckless Attack — %s" % _owner_label_for_character(active_character)):
 				var reckless_result := CombatAction.activate_reckless_attack(active_character)
 				if reckless_result.get("success", false):
 					has_advantage = true
@@ -977,7 +991,7 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 		# Offer a held Bardic Inspiration die before the attack roll.
 		if active_character.feature_uses.has("bardic_inspiration_die"):
 			var inspiration_die := str(active_character.feature_uses.get("bardic_inspiration_die", "1d6"))
-			if await hud.request_reaction(_owner_label_for_character(active_character), "bardic_inspiration", "Add %s to this attack roll?" % inspiration_die, "Use Bardic Inspiration?"):
+			if await hud.request_reaction(_owner_label_for_character(active_character), "bardic_inspiration", "Add %s to this attack roll?" % inspiration_die, "Use Bardic Inspiration?", "Use Inspiration", "Bardic Inspiration — %s" % _owner_label_for_character(active_character)):
 				attack_reaction_decisions["bardic_inspiration"] = true
 
 		# Resolve weapon attack
@@ -990,7 +1004,7 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 			var already_marked: bool = current_mark_id == str(clicked_monster.get("id", "")) and clicked_monster.get("conditions", {}).has("favored_foe")
 			if not already_marked:
 				var favored_detail := "Mark %s for 1 minute; the first hit each turn deals extra damage." % clicked_monster.get("name", "the target")
-				if await hud.request_reaction(_owner_label_for_character(active_character), "favored_foe", favored_detail, "Mark this target?"):
+				if await hud.request_reaction(_owner_label_for_character(active_character), "favored_foe", favored_detail, "Mark this target?", "Mark Target", "Favored Foe — %s" % _owner_label_for_character(active_character)):
 					if not active_character.concentrating_on.is_empty():
 						_end_concentration(active_character)
 					var favored_mark := CombatAction.resolve_favored_foe_mark(active_character, clicked_monster)
@@ -1013,7 +1027,7 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 			var smite_slot := _lowest_available_spell_slot(active_character, 4)
 			if smite_slot > 0:
 				var smite_detail := "Spend a level %d spell slot for Divine Smite?" % smite_slot
-				if await hud.request_reaction(_owner_label_for_character(active_character), "divine_smite", smite_detail):
+				if await hud.request_reaction(_owner_label_for_character(active_character), "divine_smite", smite_detail, "Spend spell slot?", "Divine Smite", "Divine Smite — %s" % _owner_label_for_character(active_character)):
 					var smite_result := CombatAction.resolve_divine_smite(active_character, clicked_monster, smite_slot)
 					if smite_result.get("success", false):
 						result["damage"] = int(result.get("damage", 0)) + int(smite_result.get("damage", 0))
@@ -1068,8 +1082,6 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 				hud.add_log("[color=green]%s was defeated![/color]" % clicked_monster["name"])
 				tracker.remove_combatant(clicked_monster["id"])
 
-		_spend_action_cost("action")
-		pending_action_type = ""
 		_check_battle_end_conditions()
 		_highlight_reachable()
 
@@ -1246,7 +1258,7 @@ func _execute_player_spell(target_coord: Vector2i) -> void:
 
 	var spell_reaction_decisions: Dictionary = {}
 	if active_character.has_feature("sorcerer_metamagic") and active_character.get_sorcery_points() > 0 and pending_spell_data.has("damage"):
-		if await hud.request_reaction(_owner_label_for_character(active_character), "metamagic:empowered", "Spend 1 Sorcery Point to improve this spell's damage roll.", "Use Empowered Spell?"):
+		if await hud.request_reaction(_owner_label_for_character(active_character), "metamagic:empowered", "Spend 1 Sorcery Point to improve this spell's damage roll.", "Use Empowered Spell?", "Empower Spell", "Empowered Spell — %s" % _owner_label_for_character(active_character)):
 			spell_reaction_decisions["metamagic:empowered"] = true
 
 	var targets_list: Array = []

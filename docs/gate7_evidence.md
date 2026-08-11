@@ -26,6 +26,5 @@ and campaign-ledger matrix remains open. Automated CROWN-09 composition rows
 and two named CROWN-10 fresh-process relaunch proofs now exist; broader
 fresh-process coverage at every supported save point remains. Normal GUI and
 two-player campaign sampling are optional and nonblocking for this casual
-project. Gate 7 stays `in_progress` until the confirmed normal-path defects are
-fixed and the agent-owned acceptance audit reconciles the automated Crown and
-recovery evidence.
+project. Gate 7 stays `in_progress` behind the unfinished Gate 5 and Gate 6
+contracts and its own agent-owned acceptance audit.

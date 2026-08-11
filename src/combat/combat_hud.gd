@@ -44,16 +44,27 @@ var spells_registered: Array[Dictionary] = []
 var features_registered: Array[Dictionary] = []
 
 
+static func decision_prompt_labels(owner_label: String, reaction_id: String, ok_title: String = "", window_title: String = "") -> Dictionary:
+	var real_reactions := ["uncanny_dodge", "shield", "counterspell", "opportunity_attack"]
+	if window_title.is_empty():
+		window_title = ("Reaction — %s" if reaction_id in real_reactions else "Optional Feature — %s") % owner_label
+	if ok_title.is_empty():
+		ok_title = "Use Reaction" if reaction_id in real_reactions else "Confirm"
+	return {"ok_title": ok_title, "window_title": window_title}
+
+
 ## Ask the owning local player whether to spend a reaction. The prompt is
 ## deliberately in-shell and names the seat so companion ownership is clear.
 ## Headless test mode declines immediately rather than waiting for input.
-func request_reaction(owner_label: String, reaction_id: String, detail: String, decision_prompt: String = "Use this reaction?") -> bool:
+func request_reaction(owner_label: String, reaction_id: String, detail: String, decision_prompt: String = "Use this reaction?", ok_title: String = "", window_title: String = "") -> bool:
 	if GameManager.test_mode:
 		return false
+	var labels := decision_prompt_labels(owner_label, reaction_id, ok_title, window_title)
+
 	var dialog := ConfirmationDialog.new()
-	dialog.title = "Reaction — %s" % owner_label
+	dialog.title = labels["window_title"]
 	dialog.dialog_text = "%s\n\n%s\n\n%s" % [owner_label, detail, decision_prompt]
-	dialog.ok_button_text = "Use Reaction"
+	dialog.ok_button_text = labels["ok_title"]
 	dialog.cancel_button_text = "Decline"
 	add_child(dialog)
 	dialog.popup_centered(Vector2i(460, 220))
@@ -69,7 +80,7 @@ func request_reaction(owner_label: String, reaction_id: String, detail: String, 
 	while not resolved and timeout.time_left > 0.0:
 		await get_tree().process_frame
 	if not resolved:
-		add_log("[color=gray]%s reaction timed out and was declined.[/color]" % owner_label)
+		add_log("[color=gray]%s feature prompt timed out and was declined.[/color]" % owner_label)
 	dialog.queue_free()
 	return accepted
 
@@ -311,6 +322,7 @@ func _hide_spell_selection() -> void:
 
 func _on_spell_selected(index: int) -> void:
 	if index < 0 or index >= spells_registered.size(): return
+	if spell_list.is_item_disabled(index): return
 	var spell := spells_registered[index]
 	_hide_spell_selection()
 	action_selected.emit("cast_spell", {"spell": spell})
@@ -323,6 +335,7 @@ func _show_feature_selection() -> void:
 	
 	set_mode(Mode.FEATURE)
 	feature_list.clear()
+	features_registered.clear()
 
 	for f in active_character.features:
 		if f.get("type", "") != "active": continue
@@ -350,6 +363,7 @@ func _hide_feature_selection() -> void:
 
 func _on_feature_selected(index: int) -> void:
 	if index < 0 or index >= features_registered.size(): return
+	if feature_list.is_item_disabled(index): return
 	var feature := features_registered[index]
 	_hide_feature_selection()
 	if feature.get("id", "") in ["rogue_cunning_action", "monk_step_of_the_wind"]:

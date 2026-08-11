@@ -120,11 +120,11 @@ five rounds. The presenter-focused validation passed both `combat_victory` and
 `combat_defeat`, and the full isolated integration run passed every named
 scenario, including `mixed_mechanics_encounter`,
 `action_resource_round_trip`, and `character_sheet_contexts`.
-Gate 6 remains `in_progress`:
-deterministic coverage,
-the other Barbarian/Monk/Paladin/Ranger mechanics, cohorts C–D, broad spell
-coverage, full item contracts, Crown monster/condition audits, AI parity,
-encounter balance still require production effects and tests. Human
-class/composition sampling is optional and nonblocking; automation owns the
-breadth gate. The next implementation action is the confirmed Rogue
-starting-equipment defect: `Q-20260810-010129-f2f2`.
+Gate 6 remains `in_progress`. The Rogue package and Ranger action-flow fixes
+close two confirmed defects, but deterministic coverage for remaining
+Barbarian/Monk/Paladin/Ranger mechanics, cohorts C-D, broad spell and item
+contracts, Crown monster/condition audits, AI parity, and encounter balance
+remain open. The generated coverage report must also reach zero exposed
+`missing`, `description-only`, or `test-only` mechanics before this gate can
+pass. Human class sampling is optional and nonblocking; automation owns the
+breadth gate.

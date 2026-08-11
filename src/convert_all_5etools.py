@@ -242,6 +242,8 @@ def convert_classes():
             equipment = ["chain_mail", "shield", "longsword"]
         elif class_name in ["Wizard", "Sorcerer", "Warlock"]:
             equipment = ["leather_armor", "dagger"]
+        elif class_name == "Rogue":
+            equipment = ["leather_armor", "rapier", "shortbow", "dagger", "thieves_tools"]
 
         # Parse spell slots by level (classTableGroups)
         spell_slots = {}

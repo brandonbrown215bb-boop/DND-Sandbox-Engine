@@ -39,14 +39,11 @@ Unsupported active records remain rejected rather than becoming inert buttons.
 
 ## Decision
 
-`in_progress`. This is a first rules cohort, not the full Gate 5 contract.
-Monster decisions now cross a validated `AICommand` boundary before movement
-or attacks execute. The effect vocabulary now includes timed AC/stat, roll, and
-movement modifiers with character serialization and turn expiry. Player-owned
-reaction paths are covered for monster attacks, opportunity attacks, Shield,
-Uncanny Dodge, and Counterspell observer selection; broader reaction ownership
-and class coverage remain open. The mixed encounter and action/resource
-round-trip fixtures close their automated slices. The confirmed Rogue
-starting-equipment and Ranger mark/action-flow defects plus the remaining
-`CombatState` separation criterion keep the gate in progress. Normal GUI
-sampling is optional and nonblocking.
+`in_progress`. The confirmed Rogue starting-equipment defect is repaired with a
+class-appropriate fixed package, and the Ranger regression now drives the real
+combat scene through empty-slot rejection, cancel, optional-feature labeling,
+one-action commitment, and repeated-click prevention. These close the reported
+playtest defects, but they do not satisfy the whole gate. Broader reaction and
+class coverage remain open, and `CombatState` still owns domain resolution,
+turn progression, input interpretation, scene transitions, and presentation as
+one large responsibility. RULE-04 and the final Gate 5 acceptance audit remain.

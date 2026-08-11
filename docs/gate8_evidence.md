@@ -21,5 +21,6 @@ the complete runner then passed twice with exit code `0`.
 True fresh-clone validation, private-content approval, generated-artifact
 cleanup, and friend-run work are publication-only checks parked until
 publication is wanted. A full manual playthrough is optional and nonblocking.
-Gate 8 remains `in_progress` for an agent-owned readiness audit after the
-confirmed normal-path defects and architecture reconciliation are complete.
+Gate 8 remains `in_progress` behind the unfinished upstream gates and an
+agent-owned readiness audit. Passing local automation is necessary evidence;
+it does not by itself satisfy the publication boundary.

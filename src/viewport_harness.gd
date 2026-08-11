@@ -80,6 +80,26 @@ func _setup_mixed_world() -> void:
 		PlayerManager.set_player_character(index, character)
 		PartyManager.register_player_character(index, character)
 
+
+func _setup_ranger_world() -> Character:
+	var camp = DataLoader.campaigns.values()[0]
+	GameManager.active_campaign = camp
+	GameManager.current_state = GameManager.GameState.COMBAT
+	GameManager.transition_context = {"terrain": "plains", "monster_ids": ["goblin"]}
+	GameManager.is_loading_save = false
+	GameManager.game_in_progress = true
+	GameManager.test_mode = true
+	PlayerManager.reset()
+	PartyManager.reset()
+	PlayerManager.add_player("Ranger")
+	var ranger := _fresh_char("Ranger Fixture", "human", "ranger",
+		{"STR": 12, "DEX": 18, "CON": 14, "INT": 10, "WIS": 16, "CHA": 8})
+	ranger.known_spells.assign(["hunters_mark"])
+	ranger.spell_slots["1"] = 0
+	PlayerManager.set_player_character(0, ranger)
+	PartyManager.register_player_character(0, ranger)
+	return ranger
+
 # --- per-test scaffolding ---------------------------------------------------
 
 func _enter_test(name: String) -> void:
@@ -154,6 +174,7 @@ func _run_all_scenarios() -> void:
 	await test_combat_defeat()
 	await test_final_encounter_round_trip()
 	await test_mixed_mechanics_encounter()
+	await test_ranger_action_flow()
 	await test_overworld()
 	await test_companion_lifecycle()
 	await test_crown_composition_solo_two()
@@ -185,6 +206,7 @@ func _run_scenario(scenario: String) -> void:
 		"combat_defeat": await test_combat_defeat()
 		"final_encounter_round_trip": await test_final_encounter_round_trip()
 		"mixed_mechanics_encounter": await test_mixed_mechanics_encounter()
+		"ranger_action_flow": await test_ranger_action_flow()
 		"overworld": await test_overworld()
 		"companion_lifecycle": await test_companion_lifecycle()
 		"crown_composition_solo_two": await test_crown_composition_solo_two()
@@ -428,6 +450,67 @@ func test_party_combat() -> void:
 	combat.hud.update_hud(hero, combat.tracker)
 	combat.hud._show_spell_selection()
 	_assert(combat.hud.spell_list.get_item_count() == 0 and combat.hud.spells_registered.is_empty(), "spell rows do not leak to a different active character")
+	_teardown_scene(combat)
+	_setup_world()
+	_exit_test()
+
+
+## Ranger regression for the playtest-reported Hunter's Mark / attack flow.
+## Drives the production CombatState and CombatHUD scene boundary, not only
+## the spell resolver, so disabled rows, cancellation, and action commitment
+## remain one coherent contract.
+func test_ranger_action_flow() -> void:
+	_enter_test("ranger_action_flow")
+	var ranger := _setup_ranger_world()
+	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 2.5)
+	combat.current_player_idx = 0
+	combat.active_character = ranger
+	ranger.spell_slots.clear()
+	ranger.spell_slots["1"] = 0
+	combat.turn_budget.reset(ranger, combat.player_entities)
+	combat.hud.update_hud(ranger, combat.tracker)
+
+	var emitted_actions: Array[String] = []
+	combat.hud.action_selected.connect(func(action_type: String, _extra_data: Dictionary): emitted_actions.append(action_type))
+	combat.hud._show_spell_selection()
+	_assert(combat.hud.spell_list.get_item_count() == 1, "Ranger spell menu renders Hunter's Mark")
+	_assert(combat.hud.spell_list.is_item_disabled(0), "Hunter's Mark is disabled when no level-1 slot remains")
+	combat.hud._on_spell_selected(0)
+	_assert(emitted_actions.is_empty(), "disabled Hunter's Mark cannot emit a cast action")
+	_assert(combat.pending_action_type.is_empty(), "disabled Hunter's Mark cannot enter targeting")
+
+	var optional_labels := CombatHUD.decision_prompt_labels("Seat 1", "favored_foe")
+	var reaction_labels := CombatHUD.decision_prompt_labels("Seat 1", "shield")
+	_assert(str(optional_labels["window_title"]).begins_with("Optional Feature"), "Favored Foe prompt is labeled as an optional feature")
+	_assert(optional_labels["ok_title"] == "Confirm", "optional feature prompt does not claim to spend a reaction")
+	_assert(str(reaction_labels["window_title"]).begins_with("Reaction"), "Shield retains reaction labeling")
+	_assert(reaction_labels["ok_title"] == "Use Reaction", "true reaction prompt keeps its reaction action label")
+
+	var hunters_mark := DataLoader.get_spell("hunters_mark")
+	combat.hud._hide_spell_selection()
+	combat._on_hud_action("cast_spell", {"spell": hunters_mark})
+	_assert(combat.pending_action_type.is_empty(), "CombatState rejects Hunter's Mark when no slot remains")
+	_assert(combat.turn_budget.action_available and combat.turn_budget.bonus_action_available, "rejected Hunter's Mark spends no action resource")
+
+	combat._on_hud_action("attack", {})
+	combat._cancel_pending_action()
+	_assert(combat.pending_action_type.is_empty(), "cancel exits attack targeting")
+	_assert(combat.turn_budget.action_available, "canceling target selection preserves the uncommitted Attack action")
+
+	combat._on_hud_action("attack", {})
+	var target: Dictionary = combat.monster_entities[0]
+	var target_coord := Vector2i(1, 0)
+	combat.player_entities[0]["hex_position"] = Vector2i.ZERO
+	target["hex_position"] = target_coord
+	target["current_hp"] = 999
+	target["is_alive"] = true
+	await combat._on_hex_clicked(target_coord)
+	_assert(not combat.turn_budget.action_available and combat.turn_budget.has_acted_this_turn, "a valid target click commits exactly one Attack action")
+	_assert(combat.pending_action_type.is_empty(), "committed attack clears targeting before optional prompts can yield")
+	var hp_after_first_click := int(target["current_hp"])
+	await combat._on_hex_clicked(target_coord)
+	_assert(int(target["current_hp"]) == hp_after_first_click, "a repeated target click cannot resolve a second attack")
+
 	_teardown_scene(combat)
 	_setup_world()
 	_exit_test()

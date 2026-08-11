@@ -32,7 +32,10 @@
   },
   "starting_equipment": [
     "leather_armor",
-    "shield"
+    "rapier",
+    "shortbow",
+    "dagger",
+    "thieves_tools"
   ],
   "spell_slots_by_level": {},
   "cantrips_known": [],
