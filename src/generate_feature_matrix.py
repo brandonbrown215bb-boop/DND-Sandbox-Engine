@@ -28,6 +28,7 @@ CURATED_FEATURE_EFFECTS = {
     "barbarian_unarmored_defense": "unarmored_defense:10+DEX+CON with shield",
     "barbarian_reckless_attack": "reckless_attack",
     "monk_patient_defense": "grant_condition",
+    "monk_unarmored_defense": "unarmored_defense:10+DEX+WIS without shield",
     "monk_step_of_the_wind": "step_of_the_wind",
     "monk_martial_arts": "unarmed_attack",
     "monk_bonus_unarmed_strike": "unarmed_attack",
