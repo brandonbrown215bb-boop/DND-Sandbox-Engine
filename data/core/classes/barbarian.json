@@ -2,7 +2,7 @@
   "id": "barbarian",
   "name": "Barbarian",
   "description": "Barbarian class. Source: PHB.",
-  "hit_die": "d1",
+  "hit_die": "d12",
   "primary_ability": "STR",
   "saving_throw_proficiencies": [
     "STR",

@@ -15,6 +15,7 @@ var current_player_idx: int = 0
 var remaining_speed: float = 0.0
 var has_moved_this_turn: bool = false
 var has_resolved_tile: bool = false
+var companion_roster_open: bool = false
 
 # Pathfinding visual highlights
 var reachable_hexes: Dictionary = {}
@@ -34,6 +35,7 @@ func _ready() -> void:
 	hud.menu_pressed.connect(_on_menu_pressed)
 	hud.settings_pressed.connect(_on_settings_pressed)
 	hud.sheet_pressed.connect(_on_sheet_pressed)
+	hud.companion_roster_visibility_changed.connect(_on_companion_roster_visibility_changed)
 
 	# Generate map from campaign
 	overworld_map.generate_map()
@@ -80,7 +82,7 @@ func _start_player_turn() -> void:
 		return
 
 	# Reset turn actions
-	remaining_speed = float(char_data.speed)
+	remaining_speed = float(char_data.get_speed())
 	has_moved_this_turn = false
 	has_resolved_tile = false
 
@@ -88,7 +90,7 @@ func _start_player_turn() -> void:
 	FogOfWar.update_visibility(hex_grid)
 
 	# Center camera on player
-	var pos := PlayerManager.get_player_position(current_player_idx)
+	var pos := PartyManager.get_exploration_position()
 	camera.center_on(hex_grid.map_to_local(pos))
 
 	# Highlight reachable tiles
@@ -100,7 +102,7 @@ func _start_player_turn() -> void:
 
 
 func _recalculate_reachable() -> void:
-	var pos := PlayerManager.get_player_position(current_player_idx)
+	var pos := PartyManager.get_exploration_position()
 	
 	# Use HexGrid's reachability wrapper
 	reachable_hexes = hex_grid.get_reachable(pos, remaining_speed)
@@ -118,10 +120,22 @@ func _recalculate_reachable() -> void:
 
 
 func _on_hex_clicked(coord: Vector2i) -> void:
-	if coord not in reachable_hexes or coord == PlayerManager.get_player_position(current_player_idx):
+	if companion_roster_open:
+		return
+	var command := PlayerCommand.move(coord)
+	if command == null:
+		return
+	_execute_move_command(command)
+
+
+func _execute_move_command(command: PlayerCommand) -> void:
+	if companion_roster_open:
+		return
+	var coord := command.target_hex()
+	if coord not in reachable_hexes or coord == PartyManager.get_exploration_position():
 		return
 
-	var path := hex_grid.find_path(PlayerManager.get_player_position(current_player_idx), coord)
+	var path := hex_grid.find_path(PartyManager.get_exploration_position(), coord)
 	if path.is_empty():
 		return
 
@@ -131,7 +145,7 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 	has_moved_this_turn = true
 
 	# Update player position
-	PlayerManager.set_player_position(current_player_idx, coord)
+	PartyManager.move_exploration_party(coord)
 	_update_grid_entities()
 
 	# Recalculate Vision
@@ -151,11 +165,13 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 
 
 func _on_hex_hovered(coord: Vector2i) -> void:
+	if companion_roster_open:
+		return
 	# Clear previous path drawing
 	current_hovered_path.clear()
 	
-	if coord in reachable_hexes and coord != PlayerManager.get_player_position(current_player_idx):
-		var path := hex_grid.find_path(PlayerManager.get_player_position(current_player_idx), coord)
+	if coord in reachable_hexes and coord != PartyManager.get_exploration_position():
+		var path := hex_grid.find_path(PartyManager.get_exploration_position(), coord)
 		current_hovered_path = path
 
 	# Re-render highlights
@@ -163,7 +179,7 @@ func _on_hex_hovered(coord: Vector2i) -> void:
 	
 	# Overlay path highlights if any
 	for p_coord in current_hovered_path:
-		if p_coord == PlayerManager.get_player_position(current_player_idx): continue
+		if p_coord == PartyManager.get_exploration_position(): continue
 		hex_grid.add_highlight(p_coord, HexHighlight.HIGHLIGHT_COLORS[HexHighlight.HighlightType.PATH])
 
 
@@ -216,7 +232,7 @@ func _trigger_event_ui(event_data: Dictionary) -> void:
 		if not next_state_combat.is_empty():
 			# Enter combat!
 			var tile_terrain := "plains"
-			var current_tile := hex_grid.get_tile(PlayerManager.get_player_position(current_player_idx))
+			var current_tile := hex_grid.get_tile(PartyManager.get_exploration_position())
 			if current_tile != null:
 				tile_terrain = current_tile.get_terrain_name()
 			GameManager.enter_combat(next_state_combat, result.get("surprise", false), GameManager.GameState.OVERWORLD, tile_terrain)
@@ -234,7 +250,7 @@ func _trigger_event_ui(event_data: Dictionary) -> void:
 			
 			if not passable_hexes.is_empty():
 				var rand_hex: Vector2i = passable_hexes.pick_random()
-				PlayerManager.set_player_position(current_player_idx, rand_hex)
+				PartyManager.move_exploration_party(rand_hex)
 				FogOfWar.update_visibility(hex_grid)
 				hud.add_log("Teleported to hex %s!" % str(rand_hex))
 
@@ -270,6 +286,17 @@ func _trigger_shop_ui(town_name: String) -> void:
 
 
 func _on_end_turn_pressed() -> void:
+	if companion_roster_open:
+		return
+	var command := PlayerCommand.simple("end_turn")
+	if command == null:
+		return
+	_execute_end_turn_command(command)
+
+
+func _execute_end_turn_command(_command: PlayerCommand) -> void:
+	if companion_roster_open:
+		return
 	# Clear active player path/reach highlights
 	hex_grid.clear_highlights()
 	
@@ -284,6 +311,17 @@ func _on_end_turn_pressed() -> void:
 ## A Stealth check (best stealthy party member) vs a DC scaled by party size
 ## determines if the night passes safely. Failing means a surprise encounter.
 func _on_rest_pressed() -> void:
+	if companion_roster_open:
+		return
+	var command := PlayerCommand.simple("rest")
+	if command == null:
+		return
+	_execute_rest_command(command)
+
+
+func _execute_rest_command(_command: PlayerCommand) -> void:
+	if companion_roster_open:
+		return
 	_rest_party()
 	hud.add_log("[color=green]The party makes camp and rests. HP, spell slots, and feature uses restored.[/color]")
 	hud.update_hud()
@@ -305,7 +343,7 @@ func _on_rest_pressed() -> void:
 		for i in count:
 			monsters.append(ambush_pool.pick_random())
 		var tile_terrain := "plains"
-		var current_tile := hex_grid.get_tile(PlayerManager.get_player_position(current_player_idx))
+		var current_tile := hex_grid.get_tile(PartyManager.get_exploration_position())
 		if current_tile != null:
 			tile_terrain = current_tile.get_terrain_name()
 		hud.add_log("[color=red]Ambush! A %s pack stalks the camp![/color]" % tile_terrain)
@@ -342,18 +380,18 @@ func _rest_party() -> void:
 	for i in player_count:
 		var char_data: Character = PlayerManager.get_player(i).get("character")
 		if char_data == null: continue
-		char_data.current_hp = char_data.max_hp
-		char_data.is_alive = true
-		for f_id in char_data.feature_uses:
-			for f in char_data.features:
-				if f.get("id", "") == f_id:
-					char_data.feature_uses[f_id] = f.get("uses", 1)
-					break
-		char_data._update_spell_slots()
+		char_data.long_rest()
 
 
 ## Manual save from the overworld HUD.
 func _on_save_pressed() -> void:
+	var command := PlayerCommand.simple("save")
+	if command == null:
+		return
+	_execute_save_command(command)
+
+
+func _execute_save_command(_command: PlayerCommand) -> void:
 	if not GameManager.game_in_progress:
 		hud.add_log("[color=orange]Nothing to save yet.[/color]")
 		return
@@ -366,6 +404,13 @@ func _on_save_pressed() -> void:
 
 ## Quit to main menu from the overworld HUD.
 func _on_menu_pressed() -> void:
+	var command := PlayerCommand.simple("menu")
+	if command == null:
+		return
+	_execute_menu_command(command)
+
+
+func _execute_menu_command(_command: PlayerCommand) -> void:
 	hud.add_log("[color=yellow]Returning to main menu...[/color]")
 	hex_grid.set_process_input(false)
 	GameManager.return_to_menu()
@@ -373,17 +418,40 @@ func _on_menu_pressed() -> void:
 
 ## Open the settings / pause overlay (save/load anywhere + options).
 func _on_settings_pressed() -> void:
+	var command := PlayerCommand.simple("settings")
+	if command == null:
+		return
+	_execute_settings_command(command)
+
+
+func _execute_settings_command(_command: PlayerCommand) -> void:
 	Settings.open_settings(self)
 
 
 func _on_sheet_pressed() -> void:
+	var command := PlayerCommand.simple("sheet")
+	if command == null:
+		return
+	_execute_sheet_command(command)
+
+
+func _execute_sheet_command(_command: PlayerCommand) -> void:
 	CharacterSheet.show_active()
 
 
+func _on_companion_roster_visibility_changed(is_open: bool) -> void:
+	companion_roster_open = is_open
+	hex_grid.set_process_input(not is_open)
+	if is_open:
+		current_hovered_path.clear()
+		hex_grid.clear_highlights()
+	else:
+		_recalculate_reachable()
+
+
 func _handle_party_wiped() -> void:
-	hud.add_log("[color=red]Party was wiped. Returning to menu...[/color]")
+	hud.add_log("[color=red]Party was wiped. Opening defeat screen...[/color]")
 	hex_grid.set_process_input(false)
 	if hud.btn_end_turn != null:
 		hud.btn_end_turn.disabled = true
-	await get_tree().create_timer(3.0).timeout
-	GameManager.return_to_menu()
+	GameManager.end_game(false, "The party was defeated.")

@@ -59,16 +59,22 @@ func _refresh_slots() -> void:
 	else:
 		for s in saves:
 			slot_list.add_item(s)
-	btn_load.disabled = saves.is_empty()
+	btn_load.disabled = SaveManager.get_resumable_saves().is_empty()
 	btn_delete.disabled = saves.is_empty()
+	var save_reason := SaveManager.get_save_block_reason()
+	btn_save.disabled = not save_reason.is_empty()
+	if not save_reason.is_empty():
+		status_lbl.text = "Save unavailable: %s." % save_reason
 
 
 func _on_save_pressed() -> void:
+	if btn_save.disabled:
+		return
 	var slot := _selected_slot()
 	if slot.is_empty():
 		slot = "quicksave"
 	var ok := Settings.save_game(slot)
-	status_lbl.text = "Saved to '%s'." % slot if ok else "Save failed (no game in progress?)."
+	status_lbl.text = "Saved to '%s'." % slot if ok else "Save failed."
 	_refresh_slots()
 
 

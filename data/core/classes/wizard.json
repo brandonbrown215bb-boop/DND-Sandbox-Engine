@@ -2,7 +2,7 @@
   "id": "wizard",
   "name": "Wizard",
   "description": "Wizard class. Source: PHB.",
-  "hit_die": "d1",
+  "hit_die": "d6",
   "primary_ability": "INT",
   "saving_throw_proficiencies": [
     "INT",

@@ -26,6 +26,7 @@ var items_data: Array = []
 var selected_item_idx: int = -1
 
 const TAVERN_REST_COST := 10
+const SHOP_ITEM_TYPES := ["weapon", "armor", "shield", "consumable"]
 
 
 func _ready() -> void:
@@ -78,11 +79,10 @@ func _populate_items() -> void:
 	item_list.clear()
 	items_data.clear()
 
-	# Fetch all weapons, armor, consumables
+	# Only expose item types the shop can sell and the runtime can use.
 	var all_items := DataLoader.get_all_items()
 	for item in all_items:
-		var type: String = item.get("type", "")
-		if type == "currency" or int(item.get("value", 0)) <= 0:
+		if not _is_buyable_item(item):
 			continue
 		items_data.append(item)
 
@@ -108,6 +108,21 @@ func _populate_items() -> void:
 		item_desc_label.text = ""
 		price_label.text = ""
 		btn_buy.disabled = true
+
+
+func _is_buyable_item(item: Dictionary) -> bool:
+	var type := str(item.get("type", ""))
+	if type not in SHOP_ITEM_TYPES or int(item.get("value", 0)) <= 0:
+		return false
+	if type != "consumable":
+		return true
+	var effects = item.get("effects", [])
+	if not effects is Array or effects.is_empty():
+		return false
+	for effect in effects:
+		if not effect is Dictionary or not EventResolver.is_effect_supported(str(effect.get("type", ""))):
+			return false
+	return true
 
 
 func _on_player_selected(index: int) -> void:
@@ -193,11 +208,16 @@ func _on_buy_pressed() -> void:
 
 	var item: Dictionary = items_data[selected_item_idx]
 	var item_id: String = item.get("id", "")
+	var command := PlayerCommand.inventory_buy(active_player_index, item_id)
+	if command == null or not _is_buyable_item(item):
+		return
+	item_id = str(command.payload["item_id"])
 	var cost := int(item.get("value", 0))
 
-	# Deduct gold and add item
+	# Add the item before charging so a failed inventory mutation cannot consume gold.
+	if not active_character.inventory.add_item(item_id):
+		return
 	active_character.inventory.gold -= cost
-	active_character.inventory.add_item(item_id)
 
 	# Print success log to overworld HUD
 	var parent_node = get_parent()
@@ -214,6 +234,9 @@ func _on_buy_pressed() -> void:
 
 func _on_rest_pressed() -> void:
 	if active_character == null: return
+	var command := PlayerCommand.inventory_rest()
+	if command == null:
+		return
 
 	var player_count := PlayerManager.get_player_count()
 	var total_cost := player_count * TAVERN_REST_COST

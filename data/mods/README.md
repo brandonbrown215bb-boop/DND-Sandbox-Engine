@@ -19,8 +19,11 @@ defined in JSON files that the game loads at startup.
 
 ## Overriding Core Content
 
-If your mod JSON has the same `id` as a core file, your mod **overrides** the core version.
-This lets you rebalance existing content without modifying the base game.
+If your mod JSON has the same `id` as a core file, the collision must be named
+in `data/content_manifest.json` with an explicit winner and replacement path.
+Unlisted duplicate IDs fail content loading; enumeration order is not an
+override contract. This lets approved packs rebalance existing content without
+silently changing precedence.
 
 ## JSON Schemas
 

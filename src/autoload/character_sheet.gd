@@ -146,7 +146,7 @@ func _populate(c: Character) -> void:
 
 	# --- Core vitals ---
 	var vitals := "HP %d/%d   Temp %d   AC %d   Speed %d   Prof +%d" % [
-		c.current_hp, c.max_hp, c.temp_hp, c.get_ac(), c.speed, c.proficiency_bonus
+		c.current_hp, c.max_hp, c.temp_hp, c.get_ac(), c.get_speed(), c.proficiency_bonus
 	]
 	_add_section("Vitals", [vitals])
 

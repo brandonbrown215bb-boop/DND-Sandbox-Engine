@@ -4,6 +4,7 @@ class_name OverworldHUD
 extends BaseHUD
 
 signal end_turn_pressed
+signal companion_roster_visibility_changed(is_open: bool)
 
 # Node references
 @onready var player_list_container: VBoxContainer = $MarginContainer/HBoxContainer/Sidebar/ScrollContainer/PlayerList
@@ -11,20 +12,27 @@ signal end_turn_pressed
 @onready var active_player_stats: Label = $MarginContainer/HBoxContainer/MainArea/Header/MarginContainer/VBoxContainer/ActivePlayerStats
 @onready var objective_label: Label = $MarginContainer/HBoxContainer/MainArea/Header/MarginContainer/VBoxContainer/ObjectiveLabel
 @onready var btn_end_turn: Button = $MarginContainer/HBoxContainer/Sidebar/BtnEndTurn
+@onready var btn_companions: Button = $MarginContainer/HBoxContainer/Sidebar/BtnCompanions
 @onready var btn_rest: Button = $MarginContainer/HBoxContainer/Sidebar/BtnRest
 @onready var btn_save: Button = $MarginContainer/HBoxContainer/Sidebar/BtnSave
 @onready var btn_menu: Button = $MarginContainer/HBoxContainer/Sidebar/BtnMenu
 @onready var btn_settings: Button = $MarginContainer/HBoxContainer/Sidebar/BtnSettings
 @onready var btn_sheet: Button = $MarginContainer/HBoxContainer/Sidebar/BtnSheet
+@onready var companion_overlay: Control = $CompanionOverlay
+@onready var companion_panel: CompanionRosterPanel = $CompanionOverlay/Center/CompanionRosterPanel
 
 
 func _ready() -> void:
 	btn_end_turn.pressed.connect(func(): end_turn_pressed.emit())
+	btn_companions.pressed.connect(open_companion_roster)
 	btn_rest.pressed.connect(func(): rest_pressed.emit())
 	btn_save.pressed.connect(func(): save_pressed.emit())
 	btn_menu.pressed.connect(func(): menu_pressed.emit())
 	btn_settings.pressed.connect(func(): settings_pressed.emit())
 	btn_sheet.pressed.connect(func(): sheet_pressed.emit())
+	companion_panel.close_requested.connect(close_companion_roster)
+	companion_panel.lifecycle_changed.connect(_on_companion_lifecycle_changed)
+	PlayerManager.device_binding_changed.connect(_on_device_binding_changed)
 	log_text = $MarginContainer/HBoxContainer/MainArea/LogBox/LogText
 	clear_logs()
 	update_hud()
@@ -36,20 +44,54 @@ func update_hud() -> void:
 	_update_party_sidebar()
 	_update_active_player_display()
 	_update_objective()
+	btn_companions.disabled = PartyManager.get_companion_ids().is_empty()
+
+
+func open_companion_roster() -> void:
+	companion_panel.refresh()
+	companion_overlay.show()
+	_set_underlay_controls_disabled(true)
+	companion_roster_visibility_changed.emit(true)
+
+
+func close_companion_roster() -> void:
+	companion_overlay.hide()
+	_set_underlay_controls_disabled(false)
+	companion_roster_visibility_changed.emit(false)
+
+
+func is_companion_roster_open() -> bool:
+	return companion_overlay.visible
+
+
+func _set_underlay_controls_disabled(disabled: bool) -> void:
+	for button in [btn_end_turn, btn_companions, btn_rest, btn_save, btn_menu, btn_settings, btn_sheet]:
+		button.disabled = disabled
+	if not disabled:
+		btn_companions.disabled = PartyManager.get_companion_ids().is_empty()
+
+
+func _on_companion_lifecycle_changed(message: String) -> void:
+	update_hud()
+	add_log("[color=khaki]%s[/color]" % message)
 
 func _update_party_sidebar() -> void:
 	# Clear sidebar list
 	for child in player_list_container.get_children():
 		child.queue_free()
 
-	# Build status bar for each player
-	var player_count := PlayerManager.get_player_count()
+	# Build status cards from the active party, including companions. Local
+	# seats are ownership metadata; they are not the party roster.
+	var party_members := PartyManager.get_active_party_members()
 	var active_idx := PlayerManager.active_player_index
 	
-	for i in player_count:
-		var player := PlayerManager.get_player(i)
-		var char_data: Character = player.get("character")
-		if char_data == null: continue
+	for member in party_members:
+		var char_data: Character = member.get("character")
+		if char_data == null:
+			continue
+		var owner_index := int(member.get("owner_player_index", -1))
+		var slot_id := str(member.get("slot_id", ""))
+		var player := PlayerManager.get_player(owner_index) if owner_index >= 0 else {}
 
 		var card := PanelContainer.new()
 		var vbox := VBoxContainer.new()
@@ -64,14 +106,36 @@ func _update_party_sidebar() -> void:
 
 		# Name & class
 		var name_lbl := Label.new()
-		name_lbl.text = "%s (%s)" % [char_data.character_name, DataLoader.get_character_class(char_data.class_id).get("name", "Class")]
-		if i == active_idx:
+		var leader_mark := "★ " if slot_id == PartyManager.leader_slot_id else ""
+		var seat_label := "Seat %d" % (owner_index + 1) if owner_index >= 0 else "Unassigned"
+		name_lbl.text = "%s%s (%s) · %s" % [leader_mark, char_data.character_name, DataLoader.get_character_class(char_data.class_id).get("name", "Class"), seat_label]
+		if owner_index == active_idx:
 			name_lbl.text = "➔ " + name_lbl.text
 			# Add subtle active color
 			name_lbl.add_theme_color_override("font_color", Color.YELLOW)
 		else:
 			name_lbl.add_theme_color_override("font_color", player.get("color", Color.WHITE))
 		vbox.add_child(name_lbl)
+		if owner_index >= 0:
+			var input_lbl := Label.new()
+			input_lbl.text = PlayerManager.get_input_status(owner_index)
+			input_lbl.add_theme_color_override("font_color", Color.LIGHT_GRAY if PlayerManager.is_player_connected(owner_index) else Color.ORANGE)
+			vbox.add_child(input_lbl)
+
+		var leader_button := Button.new()
+		leader_button.text = "Leader" if slot_id == PartyManager.leader_slot_id else "Set leader"
+		leader_button.disabled = slot_id == PartyManager.leader_slot_id
+		leader_button.pressed.connect(_on_leader_button_pressed.bind(slot_id))
+		vbox.add_child(leader_button)
+
+		if bool(member.get("is_companion", false)) and PlayerManager.get_player_count() > 0:
+			var assignment := OptionButton.new()
+			assignment.text = "Assign companion"
+			for seat in PlayerManager.get_player_count():
+				assignment.add_item("Seat %d" % (seat + 1), seat)
+			assignment.selected = owner_index if owner_index >= 0 else 0
+			assignment.item_selected.connect(_on_assignment_selected.bind(slot_id, assignment))
+			vbox.add_child(assignment)
 
 		# HP Bar/Text
 		var hp_lbl := Label.new()
@@ -104,6 +168,20 @@ func _update_party_sidebar() -> void:
 		player_list_container.add_child(card)
 
 
+func _on_leader_button_pressed(slot_id: String) -> void:
+	if PartyManager.set_leader(slot_id):
+		update_hud()
+
+
+func _on_assignment_selected(index: int, slot_id: String, assignment: OptionButton) -> void:
+	if PartyManager.assign_slot_to_seat(slot_id, index):
+		update_hud()
+
+
+func _on_device_binding_changed(_player_index: int, _device_id: int, _connected: bool) -> void:
+	update_hud()
+
+
 func _update_active_player_display() -> void:
 	var player := PlayerManager.get_active_player()
 	var char_data: Character = player.get("character")
@@ -112,10 +190,11 @@ func _update_active_player_display() -> void:
 	active_player_name.text = "Current Turn: %s" % char_data.character_name
 	active_player_name.add_theme_color_override("font_color", player.get("color", Color.WHITE))
 	
-	active_player_stats.text = "Race: %s | Level: %d | Speed: %d hexes" % [
+	active_player_stats.text = "Race: %s | Level: %d | Speed: %d hexes | %s" % [
 		DataLoader.get_race(char_data.race_id).get("name", ""),
 		char_data.level,
-		char_data.speed
+		char_data.get_speed(),
+		PlayerManager.get_input_status(PlayerManager.active_player_index)
 	]
 
 
@@ -123,26 +202,8 @@ func _update_active_player_display() -> void:
 func _update_objective() -> void:
 	if objective_label == null:
 		return
-	var win_cond: Dictionary = GameManager.get_win_condition()
-	if win_cond.is_empty():
+	var objectives := GameManager.get_campaign_objectives()
+	if objectives.is_empty():
 		objective_label.text = "Objective: Free roam"
 		return
-	var goals: Array = win_cond.get("goals", [])
-	var parts: Array[String] = []
-	for g in goals:
-		match g.get("type", ""):
-			"defeat_monster":
-				var m_id: String = g.get("monster_id", "?")
-				var md: Dictionary = DataLoader.get_monster(m_id)
-				var name: String = md.get("name", m_id) if not md.is_empty() else m_id
-				parts.append("Defeat %s" % name)
-			"collect_item":
-				var i_id: String = g.get("item_id", "?")
-				var it: Dictionary = DataLoader.get_item(i_id)
-				var iname: String = it.get("name", i_id) if not it.is_empty() else i_id
-				parts.append("Find %s" % iname)
-			"reach_tile":
-				parts.append("Reach the objective")
-			_:
-				parts.append(g.get("type", "objective"))
-	objective_label.text = "Objective: " + " • ".join(parts)
+	objective_label.text = "Objective: " + " • ".join(objectives)

@@ -30,6 +30,9 @@ const MAX_BACKPACK_SIZE := 20
 
 ## Add an item to the backpack.
 func add_item(item_id: String) -> bool:
+	if DataLoader.get_item(item_id).is_empty():
+		push_warning("[Inventory] Unknown item, cannot add: %s" % item_id)
+		return false
 	if backpack.size() >= MAX_BACKPACK_SIZE:
 		push_warning("[Inventory] Backpack full, cannot add: %s" % item_id)
 		return false
@@ -60,8 +63,53 @@ func count_item(item_id: String) -> int:
 	return count
 
 
-## Equip an item to a slot. Returns the previously equipped item (or empty string).
-func equip(slot: Slot, item_id: String) -> String:
+## Consume a mechanics-backed consumable on a character. Unsupported imported
+## records stay in the backpack but cannot mutate gameplay state.
+func consume(item_id: String, target: Character) -> Dictionary:
+	if target == null or not has_item(item_id):
+		return {"success": false, "message": "Item is not available to use."}
+	var item_data := DataLoader.get_item(item_id)
+	if str(item_data.get("type", "")) != "consumable":
+		return {"success": false, "message": "That item cannot be consumed."}
+	var effects: Array = item_data.get("effects", [])
+	if effects.is_empty():
+		return {"success": false, "message": "%s has no implemented effect yet." % item_data.get("name", item_id)}
+	for effect in effects:
+		if not EventResolver.is_effect_supported(str(effect.get("type", ""))):
+			return {"success": false, "message": "%s has an unsupported effect." % item_data.get("name", item_id)}
+	var results := EventResolver.apply_effects(target, effects)
+	if results.is_empty():
+		return {"success": false, "message": "%s had no effect." % item_data.get("name", item_id)}
+	remove_item(item_id)
+	return {"success": true, "item_id": item_id, "results": results, "message": "%s used." % item_data.get("name", item_id)}
+
+
+## Return whether an item is valid for a slot and owned by this inventory.
+## Starting equipment may use the explicit allow_unowned path during character
+## creation; normal gameplay must equip items from the backpack.
+func can_equip(slot: Slot, item_id: String, allow_unowned: bool = false) -> bool:
+	var item_data := DataLoader.get_item(item_id)
+	if item_data.is_empty():
+		return false
+	var item_type := str(item_data.get("type", ""))
+	var valid_slot := -1
+	match item_type:
+		"weapon": valid_slot = Slot.WEAPON
+		"shield": valid_slot = Slot.SHIELD
+		"armor": valid_slot = Slot.BODY
+		"helmet": valid_slot = Slot.HEAD
+		"ring": valid_slot = slot if slot in [Slot.RING_1, Slot.RING_2] else -1
+	if valid_slot != slot:
+		return false
+	return allow_unowned or item_id in backpack or item_id in equipped.values()
+
+
+## Equip an item to a compatible slot. Returns the previously equipped item (or
+## empty string) and leaves state unchanged when validation fails.
+func equip(slot: Slot, item_id: String, allow_unowned: bool = false) -> String:
+	if not can_equip(slot, item_id, allow_unowned):
+		push_warning("[Inventory] Cannot equip %s in slot %s." % [item_id, Slot.keys()[slot]])
+		return ""
 	var previous: String = equipped.get(slot, "")
 
 	# Remove from backpack if present
@@ -79,6 +127,9 @@ func equip(slot: Slot, item_id: String) -> String:
 func unequip(slot: Slot) -> String:
 	var item_id: String = equipped.get(slot, "")
 	if not item_id.is_empty():
+		if backpack.size() >= MAX_BACKPACK_SIZE:
+			push_warning("[Inventory] Backpack full, cannot unequip: %s" % item_id)
+			return ""
 		equipped.erase(slot)
 		backpack.append(item_id)
 	return item_id
@@ -137,19 +188,19 @@ func add_starting_equipment(item_ids: Array) -> void:
 		match item_type:
 			"weapon":
 				if not is_slot_equipped(Slot.WEAPON):
-					equip(Slot.WEAPON, item_id)
+					equip(Slot.WEAPON, item_id, true)
 					auto_equipped = true
 			"shield":
 				if not is_slot_equipped(Slot.SHIELD):
-					equip(Slot.SHIELD, item_id)
+					equip(Slot.SHIELD, item_id, true)
 					auto_equipped = true
 			"armor":
 				if not is_slot_equipped(Slot.BODY):
-					equip(Slot.BODY, item_id)
+					equip(Slot.BODY, item_id, true)
 					auto_equipped = true
 			"helmet":
 				if not is_slot_equipped(Slot.HEAD):
-					equip(Slot.HEAD, item_id)
+					equip(Slot.HEAD, item_id, true)
 					auto_equipped = true
 
 		if not auto_equipped:

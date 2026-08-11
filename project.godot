@@ -25,27 +25,19 @@ config/icon="res://icon.svg"
 Dice="*res://src/autoload/dice.gd"
 DataLoader="*res://src/autoload/data_loader.gd"
 PlayerManager="*res://src/autoload/player_manager.gd"
+PartyManager="*res://src/autoload/party_manager.gd"
 GameManager="*res://src/autoload/game_manager.gd"
 AudioManager="*res://src/autoload/audio_manager.gd"
 SaveManager="*res://src/autoload/save_manager.gd"
 Settings="*res://src/autoload/settings.gd"
 CharacterSheet="*res://src/autoload/character_sheet.gd"
-BeckettRuntime="*uid://dspgi2nxto4e8"
-
-[beckett]
-
-effort_schema=2
-dock_revealed=true
+NormalCreationMatrixProbe="*res://src/normal_creation_matrix_probe.gd"
 
 [display]
 
 window/size/viewport_width=1280
 window/size/viewport_height=720
 window/stretch/mode="viewport"
-
-[editor_plugins]
-
-enabled=PackedStringArray("res://addons/beckett/plugin.cfg")
 
 [gd_script]
 

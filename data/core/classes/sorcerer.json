@@ -2,7 +2,7 @@
   "id": "sorcerer",
   "name": "Sorcerer",
   "description": "Sorcerer class. Source: PHB.",
-  "hit_die": "d1",
+  "hit_die": "d6",
   "primary_ability": "CHA",
   "saving_throw_proficiencies": [
     "CON",

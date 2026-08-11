@@ -44,12 +44,41 @@ func _setup_world() -> void:
 	GameManager.game_in_progress = false
 	GameManager.test_mode = true
 	PlayerManager.reset()
+	PartyManager.reset()
 	PlayerManager.add_player("Alice")
 	PlayerManager.add_player("Bob")
-	PlayerManager.set_player_character(0, _fresh_char("Alice", "human", "fighter",
-		{"STR": 15, "DEX": 14, "CON": 13, "INT": 12, "WIS": 10, "CHA": 8}))
-	PlayerManager.set_player_character(1, _fresh_char("Bob", "elf", "wizard",
-		{"STR": 8, "DEX": 14, "CON": 14, "INT": 16, "WIS": 12, "CHA": 10}))
+	var alice := _fresh_char("Alice", "human", "fighter",
+		{"STR": 15, "DEX": 14, "CON": 13, "INT": 12, "WIS": 10, "CHA": 8})
+	var bob := _fresh_char("Bob", "elf", "wizard",
+		{"STR": 8, "DEX": 14, "CON": 14, "INT": 16, "WIS": 12, "CHA": 10})
+	PlayerManager.set_player_character(0, alice)
+	PlayerManager.set_player_character(1, bob)
+	PartyManager.register_player_character(0, alice)
+	PartyManager.register_player_character(1, bob)
+
+
+func _setup_mixed_world() -> void:
+	var camp = DataLoader.campaigns.values()[0]
+	GameManager.active_campaign = camp
+	GameManager.current_state = GameManager.GameState.OVERWORLD
+	GameManager.transition_context = {"terrain": "plains", "monster_ids": ["goblin", "goblin"]}
+	GameManager.is_loading_save = false
+	GameManager.game_in_progress = true
+	GameManager.test_mode = true
+	PlayerManager.reset()
+	PartyManager.reset()
+	var specs := [
+		{"name": "Fighter Fixture", "race": "human", "class": "fighter", "scores": {"STR": 18, "DEX": 14, "CON": 14, "INT": 10, "WIS": 10, "CHA": 8}},
+		{"name": "Rogue Fixture", "race": "halfling", "class": "rogue", "scores": {"STR": 10, "DEX": 18, "CON": 12, "INT": 12, "WIS": 10, "CHA": 10}},
+		{"name": "Wizard Fixture", "race": "elf", "class": "wizard", "scores": {"STR": 8, "DEX": 14, "CON": 14, "INT": 18, "WIS": 12, "CHA": 10}},
+		{"name": "Cleric Fixture", "race": "human", "class": "cleric", "scores": {"STR": 12, "DEX": 10, "CON": 14, "INT": 10, "WIS": 18, "CHA": 10}},
+	]
+	for index in specs.size():
+		var spec: Dictionary = specs[index]
+		PlayerManager.add_player(str(spec["name"]))
+		var character := _fresh_char(str(spec["name"]), str(spec["race"]), str(spec["class"]), spec["scores"])
+		PlayerManager.set_player_character(index, character)
+		PartyManager.register_player_character(index, character)
 
 # --- per-test scaffolding ---------------------------------------------------
 
@@ -117,36 +146,64 @@ func _requested_scenario() -> String:
 
 func _run_all_scenarios() -> void:
 	await test_combat()
+	await test_party_combat()
+	await test_crown_smoke()
+	await test_crown_balance_fixture()
 	await test_combat_ai_loop()
 	await test_combat_victory()
+	await test_combat_defeat()
+	await test_final_encounter_round_trip()
+	await test_mixed_mechanics_encounter()
 	await test_overworld()
+	await test_companion_lifecycle()
+	await test_crown_composition_solo_two()
+	await test_crown_composition_three_four()
 	await test_main_menu_load()
 	await test_dungeon()
 	await test_event_dialog()
+	await test_crown_event_fairy_ring()
+	await test_dungeon_reentry_round_trip()
 	await test_character_creation()
 	await test_shop()
 	await test_save_load()
+	await test_action_resource_round_trip()
 	await test_combat_resolution()
 	await test_event_choice_resolution()
 	await test_event_dialog_choice_click()
 	await test_character_sheet()
+	await test_character_sheet_contexts()
+	await test_character_value_audit()
 
 func _run_scenario(scenario: String) -> void:
 	match scenario:
 		"combat": await test_combat()
+		"party_combat": await test_party_combat()
+		"crown_smoke": await test_crown_smoke()
+		"crown_balance_fixture": await test_crown_balance_fixture()
 		"combat_ai_loop": await test_combat_ai_loop()
 		"combat_victory": await test_combat_victory()
+		"combat_defeat": await test_combat_defeat()
+		"final_encounter_round_trip": await test_final_encounter_round_trip()
+		"mixed_mechanics_encounter": await test_mixed_mechanics_encounter()
 		"overworld": await test_overworld()
+		"companion_lifecycle": await test_companion_lifecycle()
+		"crown_composition_solo_two": await test_crown_composition_solo_two()
+		"crown_composition_three_four": await test_crown_composition_three_four()
 		"main_menu_load": await test_main_menu_load()
 		"dungeon": await test_dungeon()
 		"event_dialog": await test_event_dialog()
+		"crown_event_fairy_ring": await test_crown_event_fairy_ring()
+		"dungeon_reentry_round_trip": await test_dungeon_reentry_round_trip()
 		"character_creation": await test_character_creation()
 		"shop": await test_shop()
 		"save_load": await test_save_load()
+		"action_resource_round_trip": await test_action_resource_round_trip()
 		"combat_resolution": await test_combat_resolution()
 		"event_choice_resolution": await test_event_choice_resolution()
 		"event_dialog_choice_click": await test_event_dialog_choice_click()
 		"character_sheet": await test_character_sheet()
+		"character_sheet_contexts": await test_character_sheet_contexts()
+		"character_value_audit": await test_character_value_audit()
 		_:
 			_fail += 1
 			_failures.append("[harness] unknown scenario '%s'" % scenario)
@@ -170,6 +227,31 @@ func test_combat() -> void:
 	_assert(hud != null, "combat HUD @onready resolved")
 	_assert(hud.has_method("update_hud"), "combat HUD has update_hud")
 	_assert(combat.hex_grid.entities.size() > 0, "combat grid has rendered entities (got %d)" % combat.hex_grid.entities.size())
+
+	# A physical disconnect holds the exact owned combatant in place. Rebinding
+	# the stable seat resumes that turn instead of changing ownership or devices.
+	var seat0_session := str(PlayerManager.get_player(0).get("session_id", ""))
+	_assert(PlayerManager.bind_device_to_session(seat0_session, 7), "combat owner can bind a transient controller")
+	var owned_turn_index := -1
+	for initiative_index in combat.tracker.combatants.size():
+		var candidate: Dictionary = combat.tracker.combatants[initiative_index]
+		if bool(candidate.get("is_player", false)) and candidate.get("entity") == combat.player_entities[0].get("character"):
+			owned_turn_index = initiative_index
+			break
+	_assert(owned_turn_index >= 0, "combat initiative contains Seat 1's owned character")
+	if owned_turn_index >= 0:
+		var owned_character: Character = combat.player_entities[0].get("character")
+		owned_character.is_alive = true
+		owned_character.current_hp = maxi(1, owned_character.max_hp)
+		combat._battle_ending = false
+		combat.tracker.active_index = owned_turn_index
+		PlayerManager._on_joy_connection_changed(7, false)
+		combat._start_combat_turn()
+		_assert(combat._waiting_for_owner_rebind, "disconnected owner holds the active combat turn")
+		_assert(combat.hud.btn_end_turn.disabled, "disconnected owner locks combat controls")
+		_assert(combat.active_combatant.get("entity") == combat.player_entities[0].get("character"), "disconnect preserves the active character's stable owner")
+		_assert(PlayerManager.request_device_join(8, seat0_session) == 0, "Start join reclaims the exact combat seat")
+		_assert(not combat._waiting_for_owner_rebind and not combat.hud.btn_end_turn.disabled, "rebind resumes the held combat turn")
 	# drive an end-turn to prove the turn machine advances
 	var before_round: int = combat.tracker.current_round
 	combat._on_hud_action("end_turn", {})
@@ -185,10 +267,10 @@ func test_combat() -> void:
 		var pchar: Character = p0["character"]
 		combat.current_player_idx = 0
 		combat.active_character = pchar
-		combat.has_acted_this_turn = false
+		combat.turn_budget.has_acted_this_turn = false
 		combat.pending_action_type = "attack"
 		p0["hex_position"] = Vector2i.ZERO
-		pchar.inventory.equip(Inventory.Slot.WEAPON, "longsword")
+		pchar.inventory.equip(Inventory.Slot.WEAPON, "longsword", true)
 		combat.hud.update_hud(pchar, combat.tracker)
 		_assert(combat.hud.weapon_info.text.contains("Weapon:"), "combat HUD shows weapon line")
 		_assert(combat.hud.weapon_info.text.contains("Longsword") or combat.hud.weapon_info.text.contains("longsword"), "combat HUD shows equipped weapon name")
@@ -249,8 +331,16 @@ func test_combat() -> void:
 				{"action":"none"}) == "Hold", "intent describes hold")
 
 			# Move-path preview
+			# The earlier timed turn intentionally exercises the live loop. Reset
+			# the preview's own preconditions so RNG and initiative order cannot
+			# decide whether this focused assertion has an active player.
+			combat.current_player_idx = 0
+			combat.active_character = pchar
+			combat._battle_ending = false
+			pchar.is_alive = true
+			pchar.current_hp = maxi(1, pchar.current_hp)
 			combat.pending_action_type = ""
-			combat.remaining_speed = float(combat.active_character.speed)
+			combat.remaining_speed = float(pchar.get_speed())
 			var ppos: Vector2i = combat.player_entities[combat.current_player_idx]["hex_position"]
 			var reach: Dictionary = combat.hex_grid.get_reachable(ppos, combat.remaining_speed)
 			var some_hex: Vector2i = Vector2i.ZERO
@@ -281,6 +371,255 @@ func test_combat() -> void:
 	_teardown_scene(combat)
 	_exit_test()
 
+
+## Party-derived combat formation and local ownership for one player plus companions.
+func test_party_combat() -> void:
+	_enter_test("party_combat")
+	var camp: Dictionary = DataLoader.get_campaign("the_lost_crown")
+	GameManager.active_campaign = camp
+	GameManager.current_state = GameManager.GameState.COMBAT
+	GameManager.transition_context = {"monster_ids": ["goblin"], "terrain": "plains", "return_state": GameManager.GameState.OVERWORLD}
+	GameManager.test_mode = true
+	PlayerManager.reset()
+	PartyManager.reset()
+	PlayerManager.add_player("Solo")
+	var hero := _fresh_char("Solo Hero", "human", "fighter", {"STR":15,"DEX":14,"CON":13,"INT":10,"WIS":10,"CHA":8})
+	PlayerManager.set_player_character(0, hero)
+	PartyManager.register_player_character(0, hero)
+	PartyManager.initialize_campaign_companions(camp.get("companions", {}))
+	for companion_id in PartyManager.get_available_companions():
+		PartyManager.recruit_companion(companion_id)
+	PartyManager.set_leader("slot_2")
+	var expected_owners: Array[int] = []
+	for member in PartyManager.get_active_party_members():
+		expected_owners.append(int(member.get("owner_player_index", -1)))
+	GameManager.game_in_progress = true
+	GameManager.current_state = GameManager.GameState.OVERWORLD
+	_assert(SaveManager.save_game("gate4_party_formation"), "four-member party saves through the supported boundary")
+	PartyManager.reset()
+	PlayerManager.reset()
+	_assert(SaveManager.load_game("gate4_party_formation"), "four-member party reloads through the supported boundary")
+	_assert(PartyManager.get_active_party_members().size() == 4, "save/load preserves all four occupied party slots")
+	_assert(PartyManager.leader_slot_id == "slot_2", "save/load preserves transferred exploration leadership")
+	var loaded_owners: Array[int] = []
+	for member in PartyManager.get_active_party_members():
+		loaded_owners.append(int(member.get("owner_player_index", -1)))
+	_assert(loaded_owners == expected_owners, "save/load preserves logical combat ownership for every party slot")
+	SaveManager.delete_save("gate4_party_formation")
+	GameManager.current_state = GameManager.GameState.COMBAT
+	GameManager.transition_context = {"monster_ids": ["goblin"], "terrain": "plains", "return_state": GameManager.GameState.OVERWORLD}
+	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 2.5)
+	_assert(combat.player_entities.size() == 4, "party combat enters with all four active party members")
+	var occupied_positions := {}
+	for entity in combat.player_entities:
+		_assert(int(entity.get("owner_player_index", -1)) == 0, "solo player owns every active combat turn")
+		_assert(not occupied_positions.has(entity.get("hex_position")), "party formation positions are distinct")
+		occupied_positions[entity.get("hex_position")] = true
+	var spell_owner: Character = combat.player_entities[1].get("character")
+	spell_owner.known_spells.assign(["magic_missile"])
+	hero.known_spells.clear()
+	combat.hud.update_hud(spell_owner, combat.tracker)
+	combat.hud._show_spell_selection()
+	_assert(combat.hud.spells_registered.size() == 1 and str(combat.hud.spells_registered[0].get("id", "")) == "magic_missile", "spell menu shows only the active companion's owned spell")
+	_assert(combat.hud.spell_list.get_item_count() == 1, "spell menu renders one row for one owned spell")
+	combat.hud._hide_spell_selection()
+	combat.hud._show_spell_selection()
+	_assert(combat.hud.spell_list.get_item_count() == 1 and combat.hud.spells_registered.size() == 1, "reopening the spell menu does not duplicate rows")
+	combat.hud.update_hud(hero, combat.tracker)
+	combat.hud._show_spell_selection()
+	_assert(combat.hud.spell_list.get_item_count() == 0 and combat.hud.spells_registered.is_empty(), "spell rows do not leak to a different active character")
+	_teardown_scene(combat)
+	_setup_world()
+	_exit_test()
+
+
+## Fixed-seed Crown path using the production overworld, dungeon, event,
+## combat, objective, and terminal scenes in one bounded process.
+func test_crown_smoke() -> void:
+	_enter_test("crown_smoke")
+	_setup_world()
+	GameManager.game_in_progress = true
+	PartyManager.initialize_campaign_companions(GameManager.active_campaign.get("companions", {}))
+	_assert(PartyManager.recruit_companion("aldric"), "Crown smoke recruits Aldric")
+	_assert(PartyManager.recruit_companion("mira"), "Crown smoke recruits Mira")
+	_assert(PartyManager.get_active_characters().size() == 4, "Crown smoke starts with a full four-member party")
+
+	var overworld: Node = await _spawn_scene("res://scenes/overworld.tscn", 1.2)
+	_assert(overworld.hud.objective_label.text.contains("Find"), "Crown smoke displays the primary objective")
+	PartyManager.move_exploration_party(Vector2i(1, 0))
+	_assert(PlayerManager.get_player_position(0) == Vector2i(1, 0) and PlayerManager.get_player_position(1) == Vector2i(1, 0), "Crown smoke moves the authoritative party position")
+	_teardown_scene(overworld)
+
+	GameManager.transition_context = {"dungeon_id": "ruins_of_ashvale"}
+	var dungeon: Node = await _spawn_scene("res://scenes/dungeon.tscn", 1.2)
+	_assert(dungeon.rooms.size() == 5, "Crown smoke enters the deterministic first dungeon")
+	_assert(GameManager.completed_milestones.has("enter_dungeon_1"), "Crown smoke records dungeon entry milestone")
+	var crown_boss: Room = null
+	for candidate in dungeon.rooms.values():
+		if candidate is Room and candidate.type == Room.RoomType.BOSS:
+			crown_boss = candidate
+			break
+	_assert(crown_boss != null, "Crown smoke finds the generated boss room")
+	dungeon._begin_room_combat(crown_boss)
+	_assert(not crown_boss.is_cleared and not dungeon.boss_defeated, "Crown smoke keeps the boss unresolved during combat")
+	dungeon._complete_pending_combat()
+	_assert(crown_boss.is_cleared and dungeon.boss_defeated, "Crown smoke resolves the boss only after victory")
+	_assert(GameManager.mark_dungeon_cleared("ruins_of_ashvale"), "Crown smoke records the resolved dungeon clear")
+	_assert(not GameManager.mark_dungeon_cleared("ruins_of_ashvale"), "Crown smoke keeps dungeon clear idempotent")
+	_teardown_scene(dungeon)
+	GameManager.active_dungeon_state.clear()
+	GameManager.transition_context = {"dungeon_id": "ruins_of_ashvale"}
+	var reentered_dungeon: Node = await _spawn_scene("res://scenes/dungeon.tscn", 0.6)
+	var reentry_rooms_cleared := true
+	for reentry_room in reentered_dungeon.rooms.values():
+		if not reentry_room.is_cleared:
+			reentry_rooms_cleared = false
+			break
+	_assert(reentry_rooms_cleared and reentered_dungeon.boss_defeated, "Crown smoke re-entry preserves cleared dungeon state without rewards")
+	_teardown_scene(reentered_dungeon)
+
+	var event_dialog: Node = await _spawn_scene("res://scenes/ui/event_dialog.tscn", 0.2)
+	var event_table: Dictionary = DataLoader.get_event_table("dungeon_events")
+	var event_data: Dictionary = event_table.get("events", [])[0]
+	event_dialog.popup_event(PartyManager.get_active_characters()[0], event_data)
+	_assert(event_dialog.visible, "Crown smoke presents a production event")
+	_teardown_scene(event_dialog)
+
+	GameManager.transition_context = {"monster_ids": ["lich_king"], "return_state": GameManager.GameState.DUNGEON, "terrain": "dungeon"}
+	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 1.2)
+	_assert(combat.player_entities.size() == 4, "Crown smoke carries the full party into the finale encounter")
+	_assert(combat.monster_entities.size() == 1 and combat.monster_entities[0].get("monster_id", "") == "lich_king", "Crown smoke uses the production Lich King encounter")
+	_assert(combat.monster_entities[0].get("spells", []).size() == 7 and combat.monster_entities[0].get("spell_slots", {}).get("3", 0) == 3, "Crown smoke preserves the production Lich King spell list and slots")
+	_assert(combat.monster_entities[0].get("condition_immunities", []).has("paralyzed") and combat.monster_entities[0].get("loot_table", []).size() == 4, "Crown smoke preserves boss defenses and reward metadata")
+	combat._handle_spell_effects(null, combat.monster_entities[0], {"effects": [{"type": "grant_condition", "condition": "paralyzed", "duration": 3}]})
+	_assert(not combat.monster_entities[0].get("conditions", {}).has("paralyzed"), "Crown monster condition immunity blocks an incoming paralyze effect")
+	for player_entity in combat.player_entities:
+		var final_character: Character = player_entity.get("character")
+		final_character.inventory.equip(Inventory.Slot.WEAPON, "longsword", true)
+		final_character.base_ac = 1000
+		final_character.max_hp = 10000
+		final_character.current_hp = 10000
+		final_character.is_alive = true
+	var lich: Dictionary = combat.monster_entities[0]
+	var final_player_position: Vector2i = combat.player_entities[0].get("hex_position", Vector2i.ZERO)
+	var final_monster_position := final_player_position
+	for neighbor in HexUtils.get_neighbors(final_player_position):
+		if combat.hex_grid.has_tile(neighbor) and combat.hex_grid.is_hex_passable(neighbor):
+			final_monster_position = neighbor
+			break
+	lich["hex_position"] = final_monster_position
+	lich["current_hp"] = 1
+	lich["max_hp"] = 1
+	lich["armor_class"] = -100
+	lich["is_alive"] = true
+	lich["conditions"] = {"prone": 99}
+	combat._update_grid_entities()
+	seed(424242)
+	var final_rounds := 0
+	while final_rounds < 6 and not combat._battle_ending:
+		var final_start_round: int = combat.tracker.current_round
+		var final_guard := 0
+		while not combat._battle_ending and combat.tracker.current_round == final_start_round and final_guard < 12:
+			var final_active: Dictionary = combat.active_combatant
+			if not final_active.is_empty() and final_active.get("is_player", false):
+				_drive_player_attack_turn(combat)
+			await get_tree().create_timer(2.5).timeout
+			final_guard += 1
+		final_rounds += 1
+	_assert(combat._battle_ending, "Crown smoke resolves the production finale combat loop")
+	_assert(GameManager.defeated_monsters.has("lich_king"), "Crown smoke registers the Lich King defeat from CombatState")
+	_teardown_scene(combat)
+
+	var active_party := PartyManager.get_active_characters()
+	for index in 3:
+		active_party[index].inventory.add_item("crown_fragment")
+	_assert(GameManager.are_win_conditions_met(), "Crown smoke reaches the campaign win condition")
+	GameManager.current_state = GameManager.GameState.COMPLETION
+	GameManager.transition_context = {"reason": "Campaign goals completed!"}
+	var completion: Node = await _spawn_scene("res://scenes/completion.tscn", 0.3)
+	_assert(completion.title_label.text == "Crown Reclaimed", "Crown smoke presents the provisional completion screen")
+	_teardown_scene(completion)
+	GameManager.current_state = GameManager.GameState.OVERWORLD
+	GameManager.game_in_progress = false
+	GameManager.active_dungeon_state.clear()
+	_exit_test()
+
+## Seeded balance fixture for the first production Crown boss encounter. This
+## keeps the normal party, milestone level-up, dungeon checkpoint, reward
+## record, and live combat loop intact; it only records the resulting budget
+## so balance review has a repeatable baseline.
+func test_crown_balance_fixture() -> void:
+	_enter_test("crown_balance_fixture")
+	_setup_world()
+	GameManager.game_in_progress = true
+	PartyManager.initialize_campaign_companions(GameManager.active_campaign.get("companions", {}))
+	_assert(PartyManager.recruit_companion("aldric"), "balance fixture recruits Aldric")
+	_assert(PartyManager.recruit_companion("mira"), "balance fixture recruits Mira")
+	seed(20260810)
+	GameManager.current_state = GameManager.GameState.DUNGEON
+	GameManager.transition_context = {"dungeon_id": "ruins_of_ashvale"}
+	var dungeon: Node = await _spawn_scene("res://scenes/dungeon.tscn", 1.0)
+	var active_party := PartyManager.get_active_characters()
+	_assert(active_party.size() == 4, "balance fixture uses the four-member Crown party")
+	var all_level_two := true
+	for character in active_party:
+		if character.level != 2:
+			all_level_two = false
+	_assert(all_level_two, "balance fixture applies the entrance milestone to level 2")
+	var dungeon_config: Dictionary = DataLoader.get_campaign("the_lost_crown").get("dungeons", {}).get("ruins_of_ashvale", {})
+	_assert(dungeon_config.get("boss", {}).get("monster_id", "") == "wight", "balance fixture selects the production Ruins Wight boss")
+	_assert(dungeon_config.get("loot", []) == [{"item_id": "crown_fragment"}, {"item_id": "gold_100"}], "balance fixture records the production boss reward boundary")
+	_assert(SaveManager.get_save_block_reason().is_empty(), "balance fixture allows safe-save at the dungeon entrance checkpoint")
+
+	var boss: Room = null
+	for candidate in dungeon.rooms.values():
+		if candidate is Room and candidate.type == Room.RoomType.BOSS:
+			boss = candidate
+			break
+	_assert(boss != null, "balance fixture finds the generated boss room")
+	if boss != null:
+		dungeon.party_position = boss.coord
+		dungeon._save_dungeon_state_to_manager()
+	_assert(SaveManager.get_save_block_reason().contains("active dungeon"), "balance fixture blocks save after leaving the entrance checkpoint")
+	if boss != null:
+		dungeon._begin_room_combat(boss)
+	GameManager.current_state = GameManager.GameState.COMBAT
+	GameManager.transition_context = {"monster_ids": ["wight"], "return_state": GameManager.GameState.DUNGEON, "terrain": "dungeon"}
+	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 1.2)
+	var starting_hp := 0
+	for entity in combat.player_entities:
+		starting_hp += int(entity.get("character").current_hp)
+	var starting_wight_hp := int(combat.monster_entities[0].get("current_hp", 0))
+	seed(20260810)
+	var rounds := 0
+	while rounds < 12 and not combat._battle_ending:
+		var round_start: int = combat.tracker.current_round
+		var turn_guard := 0
+		while not combat._battle_ending and combat.tracker.current_round == round_start and turn_guard < 16:
+			var active: Dictionary = combat.active_combatant
+			if not active.is_empty() and active.get("is_player", false):
+				_drive_player_attack_turn(combat)
+			await get_tree().create_timer(0.35).timeout
+			turn_guard += 1
+		rounds += 1
+	var ending_hp := 0
+	for entity in combat.player_entities:
+		ending_hp += int(entity.get("character").current_hp)
+	var wight_hp := int(combat.monster_entities[0].get("current_hp", 0))
+	var hp_loss := starting_hp - ending_hp
+	var resolved: bool = combat._battle_ending
+	_assert(starting_wight_hp > 0 and starting_hp > 0, "balance fixture starts with live production combatants")
+	_assert(resolved, "balance fixture resolves the seeded Wight encounter within the twelve-round budget")
+	_assert(ending_hp > 0, "balance fixture leaves at least one party member standing")
+	_assert(wight_hp <= 0, "balance fixture ends with the Wight defeated")
+	print("[balance] ruins_of_ashvale seed=20260810 party_level=2 rounds=%d hp=%d->%d loss=%d wight_hp=%d reward=crown_fragment+gold_100" % [rounds, starting_hp, ending_hp, hp_loss, wight_hp])
+	_teardown_scene(combat)
+	GameManager.active_dungeon_state.clear()
+	GameManager.current_state = GameManager.GameState.OVERWORLD
+	GameManager.game_in_progress = false
+	_teardown_scene(dungeon)
+	_exit_test()
+
 ## Overworld boot + fog + reachable + rest + save + settings + ambush (Stealth).
 func test_overworld() -> void:
 	_enter_test("overworld")
@@ -307,6 +646,19 @@ func test_overworld() -> void:
 	_assert(ow_hud.btn_rest != null, "overworld HUD rest button present")
 	_assert(ow_hud.btn_save != null, "overworld HUD save button present")
 	_assert(ow_hud.btn_menu != null, "overworld HUD menu button present")
+	PartyManager.initialize_campaign_companions(GameManager.active_campaign.get("companions", {}))
+	_assert(PartyManager.recruit_companion("aldric"), "overworld recruits a companion for roster UI")
+	ow_hud.update_hud()
+	await get_tree().process_frame
+	_assert(ow_hud.player_list_container.get_child_count() == 3, "overworld roster includes local players and companion")
+	var roster_text := ""
+	for card in ow_hud.player_list_container.get_children():
+		for label in card.find_children("", "Label", true, false):
+			roster_text += str(label.text)
+	_assert(roster_text.contains("Aldric") and roster_text.contains("Seat"), "overworld roster shows companion identity and owner seat")
+	_assert(PartyManager.set_leader("slot_2"), "roster can transfer leadership to companion")
+	ow_hud.update_hud()
+	await get_tree().process_frame
 	var rest_char: Character = PlayerManager.get_player(0).get("character")
 	rest_char.current_hp = 1
 	overworld._rest_party()
@@ -322,6 +674,7 @@ func test_overworld() -> void:
 	ow_hud.settings_pressed.emit()
 	_assert(Settings.is_open(), "settings overlay opened from overworld")
 	_assert(get_tree().paused, "tree paused while settings open")
+	_assert(AudioServer.get_bus_index("SFX") >= 0 and AudioServer.get_bus_index("Music") >= 0, "settings audio buses exist for SFX and music controls")
 	Settings.close_settings()
 	_assert(not Settings.is_open(), "settings overlay closed")
 	_assert(not get_tree().paused, "tree resumed after settings close")
@@ -330,6 +683,11 @@ func test_overworld() -> void:
 	Settings.master_volume = 1.0
 	Settings.load_settings()
 	_assert(abs(Settings.master_volume - 0.42) < 0.001, "settings persisted to disk (master_volume)")
+	Settings.sfx_volume = 0.37
+	Settings.save_settings()
+	var sfx_bus := AudioServer.get_bus_index("SFX")
+	_assert(abs(AudioServer.get_bus_volume_db(sfx_bus) - linear_to_db(0.37)) < 0.01, "SFX volume control applies to the SFX bus")
+	Settings.sfx_volume = 1.0
 
 	# ---- Ambush is now a Stealth check, not a flat 40% roll ----
 	_assert(overworld.has_method("_compute_ambush_dc"), "ambush uses Stealth DC calc")
@@ -344,6 +702,272 @@ func test_overworld() -> void:
 
 	_teardown_scene(overworld)
 	_exit_test()
+
+
+## Production Camp Roster UI: solo fill plus two-player decline, replacement,
+## dismissal, and logical-owner reassignment.
+func test_companion_lifecycle() -> void:
+	_enter_test("companion_lifecycle")
+	_setup_companion_party(1)
+	var solo_overworld: Node = await _spawn_scene("res://scenes/overworld.tscn", 1.2)
+	var solo_hud: Node = solo_overworld.hud
+	solo_hud.btn_companions.pressed.emit()
+	await get_tree().process_frame
+	var solo_panel: CompanionRosterPanel = solo_hud.companion_panel
+	_assert(solo_hud.companion_overlay.visible, "normal overworld UI opens the Camp Roster")
+	_assert(solo_panel.companion_controls.size() == 3, "Camp Roster shows all three Crown companions")
+	_assert(not solo_overworld.hex_grid.is_processing_input(), "Camp Roster suspends overworld map input")
+	_assert(solo_hud.btn_end_turn.disabled and solo_hud.btn_rest.disabled, "Camp Roster disables turn-changing controls behind the modal")
+	var roster_start := PartyManager.get_exploration_position()
+	var blocked_destination := roster_start
+	for candidate in solo_overworld.reachable_hexes:
+		if candidate != roster_start:
+			blocked_destination = candidate
+			break
+	if blocked_destination != roster_start:
+		solo_overworld._on_hex_clicked(blocked_destination)
+	_assert(PartyManager.get_exploration_position() == roster_start, "Camp Roster rejects direct movement intent while open")
+	solo_panel.close_button.pressed.emit()
+	await get_tree().process_frame
+	_assert(not solo_hud.companion_overlay.visible and solo_overworld.hex_grid.is_processing_input(), "closing Camp Roster restores overworld map input")
+	_assert(not solo_hud.btn_end_turn.disabled and not solo_hud.btn_rest.disabled, "closing Camp Roster restores turn-changing controls")
+	solo_hud.btn_companions.pressed.emit()
+	await get_tree().process_frame
+	solo_panel = solo_hud.companion_panel
+
+	var rowan_controls: Dictionary = solo_panel.companion_controls.get("rowan", {})
+	rowan_controls.get("decline_button").pressed.emit()
+	await get_tree().process_frame
+	_assert(PartyManager.get_companion_state("rowan") == "declined", "normal UI can decline a companion")
+	_assert(SaveManager.save_game("companion_lifecycle"), "declined companion state passes the supported save validator")
+	SaveManager.delete_save("companion_lifecycle")
+	rowan_controls = solo_panel.companion_controls.get("rowan", {})
+	rowan_controls.get("reconsider_button").pressed.emit()
+	await get_tree().process_frame
+	_assert(PartyManager.get_companion_state("rowan") == "available", "normal UI can reconsider a declined companion")
+
+	for companion_id in ["aldric", "mira", "rowan"]:
+		var controls: Dictionary = solo_panel.companion_controls.get(companion_id, {})
+		var seat_selector: OptionButton = controls.get("seat_selector")
+		seat_selector.select(0)
+		controls.get("recruit_button").pressed.emit()
+		await get_tree().process_frame
+	_assert(PartyManager.get_active_characters().size() == 4, "solo Camp Roster fills all three empty party slots")
+	var solo_owns_all := true
+	for slot in PartyManager.party_slots:
+		if bool(slot.get("occupied", false)) and PlayerManager.get_player_for_party_slot(str(slot.get("slot_id", ""))) != 0:
+			solo_owns_all = false
+	_assert(solo_owns_all, "solo player owns every recruited companion turn")
+	_teardown_scene(solo_overworld)
+
+	_setup_companion_party(2)
+	var coop_overworld: Node = await _spawn_scene("res://scenes/overworld.tscn", 1.2)
+	var coop_hud: Node = coop_overworld.hud
+	coop_hud.btn_companions.pressed.emit()
+	await get_tree().process_frame
+	var coop_panel: CompanionRosterPanel = coop_hud.companion_panel
+	for recruit_spec in [{"id": "aldric", "seat": 0}, {"id": "mira", "seat": 1}]:
+		var controls: Dictionary = coop_panel.companion_controls.get(recruit_spec["id"], {})
+		var selector: OptionButton = controls.get("seat_selector")
+		selector.select(int(recruit_spec["seat"]))
+		controls.get("recruit_button").pressed.emit()
+		await get_tree().process_frame
+	_assert(PartyManager.get_active_characters().size() == 4, "two-player Camp Roster fills both open slots")
+	var capture_path := OS.get_environment("VIEWPORT_CAPTURE_PATH")
+	if not capture_path.is_empty() and DisplayServer.get_name() != "headless":
+		var capture_viewport: SubViewport = coop_overworld.get_meta("vp")
+		capture_viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
+		await RenderingServer.frame_post_draw
+		var capture_image := capture_viewport.get_texture().get_image()
+		_assert(capture_image.save_png(capture_path) == OK, "Camp Roster visual capture saved")
+
+	rowan_controls = coop_panel.companion_controls.get("rowan", {})
+	var replace_selector: OptionButton = rowan_controls.get("replace_selector")
+	var aldric_option := -1
+	for option_index in replace_selector.item_count:
+		if str(replace_selector.get_item_metadata(option_index)) == "aldric":
+			aldric_option = option_index
+			break
+	_assert(aldric_option >= 0, "full-party UI offers a recruited companion as the replacement target")
+	if aldric_option >= 0:
+		replace_selector.select(aldric_option)
+	var replacement_seat: OptionButton = rowan_controls.get("seat_selector")
+	replacement_seat.select(0)
+	rowan_controls.get("replace_button").pressed.emit()
+	await get_tree().process_frame
+	_assert(PartyManager.get_companion_state("aldric") == "dismissed" and PartyManager.get_companion_state("rowan") == "recruited", "normal UI atomically replaces one companion with another")
+	_assert(PartyManager.get_active_characters().size() == 4, "replacement preserves full party capacity")
+	var rowan_slot := PartyManager.get_companion_slot_id("rowan")
+	_assert(PlayerManager.get_player_for_party_slot(rowan_slot) == 0, "replacement applies the chosen initial owner")
+
+	rowan_controls = coop_panel.companion_controls.get("rowan", {})
+	var owner_selector: OptionButton = rowan_controls.get("owner_selector")
+	owner_selector.select(1)
+	owner_selector.item_selected.emit(1)
+	await get_tree().process_frame
+	_assert(PlayerManager.get_player_for_party_slot(rowan_slot) == 1, "normal UI reassigns a companion from Seat 1 to Seat 2")
+	var mira_controls: Dictionary = coop_panel.companion_controls.get("mira", {})
+	mira_controls.get("dismiss_button").pressed.emit()
+	await get_tree().process_frame
+	_assert(PartyManager.get_companion_state("mira") == "dismissed" and PartyManager.get_active_characters().size() == 3, "normal UI dismisses a recruited companion and opens its slot")
+	_assert(coop_panel.companion_controls.get("mira", {}).has("reconsider_button"), "dismissed companion exposes an Invite back action")
+	_teardown_scene(coop_overworld)
+	_exit_test()
+
+## Crown composition rows: production Camp Roster ownership, safe save/load,
+## objective visibility, and combat formation for one and two local seats.
+## Normal shared-keyboard play remains a manual review boundary.
+func test_crown_composition_solo_two() -> void:
+	_enter_test("crown_composition_solo_two")
+	var solo_slot := "crown_composition_solo"
+	_setup_companion_party(1)
+	GameManager.active_dungeon_state.clear()
+	var solo_overworld: Node = await _spawn_scene("res://scenes/overworld.tscn", 1.0)
+	solo_overworld.hud.btn_companions.pressed.emit()
+	await get_tree().process_frame
+	var solo_panel: CompanionRosterPanel = solo_overworld.hud.companion_panel
+	for companion_id in ["aldric", "mira", "rowan"]:
+		var controls: Dictionary = solo_panel.companion_controls.get(companion_id, {})
+		var selector: OptionButton = controls.get("seat_selector")
+		selector.select(0)
+		controls.get("recruit_button").pressed.emit()
+		await get_tree().process_frame
+	_assert(PartyManager.get_active_characters().size() == 4, "solo composition fills three companion slots")
+	_assert(PlayerManager.get_player_for_party_slot("slot_0") == 0, "solo composition preserves the local seat owner")
+	var solo_objectives := " | ".join(GameManager.get_campaign_objectives())
+	_assert(solo_objectives.contains("Crown"), "solo composition keeps the player-facing Crown objective")
+	solo_panel.close_button.pressed.emit()
+	await get_tree().process_frame
+	SaveManager.delete_save(solo_slot)
+	_assert(SaveManager.save_game(solo_slot), "solo composition saves its full party at the overworld boundary")
+	_teardown_scene(solo_overworld)
+	await _run_composition_combat("solo", [0, 0, 0, 0])
+	PlayerManager.reset()
+	PartyManager.reset()
+	_assert(SaveManager.load_game(solo_slot), "solo composition reloads its four-member party")
+	_assert(PartyManager.get_active_characters().size() == 4 and PlayerManager.get_player_for_party_slot("slot_3") == 0, "solo composition reload preserves companion ownership")
+	SaveManager.delete_save(solo_slot)
+
+	var two_player_slot := "crown_composition_two_player"
+	_setup_companion_party(2)
+	GameManager.active_dungeon_state.clear()
+	var two_overworld: Node = await _spawn_scene("res://scenes/overworld.tscn", 1.0)
+	two_overworld.hud.btn_companions.pressed.emit()
+	await get_tree().process_frame
+	var two_panel: CompanionRosterPanel = two_overworld.hud.companion_panel
+	for recruit_spec in [{"id": "aldric", "seat": 0}, {"id": "mira", "seat": 1}]:
+		var controls: Dictionary = two_panel.companion_controls.get(recruit_spec["id"], {})
+		var selector: OptionButton = controls.get("seat_selector")
+		selector.select(int(recruit_spec["seat"]))
+		controls.get("recruit_button").pressed.emit()
+		await get_tree().process_frame
+	_assert(PartyManager.get_active_characters().size() == 4, "two-player composition fills two companion slots")
+	_assert(PlayerManager.get_player_for_party_slot("slot_2") == 0 and PlayerManager.get_player_for_party_slot("slot_3") == 1, "two-player composition assigns companions to both local seats")
+	two_panel.close_button.pressed.emit()
+	await get_tree().process_frame
+	SaveManager.delete_save(two_player_slot)
+	_assert(SaveManager.save_game(two_player_slot), "two-player composition saves the mixed party at the overworld boundary")
+	_teardown_scene(two_overworld)
+	await _run_composition_combat("two-player", [0, 0, 1, 1])
+	PlayerManager.reset()
+	PartyManager.reset()
+	_assert(SaveManager.load_game(two_player_slot), "two-player composition reloads its mixed party")
+	_assert(PartyManager.get_active_characters().size() == 4 and PlayerManager.get_player_for_party_slot("slot_2") == 0 and PlayerManager.get_player_for_party_slot("slot_3") == 1, "two-player composition reload preserves both companion owners")
+	SaveManager.delete_save(two_player_slot)
+	GameManager.game_in_progress = false
+	_exit_test()
+
+
+## Crown composition rows for three local seats plus one companion and four
+## local character seats. Normal shared-keyboard ownership remains review.
+func test_crown_composition_three_four() -> void:
+	_enter_test("crown_composition_three_four")
+	var three_slot := "crown_composition_three_player"
+	_setup_companion_party(3)
+	GameManager.active_dungeon_state.clear()
+	var three_overworld: Node = await _spawn_scene("res://scenes/overworld.tscn", 1.0)
+	three_overworld.hud.btn_companions.pressed.emit()
+	await get_tree().process_frame
+	var three_panel: CompanionRosterPanel = three_overworld.hud.companion_panel
+	var rowan_controls: Dictionary = three_panel.companion_controls.get("rowan", {})
+	var rowan_selector: OptionButton = rowan_controls.get("seat_selector")
+	rowan_selector.select(2)
+	rowan_controls.get("recruit_button").pressed.emit()
+	await get_tree().process_frame
+	_assert(PartyManager.get_active_characters().size() == 4, "three-player composition fills its final slot with Rowan")
+	_assert(PlayerManager.get_player_for_party_slot("slot_3") == 2, "three-player composition assigns Rowan to Seat 3")
+	three_panel.close_button.pressed.emit()
+	await get_tree().process_frame
+	SaveManager.delete_save(three_slot)
+	_assert(SaveManager.save_game(three_slot), "three-player composition saves at the overworld boundary")
+	_teardown_scene(three_overworld)
+	await _run_composition_combat("three-player", [0, 1, 2, 2])
+	PlayerManager.reset()
+	PartyManager.reset()
+	_assert(SaveManager.load_game(three_slot), "three-player composition reloads its mixed party")
+	_assert(PartyManager.get_active_characters().size() == 4 and PlayerManager.get_player_for_party_slot("slot_3") == 2, "three-player composition reload preserves Rowan ownership")
+	SaveManager.delete_save(three_slot)
+
+	var four_slot := "crown_composition_four_player"
+	_setup_companion_party(4)
+	GameManager.active_dungeon_state.clear()
+	var four_overworld: Node = await _spawn_scene("res://scenes/overworld.tscn", 1.0)
+	_assert(PartyManager.get_active_characters().size() == 4, "four-player composition starts with four local characters")
+	var four_objectives := " | ".join(GameManager.get_campaign_objectives())
+	_assert(four_objectives.contains("Crown"), "four-player composition keeps the player-facing Crown objective")
+	SaveManager.delete_save(four_slot)
+	_assert(SaveManager.save_game(four_slot), "four-player composition saves at the overworld boundary")
+	_teardown_scene(four_overworld)
+	await _run_composition_combat("four-player", [0, 1, 2, 3])
+	PlayerManager.reset()
+	PartyManager.reset()
+	_assert(SaveManager.load_game(four_slot), "four-player composition reloads all local characters")
+	_assert(PartyManager.get_active_characters().size() == 4 and PlayerManager.get_player_for_party_slot("slot_3") == 3, "four-player composition reload preserves Seat 4 ownership")
+	SaveManager.delete_save(four_slot)
+	GameManager.game_in_progress = false
+	_exit_test()
+
+
+func _run_composition_combat(label: String, expected_owners: Array) -> void:
+	GameManager.current_state = GameManager.GameState.COMBAT
+	GameManager.transition_context = {"monster_ids": ["goblin"], "return_state": GameManager.GameState.OVERWORLD, "terrain": "plains"}
+	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 1.2)
+	_assert(combat.player_entities.size() == 4, "%s composition enters combat with four active characters" % label)
+	var actual_owners: Array = []
+	var positions: Dictionary = {}
+	for entity in combat.player_entities:
+		actual_owners.append(int(entity.get("owner_player_index", -1)))
+		positions[entity.get("hex_position", Vector2i.ZERO)] = true
+	actual_owners.sort()
+	var sorted_expected := expected_owners.duplicate()
+	sorted_expected.sort()
+	_assert(actual_owners == sorted_expected, "%s composition preserves combat seat ownership" % label)
+	_assert(positions.size() == 4, "%s composition enters with distinct combat formation positions" % label)
+	_teardown_scene(combat)
+
+
+func _setup_companion_party(player_count: int) -> void:
+	GameManager.active_campaign = DataLoader.get_campaign("the_lost_crown")
+	GameManager.current_state = GameManager.GameState.OVERWORLD
+	GameManager.transition_context = {}
+	GameManager.is_loading_save = false
+	GameManager.game_in_progress = true
+	GameManager.test_mode = true
+	GameManager.recruited_companions.clear()
+	GameManager.dismissed_companions.clear()
+	PlayerManager.reset()
+	PartyManager.reset()
+	for seat_index in player_count:
+		PlayerManager.add_player("Seat %d" % (seat_index + 1))
+		var character := _fresh_char(
+			"Hero %d" % (seat_index + 1),
+			"human",
+			"fighter" if seat_index == 0 else "wizard",
+			{"STR": 15, "DEX": 14, "CON": 13, "INT": 12, "WIS": 10, "CHA": 8}
+		)
+		PlayerManager.set_player_character(seat_index, character)
+		PartyManager.register_player_character(seat_index, character)
+	PartyManager.initialize_campaign_companions(GameManager.active_campaign.get("companions", {}))
 
 ## Main-menu Load Game UI (writes its own quicksave so it's self-contained).
 func test_main_menu_load() -> void:
@@ -456,6 +1080,156 @@ func test_event_dialog() -> void:
 	_teardown_scene(ev_dialog)
 	_exit_test()
 
+## Production Crown event chain: verify the Fairy Ring follow-up, every legal
+## choice, and each deterministic branch outcome through shared resolvers.
+func test_crown_event_fairy_ring() -> void:
+	_enter_test("crown_event_fairy_ring")
+	var forest_events: Dictionary = DataLoader.get_event_table("forest_events")
+	var fairy_ring: Dictionary = {}
+	for candidate in forest_events.get("events", []):
+		if str(candidate.get("id", "")) == "fairy_ring":
+			fairy_ring = candidate
+			break
+	var fairy_court: Dictionary = EventChain.get_chain_event(fairy_ring)
+	_assert(EventChain.has_chain(fairy_ring) and str(fairy_ring.get("type", "")) == "chain", "Fairy Ring is a production event chain")
+	_assert(str(fairy_court.get("id", "")) == "fairy_court" and str(fairy_court.get("type", "")) == "choice", "Fairy Ring exposes its Fairy Court follow-up")
+	var choices: Array = fairy_court.get("choices", [])
+	_assert(choices.size() == 3, "Fairy Court exposes all three legal choices")
+	var steal_choice: Dictionary = choices[2] if choices.size() > 2 else {}
+	_assert(int(steal_choice.get("check", {}).get("dc", -1)) == 16 and str(steal_choice.get("check", {}).get("ability", "")) == "DEX", "Fairy treasure choice carries the production DEX DC 16 check")
+
+	var chain_character := _fresh_char("Fairy Chain Tester", "human", "rogue",
+		{"STR": 10, "DEX": 18, "CON": 12, "INT": 12, "WIS": 10, "CHA": 10})
+	var chain_results := EventResolver.apply_effects(chain_character, fairy_ring.get("effects", []))
+	var teleported := false
+	for result in chain_results:
+		if str(result.get("type", "")) == "teleport_random":
+			teleported = true
+	_assert(teleported, "Fairy Ring root applies its production teleport consequence")
+
+	var accept_character := _fresh_char("Fairy Gift", "human", "fighter",
+		{"STR": 15, "DEX": 14, "CON": 13, "INT": 12, "WIS": 10, "CHA": 8})
+	accept_character.current_hp = accept_character.max_hp - 5
+	var accept_hp_before := accept_character.current_hp
+	var accept_results := EventResolver.apply_effects(accept_character, choices[0].get("effects", []))
+	_assert(accept_character.has_condition("fairy_luck") and accept_character.current_hp > accept_hp_before and not accept_results.is_empty(), "Fairy gift applies luck and healing through shared effects")
+
+	var decline_character := _fresh_char("Fairy Decline", "human", "fighter",
+		{"STR": 15, "DEX": 14, "CON": 13, "INT": 12, "WIS": 10, "CHA": 8})
+	var decline_hp_before := decline_character.current_hp
+	var decline_results := EventResolver.apply_effects(decline_character, choices[1].get("effects", []))
+	_assert(decline_results.is_empty() and decline_character.current_hp == decline_hp_before and not decline_character.has_condition("fairy_luck"), "Polite decline preserves the character without hidden effects")
+
+	var steal_success_character := _fresh_char("Fairy Thief", "halfling", "rogue",
+		{"STR": 10, "DEX": 18, "CON": 12, "INT": 12, "WIS": 10, "CHA": 10})
+	var forced_success := EventResolver.resolve_skill_check(steal_success_character, {"ability": "DEX", "dc": 1})
+	var success_results := EventResolver.apply_effects(steal_success_character, steal_choice.get("success", {}).get("effects", []))
+	_assert(forced_success.get("success", false) and steal_success_character.inventory.has_item("gold_100") and not success_results.is_empty(), "Fairy treasure success grants the production reward")
+
+	var steal_failure_character := _fresh_char("Fairy Caught", "human", "rogue",
+		{"STR": 10, "DEX": 8, "CON": 12, "INT": 10, "WIS": 10, "CHA": 10})
+	var forced_failure := EventResolver.resolve_skill_check(steal_failure_character, {"ability": "DEX", "dc": 99})
+	var failure_results := EventResolver.apply_effects(steal_failure_character, steal_choice.get("failure", {}).get("effects", []))
+	_assert(not forced_failure.get("success", true) and steal_failure_character.has_condition("cursed") and not failure_results.is_empty(), "Fairy treasure failure applies the production curse consequence")
+	_assert(not fairy_ring.has("companion_change") and not fairy_ring.has("ledger") and not fairy_court.has("companion_change") and not fairy_court.has("ledger"), "Fairy Ring declares no companion or campaign-ledger mutation")
+
+	var dialog_character := _fresh_char("Fairy UI", "human", "fighter",
+		{"STR": 15, "DEX": 14, "CON": 13, "INT": 12, "WIS": 10, "CHA": 8})
+	var dialog: EventDialog = await _spawn_scene("res://scenes/ui/event_dialog.tscn", 0.2)
+	dialog.popup_event(dialog_character, fairy_ring)
+	await get_tree().create_timer(0.2).timeout
+	_assert(dialog.title_label.text == "Fairy Ring" and dialog.btn_close.text == "Next event...", "Fairy Ring UI presents its chain continuation")
+	dialog.btn_close.pressed.emit()
+	await get_tree().create_timer(0.2).timeout
+	_assert(dialog.title_label.text == "The Fairy Court" and dialog.choice_container.get_child_count() == 3, "Fairy Ring UI opens the three-choice follow-up")
+	var accept_button := dialog.choice_container.get_child(0) as Button
+	accept_button.pressed.emit()
+	await get_tree().create_timer(0.2).timeout
+	_assert(dialog_character.has_condition("fairy_luck") and not dialog.choice_container.visible, "Fairy Ring UI choice reaches the shared effect result")
+	_teardown_scene(dialog)
+	_exit_test()
+
+## Crown dungeon clear, safe-save DTO, supported reload, and idempotent re-entry.
+## The normal GUI quit/relaunch remains a manual review boundary.
+func test_dungeon_reentry_round_trip() -> void:
+	_enter_test("dungeon_reentry_round_trip")
+	_setup_world()
+	GameManager.game_in_progress = true
+	PartyManager.initialize_campaign_companions(GameManager.active_campaign.get("companions", {}))
+	_assert(PartyManager.recruit_companion("aldric"), "dungeon re-entry recruits Aldric")
+	_assert(PartyManager.recruit_companion("mira"), "dungeon re-entry recruits Mira")
+
+	GameManager.current_state = GameManager.GameState.DUNGEON
+	GameManager.transition_context = {"dungeon_id": "ruins_of_ashvale"}
+	var dungeon: Node = await _spawn_scene("res://scenes/dungeon.tscn", 0.8)
+	var boss: Room = null
+	for candidate in dungeon.rooms.values():
+		if candidate is Room and candidate.type == Room.RoomType.BOSS:
+			boss = candidate
+			break
+	_assert(boss != null and dungeon.rooms.size() == 5, "dungeon re-entry uses the production five-room Crown dungeon")
+	if boss == null:
+		_teardown_scene(dungeon)
+		SaveManager.delete_save("dungeon_reentry_round_trip")
+		_exit_test()
+		return
+
+	dungeon._begin_room_combat(boss)
+	_assert(dungeon.pending_combat_room_id == boss.id and not boss.is_cleared, "dungeon re-entry records the unresolved boss room")
+	_assert(dungeon._complete_pending_combat() == boss, "dungeon re-entry applies the victory boundary to the pending boss")
+	_assert(boss.is_cleared and dungeon.boss_defeated and dungeon.pending_combat_room_id == -1, "dungeon re-entry clears the boss and resets pending combat")
+	_assert(GameManager.mark_dungeon_cleared("ruins_of_ashvale"), "dungeon re-entry records the one-time dungeon clear")
+	_assert(GameManager.claim_reward("ruins_of_ashvale_fragment"), "dungeon re-entry records the one-time Crown reward")
+	_assert(SaveManager.get_save_block_reason().is_empty(), "dungeon re-entry permits saving at the entrance checkpoint")
+
+	var slot := "dungeon_reentry_round_trip"
+	SaveManager.delete_save(slot)
+	_assert(SaveManager.save_game(slot), "dungeon re-entry writes the cleared dungeon checkpoint")
+	var checkpoint_file := FileAccess.open("user://saves/%s.sav" % slot, FileAccess.READ)
+	var checkpoint_json := JSON.new()
+	var checkpoint_parse := checkpoint_json.parse(checkpoint_file.get_as_text()) if checkpoint_file != null else ERR_FILE_NOT_FOUND
+	if checkpoint_file != null:
+		checkpoint_file.close()
+	var checkpoint_dto: Dictionary = checkpoint_json.data if checkpoint_parse == OK and checkpoint_json.data is Dictionary else {}
+	var saved_dungeon: Dictionary = checkpoint_dto.get("active_dungeon_state", {})
+	var saved_rooms = saved_dungeon.get("rooms", []) if saved_dungeon is Dictionary else []
+	_assert(saved_rooms is Array and saved_rooms.size() == 5, "dungeon re-entry checkpoint stores five plain Room DTOs")
+	_assert(saved_dungeon.get("pending_combat_room_id", -1) == -1 and saved_dungeon.get("boss_defeated", false), "dungeon re-entry checkpoint stores completed combat state")
+
+	_teardown_scene(dungeon)
+	GameManager.current_state = GameManager.GameState.OVERWORLD
+	GameManager.transition_context = {"returning_from_dungeon": true}
+	GameManager.active_dungeon_state.clear()
+	_assert(SaveManager.save_game(slot), "dungeon re-entry saves again after the dungeon exit boundary")
+	PlayerManager.reset()
+	PartyManager.reset()
+	_assert(SaveManager.load_game(slot), "dungeon re-entry reloads through the supported save boundary")
+	_assert(GameManager.current_state == GameManager.GameState.OVERWORLD and GameManager.cleared_dungeons.has("ruins_of_ashvale"), "dungeon re-entry restores the overworld and clear ledger")
+	_assert(GameManager.claimed_rewards.has("ruins_of_ashvale_fragment"), "dungeon re-entry restores the reward ledger")
+
+	GameManager.transition_context = {"dungeon_id": "ruins_of_ashvale"}
+	var reentered: Node = await _spawn_scene("res://scenes/dungeon.tscn", 0.6)
+	var rooms_cleared := true
+	var reentered_boss: Room = null
+	for candidate in reentered.rooms.values():
+		if candidate is Room:
+			rooms_cleared = rooms_cleared and candidate.is_cleared and candidate.is_revealed
+			if candidate.type == Room.RoomType.BOSS:
+				reentered_boss = candidate
+	_assert(rooms_cleared and reentered.boss_defeated, "dungeon re-entry rebuilds a cleared dungeon without losing clear state")
+	_assert(reentered_boss != null, "dungeon re-entry finds the previously cleared boss room")
+	if reentered_boss != null:
+		reentered._resolve_room_encounter(reentered_boss)
+	var revisited_pending = reentered._complete_pending_combat()
+	_assert(reentered_boss.is_cleared and revisited_pending == null, "dungeon re-entry revisiting the boss cannot reopen combat")
+	_assert(not GameManager.mark_dungeon_cleared("ruins_of_ashvale"), "dungeon re-entry does not duplicate the clear ledger")
+	_assert(not GameManager.claim_reward("ruins_of_ashvale_fragment"), "dungeon re-entry does not duplicate the Crown reward")
+	_teardown_scene(reentered)
+	SaveManager.delete_save(slot)
+	GameManager.active_dungeon_state.clear()
+	GameManager.game_in_progress = false
+	_exit_test()
+
 ## Character creation flow: randomize + per-player confirm/save loop.
 func test_character_creation() -> void:
 	_enter_test("character_creation")
@@ -503,6 +1277,11 @@ func test_shop() -> void:
 	shop.setup_shop("Test Town")
 	await get_tree().create_timer(0.2).timeout
 	_assert(shop.items_data.size() > 0, "ShopUI populated buyable items (got %d)" % shop.items_data.size())
+	var catalog_is_executable := true
+	for item in shop.items_data:
+		if not shop._is_buyable_item(item) or str(item.get("type", "")) in ["tool", "currency"] or bool(item.get("quest_item", false)):
+			catalog_is_executable = false
+	_assert(catalog_is_executable, "ShopUI catalog excludes tools, quest items, and unsupported consumables")
 	_assert(shop.gold_label.text.contains("Gold"), "ShopUI gold label set")
 	shop.active_player_index = 0
 	shop._update_player_data()
@@ -552,6 +1331,59 @@ func test_save_load() -> void:
 	_assert(del_ok, "SaveManager.delete_save returned true")
 	_assert(not SaveManager.get_available_saves().has("harness_test_slot"), "save slot gone after delete")
 	await get_tree().process_frame
+	_exit_test()
+
+## Spend representative class resources, save at the overworld safe point,
+## reload through the real DTO boundary, and boot the next combat from it.
+func test_action_resource_round_trip() -> void:
+	_enter_test("action_resource_round_trip")
+	GameManager.active_campaign = DataLoader.campaigns.values()[0]
+	GameManager.current_state = GameManager.GameState.OVERWORLD
+	GameManager.transition_context = {"terrain": "plains", "monster_ids": ["goblin"]}
+	GameManager.game_in_progress = true
+	GameManager.test_mode = true
+	PlayerManager.reset()
+	PartyManager.reset()
+
+	PlayerManager.add_player("Resource Fighter")
+	PlayerManager.add_player("Resource Wizard")
+	var fighter := _fresh_char("Resource Fighter", "human", "fighter",
+		{"STR": 18, "DEX": 14, "CON": 14, "INT": 10, "WIS": 10, "CHA": 8})
+	var wizard := _fresh_char("Resource Wizard", "elf", "wizard",
+		{"STR": 8, "DEX": 14, "CON": 14, "INT": 18, "WIS": 12, "CHA": 10})
+	PlayerManager.set_player_character(0, fighter)
+	PlayerManager.set_player_character(1, wizard)
+	PartyManager.sync_from_player_manager()
+
+	var fighter_feature_before := int(fighter.feature_uses.get("fighter_second_wind", 0))
+	var wizard_slot_before := int(wizard.spell_slots.get("1", 0))
+	_assert(fighter_feature_before > 0 and wizard_slot_before > 0, "resource fixture starts with production feature and spell-slot uses")
+	_assert(fighter.use_feature("fighter_second_wind"), "production Fighter feature spend succeeds before save")
+	var magic_missile := DataLoader.get_spell("magic_missile")
+	var slot_spend := CombatAction.spend_spell_slot(wizard, magic_missile)
+	_assert(slot_spend.get("success", false), "production Wizard spell-slot spend succeeds before save")
+	var fighter_feature_after_spend := int(fighter.feature_uses.get("fighter_second_wind", 0))
+	var wizard_slot_after_spend := int(wizard.spell_slots.get("1", 0))
+	var slot := "action_resource_round_trip"
+	SaveManager.delete_save(slot)
+	_assert(SaveManager.save_game(slot), "spent action resources save at the overworld safe point")
+
+	PlayerManager.reset()
+	PartyManager.reset()
+	_assert(SaveManager.load_game(slot), "fresh supported flow reloads the spent resource save")
+	var restored_fighter: Character = PlayerManager.get_player(0).get("character")
+	var restored_wizard: Character = PlayerManager.get_player(1).get("character")
+	_assert(restored_fighter != null and restored_wizard != null, "resource round-trip restores both production characters")
+	_assert(int(restored_fighter.feature_uses.get("fighter_second_wind", -1)) == fighter_feature_after_spend, "Fighter feature uses survive save/load")
+	_assert(int(restored_wizard.spell_slots.get("1", -1)) == wizard_slot_after_spend, "Wizard remaining spell slots survive save/load")
+
+	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 2.0)
+	_assert(combat != null and combat.player_entities.size() == 2, "next combat boots from the restored party")
+	var combat_wizard: Character = combat.player_entities[1].get("character") if combat != null and combat.player_entities.size() > 1 else null
+	_assert(combat_wizard != null and int(combat_wizard.spell_slots.get("1", -1)) == wizard_slot_after_spend, "next combat sees the restored Wizard slot state")
+	_teardown_scene(combat)
+	SaveManager.delete_save(slot)
+	GameManager.game_in_progress = false
 	_exit_test()
 
 ## Combat resolution: attack -> damage -> kill (pure logic, no scene).
@@ -682,6 +1514,110 @@ func test_character_sheet() -> void:
 	PlayerManager.reset()
 	_exit_test()
 
+
+## Character Sheet button wiring through the normal overworld, dungeon, and
+## combat HUD signals. This deliberately presses each production Button rather
+## than calling CharacterSheet.show_*() directly.
+func test_character_sheet_contexts() -> void:
+	_enter_test("character_sheet_contexts")
+
+	# Overworld and dungeon show the active PlayerManager character.
+	_setup_world()
+	var overworld: Node = await _spawn_scene("res://scenes/overworld.tscn", 1.0)
+	var overworld_char: Character = PlayerManager.get_active_player().get("character")
+	overworld.hud.btn_sheet.pressed.emit()
+	await get_tree().process_frame
+	_assert(CharacterSheet.is_open(), "overworld Sheet button opens the character sheet")
+	_assert(CharacterSheet._open_char == overworld_char, "overworld Sheet button shows the active character")
+	CharacterSheet.close_sheet()
+	_teardown_scene(overworld)
+
+	_setup_world()
+	GameManager.transition_context = {"dungeon_id": "ruins_of_ashvale"}
+	var dungeon: Node = await _spawn_scene("res://scenes/dungeon.tscn", 1.0)
+	var dungeon_char: Character = PlayerManager.get_active_player().get("character")
+	dungeon.hud.btn_sheet.pressed.emit()
+	await get_tree().process_frame
+	_assert(CharacterSheet.is_open(), "dungeon Sheet button opens the character sheet")
+	_assert(CharacterSheet._open_char == dungeon_char, "dungeon Sheet button shows the active character")
+	CharacterSheet.close_sheet()
+	_teardown_scene(dungeon)
+
+	# Combat shows the character whose turn is active, which may differ from the
+	# exploration active player in a party encounter.
+	_setup_world()
+	GameManager.current_state = GameManager.GameState.COMBAT
+	GameManager.transition_context = {"monster_ids": ["goblin"], "terrain": "plains", "return_state": GameManager.GameState.OVERWORLD}
+	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 1.0)
+	var combat_char: Character = combat.active_character
+	combat.hud.btn_sheet.pressed.emit()
+	await get_tree().process_frame
+	_assert(CharacterSheet.is_open(), "combat Sheet button opens the character sheet")
+	_assert(CharacterSheet._open_char == combat_char, "combat Sheet button shows the active combat character")
+	CharacterSheet.close_sheet()
+	_teardown_scene(combat)
+
+	CharacterSheet.teardown_for_tests()
+	await get_tree().process_frame
+	_setup_world()
+	_exit_test()
+
+
+## Trace representative race/class values through initialization, level-up,
+## serialization, runtime HP mutation, and Character Sheet rendering. The
+## audit records the current generated hit die so data defects remain visible
+## without turning this evidence beat into a false green regression.
+func test_character_value_audit() -> void:
+	_enter_test("character_value_audit")
+	# Let the harness root finish its own _ready() child setup before the
+	# autoload lazily adds the Character Sheet CanvasLayer.
+	await get_tree().process_frame
+	var cases := [
+		{"race": "human", "class": "fighter", "name": "Human Fighter", "hit_die": "d10", "level1_hp": 12},
+		{"race": "elf", "class": "wizard", "name": "Elf Wizard", "hit_die": "d6", "level1_hp": 8},
+		{"race": "half-orc", "class": "barbarian", "name": "Half-Orc Barbarian", "hit_die": "d12", "level1_hp": 14},
+		{"race": "dwarf", "class": "rogue", "name": "Dwarf Rogue", "hit_die": "d8", "level1_hp": 10},
+	]
+	var base_scores := {"STR": 10, "DEX": 10, "CON": 14, "INT": 10, "WIS": 10, "CHA": 10}
+
+	for case in cases:
+		var race_id := str(case.get("race", ""))
+		var class_id := str(case.get("class", ""))
+		var character: Character = _fresh_char(str(case.get("name", "Audit")), race_id, class_id, base_scores)
+		var race_data: Dictionary = DataLoader.get_race(race_id)
+		var class_data: Dictionary = DataLoader.get_character_class(class_id)
+		for ability in AbilityScores.ABILITIES:
+			var expected_score := int(base_scores.get(ability, 10)) + int(race_data.get("ability_bonuses", {}).get(ability, 0))
+			_assert(character.ability_scores.get_score(ability) == expected_score, "%s %s reflects the %s racial score" % [race_id, class_id, ability])
+
+		var generated_hit_die := str(class_data.get("hit_die", ""))
+		var initial_hp := character.max_hp
+		_assert(generated_hit_die == str(case.get("hit_die", "")), "%s uses the source hit die" % case.get("name", "Audit"))
+		_assert(initial_hp == int(case.get("level1_hp", 0)), "%s level-1 HP matches the source hit die and CON" % case.get("name", "Audit"))
+		_assert(character.current_hp == initial_hp, "%s starts at full HP" % case.get("name", "Audit"))
+		character.level_up()
+		_assert(character.level == 2 and character.current_hp == character.max_hp and character.max_hp > initial_hp, "%s level-up raises and refills HP" % case.get("name", "Audit"))
+
+		var restored: Character = Character.new()
+		restored.from_dict(character.to_dict())
+		_assert(restored.max_hp == character.max_hp and restored.current_hp == character.current_hp, "%s save/load preserves HP" % case.get("name", "Audit"))
+		_assert(restored.ability_scores.to_dict() == character.ability_scores.to_dict(), "%s save/load preserves racialized scores" % case.get("name", "Audit"))
+
+		character.current_hp = maxi(1, character.max_hp - 1)
+		CharacterSheet.show_sheet(character)
+		var sheet_text := ""
+		for section in CharacterSheet._content.get_children():
+			if section is Label:
+				sheet_text += section.text + "\n"
+		_assert(sheet_text.contains("HP %d/%d" % [character.current_hp, character.max_hp]), "%s Sheet renders mutated HP" % case.get("name", "Audit"))
+		print("[audit] %s/%s generated_hit_die=%s level1_hp=%d level2_hp=%d sheet_hp=%d/%d" % [race_id, class_id, generated_hit_die, initial_hp, character.max_hp, character.current_hp, character.max_hp])
+		CharacterSheet.close_sheet()
+
+	CharacterSheet.teardown_for_tests()
+	await get_tree().process_frame
+	_setup_world()
+	_exit_test()
+
 # --- combat turn-loop integration (closes AIController-not-driven gap) ------
 
 ## Drive the REAL combat turn loop and prove AIController's decision produces a
@@ -752,7 +1688,7 @@ func test_combat_victory() -> void:
 	# chokepoint still run; fixture randomness cannot turn the proof into a TPK.
 	for i in combat.player_entities.size():
 		var pc: Character = combat.player_entities[i]["character"]
-		pc.inventory.equip(Inventory.Slot.WEAPON, "longsword")
+		pc.inventory.equip(Inventory.Slot.WEAPON, "longsword", true)
 		pc.base_ac = 1000
 		pc.max_hp = 10000
 		pc.current_hp = 10000
@@ -794,6 +1730,206 @@ func test_combat_victory() -> void:
 	_assert(alive_monsters == 0, "victory: all monsters defeated (got %d alive)" % alive_monsters)
 	_assert(GameManager.defeated_monsters.has("goblin"), "victory registered defeated monsters in GameManager")
 
+	_teardown_scene(combat)
+	_exit_test()
+
+
+## Drive the REAL combat end-state chokepoint through a total party wipe, then
+## instantiate the production defeat screen with its safe-save affordance.
+func test_combat_defeat() -> void:
+	_enter_test("combat_defeat")
+	_setup_world()
+	GameManager.game_in_progress = true
+	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 1.2)
+	for player_entity in combat.player_entities:
+		var character: Character = player_entity.get("character")
+		character.current_hp = 0
+		character.is_alive = false
+	_assert(combat._check_battle_end_conditions(), "defeat: live combat detects a total party wipe")
+	_assert(combat._battle_ending, "defeat: combat enters its terminal state")
+	_assert(GameManager.defeated_monsters.is_empty(), "defeat: no monster victory ledger is recorded")
+	_teardown_scene(combat)
+
+	GameManager.current_state = GameManager.GameState.DEFEAT
+	GameManager.transition_context = {"reason": "The party was defeated in the final encounter."}
+	var defeat: Node = await _spawn_scene("res://scenes/defeat.tscn", 0.3)
+	_assert(defeat.title_label.text == "The Party Falls", "defeat screen presents the player-facing loss title")
+	_assert(defeat.reason_label.text.contains("final encounter"), "defeat screen presents the loss reason")
+	_assert(defeat.continue_button.text == "Load Safe Save", "defeat screen offers safe-save recovery")
+	_assert(defeat.menu_button.text == "Return to Main Menu", "defeat screen offers a clean return")
+	_teardown_scene(defeat)
+	GameManager.current_state = GameManager.GameState.OVERWORLD
+	GameManager.game_in_progress = false
+	_exit_test()
+
+## Production Lich King defeat, safe reload, victory, and terminal destinations.
+## The normal GUI readability and fresh-process relaunch remain manual review.
+func test_final_encounter_round_trip() -> void:
+	_enter_test("final_encounter_round_trip")
+	_setup_world()
+	GameManager.game_in_progress = true
+	PartyManager.initialize_campaign_companions(GameManager.active_campaign.get("companions", {}))
+	_assert(PartyManager.recruit_companion("aldric"), "final encounter recruits Aldric")
+	_assert(PartyManager.recruit_companion("mira"), "final encounter recruits Mira")
+	for index in 3:
+		PartyManager.get_active_characters()[index].inventory.add_item("crown_fragment")
+	var slot := "final_encounter_round_trip"
+	SaveManager.delete_save(slot)
+	GameManager.current_state = GameManager.GameState.OVERWORLD
+	GameManager.transition_context = {}
+	_assert(SaveManager.save_game(slot), "final encounter writes the pre-finale safe save")
+
+	GameManager.current_state = GameManager.GameState.COMBAT
+	GameManager.transition_context = {"monster_ids": ["lich_king"], "return_state": GameManager.GameState.OVERWORLD, "terrain": "plains"}
+	var defeat_combat: Node = await _spawn_scene("res://scenes/combat.tscn", 1.2)
+	_assert(defeat_combat.monster_entities.size() == 1 and defeat_combat.monster_entities[0].get("monster_id", "") == "lich_king", "final encounter uses the production Lich King")
+	for player_entity in defeat_combat.player_entities:
+		var defeated_character: Character = player_entity.get("character")
+		defeated_character.current_hp = 0
+		defeated_character.is_alive = false
+	_assert(defeat_combat._check_battle_end_conditions() and defeat_combat._battle_ending, "final encounter loss reaches the live defeat boundary")
+	_assert(not GameManager.defeated_monsters.has("lich_king"), "final encounter loss does not record a boss victory")
+	_teardown_scene(defeat_combat)
+	GameManager.current_state = GameManager.GameState.DEFEAT
+	GameManager.transition_context = {"reason": "The party was defeated in the final encounter."}
+	var defeat: Node = await _spawn_scene("res://scenes/defeat.tscn", 0.3)
+	_assert(defeat.title_label.text == "The Party Falls" and defeat.continue_button.text == "Load Safe Save", "final encounter loss presents safe reload controls")
+	_teardown_scene(defeat)
+
+	PlayerManager.reset()
+	PartyManager.reset()
+	_assert(SaveManager.load_game(slot), "final encounter reloads the pre-finale safe save")
+	_assert(GameManager.current_state == GameManager.GameState.OVERWORLD and GameManager.defeated_monsters.is_empty(), "final encounter reload restores pre-finale progress without the boss victory")
+	_assert(PartyManager.get_active_characters().size() == 4 and PartyManager.get_active_characters()[0].inventory.count_item("crown_fragment") == 1, "final encounter reload restores the full party and Crown fragments")
+
+	GameManager.current_state = GameManager.GameState.COMBAT
+	GameManager.transition_context = {"monster_ids": ["lich_king"], "return_state": GameManager.GameState.OVERWORLD, "terrain": "plains"}
+	var victory_combat: Node = await _spawn_scene("res://scenes/combat.tscn", 1.2)
+	_assert(victory_combat.monster_entities.size() == 1 and victory_combat.monster_entities[0].get("spells", []).size() == 7, "final encounter reload keeps the production Lich King spell loadout")
+	var lich: Dictionary = victory_combat.monster_entities[0]
+	lich["current_hp"] = 0
+	lich["max_hp"] = 1
+	lich["armor_class"] = -100
+	lich["is_alive"] = false
+	_assert(victory_combat._check_battle_end_conditions() and victory_combat._battle_ending, "final encounter victory reaches the live victory boundary")
+	_assert(GameManager.defeated_monsters.has("lich_king") and GameManager.are_win_conditions_met(), "final encounter victory records the boss and completes Crown goals")
+	_assert(GameManager.claim_reward("lich_king_crown"), "final encounter claims its one-time reward ledger")
+	_assert(not GameManager.claim_reward("lich_king_crown"), "final encounter reward claim is idempotent")
+	_teardown_scene(victory_combat)
+
+	GameManager.current_state = GameManager.GameState.COMPLETION
+	GameManager.transition_context = {"reason": "Campaign goals completed!"}
+	var completion: Node = await _spawn_scene("res://scenes/completion.tscn", 0.3)
+	_assert(completion.title_label.text == "Crown Reclaimed", "final encounter victory presents the completion screen")
+	_teardown_scene(completion)
+	SaveManager.delete_save(slot)
+	GameManager.current_state = GameManager.GameState.OVERWORLD
+	GameManager.game_in_progress = false
+	GameManager.active_dungeon_state.clear()
+	_exit_test()
+
+
+## Run one bounded production-data encounter composition through the real
+## combat entities and resolvers. The fixture intentionally records each
+## required Gate 5 mechanic instead of relying on a green smoke-only result.
+func test_mixed_mechanics_encounter() -> void:
+	_enter_test("mixed_mechanics_encounter")
+	_setup_mixed_world()
+	seed(20260810)
+	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 1.2)
+	_assert(combat.player_entities.size() == 4, "mixed encounter uses the four-member production cohort")
+	_assert(combat.monster_entities.size() >= 1, "mixed encounter has a production monster target")
+	if combat.player_entities.size() < 4 or combat.monster_entities.is_empty():
+		_teardown_scene(combat)
+		_exit_test()
+		return
+
+	var by_class: Dictionary = {}
+	for entity in combat.player_entities:
+		by_class[entity["character"].class_id] = entity
+	var fighter: Character = by_class["fighter"]["character"]
+	var rogue: Character = by_class["rogue"]["character"]
+	var wizard: Character = by_class["wizard"]["character"]
+	var cleric: Character = by_class["cleric"]["character"]
+	rogue.level_up()
+	var target: Dictionary = combat.monster_entities[0]
+	target["current_hp"] = 100
+	target["max_hp"] = 100
+	target["armor_class"] = 5
+	target["is_alive"] = true
+	combat._update_grid_entities()
+
+	# Martial attack: production weapon data crosses CombatAction.
+	var weapon: Dictionary = DataLoader.get_item("longsword")
+	var martial_result := CombatAction.resolve_weapon_attack(fighter, target, weapon)
+	_assert(martial_result.get("hit", false) and int(martial_result.get("damage", 0)) > 0, "mixed encounter resolves a production martial attack")
+
+	# Bonus action: production Rogue Cunning Action goes through CombatState's
+	# feature path and consumes the extracted turn budget.
+	var rogue_index := int(by_class["rogue"].get("player_id", 1))
+	combat.current_player_idx = rogue_index
+	combat.active_character = rogue
+	combat.turn_budget.reset(rogue, combat.player_entities)
+	combat.remaining_speed = rogue.get_speed()
+	var cunning_action: Dictionary = rogue.get_feature("rogue_cunning_action").duplicate(true)
+	cunning_action["selected_action"] = "disengage"
+	var cunning_uses_before := int(rogue.feature_uses.get("rogue_cunning_action", 0))
+	combat._execute_class_feature(cunning_action)
+	_assert(cunning_uses_before > int(rogue.feature_uses.get("rogue_cunning_action", 0)) and not combat.turn_budget.bonus_action_available and rogue.has_condition("disengaging"), "mixed encounter spends a bonus action through production Cunning Action")
+
+	# Healing: Cure Wounds is loaded from production spell data and its typed
+	# effect is applied to a wounded cohort member.
+	fighter.current_hp = maxi(1, fighter.max_hp - 6)
+	var hp_before_heal := fighter.current_hp
+	var cure_wounds: Dictionary = DataLoader.get_spell("cure_wounds")
+	var heal_cast := CombatAction.resolve_spell(cleric, fighter, cure_wounds, true)
+	var healed_amount := 0
+	for effect in cure_wounds.get("effects", []):
+		for result in EventResolver.apply_effects(fighter, [effect]):
+			healed_amount += int(result.get("amount", 0))
+	_assert(heal_cast.get("success", false) and healed_amount > 0 and fighter.current_hp > hp_before_heal, "mixed encounter resolves production Cure Wounds healing")
+
+	# Concentration and area selection: Bless carries the validated transient
+	# area contract, applies its production condition, and owns its targets.
+	var bless: Dictionary = DataLoader.get_spell("bless")
+	var bless_selection := EventResolver.resolve_area_selection(bless.get("effects", [])[0])
+	var bless_targets: Array = [fighter, rogue, cleric]
+	for target_character in bless_targets:
+		for effect in bless.get("effects", []):
+			if str(effect.get("type", "")) == "grant_condition":
+				EventResolver.apply_effects(target_character, [effect])
+	cleric.concentrating_on = {"spell_id": "bless", "effects": bless.get("effects", []), "targets": bless_targets}
+	var bless_area := Targeting.get_sphere_targets(combat.player_entities[3]["hex_position"], int(bless_selection.get("radius", 0)), combat.hex_grid)
+	_assert(bless_selection.get("success", false) and not bless_selection.get("persistent", true) and bless_area.size() > 0 and cleric.concentrating_on.get("spell_id", "") == "bless" and fighter.has_condition("blessed"), "mixed encounter applies a transient area Bless under concentration")
+
+	# Save spell and area effect: production Fireball resolves its DEX-save
+	# contract, while the same selection result drives sphere geometry.
+	wizard.level_up()
+	wizard.level_up()
+	wizard.spell_slots["3"] = 1
+	var fireball: Dictionary = DataLoader.get_spell("fireball")
+	var fireball_selection := EventResolver.resolve_area_selection(fireball.get("effects", [])[0])
+	var fireball_area := Targeting.get_sphere_targets(target["hex_position"], int(fireball_selection.get("radius", 0)), combat.hex_grid)
+	var fireball_result := CombatAction.resolve_spell(wizard, target, fireball, true)
+	_assert(fireball_selection.get("success", false) and fireball_area.has(target["hex_position"]) and fireball.get("save", "") == "DEX" and fireball_result.get("success", false), "mixed encounter resolves a production save spell over a sphere area")
+
+	# Owned reaction: the wizard's production Shield reaction is accepted and
+	# consumes the wizard's reaction/slot through the shared attack resolver.
+	wizard.reaction_available = true
+	wizard.spell_slots["1"] = 1
+	if "shield" not in wizard.known_spells:
+		wizard.known_spells.append("shield")
+	wizard.base_ac = 10
+	var reaction_weapon := {"ability": "STR", "damage": "1", "damage_type": "bludgeoning", "range": 1}
+	for _attempt in 50:
+		if not wizard.reaction_available:
+			break
+		CombatAction.resolve_weapon_attack(fighter, wizard, reaction_weapon, false, false, {"shield": true})
+	_assert(not wizard.reaction_available and int(wizard.spell_slots.get("1", 0)) == 0 and wizard.has_condition("shield"), "mixed encounter consumes the owning wizard Shield reaction")
+
+	combat._end_concentration(cleric)
+	_assert(cleric.concentrating_on.is_empty() and not fighter.has_condition("blessed") and not rogue.has_condition("blessed"), "mixed encounter concentration cleanup removes its applied conditions")
+	print("[mixed] martial=true bonus_action=true reaction=true concentration=true healing=true save=true area=true")
 	_teardown_scene(combat)
 	_exit_test()
 

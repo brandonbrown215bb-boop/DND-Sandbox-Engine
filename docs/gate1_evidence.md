@@ -1,17 +1,34 @@
 # Gate 1 evidence
 
-Gate 1 is complete. The test result is trustworthy for the current named
-contracts: project-context parsing, production boot, isolated scenarios,
-bounded timeouts, result markers, disposable persistence roots, and unexpected
-engine errors treated as failures.
+Gate 1 is complete at the current 521-assertion baseline. Project-context
+parsing, production boot, isolated scenarios, bounded timeouts, result markers,
+disposable persistence roots, and unexpected engine-error handling all pass.
+The Bardic Inspiration fixture now seeds only its test input while keeping the
+production attack and reaction path intact.
+
+## Current working-tree validation (2026-08-10)
+
+Two consecutive complete Windows runs against
+`Godot 4.7.stable.official.5b4e0cb0f` produced the same result:
+
+| Run | Result |
+|---|---|
+| 1 | Bootstrap, parse, boot, `521 passed, 0 failed`, all 17 integration scenarios, and `OVERALL: ALL TESTS PASSED`; exit `0`. |
+| 2 | Same result: bootstrap, parse, boot, `521 passed, 0 failed`, all 17 integration scenarios, and `OVERALL: ALL TESTS PASSED`; exit `0`. |
+
+The fixed fixture seeds the global d20 immediately before the attack, keeps the
+target AC at `0`, and still calls `CombatAction.resolve_weapon_attack` with the
+optional Bardic Inspiration reaction enabled. It therefore proves grant,
+optional spend, bonus application, and die removal without allowing a natural 1
+to bypass the reaction.
 
 ## Validation environment
 
 - Engine: `Godot 4.7.stable.official.5b4e0cb0f`
 - Project: Godot 4.7, GL Compatibility
-- DataLoader: 14 classes, 9 races, 232 items, 198 spells, 453 monsters, 4 event tables, 1 campaign
+- DataLoader: 14 classes, 9 races, 233 items, 198 spells, 453 monsters, 4 event tables, 1 campaign
 - Cache-free project bootstrap: pass
-- Parse gate: 51 scripts loaded
+- Parse gate: 56 scripts loaded
 - Supported Windows runner: `run_tests.ps1`
 - Compatibility-only shell runner: `run_tests.sh` (not Gate 1 evidence)
 
@@ -24,24 +41,11 @@ directory; the durable evidence is the enumerated result below.
 | Check | Result |
 |---|---|
 | Cache-free project bootstrap | Pass - `PROJECT BOOTSTRAP PASSED` |
-| Project-context parse | Pass - `PARSE GATE PASSED: 51 scripts loaded` |
+| Project-context parse | Pass - `PARSE GATE PASSED: 56 scripts loaded` |
 | Production boot | Pass - `BOOT GATE PASSED: main scene settled for 3.0 seconds` |
-| Logic suite | Pass - `263 passed, 0 failed` |
-| `combat` | Pass |
-| `combat_ai_loop` | Pass |
-| `combat_victory` | Pass |
-| `overworld` | Pass |
-| `main_menu_load` | Pass |
-| `dungeon` | Pass |
-| `event_dialog` | Pass |
-| `character_creation` | Pass |
-| `shop` | Pass |
-| `save_load` | Pass |
-| `combat_resolution` | Pass |
-| `event_choice_resolution` | Pass |
-| `event_dialog_choice_click` | Pass |
-| `character_sheet` | Pass |
-| Overall runner | Pass - `OVERALL: ALL TESTS PASSED`, exit `0` |
+| Logic suite | Pass - `521 passed, 0 failed` on both runs |
+| Integration scenarios | Pass on both runs - `combat`, `party_combat`, `crown_smoke`, `combat_ai_loop`, `combat_victory`, `combat_defeat`, `overworld`, `main_menu_load`, `dungeon`, `event_dialog`, `character_creation`, `shop`, `save_load`, `combat_resolution`, `event_choice_resolution`, `event_dialog_choice_click`, `character_sheet` |
+| Overall runner | Pass on both runs - `OVERALL: ALL TESTS PASSED`, exit `0` |
 
 Each scenario ran in its own Godot process. Windows `APPDATA` and
 `LOCALAPPDATA` were redirected to disposable per-scenario roots; the shell
@@ -70,7 +74,6 @@ runner uses disposable `XDG_*` roots for the same contract.
 
 ## Decision
 
-`DONE`. The current 263-assertion logic suite remains green. The earlier
-242-assertion note was stale, and the random-hit assertion was made
-deterministic so the reported count is stable. All named scenarios have pass
-markers, and no unexplained Godot error remains in the full run.
+`DONE` for the current working tree. The focused logic suite passed three
+consecutive times, and the complete supported Windows runner passed twice with
+every named scenario and exit code `0`.

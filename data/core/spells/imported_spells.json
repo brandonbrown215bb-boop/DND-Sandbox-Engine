@@ -608,7 +608,7 @@
     "school": "evocation",
     "casting_time": "action",
     "range": 1,
-    "target": "single",
+    "target": "single_ally",
     "attack_type": "none",
     "effects": [
       {

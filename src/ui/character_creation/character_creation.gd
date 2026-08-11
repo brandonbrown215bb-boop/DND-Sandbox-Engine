@@ -387,6 +387,7 @@ func _confirm_and_save_character() -> void:
 	character.initialize(selected_name, selected_race_id, selected_class_id, selected_stats.duplicate_scores())
 	
 	PlayerManager.set_player_character(current_player_idx, character)
+	PartyManager.register_player_character(current_player_idx, character)
 	print("[CharacterCreation] Saved character for player %d: %s (%s %s)" % [current_player_idx, selected_name, character.race_id, character.class_id])
 
 	# Advance to next player or complete creation state

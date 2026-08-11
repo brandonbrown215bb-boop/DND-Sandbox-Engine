@@ -284,7 +284,7 @@ class SaveLoadSerializationTest:
             "name", "race_id", "class_id", "level", "xp", "ability_scores",
             "max_hp", "current_hp", "temp_hp", "base_ac", "speed",
             "proficiency_bonus", "saving_throw_proficiencies", "skill_proficiencies",
-            "weapon_proficiencies", "armor_proficiencies", "known_spells",
+            "weapon_proficiencies", "armor_proficiencies", "known_spells", "spell_slots",
             "conditions", "inventory", "feature_uses", "is_alive", "crit_range",
             "extra_attacks"
         ]
@@ -296,7 +296,7 @@ class SaveLoadSerializationTest:
             "proficiency_bonus", "is_alive", "crit_range", "extra_attacks",
             "saving_throw_proficiencies", "skill_proficiencies", "weapon_proficiencies",
             "armor_proficiencies", "known_spells", "conditions", "feature_uses",
-            "inventory"
+            "inventory", "spell_slots"
         ]
         
         for key in char_keys_to_dict:

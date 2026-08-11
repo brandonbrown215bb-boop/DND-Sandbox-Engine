@@ -2,7 +2,7 @@
   "id": "mystic",
   "name": "Mystic",
   "description": "Mystic class. Source: UATheMysticClass.",
-  "hit_die": "d1",
+  "hit_die": "d8",
   "primary_ability": "INT",
   "saving_throw_proficiencies": [
     "INT",

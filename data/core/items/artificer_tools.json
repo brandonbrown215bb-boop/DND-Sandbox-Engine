@@ -1,0 +1,10 @@
+[
+  {
+    "id": "ball_bearings",
+    "name": "Ball Bearings",
+    "description": "A pouch of small metal spheres created by Tinker's Magic.",
+    "type": "tool",
+    "effects": [],
+    "value": 1
+  }
+]

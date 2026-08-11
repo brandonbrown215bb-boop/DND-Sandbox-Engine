@@ -33,6 +33,13 @@ static func get_monster_action(monster: Dictionary, monster_coord: Vector2i, hex
 	var target_coord: Vector2i = target_player.get("hex_position", Vector2i.ZERO)
 	var target_char: Character = target_player.get("character")
 	var target_id: String = target_char.character_name
+	var chosen_spell: Dictionary = _choose_offensive_spell(monster, min_dist)
+	if not chosen_spell.is_empty():
+		return {
+			"action": "cast_spell",
+			"target_id": target_id,
+			"spell_id": str(chosen_spell.get("id", "")),
+		}
 
 	# Determine available attacks
 	var attacks: Array = monster.get("attacks", [])
@@ -126,3 +133,26 @@ static func get_monster_action(monster: Dictionary, monster_coord: Vector2i, hex
 				}
 
 	return {"action": "none"}
+
+
+static func _choose_offensive_spell(monster: Dictionary, distance: int) -> Dictionary:
+	var best: Dictionary = {}
+	var best_level := -1
+	for known in monster.get("spells", []):
+		var spell_id := str(known.get("id", ""))
+		var spell_data: Dictionary = DataLoader.get_spell(spell_id)
+		if spell_data.is_empty() or str(spell_data.get("casting_time", "action")) == "reaction":
+			continue
+		if str(spell_data.get("target", "single")) not in ["single", "multi"]:
+			continue
+		if not spell_data.has("damage") and not spell_data.has("damage_per_dart") and not spell_data.has("damage_per_ray") and str(spell_data.get("attack_type", "none")) == "none":
+			continue
+		if distance > int(spell_data.get("range", 0)):
+			continue
+		var spell_level := int(spell_data.get("level", 0))
+		if spell_level > 0 and int(monster.get("spell_slots", {}).get(str(spell_level), 0)) <= 0:
+			continue
+		if spell_level > best_level:
+			best = spell_data
+			best_level = spell_level
+	return best

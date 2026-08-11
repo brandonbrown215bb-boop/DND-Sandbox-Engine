@@ -12,6 +12,8 @@ var dungeon_data: Dictionary = {}
 var rooms: Dictionary = {} # Vector2i -> Room
 var party_position := Vector2i.ZERO
 var boss_defeated := false
+## Room whose encounter is currently in combat. It remains uncleared until victory.
+var pending_combat_room_id: int = -1
 
 
 func _ready() -> void:
@@ -53,21 +55,58 @@ func _ready() -> void:
 
 	var is_restored := false
 	if not GameManager.active_dungeon_state.is_empty() and GameManager.active_dungeon_state.get("dungeon_id") == dungeon_id:
-		rooms = GameManager.active_dungeon_state.get("rooms", {})
-		party_position = GameManager.active_dungeon_state.get("party_position", Vector2i.ZERO)
+		rooms.clear()
+		var saved_rooms = GameManager.active_dungeon_state.get("rooms", [])
+		if saved_rooms is Array:
+			for room_data in saved_rooms:
+				if room_data is Dictionary:
+					var restored_room := Room.from_dict(room_data)
+					rooms[restored_room.coord] = restored_room
+		elif saved_rooms is Dictionary:
+			# Scene transitions keep the in-memory active dungeon state between
+			# scenes. SaveManager converts this runtime dictionary to Room DTOs
+			# before writing disk saves, but a normal combat return must be able to
+			# consume the live Room values without dropping the encounter map.
+			for room_value in saved_rooms.values():
+				if room_value is Room:
+					rooms[room_value.coord] = room_value
+				elif room_value is Dictionary:
+					var restored_room := Room.from_dict(room_value)
+					rooms[restored_room.coord] = restored_room
+		else:
+			rooms = {}
+		var saved_position = GameManager.active_dungeon_state.get("party_position", Vector2i.ZERO)
+		if saved_position is Array and saved_position.size() >= 2:
+			party_position = Vector2i(int(saved_position[0]), int(saved_position[1]))
+		elif saved_position is Vector2i:
+			party_position = saved_position
+		else:
+			party_position = Vector2i.ZERO
 		boss_defeated = GameManager.active_dungeon_state.get("boss_defeated", false)
+		pending_combat_room_id = int(GameManager.active_dungeon_state.get("pending_combat_room_id", -1))
 		is_restored = true
 	else:
-		# Trigger Milestone Enter if specified
-		var milestone_enter = dungeon_data.get("milestone_enter")
-		if milestone_enter != null:
-			GameManager.check_milestone(str(milestone_enter))
-
 		# Generate rooms
 		rooms = DungeonGenerator.generate_dungeon(dungeon_data)
 		party_position = Vector2i.ZERO
-		boss_defeated = false
+		var already_cleared := dungeon_id in GameManager.cleared_dungeons
+		if already_cleared:
+			# A cleared dungeon is still visitable, but its one-time encounters and
+			# rewards cannot be replayed after the active state was discarded.
+			for room in rooms.values():
+				room.is_cleared = true
+				room.is_revealed = true
+			boss_defeated = true
+		else:
+			# Trigger Milestone Enter if specified
+			var milestone_enter = dungeon_data.get("milestone_enter")
+			if milestone_enter != null:
+				GameManager.check_milestone(str(milestone_enter))
+			boss_defeated = false
+		pending_combat_room_id = -1
 		_save_dungeon_state_to_manager()
+		if already_cleared:
+			hud.add_log("[color=yellow]This dungeon has already been cleared. Its rewards cannot be claimed again.[/color]")
 
 	# Map rooms to HexGrid
 	_build_tactical_rooms_grid()
@@ -172,8 +211,7 @@ func _resolve_room_encounter(room: Room) -> void:
 	match room.type:
 		Room.RoomType.COMBAT:
 			hud.add_log("[color=red]Monsters spotted! Prepare for battle.[/color]")
-			room.is_cleared = true
-			_save_dungeon_state_to_manager()
+			_begin_room_combat(room)
 			GameManager.enter_combat(room.monster_ids, false, GameManager.GameState.DUNGEON, tile_terrain)
 			
 		Room.RoomType.TRAP:
@@ -194,7 +232,7 @@ func _resolve_room_encounter(room: Room) -> void:
 		Room.RoomType.LOOT:
 			hud.add_log("[color=green]You found a treasure chest![/color]")
 			# Grant loot items to the active character
-			var char_data: Character = PlayerManager.get_active_player()["character"]
+			var char_data: Character = PartyManager.get_active_characters()[0] if not PartyManager.get_active_characters().is_empty() else PlayerManager.get_active_player().get("character")
 			for item_id in room.loot_item_ids:
 				if item_id.begins_with("gold_"):
 					var amount: int = item_id.substr(5).to_int()
@@ -210,9 +248,7 @@ func _resolve_room_encounter(room: Room) -> void:
 
 		Room.RoomType.BOSS:
 			hud.add_log("[color=purple]Entering the Boss Chamber! The guardian awaits.[/color]")
-			room.is_cleared = true
-			boss_defeated = true
-			_save_dungeon_state_to_manager()
+			_begin_room_combat(room)
 			GameManager.enter_combat(room.monster_ids, false, GameManager.GameState.DUNGEON, tile_terrain)
 
 		_:
@@ -226,8 +262,6 @@ func _trigger_dungeon_event_ui(event_data: Dictionary, room: Room) -> void:
 	dialog.popup_event(PlayerManager.get_active_player()["character"], event_data)
 	
 	dialog.event_resolved.connect(func(result: Dictionary):
-		room.is_cleared = true
-		_save_dungeon_state_to_manager()
 		hud.add_log(result.get("message", "Trap resolved."))
 		hud.update_hud()
 		
@@ -238,9 +272,12 @@ func _trigger_dungeon_event_ui(event_data: Dictionary, room: Room) -> void:
 			var current_tile := hex_grid.get_tile(party_position)
 			if current_tile != null:
 				tile_terrain = current_tile.get_terrain_name()
+			_begin_room_combat(room)
 			GameManager.enter_combat(next_combat, result.get("surprise", false), GameManager.GameState.DUNGEON, tile_terrain)
 			return
 		
+		room.is_cleared = true
+		_save_dungeon_state_to_manager()
 		if PlayerManager.is_party_wiped():
 			_handle_defeat()
 	)
@@ -249,24 +286,59 @@ func _trigger_dungeon_event_ui(event_data: Dictionary, room: Room) -> void:
 func _handle_combat_result(combat_result: String) -> void:
 	if combat_result == "victory":
 		hud.add_log("Victory in battle!")
-		if boss_defeated:
+		var completed_room := _complete_pending_combat()
+		if completed_room != null and completed_room.type == Room.RoomType.BOSS:
 			_clear_dungeon_successfully()
 	else:
 		_handle_defeat()
 
 
+## Record the room being resolved without consuming the encounter.
+## This is written before the scene transition so the authoritative state knows
+## which room must be completed when combat returns with a victory result.
+func _begin_room_combat(room: Room) -> void:
+	pending_combat_room_id = room.id
+	_save_dungeon_state_to_manager()
+
+
+## Apply the only combat result that clears a dungeon room. Defeat leaves the
+## pending room intact, so the unresolved encounter cannot be skipped.
+func _complete_pending_combat() -> Room:
+	if pending_combat_room_id < 0:
+		return null
+	var completed_room: Room = null
+	for room in rooms.values():
+		if room is Room and room.id == pending_combat_room_id:
+			completed_room = room
+			break
+	if completed_room == null:
+		push_error("[DungeonState] Pending combat room %d was not found." % pending_combat_room_id)
+		return null
+	completed_room.is_cleared = true
+	if completed_room.type == Room.RoomType.BOSS:
+		boss_defeated = true
+	pending_combat_room_id = -1
+	_save_dungeon_state_to_manager()
+	return completed_room
+
+
 func _handle_defeat() -> void:
-	hud.add_log("[color=red]Party was wiped. Returning to menu...[/color]")
+	hud.add_log("[color=red]Party was wiped. Opening defeat screen...[/color]")
 	hex_grid.set_process_input(false)
-	await get_tree().create_timer(3.0).timeout
-	GameManager.return_to_menu()
+	GameManager.end_game(false, "The party was defeated in the dungeon.")
 
 
 func _clear_dungeon_successfully() -> void:
 	hud.add_log("[color=green]DUNGEON CLEARED SUCCESSFULLY![/color]")
+	if not GameManager.mark_dungeon_cleared(dungeon_id):
+		hud.add_log("This dungeon has already been cleared. No duplicate rewards granted.")
+		await get_tree().create_timer(1.0).timeout
+		GameManager.exit_dungeon()
+		return
 	
 	# Give campaign rewards to the party
-	var active_char: Character = PlayerManager.get_active_player()["character"]
+	var active_members := PartyManager.get_active_characters()
+	var active_char: Character = active_members[0] if not active_members.is_empty() else PlayerManager.get_active_player().get("character")
 	var loot_list: Array = dungeon_data.get("loot", [])
 	
 	if loot_list.is_empty():
@@ -325,24 +397,17 @@ func _on_sheet_pressed() -> void:
 
 ## Heal and restore the whole party (no gold cost). Mirrors ShopUI/OverworldState.
 func _rest_party() -> void:
-	var player_count := PlayerManager.get_player_count()
-	for i in player_count:
-		var char_data: Character = PlayerManager.get_player(i).get("character")
+	for char_data in PartyManager.get_active_characters():
 		if char_data == null:
 			continue
-		char_data.current_hp = char_data.max_hp
-		char_data.is_alive = true
-		for f_id in char_data.feature_uses:
-			for f in char_data.features:
-				if f.get("id", "") == f_id:
-					char_data.feature_uses[f_id] = f.get("uses", 1)
-					break
-		char_data._update_spell_slots()
+		char_data.long_rest()
 
 func _save_dungeon_state_to_manager() -> void:
 	GameManager.active_dungeon_state = {
 		"dungeon_id": dungeon_id,
 		"rooms": rooms,
 		"party_position": party_position,
-		"boss_defeated": boss_defeated
+		"boss_defeated": boss_defeated,
+		"pending_combat_room_id": pending_combat_room_id,
+		"save_checkpoint": party_position == Vector2i.ZERO,
 	}

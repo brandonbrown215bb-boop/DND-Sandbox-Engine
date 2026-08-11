@@ -2,7 +2,7 @@
   "id": "cleric",
   "name": "Cleric",
   "description": "Cleric class. Source: PHB.",
-  "hit_die": "d1",
+  "hit_die": "d8",
   "primary_ability": "WIS",
   "saving_throw_proficiencies": [
     "WIS",

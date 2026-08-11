@@ -2,7 +2,7 @@
   "id": "artificer",
   "name": "Artificer",
   "description": "Artificer class. Source: TCE.",
-  "hit_die": "d1",
+  "hit_die": "d8",
   "primary_ability": "INT",
   "saving_throw_proficiencies": [
     "CON",
@@ -32,7 +32,8 @@
   },
   "starting_equipment": [
     "leather_armor",
-    "shield"
+    "shield",
+    "tinkers_tools"
   ],
   "spell_slots_by_level": {
     "1": [

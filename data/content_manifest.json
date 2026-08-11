@@ -1,0 +1,1105 @@
+{
+  "schema_version": 1,
+  "description": "Explicit content precedence for Gate 2. A collision not listed here is a load failure.",
+  "packs": [
+    {
+      "id": "core",
+      "version": "1.0.0",
+      "dependencies": [],
+      "ruleset_compatibility": "rook-5e-lite-v1"
+    },
+    {
+      "id": "crown",
+      "version": "1.0.0",
+      "dependencies": ["core"],
+      "ruleset_compatibility": "rook-5e-lite-v1"
+    }
+  ],
+  "layers": [
+    {
+      "id": "core_imported",
+      "precedence": 100,
+      "path": "res://data/core/",
+      "pack_id": "core"
+    },
+    {
+      "id": "core_curated",
+      "precedence": 200,
+      "path": "res://data/core/",
+      "pack_id": "core"
+    },
+    {
+      "id": "mods",
+      "precedence": 300,
+      "path": "res://data/mods/",
+      "pack_id": "crown"
+    }
+  ],
+  "overrides": [
+    {
+      "type": "item",
+      "id": "alchemists_supplies",
+      "winner": "res://data/core/items/imported_magic_tools.json#2",
+      "replaces": [
+        "res://data/core/items/imported_magic_tools.json#1"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "amulet",
+      "winner": "res://data/core/items/imported_magic_tools.json#4",
+      "replaces": [
+        "res://data/core/items/imported_magic_tools.json#3"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "animated_shield",
+      "winner": "res://data/core/items/imported_magic_armor.json#2",
+      "replaces": [
+        "res://data/core/items/imported_magic_armor.json#1"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "armor_of_invulnerability",
+      "winner": "res://data/core/items/imported_magic_armor.json#4",
+      "replaces": [
+        "res://data/core/items/imported_magic_armor.json#3"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "arrow-catching_shield",
+      "winner": "res://data/core/items/imported_magic_armor.json#9",
+      "replaces": [
+        "res://data/core/items/imported_magic_armor.json#8"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "axe_of_the_dwarvish_lords",
+      "winner": "res://data/core/items/imported_magic_weapons.json#2",
+      "replaces": [
+        "res://data/core/items/imported_magic_weapons.json#1"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "black_dragon_scale_mail",
+      "winner": "res://data/core/items/imported_magic_armor.json#11",
+      "replaces": [
+        "res://data/core/items/imported_magic_armor.json#10"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "blackrazor",
+      "winner": "res://data/core/items/imported_magic_weapons.json#4",
+      "replaces": [
+        "res://data/core/items/imported_magic_weapons.json#3"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "blue_dragon_scale_mail",
+      "winner": "res://data/core/items/imported_magic_armor.json#13",
+      "replaces": [
+        "res://data/core/items/imported_magic_armor.json#12"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "brass_dragon_scale_mail",
+      "winner": "res://data/core/items/imported_magic_armor.json#15",
+      "replaces": [
+        "res://data/core/items/imported_magic_armor.json#14"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "brewers_supplies",
+      "winner": "res://data/core/items/imported_magic_tools.json#6",
+      "replaces": [
+        "res://data/core/items/imported_magic_tools.json#5"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "bronze_dragon_scale_mail",
+      "winner": "res://data/core/items/imported_magic_armor.json#17",
+      "replaces": [
+        "res://data/core/items/imported_magic_armor.json#16"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "calligraphers_supplies",
+      "winner": "res://data/core/items/imported_magic_tools.json#8",
+      "replaces": [
+        "res://data/core/items/imported_magic_tools.json#7"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "carpenters_tools",
+      "winner": "res://data/core/items/imported_magic_tools.json#10",
+      "replaces": [
+        "res://data/core/items/imported_magic_tools.json#9"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "cartographers_tools",
+      "winner": "res://data/core/items/imported_magic_tools.json#12",
+      "replaces": [
+        "res://data/core/items/imported_magic_tools.json#11"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "chain_mail",
+      "winner": "res://data/core/items/armor.json#2",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#7"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "cobblers_tools",
+      "winner": "res://data/core/items/imported_magic_tools.json#14",
+      "replaces": [
+        "res://data/core/items/imported_magic_tools.json#13"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "cooks_utensils",
+      "winner": "res://data/core/items/imported_magic_tools.json#16",
+      "replaces": [
+        "res://data/core/items/imported_magic_tools.json#15"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "copper_dragon_scale_mail",
+      "winner": "res://data/core/items/imported_magic_armor.json#19",
+      "replaces": [
+        "res://data/core/items/imported_magic_armor.json#18"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "dagger",
+      "winner": "res://data/core/items/weapons.json#3",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#10"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "dagger_of_venom",
+      "winner": "res://data/core/items/imported_magic_weapons.json#6",
+      "replaces": [
+        "res://data/core/items/imported_magic_weapons.json#5"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "disguise_kit",
+      "winner": "res://data/core/items/imported_magic_tools.json#19",
+      "replaces": [
+        "res://data/core/items/imported_magic_tools.json#18"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "dwarven_thrower",
+      "winner": "res://data/core/items/imported_magic_weapons.json#8",
+      "replaces": [
+        "res://data/core/items/imported_magic_weapons.json#7"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "elixir_of_health",
+      "winner": "res://data/core/items/imported_magic_consumables.json#2",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#1"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "emblem",
+      "winner": "res://data/core/items/imported_magic_tools.json#21",
+      "replaces": [
+        "res://data/core/items/imported_magic_tools.json#20"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "forgery_kit",
+      "winner": "res://data/core/items/imported_magic_tools.json#23",
+      "replaces": [
+        "res://data/core/items/imported_magic_tools.json#22"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "glamoured_studded_leather",
+      "winner": "res://data/core/items/imported_magic_armor.json#25",
+      "replaces": [
+        "res://data/core/items/imported_magic_armor.json#24"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "glassblowers_tools",
+      "winner": "res://data/core/items/imported_magic_tools.json#25",
+      "replaces": [
+        "res://data/core/items/imported_magic_tools.json#24"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "gold_dragon_scale_mail",
+      "winner": "res://data/core/items/imported_magic_armor.json#27",
+      "replaces": [
+        "res://data/core/items/imported_magic_armor.json#26"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "green_dragon_scale_mail",
+      "winner": "res://data/core/items/imported_magic_armor.json#29",
+      "replaces": [
+        "res://data/core/items/imported_magic_armor.json#28"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "handaxe",
+      "winner": "res://data/core/items/weapons.json#4",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#20"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "herbalism_kit",
+      "winner": "res://data/core/items/imported_magic_tools.json#29",
+      "replaces": [
+        "res://data/core/items/imported_magic_tools.json#28"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "javelin_of_lightning",
+      "winner": "res://data/core/items/imported_magic_weapons.json#20",
+      "replaces": [
+        "res://data/core/items/imported_magic_weapons.json#19"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "jewelers_tools",
+      "winner": "res://data/core/items/imported_magic_tools.json#31",
+      "replaces": [
+        "res://data/core/items/imported_magic_tools.json#30"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "leather_armor",
+      "winner": "res://data/core/items/armor.json#1",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#28"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "leatherworkers_tools",
+      "winner": "res://data/core/items/imported_magic_tools.json#33",
+      "replaces": [
+        "res://data/core/items/imported_magic_tools.json#32"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "longbow",
+      "winner": "res://data/core/items/weapons.json#7",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#31"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "longsword",
+      "winner": "res://data/core/items/weapons.json#1",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#32"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "mace_of_disruption",
+      "winner": "res://data/core/items/imported_magic_weapons.json#23",
+      "replaces": [
+        "res://data/core/items/imported_magic_weapons.json#22"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "mace_of_smiting",
+      "winner": "res://data/core/items/imported_magic_weapons.json#25",
+      "replaces": [
+        "res://data/core/items/imported_magic_weapons.json#24"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "mace_of_terror",
+      "winner": "res://data/core/items/imported_magic_weapons.json#27",
+      "replaces": [
+        "res://data/core/items/imported_magic_weapons.json#26"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "masons_tools",
+      "winner": "res://data/core/items/imported_magic_tools.json#35",
+      "replaces": [
+        "res://data/core/items/imported_magic_tools.json#34"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "navigators_tools",
+      "winner": "res://data/core/items/imported_magic_tools.json#38",
+      "replaces": [
+        "res://data/core/items/imported_magic_tools.json#37"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "oil_of_etherealness",
+      "winner": "res://data/core/items/imported_magic_consumables.json#4",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#3"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "oil_of_sharpness",
+      "winner": "res://data/core/items/imported_magic_consumables.json#6",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#5"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "oil_of_slipperiness",
+      "winner": "res://data/core/items/imported_magic_consumables.json#8",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#7"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "painters_supplies",
+      "winner": "res://data/core/items/imported_magic_tools.json#40",
+      "replaces": [
+        "res://data/core/items/imported_magic_tools.json#39"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "philter_of_love",
+      "winner": "res://data/core/items/imported_magic_consumables.json#10",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#9"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "poisoners_kit",
+      "winner": "res://data/core/items/imported_magic_tools.json#42",
+      "replaces": [
+        "res://data/core/items/imported_magic_tools.json#41"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "potion_of_acid_resistance",
+      "winner": "res://data/core/items/imported_magic_consumables.json#12",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#11"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "potion_of_animal_friendship",
+      "winner": "res://data/core/items/imported_magic_consumables.json#14",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#13"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "potion_of_clairvoyance",
+      "winner": "res://data/core/items/imported_magic_consumables.json#16",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#15"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "potion_of_climbing",
+      "winner": "res://data/core/items/imported_magic_consumables.json#18",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#17"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "potion_of_cloud_giant_strength",
+      "winner": "res://data/core/items/imported_magic_consumables.json#20",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#19"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "potion_of_cold_resistance",
+      "winner": "res://data/core/items/imported_magic_consumables.json#22",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#21"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "potion_of_diminution",
+      "winner": "res://data/core/items/imported_magic_consumables.json#25",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#24"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "potion_of_fire_breath",
+      "winner": "res://data/core/items/imported_magic_consumables.json#27",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#26"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "potion_of_fire_giant_strength",
+      "winner": "res://data/core/items/imported_magic_consumables.json#29",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#28"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "potion_of_fire_resistance",
+      "winner": "res://data/core/items/imported_magic_consumables.json#31",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#30"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "potion_of_flying",
+      "winner": "res://data/core/items/imported_magic_consumables.json#33",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#32"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "potion_of_force_resistance",
+      "winner": "res://data/core/items/imported_magic_consumables.json#35",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#34"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "potion_of_frost_giant_strength",
+      "winner": "res://data/core/items/imported_magic_consumables.json#37",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#36"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "potion_of_gaseous_form",
+      "winner": "res://data/core/items/imported_magic_consumables.json#39",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#38"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "potion_of_greater_healing",
+      "winner": "res://data/core/items/imported_magic_consumables.json#41",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#40"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "potion_of_growth",
+      "winner": "res://data/core/items/imported_magic_consumables.json#44",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#43"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "potion_of_healing",
+      "winner": "res://data/core/items/imported_magic_consumables.json#46",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#45"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "potion_of_heroism",
+      "winner": "res://data/core/items/imported_magic_consumables.json#48",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#47"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "potion_of_hill_giant_strength",
+      "winner": "res://data/core/items/imported_magic_consumables.json#50",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#49"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "potion_of_invisibility",
+      "winner": "res://data/core/items/imported_magic_consumables.json#52",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#51"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "potion_of_invulnerability",
+      "winner": "res://data/core/items/imported_magic_consumables.json#54",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#53"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "potion_of_lightning_resistance",
+      "winner": "res://data/core/items/imported_magic_consumables.json#56",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#55"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "potion_of_longevity",
+      "winner": "res://data/core/items/imported_magic_consumables.json#58",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#57"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "potion_of_mind_reading",
+      "winner": "res://data/core/items/imported_magic_consumables.json#60",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#59"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "potion_of_necrotic_resistance",
+      "winner": "res://data/core/items/imported_magic_consumables.json#62",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#61"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "potion_of_poison",
+      "winner": "res://data/core/items/imported_magic_consumables.json#64",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#63"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "potion_of_poison_resistance",
+      "winner": "res://data/core/items/imported_magic_consumables.json#66",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#65"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "potion_of_psychic_resistance",
+      "winner": "res://data/core/items/imported_magic_consumables.json#68",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#67"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "potion_of_radiant_resistance",
+      "winner": "res://data/core/items/imported_magic_consumables.json#71",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#70"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "potion_of_speed",
+      "winner": "res://data/core/items/imported_magic_consumables.json#73",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#72"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "potion_of_stone_giant_strength",
+      "winner": "res://data/core/items/imported_magic_consumables.json#75",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#74"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "potion_of_storm_giant_strength",
+      "winner": "res://data/core/items/imported_magic_consumables.json#77",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#76"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "potion_of_superior_healing",
+      "winner": "res://data/core/items/imported_magic_consumables.json#79",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#78"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "potion_of_supreme_healing",
+      "winner": "res://data/core/items/imported_magic_consumables.json#81",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#80"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "potion_of_thunder_resistance",
+      "winner": "res://data/core/items/imported_magic_consumables.json#83",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#82"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "potion_of_vitality",
+      "winner": "res://data/core/items/imported_magic_consumables.json#85",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#84"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "potion_of_water_breathing",
+      "winner": "res://data/core/items/imported_magic_consumables.json#87",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#86"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "potters_tools",
+      "winner": "res://data/core/items/imported_magic_tools.json#44",
+      "replaces": [
+        "res://data/core/items/imported_magic_tools.json#43"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "quarterstaff",
+      "winner": "res://data/core/items/weapons.json#5",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#42"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "rapier",
+      "winner": "res://data/core/items/weapons.json#2",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#43"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "red_dragon_scale_mail",
+      "winner": "res://data/core/items/imported_magic_armor.json#32",
+      "replaces": [
+        "res://data/core/items/imported_magic_armor.json#31"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "reliquary",
+      "winner": "res://data/core/items/imported_magic_tools.json#46",
+      "replaces": [
+        "res://data/core/items/imported_magic_tools.json#45"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "scale_mail",
+      "winner": "res://data/core/items/armor.json#3",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#46"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "scimitar_of_speed",
+      "winner": "res://data/core/items/imported_magic_weapons.json#33",
+      "replaces": [
+        "res://data/core/items/imported_magic_weapons.json#32"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "sentinel_shield",
+      "winner": "res://data/core/items/imported_magic_armor.json#34",
+      "replaces": [
+        "res://data/core/items/imported_magic_armor.json#33"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "shield",
+      "winner": "res://data/core/items/armor.json#4",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#48"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "shield_of_missile_attraction",
+      "winner": "res://data/core/items/imported_magic_armor.json#37",
+      "replaces": [
+        "res://data/core/items/imported_magic_armor.json#36"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "shortbow",
+      "winner": "res://data/core/items/weapons.json#6",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#49"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "silver_dragon_scale_mail",
+      "winner": "res://data/core/items/imported_magic_armor.json#40",
+      "replaces": [
+        "res://data/core/items/imported_magic_armor.json#39"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "smiths_tools",
+      "winner": "res://data/core/items/imported_magic_tools.json#49",
+      "replaces": [
+        "res://data/core/items/imported_magic_tools.json#48"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "spellguard_shield",
+      "winner": "res://data/core/items/imported_magic_armor.json#42",
+      "replaces": [
+        "res://data/core/items/imported_magic_armor.json#41"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "sprig_of_mistletoe",
+      "winner": "res://data/core/items/imported_magic_tools.json#51",
+      "replaces": [
+        "res://data/core/items/imported_magic_tools.json#50"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "sun_blade",
+      "winner": "res://data/core/items/imported_magic_weapons.json#51",
+      "replaces": [
+        "res://data/core/items/imported_magic_weapons.json#50"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "sword_of_kas",
+      "winner": "res://data/core/items/imported_magic_weapons.json#63",
+      "replaces": [
+        "res://data/core/items/imported_magic_weapons.json#62"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "thieves_tools",
+      "winner": "res://data/core/items/consumables.json#6",
+      "replaces": [
+        "res://data/core/items/imported_magic_tools.json#52",
+        "res://data/core/items/imported_magic_tools.json#53"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "tinkers_tools",
+      "winner": "res://data/core/items/imported_magic_tools.json#55",
+      "replaces": [
+        "res://data/core/items/imported_magic_tools.json#54"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "trident_of_fish_command",
+      "winner": "res://data/core/items/imported_magic_weapons.json#66",
+      "replaces": [
+        "res://data/core/items/imported_magic_weapons.json#65"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "wave",
+      "winner": "res://data/core/items/imported_magic_weapons.json#68",
+      "replaces": [
+        "res://data/core/items/imported_magic_weapons.json#67"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "weavers_tools",
+      "winner": "res://data/core/items/imported_magic_tools.json#59",
+      "replaces": [
+        "res://data/core/items/imported_magic_tools.json#58"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "whelm",
+      "winner": "res://data/core/items/imported_magic_weapons.json#70",
+      "replaces": [
+        "res://data/core/items/imported_magic_weapons.json#69"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "white_dragon_scale_mail",
+      "winner": "res://data/core/items/imported_magic_armor.json#44",
+      "replaces": [
+        "res://data/core/items/imported_magic_armor.json#43"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "woodcarvers_tools",
+      "winner": "res://data/core/items/imported_magic_tools.json#61",
+      "replaces": [
+        "res://data/core/items/imported_magic_tools.json#60"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "yew_wand",
+      "winner": "res://data/core/items/imported_magic_tools.json#63",
+      "replaces": [
+        "res://data/core/items/imported_magic_tools.json#62"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "bless",
+      "winner": "res://data/core/spells/core_spells.json#14",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#19"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "burning_hands",
+      "winner": "res://data/core/spells/core_spells.json#7",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#25"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "counterspell",
+      "winner": "res://data/core/spells/core_spells.json#13",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#41"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "fire_bolt",
+      "winner": "res://data/core/spells/core_spells.json#1",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#76"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "fireball",
+      "winner": "res://data/core/spells/core_spells.json#12",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#77"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "light",
+      "winner": "res://data/core/spells/core_spells.json#3",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#111"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "mage_armor",
+      "winner": "res://data/core/spells/core_spells.json#6",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#117"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "magic_missile",
+      "winner": "res://data/core/spells/core_spells.json#4",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#120"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "misty_step",
+      "winner": "res://data/core/spells/core_spells.json#10",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#131"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "ray_of_frost",
+      "winner": "res://data/core/spells/core_spells.json#2",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#148"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "scorching_ray",
+      "winner": "res://data/core/spells/core_spells.json#11",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#156"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "shield",
+      "winner": "res://data/core/spells/core_spells.json#5",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#161"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "sleep",
+      "winner": "res://data/core/spells/core_spells.json#8",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#167"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "thunderwave",
+      "winner": "res://data/core/spells/core_spells.json#9",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#185"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "bandit",
+      "winner": "res://data/core/monsters/core_monsters.json#6",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#43"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "giant_spider",
+      "winner": "res://data/core/monsters/core_monsters.json#7",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#180"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "goblin",
+      "winner": "res://data/core/monsters/core_monsters.json#1",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#197"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "skeleton",
+      "winner": "res://data/core/monsters/core_monsters.json#3",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#360"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "wight",
+      "winner": "res://data/core/monsters/core_monsters.json#9",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#422"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "wolf",
+      "winner": "res://data/core/monsters/core_monsters.json#5",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#426"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "zombie",
+      "winner": "res://data/core/monsters/core_monsters.json#4",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#450"
+      ]
+    }
+  ]
+}

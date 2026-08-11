@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://e4567890f1a2b"]
+[gd_scene load_steps=9 format=3 uid="uid://e4567890f1a2b"]
 
 [ext_resource type="Script" path="res://src/overworld/overworld_state.gd" id="1_overworld"]
 [ext_resource type="Script" path="res://src/hex/hex_grid.gd" id="2_hexgrid"]
@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" uid="uid://e456789f5d6e7" path="res://scenes/ui/dice_roll_display.tscn" id="5_dice_display"]
 [ext_resource type="Script" path="res://src/ui/camera_controller.gd" id="6_camera"]
 [ext_resource type="Script" path="res://src/ui/widgets/log_panel.gd" id="7_logpanel"]
+[ext_resource type="PackedScene" path="res://scenes/ui/companion_roster_panel.tscn" id="8_companion_roster"]
 
 [node name="Overworld" type="Node2D"]
 script = ExtResource("1_overworld")
@@ -111,6 +112,11 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 10
 
+[node name="BtnCompanions" type="Button" parent="OverworldHUD/MarginContainer/HBoxContainer/Sidebar"]
+custom_minimum_size = Vector2(0, 45)
+layout_mode = 2
+text = "Manage Companions"
+
 [node name="BtnEndTurn" type="Button" parent="OverworldHUD/MarginContainer/HBoxContainer/Sidebar"]
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
@@ -153,3 +159,35 @@ anchor_right = 0.5
 anchor_bottom = 0.5
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="CompanionOverlay" type="Control" parent="OverworldHUD"]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+
+[node name="Backdrop" type="ColorRect" parent="OverworldHUD/CompanionOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0.025, 0.022, 0.018, 0.78)
+
+[node name="Center" type="CenterContainer" parent="OverworldHUD/CompanionOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+
+[node name="CompanionRosterPanel" parent="OverworldHUD/CompanionOverlay/Center" instance=ExtResource("8_companion_roster")]
+layout_mode = 2

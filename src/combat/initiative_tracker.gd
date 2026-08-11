@@ -35,14 +35,16 @@ func add_combatant(id: String, name: String, is_player: bool, entity, roll: int,
 	})
 
 
-## Sort initiative: highest roll first, tiebreaker goes to highest DEX score, then random.
+## Sort initiative: highest roll first, then highest DEX, then stable ID.
+## The final key must be deterministic and transitive; a random comparator can
+## violate the sort contract when three or more participants tie.
 func sort_initiative() -> void:
 	combatants.sort_custom(func(a, b):
 		if a["roll"] != b["roll"]:
 			return a["roll"] > b["roll"]
 		if a["dex"] != b["dex"]:
 			return a["dex"] > b["dex"]
-		return randf() > 0.5
+		return str(a["id"]) < str(b["id"])
 	)
 	active_index = 0
 	current_round = 1

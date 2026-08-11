@@ -9,9 +9,14 @@
 	  {"type": "defeat_monster", "monster_id": "lich_king"}
 	]
   },
-  "player_count": {"min": 2, "max": 4},
+	"player_count": {"min": 1, "max": 4},
   "starting_level": 1,
   "max_level": 5,
+	"companions": {
+		"aldric": {"name": "Aldric", "race_id": "dwarf", "class_id": "cleric", "ability_scores": {"STR": 12, "DEX": 10, "CON": 14, "INT": 10, "WIS": 16, "CHA": 10}},
+		"mira": {"name": "Mira", "race_id": "elf", "class_id": "ranger", "ability_scores": {"STR": 10, "DEX": 16, "CON": 12, "INT": 10, "WIS": 14, "CHA": 10}},
+		"rowan": {"name": "Rowan", "race_id": "human", "class_id": "rogue", "ability_scores": {"STR": 10, "DEX": 16, "CON": 12, "INT": 14, "WIS": 10, "CHA": 12}}
+	},
   "milestones": [
 	{"trigger": "enter_dungeon_1", "effects": [{"type": "level_up"}], "description": "The party enters the Ruins of Ashvale"},
 	{"trigger": "clear_dungeon_1", "effects": [{"type": "level_up"}], "description": "The party clears the Ruins of Ashvale"},

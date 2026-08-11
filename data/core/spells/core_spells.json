@@ -90,7 +90,8 @@
     "save": "DEX",
     "damage": "3d6",
     "damage_type": "fire",
-    "half_on_save": true
+    "half_on_save": true,
+    "effects": [{"type": "area_selection", "shape": "cone", "size": 3}]
   },
   {
     "id": "sleep",
@@ -102,7 +103,10 @@
     "range": 5,
     "target": "area",
     "area_radius": 2,
-    "effects": [{"type": "sleep", "hp_pool": "5d8"}]
+    "effects": [
+      {"type": "area_selection", "shape": "sphere", "radius": 2},
+      {"type": "sleep", "hp_pool": "5d8"}
+    ]
   },
   {
     "id": "thunderwave",
@@ -118,7 +122,10 @@
     "damage": "2d8",
     "damage_type": "thunder",
     "half_on_save": true,
-    "effects": [{"type": "push", "distance": 2}]
+    "effects": [
+      {"type": "area_selection", "shape": "sphere", "radius": 3},
+      {"type": "push", "distance": 2}
+    ]
   },
   {
     "id": "misty_step",
@@ -160,7 +167,8 @@
     "save": "DEX",
     "damage": "8d6",
     "damage_type": "fire",
-    "half_on_save": true
+    "half_on_save": true,
+    "effects": [{"type": "area_selection", "shape": "sphere", "radius": 3}]
   },
   {
     "id": "counterspell",
@@ -184,6 +192,9 @@
     "target": "area",
     "area_radius": 2,
     "concentration": true,
-    "effects": [{"type": "grant_condition", "condition": "blessed", "duration": 10}]
+    "effects": [
+      {"type": "area_selection", "shape": "sphere", "radius": 2},
+      {"type": "grant_condition", "condition": "blessed", "duration": 10}
+    ]
   }
 ]

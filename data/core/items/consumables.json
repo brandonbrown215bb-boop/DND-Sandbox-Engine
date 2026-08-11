@@ -82,5 +82,14 @@
     "type": "currency",
     "effects": [{"type": "gold", "value": 100}],
     "value": 100
+  },
+  {
+    "id": "crown_fragment",
+    "name": "Fragment of the Crown of Ages",
+    "description": "A shard of the shattered Crown of Ages. Three fragments are needed to confront the Lich King.",
+    "type": "currency",
+    "effects": [],
+    "value": 0,
+    "quest_item": true
   }
 ]

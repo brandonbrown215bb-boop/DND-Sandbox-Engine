@@ -2,7 +2,7 @@
   "id": "paladin",
   "name": "Paladin",
   "description": "Paladin class. Source: PHB.",
-  "hit_die": "d1",
+  "hit_die": "d10",
   "primary_ability": "STR",
   "saving_throw_proficiencies": [
     "WIS",

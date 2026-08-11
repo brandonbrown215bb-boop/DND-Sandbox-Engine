@@ -5,6 +5,7 @@ class_name Character
 extends RefCounted
 
 ## Character identity.
+var character_id: String = ""
 var character_name: String = ""
 var race_id: String = ""
 var class_id: String = ""
@@ -54,6 +55,10 @@ var known_spells: Array[String] = []
 ## Active conditions (e.g., "blessed", "poisoned"): condition_name -> remaining_turns.
 var conditions: Dictionary = {}
 
+## Timed numeric modifiers: [{"kind": "stat"/"roll", "key": String,
+## "amount": int, "remaining_turns": int}].
+var modifiers: Array[Dictionary] = []
+
 ## Inventory.
 var inventory: Inventory = Inventory.new()
 
@@ -69,6 +74,11 @@ var crit_range: int = 20
 
 ## Extra attacks per Attack action (normally 0, Extra Attack gives 1).
 var extra_attacks: int = 0
+
+
+## Effective movement speed after timed modifiers.
+func get_speed() -> int:
+	return maxi(0, speed + get_modifier("stat", "speed"))
 
 
 ## Initialize a character from race and class data.
@@ -109,6 +119,9 @@ func initialize(p_name: String, p_race_id: String, p_class_id: String, scores: A
 
 	# Unlock level 1 features
 	_unlock_features_for_level(1)
+	_initialize_spell_access()
+	_update_spell_slots()
+	_sync_sorcery_points()
 
 	# Calculate AC
 	_recalculate_ac()
@@ -131,9 +144,14 @@ func level_up() -> void:
 
 	# Unlock new features
 	_unlock_features_for_level(level)
+	# Lay on Hands grows with paladin level while preserving any pool already spent.
+	if has_feature("paladin_lay_on_hands") and level > 1:
+		feature_uses["paladin_lay_on_hands"] = int(feature_uses.get("paladin_lay_on_hands", 0)) + 5
+	_add_spells_for_level(level)
 
 	# Update spell slots if caster
 	_update_spell_slots()
+	_sync_sorcery_points(true)
 
 	print("[Character] %s leveled up to %d! (+%d HP, now %d)" % [character_name, level, hp_gain, max_hp])
 
@@ -151,8 +169,7 @@ func _unlock_features_for_level(lvl: int) -> void:
 			_apply_passive_feature(feature)
 			# Initialize uses for active features
 			if feature.get("type", "") == "active":
-				var uses: int = feature.get("uses", 1)
-				feature_uses[feature["id"]] = uses
+				feature_uses[feature["id"]] = get_feature_max_uses(str(feature["id"]), feature)
 
 
 ## Apply effects of passive features.
@@ -173,6 +190,12 @@ func _apply_passive_feature(feature: Dictionary) -> void:
 ## Update spell slots based on class and level.
 func _update_spell_slots() -> void:
 	var class_data := DataLoader.get_character_class(class_id)
+	var pact_table: Dictionary = class_data.get("pact_magic_by_level", {})
+	if not pact_table.is_empty():
+		var pact_entry: Dictionary = pact_table.get(str(level), {})
+		if not pact_entry.is_empty():
+			spell_slots = {str(pact_entry.get("slot_level", 1)): int(pact_entry.get("slots", 0))}
+			return
 	var slot_table: Dictionary = class_data.get("spell_slots_by_level", {})
 	spell_slots = {}
 	for lvl_key in slot_table:
@@ -180,6 +203,29 @@ func _update_spell_slots() -> void:
 		# Data format: { "1": [2], "2": [3], ... } — first element is the slot count.
 		var count: int = lvl_data[0] if (typeof(lvl_data) == TYPE_ARRAY and lvl_data.size() > 0) else int(lvl_data)
 		spell_slots[str(lvl_key)] = count
+
+
+## Seed known spells from the production class record. DataLoader supplies the
+## curated Crown access table when imported records do not contain mappings.
+func _initialize_spell_access() -> void:
+	known_spells.clear()
+	var class_data := DataLoader.get_character_class(class_id)
+	for spell_id in class_data.get("cantrips_known", []):
+		if str(spell_id) not in known_spells and not DataLoader.get_spell(str(spell_id)).is_empty():
+			known_spells.append(str(spell_id))
+	_add_spells_for_level(level)
+
+
+func _add_spells_for_level(lvl: int) -> void:
+	var class_data := DataLoader.get_character_class(class_id)
+	var known_by_level: Dictionary = class_data.get("spells_known_by_level", {})
+	for level_key in known_by_level:
+		if int(level_key) > lvl:
+			continue
+		for spell_id in known_by_level[level_key]:
+			var id := str(spell_id)
+			if id not in known_spells and not DataLoader.get_spell(id).is_empty():
+				known_spells.append(id)
 
 
 ## Parse a hit die string like "d10" into the number of sides.
@@ -193,10 +239,18 @@ func _parse_hit_die(hit_die: String) -> int:
 func _recalculate_ac() -> void:
 	var dex_mod := ability_scores.get_ability_modifier("DEX")
 	var armor_id := inventory.get_armor()
+	var shield_id := inventory.get_equipped(Inventory.Slot.SHIELD)
 
 	if armor_id.is_empty():
-		# No armor: AC = 10 + DEX
-		base_ac = 10 + dex_mod
+		if class_id == "monk" and has_feature("monk_unarmored_defense") and shield_id.is_empty():
+			# Monk Unarmored Defense: 10 + DEX + WIS while wearing no armor or shield.
+			base_ac = 10 + dex_mod + ability_scores.get_ability_modifier("WIS")
+		elif class_id == "barbarian" and has_feature("barbarian_unarmored_defense"):
+			# Barbarian Unarmored Defense: 10 + DEX + CON; shields remain valid.
+			base_ac = 10 + dex_mod + ability_scores.get_ability_modifier("CON")
+		else:
+			# No armor: AC = 10 + DEX
+			base_ac = 10 + dex_mod
 	else:
 		var armor_data := DataLoader.get_item(armor_id)
 		var armor_type: String = armor_data.get("armor_type", "light")
@@ -212,7 +266,6 @@ func _recalculate_ac() -> void:
 
 	# Shield bonus
 	var shield_ac: int = 0
-	var shield_id := inventory.get_equipped(Inventory.Slot.SHIELD)
 	if not shield_id.is_empty():
 		var shield_data := DataLoader.get_item(shield_id)
 		shield_ac = int(shield_data.get("ac_bonus", 2))
@@ -223,10 +276,10 @@ func _recalculate_ac() -> void:
 ## Get effective AC (base + conditions/buffs).
 func get_ac() -> int:
 	var ac := base_ac
+	var armor_id := inventory.get_armor()
 	
 	# Mage Armor sets base AC to 13 + DEX (if not wearing heavier armor)
 	if has_condition("mage_armor"):
-		var armor_id := inventory.get_armor()
 		if armor_id.is_empty():
 			var dex_mod := ability_scores.get_ability_modifier("DEX")
 			var shield_ac: int = 0
@@ -239,9 +292,12 @@ func get_ac() -> int:
 	# Shield spell grants +5 AC
 	if has_condition("shield"):
 		ac += 5
+	ac += get_modifier("stat", "AC")
 
-	# Apply feature modifiers
-	if "defense_style" in _get_active_feature_ids():
+	# Paladin Defense Fighting Style applies only while armor is worn. The
+	# curated feature record keeps the style explicit instead of granting a
+	# generic AC bonus to unarmored characters.
+	if has_feature("paladin_fighting_style") and not armor_id.is_empty():
 		ac += 1
 	return ac
 
@@ -299,12 +355,31 @@ func make_saving_throw(ability: String, advantage: bool = false, disadvantage: b
 	var total := roll + mod
 	if has_condition("blessed"):
 		total += Dice.roll(4)
+	total += get_modifier("roll", "save")
+	total += get_modifier("roll", "save:%s" % ability.to_upper())
 		
 	return total
 
 
+## Return the current spell save DC for this character's class.
+func get_spell_save_dc() -> int:
+	var class_data := DataLoader.get_character_class(class_id)
+	var spell_stat := str(class_data.get("primary_ability", "INT"))
+	var dc := 8 + ability_scores.get_ability_modifier(spell_stat) + proficiency_bonus
+	if has_condition("innate_sorcery"):
+		dc += 1
+	return dc
+
+
+## Return the passive attack-style bonus for a weapon.
+func get_attack_style_bonus(weapon_data: Dictionary = {}) -> int:
+	if has_feature("ranger_fighting_style") and "ranged" in weapon_data.get("properties", []):
+		return 2
+	return 0
+
+
 ## Make an attack roll. Returns {"roll": int, "is_crit": bool, "is_miss": bool}.
-func make_attack_roll(ability: String = "STR", advantage: bool = false, disadvantage: bool = false) -> Dictionary:
+func make_attack_roll(ability: String = "STR", advantage: bool = false, disadvantage: bool = false, weapon_data: Dictionary = {}) -> Dictionary:
 	if has_condition("blinded") or has_condition("poisoned"):
 		disadvantage = true
 
@@ -321,13 +396,19 @@ func make_attack_roll(ability: String = "STR", advantage: bool = false, disadvan
 	var is_miss := natural_roll == 1
 
 	var total := natural_roll + mod
+	var style_bonus := get_attack_style_bonus(weapon_data)
+	total += style_bonus
 	if has_condition("blessed"):
 		total += Dice.roll(4)
+	total += get_modifier("roll", "attack")
+	total += get_modifier("roll", "attack:%s" % ability.to_upper())
 
 	return {
 		"natural": natural_roll,
 		"total": total,
-		"modifier": mod,
+		"modifier": mod + style_bonus,
+		"feature_bonus": style_bonus,
+		"advantage": advantage and not disadvantage,
 		"is_crit": is_crit,
 		"is_miss": is_miss,
 	}
@@ -335,33 +416,128 @@ func make_attack_roll(ability: String = "STR", advantage: bool = false, disadvan
 
 ## Use a class feature. Returns false if no uses remaining.
 func use_feature(feature_id: String) -> bool:
-	if feature_id in feature_uses:
-		if feature_uses[feature_id] <= 0:
-			return false
-		feature_uses[feature_id] -= 1
+	if feature_id not in feature_uses or feature_uses[feature_id] <= 0:
+		return false
+	feature_uses[feature_id] -= 1
 	return true
+
+
+## Return the maximum uses for a feature, including level-scaled resources.
+func get_feature_max_uses(feature_id: String, feature_override: Dictionary = {}) -> int:
+	var feature_data := feature_override
+	if feature_data.is_empty():
+		for feature in features:
+			if str(feature.get("id", "")) == feature_id:
+				feature_data = feature
+				break
+	if feature_data.is_empty():
+		return -1
+	if str(feature_data.get("resource_formula", "")) == "level*5":
+		return level * 5
+	return int(feature_data.get("uses", 1))
 
 
 ## Reset per-combat feature uses.
 func reset_combat_features() -> void:
 	for feature in features:
 		if feature.get("uses_per", "") == "combat":
-			feature_uses[feature["id"]] = feature.get("uses", 1)
+			feature_uses[feature["id"]] = get_feature_max_uses(str(feature["id"]), feature)
 
 
-## Reset per-rest feature uses.
+## Restore features whose recharge cadence is a short rest.
+func short_rest() -> void:
+	_restore_features_for_cadences(["short_rest"])
+	_restore_pact_magic_slots()
+
+
+## Restore long-rest resources and the character's normal between-encounter state.
+func long_rest() -> void:
+	_restore_features_for_cadences(["short_rest", "long_rest", "rest"])
+	_update_spell_slots()
+	_sync_sorcery_points()
+	current_hp = max_hp
+	is_alive = true
+	temp_hp = 0
+	modifiers.clear()
+
+
+## Backward-compatible alias for callers that mean a full rest.
 func reset_rest_features() -> void:
+	long_rest()
+
+
+func _restore_features_for_cadences(cadences: Array[String]) -> void:
 	for feature in features:
 		var resets_on: String = feature.get("uses_per", "")
-		if resets_on in ["combat", "rest"]:
-			feature_uses[feature["id"]] = feature.get("uses", 1)
-	# Restore spell slots
-	_update_spell_slots()
+		if resets_on in cadences:
+			feature_uses[feature["id"]] = get_feature_max_uses(str(feature["id"]), feature)
+
+
+func _restore_pact_magic_slots() -> void:
+	var class_data := DataLoader.get_character_class(class_id)
+	var pact_table: Dictionary = class_data.get("pact_magic_by_level", {})
+	if pact_table.is_empty():
+		return
+	var pact_entry: Dictionary = pact_table.get(str(level), {})
+	if pact_entry.is_empty():
+		return
+	spell_slots = {str(pact_entry.get("slot_level", 1)): int(pact_entry.get("slots", 0))}
+
+
+## Recover up to a fraction of the Warlock's maximum Pact Magic slots.
+func recover_pact_magic_slots(fraction: float = 0.5) -> int:
+	var class_data := DataLoader.get_character_class(class_id)
+	var pact_table: Dictionary = class_data.get("pact_magic_by_level", {})
+	var pact_entry: Dictionary = pact_table.get(str(level), {})
+	if pact_entry.is_empty():
+		return 0
+	var slot_level := str(pact_entry.get("slot_level", 1))
+	var maximum := int(pact_entry.get("slots", 0))
+	var current := int(spell_slots.get(slot_level, 0))
+	var recovery := maxi(1, int(ceil(float(maximum) * clampf(fraction, 0.0, 1.0))))
+	var restored := mini(maximum, current + recovery) - current
+	spell_slots[slot_level] = current + restored
+	return restored
+
+
+func get_max_sorcery_points() -> int:
+	if class_id != "sorcerer" or not has_feature("sorcerer_sorcery_points"):
+		return 0
+	return level
+
+
+func get_sorcery_points() -> int:
+	return int(feature_uses.get("sorcery_points", 0))
+
+
+func spend_sorcery_points(amount: int = 1) -> bool:
+	var bounded_amount := maxi(0, amount)
+	if bounded_amount > get_sorcery_points():
+		return false
+	feature_uses["sorcery_points"] = get_sorcery_points() - bounded_amount
+	return true
+
+
+func _sync_sorcery_points(level_up_resource: bool = false) -> void:
+	var maximum := get_max_sorcery_points()
+	if maximum <= 0:
+		return
+	if not feature_uses.has("sorcery_points"):
+		feature_uses["sorcery_points"] = maximum
+	elif level_up_resource:
+		feature_uses["sorcery_points"] = mini(maximum, get_sorcery_points() + 1)
+	else:
+		feature_uses["sorcery_points"] = maximum
 
 
 ## Add a condition with a duration (in turns).
 func add_condition(condition_name: String, duration: int) -> void:
-	conditions[condition_name] = duration
+	if condition_name.is_empty():
+		return
+	var requested_duration := maxi(1, duration)
+	var remaining_duration := int(conditions.get(condition_name, 0))
+	# Reapplying an effect must not make an existing condition expire sooner.
+	conditions[condition_name] = maxi(remaining_duration, requested_duration)
 
 
 ## Remove a condition.
@@ -378,6 +554,39 @@ func tick_conditions() -> void:
 			expired.append(condition)
 	for condition in expired:
 		conditions.erase(condition)
+	tick_modifiers()
+
+
+## Add a timed numeric modifier. Multiple modifiers stack and expire independently.
+func add_modifier(kind: String, key: String, amount: int, duration: int) -> void:
+	if kind.is_empty() or key.is_empty() or amount == 0:
+		return
+	modifiers.append({
+		"kind": kind,
+		"key": key,
+		"amount": amount,
+		"remaining_turns": maxi(1, duration),
+	})
+
+
+## Sum active modifiers for a named stat or roll surface.
+func get_modifier(kind: String, key: String) -> int:
+	var total := 0
+	for modifier in modifiers:
+		if str(modifier.get("kind", "")) == kind and str(modifier.get("key", "")) == key:
+			total += int(modifier.get("amount", 0))
+	return total
+
+
+## Reduce timed numeric modifiers by one turn and remove expired entries.
+func tick_modifiers() -> void:
+	var remaining: Array[Dictionary] = []
+	for modifier in modifiers:
+		var next := modifier.duplicate(true)
+		next["remaining_turns"] = int(next.get("remaining_turns", 1)) - 1
+		if int(next["remaining_turns"]) > 0:
+			remaining.append(next)
+	modifiers = remaining
 
 
 ## Check if a condition is active.
@@ -393,6 +602,14 @@ func has_feature(feature_id: String) -> bool:
 	return false
 
 
+## Return the production feature record for a character-owned feature.
+func get_feature(feature_id: String) -> Dictionary:
+	for feature in features:
+		if str(feature.get("id", "")) == feature_id:
+			return feature
+	return {}
+
+
 ## Get IDs of all active features.
 func _get_active_feature_ids() -> Array[String]:
 	var ids: Array[String] = []
@@ -404,6 +621,7 @@ func _get_active_feature_ids() -> Array[String]:
 ## Serialize character to dictionary.
 func to_dict() -> Dictionary:
 	return {
+		"character_id": character_id,
 		"name": character_name,
 		"race_id": race_id,
 		"class_id": class_id,
@@ -421,7 +639,9 @@ func to_dict() -> Dictionary:
 		"weapon_proficiencies": weapon_proficiencies,
 		"armor_proficiencies": armor_proficiencies,
 		"known_spells": known_spells,
+		"spell_slots": spell_slots.duplicate(),
 		"conditions": conditions.duplicate(),
+		"modifiers": modifiers.duplicate(true),
 		"inventory": inventory.to_dict(),
 		"feature_uses": feature_uses.duplicate(),
 		"is_alive": is_alive,
@@ -432,6 +652,7 @@ func to_dict() -> Dictionary:
 
 ## Deserialize character from dictionary.
 func from_dict(data: Dictionary) -> void:
+	character_id = str(data.get("character_id", ""))
 	character_name = data.get("name", "")
 	race_id = data.get("race_id", "")
 	class_id = data.get("class_id", "")
@@ -479,9 +700,17 @@ func from_dict(data: Dictionary) -> void:
 
 	# Overwrite conditions and feature uses with saved state
 	conditions = data.get("conditions", {}).duplicate()
+	modifiers.clear()
+	for modifier in data.get("modifiers", []):
+		if modifier is Dictionary:
+			modifiers.append(modifier.duplicate(true))
 	feature_uses = data.get("feature_uses", {}).duplicate()
+	# Rebuild the level-appropriate default first for older saves, then restore
+	# the persisted remaining slots when the save carries them.
+	_update_spell_slots()
+	if data.has("spell_slots") and data.get("spell_slots") is Dictionary:
+		spell_slots = data.get("spell_slots", {}).duplicate()
 	
 	# Restore inventory
 	inventory = Inventory.new()
 	inventory.from_dict(data.get("inventory", {}))
-

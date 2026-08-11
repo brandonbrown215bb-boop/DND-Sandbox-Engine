@@ -2,7 +2,7 @@
 
 **Status:** Canonical execution roadmap
 
-**Updated:** 2026-08-09
+**Updated:** 2026-08-10
 
 **Milestone:** Playable Crown campaign, start to finish, from the repository
 
@@ -12,7 +12,7 @@
 `run_tests.sh` is retained as a compatibility helper and does not require native
 Linux execution evidence.
 
-This roadmap replaces the earlier phase-completion claims. A feature is not complete because a button, description, data record, or isolated resolver exists. It is complete when a player can reach it through the normal game, it produces the intended result using production data, and the relevant automated and manual gates pass.
+This roadmap replaces the earlier phase-completion claims. A feature is not complete because a button, description, data record, or isolated resolver exists. It is complete when the production path and relevant automated gates prove the intended result. Short human sampler checks may expose feel, readability, or wiring defects, but a full manual playthrough is not a standing blocker for this casual project.
 
 `docs/ROADMAP_FUTURE.md` remains an idea backlog. It does not set current priorities.
 
@@ -20,7 +20,10 @@ This roadmap replaces the earlier phase-completion claims. A feature is not comp
 
 ## 1. Milestone outcome
 
-The first milestone is a private, repository-run game in which one to four local players can create characters, recruit companions into empty party slots, complete the Crown campaign, defeat its final encounter, and reach a provisional ending.
+The first milestone is a private, repository-run game in which one to four
+shared-keyboard local players can create characters, recruit companions into
+empty party slots, complete the Crown campaign, defeat its final encounter,
+and reach a provisional ending.
 
 The target experience is a broad and mechanically deep tabletop RPG in a top-down pixel-art presentation. Breadth does not permit decorative mechanics: every option exposed to a player must work.
 
@@ -33,7 +36,7 @@ The target experience is a broad and mechanically deep tabletop RPG in a top-dow
 - Followers have a visual formation but no authoritative independent exploration position.
 - Every active character, including companions, is assigned to a local player for combat decisions.
 - One player may control multiple characters.
-- Leadership and controller assignments can be changed outside combat and blocking conversations.
+- Leadership and logical seat assignments can be changed outside combat and blocking conversations.
 - Saving is supported only at explicit safe locations or states. Mid-combat and active-dungeon saves are rejected.
 - Crown is the target baseline campaign; this is not a current completion claim.
 - Campaign completion ends at a provisional completion screen. New Game+, ascension, and post-game play are future systems.
@@ -98,6 +101,31 @@ flowchart LR
 
 Gates are sequential on the critical path. Work may be prepared in parallel, but a later gate cannot be declared complete while an earlier gate remains open.
 
+### Current review position (2026-08-10)
+
+The current working tree has completed **Gate 1 regression recovery**. The
+Bardic Inspiration fixture now seeds its d20 input while exercising the real
+optional reaction path, and two consecutive complete Windows runs passed every
+named scenario with exit code `0`.
+
+| Gate | State | What remains before it can advance |
+|---|---|---|
+| 0 | `done` | Nothing in this review. Confirmed defects continue under their owning later gates. |
+| 1 | `done` | Nothing in this review. The deterministic fixture and two complete Windows runs are recorded in [Gate 1 evidence](docs/gate1_evidence.md). |
+| 2 | `done` | Nothing in this review. Importer execution, cross-process registry digest, and quarantined-content promotion review are recorded in [Gate 2 evidence](docs/gate2_evidence.md). |
+| 3 | `done` | Exercise process interruption and a fresh relaunch against repository-owned save fixtures. |
+| 4 | `done` | Nothing in the milestone roadmap. Shared-keyboard hot-seat is the accepted local multiplayer boundary; physical controller acceptance is post-Gate 8. |
+| 5 | `in_progress` | Fix the confirmed Rogue starting-equipment and Ranger mark/action-flow defects, then rerun the agent-owned acceptance audit. |
+| 6 | `in_progress` | Complete cohorts B–D and the exposed spell, item, Crown monster, condition, AI-parity, and balance audits. |
+| 7 | `in_progress` | Automated CROWN-09 composition rows and two named CROWN-10 fresh-process probes pass; decide the gate after the confirmed normal-path defects are fixed. Optional Crown sampler notes are nonblocking. |
+| 8 | `in_progress` | Publication-only provenance, cleanup, fresh-clone, and friend-run checks are parked until publication is actually wanted. A full manual playthrough does not block casual development. |
+
+Execution is coordinated through the shared [Quest Board](.questboard/README.md).
+The remaining roadmap is split into dependency-ordered cards sized for one
+30–60 minute implementation slice. The board keeps one obvious `ready` card;
+optional human sampling, publication, friend-run, cleanup, and controller work
+stays parked until it is wanted.
+
 ---
 
 ## 4. Gate 0 — Honest baseline
@@ -128,7 +156,12 @@ Gates are sequential on the critical path. Work may be prepared in parallel, but
 
 **Objective:** A green test command must mean the project parsed, booted, executed every named scenario, and exited without unexpected engine errors.
 
-**Current evidence:** [Gate 1 evidence](docs/gate1_evidence.md). Status: `done`; the complete isolated suite is green from a cache-free committed tree with a recovery-mode first scan, 263 stable logic assertions (the earlier 242 note was stale), explicit scenario markers, hard timeouts, and disposable save/settings roots.
+**Current evidence:** [Gate 1 evidence](docs/gate1_evidence.md). Status:
+`in_progress` due to a regression in the current working tree. The committed
+baseline remains valid at 263 assertions, but the expanded 521-assertion suite
+produced one green review run and one failing review run. The Bardic Inspiration
+fixture must be made deterministic and the complete runner must return to green
+before later gates can advance.
 
 | ID | Priority | Task | Acceptance criteria |
 |---|---:|---|---|
@@ -147,13 +180,18 @@ Gates are sequential on the critical path. Work may be prepared in parallel, but
 - Intentionally breaking an autoload reference fails the parse/boot gate quickly.
 - Intentionally hanging one viewport scenario fails that scenario and does not hide the results of the others.
 - The complete suite produces an enumerated pass/fail result and no unexplained Godot `ERROR` output.
-- The current logic suite remains green; the measured 263-assertion count is stable and the earlier 242 note is explained in the evidence.
+- The Gate 1 baseline remained green at 263 assertions; later gate work expanded the current suite to 521 assertions, with the historical count explained in the evidence.
 
 ---
 
 ## 6. Gate 2 — Deterministic, validated content
 
 **Objective:** Production data loads predictably, preserves curated mechanics, and fails loudly when content is ambiguous or structurally invalid.
+
+**Current checkpoint (2026-08-10):** DATA-01 through DATA-10 have implementation,
+clean-room, and promotion-review evidence. The importer passed against
+`G:\linux\5etools-src\data` without changing `data/core`; staged source/core
+overlaps remain recorded and unsupported effectless records remain quarantined.
 
 | ID | Priority | Task | Acceptance criteria |
 |---|---:|---|---|
@@ -183,6 +221,11 @@ Gates are sequential on the critical path. Work may be prepared in parallel, but
 
 **Objective:** Supported saves round-trip without duplicating rewards, losing party state, or serializing live engine objects.
 
+**Current checkpoint (2026-08-09):** SAVE-01 through SAVE-08 have an automated
+implementation pass and are recorded as `done` in [Gate 3 evidence](docs/gate3_evidence.md).
+The repository-owned v1 fixture, corrupt-save transactional test, atomic backup
+recovery, real host process interruption, and fresh-process relaunch are green.
+
 | ID | Priority | Task | Acceptance criteria |
 |---|---:|---|---|
 | SAVE-01 | P0 | Define safe-save policy | Save is allowed at the overworld, town/camp, and designated dungeon-entry checkpoints. It is disabled and rejected during combat, event resolution, scene transitions, and active dungeon traversal. |
@@ -198,26 +241,48 @@ Gates are sequential on the critical path. Work may be prepared in parallel, but
 
 - Save controls are unavailable in every unsafe state and API calls are rejected defensively.
 - No save JSON contains `<RefCounted`, `Node`, raw `Vector2i` strings, callable values, or device IDs.
-- A three-cycle save/load test preserves party, inventory, location, controller ownership, companion roster, milestones, and cleared dungeons.
+- A three-cycle save/load test preserves party, inventory, location, logical seat ownership, companion roster, milestones, and cleared dungeons.
 - Replaying a cleared Crown dungeon cannot duplicate its one-time rewards.
 - Corrupt and unsupported saves fail safely with a player-readable message.
 
 ---
 
-## 8. Gate 4 — Party, companions, and couch co-op control
+## 8. Gate 4 — Party, companions, and shared-keyboard local control
 
-**Objective:** Model characters, active party membership, and local control separately so couch co-op works now and networking remains possible later.
+**Objective:** Model characters, active party membership, and logical local
+control separately so two or more people can share the keyboard in hot-seat
+play now and device-specific or networked control can be added later.
+
+**Current checkpoint (2026-08-10):** PARTY-01 through PARTY-08 have an
+implementation pass: four stable slots, local seats, campaign companions,
+leadership, party-derived combat participants, and overworld roster controls.
+A four-member composition scenario proves ownership and distinct formation
+positions. PARTY-08 now treats common keyboard input as hot-seat intent for the
+active logical seat, and PARTY-10 has a shared `PlayerCommand` boundary for exploration, event, and
+inventory intents alongside `CombatCommand`. Broader command routing and
+formation validation now includes supported save/load before combat entry.
+Optional physical Start binding, disconnect/reconnect callbacks, held owned
+turns, and post-load rebinding are implemented without serializing device IDs,
+but physical hardware acceptance is outside the milestone gates. The production
+Camp Roster closes the companion lifecycle gap with recruit,
+decline/reconsider, dismiss, replacement, and logical-seat assignment controls.
+
+**Current evidence:** [Gate 4 evidence](docs/gate4_evidence.md). Status:
+`done`; normal-path creation, deterministic ownership, shared-keyboard hot-seat
+control, modal-input isolation, spell ownership, supported save/load, and
+formation checks pass. Physical controller binding and unplug/replug acceptance
+are deferred to the post-Gate-8 roadmap by product decision.
 
 | ID | Priority | Task | Acceptance criteria |
 |---|---:|---|---|
 | PARTY-01 | P0 | Introduce stable party slots | Four ordered slots reference character IDs and expose empty/occupied state. Character data does not own input or seat identity. |
-| PARTY-02 | P0 | Introduce local player seats | A local seat has a stable session ID, display identity, color, joined state, and assigned party slots. Physical device bindings remain session-local. |
+| PARTY-02 | P0 | Introduce local player seats | A local seat has a stable session ID, display identity, color, joined state, and assigned party slots. Shared-keyboard play does not require one physical device per seat. |
 | PARTY-03 | P0 | Build 1–4 player join/create flow | Each joined player creates exactly one initial character. Starting the campaign with fewer than four leaves legal companion slots. |
 | PARTY-04 | P0 | Add companion recruitment lifecycle | Crown exposes a minimum roster sufficient to fill a one-player party. Recruit, decline, dismiss, and replace operations enforce party capacity and unique companion identity. |
 | PARTY-05 | P0 | Implement exploration leadership | One occupied slot is leader. Input moves the party once, followers render in formation, and events/transitions trigger from the authoritative party position. |
 | PARTY-06 | P0 | Assign all combatants to players | Before combat, every active character has exactly one local owner. Companions can be redistributed among joined players; one player may own several turns. |
 | PARTY-07 | P1 | Add leadership and assignment UI | Outside blocked states, players can transfer leadership and reassign companions. Current leader and active combat owner are always visible. |
-| PARTY-08 | P1 | Define disconnect/reconnect behavior | Pausing and controller reconnection cannot strand a turn. Players reclaim seats after load; saved data does not assume “Controller 2” still exists. |
+| PARTY-08 | P1 | Support shared-keyboard hot-seat | Every joined logical seat and every character it owns receives the correct turn through the common keyboard controls. Physical device assignment is not a milestone requirement. |
 | PARTY-09 | P1 | Spawn coherent combat formations | Encounters derive all active combatants from the party snapshot and place them around the leader using validated formation positions. No member can be absent because of exploration distance. |
 | PARTY-10 | P1 | Route intent through commands | Movement, action selection, targets, dialogue choices, inventory actions, and end-turn enter rules through explicit player commands rather than direct device events in domain logic. |
 
@@ -226,14 +291,46 @@ Gates are sequential on the critical path. Work may be prepared in parallel, but
 - Automated scenarios start Crown with 1, 2, 3, and 4 local players.
 - Empty slots can be filled by distinct companions and reassigned among players.
 - One leader moves the full exploration party and all active slots enter combat.
-- A player controlling multiple characters receives the correct turns without changing physical devices.
-- Save/load preserves party slots, characters, companion state, leadership, and logical seat ownership; device rebinding happens after load.
+- A person controlling multiple characters receives the correct turns through the shared keyboard without changing logical seats.
+- Save/load preserves party slots, characters, companion state, leadership, and logical seat ownership.
 
 ---
 
 ## 9. Gate 5 — Rules-engine proof through a representative cohort
 
 **Objective:** Establish a reusable action/effect vocabulary and prove it with Fighter, Rogue, Wizard, and Cleric across the Crown level band.
+
+**Current checkpoint (2026-08-10):** A first representative cohort is
+implemented and recorded as `in_progress` in [Gate 5 evidence](docs/gate5_evidence.md):
+Fighter Second Wind/Action Surge/Extra Attack, Barbarian/Monk/Paladin/Ranger
+Extra Attack, Rogue Sneak Attack/Cunning Action, Wizard Arcane Recovery, and
+Cleric spell-slot recovery. HUD combat input now crosses a
+validated `CombatCommand` boundary; shared action/bonus-action budgets and
+typed temporary-HP/resource/concentration effects are covered by the logic
+suite. Monster decisions now cross a validated `AICommand` boundary before
+movement or attacks execute. The broader effect, reaction, and class contracts
+remain; timed AC/stat, roll, and movement modifiers are now part of the shared
+effect vocabulary with persistence and turn expiry. Inventory now validates
+item identity, equipment slot compatibility, ownership, and backpack capacity
+at the domain boundary. Monster attacks now collect an owner-labelled,
+in-shell reaction decision for Shield and Uncanny Dodge; test mode declines
+immediately, and explicit accept/decline behavior is covered by deterministic
+fixtures. Opportunity attacks now use the same owner-labelled reaction path;
+Counterspell now scans eligible player observers once per player spell cast;
+the wider reaction/class contracts remain.
+The per-turn action, bonus-action, and reaction budget now lives in the tested
+`CombatTurnBudget` boundary, and player plus AI movement steps cross the shared
+`CombatAction.resolve_movement_step` result boundary before position mutation.
+The named `mixed_mechanics_encounter` fixture now composes the required martial,
+bonus-action, reaction, concentration, healing, save-spell, and area-selection
+surfaces from production class and spell records.
+The named `action_resource_round_trip` fixture now spends a production Fighter
+feature and Wizard spell slot, saves at the overworld safe point, reloads through
+the DTO boundary, and boots the next combat with the remaining resources.
+Character resources now expose distinct
+short-rest and long-rest methods; current camp, tavern, and dungeon rest use
+the long-rest contract, with short-rest feature and spell-slot behavior covered
+by deterministic fixtures.
 
 | ID | Priority | Task | Acceptance criteria |
 |---|---:|---|---|
@@ -261,6 +358,54 @@ Gates are sequential on the critical path. Work may be prepared in parallel, but
 ## 10. Gate 6 — Broad class, spell, item, and monster coverage
 
 **Objective:** Extend the proven rules contracts across every player option exposed within the Crown level band.
+
+**Current checkpoint (2026-08-10):** The first Cohort B slice is now
+mechanics-backed: Barbarian Rage is a production bonus-action feature using the
+shared condition/modifier resolver, with physical weapon damage bonus and
+resistance fixtures. Monk Patient Defense now applies the shared one-turn
+Dodging condition, Step of the Wind now exposes Dash/Disengage through
+per-turn bonus-action resources, and Monk Martial Arts/Bonus Unarmed Strike
+now resolve through the shared melee attack boundary. Ranger Favored Foe now
+marks post-hit targets and applies concentration-bound once-per-turn damage.
+Monk Flurry of Blows now resolves two adjacent unarmed strikes as one per-turn
+bonus-action contract through that same boundary.
+Barbarian Reckless Attack now offers first-attack Strength melee advantage and
+keeps the barbarian vulnerable to monster attacks until their next turn.
+Paladin Divine Smite now prompts after a
+melee hit and consumes a production spell slot for radiant damage. Paladin Lay
+on Hands now uses a level-scaled rest-recharged healing pool with touch-range
+ally targeting. Ranger Hunter's Mark now has curated level-1 access, bonus-action
+target marking, concentration cleanup, and extra 1d6 damage on every weapon hit.
+Paladin Divine Sense now detects nearby typed Crown creatures through curated
+monster metadata, without relying on name matching.
+Bardic Inspiration now grants an ally a level-scaled die through bonus-action
+targeting and can be spent on that ally's next attack roll.
+Warlock Pact Magic now uses curated pact-level slots, lets lower-level spells
+consume the available pact slot, and restores those slots on a short rest.
+Sorcerer Metamagic now exposes production Sorcery Points and an owner-facing
+Empowered Spell choice that modifies damage through the shared spell resolver;
+the points restore on a long rest.
+Dart- and ray-based curated spells now resolve through shared multi-roll paths;
+effect-only spells no longer fall through to invalid attacks. Mage Armor,
+Cure Wounds, Ray of Frost, teleport destination validation, Warlock-aware slot
+display, and reaction-only spell gating are covered by production-data tests.
+Crown monster attack riders now use the same combat boundary for poison,
+restraint, paralysis, armor corrosion, and maximum-hit-point reduction.
+Barbarian Unarmored Defense, Ranger Archery, Paladin Defense Fighting Style,
+Warlock Magical Cunning, Sorcerer Innate Sorcery, and Artificer Tinker's Magic
+are now mechanics-backed through production data and the shared effect/resource
+paths. Mystic psionics remains quarantined because no psi-point resource or
+discipline resolver exists.
+Druid Wild Shape remains explicitly quarantined from player selection until a
+form roster and temporary-form persistence contract are implemented. The
+proposed scope is recorded in [ADR-0002](docs/decisions/0002-wild-shape-crown-band.md)
+and awaits human acceptance. The
+remaining Cohort B class mechanics and the broader spell, item, monster, and
+condition audits remain open.
+
+**Current evidence:** [Gate 6 evidence](docs/gate6_evidence.md). Status:
+`in_progress`; broad mechanics and encounter coverage remain implementation
+work.
 
 ### Class cohorts
 
@@ -298,6 +443,46 @@ Gates are sequential on the critical path. Work may be prepared in parallel, but
 
 **Objective:** Turn the working systems into one complete campaign with a visible beginning, progression, final encounter, defeat path, and provisional ending.
 
+**Current checkpoint (2026-08-10):** CROWN-02 has a player-facing objective
+API and overworld HUD display backed by party inventory, defeat ledgers, and
+milestones. CROWN-04 now records a pending dungeon combat room and clears it
+only after a production victory result, including boss state and save DTO
+coverage. CROWN-05 now drives the real Lich King combat loop in the Crown
+smoke, while `combat_defeat` exercises the live party-wipe boundary and
+production defeat screen. CROWN-06 and CROWN-07 have terminal-screen implementations, and
+`crown_smoke` now covers the bounded production path through overworld, dungeon,
+event, finale composition, objective completion, and the provisional ending.
+The named `crown_event_fairy_ring` fixture now proves one production chain event,
+all three legal follow-up choices, deterministic DEX success/failure branches,
+and their shared reward/condition/healing/teleport effects; this is one CROWN-03
+event row, not the complete required-event ledger matrix. The named
+`dungeon_reentry_round_trip` fixture now inspects the plain Room DTO checkpoint,
+supported reload, cleared-room rebuild, and idempotent boss/reward revisit for
+CROWN-04. The named `final_encounter_round_trip` fixture now covers the
+production Lich King loss boundary, pre-finale safe reload, victory ledger,
+idempotent reward claim, and completion screen for CROWN-05 through CROWN-07.
+The named `crown_composition_solo_two` fixture now covers the first two CROWN-09
+composition rows through production Camp Roster assignment, safe save/load,
+objective visibility, combat ownership, and formation. The named
+`crown_composition_three_four` fixture now covers the remaining three-player
+plus one companion and four-player rows; normal shared-keyboard acceptance
+remains manual. The named `scripts/validate_crown_fresh_relaunch.ps1` probe now
+proves one true Crown overworld safe-point interruption/relaunch with restored
+party ownership, objective, cleared dungeon, reward ledger, and available state;
+broader CROWN-10 safe points and GUI relaunch remain.
+The named `scripts/validate_crown_two_player_relaunch.ps1` probe also restores a
+progressed two-seat Crown save with transferred leadership, two cleared
+dungeons, two rewards, two fragments, and the Tower objective; interactive
+midgame campaign traversal has not been manually sampled. That optional check
+does not block the automated campaign contract.
+Full campaign balance and interruption remain automation-owned evidence areas.
+
+**Current evidence:** [Gate 7 evidence](docs/gate7_evidence.md). Status:
+`in_progress`; the fixed-seed Crown smoke, defeat/completion paths, all four
+CROWN-09 composition rows, and two named CROWN-10 fresh-process recovery probes
+pass. Gate closure follows the agent-owned acceptance audit after confirmed
+normal-path defects are fixed; optional shared-keyboard sampling is nonblocking.
+
 | ID | Priority | Task | Acceptance criteria |
 |---|---:|---|---|
 | CROWN-01 | P0 | Define Crown campaign graph | Document required and optional locations, events, companion opportunities, dungeons, milestones, boss prerequisites, rewards, and final transition by stable ID. |
@@ -314,7 +499,7 @@ Gates are sequential on the critical path. Work may be prepared in parallel, but
 ### Gate 7 exit
 
 - The fixed-seed Crown smoke reaches the completion screen with zero skipped required stages and no unexpected engine errors.
-- A manual couch co-op run completes with at least two local players and companion reassignment.
+- Automated shared-keyboard composition and ownership coverage proves at least two logical players and companion reassignment; optional human sampling may supplement it.
 - Defeat, reload, dungeon re-entry, and final victory do not duplicate rewards or corrupt progression.
 - The objective display always identifies a valid next step.
 - The provisional ending records campaign completion without requiring New Game+ or ascension.
@@ -324,6 +509,19 @@ Gates are sequential on the critical path. Work may be prepared in parallel, but
 ## 12. Gate 8 — Repository-playable candidate
 
 **Objective:** A friend can obtain the repository, follow the setup instructions, and complete Crown without access to the original developer's machine state.
+
+**Current evidence:** [Gate 8 evidence](docs/gate8_evidence.md). Status:
+`in_progress`; documented setup, isolated test roots, disabled default
+development control surfaces, honest audio settings, two current full runner
+passes, and the architecture reconciliation have implementation evidence.
+The [true fresh-clone checklist](docs/operations/fresh_clone_validation.md),
+[private-content boundary](docs/private_content_boundary.md), and
+[generated-artifact inventory](docs/generated_artifact_inventory.md) are now
+prepared. Fresh-clone execution, reviewed cleanup, provenance/clearance review,
+and friend-run work are publication-only checks parked until publication is
+wanted. A prior clone-equivalent clean copy passed through
+`scripts/validate_clean_copy.ps1`; a future published candidate may still use
+the separate fresh-clone procedure.
 
 | ID | Priority | Task | Acceptance criteria |
 |---|---:|---|---|
@@ -341,7 +539,7 @@ Gates are sequential on the critical path. Work may be prepared in parallel, but
 
 - A friend can follow the README on a clean machine and launch the project from the repository.
 - The complete Gate 1 suite and Gate 7 campaign smoke pass from a clean clone.
-- A manual start-to-finish run has no developer console intervention.
+- The automated Crown campaign smoke reaches completion without developer intervention; optional sampler notes are recorded as defects rather than milestone blockers.
 - No friend-facing run starts Beckett control services.
 - Known limitations are written plainly and do not contradict the UI or roadmap.
 
@@ -360,7 +558,7 @@ The Crown milestone is complete only when all of the following are true:
 - Crown milestones, dungeons, rewards, and completion are idempotent.
 - The party can win, lose, reload, and reach a visible ending.
 - Automated suites run every named scenario and fail on engine errors, timeouts, and skipped completion markers.
-- A clean-clone manual run completes without machine-specific state or developer intervention.
+- A clone-equivalent automated run completes without machine-specific state; a true fresh-clone run is required only for an explicitly chosen publication candidate.
 
 “Most content exists” is not a substitute for this list.
 
@@ -368,17 +566,14 @@ The Crown milestone is complete only when all of the following are true:
 
 ## 14. Recommended next execution tranche
 
-Gates 0 and 1 supplied the baseline and trustworthy test gate. Continue in this
-order:
+Gate 0 supplied the baseline. Continue in this order:
 
-1. `DATA-01` through `DATA-06`: deterministic loading, collision failures, curated mechanics, spell access, feature validation.
-2. `SAVE-01`: enforce safe-save states immediately so known-corrupt saves cannot be created through normal UI.
-3. `SAVE-02` through `SAVE-05`: versioned DTOs and idempotent campaign ledgers.
-4. `CROWN-06` and `CROWN-07`: add explicit defeat and provisional completion destinations to close the state machine.
-5. Begin `PARTY-01` through `PARTY-06` only after save and content identities are stable.
+1. Resume Gate 5 implementation: complete the representative four-class cohort and finish separating shared rules resolution from `CombatState`.
+2. Complete Gate 6 coverage before treating the bounded Gate 7 smoke as campaign completion evidence.
+3. Complete the remaining Gate 5–6 work, rerun the automated Crown and relaunch evidence, then decide Gates 7–8 from those results and written limitations. Human sampling and publication checks remain optional until wanted.
 
-The trustworthy test checkpoint is now established; each later gate extends it
-without weakening its failure controls.
+Gate 4 is complete. Physical controller review is no longer on the milestone
+critical path.
 
 ---
 
@@ -394,14 +589,14 @@ Automated commands:
 Passed scenarios:
 Expected warnings:
 Unexpected warnings/errors:
-Manual flow exercised:
+Optional manual sampler exercised:
 Data/save root used:
 Open limitations:
 Reviewer:
 Decision: pass | review | fail
 ```
 
-If a required manual couch-co-op, clean-clone, or full-campaign run remains, the gate stays in `review`.
+Missing optional human sampling does not keep a gate in `review`. Record it plainly as unperformed; only a confirmed defect or an explicitly chosen publication requirement blocks progress.
 
 ---
 
@@ -413,7 +608,7 @@ If a required manual couch-co-op, clean-clone, or full-campaign run remains, the
 | Tests regress into false confidence | The former file preflight rejected valid autoloads and viewport victory prevented later tests | Preserve Gate 1 isolation, markers, timeouts, engine-error policy, and test manifest. |
 | Imported data destroys curated behavior | Duplicate IDs silently overwrite records | Deterministic layers, collision failure, explicit override manifests, registry hashes. |
 | Save corruption appears late | Live objects and engine-specific keys enter JSON | Versioned DTOs, safe-save policy, transactional load, repeated round-trips. |
-| Couch co-op becomes welded to devices | Current code conflates active player and active character | Separate seats, party slots, characters, commands, and transient device bindings. |
+| Local co-op becomes welded to devices | Logical ownership can be confused with physical input identity | Keep seats, party slots, characters, and commands separate; shared-keyboard play remains the milestone baseline. |
 | Campaign rewards are farmable | Milestones and dungeon state are not recorded idempotently | Stable completion ledgers and one-time reward claims. |
 | Combat changes become progressively unsafe | `CombatState` owns too many responsibilities | Extract contracts after Gate 2 and before multiplying class mechanics. |
 | Private 5E content blocks future release | Imported names/data are mixed with engine records | Content-pack boundary and rules/content separation; public clearance is a future release gate. |
@@ -425,12 +620,13 @@ If a required manual couch-co-op, clean-clone, or full-campaign run remains, the
 
 These begin only after Gate 8 unless they are necessary to repair a milestone contract.
 
-1. Online multiplayer transport, authority, synchronization, reconnect, and desync recovery using the command/state boundaries proven by couch co-op.
-2. Higher-level progression and additional campaigns.
-3. New Game+, ascension, or another post-game progression model.
-4. User-facing content packs, mod discovery, validation, enable/disable, and authoring tools.
-5. Public-release content replacement, asset provenance, licensing review, export presets, packaging, and storefront requirements.
-6. Expanded companion relationships, reactive narrative, and campaign branches.
-7. Advanced tactical layers such as surfaces, verticality, environmental interactions, and deeper enemy coordination.
+1. Physical controller acceptance and device-specific input routing, including seat selection, unplug/replug, reconnect, and post-load rebinding on representative hardware.
+2. Online multiplayer transport, authority, synchronization, reconnect, and desync recovery using the command/state boundaries proven by local play.
+3. Higher-level progression and additional campaigns.
+4. New Game+, ascension, or another post-game progression model.
+5. User-facing content packs, mod discovery, validation, enable/disable, and authoring tools.
+6. Public-release content replacement, asset provenance, licensing review, export presets, packaging, and storefront requirements.
+7. Expanded companion relationships, reactive narrative, and campaign branches.
+8. Advanced tactical layers such as surfaces, verticality, environmental interactions, and deeper enemy coordination.
 
 The destination can stay enormous. The gates keep the floor from moving while we build it.

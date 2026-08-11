@@ -2,7 +2,7 @@
   "id": "ranger",
   "name": "Ranger",
   "description": "Ranger class. Source: PHB.",
-  "hit_die": "d1",
+  "hit_die": "d10",
   "primary_ability": "DEX",
   "saving_throw_proficiencies": [
     "STR",
@@ -32,7 +32,8 @@
   },
   "starting_equipment": [
     "leather_armor",
-    "shield"
+    "shield",
+    "longbow"
   ],
   "spell_slots_by_level": {
     "1": [

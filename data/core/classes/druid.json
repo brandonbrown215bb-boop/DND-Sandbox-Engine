@@ -2,7 +2,7 @@
   "id": "druid",
   "name": "Druid",
   "description": "Druid class. Source: PHB.",
-  "hit_die": "d1",
+  "hit_die": "d8",
   "primary_ability": "WIS",
   "saving_throw_proficiencies": [
     "INT",

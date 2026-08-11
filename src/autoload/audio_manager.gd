@@ -17,17 +17,30 @@ var _music_player: AudioStreamPlayer
 
 
 func _ready() -> void:
+	_ensure_bus(BUS_SFX)
+	_ensure_bus(BUS_MUSIC)
 	# Create SFX player pool
 	for i in SFX_POOL_SIZE:
 		var player := AudioStreamPlayer.new()
-		player.bus = BUS_MASTER  # Will use SFX bus when audio buses are set up
+		player.bus = BUS_SFX
 		add_child(player)
 		_sfx_players.append(player)
 
 	# Create music player
 	_music_player = AudioStreamPlayer.new()
-	_music_player.bus = BUS_MASTER  # Will use Music bus
+	_music_player.bus = BUS_MUSIC
 	add_child(_music_player)
+
+
+## Create the named buses used by the settings controls when the project starts
+## with Godot's default Master-only audio layout.
+func _ensure_bus(bus_name: String) -> void:
+	if AudioServer.get_bus_index(bus_name) >= 0:
+		return
+	AudioServer.add_bus()
+	var bus_index := AudioServer.get_bus_count() - 1
+	AudioServer.set_bus_name(bus_index, bus_name)
+	AudioServer.set_bus_send(bus_index, BUS_MASTER)
 
 
 ## Play a sound effect by resource path.

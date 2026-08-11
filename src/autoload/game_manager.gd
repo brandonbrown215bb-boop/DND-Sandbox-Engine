@@ -15,6 +15,8 @@ enum GameState {
 	DUNGEON,
 	EVENT,
 	GAME_OVER,
+	DEFEAT,
+	COMPLETION,
 }
 
 ## Current game state.
@@ -29,6 +31,14 @@ var active_dungeon_state: Dictionary = {}
 ## List of defeated monster IDs during this campaign.
 var defeated_monsters: Array[String] = []
 
+## Stable campaign ledgers. IDs, not scene objects, are persisted.
+var completed_milestones: Array[String] = []
+var cleared_dungeons: Array[String] = []
+var claimed_rewards: Array[String] = []
+var recruited_companions: Array[String] = []
+var dismissed_companions: Array[String] = []
+var campaign_completed: bool = false
+
 ## Flag indicating that a save file is currently being loaded.
 var is_loading_save: bool = false
 
@@ -39,6 +49,9 @@ const STATE_SCENES := {
 	GameState.OVERWORLD: "res://scenes/overworld.tscn",
 	GameState.COMBAT: "res://scenes/combat.tscn",
 	GameState.DUNGEON: "res://scenes/dungeon.tscn",
+	GameState.GAME_OVER: "res://scenes/defeat.tscn",
+	GameState.DEFEAT: "res://scenes/defeat.tscn",
+	GameState.COMPLETION: "res://scenes/completion.tscn",
 }
 
 ## Context data passed when transitioning between states.
@@ -110,6 +123,9 @@ func start_new_game(campaign_id: String, player_count: int) -> void:
 
 	# Reset player manager
 	PlayerManager.reset()
+	PartyManager.reset()
+	player_count = clampi(player_count, PlayerManager.MIN_PLAYERS, PlayerManager.MAX_PLAYERS)
+	_reset_campaign_ledgers()
 	for i in player_count:
 		PlayerManager.add_player()
 
@@ -121,6 +137,7 @@ func start_new_game(campaign_id: String, player_count: int) -> void:
 
 ## Called when all players have created their characters.
 func on_character_creation_complete() -> void:
+	PartyManager.initialize_campaign_companions(active_campaign.get("companions", {}))
 	change_state(GameState.OVERWORLD)
 
 
@@ -165,18 +182,24 @@ func resolve_event(result: Dictionary) -> void:
 
 ## End the game (win or lose).
 func end_game(victory: bool, reason: String = "") -> void:
+	if not game_in_progress:
+		return
 	game_in_progress = false
-	change_state(GameState.GAME_OVER, {"victory": victory, "reason": reason})
+	campaign_completed = victory
+	var terminal_state: GameState = GameState.COMPLETION if victory else GameState.DEFEAT
+	change_state(terminal_state, {"victory": victory, "reason": reason})
 
 
 ## Return to main menu.
 func return_to_menu() -> void:
 	game_in_progress = false
 	PlayerManager.reset()
+	PartyManager.reset()
 	active_campaign = {}
 	transition_context = {}
 	active_dungeon_state.clear()
 	defeated_monsters.clear()
+	_reset_campaign_ledgers()
 	change_state(GameState.MAIN_MENU)
 
 
@@ -190,8 +213,61 @@ func get_milestones() -> Array:
 	return active_campaign.get("milestones", [])
 
 
+## Return player-facing campaign progress lines with stable counts and status.
+func get_campaign_objectives() -> Array[String]:
+	var result: Array[String] = []
+	var win_cond := get_win_condition()
+	for goal in win_cond.get("goals", []):
+		var goal_type := str(goal.get("type", ""))
+		if goal_type == "collect_item":
+			var item_id := str(goal.get("item_id", ""))
+			var required := int(goal.get("count", 1))
+			var owned := 0
+			for character in PartyManager.get_active_characters():
+				owned += character.inventory.count_item(item_id)
+			var item_name := str(DataLoader.get_item(item_id).get("name", item_id))
+			result.append("%s Find %s (%d/%d)" % ["✓" if owned >= required else "○", item_name, mini(owned, required), required])
+		elif goal_type == "defeat_monster":
+			var monster_id := str(goal.get("monster_id", ""))
+			var monster_name := str(DataLoader.get_monster(monster_id).get("name", monster_id))
+			result.append("%s Defeat %s" % ["✓" if monster_id in defeated_monsters else "○", monster_name])
+		else:
+			result.append("○ %s" % goal_type.capitalize())
+
+	for milestone in get_milestones():
+		var trigger := str(milestone.get("trigger", ""))
+		if trigger.is_empty() or trigger in completed_milestones:
+			continue
+		result.append("Next: %s" % str(milestone.get("description", trigger)))
+		break
+	return result
+
+
+func are_win_conditions_met() -> bool:
+	var win_cond := get_win_condition()
+	if win_cond.is_empty() or str(win_cond.get("type", "")) != "goal":
+		return false
+	for goal in win_cond.get("goals", []):
+		match str(goal.get("type", "")):
+			"collect_item":
+				var required := int(goal.get("count", 1))
+				var total := 0
+				for character in PartyManager.get_active_characters():
+					total += character.inventory.count_item(str(goal.get("item_id", "")))
+				if total < required:
+					return false
+			"defeat_monster":
+				if str(goal.get("monster_id", "")) not in defeated_monsters:
+					return false
+			_:
+				return false
+	return true
+
+
 ## Check a milestone trigger. Returns true if a milestone was activated.
 func check_milestone(trigger: String) -> bool:
+	if trigger in completed_milestones:
+		return false
 	var milestones: Array = get_milestones()
 	for milestone in milestones:
 		if milestone.get("trigger", "") == trigger:
@@ -199,8 +275,33 @@ func check_milestone(trigger: String) -> bool:
 			var effects: Array = milestone.get("effects", [])
 			for effect in effects:
 				_apply_milestone_effect(effect)
+			completed_milestones.append(trigger)
 			return true
 	return false
+
+
+## Claim a dungeon's one-time clear transition. Returns false on replay.
+func mark_dungeon_cleared(dungeon_id: String) -> bool:
+	if dungeon_id.is_empty() or dungeon_id in cleared_dungeons:
+		return false
+	cleared_dungeons.append(dungeon_id)
+	return true
+
+
+func claim_reward(reward_id: String) -> bool:
+	if reward_id.is_empty() or reward_id in claimed_rewards:
+		return false
+	claimed_rewards.append(reward_id)
+	return true
+
+
+func _reset_campaign_ledgers() -> void:
+	completed_milestones.clear()
+	cleared_dungeons.clear()
+	claimed_rewards.clear()
+	recruited_companions.clear()
+	dismissed_companions.clear()
+	campaign_completed = false
 
 
 ## Apply a single milestone effect.
@@ -208,12 +309,10 @@ func _apply_milestone_effect(effect: Dictionary) -> void:
 	var effect_type: String = effect.get("type", "")
 	match effect_type:
 		"level_up":
-			# Level up all players
-			for i in PlayerManager.get_player_count():
-				var player := PlayerManager.get_player(i)
-				if player.get("character") != null:
-					player["character"].level_up()
-					print("[GameManager] %s leveled up!" % player["name"])
+			# Level up every active party member, including recruited companions.
+			for character in PartyManager.get_active_characters():
+				character.level_up()
+				print("[GameManager] %s leveled up!" % character.character_name)
 		_:
 			push_warning("[GameManager] Unknown milestone effect type: %s" % effect_type)
 
@@ -222,38 +321,5 @@ func _apply_milestone_effect(effect: Dictionary) -> void:
 func check_campaign_victory() -> void:
 	if not game_in_progress or active_campaign.is_empty():
 		return
-
-	var win_cond := get_win_condition()
-	if win_cond.is_empty():
-		return
-
-	var type: String = win_cond.get("type", "")
-	if type == "goal":
-		var goals: Array = win_cond.get("goals", [])
-		var all_met := true
-		for goal in goals:
-			var goal_type: String = goal.get("type", "")
-			match goal_type:
-				"collect_item":
-					var item_id: String = goal.get("item_id", "")
-					var required_count: int = int(goal.get("count", 1))
-					var total_count := 0
-					# Count across all players' inventories
-					for i in PlayerManager.get_player_count():
-						var p := PlayerManager.get_player(i)
-						var c: Character = p.get("character")
-						if c != null:
-							total_count += c.inventory.count_item(item_id)
-					if total_count < required_count:
-						all_met = false
-						break
-				"defeat_monster":
-					var monster_id: String = goal.get("monster_id", "")
-					if not monster_id in defeated_monsters:
-						all_met = false
-						break
-				_:
-					all_met = false
-					break
-		if all_met:
-			end_game(true, "Campaign goals completed!")
+	if are_win_conditions_met():
+		end_game(true, "Campaign goals completed!")

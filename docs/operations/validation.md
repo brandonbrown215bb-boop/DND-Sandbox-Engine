@@ -16,6 +16,22 @@ $env:GODOT_BIN = 'C:\path\to\Godot_v4.7-stable_win64_console.exe'
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\run_tests.ps1
 ```
 
+Before a shipping checkpoint, run the clone-equivalent clean-tree validation
+from the repository root. It copies the current source tree without `.git`,
+Godot import/editor caches, Codex state, saves, or build outputs, then runs the
+full Windows gate from that copy:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\validate_clean_copy.ps1 `
+  'C:\path\to\Godot_v4.7-stable_win64_console.exe'
+```
+
+The script prints the retained clean-copy path so a failed run can be inspected.
+It is clone-equivalent evidence for an uncommitted worktree; a true fresh-clone
+run remains required after the source is published. Use the
+[true fresh-clone checklist](fresh_clone_validation.md) for that publication
+check.
+
 The runner also accepts the portable executable as its first argument or finds
 `godot`/`godot4` on `PATH`. It redirects `APPDATA` and `LOCALAPPDATA` to a
 disposable per-scenario directory while Godot runs.

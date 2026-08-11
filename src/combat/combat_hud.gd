@@ -44,6 +44,36 @@ var spells_registered: Array[Dictionary] = []
 var features_registered: Array[Dictionary] = []
 
 
+## Ask the owning local player whether to spend a reaction. The prompt is
+## deliberately in-shell and names the seat so companion ownership is clear.
+## Headless test mode declines immediately rather than waiting for input.
+func request_reaction(owner_label: String, reaction_id: String, detail: String, decision_prompt: String = "Use this reaction?") -> bool:
+	if GameManager.test_mode:
+		return false
+	var dialog := ConfirmationDialog.new()
+	dialog.title = "Reaction — %s" % owner_label
+	dialog.dialog_text = "%s\n\n%s\n\n%s" % [owner_label, detail, decision_prompt]
+	dialog.ok_button_text = "Use Reaction"
+	dialog.cancel_button_text = "Decline"
+	add_child(dialog)
+	dialog.popup_centered(Vector2i(460, 220))
+	var resolved := false
+	var accepted := false
+	dialog.confirmed.connect(func():
+		accepted = true
+		resolved = true
+	)
+	dialog.canceled.connect(func(): resolved = true)
+	dialog.close_requested.connect(func(): resolved = true)
+	var timeout := get_tree().create_timer(8.0)
+	while not resolved and timeout.time_left > 0.0:
+		await get_tree().process_frame
+	if not resolved:
+		add_log("[color=gray]%s reaction timed out and was declined.[/color]" % owner_label)
+	dialog.queue_free()
+	return accepted
+
+
 func _ready() -> void:
 	# Connect base buttons
 	btn_attack.pressed.connect(func(): action_selected.emit("attack", {}))
@@ -137,26 +167,16 @@ func set_mode(m: Mode) -> void:
 func update_hud(active_char: Character, tracker: InitiativeTracker) -> void:
 	active_character = active_char
 	set_mode(Mode.SELECT)
+	_clear_spell_selection()
 	_update_initiative_list(tracker)
 	_update_sidebar_stats()
 	_update_weapon_info(active_char)
 	
-	# Disable spell casting if character has no spells
-	if active_char != null:
-		var has_spells := not active_char.known_spells.is_empty()
-		if not has_spells:
-			var cls_data := DataLoader.get_character_class(active_char.class_id)
-			if cls_data != null:
-				var cantrips: Array = cls_data.get("cantrips_known", [])
-				var spells_table: Dictionary = cls_data.get("spells_known_by_level", {})
-				var has_table_spells := false
-				for lvl in spells_table:
-					if not spells_table[lvl].is_empty():
-						has_table_spells = true
-						break
-				has_spells = not cantrips.is_empty() or has_table_spells
-		btn_spell.disabled = not has_spells
+	# Character.known_spells is the ownership boundary. Class tables describe
+	# progression access; they are not an alternate per-turn spell inventory.
+	btn_spell.disabled = active_char == null or active_char.known_spells.is_empty()
 
+	if active_char != null:
 		# Disable features button if character has no active features
 		var has_active := false
 		for f in active_char.features:
@@ -188,7 +208,7 @@ func _update_sidebar_stats() -> void:
 	text += "Level %d %s\n" % [active_character.level, DataLoader.get_character_class(active_character.class_id).get("name", "")]
 	text += "HP: %d / %d\n" % [active_character.current_hp, active_character.max_hp]
 	text += "AC: %d\n" % active_character.get_ac()
-	text += "Speed: %d hexes\n\n" % active_character.speed
+	text += "Speed: %d hexes\n\n" % active_character.get_speed()
 
 	# List spell slots remaining
 	if not active_character.spell_slots.is_empty():
@@ -206,7 +226,7 @@ func _update_sidebar_stats() -> void:
 				has_uses = true
 			var f_id = f["id"]
 			var current_uses = active_character.feature_uses.get(f_id, 0)
-			var max_uses = f.get("uses", 1)
+			var max_uses = active_character.get_feature_max_uses(str(f_id), f)
 			text += "- %s: %d/%d uses\n" % [f.get("name", f_id), current_uses, max_uses]
 	if has_uses:
 		text += "\n"
@@ -245,30 +265,19 @@ func _update_weapon_info(active_char: Character) -> void:
 
 # --- Spell Selection panel ---
 
+func _clear_spell_selection() -> void:
+	spells_registered.clear()
+	spell_list.clear()
+
+
 func _show_spell_selection() -> void:
 	if active_character == null: return
 	
 	set_mode(Mode.SPELL)
-	spells_registered.clear()
+	_clear_spell_selection()
 
-	# Retrieve list of spells known
+	# The active Character owns the complete per-turn spell inventory.
 	var list_spells: Array = active_character.known_spells.duplicate()
-	
-	# Fetch Wizard starting cantrips/spells if relevant
-	var wiz_class := DataLoader.get_character_class(active_character.class_id)
-	var cantrips: Array = wiz_class.get("cantrips_known", [])
-	for c_id in cantrips:
-		if c_id not in list_spells:
-			list_spells.append(c_id)
-
-	# Wizard spells known
-	var spells_known_table: Dictionary = wiz_class.get("spells_known_by_level", {})
-	for lvl in spells_known_table:
-		var list_at_lvl: Array = spells_known_table[lvl]
-		for s_id in list_at_lvl:
-			# Wizard must have slot capacity to cast
-			if s_id not in list_spells:
-				list_spells.append(s_id)
 
 	for s_id in list_spells:
 		var spell_data := DataLoader.get_spell(s_id)
@@ -280,8 +289,11 @@ func _show_spell_selection() -> void:
 		
 		# Gray out if no spell slots left
 		var disabled := false
+		if str(spell_data.get("casting_time", "action")) == "reaction":
+			disabled = true
+			display_name += " [Reaction only]"
 		if lvl > 0:
-			var slot_key := str(lvl)
+			var slot_key := str(CombatAction.get_spell_slot_level(active_character, spell_data))
 			var current_slots: int = active_character.spell_slots.get(slot_key, 0)
 			if current_slots <= 0:
 				disabled = true
@@ -317,7 +329,7 @@ func _show_feature_selection() -> void:
 
 		var f_id = f["id"]
 		var current_uses: int = active_character.feature_uses.get(f_id, 0)
-		var max_uses: int = f.get("uses", 1)
+		var max_uses: int = active_character.get_feature_max_uses(str(f_id), f)
 		var uses_per: String = f.get("uses_per", "combat")
 		var display_name := "%s (%d/%d uses per %s)" % [f.get("name", f_id), current_uses, max_uses, uses_per]
 		
@@ -340,4 +352,42 @@ func _on_feature_selected(index: int) -> void:
 	if index < 0 or index >= features_registered.size(): return
 	var feature := features_registered[index]
 	_hide_feature_selection()
+	if feature.get("id", "") in ["rogue_cunning_action", "monk_step_of_the_wind"]:
+		var selected_action := await request_movement_bonus_action(feature.get("id", "") == "rogue_cunning_action")
+		if selected_action.is_empty():
+			return
+		feature = feature.duplicate(true)
+		feature["selected_action"] = selected_action
 	action_selected.emit("use_feature", {"feature": feature})
+
+
+## Select one of the three Cunning Action bonus-action options.
+## Test mode chooses Dash so headless action routing remains bounded.
+func request_cunning_action() -> String:
+	return await request_movement_bonus_action(true)
+
+
+## Select a bonus-action movement option. Cunning Action also exposes Hide;
+## Step of the Wind is limited to Dash and Disengage.
+func request_movement_bonus_action(include_hide: bool) -> String:
+	if GameManager.test_mode:
+		return "dash"
+	var menu := PopupMenu.new()
+	menu.add_item("Dash", 1)
+	menu.add_item("Disengage", 2)
+	if include_hide:
+		menu.add_item("Hide", 3)
+	add_child(menu)
+	menu.popup_centered(Vector2i(260, 150))
+	var resolved := false
+	var selected := ""
+	menu.id_pressed.connect(func(id: int):
+		selected = {1: "dash", 2: "disengage", 3: "hide"}.get(id, "") if include_hide else {1: "dash", 2: "disengage"}.get(id, "")
+		resolved = true
+	)
+	menu.popup_hide.connect(func(): resolved = true)
+	var timeout := get_tree().create_timer(8.0)
+	while not resolved and timeout.time_left > 0.0:
+		await get_tree().process_frame
+	menu.queue_free()
+	return selected

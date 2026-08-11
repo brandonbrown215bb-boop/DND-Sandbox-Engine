@@ -1,13 +1,17 @@
 import os
 import json
 import re
+import argparse
+from collections import Counter
 
-# Source Directories (Local and External)
-EXTERNAL_DATA_DIR = "/run/media/pigeon/890dd7cb-9753-4f6b-b8e6-58c98e531754/5etools-src/data"
-LOCAL_RAW_DIR = "5etools raw"
+# Source directories are configured at runtime. The importer must work from a
+# clean checkout without assuming the original developer's mount points.
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+EXTERNAL_DATA_DIR = os.environ.get("FIVE_TOOLS_DATA_DIR", "")
+LOCAL_RAW_DIR = os.path.join(REPO_ROOT, "5etools raw")
 
 # Output Directories
-DEST_DATA_DIR = "data/core"
+DEST_DATA_DIR = os.path.join(REPO_ROOT, "data", "imported")
 RACES_DIR = os.path.join(DEST_DATA_DIR, "races")
 CLASSES_DIR = os.path.join(DEST_DATA_DIR, "classes")
 ITEMS_DIR = os.path.join(DEST_DATA_DIR, "items")
@@ -19,6 +23,142 @@ ALLOWED_SOURCES = ["PHB", "XPHB", "DMG", "XDMG", "MM", "XMM", "VGM", "MTF", "EEP
 
 # Global store to communicate spell lists to classes during import
 global_class_spells = {}
+IMPORT_REPORT_PATH = os.path.join(DEST_DATA_DIR, "import_report.json")
+IMPORT_REPORT = {}
+
+
+def _reset_import_report():
+    global IMPORT_REPORT
+    IMPORT_REPORT = {
+        "schema_version": 1,
+        "status": "running",
+        "coverage": {
+            category: {
+                "source_files": [],
+                "source_records": 0,
+                "exported_records": 0,
+                "source_ids": [],
+                "exported_ids": []
+            }
+            for category in ("classes", "items", "spells", "monsters")
+        },
+        "collisions": {
+            "within_source": {},
+            "within_import": {},
+            "with_existing_core": {}
+        },
+        "errors": []
+    }
+
+
+def _record_error(message):
+    IMPORT_REPORT.setdefault("errors", []).append(str(message))
+
+
+def _stable_id(record):
+    if not isinstance(record, dict):
+        return ""
+    identifier = record.get("id") or record.get("table_id") or record.get("name")
+    if not identifier:
+        return ""
+    identifier = str(identifier).strip()
+    if record.get("id") or record.get("table_id"):
+        return identifier
+    return identifier.lower().replace(" ", "_").replace("'", "").replace("-", "_")
+
+
+def _record_source(category, filename, records):
+    stats = IMPORT_REPORT["coverage"][category]
+    stats["source_files"].append(str(filename))
+    stats["source_records"] += len(records)
+    stats["source_ids"].extend(identifier for identifier in (_stable_id(record) for record in records) if identifier)
+
+
+def _record_exported(category, records):
+    stats = IMPORT_REPORT["coverage"][category]
+    stats["exported_records"] += len(records)
+    stats["exported_ids"].extend(identifier for identifier in (_stable_id(record) for record in records) if identifier)
+
+
+def _read_record_ids(directory):
+    identifiers = []
+    if not os.path.isdir(directory):
+        return identifiers
+    for root, dirs, files in os.walk(directory):
+        dirs.sort()
+        for filename in sorted(files):
+            if not filename.endswith(".json"):
+                continue
+            path = os.path.join(root, filename)
+            try:
+                with open(path, "r", encoding="utf-8") as source:
+                    payload = json.load(source)
+            except (OSError, json.JSONDecodeError):
+                continue
+            records = payload if isinstance(payload, list) else [payload]
+            identifiers.extend(identifier for identifier in (_stable_id(record) for record in records) if identifier)
+    return identifiers
+
+
+def _finalize_import_report():
+    core_directories = {
+        "classes": os.path.join(REPO_ROOT, "data", "core", "classes"),
+        "items": os.path.join(REPO_ROOT, "data", "core", "items"),
+        "spells": os.path.join(REPO_ROOT, "data", "core", "spells"),
+        "monsters": os.path.join(REPO_ROOT, "data", "core", "monsters")
+    }
+    for category, stats in IMPORT_REPORT["coverage"].items():
+        source_counts = Counter(stats.pop("source_ids"))
+        exported_counts = Counter(stats.pop("exported_ids"))
+        source_duplicates = {key: count for key, count in sorted(source_counts.items()) if count > 1}
+        import_duplicates = {key: count for key, count in sorted(exported_counts.items()) if count > 1}
+        core_ids = set(_read_record_ids(core_directories[category]))
+        core_collisions = sorted(set(exported_counts).intersection(core_ids))
+        stats["source_files"] = sorted(stats["source_files"])
+        stats["skipped_records"] = max(0, stats["source_records"] - stats["exported_records"])
+        stats["source_duplicate_ids"] = source_duplicates
+        stats["import_duplicate_ids"] = import_duplicates
+        stats["existing_core_collision_ids"] = core_collisions
+        if source_duplicates:
+            IMPORT_REPORT["collisions"]["within_source"][category] = source_duplicates
+        if import_duplicates:
+            IMPORT_REPORT["collisions"]["within_import"][category] = import_duplicates
+        if core_collisions:
+            IMPORT_REPORT["collisions"]["with_existing_core"][category] = core_collisions
+    IMPORT_REPORT["status"] = "completed_with_errors" if IMPORT_REPORT["errors"] else "completed"
+    os.makedirs(os.path.dirname(IMPORT_REPORT_PATH), exist_ok=True)
+    with open(IMPORT_REPORT_PATH, "w", encoding="utf-8") as report_file:
+        json.dump(IMPORT_REPORT, report_file, indent=2, sort_keys=True)
+    return IMPORT_REPORT
+
+
+def _assert_not_curated(path, label):
+    curated_root = os.path.abspath(os.path.join(REPO_ROOT, "data", "core"))
+    candidate = os.path.abspath(path)
+    try:
+        inside_curated = os.path.commonpath([candidate, curated_root]) == curated_root
+    except ValueError:
+        inside_curated = False
+    if inside_curated:
+        raise ValueError(f"{label} cannot be inside the curated data/core directory: {candidate}")
+
+
+def configure_paths(external_data_dir, raw_dir=None, output_dir=None, report_path=None):
+    global EXTERNAL_DATA_DIR, LOCAL_RAW_DIR, DEST_DATA_DIR
+    global RACES_DIR, CLASSES_DIR, ITEMS_DIR, SPELLS_DIR, MONSTERS_DIR
+    global IMPORT_REPORT_PATH
+    EXTERNAL_DATA_DIR = os.path.abspath(external_data_dir)
+    LOCAL_RAW_DIR = os.path.abspath(raw_dir or os.path.join(REPO_ROOT, "5etools raw"))
+    DEST_DATA_DIR = os.path.abspath(output_dir or os.path.join(REPO_ROOT, "data", "imported"))
+    IMPORT_REPORT_PATH = os.path.abspath(report_path or os.path.join(DEST_DATA_DIR, "import_report.json"))
+    _assert_not_curated(DEST_DATA_DIR, "output directory")
+    _assert_not_curated(IMPORT_REPORT_PATH, "report path")
+    _reset_import_report()
+    RACES_DIR = os.path.join(DEST_DATA_DIR, "races")
+    CLASSES_DIR = os.path.join(DEST_DATA_DIR, "classes")
+    ITEMS_DIR = os.path.join(DEST_DATA_DIR, "items")
+    SPELLS_DIR = os.path.join(DEST_DATA_DIR, "spells")
+    MONSTERS_DIR = os.path.join(DEST_DATA_DIR, "monsters")
 
 
 def clean_text(text):
@@ -42,7 +182,9 @@ def convert_classes():
     print("[Importer] Processing raw classes...")
     source_dir = os.path.join(LOCAL_RAW_DIR, "class")
     if not os.path.exists(source_dir):
-        print(f"[Importer] Error: Class source folder '{source_dir}' not found.")
+        message = f"Class source folder '{source_dir}' not found."
+        print(f"[Importer] Error: {message}")
+        _record_error(message)
         return
 
     primary_abilities = {
@@ -62,7 +204,7 @@ def convert_classes():
 
     converted_count = 0
 
-    for filename in os.listdir(source_dir):
+    for filename in sorted(os.listdir(source_dir)):
         if not filename.endswith(".json"):
             continue
         
@@ -71,6 +213,7 @@ def convert_classes():
             data = json.load(f)
 
         classes_list = data.get("class", [])
+        _record_source("classes", filename, classes_list)
         if not classes_list:
             continue
 
@@ -87,7 +230,7 @@ def convert_classes():
         class_id = class_name.lower().replace(" ", "_")
 
         # Map hit die
-        hd = main_class.get("hd", {}).get("number", 8)
+		hd = main_class.get("hd", {}).get("faces", 8)
         hit_die_str = f"d{hd}"
 
         # Map saving throws
@@ -197,6 +340,7 @@ def convert_classes():
         dest_path = os.path.join(CLASSES_DIR, f"{class_id}.json")
         with open(dest_path, "w", encoding="utf-8") as out:
             json.dump(engine_class, out, indent=2)
+        _record_exported("classes", [engine_class])
 
         print(f"[Importer] Exported Class: {class_id} -> {dest_path}")
         converted_count += 1
@@ -208,13 +352,16 @@ def convert_base_items():
     print("[Importer] Processing items-base.json...")
     source_path = os.path.join(EXTERNAL_DATA_DIR, "items-base.json")
     if not os.path.exists(source_path):
-        print(f"[Importer] Error: {source_path} not found.")
+        message = f"{source_path} not found."
+        print(f"[Importer] Error: {message}")
+        _record_error(message)
         return
 
     with open(source_path, "r", encoding="utf-8") as f:
         data = json.load(f)
 
     base_items = data.get("baseitem", [])
+    _record_source("items", os.path.basename(source_path), base_items)
     converted_items = []
 
     damage_types = {
@@ -296,6 +443,7 @@ def convert_base_items():
     dest_path = os.path.join(ITEMS_DIR, "imported_base_items.json")
     with open(dest_path, "w", encoding="utf-8") as out:
         json.dump(converted_items, out, indent=2)
+    _record_exported("items", converted_items)
 
     print(f"[Importer] Exported {len(converted_items)} base items -> imported_base_items.json")
 
@@ -304,13 +452,16 @@ def convert_spells():
     print("[Importer] Processing spells-phb.json...")
     source_path = os.path.join(EXTERNAL_DATA_DIR, "spells", "spells-phb.json")
     if not os.path.exists(source_path):
-        print(f"[Importer] Error: {source_path} not found.")
+        message = f"{source_path} not found."
+        print(f"[Importer] Error: {message}")
+        _record_error(message)
         return
 
     with open(source_path, "r", encoding="utf-8") as f:
         data = json.load(f)
 
     spells = data.get("spell", [])
+    _record_source("spells", os.path.basename(source_path), spells)
     converted_spells = []
 
     school_map = {
@@ -436,6 +587,7 @@ def convert_spells():
     dest_path = os.path.join(SPELLS_DIR, "imported_spells.json")
     with open(dest_path, "w", encoding="utf-8") as out:
         json.dump(converted_spells, out, indent=2)
+    _record_exported("spells", converted_spells)
 
     print(f"[Importer] Exported {len(converted_spells)} spells -> imported_spells.json")
 
@@ -444,13 +596,16 @@ def convert_bestiary():
     print("[Importer] Processing bestiary-mm.json...")
     source_path = os.path.join(EXTERNAL_DATA_DIR, "bestiary", "bestiary-mm.json")
     if not os.path.exists(source_path):
-        print(f"[Importer] Error: {source_path} not found.")
+        message = f"{source_path} not found."
+        print(f"[Importer] Error: {message}")
+        _record_error(message)
         return
 
     with open(source_path, "r", encoding="utf-8") as f:
         data = json.load(f)
 
     monsters = data.get("monster", [])
+    _record_source("monsters", os.path.basename(source_path), monsters)
     converted_monsters = []
 
     for monster in monsters:
@@ -575,15 +730,35 @@ def convert_bestiary():
     dest_path = os.path.join(MONSTERS_DIR, "imported_monsters.json")
     with open(dest_path, "w", encoding="utf-8") as out:
         json.dump(converted_monsters, out, indent=2)
+    _record_exported("monsters", converted_monsters)
 
     print(f"[Importer] Exported {len(converted_monsters)} monsters -> imported_monsters.json")
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Convert local 5eTools exports into project content.")
+    parser.add_argument("--external-data-dir", default=EXTERNAL_DATA_DIR, help="Path to the 5eTools data directory (or FIVE_TOOLS_DATA_DIR).")
+    parser.add_argument("--raw-dir", default=LOCAL_RAW_DIR, help="Path to the repository's raw 5eTools export directory.")
+    parser.add_argument("--output-dir", default=DEST_DATA_DIR, help="Staging output content root; defaults to data/imported and cannot be data/core.")
+    parser.add_argument("--report", default=None, help="Collision/coverage report path; defaults to <output-dir>/import_report.json.")
+    args = parser.parse_args()
+    if not args.external_data_dir:
+        parser.error("--external-data-dir or FIVE_TOOLS_DATA_DIR is required; no machine-specific default is used")
+    if not os.path.isdir(args.external_data_dir):
+        parser.error("external data directory does not exist: %s" % args.external_data_dir)
+    try:
+        configure_paths(args.external_data_dir, args.raw_dir, args.output_dir, args.report)
+    except ValueError as error:
+        parser.error(str(error))
     print("[Importer] Starting bulk 5eTools conversion...")
     # spells must convert first to populate spell tables for classes
     convert_spells()
     convert_classes()
     convert_base_items()
     convert_bestiary()
+    report = _finalize_import_report()
+    print(f"[Importer] Report written -> {IMPORT_REPORT_PATH}")
+    if report["errors"]:
+        print(f"[Importer] Bulk conversion completed with {len(report['errors'])} source error(s).")
+        raise SystemExit(1)
     print("[Importer] Bulk conversion completed successfully!")

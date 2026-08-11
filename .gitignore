@@ -13,6 +13,7 @@ export_presets.cfg
 # Mono / C# (if enabled later)
 .mono/
 data_*/
+/data/imported/
 mono_crash.*.json
 
 # OS / editor noise
@@ -31,5 +32,11 @@ dogfood-output/gate1-*/
 /combat_err.txt
 /vp_err.txt
 
+# Local contract-probe logs and isolated profile roots.
+.artifacts/
+
 # Embedded external repo (codegraph tooling) — not part of the game
 codegraph_setup/
+
+# Personal Quest Board view; shared quest cards remain tracked.
+.questboard/BOARD.local.md

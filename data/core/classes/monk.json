@@ -2,7 +2,7 @@
   "id": "monk",
   "name": "Monk",
   "description": "Monk class. Source: PHB.",
-  "hit_die": "d1",
+  "hit_die": "d8",
   "primary_ability": "DEX",
   "saving_throw_proficiencies": [
     "STR",

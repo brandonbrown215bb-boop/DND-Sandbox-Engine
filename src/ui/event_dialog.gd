@@ -93,6 +93,10 @@ func _build_choice_buttons() -> void:
 
 
 func _on_choice_selected(option: Dictionary) -> void:
+	var command := PlayerCommand.event_choice(option)
+	if command == null:
+		return
+	option = command.payload["option"]
 	chosen_option = option
 	
 	# Check if this choice requires a skill check
@@ -143,6 +147,9 @@ func _setup_skill_check_section(option_or_event: Dictionary) -> void:
 
 
 func _on_btn_roll_pressed() -> void:
+	var command := PlayerCommand.event_roll()
+	if command == null:
+		return
 	_perform_roll(_pending_check_data, _pending_option_or_event)
 
 

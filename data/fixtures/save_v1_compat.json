@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "game_version": "crown-gate-1",
+  "campaign_id": "the_lost_crown",
+  "current_state": 2,
+  "defeated_monsters": [],
+  "campaign_ledger": {
+    "completed_milestones": ["enter_dungeon_1"],
+    "cleared_dungeons": [],
+    "claimed_rewards": [],
+    "recruited_companions": [],
+    "dismissed_companions": [],
+    "campaign_completed": false
+  },
+  "party": {
+    "party_slots": [
+      {"slot_id": "slot_0", "occupied": true, "character_id": "fixture_hero"},
+      {"slot_id": "slot_1", "occupied": false, "character_id": ""},
+      {"slot_id": "slot_2", "occupied": false, "character_id": ""},
+      {"slot_id": "slot_3", "occupied": false, "character_id": ""}
+    ],
+    "characters": {
+      "fixture_hero": {
+        "character_name": "Fixture Hero",
+        "race_id": "human",
+        "class_id": "fighter",
+        "level": 1,
+        "current_hp": 10,
+        "max_hp": 10
+      }
+    },
+    "companion_roster": {},
+    "leader_slot_id": "slot_0"
+  },
+  "players": [
+    {
+      "player_id": 0,
+      "player_name": "Fixture Player",
+      "assigned_slot_ids": ["slot_0"],
+      "character": {
+        "character_name": "Fixture Hero",
+        "race_id": "human",
+        "class_id": "fighter",
+        "level": 1,
+        "current_hp": 10,
+        "max_hp": 10
+      }
+    }
+  ],
+  "current_round": 1,
+  "active_player_index": 0
+}
