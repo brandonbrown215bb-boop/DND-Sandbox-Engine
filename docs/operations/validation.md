@@ -1,6 +1,7 @@
 # Validation
 
-Gate 1 is the supported developer loop. It runs project-context parsing,
+The supported developer loop is the Windows runner (historically Gate 1).
+It runs project-context parsing,
 production boot, the fast logic suite, and each named viewport scenario in a
 fresh Godot process with a timeout, result marker, captured log, and isolated
 save/settings data root.
@@ -58,9 +59,10 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\run_tests.ps1
 
 For focused work, pass `-Suite logic` or `-Suite integration` to the
 PowerShell runner. The compatibility shell runner accepts the matching
-`TEST_SUITE=logic` or `TEST_SUITE=integration` environment variable. `all` is
-the Gate 1 completion command. The fixed-seed campaign smoke is introduced and
-owned by Gate 7, not deferred Gate 1 work.
+`TEST_SUITE=logic` or `TEST_SUITE=integration` environment variable.
+`all` runs the complete current manifest. Fixed-seed campaign smoke is one
+bounded integration scenario; old gate ownership does not certify full Crown
+readiness or choose the current implementation priority.
 
 A missing marker, assertion failure, unexpected Godot error, non-zero process
 exit, or timeout fails the owning case. The Windows Godot build used on this

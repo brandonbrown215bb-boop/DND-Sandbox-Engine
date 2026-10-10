@@ -21,7 +21,7 @@ all seats use the common keyboard controls on their assigned turns.
 
 Physical controller binding, seat-selection UX, device-specific command
 routing, unplug/replug recovery, and post-load device rebinding are deferred to
-the post-Gate-8 roadmap. Existing optional controller code may remain, but it
+later owner-selected controller work. Existing optional controller code may remain, but it
 does not constitute a milestone dependency or a supported hardware claim.
 
 ## Consequences

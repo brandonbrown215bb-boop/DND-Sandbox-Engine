@@ -1,89 +1,131 @@
----
-kind: architecture
-verified_at_commit: working-tree-2026-08-11
-scope:
-  - src/**
----
-
 # Architecture
 
-## Purpose
+Current boundaries inspected 2026-10-09. This is an implementation map,
+not a rules-completion claim. [ADR-0018](../decisions/0018-shared-data-driven-rules-runtime.md)
+owns the target architecture; [roadmap](../../roadmap.md) selects the work.
 
-This repository contains a Godot 4.7 top-down party game. The production
-project is launched from `scenes/main.tscn`; the Gate 1 developer loop launches
-the same project context through `scenes/parse_gate.tscn`,
-`scenes/boot_gate.tscn`, `scenes/test_runner.tscn`, and
-`scenes/viewport_harness.tscn`.
+## Runtime and content
 
-## Boundaries
+Godot 4.7/GDScript is the production runtime. `scenes/main.tscn` starts the
+game. Autoloads under `src/autoload/` retain cross-scene services and state.
+Python imports/inventories inspect JSON and source; they are not a second
+rules implementation or gameplay oracle.
 
-Autoloads under `src/autoload/` own cross-scene state and services such as
-`GameManager`, `PlayerManager`, `PartyManager`, `SaveManager`, `Settings`, and
-`DataLoader`.
+`DataLoader` loads sorted content-type directories under `data/core/` and
+`data/mods/`. Stable IDs select records; every collision needs an explicit
+winner/replacement in `data/content_manifest.json`. Curated winning fields
+remain authoritative while approved imported descriptions fill missing fields.
+Base classes and parent-linked subclasses have separate registries.
+Unsupported records remain unavailable; accepted loader shape is not proof
+that every described trait executes. See [content pipeline](../content_pipeline.md).
 
-`ActivityHistory` owns the campaign-scoped player activity ledger. It assigns
-stable monotonic sequence IDs, retains immutable copies of at most 200
-top-level records, and exposes versioned JSON-safe snapshots. `ActivityRecord`
-validates the shared DTO and the resolved roll payload; gameplay resolvers,
-rather than `Dice` or presentation code, remain responsible for publishing
-final outcomes. `CombatAction` returns the settled attack and damage facts;
-`CombatActivityRecord` maps them without rerolling or recomputing; and
-`CombatState` publishes once after optional damage riders and Extra Attack
-swings have settled.
-Gameplay scenes under `scenes/` coordinate domain objects and UI modules under
-`src/ui/`. `src/viewport_harness.gd` is test code: it instantiates real scenes
-inside isolated `SubViewport` trees and never replaces its supervisor during a
-test-mode victory or save/load round trip.
+Today, class-specific helpers, curated dictionaries, spell dispatch branches
+and fixed AI profiles still make rule decisions. `ClassFeature` offers a
+bounded self-activation contract; `ClassProgression` shares some choices but
+retains named-class paths. `AIController` selects native behavior profiles and
+`AICommand` accepts a bounded command vocabulary. These are migration starting
+points, not the intended extensibility boundary.
 
-`DataLoader` loads sorted core and mod directories and requires every duplicate
-ID to be named in `data/content_manifest.json`. Curated fields win approved
-collisions; imported fields fill only missing descriptive metadata. Unsupported
-effectless features are removed from player-facing class records until a
-resolver or effect is curated.
+## Current spell execution
 
-`SaveManager` is the persistence boundary. It writes versioned plain DTOs only
-from overworld or dungeon-entry checkpoint states. Campaign ledgers and
-dungeon rooms are stored by stable IDs and arrays, never as live Godot objects.
-Corrupt or unsupported saves are validated before active managers are changed.
-Activity snapshots are prepared before manager mutation; malformed or future
-activity records are omitted with diagnostics without rejecting a readable
-campaign save.
+`execution: "shared"` uses `SharedSpell` validation and ordinary payloads
+without registering each spell ID. The current contract supports automatic,
+attack **or** save delivery, typed damage, healing, Temporary HP, condition
+grants/removal, targeting geometry and bounded scaling. Combining attack and
+save delivery is currently rejected; ordered per-step/per-target composition
+is required by [ADR-0017](../decisions/0017-shared-json-spell-execution.md).
 
-`PartyManager` owns four stable party slots, character identity, companion
-recruitment state, leadership, and the assignment of slots to local player
-seats. Combat derives its participant list from the active party. The milestone
-input contract is shared-keyboard hot-seat; physical device bindings remain
-transient and their hardware acceptance is post-Gate 8.
+`CombatState` coordinates input, encounter bindings, turn order and the cast
+sequence. Focused `SpellCast*` modules own selection, validation/choices,
+resources, targeting, movement, reactions, markers, results and areas.
+`SpellResolver` dispatches existing attack/save/projectile and special result
+families; `CombatAction` also owns shared weapon and typed-damage settlement.
+`SpellCastContext` and `SpellResolutionContext` are transient, never save data.
+The [spell module map](../../src/spells/README.md) locates current code.
 
-`CombatState` coordinates the tactical scene and turn sequencing. Its mutable
-per-turn action, bonus-action, and reaction budget lives in the narrow
-`CombatTurnBudget` boundary, which is independently testable and does not own
-presentation or combat resolution.
+`SpellEffects` owns cast sources, clocks and cleanup. Benefits and persistence
+have focused modules. `SpellEncounterLifecycle` coordinates repeat saves and
+encounter expiry; `CombatSpellZones` owns spatial/turn triggers and source-owned
+areas. Terrain/conjuration modules retain existing native spell policy.
+`LocalRoomSharedSpells` reuses shared resolution for bounded exploration casts.
+New shared capabilities should replace native policy progressively without
+duplicating damage or cost. Availability and full rules support are distinct.
 
-`DataLoader` validates cross-record references after all registries load. A
-campaign cannot reach runtime with missing goal items, monsters, dungeon loot,
-or event tables, and class spell access cannot name a missing spell.
+## Party, world and durable identities
 
-## Data and Control Flow
+`PlayerManager` owns logical local seats. `PartyManager` owns four stable party
+slots, characters, companions and leadership. Physical devices are transient;
+shared-keyboard play is the current boundary ([ADR-0001](../decisions/0001-shared-keyboard-hot-seat.md)).
+Combat commands resolve owned production records, so HUD-supplied metadata
+cannot determine costs or grant abilities. `CombatTurnBudget` owns shared budgets.
 
-Production boot enters `src/main.gd`, which transitions to the main menu during
-normal play. Terminal defeat and completion states route to dedicated screens.
-The Beckett addon is intentionally not enabled in the friend-facing project
-configuration; local development can enable it explicitly in an editor copy.
-The supported Windows Gate 1 runner starts each case in a fresh
-Godot process, loads the project scene, waits for a marker, scans captured
-output for unexpected errors, and fails on timeout or non-zero exit.
-Save/settings tests use `user://`, while the runner redirects the Windows roots
-behind `user://` per scenario.
+Authored local rooms reuse dungeon geometry and HUDs. `LocalRoomRules` owns
+plain room/object transactions, `LocalRoomView` controls exploration and
+`LocalRoomCombat` binds/captures the same cells and objects. `DungeonPersistence`
+validates snapshots; GameManager retains visited dungeons instead of regenerating
+them. `InventoryCopies` separates per-copy state/identity from catalog projections;
+transfers validate destinations before removing sources ([ADR-0013](../decisions/0013-local-rooms-and-item-copies.md)).
 
-## Invariants and Sharp Edges
+GameManager owns the campaign clock/ledger. Combat advances six seconds per
+completed round; authored exploration, travel, casting and rests declare their
+durations. Source-owned durable effects and room areas expire on that clock,
+including unloaded snapshots. `CombatPerception` shares modeled illumination,
+senses and wall LOS; exact volumes, cover and unmodeled observers remain gaps.
+Floor/altitude and movement modes exist in bounded room/combat paths; their
+presence does not certify every movement spell or form.
 
-`GameManager.test_mode` is a harness boundary, not a production save policy:
-test-mode combat and load flows restore logical state without replacing the
-harness scene tree. The runners must continue to accept a portable Godot path
-through `GODOT_BIN` or an explicit argument and must not use a developer's real
-profile data.
+Owner-bound familiar/steed records retain identity, HP and lifetime separately
+from encounter Character projections. They remain outside party slots and
+cannot prevent a party wipe ([ADR-0014](../decisions/0014-owned-creature-lifecycle.md)).
+`CorpseRules` distinguishes actual death from unconscious zero HP on the
+original party Character; revival keeps identity and gear
+([ADR-0015](../decisions/0015-party-corpses-and-recovery.md)).
+`CreatedCreatureRules` uses a campaign ledger: lasting Undead existence is
+independent of creator life and expiring control. Encounter projection settles
+HP/position back to the ledger ([ADR-0016](../decisions/0016-created-undead-existence-and-control.md)).
+Animate Objects hooks remain unfinished; see [current status](../operations/current.md).
 
-## Validation
+## Persistence and presentation
 
-See [validation](../operations/validation.md) and [testing](../testing.md).
+`SaveManager` validates complete plain DTOs before changing live managers.
+Current schema 2 uses `ruleset_id: dnd-2024-srd-5.2.1` and
+`user://saves/dnd2024/`. Legacy `user://saves/` files are listed as incompatible
+and never automatically migrated. Safe writes use temporary/backup files.
+Saving is limited to overworld and explicit dungeon-entry checkpoints;
+combat, events, transitions and active local rooms are unsaveable. Durable
+world changes enter the next allowed checkpoint ([ADR-0004](../decisions/0004-staged-2024-rules-and-save-boundary.md)).
+
+Reconstruction restores saved choices and remaining resources without replaying
+permanent grants. Optional fields preserve older schema-2 compatibility; missing
+required content rejects before replacing the session. A generic future rules
+state envelope and pending-workflow serialization are not implemented.
+Do not infer mid-decision save support from proposed continuation objects.
+
+The shared desktop VTT shell uses the grimoire presentation. `ActivityHistory`
+keeps at most 200 campaign records with stable sequence IDs. Domain resolvers
+publish final arithmetic; UI widgets reveal it without rerolling or recomputing.
+Versioned activity records have bounded validation; invalid activity history
+can be omitted diagnostically without rejecting an otherwise readable campaign.
+See [ADR-0003](../decisions/0003-player-vtt-shell-and-activity-history.md).
+
+## Migration contract
+
+Use one typed data runtime shared across rule domains. Generic operations may
+query the world, roll, branch, choose, modify, grant, spawn or transition; they
+must not dispatch on content identity. Definitions stay separate from mutable
+instances, sources, owners/controllers and encounter projections. Each migrated
+action has one execution owner, with costs/results committed once across prompts.
+
+Retain existing loading, command, damage, world and save boundaries as adapters
+where useful. Do not make another interpreter for monsters or another rules
+engine in Python. Add only the capability needed by a verified rule. A missing
+observable world capability can require a generic adapter; a unique content ID
+does not justify a native handler. Existing helpers may maintain unmigrated
+behavior until the shared replacement is accepted.
+
+The [class design](data-driven-2024-class-execution-plan.md) and
+[creature design](data-driven-2024-monster-execution-plan.md) contain proposed
+language, source gaps and adversarial cases. They are not executable schemas.
+Versioning, migrations and fictional adjudication require concrete acceptance
+before release. [Testing](../testing.md) owns validation practice; dated gate
+reports and reviews supply historical evidence only.

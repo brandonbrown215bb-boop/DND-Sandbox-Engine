@@ -1,5 +1,10 @@
 # Data Import Analysis: 5eTools JSON Format
 
+> Historical snapshot, not current priority or acceptance. See the
+> [documentation map](README.md) for current authority. Findings, counts,
+> gate decisions and execution orders below apply to the dated snapshot;
+> reproduce relevant behavior before reopening a defect or reusing a claim.
+
 This report investigates the format of the four newly added JSON files at the root of the project: [items.json](../items.json), [loot.json](../loot.json), [races.json](../races.json), and [skills.json](../skills.json).
 
 ---

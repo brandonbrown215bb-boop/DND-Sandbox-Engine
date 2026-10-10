@@ -1,5 +1,10 @@
 # Character Sheet Value Audit
 
+> Historical snapshot, not current priority or acceptance. See the
+> [documentation map](README.md) for current authority. Findings, counts,
+> gate decisions and execution orders below apply to the dated snapshot;
+> reproduce relevant behavior before reopening a defect or reusing a claim.
+
 Date: 2026-08-10
 
 Scope: representative race/class values through character initialization,

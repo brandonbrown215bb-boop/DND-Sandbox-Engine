@@ -1,5 +1,10 @@
 # 5eTools Raw Data Review & Import Plan
 
+> Historical snapshot, not current priority or acceptance. See the
+> [documentation map](README.md) for current authority. Findings, counts,
+> gate decisions and execution orders below apply to the dated snapshot;
+> reproduce relevant behavior before reopening a defect or reusing a claim.
+
 This document reviews the newly added `5etools raw/class/` directory and outlines recommendations for importing other 5eTools datasets into the game engine.
 
 ---

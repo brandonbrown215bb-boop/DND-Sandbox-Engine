@@ -41,6 +41,19 @@ The detailed target behavior and acceptance evidence are defined in
 
 ## Consequences
 
+### Approved presentation refinement — 2026-10-04
+
+The owner approved an ornate grimoire concept and the complete player journey:
+soot/slate surfaces, parchment text, aged-brass engraved borders, serif
+headings and clear sans body type. The concept's panels depict separate
+screens. Its terrain/portrait illustration does not replace existing game art.
+1080p is the primary target, 1280 x 720 the minimum, and larger native windows
+gain board area. Title navigation leads into campaign setup; creation uses
+five reversible steps with editable name and a persistent consequences panel.
+The [saved comparison and acceptance](../ui/VISUAL_ACCEPTANCE.md) record the
+implemented presentation. This refinement does not expand mechanics or save
+schema scope.
+
 - `Dice` remains an entropy primitive. Domain resolvers must publish the
   contextual record after modifiers, targets, and outcomes are known.
 - Roll history becomes save data and needs a versioned plain-DTO boundary,

@@ -1,5 +1,10 @@
 # Changelog — Top Down Party Game
 
+> Historical snapshot, not current priority or acceptance. See the
+> [documentation map](README.md) for current authority. Findings, counts,
+> gate decisions and execution orders below apply to the dated snapshot;
+> reproduce relevant behavior before reopening a defect or reusing a claim.
+
 ## Gate 0 baseline note — 2026-08-09
 
 The historical “full suite green” entries below describe earlier snapshots and
@@ -181,7 +186,7 @@ after adding `BaseHUD` or dependent HUDs fail to resolve the base class.
 - `roadmap.md`: Phase 2 (overworld resting / town shops / campaign save-load)
   marked **COMPLETE** — the code and `save_manager.gd` were already landed; the
   table just never got checked off.
-- `docs/UI_OVERHAUL_RESEARCH.md`: §0 corrected — `BaseHUD` extraction and the
+- Retired UI-overhaul research: §0 corrected — `BaseHUD` extraction and the
   `stat_bar.gd` font defect (`add_theme_font_features_override`) were both
   actually DONE on 2026-07-07 (the research writeup predated those fixes). Added
   a "Corrections (2026-07-08)" subsection; resolved stale §0.1.
@@ -189,7 +194,7 @@ after adding `BaseHUD` or dependent HUDs fail to resolve the base class.
 **Still open (needs sign-off / assets):** Phase 3 VFX/audio (no art or audio
 files in `assets/` yet), Phase 5 Mod Manager UI + visual editors (no art), and
 mounting `ActionBar` into HUD scenes (blocked on icon-art direction — see
-UI_OVERHAUL_RESEARCH.md §6 open question 2).
+retired UI research, section 6 open question 2).
 
 **Verified:** `run_tests.sh` → OVERALL: ALL TESTS PASSED (49 scripts parse clean,
 boot-error gate clean, 244 logic / 12 viewport).

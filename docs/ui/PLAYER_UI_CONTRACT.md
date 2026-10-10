@@ -1,6 +1,6 @@
 # Player UI Contract
 
-- Status: Accepted for implementation
+- Status: Implemented presentation; validation limits recorded in [visual acceptance](VISUAL_ACCEPTANCE.md)
 - Decision basis: [ADR-0003](../decisions/0003-player-vtt-shell-and-activity-history.md)
 - Target: desktop monitor, mouse primary, 1280 x 720 minimum composition
 - History capacity: 200 top-level activity records per campaign
@@ -9,9 +9,9 @@
 
 This document defines what a player must see and be able to do in the Crown
 milestone interface. It is a target contract, not a claim that the current UI
-already behaves this way. After approval it supersedes the target-state parts
-of [UI Overhaul - Research & Plan](../UI_OVERHAUL_RESEARCH.md); that document
-remains useful as historical audit and implementation research.
+already behaves this way. The approved implementation and visual limits are
+recorded in [visual acceptance](VISUAL_ACCEPTANCE.md); obsolete pre-overhaul
+research no longer defines the interface.
 
 This contract covers:
 
@@ -21,13 +21,15 @@ This contract covers:
 - the player-facing shape of menus and secondary gameplay screens; and
 - evidence required before the redesign can be called shipped.
 
-Implementation checkpoint: the versioned `ActivityRecord` boundary, bounded
-`ActivityHistory` campaign store, `SaveManager` round trip, and exactly-once
-weapon-attack publication are implemented. Attack records preserve the final
-d20 terms, modifiers, AC comparison, applied damage, and grouped Extra Attack
-swings. Other resolver publication, the activity rail, the shared shell, and
-the visual acceptance evidence remain future slices; this contract does not
-claim those surfaces are shipped yet.
+Implementation checkpoint (2026-10-04): the shared container shell, grimoire
+profile, compact party rail, action dock, Chronicle, modal focus policy, and
+secondary screens are implemented. The approved concept and production-scene
+captures are retained in [visual acceptance](VISUAL_ACCEPTANCE.md).
+Attack records preserve the final d20 terms, modifiers, AC comparison,
+applied damage, and grouped Extra Attack swings. Other gameplay messages stay
+readable as narrative records; this UI work does not add structured arithmetic
+to resolvers that do not already emit it. Existing activity/save validation
+and the 200-record campaign boundary remain authoritative.
 
 It does not add network multiplayer, split-screen, controller support, chat,
 GM-only information, private rolls, or third-party theme packaging.
@@ -527,17 +529,18 @@ This order limits rework without turning the contract into one giant quest:
 6. **Dark-fantasy finish:** licensed typography/icons/textures, motion/sound,
    contrast pass, and second-profile swap proof.
 
-Each step receives its own Quest Board card and validation evidence. A later
-step may refine art, but it may not violate the data, persistence, layout, or
-interaction boundaries established here without a superseding decision.
+The owner approved completing the full presentation journey together on
+2026-10-04, expanding the existing shell quest. A later art refinement may
+not violate the data, persistence, layout, or interaction boundaries here
+without a superseding decision.
 
-## 12. Review choices still open
+## 12. Accepted art direction
 
-The contract intentionally leaves three art-direction choices outside the
-architecture decision:
-
-- final typefaces and licenses;
-- final icon family and decorative texture language; and
-- whether the 200-record capacity becomes player-configurable after Crown.
-
-These choices do not block the activity foundation or shell skeleton.
+The approved profile uses soot/slate surfaces, parchment type, aged-brass
+engraved frames, classical serif headings and clear sans-serif body text.
+Georgia/Segoe UI are host system fonts with serif/sans fallbacks; no font
+files are redistributed. The icons, crest, corners and title silhouette are
+repository-native SVG assets. Existing world and token art is retained.
+1080p is the primary presentation target, 720p the supported minimum, and
+larger windows gain logical board area rather than stretching the UI.
+Whether the 200-record capacity becomes configurable remains a later choice.

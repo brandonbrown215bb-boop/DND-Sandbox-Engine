@@ -1,0 +1,230 @@
+Godot Engine v4.7.stable.official.5b4e0cb0f - https://godotengine.org
+OpenGL API 3.3.0 NVIDIA 616.92 - Compatibility - Using Device: NVIDIA - NVIDIA GeForce RTX 5060 Ti
+
+[DataLoader] Loaded: 14 classes, 9 races, 234 items, 362 spells, 453 monsters, 4 event tables, 1 campaigns
+[DataLoader] Layers: core_imported, core_curated, mods | packs: core, crown | approved overrides: 134 | validation failures: 0
+[ui ok] vitals configured before ready retain their values
+[ui ok] capture menu-1280x720
+[ui ok] capture campaign-selector-1280x720
+[ui ok] capture settings-1280x720
+[ui ok] settings blocks gameplay while paused
+[ui ok] Escape closes settings
+[ui ok] capture creation-1280x720
+[ui ok] editable character name remains visible
+[ui ok] selecting a class preserves its keyboard control
+[ui ok] backtracking preserves edited name and class
+[ui ok] combat mounts shared shell
+[ui ok] combat usable board (888.0, 600.0)
+[ui ok] combat chrome excludes board input
+[ui ok] capture combat-1280x720
+[ui ok] combat preserves older-history reading
+[ui ok] combat offers new activity without moving the viewport
+[ui ok] combat New returns to the latest activity
+[ui ok] filter keeps stored history
+[ui ok] roll detail presents the recorded terms and comparison
+[ui ok] keyboard focus exposes roll detail
+[ui ok] pinned roll detail survives leaving focus
+[ui ok] click can unpin the same arithmetic
+[ui ok] hover reveals the same stored arithmetic
+[ui ok] capture combat-rolls-1280x720
+[ui ok] capture combat-collapsed-1280x720
+[ui ok] combat resizing chrome preserves pan and zoom
+[ui ok] capture combat-inspector-1280x720
+[ui ok] combat inspector stays within the board edge
+[ui ok] capture combat-sheet-1280x720
+[ui ok] combat modal blocks world input
+[ui ok] combat input probe targets a real board tile
+[ui ok] combat actual modal pointer input cannot reach hex selection
+[ui ok] combat Tab stays within the character sheet
+[ui ok] combat Escape closes the sheet and restores focus
+[ui ok] capture reaction-1280x720
+[ui ok] reaction decision blocks world input
+[ui ok] reaction decision returns the chosen intent
+[OverworldMap] Successfully loaded 43 tiles from campaign The Lost Crown
+[OverworldMap] Placed Player 1 at start tile: (0, 0)
+[OverworldMap] Placed Player 2 at start tile: (0, 0)
+[OverworldMap] Placed Player 3 at start tile: (0, 0)
+[OverworldMap] Placed Player 4 at start tile: (0, 0)
+[ui ok] overworld mounts shared shell
+[ui ok] overworld usable board (888.0, 600.0)
+[ui ok] overworld chrome excludes board input
+[ui ok] capture overworld-1280x720
+[ui ok] overworld preserves older-history reading
+[ui ok] overworld offers new activity without moving the viewport
+[ui ok] overworld New returns to the latest activity
+[ui ok] filter keeps stored history
+[ui ok] roll detail presents the recorded terms and comparison
+[ui ok] keyboard focus exposes roll detail
+[ui ok] pinned roll detail survives leaving focus
+[ui ok] click can unpin the same arithmetic
+[ui ok] hover reveals the same stored arithmetic
+[ui ok] capture overworld-rolls-1280x720
+[ui ok] capture overworld-collapsed-1280x720
+[ui ok] overworld resizing chrome preserves pan and zoom
+[ui ok] capture overworld-inspector-1280x720
+[ui ok] overworld inspector stays within the board edge
+[ui ok] capture overworld-sheet-1280x720
+[ui ok] overworld modal blocks world input
+[ui ok] overworld input probe targets a real board tile
+[ui ok] overworld actual modal pointer input cannot reach hex selection
+[ui ok] overworld Tab stays within the character sheet
+[ui ok] overworld Escape closes the sheet and restores focus
+[ui ok] capture roster-1280x720
+[ui ok] capture shop-1280x720
+[ui ok] capture event-1280x720
+[DungeonGenerator] Procedurally built dungeon with 5 rooms.
+[Character] Sir Kaelen leveled up to 2! (+12 HP, now 24)
+[GameManager] Sir Kaelen leveled up!
+[Character] Elara leveled up to 2! (+7 HP, now 15)
+[GameManager] Elara leveled up!
+[Character] Borin Stonebender leveled up to 2! (+6 HP, now 16)
+[GameManager] Borin Stonebender leveled up!
+[Character] Thalia Windrider leveled up to 2! (+3 HP, now 13)
+[GameManager] Thalia Windrider leveled up!
+[ui ok] dungeon mounts shared shell
+[ui ok] dungeon usable board (888.0, 600.0)
+[ui ok] dungeon chrome excludes board input
+[ui ok] capture dungeon-1280x720
+[ui ok] dungeon preserves older-history reading
+[ui ok] dungeon offers new activity without moving the viewport
+[ui ok] dungeon New returns to the latest activity
+[ui ok] filter keeps stored history
+[ui ok] roll detail presents the recorded terms and comparison
+[ui ok] keyboard focus exposes roll detail
+[ui ok] pinned roll detail survives leaving focus
+[ui ok] click can unpin the same arithmetic
+[ui ok] hover reveals the same stored arithmetic
+[ui ok] capture dungeon-rolls-1280x720
+[ui ok] capture dungeon-collapsed-1280x720
+[ui ok] dungeon resizing chrome preserves pan and zoom
+[ui ok] capture dungeon-inspector-1280x720
+[ui ok] dungeon inspector stays within the board edge
+[ui ok] capture dungeon-sheet-1280x720
+[ui ok] dungeon modal blocks world input
+[ui ok] dungeon input probe targets a real board tile
+[ui ok] dungeon actual modal pointer input cannot reach hex selection
+[ui ok] dungeon Tab stays within the character sheet
+[ui ok] dungeon Escape closes the sheet and restores focus
+[ui ok] capture victory-1280x720
+[ui ok] capture final-chronicle-1280x720
+[ui ok] capture defeat-1280x720
+[ui ok] capture menu-1920x1080
+[ui ok] capture campaign-selector-1920x1080
+[ui ok] capture settings-1920x1080
+[ui ok] settings blocks gameplay while paused
+[ui ok] Escape closes settings
+[ui ok] capture creation-1920x1080
+[ui ok] editable character name remains visible
+[ui ok] selecting a class preserves its keyboard control
+[ui ok] backtracking preserves edited name and class
+[ui ok] combat mounts shared shell
+[ui ok] combat usable board (1468.0, 960.0)
+[ui ok] combat chrome excludes board input
+[ui ok] capture combat-1920x1080
+[ui ok] combat preserves older-history reading
+[ui ok] combat offers new activity without moving the viewport
+[ui ok] combat New returns to the latest activity
+[ui ok] filter keeps stored history
+[ui ok] roll detail presents the recorded terms and comparison
+[ui ok] keyboard focus exposes roll detail
+[ui ok] pinned roll detail survives leaving focus
+[ui ok] click can unpin the same arithmetic
+[ui ok] hover reveals the same stored arithmetic
+[ui ok] capture combat-rolls-1920x1080
+[ui ok] capture combat-collapsed-1920x1080
+[ui ok] combat resizing chrome preserves pan and zoom
+[ui ok] capture combat-inspector-1920x1080
+[ui ok] combat inspector stays within the board edge
+[ui ok] capture combat-sheet-1920x1080
+[ui ok] combat modal blocks world input
+[ui ok] combat input probe targets a real board tile
+[ui ok] combat actual modal pointer input cannot reach hex selection
+[ui ok] combat Tab stays within the character sheet
+[ui ok] combat Escape closes the sheet and restores focus
+[ui ok] capture reaction-1920x1080
+[ui ok] reaction decision blocks world input
+[ui ok] reaction decision returns the chosen intent
+[OverworldMap] Successfully loaded 43 tiles from campaign The Lost Crown
+[OverworldMap] Placed Player 1 at start tile: (0, 0)
+[OverworldMap] Placed Player 2 at start tile: (0, 0)
+[OverworldMap] Placed Player 3 at start tile: (0, 0)
+[OverworldMap] Placed Player 4 at start tile: (0, 0)
+[ui ok] overworld mounts shared shell
+[ui ok] overworld usable board (1468.0, 960.0)
+[ui ok] overworld chrome excludes board input
+[ui ok] capture overworld-1920x1080
+[ui ok] overworld preserves older-history reading
+[ui ok] overworld offers new activity without moving the viewport
+[ui ok] overworld New returns to the latest activity
+[ui ok] filter keeps stored history
+[ui ok] roll detail presents the recorded terms and comparison
+[ui ok] keyboard focus exposes roll detail
+[ui ok] pinned roll detail survives leaving focus
+[ui ok] click can unpin the same arithmetic
+[ui ok] hover reveals the same stored arithmetic
+[ui ok] capture overworld-rolls-1920x1080
+[ui ok] capture overworld-collapsed-1920x1080
+[ui ok] overworld resizing chrome preserves pan and zoom
+[ui ok] capture overworld-inspector-1920x1080
+[ui ok] overworld inspector stays within the board edge
+[ui ok] capture overworld-sheet-1920x1080
+[ui ok] overworld modal blocks world input
+[ui ok] overworld input probe targets a real board tile
+[ui ok] overworld actual modal pointer input cannot reach hex selection
+[ui ok] overworld Tab stays within the character sheet
+[ui ok] overworld Escape closes the sheet and restores focus
+[ui ok] capture roster-1920x1080
+[ui ok] capture shop-1920x1080
+[ui ok] capture event-1920x1080
+[ui ok] dungeon mounts shared shell
+[ui ok] dungeon usable board (1468.0, 960.0)
+[ui ok] dungeon chrome excludes board input
+[ui ok] capture dungeon-1920x1080
+[ui ok] dungeon preserves older-history reading
+[ui ok] dungeon offers new activity without moving the viewport
+[ui ok] dungeon New returns to the latest activity
+[ui ok] filter keeps stored history
+[ui ok] roll detail presents the recorded terms and comparison
+[ui ok] keyboard focus exposes roll detail
+[ui ok] pinned roll detail survives leaving focus
+[ui ok] click can unpin the same arithmetic
+[ui ok] hover reveals the same stored arithmetic
+[ui ok] capture dungeon-rolls-1920x1080
+[ui ok] capture dungeon-collapsed-1920x1080
+[ui ok] dungeon resizing chrome preserves pan and zoom
+[ui ok] capture dungeon-inspector-1920x1080
+[ui ok] dungeon inspector stays within the board edge
+[ui ok] capture dungeon-sheet-1920x1080
+[ui ok] dungeon modal blocks world input
+[ui ok] dungeon input probe targets a real board tile
+[ui ok] dungeon actual modal pointer input cannot reach hex selection
+[ui ok] dungeon Tab stays within the character sheet
+[ui ok] dungeon Escape closes the sheet and restores focus
+[ui ok] capture victory-1920x1080
+[ui ok] capture final-chronicle-1920x1080
+[ui ok] capture defeat-1920x1080
+[OverworldMap] Successfully loaded 43 tiles from campaign The Lost Crown
+[OverworldMap] Placed Player 1 at start tile: (0, 0)
+[OverworldMap] Placed Player 2 at start tile: (0, 0)
+[OverworldMap] Placed Player 3 at start tile: (0, 0)
+[OverworldMap] Placed Player 4 at start tile: (0, 0)
+[ui ok] larger window gains logical board space (2108.0, 1320.0)
+[ui ok] capture overworld-2560x1440
+[OverworldMap] Successfully loaded 43 tiles from campaign The Lost Crown
+[OverworldMap] Placed Player 1 at start tile: (0, 0)
+[OverworldMap] Placed Player 2 at start tile: (0, 0)
+[OverworldMap] Placed Player 3 at start tile: (0, 0)
+[OverworldMap] Placed Player 4 at start tile: (0, 0)
+[ui ok] larger window gains logical board space (2988.0, 1320.0)
+[ui ok] capture overworld-3440x1440
+[ui ok] capture second-profile-1280x720
+[ui ok] screens accept a second presentation profile without game changes
+[OverworldMap] Successfully loaded 43 tiles from campaign The Lost Crown
+[OverworldMap] Placed Player 1 at start tile: (0, 0)
+[OverworldMap] Placed Player 2 at start tile: (0, 0)
+[OverworldMap] Placed Player 3 at start tile: (0, 0)
+[OverworldMap] Placed Player 4 at start tile: (0, 0)
+[ui ok] capture second-profile-gameplay-1280x720
+[ui ok] second profile changes gameplay spacing and icons
+[ui ok] Chronicle retains its bounded 200-record history
+UI POLISH PROBE: 0 failures

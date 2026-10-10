@@ -1,0 +1,2921 @@
+{
+	"active_dungeon_state": {},
+	"active_player_index": 0,
+	"activity_history": {
+		"next_sequence": 91,
+		"records": [
+			{
+				"category": "world",
+				"id": "activity-000001",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 1,
+				"summary": "=== Round 1: Hero 1's Turn ===",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000002",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 2,
+				"summary": "Aldric joined the party under Seat 1.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000003",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 3,
+				"summary": "Mira joined the party under Seat 1.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000004",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 4,
+				"summary": "Rowan joined the party under Seat 1.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000005",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 5,
+				"summary": "Hero 1 moved to hex (1, 0) (Spent 1.0 movement points)",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000006",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 6,
+				"summary": "Wandering Merchant resolved.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000007",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 7,
+				"summary": "Hero 1 moved to hex (0, 0) (Spent 1.0 movement points)",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000008",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 8,
+				"summary": "Entered Town: Elderwick!",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000009",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 9,
+				"summary": "Hero 1 moved to hex (3, -1) (Spent 4.0 movement points)",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000010",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 10,
+				"summary": "Stumbled upon a Dungeon entrance: Ruins of Ashvale!",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000011",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 11,
+				"summary": "Entered Dungeon: Ruins of Ashvale",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000012",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 12,
+				"summary": "An ancient temple overrun by the undead. The first fragment of the Crown lies within.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000013",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 13,
+				"summary": "Moved to room (-1, 0) (1)",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000014",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 14,
+				"summary": "Ashvale antechamber — select a character, then click a space to move or an object to interact. Each hex is five feet.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000015",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 15,
+				"summary": "Hero 1 casts Fire Bolt at Old timber partition: miss.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000016",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 16,
+				"summary": "Old timber partition takes 4 Fire damage from burning.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000017",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 17,
+				"summary": "Temple door catches fire from Old timber partition.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000018",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 18,
+				"summary": "Hero 1 casts Fire Bolt at Old timber partition: 1 Fire damage; catches fire.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000019",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 19,
+				"summary": "Move next to the object first.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000020",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 20,
+				"summary": "Temple door takes 2 Fire damage from burning.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000021",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 21,
+				"summary": "Old timber partition takes 2 Fire damage from burning.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000022",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 22,
+				"summary": "Hero 1 moves.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000023",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 23,
+				"summary": "Temple door takes 2 Fire damage from burning.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000024",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 24,
+				"summary": "Old timber partition catches fire from Temple door.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000025",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 25,
+				"summary": "Old timber partition: extinguish.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000026",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 26,
+				"summary": "Temple door takes 4 Fire damage from burning.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000027",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 27,
+				"summary": "Old timber partition takes 2 Fire damage from burning.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000028",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 28,
+				"summary": "Hero 1 moves.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000029",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 29,
+				"summary": "Temple door takes 2 Fire damage from burning.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000030",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 30,
+				"summary": "Temple door burns out.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000031",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 31,
+				"summary": "Old timber partition takes 3 Fire damage from burning.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000032",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 32,
+				"summary": "Brass key: take.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000033",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 33,
+				"summary": "Old timber partition takes 4 Fire damage from burning.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000034",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 34,
+				"summary": "Hero 1 moves.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000035",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 35,
+				"summary": "Old timber partition takes 4 Fire damage from burning.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000036",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 36,
+				"summary": "Offering chest: open.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000037",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 37,
+				"summary": "Old timber partition takes 3 Fire damage from burning.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000038",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 38,
+				"summary": "Offering chest: take.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "combat",
+				"id": "activity-000039",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 39,
+				"summary": "=== Turn: Aldric (Player) ===",
+				"targets": [],
+				"title": "Combat",
+				"visibility": "public"
+			},
+			{
+				"category": "combat",
+				"id": "activity-000040",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 40,
+				"summary": "Aldric moved.",
+				"targets": [],
+				"title": "Combat",
+				"visibility": "public"
+			},
+			{
+				"category": "combat",
+				"id": "activity-000041",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 41,
+				"summary": "Aldric moved.",
+				"targets": [],
+				"title": "Combat",
+				"visibility": "public"
+			},
+			{
+				"category": "combat",
+				"id": "activity-000042",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 42,
+				"summary": "Click on an enemy to Attack.",
+				"targets": [],
+				"title": "Combat",
+				"visibility": "public"
+			},
+			{
+				"actor": {
+					"id": "aldric_cleric",
+					"name": "Aldric"
+				},
+				"campaign_time": {
+					"round": 1
+				},
+				"category": "roll",
+				"id": "activity-000043",
+				"kind": "attack",
+				"outcome": {
+					"code": "hit",
+					"label": "Hit"
+				},
+				"payload": {
+					"advantage": false,
+					"comparison": {
+						"kind": "armor_class",
+						"margin": 7,
+						"result": "hit",
+						"target": 13
+					},
+					"dice_terms": [
+						{
+							"count": 1,
+							"kept": [
+								true
+							],
+							"label": "d20",
+							"results": [
+								17
+							],
+							"sides": 20,
+							"subtotal": 17
+						}
+					],
+					"disadvantage": false,
+					"final_total": 20,
+					"formula": "1d20 +1 +2",
+					"modifiers": [
+						{
+							"label": "STR",
+							"value": 1
+						},
+						{
+							"label": "Proficiency",
+							"value": 2
+						}
+					],
+					"natural_total": 17,
+					"sections": {
+						"attacks": [
+							{
+								"applied_damage": 5,
+								"damage": {
+									"applied": 5,
+									"dice_terms": [
+										{
+											"count": 1,
+											"kept": [
+												true
+											],
+											"label": "d6",
+											"results": [
+												5
+											],
+											"sides": 6,
+											"subtotal": 5
+										}
+									],
+									"final_total": 5,
+									"formula": "1d6",
+									"mitigation": [],
+									"modifiers": [],
+									"resolved_total": 5,
+									"rolled_total": 5,
+									"type": "bludgeoning"
+								},
+								"damage_components": [
+									{
+										"label": "Bludgeoning damage",
+										"type": "bludgeoning",
+										"value": 5
+									}
+								],
+								"index": 1,
+								"outcome": "hit",
+								"roll": {
+									"advantage": false,
+									"comparison": {
+										"kind": "armor_class",
+										"margin": 7,
+										"result": "hit",
+										"target": 13
+									},
+									"dice_terms": [
+										{
+											"count": 1,
+											"kept": [
+												true
+											],
+											"label": "d20",
+											"results": [
+												17
+											],
+											"sides": 20,
+											"subtotal": 17
+										}
+									],
+									"disadvantage": false,
+									"final_total": 20,
+									"formula": "1d20 +1 +2",
+									"modifiers": [
+										{
+											"label": "STR",
+											"value": 1
+										},
+										{
+											"label": "Proficiency",
+											"value": 2
+										}
+									],
+									"natural_total": 17
+								}
+							}
+						],
+						"total_damage": 5
+					}
+				},
+				"scene_context": {
+					"campaign_id": "the_lost_crown",
+					"scene": "combat"
+				},
+				"schema_version": 1,
+				"sequence": 43,
+				"summary": "20 vs AC 13 - Hit; 5 bludgeoning damage",
+				"targets": [
+					{
+						"id": "monster_0",
+						"name": "Skeleton 1"
+					}
+				],
+				"title": "Mace",
+				"visibility": "public"
+			},
+			{
+				"category": "combat",
+				"id": "activity-000044",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 44,
+				"summary": "=== Turn: Rowan (Player) ===",
+				"targets": [],
+				"title": "Combat",
+				"visibility": "public"
+			},
+			{
+				"category": "combat",
+				"id": "activity-000045",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 45,
+				"summary": "=== Turn: Skeleton 1 (Monster) ===",
+				"targets": [],
+				"title": "Combat",
+				"visibility": "public"
+			},
+			{
+				"category": "combat",
+				"id": "activity-000046",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 46,
+				"summary": "CRITICAL HIT! Hit! (24 vs AC 15) Dealing 8 piercing damage.",
+				"targets": [],
+				"title": "Combat",
+				"visibility": "public"
+			},
+			{
+				"category": "combat",
+				"id": "activity-000047",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 47,
+				"summary": "=== Turn: Mira (Player) ===",
+				"targets": [],
+				"title": "Combat",
+				"visibility": "public"
+			},
+			{
+				"category": "combat",
+				"id": "activity-000048",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 48,
+				"summary": "=== Turn: Hero 1 (Player) ===",
+				"targets": [],
+				"title": "Combat",
+				"visibility": "public"
+			},
+			{
+				"category": "combat",
+				"id": "activity-000049",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 49,
+				"summary": "Casting Ray of Frost. Select target hex.",
+				"targets": [],
+				"title": "Combat",
+				"visibility": "public"
+			},
+			{
+				"category": "combat",
+				"id": "activity-000050",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 50,
+				"summary": "Spell Hit! Dealing 3 cold damage.",
+				"targets": [],
+				"title": "Combat",
+				"visibility": "public"
+			},
+			{
+				"category": "combat",
+				"id": "activity-000051",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 51,
+				"summary": "Skeleton 1's movement is reduced by 2 for 1 turns.",
+				"targets": [],
+				"title": "Combat",
+				"visibility": "public"
+			},
+			{
+				"category": "combat",
+				"id": "activity-000052",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 52,
+				"summary": "=== Turn: Aldric (Player) ===",
+				"targets": [],
+				"title": "Combat",
+				"visibility": "public"
+			},
+			{
+				"category": "combat",
+				"id": "activity-000053",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 53,
+				"summary": "Click on an enemy to Attack.",
+				"targets": [],
+				"title": "Combat",
+				"visibility": "public"
+			},
+			{
+				"actor": {
+					"id": "aldric_cleric",
+					"name": "Aldric"
+				},
+				"campaign_time": {
+					"round": 2
+				},
+				"category": "roll",
+				"id": "activity-000054",
+				"kind": "attack",
+				"outcome": {
+					"code": "miss",
+					"label": "Miss"
+				},
+				"payload": {
+					"advantage": false,
+					"comparison": {
+						"kind": "armor_class",
+						"margin": -7,
+						"result": "miss",
+						"target": 13
+					},
+					"dice_terms": [
+						{
+							"count": 1,
+							"kept": [
+								true
+							],
+							"label": "d20",
+							"results": [
+								3
+							],
+							"sides": 20,
+							"subtotal": 3
+						}
+					],
+					"disadvantage": false,
+					"final_total": 6,
+					"formula": "1d20 +1 +2",
+					"modifiers": [
+						{
+							"label": "STR",
+							"value": 1
+						},
+						{
+							"label": "Proficiency",
+							"value": 2
+						}
+					],
+					"natural_total": 3,
+					"sections": {
+						"attacks": [
+							{
+								"applied_damage": 0,
+								"damage": {},
+								"damage_components": [],
+								"index": 1,
+								"outcome": "miss",
+								"roll": {
+									"advantage": false,
+									"comparison": {
+										"kind": "armor_class",
+										"margin": -7,
+										"result": "miss",
+										"target": 13
+									},
+									"dice_terms": [
+										{
+											"count": 1,
+											"kept": [
+												true
+											],
+											"label": "d20",
+											"results": [
+												3
+											],
+											"sides": 20,
+											"subtotal": 3
+										}
+									],
+									"disadvantage": false,
+									"final_total": 6,
+									"formula": "1d20 +1 +2",
+									"modifiers": [
+										{
+											"label": "STR",
+											"value": 1
+										},
+										{
+											"label": "Proficiency",
+											"value": 2
+										}
+									],
+									"natural_total": 3
+								}
+							}
+						],
+						"total_damage": 0
+					}
+				},
+				"scene_context": {
+					"campaign_id": "the_lost_crown",
+					"scene": "combat"
+				},
+				"schema_version": 1,
+				"sequence": 54,
+				"summary": "6 vs AC 13 - Miss",
+				"targets": [
+					{
+						"id": "monster_0",
+						"name": "Skeleton 1"
+					}
+				],
+				"title": "Mace",
+				"visibility": "public"
+			},
+			{
+				"category": "combat",
+				"id": "activity-000055",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 55,
+				"summary": "=== Turn: Rowan (Player) ===",
+				"targets": [],
+				"title": "Combat",
+				"visibility": "public"
+			},
+			{
+				"category": "combat",
+				"id": "activity-000056",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 56,
+				"summary": "Rowan is dodging (Attacks against them have disadvantage).",
+				"targets": [],
+				"title": "Combat",
+				"visibility": "public"
+			},
+			{
+				"category": "combat",
+				"id": "activity-000057",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 57,
+				"summary": "You have no action available this turn.",
+				"targets": [],
+				"title": "Combat",
+				"visibility": "public"
+			},
+			{
+				"category": "combat",
+				"id": "activity-000058",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 58,
+				"summary": "You have no action available this turn.",
+				"targets": [],
+				"title": "Combat",
+				"visibility": "public"
+			},
+			{
+				"category": "combat",
+				"id": "activity-000059",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 59,
+				"summary": "You have no action available this turn.",
+				"targets": [],
+				"title": "Combat",
+				"visibility": "public"
+			},
+			{
+				"category": "combat",
+				"id": "activity-000060",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 60,
+				"summary": "=== Turn: Skeleton 1 (Monster) ===",
+				"targets": [],
+				"title": "Combat",
+				"visibility": "public"
+			},
+			{
+				"category": "combat",
+				"id": "activity-000061",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 61,
+				"summary": "Hit! (23 vs AC 15) Dealing 4 piercing damage.",
+				"targets": [],
+				"title": "Combat",
+				"visibility": "public"
+			},
+			{
+				"category": "combat",
+				"id": "activity-000062",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 62,
+				"summary": "=== Turn: Mira (Player) ===",
+				"targets": [],
+				"title": "Combat",
+				"visibility": "public"
+			},
+			{
+				"category": "combat",
+				"id": "activity-000063",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 63,
+				"summary": "=== Turn: Hero 1 (Player) ===",
+				"targets": [],
+				"title": "Combat",
+				"visibility": "public"
+			},
+			{
+				"category": "combat",
+				"id": "activity-000064",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 64,
+				"summary": "Hero 1 moved.",
+				"targets": [],
+				"title": "Combat",
+				"visibility": "public"
+			},
+			{
+				"category": "combat",
+				"id": "activity-000065",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 65,
+				"summary": "Casting Fire Bolt. Select target hex.",
+				"targets": [],
+				"title": "Combat",
+				"visibility": "public"
+			},
+			{
+				"category": "combat",
+				"id": "activity-000066",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 66,
+				"summary": "Spell Hit! Dealing 4 fire damage.",
+				"targets": [],
+				"title": "Combat",
+				"visibility": "public"
+			},
+			{
+				"category": "combat",
+				"id": "activity-000067",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 67,
+				"summary": "Skeleton 1 was defeated!",
+				"targets": [],
+				"title": "Combat",
+				"visibility": "public"
+			},
+			{
+				"category": "combat",
+				"id": "activity-000068",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 68,
+				"summary": "VICTORY! All monsters defeated.",
+				"targets": [],
+				"title": "Combat",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000069",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 69,
+				"summary": "Entered Dungeon: Ruins of Ashvale",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000070",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 70,
+				"summary": "An ancient temple overrun by the undead. The first fragment of the Crown lies within.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000071",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 71,
+				"summary": "Victory in battle!",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000072",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 72,
+				"summary": "Old timber partition takes 2 Fire damage from burning.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000073",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 73,
+				"summary": "Ashvale antechamber — select a character, then click a space to move or an object to interact. Each hex is five feet.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000074",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 74,
+				"summary": "Move next to the recipient first.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000075",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 75,
+				"summary": "Old timber partition takes 1 Fire damage from burning.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000076",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 76,
+				"summary": "Hero 1 moves.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000077",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 77,
+				"summary": "Old timber partition takes 1 Fire damage from burning.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000078",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 78,
+				"summary": "Old timber partition burns out.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000079",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 79,
+				"summary": "Item transferred to Aldric.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000080",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 80,
+				"summary": "Potion of Healing used.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000081",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 81,
+				"summary": "Aldric moves.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000082",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 82,
+				"summary": "The party makes camp and rests. HP, spell slots, and feature uses restored.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000083",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 83,
+				"summary": "Moved to room (0, 0) (0)",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000084",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 84,
+				"summary": "This room is empty and cleared.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000085",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 85,
+				"summary": "=== Round 1: Hero 1's Turn ===",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000086",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 86,
+				"summary": "Hero 1 moved to hex (0, 0) (Spent 4.0 movement points)",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000087",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 87,
+				"summary": "Entered Town: Elderwick!",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000088",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 88,
+				"summary": "Aldric left the active party.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000089",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 89,
+				"summary": "Mira left the active party.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000090",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 90,
+				"summary": "Rowan left the active party.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			}
+		],
+		"schema_version": 1
+	},
+	"campaign_id": "the_lost_crown",
+	"campaign_ledger": {
+		"animal_messenger_deliveries": [],
+		"campaign_completed": false,
+		"campaign_elapsed_seconds": 29004,
+		"claimed_rewards": [],
+		"cleared_dungeons": [],
+		"completed_milestones": [
+			"enter_dungeon_1"
+		],
+		"created_creatures": [],
+		"dismissed_companions": [
+			"aldric",
+			"mira",
+			"rowan"
+		],
+		"dungeon_snapshots": {
+			"ruins_of_ashvale": {
+				"boss_defeated": false,
+				"dungeon_id": "ruins_of_ashvale",
+				"local_room_id": "",
+				"local_rooms": {
+					"1": {
+						"area_serial": 0,
+						"areas": [],
+						"ceiling_feet": 15.0,
+						"cell_ceilings": [],
+						"cell_elevations": [],
+						"cell_terrains": [
+							{
+								"heat_damage_formula": "1d4",
+								"heat_height_feet": 5.0,
+								"position": [
+									3.0,
+									-1.0
+								],
+								"surface": "lava"
+							}
+						],
+						"cells": [
+							[
+								-4.0,
+								0.0
+							],
+							[
+								-4.0,
+								1.0
+							],
+							[
+								-4.0,
+								2.0
+							],
+							[
+								-4.0,
+								3.0
+							],
+							[
+								-4.0,
+								4.0
+							],
+							[
+								-3.0,
+								-1.0
+							],
+							[
+								-3.0,
+								0.0
+							],
+							[
+								-3.0,
+								1.0
+							],
+							[
+								-3.0,
+								2.0
+							],
+							[
+								-3.0,
+								3.0
+							],
+							[
+								-3.0,
+								4.0
+							],
+							[
+								-2.0,
+								-2.0
+							],
+							[
+								-2.0,
+								-1.0
+							],
+							[
+								-2.0,
+								0.0
+							],
+							[
+								-2.0,
+								1.0
+							],
+							[
+								-2.0,
+								2.0
+							],
+							[
+								-2.0,
+								3.0
+							],
+							[
+								-2.0,
+								4.0
+							],
+							[
+								-1.0,
+								-3.0
+							],
+							[
+								-1.0,
+								-2.0
+							],
+							[
+								-1.0,
+								-1.0
+							],
+							[
+								-1.0,
+								0.0
+							],
+							[
+								-1.0,
+								1.0
+							],
+							[
+								-1.0,
+								2.0
+							],
+							[
+								-1.0,
+								3.0
+							],
+							[
+								-1.0,
+								4.0
+							],
+							[
+								0.0,
+								-4.0
+							],
+							[
+								0.0,
+								-3.0
+							],
+							[
+								0.0,
+								-2.0
+							],
+							[
+								0.0,
+								-1.0
+							],
+							[
+								0.0,
+								0.0
+							],
+							[
+								0.0,
+								1.0
+							],
+							[
+								0.0,
+								2.0
+							],
+							[
+								0.0,
+								3.0
+							],
+							[
+								0.0,
+								4.0
+							],
+							[
+								1.0,
+								-4.0
+							],
+							[
+								1.0,
+								-3.0
+							],
+							[
+								1.0,
+								-2.0
+							],
+							[
+								1.0,
+								-1.0
+							],
+							[
+								1.0,
+								0.0
+							],
+							[
+								1.0,
+								1.0
+							],
+							[
+								1.0,
+								2.0
+							],
+							[
+								1.0,
+								3.0
+							],
+							[
+								2.0,
+								-4.0
+							],
+							[
+								2.0,
+								-3.0
+							],
+							[
+								2.0,
+								-2.0
+							],
+							[
+								2.0,
+								-1.0
+							],
+							[
+								2.0,
+								0.0
+							],
+							[
+								2.0,
+								1.0
+							],
+							[
+								2.0,
+								2.0
+							],
+							[
+								3.0,
+								-4.0
+							],
+							[
+								3.0,
+								-3.0
+							],
+							[
+								3.0,
+								-2.0
+							],
+							[
+								3.0,
+								-1.0
+							],
+							[
+								3.0,
+								0.0
+							],
+							[
+								3.0,
+								1.0
+							],
+							[
+								4.0,
+								-4.0
+							],
+							[
+								4.0,
+								-3.0
+							],
+							[
+								4.0,
+								-2.0
+							],
+							[
+								4.0,
+								-1.0
+							],
+							[
+								4.0,
+								0.0
+							]
+						],
+						"encounter_cleared": true,
+						"encounter_monsters": [
+							"skeleton"
+						],
+						"exits": [
+							[
+								-3.0,
+								0.0
+							]
+						],
+						"id": "lost_crown:ruins_of_ashvale:1",
+						"monster_spawns": [
+							[
+								3.0,
+								0.0
+							]
+						],
+						"name": "Ashvale antechamber",
+						"objects": [
+							{
+								"burning": false,
+								"contents": [],
+								"fixed": true,
+								"hp": 0,
+								"id": "door",
+								"key_id": "ashvale_brass_key",
+								"kind": "door",
+								"lock_dc": 15.0,
+								"lockable": true,
+								"locked": false,
+								"material": "wood",
+								"max_hp": 10.0,
+								"name": "Temple door",
+								"open": true,
+								"position": [
+									0.0,
+									0.0
+								],
+								"size": "Medium",
+								"weight_lb": 20.0
+							},
+							{
+								"capacity": 10.0,
+								"contents": [
+									{
+										"definition_id": "potion_healing",
+										"instance_id": "world:lost_crown:ruins_of_ashvale:1:chest:1",
+										"state": {}
+									}
+								],
+								"fixed": false,
+								"hp": 10.0,
+								"id": "chest",
+								"key_id": "ashvale_brass_key",
+								"kind": "container",
+								"lock_dc": 15.0,
+								"lockable": true,
+								"locked": false,
+								"material": "wood",
+								"max_hp": 10.0,
+								"name": "Offering chest",
+								"open": true,
+								"position": [
+									2.0,
+									0.0
+								],
+								"size": "Medium",
+								"weight_lb": 20.0
+							},
+							{
+								"contents": [],
+								"dirty": true,
+								"hp": 3.0,
+								"id": "offering_bowl",
+								"kind": "loose",
+								"material": "ceramic",
+								"max_hp": 3.0,
+								"name": "Dusty offering bowl",
+								"position": [
+									2.0,
+									1.0
+								],
+								"size": "Tiny",
+								"volume_cubic_feet": 0.2
+							},
+							{
+								"capacity_gallons": 40.0,
+								"contamination": [
+									"poison",
+									"disease"
+								],
+								"contents": [],
+								"fixed": true,
+								"food_or_drink": true,
+								"hp": 40.0,
+								"id": "cistern",
+								"kind": "container",
+								"material": "stone",
+								"max_hp": 40.0,
+								"name": "Temple cistern",
+								"open": true,
+								"position": [
+									3.0,
+									1.0
+								],
+								"size": "Large",
+								"water_gallons": 10.0,
+								"weight_lb": 500.0
+							},
+							{
+								"contamination": [],
+								"contents": [],
+								"fixed": false,
+								"food_or_drink": true,
+								"food_servings": 3.0,
+								"hp": 5.0,
+								"id": "food_basket",
+								"kind": "container",
+								"material": "woven reed",
+								"max_hp": 5.0,
+								"name": "Dry food basket",
+								"open": true,
+								"position": [
+									4.0,
+									-1.0
+								],
+								"size": "Medium"
+							},
+							{
+								"contents": [],
+								"fixed": false,
+								"hp": 10.0,
+								"id": "key",
+								"kind": "loose",
+								"material": "brass",
+								"max_hp": 10.0,
+								"name": "Brass key",
+								"position": [
+									-2.0,
+									1.0
+								],
+								"removed": true,
+								"size": "Tiny",
+								"weight_lb": 0.1
+							},
+							{
+								"armor_class": 15.0,
+								"burning": false,
+								"contents": [],
+								"damage_immunities": [
+									"poison",
+									"psychic"
+								],
+								"fixed": true,
+								"flammable": true,
+								"height_feet": 10.0,
+								"hp": 0,
+								"id": "timber_partition",
+								"kind": "barrier",
+								"material": "wood",
+								"max_hp": 27.0,
+								"name": "Old timber partition",
+								"position": [
+									0.0,
+									-1.0
+								],
+								"size": "Large"
+							},
+							{
+								"armor_class": 17.0,
+								"contents": [],
+								"damage_immunities": [
+									"poison",
+									"psychic",
+									"fire"
+								],
+								"damage_threshold": 10.0,
+								"fixed": true,
+								"height_feet": 10.0,
+								"hp": 50.0,
+								"id": "stone_partition",
+								"kind": "barrier",
+								"material": "stone",
+								"max_hp": 50.0,
+								"name": "Temple masonry",
+								"position": [
+									0.0,
+									1.0
+								],
+								"size": "Large"
+							},
+							{
+								"body_creature_type": "humanoid",
+								"contents": [],
+								"description": "An old Small or Medium Humanoid skeleton. These remains may be preserved or animated; their former knowledge is not authored.",
+								"fixed": false,
+								"hp": 10.0,
+								"id": "fallen_guard_bones",
+								"kind": "remains",
+								"material": "bone",
+								"max_hp": 10.0,
+								"name": "Bones of a fallen temple guard",
+								"position": [
+									-1.0,
+									1.0
+								],
+								"preserved_until": 0.0,
+								"remains": "bones",
+								"removed": false,
+								"size": "Medium"
+							}
+						],
+						"party_altitude_modes": {
+							"aldric_cleric": "ground",
+							"mira_ranger": "ground",
+							"player_0_wizard": "ground",
+							"rowan_rogue": "ground"
+						},
+						"party_altitudes": {
+							"aldric_cleric": 0,
+							"mira_ranger": 0,
+							"player_0_wizard": 0,
+							"rowan_rogue": 0
+						},
+						"party_positions": {
+							"aldric_cleric": [
+								-3,
+								0
+							],
+							"mira_ranger": [
+								-2,
+								-1
+							],
+							"player_0_wizard": [
+								3,
+								0
+							],
+							"rowan_rogue": [
+								-2,
+								0
+							]
+						},
+						"party_spawns": [
+							[
+								-3.0,
+								0.0
+							],
+							[
+								-3.0,
+								1.0
+							],
+							[
+								-2.0,
+								-1.0
+							],
+							[
+								-2.0,
+								0.0
+							]
+						],
+						"wall_details": [],
+						"walls": [
+							[
+								0.0,
+								-4.0
+							],
+							[
+								0.0,
+								-3.0
+							],
+							[
+								0.0,
+								-2.0
+							],
+							[
+								0.0,
+								-1.0
+							],
+							[
+								0.0,
+								1.0
+							],
+							[
+								0.0,
+								2.0
+							],
+							[
+								0.0,
+								3.0
+							],
+							[
+								0.0,
+								4.0
+							]
+						]
+					}
+				},
+				"party_position": [
+					0,
+					0
+				],
+				"pending_combat_room_id": -1,
+				"rooms": [
+					{
+						"coord": [
+							0,
+							0
+						],
+						"event_id": "",
+						"id": 0,
+						"is_cleared": true,
+						"is_revealed": true,
+						"is_visited": true,
+						"loot_item_ids": [],
+						"monster_ids": [],
+						"type": 0
+					},
+					{
+						"coord": [
+							-1,
+							0
+						],
+						"event_id": "",
+						"id": 1,
+						"is_cleared": true,
+						"is_revealed": true,
+						"is_visited": true,
+						"loot_item_ids": [],
+						"monster_ids": [],
+						"type": 1
+					},
+					{
+						"coord": [
+							-2,
+							0
+						],
+						"event_id": "",
+						"id": 2,
+						"is_cleared": false,
+						"is_revealed": true,
+						"is_visited": false,
+						"loot_item_ids": [],
+						"monster_ids": [
+							"wight"
+						],
+						"type": 3
+					},
+					{
+						"coord": [
+							-3,
+							0
+						],
+						"event_id": "",
+						"id": 3,
+						"is_cleared": false,
+						"is_revealed": false,
+						"is_visited": false,
+						"loot_item_ids": [],
+						"monster_ids": [
+							"zombie"
+						],
+						"type": 3
+					},
+					{
+						"coord": [
+							-4,
+							0
+						],
+						"event_id": "",
+						"id": 4,
+						"is_cleared": false,
+						"is_revealed": false,
+						"is_visited": false,
+						"loot_item_ids": [],
+						"monster_ids": [
+							"wight"
+						],
+						"type": 5
+					}
+				],
+				"save_checkpoint": true
+			}
+		},
+		"next_animal_messenger_id": 1,
+		"next_created_creature_id": 1,
+		"recruited_companions": [
+			"aldric",
+			"mira",
+			"rowan"
+		],
+		"visited_overworld_locations": [
+			{
+				"coord": [
+					0,
+					0
+				],
+				"id": "0,0",
+				"name": "Elderwick"
+			},
+			{
+				"coord": [
+					1,
+					0
+				],
+				"id": "1,0",
+				"name": "Wilderness hex (1, 0)"
+			},
+			{
+				"coord": [
+					3,
+					-1
+				],
+				"id": "3,-1",
+				"name": "Ruins of Ashvale"
+			}
+		]
+	},
+	"current_round": 1,
+	"current_state": 2,
+	"defeated_monsters": [
+		"skeleton"
+	],
+	"game_version": "crown-2024-partial",
+	"party": {
+		"characters": {
+			"aldric_cleric": {
+				"ability_scores": {
+					"CHA": 10,
+					"CON": 14,
+					"DEX": 10,
+					"INT": 10,
+					"STR": 12,
+					"WIS": 16
+				},
+				"armor_proficiencies": [
+					"light",
+					"medium",
+					"shield"
+				],
+				"barbarian_relentless_rage_enabled": true,
+				"base_ac": 15,
+				"body_death_serial": 0,
+				"body_missing_parts": [],
+				"character_id": "aldric_cleric",
+				"class_id": "cleric",
+				"cleric_cantrip_replacement_available": true,
+				"cleric_preparation_free_change": true,
+				"cleric_spells_trained": false,
+				"condition_sources": {},
+				"conditions": {},
+				"corpse_state": {},
+				"creation_choices": {
+					"equipment": "equipment",
+					"instrument": "lute",
+					"skills": [
+						"History",
+						"Insight"
+					],
+					"tools": []
+				},
+				"crit_range": 20,
+				"current_hp": 14,
+				"days_without_food": 0,
+				"death_save_failures": 0,
+				"death_save_successes": 0,
+				"disintegrated": false,
+				"exhaustion_level": 0,
+				"exhaustion_recovery_blockers": [],
+				"extra_attacks": 0,
+				"feature_choices": {
+					"cleric_spellcasting": [
+						"guidance",
+						"sacred_flame",
+						"bless",
+						"cure_wounds",
+						"guiding_bolt",
+						"shield_of_faith"
+					]
+				},
+				"feature_uses": {
+					"cleric_channel_divinity": 2
+				},
+				"fiendish_resilience_type": "",
+				"fighter_training": {},
+				"food_eaten_today_pounds": 0.0,
+				"heroic_inspiration": false,
+				"hydration_until_seconds": 0,
+				"inventory": {
+					"backpack": [
+						"holy_symbol",
+						"priests_pack"
+					],
+					"copies": {
+						"backpack": [
+							"bag_1791501338.542_-9223371816603482181:4",
+							"bag_1791501338.542_-9223371816603482181:5"
+						],
+						"equipped": {
+							"BODY": "bag_1791501338.542_-9223371816603482181:1",
+							"SHIELD": "bag_1791501338.542_-9223371816603482181:2",
+							"WEAPON": "bag_1791501338.542_-9223371816603482181:3"
+						},
+						"inventory_id": "bag_1791501338.542_-9223371816603482181",
+						"next_id": 6,
+						"records": {
+							"bag_1791501338.542_-9223371816603482181:1": {
+								"definition_id": "chain_shirt",
+								"instance_id": "bag_1791501338.542_-9223371816603482181:1",
+								"state": {}
+							},
+							"bag_1791501338.542_-9223371816603482181:2": {
+								"definition_id": "shield",
+								"instance_id": "bag_1791501338.542_-9223371816603482181:2",
+								"state": {}
+							},
+							"bag_1791501338.542_-9223371816603482181:3": {
+								"definition_id": "mace",
+								"instance_id": "bag_1791501338.542_-9223371816603482181:3",
+								"state": {}
+							},
+							"bag_1791501338.542_-9223371816603482181:4": {
+								"definition_id": "holy_symbol",
+								"instance_id": "bag_1791501338.542_-9223371816603482181:4",
+								"state": {}
+							},
+							"bag_1791501338.542_-9223371816603482181:5": {
+								"definition_id": "priests_pack",
+								"instance_id": "bag_1791501338.542_-9223371816603482181:5",
+								"state": {}
+							}
+						}
+					},
+					"equipped": {
+						"BODY": "chain_shirt",
+						"SHIELD": "shield",
+						"WEAPON": "mace"
+					},
+					"gold": 7
+				},
+				"is_alive": true,
+				"is_stable": false,
+				"known_spells": [
+					"guidance",
+					"sacred_flame",
+					"bless",
+					"cure_wounds",
+					"guiding_bolt",
+					"shield_of_faith"
+				],
+				"level": 2,
+				"max_hp": 14,
+				"modifiers": [],
+				"movement_speeds_feet": {
+					"climb": 0,
+					"fly": 0,
+					"swim": 0
+				},
+				"name": "Aldric",
+				"nourishment_until_seconds": 0,
+				"pact_weapon_damage_type": "",
+				"proficiency_bonus": 2,
+				"race_id": "dwarf",
+				"revival_willing": true,
+				"saving_throw_proficiencies": [
+					"WIS",
+					"CHA"
+				],
+				"skill_proficiencies": [
+					"History",
+					"Insight"
+				],
+				"sorcerer_metamagic_choices": [],
+				"sorcerer_metamagic_pending": 0,
+				"sorcerer_metamagic_replacement_available": false,
+				"speed": 6,
+				"spell_cast_serial": 0,
+				"spell_choices_pending": true,
+				"spell_concentration": {},
+				"spell_effects": {},
+				"spell_slots": {
+					"1": 3
+				},
+				"stable_recovery_at_seconds": 0,
+				"subclass_id": "",
+				"temp_hp": 0,
+				"tool_proficiencies": [],
+				"warlock_arcanum_pending_levels": [],
+				"warlock_arcanum_replacement_available": false,
+				"warlock_arcanum_uses": {},
+				"warlock_invocation_pending": 0,
+				"warlock_invocation_replacement_available": false,
+				"warlock_invocations": [],
+				"warlock_mystic_arcanum": {},
+				"water_drank_today_gallons": 0.0,
+				"weapon_masteries": [],
+				"weapon_proficiencies": [
+					"simple"
+				],
+				"wild_shape_state": {},
+				"wizard_mastery_replacement_available": false,
+				"wizard_memorize_spell_pending": false,
+				"wizard_preparation_free_change": false,
+				"wizard_signature_spells": [],
+				"wizard_spell_mastery": {},
+				"wizard_spellbook": [],
+				"wizard_spellbook_pending": 0,
+				"xp": 0
+			},
+			"mira_ranger": {
+				"ability_scores": {
+					"CHA": 10,
+					"CON": 12,
+					"DEX": 18,
+					"INT": 11,
+					"STR": 10,
+					"WIS": 14
+				},
+				"armor_proficiencies": [
+					"light",
+					"medium",
+					"shields"
+				],
+				"barbarian_relentless_rage_enabled": true,
+				"base_ac": 15,
+				"body_death_serial": 0,
+				"body_missing_parts": [],
+				"character_id": "mira_ranger",
+				"class_id": "ranger",
+				"cleric_cantrip_replacement_available": false,
+				"cleric_preparation_free_change": false,
+				"cleric_spells_trained": false,
+				"condition_sources": {},
+				"conditions": {},
+				"corpse_state": {},
+				"creation_choices": {},
+				"crit_range": 20,
+				"current_hp": 20,
+				"days_without_food": 0,
+				"death_save_failures": 0,
+				"death_save_successes": 0,
+				"disintegrated": false,
+				"exhaustion_level": 0,
+				"exhaustion_recovery_blockers": [],
+				"extra_attacks": 0,
+				"feature_choices": {
+					"ranger_spellcasting": []
+				},
+				"feature_uses": {
+					"free_spell_cast:ranger_favored_enemy": 2,
+					"weapon_mastery_swaps": 1
+				},
+				"fiendish_resilience_type": "",
+				"fighter_training": {},
+				"food_eaten_today_pounds": 0.0,
+				"heroic_inspiration": false,
+				"hydration_until_seconds": 0,
+				"inventory": {
+					"backpack": [
+						"shortsword"
+					],
+					"copies": {
+						"backpack": [
+							"bag_1791501338.542_-9223371816519596097:3"
+						],
+						"equipped": {
+							"BODY": "bag_1791501338.542_-9223371816519596097:1",
+							"WEAPON": "bag_1791501338.542_-9223371816519596097:2"
+						},
+						"inventory_id": "bag_1791501338.542_-9223371816519596097",
+						"next_id": 4,
+						"records": {
+							"bag_1791501338.542_-9223371816519596097:1": {
+								"definition_id": "leather_armor",
+								"instance_id": "bag_1791501338.542_-9223371816519596097:1",
+								"state": {}
+							},
+							"bag_1791501338.542_-9223371816519596097:2": {
+								"definition_id": "longbow",
+								"instance_id": "bag_1791501338.542_-9223371816519596097:2",
+								"state": {}
+							},
+							"bag_1791501338.542_-9223371816519596097:3": {
+								"definition_id": "shortsword",
+								"instance_id": "bag_1791501338.542_-9223371816519596097:3",
+								"state": {}
+							}
+						}
+					},
+					"equipped": {
+						"BODY": "leather_armor",
+						"WEAPON": "longbow"
+					},
+					"gold": 0
+				},
+				"is_alive": true,
+				"is_stable": false,
+				"known_spells": [
+					"hunters_mark"
+				],
+				"level": 2,
+				"max_hp": 20,
+				"modifiers": [],
+				"movement_speeds_feet": {
+					"climb": 0,
+					"fly": 0,
+					"swim": 0
+				},
+				"name": "Mira",
+				"nourishment_until_seconds": 0,
+				"pact_weapon_damage_type": "",
+				"proficiency_bonus": 2,
+				"race_id": "elf",
+				"revival_willing": true,
+				"saving_throw_proficiencies": [
+					"STR",
+					"DEX"
+				],
+				"skill_proficiencies": [
+					"Perception"
+				],
+				"sorcerer_metamagic_choices": [],
+				"sorcerer_metamagic_pending": 0,
+				"sorcerer_metamagic_replacement_available": false,
+				"speed": 6,
+				"spell_cast_serial": 0,
+				"spell_choices_pending": true,
+				"spell_concentration": {},
+				"spell_effects": {},
+				"spell_slots": {
+					"1": 2
+				},
+				"stable_recovery_at_seconds": 0,
+				"subclass_id": "",
+				"temp_hp": 0,
+				"tool_proficiencies": [],
+				"warlock_arcanum_pending_levels": [],
+				"warlock_arcanum_replacement_available": false,
+				"warlock_arcanum_uses": {},
+				"warlock_invocation_pending": 0,
+				"warlock_invocation_replacement_available": false,
+				"warlock_invocations": [],
+				"warlock_mystic_arcanum": {},
+				"water_drank_today_gallons": 0.0,
+				"weapon_masteries": [],
+				"weapon_proficiencies": [
+					"simple",
+					"martial"
+				],
+				"wild_shape_state": {},
+				"wizard_mastery_replacement_available": false,
+				"wizard_memorize_spell_pending": false,
+				"wizard_preparation_free_change": false,
+				"wizard_signature_spells": [],
+				"wizard_spell_mastery": {},
+				"wizard_spellbook": [],
+				"wizard_spellbook_pending": 0,
+				"xp": 0
+			},
+			"player_0_wizard": {
+				"ability_scores": {
+					"CHA": 10,
+					"CON": 14,
+					"DEX": 15,
+					"INT": 16,
+					"STR": 10,
+					"WIS": 10
+				},
+				"armor_proficiencies": [],
+				"barbarian_relentless_rage_enabled": true,
+				"base_ac": 12,
+				"body_death_serial": 0,
+				"body_missing_parts": [],
+				"character_id": "player_0_wizard",
+				"class_id": "wizard",
+				"cleric_cantrip_replacement_available": false,
+				"cleric_preparation_free_change": false,
+				"cleric_spells_trained": false,
+				"condition_sources": {},
+				"conditions": {},
+				"corpse_state": {},
+				"creation_choices": {},
+				"crit_range": 20,
+				"current_hp": 12,
+				"days_without_food": 0,
+				"death_save_failures": 0,
+				"death_save_successes": 0,
+				"disintegrated": false,
+				"exhaustion_level": 0,
+				"exhaustion_recovery_blockers": [],
+				"extra_attacks": 0,
+				"feature_choices": {
+					"wizard_spellcasting": [
+						"fire_bolt",
+						"ray_of_frost",
+						"light"
+					]
+				},
+				"feature_uses": {
+					"wizard_arcane_recovery": 1
+				},
+				"fiendish_resilience_type": "",
+				"fighter_training": {},
+				"food_eaten_today_pounds": 0.0,
+				"heroic_inspiration": false,
+				"hydration_until_seconds": 0,
+				"inventory": {
+					"backpack": [
+						"spellbook",
+						"ashvale_brass_key"
+					],
+					"copies": {
+						"backpack": [
+							"bag_1791501338.542_-9223371816687368265:2",
+							"world:lost_crown:ruins_of_ashvale:1:key:0"
+						],
+						"equipped": {
+							"WEAPON": "bag_1791501338.542_-9223371816687368265:1"
+						},
+						"inventory_id": "bag_1791501338.542_-9223371816687368265",
+						"next_id": 3,
+						"records": {
+							"bag_1791501338.542_-9223371816687368265:1": {
+								"definition_id": "dagger",
+								"instance_id": "bag_1791501338.542_-9223371816687368265:1",
+								"state": {}
+							},
+							"bag_1791501338.542_-9223371816687368265:2": {
+								"definition_id": "spellbook",
+								"instance_id": "bag_1791501338.542_-9223371816687368265:2",
+								"state": {}
+							},
+							"world:lost_crown:ruins_of_ashvale:1:key:0": {
+								"definition_id": "ashvale_brass_key",
+								"instance_id": "world:lost_crown:ruins_of_ashvale:1:key:0",
+								"state": {
+									"physical": {
+										"fixed": false,
+										"hp": 10.0,
+										"material": "brass",
+										"max_hp": 10.0,
+										"object_id": "key",
+										"room_id": "lost_crown:ruins_of_ashvale:1",
+										"size": "Tiny",
+										"weight_lb": 0.1
+									}
+								}
+							}
+						}
+					},
+					"equipped": {
+						"WEAPON": "dagger"
+					},
+					"gold": 0
+				},
+				"is_alive": true,
+				"is_stable": false,
+				"known_spells": [
+					"fire_bolt",
+					"ray_of_frost",
+					"light"
+				],
+				"level": 2,
+				"max_hp": 12,
+				"modifiers": [],
+				"movement_speeds_feet": {
+					"climb": 0,
+					"fly": 0,
+					"swim": 0
+				},
+				"name": "Hero 1",
+				"nourishment_until_seconds": 0,
+				"pact_weapon_damage_type": "",
+				"proficiency_bonus": 2,
+				"race_id": "elf",
+				"revival_willing": true,
+				"saving_throw_proficiencies": [
+					"INT",
+					"WIS"
+				],
+				"skill_proficiencies": [
+					"Perception"
+				],
+				"sorcerer_metamagic_choices": [],
+				"sorcerer_metamagic_pending": 0,
+				"sorcerer_metamagic_replacement_available": false,
+				"speed": 6,
+				"spell_cast_serial": 0,
+				"spell_choices_pending": true,
+				"spell_concentration": {},
+				"spell_effects": {},
+				"spell_slots": {
+					"1": 3
+				},
+				"stable_recovery_at_seconds": 0,
+				"subclass_id": "",
+				"temp_hp": 0,
+				"tool_proficiencies": [],
+				"warlock_arcanum_pending_levels": [],
+				"warlock_arcanum_replacement_available": false,
+				"warlock_arcanum_uses": {},
+				"warlock_invocation_pending": 0,
+				"warlock_invocation_replacement_available": false,
+				"warlock_invocations": [],
+				"warlock_mystic_arcanum": {},
+				"water_drank_today_gallons": 0.0,
+				"weapon_masteries": [],
+				"weapon_proficiencies": [
+					"simple"
+				],
+				"wild_shape_state": {},
+				"wizard_mastery_replacement_available": false,
+				"wizard_memorize_spell_pending": false,
+				"wizard_preparation_free_change": true,
+				"wizard_signature_spells": [],
+				"wizard_spell_mastery": {},
+				"wizard_spellbook": [],
+				"wizard_spellbook_pending": 8,
+				"xp": 0
+			},
+			"rowan_rogue": {
+				"ability_scores": {
+					"CHA": 13,
+					"CON": 13,
+					"DEX": 17,
+					"INT": 15,
+					"STR": 11,
+					"WIS": 11
+				},
+				"armor_proficiencies": [
+					"light"
+				],
+				"barbarian_relentless_rage_enabled": true,
+				"base_ac": 14,
+				"body_death_serial": 0,
+				"body_missing_parts": [],
+				"character_id": "rowan_rogue",
+				"class_id": "rogue",
+				"cleric_cantrip_replacement_available": false,
+				"cleric_preparation_free_change": false,
+				"cleric_spells_trained": false,
+				"condition_sources": {},
+				"conditions": {},
+				"corpse_state": {},
+				"creation_choices": {},
+				"crit_range": 20,
+				"current_hp": 13,
+				"days_without_food": 0,
+				"death_save_failures": 0,
+				"death_save_successes": 0,
+				"disintegrated": false,
+				"exhaustion_level": 0,
+				"exhaustion_recovery_blockers": [],
+				"extra_attacks": 0,
+				"feature_choices": {},
+				"feature_uses": {
+					"rogue_cunning_action": 1,
+					"weapon_mastery_swaps": 1
+				},
+				"fiendish_resilience_type": "",
+				"fighter_training": {},
+				"food_eaten_today_pounds": 0.0,
+				"heroic_inspiration": false,
+				"hydration_until_seconds": 0,
+				"inventory": {
+					"backpack": [
+						"shortbow",
+						"dagger",
+						"thieves_tools"
+					],
+					"copies": {
+						"backpack": [
+							"bag_1791501338.542_-9223371816435710013:3",
+							"bag_1791501338.542_-9223371816435710013:4",
+							"bag_1791501338.542_-9223371816435710013:5"
+						],
+						"equipped": {
+							"BODY": "bag_1791501338.542_-9223371816435710013:1",
+							"WEAPON": "bag_1791501338.542_-9223371816435710013:2"
+						},
+						"inventory_id": "bag_1791501338.542_-9223371816435710013",
+						"next_id": 6,
+						"records": {
+							"bag_1791501338.542_-9223371816435710013:1": {
+								"definition_id": "leather_armor",
+								"instance_id": "bag_1791501338.542_-9223371816435710013:1",
+								"state": {}
+							},
+							"bag_1791501338.542_-9223371816435710013:2": {
+								"definition_id": "rapier",
+								"instance_id": "bag_1791501338.542_-9223371816435710013:2",
+								"state": {}
+							},
+							"bag_1791501338.542_-9223371816435710013:3": {
+								"definition_id": "shortbow",
+								"instance_id": "bag_1791501338.542_-9223371816435710013:3",
+								"state": {}
+							},
+							"bag_1791501338.542_-9223371816435710013:4": {
+								"definition_id": "dagger",
+								"instance_id": "bag_1791501338.542_-9223371816435710013:4",
+								"state": {}
+							},
+							"bag_1791501338.542_-9223371816435710013:5": {
+								"definition_id": "thieves_tools",
+								"instance_id": "bag_1791501338.542_-9223371816435710013:5",
+								"state": {}
+							}
+						}
+					},
+					"equipped": {
+						"BODY": "leather_armor",
+						"WEAPON": "rapier"
+					},
+					"gold": 0
+				},
+				"is_alive": true,
+				"is_stable": false,
+				"known_spells": [],
+				"level": 2,
+				"max_hp": 13,
+				"modifiers": [],
+				"movement_speeds_feet": {
+					"climb": 0,
+					"fly": 0,
+					"swim": 0
+				},
+				"name": "Rowan",
+				"nourishment_until_seconds": 0,
+				"pact_weapon_damage_type": "",
+				"proficiency_bonus": 2,
+				"race_id": "human",
+				"revival_willing": true,
+				"saving_throw_proficiencies": [
+					"DEX",
+					"INT"
+				],
+				"skill_proficiencies": [],
+				"sorcerer_metamagic_choices": [],
+				"sorcerer_metamagic_pending": 0,
+				"sorcerer_metamagic_replacement_available": false,
+				"speed": 6,
+				"spell_cast_serial": 0,
+				"spell_choices_pending": false,
+				"spell_concentration": {},
+				"spell_effects": {},
+				"spell_slots": {},
+				"stable_recovery_at_seconds": 0,
+				"subclass_id": "",
+				"temp_hp": 0,
+				"tool_proficiencies": [],
+				"warlock_arcanum_pending_levels": [],
+				"warlock_arcanum_replacement_available": false,
+				"warlock_arcanum_uses": {},
+				"warlock_invocation_pending": 0,
+				"warlock_invocation_replacement_available": false,
+				"warlock_invocations": [],
+				"warlock_mystic_arcanum": {},
+				"water_drank_today_gallons": 0.0,
+				"weapon_masteries": [],
+				"weapon_proficiencies": [
+					"simple",
+					"martial"
+				],
+				"wild_shape_state": {},
+				"wizard_mastery_replacement_available": false,
+				"wizard_memorize_spell_pending": false,
+				"wizard_preparation_free_change": false,
+				"wizard_signature_spells": [],
+				"wizard_spell_mastery": {},
+				"wizard_spellbook": [],
+				"wizard_spellbook_pending": 0,
+				"xp": 0
+			}
+		},
+		"companion_roster": {
+			"aldric": {
+				"character_id": "aldric_cleric",
+				"state": "dismissed"
+			},
+			"mira": {
+				"character_id": "mira_ranger",
+				"state": "dismissed"
+			},
+			"rowan": {
+				"character_id": "rowan_rogue",
+				"state": "dismissed"
+			}
+		},
+		"leader_slot_id": "slot_0",
+		"party_slots": [
+			{
+				"character_id": "player_0_wizard",
+				"is_companion": false,
+				"occupied": true,
+				"slot_id": "slot_0"
+			},
+			{
+				"character_id": "",
+				"is_companion": false,
+				"occupied": false,
+				"slot_id": "slot_1"
+			},
+			{
+				"character_id": "",
+				"is_companion": false,
+				"occupied": false,
+				"slot_id": "slot_2"
+			},
+			{
+				"character_id": "",
+				"is_companion": false,
+				"occupied": false,
+				"slot_id": "slot_3"
+			}
+		]
+	},
+	"players": [
+		{
+			"assigned_slot_ids": [
+				"slot_0"
+			],
+			"character": {
+				"ability_scores": {
+					"CHA": 10,
+					"CON": 14,
+					"DEX": 15,
+					"INT": 16,
+					"STR": 10,
+					"WIS": 10
+				},
+				"armor_proficiencies": [],
+				"barbarian_relentless_rage_enabled": true,
+				"base_ac": 12,
+				"body_death_serial": 0,
+				"body_missing_parts": [],
+				"character_id": "player_0_wizard",
+				"class_id": "wizard",
+				"cleric_cantrip_replacement_available": false,
+				"cleric_preparation_free_change": false,
+				"cleric_spells_trained": false,
+				"condition_sources": {},
+				"conditions": {},
+				"corpse_state": {},
+				"creation_choices": {},
+				"crit_range": 20,
+				"current_hp": 12,
+				"days_without_food": 0,
+				"death_save_failures": 0,
+				"death_save_successes": 0,
+				"disintegrated": false,
+				"exhaustion_level": 0,
+				"exhaustion_recovery_blockers": [],
+				"extra_attacks": 0,
+				"feature_choices": {
+					"wizard_spellcasting": [
+						"fire_bolt",
+						"ray_of_frost",
+						"light"
+					]
+				},
+				"feature_uses": {
+					"wizard_arcane_recovery": 1
+				},
+				"fiendish_resilience_type": "",
+				"fighter_training": {},
+				"food_eaten_today_pounds": 0.0,
+				"heroic_inspiration": false,
+				"hydration_until_seconds": 0,
+				"inventory": {
+					"backpack": [
+						"spellbook",
+						"ashvale_brass_key"
+					],
+					"copies": {
+						"backpack": [
+							"bag_1791501338.542_-9223371816687368265:2",
+							"world:lost_crown:ruins_of_ashvale:1:key:0"
+						],
+						"equipped": {
+							"WEAPON": "bag_1791501338.542_-9223371816687368265:1"
+						},
+						"inventory_id": "bag_1791501338.542_-9223371816687368265",
+						"next_id": 3,
+						"records": {
+							"bag_1791501338.542_-9223371816687368265:1": {
+								"definition_id": "dagger",
+								"instance_id": "bag_1791501338.542_-9223371816687368265:1",
+								"state": {}
+							},
+							"bag_1791501338.542_-9223371816687368265:2": {
+								"definition_id": "spellbook",
+								"instance_id": "bag_1791501338.542_-9223371816687368265:2",
+								"state": {}
+							},
+							"world:lost_crown:ruins_of_ashvale:1:key:0": {
+								"definition_id": "ashvale_brass_key",
+								"instance_id": "world:lost_crown:ruins_of_ashvale:1:key:0",
+								"state": {
+									"physical": {
+										"fixed": false,
+										"hp": 10.0,
+										"material": "brass",
+										"max_hp": 10.0,
+										"object_id": "key",
+										"room_id": "lost_crown:ruins_of_ashvale:1",
+										"size": "Tiny",
+										"weight_lb": 0.1
+									}
+								}
+							}
+						}
+					},
+					"equipped": {
+						"WEAPON": "dagger"
+					},
+					"gold": 0
+				},
+				"is_alive": true,
+				"is_stable": false,
+				"known_spells": [
+					"fire_bolt",
+					"ray_of_frost",
+					"light"
+				],
+				"level": 2,
+				"max_hp": 12,
+				"modifiers": [],
+				"movement_speeds_feet": {
+					"climb": 0,
+					"fly": 0,
+					"swim": 0
+				},
+				"name": "Hero 1",
+				"nourishment_until_seconds": 0,
+				"pact_weapon_damage_type": "",
+				"proficiency_bonus": 2,
+				"race_id": "elf",
+				"revival_willing": true,
+				"saving_throw_proficiencies": [
+					"INT",
+					"WIS"
+				],
+				"skill_proficiencies": [
+					"Perception"
+				],
+				"sorcerer_metamagic_choices": [],
+				"sorcerer_metamagic_pending": 0,
+				"sorcerer_metamagic_replacement_available": false,
+				"speed": 6,
+				"spell_cast_serial": 0,
+				"spell_choices_pending": true,
+				"spell_concentration": {},
+				"spell_effects": {},
+				"spell_slots": {
+					"1": 3
+				},
+				"stable_recovery_at_seconds": 0,
+				"subclass_id": "",
+				"temp_hp": 0,
+				"tool_proficiencies": [],
+				"warlock_arcanum_pending_levels": [],
+				"warlock_arcanum_replacement_available": false,
+				"warlock_arcanum_uses": {},
+				"warlock_invocation_pending": 0,
+				"warlock_invocation_replacement_available": false,
+				"warlock_invocations": [],
+				"warlock_mystic_arcanum": {},
+				"water_drank_today_gallons": 0.0,
+				"weapon_masteries": [],
+				"weapon_proficiencies": [
+					"simple"
+				],
+				"wild_shape_state": {},
+				"wizard_mastery_replacement_available": false,
+				"wizard_memorize_spell_pending": false,
+				"wizard_preparation_free_change": true,
+				"wizard_signature_spells": [],
+				"wizard_spell_mastery": {},
+				"wizard_spellbook": [],
+				"wizard_spellbook_pending": 8,
+				"xp": 0
+			},
+			"color": "4d99f2ff",
+			"display_name": "Player 1",
+			"hex_position": [
+				0,
+				0
+			],
+			"input_mode": "shared",
+			"is_alive": true,
+			"joined": true,
+			"name": "Player 1",
+			"session_id": "seat_0"
+		}
+	],
+	"ruleset_id": "dnd-2024-srd-5.2.1",
+	"saved_at": {
+		"day": 8,
+		"dst": true,
+		"hour": 18,
+		"minute": 30,
+		"month": 10,
+		"second": 3,
+		"weekday": 4,
+		"year": 2026
+	},
+	"schema_version": 2
+}

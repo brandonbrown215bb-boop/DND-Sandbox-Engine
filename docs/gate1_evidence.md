@@ -1,12 +1,20 @@
 # Gate 1 evidence
 
-Gate 1 is complete at the current 521-assertion baseline. Project-context
+> Historical snapshot, not current priority or acceptance. See the
+> [documentation map](README.md) for current authority. Findings, counts,
+> gate decisions and execution orders below apply to the dated snapshot;
+> reproduce relevant behavior before reopening a defect or reusing a claim.
+
+Historical recovery evidence. See [current checkpoint](operations/current.md)
+for the supported source revision and latest validation; counts below are dated.
+
+Gate 1 was complete at the historical 521-assertion baseline. Project-context
 parsing, production boot, isolated scenarios, bounded timeouts, result markers,
 disposable persistence roots, and unexpected engine-error handling all pass.
 The Bardic Inspiration fixture now seeds only its test input while keeping the
 production attack and reaction path intact.
 
-## Current working-tree validation (2026-08-10)
+## Historical working-tree validation (2026-08-10)
 
 Two consecutive complete Windows runs against
 `Godot 4.7.stable.official.5b4e0cb0f` produced the same result:
@@ -74,6 +82,6 @@ runner uses disposable `XDG_*` roots for the same contract.
 
 ## Decision
 
-`DONE` for the current working tree. The focused logic suite passed three
+`DONE` for the working tree reviewed on that date. The focused logic suite passed three
 consecutive times, and the complete supported Windows runner passed twice with
 every named scenario and exit code `0`.

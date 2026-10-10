@@ -1,63 +1,47 @@
 # Content pipeline
 
-Gate 2 content is loaded from two runtime roots in this order:
+This describes current loading, not the target interpreter's proposed pack API.
+`DataLoader` reads sorted content-type directories under `data/core/`, then
+`data/mods/`. It registers stable IDs and validates record/reference contracts
+before exposing the loaded registries. Named mod pack folders are not recursive.
 
-1. `data/core/` contains imported source records and curated mechanics.
-2. `data/mods/` contains future internal content packs and explicit overrides.
+## Collisions and support
 
-The loader sorts every directory listing and registers records by stable ID. A
-duplicate is a load failure unless `data/content_manifest.json` names the
-winner and every replaced record. The manifest is the authority for the
-current imported/core collisions; a future mod override must add its own
-entry rather than relying on filesystem order.
+Every duplicate must name a winner and all replaced sources in
+`data/content_manifest.json`. Curated winning fields stay authoritative;
+approved descriptive sources fill missing fields only. Filesystem order is
+not precedence. Manifest pack metadata/layers are current loading boundaries,
+not a user-facing pack manager or implemented version-migration system.
 
-The manifest also declares internal pack metadata. `core` and `crown` each
-have an identity, semantic version, dependency list, and ruleset compatibility
-label; runtime layers reference those pack IDs. This is an engine boundary,
-not a user-facing mod manager.
+Base and parent-linked subclass registries stay separate. Enabled unknown
+operations/resolvers and invalid references fail validation. Unsupported
+effectless features remain quarantined. A native resolver label selects only
+an already wired path, never arbitrary content code. Current loader curation
+and named helpers are migration inputs under
+[ADR-0018](decisions/0018-shared-data-driven-rules-runtime.md).
 
-When a curated record wins an approved collision, fields missing from it are
-filled from the replaced descriptive record. Existing curated fields such as
-spell effects, action economy, targets, saves, concentration, and class access
-are never overwritten by imported data.
+Shared spell definitions use `SharedSpell.content_error`; valid operations
+determine availability without per-ID registration. Native spells still use
+bounded `SpellSupport` slices. Registry presence, schema shape and availability
+are distinct from full gameplay/rules acceptance. Read
+[executable spell syntax](mechanics/shared-spells.md) and current source.
 
-The loader validates required record fields before registration. Active class
-features with neither executable `effects` nor a named `resolver` are rejected
-from the player-facing class record and reported as unavailable. They are not
-treated as implemented because a description exists.
+`DataLoader.get_registry_hash()` supports deterministic reload comparison.
+Production creation, actions and save preflight must prove actual behavior;
+inventory counts and Python mirrors cannot certify it. Do not regenerate
+support status from newly written but unverified hooks.
 
-Semantic validation also checks supported spell casting times, targets, schools,
-damage types, abilities, non-negative ranges/resource parameters, dice
-expressions, and stable campaign/event/content references. Development builds
-print a compact registry diagnostic with active layers, pack IDs, approved
-override count, and validation-failure count.
+## Import staging
 
-`DataLoader.get_registry_hash()` provides a deterministic snapshot for repeated
-load checks. `Character.initialize()` consumes the curated production spell
-access table and initializes slots, so a caster's first usable spell is proven
-through the normal creation path. The same loader boundary curates executable
-effects for the representative Fighter, Rogue, Wizard, and Cleric cohort; the
-remaining unsupported effectless records stay unavailable until their mechanics are
-implemented.
+`src/convert_all_5etools.py` requires `--external-data-dir`, accepts explicit
+raw/output roots, and defaults output to `data/imported/`. Output/report paths
+inside `data/core/` are refused. Directory discovery is sorted.
 
-The shared effect vocabulary now also supports timed AC/stat modifiers,
-attack/save roll modifiers, and movement modifiers. Character queries apply
-these modifiers to effective AC, attack/save rolls, and movement speed; the
-same timed entries are serialized with the character and expire with turn
-ticks. The first owner-labelled reaction prompt is now wired for monster
-attacks, while triggered reaction ownership and the broader spell/item effect surface
-remain open.
-
-## Importer boundary
-
-`src/convert_all_5etools.py` requires an explicit external 5eTools source
-directory, accepts explicit raw and output roots, and defaults generated content
-to `data/imported/`. The importer refuses an output or report path inside
-`data/core/`, so a rerun cannot overwrite curated records. Directory discovery
-is sorted before conversion.
-
-Each run writes `import_report.json` beside the staged output unless `--report`
-supplies another non-curated path. The report records source and exported
-counts, skipped records, duplicate IDs within the source/import, and IDs that
-collide with existing `data/core/` records. Staged output is review material;
-promotion into curated content remains a deliberate manifest-backed change.
+Each run writes `import_report.json` unless `--report` supplies another
+non-curated path. It records counts, skipped records, source/import duplicates
+and collisions with existing core content. Review staged output against actual
+rule sources and the manifest before deliberate promotion. Translation must
+not invent rule semantics or present truncated prose as source certification.
+See [development commands](operations/development.md),
+[private-content boundary](private_content_boundary.md) and the dated source
+inventories linked by the design documents.

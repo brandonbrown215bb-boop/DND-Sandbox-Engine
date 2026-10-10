@@ -4,18 +4,18 @@ This directory is the project's shared notice board for humans and coding agents
 Quest cards under `quests/` are tracked Markdown. Each card contains a structured state
 block plus a readable summary and handoff log.
 
-## Crown roadmap execution
+## Current roadmap execution
 
 The remaining work in `roadmap.md` is decomposed into small cards.
 
 - Only the current card is `ready`; downstream cards stay `parked`.
-- Each implementation card targets roughly 30–60 minutes.
-- A card handles one mechanic, one fixture, one bounded data batch, one host
-  check, or one gate decision. If it grows beyond that, split it before coding.
-- Each parked card names its predecessor in `Context`. When a predecessor moves
-  to `done`, unpark only its immediate successor.
-- Roadmap and gate evidence remain the authority for acceptance criteria. The
-  board records who owns the next small movement.
+- Split by one observable mechanic, fixture, bounded data batch or host check,
+  rather than an arbitrary time limit.
+- The current roadmap chooses priorities and accepted ADRs own durable rules.
+  Historical gate chains and old predecessor cards do not reinstate blockers.
+- When a direction changes, update the one next-action card; do not unpark an
+  obsolete successor chain automatically. The board records ownership/motion,
+  not a competing implementation plan.
 
 ## Lean review policy
 

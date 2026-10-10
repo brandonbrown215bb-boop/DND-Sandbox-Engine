@@ -1,0 +1,52 @@
+Godot Engine v4.7.stable.official.5b4e0cb0f - https://godotengine.org
+OpenGL API OpenGL ES 3.0 (ANGLE 2.1.1 git hash: aaebda1c5a40) - Compatibility - Using Device: Google Inc. (NVIDIA) - ANGLE (NVIDIA, NVIDIA GeForce RTX 5060 Ti (0x00002D04) Direct3D11 vs_5_0 ps_5_0, D3D11-32.0.16.1692)
+
+WARNING: [DataLoader] Rejected 25 unsupported effectless feature records; they remain unavailable until curated.
+   at: push_warning (core/variant/variant_utility.cpp:1033)
+   GDScript backtrace (most recent call first):
+       [0] load_all_data (res://src/autoload/data_loader.gd:266)
+       [1] _ready (res://src/autoload/data_loader.gd:249)
+[DataLoader] Loaded: 14 classes, 9 races, 289 items, 362 spells, 481 monsters, 4 event tables, 1 campaigns
+[DataLoader] Layers: core_imported, core_curated, mods | packs: core, crown | approved overrides: 409 | validation failures: 0
+[Main] Game bootstrapper started. Transitioning to main menu...
+[GameManager] State: MAIN_MENU -> MAIN_MENU
+[GameManager] State: MAIN_MENU -> CHARACTER_CREATION
+[CharacterCreation] Saved character for player 0: Hero 1 (elf wizard)
+[GameManager] State: CHARACTER_CREATION -> OVERWORLD
+[OverworldMap] Successfully loaded 43 tiles from campaign The Lost Crown
+[OverworldMap] Placed Player 1 at start tile: (0, 0)
+[GameManager] State: OVERWORLD -> DUNGEON
+[DungeonGenerator] Procedurally built dungeon with 5 rooms.
+[Character] Hero 1 leveled up to 2! (+4 HP, now 12)
+[GameManager] Hero 1 leveled up!
+[Character] Aldric leveled up to 2! (+4 HP, now 14)
+[GameManager] Aldric leveled up!
+[Character] Mira leveled up to 2! (+9 HP, now 20)
+[GameManager] Mira leveled up!
+[Character] Rowan leveled up to 2! (+4 HP, now 13)
+[GameManager] Rowan leveled up!
+[GameManager] State: DUNGEON -> COMBAT
+[GameManager] State: COMBAT -> DUNGEON
+[GameManager] State: DUNGEON -> OVERWORLD
+[OverworldMap] Successfully loaded 43 tiles from campaign The Lost Crown
+[SaveManager] Successfully saved game to user://saves/dnd2024/quicksave.sav
+[GameManager] State: OVERWORLD -> DUNGEON
+[GameManager] State: DUNGEON -> COMBAT
+[GameManager] State: COMBAT -> DUNGEON
+[GameManager] State: DUNGEON -> DEFEAT
+[GameManager] State: DEFEAT -> MAIN_MENU
+[GameManager] State: MAIN_MENU -> CHARACTER_CREATION
+[CharacterCreation] Saved character for player 0: Lydia Windrider (dragonborn wizard)
+[CharacterCreation] Saved character for player 1: Alustriel Doomsmith (half-elf druid)
+[GameManager] State: CHARACTER_CREATION -> OVERWORLD
+[OverworldMap] Successfully loaded 43 tiles from campaign The Lost Crown
+[OverworldMap] Placed Player 1 at start tile: (0, 0)
+[OverworldMap] Placed Player 2 at start tile: (0, 0)
+[GameManager] State: OVERWORLD -> DUNGEON
+[DungeonGenerator] Procedurally built dungeon with 5 rooms.
+[Character] Lydia Windrider leveled up to 2! (+3 HP, now 10)
+[GameManager] Lydia Windrider leveled up!
+[Character] Alustriel Doomsmith leveled up to 2! (+5 HP, now 13)
+[GameManager] Alustriel Doomsmith leveled up!
+[GameManager] State: DUNGEON -> COMBAT
+[GameManager] State: COMBAT -> MAIN_MENU

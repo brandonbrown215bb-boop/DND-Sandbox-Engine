@@ -1,5 +1,10 @@
 # Gate 5 evidence
 
+> Historical snapshot, not current priority or acceptance. See the
+> [documentation map](README.md) for current authority. Findings, counts,
+> gate decisions and execution orders below apply to the dated snapshot;
+> reproduce relevant behavior before reopening a defect or reusing a claim.
+
 ## Representative rules cohort
 
 The loader now supplies executable effects for a narrow cohort supported by the

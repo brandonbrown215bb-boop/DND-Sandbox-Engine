@@ -1,0 +1,1371 @@
+{
+  "status": "planning_inventory_not_support_certification",
+  "snapshot_local_date": "2026-10-09",
+  "rules_scope": "2024 PHB, 12 classes, 48 subclasses, levels 1-20 and multiclassing",
+  "method": "Read current JSON plus abbreviated XPHB requirements; names/counts only, no extracted rule bodies. Existing flags do not prove production support.",
+  "counts": {
+    "classes": 12,
+    "class_feature_records": 244,
+    "subclasses": 48,
+    "production_subclasses": 3,
+    "staged_subclasses": 45,
+    "raw_extract_entries": 309
+  },
+  "classes": [
+    {
+      "id": "barbarian",
+      "existing_file": "data/core/classes/barbarian.json",
+      "feature_record_count": 24,
+      "explicitly_disabled": 0,
+      "existing_resolver_counts": {
+        "none": 18,
+        "barbarian_rules": 6
+      },
+      "existing_top_level_operation_types": [
+        "ability_check_advantage",
+        "ability_check_floor",
+        "ability_check_override",
+        "ability_score_increase",
+        "asi",
+        "clear_concentration",
+        "epic_boon_choice",
+        "grant_condition",
+        "initiative_advantage",
+        "saving_throw_advantage",
+        "skill_proficiency_choice",
+        "speed_bonus",
+        "stat_modifier",
+        "weapon_mastery"
+      ]
+    },
+    {
+      "id": "bard",
+      "existing_file": "data/core/classes/bard.json",
+      "feature_record_count": 15,
+      "explicitly_disabled": 0,
+      "existing_resolver_counts": {
+        "none": 15
+      },
+      "existing_top_level_operation_types": [
+        "additional_spell_target",
+        "always_prepared_spells",
+        "asi",
+        "bardic_inspiration",
+        "countercharm",
+        "epic_boon_choice",
+        "initiative_resource_recovery",
+        "jack_of_all_trades",
+        "resource_from_spell_slot",
+        "short_rest_recharge",
+        "skill_expertise_choice",
+        "spell_list_expansion",
+        "spellcasting"
+      ]
+    },
+    {
+      "id": "cleric",
+      "existing_file": "data/core/classes/cleric.json",
+      "feature_record_count": 16,
+      "explicitly_disabled": 0,
+      "existing_resolver_counts": {
+        "none": 10,
+        "cleric_rules": 6
+      },
+      "existing_top_level_operation_types": [
+        "asi",
+        "epic_boon_choice",
+        "feature_choice",
+        "spellcasting"
+      ]
+    },
+    {
+      "id": "druid",
+      "existing_file": "data/core/classes/druid.json",
+      "feature_record_count": 18,
+      "explicitly_disabled": 2,
+      "existing_resolver_counts": {
+        "none": 12,
+        "druid_rules": 6
+      },
+      "existing_top_level_operation_types": [
+        "asi",
+        "epic_boon_choice",
+        "feature_choice",
+        "initiative_resource_recovery",
+        "spellcasting"
+      ]
+    },
+    {
+      "id": "fighter",
+      "existing_file": "data/core/classes/fighter.json",
+      "feature_record_count": 19,
+      "explicitly_disabled": 0,
+      "existing_resolver_counts": {
+        "fighter_rules": 10,
+        "none": 9
+      },
+      "existing_top_level_operation_types": [
+        "asi",
+        "epic_boon_choice",
+        "extra_attack",
+        "grant_extra_action",
+        "heal_self",
+        "weapon_mastery"
+      ]
+    },
+    {
+      "id": "monk",
+      "existing_file": "data/core/classes/monk.json",
+      "feature_record_count": 30,
+      "explicitly_disabled": 5,
+      "existing_resolver_counts": {
+        "monk_rules": 26,
+        "none": 4
+      },
+      "existing_top_level_operation_types": [
+        "ability_score_increase",
+        "acrobatic_movement",
+        "asi",
+        "deflect_energy",
+        "dexterous_attacks",
+        "disciplined_survivor",
+        "empowered_strikes",
+        "epic_boon",
+        "evasion",
+        "extra_attack",
+        "heightened_focus",
+        "martial_arts",
+        "martial_arts_die",
+        "monk_bonus_action",
+        "monk_focus",
+        "perfect_focus",
+        "reaction",
+        "self_restoration",
+        "slow_fall",
+        "speed_bonus",
+        "stunning_strike",
+        "superior_defense",
+        "unarmed_attack",
+        "unarmored_defense",
+        "uncanny_metabolism"
+      ]
+    },
+    {
+      "id": "paladin",
+      "existing_file": "data/core/classes/paladin.json",
+      "feature_record_count": 24,
+      "explicitly_disabled": 4,
+      "existing_resolver_counts": {
+        "none": 21,
+        "paladin_rules": 3
+      },
+      "existing_top_level_operation_types": [
+        "abjure_foes",
+        "always_prepared_spells",
+        "asi",
+        "aura_radius_expansion",
+        "condition_immunity_aura",
+        "divine_sense",
+        "epic_boon_choice",
+        "extra_attack",
+        "feature_choice",
+        "saving_throw_aura",
+        "spell_free_cast",
+        "spellcasting",
+        "weapon_damage_rider",
+        "weapon_mastery"
+      ]
+    },
+    {
+      "id": "ranger",
+      "existing_file": "data/core/classes/ranger.json",
+      "feature_record_count": 23,
+      "explicitly_disabled": 4,
+      "existing_resolver_counts": {
+        "none": 23
+      },
+      "existing_top_level_operation_types": [
+        "always_prepared_spells",
+        "asi",
+        "attack_advantage_against_condition",
+        "blindsight",
+        "concentration_protection",
+        "epic_boon_choice",
+        "extra_attack",
+        "feature_choice",
+        "grant_condition",
+        "skill_expertise_choice",
+        "speed_bonus",
+        "spell_damage_dice_override",
+        "spell_free_cast",
+        "spellcasting",
+        "temporary_hp",
+        "weapon_mastery"
+      ]
+    },
+    {
+      "id": "rogue",
+      "existing_file": "data/core/classes/rogue.json",
+      "feature_record_count": 26,
+      "explicitly_disabled": 5,
+      "existing_resolver_counts": {
+        "none": 26
+      },
+      "existing_top_level_operation_types": [
+        "ability_check_floor",
+        "asi",
+        "cunning_strike",
+        "elusive",
+        "epic_boon_choice",
+        "evasion",
+        "reaction",
+        "rogue_steady_aim",
+        "saving_throw_proficiency",
+        "skill_expertise_choice",
+        "sneak_attack",
+        "stroke_of_luck",
+        "weapon_mastery"
+      ]
+    },
+    {
+      "id": "sorcerer",
+      "existing_file": "data/core/classes/sorcerer.json",
+      "feature_record_count": 19,
+      "explicitly_disabled": 4,
+      "existing_resolver_counts": {
+        "none": 19
+      },
+      "existing_top_level_operation_types": [
+        "arcane_apotheosis",
+        "asi",
+        "epic_boon_choice",
+        "innate_sorcery",
+        "metamagic",
+        "metamagic_choices",
+        "short_rest_recharge",
+        "sorcerer_font_of_magic",
+        "sorcery_incarnate",
+        "sorcery_points",
+        "spellcasting"
+      ]
+    },
+    {
+      "id": "warlock",
+      "existing_file": "data/core/classes/warlock.json",
+      "feature_record_count": 14,
+      "explicitly_disabled": 0,
+      "existing_resolver_counts": {
+        "none": 14
+      },
+      "existing_top_level_operation_types": [
+        "always_prepared_spells",
+        "asi",
+        "epic_boon_choice",
+        "pact_magic",
+        "pact_magic_recovery",
+        "spell_free_cast",
+        "spellcasting",
+        "warlock_invocations",
+        "warlock_mystic_arcanum"
+      ]
+    },
+    {
+      "id": "wizard",
+      "existing_file": "data/core/classes/wizard.json",
+      "feature_record_count": 16,
+      "explicitly_disabled": 4,
+      "existing_resolver_counts": {
+        "none": 16
+      },
+      "existing_top_level_operation_types": [
+        "asi",
+        "epic_boon_choice",
+        "skill_expertise_choice",
+        "spellcasting",
+        "wizard_memorize_spell",
+        "wizard_ritual_casting",
+        "wizard_signature_spells",
+        "wizard_spell_mastery"
+      ]
+    }
+  ],
+  "subclasses": [
+    {
+      "id": "aberrant_sorcery",
+      "name": "Aberrant Sorcery",
+      "class_id": "sorcerer",
+      "source_tag": "XPHB",
+      "source_page_hint": 145,
+      "extract_file": "_staging/extracts/5etools/by_subclass/aberrant_sorcery.json",
+      "extract_raw_entry_count": 7,
+      "existing_file": "_staging/staged/aberrant_sorcery.json",
+      "location": "staged",
+      "existing_feature_record_count": 9,
+      "explicitly_disabled": 5,
+      "feature_name_seeds": [
+        "Psionic Spells",
+        "Telepathic Speech",
+        "Psionic Sorcery",
+        "Psychic Defenses",
+        "Revelation in Flesh",
+        "Warping Implosion"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "abjurer",
+      "name": "Abjurer",
+      "class_id": "wizard",
+      "source_tag": "XPHB",
+      "source_page_hint": 172,
+      "extract_file": "_staging/extracts/5etools/by_subclass/abjurer.json",
+      "extract_raw_entry_count": 6,
+      "existing_file": "_staging/staged/abjurer.json",
+      "location": "staged",
+      "existing_feature_record_count": 6,
+      "explicitly_disabled": 5,
+      "feature_name_seeds": [
+        "Abjuration Savant",
+        "Arcane Ward",
+        "Projected Ward",
+        "Spell Breaker",
+        "Spell Resistance"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "arcane_trickster",
+      "name": "Arcane Trickster",
+      "class_id": "rogue",
+      "source_tag": "XPHB",
+      "source_page_hint": 132,
+      "extract_file": "_staging/extracts/5etools/by_subclass/arcane_trickster.json",
+      "extract_raw_entry_count": 6,
+      "existing_file": "_staging/staged/arcane_trickster.json",
+      "location": "staged",
+      "existing_feature_record_count": 5,
+      "explicitly_disabled": 5,
+      "feature_name_seeds": [
+        "Mage Hand Legerdemain",
+        "Spellcasting",
+        "Magical Ambush",
+        "Versatile Trickster",
+        "Spell Thief"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "archfey_patron",
+      "name": "Archfey Patron",
+      "class_id": "warlock",
+      "source_tag": "XPHB",
+      "source_page_hint": 159,
+      "extract_file": "_staging/extracts/5etools/by_subclass/archfey_patron.json",
+      "extract_raw_entry_count": 6,
+      "existing_file": "_staging/staged/archfey_patron.json",
+      "location": "staged",
+      "existing_feature_record_count": 8,
+      "explicitly_disabled": 4,
+      "feature_name_seeds": [
+        "Archfey Spells",
+        "Steps of the Fey",
+        "Misty Escape",
+        "Beguiling Defenses",
+        "Bewitching Magic"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "assassin",
+      "name": "Assassin",
+      "class_id": "rogue",
+      "source_tag": "XPHB",
+      "source_page_hint": 134,
+      "extract_file": "_staging/extracts/5etools/by_subclass/assassin.json",
+      "extract_raw_entry_count": 6,
+      "existing_file": "_staging/staged/assassin.json",
+      "location": "staged",
+      "existing_feature_record_count": 5,
+      "explicitly_disabled": 5,
+      "feature_name_seeds": [
+        "Assassin's Tools",
+        "Assassinate",
+        "Infiltration Expertise",
+        "Envenom Weapons",
+        "Death Strike"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "battle_master",
+      "name": "Battle Master",
+      "class_id": "fighter",
+      "source_tag": "XPHB",
+      "source_page_hint": 93,
+      "extract_file": "_staging/extracts/5etools/by_subclass/battle_master.json",
+      "extract_raw_entry_count": 8,
+      "existing_file": "_staging/staged/battle_master.json",
+      "location": "staged",
+      "existing_feature_record_count": 6,
+      "explicitly_disabled": 6,
+      "feature_name_seeds": [
+        "Combat Superiority",
+        "Maneuver Options",
+        "Student of War",
+        "Know Your Enemy",
+        "Improved Combat Superiority",
+        "Relentless",
+        "Ultimate Combat Superiority"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "beast_master",
+      "name": "Beast Master",
+      "class_id": "ranger",
+      "source_tag": "XPHB",
+      "source_page_hint": 123,
+      "extract_file": "_staging/extracts/5etools/by_subclass/beast_master.json",
+      "extract_raw_entry_count": 5,
+      "existing_file": "_staging/staged/beast_master.json",
+      "location": "staged",
+      "existing_feature_record_count": 4,
+      "explicitly_disabled": 4,
+      "feature_name_seeds": [
+        "Primal Companion",
+        "Exceptional Training",
+        "Bestial Fury",
+        "Share Spells"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "celestial_patron",
+      "name": "Celestial Patron",
+      "class_id": "warlock",
+      "source_tag": "XPHB",
+      "source_page_hint": 160,
+      "extract_file": "_staging/extracts/5etools/by_subclass/celestial_patron.json",
+      "extract_raw_entry_count": 6,
+      "existing_file": "_staging/staged/celestial_patron.json",
+      "location": "staged",
+      "existing_feature_record_count": 8,
+      "explicitly_disabled": 4,
+      "feature_name_seeds": [
+        "Celestial Spells",
+        "Healing Light",
+        "Radiant Soul",
+        "Celestial Resilience",
+        "Searing Vengeance"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "champion",
+      "name": "Champion",
+      "class_id": "fighter",
+      "source_tag": "XPHB",
+      "source_page_hint": 96,
+      "extract_file": "_staging/extracts/5etools/by_subclass/champion.json",
+      "extract_raw_entry_count": 7,
+      "existing_file": "data/core/subclasses/champion.json",
+      "location": "production",
+      "existing_feature_record_count": 6,
+      "explicitly_disabled": 0,
+      "feature_name_seeds": [
+        "Improved Critical",
+        "Remarkable Athlete",
+        "Additional Fighting Style",
+        "Heroic Warrior",
+        "Superior Critical",
+        "Survivor"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "circle_of_the_land",
+      "name": "Circle of the Land",
+      "class_id": "druid",
+      "source_tag": "XPHB",
+      "source_page_hint": 84,
+      "extract_file": "_staging/extracts/5etools/by_subclass/circle_of_the_land.json",
+      "extract_raw_entry_count": 6,
+      "existing_file": "_staging/staged/circle_of_the_land.json",
+      "location": "staged",
+      "existing_feature_record_count": 5,
+      "explicitly_disabled": 5,
+      "feature_name_seeds": [
+        "Circle of the Land Spells",
+        "Land's Aid",
+        "Natural Recovery",
+        "Nature's Ward",
+        "Nature's Sanctuary"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "circle_of_the_moon",
+      "name": "Circle of the Moon",
+      "class_id": "druid",
+      "source_tag": "XPHB",
+      "source_page_hint": 86,
+      "extract_file": "_staging/extracts/5etools/by_subclass/circle_of_the_moon.json",
+      "extract_raw_entry_count": 6,
+      "existing_file": "_staging/staged/circle_of_the_moon.json",
+      "location": "staged",
+      "existing_feature_record_count": 8,
+      "explicitly_disabled": 4,
+      "feature_name_seeds": [
+        "Circle Forms",
+        "Circle of the Moon Spells",
+        "Improved Circle Forms",
+        "Moonlight Step",
+        "Lunar Form"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "circle_of_the_sea",
+      "name": "Circle of the Sea",
+      "class_id": "druid",
+      "source_tag": "XPHB",
+      "source_page_hint": 87,
+      "extract_file": "_staging/extracts/5etools/by_subclass/circle_of_the_sea.json",
+      "extract_raw_entry_count": 6,
+      "existing_file": "_staging/staged/circle_of_the_sea.json",
+      "location": "staged",
+      "existing_feature_record_count": 8,
+      "explicitly_disabled": 4,
+      "feature_name_seeds": [
+        "Circle of the Sea Spells",
+        "Wrath of the Sea",
+        "Aquatic Affinity",
+        "Stormborn",
+        "Oceanic Gift"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "circle_of_the_stars",
+      "name": "Circle of the Stars",
+      "class_id": "druid",
+      "source_tag": "XPHB",
+      "source_page_hint": 88,
+      "extract_file": "_staging/extracts/5etools/by_subclass/circle_of_the_stars.json",
+      "extract_raw_entry_count": 9,
+      "existing_file": "_staging/staged/circle_of_the_stars.json",
+      "location": "staged",
+      "existing_feature_record_count": 9,
+      "explicitly_disabled": 8,
+      "feature_name_seeds": [
+        "Archer",
+        "Chalice",
+        "Dragon",
+        "Star Map",
+        "Starry Form",
+        "Cosmic Omen",
+        "Twinkling Constellations",
+        "Full of Stars"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "clockwork_sorcery",
+      "name": "Clockwork Sorcery",
+      "class_id": "sorcerer",
+      "source_tag": "XPHB",
+      "source_page_hint": 146,
+      "extract_file": "_staging/extracts/5etools/by_subclass/clockwork_sorcery.json",
+      "extract_raw_entry_count": 6,
+      "existing_file": "_staging/staged/clockwork_sorcery.json",
+      "location": "staged",
+      "existing_feature_record_count": 8,
+      "explicitly_disabled": 4,
+      "feature_name_seeds": [
+        "Clockwork Spells",
+        "Restore Balance",
+        "Bastion of Law",
+        "Trance of Order",
+        "Clockwork Cavalcade"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "college_of_dance",
+      "name": "College of Dance",
+      "class_id": "bard",
+      "source_tag": "XPHB",
+      "source_page_hint": 64,
+      "extract_file": "_staging/extracts/5etools/by_subclass/college_of_dance.json",
+      "extract_raw_entry_count": 9,
+      "existing_file": "_staging/staged/college_of_dance.json",
+      "location": "staged",
+      "existing_feature_record_count": 8,
+      "explicitly_disabled": 8,
+      "feature_name_seeds": [
+        "Agile Strikes",
+        "Bardic Damage",
+        "Dance Virtuoso",
+        "Dazzling Footwork",
+        "Unarmored Defense",
+        "Inspiring Movement",
+        "Tandem Footwork",
+        "Leading Evasion"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "college_of_glamour",
+      "name": "College of Glamour",
+      "class_id": "bard",
+      "source_tag": "XPHB",
+      "source_page_hint": 65,
+      "extract_file": "_staging/extracts/5etools/by_subclass/college_of_glamour.json",
+      "extract_raw_entry_count": 5,
+      "existing_file": "_staging/staged/college_of_glamour.json",
+      "location": "staged",
+      "existing_feature_record_count": 6,
+      "explicitly_disabled": 4,
+      "feature_name_seeds": [
+        "Beguiling Magic",
+        "Mantle of Inspiration",
+        "Mantle of Majesty",
+        "Unbreakable Majesty"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "college_of_lore",
+      "name": "College of Lore",
+      "class_id": "bard",
+      "source_tag": "XPHB",
+      "source_page_hint": 66,
+      "extract_file": "_staging/extracts/5etools/by_subclass/college_of_lore.json",
+      "extract_raw_entry_count": 5,
+      "existing_file": "_staging/staged/college_of_lore.json",
+      "location": "staged",
+      "existing_feature_record_count": 4,
+      "explicitly_disabled": 3,
+      "feature_name_seeds": [
+        "Bonus Proficiencies",
+        "Cutting Words",
+        "Magical Discoveries",
+        "Peerless Skill"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "college_of_valor",
+      "name": "College of Valor",
+      "class_id": "bard",
+      "source_tag": "XPHB",
+      "source_page_hint": 67,
+      "extract_file": "_staging/extracts/5etools/by_subclass/college_of_valor.json",
+      "extract_raw_entry_count": 5,
+      "existing_file": "_staging/staged/college_of_valor.json",
+      "location": "staged",
+      "existing_feature_record_count": 4,
+      "explicitly_disabled": 4,
+      "feature_name_seeds": [
+        "Combat Inspiration",
+        "Martial Training",
+        "Extra Attack",
+        "Battle Magic"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "diviner",
+      "name": "Diviner",
+      "class_id": "wizard",
+      "source_tag": "XPHB",
+      "source_page_hint": 173,
+      "extract_file": "_staging/extracts/5etools/by_subclass/diviner.json",
+      "extract_raw_entry_count": 6,
+      "existing_file": "_staging/staged/diviner.json",
+      "location": "staged",
+      "existing_feature_record_count": 5,
+      "explicitly_disabled": 5,
+      "feature_name_seeds": [
+        "Divination Savant",
+        "Portent",
+        "Expert Divination",
+        "The Third Eye",
+        "Greater Portent"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "draconic_sorcery",
+      "name": "Draconic Sorcery",
+      "class_id": "sorcerer",
+      "source_tag": "XPHB",
+      "source_page_hint": 148,
+      "extract_file": "_staging/extracts/5etools/by_subclass/draconic_sorcery.json",
+      "extract_raw_entry_count": 6,
+      "existing_file": "_staging/staged/draconic_sorcery.json",
+      "location": "staged",
+      "existing_feature_record_count": 8,
+      "explicitly_disabled": 4,
+      "feature_name_seeds": [
+        "Draconic Resilience",
+        "Draconic Spells",
+        "Elemental Affinity",
+        "Dragon Wings",
+        "Dragon Companion"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "eldritch_knight",
+      "name": "Eldritch Knight",
+      "class_id": "fighter",
+      "source_tag": "XPHB",
+      "source_page_hint": 96,
+      "extract_file": "_staging/extracts/5etools/by_subclass/eldritch_knight.json",
+      "extract_raw_entry_count": 7,
+      "existing_file": "_staging/staged/eldritch_knight.json",
+      "location": "staged",
+      "existing_feature_record_count": 6,
+      "explicitly_disabled": 6,
+      "feature_name_seeds": [
+        "Spellcasting",
+        "War Bond",
+        "War Magic",
+        "Eldritch Strike",
+        "Arcane Charge",
+        "Improved War Magic"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "evoker",
+      "name": "Evoker",
+      "class_id": "wizard",
+      "source_tag": "XPHB",
+      "source_page_hint": 174,
+      "extract_file": "_staging/extracts/5etools/by_subclass/evoker.json",
+      "extract_raw_entry_count": 6,
+      "existing_file": "_staging/staged/evoker.json",
+      "location": "staged",
+      "existing_feature_record_count": 5,
+      "explicitly_disabled": 5,
+      "feature_name_seeds": [
+        "Evocation Savant",
+        "Potent Cantrip",
+        "Sculpt Spells",
+        "Empowered Evocation",
+        "Overchannel"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "fey_wanderer",
+      "name": "Fey Wanderer",
+      "class_id": "ranger",
+      "source_tag": "XPHB",
+      "source_page_hint": 124,
+      "extract_file": "_staging/extracts/5etools/by_subclass/fey_wanderer.json",
+      "extract_raw_entry_count": 7,
+      "existing_file": "_staging/staged/fey_wanderer.json",
+      "location": "staged",
+      "existing_feature_record_count": 6,
+      "explicitly_disabled": 6,
+      "feature_name_seeds": [
+        "Dreadful Strikes",
+        "Fey Wanderer Spells",
+        "Otherworldly Glamour",
+        "Beguiling Twist",
+        "Fey Reinforcements",
+        "Misty Wanderer"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "fiend_patron",
+      "name": "Fiend Patron",
+      "class_id": "warlock",
+      "source_tag": "XPHB",
+      "source_page_hint": 161,
+      "extract_file": "_staging/extracts/5etools/by_subclass/fiend_patron.json",
+      "extract_raw_entry_count": 6,
+      "existing_file": "data/core/subclasses/fiend_patron.json",
+      "location": "production",
+      "existing_feature_record_count": 8,
+      "explicitly_disabled": 0,
+      "feature_name_seeds": [
+        "Dark One's Blessing",
+        "Fiend Spells",
+        "Dark One's Own Luck",
+        "Fiendish Resilience",
+        "Hurl Through Hell"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "gloom_stalker",
+      "name": "Gloom Stalker",
+      "class_id": "ranger",
+      "source_tag": "XPHB",
+      "source_page_hint": 125,
+      "extract_file": "_staging/extracts/5etools/by_subclass/gloom_stalker.json",
+      "extract_raw_entry_count": 7,
+      "existing_file": "_staging/staged/gloom_stalker.json",
+      "location": "staged",
+      "existing_feature_record_count": 10,
+      "explicitly_disabled": 5,
+      "feature_name_seeds": [
+        "Dread Ambusher",
+        "Gloom Stalker Spells",
+        "Umbral Sight",
+        "Iron Mind",
+        "Stalker's Flurry",
+        "Shadowy Dodge"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "great_old_one_patron",
+      "name": "Great Old One Patron",
+      "class_id": "warlock",
+      "source_tag": "XPHB",
+      "source_page_hint": 162,
+      "extract_file": "_staging/extracts/5etools/by_subclass/great_old_one_patron.json",
+      "extract_raw_entry_count": 8,
+      "existing_file": "_staging/staged/great_old_one_patron.json",
+      "location": "staged",
+      "existing_feature_record_count": 9,
+      "explicitly_disabled": 5,
+      "feature_name_seeds": [
+        "Awakened Mind",
+        "Great Old One Spells",
+        "Psychic Spells",
+        "Clairvoyant Combatant",
+        "Eldritch Hex",
+        "Thought Shield",
+        "Create Thrall"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "hunter",
+      "name": "Hunter",
+      "class_id": "ranger",
+      "source_tag": "XPHB",
+      "source_page_hint": 127,
+      "extract_file": "_staging/extracts/5etools/by_subclass/hunter.json",
+      "extract_raw_entry_count": 6,
+      "existing_file": "_staging/staged/hunter.json",
+      "location": "staged",
+      "existing_feature_record_count": 5,
+      "explicitly_disabled": 5,
+      "feature_name_seeds": [
+        "Hunter's Lore",
+        "Hunter's Prey",
+        "Defensive Tactics",
+        "Superior Hunter's Prey",
+        "Superior Hunter's Defense"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "illusionist",
+      "name": "Illusionist",
+      "class_id": "wizard",
+      "source_tag": "XPHB",
+      "source_page_hint": 175,
+      "extract_file": "_staging/extracts/5etools/by_subclass/illusionist.json",
+      "extract_raw_entry_count": 6,
+      "existing_file": "_staging/staged/illusionist.json",
+      "location": "staged",
+      "existing_feature_record_count": 6,
+      "explicitly_disabled": 5,
+      "feature_name_seeds": [
+        "Illusion Savant",
+        "Improved Illusions",
+        "Phantasmal Creatures",
+        "Illusory Self",
+        "Illusory Reality"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "life_domain",
+      "name": "Life Domain",
+      "class_id": "cleric",
+      "source_tag": "XPHB",
+      "source_page_hint": 73,
+      "extract_file": "_staging/extracts/5etools/by_subclass/life_domain.json",
+      "extract_raw_entry_count": 6,
+      "existing_file": "_staging/staged/life_domain.json",
+      "location": "staged",
+      "existing_feature_record_count": 8,
+      "explicitly_disabled": 4,
+      "feature_name_seeds": [
+        "Disciple of Life",
+        "Life Domain Spells",
+        "Preserve Life",
+        "Blessed Healer",
+        "Supreme Healing"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "light_domain",
+      "name": "Light Domain",
+      "class_id": "cleric",
+      "source_tag": "XPHB",
+      "source_page_hint": 74,
+      "extract_file": "_staging/extracts/5etools/by_subclass/light_domain.json",
+      "extract_raw_entry_count": 6,
+      "existing_file": "_staging/staged/light_domain.json",
+      "location": "staged",
+      "existing_feature_record_count": 8,
+      "explicitly_disabled": 4,
+      "feature_name_seeds": [
+        "Light Domain Spells",
+        "Radiance of the Dawn",
+        "Warding Flare",
+        "Improved Warding Flare",
+        "Corona of Light"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "oath_of_devotion",
+      "name": "Oath of Devotion",
+      "class_id": "paladin",
+      "source_tag": "XPHB",
+      "source_page_hint": 113,
+      "extract_file": "_staging/extracts/5etools/by_subclass/oath_of_devotion.json",
+      "extract_raw_entry_count": 6,
+      "existing_file": "_staging/staged/oath_of_devotion.json",
+      "location": "staged",
+      "existing_feature_record_count": 9,
+      "explicitly_disabled": 3,
+      "feature_name_seeds": [
+        "Oath of Devotion Spells",
+        "Sacred Weapon",
+        "Aura of Devotion",
+        "Smite of Protection",
+        "Holy Nimbus"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "oath_of_glory",
+      "name": "Oath of Glory",
+      "class_id": "paladin",
+      "source_tag": "XPHB",
+      "source_page_hint": 114,
+      "extract_file": "_staging/extracts/5etools/by_subclass/oath_of_glory.json",
+      "extract_raw_entry_count": 7,
+      "existing_file": "_staging/staged/oath_of_glory.json",
+      "location": "staged",
+      "existing_feature_record_count": 10,
+      "explicitly_disabled": 5,
+      "feature_name_seeds": [
+        "Inspiring Smite",
+        "Oath of Glory Spells",
+        "Peerless Athlete",
+        "Aura of Alacrity",
+        "Glorious Defense",
+        "Living Legend"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "oath_of_the_ancients",
+      "name": "Oath of the Ancients",
+      "class_id": "paladin",
+      "source_tag": "XPHB",
+      "source_page_hint": 115,
+      "extract_file": "_staging/extracts/5etools/by_subclass/oath_of_the_ancients.json",
+      "extract_raw_entry_count": 6,
+      "existing_file": "_staging/staged/oath_of_the_ancients.json",
+      "location": "staged",
+      "existing_feature_record_count": 9,
+      "explicitly_disabled": 4,
+      "feature_name_seeds": [
+        "Nature's Wrath",
+        "Oath of the Ancients Spells",
+        "Aura of Warding",
+        "Undying Sentinel",
+        "Elder Champion"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "oath_of_vengeance",
+      "name": "Oath of Vengeance",
+      "class_id": "paladin",
+      "source_tag": "XPHB",
+      "source_page_hint": 116,
+      "extract_file": "_staging/extracts/5etools/by_subclass/oath_of_vengeance.json",
+      "extract_raw_entry_count": 6,
+      "existing_file": "_staging/staged/oath_of_vengeance.json",
+      "location": "staged",
+      "existing_feature_record_count": 9,
+      "explicitly_disabled": 4,
+      "feature_name_seeds": [
+        "Oath of Vengeance Spells",
+        "Vow of Enmity",
+        "Relentless Avenger",
+        "Soul of Vengeance",
+        "Avenging Angel"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "path_of_the_berserker",
+      "name": "Path of the Berserker",
+      "class_id": "barbarian",
+      "source_tag": "XPHB",
+      "source_page_hint": 54,
+      "extract_file": "_staging/extracts/5etools/by_subclass/path_of_the_berserker.json",
+      "extract_raw_entry_count": 5,
+      "existing_file": "_staging/staged/path_of_the_berserker.json",
+      "location": "staged",
+      "existing_feature_record_count": 4,
+      "explicitly_disabled": 4,
+      "feature_name_seeds": [
+        "Frenzy",
+        "Mindless Rage",
+        "Retaliation",
+        "Intimidating Presence"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "path_of_the_wild_heart",
+      "name": "Path of the Wild Heart",
+      "class_id": "barbarian",
+      "source_tag": "XPHB",
+      "source_page_hint": 55,
+      "extract_file": "_staging/extracts/5etools/by_subclass/path_of_the_wild_heart.json",
+      "extract_raw_entry_count": 6,
+      "existing_file": "_staging/staged/path_of_the_wild_heart.json",
+      "location": "staged",
+      "existing_feature_record_count": 5,
+      "explicitly_disabled": 5,
+      "feature_name_seeds": [
+        "Animal Speaker",
+        "Rage of the Wilds",
+        "Aspect of the Wilds",
+        "Nature Speaker",
+        "Power of the Wilds"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "path_of_the_world_tree",
+      "name": "Path of the World Tree",
+      "class_id": "barbarian",
+      "source_tag": "XPHB",
+      "source_page_hint": 56,
+      "extract_file": "_staging/extracts/5etools/by_subclass/path_of_the_world_tree.json",
+      "extract_raw_entry_count": 5,
+      "existing_file": "_staging/staged/path_of_the_world_tree.json",
+      "location": "staged",
+      "existing_feature_record_count": 4,
+      "explicitly_disabled": 4,
+      "feature_name_seeds": [
+        "Vitality of the Tree",
+        "Branches of the Tree",
+        "Battering Roots",
+        "Travel Along the Tree"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "path_of_the_zealot",
+      "name": "Path of the Zealot",
+      "class_id": "barbarian",
+      "source_tag": "XPHB",
+      "source_page_hint": 57,
+      "extract_file": "_staging/extracts/5etools/by_subclass/path_of_the_zealot.json",
+      "extract_raw_entry_count": 6,
+      "existing_file": "_staging/staged/path_of_the_zealot.json",
+      "location": "staged",
+      "existing_feature_record_count": 5,
+      "explicitly_disabled": 5,
+      "feature_name_seeds": [
+        "Divine Fury",
+        "Warrior of the Gods",
+        "Fanatical Focus",
+        "Zealous Presence",
+        "Rage of the Gods"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "psi_warrior",
+      "name": "Psi Warrior",
+      "class_id": "fighter",
+      "source_tag": "XPHB",
+      "source_page_hint": 98,
+      "extract_file": "_staging/extracts/5etools/by_subclass/psi_warrior.json",
+      "extract_raw_entry_count": 11,
+      "existing_file": "_staging/staged/psi_warrior.json",
+      "location": "staged",
+      "existing_feature_record_count": 10,
+      "explicitly_disabled": 10,
+      "feature_name_seeds": [
+        "Protective Field",
+        "Psionic Power",
+        "Psionic Strike",
+        "Telekinetic Movement",
+        "Psi-Powered Leap",
+        "Telekinetic Adept",
+        "Telekinetic Thrust",
+        "Guarded Mind",
+        "Bulwark of Force",
+        "Telekinetic Master"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "soulknife",
+      "name": "Soulknife",
+      "class_id": "rogue",
+      "source_tag": "XPHB",
+      "source_page_hint": 135,
+      "extract_file": "_staging/extracts/5etools/by_subclass/soulknife.json",
+      "extract_raw_entry_count": 10,
+      "existing_file": "_staging/staged/soulknife.json",
+      "location": "staged",
+      "existing_feature_record_count": 9,
+      "explicitly_disabled": 9,
+      "feature_name_seeds": [
+        "Psi-Bolstered Knack",
+        "Psionic Power",
+        "Psychic Blades",
+        "Psychic Whispers",
+        "Homing Strikes",
+        "Psychic Teleportation",
+        "Soul Blades",
+        "Psychic Veil",
+        "Rend Mind"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "thief",
+      "name": "Thief",
+      "class_id": "rogue",
+      "source_tag": "XPHB",
+      "source_page_hint": 137,
+      "extract_file": "_staging/extracts/5etools/by_subclass/thief.json",
+      "extract_raw_entry_count": 6,
+      "existing_file": "_staging/staged/thief.json",
+      "location": "staged",
+      "existing_feature_record_count": 5,
+      "explicitly_disabled": 5,
+      "feature_name_seeds": [
+        "Fast Hands",
+        "Second-Story Work",
+        "Supreme Sneak",
+        "Use Magic Device",
+        "Thief's Reflexes"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "trickery_domain",
+      "name": "Trickery Domain",
+      "class_id": "cleric",
+      "source_tag": "XPHB",
+      "source_page_hint": 75,
+      "extract_file": "_staging/extracts/5etools/by_subclass/trickery_domain.json",
+      "extract_raw_entry_count": 6,
+      "existing_file": "_staging/staged/trickery_domain.json",
+      "location": "staged",
+      "existing_feature_record_count": 8,
+      "explicitly_disabled": 4,
+      "feature_name_seeds": [
+        "Blessing of the Trickster",
+        "Invoke Duplicity",
+        "Trickery Domain Spells",
+        "Trickster's Transposition",
+        "Improved Duplicity"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "war_domain",
+      "name": "War Domain",
+      "class_id": "cleric",
+      "source_tag": "XPHB",
+      "source_page_hint": 76,
+      "extract_file": "_staging/extracts/5etools/by_subclass/war_domain.json",
+      "extract_raw_entry_count": 6,
+      "existing_file": "_staging/staged/war_domain.json",
+      "location": "staged",
+      "existing_feature_record_count": 8,
+      "explicitly_disabled": 4,
+      "feature_name_seeds": [
+        "Guided Strike",
+        "War Domain Spells",
+        "War Priest",
+        "War God's Blessing",
+        "Avatar of Battle"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "warrior_of_mercy",
+      "name": "Warrior of Mercy",
+      "class_id": "monk",
+      "source_tag": "XPHB",
+      "source_page_hint": 104,
+      "extract_file": "_staging/extracts/5etools/by_subclass/warrior_of_mercy.json",
+      "extract_raw_entry_count": 7,
+      "existing_file": "_staging/staged/warrior_of_mercy.json",
+      "location": "staged",
+      "existing_feature_record_count": 6,
+      "explicitly_disabled": 6,
+      "feature_name_seeds": [
+        "Hand of Harm",
+        "Hand of Healing",
+        "Implements of Mercy",
+        "Physician's Touch",
+        "Flurry of Healing and Harm",
+        "Hand of Ultimate Mercy"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "warrior_of_shadow",
+      "name": "Warrior of Shadow",
+      "class_id": "monk",
+      "source_tag": "XPHB",
+      "source_page_hint": 105,
+      "extract_file": "_staging/extracts/5etools/by_subclass/warrior_of_shadow.json",
+      "extract_raw_entry_count": 8,
+      "existing_file": "_staging/staged/warrior_of_shadow.json",
+      "location": "staged",
+      "existing_feature_record_count": 7,
+      "explicitly_disabled": 7,
+      "feature_name_seeds": [
+        "Darkness",
+        "Darkvision",
+        "Shadow Arts",
+        "Shadowy Figments",
+        "Shadow Step",
+        "Improved Shadow Step",
+        "Cloak of Shadows"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "warrior_of_the_elements",
+      "name": "Warrior of the Elements",
+      "class_id": "monk",
+      "source_tag": "XPHB",
+      "source_page_hint": 106,
+      "extract_file": "_staging/extracts/5etools/by_subclass/warrior_of_the_elements.json",
+      "extract_raw_entry_count": 6,
+      "existing_file": "_staging/staged/warrior_of_the_elements.json",
+      "location": "staged",
+      "existing_feature_record_count": 5,
+      "explicitly_disabled": 5,
+      "feature_name_seeds": [
+        "Elemental Attunement",
+        "Manipulate Elements",
+        "Elemental Burst",
+        "Stride of the Elements",
+        "Elemental Epitome"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "warrior_of_the_open_hand",
+      "name": "Warrior of the Open Hand",
+      "class_id": "monk",
+      "source_tag": "XPHB",
+      "source_page_hint": 107,
+      "extract_file": "_staging/extracts/5etools/by_subclass/warrior_of_the_open_hand.json",
+      "extract_raw_entry_count": 5,
+      "existing_file": "data/core/subclasses/warrior_of_the_open_hand.json",
+      "location": "production",
+      "existing_feature_record_count": 7,
+      "explicitly_disabled": 5,
+      "feature_name_seeds": [
+        "Open Hand Technique",
+        "Wholeness of Body",
+        "Fleet Step",
+        "Quivering Palm"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    },
+    {
+      "id": "wild_magic_sorcery",
+      "name": "Wild Magic Sorcery",
+      "class_id": "sorcerer",
+      "source_tag": "XPHB",
+      "source_page_hint": 149,
+      "extract_file": "_staging/extracts/5etools/by_subclass/wild_magic_sorcery.json",
+      "extract_raw_entry_count": 6,
+      "existing_file": "_staging/staged/wild_magic_sorcery.json",
+      "location": "staged",
+      "existing_feature_record_count": 5,
+      "explicitly_disabled": 5,
+      "feature_name_seeds": [
+        "Tides of Chaos",
+        "Wild Magic Surge",
+        "Bend Luck",
+        "Controlled Chaos",
+        "Tamed Surge"
+      ],
+      "source_verification": "incomplete_extract_requires_full_rule_verification",
+      "mapping_status": "unmapped_to_proposed_language"
+    }
+  ]
+}

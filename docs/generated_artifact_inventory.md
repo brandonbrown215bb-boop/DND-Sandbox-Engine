@@ -1,5 +1,10 @@
 # Generated repository artifact inventory
 
+> Historical snapshot, not current priority or acceptance. See the
+> [documentation map](README.md) for current authority. Findings, counts,
+> gate decisions and execution orders below apply to the dated snapshot;
+> reproduce relevant behavior before reopening a defect or reusing a claim.
+
 Inventory captured from the working tree on 2026-08-10. This is a cleanup
 proposal, not permission to delete files. The existing dirty worktree and
 tracked evidence must be preserved until the review below is accepted.

@@ -1,0 +1,935 @@
+{
+	"active_dungeon_state": {},
+	"active_player_index": 0,
+	"activity_history": {
+		"next_sequence": 4,
+		"records": [
+			{
+				"category": "world",
+				"id": "activity-000001",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 1,
+				"summary": "=== Round 1: Gimble Oakshield's Turn ===",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000002",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 2,
+				"summary": "Gimble Oakshield moved to hex (1, 0) (Spent 1.0 movement points)",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			},
+			{
+				"category": "world",
+				"id": "activity-000003",
+				"kind": "narrative",
+				"payload": {},
+				"schema_version": 1,
+				"sequence": 3,
+				"summary": "Mysterious Shrine resolved.",
+				"targets": [],
+				"title": "Expedition",
+				"visibility": "public"
+			}
+		],
+		"schema_version": 1
+	},
+	"campaign_id": "the_lost_crown",
+	"campaign_ledger": {
+		"animal_messenger_deliveries": [],
+		"campaign_completed": false,
+		"campaign_elapsed_seconds": 0,
+		"claimed_rewards": [],
+		"cleared_dungeons": [],
+		"completed_milestones": [],
+		"created_creatures": [],
+		"dismissed_companions": [],
+		"dungeon_snapshots": {},
+		"next_animal_messenger_id": 1,
+		"next_created_creature_id": 1,
+		"recruited_companions": [],
+		"visited_overworld_locations": [
+			{
+				"coord": [
+					0,
+					0
+				],
+				"id": "0,0",
+				"name": "Elderwick"
+			},
+			{
+				"coord": [
+					1,
+					0
+				],
+				"id": "1,0",
+				"name": "Wilderness hex (1, 0)"
+			}
+		]
+	},
+	"current_round": 1,
+	"current_state": 2,
+	"defeated_monsters": [],
+	"game_version": "crown-2024-partial",
+	"party": {
+		"characters": {
+			"aldric_cleric": {
+				"ability_scores": {
+					"CHA": 10,
+					"CON": 14,
+					"DEX": 10,
+					"INT": 10,
+					"STR": 12,
+					"WIS": 16
+				},
+				"armor_proficiencies": [
+					"light",
+					"medium",
+					"shield"
+				],
+				"barbarian_relentless_rage_enabled": true,
+				"base_ac": 15,
+				"body_death_serial": 0,
+				"body_missing_parts": [],
+				"character_id": "aldric_cleric",
+				"class_id": "cleric",
+				"cleric_cantrip_replacement_available": false,
+				"cleric_preparation_free_change": false,
+				"cleric_spells_trained": false,
+				"condition_sources": {},
+				"conditions": {},
+				"corpse_state": {},
+				"creation_choices": {
+					"equipment": "equipment",
+					"instrument": "lute",
+					"skills": [
+						"History",
+						"Insight"
+					],
+					"tools": []
+				},
+				"crit_range": 20,
+				"current_hp": 10,
+				"days_without_food": 0,
+				"death_save_failures": 0,
+				"death_save_successes": 0,
+				"disintegrated": false,
+				"exhaustion_level": 0,
+				"exhaustion_recovery_blockers": [],
+				"extra_attacks": 0,
+				"feature_choices": {
+					"cleric_spellcasting": [
+						"guidance",
+						"sacred_flame",
+						"bless",
+						"cure_wounds",
+						"guiding_bolt",
+						"shield_of_faith"
+					]
+				},
+				"feature_uses": {},
+				"fiendish_resilience_type": "",
+				"fighter_training": {},
+				"food_eaten_today_pounds": 0.0,
+				"heroic_inspiration": false,
+				"hydration_until_seconds": 0,
+				"inventory": {
+					"backpack": [
+						"holy_symbol",
+						"priests_pack"
+					],
+					"copies": {
+						"backpack": [
+							"bag_1791500209.339_-9223371830713121108:4",
+							"bag_1791500209.339_-9223371830713121108:5"
+						],
+						"equipped": {
+							"BODY": "bag_1791500209.339_-9223371830713121108:1",
+							"SHIELD": "bag_1791500209.339_-9223371830713121108:2",
+							"WEAPON": "bag_1791500209.339_-9223371830713121108:3"
+						},
+						"inventory_id": "bag_1791500209.339_-9223371830713121108",
+						"next_id": 6,
+						"records": {
+							"bag_1791500209.339_-9223371830713121108:1": {
+								"definition_id": "chain_shirt",
+								"instance_id": "bag_1791500209.339_-9223371830713121108:1",
+								"state": {}
+							},
+							"bag_1791500209.339_-9223371830713121108:2": {
+								"definition_id": "shield",
+								"instance_id": "bag_1791500209.339_-9223371830713121108:2",
+								"state": {}
+							},
+							"bag_1791500209.339_-9223371830713121108:3": {
+								"definition_id": "mace",
+								"instance_id": "bag_1791500209.339_-9223371830713121108:3",
+								"state": {}
+							},
+							"bag_1791500209.339_-9223371830713121108:4": {
+								"definition_id": "holy_symbol",
+								"instance_id": "bag_1791500209.339_-9223371830713121108:4",
+								"state": {}
+							},
+							"bag_1791500209.339_-9223371830713121108:5": {
+								"definition_id": "priests_pack",
+								"instance_id": "bag_1791500209.339_-9223371830713121108:5",
+								"state": {}
+							}
+						}
+					},
+					"equipped": {
+						"BODY": "chain_shirt",
+						"SHIELD": "shield",
+						"WEAPON": "mace"
+					},
+					"gold": 7
+				},
+				"is_alive": true,
+				"is_stable": false,
+				"known_spells": [
+					"guidance",
+					"sacred_flame",
+					"bless",
+					"cure_wounds",
+					"guiding_bolt",
+					"shield_of_faith"
+				],
+				"level": 1,
+				"max_hp": 10,
+				"modifiers": [],
+				"movement_speeds_feet": {
+					"climb": 0,
+					"fly": 0,
+					"swim": 0
+				},
+				"name": "Aldric",
+				"nourishment_until_seconds": 0,
+				"pact_weapon_damage_type": "",
+				"proficiency_bonus": 2,
+				"race_id": "dwarf",
+				"revival_willing": true,
+				"saving_throw_proficiencies": [
+					"WIS",
+					"CHA"
+				],
+				"skill_proficiencies": [
+					"History",
+					"Insight"
+				],
+				"sorcerer_metamagic_choices": [],
+				"sorcerer_metamagic_pending": 0,
+				"sorcerer_metamagic_replacement_available": false,
+				"speed": 6,
+				"spell_cast_serial": 0,
+				"spell_choices_pending": true,
+				"spell_concentration": {},
+				"spell_effects": {},
+				"spell_slots": {
+					"1": 2
+				},
+				"stable_recovery_at_seconds": 0,
+				"subclass_id": "",
+				"temp_hp": 0,
+				"tool_proficiencies": [],
+				"warlock_arcanum_pending_levels": [],
+				"warlock_arcanum_replacement_available": false,
+				"warlock_arcanum_uses": {},
+				"warlock_invocation_pending": 0,
+				"warlock_invocation_replacement_available": false,
+				"warlock_invocations": [],
+				"warlock_mystic_arcanum": {},
+				"water_drank_today_gallons": 0.0,
+				"weapon_masteries": [],
+				"weapon_proficiencies": [
+					"simple"
+				],
+				"wild_shape_state": {},
+				"wizard_mastery_replacement_available": false,
+				"wizard_memorize_spell_pending": false,
+				"wizard_preparation_free_change": false,
+				"wizard_signature_spells": [],
+				"wizard_spell_mastery": {},
+				"wizard_spellbook": [],
+				"wizard_spellbook_pending": 0,
+				"xp": 0
+			},
+			"mira_ranger": {
+				"ability_scores": {
+					"CHA": 10,
+					"CON": 12,
+					"DEX": 18,
+					"INT": 11,
+					"STR": 10,
+					"WIS": 14
+				},
+				"armor_proficiencies": [
+					"light",
+					"medium",
+					"shields"
+				],
+				"barbarian_relentless_rage_enabled": true,
+				"base_ac": 15,
+				"body_death_serial": 0,
+				"body_missing_parts": [],
+				"character_id": "mira_ranger",
+				"class_id": "ranger",
+				"cleric_cantrip_replacement_available": false,
+				"cleric_preparation_free_change": false,
+				"cleric_spells_trained": false,
+				"condition_sources": {},
+				"conditions": {},
+				"corpse_state": {},
+				"creation_choices": {},
+				"crit_range": 20,
+				"current_hp": 11,
+				"days_without_food": 0,
+				"death_save_failures": 0,
+				"death_save_successes": 0,
+				"disintegrated": false,
+				"exhaustion_level": 0,
+				"exhaustion_recovery_blockers": [],
+				"extra_attacks": 0,
+				"feature_choices": {
+					"ranger_spellcasting": []
+				},
+				"feature_uses": {
+					"free_spell_cast:ranger_favored_enemy": 2
+				},
+				"fiendish_resilience_type": "",
+				"fighter_training": {},
+				"food_eaten_today_pounds": 0.0,
+				"heroic_inspiration": false,
+				"hydration_until_seconds": 0,
+				"inventory": {
+					"backpack": [
+						"shortsword"
+					],
+					"copies": {
+						"backpack": [
+							"bag_1791500209.339_-9223371830629235012:3"
+						],
+						"equipped": {
+							"BODY": "bag_1791500209.339_-9223371830629235012:1",
+							"WEAPON": "bag_1791500209.339_-9223371830629235012:2"
+						},
+						"inventory_id": "bag_1791500209.339_-9223371830629235012",
+						"next_id": 4,
+						"records": {
+							"bag_1791500209.339_-9223371830629235012:1": {
+								"definition_id": "leather_armor",
+								"instance_id": "bag_1791500209.339_-9223371830629235012:1",
+								"state": {}
+							},
+							"bag_1791500209.339_-9223371830629235012:2": {
+								"definition_id": "longbow",
+								"instance_id": "bag_1791500209.339_-9223371830629235012:2",
+								"state": {}
+							},
+							"bag_1791500209.339_-9223371830629235012:3": {
+								"definition_id": "shortsword",
+								"instance_id": "bag_1791500209.339_-9223371830629235012:3",
+								"state": {}
+							}
+						}
+					},
+					"equipped": {
+						"BODY": "leather_armor",
+						"WEAPON": "longbow"
+					},
+					"gold": 0
+				},
+				"is_alive": true,
+				"is_stable": false,
+				"known_spells": [
+					"hunters_mark"
+				],
+				"level": 1,
+				"max_hp": 11,
+				"modifiers": [],
+				"movement_speeds_feet": {
+					"climb": 0,
+					"fly": 0,
+					"swim": 0
+				},
+				"name": "Mira",
+				"nourishment_until_seconds": 0,
+				"pact_weapon_damage_type": "",
+				"proficiency_bonus": 2,
+				"race_id": "elf",
+				"revival_willing": true,
+				"saving_throw_proficiencies": [
+					"STR",
+					"DEX"
+				],
+				"skill_proficiencies": [
+					"Perception"
+				],
+				"sorcerer_metamagic_choices": [],
+				"sorcerer_metamagic_pending": 0,
+				"sorcerer_metamagic_replacement_available": false,
+				"speed": 6,
+				"spell_cast_serial": 0,
+				"spell_choices_pending": true,
+				"spell_concentration": {},
+				"spell_effects": {},
+				"spell_slots": {
+					"1": 2
+				},
+				"stable_recovery_at_seconds": 0,
+				"subclass_id": "",
+				"temp_hp": 0,
+				"tool_proficiencies": [],
+				"warlock_arcanum_pending_levels": [],
+				"warlock_arcanum_replacement_available": false,
+				"warlock_arcanum_uses": {},
+				"warlock_invocation_pending": 0,
+				"warlock_invocation_replacement_available": false,
+				"warlock_invocations": [],
+				"warlock_mystic_arcanum": {},
+				"water_drank_today_gallons": 0.0,
+				"weapon_masteries": [],
+				"weapon_proficiencies": [
+					"simple",
+					"martial"
+				],
+				"wild_shape_state": {},
+				"wizard_mastery_replacement_available": false,
+				"wizard_memorize_spell_pending": false,
+				"wizard_preparation_free_change": false,
+				"wizard_signature_spells": [],
+				"wizard_spell_mastery": {},
+				"wizard_spellbook": [],
+				"wizard_spellbook_pending": 0,
+				"xp": 0
+			},
+			"player_0_paladin": {
+				"ability_scores": {
+					"CHA": 16,
+					"CON": 15,
+					"DEX": 13,
+					"INT": 10,
+					"STR": 12,
+					"WIS": 8
+				},
+				"armor_proficiencies": [
+					"light",
+					"medium",
+					"heavy",
+					"shields"
+				],
+				"barbarian_relentless_rage_enabled": true,
+				"base_ac": 18,
+				"body_death_serial": 0,
+				"body_missing_parts": [],
+				"character_id": "player_0_paladin",
+				"class_id": "paladin",
+				"cleric_cantrip_replacement_available": false,
+				"cleric_preparation_free_change": false,
+				"cleric_spells_trained": false,
+				"condition_sources": {},
+				"conditions": {},
+				"corpse_state": {},
+				"creation_choices": {},
+				"crit_range": 20,
+				"current_hp": 12,
+				"days_without_food": 0,
+				"death_save_failures": 0,
+				"death_save_successes": 0,
+				"disintegrated": false,
+				"exhaustion_level": 0,
+				"exhaustion_recovery_blockers": [],
+				"extra_attacks": 0,
+				"feature_choices": {
+					"paladin_spellcasting": [
+						"heroism"
+					]
+				},
+				"feature_uses": {
+					"paladin_lay_on_hands": 5
+				},
+				"fiendish_resilience_type": "",
+				"fighter_training": {},
+				"food_eaten_today_pounds": 0.0,
+				"heroic_inspiration": false,
+				"hydration_until_seconds": 0,
+				"inventory": {
+					"backpack": [],
+					"copies": {
+						"backpack": [],
+						"equipped": {
+							"BODY": "bag_1791500209.339_-9223371830797007184:1",
+							"SHIELD": "bag_1791500209.339_-9223371830797007184:2",
+							"WEAPON": "bag_1791500209.339_-9223371830797007184:3"
+						},
+						"inventory_id": "bag_1791500209.339_-9223371830797007184",
+						"next_id": 4,
+						"records": {
+							"bag_1791500209.339_-9223371830797007184:1": {
+								"definition_id": "chain_mail",
+								"instance_id": "bag_1791500209.339_-9223371830797007184:1",
+								"state": {}
+							},
+							"bag_1791500209.339_-9223371830797007184:2": {
+								"definition_id": "shield",
+								"instance_id": "bag_1791500209.339_-9223371830797007184:2",
+								"state": {}
+							},
+							"bag_1791500209.339_-9223371830797007184:3": {
+								"definition_id": "longsword",
+								"instance_id": "bag_1791500209.339_-9223371830797007184:3",
+								"state": {}
+							}
+						}
+					},
+					"equipped": {
+						"BODY": "chain_mail",
+						"SHIELD": "shield",
+						"WEAPON": "longsword"
+					},
+					"gold": 0
+				},
+				"is_alive": true,
+				"is_stable": false,
+				"known_spells": [
+					"heroism"
+				],
+				"level": 1,
+				"max_hp": 12,
+				"modifiers": [],
+				"movement_speeds_feet": {
+					"climb": 0,
+					"fly": 0,
+					"swim": 0
+				},
+				"name": "Gimble Oakshield",
+				"nourishment_until_seconds": 0,
+				"pact_weapon_damage_type": "",
+				"proficiency_bonus": 2,
+				"race_id": "half-elf",
+				"revival_willing": true,
+				"saving_throw_proficiencies": [
+					"WIS",
+					"CHA"
+				],
+				"skill_proficiencies": [],
+				"sorcerer_metamagic_choices": [],
+				"sorcerer_metamagic_pending": 0,
+				"sorcerer_metamagic_replacement_available": false,
+				"speed": 6,
+				"spell_cast_serial": 0,
+				"spell_choices_pending": true,
+				"spell_concentration": {},
+				"spell_effects": {},
+				"spell_slots": {
+					"1": 2
+				},
+				"stable_recovery_at_seconds": 0,
+				"subclass_id": "",
+				"temp_hp": 0,
+				"tool_proficiencies": [],
+				"warlock_arcanum_pending_levels": [],
+				"warlock_arcanum_replacement_available": false,
+				"warlock_arcanum_uses": {},
+				"warlock_invocation_pending": 0,
+				"warlock_invocation_replacement_available": false,
+				"warlock_invocations": [],
+				"warlock_mystic_arcanum": {},
+				"water_drank_today_gallons": 0.0,
+				"weapon_masteries": [],
+				"weapon_proficiencies": [
+					"simple",
+					"martial"
+				],
+				"wild_shape_state": {},
+				"wizard_mastery_replacement_available": false,
+				"wizard_memorize_spell_pending": false,
+				"wizard_preparation_free_change": false,
+				"wizard_signature_spells": [],
+				"wizard_spell_mastery": {},
+				"wizard_spellbook": [],
+				"wizard_spellbook_pending": 0,
+				"xp": 0
+			},
+			"rowan_rogue": {
+				"ability_scores": {
+					"CHA": 13,
+					"CON": 13,
+					"DEX": 17,
+					"INT": 15,
+					"STR": 11,
+					"WIS": 11
+				},
+				"armor_proficiencies": [
+					"light"
+				],
+				"barbarian_relentless_rage_enabled": true,
+				"base_ac": 14,
+				"body_death_serial": 0,
+				"body_missing_parts": [],
+				"character_id": "rowan_rogue",
+				"class_id": "rogue",
+				"cleric_cantrip_replacement_available": false,
+				"cleric_preparation_free_change": false,
+				"cleric_spells_trained": false,
+				"condition_sources": {},
+				"conditions": {},
+				"corpse_state": {},
+				"creation_choices": {},
+				"crit_range": 20,
+				"current_hp": 9,
+				"days_without_food": 0,
+				"death_save_failures": 0,
+				"death_save_successes": 0,
+				"disintegrated": false,
+				"exhaustion_level": 0,
+				"exhaustion_recovery_blockers": [],
+				"extra_attacks": 0,
+				"feature_choices": {},
+				"feature_uses": {},
+				"fiendish_resilience_type": "",
+				"fighter_training": {},
+				"food_eaten_today_pounds": 0.0,
+				"heroic_inspiration": false,
+				"hydration_until_seconds": 0,
+				"inventory": {
+					"backpack": [
+						"shortbow",
+						"dagger",
+						"thieves_tools"
+					],
+					"copies": {
+						"backpack": [
+							"bag_1791500209.339_-9223371830545348928:3",
+							"bag_1791500209.339_-9223371830545348928:4",
+							"bag_1791500209.339_-9223371830545348928:5"
+						],
+						"equipped": {
+							"BODY": "bag_1791500209.339_-9223371830545348928:1",
+							"WEAPON": "bag_1791500209.339_-9223371830545348928:2"
+						},
+						"inventory_id": "bag_1791500209.339_-9223371830545348928",
+						"next_id": 6,
+						"records": {
+							"bag_1791500209.339_-9223371830545348928:1": {
+								"definition_id": "leather_armor",
+								"instance_id": "bag_1791500209.339_-9223371830545348928:1",
+								"state": {}
+							},
+							"bag_1791500209.339_-9223371830545348928:2": {
+								"definition_id": "rapier",
+								"instance_id": "bag_1791500209.339_-9223371830545348928:2",
+								"state": {}
+							},
+							"bag_1791500209.339_-9223371830545348928:3": {
+								"definition_id": "shortbow",
+								"instance_id": "bag_1791500209.339_-9223371830545348928:3",
+								"state": {}
+							},
+							"bag_1791500209.339_-9223371830545348928:4": {
+								"definition_id": "dagger",
+								"instance_id": "bag_1791500209.339_-9223371830545348928:4",
+								"state": {}
+							},
+							"bag_1791500209.339_-9223371830545348928:5": {
+								"definition_id": "thieves_tools",
+								"instance_id": "bag_1791500209.339_-9223371830545348928:5",
+								"state": {}
+							}
+						}
+					},
+					"equipped": {
+						"BODY": "leather_armor",
+						"WEAPON": "rapier"
+					},
+					"gold": 0
+				},
+				"is_alive": true,
+				"is_stable": false,
+				"known_spells": [],
+				"level": 1,
+				"max_hp": 9,
+				"modifiers": [],
+				"movement_speeds_feet": {
+					"climb": 0,
+					"fly": 0,
+					"swim": 0
+				},
+				"name": "Rowan",
+				"nourishment_until_seconds": 0,
+				"pact_weapon_damage_type": "",
+				"proficiency_bonus": 2,
+				"race_id": "human",
+				"revival_willing": true,
+				"saving_throw_proficiencies": [
+					"DEX",
+					"INT"
+				],
+				"skill_proficiencies": [],
+				"sorcerer_metamagic_choices": [],
+				"sorcerer_metamagic_pending": 0,
+				"sorcerer_metamagic_replacement_available": false,
+				"speed": 6,
+				"spell_cast_serial": 0,
+				"spell_choices_pending": false,
+				"spell_concentration": {},
+				"spell_effects": {},
+				"spell_slots": {},
+				"stable_recovery_at_seconds": 0,
+				"subclass_id": "",
+				"temp_hp": 0,
+				"tool_proficiencies": [],
+				"warlock_arcanum_pending_levels": [],
+				"warlock_arcanum_replacement_available": false,
+				"warlock_arcanum_uses": {},
+				"warlock_invocation_pending": 0,
+				"warlock_invocation_replacement_available": false,
+				"warlock_invocations": [],
+				"warlock_mystic_arcanum": {},
+				"water_drank_today_gallons": 0.0,
+				"weapon_masteries": [],
+				"weapon_proficiencies": [
+					"simple",
+					"martial"
+				],
+				"wild_shape_state": {},
+				"wizard_mastery_replacement_available": false,
+				"wizard_memorize_spell_pending": false,
+				"wizard_preparation_free_change": false,
+				"wizard_signature_spells": [],
+				"wizard_spell_mastery": {},
+				"wizard_spellbook": [],
+				"wizard_spellbook_pending": 0,
+				"xp": 0
+			}
+		},
+		"companion_roster": {
+			"aldric": {
+				"character_id": "aldric_cleric",
+				"state": "available"
+			},
+			"mira": {
+				"character_id": "mira_ranger",
+				"state": "available"
+			},
+			"rowan": {
+				"character_id": "rowan_rogue",
+				"state": "available"
+			}
+		},
+		"leader_slot_id": "slot_0",
+		"party_slots": [
+			{
+				"character_id": "player_0_paladin",
+				"is_companion": false,
+				"occupied": true,
+				"slot_id": "slot_0"
+			},
+			{
+				"character_id": "",
+				"is_companion": false,
+				"occupied": false,
+				"slot_id": "slot_1"
+			},
+			{
+				"character_id": "",
+				"is_companion": false,
+				"occupied": false,
+				"slot_id": "slot_2"
+			},
+			{
+				"character_id": "",
+				"is_companion": false,
+				"occupied": false,
+				"slot_id": "slot_3"
+			}
+		]
+	},
+	"players": [
+		{
+			"assigned_slot_ids": [
+				"slot_0"
+			],
+			"character": {
+				"ability_scores": {
+					"CHA": 16,
+					"CON": 15,
+					"DEX": 13,
+					"INT": 10,
+					"STR": 12,
+					"WIS": 8
+				},
+				"armor_proficiencies": [
+					"light",
+					"medium",
+					"heavy",
+					"shields"
+				],
+				"barbarian_relentless_rage_enabled": true,
+				"base_ac": 18,
+				"body_death_serial": 0,
+				"body_missing_parts": [],
+				"character_id": "player_0_paladin",
+				"class_id": "paladin",
+				"cleric_cantrip_replacement_available": false,
+				"cleric_preparation_free_change": false,
+				"cleric_spells_trained": false,
+				"condition_sources": {},
+				"conditions": {},
+				"corpse_state": {},
+				"creation_choices": {},
+				"crit_range": 20,
+				"current_hp": 12,
+				"days_without_food": 0,
+				"death_save_failures": 0,
+				"death_save_successes": 0,
+				"disintegrated": false,
+				"exhaustion_level": 0,
+				"exhaustion_recovery_blockers": [],
+				"extra_attacks": 0,
+				"feature_choices": {
+					"paladin_spellcasting": [
+						"heroism"
+					]
+				},
+				"feature_uses": {
+					"paladin_lay_on_hands": 5
+				},
+				"fiendish_resilience_type": "",
+				"fighter_training": {},
+				"food_eaten_today_pounds": 0.0,
+				"heroic_inspiration": false,
+				"hydration_until_seconds": 0,
+				"inventory": {
+					"backpack": [],
+					"copies": {
+						"backpack": [],
+						"equipped": {
+							"BODY": "bag_1791500209.339_-9223371830797007184:1",
+							"SHIELD": "bag_1791500209.339_-9223371830797007184:2",
+							"WEAPON": "bag_1791500209.339_-9223371830797007184:3"
+						},
+						"inventory_id": "bag_1791500209.339_-9223371830797007184",
+						"next_id": 4,
+						"records": {
+							"bag_1791500209.339_-9223371830797007184:1": {
+								"definition_id": "chain_mail",
+								"instance_id": "bag_1791500209.339_-9223371830797007184:1",
+								"state": {}
+							},
+							"bag_1791500209.339_-9223371830797007184:2": {
+								"definition_id": "shield",
+								"instance_id": "bag_1791500209.339_-9223371830797007184:2",
+								"state": {}
+							},
+							"bag_1791500209.339_-9223371830797007184:3": {
+								"definition_id": "longsword",
+								"instance_id": "bag_1791500209.339_-9223371830797007184:3",
+								"state": {}
+							}
+						}
+					},
+					"equipped": {
+						"BODY": "chain_mail",
+						"SHIELD": "shield",
+						"WEAPON": "longsword"
+					},
+					"gold": 0
+				},
+				"is_alive": true,
+				"is_stable": false,
+				"known_spells": [
+					"heroism"
+				],
+				"level": 1,
+				"max_hp": 12,
+				"modifiers": [],
+				"movement_speeds_feet": {
+					"climb": 0,
+					"fly": 0,
+					"swim": 0
+				},
+				"name": "Gimble Oakshield",
+				"nourishment_until_seconds": 0,
+				"pact_weapon_damage_type": "",
+				"proficiency_bonus": 2,
+				"race_id": "half-elf",
+				"revival_willing": true,
+				"saving_throw_proficiencies": [
+					"WIS",
+					"CHA"
+				],
+				"skill_proficiencies": [],
+				"sorcerer_metamagic_choices": [],
+				"sorcerer_metamagic_pending": 0,
+				"sorcerer_metamagic_replacement_available": false,
+				"speed": 6,
+				"spell_cast_serial": 0,
+				"spell_choices_pending": true,
+				"spell_concentration": {},
+				"spell_effects": {},
+				"spell_slots": {
+					"1": 2
+				},
+				"stable_recovery_at_seconds": 0,
+				"subclass_id": "",
+				"temp_hp": 0,
+				"tool_proficiencies": [],
+				"warlock_arcanum_pending_levels": [],
+				"warlock_arcanum_replacement_available": false,
+				"warlock_arcanum_uses": {},
+				"warlock_invocation_pending": 0,
+				"warlock_invocation_replacement_available": false,
+				"warlock_invocations": [],
+				"warlock_mystic_arcanum": {},
+				"water_drank_today_gallons": 0.0,
+				"weapon_masteries": [],
+				"weapon_proficiencies": [
+					"simple",
+					"martial"
+				],
+				"wild_shape_state": {},
+				"wizard_mastery_replacement_available": false,
+				"wizard_memorize_spell_pending": false,
+				"wizard_preparation_free_change": false,
+				"wizard_signature_spells": [],
+				"wizard_spell_mastery": {},
+				"wizard_spellbook": [],
+				"wizard_spellbook_pending": 0,
+				"xp": 0
+			},
+			"color": "4d99f2ff",
+			"display_name": "Player 1",
+			"hex_position": [
+				1,
+				0
+			],
+			"input_mode": "shared",
+			"is_alive": true,
+			"joined": true,
+			"name": "Player 1",
+			"session_id": "seat_0"
+		}
+	],
+	"ruleset_id": "dnd-2024-srd-5.2.1",
+	"saved_at": {
+		"day": 8,
+		"dst": true,
+		"hour": 17,
+		"minute": 59,
+		"month": 10,
+		"second": 40,
+		"weekday": 4,
+		"year": 2026
+	},
+	"schema_version": 2
+}

@@ -1,5 +1,17 @@
 # Development
 
+The [current checkpoint](current.md) records accepted verification; the Quest
+Board owns the exact next action under the [roadmap](../../roadmap.md).
+Work solo by default; use a focused independent reviewer for shared combat rules
+or persistence when the reviewer tooling is available. Missing optional grounding
+tools do not block work. Historical gate reports are not current acceptance.
+
+On this host, the owner's existing portable Godot is available at
+`.artifacts/tools/godot/Godot_v4.7-stable_win64_console.exe` (ignored, not shipped).
+The runner isolates save/settings profiles under `.artifacts/tests/<run-id>/`
+inside the project by default. Older notes about requiring an outside-sandbox
+profile are superseded; use the current runner before assuming a host issue.
+
 The supported Windows validation entry point is the PowerShell runner. Supply
 the portable Godot console executable explicitly:
 
@@ -45,3 +57,9 @@ the next successful save removes the backup after commit.
 The Beckett addon is not enabled by default. If local editor tooling is needed,
 enable the addon in a developer-only project copy; do not commit that setting
 into the friend-facing project configuration.
+
+Windows uses the Compatibility renderer through ANGLE/Direct3D 11, with a
+60 FPS cap, as a workaround for an owner-reported desktop freeze under native
+OpenGL. The original cause remains unconfirmed. For a deliberate native-OpenGL
+comparison, `--rendering-driver opengl3` overrides the Windows project setting;
+normal launches should use the configured ANGLE path. A successful launch alone does not prove the original freeze cause is resolved.

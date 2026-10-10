@@ -1,0 +1,10 @@
+Godot Engine v4.7.stable.official.5b4e0cb0f - https://godotengine.org
+
+[DataLoader] Loaded: 14 classes, 9 races, 234 items, 362 spells, 453 monsters, 4 event tables, 1 campaigns
+[DataLoader] Layers: core_imported, core_curated, mods | packs: core, crown | approved overrides: 134 | validation failures: 0
+[SaveManager] Test mode: restored save state without scene transition
+[ui ok] prepare loads a real resumable campaign
+[SaveManager] Successfully saved game to user://saves/dnd2024/ui_grimoire_newest.sav
+[ui ok] save preserves the settled roll ledger
+[ui ok] Continue selects the newest valid save
+UI RELAUNCH prepare: 0 failures
