@@ -1,4 +1,4 @@
-# Godot 4 editor cache (imported resources, .uid cache, etc.)
+# Godot editor caches. Source .uid and asset .import files remain versioned.
 .godot/
 
 # Godot 3 import metadata (kept for compatibility)
@@ -23,9 +23,32 @@ Thumbs.db
 *.tmp
 .vscode/
 
+# Python tooling caches and local environments
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Machine-specific agent/index state and editor layouts
+/.codex/
+/.codex-remote-attachments/
+/.codegraph/*
+!/.codegraph/.gitignore
+/.obsidian/workspace*.json
+
+# Local environment settings; templates may be committed
+.env
+.env.*
+!.env.example
+!.env.sample
+
 # Local save slots (user://saves are runtime data, not source)
 saves/
 *.sav
+*.sav.bak
 dogfood-output/gate1-*/
 
 # Disposable legacy diagnostics belong in runner-owned temporary directories.
@@ -34,6 +57,13 @@ dogfood-output/gate1-*/
 
 # Local contract-probe logs and isolated profile roots.
 .artifacts/
+
+# Raw content extraction/staging and disposable manifest backups
+/_staging/
+/data/content_manifest.backup-*.json
+
+# Godot import descriptors generated while viewing documentation images
+/docs/**/*.import
 
 # Embedded external repo (codegraph tooling) — not part of the game
 codegraph_setup/
