@@ -8,6 +8,9 @@ extends RefCounted
 ## Returns {"action": String, "target_id": String, "move_to": Vector2i, "weapon_idx": int}
 static func get_monster_action(monster: Dictionary, monster_coord: Vector2i, hex_grid: HexGrid, players: Array) -> Dictionary:
 	var behavior: String = monster.get("ai_behavior", "aggressive")
+	var conditions: Dictionary = monster.get("conditions", {})
+	if conditions.has("paralyzed") or conditions.has("stunned") or conditions.has("incapacitated") or conditions.has("unconscious"):
+		return {"action": "none"}
 	
 	# Find closest alive player character
 	var target_player_idx := -1
@@ -17,6 +20,8 @@ static func get_monster_action(monster: Dictionary, monster_coord: Vector2i, hex
 		var p: Dictionary = players[i]
 		var char_data: Character = p.get("character")
 		if char_data == null or not char_data.is_alive:
+			continue
+		if char_data.character_id in monster.get("animal_friendship_caster_ids", []) or _is_charm_caster(monster, char_data.character_id):
 			continue
 			
 		var p_coord: Vector2i = p.get("hex_position", Vector2i.ZERO)
@@ -59,6 +64,9 @@ static func get_monster_action(monster: Dictionary, monster_coord: Vector2i, hex
 	var chosen_attack: Dictionary = attacks[chosen_attack_idx]
 	var attack_range: int = int(chosen_attack.get("range", 1))
 
+	# A movement reduction cannot grant a move when effective speed is zero.
+	if FighterRules.monster_speed(monster) <= 0 and min_dist > attack_range:
+		return {"action": "none"}
 	# Decide movement & action based on behavior
 	match behavior:
 		"defensive":
@@ -133,6 +141,15 @@ static func get_monster_action(monster: Dictionary, monster_coord: Vector2i, hex
 				}
 
 	return {"action": "none"}
+
+
+static func _is_charm_caster(monster: Dictionary, character_id: String) -> bool:
+	if character_id.is_empty() or not monster.get("conditions", {}).has("charmed"):
+		return false
+	for effect in SpellEffects.records(monster).values():
+		if str(effect.get("spell_id", "")) in ["charm_person", "charm_monster"] and str(effect.get("caster_id", "")) == character_id and "charmed" in effect.get("conditions", []):
+			return true
+	return false
 
 
 static func _choose_offensive_spell(monster: Dictionary, distance: int) -> Dictionary:

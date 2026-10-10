@@ -574,10 +574,13 @@
 	"name": "Spear",
 	"description": "Standard D&D weapon: Spear.",
 	"type": "weapon",
+	"weapon_type": "simple",
+	"properties": ["thrown", "versatile"],
 	"damage": "1d6",
 	"damage_type": "piercing",
 	"ability": "STR",
-	"range": 4,
+	"range": 1,
+	"thrown_range": 4,
 	"value": 1
   },
   {

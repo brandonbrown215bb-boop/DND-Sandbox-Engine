@@ -1,0 +1,88 @@
+{
+  "id": "champion",
+  "name": "Champion",
+  "class_id": "fighter",
+  "rules_status": "2024-supported",
+  "features_by_level": {
+    "3": [
+      {
+        "id": "champion_improved_critical",
+        "name": "Improved Critical",
+        "description": "Weapon and Unarmed Strike critical hits on 19 or 20.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "modify_crit_range",
+            "value": 19
+          }
+        ],
+        "resolver": "fighter_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      },
+      {
+        "id": "champion_remarkable_athlete",
+        "name": "Remarkable Athlete",
+        "description": "Advantage on Initiative and Strength (Athletics). After a critical hit, move up to half Speed without Opportunity Attacks.",
+        "type": "passive",
+        "effects": [],
+        "resolver": "fighter_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "7": [
+      {
+        "id": "champion_additional_fighting_style",
+        "name": "Additional Fighting Style",
+        "description": "Choose a second, different Fighting Style feat.",
+        "type": "passive",
+        "effects": [],
+        "resolver": "fighter_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "10": [
+      {
+        "id": "champion_heroic_warrior",
+        "name": "Heroic Warrior",
+        "description": "Start each combat turn with Heroic Inspiration if you have none.",
+        "type": "passive",
+        "effects": [],
+        "resolver": "fighter_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "15": [
+      {
+        "id": "champion_superior_critical",
+        "name": "Superior Critical",
+        "description": "Weapon and Unarmed Strike critical hits on 18-20.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "modify_crit_range",
+            "value": 18
+          }
+        ],
+        "resolver": "fighter_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "18": [
+      {
+        "id": "champion_survivor",
+        "name": "Survivor",
+        "description": "Advantage on death saves; 18-20 restores 1 HP. Start a turn Bloodied with at least 1 HP: heal 5 plus Constitution modifier.",
+        "type": "passive",
+        "effects": [],
+        "resolver": "fighter_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ]
+  }
+}

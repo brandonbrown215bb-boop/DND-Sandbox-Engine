@@ -18,6 +18,7 @@ var master_volume: float = 1.0
 var sfx_volume: float = 1.0
 var music_volume: float = 1.0
 var screen_shake: bool = true
+var reduce_ui_motion: bool = false
 var high_contrast: bool = false
 var show_damage_numbers: bool = true
 var tooltip_delay: float = 0.5
@@ -37,6 +38,7 @@ func save_settings() -> void:
 		"sfx_volume": sfx_volume,
 		"music_volume": music_volume,
 		"screen_shake": screen_shake,
+		"reduce_ui_motion": reduce_ui_motion,
 		"high_contrast": high_contrast,
 		"show_damage_numbers": show_damage_numbers,
 		"tooltip_delay": tooltip_delay,
@@ -68,6 +70,7 @@ func load_settings() -> void:
 	sfx_volume = float(data.get("sfx_volume", 1.0))
 	music_volume = float(data.get("music_volume", 1.0))
 	screen_shake = bool(data.get("screen_shake", true))
+	reduce_ui_motion = bool(data.get("reduce_ui_motion", false))
 	high_contrast = bool(data.get("high_contrast", false))
 	show_damage_numbers = bool(data.get("show_damage_numbers", true))
 	tooltip_delay = float(data.get("tooltip_delay", 0.5))

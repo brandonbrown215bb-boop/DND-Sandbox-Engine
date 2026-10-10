@@ -1,0 +1,75 @@
+Godot Engine v4.7.stable.official.5b4e0cb0f - https://godotengine.org
+OpenGL API OpenGL ES 3.0 (ANGLE 2.1.1 git hash: aaebda1c5a40) - Compatibility - Using Device: Google Inc. (NVIDIA) - ANGLE (NVIDIA, NVIDIA GeForce RTX 5060 Ti (0x00002D04) Direct3D11 vs_5_0 ps_5_0, D3D11-32.0.16.1692)
+
+SCRIPT ERROR: Parse Error: Identifier "AnimatedObjectRules" not declared in the current scope.
+   at: GDScript::reload (res://src/autoload/game_manager.gd:385)
+SCRIPT ERROR: Compile Error: Failed to compile depended scripts.
+   at: GDScript::reload (res://src/spells/spell_support.gd:0)
+SCRIPT ERROR: Parse Error: Identifier "AnimatedObjectRules" not declared in the current scope.
+   at: GDScript::reload (res://src/combat/combat_action.gd:576)
+SCRIPT ERROR: Compile Error: Failed to compile depended scripts.
+   at: GDScript::reload (res://src/characters/warlock_rules.gd:0)
+SCRIPT ERROR: Parse Error: Identifier "AnimatedObjectRules" not declared in the current scope.
+   at: GDScript::reload (res://src/spells/spell_effects.gd:239)
+SCRIPT ERROR: Compile Error: Failed to compile depended scripts.
+   at: GDScript::reload (res://src/characters/corpse_rules.gd:0)
+SCRIPT ERROR: Compile Error: Failed to compile depended scripts.
+   at: GDScript::reload (res://src/autoload/character_sheet.gd:0)
+SCRIPT ERROR: Compile Error: Failed to compile depended scripts.
+   at: GDScript::reload (res://src/ui/vtt_shell.gd:0)
+SCRIPT ERROR: Compile Error: Failed to compile depended scripts.
+   at: GDScript::reload (res://src/hex/hex_grid.gd:0)
+SCRIPT ERROR: Parse Error: Identifier "AnimatedObjectRules" not declared in the current scope.
+   at: GDScript::reload (res://src/characters/created_creature_rules.gd:11)
+SCRIPT ERROR: Parse Error: Identifier "AnimatedObjectRules" not declared in the current scope.
+   at: GDScript::reload (res://src/characters/created_creature_rules.gd:55)
+SCRIPT ERROR: Parse Error: Identifier "AnimatedObjectRules" not declared in the current scope.
+   at: GDScript::reload (res://src/characters/created_creature_rules.gd:138)
+SCRIPT ERROR: Parse Error: Identifier "AnimatedObjectRules" not declared in the current scope.
+   at: GDScript::reload (res://src/characters/created_creature_rules.gd:165)
+SCRIPT ERROR: Parse Error: Identifier "AnimatedObjectRules" not declared in the current scope.
+   at: GDScript::reload (res://src/characters/created_creature_rules.gd:199)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "object_error" variable because the value doesn't have a set type.
+   at: GDScript::reload (res://src/characters/created_creature_rules.gd:199)
+SCRIPT ERROR: Compile Error: Failed to compile depended scripts.
+   at: GDScript::reload (res://src/dungeon/local_room_rules.gd:0)
+SCRIPT ERROR: Compile Error: Failed to compile depended scripts.
+   at: GDScript::reload (res://src/characters/familiar_rules.gd:0)
+SCRIPT ERROR: Compile Error: Failed to compile depended scripts.
+   at: GDScript::reload (res://src/characters/druid_rules.gd:0)
+SCRIPT ERROR: Compile Error: Failed to compile depended scripts.
+   at: GDScript::reload (res://src/characters/class_progression.gd:0)
+SCRIPT ERROR: Compile Error: Failed to compile depended scripts.
+   at: GDScript::reload (res://src/characters/fighter_rules.gd:0)
+SCRIPT ERROR: Compile Error: Failed to compile depended scripts.
+   at: GDScript::reload (res://src/autoload/data_loader.gd:0)
+SCRIPT ERROR: Compile Error: Failed to compile depended scripts.
+   at: GDScript::reload (res://src/characters/inventory_copies.gd:0)
+SCRIPT ERROR: Compile Error: Failed to compile depended scripts.
+   at: GDScript::reload (res://src/characters/inventory.gd:0)
+SCRIPT ERROR: Compile Error: Failed to compile depended scripts.
+   at: GDScript::reload (res://src/characters/character.gd:0)
+SCRIPT ERROR: Compile Error: Failed to compile depended scripts.
+   at: GDScript::reload (res://src/autoload/dice.gd:0)
+ERROR: Failed to load script "res://src/autoload/dice.gd" with error "Compilation failed".
+   at: load (modules/gdscript/gdscript_resource_format.cpp:46)
+ERROR: Failed to instantiate an autoload, script 'res://src/autoload/game_manager.gd' does not inherit from 'Node'.
+   at: start (main/main.cpp:4535)
+SCRIPT ERROR: Parse Error: Identifier "AnimatedObjectRules" not declared in the current scope.
+   at: GDScript::reload (res://src/autoload/save_manager.gd:361)
+ERROR: Failed to load script "res://src/autoload/save_manager.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript_resource_format.cpp:46)
+ERROR: Failed to instantiate an autoload, script 'res://src/autoload/save_manager.gd' does not inherit from 'Node'.
+   at: start (main/main.cpp:4535)
+WARNING: [DataLoader] Rejected 25 unsupported effectless feature records; they remain unavailable until curated.
+   at: push_warning (core/variant/variant_utility.cpp:1033)
+   GDScript backtrace (most recent call first):
+       [0] load_all_data (res://src/autoload/data_loader.gd:266)
+       [1] _ready (res://src/autoload/data_loader.gd:249)
+[DataLoader] Loaded: 14 classes, 9 races, 289 items, 362 spells, 481 monsters, 4 event tables, 1 campaigns
+[DataLoader] Layers: core_imported, core_curated, mods | packs: core, crown | approved overrides: 409 | validation failures: 0
+[Main] Game bootstrapper started. Transitioning to main menu...
+SCRIPT ERROR: Invalid access to property or key 'test_mode' on a base object of type 'Nil'.
+   at: _ready (res://src/main.gd:13)
+   GDScript backtrace (most recent call first):
+       [0] _ready (res://src/main.gd:13)

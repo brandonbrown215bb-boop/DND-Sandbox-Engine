@@ -45,7 +45,7 @@ if ($prepareText -notmatch "FRESH PREPARED:") {
 if (-not $prepare.HasExited) {
     Stop-Process -Id $prepare.Id -Force -ErrorAction SilentlyContinue
 }
-$savePath = Join-Path $userData "Godot\app_userdata\Top Down Party Game\saves\gate3_fresh_relaunch.sav"
+$savePath = Join-Path $userData "Godot\app_userdata\Top Down Party Game\saves\dnd2024\gate3_fresh_relaunch.sav"
 if (-not (Test-Path -LiteralPath $savePath -PathType Leaf)) {
     $savePath = Get-ChildItem -LiteralPath $userData -File -Recurse -Filter "gate3_fresh_relaunch.sav" -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
 }

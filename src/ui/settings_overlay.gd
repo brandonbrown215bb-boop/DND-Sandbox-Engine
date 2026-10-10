@@ -23,6 +23,36 @@ extends CanvasLayer
 func _ready() -> void:
 	# Keep this overlay responsive while the tree is paused.
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	UiThemeProfile.current().apply($Panel)
+	UiThemeProfile.current().style($Panel)
+	$Panel.theme_type_variation = "OverlayPanel"
+	high_contrast.hide()
+	$Dim.mouse_filter = Control.MOUSE_FILTER_STOP
+	ModalSurface.install($Panel, Settings.close_settings)
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	$Panel/VBox.add_child(scroll)
+	$Panel/VBox.move_child(scroll, 1)
+	var body := VBoxContainer.new()
+	body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(body)
+	for child in $Panel/VBox.get_children():
+		if child != scroll and child.name not in ["Title", "BtnResume", "BtnQuit"]:
+			child.reparent(body)
+	var motion := CheckButton.new()
+	motion.text = "Reduce interface motion"
+	motion.button_pressed = Settings.reduce_ui_motion
+	motion.toggled.connect(func(enabled): Settings.reduce_ui_motion = enabled; Settings.save_settings())
+	body.add_child(motion)
+	body.move_child(motion, screen_shake.get_index() + 1)
+	$Panel.custom_minimum_size = Vector2(600, 0)
+	$Panel.size = Vector2(600, minf(680, get_viewport().get_visible_rect().size.y - 64))
+	$Panel.position = (get_viewport().get_visible_rect().size - $Panel.size) / 2
+	get_viewport().size_changed.connect(_resize_panel)
+	$Panel/VBox/Title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	for spec in [["MasterVolLabel", master_vol], ["SfxVolLabel", sfx_vol], ["MusicVolLabel", music_vol]]:
+		body.move_child(body.get_node(spec[0]), spec[1].get_index())
 
 	# Reflect current settings.
 	master_vol.value = Settings.master_volume
@@ -48,6 +78,10 @@ func _ready() -> void:
 
 	_refresh_slots()
 	status_lbl.text = ""
+
+func _resize_panel() -> void:
+	$Panel.size = Vector2(600, minf(680, get_viewport().get_visible_rect().size.y - 64))
+	$Panel.position = (get_viewport().get_visible_rect().size - $Panel.size) / 2
 
 
 func _refresh_slots() -> void:

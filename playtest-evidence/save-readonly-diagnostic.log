@@ -1,0 +1,12 @@
+Godot Engine v4.7.stable.official.5b4e0cb0f - https://godotengine.org
+
+WARNING: [DataLoader] Rejected 25 unsupported effectless feature records; they remain unavailable until curated.
+   at: push_warning (core/variant/variant_utility.cpp:1033)
+   GDScript backtrace (most recent call first):
+       [0] load_all_data (res://src/autoload/data_loader.gd:266)
+       [1] _ready (res://src/autoload/data_loader.gd:249)
+[DataLoader] Loaded: 14 classes, 9 races, 289 items, 362 spells, 481 monsters, 4 event tables, 1 campaigns
+[DataLoader] Layers: core_imported, core_curated, mods | packs: core, crown | approved overrides: 409 | validation failures: 0
+DIAGNOSTIC user data: C:/Users/brand/AppData/Roaming/Godot/app_userdata/Top Down Party Game
+DIAGNOSTIC slots: []
+DIAGNOSTIC save validation: visited overworld location is invalid

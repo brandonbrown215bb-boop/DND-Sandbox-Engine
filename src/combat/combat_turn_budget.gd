@@ -9,6 +9,7 @@ extends RefCounted
 var has_acted_this_turn: bool = false
 var action_available: bool = true
 var bonus_action_available: bool = true
+var surge_actions: int = 0
 
 
 ## Restore the active player's action, bonus-action, and reaction budget.
@@ -16,6 +17,7 @@ func reset(active_character: Character = null, player_entities: Array = []) -> v
 	has_acted_this_turn = false
 	action_available = true
 	bonus_action_available = true
+	surge_actions = 0
 	if active_character == null:
 		return
 	active_character.reaction_available = true
@@ -28,6 +30,8 @@ func reset(active_character: Character = null, player_entities: Array = []) -> v
 func can_spend(cost_type: String) -> bool:
 	match cost_type:
 		"action":
+			return action_available or surge_actions > 0
+		"magic_action":
 			return action_available
 		"bonus_action":
 			return bonus_action_available
@@ -41,6 +45,12 @@ func spend(cost_type: String) -> bool:
 		return false
 	match cost_type:
 		"action":
+			if surge_actions > 0:
+				surge_actions -= 1
+			else:
+				action_available = false
+			has_acted_this_turn = true
+		"magic_action":
 			action_available = false
 			has_acted_this_turn = true
 		"bonus_action":
@@ -52,3 +62,7 @@ func spend(cost_type: String) -> bool:
 func grant_action() -> void:
 	action_available = true
 	has_acted_this_turn = false
+
+
+func grant_surge_action() -> void:
+	surge_actions += 1

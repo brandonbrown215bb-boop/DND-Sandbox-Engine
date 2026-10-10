@@ -1,0 +1,364 @@
+[
+  {"id": "backpack", "name": "Backpack", "description": "A sturdy pack for carrying supplies.", "type": "tool", "value": 2},
+  {"id": "bedroll", "name": "Bedroll", "description": "A portable bedroll for sleeping while traveling.", "type": "tool", "value": 1},
+  {"id": "rations", "name": "Rations (1 day)", "description": "One day's supply of food.", "type": "consumable", "action_cost": "action", "effects": [{"type": "nourish", "days": 1}], "value": 0.2},
+  {"id": "tinderbox", "name": "Tinderbox", "description": "A small container holding flint, fire steel, and tinder.", "type": "tool", "value": 0.5},
+  {"id": "waterskin", "name": "Waterskin", "description": "A leather container for water. Water quantity and consumption are not yet tracked.", "type": "tool", "value": 0.2},
+  {"id": "bell", "name": "Bell", "description": "A small hand bell.", "type": "tool", "value": 1},
+  {"id": "costume", "name": "Costume", "description": "A set of theatrical clothing.", "type": "tool", "value": 5},
+  {"id": "mirror", "name": "Mirror", "description": "A small polished mirror.", "type": "tool", "value": 5},
+  {"id": "lamp", "name": "Lamp", "description": "An oil lamp. Lighting and refueling interactions are not yet modeled.", "type": "tool", "value": 0.5},
+  {"id": "blanket", "name": "Blanket", "description": "A warm blanket for travel.", "type": "tool", "value": 0.5},
+  {"id": "robe", "name": "Robe", "description": "A simple travel robe.", "type": "tool", "value": 1},
+  {
+    "id": "alchemists_fire",
+    "name": "Alchemist's Fire (Flask)",
+    "description": "A flask of sticky liquid that ignites on contact with air. Thrown: 1d4 fire damage and the target starts burning.",
+    "type": "consumable",
+    "action_cost": "action",
+    "effects": [],
+    "value": 50
+  },
+  {
+    "id": "lantern_hooded",
+    "name": "Hooded Lantern",
+    "description": "A Hooded Lantern burns one flask of oil for 6 hours, casting Bright Light in a 30-foot radius and Dim Light for an additional 30 feet.",
+    "type": "consumable",
+    "action_cost": "bonus_action",
+    "effects": [],
+    "light_source": {"bright_radius_feet": 30, "dim_radius_feet": 60, "duration_seconds": 21600, "fuel_item_id": "oil_flask"},
+    "value": 5
+  },
+  {
+    "id": "arcane_crystal",
+    "name": "Crystal (Arcane Focus)",
+    "description": "A crystal used to channel arcane spells. Can replace material components without a listed cost.",
+    "type": "tool",
+    "effects": [
+      {
+        "type": "spellcasting_focus"
+      }
+    ],
+    "value": 10
+  },
+  {
+    "id": "arcane_orb",
+    "name": "Orb (Arcane Focus)",
+    "description": "A polished orb used to channel arcane spells. Can replace material components without a listed cost.",
+    "type": "tool",
+    "effects": [
+      {
+        "type": "spellcasting_focus"
+      }
+    ],
+    "value": 20
+  },
+  {
+    "id": "arcane_rod",
+    "name": "Rod (Arcane Focus)",
+    "description": "A rod used to channel arcane spells. Can replace material components without a listed cost.",
+    "type": "tool",
+    "effects": [
+      {
+        "type": "spellcasting_focus"
+      }
+    ],
+    "value": 10
+  },
+  {
+    "id": "arcane_staff",
+    "name": "Staff (Arcane Focus)",
+    "description": "A carved staff used to channel arcane spells. Can replace material components without a listed cost.",
+    "type": "tool",
+    "effects": [
+      {
+        "type": "spellcasting_focus"
+      }
+    ],
+    "value": 5
+  },
+  {
+    "id": "arcane_wand",
+    "name": "Wand (Arcane Focus)",
+    "description": "A slender wand used to channel arcane spells. Can replace material components without a listed cost.",
+    "type": "tool",
+    "effects": [
+      {
+        "type": "spellcasting_focus"
+      }
+    ],
+    "value": 10
+  },
+  {
+    "id": "healers_kit",
+    "name": "Healer's Kit",
+    "description": "A leather pouch of bandages, salves, and splints with ten uses. Used to stabilize a dying creature without a Medicine check.",
+    "type": "tool",
+    "effects": [],
+    "value": 5
+  },
+  {
+    "id": "acid_vial",
+    "name": "Acid (Vial)",
+    "description": "A vial of corrosive acid. Thrown: 2d6 acid damage on a failed DEX save.",
+    "type": "consumable",
+    "action_cost": "action",
+    "effects": [],
+    "value": 25
+  },
+  {
+    "id": "antitoxin",
+    "name": "Antitoxin (Vial)",
+    "description": "Drinking this grants Advantage on saving throws to avoid or end the Poisoned condition for 1 hour.",
+    "type": "consumable",
+    "action_cost": "bonus",
+    "effects": [],
+    "value": 50
+  },
+  {
+    "id": "basic_poison",
+    "name": "Basic Poison (Vial)",
+    "description": "Coat a weapon or up to three pieces of ammunition; a hit deals an extra 1d4 poison damage.",
+    "type": "consumable",
+    "action_cost": "bonus",
+    "effects": [],
+    "value": 100
+  },
+  {
+    "id": "lantern_bullseye",
+    "name": "Bullseye Lantern",
+    "description": "A focused oil lantern casting a long beam. Provides light and +3 vision range for 10 turns.",
+    "type": "consumable",
+    "action_cost": "free",
+    "effects": [
+      {
+        "type": "vision_bonus",
+        "value": 3,
+        "duration": 10
+      }
+    ],
+    "value": 10
+  },
+  {
+    "id": "climbers_kit",
+    "name": "Climber's Kit",
+    "description": "Pitons, boot tips, gloves, and a harness. Useful for climbing and certain event skill checks.",
+    "type": "tool",
+    "effects": [
+      {
+        "type": "skill_bonus",
+        "skill": "Athletics",
+        "bonus": 2,
+        "context": "climbing"
+      }
+    ],
+    "value": 25
+  },
+  {
+    "id": "crowbar",
+    "name": "Crowbar",
+    "description": "An iron bar that grants leverage when forcing doors, crates, and lids.",
+    "type": "tool",
+    "effects": [
+      {
+        "type": "skill_bonus",
+        "skill": "Athletics",
+        "bonus": 2,
+        "context": "prying"
+      }
+    ],
+    "value": 2
+  },
+  {
+    "id": "lute",
+    "name": "Lute",
+    "description": "A musical instrument. Bards can use it as a spellcasting focus.",
+    "type": "tool",
+    "effects": [],
+    "value": 35
+  },
+  {
+    "id": "wooden_staff",
+    "name": "Wooden Staff (Druidic Focus)",
+    "description": "A staff of living wood used to channel druidic spells.",
+    "type": "tool",
+    "effects": [
+      {
+        "type": "spellcasting_focus"
+      }
+    ],
+    "value": 5
+  },
+  {
+    "id": "caltrops",
+    "name": "Caltrops",
+    "description": "A bag of spikes scattered to cover a 5-foot square; creatures entering it take 1 piercing damage and lose speed.",
+    "type": "consumable",
+    "action_cost": "action",
+    "effects": [],
+    "value": 1
+  },
+  {
+    "id": "oil_flask",
+    "name": "Oil (Flask)",
+    "description": "A flask of lamp oil. Can be splashed and ignited for 5 fire damage, or used to refuel a lantern.",
+    "type": "consumable",
+    "action_cost": "action",
+    "effects": [],
+    "value": 1
+  },
+  {
+    "id": "gemstone_100gp",
+    "name": "Gemstone (100 GP)",
+    "description": "A fancy gemstone worth 100 gold.",
+    "type": "currency",
+    "effects": [
+      {
+        "type": "gold",
+        "value": 100
+      }
+    ],
+    "value": 100
+  },
+  {
+    "id": "gemstone_10gp",
+    "name": "Gemstone (10 GP)",
+    "description": "A small ornamental gemstone worth 10 gold.",
+    "type": "currency",
+    "effects": [
+      {
+        "type": "gold",
+        "value": 10
+      }
+    ],
+    "value": 10
+  },
+  {
+    "id": "gemstone_500gp",
+    "name": "Gemstone (500 GP)",
+    "description": "A precious gemstone worth 500 gold.",
+    "type": "currency",
+    "effects": [
+      {
+        "type": "gold",
+        "value": 500
+      }
+    ],
+    "value": 500
+  },
+  {
+    "id": "black_pearl_powder_500gp",
+    "name": "Crushed Black Pearl Powder (500+ GP)",
+    "description": "The nonconsumed material component required to cast Circle of Death.",
+    "type": "spell_component",
+    "value": 500
+  },
+  {
+    "id": "gemstone_50gp",
+    "name": "Gemstone (50 GP)",
+    "description": "A semiprecious gemstone worth 50 gold.",
+    "type": "currency",
+    "effects": [
+      {
+        "type": "gold",
+        "value": 50
+      }
+    ],
+    "value": 50
+  },
+  {
+    "id": "bagpipes",
+    "name": "Bagpipes",
+    "description": "A musical instrument. Bards can use it as a spellcasting focus.",
+    "type": "tool",
+    "effects": [],
+    "value": 30
+  },
+  {
+    "id": "drum",
+    "name": "Drum",
+    "description": "A musical instrument. Bards can use it as a spellcasting focus.",
+    "type": "tool",
+    "effects": [],
+    "value": 6
+  },
+  {
+    "id": "dulcimer",
+    "name": "Dulcimer",
+    "description": "A musical instrument. Bards can use it as a spellcasting focus.",
+    "type": "tool",
+    "effects": [],
+    "value": 25
+  },
+  {
+    "id": "flute",
+    "name": "Flute",
+    "description": "A musical instrument. Bards can use it as a spellcasting focus.",
+    "type": "tool",
+    "effects": [],
+    "value": 2
+  },
+  {
+    "id": "horn",
+    "name": "Horn",
+    "description": "A musical instrument. Bards can use it as a spellcasting focus.",
+    "type": "tool",
+    "effects": [],
+    "value": 3
+  },
+  {
+    "id": "lyre",
+    "name": "Lyre",
+    "description": "A musical instrument. Bards can use it as a spellcasting focus.",
+    "type": "tool",
+    "effects": [],
+    "value": 30
+  },
+  {
+    "id": "pan_flute",
+    "name": "Pan Flute",
+    "description": "A musical instrument. Bards can use it as a spellcasting focus.",
+    "type": "tool",
+    "effects": [],
+    "value": 12
+  },
+  {
+    "id": "shawm",
+    "name": "Shawm",
+    "description": "A musical instrument. Bards can use it as a spellcasting focus.",
+    "type": "tool",
+    "effects": [],
+    "value": 2
+  },
+  {
+    "id": "viol",
+    "name": "Viol",
+    "description": "A musical instrument. Bards can use it as a spellcasting focus.",
+    "type": "tool",
+    "effects": [],
+    "value": 30
+  },
+  {
+    "id": "mushroom_powder_25gp",
+    "name": "Mushroom Powder (25+ GP)",
+    "description": "Consumed Material component for True Seeing.",
+    "type": "spell_component",
+    "value": 25
+  },
+  {
+    "id": "pearl_100gp",
+    "name": "Pearl (100+ GP)",
+    "description": "A pearl worth at least 100 GP, used as a nonconsumed Material component for Identify.",
+    "type": "spell_component",
+    "value": 100
+  },
+  {
+    "id": "ashvale_brass_key",
+    "name": "Ashvale Brass Key",
+    "description": "Opens the temple door and offering chest in the Ashvale antechamber.",
+    "type": "tool",
+    "effects": [],
+    "value": 0,
+    "weight": 0.1
+  }
+]

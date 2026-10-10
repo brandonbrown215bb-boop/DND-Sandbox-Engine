@@ -1,0 +1,76 @@
+[gd_resource type="Resource" script_class="UiThemeProfile" load_steps=18 format=3]
+
+[ext_resource type="Script" path="res://src/ui/ui_theme_profile.gd" id="1"]
+
+[ext_resource type="Theme" path="res://theme/main_theme.tres" id="2"]
+
+[ext_resource type="Texture2D" path="res://assets/ui/engraved-corner.svg" id="3"]
+
+[ext_resource type="Texture2D" path="res://assets/ui/attack.svg" id="4"]
+
+[ext_resource type="Texture2D" path="res://assets/ui/spell.svg" id="5"]
+
+[ext_resource type="Texture2D" path="res://assets/ui/features.svg" id="6"]
+
+[ext_resource type="Texture2D" path="res://assets/ui/dodge.svg" id="7"]
+
+[ext_resource type="Texture2D" path="res://assets/ui/rest.svg" id="8"]
+
+[ext_resource type="Texture2D" path="res://assets/ui/sheet.svg" id="9"]
+
+[ext_resource type="Texture2D" path="res://assets/ui/menu.svg" id="10"]
+
+[ext_resource type="Texture2D" path="res://assets/ui/end_turn.svg" id="11"]
+
+[ext_resource type="Texture2D" path="res://assets/ui/cancel.svg" id="12"]
+
+[ext_resource type="Texture2D" path="res://assets/ui/party.svg" id="13"]
+
+[ext_resource type="Texture2D" path="res://assets/ui/crown.svg" id="14"]
+
+[ext_resource type="Texture2D" path="res://assets/ui/crown-crest.svg" id="15"]
+
+[ext_resource type="Texture2D" path="res://assets/ui/title-backdrop.svg" id="16"]
+
+[resource]
+
+script = ExtResource("1")
+
+ui_theme = ExtResource("2")
+
+ornament = ExtResource("3")
+
+colors = {
+"surface/base": Color(0.047059, 0.050980, 0.062745, 1),
+"surface/raised": Color(0.090196, 0.098039, 0.121569, 1),
+"surface/overlay": Color(0.125490, 0.137255, 0.168627, 1),
+"surface/selected": Color(0.188235, 0.164706, 0.129412, 1),
+"text/primary": Color(0.909804, 0.878431, 0.819608, 1),
+"text/muted": Color(0.666667, 0.631373, 0.564706, 1),
+"text/inverse": Color(0.047059, 0.050980, 0.062745, 1),
+"accent/primary": Color(0.776471, 0.603922, 0.290196, 1),
+"accent/secondary": Color(0.435294, 0.509804, 0.611765, 1),
+"focus/ring": Color(0.941176, 0.788235, 0.427451, 1),
+"state/success": Color(0.600000, 0.741176, 0.552941, 1),
+"state/warning": Color(0.819608, 0.603922, 0.321569, 1),
+"state/danger": Color(0.890196, 0.513725, 0.490196, 1),
+"state/info": Color(0.576471, 0.678431, 0.800000, 1),
+"border/subtle": Color(0.223529, 0.211765, 0.192157, 1),
+"border/strong": Color(0.474510, 0.388235, 0.243137, 1)
+}
+
+icons = {
+"attack": ExtResource("4"),
+"spell": ExtResource("5"),
+"features": ExtResource("6"),
+"dodge": ExtResource("7"),
+"rest": ExtResource("8"),
+"sheet": ExtResource("9"),
+"menu": ExtResource("10"),
+"end_turn": ExtResource("11"),
+"cancel": ExtResource("12"),
+"party": ExtResource("13"),
+"crown": ExtResource("14"),
+"crest": ExtResource("15"),
+"title_backdrop": ExtResource("16")
+}

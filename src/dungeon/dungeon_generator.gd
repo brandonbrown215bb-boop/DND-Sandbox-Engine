@@ -55,6 +55,11 @@ static func generate_dungeon(dungeon_data: Dictionary) -> Dictionary:
 		else:
 			room.type = Room.RoomType.EMPTY
 
+		if dungeon_data.get("tactical_rooms", {}).has(str(i)):
+			room.type = Room.RoomType.EMPTY
+			room.monster_ids.clear()
+			room.loot_item_ids.clear()
+			room.event_id = ""
 		rooms[current_coord] = room
 
 	# Place Boss room at the end

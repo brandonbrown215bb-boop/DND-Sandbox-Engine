@@ -3,11 +3,16 @@ param(
     [Parameter(Position = 0)][string]$GodotPath,
     [ValidateSet("all", "logic", "integration")]
     [string]$Suite = "all",
-    [string]$Scenario = ""
+    [string[]]$Scenario = @(),
+    [ValidateSet("all", "data", "spells", "effects", "barbarian", "bard", "cleric", "combat", "conditions", "classes", "persistence", "world", "ui")]
+    [string[]]$LogicGroup = @("all")
 )
 
 $ErrorActionPreference = "Stop"
 $Project = Split-Path -Parent $MyInvocation.MyCommand.Path
+if ($Suite -eq "integration" -and ($LogicGroup.Count -ne 1 -or $LogicGroup[0] -ne "all")) {
+    throw "-LogicGroup requires -Suite logic or all."
+}
 
 # The Codex host can expose both PATH and Path with different casing. Windows
 # treats environment keys case-insensitively, and Start-Process rejects that
@@ -41,8 +46,10 @@ if ($env:TEST_LOG_DIR) {
     $logDirectory = $env:TEST_LOG_DIR
     New-Item -ItemType Directory -Force -Path $logDirectory | Out-Null
 } else {
-    $logDirectory = Join-Path ([IO.Path]::GetTempPath()) ("top-down-party-game-tests-{0}" -f [guid]::NewGuid().ToString("N"))
-    New-Item -ItemType Directory -Path $logDirectory | Out-Null
+    # Keep generated logs and disposable Godot profiles inside the writable
+    # project. Sandbox Temp/profile paths may not permit the engine's safe saves.
+    $logDirectory = Join-Path $Project (".artifacts\tests\{0}" -f [guid]::NewGuid().ToString("N"))
+    New-Item -ItemType Directory -Force -Path $logDirectory | Out-Null
 }
 
 function Quote-ProcessArgument([string]$Value) {
@@ -150,19 +157,28 @@ function Invoke-GodotCase {
 
 $failed = $false
 if (-not (Invoke-GodotCase -Name "project_bootstrap" -Scene "" -Marker "PROJECT BOOTSTRAP PASSED" `
-    -TimeoutSeconds $bootstrapTimeout -Mode "EditorBootstrap")) { $failed = $true }
-if (-not (Invoke-GodotCase "parse_gate" "res://scenes/parse_gate.tscn" "PARSE GATE PASSED" $parseTimeout)) { $failed = $true }
-if (-not (Invoke-GodotCase "boot_gate" "res://scenes/boot_gate.tscn" "BOOT GATE PASSED" $bootTimeout)) { $failed = $true }
+    -TimeoutSeconds $bootstrapTimeout -Mode "EditorBootstrap")) { Write-Host ">> Stopped: project bootstrap failed. Logs: $logDirectory"; exit 1 }
+if (-not (Invoke-GodotCase "parse_gate" "res://scenes/parse_gate.tscn" "PARSE GATE PASSED" $parseTimeout)) { Write-Host ">> Stopped: project parsing failed. Logs: $logDirectory"; exit 1 }
+if (-not (Invoke-GodotCase "boot_gate" "res://scenes/boot_gate.tscn" "BOOT GATE PASSED" $bootTimeout)) { Write-Host ">> Stopped: project boot failed. Logs: $logDirectory"; exit 1 }
 $runLogic = $Suite -in @("all", "logic")
 $runIntegration = $Suite -in @("all", "integration")
 if ($runLogic) {
-    if (-not (Invoke-GodotCase "logic" "res://scenes/test_runner.tscn" "ALL TESTS PASSED" $logicTimeout)) { $failed = $true }
+    $logicMarker = if ($LogicGroup -contains "all") { "ALL TESTS PASSED" } else { "SELECTED LOGIC TESTS PASSED" }
+    if (-not (Invoke-GodotCase "logic" "res://scenes/test_runner.tscn" $logicMarker $logicTimeout @("--logic-groups=$($LogicGroup -join ',')"))) { $failed = $true }
 }
 if ($runIntegration) {
-	$scenarios = @("combat", "party_combat", "crown_smoke", "crown_balance_fixture", "combat_ai_loop", "combat_victory", "combat_defeat", "final_encounter_round_trip", "mixed_mechanics_encounter", "ranger_action_flow", "overworld", "companion_lifecycle", "crown_composition_solo_two", "crown_composition_three_four", "main_menu_load", "dungeon", "event_dialog", "crown_event_fairy_ring", "dungeon_reentry_round_trip", "character_creation", "normal_creation_matrix", "shop", "save_load", "action_resource_round_trip", "combat_resolution", "event_choice_resolution", "event_dialog_choice_click", "character_sheet", "character_sheet_contexts", "character_value_audit")
-    if (-not [string]::IsNullOrWhiteSpace($Scenario)) {
-        if ($scenarios -notcontains $Scenario) { Write-Error "Unknown integration scenario: $Scenario" }
-        $scenarios = @($Scenario)
+	$scenarios = @("playtest_fixes", "combat", "party_combat", "crown_smoke", "crown_balance_fixture", "combat_ai_loop", "combat_victory", "combat_defeat", "final_encounter_round_trip", "mixed_mechanics_encounter", "spell_effect_lifetime", "jump_spell_movement", "ranger_action_flow", "ranger_natures_veil_blindsight", "wizard_capstone_cast_modes", "monk_action_flow", "fighter_second_wind", "fighter_progression", "class_building_blocks", "barbarian_action_flow", "barbarian_choice_flow", "bard_action_flow", "bard_creation_flow", "cleric_creation_flow", "cleric_action_flow", "cleric_strike_flow", "core12_shared_rules", "core12_audit_repairs", "rogue_devious_strikes", "sorcerer_subtle_spell", "sleep_spell_flow", "blindness_deafness_spell_flow", "grease_spell_flow", "spike_growth_spell_flow", "entangle_spell_flow", "black_tentacles_spell_flow", "wall_of_fire_spell_flow", "sleet_storm_spell_flow", "cloud_of_daggers_spell_flow", "cloudkill_spell_flow", "conjure_animals_spell_flow", "conjure_celestial_spell_flow", "conjure_elemental_spell_flow", "conjure_fey_spell_flow", "conjure_minor_elementals_spell_flow", "conjure_woodland_beings_spell_flow", "spirit_guardians_spell_flow", "aura_of_life_spell_flow", "beacon_of_hope_spell_flow", "divine_favor_spell_flow", "death_ward_spell_flow", "sanctuary_spell_flow", "heroism_spell_flow", "magic_weapon_spell_flow", "enhance_ability_spell_flow", "charm_person_spell_flow", "charm_monster_spell_flow", "faerie_fire_spell_flow", "fog_cloud_spell_flow", "darkness_spell_flow", "antilife_shell_spell_flow", "freedom_of_movement_spell_flow", "darkvision_spell_flow", "see_invisibility_spell_flow", "detect_magic_spell_flow", "blur_spell_flow", "detect_evil_and_good_spell_flow", "detect_poison_and_disease_spell_flow", "identify_spell_flow", "goodberry_spell_flow", "true_seeing_spell_flow", "invisibility_spell_flow", "moonbeam_spell_flow", "plant_growth_spell_flow", "barkskin_spell_flow", "mage_armor_spell_flow", "true_strike_spell_flow", "mass_cure_wounds_flow", "mass_healing_word_flow", "sorcerer_twinned_spell", "wand_magic_missiles_flow", "wand_last_charge_destruction_flow", "portable_light_source_combat_flow", "chain_lightning_target_identity_flow", "chain_lightning_mixed_targets_flow", "meteor_swarm_object_area_flow", "fire_area_object_ignition_flow", "sunburst_spell_flow", "overworld", "companion_lifecycle", "crown_composition_solo_two", "crown_composition_three_four", "main_menu_load", "dungeon", "event_dialog", "crown_event_fairy_ring", "dungeon_reentry_round_trip", "character_creation", "normal_creation_matrix", "shop", "save_load", "action_resource_round_trip", "combat_resolution", "event_choice_resolution", "event_dialog_choice_click", "character_sheet", "character_sheet_contexts", "character_value_audit")
+    $scenarios += "spell_cast_stage_flow"
+    $scenarios += "combat_light_visibility_flow"
+	$scenarios += "local_room_object_flow"
+	$scenarios += "shared_spell_flow"
+	$scenarios += "wave_three_foundations_flow", "owned_creature_lifecycle_flow",
+    "find_familiar_exploration_flow", "party_recovery_flow", "downed_area_damage_flow", "created_undead_flow"
+    if ($Scenario.Count -gt 0) {
+        foreach ($selectedScenario in $Scenario) {
+            if ($scenarios -notcontains $selectedScenario) { Write-Error "Unknown integration scenario: $selectedScenario" }
+        }
+        $scenarios = @($Scenario | Select-Object -Unique)
     }
     foreach ($scenario in $scenarios) {
         if ($scenario -eq "normal_creation_matrix") {
@@ -182,5 +198,5 @@ if ($runIntegration) {
 Write-Host ""
 Write-Host ">> Test logs retained at: $logDirectory"
 if ($failed) { Write-Host ">> OVERALL: FAILED"; exit 1 }
-Write-Host ">> OVERALL: ALL TESTS PASSED"
+Write-Host ">> OVERALL: REQUESTED TESTS PASSED"
 exit 0

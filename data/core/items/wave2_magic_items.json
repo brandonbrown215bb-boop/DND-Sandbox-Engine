@@ -1,0 +1,42 @@
+[
+  {
+    "id": "ring_of_protection",
+    "name": "Ring of Protection",
+    "description": "While worn and attuned, this ring grants a +1 bonus to Armor Class and saving throws.",
+    "type": "ring",
+    "magical": true,
+    "rarity": "rare",
+    "requires_attunement": true,
+    "effects": [{"type": "armor_class_bonus", "bonus": 1}, {"type": "saving_throw_bonus", "bonus": 1}],
+    "value": 0
+  },
+  {
+    "id": "wand_of_magic_missiles",
+    "name": "Wand of Magic Missiles",
+    "description": "This wand has 7 charges. While holding it, you can expend up to 3 charges to cast Magic Missile. Each charge casts the spell one level higher, starting at level 1. The wand regains 1d6 + 1 expended charges daily at dawn. If you expend its last charge, roll a d20; on a 1, the wand crumbles to ashes.",
+    "type": "wand",
+    "magical": true,
+    "rarity": "uncommon",
+    "maximum_charges": 7,
+    "charge_recovery": {"minimum": 2, "maximum": 7, "cadence": "dawn"},
+    "activation": {"action_cost": "magic_action", "spell_id": "magic_missile", "minimum_charges": 1, "maximum_charges": 3},
+    "value": 0
+  },
+  {
+    "id": "sword_of_vengeance",
+    "name": "Sword of Vengeance",
+    "description": "A cursed magic weapon that requires attunement. Attuning to it binds the curse to the wielder. While cursed, the wielder cannot voluntarily end attunement; Remove Curse can break that attunement.",
+    "type": "weapon",
+    "damage": "1d8",
+    "damage_type": "slashing",
+    "ability": "STR",
+    "range": 1,
+    "properties": ["versatile"],
+    "magical": true,
+    "rarity": "uncommon",
+    "requires_attunement": true,
+    "cursed": true,
+    "effects": [],
+    "value": 0
+  }
+]

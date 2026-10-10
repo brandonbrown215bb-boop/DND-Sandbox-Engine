@@ -1,7 +1,7 @@
 {
   "id": "ranger",
   "name": "Ranger",
-  "description": "Ranger class. Source: PHB.",
+  "description": "Ranger class. 2024 SRD 5.2.1 progression; spell options remain curated.",
   "hit_die": "d10",
   "primary_ability": "DEX",
   "saving_throw_proficiencies": [
@@ -11,7 +11,6 @@
   "armor_proficiencies": [
     "light",
     "medium",
-    "heavy",
     "shields"
   ],
   "weapon_proficiencies": [
@@ -19,25 +18,77 @@
     "martial"
   ],
   "skill_choices": {
-    "pick": 2,
+    "pick": 3,
     "from": [
+      "Animal Handling",
       "Athletics",
-      "Acrobatics",
       "Insight",
+      "Investigation",
+      "Nature",
       "Perception",
-      "History",
-      "Arcana",
-      "Stealth"
+      "Stealth",
+      "Survival"
     ]
   },
   "starting_equipment": [
     "leather_armor",
-    "shield",
-    "longbow"
+    "longbow",
+    "shortsword"
   ],
-  "spell_slots_by_level": {
+  "spell_list_ids": [
+    "aid",
+    "alarm",
+    "animal_friendship",
+    "animal_messenger",
+    "barkskin",
+    "commune_with_nature",
+    "conjure_animals",
+    "conjure_woodland_beings",
+    "cure_wounds",
+    "darkvision",
+    "daylight",
+    "detect_magic",
+    "detect_poison_and_disease",
+    "dispel_magic",
+    "dominate_beast",
+    "enhance_ability",
+    "ensnaring_strike",
+    "entangle",
+    "find_traps",
+    "fog_cloud",
+    "freedom_of_movement",
+    "goodberry",
+    "greater_restoration",
+    "gust_of_wind",
+    "hunters_mark",
+    "jump",
+    "lesser_restoration",
+    "locate_animals_or_plants",
+    "locate_creature",
+    "locate_object",
+    "longstrider",
+    "magic_weapon",
+    "meld_into_stone",
+    "misty_step",
+    "nondetection",
+    "pass_without_trace",
+    "plant_growth",
+    "protection_from_energy",
+    "protection_from_poison",
+    "revivify",
+    "silence",
+    "speak_with_animals",
+    "speak_with_plants",
+    "spike_growth",
+    "stoneskin",
+    "tree_stride",
+    "water_breathing",
+    "water_walk",
+    "wind_wall"
+  ],
+  "spell_slots_by_character_level": {
     "1": [
-      0
+      2
     ],
     "2": [
       2
@@ -51,149 +102,596 @@
     "5": [
       4,
       2
+    ],
+    "6": [
+      4,
+      2
+    ],
+    "7": [
+      4,
+      3
+    ],
+    "8": [
+      4,
+      3
+    ],
+    "9": [
+      4,
+      3,
+      2
+    ],
+    "10": [
+      4,
+      3,
+      2
+    ],
+    "11": [
+      4,
+      3,
+      3
+    ],
+    "12": [
+      4,
+      3,
+      3
+    ],
+    "13": [
+      4,
+      3,
+      3,
+      1
+    ],
+    "14": [
+      4,
+      3,
+      3,
+      1
+    ],
+    "15": [
+      4,
+      3,
+      3,
+      2
+    ],
+    "16": [
+      4,
+      3,
+      3,
+      2
+    ],
+    "17": [
+      4,
+      3,
+      3,
+      3,
+      1
+    ],
+    "18": [
+      4,
+      3,
+      3,
+      3,
+      1
+    ],
+    "19": [
+      4,
+      3,
+      3,
+      3,
+      2
+    ],
+    "20": [
+      4,
+      3,
+      3,
+      3,
+      2
     ]
-  },
-  "cantrips_known": [],
-  "spells_known_by_level": {
-    "1": [],
-    "2": [],
-    "3": []
   },
   "features_by_level": {
     "1": [
       {
-        "id": "ranger_deft_explorer",
-        "name": "Deft Explorer",
-        "description": "{@i 1st-level ranger optional class features feature, which replaces the Natural Explorer feature} You are an unsurpassed explorer and survivor, both in the wilderness and in dealing with others on your travels. You gain the Canny benefit below, and you gain an additional benefit below when you reac...",
+        "id": "ranger_spellcasting",
+        "name": "Spellcasting",
         "type": "passive",
-        "effects": []
+        "description": "Wisdom-based prepared half-caster; only the class's curated spell records are available.",
+        "effects": [
+          {
+            "type": "spellcasting",
+            "ability": "WIS",
+            "spell_lists": [
+              "ranger"
+            ],
+            "default_prepared_spells": [
+              "hunters_mark"
+            ],
+            "capacity_by_level": {
+              "1": {
+                "cantrips": 0,
+                "prepared_spells": 2
+              },
+              "2": {
+                "cantrips": 0,
+                "prepared_spells": 3
+              },
+              "3": {
+                "cantrips": 0,
+                "prepared_spells": 4
+              },
+              "4": {
+                "cantrips": 0,
+                "prepared_spells": 5
+              },
+              "5": {
+                "cantrips": 0,
+                "prepared_spells": 6
+              },
+              "6": {
+                "cantrips": 0,
+                "prepared_spells": 6
+              },
+              "7": {
+                "cantrips": 0,
+                "prepared_spells": 7
+              },
+              "8": {
+                "cantrips": 0,
+                "prepared_spells": 7
+              },
+              "9": {
+                "cantrips": 0,
+                "prepared_spells": 9
+              },
+              "10": {
+                "cantrips": 0,
+                "prepared_spells": 9
+              },
+              "11": {
+                "cantrips": 0,
+                "prepared_spells": 10
+              },
+              "12": {
+                "cantrips": 0,
+                "prepared_spells": 10
+              },
+              "13": {
+                "cantrips": 0,
+                "prepared_spells": 11
+              },
+              "14": {
+                "cantrips": 0,
+                "prepared_spells": 11
+              },
+              "15": {
+                "cantrips": 0,
+                "prepared_spells": 12
+              },
+              "16": {
+                "cantrips": 0,
+                "prepared_spells": 12
+              },
+              "17": {
+                "cantrips": 0,
+                "prepared_spells": 14
+              },
+              "18": {
+                "cantrips": 0,
+                "prepared_spells": 14
+              },
+              "19": {
+                "cantrips": 0,
+                "prepared_spells": 15
+              },
+              "20": {
+                "cantrips": 0,
+                "prepared_spells": 15
+              }
+            }
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-partial"
       },
       {
         "id": "ranger_favored_enemy",
         "name": "Favored Enemy",
-        "description": "Beginning at 1st level, you have significant experience studying, tracking, hunting, and even talking to a certain type of enemy. Choose a type of favored enemy: {@filter aberrations=aberration}, {@filter beasts=beast}, {@filter celestials=celestial}, {@filter constructs=construct}, {@filter dragons...",
         "type": "passive",
-        "effects": []
-      },
-      {
-        "id": "ranger_favored_foe",
-        "name": "Favored Foe",
-        "description": "{@i 1st-level ranger optional class features feature, which replaces the Favored Enemy feature and works with the Foe Slayer feature} When you hit a creature with an attack roll, you can call on your mystical bond with nature to mark the target as your favored enemy for 1 minute or until you lose yo...",
-        "type": "passive",
-        "effects": []
-      },
-      {
-        "id": "ranger_natural_explorer",
-        "name": "Natural Explorer",
-        "description": "You are particularly familiar with one type of natural environment and are adept at traveling and surviving in such regions. Choose one type of favored terrain: arctic, coast, desert, forest, grassland, mountain, swamp, or the Underdark. When you make an Intelligence or Wisdom check related to your ...",
-        "type": "passive",
-        "effects": []
-      },
-      {
-        "id": "ranger_spellcasting",
-        "name": "Spellcasting",
-        "description": "You have learned to channel the magical essence of nature to cast spells. See chapter 7 for the rules on spellcasting. The information below details how you use those rules with Ranger spells, which appear in the {@filter Ranger spell list=Ranger} later in the class's description. {'type': 'entries'...",
-        "type": "passive",
-        "effects": []
+        "description": "Hunter's Mark is always prepared and can be cast without a spell slot 2 times per Long Rest, increasing to 3 at level 5, 4 at 9, 5 at 13, and 6 at 17.",
+        "effects": [
+          {
+            "type": "always_prepared_spells",
+            "spells": [
+              "hunters_mark"
+            ]
+          },
+          {
+            "type": "spell_free_cast",
+            "spells": [
+              "hunters_mark"
+            ],
+            "uses": 2,
+            "uses_by_level": {
+              "5": 3,
+              "9": 4,
+              "13": 5,
+              "17": 6
+            },
+            "uses_per": "long_rest"
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
       },
       {
         "id": "ranger_weapon_mastery",
         "name": "Weapon Mastery",
-        "description": "Your training with weapons allows you to use the weapon mastery properties properties of two kinds of {@filter weapons=simple weapon;martial weapon} of your choice with which you have proficiency, such as Longbow and Shortsword. Whenever you finish a Long Rest, you can change the kinds of weapons yo...",
         "type": "passive",
-        "effects": []
+        "description": "Choose two proficient weapon types; uses the shared saved Weapon Mastery path.",
+        "effects": [
+          {
+            "type": "weapon_mastery",
+            "capacity_by_level": {
+              "1": 2
+            }
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
       }
     ],
     "2": [
       {
-        "id": "ranger_fighting_style",
-        "name": "Fighting Style",
-        "description": "At 2nd level, you adopt a particular style of fighting as your specialty. Choose one of the following options. You can't take a Fighting Style option more than once, even if you later get to choose again. {'type': 'options', 'count': 1, 'entries': [{'type': 'refOptionalfeature', 'optionalfeature': '...",
-        "type": "passive",
-        "effects": []
-      },
-      {
-        "id": "ranger_spellcasting",
-        "name": "Spellcasting",
-        "description": "By the time you reach 2nd level, you have learned to use the magical essence of nature to cast spells, much as a druid does. See chapter 10 for the general rules of spellcasting and chapter 11 for the {@filter ranger spell list=ranger}. {'type': 'entries', 'name': 'Spell Slots', 'entries': [\"The Ran...",
-        "type": "passive",
-        "effects": []
-      },
-      {
-        "id": "ranger_spellcasting_focus",
-        "name": "Spellcasting Focus",
-        "description": "{@i 2nd-level ranger optional class features feature} You can use a druidic focus as a spellcasting focus for your ranger spells. A druidic focus might be a sprig of mistletoe or holly, a wand or rod made of yew or another special wood, a staff drawn whole from a living tree, or an object incorporat...",
-        "type": "passive",
-        "effects": []
-      },
-      {
         "id": "ranger_deft_explorer",
         "name": "Deft Explorer",
-        "description": "Thanks to your travels, you gain the following benefits. {'type': 'entries', 'entries': [{'type': 'entries', 'name': 'Expertise', 'entries': ['Choose one of your skill proficiencies with which you lack Expertise. You gain Expertise in that skill.']}, {'type': 'entries', 'name': 'Languages', 'entries...",
         "type": "passive",
-        "effects": []
+        "description": "Choose one proficient skill for Expertise. The two language choices are not represented by the game.",
+        "effects": [
+          {
+            "type": "skill_expertise_choice",
+            "count": 1
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-partial"
+      },
+      {
+        "id": "ranger_fighting_style",
+        "name": "Fighting Style",
+        "type": "passive",
+        "description": "Choose from the Fighting Style options supported by the shared style picker; other 2024 styles are not yet represented.",
+        "effects": [
+          {
+            "type": "feature_choice",
+            "options": [
+              {
+                "id": "archery",
+                "name": "Archery",
+                "effects": [
+                  {
+                    "type": "fighting_style",
+                    "style": "archery"
+                  }
+                ]
+              },
+              {
+                "id": "defense",
+                "name": "Defense",
+                "effects": [
+                  {
+                    "type": "fighting_style",
+                    "style": "defense"
+                  }
+                ]
+              },
+              {
+                "id": "great_weapon_fighting",
+                "name": "Great Weapon Fighting",
+                "effects": [
+                  {
+                    "type": "fighting_style",
+                    "style": "great_weapon_fighting"
+                  }
+                ]
+              },
+              {
+                "id": "two_weapon_fighting",
+                "name": "Two-Weapon Fighting",
+                "effects": [
+                  {
+                    "type": "fighting_style",
+                    "style": "two_weapon_fighting"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-partial"
       }
     ],
     "3": [
       {
-        "id": "ranger_primal_awareness",
-        "name": "Primal Awareness",
-        "description": "{@i 3rd-level ranger optional class features feature, which replaces the Primeval Awareness feature} You can focus your awareness through the interconnections of nature: you learn additional spells when you reach certain levels in this class if you don't already know them, as shown in the Primal Awa...",
-        "type": "passive",
-        "effects": []
-      },
-      {
-        "id": "ranger_primeval_awareness",
-        "name": "Primeval Awareness",
-        "description": "Beginning at 3rd level, you can use your action and expend one ranger spell slot to focus your awareness on the region around you. For 1 minute per level of the spell slot you expend, you can sense whether the following types of creatures are present within 1 mile of you (or within up to 6 miles if ...",
-        "type": "active",
-        "effects": [],
-        "action_cost": "action",
-        "uses": 1,
-        "uses_per": "combat"
-      },
-      {
-        "id": "ranger_ranger_archetype",
-        "name": "Ranger Archetype",
-        "description": "At 3rd level, you choose an archetype that you strive to emulate from the list of available archetypes. Your choice grants features at 3rd level, and again at 7th, 11th, and 15th level.",
-        "type": "passive",
-        "effects": []
-      },
-      {
-        "id": "ranger_ranger_subclass",
+        "id": "ranger_subclass",
         "name": "Ranger Subclass",
-        "description": "You gain a Ranger subclass of your choice. A subclass is a specialization that grants you features at certain Ranger levels. For the rest of your career, you gain each of your subclass's features that are of your Ranger level or lower.",
         "type": "passive",
-        "effects": []
+        "description": "Choose a Ranger subclass. Subclass features are maintained in separate subclass records.",
+        "effects": [],
+        "enabled": false,
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "reference-only"
       }
     ],
     "4": [
       {
-        "id": "ranger_ability_score_improvement",
+        "id": "ranger_ability_improvement_4",
         "name": "Ability Score Improvement",
-        "description": "When you reach 4th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature. If your DM allows the use of feats, you may instead take a {@5etools feat.html}.",
         "type": "passive",
-        "effects": []
-      },
-      {
-        "id": "ranger_martial_versatility",
-        "name": "Martial Versatility",
-        "description": "{@i 4th-level ranger optional class features feature} Whenever you reach a level in this class that grants the Ability Score Improvement feature, you can replace a fighting style you know with another fighting style available to rangers. This replacement represents a shift of focus in your martial p...",
-        "type": "passive",
-        "effects": []
+        "effects": [
+          {
+            "type": "asi"
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
       }
     ],
     "5": [
       {
         "id": "ranger_extra_attack",
         "name": "Extra Attack",
-        "description": "Beginning at 5th level, you can attack twice, instead of once, whenever you take the {@action Attack} action on your turn.",
-        "type": "active",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "extra_attack",
+            "count": 1
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "6": [
+      {
+        "id": "ranger_roving",
+        "name": "Roving",
+        "type": "passive",
+        "description": "Speed increases by 10 feet without Heavy armor. Climb and swim speeds are not modeled.",
+        "effects": [
+          {
+            "type": "speed_bonus",
+            "bonus": 2,
+            "requires_no_heavy_armor": true
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-partial"
+      }
+    ],
+    "7": [
+      {
+        "id": "ranger_subclass_feature_7",
+        "name": "Ranger Subclass Feature",
+        "type": "passive",
+        "description": "Subclass progression is stored in separate subclass records.",
         "effects": [],
-        "action_cost": "action",
-        "uses": 1,
-        "uses_per": "combat"
+        "enabled": false,
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "reference-only"
+      }
+    ],
+    "8": [
+      {
+        "id": "ranger_ability_improvement_8",
+        "name": "Ability Score Improvement",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "asi"
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "9": [
+      {
+        "id": "ranger_expertise",
+        "name": "Expertise",
+        "type": "passive",
+        "description": "Choose two additional proficient skills for Expertise using the shared saved choice path.",
+        "effects": [
+          {
+            "type": "skill_expertise_choice",
+            "count": 2
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "10": [
+      {
+        "id": "ranger_tireless",
+        "name": "Tireless",
+        "type": "active",
+        "description": "As a Magic action, gain 1d8 + Wisdom modifier temporary HP. Uses equal your Wisdom modifier (minimum 1), restored on a Long Rest. Short Rest Exhaustion recovery is not modeled.",
+        "executor": "class_feature",
+        "action_cost": "magic_action",
+        "uses_ability": "WIS",
+        "minimum_uses": 1,
+        "uses_per": "long_rest",
+        "effects": [
+          {
+            "type": "temporary_hp",
+            "value": "1d8+WIS"
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-partial"
+      }
+    ],
+    "11": [
+      {
+        "id": "ranger_subclass_feature_11",
+        "name": "Ranger Subclass Feature",
+        "type": "passive",
+        "description": "Subclass progression is stored in separate subclass records.",
+        "effects": [],
+        "enabled": false,
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "reference-only"
+      }
+    ],
+    "12": [
+      {
+        "id": "ranger_ability_improvement_12",
+        "name": "Ability Score Improvement",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "asi"
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "13": [
+      {
+        "id": "ranger_relentless_hunter",
+        "name": "Relentless Hunter",
+        "type": "passive",
+        "description": "Taking damage cannot break concentration on Hunter's Mark.",
+        "effects": [
+          {
+            "type": "concentration_protection",
+            "spells": [
+              "hunters_mark"
+            ]
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "14": [
+      {
+        "id": "ranger_natures_veil",
+        "name": "Nature's Veil",
+        "type": "active",
+        "description": "As a Bonus Action, become Invisible until the end of your next turn. Uses equal your Wisdom modifier (minimum 1), restored on a Long Rest.",
+        "executor": "class_feature",
+        "action_cost": "bonus_action",
+        "uses_ability": "WIS",
+        "minimum_uses": 1,
+        "uses_per": "long_rest",
+        "effects": [
+          {
+            "type": "grant_condition",
+            "condition": "invisible",
+            "duration": 2
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "15": [
+      {
+        "id": "ranger_subclass_feature_15",
+        "name": "Ranger Subclass Feature",
+        "type": "passive",
+        "description": "Subclass progression is stored in separate subclass records.",
+        "effects": [],
+        "enabled": false,
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "reference-only"
+      }
+    ],
+    "16": [
+      {
+        "id": "ranger_ability_improvement_16",
+        "name": "Ability Score Improvement",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "asi"
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "17": [
+      {
+        "id": "ranger_precise_hunter",
+        "name": "Precise Hunter",
+        "type": "passive",
+        "description": "You have Advantage on attack rolls against the creature marked by Hunter's Mark.",
+        "effects": [
+          {
+            "type": "attack_advantage_against_condition",
+            "condition": "hunters_mark"
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "18": [
+      {
+        "id": "ranger_feral_senses",
+        "name": "Feral Senses",
+        "type": "passive",
+        "description": "Gain 30-foot Blindsight, allowing you to perceive invisible creatures within that range.",
+        "effects": [
+          {
+            "type": "blindsight",
+            "range_feet": 30
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "19": [
+      {
+        "id": "ranger_epic_boon",
+        "name": "Epic Boon",
+        "type": "passive",
+        "description": "Choose an Epic Boon through the shared Character Sheet choice path.",
+        "effects": [
+          {
+            "type": "epic_boon_choice",
+            "options": [
+              "irresistible_offense",
+              "combat_prowess",
+              "spell_recall"
+            ]
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-partial"
+      }
+    ],
+    "20": [
+      {
+        "id": "ranger_foe_slayer",
+        "name": "Foe Slayer",
+        "type": "passive",
+        "description": "Hunter's Mark damage increases to 1d10.",
+        "effects": [
+          {
+            "type": "spell_damage_dice_override",
+            "spell_id": "hunters_mark",
+            "dice": "1d10"
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
       }
     ]
-  }
+  },
+  "subclass_level": 3
 }

@@ -11,14 +11,24 @@ extends BaseHUD
 ## "DungeonHUD extends OverworldHUD + hide btn_end_turn" smell is gone; the
 ## End Turn button no longer exists in the dungeon scene at all.
 
-@onready var player_list_container: VBoxContainer = $MarginContainer/HBoxContainer/Sidebar/ScrollContainer/PlayerList
+func _resolve_node(primary: String, fallback: String = "", fallback2: String = "") -> Node:
+	for p in [primary, fallback, fallback2]:
+		if not p.is_empty():
+			if has_node(p):
+				return get_node(p)
+			if has_node("Root/" + p):
+				return get_node("Root/" + p)
+	return find_child(primary.get_file(), true, false)
 
-@onready var objective_label: Label = $MarginContainer/HBoxContainer/MainArea/Header/MarginContainer/VBoxContainer/ObjectiveLabel
-@onready var btn_rest: Button = $MarginContainer/HBoxContainer/Sidebar/BtnRest
-@onready var btn_save: Button = $MarginContainer/HBoxContainer/Sidebar/BtnSave
-@onready var btn_menu: Button = $MarginContainer/HBoxContainer/Sidebar/BtnMenu
-@onready var btn_settings: Button = $MarginContainer/HBoxContainer/Sidebar/BtnSettings
-@onready var btn_sheet: Button = $MarginContainer/HBoxContainer/Sidebar/BtnSheet
+@onready var player_list_container: VBoxContainer = _resolve_node("PartyRail/Margin/RailBox/ScrollContainer/PlayerList", "MarginContainer/HBoxContainer/Sidebar/ScrollContainer/PlayerList") as VBoxContainer
+
+@onready var objective_label: Label = _resolve_node("ContextBar/Margin/HBox/ObjectivePanel/ObjectiveLabel", "MarginContainer/HBoxContainer/MainArea/Header/MarginContainer/VBoxContainer/ObjectiveLabel") as Label
+@onready var active_player_name: Label = _resolve_node("ContextBar/Margin/HBox/LeftBox/ActivePlayerName", "MarginContainer/HBoxContainer/MainArea/Header/MarginContainer/VBoxContainer/ActivePlayerName") as Label
+@onready var btn_rest: Button = _resolve_node("ActionDock/DockBox/Margin/HBox/BtnRest", "MarginContainer/HBoxContainer/Sidebar/BtnRest") as Button
+@onready var btn_save: Button = _resolve_node("ContextBar/Margin/HBox/RightBox/BtnSave", "MarginContainer/HBoxContainer/Sidebar/BtnSave") as Button
+@onready var btn_menu: Button = _resolve_node("ContextBar/Margin/HBox/RightBox/BtnMenu", "MarginContainer/HBoxContainer/Sidebar/BtnMenu") as Button
+@onready var btn_settings: Button = _resolve_node("ContextBar/Margin/HBox/RightBox/BtnSettings", "MarginContainer/HBoxContainer/Sidebar/BtnSettings") as Button
+@onready var btn_sheet: Button = _resolve_node("ContextBar/Margin/HBox/RightBox/BtnSheet", "MarginContainer/HBoxContainer/Sidebar/BtnSheet") as Button
 
 func _ready() -> void:
 	btn_rest.pressed.connect(func(): rest_pressed.emit())
@@ -26,13 +36,16 @@ func _ready() -> void:
 	btn_menu.pressed.connect(func(): menu_pressed.emit())
 	btn_settings.pressed.connect(func(): settings_pressed.emit())
 	btn_sheet.pressed.connect(func(): sheet_pressed.emit())
-	log_text = $MarginContainer/HBoxContainer/MainArea/LogBox/LogText
+	log_text = _resolve_node("ActivityRail/Margin/ActivityContent/LogBox/LogText", "MarginContainer/HBoxContainer/MainArea/LogBox/LogText") as RichTextLabel
 	clear_logs()
 	update_hud()
 
 ## Refresh the dungeon HUD: party cards (StatBars) + objective banner.
 ## (Rook's Touch: minimal crawl UI — no action grid, no End Turn.)
 func update_hud() -> void:
+	if get_node_or_null("Root") is VttShell:
+		$Root.active_character = PlayerManager.get_active_player().get("character")
+		$Root.refresh_party()
 	_update_party_sidebar()
 	_update_objective()
 
@@ -66,9 +79,9 @@ func _update_party_sidebar() -> void:
 		name_lbl.text = "%s (%s)" % [char_data.character_name, DataLoader.get_character_class(char_data.class_id).get("name", "Class")]
 		if i == active_idx:
 			name_lbl.text = "➔ " + name_lbl.text
-			name_lbl.add_theme_color_override("font_color", Color.YELLOW)
+			name_lbl.add_theme_color_override("font_color", UiThemeProfile.current().color("accent/primary"))
 		else:
-			name_lbl.add_theme_color_override("font_color", player.get("color", Color.WHITE))
+			name_lbl.add_theme_color_override("font_color", UiThemeProfile.current().color("text/primary"))
 		vbox.add_child(name_lbl)
 
 		var hp_lbl := Label.new()
@@ -81,7 +94,7 @@ func _update_party_sidebar() -> void:
 			for cond in char_data.conditions:
 				conds_str += "%s (%d) " % [cond, char_data.conditions[cond]]
 			cond_lbl.text = conds_str
-			cond_lbl.add_theme_color_override("font_color", Color(0.9, 0.4, 0.4))
+			cond_lbl.add_theme_color_override("font_color", UiThemeProfile.current().color("state/danger"))
 			vbox.add_child(cond_lbl)
 
 		player_list_container.add_child(card)

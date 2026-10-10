@@ -2,9 +2,13 @@
 ## Versioned, transactional persistence for supported safe-save states.
 extends Node
 
-const SAVE_DIR := "user://saves/"
-const SAVE_SCHEMA_VERSION := 1
-const GAME_VERSION := "crown-gate-2"
+const AnimalMessengerRulesRef = preload("res://src/spells/animal_messenger_rules.gd")
+
+const LEGACY_SAVE_DIR := "user://saves/"
+const SAVE_DIR := "user://saves/dnd2024/"
+const SAVE_SCHEMA_VERSION := 2
+const RULESET_ID := "dnd-2024-srd-5.2.1"
+const GAME_VERSION := "crown-2024-partial"
 
 
 func _ready() -> void:
@@ -22,9 +26,11 @@ func save_game(slot_name: String) -> bool:
 	if not reason.is_empty():
 		push_warning("[SaveManager] Save rejected: %s" % reason)
 		return false
+	SpellEffects.reconcile(PartyManager.characters.values(), PartyManager.characters.values())
 
 	var save_data := {
 		"schema_version": SAVE_SCHEMA_VERSION,
+		"ruleset_id": RULESET_ID,
 		"game_version": GAME_VERSION,
 		"campaign_id": GameManager.active_campaign.get("id", ""),
 		"current_state": int(GameManager.current_state),
@@ -38,6 +44,10 @@ func save_game(slot_name: String) -> bool:
 		"active_player_index": PlayerManager.active_player_index,
 		"saved_at": Time.get_datetime_dict_from_system(),
 	}
+	var validation_error := _validate_save_data(save_data)
+	if not validation_error.is_empty():
+		push_warning("[SaveManager] Save rejected before writing: %s" % validation_error)
+		return false
 	var json_string := JSON.stringify(save_data, "\t")
 	var file_path := SAVE_DIR + slot_name + ".sav"
 	var temp_path := file_path + ".tmp"
@@ -136,6 +146,13 @@ func load_game(slot_name: String) -> bool:
 		PartyManager.deserialize(party_data)
 	else:
 		PartyManager.sync_from_player_manager()
+	# Party data owns the current character state. Seats must reference that same
+	# object, rather than the duplicate DTO reconstructed by PlayerManager.
+	for index in PlayerManager.get_player_count():
+		var player_character: Character = PlayerManager.get_player(index).get("character")
+		if player_character != null and PartyManager.characters.has(player_character.character_id):
+			PlayerManager.set_player_character(index, PartyManager.characters[player_character.character_id])
+	SpellEffects.reconcile(PartyManager.characters.values(), PartyManager.characters.values())
 	PlayerManager.current_round = int(save_data.get("current_round", 1))
 	PlayerManager.active_player_index = int(save_data.get("active_player_index", 0))
 	ActivityHistory.apply_prepared_snapshot(prepared_activity)
@@ -167,6 +184,20 @@ func get_resumable_saves() -> Array[String]:
 	return resumable
 
 
+## Read-only menu choice; validation remains the existing save boundary.
+func get_latest_resumable_save() -> String:
+	var latest := ""
+	var latest_time := -1
+	for slot in get_resumable_saves():
+		var path := SAVE_DIR + slot + ".sav"
+		if not FileAccess.file_exists(path): path += ".bak"
+		var modified := int(FileAccess.get_modified_time(path))
+		if modified > latest_time:
+			latest = slot
+			latest_time = modified
+	return latest
+
+
 func get_available_saves() -> Array[String]:
 	var save_names: Dictionary = {}
 	if not DirAccess.dir_exists_absolute(SAVE_DIR):
@@ -186,6 +217,23 @@ func get_available_saves() -> Array[String]:
 		saves.append(str(save_name))
 	saves.sort()
 	return saves
+
+
+func get_legacy_save_names() -> Array[String]:
+	var names: Array[String] = []
+	var dir := DirAccess.open(LEGACY_SAVE_DIR)
+	if dir == null:
+		return names
+	for file_name in dir.get_files():
+		var slot := ""
+		if file_name.ends_with(".sav"):
+			slot = file_name.trim_suffix(".sav")
+		elif file_name.ends_with(".sav.bak"):
+			slot = file_name.trim_suffix(".sav.bak")
+		if not slot.is_empty() and slot not in names:
+			names.append(slot)
+	names.sort()
+	return names
 
 
 func delete_save(slot_name: String) -> bool:
@@ -238,6 +286,8 @@ func _read_save(slot_name: String) -> Dictionary:
 func _validate_save_data(data: Dictionary) -> String:
 	if int(data.get("schema_version", -1)) != SAVE_SCHEMA_VERSION:
 		return "unsupported schema version"
+	if str(data.get("ruleset_id", "")) != RULESET_ID:
+		return "save uses incompatible rules; start a new campaign"
 	if str(data.get("game_version", "")).is_empty():
 		return "missing game version"
 	if DataLoader.get_campaign(str(data.get("campaign_id", ""))).is_empty():
@@ -265,6 +315,25 @@ func _validate_save_data(data: Dictionary) -> String:
 				return "character DTO is not an object"
 			if DataLoader.get_race(str(character_data.get("race_id", ""))).is_empty() or DataLoader.get_character_class(str(character_data.get("class_id", ""))).is_empty():
 				return "character references unknown content"
+			var survival_error := SurvivalRules.saved_state_error(character_data)
+			if not survival_error.is_empty(): return survival_error
+			var corpse_error := CorpseRules.saved_error(character_data)
+			if not corpse_error.is_empty(): return corpse_error
+			var familiar_error := FamiliarRules.saved_error(character_data)
+			if not familiar_error.is_empty(): return familiar_error
+			var steed_error := PaladinRules.saved_steed_error(character_data)
+			if not steed_error.is_empty(): return steed_error
+			var inventory_error := InventoryCopies.saved_error(character_data.get("inventory", {}))
+			if not inventory_error.is_empty(): return inventory_error
+			var fighter_error := FighterRules.saved_training_error(character_data)
+			if not fighter_error.is_empty():
+				return fighter_error
+			var choices_error := ClassProgression.saved_choices_error(character_data)
+			if not choices_error.is_empty():
+				return choices_error
+			var spell_error := SpellEffects.saved_state_error(character_data)
+			if not spell_error.is_empty():
+				return spell_error
 	var party_data = data.get("party")
 	if party_data != null:
 		if not party_data is Dictionary:
@@ -276,7 +345,62 @@ func _validate_save_data(data: Dictionary) -> String:
 		return "defeated monster ledger is not an array"
 	if not data.get("campaign_ledger", {}) is Dictionary:
 		return "campaign ledger is not an object"
+	var campaign_ledger: Dictionary = data.get("campaign_ledger", {})
+	var creature_error := CreatedCreatureRules.saved_error(campaign_ledger.get("created_creatures", []), campaign_ledger.get("next_created_creature_id", 1), int(campaign_ledger.get("campaign_elapsed_seconds", 0)))
+	if not creature_error.is_empty(): return creature_error
+	var world_error := DungeonPersistence.snapshots_error(campaign_ledger.get("dungeon_snapshots", {}), DataLoader.get_campaign(str(data["campaign_id"])))
+	if not world_error.is_empty(): return world_error
+	world_error = DungeonPersistence.saved_error(data.get("active_dungeon_state", {}))
+	if not world_error.is_empty(): return world_error
+	creature_error = CreatedCreatureRules.saved_locations_error(campaign_ledger.get("created_creatures", []), DataLoader.get_campaign(str(data["campaign_id"])), campaign_ledger.get("dungeon_snapshots", {}), data.get("active_dungeon_state", {}))
+	if not creature_error.is_empty(): return creature_error
+	var ownership_error := InventoryCopies.ownership_error(data)
+	var animated_rooms: Array = []
+	for dungeon in [data.get("active_dungeon_state", {})] + campaign_ledger.get("dungeon_snapshots", {}).values():
+		animated_rooms.append_array(dungeon.get("local_rooms", {}).values())
+	creature_error = AnimatedObjectRules.saved_links_error(campaign_ledger.get("created_creatures", []), animated_rooms, data.get("party", {}).get("characters", {}))
+	if not creature_error.is_empty(): return creature_error
+	if not ownership_error.is_empty(): return ownership_error
+	var messenger_error := AnimalMessengerRulesRef.validate_saved_deliveries(campaign_ledger.get("animal_messenger_deliveries", []))
+	if not messenger_error.is_empty():
+		return messenger_error
+	var visit_error := _validate_visited_overworld_locations(campaign_ledger.get("visited_overworld_locations", []))
+	if not visit_error.is_empty():
+		return visit_error
+	if int(campaign_ledger.get("campaign_elapsed_seconds", 0)) < 0 or int(campaign_ledger.get("next_animal_messenger_id", 1)) < 1:
+		return "campaign travel clock is invalid"
+	var clock_characters: Array = []
+	for player in data.get("players", []):
+		if player.get("character") is Dictionary: clock_characters.append(player["character"])
+	if party_data is Dictionary: clock_characters.append_array(party_data.get("characters", {}).values())
+	for member_data in clock_characters:
+		var corpse_clock_error := CorpseRules.saved_clock_error(member_data, int(campaign_ledger.get("campaign_elapsed_seconds", 0)))
+		if not corpse_clock_error.is_empty(): return corpse_clock_error
 	return ""
+
+
+func _validate_visited_overworld_locations(value: Variant) -> String:
+	if not value is Array or value.size() > 2000:
+		return "visited overworld locations are not a bounded array"
+	var seen_ids: Dictionary = {}
+	for location in value:
+		if not location is Dictionary:
+			return "visited overworld location is not an object"
+		var location_id := str(location.get("id", ""))
+		var coord = location.get("coord", null)
+		if location_id.is_empty() or seen_ids.has(location_id) or not coord is Array or coord.size() != 2:
+			return "visited overworld location is invalid"
+		if not _valid_json_coordinate(coord[0]) or not _valid_json_coordinate(coord[1]) or str(location.get("name", "")).strip_edges().is_empty():
+			return "visited overworld location is invalid"
+		seen_ids[location_id] = true
+	return ""
+
+
+## JSON numbers decode as floats. Validate before narrowing to Vector2i's int32.
+func _valid_json_coordinate(value: Variant) -> bool:
+	if not (value is int or value is float):
+		return false
+	return is_finite(float(value)) and value >= -2147483648 and value <= 2147483647 and float(value) == floor(float(value))
 
 
 func _validate_party_data(data: Dictionary) -> String:
@@ -317,7 +441,29 @@ func _validate_party_data(data: Dictionary) -> String:
 			return "party character DTO is not an object"
 		if DataLoader.get_race(str(character_data.get("race_id", ""))).is_empty() or DataLoader.get_character_class(str(character_data.get("class_id", ""))).is_empty():
 			return "party character references unknown content"
+		var survival_error := SurvivalRules.saved_state_error(character_data)
+		if not survival_error.is_empty(): return survival_error
+		var corpse_error := CorpseRules.saved_error(character_data)
+		if not corpse_error.is_empty(): return corpse_error
+		var familiar_error := FamiliarRules.saved_error(character_data)
+		if not familiar_error.is_empty(): return familiar_error
+		var steed_error := PaladinRules.saved_steed_error(character_data)
+		if not steed_error.is_empty(): return steed_error
+		var inventory_error := InventoryCopies.saved_error(character_data.get("inventory", {}))
+		if not inventory_error.is_empty(): return inventory_error
+		var fighter_error := FighterRules.saved_training_error(character_data)
+		if not fighter_error.is_empty():
+			return fighter_error
+		var choices_error := ClassProgression.saved_choices_error(character_data)
+		if not choices_error.is_empty():
+			return choices_error
+		var spell_error := SpellEffects.saved_state_error(character_data)
+		if not spell_error.is_empty():
+			return spell_error
 	var leader_slot_id := str(data.get("leader_slot_id", "slot_0"))
+	var effect_party_error := SpellEffects.saved_party_error(characters)
+	if not effect_party_error.is_empty():
+		return effect_party_error
 	if leader_slot_id not in known_slots:
 		return "party leader references an unknown slot"
 	for companion_id in roster:
@@ -335,21 +481,37 @@ func _validate_party_data(data: Dictionary) -> String:
 
 func _serialize_campaign_ledger() -> Dictionary:
 	return {
+		"dungeon_snapshots": GameManager.dungeon_snapshots.duplicate(true),
 		"completed_milestones": GameManager.completed_milestones.duplicate(),
 		"cleared_dungeons": GameManager.cleared_dungeons.duplicate(),
 		"claimed_rewards": GameManager.claimed_rewards.duplicate(),
 		"recruited_companions": GameManager.recruited_companions.duplicate(),
 		"dismissed_companions": GameManager.dismissed_companions.duplicate(),
+		"visited_overworld_locations": GameManager.visited_overworld_locations.duplicate(true),
+		"animal_messenger_deliveries": GameManager.animal_messenger_deliveries.duplicate(true),
+		"campaign_elapsed_seconds": GameManager.campaign_elapsed_seconds,
+		"next_animal_messenger_id": GameManager.next_animal_messenger_id,
+		"created_creatures": GameManager.created_creatures.duplicate(true),
+		"next_created_creature_id": GameManager.next_created_creature_id,
 		"campaign_completed": GameManager.campaign_completed,
 	}
 
 
 func _apply_campaign_ledger(data: Dictionary) -> void:
+	GameManager.created_creatures.assign(_dictionary_array(data.get("created_creatures", [])))
+	GameManager.next_created_creature_id = int(data.get("next_created_creature_id", 1))
+	GameManager.dungeon_snapshots = data.get("dungeon_snapshots", {}).duplicate(true)
 	GameManager.completed_milestones.assign(_string_array(data.get("completed_milestones", [])))
 	GameManager.cleared_dungeons.assign(_string_array(data.get("cleared_dungeons", [])))
 	GameManager.claimed_rewards.assign(_string_array(data.get("claimed_rewards", [])))
 	GameManager.recruited_companions.assign(_string_array(data.get("recruited_companions", [])))
 	GameManager.dismissed_companions.assign(_string_array(data.get("dismissed_companions", [])))
+	GameManager.visited_overworld_locations.assign(_dictionary_array(data.get("visited_overworld_locations", [])))
+	for location in GameManager.visited_overworld_locations:
+		location["coord"] = [int(location["coord"][0]), int(location["coord"][1])]
+	GameManager.animal_messenger_deliveries.assign(_dictionary_array(data.get("animal_messenger_deliveries", [])))
+	GameManager.campaign_elapsed_seconds = maxi(0, int(data.get("campaign_elapsed_seconds", 0)))
+	GameManager.next_animal_messenger_id = maxi(1, int(data.get("next_animal_messenger_id", 1)))
 	GameManager.campaign_completed = bool(data.get("campaign_completed", false))
 
 
@@ -361,10 +523,19 @@ func _string_array(value) -> Array[String]:
 	return result
 
 
+func _dictionary_array(value) -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	if value is Array:
+		for entry in value:
+			if entry is Dictionary:
+				result.append(entry.duplicate(true))
+	return result
+
+
 func _serialize_dungeon_state(state: Dictionary) -> Dictionary:
 	if state.is_empty():
 		return {}
-	var result := state.duplicate()
+	var result := state.duplicate(true)
 	var raw_rooms = state.get("rooms", {})
 	var room_dtos: Array = []
 	if raw_rooms is Dictionary:
@@ -374,6 +545,9 @@ func _serialize_dungeon_state(state: Dictionary) -> Dictionary:
 				room_dtos.append(room.to_dict())
 			elif room is Dictionary:
 				room_dtos.append(room.duplicate(true))
+	elif raw_rooms is Array:
+		for room in raw_rooms:
+			if room is Dictionary: room_dtos.append(room.duplicate(true))
 	result["rooms"] = room_dtos
 	var position = state.get("party_position", Vector2i.ZERO)
 	if position is Vector2i:

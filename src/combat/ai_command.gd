@@ -64,6 +64,8 @@ func is_valid(monster: Dictionary, players: Array, grid: HexGrid) -> bool:
 		if HexUtils.get_distance(monster.get("hex_position", Vector2i.ZERO), target_position) > int(spell_data.get("range", 0)):
 			return false
 	if action_type in ["move", "move_attack"]:
+		if FighterRules.monster_speed(monster) <= 0:
+			return false
 		var move_to: Variant = payload.get("move_to", null)
 		if not move_to is Vector2i:
 			return false

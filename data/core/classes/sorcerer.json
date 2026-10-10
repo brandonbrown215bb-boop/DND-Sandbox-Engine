@@ -1,37 +1,175 @@
 {
   "id": "sorcerer",
   "name": "Sorcerer",
-  "description": "Sorcerer class. Source: PHB.",
+  "description": "Sorcerer class. 2024 SRD 5.2.1 progression; spell and Metamagic options remain curated.",
   "hit_die": "d6",
   "primary_ability": "CHA",
   "saving_throw_proficiencies": [
     "CON",
     "CHA"
   ],
-  "armor_proficiencies": [
-    "light",
-    "medium"
-  ],
+  "armor_proficiencies": [],
   "weapon_proficiencies": [
     "simple"
   ],
   "skill_choices": {
     "pick": 2,
     "from": [
-      "Athletics",
-      "Acrobatics",
-      "Insight",
-      "Perception",
-      "History",
       "Arcana",
-      "Stealth"
+      "Deception",
+      "Insight",
+      "Intimidation",
+      "Persuasion",
+      "Religion"
     ]
   },
   "starting_equipment": [
-    "leather_armor",
+    "spear",
+    "dagger",
     "dagger"
   ],
-  "spell_slots_by_level": {
+  "spell_list_ids": [
+    "acid_splash",
+    "alter_self",
+    "animate_objects",
+    "arcane_hand",
+    "banishment",
+    "blade_ward",
+    "blight",
+    "blindness/deafness",
+    "blink",
+    "blur",
+    "burning_hands",
+    "chain_lightning",
+    "charm_monster",
+    "charm_person",
+    "chill_touch",
+    "chromatic_orb",
+    "circle_of_death",
+    "clairvoyance",
+    "cloudkill",
+    "color_spray",
+    "comprehend_languages",
+    "cone_of_cold",
+    "confusion",
+    "counterspell",
+    "creation",
+    "dancing_lights",
+    "darkness",
+    "darkvision",
+    "daylight",
+    "delayed_blast_fireball",
+    "demiplane",
+    "detect_magic",
+    "detect_thoughts",
+    "dimension_door",
+    "disguise_self",
+    "disintegrate",
+    "dispel_magic",
+    "dominate_beast",
+    "dominate_monster",
+    "dominate_person",
+    "dragons_breath",
+    "earthquake",
+    "elementalism",
+    "enhance_ability",
+    "enlarge/reduce",
+    "etherealness",
+    "expeditious_retreat",
+    "eyebite",
+    "false_life",
+    "fear",
+    "feather_fall",
+    "finger_of_death",
+    "fire_bolt",
+    "fire_shield",
+    "fire_storm",
+    "fireball",
+    "flame_blade",
+    "flaming_sphere",
+    "flesh_to_stone",
+    "fly",
+    "fog_cloud",
+    "freezing_sphere",
+    "gaseous_form",
+    "gate",
+    "globe_of_invulnerability",
+    "grease",
+    "greater_invisibility",
+    "gust_of_wind",
+    "haste",
+    "hold_monster",
+    "hold_person",
+    "hypnotic_pattern",
+    "ice_knife",
+    "ice_storm",
+    "incendiary_cloud",
+    "insect_plague",
+    "invisibility",
+    "jump",
+    "knock",
+    "levitate",
+    "light",
+    "lightning_bolt",
+    "mage_armor",
+    "mage_hand",
+    "magic_missile",
+    "magic_weapon",
+    "major_image",
+    "mass_suggestion",
+    "mending",
+    "message",
+    "meteor_swarm",
+    "minor_illusion",
+    "mirror_image",
+    "misty_step",
+    "move_earth",
+    "plane_shift",
+    "poison_spray",
+    "polymorph",
+    "power_word_kill",
+    "power_word_stun",
+    "prestidigitation",
+    "prismatic_spray",
+    "protection_from_energy",
+    "ray_of_frost",
+    "ray_of_sickness",
+    "reverse_gravity",
+    "scorching_ray",
+    "see_invisibility",
+    "seeming",
+    "shatter",
+    "shield",
+    "shocking_grasp",
+    "silent_image",
+    "sleep",
+    "sleet_storm",
+    "slow",
+    "sorcerous_burst",
+    "spider_climb",
+    "stinking_cloud",
+    "stoneskin",
+    "suggestion",
+    "sunbeam",
+    "sunburst",
+    "telekinesis",
+    "teleport",
+    "teleportation_circle",
+    "thunderwave",
+    "time_stop",
+    "tongues",
+    "true_seeing",
+    "true_strike",
+    "vampiric_touch",
+    "vitriolic_sphere",
+    "wall_of_fire",
+    "wall_of_stone",
+    "water_breathing",
+    "water_walk",
+    "web",
+    "wish"
+  ],
+  "spell_slots_by_character_level": {
     "1": [
       2
     ],
@@ -50,135 +188,544 @@
       4,
       3,
       2
+    ],
+    "6": [
+      4,
+      3,
+      3
+    ],
+    "7": [
+      4,
+      3,
+      3,
+      1
+    ],
+    "8": [
+      4,
+      3,
+      3,
+      2
+    ],
+    "9": [
+      4,
+      3,
+      3,
+      3,
+      1
+    ],
+    "10": [
+      4,
+      3,
+      3,
+      3,
+      2
+    ],
+    "11": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1
+    ],
+    "12": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1
+    ],
+    "13": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1
+    ],
+    "14": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1
+    ],
+    "15": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      1
+    ],
+    "16": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      1
+    ],
+    "17": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      1,
+      1
+    ],
+    "18": [
+      4,
+      3,
+      3,
+      3,
+      3,
+      1,
+      1,
+      1,
+      1
+    ],
+    "19": [
+      4,
+      3,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      1
+    ],
+    "20": [
+      4,
+      3,
+      3,
+      3,
+      3,
+      2,
+      2,
+      1,
+      1
     ]
-  },
-  "cantrips_known": [],
-  "spells_known_by_level": {
-    "1": [],
-    "2": [],
-    "3": []
   },
   "features_by_level": {
     "1": [
       {
-        "id": "sorcerer_sorcerous_origin",
-        "name": "Sorcerous Origin",
-        "description": "Choose a sorcerous origin, which describes the source of your innate magical power, from the list of available origins. Your choice grants you features when you choose it at 1st level and again at 6th, 14th, and 18th level.",
-        "type": "passive",
-        "effects": []
-      },
-      {
         "id": "sorcerer_spellcasting",
         "name": "Spellcasting",
-        "description": "An event in your past, or in the life of a parent or ancestor, left an indelible mark on you, infusing you with arcane magic. This font of magic, whatever its origin, fuels your spells. See chapter 10 for the general rules of spellcasting and chapter 11 for the {@filter sorcerer spell list=sorcerer}...",
         "type": "passive",
-        "effects": []
+        "description": "Charisma-based prepared full caster with four cantrips and two prepared spells. Current spell access is limited to eight curated spell records.",
+        "effects": [
+          {
+            "type": "spellcasting",
+            "ability": "CHA",
+            "spell_lists": [
+              "sorcerer"
+            ],
+            "default_cantrips": [
+              "fire_bolt",
+              "light"
+            ],
+            "default_prepared_spells": [
+              "magic_missile",
+              "shield"
+            ],
+            "capacity_by_level": {
+              "1": {
+                "cantrips": 4,
+                "prepared_spells": 2
+              },
+              "2": {
+                "cantrips": 4,
+                "prepared_spells": 4
+              },
+              "3": {
+                "cantrips": 4,
+                "prepared_spells": 6
+              },
+              "4": {
+                "cantrips": 5,
+                "prepared_spells": 7
+              },
+              "5": {
+                "cantrips": 5,
+                "prepared_spells": 9
+              },
+              "6": {
+                "cantrips": 5,
+                "prepared_spells": 10
+              },
+              "7": {
+                "cantrips": 5,
+                "prepared_spells": 11
+              },
+              "8": {
+                "cantrips": 5,
+                "prepared_spells": 12
+              },
+              "9": {
+                "cantrips": 5,
+                "prepared_spells": 14
+              },
+              "10": {
+                "cantrips": 6,
+                "prepared_spells": 15
+              },
+              "11": {
+                "cantrips": 6,
+                "prepared_spells": 16
+              },
+              "12": {
+                "cantrips": 6,
+                "prepared_spells": 16
+              },
+              "13": {
+                "cantrips": 6,
+                "prepared_spells": 17
+              },
+              "14": {
+                "cantrips": 6,
+                "prepared_spells": 17
+              },
+              "15": {
+                "cantrips": 6,
+                "prepared_spells": 18
+              },
+              "16": {
+                "cantrips": 6,
+                "prepared_spells": 18
+              },
+              "17": {
+                "cantrips": 6,
+                "prepared_spells": 19
+              },
+              "18": {
+                "cantrips": 6,
+                "prepared_spells": 20
+              },
+              "19": {
+                "cantrips": 6,
+                "prepared_spells": 21
+              },
+              "20": {
+                "cantrips": 6,
+                "prepared_spells": 22
+              }
+            }
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-partial"
       },
       {
         "id": "sorcerer_innate_sorcery",
         "name": "Innate Sorcery",
-        "description": "An event in your past left an indelible mark on you, infusing you with simmering magic. As a Bonus Action, you can unleash that magic for 1 minute, during which you gain the following benefits: {'type': 'list', 'items': ['The spell save DC of your Sorcerer spells increases by 1.', 'You have Advantag...",
         "type": "active",
-        "effects": [],
+        "description": "Bonus Action; for one minute gain +1 Sorcerer spell save DC and Advantage on Sorcerer spell attacks. Two uses per Long Rest.",
+        "effects": [
+          {
+            "type": "innate_sorcery",
+            "duration": 10
+          }
+        ],
         "action_cost": "bonus_action",
-        "uses": 1,
-        "uses_per": "combat"
+        "uses": 2,
+        "uses_per": "long_rest",
+        "executor": "class_feature",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-partial"
       }
     ],
     "2": [
       {
-        "id": "sorcerer_flexible_casting",
-        "name": "Flexible Casting",
-        "description": "You can use your sorcery points to gain additional spell slots, or sacrifice spell slots to gain additional sorcery points. You learn other ways to use your sorcery points as you reach higher levels. {'type': 'entries', 'name': 'Creating Spell Slots', 'entries': ['You can transform unexpended sorcer...",
-        "type": "active",
-        "effects": [],
-        "action_cost": "bonus_action",
-        "uses": 1,
-        "uses_per": "combat"
-      },
-      {
         "id": "sorcerer_font_of_magic",
         "name": "Font of Magic",
-        "description": "At 2nd level, you tap into a deep wellspring of magic within yourself. This wellspring is represented by sorcery points, which allow you to create a variety of magical effects. {'type': 'refClassFeature', 'classFeature': 'Sorcery Points|'} {'type': 'refClassFeature', 'classFeature': 'Flexible Castin...",
         "type": "passive",
-        "effects": []
+        "description": "Convert spell slots into Sorcery Points, or spend points to create spell slots up to level 5. Created slots vanish at your next Long Rest.",
+        "effects": [
+          {
+            "type": "sorcerer_font_of_magic"
+          }
+        ],
+        "enabled": true,
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-partial"
       },
       {
         "id": "sorcerer_sorcery_points",
         "name": "Sorcery Points",
-        "description": "You have 2 sorcery points, and you gain one additional point every time you level up, to a maximum of 20 at level 20. You can never have more sorcery points than shown on the table for your level. You regain all spent sorcery points when you finish a long rest.",
         "type": "passive",
-        "effects": []
+        "description": "Sorcery Points have a maximum equal to Sorcerer level and return on a Long Rest.",
+        "effects": [
+          {
+            "type": "sorcery_points"
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
       },
       {
         "id": "sorcerer_metamagic",
         "name": "Metamagic",
-        "description": "Because your magic flows from within, you can alter your spells to suit your needs; you gain two Metamagic options of your choice from \"{@filter Metamagic Options type=MM=XPHB}\" later in this class's description. You use the chosen options to temporarily modify spells you cast. To use an option, you...",
         "type": "passive",
-        "effects": []
-      },
-      {
-        "id": "sorcerer_metamagic_options",
-        "name": "Metamagic Options",
-        "description": "The following options are available to your Metamagic feature. The options are presented in alphabetical order. {'type': 'options', 'count': 2, 'entries': [{'type': 'refOptionalfeature', 'optionalfeature': 'Careful Spell', 'preserve': {'consumes': True}}, {'type': 'refOptionalfeature', 'optionalfeat...",
-        "type": "passive",
-        "effects": []
+        "description": "Choose two Metamagic options. The complete 2024 option list is available through class training; each option's combat effect is resolved by its supported game rule.",
+        "effects": [
+          {
+            "type": "metamagic",
+            "options": [
+              "careful_spell",
+              "distant_spell",
+              "empowered_spell",
+              "extended_spell",
+              "heightened_spell",
+              "quickened_spell",
+              "seeking_spell",
+              "subtle_spell",
+              "transmuted_spell",
+              "twinned_spell"
+            ]
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-partial"
       }
     ],
     "3": [
       {
-        "id": "sorcerer_metamagic",
-        "name": "Metamagic",
-        "description": "At 3rd level, you gain the ability to twist your spells to suit your needs. You gain two of the following Metamagic options of your choice. You gain another one at 10th and 17th level. You can use only one Metamagic option on a spell when you cast it, unless otherwise noted. {'type': 'options', 'cou...",
-        "type": "passive",
-        "effects": []
-      },
-      {
-        "id": "sorcerer_metamagic_options",
-        "name": "Metamagic Options",
-        "description": "{@i 3rd-level sorcerer optional class features feature} When you choose Metamagic options, you have access to the following additional options. {'type': 'options', 'entries': [{'type': 'refOptionalfeature', 'optionalfeature': 'Seeking Spell', 'preserve': {'consumes': True}}, {'type': 'refOptionalfea...",
-        "type": "passive",
-        "effects": []
-      },
-      {
-        "id": "sorcerer_sorcerer_subclass",
+        "id": "sorcerer_subclass",
         "name": "Sorcerer Subclass",
-        "description": "You gain a Sorcerer subclass of your choice. A subclass is a specialization that grants you features at certain Sorcerer levels. For the rest of your career, you gain each of your subclass's features that are of your Sorcerer level or lower.",
         "type": "passive",
-        "effects": []
+        "description": "Choose a Sorcerer subclass. Subclass features are stored in separate records; none currently ship.",
+        "effects": [],
+        "enabled": false,
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "reference-only"
       }
     ],
     "4": [
       {
-        "id": "sorcerer_ability_score_improvement",
+        "id": "sorcerer_ability_improvement_4",
         "name": "Ability Score Improvement",
-        "description": "When you reach 4th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature. If your DM allows the use of feats, you may instead take a {@5etools feat.html}.",
         "type": "passive",
-        "effects": []
-      },
-      {
-        "id": "sorcerer_sorcerous_versatility",
-        "name": "Sorcerous Versatility",
-        "description": "{@i 4th-level sorcerer optional class features feature} Whenever you reach a level in this class that grants the Ability Score Improvement feature, you can do one of the following, representing the magic within you flowing in new ways: {'type': 'list', 'items': ['Replace one of the options you chose...",
-        "type": "passive",
-        "effects": []
+        "effects": [
+          {
+            "type": "asi"
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
       }
     ],
     "5": [
       {
-        "id": "sorcerer_magical_guidance",
-        "name": "Magical Guidance",
-        "description": "{@i 5th-level sorcerer optional class features feature} You can tap into your inner wellspring of magic to try to conjure success from failure. When you make an ability check that fails, you can spend 1 sorcery point to reroll the d20, and you must use the new roll, potentially turning the failure i...",
-        "type": "passive",
-        "effects": []
-      },
-      {
         "id": "sorcerer_sorcerous_restoration",
         "name": "Sorcerous Restoration",
-        "description": "When you finish a Short Rest, you can regain expended Sorcery Points, but no more than a number equal to half your Sorcerer level (round down). Once you use this feature, you can't do so again until you finish a Long Rest.",
         "type": "passive",
-        "effects": []
+        "description": "Once per Long Rest, after a Short Rest regain Sorcery Points up to half your Sorcerer level (rounded down). Uses shared bounded Short Rest resource recovery.",
+        "effects": [
+          {
+            "type": "short_rest_recharge",
+            "resource_id": "sorcery_points",
+            "amount_by_level": {
+              "5": 2,
+              "7": 3,
+              "9": 4,
+              "11": 5,
+              "13": 6,
+              "15": 7,
+              "17": 8,
+              "19": 9,
+              "20": 10
+            },
+            "once_per_long_rest": true
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "6": [
+      {
+        "id": "sorcerer_subclass_feature_6",
+        "name": "Sorcerer Subclass Feature",
+        "type": "passive",
+        "description": "Subclass progression is stored in separate records.",
+        "effects": [],
+        "enabled": false,
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "reference-only"
+      }
+    ],
+    "7": [
+      {
+        "id": "sorcerer_sorcery_incarnate",
+        "name": "Sorcery Incarnate",
+        "type": "passive",
+        "description": "When Innate Sorcery has no uses left, spend 2 Sorcery Points as part of its Bonus Action to reactivate it. While active, apply up to two Metamagic options to a spell.",
+        "effects": [
+          {
+            "type": "sorcery_incarnate"
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-partial"
+      }
+    ],
+    "8": [
+      {
+        "id": "sorcerer_ability_improvement_8",
+        "name": "Ability Score Improvement",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "asi"
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "9": [],
+    "10": [
+      {
+        "id": "sorcerer_metamagic_improvement_10",
+        "name": "Metamagic Improvement",
+        "type": "passive",
+        "description": "Gain two additional Metamagic options, and you may replace one option whenever you gain a Sorcerer level.",
+        "effects": [
+          {
+            "type": "metamagic_choices",
+            "count": 2
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "11": [],
+    "12": [
+      {
+        "id": "sorcerer_ability_improvement_12",
+        "name": "Ability Score Improvement",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "asi"
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "13": [],
+    "14": [
+      {
+        "id": "sorcerer_subclass_feature_14",
+        "name": "Sorcerer Subclass Feature",
+        "type": "passive",
+        "description": "Subclass progression is stored in separate records.",
+        "effects": [],
+        "enabled": false,
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "reference-only"
+      }
+    ],
+    "15": [],
+    "16": [
+      {
+        "id": "sorcerer_ability_improvement_16",
+        "name": "Ability Score Improvement",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "asi"
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "17": [
+      {
+        "id": "sorcerer_metamagic_improvement_17",
+        "name": "Metamagic Improvement",
+        "type": "passive",
+        "description": "Gain two additional Metamagic options.",
+        "effects": [
+          {
+            "type": "metamagic_choices",
+            "count": 2
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "18": [
+      {
+        "id": "sorcerer_subclass_feature_18",
+        "name": "Sorcerer Subclass Feature",
+        "type": "passive",
+        "description": "Subclass progression is stored in separate records.",
+        "effects": [],
+        "enabled": false,
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "reference-only"
+      }
+    ],
+    "19": [
+      {
+        "id": "sorcerer_epic_boon",
+        "name": "Epic Boon",
+        "type": "passive",
+        "description": "Choose an Epic Boon through the shared Character Sheet choice path.",
+        "effects": [
+          {
+            "type": "epic_boon_choice",
+            "options": [
+              "irresistible_offense",
+              "combat_prowess",
+              "spell_recall"
+            ],
+            "ability_scores_by_option": {
+              "spell_recall": [
+                "INT",
+                "WIS",
+                "CHA"
+              ]
+            }
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-partial"
+      }
+    ],
+    "20": [
+      {
+        "id": "sorcerer_arcane_apotheosis",
+        "name": "Arcane Apotheosis",
+        "type": "passive",
+        "description": "While Innate Sorcery is active, one Metamagic option each turn costs no Sorcery Points.",
+        "effects": [
+          {
+            "type": "arcane_apotheosis"
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-partial"
       }
     ]
-  }
+  },
+  "subclass_level": 3
 }

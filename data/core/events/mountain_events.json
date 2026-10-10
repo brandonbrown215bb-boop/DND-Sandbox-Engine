@@ -43,7 +43,7 @@
       "weight": 15,
       "description": "You spot a massive eagle's nest on a nearby ledge. Something sparkles within.",
       "type": "skill_check",
-      "check": {"ability": "DEX", "dc": 14},
+      "check": {"ability": "STR", "skill": "Athletics", "context": "climbing", "dc": 14},
       "success": {"description": "You carefully climb to the nest and find a golden trinket!", "effects": [{"type": "give_item", "item_id": "gold_100"}]},
       "failure": {"description": "The mother eagle returns! Her talons rake your arm as you scramble away.", "effects": [{"type": "damage", "value": "1d6", "damage_type": "slashing"}]}
     },
@@ -60,7 +60,9 @@
         },
         {
           "text": "Sneak around",
-          "check": {"ability": "DEX", "dc": 12},
+          "check": {"ability": "DEX",
+            "skill": "Stealth",
+            "familiar_help_allowed": true, "dc": 12},
           "success": {"description": "You slip past undetected."},
           "failure": {"description": "A bandit spots you! 'Intruder!' they cry.", "effects": [{"type": "start_combat", "monsters": ["bandit", "bandit"]}]}
         }

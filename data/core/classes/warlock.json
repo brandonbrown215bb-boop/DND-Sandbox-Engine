@@ -1,7 +1,7 @@
 {
   "id": "warlock",
   "name": "Warlock",
-  "description": "Warlock class. Source: PHB.",
+  "description": "2024 Warlock class progression. Source: SRD 5.2.1.",
   "hit_die": "d8",
   "primary_ability": "CHA",
   "saving_throw_proficiencies": [
@@ -9,117 +9,934 @@
     "CHA"
   ],
   "armor_proficiencies": [
-    "light",
-    "medium",
-    "heavy",
-    "shields"
+    "light"
   ],
   "weapon_proficiencies": [
-    "simple",
-    "martial"
+    "simple"
   ],
   "skill_choices": {
     "pick": 2,
     "from": [
-      "Athletics",
-      "Acrobatics",
-      "Insight",
-      "Perception",
-      "History",
       "Arcana",
-      "Stealth"
+      "Deception",
+      "History",
+      "Intimidation",
+      "Investigation",
+      "Nature",
+      "Religion"
     ]
   },
   "starting_equipment": [
     "leather_armor",
     "dagger"
   ],
+  "subclass_level": 3,
+  "legacy_subclass": "fiend_patron",
+  "spell_list_ids": [
+    "astral_projection",
+    "bane",
+    "banishment",
+    "befuddlement",
+    "blade_ward",
+    "blight",
+    "charm_monster",
+    "charm_person",
+    "chill_touch",
+    "circle_of_death",
+    "comprehend_languages",
+    "contact_other_plane",
+    "counterspell",
+    "create_undead",
+    "darkness",
+    "demiplane",
+    "detect_magic",
+    "dimension_door",
+    "dispel_magic",
+    "dominate_monster",
+    "dream",
+    "eldritch_blast",
+    "enthrall",
+    "etherealness",
+    "expeditious_retreat",
+    "eyebite",
+    "fear",
+    "finger_of_death",
+    "fire_bolt",
+    "fly",
+    "forcecage",
+    "foresight",
+    "gaseous_form",
+    "gate",
+    "glibness",
+    "hallucinatory_terrain",
+    "hellish_rebuke",
+    "hex",
+    "hold_monster",
+    "hold_person",
+    "hypnotic_pattern",
+    "illusory_script",
+    "imprisonment",
+    "invisibility",
+    "mage_hand",
+    "magic_circle",
+    "magic_missile",
+    "major_image",
+    "mind_spike",
+    "minor_illusion",
+    "mirror_image",
+    "mislead",
+    "misty_step",
+    "planar_binding",
+    "plane_shift",
+    "poison_spray",
+    "power_word_kill",
+    "power_word_stun",
+    "prestidigitation",
+    "protection_from_evil_and_good",
+    "ray_of_enfeeblement",
+    "remove_curse",
+    "scrying",
+    "speak_with_animals",
+    "spider_climb",
+    "suggestion",
+    "tashas_hideous_laughter",
+    "teleportation_circle",
+    "tongues",
+    "true_polymorph",
+    "true_seeing",
+    "true_strike",
+    "unseen_servant",
+    "vampiric_touch",
+    "weird"
+  ],
+  "spellcasting_ability": "CHA",
+  "features_by_level": {
+    "1": [
+      {
+        "id": "warlock_eldritch_invocations",
+        "name": "Eldritch Invocations",
+        "description": "Choose and save Eldritch Invocations. Options enforce their level, cantrip, and invocation prerequisites; on each Warlock level, replace at most one eligible invocation.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "warlock_invocations"
+          }
+        ],
+        "enabled": true,
+        "rules_status": "2024-partial",
+        "rules_source": "dnd-2024-srd-5.2.1"
+      },
+      {
+        "id": "warlock_pact_magic",
+        "name": "Pact Magic",
+        "description": "Charisma-based Pact Magic. Pact slots have the same level and return on a Short or Long Rest. The game supplies its shared curated Pact Magic progression and four supported spell choices.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "pact_magic"
+          },
+          {
+            "type": "spellcasting",
+            "ability": "CHA",
+            "spell_lists": [
+              "warlock"
+            ],
+            "default_cantrips": [
+              "eldritch_blast",
+              "minor_illusion"
+            ],
+            "default_prepared_spells": [
+              "charm_person",
+              "hex"
+            ],
+            "capacity_by_level": {
+              "1": {
+                "cantrips": 2,
+                "prepared_spells": 2
+              },
+              "2": {
+                "cantrips": 2,
+                "prepared_spells": 3
+              },
+              "3": {
+                "cantrips": 2,
+                "prepared_spells": 4
+              },
+              "4": {
+                "cantrips": 3,
+                "prepared_spells": 5
+              },
+              "5": {
+                "cantrips": 3,
+                "prepared_spells": 6
+              },
+              "6": {
+                "cantrips": 3,
+                "prepared_spells": 7
+              },
+              "7": {
+                "cantrips": 3,
+                "prepared_spells": 8
+              },
+              "8": {
+                "cantrips": 3,
+                "prepared_spells": 9
+              },
+              "9": {
+                "cantrips": 3,
+                "prepared_spells": 10
+              },
+              "10": {
+                "cantrips": 4,
+                "prepared_spells": 10
+              },
+              "11": {
+                "cantrips": 4,
+                "prepared_spells": 11
+              },
+              "12": {
+                "cantrips": 4,
+                "prepared_spells": 11
+              },
+              "13": {
+                "cantrips": 4,
+                "prepared_spells": 12
+              },
+              "14": {
+                "cantrips": 4,
+                "prepared_spells": 12
+              },
+              "15": {
+                "cantrips": 4,
+                "prepared_spells": 13
+              },
+              "16": {
+                "cantrips": 4,
+                "prepared_spells": 13
+              },
+              "17": {
+                "cantrips": 4,
+                "prepared_spells": 14
+              },
+              "18": {
+                "cantrips": 4,
+                "prepared_spells": 14
+              },
+              "19": {
+                "cantrips": 4,
+                "prepared_spells": 15
+              },
+              "20": {
+                "cantrips": 4,
+                "prepared_spells": 15
+              }
+            }
+          }
+        ],
+        "enabled": true,
+        "rules_status": "2024-partial",
+        "rules_source": "dnd-2024-srd-5.2.1"
+      }
+    ],
+    "2": [
+      {
+        "id": "warlock_magical_cunning",
+        "name": "Magical Cunning",
+        "description": "After a 1-minute rite, regain expended Pact Magic slots up to half the maximum (round up), once per Long Rest. The current game exposes the shared recovery effect as a class-feature action; the 1-minute rite timing is not modeled.",
+        "type": "active",
+        "effects": [
+          {
+            "type": "pact_magic_recovery",
+            "fraction": 0.5,
+            "fraction_by_level": {
+              "1": 0.5,
+              "20": 1.0
+            }
+          }
+        ],
+        "enabled": true,
+        "rules_status": "2024-partial",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "executor": "class_feature",
+        "action_cost": "action",
+        "uses": 1,
+        "uses_per": "long_rest"
+      }
+    ],
+    "3": [],
+    "4": [
+      {
+        "id": "warlock_ability_improvement_4",
+        "name": "Ability Score Improvement",
+        "description": "Gain an Ability Score Improvement feat or another feat for which you qualify.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "asi"
+          }
+        ],
+        "enabled": true,
+        "rules_status": "2024-supported",
+        "rules_source": "dnd-2024-srd-5.2.1"
+      }
+    ],
+    "5": [],
+    "6": [],
+    "7": [],
+    "8": [
+      {
+        "id": "warlock_ability_improvement_8",
+        "name": "Ability Score Improvement",
+        "description": "Gain an Ability Score Improvement feat or another feat for which you qualify.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "asi"
+          }
+        ],
+        "enabled": true,
+        "rules_status": "2024-supported",
+        "rules_source": "dnd-2024-srd-5.2.1"
+      }
+    ],
+    "9": [
+      {
+        "id": "warlock_contact_patron",
+        "name": "Contact Patron",
+        "description": "Always have Contact Other Plane prepared. Once per Long Rest, cast it without a spell slot and automatically succeed on its saving throw.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "always_prepared_spells",
+            "spells": [
+              "contact_other_plane"
+            ]
+          },
+          {
+            "type": "spell_free_cast",
+            "spells": [
+              "contact_other_plane"
+            ],
+            "uses": 1,
+            "uses_per": "long_rest"
+          }
+        ],
+        "enabled": true,
+        "rules_status": "2024-supported",
+        "rules_source": "dnd-2024-srd-5.2.1"
+      }
+    ],
+    "10": [],
+    "11": [
+      {
+        "id": "warlock_mystic_arcanum_6",
+        "name": "Mystic Arcanum (Level 6 Spell)",
+        "description": "Choose a level 6 Warlock spell to cast once without a slot per Long Rest; the chosen spell has its own Arcanum use and can be replaced when you gain a Warlock level.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "warlock_mystic_arcanum",
+            "spell_level": 6
+          }
+        ],
+        "enabled": true,
+        "rules_status": "2024-supported",
+        "rules_source": "dnd-2024-srd-5.2.1"
+      }
+    ],
+    "12": [
+      {
+        "id": "warlock_ability_improvement_12",
+        "name": "Ability Score Improvement",
+        "description": "Gain an Ability Score Improvement feat or another feat for which you qualify.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "asi"
+          }
+        ],
+        "enabled": true,
+        "rules_status": "2024-supported",
+        "rules_source": "dnd-2024-srd-5.2.1"
+      }
+    ],
+    "13": [
+      {
+        "id": "warlock_mystic_arcanum_7",
+        "name": "Mystic Arcanum (Level 7 Spell)",
+        "description": "Choose a level 7 Warlock spell to cast once without a slot per Long Rest; the chosen spell has its own Arcanum use and can be replaced when you gain a Warlock level.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "warlock_mystic_arcanum",
+            "spell_level": 7
+          }
+        ],
+        "enabled": true,
+        "rules_status": "2024-supported",
+        "rules_source": "dnd-2024-srd-5.2.1"
+      }
+    ],
+    "14": [],
+    "15": [
+      {
+        "id": "warlock_mystic_arcanum_8",
+        "name": "Mystic Arcanum (Level 8 Spell)",
+        "description": "Choose a level 8 Warlock spell to cast once without a slot per Long Rest; the chosen spell has its own Arcanum use and can be replaced when you gain a Warlock level.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "warlock_mystic_arcanum",
+            "spell_level": 8
+          }
+        ],
+        "enabled": true,
+        "rules_status": "2024-supported",
+        "rules_source": "dnd-2024-srd-5.2.1"
+      }
+    ],
+    "16": [
+      {
+        "id": "warlock_ability_improvement_16",
+        "name": "Ability Score Improvement",
+        "description": "Gain an Ability Score Improvement feat or another feat for which you qualify.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "asi"
+          }
+        ],
+        "enabled": true,
+        "rules_status": "2024-supported",
+        "rules_source": "dnd-2024-srd-5.2.1"
+      }
+    ],
+    "17": [
+      {
+        "id": "warlock_mystic_arcanum_9",
+        "name": "Mystic Arcanum (Level 9 Spell)",
+        "description": "Choose a level 9 Warlock spell to cast once without a slot per Long Rest; the chosen spell has its own Arcanum use and can be replaced when you gain a Warlock level.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "warlock_mystic_arcanum",
+            "spell_level": 9
+          }
+        ],
+        "enabled": true,
+        "rules_status": "2024-supported",
+        "rules_source": "dnd-2024-srd-5.2.1"
+      }
+    ],
+    "18": [],
+    "19": [
+      {
+        "id": "warlock_epic_boon",
+        "name": "Epic Boon",
+        "description": "Gain an Epic Boon feat or another feat for which you qualify.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "epic_boon_choice",
+            "options": [
+              "combat_prowess",
+              "irresistible_offense",
+              "spell_recall"
+            ]
+          }
+        ],
+        "enabled": true,
+        "rules_status": "2024-partial",
+        "rules_source": "dnd-2024-srd-5.2.1"
+      }
+    ],
+    "20": [
+      {
+        "id": "warlock_eldritch_master",
+        "name": "Eldritch Master",
+        "description": "When you use Magical Cunning, regain all expended Pact Magic slots. The shared Pact Magic recovery effect scales to full recovery at level 20.",
+        "type": "passive",
+        "effects": [],
+        "enabled": true,
+        "rules_status": "2024-partial",
+        "rules_source": "dnd-2024-srd-5.2.1"
+      }
+    ]
+  },
+  "eldritch_invocations_by_level": {
+    "1": 1,
+    "2": 3,
+    "5": 5,
+    "7": 6,
+    "9": 7,
+    "12": 8,
+    "15": 9,
+    "18": 10
+  },
+  "eldritch_invocation_options": [
+    {
+      "id": "agonizing_blast",
+      "name": "Agonizing Blast",
+      "minimum_level": 2,
+      "choose_damage_cantrip": true,
+      "repeatable": true,
+      "effects": [
+        {
+          "type": "spell_damage_bonus",
+          "spell_level": 0,
+          "spell_list": "warlock",
+          "ability": "CHA"
+        }
+      ]
+    },
+    {
+      "id": "armor_of_shadows",
+      "name": "Armor of Shadows",
+      "minimum_level": 1,
+      "effects": [
+        {
+          "type": "spell_free_cast",
+          "spells": [
+            "mage_armor"
+          ],
+          "at_will": true
+        }
+      ]
+    },
+    {
+      "id": "ascendant_step",
+      "name": "Ascendant Step",
+      "minimum_level": 9,
+      "effects": [
+        {
+          "type": "spell_free_cast",
+          "spells": [
+            "levitate"
+          ],
+          "at_will": true
+        }
+      ]
+    },
+    {
+      "id": "beguiling_influence",
+      "name": "Beguiling Influence",
+      "minimum_level": 1,
+      "effects": [
+        {
+          "type": "proficiency_grant",
+          "skill_proficiencies": [
+            "Deception",
+            "Persuasion"
+          ]
+        },
+        {
+          "type": "warlock_skill_proficiency",
+          "skills": [
+            "Deception",
+            "Persuasion"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "devils_sight",
+      "name": "Devil's Sight",
+      "minimum_level": 1,
+      "effects": [
+        {
+          "type": "blindsight",
+          "range_feet": 120
+        }
+      ]
+    },
+    {
+      "id": "devouring_blade",
+      "name": "Devouring Blade",
+      "minimum_level": 12,
+      "requires_invocations": [
+        "pact_of_the_blade",
+        "thirsting_blade"
+      ],
+      "effects": [
+        {
+          "type": "extra_attack",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "id": "eldritch_mind",
+      "name": "Eldritch Mind",
+      "minimum_level": 1,
+      "effects": [
+        {
+          "type": "concentration_save_advantage"
+        }
+      ]
+    },
+    {
+      "id": "eldritch_smite",
+      "name": "Eldritch Smite",
+      "minimum_level": 5,
+      "requires_invocations": [
+        "pact_of_the_blade"
+      ],
+      "effects": [
+        {
+          "type": "eldritch_smite"
+        }
+      ]
+    },
+    {
+      "id": "eldritch_spear",
+      "name": "Eldritch Spear",
+      "minimum_level": 2,
+      "choose_damage_cantrip": true,
+      "requires_attack_roll": true,
+      "repeatable": true,
+      "effects": [
+        {
+          "type": "spell_range_bonus",
+          "spell_level": 0,
+          "spell_list": "warlock",
+          "minimum_range_feet": 10,
+          "bonus_feet_by_level": {
+            "1": 30
+          }
+        }
+      ]
+    },
+    {
+      "id": "fiendish_vigor",
+      "name": "Fiendish Vigor",
+      "minimum_level": 1,
+      "effects": [
+        {
+          "type": "spell_free_cast",
+          "spells": [
+            "false_life"
+          ],
+          "at_will": true,
+          "maximize_temporary_hp": true
+        }
+      ]
+    },
+    {
+      "id": "lifedrinker",
+      "name": "Lifedrinker",
+      "minimum_level": 9,
+      "requires_invocations": [
+        "pact_of_the_blade"
+      ],
+      "effects": [
+        {
+          "type": "weapon_damage_rider",
+          "trigger": "weapon_attack_hit",
+          "damage_type_options": [
+            "necrotic",
+            "psychic",
+            "radiant"
+          ],
+          "dice_by_level": {
+            "1": "1d6"
+          },
+          "uses_per": "turn"
+        },
+        {
+          "type": "lifedrinker_heal"
+        }
+      ]
+    },
+    {
+      "id": "mask_of_many_faces",
+      "name": "Mask of Many Faces",
+      "minimum_level": 1,
+      "effects": [
+        {
+          "type": "spell_free_cast",
+          "spells": [
+            "disguise_self"
+          ],
+          "at_will": true
+        }
+      ]
+    },
+    {
+      "id": "misty_visions",
+      "name": "Misty Visions",
+      "minimum_level": 1,
+      "effects": [
+        {
+          "type": "spell_free_cast",
+          "spells": [
+            "silent_image"
+          ],
+          "at_will": true
+        }
+      ]
+    },
+    {
+      "id": "one_with_shadows",
+      "name": "One with Shadows",
+      "minimum_level": 5,
+      "effects": [
+        {
+          "type": "spell_free_cast",
+          "spells": [
+            "invisibility"
+          ],
+          "at_will": true
+        }
+      ]
+    },
+    {
+      "id": "otherworldly_leap",
+      "name": "Otherworldly Leap",
+      "minimum_level": 2,
+      "effects": [
+        {
+          "type": "spell_free_cast",
+          "spells": [
+            "jump"
+          ],
+          "at_will": true
+        }
+      ]
+    },
+    {
+      "id": "pact_of_the_blade",
+      "name": "Pact of the Blade",
+      "minimum_level": 1,
+      "effects": [
+        {
+          "type": "pact_weapon"
+        }
+      ]
+    },
+    {
+      "id": "pact_of_the_tome",
+      "name": "Pact of the Tome",
+      "minimum_level": 1,
+      "effects": [
+        {
+          "type": "spellcasting_capacity_bonus",
+          "kind": "cantrips",
+          "amount": 3
+        },
+        {
+          "type": "spell_list_expansion",
+          "spell_lists": [
+            "bard",
+            "cleric",
+            "druid",
+            "sorcerer",
+            "warlock",
+            "wizard"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "repelling_blast",
+      "name": "Repelling Blast",
+      "minimum_level": 2,
+      "choose_damage_cantrip": true,
+      "requires_attack_roll": true,
+      "repeatable": true,
+      "effects": [
+        {
+          "type": "repelling_blast"
+        }
+      ]
+    },
+    {
+      "id": "thirsting_blade",
+      "name": "Thirsting Blade",
+      "minimum_level": 5,
+      "requires_invocations": [
+        "pact_of_the_blade"
+      ],
+      "effects": [
+        {
+          "type": "extra_attack",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": "visions_of_distant_realms",
+      "name": "Visions of Distant Realms",
+      "minimum_level": 15,
+      "effects": [
+        {
+          "type": "spell_free_cast",
+          "spells": [
+            "arcane_eye"
+          ],
+          "at_will": true
+        }
+      ]
+    },
+    {
+      "id": "whispers_of_the_grave",
+      "name": "Whispers of the Grave",
+      "minimum_level": 7,
+      "effects": [
+        {
+          "type": "spell_free_cast",
+          "spells": [
+            "speak_with_dead"
+          ],
+          "at_will": true
+        }
+      ]
+    },
+    {
+      "id": "witch_sight",
+      "name": "Witch Sight",
+      "minimum_level": 15,
+      "effects": [
+        {
+          "type": "blindsight",
+          "range_feet": 30
+        }
+      ]
+    }
+  ],
+  "mystic_arcanum_spell_ids": {
+    "6": [
+      "circle_of_death",
+      "create_undead",
+      "eyebite",
+      "true_seeing"
+    ],
+    "7": [
+      "etherealness",
+      "finger_of_death",
+      "forcecage",
+      "plane_shift"
+    ],
+    "8": [
+      "befuddlement",
+      "demiplane",
+      "dominate_monster",
+      "glibness",
+      "power_word_stun"
+    ],
+    "9": [
+      "astral_projection",
+      "foresight",
+      "gate",
+      "imprisonment",
+      "power_word_kill",
+      "true_polymorph",
+      "weird"
+    ]
+  },
   "spell_slots_by_level": {},
   "cantrips_known": [],
   "spells_known_by_level": {
     "1": [],
     "2": [],
-    "3": []
+    "3": [],
+    "4": [],
+    "5": [],
+    "6": [],
+    "7": [],
+    "8": [],
+    "9": [],
+    "10": [],
+    "11": [],
+    "12": [],
+    "13": [],
+    "14": [],
+    "15": [],
+    "16": [],
+    "17": [],
+    "18": [],
+    "19": [],
+    "20": []
   },
-  "features_by_level": {
-    "1": [
-      {
-        "id": "warlock_otherworldly_patron",
-        "name": "Otherworldly Patron",
-        "description": "At 1st level, you have struck a bargain with an otherworldly being chosen from the list of available patrons. Your choice grants you features at 1st level and again at 6th, 10th, and 14th level.",
-        "type": "passive",
-        "effects": []
-      },
-      {
-        "id": "warlock_pact_magic",
-        "name": "Pact Magic",
-        "description": "Your arcane research and the magic bestowed on you by your patron have given you facility with spells. See chapter 10 for the general rules of spellcasting and chapter 11 for the {@filter warlock spell list=warlock}. {'type': 'entries', 'name': 'Cantrips', 'entries': ['You know two cantrips of your ...",
-        "type": "passive",
-        "effects": []
-      },
-      {
-        "id": "warlock_eldritch_invocation_options",
-        "name": "Eldritch Invocation Options",
-        "description": "Eldritch Invocation options appear in alphabetical order. {'type': 'options', 'count': 1, 'entries': [{'type': 'refOptionalfeature', 'optionalfeature': 'Agonizing Blast', 'preserve': {'prerequisite': True}}, {'type': 'refOptionalfeature', 'optionalfeature': 'Armor of Shadows', 'preserve': {'prerequi...",
-        "type": "passive",
-        "effects": []
-      },
-      {
-        "id": "warlock_eldritch_invocations",
-        "name": "Eldritch Invocations",
-        "description": "You have unearthed Eldritch Invocations, pieces of forbidden knowledge that imbue you with an abiding magical ability or other lessons. You gain one invocation of your choice, such as Pact of the Tome. Invocations are described in the \"{@filter Eldritch Invocation Options type=EI=XPHB}\" section late...",
-        "type": "passive",
-        "effects": []
-      }
-    ],
-    "2": [
-      {
-        "id": "warlock_eldritch_invocations",
-        "name": "Eldritch Invocations",
-        "description": "In your study of occult lore, you have unearthed eldritch invocations, fragments of forbidden knowledge that imbue you with an abiding magical ability. At 2nd level, you gain two eldritch invocations of your choice. A list of the available options can be found on the {@filter Optional Features Type=...",
-        "type": "passive",
-        "effects": []
-      },
-      {
-        "id": "warlock_magical_cunning",
-        "name": "Magical Cunning",
-        "description": "You can perform an esoteric rite for 1 minute. At the end of it, you regain expended Pact Magic spell slots but no more than a number equal to half your maximum (round up). Once you use this feature, you can't do so again until you finish a Long Rest.",
-        "type": "passive",
-        "effects": []
-      }
-    ],
-    "3": [
-      {
-        "id": "warlock_pact_boon",
-        "name": "Pact Boon",
-        "description": "At 3rd level, your otherworldly patron bestows a gift upon you for your loyal service. You gain one of the following features of your choice. {'type': 'options', 'count': 1, 'entries': [{'type': 'refOptionalfeature', 'optionalfeature': 'Pact of the Chain'}, {'type': 'refOptionalfeature', 'optionalfe...",
-        "type": "passive",
-        "effects": []
-      },
-      {
-        "id": "warlock_warlock_subclass",
-        "name": "Warlock Subclass",
-        "description": "You gain a Warlock subclass of your choice. A subclass is a specialization that grants you features at certain Warlock levels. For the rest of your career, you gain each of your subclass's features that are of your Warlock level or lower.",
-        "type": "passive",
-        "effects": []
-      }
-    ],
-    "4": [
-      {
-        "id": "warlock_ability_score_improvement",
-        "name": "Ability Score Improvement",
-        "description": "When you reach 4th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature. If your DM allows the use of feats, you may instead take a {@5etools feat.html}.",
-        "type": "passive",
-        "effects": []
-      },
-      {
-        "id": "warlock_eldritch_versatility",
-        "name": "Eldritch Versatility",
-        "description": "{@i 4th-level warlock optional class features feature} Whenever you reach a level in this class that grants the Ability Score Improvement feature, you can do one of the following, representing a change of focus in your occult studies: {'type': 'list', 'items': [\"Replace one cantrip you learned from ...",
-        "type": "passive",
-        "effects": []
-      }
-    ],
-    "5": []
+  "pact_magic_by_level": {
+    "1": {
+      "slot_level": 1,
+      "slots": 1
+    },
+    "2": {
+      "slot_level": 1,
+      "slots": 2
+    },
+    "3": {
+      "slot_level": 2,
+      "slots": 2
+    },
+    "4": {
+      "slot_level": 2,
+      "slots": 2
+    },
+    "5": {
+      "slot_level": 3,
+      "slots": 2
+    },
+    "6": {
+      "slot_level": 3,
+      "slots": 2
+    },
+    "7": {
+      "slot_level": 4,
+      "slots": 2
+    },
+    "8": {
+      "slot_level": 4,
+      "slots": 2
+    },
+    "9": {
+      "slot_level": 5,
+      "slots": 2
+    },
+    "10": {
+      "slot_level": 5,
+      "slots": 2
+    },
+    "11": {
+      "slot_level": 5,
+      "slots": 3
+    },
+    "12": {
+      "slot_level": 5,
+      "slots": 3
+    },
+    "13": {
+      "slot_level": 5,
+      "slots": 3
+    },
+    "14": {
+      "slot_level": 5,
+      "slots": 3
+    },
+    "15": {
+      "slot_level": 5,
+      "slots": 3
+    },
+    "16": {
+      "slot_level": 5,
+      "slots": 3
+    },
+    "17": {
+      "slot_level": 5,
+      "slots": 4
+    },
+    "18": {
+      "slot_level": 5,
+      "slots": 4
+    },
+    "19": {
+      "slot_level": 5,
+      "slots": 4
+    },
+    "20": {
+      "slot_level": 5,
+      "slots": 4
+    }
   }
 }

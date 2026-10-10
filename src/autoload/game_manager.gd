@@ -3,6 +3,8 @@
 ## Manages transitions between menu, character creation, overworld, combat, dungeon, and events.
 extends Node
 
+const AnimalMessengerRulesRef = preload("res://src/spells/animal_messenger_rules.gd")
+
 ## Emitted when the game state changes.
 signal state_changed(old_state: GameState, new_state: GameState)
 
@@ -27,6 +29,8 @@ var active_campaign: Dictionary = {}
 
 ## Persistent state for the current dungeon crawl (rooms, progress, etc.)
 var active_dungeon_state: Dictionary = {}
+## Plain snapshots survive exiting/reentering a dungeon and safe disk saves.
+var dungeon_snapshots: Dictionary = {}
 
 ## List of defeated monster IDs during this campaign.
 var defeated_monsters: Array[String] = []
@@ -37,6 +41,12 @@ var cleared_dungeons: Array[String] = []
 var claimed_rewards: Array[String] = []
 var recruited_companions: Array[String] = []
 var dismissed_companions: Array[String] = []
+var visited_overworld_locations: Array[Dictionary] = []
+var animal_messenger_deliveries: Array[Dictionary] = []
+var campaign_elapsed_seconds: int = 0
+var next_animal_messenger_id: int = 1
+var created_creatures: Array[Dictionary] = []
+var next_created_creature_id: int = 1
 var campaign_completed: bool = false
 
 ## Flag indicating that a save file is currently being loaded.
@@ -143,13 +153,17 @@ func on_character_creation_complete() -> void:
 
 
 ## Enter combat from the overworld or a dungeon.
-func enter_combat(monster_ids: Array, surprise: bool = false, return_state: GameState = GameState.OVERWORLD, terrain: String = "plains") -> void:
-	change_state(GameState.COMBAT, {
+func enter_combat(monster_ids: Array, surprise: bool = false, return_state: GameState = GameState.OVERWORLD, terrain: String = "plains", local_room: Dictionary = {}, ambient_light: String = "") -> void:
+	var context := {
 		"monster_ids": monster_ids,
 		"surprise": surprise,
 		"return_state": return_state,
 		"terrain": terrain,
-	})
+		"local_room": local_room,
+	}
+	if not ambient_light.is_empty():
+		context["ambient_light"] = ambient_light
+	change_state(GameState.COMBAT, context)
 
 
 ## Exit combat and return to the previous state.
@@ -160,12 +174,13 @@ func exit_combat(result: String) -> void:
 
 ## Enter a dungeon from the overworld.
 func enter_dungeon(dungeon_id: String) -> void:
-	active_dungeon_state.clear()
+	active_dungeon_state = dungeon_snapshots.get(dungeon_id, {}).duplicate(true)
 	change_state(GameState.DUNGEON, {"dungeon_id": dungeon_id})
 
 
 ## Exit a dungeon and return to the overworld.
 func exit_dungeon() -> void:
+	remember_dungeon()
 	active_dungeon_state.clear()
 	change_state(GameState.OVERWORLD, {"returning_from_dungeon": true})
 
@@ -297,13 +312,131 @@ func claim_reward(reward_id: String) -> bool:
 	return true
 
 
+func record_overworld_location(coord: Vector2i, location_name: String = "") -> void:
+	var location_id := "%d,%d" % [coord.x, coord.y]
+	for location in visited_overworld_locations:
+		if str(location.get("id", "")) == location_id:
+			return
+	var display_name := location_name.strip_edges()
+	if display_name.is_empty():
+		display_name = "Wilderness hex (%d, %d)" % [coord.x, coord.y]
+	visited_overworld_locations.append({"id": location_id, "name": display_name, "coord": [coord.x, coord.y]})
+
+
+func get_visited_overworld_locations() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for location in visited_overworld_locations:
+		result.append(location.duplicate(true))
+	return result
+
+
+func validate_animal_messenger_order(order: Dictionary) -> Dictionary:
+	return AnimalMessengerRulesRef.validate_order(order, get_visited_overworld_locations())
+
+
+func register_animal_messenger(caster: Character, origin: Vector2i, spell_slot_level: int, can_fly: bool, order: Dictionary) -> Dictionary:
+	if caster == null or animal_messenger_deliveries.size() >= AnimalMessengerRulesRef.MAX_SAVED_DELIVERIES:
+		return {"success": false, "message": "The campaign cannot record another messenger right now."}
+	var validated := AnimalMessengerRulesRef.validate_order(order, get_visited_overworld_locations())
+	if not bool(validated.get("success", false)):
+		return validated
+	var destination: Dictionary = {}
+	for location in visited_overworld_locations:
+		if str(location.get("id", "")) == str(validated.get("destination_id", "")):
+			destination = location.duplicate(true)
+			break
+	if destination.is_empty():
+		return {"success": false, "message": "That visited location is no longer available."}
+	var duration_seconds := (1 + maxi(0, spell_slot_level - 2) * 2) * 86400
+	var delivery_id := "animal-messenger-%06d" % next_animal_messenger_id
+	while animal_messenger_deliveries.any(func(existing: Dictionary) -> bool: return str(existing.get("id", "")) == delivery_id):
+		next_animal_messenger_id += 1
+		delivery_id = "animal-messenger-%06d" % next_animal_messenger_id
+	next_animal_messenger_id += 1
+	var miles_per_hex := float(active_campaign.get("map", {}).get("miles_per_hex", AnimalMessengerRulesRef.MILES_PER_OVERWORLD_HEX))
+	var delivery := AnimalMessengerRulesRef.create_delivery(
+		delivery_id,
+		caster.character_id,
+		caster.character_name,
+		origin,
+		destination,
+		str(validated.get("recipient", "")),
+		str(validated.get("message", "")),
+		duration_seconds,
+		can_fly,
+		miles_per_hex
+	)
+	# The target may be the cast hex; dispatch starts when the next campaign time elapses.
+	animal_messenger_deliveries.append(delivery)
+	return {"success": true, "delivery": delivery.duplicate(true), "message": "%s sets out toward %s." % [caster.character_name, str(destination.get("name", "the visited location"))]}
+
+
+func advance_campaign_time(elapsed_seconds: int) -> Array[Dictionary]:
+	if elapsed_seconds <= 0:
+		return []
+	var prior_day := floori(float(campaign_elapsed_seconds) / 86400.0)
+	campaign_elapsed_seconds += elapsed_seconds
+	var current_day := floori(float(campaign_elapsed_seconds) / 86400.0)
+	for day in range(prior_day, current_day):
+		for character in PartyManager.characters.values():
+			character.inventory.recover_daily_charges()
+			SurvivalRules.settle_day(character, (day + 1) * 86400)
+	SpellEffects.advance_time(PartyManager.characters.values(), elapsed_seconds)
+	AnimatedObjectRules.reconcile()
+	for room_state in saved_local_room_states():
+		LocalRoomAreas.expire(room_state, campaign_elapsed_seconds)
+	for character in PartyManager.characters.values():
+		LightSourceRules.advance_inventory(character.inventory, elapsed_seconds)
+		BarbarianRules.advance_rage_time(character, elapsed_seconds)
+		BardicInspirationRules.advance_time(character, elapsed_seconds)
+		CorpseRules.advance_time(character, campaign_elapsed_seconds)
+	var result := AnimalMessengerRulesRef.advance_deliveries(animal_messenger_deliveries, elapsed_seconds)
+	animal_messenger_deliveries.assign(result.get("deliveries", []))
+	return result.get("notifications", [])
+
+
 func _reset_campaign_ledgers() -> void:
+	created_creatures.clear()
+	next_created_creature_id = 1
+	dungeon_snapshots.clear()
 	completed_milestones.clear()
 	cleared_dungeons.clear()
 	claimed_rewards.clear()
 	recruited_companions.clear()
 	dismissed_companions.clear()
+	visited_overworld_locations.clear()
+	animal_messenger_deliveries.clear()
+	campaign_elapsed_seconds = 0
+	next_animal_messenger_id = 1
 	campaign_completed = false
+
+
+func remember_dungeon() -> void:
+	var id := str(active_dungeon_state.get("dungeon_id", ""))
+	if not id.is_empty():
+		dungeon_snapshots[id] = SaveManager._serialize_dungeon_state(active_dungeon_state)
+
+
+## Visit only existing saved room records. These dictionaries share the
+## campaign's current state; no scenes or new room generation are involved.
+func saved_local_room_states() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for dungeon in [active_dungeon_state] + dungeon_snapshots.values():
+		if dungeon is Dictionary:
+			for room_state in dungeon.get("local_rooms", {}).values():
+				if room_state is Dictionary: result.append(room_state)
+	var transition_room: Variant = transition_context.get("local_room", null)
+	if transition_room is Dictionary and not transition_room.is_empty(): result.append(transition_room)
+	return result
+
+
+func clear_room_area_concentration(caster: Character) -> void:
+	if caster == null: return
+	var spell_id := str(caster.concentrating_on.get("spell_id", ""))
+	var source_id := str(caster.concentrating_on.get("%s_source_id" % spell_id, ""))
+	if source_id.is_empty(): return
+	for room_state in saved_local_room_states():
+		LocalRoomAreas.remove_concentration(room_state, caster.character_id, spell_id, source_id)
 
 
 ## Apply a single milestone effect.

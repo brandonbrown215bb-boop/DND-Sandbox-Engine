@@ -22,13 +22,15 @@ static func update_visibility(hex_grid: HexGrid) -> void:
 		var player_data := PlayerManager.get_player(i)
 		var char_data: Character = player_data.get("character")
 		
-		# Get player vision range (e.g. Elves with Darkvision get +1 vision)
+		# Darkvision extends exploration sight to the spell's 150-foot range.
 		var vision_radius := DEFAULT_VISION_RADIUS
 		if char_data != null:
-			# Check if character has a vision bonus active (from race traits, torches, or spells)
-			var has_darkvision = char_data.ability_scores.get_score("DEX") > 12 # simple check or use specific trait
-			# Let's check race features or condition list
-			if char_data.race_id == "elf":
+			if SpellEffects.has_spell(char_data, "darkvision"):
+				vision_radius = 30
+			if char_data.inventory != null:
+				for light_record in char_data.inventory.owned_instances():
+					vision_radius = maxi(vision_radius, LightSourceRules.dim_radius_hexes(light_record))
+			if (char_data.darkvision or char_data.darkvision_feet > 0) and not SpellEffects.has_spell(char_data, "darkvision"):
 				vision_radius += 1
 			if char_data.has_condition("fairy_luck"):
 				vision_radius += 1

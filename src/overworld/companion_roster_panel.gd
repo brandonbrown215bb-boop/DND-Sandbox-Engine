@@ -43,6 +43,7 @@ func refresh() -> void:
 		return
 	for companion_id in companion_ids:
 		_build_companion_card(companion_id)
+	UiThemeProfile.current().style(self)
 
 
 func _build_companion_card(companion_id: String) -> void:
@@ -70,11 +71,11 @@ func _build_companion_card(companion_id: String) -> void:
 	name_label.text = character.character_name
 	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	name_label.add_theme_font_size_override("font_size", 18)
-	name_label.add_theme_color_override("font_color", Color(0.95, 0.78, 0.35))
+	name_label.add_theme_color_override("font_color", UiThemeProfile.current().color("accent/primary"))
 	heading.add_child(name_label)
 	var state_label := Label.new()
 	state_label.text = _state_label(state)
-	state_label.add_theme_font_size_override("font_size", 13)
+	state_label.add_theme_font_size_override("font_size", 14)
 	state_label.add_theme_color_override("font_color", _state_color(state))
 	heading.add_child(state_label)
 
@@ -83,8 +84,8 @@ func _build_companion_card(companion_id: String) -> void:
 		DataLoader.get_race(character.race_id).get("name", character.race_id),
 		DataLoader.get_character_class(character.class_id).get("name", character.class_id),
 	]
-	detail.add_theme_font_size_override("font_size", 13)
-	detail.add_theme_color_override("font_color", Color(0.72, 0.70, 0.65))
+	detail.add_theme_font_size_override("font_size", 14)
+	detail.add_theme_color_override("font_color", UiThemeProfile.current().color("text/muted"))
 	vbox.add_child(detail)
 
 	match state:
@@ -256,7 +257,7 @@ func _set_feedback(message: String, success: bool) -> void:
 	feedback_label.text = message
 	feedback_label.add_theme_color_override(
 		"font_color",
-		Color(0.55, 0.82, 0.48) if success else Color(0.92, 0.45, 0.38)
+		UiThemeProfile.current().color("state/success") if success else UiThemeProfile.current().color("state/danger")
 	)
 
 
@@ -276,8 +277,8 @@ func _state_label(state: String) -> String:
 
 func _state_color(state: String) -> Color:
 	match state:
-		"recruited": return Color(0.55, 0.82, 0.48)
-		"available": return Color(0.95, 0.78, 0.35)
-		"declined": return Color(0.65, 0.68, 0.72)
-		"dismissed": return Color(0.82, 0.50, 0.42)
-	return Color.WHITE
+		"recruited": return UiThemeProfile.current().color("state/success")
+		"available": return UiThemeProfile.current().color("accent/primary")
+		"declined": return UiThemeProfile.current().color("text/muted")
+		"dismissed": return UiThemeProfile.current().color("state/danger")
+	return UiThemeProfile.current().color("text/primary")

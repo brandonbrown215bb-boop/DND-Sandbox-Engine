@@ -24,18 +24,32 @@ var active_player_index: int = 0
 var active_character: Character = null
 var items_data: Array = []
 var selected_item_idx: int = -1
+var sell_selector: OptionButton
+var btn_sell: Button
 
 const TAVERN_REST_COST := 10
-const SHOP_ITEM_TYPES := ["weapon", "armor", "shield", "consumable"]
+const SHOP_ITEM_TYPES := ["weapon", "armor", "shield", "consumable", "spell_component"]
 
 
 func _ready() -> void:
+	ModalSurface.install(self, _on_close_pressed, true)
+	theme_type_variation = "OverlayPanel"
 	# Connect buttons
 	player_selector.item_selected.connect(_on_player_selected)
 	item_list.item_selected.connect(_on_item_selected)
 	btn_buy.pressed.connect(_on_buy_pressed)
 	btn_rest.pressed.connect(_on_rest_pressed)
 	btn_close.pressed.connect(_on_close_pressed)
+	var sell_row := HBoxContainer.new()
+	$MarginContainer/VBoxContainer.add_child(sell_row)
+	$MarginContainer/VBoxContainer.move_child(sell_row, $MarginContainer/VBoxContainer.get_child_count() - 2)
+	sell_selector = OptionButton.new()
+	sell_selector.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	sell_row.add_child(sell_selector)
+	btn_sell = Button.new()
+	btn_sell.text = "Sell selected copy (half price)"
+	btn_sell.pressed.connect(_on_sell_pressed)
+	sell_row.add_child(btn_sell)
 
 	# Fetch buyable items
 	_populate_items()
@@ -73,6 +87,7 @@ func _update_player_data() -> void:
 	
 	_update_buy_button_state()
 	_update_rest_button_label()
+	_refresh_sell_choices()
 
 
 func _populate_items() -> void:
@@ -140,7 +155,7 @@ func _on_item_selected(index: int) -> void:
 	# Build details
 	var desc: String = item.get("description", "")
 	var type: String = item.get("type", "")
-	desc += "\n\n[color=gray]"
+	desc += "\n\n[color=%s]" % UiThemeProfile.current().color("text/muted").to_html()
 	desc += "Type: %s\n" % type.capitalize()
 	if type == "weapon":
 		desc += "Damage: %s (%s)\n" % [item.get("damage", "1d4"), item.get("damage_type", "bludgeoning")]
@@ -215,6 +230,7 @@ func _on_buy_pressed() -> void:
 	var cost := int(item.get("value", 0))
 
 	# Add the item before charging so a failed inventory mutation cannot consume gold.
+	if active_character.inventory.gold < cost: return
 	if not active_character.inventory.add_item(item_id):
 		return
 	active_character.inventory.gold -= cost
@@ -229,6 +245,30 @@ func _on_buy_pressed() -> void:
 
 	print("[Shop] %s bought %s. Gold remaining: %d" % [active_character.character_name, item_id, active_character.inventory.gold])
 	
+	_update_player_data()
+
+
+func _refresh_sell_choices() -> void:
+	if sell_selector == null: return
+	sell_selector.clear()
+	if active_character != null:
+		for record in active_character.inventory.backpack_instances():
+			var item := DataLoader.get_item(str(record["definition_id"]))
+			if not _is_buyable_item(item) or item.get("quest_item", false): continue
+			sell_selector.add_item("%s — %d gp" % [InventoryCopies.display_name(record, sell_selector.item_count + 1), int(item["value"]) / 2])
+			sell_selector.set_item_metadata(sell_selector.item_count - 1, record["instance_id"])
+	btn_sell.disabled = sell_selector.item_count == 0
+
+
+func _on_sell_pressed() -> void:
+	if active_character == null or sell_selector.selected < 0: return
+	var id := str(sell_selector.get_item_metadata(sell_selector.selected))
+	var record := active_character.inventory.get_instance(id)
+	if record.is_empty(): return
+	var item := DataLoader.get_item(str(record["definition_id"]))
+	if not _is_buyable_item(item) or item.get("quest_item", false): return
+	if active_character.inventory.take_instance(id).is_empty(): return
+	active_character.inventory.gold += int(item["value"]) / 2
 	_update_player_data()
 
 
@@ -257,9 +297,12 @@ func _on_rest_pressed() -> void:
 						break
 			# Reset spell slots
 			char_data._update_spell_slots()
+	var messenger_notifications := GameManager.advance_campaign_time(28800)
 
 	var parent_node = get_parent()
 	if parent_node != null:
+		if parent_node.has_method("report_animal_messenger_notifications"):
+			parent_node.call("report_animal_messenger_notifications", messenger_notifications)
 		var hud = parent_node.get("hud")
 		if hud != null and hud.has_method("add_log"):
 			hud.add_log("[color=green]Party rested at the Tavern. HP, spell slots, and feature uses fully restored![/color]")

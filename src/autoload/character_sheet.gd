@@ -1,5 +1,5 @@
 ## Character Sheet
-## Autoloaded singleton that renders a read-only overlay of a character's full
+## Autoloaded singleton that renders an overlay of a character's full
 ## stats/variables. Reachable from overworld, dungeon, and combat. Pass any
 ## Character (e.g. the active player's) to show_sheet(); show_active() shows the
 ## current PlayerManager active character.
@@ -42,15 +42,12 @@ func _ensure_layer() -> void:
 	_layer.layer = 128  # above scene HUD and Settings (Settings uses 100)
 	get_tree().root.add_child(_layer)
 
+	var center := CenterContainer.new()
+	_layer.add_child(center)
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var panel := PanelContainer.new()
-	panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	panel.custom_minimum_size = Vector2(560, 640)
-	panel.size = Vector2(560, 640)
-	panel.position = Vector2(
-		(get_viewport().size.x - 560) / 2.0,
-		(get_viewport().size.y - 640) / 2.0
-	)
-	_layer.add_child(panel)
+	panel.custom_minimum_size = Vector2(780, 640)
+	center.add_child(panel)
 
 	var outer := MarginContainer.new()
 	outer.add_theme_constant_override("margin_left", 16)
@@ -65,10 +62,12 @@ func _ensure_layer() -> void:
 
 	_title = Label.new()
 	_title.add_theme_font_size_override("font_size", 22)
-	_title.add_theme_color_override("font_color", Color(0.9, 0.9, 1.0))
+	_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_title.add_theme_color_override("font_color", UiThemeProfile.current().color("text/primary"))
 	vbox.add_child(_title)
 
 	var scroll := ScrollContainer.new()
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	vbox.add_child(scroll)
 
@@ -81,6 +80,8 @@ func _ensure_layer() -> void:
 	close_btn.text = "Close (Esc)"
 	close_btn.pressed.connect(close_sheet)
 	vbox.add_child(close_btn)
+	panel.theme_type_variation = "OverlayPanel"
+	ModalSurface.install(center, close_sheet)
 
 
 ## Whether the sheet overlay is currently open.
@@ -95,6 +96,7 @@ func show_sheet(character: Character) -> void:
 	_ensure_layer()
 	_open_char = character
 	_populate(character)
+	UiThemeProfile.current().style(_content)
 	_layer.visible = true
 	sheet_opened.emit(character)
 
@@ -137,6 +139,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _populate(c: Character) -> void:
+	if c.class_id == "fighter":
+		c._recalculate_ac()
 	_clear_content()
 	_title.text = "%s  —  Lvl %d %s %s" % [
 		c.character_name, c.level,
@@ -148,7 +152,33 @@ func _populate(c: Character) -> void:
 	var vitals := "HP %d/%d   Temp %d   AC %d   Speed %d   Prof +%d" % [
 		c.current_hp, c.max_hp, c.temp_hp, c.get_ac(), c.get_speed(), c.proficiency_bonus
 	]
+	if c.get_max_focus_points() > 0:
+		vitals += "   Focus %d/%d" % [c.get_focus_points(), c.get_max_focus_points()]
+	if DruidRules.is_shaped(c):
+		vitals += "   Form: %s" % DruidRules.current_form(c).get("name", "Beast")
 	_add_section("Vitals", [vitals])
+	_add_section("Recovery", [CorpseRules.status(c, int(GameManager.campaign_elapsed_seconds))])
+	var revival_choice := CheckBox.new()
+	revival_choice.name = "RevivalWillingness"
+	revival_choice.text = "Accept magical revival if I die"
+	revival_choice.button_pressed = c.revival_willing
+	revival_choice.toggled.connect(func(accepted): c.revival_willing = accepted)
+	_content.add_child(revival_choice)
+	if c.has_feature("druid_wild_shape"):
+		var wild_shape_button := Button.new()
+		wild_shape_button.text = "Return to normal form" if DruidRules.is_shaped(c) else "Use Wild Shape"
+		wild_shape_button.tooltip_text = "Choose one of your learned Beast forms. Wild Shape uses recover through the normal Short Rest and Long Rest rules."
+		wild_shape_button.pressed.connect(_choose_wild_shape_form.bind(c))
+		_content.add_child(wild_shape_button)
+	if not DataLoader.get_subclasses_for_class(c.class_id).is_empty() or not ClassProgression.improvement_ids(c).is_empty() or not ClassProgression.skill_choice_ids(c).is_empty() or not ClassProgression.epic_boon_choice_ids(c).is_empty() or c.has_feature_effect("weapon_mastery") or c.has_feature_effect("spellcasting"):
+		var progression := ClassTraining.new()
+		_content.add_child(progression)
+		progression.configure(c, func(): _populate(c))
+	if c.class_id == "fighter":
+		var training := FighterTraining.new()
+		_content.add_child(training)
+		training.configure(c, func(): _populate(c))
+
 
 	# --- Ability scores + modifiers ---
 	var abil_lines: Array[String] = []
@@ -170,10 +200,16 @@ func _populate(c: Character) -> void:
 	var skill_lines: Array[String] = []
 	for sk in SKILLS:
 		var ab: String = SKILL_ABILITY.get(sk, "DEX")
-		var prof: bool = sk in c.skill_proficiencies
-		var total := c.ability_scores.get_ability_modifier(ab) + (c.proficiency_bonus if prof else 0)
-		skill_lines.append("%-16s %+d%s" % [sk, total, " *" if prof else ""])
+		var prof_bonus := c.get_skill_proficiency_bonus(sk)
+		var total := c.ability_scores.get_ability_modifier(ab) + prof_bonus + c.get_ability_check_bonus(sk)
+		var marker := " **" if prof_bonus == c.proficiency_bonus * 2 else (" *" if prof_bonus > 0 else "")
+		skill_lines.append("%-16s %+d%s" % [sk, total, marker])
 	_add_section("Skills  (* proficient)", skill_lines)
+	if not c.tool_proficiencies.is_empty():
+		var tool_names: Array[String] = []
+		for tool_id in c.tool_proficiencies:
+			tool_names.append(str(DataLoader.get_item(tool_id).get("name", tool_id)))
+		_add_section("Tool Proficiencies", tool_names)
 
 	# --- Equipment ---
 	var equip_lines: Array[String] = []
@@ -202,7 +238,10 @@ func _populate(c: Character) -> void:
 	else:
 		var cond_lines: Array[String] = []
 		for cond in c.conditions:
-			cond_lines.append("%s (%d turns)" % [cond, int(c.conditions[cond])])
+			if cond == "exhaustion":
+				cond_lines.append("Exhaustion (level %d)" % c.exhaustion_level)
+			else:
+				cond_lines.append("%s (%d turns)" % [cond, int(c.conditions[cond])])
 		_add_section("Conditions", cond_lines)
 
 	# --- Spellcasting ---
@@ -214,9 +253,11 @@ func _populate(c: Character) -> void:
 			slot_lines.append("L%s slots: %d" % [lvl, int(c.spell_slots[lvl])])
 		if slot_lines.is_empty():
 			slot_lines.append("(no slots)")
+		if c.has_feature_effect("spellcasting"):
+			slot_lines.append("Spellcasting capacity: %d prepared, %d cantrips" % [c.get_spellcasting_capacity("prepared_spells"), c.get_spellcasting_capacity("cantrips")])
 		_add_section("Spell Slots", slot_lines)
 		if c.known_spells.size() > 0:
-			_add_section("Known Spells", [", ".join(c.known_spells)])
+			_add_section("Available Spells", [", ".join(c.known_spells)])
 
 	# --- Features + remaining uses ---
 	if c.features.is_empty():
@@ -234,10 +275,49 @@ func _populate(c: Character) -> void:
 		_add_section("Class Features", feat_lines)
 
 
+func _choose_wild_shape_form(character: Character) -> void:
+	if character == null:
+		return
+	var forms := DruidRules.form_options(character)
+	if forms.is_empty():
+		var message := Label.new()
+		message.text = "No known eligible Beast forms. Learn a form under Class Progression outside combat."
+		message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		_content.add_child(message)
+		return
+	if GameManager.test_mode:
+		if DruidRules.is_shaped(character):
+			DruidRules.revert(character)
+		else:
+			DruidRules.transform(character, str(forms[0].get("id", "")))
+		_populate(character)
+		return
+	var menu := PopupMenu.new()
+	var item_forms: Dictionary = {}
+	var next_id := 1
+	if DruidRules.is_shaped(character):
+		menu.add_item("Return to normal form", 0)
+	for form in forms:
+		menu.add_item("Become %s" % str(form.get("name", form.get("id", "Beast"))), next_id)
+		item_forms[next_id] = str(form.get("id", ""))
+		next_id += 1
+	_content.add_child(menu)
+	menu.id_pressed.connect(func(id: int):
+		if id == 0:
+			DruidRules.revert(character)
+		else:
+			DruidRules.transform(character, str(item_forms.get(id, "")))
+		_populate(character)
+		menu.queue_free()
+	)
+	menu.popup_hide.connect(func(): menu.queue_free())
+	menu.popup_centered(Vector2i(320, 200))
+
+
 func _add_section(header: String, lines: Array[String]) -> void:
 	var h := Label.new()
 	h.text = header
-	h.add_theme_color_override("font_color", Color(0.7, 0.85, 1.0))
+	h.add_theme_color_override("font_color", UiThemeProfile.current().color("state/info"))
 	_content.add_child(h)
 	var body := Label.new()
 	body.text = "\n".join(lines)

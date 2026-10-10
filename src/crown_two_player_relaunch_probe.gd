@@ -29,7 +29,7 @@ func _run() -> void:
 
 func _prepare() -> void:
 	save_manager.delete_save(SLOT)
-	var fixture_text := FileAccess.get_file_as_string("res://data/fixtures/save_v1_compat.json")
+	var fixture_text := FileAccess.get_file_as_string("res://data/fixtures/save_v2_2024.json")
 	var fixture_json := JSON.new()
 	if fixture_json.parse(fixture_text) != OK or not fixture_json.data is Dictionary:
 		_fail("repository Crown fixture could not be parsed")
@@ -76,7 +76,7 @@ func _prepare() -> void:
 	})
 	save_data["players"] = players
 	save_data["current_state"] = 2
-	var fixture_file := FileAccess.open("user://saves/%s.sav" % SLOT, FileAccess.WRITE)
+	var fixture_file := FileAccess.open(save_manager.SAVE_DIR + "%s.sav" % SLOT, FileAccess.WRITE)
 	if fixture_file == null:
 		_fail("could not stage two-player Crown save")
 		return

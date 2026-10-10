@@ -35,5 +35,6 @@
       "effects": []
     }
   ],
-  "darkvision": false
+  "darkvision": false,
+  "darkvision_feet": 0
 }

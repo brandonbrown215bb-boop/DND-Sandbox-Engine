@@ -1,0 +1,210 @@
+[
+  {
+    "id": "cat",
+    "name": "Cat",
+    "rules_source": "SRD 5.2.1",
+    "size": "tiny",
+    "creature_type": "beast",
+    "challenge_rating": 0,
+    "hit_points": "1d4",
+    "armor_class": 12,
+    "speed": 8,
+    "climb_speed_feet": 40,
+    "fly_speed_feet": 0,
+    "can_fly": false,
+    "senses": {
+      "darkvision": 60
+    },
+    "ability_scores": {
+      "STR": 3,
+      "DEX": 15,
+      "CON": 10,
+      "INT": 3,
+      "WIS": 12,
+      "CHA": 7
+    },
+    "skills": {
+      "Perception": 3,
+      "Stealth": 4
+    },
+    "proficiency_bonus": 2,
+    "special_abilities": [
+      {
+        "id": "jumper",
+        "name": "Jumper"
+      }
+    ],
+    "attacks": [
+      {
+        "name": "Scratch",
+        "ability": "DEX",
+        "damage": "1",
+        "damage_type": "slashing",
+        "range": 1,
+        "attack_bonus": 4
+      }
+    ],
+    "ai_behavior": "aggressive",
+    "loot_table": [],
+    "xp": 10,
+    "saving_throw_bonuses": {
+      "DEX": 4
+    }
+  },
+  {
+    "id": "owl",
+    "name": "Owl",
+    "rules_source": "SRD 5.2.1",
+    "size": "tiny",
+    "creature_type": "beast",
+    "challenge_rating": 0,
+    "hit_points": "1d4 - 1",
+    "armor_class": 11,
+    "speed": 1,
+    "climb_speed_feet": 0,
+    "fly_speed_feet": 60,
+    "can_fly": true,
+    "senses": {
+      "darkvision": 120
+    },
+    "ability_scores": {
+      "STR": 3,
+      "DEX": 13,
+      "CON": 8,
+      "INT": 2,
+      "WIS": 12,
+      "CHA": 7
+    },
+    "skills": {
+      "Perception": 5,
+      "Stealth": 5
+    },
+    "proficiency_bonus": 2,
+    "special_abilities": [
+      {
+        "id": "flyby",
+        "name": "Flyby"
+      }
+    ],
+    "attacks": [
+      {
+        "name": "Talons",
+        "ability": "DEX",
+        "damage": "1",
+        "damage_type": "slashing",
+        "range": 1,
+        "attack_bonus": 3
+      }
+    ],
+    "ai_behavior": "aggressive",
+    "loot_table": [],
+    "xp": 10
+  },
+  {
+    "id": "rat",
+    "name": "Rat",
+    "rules_source": "SRD 5.2.1",
+    "size": "tiny",
+    "creature_type": "beast",
+    "challenge_rating": 0,
+    "hit_points": "1d4 - 1",
+    "armor_class": 10,
+    "speed": 4,
+    "climb_speed_feet": 20,
+    "fly_speed_feet": 0,
+    "can_fly": false,
+    "senses": {
+      "darkvision": 30
+    },
+    "ability_scores": {
+      "STR": 2,
+      "DEX": 11,
+      "CON": 9,
+      "INT": 2,
+      "WIS": 10,
+      "CHA": 4
+    },
+    "skills": {
+      "Perception": 2
+    },
+    "proficiency_bonus": 2,
+    "special_abilities": [
+      {
+        "id": "agile",
+        "name": "Agile"
+      }
+    ],
+    "attacks": [
+      {
+        "name": "Bite",
+        "ability": "DEX",
+        "damage": "1",
+        "damage_type": "piercing",
+        "range": 1,
+        "attack_bonus": 2
+      }
+    ],
+    "ai_behavior": "aggressive",
+    "loot_table": [],
+    "xp": 10
+  },
+  {
+    "id": "spider",
+    "name": "Spider",
+    "rules_source": "SRD 5.2.1",
+    "size": "tiny",
+    "creature_type": "beast",
+    "challenge_rating": 0,
+    "hit_points": "1d4 - 1",
+    "armor_class": 12,
+    "speed": 4,
+    "climb_speed_feet": 20,
+    "fly_speed_feet": 0,
+    "can_fly": false,
+    "senses": {
+      "darkvision": 30
+    },
+    "ability_scores": {
+      "STR": 2,
+      "DEX": 14,
+      "CON": 8,
+      "INT": 1,
+      "WIS": 10,
+      "CHA": 2
+    },
+    "skills": {
+      "Stealth": 4
+    },
+    "proficiency_bonus": 2,
+    "special_abilities": [
+      {
+        "id": "spider_climb",
+        "name": "Spider Climb"
+      },
+      {
+        "id": "web_walker",
+        "name": "Web Walker"
+      }
+    ],
+    "attacks": [
+      {
+        "name": "Bite",
+        "ability": "DEX",
+        "damage": "1",
+        "damage_type": "piercing",
+        "range": 1,
+        "attack_bonus": 4,
+        "extra_effects": [
+          {
+            "type": "bonus_damage",
+            "damage": "1d4",
+            "damage_type": "poison"
+          }
+        ]
+      }
+    ],
+    "ai_behavior": "aggressive",
+    "loot_table": [],
+    "xp": 10
+  }
+]

@@ -11,7 +11,6 @@
   "armor_proficiencies": [
     "light",
     "medium",
-    "heavy",
     "shields"
   ],
   "weapon_proficiencies": [
@@ -21,20 +20,23 @@
   "skill_choices": {
     "pick": 2,
     "from": [
+		"Animal Handling",
       "Athletics",
-      "Acrobatics",
-      "Insight",
+		"Intimidation",
+		"Nature",
       "Perception",
-      "History",
-      "Arcana",
-      "Stealth"
+		"Survival"
     ]
   },
   "starting_equipment": [
-    "chain_mail",
-    "shield",
-    "longsword"
+    "greataxe",
+    "handaxe",
+    "handaxe",
+    "handaxe",
+    "handaxe",
+    "explorers_pack"
   ],
+  "starting_gold": 15,
   "spell_slots_by_level": {},
   "cantrips_known": [],
   "spells_known_by_level": {
@@ -47,12 +49,53 @@
       {
         "id": "barbarian_rage",
         "name": "Rage",
-        "description": "In battle, you fight with primal ferocity. On your turn, you can enter a rage as a bonus action. While raging, you gain the following benefits if you aren't wearing heavy armor: {'type': 'list', 'items': ['You have advantage on Strength checks and Strength saving throws.', 'When you make a melee wea...",
+        "description": "Bonus Action: enter Rage without Heavy armor. Strength attacks gain the Rage damage bonus; Strength checks and saves gain Advantage; Bludgeoning, Piercing and Slashing damage is resisted. Rage prevents spellcasting and Concentration. Attacking an enemy or spending a Bonus Action to extend it maintains Rage through your next turn, up to ten minutes total. Extending an active Rage spends no additional Rage use.",
         "type": "active",
-        "effects": [],
+        "effects": [
+          {
+            "type": "grant_condition",
+            "condition": "raging",
+            "duration": 2
+          },
+          {
+            "type": "stat_modifier",
+            "key": "damage:rage",
+            "duration": 2,
+            "amount_by_level": {
+              "1": 2,
+              "9": 3,
+              "16": 4
+            }
+          },
+          {
+            "type": "clear_concentration"
+          }
+        ],
+        "passive_effects": [
+          {
+            "type": "ability_check_advantage",
+            "ability": "STR",
+            "condition": "raging"
+          },
+          {
+            "type": "saving_throw_advantage",
+            "ability": "STR",
+            "condition": "raging"
+          }
+        ],
         "action_cost": "bonus_action",
+        "requires_no_heavy_armor": true,
         "uses": 1,
-        "uses_per": "combat"
+        "uses_per": "long_rest",
+        "executor": "class_feature",
+        "uses_by_level": {
+          "1": 2,
+          "3": 3,
+          "6": 4,
+          "12": 5,
+          "17": 6
+        },
+        "short_rest_recovery": 1
       },
       {
         "id": "barbarian_unarmored_defense",
@@ -66,21 +109,37 @@
         "name": "Weapon Mastery",
         "description": "Your training with weapons allows you to use the weapon mastery properties properties of two kinds of {@filter Simple=simple weapon;melee weapon=sand} or {@filter Martial Melee weapons=martial weapon;melee weapon=sand} of your choice, such as Greataxe and Handaxe. Whenever you finish a Long Rest, yo...",
         "type": "passive",
-        "effects": []
+        "effects": [
+          {
+            "type": "weapon_mastery",
+            "capacity_by_level": {"1": 2, "4": 3, "10": 4},
+            "melee_only": true
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
       }
     ],
     "2": [
       {
         "id": "barbarian_danger_sense",
         "name": "Danger Sense",
-        "description": "At 2nd level, you gain an uncanny sense of when things nearby aren't as they should be, giving you an edge when you dodge away from danger. You have advantage on Dexterity saving throws against effects that you can see, such as traps and spells. To gain this benefit, you can't be blinded, deafened, ...",
+        "description": "You have Advantage on Dexterity saving throws unless you are Incapacitated.",
         "type": "passive",
-        "effects": []
+        "effects": [
+          {
+            "type": "saving_throw_advantage",
+            "ability": "DEX",
+            "unless_condition": "incapacitated"
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
       },
       {
         "id": "barbarian_reckless_attack",
         "name": "Reckless Attack",
-        "description": "Starting at 2nd level, you can throw aside all concern for defense to attack with fierce desperation. When you make your first attack on your turn, you can decide to attack recklessly. Doing so gives you advantage on melee weapon attack rolls using Strength during this turn, but attack rolls against...",
+        "description": "On your first attack roll of the turn, choose Reckless Attack. Strength attacks gain Advantage until your next turn starts, and attacks against you gain Advantage for the same duration.",
         "type": "passive",
         "effects": []
       }
@@ -89,9 +148,23 @@
       {
         "id": "barbarian_primal_knowledge",
         "name": "Primal Knowledge",
-        "description": "{@i 3rd-level barbarian optional class features feature} When you reach 3rd level and again at 10th level, you gain proficiency in one skill of your choice from the list of skills available to barbarians at 1st level.",
+        "description": "At level 3, choose one additional Barbarian skill proficiency. While Raging, Primal Knowledge lets you use Strength for Acrobatics, Intimidation, Perception, Stealth and Survival checks.",
         "type": "passive",
-        "effects": []
+        "effects": [
+          {
+            "type": "skill_proficiency_choice",
+            "options": ["Animal Handling", "Athletics", "Intimidation", "Nature", "Perception", "Survival"],
+            "count": 1
+          }
+        ],
+        "passive_effects": [
+          {
+            "type": "ability_check_override",
+            "ability": "STR",
+            "skills": ["Acrobatics", "Intimidation", "Perception", "Stealth", "Survival"],
+            "condition": "raging"
+          }
+        ]
       },
       {
         "id": "barbarian_primal_path",
@@ -114,7 +187,13 @@
         "name": "Ability Score Improvement",
         "description": "When you reach 4th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature. If your DM allows the use of feats, you may instead take a {@5etools feat.html}.",
         "type": "passive",
-        "effects": []
+        "effects": [
+          {
+            "type": "asi"
+          }
+        ],
+        "rules_status": "2024-supported",
+        "rules_source": "dnd-2024-srd-5.2.1"
       }
     ],
     "5": [
@@ -133,7 +212,196 @@
         "name": "Fast Movement",
         "description": "Starting at 5th level, your speed increases by 10 feet while you aren't wearing heavy armor.",
         "type": "passive",
-        "effects": []
+        "effects": [
+          {
+            "type": "speed_bonus",
+            "bonus": 2,
+            "requires_no_heavy_armor": true
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "8": [
+      {
+        "id": "barbarian_ability_improvement_8",
+        "name": "Ability Score Improvement",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "asi"
+          }
+        ],
+        "rules_status": "2024-supported",
+        "rules_source": "dnd-2024-srd-5.2.1"
+      }
+    ],
+    "9": [
+      {
+        "id": "barbarian_brutal_strike",
+        "name": "Brutal Strike",
+        "description": "When you use Reckless Attack, forgo Advantage on one Strength-based attack roll without Disadvantage. On a hit, deal an extra 1d10 damage and choose Forceful Blow or Hamstring Blow.",
+        "type": "passive",
+        "effects": [],
+        "resolver": "barbarian_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "10": [],
+    "11": [
+      {
+        "id": "barbarian_relentless_rage",
+        "name": "Relentless Rage",
+        "description": "If you drop to 0 Hit Points while Raging without dying outright, you can make a DC 10 Constitution saving throw. On a success, your Hit Points become twice your Barbarian level. Each use after the first increases the DC by 5; the DC resets when you finish a Short or Long Rest.",
+        "type": "passive",
+        "effects": [],
+        "resolver": "barbarian_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "12": [
+      {
+        "id": "barbarian_ability_improvement_12",
+        "name": "Ability Score Improvement",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "asi"
+          }
+        ],
+        "rules_status": "2024-supported",
+        "rules_source": "dnd-2024-srd-5.2.1"
+      }
+    ],
+    "13": [
+      {
+        "id": "barbarian_improved_brutal_strike_13",
+        "name": "Improved Brutal Strike",
+        "description": "Brutal Strike can also apply Staggering Blow or Sundering Blow.",
+        "type": "passive",
+        "effects": [],
+        "resolver": "barbarian_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "15": [
+      {
+        "id": "barbarian_persistent_rage",
+        "name": "Persistent Rage",
+        "description": "When you roll Initiative, you can regain all expended uses of Rage once per Long Rest. Your Rage lasts 10 minutes without needing to be extended and ends early if you are Unconscious or don Heavy armor.",
+        "type": "passive",
+        "effects": [],
+        "resolver": "barbarian_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "16": [
+      {
+        "id": "barbarian_ability_improvement_16",
+        "name": "Ability Score Improvement",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "asi"
+          }
+        ],
+        "rules_status": "2024-supported",
+        "rules_source": "dnd-2024-srd-5.2.1"
+      }
+    ],
+    "17": [
+      {
+        "id": "barbarian_improved_brutal_strike_17",
+        "name": "Improved Brutal Strike",
+        "description": "Brutal Strike deals 2d10 extra damage and can apply two different Brutal Strike effects.",
+        "type": "passive",
+        "effects": [],
+        "resolver": "barbarian_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "7": [
+      {
+        "id": "barbarian_feral_instinct",
+        "name": "Feral Instinct",
+        "description": "You have Advantage on Initiative rolls.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "initiative_advantage"
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      },
+      {
+        "id": "barbarian_instinctive_pounce",
+        "name": "Instinctive Pounce",
+        "description": "When you use your Bonus Action to enter your Rage, you can move up to half your Speed.",
+        "type": "passive",
+        "effects": [],
+        "resolver": "barbarian_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "20": [
+      {
+        "id": "barbarian_primal_champion",
+        "name": "Primal Champion",
+        "description": "Your Strength and Constitution each increase by 4, to a maximum of 25.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "ability_score_increase",
+            "scores": {
+              "STR": 4,
+              "CON": 4
+            },
+            "maximum": 25
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "18": [
+      {
+        "id": "barbarian_indomitable_might",
+        "name": "Indomitable Might",
+        "description": "If your total for a Strength check or Strength saving throw is less than your Strength score, you can use that score in place of the total.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "ability_check_floor",
+            "ability": "STR",
+            "applies_to": ["ability_check", "saving_throw"]
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "19": [
+      {
+        "id": "barbarian_epic_boon",
+        "name": "Epic Boon",
+        "description": "Choose an Epic Boon on the Character Sheet. The supported options increase one ability score by 1, to a maximum of 30.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "epic_boon_choice",
+            "options": ["irresistible_offense", "combat_prowess"]
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
       }
     ]
   }

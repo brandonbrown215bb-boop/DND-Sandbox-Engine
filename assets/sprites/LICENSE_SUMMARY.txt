@@ -1,0 +1,299 @@
+CC0 / Public Domain fantasy sprite stills for Top Down Party Game
+All assets below are CC0 (Creative Commons Zero 1.0) / public-domain equivalent.
+Attribution is NOT required but recommended as courtesy.
+
+Output layout (under /workspace/sprites_cc0/):
+  characters/<class_id>.png
+  items/<item_id>.png
+  monsters/<monster_id>.png
+
+Stills are 128x128 PNG with transparency, nearest-neighbor upscaled from source pixel art
+(or fitted from higher-res CC0 icons).
+
+==============================================================================
+SOURCE PACKS
+==============================================================================
+
+1) Tiny Dungeon
+   Page: https://opengameart.org/content/tiny-dungeon
+   Also: https://kenney.nl/assets/tiny-dungeon
+   Author: Kenney Vleugels (Kenney.nl)
+   License: CC0 1.0
+   Used for: several character/item/monster stills (tiles from Tiles/*.png)
+
+2) Tiny Creatures (Tiny Dungeon expansion)
+   Page: https://opengameart.org/content/tiny-creatures
+   Author: Clint Bellanger (clintbellanger.net) — expansion of Kenney Tiny Dungeon/Town
+   License: CC0 1.0
+   Used for: most class portraits and core monster stills (Tiles/*.png)
+
+3) Animated Monsters
+   Page: https://opengameart.org/content/animated-monsters
+   Author: stealthix
+   License: CC0 1.0
+   Used for: skeleton.png, zombie.png (first idle frame cropped from sheets)
+
+4) RPG portraits
+   Page: https://opengameart.org/content/rpg-portraits
+   Author: Buch
+   License: CC0 1.0
+   File: rpgportraits.png
+   Used for: bard.png (cropped cell)
+
+5) Tiny RPG CC0 Characters and Portraits
+   Page: https://opengameart.org/content/tiny-rpg-cc0-characters-and-portraits
+   Author: tiopalada
+   License: CC0 1.0
+   Used for: mystic.png (demo face still)
+
+6) Fantasy Icon Set
+   Page: https://opengameart.org/content/fantasy-icon-set
+   Author: Argon
+   License: CC0 1.0
+   Used for: sword/shield/potions/weapons/books/coins and related item icons
+   Note: also consumed individual files book_2.png, bow.png, breastplate.png,
+         helm_plate_steel.png linked from the same entry.
+
+7) Medieval Icons | Inventory +284
+   Page: https://opengameart.org/content/medieval-icons-inventory-284
+   Author: Wenrexa
+   License: CC0 1.0
+   Used for: armor, helmet, potions, rings, axe/hammer/pickaxe/scythe/wrench icons
+
+8) Generic Items
+   Page: https://opengameart.org/content/generic-items
+   Author: Kenney Vleugels (Kenney.nl)
+   License: CC0 1.0
+   Used for: tools, kits, instruments, and miscellaneous gear stand-ins
+             (PNG/Colored/genericItem_color_*.png)
+
+==============================================================================
+PER-FILE MAPPING
+==============================================================================
+See MAPPING.json in this folder for id → source notes.
+
+=== CHARACTERS ===
+artificer.png
+  Kenney Tiny Dungeon tile_0086 (apron laborer/blacksmith) — https://opengameart.org/content/tiny-dungeon
+barbarian.png
+  Kenney Tiny Dungeon tile_0112 (muscular headband adventurer) — https://opengameart.org/content/tiny-dungeon
+bard.png
+  Buch RPG portraits col3/row1 — https://opengameart.org/content/rpg-portraits
+cleric.png
+  Kenney Tiny Creatures tile_0036 (haloed angelic figure) — https://opengameart.org/content/tiny-creatures
+druid.png
+  Kenney Tiny Creatures tile_0016 (antlered forest spirit) — https://opengameart.org/content/tiny-creatures
+fighter.png
+  Kenney Tiny Creatures tile_0018 (blue knight) — https://opengameart.org/content/tiny-creatures
+monk.png
+  Kenney Tiny Creatures tile_0068 (simple brown-clad figure) — https://opengameart.org/content/tiny-creatures
+mystic.png
+  tiopalada Tiny RPG Face Workshop demoFace00 — https://opengameart.org/content/tiny-rpg-cc0-characters-and-portraits
+paladin.png
+  Kenney Tiny Creatures tile_0019 (red knight) — https://opengameart.org/content/tiny-creatures
+ranger.png
+  Kenney Tiny Creatures tile_0017 (green-caped knight) — https://opengameart.org/content/tiny-creatures
+rogue.png
+  Kenney Tiny Creatures tile_0020 (hooded dark figure) — https://opengameart.org/content/tiny-creatures
+sorcerer.png
+  Kenney Tiny Creatures tile_0067 (mage variant) — https://opengameart.org/content/tiny-creatures
+warlock.png
+  Kenney Tiny Dungeon tile_0111 (hooded cultist) — https://opengameart.org/content/tiny-dungeon
+wizard.png
+  Kenney Tiny Creatures tile_0066 (purple wizard) — https://opengameart.org/content/tiny-creatures
+=== MONSTERS ===
+bandit.png
+  Kenney Tiny Creatures tile_0020 (hooded bandit) — https://opengameart.org/content/tiny-creatures
+giant_spider.png
+  Kenney Tiny Dungeon tile_0122 (spider) — https://opengameart.org/content/tiny-dungeon
+goblin.png
+  Kenney Tiny Creatures tile_0012 (goblin) — https://opengameart.org/content/tiny-creatures
+goblin_chief.png
+  Kenney Tiny Creatures tile_0125 (armored goblin/orc) — https://opengameart.org/content/tiny-creatures
+lich_king.png
+  Kenney Tiny Creatures tile_0097 (crowned undead/ghost king) — https://opengameart.org/content/tiny-creatures
+ooze.png
+  Kenney Tiny Creatures tile_0081 (green slime/ooze) — https://opengameart.org/content/tiny-creatures
+skeleton.png
+  stealthix Animated Monsters skeleton idle frame — https://opengameart.org/content/animated-monsters
+wight.png
+  Kenney Tiny Creatures tile_0005 (hooded undead) — https://opengameart.org/content/tiny-creatures
+wolf.png
+  Kenney Tiny Creatures tile_0024 (wolf) — https://opengameart.org/content/tiny-creatures
+zombie.png
+  stealthix Animated Monsters zombie idle frame — https://opengameart.org/content/animated-monsters
+=== ITEMS ===
+acid_vial.png
+  Argon Fantasy Icon Set potion_green — https://opengameart.org/content/fantasy-icon-set
+alchemists_fire.png
+  Argon Fantasy Icon Set potion_yellow — https://opengameart.org/content/fantasy-icon-set
+antidote.png
+  Kenney Tiny Dungeon tile_0114 (green flask) — https://opengameart.org/content/tiny-dungeon
+antitoxin.png
+  Kenney Tiny Dungeon tile_0126 (green vial) — https://opengameart.org/content/tiny-dungeon
+arcane_crystal.png
+  Argon Fantasy Icon Set diamond — https://opengameart.org/content/fantasy-icon-set
+arcane_orb.png
+  Kenney Tiny Creatures tile_0090 (mana orb) — https://opengameart.org/content/tiny-creatures
+arcane_rod.png
+  Kenney Tiny Dungeon tile_0130 — https://opengameart.org/content/tiny-dungeon
+arcane_staff.png
+  Kenney Tiny Dungeon tile_0130 — https://opengameart.org/content/tiny-dungeon
+arcane_wand.png
+  Kenney Tiny Dungeon tile_0130 — https://opengameart.org/content/tiny-dungeon
+bagpipes.png
+  Kenney Generic Items color_049 — https://opengameart.org/content/generic-items
+ball_bearings.png
+  Kenney Generic Items color_018 — https://opengameart.org/content/generic-items
+basic_poison.png
+  Kenney Tiny Dungeon tile_0114 — https://opengameart.org/content/tiny-dungeon
+battleaxe.png
+  Kenney Tiny Dungeon tile_0118 (battleaxe) — https://opengameart.org/content/tiny-dungeon
+blowgun.png
+  Kenney Generic Items color_024 — https://opengameart.org/content/generic-items
+caltrops.png
+  Kenney Generic Items color_018 — https://opengameart.org/content/generic-items
+chain_mail.png
+  Argon Fantasy Icon Set breastplate.png — https://opengameart.org/content/fantasy-icon-set
+climbers_kit.png
+  Kenney Generic Items color_050 — https://opengameart.org/content/generic-items
+club.png
+  Kenney Tiny Dungeon tile_0107 — https://opengameart.org/content/tiny-dungeon
+component_pouch.png
+  Argon Fantasy Icon Set bag.png — https://opengameart.org/content/fantasy-icon-set
+crowbar.png
+  Wenrexa Medieval Icons Weapon Wrench — https://opengameart.org/content/medieval-icons-inventory-284
+crown_fragment.png
+  Wenrexa Medieval Icons Item Rings — https://opengameart.org/content/medieval-icons-inventory-284
+dagger.png
+  Argon Fantasy Icon Set dagger / Tiny Dungeon — https://opengameart.org/content/fantasy-icon-set
+dart.png
+  Kenney Tiny Dungeon tile_0131 (small blade) — https://opengameart.org/content/tiny-dungeon
+drum.png
+  Kenney Generic Items color_033 — https://opengameart.org/content/generic-items
+dulcimer.png
+  Kenney Generic Items color_049 — https://opengameart.org/content/generic-items
+flail.png
+  Wenrexa Medieval Icons Weapon Hammer (flail stand-in) — https://opengameart.org/content/medieval-icons-inventory-284
+flute.png
+  Kenney Generic Items color_024 — https://opengameart.org/content/generic-items
+gemstone_100gp.png
+  Argon Fantasy Icon Set diamond — https://opengameart.org/content/fantasy-icon-set
+gemstone_10gp.png
+  Argon Fantasy Icon Set diamond — https://opengameart.org/content/fantasy-icon-set
+gemstone_500gp.png
+  Argon Fantasy Icon Set diamond — https://opengameart.org/content/fantasy-icon-set
+gemstone_50gp.png
+  Argon Fantasy Icon Set diamond — https://opengameart.org/content/fantasy-icon-set
+glaive.png
+  Argon Fantasy Icon Set spear (glaive stand-in) — https://opengameart.org/content/fantasy-icon-set
+gold_100.png
+  Argon Fantasy Icon Set gold — https://opengameart.org/content/fantasy-icon-set
+gold_50.png
+  Argon Fantasy Icon Set coin — https://opengameart.org/content/fantasy-icon-set
+greataxe.png
+  Argon Fantasy Icon Set axe — https://opengameart.org/content/fantasy-icon-set
+greatclub.png
+  Kenney Tiny Dungeon tile_0117 (hammer as greatclub stand-in) — https://opengameart.org/content/tiny-dungeon
+greatsword.png
+  Argon Fantasy Icon Set katana (greatsword stand-in) — https://opengameart.org/content/fantasy-icon-set
+halberd.png
+  Argon Fantasy Icon Set spear (halberd stand-in) — https://opengameart.org/content/fantasy-icon-set
+hand_crossbow.png
+  Argon Fantasy Icon Set bow — https://opengameart.org/content/fantasy-icon-set
+handaxe.png
+  Kenney Tiny Dungeon tile_0119 (hand axe) — https://opengameart.org/content/tiny-dungeon
+healers_kit.png
+  Argon Fantasy Icon Set bag — https://opengameart.org/content/fantasy-icon-set
+heavy_crossbow.png
+  Argon Fantasy Icon Set bow — https://opengameart.org/content/fantasy-icon-set
+holy_water.png
+  Kenney Tiny Dungeon tile_0116 (blue flask) — https://opengameart.org/content/tiny-dungeon
+horn.png
+  Kenney Generic Items color_025 — https://opengameart.org/content/generic-items
+javelin.png
+  Argon Fantasy Icon Set spear — https://opengameart.org/content/fantasy-icon-set
+lance.png
+  Argon Fantasy Icon Set spear — https://opengameart.org/content/fantasy-icon-set
+lantern_bullseye.png
+  Kenney Tiny Dungeon tile_0129 — https://opengameart.org/content/tiny-dungeon
+lantern_hooded.png
+  Kenney Tiny Dungeon tile_0129 (torch/lantern stand-in) — https://opengameart.org/content/tiny-dungeon
+leather_armor.png
+  Wenrexa Medieval Icons Item Armors — https://opengameart.org/content/medieval-icons-inventory-284
+light_crossbow.png
+  Argon Fantasy Icon Set bow (crossbow stand-in) — https://opengameart.org/content/fantasy-icon-set
+light_hammer.png
+  Wenrexa Medieval Icons Weapon Hammer — https://opengameart.org/content/medieval-icons-inventory-284
+longbow.png
+  Argon Fantasy Icon Set bow.png — https://opengameart.org/content/fantasy-icon-set
+longsword.png
+  Argon Fantasy Icon Set shortsword — https://opengameart.org/content/fantasy-icon-set
+lute.png
+  Kenney Generic Items color_049 — https://opengameart.org/content/generic-items
+lyre.png
+  Kenney Generic Items color_049 — https://opengameart.org/content/generic-items
+mace.png
+  Wenrexa Medieval Icons Weapon Hammer — https://opengameart.org/content/medieval-icons-inventory-284
+maul.png
+  Kenney Tiny Dungeon tile_0117 (warhammer/maul) — https://opengameart.org/content/tiny-dungeon
+morningstar.png
+  Wenrexa Medieval Icons Weapon Hammer — https://opengameart.org/content/medieval-icons-inventory-284
+musket.png
+  Kenney Generic Items color_005 — https://opengameart.org/content/generic-items
+oil_flask.png
+  Kenney Tiny Dungeon tile_0113 (clear flask) — https://opengameart.org/content/tiny-dungeon
+pan_flute.png
+  Kenney Generic Items color_024 — https://opengameart.org/content/generic-items
+pike.png
+  Argon Fantasy Icon Set spear — https://opengameart.org/content/fantasy-icon-set
+pistol.png
+  Kenney Generic Items color_007 — https://opengameart.org/content/generic-items
+potion_greater_healing.png
+  Kenney Tiny Dungeon tile_0127 (red vial) — https://opengameart.org/content/tiny-dungeon
+potion_healing.png
+  Kenney Tiny Dungeon tile_0115 (red flask) — https://opengameart.org/content/tiny-dungeon
+quarterstaff.png
+  Kenney Tiny Dungeon tile_0130 (staff) — https://opengameart.org/content/tiny-dungeon
+rapier.png
+  Argon Fantasy Icon Set katana — https://opengameart.org/content/fantasy-icon-set
+rope.png
+  Kenney Generic Items color_040 — https://opengameart.org/content/generic-items
+scale_mail.png
+  Wenrexa Medieval Icons Item Armors — https://opengameart.org/content/medieval-icons-inventory-284
+scimitar.png
+  Argon Fantasy Icon Set katana — https://opengameart.org/content/fantasy-icon-set
+shawm.png
+  Kenney Generic Items color_024 — https://opengameart.org/content/generic-items
+shield.png
+  Argon Fantasy Icon Set shield.png — https://opengameart.org/content/fantasy-icon-set
+shortbow.png
+  Argon Fantasy Icon Set bow.png — https://opengameart.org/content/fantasy-icon-set
+shortsword.png
+  Argon Fantasy Icon Set shortsword — https://opengameart.org/content/fantasy-icon-set
+sickle.png
+  Wenrexa Medieval Icons Weapon Scythe — https://opengameart.org/content/medieval-icons-inventory-284
+sling.png
+  Kenney Generic Items color_030 — https://opengameart.org/content/generic-items
+spear.png
+  Argon Fantasy Icon Set spear — https://opengameart.org/content/fantasy-icon-set
+spellbook.png
+  Argon Fantasy Icon Set book — https://opengameart.org/content/fantasy-icon-set
+sword.png
+  Argon Fantasy Icon Set shortsword.png — https://opengameart.org/content/fantasy-icon-set
+thieves_tools.png
+  Kenney Generic Items color_063 — https://opengameart.org/content/generic-items
+torch.png
+  Kenney Tiny Dungeon tile_0129 (torch) — https://opengameart.org/content/tiny-dungeon
+trident.png
+  Argon Fantasy Icon Set spear — https://opengameart.org/content/fantasy-icon-set
+viol.png
+  Kenney Generic Items color_049 — https://opengameart.org/content/generic-items
+war_pick.png
+  Wenrexa Medieval Icons Weapon Pickaxe — https://opengameart.org/content/medieval-icons-inventory-284
+warhammer.png
+  Kenney Tiny Dungeon tile_0117 — https://opengameart.org/content/tiny-dungeon
+whip.png
+  Kenney Generic Items color_061 — https://opengameart.org/content/generic-items
+wooden_staff.png
+  Kenney Tiny Dungeon tile_0130 — https://opengameart.org/content/tiny-dungeon

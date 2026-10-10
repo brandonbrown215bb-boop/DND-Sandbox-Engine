@@ -7,7 +7,9 @@
     "weapon_type": "martial",
     "damage": "1d8",
     "damage_type": "slashing",
-    "properties": ["versatile"],
+    "properties": [
+      "versatile"
+    ],
     "versatile_damage": "1d10",
     "ability": "STR",
     "range": 1,
@@ -21,7 +23,9 @@
     "weapon_type": "martial",
     "damage": "1d8",
     "damage_type": "piercing",
-    "properties": ["finesse"],
+    "properties": [
+      "finesse"
+    ],
     "ability": "DEX",
     "range": 1,
     "value": 25
@@ -34,7 +38,11 @@
     "weapon_type": "simple",
     "damage": "1d4",
     "damage_type": "piercing",
-    "properties": ["finesse", "light", "thrown"],
+    "properties": [
+      "finesse",
+      "light",
+      "thrown"
+    ],
     "ability": "DEX",
     "range": 1,
     "thrown_range": 4,
@@ -48,7 +56,10 @@
     "weapon_type": "simple",
     "damage": "1d6",
     "damage_type": "slashing",
-    "properties": ["light", "thrown"],
+    "properties": [
+      "light",
+      "thrown"
+    ],
     "ability": "STR",
     "range": 1,
     "thrown_range": 4,
@@ -62,7 +73,9 @@
     "weapon_type": "simple",
     "damage": "1d6",
     "damage_type": "bludgeoning",
-    "properties": ["versatile"],
+    "properties": [
+      "versatile"
+    ],
     "versatile_damage": "1d8",
     "ability": "STR",
     "range": 1,
@@ -76,9 +89,12 @@
     "weapon_type": "simple",
     "damage": "1d6",
     "damage_type": "piercing",
-    "properties": ["ranged", "two_handed"],
+    "properties": [
+      "ranged",
+      "two_handed"
+    ],
     "ability": "DEX",
-    "range": 6,
+    "range": 16,
     "value": 25
   },
   {
@@ -89,9 +105,511 @@
     "weapon_type": "martial",
     "damage": "1d8",
     "damage_type": "piercing",
-    "properties": ["ranged", "two_handed", "heavy"],
+    "properties": [
+      "ranged",
+      "two_handed",
+      "heavy"
+    ],
+    "ability": "DEX",
+    "range": 30,
+    "value": 50
+  },
+  {
+    "id": "club",
+    "name": "Club",
+    "description": "A simple wooden cudgel.",
+    "type": "weapon",
+    "weapon_type": "simple",
+    "damage": "1d4",
+    "damage_type": "bludgeoning",
+    "properties": [
+      "light"
+    ],
+    "ability": "STR",
+    "range": 1,
+    "value": 1
+  },
+  {
+    "id": "greatclub",
+    "name": "Greatclub",
+    "description": "A heavy two-handed wooden club.",
+    "type": "weapon",
+    "weapon_type": "simple",
+    "damage": "1d8",
+    "damage_type": "bludgeoning",
+    "properties": [
+      "two_handed"
+    ],
+    "ability": "STR",
+    "range": 1,
+    "value": 1
+  },
+  {
+    "id": "javelin",
+    "name": "Javelin",
+    "description": "A light throwing spear.",
+    "type": "weapon",
+    "weapon_type": "simple",
+    "damage": "1d6",
+    "damage_type": "piercing",
+    "properties": [
+      "thrown"
+    ],
+    "ability": "STR",
+    "range": 1,
+    "thrown_range": 6,
+    "value": 1
+  },
+  {
+    "id": "light_hammer",
+    "name": "Light Hammer",
+    "description": "A small hammer balanced for throwing.",
+    "type": "weapon",
+    "weapon_type": "simple",
+    "damage": "1d4",
+    "damage_type": "bludgeoning",
+    "properties": [
+      "light",
+      "thrown"
+    ],
+    "ability": "STR",
+    "range": 1,
+    "thrown_range": 4,
+    "value": 2
+  },
+  {
+    "id": "mace",
+    "name": "Mace",
+    "description": "A flanged metal head on a sturdy haft.",
+    "type": "weapon",
+    "weapon_type": "simple",
+    "damage": "1d6",
+    "damage_type": "bludgeoning",
+    "properties": [],
+    "ability": "STR",
+    "range": 1,
+    "value": 5
+  },
+  {
+    "id": "sickle",
+    "name": "Sickle",
+    "description": "A curved farming blade pressed into service as a weapon.",
+    "type": "weapon",
+    "weapon_type": "simple",
+    "damage": "1d4",
+    "damage_type": "slashing",
+    "properties": [
+      "light"
+    ],
+    "ability": "STR",
+    "range": 1,
+    "value": 1
+  },
+  {
+    "id": "spear",
+    "name": "Spear",
+    "description": "A simple pole tipped with a point. Can be thrown.",
+    "type": "weapon",
+    "weapon_type": "simple",
+    "damage": "1d6",
+    "damage_type": "piercing",
+    "properties": [
+      "thrown",
+      "versatile"
+    ],
+    "versatile_damage": "1d8",
+    "ability": "STR",
+    "range": 1,
+    "thrown_range": 4,
+    "value": 1
+  },
+  {
+    "id": "dart",
+    "name": "Dart",
+    "description": "A small weighted throwing dart.",
+    "type": "weapon",
+    "weapon_type": "simple",
+    "damage": "1d4",
+    "damage_type": "piercing",
+    "properties": [
+      "finesse",
+      "thrown",
+      "ranged"
+    ],
+    "ability": "DEX",
+    "range": 4,
+    "value": 1
+  },
+  {
+    "id": "light_crossbow",
+    "name": "Light Crossbow",
+    "description": "A compact crossbow that must be reloaded after each shot.",
+    "type": "weapon",
+    "weapon_type": "simple",
+    "damage": "1d8",
+    "damage_type": "piercing",
+    "properties": [
+      "ranged",
+      "loading",
+      "two_handed"
+    ],
+    "ability": "DEX",
+    "range": 16,
+    "value": 25
+  },
+  {
+    "id": "sling",
+    "name": "Sling",
+    "description": "A leather strap for hurling stones.",
+    "type": "weapon",
+    "weapon_type": "simple",
+    "damage": "1d4",
+    "damage_type": "bludgeoning",
+    "properties": [
+      "ranged"
+    ],
+    "ability": "DEX",
+    "range": 6,
+    "value": 1
+  },
+  {
+    "id": "battleaxe",
+    "name": "Battleaxe",
+    "description": "A broad axe usable in one or two hands.",
+    "type": "weapon",
+    "weapon_type": "martial",
+    "damage": "1d8",
+    "damage_type": "slashing",
+    "properties": [
+      "versatile"
+    ],
+    "versatile_damage": "1d10",
+    "ability": "STR",
+    "range": 1,
+    "value": 10
+  },
+  {
+    "id": "flail",
+    "name": "Flail",
+    "description": "A spiked ball on a chain attached to a handle.",
+    "type": "weapon",
+    "weapon_type": "martial",
+    "damage": "1d8",
+    "damage_type": "bludgeoning",
+    "properties": [],
+    "ability": "STR",
+    "range": 1,
+    "value": 10
+  },
+  {
+    "id": "glaive",
+    "name": "Glaive",
+    "description": "A blade mounted on a long pole, granting reach.",
+    "type": "weapon",
+    "weapon_type": "martial",
+    "damage": "1d10",
+    "damage_type": "slashing",
+    "properties": [
+      "heavy",
+      "reach",
+      "two_handed"
+    ],
+    "ability": "STR",
+    "range": 2,
+    "value": 20
+  },
+  {
+    "id": "greataxe",
+    "name": "Greataxe",
+    "description": "A massive two-handed axe.",
+    "type": "weapon",
+    "weapon_type": "martial",
+    "damage": "1d12",
+    "damage_type": "slashing",
+    "properties": [
+      "heavy",
+      "two_handed"
+    ],
+    "ability": "STR",
+    "range": 1,
+    "value": 30
+  },
+  {
+    "id": "greatsword",
+    "name": "Greatsword",
+    "description": "A huge two-handed blade.",
+    "type": "weapon",
+    "weapon_type": "martial",
+    "damage": "2d6",
+    "damage_type": "slashing",
+    "properties": [
+      "heavy",
+      "two_handed"
+    ],
+    "ability": "STR",
+    "range": 1,
+    "value": 50
+  },
+  {
+    "id": "halberd",
+    "name": "Halberd",
+    "description": "An axe blade topped with a spike on a long pole.",
+    "type": "weapon",
+    "weapon_type": "martial",
+    "damage": "1d10",
+    "damage_type": "slashing",
+    "properties": [
+      "heavy",
+      "reach",
+      "two_handed"
+    ],
+    "ability": "STR",
+    "range": 2,
+    "value": 20
+  },
+  {
+    "id": "lance",
+    "name": "Lance",
+    "description": "A long cavalry spear with reach.",
+    "type": "weapon",
+    "weapon_type": "martial",
+    "damage": "1d10",
+    "damage_type": "piercing",
+    "properties": [
+      "heavy",
+      "reach",
+      "two_handed"
+    ],
+    "ability": "STR",
+    "range": 2,
+    "value": 10
+  },
+  {
+    "id": "maul",
+    "name": "Maul",
+    "description": "A massive two-handed hammer.",
+    "type": "weapon",
+    "weapon_type": "martial",
+    "damage": "2d6",
+    "damage_type": "bludgeoning",
+    "properties": [
+      "heavy",
+      "two_handed"
+    ],
+    "ability": "STR",
+    "range": 1,
+    "value": 10
+  },
+  {
+    "id": "morningstar",
+    "name": "Morningstar",
+    "description": "A spiked mace head on a haft.",
+    "type": "weapon",
+    "weapon_type": "martial",
+    "damage": "1d8",
+    "damage_type": "piercing",
+    "properties": [],
+    "ability": "STR",
+    "range": 1,
+    "value": 15
+  },
+  {
+    "id": "pike",
+    "name": "Pike",
+    "description": "A very long thrusting spear with reach.",
+    "type": "weapon",
+    "weapon_type": "martial",
+    "damage": "1d10",
+    "damage_type": "piercing",
+    "properties": [
+      "heavy",
+      "reach",
+      "two_handed"
+    ],
+    "ability": "STR",
+    "range": 2,
+    "value": 5
+  },
+  {
+    "id": "scimitar",
+    "name": "Scimitar",
+    "description": "A curved, light slashing blade.",
+    "type": "weapon",
+    "weapon_type": "martial",
+    "damage": "1d6",
+    "damage_type": "slashing",
+    "properties": [
+      "finesse",
+      "light"
+    ],
+    "ability": "DEX",
+    "range": 1,
+    "value": 25
+  },
+  {
+    "id": "shortsword",
+    "name": "Shortsword",
+    "description": "A short, quick thrusting blade.",
+    "type": "weapon",
+    "weapon_type": "martial",
+    "damage": "1d6",
+    "damage_type": "piercing",
+    "properties": [
+      "finesse",
+      "light"
+    ],
+    "ability": "DEX",
+    "range": 1,
+    "value": 10
+  },
+  {
+    "id": "trident",
+    "name": "Trident",
+    "description": "A three-pronged spear. Can be thrown.",
+    "type": "weapon",
+    "weapon_type": "martial",
+    "damage": "1d8",
+    "damage_type": "piercing",
+    "properties": [
+      "thrown",
+      "versatile"
+    ],
+    "versatile_damage": "1d10",
+    "ability": "STR",
+    "range": 1,
+    "thrown_range": 4,
+    "value": 5
+  },
+  {
+    "id": "war_pick",
+    "name": "War Pick",
+    "description": "A pointed hammer designed to pierce armor.",
+    "type": "weapon",
+    "weapon_type": "martial",
+    "damage": "1d8",
+    "damage_type": "piercing",
+    "properties": [
+      "versatile"
+    ],
+    "versatile_damage": "1d10",
+    "ability": "STR",
+    "range": 1,
+    "value": 5
+  },
+  {
+    "id": "warhammer",
+    "name": "Warhammer",
+    "description": "A heavy hammer usable in one or two hands.",
+    "type": "weapon",
+    "weapon_type": "martial",
+    "damage": "1d8",
+    "damage_type": "bludgeoning",
+    "properties": [
+      "versatile"
+    ],
+    "versatile_damage": "1d10",
+    "ability": "STR",
+    "range": 1,
+    "value": 15
+  },
+  {
+    "id": "whip",
+    "name": "Whip",
+    "description": "A long leather lash with reach.",
+    "type": "weapon",
+    "weapon_type": "martial",
+    "damage": "1d4",
+    "damage_type": "slashing",
+    "properties": [
+      "finesse",
+      "reach"
+    ],
+    "ability": "DEX",
+    "range": 2,
+    "value": 2
+  },
+  {
+    "id": "blowgun",
+    "name": "Blowgun",
+    "description": "A tube for firing small needles. Must be reloaded after each shot.",
+    "type": "weapon",
+    "weapon_type": "martial",
+    "damage": "1",
+    "damage_type": "piercing",
+    "properties": [
+      "ranged",
+      "loading"
+    ],
+    "ability": "DEX",
+    "range": 5,
+    "value": 10
+  },
+  {
+    "id": "hand_crossbow",
+    "name": "Hand Crossbow",
+    "description": "A one-handed crossbow. Must be reloaded after each shot.",
+    "type": "weapon",
+    "weapon_type": "martial",
+    "damage": "1d6",
+    "damage_type": "piercing",
+    "properties": [
+      "ranged",
+      "light",
+      "loading"
+    ],
+    "ability": "DEX",
+    "range": 6,
+    "value": 75
+  },
+  {
+    "id": "heavy_crossbow",
+    "name": "Heavy Crossbow",
+    "description": "A powerful crossbow with long range. Must be reloaded after each shot.",
+    "type": "weapon",
+    "weapon_type": "martial",
+    "damage": "1d10",
+    "damage_type": "piercing",
+    "properties": [
+      "ranged",
+      "heavy",
+      "loading",
+      "two_handed"
+    ],
+    "ability": "DEX",
+    "range": 20,
+    "value": 50
+  },
+  {
+    "id": "musket",
+    "name": "Musket",
+    "description": "A long black-powder firearm. Must be reloaded after each shot.",
+    "type": "weapon",
+    "weapon_type": "martial",
+    "damage": "1d12",
+    "damage_type": "piercing",
+    "properties": [
+      "ranged",
+      "loading",
+      "two_handed"
+    ],
     "ability": "DEX",
     "range": 8,
-    "value": 50
+    "value": 500
+  },
+  {
+    "id": "pistol",
+    "name": "Pistol",
+    "description": "A one-handed black-powder firearm. Must be reloaded after each shot.",
+    "type": "weapon",
+    "weapon_type": "martial",
+    "damage": "1d10",
+    "damage_type": "piercing",
+    "properties": [
+      "ranged",
+      "loading"
+    ],
+    "ability": "DEX",
+    "range": 6,
+    "value": 250
   }
 ]

@@ -17,6 +17,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 config/name="Top Down Party Game"
 config/description="A top-down turn-based D&D 5e-inspired party game with homebrew modding support."
 run/main_scene="res://scenes/main.tscn"
+run/max_fps=60
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"
 
@@ -36,9 +37,12 @@ NormalCreationMatrixProbe="*res://src/normal_creation_matrix_probe.gd"
 
 [display]
 
-window/size/viewport_width=1280
-window/size/viewport_height=720
-window/stretch/mode="viewport"
+window/size/viewport_width=1920
+window/size/viewport_height=1080
+window/size/window_width_override=1280
+window/size/window_height_override=720
+window/size/resizable=true
+window/stretch/mode="disabled"
 
 [gd_script]
 
@@ -46,9 +50,9 @@ treat_warnings_as_errors=false
 
 [gui]
 
-theme/default_font_antialiasing=0
+theme/default_font_antialiasing=1
 theme/default_font_subpixel_positioning=0
-theme="res://theme/main_theme.tres"
+theme/custom="res://theme/main_theme.tres"
 
 [input]
 
@@ -63,4 +67,5 @@ ui_click={
 textures/canvas_textures/default_texture_filter=0
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
+gl_compatibility/driver.windows="opengl3_angle"
 textures/default_filters/anisotropic_filtering_level=0

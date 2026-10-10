@@ -1,0 +1,31 @@
+[
+  {
+    "id": "cone_of_cold",
+    "name": "Cone of Cold",
+    "description": "A blast of cold air erupts from you. Each creature in a 12-hex cone makes a Constitution saving throw, taking 8d8 cold damage on a failed save or half as much on a success.",
+    "level": 5,
+    "school": "evocation",
+    "casting_time": "action",
+    "range": 0,
+    "target": "cone",
+    "cone_size": 12,
+    "save": "CON",
+    "damage": "8d8",
+    "damage_type": "cold",
+    "half_on_save": true,
+    "upcast": {
+      "starting_level": 5,
+      "damage_per_level": "1d8"
+    },
+    "rules_source": "SRD5.2.1",
+    "rules_status": "2024-gameplay-partial",
+    "effects": [
+      {
+        "type": "area_selection",
+        "shape": "cone",
+        "size": 12
+      }
+    ],
+    "execution": "shared"
+  }
+]

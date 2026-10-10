@@ -50,6 +50,21 @@ func sort_initiative() -> void:
 	current_round = 1
 
 
+func sort_initiative_preserving_active() -> void:
+	var active_id := str(get_active().get("id", ""))
+	combatants.sort_custom(func(a, b):
+		if a["roll"] != b["roll"]:
+			return a["roll"] > b["roll"]
+		if a["dex"] != b["dex"]:
+			return a["dex"] > b["dex"]
+		return str(a["id"]) < str(b["id"])
+	)
+	for index in combatants.size():
+		if str(combatants[index].get("id", "")) == active_id:
+			active_index = index
+			return
+
+
 ## Get the currently active combatant.
 func get_active() -> Dictionary:
 	if combatants.is_empty():

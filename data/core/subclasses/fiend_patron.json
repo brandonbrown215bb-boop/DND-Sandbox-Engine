@@ -1,0 +1,156 @@
+{
+  "id": "fiend_patron",
+  "name": "Fiend Patron",
+  "class_id": "warlock",
+  "rules_status": "2024-supported",
+  "features_by_level": {
+    "3": [
+      {
+        "id": "fiend_dark_ones_blessing",
+        "name": "Dark One's Blessing",
+        "description": "When you or an ally within 10 feet of you reduces an enemy to 0 Hit Points, you gain temporary hit points equal to your Charisma modifier plus your Warlock level (minimum 1).",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "dark_ones_blessing"
+          }
+        ],
+        "resolver": "warlock_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      },
+      {
+        "id": "fiend_spells_3",
+        "name": "Fiend Spells (Level 3)",
+        "description": "You always have Burning Hands, Command, Scorching Ray, and Suggestion prepared.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "always_prepared_spells",
+            "spells": [
+              "burning_hands",
+              "command",
+              "scorching_ray",
+              "suggestion"
+            ]
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "5": [
+      {
+        "id": "fiend_spells_5",
+        "name": "Fiend Spells (Level 5)",
+        "description": "You always have Fireball and Stinking Cloud prepared.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "always_prepared_spells",
+            "spells": [
+              "fireball",
+              "stinking_cloud"
+            ]
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "6": [
+      {
+        "id": "fiend_dark_ones_own_luck",
+        "name": "Dark One's Own Luck",
+        "description": "When you make an ability check or a saving throw, you can add 1d10 to your roll. You can use this feature a number of times equal to your Charisma modifier (minimum 1) per Long Rest.",
+        "type": "active",
+        "action_cost": "free",
+        "uses": 1,
+        "uses_ability": "CHA",
+        "minimum_uses": 1,
+        "uses_per": "long_rest",
+        "effects": [
+          {
+            "type": "dark_ones_own_luck"
+          }
+        ],
+        "resolver": "warlock_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "7": [
+      {
+        "id": "fiend_spells_7",
+        "name": "Fiend Spells (Level 7)",
+        "description": "You always have Fire Shield and Wall of Fire prepared.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "always_prepared_spells",
+            "spells": [
+              "fire_shield",
+              "wall_of_fire"
+            ]
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "9": [
+      {
+        "id": "fiend_spells_9",
+        "name": "Fiend Spells (Level 9)",
+        "description": "You always have Geas and Insect Plague prepared.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "always_prepared_spells",
+            "spells": [
+              "geas",
+              "insect_plague"
+            ]
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "10": [
+      {
+        "id": "fiend_fiendish_resilience",
+        "name": "Fiendish Resilience",
+        "description": "Choose one damage type other than Force on a Short or Long Rest. You gain resistance to that damage type.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "fiendish_resilience"
+          }
+        ],
+        "resolver": "warlock_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "14": [
+      {
+        "id": "fiend_hurl_through_hell",
+        "name": "Hurl Through Hell",
+        "description": "Once per turn when you hit a creature with an attack roll, you can transport it through the Lower Planes. At the end of your next turn it returns and takes 8d10 Psychic damage if not a Fiend. Regain use on a Long Rest or by expending a Pact Magic spell slot.",
+        "type": "active",
+        "action_cost": "free",
+        "uses": 1,
+        "uses_per": "long_rest",
+        "effects": [
+          {
+            "type": "hurl_through_hell"
+          }
+        ],
+        "resolver": "warlock_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ]
+  }
+}

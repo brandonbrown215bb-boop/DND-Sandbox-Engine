@@ -351,7 +351,7 @@
     "value": 0
   },
   {
-    "id": "potion_of_greater_healing",
+    "id": "potion_greater_healing",
     "name": "Potion of Greater Healing",
     "description": "You regain 4d4 + 4 hit points when you drink this potion. The potion's red liquid glimmers when agitated.",
     "type": "consumable",
@@ -365,7 +365,7 @@
     "value": 0
   },
   {
-    "id": "potion_of_greater_healing",
+    "id": "potion_greater_healing",
     "name": "Potion of Greater Healing",
     "description": "You regain 4d4 + 4 Hit Points when you drink this potion. The potion's red liquid glimmers when agitated.",
     "type": "consumable",
@@ -406,7 +406,7 @@
     "value": 0
   },
   {
-    "id": "potion_of_healing",
+    "id": "potion_healing",
     "name": "Potion of Healing",
     "description": "You regain 2d4 + 2 hit points when you drink this potion. The potion's red liquid glimmers when agitated.",
     "type": "consumable",
@@ -420,7 +420,7 @@
     "value": 50
   },
   {
-    "id": "potion_of_healing",
+    "id": "potion_healing",
     "name": "Potion of Healing",
     "description": "This potion is a magic item. As a Bonus Action, you can drink it or administer it to another creature within 5 feet of yourself. The creature that drinks the magical red fluid in this vial regains 2d4 + 2 Hit Points. The potion's red liquid glimmers when agitated.",
     "type": "consumable",
@@ -737,7 +737,7 @@
     "value": 0
   },
   {
-    "id": "potion_of_superior_healing",
+    "id": "potion_superior_healing",
     "name": "Potion of Superior Healing",
     "description": "You regain 8d4 + 8 hit points when you drink this potion. The potion's red liquid glimmers when agitated.",
     "type": "consumable",
@@ -748,10 +748,10 @@
         "value": "8d4+8"
       }
     ],
-    "value": 0
+    "value": 500
   },
   {
-    "id": "potion_of_superior_healing",
+    "id": "potion_superior_healing",
     "name": "Potion of Superior Healing",
     "description": "You regain 8d4 + 8 Hit Points when you drink this potion. The potion's red liquid glimmers when agitated.",
     "type": "consumable",
@@ -762,10 +762,10 @@
         "value": "8d4+8"
       }
     ],
-    "value": 0
+    "value": 500
   },
   {
-    "id": "potion_of_supreme_healing",
+    "id": "potion_supreme_healing",
     "name": "Potion of Supreme Healing",
     "description": "You regain 10d4 + 20 hit points when you drink this potion. The potion's red liquid glimmers when agitated.",
     "type": "consumable",
@@ -776,10 +776,10 @@
         "value": "10d4+20"
       }
     ],
-    "value": 0
+    "value": 5000
   },
   {
-    "id": "potion_of_supreme_healing",
+    "id": "potion_supreme_healing",
     "name": "Potion of Supreme Healing",
     "description": "You regain 10d4 + 20 Hit Points when you drink this potion. The potion's red liquid glimmers when agitated.",
     "type": "consumable",
@@ -790,7 +790,7 @@
         "value": "10d4+20"
       }
     ],
-    "value": 0
+    "value": 5000
   },
   {
     "id": "potion_of_thunder_resistance",

@@ -49,6 +49,8 @@ func _ready() -> void:
 		_handle_party_wiped()
 		return
 	_update_grid_entities()
+	var initial_location := hex_grid.get_tile(PartyManager.get_exploration_position())
+	GameManager.record_overworld_location(PartyManager.get_exploration_position(), initial_location.location_name if initial_location != null else "")
 	_start_player_turn()
 
 	# Clear loaded/returned transition flags
@@ -147,6 +149,8 @@ func _execute_move_command(command: PlayerCommand) -> void:
 	# Update player position
 	PartyManager.move_exploration_party(coord)
 	_update_grid_entities()
+	var visited_tile := hex_grid.get_tile(coord)
+	GameManager.record_overworld_location(coord, visited_tile.location_name if visited_tile != null else "")
 
 	# Recalculate Vision
 	FogOfWar.update_visibility(hex_grid)
@@ -302,7 +306,18 @@ func _execute_end_turn_command(_command: PlayerCommand) -> void:
 	
 	# Pass turn to next player
 	var new_round := PlayerManager.next_turn()
+	if new_round:
+		report_animal_messenger_notifications(GameManager.advance_campaign_time(86400))
 	_start_player_turn()
+
+
+func report_animal_messenger_notifications(notifications: Array[Dictionary]) -> void:
+	for notification in notifications:
+		var delivery: Dictionary = notification.get("delivery", {})
+		if str(notification.get("status", "")) == "delivered":
+			hud.add_log("[color=cyan]The messenger reaches %s and delivers its message to %s: “%s”[/color]" % [delivery.get("destination_name", "the destination"), delivery.get("recipient", "the recipient"), delivery.get("message", "")])
+		elif str(notification.get("status", "")) == "returned":
+			hud.add_log("[color=orange]The messenger cannot reach %s before the spell ends. The message is lost and the Beast returns.[/color]" % delivery.get("destination_name", "the destination"))
 
 
 ## Wilderness rest (Phase 2 gap): rest the party for free, then a Stealth check
@@ -323,6 +338,7 @@ func _execute_rest_command(_command: PlayerCommand) -> void:
 	if companion_roster_open:
 		return
 	_rest_party()
+	report_animal_messenger_notifications(GameManager.advance_campaign_time(28800))
 	hud.add_log("[color=green]The party makes camp and rests. HP, spell slots, and feature uses restored.[/color]")
 	hud.update_hud()
 	_recalculate_reachable()

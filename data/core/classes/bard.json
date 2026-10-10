@@ -9,27 +9,39 @@
     "CHA"
   ],
   "armor_proficiencies": [
-    "light",
-    "medium"
+    "light"
   ],
   "weapon_proficiencies": [
     "simple"
   ],
   "skill_choices": {
-    "pick": 2,
+    "pick": 3,
     "from": [
-      "Athletics",
       "Acrobatics",
-      "Insight",
-      "Perception",
-      "History",
+      "Animal Handling",
       "Arcana",
-      "Stealth"
+      "Athletics",
+      "Deception",
+      "History",
+      "Insight",
+      "Intimidation",
+      "Investigation",
+      "Medicine",
+      "Nature",
+      "Perception",
+      "Performance",
+      "Persuasion",
+      "Religion",
+      "Sleight of Hand",
+      "Stealth",
+      "Survival"
     ]
   },
   "starting_equipment": [
     "leather_armor",
-    "shield"
+    "dagger",
+    "dagger",
+    "entertainers_pack"
   ],
   "spell_slots_by_level": {
     "1": [
@@ -53,6 +65,144 @@
     ]
   },
   "cantrips_known": [],
+  "spell_list_ids": [
+    "aid",
+    "animal_friendship",
+    "animal_messenger",
+    "animate_objects",
+    "antipathy_sympathy",
+    "arcane_sword",
+    "awaken",
+    "bane",
+    "befuddlement",
+    "bestow_curse",
+    "blade_ward",
+    "blindness/deafness",
+    "calm_emotions",
+    "charm_monster",
+    "charm_person",
+    "clairvoyance",
+    "cloud_of_daggers",
+    "color_spray",
+    "command",
+    "comprehend_languages",
+    "compulsion",
+    "confusion",
+    "crown_of_madness",
+    "cure_wounds",
+    "dancing_lights",
+    "detect_magic",
+    "detect_thoughts",
+    "dimension_door",
+    "disguise_self",
+    "dispel_magic",
+    "dissonant_whispers",
+    "dominate_monster",
+    "dominate_person",
+    "dream",
+    "enhance_ability",
+    "enlarge/reduce",
+    "enthrall",
+    "etherealness",
+    "eyebite",
+    "faerie_fire",
+    "fear",
+    "feather_fall",
+    "feign_death",
+    "find_the_path",
+    "forcecage",
+    "foresight",
+    "freedom_of_movement",
+    "friends",
+    "geas",
+    "glibness",
+    "glyph_of_warding",
+    "greater_invisibility",
+    "greater_restoration",
+    "guards_and_wards",
+    "guidance",
+    "hallucinatory_terrain",
+    "healing_word",
+    "heat_metal",
+    "heroes_feast",
+    "heroism",
+    "hold_monster",
+    "hold_person",
+    "hypnotic_pattern",
+    "identify",
+    "illusory_script",
+    "invisibility",
+    "irresistible_dance",
+    "knock",
+    "legend_lore",
+    "leomunds_tiny_hut",
+    "lesser_restoration",
+    "light",
+    "locate_animals_or_plants",
+    "locate_creature",
+    "locate_object",
+    "longstrider",
+    "mage_hand",
+    "magic_mouth",
+    "magnificent_mansion",
+    "major_image",
+    "mass_cure_wounds",
+    "mass_healing_word",
+    "mass_suggestion",
+    "mending",
+    "message",
+    "mind_blank",
+    "minor_illusion",
+    "mirage_arcane",
+    "mirror_image",
+    "mislead",
+    "modify_memory",
+    "nondetection",
+    "phantasmal_force",
+    "phantasmal_killer",
+    "planar_binding",
+    "plant_growth",
+    "polymorph",
+    "power_word_heal",
+    "power_word_kill",
+    "power_word_stun",
+    "prestidigitation",
+    "prismatic_spray",
+    "prismatic_wall",
+    "programmed_illusion",
+    "project_image",
+    "raise_dead",
+    "regenerate",
+    "resurrection",
+    "scrying",
+    "see_invisibility",
+    "seeming",
+    "sending",
+    "shatter",
+    "silence",
+    "silent_image",
+    "sleep",
+    "slow",
+    "speak_with_animals",
+    "speak_with_dead",
+    "speak_with_plants",
+    "starry_wisp",
+    "stinking_cloud",
+    "suggestion",
+    "symbol",
+    "tashas_hideous_laughter",
+    "telepathic_bond",
+    "teleport",
+    "teleportation_circle",
+    "thunderwave",
+    "tongues",
+    "true_polymorph",
+    "true_seeing",
+    "true_strike",
+    "unseen_servant",
+    "vicious_mockery",
+    "zone_of_truth"
+  ],
   "spells_known_by_level": {
     "1": [],
     "2": [],
@@ -61,107 +211,536 @@
   "features_by_level": {
     "1": [
       {
-        "id": "bard_bardic_inspiration",
-        "name": "Bardic Inspiration",
-        "description": "You can inspire others through stirring words or music. To do so, you use a bonus action on your turn to choose one creature other than yourself within 60 feet of you who can hear you. That creature gains one Bardic Inspiration die, a d6. Once within the next 10 minutes, the creature can roll the di...",
-        "type": "active",
-        "effects": [],
-        "action_cost": "bonus_action",
-        "uses": 1,
-        "uses_per": "combat"
-      },
-      {
         "id": "bard_spellcasting",
         "name": "Spellcasting",
-        "description": "You have learned to untangle and reshape the fabric of reality in harmony with your wishes and music. Your spells are part of your vast repertoire, magic that you can tune to different situations. See chapter 10 for the general rules of spellcasting and chapter 11 for the {@filter bard spell list=ba...",
         "type": "passive",
-        "effects": []
+        "description": "You can cast prepared Bard spells using Charisma. You can use a Musical Instrument as a Spellcasting Focus.",
+        "effects": [
+          {
+            "type": "spellcasting",
+            "ability": "CHA",
+            "spell_lists": [
+              "bard"
+            ],
+            "default_cantrips": [
+              "dancing_lights",
+              "vicious_mockery"
+            ],
+            "default_prepared_spells": [
+              "charm_person",
+              "color_spray",
+              "dissonant_whispers",
+              "healing_word"
+            ],
+            "capacity_by_level": {
+              "1": {
+                "cantrips": 2,
+                "prepared_spells": 4
+              },
+              "2": {
+                "cantrips": 2,
+                "prepared_spells": 5
+              },
+              "3": {
+                "cantrips": 2,
+                "prepared_spells": 6
+              },
+              "4": {
+                "cantrips": 3,
+                "prepared_spells": 7
+              },
+              "5": {
+                "cantrips": 3,
+                "prepared_spells": 9
+              },
+              "6": {
+                "cantrips": 3,
+                "prepared_spells": 10
+              },
+              "7": {
+                "cantrips": 3,
+                "prepared_spells": 11
+              },
+              "8": {
+                "cantrips": 3,
+                "prepared_spells": 12
+              },
+              "9": {
+                "cantrips": 3,
+                "prepared_spells": 14
+              },
+              "10": {
+                "cantrips": 4,
+                "prepared_spells": 15
+              },
+              "11": {
+                "cantrips": 4,
+                "prepared_spells": 16
+              },
+              "12": {
+                "cantrips": 4,
+                "prepared_spells": 16
+              },
+              "13": {
+                "cantrips": 4,
+                "prepared_spells": 17
+              },
+              "14": {
+                "cantrips": 4,
+                "prepared_spells": 17
+              },
+              "15": {
+                "cantrips": 4,
+                "prepared_spells": 18
+              },
+              "16": {
+                "cantrips": 4,
+                "prepared_spells": 18
+              },
+              "17": {
+                "cantrips": 4,
+                "prepared_spells": 19
+              },
+              "18": {
+                "cantrips": 4,
+                "prepared_spells": 20
+              },
+              "19": {
+                "cantrips": 4,
+                "prepared_spells": 21
+              },
+              "20": {
+                "cantrips": 4,
+                "prepared_spells": 22
+              }
+            }
+          }
+        ],
+        "rules_status": "2024-supported",
+        "rules_source": "dnd-2024-srd-5.2.1"
+      },
+      {
+        "id": "bard_bardic_inspiration",
+        "name": "Bardic Inspiration",
+        "type": "active",
+        "description": "As a Bonus Action, inspire another creature within 60 feet that can see or hear you. The die expires after one hour. It can expend the die after failing a D20 Test, adding it to the roll and potentially turning failure into success.",
+        "effects": [
+          {
+            "type": "bardic_inspiration",
+            "die_by_level": {
+              "1": "1d6",
+              "5": "1d8",
+              "10": "1d10",
+              "15": "1d12"
+            },
+            "range": 12
+          }
+        ],
+        "action_cost": "bonus_action",
+        "uses_ability": "CHA",
+        "minimum_uses": 1,
+        "uses_per": "long_rest",
+        "rules_status": "2024-supported",
+        "rules_source": "dnd-2024-srd-5.2.1"
       }
     ],
     "2": [
       {
         "id": "bard_jack_of_all_trades",
         "name": "Jack of All Trades",
-        "description": "Starting at 2nd level, you can add half your proficiency bonus, rounded down, to any ability check you make that doesn't already include your proficiency bonus.",
         "type": "passive",
-        "effects": []
+        "description": "Add half your Proficiency Bonus, rounded down, to skill checks that do not already use your Proficiency Bonus.",
+        "effects": [
+          {
+            "type": "jack_of_all_trades"
+          }
+        ],
+        "rules_status": "2024-supported",
+        "rules_source": "dnd-2024-srd-5.2.1"
       },
       {
-        "id": "bard_magical_inspiration",
-        "name": "Magical Inspiration",
-        "description": "{@i 2nd-level bard optional class features feature} If a creature has a Bardic Inspiration die from you and casts a spell that restores hit points or deals damage, the creature can roll that die and choose a target affected by the spell. Add the number rolled as a bonus to the hit points regained or...",
-        "type": "passive",
-        "effects": []
-      },
-      {
-        "id": "bard_song_of_rest_(d6)",
-        "name": "Song of Rest (d6)",
-        "description": "Beginning at 2nd level, you can use soothing music or oration to help revitalize your wounded allies during a short rest. If you or any friendly creatures who can hear your performance regain hit points by spending Hit Dice at the end of the short rest, each of those creatures regains an extra 1d6 h...",
-        "type": "passive",
-        "effects": []
-      },
-      {
-        "id": "bard_expertise",
+        "id": "bard_expertise_2",
         "name": "Expertise",
-        "description": "You gain Expertise in two of your skill proficiencies of your choice. {@skill Performance} and {@skill Persuasion} are recommended if you have proficiency in them. At Bard level 9, you gain Expertise in two more of your skill proficiencies of your choice.",
         "type": "passive",
-        "effects": []
-      }
-    ],
-    "3": [
-      {
-        "id": "bard_bard_college",
-        "name": "Bard College",
-        "description": "At 3rd level, you delve into the advanced techniques of a bard college of your choice from the list of available colleges. Your choice grants you features at 3rd level and again at 6th and 14th level.",
-        "type": "passive",
-        "effects": []
-      },
-      {
-        "id": "bard_expertise",
-        "name": "Expertise",
-        "description": "At 3rd level, choose two of your skill proficiencies. Your proficiency bonus is doubled for any ability check you make that uses either of the chosen proficiencies. At 10th level, you can choose another two skill proficiencies to gain this benefit.",
-        "type": "passive",
-        "effects": []
-      },
-      {
-        "id": "bard_bard_subclass",
-        "name": "Bard Subclass",
-        "description": "You gain a Bard subclass of your choice. A subclass is a specialization that grants you features at certain Bard levels. For the rest of your career, you gain each of your subclass's features that are of your Bard level or lower.",
-        "type": "passive",
-        "effects": []
+        "description": "Choose two proficient skills; double your Proficiency Bonus for checks using them.",
+        "effects": [
+          {
+            "type": "skill_expertise_choice",
+            "count": 2
+          }
+        ],
+        "rules_status": "2024-supported",
+        "rules_source": "dnd-2024-srd-5.2.1"
       }
     ],
     "4": [
       {
-        "id": "bard_ability_score_improvement",
+        "id": "bard_ability_score_improvement_4",
         "name": "Ability Score Improvement",
-        "description": "When you reach 4th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature. If your DM allows the use of feats, you may instead take a {@5etools feat.html}.",
         "type": "passive",
-        "effects": []
-      },
-      {
-        "id": "bard_bardic_versatility",
-        "name": "Bardic Versatility",
-        "description": "{@i 4th-level bard optional class features feature} Whenever you reach a level in this class that grants the Ability Score Improvement feature, you can do one of the following, representing a change in focus as you use your skills and magic: {'type': 'list', 'items': [\"Replace one of the skills you ...",
-        "type": "passive",
-        "effects": []
+        "effects": [
+          {
+            "type": "asi"
+          }
+        ],
+        "rules_status": "2024-supported",
+        "rules_source": "dnd-2024-srd-5.2.1"
       }
     ],
     "5": [
       {
-        "id": "bard_bardic_inspiration_(d8)",
-        "name": "Bardic Inspiration (d8)",
-        "description": "At 5th level, your Bardic Inspiration die changes to a d8.",
-        "type": "passive",
-        "effects": []
-      },
-      {
         "id": "bard_font_of_inspiration",
         "name": "Font of Inspiration",
-        "description": "Beginning when you reach 5th level, you regain all of your expended uses of Bardic Inspiration when you finish a short or long rest.",
         "type": "passive",
-        "effects": []
+        "description": "You regain all expended Bardic Inspiration uses when you finish a Short or Long Rest.",
+        "effects": [
+          {
+            "type": "short_rest_recharge",
+            "resource_id": "bard_bardic_inspiration"
+          },
+          {
+            "type": "resource_from_spell_slot",
+            "resource_id": "bard_bardic_inspiration",
+            "amount": 1
+          }
+        ],
+        "rules_status": "2024-supported",
+        "rules_source": "dnd-2024-srd-5.2.1"
+      }
+    ],
+    "7": [
+      {
+        "id": "bard_countercharm",
+        "name": "Countercharm",
+        "type": "passive",
+        "description": "If you or a creature within 30 feet fails a save against an effect that applies Charmed or Frightened, you can use your Reaction to reroll the save with Advantage.",
+        "effects": [
+          {
+            "type": "countercharm"
+          }
+        ],
+        "rules_status": "2024-supported",
+        "rules_source": "dnd-2024-srd-5.2.1"
+      }
+    ],
+    "8": [
+      {
+        "id": "bard_ability_score_improvement_8",
+        "name": "Ability Score Improvement",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "asi"
+          }
+        ],
+        "rules_status": "2024-supported",
+        "rules_source": "dnd-2024-srd-5.2.1"
+      }
+    ],
+    "9": [
+      {
+        "id": "bard_expertise_9",
+        "name": "Expertise",
+        "type": "passive",
+        "description": "Choose two more proficient skills for Expertise.",
+        "effects": [
+          {
+            "type": "skill_expertise_choice",
+            "count": 2
+          }
+        ],
+        "rules_status": "2024-supported",
+        "rules_source": "dnd-2024-srd-5.2.1"
+      }
+    ],
+    "10": [
+      {
+        "id": "bard_magical_secrets",
+        "name": "Magical Secrets",
+        "type": "passive",
+        "description": "When your prepared spell capacity increases, you can choose the new spells from the Bard, Cleric, Druid, or Wizard spell lists. Whenever you gain a Bard level, you can replace one prepared spell with a spell from those lists.",
+        "effects": [
+          {
+            "type": "spell_list_expansion",
+            "spell_lists": [
+              "bard",
+              "cleric",
+              "druid",
+              "wizard"
+            ],
+            "level_1_plus_only": true
+          }
+        ],
+        "rules_status": "2024-supported",
+        "rules_source": "dnd-2024-srd-5.2.1"
+      }
+    ],
+    "12": [
+      {
+        "id": "bard_ability_score_improvement_12",
+        "name": "Ability Score Improvement",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "asi"
+          }
+        ],
+        "rules_status": "2024-supported",
+        "rules_source": "dnd-2024-srd-5.2.1"
+      }
+    ],
+    "16": [
+      {
+        "id": "bard_ability_score_improvement_16",
+        "name": "Ability Score Improvement",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "asi"
+          }
+        ],
+        "rules_status": "2024-supported",
+        "rules_source": "dnd-2024-srd-5.2.1"
+      }
+    ],
+    "18": [
+      {
+        "id": "bard_superior_inspiration",
+        "name": "Superior Inspiration",
+        "type": "passive",
+        "description": "When you roll Initiative, regain Bardic Inspiration uses until you have two.",
+        "effects": [
+          {
+            "type": "initiative_resource_recovery",
+            "resource_id": "bard_bardic_inspiration",
+            "minimum": 2
+          }
+        ],
+        "rules_status": "2024-supported",
+        "rules_source": "dnd-2024-srd-5.2.1"
+      }
+    ],
+    "19": [
+      {
+        "id": "bard_epic_boon",
+        "name": "Epic Boon",
+        "type": "passive",
+        "description": "Choose an available Epic Boon feat.",
+        "effects": [
+          {
+            "type": "epic_boon_choice",
+            "options": [
+              "combat_prowess",
+              "irresistible_offense",
+              "spell_recall"
+            ],
+            "ability_scores_by_option": {
+              "spell_recall": [
+                "INT",
+                "WIS",
+                "CHA"
+              ]
+            }
+          }
+        ],
+        "rules_status": "2024-supported",
+        "rules_source": "dnd-2024-srd-5.2.1"
+      }
+    ],
+    "20": [
+      {
+        "id": "bard_words_of_creation",
+        "name": "Words of Creation",
+        "type": "passive",
+        "description": "You always have Power Word Heal and Power Word Kill prepared. When you cast either spell, you can target a second creature within 10 feet of the first target.",
+        "effects": [
+          {
+            "type": "always_prepared_spells",
+            "spells": [
+              "power_word_heal",
+              "power_word_kill"
+            ]
+          },
+          {
+            "type": "additional_spell_target",
+            "spells": [
+              "power_word_heal",
+              "power_word_kill"
+            ],
+            "additional_targets": 1,
+            "range_from_primary_feet": 10
+          }
+        ],
+        "rules_status": "2024-supported",
+        "rules_source": "dnd-2024-srd-5.2.1"
       }
     ]
-  }
+  },
+  "spell_slots_by_character_level": {
+    "1": [
+      2
+    ],
+    "2": [
+      3
+    ],
+    "3": [
+      4,
+      2
+    ],
+    "4": [
+      4,
+      3
+    ],
+    "5": [
+      4,
+      3,
+      2
+    ],
+    "6": [
+      4,
+      3,
+      3
+    ],
+    "7": [
+      4,
+      3,
+      3,
+      1
+    ],
+    "8": [
+      4,
+      3,
+      3,
+      2
+    ],
+    "9": [
+      4,
+      3,
+      3,
+      3,
+      1
+    ],
+    "10": [
+      4,
+      3,
+      3,
+      3,
+      2
+    ],
+    "11": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1
+    ],
+    "12": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1
+    ],
+    "13": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1
+    ],
+    "14": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1
+    ],
+    "15": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      1
+    ],
+    "16": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      1
+    ],
+    "17": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      1,
+      1
+    ],
+    "18": [
+      4,
+      3,
+      3,
+      3,
+      3,
+      1,
+      1,
+      1,
+      1
+    ],
+    "19": [
+      4,
+      3,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      1
+    ],
+    "20": [
+      4,
+      3,
+      3,
+      3,
+      3,
+      2,
+      2,
+      1,
+      1
+    ]
+  },
+  "tool_choices": {
+    "pick": 3,
+    "from": [
+      "bagpipes",
+      "drum",
+      "dulcimer",
+      "flute",
+      "horn",
+      "lute",
+      "lyre",
+      "pan_flute",
+      "shawm",
+      "viol"
+    ]
+  },
+  "starting_gold": 19,
+  "starting_gold_alternative": 90
 }

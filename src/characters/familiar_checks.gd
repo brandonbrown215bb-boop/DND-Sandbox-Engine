@@ -1,0 +1,85 @@
+## Production-state regressions for the first Wave 4 creature lifecycle slice.
+class_name FamiliarChecks
+extends RefCounted
+
+static func run(check: Callable) -> void:
+	var owner := Character.new()
+	owner.initialize("Familiar owner", "human", "druid", AbilityScores.new())
+	owner.character_id = "fixture:familiar_owner"
+	owner.level_up()
+	var before := owner.feature_uses.duplicate(true)
+	check.call(not DruidRules.summon_wild_companion(owner, "goblin", "wild_shape").get("success", false) and owner.feature_uses == before, "Unsupported familiar form refuses before spending a Wild Shape use")
+	var summoned := DruidRules.summon_wild_companion(owner, "cat", "wild_shape")
+	var record := FamiliarRules.state(owner)
+	check.call(summoned.get("success", false) and record.get("owner_id") == owner.character_id and FamiliarRules.saved_error(owner.to_dict()).is_empty(), "Wild Companion creates a validated owner-bound creature record")
+	var command := CombatCommand.from_hud_for_character("use_feature", {"feature": {"id": "familiar_dismiss", "action_cost": "free"}}, owner)
+	check.call(command != null and command.payload["feature"]["action_cost"] == "magic_action", "Familiar presence controls derive their Magic action cost from the real bond, ignoring a cheaper HUD payload")
+	FamiliarRules.update_hp(owner, 1)
+	FamiliarRules.set_position(owner, "ashvale_antechamber", Vector2i(-1, 0))
+	var copy := Character.new()
+	copy.from_dict(JSON.parse_string(JSON.stringify(owner.to_dict())))
+	check.call(FamiliarRules.state(copy).get("creature_id") == record["creature_id"] and FamiliarRules.position(copy, "ashvale_antechamber") == Vector2i(-1, 0) and FamiliarRules.character(copy).current_hp == 1, "Familiar identity, damage and local position survive JSON owner reconstruction without rerolling HP")
+	FamiliarRules.set_pocket(copy, true)
+	check.call(FamiliarRules.character(copy) == null and DruidRules.wild_companion_state(copy).is_empty() and FamiliarRules.state(copy).get("current_hp") == 1, "Pocket dismissal removes presence while retaining the same familiar and HP")
+	FamiliarRules.set_pocket(copy, false)
+	check.call(FamiliarRules.character(copy).character_id == record["creature_id"], "Recall keeps the familiar's stable creature identity")
+	copy.long_rest()
+	check.call(FamiliarRules.state(copy).is_empty() and not copy.feature_uses.has(FamiliarRules.FORM_KEY), "Finishing the Druid's Long Rest removes both familiar state and its compatibility form")
+	var legacy := owner.to_dict()
+	legacy["feature_uses"].erase(FamiliarRules.STATE_KEY)
+	check.call(FamiliarRules.saved_error(legacy).is_empty(), "Earlier schema-2 form-only familiars remain accepted")
+	copy.from_dict(legacy)
+	var restored := FamiliarRules.state(copy)
+	copy.from_dict(copy.to_dict())
+	check.call(not restored.is_empty() and FamiliarRules.state(copy) == restored and copy.feature_uses["druid_wild_shape_uses"] == owner.feature_uses["druid_wild_shape_uses"], "Old familiar restoration is idempotent and spends no additional class resource")
+	for mutation in [{"owner_id": "another_owner"}, {"creature_id": "duplicate"}, {"form_id": "goblin"}, {"current_hp": 0}, {"max_hp": 1.5}, {"pocket": "true"}, {"local_room_position": [0, "bad"]}]:
+		var invalid := owner.to_dict()
+		invalid["feature_uses"][FamiliarRules.STATE_KEY] = FamiliarRules.state(owner).merged(mutation, true)
+		check.call(not FamiliarRules.saved_error(invalid).is_empty(), "Malformed familiar checkpoint refuses: %s" % str(mutation))
+	for form_id in DruidRules.WILD_COMPANION_FORMS:
+		var data := DataLoader.get_monster(form_id)
+		FamiliarRules.create(owner, form_id)
+		var creature := FamiliarRules.character(owner)
+		check.call(data.get("rules_source") == "SRD 5.2.1" and creature.movement_speed_feet("climb") == int(data.get("climb_speed_feet", 0)) and creature.movement_speed_feet("fly") == int(data.get("fly_speed_feet", 0)) and CombatPerception._darkvision_range_feet(creature) == int(data["senses"]["darkvision"]), "Curated %s familiar uses its SRD movement and special sight" % form_id)
+		check.call(creature.get_creature_size() == "tiny" and (form_id != "cat" or creature.is_proficient_in_save("DEX")), "Curated %s familiar is Tiny and retains any published saving-throw proficiency" % form_id)
+		for skill in data["skills"]:
+			check.call(creature.get_skill_check_modifier(skill, "WIS" if skill == "Perception" else "DEX") == int(data["skills"][skill]), "%s familiar retains the published %s skill modifier" % [form_id, skill])
+	check.call(FamiliarRules.character(owner).get_creature_type() == "fey", "A Wild Companion uses its Fey type rather than a default Humanoid race")
+	var sense_command := CombatCommand.from_hud_for_character("use_feature", {"feature": {"id": "familiar_senses", "action_cost": "free"}}, owner)
+	check.call(sense_command != null and sense_command.payload["feature"]["action_cost"] == "bonus_action", "Borrowed familiar senses always costs the owner's Bonus Action")
+	FamiliarRules.set_pocket(owner, true)
+	check.call(FamiliarRules.command_feature(owner, "familiar_senses").is_empty(), "A dismissed familiar cannot lend its senses")
+	FamiliarRules.set_pocket(owner, false)
+	var spell_target := {"id": "familiar_help_spell", "name": "Help target", "current_hp": 100, "max_hp": 100, "is_alive": true, "armor_class": 1000, "conditions": {}, "creature_type": "humanoid", "familiar_helped_by": FamiliarRules.state(owner)["creature_id"]}
+	var first_attack := CombatAction.resolve_spell(owner, spell_target, DataLoader.get_spell("fire_bolt"), false, {}, [], 0, 10)
+	var second_attack := CombatAction.resolve_spell(owner, spell_target, DataLoader.get_spell("fire_bolt"), false, {}, [], 0, 10)
+	check.call(first_attack.get("attack_advantage", false) and not second_attack.get("attack_advantage", false) and not spell_target.has("familiar_helped_by"), "Familiar attack Help applies to the next spell attack once, rather than waiting for a weapon hit")
+	var prior_state := GameManager.current_state
+	GameManager.current_state = GameManager.GameState.OVERWORLD
+	var supported_check := {"ability": "WIS", "skill": "Perception", "dc": 10, "familiar_help_allowed": true, "request_familiar_help": true}
+	FamiliarRules.create(owner, "owl")
+	var helped := EventResolver.resolve_skill_check(owner, supported_check)
+	check.call(helped.get("familiar_help", false) and helped.get("advantage", false), "A proficient present familiar grants Help Advantage to an authored exploration check")
+	FamiliarRules.set_pocket(owner, true)
+	check.call(not EventResolver.resolve_skill_check(owner, supported_check).get("familiar_help", false), "Pocket dismissal removes the familiar's ability to Help a pending check")
+	FamiliarRules.set_pocket(owner, false)
+	FamiliarRules.create(owner, "spider")
+	check.call(not EventResolver.resolve_skill_check(owner, supported_check).get("familiar_help", false), "A familiar without Perception proficiency cannot Help that check")
+	FamiliarRules.create(owner, "owl")
+	var unauthored := supported_check.duplicate()
+	unauthored.erase("familiar_help_allowed")
+	check.call(not EventResolver.resolve_skill_check(owner, unauthored).get("familiar_help", false), "A check without authored familiar assistance does not gain invented Advantage")
+	GameManager.current_state = prior_state
+	FamiliarRules.update_hp(owner, 0)
+	check.call(FamiliarRules.state(owner).is_empty() and FamiliarRules.character(owner) == null, "A familiar at zero HP is gone and cannot return at full HP in another encounter")
+	check.call(CombatCommand.from_hud_for_character("use_feature", {"feature": {"id": "familiar_recall"}}, owner) == null, "No existing familiar means no valid recall command")
+
+	var paladin := Character.new()
+	paladin.initialize("Steed owner", "human", "paladin", AbilityScores.new())
+	for _level in 4: paladin.level_up()
+	PaladinRules.create_find_steed_state(paladin, DataLoader.get_spell("find_steed"), 2, "fey", "horse")
+	check.call(PaladinRules.saved_steed_error(paladin.to_dict()).is_empty(), "Production steed statistics pass the checkpoint validation boundary")
+	for mutation in [{"current_hp": 0}, {"max_hp": 9999}, {"creature_type": "beast"}, {"mounted": "yes"}, {"fly_speed_feet": 60}, {"ability_scores": {}}]:
+		var invalid := paladin.to_dict()
+		invalid["feature_uses"][PaladinRules.FIND_STEED_STATE_KEY] = PaladinRules.find_steed_state(paladin).merged(mutation, true)
+		check.call(not PaladinRules.saved_steed_error(invalid).is_empty(), "Malformed steed checkpoint refuses: %s" % str(mutation))

@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://e456789f3b4c5"]
+[gd_scene load_steps=7 format=3 uid="uid://e456789f3b4c5"]
 
 [ext_resource type="Script" path="res://src/combat/combat_state.gd" id="1_combat"]
 [ext_resource type="Script" path="res://src/hex/hex_grid.gd" id="2_grid"]
@@ -6,6 +6,9 @@
 [ext_resource type="PackedScene" uid="uid://e456789f5d6e7" path="res://scenes/ui/dice_roll_display.tscn" id="4_dice_display"]
 [ext_resource type="PackedScene" uid="uid://rookstatbar1" path="res://scenes/ui/stat_bar.tscn" id="5_statbar"]
 [ext_resource type="Script" path="res://src/ui/widgets/log_panel.gd" id="6_logpanel"]
+[ext_resource type="Script" path="res://src/ui/widgets/activity_rail.gd" id="7_activity_rail"]
+
+[ext_resource type="Script" path="res://src/ui/vtt_shell.gd" id="99_shell"]
 
 [node name="Combat" type="Node2D"]
 script = ExtResource("1_combat")
@@ -21,187 +24,356 @@ script = ExtResource("2_grid")
 [node name="CombatHUD" type="CanvasLayer" parent="."]
 script = ExtResource("3_combat_hud")
 
-[node name="MarginContainer" type="MarginContainer" parent="CombatHUD"]
+[node name="Root" type="Control" parent="CombatHUD"]
+script = ExtResource("99_shell")
+layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/margin_left = 20
-theme_override_constants/margin_top = 20
-theme_override_constants/margin_right = 20
-theme_override_constants/margin_bottom = 20
 mouse_filter = 2
 
-[node name="HBoxContainer" type="HBoxContainer" parent="CombatHUD/MarginContainer"]
-layout_mode = 2
-theme_override_constants/separation = 20
-mouse_filter = 2
+[node name="ContextBar" type="PanelContainer" parent="CombatHUD/Root"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 48.0
+grow_horizontal = 2
 
-[node name="Sidebar" type="PanelContainer" parent="CombatHUD/MarginContainer/HBoxContainer"]
-custom_minimum_size = Vector2(250, 0)
+[node name="Margin" type="MarginContainer" parent="CombatHUD/Root/ContextBar"]
 layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 4
 
-[node name="ScrollContainer" type="ScrollContainer" parent="CombatHUD/MarginContainer/HBoxContainer/Sidebar"]
+[node name="HBox" type="HBoxContainer" parent="CombatHUD/Root/ContextBar/Margin"]
 layout_mode = 2
+theme_override_constants/separation = 16
 
-[node name="WeaponInfo" type="Label" parent="CombatHUD/MarginContainer/HBoxContainer/Sidebar/ScrollContainer"]
+[node name="LeftBox" type="HBoxContainer" parent="CombatHUD/Root/ContextBar/Margin/HBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="EncounterLabel" type="Label" parent="CombatHUD/Root/ContextBar/Margin/HBox/LeftBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.65, 0.3, 1)
+theme_override_font_sizes/font_size = 14
+text = "TACTICAL COMBAT"
+
+[node name="Divider" type="Label" parent="CombatHUD/Root/ContextBar/Margin/HBox/LeftBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.45, 0.45, 0.48, 1)
+text = "•"
+
+[node name="ModeBanner" type="Label" parent="CombatHUD/Root/ContextBar/Margin/HBox/LeftBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.85, 0.75, 1)
+theme_override_font_sizes/font_size = 14
+text = "● SELECT — choose an action"
+
+[node name="InitiativePanel" type="PanelContainer" parent="CombatHUD/Root/ContextBar/Margin/HBox"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 16
-theme_override_colors/default_color = Color(0.6, 0.9, 1, 1)
+
+[node name="InitiativeBar" type="RichTextLabel" parent="CombatHUD/Root/ContextBar/Margin/HBox/InitiativePanel"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
+text = "Initiative Tracker List"
+
+[node name="RightBox" type="HBoxContainer" parent="CombatHUD/Root/ContextBar/Margin/HBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 2
+
+[node name="BtnSheet" type="Button" parent="CombatHUD/Root/ContextBar/Margin/HBox/RightBox"]
+custom_minimum_size = Vector2(130, 36)
+layout_mode = 2
+text = "Character Sheet"
+
+[node name="BtnSettings" type="Button" parent="CombatHUD/Root/ContextBar/Margin/HBox/RightBox"]
+custom_minimum_size = Vector2(90, 36)
+layout_mode = 2
+text = "Settings ⚙"
+
+[node name="HintLabel" type="Label" parent="CombatHUD/Root"]
+visible = false
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 260.0
+offset_top = 54.0
+offset_right = -342.0
+offset_bottom = 96.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(1, 0.92, 0.7, 1)
+theme_override_font_sizes/font_size = 13
+autowrap_mode = 2
+horizontal_alignment = 1
+
+[node name="Sidebar" type="PanelContainer" parent="CombatHUD/Root"]
+custom_minimum_size = Vector2(236, 0)
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = 56.0
+offset_right = 248.0
+offset_bottom = -12.0
+grow_vertical = 2
+
+[node name="Margin" type="MarginContainer" parent="CombatHUD/Root/Sidebar"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="ScrollContainer" type="ScrollContainer" parent="CombatHUD/Root/Sidebar/Margin"]
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="SidebarContent" type="VBoxContainer" parent="CombatHUD/Root/Sidebar/Margin/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="WeaponInfo" type="Label" parent="CombatHUD/Root/Sidebar/Margin/ScrollContainer/SidebarContent"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.65, 0.85, 0.95, 1)
+theme_override_font_sizes/font_size = 15
 text = "Weapon: —"
 autowrap_mode = 2
 
-[node name="EntityHpBar" parent="CombatHUD/MarginContainer/HBoxContainer/Sidebar/ScrollContainer" instance=ExtResource("5_statbar")]
+[node name="EntityHpBar" parent="CombatHUD/Root/Sidebar/Margin/ScrollContainer/SidebarContent" instance=ExtResource("5_statbar")]
 layout_mode = 2
 
-[node name="EntityInfo" type="Label" parent="CombatHUD/MarginContainer/HBoxContainer/Sidebar/ScrollContainer"]
+[node name="EntityInfo" type="Label" parent="CombatHUD/Root/Sidebar/Margin/ScrollContainer/SidebarContent"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 15
+theme_override_font_sizes/font_size = 14
 text = "Active Combatant details..."
 autowrap_mode = 2
 
-[node name="ControlArea" type="Control" parent="CombatHUD/MarginContainer/HBoxContainer"]
+[node name="ActivityRail" type="PanelContainer" parent="CombatHUD/Root"]
+custom_minimum_size = Vector2(320, 0)
+layout_mode = 1
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -332.0
+offset_top = 56.0
+offset_right = -12.0
+offset_bottom = -12.0
+grow_horizontal = 0
+grow_vertical = 2
+
+[node name="Margin" type="MarginContainer" parent="CombatHUD/Root/ActivityRail"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="ActivityContent" type="VBoxContainer" parent="CombatHUD/Root/ActivityRail/Margin"]
 layout_mode = 2
 size_flags_horizontal = 3
-mouse_filter = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 6
+script = ExtResource("7_activity_rail")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea"]
+[node name="RailHeader" type="HBoxContainer" parent="CombatHUD/Root/ActivityRail/Margin/ActivityContent"]
 layout_mode = 2
-theme_override_constants/separation = 15
-mouse_filter = 2
 
-[node name="HintLabel" type="Label" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea/VBoxContainer"]
+[node name="RailTitle" type="Label" parent="CombatHUD/Root/ActivityRail/Margin/ActivityContent/RailHeader"]
 layout_mode = 2
-autowrap_mode = 2
-theme_override_colors/font_color = Color(1.0, 0.92, 0.7, 1)
-theme_override_font_sizes/font_size = 15
-text = ""
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.85, 0.65, 0.3, 1)
+theme_override_font_sizes/font_size = 13
+text = "TACTICAL ACTIVITY"
+
+[node name="FilterTabs" type="HBoxContainer" parent="CombatHUD/Root/ActivityRail/Margin/ActivityContent"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="BtnAll" type="Button" parent="CombatHUD/Root/ActivityRail/Margin/ActivityContent/FilterTabs"]
+custom_minimum_size = Vector2(0, 26)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 11
+text = "All"
+
+[node name="BtnRolls" type="Button" parent="CombatHUD/Root/ActivityRail/Margin/ActivityContent/FilterTabs"]
+custom_minimum_size = Vector2(0, 26)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 11
+text = "Rolls"
+
+[node name="BtnCombat" type="Button" parent="CombatHUD/Root/ActivityRail/Margin/ActivityContent/FilterTabs"]
+custom_minimum_size = Vector2(0, 26)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 11
+text = "Combat"
+
+[node name="BtnSystem" type="Button" parent="CombatHUD/Root/ActivityRail/Margin/ActivityContent/FilterTabs"]
+custom_minimum_size = Vector2(0, 26)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 11
+text = "System"
+
+[node name="DiceRollDisplay" parent="CombatHUD/Root/ActivityRail/Margin/ActivityContent" instance=ExtResource("4_dice_display")]
 visible = false
-
-[node name="ModeBanner" type="Label" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea/VBoxContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.85, 0.65, 0.30, 1)
-theme_override_font_sizes/font_size = 18
-text = "SELECT"
-
-[node name="InitiativePanel" type="PanelContainer" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea/VBoxContainer"]
-custom_minimum_size = Vector2(0, 44)
+custom_minimum_size = Vector2(0, 130)
 layout_mode = 2
 
-[node name="InitiativeBar" type="RichTextLabel" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea/VBoxContainer/InitiativePanel"]
-layout_mode = 2
-bbcode_enabled = true
-text = "Initiative Tracker List"
-
-[node name="Spacer" type="Control" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea/VBoxContainer"]
+[node name="CardScroll" type="ScrollContainer" parent="CombatHUD/Root/ActivityRail/Margin/ActivityContent"]
 layout_mode = 2
 size_flags_vertical = 3
-mouse_filter = 2
+horizontal_scroll_mode = 0
 
-[node name="LogBox" type="PanelContainer" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea/VBoxContainer"]
-custom_minimum_size = Vector2(0, 150)
+[node name="CardFeed" type="VBoxContainer" parent="CombatHUD/Root/ActivityRail/Margin/ActivityContent/CardScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="LogBox" type="PanelContainer" parent="CombatHUD/Root/ActivityRail/Margin/ActivityContent"]
+visible = false
 layout_mode = 2
 
-[node name="LogText" type="RichTextLabel" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea/VBoxContainer/LogBox"]
-script = ExtResource("6_logpanel")
+[node name="LogText" type="RichTextLabel" parent="CombatHUD/Root/ActivityRail/Margin/ActivityContent/LogBox"]
 layout_mode = 2
 bbcode_enabled = true
 text = "Combat started!"
+script = ExtResource("6_logpanel")
 
-[node name="ActionMenu" type="PanelContainer" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea/VBoxContainer"]
+[node name="ActionDock" type="MarginContainer" parent="CombatHUD/Root"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 258.0
+offset_top = -72.0
+offset_right = -342.0
+offset_bottom = -12.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+
+[node name="DockBox" type="VBoxContainer" parent="CombatHUD/Root/ActionDock"]
+layout_mode = 2
+alignment = 2
+mouse_filter = 2
+
+[node name="SpellMenu" type="PanelContainer" parent="CombatHUD/Root/ActionDock/DockBox"]
+visible = false
 layout_mode = 2
 
-[node name="GridContainer" type="GridContainer" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea/VBoxContainer/ActionMenu"]
+[node name="Margin" type="MarginContainer" parent="CombatHUD/Root/ActionDock/DockBox/SpellMenu"]
 layout_mode = 2
-theme_override_constants/h_separation = 15
-theme_override_constants/v_separation = 10
-columns = 5
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
 
-[node name="BtnAttack" type="Button" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea/VBoxContainer/ActionMenu/GridContainer"]
-custom_minimum_size = Vector2(0, 45)
+[node name="VBox" type="VBoxContainer" parent="CombatHUD/Root/ActionDock/DockBox/SpellMenu/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="SpellList" type="ItemList" parent="CombatHUD/Root/ActionDock/DockBox/SpellMenu/Margin/VBox"]
+custom_minimum_size = Vector2(0, 130)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="BtnCancelSpell" type="Button" parent="CombatHUD/Root/ActionDock/DockBox/SpellMenu/Margin/VBox"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+text = "Cancel"
+
+[node name="FeatureMenu" type="PanelContainer" parent="CombatHUD/Root/ActionDock/DockBox"]
+visible = false
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="CombatHUD/Root/ActionDock/DockBox/FeatureMenu"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="VBox" type="VBoxContainer" parent="CombatHUD/Root/ActionDock/DockBox/FeatureMenu/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="FeatureList" type="ItemList" parent="CombatHUD/Root/ActionDock/DockBox/FeatureMenu/Margin/VBox"]
+custom_minimum_size = Vector2(0, 130)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="BtnCancelFeatures" type="Button" parent="CombatHUD/Root/ActionDock/DockBox/FeatureMenu/Margin/VBox"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+text = "Cancel"
+
+[node name="ActionMenu" type="PanelContainer" parent="CombatHUD/Root/ActionDock/DockBox"]
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="CombatHUD/Root/ActionDock/DockBox/ActionMenu"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 6
+
+[node name="GridContainer" type="GridContainer" parent="CombatHUD/Root/ActionDock/DockBox/ActionMenu/Margin"]
+layout_mode = 2
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 6
+columns = 6
+
+[node name="BtnAttack" type="Button" parent="CombatHUD/Root/ActionDock/DockBox/ActionMenu/Margin/GridContainer"]
+custom_minimum_size = Vector2(0, 42)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Attack"
 
-[node name="BtnSpell" type="Button" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea/VBoxContainer/ActionMenu/GridContainer"]
-custom_minimum_size = Vector2(0, 45)
+[node name="BtnSpell" type="Button" parent="CombatHUD/Root/ActionDock/DockBox/ActionMenu/Margin/GridContainer"]
+custom_minimum_size = Vector2(0, 42)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Spell"
 
-[node name="BtnFeatures" type="Button" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea/VBoxContainer/ActionMenu/GridContainer"]
-custom_minimum_size = Vector2(0, 45)
+[node name="BtnFeatures" type="Button" parent="CombatHUD/Root/ActionDock/DockBox/ActionMenu/Margin/GridContainer"]
+custom_minimum_size = Vector2(0, 42)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Features"
 
-[node name="BtnDodge" type="Button" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea/VBoxContainer/ActionMenu/GridContainer"]
-custom_minimum_size = Vector2(0, 45)
+[node name="BtnDodge" type="Button" parent="CombatHUD/Root/ActionDock/DockBox/ActionMenu/Margin/GridContainer"]
+custom_minimum_size = Vector2(0, 42)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Dodge"
 
-[node name="BtnEndTurn" type="Button" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea/VBoxContainer/ActionMenu/GridContainer"]
-custom_minimum_size = Vector2(0, 45)
+[node name="BtnEndTurn" type="Button" parent="CombatHUD/Root/ActionDock/DockBox/ActionMenu/Margin/GridContainer"]
+custom_minimum_size = Vector2(0, 42)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "End Turn"
 
-[node name="BtnCancel" type="Button" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea/VBoxContainer/ActionMenu/GridContainer"]
-custom_minimum_size = Vector2(0, 45)
+[node name="BtnCancel" type="Button" parent="CombatHUD/Root/ActionDock/DockBox/ActionMenu/Margin/GridContainer"]
+custom_minimum_size = Vector2(0, 42)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Cancel"
-
-[node name="BtnSettings" type="Button" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea/VBoxContainer"]
-custom_minimum_size = Vector2(0, 45)
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Settings ⚙"
-
-[node name="BtnSheet" type="Button" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea/VBoxContainer"]
-custom_minimum_size = Vector2(0, 45)
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Character Sheet"
-
-[node name="SpellMenu" type="PanelContainer" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea/VBoxContainer"]
-visible = false
-layout_mode = 2
-
-[node name="SpellList" type="ItemList" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea/VBoxContainer/SpellMenu"]
-custom_minimum_size = Vector2(0, 150)
-layout_mode = 2
-
-[node name="BtnCancelSpell" type="Button" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea/VBoxContainer/SpellMenu"]
-layout_mode = 2
-size_flags_vertical = 8
-text = "Cancel"
-
-[node name="FeatureMenu" type="PanelContainer" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea/VBoxContainer"]
-visible = false
-layout_mode = 2
-
-[node name="FeatureList" type="ItemList" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea/VBoxContainer/FeatureMenu"]
-custom_minimum_size = Vector2(0, 150)
-layout_mode = 2
-
-[node name="BtnCancelFeatures" type="Button" parent="CombatHUD/MarginContainer/HBoxContainer/ControlArea/VBoxContainer/FeatureMenu"]
-layout_mode = 2
-size_flags_vertical = 8
-text = "Cancel"
-
-[node name="DiceRollDisplay" parent="CombatHUD" instance=ExtResource("4_dice_display")]
-visible = false
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-grow_horizontal = 2
-grow_vertical = 2

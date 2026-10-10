@@ -10,6 +10,7 @@ const SUPPORTED_EFFECT_TYPES := [
 	"start_combat", "set_concentration", "clear_concentration", "stat_modifier", "cunning_action", "step_of_the_wind", "lay_on_hands", "unarmed_attack", "favored_foe", "hunters_mark", "reckless_attack", "divine_sense", "bardic_inspiration", "pact_magic", "pact_magic_recovery", "sorcery_points", "innate_sorcery", "metamagic",
 	"ac_bonus", "speed_modifier", "movement", "roll_modifier", "reaction",
 	"teleport_random", "reveal_map", "reduce_speed", "vision_bonus", "area_selection",
+	"nourish",
 ]
 
 
@@ -20,12 +21,23 @@ static func is_effect_supported(effect_type: String) -> bool:
 ## Resolve a skill check for an event.
 ## Returns {"success": bool, "roll": int, "dc": int, "modifier": int}.
 static func resolve_skill_check(character: Character, check_data: Dictionary) -> Dictionary:
-	var ability: String = check_data.get("ability", "STR")
+	var skill := str(check_data.get("skill", ""))
+	var ability: String = character.get_skill_check_ability(str(check_data.get("ability", "STR")), skill, bool(check_data.get("use_primal_knowledge", true)))
 	var dc: int = int(check_data.get("dc", 10))
+	var familiar_help := bool(check_data.get("request_familiar_help", false)) and FamiliarRules.skill_help_available(character, check_data)
 
-	var roll := Dice.roll(20)
-	var modifier := character.ability_scores.get_ability_modifier(ability)
+	var advantage := familiar_help or character.has_ability_check_advantage(ability) or (character.has_feature("champion_remarkable_athlete") and ability == "STR" and skill == "Athletics")
+	var disadvantage := ability == "STR" and character.has_condition("ray_of_enfeeblement")
+	var roll := Dice.roll_with_advantage(20, character) if advantage and not disadvantage else Dice.roll_with_disadvantage(20, character) if disadvantage and not advantage else Dice.roll(20, character)
+	roll = character.apply_skill_check_roll_floor(roll, skill)
+	var tool_bonus := character.inventory.skill_tool_bonus(skill, str(check_data.get("context", "")))
+	var modifier := character.get_skill_check_modifier(skill, ability) + tool_bonus
 	var total := roll + modifier
+	var guidance_bonus := 0
+	if character.has_condition("guidance") and character.guidance_skill == skill:
+		guidance_bonus = Dice.roll(4, character)
+		total += guidance_bonus
+	total = character.apply_feature_check_floor(total, ability, "ability_check")
 
 	return {
 		"success": total >= dc,
@@ -34,6 +46,10 @@ static func resolve_skill_check(character: Character, check_data: Dictionary) ->
 		"modifier": modifier,
 		"dc": dc,
 		"ability": ability,
+		"guidance_bonus": guidance_bonus,
+		"tool_bonus": tool_bonus,
+		"familiar_help": familiar_help,
+		"advantage": advantage and not disadvantage,
 	}
 
 
@@ -41,13 +57,32 @@ static func resolve_skill_check(character: Character, check_data: Dictionary) ->
 ## belong to the active combat scene and are never persisted by this effect.
 static func resolve_area_selection(effect: Dictionary) -> Dictionary:
 	var shape := str(effect.get("shape", "sphere"))
-	if shape not in ["sphere", "cone"]:
+	if shape not in ["sphere", "cone", "cube", "square", "point", "line"]:
 		return {"success": false, "type": "area_selection", "message": "Unsupported area shape: %s" % shape}
+	if shape == "point":
+		return {"success": true, "type": "area_selection", "shape": shape, "persistent": false, "message": "Selected one point."}
+	if shape == "line":
+		var length := int(effect.get("size", 0))
+		if length < 1 or length > 12:
+			return {"success": false, "type": "area_selection", "message": "Line length must be between 1 and 12 hexes."}
+		return {"success": true, "type": "area_selection", "shape": shape, "size": length, "persistent": false, "message": "Selected a line up to %d hexes long." % length}
+	if shape == "square":
+		var size_feet := int(effect.get("size_feet", 0))
+		if size_feet < 5 or size_feet > 60:
+			return {"success": false, "type": "area_selection", "message": "Square size must be between 5 and 60 feet."}
+		return {
+			"success": true,
+			"type": "area_selection",
+			"shape": shape,
+			"size_feet": size_feet,
+			"persistent": false,
+			"message": "Selected a %d-foot square." % size_feet,
+		}
 
 	if shape == "sphere":
 		var radius := int(effect.get("radius", 0))
-		if radius < 1 or radius > 8:
-			return {"success": false, "type": "area_selection", "message": "Area radius must be between 1 and 8."}
+		if radius < 1 or radius > 40:
+			return {"success": false, "type": "area_selection", "message": "Sphere radius must be between 1 and 40 hexes."}
 		return {
 			"success": true,
 			"type": "area_selection",
@@ -58,26 +93,26 @@ static func resolve_area_selection(effect: Dictionary) -> Dictionary:
 		}
 
 	var size := int(effect.get("size", 0))
-	if size < 1 or size > 8:
-		return {"success": false, "type": "area_selection", "message": "Cone size must be between 1 and 8."}
+	if size < 1 or size > 12:
+		return {"success": false, "type": "area_selection", "message": "%s size must be between 1 and 12." % shape.capitalize()}
 	return {
 		"success": true,
 		"type": "area_selection",
 		"shape": shape,
 		"size": size,
 		"persistent": false,
-		"message": "Selected a cone with size %d." % size,
+		"message": "Selected a %s with size %d." % [shape.capitalize(), size],
 	}
 
 
 ## Apply an array of effect dictionaries to a character.
 ## Returns a summary array of applied effects (for display).
-static func apply_effects(character: Character, effects: Array) -> Array[Dictionary]:
+static func apply_effects(character: Character, effects: Array, roller: Character = null) -> Array[Dictionary]:
 	var results: Array[Dictionary] = []
 
 	for effect in effects:
 		var effect_type: String = effect.get("type", "")
-		var result := _apply_single_effect(character, effect)
+		var result := _apply_single_effect(character, effect, roller)
 		if not result.is_empty():
 			results.append(result)
 
@@ -85,37 +120,49 @@ static func apply_effects(character: Character, effects: Array) -> Array[Diction
 
 
 ## Apply a single effect to a character.
-static func _apply_single_effect(character: Character, effect: Dictionary) -> Dictionary:
+static func _apply_single_effect(character: Character, effect: Dictionary, roller: Character = null) -> Dictionary:
 	var effect_type: String = effect.get("type", "")
+	if roller == null:
+		roller = character
 
 	match effect_type:
+		"nourish":
+			var days := maxi(1, int(effect.get("days", 1)))
+			character.add_nourishment(days)
+			return {"type": "nourish", "days": days, "message": "%s has food for %d day%s." % [character.character_name, days, "" if days == 1 else "s"]}
+
 		"damage":
 			var damage_str: String = effect.get("value", "1d6")
 			var modifiers := character.ability_scores.get_all_modifiers()
 			modifiers["level"] = character.level
 			var amount := Dice.parse_dice_string(damage_str, modifiers)
-			var actual := character.take_damage(amount)
+			var actual := int(CombatAction.resolve_damage(character, amount, str(effect.get("damage_type", "")))["damage"])
 			return {"type": "damage", "amount": actual, "damage_type": effect.get("damage_type", ""), "message": "%s took %d %s damage!" % [character.character_name, actual, effect.get("damage_type", "")]}
 
 		"heal":
-			var heal_str: String = effect.get("value", "1d6")
+			var heal_str := _level_scaled_expression(effect, "value_by_level", "value", character.level, "1d6")
 			var modifiers := character.ability_scores.get_all_modifiers()
 			modifiers["level"] = character.level
-			var amount := Dice.parse_dice_string(heal_str, modifiers)
+			var amount := Dice.parse_dice_string(heal_str, modifiers, roller)
+			amount = SpellEffects.maximize_healing(character, amount, Dice.maximum_dice_string(heal_str, modifiers))
+			if bool(effect.get("ability_bonus_from_caster", false)) and roller != null:
+				amount += roller.ability_scores.get_ability_modifier(roller.get_spellcasting_ability())
+			amount = maxi(0, amount)
 			var actual := character.heal(amount)
 			return {"type": "heal", "amount": actual, "message": "%s healed %d HP!" % [character.character_name, actual]}
 
 		"heal_self":
-			var heal_str: String = effect.get("value", "1d6")
+			var heal_str := _level_scaled_expression(effect, "value_by_level", "value", character.level, "1d6")
 			var modifiers := character.ability_scores.get_all_modifiers()
 			modifiers["level"] = character.level
-			var amount := Dice.parse_dice_string(heal_str, modifiers)
+			var amount := maxi(0, Dice.parse_dice_string(heal_str, modifiers, roller))
+			amount = SpellEffects.maximize_healing(character, amount, Dice.maximum_dice_string(heal_str, modifiers))
 			var actual := character.heal(amount)
 			return {"type": "heal", "amount": actual, "message": "%s healed %d HP!" % [character.character_name, actual]}
 
 		"temporary_hp":
-			var temp_str: String = effect.get("value", "1d6")
-			var temp_amount := Dice.parse_dice_string(temp_str, {"level": character.level})
+			var temp_str := _level_scaled_expression(effect, "value_by_level", "value", character.level, "1d6")
+			var temp_amount := Dice.parse_dice_string(temp_str, {"level": character.level}, roller)
 			if temp_amount <= character.temp_hp:
 				return {"type": "temporary_hp", "amount": 0, "message": "%s keeps their existing temporary HP." % character.character_name}
 			character.temp_hp = temp_amount
@@ -213,7 +260,7 @@ static func _apply_single_effect(character: Character, effect: Dictionary) -> Di
 				stat_key = "AC"
 			elif effect_type in ["speed_modifier", "movement"]:
 				stat_key = "speed"
-			var stat_amount := int(effect.get("amount", effect.get("value", 0)))
+			var stat_amount := _level_scaled_amount(effect, character.level)
 			var stat_duration := int(effect.get("duration", 1))
 			if stat_key.is_empty() or stat_amount == 0:
 				return {}
@@ -222,7 +269,7 @@ static func _apply_single_effect(character: Character, effect: Dictionary) -> Di
 
 		"roll_modifier":
 			var roll_key := str(effect.get("key", ""))
-			var roll_amount := int(effect.get("amount", effect.get("value", 0)))
+			var roll_amount := _level_scaled_amount(effect, character.level)
 			var roll_duration := int(effect.get("duration", 1))
 			if roll_key.is_empty() or roll_amount == 0:
 				return {}
@@ -230,7 +277,16 @@ static func _apply_single_effect(character: Character, effect: Dictionary) -> Di
 			return {"type": "roll_modifier", "key": roll_key, "amount": roll_amount, "duration": roll_duration, "message": "%s gains a %s roll modifier of %+d for %d turns." % [character.character_name, roll_key, roll_amount, roll_duration]}
 
 		"pact_magic_recovery":
-			var recovered := character.recover_pact_magic_slots(float(effect.get("fraction", 0.5)))
+			var recovery_fraction := float(effect.get("fraction", 0.5))
+			var recovery_by_level: Dictionary = effect.get("fraction_by_level", {})
+			var recovery_level := 0
+			for level_key in recovery_by_level:
+				var attained_level := int(level_key)
+				if attained_level <= character.level and attained_level > recovery_level:
+					recovery_level = attained_level
+			if recovery_level > 0:
+				recovery_fraction = float(recovery_by_level[str(recovery_level)])
+			var recovered := character.recover_pact_magic_slots(recovery_fraction)
 			return {"type": "pact_magic_recovery", "amount": recovered, "message": "%s recovers %d Pact Magic slot%s." % [character.character_name, recovered, "" if recovered == 1 else "s"]}
 
 		"innate_sorcery":
@@ -252,6 +308,8 @@ static func _apply_single_effect(character: Character, effect: Dictionary) -> Di
 			return {"type": "reveal_map", "radius": radius, "message": "The surrounding area is revealed!"}
 
 		"reduce_speed":
+			if SpellEffects.has_spell(character, "freedom_of_movement"):
+				return {"type": "reduce_speed", "value": 0, "duration": int(effect.get("duration", 1)), "message": "%s is unaffected by the movement reduction." % character.character_name}
 			var speed_reduction := int(effect.get("value", 2))
 			var speed_duration := int(effect.get("duration", 1))
 			character.add_modifier("stat", "speed", -speed_reduction, speed_duration)
@@ -275,3 +333,25 @@ static func _apply_single_effect(character: Character, effect: Dictionary) -> Di
 
 static func _feature_max_uses(character: Character, feature_id: String) -> int:
 	return character.get_feature_max_uses(feature_id)
+
+
+static func _level_scaled_amount(effect: Dictionary, level: int) -> int:
+	var progression: Dictionary = effect.get("amount_by_level", {})
+	if progression.is_empty():
+		return int(effect.get("amount", effect.get("value", 0)))
+	var threshold := 0
+	for key in progression:
+		var attained := int(key)
+		if attained <= level and attained > threshold:
+			threshold = attained
+	return int(progression[str(threshold)]) if threshold > 0 else int(effect.get("amount", effect.get("value", 0)))
+
+
+static func _level_scaled_expression(effect: Dictionary, table_field: String, value_field: String, level: int, fallback: String) -> String:
+	var progression: Dictionary = effect.get(table_field, {})
+	var threshold := 0
+	for key in progression:
+		var attained := int(key)
+		if attained <= level and attained > threshold:
+			threshold = attained
+	return str(progression[str(threshold)]) if threshold > 0 else str(effect.get(value_field, fallback))

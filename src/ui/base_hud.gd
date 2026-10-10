@@ -20,16 +20,26 @@ signal sheet_pressed
 ## Set by each subclass in _ready to its own log RichTextLabel.
 var log_text: RichTextLabel
 
+func _enter_tree() -> void:
+	child_entered_tree.connect(func(child):
+		if child is Window: ModalSurface.watch_window(child)
+	)
+
 ## Clear the log panel.
 func clear_logs() -> void:
 	if log_text != null:
 		log_text.text = ""
 
 ## Append a line to the log and auto-scroll.
-func add_log(msg: String) -> void:
+func add_log(msg: String, publish_activity: bool = true) -> void:
 	if log_text == null:
 		return
 	log_text.text += msg + "\n"
+	var regex := RegEx.new()
+	regex.compile("\\[[^\\]]*\\]")
+	var plain := regex.sub(msg, "", true).strip_edges()
+	if publish_activity and not plain.is_empty():
+		ActivityHistory.publish({"category": "combat" if GameManager.current_state == GameManager.GameState.COMBAT else "world", "kind": "narrative", "title": "Combat" if GameManager.current_state == GameManager.GameState.COMBAT else "Expedition", "summary": plain, "visibility": "public", "payload": {}})
 	var scroll = log_text.get_v_scroll_bar()
 	if scroll:
 		scroll.value = scroll.max_value

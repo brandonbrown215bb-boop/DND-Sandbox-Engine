@@ -2,60 +2,142 @@
   {
     "id": "acid_splash",
     "name": "Acid Splash",
-    "description": "You hurl a bubble of acid. Choose one creature you can see within range, or choose two creatures you can see within range that are within 5 feet of each other. A target must succeed on a Dexterity saving throw or take 1d6 acid damage. This spell's damage increases by 1d6 when you reach 5th level (2d...",
+    "description": "You create an acidic bubble at a point within range, where it explodes in a 5-foot-radius sphere. Each creature in that sphere must succeed on a Dexterity saving throw or take 1d6 Acid damage. The damage increases by 1d6 when you reach character levels 5, 11, and 17.",
     "level": 0,
-    "school": "conjuration",
+    "school": "evocation",
     "casting_time": "action",
     "range": 12,
-    "target": "single",
+    "target": "area",
+    "area_radius": 1,
     "attack_type": "none",
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "instantaneous",
     "damage": "1d6",
     "damage_type": "acid",
     "save": "DEX",
-    "classes": []
+    "scaling": {
+      "5": "2d6",
+      "11": "3d6",
+      "17": "4d6"
+    },
+    "effects": [
+      {
+        "type": "area_selection",
+        "shape": "sphere",
+        "radius": 1
+      }
+    ],
+    "classes": [
+      "sorcerer",
+      "wizard"
+    ],
+    "concentration": false,
+    "execution": "shared"
   },
   {
     "id": "aid",
     "name": "Aid",
-    "description": "Your spell bolsters your allies with toughness and resolve. Choose up to three creatures within range. Each target's hit point maximum and current hit points increase by 5 for the duration.",
+    "description": "You bolster your allies with toughness and resolve. Choose up to three creatures within range. Each target's Hit Point maximum and current Hit Points increase by 5 for the duration.",
     "level": 2,
     "school": "abjuration",
     "casting_time": "action",
     "range": 6,
-    "target": "single",
+    "target": "single_ally",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "bard",
+      "cleric",
+      "druid",
+      "paladin",
+      "ranger"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a strip of white cloth",
+    "duration": "8 hours",
+    "concentration": false,
+    "duration_seconds": 28800,
+    "rules_source": "SRD5.2.1",
+    "rules_status": "2024-gameplay-partial",
+    "base_targets": 3,
+    "effects": [
+      {
+        "type": "aid_hp_bonus",
+        "value": 5
+      }
+    ],
+    "upcast": {
+      "hit_points_per_level": 5,
+      "starting_level": 2
+    }
   },
   {
     "id": "alarm",
     "name": "Alarm",
-    "description": "You set an alarm against unwanted intrusion. Choose a door, a window, or an area within range that is no larger than a 20-foot cube. Until the spell ends, an alarm alerts you whenever a Tiny or larger creature touches or enters the warded area. When you cast the spell, you can designate creatures th...",
+    "description": "Set an alarm on a door, window, or area in range no larger than a 20-foot cube. For 8 hours, it alerts you when a creature touches or enters the warded area. Choose creatures that do not trigger it and whether the alert is a handbell heard within 60 feet or a mental ping heard within 1 mile that can wake you.",
     "level": 1,
     "school": "abjuration",
     "casting_time": "minute",
     "range": 6,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "ranger",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a bell and silver wire",
+    "duration": "8 hours",
+    "concentration": false,
+    "duration_seconds": 28800,
+    "ritual": true,
+    "rules_source": "SRD5.2.1",
+    "rules_status": "2024-gameplay-partial"
   },
   {
     "id": "alter_self",
     "name": "Alter Self",
-    "description": "You assume a different form. When you cast the spell, choose one of the following options, the effects of which last for the duration of the spell. While the spell lasts, you can end one option as an action to gain the benefits of a different one. {'type': 'entries', 'name': 'Aquatic Adaptation', 'e...",
+    "description": "You alter your physical form for up to 1 hour while you concentrate. Choose Aquatic Adaptation to breathe underwater and gain a Swim Speed equal to your Speed; Change Appearance to change your appearance without changing your statistics, size, or basic shape; or Natural Weapons to grow claws (Slashing), fangs (Piercing), horns, or hooves (Bludgeoning). Natural Weapons make your Unarmed Strike deal 1d6 damage of its type and use your spellcasting ability modifier for its attack and damage rolls instead of Strength. You can replace your chosen option with a different one as a Magic action.",
     "level": 2,
     "school": "transmutation",
     "casting_time": "action",
     "range": 0,
     "target": "self",
     "attack_type": "none",
-    "damage": "1d6",
-    "damage_type": "force",
-    "classes": []
+    "classes": [
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Concentration, up to 1 hour",
+    "concentration": true,
+    "duration_seconds": 3600,
+    "rules_source": "SRD5.2.1",
+    "rules_status": "2024-gameplay-partial",
+    "effects": [
+      {
+        "type": "alter_self_natural_weapons",
+        "duration_seconds": 3600
+      }
+    ]
   },
   {
     "id": "animal_friendship",
     "name": "Animal Friendship",
-    "description": "This spell lets you convince a beast that you mean it no harm. Choose a beast that you can see within range. It must see and hear you. If the beast's Intelligence is 4 or higher, the spell fails. Otherwise, the beast must succeed on a Wisdom saving throw or be charmed by you for the spell's duration...",
+    "description": "Target a Beast that you can see within range. The target must succeed on a Wisdom saving throw or have the Charmed condition for 24 hours. If you or one of your allies deals damage to the target, the spell ends. Using a Higher-Level Spell Slot. You can target one additional Beast for each spell slot level above 1.",
     "level": 1,
     "school": "enchantment",
     "casting_time": "action",
@@ -63,31 +145,108 @@
     "target": "single",
     "attack_type": "none",
     "save": "WIS",
-    "classes": []
+    "target_creature_types": [
+      "beast"
+    ],
+    "requires_target_sight": true,
+    "condition_on_failed_save": "charmed",
+    "condition_duration": 14400,
+    "end_on_party_damage": true,
+    "upcast": {
+      "starting_level": 1,
+      "additional_targets_per_level": 1
+    },
+    "classes": [
+      "bard",
+      "druid",
+      "ranger"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a morsel of food",
+    "duration": "24 hours",
+    "duration_seconds": 86400,
+    "concentration": false,
+    "rules_source": "dnd-2024-srd-5.2.1",
+    "rules_status": "2024-supported"
   },
   {
     "id": "animal_messenger",
     "name": "Animal Messenger",
-    "description": "By means of this spell, you use an animal to deliver a message. Choose a Tiny beast you can see within range, such as a squirrel, a blue jay, or a bat. You specify a location, which you must have visited, and a recipient who matches a general description, such as \"a man or woman dressed in the unifo...",
+    "description": "A Tiny Beast you can see within 30 feet attempts to deliver your message of up to 25 words to a recipient matching your general description at a location you have visited. A Beast with a Challenge Rating other than 0 succeeds automatically on its Charisma save and does not undertake the delivery; otherwise, a failed save sends it on its way. It travels about 25 miles per 24 hours, or 50 miles if it can fly. It delivers the message by mimicking you if it arrives before the spell ends; otherwise it returns to where you cast the spell and the message is lost. Each spell slot level above 2 adds 48 hours to the duration.",
     "level": 2,
     "school": "enchantment",
     "casting_time": "action",
     "range": 6,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "save": "CHA",
+    "target_creature_types": [
+      "beast"
+    ],
+    "target_sizes": [
+      "tiny"
+    ],
+    "automatic_save_success_if_challenge_rating_not_zero": true,
+    "max_message_words": 25,
+    "travel_miles_per_24_hours": 25,
+    "flying_travel_miles_per_24_hours": 50,
+    "requires_visited_location": true,
+    "classes": [
+      "bard",
+      "druid",
+      "ranger"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a morsel of food",
+    "duration": "24 hours",
+    "duration_seconds": 86400,
+    "concentration": false,
+    "ritual": true,
+    "upcast": {
+      "starting_level": 2,
+      "additional_duration_seconds_per_level": 172800
+    },
+    "rules_source": "dnd-2024-srd-5.2.1",
+    "rules_status": "2024-supported"
   },
   {
     "id": "animate_dead",
     "name": "Animate Dead",
-    "description": "This spell creates an undead servant. Choose a pile of bones or a corpse of a Medium or Small humanoid within range. Your spell imbues the target with a foul mimicry of life, raising it as an undead creature. The target becomes a skeleton if you chose bones or a zombie if you chose a corpse (the DM ...",
+    "description": "Choose bones or a corpse of a Small or Medium Humanoid within range; it rises as a Skeleton or Zombie, respectively. For 24 hours, you can command any Undead you created with this spell as a Bonus Action while it is within 60 feet. If not commanded, it Dodges and moves only to avoid harm. When control ends, it stops obeying. Recasting can renew control over up to four Undead you made instead of animating a new one. A higher-level slot animates or renews control of two additional Undead per slot level above 3, each from a different body or pile of bones.",
     "level": 3,
-    "school": "necrotic",
+    "school": "necromancy",
     "casting_time": "minute",
     "range": 2,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "cleric",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a drop of blood, a piece of flesh, and a pinch of bone dust",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "rules_source": "SRD5.2.1",
+    "rules_status": "2024-gameplay-partial",
+    "control_duration_seconds": 86400,
+    "upcast": {
+      "additional_targets_per_level": 2,
+      "starting_level": 3,
+      "reassert_control_target_limit": 4
+    }
   },
   {
     "id": "arcane_lock",
@@ -99,7 +258,17 @@
     "range": 1,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "gold dust worth 25+ GP, which the spell consumes",
+    "duration": "Until dispelled",
+    "concentration": false
   },
   {
     "id": "armor_of_agathys",
@@ -139,7 +308,19 @@
     "range": 0,
     "target": "self",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "cleric",
+      "druid",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "specially marked sticks, bones, cards, or other divinatory tokens worth 25+ GP",
+    "duration": "Instantaneous",
+    "concentration": false
   },
   {
     "id": "aura_of_vitality",
@@ -162,7 +343,7 @@
   {
     "id": "bane",
     "name": "Bane",
-    "description": "Up to three creatures of your choice that you can see within range must make Charisma saving throws. Whenever a target that fails this saving throw makes an attack roll or a saving throw before the spell ends, the target must roll a d4 and subtract the number rolled from the attack roll or saving th...",
+    "description": "Up to three creatures of your choice that you can see within range must make Charisma saving throws. Whenever a target that fails this saving throw makes an attack roll or a saving throw before the spell ends, the target must roll a d4 and subtract the number rolled from the attack roll or saving throw.",
     "level": 1,
     "school": "enchantment",
     "casting_time": "action",
@@ -170,7 +351,38 @@
     "target": "single",
     "attack_type": "none",
     "save": "CHA",
-    "classes": []
+    "classes": [
+      "bard",
+      "cleric",
+      "warlock"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a drop of blood",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "duration_seconds": 60,
+    "rules_source": "SRD5.2.1",
+    "rules_status": "2024-gameplay-partial",
+    "base_targets": 3,
+    "requires_target_sight": true,
+    "condition_on_failed_save": "baned",
+    "condition_duration": 10,
+    "effects": [
+      {
+        "type": "grant_condition",
+        "condition": "baned",
+        "duration": 10,
+        "on_failed_save": true
+      }
+    ],
+    "upcast": {
+      "additional_targets_per_level": 1,
+      "starting_level": 1
+    }
   },
   {
     "id": "barkskin",
@@ -182,7 +394,18 @@
     "range": 1,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "druid",
+      "ranger"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a handful of oak bark",
+    "duration": "1 hour",
+    "concentration": false
   },
   {
     "id": "beacon_of_hope",
@@ -195,7 +418,15 @@
     "target": "single",
     "attack_type": "none",
     "save": "WIS",
-    "classes": []
+    "classes": [
+      "cleric"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true
   },
   {
     "id": "beast_sense",
@@ -222,19 +453,47 @@
     "damage": "1d8",
     "damage_type": "necrotic",
     "save": "WIS",
-    "classes": []
+    "classes": [
+      "bard",
+      "cleric",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true
   },
   {
     "id": "blade_ward",
     "name": "Blade Ward",
-    "description": "You extend your hand and trace a sigil of warding in the air. Until the end of your next turn, you have resistance against bludgeoning, piercing, and slashing damage dealt by weapon attacks.",
+    "description": "You trace a warding sigil in the air. Until the spell ends, each attack roll made against you takes a 1d4 penalty.",
     "level": 0,
     "school": "abjuration",
     "casting_time": "action",
     "range": 0,
     "target": "self",
     "attack_type": "none",
-    "classes": []
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "concentration, up to 1 minute",
+    "concentration": true,
+    "effects": [
+      {
+        "type": "grant_condition",
+        "condition": "blade_ward",
+        "duration": 10
+      }
+    ],
+    "classes": [
+      "bard",
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ]
   },
   {
     "id": "bless",
@@ -246,7 +505,18 @@
     "range": 6,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "cleric",
+      "paladin"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a Holy Symbol worth 5+ GP",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true
   },
   {
     "id": "blinding_smite",
@@ -274,7 +544,17 @@
     "target": "single",
     "attack_type": "none",
     "save": "CON",
-    "classes": []
+    "classes": [
+      "bard",
+      "cleric",
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V"
+    ],
+    "duration": "1 minute",
+    "concentration": false
   },
   {
     "id": "blink",
@@ -286,7 +566,16 @@
     "range": 0,
     "target": "self",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "1 minute",
+    "concentration": false
   },
   {
     "id": "blur",
@@ -298,7 +587,15 @@
     "range": 0,
     "target": "self",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V"
+    ],
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true
   },
   {
     "id": "branding_smite",
@@ -328,7 +625,16 @@
     "damage_type": "fire",
     "save": "DEX",
     "half_on_save": true,
-    "classes": []
+    "classes": [
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Instantaneous",
+    "concentration": false
   },
   {
     "id": "call_lightning",
@@ -344,7 +650,15 @@
     "damage_type": "lightning",
     "save": "DEX",
     "half_on_save": true,
-    "classes": []
+    "classes": [
+      "druid"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Concentration, up to 10 minutes",
+    "concentration": true
   },
   {
     "id": "calm_emotions",
@@ -357,12 +671,21 @@
     "target": "area",
     "attack_type": "none",
     "save": "CHA",
-    "classes": []
+    "classes": [
+      "bard",
+      "cleric"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true
   },
   {
     "id": "charm_person",
     "name": "Charm Person",
-    "description": "You attempt to charm a humanoid you can see within range. It must make a Wisdom saving throw, and does so with advantage if you or your companions are fighting it. If it fails the saving throw, it is charmed by you until the spell ends or until you or your companions do anything harmful to it. The c...",
+    "description": "One Humanoid you can see within range makes a Wisdom saving throw. It does so with Advantage if you or your allies are fighting it. On a failed save, the target has the Charmed condition until the spell ends or until you or your allies damage it. The Charmed creature is Friendly to you. When the spell ends, the target knows it was Charmed by you. Using a Higher-Level Spell Slot. You can target one additional Humanoid for each spell slot level above 1.",
     "level": 1,
     "school": "enchantment",
     "casting_time": "action",
@@ -370,25 +693,71 @@
     "target": "single",
     "attack_type": "none",
     "save": "WIS",
-    "classes": []
+    "classes": [
+      "bard",
+      "druid",
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ],
+    "target_creature_types": [
+      "humanoid"
+    ],
+    "requires_target_sight": true,
+    "condition_on_failed_save": "charmed",
+    "condition_duration": 600,
+    "duration_seconds": 3600,
+    "end_on_target_damage": true,
+    "rules_source": "SRD 5.2.1",
+    "rules_status": "2024-gameplay-partial",
+    "save_advantage_if_fighting_target": true,
+    "upcast": {
+      "additional_targets_per_level": 1,
+      "starting_level": 1
+    },
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "1 hour",
+    "concentration": false
   },
   {
     "id": "chill_touch",
     "name": "Chill Touch",
-    "description": "You create a ghostly, skeletal hand in the space of a creature within range. Make a ranged spell attack against the creature to assail it with the chill of the grave. On a hit, the target takes 1d8 necrotic damage, and it can't regain hit points until the start of your next turn. Until then, the han...",
+    "description": "Channeling the chill of the grave, make a melee spell attack against a target within reach. On a hit, the target takes 1d10 Necrotic damage and can't regain Hit Points until the end of your next turn. The damage increases by 1d10 at character levels 5, 11, and 17.",
     "level": 0,
-    "school": "necrotic",
+    "school": "necromancy",
     "casting_time": "action",
-    "range": 24,
+    "range": 1,
     "target": "single",
-    "attack_type": "ranged_spell",
+    "attack_type": "melee_spell",
+    "damage": "1d10",
+    "damage_type": "necrotic",
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "instantaneous",
+    "classes": [
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ],
+    "scaling": {
+      "5": "2d10",
+      "11": "3d10",
+      "17": "4d10"
+    },
     "effects": [
       {
-        "type": "heal",
-        "value": "1d8"
+        "type": "prevent_healing",
+        "source_turns": 2,
+        "on_spell_hit": true
       }
     ],
-    "classes": []
+    "concentration": false,
+    "range_kind": "touch"
   },
   {
     "id": "chromatic_orb",
@@ -402,7 +771,18 @@
     "attack_type": "ranged_spell",
     "damage": "3d8",
     "damage_type": "fire",
-    "classes": []
+    "classes": [
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a diamond worth 50+ GP",
+    "duration": "Instantaneous",
+    "concentration": false
   },
   {
     "id": "clairvoyance",
@@ -414,7 +794,20 @@
     "range": 1,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "bard",
+      "cleric",
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a focus worth 100+ GP, either a jeweled horn for hearing or a glass eye for seeing",
+    "duration": "Concentration, up to 10 minutes",
+    "concentration": true
   },
   {
     "id": "cloud_of_daggers",
@@ -433,21 +826,46 @@
   {
     "id": "color_spray",
     "name": "Color Spray",
-    "description": "A dazzling array of flashing, colored light springs from your hand. Roll 6d10; the total is how many hit points of creatures this spell can effect. Creatures in a 15-foot cone originating from you are affected in ascending order of their current hit points (ignoring unconscious creatures and creatur...",
+    "description": "You launch a dazzling array of flashing, colorful light. Each creature in a 15-foot Cone originating from you must succeed on a Constitution saving throw or have the Blinded condition until the end of your next turn.",
     "level": 1,
     "school": "illusion",
     "casting_time": "action",
-    "range": 3,
+    "range": 0,
     "target": "cone",
+    "cone_size": 3,
     "attack_type": "none",
-    "damage": "6d10",
-    "damage_type": "force",
-    "classes": []
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a pinch of colored sand",
+    "duration": "instantaneous",
+    "save": "CON",
+    "effects": [
+      {
+        "type": "area_selection",
+        "shape": "cone",
+        "size": 3
+      },
+      {
+        "type": "grant_condition",
+        "condition": "blinded",
+        "duration": 1,
+        "on_failed_save": true
+      }
+    ],
+    "classes": [
+      "bard",
+      "sorcerer",
+      "wizard"
+    ],
+    "concentration": false
   },
   {
     "id": "command",
     "name": "Command",
-    "description": "You speak a one-word command to a creature you can see within range. The target must succeed on a Wisdom saving throw or follow the command on its next turn. The spell has no effect if the target is undead, if it doesn't understand your language, or if your command is directly harmful to it. Some ty...",
+    "description": "You speak a one-word command to a creature you can see within range. The target must succeed on a Wisdom saving throw or follow the command on its next turn. The spell has no effect if the target is Undead, if it doesn't understand your language, or if your command is directly harmful to it. Choose Approach, Drop, Flee, Grovel, or Halt. Using a higher-level spell slot targets one additional creature for each slot level above 1.",
     "level": 1,
     "school": "enchantment",
     "casting_time": "action",
@@ -455,7 +873,30 @@
     "target": "single",
     "attack_type": "none",
     "save": "WIS",
-    "classes": []
+    "components": [
+      "V"
+    ],
+    "duration": "instantaneous",
+    "target_creature_type_exclusions": [
+      "undead"
+    ],
+    "requires_target_sight": true,
+    "effects": [
+      {
+        "type": "command",
+        "on_failed_save": true
+      }
+    ],
+    "upcast": {
+      "starting_level": 1,
+      "additional_targets_per_level": 1
+    },
+    "classes": [
+      "bard",
+      "cleric",
+      "paladin"
+    ],
+    "concentration": false
   },
   {
     "id": "compelled_duel",
@@ -480,7 +921,20 @@
     "range": 0,
     "target": "self",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "bard",
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a pinch of soot and salt",
+    "duration": "1 hour",
+    "concentration": false
   },
   {
     "id": "conjure_animals",
@@ -492,7 +946,16 @@
     "range": 12,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "druid",
+      "ranger"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Concentration, up to 10 minutes",
+    "concentration": true
   },
   {
     "id": "conjure_barrage",
@@ -520,12 +983,24 @@
     "range": 1,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "cleric",
+      "druid",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "ruby dust worth 50+ GP, which the spell consumes",
+    "duration": "Until dispelled",
+    "concentration": false
   },
   {
     "id": "cordon_of_arrows",
     "name": "Cordon of Arrows",
-    "description": "You plant four pieces of nonmagical ammunition\u2014arrow or crossbow bolt bolts\u2014in the ground within range and lay magic upon them to protect an area. Until the spell ends, whenever a creature other than you comes within 30 feet of the ammunition for the first time on a turn or ends its turn there, one ...",
+    "description": "You plant four pieces of nonmagical ammunitionâ€”arrow or crossbow bolt boltsâ€”in the ground within range and lay magic upon them to protect an area. Until the spell ends, whenever a creature other than you comes within 30 feet of the ammunition for the first time on a turn or ends its turn there, one ...",
     "level": 2,
     "school": "transmutation",
     "casting_time": "action",
@@ -547,7 +1022,16 @@
     "range": 12,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ],
+    "components": [
+      "S"
+    ],
+    "duration": "Instantaneous",
+    "concentration": false
   },
   {
     "id": "create_food_and_water",
@@ -559,7 +1043,16 @@
     "range": 6,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "cleric",
+      "paladin"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Instantaneous",
+    "concentration": false
   },
   {
     "id": "create_or_destroy_water",
@@ -571,7 +1064,18 @@
     "range": 6,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "cleric",
+      "druid"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a mix of water and sand",
+    "duration": "Instantaneous",
+    "concentration": false
   },
   {
     "id": "crown_of_madness",
@@ -603,32 +1107,70 @@
   {
     "id": "cure_wounds",
     "name": "Cure Wounds",
-    "description": "A creature you touch regains a number of hit points equal to 1d8 + your spellcasting ability modifier. This spell has no effect on undead or constructs.",
+    "description": "A creature you touch regains hit points equal to 2d8 plus your spellcasting ability modifier. This spell has no effect on undead or constructs.",
     "level": 1,
-    "school": "evocation",
+    "school": "abjuration",
     "casting_time": "action",
     "range": 1,
-    "target": "single_ally",
+    "target": "single",
     "attack_type": "none",
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "instantaneous",
+    "target_creature_type_exclusions": [
+      "undead",
+      "construct"
+    ],
     "effects": [
       {
         "type": "heal",
-        "value": "1d8"
+        "value": "2d8",
+        "ability_bonus_from_caster": true
       }
     ],
-    "classes": []
+    "upcast": {
+      "starting_level": 1,
+      "healing_dice_per_level": "2d8"
+    },
+    "classes": [
+      "bard",
+      "cleric",
+      "druid",
+      "paladin",
+      "ranger"
+    ],
+    "concentration": false,
+    "range_kind": "touch",
+    "execution": "shared"
   },
   {
     "id": "dancing_lights",
     "name": "Dancing Lights",
-    "description": "You create up to four torch-sized lights within range, making them appear as torches, lanterns, or glowing orbs that hover in the air for the duration. You can also combine the four lights into one glowing vaguely humanoid form of Medium size. Whichever form you choose, each light sheds dim light in...",
+    "description": "You create up to four torch-size lights within range, making them appear as torches, lanterns, or glowing orbs that hover for the duration. Alternatively, you combine the four lights into one glowing Medium form that is vaguely humanlike. Whichever form you choose, each light sheds Dim Light in a 10-foot radius. As a Bonus Action, you can move the lights up to 60 feet to a space within range. A light must be within 20 feet of another light created by this spell, and a light vanishes if it exceeds the spell's range.",
     "level": 0,
-    "school": "evocation",
+    "school": "illusion",
     "casting_time": "action",
     "range": 24,
-    "target": "area",
+    "target": "point",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "bard",
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a bit of phosphorus",
+    "duration": "Concentration, up to 1 minute",
+    "duration_seconds": 60,
+    "concentration": true,
+    "rules_source": "dnd-2024-srd-5.2.1",
+    "rules_status": "2024-supported"
   },
   {
     "id": "darkness",
@@ -640,7 +1182,18 @@
     "range": 12,
     "target": "area",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "M"
+    ],
+    "material": "bat fur and a piece of coal",
+    "duration": "Concentration, up to 10 minutes",
+    "concentration": true
   },
   {
     "id": "darkvision",
@@ -652,7 +1205,21 @@
     "range": 1,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "druid",
+      "ranger",
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a dried carrot",
+    "duration": "8 hours",
+    "concentration": false,
+    "range_kind": "touch"
   },
   {
     "id": "daylight",
@@ -664,7 +1231,19 @@
     "range": 12,
     "target": "area",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "cleric",
+      "druid",
+      "paladin",
+      "ranger",
+      "sorcerer"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "1 hour",
+    "concentration": false
   },
   {
     "id": "detect_evil_and_good",
@@ -676,7 +1255,16 @@
     "range": 0,
     "target": "self",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "cleric",
+      "paladin"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Concentration, up to 10 minutes",
+    "concentration": true
   },
   {
     "id": "detect_magic",
@@ -688,7 +1276,23 @@
     "range": 0,
     "target": "self",
     "attack_type": "none",
-    "classes": []
+    "ritual": true,
+    "classes": [
+      "bard",
+      "cleric",
+      "druid",
+      "paladin",
+      "ranger",
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Concentration, up to 10 minutes",
+    "concentration": true
   },
   {
     "id": "detect_poison_and_disease",
@@ -700,7 +1304,20 @@
     "range": 0,
     "target": "self",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "cleric",
+      "druid",
+      "paladin",
+      "ranger"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a yew leaf",
+    "duration": "Concentration, up to 10 minutes",
+    "concentration": true
   },
   {
     "id": "detect_thoughts",
@@ -713,19 +1330,41 @@
     "target": "self",
     "attack_type": "none",
     "save": "WIS",
-    "classes": []
+    "classes": [
+      "bard",
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "1 Copper Piece",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true
   },
   {
     "id": "disguise_self",
     "name": "Disguise Self",
-    "description": "You make yourself\u2014including your clothing, armor, weapons, and other belongings on your person\u2014look different until the spell ends or until you use your action to dismiss it. You can seem 1 foot shorter or taller and can appear thin, fat, or in between. You can't change your body type, so you must a...",
+    "description": "You make yourselfâ€”including your clothing, armor, weapons, and other belongings on your personâ€”look different until the spell ends or until you use your action to dismiss it. You can seem 1 foot shorter or taller and can appear thin, fat, or in between. You can't change your body type, so you must a...",
     "level": 1,
     "school": "illusion",
     "casting_time": "action",
     "range": 0,
     "target": "self",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "bard",
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "1 hour",
+    "concentration": false
   },
   {
     "id": "dispel_magic",
@@ -737,7 +1376,22 @@
     "range": 24,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "bard",
+      "cleric",
+      "druid",
+      "paladin",
+      "ranger",
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Instantaneous",
+    "concentration": false
   },
   {
     "id": "dissonant_whispers",
@@ -753,7 +1407,14 @@
     "damage_type": "fire",
     "save": "WIS",
     "half_on_save": true,
-    "classes": []
+    "classes": [
+      "bard"
+    ],
+    "components": [
+      "V"
+    ],
+    "duration": "Instantaneous",
+    "concentration": false
   },
   {
     "id": "divine_favor",
@@ -767,7 +1428,15 @@
     "attack_type": "none",
     "damage": "1d4",
     "damage_type": "radiant",
-    "classes": []
+    "classes": [
+      "paladin"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "1 minute",
+    "concentration": false
   },
   {
     "id": "druidcraft",
@@ -779,12 +1448,20 @@
     "range": 6,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "druid"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Instantaneous",
+    "concentration": false
   },
   {
     "id": "eldritch_blast",
     "name": "Eldritch Blast",
-    "description": "A beam of crackling energy streaks toward a creature within range. Make a ranged spell attack against the target. On a hit, the target takes 1d10 force damage. The spell creates more than one beam when you reach higher levels: two beams at 5th level, three beams at 11th level, and four beams at 17th...",
+    "description": "You hurl a beam of crackling energy. Make a ranged spell attack against one creature or object in range. On a hit, the target takes 1d10 Force damage. The spell creates two beams at character level 5, three at level 11, and four at level 17. You can direct the beams at the same target or different ones, making a separate attack roll for each beam.",
     "level": 0,
     "school": "evocation",
     "casting_time": "action",
@@ -793,7 +1470,24 @@
     "attack_type": "ranged_spell",
     "damage": "1d10",
     "damage_type": "force",
-    "classes": []
+    "classes": [
+      "warlock"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Instantaneous",
+    "concentration": false,
+    "rules_source": "SRD5.2.1",
+    "rules_status": "2024-gameplay-partial",
+    "damage_per_ray": "1d10",
+    "beam_count_by_level": {
+      "1": 1,
+      "5": 2,
+      "11": 3,
+      "17": 4
+    }
   },
   {
     "id": "elemental_weapon",
@@ -821,7 +1515,23 @@
     "attack_type": "none",
     "damage": "2d6",
     "damage_type": "force",
-    "classes": []
+    "classes": [
+      "bard",
+      "cleric",
+      "druid",
+      "ranger",
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "fur or a feather",
+    "duration": "Concentration, up to 1 hour",
+    "concentration": true,
+    "range_kind": "touch"
   },
   {
     "id": "enlarge/reduce",
@@ -836,7 +1546,20 @@
     "damage": "1d4",
     "damage_type": "force",
     "save": "CON",
-    "classes": []
+    "classes": [
+      "bard",
+      "druid",
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a pinch of powdered iron",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true
   },
   {
     "id": "ensnaring_strike",
@@ -851,7 +1574,14 @@
     "damage": "1d6",
     "damage_type": "force",
     "save": "STR",
-    "classes": []
+    "classes": [
+      "ranger"
+    ],
+    "components": [
+      "V"
+    ],
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true
   },
   {
     "id": "entangle",
@@ -864,7 +1594,16 @@
     "target": "single",
     "attack_type": "none",
     "save": "STR",
-    "classes": []
+    "classes": [
+      "druid",
+      "ranger"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true
   },
   {
     "id": "enthrall",
@@ -877,7 +1616,16 @@
     "target": "single",
     "attack_type": "none",
     "save": "WIS",
-    "classes": []
+    "classes": [
+      "bard",
+      "warlock"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "1 minute",
+    "concentration": false
   },
   {
     "id": "expeditious_retreat",
@@ -889,7 +1637,17 @@
     "range": 0,
     "target": "self",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Concentration, up to 10 minutes",
+    "concentration": true
   },
   {
     "id": "faerie_fire",
@@ -902,21 +1660,48 @@
     "target": "area",
     "attack_type": "none",
     "save": "DEX",
-    "classes": []
+    "classes": [
+      "bard",
+      "druid"
+    ],
+    "components": [
+      "V"
+    ],
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true
   },
   {
     "id": "false_life",
     "name": "False Life",
-    "description": "Bolstering yourself with a necromantic facsimile of life, you gain 1d4 + 4 temporary hit points for the duration.",
+    "description": "You gain 2d4 + 4 Temporary Hit Points. When you cast this spell with a spell slot above level 1, you gain 5 additional Temporary Hit Points for each slot level above 1.",
     "level": 1,
-    "school": "necrotic",
+    "school": "necromancy",
     "casting_time": "action",
     "range": 0,
+    "duration": "instantaneous",
     "target": "self",
     "attack_type": "none",
-    "damage": "1d4+4",
-    "damage_type": "force",
-    "classes": []
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a drop of alcohol",
+    "effects": [
+      {
+        "type": "temporary_hp",
+        "value": "2d4+4"
+      }
+    ],
+    "upcast": {
+      "starting_level": 1,
+      "temporary_hp_per_level": 5
+    },
+    "classes": [
+      "sorcerer",
+      "wizard"
+    ],
+    "concentration": false
   },
   {
     "id": "fear",
@@ -929,7 +1714,22 @@
     "target": "cone",
     "attack_type": "none",
     "save": "WIS",
-    "classes": []
+    "classes": [
+      "bard",
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ],
+    "condition_on_failed_save": "frightened",
+    "condition_duration": 10,
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a white feather",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true
   },
   {
     "id": "feather_fall",
@@ -941,7 +1741,18 @@
     "range": 12,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "bard",
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "M"
+    ],
+    "material": "a small feather or piece of down",
+    "duration": "1 minute",
+    "concentration": false
   },
   {
     "id": "feign_death",
@@ -965,7 +1776,24 @@
     "range": 2,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "ritual": true,
+    "classes": [
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "burning incense worth 10+ GP, which the spell consumes",
+    "duration": "instantaneous",
+    "concentration": false,
+    "casting_time_seconds": 3600,
+    "material_component_cost": 10,
+    "material_component_consumed": true,
+    "material_component_item_id": "incense_10gp",
+    "rules_source": "SRD5.2.1",
+    "rules_status": "2024-gameplay-partial"
   },
   {
     "id": "find_steed",
@@ -977,7 +1805,15 @@
     "range": 6,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "paladin"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Instantaneous",
+    "concentration": false
   },
   {
     "id": "find_traps",
@@ -989,7 +1825,17 @@
     "range": 24,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "cleric",
+      "druid",
+      "ranger"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Instantaneous",
+    "concentration": false
   },
   {
     "id": "fire_bolt",
@@ -1003,7 +1849,16 @@
     "attack_type": "ranged_spell",
     "damage": "1d10",
     "damage_type": "fire",
-    "classes": []
+    "classes": [
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Instantaneous",
+    "concentration": false
   },
   {
     "id": "fireball",
@@ -1019,7 +1874,18 @@
     "damage_type": "fire",
     "save": "DEX",
     "half_on_save": true,
-    "classes": []
+    "classes": [
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a ball of bat guano and sulfur",
+    "duration": "Instantaneous",
+    "concentration": false
   },
   {
     "id": "flame_blade",
@@ -1033,7 +1899,18 @@
     "attack_type": "none",
     "damage": "3d6",
     "damage_type": "fire",
-    "classes": []
+    "classes": [
+      "druid",
+      "sorcerer"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a sumac leaf",
+    "duration": "Concentration, up to 10 minutes",
+    "concentration": true
   },
   {
     "id": "flaming_sphere",
@@ -1049,7 +1926,19 @@
     "damage_type": "fire",
     "save": "DEX",
     "half_on_save": true,
-    "classes": []
+    "classes": [
+      "druid",
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a ball of wax",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true
   },
   {
     "id": "fly",
@@ -1061,7 +1950,20 @@
     "range": 1,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a feather",
+    "duration": "Concentration, up to 10 minutes",
+    "duration_seconds": 600,
+    "concentration": true
   },
   {
     "id": "fog_cloud",
@@ -1073,7 +1975,18 @@
     "range": 24,
     "target": "area",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "druid",
+      "ranger",
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Concentration, up to 1 hour",
+    "concentration": true
   },
   {
     "id": "friends",
@@ -1098,19 +2011,52 @@
     "target": "single",
     "attack_type": "none",
     "save": "CON",
-    "classes": []
+    "classes": [
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a bit of gauze",
+    "duration": "Concentration, up to 1 hour",
+    "concentration": true
   },
   {
     "id": "gentle_repose",
     "name": "Gentle Repose",
-    "description": "You touch a corpse or other remains. For the duration, the target is protected from decay and can't become undead. The spell also effectively extends the time limit on raising the target from the dead, since days spent under the influence of this spell don't count against the time limit of spells su...",
+    "description": "Preserve touched remains for ten days, preventing decay and transformation into Undead. Protected time is excluded from revival time limits; this does not make an already expired revival eligible.",
     "level": 2,
-    "school": "necrotic",
+    "school": "necromancy",
     "casting_time": "action",
     "range": 1,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "cleric",
+      "paladin",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "2 Copper Pieces, which the spell consumes",
+    "duration": "10 days",
+    "concentration": false,
+    "range_kind": "touch",
+    "requires_target_sight": false,
+    "material_component_consumed": true,
+    "rules_source": "SRD 5.2.1",
+    "rules_completeness": "partial",
+    "material_component_cost": 0,
+    "material_component_item_id": "gentle_repose_copper",
+    "ritual": true,
+    "duration_seconds": 864000
   },
   {
     "id": "glyph_of_warding",
@@ -1126,7 +2072,19 @@
     "damage_type": "fire",
     "save": "DEX",
     "half_on_save": true,
-    "classes": []
+    "classes": [
+      "bard",
+      "cleric",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "powdered diamond worth 200+ GP, which the spell consumes",
+    "duration": "Until dispelled or triggered",
+    "concentration": false
   },
   {
     "id": "goodberry",
@@ -1138,7 +2096,18 @@
     "range": 1,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "druid",
+      "ranger"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a sprig of mistletoe",
+    "duration": "24 hours",
+    "concentration": false
   },
   {
     "id": "grease",
@@ -1151,19 +2120,48 @@
     "target": "single",
     "attack_type": "none",
     "save": "DEX",
-    "classes": []
+    "classes": [
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a bit of pork rind or butter",
+    "duration": "1 minute",
+    "concentration": false
   },
   {
     "id": "guidance",
     "name": "Guidance",
-    "description": "You touch one willing creature. Once before the spell ends, the target can roll a d4 and add the number rolled to one ability check of its choice. It can roll the die before or after making the ability check. The spell then ends.",
+    "description": "You touch one willing creature and choose a skill. Until the spell ends, the creature adds 1d4 to ability checks that use that skill.",
     "level": 0,
     "school": "divination",
     "casting_time": "action",
     "range": 1,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "concentration, up to 1 minute",
+    "concentration": true,
+    "effects": [
+      {
+        "type": "grant_condition",
+        "condition": "guidance",
+        "duration": 10
+      }
+    ],
+    "classes": [
+      "bard",
+      "cleric",
+      "druid"
+    ],
+    "range_kind": "touch"
   },
   {
     "id": "guiding_bolt",
@@ -1177,7 +2175,27 @@
     "attack_type": "ranged_spell",
     "damage": "4d6",
     "damage_type": "radiant",
-    "classes": []
+    "components": [
+      "V",
+      "S"
+    ],
+    "upcast": {
+      "starting_level": 1,
+      "damage_per_level": "1d6"
+    },
+    "effects": [
+      {
+        "type": "grant_condition",
+        "condition": "guiding_bolt",
+        "duration": 2,
+        "on_spell_hit": true
+      }
+    ],
+    "classes": [
+      "cleric"
+    ],
+    "duration": "1 round",
+    "concentration": false
   },
   {
     "id": "gust_of_wind",
@@ -1190,7 +2208,20 @@
     "target": "single",
     "attack_type": "none",
     "save": "STR",
-    "classes": []
+    "classes": [
+      "druid",
+      "ranger",
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a legume seed",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true
   },
   {
     "id": "hail_of_thorns",
@@ -1219,25 +2250,56 @@
     "target": "single",
     "attack_type": "none",
     "save": "DEX",
-    "classes": []
+    "classes": [
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a shaving of licorice root",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true
   },
   {
     "id": "healing_word",
     "name": "Healing Word",
-    "description": "A creature of your choice that you can see within range regains hit points equal to 1d4 + your spellcasting ability modifier. This spell has no effect on undead or constructs.",
+    "requires_target_sight": true,
+    "description": "A creature of your choice that you can see within range regains hit points equal to 2d4 plus your spellcasting ability modifier.",
     "level": 1,
-    "school": "evocation",
+    "school": "abjuration",
     "casting_time": "bonus_action",
     "range": 12,
     "target": "single",
     "attack_type": "none",
+    "components": [
+      "V"
+    ],
+    "duration": "instantaneous",
+    "target_creature_type_exclusions": [
+      "undead",
+      "construct"
+    ],
     "effects": [
       {
         "type": "heal",
-        "value": "1d4"
+        "value": "2d4",
+        "ability_bonus_from_caster": true
       }
     ],
-    "classes": []
+    "upcast": {
+      "starting_level": 1,
+      "healing_dice_per_level": "2d4"
+    },
+    "classes": [
+      "bard",
+      "cleric",
+      "druid"
+    ],
+    "concentration": false,
+    "execution": "shared"
   },
   {
     "id": "heat_metal",
@@ -1252,7 +2314,18 @@
     "damage": "2d8",
     "damage_type": "fire",
     "save": "CON",
-    "classes": []
+    "classes": [
+      "bard",
+      "druid"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a piece of iron and a flame",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true
   },
   {
     "id": "hellish_rebuke",
@@ -1268,7 +2341,15 @@
     "damage_type": "fire",
     "save": "DEX",
     "half_on_save": true,
-    "classes": []
+    "classes": [
+      "warlock"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Instantaneous",
+    "concentration": false
   },
   {
     "id": "heroism",
@@ -1280,7 +2361,16 @@
     "range": 1,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "bard",
+      "paladin"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true
   },
   {
     "id": "hex",
@@ -1294,7 +2384,17 @@
     "attack_type": "none",
     "damage": "1d6",
     "damage_type": "necrotic",
-    "classes": []
+    "classes": [
+      "warlock"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "the petrified eye of a newt",
+    "duration": "Concentration, up to 1 hour",
+    "concentration": true
   },
   {
     "id": "hold_person",
@@ -1307,7 +2407,43 @@
     "target": "single",
     "attack_type": "none",
     "save": "WIS",
-    "classes": []
+    "classes": [
+      "bard",
+      "cleric",
+      "druid",
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a straight piece of iron",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "duration_seconds": 60,
+    "requires_target_sight": true,
+    "target_creature_types": [
+      "humanoid"
+    ],
+    "half_on_save": false,
+    "rules_source": "SRD5.2.1",
+    "rules_status": "2024-gameplay-partial",
+    "effects": [
+      {
+        "type": "grant_condition",
+        "condition": "paralyzed",
+        "on_failed_save": true
+      }
+    ],
+    "upcast": {
+      "additional_targets_per_level": 1,
+      "starting_level": 2
+    },
+    "repeat_save": "WIS",
+    "execution": "shared"
   },
   {
     "id": "hunger_of_hadar",
@@ -1327,16 +2463,33 @@
   {
     "id": "hunters_mark",
     "name": "Hunter's Mark",
-    "description": "You choose a creature you can see within range and mystically mark it as your quarry. Until the spell ends, you deal an extra 1d6 damage to the target whenever you hit it with a weapon attack, and you have advantage on any Wisdom ({@skill Perception}) or Wisdom ({@skill Survival}) check you make to ...",
+    "description": "You magically mark one creature you can see within range as your quarry. Until the spell ends, you deal an extra 1d6 Force damage to the target whenever you hit it with an attack roll. You also have Advantage on any Wisdom (Perception or Survival) check you make to find it. If the target drops to 0 Hit Points before the spell ends, you can take a Bonus Action to move the mark to a new creature you can see within range. Using a Higher-Level Spell Slot. Your Concentration can last longer with a spell slot of level 3â€“4 (up to 8 hours) or 5+ (up to 24 hours).",
     "level": 1,
     "school": "divination",
     "casting_time": "bonus_action",
     "range": 18,
+    "duration_seconds": 3600,
     "target": "single",
     "attack_type": "none",
     "damage": "1d6",
     "damage_type": "force",
-    "classes": []
+    "classes": [
+      "ranger"
+    ],
+    "components": [
+      "V"
+    ],
+    "duration": "Concentration, up to 1 hour",
+    "concentration": true,
+    "rules_source": "SRD 5.2.1",
+    "rules_status": "2024-gameplay-partial",
+    "upcast": {
+      "concentration_seconds_by_slot_level": {
+        "3": 28800,
+        "4": 28800,
+        "5+": 86400
+      }
+    }
   },
   {
     "id": "hypnotic_pattern",
@@ -1349,7 +2502,19 @@
     "target": "single",
     "attack_type": "none",
     "save": "WIS",
-    "classes": []
+    "classes": [
+      "bard",
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ],
+    "components": [
+      "S",
+      "M"
+    ],
+    "material": "a pinch of confetti",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true
   },
   {
     "id": "identify",
@@ -1361,7 +2526,19 @@
     "range": 1,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "ritual": true,
+    "classes": [
+      "bard",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a pearl worth 100+ GP",
+    "duration": "Instantaneous",
+    "concentration": false
   },
   {
     "id": "illusory_script",
@@ -1373,21 +2550,48 @@
     "range": 1,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "bard",
+      "warlock",
+      "wizard"
+    ],
+    "components": [
+      "S",
+      "M"
+    ],
+    "material": "ink worth 10+ GP, which the spell consumes",
+    "duration": "10 days",
+    "concentration": false
   },
   {
     "id": "inflict_wounds",
     "name": "Inflict Wounds",
-    "description": "Make a melee spell attack against a creature you can reach. On a hit, the target takes 3d10 necrotic damage.",
+    "description": "A creature you touch makes a Constitution saving throw, taking 2d10 necrotic damage on a failed save or half as much damage on a successful one.",
     "level": 1,
-    "school": "necrotic",
+    "school": "necromancy",
     "casting_time": "action",
     "range": 1,
     "target": "single",
     "attack_type": "none",
-    "damage": "3d10",
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "instantaneous",
+    "damage": "2d10",
     "damage_type": "necrotic",
-    "classes": []
+    "save": "CON",
+    "half_on_save": true,
+    "upcast": {
+      "starting_level": 1,
+      "damage_per_level": "1d10"
+    },
+    "classes": [
+      "cleric"
+    ],
+    "concentration": false,
+    "range_kind": "touch",
+    "execution": "shared"
   },
   {
     "id": "invisibility",
@@ -1399,19 +2603,60 @@
     "range": 1,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "bard",
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "an eyelash in gum arabic",
+    "duration": "Concentration, up to 1 hour",
+    "concentration": true
   },
   {
     "id": "jump",
     "name": "Jump",
-    "description": "You touch a creature. The creature's jump distance is tripled until the spell ends.",
+    "description": "You touch a willing creature. Once on each of its turns until the spell ends, that creature can jump up to 30 feet by spending 10 feet of movement.",
     "level": 1,
     "school": "transmutation",
-    "casting_time": "action",
+    "casting_time": "bonus_action",
     "range": 1,
-    "target": "single",
+    "target": "single_ally",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "druid",
+      "ranger",
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a grasshopper's hind leg",
+    "duration": "1 minute",
+    "concentration": false,
+    "duration_seconds": 60,
+    "rules_source": "SRD5.2.1",
+    "rules_status": "2024-gameplay-partial",
+    "base_targets": 1,
+    "effects": [
+      {
+        "type": "grant_condition",
+        "condition": "jumping",
+        "duration": 10
+      }
+    ],
+    "upcast": {
+      "additional_targets_per_level": 1,
+      "starting_level": 1
+    }
   },
   {
     "id": "knock",
@@ -1423,7 +2668,16 @@
     "range": 12,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "bard",
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V"
+    ],
+    "duration": "Instantaneous",
+    "concentration": false
   },
   {
     "id": "leomunds_tiny_hut",
@@ -1435,7 +2689,18 @@
     "range": 2,
     "target": "area",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "bard",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a crystal bead",
+    "duration": "8 hours",
+    "concentration": false
   },
   {
     "id": "lesser_restoration",
@@ -1447,7 +2712,19 @@
     "range": 1,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "bard",
+      "cleric",
+      "druid",
+      "paladin",
+      "ranger"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Instantaneous",
+    "concentration": false
   },
   {
     "id": "levitate",
@@ -1460,7 +2737,18 @@
     "target": "single",
     "attack_type": "none",
     "save": "CON",
-    "classes": []
+    "classes": [
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a metal spring",
+    "duration": "Concentration, up to 10 minutes",
+    "concentration": true
   },
   {
     "id": "light",
@@ -1473,7 +2761,20 @@
     "target": "area",
     "attack_type": "none",
     "save": "DEX",
-    "classes": []
+    "classes": [
+      "bard",
+      "cleric",
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "M"
+    ],
+    "material": "a firefly or phosphorescent moss",
+    "duration": "1 hour",
+    "concentration": false,
+    "range_kind": "touch"
   },
   {
     "id": "lightning_arrow",
@@ -1505,7 +2806,18 @@
     "damage_type": "lightning",
     "save": "DEX",
     "half_on_save": true,
-    "classes": []
+    "classes": [
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a bit of fur and a crystal rod",
+    "duration": "Instantaneous",
+    "concentration": false
   },
   {
     "id": "locate_animals_or_plants",
@@ -1517,7 +2829,19 @@
     "range": 0,
     "target": "self",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "bard",
+      "druid",
+      "ranger"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "fur from a bloodhound",
+    "duration": "Instantaneous",
+    "concentration": false
   },
   {
     "id": "locate_object",
@@ -1529,19 +2853,62 @@
     "range": 0,
     "target": "self",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "bard",
+      "cleric",
+      "druid",
+      "paladin",
+      "ranger",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a forked twig",
+    "duration": "Concentration, up to 10 minutes",
+    "concentration": true
   },
   {
     "id": "longstrider",
     "name": "Longstrider",
-    "description": "You touch a creature. The target's speed increases by 10 feet until the spell ends.",
+    "description": "A creature you touch gains a Speed increase of 10 feet for the duration. Using a Higher-Level Spell Slot. You can target one additional creature for each spell slot level above 1.",
     "level": 1,
     "school": "transmutation",
     "casting_time": "action",
     "range": 1,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a pinch of dirt",
+    "duration": "1 hour",
+    "duration_seconds": 3600,
+    "effects": [
+      {
+        "type": "grant_condition",
+        "condition": "longstrider",
+        "duration": 600
+      }
+    ],
+    "upcast": {
+      "starting_level": 1,
+      "additional_targets_per_level": 1
+    },
+    "classes": [
+      "bard",
+      "druid",
+      "ranger",
+      "wizard"
+    ],
+    "rules_source": "dnd-2024-srd-5.2.1",
+    "rules_status": "2024-supported",
+    "concentration": false,
+    "range_kind": "touch"
   },
   {
     "id": "mage_armor",
@@ -1553,7 +2920,19 @@
     "range": 1,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a piece of cured leather",
+    "duration": "8 hours",
+    "concentration": false,
+    "range_kind": "touch"
   },
   {
     "id": "mage_hand",
@@ -1565,7 +2944,18 @@
     "range": 6,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "bard",
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "1 minute",
+    "concentration": false
   },
   {
     "id": "magic_circle",
@@ -1578,7 +2968,20 @@
     "target": "area",
     "attack_type": "none",
     "save": "CHA",
-    "classes": []
+    "classes": [
+      "cleric",
+      "paladin",
+      "warlock",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "salt and powdered silver worth 100+ GP, which the spell consumes",
+    "duration": "1 hour",
+    "concentration": false
   },
   {
     "id": "magic_missile",
@@ -1592,7 +2995,16 @@
     "attack_type": "none",
     "damage": "1d4+1",
     "damage_type": "force",
-    "classes": []
+    "classes": [
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Instantaneous",
+    "concentration": false
   },
   {
     "id": "magic_mouth",
@@ -1604,7 +3016,18 @@
     "range": 6,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "bard",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "jade dust worth 10+ GP, which the spell consumes",
+    "duration": "Until dispelled",
+    "concentration": false
   },
   {
     "id": "magic_weapon",
@@ -1616,7 +3039,18 @@
     "range": 1,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "paladin",
+      "ranger",
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "1 hour",
+    "concentration": false
   },
   {
     "id": "major_image",
@@ -1628,7 +3062,20 @@
     "range": 24,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "bard",
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a bit of fleece",
+    "duration": "Concentration, up to 10 minutes",
+    "concentration": true
   },
   {
     "id": "mass_healing_word",
@@ -1646,7 +3093,15 @@
         "value": "1d4"
       }
     ],
-    "classes": []
+    "classes": [
+      "bard",
+      "cleric"
+    ],
+    "components": [
+      "V"
+    ],
+    "duration": "Instantaneous",
+    "concentration": false
   },
   {
     "id": "meld_into_stone",
@@ -1660,21 +3115,51 @@
     "attack_type": "none",
     "damage": "6d6",
     "damage_type": "force",
-    "classes": []
+    "classes": [
+      "cleric",
+      "druid",
+      "ranger"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "8 hours",
+    "concentration": false
   },
   {
     "id": "melfs_acid_arrow",
     "name": "Melf's Acid Arrow",
-    "description": "A shimmering green arrow streaks toward a target within range and bursts in a spray of acid. Make a ranged spell attack against the target. On a hit, the target takes 4d4 acid damage immediately and 2d4 acid damage at the end of its next turn. On a miss, the arrow splashes the target with acid for h...",
+    "description": "A shimmering green arrow streaks toward one target within 90 feet. On a hit, make a ranged spell attack: the target takes 4d4 acid damage, then 2d4 acid damage at the end of its next turn. On a miss, it takes half the initial damage only. Each spell slot above level 2 adds 1d4 to both damage rolls.",
     "level": 2,
     "school": "evocation",
     "casting_time": "action",
     "range": 18,
+    "duration": "instantaneous",
+    "concentration": false,
     "target": "single",
     "attack_type": "ranged_spell",
     "damage": "4d4",
     "damage_type": "acid",
-    "classes": []
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "powdered rhubarb leaf",
+    "miss_damage_scale": 0.5,
+    "delayed_damage": {
+      "damage": "2d4",
+      "damage_type": "acid",
+      "trigger": "end_of_target_next_turn"
+    },
+    "upcast": {
+      "starting_level": 2,
+      "damage_per_level": "1d4"
+    },
+    "classes": [
+      "wizard"
+    ]
   },
   {
     "id": "mending",
@@ -1686,31 +3171,75 @@
     "range": 1,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "bard",
+      "cleric",
+      "druid",
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "two lodestones",
+    "duration": "Instantaneous",
+    "concentration": false
   },
   {
     "id": "message",
     "name": "Message",
-    "description": "You point your finger toward a creature within range and whisper a message. The target (and only the target) hears the message and can reply in a whisper that only you can hear. You can cast this spell through solid objects if you are familiar with the target and know it is beyond the barrier. Magic...",
+    "description": "You point toward a creature within range and whisper a message. The target (and only the target) hears the message and can reply in a whisper that only you can hear.",
     "level": 0,
     "school": "transmutation",
     "casting_time": "action",
     "range": 24,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "bard",
+      "druid",
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "S",
+      "M"
+    ],
+    "material": "a copper wire",
+    "duration": "1 round",
+    "duration_seconds": 6,
+    "concentration": false,
+    "rules_source": "SRD5.2.1",
+    "rules_status": "2024-gameplay-partial"
   },
   {
     "id": "minor_illusion",
     "name": "Minor Illusion",
-    "description": "You create a sound or an image of an object within range that lasts for the duration. The illusion also ends if you dismiss it as an action or cast this spell again. If you create a sound, its volume can range from a whisper to a scream. It can be your voice, someone else's voice, a lion's roar, a b...",
+    "description": "You create a sound or an image of an object within range that lasts for 1 minute. The image must fit inside a 5-foot Cube and cannot create sound, light, smell, or another sensory effect. Physical interaction reveals it as an illusion. The sound can be a continuous or intermittent noise. A creature can take the Study action to recognize the illusion with a successful Intelligence (Investigation) check against your spell save DC; it then appears faint to that creature. The illusion ends if you cast this spell again.",
     "level": 0,
     "school": "illusion",
     "casting_time": "action",
     "range": 6,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "bard",
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ],
+    "components": [
+      "S",
+      "M"
+    ],
+    "material": "a bit of fleece",
+    "duration": "1 minute",
+    "duration_seconds": 60,
+    "concentration": false,
+    "rules_source": "SRD5.2.1",
+    "rules_status": "2024-gameplay-partial"
   },
   {
     "id": "mirror_image",
@@ -1722,7 +3251,18 @@
     "range": 0,
     "target": "self",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "bard",
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "1 minute",
+    "concentration": false
   },
   {
     "id": "misty_step",
@@ -1734,7 +3274,16 @@
     "range": 0,
     "target": "self",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ],
+    "components": [
+      "V"
+    ],
+    "duration": "Instantaneous",
+    "concentration": false
   },
   {
     "id": "moonbeam",
@@ -1750,7 +3299,17 @@
     "damage_type": "radiant",
     "save": "CON",
     "half_on_save": true,
-    "classes": []
+    "classes": [
+      "druid"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a moonseed leaf",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true
   },
   {
     "id": "nondetection",
@@ -1762,7 +3321,19 @@
     "range": 1,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "bard",
+      "ranger",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a pinch of diamond dust worth 25+ GP, which the spell consumes",
+    "duration": "8 hours",
+    "concentration": false
   },
   {
     "id": "nystuls_magic_aura",
@@ -1774,7 +3345,17 @@
     "range": 1,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a small square of silk",
+    "duration": "24 hours",
+    "concentration": false
   },
   {
     "id": "pass_without_trace",
@@ -1786,7 +3367,18 @@
     "range": 0,
     "target": "self",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "druid",
+      "ranger"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "ashes from burned mistletoe",
+    "duration": "Concentration, up to 1 hour",
+    "concentration": true
   },
   {
     "id": "phantasmal_force",
@@ -1813,7 +3405,15 @@
     "range": 6,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "1 hour",
+    "concentration": false
   },
   {
     "id": "plant_growth",
@@ -1825,22 +3425,48 @@
     "range": 30,
     "target": "area",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "bard",
+      "druid",
+      "ranger"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Instantaneous",
+    "concentration": false
   },
   {
     "id": "poison_spray",
     "name": "Poison Spray",
-    "description": "You extend your hand toward a creature you can see within range and project a puff of noxious gas from your palm. The creature must succeed on a Constitution saving throw or take 1d12 poison damage. This spell's damage increases by 1d12 when you reach 5th level (2d12), 11th level (3d12), and 17th le...",
+    "description": "You spray toxic mist at a creature within range. Make a ranged spell attack against the target. On a hit, the target takes 1d12 Poison damage. The damage increases to 2d12 at level 5, 3d12 at level 11, and 4d12 at level 17.",
     "level": 0,
-    "school": "conjuration",
+    "school": "necromancy",
     "casting_time": "action",
-    "range": 2,
+    "range": 6,
     "target": "single",
-    "attack_type": "none",
+    "attack_type": "ranged_spell",
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "instantaneous",
     "damage": "1d12",
     "damage_type": "poison",
-    "save": "CON",
-    "classes": []
+    "scaling": {
+      "5": "2d12",
+      "11": "3d12",
+      "17": "4d12"
+    },
+    "classes": [
+      "druid",
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ],
+    "concentration": false,
+    "execution": "shared"
   },
   {
     "id": "prayer_of_healing",
@@ -1858,69 +3484,176 @@
         "value": "2d8"
       }
     ],
-    "classes": []
+    "classes": [
+      "cleric",
+      "paladin"
+    ],
+    "components": [
+      "V"
+    ],
+    "duration": "Instantaneous",
+    "concentration": false
   },
   {
     "id": "prestidigitation",
     "name": "Prestidigitation",
-    "description": "This spell is a minor magical trick that novice spellcasters use for practice. You create one of the following magical effects within range: {'type': 'list', 'items': ['You create an instantaneous, harmless sensory effect, such as a shower of sparks, a puff of wind, faint musical notes, or an odd od...",
+    "description": "You create one of six magical effects within range: an instantaneous harmless sensory effect; instantaneously light or snuff out a candle, torch, or small campfire; instantaneously clean or soil an object no larger than 1 cubic foot; chill, warm, or flavor up to 1 cubic foot of nonliving material for 1 hour; make a color, small mark, or symbol appear on an object or surface for 1 hour; or create a nonmagical trinket or illusory image that fits in your hand until the end of your next turn. A trinket deals no damage and has no monetary worth. If you cast Prestidigitation multiple times, you can have up to three non-instantaneous effects active at a time.",
     "level": 0,
     "school": "transmutation",
     "casting_time": "action",
     "range": 2,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "bard",
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Instantaneous or up to 1 hour",
+    "duration_seconds": 3600,
+    "concentration": false,
+    "rules_source": "SRD5.2.1",
+    "rules_status": "2024-gameplay-partial"
   },
   {
     "id": "produce_flame",
     "name": "Produce Flame",
-    "description": "A flickering flame appears in your hand. The flame remains there for the duration and harms neither you nor your equipment. The flame sheds bright light in a 10-foot radius and dim light for an additional 10 feet. The spell ends if you dismiss it as an action or if you cast it again. You can also at...",
+    "description": "A flickering flame appears in your hand and remains there for 10 minutes. It emits no heat, ignites nothing, and sheds Bright Light in a 20-foot radius and Dim Light for an additional 20 feet. The spell ends if you cast it again. Until it ends, you can take a Magic action to hurl fire at a creature or object within 60 feet of you, making a ranged spell attack. On a hit, the target takes 1d8 Fire damage. The damage increases by 1d8 at character levels 5 (2d8), 11 (3d8), and 17 (4d8).",
     "level": 0,
     "school": "conjuration",
-    "casting_time": "action",
+    "casting_time": "bonus_action",
     "range": 0,
-    "target": "area",
+    "target": "self",
     "attack_type": "none",
-    "damage": "1d8",
-    "damage_type": "fire",
-    "classes": []
+    "classes": [
+      "druid"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "10 minutes",
+    "duration_seconds": 600,
+    "concentration": false,
+    "rules_source": "SRD5.2.1",
+    "rules_status": "2024-gameplay-partial"
   },
   {
     "id": "protection_from_energy",
     "name": "Protection from Energy",
-    "description": "For the duration, the willing creature you touch has resistance to one damage type of your choice: acid, cold, fire, lightning, or thunder.",
+    "description": "For the duration, the willing creature you touch has Resistance to one damage type of your choice: Acid, Cold, Fire, Lightning, or Thunder.",
     "level": 3,
     "school": "abjuration",
     "casting_time": "action",
     "range": 1,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "cleric",
+      "druid",
+      "ranger",
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Concentration, up to 1 hour",
+    "duration_seconds": 3600,
+    "concentration": true,
+    "effects": [
+      {
+        "type": "damage_resistance",
+        "damage_types": [
+          "acid",
+          "cold",
+          "fire",
+          "lightning",
+          "thunder"
+        ],
+        "duration": 600
+      }
+    ],
+    "rules_source": "SRD5.2.1",
+    "rules_status": "2024-gameplay-partial",
+    "range_kind": "touch"
   },
   {
     "id": "protection_from_evil_and_good",
     "name": "Protection from Evil and Good",
-    "description": "Until the spell ends, one willing creature you touch is protected against certain types of creatures: aberrations, celestials, elementals, fey, fiends, and undead. The protection grants several benefits. Creatures of those types have disadvantage on attack rolls against the target. The target also c...",
+    "description": "Until the spell ends, one willing creature you touch is protected against Aberrations, Celestials, Elementals, Fey, Fiends, and Undead. Those creature types have Disadvantage on attack rolls against the target. The target also can't be possessed by them or gain the Charmed or Frightened condition from them. If the target is already possessed, Charmed, or Frightened by one of them, it has Advantage on new saving throws against that effect.",
     "level": 1,
     "school": "abjuration",
     "casting_time": "action",
     "range": 1,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "cleric",
+      "druid",
+      "paladin",
+      "warlock",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a flask of Holy Water worth 25+ GP, which the spell consumes",
+    "duration": "Concentration, up to 10 minutes",
+    "duration_seconds": 600,
+    "concentration": true,
+    "material_component_cost": 25,
+    "material_component_consumed": true,
+    "consumed_material_item_id": "holy_water",
+    "protected_creature_types": [
+      "aberration",
+      "celestial",
+      "elemental",
+      "fey",
+      "fiend",
+      "undead"
+    ],
+    "rules_source": "SRD5.2.1",
+    "rules_status": "2024-gameplay-partial",
+    "range_kind": "touch"
   },
   {
     "id": "protection_from_poison",
     "name": "Protection from Poison",
-    "description": "You touch a creature. If it is poisoned, you neutralize the poison. If more than one poison afflicts the target, you neutralize one poison that you know is present, or you neutralize one at random. For the duration, the target has advantage on saving throws against being poisoned, and it has resista...",
+    "description": "You touch a creature. If it is Poisoned, you neutralize the poison. If more than one poison afflicts the target, you neutralize one poison that you know is present, or one at random. For 1 hour, the target has Advantage on saving throws to avoid or end the Poisoned condition and Resistance to Poison damage.",
     "level": 2,
     "school": "abjuration",
     "casting_time": "action",
     "range": 1,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "cleric",
+      "druid",
+      "paladin",
+      "ranger"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "1 hour",
+    "duration_seconds": 3600,
+    "concentration": false,
+    "neutralizes_condition": "poisoned",
+    "grants_condition": "protection_from_poison",
+    "saving_throw_condition": "poisoned",
+    "damage_resistance": "poison",
+    "rules_source": "SRD5.2.1",
+    "rules_status": "2024-gameplay-partial"
   },
   {
     "id": "purify_food_and_drink",
@@ -1932,21 +3665,69 @@
     "range": 2,
     "target": "area",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "cleric",
+      "druid",
+      "paladin"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Instantaneous",
+    "duration_seconds": 0,
+    "concentration": false,
+    "area_shape": "sphere",
+    "area_radius_feet": 5,
+    "purifies": [
+      "nonmagical_food",
+      "nonmagical_drink"
+    ],
+    "removes": [
+      "poison",
+      "disease"
+    ],
+    "rules_source": "SRD5.2.1",
+    "rules_status": "2024-gameplay-partial"
   },
   {
     "id": "ray_of_enfeeblement",
     "name": "Ray of Enfeeblement",
-    "description": "A black beam of enervating energy springs from your finger toward a creature within range. Make a ranged spell attack against the target. On a hit, the target deals only half damage with weapon attacks that use Strength until the spell ends. At the end of each of the target's turns, it can make a Co...",
+    "description": "A beam of enervating energy shoots from you toward a creature within range. The target must make a Constitution saving throw. On a success, it has Disadvantage on its next attack roll before the start of your next turn. On a failure, it has Disadvantage on Strength-based D20 Tests and subtracts 1d8 from all its damage rolls for the duration. The target repeats the save at the end of each of its turns, ending the spell on a success.",
     "level": 2,
-    "school": "necrotic",
+    "school": "necromancy",
     "casting_time": "action",
     "range": 12,
     "target": "single",
-    "attack_type": "ranged_spell",
+    "attack_type": "none",
     "save": "CON",
-    "half_on_save": true,
-    "classes": []
+    "classes": [
+      "warlock",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "duration_seconds": 60,
+    "condition_on_failed_save": "ray_of_enfeeblement",
+    "condition_on_successful_save": "vicious_mockery_disadvantage",
+    "condition_duration": 10,
+    "repeat_save": "CON",
+    "damage_roll_penalty": "1d8",
+    "strength_test_disadvantage": true,
+    "rules_source": "SRD5.2.1",
+    "rules_status": "2024-gameplay-partial",
+    "effects": [
+      {
+        "type": "grant_condition",
+        "condition": "ray_of_enfeeblement",
+        "duration": 10,
+        "on_failed_save": true
+      }
+    ]
   },
   {
     "id": "ray_of_frost",
@@ -1960,22 +3741,53 @@
     "attack_type": "ranged_spell",
     "damage": "1d8",
     "damage_type": "cold",
-    "classes": []
+    "classes": [
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Instantaneous",
+    "concentration": false
   },
   {
     "id": "ray_of_sickness",
     "name": "Ray of Sickness",
-    "description": "A ray of sickening greenish energy lashes out toward a creature within range. Make a ranged spell attack against the target. On a hit, the target takes 2d8 poison damage and must make a Constitution saving throw. On a failed save, it is also poisoned until the end of your next turn.",
+    "description": "You shoot a greenish ray at a creature within range. Make a ranged spell attack against the target. On a hit, the target takes 2d8 Poison damage and has the Poisoned condition until the end of your next turn. When you cast this spell using a higher-level spell slot, the damage increases by 1d8 for each slot level above 1.",
     "level": 1,
-    "school": "necrotic",
+    "school": "necromancy",
     "casting_time": "action",
     "range": 12,
     "target": "single",
     "attack_type": "ranged_spell",
     "damage": "2d8",
     "damage_type": "poison",
-    "save": "CON",
-    "classes": []
+    "upcast": {
+      "starting_level": 1,
+      "damage_per_level": "1d8"
+    },
+    "classes": [
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Instantaneous",
+    "concentration": false,
+    "effects": [
+      {
+        "type": "grant_condition",
+        "condition": "poisoned",
+        "duration": 10,
+        "on_spell_hit": true
+      }
+    ],
+    "rules_source": "SRD5.2.1",
+    "rules_status": "2024-gameplay-partial"
   },
   {
     "id": "remove_curse",
@@ -1987,31 +3799,100 @@
     "range": 1,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "cleric",
+      "paladin",
+      "warlock",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Instantaneous",
+    "concentration": false,
+    "removes_conditions": [
+      "cursed"
+    ],
+    "ends_curses_on_creatures": true,
+    "breaks_cursed_item_attunement": true,
+    "rules_source": "SRD5.2.1",
+    "rules_status": "2024-gameplay-partial"
   },
   {
     "id": "resistance",
     "name": "Resistance",
-    "description": "You touch one willing creature. Once before the spell ends, the target can roll a d4 and add the number rolled to one saving throw of its choice. It can roll the die before or after making the saving throw. The spell then ends.",
+    "description": "You touch a willing creature and choose a damage type: Acid, Bludgeoning, Cold, Fire, Lightning, Necrotic, Piercing, Poison, Radiant, Slashing, or Thunder. When the creature takes damage of the chosen type before the spell ends, the creature reduces the total damage taken by 1d4. A creature can benefit from this spell only once per turn.",
     "level": 0,
     "school": "abjuration",
     "casting_time": "action",
     "range": 1,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "components": [
+      "V",
+      "S"
+    ],
+    "concentration": true,
+    "duration": "concentration, up to 1 minute",
+    "damage_type_options": [
+      "acid",
+      "bludgeoning",
+      "cold",
+      "fire",
+      "lightning",
+      "necrotic",
+      "piercing",
+      "poison",
+      "radiant",
+      "slashing",
+      "thunder"
+    ],
+    "effects": [
+      {
+        "type": "grant_condition",
+        "condition": "resistance_spell",
+        "duration": 10
+      }
+    ],
+    "classes": [
+      "cleric",
+      "druid"
+    ],
+    "range_kind": "touch"
   },
   {
     "id": "revivify",
     "name": "Revivify",
     "description": "You touch a creature that has died within the last minute. That creature returns to life with 1 hit point. This spell can't return to life a creature that has died of old age, nor can it restore any missing body parts.",
     "level": 3,
-    "school": "necrotic",
+    "school": "necromancy",
     "casting_time": "action",
     "range": 1,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "cleric",
+      "druid",
+      "paladin",
+      "ranger"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a diamond worth 300+ GP, which the spell consumes",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "range_kind": "touch",
+    "requires_target_sight": false,
+    "material_component_consumed": true,
+    "rules_source": "SRD 5.2.1",
+    "rules_completeness": "partial",
+    "material_component_cost": 300,
+    "material_component_item_id": "diamond_300gp",
+    "revival_window_seconds": 60
   },
   {
     "id": "rope_trick",
@@ -2023,12 +3904,22 @@
     "range": 1,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a segment of rope",
+    "duration": "1 hour",
+    "concentration": false
   },
   {
     "id": "sacred_flame",
     "name": "Sacred Flame",
-    "description": "Flame-like radiance descends on a creature that you can see within range. The target must succeed on a Dexterity saving throw or take 1d8 radiant damage. The target gains no benefit from cover for this saving throw. The spell's damage increases by 1d8 when you reach 5th level (2d8), 11th level (3d8)...",
+    "description": "Flame-like radiance descends on a creature that you can see within range. The target must succeed on a Dexterity saving throw or take 1d8 Radiant damage. The target gains no benefit from Half Cover or Three-Quarters Cover for this save. The damage increases by 1d8 when you reach levels 5 (2d8), 11 (3d8), and 17 (4d8).",
     "level": 0,
     "school": "evocation",
     "casting_time": "action",
@@ -2038,7 +3929,23 @@
     "damage": "1d8",
     "damage_type": "radiant",
     "save": "DEX",
-    "classes": []
+    "classes": [
+      "cleric"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "instantaneous",
+    "requires_target_sight": true,
+    "ignore_cover_on_save": true,
+    "scaling": {
+      "5": "2d8",
+      "11": "3d8",
+      "17": "4d8"
+    },
+    "concentration": false,
+    "execution": "shared"
   },
   {
     "id": "sanctuary",
@@ -2051,7 +3958,17 @@
     "target": "single",
     "attack_type": "none",
     "save": "WIS",
-    "classes": []
+    "classes": [
+      "cleric"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a shard of glass from a mirror",
+    "duration": "1 minute",
+    "concentration": false
   },
   {
     "id": "scorching_ray",
@@ -2065,7 +3982,16 @@
     "attack_type": "ranged_spell",
     "damage": "2d6",
     "damage_type": "fire",
-    "classes": []
+    "classes": [
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Instantaneous",
+    "concentration": false
   },
   {
     "id": "searing_smite",
@@ -2080,7 +4006,14 @@
     "damage": "1d6",
     "damage_type": "fire",
     "save": "CON",
-    "classes": []
+    "classes": [
+      "paladin"
+    ],
+    "components": [
+      "V"
+    ],
+    "duration": "1 minute",
+    "concentration": false
   },
   {
     "id": "see_invisibility",
@@ -2092,7 +4025,19 @@
     "range": 0,
     "target": "self",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "bard",
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a pinch of talc",
+    "duration": "1 hour",
+    "concentration": false
   },
   {
     "id": "sending",
@@ -2104,7 +4049,19 @@
     "range": 1,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "bard",
+      "cleric",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a copper wire",
+    "duration": "Instantaneous",
+    "concentration": false
   },
   {
     "id": "shatter",
@@ -2120,7 +4077,19 @@
     "damage_type": "thunder",
     "save": "CON",
     "half_on_save": true,
-    "classes": []
+    "classes": [
+      "bard",
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a chip of mica",
+    "duration": "Instantaneous",
+    "concentration": false
   },
   {
     "id": "shield",
@@ -2132,7 +4101,16 @@
     "range": 0,
     "target": "self",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "1 round",
+    "concentration": false
   },
   {
     "id": "shield_of_faith",
@@ -2142,35 +4120,96 @@
     "school": "abjuration",
     "casting_time": "bonus_action",
     "range": 12,
+    "duration": "concentration, up to 10 minutes",
+    "concentration": true,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a prayer scroll",
+    "requires_target_sight": false,
+    "effects": [
+      {
+        "type": "grant_condition",
+        "condition": "shield_of_faith"
+      }
+    ],
+    "classes": [
+      "cleric",
+      "paladin"
+    ],
+    "duration_seconds": 600,
+    "execution": "shared"
   },
   {
     "id": "shillelagh",
     "name": "Shillelagh",
-    "description": "The wood of a club or quarterstaff you are holding is imbued with nature's power. For the duration, you can use your spellcasting ability instead of Strength for the attack and damage rolls of melee attacks using that weapon, and the weapon's damage die becomes a d8. The weapon also becomes magical,...",
+    "description": "A Club or Quarterstaff you are holding is imbued with nature's power. For the duration, you can use your spellcasting ability instead of Strength for the attack and damage rolls of melee attacks using that weapon, and the weapon's damage die becomes a d8. If the attack deals damage, it can be Force damage or the weapon's normal damage type (your choice). The spell ends early if you cast it again or if you let go of the weapon. The damage die changes when you reach levels 5 (d10), 11 (d12), and 17 (2d6).",
     "level": 0,
     "school": "transmutation",
     "casting_time": "bonus_action",
-    "range": 1,
-    "target": "single",
+    "range": 0,
+    "target": "self",
     "attack_type": "none",
-    "classes": []
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "mistletoe",
+    "duration": "1 minute",
+    "duration_seconds": 60,
+    "effects": [
+      {
+        "type": "grant_condition",
+        "condition": "shillelagh",
+        "duration": 10
+      }
+    ],
+    "classes": [
+      "druid"
+    ],
+    "concentration": false
   },
   {
     "id": "shocking_grasp",
     "name": "Shocking Grasp",
-    "description": "Lightning springs from your hand to deliver a shock to a creature you try to touch. Make a melee spell attack against the target. You have advantage on the attack roll if the target is wearing armor made of metal. On a hit, the target takes 1d8 lightning damage, and it can't take reactions until the...",
+    "description": "Lightning springs from you to a creature you try to touch. Make a melee spell attack against the target. On a hit, the target takes 1d8 lightning damage and can't make Opportunity Attacks until the start of its next turn. The damage increases to 2d8 at level 5, 3d8 at level 11, and 4d8 at level 17.",
     "level": 0,
     "school": "evocation",
     "casting_time": "action",
     "range": 1,
     "target": "single",
-    "attack_type": "none",
+    "attack_type": "melee_spell",
     "damage": "1d8",
     "damage_type": "lightning",
-    "classes": []
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "instantaneous",
+    "scaling": {
+      "5": "2d8",
+      "11": "3d8",
+      "17": "4d8"
+    },
+    "effects": [
+      {
+        "type": "grant_condition",
+        "condition": "shocking_grasp",
+        "duration": 1,
+        "on_spell_hit": true
+      }
+    ],
+    "classes": [
+      "sorcerer",
+      "wizard"
+    ],
+    "concentration": false,
+    "range_kind": "touch"
   },
   {
     "id": "silence",
@@ -2182,7 +4221,17 @@
     "range": 24,
     "target": "area",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "bard",
+      "cleric",
+      "ranger"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Concentration, up to 10 minutes",
+    "concentration": true
   },
   {
     "id": "silent_image",
@@ -2194,7 +4243,19 @@
     "range": 12,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "bard",
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a bit of fleece",
+    "duration": "Concentration, up to 10 minutes",
+    "concentration": true
   },
   {
     "id": "sleep",
@@ -2208,7 +4269,19 @@
     "attack_type": "none",
     "damage": "5d8",
     "damage_type": "force",
-    "classes": []
+    "classes": [
+      "bard",
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a pinch of sand or rose petals",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true
   },
   {
     "id": "sleet_storm",
@@ -2221,12 +4294,24 @@
     "target": "area",
     "attack_type": "none",
     "save": "DEX",
-    "classes": []
+    "classes": [
+      "druid",
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a miniature umbrella",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true
   },
   {
     "id": "slow",
     "name": "Slow",
-    "description": "You alter time around up to six creatures of your choice in a 40-foot cube within range. Each target must succeed on a Wisdom saving throw or be affected by this spell for the duration. An affected target's speed is halved, it takes a \u22122 penalty to AC and Dexterity saving throws, and it can't use re...",
+    "description": "You alter time around up to six creatures of your choice in a 40-foot cube within range. Each target must succeed on a Wisdom saving throw or be affected by this spell for the duration. An affected target's speed is halved, it takes a âˆ’2 penalty to AC and Dexterity saving throws, and it can't use re...",
     "level": 3,
     "school": "transmutation",
     "casting_time": "action",
@@ -2234,19 +4319,53 @@
     "target": "single",
     "attack_type": "none",
     "save": "DEX",
-    "classes": []
+    "classes": [
+      "bard",
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a drop of molasses",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true
   },
   {
     "id": "spare_the_dying",
     "name": "Spare the Dying",
-    "description": "You touch a living creature that has 0 hit points. The creature becomes stable. This spell has no effect on undead or constructs.",
+    "description": "Choose a creature within 15 feet that has 0 Hit Points and isn't dead. The creature becomes Stable. Cantrip Upgrade: The range doubles when you reach levels 5 (30 feet), 11 (60 feet), and 17 (120 feet).",
     "level": 0,
     "school": "necrotic",
     "casting_time": "action",
-    "range": 1,
+    "range": 3,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "rules_source": "SRD 5.2.1",
+    "rules_status": "2024-gameplay-partial",
+    "range_by_character_level_feet": {
+      "1": 15,
+      "5": 30,
+      "11": 60,
+      "17": 120
+    },
+    "target_must_have_zero_hp": true,
+    "target_creature_type_exclusions": [
+      "undead",
+      "construct"
+    ],
+    "classes": [
+      "cleric",
+      "druid"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Instantaneous",
+    "concentration": false
   },
   {
     "id": "speak_with_animals",
@@ -2258,7 +4377,18 @@
     "range": 0,
     "target": "self",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "bard",
+      "druid",
+      "ranger",
+      "warlock"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "10 minutes",
+    "concentration": false
   },
   {
     "id": "speak_with_dead",
@@ -2270,7 +4400,19 @@
     "range": 2,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "bard",
+      "cleric",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "burning incense",
+    "duration": "10 minutes",
+    "concentration": false
   },
   {
     "id": "speak_with_plants",
@@ -2282,7 +4424,17 @@
     "range": 6,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "bard",
+      "druid",
+      "ranger"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "10 minutes",
+    "concentration": false
   },
   {
     "id": "spider_climb",
@@ -2294,7 +4446,20 @@
     "range": 1,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a drop of bitumen and a spider",
+    "duration": "Concentration, up to 1 hour",
+    "duration_seconds": 3600,
+    "concentration": true
   },
   {
     "id": "spike_growth",
@@ -2308,7 +4473,18 @@
     "attack_type": "none",
     "damage": "2d4",
     "damage_type": "force",
-    "classes": []
+    "classes": [
+      "druid",
+      "ranger"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "seven thorns",
+    "duration": "Concentration, up to 10 minutes",
+    "concentration": true
   },
   {
     "id": "spirit_guardians",
@@ -2324,7 +4500,17 @@
     "damage_type": "radiant",
     "save": "WIS",
     "half_on_save": true,
-    "classes": []
+    "classes": [
+      "cleric"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a prayer scroll",
+    "duration": "Concentration, up to 10 minutes",
+    "concentration": true
   },
   {
     "id": "spiritual_weapon",
@@ -2338,7 +4524,15 @@
     "attack_type": "ranged_spell",
     "damage": "1d8",
     "damage_type": "force",
-    "classes": []
+    "classes": [
+      "cleric"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true
   },
   {
     "id": "stinking_cloud",
@@ -2351,7 +4545,19 @@
     "target": "area",
     "attack_type": "none",
     "save": "CON",
-    "classes": []
+    "classes": [
+      "bard",
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a rotten egg",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true
   },
   {
     "id": "suggestion",
@@ -2364,7 +4570,19 @@
     "target": "single",
     "attack_type": "none",
     "save": "WIS",
-    "classes": []
+    "classes": [
+      "bard",
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "M"
+    ],
+    "material": "a drop of honey",
+    "duration": "Concentration, up to 8 hours",
+    "concentration": true
   },
   {
     "id": "tashas_hideous_laughter",
@@ -2377,7 +4595,19 @@
     "target": "single",
     "attack_type": "none",
     "save": "WIS",
-    "classes": []
+    "classes": [
+      "bard",
+      "warlock",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a tart and a feather",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true
   },
   {
     "id": "tensers_floating_disk",
@@ -2389,7 +4619,17 @@
     "range": 6,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a drop of mercury",
+    "duration": "1 hour",
+    "concentration": false
   },
   {
     "id": "thaumaturgy",
@@ -2401,7 +4641,14 @@
     "range": 6,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "cleric"
+    ],
+    "components": [
+      "V"
+    ],
+    "duration": "1 minute",
+    "concentration": false
   },
   {
     "id": "thorn_whip",
@@ -2446,7 +4693,18 @@
     "damage_type": "thunder",
     "save": "CON",
     "half_on_save": true,
-    "classes": []
+    "classes": [
+      "bard",
+      "druid",
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Instantaneous",
+    "concentration": false
   },
   {
     "id": "tongues",
@@ -2458,7 +4716,20 @@
     "range": 1,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "bard",
+      "cleric",
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "M"
+    ],
+    "material": "a miniature ziggurat",
+    "duration": "1 hour",
+    "concentration": false
   },
   {
     "id": "true_strike",
@@ -2470,7 +4741,19 @@
     "range": 6,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "bard",
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ],
+    "components": [
+      "S",
+      "M"
+    ],
+    "material": "a weapon with which you have proficiency and that is worth 1+ CP",
+    "duration": "Instantaneous",
+    "concentration": false
   },
   {
     "id": "unseen_servant",
@@ -2482,7 +4765,19 @@
     "range": 12,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "bard",
+      "warlock",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a bit of string and of wood",
+    "duration": "1 hour",
+    "concentration": false
   },
   {
     "id": "vampiric_touch",
@@ -2500,22 +4795,52 @@
         "value": "3d6"
       }
     ],
-    "classes": []
+    "classes": [
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true
   },
   {
     "id": "vicious_mockery",
     "name": "Vicious Mockery",
-    "description": "You unleash a string of insults laced with subtle enchantments at a creature you can see within range. If the target can hear you (though it need not understand you), it must succeed on a Wisdom saving throw or take 1d4 psychic damage and have disadvantage on the next attack roll it makes before the...",
+    "description": "You unleash a string of insults laced with subtle enchantments at one creature you can see or hear within range. The target must succeed on a Wisdom saving throw or take 1d6 Psychic damage and have Disadvantage on the next attack roll it makes before the end of its next turn. The damage increases by 1d6 when you reach character levels 5, 11, and 17.",
     "level": 0,
     "school": "enchantment",
     "casting_time": "action",
     "range": 12,
     "target": "single",
     "attack_type": "none",
-    "damage": "1d4",
+    "components": [
+      "V"
+    ],
+    "duration": "instantaneous",
+    "damage": "1d6",
     "damage_type": "psychic",
     "save": "WIS",
-    "classes": []
+    "scaling": {
+      "5": "2d6",
+      "11": "3d6",
+      "17": "4d6"
+    },
+    "effects": [
+      {
+        "type": "grant_condition",
+        "condition": "vicious_mockery_disadvantage",
+        "duration": 1,
+        "on_failed_save": true
+      }
+    ],
+    "classes": [
+      "bard"
+    ],
+    "concentration": false
   },
   {
     "id": "warding_bond",
@@ -2527,7 +4852,18 @@
     "range": 1,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "cleric",
+      "paladin"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a pair of platinum rings worth 50+ GP each, which you and the target must wear for the duration",
+    "duration": "1 hour",
+    "concentration": false
   },
   {
     "id": "water_breathing",
@@ -2539,19 +4875,46 @@
     "range": 6,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "druid",
+      "ranger",
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a short reed",
+    "duration": "24 hours",
+    "concentration": false
   },
   {
     "id": "water_walk",
     "name": "Water Walk",
-    "description": "This spell grants the ability to move across any liquid surface\u2014such as water, acid, mud, snow, quicksand, or lava\u2014as if it were harmless solid ground (creatures crossing molten lava can still take damage from the heat). Up to ten willing creatures you can see within range gain this ability for the ...",
+    "description": "This spell grants the ability to move across any liquid surfaceâ€”such as water, acid, mud, snow, quicksand, or lavaâ€”as if it were harmless solid ground (creatures crossing molten lava can still take damage from the heat). Up to ten willing creatures you can see within range gain this ability for the ...",
     "level": 3,
     "school": "transmutation",
     "casting_time": "action",
     "range": 6,
     "target": "single",
     "attack_type": "none",
-    "classes": []
+    "classes": [
+      "cleric",
+      "druid",
+      "ranger",
+      "sorcerer"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a piece of cork",
+    "duration": "1 hour",
+    "duration_seconds": 3600,
+    "concentration": false
   },
   {
     "id": "web",
@@ -2566,7 +4929,18 @@
     "damage": "2d4",
     "damage_type": "fire",
     "save": "DEX",
-    "classes": []
+    "classes": [
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a bit of spiderweb",
+    "duration": "Concentration, up to 1 hour",
+    "concentration": true
   },
   {
     "id": "wind_wall",
@@ -2582,7 +4956,18 @@
     "damage_type": "force",
     "save": "STR",
     "half_on_save": true,
-    "classes": []
+    "classes": [
+      "druid",
+      "ranger"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a fan and a feather",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true
   },
   {
     "id": "witch_bolt",
@@ -2624,6 +5009,155 @@
     "target": "area",
     "attack_type": "none",
     "save": "CHA",
-    "classes": []
+    "classes": [
+      "bard",
+      "cleric",
+      "paladin"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "10 minutes",
+    "concentration": false
+  },
+  {
+    "id": "dominate_monster",
+    "name": "Dominate Monster",
+    "description": "Attempt to charm one creature. The target resists with a Wisdom saving throw; the effect requires concentration.",
+    "level": 8,
+    "school": "enchantment",
+    "casting_time": "action",
+    "range": 12,
+    "target": "single",
+    "attack_type": "none",
+    "save": "WIS",
+    "condition_on_failed_save": "charmed",
+    "condition_duration": 10,
+    "concentration": true,
+    "classes": [
+      "bard",
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Concentration, up to 1 hour"
+  },
+  {
+    "id": "eyebite",
+    "name": "Eyebite",
+    "description": "Focus a necromantic gaze on one creature. A failed Wisdom saving throw frightens the target; maintaining the spell requires concentration.",
+    "level": 6,
+    "school": "necromancy",
+    "casting_time": "action",
+    "range": 12,
+    "target": "single",
+    "attack_type": "none",
+    "save": "WIS",
+    "condition_on_failed_save": "frightened",
+    "condition_duration": 10,
+    "concentration": true,
+    "classes": [
+      "bard",
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Concentration, up to 1 minute"
+  },
+  {
+    "id": "finger_of_death",
+    "name": "Finger of Death",
+    "description": "A creature you can see within range makes a Constitution saving throw, taking 7d8 + 30 Necrotic damage on a failed save or half as much on a success. A Humanoid killed by this spell rises at the start of your next turn as a Zombie that follows your verbal orders.",
+    "level": 7,
+    "school": "necromancy",
+    "casting_time": "action",
+    "range": 12,
+    "target": "single",
+    "attack_type": "none",
+    "damage": "7d8+30",
+    "damage_type": "necrotic",
+    "save": "CON",
+    "half_damage_on_save": true,
+    "classes": [
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Instantaneous",
+    "concentration": false,
+    "rules_source": "SRD5.2.1",
+    "rules_status": "2024-gameplay-partial",
+    "zombie_on_humanoid_kill": true
+  },
+  {
+    "id": "power_word_heal",
+    "name": "Power Word Heal",
+    "description": "A wave of healing energy washes over one creature you can see within range. The target regains all its Hit Points. Charmed, Frightened, Paralyzed, Poisoned, and Stunned end. A Prone target can use its Reaction to stand up.",
+    "level": 9,
+    "school": "enchantment",
+    "casting_time": "action",
+    "range": 12,
+    "target": "single",
+    "attack_type": "none",
+    "effects": [
+      {
+        "type": "power_word_heal"
+      }
+    ],
+    "classes": [
+      "bard",
+      "cleric"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Instantaneous",
+    "concentration": false,
+    "requires_target_sight": true
+  },
+  {
+    "id": "power_word_kill",
+    "name": "Power Word Kill",
+    "description": "Compel one creature you can see within range to die if it has 100 Hit Points or fewer. Otherwise, it takes 12d12 Psychic damage.",
+    "level": 9,
+    "school": "enchantment",
+    "casting_time": "action",
+    "range": 12,
+    "target": "single",
+    "attack_type": "none",
+    "effects": [
+      {
+        "type": "power_word_kill",
+        "threshold_hp": 100,
+        "damage": "12d12",
+        "damage_type": "psychic"
+      }
+    ],
+    "classes": [
+      "bard",
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ],
+    "components": [
+      "V"
+    ],
+    "duration": "Instantaneous",
+    "concentration": false,
+    "requires_target_sight": true
   }
 ]

@@ -1,0 +1,129 @@
+CC0 / Public Domain audio pack for fantasy top-down party RPG
+All assets below are CC0 (Creative Commons Zero 1.0) / public-domain equivalent.
+Attribution is NOT required but recommended as courtesy.
+
+=== MUSIC ===
+
+title.ogg
+  Source page: https://opengameart.org/content/fairy-adventure
+  Author: MintoDog
+  License: CC0
+  Original filename: fairy_adventure_bpm140.ogg
+  Output: /workspace/audio_cc0/music/title.ogg
+  Notes: Loopable fantasy field/adventure theme (~2:24)
+
+combat.ogg
+  Source page: https://opengameart.org/content/fairy-battles
+  Author: MintoDog
+  License: CC0
+  Original filename: fairy_battles_bpm180.ogg
+  Output: /workspace/audio_cc0/music/combat.ogg
+  Notes: Loopable fantasy battle music (~1:37)
+
+camp.ogg
+  Source page: https://opengameart.org/content/shakkar
+  Author: zesona (Chris Murphy)
+  License: CC0
+  Original filename: Shakkar.ogg
+  Output: /workspace/audio_cc0/music/camp.ogg
+  Notes: Medieval town/camp loop (~0:55)
+
+=== SFX ===
+
+ui_click.ogg
+  Source page: https://opengameart.org/content/interface-sounds
+  Also: https://www.kenney.nl/assets/ui-audio (related Kenney UI packs)
+  Author: Kenney Vleugels (Kenney.nl)
+  License: CC0
+  Original filename: click_001.ogg (from kenney_interfaceSounds.zip)
+  Output: /workspace/audio_cc0/sfx/ui_click.ogg
+
+ui_cancel.ogg
+  Source page: https://opengameart.org/content/interface-sounds
+  Author: Kenney Vleugels (Kenney.nl)
+  License: CC0
+  Original filename: back_001.ogg (from kenney_interfaceSounds.zip)
+  Output: /workspace/audio_cc0/sfx/ui_cancel.ogg
+
+menu_open.ogg
+  Source page: https://opengameart.org/content/interface-sounds
+  Author: Kenney Vleugels (Kenney.nl)
+  License: CC0
+  Original filename: open_001.ogg (from kenney_interfaceSounds.zip)
+  Output: /workspace/audio_cc0/sfx/menu_open.ogg
+
+attack.ogg
+  Source page: https://opengameart.org/content/rpg-sound-pack
+  Author: artisticdude
+  License: CC0
+  Original filename: swing.wav (RPG Sound Pack/battle/)
+  Output: /workspace/audio_cc0/sfx/attack.ogg
+
+dodge.ogg
+  Source page: https://opengameart.org/content/100-cc0-sfx-2
+  Author: rubberduck
+  License: CC0
+  Original filename: sfx100v2_air_01.ogg
+  Output: /workspace/audio_cc0/sfx/dodge.ogg
+
+spell.ogg
+  Source page: https://opengameart.org/content/rpg-sound-pack
+  Author: artisticdude
+  License: CC0
+  Original filename: spell.wav (RPG Sound Pack/battle/)
+  Output: /workspace/audio_cc0/sfx/spell.ogg
+
+hit.ogg
+  Source page: https://opengameart.org/content/100-cc0-sfx-2
+  Author: rubberduck
+  License: CC0
+  Original filename: sfx100v2_hit_01.ogg
+  Output: /workspace/audio_cc0/sfx/hit.ogg
+
+miss.ogg
+  Source page: https://opengameart.org/content/100-cc0-sfx-2
+  Author: rubberduck
+  License: CC0
+  Original filename: sfx100v2_air_02.ogg
+  Output: /workspace/audio_cc0/sfx/miss.ogg
+
+heal.ogg
+  Source page: https://opengameart.org/content/magic-words-healing-sound-effect
+  Author: Spring Spring
+  License: CC0
+  Original filename: health_restore.wav
+  Output: /workspace/audio_cc0/sfx/heal.ogg
+
+rest.ogg
+  Source page: https://opengameart.org/content/50-rpg-sound-effects
+  Also: https://www.kenney.nl/assets/rpg-audio
+  Author: Kenney Vleugels (Kenney.nl)
+  License: CC0
+  Original filename: bookClose.ogg (from RPGsounds_Kenney.zip)
+  Output: /workspace/audio_cc0/sfx/rest.ogg
+
+end_turn.ogg
+  Source page: https://opengameart.org/content/interface-sounds
+  Author: Kenney Vleugels (Kenney.nl)
+  License: CC0
+  Original filename: confirmation_001.ogg (from kenney_interfaceSounds.zip)
+  Output: /workspace/audio_cc0/sfx/end_turn.ogg
+
+victory.ogg
+  Source page: https://opengameart.org/content/victory-fanfare
+  Author: ARoachIFoundOnMyPillow
+  License: CC0
+  Original filename: fanfare1.ogg (mirrored as fanfare1_0.ogg on OGA)
+  Output: /workspace/audio_cc0/sfx/victory.ogg
+
+defeat.ogg
+  Source page: https://opengameart.org/content/game-over-trumpet-sfx
+  Author: 0new4y
+  License: CC0
+  Original filename: losetrumpet.ogg (mirrored as losetrumpet_0.ogg on OGA)
+  Output: /workspace/audio_cc0/sfx/defeat.ogg
+
+=== NOTES ===
+- All outputs are OGG Vorbis (libvorbis), converted with /usr/bin/ffmpeg.
+- Raw downloads retained under /workspace/audio_cc0/_src/ for provenance.
+- Do NOT copy to user machine from this agent; parent will CopyFromBox.

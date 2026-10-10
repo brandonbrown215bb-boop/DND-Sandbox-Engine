@@ -1,0 +1,18 @@
+[
+  {
+    "id": "diamond_300gp",
+    "name": "Diamond (300 GP)",
+    "description": "A diamond worth 300 GP, consumed by Revivify.",
+    "type": "spell_component",
+    "weight": 0.01,
+    "value": 300
+  },
+  {
+    "id": "gentle_repose_copper",
+    "name": "Gentle Repose component packet (2 CP)",
+    "description": "A merchant-prepared packet containing the two copper coins consumed by Gentle Repose. The packet's shop price is 1 GP.",
+    "type": "spell_component",
+    "weight": 0.04,
+    "value": 1
+  }
+]

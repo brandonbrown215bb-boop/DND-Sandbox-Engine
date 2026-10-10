@@ -1,0 +1,134 @@
+{
+  "id": "warrior_of_the_open_hand",
+  "name": "Warrior of the Open Hand",
+  "class_id": "monk",
+  "rules_status": "2024-partial",
+  "features_by_level": {
+    "3": [
+      {
+        "id": "monk_open_hand_technique",
+        "name": "Open Hand Technique",
+        "description": "Whenever you hit a creature with an attack granted by your Flurry of Blows, you can impose Addle (prevents Opportunity Attacks), Push (push 10 ft away on failed STR save), or Topple (knock Prone on failed DEX save).",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "open_hand_technique"
+          }
+        ],
+        "resolver": "monk_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "reference-only",
+        "enabled": false
+      }
+    ],
+    "6": [
+      {
+        "id": "monk_wholeness_of_body",
+        "name": "Wholeness of Body",
+        "description": "As a Bonus Action, regain Hit Points equal to a roll of your Martial Arts die plus your Wisdom modifier. You can use this feature a number of times equal to your Wisdom modifier (minimum 1) per Long Rest.",
+        "type": "active",
+        "effects": [
+          {
+            "type": "heal_self",
+            "value_by_level": {
+              "1": "1d6+WIS",
+              "5": "1d8+WIS",
+              "11": "1d10+WIS",
+              "17": "1d12+WIS"
+            }
+          }
+        ],
+        "action_cost": "bonus_action",
+        "uses": 1,
+        "uses_per": "long_rest",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported",
+        "executor": "class_feature",
+        "uses_ability": "WIS",
+        "minimum_uses": 1
+      },
+      {
+        "id": "monk_subclass_feature_6",
+        "name": "Subclass Feature",
+        "description": "You gain a feature from your Monk Subclass.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "subclass_feature"
+          }
+        ],
+        "resolver": "monk_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "reference-only",
+        "enabled": false
+      }
+    ],
+    "11": [
+      {
+        "id": "monk_fleet_step",
+        "name": "Fleet Step",
+        "description": "When you take a Bonus Action on your turn other than Step of the Wind, you can also use Step of the Wind as part of that Bonus Action.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "fleet_step"
+          }
+        ],
+        "resolver": "monk_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      },
+      {
+        "id": "monk_subclass_feature_11",
+        "name": "Subclass Feature",
+        "description": "You gain a feature from your Monk Subclass.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "subclass_feature"
+          }
+        ],
+        "resolver": "monk_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "reference-only",
+        "enabled": false
+      }
+    ],
+    "17": [
+      {
+        "id": "monk_quivering_palm",
+        "name": "Quivering Palm",
+        "description": "When you hit a creature with an Unarmed Strike, spend 4 Focus Points to start lethal vibrations. The target makes a Constitution saving throw, taking 10d12 Force damage on a failure or half as much on a success.",
+        "type": "active",
+        "effects": [
+          {
+            "type": "quivering_palm"
+          }
+        ],
+        "action_cost": "action",
+        "focus_cost": 4,
+        "uses": 1,
+        "uses_per": "combat",
+        "resolver": "monk_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "reference-only",
+        "enabled": false
+      },
+      {
+        "id": "monk_subclass_feature_17",
+        "name": "Subclass Feature",
+        "description": "You gain a feature from your Monk Subclass.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "subclass_feature"
+          }
+        ],
+        "resolver": "monk_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "reference-only",
+        "enabled": false
+      }
+    ]
+  }
+}

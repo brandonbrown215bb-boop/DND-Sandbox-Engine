@@ -29,10 +29,11 @@
   {
     "id": "torch",
     "name": "Torch",
-    "description": "A stick wrapped in oil-soaked cloth. Provides light and +1 vision range for 10 turns.",
+    "description": "A Torch burns for 1 hour, casting Bright Light in a 20-foot radius and Dim Light for an additional 20 feet.",
     "type": "consumable",
-    "action_cost": "free",
-    "effects": [{"type": "vision_bonus", "value": 1, "duration": 10}],
+    "action_cost": "bonus_action",
+    "effects": [],
+    "light_source": {"bright_radius_feet": 20, "dim_radius_feet": 40, "duration_seconds": 3600},
     "value": 1
   },
   {
@@ -57,6 +58,15 @@
     "description": "A pouch containing material components for spellcasting.",
     "type": "tool",
     "effects": [{"type": "spellcasting_focus"}],
+    "value": 25
+  },
+  {
+    "id": "holy_water",
+    "name": "Holy Water (Flask, 25 GP)",
+    "description": "A flask of Holy Water worth 25 GP. Consumed when casting Protection from Evil and Good.",
+    "type": "consumable",
+    "action_cost": "free",
+    "effects": [],
     "value": 25
   },
   {

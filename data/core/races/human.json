@@ -12,15 +12,24 @@
   },
   "speed": 6,
   "size": "medium",
-  "languages": ["Common", "Choice"],
+  "languages": [
+    "Common",
+    "Choice"
+  ],
   "proficiencies": [],
   "traits": [
     {
       "id": "human_versatility",
       "name": "Versatile",
       "description": "+1 to all ability scores. Gain proficiency in one extra skill of your choice.",
-      "effects": [{"type": "bonus_skill_proficiency", "count": 1}]
+      "effects": [
+        {
+          "type": "bonus_skill_proficiency",
+          "count": 1
+        }
+      ]
     }
   ],
-  "darkvision": false
+  "darkvision": false,
+  "darkvision_feet": 0
 }

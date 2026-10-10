@@ -1,22 +1,17 @@
 {
   "id": "monk",
   "name": "Monk",
-  "description": "Monk class. Source: PHB.",
+  "description": "SRD 5.2.1 Monk with partial levels 1-20 mechanics. Unsupported terrain, falling, Open Hand Technique, Quivering Palm and Epic Boon choices remain unavailable.",
   "hit_die": "d8",
   "primary_ability": "DEX",
   "saving_throw_proficiencies": [
     "STR",
     "DEX"
   ],
-  "armor_proficiencies": [
-    "light",
-    "medium",
-    "heavy",
-    "shields"
-  ],
+  "armor_proficiencies": [],
   "weapon_proficiencies": [
     "simple",
-    "martial"
+    "martial_light"
   ],
   "skill_choices": {
     "pick": 2,
@@ -24,234 +19,555 @@
       "Athletics",
       "Acrobatics",
       "Insight",
-      "Perception",
+      "Religion",
       "History",
-      "Arcana",
       "Stealth"
     ]
   },
   "starting_equipment": [
-    "leather_armor",
-    "shield"
+    "spear",
+    "dagger",
+    "dagger",
+    "dagger",
+    "dagger",
+    "dagger"
   ],
+  "starting_gold": 11,
+  "rules_source": "dnd-2024-srd-5.2.1",
+  "rules_status": "2024-partial",
+  "support_status": "full",
   "spell_slots_by_level": {},
   "cantrips_known": [],
   "spells_known_by_level": {
     "1": [],
     "2": [],
-    "3": []
+    "3": [],
+    "4": [],
+    "5": [],
+    "6": [],
+    "7": [],
+    "8": [],
+    "9": [],
+    "10": [],
+    "11": [],
+    "12": [],
+    "13": [],
+    "14": [],
+    "15": [],
+    "16": [],
+    "17": [],
+    "18": [],
+    "19": [],
+    "20": []
   },
   "features_by_level": {
     "1": [
       {
         "id": "monk_martial_arts",
         "name": "Martial Arts",
-        "description": "Your practice of martial arts gives you mastery of combat styles that use unarmed strikes and monk weapons, which are shortsword and any {@filter simple melee weapons that don't have the two-handed or heavy property=phb=basic=simple weapon;melee weapon=sand=!heavy;!two-handed}. You gain the followin...",
-        "type": "active",
-        "effects": [],
-        "action_cost": "bonus_action",
-        "uses": 1,
-        "uses_per": "combat"
+        "description": "While unarmored, without a shield, and using only Monk weapons, use Dexterity for attacks and damage and a d6 Martial Arts die (d8 at level 5, d10 at level 11, d12 at level 17). Monk weapons are Simple Melee weapons and Light Martial Melee weapons. You can make an Unarmed Strike as a Bonus Action.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "martial_arts"
+          }
+        ],
+        "resolver": "monk_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
       },
       {
         "id": "monk_unarmored_defense",
         "name": "Unarmored Defense",
-        "description": "Beginning at 1st level, while you are wearing no armor and not wielding a shield, your AC equals 10 + your Dexterity modifier + your Wisdom modifier.",
+        "description": "While you are wearing no armor and not wielding a shield, your AC equals 10 + your Dexterity modifier + your Wisdom modifier.",
         "type": "passive",
-        "effects": []
+        "effects": [
+          {
+            "type": "unarmored_defense"
+          }
+        ],
+        "resolver": "monk_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
       },
       {
         "id": "monk_bonus_unarmed_strike",
         "name": "Bonus Unarmed Strike",
         "description": "You can make an Unarmed Strike as a Bonus Action.",
         "type": "active",
-        "effects": [],
+        "effects": [
+          {
+            "type": "unarmed_attack"
+          }
+        ],
         "action_cost": "bonus_action",
         "uses": 1,
-        "uses_per": "combat"
+        "uses_per": "combat",
+        "resolver": "monk_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
       },
       {
         "id": "monk_dexterous_attacks",
         "name": "Dexterous Attacks",
-        "description": "You can use your Dexterity modifier instead of your Strength modifier for the attack and damage rolls of your Unarmed Strikes and Monk weapons. In addition, when you use the Grapple or Shove option of your Unarmed Strike, you can use your Dexterity modifier instead of your Strength modifier to deter...",
+        "description": "You can use your Dexterity modifier instead of your Strength modifier for the attack and damage rolls of your Unarmed Strikes and Monk weapons.",
         "type": "passive",
-        "effects": []
+        "effects": [
+          {
+            "type": "dexterous_attacks"
+          }
+        ],
+        "resolver": "monk_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "reference-only",
+        "enabled": false
       },
       {
         "id": "monk_martial_arts_die",
         "name": "Martial Arts Die",
-        "description": "You can roll 1d6 in place of the normal damage of your Unarmed Strike or Monk weapons. This die changes as you gain Monk levels, as shown in the Martial Arts column of the Monk Features table.",
+        "description": "You can roll your Martial Arts die in place of the normal damage of your Unarmed Strike or Monk weapons (1d6 at levels 1-4, 1d8 at 5-10, 1d10 at 11-16, 1d12 at 17-20).",
         "type": "passive",
-        "effects": []
+        "effects": [
+          {
+            "type": "martial_arts_die"
+          }
+        ],
+        "resolver": "monk_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "reference-only",
+        "enabled": false
       }
     ],
     "2": [
       {
-        "id": "monk_dedicated_weapon",
-        "name": "Dedicated Weapon",
-        "description": "{@i 2nd-level monk optional class features feature} You train yourself to use a variety of weapons as monk weapons, not just simple melee weapons and shortswords. Whenever you finish a short or long rest, you can touch one weapon, focus your ki on it, and then count that weapon as a monk weapon unti...",
-        "type": "passive",
-        "effects": []
-      },
-      {
         "id": "monk_flurry_of_blows",
         "name": "Flurry of Blows",
-        "description": "Immediately after you take the {@action Attack} action on your turn, you can spend 1 ki point to make two unarmed strikes as a bonus action.",
+        "description": "Spend 1 Focus to make two Unarmed Strikes as a Bonus Action (three strikes at level 10+ with Heightened Focus). No preceding Attack action is required.",
         "type": "active",
-        "effects": [],
+        "effects": [
+          {
+            "type": "unarmed_attack",
+            "count": 2
+          }
+        ],
         "action_cost": "bonus_action",
         "uses": 1,
-        "uses_per": "combat"
-      },
-      {
-        "id": "monk_ki",
-        "name": "Ki",
-        "description": "Starting at 2nd level, your training allows you to harness the mystic energy of ki. Your access to this energy is represented by a number of ki points. Your monk level determines the number of points you have, as shown in the Ki Points column of the Monk table. You can spend these points to fuel var...",
-        "type": "passive",
-        "effects": []
+        "uses_per": "turn",
+        "focus_cost": 1,
+        "resolver": "monk_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
       },
       {
         "id": "monk_patient_defense",
         "name": "Patient Defense",
-        "description": "You can spend 1 ki point to take the {@action Dodge} action as a bonus action on your turn.",
+        "description": "Disengage as a Bonus Action for free, or spend 1 Focus to Disengage and Dodge together. At level 10+, also grants Temporary Hit Points equal to two rolls of your Martial Arts die.",
         "type": "active",
-        "effects": [],
+        "effects": [
+          {
+            "type": "monk_bonus_action"
+          }
+        ],
         "action_cost": "bonus_action",
         "uses": 1,
-        "uses_per": "combat"
+        "uses_per": "turn",
+        "options": [
+          "disengage",
+          "disengage_dodge"
+        ],
+        "resolver": "monk_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
       },
       {
         "id": "monk_step_of_the_wind",
         "name": "Step of the Wind",
-        "description": "You can spend 1 ki point to take the {@action Disengage} or {@action Dash} action as a bonus action on your turn, and your jump distance is doubled for the turn.",
+        "description": "Dash as a Bonus Action for free, or spend 1 Focus to Dash and Disengage together.",
         "type": "active",
-        "effects": [],
+        "effects": [
+          {
+            "type": "monk_bonus_action"
+          }
+        ],
         "action_cost": "bonus_action",
         "uses": 1,
-        "uses_per": "combat"
+        "uses_per": "turn",
+        "options": [
+          "dash",
+          "dash_disengage"
+        ],
+        "resolver": "monk_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
       },
       {
         "id": "monk_unarmored_movement",
         "name": "Unarmored Movement",
-        "description": "Starting at 2nd level, your speed increases by 10 feet while you are not wearing armor or wielding a shield. This bonus increases when you reach certain monk levels, as shown in the Monk table. At 9th level, you gain the ability to move along vertical surfaces and across liquids on your turn without...",
+        "description": "While you are not wearing armor or wielding a shield, your speed increases by 10 ft (+2 tiles). This bonus increases to +15 ft at level 6, +20 ft at level 10, +25 ft at level 14, and +30 ft at level 18.",
         "type": "passive",
-        "effects": []
+        "effects": [
+          {
+            "type": "speed_bonus",
+            "requires_unarmored": true,
+            "bonus_by_level": {
+              "2": 2,
+              "6": 3,
+              "10": 4,
+              "14": 5,
+              "18": 6
+            }
+          }
+        ],
+        "resolver": "monk_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
       },
       {
         "id": "monk_monk's_focus",
         "name": "Monk's Focus",
-        "description": "Your focus and martial training allow you to harness a well of extraordinary energy within yourself. This energy is represented by Focus Points. Your Monk level determines the number of points you have, as shown in the Focus Points column of the Monk Features table. You can expend these points to en...",
+        "description": "You have a pool of Focus Points equal to your Monk level. Restored on Short or Long Rest.",
         "type": "passive",
-        "effects": []
+        "effects": [
+          {
+            "type": "monk_focus"
+          }
+        ],
+        "resolver": "monk_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
       },
       {
         "id": "monk_uncanny_metabolism",
         "name": "Uncanny Metabolism",
-        "description": "When you roll Initiative, you can regain all expended Focus Points. When you do so, roll your Martial Arts die, and regain a number of Hit Points equal to your Monk level plus the number rolled. Once you use this feature, you can't use it again until you finish a Long Rest.",
+        "description": "When you roll Initiative, you can regain all expended Focus Points and regain HP equal to your Monk level plus a roll of your Martial Arts die. Once per Long Rest.",
         "type": "passive",
-        "effects": []
+        "effects": [
+          {
+            "type": "uncanny_metabolism"
+          }
+        ],
+        "resolver": "monk_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
       }
     ],
     "3": [
       {
-        "id": "monk_deflect_missiles",
-        "name": "Deflect Missiles",
-        "description": "Starting at 3rd level, you can use your reaction to deflect or catch the missile when you are hit by a ranged weapon attack. When you do so, the damage you take from the attack is reduced by 1d10 + your Dexterity modifier + your monk level. If you reduce the damage to 0, you can catch the missile if...",
-        "type": "active",
-        "effects": [],
-        "action_cost": "reaction",
-        "uses": 1,
-        "uses_per": "combat"
-      },
-      {
-        "id": "monk_ki-fueled_attack",
-        "name": "Ki-Fueled Attack",
-        "description": "{@i 3rd-level monk optional class features feature} If you spend 1 ki point or more as part of your action on your turn, you can make one attack with an unarmed strike or a monk weapon as a bonus action before the end of the turn.",
-        "type": "active",
-        "effects": [],
-        "action_cost": "bonus_action",
-        "uses": 1,
-        "uses_per": "combat"
-      },
-      {
-        "id": "monk_monastic_tradition",
-        "name": "Monastic Tradition",
-        "description": "When you reach 3rd level, you commit yourself to a monastic tradition, chosen from the list of available traditions. Your tradition grants you features at 3rd level and again at 6th, 11th, and 17th level.",
-        "type": "passive",
-        "effects": []
-      },
-      {
         "id": "monk_deflect_attacks",
         "name": "Deflect Attacks",
-        "description": "When an attack roll hits you and its damage includes Bludgeoning, Piercing, or Slashing damage, you can take a Reaction to reduce the attack's total damage against you. The reduction equals 1d10 plus your Dexterity modifier and Monk level. If you reduce the damage to 0, you can expend 1 Focus Point ...",
+        "description": "When an attack hits you, take a Reaction to reduce damage by 1d10 + Dexterity modifier + Monk level. If reduced to 0, expend 1 Focus to redirect the attack (target makes Dex save vs Monk DC or takes 2 Martial Arts dice + Dex mod damage). At level 13 Deflect Energy extends this to any damage type.",
         "type": "active",
-        "effects": [],
+        "effects": [
+          {
+            "type": "reaction",
+            "reaction": "deflect_attacks"
+          }
+        ],
         "action_cost": "reaction",
         "uses": 1,
-        "uses_per": "combat"
-      },
-      {
-        "id": "monk_monk_subclass",
-        "name": "Monk Subclass",
-        "description": "You gain a Monk subclass of your choice. A subclass is a specialization that grants you features at certain Monk levels. For the rest of your career, you gain each of your subclass's features that are of your Monk level or lower.",
-        "type": "passive",
-        "effects": []
+        "uses_per": "combat",
+        "resolver": "monk_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
       }
     ],
     "4": [
       {
-        "id": "monk_ability_score_improvement",
+        "id": "monk_ability_score_improvement_4",
         "name": "Ability Score Improvement",
-        "description": "When you reach 4th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature. If your DM allows the use of feats, you may instead take a {@5etools feat.html}.",
+        "description": "Increase one ability score by 2, or two ability scores by 1, up to the maximum of 20.",
         "type": "passive",
-        "effects": []
-      },
-      {
-        "id": "monk_quickened_healing",
-        "name": "Quickened Healing",
-        "description": "{@i 4th-level monk optional class features feature} As an action, you can spend 2 ki points and roll a Martial Arts die. You regain a number of hit points equal to the number rolled plus your proficiency bonus.",
-        "type": "active",
-        "effects": [],
-        "action_cost": "action",
-        "uses": 1,
-        "uses_per": "combat"
+        "effects": [
+          {
+            "type": "asi"
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
       },
       {
         "id": "monk_slow_fall",
         "name": "Slow Fall",
-        "description": "Beginning at 4th level, you can use your reaction when you fall to reduce any falling damage you take by an amount equal to five times your monk level.",
+        "description": "Use your Reaction when you fall to reduce any falling damage by an amount equal to five times your Monk level.",
         "type": "active",
-        "effects": [],
+        "effects": [
+          {
+            "type": "slow_fall"
+          }
+        ],
         "action_cost": "reaction",
         "uses": 1,
-        "uses_per": "combat"
+        "uses_per": "combat",
+        "resolver": "monk_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "reference-only",
+        "enabled": false
       }
     ],
     "5": [
       {
         "id": "monk_extra_attack",
         "name": "Extra Attack",
-        "description": "Beginning at 5th level, you can attack twice, instead of once, whenever you take the {@action Attack} action on your turn.",
-        "type": "active",
-        "effects": [],
-        "action_cost": "action",
-        "uses": 1,
-        "uses_per": "combat"
-      },
-      {
-        "id": "monk_focused_aim",
-        "name": "Focused Aim",
-        "description": "{@i 5th-level monk optional class features feature} When you miss with an attack roll, you can spend 1 to 3 ki points to increase your attack roll by 2 for each of these ki points you spend, potentially turning the miss into a hit.",
+        "description": "You can attack twice, instead of once, whenever you take the Attack action on your turn.",
         "type": "passive",
-        "effects": []
+        "effects": [
+          {
+            "type": "extra_attack",
+            "count": 1
+          }
+        ],
+        "resolver": "monk_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
       },
       {
         "id": "monk_stunning_strike",
         "name": "Stunning Strike",
-        "description": "Starting at 5th level, you can interfere with the flow of ki in an opponent's body. When you hit another creature with a melee weapon attack, you can spend 1 ki point to attempt a stunning strike. The target must succeed on a Constitution saving throw or be stunned until the end of your next turn.",
+        "description": "Once per turn after a Monk weapon or Unarmed Strike hits, spend 1 Focus. A failed Constitution save Stuns until your next turn begins. A successful save halves Speed and grants Advantage to the next attack against the target before then.",
         "type": "passive",
-        "effects": []
+        "effects": [
+          {
+            "type": "stunning_strike"
+          }
+        ],
+        "resolver": "monk_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "6": [
+      {
+        "id": "monk_empowered_strikes",
+        "name": "Empowered Strikes",
+        "description": "Whenever you deal damage with your Unarmed Strike, it can deal your choice of Force damage or its normal damage type.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "empowered_strikes"
+          }
+        ],
+        "resolver": "monk_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "7": [
+      {
+        "id": "monk_evasion",
+        "name": "Evasion",
+        "description": "When you are subjected to an effect that allows a Dexterity saving throw to take only half damage, you instead take no damage on a success and only half damage on a failure.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "evasion"
+          }
+        ],
+        "resolver": "monk_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "8": [
+      {
+        "id": "monk_ability_score_improvement_8",
+        "name": "Ability Score Improvement",
+        "description": "Increase one ability score by 2, or two ability scores by 1, up to the maximum of 20.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "asi"
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "9": [
+      {
+        "id": "monk_acrobatic_movement",
+        "name": "Acrobatic Movement",
+        "description": "While you are not wearing armor or wielding a shield, you can move along vertical surfaces and across liquids on your turn without falling during movement.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "acrobatic_movement"
+          }
+        ],
+        "resolver": "monk_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "reference-only",
+        "enabled": false
+      }
+    ],
+    "10": [
+      {
+        "id": "monk_heightened_focus",
+        "name": "Heightened Focus",
+        "description": "Your Flurry of Blows grants three Unarmed Strikes instead of two. Patient Defense with Focus grants Temporary Hit Points equal to two rolls of your Martial Arts die. Step of the Wind with Focus allows you to move a willing Large or smaller creature with you.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "heightened_focus"
+          }
+        ],
+        "resolver": "monk_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      },
+      {
+        "id": "monk_self_restoration",
+        "name": "Self-Restoration",
+        "description": "At the end of each of your turns, you can remove the Charmed, Frightened, or Poisoned condition from yourself. You no longer gain Exhaustion from forgoing food and drink.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "self_restoration"
+          }
+        ],
+        "resolver": "monk_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "11": [],
+    "12": [
+      {
+        "id": "monk_ability_score_improvement_12",
+        "name": "Ability Score Improvement",
+        "description": "Increase one ability score by 2, or two ability scores by 1, up to the maximum of 20.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "asi"
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "13": [
+      {
+        "id": "monk_deflect_energy",
+        "name": "Deflect Energy",
+        "description": "You can now use your Deflect Attacks feature against attacks that deal any damage type, not just Bludgeoning, Piercing, or Slashing.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "deflect_energy"
+          }
+        ],
+        "resolver": "monk_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "14": [
+      {
+        "id": "monk_disciplined_survivor",
+        "name": "Disciplined Survivor",
+        "description": "You gain proficiency in all saving throws. Whenever you fail a saving throw, you can spend 1 Focus Point to reroll it and take the second result.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "disciplined_survivor"
+          }
+        ],
+        "resolver": "monk_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "15": [
+      {
+        "id": "monk_perfect_focus",
+        "name": "Perfect Focus",
+        "description": "When you roll Initiative, if you have 3 or fewer Focus Points remaining, you regain expended Focus Points until you have 4.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "perfect_focus"
+          }
+        ],
+        "resolver": "monk_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "16": [
+      {
+        "id": "monk_ability_score_improvement_16",
+        "name": "Ability Score Improvement",
+        "description": "Increase one ability score by 2, or two ability scores by 1, up to the maximum of 20.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "asi"
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "17": [],
+    "18": [
+      {
+        "id": "monk_superior_defense",
+        "name": "Superior Defense",
+        "description": "At the start of your turn, expend 3 Focus Points to gain resistance to all damage types except Force damage for 1 minute or until you become Incapacitated.",
+        "type": "active",
+        "effects": [
+          {
+            "type": "superior_defense"
+          }
+        ],
+        "action_cost": "free",
+        "focus_cost": 3,
+        "uses": 1,
+        "uses_per": "combat",
+        "resolver": "monk_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "19": [
+      {
+        "id": "monk_epic_boon",
+        "name": "Epic Boon",
+        "description": "Choose an Epic Boon feat or an Ability Score Improvement on the Character Sheet.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "epic_boon"
+          }
+        ],
+        "resolver": "monk_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "reference-only",
+        "enabled": false
+      }
+    ],
+    "20": [
+      {
+        "id": "monk_body_and_mind",
+        "name": "Body and Mind",
+        "description": "Your Dexterity and Wisdom scores each increase by 4, and your maximum for those scores becomes 25.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "ability_score_increase",
+            "scores": {
+              "DEX": 4,
+              "WIS": 4
+            },
+            "maximum": 25
+          }
+        ],
+        "resolver": "monk_rules",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
       }
     ]
-  }
+  },
+  "subclass_level": 3,
+  "legacy_subclass": "warrior_of_the_open_hand"
 }

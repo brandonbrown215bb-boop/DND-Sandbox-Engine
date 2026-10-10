@@ -1202,6 +1202,10 @@
   {
     "id": "bat",
     "name": "Bat",
+    "size": "tiny",
+    "creature_type": "beast",
+    "challenge_rating": 0,
+    "can_fly": true,
     "hit_points": "1d4 - 1",
     "armor_class": 12,
     "speed": 1,
@@ -5427,6 +5431,10 @@
   {
     "id": "hawk",
     "name": "Hawk",
+    "size": "tiny",
+    "creature_type": "beast",
+    "challenge_rating": 0,
+    "can_fly": true,
     "hit_points": "1d4 - 1",
     "armor_class": 13,
     "speed": 2,
@@ -7552,6 +7560,10 @@
   {
     "id": "owl",
     "name": "Owl",
+    "size": "tiny",
+    "creature_type": "beast",
+    "challenge_rating": 0,
+    "can_fly": true,
     "hit_points": "1d4 - 1",
     "armor_class": 11,
     "speed": 1,
@@ -8227,6 +8239,9 @@
   {
     "id": "rat",
     "name": "Rat",
+    "size": "tiny",
+    "creature_type": "beast",
+    "challenge_rating": 0,
     "hit_points": "1d4 - 1",
     "armor_class": 10,
     "speed": 4,
@@ -8252,6 +8267,10 @@
   {
     "id": "raven",
     "name": "Raven",
+    "size": "tiny",
+    "creature_type": "beast",
+    "challenge_rating": 0,
+    "can_fly": true,
     "hit_points": "1d4 - 1",
     "armor_class": 12,
     "speed": 2,

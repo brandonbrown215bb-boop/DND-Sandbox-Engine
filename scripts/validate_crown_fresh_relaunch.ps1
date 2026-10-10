@@ -13,7 +13,7 @@ if ([string]::IsNullOrWhiteSpace($GodotPath)) { $GodotPath = $env:GODOT_BIN }
 if ([string]::IsNullOrWhiteSpace($GodotPath)) { throw "Pass Godot 4.7 console executable or set GODOT_BIN." }
 if (-not (Test-Path -LiteralPath $GodotPath -PathType Leaf)) { throw "Godot executable not found: $GodotPath" }
 
-$runRoot = Join-Path ([IO.Path]::GetTempPath()) ("top-down-party-game-crown-relaunch-" + [guid]::NewGuid().ToString("N"))
+$runRoot = Join-Path $Project (".artifacts\tests\crown-relaunch-" + [guid]::NewGuid().ToString("N"))
 $userData = Join-Path $runRoot "user-data"
 $prepareOut = Join-Path $runRoot "prepare.stdout.log"
 $prepareErr = Join-Path $runRoot "prepare.stderr.log"

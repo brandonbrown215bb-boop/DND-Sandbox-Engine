@@ -13,7 +13,7 @@ var _low_is_danger := true
 
 func _ready() -> void:
 	_bar.min_value = 0
-	_bar.max_value = 1
+	_bar.max_value = _max
 	_bar.show_percentage = false
 	# Tabular numerals so "12/20" doesn't jitter width as digits change.
 	# add_theme_font_features_override() does not exist in Godot 4.7 stable,
@@ -34,14 +34,19 @@ func _apply_tnum() -> void:
 	_label.add_theme_font_override("font", fv)
 
 ## Configure the bar. `color` tints the fill (vitals green / mana blue / etc).
-func configure(label: String, max_value: int, color: Color = Color(0.42, 0.70, 0.38)) -> void:
+func configure(label: String, max_value: int, color: Color = Color.TRANSPARENT) -> void:
+	# Party cards configure this widget before it enters the scene tree.
+	if _bar == null:
+		_bar = get_node("Margin/VBox/Bar")
+		_label = get_node("Margin/VBox/Bar/ValueLabel")
+		_name = get_node("Margin/VBox/NameLabel")
 	if _bar == null or _name == null:
 		return
 	_max = max(1, max_value)
 	_bar.max_value = _max
 	_name.text = label
-	_set_fill_color(color)
-	_label.add_theme_color_override("font_color", Color(0.95, 0.95, 0.95))
+	_set_fill_color(color if color.a > 0 else UiThemeProfile.current().color("state/success"))
+	_label.add_theme_color_override("font_color", UiThemeProfile.current().color("text/primary"))
 
 func _set_fill_color(c: Color) -> void:
 	if _bar == null:
@@ -60,9 +65,9 @@ func set_value(current: int) -> void:
 	# Ratio-based recolor (green -> amber -> red) when low is danger.
 	if _low_is_danger:
 		var r := float(cur) / float(_max)
-		var col := Color(0.42, 0.70, 0.38)
+		var col := UiThemeProfile.current().color("state/success")
 		if r <= 0.25:
-			col = Color(0.78, 0.30, 0.28)
+			col = UiThemeProfile.current().color("state/danger")
 		elif r <= 0.5:
-			col = Color(0.85, 0.65, 0.30)
+			col = UiThemeProfile.current().color("state/warning")
 		_set_fill_color(col)

@@ -10,6 +10,7 @@ extends PanelContainer
 var rolling_sides := 20
 var roll_result := 0
 var animation_ticks := 0
+var presentation_enabled := true
 const MAX_TICKS := 12
 
 # Dedicated one-shot timer for the post-roll fade. Using a real Timer (not an
@@ -42,6 +43,8 @@ func _ready() -> void:
 
 
 func _on_dice_rolled(data: Dictionary) -> void:
+	if not presentation_enabled:
+		return
 	# Cancel any pending hide -- a new roll restarts the sequence.
 	_hide_timer.stop()
 

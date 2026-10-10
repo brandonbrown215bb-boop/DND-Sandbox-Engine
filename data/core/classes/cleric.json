@@ -1,7 +1,7 @@
 {
   "id": "cleric",
   "name": "Cleric",
-  "description": "Cleric class. Source: PHB.",
+  "description": "A divine spellcaster using Wisdom. Base-class rules follow SRD 5.2.1; supported spell and feat choices remain curated.",
   "hit_die": "d8",
   "primary_ability": "WIS",
   "saving_throw_proficiencies": [
@@ -10,7 +10,8 @@
   ],
   "armor_proficiencies": [
     "light",
-    "medium"
+    "medium",
+    "shield"
   ],
   "weapon_proficiencies": [
     "simple"
@@ -18,18 +19,19 @@
   "skill_choices": {
     "pick": 2,
     "from": [
-      "Athletics",
-      "Acrobatics",
-      "Insight",
-      "Perception",
       "History",
-      "Arcana",
-      "Stealth"
+      "Insight",
+      "Medicine",
+      "Persuasion",
+      "Religion"
     ]
   },
   "starting_equipment": [
-    "leather_armor",
-    "shield"
+    "chain_shirt",
+    "shield",
+    "mace",
+    "holy_symbol",
+    "priests_pack"
   ],
   "spell_slots_by_level": {
     "1": [
@@ -53,6 +55,118 @@
     ]
   },
   "cantrips_known": [],
+  "spell_list_ids": [
+    "aid",
+    "animate_dead",
+    "antimagic_field",
+    "astral_projection",
+    "augury",
+    "aura_of_life",
+    "bane",
+    "banishment",
+    "beacon_of_hope",
+    "bestow_curse",
+    "blade_barrier",
+    "bless",
+    "blindness/deafness",
+    "calm_emotions",
+    "clairvoyance",
+    "command",
+    "commune",
+    "conjure_celestial",
+    "contagion",
+    "continual_flame",
+    "control_water",
+    "control_weather",
+    "create_food_and_water",
+    "create_or_destroy_water",
+    "create_undead",
+    "cure_wounds",
+    "daylight",
+    "death_ward",
+    "detect_evil_and_good",
+    "detect_magic",
+    "detect_poison_and_disease",
+    "dispel_evil_and_good",
+    "dispel_magic",
+    "divination",
+    "divine_word",
+    "earthquake",
+    "enhance_ability",
+    "etherealness",
+    "find_the_path",
+    "find_traps",
+    "fire_storm",
+    "flame_strike",
+    "forbiddance",
+    "freedom_of_movement",
+    "gate",
+    "geas",
+    "gentle_repose",
+    "glyph_of_warding",
+    "greater_restoration",
+    "guardian_of_faith",
+    "guidance",
+    "guiding_bolt",
+    "hallow",
+    "harm",
+    "heal",
+    "healing_word",
+    "heroes_feast",
+    "hold_person",
+    "holy_aura",
+    "inflict_wounds",
+    "insect_plague",
+    "legend_lore",
+    "lesser_restoration",
+    "light",
+    "locate_creature",
+    "locate_object",
+    "magic_circle",
+    "mass_cure_wounds",
+    "mass_heal",
+    "mass_healing_word",
+    "meld_into_stone",
+    "mending",
+    "planar_ally",
+    "planar_binding",
+    "plane_shift",
+    "power_word_heal",
+    "prayer_of_healing",
+    "protection_from_energy",
+    "protection_from_evil_and_good",
+    "protection_from_poison",
+    "purify_food_and_drink",
+    "raise_dead",
+    "regenerate",
+    "remove_curse",
+    "resilient_sphere",
+    "resistance",
+    "resurrection",
+    "revivify",
+    "sacred_flame",
+    "sanctuary",
+    "scrying",
+    "sending",
+    "shield_of_faith",
+    "silence",
+    "spare_the_dying",
+    "speak_with_dead",
+    "spirit_guardians",
+    "spiritual_weapon",
+    "stone_shape",
+    "sunbeam",
+    "sunburst",
+    "symbol",
+    "thaumaturgy",
+    "tongues",
+    "true_resurrection",
+    "true_seeing",
+    "warding_bond",
+    "water_walk",
+    "word_of_recall",
+    "zone_of_truth"
+  ],
   "spells_known_by_level": {
     "1": [],
     "2": [],
@@ -61,95 +175,196 @@
   "features_by_level": {
     "1": [
       {
-        "id": "cleric_divine_domain",
-        "name": "Divine Domain",
-        "description": "Choose one domain related to your deity from the list of available domains. Each domain is detailed in their own feature, and each one provides examples of gods associated with it. Your choice grants you domain spells and other features when you choose it at 1st level. It also grants you additional ...",
-        "type": "passive",
-        "effects": []
-      },
-      {
         "id": "cleric_spellcasting",
         "name": "Spellcasting",
-        "description": "As a conduit for divine power, you can cast cleric spells. See chapter 10 for the general rules of spellcasting and chapter 11 for a selection of {@filter cleric spells=cleric}. {'type': 'entries', 'name': 'Cantrips', 'entries': ['At 1st level, you know three cantrips of your choice from the cleric ...",
+        "description": "You prepare Cleric spells using Wisdom. You can use a Holy Symbol as a Spellcasting Focus.",
         "type": "passive",
-        "effects": []
+        "effects": [
+          {
+            "type": "spellcasting",
+            "ability": "WIS",
+            "spell_lists": [
+              "cleric"
+            ],
+            "default_cantrips": [
+              "guidance",
+              "sacred_flame",
+              "thaumaturgy"
+            ],
+            "default_prepared_spells": [
+              "bless",
+              "cure_wounds",
+              "guiding_bolt",
+              "shield_of_faith"
+            ],
+            "capacity_by_level": {
+              "1": {
+                "cantrips": 3,
+                "prepared_spells": 4
+              },
+              "2": {
+                "cantrips": 3,
+                "prepared_spells": 5
+              },
+              "3": {
+                "cantrips": 3,
+                "prepared_spells": 6
+              },
+              "4": {
+                "cantrips": 4,
+                "prepared_spells": 7
+              },
+              "5": {
+                "cantrips": 4,
+                "prepared_spells": 9
+              },
+              "6": {
+                "cantrips": 4,
+                "prepared_spells": 10
+              },
+              "7": {
+                "cantrips": 4,
+                "prepared_spells": 11
+              },
+              "8": {
+                "cantrips": 4,
+                "prepared_spells": 12
+              },
+              "9": {
+                "cantrips": 4,
+                "prepared_spells": 14
+              },
+              "10": {
+                "cantrips": 5,
+                "prepared_spells": 15
+              },
+              "11": {
+                "cantrips": 5,
+                "prepared_spells": 16
+              },
+              "12": {
+                "cantrips": 5,
+                "prepared_spells": 16
+              },
+              "13": {
+                "cantrips": 5,
+                "prepared_spells": 17
+              },
+              "14": {
+                "cantrips": 5,
+                "prepared_spells": 17
+              },
+              "15": {
+                "cantrips": 5,
+                "prepared_spells": 18
+              },
+              "16": {
+                "cantrips": 5,
+                "prepared_spells": 18
+              },
+              "17": {
+                "cantrips": 5,
+                "prepared_spells": 19
+              },
+              "18": {
+                "cantrips": 5,
+                "prepared_spells": 20
+              },
+              "19": {
+                "cantrips": 5,
+                "prepared_spells": 21
+              },
+              "20": {
+                "cantrips": 5,
+                "prepared_spells": 22
+              }
+            }
+          }
+        ]
       },
       {
         "id": "cleric_divine_order",
         "name": "Divine Order",
-        "description": "You have dedicated yourself to one of the following sacred roles of your choice. {'type': 'entries', 'entries': [{'type': 'options', 'count': 1, 'entries': [{'type': 'refClassFeature', 'classFeature': 'Protector'}, {'type': 'refClassFeature', 'classFeature': 'Thaumaturge'}]}]}",
+        "description": "Choose Protector or Thaumaturge. Protector grants Martial weapon proficiency and Heavy Armor training. Thaumaturge grants one additional Cleric cantrip and a Wisdom-based bonus on Arcana and Religion checks.",
         "type": "passive",
-        "effects": []
-      },
-      {
-        "id": "cleric_protector",
-        "name": "Protector",
-        "description": "Trained for battle, you gain proficiency with {@filter Martial weapons=martial weapon} and training with {@filter Heavy armor=Heavy Armor}.",
-        "type": "passive",
-        "effects": []
-      },
-      {
-        "id": "cleric_thaumaturge",
-        "name": "Thaumaturge",
-        "description": "You know one extra cantrip from the {@filter Cleric spell list=Cleric}. In addition, your mystical connection to the divine gives you a bonus to your Intelligence ({@skill Arcana} or {@skill Religion}) checks. The bonus equals your Wisdom modifier (minimum of +1).",
-        "type": "passive",
-        "effects": []
+        "effects": [
+          {
+            "type": "feature_choice",
+            "options": [
+              {
+                "id": "protector",
+                "name": "Protector",
+                "effects": [
+                  {
+                    "type": "proficiency_grant",
+                    "weapon_proficiencies": [
+                      "martial"
+                    ],
+                    "armor_proficiencies": [
+                      "heavy"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "thaumaturge",
+                "name": "Thaumaturge",
+                "effects": [
+                  {
+                    "type": "spellcasting_capacity_bonus",
+                    "kind": "cantrips",
+                    "amount": 1
+                  },
+                  {
+                    "type": "ability_check_bonus",
+                    "skills": [
+                      "Arcana",
+                      "Religion"
+                    ],
+                    "ability": "WIS",
+                    "minimum_bonus": 1,
+                    "check_ability": "INT"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
       }
     ],
     "2": [
       {
         "id": "cleric_channel_divinity",
         "name": "Channel Divinity",
-        "description": "At 2nd level, you gain the ability to channel divine energy directly from your deity, using that energy to fuel magical effects. You start with two such effects: Turn Undead and an effect determined by your domain. Some domains grant you additional effects as you advance in levels, as noted in the d...",
-        "type": "passive",
-        "effects": []
-      },
-      {
-        "id": "cleric_channel_divinity:_harness_divine_power",
-        "name": "Channel Divinity: Harness Divine Power",
-        "description": "{@i 2nd-level cleric optional class features feature} You can expend a use of your Channel Divinity to fuel your spells. As a bonus action, you touch your holy symbol, utter a prayer, and regain one expended spell slot, the level of which can be no higher than half your proficiency bonus (rounded up...",
-        "type": "active",
-        "effects": [],
-        "action_cost": "bonus_action",
-        "uses": 1,
-        "uses_per": "combat"
-      },
-      {
-        "id": "cleric_channel_divinity:_turn_undead",
-        "name": "Channel Divinity: Turn Undead",
-        "description": "As an action, you present your holy symbol and speak a prayer censuring the undead. Each undead that can see or hear you within 30 feet of you must make a Wisdom saving throw. If the creature fails its saving throw, it is turned for 1 minute or until it takes any damage. A turned creature must spend...",
-        "type": "active",
-        "effects": [],
-        "action_cost": "reaction",
-        "uses": 1,
-        "uses_per": "combat"
-      },
-      {
-        "id": "cleric_divine_domain_feature",
-        "name": "Divine Domain feature",
-        "description": "At 2nd level, you gain a feature from your Divine Domain.",
-        "type": "passive",
-        "effects": []
+        "description": "You have two uses of Channel Divinity, regain one expended use on a Short Rest, and regain all uses on a Long Rest.",
+        "type": "resource",
+        "uses": 2,
+        "uses_by_level": {
+          "6": 3,
+          "18": 4
+        },
+        "uses_per": "long_rest",
+        "short_rest_recovery": 1
       },
       {
         "id": "cleric_divine_spark",
         "name": "Divine Spark",
-        "description": "As a {@action Magic} action, you point your Holy Symbol at another creature you can see within 30 feet of yourself and focus divine energy at it. Roll 1d8 and add your Wisdom modifier. You either restore Hit Points to the creature equal to that total or force the creature to make a Constitution savi...",
+        "description": "As a Magic action, point your Holy Symbol at another creature you can see within 30 feet. Roll 1d8 plus your Wisdom modifier. Restore that many Hit Points, or force a Constitution save: on a failure the creature takes that much Radiant or Necrotic damage; on a success it takes half. The dice increase to 2d8 at level 7, 3d8 at level 13, and 4d8 at level 18.",
         "type": "active",
         "effects": [],
-        "action_cost": "action",
-        "uses": 1,
-        "uses_per": "combat"
+        "action_cost": "magic_action",
+        "resource_id": "cleric_channel_divinity",
+        "resolver": "cleric_rules"
       },
       {
         "id": "cleric_turn_undead",
         "name": "Turn Undead",
-        "description": "As a {@action Magic} action, you present your Holy Symbol and censure Undead creatures. Each Undead of your choice within 30 feet of you must make a Wisdom saving throw. If the creature fails its save, it has the Frightened and Incapacitated conditions for 1 minute. For that duration, it tries to mo...",
+        "description": "As a Magic action, present your Holy Symbol. Each Undead of your choice within 30 feet makes a Wisdom saving throw against your spell save DC. On a failure it is Frightened and Incapacitated for 1 minute and tries to move as far from you as it can on its turns. The effect ends early if it takes damage, you become Incapacitated, or you die.",
         "type": "active",
         "effects": [],
-        "action_cost": "action",
-        "uses": 1,
-        "uses_per": "combat"
+        "action_cost": "magic_action",
+        "resource_id": "cleric_channel_divinity",
+        "resolver": "cleric_rules"
       }
     ],
     "3": [
@@ -167,31 +382,337 @@
         "name": "Ability Score Improvement",
         "description": "When you reach 4th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature. If your DM allows the use of feats, you may instead take a {@5etools feat.html}.",
         "type": "passive",
-        "effects": []
-      },
-      {
-        "id": "cleric_cantrip_versatility",
-        "name": "Cantrip Versatility",
-        "description": "{@i 4th-level cleric optional class features feature} Whenever you reach a level in this class that grants the Ability Score Improvement feature, you can replace one cantrip you learned from this class's Spellcasting feature with another cantrip from the {@filter cleric spell list=0=Cleric}.",
-        "type": "passive",
-        "effects": []
+        "effects": [
+          {
+            "type": "asi"
+          }
+        ],
+        "rules_status": "2024-supported",
+        "rules_source": "dnd-2024-srd-5.2.1"
       }
     ],
     "5": [
-      {
-        "id": "cleric_destroy_undead_(cr_1/2)",
-        "name": "Destroy Undead (CR 1/2)",
-        "description": "Starting at 5th level, when an {@filter undead of CR 1/2 or lower rating=[&0;&1/2]=undead=!swarm} fails its saving throw against your Turn Undead feature, the creature is instantly destroyed.",
-        "type": "passive",
-        "effects": []
-      },
       {
         "id": "cleric_sear_undead",
         "name": "Sear Undead",
         "description": "Whenever you use Turn Undead, you can roll a number of d8s equal to your Wisdom modifier (minimum of 1d8) and add the rolls together. Each Undead that fails its saving throw against that use of Turn Undead takes Radiant damage equal to the roll's total. This damage doesn't end the turn effect.",
         "type": "passive",
+        "effects": [],
+        "resolver": "cleric_rules"
+      }
+    ],
+    "7": [
+      {
+        "id": "cleric_blessed_strikes",
+        "name": "Blessed Strikes",
+        "description": "Choose Divine Strike or Potent Spellcasting. Divine Strike optionally adds 1d8 Necrotic or Radiant weapon damage once on each of your turns. Potent Spellcasting adds Wisdom to Cleric cantrip damage.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "feature_choice",
+            "options": [
+              {
+                "id": "divine_strike",
+                "name": "Divine Strike",
+                "effects": [
+                  {
+                    "type": "weapon_damage_rider",
+                    "id": "divine_strike",
+                    "trigger": "weapon_attack_hit",
+                    "damage_type": "radiant",
+                    "dice_by_level": {
+                      "7": "1d8",
+                      "14": "2d8"
+                    },
+                    "uses_per": "turn",
+                    "damage_type_options": [
+                      "radiant",
+                      "necrotic"
+                    ],
+                    "optional": true,
+                    "own_turn_only": true
+                  }
+                ]
+              },
+              {
+                "id": "potent_spellcasting",
+                "name": "Potent Spellcasting",
+                "effects": [
+                  {
+                    "type": "spell_damage_bonus",
+                    "spell_level": 0,
+                    "spell_list": "cleric",
+                    "ability": "WIS"
+                  },
+                  {
+                    "type": "spell_cast_temporary_hp",
+                    "spell_level": 0,
+                    "spell_list": "cleric",
+                    "action_cost": "magic_action",
+                    "ability": "WIS",
+                    "multiplier": 2,
+                    "requires_feature": "cleric_improved_blessed_strikes",
+                    "requires_damage": true,
+                    "target_range": 12
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "8": [
+      {
+        "id": "cleric_ability_improvement_8",
+        "name": "Ability Score Improvement",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "asi"
+          }
+        ],
+        "rules_status": "2024-supported",
+        "rules_source": "dnd-2024-srd-5.2.1"
+      }
+    ],
+    "10": [
+      {
+        "id": "cleric_divine_intervention",
+        "name": "Divine Intervention",
+        "description": "As a Magic action, choose any Cleric spell of level 5 or lower that doesn't require a Reaction. As part of the same action, you cast the spell without expending a spell slot or Material components. Once used, this feature can't be used again until you finish a Long Rest.",
+        "type": "active",
+        "effects": [],
+        "action_cost": "magic_action",
+        "uses": 1,
+        "uses_per": "long_rest",
+        "resolver": "cleric_rules"
+      }
+    ],
+    "12": [
+      {
+        "id": "cleric_ability_improvement_12",
+        "name": "Ability Score Improvement",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "asi"
+          }
+        ],
+        "rules_status": "2024-supported",
+        "rules_source": "dnd-2024-srd-5.2.1"
+      }
+    ],
+    "14": [
+      {
+        "id": "cleric_improved_blessed_strikes",
+        "name": "Improved Blessed Strikes",
+        "description": "Divine Strike deals 2d8. After a Cleric cantrip deals damage, Potent Spellcasting can grant twice Wisdom modifier in Temporary Hit Points to you or another creature within 60 feet.",
+        "type": "passive",
+        "resolver": "cleric_rules",
         "effects": []
       }
+    ],
+    "16": [
+      {
+        "id": "cleric_ability_improvement_16",
+        "name": "Ability Score Improvement",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "asi"
+          }
+        ],
+        "rules_status": "2024-supported",
+        "rules_source": "dnd-2024-srd-5.2.1"
+      }
+    ],
+    "19": [
+      {
+        "id": "cleric_epic_boon",
+        "name": "Epic Boon",
+        "description": "You gain an Epic Boon feat or another feat for which you qualify.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "epic_boon_choice",
+            "options": [
+              "combat_prowess",
+              "irresistible_offense",
+              "spell_recall"
+            ],
+            "ability_scores_by_option": {
+              "spell_recall": [
+                "INT",
+                "WIS",
+                "CHA"
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "20": [
+      {
+        "id": "cleric_greater_divine_intervention",
+        "name": "Greater Divine Intervention",
+        "description": "When you use Divine Intervention, you can choose Wish when you select a spell. After you cast Wish this way, you can't use Divine Intervention again until you finish 2d4 Long Rests.",
+        "type": "passive",
+        "effects": [],
+        "resolver": "cleric_rules"
+      }
     ]
-  }
+  },
+  "spell_slots_by_character_level": {
+    "1": [
+      2
+    ],
+    "2": [
+      3
+    ],
+    "3": [
+      4,
+      2
+    ],
+    "4": [
+      4,
+      3
+    ],
+    "5": [
+      4,
+      3,
+      2
+    ],
+    "6": [
+      4,
+      3,
+      3
+    ],
+    "7": [
+      4,
+      3,
+      3,
+      1
+    ],
+    "8": [
+      4,
+      3,
+      3,
+      2
+    ],
+    "9": [
+      4,
+      3,
+      3,
+      3,
+      1
+    ],
+    "10": [
+      4,
+      3,
+      3,
+      3,
+      2
+    ],
+    "11": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1
+    ],
+    "12": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1
+    ],
+    "13": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1
+    ],
+    "14": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1
+    ],
+    "15": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      1
+    ],
+    "16": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      1
+    ],
+    "17": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      1,
+      1
+    ],
+    "18": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      1,
+      1
+    ],
+    "19": [
+      4,
+      3,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      1
+    ],
+    "20": [
+      4,
+      3,
+      3,
+      3,
+      3,
+      2,
+      2,
+      1,
+      1
+    ]
+  },
+  "starting_gold": 7,
+  "starting_gold_alternative": 110
 }

@@ -51,7 +51,7 @@ Countercharm/Repelling Blast hooks were corrected/preserved.
 Disk reload was same-process. This batch does not claim fresh-process recovery,
 manual visual acceptance, Linux execution or full rules/campaign completion.
 Earlier named relaunch probes cover their own older scenarios only.
-The current uncommitted tree includes unfinished work; a prior pass is not
+The current project snapshot includes unfinished work; a prior pass is not
 blanket acceptance of every current file.
 
 ## Open implementation — Animate Objects and world gaps

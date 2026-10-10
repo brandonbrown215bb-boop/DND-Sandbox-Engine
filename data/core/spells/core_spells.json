@@ -2,16 +2,29 @@
   {
     "id": "fire_bolt",
     "name": "Fire Bolt",
-    "description": "You hurl a mote of fire at a creature. Make a ranged spell attack. On a hit, the target takes 1d10 fire damage.",
+    "description": "You hurl a mote of fire at a creature or object within range. Make a ranged spell attack. On a hit, the target takes 1d10 Fire damage.",
     "level": 0,
     "school": "evocation",
     "casting_time": "action",
-    "range": 6,
+    "range": 24,
     "target": "single",
     "attack_type": "ranged_spell",
     "damage": "1d10",
     "damage_type": "fire",
-    "scaling": {"5": "2d10"}
+    "components": [
+      "V",
+      "S"
+    ],
+    "scaling": {
+      "5": "2d10",
+      "11": "3d10",
+      "17": "4d10"
+    },
+    "rules_source": "SRD 5.2.1",
+    "rules_status": "2024-gameplay-partial",
+    "execution": "shared",
+    "targets_objects": true,
+    "ignites_objects": true
   },
   {
     "id": "ray_of_frost",
@@ -20,24 +33,49 @@
     "level": 0,
     "school": "evocation",
     "casting_time": "action",
-    "range": 6,
+    "range": 12,
     "target": "single",
     "attack_type": "ranged_spell",
     "damage": "1d8",
     "damage_type": "cold",
-    "effects": [{"type": "reduce_speed", "value": 2, "duration": 1}],
-    "scaling": {"5": "2d8"}
+    "components": [
+      "V",
+      "S"
+    ],
+    "effects": [
+      {
+        "type": "reduce_speed",
+        "value": 2,
+        "duration": 1
+      }
+    ],
+    "scaling": {
+      "5": "2d8",
+      "11": "3d8",
+      "17": "4d8"
+    },
+    "rules_source": "SRD 5.2.1",
+    "rules_status": "2024-gameplay-partial"
   },
   {
     "id": "light",
     "name": "Light",
-    "description": "You touch an object, causing it to shed bright light in a 2-hex radius for 1 hour.",
+    "description": "You touch one object that is no larger than 10 feet in any dimension. Until the spell ends, the object sheds Bright Light in a 20-foot radius and Dim Light for an additional 20 feet. The light can be colored as you like. Completely covering the object with something opaque blocks the light. The spell ends if you cast it again or dismiss it as an action. If you target an object held or worn by a hostile creature, that creature must succeed on a Dexterity saving throw to avoid the spell.",
     "level": 0,
     "school": "evocation",
     "casting_time": "action",
-    "range": 0,
-    "target": "self",
-    "effects": [{"type": "vision_bonus", "value": 2, "duration": 10}]
+    "range": 1,
+    "target": "point",
+    "components": [
+      "V",
+      "M"
+    ],
+    "material": "firefly or phosphorescent moss",
+    "duration": "1 hour",
+    "duration_seconds": 3600,
+    "rules_source": "SRD5.2.1",
+    "rules_status": "2024-gameplay-partial",
+    "range_kind": "touch"
   },
   {
     "id": "magic_missile",
@@ -46,14 +84,21 @@
     "level": 1,
     "school": "evocation",
     "casting_time": "action",
-    "range": 6,
+    "range": 24,
     "target": "multi",
     "max_targets": 3,
+    "requires_target_sight": true,
     "auto_hit": true,
     "damage_per_dart": "1d4 + 1",
     "damage_type": "force",
+    "components": [
+      "V",
+      "S"
+    ],
     "dart_count": 3,
-    "upcast": {"extra_darts_per_level": 1}
+    "upcast": {
+      "extra_darts_per_level": 1
+    }
   },
   {
     "id": "shield",
@@ -64,18 +109,50 @@
     "casting_time": "reaction",
     "range": 0,
     "target": "self",
-    "effects": [{"type": "ac_bonus", "value": 5, "duration": 1}]
+    "components": [
+      "V",
+      "S"
+    ],
+    "effects": [
+      {
+        "type": "ac_bonus",
+        "value": 5,
+        "duration": 1
+      }
+    ]
   },
   {
     "id": "mage_armor",
     "name": "Mage Armor",
-    "description": "You touch a willing creature and a protective magical force surrounds it. AC becomes 13 + DEX modifier.",
+    "description": "You touch a willing creature who isn't wearing armor. Until the spell ends, the target's base AC becomes 13 plus its Dexterity modifier. The spell ends early if the target dons armor.",
     "level": 1,
     "school": "abjuration",
     "casting_time": "action",
     "range": 1,
     "target": "single_ally",
-    "effects": [{"type": "set_base_ac", "value": 13, "duration": -1}]
+    "attack_type": "none",
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a piece of cured leather",
+    "duration": "8 hours",
+    "duration_seconds": 28800,
+    "concentration": false,
+    "effects": [
+      {
+        "type": "set_base_ac",
+        "value": 13
+      }
+    ],
+    "classes": [
+      "sorcerer",
+      "wizard"
+    ],
+    "rules_source": "SRD5.2.1",
+    "rules_status": "2024-gameplay-partial",
+    "range_kind": "touch"
   },
   {
     "id": "burning_hands",
@@ -91,40 +168,83 @@
     "damage": "3d6",
     "damage_type": "fire",
     "half_on_save": true,
-    "effects": [{"type": "area_selection", "shape": "cone", "size": 3}]
+    "upcast": {
+      "starting_level": 1,
+      "damage_per_level": "1d6"
+    },
+    "effects": [
+      {
+        "type": "area_selection",
+        "shape": "cone",
+        "size": 3
+      }
+    ],
+    "execution": "shared",
+    "ignites_objects": true
   },
   {
     "id": "sleep",
     "name": "Sleep",
-    "description": "You send creatures into a magical slumber. Roll 5d8; creatures with the fewest HP are affected first.",
+    "description": "Each creature of your choice in a 5-foot-radius Sphere within range makes a Wisdom saving throw. A failed save imposes Incapacitated until the end of the target's next turn; then the target repeats the save, becoming Unconscious for the duration on a second failure. Damage or an adjacent creature's action to shake the target ends the effect.",
     "level": 1,
     "school": "enchantment",
     "casting_time": "action",
-    "range": 5,
+    "range": 12,
     "target": "area",
-    "area_radius": 2,
+    "area_radius": 1,
+    "save": "WIS",
+    "repeat_save_ability": "WIS",
+    "condition_on_failed_save": "incapacitated",
+    "duration": "Concentration, up to 1 minute",
+    "duration_seconds": 60,
+    "concentration": true,
+    "end_on_any_damage": true,
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a pinch of sand or rose petals",
+    "rules_source": "SRD 5.2.1",
+    "rules_status": "2024-gameplay-partial",
     "effects": [
-      {"type": "area_selection", "shape": "sphere", "radius": 2},
-      {"type": "sleep", "hp_pool": "5d8"}
+      {
+        "type": "area_selection",
+        "shape": "sphere",
+        "radius": 1
+      }
     ]
   },
   {
     "id": "thunderwave",
     "name": "Thunderwave",
-    "description": "A wave of thunderous force sweeps out from you. Creatures in a 3-hex area must make a CON save or take 2d8 thunder damage and be pushed 2 hexes.",
+    "description": "You unleash thunderous energy in a 15-foot Cube originating from you. Each creature in the Cube makes a Constitution saving throw, taking 2d8 Thunder damage and being pushed 10 feet on a failed save, or taking half damage only on a success. Unsecured objects entirely in the Cube are pushed 10 feet, and the boom is audible within 300 feet.",
     "level": 1,
     "school": "evocation",
     "casting_time": "action",
     "range": 0,
     "target": "area",
-    "area_radius": 3,
+    "rules_source": "SRD5.2.1",
+    "rules_status": "2024-gameplay-partial",
     "save": "CON",
     "damage": "2d8",
     "damage_type": "thunder",
     "half_on_save": true,
+    "upcast": {
+      "starting_level": 1,
+      "damage_per_level": "1d8"
+    },
     "effects": [
-      {"type": "area_selection", "shape": "sphere", "radius": 3},
-      {"type": "push", "distance": 2}
+      {
+        "type": "area_selection",
+        "shape": "cube",
+        "size": 3
+      },
+      {
+        "type": "push",
+        "distance": 2,
+        "on_failed_save": true
+      }
     ]
   },
   {
@@ -136,7 +256,12 @@
     "casting_time": "bonus_action",
     "range": 0,
     "target": "self",
-    "effects": [{"type": "teleport", "distance": 5}]
+    "effects": [
+      {
+        "type": "teleport",
+        "distance": 6
+      }
+    ]
   },
   {
     "id": "scorching_ray",
@@ -145,41 +270,73 @@
     "level": 2,
     "school": "evocation",
     "casting_time": "action",
-    "range": 6,
+    "range": 24,
     "target": "multi",
     "max_targets": 3,
     "attack_type": "ranged_spell",
     "damage_per_ray": "2d6",
     "damage_type": "fire",
+    "components": [
+      "V",
+      "S"
+    ],
     "ray_count": 3,
-    "upcast": {"extra_rays_per_level": 1}
+    "upcast": {
+      "extra_rays_per_level": 1
+    },
+    "rules_source": "SRD 5.2.1",
+    "rules_status": "2024-gameplay-partial"
   },
   {
     "id": "fireball",
     "name": "Fireball",
-    "description": "A bright streak flashes to a point and then blossoms into an explosion of flame. Each creature in a 3-hex radius must make a DEX save or take 8d6 fire damage.",
+    "description": "A bright streak flashes to a point within range, then blossoms in a 20-foot-radius Sphere. Each creature in the area makes a Dexterity save, taking 8d6 Fire damage on a failed save or half as much on a success.",
     "level": 3,
     "school": "evocation",
     "casting_time": "action",
-    "range": 8,
+    "range": 30,
     "target": "area",
-    "area_radius": 3,
+    "area_radius": 4,
     "save": "DEX",
     "damage": "8d6",
     "damage_type": "fire",
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a ball of bat guano and sulfur",
     "half_on_save": true,
-    "effects": [{"type": "area_selection", "shape": "sphere", "radius": 3}]
+    "effects": [
+      {
+        "type": "area_selection",
+        "shape": "sphere",
+        "radius": 4
+      }
+    ],
+    "execution": "shared",
+    "ignites_objects": true
   },
   {
     "id": "counterspell",
     "name": "Counterspell",
-    "description": "You attempt to interrupt a creature in the process of casting a spell. If the spell is level 3 or lower, it automatically fails.",
+    "description": "You attempt to interrupt a creature in the process of casting a spell. The creature makes a Constitution saving throw. On a failed save, the spell dissipates with no effect, and the spell slot used to cast it is not expended.",
     "level": 3,
     "school": "abjuration",
     "casting_time": "reaction",
-    "range": 4,
+    "range": 12,
     "target": "single",
-    "effects": [{"type": "counterspell", "auto_level": 3}]
+    "effects": [
+      {
+        "type": "counterspell_save"
+      }
+    ],
+    "save": "CON",
+    "components": [
+      "S"
+    ],
+    "rules_source": "SRD 5.2.1",
+    "rules_status": "2024-gameplay-partial"
   },
   {
     "id": "bless",
@@ -189,12 +346,170 @@
     "school": "enchantment",
     "casting_time": "action",
     "range": 6,
-    "target": "area",
-    "area_radius": 2,
+    "target": "single",
+    "base_targets": 3,
+    "attack_type": "none",
+    "duration_seconds": 60,
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a Holy Symbol worth at least 5 GP",
+    "material_component_cost": 5,
+    "material_component_item_id": "holy_symbol",
+    "rules_source": "SRD5.2.1",
+    "rules_status": "2024-gameplay-partial",
+    "upcast": {
+      "additional_targets_per_level": 1,
+      "starting_level": 1
+    },
     "concentration": true,
     "effects": [
-      {"type": "area_selection", "shape": "sphere", "radius": 2},
-      {"type": "grant_condition", "condition": "blessed", "duration": 10}
+      {
+        "type": "grant_condition",
+        "condition": "blessed",
+        "duration": 10
+      }
     ]
+  },
+  {
+    "id": "find_steed",
+    "name": "Find Steed",
+    "description": "Summon an otherworldly steed in an unoccupied space within 30 feet. Choose its animal appearance and Celestial, Fey, or Fiend nature. Its defenses and Hit Points scale with the spell slot; a slot of level 4 or higher grants a Fly Speed.",
+    "level": 2,
+    "school": "conjuration",
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "attack_type": "none",
+    "classes": [
+      "paladin"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "summoned_creature": {
+      "kind": "otherworldly_steed",
+      "forms": [
+        "horse",
+        "camel",
+        "dire wolf",
+        "elk"
+      ],
+      "creature_types": [
+        "celestial",
+        "fey",
+        "fiend"
+      ],
+      "armor_class": {
+        "base": 10,
+        "per_spell_level": 1
+      },
+      "hit_points": {
+        "base": 5,
+        "per_spell_level": 10
+      },
+      "speed_feet": 60,
+      "fly_speed_feet": 60,
+      "fly_from_spell_level": 4,
+      "ability_scores": {
+        "STR": 18,
+        "DEX": 12,
+        "CON": 14,
+        "INT": 6,
+        "WIS": 12,
+        "CHA": 8
+      },
+      "attack": {
+        "name": "Otherworldly Slam",
+        "damage": "1d8",
+        "damage_per_spell_level": 1,
+        "reach_feet": 5
+      },
+      "type_damage": {
+        "celestial": "radiant",
+        "fey": "psychic",
+        "fiend": "necrotic"
+      },
+      "long_rest_ability": {
+        "celestial": "healing_touch",
+        "fey": "fey_step",
+        "fiend": "fell_glare"
+      }
+    }
+  },
+  {
+    "id": "divine_smite",
+    "name": "Divine Smite",
+    "description": "Immediately after hitting a creature with a melee weapon or Unarmed Strike, deal radiant damage. The damage increases when using a higher-level spell slot, with one extra die against a Fiend or Undead.",
+    "level": 1,
+    "school": "evocation",
+    "casting_time": "bonus_action",
+    "range": 0,
+    "target": "single",
+    "attack_type": "none",
+    "damage": "2d8",
+    "damage_type": "radiant",
+    "classes": [
+      "paladin"
+    ],
+    "components": [
+      "V"
+    ],
+    "trigger": "after_melee_weapon_or_unarmed_hit",
+    "upcast": {
+      "extra_dice_per_level": 1
+    },
+    "bonus_damage_creature_types": [
+      "fiend",
+      "undead"
+    ],
+    "bonus_damage_dice": 1
+  },
+  {
+    "id": "mage_hand",
+    "name": "Mage Hand",
+    "description": "A spectral, floating hand appears at a point you choose within range. The hand lasts for the duration or until you dismiss it as a Magic action. The hand vanishes if it is ever more than 30 feet away from you or if you cast this spell again. You can use the hand to manipulate an object, open an unlocked door or container, stow or retrieve an item from an open container, or pour the contents out of a vial. As a Magic action, you can control the hand in this way and move it up to 30 feet. The hand can't attack, activate magic items, or carry more than 10 pounds.",
+    "level": 0,
+    "school": "conjuration",
+    "casting_time": "action",
+    "range": 6,
+    "target": "point",
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "1 minute",
+    "duration_seconds": 60,
+    "rules_source": "SRD5.2.1",
+    "rules_status": "2024-gameplay-partial"
+  },
+  {
+    "id": "true_strike",
+    "name": "True Strike",
+    "description": "You make one attack with the weapon used to cast the spell. The attack and its damage use your spellcasting ability instead of Strength or Dexterity. If the attack deals damage, choose Radiant or the weapon's normal damage type. The target then takes 1d6 Radiant damage, increasing to 2d6 at character level 11 and 3d6 at character level 17.",
+    "level": 0,
+    "school": "divination",
+    "casting_time": "action",
+    "range": 0,
+    "target": "single",
+    "attack_type": "none",
+    "classes": [
+      "bard",
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ],
+    "components": [
+      "S",
+      "M"
+    ],
+    "material": "a weapon with which you have proficiency and that is worth 1+ CP",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "rules_source": "SRD 5.2.1",
+    "rules_status": "2024-gameplay-partial"
   }
 ]

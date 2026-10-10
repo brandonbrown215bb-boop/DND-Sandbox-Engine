@@ -87,6 +87,7 @@ fi
 
 # Keep this list synchronized with _run_scenario in viewport_harness.gd.
 SCENARIOS=(combat combat_ai_loop combat_victory overworld main_menu_load dungeon event_dialog character_creation shop save_load combat_resolution event_choice_resolution event_dialog_choice_click character_sheet)
+SCENARIOS+=(shared_spell_flow)
 if [ "$TEST_SUITE" = "all" ] || [ "$TEST_SUITE" = "integration" ]; then
   for scenario in "${SCENARIOS[@]}"; do
     run_case "$scenario" "res://scenes/viewport_harness.tscn" "SCENARIO PASSED: $scenario" "$SCENARIO_TIMEOUT_SECONDS" "--scenario=$scenario" || FAILED=1

@@ -12,7 +12,7 @@ anchor_bottom = 0.5
 offset_left = -250.0
 offset_top = -175.0
 offset_right = 250.0
-offset_top = -175.0
+offset_bottom = 175.0
 grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 4
@@ -46,7 +46,7 @@ text = "Event narrative description goes here..."
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="RollSection" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+[node name="RollSection" type="VBoxContainer" parent="MarginContainer/VBoxContainer"]
 visible = false
 layout_mode = 2
 theme_override_constants/separation = 20

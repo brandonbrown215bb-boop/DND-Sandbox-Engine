@@ -16,6 +16,14 @@ func _ready() -> void:
 	target_position = position
 
 func _process(delta: float) -> void:
+	if _is_dragging and not Input.is_mouse_button_pressed(MOUSE_BUTTON_MIDDLE) and not Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
+		_is_dragging = false
+	if ModalSurface.blocks_world():
+		_is_dragging = false
+		return
+	var focus := get_viewport().gui_get_focus_owner()
+	if focus is LineEdit or focus is TextEdit:
+		return
 	# WASD / Arrow keys panning
 	var input_dir := Vector2.ZERO
 	if Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP):
@@ -34,6 +42,11 @@ func _process(delta: float) -> void:
 	position = position.lerp(target_position, 0.15)
 
 func _unhandled_input(event: InputEvent) -> void:
+	if ModalSurface.blocks_world():
+		return
+	var shell := get_parent().find_child("Root", true, false) as VttShell
+	if shell != null and not shell.allows_world_point(get_viewport().get_mouse_position()):
+		return
 	# Drag panning (Middle Mouse Button or Right Mouse Button)
 	if event is InputEventMouseButton:
 		var mb := event as InputEventMouseButton

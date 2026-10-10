@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://e4567890f1a2b"]
+[gd_scene load_steps=10 format=3 uid="uid://e4567890f1a2b"]
 
 [ext_resource type="Script" path="res://src/overworld/overworld_state.gd" id="1_overworld"]
 [ext_resource type="Script" path="res://src/hex/hex_grid.gd" id="2_hexgrid"]
@@ -8,6 +8,9 @@
 [ext_resource type="Script" path="res://src/ui/camera_controller.gd" id="6_camera"]
 [ext_resource type="Script" path="res://src/ui/widgets/log_panel.gd" id="7_logpanel"]
 [ext_resource type="PackedScene" path="res://scenes/ui/companion_roster_panel.tscn" id="8_companion_roster"]
+[ext_resource type="Script" path="res://src/ui/widgets/activity_rail.gd" id="9_activity_rail"]
+
+[ext_resource type="Script" path="res://src/ui/vtt_shell.gd" id="99_shell"]
 
 [node name="Overworld" type="Node2D"]
 script = ExtResource("1_overworld")
@@ -25,140 +28,277 @@ hex_grid_path = NodePath("../HexGrid")
 [node name="OverworldHUD" type="CanvasLayer" parent="."]
 script = ExtResource("4_hud")
 
-[node name="MarginContainer" type="MarginContainer" parent="OverworldHUD"]
+[node name="Root" type="Control" parent="OverworldHUD"]
+script = ExtResource("99_shell")
+layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/margin_left = 20
-theme_override_constants/margin_top = 20
-theme_override_constants/margin_right = 20
-theme_override_constants/margin_bottom = 20
 mouse_filter = 2
 
-[node name="HBoxContainer" type="HBoxContainer" parent="OverworldHUD/MarginContainer"]
-layout_mode = 2
-theme_override_constants/separation = 20
-mouse_filter = 2
+[node name="ContextBar" type="PanelContainer" parent="OverworldHUD/Root"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 48.0
+grow_horizontal = 2
 
-[node name="MainArea" type="VBoxContainer" parent="OverworldHUD/MarginContainer/HBoxContainer"]
+[node name="Margin" type="MarginContainer" parent="OverworldHUD/Root/ContextBar"]
 layout_mode = 2
-size_flags_horizontal = 3
-mouse_filter = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 4
 
-[node name="Header" type="PanelContainer" parent="OverworldHUD/MarginContainer/HBoxContainer/MainArea"]
+[node name="HBox" type="HBoxContainer" parent="OverworldHUD/Root/ContextBar/Margin"]
 layout_mode = 2
+theme_override_constants/separation = 16
 
-[node name="MarginContainer" type="MarginContainer" parent="OverworldHUD/MarginContainer/HBoxContainer/MainArea/Header"]
+[node name="LeftBox" type="HBoxContainer" parent="OverworldHUD/Root/ContextBar/Margin/HBox"]
 layout_mode = 2
-theme_override_constants/margin_left = 15
-theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 15
-theme_override_constants/margin_bottom = 10
+theme_override_constants/separation = 10
 
-[node name="VBoxContainer" type="VBoxContainer" parent="OverworldHUD/MarginContainer/HBoxContainer/MainArea/Header/MarginContainer"]
+[node name="ExpeditionLabel" type="Label" parent="OverworldHUD/Root/ContextBar/Margin/HBox/LeftBox"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.65, 0.3, 1)
+theme_override_font_sizes/font_size = 14
+text = "OVERWORLD EXPEDITION"
 
-[node name="ActivePlayerName" type="Label" parent="OverworldHUD/MarginContainer/HBoxContainer/MainArea/Header/MarginContainer/VBoxContainer"]
+[node name="Divider" type="Label" parent="OverworldHUD/Root/ContextBar/Margin/HBox/LeftBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.45, 0.45, 0.48, 1)
+text = "•"
+
+[node name="ActivePlayerName" type="Label" parent="OverworldHUD/Root/ContextBar/Margin/HBox/LeftBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
 text = "Active Player: Hero Name"
 
-[node name="ActivePlayerStats" type="Label" parent="OverworldHUD/MarginContainer/HBoxContainer/MainArea/Header/MarginContainer/VBoxContainer"]
+[node name="ObjectivePanel" type="PanelContainer" parent="OverworldHUD/Root/ContextBar/Margin/HBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.65, 0.65, 0.65, 1)
-text = "Stats detail"
+size_flags_horizontal = 3
 
-[node name="ObjectiveLabel" type="Label" parent="OverworldHUD/MarginContainer/HBoxContainer/MainArea/Header/MarginContainer/VBoxContainer"]
+[node name="ObjectiveLabel" type="Label" parent="OverworldHUD/Root/ContextBar/Margin/HBox/ObjectivePanel"]
 layout_mode = 2
-theme_override_colors/font_color = Color(1.0, 0.85, 0.4, 1)
-theme_override_font_sizes/font_size = 14
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 0.85, 0.4, 1)
+theme_override_font_sizes/font_size = 13
 autowrap_mode = 2
 text = "Objective: —"
 
-[node name="Control" type="Control" parent="OverworldHUD/MarginContainer/HBoxContainer/MainArea"]
+[node name="RightBox" type="HBoxContainer" parent="OverworldHUD/Root/ContextBar/Margin/HBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 2
+
+[node name="BtnSave" type="Button" parent="OverworldHUD/Root/ContextBar/Margin/HBox/RightBox"]
+custom_minimum_size = Vector2(70, 36)
+layout_mode = 2
+text = "Save"
+
+[node name="BtnSheet" type="Button" parent="OverworldHUD/Root/ContextBar/Margin/HBox/RightBox"]
+custom_minimum_size = Vector2(130, 36)
+layout_mode = 2
+text = "Character Sheet"
+
+[node name="BtnSettings" type="Button" parent="OverworldHUD/Root/ContextBar/Margin/HBox/RightBox"]
+custom_minimum_size = Vector2(90, 36)
+layout_mode = 2
+text = "Settings ⚙"
+
+[node name="BtnMenu" type="Button" parent="OverworldHUD/Root/ContextBar/Margin/HBox/RightBox"]
+custom_minimum_size = Vector2(65, 36)
+layout_mode = 2
+text = "Quit"
+
+[node name="PartyRail" type="PanelContainer" parent="OverworldHUD/Root"]
+custom_minimum_size = Vector2(236, 0)
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = 56.0
+offset_right = 248.0
+offset_bottom = -12.0
+grow_vertical = 2
+
+[node name="Margin" type="MarginContainer" parent="OverworldHUD/Root/PartyRail"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="RailBox" type="VBoxContainer" parent="OverworldHUD/Root/PartyRail/Margin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+
+[node name="PartyHeader" type="Label" parent="OverworldHUD/Root/PartyRail/Margin/RailBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.65, 0.3, 1)
+theme_override_font_sizes/font_size = 14
+text = "PARTY STATUS"
+
+[node name="BtnCompanions" type="Button" parent="OverworldHUD/Root/PartyRail/Margin/RailBox"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+text = "Manage Companions"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="OverworldHUD/Root/PartyRail/Margin/RailBox"]
 layout_mode = 2
 size_flags_vertical = 3
-mouse_filter = 2
+horizontal_scroll_mode = 0
 
-[node name="LogBox" type="PanelContainer" parent="OverworldHUD/MarginContainer/HBoxContainer/MainArea"]
-custom_minimum_size = Vector2(0, 150)
+[node name="PlayerList" type="VBoxContainer" parent="OverworldHUD/Root/PartyRail/Margin/RailBox/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="ActivityRail" type="PanelContainer" parent="OverworldHUD/Root"]
+custom_minimum_size = Vector2(320, 0)
+layout_mode = 1
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -332.0
+offset_top = 56.0
+offset_right = -12.0
+offset_bottom = -12.0
+grow_horizontal = 0
+grow_vertical = 2
+
+[node name="Margin" type="MarginContainer" parent="OverworldHUD/Root/ActivityRail"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="ActivityContent" type="VBoxContainer" parent="OverworldHUD/Root/ActivityRail/Margin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 6
+script = ExtResource("9_activity_rail")
+
+[node name="RailHeader" type="HBoxContainer" parent="OverworldHUD/Root/ActivityRail/Margin/ActivityContent"]
 layout_mode = 2
 
-[node name="LogText" type="RichTextLabel" parent="OverworldHUD/MarginContainer/HBoxContainer/MainArea/LogBox"]
-script = ExtResource("7_logpanel")
+[node name="RailTitle" type="Label" parent="OverworldHUD/Root/ActivityRail/Margin/ActivityContent/RailHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.85, 0.65, 0.3, 1)
+theme_override_font_sizes/font_size = 13
+text = "EXPEDITION ACTIVITY"
+
+[node name="FilterTabs" type="HBoxContainer" parent="OverworldHUD/Root/ActivityRail/Margin/ActivityContent"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="BtnAll" type="Button" parent="OverworldHUD/Root/ActivityRail/Margin/ActivityContent/FilterTabs"]
+custom_minimum_size = Vector2(0, 26)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 11
+text = "All"
+
+[node name="BtnRolls" type="Button" parent="OverworldHUD/Root/ActivityRail/Margin/ActivityContent/FilterTabs"]
+custom_minimum_size = Vector2(0, 26)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 11
+text = "Rolls"
+
+[node name="BtnCombat" type="Button" parent="OverworldHUD/Root/ActivityRail/Margin/ActivityContent/FilterTabs"]
+custom_minimum_size = Vector2(0, 26)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 11
+text = "Combat"
+
+[node name="BtnSystem" type="Button" parent="OverworldHUD/Root/ActivityRail/Margin/ActivityContent/FilterTabs"]
+custom_minimum_size = Vector2(0, 26)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 11
+text = "System"
+
+[node name="DiceRollDisplay" parent="OverworldHUD/Root/ActivityRail/Margin/ActivityContent" instance=ExtResource("5_dice_display")]
+visible = false
+custom_minimum_size = Vector2(0, 130)
+layout_mode = 2
+
+[node name="CardScroll" type="ScrollContainer" parent="OverworldHUD/Root/ActivityRail/Margin/ActivityContent"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="CardFeed" type="VBoxContainer" parent="OverworldHUD/Root/ActivityRail/Margin/ActivityContent/CardScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="LogBox" type="PanelContainer" parent="OverworldHUD/Root/ActivityRail/Margin/ActivityContent"]
+visible = false
+layout_mode = 2
+
+[node name="LogText" type="RichTextLabel" parent="OverworldHUD/Root/ActivityRail/Margin/ActivityContent/LogBox"]
 layout_mode = 2
 bbcode_enabled = true
 text = "Exploring overworld..."
 scroll_following = true
+script = ExtResource("7_logpanel")
 
-[node name="Sidebar" type="VBoxContainer" parent="OverworldHUD/MarginContainer/HBoxContainer"]
-custom_minimum_size = Vector2(250, 0)
+[node name="ActionDock" type="MarginContainer" parent="OverworldHUD/Root"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 258.0
+offset_top = -68.0
+offset_right = -342.0
+offset_bottom = -12.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+
+[node name="DockBox" type="PanelContainer" parent="OverworldHUD/Root/ActionDock"]
 layout_mode = 2
-theme_override_constants/separation = 15
 
-[node name="PartyHeader" type="Label" parent="OverworldHUD/MarginContainer/HBoxContainer/Sidebar"]
+[node name="Margin" type="MarginContainer" parent="OverworldHUD/Root/ActionDock/DockBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
-text = "Party Status"
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 6
 
-[node name="ScrollContainer" type="ScrollContainer" parent="OverworldHUD/MarginContainer/HBoxContainer/Sidebar"]
+[node name="HBox" type="HBoxContainer" parent="OverworldHUD/Root/ActionDock/DockBox/Margin"]
 layout_mode = 2
-size_flags_vertical = 3
+theme_override_constants/separation = 12
 
-[node name="PlayerList" type="VBoxContainer" parent="OverworldHUD/MarginContainer/HBoxContainer/Sidebar/ScrollContainer"]
+[node name="ActivePlayerStats" type="Label" parent="OverworldHUD/Root/ActionDock/DockBox/Margin/HBox"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 10
+theme_override_colors/font_color = Color(0.7, 0.75, 0.8, 1)
+theme_override_font_sizes/font_size = 13
+text = "Stats detail"
 
-[node name="BtnCompanions" type="Button" parent="OverworldHUD/MarginContainer/HBoxContainer/Sidebar"]
-custom_minimum_size = Vector2(0, 45)
+[node name="BtnRest" type="Button" parent="OverworldHUD/Root/ActionDock/DockBox/Margin/HBox"]
+custom_minimum_size = Vector2(180, 42)
 layout_mode = 2
-text = "Manage Companions"
-
-[node name="BtnEndTurn" type="Button" parent="OverworldHUD/MarginContainer/HBoxContainer/Sidebar"]
-custom_minimum_size = Vector2(0, 50)
-layout_mode = 2
-theme_override_font_sizes/font_size = 16
-text = "End Turn"
-
-[node name="BtnRest" type="Button" parent="OverworldHUD/MarginContainer/HBoxContainer/Sidebar"]
-custom_minimum_size = Vector2(0, 50)
-layout_mode = 2
-theme_override_font_sizes/font_size = 16
 text = "Rest (may be ambushed)"
 
-[node name="BtnSave" type="Button" parent="OverworldHUD/MarginContainer/HBoxContainer/Sidebar"]
-custom_minimum_size = Vector2(0, 45)
+[node name="BtnEndTurn" type="Button" parent="OverworldHUD/Root/ActionDock/DockBox/Margin/HBox"]
+custom_minimum_size = Vector2(120, 42)
 layout_mode = 2
-text = "Save Game"
-
-[node name="BtnMenu" type="Button" parent="OverworldHUD/MarginContainer/HBoxContainer/Sidebar"]
-custom_minimum_size = Vector2(0, 45)
-layout_mode = 2
-text = "Quit to Menu"
-
-[node name="BtnSettings" type="Button" parent="OverworldHUD/MarginContainer/HBoxContainer/Sidebar"]
-custom_minimum_size = Vector2(0, 45)
-layout_mode = 2
-text = "Settings ⚙"
-
-[node name="BtnSheet" type="Button" parent="OverworldHUD/MarginContainer/HBoxContainer/Sidebar"]
-custom_minimum_size = Vector2(0, 45)
-layout_mode = 2
-text = "Character Sheet"
-
-[node name="DiceRollDisplay" parent="OverworldHUD" instance=ExtResource("5_dice_display")]
-visible = false
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-grow_horizontal = 2
-grow_vertical = 2
+text = "End Turn"
 
 [node name="CompanionOverlay" type="Control" parent="OverworldHUD"]
 visible = false

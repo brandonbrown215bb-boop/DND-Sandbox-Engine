@@ -29,8 +29,8 @@ func _run() -> void:
 
 func _prepare() -> void:
 	save_manager.delete_save(SLOT)
-	var fixture_text := FileAccess.get_file_as_string("res://data/fixtures/save_v1_compat.json")
-	var fixture_file := FileAccess.open("user://saves/%s.sav" % SLOT, FileAccess.WRITE)
+	var fixture_text := FileAccess.get_file_as_string("res://data/fixtures/save_v2_2024.json")
+	var fixture_file := FileAccess.open(save_manager.SAVE_DIR + "%s.sav" % SLOT, FileAccess.WRITE)
 	if fixture_text.is_empty() or fixture_file == null:
 		_fail("could not stage the repository Crown save fixture")
 		return
@@ -59,6 +59,8 @@ func _prepare() -> void:
 	game_manager.cleared_dungeons.assign(["ruins_of_ashvale"])
 	game_manager.claimed_rewards.assign(["ruins_of_ashvale_fragment"])
 	game_manager.defeated_monsters.assign(["wight"])
+	game_manager.record_overworld_location(Vector2i.ZERO, "Elderwick")
+	game_manager.record_overworld_location(Vector2i(1, -1), "Travel checkpoint")
 	if not save_manager.get_save_block_reason().is_empty():
 		_fail("Crown overworld safe point was rejected: %s" % save_manager.get_save_block_reason())
 		return
@@ -74,6 +76,9 @@ func _recover() -> void:
 		_fail("fresh Crown process could not load the prepared save")
 		return
 	var active_party: Array = party_manager.get_active_characters()
+	if not save_manager.is_save_resumable(SLOT) or game_manager.visited_overworld_locations.size() != 2 or not game_manager.visited_overworld_locations[1]["coord"][0] is int:
+		_fail("Visited locations and menu eligibility did not survive JSON/fresh-process recovery")
+		return
 	var owner_indices: Array = []
 	for slot in party_manager.party_slots:
 		if bool(slot.get("occupied", false)):

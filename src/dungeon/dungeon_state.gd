@@ -14,6 +14,10 @@ var party_position := Vector2i.ZERO
 var boss_defeated := false
 ## Room whose encounter is currently in combat. It remains uncleared until victory.
 var pending_combat_room_id: int = -1
+var local_rooms: Dictionary = {}
+var local_room_id: String = ""
+var local_view: LocalRoomView
+var exit_button: Button
 
 
 func _ready() -> void:
@@ -28,9 +32,16 @@ func _ready() -> void:
 	hud.menu_pressed.connect(_on_menu_pressed)
 	hud.settings_pressed.connect(_on_settings_pressed)
 	hud.sheet_pressed.connect(_on_sheet_pressed)
+	exit_button = Button.new()
+	exit_button.text = "Leave dungeon"
+	exit_button.pressed.connect(func():
+		if party_position == Vector2i.ZERO and local_view == null:
+			_save_dungeon_state_to_manager()
+			GameManager.exit_dungeon())
+	hud.btn_rest.get_parent().add_child(exit_button)
 
 	# Center the hex grid in the visible area to the left of the sidebar
-	hex_grid.position = Vector2(515, 295)
+	hex_grid.position = Vector2.ZERO
 
 	# Get active dungeon ID from GameManager context or existing state
 	if not GameManager.active_dungeon_state.is_empty():
@@ -83,6 +94,8 @@ func _ready() -> void:
 		else:
 			party_position = Vector2i.ZERO
 		boss_defeated = GameManager.active_dungeon_state.get("boss_defeated", false)
+		local_rooms = GameManager.active_dungeon_state.get("local_rooms", {}).duplicate(true)
+		local_room_id = str(GameManager.active_dungeon_state.get("local_room_id", ""))
 		pending_combat_room_id = int(GameManager.active_dungeon_state.get("pending_combat_room_id", -1))
 		is_restored = true
 	else:
@@ -118,6 +131,8 @@ func _ready() -> void:
 		_handle_combat_result(combat_result)
 	
 	_highlight_accessible_rooms()
+	if not local_room_id.is_empty():
+		_enter_local_room(local_room_id)
 	hud.update_hud()
 
 
@@ -177,6 +192,9 @@ func _highlight_accessible_rooms() -> void:
 
 
 func _on_room_clicked(coord: Vector2i) -> void:
+	if local_view != null:
+		local_view.click(coord)
+		return
 	if coord == party_position: return
 	
 	# Must be neighbor room
@@ -184,6 +202,7 @@ func _on_room_clicked(coord: Vector2i) -> void:
 	if dist > 1 or coord not in rooms:
 		return
 
+	GameManager.advance_campaign_time(60)
 	# Move party position
 	party_position = coord
 	var room: Room = rooms[coord]
@@ -199,6 +218,9 @@ func _on_room_clicked(coord: Vector2i) -> void:
 
 
 func _resolve_room_encounter(room: Room) -> void:
+	if dungeon_data.get("tactical_rooms", {}).has(str(room.id)):
+		_enter_local_room(str(room.id))
+		return
 	if room.is_cleared:
 		hud.add_log("This room is empty and cleared.")
 		return
@@ -315,6 +337,8 @@ func _complete_pending_combat() -> Room:
 		push_error("[DungeonState] Pending combat room %d was not found." % pending_combat_room_id)
 		return null
 	completed_room.is_cleared = true
+	if local_rooms.has(str(completed_room.id)):
+		local_rooms[str(completed_room.id)]["encounter_cleared"] = true
 	if completed_room.type == Room.RoomType.BOSS:
 		boss_defeated = true
 	pending_combat_room_id = -1
@@ -370,6 +394,10 @@ func _clear_dungeon_successfully() -> void:
 ## --- System-row handlers (mirror OverworldState) ---
 
 func _on_rest_pressed() -> void:
+	if local_view != null:
+		hud.add_log("Return to the entrance before resting.")
+		return
+	GameManager.advance_campaign_time(28800)
 	_rest_party()
 	hud.add_log("[color=green]The party makes camp and rests. HP, spell slots, and feature uses restored.[/color]")
 	hud.update_hud()
@@ -403,11 +431,85 @@ func _rest_party() -> void:
 		char_data.long_rest()
 
 func _save_dungeon_state_to_manager() -> void:
+	if exit_button != null:
+		exit_button.disabled = party_position != Vector2i.ZERO or local_view != null
 	GameManager.active_dungeon_state = {
 		"dungeon_id": dungeon_id,
 		"rooms": rooms,
 		"party_position": party_position,
 		"boss_defeated": boss_defeated,
 		"pending_combat_room_id": pending_combat_room_id,
-		"save_checkpoint": party_position == Vector2i.ZERO,
+		"save_checkpoint": party_position == Vector2i.ZERO and local_view == null,
+		"local_rooms": local_rooms,
+		"local_room_id": local_room_id,
 	}
+
+	GameManager.remember_dungeon()
+
+
+func _enter_local_room(id: String) -> void:
+	var definition: Dictionary = dungeon_data.get("tactical_rooms", {}).get(id, {})
+	var members := PartyManager.get_active_characters()
+	if definition.is_empty() or members.is_empty(): return
+	if local_view != null: local_view.stop()
+	if not local_rooms.has(id):
+		local_rooms[id] = LocalRoomRules.create(definition, members)
+		if dungeon_id in GameManager.cleared_dungeons: local_rooms[id]["encounter_cleared"] = true
+	# New companions may join between visits; reserve an unoccupied spawn for them.
+	var positions: Dictionary = local_rooms[id]["party_positions"]
+	var altitudes: Dictionary = local_rooms[id].get("party_altitudes", {}).duplicate(true)
+	var altitude_modes: Dictionary = local_rooms[id].get("party_altitude_modes", {}).duplicate(true)
+	var ids: Array = members.map(func(character): return character.character_id)
+	for old_id in positions.keys():
+		if old_id not in ids:
+			positions.erase(old_id)
+			altitudes.erase(old_id)
+			altitude_modes.erase(old_id)
+	for member in members:
+		if not positions.has(member.character_id):
+			for spawn in definition["party_spawns"]:
+				if not positions.values().any(func(position): return LocalRoomRules.coord(position) == LocalRoomRules.coord(spawn)):
+					positions[member.character_id] = spawn.duplicate()
+					break
+		if not altitudes.has(member.character_id):
+			altitudes[member.character_id] = LocalRoomRules.elevation_feet(local_rooms[id], LocalRoomRules.coord(positions[member.character_id]))
+		if not altitude_modes.has(member.character_id):
+			altitude_modes[member.character_id] = "ground"
+	local_rooms[id]["party_altitudes"] = altitudes
+	local_rooms[id]["party_altitude_modes"] = altitude_modes
+	local_room_id = id
+	local_view = LocalRoomView.new()
+	local_view.leave_requested.connect(_leave_local_room, CONNECT_DEFERRED)
+	local_view.encounter_requested.connect(_local_encounter, CONNECT_DEFERRED)
+	local_view.start(local_rooms[id], members, hex_grid, hud, _save_dungeon_state_to_manager)
+	_save_dungeon_state_to_manager()
+
+
+func _leave_local_room() -> void:
+	var position := LocalRoomRules.coord(local_view.state["party_positions"][local_view.actor().character_id])
+	var at_exit := false
+	for exit_position in local_view.state["exits"]:
+		if position == LocalRoomRules.coord(exit_position): at_exit = true
+	if not at_exit:
+		hud.add_log("Move the selected character to the entrance space to return to the room map.")
+		return
+	local_view.stop()
+	local_view = null
+	local_room_id = ""
+	hex_grid.clear_entities()
+	_build_tactical_rooms_grid()
+	_highlight_accessible_rooms()
+	_save_dungeon_state_to_manager()
+
+
+func _local_encounter() -> void:
+	var state: Dictionary = local_view.state
+	var hostile_created := CreatedCreatureRules.hostile_in_room(state)
+	if bool(state.get("encounter_cleared", false)) and not hostile_created: return
+	var position := LocalRoomRules.coord(state["party_positions"][local_view.actor().character_id])
+	if position.x <= 0 and not hostile_created:
+		hud.add_log("Pass the temple door before approaching the guardian.")
+		return
+	var room: Room = rooms[party_position]
+	_begin_room_combat(room)
+	GameManager.enter_combat([] if bool(state.get("encounter_cleared", false)) else state["encounter_monsters"], false, GameManager.GameState.DUNGEON, "road", state)

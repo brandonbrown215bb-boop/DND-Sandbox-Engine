@@ -50,7 +50,7 @@
       "weight": 15,
       "description": "You notice a hollow tree stump partially concealed by ferns. Something glints inside.",
       "type": "skill_check",
-      "check": {"ability": "INT", "dc": 10},
+      "check": {"ability": "WIS", "skill": "Perception", "dc": 10, "familiar_help_allowed": true},
       "success": {"description": "Inside the stump you find a small cache of supplies left by a previous traveler.", "effects": [{"type": "give_item", "item_id": "gold_50"}, {"type": "give_item", "item_id": "potion_healing"}]},
       "failure": {"description": "You reach inside but find only rotting leaves and disappointed spiders."}
     },

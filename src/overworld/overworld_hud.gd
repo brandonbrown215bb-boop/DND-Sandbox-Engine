@@ -6,23 +6,33 @@ extends BaseHUD
 signal end_turn_pressed
 signal companion_roster_visibility_changed(is_open: bool)
 
+func _resolve_node(primary: String, fallback: String = "", fallback2: String = "") -> Node:
+	for p in [primary, fallback, fallback2]:
+		if not p.is_empty():
+			if has_node(p):
+				return get_node(p)
+			if has_node("Root/" + p):
+				return get_node("Root/" + p)
+	return find_child(primary.get_file(), true, false)
+
 # Node references
-@onready var player_list_container: VBoxContainer = $MarginContainer/HBoxContainer/Sidebar/ScrollContainer/PlayerList
-@onready var active_player_name: Label = $MarginContainer/HBoxContainer/MainArea/Header/MarginContainer/VBoxContainer/ActivePlayerName
-@onready var active_player_stats: Label = $MarginContainer/HBoxContainer/MainArea/Header/MarginContainer/VBoxContainer/ActivePlayerStats
-@onready var objective_label: Label = $MarginContainer/HBoxContainer/MainArea/Header/MarginContainer/VBoxContainer/ObjectiveLabel
-@onready var btn_end_turn: Button = $MarginContainer/HBoxContainer/Sidebar/BtnEndTurn
-@onready var btn_companions: Button = $MarginContainer/HBoxContainer/Sidebar/BtnCompanions
-@onready var btn_rest: Button = $MarginContainer/HBoxContainer/Sidebar/BtnRest
-@onready var btn_save: Button = $MarginContainer/HBoxContainer/Sidebar/BtnSave
-@onready var btn_menu: Button = $MarginContainer/HBoxContainer/Sidebar/BtnMenu
-@onready var btn_settings: Button = $MarginContainer/HBoxContainer/Sidebar/BtnSettings
-@onready var btn_sheet: Button = $MarginContainer/HBoxContainer/Sidebar/BtnSheet
-@onready var companion_overlay: Control = $CompanionOverlay
-@onready var companion_panel: CompanionRosterPanel = $CompanionOverlay/Center/CompanionRosterPanel
+@onready var player_list_container: VBoxContainer = _resolve_node("PartyRail/Margin/RailBox/ScrollContainer/PlayerList", "MarginContainer/HBoxContainer/Sidebar/ScrollContainer/PlayerList") as VBoxContainer
+@onready var active_player_name: Label = _resolve_node("ContextBar/Margin/HBox/LeftBox/ActivePlayerName", "MarginContainer/HBoxContainer/MainArea/Header/MarginContainer/VBoxContainer/ActivePlayerName") as Label
+@onready var active_player_stats: Label = _resolve_node("ActionDock/DockBox/Margin/HBox/ActivePlayerStats", "MarginContainer/HBoxContainer/MainArea/Header/MarginContainer/VBoxContainer/ActivePlayerStats") as Label
+@onready var objective_label: Label = _resolve_node("ContextBar/Margin/HBox/ObjectivePanel/ObjectiveLabel", "MarginContainer/HBoxContainer/MainArea/Header/MarginContainer/VBoxContainer/ObjectiveLabel") as Label
+@onready var btn_end_turn: Button = _resolve_node("ActionDock/DockBox/Margin/HBox/BtnEndTurn", "MarginContainer/HBoxContainer/Sidebar/BtnEndTurn") as Button
+@onready var btn_companions: Button = _resolve_node("PartyRail/Margin/RailBox/BtnCompanions", "MarginContainer/HBoxContainer/Sidebar/BtnCompanions") as Button
+@onready var btn_rest: Button = _resolve_node("ActionDock/DockBox/Margin/HBox/BtnRest", "MarginContainer/HBoxContainer/Sidebar/BtnRest") as Button
+@onready var btn_save: Button = _resolve_node("ContextBar/Margin/HBox/RightBox/BtnSave", "MarginContainer/HBoxContainer/Sidebar/BtnSave") as Button
+@onready var btn_menu: Button = _resolve_node("ContextBar/Margin/HBox/RightBox/BtnMenu", "MarginContainer/HBoxContainer/Sidebar/BtnMenu") as Button
+@onready var btn_settings: Button = _resolve_node("ContextBar/Margin/HBox/RightBox/BtnSettings", "MarginContainer/HBoxContainer/Sidebar/BtnSettings") as Button
+@onready var btn_sheet: Button = _resolve_node("ContextBar/Margin/HBox/RightBox/BtnSheet", "MarginContainer/HBoxContainer/Sidebar/BtnSheet") as Button
+@onready var companion_overlay: Control = _resolve_node("CompanionOverlay") as Control
+@onready var companion_panel: CompanionRosterPanel = _resolve_node("CompanionOverlay/Center/CompanionRosterPanel") as CompanionRosterPanel
 
 
 func _ready() -> void:
+	ModalSurface.install(companion_overlay, close_companion_roster)
 	btn_end_turn.pressed.connect(func(): end_turn_pressed.emit())
 	btn_companions.pressed.connect(open_companion_roster)
 	btn_rest.pressed.connect(func(): rest_pressed.emit())
@@ -33,7 +43,7 @@ func _ready() -> void:
 	companion_panel.close_requested.connect(close_companion_roster)
 	companion_panel.lifecycle_changed.connect(_on_companion_lifecycle_changed)
 	PlayerManager.device_binding_changed.connect(_on_device_binding_changed)
-	log_text = $MarginContainer/HBoxContainer/MainArea/LogBox/LogText
+	log_text = _resolve_node("ActivityRail/Margin/ActivityContent/LogBox/LogText", "MarginContainer/HBoxContainer/MainArea/LogBox/LogText") as RichTextLabel
 	clear_logs()
 	update_hud()
 
@@ -41,6 +51,9 @@ func _ready() -> void:
 ## Refresh HUD elements with current player and party information.
 ## (log_text, clear_logs(), add_log() inherited from BaseHUD.)
 func update_hud() -> void:
+	if get_node_or_null("Root") is VttShell:
+		$Root.active_character = PlayerManager.get_active_player().get("character")
+		$Root.refresh_party()
 	_update_party_sidebar()
 	_update_active_player_display()
 	_update_objective()
@@ -112,14 +125,14 @@ func _update_party_sidebar() -> void:
 		if owner_index == active_idx:
 			name_lbl.text = "➔ " + name_lbl.text
 			# Add subtle active color
-			name_lbl.add_theme_color_override("font_color", Color.YELLOW)
+			name_lbl.add_theme_color_override("font_color", UiThemeProfile.current().color("accent/primary"))
 		else:
-			name_lbl.add_theme_color_override("font_color", player.get("color", Color.WHITE))
+			name_lbl.add_theme_color_override("font_color", UiThemeProfile.current().color("text/primary"))
 		vbox.add_child(name_lbl)
 		if owner_index >= 0:
 			var input_lbl := Label.new()
 			input_lbl.text = PlayerManager.get_input_status(owner_index)
-			input_lbl.add_theme_color_override("font_color", Color.LIGHT_GRAY if PlayerManager.is_player_connected(owner_index) else Color.ORANGE)
+			input_lbl.add_theme_color_override("font_color", UiThemeProfile.current().color("text/muted" if PlayerManager.is_player_connected(owner_index) else "state/warning"))
 			vbox.add_child(input_lbl)
 
 		var leader_button := Button.new()
@@ -152,7 +165,7 @@ func _update_party_sidebar() -> void:
 				has_slots = true
 			if has_slots:
 				slots_lbl.text = slots_str
-				slots_lbl.add_theme_color_override("font_color", Color(0.6, 0.8, 1.0))
+				slots_lbl.add_theme_color_override("font_color", UiThemeProfile.current().color("state/info"))
 				vbox.add_child(slots_lbl)
 
 		# Show active conditions
@@ -162,7 +175,7 @@ func _update_party_sidebar() -> void:
 			for cond in char_data.conditions:
 				conds_str += "%s (%d) " % [cond, char_data.conditions[cond]]
 			cond_lbl.text = conds_str
-			cond_lbl.add_theme_color_override("font_color", Color(0.9, 0.4, 0.4))
+			cond_lbl.add_theme_color_override("font_color", UiThemeProfile.current().color("state/danger"))
 			vbox.add_child(cond_lbl)
 
 		player_list_container.add_child(card)
@@ -188,7 +201,10 @@ func _update_active_player_display() -> void:
 	if char_data == null: return
 
 	active_player_name.text = "Current Turn: %s" % char_data.character_name
-	active_player_name.add_theme_color_override("font_color", player.get("color", Color.WHITE))
+	var setup := ClassTraining.setup_hint(char_data)
+	btn_sheet.text = "Class setup" if not setup.is_empty() else "Character"
+	btn_sheet.tooltip_text = setup if not setup.is_empty() else "Open the character sheet"
+	active_player_name.add_theme_color_override("font_color", UiThemeProfile.current().color("state/info"))
 	
 	active_player_stats.text = "Race: %s | Level: %d | Speed: %d hexes | %s" % [
 		DataLoader.get_race(char_data.race_id).get("name", ""),
@@ -206,4 +222,7 @@ func _update_objective() -> void:
 	if objectives.is_empty():
 		objective_label.text = "Objective: Free roam"
 		return
-	objective_label.text = "Objective: " + " • ".join(objectives)
+	objective_label.text = "Objective: " + "\n".join(objectives)
+	objective_label.text_overrun_behavior = TextServer.OVERRUN_NO_TRIMMING
+	objective_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	objective_label.tooltip_text = objective_label.text

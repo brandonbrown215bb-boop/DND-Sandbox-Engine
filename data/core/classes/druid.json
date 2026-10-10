@@ -4,13 +4,14 @@
   "description": "Druid class. Source: PHB.",
   "hit_die": "d8",
   "primary_ability": "WIS",
+  "subclass_level": 3,
   "saving_throw_proficiencies": [
     "INT",
     "WIS"
   ],
   "armor_proficiencies": [
     "light",
-    "medium"
+    "shields"
   ],
   "weapon_proficiencies": [
     "simple"
@@ -18,20 +19,1010 @@
   "skill_choices": {
     "pick": 2,
     "from": [
-      "Athletics",
-      "Acrobatics",
-      "Insight",
-      "Perception",
-      "History",
       "Arcana",
-      "Stealth"
+      "Animal Handling",
+      "Insight",
+      "Medicine",
+      "Nature",
+      "Perception",
+      "Religion",
+      "Survival"
     ]
   },
   "starting_equipment": [
     "leather_armor",
     "shield"
   ],
-  "spell_slots_by_level": {
+  "spell_list_ids": [
+    "aid",
+    "animal_friendship",
+    "animal_messenger",
+    "animal_shapes",
+    "antilife_shell",
+    "antipathy_sympathy",
+    "augury",
+    "awaken",
+    "barkskin",
+    "befuddlement",
+    "blight",
+    "call_lightning",
+    "charm_monster",
+    "charm_person",
+    "commune_with_nature",
+    "cone_of_cold",
+    "confusion",
+    "conjure_animals",
+    "conjure_elemental",
+    "conjure_fey",
+    "conjure_minor_elementals",
+    "conjure_woodland_beings",
+    "contagion",
+    "continual_flame",
+    "control_water",
+    "control_weather",
+    "create_or_destroy_water",
+    "cure_wounds",
+    "darkvision",
+    "daylight",
+    "detect_magic",
+    "detect_poison_and_disease",
+    "dispel_magic",
+    "divination",
+    "dominate_beast",
+    "druidcraft",
+    "earthquake",
+    "elementalism",
+    "enhance_ability",
+    "enlarge/reduce",
+    "entangle",
+    "faerie_fire",
+    "find_the_path",
+    "find_traps",
+    "fire_shield",
+    "fire_storm",
+    "flame_blade",
+    "flaming_sphere",
+    "flesh_to_stone",
+    "fog_cloud",
+    "foresight",
+    "freedom_of_movement",
+    "geas",
+    "giant_insect",
+    "goodberry",
+    "greater_restoration",
+    "guidance",
+    "gust_of_wind",
+    "hallucinatory_terrain",
+    "heal",
+    "healing_word",
+    "heat_metal",
+    "heroes_feast",
+    "hold_person",
+    "ice_knife",
+    "ice_storm",
+    "incendiary_cloud",
+    "insect_plague",
+    "jump",
+    "lesser_restoration",
+    "locate_animals_or_plants",
+    "locate_creature",
+    "locate_object",
+    "longstrider",
+    "mass_cure_wounds",
+    "meld_into_stone",
+    "mending",
+    "message",
+    "mirage_arcane",
+    "moonbeam",
+    "move_earth",
+    "pass_without_trace",
+    "planar_binding",
+    "plane_shift",
+    "plant_growth",
+    "poison_spray",
+    "polymorph",
+    "produce_flame",
+    "protection_from_energy",
+    "protection_from_evil_and_good",
+    "protection_from_poison",
+    "purify_food_and_drink",
+    "regenerate",
+    "reincarnate",
+    "resistance",
+    "reverse_gravity",
+    "revivify",
+    "scrying",
+    "shapechange",
+    "shillelagh",
+    "sleet_storm",
+    "spare_the_dying",
+    "speak_with_animals",
+    "speak_with_plants",
+    "spike_growth",
+    "starry_wisp",
+    "stone_shape",
+    "stoneskin",
+    "storm_of_vengeance",
+    "sunbeam",
+    "sunburst",
+    "symbol",
+    "thorn_whip",
+    "thunderwave",
+    "transport_via_plants",
+    "tree_stride",
+    "true_resurrection",
+    "tsunami",
+    "wall_of_fire",
+    "wall_of_stone",
+    "wall_of_thorns",
+    "water_breathing",
+    "water_walk",
+    "wind_walk",
+    "wind_wall"
+  ],
+  "wild_shape_forms": [
+    {
+      "id": "rat",
+      "name": "Rat",
+      "size": "tiny",
+      "challenge_rating": 0,
+      "fly_speed": 0,
+      "armor_class": 10,
+      "speed_feet": 20,
+      "ability_scores": {
+        "STR": 2,
+        "DEX": 11,
+        "CON": 9,
+        "INT": 2,
+        "WIS": 10,
+        "CHA": 4
+      },
+      "skills": {
+        "Perception": 2
+      },
+      "attacks": [
+        {
+          "name": "Bite",
+          "ability": "STR",
+          "attack_bonus": 2,
+          "damage": "1",
+          "fixed_damage": true,
+          "damage_type": "piercing",
+          "range_feet": 5
+        }
+      ]
+    },
+    {
+      "id": "riding_horse",
+      "name": "Riding Horse",
+      "size": "large",
+      "challenge_rating": 0.25,
+      "fly_speed": 0,
+      "armor_class": 11,
+      "speed_feet": 60,
+      "ability_scores": {
+        "STR": 16,
+        "DEX": 13,
+        "CON": 12,
+        "INT": 2,
+        "WIS": 11,
+        "CHA": 7
+      },
+      "skills": {},
+      "attacks": [
+        {
+          "name": "Hooves",
+          "ability": "STR",
+          "attack_bonus": 5,
+          "damage": "1d8",
+          "damage_type": "bludgeoning",
+          "range_feet": 5
+        }
+      ]
+    },
+    {
+      "id": "spider",
+      "name": "Spider",
+      "size": "tiny",
+      "challenge_rating": 0,
+      "fly_speed": 0,
+      "armor_class": 12,
+      "speed_feet": 20,
+      "ability_scores": {
+        "STR": 2,
+        "DEX": 14,
+        "CON": 8,
+        "INT": 1,
+        "WIS": 10,
+        "CHA": 2
+      },
+      "skills": {
+        "Stealth": 4
+      },
+      "traits": [
+        "spider_climb",
+        "web_walker"
+      ],
+      "attacks": [
+        {
+          "name": "Bite",
+          "ability": "DEX",
+          "attack_bonus": 4,
+          "damage": "1",
+          "fixed_damage": true,
+          "damage_type": "piercing",
+          "bonus_damage": "1d4",
+          "bonus_damage_type": "poison",
+          "range_feet": 5
+        }
+      ]
+    },
+    {
+      "id": "wolf",
+      "name": "Wolf",
+      "size": "medium",
+      "challenge_rating": 0.25,
+      "fly_speed": 0,
+      "armor_class": 12,
+      "speed_feet": 40,
+      "ability_scores": {
+        "STR": 14,
+        "DEX": 15,
+        "CON": 12,
+        "INT": 3,
+        "WIS": 12,
+        "CHA": 6
+      },
+      "skills": {
+        "Perception": 5,
+        "Stealth": 4
+      },
+      "traits": [
+        "pack_tactics"
+      ],
+      "attacks": [
+        {
+          "name": "Bite",
+          "ability": "STR",
+          "attack_bonus": 4,
+          "damage": "1d6",
+          "damage_type": "piercing",
+          "knock_prone_size": "medium",
+          "range_feet": 5
+        }
+      ]
+    },
+    {
+      "id": "boar",
+      "name": "Boar",
+      "size": "medium",
+      "challenge_rating": 0.25,
+      "fly_speed": 0,
+      "armor_class": 11,
+      "speed_feet": 40,
+      "ability_scores": {
+        "STR": 13,
+        "DEX": 11,
+        "CON": 14,
+        "INT": 2,
+        "WIS": 9,
+        "CHA": 5
+      },
+      "skills": {},
+      "traits": [
+        "bloodied_fury"
+      ],
+      "attacks": [
+        {
+          "name": "Gore",
+          "ability": "STR",
+          "attack_bonus": 3,
+          "damage": "1d6+1",
+          "fixed_damage": true,
+          "damage_type": "piercing",
+          "range_feet": 5
+        }
+      ]
+    },
+    {
+      "id": "giant_badger",
+      "name": "Giant Badger",
+      "size": "medium",
+      "challenge_rating": 0.25,
+      "fly_speed": 0,
+      "armor_class": 13,
+      "speed_feet": 30,
+      "ability_scores": {
+        "STR": 13,
+        "DEX": 10,
+        "CON": 17,
+        "INT": 2,
+        "WIS": 12,
+        "CHA": 5
+      },
+      "skills": {
+        "Perception": 3
+      },
+      "attacks": [
+        {
+          "name": "Bite",
+          "ability": "STR",
+          "attack_bonus": 3,
+          "damage": "2d4+1",
+          "fixed_damage": true,
+          "damage_type": "piercing",
+          "range_feet": 5
+        }
+      ]
+    },
+    {
+      "id": "panther",
+      "name": "Panther",
+      "size": "medium",
+      "challenge_rating": 0.25,
+      "fly_speed": 0,
+      "armor_class": 13,
+      "speed_feet": 50,
+      "ability_scores": {
+        "STR": 14,
+        "DEX": 16,
+        "CON": 10,
+        "INT": 3,
+        "WIS": 14,
+        "CHA": 7
+      },
+      "skills": {
+        "Perception": 4,
+        "Stealth": 7
+      },
+      "attacks": [
+        {
+          "name": "Rend",
+          "ability": "DEX",
+          "attack_bonus": 5,
+          "damage": "1d6+3",
+          "fixed_damage": true,
+          "damage_type": "slashing",
+          "range_feet": 5
+        }
+      ]
+    },
+    {
+      "id": "giant_wolf_spider",
+      "name": "Giant Wolf Spider",
+      "size": "medium",
+      "challenge_rating": 0.25,
+      "fly_speed": 0,
+      "armor_class": 13,
+      "speed_feet": 40,
+      "climb_speed_feet": 40,
+      "ability_scores": {
+        "STR": 12,
+        "DEX": 16,
+        "CON": 13,
+        "INT": 3,
+        "WIS": 12,
+        "CHA": 4
+      },
+      "skills": {
+        "Perception": 3,
+        "Stealth": 7
+      },
+      "traits": [
+        "spider_climb"
+      ],
+      "attacks": [
+        {
+          "name": "Bite",
+          "ability": "DEX",
+          "attack_bonus": 5,
+          "damage": "1d4+3",
+          "fixed_damage": true,
+          "damage_type": "piercing",
+          "bonus_damage": "2d4",
+          "bonus_damage_type": "poison",
+          "range_feet": 5
+        }
+      ]
+    },
+    {
+      "id": "giant_venomous_snake",
+      "name": "Giant Venomous Snake",
+      "size": "medium",
+      "challenge_rating": 0.25,
+      "fly_speed": 0,
+      "armor_class": 14,
+      "speed_feet": 40,
+      "swim_speed_feet": 40,
+      "ability_scores": {
+        "STR": 10,
+        "DEX": 18,
+        "CON": 13,
+        "INT": 2,
+        "WIS": 10,
+        "CHA": 3
+      },
+      "skills": {
+        "Perception": 2
+      },
+      "attacks": [
+        {
+          "name": "Bite",
+          "ability": "DEX",
+          "attack_bonus": 6,
+          "damage": "1d4+4",
+          "fixed_damage": true,
+          "damage_type": "piercing",
+          "bonus_damage": "1d8",
+          "bonus_damage_type": "poison",
+          "range_feet": 10
+        }
+      ]
+    },
+    {
+      "id": "giant_goat",
+      "name": "Giant Goat",
+      "size": "large",
+      "challenge_rating": 0.5,
+      "fly_speed": 0,
+      "armor_class": 11,
+      "speed_feet": 40,
+      "climb_speed_feet": 30,
+      "ability_scores": {
+        "STR": 17,
+        "DEX": 13,
+        "CON": 12,
+        "INT": 3,
+        "WIS": 12,
+        "CHA": 6
+      },
+      "skills": {
+        "Perception": 3
+      },
+      "attacks": [
+        {
+          "name": "Ram",
+          "ability": "STR",
+          "attack_bonus": 5,
+          "damage": "1d6+3",
+          "fixed_damage": true,
+          "damage_type": "bludgeoning",
+          "range_feet": 5
+        }
+      ]
+    },
+    {
+      "id": "brown_bear",
+      "name": "Brown Bear",
+      "size": "large",
+      "challenge_rating": 1,
+      "fly_speed": 0,
+      "armor_class": 11,
+      "speed_feet": 40,
+      "climb_speed_feet": 30,
+      "ability_scores": {
+        "STR": 17,
+        "DEX": 12,
+        "CON": 15,
+        "INT": 2,
+        "WIS": 13,
+        "CHA": 7
+      },
+      "skills": {
+        "Perception": 3
+      },
+      "attacks": [
+        {
+          "name": "Bite",
+          "ability": "STR",
+          "attack_bonus": 5,
+          "damage": "1d8+3",
+          "fixed_damage": true,
+          "damage_type": "piercing",
+          "range_feet": 5
+        },
+        {
+          "name": "Claw",
+          "ability": "STR",
+          "attack_bonus": 5,
+          "damage": "1d4+3",
+          "fixed_damage": true,
+          "damage_type": "slashing",
+          "knock_prone_size": "large",
+          "range_feet": 5
+        }
+      ]
+    },
+    {
+      "id": "giant_spider",
+      "name": "Giant Spider",
+      "size": "large",
+      "challenge_rating": 1,
+      "fly_speed": 0,
+      "armor_class": 14,
+      "speed_feet": 30,
+      "climb_speed_feet": 30,
+      "ability_scores": {
+        "STR": 14,
+        "DEX": 16,
+        "CON": 12,
+        "INT": 2,
+        "WIS": 11,
+        "CHA": 4
+      },
+      "skills": {
+        "Perception": 4,
+        "Stealth": 7
+      },
+      "traits": [
+        "spider_climb",
+        "web_walker"
+      ],
+      "attacks": [
+        {
+          "name": "Bite",
+          "ability": "DEX",
+          "attack_bonus": 5,
+          "damage": "1d8+3",
+          "fixed_damage": true,
+          "damage_type": "piercing",
+          "bonus_damage": "2d6",
+          "bonus_damage_type": "poison",
+          "range_feet": 5
+        }
+      ]
+    },
+    {
+      "id": "eagle",
+      "name": "Eagle",
+      "size": "small",
+      "challenge_rating": 0,
+      "fly_speed": 60,
+      "armor_class": 12,
+      "speed_feet": 10,
+      "ability_scores": {
+        "STR": 6,
+        "DEX": 15,
+        "CON": 12,
+        "INT": 2,
+        "WIS": 14,
+        "CHA": 7
+      },
+      "skills": {
+        "Perception": 6
+      },
+      "attacks": [
+        {
+          "name": "Talons",
+          "ability": "DEX",
+          "attack_bonus": 4,
+          "damage": "1d4+2",
+          "fixed_damage": true,
+          "damage_type": "slashing",
+          "range_feet": 5
+        }
+      ]
+    }
+  ],
+  "features_by_level": {
+    "1": [
+      {
+        "id": "druid_druidic",
+        "name": "Druidic",
+        "enabled": false,
+        "description": "You know the secret language Druidic. You can speak it and leave hidden messages that other Druids automatically notice; others can notice a message with a DC 15 Intelligence (Investigation) check but cannot decipher it without magic. Language grants are not currently represented in character data.",
+        "type": "passive",
+        "effects": []
+      },
+      {
+        "id": "druid_spellcasting",
+        "name": "Spellcasting",
+        "description": "You prepare Druid spells using Wisdom. Your nature-based spellcasting uses the shared spell list, capacity, selection, and spell slot systems.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "spellcasting",
+            "ability": "WIS",
+            "spell_lists": [
+              "druid"
+            ],
+            "default_cantrips": [
+              "druidcraft",
+              "produce_flame"
+            ],
+            "default_prepared_spells": [
+              "animal_friendship",
+              "cure_wounds",
+              "entangle",
+              "goodberry"
+            ],
+            "capacity_by_level": {
+              "1": {
+                "cantrips": 2,
+                "prepared_spells": 4
+              },
+              "2": {
+                "cantrips": 2,
+                "prepared_spells": 5
+              },
+              "3": {
+                "cantrips": 2,
+                "prepared_spells": 6
+              },
+              "4": {
+                "cantrips": 3,
+                "prepared_spells": 7
+              },
+              "5": {
+                "cantrips": 3,
+                "prepared_spells": 9
+              },
+              "6": {
+                "cantrips": 3,
+                "prepared_spells": 10
+              },
+              "7": {
+                "cantrips": 3,
+                "prepared_spells": 11
+              },
+              "8": {
+                "cantrips": 3,
+                "prepared_spells": 12
+              },
+              "9": {
+                "cantrips": 3,
+                "prepared_spells": 14
+              },
+              "10": {
+                "cantrips": 4,
+                "prepared_spells": 15
+              },
+              "11": {
+                "cantrips": 4,
+                "prepared_spells": 16
+              },
+              "12": {
+                "cantrips": 4,
+                "prepared_spells": 16
+              },
+              "13": {
+                "cantrips": 4,
+                "prepared_spells": 17
+              },
+              "14": {
+                "cantrips": 4,
+                "prepared_spells": 17
+              },
+              "15": {
+                "cantrips": 4,
+                "prepared_spells": 18
+              },
+              "16": {
+                "cantrips": 4,
+                "prepared_spells": 18
+              },
+              "17": {
+                "cantrips": 4,
+                "prepared_spells": 19
+              },
+              "18": {
+                "cantrips": 4,
+                "prepared_spells": 20
+              },
+              "19": {
+                "cantrips": 4,
+                "prepared_spells": 21
+              },
+              "20": {
+                "cantrips": 4,
+                "prepared_spells": 22
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "druid_primal_order",
+        "name": "Primal Order",
+        "description": "Choose Magician or Warden. Magician grants one additional Druid cantrip and adds at least +1 or your Wisdom modifier to Arcana and Nature checks. Warden grants Martial weapon proficiency and Medium Armor training.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "feature_choice",
+            "options": [
+              {
+                "id": "magician",
+                "name": "Magician",
+                "effects": [
+                  {
+                    "type": "spellcasting_capacity_bonus",
+                    "kind": "cantrips",
+                    "amount": 1
+                  },
+                  {
+                    "type": "ability_check_bonus",
+                    "skills": [
+                      "Arcana",
+                      "Nature"
+                    ],
+                    "ability": "WIS",
+                    "minimum_bonus": 1
+                  }
+                ]
+              },
+              {
+                "id": "warden",
+                "name": "Warden",
+                "effects": [
+                  {
+                    "type": "proficiency_grant",
+                    "weapon_proficiencies": [
+                      "martial"
+                    ],
+                    "armor_proficiencies": [
+                      "medium"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "2": [
+      {
+        "id": "druid_wild_shape_uses",
+        "name": "Wild Shape uses",
+        "type": "resource",
+        "uses": 2,
+        "uses_by_level": {
+          "6": 3,
+          "17": 4
+        },
+        "uses_per": "long_rest",
+        "short_rest_recovery": 1
+      },
+      {
+        "id": "druid_wild_shape",
+        "name": "Wild Shape",
+        "resolver": "druid_rules",
+        "description": "As a Bonus Action, assume one of your learned Beast forms. You gain temporary Hit Points equal to your Druid level. The form lasts for half your Druid level in hours, until you use Wild Shape again, become Incapacitated, die, or leave as a Bonus Action.",
+        "type": "active",
+        "resource_id": "druid_wild_shape_uses",
+        "action_cost": "bonus_action",
+        "effects": []
+      },
+      {
+        "id": "druid_wild_companion",
+        "name": "Wild Companion",
+        "resolver": "druid_rules",
+        "description": "As a Magic action, expend a spell slot or a use of Wild Shape to summon a Fey familiar. Choose a Cat, Owl, Rat, or Spider. It acts on its own initiative, can move, Dodge, or Help, and disappears after your next Long Rest.",
+        "type": "active",
+        "resource_id": "druid_wild_shape_uses",
+        "action_cost": "magic_action",
+        "effects": []
+      },
+      {
+        "id": "druid_druid_circle",
+        "name": "Druid Subclass",
+        "enabled": false,
+        "description": "Choose a Druid subclass at level 3. Subclass mechanics are separate from this base-class progression.",
+        "type": "passive",
+        "effects": []
+      }
+    ],
+    "3": [],
+    "4": [
+      {
+        "id": "druid_ability_score_improvement",
+        "name": "Ability Score Improvement",
+        "description": "Increase one ability score by 2 or two scores by 1, to a maximum of 20, or choose another eligible feat.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "asi"
+          }
+        ],
+        "rules_status": "2024-supported",
+        "rules_source": "dnd-2024-srd-5.2.1"
+      }
+    ],
+    "5": [
+      {
+        "id": "druid_wild_resurgence",
+        "name": "Wild Resurgence",
+        "resolver": "druid_rules",
+        "description": "Once on each of your turns when no Wild Shape uses remain, expend a spell slot to regain one use. Alternatively, expend a Wild Shape use to regain a level 1 spell slot; once per Long Rest.",
+        "type": "active",
+        "uses": 1,
+        "uses_per": "turn",
+        "action_cost": "free",
+        "effects": []
+      }
+    ],
+    "6": [],
+    "7": [
+      {
+        "id": "druid_elemental_fury",
+        "name": "Elemental Fury",
+        "description": "Choose Potent Spellcasting (add Wisdom to Druid cantrip damage) or Primal Strike (once per turn, add 1d8 Cold, Fire, Lightning, or Thunder damage when a weapon or Beast-form attack hits).",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "feature_choice",
+            "options": [
+              {
+                "id": "potent_spellcasting",
+                "name": "Potent Spellcasting",
+                "effects": [
+                  {
+                    "type": "spell_damage_bonus",
+                    "spell_level": 0,
+                    "spell_list": "druid",
+                    "ability": "WIS"
+                  },
+                  {
+                    "type": "spell_range_bonus",
+                    "spell_level": 0,
+                    "spell_list": "druid",
+                    "minimum_range_feet": 10,
+                    "bonus_feet_by_level": {
+                      "15": 300
+                    },
+                    "requires_feature": "druid_improved_elemental_fury"
+                  }
+                ]
+              },
+              {
+                "id": "primal_strike",
+                "name": "Primal Strike",
+                "effects": [
+                  {
+                    "type": "weapon_damage_rider",
+                    "id": "primal_strike",
+                    "feature_id": "primal_strike",
+                    "trigger": "weapon_attack_hit",
+                    "damage_type_options": [
+                      "cold",
+                      "fire",
+                      "lightning",
+                      "thunder"
+                    ],
+                    "dice_by_level": {
+                      "7": "1d8",
+                      "15": "2d8"
+                    },
+                    "uses_per": "turn"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "8": [
+      {
+        "id": "druid_ability_score_improvement_8",
+        "name": "Ability Score Improvement",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "asi"
+          }
+        ],
+        "rules_status": "2024-supported",
+        "rules_source": "dnd-2024-srd-5.2.1"
+      }
+    ],
+    "9": [],
+    "10": [],
+    "11": [],
+    "12": [
+      {
+        "id": "druid_ability_score_improvement_12",
+        "name": "Ability Score Improvement",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "asi"
+          }
+        ],
+        "rules_status": "2024-supported",
+        "rules_source": "dnd-2024-srd-5.2.1"
+      }
+    ],
+    "13": [],
+    "14": [],
+    "15": [
+      {
+        "id": "druid_improved_elemental_fury",
+        "name": "Improved Elemental Fury",
+        "resolver": "druid_rules",
+        "description": "Potent Spellcasting increases the range of Druid cantrips whose range is at least 10 feet by 300 feet. Primal Strike damage increases to 2d8. The selected level-7 Elemental Fury choice carries these upgrades.",
+        "type": "passive",
+        "effects": []
+      }
+    ],
+    "16": [
+      {
+        "id": "druid_ability_score_improvement_16",
+        "name": "Ability Score Improvement",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "asi"
+          }
+        ],
+        "rules_status": "2024-supported",
+        "rules_source": "dnd-2024-srd-5.2.1"
+      }
+    ],
+    "17": [],
+    "18": [
+      {
+        "id": "druid_beast_spells",
+        "name": "Beast Spells",
+        "resolver": "druid_rules",
+        "description": "While using Wild Shape, cast spells except spells with a priced Material component or a consumed Material component.",
+        "type": "passive",
+        "effects": []
+      }
+    ],
+    "19": [
+      {
+        "id": "druid_epic_boon",
+        "name": "Epic Boon",
+        "description": "Gain an Epic Boon feat or another feat for which you qualify.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "epic_boon_choice",
+            "options": [
+              "combat_prowess",
+              "irresistible_offense",
+              "spell_recall"
+            ],
+            "ability_scores_by_option": {
+              "spell_recall": [
+                "INT",
+                "WIS",
+                "CHA"
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "20": [
+      {
+        "id": "druid_archdruid",
+        "name": "Archdruid",
+        "description": "Evergreen Wild Shape restores one use when you roll Initiative with none remaining. Longevity makes your body age one year for every ten years that pass.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "initiative_resource_recovery",
+            "resource_id": "druid_wild_shape_uses",
+            "minimum": 1
+          }
+        ]
+      },
+      {
+        "id": "druid_nature_magician",
+        "name": "Nature Magician",
+        "resolver": "druid_rules",
+        "description": "Convert one or more unexpended Wild Shape uses into one spell slot, each use contributing two spell levels. Once per Long Rest.",
+        "type": "active",
+        "uses": 1,
+        "uses_per": "long_rest",
+        "action_cost": "free",
+        "effects": []
+      }
+    ]
+  },
+  "spell_slots_by_character_level": {
     "1": [
       2
     ],
@@ -50,124 +1041,135 @@
       4,
       3,
       2
-    ]
-  },
-  "cantrips_known": [],
-  "spells_known_by_level": {
-    "1": [],
-    "2": [],
-    "3": []
-  },
-  "features_by_level": {
-    "1": [
-      {
-        "id": "druid_druidic",
-        "name": "Druidic",
-        "description": "You know {@language Druidic}, the secret language of druids. You can speak the language and use it to leave hidden messages. You and others who know this language automatically spot such a message. Others spot the message's presence with a successful 15 Wisdom ({@skill Perception}) check but can't d...",
-        "type": "passive",
-        "effects": []
-      },
-      {
-        "id": "druid_spellcasting",
-        "name": "Spellcasting",
-        "description": "Drawing on the divine essence of nature itself, you can cast spells to shape that essence to your will. See chapter 10 for the general rules of spellcasting and chapter 11 for the {@filter druid spell list=druid}. {'type': 'entries', 'name': 'Cantrips', 'entries': ['At 1st level, you know two cantri...",
-        "type": "passive",
-        "effects": []
-      },
-      {
-        "id": "druid_magician",
-        "name": "Magician",
-        "description": "You know one extra cantrip from the {@filter Druid spell list=Druid}. In addition, your mystical connection to nature gives you a bonus to your Intelligence ({@skill Arcana} or {@skill Nature}) checks. The bonus equals your Wisdom modifier (minimum bonus of +1).",
-        "type": "passive",
-        "effects": []
-      },
-      {
-        "id": "druid_primal_order",
-        "name": "Primal Order",
-        "description": "You have dedicated yourself to one of the following sacred roles of your choice. {'type': 'entries', 'entries': [{'type': 'options', 'count': 1, 'entries': [{'type': 'refClassFeature', 'classFeature': 'Magician'}, {'type': 'refClassFeature', 'classFeature': 'Warden'}]}]}",
-        "type": "passive",
-        "effects": []
-      },
-      {
-        "id": "druid_warden",
-        "name": "Warden",
-        "description": "Trained for battle, you gain proficiency with {@filter Martial weapons=martial weapon} and training with {@filter Medium armor=Medium Armor}.",
-        "type": "passive",
-        "effects": []
-      }
     ],
-    "2": [
-      {
-        "id": "druid_druid_circle",
-        "name": "Druid Circle",
-        "description": "At 2nd level, you choose to identify with a circle of druids from the list of available circles. Your choice grants you features at 2nd level and again at 6th, 10th, and 14th level.",
-        "type": "passive",
-        "effects": []
-      },
-      {
-        "id": "druid_wild_companion",
-        "name": "Wild Companion",
-        "description": "{@i 2nd-level druid optional class features feature} You gain the ability to summon a spirit that assumes an animal form: as an action, you can expend a use of your Wild Shape feature to cast the find familiar spell, without material components. When you cast the spell in this way, the familiar is a...",
-        "type": "active",
-        "effects": [],
-        "action_cost": "action",
-        "uses": 1,
-        "uses_per": "combat"
-      },
-      {
-        "id": "druid_wild_shape",
-        "name": "Wild Shape",
-        "description": "Starting at 2nd level, you can use your action to magically assume the shape of a beast that you have seen before. You can use this feature twice. You regain expended uses when you finish a short or long rest. Your druid level determines the beasts you can transform into, as shown in the Beast Shape...",
-        "type": "active",
-        "effects": [],
-        "action_cost": "bonus_action",
-        "uses": 1,
-        "uses_per": "combat"
-      }
+    "6": [
+      4,
+      3,
+      3
     ],
-    "3": [
-      {
-        "id": "druid_druid_subclass",
-        "name": "Druid Subclass",
-        "description": "You gain a Druid subclass of your choice. A subclass is a specialization that grants you features at certain Druid levels. For the rest of your career, you gain each of your subclass's features that are of your Druid level or lower.",
-        "type": "passive",
-        "effects": []
-      }
+    "7": [
+      4,
+      3,
+      3,
+      1
     ],
-    "4": [
-      {
-        "id": "druid_ability_score_improvement",
-        "name": "Ability Score Improvement",
-        "description": "When you reach 4th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature. If your DM allows the use of feats, you may instead take a {@5etools feat.html}.",
-        "type": "passive",
-        "effects": []
-      },
-      {
-        "id": "druid_cantrip_versatility",
-        "name": "Cantrip Versatility",
-        "description": "{@i 4th-level druid optional class features feature} Whenever you reach a level in this class that grants the Ability Score Improvement feature, you can replace one cantrip you learned from this class's Spellcasting feature with another cantrip from the {@filter druid spell list=0=Druid}.",
-        "type": "passive",
-        "effects": []
-      },
-      {
-        "id": "druid_wild_shape_improvement",
-        "name": "Wild Shape Improvement",
-        "description": "At 4th level, your Wild Shape improves as shown on the Beast Shapes table.",
-        "type": "passive",
-        "effects": []
-      }
+    "8": [
+      4,
+      3,
+      3,
+      2
     ],
-    "5": [
-      {
-        "id": "druid_wild_resurgence",
-        "name": "Wild Resurgence",
-        "description": "Once on each of your turns, if you have no uses of Wild Shape left, you can give yourself one use by expending a spell slot (no action required). In addition, you can expend one use of Wild Shape (no action required) to give yourself a level 1 spell slot, but you can't do so again until you finish a...",
-        "type": "active",
-        "effects": [],
-        "action_cost": "action",
-        "uses": 1,
-        "uses_per": "combat"
-      }
+    "9": [
+      4,
+      3,
+      3,
+      3,
+      1
+    ],
+    "10": [
+      4,
+      3,
+      3,
+      3,
+      2
+    ],
+    "11": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1
+    ],
+    "12": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1
+    ],
+    "13": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1
+    ],
+    "14": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1
+    ],
+    "15": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      1
+    ],
+    "16": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      1
+    ],
+    "17": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      1,
+      1
+    ],
+    "18": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      1,
+      1
+    ],
+    "19": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      2,
+      1,
+      1,
+      1
+    ],
+    "20": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      2,
+      2,
+      1,
+      1
     ]
   }
 }

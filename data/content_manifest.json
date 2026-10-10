@@ -11,7 +11,9 @@
     {
       "id": "crown",
       "version": "1.0.0",
-      "dependencies": ["core"],
+      "dependencies": [
+        "core"
+      ],
       "ruleset_compatibility": "rook-5e-lite-v1"
     }
   ],
@@ -86,6 +88,14 @@
     },
     {
       "type": "item",
+      "id": "battleaxe",
+      "winner": "res://data/core/items/weapons.json#18",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#4"
+      ]
+    },
+    {
+      "type": "item",
       "id": "black_dragon_scale_mail",
       "winner": "res://data/core/items/imported_magic_armor.json#11",
       "replaces": [
@@ -98,6 +108,14 @@
       "winner": "res://data/core/items/imported_magic_weapons.json#4",
       "replaces": [
         "res://data/core/items/imported_magic_weapons.json#3"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "blowgun",
+      "winner": "res://data/core/items/weapons.json#34",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#5"
       ]
     },
     {
@@ -166,6 +184,14 @@
     },
     {
       "type": "item",
+      "id": "club",
+      "winner": "res://data/core/items/weapons.json#8",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#9"
+      ]
+    },
+    {
+      "type": "item",
       "id": "cobblers_tools",
       "winner": "res://data/core/items/imported_magic_tools.json#14",
       "replaces": [
@@ -206,6 +232,14 @@
     },
     {
       "type": "item",
+      "id": "dart",
+      "winner": "res://data/core/items/weapons.json#15",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#11"
+      ]
+    },
+    {
+      "type": "item",
       "id": "disguise_kit",
       "winner": "res://data/core/items/imported_magic_tools.json#19",
       "replaces": [
@@ -238,10 +272,26 @@
     },
     {
       "type": "item",
+      "id": "flail",
+      "winner": "res://data/core/items/weapons.json#19",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#12"
+      ]
+    },
+    {
+      "type": "item",
       "id": "forgery_kit",
       "winner": "res://data/core/items/imported_magic_tools.json#23",
       "replaces": [
         "res://data/core/items/imported_magic_tools.json#22"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "glaive",
+      "winner": "res://data/core/items/weapons.json#20",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#13"
       ]
     },
     {
@@ -270,10 +320,50 @@
     },
     {
       "type": "item",
+      "id": "greataxe",
+      "winner": "res://data/core/items/weapons.json#21",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#14"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "greatclub",
+      "winner": "res://data/core/items/weapons.json#9",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#15"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "greatsword",
+      "winner": "res://data/core/items/weapons.json#22",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#16"
+      ]
+    },
+    {
+      "type": "item",
       "id": "green_dragon_scale_mail",
       "winner": "res://data/core/items/imported_magic_armor.json#29",
       "replaces": [
         "res://data/core/items/imported_magic_armor.json#28"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "halberd",
+      "winner": "res://data/core/items/weapons.json#23",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#17"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "hand_crossbow",
+      "winner": "res://data/core/items/weapons.json#35",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#19"
       ]
     },
     {
@@ -286,10 +376,26 @@
     },
     {
       "type": "item",
+      "id": "heavy_crossbow",
+      "winner": "res://data/core/items/weapons.json#36",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#21"
+      ]
+    },
+    {
+      "type": "item",
       "id": "herbalism_kit",
       "winner": "res://data/core/items/imported_magic_tools.json#29",
       "replaces": [
         "res://data/core/items/imported_magic_tools.json#28"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "javelin",
+      "winner": "res://data/core/items/weapons.json#10",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#24"
       ]
     },
     {
@@ -310,6 +416,14 @@
     },
     {
       "type": "item",
+      "id": "lance",
+      "winner": "res://data/core/items/weapons.json#24",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#25"
+      ]
+    },
+    {
+      "type": "item",
       "id": "leather_armor",
       "winner": "res://data/core/items/armor.json#1",
       "replaces": [
@@ -326,6 +440,22 @@
     },
     {
       "type": "item",
+      "id": "light_crossbow",
+      "winner": "res://data/core/items/weapons.json#16",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#29"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "light_hammer",
+      "winner": "res://data/core/items/weapons.json#11",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#30"
+      ]
+    },
+    {
+      "type": "item",
       "id": "longbow",
       "winner": "res://data/core/items/weapons.json#7",
       "replaces": [
@@ -338,6 +468,14 @@
       "winner": "res://data/core/items/weapons.json#1",
       "replaces": [
         "res://data/core/items/imported_base_items.json#32"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "mace",
+      "winner": "res://data/core/items/weapons.json#12",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#33"
       ]
     },
     {
@@ -370,6 +508,30 @@
       "winner": "res://data/core/items/imported_magic_tools.json#35",
       "replaces": [
         "res://data/core/items/imported_magic_tools.json#34"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "maul",
+      "winner": "res://data/core/items/weapons.json#25",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#34"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "morningstar",
+      "winner": "res://data/core/items/weapons.json#26",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#35"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "musket",
+      "winner": "res://data/core/items/weapons.json#37",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#36"
       ]
     },
     {
@@ -422,10 +584,44 @@
     },
     {
       "type": "item",
+      "id": "pike",
+      "winner": "res://data/core/items/weapons.json#27",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#39"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "pistol",
+      "winner": "res://data/core/items/weapons.json#38",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#40"
+      ]
+    },
+    {
+      "type": "item",
       "id": "poisoners_kit",
       "winner": "res://data/core/items/imported_magic_tools.json#42",
       "replaces": [
         "res://data/core/items/imported_magic_tools.json#41"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "potion_greater_healing",
+      "winner": "res://data/core/items/consumables.json#2",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#40",
+        "res://data/core/items/imported_magic_consumables.json#41"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "potion_healing",
+      "winner": "res://data/core/items/consumables.json#1",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#45",
+        "res://data/core/items/imported_magic_consumables.json#46"
       ]
     },
     {
@@ -542,26 +738,10 @@
     },
     {
       "type": "item",
-      "id": "potion_of_greater_healing",
-      "winner": "res://data/core/items/imported_magic_consumables.json#41",
-      "replaces": [
-        "res://data/core/items/imported_magic_consumables.json#40"
-      ]
-    },
-    {
-      "type": "item",
       "id": "potion_of_growth",
       "winner": "res://data/core/items/imported_magic_consumables.json#44",
       "replaces": [
         "res://data/core/items/imported_magic_consumables.json#43"
-      ]
-    },
-    {
-      "type": "item",
-      "id": "potion_of_healing",
-      "winner": "res://data/core/items/imported_magic_consumables.json#46",
-      "replaces": [
-        "res://data/core/items/imported_magic_consumables.json#45"
       ]
     },
     {
@@ -686,22 +866,6 @@
     },
     {
       "type": "item",
-      "id": "potion_of_superior_healing",
-      "winner": "res://data/core/items/imported_magic_consumables.json#79",
-      "replaces": [
-        "res://data/core/items/imported_magic_consumables.json#78"
-      ]
-    },
-    {
-      "type": "item",
-      "id": "potion_of_supreme_healing",
-      "winner": "res://data/core/items/imported_magic_consumables.json#81",
-      "replaces": [
-        "res://data/core/items/imported_magic_consumables.json#80"
-      ]
-    },
-    {
-      "type": "item",
       "id": "potion_of_thunder_resistance",
       "winner": "res://data/core/items/imported_magic_consumables.json#83",
       "replaces": [
@@ -722,6 +886,22 @@
       "winner": "res://data/core/items/imported_magic_consumables.json#87",
       "replaces": [
         "res://data/core/items/imported_magic_consumables.json#86"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "potion_superior_healing",
+      "winner": "res://data/core/items/imported_magic_consumables.json#79",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#78"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "potion_supreme_healing",
+      "winner": "res://data/core/items/imported_magic_consumables.json#81",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#80"
       ]
     },
     {
@@ -774,6 +954,14 @@
     },
     {
       "type": "item",
+      "id": "scimitar",
+      "winner": "res://data/core/items/weapons.json#28",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#47"
+      ]
+    },
+    {
+      "type": "item",
       "id": "scimitar_of_speed",
       "winner": "res://data/core/items/imported_magic_weapons.json#33",
       "replaces": [
@@ -814,6 +1002,22 @@
     },
     {
       "type": "item",
+      "id": "shortsword",
+      "winner": "res://data/core/items/weapons.json#29",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#50"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "sickle",
+      "winner": "res://data/core/items/weapons.json#13",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#52"
+      ]
+    },
+    {
+      "type": "item",
       "id": "silver_dragon_scale_mail",
       "winner": "res://data/core/items/imported_magic_armor.json#40",
       "replaces": [
@@ -822,10 +1026,26 @@
     },
     {
       "type": "item",
+      "id": "sling",
+      "winner": "res://data/core/items/weapons.json#17",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#53"
+      ]
+    },
+    {
+      "type": "item",
       "id": "smiths_tools",
       "winner": "res://data/core/items/imported_magic_tools.json#49",
       "replaces": [
         "res://data/core/items/imported_magic_tools.json#48"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "spear",
+      "winner": "res://data/core/items/weapons.json#14",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#54"
       ]
     },
     {
@@ -879,10 +1099,34 @@
     },
     {
       "type": "item",
+      "id": "trident",
+      "winner": "res://data/core/items/weapons.json#30",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#57"
+      ]
+    },
+    {
+      "type": "item",
       "id": "trident_of_fish_command",
       "winner": "res://data/core/items/imported_magic_weapons.json#66",
       "replaces": [
         "res://data/core/items/imported_magic_weapons.json#65"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "war_pick",
+      "winner": "res://data/core/items/weapons.json#31",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#58"
+      ]
+    },
+    {
+      "type": "item",
+      "id": "warhammer",
+      "winner": "res://data/core/items/weapons.json#32",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#59"
       ]
     },
     {
@@ -911,6 +1155,14 @@
     },
     {
       "type": "item",
+      "id": "whip",
+      "winner": "res://data/core/items/weapons.json#33",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#60"
+      ]
+    },
+    {
+      "type": "item",
       "id": "white_dragon_scale_mail",
       "winner": "res://data/core/items/imported_magic_armor.json#44",
       "replaces": [
@@ -931,118 +1183,6 @@
       "winner": "res://data/core/items/imported_magic_tools.json#63",
       "replaces": [
         "res://data/core/items/imported_magic_tools.json#62"
-      ]
-    },
-    {
-      "type": "spell",
-      "id": "bless",
-      "winner": "res://data/core/spells/core_spells.json#14",
-      "replaces": [
-        "res://data/core/spells/imported_spells.json#19"
-      ]
-    },
-    {
-      "type": "spell",
-      "id": "burning_hands",
-      "winner": "res://data/core/spells/core_spells.json#7",
-      "replaces": [
-        "res://data/core/spells/imported_spells.json#25"
-      ]
-    },
-    {
-      "type": "spell",
-      "id": "counterspell",
-      "winner": "res://data/core/spells/core_spells.json#13",
-      "replaces": [
-        "res://data/core/spells/imported_spells.json#41"
-      ]
-    },
-    {
-      "type": "spell",
-      "id": "fire_bolt",
-      "winner": "res://data/core/spells/core_spells.json#1",
-      "replaces": [
-        "res://data/core/spells/imported_spells.json#76"
-      ]
-    },
-    {
-      "type": "spell",
-      "id": "fireball",
-      "winner": "res://data/core/spells/core_spells.json#12",
-      "replaces": [
-        "res://data/core/spells/imported_spells.json#77"
-      ]
-    },
-    {
-      "type": "spell",
-      "id": "light",
-      "winner": "res://data/core/spells/core_spells.json#3",
-      "replaces": [
-        "res://data/core/spells/imported_spells.json#111"
-      ]
-    },
-    {
-      "type": "spell",
-      "id": "mage_armor",
-      "winner": "res://data/core/spells/core_spells.json#6",
-      "replaces": [
-        "res://data/core/spells/imported_spells.json#117"
-      ]
-    },
-    {
-      "type": "spell",
-      "id": "magic_missile",
-      "winner": "res://data/core/spells/core_spells.json#4",
-      "replaces": [
-        "res://data/core/spells/imported_spells.json#120"
-      ]
-    },
-    {
-      "type": "spell",
-      "id": "misty_step",
-      "winner": "res://data/core/spells/core_spells.json#10",
-      "replaces": [
-        "res://data/core/spells/imported_spells.json#131"
-      ]
-    },
-    {
-      "type": "spell",
-      "id": "ray_of_frost",
-      "winner": "res://data/core/spells/core_spells.json#2",
-      "replaces": [
-        "res://data/core/spells/imported_spells.json#148"
-      ]
-    },
-    {
-      "type": "spell",
-      "id": "scorching_ray",
-      "winner": "res://data/core/spells/core_spells.json#11",
-      "replaces": [
-        "res://data/core/spells/imported_spells.json#156"
-      ]
-    },
-    {
-      "type": "spell",
-      "id": "shield",
-      "winner": "res://data/core/spells/core_spells.json#5",
-      "replaces": [
-        "res://data/core/spells/imported_spells.json#161"
-      ]
-    },
-    {
-      "type": "spell",
-      "id": "sleep",
-      "winner": "res://data/core/spells/core_spells.json#8",
-      "replaces": [
-        "res://data/core/spells/imported_spells.json#167"
-      ]
-    },
-    {
-      "type": "spell",
-      "id": "thunderwave",
-      "winner": "res://data/core/spells/core_spells.json#9",
-      "replaces": [
-        "res://data/core/spells/imported_spells.json#185"
       ]
     },
     {
@@ -1099,6 +1239,2074 @@
       "winner": "res://data/core/monsters/core_monsters.json#4",
       "replaces": [
         "res://data/core/monsters/imported_monsters.json#450"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "bless",
+      "winner": "res://data/core/spells/core_spells.json#14",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#19"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "burning_hands",
+      "winner": "res://data/core/spells/core_spells.json#7",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#25"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "counterspell",
+      "winner": "res://data/core/spells/core_spells.json#13",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#41"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "find_steed",
+      "winner": "res://data/core/spells/core_spells.json#15",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#74"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "fire_bolt",
+      "winner": "res://data/core/spells/core_spells.json#1",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#76"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "fireball",
+      "winner": "res://data/core/spells/core_spells.json#12",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#77"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "light",
+      "winner": "res://data/core/spells/core_spells.json#3",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#111"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "mage_armor",
+      "winner": "res://data/core/spells/core_spells.json#6",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#117"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "mage_hand",
+      "winner": "res://data/core/spells/core_spells.json#17",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#118"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "magic_missile",
+      "winner": "res://data/core/spells/core_spells.json#4",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#120"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "misty_step",
+      "winner": "res://data/core/spells/core_spells.json#10",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#131"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "ray_of_frost",
+      "winner": "res://data/core/spells/core_spells.json#2",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#148"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "scorching_ray",
+      "winner": "res://data/core/spells/core_spells.json#11",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#156"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "shatter",
+      "winner": "res://data/core/spells/srd_additional_spells.json#159",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#160"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "shield",
+      "winner": "res://data/core/spells/core_spells.json#5",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#161"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "sleep",
+      "winner": "res://data/core/spells/core_spells.json#8",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#167"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "thunderwave",
+      "winner": "res://data/core/spells/core_spells.json#9",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#185"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "aboleth",
+      "winner": "res://data/core/monsters/srd_monsters.json#183",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#2"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "adult_black_dragon",
+      "winner": "res://data/core/monsters/srd_monsters.json#81",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#5"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "adult_blue_dragon",
+      "winner": "res://data/core/monsters/srd_monsters.json#83",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#7"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "adult_brass_dragon",
+      "winner": "res://data/core/monsters/srd_monsters.json#93",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#8"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "adult_bronze_dragon",
+      "winner": "res://data/core/monsters/srd_monsters.json#95",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#9"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "adult_copper_dragon",
+      "winner": "res://data/core/monsters/srd_monsters.json#94",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#10"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "adult_gold_dragon",
+      "winner": "res://data/core/monsters/srd_monsters.json#106",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#11"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "adult_green_dragon",
+      "winner": "res://data/core/monsters/srd_monsters.json#91",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#12"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "adult_red_dragon",
+      "winner": "res://data/core/monsters/srd_monsters.json#82",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#13"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "adult_silver_dragon",
+      "winner": "res://data/core/monsters/srd_monsters.json#107",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#14"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "adult_white_dragon",
+      "winner": "res://data/core/monsters/srd_monsters.json#92",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#15"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "air_elemental",
+      "winner": "res://data/core/monsters/srd_monsters.json#37",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#16"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "ancient_black_dragon",
+      "winner": "res://data/core/monsters/srd_monsters.json#166",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#18"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "ancient_blue_dragon",
+      "winner": "res://data/core/monsters/srd_monsters.json#167",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#19"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "ancient_brass_dragon",
+      "winner": "res://data/core/monsters/srd_monsters.json#171",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#20"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "ancient_bronze_dragon",
+      "winner": "res://data/core/monsters/srd_monsters.json#172",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#21"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "ancient_copper_dragon",
+      "winner": "res://data/core/monsters/srd_monsters.json#173",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#22"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "ancient_gold_dragon",
+      "winner": "res://data/core/monsters/srd_monsters.json#175",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#23"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "ancient_green_dragon",
+      "winner": "res://data/core/monsters/srd_monsters.json#168",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#24"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "ancient_red_dragon",
+      "winner": "res://data/core/monsters/srd_monsters.json#169",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#25"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "ancient_silver_dragon",
+      "winner": "res://data/core/monsters/srd_monsters.json#174",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#26"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "ancient_white_dragon",
+      "winner": "res://data/core/monsters/srd_monsters.json#170",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#27"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "animated_armor",
+      "winner": "res://data/core/monsters/srd_monsters.json#22",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#29"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "ankheg",
+      "winner": "res://data/core/monsters/srd_monsters.json#36",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#30"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "archmage",
+      "winner": "res://data/core/monsters/srd_monsters.json#187",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#34"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "assassin",
+      "winner": "res://data/core/monsters/srd_monsters.json#97",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#35"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "awakened_shrub",
+      "winner": "res://data/core/monsters/srd_monsters.json#195",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#36"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "awakened_tree",
+      "winner": "res://data/core/monsters/srd_monsters.json#196",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#37"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "axe_beak",
+      "winner": "res://data/core/monsters/srd_monsters.json#225",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#38"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "balor",
+      "winner": "res://data/core/monsters/srd_monsters.json#163",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#42"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "bandit_captain",
+      "winner": "res://data/core/monsters/srd_monsters.json#108",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#44"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "barbed_devil",
+      "winner": "res://data/core/monsters/srd_monsters.json#100",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#46"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "basilisk",
+      "winner": "res://data/core/monsters/srd_monsters.json#25",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#48"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "bearded_devil",
+      "winner": "res://data/core/monsters/srd_monsters.json#99",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#50"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "behir",
+      "winner": "res://data/core/monsters/srd_monsters.json#189",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#51"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "berserker",
+      "winner": "res://data/core/monsters/srd_monsters.json#84",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#54"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "black_dragon_wyrmling",
+      "winner": "res://data/core/monsters/srd_monsters.json#151",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#56"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "black_pudding",
+      "winner": "res://data/core/monsters/srd_monsters.json#102",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#57"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "blink_dog",
+      "winner": "res://data/core/monsters/srd_monsters.json#144",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#58"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "blue_dragon_wyrmling",
+      "winner": "res://data/core/monsters/srd_monsters.json#152",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#60"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "bone_devil",
+      "winner": "res://data/core/monsters/srd_monsters.json#110",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#63"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "brass_dragon_wyrmling",
+      "winner": "res://data/core/monsters/srd_monsters.json#156",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#66"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "bronze_dragon_wyrmling",
+      "winner": "res://data/core/monsters/srd_monsters.json#157",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#67"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "brown_bear",
+      "winner": "res://data/core/monsters/srd_monsters.json#14",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#68"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "bulette",
+      "winner": "res://data/core/monsters/srd_monsters.json#42",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#71"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "chain_devil",
+      "winner": "res://data/core/monsters/srd_monsters.json#111",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#79"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "chimera",
+      "winner": "res://data/core/monsters/srd_monsters.json#30",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#81"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "chuul",
+      "winner": "res://data/core/monsters/srd_monsters.json#147",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#82"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "clay_golem",
+      "winner": "res://data/core/monsters/srd_monsters.json#64",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#83"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "cloaker",
+      "winner": "res://data/core/monsters/srd_monsters.json#218",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#84"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "cloud_giant",
+      "winner": "res://data/core/monsters/srd_monsters.json#61",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#85"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "cockatrice",
+      "winner": "res://data/core/monsters/srd_monsters.json#89",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#86"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "commoner",
+      "winner": "res://data/core/monsters/srd_monsters.json#203",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#87"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "copper_dragon_wyrmling",
+      "winner": "res://data/core/monsters/srd_monsters.json#158",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#89"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "couatl",
+      "winner": "res://data/core/monsters/srd_monsters.json#182",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#90"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "cultist",
+      "winner": "res://data/core/monsters/srd_monsters.json#9",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#95"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "darkmantle",
+      "winner": "res://data/core/monsters/srd_monsters.json#105",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#98"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "death_dog",
+      "winner": "res://data/core/monsters/srd_monsters.json#145",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#99"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "deva",
+      "winner": "res://data/core/monsters/srd_monsters.json#181",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#106"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "dire_wolf",
+      "winner": "res://data/core/monsters/srd_monsters.json#15",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#107"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "djinni",
+      "winner": "res://data/core/monsters/srd_monsters.json#68",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#109"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "doppelganger",
+      "winner": "res://data/core/monsters/srd_monsters.json#227",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#110"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "dragon_turtle",
+      "winner": "res://data/core/monsters/srd_monsters.json#186",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#112"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "dretch",
+      "winner": "res://data/core/monsters/srd_monsters.json#132",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#113"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "drider",
+      "winner": "res://data/core/monsters/srd_monsters.json#228",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#114"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "druid",
+      "winner": "res://data/core/monsters/srd_monsters.json#141",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#119"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "dryad",
+      "winner": "res://data/core/monsters/srd_monsters.json#70",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#120"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "dust_mephit",
+      "winner": "res://data/core/monsters/srd_monsters.json#191",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#123"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "earth_elemental",
+      "winner": "res://data/core/monsters/srd_monsters.json#38",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#125"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "efreeti",
+      "winner": "res://data/core/monsters/srd_monsters.json#67",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#126"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "erinyes",
+      "winner": "res://data/core/monsters/srd_monsters.json#137",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#130"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "ettercap",
+      "winner": "res://data/core/monsters/srd_monsters.json#117",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#131"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "ettin",
+      "winner": "res://data/core/monsters/srd_monsters.json#34",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#132"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "fire_elemental",
+      "winner": "res://data/core/monsters/srd_monsters.json#39",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#140"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "fire_giant",
+      "winner": "res://data/core/monsters/srd_monsters.json#51",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#141"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "flesh_golem",
+      "winner": "res://data/core/monsters/srd_monsters.json#54",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#144"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "flying_sword",
+      "winner": "res://data/core/monsters/srd_monsters.json#23",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#147"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "frost_giant",
+      "winner": "res://data/core/monsters/srd_monsters.json#50",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#150"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "gargoyle",
+      "winner": "res://data/core/monsters/srd_monsters.json#118",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#152"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "gelatinous_cube",
+      "winner": "res://data/core/monsters/srd_monsters.json#7",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#154"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "ghast",
+      "winner": "res://data/core/monsters/srd_monsters.json#103",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#155"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "ghost",
+      "winner": "res://data/core/monsters/srd_monsters.json#26",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#156"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "ghoul",
+      "winner": "res://data/core/monsters/srd_monsters.json#11",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#157"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "gibbering_mouther",
+      "winner": "res://data/core/monsters/srd_monsters.json#219",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#186"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "glabrezu",
+      "winner": "res://data/core/monsters/srd_monsters.json#138",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#191"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "gladiator",
+      "winner": "res://data/core/monsters/srd_monsters.json#98",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#192"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "gold_dragon_wyrmling",
+      "winner": "res://data/core/monsters/srd_monsters.json#160",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#199"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "gorgon",
+      "winner": "res://data/core/monsters/srd_monsters.json#200",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#200"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "gray_ooze",
+      "winner": "res://data/core/monsters/srd_monsters.json#211",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#202"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "green_dragon_wyrmling",
+      "winner": "res://data/core/monsters/srd_monsters.json#153",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#204"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "green_hag",
+      "winner": "res://data/core/monsters/srd_monsters.json#128",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#205"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "grick",
+      "winner": "res://data/core/monsters/srd_monsters.json#146",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#208"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "griffon",
+      "winner": "res://data/core/monsters/srd_monsters.json#71",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#210"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "grimlock",
+      "winner": "res://data/core/monsters/srd_monsters.json#220",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#211"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "guard",
+      "winner": "res://data/core/monsters/srd_monsters.json#10",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#212"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "guardian_naga",
+      "winner": "res://data/core/monsters/srd_monsters.json#184",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#213"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "harpy",
+      "winner": "res://data/core/monsters/srd_monsters.json#20",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#217"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "hell_hound",
+      "winner": "res://data/core/monsters/srd_monsters.json#24",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#219"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "hezrou",
+      "winner": "res://data/core/monsters/srd_monsters.json#125",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#221"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "hill_giant",
+      "winner": "res://data/core/monsters/srd_monsters.json#35",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#222"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "hippogriff",
+      "winner": "res://data/core/monsters/srd_monsters.json#60",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#223"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "hobgoblin_captain",
+      "winner": "res://data/core/monsters/srd_monsters.json#119",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#225"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "homunculus",
+      "winner": "res://data/core/monsters/srd_monsters.json#201",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#227"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "horned_devil",
+      "winner": "res://data/core/monsters/srd_monsters.json#164",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#229"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "hydra",
+      "winner": "res://data/core/monsters/srd_monsters.json#31",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#231"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "ice_devil",
+      "winner": "res://data/core/monsters/srd_monsters.json#165",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#233"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "ice_mephit",
+      "winner": "res://data/core/monsters/srd_monsters.json#192",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#234"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "imp",
+      "winner": "res://data/core/monsters/srd_monsters.json#88",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#235"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "incubus",
+      "winner": "res://data/core/monsters/srd_monsters.json#136",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#236"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "invisible_stalker",
+      "winner": "res://data/core/monsters/srd_monsters.json#45",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#238"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "iron_golem",
+      "winner": "res://data/core/monsters/srd_monsters.json#65",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#239"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "knight",
+      "winner": "res://data/core/monsters/srd_monsters.json#86",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#244"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "kraken",
+      "winner": "res://data/core/monsters/srd_monsters.json#177",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#246"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "lamia",
+      "winner": "res://data/core/monsters/srd_monsters.json#215",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#251"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "lemure",
+      "winner": "res://data/core/monsters/srd_monsters.json#216",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#252"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "lich",
+      "winner": "res://data/core/monsters/srd_monsters.json#178",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#253"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "mage",
+      "winner": "res://data/core/monsters/srd_monsters.json#87",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#260"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "magma_mephit",
+      "winner": "res://data/core/monsters/srd_monsters.json#193",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#261"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "magmin",
+      "winner": "res://data/core/monsters/srd_monsters.json#208",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#262"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "manticore",
+      "winner": "res://data/core/monsters/srd_monsters.json#52",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#265"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "marilith",
+      "winner": "res://data/core/monsters/srd_monsters.json#161",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#267"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "medusa",
+      "winner": "res://data/core/monsters/srd_monsters.json#43",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#269"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "merrow",
+      "winner": "res://data/core/monsters/srd_monsters.json#134",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#271"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "mimic",
+      "winner": "res://data/core/monsters/srd_monsters.json#21",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#273"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "minotaur",
+      "winner": "res://data/core/monsters/srd_monsters.json#28",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#276"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "minotaur_skeleton",
+      "winner": "res://data/core/monsters/srd_monsters.json#212",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#277"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "mummy",
+      "winner": "res://data/core/monsters/srd_monsters.json#17",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#281"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "mummy_lord",
+      "winner": "res://data/core/monsters/srd_monsters.json#66",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#282"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "nalfeshnee",
+      "winner": "res://data/core/monsters/srd_monsters.json#139",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#286"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "night_hag",
+      "winner": "res://data/core/monsters/srd_monsters.json#131",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#288"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "nightmare",
+      "winner": "res://data/core/monsters/srd_monsters.json#32",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#289"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "noble",
+      "winner": "res://data/core/monsters/srd_monsters.json#142",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#290"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "ochre_jelly",
+      "winner": "res://data/core/monsters/srd_monsters.json#101",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#293"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "ogre",
+      "winner": "res://data/core/monsters/srd_monsters.json#5",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#295"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "ogre_zombie",
+      "winner": "res://data/core/monsters/srd_monsters.json#213",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#296"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "oni",
+      "winner": "res://data/core/monsters/srd_monsters.json#217",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#297"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "orc",
+      "winner": "res://data/core/monsters/srd_monsters.json#13",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#298"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "otyugh",
+      "winner": "res://data/core/monsters/srd_monsters.json#148",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#302"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "owlbear",
+      "winner": "res://data/core/monsters/srd_monsters.json#6",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#304"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "pegasus",
+      "winner": "res://data/core/monsters/srd_monsters.json#59",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#306"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "phase_spider",
+      "winner": "res://data/core/monsters/srd_monsters.json#41",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#309"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "pit_fiend",
+      "winner": "res://data/core/monsters/srd_monsters.json#162",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#311"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "planetar",
+      "winner": "res://data/core/monsters/srd_monsters.json#180",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#313"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "priest",
+      "winner": "res://data/core/monsters/srd_monsters.json#96",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#319"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "pseudodragon",
+      "winner": "res://data/core/monsters/srd_monsters.json#224",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#320"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "purple_worm",
+      "winner": "res://data/core/monsters/srd_monsters.json#73",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#322"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "quasit",
+      "winner": "res://data/core/monsters/srd_monsters.json#112",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#327"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "rakshasa",
+      "winner": "res://data/core/monsters/srd_monsters.json#46",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#329"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "red_dragon_wyrmling",
+      "winner": "res://data/core/monsters/srd_monsters.json#154",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#332"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "remorhaz",
+      "winner": "res://data/core/monsters/srd_monsters.json#72",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#335"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "roc",
+      "winner": "res://data/core/monsters/srd_monsters.json#188",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#339"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "roper",
+      "winner": "res://data/core/monsters/srd_monsters.json#75",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#340"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "rust_monster",
+      "winner": "res://data/core/monsters/srd_monsters.json#90",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#342"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "salamander",
+      "winner": "res://data/core/monsters/srd_monsters.json#56",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#347"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "satyr",
+      "winner": "res://data/core/monsters/srd_monsters.json#133",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#348"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "scout",
+      "winner": "res://data/core/monsters/srd_monsters.json#85",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#351"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "sea_hag",
+      "winner": "res://data/core/monsters/srd_monsters.json#127",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#352"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "shadow",
+      "winner": "res://data/core/monsters/srd_monsters.json#12",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#354"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "shambling_mound",
+      "winner": "res://data/core/monsters/srd_monsters.json#149",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#356"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "shield_guardian",
+      "winner": "res://data/core/monsters/srd_monsters.json#202",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#357"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "silver_dragon_wyrmling",
+      "winner": "res://data/core/monsters/srd_monsters.json#159",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#359"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "solar",
+      "winner": "res://data/core/monsters/srd_monsters.json#179",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#363"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "specter",
+      "winner": "res://data/core/monsters/srd_monsters.json#16",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#365"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "spirit_naga",
+      "winner": "res://data/core/monsters/srd_monsters.json#190",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#368"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "sprite",
+      "winner": "res://data/core/monsters/srd_monsters.json#230",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#369"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "spy",
+      "winner": "res://data/core/monsters/srd_monsters.json#140",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#370"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "steam_mephit",
+      "winner": "res://data/core/monsters/srd_monsters.json#194",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#371"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "stirge",
+      "winner": "res://data/core/monsters/srd_monsters.json#8",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#372"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "stone_giant",
+      "winner": "res://data/core/monsters/srd_monsters.json#62",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#373"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "stone_golem",
+      "winner": "res://data/core/monsters/srd_monsters.json#55",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#374"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "storm_giant",
+      "winner": "res://data/core/monsters/srd_monsters.json#63",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#375"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "succubus",
+      "winner": "res://data/core/monsters/srd_monsters.json#116",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#376"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "tarrasque",
+      "winner": "res://data/core/monsters/srd_monsters.json#176",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#387"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "treant",
+      "winner": "res://data/core/monsters/srd_monsters.json#58",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#391"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "troll",
+      "winner": "res://data/core/monsters/srd_monsters.json#33",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#396"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "unicorn",
+      "winner": "res://data/core/monsters/srd_monsters.json#69",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#401"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "vampire",
+      "winner": "res://data/core/monsters/srd_monsters.json#57",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#402"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "vampire_spawn",
+      "winner": "res://data/core/monsters/srd_monsters.json#18",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#403"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "violet_fungus",
+      "winner": "res://data/core/monsters/srd_monsters.json#198",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#408"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "vrock",
+      "winner": "res://data/core/monsters/srd_monsters.json#126",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#409"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "warhorse_skeleton",
+      "winner": "res://data/core/monsters/srd_monsters.json#214",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#412"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "water_elemental",
+      "winner": "res://data/core/monsters/srd_monsters.json#40",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#413"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "werebear",
+      "winner": "res://data/core/monsters/srd_monsters.json#121",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#416"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "wereboar",
+      "winner": "res://data/core/monsters/srd_monsters.json#114",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#417"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "wererat",
+      "winner": "res://data/core/monsters/srd_monsters.json#113",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#418"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "weretiger",
+      "winner": "res://data/core/monsters/srd_monsters.json#122",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#419"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "werewolf",
+      "winner": "res://data/core/monsters/srd_monsters.json#19",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#420"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "white_dragon_wyrmling",
+      "winner": "res://data/core/monsters/srd_monsters.json#155",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#421"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "will_o_wisp",
+      "winner": "res://data/core/monsters/srd_monsters.json#104",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#423"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "winter_wolf",
+      "winner": "res://data/core/monsters/srd_monsters.json#226",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#425"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "worg",
+      "winner": "res://data/core/monsters/srd_monsters.json#135",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#427"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "wraith",
+      "winner": "res://data/core/monsters/srd_monsters.json#27",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#428"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "wyvern",
+      "winner": "res://data/core/monsters/srd_monsters.json#53",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#429"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "xorn",
+      "winner": "res://data/core/monsters/srd_monsters.json#210",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#430"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "young_black_dragon",
+      "winner": "res://data/core/monsters/srd_monsters.json#29",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#433"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "young_blue_dragon",
+      "winner": "res://data/core/monsters/srd_monsters.json#47",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#434"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "young_brass_dragon",
+      "winner": "res://data/core/monsters/srd_monsters.json#78",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#435"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "young_bronze_dragon",
+      "winner": "res://data/core/monsters/srd_monsters.json#77",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#436"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "young_copper_dragon",
+      "winner": "res://data/core/monsters/srd_monsters.json#76",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#437"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "young_gold_dragon",
+      "winner": "res://data/core/monsters/srd_monsters.json#80",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#438"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "young_green_dragon",
+      "winner": "res://data/core/monsters/srd_monsters.json#48",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#439"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "young_red_dragon",
+      "winner": "res://data/core/monsters/srd_monsters.json#44",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#440"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "young_silver_dragon",
+      "winner": "res://data/core/monsters/srd_monsters.json#79",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#443"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "young_white_dragon",
+      "winner": "res://data/core/monsters/srd_monsters.json#49",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#444"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "true_strike",
+      "winner": "res://data/core/spells/core_spells.json#18",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#187"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "mass_healing_word",
+      "winner": "res://data/core/spells/srd_additional_spells.json#95",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#124"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "blindness/deafness",
+      "winner": "res://data/core/spells/srd_additional_spells.json#160",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#21"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "grease",
+      "winner": "res://data/core/spells/srd_additional_spells.json#161",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#87"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "spike_growth",
+      "winner": "res://data/core/spells/srd_additional_spells.json#162",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#175"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "entangle",
+      "winner": "res://data/core/spells/srd_additional_spells.json#163",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#65"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "moonbeam",
+      "winner": "res://data/core/spells/srd_additional_spells.json#164",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#132"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "plant_growth",
+      "winner": "res://data/core/spells/srd_additional_spells.json#165",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#138"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "barkskin",
+      "winner": "res://data/core/spells/srd_additional_spells.json#166",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#14"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "mage_armor",
+      "winner": "res://data/core/spells/srd_additional_spells.json#167",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#117"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "sleet_storm",
+      "winner": "res://data/core/spells/srd_additional_spells.json#167",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#168"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "cloud_of_daggers",
+      "winner": "res://data/core/spells/srd_additional_spells.json#168",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#32"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "conjure_animals",
+      "winner": "res://data/core/spells/srd_additional_spells.json#169",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#37"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "spirit_guardians",
+      "winner": "res://data/core/spells/srd_additional_spells.json#170",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#176"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "beacon_of_hope",
+      "winner": "res://data/core/spells/srd_additional_spells.json#171",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#15"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "divine_favor",
+      "winner": "res://data/core/spells/srd_additional_spells.json#172",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#58"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "death_ward",
+      "winner": "res://data/core/spells/srd_additional_spells.json#43",
+      "replaces": []
+    },
+    {
+      "type": "spell",
+      "id": "sanctuary",
+      "winner": "res://data/core/spells/srd_additional_spells.json#173",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#155"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "heroism",
+      "winner": "res://data/core/spells/srd_additional_spells.json#174",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#96"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "magic_weapon",
+      "winner": "res://data/core/spells/srd_additional_spells.json#175",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#122"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "enhance_ability",
+      "winner": "res://data/core/spells/srd_additional_spells.json#176",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#62"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "faerie_fire",
+      "winner": "res://data/core/spells/srd_additional_spells.json#177",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#68"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "fog_cloud",
+      "winner": "res://data/core/spells/srd_additional_spells.json#178",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#81"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "invisibility",
+      "winner": "res://data/core/spells/srd_additional_spells.json#179",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#105"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "darkness",
+      "winner": "res://data/core/spells/srd_additional_spells.json#180",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#48"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "darkvision",
+      "winner": "res://data/core/spells/srd_additional_spells.json#181",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#49"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "see_invisibility",
+      "winner": "res://data/core/spells/srd_additional_spells.json#182",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#158"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "true_seeing",
+      "winner": "res://data/core/spells/srd_additional_spells.json#147",
+      "replaces": []
+    },
+    {
+      "type": "spell",
+      "id": "detect_magic",
+      "winner": "res://data/core/spells/srd_additional_spells.json#183",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#52"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "blur",
+      "winner": "res://data/core/spells/srd_additional_spells.json#184",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#23"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "detect_evil_and_good",
+      "winner": "res://data/core/spells/srd_additional_spells.json#185",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#51"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "detect_poison_and_disease",
+      "winner": "res://data/core/spells/srd_additional_spells.json#186",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#53"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "identify",
+      "winner": "res://data/core/spells/srd_additional_spells.json#187",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#102"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "goodberry",
+      "winner": "res://data/core/spells/srd_additional_spells.json#188",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#86"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "cat",
+      "winner": "res://data/core/monsters/familiar_forms.json#1",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#76"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "owl",
+      "winner": "res://data/core/monsters/familiar_forms.json#2",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#303"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "rat",
+      "winner": "res://data/core/monsters/familiar_forms.json#3",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#330"
+      ]
+    },
+    {
+      "type": "monster",
+      "id": "spider",
+      "winner": "res://data/core/monsters/familiar_forms.json#4",
+      "replaces": [
+        "res://data/core/monsters/imported_monsters.json#366"
       ]
     }
   ]

@@ -47,7 +47,7 @@ func _run() -> void:
 	await _run_class_equipment_smoke("Wizard", ["leather_armor", "dagger"], ["fire_bolt", "magic_missile"])
 	await _run_class_equipment_smoke("Warlock", ["leather_armor", "dagger"])
 	await _run_class_equipment_smoke("Sorcerer", ["leather_armor", "dagger"])
-	await _run_class_equipment_smoke("Cleric", ["leather_armor", "shield"], ["light", "bless", "cure_wounds"])
+	await _run_class_equipment_smoke("Cleric", ["chain_shirt", "shield", "mace", "holy_symbol", "priests_pack"], ["guidance", "sacred_flame", "bless", "cure_wounds"])
 	await _run_class_equipment_smoke("Paladin", ["chain_mail", "shield", "longsword"])
 	await _run_class_equipment_smoke("Ranger", ["leather_armor", "shield", "longbow"])
 	await _run_class_equipment_smoke("Artificer", ["leather_armor", "shield", "tinkers_tools"])
@@ -127,6 +127,8 @@ func _run_player_count(player_count: int) -> void:
 
 func _find_card_button(grid: GridContainer, expected_label: String) -> Button:
 	for card in grid.get_children():
+		if card is Button and card.text == expected_label:
+			return card
 		if card.get_child_count() == 0:
 			continue
 		var card_content := card.get_child(0)
@@ -175,6 +177,13 @@ func _run_class_equipment_smoke(target_class: String, expected_equipment: Array[
 	creation.btn_next.pressed.emit()
 	await get_tree().process_frame
 
+	if target_class == "Cleric":
+		for pair in [["ClericDivineOrder", "protector"], ["ClericSkill1", "Medicine"], ["ClericSkill2", "Religion"]]:
+			var selector: OptionButton = creation.equip_list.get_node(pair[0])
+			for index in selector.item_count:
+				if selector.get_item_metadata(index) == pair[1]:
+					selector.select(index)
+					selector.item_selected.emit(index)
 	_check(creation.selected_equipment == expected_equipment, "%s equipment step shows the production starting gear" % target_class)
 	creation.btn_next.pressed.emit()
 	await get_tree().process_frame
@@ -223,7 +232,7 @@ func _run_class_equipment_smoke(target_class: String, expected_equipment: Array[
 		EventResolver.apply_effects(character, innate_effects)
 		_check(character.has_condition("innate_sorcery") and character.get_spell_save_dc() == normal_sorcerer_dc + 1, "normal Sorcerer activates Innate Sorcery through the shared effect path")
 	elif target_class == "Cleric":
-		_check(character.inventory.get_armor() == "leather_armor", "normal Cleric equips leather armor")
+		_check(character.inventory.get_armor() == "chain_shirt", "normal Cleric equips Chain Shirt")
 		_check(character.inventory.get_equipped(Inventory.Slot.SHIELD) == "shield", "normal Cleric equips a shield")
 	elif target_class == "Paladin":
 		_check(character.inventory.get_armor() == "chain_mail", "normal Paladin equips chain mail")

@@ -22,12 +22,11 @@
     "pick": 2,
     "from": [
       "Athletics",
-      "Acrobatics",
       "Insight",
-      "Perception",
-      "History",
-      "Arcana",
-      "Stealth"
+      "Intimidation",
+      "Medicine",
+      "Persuasion",
+      "Religion"
     ]
   },
   "starting_equipment": [
@@ -57,159 +56,733 @@
   "spells_known_by_level": {
     "1": [],
     "2": [],
-    "3": []
+    "3": [],
+    "4": [],
+    "5": [],
+    "6": [],
+    "7": [],
+    "8": [],
+    "9": [],
+    "10": [],
+    "11": [],
+    "12": [],
+    "13": [],
+    "14": [],
+    "15": [],
+    "16": [],
+    "17": [],
+    "18": [],
+    "19": [],
+    "20": []
   },
   "features_by_level": {
     "1": [
       {
-        "id": "paladin_divine_sense",
-        "name": "Divine Sense",
-        "description": "The presence of strong evil registers on your senses like a noxious odor, and powerful good rings like heavenly music in your ears. As an action, you can open your awareness to detect such forces. Until the end of your next turn, you know the location of any celestial, fiend, or undead within 60 fee...",
-        "type": "active",
-        "effects": [],
-        "action_cost": "action",
-        "uses": 1,
-        "uses_per": "combat"
-      },
-      {
         "id": "paladin_lay_on_hands",
         "name": "Lay on Hands",
-        "description": "Your blessed touch can heal wounds. You have a pool of healing power that replenishes when you take a long rest. With that pool, you can restore a total number of hit points equal to your paladin level \u00d7 5. As an action, you can touch a creature and draw power from the pool to restore a number of hi...",
         "type": "active",
+        "description": "Bonus Action touch healing pool; level \u00d7 5, Long Rest recovery. Spend 5 pool points to remove Poisoned; those points do not also restore Hit Points.",
         "effects": [],
-        "action_cost": "action",
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "action_cost": "bonus_action",
         "uses": 1,
-        "uses_per": "combat"
+        "uses_per": "long_rest"
       },
       {
         "id": "paladin_spellcasting",
         "name": "Spellcasting",
-        "description": "You have learned to cast spells through prayer and meditation. See chapter 7 for the rules on spellcasting. The information below details how you use those rules with Paladin spells, which appear in the {@filter Paladin spell list=Paladin} later in the class's description. {'type': 'entries', 'entri...",
         "type": "passive",
-        "effects": []
+        "description": "Charisma-based prepared half-caster spells; eligible spell list is curated to loaded spell records.",
+        "effects": [
+          {
+            "type": "spellcasting",
+            "ability": "CHA",
+            "spell_lists": [
+              "paladin"
+            ],
+            "default_prepared_spells": [
+              "heroism",
+              "searing_smite"
+            ],
+            "capacity_by_level": {
+              "1": {
+                "cantrips": 0,
+                "prepared_spells": 2
+              },
+              "2": {
+                "cantrips": 0,
+                "prepared_spells": 3
+              },
+              "3": {
+                "cantrips": 0,
+                "prepared_spells": 4
+              },
+              "4": {
+                "cantrips": 0,
+                "prepared_spells": 5
+              },
+              "5": {
+                "cantrips": 0,
+                "prepared_spells": 6
+              },
+              "6": {
+                "cantrips": 0,
+                "prepared_spells": 6
+              },
+              "7": {
+                "cantrips": 0,
+                "prepared_spells": 7
+              },
+              "8": {
+                "cantrips": 0,
+                "prepared_spells": 7
+              },
+              "9": {
+                "cantrips": 0,
+                "prepared_spells": 9
+              },
+              "10": {
+                "cantrips": 0,
+                "prepared_spells": 9
+              },
+              "11": {
+                "cantrips": 0,
+                "prepared_spells": 10
+              },
+              "12": {
+                "cantrips": 0,
+                "prepared_spells": 10
+              },
+              "13": {
+                "cantrips": 0,
+                "prepared_spells": 11
+              },
+              "14": {
+                "cantrips": 0,
+                "prepared_spells": 11
+              },
+              "15": {
+                "cantrips": 0,
+                "prepared_spells": 12
+              },
+              "16": {
+                "cantrips": 0,
+                "prepared_spells": 12
+              },
+              "17": {
+                "cantrips": 0,
+                "prepared_spells": 14
+              },
+              "18": {
+                "cantrips": 0,
+                "prepared_spells": 14
+              },
+              "19": {
+                "cantrips": 0,
+                "prepared_spells": 15
+              },
+              "20": {
+                "cantrips": 0,
+                "prepared_spells": 15
+              }
+            }
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
       },
       {
         "id": "paladin_weapon_mastery",
         "name": "Weapon Mastery",
-        "description": "Your training with weapons allows you to use the weapon mastery properties properties of two kinds of {@filter weapons=simple weapon;martial weapon} of your choice with which you have proficiency, such as Longsword and Javelin. Whenever you finish a Long Rest, you can change the kinds of weapons you...",
         "type": "passive",
-        "effects": []
+        "description": "Choose two proficient weapon types; mastery choices use the shared saved Weapon Mastery path.",
+        "effects": [
+          {
+            "type": "weapon_mastery",
+            "capacity_by_level": {
+              "1": 2
+            }
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
       }
     ],
     "2": [
       {
-        "id": "paladin_divine_smite",
-        "name": "Divine Smite",
-        "description": "Starting at 2nd level, when you hit a creature with a melee weapon attack, you can expend one spell slot to deal radiant damage to the target, in addition to the weapon's damage. The extra damage is 2d8 for a 1st-level spell slot, plus 1d8 for each spell level higher than 1st, to a maximum of 5d8. T...",
-        "type": "passive",
-        "effects": []
-      },
-      {
         "id": "paladin_fighting_style",
         "name": "Fighting Style",
-        "description": "At 2nd level, you adopt a particular style of fighting as your specialty. Choose one of the following options. You can't take the same Fighting Style option more than once, even if you get to choose again. {'type': 'options', 'count': 1, 'entries': [{'type': 'refOptionalfeature', 'optionalfeature': ...",
         "type": "passive",
-        "effects": []
+        "description": "Choose one 2024 Fighting Style option or Blessed Warrior. Its saved choice uses shared style effects and the Paladin spell-selection path.",
+        "effects": [
+          {
+            "type": "feature_choice",
+            "options": [
+              {
+                "id": "archery",
+                "name": "Archery",
+                "effects": [
+                  {
+                    "type": "fighting_style",
+                    "style": "archery"
+                  }
+                ]
+              },
+              {
+                "id": "defense",
+                "name": "Defense",
+                "effects": [
+                  {
+                    "type": "fighting_style",
+                    "style": "defense"
+                  }
+                ]
+              },
+              {
+                "id": "great_weapon_fighting",
+                "name": "Great Weapon Fighting",
+                "effects": [
+                  {
+                    "type": "fighting_style",
+                    "style": "great_weapon_fighting"
+                  }
+                ]
+              },
+              {
+                "id": "two_weapon_fighting",
+                "name": "Two-Weapon Fighting",
+                "effects": [
+                  {
+                    "type": "fighting_style",
+                    "style": "two_weapon_fighting"
+                  }
+                ]
+              },
+              {
+                "id": "blessed_warrior",
+                "name": "Blessed Warrior",
+                "effects": [
+                  {
+                    "type": "spellcasting_capacity_bonus",
+                    "kind": "cantrips",
+                    "amount": 2
+                  },
+                  {
+                    "type": "spell_list_expansion",
+                    "spell_lists": [
+                      "cleric"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
       },
       {
-        "id": "paladin_spellcasting",
-        "name": "Spellcasting",
-        "description": "By 2nd level, you have learned to draw on divine magic through meditation and prayer to cast spells as a cleric does. See chapter 10 for the general rules of spellcasting and chapter 11 for the {@filter paladin spell list=paladin}. {'type': 'entries', 'name': 'Preparing and Casting Spells', 'entries...",
+        "id": "paladin_paladins_smite",
+        "name": "Paladin\u2019s Smite",
         "type": "passive",
-        "effects": []
-      },
-      {
-        "id": "paladin_paladin's_smite",
-        "name": "Paladin's Smite",
-        "description": "You always have the Divine Smite spell prepared. In addition, you can cast it without expending a spell slot, but you must finish a Long Rest before you can cast it in this way again.",
-        "type": "passive",
-        "effects": []
+        "description": "Divine Smite is always prepared and can be cast once without a spell slot per Long Rest. Cast it as a Bonus Action immediately after a melee hit.",
+        "effects": [
+          {
+            "type": "always_prepared_spells",
+            "spells": [
+              "divine_smite"
+            ]
+          },
+          {
+            "type": "spell_free_cast",
+            "spells": [
+              "divine_smite"
+            ],
+            "uses": 1,
+            "uses_per": "long_rest"
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
       }
     ],
     "3": [
       {
         "id": "paladin_channel_divinity",
         "name": "Channel Divinity",
-        "description": "Your oath allows you to channel divine energy to fuel magical effects. Each Channel Divinity option provided by your oath explains how to use it. When you use your Channel Divinity, you choose which option to use. You must then finish a short or long rest to use your Channel Divinity again. Some Cha...",
-        "type": "passive",
-        "effects": []
-      },
-      {
-        "id": "paladin_channel_divinity:_harness_divine_power",
-        "name": "Channel Divinity: Harness Divine Power",
-        "description": "{@i 3rd-level paladin optional class features feature} You can expend a use of your Channel Divinity to fuel your spells. As a bonus action, you touch your holy symbol, utter a prayer, and regain one expended spell slot, the level of which can be no higher than half your proficiency bonus (rounded u...",
-        "type": "active",
+        "type": "resource",
+        "description": "Channel Divinity has two uses, regains one on a Short Rest and all on a Long Rest; level 11 raises capacity to three.",
         "effects": [],
-        "action_cost": "bonus_action",
-        "uses": 1,
-        "uses_per": "combat"
-      },
-      {
-        "id": "paladin_divine_health",
-        "name": "Divine Health",
-        "description": "By 3rd level, the divine magic flowing through you makes you immune to disease.",
-        "type": "passive",
-        "effects": []
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported",
+        "uses_by_level": {
+          "11": 3
+        },
+        "uses_per": "long_rest",
+        "short_rest_recovery": 1,
+        "uses": 2
       },
       {
         "id": "paladin_sacred_oath",
-        "name": "Sacred Oath",
-        "description": "When you reach 3rd level, you swear the oath that binds you as a paladin forever. Up to this time you have been in a preparatory stage, committed to the path but not yet sworn to it. Now you choose from the list of available oaths. Your choice grants you features at 3rd level and again at 7th, 15th,...",
-        "type": "passive",
-        "effects": []
-      },
-      {
-        "id": "paladin_divine_sense",
-        "name": "Divine Sense",
-        "description": "As a Bonus Action, you can open your awareness to detect Celestials, Fiends, and Undead. For the next 10 minutes or until you have the Incapacitated condition, you know the location of any creature of those types within 60 feet of yourself, and you know its creature type. Within the same radius, you...",
-        "type": "active",
-        "effects": [],
-        "action_cost": "bonus_action",
-        "uses": 1,
-        "uses_per": "combat"
-      },
-      {
-        "id": "paladin_paladin_subclass",
         "name": "Paladin Subclass",
-        "description": "You gain a Paladin subclass of your choice. A subclass is a specialization that grants you features at certain Paladin levels. For the rest of your career, you gain each of your subclass's features that are of your Paladin level or lower. {'type': 'inset', 'name': 'Breaking Your Oath', 'entries': ['...",
         "type": "passive",
-        "effects": []
+        "description": "Choose a Sacred Oath. Selection uses the shared subclass path; oath features are a separate progression.",
+        "effects": [],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "reference-only",
+        "enabled": false
+      },
+      {
+        "id": "paladin_channel_divinity_divine_sense",
+        "name": "Channel Divinity: Divine Sense",
+        "type": "active",
+        "description": "As a Bonus Action, detect Celestials, Fiends, and Undead within 60 feet for 10 minutes using a Channel Divinity use.",
+        "action_cost": "bonus_action",
+        "resource_id": "paladin_channel_divinity",
+        "resource_cost": 1,
+        "resolver": "paladin_rules",
+        "effects": [
+          {
+            "type": "divine_sense",
+            "duration_minutes": 10,
+            "creature_types": [
+              "celestial",
+              "fiend",
+              "undead"
+            ]
+          }
+        ],
+        "enabled": true,
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-partial"
       }
     ],
     "4": [
       {
-        "id": "paladin_ability_score_improvement",
+        "id": "paladin_ability_improvement_4",
         "name": "Ability Score Improvement",
-        "description": "When you reach 4th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature. If your DM allows the use of feats, you may instead take a {@5etools feat.html}.",
         "type": "passive",
-        "effects": []
-      },
-      {
-        "id": "paladin_martial_versatility",
-        "name": "Martial Versatility",
-        "description": "{@i 4th-level paladin optional class features feature} Whenever you reach a level in this class that grants the Ability Score Improvement feature, you can replace a {@filter fighting style type=FS:P} you know with another fighting style available to paladins. This replacement represents a shift of f...",
-        "type": "passive",
-        "effects": []
+        "description": "",
+        "effects": [
+          {
+            "type": "asi"
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
       }
     ],
     "5": [
       {
         "id": "paladin_extra_attack",
         "name": "Extra Attack",
-        "description": "Beginning at 5th level, you can attack twice, instead of once, whenever you take the {@action Attack} action on your turn.",
-        "type": "active",
-        "effects": [],
-        "action_cost": "action",
-        "uses": 1,
-        "uses_per": "combat"
+        "type": "passive",
+        "description": "",
+        "effects": [
+          {
+            "type": "extra_attack",
+            "count": 1
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
       },
       {
         "id": "paladin_faithful_steed",
         "name": "Faithful Steed",
-        "description": "You can call on the aid of an otherworldly steed. You always have the Find Steed spell prepared. You can also cast the spell once without expending a spell slot, and you regain the ability to do so when you finish a Long Rest.",
         "type": "passive",
-        "effects": []
+        "description": "Find Steed is always prepared and can be cast once without a spell slot per Long Rest. Casting summons or replaces a persistent Otherworldly Steed whose AC and Hit Points scale with the spell slot.",
+        "effects": [
+          {
+            "type": "always_prepared_spells",
+            "spells": [
+              "find_steed"
+            ]
+          },
+          {
+            "type": "spell_free_cast",
+            "spells": [
+              "find_steed"
+            ],
+            "uses": 1,
+            "uses_per": "long_rest"
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-partial",
+        "enabled": true
+      }
+    ],
+    "6": [
+      {
+        "id": "paladin_aura_of_protection",
+        "name": "Aura of Protection",
+        "type": "passive",
+        "description": "You and allies within 10 feet gain your Charisma modifier (minimum +1) to saving throws while you are not Incapacitated.",
+        "effects": [
+          {
+            "type": "saving_throw_aura",
+            "aura_id": "paladin_aura_of_protection",
+            "ability": "CHA",
+            "minimum_bonus": 1,
+            "radius_feet": 10
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "7": [
+      {
+        "id": "paladin_subclass_7",
+        "name": "Paladin Subclass Feature",
+        "type": "passive",
+        "description": "Gained through the selected subclass when implemented.",
+        "effects": [],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "reference-only",
+        "enabled": false
+      }
+    ],
+    "8": [
+      {
+        "id": "paladin_ability_improvement_8",
+        "name": "Ability Score Improvement",
+        "type": "passive",
+        "description": "",
+        "effects": [
+          {
+            "type": "asi"
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "9": [
+      {
+        "id": "paladin_abjure_foes",
+        "name": "Abjure Foes",
+        "type": "active",
+        "description": "As a Magic action, spend a Channel Divinity use to target up to your Charisma modifier creatures you can see within 60 feet. Each target makes a Wisdom save against your spell save DC or is Frightened for 1 minute, ending early if it takes damage.",
+        "action_cost": "magic_action",
+        "resource_id": "paladin_channel_divinity",
+        "resource_cost": 1,
+        "resolver": "paladin_rules",
+        "effects": [
+          {
+            "type": "abjure_foes",
+            "save": "WIS",
+            "condition": "frightened",
+            "duration_rounds": 10,
+            "breaks_on_damage": true,
+            "target_limit": "charisma_modifier",
+            "range_feet": 60
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-partial",
+        "enabled": true
+      }
+    ],
+    "10": [
+      {
+        "id": "paladin_aura_of_courage",
+        "name": "Aura of Courage",
+        "type": "passive",
+        "description": "You and allies within Aura of Protection cannot be Frightened while you are not Incapacitated.",
+        "effects": [
+          {
+            "type": "condition_immunity_aura",
+            "aura_id": "paladin_aura_of_protection",
+            "condition": "frightened"
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "11": [
+      {
+        "id": "paladin_radiant_strikes",
+        "name": "Radiant Strikes",
+        "type": "passive",
+        "description": "Melee weapon hits deal an extra 1d8 Radiant damage through the shared weapon-damage-rider operation.",
+        "effects": [
+          {
+            "type": "weapon_damage_rider",
+            "id": "radiant_strikes",
+            "trigger": "weapon_attack_hit",
+            "damage_type": "radiant",
+            "dice_by_level": {
+              "11": "1d8"
+            },
+            "once_per_turn": false,
+            "melee_only": true
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported",
+        "enabled": true
+      }
+    ],
+    "12": [
+      {
+        "id": "paladin_ability_improvement_12",
+        "name": "Ability Score Improvement",
+        "type": "passive",
+        "description": "",
+        "effects": [
+          {
+            "type": "asi"
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "13": [],
+    "14": [
+      {
+        "id": "paladin_restoring_touch",
+        "name": "Restoring Touch",
+        "type": "passive",
+        "description": "When you use Lay on Hands, spend 5 healing-pool points per Blinded, Charmed, Deafened, Frightened, Paralyzed, or Stunned condition removed.",
+        "effects": [],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "resolver": "paladin_rules",
+        "rules_status": "2024-supported",
+        "enabled": true
+      }
+    ],
+    "15": [
+      {
+        "id": "paladin_subclass_15",
+        "name": "Paladin Subclass Feature",
+        "type": "passive",
+        "description": "Gained through the selected subclass when implemented.",
+        "effects": [],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "reference-only",
+        "enabled": false
+      }
+    ],
+    "16": [
+      {
+        "id": "paladin_ability_improvement_16",
+        "name": "Ability Score Improvement",
+        "type": "passive",
+        "description": "",
+        "effects": [
+          {
+            "type": "asi"
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "17": [],
+    "18": [
+      {
+        "id": "paladin_aura_expansion",
+        "name": "Aura Expansion",
+        "type": "passive",
+        "description": "Aura of Protection and Aura of Courage extend to 30 feet.",
+        "effects": [
+          {
+            "type": "aura_radius_expansion",
+            "aura_id": "paladin_aura_of_protection",
+            "radius_feet": 30
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "19": [
+      {
+        "id": "paladin_epic_boon",
+        "name": "Epic Boon",
+        "type": "passive",
+        "description": "",
+        "effects": [
+          {
+            "type": "epic_boon_choice",
+            "options": [
+              "combat_prowess",
+              "irresistible_offense",
+              "spell_recall"
+            ]
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "20": [
+      {
+        "id": "paladin_subclass_20",
+        "name": "Paladin Subclass Feature",
+        "type": "passive",
+        "description": "Gained through the selected subclass when implemented.",
+        "effects": [],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "reference-only",
+        "enabled": false
       }
     ]
-  }
+  },
+  "spell_slots_by_character_level": {
+    "1": [
+      2
+    ],
+    "2": [
+      2
+    ],
+    "3": [
+      3
+    ],
+    "4": [
+      3
+    ],
+    "5": [
+      4,
+      2
+    ],
+    "6": [
+      4,
+      2
+    ],
+    "7": [
+      4,
+      3
+    ],
+    "8": [
+      4,
+      3
+    ],
+    "9": [
+      4,
+      3,
+      2
+    ],
+    "10": [
+      4,
+      3,
+      2
+    ],
+    "11": [
+      4,
+      3,
+      3
+    ],
+    "12": [
+      4,
+      3,
+      3
+    ],
+    "13": [
+      4,
+      3,
+      3,
+      1
+    ],
+    "14": [
+      4,
+      3,
+      3,
+      1
+    ],
+    "15": [
+      4,
+      3,
+      3,
+      2
+    ],
+    "16": [
+      4,
+      3,
+      3,
+      2
+    ],
+    "17": [
+      4,
+      3,
+      3,
+      3,
+      1
+    ],
+    "18": [
+      4,
+      3,
+      3,
+      3,
+      1
+    ],
+    "19": [
+      4,
+      3,
+      3,
+      3,
+      2
+    ],
+    "20": [
+      4,
+      3,
+      3,
+      3,
+      2
+    ]
+  },
+  "subclass_level": 3,
+  "spell_list_ids": [
+    "aid",
+    "aura_of_life",
+    "aura_of_vitality",
+    "banishment",
+    "bless",
+    "blinding_smite",
+    "command",
+    "compelled_duel",
+    "create_food_and_water",
+    "crusaders_mantle",
+    "cure_wounds",
+    "daylight",
+    "death_ward",
+    "detect_evil_and_good",
+    "detect_magic",
+    "detect_poison_and_disease",
+    "dispel_evil_and_good",
+    "dispel_magic",
+    "divine_favor",
+    "divine_smite",
+    "elemental_weapon",
+    "find_steed",
+    "geas",
+    "gentle_repose",
+    "greater_restoration",
+    "heroism",
+    "lesser_restoration",
+    "locate_creature",
+    "locate_object",
+    "magic_circle",
+    "magic_weapon",
+    "prayer_of_healing",
+    "protection_from_evil_and_good",
+    "protection_from_poison",
+    "resilient_sphere",
+    "purify_food_and_drink",
+    "raise_dead",
+    "remove_curse",
+    "revivify",
+    "searing_smite",
+    "shield_of_faith",
+    "shining_smite",
+    "thunderous_smite",
+    "warding_bond",
+    "wrathful_smite",
+    "zone_of_truth"
+  ],
+  "rules_status": "2024-partial"
 }

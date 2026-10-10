@@ -1,0 +1,8 @@
+{
+  "id": "fixture:guard",
+  "name": "Fixture Guard",
+  "class_id": "fixture:warden",
+  "features_by_level": {
+    "3": [{"id": "fixture:guard_critical", "name": "Guard Critical", "type": "passive", "effects": [{"type": "modify_crit_range", "value": 19}]}]
+  }
+}

@@ -1,0 +1,10 @@
+[
+  {
+    "id": "incense_10gp",
+    "name": "Incense (10 GP)",
+    "description": "Burning incense consumed by Find Familiar, including ritual casts.",
+    "type": "spell_component",
+    "weight": 0.1,
+    "value": 10
+  }
+]

@@ -8,36 +8,67 @@
   },
   "speed": 6,
   "size": "medium",
-  "languages": ["Common", "Elvish"],
-  "proficiencies": ["Perception"],
+  "languages": [
+    "Common",
+    "Elvish"
+  ],
+  "proficiencies": [
+    "Perception"
+  ],
   "traits": [
     {
       "id": "darkvision",
       "name": "Darkvision",
       "description": "You can see in dim light within 60 feet as if it were bright light. Grants +1 vision range on the overworld.",
-      "effects": [{"type": "vision_bonus", "value": 1}]
+      "effects": [
+        {
+          "type": "vision_bonus",
+          "value": 1
+        }
+      ]
     },
     {
       "id": "fey_ancestry",
       "name": "Fey Ancestry",
       "description": "You have advantage on saving throws against being charmed, and magic can't put you to sleep.",
       "effects": [
-        {"type": "save_advantage", "condition": "charmed"},
-        {"type": "immunity", "condition": "magical_sleep"}
+        {
+          "type": "save_advantage",
+          "condition": "charmed"
+        },
+        {
+          "type": "immunity",
+          "condition": "magical_sleep"
+        }
       ]
     },
     {
       "id": "trance",
       "name": "Trance",
       "description": "Elves don't need to sleep. During rest events, you remain alert and can keep watch.",
-      "effects": [{"type": "rest_advantage"}]
+      "effects": [
+        {
+          "type": "rest_advantage"
+        }
+      ]
     },
     {
       "id": "elf_weapon_training",
       "name": "Elf Weapon Training",
       "description": "You have proficiency with longswords, shortswords, shortbows, and longbows.",
-      "effects": [{"type": "weapon_proficiency", "weapons": ["longsword", "shortsword", "shortbow", "longbow"]}]
+      "effects": [
+        {
+          "type": "weapon_proficiency",
+          "weapons": [
+            "longsword",
+            "shortsword",
+            "shortbow",
+            "longbow"
+          ]
+        }
+      ]
     }
   ],
-  "darkvision": true
+  "darkvision": true,
+  "darkvision_feet": 60
 }

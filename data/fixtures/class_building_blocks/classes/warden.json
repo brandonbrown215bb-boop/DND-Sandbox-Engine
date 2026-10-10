@@ -1,0 +1,15 @@
+{
+  "id": "fixture:warden",
+  "name": "Fixture Warden",
+  "description": "Test-only data-defined class; never loaded by production boot.",
+  "hit_die": "d8",
+  "primary_ability": "WIS",
+  "subclass_level": 3,
+  "features_by_level": {
+    "1": [
+      {"id": "fixture:resolve", "name": "Resolve", "type": "resource", "effects": [], "uses": 2, "uses_by_level": {"1": 2, "5": 3}, "uses_per": "long_rest", "short_rest_recovery": 1},
+      {"id": "fixture:mend", "name": "Mend", "type": "active", "executor": "class_feature", "resource_id": "fixture:resolve", "resource_cost": 1, "action_cost": "bonus_action", "effects": [{"type": "heal_self", "value_by_level": {"1": "1d4+level", "5": "1d8+level"}}]}
+    ],
+    "4": [{"id": "fixture:improvement", "name": "Ability Score Improvement", "type": "passive", "effects": [{"type": "asi"}]}]
+  }
+}

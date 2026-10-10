@@ -18,21 +18,57 @@ var tracker: InitiativeTracker = InitiativeTracker.new()
 # Maps entity_id -> position (Vector2i)
 var player_entities: Array[Dictionary] = [] # Elements same as PlayerManager.players
 var monster_entities: Array[Dictionary] = [] # Keys: name, monster_id, current_hp, max_hp, armor_class, speed, attacks, hex_position, color, is_alive
+var dropped_combat_items: Array[Dictionary] = []
+var dancing_light_sets: Dictionary = {}
+var light_spell_markers: Dictionary = {} # caster_id -> marker
+var mage_hand_markers: Dictionary = {} # caster_id -> hand
+var minor_illusion_markers: Dictionary = {} # caster_id -> illusion
+var prestidigitation_effects: Dictionary = {} # caster_id -> active visible effects
+var produce_flame_markers: Dictionary = {} # caster_id -> active held flame
+var _spell_boundary_rounds: Dictionary = {}
+var _detect_evil_and_good_targets: Dictionary = {}
+var _detect_poison_and_disease_targets: Dictionary = {}
+var _area_spells := CombatSpellZones.new()
+var active_spell_zones: Dictionary: # Compatibility view of encounter-local area records.
+	get: return _area_spells.active_spell_zones
+	set(value): _area_spells.active_spell_zones = value
+var _spell_zone_serial: int:
+	get: return _area_spells._spell_zone_serial
+	set(value): _area_spells._spell_zone_serial = value
 
 # Input states
 var current_player_idx: int = -1
 var active_combatant: Dictionary = {} # Reference from tracker
 var active_character: Character = null # If active_combatant is player
 var remaining_speed: float = 0.0
+var active_movement_mode := "walk"
+var extra_movement_speed_hexes := 0.0
+var player_moved_this_turn: bool = false
+var rogue_steady_aim_armed: bool = false
 var turn_budget: CombatTurnBudget = CombatTurnBudget.new()
 
 # Targeting action mode
 var pending_action_type: String = "" # "attack", "spell", "lay_on_hands", "bardic_inspiration", "unarmed_attack"
+var resolving_player_action := false
 var pending_spell_data: Dictionary = {}
+var pending_divine_intervention := false
+var pending_divine_intervention_wish := false
+var pending_words_primary_target := Vector2i.ZERO
+var pending_words_primary_selected := false
+var pending_command_target_coords: Array[Vector2i] = []
+var pending_command_target_ids: Array[String] = []
 var pending_feature_data: Dictionary = {}
+var fighter_move_choices: Dictionary = {}
+var fighter_move_waiting := false
+var fighter_move_done := false
+var fighter_move_entity: Dictionary = {}
+var remaining_attack_swings := 0
+var light_attack_weapon: Dictionary = {}
 
 # Guards against double-triggering battle end (victory/defeat).
 var _battle_ending := false
+## Initiative stays encounter-local, but recall does not reroll the same familiar.
+var familiar_initiative: Dictionary = {}
 
 # Last computed enemy intent preview text (drawn above monster tokens).
 var _intent_preview: String = ""
@@ -50,22 +86,29 @@ var _rebind_wait_before_turn_setup := false
 
 
 func _ready() -> void:
+	hud.turn_budget = turn_budget
 	# Connect HUD action selectors
 	hud.action_selected.connect(_on_hud_action)
 	hud.cancel_pressed.connect(_cancel_pending_action)
+	hud.movement_mode_selected.connect(_on_movement_mode_selected)
+	hud.flight_altitude_delta.connect(_on_flight_altitude_delta)
 	hud.settings_pressed.connect(func(): Settings.open_settings(self))
 	hud.sheet_pressed.connect(_on_sheet_pressed)
 	PlayerManager.device_binding_changed.connect(_on_device_binding_changed)
 	hex_grid.hex_clicked.connect(_on_hex_clicked)
 	hex_grid.hex_hovered.connect(_on_hex_hovered)
 
-	# Center the hex grid in the visible area to the right of the sidebar
-	hex_grid.position = Vector2(775, 295)
+	# Center the hex grid in the visible area between the left sidebar and right activity rail
+	hex_grid.position = Vector2.ZERO
+	cam.position = Vector2.ZERO
 
 	# Build small tactical grid (radius 4)
 	hex_grid.tiles.clear()
 	var center := Vector2i.ZERO
 	var cells := HexUtils.get_hexes_in_range(center, 4)
+	if not LocalRoomCombat.room().is_empty():
+		cells.clear()
+		for cell in LocalRoomCombat.room()["cells"]: cells.append(LocalRoomRules.coord(cell))
 	var terrain_str: String = GameManager.transition_context.get("terrain", "plains")
 	var terrain_type = HexTile.TERRAIN_MAP.get(terrain_str, HexTile.TerrainType.PLAINS)
 
@@ -77,11 +120,39 @@ func _ready() -> void:
 		tile.is_visible = true
 		hex_grid.add_tile(tile)
 
+	LocalRoomCombat.bind_grid(hex_grid)
+	var room_illumination := str(LocalRoomCombat.room().get("ambient_light", "bright"))
+	var encounter_illumination := str(GameManager.transition_context.get("ambient_light", room_illumination))
+	CombatPerception.configure_ambient_light(hex_grid, encounter_illumination)
 	# Populate players
-	_setup_combat_players()
-
-	# Populate monsters
 	_setup_combat_monsters()
+	_setup_combat_players()
+	active_spell_zones = LocalRoomCombat.restore_spell_zones(player_entities)
+	for source_id in active_spell_zones:
+		var restored_zone: Dictionary = active_spell_zones[source_id]
+		if str(restored_zone.get("spell_id", "")) == "moonbeam":
+			var shape_locked_targets: Array = []
+			var shape_lock_source := "%s:shape_lock" % str(source_id)
+			for target in _spell_effect_targets():
+				if target is Character and target.condition_sources.get("moonbeam_shape_lock", {}).has(shape_lock_source):
+					shape_locked_targets.append(target)
+				elif not target is Character and CombatAction.has_condition_source(target, shape_lock_source):
+					shape_locked_targets.append(target)
+			restored_zone["shape_locked_targets"] = shape_locked_targets
+			continue
+		if str(restored_zone.get("spell_id", "")) not in ["black_tentacles", "grease", "spike_growth", "entangle", "sleet_storm"]: continue
+		hex_grid.add_difficult_terrain(str(source_id), restored_zone.get("coords", []))
+		var restrained_targets: Array = []
+		for target in _spell_effect_targets():
+			var has_source := false
+			if target is Character:
+				for grants in target.condition_sources.values():
+					if grants.has(str(source_id)): has_source = true; break
+			else:
+				has_source = CombatAction.has_condition_source(target, str(source_id))
+			if has_source:
+				restrained_targets.append(target)
+		restored_zone["restrained_targets"] = restrained_targets
 
 	# Build initiative tracker
 	_roll_initiative_and_start()
@@ -95,17 +166,56 @@ func _on_sheet_pressed() -> void:
 
 
 func _update_grid_entities() -> void:
+	LocalRoomCombat.bind_grid(hex_grid)
+	ClericRules.reconcile_turning(monster_entities, player_entities)
+	SpellEffects.reconcile(_spell_casters(), _spell_effect_targets())
+	_validate_identify_contacts()
+	_refresh_fog_cloud_conditions()
+	_refresh_darkness_conditions()
+	_refresh_aura_of_life_protection()
 	hex_grid.clear_entities()
+	var active_character_id := active_character.character_id if active_character != null else ""
+	hud.light_marker_active = light_spell_markers.has(active_character_id)
+	hud.mage_hand_active = mage_hand_markers.has(active_character_id)
+	_cleanup_dead_familiars()
+	_sync_find_steeds()
+	AuraRules.refresh_party_context(player_entities)
 	
 	# Add players
 	for p in player_entities:
 		if p.get("character") != null and p["character"].is_alive:
+			var character: Character = p["character"]
+			var emanation_source := _conjure_minor_elementals_zone_source_for_caster(character)
+			var emanation_zone: Dictionary = active_spell_zones.get(emanation_source, {})
+			var woodland_source := _conjure_woodland_beings_zone_source_for_caster(character)
+			var woodland_zone: Dictionary = active_spell_zones.get(woodland_source, {})
+			var guardians_source := _spirit_guardians_zone_source_for_caster(character)
+			var guardians_zone: Dictionary = active_spell_zones.get(guardians_source, {})
+			var life_source := _aura_of_life_zone_source_for_caster(character)
+			var life_zone: Dictionary = active_spell_zones.get(life_source, {})
+			var emanation_radius := int(emanation_zone.get("radius_hexes", woodland_zone.get("radius_hexes", guardians_zone.get("radius_hexes", life_zone.get("radius_hexes", 0)))))
+			var emanation_color := Color(0.6, 0.83, 0.96) if not emanation_zone.is_empty() else Color(0.58, 0.9, 0.72) if not woodland_zone.is_empty() else Color(0.86, 0.78, 0.48) if not guardians_zone.is_empty() else Color(0.68, 0.9, 0.84)
 			hex_grid.add_entity({
 				"hex_position": p.get("hex_position", Vector2i.ZERO),
 				"color": p.get("color", Color.WHITE),
 				"is_player": true,
-				"character": p["character"]
+				"character": character,
+				"spell_emanation_radius_hexes": emanation_radius,
+				"spell_emanation_color": emanation_color,
 			})
+			for light_record in character.inventory.owned_instances():
+				var bright_radius := LightSourceRules.bright_radius_hexes(light_record)
+				var dim_radius := LightSourceRules.dim_radius_hexes(light_record)
+				if dim_radius <= 0:
+					continue
+				hex_grid.add_entity({
+					"hex_position": p.get("hex_position", Vector2i.ZERO),
+					"color": Color(1.0, 0.78, 0.36),
+					"is_physical_light_source": true,
+					"light_instance_id": str(light_record.get("instance_id", "")),
+					"bright_light_radius_hexes": bright_radius,
+					"dim_light_radius_hexes": dim_radius,
+				})
 	
 	# Add monsters
 	for m in monster_entities:
@@ -116,6 +226,292 @@ func _update_grid_entities() -> void:
 				"is_player": false,
 				"monster": m
 			})
+	for zone in active_spell_zones.values():
+		if str(zone.get("spell_id", "")) == "conjure_elemental":
+			hex_grid.add_entity({
+				"hex_position": zone.get("center", Vector2i.ZERO),
+				"color": Color(0.55, 0.82, 0.95),
+				"is_conjure_elemental": true,
+				"element": str(zone.get("element", "air")),
+				"size": "Large",
+			})
+		elif str(zone.get("spell_id", "")) == "conjure_fey":
+			hex_grid.add_entity({
+				"hex_position": zone.get("center", Vector2i.ZERO),
+				"color": Color(0.84, 0.63, 0.97),
+				"is_conjure_fey": true,
+				"size": "Medium",
+			})
+	for light_set in dancing_light_sets.values():
+		for light_index in light_set.get("positions", []).size():
+			var light_coord: Array = light_set["positions"][light_index]
+			hex_grid.add_entity({
+				"hex_position": Vector2i(int(light_coord[0]), int(light_coord[1])),
+				"color": Color(0.65, 0.9, 1.0),
+				"is_player": false,
+				"is_dancing_light": true,
+				"light_index": light_index,
+				"humanoid_form": bool(light_set.get("humanoid_form", false)),
+				"dim_light_radius_hexes": int(light_set.get("dim_light_radius_hexes", DancingLightsRules.DIM_LIGHT_RADIUS_HEXES)),
+			})
+	for light_spell_marker in light_spell_markers.values():
+		var light_coord: Array = light_spell_marker.get("position", [0, 0])
+		hex_grid.add_entity({
+			"hex_position": Vector2i(int(light_coord[0]), int(light_coord[1])),
+			"color": Color(1.0, 0.85, 0.38),
+			"is_spell_light": true,
+			"bright_light_radius_hexes": LightRules.BRIGHT_RADIUS_HEXES,
+			"dim_light_radius_hexes": LightRules.DIM_RADIUS_HEXES,
+		})
+	for mage_hand_marker in mage_hand_markers.values():
+		var hand_coord: Array = mage_hand_marker.get("position", [0, 0])
+		hex_grid.add_entity({
+			"hex_position": Vector2i(int(hand_coord[0]), int(hand_coord[1])),
+			"color": Color(0.72, 0.58, 1.0),
+			"is_mage_hand": true,
+		})
+	for illusion in minor_illusion_markers.values():
+		var illusion_coord: Array = illusion.get("position", [0, 0])
+		hex_grid.add_entity({
+			"hex_position": Vector2i(int(illusion_coord[0]), int(illusion_coord[1])),
+			"color": Color(0.56, 0.66, 1.0) if str(illusion.get("form", "")) == "sound" else Color(0.78, 0.57, 1.0),
+			"is_minor_illusion": true,
+			"form": str(illusion.get("form", "")),
+			"description": str(illusion.get("description", "")),
+		})
+	for effects_value in prestidigitation_effects.values():
+		for effect in effects_value:
+			var effect_coord: Array = effect.get("position", [0, 0])
+			hex_grid.add_entity({
+				"hex_position": Vector2i(int(effect_coord[0]), int(effect_coord[1])),
+				"color": Color(0.94, 0.77, 0.43) if str(effect.get("effect_type", "")) == "magic_mark" else Color(0.54, 0.85, 0.74),
+				"is_prestidigitation": true,
+				"effect_type": str(effect.get("effect_type", "")),
+				"description": str(effect.get("description", "")),
+			})
+	for caster_id_value in produce_flame_markers.keys().duplicate():
+		var caster_id := str(caster_id_value)
+		var flame: Dictionary = produce_flame_markers[caster_id]
+		var flame_caster_found := false
+		for player in player_entities:
+			var flame_caster: Character = player.get("character")
+			if flame_caster == null or flame_caster.character_id != caster_id:
+				continue
+			flame_caster_found = true
+			if not flame_caster.is_alive:
+				produce_flame_markers.erase(caster_id)
+				break
+			var held_position: Vector2i = player.get("hex_position", Vector2i.ZERO)
+			flame["position"] = [held_position.x, held_position.y]
+			produce_flame_markers[caster_id] = flame
+			break
+		if not flame_caster_found or not produce_flame_markers.has(caster_id):
+			produce_flame_markers.erase(caster_id)
+			continue
+		var flame_coord: Array = flame.get("position", [0, 0])
+		hex_grid.add_entity({
+			"hex_position": Vector2i(int(flame_coord[0]), int(flame_coord[1])),
+			"color": Color(1.0, 0.45, 0.12),
+			"is_produce_flame": true,
+			"bright_light_radius_hexes": ProduceFlameRules.BRIGHT_LIGHT_RADIUS_HEXES,
+			"dim_light_radius_hexes": ProduceFlameRules.DIM_LIGHT_RADIUS_HEXES,
+		})
+
+
+	LocalRoomCombat.add_objects(hex_grid)
+	for dropped_object in dropped_combat_items:
+		if bool(dropped_object.get("removed", false)) or int(dropped_object.get("hp", 1)) <= 0:
+			continue
+		var raw_position: Array = dropped_object.get("position", [0, 0])
+		hex_grid.add_entity({
+			"hex_position": Vector2i(int(raw_position[0]), int(raw_position[1])),
+			"world_object": dropped_object,
+		})
+	_refresh_detect_evil_and_good_senses()
+	_refresh_detect_poison_and_disease_senses()
+
+
+func _refresh_detect_evil_and_good_senses() -> void:
+	SpellEncounterPerception._refresh_detect_evil_and_good_senses(_spell_cast_context())
+
+
+func _refresh_detect_poison_and_disease_senses() -> void:
+	SpellEncounterPerception._refresh_detect_poison_and_disease_senses(_spell_cast_context())
+
+
+func _familiar_spawn_position(owner: Dictionary, radius: int = 2, restore_position: bool = true) -> Vector2i:
+	var owner_character: Character = owner.get("character")
+	var origin: Vector2i = owner.get("hex_position", Vector2i.ZERO)
+	var saved := FamiliarRules.position(owner_character, str(LocalRoomCombat.room().get("id", "")))
+	var candidates: Array[Vector2i] = []
+	if restore_position and saved != FamiliarRules.ABSENT:
+		candidates.append(saved)
+	candidates.append_array(HexUtils.get_hexes_in_range(origin, radius))
+	for candidate in candidates:
+		if candidate == origin or not hex_grid.has_tile(candidate) or not hex_grid.is_hex_passable(candidate): continue
+		if LocalRoomRules.requires_surface_traversal(str(hex_grid.tiles[candidate].custom_properties.get("surface", "floor"))): continue
+		var occupied := false
+		for entity in player_entities:
+			if entity.get("is_familiar", false) and entity.get("familiar_owner") == owner_character: continue
+			if entity.get("hex_position") == candidate: occupied = true; break
+		for monster in monster_entities:
+			if monster.get("is_alive", true) and monster.get("hex_position") == candidate: occupied = true; break
+		if not LocalRoomCombat.room().is_empty() and not LocalRoomRules.object_at(LocalRoomCombat.room(), candidate).is_empty(): occupied = true
+		if not occupied: return candidate
+	return FamiliarRules.ABSENT
+
+
+func _add_wild_companion_entity(owner: Dictionary, add_to_initiative: bool, requested_position: Vector2i = FamiliarRules.ABSENT) -> Dictionary:
+	var owner_character: Character = owner.get("character")
+	var familiar := FamiliarRules.character(owner_character)
+	if familiar == null:
+		return {"success": false, "message": "No familiar is present."}
+	var familiar_pos := requested_position if requested_position != FamiliarRules.ABSENT else _familiar_spawn_position(owner)
+	if familiar_pos == FamiliarRules.ABSENT:
+		return {"success": false, "message": "No unoccupied space is available for the familiar."}
+	for existing in player_entities.duplicate():
+		if existing.get("is_familiar", false) and existing.get("familiar_owner") == owner_character:
+			tracker.remove_combatant(str(existing.get("combat_id", "")))
+			player_entities.erase(existing)
+	var combat_id := familiar.character_id
+	var entity := {
+		"name": familiar.character_name, "display_name": familiar.character_name,
+		"player_id": int(owner.get("player_id", 0)) + 1000,
+		"owner_player_index": int(owner.get("owner_player_index", -1)),
+		"character": familiar, "hex_position": familiar_pos, "reaction_available": true,
+		"color": owner.get("color", Color.WHITE), "is_familiar": true,
+		"familiar_owner": owner_character, "combat_id": combat_id,
+		"familiar_form_id": str(FamiliarRules.state(owner_character).get("form_id", "")),
+		"size": familiar.get_creature_size(),
+	}
+	player_entities.append(entity)
+	if add_to_initiative:
+		var dex := familiar.ability_scores.get_score("DEX")
+		var initiative: Dictionary = familiar_initiative.get(combat_id, {})
+		if initiative.is_empty():
+			initiative = {"roll": Dice.roll(20, familiar) + AbilityScores.get_modifier(dex), "dex": dex}
+			familiar_initiative[combat_id] = initiative
+		tracker.add_combatant(combat_id, familiar.character_name, true, familiar, int(initiative["roll"]), int(initiative["dex"]))
+		tracker.sort_initiative_preserving_active()
+	_update_grid_entities()
+	return {"success": true, "entity": entity}
+
+
+func _add_find_steed_entity(owner: Dictionary, requested_position: Vector2i = Vector2i(9999, 9999), add_to_initiative: bool = false) -> Dictionary:
+	var owner_character: Character = owner.get("character")
+	var state := PaladinRules.find_steed_state(owner_character)
+	if owner_character == null or state.is_empty() or owner_character.disintegrated or owner_character.death_save_failures >= 3 or int(state.get("current_hp", 0)) <= 0:
+		return {"success": false, "message": "There is no living bonded steed to summon."}
+	var summon: Dictionary = DataLoader.get_spell("find_steed").get("summoned_creature", {})
+	var appearance := str(state.get("form", "horse"))
+	var steed := Character.new()
+	var scores := AbilityScores.new()
+	scores.from_dict(state.get("ability_scores", summon.get("ability_scores", {})))
+	steed.initialize("%s's %s" % [owner_character.character_name, appearance.capitalize()], "", "familiar", scores)
+	steed.character_id = "paladin_steed_%s" % (owner_character.character_id if not owner_character.character_id.is_empty() else str(owner_character.get_instance_id()))
+	steed.level = owner_character.level
+	steed.proficiency_bonus = owner_character.proficiency_bonus
+	steed.base_ac = int(state.get("armor_class", 12))
+	steed.max_hp = int(state.get("max_hp", 25))
+	steed.current_hp = clampi(int(state.get("current_hp", steed.max_hp)), 1, steed.max_hp)
+	steed.speed = maxi(1, int(floor(float(state.get("speed_feet", 60)) / 5.0)))
+	steed.set_movement_speed_feet("fly", int(state.get("fly_speed_feet", 0)))
+	steed.is_alive = true
+	steed.feature_uses["creature_type"] = str(state.get("creature_type", "fey"))
+	steed.creature_type = str(state.get("creature_type", "fey"))
+	steed.feature_uses["creature_size"] = "large"
+	for steed_feature in PaladinRules.find_steed_features(state):
+		steed.features.append(steed_feature)
+		steed.feature_uses[str(steed_feature.get("id", ""))] = 0 if (str(steed_feature.get("uses_per", "")) == "long_rest" and bool(state.get("long_rest_ability_used", false))) else int(steed_feature.get("uses", 0))
+	var owner_position: Vector2i = owner.get("hex_position", Vector2i.ZERO)
+	var steed_position := requested_position
+	if steed_position == FamiliarRules.ABSENT and not LocalRoomCombat.room().is_empty():
+		steed_position = PaladinRules.find_steed_room_position(owner_character, str(LocalRoomCombat.room()["id"]))
+		if steed_position != FamiliarRules.ABSENT and (not hex_grid.has_tile(steed_position) or not hex_grid.is_hex_passable(steed_position) or _is_occupied_hex(steed_position)):
+			steed_position = FamiliarRules.ABSENT
+	var begins_mounted := bool(state.get("mounted", false))
+	if steed_position == Vector2i(9999, 9999):
+		if begins_mounted:
+			steed_position = owner_position
+		else:
+			steed_position = owner_position
+			for candidate in HexUtils.get_hexes_in_range(owner_position, 1):
+				if candidate != owner_position and hex_grid.has_tile(candidate) and hex_grid.is_hex_passable(candidate) and not _is_occupied_hex(candidate):
+					steed_position = candidate
+					break
+	if (steed_position == owner_position and not begins_mounted) or not hex_grid.has_tile(steed_position) or not hex_grid.is_hex_passable(steed_position):
+		return {"success": false, "message": "No unoccupied space is available for the steed."}
+	for existing in player_entities.duplicate():
+		if existing.get("is_steed", false) and existing.get("steed_owner") == owner_character:
+			tracker.remove_combatant(str(existing.get("combat_id", "")))
+			player_entities.erase(existing)
+	var owner_index := int(owner.get("owner_player_index", -1))
+	var combat_id := "steed_%s" % (owner_character.character_id if not owner_character.character_id.is_empty() else str(owner_character.get_instance_id()))
+	var entity := {
+		"name": steed.character_name,
+		"display_name": steed.character_name,
+		"player_id": int(owner.get("player_id", 0)) + 2000,
+		"owner_player_index": owner_index,
+		"character": steed,
+		"hex_position": steed_position,
+		"reaction_available": true,
+		"color": owner.get("color", Color.WHITE),
+		"is_steed": true,
+		"steed_owner": owner_character,
+		"steed_creature_type": str(state.get("creature_type", "celestial")),
+		"steed_spell_level": int(state.get("spell_level", 2)),
+		"steed_speed_feet": int(state.get("speed_feet", 60)),
+		"steed_fly_speed_feet": int(state.get("fly_speed_feet", 0)),
+		"mounted": begins_mounted,
+		"combat_id": combat_id,
+	}
+	player_entities.append(entity)
+	if add_to_initiative:
+		var dex := steed.ability_scores.get_score("DEX")
+		var owner_roll := int(active_combatant.get("roll", 0))
+		dex = int(active_combatant.get("dex", dex))
+		tracker.add_combatant(combat_id, steed.character_name, true, steed, owner_roll, dex)
+		tracker.sort_initiative_preserving_active()
+	_update_grid_entities()
+	return {"success": true, "entity": entity}
+
+
+func _sync_find_steeds() -> void:
+	for entity in player_entities.duplicate():
+		if not entity.get("is_steed", false):
+			continue
+		var steed: Character = entity.get("character")
+		var owner: Character = entity.get("steed_owner")
+		if steed == null or owner == null or owner.disintegrated or owner.death_save_failures >= 3 or not steed.is_alive or PaladinRules.find_steed_state(owner).is_empty():
+			PaladinRules.dismiss_find_steed(owner)
+			tracker.remove_combatant(str(entity.get("combat_id", "")))
+			player_entities.erase(entity)
+			continue
+		PaladinRules.update_find_steed_hit_points(owner, steed.current_hp)
+		if not LocalRoomCombat.room().is_empty():
+			PaladinRules.set_find_steed_room_position(owner, str(LocalRoomCombat.room()["id"]), entity["hex_position"])
+
+
+func _cleanup_dead_familiars() -> void:
+	for entity in player_entities.duplicate():
+		if not entity.get("is_familiar", false): continue
+		var owner_character: Character = entity.get("familiar_owner")
+		var familiar: Character = entity.get("character")
+		var record := FamiliarRules.state(owner_character)
+		if not record.is_empty() and not bool(record.get("pocket", false)) and familiar != null and familiar.is_alive:
+			FamiliarRules.update_hp(owner_character, familiar.current_hp)
+			if owner_character.familiar_senses == familiar:
+				owner_character.familiar_senses_position = entity["hex_position"]
+			if not LocalRoomCombat.room().is_empty():
+				FamiliarRules.set_position(owner_character, str(LocalRoomCombat.room()["id"]), entity["hex_position"])
+			continue
+		if familiar != null and not familiar.is_alive: FamiliarRules.forget(owner_character)
+		if owner_character != null: owner_character.familiar_senses = null
+		var removed_id := str(entity.get("combat_id", ""))
+		for monster in monster_entities:
+			if str(monster.get("familiar_helped_by", "")) == removed_id: monster.erase("familiar_helped_by")
+		tracker.remove_combatant(str(entity.get("combat_id", "")))
+		player_entities.erase(entity)
 
 
 ## --- Combat feedback / juice -------------------------------------------
@@ -149,7 +545,7 @@ func _shake_camera(intensity: float = 6.0) -> void:
 		return
 	if cam == null:
 		return
-	var base := Vector2(640, 360)
+	var base := cam.position
 	var tween := create_tween()
 	for i in 5:
 		var off := Vector2(randf_range(-intensity, intensity), randf_range(-intensity, intensity))
@@ -222,19 +618,31 @@ func _setup_combat_players() -> void:
 	
 	for i in player_count:
 		var pos = spawn_points[i]
-		player_entities[i]["hex_position"] = pos
+		var local_position: Array = LocalRoomCombat.room().get("party_positions", {}).get(player_entities[i]["character"].character_id, [pos.x, pos.y])
+		player_entities[i]["hex_position"] = LocalRoomRules.coord(local_position)
+		var room_state := LocalRoomCombat.room()
+		if not room_state.is_empty():
+			player_entities[i]["altitude_feet"] = LocalRoomRules.altitude_feet(room_state, player_entities[i]["character"].character_id)
 		player_entities[i]["reaction_available"] = true
 		var char_data: Character = player_entities[i]["character"]
 		if char_data != null:
 			char_data.reset_combat_features()
 			char_data.is_alive = char_data.current_hp > 0
 			char_data.reaction_available = true
+	var owners := player_entities.duplicate()
+	for owner in owners:
+		var owner_character: Character = owner.get("character")
+		if owner_character != null and not FamiliarRules.state(owner_character).is_empty():
+			_add_wild_companion_entity(owner, false)
+		if owner_character != null and not PaladinRules.find_steed_state(owner_character).is_empty():
+			_add_find_steed_entity(owner, Vector2i(9999, 9999), false)
+	CreatedCreatureCombat.attach(self)
 
 
 func _setup_combat_monsters() -> void:
 	monster_entities.clear()
 	var monster_ids: Array = GameManager.transition_context.get("monster_ids", [])
-	if monster_ids.is_empty():
+	if monster_ids.is_empty() and LocalRoomCombat.room().is_empty():
 		# Fallback to simple goblins if debug combat launched
 		monster_ids = ["goblin", "goblin"]
 
@@ -245,6 +653,10 @@ func _setup_combat_monsters() -> void:
 		Vector2i(3, 1),
 		Vector2i(2, 0)
 	]
+
+	if not LocalRoomCombat.room().is_empty():
+		spawn_points.clear()
+		for cell in LocalRoomCombat.room()["monster_spawns"]: spawn_points.append(LocalRoomRules.coord(cell))
 
 	for i in monster_ids.size():
 		var m_id = monster_ids[i]
@@ -268,17 +680,20 @@ func _setup_combat_monsters() -> void:
 			"spells": base_monster.get("spells", []).duplicate(true),
 			"spell_slots": base_monster.get("spell_slots", {}).duplicate(true),
 			"damage_immunities": base_monster.get("damage_immunities", []).duplicate(true),
+			"damage_resistances": base_monster.get("damage_resistances", []).duplicate(true),
 			"condition_immunities": base_monster.get("condition_immunities", []).duplicate(true),
 			"saving_throw_bonuses": base_monster.get("saving_throw_bonuses", {}).duplicate(true),
 			"special_abilities": base_monster.get("special_abilities", []).duplicate(true),
 			"loot_table": base_monster.get("loot_table", []).duplicate(true),
 			"is_boss": bool(base_monster.get("is_boss", false)),
 			"creature_type": str(base_monster.get("creature_type", "")),
+			"size": str(base_monster.get("size", "medium")),
 			"ai_behavior": base_monster.get("ai_behavior", "aggressive"),
 			"hex_position": spawn_points[i % spawn_points.size()],
 			"color": Color(0.9, 0.3, 0.3),
 			"is_alive": true,
-			"conditions": {}
+			"conditions": {},
+			"delayed_spell_damage": []
 		}
 		monster_entities.append(monster_inst)
 
@@ -291,18 +706,46 @@ func _roll_initiative_and_start() -> void:
 		var p := player_entities[i]
 		var char_data: Character = p.get("character")
 		if char_data == null or not char_data.is_alive: continue
-
-		var roll = Dice.roll(20)
+		var initiative_recoveries := ClassProgression.apply_initiative_resource_recovery(char_data)
+		for recovered_resource in initiative_recoveries:
+			var recovery_count := int(initiative_recoveries[recovered_resource])
+			hud.add_log("%s regains %d %s use%s at Initiative." % [char_data.character_name, recovery_count, recovered_resource.replace("_", " "), "" if recovery_count == 1 else "s"])
+		var used_metabolism := false
+		if char_data.has_feature("monk_uncanny_metabolism") and not char_data.feature_uses.get("uncanny_metabolism_used", false) and (char_data.get_focus_points() < char_data.get_max_focus_points() or char_data.current_hp < char_data.max_hp):
+			if await hud.request_reaction(_owner_label_for_character(char_data), "uncanny_metabolism", "Restore all Focus and recover hit points (once per Long Rest).", "Use Uncanny Metabolism?", "Recover", "Uncanny Metabolism"):
+				var recovery := char_data.use_uncanny_metabolism()
+				hud.add_log(recovery.get("message", "Focus restored."))
+				used_metabolism = true
+		if not used_metabolism and char_data.has_feature("monk_perfect_focus"):
+			if MonkRules.apply_perfect_focus(char_data):
+				hud.add_log("%s regains Focus up to 4 with Perfect Focus." % char_data.character_name)
+		if BarbarianRules.can_recover_rage_at_initiative(char_data):
+			var rage_recovery_detail := "Recover all expended uses of Rage (once per Long Rest)."
+			if await hud.request_reaction(_owner_label_for_character(char_data), "persistent_rage", rage_recovery_detail, "Recover your Rage uses?", "Recover Rage", "Persistent Rage"):
+				var recovered_rages := BarbarianRules.recover_rage_at_initiative(char_data)
+				if recovered_rages > 0:
+					hud.add_log("%s regains %d uses of Rage." % [char_data.character_name, recovered_rages])
+		var initiative_advantage := char_data.has_feature("champion_remarkable_athlete") or char_data.has_feature_effect("initiative_advantage")
+		var roll = (Dice.roll_with_advantage(20, char_data) if initiative_advantage else Dice.roll(20, char_data)) - char_data.exhaustion_level * 2
 		var dex = char_data.ability_scores.get_score("DEX")
 		var mod = AbilityScores.get_modifier(dex)
 		var total = roll + mod
+		if p.get("is_steed", false):
+			var steed_owner: Character = p.get("steed_owner")
+			for owner_combatant in tracker.combatants:
+				if owner_combatant.get("entity") == steed_owner:
+					total = int(owner_combatant.get("roll", total))
+					dex = int(owner_combatant.get("dex", dex))
+					break
 		var owner_index := int(p.get("owner_player_index", -1))
 		var turn_name := char_data.character_name
 		if owner_index >= 0:
 			turn_name += " [Seat %d]" % (owner_index + 1)
 
+		var combatant_id := str(p.get("combat_id", "player_%d" % i))
+		if p.get("is_familiar", false): familiar_initiative[combatant_id] = {"roll": total, "dex": dex}
 		tracker.add_combatant(
-			"player_%d" % i,
+			combatant_id,
 			turn_name,
 			true,
 			char_data,
@@ -332,6 +775,15 @@ func _roll_initiative_and_start() -> void:
 
 
 func _start_combat_turn() -> void:
+	CreatedCreatureCombat.reconcile(self)
+	var next_entity: Variant = tracker.get_active().get("entity")
+	CombatAction.advance_combat_turn(next_entity if next_entity is Character else null)
+	for player in player_entities:
+		var member: Character = player.get("character")
+		if member != null:
+			member.feature_uses.erase("stunning_strike_used")
+			member.feature_uses.erase("fighter_cleave_used")
+			member.feature_uses.erase("sneak_attack_used_this_turn")
 	active_combatant = tracker.get_active()
 	if active_combatant.is_empty():
 		return
@@ -345,25 +797,89 @@ func _start_combat_turn() -> void:
 	if is_player:
 		# Player Turn
 		active_character = active_combatant["entity"]
+		# This hit restriction ends when the target's next turn begins.
+		CombatAction.clear_shocking_grasp(active_character)
+		_clear_monk_turn_effects(active_character)
+		remaining_attack_swings = 0
+		light_attack_weapon = {}
+		active_character.familiar_senses = null
+		active_character.feature_uses.erase("stunning_strike_used")
+		if active_character.feature_uses.has("monk_patient_dodge"):
+			active_character.remove_condition("dodging")
+			active_character.feature_uses.erase("monk_patient_dodge")
 		current_player_idx = -1
 		for i in player_entities.size():
 			if player_entities[i]["character"] == active_character:
 				current_player_idx = i
 				break
-		if not active_character.is_alive:
-			hud.add_log("[color=gray]%s is knocked out and skips their turn.[/color]" % active_character.character_name)
-			await get_tree().create_timer(1.0).timeout
-			_end_active_turn()
+		if current_player_idx >= 0:
+			if player_entities[current_player_idx].get("is_steed", false):
+				var mounted_owner: Character = player_entities[current_player_idx].get("steed_owner")
+				if mounted_owner != null and mounted_owner.is_alive and PaladinRules.find_steed_is_mounted(mounted_owner) and not CombatAction.is_incapacitated(mounted_owner):
+					_end_active_turn()
+					return
+			if not player_entities[current_player_idx].get("is_steed", false):
+				active_character.feature_uses.erase("find_steed_mount_transition_used_this_turn")
+			_expire_conjure_fey_frightened(active_character)
+			await _advance_cloudkill_zones_for_caster(active_character)
+			await _resolve_spell_zone_start_turn(active_character, player_entities[current_player_idx].get("hex_position", Vector2i.ZERO))
+		_tick_dancing_lights_duration(active_character)
+		_tick_light_spell_duration(active_character)
+		_tick_mage_hand_duration(active_character)
+		_tick_minor_illusion_duration(active_character)
+		_tick_prestidigitation_effects(active_character)
+		_tick_produce_flame_duration(active_character)
+		_tick_protection_from_energy_duration(active_character)
+		_tick_protection_from_evil_and_good_duration(active_character)
+		_tick_spell_effect_boundary(active_character, "start")
+		SpellEffects.reconcile(_spell_casters(), _spell_effect_targets())
+		for fall_message in LocalRoomCombat.reconcile_flight_altitudes(player_entities):
+			hud.add_log(fall_message)
+		if _check_battle_end_conditions():
 			return
+		SpellEffects.apply_turn_start(active_character)
+		_tick_resilient_sphere_duration(active_character)
+		_apply_regenerate_turn_start(active_character)
+		_refresh_paladin_divine_sense(active_character)
+		if active_character.class_id == "familiar" and current_player_idx >= 0:
+			var familiar_id := str(player_entities[current_player_idx].get("combat_id", ""))
+			for monster in monster_entities:
+				if str(monster.get("familiar_helped_by", "")) == familiar_id:
+					monster.erase("familiar_helped_by")
 		var owner_index := _get_current_owner_index()
 		if owner_index >= 0 and not PlayerManager.is_player_connected(owner_index):
 			_wait_for_owner_rebind(owner_index, true)
 			return
+		FighterRules.clear_source_effects(active_character, monster_entities)
+		var rally := FighterRules.start_turn(active_character)
+		if rally > 0:
+			hud.add_log("Survivor restores %d HP." % rally)
+		if active_character.is_downed():
+			var use_bardic_inspiration := false
+			var use_stroke_of_luck := false
+			if active_character.has_feature("rogue_stroke_of_luck") and int(active_character.feature_uses.get("rogue_stroke_of_luck", 0)) > 0:
+				var owner_label := _owner_label_for_character(active_character)
+				use_stroke_of_luck = await hud.request_reaction(owner_label, "stroke_of_luck", "If this death save fails after any Indomitable reroll, turn its d20 into a 20?", "Use Stroke of Luck on this death save?", "Turn the d20 into 20", "Stroke of Luck — %s" % owner_label)
+			if active_character.feature_uses.has("bardic_inspiration_die"):
+				var inspiration_die := str(active_character.feature_uses.get("bardic_inspiration_die", "1d6"))
+				var owner_label := _owner_label_for_character(active_character)
+				use_bardic_inspiration = await hud.request_reaction(owner_label, "bardic_inspiration", "If this death save remains failed after any Indomitable reroll, add %s. Natural 1 keeps its special result." % inspiration_die, "Use Bardic Inspiration on a failed death save?", "Use Inspiration", "Bardic Inspiration — %s" % owner_label)
+			var death_save := active_character.make_death_save(use_bardic_inspiration, use_stroke_of_luck)
+			if death_save.get("rolled", false):
+				var inspiration_note := " Bardic Inspiration adds %d." % int(death_save.get("bardic_inspiration_bonus", 0)) if death_save.get("bardic_inspiration_used", false) else ""
+				var stroke_note := " Stroke of Luck turns the death save into a 20." if death_save.get("stroke_of_luck_used", false) else ""
+				hud.add_log("Death save: %d (%d successes, %d failures).%s%s" % [death_save.get("total", death_save["natural"]), death_save["successes"], death_save["failures"], inspiration_note, stroke_note])
+		if not active_character.is_alive:
+			hud.add_log("[color=gray]%s is %s and skips their turn.[/color]" % [active_character.character_name, "dead" if active_character.is_dead() else "unconscious"])
+			await get_tree().create_timer(1.0).timeout
+			_end_active_turn()
+			return
+
 
 		# Process turn-start condition effects (like poison)
 		if active_character.has_condition("poisoned"):
 			var dmg := Dice.roll(4) # 1d4 poison damage
-			var actual := active_character.take_damage(dmg)
+			var actual := int(CombatAction.resolve_damage(active_character, dmg, "poison")["damage"])
 			hud.add_log("[color=red]%s took %d poison damage from being poisoned![/color]" % [active_character.character_name, actual])
 			var ppos: Vector2i = player_entities[current_player_idx]["hex_position"]
 			_spawn_floating_text(ppos, "-%d" % actual, Color(0.3, 1.0, 0.3))
@@ -373,6 +889,10 @@ func _start_combat_turn() -> void:
 				await get_tree().create_timer(1.0).timeout
 				_end_active_turn()
 				return
+		if not active_character.combat_command.is_empty():
+			await _resolve_character_command(active_character, player_entities[current_player_idx], active_character.combat_command)
+			_end_active_turn()
+			return
 
 		# Check turn-blocking conditions
 		if active_character.has_condition("stunned") or active_character.has_condition("paralyzed"):
@@ -382,24 +902,46 @@ func _start_combat_turn() -> void:
 			_end_active_turn()
 			return
 
-		var speed_val := float(active_character.get_speed())
+		var speed_val := _movement_speed_feet("walk", active_character) / 5.0
 		if active_character.has_condition("prone"):
 			speed_val /= 2.0
 		remaining_speed = speed_val
+		active_movement_mode = "walk"
+		hud.set_movement_modes(active_character, active_movement_mode, _movement_speed_overrides(active_character))
 		_reset_turn_action_economy()
+		if player_entities[current_player_idx].get("is_created_creature", false):
+			await CreatedCreatureCombat.take_turn(self, player_entities[current_player_idx])
+			_end_active_turn()
+			return
+		var controlled_entity: Dictionary = player_entities[current_player_idx]
+		var creature_owner: Character = controlled_entity.get("familiar_owner", controlled_entity.get("steed_owner"))
+		if creature_owner != null and (not creature_owner.is_alive or CombatAction.is_incapacitated(creature_owner)):
+			active_character.add_condition("dodging", 2)
+			_spend_action_cost("action")
+			hud.add_log("%s takes Dodge while its owner cannot command it." % active_character.character_name)
+			await get_tree().create_timer(0.01).timeout
+			_end_active_turn()
+			return
 		
 		# Reset once-per-turn features/restrictions for this player
+		active_character.feature_uses.erase("jump_spell_used_this_turn")
+		active_character.feature_uses.erase("sorcerer_arcane_apotheosis_used_this_turn")
+		active_character.feature_uses.erase("sorcerer_levelled_spell_cast_this_turn")
+		active_character.feature_uses.erase("sorcerer_quickened_spell_cast_this_turn")
 		for feature in active_character.features:
 			if feature.get("uses_per", "") == "turn":
-				active_character.feature_uses[feature.get("id", "")] = feature.get("uses", 1)
+				active_character.feature_uses[feature.get("id", "")] = active_character.get_feature_max_uses(str(feature.get("id", "")))
+		for effect in ClassProgression.selected_feature_effects_of_type(active_character, "weapon_damage_rider"):
+			var marker := "%s_%s_used_this_turn" % [str(effect.get("id", "weapon_damage_rider")), active_character.class_id]
+			active_character.feature_uses.erase(marker)
 		if active_character.has_feature("barbarian_reckless_attack"):
 			active_character.feature_uses["barbarian_reckless_attack_used_this_turn"] = 0
 			active_character.remove_condition("reckless_attack")
-		active_character.feature_uses.erase("paladin_divine_sense_targets")
+		if active_character.has_feature("barbarian_brutal_strike"):
+			active_character.feature_uses["barbarian_brutal_strike_used_this_turn"] = 0
+			BarbarianRules.clear_turn_effects(active_character, monster_entities)
 		if active_character.has_feature("ranger_favored_foe"):
 			active_character.feature_uses["ranger_favored_foe_used_this_turn"] = 0
-		if active_character.has_feature("sneak_attack"):
-			active_character.feature_uses["sneak_attack_used_this_turn"] = 0
 		
 		hud.update_hud(active_character, tracker)
 		hud.set_controls_disabled(false)
@@ -414,14 +956,20 @@ func _start_combat_turn() -> void:
 		# Monster Turn
 		var monster: Dictionary = active_combatant["entity"]
 		monster["reaction_available"] = true
+		CombatAction.clear_shocking_grasp(monster)
+		await _resolve_spell_zone_start_turn(monster, monster.get("hex_position", Vector2i.ZERO))
+		_apply_regenerate_turn_start(monster)
 		
 		# Process turn-start condition effects (like poison)
 		var monster_conditions: Dictionary = monster.get("conditions", {})
+		var command: Dictionary = monster.get("combat_command", {})
+		if monster_conditions.has("prone") and str(command.get("action", "")) != "grovel":
+			monster_conditions.erase("prone")
+			monster["fighter_stood_up"] = true
+			hud.add_log("%s stands from Prone, spending half its movement." % monster["name"])
 		if monster_conditions.has("poisoned"):
 			var dmg := Dice.roll(4)
-			var hp := int(monster.get("current_hp", 0))
-			var actual := mini(dmg, hp)
-			monster["current_hp"] = hp - actual
+			var actual := int(CombatAction.resolve_damage(monster, dmg, "poison")["damage"])
 			hud.add_log("[color=red]%s took %d poison damage from being poisoned![/color]" % [monster["name"], actual])
 			if monster["current_hp"] <= 0:
 				monster["is_alive"] = false
@@ -432,13 +980,15 @@ func _start_combat_turn() -> void:
 				return
 
 		# Check stunned condition
-		if monster_conditions.has("stunned"):
-			hud.add_log("[color=orange]%s is Stunned and skips their turn.[/color]" % monster["name"])
+		if monster_conditions.has("stunned") or monster_conditions.has("paralyzed") or monster.get("stunning_strike_stunned", false):
+			var blocked_monster_condition := "Paralyzed" if monster_conditions.has("paralyzed") else "Stunned"
+			hud.add_log("[color=orange]%s is %s and skips their turn.[/color]" % [monster["name"], blocked_monster_condition])
 			await get_tree().create_timer(1.0).timeout
 			_end_active_turn()
 			return
 
 		hud.update_hud(null, tracker)
+		hud.set_movement_modes(null, "")
 		hud.set_controls_disabled(true)
 		hud.add_log("[color=red]=== Turn: %s (Monster) ===[/color]" % active_combatant["name"])
 
@@ -473,6 +1023,51 @@ func _wait_for_owner_rebind(owner_index: int, before_turn_setup: bool) -> void:
 	hud.add_log("[color=orange]Seat %d disconnected. Reconnect the controller or press Start to reclaim this turn.[/color]" % (owner_index + 1))
 
 
+func _resolve_character_command(character: Character, entity: Dictionary, command: Dictionary) -> void:
+	var action := str(command.get("action", "halt"))
+	var origin: Vector2i = entity.get("hex_position", Vector2i.ZERO)
+	if action == "grovel":
+		character.add_condition("prone", 2)
+		hud.add_log("%s grovels and ends their turn Prone." % character.character_name)
+		return
+	if action == "drop":
+		for slot in [Inventory.Slot.WEAPON, Inventory.Slot.SHIELD, Inventory.Slot.OFFHAND]:
+			var item_copy := character.inventory.drop_equipped_instance(slot)
+			var dropped_object := CombatObjectRules.make_dropped_item(item_copy, origin, character.character_id)
+			if not dropped_object.is_empty():
+				dropped_combat_items.append(dropped_object)
+		_update_grid_entities()
+		hud.add_log("%s drops what they are holding and ends their turn." % character.character_name)
+		return
+	if action == "halt":
+		hud.add_log("%s halts and ends their turn." % character.character_name)
+		return
+	var caster_coord := Vector2i.ZERO
+	var caster_id := str(command.get("caster_id", ""))
+	for player in player_entities:
+		var caster: Character = player.get("character")
+		if caster != null and (caster.character_id == caster_id or str(caster.get_instance_id()) == caster_id):
+			caster_coord = player.get("hex_position", Vector2i.ZERO)
+			break
+	var movement_budget := float(character.get_speed()) * 2.0 if action == "flee" else float(character.get_speed())
+	var reachable: Dictionary = _player_reachable(origin, movement_budget, character)
+	var destination := origin
+	var best_distance := HexUtils.get_distance(origin, caster_coord)
+	for candidate_value in reachable:
+		var candidate: Vector2i = candidate_value
+		if candidate == origin or _is_occupied_hex(candidate):
+			continue
+		var distance := HexUtils.get_distance(candidate, caster_coord)
+		var better := distance < best_distance if action == "approach" else distance > best_distance
+		if better and (action != "approach" or distance > 0):
+			best_distance = distance
+			destination = candidate
+	if destination != origin:
+		var path := _player_path(origin, destination, character)
+		await _check_opportunity_attacks_for_path(character, entity, path, false)
+	hud.add_log("%s %s and ends their turn." % [character.character_name, "approaches" if action == "approach" else "flees"])
+
+
 func _on_device_binding_changed(player_index: int, _device_id: int, connected: bool) -> void:
 	if _battle_ending or active_combatant.is_empty() or not bool(active_combatant.get("is_player", false)):
 		return
@@ -500,8 +1095,37 @@ func _on_device_binding_changed(player_index: int, _device_id: int, connected: b
 
 
 func _run_monster_ai() -> void:
+	ClericRules.reconcile_turning(monster_entities, player_entities)
 	var monster: Dictionary = active_combatant["entity"]
 	var monster_coord: Vector2i = monster.get("hex_position", Vector2i.ZERO)
+	var monster_conditions: Dictionary = monster.get("conditions", {})
+	if monster_conditions.has("unconscious"):
+		hud.add_log("%s is Unconscious and skips its turn." % monster.get("name", "The target"))
+		_update_grid_entities()
+		await get_tree().create_timer(1.0).timeout
+		_end_active_turn()
+		return
+	var forced_command: Dictionary = monster.get("combat_command", {})
+	if not forced_command.is_empty():
+		await _resolve_monster_command(monster, forced_command)
+		_update_grid_entities()
+		await get_tree().create_timer(1.0).timeout
+		_end_active_turn()
+		return
+	if monster_conditions.has("incapacitated"):
+		if monster.has("turn_undead_origin"):
+			await _move_turned_undead_away(monster)
+		else:
+			hud.add_log("%s is Incapacitated or Unconscious and skips its turn." % monster.get("name", "Undead"))
+		_update_grid_entities()
+		await get_tree().create_timer(1.0).timeout
+		_end_active_turn()
+		return
+	if _try_monster_escape_restrained_zone(monster):
+		_update_grid_entities()
+		await get_tree().create_timer(1.0).timeout
+		_end_active_turn()
+		return
 	
 	# Get AI decision
 	var decision := AIController.get_monster_action(monster, monster_coord, hex_grid, player_entities)
@@ -513,14 +1137,23 @@ func _run_monster_ai() -> void:
 		_end_active_turn()
 		return
 	var action_str: String = command.action_type
+	if monster.get("conditions", {}).has("dazed") and action_str == "move_attack":
+		action_str = "move"
+		hud.add_log("%s is Dazed and can only move this turn." % monster.get("name", "The target"))
+	if monster.has(PaladinRules.ABJURE_FOES_MARKER) and action_str == "move_attack":
+		# Abjure Foes permits movement or an action on the turn, not both.
+		action_str = "move"
 
 	match action_str:
 		"move":
 			var dest: Vector2i = command.move_to()
-			var path := [monster_coord, dest]
-			await _check_opportunity_attacks_for_path(null, monster, path, true)
-			if monster["is_alive"]:
-				hud.add_log("%s moved closer." % monster["name"])
+			if PaladinRules.abjure_foes_forbids_movement_closer(monster, dest, player_entities):
+				hud.add_log("%s cannot move closer to the source of its fear." % monster.get("name", "The creature"))
+			else:
+				var path := [monster_coord, dest]
+				await _check_opportunity_attacks_for_path(null, monster, path, true)
+				if monster["is_alive"]:
+					hud.add_log("%s moved." % monster["name"])
 		"attack":
 			var target_name: String = command.target_id()
 			var attack_idx: int = command.attack_idx()
@@ -530,20 +1163,132 @@ func _run_monster_ai() -> void:
 		"move_attack":
 			# Move
 			var dest: Vector2i = command.move_to()
-			var path := [monster_coord, dest]
-			await _check_opportunity_attacks_for_path(null, monster, path, true)
-			if monster["is_alive"]:
-				# Attack
-				var target_name: String = command.target_id()
-				var attack_idx: int = command.attack_idx()
-				hud.add_log("%s moved and attacked!" % monster["name"])
-				await _execute_monster_attack(monster, target_name, attack_idx)
+			if PaladinRules.abjure_foes_forbids_movement_closer(monster, dest, player_entities):
+				hud.add_log("%s cannot move closer to the source of its fear." % monster.get("name", "The creature"))
+			else:
+				var path := [monster_coord, dest]
+				await _check_opportunity_attacks_for_path(null, monster, path, true)
+				if monster["is_alive"]:
+					# Attack
+					var target_name: String = command.target_id()
+					var attack_idx: int = command.attack_idx()
+					hud.add_log("%s moved and attacked!" % monster["name"])
+					await _execute_monster_attack(monster, target_name, attack_idx)
 		_:
 			hud.add_log("%s dodges." % monster["name"])
 
 	_update_grid_entities()
 	await get_tree().create_timer(1.2).timeout
 	_end_active_turn()
+
+
+func _move_turned_undead_away(monster: Dictionary) -> void:
+	var origin: Vector2i = monster.get("hex_position", Vector2i.ZERO)
+	var source: Vector2i = monster.get("turn_undead_origin", origin)
+	var reachable: Dictionary = _enemy_reachable(origin, float(monster.get("speed", 6)), monster)
+	var destination := origin
+	var best_distance := HexUtils.get_distance(origin, source)
+	for candidate in reachable:
+		var cell: Vector2i = candidate
+		if cell == origin or _is_occupied_hex(cell):
+			continue
+		var distance := HexUtils.get_distance(cell, source)
+		if distance > best_distance:
+			best_distance = distance
+			destination = cell
+	if destination == origin:
+		hud.add_log("%s is turned but cannot move farther away." % monster.get("name", "Undead"))
+		return
+	var path := _enemy_path(origin, destination, monster)
+	await _check_opportunity_attacks_for_path(null, monster, path, true)
+	if monster.get("is_alive", false):
+		hud.add_log("%s flees from Turn Undead." % monster.get("name", "Undead"))
+
+
+func _resolve_monster_command(monster: Dictionary, command: Dictionary) -> void:
+	if monster.get("conditions", {}).has("resilient_sphere"):
+		hud.add_log("%s cannot move through the Resilient Sphere." % monster.get("name", "The creature"))
+		return
+	var action := str(command.get("action", "halt"))
+	var name := str(monster.get("name", "The target"))
+	var origin: Vector2i = monster.get("hex_position", Vector2i.ZERO)
+	if action == "grovel":
+		CombatAction.apply_condition(monster, "prone", 2)
+		hud.add_log("%s grovels and ends its turn Prone." % name)
+		return
+	if action == "drop":
+		var held: Array = monster.get("held_items", []).duplicate()
+		for item_index in held.size():
+			var definition_id := str(held[item_index])
+			var record := {"instance_id": "monster:%s:drop:%d:%d" % [str(monster.get("id", "monster")), tracker.round_number, item_index], "definition_id": definition_id, "state": {}}
+			var dropped_object := CombatObjectRules.make_dropped_item(record, origin, str(monster.get("id", "")))
+			if not dropped_object.is_empty():
+				dropped_combat_items.append(dropped_object)
+		monster["held_items"] = []
+		_update_grid_entities()
+		hud.add_log("%s drops what it is holding and ends its turn." % name)
+		return
+	if action == "halt":
+		hud.add_log("%s halts and ends its turn." % name)
+		return
+	var caster_id := str(command.get("caster_id", ""))
+	var caster_coord := Vector2i.ZERO
+	for player in player_entities:
+		var caster: Character = player.get("character")
+		if caster != null and (caster.character_id == caster_id or str(caster.get_instance_id()) == caster_id):
+			caster_coord = player.get("hex_position", Vector2i.ZERO)
+			break
+	var monster_speed := 0.0 if monster.get("conditions", {}).has("restrained") else float(monster.get("speed", 6))
+	var movement_budget := monster_speed * 2.0 if action == "flee" else monster_speed
+	var reachable: Dictionary = _enemy_reachable(origin, movement_budget, monster)
+	var destination := origin
+	var best_distance := HexUtils.get_distance(origin, caster_coord)
+	for candidate_value in reachable:
+		var candidate: Vector2i = candidate_value
+		if candidate == origin or _is_occupied_hex(candidate):
+			continue
+		var distance := HexUtils.get_distance(candidate, caster_coord)
+		var better := distance < best_distance if action == "approach" else distance > best_distance
+		if better and (action != "approach" or distance > 0):
+			best_distance = distance
+			destination = candidate
+	if destination != origin:
+		var path := _enemy_path(origin, destination, monster)
+		await _check_opportunity_attacks_for_path(null, monster, path, true)
+	if action == "approach" and HexUtils.get_distance(monster.get("hex_position", origin), caster_coord) <= 1:
+		hud.add_log("%s approaches the caster and ends its turn." % name)
+	else:
+		hud.add_log("%s %s and ends its turn." % [name, "approaches" if action == "approach" else "flees"])
+
+
+func _try_monster_escape_restrained_zone(monster: Dictionary) -> bool:
+	var sources: Dictionary = monster.get("condition_sources", {}).get("restrained", {})
+	for source_value in sources.keys():
+		var source_id := str(source_value)
+		if not (source_id.begins_with("entangle:") or source_id.begins_with("black_tentacles:")):
+			continue
+		var zone: Dictionary = active_spell_zones.get(source_id, {})
+		if zone.is_empty():
+			CombatAction.remove_condition_source(monster, source_id, ["restrained"])
+			continue
+		var ability_scores: Dictionary = monster.get("ability_scores", {})
+		var strength_modifier := AbilityScores.get_modifier(int(ability_scores.get("STR", 10)))
+		var athletics_modifier := strength_modifier
+		var skills: Variant = monster.get("skills", {})
+		if skills is Dictionary:
+			athletics_modifier = int(skills.get("Athletics", strength_modifier))
+		var total := Dice.roll(20) + athletics_modifier
+		var dc := int(zone.get("save_dc", 10))
+		if total >= dc:
+			CombatAction.remove_condition_source(monster, source_id, ["restrained"])
+			var restrained_targets: Array = zone.get("restrained_targets", [])
+			restrained_targets.erase(monster)
+			zone["restrained_targets"] = restrained_targets
+			hud.add_log("[color=green]%s uses its Action to break free of %s (%d vs DC %d).[/color]" % [str(monster.get("name", "The creature")), str(zone.get("spell_id", "the restraint")).capitalize().replace("_", " "), total, dc])
+		else:
+			hud.add_log("[color=orange]%s uses its Action to escape %s, but fails (%d vs DC %d).[/color]" % [str(monster.get("name", "The creature")), str(zone.get("spell_id", "the restraint")).capitalize().replace("_", " "), total, dc])
+		return true
+	return false
 
 
 func _execute_monster_attack(monster: Dictionary, target_player_name: String, attack_idx: int) -> void:
@@ -559,20 +1304,40 @@ func _execute_monster_attack(monster: Dictionary, target_player_name: String, at
 			break
 
 	if target_char == null: return
+	var monster_origin: Vector2i = monster.get("hex_position", Vector2i.ZERO)
+	if _spell_zones()._antilife_shell_blocks_melee(monster, monster_origin, target_pos, attack_data):
+		hud.add_log("Antilife Shell prevents %s's melee attack from reaching through its barrier." % str(monster.get("name", "The creature")))
+		return
+	if not Targeting.has_line_of_sight(monster_origin, target_pos, hex_grid):
+		hud.add_log("%s's attack is blocked by a wall or closed door." % str(monster.get("name", "The creature")))
+		return
 
 	# Determine advantage & disadvantage based on conditions
 	var has_advantage := false
-	var has_disadvantage := target_char.has_condition("dodging")
+	var has_disadvantage: bool = target_char.has_condition("dodging") or bool(monster.get("conditions", {}).has("restrained"))
+	var attack_distance_feet := HexUtils.get_distance(monster.get("hex_position", Vector2i.ZERO), target_pos) * 5
+	if not CombatPerception.can_see_target(monster, target_char, monster_origin, target_pos, hex_grid):
+		has_disadvantage = true
+	var monster_perceives_invisible := CombatAction.can_perceive_invisible(monster, attack_distance_feet)
+	if CombatAction.is_invisible(target_char) and not monster_perceives_invisible:
+		has_disadvantage = true
+	if CombatAction.is_invisible(monster) and not CombatAction.can_perceive_invisible(target_char, attack_distance_feet):
+		has_advantage = true
 	
 	# Monster conditions (blinded/poisoned)
 	var monster_conditions: Dictionary = monster.get("conditions", {})
 	if monster_conditions.has("blinded") or monster_conditions.has("poisoned"):
+		has_disadvantage = true
+	var abjure_source_position: Variant = PaladinRules.abjure_foes_source_position(monster, player_entities)
+	if monster_conditions.has("frightened") and abjure_source_position is Vector2i and Targeting.has_line_of_sight(monster_origin, abjure_source_position, hex_grid):
 		has_disadvantage = true
 
 	# Target conditions (blinded or prone)
 	if target_char.has_condition("blinded"):
 		has_advantage = true
 	if target_char.has_condition("reckless_attack"):
+		has_advantage = true
+	if target_char.has_condition("restrained"):
 		has_advantage = true
 	if target_char.has_condition("prone"):
 		var dist := HexUtils.get_distance(monster.get("hex_position", Vector2i.ZERO), target_pos)
@@ -581,22 +1346,30 @@ func _execute_monster_attack(monster: Dictionary, target_player_name: String, at
 		else:
 				has_disadvantage = true
 
+	if not monster.get("fighter_sap_sources", []).is_empty():
+		has_disadvantage = true
+		monster.erase("fighter_sap_sources")
 	var reaction_decisions := await _collect_reaction_decisions(target_char)
 
 	# Roll attack
+	var monster_attacker := _make_temp_monster_character(monster)
 	var result := CombatAction.resolve_weapon_attack(
-		# construct temporary character representing monster for simplicity
-		_make_temp_monster_character(monster),
+		monster_attacker,
 		target_char,
 		attack_data,
 		has_advantage,
 		has_disadvantage,
 		reaction_decisions
 	)
+	if result.has("attack_roll"):
+		SpellEffects.consume_spell(monster, "invisibility")
+	_sync_consumed_monster_attack_conditions(monster, monster_attacker)
 	var rider_results := CombatAction.resolve_monster_attack_effects(monster, target_char, attack_data, result)
 	for rider in rider_results:
 		hud.add_log("[color=orange]%s[/color]" % rider.get("message", "Monster effect resolved."))
 		result["damage"] = int(result.get("damage", 0)) + int(rider.get("damage", 0))
+	if result.get("deflected", false) and rider_results.is_empty():
+		await _offer_deflect_redirect(target_char, target_pos, attack_data, result)
 
 	hud.add_log(result.get("message", "Miss!"))
 
@@ -620,13 +1393,18 @@ func _execute_monster_attack(monster: Dictionary, target_player_name: String, at
 			_end_concentration(target_char)
 	else:
 		if result.get("hit", false) and result.get("damage", 0) > 0:
-			_check_concentration_save(target_char, result["damage"])
+			await _check_concentration_save(target_char, result["damage"])
 
 
 func _make_monster_spellcaster(monster: Dictionary) -> Character:
 	var caster := _make_temp_monster_character(monster)
 	caster.class_id = "wizard"
 	caster.level = maxi(1, int(monster.get("spellcaster_level", 8)))
+	var monster_save_bonuses: Dictionary = monster.get("saving_throw_bonuses", {})
+	for ability in ["STR", "DEX", "CON", "INT", "WIS", "CHA"]:
+		if monster_save_bonuses.has(ability):
+			var ability_score := int(monster.get("ability_scores", {}).get(ability, 10))
+			caster.add_modifier("roll", "save:%s" % ability, int(monster_save_bonuses[ability]) - AbilityScores.get_modifier(ability_score), 999999)
 	caster.known_spells.clear()
 	for known in monster.get("spells", []):
 		var spell_id := str(known.get("id", ""))
@@ -647,17 +1425,80 @@ func _execute_monster_spell(monster: Dictionary, target_player_name: String, spe
 	if target_char == null or not target_char.is_alive:
 		return
 	var spell_data: Dictionary = DataLoader.get_spell(spell_id)
+	if bool(spell_data.get("requires_target_sight", false)) and not CombatPerception.can_see_target(monster, target_char, monster.get("hex_position", Vector2i.ZERO), target_pos, hex_grid):
+		hud.add_log("%s cannot see a target for %s." % [str(monster.get("name", "The creature")), str(spell_data.get("name", "the spell"))])
+		return
 	var caster := _make_monster_spellcaster(monster)
-	var counterspell_context := await _collect_counterspell_decisions(caster)
-	var result := CombatAction.resolve_spell(caster, target_char, spell_data, true, counterspell_context.get("decisions", {}), counterspell_context.get("observers", []))
+	var counterspell_context := await _collect_counterspell_decisions(caster, spell_data, monster.get("hex_position", Vector2i.ZERO), monster)
+	var countercharm_context := await _collect_countercharm_decisions(target_char, target_pos, spell_data)
+	var inspiration_context := await _collect_bardic_inspiration_save_decision(target_char, spell_data)
+	var stroke_context := await _collect_stroke_of_luck_save_decision(target_char, str(spell_data.get("name", "this spell"))) if CombatAction.spell_requires_saving_throw(spell_data) else {}
+	var spell_reaction_decisions: Dictionary = counterspell_context.get("decisions", {}).duplicate()
+	spell_reaction_decisions.merge(countercharm_context.get("decisions", {}), true)
+	spell_reaction_decisions.merge(inspiration_context, true)
+	spell_reaction_decisions.merge(stroke_context, true)
+	spell_reaction_decisions.merge(await _collect_spell_shield_decision(target_char, spell_data, spell_reaction_decisions), true)
+	var spell_reaction_observers: Array = counterspell_context.get("observers", []).duplicate()
+	spell_reaction_observers.append_array(countercharm_context.get("observers", []))
+	var spell_target_distance := HexUtils.get_distance(monster.get("hex_position", Vector2i.ZERO), target_pos) * 5
+	var result := CombatAction.resolve_spell(caster, target_char, spell_data, true, spell_reaction_decisions, spell_reaction_observers, 0, spell_target_distance)
+	monster["spell_slots"] = caster.spell_slots.duplicate(true)
 	hud.add_log(result.get("message", "%s's spell failed." % monster.get("name", "Monster")))
+	if spell_reaction_decisions.has("counterspell_saved_by"):
+		hud.add_log("[color=yellow]%s resists Counterspell; the spell continues.[/color]" % str(spell_reaction_decisions["counterspell_saved_by"]))
 	var damage := int(result.get("damage", 0))
 	if result.get("success", false) and damage > 0:
 		_spawn_floating_text(target_pos, "-%d" % damage, Color(0.8, 0.3, 1.0))
 		_flash_hex(target_pos, Color(0.7, 0.2, 1.0, 0.6))
-		_check_concentration_save(target_char, damage)
+		await _check_concentration_save(target_char, damage)
 	if not target_char.is_alive:
 		hud.add_log("[color=red]%s was knocked out by %s's spell![/color]" % [target_char.character_name, monster.get("name", "Monster")])
+
+
+func _collect_countercharm_decisions(target: Character, target_position: Vector2i, spell_data: Dictionary) -> Dictionary:
+	var decisions: Dictionary = {}
+	var observers: Array[Character] = []
+	var condition := str(spell_data.get("condition_on_failed_save", ""))
+	if target == null or condition not in ["charmed", "frightened"]:
+		return {"decisions": decisions, "observers": observers}
+	for player_entity in player_entities:
+		var bard: Character = player_entity.get("character")
+		if bard == null or not bard.is_alive or CombatAction.is_incapacitated(bard) or not bard.has_feature("bard_countercharm") or not bard.reaction_available:
+			continue
+		var bard_position: Vector2i = player_entity.get("hex_position", Vector2i.ZERO)
+		if not Targeting.is_in_range(bard_position, target_position, 6):
+			continue
+		observers.append(bard)
+		var key := "countercharm:%s" % bard.character_id
+		decisions[key] = await hud.request_reaction(_owner_label_for_character(bard), "countercharm", "If %s fails its save against this %s effect, use your Reaction to reroll with Advantage?" % [target.character_name, condition], "Use Countercharm?", "Use Reaction", "Countercharm — %s" % _owner_label_for_character(bard))
+	return {"decisions": decisions, "observers": observers}
+
+
+func _collect_bardic_inspiration_save_decision(target: Character, spell_data: Dictionary) -> Dictionary:
+	if target == null or not target.feature_uses.has("bardic_inspiration_die"):
+		return {}
+	var spell_has_save := CombatAction.spell_requires_saving_throw(spell_data)
+	var has_relentless_rage_damage := target.has_feature("barbarian_relentless_rage") and target.has_condition("raging") and (spell_data.has("damage") or spell_data.has("damage_per_dart") or spell_data.has("damage_per_ray"))
+	if not spell_has_save and not has_relentless_rage_damage:
+		return {}
+	var die := str(target.feature_uses.get("bardic_inspiration_die", "1d6"))
+	var owner_label := _owner_label_for_character(target)
+	var detail := "If your save against %s still fails, add %s to the roll." % [str(spell_data.get("name", "this spell")), die] if spell_has_save else "If this spell's damage triggers a failed Relentless Rage save, add %s." % die
+	if spell_has_save and has_relentless_rage_damage:
+		detail += " If you succeed on the spell save, you can still use the die on a later Relentless Rage save caused by its damage."
+	var accepted := await hud.request_reaction(owner_label, "bardic_inspiration", detail, "Use Bardic Inspiration if a save fails?", "Use Inspiration", "Bardic Inspiration — %s" % owner_label)
+	var decisions := {"bardic_inspiration": accepted} if spell_has_save else {}
+	if has_relentless_rage_damage:
+		decisions["relentless_rage_bardic_inspiration"] = accepted
+	return decisions
+
+
+func _collect_stroke_of_luck_save_decision(target: Character, source_name: String) -> Dictionary:
+	if target == null or not target.has_feature("rogue_stroke_of_luck") or int(target.feature_uses.get("rogue_stroke_of_luck", 0)) <= 0:
+		return {}
+	var owner_label := _owner_label_for_character(target)
+	var accepted := await hud.request_reaction(owner_label, "stroke_of_luck", "If your saving throw against %s fails, turn its d20 into a 20?" % source_name, "Use Stroke of Luck if the save fails?", "Turn the d20 into 20", "Stroke of Luck — %s" % owner_label)
+	return {"stroke_of_luck:%s" % target.character_id: accepted}
 
 
 func _collect_reaction_decisions(target: Character) -> Dictionary:
@@ -675,61 +1516,399 @@ func _collect_reaction_decisions(target: Character) -> Dictionary:
 		decisions["uncanny_dodge"] = await hud.request_reaction(owner_label, "uncanny_dodge", "Halve the incoming weapon damage.")
 	if target.reaction_available and "shield" in target.known_spells and target.spell_slots.get("1", 0) > 0:
 		decisions["shield"] = await hud.request_reaction(owner_label, "shield", "Add the Shield spell's AC bonus before the attack resolves.")
+	if target.reaction_available and target.has_feature("monk_deflect_attacks"):
+		var prompt_text := "Use your Reaction to reduce incoming damage if this attack hits." if target.has_feature("monk_deflect_energy") else "Use your Reaction to reduce damage if this physical attack hits."
+		decisions["deflect_attacks"] = await hud.request_reaction(owner_label, "deflect_attacks", prompt_text)
+	if target.has_feature("barbarian_relentless_rage") and target.has_condition("raging") and target.feature_uses.has("bardic_inspiration_die"):
+		var die := str(target.feature_uses.get("bardic_inspiration_die", "1d6"))
+		decisions["relentless_rage_bardic_inspiration"] = await hud.request_reaction(owner_label, "bardic_inspiration", "If this attack drops you to 0 HP and your Relentless Rage save fails, add %s." % die, "Use Bardic Inspiration on a failed Relentless Rage save?", "Bardic Inspiration — %s" % owner_label)
 	return decisions
 
 
-func _collect_counterspell_decisions(caster: Character) -> Dictionary:
+func _clear_monk_turn_effects(monk: Character) -> void:
+	for monster in monster_entities:
+		var stun_sources: Array = monster.get("stunning_strike_stun_sources", [])
+		var slow_sources: Array = monster.get("stunning_strike_slow_sources", [])
+		stun_sources.erase(monk.get_instance_id())
+		slow_sources.erase(monk.get_instance_id())
+		if slow_sources.is_empty() and monster.has("stunning_strike_speed"):
+			monster["speed"] = int(monster["stunning_strike_speed"])
+			monster.erase("stunning_strike_speed")
+		if stun_sources.is_empty() and monster.get("stunning_strike_owns_condition", false):
+			monster.get("conditions", {}).erase("stunned")
+			monster.erase("stunning_strike_owns_condition")
+		if stun_sources.is_empty():
+			monster.erase("stunning_strike_stunned")
+		if monster.get("stunning_strike_advantage_source", -1) == monk.get_instance_id():
+			monster.erase("stunning_strike_advantage")
+			monster.erase("stunning_strike_advantage_source")
+		if stun_sources.is_empty() and slow_sources.is_empty():
+			monster.erase("stunning_strike_source")
+			monster.erase("stunning_strike_stun_sources")
+			monster.erase("stunning_strike_slow_sources")
+
+
+func _offer_stunning_strike(target: Dictionary, weapon: Dictionary, hit_result: Dictionary, caster: Character = null) -> void:
+	if caster == null:
+		caster = active_character
+	if caster == null or not hit_result.get("hit", false) or int(target.get("current_hp", 0)) <= 0 or not caster.has_feature("monk_stunning_strike") or caster.get_focus_points() < 1 or int(caster.feature_uses.get("stunning_strike_used", 0)) > 0:
+		return
+	if weapon.get("id", "") != "unarmed_strike" and not caster.is_monk_weapon(weapon):
+		return
+	if await hud.request_reaction(_owner_label_for_character(caster), "stunning_strike", "Spend 1 Focus after this hit? %d remaining." % caster.get_focus_points(), "Use Stunning Strike?", "Stun", "Stunning Strike"):
+		var result := CombatAction.resolve_stunning_strike(caster, target)
+		hud.add_log(result.get("message", "Stunning Strike unavailable."))
+		hud.update_hud(active_character, tracker)
+
+
+func _offer_deflect_redirect(monk: Character, origin: Vector2i, attack: Dictionary, result: Dictionary) -> void:
+	if monk.get_focus_points() < 1:
+		return
+	var candidates: Array[Dictionary] = []
+	var reach := 12 if int(attack.get("range", 1)) > 1 else 1
+	for monster in monster_entities:
+		if monster.get("is_alive", false) and Targeting.is_in_range(origin, monster.get("hex_position", Vector2i.ZERO), reach):
+			candidates.append(monster)
+	var selected := await hud.request_deflect_target(candidates)
+	if selected < 0 or selected >= candidates.size():
+		return
+	var target := candidates[selected]
+	if not target.get("is_alive", false):
+		return
+	var redirected := CombatAction.resolve_deflect_redirect(monk, target, str(result.get("damage_type", "bludgeoning")))
+	if redirected.get("success", false):
+		hud.add_log(redirected.get("message", "Attack redirected."))
+		if int(target.get("current_hp", 0)) <= 0:
+			target["is_alive"] = false
+			tracker.remove_combatant(target.get("id", ""))
+		_update_grid_entities()
+
+
+func _collect_counterspell_decisions(caster: Character, spell_data: Dictionary = {}, caster_position: Vector2i = Vector2i.ZERO, visibility_target = null) -> Dictionary:
 	var decisions: Dictionary = {}
 	var observers: Array[Character] = []
+	if not SpellSupport.is_available(DataLoader.get_spell("counterspell")):
+		return {"decisions": decisions, "observers": observers}
 	if caster == null:
 		return {"decisions": decisions, "observers": observers}
+	var components: Array = spell_data.get("components", [])
+	if components.is_empty() or not components.any(func(component): return str(component) in ["V", "S", "M"]):
+		return {"decisions": decisions, "observers": observers}
+	var visible_target = visibility_target if visibility_target != null else caster
 	for player_entity in player_entities:
 		var observer: Character = player_entity.get("character")
 		if observer == null or observer == caster or not observer.is_alive:
 			continue
-		if not observer.reaction_available or "counterspell" not in observer.known_spells or observer.spell_slots.get("3", 0) <= 0:
+		var observer_position: Vector2i = player_entity.get("hex_position", Vector2i.ZERO)
+		var distance_feet := HexUtils.get_distance(observer_position, caster_position) * 5
+		var has_counterspell_slot := false
+		for slot_level in observer.spell_slots:
+			if int(slot_level) >= 3 and int(observer.spell_slots[slot_level]) > 0:
+				has_counterspell_slot = true
+				break
+		if not Targeting.is_in_range(observer_position, caster_position, int(DataLoader.get_spell("counterspell").get("range", 12))) or not CombatPerception.can_see_target(observer, visible_target, observer_position, caster_position, hex_grid) or not CombatAction.spell_target_is_visible_to(observer, visible_target, {"requires_target_sight": true}, distance_feet):
+			continue
+		if not observer.reaction_available or CombatAction.is_incapacitated(observer) or "counterspell" not in observer.known_spells or (not has_counterspell_slot and not observer.has_free_spell_cast("counterspell")):
 			continue
 		observers.append(observer)
 		var observer_key := "counterspell:%s" % observer.character_name
-		decisions[observer_key] = await hud.request_reaction(_owner_label_for_character(observer), "counterspell", "Interrupt %s's spell before it resolves." % caster.character_name)
+		decisions[observer_key] = await hud.request_reaction(_owner_label_for_character(observer), "counterspell", "You see %s casting a spell within 60 feet. Force a Constitution save against your spell save DC to interrupt it?" % caster.character_name)
 		if decisions[observer_key]:
 			break
 	return {"decisions": decisions, "observers": observers}
 
 
-func _make_temp_monster_character(m: Dictionary) -> Character:
+static func _make_temp_monster_character(m: Dictionary) -> Character:
 	var c := Character.new()
 	c.character_name = m["name"]
+	c.creature_type = str(m.get("creature_type", ""))
+	var senses: Dictionary = m.get("senses", {})
+	c.feature_uses["monster_blindsight_range_feet"] = int(m.get("blindsight_range_feet", senses.get("blindsight", 0)))
+	c.feature_uses["monster_truesight_range_feet"] = int(m.get("truesight_range_feet", senses.get("truesight", 0)))
 	c.ability_scores.from_dict(m.get("ability_scores", {}))
 	c.proficiency_bonus = 2
+	var conditions: Dictionary = m.get("conditions", {})
+	if conditions.has("vicious_mockery_disadvantage"):
+		c.add_condition("vicious_mockery_disadvantage", int(conditions["vicious_mockery_disadvantage"]))
+	if conditions.has("ray_of_enfeeblement"):
+		c.add_condition("ray_of_enfeeblement", int(conditions["ray_of_enfeeblement"]))
+	if conditions.has("blessed"):
+		c.add_condition("blessed", int(conditions["blessed"]))
+	if conditions.has("baned"):
+		c.add_condition("baned", int(conditions["baned"]))
+	if conditions.has("resilient_sphere"):
+		c.add_condition("resilient_sphere", int(conditions["resilient_sphere"]))
 	return c
+
+
+static func _sync_consumed_monster_attack_conditions(monster: Dictionary, attacker: Character) -> void:
+	if attacker.has_condition("vicious_mockery_disadvantage"):
+		return
+	var conditions: Dictionary = monster.get("conditions", {})
+	conditions.erase("vicious_mockery_disadvantage")
+	monster["conditions"] = conditions
+	var sources: Dictionary = monster.get("condition_sources", {})
+	sources.erase("vicious_mockery_disadvantage")
+	monster["condition_sources"] = sources
 
 
 func _highlight_reachable() -> void:
 	_clear_path_preview()
+	hud.set_movement_modes(active_character, active_movement_mode, _movement_speed_overrides(active_character))
 	var pos: Vector2i = player_entities[current_player_idx]["hex_position"]
-	var reachable := hex_grid.get_reachable(pos, remaining_speed)
+	var reachable := _player_reachable(pos, remaining_speed, active_character)
 	
 	# Don't draw A* route on active player hex
 	var highlights := {}
 	for hex in reachable:
 		if hex == pos: continue
 		highlights[hex] = HexHighlight.HIGHLIGHT_COLORS[HexHighlight.HighlightType.MOVEMENT]
+	if _can_use_spell_jump() and remaining_speed >= 2.0:
+		for hex in hex_grid.tiles:
+			if _spell_jump_move_cost(pos, hex, reachable) >= 0.0:
+				highlights[hex] = HexHighlight.HIGHLIGHT_COLORS[HexHighlight.HighlightType.MOVEMENT]
 	
 	hex_grid.set_highlights(highlights)
+
+
+func _on_movement_mode_selected(mode: String) -> void:
+	if active_character == null:
+		hud.set_movement_modes(active_character, active_movement_mode, _movement_speed_overrides(active_character))
+		return
+	if mode not in ["walk", "climb", "swim", "fly"] or _movement_speed_feet(mode, active_character) <= 0:
+		hud.set_movement_modes(active_character, active_movement_mode, _movement_speed_overrides(active_character))
+		return
+	var used_speed := maxf(0.0, _active_movement_speed_hexes() + extra_movement_speed_hexes - remaining_speed)
+	active_movement_mode = mode
+	remaining_speed = maxf(0.0, _active_movement_speed_hexes() + extra_movement_speed_hexes - used_speed)
+	active_character.feature_uses.erase("find_steed_just_mounted_this_turn")
+	if active_character.has_condition("prone"):
+		remaining_speed /= 2.0
+	remaining_speed += extra_movement_speed_hexes
+	_highlight_reachable()
+
+
+func _on_flight_altitude_delta(delta_feet: int) -> void:
+	var room := LocalRoomCombat.room()
+	if room.is_empty() or active_character == null or current_player_idx < 0:
+		return
+	if SpellEffects.has_spell(active_character, "levitate"):
+		if active_movement_mode != "walk" or abs(delta_feet) != 5 or remaining_speed < 1.0:
+			hud.add_log("Spend 5 feet of movement to change Levitate altitude.")
+			return
+		var levitating_player: Dictionary = player_entities[current_player_idx]
+		var levitating_position: Vector2i = levitating_player.get("hex_position", Vector2i.ZERO)
+		var levitating_floor := LocalRoomRules.elevation_feet(room, levitating_position)
+		var levitating_altitude := int(levitating_player.get("altitude_feet", LocalRoomRules.altitude_feet(room, active_character.character_id)))
+		var next_levitating_altitude := levitating_altitude + delta_feet
+		if next_levitating_altitude < levitating_floor or next_levitating_altitude + 5 > LocalRoomRules.ceiling_feet(room, levitating_position):
+			hud.add_log("That altitude is blocked by the floor or ceiling.")
+			return
+		levitating_player["altitude_feet"] = next_levitating_altitude
+		var levitating_altitudes: Dictionary = room.get("party_altitudes", {}).duplicate(true)
+		levitating_altitudes[active_character.character_id] = next_levitating_altitude
+		room["party_altitudes"] = levitating_altitudes
+		remaining_speed -= 1.0
+		player_moved_this_turn = true
+		hud.add_log("%s levitates to altitude %d ft." % [active_character.character_name, next_levitating_altitude])
+		_highlight_reachable()
+		return
+	if active_movement_mode != "fly":
+		return
+	if abs(delta_feet) != 5 or remaining_speed < 1.0:
+		hud.add_log("Spend at least 5 feet of Fly Speed to change altitude.")
+		return
+	var player: Dictionary = player_entities[current_player_idx]
+	var position: Vector2i = player.get("hex_position", Vector2i.ZERO)
+	var floor_feet := LocalRoomRules.elevation_feet(room, position)
+	var altitude := int(player.get("altitude_feet", LocalRoomRules.altitude_feet(room, active_character.character_id)))
+	var next_altitude := altitude + delta_feet
+	if next_altitude < floor_feet or next_altitude + 5 > LocalRoomRules.ceiling_feet(room, position):
+		hud.add_log("That altitude is blocked by the floor or ceiling.")
+		return
+	player["altitude_feet"] = next_altitude
+	var party_altitudes: Dictionary = room.get("party_altitudes", {}).duplicate(true)
+	party_altitudes[active_character.character_id] = next_altitude
+	room["party_altitudes"] = party_altitudes
+	var altitude_modes: Dictionary = room.get("party_altitude_modes", {}).duplicate(true)
+	altitude_modes[active_character.character_id] = "fly"
+	room["party_altitude_modes"] = altitude_modes
+	_sync_mounted_steed_position(active_character, position)
+	remaining_speed -= 1.0
+	player_moved_this_turn = true
+	hud.add_log("%s flies to altitude %d ft." % [active_character.character_name, next_altitude])
+	_highlight_reachable()
+
+
+func _active_movement_speed_hexes() -> float:
+	if active_character == null:
+		return 0.0
+	return float(_movement_speed_feet(active_movement_mode, active_character)) / 5.0
+
+
+func _movement_speed_feet(mode: String, character: Character) -> int:
+	if character == null:
+		return 0
+	if not PaladinRules.find_steed_is_mounted(character):
+		return character.movement_speed_feet(mode)
+	var steed := _find_steed_entity(character)
+	var steed_character: Character = steed.get("character")
+	if steed_character == null:
+		return 0
+	return steed_character.movement_speed_feet(mode)
+
+
+func _movement_speed_overrides(character: Character) -> Dictionary:
+	if character == null or not PaladinRules.find_steed_is_mounted(character):
+		return {}
+	return {
+		"walk": _movement_speed_feet("walk", character),
+		"climb": _movement_speed_feet("climb", character),
+		"swim": _movement_speed_feet("swim", character),
+		"fly": _movement_speed_feet("fly", character),
+	}
+
+
+func _find_steed_entity(owner: Character) -> Dictionary:
+	if owner == null:
+		return {}
+	for entity in player_entities:
+		if entity.get("is_steed", false) and entity.get("steed_owner") == owner:
+			return entity
+	return {}
+
+
+func _toggle_find_steed_mount() -> void:
+	var steed_entity := _find_steed_entity(active_character)
+	if steed_entity.is_empty():
+		hud.add_log("Your bonded steed is not present in this encounter.")
+		return
+	var steed_character: Character = steed_entity.get("character")
+	if steed_character == null or not steed_character.is_alive or CombatAction.is_incapacitated(active_character):
+		hud.add_log("You cannot mount or dismount right now.")
+		return
+	var half_speed_cost := int(floor(float(active_character.get_speed()) / 2.0))
+	if remaining_speed < float(half_speed_cost):
+		hud.add_log("You need %d feet of movement remaining to mount or dismount." % (half_speed_cost * 5))
+		return
+	var rider_entity: Dictionary = player_entities[current_player_idx]
+	var rider_position: Vector2i = rider_entity.get("hex_position", Vector2i.ZERO)
+	var steed_position: Vector2i = steed_entity.get("hex_position", Vector2i.ZERO)
+	var was_mounted := PaladinRules.find_steed_is_mounted(active_character)
+	if not was_mounted and HexUtils.get_distance(rider_position, steed_position) > 1:
+		hud.add_log("Move within 5 feet of your steed before mounting.")
+		return
+	var destination := rider_position
+	if was_mounted:
+		var found_space := false
+		for candidate in HexUtils.get_hexes_in_range(steed_position, 1):
+			if candidate == steed_position or not hex_grid.has_tile(candidate) or not hex_grid.is_hex_passable(candidate) or _is_occupied_hex(candidate):
+				continue
+			destination = candidate
+			found_space = true
+			break
+		if not found_space:
+			hud.add_log("There is no open space beside the steed to dismount.")
+			return
+	var old_speed := _active_movement_speed_hexes()
+	var used_speed := maxf(0.0, old_speed - remaining_speed)
+	var mount_state := PaladinRules.find_steed_state(active_character)
+	if not PaladinRules.set_find_steed_mounted(active_character, not was_mounted):
+		hud.add_log("The bonded steed state is unavailable.")
+		return
+	if was_mounted:
+		rider_entity["hex_position"] = destination
+		var rider_speed := float(active_character.movement_speed_feet("walk")) / 5.0
+		remaining_speed = maxf(0.0, rider_speed - used_speed - float(half_speed_cost))
+		hud.add_log("You dismount, spending %d feet of movement." % (half_speed_cost * 5))
+	else:
+		steed_entity["hex_position"] = steed_position
+		rider_entity["hex_position"] = steed_position
+		var steed_speed := float(mount_state.get("speed_feet", 60)) / 5.0
+		remaining_speed = maxf(0.0, steed_speed - used_speed - float(half_speed_cost))
+		active_character.feature_uses["find_steed_just_mounted_this_turn"] = true
+		if int(mount_state.get("fly_speed_feet", 0)) > 0:
+			steed_character.set_movement_speed_feet("fly", int(mount_state["fly_speed_feet"]))
+		hud.add_log("You mount your steed, spending %d feet of movement." % (half_speed_cost * 5))
+	player_moved_this_turn = true
+	active_movement_mode = "walk"
+	player_entities[current_player_idx]["altitude_feet"] = int(player_entities[current_player_idx].get("altitude_feet", 0))
+	steed_entity["altitude_feet"] = player_entities[current_player_idx]["altitude_feet"]
+	hud.set_movement_modes(active_character, active_movement_mode, _movement_speed_overrides(active_character))
+	_update_grid_entities()
+	_highlight_reachable()
+
+
+func _sync_mounted_steed_position(owner: Character, position: Vector2i) -> void:
+	if owner == null or not PaladinRules.find_steed_is_mounted(owner):
+		return
+	var steed_entity := _find_steed_entity(owner)
+	if steed_entity.is_empty():
+		return
+	steed_entity["hex_position"] = position
+	for player in player_entities:
+		if player.get("character") == owner:
+			steed_entity["altitude_feet"] = int(player.get("altitude_feet", 0))
+			break
+
+
+func _grant_extra_movement_speed() -> void:
+	var bonus := _active_movement_speed_hexes()
+	extra_movement_speed_hexes += bonus
+	remaining_speed += bonus
+
+
+func _can_use_spell_jump() -> bool:
+	return active_character != null and active_character.has_condition("jumping") and not bool(active_character.feature_uses.get("jump_spell_used_this_turn", false))
+
+
+func _spell_jump_move_cost(origin: Vector2i, destination: Vector2i, reachable: Dictionary) -> float:
+	if not _can_use_spell_jump() or remaining_speed < 2.0 or destination == origin:
+		return -1.0
+	if HexUtils.get_distance(origin, destination) > 6 or not hex_grid.is_hex_passable(destination) or _is_occupied_hex(destination):
+		return -1.0
+	var walking_cost := float(reachable.get(destination, INF))
+	if walking_cost <= remaining_speed:
+		return -1.0
+	return 2.0
 
 
 # --- Action handlers ---
 
 func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
+	if fighter_move_waiting:
+		if action_type == "cancel":
+			fighter_move_done = true
+		return
+	if resolving_player_action or current_player_idx < 0:
+		return
 	var command := CombatCommand.from_hud_for_character(action_type, extra_data, active_character)
 	if command == null:
 		hud.add_log("Invalid combat action.")
 		return
 	action_type = command.action_type
 	extra_data = command.payload
+	if active_character.class_id == "familiar" and action_type not in ["move", "dodge", "end_turn", "cancel", "use_feature"]:
+		hud.add_log("A familiar can move, Dodge, or take another non-attack action.")
+		return
+	if action_type in ["cast_spell", "activate_magic_item"] and active_character != null:
+		var support := SpellSupport.availability(extra_data.get("spell", {}))
+		if not support["available"]:
+			hud.add_log(support["reason"])
+			return
+		var quickened_spell := await SpellCastSelection.choose_quickened(_spell_cast_context(), extra_data.get("spell", {}).duplicate(true))
+		if not quickened_spell.is_empty():
+			extra_data["spell"] = quickened_spell
 	var cost_type := _action_cost_for_command(action_type, extra_data)
-	if not _can_spend_action_cost(cost_type) and action_type not in ["end_turn", "cancel", "move"]:
+	if action_type == "cast_spell" and SorcererRules.quickened_spell_blocks_cast(active_character, extra_data.get("spell", {})):
+		hud.add_log("You can't cast another level 1+ spell this turn after using Quickened Spell.")
+		return
+	var has_action_budget := _can_spend_action_cost(cost_type)
+	var selected_spell: Dictionary = extra_data.get("spell", {})
+	var choosing_produce_flame_mode := action_type == "cast_spell" and str(selected_spell.get("id", "")) == "produce_flame" and active_character != null and produce_flame_markers.has(active_character.character_id)
+	if not has_action_budget and choosing_produce_flame_mode:
+		has_action_budget = _can_spend_action_cost("magic_action") or _can_spend_action_cost("bonus_action")
+	if not has_action_budget and not (action_type == "attack" and remaining_attack_swings > 0) and action_type not in ["end_turn", "cancel", "move", "toggle_find_steed_mount"]:
 		hud.add_log("You have no %s available this turn." % cost_type.replace("_", " "))
 		return
 
@@ -740,28 +1919,344 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 		"cancel":
 			_cancel_pending_action()
 			return
+		"toggle_find_steed_mount":
+			_toggle_find_steed_mount()
+			return
+		"font_of_magic_convert":
+			var conversion := SorcererRules.convert_slot_to_points(active_character, int(extra_data.get("slot_level", 0)))
+			hud.add_log(str(conversion.get("message", "Font of Magic conversion failed.")))
+			hud.update_hud(active_character, tracker)
+			return
+		"font_of_magic_create":
+			var creation := SorcererRules.create_spell_slot(active_character, int(extra_data.get("slot_level", 0)), turn_budget)
+			hud.add_log(str(creation.get("message", "Font of Magic could not create a slot.")))
+			hud.update_hud(active_character, tracker)
+			return
+		"move_dancing_lights":
+			pending_action_type = "dancing_lights_move"
+			hud.add_log("Choose a space to move the linked lights up to 60 feet. They stay linked and within 120 feet.")
+			_highlight_dancing_lights_movement()
+			return
+		"move_moonbeam":
+			if not turn_budget.can_spend("magic_action"):
+				return
+			var moonbeam_source := _moonbeam_zone_source_for_caster(active_character)
+			var moonbeam_zone: Dictionary = active_spell_zones.get(moonbeam_source, {})
+			if moonbeam_zone.is_empty() or not _moonbeam_can_move(moonbeam_zone):
+				hud.add_log("[color=orange]You can move Moonbeam with a Magic action on a later turn.[/color]")
+				return
+			pending_action_type = "moonbeam_move"
+			hud.add_log("Choose a new center for the Moonbeam Cylinder, up to 60 feet from its current center.")
+			_highlight_moonbeam_movement()
+			return
+		"move_cloud_of_daggers":
+			if not turn_budget.can_spend("magic_action"):
+				return
+			var daggers_source := _cloud_of_daggers_zone_source_for_caster(active_character)
+			var daggers_zone: Dictionary = active_spell_zones.get(daggers_source, {})
+			if daggers_zone.is_empty() or not _cloud_of_daggers_can_move(daggers_zone):
+				hud.add_log("[color=orange]You can teleport Cloud of Daggers with a Magic action on a later turn.[/color]")
+				return
+			pending_action_type = "cloud_of_daggers_move"
+			hud.add_log("Choose a new space for Cloud of Daggers, up to 30 feet from its current space.")
+			_highlight_cloud_of_daggers_movement()
+			return
+		"move_conjure_animals":
+			var animals_source := _conjure_animals_zone_source_for_caster(active_character)
+			var animals_zone: Dictionary = active_spell_zones.get(animals_source, {})
+			if animals_zone.is_empty() or not player_moved_this_turn or bool(active_character.feature_uses.get("conjure_animals_pack_moved_this_turn", false)):
+				hud.add_log("[color=orange]Move Conjure Animals after you move, once per turn.[/color]")
+				return
+			pending_action_type = "conjure_animals_move"
+			hud.add_log("Choose an unoccupied pack space up to 30 feet away.")
+			_highlight_conjure_animals_movement()
+			return
+		"move_conjure_celestial":
+			var celestial_source := _conjure_celestial_zone_source_for_caster(active_character)
+			var celestial_zone: Dictionary = active_spell_zones.get(celestial_source, {})
+			if celestial_zone.is_empty() or not player_moved_this_turn or bool(active_character.feature_uses.get("conjure_celestial_pillar_moved_this_turn", false)):
+				hud.add_log("[color=orange]Move Conjure Celestial after you move, once per turn.[/color]")
+				return
+			pending_action_type = "conjure_celestial_move"
+			hud.add_log("Choose a new center for the Conjure Celestial Cylinder, up to 30 feet away.")
+			_highlight_conjure_celestial_movement()
+			return
+		"move_conjure_fey":
+			if not turn_budget.can_spend("bonus_action"):
+				hud.add_log("Conjure Fey needs your Bonus Action to teleport and attack.")
+				return
+			var fey_source := _conjure_fey_zone_source_for_caster(active_character)
+			var fey_zone: Dictionary = active_spell_zones.get(fey_source, {})
+			if fey_zone.is_empty() or str(fey_zone.get("cast_turn", "")) == _current_spell_trigger_turn():
+				hud.add_log("Conjure Fey's spirit can teleport on a later turn while you concentrate.")
+				return
+			pending_action_type = "conjure_fey_move"
+			hud.add_log("Choose a space up to 30 feet from the Conjure Fey spirit, then choose a creature it can reach.")
+			_highlight_conjure_fey_movement()
+			return
+		"conjure_woodland_beings_disengage":
+			var woodland_source := _conjure_woodland_beings_zone_source_for_caster(active_character)
+			if woodland_source.is_empty() or not turn_budget.spend("bonus_action"):
+				return
+			active_character.add_condition("disengaging", 1)
+			hud.add_log("[color=green]%s uses Conjure Woodland Beings: Disengage.[/color]" % active_character.character_name)
+			hud.update_hud(active_character, tracker)
+			return
+		"dismiss_light":
+			light_spell_markers.erase(active_character.character_id)
+			hud.add_log("The magical light fades.")
+			_spend_action_cost("action")
+			_update_grid_entities()
+			hud.update_hud(active_character, tracker)
+			_highlight_reachable()
+			return
+		"detect_magic_inspect":
+			var origin: Vector2i = player_entities[current_player_idx].get("hex_position", Vector2i.ZERO)
+			var auras := DetectMagicRules.auras_within(origin, player_entities, monster_entities, active_spell_zones)
+			if auras.is_empty():
+				hud.add_log("Detect Magic senses no represented magical effects within 30 feet.")
+				return
+			_spend_action_cost("magic_action")
+			for aura in auras:
+				var school: String = str(aura.get("school", ""))
+				var school_text := (" (%s)" % school.capitalize()) if not school.is_empty() else ""
+				hud.add_log("[color=cyan]%s aura: %s%s.[/color]" % [str(aura.get("name", "Magic")), str(aura.get("location", "nearby")), school_text])
+			hud.update_hud(active_character, tracker)
+			_highlight_reachable()
+			return
+		"control_mage_hand":
+			if not mage_hand_markers.has(active_character.character_id):
+				hud.add_log("You can control only your own Mage Hand.")
+				return
+			pending_action_type = "mage_hand_move"
+			hud.add_log("Choose a space up to 30 feet away; the hand must remain within 30 feet of you.")
+			_highlight_mage_hand_movement()
+			return
+		"dismiss_mage_hand":
+			if not mage_hand_markers.has(active_character.character_id):
+				hud.add_log("You can dismiss only your own Mage Hand.")
+				return
+			mage_hand_markers.erase(active_character.character_id)
+			_spend_action_cost("magic_action")
+			hud.add_log("The spectral hand vanishes.")
+			hud.update_hud(active_character, tracker)
+			_update_grid_entities()
+			_highlight_reachable()
+			return
 		"attack":
 			pending_action_type = "attack"
-			hud.add_log("Click on an enemy to Attack.")
+			hud.show_hint("Attack: click an enemy in highlighted reach. Esc/Cancel to back out.")
+			hud.add_log("Click on an enemy to attack with your Beast form." if DruidRules.is_shaped(active_character) else "Click on an enemy to Attack.")
 			_highlight_attack_targets()
 		"cast_spell":
-			var spell_info: Dictionary = extra_data.get("spell", {})
-			if str(spell_info.get("casting_time", "action")) == "reaction":
-				hud.add_log("That spell is reaction-only and is offered when its trigger occurs.")
-				return
-			var spell_lvl: int = int(spell_info.get("level", 0))
-			if spell_lvl > 0 and active_character != null:
-				var slot_key := str(CombatAction.get_spell_slot_level(active_character, spell_info))
-				if active_character.spell_slots.get(slot_key, 0) <= 0:
-					hud.add_log("[color=orange]No level %s spell slots remaining for %s.[/color]" % [slot_key, spell_info.get("name", "this spell")])
-					return
-			pending_action_type = "spell"
-			pending_spell_data = spell_info
-			var spell_name: String = pending_spell_data.get("name", "Spell")
-			hud.add_log("Casting %s. Select target hex." % spell_name)
-			_highlight_spell_targets()
+			if await SpellCastSelection.choose(_spell_cast_context(), extra_data.get("spell", {})):
+				_highlight_spell_targets()
+		"activate_magic_item":
+			if await SpellCastSelection.choose(_spell_cast_context(), extra_data.get("spell", {})):
+				_highlight_spell_targets()
 		"use_feature":
 			var feature: Dictionary = extra_data.get("feature", {})
+			if str(feature.get("id", "")) in ["created_attack", "created_guard"]:
+				if str(feature["id"]) == "created_attack":
+					pending_action_type = "created_creature_order"
+					hud.add_log("Choose an enemy. All controlled Undead within 60 feet receive the same attack order.")
+				else:
+					hud.add_log(str(CreatedCreatureCombat.issue(self, "guard")["message"]))
+					hud.update_hud(active_character, tracker)
+				return
+			if str(feature.get("resolver", "")) == "paladin_rules" and str(feature.get("id", "")) == "paladin_abjure_foes":
+				var origin: Vector2i = player_entities[current_player_idx].get("hex_position", Vector2i.ZERO)
+				var candidates: Array[Dictionary] = []
+				for monster in monster_entities:
+					if monster.get("is_alive", false) and HexUtils.get_distance(origin, monster.get("hex_position", Vector2i.ZERO)) <= 12:
+						candidates.append(monster)
+				if candidates.is_empty():
+					hud.add_log("No foes are within 60 feet for Abjure Foes.")
+					return
+				var max_targets := maxi(1, active_character.ability_scores.get_ability_modifier("CHA"))
+				var selected_ids := await hud.request_abjure_foes_targets(candidates, max_targets)
+				if selected_ids.is_empty():
+					return
+				if not turn_budget.can_spend("magic_action") or not active_character.use_feature(str(feature.get("id", ""))):
+					hud.add_log("No Channel Divinity use or Magic action remains.")
+					return
+				_spend_action_cost("magic_action")
+				var selected_targets: Array[Dictionary] = []
+				for monster in candidates:
+					if str(monster.get("id", "")) in selected_ids:
+						selected_targets.append(monster)
+				for result in PaladinRules.resolve_abjure_foes(active_character, selected_targets, origin):
+					hud.add_log(str(result.get("message", "Abjure Foes resolves.")))
+				hud.update_hud(active_character, tracker)
+				_update_grid_entities()
+				_highlight_reachable()
+				return
+			var controlled_steed := _find_steed_entity(active_character)
+			var steed_feature_usable: bool = bool(player_entities[current_player_idx].get("is_steed", false)) or PaladinRules.find_steed_is_mounted(active_character)
+			if str(feature.get("id", "")).begins_with("otherworldly_steed_") and not controlled_steed.is_empty() and steed_feature_usable:
+				pending_action_type = "steed_feature"
+				pending_feature_data = feature
+				hud.add_log("%s: select a valid target or destination." % feature.get("name", "Steed feature"))
+				_highlight_steed_feature_targets(feature)
+				return
+			if str(feature.get("id", "")) == "familiar_help":
+				pending_action_type = "familiar_help"
+				hud.add_log("Help: select an enemy within 5 feet.")
+				_highlight_familiar_help_targets()
+				return
+			if str(feature.get("id", "")) == "familiar_senses":
+				var sense_entity := FamiliarSpellDelivery.creature(active_character, player_entities, false)
+				if sense_entity.is_empty() or not turn_budget.can_spend("bonus_action"):
+					hud.add_log("Sharing senses needs a conscious familiar within 100 feet and your Bonus Action.")
+					return
+				active_character.familiar_senses = sense_entity["character"]
+				active_character.familiar_senses_position = sense_entity["hex_position"]
+				_spend_action_cost("bonus_action")
+				hud.add_log("You perceive through your familiar until the start of your next turn, including its special senses.")
+				hud.update_hud(active_character, tracker)
+				return
+			if str(feature.get("id", "")) in ["familiar_dismiss", "familiar_recall", "familiar_release"]:
+				var familiar_record := FamiliarRules.state(active_character)
+				if familiar_record.is_empty() or not turn_budget.can_spend("magic_action"):
+					hud.add_log("No familiar or Magic action is available.")
+					return
+				var familiar_command := str(feature["id"])
+				if familiar_command == "familiar_recall":
+					if not bool(familiar_record.get("pocket", false)): return
+					var destination := _familiar_spawn_position(player_entities[current_player_idx], 6, false)
+					if destination == FamiliarRules.ABSENT:
+						hud.add_log("No unoccupied space is available; no action was spent.")
+						return
+					FamiliarRules.set_pocket(active_character, false)
+					_add_wild_companion_entity(player_entities[current_player_idx], true, destination)
+					hud.add_log("Your familiar returns with its retained Hit Points.")
+				elif familiar_command == "familiar_dismiss":
+					if bool(familiar_record.get("pocket", false)): return
+					_cleanup_dead_familiars()
+					FamiliarRules.set_pocket(active_character, true)
+					hud.add_log("Your familiar waits in its pocket dimension.")
+				else:
+					FamiliarRules.forget(active_character)
+					hud.add_log("Your familiar is released; another summon requires a new resource.")
+				_spend_action_cost("magic_action")
+				_update_grid_entities()
+				hud.update_hud(active_character, tracker)
+				_highlight_reachable()
+				return
+			if str(feature.get("id", "")) == "druid_wild_companion":
+				if not turn_budget.can_spend("magic_action"):
+					hud.add_log("No Magic action remains for Wild Companion.")
+					return
+				var familiar_destination := _familiar_spawn_position(player_entities[current_player_idx], 2, false)
+				if familiar_destination == FamiliarRules.ABSENT:
+					hud.add_log("No unoccupied space is available for the familiar; no resource was spent.")
+					return
+				var companion_choice: Dictionary = extra_data.get("wild_companion_choice", {})
+				var companion_result := DruidRules.summon_wild_companion(active_character, str(companion_choice.get("form_id", "")), str(companion_choice.get("cost", "")))
+				if not companion_result.get("success", false):
+					hud.add_log(str(companion_result.get("message", "Wild Companion failed.")))
+					return
+				_add_wild_companion_entity(player_entities[current_player_idx], true, familiar_destination)
+				_spend_action_cost("magic_action")
+				hud.add_log(str(companion_result.get("message", "Wild Companion summoned.")))
+				hud.update_hud(active_character, tracker)
+				_highlight_reachable()
+				return
+			if str(feature.get("id", "")) == "druid_nature_magician":
+				var uses_to_convert := int(extra_data.get("wild_shape_uses", 0))
+				var nature_result := DruidRules.use_nature_magician(active_character, uses_to_convert)
+				hud.add_log(str(nature_result.get("message", "Nature Magician is unavailable.")))
+				hud.update_hud(active_character, tracker)
+				_highlight_reachable()
+				return
+			if str(feature.get("resolver", "")) == "druid_rules" and str(feature.get("id", "")) == "druid_wild_resurgence":
+				var resurgence_state := DruidRules.wild_resurgence_state(active_character)
+				var slot_level := 0
+				if str(resurgence_state.get("mode", "")) == "slot_to_wild_shape":
+					slot_level = await hud.request_spell_slot(active_character)
+					if slot_level <= 0:
+						return
+				var resurgence_result := DruidRules.use_wild_resurgence(active_character, slot_level)
+				if resurgence_result.get("success", false):
+					hud.add_log(str(resurgence_result.get("message", "Wild Resurgence restores a resource.")))
+				else:
+					hud.add_log(str(resurgence_result.get("message", "Wild Resurgence is unavailable.")))
+				hud.update_hud(active_character, tracker)
+				_highlight_reachable()
+				return
+			if str(feature.get("resolver", "")) == "druid_rules" and str(feature.get("id", "")) == "druid_wild_shape":
+				var form_id := await hud.request_wild_shape_form(active_character)
+				if form_id.is_empty():
+					return
+				if form_id == "__revert":
+					if DruidRules.revert(active_character):
+						_spend_action_cost("bonus_action")
+						hud.add_log("%s returns to normal form." % active_character.character_name)
+				else:
+					var shape_result := DruidRules.transform(active_character, form_id)
+					if not shape_result.get("success", false):
+						hud.add_log(str(shape_result.get("message", "Wild Shape failed.")))
+						return
+					_spend_action_cost("bonus_action")
+					hud.add_log("%s becomes a %s and gains %d Temporary Hit Points." % [active_character.character_name, str(shape_result["form"].get("name", "Beast")), active_character.level])
+				hud.update_hud(active_character, tracker)
+				_highlight_reachable()
+				return
+			if str(feature.get("resolver", "")) == "cleric_rules" and str(feature.get("id", "")) == "cleric_divine_intervention":
+				resolving_player_action = true
+				var intervention_spell := await hud.request_divine_intervention_spell(active_character)
+				if intervention_spell.is_empty():
+					resolving_player_action = false
+					hud.add_log("Divine Intervention spell selection was cancelled or no eligible spell is available.")
+					return
+				var casts_wish := str(intervention_spell.get("id", "")) == "wish"
+				if casts_wish:
+					intervention_spell = await hud.request_wish_duplication_spell()
+					if intervention_spell.is_empty():
+						resolving_player_action = false
+						hud.add_log("Wish duplication was cancelled; Divine Intervention remains available.")
+						return
+				pending_action_type = "spell"
+				resolving_player_action = false
+				pending_divine_intervention = true
+				pending_divine_intervention_wish = casts_wish
+				pending_spell_data = intervention_spell.duplicate(true)
+				pending_spell_data["casting_time"] = "action"
+				pending_spell_data["_wish_duplicate"] = casts_wish
+				pending_spell_data["_ignore_material_components"] = true
+				if str(pending_spell_data.get("id", "")) == "produce_flame":
+					pending_spell_data["_produce_flame_create"] = true
+				hud.add_log("Divine Intervention casts %s without a spell slot. Select its target." % intervention_spell.get("name", "the spell"))
+				_highlight_spell_targets()
+				return
+			if str(feature.get("resolver", "")) == "cleric_rules":
+				var channel_error := ClericRules.channel_divinity_error(active_character)
+				if not channel_error.is_empty():
+					hud.add_log(channel_error)
+					return
+				if str(feature.get("id", "")) == "cleric_divine_spark":
+					pending_action_type = "cleric_divine_spark"
+					pending_feature_data = feature
+					hud.add_log("Divine Spark: select another creature within 30 feet.")
+					_highlight_divine_spark_targets()
+					return
+				if str(feature.get("id", "")) == "cleric_turn_undead":
+					await _execute_cleric_turn_undead(feature)
+					return
+			var slot_recovery_effect: Dictionary = {}
+			for effect in feature.get("effects", []):
+				if effect.get("type", "") == "resource_from_spell_slot":
+					slot_recovery_effect = effect
+			if not slot_recovery_effect.is_empty():
+				var slot_level := int(feature.get("selected_spell_slot_level", 0))
+				var recovery := ClassProgression.restore_resource_from_spell_slot(active_character, str(slot_recovery_effect.get("resource_id", "")), slot_level, int(slot_recovery_effect.get("amount", 1)))
+				if recovery.get("success", false):
+					hud.add_log("Font of Inspiration restores %d Bardic Inspiration use by spending a level %d spell slot." % [int(recovery.get("restored", 0)), int(recovery.get("slot_level", 0))])
+				else:
+					hud.add_log(recovery.get("message", "Unable to recover that resource."))
+				hud.update_hud(active_character, tracker)
+				_highlight_reachable()
+				return
 			if feature.get("id", "") == "bard_bardic_inspiration":
 				pending_action_type = "bardic_inspiration"
 				pending_feature_data = feature
@@ -774,9 +2269,12 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 				hud.add_log("Lay on Hands: select an ally within touch range.")
 				_highlight_lay_on_hands_targets()
 				return
-			if feature.get("id", "") in ["monk_martial_arts", "monk_bonus_unarmed_strike", "monk_flurry_of_blows"]:
-				if not turn_budget.has_acted_this_turn:
-					hud.add_log("Take the Attack action before making a Bonus Unarmed Strike.")
+			if feature.get("id", "") in ["monk_bonus_unarmed_strike", "monk_flurry_of_blows"]:
+				if feature.get("id", "") == "monk_bonus_unarmed_strike" and not active_character.can_use_martial_arts():
+					hud.add_log("Martial Arts requires no armor or shield and only Monk weapons.")
+					return
+				if active_character.get_focus_points() < int(feature.get("focus_cost", 0)):
+					hud.add_log("Not enough Focus.")
 					return
 				pending_action_type = "unarmed_attack"
 				pending_feature_data = feature
@@ -788,6 +2286,8 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 		"use_item":
 			var item: Dictionary = extra_data.get("item", {})
 			_execute_item(item)
+		"eat_goodberry":
+			_execute_goodberry()
 		"dodge":
 			pending_action_type = ""
 			active_character.add_condition("dodging", 1)
@@ -802,12 +2302,20 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 ## Bound to the HUD Cancel button and the Esc key so the player is never
 ## trapped in targeting mode with no way back to movement.
 func _cancel_pending_action() -> void:
+	if fighter_move_waiting:
+		fighter_move_done = true
+		return
 	if pending_action_type.is_empty():
 		return
 	var old := pending_action_type
 	pending_action_type = ""
 	pending_spell_data = {}
+	pending_divine_intervention = false
+	pending_divine_intervention_wish = false
 	pending_feature_data = {}
+	pending_words_primary_selected = false
+	pending_command_target_coords.clear()
+	pending_command_target_ids.clear()
 	hex_grid.clear_highlights()
 	_clear_path_preview()
 	_highlight_reachable()
@@ -826,8 +2334,7 @@ func _highlight_attack_targets() -> void:
 	hex_grid.clear_highlights()
 	
 	var pos: Vector2i = player_entities[current_player_idx]["hex_position"]
-	var weapon_id := active_character.inventory.get_weapon()
-	var weapon := DataLoader.get_item(weapon_id)
+	var weapon := DruidRules.current_attack_profile(active_character) if DruidRules.is_shaped(active_character) else DataLoader.get_item(active_character.inventory.get_weapon())
 	var max_range := int(weapon.get("range", 1))
 
 	var highlights := {}
@@ -842,16 +2349,108 @@ func _highlight_attack_targets() -> void:
 	for m in monster_entities:
 		if not m["is_alive"]: continue
 		var m_pos: Vector2i = m["hex_position"]
-		if Targeting.is_in_range(pos, m_pos, max_range):
+		if Targeting.is_in_range(pos, m_pos, max_range) and Targeting.has_line_of_sight(pos, m_pos, hex_grid):
 			highlights[m_pos] = HexHighlight.HIGHLIGHT_COLORS[HexHighlight.HighlightType.ATTACK]
 
 	hex_grid.set_highlights(highlights)
 
 
+func _highlight_familiar_help_targets() -> void:
+	var origin: Vector2i = player_entities[current_player_idx].get("hex_position", Vector2i.ZERO)
+	var highlights := {}
+	for monster in monster_entities:
+		var target_hex: Vector2i = monster.get("hex_position", Vector2i.ZERO)
+		if monster.get("is_alive", false) and Targeting.is_in_range(origin, target_hex, 1):
+			highlights[target_hex] = HexHighlight.HIGHLIGHT_COLORS[HexHighlight.HighlightType.ATTACK]
+	hex_grid.set_highlights(highlights)
+
+
+func _highlight_steed_feature_targets(feature: Dictionary) -> void:
+	hex_grid.clear_highlights()
+	var origin: Vector2i = player_entities[current_player_idx].get("hex_position", Vector2i.ZERO)
+	var feature_id := str(feature.get("id", ""))
+	var highlights := {}
+	if feature_id == "otherworldly_steed_fey_step":
+		for target_hex in HexUtils.get_hexes_in_range(origin, 12):
+			if target_hex != origin and hex_grid.has_tile(target_hex) and hex_grid.is_hex_passable(target_hex) and not _is_occupied_hex(target_hex):
+				highlights[target_hex] = HexHighlight.HIGHLIGHT_COLORS[HexHighlight.HighlightType.SPELL]
+	elif feature_id == "otherworldly_steed_healing_touch":
+		for player in player_entities:
+			var target: Character = player.get("character")
+			var target_hex: Vector2i = player.get("hex_position", Vector2i.ZERO)
+			if target != null and target.is_alive and target.current_hp < target.max_hp and Targeting.is_in_range(origin, target_hex, 1):
+				highlights[target_hex] = HexHighlight.HIGHLIGHT_COLORS[HexHighlight.HighlightType.SPELL]
+	elif feature_id == "otherworldly_steed_fell_glare":
+		for monster in monster_entities:
+			var target_hex: Vector2i = monster.get("hex_position", Vector2i.ZERO)
+			if monster.get("is_alive", false) and Targeting.is_in_range(origin, target_hex, 2):
+				highlights[target_hex] = HexHighlight.HIGHLIGHT_COLORS[HexHighlight.HighlightType.SPELL]
+	else:
+		for monster in monster_entities:
+			var target_hex: Vector2i = monster.get("hex_position", Vector2i.ZERO)
+			if monster.get("is_alive", false) and Targeting.is_in_range(origin, target_hex, 1):
+				highlights[target_hex] = HexHighlight.HIGHLIGHT_COLORS[HexHighlight.HighlightType.ATTACK]
+	hex_grid.set_highlights(highlights)
+
+
+func _request_weapon_damage_rider_choices(character: Character) -> Dictionary:
+	var choices: Dictionary = {}
+	for effect in ClassProgression.selected_feature_effects_of_type(character, "weapon_damage_rider"):
+		var id := str(effect.get("id", ""))
+		var marker := "%s_%s_used_this_turn" % [id, character.class_id]
+		if bool(effect.get("own_turn_only", false)) and CombatAction.active_turn_actor_id != character.get_instance_id():
+			continue
+		if effect.get("uses_per", "") == "turn" and int(character.feature_uses.get(marker, 0)) > 0:
+			continue
+		if bool(effect.get("optional", false)) and not await hud.request_reaction(_owner_label_for_character(character), id, "Add Divine Strike damage to this weapon hit?", "Use Divine Strike?", "Add damage", "Divine Strike"):
+			continue
+		var options: Array = effect.get("damage_type_options", [])
+		if options.is_empty():
+			continue
+		var selected := await hud.request_damage_type_choice(options, id.replace("_", " ").capitalize())
+		if not selected.is_empty():
+			choices[id] = selected
+	return choices
+
+
+func _offer_potent_spellcasting_vitality(spell: Dictionary, damage_dealt: int) -> void:
+	if damage_dealt <= 0 or int(spell.get("level", -1)) != 0 or not active_character.has_feature("cleric_improved_blessed_strikes") or str(spell.get("id", "")) not in DataLoader.get_character_class("cleric").get("spell_list_ids", []):
+		return
+	if not ClassProgression.selected_feature_effects_of_type(active_character, "spell_cast_temporary_hp").any(func(effect): return bool(effect.get("requires_damage", false))):
+		return
+	var origin: Vector2i = player_entities[current_player_idx]["hex_position"]
+	var candidates: Array[Dictionary] = []
+	for player in player_entities:
+		var character: Character = player.get("character")
+		if character != null and ClericRules.can_receive_spark(character) and Targeting.is_in_range(origin, player["hex_position"], 12):
+			candidates.append({"id": character.character_id, "name": character.character_name, "target": character})
+	for monster in monster_entities:
+		if monster.get("is_alive", false) and Targeting.is_in_range(origin, monster["hex_position"], 12):
+			candidates.append({"id": str(monster["id"]), "name": str(monster["name"]), "target": monster})
+	var selected := await hud.request_cleric_vitality_target(candidates)
+	for candidate in candidates:
+		if str(candidate["id"]) == selected:
+			for rider in CombatAction.resolve_spell_cast_riders(active_character, spell, "magic_action", damage_dealt, candidate["target"]):
+				hud.add_log("Potent Spellcasting grants %s %d temporary Hit Points." % [candidate["name"], int(rider.get("granted", 0))])
+			break
+
+func _offer_weapon_damage_riders(actor: Character, target: Dictionary, weapon: Dictionary, result: Dictionary) -> void:
+	if not result.get("hit", false) or str(weapon.get("type", "")) != "weapon":
+		return
+	var choices := await _request_weapon_damage_rider_choices(actor)
+	for rider in CombatAction.resolve_weapon_damage_riders(actor, target, choices, weapon, bool(result.get("crit", false))):
+		result["damage"] = int(result.get("damage", 0)) + int(rider.get("damage", 0))
+		hud.add_log("%s deals %d extra %s damage." % [str(rider.get("feature_id", "Damage rider")), int(rider.get("damage", 0)), str(rider.get("damage_type", "radiant"))], false)
+
+func _pending_spell_origin() -> Vector2i:
+	var origin: Vector2i = player_entities[current_player_idx]["hex_position"]
+	return FamiliarSpellDelivery.origin(active_character, player_entities, pending_spell_data, origin)
+
+
 func _highlight_spell_targets() -> void:
 	hex_grid.clear_highlights()
 	
-	var pos: Vector2i = player_entities[current_player_idx]["hex_position"]
+	var pos := _pending_spell_origin()
 	var max_range := _spell_target_range(pending_spell_data)
 
 	var highlights := {}
@@ -864,22 +2463,116 @@ func _highlight_spell_targets() -> void:
 	hex_grid.set_highlights(highlights)
 
 
+func _highlight_dancing_lights_movement() -> void:
+	var owner_id := active_character.character_id if active_character != null else ""
+	var light_set: Dictionary = dancing_light_sets.get(owner_id, {})
+	var anchor_value: Array = light_set.get("anchor", [])
+	if anchor_value.size() != 2:
+		return
+	var anchor := Vector2i(int(anchor_value[0]), int(anchor_value[1]))
+	var origin: Vector2i = player_entities[current_player_idx].get("hex_position", Vector2i.ZERO)
+	var highlights: Dictionary = {}
+	for candidate in hex_grid.tiles.keys():
+		var moved := DancingLightsRules.move_light_set(light_set, origin, candidate)
+		if not moved.get("success", false):
+			continue
+		var all_positions_on_map := true
+		for position in moved.get("light_set", {}).get("positions", []):
+			if not hex_grid.has_tile(Vector2i(int(position[0]), int(position[1]))):
+				all_positions_on_map = false
+				break
+		if all_positions_on_map:
+			highlights[candidate] = Color(0.45, 0.8, 1.0, 0.72)
+	hex_grid.set_highlights(highlights)
+
+
+func _highlight_mage_hand_movement() -> void:
+	if current_player_idx < 0:
+		return
+	var player_pos: Vector2i = player_entities[current_player_idx].get("hex_position", Vector2i.ZERO)
+	var mage_hand_marker: Dictionary = mage_hand_markers.get(active_character.character_id, {})
+	var current_pos_array: Array = mage_hand_marker.get("position", [0, 0])
+	if current_pos_array.size() != 2:
+		return
+	var hand_pos := Vector2i(int(current_pos_array[0]), int(current_pos_array[1]))
+	var highlights: Dictionary = {}
+	for candidate in hex_grid.tiles.keys():
+		if MageHandRules.can_move(mage_hand_marker, player_pos, candidate):
+			highlights[candidate] = Color(0.74, 0.58, 1.0, 0.72)
+	hex_grid.set_highlights(highlights)
+
+
 func _spell_target_range(spell_data: Dictionary) -> int:
-	var max_range := int(spell_data.get("range", 6))
-	for effect in spell_data.get("effects", []):
-		if str(effect.get("type", "")) == "teleport":
-			max_range = maxi(max_range, int(effect.get("distance", 0)))
-	return max_range
+	return SpellCastTargeting._spell_target_range(_spell_cast_context(), spell_data)
+
+
+func _spell_grants_additional_target(character: Character, spell_data: Dictionary) -> bool:
+	return SpellCastTargeting._spell_grants_additional_target(_spell_cast_context(), character, spell_data)
+
+
+func _spell_upcast_maximum_targets(spell_data: Dictionary) -> int:
+	return SpellCastTargeting._spell_upcast_maximum_targets(_spell_cast_context(), spell_data)
+
+
+func _magic_missile_dart_total(spell_data: Dictionary) -> int:
+	return SpellCastTargeting._magic_missile_dart_total(_spell_cast_context(), spell_data)
+
+
+func _spell_projectile_total(spell_data: Dictionary) -> int:
+	return SpellCastTargeting._spell_projectile_total(_spell_cast_context(), spell_data)
+
+
+func _valid_additional_spell_target(first_target: Vector2i, candidate: Vector2i, spell_data: Dictionary, prior_targets: Array[Vector2i] = []) -> bool:
+	return SpellCastTargeting._valid_additional_spell_target(_spell_cast_context(), first_target, candidate, spell_data, prior_targets)
+
+
+func _creature_at_coord_matches_types(coord: Vector2i, required_types: Array) -> bool:
+	return SpellCastTargeting._creature_at_coord_matches_types(_spell_cast_context(), coord, required_types)
+
+
+func _spell_target_visible_to_active_character(coord: Vector2i, spell_data: Dictionary) -> bool:
+	return SpellCastTargeting._spell_target_visible_to_active_character(_spell_cast_context(), coord, spell_data)
+
+
+func _has_spell_creature_at(coord: Vector2i, spell: Dictionary) -> bool:
+	return SpellCastTargeting._has_spell_creature_at(_spell_cast_context(), coord, spell)
+
+
+func _has_spell_target_at(coord: Vector2i, spell: Dictionary) -> bool:
+	return SpellCastTargeting._has_spell_target_at(_spell_cast_context(), coord, spell)
+
+
+func _has_creature_at(coord: Vector2i) -> bool:
+	return _spell_zones()._has_creature_at(coord)
+
+
+func _identify_creature_id_at(coord: Vector2i) -> String:
+	return SpellCastTargeting._identify_creature_id_at(_spell_cast_context(), coord)
 
 
 func _is_occupied_hex(coord: Vector2i) -> bool:
+	return _spell_zones()._is_occupied_hex(active_character, coord)
+
+
+func _is_unoccupied_conjure_elemental_space(center: Vector2i) -> bool:
+	return _spell_zones()._is_unoccupied_conjure_elemental_space(center)
+
+
+func _highlight_divine_spark_targets() -> void:
+	hex_grid.clear_highlights()
+	var origin: Vector2i = player_entities[current_player_idx].get("hex_position", Vector2i.ZERO)
+	var highlights := {}
 	for player in player_entities:
-		if player.get("character") != active_character and player.get("hex_position", Vector2i.ZERO) == coord and player.get("character") != null and player.get("character").is_alive:
-			return true
+		var target: Character = player.get("character")
+		if target == null or target == active_character or not ClericRules.can_receive_spark(target):
+			continue
+		var target_hex: Vector2i = player.get("hex_position", Vector2i.ZERO)
+		if Targeting.is_in_range(origin, target_hex, 6):
+			highlights[target_hex] = HexHighlight.HIGHLIGHT_COLORS[HexHighlight.HighlightType.SPELL]
 	for monster in monster_entities:
-		if monster.get("hex_position", Vector2i.ZERO) == coord and monster.get("is_alive", false):
-			return true
-	return false
+		if monster.get("is_alive", false) and Targeting.is_in_range(origin, monster.get("hex_position", Vector2i.ZERO), 6):
+			highlights[monster["hex_position"]] = HexHighlight.HIGHLIGHT_COLORS[HexHighlight.HighlightType.SPELL]
+	hex_grid.set_highlights(highlights)
 
 
 func _highlight_lay_on_hands_targets() -> void:
@@ -888,7 +2581,11 @@ func _highlight_lay_on_hands_targets() -> void:
 	var highlights := {}
 	for player in player_entities:
 		var target: Character = player.get("character")
-		if target == null or target.current_hp >= target.max_hp:
+		if target == null:
+			continue
+		var can_heal := target.current_hp < target.max_hp
+		var can_cleanse := int(active_character.feature_uses.get("paladin_lay_on_hands", 0)) >= 5 and not PaladinRules.lay_on_hands_conditions(active_character, target).is_empty()
+		if not can_heal and not can_cleanse:
 			continue
 		var target_hex: Vector2i = player.get("hex_position", Vector2i.ZERO)
 		if Targeting.is_in_range(origin, target_hex, 1):
@@ -902,10 +2599,10 @@ func _highlight_bardic_inspiration_targets() -> void:
 	var highlights := {}
 	for player in player_entities:
 		var target: Character = player.get("character")
-		if target == null or target == active_character or not target.is_alive:
+		if target == null:
 			continue
 		var target_hex: Vector2i = player.get("hex_position", Vector2i.ZERO)
-		if Targeting.is_in_range(origin, target_hex, 12):
+		if BardicInspirationRules.can_receive(active_character, target, HexUtils.get_distance(origin, target_hex) * 5) and not BardicInspirationRules.has_die(target):
 			highlights[target_hex] = HexHighlight.HIGHLIGHT_COLORS[HexHighlight.HighlightType.SPELL]
 	hex_grid.set_highlights(highlights)
 
@@ -924,9 +2621,343 @@ func _highlight_unarmed_targets() -> void:
 
 
 func _on_hex_clicked(coord: Vector2i) -> void:
-	if current_player_idx == -1: return # Not player turn
+	if fighter_move_waiting:
+		if coord in fighter_move_choices:
+			var entity: Dictionary = fighter_move_entity
+			CombatAction.resolve_movement_step(entity, entity["hex_position"], coord)
+			fighter_move_done = true
+		return
+	if current_player_idx == -1 or resolving_player_action: return # Not player turn
 
 	var player_pos: Vector2i = player_entities[current_player_idx]["hex_position"]
+	if pending_action_type == "created_creature_order":
+		var target_id := ""
+		for target in monster_entities:
+			if target.get("is_alive", false) and target["hex_position"] == coord: target_id = str(target["id"]); break
+		var order_result := CreatedCreatureCombat.issue(self, "attack", target_id)
+		hud.add_log(str(order_result["message"]))
+		if order_result.get("success", false): pending_action_type = ""
+		hud.update_hud(active_character, tracker)
+		return
+	if pending_action_type.is_empty() and coord == player_pos and _try_freedom_of_movement_escape(active_character):
+		return
+	if pending_action_type.is_empty() and coord == player_pos and _try_escape_restrained_zone(active_character):
+		return
+	if pending_action_type.is_empty() and _try_shake_sleeping_creature(coord, player_pos):
+		return
+	if pending_action_type == "dancing_lights_move":
+		var owner_id := active_character.character_id
+		var light_set: Dictionary = dancing_light_sets.get(owner_id, {})
+		if light_set.is_empty():
+			pending_action_type = ""
+			return
+		var movement := DancingLightsRules.move_light_set(light_set, player_pos, coord)
+		if not movement.get("success", false):
+			hud.add_log("[color=orange]%s[/color]" % movement.get("message", "Those lights cannot move there."))
+			return
+		for position in movement.get("light_set", {}).get("positions", []):
+			if not hex_grid.has_tile(Vector2i(int(position[0]), int(position[1]))):
+				hud.add_log("[color=orange]Choose a destination on the visible battlefield.[/color]")
+				return
+		dancing_light_sets[owner_id] = movement["light_set"]
+		_spend_action_cost("bonus_action")
+		pending_action_type = ""
+		hud.add_log("[color=cyan]The Dancing Lights drift to their new position.[/color]")
+		hud.update_hud(active_character, tracker)
+		_update_grid_entities()
+		_highlight_reachable()
+		return
+	if pending_action_type == "moonbeam_move":
+		var source_id := _moonbeam_zone_source_for_caster(active_character)
+		var zone: Dictionary = active_spell_zones.get(source_id, {})
+		var old_center: Vector2i = zone.get("center", Vector2i.ZERO)
+		if zone.is_empty() or not _moonbeam_can_move(zone) or not Targeting.is_in_range(old_center, coord, 12) or not hex_grid.has_tile(coord):
+			hud.add_log("[color=orange]Choose a Moonbeam center up to 60 feet away, on a later turn.[/color]")
+			return
+		var old_coords: Array = zone.get("coords", []).duplicate()
+		var new_coords := Targeting.get_sphere_targets(coord, 1, hex_grid)
+		zone["center"] = coord
+		zone["coords"] = new_coords
+		zone["last_trigger_turn_by_target"] = zone.get("last_trigger_turn_by_target", {})
+		zone["shape_locked_targets"] = zone.get("shape_locked_targets", [])
+		_spend_action_cost("magic_action")
+		pending_action_type = ""
+		hud.add_log("[color=cyan]You move the Moonbeam Cylinder to its new center.[/color]")
+		await _resolve_moonbeam_area_movement(zone, old_coords, new_coords)
+		hud.update_hud(active_character, tracker)
+		_update_grid_entities()
+		_highlight_reachable()
+		return
+	if pending_action_type == "cloud_of_daggers_move":
+		var source_id := _cloud_of_daggers_zone_source_for_caster(active_character)
+		var zone: Dictionary = active_spell_zones.get(source_id, {})
+		var old_center: Vector2i = zone.get("center", Vector2i.ZERO)
+		if zone.is_empty() or not _cloud_of_daggers_can_move(zone) or not Targeting.is_in_range(old_center, coord, 6) or not hex_grid.has_tile(coord):
+			hud.add_log("[color=orange]Choose a Cloud of Daggers space up to 30 feet away on a later turn.[/color]")
+			return
+		var old_coords: Array = zone.get("coords", []).duplicate()
+		var new_coords: Array[Vector2i] = [coord]
+		zone["center"] = coord
+		zone["coords"] = new_coords
+		_spend_action_cost("magic_action")
+		pending_action_type = ""
+		hud.add_log("[color=cyan]You teleport the Cloud of Daggers Cube to its new space.[/color]")
+		await _resolve_cloud_of_daggers_area_movement(zone, old_coords, new_coords)
+		hud.update_hud(active_character, tracker)
+		_update_grid_entities()
+		_highlight_reachable()
+		return
+	if pending_action_type == "conjure_animals_move":
+		var source_id := _conjure_animals_zone_source_for_caster(active_character)
+		var zone: Dictionary = active_spell_zones.get(source_id, {})
+		var old_center: Vector2i = zone.get("center", Vector2i.ZERO)
+		if zone.is_empty() or not player_moved_this_turn or bool(active_character.feature_uses.get("conjure_animals_pack_moved_this_turn", false)) or not Targeting.is_in_range(old_center, coord, 6) or not hex_grid.has_tile(coord) or _is_occupied_hex(coord):
+			hud.add_log("[color=orange]Choose an unoccupied Conjure Animals pack space up to 30 feet away, after you move.[/color]")
+			return
+		var path: Array[Vector2i] = HexUtils.hex_line(old_center, coord)
+		var path_is_on_map := true
+		for path_hex in path:
+			if not hex_grid.has_tile(path_hex):
+				path_is_on_map = false
+				break
+		if not path_is_on_map:
+			hud.add_log("[color=orange]The pack must move through mapped spaces.[/color]")
+			return
+		pending_action_type = ""
+		active_character.feature_uses["conjure_animals_pack_moved_this_turn"] = true
+		var previous_coords: Array = zone.get("coords", []).duplicate()
+		for path_index in range(1, path.size()):
+			var next_center: Vector2i = path[path_index]
+			var next_coords: Array[Vector2i] = Targeting.get_sphere_targets(next_center, int(zone.get("radius_hexes", 2)), hex_grid)
+			zone["center"] = next_center
+			zone["coords"] = next_coords
+			await _resolve_conjure_animals_area_movement(zone, previous_coords, next_coords)
+			previous_coords = next_coords
+		_refresh_conjure_animals_strength_advantage(active_character)
+		hud.add_log("[color=cyan]You move the spectral animal pack up to 30 feet.[/color]")
+		hud.update_hud(active_character, tracker)
+		_update_grid_entities()
+		_highlight_reachable()
+		return
+	if pending_action_type == "conjure_celestial_move":
+		var source_id := _conjure_celestial_zone_source_for_caster(active_character)
+		var zone: Dictionary = active_spell_zones.get(source_id, {})
+		var old_center: Vector2i = zone.get("center", Vector2i.ZERO)
+		if zone.is_empty() or not player_moved_this_turn or bool(active_character.feature_uses.get("conjure_celestial_pillar_moved_this_turn", false)) or not Targeting.is_in_range(old_center, coord, 6) or not hex_grid.has_tile(coord):
+			hud.add_log("[color=orange]Choose a Conjure Celestial Cylinder center up to 30 feet away, after you move.[/color]")
+			return
+		var path: Array[Vector2i] = HexUtils.hex_line(old_center, coord)
+		var path_is_on_map := true
+		for path_hex in path:
+			if not hex_grid.has_tile(path_hex):
+				path_is_on_map = false
+				break
+		if not path_is_on_map:
+			hud.add_log("[color=orange]The Cylinder must move through mapped spaces.[/color]")
+			return
+		pending_action_type = ""
+		active_character.feature_uses["conjure_celestial_pillar_moved_this_turn"] = true
+		var previous_coords: Array = zone.get("coords", []).duplicate()
+		for path_index in range(1, path.size()):
+			var next_center: Vector2i = path[path_index]
+			var next_coords: Array[Vector2i] = Targeting.get_sphere_targets(next_center, int(zone.get("radius_hexes", 2)), hex_grid)
+			zone["center"] = next_center
+			zone["coords"] = next_coords
+			await _resolve_conjure_celestial_area_movement(zone, previous_coords, next_coords)
+			previous_coords = next_coords
+		hud.add_log("[color=cyan]You move the Conjure Celestial Cylinder up to 30 feet.[/color]")
+		hud.update_hud(active_character, tracker)
+		_update_grid_entities()
+		_highlight_reachable()
+		return
+	if pending_action_type == "conjure_fey_move":
+		var source_id := _conjure_fey_zone_source_for_caster(active_character)
+		var zone: Dictionary = active_spell_zones.get(source_id, {})
+		var old_center: Vector2i = zone.get("center", Vector2i.ZERO)
+		if zone.is_empty() or str(zone.get("cast_turn", "")) == _current_spell_trigger_turn() or not turn_budget.can_spend("bonus_action") or not Targeting.is_in_range(old_center, coord, 6) or not _is_unoccupied_conjure_fey_space(coord):
+			hud.add_log("[color=orange]Choose an unoccupied Conjure Fey space up to 30 feet away on a later turn.[/color]")
+			return
+		var possible_targets := _conjure_fey_targets_within(coord)
+		var target_id := str(zone.get("_test_target_id", ""))
+		if not possible_targets.is_empty():
+			if target_id.is_empty():
+				target_id = await hud.request_conjure_fey_attack_target(possible_targets)
+			if target_id.is_empty():
+				return
+			var target_is_available := false
+			for possible_target in possible_targets:
+				if str(possible_target.get("id", "")) == target_id:
+					target_is_available = true
+					break
+			if not target_is_available:
+				hud.add_log("[color=orange]Choose a creature within 5 feet of the spirit's new space.[/color]")
+				return
+		zone["center"] = coord
+		zone["cast_turn"] = _current_spell_trigger_turn()
+		_spend_action_cost("bonus_action")
+		pending_action_type = ""
+		hud.add_log("[color=cyan]You teleport the Conjure Fey spirit up to 30 feet.[/color]")
+		if not target_id.is_empty():
+			var fey_target = _conjure_fey_target_by_id(target_id)
+			if fey_target != null:
+				await _resolve_conjure_fey_attack(zone, fey_target)
+		hud.update_hud(active_character, tracker)
+		_update_grid_entities()
+		_highlight_reachable()
+		return
+	if pending_action_type == "mage_hand_move":
+		if not mage_hand_markers.has(active_character.character_id):
+			pending_action_type = ""
+			return
+		var owned_mage_hand: Dictionary = mage_hand_markers[active_character.character_id]
+		if not MageHandRules.can_move(owned_mage_hand, player_pos, coord) or not hex_grid.has_tile(coord):
+			hud.add_log("[color=orange]That Mage Hand destination is too far away.[/color]")
+			return
+		owned_mage_hand["position"] = [coord.x, coord.y]
+		_spend_action_cost("magic_action")
+		pending_action_type = ""
+		hud.add_log("[color=violet]You control the Mage Hand to its new space.[/color]")
+		hud.update_hud(active_character, tracker)
+		_update_grid_entities()
+		_highlight_reachable()
+		return
+	if pending_action_type == "steed_feature":
+		var steed_entity: Dictionary = player_entities[current_player_idx] if player_entities[current_player_idx].get("is_steed", false) else _find_steed_entity(active_character)
+		if steed_entity.is_empty():
+			pending_action_type = ""
+			pending_feature_data = {}
+			return
+		var steed: Character = steed_entity.get("character")
+		var owner: Character = steed_entity.get("steed_owner")
+		var feature_id := str(pending_feature_data.get("id", ""))
+		var owner_state := PaladinRules.find_steed_state(owner)
+		var selected_monster: Dictionary = {}
+		var selected_ally: Character = null
+		for monster in monster_entities:
+			if monster.get("is_alive", false) and monster.get("hex_position", Vector2i.ZERO) == coord:
+				selected_monster = monster
+				break
+		for player in player_entities:
+			var candidate: Character = player.get("character")
+			if candidate != null and candidate.is_alive and candidate.current_hp < candidate.max_hp and player.get("hex_position", Vector2i.ZERO) == coord:
+				selected_ally = candidate
+				break
+		if feature_id == "otherworldly_steed_slam":
+			if selected_monster.is_empty() or not Targeting.is_in_range(player_pos, coord, 1):
+				return
+			var slam := PaladinRules.resolve_steed_slam(owner, steed, selected_monster, str(steed_entity.get("steed_creature_type", "celestial")), int(steed_entity.get("steed_spell_level", 2)))
+			hud.add_log(str(slam.get("message", "Otherworldly Slam failed.")))
+			if int(selected_monster.get("current_hp", 0)) <= 0:
+				selected_monster["is_alive"] = false
+				hud.add_log("[color=green]%s was defeated![/color]" % selected_monster.get("name", "Enemy"))
+				tracker.remove_combatant(str(selected_monster.get("id", "")))
+			_spend_action_cost("action")
+		elif feature_id == "otherworldly_steed_healing_touch":
+			if selected_ally == null or not Targeting.is_in_range(player_pos, coord, 1):
+				return
+			if not _can_spend_action_cost("bonus_action") or not steed.use_feature(feature_id) or not PaladinRules.mark_find_steed_ability_used(owner):
+				hud.add_log("Healing Touch has already been used since the last Long Rest.")
+				return
+			var rolled_healing := Dice.parse_dice_string("2d8+%d" % int(owner_state.get("spell_level", 2)), {}, owner)
+			var healing := selected_ally.heal(rolled_healing)
+			hud.add_log("Healing Touch restores %d Hit Points to %s." % [healing, selected_ally.character_name])
+			_spend_action_cost("bonus_action")
+		elif feature_id == "otherworldly_steed_fell_glare":
+			if selected_monster.is_empty() or not Targeting.is_in_range(player_pos, coord, 2):
+				return
+			if not _can_spend_action_cost("bonus_action") or not steed.use_feature(feature_id) or not PaladinRules.mark_find_steed_ability_used(owner):
+				hud.add_log("Fell Glare has already been used since the last Long Rest.")
+				return
+			var immunities: Array = selected_monster.get("condition_immunities", [])
+			if "frightened" in immunities:
+				hud.add_log("%s is immune to Frightened." % selected_monster.get("name", "Target"))
+			else:
+				var save_total := BarbarianRules.roll_monster_save(selected_monster, "WIS")
+				var save_dc := owner.get_spell_save_dc()
+				if save_total < save_dc:
+					CombatAction.apply_condition(selected_monster, "frightened", 1)
+					hud.add_log("%s is Frightened by the steed until its next turn." % selected_monster.get("name", "Target"))
+				else:
+					hud.add_log("%s resists Fell Glare (WIS %d vs. DC %d)." % [selected_monster.get("name", "Target"), save_total, save_dc])
+			_spend_action_cost("bonus_action")
+		elif feature_id == "otherworldly_steed_fey_step":
+			if coord == player_pos or not hex_grid.has_tile(coord) or not hex_grid.is_hex_passable(coord) or _is_occupied_hex(coord) or not Targeting.is_in_range(player_pos, coord, 12):
+				return
+			if not _can_spend_action_cost("bonus_action") or not steed.use_feature(feature_id) or not PaladinRules.mark_find_steed_ability_used(owner):
+				hud.add_log("Fey Step has already been used since the last Long Rest.")
+				return
+			steed_entity["hex_position"] = coord
+			if PaladinRules.find_steed_is_mounted(owner):
+				for rider_entity in player_entities:
+					if rider_entity.get("character") == owner:
+						rider_entity["hex_position"] = coord
+						break
+			hud.add_log("The Fey steed teleports up to 60 feet.")
+			_spend_action_cost("bonus_action")
+		pending_action_type = ""
+		pending_feature_data = {}
+		hud.update_hud(active_character, tracker)
+		_update_grid_entities()
+		_check_battle_end_conditions()
+		_highlight_reachable()
+		return
+	if pending_action_type == "familiar_help":
+		var help_target: Dictionary = {}
+		for monster in monster_entities:
+			if monster.get("is_alive", false) and monster.get("hex_position", Vector2i.ZERO) == coord:
+				help_target = monster
+				break
+		if help_target.is_empty() or not Targeting.is_in_range(player_pos, coord, 1):
+			return
+		var familiar_id := str(player_entities[current_player_idx].get("combat_id", ""))
+		help_target["familiar_helped_by"] = familiar_id
+		pending_action_type = ""
+		_spend_action_cost("action")
+		hud.add_log("%s helps against %s. The next ally attack against it has Advantage." % [active_character.character_name, str(help_target.get("name", "the target"))])
+		hud.update_hud(active_character, tracker)
+		_highlight_reachable()
+		return
+
+	if pending_action_type == "cleric_divine_spark":
+		var target = null
+		for player in player_entities:
+			var candidate: Character = player.get("character")
+			if candidate != null and candidate != active_character and ClericRules.can_receive_spark(candidate) and player.get("hex_position", Vector2i.ZERO) == coord:
+				target = candidate
+				break
+		if target == null:
+			for monster in monster_entities:
+				if monster.get("is_alive", false) and monster.get("hex_position", Vector2i.ZERO) == coord:
+					target = monster
+					break
+		if target == null or not Targeting.is_in_range(player_pos, coord, 6):
+			return
+		if active_character.has_condition("blinded") or not CombatAction.spell_target_is_visible_to(active_character, target, {"requires_target_sight": true}, HexUtils.get_distance(player_pos, coord) * 5):
+			hud.add_log("Divine Spark needs a creature you can see.")
+			return
+		resolving_player_action = true
+		var choice: Dictionary = await hud.request_divine_spark_choice()
+		resolving_player_action = false
+		if choice.is_empty():
+			return
+		var feature_id := str(pending_feature_data.get("id", ""))
+		if not ClericRules.channel_divinity_error(active_character).is_empty() or not turn_budget.can_spend("magic_action") or not active_character.use_feature(feature_id):
+			hud.add_log("No Channel Divinity use or Magic action remains.")
+			_cancel_pending_action()
+			return
+		_spend_action_cost("magic_action")
+		pending_action_type = ""
+		var result := ClericRules.resolve_divine_spark(active_character, target, str(choice["mode"]), str(choice["damage_type"]))
+		hud.add_log(result.get("message", "Divine Spark resolves."))
+		if target is Dictionary and int(target.get("current_hp", 0)) <= 0:
+			target["is_alive"] = false
+			tracker.remove_combatant(str(target.get("id", "")))
+		pending_feature_data = {}
+		_update_grid_entities()
+		hud.update_hud(active_character, tracker)
+		_check_battle_end_conditions()
+		_highlight_reachable()
+		return
 
 	if pending_action_type == "attack":
 		# Attack enemy at hex
@@ -938,28 +2969,54 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 
 		if clicked_monster.is_empty():
 			return # No valid monster selected
+		var attacker_position: Vector2i = player_entities[current_player_idx].get("hex_position", Vector2i.ZERO)
+		if not Targeting.has_line_of_sight(attacker_position, coord, hex_grid):
+			hud.add_log("A wall or closed door blocks the attacker's sight.")
+			return
 
 		# Enforce weapon range on execution (mirrors _highlight_attack_targets).
-		var weapon_id := active_character.inventory.get_weapon()
-		var weapon := DataLoader.get_item(weapon_id)
+		var weapon := DruidRules.current_attack_profile(active_character) if DruidRules.is_shaped(active_character) else DataLoader.get_item(active_character.inventory.get_weapon())
+		if weapon.is_empty():
+			weapon = CombatAction.unarmed_attack_profile(active_character)
 		var max_range := int(weapon.get("range", 1))
 		var atk_dist := HexUtils.get_distance(player_pos, coord)
 		if not Targeting.is_in_range(player_pos, coord, max_range):
-			var w_name: String = weapon.get("name", weapon_id) if not weapon.is_empty() else "unarmed"
+			var w_name: String = str(weapon.get("name", weapon.get("id", "unarmed"))) if not weapon.is_empty() else "unarmed"
 			hud.add_log("[color=red]%s is out of range of %s (distance %d, range %d).[/color]" % [clicked_monster["name"], w_name, atk_dist, max_range])
 			return # out of range — do not resolve the attack
+		if _spell_zones()._antilife_shell_blocks_melee(active_character, attacker_position, coord, weapon):
+			hud.add_log("Antilife Shell prevents this melee attack from reaching through its barrier.")
+			return
 
 		# A valid target commits the Attack action before any optional prompts
 		# yield. Clearing targeting here prevents a second click from starting a
 		# concurrent attack while an optional feature decision is open.
+		if remaining_attack_swings <= 0 and not turn_budget.can_spend("action"):
+			hud.add_log("No action remains for this attack.")
+			return
+		weapon["attack_distance"] = atk_dist
 		pending_action_type = ""
-		_spend_action_cost("action")
+		resolving_player_action = true
+		if remaining_attack_swings <= 0:
+			_spend_action_cost("action")
+			remaining_attack_swings = 1 if "loading" in weapon.get("properties", []) else 1 + active_character.extra_attacks
+		remaining_attack_swings -= 1
+		if "light" in weapon.get("properties", []):
+			light_attack_weapon = weapon
 
 		# (weapon / weapon_id already resolved above; reused for the attack roll)
 		
 		# Determine advantage/disadvantage based on conditions
 		var has_advantage := false
 		var has_disadvantage := false
+		var attack_distance_feet := atk_dist * 5
+		if not CombatPerception.can_see_target(active_character, clicked_monster, attacker_position, coord, hex_grid):
+			has_disadvantage = true
+		var target_perceives_invisible := CombatAction.can_perceive_invisible(clicked_monster, attack_distance_feet)
+		if CombatAction.is_invisible(clicked_monster) and not CombatAction.can_perceive_invisible(active_character, attack_distance_feet):
+			has_disadvantage = true
+		if CombatAction.is_invisible(active_character) and not target_perceives_invisible:
+			has_advantage = true
 		var attack_reaction_decisions: Dictionary = {}
 		
 		# Attacker conditions
@@ -969,6 +3026,11 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 			has_advantage = true
 			active_character.remove_condition("hidden") # Reveal after attacking
 			hud.add_log("[color=green]%s attacks with Advantage from hiding![/color]" % active_character.character_name)
+		if DruidRules.pack_tactics_advantage(active_character, clicked_monster, player_entities):
+			has_advantage = true
+		if not str(clicked_monster.get("familiar_helped_by", "")).is_empty():
+			has_advantage = true
+			clicked_monster.erase("familiar_helped_by")
 
 		# Target conditions (blinded or prone)
 		var monster_conditions: Dictionary = clicked_monster.get("conditions", {})
@@ -983,80 +3045,49 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 
 		# Reckless Attack exposes the barbarian to advantage until their next
 		# turn, while the activating attack itself gains advantage below.
-		if active_character.has_feature("barbarian_reckless_attack") and active_character.level >= 2 and int(weapon.get("range", 1)) <= 1 and str(weapon.get("ability", "STR")) == "STR" and int(active_character.feature_uses.get("barbarian_reckless_attack_used_this_turn", 0)) <= 0:
-			var reckless_detail := "Gain Advantage on Strength melee attacks this turn; enemies gain Advantage against you until your next turn."
+		if active_character.has_feature("barbarian_reckless_attack") and int(active_character.feature_uses.get("barbarian_reckless_attack_used_this_turn", 0)) <= 0:
+			var reckless_detail := "Gain Advantage on Strength attacks until your next turn; enemies gain Advantage against you for the same time."
 			if await hud.request_reaction(_owner_label_for_character(active_character), "reckless_attack", reckless_detail, "Attack recklessly?", "Reckless Attack", "Reckless Attack — %s" % _owner_label_for_character(active_character)):
 				var reckless_result := CombatAction.activate_reckless_attack(active_character)
 				if reckless_result.get("success", false):
-					has_advantage = true
+					has_advantage = str(weapon.get("ability", "STR")) == "STR" or has_advantage
+			# The decision belongs to the first attack, including a declined offer.
+			active_character.feature_uses["barbarian_reckless_attack_used_this_turn"] = 1
+		if rogue_steady_aim_armed:
+			has_advantage = true
 
-		# Offer a held Bardic Inspiration die before the attack roll.
-		if active_character.feature_uses.has("bardic_inspiration_die"):
-			var inspiration_die := str(active_character.feature_uses.get("bardic_inspiration_die", "1d6"))
-			if await hud.request_reaction(_owner_label_for_character(active_character), "bardic_inspiration", "Add %s to this attack roll?" % inspiration_die, "Use Bardic Inspiration?", "Use Inspiration", "Bardic Inspiration — %s" % _owner_label_for_character(active_character)):
-				attack_reaction_decisions["bardic_inspiration"] = true
+		var brutal_effects := await _request_brutal_strike(active_character, weapon, has_disadvantage)
+		if not brutal_effects.is_empty():
+			attack_reaction_decisions["barbarian_brutal_strike_effects"] = brutal_effects
 
+		# A held die is spent only if this D20 Test fails and the character chooses it.
+		attack_reaction_decisions.merge(await _collect_attack_inspiration_decision(active_character), true)
+
+		# Shillelagh lets each attack choose Force or the weapon's normal damage type.
+		if active_character.has_condition("shillelagh") and str(weapon.get("id", "")) == active_character.shillelagh_weapon_id:
+			var shillelagh_damage_type := await hud.request_damage_type_choice(["force", str(weapon.get("damage_type", "bludgeoning"))], "Shillelagh")
+			if not shillelagh_damage_type.is_empty():
+				attack_reaction_decisions["shillelagh_damage_type"] = shillelagh_damage_type
 		# Resolve weapon attack
-		var result := CombatAction.resolve_weapon_attack(active_character, clicked_monster, weapon, has_advantage, has_disadvantage, attack_reaction_decisions)
+		var conjure_minor_elementals_packet := await _conjure_minor_elementals_damage_choice(active_character, clicked_monster)
+		var attack_additional_damage := {"packets": [conjure_minor_elementals_packet]} if not conjure_minor_elementals_packet.is_empty() else {}
+		var result := CombatAction.resolve_weapon_attack(active_character, clicked_monster, weapon, has_advantage, has_disadvantage, attack_reaction_decisions, attack_additional_damage)
+		rogue_steady_aim_armed = false
+		if not result.get("hit", false) and active_character.has_feature("rogue_stroke_of_luck") and int(active_character.feature_uses.get("rogue_stroke_of_luck", 0)) > 0:
+			var stroke_accepted := await hud.request_reaction(_owner_label_for_character(active_character), "stroke_of_luck", "This attack failed (%d vs AC %d). Turn the d20 into a 20?" % [int(result.get("attack_roll", 0)), int(result.get("target_ac", 0))], "Use Stroke of Luck?", "Stroke of Luck", "Stroke of Luck — %s" % _owner_label_for_character(active_character))
+			if stroke_accepted:
+				attack_reaction_decisions["stroke_of_luck"] = true
+				result = CombatAction.resolve_weapon_attack(active_character, clicked_monster, weapon, has_advantage, has_disadvantage, attack_reaction_decisions, attack_additional_damage)
+		DruidRules.apply_attack_effects(active_character, clicked_monster, weapon, result)
+
 		var attack_results: Array[Dictionary] = [result]
+		await _offer_divine_smite(clicked_monster, weapon, result)
 
-		# Ranger Favored Foe is offered on a confirmed hit. Marking replaces any
-		# prior concentration-bound mark; the shared resolver owns the bonus damage.
-		if result.get("hit", false) and active_character.has_feature("ranger_favored_foe"):
-			var current_mark_id := str(active_character.feature_uses.get("ranger_favored_foe_target_id", ""))
-			var already_marked: bool = current_mark_id == str(clicked_monster.get("id", "")) and clicked_monster.get("conditions", {}).has("favored_foe")
-			if not already_marked:
-				var favored_detail := "Mark %s for 1 minute; the first hit each turn deals extra damage." % clicked_monster.get("name", "the target")
-				if await hud.request_reaction(_owner_label_for_character(active_character), "favored_foe", favored_detail, "Mark this target?", "Mark Target", "Favored Foe — %s" % _owner_label_for_character(active_character)):
-					if not active_character.concentrating_on.is_empty():
-						_end_concentration(active_character)
-					var favored_mark := CombatAction.resolve_favored_foe_mark(active_character, clicked_monster)
-					if favored_mark.get("success", false):
-						result["message"] += " [color=green]%s[/color]" % favored_mark.get("message", "Favored Foe marked.")
-			var favored_damage := CombatAction.resolve_favored_foe_damage(active_character, clicked_monster)
-			if favored_damage.get("success", false):
-				result["damage"] = int(result.get("damage", 0)) + int(favored_damage.get("damage", 0))
-				result.get_or_add("damage_components", []).append({"label": "Favored Foe", "value": int(favored_damage.get("damage", 0)), "type": str(result.get("damage_type", "")), "formula": str(favored_damage.get("dice", ""))})
-				result["message"] += " [color=green]%s[/color]" % favored_damage.get("message", "Favored Foe!")
+		await _offer_sneak_attack(clicked_monster, weapon, result, active_character, has_advantage, has_disadvantage)
+		await _finish_fighter_attack(clicked_monster, weapon, result)
+		await _offer_stunning_strike(clicked_monster, weapon, result)
 
-		if result.get("hit", false):
-			var hunters_mark_damage := CombatAction.resolve_hunters_mark_damage(active_character, clicked_monster)
-			if hunters_mark_damage.get("success", false):
-				result["damage"] = int(result.get("damage", 0)) + int(hunters_mark_damage.get("damage", 0))
-				result.get_or_add("damage_components", []).append({"label": "Hunter's Mark", "value": int(hunters_mark_damage.get("damage", 0)), "type": str(result.get("damage_type", "")), "formula": str(hunters_mark_damage.get("dice", ""))})
-				result["message"] += " [color=green]%s[/color]" % hunters_mark_damage.get("message", "Hunter's Mark!")
-
-		# Paladin Divine Smite is offered after a melee hit and before the
-		# ordinary attack result is committed to the combat log.
-		if result.get("hit", false) and int(weapon.get("range", 1)) <= 1 and int(clicked_monster.get("current_hp", 0)) > 0 and active_character.has_feature("paladin_divine_smite"):
-			var smite_slot := _lowest_available_spell_slot(active_character, 4)
-			if smite_slot > 0:
-				var smite_detail := "Spend a level %d spell slot for Divine Smite?" % smite_slot
-				if await hud.request_reaction(_owner_label_for_character(active_character), "divine_smite", smite_detail, "Spend spell slot?", "Divine Smite", "Divine Smite — %s" % _owner_label_for_character(active_character)):
-					var smite_result := CombatAction.resolve_divine_smite(active_character, clicked_monster, smite_slot)
-					if smite_result.get("success", false):
-						result["damage"] = int(result.get("damage", 0)) + int(smite_result.get("damage", 0))
-						result.get_or_add("damage_components", []).append({"label": "Divine Smite", "value": int(smite_result.get("damage", 0)), "type": str(smite_result.get("damage_type", "radiant")), "formula": "%dd8" % mini(5, int(smite_result.get("slot_level", 1)) + 1)})
-						result["message"] += " [color=gold]%s[/color]" % smite_result.get("message", "Divine Smite!")
-		
-		# Check for Rogue Sneak Attack on a hit
-		if result.get("hit", false) and _is_sneak_attack_valid(active_character, coord, has_advantage):
-			var sa_dice := _get_sneak_attack_dice(active_character)
-			var sa_damage := Dice.parse_dice_string(sa_dice)
-			if result.get("crit", false):
-				# Double the Sneak Attack dice on critical hit
-				sa_damage += Dice.parse_dice_string(sa_dice)
-			
-			var hp: int = int(clicked_monster.get("current_hp", 0))
-			var actual_sa_dealt := mini(sa_damage, hp)
-			clicked_monster["current_hp"] = hp - actual_sa_dealt
-			result["damage"] = result.get("damage", 0) + actual_sa_dealt
-			result.get_or_add("damage_components", []).append({"label": "Sneak Attack", "value": actual_sa_dealt, "type": str(result.get("damage_type", "")), "formula": sa_dice})
-			result["message"] += " [color=orange]Sneak Attack! Deals +%d damage (%s).[/color]" % [actual_sa_dealt, sa_dice]
-			
-			active_character.feature_uses["sneak_attack_used_this_turn"] = 1
-
-		hud.add_log(result.get("message", "Miss!"))
+		hud.add_log(result.get("message", "Miss!"), false) # The settled attack card owns this outcome.
 
 		# --- Feedback / juice ---
 		var dmg_dealt: int = int(result.get("damage", 0))
@@ -1076,19 +3107,38 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 			clicked_monster["is_alive"] = false
 			hud.add_log("[color=green]%s was defeated![/color]" % clicked_monster["name"])
 			tracker.remove_combatant(clicked_monster["id"])
+			_trigger_enemy_defeat_features(clicked_monster, active_character)
 
 		# Extra Attack is part of one Attack action, not a second action-cost.
 		# Resolve the additional swings through the same CombatAction boundary.
-		for extra_index in active_character.extra_attacks:
+		for extra_index in remaining_attack_swings:
 			if not clicked_monster.get("is_alive", false):
 				break
-			var extra_result := CombatAction.resolve_weapon_attack(active_character, clicked_monster, weapon, has_advantage, has_disadvantage)
+			var live_origin: Vector2i = player_entities[current_player_idx]["hex_position"]
+			if not Targeting.is_in_range(live_origin, clicked_monster["hex_position"], max_range):
+				break
+			remaining_attack_swings -= 1
+			weapon["attack_distance"] = HexUtils.get_distance(live_origin, clicked_monster["hex_position"])
+			var extra_decisions := await _collect_attack_inspiration_decision(active_character)
+			var extra_brutal := await _request_brutal_strike(active_character, weapon, has_disadvantage)
+			if not extra_brutal.is_empty():
+				extra_decisions["barbarian_brutal_strike_effects"] = extra_brutal
+			var extra_packet := await _conjure_minor_elementals_damage_choice(active_character, clicked_monster)
+			var extra_additional_damage := {"packets": [extra_packet]} if not extra_packet.is_empty() else {}
+			var extra_result := CombatAction.resolve_weapon_attack(active_character, clicked_monster, weapon, has_advantage, has_disadvantage, extra_decisions, extra_additional_damage)
+			await _offer_divine_smite(clicked_monster, weapon, extra_result)
+			await _offer_sneak_attack(clicked_monster, weapon, extra_result, active_character, has_advantage, has_disadvantage)
+			if int(extra_result.get("damage", 0)) > 0:
+				ClericRules.clear_turning_after_damage(clicked_monster)
 			attack_results.append(extra_result)
-			hud.add_log("[color=cyan]Extra Attack %d: %s[/color]" % [extra_index + 1, extra_result.get("message", "Miss!")])
+			await _finish_fighter_attack(clicked_monster, weapon, extra_result)
+			await _offer_stunning_strike(clicked_monster, weapon, extra_result)
+			hud.add_log("[color=cyan]Extra Attack %d: %s[/color]" % [extra_index + 1, extra_result.get("message", "Miss!")], false)
 			if int(clicked_monster.get("current_hp", 0)) <= 0:
 				clicked_monster["is_alive"] = false
 				hud.add_log("[color=green]%s was defeated![/color]" % clicked_monster["name"])
 				tracker.remove_combatant(clicked_monster["id"])
+				_trigger_enemy_defeat_features(clicked_monster, active_character)
 
 		# The Attack action is now fully settled. Publish once, grouping Extra
 		# Attack swings and every applied damage rider under the same intent.
@@ -1097,14 +3147,22 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 		if not activity_draft.is_empty():
 			ActivityHistory.publish(activity_draft)
 
+		await _offer_light_attack(clicked_monster)
+		resolving_player_action = false
 		_check_battle_end_conditions()
-		_highlight_reachable()
+		if remaining_attack_swings > 0 and not _battle_ending:
+			pending_action_type = "attack"
+			hud.add_log("%d attacks remain. Choose a target, move, or end your turn." % remaining_attack_swings)
+			_highlight_attack_targets()
+		else:
+			_highlight_reachable()
 
 	elif pending_action_type == "lay_on_hands":
 		var lay_target: Character = null
 		for player in player_entities:
 			var candidate: Character = player.get("character")
-			if candidate != null and player.get("hex_position", Vector2i.ZERO) == coord and candidate.current_hp < candidate.max_hp:
+			var can_cleanse := candidate != null and int(active_character.feature_uses.get("paladin_lay_on_hands", 0)) >= 5 and not PaladinRules.lay_on_hands_conditions(active_character, candidate).is_empty()
+			if candidate != null and player.get("hex_position", Vector2i.ZERO) == coord and (candidate.current_hp < candidate.max_hp or can_cleanse):
 				lay_target = candidate
 				break
 		if lay_target == null:
@@ -1113,11 +3171,16 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 			hud.add_log("That ally is out of touch range.")
 			return
 		var pool := int(active_character.feature_uses.get("paladin_lay_on_hands", 0))
-		var requested := mini(pool, maxi(0, lay_target.max_hp - lay_target.current_hp))
-		var result := CombatAction.resolve_lay_on_hands(active_character, lay_target, requested)
+		var conditions_to_remove: Array[String] = []
+		var eligible_conditions := PaladinRules.lay_on_hands_conditions(active_character, lay_target)
+		if not eligible_conditions.is_empty() and pool >= 5:
+			conditions_to_remove = await hud.request_lay_on_hands_conditions(eligible_conditions, mini(eligible_conditions.size(), floori(pool / 5)))
+		var condition_cost := conditions_to_remove.size() * 5
+		var requested := mini(pool - condition_cost, maxi(0, lay_target.max_hp - lay_target.current_hp))
+		var result := CombatAction.resolve_lay_on_hands(active_character, lay_target, requested, conditions_to_remove)
 		hud.add_log(result.get("message", "Lay on Hands failed."))
 		if result.get("success", false):
-			_spend_action_cost("action")
+			_spend_action_cost("bonus_action")
 			pending_action_type = ""
 			pending_feature_data = {}
 			hud.update_hud(active_character, tracker)
@@ -1135,7 +3198,7 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 		if not Targeting.is_in_range(player_pos, coord, 12):
 			hud.add_log("That ally is out of Bardic Inspiration range.")
 			return
-		var inspiration_result := CombatAction.resolve_bardic_inspiration(active_character, inspiration_target)
+		var inspiration_result := CombatAction.resolve_bardic_inspiration(active_character, inspiration_target, HexUtils.get_distance(player_pos, coord) * 5)
 		hud.add_log(inspiration_result.get("message", "Bardic Inspiration failed."))
 		if inspiration_result.get("success", false):
 			_spend_action_cost("bonus_action")
@@ -1151,236 +3214,395 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 				break
 		if unarmed_target.is_empty() or not Targeting.is_in_range(player_pos, coord, 1):
 			return
+		var feature_id := str(pending_feature_data.get("id", ""))
+		var focus_cost := int(pending_feature_data.get("focus_cost", 0))
+		if not _can_spend_action_cost("bonus_action") or active_character.get_focus_points() < focus_cost:
+			return
+		if feature_id == "monk_bonus_unarmed_strike" and not active_character.can_use_martial_arts():
+			return
 		if not active_character.use_feature(str(pending_feature_data.get("id", ""))):
 			hud.add_log("No Bonus Unarmed Strike uses remain this turn.")
 			return
-		var feature_id := str(pending_feature_data.get("id", ""))
+		active_character.spend_focus_points(focus_cost)
+		_spend_action_cost("bonus_action")
+		if active_character.has_feature("monk_fleet_step"):
+			_grant_extra_movement_speed()
+			hud.add_log("Fleet Step grants Step of the Wind dash movement.")
+		pending_action_type = ""
+		pending_feature_data = {}
+		resolving_player_action = true
 		var unarmed_results: Array[Dictionary] = []
-		if feature_id == "monk_flurry_of_blows":
-			unarmed_results = CombatAction.resolve_flurry_of_blows(active_character, unarmed_target)
-		else:
-			unarmed_results.append(CombatAction.resolve_unarmed_attack(active_character, unarmed_target))
+		var strike_count := 3 if (feature_id == "monk_flurry_of_blows" and active_character.has_feature("monk_heightened_focus")) else (2 if feature_id == "monk_flurry_of_blows" else 1)
+		for strike in strike_count:
+			if int(unarmed_target.get("current_hp", 0)) <= 0:
+				break
+			var result := CombatAction.resolve_unarmed_attack(active_character, unarmed_target)
+			await _offer_divine_smite(unarmed_target, {"id": "unarmed_strike"}, result)
+			unarmed_results.append(result)
+			await _offer_stunning_strike(unarmed_target, {"id": "unarmed_strike"}, result)
 		for strike_index in unarmed_results.size():
 			hud.add_log("%s" % unarmed_results[strike_index].get("message", "Unarmed Strike missed."))
-		_spend_action_cost("bonus_action")
 		if int(unarmed_target.get("current_hp", 0)) <= 0:
 			unarmed_target["is_alive"] = false
 			hud.add_log("[color=green]%s was defeated![/color]" % unarmed_target.get("name", "Enemy"))
 			tracker.remove_combatant(unarmed_target.get("id", ""))
+			_trigger_enemy_defeat_features(unarmed_target, active_character)
 		pending_action_type = ""
 		pending_feature_data = {}
+		resolving_player_action = false
 		hud.update_hud(active_character, tracker)
 		_check_battle_end_conditions()
 		_highlight_reachable()
 	elif pending_action_type == "spell":
 		# Cast spell at hex
 		var spell_range := _spell_target_range(pending_spell_data)
-		if not Targeting.is_in_range(player_pos, coord, spell_range):
+		var is_chain_lightning := str(pending_spell_data.get("id", "")) == "chain_lightning"
+		if not pending_words_primary_selected and (not is_chain_lightning or pending_command_target_coords.is_empty()) and not Targeting.is_in_range(_pending_spell_origin(), coord, spell_range):
 			return # out of range
-
+		var area_point_count := int(pending_spell_data.get("area_point_count", 1))
+		if area_point_count > 1:
+			if not hex_grid.has_tile(coord) or coord in pending_command_target_coords:
+				return
+			pending_command_target_coords.append(coord)
+			if pending_command_target_coords.size() < area_point_count:
+				hud.add_log("Choose another distinct area center for %s (%d of %d)." % [str(pending_spell_data.get("name", "this spell")), pending_command_target_coords.size(), area_point_count])
+				return
+			var area_centers := pending_command_target_coords.duplicate()
+			pending_command_target_coords.clear()
+			await _execute_player_spell(area_centers[0], Vector2i(9999, 9999), area_centers)
+			return
+		if str(pending_spell_data.get("id", "")) in ["magic_missile", "scorching_ray", "eldritch_blast"]:
+			if not _has_spell_creature_at(coord, pending_spell_data):
+				return
+			pending_command_target_coords.append(coord)
+			var projectile_total := _spell_projectile_total(pending_spell_data)
+			if pending_command_target_coords.size() < projectile_total:
+				var projectile_name := "dart" if str(pending_spell_data.get("id", "")) == "magic_missile" else "beam" if str(pending_spell_data.get("id", "")) == "eldritch_blast" else "ray"
+				hud.add_log("Choose a creature for %s %s %d of %d. You may select the same creature again." % [str(pending_spell_data.get("name", "Spell")), projectile_name, pending_command_target_coords.size() + 1, projectile_total])
+				hud.show_hint("%s: %d %s(s) remaining. Click a creature; you may choose the same creature again. Esc/Cancel to back out." % [pending_spell_data.get("name", "Spell"), projectile_total - pending_command_target_coords.size(), projectile_name])
+				return
+			var dart_targets := pending_command_target_coords.duplicate()
+			pending_command_target_coords.clear()
+			await _execute_player_spell(dart_targets[0], Vector2i(9999, 9999), dart_targets)
+			return
+		if _spell_grants_additional_target(active_character, pending_spell_data):
+			if _spell_upcast_maximum_targets(pending_spell_data) > 2:
+				var maximum_targets := _spell_upcast_maximum_targets(pending_spell_data)
+				if pending_command_target_coords.is_empty():
+					var exclusions: Array = pending_spell_data.get("target_creature_type_exclusions", [])
+					var excluded := not exclusions.is_empty() and _creature_at_coord_matches_types(coord, exclusions)
+					var valid_first_target := _has_spell_target_at(coord, pending_spell_data) if is_chain_lightning else _has_creature_at(coord)
+					if not valid_first_target or (excluded and not is_chain_lightning):
+						return
+					if is_chain_lightning:
+						var first_options := SpellCastTargeting.chain_target_options(_spell_cast_context(), coord)
+						var first_target_id := await hud.request_chain_lightning_target_choice(first_options, str(pending_spell_data.get("_test_chain_target_id", "")))
+						if first_target_id.is_empty():
+							return
+						pending_command_target_ids.append(first_target_id)
+					pending_command_target_coords.append(coord)
+				else:
+					if coord in pending_command_target_coords:
+						if int(pending_spell_data.get("_metamagic_twinned_extra_targets", 0)) > 0:
+							return
+						var chosen := pending_command_target_coords.duplicate()
+						var chosen_ids := pending_command_target_ids.duplicate()
+						pending_command_target_coords.clear()
+						pending_command_target_ids.clear()
+						await _execute_player_spell(chosen[0], Vector2i(9999, 9999), chosen, chosen_ids)
+						return
+					var chain_anchor: Vector2i = pending_command_target_coords[0]
+					if not _valid_additional_spell_target(chain_anchor, coord, pending_spell_data, pending_command_target_coords):
+						return
+					if is_chain_lightning:
+						var next_options := SpellCastTargeting.chain_target_options(_spell_cast_context(), coord)
+						var next_target_id := await hud.request_chain_lightning_target_choice(next_options, str(pending_spell_data.get("_test_chain_target_id", "")))
+						if next_target_id.is_empty():
+							return
+						pending_command_target_ids.append(next_target_id)
+					pending_command_target_coords.append(coord)
+				if pending_command_target_coords.size() < maximum_targets:
+					var next_target_kind := "creature or object" if is_chain_lightning else "creature"
+					hud.add_log("Select another %s for %s (%d of %d), or click a selected target again to cast." % [next_target_kind, pending_spell_data.get("name", "this spell"), pending_command_target_coords.size(), maximum_targets])
+					return
+				var command_targets := pending_command_target_coords.duplicate()
+				var command_target_ids := pending_command_target_ids.duplicate()
+				pending_command_target_coords.clear()
+				pending_command_target_ids.clear()
+				await _execute_player_spell(command_targets[0], Vector2i(9999, 9999), command_targets, command_target_ids)
+				return
+			if not pending_words_primary_selected:
+				if not _has_spell_creature_at(coord, pending_spell_data):
+					return
+				pending_words_primary_target = coord
+				pending_words_primary_selected = true
+				if int(pending_spell_data.get("_metamagic_twinned_extra_targets", 0)) > 0:
+					hud.add_log("Select another creature within this spell's range.")
+				else:
+					hud.add_log("Select a second creature within 10 feet, or click the first target again to cast on one creature.")
+				return
+			if coord == pending_words_primary_target:
+				if int(pending_spell_data.get("_metamagic_twinned_extra_targets", 0)) > 0:
+					hud.add_log("Twinned Spell requires the additional target; choose another creature in range.")
+					return
+				await _execute_player_spell(pending_words_primary_target)
+			elif _valid_additional_spell_target(pending_words_primary_target, coord, pending_spell_data):
+				await _execute_player_spell(pending_words_primary_target, coord)
+			else:
+				hud.add_log("Choose another creature within 10 feet of the first target.")
+			return
 		await _execute_player_spell(coord)
 	else:
 		# Regular movement click
-		var reachable := hex_grid.get_reachable(player_pos, remaining_speed)
-		if coord in reachable and coord != player_pos:
-			var path := hex_grid.find_path(player_pos, coord)
-			var cost: float = reachable[coord]
+		var reachable := _player_reachable(player_pos, remaining_speed, active_character)
+		var jump_cost := _spell_jump_move_cost(player_pos, coord, reachable)
+		var use_spell_jump := jump_cost >= 0.0
+		if (reachable.has(coord) or use_spell_jump) and coord != player_pos:
+			active_character.feature_uses.erase("find_steed_just_mounted_this_turn")
+			player_moved_this_turn = true
+			resolving_player_action = true
+			var path: Array[Vector2i] = HexUtils.hex_line(player_pos, coord) if use_spell_jump else _player_path(player_pos, coord, active_character)
+			var cost: float = jump_cost if use_spell_jump else float(reachable[coord])
 			remaining_speed -= cost
+			if use_spell_jump:
+				active_character.feature_uses["jump_spell_used_this_turn"] = true
 			
 			var disengaged := active_character.has_condition("disengaging")
 			if not disengaged and path.size() >= 2:
 				await _check_opportunity_attacks_for_path(active_character, player_entities[current_player_idx], path, false)
+			elif disengaged and path.size() >= 2:
+				for path_index in range(1, path.size()):
+					var movement_result := CombatAction.resolve_movement_step(player_entities[current_player_idx], path[path_index - 1], path[path_index])
+					if not movement_result.get("success", false):
+						break
+					_sync_mounted_steed_position(active_character, path[path_index])
+					if await _apply_room_fall_damage(active_character, path[path_index - 1], path[path_index]):
+						break
+					await _resolve_spell_zone_entries(active_character, path[path_index - 1], path[path_index])
+					await _resolve_spell_zone_movement(active_character, path[path_index])
 			else:
 				# Teleport normally if disengaged or path too short
 				CombatAction.resolve_movement_step(player_entities[current_player_idx], player_pos, coord)
+				_sync_mounted_steed_position(active_character, coord)
+				await _resolve_spell_zone_entries(active_character, player_pos, coord)
 			
 			if active_character.is_alive:
-				hud.add_log("%s moved." % active_character.character_name)
+				hud.add_log("%s leapt, spending 10 feet of movement." % active_character.character_name if use_spell_jump else "%s moved." % active_character.character_name)
+			if _conjure_animals_zone_source_for_caster(active_character) != "":
+				active_character.feature_uses["conjure_animals_moved_this_turn"] = true
+				_refresh_conjure_animals_strength_advantage(active_character)
+			if _conjure_celestial_zone_source_for_caster(active_character) != "":
+				active_character.feature_uses["conjure_celestial_moved_this_turn"] = true
 			
 			_highlight_reachable()
+			resolving_player_action = false
 
 	_update_grid_entities()
+	if active_character != null:
+		hud.update_hud(active_character, tracker)
 
 
-func _execute_player_spell(target_coord: Vector2i) -> void:
-	var spell_origin: Vector2i = player_entities[current_player_idx].get("hex_position", Vector2i.ZERO)
-	var target_type := str(pending_spell_data.get("target", "single"))
-	if str(pending_spell_data.get("casting_time", "action")) == "reaction":
-		hud.add_log("[color=orange]%s resolves only through its reaction boundary.[/color]" % pending_spell_data.get("name", "This spell"))
+func _execute_player_spell(target_coord: Vector2i, additional_target_coord: Vector2i = Vector2i(9999, 9999), extra_target_coords: Array[Vector2i] = [], chain_target_ids: Array[String] = []) -> void:
+	var cast := _spell_cast_context(target_coord, additional_target_coord, extra_target_coords, chain_target_ids)
+	if not await SpellCastPreparation.validate_and_choose(cast):
+		return
+	if not SpellCastResources.commit_metamagic(cast):
+		return
+	if not await SpellCastPreparation.choose_target_options(cast):
+		return
+	if not SpellCastResources.commit_spell_resource(cast):
+		return
+	if await _resolve_spell_cast_movement(cast):
+		return
+	await _collect_spell_cast_reactions(cast)
+	if await _resolve_spell_cast_markers(cast):
+		return
+	await SpellCastTargeting.collect_targets(cast)
+	await _prepare_spell_cast_effects(cast)
+	await _resolve_spell_cast_targets(cast)
+	await _create_spell_cast_areas(cast)
+	await _finish_spell_cast(cast)
+
+
+func _spell_cast_context(target_coord: Vector2i = Vector2i.ZERO, additional_target_coord: Vector2i = Vector2i(9999, 9999), extra_target_coords: Array[Vector2i] = [], chain_target_ids: Array[String] = []) -> SpellCastContext:
+	var cast := SpellCastContext.new()
+	cast.caster = active_character
+	cast.spell = pending_spell_data
+	cast.target_coord = target_coord
+	cast.additional_target_coord = additional_target_coord
+	cast.extra_target_coords = extra_target_coords
+	cast.chain_target_ids = chain_target_ids
+	cast.players = player_entities
+	cast.monsters = monster_entities
+	cast.player_index = current_player_idx
+	cast.grid = hex_grid
+	cast.hud = hud
+	cast.tracker = tracker
+	cast.turn_budget = turn_budget
+	cast.areas = _spell_zones()
+	cast.prestidigitation_effects = prestidigitation_effects
+	cast.divine_intervention = pending_divine_intervention
+	cast.divine_intervention_wish = pending_divine_intervention_wish
+	cast.owner_label = _owner_label_for_character(active_character) if active_character != null else ""
+	cast.can_spend = _can_spend_action_cost
+	cast.highlight_reachable = _highlight_reachable
+	cast.reset_pending = _reset_pending_spell_cast
+	cast.publish_spell = _replace_pending_cast_spell
+	cast.set_resolving = _set_spell_cast_resolving
+	cast.detected_creatures = _detect_evil_and_good_targets
+	cast.detected_hazards = _detect_poison_and_disease_targets
+	cast.effect_boundary_rounds = _spell_boundary_rounds
+	cast.owner_label_for_character = _owner_label_for_character
+	cast.action_cost_for_command = _action_cost_for_command
+	cast.add_find_steed_entity = _add_find_steed_entity
+	cast.apply_find_steed_life_bond = _apply_find_steed_life_bond
+	cast.check_battle_end_conditions = _check_battle_end_conditions
+	cast.collect_attack_inspiration_decision = _collect_attack_inspiration_decision
+	cast.collect_bardic_inspiration_save_decision = _collect_bardic_inspiration_save_decision
+	cast.collect_countercharm_decisions = _collect_countercharm_decisions
+	cast.collect_counterspell_decisions = _collect_counterspell_decisions
+	cast.collect_reaction_decisions = _collect_reaction_decisions
+	cast.collect_spell_shield_decision = _collect_spell_shield_decision
+	cast.collect_stroke_of_luck_save_decision = _collect_stroke_of_luck_save_decision
+	cast.offer_potent_spellcasting_vitality = _offer_potent_spellcasting_vitality
+	cast.offer_power_word_heal_stand = _offer_power_word_heal_stand
+	cast.offer_sneak_attack = _offer_sneak_attack
+	cast.offer_divine_smite = _offer_divine_smite
+	cast.offer_weapon_damage_riders = _offer_weapon_damage_riders
+	cast.publish_true_strike_activity = _publish_true_strike_activity
+	cast.spend_action_cost = _spend_action_cost
+	cast.trigger_enemy_defeat_features = _trigger_enemy_defeat_features
+	cast.finish_targeting = _finish_spell_targeting
+	cast.begin_targeting = _begin_spell_targeting
+	cast.minor_illusion_markers = minor_illusion_markers
+	cast.mage_hand_markers = mage_hand_markers
+	cast.light_spell_markers = light_spell_markers
+	cast.dancing_light_sets = dancing_light_sets
+	cast.produce_flame_markers = produce_flame_markers
+	cast.refresh_poison_senses = _refresh_detect_poison_and_disease_senses
+	cast.refresh_creature_senses = _refresh_detect_evil_and_good_senses
+	cast.end_concentration = _end_concentration
+	cast.end_resilient_sphere = _end_resilient_sphere_for_target
+	cast.push_blocked_hexes = _spell_push_blocked_hexes
+	cast.redraw_entities = _update_grid_entities
+	cast.push_combat_target = _push_combat_target
+	return cast
+
+
+func _reset_pending_spell_cast(flags: int) -> void:
+	if flags & SpellCastContext.CLEAR_ACTION:
 		pending_action_type = ""
-		_highlight_reachable()
+	if flags & SpellCastContext.CLEAR_SPELL:
+		pending_spell_data = {}
+	if flags & SpellCastContext.CLEAR_INTERVENTION:
+		pending_divine_intervention = false
+	if flags & SpellCastContext.CLEAR_WISH:
+		pending_divine_intervention_wish = false
+
+
+func _replace_pending_cast_spell(spell_data: Dictionary) -> void:
+	pending_spell_data = spell_data
+
+
+func _set_spell_cast_resolving(resolving: bool) -> void:
+	resolving_player_action = resolving
+
+
+func _resolve_spell_cast_movement(cast: SpellCastContext) -> bool:
+	return await SpellCastMovement._resolve_spell_cast_movement(cast)
+
+
+
+
+func _collect_spell_cast_reactions(cast: SpellCastContext) -> void:
+	await SpellCastReactions._collect_spell_cast_reactions(cast)
+
+
+
+
+func _resolve_spell_cast_markers(cast: SpellCastContext) -> bool:
+	return await SpellCastMarkers._resolve_spell_cast_markers(cast)
+
+
+
+
+func _prepare_spell_cast_effects(cast: SpellCastContext) -> void:
+	await SpellCastReactions._prepare_spell_cast_effects(cast)
+
+
+
+
+func _resolve_spell_cast_targets(cast: SpellCastContext) -> void:
+	await SpellCastResults._resolve_spell_cast_targets(cast)
+
+
+
+
+func _create_spell_cast_areas(cast: SpellCastContext) -> void:
+	await SpellCastAreas._create_spell_cast_areas(cast)
+
+
+
+
+func _finish_spell_cast(cast: SpellCastContext) -> void:
+	await SpellCastResults._finish_spell_cast(cast)
+
+
+
+
+func _resolve_ice_knife_splash(center: Vector2i, spell_data: Dictionary, slot_level: int, cast_decisions: Dictionary) -> void:
+	await SpellCastResults._resolve_ice_knife_splash(_spell_cast_context(), center, spell_data, slot_level, cast_decisions)
+
+
+
+
+func _spell_decisions_for_target(cast_decisions: Dictionary, first_target: bool) -> Dictionary:
+	return SpellCastResults._spell_decisions_for_target(_spell_cast_context(), cast_decisions, first_target)
+
+
+
+
+func _collect_spell_shield_decision(target: Character, spell_data: Dictionary, existing_decisions: Dictionary) -> Dictionary:
+	if target == null or not target.reaction_available or "shield" not in target.known_spells or int(target.spell_slots.get("1", 0)) <= 0:
+		return {}
+	for decision_key in existing_decisions:
+		if str(decision_key) == "counterspell:%s" % target.character_name and bool(existing_decisions[decision_key]):
+			return {}
+	var spell_id := str(spell_data.get("id", ""))
+	var attack_type := str(spell_data.get("attack_type", "none"))
+	if spell_id == "magic_missile":
+		return {"shield": await hud.request_reaction(_owner_label_for_character(target), "shield", "Magic Missile targets you. Shield prevents all its damage and adds +5 AC until your next turn.")}
+	if attack_type not in ["ranged_spell", "melee_spell"]:
+		return {}
+	var spell_name := str(spell_data.get("name", "This spell"))
+	return {"shield": await hud.request_reaction(_owner_label_for_character(target), "shield", "If %s hits you, cast Shield as a Reaction? It spends only if an attack hits. The +5 AC applies against the triggering attack and later attacks until the start of your next turn." % spell_name, "Use Shield if hit?", "Use Reaction", "Shield — %s" % _owner_label_for_character(target))}
+
+
+func _settle_empowered_spell(target, result: Dictionary, decisions: Dictionary) -> Dictionary:
+	return await SpellCastResults._settle_empowered_spell(_spell_cast_context(), target, result, decisions)
+
+
+
+
+func _apply_find_steed_life_bond(owner: Character, healing: int, owner_position: Vector2i) -> void:
+	if healing <= 0 or owner == null:
 		return
-	if target_type == "self" and target_coord != spell_origin:
-		hud.add_log("[color=orange]%s can only target its caster.[/color]" % pending_spell_data.get("name", "This spell"))
-		_highlight_reachable()
-		return
-	if target_type == "single_ally":
-		var ally_at_target := false
-		for player in player_entities:
-			if player.get("hex_position", Vector2i.ZERO) == target_coord and player.get("character") != null and player["character"].is_alive:
-				ally_at_target = true
-				break
-		if not ally_at_target:
-			hud.add_log("[color=orange]%s needs a living ally target.[/color]" % pending_spell_data.get("name", "This spell"))
-			_highlight_reachable()
-			return
-
-	var area_selection := _area_selection_for_spell(pending_spell_data)
-	if target_type in ["area", "cone"] and not area_selection.get("success", false):
-		hud.add_log("[color=orange]%s[/color]" % area_selection.get("message", "Invalid area selection."))
-		_highlight_reachable()
-		return
-
-	# Validate self-targeted teleport destinations before spending a spell slot.
-	for effect in pending_spell_data.get("effects", []):
-		if str(effect.get("type", "")) == "teleport" and (not hex_grid.has_tile(target_coord) or not hex_grid.is_hex_passable(target_coord) or _is_occupied_hex(target_coord)):
-			hud.add_log("[color=orange]That teleport destination is not available.[/color]")
-			_highlight_reachable()
-			return
-
-	# Deduct spell slot if leveled spell
-	var spell_level: int = int(pending_spell_data.get("level", 0))
-	var slot_level_used: int = spell_level
-	if spell_level > 0:
-		var slot_result := CombatAction.spend_spell_slot(active_character, pending_spell_data)
-		if not slot_result.get("success", false):
-			hud.add_log("[color=orange]%s[/color]" % slot_result.get("message", "No spell slots remaining!"))
-			pending_action_type = ""
-			_highlight_reachable()
-			return
-		slot_level_used = int(slot_result.get("slot_level", spell_level))
-		hud.add_log("%s expended a level %d spell slot." % [active_character.character_name, int(slot_result.get("slot_level", spell_level))])
-
-	# Self-targeted teleport spells resolve movement at the combat-state boundary;
-	# there is no creature at the destination to pass through CombatAction.
-	for effect in pending_spell_data.get("effects", []):
-		if str(effect.get("type", "")) != "teleport":
+	for entity in player_entities:
+		if not entity.get("is_steed", false) or entity.get("steed_owner") != owner:
 			continue
-		var origin: Vector2i = player_entities[current_player_idx].get("hex_position", Vector2i.ZERO)
-		if not hex_grid.has_tile(target_coord) or not hex_grid.is_hex_passable(target_coord) or _is_occupied_hex(target_coord):
-			hud.add_log("[color=orange]That teleport destination is not available.[/color]")
-			_highlight_reachable()
+		if not Targeting.is_in_range(owner_position, entity.get("hex_position", Vector2i.ZERO), 1):
 			return
-		player_entities[current_player_idx]["hex_position"] = target_coord
-		hud.add_log("[color=cyan]%s teleports from %s to %s.[/color]" % [active_character.character_name, origin, target_coord])
-		var teleport_cost := str(pending_spell_data.get("casting_time", "action"))
-		_spend_action_cost(teleport_cost if teleport_cost in ["action", "bonus_action"] else "action")
-		pending_action_type = ""
-		_check_battle_end_conditions()
-		_highlight_reachable()
-		_update_grid_entities()
+		var steed: Character = entity.get("character")
+		if steed == null or not steed.is_alive:
+			return
+		var restored := PaladinRules.apply_life_bond(owner, steed, healing)
+		if restored > 0:
+			hud.add_log("Life Bond restores %d Hit Points to %s." % [restored, steed.character_name])
 		return
-
-	var spell_reaction_decisions: Dictionary = {}
-	if active_character.has_feature("sorcerer_metamagic") and active_character.get_sorcery_points() > 0 and pending_spell_data.has("damage"):
-		if await hud.request_reaction(_owner_label_for_character(active_character), "metamagic:empowered", "Spend 1 Sorcery Point to improve this spell's damage roll.", "Use Empowered Spell?", "Empower Spell", "Empowered Spell — %s" % _owner_label_for_character(active_character)):
-			spell_reaction_decisions["metamagic:empowered"] = true
-
-	var targets_list: Array = []
-	var counterspell_context := await _collect_counterspell_decisions(active_character)
-	var counterspell_observers: Array = counterspell_context.get("observers", [])
-	var counterspell_decisions: Dictionary = counterspell_context.get("decisions", {})
-	for decision_key in spell_reaction_decisions:
-		counterspell_decisions[decision_key] = spell_reaction_decisions[decision_key]
-	var counterspell_pending := true
-
-	if target_type == "area" or pending_spell_data.get("target") == "cone":
-		var radius := int(area_selection.get("radius", 2))
-		var cone_size := int(area_selection.get("size", 3))
-		var origin: Vector2i = player_entities[current_player_idx]["hex_position"]
-
-		if target_type == "cone":
-			targets_list = Targeting.get_cone_targets(origin, target_coord, cone_size, hex_grid)
-		else:
-			targets_list = Targeting.get_sphere_targets(target_coord, radius, hex_grid)
-	else:
-		targets_list = [target_coord]
-
-	# If spell requires concentration, handle existing concentration
-	if pending_spell_data.get("concentration", false):
-		_end_concentration(active_character)
-		active_character.concentrating_on = {
-			"spell_id": pending_spell_data["id"],
-			"effects": pending_spell_data.get("effects", []),
-			"targets": []
-		}
-
-	# Apply spell to all entities in the targets list
-	for target_hex in targets_list:
-		# Check if player is there
-		var p_target: Character = null
-		for p in player_entities:
-			if p["hex_position"] == target_hex and p["character"].is_alive:
-				p_target = p["character"]
-				break
-
-		# Check if monster is there
-		var m_target: Dictionary = {}
-		for m in monster_entities:
-			if m["hex_position"] == target_hex and m["is_alive"]:
-				m_target = m
-				break
-
-		if p_target != null:
-			var res := CombatAction.resolve_spell(active_character, p_target, pending_spell_data, false, counterspell_decisions if counterspell_pending else {}, counterspell_observers if counterspell_pending else [], slot_level_used)
-			hud.add_log(res.get("message", ""))
-			counterspell_pending = false
-			if not res.get("success", true):
-				break
-			
-			if pending_spell_data.get("concentration", false):
-				active_character.concentrating_on["targets"].append(p_target)
-				
-			_handle_spell_effects(p_target, {}, pending_spell_data, player_entities[current_player_idx].get("hex_position", Vector2i.ZERO), target_hex)
-
-		elif not m_target.is_empty():
-			var res := CombatAction.resolve_spell(active_character, m_target, pending_spell_data, false, counterspell_decisions if counterspell_pending else {}, counterspell_observers if counterspell_pending else [], slot_level_used)
-			hud.add_log(res.get("message", ""))
-			counterspell_pending = false
-			if not res.get("success", true):
-				break
-			
-			if pending_spell_data.get("concentration", false):
-				active_character.concentrating_on["targets"].append(m_target)
-				
-			_handle_spell_effects(null, m_target, pending_spell_data, player_entities[current_player_idx].get("hex_position", Vector2i.ZERO), target_hex)
-			
-			if int(m_target.get("current_hp", 0)) <= 0:
-				m_target["is_alive"] = false
-				hud.add_log("[color=green]%s was defeated![/color]" % m_target["name"])
-				tracker.remove_combatant(m_target["id"])
-
-	# Custom area effects like Sleep
-	_handle_area_spell_effects(targets_list, pending_spell_data)
-
-	# Finish spellcasting
-	var spell_cost := str(pending_spell_data.get("casting_time", "action"))
-	if spell_cost not in ["action", "bonus_action"]:
-		spell_cost = "action"
-	_spend_action_cost(spell_cost)
-	pending_action_type = ""
-	_check_battle_end_conditions()
-	_highlight_reachable()
 
 
 func _area_selection_for_spell(spell_data: Dictionary) -> Dictionary:
-	var target_type := str(spell_data.get("target", "single"))
-	if target_type not in ["area", "cone"]:
-		return {"success": true, "type": "single_target", "persistent": false}
-
-	var selection_effect: Dictionary = {}
-	for effect in spell_data.get("effects", []):
-		if str(effect.get("type", "")) == "area_selection":
-			selection_effect = effect.duplicate(true)
-			break
-	if selection_effect.is_empty():
-		selection_effect = {
-			"type": "area_selection",
-			"shape": "cone" if target_type == "cone" else "sphere",
-			"size": int(spell_data.get("cone_size", 3)),
-			"radius": int(spell_data.get("area_radius", 2)),
-		}
-	return EventResolver.resolve_area_selection(selection_effect)
+	return SpellCastTargeting._area_selection_for_spell(_spell_cast_context(), spell_data)
 
 
 func _on_hex_hovered(coord: Vector2i) -> void:
@@ -1391,9 +3613,9 @@ func _on_hex_hovered(coord: Vector2i) -> void:
 		_clear_path_preview()
 		var player_pos: Vector2i = player_entities[current_player_idx]["hex_position"]
 		if coord != player_pos and active_character.is_alive:
-			var reachable := hex_grid.get_reachable(player_pos, remaining_speed)
+			var reachable := _player_reachable(player_pos, remaining_speed, active_character)
 			if coord in reachable:
-				var path := hex_grid.find_path(player_pos, coord)
+				var path := _player_path(player_pos, coord, active_character)
 				for h in path:
 					if h != player_pos:
 						hex_grid.add_highlight(h, HexHighlight.HIGHLIGHT_COLORS[HexHighlight.HighlightType.PATH])
@@ -1403,8 +3625,8 @@ func _on_hex_hovered(coord: Vector2i) -> void:
 	# For spell casting, overlay targeting shapes (e.g. highlight AoE sphere or cone on hover)
 	if pending_action_type == "spell":
 		var target_type: String = pending_spell_data.get("target", "single")
-		var origin: Vector2i = player_entities[current_player_idx]["hex_position"]
-		var max_range := int(pending_spell_data.get("range", 6))
+		var origin := _pending_spell_origin()
+		var max_range := _spell_target_range(pending_spell_data)
 
 		if not Targeting.is_in_range(origin, coord, max_range):
 			return # Out of cast range, keep default highlights
@@ -1418,8 +3640,26 @@ func _on_hex_hovered(coord: Vector2i) -> void:
 			var area_selection := _area_selection_for_spell(pending_spell_data)
 			if not area_selection.get("success", false):
 				return
-			var radius := int(area_selection.get("radius", 2))
-			aoe_list = Targeting.get_sphere_targets(coord, radius, hex_grid)
+			if int(pending_spell_data.get("area_point_count", 1)) > 1 and str(area_selection.get("shape", "sphere")) == "sphere":
+				var preview_centers: Array[Vector2i] = pending_command_target_coords.duplicate()
+				if coord not in preview_centers:
+					preview_centers.append(coord)
+				aoe_list = SpellCastTargeting.union_sphere_targets(preview_centers, int(area_selection.get("radius", 2)), hex_grid)
+			else:
+				match str(area_selection.get("shape", "sphere")):
+					"line":
+						if not pending_command_target_coords.is_empty():
+							aoe_list = HexUtils.hex_line(pending_command_target_coords[0], coord)
+					"point":
+						aoe_list = [coord]
+					"cube":
+						aoe_list = Targeting.get_cube_targets(origin, coord, int(area_selection.get("size", 3)), hex_grid)
+					"cone":
+						aoe_list = Targeting.get_cone_targets(origin, coord, int(area_selection.get("size", 3)), hex_grid)
+					"square":
+						aoe_list = Targeting.get_square_targets(coord, int(area_selection.get("size_feet", 10)), hex_grid)
+					_:
+						aoe_list = Targeting.get_sphere_targets(coord, int(area_selection.get("radius", 2)), hex_grid)
 		elif target_type == "cone":
 			var area_selection := _area_selection_for_spell(pending_spell_data)
 			if not area_selection.get("success", false):
@@ -1429,6 +3669,12 @@ func _on_hex_hovered(coord: Vector2i) -> void:
 
 		for hex in aoe_list:
 			hex_grid.add_highlight(hex, HexHighlight.HIGHLIGHT_COLORS[HexHighlight.HighlightType.SPELL])
+
+
+## Chill Touch expires at the end of the caster's next turn, regardless of
+## where the target falls in initiative order.
+func _tick_spell_healing_suppression(caster: Character) -> void:
+	SpellEncounterLifecycle._tick_spell_healing_suppression(_spell_cast_context(), caster)
 
 
 func _end_active_turn() -> void:
@@ -1442,31 +3688,137 @@ func _end_active_turn() -> void:
 
 	# Tick active conditions at turn end
 	if active_combatant["is_player"] and active_character != null:
+		await _resolve_delayed_spell_damage(active_character)
+		if _check_battle_end_conditions():
+			return
+		_resolve_condition_spell_repeat_saves(active_character)
+		await _resolve_spell_zone_end_turn(active_character, player_entities[current_player_idx].get("hex_position", Vector2i.ZERO))
+		_tick_spell_effect_boundary(active_character, "end")
+		SpellEffects.reconcile(_spell_casters(), _spell_effect_targets())
+		for fall_message in LocalRoomCombat.reconcile_flight_altitudes(player_entities):
+			hud.add_log(fall_message)
+		if _check_battle_end_conditions():
+			return
 		active_character.tick_conditions()
+		active_character.combat_command.clear()
+		_tick_spell_healing_suppression(active_character)
+		FighterRules.end_turn(active_character)
 	elif not active_combatant["is_player"] and not active_combatant.is_empty():
 		var monster: Dictionary = active_combatant["entity"]
+		await _resolve_delayed_spell_damage(monster)
+		if _check_battle_end_conditions():
+			return
+		if CombatAction.has_condition_source(monster, RogueRules.CUNNING_KNOCKOUT_SOURCE):
+			var knock_out_dc := int(monster.get("rogue_cunning_knock_out_dc", 0))
+			var knock_out_save := BarbarianRules.roll_monster_save(monster, "CON")
+			if RogueRules.resolve_knock_out_repeat_save(monster, knock_out_save, knock_out_dc):
+				hud.add_log("%s succeeds on the end-of-turn Constitution save and wakes from Knock Out (%d vs DC %d)." % [monster.get("name", "The target"), knock_out_save, knock_out_dc])
+			else:
+				hud.add_log("%s remains Unconscious after failing its end-of-turn Constitution save (%d vs DC %d)." % [monster.get("name", "The target"), knock_out_save, knock_out_dc])
+		if CombatAction.has_condition_source(monster, "rogue_cunning_poison"):
+			var poison_save := BarbarianRules.roll_monster_save(monster, "CON")
+			var poison_dc := int(monster.get("rogue_cunning_poison_dc", 0))
+			if poison_save >= poison_dc:
+				CombatAction.remove_condition_source(monster, "rogue_cunning_poison", ["poisoned"])
+				monster.erase("rogue_cunning_poison_dc")
+				hud.add_log("%s succeeds on the end-of-turn Constitution save and ends the Rogue's poison." % monster.get("name", "The target"))
+			else:
+				hud.add_log("%s remains Poisoned after failing its end-of-turn Constitution save (%d vs DC %d)." % [monster.get("name", "The target"), poison_save, poison_dc])
+		_resolve_condition_spell_repeat_saves(monster)
+		await _resolve_spell_zone_end_turn(monster, monster.get("hex_position", Vector2i.ZERO))
+		SpellEffects.reconcile(_spell_casters(), _spell_effect_targets())
 		CombatState.tick_monster_condition_durations(monster)
+		monster.erase("combat_command")
+		if not CombatAction.has_condition_source(monster, "rogue_cunning_poison"):
+			monster.erase("rogue_cunning_poison_dc")
+		if not CombatAction.has_condition_source(monster, RogueRules.CUNNING_KNOCKOUT_SOURCE):
+			monster.erase("rogue_cunning_knock_out_dc")
+		monster.erase("fighter_stood_up")
 
 	var round_complete := tracker.next_turn()
+	if round_complete:
+		# Combat owns effect/light ticks; advance only the durable campaign clock here.
+		GameManager.campaign_elapsed_seconds += 6
+		for player in player_entities:
+			CorpseRules.advance_time(player["character"], GameManager.campaign_elapsed_seconds)
+		_tick_portable_light_sources()
+		_tick_spell_zones()
 	_start_combat_turn()
 
 
+func _tick_portable_light_sources() -> void:
+	for player in player_entities:
+		var character: Character = player.get("character")
+		if character == null or character.inventory == null:
+			continue
+		for record in character.inventory.owned_instances():
+			if LightSourceRules.is_lit(record):
+				character.inventory.update_instance(LightSourceRules.tick_record(record, 6))
+	for index in dropped_combat_items.size():
+		var dropped: Dictionary = dropped_combat_items[index]
+		if LightSourceRules.is_lit(dropped):
+			dropped_combat_items[index] = LightSourceRules.tick_record(dropped, 6)
+	_update_grid_entities()
+
+
+func _resolve_delayed_spell_damage(target) -> void:
+	await SpellEncounterLifecycle._resolve_delayed_spell_damage(_spell_cast_context(), target)
 ## Tick monster conditions and restore movement after a spell slow expires.
 ## Kept as a stateless boundary so duration cleanup can be exercised without
 ## constructing a full combat scene.
 static func tick_monster_condition_durations(monster: Dictionary) -> void:
 	var conditions: Dictionary = monster.get("conditions", {})
-	if conditions.is_empty(): return
+	var tracked_conditions: Array = monster.get("condition_sources", {}).keys()
+	var had_animal_friendship := _has_animal_friendship_condition_source(monster)
+	var was_turned := CombatAction.has_condition_source(monster, "turn_undead")
+	var was_abjured := CombatAction.has_condition_source(monster, "abjure_foes")
+	CombatAction.tick_condition_sources(monster)
+	if had_animal_friendship and not _has_animal_friendship_condition_source(monster):
+		monster.erase("animal_friendship_caster_ids")
+	if was_turned and not CombatAction.has_condition_source(monster, "turn_undead"):
+		monster.erase("turn_undead_origin")
+	if was_abjured and not CombatAction.has_condition_source(monster, "abjure_foes"):
+		monster.erase(PaladinRules.ABJURE_FOES_MARKER)
+		monster.erase(PaladinRules.ABJURE_FOES_CASTER_ID)
 	var expired: Array[String] = []
 	for cond in conditions:
+		if cond in tracked_conditions:
+			continue
 		conditions[cond] -= 1
 		if conditions[cond] <= 0:
 			expired.append(cond)
 	for cond in expired:
 		conditions.erase(cond)
+		if cond == "longstrider":
+			monster["speed"] = maxi(0, int(monster.get("speed", 6)) - 2)
+		if cond == "charmed" and not conditions.has("charmed"):
+			monster.erase("animal_friendship_caster_ids")
+		if cond == "frightened":
+			monster.erase(PaladinRules.ABJURE_FOES_MARKER)
+			monster.erase(PaladinRules.ABJURE_FOES_CASTER_ID)
+		if cond == "incapacitated" or cond == "frightened":
+			if not conditions.has("incapacitated") and not conditions.has("frightened"):
+				monster.erase("turn_undead_origin")
 		if cond == "speed_reduced" and monster.has("speed_before_spell_slow"):
 			monster["speed"] = int(monster.get("speed_before_spell_slow", monster.get("speed", 6)))
 			monster.erase("speed_before_spell_slow")
+
+
+static func _has_animal_friendship_condition_source(monster: Dictionary) -> bool:
+	if SpellEffects.has_spell(monster, "animal_friendship"):
+		return true
+	for source_id in monster.get("condition_sources", {}).get("charmed", {}):
+		if str(source_id).begins_with("animal_friendship:"):
+			return true
+	return false
+
+
+func _creature_at_coord_matches_sizes(coord: Vector2i, required_sizes: Array) -> bool:
+	return SpellCastTargeting._creature_at_coord_matches_sizes(_spell_cast_context(), coord, required_sizes)
+
+
+func _creature_at_coord_has_condition(coord: Vector2i, condition: String) -> bool:
+	return SpellCastTargeting._creature_at_coord_has_condition(_spell_cast_context(), coord, condition)
 
 
 func _check_battle_end_conditions() -> bool:
@@ -1495,8 +3847,10 @@ func _check_battle_end_conditions() -> bool:
 	# Check if all players dead (TPK / party wipe)
 	var players_alive := false
 	for p in player_entities:
+		if p.get("is_familiar", false) or p.get("is_steed", false) or p.get("is_created_creature", false):
+			continue
 		var c: Character = p.get("character")
-		if c != null and c.is_alive:
+		if c != null and (c.is_alive or (not c.disintegrated and (c.has_feature("fighter_indomitable") or c.has_feature("champion_survivor")) and c.death_save_failures < 3 and c.death_save_successes < 3)):
 			players_alive = true
 			break
 
@@ -1510,6 +3864,17 @@ func _check_battle_end_conditions() -> bool:
 
 
 func _end_battle(result: String) -> void:
+	CreatedCreatureCombat.capture(self)
+	_cleanup_dead_familiars()
+	_sync_find_steeds()
+	LocalRoomCombat.capture_spell_zones(player_entities, active_spell_zones)
+	LocalRoomCombat.capture(player_entities)
+	CombatAction.active_turn_actor_id = 0
+	for source_id_value in active_spell_zones.keys().duplicate():
+		_remove_spell_zone(str(source_id_value))
+	SpellEffects.finish_encounter(_spell_casters(), _spell_effect_targets())
+	_clear_monk_battle_effects()
+	_clear_delayed_spell_damage()
 	set_process_input(false)
 	var presenter := CombatResultPresenter.new()
 	var choice: String = await presenter.present(self, result, GameManager.test_mode)
@@ -1526,13 +3891,94 @@ func _end_battle(result: String) -> void:
 		GameManager.exit_combat(result)
 
 
+func _clear_monk_battle_effects() -> void:
+	for player in player_entities:
+		var member: Character = player.get("character")
+		if member != null and member.feature_uses.has("monk_patient_dodge"):
+			member.remove_condition("dodging")
+			member.feature_uses.erase("monk_patient_dodge")
+
+
+func _exit_tree() -> void:
+	for entity in player_entities:
+		var character: Character = entity.get("character")
+		if character != null: character.familiar_senses = null
+	CombatAction.active_turn_actor_id = 0
+	_clear_monk_battle_effects()
+	_clear_delayed_spell_damage()
+
+
+func _clear_delayed_spell_damage() -> void:
+	SpellEncounterLifecycle._clear_delayed_spell_damage(_spell_cast_context())
+
+
+func _refresh_paladin_divine_sense(paladin: Character) -> void:
+	if paladin == null or paladin.class_id != "paladin" or not paladin.feature_uses.has("paladin_divine_sense_expires_round"):
+		return
+	if paladin.has_condition("incapacitated") or tracker.current_round >= int(paladin.feature_uses.get("paladin_divine_sense_expires_round", 0)):
+		paladin.feature_uses.erase("paladin_divine_sense_targets")
+		paladin.feature_uses.erase("paladin_divine_sense_expires_round")
+		return
+	if current_player_idx < 0 or current_player_idx >= player_entities.size():
+		return
+	var origin: Vector2i = player_entities[current_player_idx].get("hex_position", Vector2i.ZERO)
+	CombatAction.resolve_divine_sense(paladin, monster_entities, origin, 12, tracker.current_round, true)
+
+
 func _execute_class_feature(feature: Dictionary) -> void:
+	if str(feature.get("id", "")) == "rogue_steady_aim":
+		if player_moved_this_turn or rogue_steady_aim_armed:
+			hud.add_log("Steady Aim requires that you have not moved this turn.")
+			return
+		if not turn_budget.can_spend("bonus_action") or not active_character.use_feature("rogue_steady_aim"):
+			hud.add_log("No Bonus Action remains for Steady Aim.")
+			return
+		_spend_action_cost("bonus_action")
+		rogue_steady_aim_armed = true
+		remaining_speed = 0
+		hud.add_log("%s steadies their aim. Speed is 0 until the end of the turn; the next attack has Advantage." % active_character.character_name)
+		hud.update_hud(active_character, tracker)
+		_highlight_reachable()
+		return
+	if str(feature.get("resolver", "")) == "cleric_rules" and str(feature.get("id", "")) == "cleric_turn_undead":
+		await _execute_cleric_turn_undead(feature)
+		return
+	if feature.has("executor"):
+		var result := ClassFeature.execute(active_character, feature, null, turn_budget)
+		if not result.get("success", false):
+			hud.add_log(result.get("message", "Feature unavailable."))
+			return
+		for effect_result in result.get("results", []):
+			hud.add_log(effect_result.get("message", ""))
+		if str(feature.get("id", "")) == "barbarian_rage" and not result.get("rage_extended", false):
+			var pounce_distance := BarbarianRules.instinctive_pounce_distance(active_character)
+			if pounce_distance > 0:
+				remaining_speed += pounce_distance
+				hud.add_log("[color=green]Instinctive Pounce: %s can move up to %d feet.[/color]" % [active_character.character_name, pounce_distance * 5])
+		if feature.get("id", "") == "fighter_second_wind" and active_character.has_feature("fighter_tactical_shift"):
+			resolving_player_action = true
+			await _offer_fighter_movement("Tactical Shift")
+			resolving_player_action = false
+		if feature.get("action_cost", "") == "bonus_action" and active_character.has_feature("monk_fleet_step"):
+			_grant_extra_movement_speed()
+		hud.update_hud(active_character, tracker)
+		_highlight_reachable()
+		return
 	var f_id: String = feature.get("id", "")
 	var cost_type: String = feature.get("action_cost", "action")
 	if not _can_spend_action_cost(cost_type):
 		hud.add_log("You have no %s available for %s." % [cost_type.replace("_", " "), feature.get("name", f_id)])
 		return
 	
+	var monk_choice := str(feature.get("selected_action", ""))
+	var focus_cost := int(feature.get("focus_cost", 0))
+	if f_id in ["monk_patient_defense", "monk_step_of_the_wind"]:
+		if monk_choice not in feature.get("options", []):
+			return
+		focus_cost = 1 if monk_choice in ["disengage_dodge", "dash_disengage"] else 0
+	if focus_cost > 0 and active_character.get_focus_points() < focus_cost:
+		hud.add_log("Not enough Focus.")
+		return
 	if not active_character.use_feature(f_id):
 		hud.add_log("You have no uses of %s remaining!" % feature.get("name", f_id))
 		return
@@ -1540,16 +3986,36 @@ func _execute_class_feature(feature: Dictionary) -> void:
 	hud.add_log("[color=cyan]%s uses class feature: %s![/color]" % [active_character.character_name, feature.get("name", f_id)])
 
 	var effects: Array = feature.get("effects", [])
+	active_character.spend_focus_points(focus_cost)
 	_spend_action_cost(cost_type)
+	if cost_type == "bonus_action" and pending_action_type == "unarmed_attack":
+		pending_action_type = ""
+		pending_feature_data = {}
 
 	for effect in effects:
 		var type: String = effect.get("type", "")
 		match type:
+			"monk_bonus_action":
+				if monk_choice.begins_with("dash"):
+					_grant_extra_movement_speed()
+				if "disengage" in monk_choice:
+					active_character.add_condition("disengaging", 1)
+				if monk_choice == "disengage_dodge":
+					active_character.add_condition("dodging", 2)
+					active_character.feature_uses["monk_patient_dodge"] = true
+					if active_character.has_feature("monk_heightened_focus"):
+						var temp_hp := Dice.parse_dice_string(active_character.get_martial_arts_die()) + Dice.parse_dice_string(active_character.get_martial_arts_die())
+						active_character.temp_hp = maxi(active_character.temp_hp, temp_hp)
+						hud.add_log("Heightened Focus grants %d Temporary Hit Points." % temp_hp)
+				if active_character.has_feature("monk_fleet_step") and f_id == "monk_patient_defense":
+					_grant_extra_movement_speed()
+					hud.add_log("Fleet Step grants Step of the Wind dash movement.")
+				hud.add_log("%s: %s (%d Focus remaining)." % [feature.get("name", f_id), monk_choice.replace("_", " + "), active_character.get_focus_points()])
 			"grant_extra_action":
-				turn_budget.grant_action()
+				turn_budget.grant_surge_action()
 				hud.add_log("[color=green]%s gains an additional action this turn![/color]" % active_character.character_name)
 			"cunning_dash":
-				remaining_speed += active_character.get_speed()
+				_grant_extra_movement_speed()
 				hud.add_log("[color=green]%s uses Cunning Action: Dash! Speed doubled to %.1f.[/color]" % [active_character.character_name, remaining_speed])
 			"cunning_disengage":
 				active_character.add_condition("disengaging", 1)
@@ -1575,7 +4041,7 @@ func _execute_class_feature(feature: Dictionary) -> void:
 				var selected_action := str(feature.get("selected_action", "dash"))
 				match selected_action:
 					"dash":
-						remaining_speed += active_character.get_speed()
+						_grant_extra_movement_speed()
 						hud.add_log("[color=green]%s uses Cunning Action: Dash! Speed doubled to %.1f.[/color]" % [active_character.character_name, remaining_speed])
 					"disengage":
 						active_character.add_condition("disengaging", 1)
@@ -1591,25 +4057,70 @@ func _execute_class_feature(feature: Dictionary) -> void:
 				var step_action := str(feature.get("selected_action", "dash"))
 				match step_action:
 					"dash":
-						remaining_speed += active_character.get_speed()
+						_grant_extra_movement_speed()
 						hud.add_log("[color=green]%s uses Step of the Wind: Dash! Speed doubled to %.1f.[/color]" % [active_character.character_name, remaining_speed])
 					"disengage":
 						active_character.add_condition("disengaging", 1)
 						hud.add_log("[color=green]%s uses Step of the Wind: Disengage![/color]" % active_character.character_name)
 			"divine_sense":
 				var sense_origin: Vector2i = player_entities[current_player_idx].get("hex_position", Vector2i.ZERO)
-				var sense_result := CombatAction.resolve_divine_sense(active_character, monster_entities, sense_origin)
+				var sense_result := CombatAction.resolve_divine_sense(active_character, monster_entities, sense_origin, 12, tracker.current_round)
 				hud.add_log("[color=cyan]%s[/color]" % sense_result.get("message", "Divine Sense resolves."))
 			"recover_spell_slots":
 				_recover_wizard_spell_slots(active_character)
+			"superior_defense":
+				var def_res := MonkRules.activate_superior_defense(active_character)
+				hud.add_log(def_res.get("message", ""))
 			_:
 				var res := EventResolver.apply_effects(active_character, [effect])
 				for r in res:
 					hud.add_log(r.get("message", ""))
 
+	if f_id == "fighter_second_wind" and active_character.has_feature("fighter_tactical_shift"):
+		resolving_player_action = true
+		await _offer_fighter_movement("Tactical Shift")
+		resolving_player_action = false
 	hud.update_hud(active_character, tracker)
 	_highlight_reachable()
 
+
+func _execute_cleric_turn_undead(feature: Dictionary) -> void:
+	var channel_error := ClericRules.channel_divinity_error(active_character)
+	if not channel_error.is_empty():
+		hud.add_log(channel_error)
+		return
+	if not turn_budget.can_spend("magic_action") or not active_character.has_feature("cleric_turn_undead") or int(active_character.feature_uses.get("cleric_channel_divinity", 0)) <= 0:
+		hud.add_log("Turn Undead needs a Channel Divinity use and a Magic action.")
+		return
+	var origin: Vector2i = player_entities[current_player_idx].get("hex_position", Vector2i.ZERO)
+	var candidates: Array[Dictionary] = []
+	for monster in monster_entities:
+		if monster.get("is_alive", false) and str(monster.get("creature_type", "")).to_lower() == "undead" and Targeting.is_in_range(origin, monster.get("hex_position", Vector2i.ZERO), 6):
+			candidates.append(monster)
+	if candidates.is_empty():
+		hud.add_log("No Undead are within 30 feet.")
+		return
+	resolving_player_action = true
+	var selected := await hud.request_turn_undead_targets(candidates)
+	var sear := false
+	if not selected.is_empty() and active_character.has_feature("cleric_sear_undead"):
+		sear = await hud.request_reaction(_owner_label_for_character(active_character), "sear_undead", "Deal Radiant damage to each selected Undead that fails its save?", "Use Sear Undead?", "Sear", "Sear Undead")
+	resolving_player_action = false
+	if selected.is_empty():
+		return
+	if not turn_budget.can_spend("magic_action") or not active_character.use_feature("cleric_turn_undead"):
+		return
+	_spend_action_cost("magic_action")
+	var results := ClericRules.resolve_turn_undead(active_character, monster_entities, origin, selected, sear)
+	for result in results:
+		hud.add_log(str(result.get("message", "Turn Undead resolves.")))
+		for monster in monster_entities:
+			if str(monster.get("id", "")) == str(result.get("target_id", "")) and not monster.get("is_alive", false):
+				tracker.remove_combatant(str(monster["id"]))
+	_update_grid_entities()
+	hud.update_hud(active_character, tracker)
+	_check_battle_end_conditions()
+	_highlight_reachable()
 
 func _execute_item(item: Dictionary) -> void:
 	var item_id := str(item.get("id", ""))
@@ -1629,12 +4140,337 @@ func _execute_item(item: Dictionary) -> void:
 	_highlight_reachable()
 
 
+func _execute_goodberry() -> void:
+	if not _can_spend_action_cost("bonus_action"):
+		hud.add_log("You have no Bonus Action available to eat a Goodberry.")
+		return
+	if not SpellEffects.consume_goodberry_from_party(_spell_casters()):
+		hud.add_log("No Goodberries remain.")
+		return
+	var restored := active_character.heal(1)
+	_spend_action_cost("bonus_action")
+	hud.add_log("%s eats a Goodberry and regains %d Hit Point%s (%d remaining in the party)." % [active_character.character_name, restored, "" if restored == 1 else "s", SpellEffects.goodberry_count_for_party(_spell_casters())])
+	hud.update_hud(active_character, tracker)
+	_highlight_reachable()
+
+
+## Bonus movement is a separate, immediate selection, never normal movement
+## or a whole-turn Disengage. Cancel forfeits only this optional movement.
+func _fighter_entity(actor: Character) -> Dictionary:
+	for entity in player_entities:
+		if entity.get("character") == actor:
+			return entity
+	return {}
+
+
+func _fighter_movement_choices(actor: Character, toward: Variant = null) -> Dictionary:
+	var entity := _fighter_entity(actor)
+	if entity.is_empty():
+		return {}
+	var origin: Vector2i = entity["hex_position"]
+	var maximum := float(actor.get_speed()) / 2.0
+	if toward != null:
+		var straight_choices := {}
+		var spent := 0.0
+		for hex in HexUtils.hex_line(origin, toward):
+			if hex == origin:
+				continue
+			spent += hex_grid.get_hex_cost(hex)
+			if spent > maximum or not hex_grid.is_hex_passable(hex) or _fighter_hex_occupied(hex):
+				break
+			straight_choices[hex] = spent
+		return straight_choices
+	var choices := HexUtils.get_reachable(origin, maximum, func(hex: Vector2i): return hex_grid.is_hex_passable(hex) and (hex == origin or not _fighter_hex_occupied(hex)), hex_grid.get_hex_cost)
+	choices.erase(origin)
+	return choices
+
+
+func _offer_fighter_movement(label: String, actor: Character = null, toward: Variant = null) -> void:
+	if actor == null:
+		actor = active_character
+	var entity := _fighter_entity(actor)
+	if entity.is_empty():
+		return
+	var choices := _fighter_movement_choices(actor, toward)
+	if choices.is_empty():
+		return
+	var detail := "Move up to half Speed%s without Opportunity Attacks. Normal movement is preserved." % (" straight toward the target" if toward != null else "")
+	if not await hud.request_reaction(_owner_label_for_character(actor), "fighter_movement", detail, "Use %s movement?" % label, "Choose Destination", label):
+		return
+	fighter_move_choices = choices
+	fighter_move_entity = entity
+	fighter_move_done = false
+	fighter_move_waiting = true
+	var highlights := {}
+	for hex in choices:
+		highlights[hex] = HexHighlight.HIGHLIGHT_COLORS[HexHighlight.HighlightType.MOVEMENT]
+	hex_grid.set_highlights(highlights)
+	hud.add_log("%s: choose a highlighted destination, or Cancel." % label)
+	while not fighter_move_done and not _battle_ending:
+		await get_tree().process_frame
+	fighter_move_waiting = false
+	fighter_move_choices.clear()
+	fighter_move_entity = {}
+	_update_grid_entities()
+
+
+func _collect_attack_inspiration_decision(actor: Character) -> Dictionary:
+	if not BardicInspirationRules.has_die(actor):
+		return {}
+	var die := str(actor.feature_uses["bardic_inspiration_die"])
+	var accepted := await hud.request_reaction(_owner_label_for_character(actor), "bardic_inspiration", "If this attack fails, add %s. A successful attack keeps the die." % die, "Use Bardic Inspiration if the attack fails?", "Use Inspiration", "Bardic Inspiration — %s" % _owner_label_for_character(actor))
+	return {"bardic_inspiration_attack": accepted}
+
+
+func _offer_power_word_heal_stand(target, spell: Dictionary) -> void:
+	if str(spell.get("id", "")) != "power_word_heal" or not CombatAction.has_condition(target, "prone") or CombatAction.is_incapacitated(target):
+		return
+	if target is Character:
+		if target.reaction_available and await hud.request_reaction(_owner_label_for_character(target), "power_word_heal_stand", "Power Word Heal lets you spend your Reaction to stand from Prone.", "Stand up?", "Stand up", "Power Word Heal — %s" % _owner_label_for_character(target)):
+			CombatAction.stand_after_power_word_heal(target)
+	elif target is Dictionary:
+		# NPCs accept the benefit if their Reaction is still available.
+		CombatAction.stand_after_power_word_heal(target)
+
+
+func _request_brutal_strike(actor: Character, weapon: Dictionary, disadvantage: bool = false) -> Array[String]:
+	if not BarbarianRules.brutal_strike_eligible(actor, weapon, disadvantage):
+		return []
+	var detail := "Trade Advantage on this Strength attack for %s extra damage and a Brutal Strike effect." % BarbarianRules.brutal_strike_dice(actor)
+	if not await hud.request_reaction(_owner_label_for_character(actor), "brutal_strike", detail, "Use Brutal Strike?", "Brutal Strike", "Brutal Strike — %s" % _owner_label_for_character(actor)):
+		return []
+	return await hud.request_barbarian_brutal_strike(actor)
+
+
+func _finish_fighter_attack(target: Dictionary, weapon: Dictionary, result: Dictionary, actor: Character = null) -> void:
+	if actor == null:
+		actor = active_character
+	if actor == null:
+		return
+	await _offer_weapon_damage_riders(actor, target, weapon, result)
+	var entity := _fighter_entity(actor)
+	if entity.is_empty():
+		return
+	var barbarian_effects: Dictionary = result.get("barbarian_brutal_strike", {})
+	if result.get("hit", false) and not barbarian_effects.is_empty() and int(target.get("current_hp", 0)) > 0:
+		if int(barbarian_effects.get("push_distance", 0)) > 0:
+			await _push_combat_target(target, entity["hex_position"], int(barbarian_effects["push_distance"]), false)
+		if bool(barbarian_effects.get("move_after_push", false)):
+			await _offer_fighter_movement("Forceful Blow", actor, target["hex_position"])
+	if result.get("crit", false) and actor.has_feature("champion_remarkable_athlete"):
+		await _offer_fighter_movement("Remarkable Athlete", actor)
+	if result.get("hit", false) and result.get("mastery", "") == "push" and int(target.get("current_hp", 0)) > 0:
+		await _push_combat_target(target, entity["hex_position"])
+	if result.get("hit", false) and result.get("mastery", "") == "cleave" and not actor.feature_uses.get("fighter_cleave_used", false):
+		var origin: Vector2i = entity["hex_position"]
+		for other in monster_entities:
+			if other == target or not other.get("is_alive", false):
+				continue
+			if HexUtils.get_distance(target["hex_position"], other["hex_position"]) > 1 or not Targeting.is_in_range(origin, other["hex_position"], int(weapon.get("range", 1))):
+				continue
+			if await hud.request_reaction(_owner_label_for_character(actor), "cleave", "Make one extra attack against %s, without a positive ability damage bonus." % other["name"], "Use Cleave?", "Attack", "Cleave"):
+				actor.feature_uses["fighter_cleave_used"] = true
+				var cleave_weapon := weapon.duplicate(true)
+				cleave_weapon["cleave_extra"] = true
+				cleave_weapon["attack_distance"] = HexUtils.get_distance(origin, other["hex_position"])
+				var cleave_effects := await _request_brutal_strike(actor, cleave_weapon)
+				var cleave_decisions := await _collect_attack_inspiration_decision(actor)
+				if not cleave_effects.is_empty():
+					cleave_decisions["barbarian_brutal_strike_effects"] = cleave_effects
+				var cleave_packet := await _conjure_minor_elementals_damage_choice(actor, other)
+				var cleave_additional_damage := {"packets": [cleave_packet]} if not cleave_packet.is_empty() else {}
+				var cleave := CombatAction.resolve_weapon_attack(actor, other, cleave_weapon, false, false, cleave_decisions, cleave_additional_damage)
+				await _offer_divine_smite(other, cleave_weapon, cleave, actor)
+				await _offer_weapon_damage_riders(actor, other, cleave_weapon, cleave)
+				await _offer_sneak_attack(other, cleave_weapon, cleave, actor)
+				hud.add_log("Cleave: %s" % cleave.get("message", ""), false)
+				_publish_fighter_extra_attack(other, cleave_weapon, cleave, actor)
+				await _finish_fighter_attack(other, cleave_weapon, cleave, actor)
+				_mark_fighter_target_defeated(other)
+				break
+
+
+func _push_combat_target(target, origin: Vector2i, distance: int = 2, size_limited: bool = true) -> int:
+	var entity: Dictionary = _fighter_entity(target) if target is Character else target
+	if entity.is_empty(): return 0
+	if size_limited and str(entity.get("size", "medium")).to_lower() in ["huge", "gargantuan", "h", "g"]: return 0
+	var start: Vector2i = entity["hex_position"]
+	var blocked := _spell_push_blocked_hexes(target if target is Character else null, {} if target is Character else target)
+	var pushed_to := Targeting.get_pushed_position(start, origin, distance, hex_grid, blocked)
+	var path := HexUtils.hex_line(start, pushed_to)
+	for step in range(1, path.size()):
+		var from_hex: Vector2i = path[step - 1]
+		var to_hex: Vector2i = path[step]
+		if _spell_zones()._antilife_shell_blocks_crossing(target, from_hex, to_hex):
+			hud.add_log("Antilife Shell prevents crossing its barrier.")
+			break
+		entity["hex_position"] = to_hex
+		if target is Character:
+			await _apply_room_fall_damage(target, from_hex, to_hex)
+		else:
+			_apply_forced_movement_fall_damage(target, from_hex, to_hex)
+		if (target is Character and not target.is_alive) or (target is Dictionary and not bool(target.get("is_alive", true))): break
+		await _resolve_spell_zone_entries(target, from_hex, to_hex)
+		await _resolve_spell_zone_movement(target, to_hex)
+		if (target is Character and not target.is_alive) or (target is Dictionary and not bool(target.get("is_alive", true))): break
+	_update_grid_entities()
+	return HexUtils.get_distance(start, entity["hex_position"]) * 5
+
+
+func _apply_forced_movement_fall_damage(target: Dictionary, from_hex: Vector2i, to_hex: Vector2i) -> void:
+	var room := LocalRoomCombat.room()
+	if room.is_empty():
+		return
+	var drop_feet := LocalRoomRules.elevation_feet(room, from_hex) - LocalRoomRules.elevation_feet(room, to_hex)
+	if drop_feet < 10 or int(target.get("fly_speed_feet", 0)) > 0:
+		return
+	var damage := 0
+	for _die in LocalRoomRules.fall_dice_for_drop(drop_feet):
+		damage += Dice.roll(6)
+	target["current_hp"] = maxi(0, int(target.get("current_hp", 0)) - damage)
+	hud.add_log("%s is pushed %d feet down and takes %d falling damage." % [target.get("name", "The creature"), drop_feet, damage])
+	if int(target["current_hp"]) <= 0 and bool(target.get("is_alive", true)):
+		target["is_alive"] = false
+		tracker.remove_combatant(str(target.get("id", "")))
+		_trigger_enemy_defeat_features(target)
+		_check_battle_end_conditions()
+
+
+func _spell_push_blocked_hexes(excluded_player: Character, excluded_monster: Dictionary) -> Array[Vector2i]:
+	var occupied: Array[Vector2i] = []
+	for entity in player_entities:
+		var character: Character = entity.get("character")
+		if character != null and character != excluded_player and character.is_alive:
+			occupied.append(entity.get("hex_position", Vector2i.ZERO))
+	for entity in monster_entities:
+		if entity != excluded_monster and entity.get("is_alive", false):
+			occupied.append(entity.get("hex_position", Vector2i.ZERO))
+	return occupied
+
+
+func _fighter_hex_occupied(hex: Vector2i) -> bool:
+	for entity in player_entities:
+		if entity["hex_position"] == hex:
+			return true
+	for entity in monster_entities:
+		if entity.get("is_alive", false) and entity["hex_position"] == hex:
+			return true
+	return false
+
+
+func _offer_light_attack(target: Dictionary) -> void:
+	if light_attack_weapon.is_empty() or active_character.feature_uses.get("fighter_light_used", false):
+		return
+	var offhand_id := active_character.inventory.get_equipped(Inventory.Slot.OFFHAND)
+	var weapon := DataLoader.get_item(offhand_id).duplicate(true)
+	if "light" not in weapon.get("properties", []):
+		return
+	var nick := FighterRules.mastery(active_character, weapon) == "nick"
+	if not nick and not turn_budget.bonus_action_available:
+		return
+	var origin: Vector2i = player_entities[current_player_idx]["hex_position"]
+	var candidates: Array = [target]
+	for monster in monster_entities:
+		if monster != target:
+			candidates.append(monster)
+	for candidate in candidates:
+		if not candidate.get("is_alive", false) or not Targeting.is_in_range(origin, candidate["hex_position"], int(weapon.get("range", 1))):
+			continue
+		if not await hud.request_reaction(_owner_label_for_character(active_character), "light_attack", "Attack %s with %s (%s). Once this turn." % [candidate.get("name", "target"), weapon.get("name", offhand_id), "part of the Attack action — Nick" if nick else "Bonus Action"], "Make the extra Light attack?", "Attack", "Light Weapon"):
+			continue
+		active_character.feature_uses["fighter_light_used"] = true
+		if not nick:
+			turn_budget.spend("bonus_action")
+		weapon["light_extra"] = true
+		weapon["attack_distance"] = HexUtils.get_distance(origin, candidate["hex_position"])
+		var light_effects := await _request_brutal_strike(active_character, weapon)
+		var light_decisions := await _collect_attack_inspiration_decision(active_character)
+		if not light_effects.is_empty():
+			light_decisions["barbarian_brutal_strike_effects"] = light_effects
+		var light_packet := await _conjure_minor_elementals_damage_choice(active_character, candidate)
+		var light_additional_damage := {"packets": [light_packet]} if not light_packet.is_empty() else {}
+		var result := CombatAction.resolve_weapon_attack(active_character, candidate, weapon, false, false, light_decisions, light_additional_damage)
+		await _offer_divine_smite(candidate, weapon, result)
+		await _offer_sneak_attack(candidate, weapon, result)
+		hud.add_log(result.get("message", ""), false)
+		await _finish_fighter_attack(candidate, weapon, result)
+		_publish_fighter_extra_attack(candidate, weapon, result)
+		_mark_fighter_target_defeated(candidate)
+		hud.update_hud(active_character, tracker)
+		return
+
+
+func _publish_fighter_extra_attack(target: Dictionary, weapon: Dictionary, result: Dictionary, actor: Character = null) -> void:
+	if actor == null:
+		actor = active_character
+	var draft := CombatActivityRecordModel.attack_action(actor, target, weapon, [result], str(GameManager.active_campaign.get("id", "")), tracker.current_round)
+	if not draft.is_empty():
+		ActivityHistory.publish(draft)
+
+
+func _publish_true_strike_activity(target: Dictionary, weapon: Dictionary, result: Dictionary) -> void:
+	var settled_attacks: Array[Dictionary] = [result]
+	var draft := CombatActivityRecordModel.attack_action(active_character, target, weapon, settled_attacks, str(GameManager.active_campaign.get("id", "")), tracker.current_round)
+	if draft.is_empty():
+		return
+	draft["kind"] = "spell_attack"
+	draft["title"] = "True Strike — " + str(weapon.get("name", "Weapon"))
+	ActivityHistory.publish(draft)
+
+
+func _mark_fighter_target_defeated(target: Dictionary) -> void:
+	if int(target.get("current_hp", 0)) <= 0:
+		target["is_alive"] = false
+		for combatant in tracker.combatants:
+			if str(combatant.get("id", "")) == str(target.get("id", "")):
+				tracker.remove_combatant(str(target.get("id", "")))
+				hud.add_log("%s was defeated!" % target.get("name", "Target"))
+				break
+		_trigger_enemy_defeat_features(target, active_character)
+
+
+func _trigger_enemy_defeat_features(defeated_target: Dictionary, killer_character: Character = null) -> void:
+	if defeated_target.is_empty():
+		return
+	var target_pos: Vector2i = defeated_target.get("hex_position", Vector2i.ZERO)
+	for p_entity in player_entities:
+		var c: Character = p_entity.get("character")
+		if c == null or not c.has_feature("fiend_dark_ones_blessing") or not c.is_alive:
+			continue
+		var dist_feet := HexUtils.get_distance(p_entity.get("hex_position", Vector2i.ZERO), target_pos) * 5
+		if c == killer_character or dist_feet <= 10:
+			var gained := WarlockRules.apply_dark_ones_blessing(c)
+			if gained > 0:
+				hud.add_log("[color=purple]%s gains %d temporary Hit Points from Dark One's Blessing.[/color]" % [c.character_name, gained])
+
+
 func _action_cost_for_command(action_type: String, extra_data: Dictionary) -> String:
+	if action_type == "toggle_find_steed_mount":
+		return "free"
+	if action_type == "activate_magic_item":
+		return "magic_action"
+	if action_type in ["control_mage_hand", "dismiss_mage_hand"]:
+		return "magic_action"
+	if action_type == "dismiss_light":
+		return "action"
+	if action_type == "detect_magic_inspect":
+		return "magic_action"
+	if action_type == "font_of_magic_create":
+		return "bonus_action"
+	if action_type == "move_dancing_lights":
+		return "bonus_action"
+	if action_type == "move_moonbeam":
+		return "magic_action"
+	if action_type == "move_conjure_fey":
+		return "bonus_action"
 	if action_type == "use_feature":
+		for effect in extra_data.get("feature", {}).get("effects", []):
+			if effect.get("type", "") == "resource_from_spell_slot":
+				return "free"
 		return str(extra_data.get("feature", {}).get("action_cost", "action"))
 	if action_type == "cast_spell":
 		var spell_cost := str(extra_data.get("spell", {}).get("casting_time", "action"))
-		return spell_cost if spell_cost in ["action", "bonus_action"] else "action"
+		return "bonus_action" if spell_cost == "bonus_action" else "magic_action"
 	if action_type in ["attack", "dodge"]:
 		return "action"
 	return "free"
@@ -1646,189 +4482,852 @@ func _can_spend_action_cost(cost_type: String) -> bool:
 
 func _reset_turn_action_economy() -> void:
 	turn_budget.reset(active_character, player_entities)
+	player_moved_this_turn = false
+	extra_movement_speed_hexes = 0.0
+	rogue_steady_aim_armed = false
+	if active_character != null:
+		active_character.feature_uses.erase("conjure_animals_moved_this_turn")
+		active_character.feature_uses.erase("conjure_animals_pack_moved_this_turn")
+		active_character.feature_uses.erase("conjure_celestial_moved_this_turn")
+		active_character.feature_uses.erase("conjure_celestial_pillar_moved_this_turn")
 
 
 func _spend_action_cost(cost_type: String) -> bool:
-	return turn_budget.spend(cost_type)
+	var spent := turn_budget.spend(cost_type)
+	return spent
 
 
-func _is_sneak_attack_valid(attacker: Character, target_coord: Vector2i, has_advantage: bool) -> bool:
-	if not attacker.has_feature("sneak_attack") and not attacker.has_feature("rogue_sneak_attack"):
-		return false
-		
-	if attacker.feature_uses.get("sneak_attack_used_this_turn", 0) > 0:
-		return false
+func _offer_divine_smite(target, weapon: Dictionary, result: Dictionary, actor: Character = null) -> void:
+	if actor == null:
+		actor = active_character
+	if result.has("divine_smite") or actor != active_character or _battle_ending or not turn_budget.can_spend("bonus_action") or not result.get("hit", false):
+		return
+	var spell := DataLoader.get_spell("divine_smite")
+	if not bool(result.get("can_divine_smite", false)):
+		var properties: Array = weapon.get("properties", [])
+		var melee := str(weapon.get("id", "")) == "unarmed_strike" or (str(weapon.get("type", "")) == "weapon" and "ranged" not in properties and "ammunition" not in properties)
+		var target_hp: int = target.current_hp if target is Character else int(target.get("current_hp", 0))
+		if not melee or target_hp <= 0 or not actor.has_feature("paladin_paladins_smite") or CombatAction.is_incapacitated(actor) or actor.has_condition("raging") or not DruidRules.can_cast_spell(actor, spell):
+			return
+		if not actor.has_free_spell_cast("divine_smite") and CombatAction.get_spell_slot_level(actor, spell) <= 0:
+			return
+	var target_name: String = target.character_name if target is Character else str(target.get("name", "Target"))
+	var choice := await hud.request_divine_smite(actor, _owner_label_for_character(actor), target_name)
+	if choice.is_empty() or actor != active_character or not turn_budget.can_spend("bonus_action") or _battle_ending:
+		return
+	var origin: Vector2i = player_entities[current_player_idx]["hex_position"]
+	var reactions := await _collect_counterspell_decisions(actor, spell, origin, actor)
+	var smite := CombatAction.resolve_divine_smite(actor, target, int(choice["slot_level"]), bool(choice["free_cast"]), bool(result.get("crit", false)), reactions.get("decisions", {}), reactions.get("observers", []))
+	if smite.get("cast_committed", false):
+		_spend_action_cost("bonus_action")
+	if smite.get("success", false):
+		var added := int(smite.get("damage", 0))
+		result["damage"] = int(result.get("damage", 0)) + added
+		var detail: Dictionary = result.get("activity_damage", {})
+		for term in smite.get("activity_damage", {}).get("dice_terms", []):
+			var labeled: Dictionary = term.duplicate(true)
+			labeled["label"] = "Divine Smite — " + str(labeled.get("label", "d8"))
+			detail.get("dice_terms", []).append(labeled)
+		for field in ["rolled_total", "resolved_total", "applied"]:
+			detail[field] = int(detail.get(field, 0)) + int(smite.get("activity_damage", {}).get(field, added))
+		detail["final_total"] = detail["rolled_total"]
+		detail.get_or_add("mitigation", []).append_array(smite.get("activity_damage", {}).get("mitigation", []))
+		result["damage_components"].append({"label": "Divine Smite", "value": added, "type": "radiant", "formula": smite.get("damage_formula", "")})
+		if added > 0:
+			ClericRules.clear_turning_after_damage(target)
+	result["message"] = str(result.get("message", "")) + " " + str(smite.get("message", ""))
+	hud.update_hud(actor, tracker)
+	_update_grid_entities()
 
+
+func _offer_sneak_attack(target: Dictionary, weapon: Dictionary, result: Dictionary, actor: Character = null, has_advantage: bool = false, has_disadvantage: bool = false) -> void:
+	if actor == null:
+		actor = active_character
+	# Use the resolver's final attack context, including conditions and cancellations.
+	has_advantage = bool(result.get("activity_roll", {}).get("advantage", has_advantage))
+	has_disadvantage = bool(result.get("activity_roll", {}).get("disadvantage", has_disadvantage))
+	if result.get("hit", false) and _is_sneak_attack_valid(actor, target["hex_position"], has_advantage, has_disadvantage, weapon):
+		actor.feature_uses["sneak_attack_used_this_turn"] = 1
+		var full_sa_dice := _get_sneak_attack_dice(actor)
+		var available_sa_dice := int(full_sa_dice.split("d")[0])
+		var cunning_options: Array[String] = []
+		if actor.level >= 5:
+			cunning_options = await hud.request_rogue_cunning_strike(actor, target, available_sa_dice)
+		var remaining_sa_dice := RogueRules.remaining_sneak_attack_dice(available_sa_dice, cunning_options)
+		var sa_damage := 0
+		var sa_dice := "%dd6" % remaining_sa_dice
+		if remaining_sa_dice > 0:
+			sa_damage = Dice.parse_dice_string(sa_dice)
+			if result.get("crit", false):
+				# Critical hits double only the Sneak Attack dice not traded away.
+				sa_damage += Dice.parse_dice_string(sa_dice)
+		var sa_type := str(result.get("damage_type", ""))
+		var bypass := ClassProgression.has_epic_boon(actor, "irresistible_offense") and sa_type in ["bludgeoning", "piercing", "slashing"]
+		var actual_sa_dealt := int(CombatAction.resolve_damage(target, sa_damage, sa_type, {}, bypass)["damage"]) if sa_damage > 0 else 0
+		result["damage"] = int(result.get("damage", 0)) + actual_sa_dealt
+		if actual_sa_dealt > 0:
+			result.get_or_add("damage_components", []).append({"label": "Sneak Attack", "value": actual_sa_dealt, "type": sa_type, "formula": sa_dice})
+		result["message"] += " [color=orange]Sneak Attack! Deals +%d damage (%s).[/color]" % [actual_sa_dealt, sa_dice]
+		for cunning_option in cunning_options:
+			match cunning_option:
+				"poison", "trip", "daze", "knock_out", "obscure":
+					var save_ability := RogueRules.cunning_strike_save_ability(cunning_option)
+					var save_dc := RogueRules.saving_throw_dc(actor)
+					var save_total := BarbarianRules.roll_monster_save(target, save_ability)
+					var condition: String = {"poison": "poisoned", "trip": "prone", "daze": "dazed", "knock_out": "unconscious", "obscure": "blinded"}.get(cunning_option, "")
+					if save_total < save_dc:
+						var source := ""
+						var duration := 1
+						match cunning_option:
+							"poison":
+								source = "rogue_cunning_poison"
+								duration = 10
+							"daze":
+								source = RogueRules.CUNNING_DAZE_SOURCE
+							"knock_out":
+								source = RogueRules.CUNNING_KNOCKOUT_SOURCE
+								duration = 10
+							"obscure":
+								source = RogueRules.CUNNING_OBSCURE_SOURCE
+						CombatAction.apply_condition(target, condition, duration, source)
+						if cunning_option == "poison" and CombatAction.has_condition_source(target, source):
+							target["rogue_cunning_poison_dc"] = save_dc
+						elif cunning_option == "knock_out" and CombatAction.has_condition_source(target, source):
+							target["rogue_cunning_knock_out_dc"] = save_dc
+						if not condition.is_empty() and condition in target.get("condition_immunities", []):
+							result["message"] += " %s is immune to Cunning Strike %s." % [target.get("name", "Target"), cunning_option.replace("_", " ").capitalize()]
+						else:
+							result["message"] += " [color=orange]Cunning Strike %s: %s failed %s save (DC %d).[/color]" % [cunning_option.replace("_", " ").capitalize(), target.get("name", "Target"), save_ability, save_dc]
+					else:
+						result["message"] += " Cunning Strike %s: target succeeds on %s save (DC %d)." % [cunning_option.replace("_", " ").capitalize(), save_ability, save_dc]
+				"withdraw":
+					var withdraw_distance: float = floor(float(actor.get_speed()) / 2.0)
+					await _offer_fighter_movement("Cunning Strike Withdraw", actor)
+					result["message"] += " [color=orange]Cunning Strike Withdraw: move up to %d feet of movement without provoking Opportunity Attacks.[/color]" % int(withdraw_distance * 5.0)
+		actor.feature_uses["sneak_attack_used_this_turn"] = 1
+
+
+func _is_sneak_attack_valid(attacker: Character, target_coord: Vector2i, has_advantage: bool, has_disadvantage: bool = false, weapon: Dictionary = {}) -> bool:
 	var has_ally_adjacent := false
 	for p in player_entities:
-		if p["character"] == attacker: continue
-		if p["character"].is_alive and HexUtils.get_distance(p["hex_position"], target_coord) == 1:
+		var ally: Character = p["character"]
+		if ally != attacker and ally.is_alive and not CombatAction.is_incapacitated(ally) and HexUtils.get_distance(p["hex_position"], target_coord) == 1:
 			has_ally_adjacent = true
 			break
-			
-	return has_advantage or has_ally_adjacent
+	return RogueRules.sneak_attack_eligible(attacker, weapon if not weapon.is_empty() else DataLoader.get_item(attacker.inventory.get_weapon()), has_advantage, has_disadvantage, has_ally_adjacent)
 
 
 func _get_sneak_attack_dice(attacker: Character) -> String:
 	var dice := "1d6"
 	for f in attacker.features:
-		var effects = f.get("effects", [])
-		for eff in effects:
-			if eff.get("type", "") in ["sneak_attack", "sneak_attack_upgrade"]:
-				dice = eff.get("dice", dice)
+		for eff in attacker._feature_effects(f):
+			if eff.get("type", "") not in ["sneak_attack", "sneak_attack_upgrade"]:
+				continue
+			var progression: Dictionary = eff.get("dice_by_level", {})
+			var threshold := 0
+			for key in progression:
+				if int(key) <= attacker.level and int(key) > threshold:
+					threshold = int(key)
+			dice = str(progression[str(threshold)]) if threshold > 0 else str(eff.get("dice", dice))
 	return dice
 
 
+func _tick_dancing_lights_duration(caster: Character) -> void:
+	SpellCastMarkers._tick_dancing_lights_duration(_spell_cast_context(), caster)
+
+
+func _tick_light_spell_duration(caster: Character) -> void:
+	SpellCastMarkers._tick_light_spell_duration(_spell_cast_context(), caster)
+
+
+func _tick_mage_hand_duration(caster: Character) -> void:
+	SpellCastMarkers._tick_mage_hand_duration(_spell_cast_context(), caster)
+
+
+func _tick_minor_illusion_duration(caster: Character) -> void:
+	SpellCastMarkers._tick_minor_illusion_duration(_spell_cast_context(), caster)
+
+
+func _tick_prestidigitation_effects(caster: Character) -> void:
+	SpellCastMarkers._tick_prestidigitation_effects(_spell_cast_context(), caster)
+
+
+func _tick_produce_flame_duration(caster: Character) -> void:
+	SpellCastMarkers._tick_produce_flame_duration(_spell_cast_context(), caster)
+
+
+func _tick_protection_from_energy_duration(caster: Character) -> void:
+	SpellEncounterLifecycle._tick_protection_from_energy_duration(_spell_cast_context(), caster)
+
+
+func _tick_protection_from_evil_and_good_duration(caster: Character) -> void:
+	SpellEncounterLifecycle._tick_protection_from_evil_and_good_duration(_spell_cast_context(), caster)
+
+
+func _tick_ray_of_enfeeblement_duration(caster: Character) -> void:
+	SpellEncounterLifecycle._tick_ray_of_enfeeblement_duration(_spell_cast_context(), caster)
+
+
+func _tick_resilient_sphere_duration(caster: Character) -> void:
+	SpellEncounterLifecycle._tick_resilient_sphere_duration(_spell_cast_context(), caster)
+
+
+func _tick_hold_monster_duration(caster: Character) -> void:
+	SpellEncounterLifecycle._tick_hold_monster_duration(_spell_cast_context(), caster)
+
+
+func _apply_regenerate_turn_start(target) -> void:
+	SpellEncounterLifecycle._apply_regenerate_turn_start(_spell_cast_context(), target)
+
+
+func _tick_spell_effect_boundary(caster: Character, phase: String) -> void:
+	SpellEncounterLifecycle._tick_spell_effect_boundary(_spell_cast_context(), caster, phase)
+
+
+func _identify_target_remains_touchable(caster: Character, identify_target: Dictionary) -> bool:
+	return SpellEncounterPerception._identify_target_remains_touchable(_spell_cast_context(), caster, identify_target)
+
+
+func _validate_identify_contacts() -> void:
+	SpellEncounterPerception._validate_identify_contacts(_spell_cast_context())
+
+
+func _complete_identify(caster: Character, identify_record: Dictionary) -> void:
+	SpellEncounterPerception._complete_identify(_spell_cast_context(), caster, identify_record)
+
+func _spell_effect_targets() -> Array:
+	return _spell_zones()._spell_effect_targets()
+
+func _spell_casters() -> Array:
+	return player_entities.map(func(player): return player.get("character")).filter(func(caster): return caster != null)
+
+func _resolve_condition_spell_repeat_saves(target) -> void:
+	SpellEncounterLifecycle._resolve_condition_spell_repeat_saves(_spell_cast_context(), target)
+
+
+func _spell_zones() -> CombatSpellZones:
+	# Entity arrays can be replaced during setup; bind the current encounter views.
+	_area_spells.bind_encounter(hex_grid, hud, tracker, player_entities, monster_entities)
+	_area_spells.light_spell_markers = light_spell_markers
+	_area_spells.produce_flame_markers = produce_flame_markers
+	_area_spells.dancing_light_sets = dancing_light_sets
+	_area_spells.collect_save_decisions = _collect_zone_save_decisions
+	_area_spells.collect_attack_decision = _collect_attack_inspiration_decision
+	_area_spells.collect_shield_decision = _collect_spell_shield_decision
+	_area_spells.check_concentration = _check_concentration_save
+	_area_spells.end_concentration = _end_concentration
+	_area_spells.enemy_defeated = _trigger_enemy_defeat_features
+	_area_spells.refresh_grid = _update_grid_entities
+	_area_spells.highlight_reachable = _highlight_reachable
+	return _area_spells
+
+
+func _collect_zone_save_decisions(target, label: String, spell_data: Dictionary) -> Dictionary:
+	var decisions: Dictionary = {}
+	if target is Character:
+		decisions.merge(await _collect_stroke_of_luck_save_decision(target, label), true)
+		decisions.merge(await _collect_bardic_inspiration_save_decision(target, spell_data), true)
+	return decisions
+
+
+func _create_grease_zone(center: Vector2i) -> void:
+	SpellZoneTerrain._create_grease_zone(_spell_zones(), active_character, center)
+
+
+func _create_spike_growth_zone(center: Vector2i, slot_level: int) -> void:
+	SpellZoneTerrain._create_spike_growth_zone(_spell_zones(), active_character, center, slot_level)
+
+
+func _create_entangle_zone(center: Vector2i, source_id: String, restrained_targets: Array) -> void:
+	SpellZoneTerrain._create_entangle_zone(_spell_zones(), active_character, center, source_id, restrained_targets)
+
+
+func _apply_black_tentacles_restrained(target, source_id: String, restrained_targets: Array) -> void:
+	SpellZoneTerrain._apply_black_tentacles_restrained(_spell_zones(), target, source_id, restrained_targets)
+
+
+func _create_black_tentacles_zone(center: Vector2i, source_id: String, restrained_targets: Array, initial_targets: Array, slot_level: int) -> void:
+	SpellZoneTerrain._create_black_tentacles_zone(_spell_zones(), active_character, pending_spell_data, center, source_id, restrained_targets, initial_targets, slot_level)
+
+
+func _create_sleet_storm_zone(center: Vector2i, source_id: String, extended: bool) -> void:
+	SpellZoneTerrain._create_sleet_storm_zone(_spell_zones(), active_character, center, source_id, extended)
+
+
+func _create_plant_growth_zone(center: Vector2i) -> void:
+	SpellZoneTerrain._create_plant_growth_zone(_spell_zones(), active_character, center)
+
+
+func _current_spell_trigger_turn() -> String:
+	return _spell_zones()._current_spell_trigger_turn()
+
+
+func _spell_zone_target_id(target) -> String:
+	return _spell_zones()._spell_zone_target_id(target)
+
+
+func _spell_zone_target_hex(target) -> Vector2i:
+	return _spell_zones()._spell_zone_target_hex(target)
+
+
+func _has_spell_condition_source(target, source_id: String, condition: String = "restrained") -> bool:
+	return _spell_zones()._has_spell_condition_source(target, source_id, condition)
+
+
+func _spell_target_at_hex(target_hex: Vector2i):
+	return _spell_zones()._spell_target_at_hex(target_hex)
+
+
+func _cloud_of_daggers_zone_source_for_caster(caster: Character) -> String:
+	return _spell_zones()._cloud_of_daggers_zone_source_for_caster(caster)
+
+
+func _conjure_animals_zone_source_for_caster(caster: Character) -> String:
+	return _spell_zones()._conjure_animals_zone_source_for_caster(caster)
+
+
+func _create_conjure_animals_zone(center: Vector2i, source_id: String, slot_level: int) -> void:
+	SpellZoneConjurations._create_conjure_animals_zone(_spell_zones(), active_character, center, source_id, slot_level)
+
+
+func _refresh_conjure_animals_strength_advantage(caster: Character) -> void:
+	_spell_zones()._refresh_conjure_animals_strength_advantage(caster)
+
+
+func _highlight_conjure_animals_movement() -> void:
+	var source_id := _conjure_animals_zone_source_for_caster(active_character)
+	var zone: Dictionary = active_spell_zones.get(source_id, {})
+	var center: Vector2i = zone.get("center", Vector2i.ZERO)
+	var highlights := {}
+	for candidate in hex_grid.tiles.keys():
+		if Targeting.is_in_range(center, candidate, 6) and not _is_occupied_hex(candidate):
+			highlights[candidate] = Color(0.52, 0.82, 0.62, 0.72)
+	hex_grid.set_highlights(highlights)
+
+
+func _conjure_celestial_zone_source_for_caster(caster: Character) -> String:
+	return _spell_zones()._conjure_celestial_zone_source_for_caster(caster)
+
+
+func _create_conjure_celestial_zone(center: Vector2i, source_id: String, slot_level: int, initial_targets: Dictionary) -> void:
+	SpellZoneConjurations._create_conjure_celestial_zone(_spell_zones(), active_character, center, source_id, slot_level, initial_targets)
+
+
+func _highlight_conjure_celestial_movement() -> void:
+	var source_id := _conjure_celestial_zone_source_for_caster(active_character)
+	var zone: Dictionary = active_spell_zones.get(source_id, {})
+	var center: Vector2i = zone.get("center", Vector2i.ZERO)
+	var highlights := {}
+	for candidate in hex_grid.tiles.keys():
+		if Targeting.is_in_range(center, candidate, 6):
+			highlights[candidate] = Color(1.0, 0.9, 0.52, 0.74)
+	hex_grid.set_highlights(highlights)
+
+
+func _apply_conjure_celestial_healing(target, caster: Character, slot_level: int) -> int:
+	return SpellZoneConjurations._apply_conjure_celestial_healing(_spell_zones(), target, caster, slot_level)
+
+
+func _resolve_conjure_celestial_zone_trigger(target, zone: Dictionary) -> Dictionary:
+	return await SpellZoneConjurations._resolve_conjure_celestial_zone_trigger(_spell_zones(), target, zone)
+
+
+func _resolve_conjure_celestial_area_movement(zone: Dictionary, old_coords: Array, new_coords: Array) -> Array[Dictionary]:
+	return await _spell_zones()._resolve_conjure_celestial_area_movement(zone, old_coords, new_coords)
+
+
+func _conjure_elemental_zone_source_for_caster(caster: Character) -> String:
+	return _spell_zones()._conjure_elemental_zone_source_for_caster(caster)
+
+
+func _create_conjure_elemental_zone(center: Vector2i, source_id: String, slot_level: int, element: String, damage_type: String) -> void:
+	SpellZoneConjurations._create_conjure_elemental_zone(_spell_zones(), active_character, center, source_id, slot_level, element, damage_type)
+
+
+func _conjure_elemental_has_restrained_target(zone: Dictionary) -> bool:
+	return SpellZoneConjurations._conjure_elemental_has_restrained_target(_spell_zones(), zone)
+
+
+func _resolve_conjure_elemental_save(target, zone: Dictionary, repeat_save: bool = false) -> Dictionary:
+	return await SpellZoneConjurations._resolve_conjure_elemental_save(_spell_zones(), target, zone, repeat_save)
+
+
+func _is_unoccupied_conjure_fey_space(center: Vector2i) -> bool:
+	return _spell_zones()._is_unoccupied_conjure_fey_space(center)
+
+
+func _conjure_fey_zone_source_for_caster(caster: Character) -> String:
+	return _spell_zones()._conjure_fey_zone_source_for_caster(caster)
+
+
+func _create_conjure_fey_zone(center: Vector2i, source_id: String, slot_level: int) -> String:
+	return SpellZoneConjurations._create_conjure_fey_zone(_spell_zones(), active_character, center, source_id, slot_level)
+
+
+func _create_conjure_minor_elementals_zone(source_id: String, slot_level: int) -> String:
+	return SpellZoneConjurations._create_conjure_minor_elementals_zone(_spell_zones(), active_character, source_id, slot_level)
+
+
+func _conjure_minor_elementals_zone_source_for_caster(caster: Character) -> String:
+	return _spell_zones()._conjure_minor_elementals_zone_source_for_caster(caster)
+
+
+func _conjure_woodland_beings_zone_source_for_caster(caster: Character) -> String:
+	return _spell_zones()._conjure_woodland_beings_zone_source_for_caster(caster)
+
+
+func _create_conjure_woodland_beings_zone(source_id: String, slot_level: int) -> String:
+	return SpellZoneConjurations._create_conjure_woodland_beings_zone(_spell_zones(), active_character, source_id, slot_level)
+
+
+func _character_combat_hex(character: Character) -> Vector2i:
+	return _spell_zones()._character_combat_hex(character)
+
+
+func _spirit_guardians_zone_source_for_caster(caster: Character) -> String:
+	return _spell_zones()._spirit_guardians_zone_source_for_caster(caster)
+
+
+func _aura_of_life_zone_source_for_caster(caster: Character) -> String:
+	return _spell_zones()._aura_of_life_zone_source_for_caster(caster)
+
+
+func _create_aura_of_life_zone(source_id: String) -> String:
+	return SpellZoneConjurations._create_aura_of_life_zone(_spell_zones(), active_character, source_id)
+
+
+func _refresh_aura_of_life_protection() -> void:
+	_spell_zones()._refresh_aura_of_life_protection()
+
+
+func _aura_of_life_allows_hp_maximum(target: Character) -> bool:
+	return _spell_zones()._aura_of_life_allows_hp_maximum(target)
+
+
+func _create_spirit_guardians_zone(source_id: String, slot_level: int) -> String:
+	return SpellZoneConjurations._create_spirit_guardians_zone(_spell_zones(), active_character, pending_spell_data, source_id, slot_level)
+
+
+func _spirit_guardians_zone_affects_target(zone: Dictionary, target_id: String) -> bool:
+	return SpellZoneConjurations._spirit_guardians_zone_affects_target(_spell_zones(), zone, target_id)
+
+
+func _spirit_guardians_movement_slowed(target, coord: Vector2i) -> bool:
+	return _spell_zones()._spirit_guardians_movement_slowed(target, coord)
+
+
+func _resolve_spirit_guardians_zone_save(target, zone: Dictionary) -> Dictionary:
+	return await SpellZoneConjurations._resolve_spirit_guardians_zone_save(_spell_zones(), target, zone)
+
+
+func _resolve_spirit_guardians_area_movement(zone: Dictionary, old_center: Vector2i, new_center: Vector2i) -> Array[Dictionary]:
+	return await _spell_zones()._resolve_spirit_guardians_area_movement(zone, old_center, new_center)
+
+
+func _conjure_minor_elementals_applies_to_target(caster: Character, target) -> bool:
+	return _spell_zones()._conjure_minor_elementals_applies_to_target(caster, target)
+
+
+func _conjure_minor_elementals_damage_choice(caster: Character, target) -> Dictionary:
+	return await SpellZoneConjurations._conjure_minor_elementals_damage_choice(_spell_zones(), caster, target)
+
+
+func _conjure_minor_elementals_spell_attack_choices(caster: Character, target, spell_data: Dictionary) -> Array[Dictionary]:
+	return await SpellZoneConjurations._conjure_minor_elementals_spell_attack_choices(_spell_zones(), caster, target, spell_data)
+
+
+func _player_movement_cost(coord: Vector2i, character: Character) -> float:
+	var ignores_difficult_terrain := character != null and SpellEffects.has_spell(character, "freedom_of_movement")
+	var cost := hex_grid.get_hex_cost(coord, ignores_difficult_terrain)
+	var room := LocalRoomCombat.room()
+	if not room.is_empty():
+		if LocalRoomRules.requires_surface_traversal(LocalRoomRules.surface_at(room, coord)):
+			cost = 1.0
+		if LocalRoomRules.has_wall(room, coord) and active_movement_mode == "climb":
+			cost += float(LocalRoomRules.wall_height_feet(room, coord)) / 5.0
+	if not ignores_difficult_terrain and _spirit_guardians_movement_slowed(character, coord):
+		cost *= 2.0
+	return cost
+
+
+func _player_step_movement_cost(from_hex: Vector2i, to_hex: Vector2i, character: Character) -> float:
+	if _spell_zones()._antilife_shell_blocks_crossing(character, from_hex, to_hex):
+		return 9999.0
+	var cost := _player_movement_cost(to_hex, character)
+	var room := LocalRoomCombat.room()
+	if not room.is_empty() and active_movement_mode == "walk":
+		var rise_feet := LocalRoomRules.elevation_feet(room, to_hex) - LocalRoomRules.elevation_feet(room, from_hex)
+		if rise_feet > 0:
+			cost += float(rise_feet) / 5.0
+	return cost
+
+
+func _apply_room_fall_damage(target, from_hex: Vector2i, to_hex: Vector2i) -> bool:
+	var room := LocalRoomCombat.room()
+	if room.is_empty():
+		return false
+	var height_change := LocalRoomRules.elevation_feet(room, to_hex) - LocalRoomRules.elevation_feet(room, from_hex)
+	if height_change > -10:
+		return false
+	var can_fly := active_movement_mode == "fly" if target is Character and target == active_character else int(target.get("fly_speed_feet", 0)) > 0 if target is Dictionary else false
+	if can_fly:
+		return false
+	var dice_count := LocalRoomRules.fall_dice_for_drop(-height_change)
+	var damage := 0
+	for _die in dice_count:
+		damage += Dice.roll(6, target if target is Character else null)
+	if target is Character:
+		target.take_damage(damage)
+		hud.add_log("%s falls %d feet and takes %d damage." % [target.character_name, -height_change, damage])
+		if damage > 0 and target.is_alive:
+			await _check_concentration_save(target, damage)
+		if not target.is_alive:
+			_end_concentration(target)
+			_check_battle_end_conditions()
+			return true
+	elif target is Dictionary:
+		target["current_hp"] = maxi(0, int(target.get("current_hp", 0)) - damage)
+		hud.add_log("%s falls %d feet and takes %d damage." % [target.get("name", "The creature"), -height_change, damage])
+		if int(target["current_hp"]) <= 0 and bool(target.get("is_alive", true)):
+			target["is_alive"] = false
+			tracker.remove_combatant(str(target.get("id", "")))
+			_trigger_enemy_defeat_features(target)
+			_check_battle_end_conditions()
+			return true
+	return false
+
+
+func _player_can_enter(coord: Vector2i, character: Character) -> bool:
+	var room := LocalRoomCombat.room()
+	if room.is_empty():
+		return hex_grid.is_hex_passable(coord)
+	var current_position: Vector2i = player_entities[current_player_idx].get("hex_position", Vector2i.ZERO)
+	var current_altitude := int(player_entities[current_player_idx].get("altitude_feet", LocalRoomRules.elevation_feet(room, current_position)))
+	if active_movement_mode != "fly" and current_altitude > LocalRoomRules.elevation_feet(room, current_position):
+		return false
+	var surface := LocalRoomRules.surface_at(room, coord)
+	if LocalRoomRules.requires_surface_traversal(surface):
+		var can_surface_traverse := active_movement_mode == "fly" or (surface == "water" and active_movement_mode == "swim") or SpellEffects.has_spell(character, "water_walk")
+		if not can_surface_traverse: return false
+	if LocalRoomRules.has_wall(room, coord):
+		if active_movement_mode == "fly":
+			var wall_altitude := int(player_entities[current_player_idx].get("altitude_feet", LocalRoomRules.elevation_feet(room, coord)))
+			return wall_altitude >= LocalRoomRules.elevation_feet(room, coord) + LocalRoomRules.wall_height_feet(room, coord) and wall_altitude + 5 <= LocalRoomRules.ceiling_feet(room, coord)
+		if active_movement_mode == "climb":
+			return LocalRoomRules.wall_height_feet(room, coord) <= _movement_speed_feet("climb", character)
+		return false
+	if active_movement_mode == "fly":
+		var flight_altitude := int(player_entities[current_player_idx].get("altitude_feet", 0))
+		if flight_altitude < LocalRoomRules.elevation_feet(room, coord) or flight_altitude + 5 > LocalRoomRules.ceiling_feet(room, coord): return false
+	return hex_grid.is_hex_passable(coord)
+
+
+func _player_reachable(origin: Vector2i, movement_budget: float, character: Character) -> Dictionary:
+	return HexUtils.get_reachable(origin, movement_budget, func(coord: Vector2i): return _player_can_enter(coord, character), func(coord: Vector2i) -> float: return _player_movement_cost(coord, character), func(from_hex: Vector2i, to_hex: Vector2i): return _player_step_movement_cost(from_hex, to_hex, character))
+
+
+func _player_path(origin: Vector2i, destination: Vector2i, character: Character) -> Array[Vector2i]:
+	return HexUtils.find_path(origin, destination, func(coord: Vector2i): return _player_can_enter(coord, character), func(coord: Vector2i) -> float: return _player_movement_cost(coord, character), 100, func(from_hex: Vector2i, to_hex: Vector2i): return _player_step_movement_cost(from_hex, to_hex, character))
+
+
+func _enemy_movement_cost(coord: Vector2i, mover_id: String = "") -> float:
+	return _spell_zones()._enemy_movement_cost(coord, mover_id)
+
+
+func _enemy_step_movement_cost(from_hex: Vector2i, to_hex: Vector2i, mover: Dictionary) -> float:
+	if _spell_zones()._antilife_shell_blocks_crossing(mover, from_hex, to_hex):
+		return 9999.0
+	var cost := _enemy_movement_cost(to_hex, str(mover.get("id", "")))
+	var room := LocalRoomCombat.room()
+	if not room.is_empty() and int(mover.get("fly_speed_feet", 0)) <= 0:
+		var rise_feet := LocalRoomRules.elevation_feet(room, to_hex) - LocalRoomRules.elevation_feet(room, from_hex)
+		if rise_feet > 0:
+			cost += float(rise_feet) / 5.0
+	return cost
+
+
+
+func _enemy_reachable(origin: Vector2i, movement_budget: float, mover: Dictionary = {}) -> Dictionary:
+	var mover_id := str(mover.get("id", ""))
+	return HexUtils.get_reachable(origin, movement_budget, hex_grid.is_hex_passable, func(coord: Vector2i) -> float: return _enemy_movement_cost(coord, mover_id), func(from_hex: Vector2i, to_hex: Vector2i): return _enemy_step_movement_cost(from_hex, to_hex, mover))
+
+
+func _enemy_path(origin: Vector2i, destination: Vector2i, mover: Dictionary) -> Array[Vector2i]:
+	var mover_id := str(mover.get("id", ""))
+	return HexUtils.find_path(origin, destination, hex_grid.is_hex_passable, func(coord: Vector2i) -> float: return _enemy_movement_cost(coord, mover_id), 100, func(from_hex: Vector2i, to_hex: Vector2i): return _enemy_step_movement_cost(from_hex, to_hex, mover))
+
+
+func _conjure_fey_targets_within(center: Vector2i) -> Array[Dictionary]:
+	return _spell_zones()._conjure_fey_targets_within(center)
+
+
+func _conjure_fey_target_by_id(target_id: String):
+	return _spell_zones()._conjure_fey_target_by_id(target_id)
+
+
+func _resolve_conjure_fey_attack(zone: Dictionary, target) -> Dictionary:
+	return await SpellZoneConjurations._resolve_conjure_fey_attack(_spell_zones(), zone, target)
+
+
+func _expire_conjure_fey_frightened(caster: Character) -> void:
+	_spell_zones()._expire_conjure_fey_frightened(caster)
+
+
+func _highlight_conjure_fey_movement() -> void:
+	var source_id := _conjure_fey_zone_source_for_caster(active_character)
+	var zone: Dictionary = active_spell_zones.get(source_id, {})
+	var center: Vector2i = zone.get("center", Vector2i.ZERO)
+	var highlights := {}
+	for candidate in hex_grid.tiles.keys():
+		if Targeting.is_in_range(center, candidate, 6) and candidate != center and _is_unoccupied_conjure_fey_space(candidate):
+			highlights[candidate] = Color(0.84, 0.63, 0.97, 0.76)
+	hex_grid.set_highlights(highlights)
+
+
+func _resolve_conjure_animals_zone_save(target, zone: Dictionary) -> Dictionary:
+	return await SpellZoneConjurations._resolve_conjure_animals_zone_save(_spell_zones(), target, zone)
+
+
+func _resolve_conjure_woodland_beings_zone_save(target, zone: Dictionary) -> Dictionary:
+	return await SpellZoneConjurations._resolve_conjure_woodland_beings_zone_save(_spell_zones(), target, zone)
+
+
+func _resolve_conjure_woodland_beings_area_movement(zone: Dictionary, old_center: Vector2i, new_center: Vector2i) -> Array[Dictionary]:
+	return await _spell_zones()._resolve_conjure_woodland_beings_area_movement(zone, old_center, new_center)
+
+
+func _resolve_conjure_animals_area_movement(zone: Dictionary, old_coords: Array, new_coords: Array) -> Array[Dictionary]:
+	return await _spell_zones()._resolve_conjure_animals_area_movement(zone, old_coords, new_coords)
+
+
+func _create_fog_cloud_zone(center: Vector2i, slot_level: int, extended: bool) -> void:
+	SpellZoneTerrain._create_fog_cloud_zone(_spell_zones(), active_character, center, slot_level, extended)
+
+
+func _refresh_fog_cloud_conditions() -> void:
+	_spell_zones()._refresh_fog_cloud_conditions()
+
+
+func _create_darkness_zone(center: Vector2i, extended: bool) -> void:
+	SpellZoneTerrain._create_darkness_zone(_spell_zones(), active_character, center, extended)
+
+
+func _refresh_darkness_conditions() -> void:
+	_spell_zones()._refresh_darkness_conditions()
+
+
+func _create_cloudkill_zone(center: Vector2i, source_id: String, slot_level: int, extended: bool) -> void:
+	SpellZoneTerrain._create_cloudkill_zone(_spell_zones(), active_character, center, source_id, slot_level, extended)
+
+
+func _advance_cloudkill_zones_for_caster(caster: Character) -> void:
+	await _spell_zones()._advance_cloudkill_zones_for_caster(caster)
+
+
+func _cloud_of_daggers_can_move(zone: Dictionary) -> bool:
+	return _spell_zones()._cloud_of_daggers_can_move(zone)
+
+
+func _create_cloud_of_daggers_zone(center: Vector2i, slot_level: int, extended: bool) -> void:
+	SpellZoneTerrain._create_cloud_of_daggers_zone(_spell_zones(), active_character, center, slot_level, extended)
+
+
+func _highlight_cloud_of_daggers_movement() -> void:
+	var source_id := _cloud_of_daggers_zone_source_for_caster(active_character)
+	var zone: Dictionary = active_spell_zones.get(source_id, {})
+	var center: Vector2i = zone.get("center", Vector2i.ZERO)
+	var highlights := {}
+	for candidate in hex_grid.tiles.keys():
+		if Targeting.is_in_range(center, candidate, 6):
+			highlights[candidate] = Color(0.72, 0.82, 1.0, 0.72)
+	hex_grid.set_highlights(highlights)
+
+
+func _moonbeam_zone_source_for_caster(caster: Character) -> String:
+	return _spell_zones()._moonbeam_zone_source_for_caster(caster)
+
+
+func _moonbeam_can_move(zone: Dictionary) -> bool:
+	return _spell_zones()._moonbeam_can_move(zone)
+
+
+func _create_moonbeam_zone(center: Vector2i, slot_level: int, initial_targets: Array, source_id: String, shape_locked_targets: Array) -> void:
+	SpellZoneTerrain._create_moonbeam_zone(_spell_zones(), active_character, center, slot_level, initial_targets, source_id, shape_locked_targets)
+
+
+func _highlight_moonbeam_movement() -> void:
+	var source_id := _moonbeam_zone_source_for_caster(active_character)
+	var zone: Dictionary = active_spell_zones.get(source_id, {})
+	if zone.is_empty():
+		return
+	var center: Vector2i = zone.get("center", Vector2i.ZERO)
+	var highlights: Dictionary = {}
+	for candidate in hex_grid.tiles.keys():
+		if Targeting.is_in_range(center, candidate, 12):
+			highlights[candidate] = Color(0.72, 0.82, 1.0, 0.72)
+	hex_grid.set_highlights(highlights)
+
+
+func _resolve_moonbeam_zone_save(target, zone: Dictionary) -> Dictionary:
+	return await SpellZoneTerrain._resolve_moonbeam_zone_save(_spell_zones(), target, zone)
+
+
+func _apply_moonbeam_shape_change(target: Character, source_id: String, locked_targets: Array, was_shape_shifted: bool = false) -> bool:
+	return SpellZoneTerrain._apply_moonbeam_shape_change(_spell_zones(), target, source_id, locked_targets, was_shape_shifted)
+
+
+func _release_moonbeam_shape_lock(target, source_id: String, zone: Dictionary) -> void:
+	_spell_zones()._release_moonbeam_shape_lock(target, source_id, zone)
+
+
+func _resolve_moonbeam_area_movement(zone: Dictionary, old_coords: Array, new_coords: Array) -> void:
+	await _spell_zones()._resolve_moonbeam_area_movement(zone, old_coords, new_coords)
+
+
+func _position_for_spell_target(target) -> Vector2i:
+	return _spell_zones()._position_for_spell_target(target)
+
+
+func _remove_spell_zone(source_id: String) -> void:
+	_spell_zones()._remove_spell_zone(source_id)
+
+
+func _tick_spell_zones() -> void:
+	_spell_zones()._tick_spell_zones()
+
+
+func _resolve_spell_zone_save(target, zone: Dictionary) -> Dictionary:
+	return await SpellZoneTerrain._resolve_spell_zone_save(_spell_zones(), target, zone)
+
+
+func _resolve_black_tentacles_zone_save(target, zone: Dictionary) -> Dictionary:
+	return await SpellZoneTerrain._resolve_black_tentacles_zone_save(_spell_zones(), target, zone)
+
+
+func _resolve_sleet_storm_zone_save(target, zone: Dictionary) -> Dictionary:
+	return await SpellZoneTerrain._resolve_sleet_storm_zone_save(_spell_zones(), target, zone)
+
+
+func _resolve_cloud_of_daggers_damage(target, zone: Dictionary) -> Dictionary:
+	return await SpellZoneTerrain._resolve_cloud_of_daggers_damage(_spell_zones(), target, zone)
+
+
+func _resolve_cloud_of_daggers_area_movement(zone: Dictionary, old_coords: Array, new_coords: Array) -> Array[Dictionary]:
+	return await _spell_zones()._resolve_cloud_of_daggers_area_movement(zone, old_coords, new_coords)
+
+
+func _resolve_cloudkill_zone_save(target, zone: Dictionary) -> Dictionary:
+	return await SpellZoneTerrain._resolve_cloudkill_zone_save(_spell_zones(), target, zone)
+
+
+func _resolve_cloudkill_area_movement(zone: Dictionary, old_coords: Array, new_coords: Array) -> Array[Dictionary]:
+	return await _spell_zones()._resolve_cloudkill_area_movement(zone, old_coords, new_coords)
+
+
+func _spell_zone_caster(zone: Dictionary) -> Character:
+	return _spell_zones()._spell_zone_caster(zone)
+
+
+func _resolve_spell_zone_entries(target, from_hex: Vector2i, to_hex: Vector2i) -> Array[Dictionary]:
+	return await _spell_zones()._resolve_spell_zone_entries(target, from_hex, to_hex)
+
+
+func _resolve_spell_zone_movement(target, to_hex: Vector2i) -> Array[Dictionary]:
+	return await _spell_zones()._resolve_spell_zone_movement(target, to_hex)
+
+
+func _resolve_spell_zone_path(target, path: Array) -> Array[Dictionary]:
+	return await _spell_zones()._resolve_spell_zone_path(target, path)
+
+
+func _resolve_spell_zone_end_turn(target, coord: Vector2i) -> Array[Dictionary]:
+	return await _spell_zones()._resolve_spell_zone_end_turn(target, coord)
+
+
+func _resolve_spell_zone_start_turn(target, coord: Vector2i) -> Array[Dictionary]:
+	return await _spell_zones()._resolve_spell_zone_start_turn(target, coord)
+
+
+func _try_escape_restrained_zone(character: Character) -> bool:
+	if character == null or not _can_spend_action_cost("action"):
+		return false
+	for source_id_value in character.condition_sources.get("restrained", {}).keys():
+		var source_id := str(source_id_value)
+		if not (source_id.begins_with("entangle:") or source_id.begins_with("black_tentacles:")):
+			continue
+		var zone: Dictionary = active_spell_zones.get(source_id, {})
+		if zone.is_empty():
+			CombatAction.remove_condition_source(character, source_id, ["restrained"])
+			continue
+		var result := EventResolver.resolve_skill_check(character, {"ability": "STR", "skill": "Athletics", "dc": int(zone.get("save_dc", 10)), "use_primal_knowledge": false})
+		_spend_action_cost("action")
+		if bool(result.get("success", false)):
+			CombatAction.remove_condition_source(character, source_id, ["restrained"])
+			var restrained_targets: Array = zone.get("restrained_targets", [])
+			restrained_targets.erase(character)
+			zone["restrained_targets"] = restrained_targets
+			hud.add_log("[color=green]%s breaks free of %s with Strength (Athletics) (%d vs DC %d).[/color]" % [character.character_name, str(zone.get("spell_id", "the restraint")).capitalize().replace("_", " "), int(result.get("total", 0)), int(result.get("dc", 0))])
+		else:
+			hud.add_log("[color=orange]%s fails the Strength (Athletics) check to escape %s (%d vs DC %d).[/color]" % [character.character_name, str(zone.get("spell_id", "the restraint")).capitalize().replace("_", " "), int(result.get("total", 0)), int(result.get("dc", 0))])
+		hud.update_hud(active_character, tracker)
+		_highlight_reachable()
+		return true
+	return false
+
+
+func _try_freedom_of_movement_escape(character: Character) -> bool:
+	if character == null or not SpellEffects.has_spell(character, "freedom_of_movement"):
+		return false
+	if CombatAction.nonmagical_restraint_sources(character).is_empty():
+		return false
+	var total_speed := float(character.movement_speed_feet(active_movement_mode, true)) / 5.0
+	var available_speed := minf(total_speed, remaining_speed) if player_moved_this_turn else total_speed
+	if available_speed < 1.0:
+		hud.add_log("You need 5 feet of movement available to escape the restraint.")
+		return true
+	if not CombatAction.escape_nonmagical_restraint(character):
+		return false
+	remaining_speed = available_speed - 1.0
+	player_moved_this_turn = true
+	hud.add_log("%s spends 5 feet of movement and escapes the nonmagical restraint." % character.character_name)
+	hud.update_hud(active_character, tracker)
+	_highlight_reachable()
+	return true
+
+
+func _try_shake_sleeping_creature(coord: Vector2i, player_pos: Vector2i) -> bool:
+	return SpellEncounterLifecycle._try_shake_sleeping_creature(_spell_cast_context(), coord, player_pos)
+
+
+
+func _resolve_ray_of_enfeeblement_repeat_save(target) -> void:
+	SpellEncounterLifecycle._resolve_ray_of_enfeeblement_repeat_save(_spell_cast_context(), target)
+
+
+
+
+func _resolve_hold_monster_repeat_save(target) -> void:
+	SpellEncounterLifecycle._resolve_hold_monster_repeat_save(_spell_cast_context(), target)
+
+
+
+
 func _end_concentration(caster: Character) -> void:
-	if caster.concentrating_on.is_empty(): return
-	
-	var spell_id: String = caster.concentrating_on["spell_id"]
-	var targets: Array = caster.concentrating_on["targets"]
-	var concentration_name: String = str(DataLoader.get_spell(spell_id).get("name", spell_id))
-	if spell_id == "ranger_favored_foe":
-		concentration_name = "Favored Foe"
-	hud.add_log("[color=yellow]%s's concentration on %s ends.[/color]" % [caster.character_name, concentration_name])
-	if spell_id == "ranger_favored_foe":
-		var marked_id := str(caster.feature_uses.get("ranger_favored_foe_target_id", ""))
-		for monster in monster_entities:
-			if str(monster.get("id", "")) == marked_id:
-				monster.get("conditions", {}).erase("favored_foe")
-		caster.feature_uses.erase("ranger_favored_foe_target_id")
-	if spell_id == "hunters_mark":
-		var marked_id := str(caster.feature_uses.get("hunters_mark_target_id", ""))
-		for monster in monster_entities:
-			if str(monster.get("id", "")) == marked_id:
-				monster.get("conditions", {}).erase("hunters_mark")
-		caster.feature_uses.erase("hunters_mark_target_id")
-	
-	# Remove conditions applied by this spell
-	var effects: Array = caster.concentrating_on.get("effects", [])
-	for target in targets:
-		for effect in effects:
-			if effect.get("type", "") == "grant_condition":
-				var cond = effect.get("condition", "")
-				if target is Character:
-					target.remove_condition(cond)
-				elif target is Dictionary:
-					target.get("conditions", {}).erase(cond)
-					
-	caster.concentrating_on.clear()
+	SpellEncounterLifecycle._end_concentration(_spell_cast_context(), caster)
+
+
+func _end_resilient_sphere_for_target(target) -> void:
+	SpellEncounterLifecycle._end_resilient_sphere_for_target(_spell_cast_context(), target)
 
 
 func _check_concentration_save(character: Character, damage_taken: int) -> void:
-	if damage_taken <= 0 or character.concentrating_on.is_empty(): return
-	
-	var dc: int = max(10, int(floor(float(damage_taken) / 2.0)))
-	var roll := character.make_saving_throw("CON")
-	var success: bool = roll >= dc
-	
-	hud.add_log("%s makes a CON save to maintain concentration: %d vs DC %d." % [character.character_name, roll, dc])
-	if success:
-		hud.add_log("[color=green]%s maintained concentration![/color]" % character.character_name)
-	else:
-		hud.add_log("[color=red]%s failed CON save! Concentration lost.[/color]" % character.character_name)
-		_end_concentration(character)
+	await SpellEncounterLifecycle._check_concentration_save(_spell_cast_context(), character, damage_taken)
 
 
-func _handle_spell_effects(p_target: Character = null, m_target: Dictionary = {}, spell_data: Dictionary = {}, origin: Vector2i = Vector2i.ZERO, target_coord: Vector2i = Vector2i.ZERO) -> void:
-	var effects: Array = spell_data.get("effects", [])
-	for effect in effects:
-		var type: String = effect.get("type", "")
-		match type:
-			"heal", "heal_self", "reduce_speed", "vision_bonus":
-				if p_target != null:
-					for result in EventResolver.apply_effects(p_target, [effect]):
-						hud.add_log(result.get("message", ""))
-				elif not m_target.is_empty() and type == "reduce_speed":
-					var reduction := maxi(0, int(effect.get("value", 2)))
-					var duration := maxi(1, int(effect.get("duration", 1)))
-					var conditions: Dictionary = m_target.get("conditions", {})
-					if not conditions.has("speed_reduced"):
-						m_target["speed_before_spell_slow"] = int(m_target.get("speed", 6))
-						m_target["speed"] = maxi(0, int(m_target.get("speed", 6)) - reduction)
-					conditions["speed_reduced"] = duration
-					m_target["conditions"] = conditions
-					hud.add_log("[color=cyan]%s's movement is reduced by %d for %d turns.[/color]" % [m_target.get("name", "Target"), reduction, duration])
-			"grant_condition":
-				var cond = effect.get("condition", "")
-				var dur = int(effect.get("duration", 3))
-				if p_target != null:
-					p_target.add_condition(cond, dur)
-					hud.add_log("[color=green]%s is now %s for %d turns![/color]" % [p_target.character_name, cond, dur])
-				elif not m_target.is_empty():
-					var immunities: Array = m_target.get("condition_immunities", [])
-					if cond in immunities:
-						hud.add_log("[color=gray]%s is immune to %s.[/color]" % [m_target.get("name", "Target"), cond])
-						continue
-					var monster_conditions: Dictionary = m_target.get("conditions", {})
-					monster_conditions[cond] = dur
-					m_target["conditions"] = monster_conditions
-					hud.add_log("[color=green]%s is now %s for %d turns![/color]" % [m_target.get("name", "Target"), cond, dur])
-			"ac_bonus":
-				var val = int(effect.get("value", 5))
-				var dur = int(effect.get("duration", 1))
-				if p_target != null:
-					p_target.add_condition("shield", dur)
-					hud.add_log("[color=green]%s is protected by a magical barrier (+5 AC)![/color]" % p_target.character_name)
-			"set_base_ac":
-				var val = int(effect.get("value", 13))
-				if p_target != null:
-					p_target.add_condition("mage_armor", 99)
-					hud.add_log("[color=green]%s's AC is set to 13 + DEX from Mage Armor![/color]" % p_target.character_name)
-			"push":
-				if not m_target.is_empty():
-					var push_distance := int(effect.get("distance", 1))
-					var pushed_to: Vector2i = m_target.get("hex_position", target_coord)
-					for _step in push_distance:
-						var best_hex := pushed_to
-						var best_distance := HexUtils.get_distance(origin, pushed_to)
-						for neighbor in HexUtils.get_neighbors(pushed_to):
-							if not hex_grid.has_tile(neighbor) or not hex_grid.is_hex_passable(neighbor) or _is_occupied_hex(neighbor):
-								continue
-							var candidate_distance := HexUtils.get_distance(origin, neighbor)
-							if candidate_distance > best_distance:
-								best_hex = neighbor
-								best_distance = candidate_distance
-						if best_hex == pushed_to:
-							break
-						pushed_to = best_hex
-					m_target["hex_position"] = pushed_to
-					hud.add_log("[color=cyan]%s is pushed %d hexes.[/color]" % [m_target.get("name", "Target"), HexUtils.get_distance(target_coord, pushed_to)])
+func _handle_spell_effects(p_target: Character = null, m_target: Dictionary = {}, spell_data: Dictionary = {}, origin: Vector2i = Vector2i.ZERO, target_coord: Vector2i = Vector2i.ZERO, resolution: Dictionary = {}) -> void:
+	await SpellEffectApplication.apply(_spell_cast_context(), p_target, m_target, spell_data, origin, target_coord, resolution)
 
 
-func _handle_area_spell_effects(targets_list: Array, spell_data: Dictionary) -> void:
-	var effects: Array = spell_data.get("effects", [])
-	for effect in effects:
-		var type: String = effect.get("type", "")
-		match type:
-			"sleep":
-				var hp_pool_str: String = effect.get("hp_pool", "5d8")
-				var hp_pool := Dice.parse_dice_string(hp_pool_str)
-				hud.add_log("[color=purple]Sleep spell rolled an HP pool of %d![/color]" % hp_pool)
-				
-				var candidates: Array = []
-				for target_hex in targets_list:
-					for p in player_entities:
-						if p["hex_position"] == target_hex and p["character"].is_alive:
-							candidates.append({"type": "player", "entity": p["character"], "hp": p["character"].current_hp})
-					for m in monster_entities:
-						if m["hex_position"] == target_hex and m["is_alive"]:
-							candidates.append({"type": "monster", "entity": m, "hp": m["current_hp"]})
-							
-				candidates.sort_custom(func(a, b): return a["hp"] < b["hp"])
-				
-				for cand in candidates:
-					var hp = cand["hp"]
-					if hp_pool >= hp:
-						hp_pool -= hp
-						if cand["type"] == "player":
-							cand["entity"].add_condition("stunned", 10)
-							hud.add_log("[color=purple]%s fell into a magical slumber![/color]" % cand["entity"].character_name)
-						else:
-							cand["entity"]["conditions"]["stunned"] = 10
-							hud.add_log("[color=purple]%s fell into a magical slumber![/color]" % cand["entity"]["name"])
-					else:
-						break
 
 
 func _recover_wizard_spell_slots(character: Character) -> void:
@@ -1836,22 +5335,19 @@ func _recover_wizard_spell_slots(character: Character) -> void:
 	var recovered_slots: Array[String] = []
 	
 	var class_data := DataLoader.get_character_class(character.class_id)
-	var slot_table: Dictionary = class_data.get("spell_slots_by_level", {})
+	var slot_table: Dictionary = class_data.get("spell_slots_by_character_level", {})
 	var level_key := str(character.level)
 	if not level_key in slot_table:
 		return
 		
-	var max_slots: Dictionary = slot_table[level_key]
+	var max_slots: Array = slot_table[level_key]
 	
 	var remaining_recovery_levels := max_recovery_levels
-	var slot_levels := max_slots.keys()
-	slot_levels.sort_custom(func(a, b): return int(a) > int(b))
-	
-	for slot_lvl_str in slot_levels:
-		var slot_lvl := int(slot_lvl_str)
+	for slot_lvl in range(max_slots.size(), 0, -1):
 		if slot_lvl > 5: continue
 		
-		var max_qty: int = int(max_slots[slot_lvl_str])
+		var max_qty: int = int(max_slots[slot_lvl - 1]) if slot_lvl <= max_slots.size() else 0
+		var slot_lvl_str := str(slot_lvl)
 		var current_qty: int = character.spell_slots.get(slot_lvl_str, 0)
 		var expended := max_qty - current_qty
 		
@@ -1874,8 +5370,9 @@ func _lowest_available_spell_slot(character: Character, max_level: int) -> int:
 	return 0
 
 
-func _check_opportunity_attacks_for_path(entity, entity_dict: Dictionary, path: Array, is_entity_monster: bool) -> void:
-	if path.size() < 2: return
+func _check_opportunity_attacks_for_path(entity, entity_dict: Dictionary, path: Array, is_entity_monster: bool):
+	if path.size() < 2: return []
+	var zone_entry_results: Array[Dictionary] = []
 	
 	for k in range(path.size() - 1):
 		var from_hex: Vector2i = path[k]
@@ -1885,6 +5382,8 @@ func _check_opportunity_attacks_for_path(entity, entity_dict: Dictionary, path: 
 		var movement_result := CombatAction.resolve_movement_step(entity_dict, from_hex, to_hex)
 		if not movement_result.get("success", false):
 			return
+		if not is_entity_monster:
+			_sync_mounted_steed_position(entity, to_hex)
 		
 		if is_entity_monster:
 			# Monster is moving. Check players who can make opportunity attacks.
@@ -1892,12 +5391,18 @@ func _check_opportunity_attacks_for_path(entity, entity_dict: Dictionary, path: 
 				var char_data: Character = p["character"]
 				if char_data == null or not char_data.is_alive: continue
 				if not p.get("reaction_available", true): continue
-				if char_data.has_condition("stunned"): continue
+				if char_data.has_condition("stunned") or CombatAction.blocks_opportunity_attack(char_data): continue
 				
 				# Check if player was adjacent at from_hex and is no longer adjacent at to_hex
+				var weapon := DataLoader.get_item(char_data.inventory.get_weapon()).duplicate(true)
+				if "ranged" in weapon.get("properties", []) or weapon.is_empty():
+					weapon = {"id": "unarmed", "type": "weapon", "damage": "1+STR", "ability": "STR", "range": 1, "damage_type": "bludgeoning"}
+				if _spell_zones()._antilife_shell_blocks_melee(char_data, p.get("hex_position", Vector2i.ZERO), from_hex, weapon):
+					continue
+				var reach := 2 if "reach" in weapon.get("properties", []) else 1
 				var dist_from := HexUtils.get_distance(p["hex_position"], from_hex)
 				var dist_to := HexUtils.get_distance(p["hex_position"], to_hex)
-				if dist_from == 1 and dist_to > 1:
+				if dist_from <= reach and dist_to > reach:
 					var owner_label := _owner_label_for_character(char_data)
 					var accepted := await hud.request_reaction(owner_label, "opportunity_attack", "Make a weapon attack against %s before it leaves your reach." % entity_dict["name"])
 					if not accepted:
@@ -1907,34 +5412,59 @@ func _check_opportunity_attacks_for_path(entity, entity_dict: Dictionary, path: 
 					char_data.reaction_available = false
 					hud.add_log("[color=yellow]%s makes an Opportunity Attack against %s![/color]" % [char_data.character_name, entity_dict["name"]])
 					
-					var weapon_id := char_data.inventory.get_weapon()
-					var weapon := DataLoader.get_item(weapon_id)
-					var result := CombatAction.resolve_weapon_attack(char_data, entity_dict, weapon)
+					# Resolve before leaving reach. A positional mastery can interrupt
+					# the proposed path, so do not overwrite its settled destination.
+					entity_dict["hex_position"] = from_hex
+					weapon["attack_distance"] = dist_from
+					weapon["opportunity_attack"] = true
+					var opportunity_effects := await _request_brutal_strike(char_data, weapon)
+					var opportunity_decisions := await _collect_attack_inspiration_decision(char_data)
+					if not opportunity_effects.is_empty():
+						opportunity_decisions["barbarian_brutal_strike_effects"] = opportunity_effects
+					var opportunity_packet := await _conjure_minor_elementals_damage_choice(char_data, entity_dict)
+					var opportunity_additional_damage := {"packets": [opportunity_packet]} if not opportunity_packet.is_empty() else {}
+					var result := CombatAction.resolve_weapon_attack(char_data, entity_dict, weapon, false, false, opportunity_decisions, opportunity_additional_damage)
+					await _offer_sneak_attack(entity_dict, weapon, result, char_data)
+					await _offer_stunning_strike(entity_dict, weapon, result, char_data)
+					await _finish_fighter_attack(entity_dict, weapon, result, char_data)
 					hud.add_log(result.get("message", "Miss!"))
+					_publish_fighter_extra_attack(entity_dict, weapon, result, char_data)
 					
 					if int(entity_dict.get("current_hp", 0)) <= 0:
 						entity_dict["is_alive"] = false
 						hud.add_log("[color=green]%s was defeated by opportunity attack![/color]" % entity_dict["name"])
 						tracker.remove_combatant(entity_dict["id"])
+						_trigger_enemy_defeat_features(entity_dict, char_data)
 						entity_dict["hex_position"] = from_hex # Stops at from_hex
 						return
+					if entity_dict["hex_position"] != from_hex:
+						return
+					entity_dict["hex_position"] = to_hex
 		else:
 			# Player is moving. Check monsters who can make opportunity attacks.
 			for m in monster_entities:
+				if entity is Character and (entity.has_feature("agile") or (entity.has_feature("flyby") and active_movement_mode == "fly")): continue
 				if not m["is_alive"]: continue
 				if not m.get("reaction_available", true): continue
-				if m.get("conditions", {}).has("stunned"): continue
+				if m.get("conditions", {}).has("stunned") or CombatAction.blocks_opportunity_attack(m) or m.get("stunning_strike_stunned", false) or m.has("barbarian_no_opportunity_owner"): continue
 				
 				# Check if monster was adjacent at from_hex and is no longer adjacent at to_hex
 				var dist_from := HexUtils.get_distance(m["hex_position"], from_hex)
 				var dist_to := HexUtils.get_distance(m["hex_position"], to_hex)
 				if dist_from == 1 and dist_to > 1:
+					var attack_data: Dictionary = m.get("attacks", [{}])[0]
+					if _spell_zones()._antilife_shell_blocks_melee(m, m["hex_position"], from_hex, attack_data):
+						continue
 					m["reaction_available"] = false
 					hud.add_log("[color=red]%s makes an Opportunity Attack against %s![/color]" % [m["name"], entity.character_name])
-					
-					var attack_data = m["attacks"][0]
 					var reaction_decisions := await _collect_reaction_decisions(entity)
-					var result := CombatAction.resolve_weapon_attack(_make_temp_monster_character(m), entity, attack_data, false, false, reaction_decisions)
+					var monster_attacker := _make_temp_monster_character(m)
+					var result := CombatAction.resolve_weapon_attack(monster_attacker, entity, attack_data, false, false, reaction_decisions)
+					if result.has("attack_roll"):
+						SpellEffects.consume_spell(m, "invisibility")
+					_sync_consumed_monster_attack_conditions(m, monster_attacker)
+					if result.get("deflected", false):
+						await _offer_deflect_redirect(entity, from_hex, attack_data, result)
 					hud.add_log(result.get("message", "Miss!"))
 					
 					if not entity.is_alive:
@@ -1942,6 +5472,12 @@ func _check_opportunity_attacks_for_path(entity, entity_dict: Dictionary, path: 
 						entity_dict["hex_position"] = from_hex # Stops at from_hex
 						_end_concentration(entity)
 						return
+		var actual_hex: Vector2i = entity_dict.get("hex_position", from_hex)
+		if actual_hex != from_hex and await _apply_room_fall_damage(entity, from_hex, actual_hex):
+			return zone_entry_results
+		zone_entry_results.append_array(await _resolve_spell_zone_entries(entity, from_hex, actual_hex))
+		zone_entry_results.append_array(await _resolve_spell_zone_movement(entity, actual_hex))
+	return zone_entry_results
 
 
 func _owner_label_for_character(character: Character) -> String:
@@ -1953,3 +5489,15 @@ func _owner_label_for_character(character: Character) -> String:
 		var owner_index := int(player_entity.get("owner_player_index", -1))
 		return "Seat %d - %s" % [owner_index + 1, character.character_name] if owner_index >= 0 else character.character_name
 	return character.character_name
+
+
+func _begin_spell_targeting() -> void:
+	pending_action_type = "spell"
+	pending_command_target_coords.clear()
+	pending_command_target_ids.clear()
+
+
+func _finish_spell_targeting() -> void:
+	pending_words_primary_selected = false
+	pending_command_target_coords.clear()
+	pending_command_target_ids.clear()

@@ -145,7 +145,7 @@ static func has_line_of_sight(a: Vector2i, b: Vector2i, is_blocked: Callable) ->
 ## `get_cost` should be a Callable: Vector2i -> float (movement cost to enter)
 ## Returns an array of hex coordinates forming the path (including start and end),
 ## or an empty array if no path exists.
-static func find_path(start: Vector2i, goal: Vector2i, is_passable: Callable, get_cost: Callable, max_range: int = 100) -> Array[Vector2i]:
+static func find_path(start: Vector2i, goal: Vector2i, is_passable: Callable, get_cost: Callable, max_range: int = 100, get_step_cost: Callable = Callable()) -> Array[Vector2i]:
 	if start == goal:
 		return [start]
 
@@ -175,7 +175,8 @@ static func find_path(start: Vector2i, goal: Vector2i, is_passable: Callable, ge
 			if not is_passable.call(neighbor):
 				continue
 
-			var new_cost: float = cost_so_far[current] + get_cost.call(neighbor)
+			var step_cost: float = float(get_step_cost.call(current, neighbor)) if get_step_cost.is_valid() else float(get_cost.call(neighbor))
+			var new_cost: float = cost_so_far[current] + float(step_cost)
 			if new_cost > max_range:
 				continue
 
@@ -190,7 +191,7 @@ static func find_path(start: Vector2i, goal: Vector2i, is_passable: Callable, ge
 
 ## Get all reachable hexes within a movement budget.
 ## Returns Dictionary[Vector2i, float] mapping hex -> cost to reach it.
-static func get_reachable(start: Vector2i, budget: float, is_passable: Callable, get_cost: Callable) -> Dictionary:
+static func get_reachable(start: Vector2i, budget: float, is_passable: Callable, get_cost: Callable, get_step_cost: Callable = Callable()) -> Dictionary:
 	var reachable: Dictionary = {start: 0.0}
 	var frontier: Array = [start]
 
@@ -201,7 +202,8 @@ static func get_reachable(start: Vector2i, budget: float, is_passable: Callable,
 			if not is_passable.call(neighbor):
 				continue
 
-			var new_cost: float = reachable[current] + get_cost.call(neighbor)
+			var step_cost: float = float(get_step_cost.call(current, neighbor)) if get_step_cost.is_valid() else float(get_cost.call(neighbor))
+			var new_cost: float = reachable[current] + float(step_cost)
 			if new_cost > budget:
 				continue
 

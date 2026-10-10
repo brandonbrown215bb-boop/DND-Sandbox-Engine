@@ -1,5 +1,5 @@
-## Validation and Math Unit Tests Runner
-## Mirrors the hex coordinate math and dice parser formulas, and validates all campaign/mod JSON files.
+## Structural validation and independent reference examples, not Godot tests.
+## Runtime behavior and save serialization are verified by run_tests.ps1.
 import os
 import json
 import re
@@ -170,7 +170,7 @@ class JSONValidator:
 class CoreRPGMechanicsTest:
     @classmethod
     def run_tests(cls):
-        print("[Test] Running Core RPG Mechanics & Rules tests...")
+        print("[Reference] Checking copied formula examples; this is not a production rules audit...")
         
         # 1. Test Wizard Arcane Recovery calculation
         assert int((1 + 1) // 2) == 1
@@ -242,27 +242,7 @@ class CoreRPGMechanicsTest:
         assert get_damage_with_uncanny_dodge(10, True) == 5
         assert get_damage_with_uncanny_dodge(10, False) == 10
 
-        # 9. Test Sleep HP pool depletion
-        def resolve_sleep_targets(hp_pool, targets):
-            sorted_targets = sorted(targets, key=lambda x: x["hp"])
-            asleep = []
-            for t in sorted_targets:
-                if hp_pool >= t["hp"]:
-                    hp_pool -= t["hp"]
-                    asleep.append(t["name"])
-                else:
-                    break
-            return asleep
-
-        targets = [
-            {"name": "Goblin 1", "hp": 7},
-            {"name": "Goblin 2", "hp": 12},
-            {"name": "Orc", "hp": 15}
-        ]
-        assert resolve_sleep_targets(20, targets) == ["Goblin 1", "Goblin 2"]
-        assert resolve_sleep_targets(10, targets) == ["Goblin 1"]
-
-        # 10. Test Opportunity Attack trigger rules
+        # 9. Test Opportunity Attack trigger rules
         def triggers_opportunity_attack(dist_from, dist_to, disengaged):
             if disengaged: return False
             return dist_from == 1 and dist_to > 1
@@ -274,47 +254,15 @@ class CoreRPGMechanicsTest:
         print("[Test] Core RPG Mechanics & Rules tests PASSED.")
 
 
-class SaveLoadSerializationTest:
-    @classmethod
-    def run_tests(cls):
-        print("[Test] Running Save/Load Serialization schema tests...")
-        
-        # Simulate character serialization keys
-        char_keys_to_dict = [
-            "name", "race_id", "class_id", "level", "xp", "ability_scores",
-            "max_hp", "current_hp", "temp_hp", "base_ac", "speed",
-            "proficiency_bonus", "saving_throw_proficiencies", "skill_proficiencies",
-            "weapon_proficiencies", "armor_proficiencies", "known_spells", "spell_slots",
-            "conditions", "inventory", "feature_uses", "is_alive", "crit_range",
-            "extra_attacks"
-        ]
-        
-        # Simulate character from_dict retrievals
-        char_keys_from_dict = [
-            "name", "race_id", "class_id", "level", "xp", "ability_scores",
-            "max_hp", "current_hp", "temp_hp", "base_ac", "speed",
-            "proficiency_bonus", "is_alive", "crit_range", "extra_attacks",
-            "saving_throw_proficiencies", "skill_proficiencies", "weapon_proficiencies",
-            "armor_proficiencies", "known_spells", "conditions", "feature_uses",
-            "inventory", "spell_slots"
-        ]
-        
-        for key in char_keys_to_dict:
-            assert key in char_keys_from_dict, f"Character serializer mismatch: key '{key}' is output but not parsed!"
-        for key in char_keys_from_dict:
-            assert key in char_keys_to_dict, f"Character serializer mismatch: key '{key}' is parsed but not output!"
-            
-        print("[Test] Save/Load Serialization tests PASSED.")
 
 
 if __name__ == "__main__":
     HexUtilsTest.run_tests()
     DiceParserTest.run_tests()
     CoreRPGMechanicsTest.run_tests()
-    SaveLoadSerializationTest.run_tests()
     
     # Locate data files
     base_data_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../data/core"))
     JSONValidator.run_validation(base_data_path)
     
-    print("\n[Test] ALL UNIT AND STRUCTURAL TESTS PASSED SUCCESSFULLY!")
+    print("\n[Structure] JSON structure and reference examples passed. Gameplay and saves require the Godot suite.")

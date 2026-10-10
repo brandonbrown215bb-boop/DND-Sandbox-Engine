@@ -1,0 +1,11 @@
+{
+  "id": "fixture:duelist",
+  "name": "Fixture Duelist",
+  "class_id": "fighter",
+  "features_by_level": {
+    "3": [
+      {"id": "fixture:duelist_heal", "name": "Duelist Recovery", "type": "active", "executor": "class_feature", "uses": 1, "uses_per": "long_rest", "action_cost": "action", "effects": [{"type": "heal_self", "value": "1d6+level"}]},
+      {"id": "fixture:duelist_improvement", "name": "Subclass Improvement", "type": "passive", "effects": [{"type": "asi"}]}
+    ]
+  }
+}

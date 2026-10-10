@@ -1,0 +1,265 @@
+## Spell-specific player choices at their existing cast boundaries.
+class_name SpellCastChoices
+extends RefCounted
+
+static func choose_identify(cast: SpellCastContext) -> bool:
+	if str(cast.spell.get("id", "")) == "identify":
+		var identify_mode := await cast.hud.request_identify_mode(str(cast.spell.get("_test_identify_mode", "")))
+		if identify_mode == "creature":
+			var creature_id := SpellCastTargeting._identify_creature_id_at(cast, cast.target_coord)
+			if creature_id.is_empty() or HexUtils.get_distance(cast.spell_origin, cast.target_coord) > 1:
+				cast.hud.add_log("Identify needs a living creature within 5 feet, touched throughout the casting.")
+				cast.highlight_reachable.call()
+				return false
+			cast.spell["_identify_target"] = {"kind": "creature", "target_id": creature_id}
+		else:
+			var carried_items: Array[Dictionary] = []
+			for record in cast.caster.inventory.owned_instances():
+				var item := DataLoader.get_item(str(record.get("definition_id", ""))).duplicate(true)
+				if item.is_empty():
+					continue
+				item["id"] = str(record.get("instance_id", ""))
+				item["definition_id"] = str(record.get("definition_id", ""))
+				item["copy_state"] = record.get("state", {}).duplicate(true)
+				carried_items.append(item)
+			var chosen_item := await cast.hud.request_identify_item_choice(carried_items, str(cast.spell.get("_test_identify_item_id", "")))
+			if chosen_item.is_empty():
+				cast.hud.add_log("Identify needs an item you carry and can touch throughout the casting.")
+				cast.highlight_reachable.call()
+				return false
+			var chosen_record := cast.caster.inventory.get_instance(chosen_item)
+			cast.spell["_identify_target"] = {"kind": "item", "instance_id": chosen_item, "item_id": str(chosen_record.get("definition_id", ""))}
+			cast.target_coord = cast.spell_origin
+	return true
+
+
+static func choose_dancing_lights(cast: SpellCastContext) -> bool:
+	if str(cast.spell.get("id", "")) == "dancing_lights":
+		if not cast.grid.has_tile(cast.target_coord) or not Targeting.is_in_range(cast.spell_origin, cast.target_coord, SpellCastTargeting._spell_target_range(cast, cast.spell)):
+			cast.hud.add_log("[color=orange]Choose a space within Dancing Lights' range.[/color]")
+			cast.highlight_reachable.call()
+			return false
+		var lights_form_choice := await cast.hud.request_dancing_lights_form()
+		if not lights_form_choice.get("success", false):
+			cast.clear_pending(SpellCastContext.CLEAR_ACTION)
+			cast.clear_pending(SpellCastContext.CLEAR_SPELL)
+			cast.clear_pending(SpellCastContext.CLEAR_INTERVENTION)
+			cast.clear_pending(SpellCastContext.CLEAR_WISH)
+			cast.highlight_reachable.call()
+			return false
+		cast.spell["_dancing_lights_humanoid_form"] = bool(lights_form_choice.get("humanoid_form", false))
+		cast.spell["_dancing_lights_count"] = clampi(int(lights_form_choice.get("light_count", 4)), 1, 4)
+	return true
+
+
+static func choose_spirit_guardians(cast: SpellCastContext) -> bool:
+	if str(cast.spell.get("id", "")) == "spirit_guardians":
+		var exempt_candidates: Array[Dictionary] = []
+		for player_entity in cast.players:
+			var candidate: Character = player_entity.get("character")
+			if candidate != null and candidate.is_alive:
+				exempt_candidates.append({"id": candidate.character_id, "name": candidate.character_name})
+		for monster_entity in cast.monsters:
+			if bool(monster_entity.get("is_alive", false)):
+				exempt_candidates.append({"id": str(monster_entity.get("id", "")), "name": str(monster_entity.get("name", "Creature"))})
+		cast.spell["_spirit_guardians_exempt_target_ids"] = await cast.hud.request_spirit_guardians_exemptions(exempt_candidates, cast.spell.get("_test_spirit_guardians_exempt_target_ids", []))
+		var chosen_damage_type := "radiant"
+		if GameManager.test_mode:
+			chosen_damage_type = str(cast.spell.get("_test_spirit_guardians_damage_type", "radiant"))
+		else:
+			chosen_damage_type = await cast.hud.request_damage_type_choice(cast.spell.get("damage_type_choices", ["radiant", "necrotic"]), "Spirit Guardians alignment damage")
+		if chosen_damage_type not in cast.spell.get("damage_type_choices", ["radiant", "necrotic"]):
+			cast.clear_pending(SpellCastContext.CLEAR_ACTION)
+			cast.clear_pending(SpellCastContext.CLEAR_SPELL)
+			cast.highlight_reachable.call()
+			return false
+		cast.spell["_spirit_guardians_damage_type"] = chosen_damage_type
+	return true
+
+
+static func choose_utility_options(cast: SpellCastContext) -> bool:
+	if str(cast.spell.get("id", "")) == "minor_illusion":
+		if not cast.grid.has_tile(cast.target_coord) or not Targeting.is_in_range(cast.spell_origin, cast.target_coord, MinorIllusionRules.RANGE_HEXES):
+			cast.hud.add_log("[color=orange]Choose a point within 30 feet for Minor Illusion.[/color]")
+			cast.highlight_reachable.call()
+			return false
+		var illusion_choice: Dictionary = await cast.hud.request_minor_illusion()
+		if not illusion_choice.get("success", false):
+			cast.clear_pending(SpellCastContext.CLEAR_ACTION)
+			cast.clear_pending(SpellCastContext.CLEAR_SPELL)
+			cast.clear_pending(SpellCastContext.CLEAR_INTERVENTION)
+			cast.clear_pending(SpellCastContext.CLEAR_WISH)
+			cast.highlight_reachable.call()
+			return false
+		cast.spell["_minor_illusion_form"] = str(illusion_choice.get("form", ""))
+		cast.spell["_minor_illusion_description"] = str(illusion_choice.get("description", ""))
+	if str(cast.spell.get("id", "")) == "prestidigitation":
+		if not cast.grid.has_tile(cast.target_coord) or not Targeting.is_in_range(cast.spell_origin, cast.target_coord, PrestidigitationRules.RANGE_HEXES):
+			cast.hud.add_log("[color=orange]Choose a point within 10 feet for Prestidigitation.[/color]")
+			cast.highlight_reachable.call()
+			return false
+		var prestidigitation_choice: Dictionary = await cast.hud.request_prestidigitation_effect()
+		if not prestidigitation_choice.get("success", false):
+			cast.clear_pending(SpellCastContext.CLEAR_ACTION)
+			cast.clear_pending(SpellCastContext.CLEAR_SPELL)
+			cast.clear_pending(SpellCastContext.CLEAR_INTERVENTION)
+			cast.clear_pending(SpellCastContext.CLEAR_WISH)
+			cast.highlight_reachable.call()
+			return false
+		var chosen_effect_type := str(prestidigitation_choice.get("effect_type", ""))
+		var current_effects: Array = cast.prestidigitation_effects.get(cast.caster.character_id, [])
+		if not PrestidigitationRules.is_instantaneous(chosen_effect_type) and current_effects.size() >= PrestidigitationRules.MAX_ACTIVE_EFFECTS:
+			cast.hud.add_log("[color=orange]You already have three non-instantaneous Prestidigitation effects active.[/color]")
+			cast.highlight_reachable.call()
+			return false
+		cast.spell["_prestidigitation_effect_type"] = chosen_effect_type
+		cast.spell["_prestidigitation_description"] = str(prestidigitation_choice.get("description", ""))
+	if str(cast.spell.get("id", "")) == "alter_self":
+		var natural_damage_type := await cast.hud.request_damage_type_choice(["slashing", "piercing", "bludgeoning"], "Alter Self — Natural Weapons (supported option)")
+		if natural_damage_type not in ["slashing", "piercing", "bludgeoning"]:
+			cast.hud.add_log("Choose a Natural Weapons damage type to cast Alter Self.")
+			cast.highlight_reachable.call()
+			return false
+		cast.spell["_alter_self_natural_damage_type"] = natural_damage_type
+	if str(cast.spell.get("id", "")) == "true_strike":
+		var strike_weapon: Dictionary = DataLoader.get_item(str(cast.spell.get("_true_strike_weapon_id", "")))
+		var normal_damage_type := str(strike_weapon.get("damage_type", "bludgeoning"))
+		var strike_damage_options: Array = [normal_damage_type]
+		if normal_damage_type != "radiant":
+			strike_damage_options.append("radiant")
+		var selected_strike_type := await cast.hud.request_damage_type_choice(strike_damage_options, "True Strike")
+		if selected_strike_type not in [normal_damage_type, "radiant"]:
+			cast.hud.add_log("Choose the True Strike attack's damage type.")
+			cast.highlight_reachable.call()
+			return false
+		cast.spell["_true_strike_damage_type"] = selected_strike_type
+	return true
+
+
+static func choose_orders_and_types(cast: SpellCastContext) -> bool:
+	if str(cast.spell.get("id", "")) == "animal_messenger":
+		var messenger_target: Dictionary = {}
+		for monster in cast.monsters:
+			if monster.get("hex_position", Vector2i.ZERO) == cast.target_coord and monster.get("is_alive", false):
+				messenger_target = monster
+				break
+		if messenger_target.is_empty():
+			cast.hud.add_log("[color=orange]Animal Messenger needs a Tiny Beast in the combat encounter.[/color]")
+			cast.highlight_reachable.call()
+			return false
+		var visited_locations := GameManager.get_visited_overworld_locations()
+		if is_zero_approx(float(messenger_target.get("challenge_rating", 0.0))):
+			if visited_locations.is_empty():
+				cast.hud.add_log("[color=orange]Animal Messenger needs a destination the party has already visited.[/color]")
+				cast.highlight_reachable.call()
+				return false
+			if GameManager.animal_messenger_deliveries.size() >= AnimalMessengerRules.MAX_SAVED_DELIVERIES:
+				cast.hud.add_log("[color=orange]The campaign messenger ledger is full.[/color]")
+				cast.highlight_reachable.call()
+				return false
+			var messenger_order: Dictionary = await cast.hud.request_animal_messenger_order(visited_locations)
+			var order_validation := GameManager.validate_animal_messenger_order(messenger_order)
+			if not order_validation.get("success", false):
+				cast.hud.add_log("[color=orange]%s[/color]" % order_validation.get("message", "Animal Messenger was cancelled."))
+				cast.highlight_reachable.call()
+				return false
+			cast.spell["_animal_messenger_order"] = order_validation
+	if str(cast.spell.get("id", "")) == "message":
+		var message_target: Character = null
+		var message_target_owner := -1
+		for player in cast.players:
+			var candidate: Character = player.get("character")
+			if player.get("hex_position", Vector2i.ZERO) == cast.target_coord and candidate != null and candidate.is_alive:
+				message_target = candidate
+				message_target_owner = int(player.get("owner_player_index", -1))
+				break
+		if message_target == null:
+			cast.hud.add_log("[color=orange]Message currently needs a living party character to receive the hot-seat whisper.[/color]")
+			cast.highlight_reachable.call()
+			return false
+		cast.spell["_message_target_id"] = message_target.character_id
+		cast.spell["_message_target_owner"] = message_target_owner
+	var damage_type_options: Array = cast.spell.get("damage_type_options", [])
+	if not damage_type_options.is_empty():
+		var selected_damage_type := await cast.hud.request_damage_type_choice(damage_type_options, str(cast.spell.get("name", "Spell")))
+		if selected_damage_type.is_empty():
+			cast.hud.add_log("Choose a damage type to cast %s." % cast.spell.get("name", "the spell"))
+			cast.highlight_reachable.call()
+			return false
+		cast.spell["damage_type"] = selected_damage_type
+	var condition_options: Array = cast.spell.get("condition_options", [])
+	if not condition_options.is_empty():
+		var selected_condition := await cast.hud.request_damage_type_choice(condition_options, str(cast.spell.get("name", "Spell")))
+		if selected_condition not in condition_options:
+			cast.hud.add_log("Choose a condition for %s." % str(cast.spell.get("name", "the spell")))
+			cast.highlight_reachable.call()
+			return false
+		cast.spell["condition_on_failed_save"] = selected_condition
+	return true
+
+
+static func choose_target_options(cast: SpellCastContext) -> bool:
+	if str(cast.spell.get("id", "")) == "command":
+		var chosen_command := await cast.hud.request_command_choice()
+		if chosen_command.is_empty():
+			cast.hud.add_log("Choose a command to cast Command.")
+			cast.highlight_reachable.call()
+			return false
+		cast.spell["_command_choice"] = chosen_command
+	if str(cast.spell.get("id", "")) == "guidance":
+		var chosen_guidance_skill := await cast.hud.request_guidance_skill_choice()
+		if chosen_guidance_skill.is_empty():
+			cast.hud.add_log("Choose a skill to cast Guidance.")
+			cast.highlight_reachable.call()
+			return false
+		cast.spell["_guidance_skill"] = chosen_guidance_skill
+	if str(cast.spell.get("id", "")) == "resistance":
+		var chosen_resistance_type := await cast.hud.request_resistance_damage_type()
+		if chosen_resistance_type.is_empty():
+			cast.hud.add_log("Choose a damage type to cast Resistance.")
+			cast.highlight_reachable.call()
+			return false
+		cast.spell["_resistance_damage_type"] = chosen_resistance_type
+	if str(cast.spell.get("id", "")) == "protection_from_energy":
+		var energy_type := await cast.hud.request_damage_type_choice(["acid", "cold", "fire", "lightning", "thunder"], "Protection from Energy")
+		if energy_type.is_empty():
+			cast.hud.add_log("Choose a damage type for Protection from Energy.")
+			cast.highlight_reachable.call()
+			return false
+		cast.spell["_protection_from_energy_type"] = energy_type
+	if str(cast.spell.get("id", "")) == "conjure_elemental":
+		var elemental_choice := str(cast.spell.get("_test_conjure_elemental_type", ""))
+		if elemental_choice.is_empty():
+			elemental_choice = await cast.hud.request_conjure_elemental_element()
+		var elemental_types: Dictionary = cast.spell.get("element_choices", {})
+		if not elemental_types.has(elemental_choice):
+			cast.hud.add_log("Choose Air, Earth, Fire, or Water for Conjure Elemental.")
+			cast.highlight_reachable.call()
+			return false
+		cast.spell["_conjure_elemental_choice"] = elemental_choice
+		cast.spell["damage_type"] = str(elemental_types[elemental_choice])
+
+	if str(cast.spell.get("id", "")) == "enhance_ability":
+		var enhance_choices: Dictionary = {}
+		var enhance_target_coords: Array[Vector2i] = [cast.target_coord]
+		enhance_target_coords.append_array(cast.extra_target_coords)
+		if cast.additional_target_coord != Vector2i(9999, 9999):
+			enhance_target_coords.append(cast.additional_target_coord)
+		for enhance_coord in enhance_target_coords:
+			var coord_key := "%d,%d" % [enhance_coord.x, enhance_coord.y]
+			if enhance_choices.has(coord_key):
+				continue
+			for party_entity in cast.players:
+				var enhance_target: Character = party_entity.get("character")
+				if enhance_target == null or not enhance_target.is_alive or party_entity.get("hex_position", Vector2i.ZERO) != enhance_coord:
+					continue
+				var seeded_enhance := str(cast.spell.get("_test_enhance_ability_choices", {}).get(coord_key, cast.spell.get("_test_enhance_ability_choice", "")))
+				var enhance_choice := await cast.hud.request_enhance_ability_choice(enhance_target.character_name, seeded_enhance)
+				if enhance_choice.is_empty():
+					cast.hud.add_log("Choose an ability for each Enhance Ability target.")
+					cast.highlight_reachable.call()
+					return false
+				enhance_choices[coord_key] = enhance_choice
+				break
+		cast.spell["_enhance_ability_choices"] = enhance_choices
+	return true

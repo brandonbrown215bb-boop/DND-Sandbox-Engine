@@ -1,0 +1,69 @@
+[
+  {
+    "id": "explorers_pack",
+    "name": "Explorer's Pack",
+    "type": "tool",
+    "description": "A backpack, bedroll, two Oil flasks, ten days of Rations, Rope, Tinderbox, ten Torches, and a Waterskin.",
+    "pack_contents": [
+      {"item_id": "backpack", "quantity": 1},
+      {"item_id": "bedroll", "quantity": 1},
+      {"item_id": "oil_flask", "quantity": 2},
+      {"item_id": "rations", "quantity": 10},
+      {"item_id": "rope", "quantity": 1},
+      {"item_id": "tinderbox", "quantity": 1},
+      {"item_id": "torch", "quantity": 10},
+      {"item_id": "waterskin", "quantity": 1}
+    ],
+    "value": 10,
+    "rules_source": "dnd-2024-srd-5.2.1",
+    "rules_status": "2024-gameplay-partial"
+  },
+  {
+    "id": "entertainers_pack",
+    "name": "Entertainer's Pack",
+    "type": "tool",
+    "description": "A backpack, bedroll, bell, bullseye lantern, three costumes, mirror, eight Oil flasks, nine days of Rations, tinderbox, and waterskin. Carried as one bundle.",
+    "pack_contents": [
+      {"item_id": "backpack", "quantity": 1},
+      {"item_id": "bedroll", "quantity": 1},
+      {"item_id": "bell", "quantity": 1},
+      {"item_id": "lantern_bullseye", "quantity": 1},
+      {"item_id": "costume", "quantity": 3},
+      {"item_id": "mirror", "quantity": 1},
+      {"item_id": "oil_flask", "quantity": 8},
+      {"item_id": "rations", "quantity": 9},
+      {"item_id": "tinderbox", "quantity": 1},
+      {"item_id": "waterskin", "quantity": 1}
+    ],
+    "value": 40,
+    "rules_source": "dnd-2024-srd-5.2.1",
+    "rules_status": "2024-gameplay-partial"
+  },
+  {
+    "id": "priests_pack",
+    "name": "Priest's Pack",
+    "type": "tool",
+    "description": "Backpack, blanket, Holy Water, lamp, seven days of Rations, robe, and tinderbox. Carried as one bundle.",
+    "pack_contents": [
+      {"item_id": "backpack", "quantity": 1},
+      {"item_id": "blanket", "quantity": 1},
+      {"item_id": "holy_water", "quantity": 1},
+      {"item_id": "lamp", "quantity": 1},
+      {"item_id": "rations", "quantity": 7},
+      {"item_id": "robe", "quantity": 1},
+      {"item_id": "tinderbox", "quantity": 1}
+    ],
+    "value": 33,
+    "rules_source": "dnd-2024-srd-5.2.1",
+    "rules_status": "2024-gameplay-partial"
+  },
+  {
+    "id": "holy_symbol",
+    "name": "Holy Symbol",
+    "type": "tool",
+    "description": "An amulet representing a deity or pantheon, usable as a Cleric spellcasting focus.",
+    "value": 5,
+    "rules_source": "dnd-2024-srd-5.2.1",
+    "rules_status": "2024-gameplay-partial"
+  }
+]
