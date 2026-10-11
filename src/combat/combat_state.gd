@@ -173,6 +173,8 @@ func _update_grid_entities() -> void:
 	_refresh_fog_cloud_conditions()
 	_refresh_darkness_conditions()
 	_refresh_aura_of_life_protection()
+	if hex_grid == null:
+		return
 	hex_grid.clear_entities()
 	var active_character_id := active_character.character_id if active_character != null else ""
 	hud.light_marker_active = light_spell_markers.has(active_character_id)
@@ -389,7 +391,8 @@ func _add_wild_companion_entity(owner: Dictionary, add_to_initiative: bool, requ
 		var dex := familiar.ability_scores.get_score("DEX")
 		var initiative: Dictionary = familiar_initiative.get(combat_id, {})
 		if initiative.is_empty():
-			initiative = {"roll": Dice.roll(20, familiar) + AbilityScores.get_modifier(dex), "dex": dex}
+			var fam_init_d20 := RollTokenRules.resolve_d20_test(familiar, "initiative", false, false, {})
+			initiative = {"roll": int(fam_init_d20.get("total", 1)) + AbilityScores.get_modifier(dex), "dex": dex}
 			familiar_initiative[combat_id] = initiative
 		tracker.add_combatant(combat_id, familiar.character_name, true, familiar, int(initiative["roll"]), int(initiative["dex"]))
 		tracker.sort_initiative_preserving_active()
@@ -700,6 +703,8 @@ func _setup_combat_monsters() -> void:
 
 func _roll_initiative_and_start() -> void:
 	tracker.clear()
+	CombatAction.advance_combat_turn(null)
+	var seeded_init_map: Dictionary = GameManager.transition_context.get("initiative_decisions", {}) if GameManager.transition_context.get("initiative_decisions") is Dictionary else {}
 
 	# Roll players
 	for i in player_entities.size():
@@ -725,11 +730,9 @@ func _roll_initiative_and_start() -> void:
 				var recovered_rages := BarbarianRules.recover_rage_at_initiative(char_data)
 				if recovered_rages > 0:
 					hud.add_log("%s regains %d uses of Rage." % [char_data.character_name, recovered_rages])
-		var initiative_advantage := char_data.has_feature("champion_remarkable_athlete") or char_data.has_feature_effect("initiative_advantage")
-		var roll = (Dice.roll_with_advantage(20, char_data) if initiative_advantage else Dice.roll(20, char_data)) - char_data.exhaustion_level * 2
 		var dex = char_data.ability_scores.get_score("DEX")
 		var mod = AbilityScores.get_modifier(dex)
-		var total = roll + mod
+		var total = mod
 		if p.get("is_steed", false):
 			var steed_owner: Character = p.get("steed_owner")
 			for owner_combatant in tracker.combatants:
@@ -737,6 +740,13 @@ func _roll_initiative_and_start() -> void:
 					total = int(owner_combatant.get("roll", total))
 					dex = int(owner_combatant.get("dex", dex))
 					break
+		else:
+			var initiative_advantage := char_data.has_feature("champion_remarkable_athlete") or char_data.has_feature_effect("initiative_advantage")
+			var char_init_seeded: Dictionary = seeded_init_map.get(char_data.character_id, {}) if seeded_init_map.get(char_data.character_id) is Dictionary else {}
+			var init_decisions := await _collect_roll_token_decision(char_data, "initiative", "Initiative roll", char_init_seeded)
+			var init_d20 := RollTokenRules.resolve_d20_test(char_data, "initiative", initiative_advantage, false, init_decisions)
+			var roll = int(init_d20.get("total", 1)) - char_data.exhaustion_level * 2
+			total = roll + mod
 		var owner_index := int(p.get("owner_player_index", -1))
 		var turn_name := char_data.character_name
 		if owner_index >= 0:
@@ -755,7 +765,11 @@ func _roll_initiative_and_start() -> void:
 
 	# Roll monsters
 	for m in monster_entities:
-		var roll = Dice.roll(20)
+		var m_id := str(m.get("id", ""))
+		var m_init_seeded: Dictionary = seeded_init_map.get(m_id, {}) if seeded_init_map.get(m_id) is Dictionary else {}
+		var m_init_decisions := await _collect_roll_token_decision(m, "initiative", "Initiative roll", m_init_seeded)
+		var m_init_d20 := RollTokenRules.resolve_d20_test(m, "initiative", false, false, m_init_decisions)
+		var roll = int(m_init_d20.get("total", 1))
 		var monster_scores: Dictionary = m.get("ability_scores", {})
 		var dex = int(monster_scores.get("DEX", 10))
 		var mod = AbilityScores.get_modifier(dex)
@@ -864,7 +878,8 @@ func _start_combat_turn() -> void:
 				var inspiration_die := str(active_character.feature_uses.get("bardic_inspiration_die", "1d6"))
 				var owner_label := _owner_label_for_character(active_character)
 				use_bardic_inspiration = await hud.request_reaction(owner_label, "bardic_inspiration", "If this death save remains failed after any Indomitable reroll, add %s. Natural 1 keeps its special result." % inspiration_die, "Use Bardic Inspiration on a failed death save?", "Use Inspiration", "Bardic Inspiration — %s" % owner_label)
-			var death_save := active_character.make_death_save(use_bardic_inspiration, use_stroke_of_luck)
+			var death_save_decisions := await _collect_roll_token_decision(active_character, "death_save", "Death Saving Throw")
+			var death_save := active_character.make_death_save(use_bardic_inspiration, use_stroke_of_luck, death_save_decisions)
 			if death_save.get("rolled", false):
 				var inspiration_note := " Bardic Inspiration adds %d." % int(death_save.get("bardic_inspiration_bonus", 0)) if death_save.get("bardic_inspiration_used", false) else ""
 				var stroke_note := " Stroke of Luck turns the death save into a 20." if death_save.get("stroke_of_luck_used", false) else ""
@@ -1353,6 +1368,7 @@ func _execute_monster_attack(monster: Dictionary, target_player_name: String, at
 
 	# Roll attack
 	var monster_attacker := _make_temp_monster_character(monster)
+	reaction_decisions.merge(await _collect_roll_token_decision(monster_attacker, "attack", "%s attack roll against %s" % [str(monster.get("name", "Monster")), target_char.character_name], reaction_decisions), true)
 	var result := CombatAction.resolve_weapon_attack(
 		monster_attacker,
 		target_char,
@@ -1364,10 +1380,18 @@ func _execute_monster_attack(monster: Dictionary, target_player_name: String, at
 	if result.has("attack_roll"):
 		SpellEffects.consume_spell(monster, "invisibility")
 	_sync_consumed_monster_attack_conditions(monster, monster_attacker)
-	var rider_results := CombatAction.resolve_monster_attack_effects(monster, target_char, attack_data, result)
+	var rider_save_decisions: Dictionary = {}
+	if result.get("hit", false):
+		for effect in attack_data.get("extra_effects", []):
+			if str(effect.get("type", "")) in ["poison_save", "restrain", "paralyze_save"]:
+				rider_save_decisions = await _collect_roll_token_decision(target_char, "save", "%s saving throw against %s" % [str(effect.get("save", "CON")), str(monster.get("name", "attack"))])
+				break
+	var rider_results := CombatAction.resolve_monster_attack_effects(monster, target_char, attack_data, result, rider_save_decisions)
+	var rider_resolved := 0
 	for rider in rider_results:
 		hud.add_log("[color=orange]%s[/color]" % rider.get("message", "Monster effect resolved."))
 		result["damage"] = int(result.get("damage", 0)) + int(rider.get("damage", 0))
+		rider_resolved += int(rider.get("resolved", rider.get("damage", 0)))
 	if result.get("deflected", false) and rider_results.is_empty():
 		await _offer_deflect_redirect(target_char, target_pos, attack_data, result)
 
@@ -1392,8 +1416,9 @@ func _execute_monster_attack(monster: Dictionary, target_player_name: String, at
 		if not target_char.concentrating_on.is_empty():
 			_end_concentration(target_char)
 	else:
-		if result.get("hit", false) and result.get("damage", 0) > 0:
-			await _check_concentration_save(target_char, result["damage"])
+		var conc_damage := int(result.get("resolved", result.get("damage", 0))) + rider_resolved
+		if result.get("hit", false) and conc_damage > 0:
+			await _check_concentration_save(target_char, conc_damage)
 
 
 func _make_monster_spellcaster(monster: Dictionary) -> Character:
@@ -1438,6 +1463,12 @@ func _execute_monster_spell(monster: Dictionary, target_player_name: String, spe
 	spell_reaction_decisions.merge(inspiration_context, true)
 	spell_reaction_decisions.merge(stroke_context, true)
 	spell_reaction_decisions.merge(await _collect_spell_shield_decision(target_char, spell_data, spell_reaction_decisions), true)
+	if CombatAction.spell_requires_saving_throw(spell_data):
+		spell_reaction_decisions.merge(await _collect_roll_token_decision(target_char, "save", "%s saving throw against %s" % [str(spell_data.get("save", "Spell")), str(spell_data.get("name", "spell"))], spell_reaction_decisions), true)
+	elif str(spell_data.get("attack_type", "none")) != "none":
+		spell_reaction_decisions.merge(await _collect_roll_token_decision(caster, "attack", "%s spell attack against %s" % [str(spell_data.get("name", "Spell")), target_char.character_name], spell_reaction_decisions), true)
+	if spell_data.has("damage") or spell_data.has("damage_per_dart") or spell_data.has("damage_per_ray"):
+		spell_reaction_decisions.merge(await _collect_projected_ward_decision(target_char, spell_reaction_decisions), true)
 	var spell_reaction_observers: Array = counterspell_context.get("observers", []).duplicate()
 	spell_reaction_observers.append_array(countercharm_context.get("observers", []))
 	var spell_target_distance := HexUtils.get_distance(monster.get("hex_position", Vector2i.ZERO), target_pos) * 5
@@ -1447,10 +1478,13 @@ func _execute_monster_spell(monster: Dictionary, target_player_name: String, spe
 	if spell_reaction_decisions.has("counterspell_saved_by"):
 		hud.add_log("[color=yellow]%s resists Counterspell; the spell continues.[/color]" % str(spell_reaction_decisions["counterspell_saved_by"]))
 	var damage := int(result.get("damage", 0))
-	if result.get("success", false) and damage > 0:
-		_spawn_floating_text(target_pos, "-%d" % damage, Color(0.8, 0.3, 1.0))
-		_flash_hex(target_pos, Color(0.7, 0.2, 1.0, 0.6))
-		await _check_concentration_save(target_char, damage)
+	var resolved_damage := int(result.get("resolved", damage))
+	if result.get("success", false) and (damage > 0 or resolved_damage > 0):
+		if damage > 0:
+			_spawn_floating_text(target_pos, "-%d" % damage, Color(0.8, 0.3, 1.0))
+			_flash_hex(target_pos, Color(0.7, 0.2, 1.0, 0.6))
+		if resolved_damage > 0:
+			await _check_concentration_save(target_char, resolved_damage)
 	if not target_char.is_alive:
 		hud.add_log("[color=red]%s was knocked out by %s's spell![/color]" % [target_char.character_name, monster.get("name", "Monster")])
 
@@ -1522,6 +1556,7 @@ func _collect_reaction_decisions(target: Character) -> Dictionary:
 	if target.has_feature("barbarian_relentless_rage") and target.has_condition("raging") and target.feature_uses.has("bardic_inspiration_die"):
 		var die := str(target.feature_uses.get("bardic_inspiration_die", "1d6"))
 		decisions["relentless_rage_bardic_inspiration"] = await hud.request_reaction(owner_label, "bardic_inspiration", "If this attack drops you to 0 HP and your Relentless Rage save fails, add %s." % die, "Use Bardic Inspiration on a failed Relentless Rage save?", "Bardic Inspiration — %s" % owner_label)
+	decisions.merge(await _collect_projected_ward_decision(target, decisions), true)
 	return decisions
 
 
@@ -1556,7 +1591,8 @@ func _offer_stunning_strike(target: Dictionary, weapon: Dictionary, hit_result: 
 	if weapon.get("id", "") != "unarmed_strike" and not caster.is_monk_weapon(weapon):
 		return
 	if await hud.request_reaction(_owner_label_for_character(caster), "stunning_strike", "Spend 1 Focus after this hit? %d remaining." % caster.get_focus_points(), "Use Stunning Strike?", "Stun", "Stunning Strike"):
-		var result := CombatAction.resolve_stunning_strike(caster, target)
+		var stun_decisions := await _collect_roll_token_decision(target, "monster_save", "CON saving throw against Stunning Strike")
+		var result := CombatAction.resolve_stunning_strike(caster, target, stun_decisions)
 		hud.add_log(result.get("message", "Stunning Strike unavailable."))
 		hud.update_hud(active_character, tracker)
 
@@ -1622,6 +1658,8 @@ static func _make_temp_monster_character(m: Dictionary) -> Character:
 	var c := Character.new()
 	c.character_name = m["name"]
 	c.creature_type = str(m.get("creature_type", ""))
+	c.feature_uses["is_monster_actor"] = true
+	c.feature_uses["monster_source"] = m
 	var senses: Dictionary = m.get("senses", {})
 	c.feature_uses["monster_blindsight_range_feet"] = int(m.get("blindsight_range_feet", senses.get("blindsight", 0)))
 	c.feature_uses["monster_truesight_range_feet"] = int(m.get("truesight_range_feet", senses.get("truesight", 0)))
@@ -1641,6 +1679,145 @@ static func _make_temp_monster_character(m: Dictionary) -> Character:
 	return c
 
 
+func _collect_eligible_roll_token_entries(test_kind: String, roller, explicit_roller_pos: Variant = null, extra_context: Dictionary = {}) -> Array[Dictionary]:
+	var actual_roller = roller
+	if roller is Character and bool(roller.feature_uses.get("is_monster_actor", false)) and roller.feature_uses.get("monster_source") is Dictionary:
+		actual_roller = roller.feature_uses["monster_source"]
+	var roller_pos := Vector2i.ZERO
+	var found_roller_pos := false
+	if explicit_roller_pos is Vector2i:
+		roller_pos = explicit_roller_pos
+		found_roller_pos = true
+	elif actual_roller is Character:
+		for player_entity in player_entities:
+			if player_entity.get("character") == actual_roller:
+				roller_pos = player_entity.get("hex_position", Vector2i.ZERO)
+				found_roller_pos = true
+				break
+	elif actual_roller is Dictionary:
+		roller_pos = actual_roller.get("hex_position", Vector2i.ZERO)
+		found_roller_pos = true
+	var options: Array[Dictionary] = []
+	for player_entity in player_entities:
+		var owner: Character = player_entity.get("character")
+		if owner == null or not owner.is_alive or CombatAction.is_incapacitated(owner):
+			continue
+		var owner_pos: Vector2i = player_entity.get("hex_position", Vector2i.ZERO)
+		for pool in RollTokenRules.pool_definitions(owner):
+			var pool_id := str(pool.get("pool_id", ""))
+			if not RollTokenRules.can_use_pool_this_turn(owner, pool):
+				continue
+			var tokens: Array = RollTokenRules.available_tokens(owner, pool_id)
+			if tokens.is_empty():
+				continue
+			var predicate := str(pool.get("target_predicate", "any_visible"))
+			var eligible := false
+			if actual_roller is Character and actual_roller == owner:
+				eligible = predicate in ["self", "self_only", "any_visible", "self_or_visible_creature", "ally_visible"]
+			elif predicate in ["self", "self_only"]:
+				eligible = false
+			elif predicate == "ally_visible":
+				eligible = actual_roller is Character and found_roller_pos and CombatPerception.can_see_target(owner, actual_roller, owner_pos, roller_pos, hex_grid)
+			elif predicate == "enemy_visible":
+				eligible = actual_roller is Dictionary and found_roller_pos and CombatPerception.can_see_target(owner, actual_roller, owner_pos, roller_pos, hex_grid)
+			else:
+				eligible = found_roller_pos and CombatPerception.can_see_target(owner, actual_roller, owner_pos, roller_pos, hex_grid)
+			if not eligible:
+				continue
+			var source_name := str(pool.get("feature_name", "Roll Token"))
+			for token in tokens:
+				var tid := str(token.get("token_id", token.get("id", "")))
+				options.append({
+					"owner": owner,
+					"owner_id": owner.character_id,
+					"owner_name": owner.character_name,
+					"pool_id": pool_id,
+					"token_id": tid,
+					"value": int(token.get("value", 0)),
+					"source_name": source_name,
+					"label": "%s — %s: %d" % [owner.character_name, source_name, int(token.get("value", 0))],
+				})
+	return options
+
+
+func _collect_roll_token_decision(roller, test_kind: String, test_label: String, seeded_decisions: Dictionary = {}) -> Dictionary:
+	var normalized := RollTokenRules.normalize_decision(seeded_decisions)
+	if not normalized.is_empty():
+		return {"roll_token_replacement": normalized}
+	var actual_roller = roller
+	if roller is Character and bool(roller.feature_uses.get("is_monster_actor", false)) and roller.feature_uses.get("monster_source") is Dictionary:
+		actual_roller = roller.feature_uses["monster_source"]
+	var options := _collect_eligible_roll_token_entries(test_kind, roller)
+	if options.is_empty() or hud == null or not hud.has_method("request_roll_token_replacement"):
+		return {}
+	var roller_name: String = actual_roller.character_name if actual_roller is Character else str(actual_roller.get("name", "Creature")) if actual_roller is Dictionary else "Creature"
+	var chosen: Dictionary = await hud.request_roll_token_replacement(roller_name, test_label, options)
+	if chosen.is_empty():
+		return {}
+	return {"roll_token_replacement": chosen}
+
+
+func _collect_projected_ward_decision(target: Character, seeded_decisions: Dictionary = {}) -> Dictionary:
+	if seeded_decisions.get("projected_ward") is Dictionary and not (seeded_decisions["projected_ward"] as Dictionary).is_empty():
+		return {"projected_ward": seeded_decisions["projected_ward"]}
+	if target == null or not target.is_alive or hud == null or not hud.has_method("request_reaction"):
+		return {}
+	var target_pos := Vector2i.ZERO
+	var found_target := false
+	for player_entity in player_entities:
+		if player_entity.get("character") == target:
+			target_pos = player_entity.get("hex_position", Vector2i.ZERO)
+			found_target = true
+			break
+	if not found_target:
+		return {}
+	for player_entity in player_entities:
+		var owner: Character = player_entity.get("character")
+		if owner == null or owner == target or not owner.is_alive or CombatAction.is_incapacitated(owner) or not owner.reaction_available:
+			continue
+		var owner_pos: Vector2i = player_entity.get("hex_position", Vector2i.ZERO)
+		for feature_entry in WardRules.feature_definitions_for_character(owner):
+			var feature: Dictionary = feature_entry
+			for raw_effect in feature.get("effects", []):
+				if not (raw_effect is Dictionary) or str(raw_effect.get("type", "")).strip_edges() != "damage_ward_projection":
+					continue
+				var effect: Dictionary = raw_effect
+				var pool_id := str(effect.get("pool_id", "")).strip_edges()
+				var state := WardRules.ward_state(owner, pool_id)
+				if not bool(state.get("active", false)) or int(state.get("current_hp", 0)) <= 0:
+					continue
+				var range_feet := int(effect.get("range_feet", 30))
+				var range_hexes := maxi(1, int(ceil(float(range_feet) / 5.0)))
+				if not Targeting.is_in_range(owner_pos, target_pos, range_hexes):
+					continue
+				if bool(effect.get("requires_sight", true)) and not CombatPerception.can_see_target(owner, target, owner_pos, target_pos, hex_grid):
+					continue
+				var owner_label := _owner_label_for_character(owner)
+				var feature_name := str(feature.get("name", "Projected Ward"))
+				var ward_name := WardRules.ward_display_name(owner, pool_id)
+				var ward_hp := int(state.get("current_hp", 0))
+				var ward_max := int(state.get("max_hp", 0))
+				var accepted := await hud.request_reaction(
+					owner_label,
+					"projected_ward",
+					"Protect %s with %s (%d/%d HP) if they take damage?" % [target.character_name, ward_name, ward_hp, ward_max],
+					"Use %s?" % feature_name,
+					"Project Ward",
+					"%s — %s" % [feature_name, owner_label]
+				)
+				if accepted:
+					return {
+						"projected_ward": {
+							"owner": owner,
+							"pool_id": pool_id,
+							"feature_id": str(feature.get("id", "")),
+							"distance_feet": HexUtils.get_distance(owner_pos, target_pos) * 5,
+							"can_see": true,
+						}
+					}
+	return {}
+
+
 static func _sync_consumed_monster_attack_conditions(monster: Dictionary, attacker: Character) -> void:
 	if attacker.has_condition("vicious_mockery_disadvantage"):
 		return
@@ -1654,6 +1831,8 @@ static func _sync_consumed_monster_attack_conditions(monster: Dictionary, attack
 
 func _highlight_reachable() -> void:
 	_clear_path_preview()
+	if hex_grid == null or player_entities.is_empty() or current_player_idx < 0 or current_player_idx >= player_entities.size():
+		return
 	hud.set_movement_modes(active_character, active_movement_mode, _movement_speed_overrides(active_character))
 	var pos: Vector2i = player_entities[current_player_idx]["hex_position"]
 	var reachable := _player_reachable(pos, remaining_speed, active_character)
@@ -2244,9 +2423,12 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 					await _execute_cleric_turn_undead(feature)
 					return
 			var slot_recovery_effect: Dictionary = {}
+			var ward_recharge_effect: Dictionary = {}
 			for effect in feature.get("effects", []):
 				if effect.get("type", "") == "resource_from_spell_slot":
 					slot_recovery_effect = effect
+				elif effect.get("type", "") == "damage_ward_pool" and bool(effect.get("bonus_action_slot_recharge", false)):
+					ward_recharge_effect = effect
 			if not slot_recovery_effect.is_empty():
 				var slot_level := int(feature.get("selected_spell_slot_level", 0))
 				var recovery := ClassProgression.restore_resource_from_spell_slot(active_character, str(slot_recovery_effect.get("resource_id", "")), slot_level, int(slot_recovery_effect.get("amount", 1)))
@@ -2254,6 +2436,20 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 					hud.add_log("Font of Inspiration restores %d Bardic Inspiration use by spending a level %d spell slot." % [int(recovery.get("restored", 0)), int(recovery.get("slot_level", 0))])
 				else:
 					hud.add_log(recovery.get("message", "Unable to recover that resource."))
+				hud.update_hud(active_character, tracker)
+				_highlight_reachable()
+				return
+			if not ward_recharge_effect.is_empty():
+				if not turn_budget.can_spend("bonus_action"):
+					hud.add_log("No Bonus Action remains to recharge %s." % str(feature.get("name", "the ward")))
+					return
+				var ward_slot_level := int(feature.get("selected_spell_slot_level", 0))
+				var recharge := WardRules.spend_slot_for_ward_recharge(active_character, str(feature.get("id", "")), ward_slot_level)
+				if recharge.get("success", false):
+					_spend_action_cost("bonus_action")
+					hud.add_log("[color=cyan]%s[/color]" % str(recharge.get("message", "Ward recharged.")))
+				else:
+					hud.add_log("[color=orange]%s[/color]" % str(recharge.get("message", "Unable to recharge ward.")))
 				hud.update_hud(active_character, tracker)
 				_highlight_reachable()
 				return
@@ -2316,16 +2512,19 @@ func _cancel_pending_action() -> void:
 	pending_words_primary_selected = false
 	pending_command_target_coords.clear()
 	pending_command_target_ids.clear()
-	hex_grid.clear_highlights()
+	if hex_grid != null:
+		hex_grid.clear_highlights()
 	_clear_path_preview()
 	_highlight_reachable()
-	hud.hide_dice()
-	hud.add_log("[color=yellow]Cancelled %s targeting.[/color]" % old)
+	if hud != null:
+		hud.hide_dice()
+		hud.add_log("[color=yellow]Cancelled %s targeting.[/color]" % old)
 
 
 func _clear_path_preview() -> void:
-	for h in _path_preview_hexes:
-		hex_grid.clear_highlight(h)
+	if hex_grid != null:
+		for h in _path_preview_hexes:
+			hex_grid.clear_highlight(h)
 	_path_preview_hexes.clear()
 
 
@@ -2448,6 +2647,8 @@ func _pending_spell_origin() -> Vector2i:
 
 
 func _highlight_spell_targets() -> void:
+	if hex_grid == null:
+		return
 	hex_grid.clear_highlights()
 	
 	var pos := _pending_spell_origin()
@@ -3062,6 +3263,7 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 
 		# A held die is spent only if this D20 Test fails and the character chooses it.
 		attack_reaction_decisions.merge(await _collect_attack_inspiration_decision(active_character), true)
+		attack_reaction_decisions.merge(await _collect_roll_token_decision(active_character, "attack", "%s attack roll against %s" % [active_character.character_name, str(clicked_monster.get("name", "target"))], attack_reaction_decisions), true)
 
 		# Shillelagh lets each attack choose Force or the weapon's normal damage type.
 		if active_character.has_condition("shillelagh") and str(weapon.get("id", "")) == active_character.shillelagh_weapon_id:
@@ -3120,6 +3322,7 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 			remaining_attack_swings -= 1
 			weapon["attack_distance"] = HexUtils.get_distance(live_origin, clicked_monster["hex_position"])
 			var extra_decisions := await _collect_attack_inspiration_decision(active_character)
+			extra_decisions.merge(await _collect_roll_token_decision(active_character, "attack", "%s Extra Attack roll against %s" % [active_character.character_name, str(clicked_monster.get("name", "target"))], extra_decisions), true)
 			var extra_brutal := await _request_brutal_strike(active_character, weapon, has_disadvantage)
 			if not extra_brutal.is_empty():
 				extra_decisions["barbarian_brutal_strike_effects"] = extra_brutal
@@ -3406,9 +3609,9 @@ func _execute_player_spell(target_coord: Vector2i, additional_target_coord: Vect
 	var cast := _spell_cast_context(target_coord, additional_target_coord, extra_target_coords, chain_target_ids)
 	if not await SpellCastPreparation.validate_and_choose(cast):
 		return
-	if not SpellCastResources.commit_metamagic(cast):
-		return
 	if not await SpellCastPreparation.choose_target_options(cast):
+		return
+	if not SpellCastResources.commit_metamagic(cast):
 		return
 	if not SpellCastResources.commit_spell_resource(cast):
 		return
@@ -3464,6 +3667,8 @@ func _spell_cast_context(target_coord: Vector2i = Vector2i.ZERO, additional_targ
 	cast.collect_reaction_decisions = _collect_reaction_decisions
 	cast.collect_spell_shield_decision = _collect_spell_shield_decision
 	cast.collect_stroke_of_luck_save_decision = _collect_stroke_of_luck_save_decision
+	cast.collect_roll_token_decision = _collect_roll_token_decision
+	cast.collect_projected_ward_decision = _collect_projected_ward_decision
 	cast.offer_potent_spellcasting_vitality = _offer_potent_spellcasting_vitality
 	cast.offer_power_word_heal_stand = _offer_power_word_heal_stand
 	cast.offer_sneak_attack = _offer_sneak_attack
@@ -3906,6 +4111,7 @@ func _exit_tree() -> void:
 	CombatAction.active_turn_actor_id = 0
 	_clear_monk_battle_effects()
 	_clear_delayed_spell_damage()
+	SpellDamageRolls.clear_pending_requests()
 
 
 func _clear_delayed_spell_damage() -> void:
@@ -3965,6 +4171,10 @@ func _execute_class_feature(feature: Dictionary) -> void:
 		_highlight_reachable()
 		return
 	var f_id: String = feature.get("id", "")
+	for effect in feature.get("effects", []):
+		if effect is Dictionary and str(effect.get("type", "")) == "rest_slot_recovery":
+			hud.add_log("%s can only be used when finishing a Short Rest." % str(feature.get("name", f_id)))
+			return
 	var cost_type: String = feature.get("action_cost", "action")
 	if not _can_spend_action_cost(cost_type):
 		hud.add_log("You have no %s available for %s." % [cost_type.replace("_", " "), feature.get("name", f_id)])
@@ -4467,6 +4677,8 @@ func _action_cost_for_command(action_type: String, extra_data: Dictionary) -> St
 		for effect in extra_data.get("feature", {}).get("effects", []):
 			if effect.get("type", "") == "resource_from_spell_slot":
 				return "free"
+			if effect.get("type", "") == "damage_ward_pool" and bool(effect.get("bonus_action_slot_recharge", false)):
+				return "bonus_action"
 		return str(extra_data.get("feature", {}).get("action_cost", "action"))
 	if action_type == "cast_spell":
 		var spell_cost := str(extra_data.get("spell", {}).get("casting_time", "action"))
@@ -5331,6 +5543,8 @@ func _handle_spell_effects(p_target: Character = null, m_target: Dictionary = {}
 
 
 func _recover_wizard_spell_slots(character: Character) -> void:
+	if character == null or character.class_id == "wizard":
+		return
 	var max_recovery_levels := int(ceil(float(character.level) / 2.0))
 	var recovered_slots: Array[String] = []
 	
@@ -5419,6 +5633,7 @@ func _check_opportunity_attacks_for_path(entity, entity_dict: Dictionary, path: 
 					weapon["opportunity_attack"] = true
 					var opportunity_effects := await _request_brutal_strike(char_data, weapon)
 					var opportunity_decisions := await _collect_attack_inspiration_decision(char_data)
+					opportunity_decisions.merge(await _collect_roll_token_decision(char_data, "attack", "%s Opportunity Attack roll against %s" % [char_data.character_name, str(entity_dict.get("name", "target"))], opportunity_decisions), true)
 					if not opportunity_effects.is_empty():
 						opportunity_decisions["barbarian_brutal_strike_effects"] = opportunity_effects
 					var opportunity_packet := await _conjure_minor_elementals_damage_choice(char_data, entity_dict)
@@ -5459,6 +5674,7 @@ func _check_opportunity_attacks_for_path(entity, entity_dict: Dictionary, path: 
 					hud.add_log("[color=red]%s makes an Opportunity Attack against %s![/color]" % [m["name"], entity.character_name])
 					var reaction_decisions := await _collect_reaction_decisions(entity)
 					var monster_attacker := _make_temp_monster_character(m)
+					reaction_decisions.merge(await _collect_roll_token_decision(monster_attacker, "attack", "%s Opportunity Attack roll against %s" % [str(m.get("name", "Monster")), entity.character_name], reaction_decisions), true)
 					var result := CombatAction.resolve_weapon_attack(monster_attacker, entity, attack_data, false, false, reaction_decisions)
 					if result.has("attack_roll"):
 						SpellEffects.consume_spell(m, "invisibility")

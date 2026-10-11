@@ -171,7 +171,7 @@ if ($runIntegration) {
     $scenarios += "spell_cast_stage_flow"
     $scenarios += "combat_light_visibility_flow"
 	$scenarios += "local_room_object_flow"
-	$scenarios += "shared_spell_flow"
+	$scenarios += "shared_spell_flow", "shared_spell_normal_controls_flow", "roll_token_normal_controls_flow", "ward_normal_controls_flow", "short_rest_arcane_recovery_normal_controls_flow"
 	$scenarios += "wave_three_foundations_flow", "owned_creature_lifecycle_flow",
     "find_familiar_exploration_flow", "party_recovery_flow", "downed_area_damage_flow", "created_undead_flow"
     if ($Scenario.Count -gt 0) {

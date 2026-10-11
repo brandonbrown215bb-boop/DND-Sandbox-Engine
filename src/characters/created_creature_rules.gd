@@ -153,13 +153,24 @@ static func character(record: Dictionary) -> Character:
 	creature.feature_uses["created_form_id"] = str(record["form_id"])
 	creature.saving_throw_proficiencies.assign(["WIS"] if str(record["form_id"]) == "zombie" else [])
 	creature.features.append({"id": "created_undead_immunities", "effects": [{"type": "immunity", "condition": "poisoned"}, {"type": "immunity", "condition": "exhaustion"}]})
+	var form_id := str(record.get("form_id", ""))
+	var monster_data: Dictionary = DataLoader.get_monster(form_id)
+	for ability in monster_data.get("special_abilities", []):
+		if ability is Dictionary:
+			creature.features.append(ability.duplicate(true))
 	return creature
 
 static func monster(record: Dictionary) -> Dictionary:
 	var form: Dictionary = FORMS[str(record["form_id"])]
 	var attacks: Array = [attack_profile(record)]
 	if record["form_id"] == "skeleton": attacks.append(attack_profile(record, true))
-	return {"id": record["id"], "name": "%s %s (uncontrolled)" % [form["name"], str(record["serial"])], "created_creature_id": record["id"], "monster_id": "", "creature_type": "undead", "size": "medium", "max_hp": record["max_hp"], "current_hp": record["current_hp"], "armor_class": form["ac"], "speed": form["speed"], "ability_scores": form["scores"].duplicate(), "attacks": attacks, "is_alive": int(record["current_hp"]) > 0, "hex_position": LocalRoomRules.coord(record["position"]), "conditions": {}, "spell_slots": {}, "damage_immunities": ["poison"], "damage_vulnerabilities": ["bludgeoning"] if str(record["form_id"]) == "skeleton" else [], "condition_immunities": ["poisoned", "exhaustion"], "saving_throw_bonuses": {"WIS": 0} if str(record["form_id"]) == "zombie" else {}, "senses": {"darkvision": 60}, "undead_fortitude": str(record["form_id"]) == "zombie", "color": Color.RED, "ai_behavior": "aggressive", "loot_table": []}
+	var monster_form_id := str(record.get("form_id", ""))
+	var monster_def: Dictionary = DataLoader.get_monster(monster_form_id)
+	var special_abilities: Array = []
+	for ability in monster_def.get("special_abilities", []):
+		if ability is Dictionary:
+			special_abilities.append(ability.duplicate(true))
+	return {"id": record["id"], "name": "%s %s (uncontrolled)" % [form["name"], str(record["serial"])], "created_creature_id": record["id"], "monster_id": "", "creature_type": "undead", "size": "medium", "max_hp": record["max_hp"], "current_hp": record["current_hp"], "armor_class": form["ac"], "speed": form["speed"], "ability_scores": form["scores"].duplicate(), "attacks": attacks, "is_alive": int(record["current_hp"]) > 0, "hex_position": LocalRoomRules.coord(record["position"]), "conditions": {}, "spell_slots": {}, "damage_immunities": ["poison"], "damage_vulnerabilities": ["bludgeoning"] if str(record["form_id"]) == "skeleton" else [], "condition_immunities": ["poisoned", "exhaustion"], "saving_throw_bonuses": {"WIS": 0} if str(record["form_id"]) == "zombie" else {}, "senses": {"darkvision": 60}, "undead_fortitude": str(record["form_id"]) == "zombie", "special_abilities": special_abilities, "color": Color.RED, "ai_behavior": "aggressive", "loot_table": []}
 
 static func attack_profile(record: Dictionary, ranged: bool = false) -> Dictionary:
 	if record.get("source_spell") == "animate_objects": return AnimatedObjectRules.attack_profile(record)
@@ -208,21 +219,8 @@ static func saved_error(value: Variant, next_id: Variant, now: int) -> String:
 		if not DungeonPersistence.coordinate(record.get("position")): return "created creature position is invalid"
 	return ""
 
-static func resolve_fortitude(target, hp_before: int, damage: int, damage_type: String, critical: bool) -> bool:
-	if hp_before <= 0 or damage <= 0 or damage_type == "radiant" or critical: return false
-	if target is Character:
-		if target.class_id != "created_creature" or str(target.feature_uses.get("created_form_id", "")) != "zombie" or target.current_hp > 0: return false
-		if target.saving_throw_to_dc("CON", 5 + damage) < 5 + damage: return false
-		target.current_hp = 1
-		target.is_alive = true
-		target.death_save_failures = 0
-		target.corpse_state.clear()
-		return true
-	if target is Dictionary and bool(target.get("undead_fortitude", false)) and int(target.get("current_hp", 0)) == 0:
-		if BarbarianRules.roll_monster_save(target, "CON") < 5 + damage: return false
-		target["current_hp"] = 1
-		target["is_alive"] = true
-		return true
+static func resolve_fortitude(_target, _hp_before: int, _damage: int, _damage_type: String, _critical: bool) -> bool:
+	# Deprecated: Zero-HP replacement is handled data-driven by CombatAction.resolve_zero_hp_replacement.
 	return false
 
 static func saved_locations_error(records: Array, campaign: Dictionary, snapshots: Dictionary, active: Dictionary) -> String:

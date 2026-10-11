@@ -792,8 +792,9 @@ static func cast_alarm(state: Dictionary, id: String, alert_mode: String, charac
 		if str(area.get("spell_id", "")) == "alarm" and str(area.get("warded_object_id", "")) == id and int(area.get("expires_at_seconds", 0)) > now:
 			return failure("This door already has an active Alarm.")
 	if ritual and not bool(spell.get("ritual", false)): return failure("Alarm cannot be cast as a ritual.")
+	var spent: Dictionary = {}
 	if not ritual:
-		var spent := CombatAction.spend_spell_slot(character, spell)
+		spent = CombatAction.spend_spell_slot(character, spell)
 		if not spent.get("success", false): return failure(str(spent.get("message", "No level 1 spell slot remains.")))
 	var ignored: Array[String] = []
 	for member in party:
@@ -811,6 +812,8 @@ static func cast_alarm(state: Dictionary, id: String, alert_mode: String, charac
 		"mental_wakes_if_asleep": true,
 	})
 	if not added.get("success", false): return failure(str(added.get("message", "The ward could not be placed.")))
+	if not ritual and not bool(spent.get("slot_recalled", false)):
+		WardRules.on_slot_spell_cast(character, spell, int(spent.get("slot_level", 1)))
 	var seconds := 660 if ritual else int(spell.get("casting_time_seconds", 60))
 	return {"success": true, "seconds": seconds, "message": "%s sets an %s Alarm on %s for eight hours%s." % [character.character_name, alert_mode, door.get("name", "the door"), " as a ritual" if ritual else ""]}
 
@@ -1115,6 +1118,8 @@ static func cast_movement_spell(state: Dictionary, spell_id: String, character: 
 		if altitude_feet(state, character.character_id) >= max_altitude: return failure("There is not enough room above this character to Levitate.")
 	var spent := CombatAction.spend_spell_slot(character, spell)
 	if not spent.get("success", false): return failure(str(spent.get("message", "No spell slot remains.")))
+	if not bool(spent.get("slot_recalled", false)):
+		WardRules.on_slot_spell_cast(character, spell, int(spent.get("slot_level", 1)))
 	if bool(spell.get("concentration", false)):
 		var previous_spell_id := str(character.concentrating_on.get("spell_id", ""))
 		var previous_source_id := str(character.concentrating_on.get("%s_source_id" % previous_spell_id, ""))

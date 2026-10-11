@@ -116,6 +116,9 @@ var warlock_mystic_arcanum: Dictionary = {}
 var warlock_arcanum_pending_levels: Array[int] = []
 var warlock_arcanum_uses: Dictionary = {}
 var warlock_arcanum_replacement_available: bool = false
+var roll_tokens: Dictionary = {}
+var roll_token_generation_serial: int = 0
+var damage_wards: Dictionary = {}
 
 ## Active conditions (e.g., "blessed", "poisoned"): condition_name -> remaining_turns.
 var conditions: Dictionary = {}
@@ -859,6 +862,7 @@ func level_up() -> void:
 			feature_uses[id] = clampi(int(feature_uses.get(id, 0)) + maxi(0, maximum - int(previous_maxima[id])), 0, maximum)
 	if class_id == "fighter":
 		fighter_training["style_swap"] = true
+	WardRules.sync_pools_on_level_up(self)
 
 	print("[Character] %s leveled up to %d! (+%d HP, now %d)" % [character_name, level, hp_gain, max_hp])
 
@@ -882,6 +886,9 @@ func _unlock_features_for_level(lvl: int, acquiring: bool = true) -> void:
 			var pool := str(feature.get("resource_id", feature["id"]))
 			if not feature_uses.has(pool):
 				feature_uses[pool] = get_feature_max_uses(pool)
+	if acquiring and not gained.is_empty():
+		RollTokenRules.sync_pools_on_acquire(self)
+		WardRules.sync_pools_on_acquire(self)
 
 
 ## Apply effects of passive features.
@@ -905,31 +912,46 @@ func _apply_passive_feature(feature: Dictionary, acquiring: bool = true) -> void
 					ClassProgression.apply_fixed_score_increase(self, effect)
 
 
-## Update spell slots based on class and level.
-func _update_spell_slots() -> void:
+## Return the character's level in a specific class. While multiclass progression
+## remains deferred, single-class characters return `level` for their own `class_id`
+## (or when `target_class_id` is empty/self) and `0` for any other class ID.
+func get_class_level(target_class_id: String = "") -> int:
+	var normalized := target_class_id.strip_edges()
+	if normalized.is_empty() or normalized == "self" or normalized == class_id:
+		return maxi(0, level)
+	return 0
+
+
+## Return the maximum spell slots dictionary for this character's current class and level.
+func get_max_spell_slots() -> Dictionary:
 	var class_data := DataLoader.get_character_class(class_id)
 	var pact_table: Dictionary = class_data.get("pact_magic_by_level", {})
 	if not pact_table.is_empty():
 		var pact_entry: Dictionary = pact_table.get(str(level), {})
 		if not pact_entry.is_empty():
-			spell_slots = {str(int(pact_entry.get("slot_level", 1))): int(pact_entry.get("slots", 0))}
-			return
+			return {str(int(pact_entry.get("slot_level", 1))): int(pact_entry.get("slots", 0))}
 	var progression: Dictionary = class_data.get("spell_slots_by_character_level", {})
 	if progression.has(str(level)):
-		spell_slots = {}
+		var out := {}
 		var counts: Array = progression[str(level)]
 		for index in counts.size():
 			var count := int(counts[index])
 			if count > 0:
-				spell_slots[str(index + 1)] = count
-		return
+				out[str(index + 1)] = count
+		return out
 	var slot_table: Dictionary = class_data.get("spell_slots_by_level", {})
-	spell_slots = {}
+	var fallback := {}
 	for lvl_key in slot_table:
 		var lvl_data = slot_table[lvl_key]
 		# Data format: { "1": [2], "2": [3], ... } — first element is the slot count.
 		var count: int = lvl_data[0] if (typeof(lvl_data) == TYPE_ARRAY and lvl_data.size() > 0) else int(lvl_data)
-		spell_slots[str(lvl_key)] = count
+		fallback[str(lvl_key)] = count
+	return fallback
+
+
+## Update spell slots based on class and level.
+func _update_spell_slots() -> void:
+	spell_slots = get_max_spell_slots()
 
 
 ## Seed known spells from the production class record. DataLoader supplies the
@@ -1057,46 +1079,64 @@ func get_ac() -> int:
 
 
 ## Take damage. Returns actual damage dealt after temp HP absorption.
-func take_damage(amount: int, accepted_relentless_rage_inspiration: bool = false, critical_hit: bool = false) -> int:
+func take_damage(amount: int, accepted_relentless_rage_inspiration: bool = false, critical_hit: bool = false, damage_facts: Dictionary = {}) -> int:
 	if amount <= 0 or is_dead():
 		return 0
+
+	var incoming_damage := amount
+	var absorbed := mini(amount, maxi(0, temp_hp))
+	temp_hp -= absorbed
+	var hp_damage := amount - absorbed
+
 	if current_hp <= 0:
+		# Downed actor taking damage:
+		# SRD 5.2.1 p. 18 & Sage Advice Compendium (lines 732-735):
+		# Temporary HP absorbs damage but taking damage at 0 HP still inflicts a death
+		# saving throw failure (2 on critical hit) or instant death if damage >= max_hp.
+		# Full temporary-HP absorption is not immunity or a ward.
 		is_stable = false
 		stable_recovery_at_seconds = 0
 		death_save_successes = 0
+		if incoming_damage >= max_hp:
+			CorpseRules.mark_dead(self, "massive_damage")
+			return hp_damage
 		death_save_failures = mini(3, death_save_failures + (2 if critical_hit else 1))
 		if death_save_failures >= 3:
 			CorpseRules.mark_dead(self, "death_saves")
-			return amount
+		return hp_damage
 
-	# Absorb with temp HP first
-	if temp_hp > 0:
-		if temp_hp >= amount:
-			temp_hp -= amount
-			return 0
-		else:
-			amount -= temp_hp
-			temp_hp = 0
+	# Living actor (current_hp > 0):
+	if hp_damage <= 0:
+		return 0
 
 	var hp_before_damage := current_hp
-	current_hp -= amount
+	current_hp -= hp_damage
 	if current_hp <= 0:
+		var damage_amount: int = int(damage_facts.get("damage", incoming_damage))
+		var dmg_type: String = str(damage_facts.get("damage_type", "untyped"))
+		var is_crit: bool = bool(damage_facts.get("critical", critical_hit))
 		current_hp = 0
+		var damage_decisions: Dictionary = damage_facts.get("decisions", {}) if damage_facts.get("decisions") is Dictionary else {}
+		var replaced := SharedStepExecutor.resolve_zero_hp_replacement(self, hp_before_damage, damage_amount, dmg_type, is_crit, damage_decisions)
+		if replaced:
+			damage_facts["zero_hp_replacement_saved"] = true
+			damage_facts["replacement_hp"] = current_hp
+			return hp_damage
 		if class_id == "created_creature":
 			is_alive = false
 			death_save_failures = 3
-			return amount
-		if amount < hp_before_damage + max_hp:
-			var relentless := BarbarianRules.attempt_relentless_rage(self, accepted_relentless_rage_inspiration)
+			return hp_damage
+		if hp_damage < hp_before_damage + max_hp:
+			var relentless := BarbarianRules.attempt_relentless_rage(self, accepted_relentless_rage_inspiration, damage_decisions)
 			if relentless.get("success", false):
-				return amount
+				return hp_damage
 		end_rage()
 		is_alive = false
 		DruidRules.revert_for_incapacitation(self)
-		if amount >= hp_before_damage + max_hp or death_save_failures >= 3:
-			CorpseRules.mark_dead(self, "massive_damage" if amount >= hp_before_damage + max_hp else "death_saves")
+		if hp_damage >= hp_before_damage + max_hp or death_save_failures >= 3:
+			CorpseRules.mark_dead(self, "massive_damage" if hp_damage >= hp_before_damage + max_hp else "death_saves")
 
-	return amount
+	return hp_damage
 
 
 ## Apply one resistance halving after the caller has resolved damage reduction.
@@ -1110,7 +1150,8 @@ func resist_damage(amount: int, damage_type: String) -> int:
 	var spell_resistance := protection_from_energy_type == damage_type
 	var poison_spell_resistance := has_condition("protection_from_poison") and damage_type == "poison"
 	var aura_of_life_resistance := damage_type == "necrotic" and not aura_of_life_sources.is_empty()
-	return int(floor(float(amount) / 2.0)) if raging_resistance or superior_resistance or fiend_resistance or spell_resistance or poison_spell_resistance or aura_of_life_resistance else amount
+	var custom_resistance: bool = (feature_uses.get("damage_resistances", []) is Array) and (damage_type in (feature_uses.get("damage_resistances", []) as Array))
+	return int(floor(float(amount) / 2.0)) if raging_resistance or superior_resistance or fiend_resistance or spell_resistance or poison_spell_resistance or aura_of_life_resistance or custom_resistance else amount
 
 
 ## Heal HP.
@@ -1161,25 +1202,20 @@ func is_proficient_with_weapon(weapon: Dictionary) -> bool:
 
 
 ## Make a saving throw. Returns the total roll.
-func make_saving_throw(ability: String, advantage: bool = false, disadvantage: bool = false) -> int:
-	return int(make_saving_throw_result(ability, advantage, disadvantage).get("total", 0))
+func make_saving_throw(ability: String, advantage: bool = false, disadvantage: bool = false, decisions: Dictionary = {}) -> int:
+	return int(make_saving_throw_result(ability, advantage, disadvantage, decisions).get("total", 0))
 
 
 ## Return the d20 and non-d20 modifiers so a failed D20 Test can be replaced
 ## without losing proficiency, bonuses, or feature floors.
-func make_saving_throw_result(ability: String, advantage: bool = false, disadvantage: bool = false) -> Dictionary:
+func make_saving_throw_result(ability: String, advantage: bool = false, disadvantage: bool = false, decisions: Dictionary = {}) -> Dictionary:
 	advantage = advantage or _has_saving_throw_advantage(ability)
 	if ability.to_upper() == "STR" and has_condition("ray_of_enfeeblement"):
 		disadvantage = true
 	if ability.to_upper() == "CON" and not concentrating_on.is_empty() and WarlockRules.has_invocation(self, "eldritch_mind"):
 		advantage = true
-	var roll: int
-	if advantage and not disadvantage:
-		roll = Dice.roll_with_advantage(20, self)
-	elif disadvantage and not advantage:
-		roll = Dice.roll_with_disadvantage(20, self)
-	else:
-		roll = Dice.roll(20, self)
+	var d20_details: Dictionary = RollTokenRules.resolve_d20_test(self, "save", advantage, disadvantage, decisions)
+	var roll := int(d20_details.get("total", 1))
 
 	var mod := ability_scores.get_ability_modifier(ability)
 	if is_proficient_in_save(ability):
@@ -1195,16 +1231,29 @@ func make_saving_throw_result(ability: String, advantage: bool = false, disadvan
 	mod -= exhaustion_level * 2
 	var raw_total := roll + mod
 	var total := apply_feature_check_floor(raw_total, ability, "saving_throw")
-	return {
+	var out := {
+		"natural": roll,
 		"natural_roll": roll,
+		"rolls": d20_details.get("rolls", [roll]),
+		"kept": d20_details.get("kept", [true]),
 		"modifier": mod,
 		"bane_penalty": bane_penalty,
 		"raw_total": raw_total,
 		"total": total,
 		"success": false,
 		"ability": ability.to_upper(),
-		"floor_applied": total != raw_total
+		"floor_applied": total != raw_total,
+		"roll_token_replaced": bool(d20_details.get("replaced", false)),
+		"replaced_by_roll_token": bool(d20_details.get("replaced", false)),
 	}
+	if bool(d20_details.get("replaced", false)):
+		out["roll_token_id"] = str(d20_details.get("roll_token_id", ""))
+		out["roll_token_value"] = int(d20_details.get("roll_token_value", roll))
+		out["roll_token_pool_id"] = str(d20_details.get("roll_token_pool_id", ""))
+		out["roll_token_owner_id"] = str(d20_details.get("roll_token_owner_id", ""))
+	if d20_details.has("roll_token_error"):
+		out["roll_token_error"] = str(d20_details["roll_token_error"])
+	return out
 
 
 func _has_saving_throw_advantage(ability: String) -> bool:
@@ -1249,31 +1298,17 @@ func get_attack_style_bonus(weapon_data: Dictionary = {}) -> int:
 
 
 ## Make an attack roll. Returns {"roll": int, "is_crit": bool, "is_miss": bool}.
-func make_attack_roll(ability: String = "STR", advantage: bool = false, disadvantage: bool = false, weapon_data: Dictionary = {}) -> Dictionary:
+func make_attack_roll(ability: String = "STR", advantage: bool = false, disadvantage: bool = false, weapon_data: Dictionary = {}, decisions: Dictionary = {}) -> Dictionary:
 	if has_condition("blinded") or has_condition("poisoned") or (ability.to_upper() == "STR" and has_condition("ray_of_enfeeblement")):
 		disadvantage = true
 	var mockery_disadvantage := has_condition("vicious_mockery_disadvantage")
 	if mockery_disadvantage:
 		disadvantage = true
 
-	var natural_roll: int
-	var roll_results: Array = []
-	var roll_kept: Array = []
-	if advantage and not disadvantage:
-		var advantage_roll: Dictionary = Dice.roll_with_advantage_details(20, self)
-		natural_roll = int(advantage_roll.get("total", 0))
-		roll_results = advantage_roll.get("rolls", []).duplicate()
-		roll_kept = advantage_roll.get("kept", []).duplicate()
-	elif disadvantage and not advantage:
-		var disadvantage_roll: Dictionary = Dice.roll_with_disadvantage_details(20, self)
-		natural_roll = int(disadvantage_roll.get("total", 0))
-		roll_results = disadvantage_roll.get("rolls", []).duplicate()
-		roll_kept = disadvantage_roll.get("kept", []).duplicate()
-	else:
-		var single_roll := Dice.roll_single_details(20, self)
-		natural_roll = int(single_roll["total"])
-		roll_results = single_roll["rolls"]
-		roll_kept = single_roll["kept"]
+	var d20_details := RollTokenRules.resolve_d20_test(self, "attack", advantage, disadvantage, decisions)
+	var natural_roll := int(d20_details.get("total", 0))
+	var roll_results: Array = d20_details.get("rolls", [natural_roll]).duplicate()
+	var roll_kept: Array = d20_details.get("kept", [true]).duplicate()
 	if mockery_disadvantage:
 		remove_condition("vicious_mockery_disadvantage")
 
@@ -1312,7 +1347,7 @@ func make_attack_roll(ability: String = "STR", advantage: bool = false, disadvan
 	if bane_penalty > 0:
 		activity_modifiers.append({"label": "Bane", "value": -bane_penalty})
 
-	return {
+	var out := {
 		"natural": natural_roll,
 		"total": total,
 		"modifier": mod + style_bonus,
@@ -1325,7 +1360,16 @@ func make_attack_roll(ability: String = "STR", advantage: bool = false, disadvan
 		"activity_modifiers": activity_modifiers,
 		"is_crit": is_crit,
 		"is_miss": is_miss,
+		"roll_token_replaced": bool(d20_details.get("replaced", false)),
 	}
+	if bool(d20_details.get("replaced", false)):
+		out["roll_token_id"] = str(d20_details.get("roll_token_id", ""))
+		out["roll_token_value"] = int(d20_details.get("roll_token_value", natural_roll))
+		out["roll_token_pool_id"] = str(d20_details.get("roll_token_pool_id", ""))
+		out["roll_token_owner_id"] = str(d20_details.get("roll_token_owner_id", ""))
+	if d20_details.has("roll_token_error"):
+		out["roll_token_error"] = str(d20_details["roll_token_error"])
+	return out
 
 
 ## Use a class feature. Returns false if no uses remaining.
@@ -1389,7 +1433,7 @@ func reset_combat_features() -> void:
 
 ## Restore features whose recharge cadence is a short rest.
 func short_rest() -> void:
-	if is_dead(): return
+	if is_dead() or current_hp <= 0: return
 	BardicInspirationRules.advance_time(self, 3600)
 	_restore_wizard_signature_spells()
 	if class_id == "wizard" and has_feature("wizard_memorize_spell"):
@@ -1428,6 +1472,7 @@ func short_rest() -> void:
 	_restore_pact_magic_slots()
 	if get_max_focus_points() > 0:
 		feature_uses["focus_points"] = get_max_focus_points()
+	RollTokenRules.generate_for_rest(self, "short_rest")
 
 
 ## Restore long-rest resources and the character's normal between-encounter state.
@@ -1483,6 +1528,8 @@ func long_rest() -> void:
 	if get_max_focus_points() > 0:
 		feature_uses["focus_points"] = get_max_focus_points()
 	feature_uses.erase("uncanny_metabolism_used")
+	RollTokenRules.generate_for_rest(self, "long_rest")
+	WardRules.clear_for_long_rest(self)
 	if class_id == "paladin":
 		PaladinRules.restore_find_steed_ability(self)
 	if class_id == "fighter":
@@ -1802,6 +1849,9 @@ func to_dict() -> Dictionary:
 		"wild_shape_state": wild_shape_state.duplicate(true),
 		"fiendish_resilience_type": fiendish_resilience_type,
 		"pact_weapon_damage_type": pact_weapon_damage_type,
+		"roll_tokens": RollTokenRules.serialize_tokens(roll_tokens),
+		"roll_token_generation_serial": roll_token_generation_serial,
+		"damage_wards": WardRules.serialize_wards(damage_wards),
 	}
 
 
@@ -1984,6 +2034,10 @@ func from_dict(data: Dictionary) -> void:
 		if modifier is Dictionary:
 			modifiers.append(modifier.duplicate(true))
 	feature_uses = data.get("feature_uses", {}).duplicate()
+	roll_tokens = RollTokenRules.deserialize_tokens(data.get("roll_tokens", {}))
+	roll_token_generation_serial = maxi(0, int(data.get("roll_token_generation_serial", 0)))
+	damage_wards = WardRules.deserialize_wards(data.get("damage_wards", {}))
+	WardRules.sync_pools_on_acquire(self)
 	FamiliarRules.restore_legacy(self)
 	BardicInspirationRules.advance_time(self, 0)
 	barbarian_relentless_rage_enabled = bool(data.get("barbarian_relentless_rage_enabled", true))
@@ -1997,7 +2051,10 @@ func from_dict(data: Dictionary) -> void:
 	# the persisted remaining slots when the save carries them.
 	_update_spell_slots()
 	if data.has("spell_slots") and data.get("spell_slots") is Dictionary:
-		spell_slots = data.get("spell_slots", {}).duplicate()
+		spell_slots.clear()
+		var raw_slots: Dictionary = data.get("spell_slots", {})
+		for slot_key in raw_slots:
+			spell_slots[str(slot_key)] = int(raw_slots[slot_key])
 	
 	# Restore inventory
 	inventory = Inventory.new()
@@ -2009,26 +2066,36 @@ func from_dict(data: Dictionary) -> void:
 
 
 ## Resolve a known-DC saving throw. The sheet exposes automatic resource choices.
-func saving_throw_to_dc(ability: String, dc: int, advantage: bool = false, disadvantage: bool = false) -> int:
-	return int(saving_throw_test_to_dc(ability, dc, advantage, disadvantage).get("total", 0))
+func saving_throw_to_dc(ability: String, dc: int, advantage: bool = false, disadvantage: bool = false, decisions: Dictionary = {}) -> int:
+	return int(saving_throw_test_to_dc(ability, dc, advantage, disadvantage, decisions).get("total", 0))
 
 
-func saving_throw_test_to_dc(ability: String, dc: int, advantage: bool = false, disadvantage: bool = false) -> Dictionary:
+func saving_throw_test_to_dc(ability: String, dc: int, advantage: bool = false, disadvantage: bool = false, decisions: Dictionary = {}) -> Dictionary:
 	last_save_note = ""
-	var result := make_saving_throw_result(ability, advantage, disadvantage)
+	var result := make_saving_throw_result(ability, advantage, disadvantage, decisions)
 	var total := int(result.get("total", 0))
 	if total < dc and has_feature("fighter_indomitable") and fighter_training.get("auto_indomitable", true) and use_feature("fighter_indomitable"):
+		var initial_replaced := bool(result.get("roll_token_replaced", false))
+		var initial_token_id := str(result.get("roll_token_id", ""))
 		result = make_saving_throw_result(ability, advantage, disadvantage)
 		result["modifier"] = int(result.get("modifier", 0)) + level
 		result["total"] = int(result.get("total", 0)) + level
 		result["raw_total"] = int(result.get("raw_total", 0)) + level
 		result["indomitable_used"] = true
+		if initial_replaced:
+			result["initial_roll_token_replaced"] = true
+			result["initial_roll_token_id"] = initial_token_id
 		total = int(result["total"])
 		last_save_note = "Indomitable reroll +%d: %d vs DC %d." % [level, total, dc]
 	if total < dc and has_feature("monk_disciplined_survivor") and spend_focus_points(1):
+		var initial_replaced := bool(result.get("roll_token_replaced", false))
+		var initial_token_id := str(result.get("roll_token_id", ""))
 		result = make_saving_throw_result(ability, advantage, disadvantage)
 		total = int(result.get("total", 0))
 		result["disciplined_survivor_used"] = true
+		if initial_replaced:
+			result["initial_roll_token_replaced"] = true
+			result["initial_roll_token_id"] = initial_token_id
 	result["total"] = total
 	result["dc"] = dc
 	result["success"] = total >= dc
@@ -2036,11 +2103,12 @@ func saving_throw_test_to_dc(ability: String, dc: int, advantage: bool = false, 
 
 
 ## Survivor's death saves use this same production method on the live turn.
-func make_death_save(accepted_bardic_inspiration: bool = false, accepted_stroke_of_luck: bool = false) -> Dictionary:
+func make_death_save(accepted_bardic_inspiration: bool = false, accepted_stroke_of_luck: bool = false, decisions: Dictionary = {}) -> Dictionary:
 	if current_hp > 0 or is_stable or is_dead() or death_save_successes >= 3:
 		return {"rolled": false}
 	var has_death_save_advantage := has_feature("champion_survivor") or SpellEffects.has_spell(self, "beacon_of_hope")
-	var natural := Dice.roll_with_advantage(20, self) if has_death_save_advantage else Dice.roll(20, self)
+	var d20_details := RollTokenRules.resolve_d20_test(self, "death_save", has_death_save_advantage, false, decisions)
+	var natural := int(d20_details.get("total", 1))
 	var bane_penalty := Dice.roll(4, self) if has_condition("baned") else 0
 	var total := natural - bane_penalty - exhaustion_level * 2
 	if natural < 10 and has_feature("fighter_indomitable") and fighter_training.get("auto_indomitable", true) and use_feature("fighter_indomitable"):
@@ -2074,7 +2142,11 @@ func make_death_save(accepted_bardic_inspiration: bool = false, accepted_stroke_
 		if death_save_successes >= 3:
 			stabilize()
 	if death_save_failures >= 3: CorpseRules.mark_dead(self, "death_saves")
-	return {"rolled": true, "natural": natural, "total": total, "bane_penalty": bane_penalty, "stroke_of_luck_used": stroke_used, "bardic_inspiration_used": inspiration_used, "bardic_inspiration_bonus": inspiration_bonus, "revived": current_hp > 0, "successes": death_save_successes, "failures": death_save_failures}
+	var out := {"rolled": true, "natural": natural, "rolls": d20_details.get("rolls", [natural]), "kept": d20_details.get("kept", [true]), "total": total, "bane_penalty": bane_penalty, "stroke_of_luck_used": stroke_used, "bardic_inspiration_used": inspiration_used, "bardic_inspiration_bonus": inspiration_bonus, "revived": current_hp > 0, "successes": death_save_successes, "failures": death_save_failures, "roll_token_replaced": bool(d20_details.get("replaced", false)), "replaced_by_roll_token": bool(d20_details.get("replaced", false))}
+	if bool(d20_details.get("replaced", false)):
+		out["roll_token_id"] = str(d20_details.get("roll_token_id", ""))
+		out["roll_token_value"] = int(d20_details.get("roll_token_value", natural))
+	return out
 
 
 func stabilize() -> bool:

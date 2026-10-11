@@ -2,6 +2,77 @@
 class_name SpellCastValidation
 extends RefCounted
 
+static func validate_host(cast: SpellCastContext) -> bool:
+	if cast == null or cast.caster == null:
+		return false
+
+	# Required participants:
+	if cast.players.is_empty() or cast.player_index < 0 or cast.player_index >= cast.players.size():
+		if cast.hud != null:
+			cast.hud.add_log("[color=orange]Spell cast requires encounter participants.[/color]")
+		cast.clear_pending(SpellCastContext.CLEAR_ACTION)
+		cast.clear_pending(SpellCastContext.CLEAR_SPELL)
+		cast.clear_pending(SpellCastContext.CLEAR_INTERVENTION)
+		cast.clear_pending(SpellCastContext.CLEAR_WISH)
+		if cast.grid != null and not cast.players.is_empty() and cast.highlight_reachable != null and cast.highlight_reachable.is_valid():
+			cast.highlight_reachable.call()
+		return false
+
+	var active_entity: Dictionary = cast.players[cast.player_index]
+	if active_entity.get("character") != cast.caster:
+		if cast.hud != null:
+			cast.hud.add_log("[color=orange]Spell cast requires active caster participant in encounter.[/color]")
+		cast.clear_pending(SpellCastContext.CLEAR_ACTION)
+		cast.clear_pending(SpellCastContext.CLEAR_SPELL)
+		cast.clear_pending(SpellCastContext.CLEAR_INTERVENTION)
+		cast.clear_pending(SpellCastContext.CLEAR_WISH)
+		if cast.grid != null and not cast.players.is_empty() and cast.highlight_reachable != null and cast.highlight_reachable.is_valid():
+			cast.highlight_reachable.call()
+		return false
+
+	# Spatial context / grid capability:
+	if cast.spell.has("steps") and cast.spell.get("steps") is Array:
+		var spatial_err := SharedStepExecutor.validate_spatial_context_for_steps(cast.spell.get("steps", []), {
+			"grid": cast.grid,
+			"players": cast.players,
+			"monsters": cast.monsters
+		})
+		if not spatial_err.is_empty():
+			if cast.hud != null:
+				cast.hud.add_log("[color=orange]%s[/color]" % spatial_err)
+			cast.clear_pending(SpellCastContext.CLEAR_ACTION)
+			cast.clear_pending(SpellCastContext.CLEAR_SPELL)
+			cast.clear_pending(SpellCastContext.CLEAR_INTERVENTION)
+			cast.clear_pending(SpellCastContext.CLEAR_WISH)
+			if cast.grid != null and not cast.players.is_empty() and cast.highlight_reachable != null and cast.highlight_reachable.is_valid():
+				cast.highlight_reachable.call()
+			return false
+	elif str(cast.spell.get("target", "single")) in ["area", "cone"]:
+		if cast.grid == null or (cast.players.is_empty() and cast.monsters.is_empty()):
+			if cast.hud != null:
+				cast.hud.add_log("[color=orange]Area targeting requires encounter grid and participants.[/color]")
+			cast.clear_pending(SpellCastContext.CLEAR_ACTION)
+			cast.clear_pending(SpellCastContext.CLEAR_SPELL)
+			cast.clear_pending(SpellCastContext.CLEAR_INTERVENTION)
+			cast.clear_pending(SpellCastContext.CLEAR_WISH)
+			if cast.grid != null and not cast.players.is_empty() and cast.highlight_reachable != null and cast.highlight_reachable.is_valid():
+				cast.highlight_reachable.call()
+			return false
+
+	if cast.grid == null:
+		if cast.hud != null:
+			cast.hud.add_log("[color=orange]Spell cast requires encounter grid.[/color]")
+		cast.clear_pending(SpellCastContext.CLEAR_ACTION)
+		cast.clear_pending(SpellCastContext.CLEAR_SPELL)
+		cast.clear_pending(SpellCastContext.CLEAR_INTERVENTION)
+		cast.clear_pending(SpellCastContext.CLEAR_WISH)
+		if cast.grid != null and not cast.players.is_empty() and cast.highlight_reachable != null and cast.highlight_reachable.is_valid():
+			cast.highlight_reachable.call()
+		return false
+
+	return true
+
+
 static func validate_actor(cast: SpellCastContext) -> bool:
 	if not str(cast.spell.get("trigger", "")).is_empty():
 		cast.hud.add_log("%s is offered immediately after a qualifying hit." % cast.spell.get("name", "This spell"))
@@ -296,6 +367,19 @@ static func validate_creatures_and_components(cast: SpellCastContext) -> bool:
 
 
 static func validate_area(cast: SpellCastContext) -> bool:
+	if cast.spell.has("steps") and cast.spell.get("steps") is Array:
+		for step in cast.spell.get("steps", []):
+			if not step is Dictionary:
+				continue
+			if str(step.get("target", "target")) == "area":
+				if cast.grid == null or (cast.players.is_empty() and cast.monsters.is_empty()):
+					cast.hud.add_log("[color=orange]Area targeting requires encounter grid and participants.[/color]")
+					cast.clear_pending(SpellCastContext.CLEAR_ACTION)
+					cast.clear_pending(SpellCastContext.CLEAR_SPELL)
+					cast.clear_pending(SpellCastContext.CLEAR_INTERVENTION)
+					cast.clear_pending(SpellCastContext.CLEAR_WISH)
+					cast.highlight_reachable.call()
+					return false
 	cast.area_selection = SpellCastTargeting._area_selection_for_spell(cast, cast.spell)
 	if cast.target_type in ["area", "cone"] and not cast.area_selection.get("success", false):
 		cast.hud.add_log("[color=orange]%s[/color]" % cast.area_selection.get("message", "Invalid area selection."))

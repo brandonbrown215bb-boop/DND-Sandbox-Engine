@@ -370,6 +370,12 @@
     },
     "trigger": {
       "const": ""
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/step"
+      }
     }
   },
   "patternProperties": {
@@ -389,6 +395,29 @@
           "pattern": "^([0-9]{1,3}|[1-9][0-9]?d(4|6|8|10|12|20))([+][0-9]{1,3})?$"
         }
       ]
+    },
+    "step": {
+      "type": "object",
+      "required": ["id", "type"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "type": { "enum": ["attack", "save", "damage", "effect"] },
+        "gate": { "enum": ["always", "hit", "miss", "failed_save", "successful_save"] },
+        "gate_step": {},
+        "target": { "enum": ["target", "self", "area"] },
+        "shape": { "enum": ["sphere", "cone", "cube"] },
+        "radius": { "type": "integer", "minimum": 1, "maximum": 100 },
+        "size": { "type": "integer", "minimum": 1, "maximum": 100 },
+        "attack_type": { "enum": ["ranged_spell", "melee_spell"] },
+        "damage": { "$ref": "#/definitions/formula" },
+        "damage_type": { "enum": ["acid", "bludgeoning", "cold", "fire", "force", "lightning", "necrotic", "piercing", "poison", "psychic", "radiant", "slashing", "thunder"] },
+        "save": { "enum": ["STR", "DEX", "CON", "INT", "WIS", "CHA"] },
+        "half_on_save": { "type": "boolean" },
+        "scaling": {},
+        "upcast": {},
+        "effects": { "type": "array" }
+      },
+      "additionalProperties": false
     }
   }
 }

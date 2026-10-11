@@ -3,6 +3,9 @@ class_name SpellCastResults
 extends RefCounted
 
 static func _resolve_spell_cast_targets(cast: SpellCastContext) -> void:
+	if cast.spell.has("steps"):
+		await _resolve_stepped_spell_cast(cast)
+		return
 	# Apply spell to all entities in the targets list
 	cast.successful = false
 	cast.interrupted = false
@@ -125,6 +128,13 @@ static func _resolve_player_target(cast: SpellCastContext, p_target: Character, 
 	var paladin_hp_before := p_target.current_hp
 	var target_spell_decisions := SpellCastResults._spell_decisions_for_target(cast, cast.counterspell_decisions, cast.counterspell_pending)
 	target_spell_decisions["spell_visibility"] = {"grid": cast.grid, "caster_position": cast.players[cast.player_index]["hex_position"], "target_position": target_hex}
+	target_spell_decisions["grid"] = cast.grid
+	target_spell_decisions["players"] = cast.players
+	target_spell_decisions["monsters"] = cast.monsters
+	target_spell_decisions["cast_context"] = cast
+	target_spell_decisions["hud"] = cast.hud
+	target_spell_decisions["tracker"] = cast.tracker
+	target_spell_decisions["trigger_enemy_defeat_features"] = cast.trigger_enemy_defeat_features
 	if CombatAction.spell_requires_saving_throw(cast.spell):
 		target_spell_decisions.merge(await cast.collect_stroke_of_luck_save_decision.call(p_target, str(cast.spell.get("name", "this spell"))), true)
 	if not SorcererRules.is_careful_spell_target(cast.caster, cast.spell, p_target, cast.counterspell_decisions.get("metamagic:careful_targets", [])):
@@ -140,6 +150,13 @@ static func _resolve_player_target(cast: SpellCastContext, p_target: Character, 
 		if not target_spell_decisions.has(counterspell_key):
 			target_spell_decisions[counterspell_key] = false
 	target_spell_decisions.merge(await cast.collect_spell_shield_decision.call(p_target, cast.spell, target_spell_decisions), true)
+	if cast.collect_roll_token_decision.is_valid():
+		if CombatAction.spell_requires_saving_throw(cast.spell):
+			target_spell_decisions.merge(await cast.collect_roll_token_decision.call(p_target, "save", "%s saving throw against %s" % [str(cast.spell.get("save", "Spell")), str(cast.spell.get("name", "spell"))], target_spell_decisions), true)
+		elif str(cast.spell.get("attack_type", "none")) != "none":
+			target_spell_decisions.merge(await cast.collect_roll_token_decision.call(cast.caster, "attack", "%s spell attack against %s" % [str(cast.spell.get("name", "Spell")), p_target.character_name], target_spell_decisions), true)
+	if cast.collect_projected_ward_decision.is_valid():
+		target_spell_decisions.merge(await cast.collect_projected_ward_decision.call(p_target), true)
 	var target_temp_hp_before := p_target.temp_hp
 	var p_target_was_shape_shifted := DruidRules.is_shaped(p_target)
 	var target_spell_data := cast.spell.duplicate(true)
@@ -232,6 +249,14 @@ static func _resolve_monster_target(cast: SpellCastContext, m_target: Dictionary
 	var spell_target_distance := 0 if ignore_spell_range else HexUtils.get_distance(cast.spell_origin, target_hex) * 5
 	var target_spell_decisions := SpellCastResults._spell_decisions_for_target(cast, cast.counterspell_decisions, cast.counterspell_pending)
 	target_spell_decisions["spell_visibility"] = {"grid": cast.grid, "caster_position": cast.players[cast.player_index]["hex_position"], "target_position": target_hex}
+	target_spell_decisions["grid"] = cast.grid
+	target_spell_decisions["players"] = cast.players
+	target_spell_decisions["monsters"] = cast.monsters
+	if cast.collect_roll_token_decision.is_valid():
+		if CombatAction.spell_requires_saving_throw(cast.spell):
+			target_spell_decisions.merge(await cast.collect_roll_token_decision.call(m_target, "monster_save", "%s saving throw against %s" % [str(cast.spell.get("save", "Spell")), str(cast.spell.get("name", "spell"))], target_spell_decisions), true)
+		elif str(cast.spell.get("attack_type", "none")) != "none":
+			target_spell_decisions.merge(await cast.collect_roll_token_decision.call(cast.caster, "attack", "%s spell attack against %s" % [str(cast.spell.get("name", "Spell")), str(m_target.get("name", "target"))], target_spell_decisions), true)
 	var target_temp_hp_before := int(m_target.get("temp_hp", 0))
 	var target_spell_data := cast.spell.duplicate(true)
 	if str(cast.spell.get("id", "")) == "entangle":
@@ -337,6 +362,10 @@ static func _resolve_monster_target(cast: SpellCastContext, m_target: Dictionary
 static func _finish_spell_cast(cast: SpellCastContext) -> void:
 	if cast.counterspell_decisions.has("counterspell_saved_by"):
 		cast.hud.add_log("[color=yellow]%s resists Counterspell; the spell continues.[/color]" % str(cast.counterspell_decisions["counterspell_saved_by"]))
+	if not cast.interrupted and cast.incoming_slot_spent and cast.slot_level_used >= 1:
+		for ward_ev in WardRules.on_slot_spell_cast(cast.caster, cast.spell, cast.slot_level_used):
+			if cast.hud != null and not str(ward_ev.get("message", "")).is_empty():
+				cast.hud.add_log("[color=cyan]%s[/color]" % str(ward_ev["message"]))
 
 	# Finish spellcasting
 	var spell_cost := str(cast.spell.get("casting_time", "action"))
@@ -414,10 +443,171 @@ static func _spell_decisions_for_target(cast: SpellCastContext, cast_decisions: 
 
 
 static func _settle_empowered_spell(cast: SpellCastContext, target, result: Dictionary, decisions: Dictionary) -> Dictionary:
-	if not result.has("damage_request"):
-		return result
-	decisions["metamagic:empowered_dice"] = await cast.hud.request_empowered_spell_dice(cast.caster, result["damage_request"]["details"])
-	result = CombatAction.finish_pending_spell_damage(cast.caster, target, result, decisions)
-	return SharedSpell.apply(cast.caster, target, cast.spell, result) if SharedSpell.uses(cast.spell) else result
+	while result.has("damage_request"):
+		var req_target = target
+		var owner_actor = SpellDamageRolls.owner_target(result)
+		if owner_actor != null:
+			req_target = owner_actor
+		if cast.hud != null:
+			var max_dice := int(result["damage_request"].get("max_dice", -1))
+			decisions["metamagic:empowered_dice"] = await cast.hud.request_empowered_spell_dice(cast.caster, result["damage_request"]["details"], max_dice)
+		else:
+			decisions["metamagic:empowered_dice"] = decisions.get("metamagic:empowered_dice", [])
+		result = CombatAction.finish_pending_spell_damage(cast.caster, req_target, result, decisions)
+		if result.has("concentration_request"):
+			result = await SpellCastResults._settle_concentration_choice(cast, target, result, decisions)
+	return SharedSpell.apply(cast.caster, target, cast.spell, result) if SharedSpell.uses(cast.spell) and not cast.spell.has("steps") else result
+
+
+static func _settle_concentration_choice(cast: SpellCastContext, target, result: Dictionary, decisions: Dictionary) -> Dictionary:
+	while result.has("concentration_request"):
+		var req: Dictionary = result["concentration_request"]
+		var req_target = req.get("target", target)
+		var owner_actor = SpellDamageRolls.owner_target(result)
+		if owner_actor != null:
+			req_target = owner_actor
+		var choice_feature: String = str(req.get("feature", "stroke_of_luck"))
+		var accepted := false
+		if cast.hud != null and cast.owner_label_for_character.is_valid():
+			var owner_label: String = cast.owner_label_for_character.call(req_target)
+			if choice_feature == "stroke_of_luck":
+				accepted = await cast.hud.request_reaction(owner_label, "stroke_of_luck", "If this concentration save fails, turn its d20 into a 20?", "Use Stroke of Luck on this save?", "Turn the d20 into 20", "Stroke of Luck — %s" % owner_label)
+			elif choice_feature == "bardic_inspiration":
+				var die := str(req_target.feature_uses.get("bardic_inspiration_die", "1d6"))
+				accepted = await cast.hud.request_reaction(owner_label, "bardic_inspiration", "If your concentration save still fails, add %s to the roll?" % die, "Save Bardic Inspiration for this save?", "Use Inspiration", "Bardic Inspiration — %s" % owner_label)
+		else:
+			var feature_dec = SpellDamageRolls.get_concentration_decision(decisions, req_target, choice_feature, cast.caster)
+			accepted = bool(feature_dec) if feature_dec != null else false
+		result = CombatAction.finish_pending_concentration_choice(cast.caster, req_target, result, {"feature": choice_feature, "accepted": accepted})
+		if result.has("damage_request"):
+			result = await SpellCastResults._settle_empowered_spell(cast, target, result, decisions)
+	return result
+
+
+static func _settle_stepped_spell_actors(cast: SpellCastContext, res: Dictionary) -> void:
+	var step_results: Array = res.get("step_results", [])
+	var actor_damage_map := {}
+	var ordered_actors: Array = []
+	for step in step_results:
+		if not step is Dictionary:
+			continue
+		for outcome in step.get("target_outcomes", []):
+			if not outcome is Dictionary or bool(outcome.get("skipped", false)):
+				continue
+			if bool(outcome.get("occurrence_settled", false)):
+				continue
+			var actor = outcome.get("target")
+			if actor == null:
+				continue
+			var found := false
+			for known in ordered_actors:
+				if SharedStepExecutor._same_actor(known, actor):
+					found = true
+					break
+			if not found:
+				ordered_actors.append(actor)
+			var actor_key := str(actor.get_instance_id()) if actor is Character else str(actor.get("id", ""))
+			var dmg := int(outcome.get("resolved", outcome.get("damage", 0)))
+			actor_damage_map[actor_key] = int(actor_damage_map.get(actor_key, 0)) + dmg
+
+	for actor in ordered_actors:
+		var actor_key := str(actor.get_instance_id()) if actor is Character else str(actor.get("id", ""))
+		var total_dmg: int = int(actor_damage_map.get(actor_key, 0))
+		if total_dmg > 0:
+			ClericRules.clear_turning_after_damage(actor)
+			if actor is Character:
+				await SpellEncounterLifecycle._check_concentration_save(cast, actor, total_dmg)
+			elif actor is Dictionary:
+				if int(actor.get("current_hp", 0)) <= 0 and not bool(actor.get("_defeat_processed", false)):
+					actor["_defeat_processed"] = true
+					actor["is_alive"] = false
+					if cast.hud != null:
+						cast.hud.add_log("[color=green]%s was defeated![/color]" % str(actor.get("name", "The creature")))
+					if cast.tracker != null:
+						cast.tracker.remove_combatant(str(actor.get("id", "")))
+					if cast.trigger_enemy_defeat_features != null and cast.trigger_enemy_defeat_features.is_valid():
+						cast.trigger_enemy_defeat_features.call(actor, cast.caster)
+
+
+static func _settle_ordered_choices(cast: SpellCastContext, target, result: Dictionary, decisions: Dictionary) -> Dictionary:
+	while result.has("roll_choice_request") or result.has("damage_request") or result.has("concentration_request"):
+		if result.has("roll_choice_request"):
+			var record := SpellDamageRolls.roll_choice_record(cast.caster, result)
+			if record.is_empty():
+				return {"success": false, "refused": true, "message": "The spell's roll choice is no longer available."}
+			var answer: Dictionary = await cast.collect_roll_token_decision.call(record["roller"], record["test_kind"], record["label"])
+			result = SpellDamageRolls.settle_roll_choice(cast.caster, record["target"], result, answer)
+		elif result.has("damage_request"):
+			result = await _settle_empowered_spell(cast, target, result, decisions)
+		else:
+			result = await _settle_concentration_choice(cast, target, result, decisions)
+	return result
+
+
+static func _resolve_stepped_spell_cast(cast: SpellCastContext) -> void:
+	var target = null
+	var target_coord := cast.target_coord
+	for p in cast.players:
+		if p.get("hex_position") == target_coord:
+			var candidate: Character = p.get("character")
+			if candidate != null and (candidate.is_alive or SpellCastTargeting.can_target_downed(candidate, cast.spell)):
+				target = candidate
+				break
+	if target == null:
+		for m in cast.monsters:
+			if m.get("hex_position") == target_coord and bool(m.get("is_alive", false)):
+				target = m
+				break
+	if target == null:
+		for t_hex in cast.targets:
+			for p in cast.players:
+				if p.get("hex_position") == t_hex:
+					var candidate: Character = p.get("character")
+					if candidate != null and (candidate.is_alive or SpellCastTargeting.can_target_downed(candidate, cast.spell)):
+						target = candidate
+						target_coord = t_hex
+						break
+			if target != null:
+				break
+			for m in cast.monsters:
+				if m.get("hex_position") == t_hex and bool(m.get("is_alive", false)):
+					target = m
+					target_coord = t_hex
+					break
+			if target != null:
+				break
+	if target == null:
+		target = {"hex_position": target_coord, "id": "coord_%d_%d" % [target_coord.x, target_coord.y]}
+
+	var origin: Vector2i = cast.players[cast.player_index].get("hex_position", Vector2i.ZERO) if cast.players.size() > cast.player_index else Vector2i.ZERO
+	var distance_feet := HexUtils.get_distance(cast.spell_origin, target_coord) * 5
+	var target_spell_decisions := SpellCastResults._spell_decisions_for_target(cast, cast.counterspell_decisions, cast.counterspell_pending)
+	target_spell_decisions["spell_visibility"] = {"grid": cast.grid, "caster_position": origin, "target_position": target_coord}
+	target_spell_decisions["grid"] = cast.grid
+	target_spell_decisions["players"] = cast.players
+	target_spell_decisions["monsters"] = cast.monsters
+	target_spell_decisions["cast_context"] = cast
+	target_spell_decisions["hud"] = cast.hud
+	target_spell_decisions["tracker"] = cast.tracker
+	target_spell_decisions["trigger_enemy_defeat_features"] = cast.trigger_enemy_defeat_features
+	if target is Character and cast.collect_projected_ward_decision.is_valid():
+		target_spell_decisions.merge(await cast.collect_projected_ward_decision.call(target), true)
+
+	var observers := cast.counterspell_observers if cast.counterspell_pending else []
+	var res := CombatAction.resolve_spell(cast.caster, target, cast.spell, false, target_spell_decisions, observers, cast.slot_level_used, distance_feet)
+	res = await SpellCastResults._settle_ordered_choices(cast, target, res, target_spell_decisions)
+	await SpellCastResults._settle_stepped_spell_actors(cast, res)
+
+	cast.damage_dealt += int(res.get("damage", 0))
+	if cast.hud != null:
+		cast.hud.add_log(res.get("message", ""))
+	cast.counterspell_pending = false
+	if not res.get("success", true):
+		cast.interrupted = true
+		return
+	cast.successful = true
+	if cast.spell.get("concentration", false):
+		cast.caster.concentrating_on["targets"].append(target)
+	await SpellEffectApplication.apply(cast, target if target is Character else null, target if target is Dictionary else {}, cast.spell, origin, target_coord, res)
 
 

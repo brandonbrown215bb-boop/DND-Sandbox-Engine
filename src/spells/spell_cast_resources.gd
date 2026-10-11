@@ -90,6 +90,7 @@ static func commit_spell_resource(cast: SpellCastContext) -> bool:
 	# Deduct spell slot if leveled spell
 	cast.spell_level = int(cast.spell.get("level", 0))
 	cast.slot_level_used = cast.spell_level
+	cast.incoming_slot_spent = false
 	var magic_item_activation := bool(cast.spell.get("_magic_item_activation", false))
 	if magic_item_activation:
 		var instance_id := str(cast.spell.get("_magic_item_instance_id", ""))
@@ -142,6 +143,7 @@ static func commit_spell_resource(cast: SpellCastContext) -> bool:
 				cast.highlight_reachable.call()
 				return false
 			cast.slot_level_used = int(slot_result.get("slot_level", cast.spell_level))
+			cast.incoming_slot_spent = not bool(slot_result.get("slot_recalled", false))
 			if slot_result.get("slot_recalled", false):
 				cast.hud.add_log("[color=cyan]%s's Boon of Spell Recall preserves the level %d slot.[/color]" % [cast.caster.character_name, int(slot_result.get("slot_level", cast.spell_level))])
 			else:

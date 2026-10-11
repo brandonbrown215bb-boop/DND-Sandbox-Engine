@@ -69,8 +69,21 @@ static func saved_state_error(dto: Dictionary) -> String:
 			if not condition is String or not sources.get(condition, {}) is Dictionary or not sources.get(condition, {}).has(source):
 				return "saved spell effect lacks its condition source"
 			var definition := DataLoader.get_spell(spell_id)
-			if SharedSpell.uses(definition) and not definition.get("effects", []).any(func(effect): return effect.get("type", "") == "grant_condition" and effect.get("condition", "") == condition):
-				return "saved shared spell has an undeclared condition"
+			var declares_condition := false
+			if SharedSpell.uses(definition):
+				for eff in definition.get("effects", []):
+					if eff is Dictionary and eff.get("type", "") == "grant_condition" and eff.get("condition", "") == condition:
+						declares_condition = true
+						break
+				if not declares_condition:
+					for step in definition.get("steps", []):
+						if step is Dictionary:
+							for eff in step.get("effects", []):
+								if eff is Dictionary and eff.get("type", "") == "grant_condition" and eff.get("condition", "") == condition:
+									declares_condition = true
+									break
+				if not declares_condition:
+					return "saved shared spell has an undeclared condition"
 	if not concentration.is_empty() and (str(concentration.get("effect_source", "")).is_empty() or (not SpellEffects.manages(DataLoader.get_spell(str(concentration.get("spell_id", "")))) and str(concentration.get("spell_id", "")) not in SpellEffects.PERSISTED_AREA_MARKER_SPELLS)):
 		return "invalid saved spell concentration"
 	return ""

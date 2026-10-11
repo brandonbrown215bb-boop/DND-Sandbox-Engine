@@ -326,16 +326,40 @@ func report_animal_messenger_notifications(notifications: Array[Dictionary]) -> 
 ## A Stealth check (best stealthy party member) vs a DC scaled by party size
 ## determines if the night passes safely. Failing means a surprise encounter.
 func _on_rest_pressed() -> void:
-	if companion_roster_open:
+	if companion_roster_open or RestRules.is_rest_window_open():
 		return
-	var command := PlayerCommand.simple("rest")
-	if command == null:
-		return
-	_execute_rest_command(command)
+	RestRules.open_rest_choice_dialog(hud, func(chosen_rest_type: String) -> void:
+		if chosen_rest_type.is_empty():
+			return
+		var command := PlayerCommand.rest(chosen_rest_type)
+		if command != null:
+			_execute_rest_command(command)
+	, {"companion_roster_open": companion_roster_open})
 
 
-func _execute_rest_command(_command: PlayerCommand) -> void:
-	if companion_roster_open:
+func _execute_rest_command(command: PlayerCommand) -> void:
+	if command == null or not command.is_valid() or companion_roster_open:
+		return
+	if command.rest_type() == "short_rest":
+		var party := _get_party_characters()
+		var short_res := RestRules.complete_short_rest(
+			party,
+			{"source": "overworld", "companion_roster_open": companion_roster_open},
+			hud,
+			Callable(),
+			func(final_out: Dictionary) -> void:
+				for rec in final_out.get("recoveries", []):
+					if rec is Dictionary and not str(rec.get("message", "")).is_empty():
+						hud.add_log("[color=cyan]%s[/color]" % str(rec["message"]))
+				hud.update_hud()
+		)
+		if not bool(short_res.get("success", false)):
+			hud.add_log("[color=orange]%s[/color]" % str(short_res.get("message", "Cannot rest right now.")))
+			return
+		report_animal_messenger_notifications(short_res.get("notifications", []))
+		hud.add_log("[color=cyan]The party takes a Short Rest (1 hour). Short-rest features recovered.[/color]")
+		hud.update_hud()
+		_recalculate_reachable()
 		return
 	_rest_party()
 	report_animal_messenger_notifications(GameManager.advance_campaign_time(28800))
@@ -390,13 +414,24 @@ func _party_best_stealth_mod() -> int:
 	return best
 
 
-## Heal and restore the whole party (no gold cost). Mirrors ShopUI._on_rest_pressed.
-func _rest_party() -> void:
+func _get_party_characters() -> Array[Character]:
+	var out: Array[Character] = []
+	for char_data in PartyManager.get_active_characters():
+		if char_data != null and char_data not in out:
+			out.append(char_data)
 	var player_count := PlayerManager.get_player_count()
 	for i in player_count:
 		var char_data: Character = PlayerManager.get_player(i).get("character")
-		if char_data == null: continue
+		if char_data != null and char_data not in out:
+			out.append(char_data)
+	return out
+
+
+## Heal and restore the whole party (no gold cost). Mirrors ShopUI._on_rest_pressed.
+func _rest_party() -> void:
+	for char_data in _get_party_characters():
 		char_data.long_rest()
+
 
 
 ## Manual save from the overworld HUD.

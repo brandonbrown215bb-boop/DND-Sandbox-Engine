@@ -1,0 +1,48 @@
+{
+  "id": "fixture:runeguard",
+  "name": "Fixture Runeguard",
+  "class_id": "wizard",
+  "features_by_level": {
+    "3": [
+      {
+        "id": "fixture:runeguard_aegis_ward",
+        "name": "Runic Aegis",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "damage_ward_pool",
+            "pool_id": "fixture:runeguard_aegis",
+            "creation_trigger": "spell_cast_with_slot",
+            "trigger_schools": [
+              "Abjuration",
+              "Evocation"
+            ],
+            "creation_uses_per": "long_rest",
+            "max_hp_level_multiplier": 3,
+            "max_hp_ability": "INT",
+            "max_hp_flat_bonus": 2,
+            "recharge_slot_multiplier": 3,
+            "bonus_action_slot_recharge": true
+          }
+        ]
+      }
+    ],
+    "6": [
+      {
+        "id": "fixture:runeguard_projected_aegis",
+        "name": "Projected Runic Aegis",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "damage_ward_projection",
+            "pool_id": "fixture:runeguard_aegis",
+            "trigger": "visible_creature_damaged",
+            "action_cost": "reaction",
+            "range_feet": 60,
+            "target_predicate": "ally_visible_within_range"
+          }
+        ]
+      }
+    ]
+  }
+}

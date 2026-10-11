@@ -1,8 +1,8 @@
 # Current development checkpoint
 
-Reconciled 2026-10-09. This page records the latest accepted runtime evidence
+Reconciled 2026-10-11. This page records the latest accepted runtime evidence
 and open work. [Roadmap](../../roadmap.md) chooses priority; the Quest Board
-owns the exact next action. Documentation reconciliation changed no gameplay.
+owns the exact next action. The reviewed shared-runtime batch includes the ward and ordered Portent fixes below.
 
 ## Direction and current implementation
 
@@ -23,36 +23,92 @@ Sacred Flame, Shield of Faith and Cone of Cold. Their rules limits remain.
 Exploration controls support single/self party effects and single-object
 attacks. Area/multi-target exploration and ongoing hazards remain separate paths.
 
-The current validator rejects combined attack/save delivery. Ordered mixed
-checks required by [ADR-0017](../decisions/0017-shared-json-spell-execution.md)
-are still unimplemented. See [executable authoring syntax](../mechanics/shared-spells.md).
+## Latest accepted evidence — shared-runtime slices, 2026-10-11
 
-## Latest accepted evidence — shared spells, 2026-10-09
+Windows Godot 4.7 stable: bootstrap, **179-script parse gate**, production boot,
+and **2,930 logic checks passed, zero failed**. The normal-control scenarios
+`shared_spell_normal_controls_flow`, `ward_normal_controls_flow`,
+`roll_token_normal_controls_flow`,
+`short_rest_arcane_recovery_normal_controls_flow`, `crown_smoke` and
+`combat_defeat` passed. The Portent and ordered-spell scenarios were rerun after
+fixing consecutive exclusive-dialog handoff; that final batch had no engine
+errors. All four save/reload probes passed in distinct prepare/recover processes.
 
-Recorded Windows Godot 4.7 stable result: recovery bootstrap, **171-script
-parse gate**, production boot and **2,553 logic checks passed, zero failed**.
-Seven live scenarios passed: `shared_spell_flow`, `spell_effect_lifetime`,
-`spell_cast_stage_flow`, `wave_three_foundations_flow`, `local_room_object_flow`,
-`crown_smoke` and `combat_defeat`.
+Reproduce with `run_tests.ps1 -GodotPath <Godot-console-path> -Suite logic`,
+then `-Suite integration -Scenario` with the six scenario names above.
+Run `scripts/validate_ordered_grant_fresh_relaunch.ps1`,
+`validate_roll_token_fresh_relaunch.ps1`, `validate_ward_fresh_relaunch.ps1` and
+`validate_short_rest_fresh_relaunch.ps1`, each with `-GodotPath`.
+See [testing](../testing.md) for the runner contract.
 
-Logs: `.artifacts/tests/4c8eb8557b5843ca951268e2f6462f00/` and
-`.artifacts/shared-spell-accepted-final.log`. These are local ignored evidence,
-not a reproducibility guarantee for another checkout. Commands are in
-[testing](../testing.md); inspect/reproduce the affected behavior after changes.
+Local ignored evidence:
 
-This batch covers new-ID loading/learning/preparation, combat/exploration
-controls, hit/save outcomes, downed-target healing, exactly-once costs,
-cancellation, source-preserving cleanup, repeat saves, disk reload and expiry.
-Missing mod content rejects load before session replacement. Invalid fields,
-operations and unsupported scaling combinations reject instead of spending
-resources for no effect. Sanctuary's attacker save and existing
-Countercharm/Repelling Blast hooks were corrected/preserved.
+- Logic: `.artifacts/tests/33671b91de94471b866b8eba63ef048e/`.
+- Gameplay: `.artifacts/tests/1bf53d3bcd9a420baa5c3c8527e2cca2/`; its Portent engine error is superseded by the clean final Portent/ordered-spell batch at `.artifacts/tests/323be74ab4614959b04e6b54126739b1/`.
+- Ordered grants relaunch: `.artifacts/tests/ordered-grant-relaunch-04f61b57545a4c428a6f3fd5cf6d2b0b/`.
+- Roll tokens relaunch: `.artifacts/tests/roll-token-relaunch-ddc9872d4bcd468eb974edfb6bf7d764/`.
+- Wards relaunch: `.artifacts/tests/ward-relaunch-127d963aa9774ed9822daf1906d8a09d/`.
+- Short Rest relaunch: `.artifacts/tests/short-rest-relaunch-50bf66638b59427d982cfd3486dbd82d/`.
 
-Disk reload was same-process. This batch does not claim fresh-process recovery,
-manual visual acceptance, Linux execution or full rules/campaign completion.
-Earlier named relaunch probes cover their own older scenarios only.
-The current project snapshot includes unfinished work; a prior pass is not
-blanket acceptance of every current file.
+These logs are evidence from this host, not a guarantee for another checkout.
+No Linux execution, manual visual acceptance or full rules/campaign certification
+is claimed. Broader interpreters, generic continuation persistence and unmigrated
+class/monster catalogs remain unfinished.
+
+## Verified behavior and bounded scope
+
+**Ordered execution and zero-HP replacement**
+([ADR-0019](../decisions/0019-shared-ordered-execution-and-zero-hp-replacement.md)):
+`SharedStepExecutor` runs explicit spell steps and creature event rules through
+one engine. Per-target gates retain attack damage when a later save succeeds;
+area saves retain one shared raw damage roll and filter obstructed targets.
+Empowered Spell and concentration reaction chains resume at the pending actor
+and step, retain settled effects, and spend cast-wide costs once. Natural and
+created Zombies and the JSON-only Dread Husk use data-driven zero-HP replacement.
+Source-owned timed grants survive fresh-process reload, reject invalid content
+before session replacement and expire independently. Multi-step exploration
+remains single-target; active combat continuations are transient.
+
+**Roll tokens and Portent**
+([ADR-0020](../decisions/0020-roll-tokens-and-pre-roll-replacement.md)):
+Diviner and the JSON-only Oracle fixture share `RollTokenRules`. Token identity,
+visibility, once-per-turn use and schema-2 persistence are verified across attack,
+save, ability/skill, Initiative and Death Saving Throw boundaries. Ordered casts
+now offer pre-roll choices for each attack, target save and concentration save.
+Declining the first attack preserves the later save choice without replaying
+attack damage or slot expenditure. Stale, copied, wrong-kind and replayed request
+callbacks refuse before resumption. Consecutive Portent dialogs release modal
+focus before the next opens. Acquisition generates initial tokens and capacity
+upgrades generate the additional tokens immediately; replacement uses the stored
+natural result without another Advantage/Disadvantage d20. Those existing game
+policies are documented rules limitations, not full PHB certification. Divination
+Savant, Expert Divination and The Third Eye remain disabled/partial.
+
+**Wards and damage interception**
+([ADR-0021](../decisions/0021-damage-interception-and-wards.md)):
+Abjurer and the JSON-only Runeguard fixture share `WardRules`. Slot-paid qualifying
+casts create/recharge wards; free, ritual, item and at-will casts do not. Damage
+applies Resistance/Vulnerability, ward interception, Immunity on overflow,
+Temporary HP, then real HP. Immunity no longer preserves ward HP incorrectly.
+Projected Ward spends one Reaction on one occurrence, including its typed damage
+components, and cannot absorb a later hit or ordered step using the same decision.
+Concentration uses creature damage after ward interception; fully absorbed damage
+requires no save. Active zero-HP wards can recharge, and their state survives
+fresh-process reload with malformed-save refusal. Abjuration Savant, Spell Breaker
+and Spell Resistance remain disabled/partial.
+
+**Short Rest and Arcane Recovery**
+([ADR-0022](../decisions/0022-rest-completion-and-slot-recovery.md)):
+Overworld and Dungeon entrance controls offer Short Rest (1 hour), Long Rest
+(8 hours), or Cancel. Cancellation/refusal changes no time or resources; Short
+Rest advances the clock once and affects living party members once. The shared
+`rest_slot_recovery` effect offers a player-selected combination within
+`ceil(wizard_class_level / 2)` slot levels and excludes level 6+ slots. A valid
+choice consumes the once-per-Long-Rest use; declining/full slots preserve it.
+The combat recovery helper is retired. Invalid, stale, wrong-actor and replayed
+choices refuse without corrupting the live opportunity. Wizard and JSON-only
+Leyline Savant fixture behavior, clock, slot state, spent uses, second-rest
+suppression and Long Rest reset survive fresh-process reload.
 
 ## Open implementation — Animate Objects and world gaps
 

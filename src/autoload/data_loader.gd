@@ -203,7 +203,6 @@ const CURATED_FEATURE_EFFECTS := {
 	"rogue_sneak_attack": {"effects": [{"type": "sneak_attack", "dice": "1d6"}]},
 	"rogue_uncanny_dodge": {"effects": [{"type": "reaction", "reaction": "uncanny_dodge"}]},
 	"rogue_cunning_action": {"effects": [{"type": "cunning_action"}], "uses": 1, "uses_per": "turn", "action_cost": "bonus_action"},
-	"wizard_arcane_recovery": {"effects": [{"type": "recover_spell_slots"}]},
 	"cleric_channel_divinity:_harness_divine_power": {"effects": [{"type": "recover_spell_slots"}]},
 	"warlock_pact_magic": {"type": "passive", "effects": [{"type": "pact_magic"}]},
 	"sorcerer_sorcery_points": {"type": "passive", "effects": [{"type": "sorcery_points"}]},
@@ -431,6 +430,11 @@ func _validate_content(data: Dictionary, content_type: String, source: String) -
 		var execution_error := SharedSpell.content_error(data)
 		if not execution_error.is_empty():
 			_load_errors.append("Spell in %s: %s" % [source, execution_error])
+			return false
+	if content_type == "monster" and data.has("special_abilities"):
+		var ability_error := SharedStepExecutor.validate_monster_special_abilities(data)
+		if not ability_error.is_empty():
+			_load_errors.append("Monster in %s: %s" % [source, ability_error])
 			return false
 	var required: Array = ["id", "name"]
 	match content_type:
@@ -665,13 +669,13 @@ func _feature_content_error(feature: Dictionary) -> String:
 			return ""
 		return "" if resolver == "fighter_rules" and feature.get("id", "") in implemented else "Resolver has no registered behavior for this feature"
 	var supported := ["heal_self", "grant_extra_action", "extra_attack", "modify_crit_range", "asi", "ability_score_increase", "skill_proficiency_choice", "skill_expertise_choice", "jack_of_all_trades", "short_rest_recharge", "initiative_resource_recovery", "resource_from_spell_slot", "spellcasting", "spell_list_expansion", "always_prepared_spells", "spell_free_cast", "concentration_protection", "spell_damage_dice_override", "attack_advantage_against_condition", "saving_throw_proficiency", "saving_throw_aura", "aura_radius_expansion", "condition_immunity_aura", "additional_spell_target", "countercharm", "epic_boon_choice", "feature_choice", "grant_condition", "stat_modifier", "unarmored_defense", "reckless_attack", "monk_bonus_action", "martial_arts", "unarmed_attack", "monk_focus", "unarmored_movement", "speed_bonus", "initiative_advantage", "saving_throw_advantage", "ability_check_override", "ability_check_advantage", "ability_check_floor", "weapon_mastery", "weapon_damage_rider", "uncanny_metabolism", "reaction", "stunning_strike", "empowered_strikes", "evasion", "heightened_focus", "self_restoration", "fleet_step", "deflect_energy", "disciplined_survivor", "perfect_focus", "superior_defense", "divine_smite", "defense_style", "archery", "lay_on_hands", "divine_sense", "abjure_foes", "bardic_inspiration", "favored_foe", "sneak_attack", "cunning_strike", "cunning_action", "recover_spell_slots", "pact_magic", "pact_magic_recovery", "sorcery_points", "sorcerer_font_of_magic", "innate_sorcery", "metamagic", "metamagic_choices", "sorcery_incarnate", "arcane_apotheosis", "blindsight", "wizard_ritual_casting", "wizard_memorize_spell", "wizard_spell_mastery", "wizard_signature_spells", "elusive", "rogue_steady_aim", "stroke_of_luck", "give_item"]
-	supported.append_array(["warlock_invocations", "warlock_mystic_arcanum", "concentration_save_advantage", "dark_ones_blessing", "dark_ones_own_luck", "fiendish_resilience", "hurl_through_hell"])
+	supported.append_array(["warlock_invocations", "warlock_mystic_arcanum", "concentration_save_advantage", "dark_ones_blessing", "dark_ones_own_luck", "fiendish_resilience", "hurl_through_hell", "roll_token_pool", "roll_token_pool_upgrade", "damage_ward_pool", "damage_ward_projection", "rest_slot_recovery"])
 	var effects: Array = feature.get("effects", []).duplicate()
 	effects.append_array(feature.get("passive_effects", []))
 	for effect in effects:
 		if not effect is Dictionary or effect.get("type", "") not in supported:
 			return "Unknown or unimplemented effect operation"
-		if effect.get("type", "") in ["asi", "ability_score_increase", "skill_proficiency_choice", "skill_expertise_choice", "jack_of_all_trades", "short_rest_recharge", "initiative_resource_recovery", "resource_from_spell_slot", "spellcasting", "spell_list_expansion", "always_prepared_spells", "spell_free_cast", "concentration_protection", "spell_damage_dice_override", "attack_advantage_against_condition", "saving_throw_proficiency", "saving_throw_aura", "aura_radius_expansion", "condition_immunity_aura", "additional_spell_target", "countercharm", "epic_boon_choice", "feature_choice", "modify_crit_range", "extra_attack", "speed_bonus", "initiative_advantage", "saving_throw_advantage", "ability_check_override", "ability_check_advantage", "ability_check_floor", "weapon_mastery", "blindsight", "wizard_ritual_casting", "wizard_memorize_spell", "wizard_spell_mastery", "wizard_signature_spells", "sorcerer_font_of_magic"] and feature.get("type", "") != "passive":
+		if effect.get("type", "") in ["asi", "ability_score_increase", "skill_proficiency_choice", "skill_expertise_choice", "jack_of_all_trades", "short_rest_recharge", "initiative_resource_recovery", "resource_from_spell_slot", "spellcasting", "spell_list_expansion", "always_prepared_spells", "spell_free_cast", "concentration_protection", "spell_damage_dice_override", "attack_advantage_against_condition", "saving_throw_proficiency", "saving_throw_aura", "aura_radius_expansion", "condition_immunity_aura", "additional_spell_target", "countercharm", "epic_boon_choice", "feature_choice", "modify_crit_range", "extra_attack", "speed_bonus", "initiative_advantage", "saving_throw_advantage", "ability_check_override", "ability_check_advantage", "ability_check_floor", "weapon_mastery", "blindsight", "wizard_ritual_casting", "wizard_memorize_spell", "wizard_spell_mastery", "wizard_signature_spells", "sorcerer_font_of_magic", "roll_token_pool", "roll_token_pool_upgrade", "damage_ward_pool", "damage_ward_projection"] and feature.get("type", "") != "passive":
 			return "This class progression effect requires a passive feature"
 		if effect.get("type", "") in ["warlock_invocations", "warlock_mystic_arcanum"] and feature.get("type", "") != "passive":
 			return "Warlock progression features must be passive"
@@ -921,6 +925,117 @@ func _feature_content_error(feature: Dictionary) -> String:
 				var value: Variant = levels[key]
 				if not str(key).is_valid_int() or str(int(key)) != str(key) or int(key) < 1 or int(key) > 20 or not (value is int or value is float) or float(value) != float(int(value)) or int(value) < 0 or int(value) > 20:
 					return "Speed bonus scaling requires integer levels 1-20 and bonuses 0-20"
+		if effect.get("type", "") == "roll_token_pool":
+			var pool_id: Variant = effect.get("pool_id", "")
+			var die_sides: Variant = effect.get("die_sides", 0)
+			var timing := str(effect.get("generation_timing", ""))
+			var predicate := str(effect.get("target_predicate", ""))
+			var uses_per_turn: Variant = effect.get("uses_per_turn", 0)
+			if not (pool_id is String) or str(pool_id).strip_edges().is_empty():
+				return "Roll token pool requires a nonempty pool_id"
+			if typeof(die_sides) == TYPE_BOOL or not (die_sides is int or die_sides is float) or int(die_sides) != 20:
+				return "Roll token pool requires die_sides == 20"
+			if timing not in RollTokenRules.SUPPORTED_TIMINGS:
+				return "Roll token pool requires supported generation_timing"
+			if predicate not in RollTokenRules.SUPPORTED_PREDICATES:
+				return "Roll token pool requires a supported target_predicate"
+			if typeof(uses_per_turn) == TYPE_BOOL or not (uses_per_turn is int or uses_per_turn is float) or float(uses_per_turn) != float(int(uses_per_turn)) or int(uses_per_turn) < 1 or int(uses_per_turn) > 10:
+				return "Roll token pool requires integer uses_per_turn from 1-10"
+			var has_count: bool = effect.has("token_count")
+			var has_table: bool = effect.has("token_count_by_level")
+			if not has_count and not has_table:
+				return "Roll token pool requires token_count or token_count_by_level"
+			if has_count:
+				var count: Variant = effect["token_count"]
+				if typeof(count) == TYPE_BOOL or not (count is int or count is float) or float(count) != float(int(count)) or int(count) < 1 or int(count) > 10:
+					return "Roll token pool token_count must be an integer from 1-10"
+			if has_table:
+				var table: Variant = effect["token_count_by_level"]
+				if not (table is Dictionary) or table.is_empty():
+					return "Roll token pool token_count_by_level must be a nonempty object"
+				for key in table:
+					var val: Variant = table[key]
+					if not str(key).is_valid_int() or str(int(key)) != str(key) or int(key) < 1 or int(key) > 20 or typeof(val) == TYPE_BOOL or not (val is int or val is float) or float(val) != float(int(val)) or int(val) < 1 or int(val) > 10:
+						return "Roll token pool token_count_by_level requires levels 1-20 and counts 1-10"
+		if effect.get("type", "") == "roll_token_pool_upgrade":
+			var upgrade_pool_id: Variant = effect.get("pool_id", "")
+			var upgrade_count: Variant = effect.get("token_count", 0)
+			if not (upgrade_pool_id is String) or str(upgrade_pool_id).strip_edges().is_empty():
+				return "Roll token pool upgrade requires a nonempty pool_id"
+			if typeof(upgrade_count) == TYPE_BOOL or not (upgrade_count is int or upgrade_count is float) or float(upgrade_count) != float(int(upgrade_count)) or int(upgrade_count) < 1 or int(upgrade_count) > 10:
+				return "Roll token pool upgrade token_count must be an integer from 1-10"
+		if effect.get("type", "") == "damage_ward_pool":
+			var ward_pool_id: Variant = effect.get("pool_id", "")
+			var creation_trigger := str(effect.get("creation_trigger", ""))
+			var trigger_schools: Variant = effect.get("trigger_schools", [])
+			var creation_uses_per := str(effect.get("creation_uses_per", ""))
+			var level_mult: Variant = effect.get("max_hp_level_multiplier", 0)
+			var ability := str(effect.get("max_hp_ability", "")).to_upper()
+			var recharge_mult: Variant = effect.get("recharge_slot_multiplier", 0)
+			var bonus_recharge: Variant = effect.get("bonus_action_slot_recharge", null)
+			if not (ward_pool_id is String) or str(ward_pool_id).strip_edges().is_empty():
+				return "Damage ward pool requires a nonempty pool_id"
+			if creation_trigger not in WardRules.SUPPORTED_CREATION_TRIGGERS:
+				return "Damage ward pool requires supported creation_trigger"
+			if not (trigger_schools is Array) or trigger_schools.is_empty() or trigger_schools.any(func(s): return not (s is String) or str(s) not in WardRules.SUPPORTED_SCHOOLS):
+				return "Damage ward pool requires a nonempty trigger_schools array of supported spell schools"
+			if creation_uses_per not in WardRules.SUPPORTED_CREATION_USES_PER:
+				return "Damage ward pool requires supported creation_uses_per"
+			if typeof(level_mult) == TYPE_BOOL or not (level_mult is int or level_mult is float) or float(level_mult) != float(int(level_mult)) or int(level_mult) < 1 or int(level_mult) > 10:
+				return "Damage ward pool max_hp_level_multiplier must be an integer from 1-10"
+			if ability not in VALID_ABILITIES:
+				return "Damage ward pool requires a valid max_hp_ability"
+			if effect.has("max_hp_flat_bonus"):
+				var flat_bonus: Variant = effect["max_hp_flat_bonus"]
+				if typeof(flat_bonus) == TYPE_BOOL or not (flat_bonus is int or flat_bonus is float) or float(flat_bonus) != float(int(flat_bonus)) or int(flat_bonus) < -20 or int(flat_bonus) > 100:
+					return "Damage ward pool max_hp_flat_bonus must be an integer from -20 to 100"
+			if typeof(recharge_mult) == TYPE_BOOL or not (recharge_mult is int or recharge_mult is float) or float(recharge_mult) != float(int(recharge_mult)) or int(recharge_mult) < 1 or int(recharge_mult) > 10:
+				return "Damage ward pool recharge_slot_multiplier must be an integer from 1-10"
+			if typeof(bonus_recharge) != TYPE_BOOL:
+				return "Damage ward pool bonus_action_slot_recharge must be boolean"
+		if effect.get("type", "") == "damage_ward_projection":
+			var proj_pool_id: Variant = effect.get("pool_id", "")
+			var proj_trigger := str(effect.get("trigger", ""))
+			var proj_cost := str(effect.get("action_cost", ""))
+			var proj_range: Variant = effect.get("range_feet", 0)
+			var proj_predicate := str(effect.get("target_predicate", ""))
+			if not (proj_pool_id is String) or str(proj_pool_id).strip_edges().is_empty():
+				return "Damage ward projection requires a nonempty pool_id"
+			if proj_trigger not in WardRules.SUPPORTED_PROJECTION_TRIGGERS:
+				return "Damage ward projection requires a supported trigger"
+			if proj_cost not in WardRules.SUPPORTED_PROJECTION_ACTION_COSTS:
+				return "Damage ward projection requires a supported action_cost"
+			if typeof(proj_range) == TYPE_BOOL or not (proj_range is int or proj_range is float) or float(proj_range) != float(int(proj_range)) or int(proj_range) < 5 or int(proj_range) > 300 or int(proj_range) % 5 != 0:
+				return "Damage ward projection range_feet must be 5-300 in 5-foot steps"
+			if proj_predicate not in WardRules.SUPPORTED_PROJECTION_PREDICATES:
+				return "Damage ward projection requires a supported target_predicate"
+		if effect.get("type", "") == "rest_slot_recovery":
+			if feature.get("type", "") not in ["triggered", "active"]:
+				return "Rest slot recovery requires a triggered or active feature"
+			var uses_err := _uses_content_error(feature)
+			if not uses_err.is_empty():
+				return uses_err
+			if not feature.has("resource_id") and str(feature.get("uses_per", "")) not in ["long_rest", "short_rest", "rest"]:
+				return "Rest slot recovery requires a rest recovery cadence or resource_id"
+			var rec_trigger := str(effect.get("trigger", ""))
+			var cls_source: Variant = effect.get("class_level_source", "")
+			var formula := str(effect.get("budget_formula", ""))
+			var min_lvl: Variant = effect.get("min_slot_level", 1)
+			var max_lvl: Variant = effect.get("max_slot_level", 0)
+			if rec_trigger not in RestRules.SUPPORTED_TRIGGERS:
+				return "Rest slot recovery requires a supported trigger"
+			if not (cls_source is String) or str(cls_source).strip_edges().is_empty():
+				return "Rest slot recovery requires a nonempty class_level_source"
+			if formula not in RestRules.SUPPORTED_BUDGET_FORMULAS:
+				return "Rest slot recovery requires a supported budget_formula"
+			if formula == "flat":
+				var flat_val: Variant = effect.get("flat_budget", 0)
+				if typeof(flat_val) == TYPE_BOOL or not (flat_val is int or flat_val is float) or float(flat_val) != float(int(flat_val)) or int(flat_val) < 1 or int(flat_val) > 20:
+					return "Rest slot recovery flat_budget must be an integer from 1-20"
+			if typeof(min_lvl) == TYPE_BOOL or not (min_lvl is int or min_lvl is float) or float(min_lvl) != float(int(min_lvl)) or int(min_lvl) < 1 or int(min_lvl) > 9:
+				return "Rest slot recovery min_slot_level must be an integer from 1-9"
+			if typeof(max_lvl) == TYPE_BOOL or not (max_lvl is int or max_lvl is float) or float(max_lvl) != float(int(max_lvl)) or int(max_lvl) < int(min_lvl) or int(max_lvl) > 9:
+				return "Rest slot recovery max_slot_level must be an integer from min_slot_level to 9"
 	return ""
 
 
@@ -1142,6 +1257,8 @@ func get_subclasses_for_class(id: String) -> Array:
 
 func _validate_feature_resources(data: Dictionary, base: Dictionary = {}) -> void:
 	var owned := {}
+	var token_pools := {}
+	var ward_pools := {}
 	for source in [base, data]:
 		for level_key in source.get("features_by_level", {}):
 			for feature in source["features_by_level"][level_key]:
@@ -1151,12 +1268,30 @@ func _validate_feature_resources(data: Dictionary, base: Dictionary = {}) -> voi
 				if id.is_empty() or (owned.has(id) and not legacy_upgrade):
 					_load_errors.append("Duplicate or missing feature ID '%s' in %s" % [id, data.get("id", "")])
 				owned[id] = {"record": feature, "level": int(level_key)}
+				for effect in feature.get("effects", []) + feature.get("passive_effects", []):
+					if effect is Dictionary and str(effect.get("type", "")) == "roll_token_pool":
+						var token_pool_id := str(effect.get("pool_id", id)).strip_edges()
+						if not token_pool_id.is_empty():
+							token_pools[token_pool_id] = mini(int(token_pools.get(token_pool_id, 99)), int(level_key))
+					if effect is Dictionary and str(effect.get("type", "")) == "damage_ward_pool":
+						var ward_pool_id := str(effect.get("pool_id", id)).strip_edges()
+						if not ward_pool_id.is_empty():
+							ward_pools[ward_pool_id] = mini(int(ward_pools.get(ward_pool_id, 99)), int(level_key))
 	for id in owned:
 		var feature: Dictionary = owned[id]["record"]
 		if feature.has("resource_id"):
 			var pool := str(feature["resource_id"])
 			if not owned.has(pool) or owned[pool]["record"].get("type", "") != "resource" or int(owned[pool]["level"]) > int(owned[id]["level"]):
 				_load_errors.append("Feature '%s' requires an earlier or same-level resource pool '%s' in %s" % [id, pool, data.get("id", "")])
+		for effect in feature.get("effects", []) + feature.get("passive_effects", []):
+			if effect is Dictionary and str(effect.get("type", "")) == "roll_token_pool_upgrade":
+				var upgrade_pool_id := str(effect.get("pool_id", "")).strip_edges()
+				if not token_pools.has(upgrade_pool_id) or int(token_pools[upgrade_pool_id]) > int(owned[id]["level"]):
+					_load_errors.append("Feature '%s' requires an earlier or same-level roll_token_pool '%s' in %s" % [id, upgrade_pool_id, data.get("id", "")])
+			if effect is Dictionary and str(effect.get("type", "")) == "damage_ward_projection":
+				var proj_pool_id := str(effect.get("pool_id", "")).strip_edges()
+				if not ward_pools.has(proj_pool_id) or int(ward_pools[proj_pool_id]) > int(owned[id]["level"]):
+					_load_errors.append("Feature '%s' requires an earlier or same-level damage_ward_pool '%s' in %s" % [id, proj_pool_id, data.get("id", "")])
 
 func get_all_races() -> Array:
 	return _sorted_values(races)

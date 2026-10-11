@@ -397,6 +397,41 @@ func _on_rest_pressed() -> void:
 	if local_view != null:
 		hud.add_log("Return to the entrance before resting.")
 		return
+	if RestRules.is_rest_window_open():
+		return
+	RestRules.open_rest_choice_dialog(hud, func(chosen_rest_type: String) -> void:
+		if chosen_rest_type.is_empty():
+			return
+		var command := PlayerCommand.rest(chosen_rest_type)
+		if command != null:
+			_execute_rest_command(command)
+	, {"local_view": local_view})
+
+
+func _execute_rest_command(command: PlayerCommand) -> void:
+	if command == null or not command.is_valid():
+		return
+	if local_view != null:
+		hud.add_log("Return to the entrance before resting.")
+		return
+	if command.rest_type() == "short_rest":
+		var short_res := RestRules.complete_short_rest(
+			PartyManager.get_active_characters(),
+			{"source": "dungeon", "local_view": local_view},
+			hud,
+			Callable(),
+			func(final_out: Dictionary) -> void:
+				for rec in final_out.get("recoveries", []):
+					if rec is Dictionary and not str(rec.get("message", "")).is_empty():
+						hud.add_log("[color=cyan]%s[/color]" % str(rec["message"]))
+				hud.update_hud()
+		)
+		if not bool(short_res.get("success", false)):
+			hud.add_log("[color=orange]%s[/color]" % str(short_res.get("message", "Cannot rest right now.")))
+			return
+		hud.add_log("[color=cyan]The party takes a Short Rest (1 hour). Short-rest features recovered.[/color]")
+		hud.update_hud()
+		return
 	GameManager.advance_campaign_time(28800)
 	_rest_party()
 	hud.add_log("[color=green]The party makes camp and rests. HP, spell slots, and feature uses restored.[/color]")

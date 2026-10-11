@@ -25,8 +25,12 @@ for accepted evidence. Old implementation restrictions do not override later dec
 | [0014 — Owned creatures and projections](0014-owned-creature-lifecycle.md) | Accepted identity/lifetime boundary |
 | [0015 — Party corpses and recovery](0015-party-corpses-and-recovery.md) | Accepted life-state/compatibility boundary |
 | [0016 — Undead existence and control](0016-created-undead-existence-and-control.md) | Accepted identity/control boundary |
-| [0017 — Shared JSON spells](0017-shared-json-spell-execution.md) | Accepted; handler exception superseded by 0018; mixed checks pending |
+| [0017 — Shared JSON spells](0017-shared-json-spell-execution.md) | Accepted; handler exception superseded by 0018; mixed checks implemented in 0019 |
 | [0018 — Shared data-driven rules runtime](0018-shared-data-driven-rules-runtime.md) | Accepted direction; implementation staged |
+| [0019 — Shared ordered execution & zero-HP replacement](0019-shared-ordered-execution-and-zero-hp-replacement.md) | Accepted; Corrections A3, B1, B1R1, B1R2, B2A, and B2B verified |
+| [0020 — Roll tokens and pre-roll replacement](0020-roll-tokens-and-pre-roll-replacement.md) | Accepted; Slice 2 shared `roll_token_pool` runtime, Diviner Portent/Greater Portent, and save preflight |
+| [0021 — Damage interception and wards](0021-damage-interception-and-wards.md) | Accepted; Slice 3 shared `damage_ward_pool` / `damage_ward_projection`, 5-step damage order, Abjurer Arcane/Projected Ward, and save preflight |
+| [0022 — Rest completion and slot recovery](0022-rest-completion-and-slot-recovery.md) | Accepted; Slice 4A/4B bounded Short/Long Rest completion, `rest_slot_recovery` window, Wizard Arcane Recovery, and single-owner execution |
 
 New ADRs must state the decision, reason, compatibility constraints, acceptance
 boundary and affected earlier decisions. Keep implementation diaries and latest

@@ -386,11 +386,20 @@
       {
         "id": "wizard_arcane_recovery",
         "name": "Arcane Recovery",
-        "description": "Once per Long Rest when you finish a Short Rest, recover expended spell slots whose combined levels are no more than half your Wizard level (round up); slot levels 6+ are ineligible. The combat helper chooses eligible higher-level slots automatically.",
-        "type": "active",
-        "effects": [],
+        "description": "Once per Long Rest when you finish a Short Rest, recover expended spell slots whose combined levels are no more than half your Wizard level (round up); slot levels 6+ are ineligible.",
+        "type": "triggered",
+        "effects": [
+          {
+            "type": "rest_slot_recovery",
+            "trigger": "short_rest_completed",
+            "class_level_source": "wizard",
+            "budget_formula": "half_class_level_ceil",
+            "min_slot_level": 1,
+            "max_slot_level": 5
+          }
+        ],
         "enabled": true,
-        "rules_status": "2024-partial",
+        "rules_status": "2024-supported",
         "rules_source": "dnd-2024-srd-5.2.1",
         "uses": 1,
         "uses_per": "long_rest"

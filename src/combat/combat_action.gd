@@ -509,9 +509,27 @@ static func tick_condition_sources(target) -> void:
 		target["condition_sources"] = sources
 
 
+static func is_immune_to_damage(target, damage_type: String) -> bool:
+	if target == null or damage_type.is_empty():
+		return false
+	if target is Dictionary:
+		return damage_type in target.get("damage_immunities", [])
+	if target is not Character:
+		return false
+	if target.class_id == "created_creature":
+		if damage_type == "poison":
+			return true
+		if damage_type == "psychic" and str(target.feature_uses.get("created_form_id", "")) == "animated_object":
+			return true
+	var custom_immunities: Variant = target.feature_uses.get("damage_immunities", [])
+	if custom_immunities is Array and damage_type in custom_immunities:
+		return true
+	return false
+
+
 ## One typed settlement path; reductions/saves resolve before calling it.
 ## CombatState keeps concentration prompts and positional/death presentation.
-static func resolve_damage(target, amount: int, damage_type: String, reaction_decisions: Dictionary = {}, bypass_resistance: bool = false, preserve_turning: bool = false, source_character: Character = null) -> Dictionary:
+static func resolve_damage(target, amount: int, damage_type: String, reaction_decisions: Dictionary = {}, bypass_resistance: bool = false, preserve_turning: bool = false, source_character: Character = null, damage_occurrence_id: int = 0) -> Dictionary:
 	var source_is_target := is_same_character(source_character, target)
 	if (has_condition(target, "resilient_sphere") and not source_is_target) or (source_character != null and has_condition(source_character, "resilient_sphere") and not source_is_target):
 		return {"damage": 0, "resolved": 0, "blocked_by_resilient_sphere": true}
@@ -534,20 +552,24 @@ static func resolve_damage(target, amount: int, damage_type: String, reaction_de
 	if target is Character:
 		if not bypass_resistance:
 			resolved = target.resist_damage(resolved, damage_type)
-		if target.class_id == "created_creature":
-			if damage_type == "poison": resolved = 0
-			elif damage_type == "psychic" and target.feature_uses.get("created_form_id", "") == "animated_object": resolved = 0
-			elif damage_type == "bludgeoning" and str(target.feature_uses.get("created_form_id", "")) == "skeleton": resolved *= 2
+		var char_vulns: Variant = target.feature_uses.get("damage_vulnerabilities", [])
+		if (target.class_id == "created_creature" and damage_type == "bludgeoning" and str(target.feature_uses.get("created_form_id", "")) == "skeleton") or (char_vulns is Array and damage_type in char_vulns):
+			resolved *= 2
 	elif target is Dictionary:
-		if damage_type in target.get("damage_immunities", []):
-			resolved = 0
-		elif not bypass_resistance and (damage_type in target.get("damage_resistances", []) or str(target.get("protection_from_energy_type", "")) == damage_type or (damage_type == "poison" and target.get("conditions", {}).has("protection_from_poison")) or (damage_type == "necrotic" and not target.get("aura_of_life_sources", []).is_empty())):
+		if not bypass_resistance and (damage_type in target.get("damage_resistances", []) or str(target.get("protection_from_energy_type", "")) == damage_type or (damage_type == "poison" and target.get("conditions", {}).has("protection_from_poison")) or (damage_type == "necrotic" and not target.get("aura_of_life_sources", []).is_empty())):
 			resolved = int(floor(float(resolved) / 2.0))
-		if target.has("created_creature_id") and damage_type in target.get("damage_vulnerabilities", []): resolved *= 2
+		if damage_type in target.get("damage_vulnerabilities", []):
+			resolved *= 2
 	else:
 		return {"damage": 0, "resolved": 0}
+	var ward_res := WardRules.absorb_damage(target, resolved, reaction_decisions, damage_occurrence_id)
+	resolved = int(ward_res.get("remaining_damage", resolved))
+	if resolved > 0 and is_immune_to_damage(target, damage_type):
+		resolved = 0
 	var actual := 0
 	var death_ward_prevented := false
+	var undead_fortitude_saved := false
+	var is_alive_before: bool = target.is_alive if target is Character else bool(target.get("is_alive", true))
 	var created_hp_before: int = target.current_hp if target is Character else int(target.get("current_hp", 0))
 	var created_temp_hp_before: int = target.temp_hp if target is Character else int(target.get("temp_hp", 0))
 	if target is Character:
@@ -561,7 +583,17 @@ static func resolve_damage(target, amount: int, damage_type: String, reaction_de
 			death_ward_prevented = true
 			SpellEffects.consume_spell(target, "death_ward")
 		else:
-			actual = target.take_damage(resolved, bool(reaction_decisions.get("relentless_rage_bardic_inspiration", false)), bool(reaction_decisions.get("damage_is_critical", false)))
+			var damage_facts := {
+				"hp_before": created_hp_before,
+				"damage": resolved,
+				"damage_type": damage_type,
+				"critical": bool(reaction_decisions.get("damage_is_critical", false)),
+				"decisions": reaction_decisions,
+			}
+			actual = target.take_damage(resolved, bool(reaction_decisions.get("relentless_rage_bardic_inspiration", false)), bool(reaction_decisions.get("damage_is_critical", false)), damage_facts)
+			if bool(damage_facts.get("zero_hp_replacement_saved", false)):
+				undead_fortitude_saved = true
+				actual = maxi(0, created_hp_before - int(damage_facts.get("replacement_hp", target.current_hp)))
 	elif resolved > 0:
 		var monster_hp := int(target.get("current_hp", 0))
 		var monster_temp_hp := int(target.get("temp_hp", 0))
@@ -577,12 +609,23 @@ static func resolve_damage(target, amount: int, damage_type: String, reaction_de
 			var absorbed := mini(resolved, maxi(0, monster_temp_hp))
 			if absorbed > 0:
 				target["temp_hp"] = monster_temp_hp - absorbed
-			actual = mini(resolved - absorbed, maxi(0, monster_hp))
-			target["current_hp"] = monster_hp - actual
-			if int(target["current_hp"]) <= 0:
-				target["is_alive"] = false
-	var undead_fortitude_saved := CreatedCreatureRules.resolve_fortitude(target, created_hp_before, resolved, damage_type, bool(reaction_decisions.get("damage_is_critical", false)))
-	if undead_fortitude_saved: actual = maxi(0, created_hp_before - 1)
+			var hp_damage := resolved - absorbed
+			var new_hp := monster_hp - hp_damage
+			if monster_hp > 0 and new_hp <= 0:
+				target["current_hp"] = 0
+				var replaced := resolve_zero_hp_replacement(target, monster_hp, resolved, damage_type, bool(reaction_decisions.get("damage_is_critical", false)), reaction_decisions)
+				if replaced:
+					undead_fortitude_saved = true
+					actual = maxi(0, monster_hp - int(target.get("current_hp", 1)))
+				else:
+					target["current_hp"] = 0
+					target["is_alive"] = false
+					actual = mini(hp_damage, maxi(0, monster_hp))
+			else:
+				actual = mini(hp_damage, maxi(0, monster_hp))
+				target["current_hp"] = new_hp
+				if int(target["current_hp"]) <= 0:
+					target["is_alive"] = false
 	if target is Character and target.feature_uses.get("created_form_id", "") == "animated_object": AnimatedObjectRules.damage(target, created_hp_before, maxi(0, resolved - created_temp_hp_before))
 	if resolved > 0:
 		_end_damage_broken_spell_effects(target, source_character != null and not source_character.character_id.is_empty())
@@ -600,7 +643,44 @@ static func resolve_damage(target, amount: int, damage_type: String, reaction_de
 			ClericRules.clear_turning_after_damage(target)
 		elif target is Dictionary:
 			PaladinRules.clear_abjure_foes_after_damage(target)
-	return {"damage": actual, "resolved": resolved, "source_roll_penalty": enfeeblement_penalty, "resistance_spell_reduction": resistance_spell_reduction, "death_ward_prevented": death_ward_prevented, "undead_fortitude_saved": undead_fortitude_saved}
+	var hp_after: int = target.current_hp if target is Character else int(target.get("current_hp", 0))
+	var temp_hp_after: int = target.temp_hp if target is Character else int(target.get("temp_hp", 0))
+	var is_alive_after: bool = target.is_alive if target is Character else bool(target.get("is_alive", true))
+	var temp_hp_absorbed: int = maxi(0, created_temp_hp_before - temp_hp_after)
+	var is_crit: bool = bool(reaction_decisions.get("damage_is_critical", false))
+	return {
+		"damage": actual,
+		"hp_loss": actual,
+		"resolved": resolved,
+		"ward_absorbed": int(ward_res.get("absorbed", 0)),
+		"ward_pool_id": str(ward_res.get("ward_pool_id", "")),
+		"ward_owner_id": str(ward_res.get("ward_owner_id", "")),
+		"ward_remaining_hp": int(ward_res.get("ward_remaining_hp", 0)),
+		"ward_projected": bool(ward_res.get("projected", false)),
+		"ward_message": str(ward_res.get("message", "")),
+		"temp_hp_absorbed": temp_hp_absorbed,
+		"hp_before": created_hp_before,
+		"hp_after": hp_after,
+		"temp_hp_before": created_temp_hp_before,
+		"temp_hp_after": temp_hp_after,
+		"is_alive_before": is_alive_before,
+		"is_alive_after": is_alive_after,
+		"critical": is_crit,
+		"damage_is_critical": is_crit,
+		"source_roll_penalty": enfeeblement_penalty,
+		"resistance_spell_reduction": resistance_spell_reduction,
+		"death_ward_prevented": death_ward_prevented,
+		"undead_fortitude_saved": undead_fortitude_saved,
+		"zero_hp_replacement_saved": undead_fortitude_saved
+	}
+
+
+static func get_zero_hp_replacement_rule(target) -> Dictionary:
+	return SharedStepExecutor.get_zero_hp_replacement_rule(target)
+
+
+static func resolve_zero_hp_replacement(target, hp_before: int, damage: int, damage_type: String, critical: bool, decisions: Dictionary = {}) -> bool:
+	return SharedStepExecutor.resolve_zero_hp_replacement(target, hp_before, damage, damage_type, critical, decisions)
 
 
 static func _end_damage_broken_spell_effects(target, party_damage: bool = true) -> void:
@@ -691,13 +771,13 @@ static func unarmed_attack_profile(attacker: Character) -> Dictionary:
 
 
 ## Resolve the two unarmed strikes granted by Monk Flurry of Blows.
-static func resolve_stunning_strike(attacker: Character, target: Dictionary) -> Dictionary:
+static func resolve_stunning_strike(attacker: Character, target: Dictionary, decisions: Dictionary = {}) -> Dictionary:
 	if attacker == null or not attacker.has_feature("monk_stunning_strike") or int(target.get("current_hp", 0)) <= 0 or int(attacker.feature_uses.get("stunning_strike_used", 0)) > 0 or attacker.get_focus_points() < 1:
 		return {"success": false, "message": "Stunning Strike is unavailable."}
 	attacker.spend_focus_points(1)
 	attacker.feature_uses["stunning_strike_used"] = 1
 	var dc := 8 + attacker.proficiency_bonus + attacker.ability_scores.get_ability_modifier("WIS")
-	var total := BarbarianRules.roll_monster_save(target, "CON")
+	var total := BarbarianRules.roll_monster_save(target, "CON", null, false, false, decisions)
 	var failed := total < dc
 	var conditions: Dictionary = target.get("conditions", {})
 	if failed and "stunned" not in target.get("condition_immunities", []):
@@ -946,7 +1026,7 @@ static func resolve_weapon_attack(attacker: Character, target_entity, weapon_dat
 		weapon_data["magical"] = true
 	if SpellEffects.has_spell(target_entity, "sanctuary"):
 		var sanctuary_dc := _spell_effect_save_dc(target_entity, "sanctuary", attacker.get_spell_save_dc())
-		var sanctuary_save := int(attacker.saving_throw_test_to_dc("WIS", sanctuary_dc).get("total", 0))
+		var sanctuary_save := int(attacker.saving_throw_test_to_dc("WIS", sanctuary_dc, false, false, reaction_decisions).get("total", 0))
 		if sanctuary_save < sanctuary_dc:
 			return {"hit": false, "damage": 0, "sanctuary_blocked": true, "sanctuary_save_total": sanctuary_save, "sanctuary_save_dc": sanctuary_dc, "message": "%s fails the Wisdom save against Sanctuary and loses the attack." % attacker.character_name}
 	SpellEffects.consume_spell(attacker, "sanctuary")
@@ -1052,7 +1132,7 @@ static func resolve_weapon_attack(attacker: Character, target_entity, weapon_dat
 	# Roll attack
 	var helped_attack := consume_attack_help(target_entity)
 	advantage = advantage or helped_attack
-	var attack_result := attacker.make_attack_roll(ability, advantage, disadvantage, weapon_data)
+	var attack_result := attacker.make_attack_roll(ability, advantage, disadvantage, weapon_data, reaction_decisions)
 	SpellEffects.consume_spell(attacker, "invisibility")
 	if magic_weapon_bonus > 0:
 		attack_result["total"] = int(attack_result.get("total", 0)) + magic_weapon_bonus
@@ -1106,22 +1186,31 @@ static func resolve_weapon_attack(attacker: Character, target_entity, weapon_dat
 			target_ac = target_entity.get_ac()
 			is_hit = attack_result["total"] >= target_ac
 			reaction_msg = "[color=cyan]%s casts Shield as a reaction! AC increases to %d.[/color]\n" % [target_entity.character_name, target_ac]
+			var shield_ward := WardRules.on_slot_spell_cast(target_entity, DataLoader.get_spell("shield"), 1)
+			for ward_ev in shield_ward:
+				if not str(ward_ev.get("message", "")).is_empty():
+					reaction_msg += "%s\n" % str(ward_ev["message"])
 
 	var before_peerless := is_hit
 	is_hit = FighterRules.peerless_aim(attacker, is_hit)
 	if is_hit and not before_peerless:
 		reaction_msg += "Peerless Aim turns the miss into a hit. "
+	var token_replaced := bool(attack_result.get("roll_token_replaced", false))
 	if not is_hit:
 		var miss := {
 			"hit": false,
 			"attack_roll": attack_result["total"],
 			"target_ac": target_ac,
+			"roll_token_replaced": token_replaced,
 			"activity_roll": _attack_activity_roll(attack_result, target_ac, false),
 			"activity_damage": {},
 			"can_divine_smite": false,
 			"divine_smite_eligible": false,
 			"message": reaction_msg + "Miss! Attack roll %d vs AC %d" % [attack_result["total"], target_ac]
 		}
+		if token_replaced:
+			miss["roll_token_id"] = str(attack_result.get("roll_token_id", ""))
+			miss["roll_token_value"] = int(attack_result.get("roll_token_value", 0))
 		FighterRules.apply_mastery(attacker, target_entity, weapon_data, miss)
 		if sundering_bonus:
 			miss["sundering_bonus"] = 5
@@ -1242,20 +1331,27 @@ static func resolve_weapon_attack(attacker: Character, target_entity, weapon_dat
 	var bypass_weapon_resistance := ClassProgression.has_epic_boon(attacker, "irresistible_offense") and damage_type in ["bludgeoning", "piercing", "slashing"]
 	var weapon_damage_decisions := reaction_decisions.duplicate()
 	weapon_damage_decisions["damage_is_critical"] = bool(attack_result["is_crit"])
-	var weapon_settlement := resolve_damage(target_entity, weapon_component_after_reactions, damage_type, weapon_damage_decisions, bypass_weapon_resistance, false, attacker)
+	var damage_occurrence_id := WardRules.next_damage_occurrence_id()
+	var weapon_settlement := resolve_damage(target_entity, weapon_component_after_reactions, damage_type, weapon_damage_decisions, bypass_weapon_resistance, false, attacker, damage_occurrence_id)
 	var additional_settlements: Array[Dictionary] = []
 	var additional_actual_dealt := 0
 	var additional_resolved := 0
+	var total_ward_absorbed := int(weapon_settlement.get("ward_absorbed", 0))
+	if not str(weapon_settlement.get("ward_message", "")).is_empty():
+		reaction_msg += "[color=cyan]%s[/color] " % str(weapon_settlement["ward_message"])
 	for entry in additional_damage_packets:
 		var packet: Dictionary = entry["packet"]
 		var component := mini(int(entry["roll"]), remaining_additional_after_reactions)
 		remaining_additional_after_reactions -= component
 		var settlement: Dictionary = {"resolved": 0, "damage": 0}
 		if component > 0 and not str(packet.get("type", "")).is_empty():
-			settlement = resolve_damage(target_entity, component, str(packet["type"]), reaction_decisions, false, false, attacker)
+			settlement = resolve_damage(target_entity, component, str(packet["type"]), reaction_decisions, false, false, attacker, damage_occurrence_id)
 		additional_settlements.append(settlement)
 		additional_actual_dealt += int(settlement.get("damage", 0))
 		additional_resolved += int(settlement.get("resolved", 0))
+		total_ward_absorbed += int(settlement.get("ward_absorbed", 0))
+		if not str(settlement.get("ward_message", "")).is_empty():
+			reaction_msg += "[color=cyan]%s[/color] " % str(settlement["ward_message"])
 	damage_roll = int(weapon_settlement["resolved"]) + additional_resolved
 	var actual_dealt := int(weapon_settlement["damage"]) + additional_actual_dealt
 	if damage_roll != before_resistance:
@@ -1292,7 +1388,12 @@ static func resolve_weapon_attack(attacker: Character, target_entity, weapon_dat
 		"hit": true,
 		"crit": attack_result["is_crit"],
 		"stroke_of_luck_used": bool(stroke_result.get("used", false)),
+		"roll_token_replaced": token_replaced,
 		"damage": actual_dealt,
+		"resolved": damage_roll,
+		"ward_absorbed": total_ward_absorbed,
+		"ward_remaining_hp": int(weapon_settlement.get("ward_remaining_hp", 0)),
+		"ward_projected": bool(weapon_settlement.get("ward_projected", false)),
 		"damage_type": damage_type,
 		"deflected": deflected,
 		"attack_roll": attack_result["total"],
@@ -1304,6 +1405,9 @@ static func resolve_weapon_attack(attacker: Character, target_entity, weapon_dat
 		"damage_components": damage_components,
 		"message": reaction_msg + bardic_message + "%sHit! (%d vs AC %d) %s" % [crit_prefix, attack_result["total"], target_ac, damage_message]
 	}
+	if token_replaced:
+		result["roll_token_id"] = str(attack_result.get("roll_token_id", ""))
+		result["roll_token_value"] = int(attack_result.get("roll_token_value", 0))
 	if not additional_damage_packets.is_empty():
 		result["message"] += " Includes %s." % ", ".join(additional_damage_packets.map(func(entry: Dictionary) -> String: return "%d %s" % [int(additional_settlements[additional_damage_packets.find(entry)].get("damage", 0)), str(entry["packet"].get("type", "damage"))]))
 	FighterRules.apply_mastery(attacker, target_entity, weapon_data, result)
@@ -1396,7 +1500,7 @@ static func _attack_activity_roll(attack_result: Dictionary, target_ac: int, is_
 ## Resolve production monster attack riders after the base attack hits.
 ## Monster data stays declarative; this boundary owns saves, conditions, and
 ## persistent target damage so AI and player-triggered fixtures share behavior.
-static func resolve_monster_attack_effects(monster: Dictionary, target: Character, attack_data: Dictionary, attack_result: Dictionary) -> Array[Dictionary]:
+static func resolve_monster_attack_effects(monster: Dictionary, target: Character, attack_data: Dictionary, attack_result: Dictionary, reaction_decisions: Dictionary = {}) -> Array[Dictionary]:
 	var results: Array[Dictionary] = []
 	if monster.is_empty() or target == null or not attack_result.get("hit", false):
 		return results
@@ -1406,7 +1510,7 @@ static func resolve_monster_attack_effects(monster: Dictionary, target: Characte
 			"poison_save", "restrain", "paralyze_save":
 				var save_ability := str(effect.get("save", "CON"))
 				var dc := int(effect.get("dc", 10))
-				var save_total := target.saving_throw_to_dc(save_ability, dc)
+				var save_total := target.saving_throw_to_dc(save_ability, dc, false, false, reaction_decisions)
 				if save_total >= dc:
 					results.append({"type": effect_type, "success": true, "message": "%s resists %s (%d vs DC %d)." % [target.character_name, effect_type.replace("_", " "), save_total, dc]})
 					continue
@@ -1805,7 +1909,12 @@ static func spell_delayed_damage_for_resolution(caster: Character, spell_data: D
 
 
 static func spell_requires_saving_throw(spell_data: Dictionary) -> bool:
-	return not str(spell_data.get("save", "")).strip_edges().is_empty()
+	if not str(spell_data.get("save", "")).strip_edges().is_empty():
+		return true
+	for step in spell_data.get("steps", []):
+		if step is Dictionary and (step.get("type", "") == "save" or not str(step.get("save", "")).strip_edges().is_empty()):
+			return true
+	return false
 
 
 static func _spell_effect_save_dc(target, spell_id: String, fallback: int) -> int:
@@ -1857,7 +1966,69 @@ static func _finish_spell_damage(caster: Character, target, details: Dictionary,
 
 
 static func finish_pending_spell_damage(caster: Character, target, result: Dictionary, decisions: Dictionary) -> Dictionary:
-	return SpellDamageRolls.finish_pending_spell_damage(caster, target, result, decisions)
+	if not result.has("damage_request"):
+		return result
+	# The caller supplies only the owner's answer; every other fact comes from the
+	# registered request, so a copied/stale payload can not redirect or replace it.
+	var answer := {}
+	if decisions.has("metamagic:empowered_dice"):
+		answer["metamagic:empowered_dice"] = decisions["metamagic:empowered_dice"]
+	var settlement := SpellDamageRolls.settle_pending_request(caster, target, result, answer)
+	if not settlement.get("valid", false):
+		if bool(settlement.get("no_op", false)):
+			return result
+		var err_msg: String = str(settlement.get("error", "Request validation failed."))
+		push_warning("[CombatAction] finish_pending_spell_damage refused: %s" % err_msg)
+		return {"success": false, "refused": true, "error": err_msg, "message": err_msg}
+
+	for key in ["empowered_sp_spent", "empowered_remaining_dice"]:
+		if answer.has(key):
+			decisions[key] = answer[key]
+	var record: Dictionary = settlement["record"]
+	var working_result: Dictionary = settlement["result"]
+	result.erase("damage_request")
+	result.erase("ordered_continuation")
+
+	var ordered_cont = record.get("ordered_continuation")
+	if ordered_cont is Dictionary:
+		return SharedSpell.resume_pending_steps(record["caster"], record["target"], working_result, record["decisions"], ordered_cont)
+	return working_result
+
+
+static func finish_pending_concentration_choice(caster: Character, target, result: Dictionary, answer: Dictionary) -> Dictionary:
+	if not result.has("concentration_request"):
+		return result
+	var settlement := SpellDamageRolls.settle_pending_concentration_request(caster, target, result, answer)
+	if not settlement.get("valid", false):
+		if bool(settlement.get("no_op", false)):
+			return result
+		var err_msg: String = str(settlement.get("error", "Request validation failed."))
+		push_warning("[CombatAction] finish_pending_concentration_choice refused: %s" % err_msg)
+		return {"success": false, "refused": true, "error": err_msg, "message": err_msg}
+
+	var record: Dictionary = settlement["record"]
+	var ordered_cont = record.get("ordered_continuation")
+	result.erase("concentration_request")
+	result.erase("ordered_continuation")
+
+	if bool(settlement.get("has_next_request", false)):
+		var next_req_id: String = settlement["next_request_id"]
+		result["concentration_request"] = {
+			"request_id": next_req_id,
+			"target": record["target"],
+			"dc": settlement["next_dc"],
+			"roll": settlement["next_roll"],
+			"feature": settlement["next_feature"],
+			"save_test": settlement["save_test"]
+		}
+		if ordered_cont is Dictionary:
+			result["ordered_continuation"] = ordered_cont
+		return result
+
+	if ordered_cont is Dictionary:
+		return SharedStepExecutor.resume_spell_steps_occurrence(record["caster"], record["target"], result, record["decisions"], ordered_cont, settlement)
+	return result
+
 
 
 static func _reaction_accepted(reaction_id: String, decisions: Dictionary) -> bool:

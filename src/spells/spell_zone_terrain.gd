@@ -494,8 +494,8 @@ static func _resolve_moonbeam_zone_save(zones: CombatSpellZones, target, zone: D
 		if SpellZoneTerrain._apply_moonbeam_shape_change(zones, target, str(zone.get("source_id", "moonbeam")), locked_targets, true):
 			zone["shape_locked_targets"] = locked_targets
 			zones.hud.add_log("[color=yellow]%s reverts to normal form and can't shape-shift until leaving the Moonbeam.[/color]" % target_name)
-	if int(result.get("damage", 0)) > 0 and target is Character:
-		await zones.check_concentration.call(target, int(result.get("damage", 0)))
+	if int(result.get("resolved", result.get("damage", 0))) > 0 and target is Character:
+		await zones.check_concentration.call(target, int(result.get("resolved", result.get("damage", 0))))
 	elif target is Dictionary and int(target.get("current_hp", 0)) <= 0 and bool(target.get("is_alive", true)):
 		target["is_alive"] = false
 		zones.tracker.remove_combatant(str(target.get("id", "")))

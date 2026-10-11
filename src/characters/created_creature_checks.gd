@@ -87,6 +87,97 @@ static func run(check: Callable) -> void:
 	FighterChecks._seed_die(20, 1)
 	CombatAction.resolve_damage(hostile_zombie, 1, "slashing")
 	check.call(hostile_zombie["current_hp"] == 0 and not hostile_zombie["is_alive"], "A failed Constitution save destroys an uncontrolled Zombie")
+	var natural_zombie := DataLoader.get_monster("zombie").duplicate(true)
+	natural_zombie["current_hp"] = 1
+	natural_zombie["max_hp"] = 15
+	natural_zombie["is_alive"] = true
+	FighterChecks._seed_die(20, 20)
+	var nat_fortitude := CombatAction.resolve_damage(natural_zombie, 1, "slashing")
+	check.call(nat_fortitude.get("zero_hp_replacement_saved", false) and natural_zombie["current_hp"] == 1 and bool(natural_zombie["is_alive"]), "Naturally encountered Zombie triggers data-driven zero-HP replacement and survives on save")
+	var zero_dmg_res := CombatAction.resolve_damage(natural_zombie, 0, "slashing")
+	check.call(not zero_dmg_res.get("zero_hp_replacement_saved", false) and natural_zombie["current_hp"] == 1, "Exactly-zero damage does not trigger zero-HP replacement")
+	natural_zombie["current_hp"] = 1
+	natural_zombie["current_hp"] = 1
+	natural_zombie["is_alive"] = true
+	var radiant_res := CombatAction.resolve_damage(natural_zombie, 1, "radiant")
+	check.call(not radiant_res.get("zero_hp_replacement_saved", false) and natural_zombie["current_hp"] == 0 and not bool(natural_zombie["is_alive"]), "Radiant damage bypasses zero-HP replacement on naturally encountered zombie")
+	natural_zombie["current_hp"] = 15
+	natural_zombie["max_hp"] = 15
+	natural_zombie["is_alive"] = true
+	natural_zombie["ability_scores"]["CON"] = 50
+	FighterChecks._seed_die(20, 20)
+	var overkill_saved := CombatAction.resolve_damage(natural_zombie, 35, "slashing")
+	check.call(overkill_saved.get("zero_hp_replacement_saved", false) and natural_zombie["current_hp"] == 1 and bool(natural_zombie["is_alive"]), "Overkill damage with successful Constitution save triggers zero-HP replacement and leaves 1 HP (SRD 5.2.1 exclusions strictly radiant and critical)")
+	natural_zombie["current_hp"] = 15
+	natural_zombie["ability_scores"]["CON"] = 16
+	natural_zombie["is_alive"] = true
+	FighterChecks._seed_die(20, 1)
+	var overkill_failed := CombatAction.resolve_damage(natural_zombie, 35, "slashing")
+	check.call(not overkill_failed.get("zero_hp_replacement_saved", false) and natural_zombie["current_hp"] == 0 and not bool(natural_zombie["is_alive"]), "Overkill damage with failed Constitution save destroys creature")
+	var temp_hp_zombie := CreatedCreatureRules.character(zombie_record)
+	temp_hp_zombie.current_hp = 10
+	temp_hp_zombie.temp_hp = 10
+	var temp_survive := CombatAction.resolve_damage(temp_hp_zombie, 15, "slashing")
+	check.call(not temp_survive.get("zero_hp_replacement_saved", false) and temp_hp_zombie.current_hp == 5 and temp_hp_zombie.temp_hp == 0, "Temporary HP absorbs damage before zero-HP replacement is evaluated")
+	FighterChecks._seed_die(20, 20)
+	var temp_lethal := CombatAction.resolve_damage(temp_hp_zombie, 10, "slashing")
+	check.call(temp_lethal.get("zero_hp_replacement_saved", false) and temp_hp_zombie.current_hp == 1, "Zero-HP replacement succeeds on lethal damage after Temporary HP depletion")
+	var malformed_actor := {"id": "malformed", "name": "Malformed Monster", "current_hp": 5, "max_hp": 10, "is_alive": true, "special_abilities": [{"type": "zero_hp_replacement", "save_ability": "INVALID_STAT"}]}
+	var malformed_res := CombatAction.resolve_damage(malformed_actor, 10, "slashing")
+	check.call(not malformed_res.get("zero_hp_replacement_saved", false) and malformed_actor["current_hp"] == 0 and not bool(malformed_actor["is_alive"]), "Malformed zero-HP replacement rule is refused and does not prevent death")
+	var competing_actor := {"id": "competing", "name": "Competing Monster", "current_hp": 5, "max_hp": 10, "is_alive": true, "special_abilities": [{"id": "r1", "type": "zero_hp_replacement", "trigger": "zero_hp", "save_ability": "CON", "dc_base": 5, "dc_add_damage": true, "replacement_hp": 1}, {"id": "r2", "type": "zero_hp_replacement", "trigger": "zero_hp", "save_ability": "WIS", "dc_base": 10, "dc_add_damage": false, "replacement_hp": 5}]}
+	var competing_res := CombatAction.resolve_damage(competing_actor, 10, "slashing")
+	check.call(not competing_res.get("zero_hp_replacement_saved", false) and competing_actor["current_hp"] == 0 and not bool(competing_actor["is_alive"]), "Competing zero-HP replacement rules are refused with diagnostic without silently selecting first")
+	# Homebrew Character projection test:
+	# Verifies that successful replacement preserves affected states (raging) and death identity (body_death_serial),
+	# that actor-dependent replacement HP never exceeds max_hp,
+	# that failed/bypassed replacement proceeds to normal settlement once without clearing corpse_state afterwards,
+	# and that an already dead character is not revived.
+	var hb_barbarian := Character.new()
+	hb_barbarian.initialize("Resilient Barbarian", "human", "barbarian", AbilityScores.new())
+	hb_barbarian.character_id = "fixture:hb_barbarian"
+	hb_barbarian.current_hp = 10
+	hb_barbarian.max_hp = 20
+	hb_barbarian.add_condition("raging", 60)
+	var initial_serial := hb_barbarian.body_death_serial
+	hb_barbarian.features.append({
+		"id": "fixture_resilience",
+		"name": "Fixture Resilience",
+		"type": "zero_hp_replacement",
+		"trigger": "zero_hp",
+		"save_ability": "CON",
+		"dc_base": 5,
+		"dc_add_damage": true,
+		"bypass_damage_types": ["radiant"],
+		"bypass_critical": true,
+		"replacement_hp": 5
+	})
+	FighterChecks._seed_die(20, 20)
+	var hb_res := CombatAction.resolve_damage(hb_barbarian, 25, "slashing")
+	check.call(hb_res.get("zero_hp_replacement_saved", false) and hb_barbarian.current_hp == 5 and hb_barbarian.is_alive and hb_barbarian.has_condition("raging") and hb_barbarian.body_death_serial == initial_serial and hb_barbarian.corpse_state.is_empty(), "Homebrew Character successful replacement preserves raging state, death identity, and does not create corpse_state")
+	var hb_rule: Dictionary = hb_barbarian.features[hb_barbarian.features.size() - 1]
+	hb_rule["replacement_hp"] = 500
+	hb_barbarian.current_hp = 1
+	FighterChecks._seed_die(20, 20)
+	var clamp_res := CombatAction.resolve_damage(hb_barbarian, 10, "slashing")
+	check.call(clamp_res.get("zero_hp_replacement_saved", false) and hb_barbarian.current_hp == hb_barbarian.max_hp and hb_barbarian.current_hp <= hb_barbarian.max_hp, "Actor-dependent replacement HP is bounded by max_hp before commit and never leaves HP > max")
+	hb_rule["replacement_hp"] = 5
+	var bypass_res := CombatAction.resolve_damage(hb_barbarian, hb_barbarian.max_hp + 50, "radiant")
+	check.call(not bypass_res.get("zero_hp_replacement_saved", false) and hb_barbarian.current_hp == 0 and hb_barbarian.is_dead() and not hb_barbarian.has_condition("raging") and hb_barbarian.body_death_serial == initial_serial + 1 and not hb_barbarian.corpse_state.is_empty(), "Bypassed replacement proceeds to normal settlement once (rage ended, corpse created, body serial incremented)")
+	var dead_serial := hb_barbarian.body_death_serial
+	FighterChecks._seed_die(20, 20)
+	var post_death_res := CombatAction.resolve_damage(hb_barbarian, 10, "slashing")
+	check.call(not post_death_res.get("zero_hp_replacement_saved", false) and hb_barbarian.current_hp == 0 and hb_barbarian.is_dead() and not hb_barbarian.corpse_state.is_empty() and hb_barbarian.body_death_serial == dead_serial, "Further damage to an already dead actor does not resurrect or clear corpse_state")
+	DataLoader._load_content_type("res://data/fixtures/shared_spells/monsters/", "monster")
+	var dread_husk := DataLoader.get_monster("sandbox:dread_husk").duplicate(true)
+	check.call(not dread_husk.is_empty(), "Fixture sandbox:dread_husk loaded through production loader")
+	dread_husk["current_hp"] = 1
+	dread_husk["max_hp"] = 15
+	dread_husk["is_alive"] = true
+	FighterChecks._seed_die(20, 20)
+	var husk_res := CombatAction.resolve_damage(dread_husk, 1, "slashing")
+	check.call(husk_res.get("zero_hp_replacement_saved", false) and dread_husk["current_hp"] == 1 and bool(dread_husk["is_alive"]), "Independently renamed monster sandbox:dread_husk uses the same data-driven zero-HP replacement")
+	check.call(not CreatedCreatureRules.resolve_fortitude(zombie, 1, 1, "slashing", false), "Legacy CreatedCreatureRules.resolve_fortitude helper is neutralized and does not execute migrated rule")
 	GameManager.campaign_elapsed_seconds = 86520
 	caster.spell_slots["3"] = 1
 	before = caster.spell_slots.duplicate()

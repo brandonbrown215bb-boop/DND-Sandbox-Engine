@@ -73,13 +73,13 @@ static func recover_rage_at_initiative(character: Character) -> int:
 	return maximum - current
 
 
-static func attempt_relentless_rage(character: Character, accepted_bardic_inspiration: bool = false) -> Dictionary:
+static func attempt_relentless_rage(character: Character, accepted_bardic_inspiration: bool = false, decisions: Dictionary = {}) -> Dictionary:
 	if character == null or not character.barbarian_relentless_rage_enabled or not character.has_feature("barbarian_relentless_rage") or not character.has_condition("raging"):
 		return {"success": false, "used": false}
 	var attempts := int(character.feature_uses.get("barbarian_relentless_rage_attempts", 0))
 	var dc := 10 + attempts * 5
 	character.feature_uses["barbarian_relentless_rage_attempts"] = attempts + 1
-	var total := character.make_saving_throw("CON")
+	var total := character.make_saving_throw("CON", false, false, decisions)
 	var inspiration_note := ""
 	if total < dc and accepted_bardic_inspiration:
 		var inspiration := BardicInspirationRules.apply_to_test(character, total, dc, true)
@@ -147,20 +147,43 @@ static func apply_brutal_strike_effects(character: Character, target: Dictionary
 	return result
 
 
-static func roll_monster_save(target: Dictionary, ability: String, source: Character = null) -> int:
+static func roll_monster_save(target: Dictionary, ability: String, source: Character = null, advantage: bool = false, disadvantage: bool = false, decisions: Dictionary = {}) -> int:
+	return int(roll_monster_save_result(target, ability, source, advantage, disadvantage, decisions).get("total", 0))
+
+
+static func roll_monster_save_result(target: Dictionary, ability: String, source: Character = null, advantage: bool = false, disadvantage: bool = false, decisions: Dictionary = {}) -> Dictionary:
 	# Only an initial forced enemy save counts as upkeep. Repeat saves omit source.
 	if source != null and not bool(target.get("is_player", false)):
 		maintain_rage(source)
 	var scores: Dictionary = target.get("ability_scores", {})
 	var bonus := int(target.get("saving_throw_bonuses", {}).get(ability, AbilityScores.get_modifier(int(scores.get(ability, 10)))))
-	var beacon_advantage := SpellEffects.has_spell(target, "beacon_of_hope") and ability.to_upper() == "WIS"
-	var staggered_disadvantage := consume_staggered_save(target)
-	var roll := Dice.roll_with_advantage(20) if beacon_advantage and not staggered_disadvantage else Dice.roll_with_disadvantage(20) if staggered_disadvantage and not beacon_advantage else Dice.roll(20)
+	var beacon_advantage := advantage or (SpellEffects.has_spell(target, "beacon_of_hope") and ability.to_upper() == "WIS")
+	var staggered_disadvantage := disadvantage or consume_staggered_save(target)
+	var d20_details := RollTokenRules.resolve_d20_test(target, "monster_save", beacon_advantage, staggered_disadvantage, decisions)
+	var roll := int(d20_details.get("total", 1))
+	var natural_roll := roll
 	if target.get("conditions", {}).has("blessed"):
 		roll += Dice.roll(4)
 	if target.get("conditions", {}).has("baned"):
 		roll -= Dice.roll(4)
-	return roll + bonus
+	var total := roll + bonus
+	var out := {
+		"natural_roll": natural_roll,
+		"rolls": d20_details.get("rolls", [natural_roll]),
+		"kept": d20_details.get("kept", [true]),
+		"modifier": bonus,
+		"total": total,
+		"ability": ability.to_upper(),
+		"roll_token_replaced": bool(d20_details.get("replaced", false)),
+	}
+	if bool(d20_details.get("replaced", false)):
+		out["roll_token_id"] = str(d20_details.get("roll_token_id", ""))
+		out["roll_token_value"] = int(d20_details.get("roll_token_value", natural_roll))
+		out["roll_token_pool_id"] = str(d20_details.get("roll_token_pool_id", ""))
+		out["roll_token_owner_id"] = str(d20_details.get("roll_token_owner_id", ""))
+	if d20_details.has("roll_token_error"):
+		out["roll_token_error"] = str(d20_details["roll_token_error"])
+	return out
 
 
 static func consume_sundering_bonus(attacker: Character, target: Dictionary) -> bool:

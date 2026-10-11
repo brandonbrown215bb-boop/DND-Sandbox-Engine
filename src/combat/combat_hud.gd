@@ -441,6 +441,20 @@ func _update_sidebar_stats() -> void:
 	if has_uses:
 		text += "\n"
 
+	var roll_token_lines := RollTokenRules.summary_lines(active_character)
+	if not roll_token_lines.is_empty():
+		text += "Roll Tokens:\n"
+		for token_line in roll_token_lines:
+			text += "- %s\n" % token_line
+		text += "\n"
+
+	var ward_lines := WardRules.summary_lines(active_character)
+	if not ward_lines.is_empty():
+		text += "Damage Wards:\n"
+		for ward_line in ward_lines:
+			text += "- %s\n" % ward_line
+		text += "\n"
+
 	# Active conditions
 	if not active_character.conditions.is_empty():
 		text += "Conditions:\n"
@@ -662,10 +676,18 @@ func _show_feature_selection() -> void:
 
 	for f in active_character.features:
 		var resource_slot_effect: Dictionary = {}
+		var ward_slot_effect: Dictionary = {}
+		var has_rest_slot_recovery := false
 		for effect in f.get("effects", []):
 			if effect.get("type", "") == "resource_from_spell_slot":
 				resource_slot_effect = effect
-		if f.get("type", "") != "active" and f.get("id", "") != "druid_wild_companion" and resource_slot_effect.is_empty(): continue
+			elif effect.get("type", "") == "damage_ward_pool" and bool(effect.get("bonus_action_slot_recharge", false)):
+				ward_slot_effect = effect
+			elif effect.get("type", "") == "rest_slot_recovery":
+				has_rest_slot_recovery = true
+		if has_rest_slot_recovery:
+			continue
+		if f.get("type", "") != "active" and f.get("id", "") != "druid_wild_companion" and resource_slot_effect.is_empty() and ward_slot_effect.is_empty(): continue
 
 		var f_id = f["id"]
 		if f_id == "druid_wild_companion":
@@ -707,6 +729,33 @@ func _show_feature_selection() -> void:
 			var font_index := feature_list.get_item_count() - 1
 			feature_list.set_item_disabled(font_index, disabled)
 			feature_list.set_item_tooltip(font_index, "Spend one spell slot to regain one Bardic Inspiration use. No action required.")
+			features_registered.append(f)
+			continue
+		if not ward_slot_effect.is_empty():
+			var pool_id := str(f.get("id", ""))
+			var ward_active := WardRules.has_active_ward(active_character, pool_id)
+			var ward_current := WardRules.get_ward_hp(active_character, pool_id)
+			var ward_max := WardRules.get_ward_max_hp(active_character, pool_id)
+			var has_slot := false
+			for slot_key in active_character.spell_slots:
+				if int(slot_key) >= 1 and int(active_character.spell_slots[slot_key]) > 0:
+					has_slot = true
+					break
+			var bonus_available := turn_budget == null or turn_budget.can_spend("bonus_action")
+			var disabled := not ward_active or ward_current >= ward_max or not has_slot or not bonus_available
+			var status_suffix := ""
+			if not ward_active:
+				status_suffix = " [Create ward first]"
+			elif ward_current >= ward_max:
+				status_suffix = " [At max HP]"
+			elif not has_slot:
+				status_suffix = " [No slots]"
+			elif not bonus_available:
+				status_suffix = " [Unavailable]"
+			feature_list.add_item("%s: Expend Slot (Bonus Action; %d/%d HP)%s" % [f.get("name", f_id), ward_current, ward_max, status_suffix])
+			var ward_index := feature_list.get_item_count() - 1
+			feature_list.set_item_disabled(ward_index, disabled)
+			feature_list.set_item_tooltip(ward_index, "As a Bonus Action, expend one spell slot to restore Hit Points to %s equal to twice the slot's level." % f.get("name", f_id))
 			features_registered.append(f)
 			continue
 		var resource_id := str(f.get("resource_id", f_id))
@@ -876,10 +925,13 @@ func _on_feature_selected(index: int) -> void:
 			action_selected.emit("use_feature", {"feature": feature, "wild_shape_uses": uses_to_convert})
 		return
 	var resource_slot_effect: Dictionary = {}
+	var ward_slot_effect: Dictionary = {}
 	for effect in feature.get("effects", []):
 		if effect.get("type", "") == "resource_from_spell_slot":
 			resource_slot_effect = effect
-	if not resource_slot_effect.is_empty():
+		elif effect.get("type", "") == "damage_ward_pool" and bool(effect.get("bonus_action_slot_recharge", false)):
+			ward_slot_effect = effect
+	if not resource_slot_effect.is_empty() or not ward_slot_effect.is_empty():
 		var selected_slot := await request_spell_slot(active_character)
 		if selected_slot <= 0:
 			return
@@ -1279,10 +1331,11 @@ func request_sorcerer_careful_spell_targets(caster: Character, candidates: Array
 	return selected
 
 
-func request_empowered_spell_dice(caster: Character, details: Dictionary) -> Array[int]:
+func request_empowered_spell_dice(caster: Character, details: Dictionary, max_dice_override: int = -1) -> Array[int]:
 	var selected: Array[int] = []
 	var dice := Dice.selectable_dice(details)
-	var maximum := maxi(1, caster.ability_scores.get_ability_modifier("CHA"))
+	var cha_mod := maxi(1, caster.ability_scores.get_ability_modifier("CHA"))
+	var maximum := mini(max_dice_override, cha_mod) if max_dice_override > 0 else cha_mod
 	if GameManager.test_mode:
 		if not dice.is_empty():
 			selected.append(0)
@@ -1964,3 +2017,73 @@ func request_cleric_vitality_target(candidates: Array[Dictionary]) -> String:
 		labels[id] = str(candidate["name"])
 	options.append("__skip")
 	return await _request_popup_choice("Potent Spellcasting: grant vitality within 60 feet", options, labels)
+
+
+## Offer pre-roll d20 token replacement (e.g. Diviner Portent) before the roll is made.
+## In test_mode without a seeded choice, returns {} so automated headless runs do not spend Portent dice.
+func request_roll_token_replacement(roller_name: String, test_label: String, options: Array[Dictionary], seeded_token_id: String = "") -> Dictionary:
+	if options.is_empty():
+		return {}
+	if not seeded_token_id.is_empty():
+		for opt in options:
+			if str(opt.get("token_id", "")) == seeded_token_id:
+				return {
+					"use_token": true,
+					"owner": opt.get("owner"),
+					"owner_id": str(opt.get("owner_id", "")),
+					"pool_id": str(opt.get("pool_id", "")),
+					"token_id": str(opt.get("token_id", "")),
+					"value": int(opt.get("value", 0)),
+				}
+		return {}
+	if GameManager.test_mode:
+		return {}
+	var owner_label := str(options[0].get("owner_name", "Player"))
+	var source_label := str(options[0].get("source_name", "Portent"))
+	var dialog := ConfirmationDialog.new()
+	dialog.title = "%s — %s Replacement" % [owner_label, source_label]
+	dialog.dialog_text = "Pass to %s.\n\n%s is about to make a %s.\nReplace the d20 roll before rolling?" % [owner_label, roller_name, test_label]
+	dialog.ok_button_text = "Replace Roll"
+	dialog.cancel_button_text = "Roll Normally"
+	var content := VBoxContainer.new()
+	var picker_label := Label.new()
+	picker_label.text = "Select a stored roll token:"
+	content.add_child(picker_label)
+	var picker := OptionButton.new()
+	picker.name = "RollTokenOptionPicker"
+	for idx in options.size():
+		var opt: Dictionary = options[idx]
+		picker.add_item(str(opt.get("label", "Token #%d (%d)" % [idx + 1, int(opt.get("value", 1))])), idx)
+		picker.set_item_metadata(idx, opt.duplicate(true))
+	picker.select(0)
+	content.add_child(picker)
+	dialog.add_child(content)
+	add_child(dialog)
+	ModalSurface.watch_window(dialog)
+	var decision := {"done": false, "accepted": false, "selected_index": 0}
+	dialog.confirmed.connect(func():
+		decision["accepted"] = true
+		decision["selected_index"] = picker.selected
+		decision["done"] = true
+	)
+	dialog.canceled.connect(func(): decision["done"] = true)
+	dialog.close_requested.connect(func(): decision["done"] = true)
+	dialog.popup_centered(Vector2i(460, 210))
+	var timeout := get_tree().create_timer(15.0)
+	while not decision["done"] and timeout.time_left > 0.0:
+		await get_tree().process_frame
+	var selected_idx := int(decision["selected_index"])
+	# Release the exclusive modal before an ordered cast opens its next choice.
+	dialog.hide()
+	dialog.queue_free()
+	if not bool(decision["accepted"]) or selected_idx < 0 or selected_idx >= options.size():
+		return {}
+	var chosen: Dictionary = options[selected_idx]
+	return {
+		"use_token": true,
+		"owner": chosen.get("owner"),
+		"owner_id": str(chosen.get("owner_id", "")),
+		"pool_id": str(chosen.get("pool_id", "")),
+		"token_id": str(chosen.get("token_id", "")),
+		"value": int(chosen.get("value", 0)),
+	}

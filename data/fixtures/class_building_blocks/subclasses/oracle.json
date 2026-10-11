@@ -1,0 +1,25 @@
+{
+  "id": "fixture:oracle",
+  "name": "Fixture Oracle",
+  "class_id": "wizard",
+  "features_by_level": {
+    "3": [
+      {
+        "id": "fixture:oracle_omen",
+        "name": "Oracle Omen",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "roll_token_pool",
+            "pool_id": "fixture:oracle_omen",
+            "die_sides": 20,
+            "token_count": 3,
+            "generation_timing": "long_rest",
+            "target_predicate": "ally_visible",
+            "uses_per_turn": 1
+          }
+        ]
+      }
+    ]
+  }
+}

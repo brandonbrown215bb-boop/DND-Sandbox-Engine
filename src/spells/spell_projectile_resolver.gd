@@ -11,7 +11,12 @@ static func _resolve_magic_missile(caster: Character, target_entity, spell_data:
 			target_entity.reaction_available = false
 			target_entity.spell_slots["1"] -= 1
 			target_entity.add_condition("shield", 1)
-			return {"success": true, "hit": true, "damage": 0, "dart_count": dart_count, "shield_blocked": true, "shield_used": true, "message": "%s casts Shield as a Reaction and takes no damage from Magic Missile." % target_entity.character_name}
+			var ward_events := WardRules.on_slot_spell_cast(target_entity, DataLoader.get_spell("shield"), 1)
+			var shield_msg := "%s casts Shield as a Reaction and takes no damage from Magic Missile." % target_entity.character_name
+			for ward_ev in ward_events:
+				if not str(ward_ev.get("message", "")).is_empty():
+					shield_msg += " " + str(ward_ev["message"])
+			return {"success": true, "hit": true, "damage": 0, "dart_count": dart_count, "shield_blocked": true, "shield_used": true, "message": shield_msg}
 	var damage_per_dart := str(spell_data.get("damage_per_dart", "1d4+1")).replace(" ", "")
 	var details := SpellDamageRolls._roll_spell_damage(caster, damage_per_dart, dart_count, reaction_decisions)
 	return SpellDamageRolls._finish_spell_damage(caster, target_entity, details, 0, 1.0, str(spell_data.get("damage_type", "force")), reaction_decisions, {
@@ -73,6 +78,7 @@ static func _resolve_scorching_ray(caster: Character, target_entity, spell_data:
 			target_entity.reaction_available = false
 			target_entity.spell_slots["1"] -= 1
 			target_entity.add_condition("shield", 1)
+			WardRules.on_slot_spell_cast(target_entity, DataLoader.get_spell("shield"), 1)
 			target_ac = target_entity.get_ac()
 			shield_used = true
 			hit = bool(attack_result.get("is_crit", false)) or int(attack_result.get("total", 0)) >= target_ac

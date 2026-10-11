@@ -29,5 +29,128 @@
     "level": 1, "casting_time": "action", "range": 12, "target": "single",
     "concentration": true, "duration_seconds": 60,
     "effects": [{"type": "grant_condition", "condition": "blessed"}]
+  },
+  {
+    "id": "sandbox:attack_then_save",
+    "name": "Venomous Strike",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "school": "evocation",
+    "steps": [
+      {
+        "id": "strike",
+        "type": "attack",
+        "attack_type": "ranged_spell",
+        "damage": "1d10",
+        "damage_type": "fire"
+      },
+      {
+        "id": "toxin",
+        "type": "save",
+        "gate": "hit",
+        "gate_step": "strike",
+        "save": "CON",
+        "damage": "1d6",
+        "damage_type": "poison",
+        "half_on_save": false,
+        "effects": [
+          {"type": "grant_condition", "condition": "poisoned", "on_failed_save": true}
+        ]
+      }
+    ],
+    "duration_seconds": 60
+  },
+  {
+    "id": "sandbox:attack_then_area",
+    "name": "Explosive Arrow",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "school": "evocation",
+    "steps": [
+      {
+        "id": "arrow",
+        "type": "attack",
+        "attack_type": "ranged_spell",
+        "damage": "1d8",
+        "damage_type": "piercing"
+      },
+      {
+        "id": "blast",
+        "type": "save",
+        "gate": "always",
+        "target": "area",
+        "shape": "sphere",
+        "radius": 2,
+        "save": "DEX",
+        "damage": "2d6",
+        "damage_type": "fire",
+        "half_on_save": true
+      }
+    ]
+  },
+  {
+    "id": "sandbox:save_then_attack",
+    "name": "Snare and Strike",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "school": "transmutation",
+    "steps": [
+      {
+        "id": "snare",
+        "type": "save",
+        "save": "STR",
+        "effects": [
+          {"type": "grant_condition", "condition": "restrained", "on_failed_save": true}
+        ]
+      },
+      {
+        "id": "impale",
+        "type": "attack",
+        "gate": "failed_save",
+        "gate_step": "snare",
+        "attack_type": "melee_spell",
+        "damage": "2d8",
+        "damage_type": "piercing"
+      }
+    ],
+    "duration_seconds": 60
+  },
+  {
+    "id": "sandbox:ordered_empowered",
+    "name": "Empowered Cascade",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "school": "evocation",
+    "steps": [
+      {
+        "id": "burst",
+        "type": "attack",
+        "attack_type": "ranged_spell",
+        "damage": "2d8",
+        "damage_type": "fire"
+      },
+      {
+        "id": "secondary_shock",
+        "type": "save",
+        "gate": "hit",
+        "gate_step": "burst",
+        "save": "DEX",
+        "damage": "1d6",
+        "damage_type": "lightning",
+        "half_on_save": false
+      }
+    ]
   }
 ]

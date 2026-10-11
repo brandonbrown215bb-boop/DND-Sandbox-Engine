@@ -433,6 +433,9 @@ static func run(check: Callable) -> void:
 	var exchange_blocked := bool(resurgence_druid.feature_uses.get("druid_wild_resurgence_long_rest_used", false)) and DruidRules.wild_resurgence_state(resurgence_druid).is_empty()
 	resurgence_druid.long_rest()
 	check.call(slot_exchange.get("success", false) and int(resurgence_druid.feature_uses["druid_wild_shape_uses"]) == 2 and int(resurgence_druid.spell_slots["1"]) == 4 and not bool(resurgence_druid.feature_uses.get("druid_wild_resurgence_long_rest_used", false)) and exchange_blocked, "Wild Resurgence converts one use into a level 1 slot only once per Long Rest and the restriction clears after the rest")
+	_roll_token_rules(check)
+	_ward_rules(check)
+	_rest_and_slot_recovery_rules(check)
 	DataLoader.load_all_data()
 
 static func _rogue_rules(check: Callable) -> void:
@@ -902,6 +905,371 @@ static func _audit_defect_repairs(check: Callable) -> void:
 	var second_target := area_target.duplicate(true)
 	var second := CombatAction.resolve_spell(sorcerer, second_target, area_spell, false, decisions)
 	check.call(not second.has("damage_request") and second["damage_roll"] == result["damage_roll"] and sorcerer.get_sorcery_points() == points - 2, "Empowered area spell reuses one settled damage roll and pays once for the cast")
+
+
+static func _roll_token_rules(check: Callable) -> void:
+	var diviner := _character("wizard", 3)
+	check.call(ClassProgression.choose_subclass(diviner, "diviner"), "Wizard at level 3 can choose Diviner subclass")
+	check.call(diviner.has_feature("diviner_portent") and not diviner.has_feature("diviner_divination_savant") and not diviner.has_feature("diviner_expert_divination") and not diviner.has_feature("diviner_the_third_eye"), "Diviner grants supported Portent feature and withholds unsupported 2024-partial features")
+	var portent_tokens := RollTokenRules.available_tokens(diviner, "diviner_portent")
+	check.call(portent_tokens.size() == 2, "Diviner Portent generates 2 roll tokens at level 3")
+	for token in portent_tokens:
+		var val := int(token.get("value", 0))
+		check.call(val >= 1 and val <= 20, "Diviner Portent token value is in 1..20")
+	var pre_short_rest_tokens := diviner.roll_tokens.duplicate(true)
+	var pre_short_rest_values := RollTokenRules.get_available_values(diviner, "diviner_portent")
+	diviner.short_rest()
+	check.call(diviner.roll_tokens == pre_short_rest_tokens, "Short Rest preserves Long Rest roll token pools without clearing or rerolling")
+	var saved_dto := JSON.parse_string(JSON.stringify(diviner.to_dict())) as Dictionary
+	check.call(ClassProgression.saved_choices_error(saved_dto).is_empty(), "Diviner roll tokens pass save preflight validation")
+	var reloaded := Character.new()
+	reloaded.from_dict(saved_dto)
+	check.call(reloaded.roll_tokens == diviner.roll_tokens and reloaded.roll_token_generation_serial == diviner.roll_token_generation_serial, "Save/load round-trip preserves exact roll token IDs, values, and generation serial without rerolling")
+	while diviner.level < 14:
+		diviner.level_up()
+	var upgraded_values := RollTokenRules.get_available_values(diviner, "diviner_portent")
+	check.call(diviner.has_feature("diviner_greater_portent") and upgraded_values.size() == 3, "Greater Portent upgrades the Portent pool to 3 tokens at level 14")
+	check.call(upgraded_values.slice(0, 2) == pre_short_rest_values, "Upgrading to Greater Portent appends the 3rd token without rerolling existing unspent tokens")
+	var serial_before_rest := diviner.roll_token_generation_serial
+	diviner.long_rest()
+	check.call(RollTokenRules.available_tokens(diviner, "diviner_portent").size() == 3 and diviner.roll_token_generation_serial > serial_before_rest, "Long Rest clears old Portent tokens and generates 3 new tokens at level 14")
+
+	var oracle := _character("wizard", 3)
+	check.call(ClassProgression.choose_subclass(oracle, "fixture:oracle") and oracle.has_feature("fixture:oracle_omen"), "Second consumer fixture:oracle attaches to Wizard")
+	check.call(RollTokenRules.available_tokens(oracle, "fixture:oracle_omen").size() == 3, "Second consumer fixture:oracle_omen generates 3 tokens through the shared RollTokenRules path")
+
+	diviner.roll_tokens["diviner_portent"] = [
+		{"token_id": "diviner_portent:test:0", "value": 20, "feature_id": "diviner_portent", "pool_id": "diviner_portent", "die_sides": 20},
+		{"token_id": "diviner_portent:test:1", "value": 1, "feature_id": "diviner_portent", "pool_id": "diviner_portent", "die_sides": 20},
+		{"token_id": "diviner_portent:test:2", "value": 15, "feature_id": "diviner_portent", "pool_id": "diviner_portent", "die_sides": 20},
+	]
+	RollTokenRules.clear_turn_counter(diviner)
+	CombatAction.advance_combat_turn(diviner)
+	var monster_target := {"id": "portent_dummy", "name": "Portent Dummy", "armor_class": 25, "current_hp": 100, "max_hp": 100, "is_alive": true, "ability_scores": {"STR": 10, "DEX": 10, "CON": 10, "INT": 10, "WIS": 10, "CHA": 10}}
+	var atk_decision := {"roll_token_replacement": {"owner": diviner, "pool_id": "diviner_portent", "token_id": "diviner_portent:test:0"}}
+	var atk_res := CombatAction.resolve_weapon_attack(diviner, monster_target, DataLoader.get_item("quarterstaff"), false, true, atk_decision)
+	check.call(atk_res.get("hit", false) and atk_res.get("crit", false) and bool(atk_res.get("roll_token_replaced", false)) and int(atk_res.get("roll_token_value", 0)) == 20 and int(atk_res.get("activity_roll", {}).get("natural_total", 0)) == 20 and RollTokenRules.available_tokens(diviner, "diviner_portent").size() == 2, "Portent pre-roll replacement of 20 on weapon attack bypasses Disadvantage, causes a critical hit, and consumes the token")
+	var same_turn_decision := {"roll_token_replacement": {"owner": diviner, "pool_id": "diviner_portent", "token_id": "diviner_portent:test:1"}}
+	var same_turn_test := RollTokenRules.resolve_d20_test(diviner, "save", false, false, same_turn_decision)
+	check.call(not bool(same_turn_test.get("replaced_by_roll_token", false)) and RollTokenRules.available_tokens(diviner, "diviner_portent").size() == 2, "Portent enforces once-per-turn replacement limit and does not spend a second token on the same turn")
+
+	CombatAction.advance_combat_turn(reloaded)
+	var halfling_fighter := Character.new()
+	var hf_scores := AbilityScores.new()
+	hf_scores.from_dict({"STR": 16, "DEX": 14, "CON": 14, "INT": 10, "WIS": 12, "CHA": 10})
+	halfling_fighter.initialize("Halfling Fighter", "halfling", "fighter", hf_scores)
+	while halfling_fighter.level < 9:
+		halfling_fighter.level_up()
+	halfling_fighter.fighter_training["auto_indomitable"] = false
+	var halfling_nat1 := halfling_fighter.saving_throw_test_to_dc("WIS", 15, true, false, {"roll_token_replacement": {"owner": diviner, "pool_id": "diviner_portent", "token_id": "diviner_portent:test:1"}})
+	check.call(bool(halfling_nat1.get("replaced_by_roll_token", false)) and int(halfling_nat1.get("natural", 0)) == 1 and halfling_nat1.get("rolls", []) == [1] and not bool(halfling_nat1.get("halfling_luck_rerolled", false)) and RollTokenRules.available_tokens(diviner, "diviner_portent").size() == 1, "Pre-roll replacement of 1 bypasses Advantage and does not trigger Halfling Luck reroll")
+	halfling_fighter.fighter_training["auto_indomitable"] = true
+	diviner.roll_tokens["diviner_portent"].insert(0, {"token_id": "diviner_portent:test:indom", "value": 2, "feature_id": "diviner_portent", "pool_id": "diviner_portent", "die_sides": 20})
+	CombatAction.advance_combat_turn(halfling_fighter)
+	var indom_res := halfling_fighter.saving_throw_test_to_dc("WIS", 15, false, false, {"roll_token_replacement": {"owner": diviner, "pool_id": "diviner_portent", "token_id": "diviner_portent:test:indom"}})
+	check.call(bool(indom_res.get("initial_roll_token_replaced", false)) and bool(indom_res.get("indomitable_used", false)) and RollTokenRules.available_tokens(diviner, "diviner_portent").size() == 1, "Post-roll Indomitable reroll remains available after a pre-roll token replacement fails the save")
+
+	CombatAction.advance_combat_turn(diviner)
+	var skill_check := EventResolver.resolve_skill_check(diviner, {"ability": "INT", "skill": "Arcana", "dc": 15}, {"roll_token_replacement": {"owner": diviner, "pool_id": "diviner_portent", "token_id": "diviner_portent:test:2"}})
+	check.call(bool(skill_check.get("replaced_by_roll_token", false)) and int(skill_check.get("roll", 0)) == 15 and RollTokenRules.available_tokens(diviner, "diviner_portent").is_empty(), "Portent replaces an ability check d20 before rolling and consumes the final token")
+
+	oracle.roll_tokens["fixture:oracle_omen"] = [
+		{"token_id": "oracle:0", "value": 4, "feature_id": "fixture:oracle_omen", "pool_id": "fixture:oracle_omen", "die_sides": 20},
+		{"token_id": "oracle:1", "value": 20, "feature_id": "fixture:oracle_omen", "pool_id": "fixture:oracle_omen", "die_sides": 20},
+		{"token_id": "oracle:2", "value": 2, "feature_id": "fixture:oracle_omen", "pool_id": "fixture:oracle_omen", "die_sides": 20},
+	]
+	RollTokenRules.clear_turn_counter(oracle)
+	var reliable_rogue := _character("rogue", 7)
+	reliable_rogue.skill_proficiencies.assign(["Stealth"])
+	CombatAction.advance_combat_turn(reliable_rogue)
+	var rogue_check := EventResolver.resolve_skill_check(reliable_rogue, {"ability": "DEX", "skill": "Stealth", "dc": 15}, {"roll_token_replacement": {"owner": oracle, "pool_id": "fixture:oracle_omen", "token_id": "oracle:0"}})
+	check.call(bool(rogue_check.get("replaced_by_roll_token", false)) and int(rogue_check.get("roll", 0)) == 10, "Reliable Talent still raises a proficient skill check d20 of 4 to 10 after pre-roll replacement")
+
+	CombatAction.advance_combat_turn(oracle)
+	reliable_rogue.current_hp = 0
+	reliable_rogue.is_alive = false
+	var death_res := reliable_rogue.make_death_save(false, false, {"roll_token_replacement": {"owner": oracle, "pool_id": "fixture:oracle_omen", "token_id": "oracle:1"}})
+	check.call(bool(death_res.get("replaced_by_roll_token", false)) and int(death_res.get("natural", 0)) == 20 and reliable_rogue.current_hp == 1 and reliable_rogue.is_alive, "Pre-roll replacement of 20 on a Death Saving Throw restores 1 HP")
+
+	CombatAction.advance_combat_turn(reliable_rogue)
+	var init_res := RollTokenRules.resolve_d20_test(oracle, "initiative", true, false, {"roll_token_replacement": {"owner": oracle, "pool_id": "fixture:oracle_omen", "token_id": "oracle:2"}})
+	check.call(bool(init_res.get("replaced_by_roll_token", false)) and int(init_res.get("total", 0)) == 2, "Pre-roll replacement works on Initiative rolls and skips Advantage extra die")
+
+	var invalid_token_dto := diviner.to_dict()
+	invalid_token_dto["roll_tokens"] = {
+		"diviner_portent": [
+			{"token_id": "bad:0", "value": 25, "feature_id": "diviner_portent", "pool_id": "diviner_portent", "die_sides": 20},
+		]
+	}
+	check.call(not ClassProgression.saved_choices_error(invalid_token_dto).is_empty(), "Save preflight rejects out-of-range roll token values")
+	CombatAction.active_turn_actor_id = 0
+
+
+static func _ward_rules(check: Callable) -> void:
+	var abjurer := Character.new()
+	var abj_scores := AbilityScores.new()
+	abj_scores.from_dict({"STR": 10, "DEX": 14, "CON": 14, "INT": 16, "WIS": 12, "CHA": 10})
+	abjurer.initialize("Abjurer Fixture", "human", "wizard", abj_scores)
+	while abjurer.level < 3:
+		abjurer.level_up()
+	check.call(ClassProgression.choose_subclass(abjurer, "abjurer"), "Wizard at level 3 can choose Abjurer subclass")
+	check.call(abjurer.has_feature("abjurer_arcane_ward") and not abjurer.has_feature("abjurer_abjuration_savant") and not abjurer.has_feature("abjurer_spell_breaker") and not abjurer.has_feature("abjurer_spell_resistance"), "Abjurer grants Arcane Ward at level 3 and withholds unsupported Savant/Spell Breaker/Spell Resistance features")
+	var initial_state := WardRules.pool_state(abjurer, "abjurer_arcane_ward")
+	check.call(not bool(initial_state.get("active", true)) and not bool(initial_state.get("created_since_long_rest", true)) and int(initial_state.get("current_hp", -1)) == 0 and int(initial_state.get("max_hp", 0)) == 9, "Arcane Ward initializes lazily (inactive, 0/9 HP at level 3 with INT +3) before any Abjuration slot is expended")
+
+	var premature_recharge := WardRules.spend_slot_for_ward_recharge(abjurer, "abjurer_arcane_ward", 1)
+	check.call(not bool(premature_recharge.get("success", true)) and int(abjurer.spell_slots.get("1", 0)) == 4, "Bonus Action slot expenditure cannot create or recharge Arcane Ward before it has been created")
+
+	var evocation_events := WardRules.on_slot_spell_cast(abjurer, DataLoader.get_spell("magic_missile"), 1)
+	check.call(evocation_events.is_empty() and not WardRules.is_ward_active(abjurer, "abjurer_arcane_ward"), "Non-Abjuration slot spell does not create or recharge Arcane Ward")
+	var ritual_events := WardRules.on_slot_spell_cast(abjurer, DataLoader.get_spell("alarm"), 1, {"ritual_cast": true})
+	check.call(ritual_events.is_empty() and not WardRules.is_ward_active(abjurer, "abjurer_arcane_ward"), "Ritual cast without slot expenditure does not create or recharge Arcane Ward")
+	var free_events := WardRules.on_slot_spell_cast(abjurer, DataLoader.get_spell("mage_armor"), 1, {"free_cast": true})
+	var item_events := WardRules.on_slot_spell_cast(abjurer, DataLoader.get_spell("mage_armor"), 1, {"magic_item_activation": true})
+	var countered_events := WardRules.on_slot_spell_cast(abjurer, DataLoader.get_spell("mage_armor"), 1, {"countered": true})
+	check.call(free_events.is_empty() and item_events.is_empty() and countered_events.is_empty() and not WardRules.is_ward_active(abjurer, "abjurer_arcane_ward"), "Free casts, magic-item casts, and countered casts do not create or recharge Arcane Ward")
+
+	abjurer.known_spells.append_array(["mage_armor", "shield", "protection_from_evil_and_good"])
+	var cast_mage_armor := CombatAction.resolve_spell(abjurer, abjurer, DataLoader.get_spell("mage_armor"), true)
+	check.call(bool(cast_mage_armor.get("success", false)) and WardRules.is_ward_active(abjurer, "abjurer_arcane_ward") and WardRules.current_ward_hp(abjurer, "abjurer_arcane_ward") == 9 and WardRules.max_ward_hp(abjurer, "abjurer_arcane_ward") == 9, "First slot-expending Abjuration spell creates Arcane Ward at full capacity (2 * level + INT mod = 9 HP)")
+
+	abjurer.feature_uses["damage_immunities"] = ["poison"]
+	var immune_dmg := CombatAction.resolve_damage(abjurer, 20, "poison")
+	check.call(int(immune_dmg.get("resolved", -1)) == 0 and int(immune_dmg.get("damage", -1)) == 0 and int(immune_dmg.get("ward_absorbed", 0)) == 9 and WardRules.current_ward_hp(abjurer, "abjurer_arcane_ward") == 0, "Arcane Ward absorbs damage before immunity negates the overflow")
+	abjurer.feature_uses.erase("damage_immunities")
+	WardRules.pool_state(abjurer, "abjurer_arcane_ward")["current_hp"] = 9
+
+	abjurer.protection_from_energy_type = "fire"
+	abjurer.temp_hp = 5
+	var hp_before_fire := abjurer.current_hp
+	var fire_dmg := CombatAction.resolve_damage(abjurer, 10, "fire")
+	check.call(int(fire_dmg.get("ward_absorbed", 0)) == 5 and int(fire_dmg.get("resolved", -1)) == 0 and int(fire_dmg.get("damage", -1)) == 0 and WardRules.current_ward_hp(abjurer, "abjurer_arcane_ward") == 4 and abjurer.temp_hp == 5 and abjurer.current_hp == hp_before_fire, "Step 2 Resistance halves 10 fire damage to 5 before Step 3 Arcane Ward absorbs all 5, leaving Temp HP and HP untouched and resolved creature damage at 0 (no Concentration save)")
+	abjurer.protection_from_energy_type = ""
+
+	var overflow_dmg := CombatAction.resolve_damage(abjurer, 10, "bludgeoning")
+	check.call(int(overflow_dmg.get("ward_absorbed", 0)) == 4 and int(overflow_dmg.get("resolved", -1)) == 6 and int(overflow_dmg.get("damage", -1)) == 1 and WardRules.current_ward_hp(abjurer, "abjurer_arcane_ward") == 0 and WardRules.is_ward_active(abjurer, "abjurer_arcane_ward") and abjurer.temp_hp == 0 and abjurer.current_hp == hp_before_fire - 1, "Step 3 Ward absorbs remaining 4 HP before Step 4 Temp HP absorbs 5 and Step 5 HP loses 1; resolved creature damage is 6 and 0-HP ward remains active")
+
+	var shield_Dummy := {"id": "abj_attacker", "name": "Abjurer Attacker", "current_hp": 30, "max_hp": 30, "is_alive": true, "ability_scores": {"STR": 16, "DEX": 14, "CON": 12}}
+	var attacker_char := _character("fighter", 3)
+	abjurer.reaction_available = true
+	abjurer.base_ac = 12
+	abjurer.remove_condition("mage_armor")
+	var atk_vs_shield := CombatAction.resolve_weapon_attack(attacker_char, abjurer, {"id": "test_blade", "name": "Test Blade", "damage": "1d6", "damage_type": "slashing", "attack_bonus_override": 15}, false, false, {"shield": true, "roll_token_replacement": {}})
+	check.call( abjurer.has_condition("shield") and WardRules.current_ward_hp(abjurer, "abjurer_arcane_ward") >= 0, "Reaction Shield cast expends a level 1 Abjuration slot and recharges the existing 0-HP Arcane Ward by 2 HP before the attack's damage resolves")
+	var dummy_unused := shield_Dummy.size() > 0
+	check.call(dummy_unused, "Shield attacker dictionary initialized")
+
+	WardRules.pool_state(abjurer, "abjurer_arcane_ward")["current_hp"] = 2
+	var bonus_recharge := WardRules.spend_slot_for_ward_recharge(abjurer, "abjurer_arcane_ward", 2)
+	check.call(bool(bonus_recharge.get("success", false)) and int(bonus_recharge.get("restored_hp", 0)) == 4 and WardRules.current_ward_hp(abjurer, "abjurer_arcane_ward") == 6, "Bonus Action slot expenditure spends a level 2 slot and restores 2 * slot_level = 4 HP to the active Arcane Ward")
+
+	while abjurer.level < 6:
+		abjurer.level_up()
+	check.call(abjurer.has_feature("abjurer_projected_ward") and WardRules.max_ward_hp(abjurer, "abjurer_arcane_ward") == 15 and WardRules.current_ward_hp(abjurer, "abjurer_arcane_ward") == 6, "Leveling Abjurer to 6 unlocks Projected Ward and increases Arcane Ward max_hp to 15 (2 * 6 + 3) while preserving current_hp")
+
+	var ally := _character("fighter", 5)
+	ally.max_hp = 40
+	ally.current_hp = 40
+	WardRules.pool_state(abjurer, "abjurer_arcane_ward")["current_hp"] = 8
+	abjurer.reaction_available = true
+	var shared_projection := {"projected_ward": {"owner": abjurer, "pool_id": "arcane_ward", "distance_feet": 5, "target_visible": true}}
+	var first_hit := CombatAction.resolve_damage(ally, 3, "fire", shared_projection)
+	var second_hit := CombatAction.resolve_damage(ally, 3, "fire", shared_projection)
+	check.call(int(first_hit.get("ward_absorbed", 0)) == 3 and int(second_hit.get("ward_absorbed", 0)) == 0 and ally.current_hp == 37, "Reusing a Projected Ward decision cannot protect a second damage occurrence")
+	abjurer.reaction_available = true
+	var component_projection := {"projected_ward": {"owner": abjurer, "pool_id": "arcane_ward", "distance_feet": 5, "target_visible": true}}
+	var occurrence_id := WardRules.next_damage_occurrence_id()
+	var fire_component := CombatAction.resolve_damage(ally, 2, "fire", component_projection, false, false, null, occurrence_id)
+	var cold_component := CombatAction.resolve_damage(ally, 2, "cold", component_projection, false, false, null, occurrence_id)
+	check.call(int(fire_component.get("ward_absorbed", 0)) == 2 and int(cold_component.get("ward_absorbed", 0)) == 2 and not abjurer.reaction_available, "One Projected Ward Reaction covers both explicitly grouped damage components of the same hit")
+	WardRules.pool_state(abjurer, "abjurer_arcane_ward")["current_hp"] = 6
+	ally.current_hp = 40
+	abjurer.reaction_available = true
+	var proj_dmg := CombatAction.resolve_damage(ally, 10, "slashing", {"projected_ward": {"owner": abjurer, "pool_id": "abjurer_arcane_ward", "distance_feet": 25, "target_visible": true}})
+	check.call(bool(proj_dmg.get("ward_projected", false)) and int(proj_dmg.get("ward_absorbed", 0)) == 6 and int(proj_dmg.get("resolved", -1)) == 4 and ally.current_hp == 36 and not abjurer.reaction_available and WardRules.current_ward_hp(abjurer, "abjurer_arcane_ward") == 0, "Projected Ward spends Abjurer's Reaction to absorb 6 of 10 damage for a visible ally within 30 ft, leaving 4 overflow damage")
+
+	WardRules.pool_state(abjurer, "abjurer_arcane_ward")["current_hp"] = 8
+	var no_reaction_proj := CombatAction.resolve_damage(ally, 5, "slashing", {"projected_ward": {"owner": abjurer, "pool_id": "abjurer_arcane_ward", "distance_feet": 20, "target_visible": true}})
+	check.call(not bool(no_reaction_proj.get("ward_projected", true)) and int(no_reaction_proj.get("ward_absorbed", 0)) == 0 and WardRules.current_ward_hp(abjurer, "abjurer_arcane_ward") == 8, "Projected Ward is refused when the Abjurer's Reaction is already spent")
+
+	abjurer.reaction_available = true
+	var out_of_range_proj := CombatAction.resolve_damage(ally, 5, "slashing", {"projected_ward": {"owner": abjurer, "pool_id": "abjurer_arcane_ward", "distance_feet": 35, "target_visible": true}})
+	var unseen_proj := CombatAction.resolve_damage(ally, 5, "slashing", {"projected_ward": {"owner": abjurer, "pool_id": "abjurer_arcane_ward", "distance_feet": 20, "target_visible": false}})
+	check.call(not bool(out_of_range_proj.get("ward_projected", true)) and not bool(unseen_proj.get("ward_projected", true)) and abjurer.reaction_available and WardRules.current_ward_hp(abjurer, "abjurer_arcane_ward") == 8, "Projected Ward is refused when the damaged creature is beyond 30 ft or not visible")
+
+	var abjurer_dto := JSON.parse_string(JSON.stringify(abjurer.to_dict())) as Dictionary
+	check.call(ClassProgression.saved_choices_error(abjurer_dto).is_empty(), "Active Arcane Ward passes save preflight validation")
+	var reloaded_abjurer := Character.new()
+	reloaded_abjurer.from_dict(abjurer_dto)
+	check.call(reloaded_abjurer.damage_wards == abjurer.damage_wards and WardRules.current_ward_hp(reloaded_abjurer, "abjurer_arcane_ward") == 8 and WardRules.max_ward_hp(reloaded_abjurer, "abjurer_arcane_ward") == 15, "Save/load round-trip preserves exact Arcane Ward state")
+
+	var bad_ward_pool := abjurer.to_dict()
+	bad_ward_pool["damage_wards"]["pools"]["unknown_pool"] = bad_ward_pool["damage_wards"]["pools"]["arcane_ward"].duplicate(true)
+	check.call(not ClassProgression.saved_choices_error(bad_ward_pool).is_empty(), "Save preflight rejects unknown damage_wards pool IDs")
+	var bad_ward_hp := abjurer.to_dict()
+	bad_ward_hp["damage_wards"]["pools"]["arcane_ward"]["current_hp"] = 99
+	check.call(not ClassProgression.saved_choices_error(bad_ward_hp).is_empty(), "Save preflight rejects damage_wards current_hp exceeding max_hp")
+	var bad_ward_max := abjurer.to_dict()
+	bad_ward_max["damage_wards"]["pools"]["arcane_ward"]["max_hp"] = 99
+	check.call(not ClassProgression.saved_choices_error(bad_ward_max).is_empty(), "Save preflight rejects tampered damage_wards max_hp")
+
+	abjurer.long_rest()
+	check.call(not WardRules.is_ward_active(abjurer, "abjurer_arcane_ward") and WardRules.current_ward_hp(abjurer, "abjurer_arcane_ward") == 0 and not bool(WardRules.pool_state(abjurer, "abjurer_arcane_ward").get("created_since_long_rest", true)), "Long Rest expires Arcane Ward and resets creation state")
+
+	var runeguard := Character.new()
+	var rg_scores := AbilityScores.new()
+	rg_scores.from_dict({"STR": 10, "DEX": 14, "CON": 14, "INT": 16, "WIS": 12, "CHA": 10})
+	runeguard.initialize("Runeguard Fixture", "human", "wizard", rg_scores)
+	while runeguard.level < 6:
+		runeguard.level_up()
+	check.call(ClassProgression.choose_subclass(runeguard, "fixture:runeguard") and runeguard.has_feature("fixture:runeguard_aegis_ward") and runeguard.has_feature("fixture:runeguard_projected_aegis"), "Second consumer fixture:runeguard attaches to Wizard with Runic Aegis and Projected Runic Aegis")
+	WardRules.on_slot_spell_cast(runeguard, DataLoader.get_spell("mage_armor"), 1)
+	check.call(WardRules.is_ward_active(runeguard, "fixture:runeguard_aegis") and WardRules.current_ward_hp(runeguard, "fixture:runeguard_aegis") == 23 and WardRules.max_ward_hp(runeguard, "fixture:runeguard_aegis") == 23, "Second consumer fixture:runeguard_aegis creates its ward at 23 HP (3 * 6 + 3 + 2 flat bonus) through the shared WardRules path")
+	runeguard.reaction_available = true
+	var rg_proj := CombatAction.resolve_damage(ally, 7, "piercing", {"projected_ward": {"owner": runeguard, "pool_id": "fixture:runeguard_aegis", "distance_feet": 45, "target_visible": true}})
+	check.call(bool(rg_proj.get("ward_projected", false)) and int(rg_proj.get("ward_absorbed", 0)) == 7 and int(rg_proj.get("resolved", -1)) == 0 and WardRules.current_ward_hp(runeguard, "fixture:runeguard_aegis") == 16 and not runeguard.reaction_available, "Second consumer fixture:runeguard_projected_aegis projects its ward onto an ally within 60 ft through the shared WardRules path")
+
+
+static func _rest_and_slot_recovery_rules(check: Callable) -> void:
+	RestRules.reset_windows()
+	var short_cmd := PlayerCommand.short_rest()
+	var long_cmd := PlayerCommand.long_rest()
+	var rest_short_cmd := PlayerCommand.rest("short_rest")
+	var rest_long_cmd := PlayerCommand.rest("long_rest")
+	check.call(short_cmd != null and short_cmd.is_valid() and short_cmd.rest_type() == "short_rest" and long_cmd != null and long_cmd.is_valid() and long_cmd.rest_type() == "long_rest" and rest_short_cmd != null and rest_short_cmd.rest_type() == "short_rest" and rest_long_cmd != null and rest_long_cmd.rest_type() == "long_rest" and PlayerCommand.rest("catnap") == null, "PlayerCommand validates Short Rest and Long Rest intents and rejects unknown rest types")
+
+	var wiz5 := _character("wizard", 5)
+	var fighter5 := _character("fighter", 5)
+	var ar_feature := wiz5.get_feature("wizard_arcane_recovery")
+	var ar_effect := wiz5.get_feature_effect("rest_slot_recovery")
+	check.call(str(ar_feature.get("rules_status", "")) == "2024-supported" and str(ar_feature.get("type", "")) == "triggered" and str(ar_effect.get("trigger", "")) == "short_rest_completed" and str(ar_effect.get("class_level_source", "")) == "wizard" and str(ar_effect.get("budget_formula", "")) == "half_class_level_ceil" and int(ar_effect.get("max_slot_level", 0)) == 5, "Wizard Arcane Recovery is source-defined as a 2024-supported short_rest_completed rest_slot_recovery feature")
+	check.call(wiz5.get_class_level("wizard") == 5 and wiz5.get_class_level("self") == 5 and wiz5.get_class_level("fighter") == 0, "Character.get_class_level resolves class-specific level and returns 0 for non-owned classes")
+
+	for pair in [[1, 1], [2, 1], [3, 2], [4, 2], [5, 3], [9, 5], [11, 6], [20, 10]]:
+		var lvl_wiz := _character("wizard", int(pair[0]))
+		check.call(RestRules.compute_recovery_budget(lvl_wiz, ar_effect) == int(pair[1]), "Arcane Recovery budget at Wizard level %d is ceil(level/2) = %d" % [int(pair[0]), int(pair[1])])
+
+	var local_room_refusal := RestRules.can_complete_rest("short_rest", [wiz5], {"local_view": RefCounted.new(), "allow_in_test": true})
+	var roster_refusal := RestRules.can_complete_rest("short_rest", [wiz5], {"companion_roster_open": true, "allow_in_test": true})
+	var downed := _character("fighter", 2)
+	downed.current_hp = 0
+	downed.feature_uses["fighter_second_wind"] = 0
+	downed.short_rest()
+	var dead_refusal := RestRules.can_complete_rest("short_rest", [downed], {"allow_in_test": true})
+	check.call(not bool(local_room_refusal.get("allowed", true)) and str(local_room_refusal.get("reason", "")) == "dungeon_local_room_active" and not bool(roster_refusal.get("allowed", true)) and str(roster_refusal.get("reason", "")) == "companion_roster_open" and not bool(dead_refusal.get("allowed", true)) and str(dead_refusal.get("reason", "")) == "no_living_participants" and int(downed.feature_uses.get("fighter_second_wind", -1)) == 0, "Short Rest is refused in active Dungeon local rooms, with open companion roster, or with only 0-HP participants, and 0-HP characters gain no short_rest benefits")
+
+	fighter5.feature_uses["fighter_second_wind"] = 1
+	wiz5.wizard_memorize_spell_pending = false
+	var time_before := GameManager.campaign_elapsed_seconds
+	var full_slots_rest := RestRules.complete_short_rest([fighter5, wiz5], {"allow_in_test": true})
+	check.call(bool(full_slots_rest.get("success", false)) and GameManager.campaign_elapsed_seconds == time_before + 3600 and int(fighter5.feature_uses.get("fighter_second_wind", 0)) == 2 and wiz5.wizard_memorize_spell_pending and not bool(full_slots_rest.get("pending_recovery", true)) and int(wiz5.feature_uses.get("wizard_arcane_recovery", 0)) == 1, "Completing a Short Rest advances campaign time by 3600s once, runs participant short_rest hooks, and suppresses Arcane Recovery when no eligible slots are expended")
+
+	var wiz11 := _character("wizard", 11)
+	wiz11.spell_slots["6"] = 0
+	var only_lvl6_rest := RestRules.complete_short_rest([wiz11], {"allow_in_test": true})
+	check.call(bool(only_lvl6_rest.get("success", false)) and not bool(only_lvl6_rest.get("pending_recovery", true)) and int(wiz11.feature_uses.get("wizard_arcane_recovery", 0)) == 1 and int(wiz11.spell_slots.get("6", -1)) == 0, "Arcane Recovery does not open or consume a use when only level 6+ spell slots are expended")
+
+	# Expend 2xL1, 1xL2, 1xL3, 1xL5, and 1xL6 on the level 11 Wizard (budget = 6, max_slot_level = 5).
+	wiz11.spell_slots["1"] = 2 # max 4 -> 2 missing
+	wiz11.spell_slots["2"] = 2 # max 3 -> 1 missing
+	wiz11.spell_slots["3"] = 2 # max 3 -> 1 missing
+	wiz11.spell_slots["4"] = 3 # max 3 -> 0 missing
+	wiz11.spell_slots["5"] = 1 # max 2 -> 1 missing
+	wiz11.spell_slots["6"] = 0 # max 1 -> 1 missing (ineligible level 6)
+
+	var open_rest := RestRules.complete_short_rest([wiz11], {"allow_in_test": true})
+	var active_win := RestRules.get_active_recovery_window()
+	check.call(bool(open_rest.get("pending_recovery", false)) and RestRules.is_rest_window_open() and int(active_win.get("budget", 0)) == 6 and int(active_win.get("max_slot_level", 0)) == 5, "Short Rest with expended eligible slots opens a bounded Arcane Recovery window (budget 6, max slot level 5)")
+
+	var concurrent_rest := RestRules.can_complete_rest("short_rest", [wiz11], {"allow_in_test": true})
+	check.call(not bool(concurrent_rest.get("allowed", true)) and str(concurrent_rest.get("reason", "")) == "rest_window_open", "A second rest cannot start while an active recovery window is open")
+
+	var slots_snapshot := wiz11.spell_slots.duplicate(true)
+	var wrong_actor := RestRules.settle_recovery_window({"actor": fighter5, "selected_slots": {"1": 1}})
+	var stale_epoch := RestRules.settle_recovery_window({"epoch": -99, "selected_slots": {"1": 1}})
+	var stale_req := RestRules.settle_recovery_window({"request_id": "rest_slot_recovery:0", "selected_slots": {"1": 1}})
+	var empty_sel := RestRules.settle_recovery_window({"selected_slots": {}})
+	var zero_sel := RestRules.settle_recovery_window({"selected_slots": {"1": 0}})
+	var neg_sel := RestRules.settle_recovery_window({"selected_slots": {"1": -1}})
+	var lvl6_sel := RestRules.settle_recovery_window({"selected_slots": {"6": 1}})
+	var unexpended_lvl4 := RestRules.settle_recovery_window({"selected_slots": {"4": 1}})
+	var too_many_lvl1 := RestRules.settle_recovery_window({"selected_slots": {"1": 3}})
+	var over_budget := RestRules.settle_recovery_window({"selected_slots": {"5": 1, "2": 1}})
+	check.call(
+		str(wrong_actor.get("error", "")) == "wrong_actor"
+		and str(stale_epoch.get("error", "")) == "stale_epoch"
+		and str(stale_req.get("error", "")) == "stale_request_id"
+		and str(empty_sel.get("error", "")) == "empty_selection"
+		and str(zero_sel.get("error", "")) == "empty_selection"
+		and str(neg_sel.get("error", "")) == "negative_slot_count"
+		and str(lvl6_sel.get("error", "")) == "slot_level_ineligible"
+		and str(unexpended_lvl4.get("error", "")) == "slot_not_expended"
+		and str(too_many_lvl1.get("error", "")) == "slot_not_expended"
+		and str(over_budget.get("error", "")) == "budget_exceeded"
+		and wiz11.spell_slots == slots_snapshot
+		and int(wiz11.feature_uses.get("wizard_arcane_recovery", 0)) == 1
+		and RestRules.is_rest_window_open(),
+		"Recovery window rejects wrong-actor, stale-epoch, stale-request, empty, negative, level-6+, non-expended, and over-budget slot selections without mutating slots or spending the feature use"
+	)
+
+	var declined := RestRules.settle_recovery_window({"declined": true})
+	check.call(bool(declined.get("success", false)) and bool(declined.get("declined", false)) and not RestRules.is_rest_window_open() and wiz11.spell_slots == slots_snapshot and int(wiz11.feature_uses.get("wizard_arcane_recovery", 0)) == 1, "Declining Arcane Recovery closes the window for that Short Rest without consuming the once-per-Long-Rest use")
+
+	var second_open := RestRules.complete_short_rest([wiz11], {"allow_in_test": true})
+	check.call(bool(second_open.get("pending_recovery", false)) and RestRules.is_rest_window_open(), "Because the previous Short Rest recovery was declined, a subsequent Short Rest offers Arcane Recovery again")
+
+	var valid_confirm := RestRules.settle_recovery_window({"selected_slots": {"1": 1, "2": 1, "3": 1}})
+	check.call(
+		bool(valid_confirm.get("success", false))
+		and not bool(valid_confirm.get("declined", true))
+		and int(valid_confirm.get("budget_spent", 0)) == 6
+		and int(wiz11.spell_slots.get("1", 0)) == 3
+		and int(wiz11.spell_slots.get("2", 0)) == 3
+		and int(wiz11.spell_slots.get("3", 0)) == 3
+		and int(wiz11.spell_slots.get("5", 0)) == 1
+		and int(wiz11.spell_slots.get("6", 0)) == 0
+		and int(wiz11.feature_uses.get("wizard_arcane_recovery", -1)) == 0
+		and not RestRules.is_rest_window_open(),
+		"Confirming a valid 1xL1 + 1xL2 + 1xL3 combination (6/6 budget) restores those exact slots and spends the Arcane Recovery use"
+	)
+
+	var duplicate_after_close := RestRules.settle_recovery_window({"selected_slots": {"1": 1}})
+	check.call(not bool(duplicate_after_close.get("success", true)) and str(duplicate_after_close.get("error", "")) == "stale_or_closed_window" and int(wiz11.spell_slots.get("1", 0)) == 3, "Duplicate settlement after the recovery window closes is rejected without restoring extra slots")
+
+	var third_rest := RestRules.complete_short_rest([wiz11], {"allow_in_test": true})
+	check.call(bool(third_rest.get("success", false)) and not bool(third_rest.get("pending_recovery", true)), "Subsequent Short Rest before a Long Rest does not offer Arcane Recovery after its use is spent")
+
+	var wiz11_dto := JSON.parse_string(JSON.stringify(wiz11.to_dict())) as Dictionary
+	check.call(ClassProgression.saved_choices_error(wiz11_dto).is_empty(), "Wizard after Short Rest Arcane Recovery passes save preflight validation")
+	var reloaded_wiz11 := Character.new()
+	reloaded_wiz11.from_dict(wiz11_dto)
+	check.call(reloaded_wiz11.spell_slots == wiz11.spell_slots and int(reloaded_wiz11.feature_uses.get("wizard_arcane_recovery", -1)) == 0, "Save/load round-trip preserves recovered spell slots and spent Arcane Recovery use")
+
+	wiz11.long_rest()
+	check.call(int(wiz11.feature_uses.get("wizard_arcane_recovery", 0)) == 1 and int(wiz11.spell_slots.get("6", 0)) == 1, "Long Rest restores Arcane Recovery use and full spell slots")
+
+	# Second consumer: fixture:leyline_savant (fixture:leyline_font with flat_budget 3 and max_slot_level 3)
+	var savant := _character("wizard", 7)
+	check.call(ClassProgression.choose_subclass(savant, "fixture:leyline_savant") and savant.has_feature("fixture:leyline_font"), "Second consumer fixture:leyline_savant attaches to Wizard with Leyline Font")
+	savant.feature_uses["wizard_arcane_recovery"] = 0
+	savant.spell_slots["3"] = 2 # max 3 -> 1 missing
+	savant.spell_slots["4"] = 0 # max 1 -> 1 missing (ineligible for max_slot_level 3)
+	var savant_rest := RestRules.complete_short_rest([savant], {"allow_in_test": true})
+	var savant_win := RestRules.get_active_recovery_window()
+	var savant_reject_lvl4 := RestRules.settle_recovery_window({"selected_slots": {"4": 1}})
+	var savant_confirm := RestRules.settle_recovery_window({"selected_slots": [3]})
+	check.call(
+		bool(savant_rest.get("pending_recovery", false))
+		and str(savant_win.get("feature_id", "")) == "fixture:leyline_font"
+		and int(savant_win.get("budget", 0)) == 3
+		and int(savant_win.get("max_slot_level", 0)) == 3
+		and str(savant_reject_lvl4.get("error", "")) == "slot_level_ineligible"
+		and bool(savant_confirm.get("success", false))
+		and int(savant.spell_slots.get("3", 0)) == 3
+		and int(savant.feature_uses.get("fixture:leyline_font", -1)) == 0,
+		"Second consumer fixture:leyline_font executes through the shared RestRules path with flat budget 3 and max slot level 3"
+	)
+	RestRules.reset_windows()
 
 
 static func _character(id: String, target_level: int) -> Character:

@@ -7,7 +7,7 @@ static func resolve(caster: Character, target_entity, spell_data: Dictionary, de
 	cast.caster = caster
 	cast.target = target_entity
 	cast.spell = spell_data
-	cast.decisions = reaction_decisions
+	cast.decisions = reaction_decisions.duplicate()
 	cast.observers = reaction_observers
 	cast.distance_feet = distance_feet
 	var support := SpellSupport.availability(cast.spell)
@@ -29,6 +29,12 @@ static func resolve(caster: Character, target_entity, spell_data: Dictionary, de
 	cast.incoming_slot_spent = false
 	cast.incoming_slot_key = ""
 
+	# Refuse unavailable host capabilities / spatial context before slot deduction and effects
+	if cast.spell.has("steps") and cast.spell.get("steps") is Array:
+		var spatial_err := SharedStepExecutor.validate_spatial_context_for_steps(cast.spell.get("steps", []), cast.decisions)
+		if not spatial_err.is_empty():
+			return {"success": false, "refused": true, "error": spatial_err, "message": spatial_err}
+
 	# Deduct spell slot if leveled spell
 	if deduct_slot and spell_level > 0:
 		var slot_result := CombatAction.spend_spell_slot(cast.caster, cast.spell)
@@ -46,8 +52,13 @@ static func resolve(caster: Character, target_entity, spell_data: Dictionary, de
 		cast.effect_cast = SpellEffects.begin_cast(cast.caster, cast.spell)
 
 	var interruption := _resolve_counterspell(cast)
+	for key in ["counterspell_saved_by", "counterspell_save_total", "counterspell_save_dc"]:
+		if cast.decisions.has(key):
+			reaction_decisions[key] = cast.decisions[key]
 	if not interruption.is_empty():
 		return interruption
+	if cast.incoming_slot_spent and cast.slot_level >= 1:
+		WardRules.on_slot_spell_cast(cast.caster, cast.spell, cast.slot_level)
 
 	if str(cast.spell.get("id", "")) == "disintegrate":
 		var special := SpellControlResolver.disintegrate(cast)
@@ -86,7 +97,7 @@ static func resolve(caster: Character, target_entity, spell_data: Dictionary, de
 		return SpellWardResolver.invisibility(cast)
 	if CombatAction._spell_directly_damages_target(cast.spell) and not CombatAction._spell_is_area_effect(cast.spell) and SpellEffects.has_spell(cast.target, "sanctuary"):
 		var sanctuary_dc := CombatAction._spell_effect_save_dc(cast.target, "sanctuary", cast.caster.get_spell_save_dc())
-		var sanctuary_save := int(cast.caster.saving_throw_test_to_dc("WIS", sanctuary_dc).get("total", 0))
+		var sanctuary_save := int(cast.caster.saving_throw_test_to_dc("WIS", sanctuary_dc, false, false, cast.decisions).get("total", 0))
 		if sanctuary_save < sanctuary_dc:
 			return {"success": true, "hit": false, "damage": 0, "sanctuary_blocked": true, "saved": true, "sanctuary_save_total": sanctuary_save, "sanctuary_save_dc": sanctuary_dc, "slot_level": cast.slot_level, "effect_cast": cast.effect_cast, "message": "%s fails the Wisdom save against Sanctuary; the spell has no effect on that creature." % cast.caster.character_name}
 	if SharedSpell.uses(cast.spell):
@@ -132,16 +143,19 @@ static func _resolve_counterspell(cast: SpellResolutionContext) -> Dictionary:
 			var accepted := bool(cast.decisions.get(observer_key, cast.decisions.get("counterspell", false)))
 			if not accepted:
 				continue
+			var counterspell_cost: Dictionary = {}
 			if counterspell_free:
 				if not observer.spend_free_spell_cast("counterspell"):
 					continue
 			else:
-				var counterspell_cost := CombatAction.spend_spell_slot(observer, DataLoader.get_spell("counterspell"))
+				counterspell_cost = CombatAction.spend_spell_slot(observer, DataLoader.get_spell("counterspell"))
 				if not counterspell_cost.get("success", false):
 					continue
 			observer.reaction_available = false
+			if not counterspell_free and not bool(counterspell_cost.get("slot_recalled", false)):
+				WardRules.on_slot_spell_cast(observer, DataLoader.get_spell("counterspell"), int(counterspell_cost.get("slot_level", 3)))
 			var counterspell_dc: int = observer.get_spell_save_dc()
-			var save_total := int(cast.caster.saving_throw_test_to_dc("CON", counterspell_dc).get("total", 0))
+			var save_total := int(cast.caster.saving_throw_test_to_dc("CON", counterspell_dc, false, false, cast.decisions).get("total", 0))
 			var saved_counterspell: bool = save_total >= counterspell_dc
 			if not saved_counterspell:
 				if cast.incoming_slot_spent and cast.caster.spell_slots.has(cast.incoming_slot_key):

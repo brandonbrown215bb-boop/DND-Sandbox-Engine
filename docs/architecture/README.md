@@ -32,8 +32,11 @@ points, not the intended extensibility boundary.
 without registering each spell ID. The current contract supports automatic,
 attack **or** save delivery, typed damage, healing, Temporary HP, condition
 grants/removal, targeting geometry and bounded scaling. Combining attack and
-save delivery is currently rejected; ordered per-step/per-target composition
-is required by [ADR-0017](../decisions/0017-shared-json-spell-execution.md).
+save fields on one flat payload is rejected. Explicit ordered `steps` compose
+attack, save, damage and effect operations with per-target gates through
+`SharedStepExecutor` ([ADR-0019](../decisions/0019-shared-ordered-execution-and-zero-hp-replacement.md)).
+Pre-roll replacement, damage rerolls and concentration reactions resume at the
+pending actor and step while retaining settled effects and cast-wide costs.
 
 `CombatState` coordinates input, encounter bindings, turn order and the cast
 sequence. Focused `SpellCast*` modules own selection, validation/choices,

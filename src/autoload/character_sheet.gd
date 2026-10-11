@@ -273,6 +273,12 @@ func _populate(c: Character) -> void:
 				uses_str = "  [%d left]" % uses
 			feat_lines.append("%s%s" % [name, uses_str])
 		_add_section("Class Features", feat_lines)
+	var roll_token_lines := RollTokenRules.summary_lines(c)
+	if not roll_token_lines.is_empty():
+		_add_section("Roll Tokens", roll_token_lines)
+	var ward_lines := WardRules.summary_lines(c)
+	if not ward_lines.is_empty():
+		_add_section("Damage Wards", ward_lines)
 
 
 func _choose_wild_shape_form(character: Character) -> void:

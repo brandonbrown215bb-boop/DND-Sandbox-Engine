@@ -46,6 +46,8 @@ var collect_counterspell_decisions: Callable
 var collect_reaction_decisions: Callable
 var collect_spell_shield_decision: Callable
 var collect_stroke_of_luck_save_decision: Callable
+var collect_roll_token_decision: Callable
+var collect_projected_ward_decision: Callable
 var offer_potent_spellcasting_vitality: Callable
 var offer_power_word_heal_stand: Callable
 var offer_sneak_attack: Callable
@@ -79,6 +81,7 @@ var component_item_id := ""
 var component_instance_id := ""
 var spell_level := 0
 var slot_level_used := 0
+var incoming_slot_spent := false
 var reaction_decisions: Dictionary = {}
 var spell_attack_available := false
 var apotheosis_available := false
@@ -104,9 +107,11 @@ func clear_pending(flags: int) -> void:
 		divine_intervention = false
 	if flags & CLEAR_WISH:
 		divine_intervention_wish = false
-	reset_pending.call(flags)
+	if reset_pending != null and reset_pending.is_valid():
+		reset_pending.call(flags)
 
 
 func replace_spell(value: Dictionary) -> void:
 	spell = value
-	publish_spell.call(value)
+	if publish_spell != null and publish_spell.is_valid():
+		publish_spell.call(value)

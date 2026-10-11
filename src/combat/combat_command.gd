@@ -90,6 +90,8 @@ static func from_hud_for_character(kind: String, data: Dictionary, character: Ch
 			for effect in owned_feature.get("effects", []):
 				if effect.get("type", "") == "resource_from_spell_slot":
 					has_slot_recovery = true
+				elif effect.get("type", "") == "damage_ward_pool" and bool(effect.get("bonus_action_slot_recharge", false)):
+					has_slot_recovery = true
 			if owned_feature.is_empty() or (str(owned_feature.get("type", "")) != "active" and not has_slot_recovery):
 				return null
 			if has_slot_recovery:

@@ -41,17 +41,14 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 		save_test = {"total": 0, "success": false}
 		save_roll = 0
 	elif cast.target is Character:
-		save_test = cast.target.saving_throw_test_to_dc(save_ability, save_dc, target_save_advantage, heightened or target_save_disadvantage)
+		save_test = cast.target.saving_throw_test_to_dc(save_ability, save_dc, target_save_advantage, heightened or target_save_disadvantage, cast.decisions)
 		save_roll = int(save_test.get("total", 0))
 	elif cast.target is Dictionary:
 		# Monster stats
-		save_roll = BarbarianRules.roll_monster_save(cast.target, save_ability)
 		var save_has_advantage: bool = target_save_advantage and not target_save_disadvantage and not heightened
 		var save_has_disadvantage: bool = (target_save_disadvantage or heightened) and not target_save_advantage
-		if save_has_disadvantage:
-			save_roll = mini(save_roll, BarbarianRules.roll_monster_save(cast.target, save_ability))
-		elif save_has_advantage:
-			save_roll = maxi(save_roll, BarbarianRules.roll_monster_save(cast.target, save_ability))
+		save_test = BarbarianRules.roll_monster_save_result(cast.target, save_ability, null, save_has_advantage, save_has_disadvantage, cast.decisions)
+		save_roll = int(save_test.get("total", 0))
 		if save_ability in ["STR", "DEX"] and cast.target.get("conditions", {}).has("stunned"):
 			save_roll = -1000
 
@@ -165,6 +162,10 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 	if stroke_of_luck_used:
 		msg += " Stroke of Luck turns the failed saving throw into a 20."
 	var effective_save_disadvantage: bool = (target_save_disadvantage or heightened) and not target_save_advantage
-	return SpellDamageRolls._finish_spell_damage(cast.caster, cast.target, damage_details, CombatAction.spell_damage_bonus(cast.caster, cast.spell) if cast.has_damage_payload else 0, damage_scale, damage_type, cast.decisions, {"success": true, "saved": saved, "save_total": save_roll, "save_dc": save_dc, "save_disadvantage": effective_save_disadvantage, "effect_cast": cast.effect_cast, "condition": inflicted_condition if not saved and not SharedSpell.uses(cast.spell) else "", "condition_source": "animal_friendship:%s" % cast.caster.character_id if str(cast.spell.get("id", "")) == "animal_friendship" else "", "caster_creature_type": cast.caster.creature_type, "countercharm_used": countercharm_used, "bardic_inspiration_used": bardic_inspiration_used, "stroke_of_luck_used": stroke_of_luck_used, "metamagic_used": careful_saved, "message": msg}, maxi(1, int(cast.spell.get("condition_duration", 1))), additional_damage_packets)
+	var base_res := {"success": true, "saved": saved, "save_total": save_roll, "save_dc": save_dc, "save_disadvantage": effective_save_disadvantage, "effect_cast": cast.effect_cast, "condition": inflicted_condition if not saved and not SharedSpell.uses(cast.spell) else "", "condition_source": "animal_friendship:%s" % cast.caster.character_id if str(cast.spell.get("id", "")) == "animal_friendship" else "", "caster_creature_type": cast.caster.creature_type, "countercharm_used": countercharm_used, "bardic_inspiration_used": bardic_inspiration_used, "stroke_of_luck_used": stroke_of_luck_used, "metamagic_used": careful_saved, "roll_token_replaced": bool(save_test.get("roll_token_replaced", false)), "message": msg}
+	if bool(save_test.get("roll_token_replaced", false)):
+		base_res["roll_token_id"] = str(save_test.get("roll_token_id", ""))
+		base_res["roll_token_value"] = int(save_test.get("roll_token_value", 0))
+	return SpellDamageRolls._finish_spell_damage(cast.caster, cast.target, damage_details, CombatAction.spell_damage_bonus(cast.caster, cast.spell) if cast.has_damage_payload else 0, damage_scale, damage_type, cast.decisions, base_res, maxi(1, int(cast.spell.get("condition_duration", 1))), additional_damage_packets)
 
 

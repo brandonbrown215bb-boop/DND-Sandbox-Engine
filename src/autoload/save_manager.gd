@@ -149,9 +149,17 @@ func load_game(slot_name: String) -> bool:
 	# Party data owns the current character state. Seats must reference that same
 	# object, rather than the duplicate DTO reconstructed by PlayerManager.
 	for index in PlayerManager.get_player_count():
-		var player_character: Character = PlayerManager.get_player(index).get("character")
+		var player_data: Dictionary = PlayerManager.get_player(index)
+		var player_character: Character = player_data.get("character")
 		if player_character != null and PartyManager.characters.has(player_character.character_id):
 			PlayerManager.set_player_character(index, PartyManager.characters[player_character.character_id])
+		elif player_character != null:
+			for slot_id in player_data.get("assigned_slot_ids", []):
+				for slot in PartyManager.party_slots:
+					var cid := str(slot.get("character_id", ""))
+					if str(slot.get("slot_id", "")) == str(slot_id) and not bool(slot.get("is_companion", false)) and PartyManager.characters.has(cid):
+						PlayerManager.set_player_character(index, PartyManager.characters[cid])
+						break
 	SpellEffects.reconcile(PartyManager.characters.values(), PartyManager.characters.values())
 	PlayerManager.current_round = int(save_data.get("current_round", 1))
 	PlayerManager.active_player_index = int(save_data.get("active_player_index", 0))

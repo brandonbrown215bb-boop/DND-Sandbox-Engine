@@ -711,7 +711,7 @@ func _build_sorcerer_metamagic(c: Character, refresh: Callable) -> void:
 				continue
 			new_choice.add_item(str(options[option_id]))
 			new_choice.set_item_metadata(new_choice.item_count - 1, option_id)
-			replace_row.add_child(new_choice)
+		replace_row.add_child(new_choice)
 		var replace := Button.new()
 		replace.text = "Replace one Metamagic option"
 		replace.pressed.connect(func():

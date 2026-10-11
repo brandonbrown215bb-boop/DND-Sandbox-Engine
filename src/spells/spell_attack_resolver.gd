@@ -26,7 +26,7 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 		CombatAction.consume_guiding_bolt_advantage(cast.target)
 	var helped_attack := CombatAction.consume_attack_help(cast.target)
 	spell_attack_advantage = spell_attack_advantage or helped_attack
-	var attack_result := cast.caster.make_attack_roll(spell_stat, spell_attack_advantage, spell_attack_disadvantage)
+	var attack_result := cast.caster.make_attack_roll(spell_stat, spell_attack_advantage, spell_attack_disadvantage, {}, cast.decisions)
 	
 	var target_ac := 10
 	if cast.target is Character:
@@ -72,22 +72,38 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 			cast.target.reaction_available = false
 			cast.target.spell_slots["1"] -= 1
 			cast.target.add_condition("shield", 1)
+			var ward_events := WardRules.on_slot_spell_cast(cast.target, DataLoader.get_spell("shield"), 1)
 			target_ac = cast.target.get_ac()
 			is_hit = is_crit or attack_result["total"] >= target_ac
 			reaction_msg = "[color=cyan]%s casts Shield as a reaction! AC increases to %d.[/color]\n" % [cast.target.character_name, target_ac]
+			for ward_ev in ward_events:
+				if not str(ward_ev.get("message", "")).is_empty():
+					reaction_msg += "[color=cyan]%s[/color]\n" % str(ward_ev["message"])
 
 	is_hit = FighterRules.peerless_aim(cast.caster, is_hit)
+	var token_replaced := bool(attack_result.get("roll_token_replaced", false))
+	var token_id := str(attack_result.get("roll_token_id", ""))
+	var token_value := int(attack_result.get("roll_token_value", 0))
 	if not is_hit:
 		FighterRules.record_miss(cast.caster, cast.target)
 		if cast.spell.has("miss_damage_scale") and cast.spell.has("damage"):
 			var miss_damage_str := SpellDamageRolls.spell_damage_formula(cast.caster, cast.spell, cast.slot_level)
 			var miss_damage_details := SpellDamageRolls._roll_spell_damage(cast.caster, miss_damage_str, 1, cast.decisions)
-			return SpellDamageRolls._finish_spell_damage(cast.caster, cast.target, miss_damage_details, CombatAction.spell_damage_bonus(cast.caster, cast.spell), float(cast.spell.get("miss_damage_scale", 0.0)), str(cast.spell.get("damage_type", "fire")), cast.decisions, {
+			var miss_base := {
 				"success": true, "hit": false, "slot_level": cast.slot_level,
 				"metamagic_used": seeking_spell_used, "stroke_of_luck_used": stroke_of_luck_used,
+				"roll_token_replaced": token_replaced,
 				"message": reaction_msg + "Spell misses for half damage: {damage} %s damage." % cast.spell.get("damage_type", "fire")
-			})
-		return {"success": true, "hit": false, "slot_level": cast.slot_level, "attack_roll": attack_result["total"], "attack_advantage": spell_attack_advantage, "attack_disadvantage": spell_attack_disadvantage, "metamagic_used": seeking_spell_used, "stroke_of_luck_used": stroke_of_luck_used, "message": reaction_msg + "Spell missed! Ranged spell attack %d vs AC %d" % [attack_result["total"], target_ac]}
+			}
+			if token_replaced:
+				miss_base["roll_token_id"] = token_id
+				miss_base["roll_token_value"] = token_value
+			return SpellDamageRolls._finish_spell_damage(cast.caster, cast.target, miss_damage_details, CombatAction.spell_damage_bonus(cast.caster, cast.spell), float(cast.spell.get("miss_damage_scale", 0.0)), str(cast.spell.get("damage_type", "fire")), cast.decisions, miss_base)
+		var miss_out := {"success": true, "hit": false, "slot_level": cast.slot_level, "attack_roll": attack_result["total"], "attack_advantage": spell_attack_advantage, "attack_disadvantage": spell_attack_disadvantage, "metamagic_used": seeking_spell_used, "stroke_of_luck_used": stroke_of_luck_used, "roll_token_replaced": token_replaced, "message": reaction_msg + "Spell missed! Ranged spell attack %d vs AC %d" % [attack_result["total"], target_ac]}
+		if token_replaced:
+			miss_out["roll_token_id"] = token_id
+			miss_out["roll_token_value"] = token_value
+		return miss_out
 
 	var damage_str := SpellDamageRolls.spell_damage_formula(cast.caster, cast.spell, cast.slot_level)
 	var damage_type: String = cast.spell.get("damage_type", "fire")
@@ -103,12 +119,23 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 		reaction_msg += "[color=cyan]%s uses Uncanny Dodge as a reaction to halve incoming damage![/color]\n" % cast.target.character_name
 	var attack_critical := bool(attack_result["is_crit"]) or ((CombatAction.is_unconscious(cast.target) or CombatAction.is_paralyzed(cast.target)) and int(cast.spell.get("range", 6)) <= 1)
 	var attack_damage_packets := CombatAction._roll_attack_damage_packets(cast.caster, cast.spell.get("_conjure_minor_elementals_bonus_packets", []), [attack_critical])
-	return SpellDamageRolls._finish_spell_damage(cast.caster, cast.target, damage_details, CombatAction.spell_damage_bonus(cast.caster, cast.spell), damage_scale, damage_type, cast.decisions, {
+	cast.decisions["damage_is_critical"] = attack_critical
+	cast.decisions["critical"] = attack_critical
+	var hit_base := {
 		"success": true, "hit": true, "slot_level": cast.slot_level, "attack_roll": attack_result["total"], "attack_advantage": spell_attack_advantage, "attack_disadvantage": spell_attack_disadvantage, "metamagic_used": seeking_spell_used,
-		"crit": bool(attack_result["is_crit"]),
+		"crit": attack_critical,
+		"critical": attack_critical,
 		"stroke_of_luck_used": stroke_of_luck_used,
+		"roll_token_replaced": token_replaced,
 		"effect_cast": cast.effect_cast,
 		"message": reaction_msg + "Spell Hit! Dealing {damage} %s damage." % damage_type
-	}, 1, attack_damage_packets)
+	}
+	if token_replaced:
+		hit_base["roll_token_id"] = token_id
+		hit_base["roll_token_value"] = token_value
+	var res := SpellDamageRolls._finish_spell_damage(cast.caster, cast.target, damage_details, CombatAction.spell_damage_bonus(cast.caster, cast.spell), damage_scale, damage_type, cast.decisions, hit_base, 1, attack_damage_packets)
+	cast.decisions.erase("damage_is_critical")
+	cast.decisions.erase("critical")
+	return res
 
 

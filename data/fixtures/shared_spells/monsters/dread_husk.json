@@ -1,0 +1,53 @@
+[
+  {
+    "id": "sandbox:dread_husk",
+    "name": "Dread Husk",
+    "description": "A withered husk preserved through unholy durability.",
+    "size": "medium",
+    "challenge_rating": 0.5,
+    "hit_points": "15",
+    "armor_class": 8,
+    "speed": 4,
+    "ability_scores": {"STR": 13, "DEX": 6, "CON": 16, "INT": 3, "WIS": 6, "CHA": 5},
+    "damage_immunities": ["poison"],
+    "condition_immunities": ["poisoned", "exhaustion"],
+    "saving_throw_bonuses": {"WIS": 0},
+    "attacks": [
+      {"name": "Grave Claw", "ability": "STR", "damage": "1d6 + 1", "damage_type": "slashing", "range": 1}
+    ],
+    "ai_behavior": "aggressive",
+    "special_abilities": [
+      {
+        "id": "inexorable_resilience",
+        "name": "Inexorable Resilience",
+        "type": "zero_hp_replacement",
+        "trigger": "zero_hp",
+        "save_ability": "CON",
+        "dc_base": 5,
+        "dc_add_damage": true,
+        "bypass_damage_types": ["radiant"],
+        "bypass_critical": true,
+        "replacement_hp": 1,
+        "steps": [
+          {
+            "id": "resilience_save",
+            "type": "save",
+            "save": "CON",
+            "dc_base": 5,
+            "dc_add_damage": true
+          },
+          {
+            "id": "resilience_replacement",
+            "type": "replace_hp",
+            "gate": "successful_save",
+            "gate_step": "resilience_save",
+            "replacement_hp": 1
+          }
+        ],
+        "description": "When reduced to 0 HP, makes a CON save (DC 5 + damage taken). On success, drops to 1 HP instead. Doesn't work against radiant damage or critical hits."
+      }
+    ],
+    "loot_table": [],
+    "xp": 50
+  }
+]

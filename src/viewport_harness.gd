@@ -241,6 +241,10 @@ func _run_scenario(scenario: String) -> void:
 		"mixed_mechanics_encounter": await test_mixed_mechanics_encounter()
 		"spell_effect_lifetime": await test_spell_effect_lifetime()
 		"shared_spell_flow": await test_shared_spell_flow()
+		"shared_spell_normal_controls_flow": await test_shared_spell_normal_controls_flow()
+		"roll_token_normal_controls_flow": await test_roll_token_normal_controls_flow()
+		"ward_normal_controls_flow": await test_ward_normal_controls_flow()
+		"short_rest_arcane_recovery_normal_controls_flow": await test_short_rest_arcane_recovery_normal_controls_flow()
 		"jump_spell_movement": await test_jump_spell_movement()
 		"ranger_action_flow": await test_ranger_action_flow()
 		"ranger_natures_veil_blindsight": await test_ranger_natures_veil_blindsight()
@@ -8833,6 +8837,337 @@ func test_shared_spell_flow() -> void:
 	combat._resolve_condition_spell_repeat_saves(foe)
 	_assert(not CombatAction.has_condition(foe, "poisoned"), "New-ID repeat saves run through the encounter lifecycle")
 	combat.turn_budget.reset(caster, combat.player_entities)
+	# B1R1 Production lifecycle scenario: actual scene-tree exit teardown while an owned request is pending
+	caster.features.append({"id": "sorcerer_metamagic"})
+	caster.sorcerer_metamagic_choices.append("empowered_spell")
+	caster.feature_uses["sorcery_points"] = 3
+	foe["armor_class"] = -100
+	foe["current_hp"] = 1000
+	FighterChecks._seed_die(20, 15)
+	var exit_decisions := {
+		"metamagic:empowered": true,
+		"defer_empowered": true,
+		"players": combat.player_entities,
+		"monsters": combat.monster_entities
+	}
+	var pending_exit_cast := CombatAction.resolve_spell(caster, foe, DataLoader.get_spell("sandbox:ember"), true, exit_decisions, [], 1, 5)
+	_assert(pending_exit_cast.has("damage_request"), "Production encounter generates an owned pending damage request before exit")
+	var old_req_id: String = pending_exit_cast["damage_request"]["request_id"]
+	var foe_hp_before := int(foe["current_hp"])
+	var sp_before := int(caster.feature_uses["sorcery_points"])
+	# Trigger genuine scene tree exit teardown without manually calling clear_pending_requests or _exit_tree
+	_teardown_scene(combat)
+	await get_tree().process_frame
+	var exit_answer := {"metamagic:empowered_dice": [0]}
+	var post_exit_settle := CombatAction.finish_pending_spell_damage(caster, foe, pending_exit_cast, exit_answer)
+	_assert(bool(post_exit_settle.get("refused", false)) and int(foe["current_hp"]) == foe_hp_before and int(caster.feature_uses["sorcery_points"]) == sp_before, "Callback after genuine scene-tree exit teardown refuses before HP, SP, or grant mutation")
+	# Reopen fresh encounter: verify new nonce/ID and legitimate answerability
+	combat = await _spawn_scene("res://scenes/combat.tscn", 0.5)
+	combat.current_player_idx = 0
+	combat.active_character = caster
+	combat.active_combatant = {"id": "shared_caster", "is_player": true, "entity": caster}
+	combat.player_entities[0]["hex_position"] = Vector2i.ZERO
+	combat.player_entities[1]["hex_position"] = Vector2i(1, 0)
+	for index in combat.monster_entities.size():
+		combat.monster_entities[index]["hex_position"] = Vector2i(3 + index, 0)
+		combat.monster_entities[index]["current_hp"] = 1000
+		combat.monster_entities[index]["max_hp"] = 1000
+	var reopened_foe: Dictionary = combat.monster_entities[0]
+	reopened_foe["armor_class"] = -100
+	var fresh_foe_hp_before := int(reopened_foe["current_hp"])
+	FighterChecks._seed_die(20, 15)
+	var reopened_decisions := {
+		"metamagic:empowered": true,
+		"defer_empowered": true,
+		"players": combat.player_entities,
+		"monsters": combat.monster_entities
+	}
+	var fresh_cast := CombatAction.resolve_spell(caster, reopened_foe, DataLoader.get_spell("sandbox:ember"), true, reopened_decisions, [], 1, 5)
+	_assert(fresh_cast.has("damage_request"), "Reopened encounter generates a fresh pending damage request")
+	var fresh_req_id: String = fresh_cast["damage_request"]["request_id"]
+	_assert(fresh_req_id != old_req_id, "Reopened encounter request gets a fresh non-aliasing nonce/ID")
+	# Canonical actors: forged/copied target dictionary refuses
+	var forged_target := reopened_foe.duplicate(true)
+	var forged_refusal := CombatAction.finish_pending_spell_damage(caster, forged_target, fresh_cast, exit_answer)
+	_assert(bool(forged_refusal.get("refused", false)), "Reopened encounter refuses forged dictionary target even with identical fields")
+	# Old pre-exit callback still refuses in reopened encounter
+	var old_reopened_refusal := CombatAction.finish_pending_spell_damage(caster, reopened_foe, pending_exit_cast, exit_answer)
+	_assert(bool(old_reopened_refusal.get("refused", false)) and int(reopened_foe["current_hp"]) == fresh_foe_hp_before and int(caster.feature_uses["sorcery_points"]) == sp_before, "Old pre-exit callback still refuses in reopened encounter without mutating fresh targets or SP")
+	# Fresh request settles cleanly and spends SP exactly once
+	var fresh_settle := CombatAction.finish_pending_spell_damage(caster, reopened_foe, fresh_cast, exit_answer)
+	_assert(bool(fresh_settle.get("success", false)) and int(reopened_foe["current_hp"]) < fresh_foe_hp_before and int(caster.feature_uses["sorcery_points"]) == sp_before - 1, "Reopened encounter request settles cleanly, mutates target and costs exactly one SP")
+	# Clean up temporary Metamagic test features from caster
+	for i in range(caster.features.size() - 1, -1, -1):
+		if caster.features[i].get("id", "") == "sorcerer_metamagic":
+			caster.features.remove_at(i)
+	caster.sorcerer_metamagic_choices.erase("empowered_spell")
+	caster.feature_uses.erase("sorcery_points")
+	caster.spell_slots = {"1": 8}
+	combat.remaining_attack_swings = 0
+	combat.hud.update_hud(caster, combat.tracker)
+	combat.turn_budget.reset(caster, combat.player_entities)
+
+	# B1R2: Normal prepayment host refusal via real CombatState._execute_player_spell
+	var refusal_grid = combat.hex_grid
+	combat.hex_grid = null
+	combat.pending_action_type = "spell"
+	combat.pending_spell_data = DataLoader.get_spell("sandbox:shock").duplicate(true)
+	var slots_before_grid_refusal := int(caster.spell_slots["1"])
+	var hp_before_grid_refusal := caster.current_hp
+	var action_before_grid_refusal: bool = combat.turn_budget.action_available
+	caster.add_condition("sanctuary", 10)
+	caster.add_condition("invisibility", 10)
+	await combat._execute_player_spell(Vector2i.ZERO)
+	_assert(combat.turn_budget.action_available == action_before_grid_refusal, "Normal host refusal with missing grid preserves Action")
+	_assert(int(caster.spell_slots["1"]) == slots_before_grid_refusal, "Normal host refusal with missing grid preserves spell slots")
+	_assert(caster.current_hp == hp_before_grid_refusal, "Normal host refusal with missing grid preserves HP")
+	_assert(caster.has_condition("sanctuary") and caster.has_condition("invisibility"), "Normal host refusal with missing grid preserves Sanctuary and Invisibility")
+	_assert(combat.pending_action_type == "" and combat.pending_spell_data.is_empty(), "Normal host refusal with missing grid deliberately resets pending state")
+	combat.hex_grid = refusal_grid
+	caster.remove_condition("sanctuary")
+	caster.remove_condition("invisibility")
+
+	var refusal_players: Array[Dictionary] = combat.player_entities.duplicate()
+	combat.player_entities = [] as Array[Dictionary]
+	combat.pending_action_type = "spell"
+	combat.pending_spell_data = DataLoader.get_spell("sandbox:shock").duplicate(true)
+	await combat._execute_player_spell(Vector2i.ZERO)
+	_assert(combat.turn_budget.action_available == action_before_grid_refusal, "Normal host refusal with missing participants preserves Action")
+	_assert(int(caster.spell_slots["1"]) == slots_before_grid_refusal, "Normal host refusal with missing participants preserves spell slots")
+	_assert(combat.pending_action_type == "" and combat.pending_spell_data.is_empty(), "Normal host refusal with missing participants deliberately resets pending state")
+	combat.player_entities = refusal_players
+
+	# Cancellation before commitment:
+	combat.pending_action_type = "spell"
+	combat.pending_spell_data = DataLoader.get_spell("sandbox:resolve").duplicate(true)
+	combat._cancel_pending_action()
+	_assert(combat.pending_action_type == "" and combat.pending_spell_data.is_empty() and combat.turn_budget.action_available and int(caster.spell_slots["1"]) == slots_before_grid_refusal, "Cancellation before commitment resets pending action and preserves resources")
+
+	# B1R2: Real HUD concentration pause (GameManager.test_mode = false)
+	# Setup ally with Shield of Faith and Rogue Stroke of Luck:
+	ally.features.append({"id": "rogue_stroke_of_luck"})
+	ally.feature_uses["rogue_stroke_of_luck"] = 1
+	ally.add_condition("shield_of_faith", 100)
+	ally.concentrating_on = {
+		"spell_id": "shield_of_faith",
+		"targets": [ally],
+		"duration_rounds_remaining": 100
+	}
+	ally.inventory.unequip(Inventory.Slot.BODY)
+	ally.inventory.unequip(Inventory.Slot.SHIELD)
+	ally.base_ac = 13
+	ally.current_hp = 30
+	ally.max_hp = 30
+	ally.temp_hp = 0
+	ally.ability_scores.constitution = 10
+	_assert(ally.get_ac() == 15, "B1R2 Production: Ally initial AC is 15 with Shield of Faith")
+
+	var prod_two_step := {
+		"id": "sandbox:prod_two_step",
+		"name": "Prod Two Step",
+		"execution": "shared",
+		"level": 1,
+		"range": 10,
+		"steps": [
+			{"id": "s0", "type": "attack", "attack_type": "ranged_spell", "damage": "10", "damage_type": "fire"},
+			{"id": "s1", "type": "attack", "attack_type": "ranged_spell", "damage": "10", "damage_type": "fire"}
+		]
+	}
+
+	# Seed finding: atk1 hits AC 15 (>= 10 + 5), CON save fails DC 10 (<= 9), atk2 hits AC 13 but misses AC 15 (roll + 5 == 14)
+	var prod_seed := 0
+	for candidate in 50000:
+		seed(candidate)
+		var r1 := randi_range(1, 20)
+		var r2 := randi_range(1, 20)
+		var r3 := randi_range(1, 20)
+		if (r1 + 5 >= 15) and (r1 < 20) and r2 <= 9 and (r3 + 5 == 14):
+			prod_seed = candidate
+			break
+
+	# Chain seed finding: atk1 hits AC 15 (>= 10 + 5), CON save fails DC 10 with +2 prof (r2 + 2 <= 9), bardic d6 saves (r2 + 2 + r3 >= 10), atk2 hits AC 13 but misses AC 15 (roll + 5 == 14)
+	var chain_seed := 0
+	for candidate in 50000:
+		seed(candidate)
+		var r1 := randi_range(1, 20)
+		var r2 := randi_range(1, 20)
+		var r3 := randi_range(1, 6)
+		var r4 := randi_range(1, 20)
+		if (r1 + 5 >= 15) and (r1 < 20) and (r2 + 2 <= 9) and (r2 + 2 + r3 >= 10) and (r4 + 5 == 14):
+			chain_seed = candidate
+			break
+
+	var test_state := {
+		"popup_seen_decline": false,
+		"popup_seen_accept": false,
+		"popup_seen_temphp": false,
+		"chain_stroke_seen": false,
+		"chain_bardic_seen": false
+	}
+
+	var wait_and_handle_dialog := func(on_found: Callable) -> void:
+		for frame in 60:
+			await get_tree().process_frame
+			if not is_instance_valid(combat) or combat.hud == null:
+				return
+			for child in combat.hud.get_children():
+				if child is ConfirmationDialog and child.visible:
+					on_found.call(child)
+					return
+
+	var wait_and_handle_chain_dialogs := func(first_action: Callable, second_action: Callable) -> void:
+		var handled_ids: Array[int] = []
+		var phase: int = 0
+		for frame in 180:
+			await get_tree().process_frame
+			if not is_instance_valid(combat) or combat.hud == null:
+				return
+			for child in combat.hud.get_children():
+				if child is ConfirmationDialog and child.visible and not handled_ids.has(child.get_instance_id()):
+					var child_id: int = child.get_instance_id()
+					if phase == 0 and child.title.contains("Stroke of Luck"):
+						handled_ids.append(child_id)
+						phase = 1
+						first_action.call(child)
+					elif phase == 1 and child.title.contains("Bardic Inspiration"):
+						handled_ids.append(child_id)
+						phase = 2
+						second_action.call(child)
+						return
+
+	GameManager.test_mode = false
+	seed(prod_seed)
+	combat.pending_action_type = "spell"
+	combat.pending_spell_data = prod_two_step.duplicate(true)
+	combat.turn_budget.reset(caster, combat.player_entities)
+
+	wait_and_handle_dialog.call(func(dialog: ConfirmationDialog):
+		test_state["popup_seen_decline"] = true
+		_assert(dialog.visible, "B1R2 Production: ConfirmationDialog is visibly open in HUD")
+		_assert(ally.has_condition("shield_of_faith") and ally.get_ac() == 15, "B1R2 Production: Defense AC 15 and Shield of Faith retained while popup awaits")
+		_assert(ally.current_hp == 20, "B1R2 Production: Step 1 not executed while popup awaits; ally HP damaged once by Step 0 (20 HP remaining)")
+		dialog.canceled.emit()
+	)
+	await combat._execute_player_spell(Vector2i(1, 0))
+	_assert(test_state["popup_seen_decline"], "B1R2 Production: Verified popup was open and inspected before decline")
+	_assert(not ally.has_condition("shield_of_faith") and ally.concentrating_on.is_empty(), "B1R2 Production: Declining Stroke of Luck ends concentration and removes Shield of Faith")
+	_assert(ally.get_ac() == 13, "B1R2 Production: Ally defense dropped to AC 13")
+	_assert(ally.current_hp == 10, "B1R2 Production: Step 1 executed against reduced AC 13 and hit; no double damage (10 HP remaining)")
+
+	# Now exercise acceptance maintaining concentration and defense:
+	ally.current_hp = 30
+	ally.temp_hp = 0
+	ally.add_condition("shield_of_faith", 100)
+	ally.concentrating_on = {
+		"spell_id": "shield_of_faith",
+		"targets": [ally],
+		"duration_rounds_remaining": 100
+	}
+	ally.feature_uses["rogue_stroke_of_luck"] = 1
+	seed(prod_seed)
+	combat.pending_action_type = "spell"
+	combat.pending_spell_data = prod_two_step.duplicate(true)
+	combat.turn_budget.reset(caster, combat.player_entities)
+
+	wait_and_handle_dialog.call(func(dialog: ConfirmationDialog):
+		test_state["popup_seen_accept"] = true
+		_assert(dialog.visible, "B1R2 Production: ConfirmationDialog is visibly open in HUD on accept")
+		_assert(ally.has_condition("shield_of_faith") and ally.get_ac() == 15, "B1R2 Production: Defense AC 15 maintained while popup awaits")
+		_assert(ally.current_hp == 20, "B1R2 Production: Ally damaged once by Step 0 (20 HP remaining)")
+		dialog.confirmed.emit()
+	)
+	await combat._execute_player_spell(Vector2i(1, 0))
+	_assert(test_state["popup_seen_accept"], "B1R2 Production: Verified popup was open and inspected before accept")
+	_assert(ally.has_condition("shield_of_faith") and not ally.concentrating_on.is_empty(), "B1R2 Production: Accepting Stroke of Luck maintains concentration on Shield of Faith")
+	_assert(ally.get_ac() == 15, "B1R2 Production: Defense AC 15 maintained")
+	_assert(ally.current_hp == 20, "B1R2 Production: Step 1 missed against retained AC 15; HP suffered only Step 0 damage (20 HP remaining)")
+
+	# Production ordered damage occurrence wholly/partly absorbed by TempHP driving CON save:
+	ally.current_hp = 30
+	ally.temp_hp = 10
+	ally.concentrating_on = {"spell_id": "bless", "targets": [ally]}
+	ally.feature_uses["rogue_stroke_of_luck"] = 1
+	var prod_temphp_spell := {
+		"id": "sandbox:prod_temphp",
+		"name": "Prod TempHP",
+		"execution": "shared",
+		"level": 1,
+		"range": 10,
+		"steps": [{"id": "s0", "type": "damage", "damage": "24", "damage_type": "fire"}]
+	}
+	combat.pending_action_type = "spell"
+	combat.pending_spell_data = prod_temphp_spell.duplicate(true)
+	combat.turn_budget.reset(caster, combat.player_entities)
+	# Seed CON save to roll 8 (+2 save prof = 10): passes DC 10 (if driven by hp_loss 14), but fails DC 12 (driven by resolved 24)
+	FighterChecks._seed_die(20, 8)
+	wait_and_handle_dialog.call(func(dialog: ConfirmationDialog):
+		_assert(ally.temp_hp == 0 and ally.current_hp == 16, "B1R2 Production: While popup awaits, TempHP absorbed 10 and HP loss was 14 (16 HP remaining)")
+		test_state["popup_seen_temphp"] = true
+		dialog.canceled.emit()
+	)
+	await combat._execute_player_spell(Vector2i(1, 0))
+	_assert(test_state["popup_seen_temphp"], "B1R2 Production: TempHP concentration popup was opened and declined")
+	_assert(ally.concentrating_on.is_empty(), "B1R2 Production: Resolved damage 24 drove DC 12 save, ending concentration")
+
+	# B1R2 Correction Production: Real HUD two-choice chain (decline Stroke then accept Bardic with GameManager.test_mode = false)
+	ally.current_hp = 30
+	ally.max_hp = 30
+	ally.temp_hp = 0
+	ally.base_ac = 13
+	ally.add_condition("shield_of_faith", 100)
+	ally.concentrating_on = {
+		"spell_id": "shield_of_faith",
+		"targets": [ally],
+		"duration_rounds_remaining": 100
+	}
+	ally.feature_uses["rogue_stroke_of_luck"] = 1
+	ally.feature_uses["bardic_inspiration_die"] = "1d6"
+	_assert(ally.get_ac() == 15, "B1R2 Production Chain: Ally initial AC is 15 with Shield of Faith")
+
+	seed(chain_seed)
+	combat.pending_action_type = "spell"
+	combat.pending_spell_data = prod_two_step.duplicate(true)
+	combat.turn_budget.reset(caster, combat.player_entities)
+
+	wait_and_handle_chain_dialogs.call(
+		func(dialog: ConfirmationDialog):
+			test_state["chain_stroke_seen"] = true
+			_assert(dialog.visible, "B1R2 Production Chain: First popup is visibly open for Stroke of Luck")
+			_assert(dialog.title.contains("Stroke of Luck") and dialog.title.contains("JSON Ally"), "B1R2 Production Chain: First popup title indicates Stroke of Luck for ally")
+			_assert(ally.has_condition("shield_of_faith") and ally.get_ac() == 15, "B1R2 Production Chain: Shield of Faith and AC 15 retained while Stroke popup awaits")
+			_assert(ally.current_hp == 20, "B1R2 Production Chain: Ally suffered Step 0 damage (20 HP remaining); Step 1 not executed while Stroke popup awaits")
+			dialog.canceled.emit(),
+		func(dialog: ConfirmationDialog):
+			test_state["chain_bardic_seen"] = true
+			_assert(dialog.visible, "B1R2 Production Chain: Second popup is visibly open for Bardic Inspiration")
+			_assert(dialog.title.contains("Bardic Inspiration") and dialog.title.contains("JSON Ally"), "B1R2 Production Chain: Second popup title indicates Bardic Inspiration for ally")
+			_assert(ally.has_condition("shield_of_faith") and ally.get_ac() == 15, "B1R2 Production Chain: Shield of Faith and AC 15 retained while Bardic popup awaits")
+			_assert(ally.current_hp == 20, "B1R2 Production Chain: Step 1 still waiting while Bardic popup awaits (20 HP remaining)")
+			_assert(int(ally.feature_uses.get("rogue_stroke_of_luck", 0)) == 1, "B1R2 Production Chain: Declined Stroke was not consumed")
+			dialog.confirmed.emit()
+	)
+	await combat._execute_player_spell(Vector2i(1, 0))
+	_assert(test_state["chain_stroke_seen"], "B1R2 Production Chain: Verified Stroke popup was opened and declined")
+	_assert(test_state["chain_bardic_seen"], "B1R2 Production Chain: Verified Bardic popup was opened and accepted")
+	_assert(ally.has_condition("shield_of_faith") and not ally.concentrating_on.is_empty(), "B1R2 Production Chain: Accepting Bardic Inspiration maintained concentration on Shield of Faith")
+	_assert(ally.get_ac() == 15, "B1R2 Production Chain: Defense AC 15 maintained")
+	_assert(int(ally.feature_uses.get("rogue_stroke_of_luck", 0)) == 1, "B1R2 Production Chain: Stroke of Luck was not consumed")
+	_assert(not ally.feature_uses.has("bardic_inspiration_die"), "B1R2 Production Chain: Bardic Inspiration die was consumed")
+	_assert(ally.current_hp == 20, "B1R2 Production Chain: Step 1 attack missed against retained AC 15; exactly 1 damage occurrence (20 HP remaining)")
+
+	# Clean up test features & state from ally
+	for i in range(ally.features.size() - 1, -1, -1):
+		if ally.features[i].get("id", "") == "rogue_stroke_of_luck":
+			ally.features.remove_at(i)
+	ally.feature_uses.erase("rogue_stroke_of_luck")
+	ally.feature_uses.erase("bardic_inspiration_die")
+	ally.concentrating_on.clear()
+	ally.temp_hp = 0
+	ally.current_hp = 30
+	GameManager.test_mode = true
+
+	combat.turn_budget.reset(caster, combat.player_entities)
+	foe = combat.monster_entities[0]
 	combat.pending_spell_data = DataLoader.get_spell("sandbox:resolve").duplicate(true)
 	combat.pending_action_type = "spell"
 	await combat._on_hex_clicked(Vector2i(1, 0))
@@ -8888,6 +9223,603 @@ func test_shared_spell_flow() -> void:
 		_teardown_scene(dungeon)
 	class_data["spell_list_ids"] = previous_list
 	print("SHARED_SPELL_LIVE_FLOW_CHECKS_COMPLETE")
+	_exit_test()
+
+
+func test_shared_spell_normal_controls_flow() -> void:
+	_enter_test("shared_spell_normal_controls_flow")
+	_setup_world()
+	DataLoader._load_content_type("res://data/fixtures/shared_spells/spells/", "spell")
+	DataLoader._load_content_type("res://data/fixtures/shared_spells/monsters/", "monster")
+
+	# Authored JSON class spell list membership is legitimate content data
+	var sorcerer_class: Dictionary = DataLoader.classes["sorcerer"]
+	var previous_sorcerer_list: Array = sorcerer_class["spell_list_ids"].duplicate()
+	var added_spells: Array[String] = [
+		"sandbox:ember",
+		"sandbox:shock",
+		"sandbox:mend",
+		"sandbox:resolve",
+		"sandbox:attack_then_save",
+		"sandbox:attack_then_area",
+		"sandbox:save_then_attack",
+		"sandbox:ordered_empowered"
+	]
+	sorcerer_class["spell_list_ids"].append_array(added_spells)
+
+	# 1. Legal learning / progression: Sorcerer earns Metamagic and prepares spells via production progression
+	var caster := _fresh_char("Legal Sorcerer", "human", "sorcerer", {"STR": 10, "DEX": 14, "CON": 14, "INT": 10, "WIS": 10, "CHA": 16})
+	var ally := _fresh_char("Legal Ally", "human", "fighter", {"STR": 16, "DEX": 12, "CON": 14, "INT": 10, "WIS": 10, "CHA": 10})
+
+	# Level 1 legal preparation: capacity is 4 cantrips and 2 prepared spells
+	_assert(caster.spell_choices_pending, "B2A: Fresh level 1 Sorcerer has pending spell choices")
+	var l1_cantrip_cap := caster.get_spellcasting_capacity("cantrips")
+	var l1_prep_cap := caster.get_spellcasting_capacity("prepared_spells")
+	var allowed_cantrips := caster.get_spell_option_ids(true)
+	var l1_chosen: Array[String] = []
+	for c_id in allowed_cantrips.slice(0, l1_cantrip_cap):
+		l1_chosen.append(c_id)
+	l1_chosen.append("sandbox:ember")
+	l1_chosen.append("sandbox:ordered_empowered")
+	_assert(ClassProgression.choose_spell_selection(caster, l1_chosen), "B2A: Legally prepare level 1 spells and cantrips via production choose_spell_selection")
+	_assert(not caster.spell_choices_pending, "B2A: Spell choices pending cleared after level 1 preparation")
+
+	# Progress to level 2 via production level_up
+	caster.level_up()
+	_assert(caster.level == 2, "B2A: Sorcerer reached level 2 via production level_up")
+	_assert(caster.sorcerer_metamagic_pending == 2, "B2A: Level 2 Sorcerer has exactly 2 pending Metamagic choices")
+	_assert(ClassProgression.choose_sorcerer_metamagic(caster, ["empowered_spell", "careful_spell"]), "B2A: Legally choose Empowered Spell and Careful Spell via production progression")
+	_assert(caster.sorcerer_metamagic_pending == 0 and "empowered_spell" in caster.sorcerer_metamagic_choices and caster.has_feature("sorcerer_metamagic"), "B2A: Empowered Spell verified on legally progressed Sorcerer")
+
+	# Level 2 legal preparation: capacity is 4 cantrips and 4 prepared spells
+	_assert(caster.spell_choices_pending, "B2A: Sorcerer has pending spell choices at level 2")
+	var l2_cantrip_cap := caster.get_spellcasting_capacity("cantrips")
+	var l2_prep_cap := caster.get_spellcasting_capacity("prepared_spells")
+	var l2_chosen: Array[String] = []
+	for c_id in allowed_cantrips.slice(0, l2_cantrip_cap):
+		l2_chosen.append(c_id)
+	# Retain existing 2 prepared spells and add 2 new eligible prepared spells (0 removed <= 1 replacement allowance)
+	l2_chosen.append("sandbox:ember")
+	l2_chosen.append("sandbox:ordered_empowered")
+	l2_chosen.append("sandbox:attack_then_save")
+	l2_chosen.append("sandbox:attack_then_area")
+	_assert(ClassProgression.choose_spell_selection(caster, l2_chosen), "B2A: Legally prepare level 2 spells and cantrips via production choose_spell_selection")
+	_assert(not caster.spell_choices_pending, "B2A: Spell choices pending cleared after level 2 preparation")
+
+	# Progress to level 3 to expand capacity for all ordered and simple test definitions
+	caster.level_up()
+	_assert(caster.level == 3, "B2A: Sorcerer reached level 3 via production level_up")
+	_assert(caster.spell_choices_pending, "B2A: Sorcerer has pending spell choices at level 3")
+	var l3_cantrip_cap := caster.get_spellcasting_capacity("cantrips")
+	var l3_prep_cap := caster.get_spellcasting_capacity("prepared_spells")
+	var l3_chosen: Array[String] = []
+	for c_id in allowed_cantrips.slice(0, l3_cantrip_cap):
+		l3_chosen.append(c_id)
+	l3_chosen.append("sandbox:ember")
+	l3_chosen.append("sandbox:ordered_empowered")
+	l3_chosen.append("sandbox:attack_then_save")
+	l3_chosen.append("sandbox:attack_then_area")
+	l3_chosen.append("sandbox:save_then_attack")
+	l3_chosen.append("sandbox:resolve")
+	_assert(ClassProgression.choose_spell_selection(caster, l3_chosen), "B2A: Legally prepare level 3 spells via production choose_spell_selection")
+	_assert(not caster.spell_choices_pending, "B2A: Spell choices pending cleared after level 3 preparation")
+	_assert("sandbox:ordered_empowered" in caster.known_spells and "sandbox:attack_then_save" in caster.known_spells and "sandbox:attack_then_area" in caster.known_spells and "sandbox:save_then_attack" in caster.known_spells and "sandbox:ember" in caster.known_spells and "sandbox:resolve" in caster.known_spells, "B2A: Legally chosen new definitions in known_spells")
+
+	# Sheet verification
+	await get_tree().process_frame
+	CharacterSheet.show_sheet(caster)
+	_assert(CharacterSheet.is_open(), "B2A: Character sheet opens for legally progressed Sorcerer")
+	var sheet_title: String = CharacterSheet._title.text
+	_assert(sheet_title.contains("Legal Sorcerer") and sheet_title.contains("Lvl 3") and sheet_title.contains("Sorcerer"), "B2A: Character sheet shows legal Level 3 Sorcerer identity")
+	CharacterSheet.close_sheet()
+	_assert(not CharacterSheet.is_open(), "B2A: Character sheet closes cleanly")
+	CharacterSheet.teardown_for_tests()
+
+	# Combat Setup
+	PlayerManager.set_player_character(0, caster)
+	PlayerManager.set_player_character(1, ally)
+	PartyManager.reset()
+	PartyManager.register_player_character(0, caster)
+	PartyManager.register_player_character(1, ally)
+	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 1.2)
+	combat.current_player_idx = 0
+	combat.active_character = caster
+	combat.active_combatant = {"id": "player_0", "is_player": true, "entity": caster}
+	combat.player_entities[0]["hex_position"] = Vector2i.ZERO
+	combat.player_entities[1]["hex_position"] = Vector2i(1, 0)
+	for index in combat.monster_entities.size():
+		combat.monster_entities[index]["hex_position"] = Vector2i(3 + index, 0)
+		combat.monster_entities[index]["current_hp"] = 1000
+		combat.monster_entities[index]["max_hp"] = 1000
+	caster.spell_slots = {"1": 4, "2": 2}
+	caster.feature_uses["sorcery_points"] = 3
+	combat.turn_budget.reset(caster, combat.player_entities)
+	combat.remaining_attack_swings = 0
+	combat.hud.update_hud(caster, combat.tracker)
+
+	var find_spell_idx := func(spell_id: String) -> int:
+		for idx in combat.hud.spells_registered.size():
+			if combat.hud.spells_registered[idx].get("id", "") == spell_id:
+				return idx
+		return -1
+
+	# Show HUD picker and verify new definitions and simple spells appear enabled
+	combat.hud._show_spell_selection()
+	var ember_idx: int = int(find_spell_idx.call("sandbox:ember"))
+	var atk_save_idx: int = int(find_spell_idx.call("sandbox:attack_then_save"))
+	var atk_area_idx: int = int(find_spell_idx.call("sandbox:attack_then_area"))
+	var save_atk_idx: int = int(find_spell_idx.call("sandbox:save_then_attack"))
+	var ord_emp_idx: int = int(find_spell_idx.call("sandbox:ordered_empowered"))
+	var resolve_idx: int = int(find_spell_idx.call("sandbox:resolve"))
+	_assert(ember_idx >= 0 and not combat.hud.spell_list.is_item_disabled(ember_idx), "B2A: Ordinary simple spell sandbox:ember enabled in HUD picker")
+	_assert(atk_save_idx >= 0 and not combat.hud.spell_list.is_item_disabled(atk_save_idx), "B2A: Ordered attack->save spell enabled in HUD picker")
+	_assert(atk_area_idx >= 0 and not combat.hud.spell_list.is_item_disabled(atk_area_idx), "B2A: Ordered attack->area spell enabled in HUD picker")
+	_assert(save_atk_idx >= 0 and not combat.hud.spell_list.is_item_disabled(save_atk_idx), "B2A: Ordered save->attack spell enabled in HUD picker")
+	_assert(ord_emp_idx >= 0 and not combat.hud.spell_list.is_item_disabled(ord_emp_idx), "B2A: Ordered cascade spell enabled in HUD picker")
+	_assert(resolve_idx >= 0 and not combat.hud.spell_list.is_item_disabled(resolve_idx), "B2A: Shared concentration spell sandbox:resolve enabled in HUD picker")
+
+	# Picker/click cancellation before commitment: zero unintended cost
+	combat.hud._on_spell_selected(ord_emp_idx)
+	_assert(combat.pending_action_type == "spell", "B2A: Spell targeting pending after selection")
+	combat._cancel_pending_action()
+	_assert(combat.pending_action_type == "" and combat.pending_spell_data.is_empty(), "B2A: Cancellation clears pending state")
+	_assert(int(caster.spell_slots["1"]) == 4 and int(caster.feature_uses["sorcery_points"]) == 3 and combat.turn_budget.action_available, "B2A: Cancellation before commitment leaves slots, SP, and action untouched")
+
+	# Ordinary simple spell compatibility cast
+	var foe0: Dictionary = combat.monster_entities[0]
+	foe0["armor_class"] = 10
+	combat.hud._show_spell_selection()
+	ember_idx = find_spell_idx.call("sandbox:ember")
+	combat.hud._on_spell_selected(ember_idx)
+	FighterChecks._seed_die(20, 15)
+	await combat._on_hex_clicked(foe0["hex_position"])
+	_assert(int(foe0["current_hp"]) < 1000, "B2A: Ordinary simple spell resolves and damages target")
+	_assert(int(caster.spell_slots["1"]) == 3 and int(caster.feature_uses["sorcery_points"]) == 3 and not combat.turn_budget.action_available, "B2A: Ordinary simple spell spends exactly one slot and Action, zero SP")
+
+	# 2. Mixed attack->save: deterministic attack hit damage persists after secondary save succeeds
+	combat.turn_budget.reset(caster, combat.player_entities)
+	foe0["current_hp"] = 1000
+	foe0["armor_class"] = 10
+	foe0["saving_throw_bonuses"] = {"CON": 100} # secondary CON save guaranteed to succeed
+	combat.hud._show_spell_selection()
+	atk_save_idx = find_spell_idx.call("sandbox:attack_then_save")
+	combat.hud._on_spell_selected(atk_save_idx)
+	FighterChecks._seed_die(20, 15)
+	await combat._on_hex_clicked(foe0["hex_position"])
+	_assert(int(foe0["current_hp"]) < 1000, "B2A: Attack hit damage applied to foe")
+	var hp_after_atk_hit := int(foe0["current_hp"])
+	_assert(not CombatAction.has_condition(foe0, "poisoned"), "B2A: Secondary save succeeded and avoided poisoned condition")
+	_assert(int(caster.spell_slots["1"]) == 2 and not combat.turn_budget.action_available, "B2A: Mixed attack->save spent exactly one slot and Action")
+	_assert(int(foe0["current_hp"]) == hp_after_atk_hit, "B2A: Attack hit damage persists after secondary save succeeds")
+
+	# Independent declared area executes after attack miss with separate nearby actors/per-actor outcomes
+	combat.turn_budget.reset(caster, combat.player_entities)
+	var foe1: Dictionary = combat.monster_entities[1]
+	foe0["hex_position"] = Vector2i(3, 0)
+	foe1["hex_position"] = Vector2i(3, 1) # Adjacent, within sphere radius 2 of (3, 0)
+	foe0["current_hp"] = 1000
+	foe1["current_hp"] = 1000
+	foe0["armor_class"] = 50 # Primary attack will miss!
+	foe0["saving_throw_bonuses"] = {"DEX": -100} # Foe 0 fails DEX save -> full area damage
+	foe1["saving_throw_bonuses"] = {"DEX": 100} # Foe 1 succeeds DEX save -> half area damage
+	combat.hud._show_spell_selection()
+	atk_area_idx = find_spell_idx.call("sandbox:attack_then_area")
+	combat.hud._on_spell_selected(atk_area_idx)
+	FighterChecks._seed_die(20, 5)
+	await combat._on_hex_clicked(foe0["hex_position"])
+	_assert(int(foe0["current_hp"]) < 1000, "B2A: Foe 0 took area blast damage despite attack miss")
+	_assert(int(foe1["current_hp"]) < 1000, "B2A: Foe 1 in area took area blast damage")
+	var foe0_blast_dmg := 1000 - int(foe0["current_hp"])
+	var foe1_blast_dmg := 1000 - int(foe1["current_hp"])
+	_assert(foe0_blast_dmg > foe1_blast_dmg and foe1_blast_dmg == int(floor(float(foe0_blast_dmg) / 2.0)), "B2A: Per-actor outcomes: failed save took full %d, successful save took half %d" % [foe0_blast_dmg, foe1_blast_dmg])
+	_assert(int(caster.spell_slots["1"]) == 1 and not combat.turn_budget.action_available, "B2A: Attack-then-area spent exactly one slot and Action")
+
+	# Save->attack gating: successful save skips gated attack; failed save executes gated attack and logs first-attack hit summary
+	combat.turn_budget.reset(caster, combat.player_entities)
+	foe0["current_hp"] = 1000
+	foe0["armor_class"] = 10
+	foe0["saving_throw_bonuses"] = {"STR": 100} # Foe succeeds save -> impale attack gated out
+	var log_before_gated: String = combat.hud.log_text.get_parsed_text()
+	combat.hud._show_spell_selection()
+	save_atk_idx = find_spell_idx.call("sandbox:save_then_attack")
+	combat.hud._on_spell_selected(save_atk_idx)
+	await combat._on_hex_clicked(foe0["hex_position"])
+	var log_after_gated: String = combat.hud.log_text.get_parsed_text().substr(log_before_gated.length())
+	_assert(int(foe0["current_hp"]) == 1000 and not CombatAction.has_condition(foe0, "restrained"), "B2A: Successful save gates out subsequent attack step; zero damage dealt and not restrained")
+	_assert(log_after_gated.contains("succeeded on STR save") and not log_after_gated.contains("Spell Hit!") and not log_after_gated.contains("Spell missed!"), "B2A: Gated-out attack step does not log an attack roll after successful save")
+
+	combat.turn_budget.reset(caster, combat.player_entities)
+	foe0["saving_throw_bonuses"] = {"STR": -100} # Foe fails save -> restrained and impale executes
+	var log_before_impale: String = combat.hud.log_text.get_parsed_text()
+	combat.hud._show_spell_selection()
+	combat.hud._on_spell_selected(save_atk_idx)
+	FighterChecks._seed_die(20, 15)
+	await combat._on_hex_clicked(foe0["hex_position"])
+	var log_after_impale: String = combat.hud.log_text.get_parsed_text().substr(log_before_impale.length())
+	_assert(int(foe0["current_hp"]) < 1000 and CombatAction.has_condition(foe0, "restrained"), "B2A: Failed save satisfies gate; impale attack step executes, hits and restrains foe")
+	_assert(log_after_impale.contains("failed STR save") and log_after_impale.contains("is restrained.") and log_after_impale.contains("Spell Hit! Dealing"), "B2A: Failed-save -> attack cast visibly publishes both restrained grant and first-attack hit summary in HUD log")
+	foe0.get("conditions", {}).erase("restrained")
+
+	# 3. Actual Empowered popup with GameManager.test_mode = false on ordered multi-step spells
+	# Case A: Ordered 2-step spell (sandbox:ordered_empowered) Popup Cancel across both steps applies original rolls, spends 0 SP
+	GameManager.test_mode = false
+	combat.turn_budget.reset(caster, combat.player_entities)
+	caster.spell_slots["1"] = 3
+	caster.feature_uses["sorcery_points"] = 3
+	foe0["armor_class"] = 10
+	foe0["current_hp"] = 1000
+	foe0["temp_hp"] = 0
+	foe0["saving_throw_bonuses"] = {"DEX": -100}
+	var sp_before_popup := int(caster.feature_uses["sorcery_points"])
+
+	var popup_state := {
+		"cancel_step1_seen": false,
+		"cancel_step2_seen": false,
+		"accept_step1_seen": false,
+		"accept_step2_seen": false,
+		"fresh_cast_seen": false,
+		"step1_req_id": "",
+		"step2_req_id": ""
+	}
+	var handle_ordered_empowered_cancel := func() -> void:
+		var dialog_confirmed := false
+		var closed_menus: Array[ int ] = []
+		for _f in 240:
+			await get_tree().process_frame
+			if not is_instance_valid(combat) or combat.hud == null: return
+			if not dialog_confirmed:
+				for child in combat.hud.get_children():
+					if child is ConfirmationDialog and not child.is_queued_for_deletion() and child.title.contains("Empowered Spell"):
+						dialog_confirmed = true
+						child.confirmed.emit()
+						break
+			else:
+				for child in combat.hud.get_children():
+					if child is PopupMenu and not child.is_queued_for_deletion() and child.title.contains("Empowered Spell"):
+						var m_id: int = int(child.get_instance_id())
+						if m_id in closed_menus:
+							continue
+						closed_menus.append(m_id)
+						if not bool(popup_state["cancel_step1_seen"]):
+							popup_state["cancel_step1_seen"] = true
+							_assert(child.title.contains("choose up to 3 damage dice") and child.item_count >= 3, "B2A: Step 1 cancel PopupMenu offers up to 3 dice for 2d8 burst")
+							child.popup_hide.emit()
+							break
+						else:
+							popup_state["cancel_step2_seen"] = true
+							_assert(child.title.contains("choose up to 3 damage dice") and child.item_count >= 2, "B2A: Step 2 cancel PopupMenu still offers up to 3 dice after Step 1 cancel")
+							child.popup_hide.emit()
+							return
+
+	combat.hud._show_spell_selection()
+	ord_emp_idx = find_spell_idx.call("sandbox:ordered_empowered")
+	combat.hud._on_spell_selected(ord_emp_idx)
+	handle_ordered_empowered_cancel.call()
+	FighterChecks._seed_die(20, 15)
+	await combat._on_hex_clicked(foe0["hex_position"])
+	_assert(bool(popup_state["cancel_step1_seen"]) and bool(popup_state["cancel_step2_seen"]), "B2A: Ordered 2-step sandbox:ordered_empowered opened live Empowered PopupMenu for both steps on cancel")
+	_assert(int(foe0["current_hp"]) < 1000, "B2A: Target took original damage from both steps after popup cancels")
+	_assert(int(caster.feature_uses["sorcery_points"]) == sp_before_popup, "B2A: Cancelling both step popups spent zero Sorcery Points")
+	_assert(int(caster.spell_slots["1"]) == 2 and not combat.turn_budget.action_available, "B2A: Ordered popup cancel cast spent exactly one slot and Action")
+
+	# Case B: Ordered 2-step attack->area save (sandbox:attack_then_area) with live Empowered reroll on Step 1 AND Step 2,
+	# mid-cast stale/duplicate/wrong-kind refusal while Step 2 is suspended, and shared raw area roll across foe0 (failed save) and foe1 (half damage).
+	combat.turn_budget.reset(caster, combat.player_entities)
+	foe0["hex_position"] = Vector2i(3, 0)
+	foe1["hex_position"] = Vector2i(3, 1)
+	foe0["armor_class"] = 10
+	foe0["current_hp"] = 1000
+	foe0["temp_hp"] = 4
+	foe0["saving_throw_bonuses"] = {"DEX": -100} # fails DEX save -> full area fire damage
+	foe1["current_hp"] = 1000
+	foe1["temp_hp"] = 0
+	foe1["saving_throw_bonuses"] = {"DEX": 100} # succeeds DEX save -> half area fire damage
+	var hp_after_step1_holder := {"foe0_hp": 1000, "foe0_temp": 4}
+
+	var handle_ordered_empowered_accept := func() -> void:
+		var dialog_confirmed := false
+		var seen_menus: Array[ int ] = []
+		var step1_die_picked := false
+		var step2_die_picked := false
+		for _f in 360:
+			await get_tree().process_frame
+			if not is_instance_valid(combat) or combat.hud == null: return
+			if not dialog_confirmed:
+				for child in combat.hud.get_children():
+					if child is ConfirmationDialog and not child.is_queued_for_deletion() and child.title.contains("Empowered Spell"):
+						dialog_confirmed = true
+						child.confirmed.emit()
+						break
+			else:
+				for child in combat.hud.get_children():
+					if child is PopupMenu and not child.is_queued_for_deletion() and child.title.contains("Empowered Spell"):
+						var m_id: int = int(child.get_instance_id())
+						if m_id in seen_menus:
+							continue
+						seen_menus.append(m_id)
+						if not step1_die_picked:
+							popup_state["accept_step1_seen"] = true
+							popup_state["step1_req_id"] = str(SpellDamageRolls._active_request_id_by_caster.get(str(caster.get_instance_id()), ""))
+							_assert(not str(popup_state["step1_req_id"]).is_empty(), "B2A: Step 1 active damage request registered")
+							_assert(child.title.contains("choose up to 3 damage dice"), "B2A: Step 1 PopupMenu offers full 3-die CHA allowance")
+							step1_die_picked = true
+							# Step 1 has 1 die (1d10), so selecting index 0 exhausts Step 1's selectable dice and settles Step 1 immediately
+							child.id_pressed.emit(0)
+							break
+						elif not step2_die_picked:
+							popup_state["accept_step2_seen"] = true
+							popup_state["step2_req_id"] = str(SpellDamageRolls._active_request_id_by_caster.get(str(caster.get_instance_id()), ""))
+							_assert(not str(popup_state["step2_req_id"]).is_empty() and str(popup_state["step2_req_id"]) != str(popup_state["step1_req_id"]), "B2A: Step 2 registered distinct active damage request")
+							_assert(child.title.contains("choose up to 2 damage dice"), "B2A: Step 2 PopupMenu caps selection to remaining 2-die allowance from Step 1")
+							_assert(int(caster.feature_uses["sorcery_points"]) == sp_before_popup - 1, "B2A: Step 1 settlement charged 1 Sorcery Point before Step 2 prompt")
+							hp_after_step1_holder["foe0_hp"] = int(foe0["current_hp"])
+							hp_after_step1_holder["foe0_temp"] = int(foe0["temp_hp"])
+							_assert(int(foe0["temp_hp"]) < 4 or int(foe0["current_hp"]) < 1000, "B2A: Step 1 piercing damage settled against foe0 Temp HP / HP before Step 2")
+
+							# 4. Mid-cast stale/duplicate/wrong-kind refusals while Step 2 is genuinely suspended:
+							var snap_foe0_hp := int(foe0["current_hp"])
+							var snap_foe0_temp := int(foe0["temp_hp"])
+							var snap_foe1_hp := int(foe1["current_hp"])
+							var snap_slots := int(caster.spell_slots["1"])
+							var snap_sp := int(caster.feature_uses["sorcery_points"])
+
+							var replay_step1 := CombatAction.finish_pending_spell_damage(caster, foe0, {"damage_request": {"request_id": str(popup_state["step1_req_id"]), "kind": "damage"}}, {"metamagic:empowered_dice": [0]})
+							_assert(bool(replay_step1.get("refused", false)), "B2A: Mid-cast replay of settled Step 1 request ID is refused")
+
+							var unknown_req := CombatAction.finish_pending_spell_damage(caster, foe0, {"damage_request": {"request_id": "nonexistent_req_id", "kind": "damage"}}, {"metamagic:empowered_dice": [0]})
+							_assert(bool(unknown_req.get("refused", false)), "B2A: Mid-cast unknown request ID is refused")
+
+							var wrong_kind := CombatAction.finish_pending_concentration_choice(caster, foe0, {"concentration_request": {"request_id": str(popup_state["step2_req_id"]), "kind": "damage"}}, {"feature": "stroke_of_luck", "accepted": false})
+							_assert(bool(wrong_kind.get("refused", false)), "B2A: Mid-cast concentration finish against active Step 2 damage request ID is refused")
+
+							_assert(int(foe0["current_hp"]) == snap_foe0_hp and int(foe0["temp_hp"]) == snap_foe0_temp and int(foe1["current_hp"]) == snap_foe1_hp and int(caster.spell_slots["1"]) == snap_slots and int(caster.feature_uses["sorcery_points"]) == snap_sp, "B2A: Mid-cast refused commands do not mutate HP, Temp HP, slots, or Sorcery Points")
+							_assert(str(SpellDamageRolls._active_request_id_by_caster.get(str(caster.get_instance_id()), "")) == str(popup_state["step2_req_id"]), "B2A: Active Step 2 request remains intact after refused mid-cast commands")
+
+							step2_die_picked = true
+							child.id_pressed.emit(0)
+							break
+						else:
+							child.popup_hide.emit()
+							return
+
+	combat.hud._show_spell_selection()
+	atk_area_idx = find_spell_idx.call("sandbox:attack_then_area")
+	combat.hud._on_spell_selected(atk_area_idx)
+	handle_ordered_empowered_accept.call()
+	FighterChecks._seed_die(20, 15)
+	await combat._on_hex_clicked(foe0["hex_position"])
+	_assert(bool(popup_state["accept_step1_seen"]) and bool(popup_state["accept_step2_seen"]), "B2A: Verified Empowered PopupMenu opened and rerolled across both Step 1 attack and Step 2 area save")
+	var foe0_step2_dmg := int(hp_after_step1_holder["foe0_hp"]) + int(hp_after_step1_holder["foe0_temp"]) - (int(foe0["current_hp"]) + int(foe0["temp_hp"]))
+	var foe1_step2_dmg := 1000 - int(foe1["current_hp"])
+	_assert(foe0_step2_dmg > 0 and foe1_step2_dmg == int(floor(float(foe0_step2_dmg) / 2.0)), "B2A: Step 2 Empowered reroll shared one raw area damage roll across foe0 (%d) and foe1 (%d)" % [foe0_step2_dmg, foe1_step2_dmg])
+	_assert(int(caster.feature_uses["sorcery_points"]) == sp_before_popup - 1, "B2A: Multi-step Empowered rerolls across Step 1 and Step 2 spent 1 Sorcery Point total for the cast")
+	_assert(int(caster.spell_slots["1"]) == 1 and not combat.turn_budget.action_available, "B2A: Ordered Empowered cast spent exactly one slot and Action")
+
+	# Case C: Immediately follow with a fresh cast via normal controls to prove fresh Empowered allowance and unblocked continuation
+	combat.turn_budget.reset(caster, combat.player_entities)
+	foe0["current_hp"] = 1000
+	foe0["temp_hp"] = 0
+	var handle_fresh_cast_popup := func() -> void:
+		var dialog_confirmed := false
+		var seen_menus: Array[ int ] = []
+		var die_picked := false
+		for _f in 180:
+			await get_tree().process_frame
+			if not is_instance_valid(combat) or combat.hud == null: return
+			if not dialog_confirmed:
+				for child in combat.hud.get_children():
+					if child is ConfirmationDialog and not child.is_queued_for_deletion() and child.title.contains("Empowered Spell"):
+						dialog_confirmed = true
+						child.confirmed.emit()
+						break
+			else:
+				for child in combat.hud.get_children():
+					if child is PopupMenu and not child.is_queued_for_deletion() and child.title.contains("Empowered Spell"):
+						var m_id: int = int(child.get_instance_id())
+						if m_id in seen_menus:
+							continue
+						seen_menus.append(m_id)
+						if not die_picked:
+							popup_state["fresh_cast_seen"] = true
+							_assert(child.title.contains("choose up to 3 damage dice"), "B2A: Subsequent fresh cast resets Empowered allowance back to 3 dice")
+							die_picked = true
+							# sandbox:ember has 1d6 (1 die), so selecting index 0 finishes immediately
+							child.id_pressed.emit(0)
+							return
+						else:
+							child.popup_hide.emit()
+							return
+
+	combat.hud._show_spell_selection()
+	ember_idx = find_spell_idx.call("sandbox:ember")
+	combat.hud._on_spell_selected(ember_idx)
+	handle_fresh_cast_popup.call()
+	FighterChecks._seed_die(20, 15)
+	await combat._on_hex_clicked(foe0["hex_position"])
+	_assert(bool(popup_state["fresh_cast_seen"]) and int(foe0["current_hp"]) < 1000, "B2A: Subsequent fresh cast after multi-step continuation resolves normally through HUD controls")
+	_assert(int(caster.feature_uses["sorcery_points"]) == sp_before_popup - 2 and int(caster.spell_slots["1"]) == 0, "B2A: Subsequent fresh cast spent its own slot and Sorcery Point")
+	GameManager.test_mode = true
+
+	# 5. Encounter-hosted natural Zombie, created Zombie, and independently renamed sandbox:dread_husk
+	#    verified through normal spell controls, initiative tracker membership, and once-only defeat callbacks.
+	caster.features.append({"id": "fiend_dark_ones_blessing"})
+	caster.temp_hp = 0
+	caster.spell_slots["1"] = 6
+
+	var nat_zombie: Dictionary = DataLoader.get_monster("zombie").duplicate(true)
+	nat_zombie["id"] = "b2a_nat_zombie"
+	nat_zombie["hex_position"] = Vector2i(2, 0)
+	nat_zombie["current_hp"] = 1
+	nat_zombie["max_hp"] = 15
+	nat_zombie["armor_class"] = 8
+	nat_zombie["is_alive"] = true
+	nat_zombie["saving_throw_bonuses"] = {"CON": 100}
+
+	var z_record := {"id": "b2a_created_zombie", "serial": 1, "form_id": "zombie", "position": [2, 1], "current_hp": 1, "max_hp": 15}
+	var created_zombie: Dictionary = CreatedCreatureRules.monster(z_record)
+	created_zombie["id"] = "b2a_created_zombie"
+	created_zombie["hex_position"] = Vector2i(2, 1)
+	created_zombie["current_hp"] = 1
+	created_zombie["max_hp"] = 15
+	created_zombie["armor_class"] = 8
+	created_zombie["is_alive"] = true
+	created_zombie["saving_throw_bonuses"] = {"CON": 100}
+
+	var husk: Dictionary = DataLoader.get_monster("sandbox:dread_husk").duplicate(true)
+	_assert(not husk.is_empty(), "B2A: Fixture sandbox:dread_husk loaded successfully")
+	husk["id"] = "b2a_dread_husk"
+	husk["hex_position"] = Vector2i(2, -1)
+	husk["current_hp"] = 1
+	husk["max_hp"] = 15
+	husk["armor_class"] = 8
+	husk["is_alive"] = true
+	husk["saving_throw_bonuses"] = {"CON": 100}
+
+	combat.monster_entities.append(nat_zombie)
+	combat.monster_entities.append(created_zombie)
+	combat.monster_entities.append(husk)
+	combat.tracker.add_combatant(nat_zombie["id"], nat_zombie["name"], false, nat_zombie, 5, 6)
+	combat.tracker.add_combatant(created_zombie["id"], created_zombie["name"], false, created_zombie, 4, 6)
+	combat.tracker.add_combatant(husk["id"], husk["name"], false, husk, 3, 6)
+	combat._update_grid_entities()
+
+	var tracker_has := func(m_id: String) -> bool:
+		for c_entry in combat.tracker.combatants:
+			if str(c_entry.get("id", "")) == m_id:
+				return true
+		return false
+
+	# 5a. Non-radiant, non-crit lethal spell hits via normal controls -> all 3 survive at 1 HP, stay in tracker, 0 defeat callbacks
+	for undead_target in [nat_zombie, created_zombie, husk]:
+		combat.turn_budget.reset(caster, combat.player_entities)
+		caster.spell_slots["1"] = 4
+		combat.hud._show_spell_selection()
+		ember_idx = find_spell_idx.call("sandbox:ember")
+		combat.hud._on_spell_selected(ember_idx)
+		FighterChecks._seed_die(20, 15)
+		await combat._on_hex_clicked(undead_target["hex_position"])
+		_assert(int(undead_target["current_hp"]) == 1 and bool(undead_target["is_alive"]), "B2A: %s survives lethal spell hit at 1 HP via zero-HP replacement" % str(undead_target["id"]))
+		_assert(tracker_has.call(str(undead_target["id"])) and not bool(undead_target.get("_defeat_processed", false)) and caster.temp_hp == 0, "B2A: %s remains in initiative tracker and fires zero defeat callbacks on survival" % str(undead_target["id"]))
+
+	# 5b. Critical spell hit via normal controls on natural Zombie bypasses zero-HP replacement -> 0 HP, removed from tracker, defeat callback fires once
+	combat.turn_budget.reset(caster, combat.player_entities)
+	combat.hud._show_spell_selection()
+	ember_idx = find_spell_idx.call("sandbox:ember")
+	combat.hud._on_spell_selected(ember_idx)
+	FighterChecks._seed_die(20, 20)
+	await combat._on_hex_clicked(nat_zombie["hex_position"])
+	_assert(int(nat_zombie["current_hp"]) == 0 and not bool(nat_zombie["is_alive"]) and not tracker_has.call("b2a_nat_zombie") and caster.temp_hp > 0, "B2A: Critical spell hit bypasses zero-HP replacement on natural Zombie, removes from tracker, and triggers defeat feature")
+	caster.temp_hp = 0
+
+	# 5c. Radiant damage bypass on created Zombie, then stepped spell defeat once-only verification in encounter
+	var created_rad: Dictionary = CombatAction.resolve_damage(created_zombie, 5, "radiant")
+	_assert(not created_rad.get("zero_hp_replacement_saved", false) and int(created_zombie["current_hp"]) == 0 and not bool(created_zombie["is_alive"]), "B2A: Radiant damage bypasses zero-HP replacement on created Zombie")
+	created_zombie["current_hp"] = 1
+	created_zombie["is_alive"] = true
+	created_zombie["saving_throw_bonuses"] = {"CON": -100}
+	combat.turn_budget.reset(caster, combat.player_entities)
+	combat.hud._show_spell_selection()
+	ord_emp_idx = find_spell_idx.call("sandbox:ordered_empowered")
+	combat.hud._on_spell_selected(ord_emp_idx)
+	FighterChecks._seed_die(20, 15)
+	await combat._on_hex_clicked(created_zombie["hex_position"])
+	_assert(int(created_zombie["current_hp"]) == 0 and not bool(created_zombie["is_alive"]) and bool(created_zombie.get("_defeat_processed", false)) and not tracker_has.call("b2a_created_zombie") and caster.temp_hp > 0, "B2A: Created Zombie defeated once by stepped spell, removed from tracker, and skipped by later step")
+	caster.temp_hp = 0
+
+	# 5d. Failed CON save on sandbox:dread_husk via stepped spell in encounter -> 0 HP, removed from tracker, defeat processed once
+	husk["saving_throw_bonuses"] = {"CON": -100}
+	var log_before_husk_defeat: String = combat.hud.log_text.get_parsed_text()
+	combat.turn_budget.reset(caster, combat.player_entities)
+	combat.hud._show_spell_selection()
+	combat.hud._on_spell_selected(ord_emp_idx)
+	FighterChecks._seed_die(20, 15)
+	await combat._on_hex_clicked(husk["hex_position"])
+	var log_after_husk_defeat: String = combat.hud.log_text.get_parsed_text().substr(log_before_husk_defeat.length())
+	_assert(int(husk["current_hp"]) == 0 and not bool(husk["is_alive"]) and bool(husk.get("_defeat_processed", false)) and not tracker_has.call("b2a_dread_husk") and caster.temp_hp > 0, "B2A: Failed CON save destroys sandbox:dread_husk, removes from tracker, and triggers defeat feature once")
+	_assert(log_after_husk_defeat.count("Dread Husk was defeated!") == 1, "B2A: Stepped spell logs Dread Husk defeat exactly once")
+	caster.features.erase({"id": "fiend_dark_ones_blessing"})
+	caster.temp_hp = 0
+
+	# 6. Cast-owned SpellEffects grant cleanup on concentration loss and duration expiry, preserving unrelated sources
+	var other_caster := _fresh_char("Other Cleric", "human", "cleric", {"STR": 10, "DEX": 10, "CON": 14, "INT": 10, "WIS": 16, "CHA": 10})
+	var other_ward := DataLoader.get_spell("sandbox:resolve").duplicate(true)
+	other_ward["id"] = "sandbox:other_ward"
+	other_ward["concentration"] = false
+	other_ward["duration_seconds"] = 120
+	other_ward["effects"] = [{"type": "grant_condition", "condition": "shield_of_faith"}]
+	var other_effect_cast := SpellEffects.begin_cast(other_caster, other_ward)
+	var other_source_id := str(other_effect_cast["source_id"])
+	SpellEffects.grant(ally, other_effect_cast, "shield_of_faith")
+	_assert(ally.has_condition("shield_of_faith") and SpellEffects.records(ally).has(other_source_id), "B2A: Unrelated SpellEffects grant active on ally before sandbox:resolve cast")
+
+	# Cast sandbox:resolve on ally through normal HUD picker + hex click
+	combat.turn_budget.reset(caster, combat.player_entities)
+	caster.spell_slots["1"] = 3
+	combat.hud._show_spell_selection()
+	resolve_idx = find_spell_idx.call("sandbox:resolve")
+	combat.hud._on_spell_selected(resolve_idx)
+	await combat._on_hex_clicked(combat.player_entities[1]["hex_position"])
+	var resolve_source_1 := str(caster.concentrating_on.get("effect_source", ""))
+	_assert(not resolve_source_1.is_empty() and ally.has_condition("blessed") and SpellEffects.records(ally).has(resolve_source_1), "B2A: Normal-control sandbox:resolve cast creates SpellEffects grant and concentration record")
+
+	# R2 taking-damage concentration loss removes only caster's sandbox:resolve grant
+	var orig_caster_con := caster.ability_scores.constitution
+	caster.ability_scores.constitution = 1
+	FighterChecks._seed_die(20, 1)
+	await combat._check_concentration_save(caster, 22)
+	caster.ability_scores.constitution = orig_caster_con
+	_assert(caster.concentrating_on.is_empty() and not ally.has_condition("blessed") and not SpellEffects.records(ally).has(resolve_source_1), "B2A: Failed concentration save removes cast-owned sandbox:resolve grant")
+	_assert(ally.has_condition("shield_of_faith") and SpellEffects.records(ally).has(other_source_id), "B2A: Concentration loss preserves unrelated SpellEffects source on same ally")
+
+	# Re-cast sandbox:resolve via normal controls and expire via duration advance
+	combat.turn_budget.reset(caster, combat.player_entities)
+	combat.hud._show_spell_selection()
+	resolve_idx = find_spell_idx.call("sandbox:resolve")
+	combat.hud._on_spell_selected(resolve_idx)
+	await combat._on_hex_clicked(combat.player_entities[1]["hex_position"])
+	var resolve_source_2 := str(caster.concentrating_on.get("effect_source", ""))
+	_assert(not resolve_source_2.is_empty() and resolve_source_2 != resolve_source_1 and ally.has_condition("blessed"), "B2A: Second sandbox:resolve cast establishes fresh SpellEffects source")
+	SpellEffects.advance_time([caster, other_caster, ally], 60)
+	combat._update_grid_entities()
+	_assert(caster.concentrating_on.is_empty() and not ally.has_condition("blessed") and not SpellEffects.records(ally).has(resolve_source_2), "B2A: Duration expiry removes sandbox:resolve grant and clears concentration")
+	_assert(ally.has_condition("shield_of_faith") and SpellEffects.records(ally).has(other_source_id), "B2A: Duration expiry preserves longer-duration unrelated SpellEffects source on ally")
+	SpellEffects.remove(ally, other_source_id)
+
+	# 7. Normal-control pre-payment refusal (picker + _on_hex_clicked with missing spatial grid) followed by valid normal cast
+	combat.turn_budget.reset(caster, combat.player_entities)
+	caster.spell_slots["1"] = 2
+	caster.feature_uses["sorcery_points"] = 2
+	caster.add_condition("sanctuary", 10)
+	caster.add_condition("invisibility", 10)
+	combat.hud._show_spell_selection()
+	atk_area_idx = find_spell_idx.call("sandbox:attack_then_area")
+	combat.hud._on_spell_selected(atk_area_idx)
+	_assert(combat.pending_action_type == "spell", "B2A: Area-step spell selected via normal HUD picker")
+	var saved_grid = combat.hex_grid
+	combat.hex_grid = null
+	await combat._on_hex_clicked(foe0["hex_position"])
+	_assert(int(caster.spell_slots["1"]) == 2 and int(caster.feature_uses["sorcery_points"]) == 2, "B2A: Normal-control pre-payment refusal preserves spell slots and Sorcery Points")
+	_assert(combat.turn_budget.action_available, "B2A: Normal-control pre-payment refusal preserves Action")
+	_assert(caster.has_condition("sanctuary") and caster.has_condition("invisibility"), "B2A: Normal-control pre-payment refusal preserves Sanctuary and Invisibility")
+	_assert(combat.pending_action_type == "" and combat.pending_spell_data.is_empty(), "B2A: Normal-control pre-payment refusal cleanly resets pending state")
+
+	combat.hex_grid = saved_grid
+	caster.remove_condition("sanctuary")
+	caster.remove_condition("invisibility")
+	foe0["current_hp"] = 1000
+	combat.hud._show_spell_selection()
+	ember_idx = find_spell_idx.call("sandbox:ember")
+	combat.hud._on_spell_selected(ember_idx)
+	FighterChecks._seed_die(20, 15)
+	await combat._on_hex_clicked(foe0["hex_position"])
+	_assert(int(foe0["current_hp"]) < 1000 and int(caster.spell_slots["1"]) == 1 and not combat.turn_budget.action_available, "B2A: Subsequent normal cast succeeds after pre-payment refusal without blockage")
+
+	# Teardown and restore
+	sorcerer_class["spell_list_ids"] = previous_sorcerer_list
+	GameManager.test_mode = true
+	_teardown_scene(combat)
+	SpellDamageRolls.clear_pending_requests()
+	print("SHARED_SPELL_NORMAL_CONTROLS_FLOW_COMPLETE")
 	_exit_test()
 
 
@@ -10756,4 +11688,508 @@ func test_created_undead_flow() -> void:
 	_assert(not combat.player_entities.any(func(entity): return entity.get("is_created_creature", false)) and combat.monster_entities.size() == 1 and combat.monster_entities[0].get("created_creature_id", "") == creature_id and combat.monster_entities[0]["current_hp"] == 9, "A later encounter projects the expired creature as the same damaged hostile Undead without spawning fallback enemies")
 	_teardown_scene(combat)
 	SaveManager.delete_save(save_slot)
+	_exit_test()
+
+
+func _find_open_roll_token_dialog(hud: Node) -> Node:
+	for child in hud.get_children():
+		if child.is_queued_for_deletion():
+			continue
+		if child is PopupMenu and child.visible:
+			return child
+		if child is ConfirmationDialog and child.visible and (str(child.title).contains("Portent") or str(child.title).contains("Roll Token")):
+			return child
+	return null
+
+
+func test_roll_token_normal_controls_flow() -> void:
+	_enter_test("roll_token_normal_controls_flow")
+	_setup_world()
+	var diviner := _fresh_char("Portent Diviner", "human", "wizard", {"STR": 8, "DEX": 14, "CON": 14, "INT": 18, "WIS": 12, "CHA": 10})
+	while diviner.level < 3:
+		diviner.level_up()
+	_assert(ClassProgression.choose_subclass(diviner, "diviner"), "Level 3 Wizard selects Diviner subclass")
+	diviner.roll_tokens["diviner_portent"] = [
+		{"token_id": "diviner_portent:1:0", "value": 19, "feature_id": "diviner_portent", "pool_id": "diviner_portent", "die_sides": 20},
+		{"token_id": "diviner_portent:1:1", "value": 3, "feature_id": "diviner_portent", "pool_id": "diviner_portent", "die_sides": 20},
+	]
+	diviner.known_spells.assign(["fire_bolt", "burning_hands"])
+	diviner.wizard_spellbook.assign(["burning_hands", "magic_missile", "shield", "mage_armor", "sleep"])
+	diviner.spell_slots["1"] = 2
+
+	await get_tree().process_frame
+	CharacterSheet.show_sheet(diviner)
+	await get_tree().process_frame
+	var sheet_has_portent := false
+	for label in CharacterSheet._content.find_children("*", "Label", true, false):
+		if str((label as Label).text).contains("Portent: 19, 3"):
+			sheet_has_portent = true
+			break
+	_assert(sheet_has_portent, "CharacterSheet displays live Diviner Portent dice values")
+	CharacterSheet.close_sheet()
+	CharacterSheet.teardown_for_tests()
+	await get_tree().process_frame
+
+	PlayerManager.set_player_character(0, diviner)
+	PartyManager.reset()
+	PartyManager.register_player_character(0, diviner)
+	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 1.5)
+	combat.current_player_idx = 0
+	combat.active_character = diviner
+	combat.active_combatant = {"is_player": true, "entity": diviner}
+	combat.player_entities[0]["hex_position"] = Vector2i.ZERO
+	combat.turn_budget.reset(diviner, combat.player_entities)
+	combat.remaining_attack_swings = 0
+	var enemy: Dictionary = combat.monster_entities[0]
+	enemy["name"] = "Portent Target"
+	enemy["hex_position"] = Vector2i(1, 0)
+	enemy["is_alive"] = true
+	enemy["current_hp"] = 50
+	enemy["max_hp"] = 50
+	enemy["armor_class"] = 20
+	enemy["saving_throw_bonuses"] = {"DEX": 8}
+	enemy["conditions"] = {}
+	for idx in range(1, combat.monster_entities.size()):
+		combat.monster_entities[idx]["is_alive"] = false
+		combat.monster_entities[idx]["current_hp"] = 0
+	combat._update_grid_entities()
+	combat.hud.update_hud(diviner, combat.tracker)
+	_assert(combat.hud.info_label.text.contains("Portent: 19, 3 (1/turn)"), "CombatHUD displays active Diviner Portent tokens and per-turn state")
+
+	GameManager.test_mode = false
+	combat.hud._show_spell_selection()
+	var fire_bolt_idx := -1
+	for idx in combat.hud.spells_registered.size():
+		if str(combat.hud.spells_registered[idx].get("id", "")) == "fire_bolt":
+			fire_bolt_idx = idx
+			break
+	_assert(fire_bolt_idx >= 0, "Normal spell picker lists Fire Bolt for the Diviner")
+	combat.hud._on_spell_selected(fire_bolt_idx)
+	for _frame in 20:
+		if combat.pending_action_type == "spell":
+			break
+		await get_tree().process_frame
+	_assert(combat.pending_action_type == "spell" and str(combat.pending_spell_data.get("id", "")) == "fire_bolt", "Selecting Fire Bolt enters normal spell targeting")
+
+	var d20_rolls_during_portent := 0
+	var count_d20 := func(payload: Dictionary) -> void:
+		if int(payload.get("sides", 0)) == 20:
+			d20_rolls_during_portent += 1
+	Dice.dice_rolled.connect(count_d20)
+
+	combat.call_deferred("_on_hex_clicked", Vector2i(1, 0))
+	var popup_handled := false
+	for _frame in 120:
+		await get_tree().process_frame
+		var dialog := _find_open_roll_token_dialog(combat.hud)
+		if dialog is ConfirmationDialog:
+			popup_handled = true
+			dialog.confirmed.emit()
+			break
+		elif dialog is PopupMenu:
+			popup_handled = true
+			dialog.id_pressed.emit(1)
+			break
+	for _frame in 120:
+		if combat.pending_action_type.is_empty() and not combat.resolving_player_action:
+			break
+		await get_tree().process_frame
+	Dice.dice_rolled.disconnect(count_d20)
+
+	_assert(popup_handled, "Normal-controls Fire Bolt attack opens the Portent token selection dialog before rolling")
+	_assert(d20_rolls_during_portent == 0, "Replacing the Fire Bolt attack roll with Portent token 19 rolls zero d20s")
+	_assert(int(enemy.get("current_hp", 50)) < 50, "Portent token 19 + spell attack bonus hits AC 20 and deals Fire Bolt damage")
+	_assert(RollTokenRules.get_available_values(diviner, "diviner_portent") == [3], "Spending token 19 leaves only token 3 in the Diviner's Portent pool")
+	_assert(not combat.turn_budget.can_use_turn_feature(diviner, "diviner_portent"), "Spending a Portent token consumes the once-per-turn diviner_portent budget")
+	combat.hud.update_hud(diviner, combat.tracker)
+	_assert(combat.hud.info_label.text.contains("Portent: 3 (used this turn)"), "CombatHUD reflects remaining token 3 and used-this-turn status")
+
+	# Next turn: use remaining token 3 through normal controls on Burning Hands to force enemy DEX save failure.
+	combat.turn_budget.reset(diviner, combat.player_entities)
+	combat.hud.update_hud(diviner, combat.tracker)
+	_assert(combat.hud.info_label.text.contains("Portent: 3 (1/turn)"), "Resetting the turn budget restores the once-per-turn Portent availability")
+
+	var hp_before_burning := int(enemy.get("current_hp", 0))
+	combat.hud._show_spell_selection()
+	var burning_idx := -1
+	for idx in combat.hud.spells_registered.size():
+		if str(combat.hud.spells_registered[idx].get("id", "")) == "burning_hands":
+			burning_idx = idx
+			break
+	_assert(burning_idx >= 0, "Normal spell picker lists Burning Hands for the Diviner")
+	combat.hud._on_spell_selected(burning_idx)
+	for _frame in 20:
+		if combat.pending_action_type == "spell":
+			break
+		await get_tree().process_frame
+
+	d20_rolls_during_portent = 0
+	Dice.dice_rolled.connect(count_d20)
+	combat.call_deferred("_on_hex_clicked", Vector2i(1, 0))
+	var save_prompt_handled := false
+	for _frame in 120:
+		await get_tree().process_frame
+		var dialog := _find_open_roll_token_dialog(combat.hud)
+		if dialog is ConfirmationDialog:
+			save_prompt_handled = true
+			dialog.confirmed.emit()
+			break
+		elif dialog is PopupMenu:
+			save_prompt_handled = true
+			dialog.id_pressed.emit(1)
+			break
+	for _frame in 120:
+		if combat.pending_action_type.is_empty() and not combat.resolving_player_action:
+			break
+		await get_tree().process_frame
+	Dice.dice_rolled.disconnect(count_d20)
+
+	_assert(save_prompt_handled, "Normal-controls Burning Hands offers the remaining Portent token 3 before the enemy's DEX save")
+	_assert(d20_rolls_during_portent == 0, "Replacing the enemy's DEX save with Portent token 3 rolls zero d20s")
+	_assert(RollTokenRules.get_available_values(diviner, "diviner_portent").is_empty(), "Spending token 3 exhausts the Diviner's Portent pool")
+	_assert(int(enemy.get("current_hp", 0)) < hp_before_burning, "Enemy forced onto Portent die 3 fails the Burning Hands save and takes damage")
+	combat.hud.update_hud(diviner, combat.tracker)
+	_assert(combat.hud.info_label.text.contains("Portent: exhausted"), "CombatHUD reports Portent: exhausted when all tokens are spent")
+
+	# Decline the first roll, then replace the gated save in the same live cast.
+	var original_spells := DataLoader.spells.duplicate(true)
+	DataLoader._load_content_type("res://data/fixtures/shared_spells/spells/", "spell")
+	diviner.known_spells.append("sandbox:attack_then_save")
+	diviner.wizard_spellbook.append("sandbox:attack_then_save")
+	diviner.roll_tokens["diviner_portent"] = [{"token_id": "ordered:20", "value": 20, "feature_id": "diviner_portent", "pool_id": "diviner_portent", "die_sides": 20}]
+	diviner.spell_slots["1"] = 2
+	combat.turn_budget.reset(diviner, combat.player_entities)
+	enemy["current_hp"] = 50
+	enemy["armor_class"] = 1
+	enemy["saving_throw_bonuses"] = {"CON": 0}
+	combat.hud.update_hud(diviner, combat.tracker)
+	combat.hud._show_spell_selection()
+	var ordered_idx := -1
+	for idx in combat.hud.spells_registered.size():
+		if str(combat.hud.spells_registered[idx].get("id", "")) == "sandbox:attack_then_save":
+			ordered_idx = idx
+			break
+	_assert(ordered_idx >= 0, "Normal picker lists the ordered attack/save fixture for the Diviner")
+	combat.hud._on_spell_selected(ordered_idx)
+	for _frame in 20:
+		if combat.pending_action_type == "spell": break
+		await get_tree().process_frame
+	FighterChecks._seed_die(20, 10)
+	combat.call_deferred("_on_hex_clicked", Vector2i(1, 0))
+	var handled_dialogs: Array[int] = []
+	var hp_before_later_save := 50
+	for _frame in 240:
+		await get_tree().process_frame
+		var dialog := _find_open_roll_token_dialog(combat.hud)
+		if not dialog is ConfirmationDialog or dialog.get_instance_id() in handled_dialogs: continue
+		handled_dialogs.append(dialog.get_instance_id())
+		if handled_dialogs.size() == 1:
+			_assert(int(enemy.current_hp) == 50, "First ordered Portent dialog opens before attack damage")
+			dialog.canceled.emit()
+		else:
+			hp_before_later_save = int(enemy.current_hp)
+			_assert(hp_before_later_save < 50 and not enemy.conditions.has("poisoned"), "Later Portent dialog opens after attack damage and before the gated save")
+			dialog.confirmed.emit()
+			break
+	for _frame in 120:
+		if combat.pending_action_type.is_empty() and not combat.resolving_player_action: break
+		await get_tree().process_frame
+	_assert(handled_dialogs.size() == 2, "Declining the attack preserves a live Portent choice for the later save")
+	_assert(int(enemy.current_hp) == hp_before_later_save and not enemy.conditions.has("poisoned"), "Later Portent succeeds without repeating attack damage or applying failed-save effects")
+	_assert(RollTokenRules.get_available_values(diviner, "diviner_portent").is_empty() and int(diviner.spell_slots["1"]) == 1, "Ordered cast spends one Portent token and one spell slot")
+	diviner.known_spells.erase("sandbox:attack_then_save")
+	diviner.wizard_spellbook.erase("sandbox:attack_then_save")
+	DataLoader.spells = original_spells
+
+	# Visibility gate check in live combat: invisible enemy cannot be targeted by Portent without perception.
+	RollTokenRules.regenerate_all_pools(diviner)
+	combat.turn_budget.reset(diviner, combat.player_entities)
+	enemy["conditions"] = {"invisible": 2}
+	var unseen_eligible: Array = combat._collect_eligible_roll_token_entries("saving_throw", enemy, Vector2i(1, 0), {"ability": "DEX", "dc": 14})
+	_assert(unseen_eligible.is_empty(), "Invisible enemy outside special perception is not eligible for Diviner Portent replacement")
+
+	GameManager.test_mode = true
+	_teardown_scene(combat)
+	_exit_test()
+
+
+func test_ward_normal_controls_flow() -> void:
+	_enter_test("ward_normal_controls_flow")
+	_setup_world()
+	var abjurer := _fresh_char("Arcane Abjurer", "human", "wizard", {"STR": 8, "DEX": 14, "CON": 14, "INT": 18, "WIS": 12, "CHA": 10})
+	while abjurer.level < 6:
+		abjurer.level_up()
+	_assert(ClassProgression.choose_subclass(abjurer, "abjurer"), "Level 6 Wizard selects Abjurer subclass")
+	abjurer.known_spells.assign(["mage_armor", "protection_from_evil_and_good", "shield"])
+	abjurer.wizard_spellbook.assign(["mage_armor", "protection_from_evil_and_good", "shield", "magic_missile"])
+	abjurer.spell_slots = {"1": 2, "2": 2}
+	abjurer.inventory.add_item("component_pouch")
+
+	var ally := _fresh_char("Guarded Fighter", "human", "fighter", {"STR": 16, "DEX": 12, "CON": 14, "INT": 10, "WIS": 12, "CHA": 10})
+	while ally.level < 6:
+		ally.level_up()
+	ally.max_hp = 50
+	ally.current_hp = 50
+	ally.base_ac = 10
+
+	await get_tree().process_frame
+	CharacterSheet.show_sheet(abjurer)
+	await get_tree().process_frame
+	var sheet_has_inactive_ward := false
+	for label in CharacterSheet._content.find_children("*", "Label", true, false):
+		if str((label as Label).text).contains("Arcane Ward: Inactive (0 / 16 HP"):
+			sheet_has_inactive_ward = true
+			break
+	_assert(sheet_has_inactive_ward, "CharacterSheet displays inactive Arcane Ward (0 / 16 HP) before creation")
+	CharacterSheet.close_sheet()
+	CharacterSheet.teardown_for_tests()
+	await get_tree().process_frame
+
+	PlayerManager.set_player_character(0, abjurer)
+	PlayerManager.set_player_character(1, ally)
+	PartyManager.reset()
+	PartyManager.register_player_character(0, abjurer)
+	PartyManager.register_player_character(1, ally)
+
+	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 1.5)
+	for coord in HexUtils.get_hexes_in_range(Vector2i.ZERO, 6):
+		if not combat.hex_grid.has_tile(coord):
+			var tile := HexTile.new()
+			tile.coord = coord
+			tile.is_revealed = true
+			combat.hex_grid.add_tile(tile)
+	combat.current_player_idx = 0
+	combat.active_character = abjurer
+	combat.active_combatant = {"is_player": true, "entity": abjurer}
+	combat.player_entities[0]["hex_position"] = Vector2i.ZERO
+	combat.player_entities[1]["hex_position"] = Vector2i(2, 0)
+	combat.turn_budget.reset(abjurer, combat.player_entities)
+	combat.remaining_attack_swings = 0
+
+	var enemy: Dictionary = combat.monster_entities[0]
+	enemy["name"] = "Ward Breaker"
+	enemy["hex_position"] = Vector2i(2, 1)
+	enemy["is_alive"] = true
+	enemy["current_hp"] = 50
+	enemy["max_hp"] = 50
+	enemy["armor_class"] = 12
+	enemy["conditions"] = {}
+	enemy["attacks"] = [{"name": "Heavy Club", "attack_bonus": 25, "damage": "10", "damage_type": "bludgeoning", "reach": 1}]
+	for idx in range(1, combat.monster_entities.size()):
+		combat.monster_entities[idx]["is_alive"] = false
+		combat.monster_entities[idx]["current_hp"] = 0
+	combat._update_grid_entities()
+	combat.hud.update_hud(abjurer, combat.tracker)
+	_assert(combat.hud.info_label.text.contains("Arcane Ward: Inactive (0 / 16 HP"), "CombatHUD displays inactive Arcane Ward before first Abjuration slot spell")
+
+	combat.hud._show_feature_selection()
+	var ward_feat_idx := -1
+	for idx in combat.hud.features_registered.size():
+		if str(combat.hud.features_registered[idx].get("id", "")) == "abjurer_arcane_ward":
+			ward_feat_idx = idx
+			break
+	_assert(ward_feat_idx >= 0 and combat.hud.feature_list.is_item_disabled(ward_feat_idx), "Feature menu lists Arcane Ward Bonus Action slot expenditure as disabled before the ward is created")
+	combat.hud._cancel_selection()
+
+	GameManager.test_mode = false
+	combat.hud._show_spell_selection()
+	var mage_armor_idx := -1
+	for idx in combat.hud.spells_registered.size():
+		if str(combat.hud.spells_registered[idx].get("id", "")) == "mage_armor":
+			mage_armor_idx = idx
+			break
+	_assert(mage_armor_idx >= 0, "Normal spell picker lists Mage Armor for the Abjurer")
+	combat.hud._on_spell_selected(mage_armor_idx)
+	for _frame in 20:
+		if combat.pending_action_type == "spell":
+			break
+		await get_tree().process_frame
+	_assert(combat.pending_action_type == "spell" and str(combat.pending_spell_data.get("id", "")) == "mage_armor", "Selecting Mage Armor enters normal spell targeting")
+
+	await combat._on_hex_clicked(Vector2i.ZERO)
+	for _frame in 40:
+		if combat.pending_action_type.is_empty() and not combat.resolving_player_action:
+			break
+		await get_tree().process_frame
+	_assert(WardRules.is_ward_active(abjurer, "arcane_ward") and WardRules.current_ward_hp(abjurer, "arcane_ward") == 16, "Casting Mage Armor through normal controls creates Arcane Ward at 16/16 HP")
+	combat.hud.update_hud(abjurer, combat.tracker)
+	_assert(combat.hud.info_label.text.contains("Arcane Ward: 16 / 16 HP (Active)"), "CombatHUD updates to display active Arcane Ward at 16 / 16 HP")
+
+	# Drain 6 HP from the ward and use the normal Feature menu Bonus Action slot recharge
+	CombatAction.resolve_damage(abjurer, 6, "bludgeoning")
+	_assert(WardRules.current_ward_hp(abjurer, "arcane_ward") == 10, "Arcane Ward absorbs 6 self damage down to 10/16 HP")
+	combat.hud.update_hud(abjurer, combat.tracker)
+	combat.hud._show_feature_selection()
+	ward_feat_idx = -1
+	for idx in combat.hud.features_registered.size():
+		if str(combat.hud.features_registered[idx].get("id", "")) == "abjurer_arcane_ward":
+			ward_feat_idx = idx
+			break
+	_assert(ward_feat_idx >= 0 and not combat.hud.feature_list.is_item_disabled(ward_feat_idx), "Feature menu enables Arcane Ward Bonus Action slot expenditure when the ward is active and below max HP")
+
+	combat.hud.call_deferred("_on_feature_selected", ward_feat_idx)
+	var slot_popup_handled := false
+	for _frame in 60:
+		await get_tree().process_frame
+		for child in combat.hud.get_children():
+			if child is PopupMenu and (child as PopupMenu).visible:
+				slot_popup_handled = true
+				(child as PopupMenu).id_pressed.emit(2)
+				break
+		if slot_popup_handled:
+			break
+	for _frame in 30:
+		await get_tree().process_frame
+	_assert(slot_popup_handled and WardRules.current_ward_hp(abjurer, "arcane_ward") == 14 and int(abjurer.spell_slots.get("2", 0)) == 1 and not combat.turn_budget.can_spend("bonus_action"), "Selecting Arcane Ward: Expend Slot in the Feature menu opens the slot picker, spends a level 2 slot + Bonus Action, and restores 4 Ward HP (to 14/16)")
+
+	# Now enemy attacks ally within 30 ft; Abjurer accepts Projected Ward Reaction dialog
+	abjurer.reaction_available = true
+	combat.player_entities[0]["reaction_available"] = true
+	combat.call_deferred("_execute_monster_attack", enemy, ally.character_name, 0)
+	var projected_dialog_handled := false
+	for _frame in 120:
+		await get_tree().process_frame
+		for child in combat.hud.get_children():
+			if child is ConfirmationDialog and (child as ConfirmationDialog).visible and str((child as ConfirmationDialog).title).contains("Projected Ward"):
+				projected_dialog_handled = true
+				(child as ConfirmationDialog).confirmed.emit()
+				break
+		if projected_dialog_handled:
+			break
+	for _frame in 60:
+		await get_tree().process_frame
+	_assert(projected_dialog_handled, "Monster attack against visible ally within 30 ft opens Projected Ward Reaction dialog")
+	_assert(ally.current_hp == 50 and WardRules.current_ward_hp(abjurer, "arcane_ward") < 14 and not abjurer.reaction_available, "Confirming Projected Ward spends Abjurer's Reaction and absorbs incoming monster attack damage for the ally")
+
+	GameManager.test_mode = true
+	_teardown_scene(combat)
+	_exit_test()
+
+
+func test_short_rest_arcane_recovery_normal_controls_flow() -> void:
+	_enter_test("short_rest_arcane_recovery_normal_controls_flow")
+	RestRules.reset_windows()
+	_setup_world()
+	GameManager.current_state = GameManager.GameState.OVERWORLD
+	GameManager.campaign_elapsed_seconds = 0
+
+	var wiz := Character.new()
+	var wiz_scores := AbilityScores.new()
+	wiz_scores.from_dict({"STR": 10, "DEX": 14, "CON": 14, "INT": 16, "WIS": 12, "CHA": 10})
+	wiz.initialize("Lyra Recovery", "human", "wizard", wiz_scores)
+	while wiz.level < 3:
+		wiz.level_up()
+	wiz.spell_slots["1"] = 2 # max 4 -> 2 missing
+	wiz.spell_slots["2"] = 1 # max 2 -> 1 missing
+
+	var fighter := Character.new()
+	var f_scores := AbilityScores.new()
+	f_scores.from_dict({"STR": 16, "DEX": 14, "CON": 14, "INT": 10, "WIS": 12, "CHA": 10})
+	fighter.initialize("Garrick Vanguard", "human", "fighter", f_scores)
+	while fighter.level < 3:
+		fighter.level_up()
+	fighter.feature_uses["fighter_second_wind"] = 1
+
+	PlayerManager.set_player_character(0, wiz)
+	PlayerManager.set_player_character(1, fighter)
+	PartyManager.reset()
+	PartyManager.register_player_character(0, wiz)
+	PartyManager.register_player_character(1, fighter)
+
+	var overworld: Node = await _spawn_scene("res://scenes/overworld.tscn", 0.6)
+	var ow_hud: Node = overworld.hud
+
+	# 1. Refusal when Camp Roster is open
+	ow_hud.btn_companions.pressed.emit()
+	await get_tree().process_frame
+	ow_hud.btn_rest.pressed.emit()
+	await get_tree().process_frame
+	_assert(RestRules.get_active_rest_choice_modal() == null, "Rest choice modal is refused while Camp Roster modal is open")
+	ow_hud.companion_panel.close_button.pressed.emit()
+	await get_tree().process_frame
+
+	# 2. Normal-controls Rest Choice Modal -> Cancel does not advance time or rest
+	var time_before := GameManager.campaign_elapsed_seconds
+	ow_hud.btn_rest.pressed.emit()
+	await get_tree().process_frame
+	var choice_modal := RestRules.get_active_rest_choice_modal()
+	_assert(choice_modal != null and choice_modal.visible, "Pressing Rest in Overworld opens the Rest Choice modal")
+	var btn_cancel := choice_modal.get_meta("btn_cancel") as Button
+	btn_cancel.pressed.emit()
+	await get_tree().process_frame
+	_assert(RestRules.get_active_rest_choice_modal() == null and GameManager.campaign_elapsed_seconds == time_before and int(fighter.feature_uses.get("fighter_second_wind", 0)) == 1 and int(wiz.spell_slots.get("1", 0)) == 2, "Cancelling the Rest Choice modal closes it without advancing campaign time or restoring resources")
+
+	# 3. Normal-controls Short Rest -> opens interactive Arcane Recovery modal
+	ow_hud.btn_rest.pressed.emit()
+	await get_tree().process_frame
+	choice_modal = RestRules.get_active_rest_choice_modal()
+	var btn_short := choice_modal.get_meta("btn_short_rest") as Button
+	btn_short.pressed.emit()
+	await get_tree().process_frame
+
+	_assert(GameManager.campaign_elapsed_seconds == time_before + 3600 and int(fighter.feature_uses.get("fighter_second_wind", 0)) == 2, "Selecting Short Rest (1 Hour) advances campaign time by 3600s once and runs Fighter short_rest recovery")
+	var rec_modal := RestRules.get_active_recovery_modal()
+	_assert(rec_modal != null and rec_modal.visible, "Completing Short Rest with expended Wizard spell slots opens the interactive Arcane Recovery modal")
+
+	var btn_confirm := rec_modal.get_meta("btn_confirm") as Button
+	var btn_add_l1 := rec_modal.get_meta("btn_add_level_1") as Button
+	var btn_sub_l1 := rec_modal.get_meta("btn_sub_level_1") as Button
+	var btn_add_l2 := rec_modal.get_meta("btn_add_level_2") as Button
+	_assert(btn_confirm.disabled, "Arcane Recovery Confirm button is disabled before any slot is selected")
+
+	# Select 2x Level 1 slots (fills 2/2 budget)
+	btn_add_l1.pressed.emit()
+	btn_add_l1.pressed.emit()
+	await get_tree().process_frame
+	_assert(not btn_confirm.disabled and btn_add_l1.disabled and btn_add_l2.disabled, "Selecting 2xL1 slots fills the 2/2 recovery budget, enables Confirm, and disables adding more slots")
+
+	# Switch selection in the UI to 1x Level 2 slot (2/2 budget) and confirm
+	btn_sub_l1.pressed.emit()
+	btn_sub_l1.pressed.emit()
+	btn_add_l2.pressed.emit()
+	await get_tree().process_frame
+	_assert(not btn_confirm.disabled and btn_add_l1.disabled and btn_add_l2.disabled, "Switching selection to 1xL2 slot fills the 2/2 recovery budget and enables Confirm")
+
+	btn_confirm.pressed.emit()
+	await get_tree().process_frame
+	_assert(RestRules.get_active_recovery_modal() == null and not RestRules.is_rest_window_open(), "Confirming Arcane Recovery closes the modal and settles the recovery window")
+	_assert(int(wiz.spell_slots.get("2", 0)) == 2 and int(wiz.spell_slots.get("1", 0)) == 2 and int(wiz.feature_uses.get("wizard_arcane_recovery", -1)) == 0, "Confirming 1xL2 restores the level 2 slot, leaves level 1 slots at 2, and spends the once-per-Long-Rest Arcane Recovery use")
+
+	# 4. Second Short Rest before Long Rest does not re-open Arcane Recovery
+	ow_hud.btn_rest.pressed.emit()
+	await get_tree().process_frame
+	choice_modal = RestRules.get_active_rest_choice_modal()
+	(choice_modal.get_meta("btn_short_rest") as Button).pressed.emit()
+	await get_tree().process_frame
+	_assert(GameManager.campaign_elapsed_seconds == time_before + 7200 and RestRules.get_active_recovery_modal() == null, "Second Short Rest before a Long Rest advances another 3600s without re-opening Arcane Recovery")
+
+	_teardown_scene(overworld)
+
+	# 5. Dungeon local-room refusal vs Dungeon entrance Short Rest with Decline
+	GameManager.current_state = GameManager.GameState.DUNGEON
+	var dungeon: Node = await _spawn_scene("res://scenes/dungeon.tscn", 0.6)
+	wiz.long_rest()
+	wiz.spell_slots["1"] = 2
+	var dummy_local := LocalRoomView.new()
+	dungeon.local_view = dummy_local
+	dungeon._on_rest_pressed()
+	await get_tree().process_frame
+	_assert(RestRules.get_active_rest_choice_modal() == null, "Dungeon refuses Rest while local_view is active")
+	dungeon.local_view = null
+
+	dungeon.hud.btn_rest.pressed.emit()
+	await get_tree().process_frame
+	choice_modal = RestRules.get_active_rest_choice_modal()
+	_assert(choice_modal != null and choice_modal.visible, "Dungeon entrance Rest button opens the Rest Choice modal")
+	(choice_modal.get_meta("btn_short_rest") as Button).pressed.emit()
+	await get_tree().process_frame
+	rec_modal = RestRules.get_active_recovery_modal()
+	_assert(rec_modal != null and rec_modal.visible, "Completing Short Rest in Dungeon opens the Arcane Recovery modal")
+	var btn_decline := rec_modal.get_meta("btn_decline") as Button
+	btn_decline.pressed.emit()
+	await get_tree().process_frame
+	_assert(RestRules.get_active_recovery_modal() == null and int(wiz.spell_slots.get("1", 0)) == 2 and int(wiz.feature_uses.get("wizard_arcane_recovery", 0)) == 1, "Declining Arcane Recovery in Dungeon closes the modal without spending the feature use")
+
+	RestRules.reset_windows()
+	_teardown_scene(dungeon)
 	_exit_test()

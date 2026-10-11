@@ -5,7 +5,7 @@ class_name PlayerCommand
 extends RefCounted
 
 const TYPES := [
-	"move", "end_turn", "rest", "save", "menu", "settings", "sheet",
+	"move", "end_turn", "rest", "short_rest", "long_rest", "save", "menu", "settings", "sheet",
 	"event_choice", "event_roll", "inventory_buy", "inventory_rest",
 ]
 
@@ -33,6 +33,18 @@ static func simple(command_kind: String) -> PlayerCommand:
 	return from_ui(command_kind, {})
 
 
+static func rest(chosen_rest_type: String = "long_rest") -> PlayerCommand:
+	return from_ui("rest", {"rest_type": chosen_rest_type})
+
+
+static func short_rest() -> PlayerCommand:
+	return from_ui("short_rest", {"rest_type": "short_rest"})
+
+
+static func long_rest() -> PlayerCommand:
+	return from_ui("long_rest", {"rest_type": "long_rest"})
+
+
 static func event_choice(option: Dictionary) -> PlayerCommand:
 	return from_ui("event_choice", {"option": option})
 
@@ -56,11 +68,26 @@ func is_valid() -> bool:
 		"move":
 			var raw_target: Variant = payload.get("target_hex", [])
 			return raw_target is Array and (raw_target as Array).size() == 2
+		"rest":
+			var chosen_type := str(payload.get("rest_type", "long_rest"))
+			return chosen_type in ["short_rest", "long_rest"]
+		"short_rest":
+			return str(payload.get("rest_type", "short_rest")) == "short_rest"
+		"long_rest":
+			return str(payload.get("rest_type", "long_rest")) == "long_rest"
 		"event_choice":
 			return payload.get("option", {}) is Dictionary and not payload.get("option", {}).is_empty()
 		"inventory_buy":
 			return int(payload.get("player_index", -1)) >= 0 and not str(payload.get("item_id", "")).is_empty()
 	return true
+
+
+func rest_type() -> String:
+	if kind == "short_rest":
+		return "short_rest"
+	if kind == "long_rest":
+		return "long_rest"
+	return str(payload.get("rest_type", "long_rest"))
 
 
 func target_hex() -> Vector2i:

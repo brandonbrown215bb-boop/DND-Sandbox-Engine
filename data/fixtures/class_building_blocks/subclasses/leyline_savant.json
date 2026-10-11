@@ -1,0 +1,27 @@
+{
+  "id": "fixture:leyline_savant",
+  "name": "Fixture Leyline Savant",
+  "class_id": "wizard",
+  "features_by_level": {
+    "3": [
+      {
+        "id": "fixture:leyline_font",
+        "name": "Leyline Font",
+        "type": "triggered",
+        "uses": 1,
+        "uses_per": "long_rest",
+        "effects": [
+          {
+            "type": "rest_slot_recovery",
+            "trigger": "short_rest_completed",
+            "class_level_source": "self",
+            "budget_formula": "flat",
+            "flat_budget": 3,
+            "min_slot_level": 1,
+            "max_slot_level": 3
+          }
+        ]
+      }
+    ]
+  }
+}

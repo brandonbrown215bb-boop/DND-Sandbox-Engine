@@ -578,7 +578,7 @@ static func apply_fixed_score_increase(c: Character, effect: Dictionary) -> void
 
 static func choose_subclass(c: Character, id: String) -> bool:
 	var data := DataLoader.get_subclass(id)
-	if data.is_empty() or not c.subclass_id.is_empty() or data.get("class_id", "") != c.class_id or c.level < int(DataLoader.get_character_class(c.class_id).get("subclass_level", 3)):
+	if data.is_empty() or (not c.subclass_id.is_empty() and c.subclass_id != id) or data.get("class_id", "") != c.class_id or c.level < int(DataLoader.get_character_class(c.class_id).get("subclass_level", 3)):
 		return false
 	c.subclass_id = id
 	for gained_level in range(1, c.level + 1):
@@ -642,6 +642,12 @@ static func saved_choices_error(dto: Dictionary) -> String:
 	var subclass := DataLoader.get_subclass(subclass_id)
 	if not subclass_id.is_empty() and (subclass.get("class_id", "") != class_id or level < int(data.get("subclass_level", 3))):
 		return "Selected subclass is missing or unavailable for this character"
+	var roll_token_error := RollTokenRules.saved_state_error(dto, data, subclass, level)
+	if not roll_token_error.is_empty():
+		return roll_token_error
+	var ward_error := WardRules.saved_state_error(dto, data, subclass, level)
+	if not ward_error.is_empty():
+		return ward_error
 	var choices: Variant = dto.get("feature_choices", {})
 	if not choices is Dictionary:
 		return "Feature choices are not an object"

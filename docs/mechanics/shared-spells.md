@@ -26,11 +26,10 @@ still control who can cast it; shared execution does not grant ownership.
 Range and area geometry are five-foot hex counts. Delivery is automatic when
 neither `save` nor an attack type is supplied. Use `save: "DEX"` (or another
 ability) for saving-throw delivery, with optional `half_on_save: true`.
-Attack types are `ranged_spell` and `melee_spell`. **Current implementation
-limit:** a shared record cannot yet combine `attack_type` and `save`. The loader
-rejects that combination. This is a gap in the first contract, not the intended
-spell architecture; mixed and sequential checks belong in shared execution
-under [ADR-0017](../decisions/0017-shared-json-spell-execution.md).
+Attack types are `ranged_spell` and `melee_spell`. In simple spell records,
+choose either `attack_type` or `save`. To compose mixed or sequential checks,
+declare an explicit ordered `steps` array as described under
+[ADR-0019](../decisions/0019-shared-ordered-execution-and-zero-hp-replacement.md).
 `scaling` maps character-level strings to damage
 formulas. `upcast` supports damage dice, healing dice or fixed healing/Temporary
 HP increases and `additional_targets_per_level`.
@@ -57,23 +56,59 @@ Effects can be combined in their listed order. Use `on_spell_hit: true` for a
 payload that requires a hit, or `on_failed_save: true` for a failed-save
 payload. Ungated effects apply after a successful resolution, including a
 successful saving throw. Unknown operations and effect fields are errors.
-These flags inspect the current delivery result; adding `on_failed_save` to
-an attack effect does not cause a follow-up saving throw.
 
-## Mixed checks: required direction, not yet executable
+## Ordered steps: executable mixed checks and gating (ADR-0019)
 
-The shared path is intended to represent an attack followed by a save on hit,
-an attack followed by an area save regardless of hit/miss, and a save enabling
-a later attack. Those steps need explicit order, targets and conditions, with
-each check controlling only its declared payloads. For example, attack damage
-can resolve before a save against a secondary condition; a successful save
-then prevents that condition without undoing the attack damage.
+Spells can declare an ordered `steps` array to execute multi-phase deliveries
+with explicit gating, target scoping, and independent results:
 
-The ordered-step JSON format and its runtime are not implemented yet. Do not
-put both top-level fields into a shared record or assume effect gates supply
-the missing check. Existing mixed spells keep their dedicated paths until
-the reusable sequence is implemented and verified. A later `repeat_save` on
-a timed condition is already supported, but is a separate lifetime mechanism.
+```json
+{
+  "id": "my_mod:snare_and_strike",
+  "name": "Snare and Strike",
+  "execution": "shared",
+  "level": 1,
+  "casting_time": "action",
+  "range": 6,
+  "target": "single",
+  "school": "transmutation",
+  "steps": [
+    {
+      "id": "snare",
+      "type": "save",
+      "save": "STR",
+      "effects": [
+        {"type": "grant_condition", "condition": "restrained", "on_failed_save": true}
+      ]
+    },
+    {
+      "id": "impale",
+      "type": "attack",
+      "gate": "failed_save",
+      "gate_step": "snare",
+      "attack_type": "melee_spell",
+      "damage": "2d8",
+      "damage_type": "piercing"
+    }
+  ],
+  "duration_seconds": 60
+}
+```
+
+### Step specification
+- Execution runtime: `SharedStepExecutor` is the unified ordered execution engine for stepped spells and creature event rules.
+- `id`: Unique step identifier string.
+- `type`: For spells: `attack`, `save`, `damage`, `effect`. (`replace_hp` is an event rule step type used in zero-HP replacement, and is invalid in spell definitions).
+- Capability preflight refusal: Spells specifying unsupported step types (like `replace_hp`) or event-only save fields (`dc_base`, `dc_add_damage`, `save_ability`) are refused at preflight before any step execution, state mutation, or spell slot deduction.
+- `target`: `target` (default, follows cast selection), `area` (uses area geometry), or `self`.
+- `gate`: Execution condition based on prerequisite step: `always` (default), `hit`, `miss`, `failed_save`, `successful_save`.
+- `gate_step`: ID or relative index of prerequisite step to check.
+- **Results**: Execution returns top-level summaries (`hit`, `saved`, `damage`) and a `step_results` array containing each step's `step_id`, `type`, `target_mode`, `hit`, `saved`, `replaced`, `damage`, `skipped`, and detailed `target_outcomes`. Gating is evaluated per-actor, decoupling downstream steps from target iteration order.
+- **Preserved damage & mixed summaries**: Attack steps followed by gated save steps retain initial attack damage when secondary saves succeed. Visible summaries accurately report `hit=true` when attacks hit, including when preceded by non-attack steps.
+- **Area scoping & obstruction**: Area steps run independently across all eligible targets (`sphere`, `cone`, `cube`) with wall line-of-sight obstruction filtering (`blocks_sight`). Area steps missing spatial encounter context refuse preflight before mutation. Area damage rolls share a per-step raw roll context so targets in the same area share damage rolls without polluting other steps while save scaling applies individually.
+- **Per-actor settlement**: In `SpellCastResults`, stepped spells execute once rather than re-running per outer target hex. Each affected actor settles damage, temporary HP, concentration CON saves, and enemy defeat triggers once.
+- **Pre-roll choices**: Ordered spells suspend before each eligible attack or target save, and before each damage-triggered concentration save. Declining Portent on an earlier test leaves it available for a later test within its once-per-turn budget. Each choice belongs to the canonical actor and exact step; settlement retains prior damage, gates, shared area rolls and paid costs. Stale, replayed and wrong-kind callbacks refuse before resuming execution.
+- **Suspension & resume**: Metamagic/damage choices (such as Empowered Spell reroll prompts) and reaction choices (such as Stroke of Luck or Bardic Inspiration on concentration saves) suspend at the exact actor and step. Resumption continues remaining area targets within the same step without dropping actors or redirecting secondary actor packets. Empowered Spell tracks remaining dice allowance across multiple rolls of the same cast (surfacing the remaining `max_dice` cap in the HUD popup on later steps) while committing 1 Sorcery Point once. Suspended failed-save condition grants apply once upon damage settlement. Owned damage and concentration requests are validated authoritatively before mutation; duplicate, copied, stale, or cross-cast callbacks refuse explicitly before state mutation, leaving legitimate requests available. Live Dictionary actors remain canonical live references without deep-copy detachment. Taking-damage concentration prompts suspend ordered execution with production HUD reaction dialogs before subsequent steps run. Accepting Stroke of Luck spends the feature and sets the d20 roll to 20 plus original modifier (which does not guarantee a save if 20 + modifier < DC); if declined or still failed, an available Bardic Inspiration die choice is prompted before concentration ends or subsequent steps execute. Accepting Bardic rolls the die once and adds it to the save total. A successful save maintains concentration and defenses (e.g. Shield of Faith AC 15), while declining or failing ends concentration immediately, exposing reduced defenses to subsequent steps in the same cast. This real two-choice HUD chain and two-process fresh-relaunch recovery (`scripts/validate_ordered_grant_fresh_relaunch.ps1`) are verified in production Godot 4.7 runs.
 
 ## Conditions, lifetime and other supported fields
 

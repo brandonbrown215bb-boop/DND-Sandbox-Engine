@@ -116,34 +116,48 @@ static func _resolve_condition_spell_repeat_saves(cast: SpellCastContext, target
 
 
 static func _end_concentration(cast: SpellCastContext, caster: Character) -> void:
-	if caster.concentrating_on.is_empty(): return
+	if caster == null or caster.concentrating_on.is_empty(): return
 	# Room-owned area records and encounter markers use the concentration
 	# metadata too; clean them before SpellEffects clears that source record.
 	var spell_id := str(caster.concentrating_on.get("spell_id", ""))
-	cast.areas.end_area_concentration(caster)
+	if cast != null and cast.areas != null:
+		cast.areas.end_area_concentration(caster)
 	if spell_id == "dancing_lights":
-		cast.dancing_light_sets.erase(caster.character_id)
-	if SpellEffects.end_concentration(caster, cast.areas._spell_effect_targets()):
-		cast.hud.add_log("[color=yellow]%s's concentration ends.[/color]" % caster.character_name)
+		if cast != null and cast.dancing_light_sets != null:
+			cast.dancing_light_sets.erase(caster.character_id)
+	var effect_targets: Array = cast.areas._spell_effect_targets() if (cast != null and cast.areas != null) else []
+	if SpellEffects.end_concentration(caster, effect_targets):
+		if cast != null and cast.hud != null:
+			cast.hud.add_log("[color=yellow]%s's concentration ends.[/color]" % caster.character_name)
 		return
 
-	var targets: Array = caster.concentrating_on["targets"]
+	var targets: Array = caster.concentrating_on.get("targets", [])
 	var concentration_name: String = str(DataLoader.get_spell(spell_id).get("name", spell_id))
 	if spell_id == "ranger_favored_foe":
 		concentration_name = "Favored Foe"
-	cast.hud.add_log("[color=yellow]%s's concentration on %s ends.[/color]" % [caster.character_name, concentration_name])
+	if cast != null and cast.hud != null:
+		cast.hud.add_log("[color=yellow]%s's concentration on %s ends.[/color]" % [caster.character_name, concentration_name])
 	if spell_id == "ranger_favored_foe":
 		var marked_id := str(caster.feature_uses.get("ranger_favored_foe_target_id", ""))
-		for monster in cast.monsters:
-			if str(monster.get("id", "")) == marked_id:
-				monster.get("conditions", {}).erase("favored_foe")
+		if cast != null and cast.monsters != null:
+			for monster in cast.monsters:
+				if str(monster.get("id", "")) == marked_id:
+					monster.get("conditions", {}).erase("favored_foe")
 		caster.feature_uses.erase("ranger_favored_foe_target_id")
 	if spell_id == "hunters_mark":
 		var marked_id := str(caster.feature_uses.get("hunters_mark_target_id", ""))
-		for monster in cast.monsters:
-			if str(monster.get("id", "")) == marked_id:
-				monster.get("conditions", {}).erase("hunters_mark")
+		if cast != null and cast.monsters != null:
+			for monster in cast.monsters:
+				if str(monster.get("id", "")) == marked_id:
+					monster.get("conditions", {}).erase("hunters_mark")
 		caster.feature_uses.erase("hunters_mark_target_id")
+	if spell_id == "shield_of_faith":
+		for target in targets:
+			if target is Character:
+				target.remove_condition("shield_of_faith")
+			elif target is Dictionary:
+				target.get("conditions", {}).erase("shield_of_faith")
+		caster.remove_condition("shield_of_faith")
 	if spell_id == "protection_from_energy":
 		for target in targets:
 			if target is Character:
@@ -177,7 +191,8 @@ static func _end_concentration(cast: SpellCastContext, caster: Character) -> voi
 						target.erase("resistance_last_turn_serial")
 					
 	caster.concentrating_on.clear()
-	cast.redraw_entities.call()
+	if cast != null and cast.redraw_entities.is_valid():
+		cast.redraw_entities.call()
 
 
 static func _end_resilient_sphere_for_target(cast: SpellCastContext, target) -> void:
@@ -191,44 +206,76 @@ static func _end_resilient_sphere_for_target(cast: SpellCastContext, target) -> 
 
 
 static func _check_concentration_save(cast: SpellCastContext, character: Character, damage_taken: int) -> void:
-	if damage_taken <= 0 or character.concentrating_on.is_empty(): return
+	if damage_taken <= 0 or character == null or character.concentrating_on.is_empty(): return
+	if not character.is_alive or character.current_hp <= 0 or character.has_condition("incapacitated") or character.has_condition("unconscious"):
+		SpellEncounterLifecycle._end_concentration(cast, character)
+		return
 	var concentration_spell_id := str(character.concentrating_on.get("spell_id", ""))
 	for feature in character.features:
 		for effect in character._feature_effects(feature):
 			if effect.get("type", "") == "concentration_protection" and concentration_spell_id in effect.get("spells", []):
-				cast.hud.add_log("%s maintains concentration on %s through Relentless Hunter." % [character.character_name, DataLoader.get_spell(concentration_spell_id).get("name", concentration_spell_id)])
+				if cast != null and cast.hud != null:
+					cast.hud.add_log("%s maintains concentration on %s through Relentless Hunter." % [character.character_name, DataLoader.get_spell(concentration_spell_id).get("name", concentration_spell_id)])
 				return
 	
-	var dc: int = max(10, int(floor(float(damage_taken) / 2.0)))
-	var save_test := character.saving_throw_test_to_dc("CON", dc, bool(character.concentrating_on.get("extended_spell", false)))
+	# SRD 5.2.1 p. 179: DC 10 or half the damage taken, whichever is higher, maximum 30.
+	var dc: int = mini(30, maxi(10, int(floor(float(damage_taken) / 2.0))))
+	var save_decisions: Dictionary = {}
+	if cast != null and cast.collect_roll_token_decision.is_valid():
+		save_decisions.merge(await cast.collect_roll_token_decision.call(character, "save", "CON concentration save"), true)
+	var save_test := character.saving_throw_test_to_dc("CON", dc, bool(character.concentrating_on.get("extended_spell", false)), false, save_decisions)
 	var roll := int(save_test.get("total", 0))
 	var success: bool = roll >= dc
 	var inspiration_message := ""
 	if not success and character.has_feature("rogue_stroke_of_luck") and int(character.feature_uses.get("rogue_stroke_of_luck", 0)) > 0:
-		var owner_label: String = cast.owner_label_for_character.call(character)
-		var accepted := await cast.hud.request_reaction(owner_label, "stroke_of_luck", "If this concentration save fails, turn its d20 into a 20?", "Use Stroke of Luck on this save?", "Turn the d20 into 20", "Stroke of Luck — %s" % owner_label)
-		var stroke := RogueRules.apply_stroke_of_luck(character, save_test, accepted)
-		if stroke.get("used", false):
-			save_test = stroke.get("result", save_test)
-			roll = int(save_test.get("total", roll))
-			success = bool(save_test.get("success", roll >= dc))
-			inspiration_message += " Stroke of Luck turns the saving throw into a 20."
-	if not success and character.feature_uses.has("bardic_inspiration_die"):
-		var die := str(character.feature_uses.get("bardic_inspiration_die", "1d6"))
-		var owner_label: String = cast.owner_label_for_character.call(character)
-		var accepted := await cast.hud.request_reaction(owner_label, "bardic_inspiration", "If your concentration save still fails, add %s to the roll?" % die, "Save Bardic Inspiration for this save?", "Use Inspiration", "Bardic Inspiration — %s" % owner_label)
-		var inspiration := BardicInspirationRules.apply_to_test(character, roll, dc, accepted)
-		if inspiration.get("used", false):
-			roll = int(inspiration["total"])
-			success = bool(inspiration["success"])
-			inspiration_message += " Bardic Inspiration adds %d." % int(inspiration["bonus"])
+		var accepted := false
+		var has_decision := false
+		if cast != null and cast.hud != null and cast.owner_label_for_character.is_valid():
+			var owner_label: String = cast.owner_label_for_character.call(character)
+			accepted = await cast.hud.request_reaction(owner_label, "stroke_of_luck", "If this concentration save fails, turn its d20 into a 20?", "Use Stroke of Luck on this save?", "Turn the d20 into 20", "Stroke of Luck — %s" % owner_label)
+			has_decision = true
+		elif cast != null and cast.decisions != null:
+			var dec = SpellDamageRolls.get_concentration_decision(cast.decisions, character, "stroke_of_luck", cast.caster)
+			if dec != null:
+				accepted = bool(dec)
+				has_decision = true
+		if has_decision:
+			var stroke := RogueRules.apply_stroke_of_luck(character, save_test, accepted)
+			if stroke.get("used", false):
+				save_test = stroke.get("result", save_test)
+				roll = int(save_test.get("total", roll))
+				success = bool(save_test.get("success", roll >= dc))
+				inspiration_message += " Stroke of Luck turns the saving throw into a 20."
+	if not success and BardicInspirationRules.has_die(character):
+		var accepted := false
+		var has_decision := false
+		if cast != null and cast.hud != null and cast.owner_label_for_character.is_valid():
+			var die := str(character.feature_uses.get("bardic_inspiration_die", "1d6"))
+			var owner_label: String = cast.owner_label_for_character.call(character)
+			accepted = await cast.hud.request_reaction(owner_label, "bardic_inspiration", "If your concentration save still fails, add %s to the roll?" % die, "Save Bardic Inspiration for this save?", "Use Inspiration", "Bardic Inspiration — %s" % owner_label)
+			has_decision = true
+		elif cast != null and cast.decisions != null:
+			var dec = SpellDamageRolls.get_concentration_decision(cast.decisions, character, "bardic_inspiration", cast.caster)
+			if dec != null:
+				accepted = bool(dec)
+				has_decision = true
+		if has_decision:
+			var inspiration := BardicInspirationRules.apply_to_test(character, roll, dc, accepted)
+			if inspiration.get("used", false):
+				roll = int(inspiration["total"])
+				success = bool(inspiration["success"])
+				inspiration_message += " Bardic Inspiration adds %d." % int(inspiration["bonus"])
 	
-	cast.hud.add_log("%s makes a CON save to maintain concentration: %d vs DC %d.%s %s" % [character.character_name, roll, dc, inspiration_message, character.last_save_note])
-	if success:
-		cast.hud.add_log("[color=green]%s maintained concentration![/color]" % character.character_name)
+	if cast != null and cast.hud != null:
+		cast.hud.add_log("%s makes a CON save to maintain concentration: %d vs DC %d.%s %s" % [character.character_name, roll, dc, inspiration_message, character.last_save_note])
+		if success:
+			cast.hud.add_log("[color=green]%s maintained concentration![/color]" % character.character_name)
+		else:
+			cast.hud.add_log("[color=red]%s failed CON save! Concentration lost.[/color]" % character.character_name)
+			SpellEncounterLifecycle._end_concentration(cast, character)
 	else:
-		cast.hud.add_log("[color=red]%s failed CON save! Concentration lost.[/color]" % character.character_name)
-		SpellEncounterLifecycle._end_concentration(cast, character)
+		if not success:
+			SpellEncounterLifecycle._end_concentration(cast, character)
 
 
 static func _tick_spell_healing_suppression(cast: SpellCastContext, caster: Character) -> void:

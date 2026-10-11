@@ -27,7 +27,7 @@ static func _collect_spell_cast_reactions(cast: SpellCastContext) -> void:
 	cast.twinned_selected = bool(cast.spell.get("_metamagic_twinned", false))
 	var already_selected_metamagic := int(cast.quickened_selected) + int(cast.twinned_selected) + int(bool(cast.reaction_decisions.get("metamagic:distant", false))) + int(bool(cast.reaction_decisions.get("metamagic:transmuted", false))) + int(bool(cast.reaction_decisions.get("metamagic:seeking", false)))
 	var quickened_combo_allowed_at_innate := (not cast.quickened_selected or cast.caster.has_condition("innate_sorcery")) and (not cast.twinned_selected or cast.caster.has_condition("innate_sorcery"))
-	if not bool(cast.spell.get("_produce_flame_hurl", false)) and cast.caster.has_feature("sorcerer_metamagic") and "empowered_spell" in cast.caster.sorcerer_metamagic_choices and already_selected_metamagic < 2 and quickened_combo_allowed_at_innate and (cast.caster.get_sorcery_points() > 0 or cast.apotheosis_available) and (cast.spell.has("damage") or cast.spell.has("damage_per_dart") or cast.spell.has("damage_per_ray")):
+	if not bool(cast.spell.get("_produce_flame_hurl", false)) and cast.caster.has_feature("sorcerer_metamagic") and "empowered_spell" in cast.caster.sorcerer_metamagic_choices and already_selected_metamagic < 2 and quickened_combo_allowed_at_innate and (cast.caster.get_sorcery_points() > 0 or cast.apotheosis_available) and _spell_has_damage_payload(cast.spell):
 		var empowered_free := cast.apotheosis_available
 		var empowered_prompt := "Use Arcane Apotheosis to make this Metamagic free?" if empowered_free else "Spend 1 Sorcery Point to reroll selected damage dice (up to your Charisma modifier, minimum one). New rolls must stand."
 		if await cast.hud.request_reaction(cast.owner_label, "metamagic:empowered", empowered_prompt, "Use Empowered Spell?", "Empower Spell", "Empowered Spell — %s" % cast.owner_label):
@@ -44,7 +44,7 @@ static func _collect_spell_cast_reactions(cast: SpellCastContext) -> void:
 			cast.reaction_decisions["metamagic:heightened"] = true
 			if heightened_free:
 				cast.reaction_decisions["metamagic:arcane_apotheosis"] = true
-	cast.spell_attack_available = str(cast.spell.get("attack_type", "none")) in ["ranged_spell", "melee_spell"] or cast.spell.has("damage_per_ray")
+	cast.spell_attack_available = _spell_has_attack(cast.spell)
 	if cast.caster.has_feature("rogue_stroke_of_luck") and int(cast.caster.feature_uses.get("rogue_stroke_of_luck", 0)) > 0 and cast.spell_attack_available:
 		if await cast.hud.request_reaction(cast.owner_label, "stroke_of_luck", "If this spell attack misses, turn the first missed d20 into a 20? The use is spent only if it misses.", "Use Stroke of Luck?", "Turn a Miss into 20", "Stroke of Luck — %s" % cast.owner_label):
 			cast.reaction_decisions["stroke_of_luck"] = true
@@ -164,3 +164,19 @@ static func _prepare_spell_cast_effects(cast: SpellCastContext) -> void:
 			cast.caster.concentrating_on["save_dc"] = cast.caster.get_spell_save_dc()
 
 
+static func _spell_has_damage_payload(spell_data: Dictionary) -> bool:
+	if spell_data.has("damage") or spell_data.has("damage_per_dart") or spell_data.has("damage_per_ray"):
+		return true
+	for step in spell_data.get("steps", []):
+		if step is Dictionary and step.has("damage"):
+			return true
+	return false
+
+
+static func _spell_has_attack(spell_data: Dictionary) -> bool:
+	if str(spell_data.get("attack_type", "none")) in ["ranged_spell", "melee_spell"] or spell_data.has("damage_per_ray"):
+		return true
+	for step in spell_data.get("steps", []):
+		if step is Dictionary and (step.get("type", "") == "attack" or str(step.get("attack_type", "none")) in ["ranged_spell", "melee_spell"]):
+			return true
+	return false

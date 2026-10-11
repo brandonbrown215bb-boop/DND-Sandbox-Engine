@@ -101,6 +101,68 @@ static func run(check: Callable) -> void:
 	FighterChecks._seed_die(20, 1)
 	ordinary.make_death_save()
 	check.call(ordinary.is_dead() and ordinary.corpse_state.get("cause") == "death_saves", "A natural-one production death save causing three failures records death")
+	var downed_massive := _character("Downed massive damage")
+	downed_massive.max_hp = 10
+	downed_massive.take_damage(downed_massive.current_hp)
+	downed_massive.death_save_failures = 1
+	var downed_initial_serial := downed_massive.body_death_serial
+	downed_massive.take_damage(10)
+	check.call(downed_massive.is_dead() and downed_massive.corpse_state.get("cause") == "massive_damage" and downed_massive.body_death_serial == downed_initial_serial + 1, "Damage to a zero-HP character equaling or exceeding maximum HP causes instant death from massive damage")
+	var already_dead_serial := downed_massive.body_death_serial
+	var dead_damage := downed_massive.take_damage(10)
+	check.call(dead_damage == 0 and downed_massive.is_dead() and downed_massive.body_death_serial == already_dead_serial, "Further damage to an already dead character deals 0 and preserves single corpse commitment")
+	var downed_buffered := _character("Downed temp HP buffer")
+	downed_buffered.max_hp = 10
+	downed_buffered.take_damage(downed_buffered.current_hp)
+	downed_buffered.temp_hp = 3
+	downed_buffered.death_save_failures = 0
+	var buffer_absorbed := downed_buffered.take_damage(2)
+	check.call(buffer_absorbed == 0 and downed_buffered.temp_hp == 1 and downed_buffered.current_hp == 0 and downed_buffered.death_save_failures == 1 and not downed_buffered.is_dead(), "Damage absorbed by Temporary HP at zero HP depletes buffer and inflicts a death saving throw failure")
+	var overflow_dealt := downed_buffered.take_damage(3)
+	check.call(overflow_dealt == 2 and downed_buffered.temp_hp == 0 and downed_buffered.current_hp == 0 and downed_buffered.death_save_failures == 2 and not downed_buffered.is_dead(), "Damage overflowing Temporary HP at zero HP inflicts a second death saving throw failure")
+	var downed_crit_absorbed := _character("Downed critical absorbed")
+	downed_crit_absorbed.max_hp = 10
+	downed_crit_absorbed.take_damage(downed_crit_absorbed.current_hp)
+	downed_crit_absorbed.temp_hp = 5
+	downed_crit_absorbed.death_save_failures = 0
+	downed_crit_absorbed.take_damage(2, false, true)
+	check.call(downed_crit_absorbed.temp_hp == 3 and downed_crit_absorbed.death_save_failures == 2 and not downed_crit_absorbed.is_dead(), "Critical damage fully absorbed by Temporary HP at zero HP inflicts two death saving throw failures")
+	var downed_buffer_massive := _character("Downed buffer massive boundary")
+	downed_buffer_massive.max_hp = 10
+	downed_buffer_massive.take_damage(downed_buffer_massive.current_hp)
+	downed_buffer_massive.temp_hp = 3
+	downed_buffer_massive.take_damage(10)
+	check.call(downed_buffer_massive.is_dead() and downed_buffer_massive.corpse_state.get("cause") == "massive_damage", "Damage equaling maximum HP at zero HP causes instant death even with a Temporary HP buffer")
+	var downed_immune := _character("Downed zero damage")
+	downed_immune.max_hp = 10
+	downed_immune.take_damage(downed_immune.current_hp)
+	downed_immune.death_save_failures = 1
+	var zero_dmg := downed_immune.take_damage(0)
+	check.call(zero_dmg == 0 and downed_immune.death_save_failures == 1 and not downed_immune.is_dead(), "Genuine zero damage dealt to a zero-HP character inflicts no failure")
+	var downed_overflow_massive := _character("Downed overflow massive")
+	downed_overflow_massive.max_hp = 10
+	downed_overflow_massive.take_damage(downed_overflow_massive.current_hp)
+	downed_overflow_massive.temp_hp = 3
+	downed_overflow_massive.take_damage(13)
+	check.call(downed_overflow_massive.is_dead() and downed_overflow_massive.corpse_state.get("cause") == "massive_damage", "Damage overflowing Temporary HP equaling maximum HP causes instant death at zero HP")
+	var downed_replacement_actor := _character("Downed replacement bypass")
+	downed_replacement_actor.max_hp = 15
+	downed_replacement_actor.features.append({
+		"id": "undead_fortitude",
+		"type": "zero_hp_replacement",
+		"trigger": "zero_hp",
+		"save_ability": "CON",
+		"dc_base": 5,
+		"dc_add_damage": true,
+		"replacement_hp": 1
+	})
+	downed_replacement_actor.take_damage(downed_replacement_actor.current_hp)
+	downed_replacement_actor.current_hp = 0
+	downed_replacement_actor.is_alive = false
+	downed_replacement_actor.death_save_failures = 0
+	FighterChecks._seed_die(20, 20)
+	downed_replacement_actor.take_damage(1)
+	check.call(downed_replacement_actor.current_hp == 0 and downed_replacement_actor.death_save_failures == 1, "Already-downed character never triggers zero-HP replacement on subsequent damage")
 	var future := serialized.duplicate(true)
 	future["corpse_state"]["preservation_started_at"] = 70000
 	future["corpse_state"]["preservation_until"] = 934000

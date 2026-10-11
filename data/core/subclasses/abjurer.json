@@ -1,0 +1,89 @@
+{
+  "id": "abjurer",
+  "name": "Abjurer",
+  "class_id": "wizard",
+  "rules_status": "2024-partial",
+  "features_by_level": {
+    "3": [
+      {
+        "id": "abjurer_abjuration_savant",
+        "name": "Abjuration Savant",
+        "description": "Choose two Wizard spells from the Abjuration school, each of level 2 or lower, and add them to your spellbook for free. Whenever you gain access to a new level of spell slots in this class, you can add one Wizard spell from the Abjuration school to your spellbook for free.",
+        "type": "passive",
+        "effects": [],
+        "enabled": false,
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-partial"
+      },
+      {
+        "id": "abjurer_arcane_ward",
+        "name": "Arcane Ward",
+        "description": "When you cast an Abjuration spell with a spell slot, you create a magical ward on yourself that lasts until you finish a Long Rest. The ward has a Hit Point maximum equal to twice your Wizard level plus your Intelligence modifier. Whenever you take damage, the ward takes the damage before your Temporary Hit Points and real Hit Points. Whenever you cast an Abjuration spell with a spell slot, or expend a spell slot as a Bonus Action, an active ward regains Hit Points equal to twice the level of the slot.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "damage_ward_pool",
+            "pool_id": "arcane_ward",
+            "creation_trigger": "spell_cast_with_slot",
+            "trigger_schools": [
+              "Abjuration"
+            ],
+            "creation_uses_per": "long_rest",
+            "max_hp_level_multiplier": 2,
+            "max_hp_ability": "INT",
+            "recharge_slot_multiplier": 2,
+            "bonus_action_slot_recharge": true
+          }
+        ],
+        "enabled": true,
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "6": [
+      {
+        "id": "abjurer_projected_ward",
+        "name": "Projected Ward",
+        "description": "When a creature that you can see within 30 feet of yourself takes damage, you can take a Reaction to cause your Arcane Ward to absorb that damage. If this damage reduces the ward to 0 Hit Points, the warded creature takes any remaining damage.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "damage_ward_projection",
+            "pool_id": "arcane_ward",
+            "trigger": "visible_creature_damaged",
+            "action_cost": "reaction",
+            "range_feet": 30,
+            "target_predicate": "visible_creature_within_range"
+          }
+        ],
+        "enabled": true,
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "10": [
+      {
+        "id": "abjurer_spell_breaker",
+        "name": "Spell Breaker",
+        "description": "You always have Counterspell and Dispel Magic prepared. You can cast Dispel Magic as a Bonus Action, and when you cast either spell with a spell slot, that slot isn't expended if the spell fails to stop a spell.",
+        "type": "passive",
+        "effects": [],
+        "enabled": false,
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-partial"
+      }
+    ],
+    "14": [
+      {
+        "id": "abjurer_spell_resistance",
+        "name": "Spell Resistance",
+        "description": "You have Advantage on saving throws against spells, and you have Resistance to the damage of spells.",
+        "type": "passive",
+        "effects": [],
+        "enabled": false,
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-partial"
+      }
+    ]
+  }
+}

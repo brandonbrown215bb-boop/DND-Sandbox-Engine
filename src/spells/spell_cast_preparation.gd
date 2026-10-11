@@ -3,6 +3,8 @@ class_name SpellCastPreparation
 extends RefCounted
 
 static func validate_and_choose(cast: SpellCastContext) -> bool:
+	if not SpellCastValidation.validate_host(cast):
+		return false
 	if not SpellCastValidation.validate_actor(cast):
 		return false
 	if not await SpellCastChoices.choose_identify(cast):

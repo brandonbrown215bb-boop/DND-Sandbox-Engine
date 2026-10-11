@@ -18,6 +18,7 @@ func reset(active_character: Character = null, player_entities: Array = []) -> v
 	action_available = true
 	bonus_action_available = true
 	surge_actions = 0
+	CombatAction.advance_combat_turn(active_character)
 	if active_character == null:
 		return
 	active_character.reaction_available = true
@@ -25,6 +26,11 @@ func reset(active_character: Character = null, player_entities: Array = []) -> v
 		if player_entity.get("character") == active_character:
 			player_entity["reaction_available"] = true
 			break
+
+
+func can_use_turn_feature(character: Character, pool_id: String) -> bool:
+	var pool := RollTokenRules.pool_definition(character, pool_id)
+	return RollTokenRules.can_use_pool_this_turn(character, pool)
 
 
 func can_spend(cost_type: String) -> bool:

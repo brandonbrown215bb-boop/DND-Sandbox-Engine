@@ -1,0 +1,82 @@
+{
+  "id": "diviner",
+  "name": "Diviner",
+  "class_id": "wizard",
+  "rules_status": "2024-partial",
+  "features_by_level": {
+    "3": [
+      {
+        "id": "diviner_divination_savant",
+        "name": "Divination Savant",
+        "description": "Choose two Wizard spells from the Divination school, each of level 2 or lower, and add them to your spellbook for free. Whenever you gain access to a new level of spell slots in this class, you can add one Wizard spell from the Divination school to your spellbook for free.",
+        "type": "passive",
+        "effects": [],
+        "enabled": false,
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-partial"
+      },
+      {
+        "id": "diviner_portent",
+        "name": "Portent",
+        "description": "Whenever you finish a Long Rest, roll two d20s and record the numbers rolled. You can replace any D20 Test made by you or a creature that you can see with one of these foretelling rolls before the roll is made, once per turn. Unused rolls are lost when you finish a Long Rest.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "roll_token_pool",
+            "pool_id": "diviner_portent",
+            "die_sides": 20,
+            "token_count": 2,
+            "generation_timing": "long_rest",
+            "target_predicate": "any_visible",
+            "uses_per_turn": 1
+          }
+        ],
+        "enabled": true,
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ],
+    "6": [
+      {
+        "id": "diviner_expert_divination",
+        "name": "Expert Divination",
+        "description": "When you cast a Divination spell using a level 2+ spell slot, you regain one expended spell slot of a level lower than the slot you expended and no higher than level 5.",
+        "type": "passive",
+        "effects": [],
+        "enabled": false,
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-partial"
+      }
+    ],
+    "10": [
+      {
+        "id": "diviner_the_third_eye",
+        "name": "The Third Eye",
+        "description": "Use a Bonus Action to gain Darkvision, Ethereal Sight, Greater Comprehension, or See Invisibility until you finish a Short or Long Rest.",
+        "type": "passive",
+        "effects": [],
+        "enabled": false,
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-partial"
+      }
+    ],
+    "14": [
+      {
+        "id": "diviner_greater_portent",
+        "name": "Greater Portent",
+        "description": "You roll three d20s for your Portent feature, rather than two.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "roll_token_pool_upgrade",
+            "pool_id": "diviner_portent",
+            "token_count": 3
+          }
+        ],
+        "enabled": true,
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported"
+      }
+    ]
+  }
+}

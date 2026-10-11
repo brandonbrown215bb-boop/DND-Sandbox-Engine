@@ -384,6 +384,8 @@ func deserialize(data: Dictionary) -> void:
 		if character_data is Dictionary:
 			var character := Character.new()
 			character.from_dict(character_data)
+			if character.character_id.is_empty():
+				character.character_id = str(character_id)
 			characters[str(character_id)] = character
 	companion_roster = data.get("companion_roster", {}).duplicate(true)
 

@@ -20,7 +20,7 @@ static func is_effect_supported(effect_type: String) -> bool:
 
 ## Resolve a skill check for an event.
 ## Returns {"success": bool, "roll": int, "dc": int, "modifier": int}.
-static func resolve_skill_check(character: Character, check_data: Dictionary) -> Dictionary:
+static func resolve_skill_check(character: Character, check_data: Dictionary, decisions: Dictionary = {}) -> Dictionary:
 	var skill := str(check_data.get("skill", ""))
 	var ability: String = character.get_skill_check_ability(str(check_data.get("ability", "STR")), skill, bool(check_data.get("use_primal_knowledge", true)))
 	var dc: int = int(check_data.get("dc", 10))
@@ -28,7 +28,10 @@ static func resolve_skill_check(character: Character, check_data: Dictionary) ->
 
 	var advantage := familiar_help or character.has_ability_check_advantage(ability) or (character.has_feature("champion_remarkable_athlete") and ability == "STR" and skill == "Athletics")
 	var disadvantage := ability == "STR" and character.has_condition("ray_of_enfeeblement")
-	var roll := Dice.roll_with_advantage(20, character) if advantage and not disadvantage else Dice.roll_with_disadvantage(20, character) if disadvantage and not advantage else Dice.roll(20, character)
+	var merged_decisions := check_data.duplicate(true)
+	merged_decisions.merge(decisions, true)
+	var d20_details: Dictionary = RollTokenRules.resolve_d20_test(character, "ability_check", advantage, disadvantage, merged_decisions)
+	var roll := int(d20_details.get("total", 1))
 	roll = character.apply_skill_check_roll_floor(roll, skill)
 	var tool_bonus := character.inventory.skill_tool_bonus(skill, str(check_data.get("context", "")))
 	var modifier := character.get_skill_check_modifier(skill, ability) + tool_bonus
@@ -41,6 +44,7 @@ static func resolve_skill_check(character: Character, check_data: Dictionary) ->
 
 	return {
 		"success": total >= dc,
+		"roll": roll,
 		"natural_roll": roll,
 		"total": total,
 		"modifier": modifier,
@@ -50,6 +54,13 @@ static func resolve_skill_check(character: Character, check_data: Dictionary) ->
 		"tool_bonus": tool_bonus,
 		"familiar_help": familiar_help,
 		"advantage": advantage and not disadvantage,
+		"rolls": d20_details.get("rolls", [roll]),
+		"kept": d20_details.get("kept", [true]),
+		"roll_token_replaced": bool(d20_details.get("replaced", false)),
+		"replaced_by_roll_token": bool(d20_details.get("replaced", false)),
+		"roll_token_id": str(d20_details.get("roll_token_id", "")),
+		"roll_token_value": int(d20_details.get("roll_token_value", 0)),
+		"roll_token_error": str(d20_details.get("roll_token_error", "")),
 	}
 
 
