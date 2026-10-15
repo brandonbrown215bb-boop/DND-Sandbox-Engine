@@ -12,6 +12,13 @@ class/import caches. Recovery mode keeps editor plugins out of that bootstrap.
 
 ## Windows (supported gate)
 
+The runner uses explicit `-GodotPath`, then `GODOT_BIN`, then the existing
+project-local `.artifacts/tools/godot/Godot_v4.7-stable_win64_console.exe`, then
+`godot`/`godot4` on PATH. It prints the resolved absolute path. Fresh chats on
+this host do not need an environment variable or PATH change. An invalid explicit
+path/environment override remains an error. The portable engine is ignored host
+tooling, so another checkout must supply its own existing executable.
+
 ```powershell
 $env:GODOT_BIN = 'C:\path\to\Godot_v4.7-stable_win64_console.exe'
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\run_tests.ps1
@@ -33,8 +40,8 @@ run remains required after the source is published. Use the
 [true fresh-clone checklist](fresh_clone_validation.md) for that publication
 check.
 
-The runner also accepts the portable executable as its first argument or finds
-`godot`/`godot4` on `PATH`. It redirects `APPDATA` and `LOCALAPPDATA` to a
+The runner also accepts the portable executable as its first argument. It redirects
+`APPDATA` and `LOCALAPPDATA` to a
 disposable per-scenario directory while Godot runs.
 
 ## Shell compatibility

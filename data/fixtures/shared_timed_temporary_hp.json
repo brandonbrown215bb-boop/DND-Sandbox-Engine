@@ -1,0 +1,28 @@
+{
+  "id": "fixture:timed_guard_class",
+  "name": "Fixture Timed Guard",
+  "description": "Test-only source-owned campaign-time Temporary HP grant.",
+  "hit_die": "d8",
+  "primary_ability": "CON",
+  "features_by_level": {
+    "1": [
+      {
+        "id": "fixture:timed_guard",
+        "name": "Timed Guard",
+        "executor": "class_feature",
+        "type": "active",
+        "target": "self",
+        "action_cost": "free",
+        "resource_cost": 1,
+        "resource_pool": {
+          "id": "fixture:timed_guard_pool",
+          "capacity_formula": 4,
+          "initial_quantity": 4
+        },
+        "effects": [
+          { "type": "timed_temporary_hp", "amount": 10, "duration_seconds": 60 }
+        ]
+      }
+    ]
+  }
+}

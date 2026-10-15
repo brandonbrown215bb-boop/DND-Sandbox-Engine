@@ -1,0 +1,60 @@
+[
+  {
+    "id": "fixture:save_success_override_class",
+    "name": "Fixture Save Success Override",
+    "hit_die": "d8",
+    "primary_ability": "DEX",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:steadfast_success",
+          "name": "Steadfast Success",
+          "type": "passive",
+          "resource_pool": { "id": "fixture:steadfast_success_pool", "capacity_formula": 2, "initial_quantity": 2 },
+          "passive_effects": [
+            { "type": "failed_save_outcome_override", "ability": "DEX", "cost": 1 }
+          ]
+        },
+        {
+          "id": "fixture:steadfast_roll_outcomes",
+          "name": "Steadfast Roll Outcomes",
+          "type": "passive",
+          "resource_pool": { "id": "fixture:steadfast_roll_outcomes_pool", "capacity_formula": 4, "initial_quantity": 4 },
+          "passive_effects": [
+            { "type": "roll_outcome_override", "domains": ["weapon_attack", "shared_spell_attack"], "outcomes": ["hit", "miss"], "stage": "provisional_outcome", "cost": 1 },
+            { "type": "roll_outcome_override", "domains": ["shared_spell_save"], "outcomes": ["failure"], "stage": "after_roll_before_consequences", "ability": "DEX", "cost": 1 }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "fixture:resolute_success_class",
+    "name": "Fixture Resolute Success",
+    "hit_die": "d10",
+    "primary_ability": "CON",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:resolute_success",
+          "name": "Resolute Success",
+          "type": "passive",
+          "resource_pool": { "id": "fixture:resolute_success_pool", "capacity_formula": 3, "initial_quantity": 3 },
+          "passive_effects": [
+            { "type": "failed_save_outcome_override", "ability": "CON", "cost": 2 }
+          ]
+        },
+        {
+          "id": "fixture:resolute_roll_outcomes",
+          "name": "Resolute Roll Outcomes",
+          "type": "passive",
+          "resource_pool": { "id": "fixture:resolute_roll_outcomes_pool", "capacity_formula": 8, "initial_quantity": 8 },
+          "passive_effects": [
+            { "type": "roll_outcome_override", "domains": ["weapon_attack", "shared_spell_attack"], "outcomes": ["hit", "miss"], "stage": "provisional_outcome", "cost": 2 },
+            { "type": "roll_outcome_override", "domains": ["shared_spell_save"], "outcomes": ["failure"], "stage": "after_roll_before_consequences", "ability": "CON", "cost": 2 }
+          ]
+        }
+      ]
+    }
+  }
+]

@@ -8,23 +8,26 @@ tools do not block work. Historical gate reports are not current acceptance.
 
 On this host, the owner's existing portable Godot is available at
 `.artifacts/tools/godot/Godot_v4.7-stable_win64_console.exe` (ignored, not shipped).
+`run_tests.ps1` discovers it without `GODOT_BIN` or a Godot entry on PATH. Discovery
+order is explicit `-GodotPath`, `GODOT_BIN`, this project-local console executable,
+then `godot`/`godot4` on PATH. An invalid explicit override fails rather than silently
+using a different engine. The selected absolute executable path is printed.
 The runner isolates save/settings profiles under `.artifacts/tests/<run-id>/`
 inside the project by default. Older notes about requiring an outside-sandbox
 profile are superseded; use the current runner before assuming a host issue.
 
-The supported Windows validation entry point is the PowerShell runner. Supply
-the portable Godot console executable explicitly:
+The supported Windows validation entry point is the PowerShell runner. For the
+existing project-local engine, a focused command needs no path setup:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\run_tests.ps1 `
-  'C:\path\to\Godot_v4.7-stable_win64_console.exe'
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\run_tests.ps1 -Suite logic -LogicGroup spells
 ```
 
 Useful bounded runs:
 
 ```powershell
-.\run_tests.ps1 'C:\path\to\Godot_v4.7-stable_win64_console.exe' -Suite logic
-.\run_tests.ps1 'C:\path\to\Godot_v4.7-stable_win64_console.exe'
+.\run_tests.ps1 -Suite logic -LogicGroup spells
+.\run_tests.ps1 -GodotPath '.\.artifacts\tools\godot\Godot_v4.7-stable_win64_console.exe' -Suite logic -LogicGroup spells
 python .\src\generate_feature_matrix.py
 ```
 

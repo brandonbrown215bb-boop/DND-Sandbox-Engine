@@ -1,0 +1,40 @@
+[
+  {
+    "id": "fixture:weapon_attack_bonus_neutral_class",
+    "name": "Fixture Steady Strike",
+    "hit_die": "d8",
+    "primary_ability": "STR",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:steady_strike",
+          "name": "Steady Strike",
+          "type": "passive",
+          "resource_pool": { "id": "fixture:steady_strike_pool", "capacity_formula": 3, "initial_quantity": 3 },
+          "passive_effects": [
+            { "type": "weapon_attack_numeric_bonus", "domains": ["weapon_attack", "shared_spell_attack"], "amount": 5, "cost": 1, "payment_policy": "pay_on_choice" }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "fixture:weapon_attack_bonus_renamed_class",
+    "name": "Fixture Sure Aim",
+    "hit_die": "d10",
+    "primary_ability": "DEX",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:sure_aim",
+          "name": "Sure Aim",
+          "type": "passive",
+          "resource_pool": { "id": "fixture:sure_aim_pool", "capacity_formula": 3, "initial_quantity": 3 },
+          "passive_effects": [
+            { "type": "weapon_attack_numeric_bonus", "domains": ["weapon_attack", "shared_spell_attack"], "amount": 8, "cost": 2, "payment_policy": "pay_on_converted_success" }
+          ]
+        }
+      ]
+    }
+  }
+]

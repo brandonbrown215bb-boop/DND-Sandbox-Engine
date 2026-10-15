@@ -674,7 +674,22 @@ func _show_feature_selection() -> void:
 		feature_list.set_item_tooltip(feature_list.get_item_count() - 1, "Spend Sorcery Points to create a level 1–5 spell slot. The slot vanishes after a Long Rest.")
 		features_registered.append({"id": "sorcerer_font_of_magic_create", "name": "Create Spell Slot", "type": "active"})
 
-	for f in active_character.features:
+	var activation_features: Array[Dictionary] = []
+	for owned_feature in active_character.features:
+		if owned_feature.has("executor") and owned_feature.has("resource_pool"):
+			var source_ids := ResourcePoolRules.source_instance_ids(active_character, str(owned_feature["resource_pool"].get("id", "")))
+			if source_ids.is_empty():
+				var unavailable_feature: Dictionary = owned_feature.duplicate(true)
+				unavailable_feature["source_instance_id"] = ""
+				activation_features.append(unavailable_feature)
+			else:
+				for source_instance_id in source_ids:
+					var source_feature: Dictionary = owned_feature.duplicate(true)
+					source_feature["source_instance_id"] = source_instance_id
+					activation_features.append(source_feature)
+		else:
+			activation_features.append(owned_feature)
+	for f in activation_features:
 		var resource_slot_effect: Dictionary = {}
 		var ward_slot_effect: Dictionary = {}
 		var has_rest_slot_recovery := false
@@ -793,9 +808,12 @@ func _show_feature_selection() -> void:
 			if disabled:
 				display_name += " [No uses]"
 		if f.has("executor"):
-			var available := ClassFeature.availability(active_character, f, turn_budget)
+			var source_instance_id := str(f.get("source_instance_id", ""))
+			var available := ClassFeature.availability(active_character, f, turn_budget, source_instance_id)
 			disabled = not available["available"]
 			display_name = "%s %d/%d (%s)" % [f.get("name", f_id), available["remaining"], available["maximum"], str(available["action_cost"]).replace("_", " ").capitalize()]
+			if f.has("resource_pool") and not source_instance_id.is_empty():
+				display_name += " [%s]" % source_instance_id
 			if f_id == "barbarian_rage" and active_character.has_condition("raging"):
 				display_name = "Extend Rage (Bonus Action)"
 			if disabled:
@@ -811,6 +829,13 @@ func _show_feature_selection() -> void:
 		else:
 			feature_list.set_item_tooltip(item_idx, str(f.get("description", "")))
 		features_registered.append(f)
+	for grant in active_character.active_campaign_modifier_grants():
+		var source_id := str(grant.get("source_instance_id", ""))
+		var grant_id := str(grant.get("grant_instance_id", ""))
+		var display := "Dismiss %s %+d (%s)" % [str(grant.get("key", "AC")), int(grant.get("amount", 0)), source_id]
+		feature_list.add_item(display)
+		feature_list.set_item_tooltip(feature_list.get_item_count() - 1, "Dismiss this active timed benefit now. Its source cooldown, if authored, starts at the current campaign time.")
+		features_registered.append({"id": "dismiss_timed_numeric_modifier", "name": display, "source_instance_id": source_id, "grant_instance_id": grant_id, "type": "active"})
 	var familiar_record := FamiliarRules.state(active_character)
 	for id in ["created_attack", "created_guard", "animated_attack", "animated_guard"]:
 		var command := CreatedCreatureRules.command_feature(active_character, id)
@@ -852,6 +877,10 @@ func _on_feature_selected(index: int) -> void:
 	var feature_owner := active_character
 	var feature := features_registered[index]
 	_hide_feature_selection()
+	if str(feature.get("id", "")) == "dismiss_timed_numeric_modifier":
+		if active_character == feature_owner:
+			action_selected.emit("dismiss_timed_numeric_modifier", {"source_instance_id": str(feature.get("source_instance_id", "")), "grant_instance_id": str(feature.get("grant_instance_id", ""))})
+		return
 	if str(feature.get("id", "")) == "wand_of_magic_missiles_activate":
 		if active_character == feature_owner:
 			action_selected.emit("activate_magic_item", {"instance_id": str(feature.get("instance_id", "")), "charges": int(feature.get("charges", 0))})
@@ -924,6 +953,45 @@ func _on_feature_selected(index: int) -> void:
 		if active_character == feature_owner and uses_to_convert > 0:
 			action_selected.emit("use_feature", {"feature": feature, "wild_shape_uses": uses_to_convert})
 		return
+	if feature.get("resource_pool", {}).has("die_size"):
+		var source_instance_id := str(feature.get("source_instance_id", ""))
+		var pool_state := ResourcePoolRules.availability(active_character, source_instance_id)
+		var spend_choice: Dictionary = feature["resource_pool"].get("spend_choice", {})
+		var maximum := mini(int(spend_choice.get("maximum", 0)), int(pool_state.get("current", 0)))
+		var minimum := int(spend_choice.get("minimum", 1))
+		if maximum < minimum:
+			return
+		var selected_quantity := await request_pool_quantity(minimum, maximum, int(feature["resource_pool"]["die_size"]))
+		if active_character == feature_owner and selected_quantity > 0:
+			feature = feature.duplicate(true)
+			feature["selected_pool_quantity"] = selected_quantity
+			action_selected.emit("use_feature", {"feature": feature})
+		return
+	if feature.has("resource_exchange"):
+		var exchange: Dictionary = feature["resource_exchange"]
+		var payment_sources := ResourcePoolRules.exchange_payment_sources(active_character, exchange)
+		if payment_sources.is_empty():
+			return
+		var payment_labels: Dictionary = {}
+		for source_id in payment_sources:
+			payment_labels[source_id] = "Pay from %s" % source_id
+		var payment_source := payment_sources[0] if GameManager.test_mode else await _request_popup_choice("Choose the exact pool source to pay", payment_sources, payment_labels)
+		if payment_source not in payment_sources:
+			return
+		var restoration_sources := ResourcePoolRules.exchange_restoration_sources(active_character, payment_source, exchange)
+		if restoration_sources.is_empty():
+			return
+		var restoration_labels: Dictionary = {}
+		for source_id in restoration_sources:
+			restoration_labels[source_id] = "Restore to %s" % source_id
+		var restoration_source := restoration_sources[0] if GameManager.test_mode else await _request_popup_choice("Choose the exact pool source to restore", restoration_sources, restoration_labels)
+		if restoration_source not in restoration_sources or active_character != feature_owner:
+			return
+		feature = feature.duplicate(true)
+		feature["selected_payment_source_instance_id"] = payment_source
+		feature["selected_restoration_source_instance_id"] = restoration_source
+		action_selected.emit("use_feature", {"feature": feature})
+		return
 	var resource_slot_effect: Dictionary = {}
 	var ward_slot_effect: Dictionary = {}
 	for effect in feature.get("effects", []):
@@ -979,6 +1047,21 @@ func request_spell_slot(character: Character, minimum_level: int = 1) -> int:
 		await get_tree().process_frame
 	menu.queue_free()
 	return int(decision["slot_level"])
+
+
+func request_pool_quantity(minimum: int, maximum: int, die_size: int) -> int:
+	var options: Array[String] = []
+	var labels: Dictionary = {}
+	for quantity in range(minimum, maximum + 1):
+		var key := str(quantity)
+		options.append(key)
+		labels[key] = "%d d%d%s" % [quantity, die_size, "s" if quantity != 1 else ""]
+	if options.is_empty():
+		return 0
+	if GameManager.test_mode:
+		return minimum
+	var selected := await _request_popup_choice("Choose how many d%d uses to spend" % die_size, options, labels)
+	return int(selected) if selected.is_valid_int() else 0
 
 
 func request_sorcerer_font_slot_level(character: Character, create_slot: bool) -> int:
@@ -1425,10 +1508,68 @@ func _request_popup_choice(prompt: String, options: Array[String], labels: Dicti
 	menu.popup_centered(Vector2i(360, 180))
 	var timeout := get_tree().create_timer(30.0)
 	while not decision["done"] and timeout.time_left > 0.0:
-		await get_tree().process_frame
+		if not is_inside_tree() or not is_instance_valid(menu):
+			return ""
+		var scene_tree = get_tree()
+		if scene_tree == null:
+			return ""
+		await scene_tree.process_frame
+	if not is_instance_valid(menu):
+		return ""
 	menu.queue_free()
 	var selected := int(decision["selected"])
 	return options[selected] if selected >= 0 and selected < options.size() else ""
+
+
+func request_failed_save_numeric_bonus(owner_label: String, ability: String, total: int, dc: int, options: Array[Dictionary], provisional_saved: bool = false) -> String:
+	if options.is_empty() or GameManager.test_mode:
+		return ""
+	var choices: Array[String] = [""]
+	var labels := {"": "Decline"}
+	for option in options:
+		var source_id := str(option.get("source_instance_id", ""))
+		if source_id.is_empty():
+			continue
+		choices.append(source_id)
+		var payment_note := "paid only if this converts to a success" if str(option.get("payment_policy", "pay_on_choice")) == "pay_on_converted_success" else "paid when chosen"
+		if str(option.get("resolution", "numeric_bonus")) == "outcome_override":
+			var outcome_label := "make this save succeed" if str(option.get("outcome", "success")) == "success" else "make this save fail"
+			labels[source_id] = "%s — %s (%d use%s; paid when chosen)" % [str(option.get("label", source_id)), outcome_label, int(option.get("cost", 0)), "" if int(option.get("cost", 0)) == 1 else "s"]
+		elif str(option.get("resolution", "")) == "die_bonus":
+			labels[source_id] = "%s — roll d%d on this save (%d use%s; %s)" % [str(option.get("label", source_id)), int(option.get("die_size", 0)), int(option.get("cost", 0)), "" if int(option.get("cost", 0)) == 1 else "s", payment_note]
+		else:
+			labels[source_id] = "%s — +%d %s (%d use%s; %s)" % [str(option.get("label", source_id)), int(option.get("amount", 0)), ability.to_upper(), int(option.get("cost", 0)), "" if int(option.get("cost", 0)) == 1 else "s", payment_note]
+	if choices.size() <= 1:
+		return ""
+	var prompt := "Successful %s save: %d vs DC %d." % [ability.to_upper(), total, dc] if provisional_saved else "Failed %s save: %d vs DC %d." % [ability.to_upper(), total, dc]
+	return await _request_popup_choice("%s Choose one owned option or decline." % prompt, choices, labels)
+
+
+func request_weapon_attack_numeric_bonus(owner_label: String, total: int, target_ac: int, options: Array[Dictionary], attack_label: String = "weapon attack", provisional_hit: bool = false) -> String:
+	if options.is_empty() or GameManager.test_mode:
+		return ""
+	var choices: Array[String] = [""]
+	var labels := {"": "Decline"}
+	for option in options:
+		var source_id := str(option.get("source_instance_id", ""))
+		if source_id.is_empty():
+			continue
+		choices.append(source_id)
+		if str(option.get("resolution", "")) in ["attack_total_adjustment", "defending_ac_adjustment"]:
+			var payment_note := "paid only if the final attack hits" if str(option.get("payment_policy", "pay_on_choice")) == "pay_on_converted_success" else "paid when chosen"
+			var adjustment_text := "lower this attack total by %d" % int(option.get("amount", 0)) if str(option.get("resolution", "")) == "attack_total_adjustment" else "raise defending AC by %d for this attack" % int(option.get("amount", 0))
+			labels[source_id] = "%s — %s (%d use%s; %s)" % [str(option.get("label", source_id)), adjustment_text, int(option.get("cost", 0)), "" if int(option.get("cost", 0)) == 1 else "s", payment_note]
+		elif str(option.get("resolution", "numeric_bonus")) == "outcome_override":
+			var outcome_label := "force a hit" if str(option.get("outcome", "")) == "hit" else "force a miss"
+			labels[source_id] = "%s — %s (%d use%s; paid when chosen)" % [str(option.get("label", source_id)), outcome_label, int(option.get("cost", 0)), "" if int(option.get("cost", 0)) == 1 else "s"]
+		else:
+			var payment_note := "paid only if the final attack hits" if str(option.get("payment_policy", "pay_on_choice")) == "pay_on_converted_success" else "paid when chosen"
+			var bonus_label := "roll d%d on this attack" % int(option.get("die_size", 0)) if str(option.get("bonus_kind", "numeric")) == "die" else "+%d to this attack" % int(option.get("amount", 0))
+			labels[source_id] = "%s — %s (%d use%s; %s)" % [str(option.get("label", source_id)), bonus_label, int(option.get("cost", 0)), "" if int(option.get("cost", 0)) == 1 else "s", payment_note]
+	if choices.size() <= 1:
+		return ""
+	var outcome_word := "hit" if provisional_hit else "miss"
+	return await _request_popup_choice("%s provisionally %s: %d vs AC %d. Choose one owned option or decline." % [attack_label.capitalize(), outcome_word, total, target_ac], choices, labels)
 
 
 func request_chain_lightning_target_choice(candidates: Array[Dictionary], seeded_target_id: String = "") -> String:

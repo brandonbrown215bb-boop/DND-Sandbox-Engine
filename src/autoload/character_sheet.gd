@@ -164,6 +164,14 @@ func _populate(c: Character) -> void:
 	revival_choice.button_pressed = c.revival_willing
 	revival_choice.toggled.connect(func(accepted): c.revival_willing = accepted)
 	_content.add_child(revival_choice)
+	var willingness_choice := OptionButton.new()
+	willingness_choice.name = "TargetWillingness"
+	willingness_choice.add_item("Target permission: Unknown")
+	willingness_choice.add_item("Target permission: Willing")
+	willingness_choice.add_item("Target permission: Unwilling")
+	willingness_choice.selected = ["unknown", "willing", "unwilling"].find(c.willingness)
+	willingness_choice.item_selected.connect(func(index: int): c.willingness = ["unknown", "willing", "unwilling"][index])
+	_content.add_child(willingness_choice)
 	if c.has_feature("druid_wild_shape"):
 		var wild_shape_button := Button.new()
 		wild_shape_button.text = "Return to normal form" if DruidRules.is_shaped(c) else "Use Wild Shape"

@@ -4,7 +4,7 @@ extends RefCounted
 const SHORT_REST_SECONDS := 3600
 const LONG_REST_SECONDS := 28800
 const SUPPORTED_REST_TYPES := ["short_rest", "long_rest"]
-const SUPPORTED_TRIGGERS := ["short_rest_completed"]
+const SUPPORTED_TRIGGERS := ["short_rest_completed", "long_rest_completed"]
 const SUPPORTED_BUDGET_FORMULAS := ["half_class_level_ceil", "class_level", "flat"]
 
 static var _active_rest_choice_modal: Control = null
@@ -15,6 +15,7 @@ static var _pending_recovery_results: Array[Dictionary] = []
 static var _pending_recovery_host: Node = null
 static var _pending_recovery_finished: Callable = Callable()
 static var _pending_rest_event: Dictionary = {}
+static var _pending_pool_recoveries: Array[Dictionary] = []
 static var _window_epoch: int = 0
 static var _next_event_serial: int = 0
 
@@ -60,6 +61,7 @@ static func reset_windows() -> void:
 	_pending_recovery_host = null
 	_pending_recovery_finished = Callable()
 	_pending_rest_event.clear()
+	_pending_pool_recoveries.clear()
 
 
 static func eligible_participants(candidates: Array) -> Array[Character]:
@@ -210,6 +212,7 @@ static func complete_short_rest(
 		"campaign_elapsed_seconds": GameManager.campaign_elapsed_seconds if GameManager != null else SHORT_REST_SECONDS,
 		"participants": living,
 	}
+	var pool_recoveries := _recover_numeric_pools(living, "short_rest_completed")
 
 	var candidates: Array[Dictionary] = []
 	for character in living:
@@ -224,6 +227,7 @@ static func complete_short_rest(
 			"elapsed_seconds": SHORT_REST_SECONDS,
 			"event": event,
 			"recoveries": [],
+			"pool_recoveries": pool_recoveries,
 			"notifications": notifications,
 			"pending_recovery": false,
 		}
@@ -246,6 +250,7 @@ static func complete_short_rest(
 			"elapsed_seconds": SHORT_REST_SECONDS,
 			"event": event,
 			"recoveries": recoveries,
+			"pool_recoveries": pool_recoveries,
 			"notifications": notifications,
 			"pending_recovery": false,
 		}
@@ -261,6 +266,7 @@ static func complete_short_rest(
 		_pending_recovery_host = host_parent
 		_pending_recovery_finished = on_finished
 		_pending_rest_event = event
+		_pending_pool_recoveries = pool_recoveries
 		_advance_interactive_recovery_queue(notifications)
 		return {
 			"success": true,
@@ -268,6 +274,7 @@ static func complete_short_rest(
 			"elapsed_seconds": SHORT_REST_SECONDS,
 			"event": event,
 			"recoveries": _pending_recovery_results,
+			"pool_recoveries": pool_recoveries,
 			"notifications": notifications,
 			"pending_recovery": is_rest_window_open(),
 			"active_window": get_active_recovery_window(),
@@ -283,6 +290,7 @@ static func complete_short_rest(
 		"elapsed_seconds": SHORT_REST_SECONDS,
 		"event": event,
 		"recoveries": [],
+		"pool_recoveries": pool_recoveries,
 		"notifications": notifications,
 		"pending_recovery": true,
 		"active_window": get_active_recovery_window(),
@@ -305,11 +313,13 @@ static func _advance_interactive_recovery_queue(notifications: Array[Dictionary]
 		"elapsed_seconds": SHORT_REST_SECONDS,
 		"event": _pending_rest_event,
 		"recoveries": _pending_recovery_results.duplicate(true),
+		"pool_recoveries": _pending_pool_recoveries.duplicate(true),
 		"notifications": notifications,
 		"pending_recovery": false,
 	}
 	_pending_recovery_host = null
 	_pending_recovery_finished = Callable()
+	_pending_pool_recoveries.clear()
 	if done_callback.is_valid():
 		done_callback.call(final_out)
 
@@ -338,13 +348,42 @@ static func complete_long_rest(participants: Array, context: Dictionary = {}) ->
 		"campaign_elapsed_seconds": GameManager.campaign_elapsed_seconds if GameManager != null else LONG_REST_SECONDS,
 		"participants": living,
 	}
+	var pool_recoveries := _recover_numeric_pools(living, "long_rest_completed")
 	return {
 		"success": true,
 		"rest_type": "long_rest",
 		"elapsed_seconds": LONG_REST_SECONDS,
 		"event": event,
+		"pool_recoveries": pool_recoveries,
 		"notifications": notifications,
 	}
+
+
+static func _recover_numeric_pools(participants: Array[Character], trigger: String) -> Array[Dictionary]:
+	var recovered: Array[Dictionary] = []
+	for character in participants:
+		if character == null or character.is_dead() or character.current_hp <= 0:
+			continue
+		var seen_source_instances: Dictionary = {}
+		for feature in character.features:
+			if not feature is Dictionary:
+				continue
+			if not feature.has("resource_pool") or not feature["resource_pool"] is Dictionary:
+				continue
+			var definition: Dictionary = feature
+			var pool_definition: Dictionary = definition["resource_pool"]
+			var recovery: Variant = pool_definition.get("recovery", {})
+			if not recovery is Dictionary or not recovery.has(trigger):
+				continue
+			var definition_id := str(pool_definition.get("id", ""))
+			for source_instance_id in ResourcePoolRules.source_instance_ids(character, definition_id):
+				if seen_source_instances.has(source_instance_id):
+					continue
+				seen_source_instances[source_instance_id] = true
+				var result := ResourcePoolRules.recover(character, definition, source_instance_id, trigger)
+				if result.get("success", false):
+					recovered.append(result)
+	return recovered
 
 
 static func compute_recovery_budget(character: Character, effect: Dictionary) -> int:

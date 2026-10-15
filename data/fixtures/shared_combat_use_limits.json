@@ -1,0 +1,65 @@
+{
+  "id": "fixture:bounded_hit_rider_class",
+  "name": "Fixture Bounded Hit Rider",
+  "description": "Test-only class used to validate authored combat and owner-turn-interval hit limits.",
+  "hit_die": "d8",
+  "primary_ability": "STR",
+  "features_by_level": {
+    "1": [
+      {
+        "id": "fixture:bounded_hit_rider",
+        "name": "Bounded Hit Rider",
+        "executor": "class_feature",
+        "type": "active",
+        "target": "self",
+        "action_cost": "free",
+        "resource_cost": 1,
+        "resource_pool": {
+          "id": "fixture:bounded_hit_rider_pool",
+          "capacity_formula": 2,
+          "initial_quantity": 2
+        },
+        "effects": [
+          { "type": "grant_condition", "condition": "bounded_hit_rider", "duration": 1 }
+        ],
+        "passive_effects": [
+          {
+            "type": "weapon_damage_rider",
+            "id": "fixture_bounded_hit_target",
+            "trigger": "weapon_attack_hit",
+            "damage_type": "force",
+            "dice_by_level": { "1": "1d4" },
+            "use_limit": "once_per_target_per_combat_turn"
+          }
+        ]
+      },
+      {
+        "id": "fixture:bounded_owner_interval_rider",
+        "name": "Owner Interval Hit Rider",
+        "executor": "class_feature",
+        "type": "active",
+        "target": "self",
+        "action_cost": "free",
+        "resource_cost": 1,
+        "resource_pool": {
+          "id": "fixture:bounded_owner_interval_rider_pool",
+          "capacity_formula": 2,
+          "initial_quantity": 2
+        },
+        "effects": [
+          { "type": "grant_condition", "condition": "bounded_owner_interval_rider", "duration": 1 }
+        ],
+        "passive_effects": [
+          {
+            "type": "weapon_damage_rider",
+            "id": "fixture_bounded_owner_interval_hit",
+            "trigger": "weapon_attack_hit",
+            "damage_type": "force",
+            "dice_by_level": { "1": "1d4" },
+            "use_limit": "once_per_owner_turn_interval"
+          }
+        ]
+      }
+    ]
+  }
+}

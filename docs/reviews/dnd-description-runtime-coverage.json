@@ -1,0 +1,4915 @@
+{
+  "purpose": "Review progress; pending and structural-only entries are not support claims.",
+  "registry_snapshot_sha256": "d68cad59e1aae34dd76ecea2d827ded614fca35ff18d24ebb1746a80f7874e6c",
+  "files": [
+    {
+      "path": "5etools raw/class/class-artificer.json",
+      "sha256": "4213e978e2af87173babdbe50931c349d8e8ac0941776293fdba565dbb85b048",
+      "units": 137,
+      "text_units": 120
+    },
+    {
+      "path": "5etools raw/class/class-barbarian.json",
+      "sha256": "e13109b124331e052f00333826855333f26db39d26d0416a27cf100dd3b6cf5c",
+      "units": 178,
+      "text_units": 148
+    },
+    {
+      "path": "5etools raw/class/class-bard.json",
+      "sha256": "2caa2b0910127ba3b8910914e8f2a54549c2189306b7021d5c7f7804d3463892",
+      "units": 154,
+      "text_units": 122
+    },
+    {
+      "path": "5etools raw/class/class-cleric.json",
+      "sha256": "ca6c89359ac1b47e97e9a89b427add8d51b04e2af9b9f23569e694388b8005a7",
+      "units": 346,
+      "text_units": 219
+    },
+    {
+      "path": "5etools raw/class/class-druid.json",
+      "sha256": "ed8e4d25e3dafe16df49620de5a3a1f1f2bb1db9a47493ad809fef61d1929266",
+      "units": 167,
+      "text_units": 116
+    },
+    {
+      "path": "5etools raw/class/class-fighter.json",
+      "sha256": "07411cc6484ef7ef1a5e509edbef23cbf7c27d53e85c2ab6da4af4fae680c10f",
+      "units": 234,
+      "text_units": 180
+    },
+    {
+      "path": "5etools raw/class/class-monk.json",
+      "sha256": "1d43629bee18150f7d592c532962bb9dce98359deb8533550a9267abdafee8e0",
+      "units": 223,
+      "text_units": 155
+    },
+    {
+      "path": "5etools raw/class/class-mystic.json",
+      "sha256": "61143202adf151fb130f3a35840b8ccd7aa792d334d001ea4278d1c0f8d5c2dc",
+      "units": 66,
+      "text_units": 59
+    },
+    {
+      "path": "5etools raw/class/class-paladin.json",
+      "sha256": "d7d95eeff5e396cb3338c79e2fe852e1b94476fcd14e390ffb2e6e3f92c50573",
+      "units": 225,
+      "text_units": 165
+    },
+    {
+      "path": "5etools raw/class/class-ranger.json",
+      "sha256": "50e58b97502ba7ceffe2b47979ff1082b88825f1755950398771ef76c8b35b08",
+      "units": 178,
+      "text_units": 149
+    },
+    {
+      "path": "5etools raw/class/class-rogue.json",
+      "sha256": "f171ba2fddef031c08dc05d9d6cf6f974fdd0690763b13711509bd18d60eaa1c",
+      "units": 188,
+      "text_units": 149
+    },
+    {
+      "path": "5etools raw/class/class-sorcerer.json",
+      "sha256": "31efb2befb0181a70fe6ba323bbea9f06f76a5969e0eb9a55f8a6403fbd2da1b",
+      "units": 193,
+      "text_units": 129
+    },
+    {
+      "path": "5etools raw/class/class-warlock.json",
+      "sha256": "c6a7e3414d350fddffee686060b2420f69e58273517e5609583b855fdf9a75f0",
+      "units": 161,
+      "text_units": 115
+    },
+    {
+      "path": "5etools raw/class/class-wizard.json",
+      "sha256": "08c7e796dc8761ff956a532d56e2a87371a434bd94e387944411612744a4ceaf",
+      "units": 191,
+      "text_units": 139
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/aberrant_sorcery.json",
+      "sha256": "c352370864e5d2c584e68d5ae1de713a661d1041a5ebca72abe14b6475cb528b",
+      "units": 8,
+      "text_units": 7
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/abjurer.json",
+      "sha256": "cdd08fee36b70bcc0809388f34976aca45486153948b015d54657310e032aa70",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/arcane_trickster.json",
+      "sha256": "ab91aacc28c76004f68964160c49787b4c65d4af9c3db973bbcfbf51a6fa564a",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/archfey_patron.json",
+      "sha256": "c5d0ff3157888d93cb0dc4eb2cb9ce2124a3f00a11ec9deb6c9e2dd1041e23d0",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/assassin.json",
+      "sha256": "25d29f0177a3b6c9577334d2b015646eaee9e0e08e8a9748b277980ce6feea5e",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/battle_master.json",
+      "sha256": "b00c491f7dcdd969536d2f6dc17c20d2bc6ec8d8a19799e6fd50fa27f0bc9ac7",
+      "units": 10,
+      "text_units": 8
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/beast_master.json",
+      "sha256": "711530633ec17fd78c22512a15e9db886f86098d4f95f0b1f313b33e5af303d9",
+      "units": 6,
+      "text_units": 5
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/celestial_patron.json",
+      "sha256": "5abddf88f78fb62c2f2a1b22b8c1a07f84c371db846ef60530b2dde946ae1094",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/champion.json",
+      "sha256": "050b7de0f26f02d2d7db3da4de4b6cae729c112c0818cbad73458cdfe7fd91f1",
+      "units": 8,
+      "text_units": 7
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/circle_of_the_land.json",
+      "sha256": "caf51f3022955171a4db3682018673c555599c3ae745406c52ba0759eb2b302c",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/circle_of_the_moon.json",
+      "sha256": "bd4e4e5ccbcbfacba26170d38e5f90e59df937936377508a053818268667c40d",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/circle_of_the_sea.json",
+      "sha256": "9adec5aeaaef6a30bc949cca790706c4ea4776123781b1115bccfc81cb6dc223",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/circle_of_the_stars.json",
+      "sha256": "4cb4a3d13498bbb69b7191515f8d9a9d90e4e61194893e9e2b922f24037ab75c",
+      "units": 10,
+      "text_units": 9
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/clockwork_sorcery.json",
+      "sha256": "fdd8bf46c7b101a6ecee0ba48a95135aa1b79433aa3fe51f4bc684c392fa203a",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/college_of_dance.json",
+      "sha256": "8c6d9bb6f983691047b347afb7f3b75b90bac18af93b8d779138d17580fcc0f6",
+      "units": 10,
+      "text_units": 9
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/college_of_glamour.json",
+      "sha256": "cbdd09f0bcbc23b0f33ed5d135a7bbd3bd28c9a8dd33bffdbbb961e61de48f41",
+      "units": 6,
+      "text_units": 5
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/college_of_lore.json",
+      "sha256": "5338f76dcf77be098b0e2a93616c76399b31a36137deeae5eb2caef9f1eed987",
+      "units": 6,
+      "text_units": 5
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/college_of_valor.json",
+      "sha256": "7cd95cb1966dc7c49494da66237429844d8a3c1ecabc7ec5efe97cde6d7b807a",
+      "units": 6,
+      "text_units": 5
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/diviner.json",
+      "sha256": "e89b73d4433df5d6e44e6a7a370f74324508f6304b85852982520eeb1611282f",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/draconic_sorcery.json",
+      "sha256": "a4ae59faa1282f5e4ad17c87bcf486d4a6d358ecd717e3dc5552ac23282d160b",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/eldritch_knight.json",
+      "sha256": "e2ea50c76ca7d3737e555a79e2e6bb991aa53c8405fa1676cbcbba51bd700523",
+      "units": 8,
+      "text_units": 7
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/evoker.json",
+      "sha256": "b590b9f1dba36f829a2484e50335f9cb4a4361afa2149aa0524ae3df9aa02be3",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/fey_wanderer.json",
+      "sha256": "8491936fa18529512326be349d39d1d07b2131aefda05304c168e997a86b2434",
+      "units": 8,
+      "text_units": 7
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/fiend_patron.json",
+      "sha256": "7a89fee096eb1d583848893305c221056f7bfb50faa6fffcba796c6a9f517cf7",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/gloom_stalker.json",
+      "sha256": "a624e0807704d4f0014d5396e9acc20dc3934dee47b0c76c23866e5168aa342f",
+      "units": 8,
+      "text_units": 7
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/great_old_one_patron.json",
+      "sha256": "26ce1bb00d0dca51f53440c422ceac394ff740416595025812c0fad718d8d33f",
+      "units": 9,
+      "text_units": 8
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/hunter.json",
+      "sha256": "970cdff0c848ef5cd8a6213da16ddf44630eeb342c08e23bfd9a10e97a59376b",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/illusionist.json",
+      "sha256": "50349c3d982f914be2f803d0cb7885f2093c3ff6bcd767355d9c443be7176e29",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/life_domain.json",
+      "sha256": "3aef068d380d813163cc0f73fdc594f5c5a48ad81558eacd70a124b9c39401a4",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/light_domain.json",
+      "sha256": "362d55e4d6661c502504aba5bd77d7b03e43f1369289cbb48fa63e0732408960",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/oath_of_devotion.json",
+      "sha256": "b0d8682413876db65ff4fd73b33d5e6b77c83c24b4fe8c1af02a45136a1c1862",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/oath_of_glory.json",
+      "sha256": "0b1c8983ddb536f557bda48f50cd60683075117b53578e71933fe2f50e2d1a06",
+      "units": 8,
+      "text_units": 7
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/oath_of_the_ancients.json",
+      "sha256": "14ac821674a2b9de2b09d96d57f5d9cf79a6b342932579512a934f691eaca73a",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/oath_of_vengeance.json",
+      "sha256": "a0e04819723adcad5c4d2d91627db297afd1b1fdcbcb6bafbac6ee941630aff7",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/path_of_the_berserker.json",
+      "sha256": "a5265ccfd4ee79c478e451fd17a09a4a466096319a3a5fd37676b703d9523acf",
+      "units": 6,
+      "text_units": 5
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/path_of_the_wild_heart.json",
+      "sha256": "055f093a3d34e4bd3ab3ee0553545448ac030a0e0b582a23a56ab7bad1d5d67f",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/path_of_the_world_tree.json",
+      "sha256": "cdda13efb8ab70a3fe06f2e09b82cfb844a0c5751c6d01ecee9e18d1b584ae52",
+      "units": 6,
+      "text_units": 5
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/path_of_the_zealot.json",
+      "sha256": "fe2867bca55181cbe45f2032c8ef58682fedf41013877767e9f9ed14273afbbd",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/psi_warrior.json",
+      "sha256": "d28f4e5fd12cc0a999c33364179c50b92a274212682453048f93d19841c54fce",
+      "units": 12,
+      "text_units": 11
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/soulknife.json",
+      "sha256": "749002c4e8769f750610445f2229fb640f5e48ce77d4d9439ae96416335a1d35",
+      "units": 11,
+      "text_units": 10
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/thief.json",
+      "sha256": "9dbaa3fd86dd01c208291ad1b5eba3c686fa9bd44b180c899e5bfa9267f2f09e",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/trickery_domain.json",
+      "sha256": "e7d70c2dffaf0749d8ceb5d2b9032eefa79cd655d55a14c28c66ab46a730e912",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/war_domain.json",
+      "sha256": "fa43f5dc616af617e783374124577e4e2540f9c9688f5608268a3a5ba0eecfe8",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/warrior_of_mercy.json",
+      "sha256": "b14a7c269a1527e764c0e36d18729bf32d0160fe352c72a5a57cfa31c34423a1",
+      "units": 8,
+      "text_units": 7
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/warrior_of_shadow.json",
+      "sha256": "4ea402798012e6dc40b8f251e69487e695342a155130879d3bdb6bf737a608f7",
+      "units": 9,
+      "text_units": 8
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/warrior_of_the_elements.json",
+      "sha256": "e033e1845c67c08988591852dbcc767089064d333acd13dd71df797684e1cc4f",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/warrior_of_the_open_hand.json",
+      "sha256": "f1240c1b5d143da4c681e3a9dcbe650f91a155d503618d7c6b2bf2a3fb3fe7a6",
+      "units": 6,
+      "text_units": 5
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/wild_magic_sorcery.json",
+      "sha256": "957ea200def651c68224bbc12578283f1c985a774d25c02d18d8d65a0bfde57c",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/extracts/5etools/index.json",
+      "sha256": "1d44310021ce7f0affc684c8448842ae018e668720eef5262071f341d2b08856",
+      "units": 48,
+      "text_units": 0
+    },
+    {
+      "path": "_staging/phb_dmg/staged/aberrant_sorcery.json",
+      "sha256": "caee2d6abf915a5603be6b651bd00c6741f64cb41f176a89bb11694cc67e3768",
+      "units": 10,
+      "text_units": 9
+    },
+    {
+      "path": "_staging/phb_dmg/staged/abjurer.json",
+      "sha256": "26ebbe2bc3ced9c829d6f8b0fe7306d66986899d8558e90dfea3022b07cd99e2",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/phb_dmg/staged/arcane_trickster.json",
+      "sha256": "bd0a96e9b6314b72db10ab273751e6510c60d7b4d6415617b34335367d986ffa",
+      "units": 6,
+      "text_units": 5
+    },
+    {
+      "path": "_staging/phb_dmg/staged/archfey_patron.json",
+      "sha256": "5db827546f0372da5fa94c2a9d6ec68a7bfdc0d3e89cd6d9aa63c96b1d2e31b6",
+      "units": 9,
+      "text_units": 8
+    },
+    {
+      "path": "_staging/phb_dmg/staged/assassin.json",
+      "sha256": "90b25d291f3632772860040d4dbe220b08995db8138871e9c6bcb79d6b84731b",
+      "units": 6,
+      "text_units": 5
+    },
+    {
+      "path": "_staging/phb_dmg/staged/battle_master.json",
+      "sha256": "7807e8485ed0cd99fe72ad86e937edef4e767ddc87b5834cf1d4f94cdc1cf35e",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/phb_dmg/staged/beast_master.json",
+      "sha256": "e81a147f048e276fef7e1da34d61bec6d4f5d27d5cc1bbe592a8999689cae434",
+      "units": 5,
+      "text_units": 4
+    },
+    {
+      "path": "_staging/phb_dmg/staged/celestial_patron.json",
+      "sha256": "d55577bcc7edb0d95e41177cff8d380eed0c32d57356b97d4a280809f04fbb6a",
+      "units": 9,
+      "text_units": 8
+    },
+    {
+      "path": "_staging/phb_dmg/staged/circle_of_the_moon.json",
+      "sha256": "af594c89b570debb0fd8e31e6c2f5cf1f03a3692f49895e56c49f03da97aec2a",
+      "units": 9,
+      "text_units": 8
+    },
+    {
+      "path": "_staging/phb_dmg/staged/circle_of_the_sea.json",
+      "sha256": "7b7b6bf3db559a1d44e991e1e6a2ee85b7015dc0991d212949554625e750f12e",
+      "units": 9,
+      "text_units": 8
+    },
+    {
+      "path": "_staging/phb_dmg/staged/circle_of_the_stars.json",
+      "sha256": "189f04d7ed31b37a9ab2c32a1da196468390d6b24342fd706dccbb8281aaa38e",
+      "units": 10,
+      "text_units": 9
+    },
+    {
+      "path": "_staging/phb_dmg/staged/clockwork_sorcery.json",
+      "sha256": "c563c4361ae2d65718a17f74b3791a195af381369f546b61c13ae13b1c5efc85",
+      "units": 9,
+      "text_units": 8
+    },
+    {
+      "path": "_staging/phb_dmg/staged/college_of_dance.json",
+      "sha256": "012671e9d9a136f99aa9830f82d7a308570f6de296f5aed526ef712363cf1f97",
+      "units": 9,
+      "text_units": 8
+    },
+    {
+      "path": "_staging/phb_dmg/staged/college_of_glamour.json",
+      "sha256": "f09f3e32550337e257492f42060b8ffa7c850dd7224d83c1bf6d23c3ee1a9f6e",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/phb_dmg/staged/college_of_valor.json",
+      "sha256": "acadefea0aa5514ecf28c7190a1f81ac2e06db68babcff00e5fcb346a96e3083",
+      "units": 5,
+      "text_units": 4
+    },
+    {
+      "path": "_staging/phb_dmg/staged/diviner.json",
+      "sha256": "295ed40b6450e2f3af18e13f297f474b36000caa8fc716e2bfd3783bee2ce0b1",
+      "units": 6,
+      "text_units": 5
+    },
+    {
+      "path": "_staging/phb_dmg/staged/eldritch_knight.json",
+      "sha256": "dd6f96448bf8117b8bbfb68c989edce842e1dc79b81d6aa9d13d77190dc8da0b",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/phb_dmg/staged/fey_wanderer.json",
+      "sha256": "95c67ab24c584d910a95793e64c62fbb47a5e7f8f460401936312f1b4b18ffe4",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/phb_dmg/staged/gloom_stalker.json",
+      "sha256": "a4d7de23e360acfc2e410cd77259b0d06bd35feb749b0b0a4d7a1a47143a9192",
+      "units": 11,
+      "text_units": 10
+    },
+    {
+      "path": "_staging/phb_dmg/staged/great_old_one_patron.json",
+      "sha256": "f67e53d0f1b5ebf741886acdc7068b83502bfded6f5ff4cb8006291350651495",
+      "units": 10,
+      "text_units": 9
+    },
+    {
+      "path": "_staging/phb_dmg/staged/illusionist.json",
+      "sha256": "daf176d1ae78cdbdc6d71f8082e0e67d010a362765c517fae2bbe16ebdeee247",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/phb_dmg/staged/light_domain.json",
+      "sha256": "6fe6617853d86acd84dcadb55dfc183a78045d2c439b3cfd351f6ce21a23b606",
+      "units": 9,
+      "text_units": 8
+    },
+    {
+      "path": "_staging/phb_dmg/staged/oath_of_glory.json",
+      "sha256": "87a4f94c9d31550b73553add11b74eb5bfc694c2e42d45323c7f76ca09fa9e83",
+      "units": 11,
+      "text_units": 10
+    },
+    {
+      "path": "_staging/phb_dmg/staged/oath_of_the_ancients.json",
+      "sha256": "f72acdf977d8559392dabaebb32993f6c62bc74ae01e88fc652d2ba7246cee13",
+      "units": 10,
+      "text_units": 9
+    },
+    {
+      "path": "_staging/phb_dmg/staged/oath_of_vengeance.json",
+      "sha256": "a6c2b4ef82400bfd5ce27874bf4c718a3e54f352118c1e42162aeb0770279b65",
+      "units": 10,
+      "text_units": 9
+    },
+    {
+      "path": "_staging/phb_dmg/staged/path_of_the_wild_heart.json",
+      "sha256": "eb0b1ea62263c1b7a49aadea944f2af3551ae6762fabe1c374b75cdd6e93bdf7",
+      "units": 6,
+      "text_units": 5
+    },
+    {
+      "path": "_staging/phb_dmg/staged/path_of_the_world_tree.json",
+      "sha256": "670a31f79aaaaca10ebfd5b3c04d5ff8d68424ebeb68d881f4290ab95b533251",
+      "units": 5,
+      "text_units": 4
+    },
+    {
+      "path": "_staging/phb_dmg/staged/path_of_the_zealot.json",
+      "sha256": "be6eb5c4a33916d8c4d6f107cba5fd55f90a5c3f55324beed8caf783f59fd598",
+      "units": 6,
+      "text_units": 5
+    },
+    {
+      "path": "_staging/phb_dmg/staged/psi_warrior.json",
+      "sha256": "9d55eae9db0c28428dc0a7a95963014dbcd73507d82fb98cece7682ea5aabdd0",
+      "units": 11,
+      "text_units": 10
+    },
+    {
+      "path": "_staging/phb_dmg/staged/soulknife.json",
+      "sha256": "45a9d6f7fab7c677d4e56ffd68b255bd7803e56802baa85a60228adddca8b04e",
+      "units": 10,
+      "text_units": 9
+    },
+    {
+      "path": "_staging/phb_dmg/staged/trickery_domain.json",
+      "sha256": "e3c67d556c2721a3a5eb42d28b6b03510ec759d73d1088631c19eecb68442544",
+      "units": 9,
+      "text_units": 8
+    },
+    {
+      "path": "_staging/phb_dmg/staged/war_domain.json",
+      "sha256": "cde23aaf64bc91c2b1a397450e7c5748e7d22fd87b00d17399f1e464f581a96a",
+      "units": 9,
+      "text_units": 8
+    },
+    {
+      "path": "_staging/phb_dmg/staged/warrior_of_mercy.json",
+      "sha256": "0a00194e3f3743dc35cfd77d5cce2dd6b73130d24bb099a78a221aea73eb6514",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/phb_dmg/staged/warrior_of_shadow.json",
+      "sha256": "04e5e09bd74413f54a08e43a27617379404ed4ee0ac263b5ddff613b7ba67e4d",
+      "units": 8,
+      "text_units": 7
+    },
+    {
+      "path": "_staging/phb_dmg/staged/warrior_of_the_elements.json",
+      "sha256": "0d8de360d9047a41faa8d792fdbae13f3022fee6a118e8a9a66468f0a8729b24",
+      "units": 6,
+      "text_units": 5
+    },
+    {
+      "path": "_staging/phb_dmg/staged/wild_magic_sorcery.json",
+      "sha256": "b4994cb138f66c820d29183ff8dc370d044e0e8279e743c780c203432035fd9f",
+      "units": 6,
+      "text_units": 5
+    },
+    {
+      "path": "_staging/staged/aberrant_sorcery.json",
+      "sha256": "bdd7f2475cdb14f089b8fad22415627e846db2d71ce7ddadff7109f06b483753",
+      "units": 10,
+      "text_units": 9
+    },
+    {
+      "path": "_staging/staged/abjurer.json",
+      "sha256": "762c4b9efea6300972b4646c6ff761623080dd615b2a3d16640c5306774b575f",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/staged/arcane_trickster.json",
+      "sha256": "27ab9644549451732fb2eb8a7f1c1962b2c2db03df25ad5cedb5ac0c2a32a950",
+      "units": 6,
+      "text_units": 5
+    },
+    {
+      "path": "_staging/staged/archfey_patron.json",
+      "sha256": "a170fb53b3fa1cd1650c11d99b3380a24c57883b5154089460af68e20d0bb775",
+      "units": 9,
+      "text_units": 8
+    },
+    {
+      "path": "_staging/staged/assassin.json",
+      "sha256": "85c1030a8bf1ee3132064e4a87e0aca54dcc8efd3436d177cb6af2cc855298f9",
+      "units": 6,
+      "text_units": 5
+    },
+    {
+      "path": "_staging/staged/battle_master.json",
+      "sha256": "1f29be1757d3b370d282b11730959598dcfdfc61eda33c99db41dd6b049f885e",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/staged/beast_master.json",
+      "sha256": "009628b4abde9e23ffdca0decef2698845503ae7c0863957b00eb54e83e0794c",
+      "units": 5,
+      "text_units": 4
+    },
+    {
+      "path": "_staging/staged/celestial_patron.json",
+      "sha256": "73257b980e0079d3e7d44e6432ef2138d6a2d27af2a47725bb546b665e5b40b9",
+      "units": 9,
+      "text_units": 8
+    },
+    {
+      "path": "_staging/staged/circle_of_the_land.json",
+      "sha256": "1b566199101a53ac4b1038c0cf77e8fa8dedf4af48c7b688750f1e1872b4708c",
+      "units": 6,
+      "text_units": 5
+    },
+    {
+      "path": "_staging/staged/circle_of_the_moon.json",
+      "sha256": "d7b278337e4abd718e412d500d14c1f0d74109b81c312220b9334787e4f2ae51",
+      "units": 9,
+      "text_units": 8
+    },
+    {
+      "path": "_staging/staged/circle_of_the_sea.json",
+      "sha256": "d6705d91232ce16663505607f418ff706b7e6e95c4ca5ee14652b091062806cd",
+      "units": 9,
+      "text_units": 8
+    },
+    {
+      "path": "_staging/staged/circle_of_the_stars.json",
+      "sha256": "4588146006ef9f94289b682cd6673988362824cd17d50e9842c3981ef050eaa4",
+      "units": 10,
+      "text_units": 9
+    },
+    {
+      "path": "_staging/staged/clockwork_sorcery.json",
+      "sha256": "50587c077fac09491527d1814643865f189985c71bef6860a37738452200d0e0",
+      "units": 9,
+      "text_units": 8
+    },
+    {
+      "path": "_staging/staged/college_of_dance.json",
+      "sha256": "522da7e8de40fa7302aa26f611dccfc89925ac6055302530e40b8fd4244d31f4",
+      "units": 9,
+      "text_units": 8
+    },
+    {
+      "path": "_staging/staged/college_of_glamour.json",
+      "sha256": "39b24eb5174d891b06f36d0f892f5b6ce173d5b6cf6f1d34f7450cf2cec1a126",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/staged/college_of_lore.json",
+      "sha256": "72fa8990b4b1d9f5d0a454a4b237486608280ab1a14eab2ccf5f5d7b3b76512f",
+      "units": 5,
+      "text_units": 4
+    },
+    {
+      "path": "_staging/staged/college_of_valor.json",
+      "sha256": "d1c3396249332a2183d0bdd916bc9f570368a2d84a7a855fd4069398ae030752",
+      "units": 5,
+      "text_units": 4
+    },
+    {
+      "path": "_staging/staged/diviner.json",
+      "sha256": "844921cc3fb14c301a005d8728d5260ad4384d8a51288d54762c603dd71bcc58",
+      "units": 6,
+      "text_units": 5
+    },
+    {
+      "path": "_staging/staged/draconic_sorcery.json",
+      "sha256": "a936d4323b1a82e12d7977ce5e04fa8b0b7a86926e6c5e36ecc711a20342c36a",
+      "units": 9,
+      "text_units": 8
+    },
+    {
+      "path": "_staging/staged/eldritch_knight.json",
+      "sha256": "28b6526a1a3df6f9fdc1baf5f5f1e3b6e7691a632c6ca7c3278926adab3b39f4",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/staged/evoker.json",
+      "sha256": "13efbc4cb3556b703a2be70c2922dd402391ad989603e7aeb8a3a503f26e3952",
+      "units": 6,
+      "text_units": 5
+    },
+    {
+      "path": "_staging/staged/fey_wanderer.json",
+      "sha256": "d1539415aa73aa04caf87b60a245fe725cdbb950c2aa3f47fc2096951a9e0daf",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/staged/gloom_stalker.json",
+      "sha256": "11e19f37ab7cab6bcbd2e57ef9c96ee349657d60e078acf592ca9b65955c8db7",
+      "units": 11,
+      "text_units": 10
+    },
+    {
+      "path": "_staging/staged/great_old_one_patron.json",
+      "sha256": "12ecbbc792b40fc0969fc43a99415a26bad7aa04d0d420833c30f086d375bfbc",
+      "units": 10,
+      "text_units": 9
+    },
+    {
+      "path": "_staging/staged/hunter.json",
+      "sha256": "30a32c89d9306e9debc9278ebb53eb67b4fe329d70227f85e8b098cf4a08f2c4",
+      "units": 6,
+      "text_units": 5
+    },
+    {
+      "path": "_staging/staged/illusionist.json",
+      "sha256": "be6e39e39419145c2c4c28491091c154b41baf369c33c370171a9e7b214aa6b6",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/staged/life_domain.json",
+      "sha256": "cf947d62a43c367ea03124661b1f481093c9d05577f281391e19ad24f3a39580",
+      "units": 9,
+      "text_units": 8
+    },
+    {
+      "path": "_staging/staged/light_domain.json",
+      "sha256": "5a9c03f08ade439c407a660ddc775072610c05ef2c112ece91f2db4610508543",
+      "units": 9,
+      "text_units": 8
+    },
+    {
+      "path": "_staging/staged/oath_of_devotion.json",
+      "sha256": "95e402ea60caa513a310dc69207652ba7416cb3c0e5a6a0a582c3116c099edf2",
+      "units": 10,
+      "text_units": 9
+    },
+    {
+      "path": "_staging/staged/oath_of_glory.json",
+      "sha256": "80efaf677cafb37d8244adcdda719af0c09346815ad933309bb89f840d3829d3",
+      "units": 11,
+      "text_units": 10
+    },
+    {
+      "path": "_staging/staged/oath_of_the_ancients.json",
+      "sha256": "0786774d8f4702b7e79e7f170e2429e6c7131be4a7af976f32c9a374cad8752f",
+      "units": 10,
+      "text_units": 9
+    },
+    {
+      "path": "_staging/staged/oath_of_vengeance.json",
+      "sha256": "63711b1174d58f9edb2958760d8188f0324ab7ef143d04c8d7713d38432e43f2",
+      "units": 10,
+      "text_units": 9
+    },
+    {
+      "path": "_staging/staged/path_of_the_berserker.json",
+      "sha256": "09b8ec75fd0457bc1f26aa93d86c278f72c7519666495c27ec6725af2e97c31d",
+      "units": 5,
+      "text_units": 4
+    },
+    {
+      "path": "_staging/staged/path_of_the_wild_heart.json",
+      "sha256": "8797b338a5ee5848a9ab3baf1afa9867712a5070ca0996ca074e03286bc56963",
+      "units": 6,
+      "text_units": 5
+    },
+    {
+      "path": "_staging/staged/path_of_the_world_tree.json",
+      "sha256": "a214c83b9e65d8ca3e79aef0eb9949d9c0c18918e0f669265e2e141633faf94d",
+      "units": 5,
+      "text_units": 4
+    },
+    {
+      "path": "_staging/staged/path_of_the_zealot.json",
+      "sha256": "ea1a3da102613cf0b47f635be0c676cfe09d8594501eb2978d5410ea7cf2f773",
+      "units": 6,
+      "text_units": 5
+    },
+    {
+      "path": "_staging/staged/psi_warrior.json",
+      "sha256": "8fceae625c718f3493c422f00fd1ade9614a1ebd56ae3829e91b56e0521ef52d",
+      "units": 11,
+      "text_units": 10
+    },
+    {
+      "path": "_staging/staged/soulknife.json",
+      "sha256": "9ab7ddc6d99f3871f16072cb4f739f075ea9b0e46bec9a6eff6bdcfbb398a79c",
+      "units": 10,
+      "text_units": 9
+    },
+    {
+      "path": "_staging/staged/thief.json",
+      "sha256": "81d37eace3f5d4b0b34b8fd6b44a0f6595b446de9dd5c65cb5f1e0b5fb3bfa42",
+      "units": 6,
+      "text_units": 5
+    },
+    {
+      "path": "_staging/staged/trickery_domain.json",
+      "sha256": "8e0aa74aade8a68976bfe5ea9c4dae392190038643d837f715e3e7544fd72445",
+      "units": 9,
+      "text_units": 8
+    },
+    {
+      "path": "_staging/staged/war_domain.json",
+      "sha256": "ae814c0d3d2106bc18e018579a6037e19afcc527ae12556183afb17f6b132cb9",
+      "units": 9,
+      "text_units": 8
+    },
+    {
+      "path": "_staging/staged/warrior_of_mercy.json",
+      "sha256": "04d514bccd65525e89a008bd8e533588874a47b778f53315482fcdc451c3118b",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/staged/warrior_of_shadow.json",
+      "sha256": "81f892ec672decde2615dccce41867a57d81da231dc964325503b1c586d635ff",
+      "units": 8,
+      "text_units": 7
+    },
+    {
+      "path": "_staging/staged/warrior_of_the_elements.json",
+      "sha256": "63b4a72ba2010b74c806898beea2697585c8e9772d6e206e31fe3db47ae4f08a",
+      "units": 6,
+      "text_units": 5
+    },
+    {
+      "path": "_staging/staged/wild_magic_sorcery.json",
+      "sha256": "93257ab02e6833287ac9e9bbbda1e1659a95ca3da2b9404e5db0186fb543c04e",
+      "units": 6,
+      "text_units": 5
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/aberrant_sorcery.json",
+      "sha256": "c352370864e5d2c584e68d5ae1de713a661d1041a5ebca72abe14b6475cb528b",
+      "units": 8,
+      "text_units": 7
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/abjurer.json",
+      "sha256": "cdd08fee36b70bcc0809388f34976aca45486153948b015d54657310e032aa70",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/arcane_trickster.json",
+      "sha256": "ab91aacc28c76004f68964160c49787b4c65d4af9c3db973bbcfbf51a6fa564a",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/archfey_patron.json",
+      "sha256": "c5d0ff3157888d93cb0dc4eb2cb9ce2124a3f00a11ec9deb6c9e2dd1041e23d0",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/assassin.json",
+      "sha256": "25d29f0177a3b6c9577334d2b015646eaee9e0e08e8a9748b277980ce6feea5e",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/battle_master.json",
+      "sha256": "b00c491f7dcdd969536d2f6dc17c20d2bc6ec8d8a19799e6fd50fa27f0bc9ac7",
+      "units": 10,
+      "text_units": 8
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/beast_master.json",
+      "sha256": "711530633ec17fd78c22512a15e9db886f86098d4f95f0b1f313b33e5af303d9",
+      "units": 6,
+      "text_units": 5
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/celestial_patron.json",
+      "sha256": "5abddf88f78fb62c2f2a1b22b8c1a07f84c371db846ef60530b2dde946ae1094",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/champion.json",
+      "sha256": "050b7de0f26f02d2d7db3da4de4b6cae729c112c0818cbad73458cdfe7fd91f1",
+      "units": 8,
+      "text_units": 7
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/circle_of_the_land.json",
+      "sha256": "caf51f3022955171a4db3682018673c555599c3ae745406c52ba0759eb2b302c",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/circle_of_the_moon.json",
+      "sha256": "bd4e4e5ccbcbfacba26170d38e5f90e59df937936377508a053818268667c40d",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/circle_of_the_sea.json",
+      "sha256": "9adec5aeaaef6a30bc949cca790706c4ea4776123781b1115bccfc81cb6dc223",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/circle_of_the_stars.json",
+      "sha256": "4cb4a3d13498bbb69b7191515f8d9a9d90e4e61194893e9e2b922f24037ab75c",
+      "units": 10,
+      "text_units": 9
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/clockwork_sorcery.json",
+      "sha256": "fdd8bf46c7b101a6ecee0ba48a95135aa1b79433aa3fe51f4bc684c392fa203a",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/college_of_dance.json",
+      "sha256": "8c6d9bb6f983691047b347afb7f3b75b90bac18af93b8d779138d17580fcc0f6",
+      "units": 10,
+      "text_units": 9
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/college_of_glamour.json",
+      "sha256": "cbdd09f0bcbc23b0f33ed5d135a7bbd3bd28c9a8dd33bffdbbb961e61de48f41",
+      "units": 6,
+      "text_units": 5
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/college_of_lore.json",
+      "sha256": "5338f76dcf77be098b0e2a93616c76399b31a36137deeae5eb2caef9f1eed987",
+      "units": 6,
+      "text_units": 5
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/college_of_valor.json",
+      "sha256": "7cd95cb1966dc7c49494da66237429844d8a3c1ecabc7ec5efe97cde6d7b807a",
+      "units": 6,
+      "text_units": 5
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/diviner.json",
+      "sha256": "e89b73d4433df5d6e44e6a7a370f74324508f6304b85852982520eeb1611282f",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/draconic_sorcery.json",
+      "sha256": "a4ae59faa1282f5e4ad17c87bcf486d4a6d358ecd717e3dc5552ac23282d160b",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/eldritch_knight.json",
+      "sha256": "e2ea50c76ca7d3737e555a79e2e6bb991aa53c8405fa1676cbcbba51bd700523",
+      "units": 8,
+      "text_units": 7
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/evoker.json",
+      "sha256": "b590b9f1dba36f829a2484e50335f9cb4a4361afa2149aa0524ae3df9aa02be3",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/fey_wanderer.json",
+      "sha256": "8491936fa18529512326be349d39d1d07b2131aefda05304c168e997a86b2434",
+      "units": 8,
+      "text_units": 7
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/fiend_patron.json",
+      "sha256": "7a89fee096eb1d583848893305c221056f7bfb50faa6fffcba796c6a9f517cf7",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/gloom_stalker.json",
+      "sha256": "a624e0807704d4f0014d5396e9acc20dc3934dee47b0c76c23866e5168aa342f",
+      "units": 8,
+      "text_units": 7
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/great_old_one_patron.json",
+      "sha256": "26ce1bb00d0dca51f53440c422ceac394ff740416595025812c0fad718d8d33f",
+      "units": 9,
+      "text_units": 8
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/hunter.json",
+      "sha256": "970cdff0c848ef5cd8a6213da16ddf44630eeb342c08e23bfd9a10e97a59376b",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/illusionist.json",
+      "sha256": "50349c3d982f914be2f803d0cb7885f2093c3ff6bcd767355d9c443be7176e29",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/life_domain.json",
+      "sha256": "3aef068d380d813163cc0f73fdc594f5c5a48ad81558eacd70a124b9c39401a4",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/light_domain.json",
+      "sha256": "362d55e4d6661c502504aba5bd77d7b03e43f1369289cbb48fa63e0732408960",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/oath_of_devotion.json",
+      "sha256": "b0d8682413876db65ff4fd73b33d5e6b77c83c24b4fe8c1af02a45136a1c1862",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/oath_of_glory.json",
+      "sha256": "0b1c8983ddb536f557bda48f50cd60683075117b53578e71933fe2f50e2d1a06",
+      "units": 8,
+      "text_units": 7
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/oath_of_the_ancients.json",
+      "sha256": "14ac821674a2b9de2b09d96d57f5d9cf79a6b342932579512a934f691eaca73a",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/oath_of_vengeance.json",
+      "sha256": "a0e04819723adcad5c4d2d91627db297afd1b1fdcbcb6bafbac6ee941630aff7",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/path_of_the_berserker.json",
+      "sha256": "a5265ccfd4ee79c478e451fd17a09a4a466096319a3a5fd37676b703d9523acf",
+      "units": 6,
+      "text_units": 5
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/path_of_the_wild_heart.json",
+      "sha256": "055f093a3d34e4bd3ab3ee0553545448ac030a0e0b582a23a56ab7bad1d5d67f",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/path_of_the_world_tree.json",
+      "sha256": "cdda13efb8ab70a3fe06f2e09b82cfb844a0c5751c6d01ecee9e18d1b584ae52",
+      "units": 6,
+      "text_units": 5
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/path_of_the_zealot.json",
+      "sha256": "fe2867bca55181cbe45f2032c8ef58682fedf41013877767e9f9ed14273afbbd",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/psi_warrior.json",
+      "sha256": "d28f4e5fd12cc0a999c33364179c50b92a274212682453048f93d19841c54fce",
+      "units": 12,
+      "text_units": 11
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/soulknife.json",
+      "sha256": "749002c4e8769f750610445f2229fb640f5e48ce77d4d9439ae96416335a1d35",
+      "units": 11,
+      "text_units": 10
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/thief.json",
+      "sha256": "9dbaa3fd86dd01c208291ad1b5eba3c686fa9bd44b180c899e5bfa9267f2f09e",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/trickery_domain.json",
+      "sha256": "e7d70c2dffaf0749d8ceb5d2b9032eefa79cd655d55a14c28c66ab46a730e912",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/war_domain.json",
+      "sha256": "fa43f5dc616af617e783374124577e4e2540f9c9688f5608268a3a5ba0eecfe8",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/warrior_of_mercy.json",
+      "sha256": "b14a7c269a1527e764c0e36d18729bf32d0160fe352c72a5a57cfa31c34423a1",
+      "units": 8,
+      "text_units": 7
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/warrior_of_shadow.json",
+      "sha256": "4ea402798012e6dc40b8f251e69487e695342a155130879d3bdb6bf737a608f7",
+      "units": 9,
+      "text_units": 8
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/warrior_of_the_elements.json",
+      "sha256": "e033e1845c67c08988591852dbcc767089064d333acd13dd71df797684e1cc4f",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/warrior_of_the_open_hand.json",
+      "sha256": "f1240c1b5d143da4c681e3a9dcbe650f91a155d503618d7c6b2bf2a3fb3fe7a6",
+      "units": 6,
+      "text_units": 5
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/wild_magic_sorcery.json",
+      "sha256": "957ea200def651c68224bbc12578283f1c985a774d25c02d18d8d65a0bfde57c",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/index.json",
+      "sha256": "1d44310021ce7f0affc684c8448842ae018e668720eef5262071f341d2b08856",
+      "units": 48,
+      "text_units": 0
+    },
+    {
+      "path": "_staging/subclass-staging/staged/circle_of_the_land.json",
+      "sha256": "dfe5b13b5a9429140d70bd77b95ea9f633d4270ddb563c83085e7fa6776b0637",
+      "units": 6,
+      "text_units": 5
+    },
+    {
+      "path": "_staging/subclass-staging/staged/college_of_lore.json",
+      "sha256": "4dd161079409681814cd9b179eb4a09663a8abe97887401e5b0818ff78ad1ecc",
+      "units": 5,
+      "text_units": 4
+    },
+    {
+      "path": "_staging/subclass-staging/staged/draconic_sorcery.json",
+      "sha256": "76722df256a84a4b2f9691066a9563446328e4591ceaa53fe62db48149dbd7c6",
+      "units": 9,
+      "text_units": 8
+    },
+    {
+      "path": "_staging/subclass-staging/staged/evoker.json",
+      "sha256": "483e50a3d9d1457e5fdf5314fc01fff2ff62878a3c4e6063f995c2d604170bcb",
+      "units": 6,
+      "text_units": 5
+    },
+    {
+      "path": "_staging/subclass-staging/staged/hunter.json",
+      "sha256": "c9c5d585514fa2e91a9dfe8a77f7e5af7a18c18226ff84534fc99b59ac1d8b78",
+      "units": 6,
+      "text_units": 5
+    },
+    {
+      "path": "_staging/subclass-staging/staged/life_domain.json",
+      "sha256": "d39971ff5133112852949015bea21794935e76843a77cf8f39ce7b0a326b0786",
+      "units": 9,
+      "text_units": 8
+    },
+    {
+      "path": "_staging/subclass-staging/staged/oath_of_devotion.json",
+      "sha256": "3b06f4f99814119c34e8756acba97948ed5491ac15637a23a7ff954e4dd2f087",
+      "units": 10,
+      "text_units": 9
+    },
+    {
+      "path": "_staging/subclass-staging/staged/path_of_the_berserker.json",
+      "sha256": "08bca9476d1ce83f0e501da31e225b3c978d9694194781ef445e7fd729c60d7d",
+      "units": 5,
+      "text_units": 4
+    },
+    {
+      "path": "_staging/subclass-staging/staged/thief.json",
+      "sha256": "7cd0c68a3fec04715a3b78c53a0adc9f4ac6069cb275974fa24198445a7db7da",
+      "units": 6,
+      "text_units": 5
+    },
+    {
+      "path": "_staging/subclass-staging/templates/champion.json",
+      "sha256": "55489dd74f8e3f4d4ed80bc7771d6b588e1d65ebab2b50227508751ebccfa657",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/subclass-staging/templates/fiend_patron.json",
+      "sha256": "a5319f94120d1799405a91183248dc966600b055c8235a3ad7357308ecc0bdaf",
+      "units": 9,
+      "text_units": 8
+    },
+    {
+      "path": "_staging/templates/champion.json",
+      "sha256": "55489dd74f8e3f4d4ed80bc7771d6b588e1d65ebab2b50227508751ebccfa657",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "_staging/templates/fiend_patron.json",
+      "sha256": "a5319f94120d1799405a91183248dc966600b055c8235a3ad7357308ecc0bdaf",
+      "units": 9,
+      "text_units": 8
+    },
+    {
+      "path": "data/core/campaigns/the_lost_crown.json",
+      "sha256": "1c615c2fb7da725397cf712a594f14acc8cf05aa79000f6b04cbbd1c13305c1e",
+      "units": 30,
+      "text_units": 9
+    },
+    {
+      "path": "data/core/classes/artificer.json",
+      "sha256": "68b55fa4409936afbe7414bd8c830ca0b8e3483bc975f696c6d6764c74f07128",
+      "units": 14,
+      "text_units": 14
+    },
+    {
+      "path": "data/core/classes/barbarian.json",
+      "sha256": "030112a5931946b424fb88108129252a73548183278888cead0430f6ae761233",
+      "units": 25,
+      "text_units": 22
+    },
+    {
+      "path": "data/core/classes/bard.json",
+      "sha256": "0dd563c825cb174ee6e1c558a280cead0a433b1a33f7e011e2400d45ce60f8ee",
+      "units": 16,
+      "text_units": 12
+    },
+    {
+      "path": "data/core/classes/cleric.json",
+      "sha256": "780f8691a906d0965fe24fb09417232078a6b2f609764991fdba2d688cc33b9d",
+      "units": 22,
+      "text_units": 14
+    },
+    {
+      "path": "data/core/classes/druid.json",
+      "sha256": "4c38950535c6ac1f5776215487bc63f80fc4fb099f3b5225b450c422c7e8c926",
+      "units": 51,
+      "text_units": 15
+    },
+    {
+      "path": "data/core/classes/fighter.json",
+      "sha256": "155b0bb94433164df43b4b964c6765a509c1f79dd27c932e2820c8bed7e0ab83",
+      "units": 20,
+      "text_units": 20
+    },
+    {
+      "path": "data/core/classes/monk.json",
+      "sha256": "c53f2c2614451dcae601b4ad5c843dc24a34bab9c590d5001ce41cf203edecc8",
+      "units": 31,
+      "text_units": 31
+    },
+    {
+      "path": "data/core/classes/mystic.json",
+      "sha256": "84a70b2348a74fefbb37a645c6258f9b967af4dbdb1e58e88f945a5e738ee6ee",
+      "units": 10,
+      "text_units": 10
+    },
+    {
+      "path": "data/core/classes/paladin.json",
+      "sha256": "3f092ff1ff43d834d4ddc9bbb42688d5bf7dc439685420fa3ad0f6061f5f8e23",
+      "units": 31,
+      "text_units": 25
+    },
+    {
+      "path": "data/core/classes/ranger.json",
+      "sha256": "8e98b7857b23223e1c6e7562a676151cbbc4fa365a406216ef43c4e1fac927a9",
+      "units": 28,
+      "text_units": 19
+    },
+    {
+      "path": "data/core/classes/rogue.json",
+      "sha256": "de116b50180f48851c6d877f170176623436993eb755f1bad2528ed050ab1fe8",
+      "units": 27,
+      "text_units": 22
+    },
+    {
+      "path": "data/core/classes/sorcerer.json",
+      "sha256": "3e20ff0b20ea1233368cbd8186b294fca51a7baa549f1c0e40ffd0e4491de3f0",
+      "units": 20,
+      "text_units": 16
+    },
+    {
+      "path": "data/core/classes/warlock.json",
+      "sha256": "0b4cd991927f37c3a5630a85d18b97a3d8326d5ddccad9043e7eb6f7fe6515d7",
+      "units": 37,
+      "text_units": 15
+    },
+    {
+      "path": "data/core/classes/wizard.json",
+      "sha256": "c9c417fa2b1636db04e781690f50456d8aea5cb08a920a791a96ca47a0c88c0d",
+      "units": 17,
+      "text_units": 17
+    },
+    {
+      "path": "data/core/events/dungeon_events.json",
+      "sha256": "db368f21178462a95f0bb78028ec8e10441f6467e4a6bb7b3843d6ecaeb20d35",
+      "units": 24,
+      "text_units": 23
+    },
+    {
+      "path": "data/core/events/forest_events.json",
+      "sha256": "d4510f0da5ad26db2611a506fb58c79c35247610ac61ea39be48d30824feac09",
+      "units": 32,
+      "text_units": 31
+    },
+    {
+      "path": "data/core/events/mountain_events.json",
+      "sha256": "28c24bea91c714a4c49e7c7b6358adf5dea15b8f06d69dca29ef79542f0a6fd3",
+      "units": 27,
+      "text_units": 26
+    },
+    {
+      "path": "data/core/events/town_events.json",
+      "sha256": "cc2833d086c100b57a67f114d11888312e7074fdebe601d94151d17e9c310098",
+      "units": 22,
+      "text_units": 21
+    },
+    {
+      "path": "data/core/items/adventuring_packs.json",
+      "sha256": "03f215b84039fed986556957e1b4f570aa85179576cb8ca31263e5ba1bee2d1c",
+      "units": 4,
+      "text_units": 4
+    },
+    {
+      "path": "data/core/items/armor.json",
+      "sha256": "152acbe27d5d64b7ac9a78322330afc038e45c91b437ffe6b249ae08c4f6968e",
+      "units": 4,
+      "text_units": 4
+    },
+    {
+      "path": "data/core/items/artificer_tools.json",
+      "sha256": "b8064f7b727ae0fd6c7502ca774de9969e42e321188fb35df60999c94c494d24",
+      "units": 1,
+      "text_units": 1
+    },
+    {
+      "path": "data/core/items/consumables.json",
+      "sha256": "29ebe9084a596391bd26a19aa2697454078dcdc56c43b4eb0de999eb2044c534",
+      "units": 12,
+      "text_units": 12
+    },
+    {
+      "path": "data/core/items/familiar_components.json",
+      "sha256": "ca8b6450af0bf1d092019e0201b9899fb5442ba4ebd51d159eb3abb1b88c4dd9",
+      "units": 1,
+      "text_units": 1
+    },
+    {
+      "path": "data/core/items/imported_base_items.json",
+      "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+      "units": 60,
+      "text_units": 60
+    },
+    {
+      "path": "data/core/items/imported_magic_armor.json",
+      "sha256": "8ad0b87b465eeada7ad6bf0c8cab5465c277bcc9da19493ae6ee47d2111df029",
+      "units": 44,
+      "text_units": 44
+    },
+    {
+      "path": "data/core/items/imported_magic_consumables.json",
+      "sha256": "383900f8d29fe1093a26cda608e8e44fe92e7dd5617d3a59f3d4ab2e6f089958",
+      "units": 87,
+      "text_units": 87
+    },
+    {
+      "path": "data/core/items/imported_magic_tools.json",
+      "sha256": "7403cb6637b668bbfd13787473f467f618af88874c60c0a696adad165255caca",
+      "units": 63,
+      "text_units": 63
+    },
+    {
+      "path": "data/core/items/imported_magic_weapons.json",
+      "sha256": "0a50310f5e708facd759006afe3f02042c3058f87eaae39adc7c461d54bba223",
+      "units": 70,
+      "text_units": 70
+    },
+    {
+      "path": "data/core/items/recovery_components.json",
+      "sha256": "7627b8744080116b2c5f8f2560d371bf0c50732fb8401264f4d863e39ac6dcd3",
+      "units": 2,
+      "text_units": 2
+    },
+    {
+      "path": "data/core/items/srd_gear.json",
+      "sha256": "ad2a0e5acb8940debe3a3e40e97968107e2e44bf666c8af27a07d5344a25fa60",
+      "units": 46,
+      "text_units": 46
+    },
+    {
+      "path": "data/core/items/wave2_magic_items.json",
+      "sha256": "4a3a6e9e05d321d8c4121b4a2555875474cac8339d23621523baa44f8392c154",
+      "units": 3,
+      "text_units": 3
+    },
+    {
+      "path": "data/core/items/weapons.json",
+      "sha256": "4a538bdb92892b7ef4fd5af82946cf5fdb33c961e0c217f554658472a2ddec48",
+      "units": 38,
+      "text_units": 38
+    },
+    {
+      "path": "data/core/monsters/core_monsters.json",
+      "sha256": "33bf505c91476b32f7dd2887dd0caa19521e4a9e206392b8d803090b105eb8c2",
+      "units": 47,
+      "text_units": 22
+    },
+    {
+      "path": "data/core/monsters/familiar_forms.json",
+      "sha256": "a58aad3338f933d7414e965ff751154d0b8bc3d2166777ae941d65c7e611a43f",
+      "units": 13,
+      "text_units": 0
+    },
+    {
+      "path": "data/core/monsters/imported_monsters.json",
+      "sha256": "f57bee1e93f185a89575bed3d8b2b610b53cfd3b7f2eb56448d1dd64a0126c5f",
+      "units": 900,
+      "text_units": 0
+    },
+    {
+      "path": "data/core/monsters/srd_monsters.json",
+      "sha256": "83786ed8bafc802e37b7794c04ba8901e3e10b35d288f301c92f01bbed50cd73",
+      "units": 1368,
+      "text_units": 895
+    },
+    {
+      "path": "data/core/races/dragonborn.json",
+      "sha256": "fd3ea102b627ef0a5a76233cdd7c2ff4cc059b59cbbdca184de6879b0acd3c07",
+      "units": 6,
+      "text_units": 6
+    },
+    {
+      "path": "data/core/races/dwarf.json",
+      "sha256": "f9d6efb9a4f3a71a7df402c8158f3441a315bfd7f58edad62632d766b03e4da1",
+      "units": 5,
+      "text_units": 5
+    },
+    {
+      "path": "data/core/races/elf.json",
+      "sha256": "70e5780f9235a1849af25f12ea76db189fb3043ef8f16320844146b4866720ac",
+      "units": 5,
+      "text_units": 5
+    },
+    {
+      "path": "data/core/races/gnome.json",
+      "sha256": "73b625459af3e0c5151cee0369c1b5b68c22eb20db47898da244b0e3dcdccd8b",
+      "units": 4,
+      "text_units": 4
+    },
+    {
+      "path": "data/core/races/half-elf.json",
+      "sha256": "c16c5022b3c1aff26c3a2511f0c4dc8774a16267bf4a316853689d9cc0d15830",
+      "units": 7,
+      "text_units": 7
+    },
+    {
+      "path": "data/core/races/half-orc.json",
+      "sha256": "29fa0435407dbbe8cc6f3821bf719015be55fffc79fb0585cd38fdf1d377d831",
+      "units": 8,
+      "text_units": 8
+    },
+    {
+      "path": "data/core/races/halfling.json",
+      "sha256": "3edbaf7bb12e69e3889d6343d076e101163f32a7a1e6a76196762c4ff32f8024",
+      "units": 5,
+      "text_units": 5
+    },
+    {
+      "path": "data/core/races/human.json",
+      "sha256": "2a86c213f432d1f52433ffdd1156be463334f69bd5b6c26b36a25b9dc652d0a7",
+      "units": 2,
+      "text_units": 2
+    },
+    {
+      "path": "data/core/races/tiefling.json",
+      "sha256": "2034a9ab00181a5bcf3334a6e4949582e1c1db1ec79aabf0d961e59d9ae8e644",
+      "units": 4,
+      "text_units": 4
+    },
+    {
+      "path": "data/core/spells/core_spells.json",
+      "sha256": "3bdb72c7532fe2f2a1c351db08f832caab4d5abbe540be56ecb1307780b31527",
+      "units": 19,
+      "text_units": 18
+    },
+    {
+      "path": "data/core/spells/imported_spells.json",
+      "sha256": "0c69e2b44414985e9690345947fa1cd7f695a34ca3ddabe2f003437889ef7cc6",
+      "units": 203,
+      "text_units": 203
+    },
+    {
+      "path": "data/core/spells/srd_additional_spells.json",
+      "sha256": "f92e9ce2eefe8476040615e368ff7024ee9ae67eec9b0ca77d8d388246a6a091",
+      "units": 188,
+      "text_units": 188
+    },
+    {
+      "path": "data/core/spells/wizard_spellbook_spells.json",
+      "sha256": "d705c459714850a3fbb8c6a097e1f69c118f57a3ec2898b4cd0fbdb2ff67ea54",
+      "units": 1,
+      "text_units": 1
+    },
+    {
+      "path": "data/core/subclasses/abjurer.json",
+      "sha256": "2b1b48c22746810772cb4107f6b9c0b47b2da819c2cf9299250c8b49f2ae8cba",
+      "units": 6,
+      "text_units": 5
+    },
+    {
+      "path": "data/core/subclasses/champion.json",
+      "sha256": "55489dd74f8e3f4d4ed80bc7771d6b588e1d65ebab2b50227508751ebccfa657",
+      "units": 7,
+      "text_units": 6
+    },
+    {
+      "path": "data/core/subclasses/diviner.json",
+      "sha256": "7f41c5729a6c0cf72d8dba3e793b0e0b860d7b456c47c14585ec539f4466c249",
+      "units": 6,
+      "text_units": 5
+    },
+    {
+      "path": "data/core/subclasses/fiend_patron.json",
+      "sha256": "a5319f94120d1799405a91183248dc966600b055c8235a3ad7357308ecc0bdaf",
+      "units": 9,
+      "text_units": 8
+    },
+    {
+      "path": "data/core/subclasses/warrior_of_the_open_hand.json",
+      "sha256": "bff213369a19b61c4fee642716a99fc5192bc38df46abb0b818962263edabeda",
+      "units": 8,
+      "text_units": 7
+    },
+    {
+      "path": "data/fixtures/class_building_blocks/classes/warden.json",
+      "sha256": "07c5130178049d0a5fb50f78cfd820445c4e02afd7a40e4bf8b69267239201c2",
+      "units": 4,
+      "text_units": 1
+    },
+    {
+      "path": "data/fixtures/class_building_blocks/subclasses/duelist.json",
+      "sha256": "31308e467e36bb4fe212c7842629f05f3932c3dd77a728f4edabb33b153a3ffa",
+      "units": 3,
+      "text_units": 0
+    },
+    {
+      "path": "data/fixtures/class_building_blocks/subclasses/guard.json",
+      "sha256": "988ecfbb71cb9a47606fd0a7107a56b59495a7fec2ea42c2a41d75dcb3608c63",
+      "units": 2,
+      "text_units": 0
+    },
+    {
+      "path": "data/fixtures/class_building_blocks/subclasses/healer.json",
+      "sha256": "25e55585d240ce91c9751c1369b2ff08679b9bc818fedfedc6bda1bb738920fc",
+      "units": 2,
+      "text_units": 0
+    },
+    {
+      "path": "data/fixtures/class_building_blocks/subclasses/leyline_savant.json",
+      "sha256": "3d4db57d9b6d18a6c4e41fc00680b0a13cab3402c423ccdf6d0b23ac9bb62eef",
+      "units": 2,
+      "text_units": 0
+    },
+    {
+      "path": "data/fixtures/class_building_blocks/subclasses/oracle.json",
+      "sha256": "ca44f1a8d84b0de32f758342b73a79c6cc795903cd142d278664ddc8a7a703fc",
+      "units": 2,
+      "text_units": 0
+    },
+    {
+      "path": "data/fixtures/class_building_blocks/subclasses/runeguard.json",
+      "sha256": "3835dde7c970e2ec22e3adfe0b594f793cbd458e188946a4c7baddb1282a0169",
+      "units": 3,
+      "text_units": 0
+    },
+    {
+      "path": "data/fixtures/save_v1_compat.json",
+      "sha256": "d239e2d61cdd35c6ed518d2f719c0624463ae6b06b62170bab518c9a3fc567a9",
+      "units": 0,
+      "text_units": 0
+    },
+    {
+      "path": "data/fixtures/save_v2_2024.json",
+      "sha256": "963fea9189644181f8e91bf606676a15d24eab4806ee3737596823f15964c2b4",
+      "units": 0,
+      "text_units": 0
+    },
+    {
+      "path": "data/fixtures/shared_spells/monsters/dread_husk.json",
+      "sha256": "92c8b854a12b8193ebe11c60c2588dbafa0065251ca0a59391a0a163141d6870",
+      "units": 5,
+      "text_units": 2
+    },
+    {
+      "path": "data/fixtures/shared_spells/spells/examples.json",
+      "sha256": "a74e17124b3638bac804a40d1fa2f82a70ccccf154ab5051d5c77994d8531363",
+      "units": 16,
+      "text_units": 0
+    },
+    {
+      "path": "items.json",
+      "sha256": "43f63d345fcefa9411bd16dad50aa90bc1573706ff969b424a69556c51a381cc",
+      "units": 2670,
+      "text_units": 2301
+    },
+    {
+      "path": "loot.json",
+      "sha256": "e05b7d4d4253700a03e99ca9f9cdd89a413fea2e32ceaf87855a3aae9682a8c0",
+      "units": 75,
+      "text_units": 0
+    },
+    {
+      "path": "races.json",
+      "sha256": "0aa786cca9592b9c5e994948496d19fb831a67c104f8196c2cfece365260bd76",
+      "units": 383,
+      "text_units": 320
+    },
+    {
+      "path": "skills.json",
+      "sha256": "23327c7b6504232b0c6eb25690fec419c2aa447342337011668dbc53cc72c54f",
+      "units": 36,
+      "text_units": 36
+    }
+  ],
+  "archives": [
+    {
+      "path": "_staging/subclass-extracts-5etools.tar.gz",
+      "sha256": "aa26b84d534f60e719c31a69f7d28f31c15e38419e58ec02565397e328d13161",
+      "members": [
+        {
+          "name": "5etools/by_subclass/diviner.md",
+          "sha256": "59600db4a47161cd09e61110ed7e4cd8b964acd4e47bd9fb3c611787d8ad5491",
+          "bytes": 2625,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/diviner.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/diviner.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/aberrant_sorcery.json",
+          "sha256": "c352370864e5d2c584e68d5ae1de713a661d1041a5ebca72abe14b6475cb528b",
+          "bytes": 7957,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/aberrant_sorcery.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/aberrant_sorcery.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/circle_of_the_stars.json",
+          "sha256": "4cb4a3d13498bbb69b7191515f8d9a9d90e4e61194893e9e2b922f24037ab75c",
+          "bytes": 9941,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/circle_of_the_stars.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/circle_of_the_stars.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/circle_of_the_sea.md",
+          "sha256": "6424da52c8f8da613fa5952443fdd7cb2c5861fc18a3a4916fe2c2ca356dc38f",
+          "bytes": 2892,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/circle_of_the_sea.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/circle_of_the_sea.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/champion.json",
+          "sha256": "050b7de0f26f02d2d7db3da4de4b6cae729c112c0818cbad73458cdfe7fd91f1",
+          "bytes": 5290,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/champion.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/champion.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/assassin.md",
+          "sha256": "b9109d1dc203a475df4ceead7d7fe95f32a315c55cb917009fcd801ea6e315d8",
+          "bytes": 2150,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/assassin.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/assassin.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/aberrant_sorcery.md",
+          "sha256": "01c672206c0361b4697b450157acac6ae700ab2acd94809eda8be224ea4b81a5",
+          "bytes": 3596,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/aberrant_sorcery.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/aberrant_sorcery.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/path_of_the_zealot.json",
+          "sha256": "fe2867bca55181cbe45f2032c8ef58682fedf41013877767e9f9ed14273afbbd",
+          "bytes": 5873,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/path_of_the_zealot.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/path_of_the_zealot.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/diviner.json",
+          "sha256": "e89b73d4433df5d6e44e6a7a370f74324508f6304b85852982520eeb1611282f",
+          "bytes": 5423,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/diviner.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/diviner.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/light_domain.md",
+          "sha256": "e61329f787019f5f493396f4cfd4f8fd8f54ce20542fd5ebb549e4a81e9cb4a0",
+          "bytes": 3549,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/light_domain.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/light_domain.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/assassin.json",
+          "sha256": "25d29f0177a3b6c9577334d2b015646eaee9e0e08e8a9748b277980ce6feea5e",
+          "bytes": 4968,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/assassin.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/assassin.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/great_old_one_patron.json",
+          "sha256": "26ce1bb00d0dca51f53440c422ceac394ff740416595025812c0fad718d8d33f",
+          "bytes": 8828,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/great_old_one_patron.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/great_old_one_patron.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/archfey_patron.json",
+          "sha256": "c5d0ff3157888d93cb0dc4eb2cb9ce2124a3f00a11ec9deb6c9e2dd1041e23d0",
+          "bytes": 7495,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/archfey_patron.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/archfey_patron.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/college_of_lore.json",
+          "sha256": "5338f76dcf77be098b0e2a93616c76399b31a36137deeae5eb2caef9f1eed987",
+          "bytes": 4443,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/college_of_lore.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/college_of_lore.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/warrior_of_the_open_hand.md",
+          "sha256": "edba9a4a7178abe4c846c800db844c5ec07f243f8e47df4b3805e37904600277",
+          "bytes": 2536,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/warrior_of_the_open_hand.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/warrior_of_the_open_hand.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/beast_master.md",
+          "sha256": "71f6a0a20d14d69c1a9882875e386292892df2ee7f935b29d32c797fdafe18ff",
+          "bytes": 2395,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/beast_master.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/beast_master.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/illusionist.md",
+          "sha256": "2a3b9def81488bcf909d0448644f9b84fa283a9d2ec52e2bd03f3dd485fb63eb",
+          "bytes": 2813,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/illusionist.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/illusionist.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/evoker.md",
+          "sha256": "7b08f0d787ce444d74b7f4713c014d7341dc31a745834127c8e09f32cdd54ad5",
+          "bytes": 2397,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/evoker.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/evoker.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/trickery_domain.md",
+          "sha256": "fe159d633afa3e7ad2203ba46e010512ff07001b69a4a58a5138123456187de3",
+          "bytes": 3171,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/trickery_domain.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/trickery_domain.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/warrior_of_the_elements.md",
+          "sha256": "c3bd6b887aee5c38c43432e24b991ffd9ab071859fcba24cf16b77e3d0eb7529",
+          "bytes": 2944,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/warrior_of_the_elements.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/warrior_of_the_elements.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/college_of_glamour.md",
+          "sha256": "8a64c76d666774eb0d36fca75a537602d1f34b40d801ac69c0b47ba406b34f97",
+          "bytes": 2756,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/college_of_glamour.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/college_of_glamour.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/wild_magic_sorcery.json",
+          "sha256": "957ea200def651c68224bbc12578283f1c985a774d25c02d18d8d65a0bfde57c",
+          "bytes": 6392,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/wild_magic_sorcery.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/wild_magic_sorcery.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/fey_wanderer.md",
+          "sha256": "bba6c794f00eeaa6eb003d2cddeecc9a6d2ed6e1d579e194855c3d20cf8f4fdf",
+          "bytes": 3411,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/fey_wanderer.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/fey_wanderer.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/path_of_the_berserker.md",
+          "sha256": "7402fd3b2281656486c1aba5ac8ce31bc75068ebc637682ecccb67286db7c57b",
+          "bytes": 2116,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/path_of_the_berserker.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/path_of_the_berserker.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/path_of_the_zealot.md",
+          "sha256": "d88aae8d37783d1e5db4bd115bcbbd534ac7f4c4d07e65dc47ac5cb8f248b9e6",
+          "bytes": 2996,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/path_of_the_zealot.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/path_of_the_zealot.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/champion.md",
+          "sha256": "006adea2aa8e3e112adb9463b42d5cb23df9a00507688581b7769468ba63f608",
+          "bytes": 2198,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/champion.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/champion.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/oath_of_the_ancients.md",
+          "sha256": "862e04887c1acadf5f6e76c39302fbbbe38a430f01898d1c2ac1f5a75f07e82d",
+          "bytes": 3452,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/oath_of_the_ancients.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/oath_of_the_ancients.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/oath_of_glory.md",
+          "sha256": "568ad2cf52f2cff8bfb430674c7697986dde6ee78b298d26a41c4c76631038cd",
+          "bytes": 4017,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/oath_of_glory.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/oath_of_glory.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/oath_of_the_ancients.json",
+          "sha256": "14ac821674a2b9de2b09d96d57f5d9cf79a6b342932579512a934f691eaca73a",
+          "bytes": 7591,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/oath_of_the_ancients.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/oath_of_the_ancients.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/path_of_the_berserker.json",
+          "sha256": "a5265ccfd4ee79c478e451fd17a09a4a466096319a3a5fd37676b703d9523acf",
+          "bytes": 4339,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/path_of_the_berserker.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/path_of_the_berserker.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/beast_master.json",
+          "sha256": "711530633ec17fd78c22512a15e9db886f86098d4f95f0b1f313b33e5af303d9",
+          "bytes": 4755,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/beast_master.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/beast_master.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/abjurer.json",
+          "sha256": "cdd08fee36b70bcc0809388f34976aca45486153948b015d54657310e032aa70",
+          "bytes": 5426,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/abjurer.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/abjurer.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/eldritch_knight.json",
+          "sha256": "e2ea50c76ca7d3737e555a79e2e6bb991aa53c8405fa1676cbcbba51bd700523",
+          "bytes": 6361,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/eldritch_knight.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/eldritch_knight.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/thief.json",
+          "sha256": "9dbaa3fd86dd01c208291ad1b5eba3c686fa9bd44b180c899e5bfa9267f2f09e",
+          "bytes": 5220,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/thief.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/thief.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/light_domain.json",
+          "sha256": "362d55e4d6661c502504aba5bd77d7b03e43f1369289cbb48fa63e0732408960",
+          "bytes": 7593,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/light_domain.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/light_domain.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/path_of_the_world_tree.json",
+          "sha256": "cdda13efb8ab70a3fe06f2e09b82cfb844a0c5751c6d01ecee9e18d1b584ae52",
+          "bytes": 4613,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/path_of_the_world_tree.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/path_of_the_world_tree.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/fiend_patron.json",
+          "sha256": "7a89fee096eb1d583848893305c221056f7bfb50faa6fffcba796c6a9f517cf7",
+          "bytes": 6919,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/fiend_patron.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/fiend_patron.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/wild_magic_sorcery.md",
+          "sha256": "28cedecc12a653f45b5bb1fc91179e01fc9c2d1fd302cd974559df1b7c3b730b",
+          "bytes": 2754,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/wild_magic_sorcery.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/wild_magic_sorcery.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/great_old_one_patron.md",
+          "sha256": "6f1c286af8d7de59da6e1f026f542e13146f34968e4ba0a5157fc8daa9255637",
+          "bytes": 4106,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/great_old_one_patron.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/great_old_one_patron.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/archfey_patron.md",
+          "sha256": "f41067f05e0d9712523c8fa44f8e6f9042d779271e5504b76ff7ed4fc58f4d40",
+          "bytes": 3384,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/archfey_patron.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/archfey_patron.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/battle_master.md",
+          "sha256": "6b283a9264289232bb54f96d26305877c6d0a3159fbcaac02b74b3d94949f3bc",
+          "bytes": 3063,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/battle_master.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/battle_master.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/arcane_trickster.md",
+          "sha256": "77fc59a15d654100a87df94798577b027a6a389b77caa616a7dcec44ce0d50ba",
+          "bytes": 2767,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/arcane_trickster.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/arcane_trickster.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/oath_of_devotion.md",
+          "sha256": "2182eef8d34eb49dcb172a338d769b61446362eda4e9902ebb867796f4943824",
+          "bytes": 3429,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/oath_of_devotion.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/oath_of_devotion.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/gloom_stalker.md",
+          "sha256": "caded90889d3c5e2e15c5b12d18c5d9fd3e5c2a2e6b2761cea32a8c3e1fcd41c",
+          "bytes": 3421,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/gloom_stalker.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/gloom_stalker.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/evoker.json",
+          "sha256": "b590b9f1dba36f829a2484e50335f9cb4a4361afa2149aa0524ae3df9aa02be3",
+          "bytes": 5085,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/evoker.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/evoker.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/circle_of_the_sea.json",
+          "sha256": "9adec5aeaaef6a30bc949cca790706c4ea4776123781b1115bccfc81cb6dc223",
+          "bytes": 6761,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/circle_of_the_sea.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/circle_of_the_sea.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/path_of_the_world_tree.md",
+          "sha256": "99628fd1437c31fd652afadb09b26d86df7424e1fc4e41fc32bbc74f32d5d9ff",
+          "bytes": 2302,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/path_of_the_world_tree.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/path_of_the_world_tree.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/circle_of_the_land.json",
+          "sha256": "caf51f3022955171a4db3682018673c555599c3ae745406c52ba0759eb2b302c",
+          "bytes": 10303,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/circle_of_the_land.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/circle_of_the_land.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/life_domain.json",
+          "sha256": "3aef068d380d813163cc0f73fdc594f5c5a48ad81558eacd70a124b9c39401a4",
+          "bytes": 6578,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/life_domain.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/life_domain.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/psi_warrior.json",
+          "sha256": "d28f4e5fd12cc0a999c33364179c50b92a274212682453048f93d19841c54fce",
+          "bytes": 11335,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/psi_warrior.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/psi_warrior.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/fey_wanderer.json",
+          "sha256": "8491936fa18529512326be349d39d1d07b2131aefda05304c168e997a86b2434",
+          "bytes": 8262,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/fey_wanderer.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/fey_wanderer.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/soulknife.md",
+          "sha256": "c2c00fdf3c1fceaeec1aa5aba370bdef194905be39a3a18d62ff12d22d11fe93",
+          "bytes": 4808,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/soulknife.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/soulknife.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/gloom_stalker.json",
+          "sha256": "a624e0807704d4f0014d5396e9acc20dc3934dee47b0c76c23866e5168aa342f",
+          "bytes": 7978,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/gloom_stalker.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/gloom_stalker.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/draconic_sorcery.md",
+          "sha256": "df799deebbf20451dd7b056ad6f2988086019b5daf2d8294c67049c46e521686",
+          "bytes": 3070,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/draconic_sorcery.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/draconic_sorcery.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/hunter.json",
+          "sha256": "970cdff0c848ef5cd8a6213da16ddf44630eeb342c08e23bfd9a10e97a59376b",
+          "bytes": 5237,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/hunter.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/hunter.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/trickery_domain.json",
+          "sha256": "e7d70c2dffaf0749d8ceb5d2b9032eefa79cd655d55a14c28c66ab46a730e912",
+          "bytes": 7260,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/trickery_domain.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/trickery_domain.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/circle_of_the_moon.md",
+          "sha256": "eed42383c5897134bcb610c4bda425c3f91106d206ebe721982e08f2ef12f373",
+          "bytes": 3167,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/circle_of_the_moon.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/circle_of_the_moon.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/college_of_valor.json",
+          "sha256": "7cd95cb1966dc7c49494da66237429844d8a3c1ecabc7ec5efe97cde6d7b807a",
+          "bytes": 4529,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/college_of_valor.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/college_of_valor.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/clockwork_sorcery.json",
+          "sha256": "fdd8bf46c7b101a6ecee0ba48a95135aa1b79433aa3fe51f4bc684c392fa203a",
+          "bytes": 8500,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/clockwork_sorcery.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/clockwork_sorcery.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/clockwork_sorcery.md",
+          "sha256": "bd029c408f19b03281a7d7e3ab10b921d55b59b51da6caa60302e335656ae7d7",
+          "bytes": 3647,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/clockwork_sorcery.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/clockwork_sorcery.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/oath_of_devotion.json",
+          "sha256": "b0d8682413876db65ff4fd73b33d5e6b77c83c24b4fe8c1af02a45136a1c1862",
+          "bytes": 7533,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/oath_of_devotion.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/oath_of_devotion.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/eldritch_knight.md",
+          "sha256": "466381f32af44a095e231c3377a8e21a910c3cde7db8a823c95ce59044661c36",
+          "bytes": 3094,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/eldritch_knight.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/eldritch_knight.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/warrior_of_shadow.json",
+          "sha256": "4ea402798012e6dc40b8f251e69487e695342a155130879d3bdb6bf737a608f7",
+          "bytes": 6963,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/warrior_of_shadow.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/warrior_of_shadow.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/battle_master.json",
+          "sha256": "b00c491f7dcdd969536d2f6dc17c20d2bc6ec8d8a19799e6fd50fa27f0bc9ac7",
+          "bytes": 7551,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/battle_master.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/battle_master.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/path_of_the_wild_heart.json",
+          "sha256": "055f093a3d34e4bd3ab3ee0553545448ac030a0e0b582a23a56ab7bad1d5d67f",
+          "bytes": 5736,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/path_of_the_wild_heart.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/path_of_the_wild_heart.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/celestial_patron.md",
+          "sha256": "0b9ab49f3eb6a9e34c0a0a91575690812f0c143ee5b87640d1f66ed485ec9d54",
+          "bytes": 3077,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/celestial_patron.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/celestial_patron.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/thief.md",
+          "sha256": "c303b1807f41a7269b346c2ec4459aee25aa88df3aa7bdcefbe44dcc4450471e",
+          "bytes": 2278,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/thief.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/thief.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/circle_of_the_land.md",
+          "sha256": "bca23549dbfed4fff64d882b51ed27887ee7d1af36d34eb4d15dc54c0264f3da",
+          "bytes": 3644,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/circle_of_the_land.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/circle_of_the_land.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/illusionist.json",
+          "sha256": "50349c3d982f914be2f803d0cb7885f2093c3ff6bcd767355d9c443be7176e29",
+          "bytes": 5627,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/illusionist.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/illusionist.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/college_of_glamour.json",
+          "sha256": "cbdd09f0bcbc23b0f33ed5d135a7bbd3bd28c9a8dd33bffdbbb961e61de48f41",
+          "bytes": 5388,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/college_of_glamour.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/college_of_glamour.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/hunter.md",
+          "sha256": "6f6cd507e2fdc009f2c8118f926a0dbadecf47e5e3de3d10e90b18ebb99c0082",
+          "bytes": 2422,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/hunter.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/hunter.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/arcane_trickster.json",
+          "sha256": "ab91aacc28c76004f68964160c49787b4c65d4af9c3db973bbcfbf51a6fa564a",
+          "bytes": 5648,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/arcane_trickster.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/arcane_trickster.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/warrior_of_the_open_hand.json",
+          "sha256": "f1240c1b5d143da4c681e3a9dcbe650f91a155d503618d7c6b2bf2a3fb3fe7a6",
+          "bytes": 4959,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/warrior_of_the_open_hand.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/warrior_of_the_open_hand.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/celestial_patron.json",
+          "sha256": "5abddf88f78fb62c2f2a1b22b8c1a07f84c371db846ef60530b2dde946ae1094",
+          "bytes": 6876,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/celestial_patron.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/celestial_patron.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/oath_of_glory.json",
+          "sha256": "0b1c8983ddb536f557bda48f50cd60683075117b53578e71933fe2f50e2d1a06",
+          "bytes": 8677,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/oath_of_glory.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/oath_of_glory.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/war_domain.json",
+          "sha256": "fa43f5dc616af617e783374124577e4e2540f9c9688f5608268a3a5ba0eecfe8",
+          "bytes": 6871,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/war_domain.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/war_domain.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/college_of_dance.md",
+          "sha256": "e03479ddcfca8497d8f7cd04848f357912b397dbf3c5784e098b72c8f9253649",
+          "bytes": 3493,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/college_of_dance.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/college_of_dance.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/warrior_of_mercy.md",
+          "sha256": "2f0c1fd47c6e8052e1ced7e42ae96bced425bc5158116e2cea90bfbe2fcfd472",
+          "bytes": 3167,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/warrior_of_mercy.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/warrior_of_mercy.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/circle_of_the_moon.json",
+          "sha256": "bd4e4e5ccbcbfacba26170d38e5f90e59df937936377508a053818268667c40d",
+          "bytes": 7208,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/circle_of_the_moon.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/circle_of_the_moon.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/oath_of_vengeance.json",
+          "sha256": "a0e04819723adcad5c4d2d91627db297afd1b1fdcbcb6bafbac6ee941630aff7",
+          "bytes": 7553,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/oath_of_vengeance.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/oath_of_vengeance.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/college_of_valor.md",
+          "sha256": "4076161e1b85607bba0b573a11d48c2975ba2a9c59183879caa09dd3f65ae4e6",
+          "bytes": 2145,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/college_of_valor.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/college_of_valor.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/soulknife.json",
+          "sha256": "749002c4e8769f750610445f2229fb640f5e48ce77d4d9439ae96416335a1d35",
+          "bytes": 10447,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/soulknife.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/soulknife.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/abjurer.md",
+          "sha256": "9a5db323dbf4b15a9666a956890429dedf0d1f8434d6966d7d0fb4eb29379491",
+          "bytes": 2644,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/abjurer.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/abjurer.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/path_of_the_wild_heart.md",
+          "sha256": "c2a20ba1dfbe0fda831c7c93b71f2ba0f1892dee9362a3f687f1dbec5d7d95c2",
+          "bytes": 2686,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/path_of_the_wild_heart.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/path_of_the_wild_heart.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/circle_of_the_stars.md",
+          "sha256": "cc4bad4efa117ed11d0f9ba42c5ec3d6aba11bef0c04ba0151a11ccd0d9e2aa0",
+          "bytes": 4708,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/circle_of_the_stars.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/circle_of_the_stars.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/life_domain.md",
+          "sha256": "be25abe135691bd81ef7de3275c85200b4926c4c9ce38121c868cf5b0aa79c8c",
+          "bytes": 2742,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/life_domain.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/life_domain.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/college_of_lore.md",
+          "sha256": "a61135997da625b485a3b86bdfd69b871d09117236eb64672c9dbb986f93b247",
+          "bytes": 2087,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/college_of_lore.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/college_of_lore.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/fiend_patron.md",
+          "sha256": "7f6a76d41a602f791df6947df644847f5f99401d807fc2d7d069ffd1ee171171",
+          "bytes": 3088,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/fiend_patron.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/fiend_patron.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/psi_warrior.md",
+          "sha256": "8b146a7193f8d33e159ca9099ef981dce7156578e0ba096bb0cce78e18d7445c",
+          "bytes": 5242,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/psi_warrior.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/psi_warrior.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/war_domain.md",
+          "sha256": "a4634af20fd42923898b7fb3d34bb5c63496a13b818df4a522023a4ad5e9da8c",
+          "bytes": 2946,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/war_domain.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/war_domain.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/warrior_of_the_elements.json",
+          "sha256": "e033e1845c67c08988591852dbcc767089064d333acd13dd71df797684e1cc4f",
+          "bytes": 5909,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/warrior_of_the_elements.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/warrior_of_the_elements.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/oath_of_vengeance.md",
+          "sha256": "69ab8379391a630c626b9ec7ea36c80d7c00e3d2f3175b5ddd69f55a2a5ea554",
+          "bytes": 3430,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/oath_of_vengeance.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/oath_of_vengeance.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/draconic_sorcery.json",
+          "sha256": "a4ae59faa1282f5e4ad17c87bcf486d4a6d358ecd717e3dc5552ac23282d160b",
+          "bytes": 6875,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/draconic_sorcery.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/draconic_sorcery.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/warrior_of_shadow.md",
+          "sha256": "c266ad8d0177e4458288f31549a95c3ff09ad1f8f8aba8d7db06440fc0f6549a",
+          "bytes": 3169,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/warrior_of_shadow.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/warrior_of_shadow.md"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/warrior_of_mercy.json",
+          "sha256": "b14a7c269a1527e764c0e36d18729bf32d0160fe352c72a5a57cfa31c34423a1",
+          "bytes": 6440,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/warrior_of_mercy.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/warrior_of_mercy.json"
+          ]
+        },
+        {
+          "name": "5etools/by_subclass/college_of_dance.json",
+          "sha256": "8c6d9bb6f983691047b347afb7f3b75b90bac18af93b8d779138d17580fcc0f6",
+          "bytes": 7605,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/college_of_dance.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/college_of_dance.json"
+          ]
+        },
+        {
+          "name": "5etools/index.json",
+          "sha256": "1d44310021ce7f0affc684c8448842ae018e668720eef5262071f341d2b08856",
+          "bytes": 10678,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/index.json",
+            "_staging/subclass-staging/extracts/5etools/index.json"
+          ]
+        },
+        {
+          "name": "5etools/README.md",
+          "sha256": "7c6df908e94d5bbd3594afd46068287ca7fa150d9adc63a743e3c7571ded6445",
+          "bytes": 1569,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/README.md",
+            "_staging/subclass-staging/extracts/5etools/README.md"
+          ]
+        },
+        {
+          "name": "5etools/INDEX.md",
+          "sha256": "4e6eddc4606ba684067be9807d946b4315242f2a609adf73692f263db73c5f9f",
+          "bytes": 4114,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/INDEX.md",
+            "_staging/subclass-staging/extracts/5etools/INDEX.md"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "_staging/subclass-staging-phb_dmg.tar.gz",
+      "sha256": "43e3337433a18b6a2172e347c87a7adf2deb40466b62fe100417a0128971b783",
+      "members": [
+        {
+          "name": "staged/aberrant_sorcery.json",
+          "sha256": "caee2d6abf915a5603be6b651bd00c6741f64cb41f176a89bb11694cc67e3768",
+          "bytes": 5144,
+          "exact_extracted_matches": [
+            "_staging/phb_dmg/staged/aberrant_sorcery.json"
+          ]
+        },
+        {
+          "name": "staged/circle_of_the_stars.json",
+          "sha256": "189f04d7ed31b37a9ab2c32a1da196468390d6b24342fd706dccbb8281aaa38e",
+          "bytes": 4965,
+          "exact_extracted_matches": [
+            "_staging/phb_dmg/staged/circle_of_the_stars.json"
+          ]
+        },
+        {
+          "name": "staged/path_of_the_zealot.json",
+          "sha256": "be6eb5c4a33916d8c4d6f107cba5fd55f90a5c3f55324beed8caf783f59fd598",
+          "bytes": 2993,
+          "exact_extracted_matches": [
+            "_staging/phb_dmg/staged/path_of_the_zealot.json"
+          ]
+        },
+        {
+          "name": "staged/diviner.json",
+          "sha256": "295ed40b6450e2f3af18e13f297f474b36000caa8fc716e2bfd3783bee2ce0b1",
+          "bytes": 2844,
+          "exact_extracted_matches": [
+            "_staging/phb_dmg/staged/diviner.json"
+          ]
+        },
+        {
+          "name": "staged/assassin.json",
+          "sha256": "90b25d291f3632772860040d4dbe220b08995db8138871e9c6bcb79d6b84731b",
+          "bytes": 2363,
+          "exact_extracted_matches": [
+            "_staging/phb_dmg/staged/assassin.json"
+          ]
+        },
+        {
+          "name": "staged/great_old_one_patron.json",
+          "sha256": "f67e53d0f1b5ebf741886acdc7068b83502bfded6f5ff4cb8006291350651495",
+          "bytes": 5244,
+          "exact_extracted_matches": [
+            "_staging/phb_dmg/staged/great_old_one_patron.json"
+          ]
+        },
+        {
+          "name": "staged/archfey_patron.json",
+          "sha256": "5db827546f0372da5fa94c2a9d6ec68a7bfdc0d3e89cd6d9aa63c96b1d2e31b6",
+          "bytes": 4554,
+          "exact_extracted_matches": [
+            "_staging/phb_dmg/staged/archfey_patron.json"
+          ]
+        },
+        {
+          "name": "staged/wild_magic_sorcery.json",
+          "sha256": "b4994cb138f66c820d29183ff8dc370d044e0e8279e743c780c203432035fd9f",
+          "bytes": 2932,
+          "exact_extracted_matches": [
+            "_staging/phb_dmg/staged/wild_magic_sorcery.json"
+          ]
+        },
+        {
+          "name": "staged/oath_of_the_ancients.json",
+          "sha256": "f72acdf977d8559392dabaebb32993f6c62bc74ae01e88fc652d2ba7246cee13",
+          "bytes": 5108,
+          "exact_extracted_matches": [
+            "_staging/phb_dmg/staged/oath_of_the_ancients.json"
+          ]
+        },
+        {
+          "name": "staged/beast_master.json",
+          "sha256": "e81a147f048e276fef7e1da34d61bec6d4f5d27d5cc1bbe592a8999689cae434",
+          "bytes": 2448,
+          "exact_extracted_matches": [
+            "_staging/phb_dmg/staged/beast_master.json"
+          ]
+        },
+        {
+          "name": "staged/abjurer.json",
+          "sha256": "26ebbe2bc3ced9c829d6f8b0fe7306d66986899d8558e90dfea3022b07cd99e2",
+          "bytes": 3333,
+          "exact_extracted_matches": [
+            "_staging/phb_dmg/staged/abjurer.json"
+          ]
+        },
+        {
+          "name": "staged/eldritch_knight.json",
+          "sha256": "dd6f96448bf8117b8bbfb68c989edce842e1dc79b81d6aa9d13d77190dc8da0b",
+          "bytes": 3349,
+          "exact_extracted_matches": [
+            "_staging/phb_dmg/staged/eldritch_knight.json"
+          ]
+        },
+        {
+          "name": "staged/light_domain.json",
+          "sha256": "6fe6617853d86acd84dcadb55dfc183a78045d2c439b3cfd351f6ce21a23b606",
+          "bytes": 4553,
+          "exact_extracted_matches": [
+            "_staging/phb_dmg/staged/light_domain.json"
+          ]
+        },
+        {
+          "name": "staged/path_of_the_world_tree.json",
+          "sha256": "670a31f79aaaaca10ebfd5b3c04d5ff8d68424ebeb68d881f4290ab95b533251",
+          "bytes": 2419,
+          "exact_extracted_matches": [
+            "_staging/phb_dmg/staged/path_of_the_world_tree.json"
+          ]
+        },
+        {
+          "name": "staged/circle_of_the_sea.json",
+          "sha256": "7b7b6bf3db559a1d44e991e1e6a2ee85b7015dc0991d212949554625e750f12e",
+          "bytes": 4391,
+          "exact_extracted_matches": [
+            "_staging/phb_dmg/staged/circle_of_the_sea.json"
+          ]
+        },
+        {
+          "name": "staged/psi_warrior.json",
+          "sha256": "9d55eae9db0c28428dc0a7a95963014dbcd73507d82fb98cece7682ea5aabdd0",
+          "bytes": 5595,
+          "exact_extracted_matches": [
+            "_staging/phb_dmg/staged/psi_warrior.json"
+          ]
+        },
+        {
+          "name": "staged/fey_wanderer.json",
+          "sha256": "95c67ab24c584d910a95793e64c62fbb47a5e7f8f460401936312f1b4b18ffe4",
+          "bytes": 3503,
+          "exact_extracted_matches": [
+            "_staging/phb_dmg/staged/fey_wanderer.json"
+          ]
+        },
+        {
+          "name": "staged/gloom_stalker.json",
+          "sha256": "a4d7de23e360acfc2e410cd77259b0d06bd35feb749b0b0a4d7a1a47143a9192",
+          "bytes": 5131,
+          "exact_extracted_matches": [
+            "_staging/phb_dmg/staged/gloom_stalker.json"
+          ]
+        },
+        {
+          "name": "staged/trickery_domain.json",
+          "sha256": "e3c67d556c2721a3a5eb42d28b6b03510ec759d73d1088631c19eecb68442544",
+          "bytes": 4495,
+          "exact_extracted_matches": [
+            "_staging/phb_dmg/staged/trickery_domain.json"
+          ]
+        },
+        {
+          "name": "staged/college_of_valor.json",
+          "sha256": "acadefea0aa5514ecf28c7190a1f81ac2e06db68babcff00e5fcb346a96e3083",
+          "bytes": 2215,
+          "exact_extracted_matches": [
+            "_staging/phb_dmg/staged/college_of_valor.json"
+          ]
+        },
+        {
+          "name": "staged/clockwork_sorcery.json",
+          "sha256": "c563c4361ae2d65718a17f74b3791a195af381369f546b61c13ae13b1c5efc85",
+          "bytes": 4864,
+          "exact_extracted_matches": [
+            "_staging/phb_dmg/staged/clockwork_sorcery.json"
+          ]
+        },
+        {
+          "name": "staged/warrior_of_shadow.json",
+          "sha256": "04e5e09bd74413f54a08e43a27617379404ed4ee0ac263b5ddff613b7ba67e4d",
+          "bytes": 3503,
+          "exact_extracted_matches": [
+            "_staging/phb_dmg/staged/warrior_of_shadow.json"
+          ]
+        },
+        {
+          "name": "staged/battle_master.json",
+          "sha256": "7807e8485ed0cd99fe72ad86e937edef4e767ddc87b5834cf1d4f94cdc1cf35e",
+          "bytes": 2944,
+          "exact_extracted_matches": [
+            "_staging/phb_dmg/staged/battle_master.json"
+          ]
+        },
+        {
+          "name": "staged/path_of_the_wild_heart.json",
+          "sha256": "eb0b1ea62263c1b7a49aadea944f2af3551ae6762fabe1c374b75cdd6e93bdf7",
+          "bytes": 2610,
+          "exact_extracted_matches": [
+            "_staging/phb_dmg/staged/path_of_the_wild_heart.json"
+          ]
+        },
+        {
+          "name": "staged/illusionist.json",
+          "sha256": "daf176d1ae78cdbdc6d71f8082e0e67d010a362765c517fae2bbe16ebdeee247",
+          "bytes": 3509,
+          "exact_extracted_matches": [
+            "_staging/phb_dmg/staged/illusionist.json"
+          ]
+        },
+        {
+          "name": "staged/college_of_glamour.json",
+          "sha256": "f09f3e32550337e257492f42060b8ffa7c850dd7224d83c1bf6d23c3ee1a9f6e",
+          "bytes": 3527,
+          "exact_extracted_matches": [
+            "_staging/phb_dmg/staged/college_of_glamour.json"
+          ]
+        },
+        {
+          "name": "staged/arcane_trickster.json",
+          "sha256": "bd0a96e9b6314b72db10ab273751e6510c60d7b4d6415617b34335367d986ffa",
+          "bytes": 2851,
+          "exact_extracted_matches": [
+            "_staging/phb_dmg/staged/arcane_trickster.json"
+          ]
+        },
+        {
+          "name": "staged/celestial_patron.json",
+          "sha256": "d55577bcc7edb0d95e41177cff8d380eed0c32d57356b97d4a280809f04fbb6a",
+          "bytes": 4551,
+          "exact_extracted_matches": [
+            "_staging/phb_dmg/staged/celestial_patron.json"
+          ]
+        },
+        {
+          "name": "staged/oath_of_glory.json",
+          "sha256": "87a4f94c9d31550b73553add11b74eb5bfc694c2e42d45323c7f76ca09fa9e83",
+          "bytes": 5536,
+          "exact_extracted_matches": [
+            "_staging/phb_dmg/staged/oath_of_glory.json"
+          ]
+        },
+        {
+          "name": "staged/war_domain.json",
+          "sha256": "cde23aaf64bc91c2b1a397450e7c5748e7d22fd87b00d17399f1e464f581a96a",
+          "bytes": 4206,
+          "exact_extracted_matches": [
+            "_staging/phb_dmg/staged/war_domain.json"
+          ]
+        },
+        {
+          "name": "staged/circle_of_the_moon.json",
+          "sha256": "af594c89b570debb0fd8e31e6c2f5cf1f03a3692f49895e56c49f03da97aec2a",
+          "bytes": 4236,
+          "exact_extracted_matches": [
+            "_staging/phb_dmg/staged/circle_of_the_moon.json"
+          ]
+        },
+        {
+          "name": "staged/oath_of_vengeance.json",
+          "sha256": "a6c2b4ef82400bfd5ce27874bf4c718a3e54f352118c1e42162aeb0770279b65",
+          "bytes": 5052,
+          "exact_extracted_matches": [
+            "_staging/phb_dmg/staged/oath_of_vengeance.json"
+          ]
+        },
+        {
+          "name": "staged/soulknife.json",
+          "sha256": "45a9d6f7fab7c677d4e56ffd68b255bd7803e56802baa85a60228adddca8b04e",
+          "bytes": 4950,
+          "exact_extracted_matches": [
+            "_staging/phb_dmg/staged/soulknife.json"
+          ]
+        },
+        {
+          "name": "staged/warrior_of_the_elements.json",
+          "sha256": "0d8de360d9047a41faa8d792fdbae13f3022fee6a118e8a9a66468f0a8729b24",
+          "bytes": 2785,
+          "exact_extracted_matches": [
+            "_staging/phb_dmg/staged/warrior_of_the_elements.json"
+          ]
+        },
+        {
+          "name": "staged/warrior_of_mercy.json",
+          "sha256": "0a00194e3f3743dc35cfd77d5cce2dd6b73130d24bb099a78a221aea73eb6514",
+          "bytes": 3328,
+          "exact_extracted_matches": [
+            "_staging/phb_dmg/staged/warrior_of_mercy.json"
+          ]
+        },
+        {
+          "name": "staged/college_of_dance.json",
+          "sha256": "012671e9d9a136f99aa9830f82d7a308570f6de296f5aed526ef712363cf1f97",
+          "bytes": 3965,
+          "exact_extracted_matches": [
+            "_staging/phb_dmg/staged/college_of_dance.json"
+          ]
+        },
+        {
+          "name": "STATUS.md",
+          "sha256": "40837dd767b70a02d28f135e5011887b9530efd44bfe24223a2dd1d88ef83657",
+          "bytes": 22523,
+          "exact_extracted_matches": [
+            "_staging/phb_dmg/STATUS.md"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "_staging/subclass-staging.tar.gz",
+      "sha256": "76dbda13de1aef1b206648c8f54044ef46b0cc6d200149bade776c612c744fcd",
+      "members": [
+        {
+          "name": "staged/college_of_lore.json",
+          "sha256": "4dd161079409681814cd9b179eb4a09663a8abe97887401e5b0818ff78ad1ecc",
+          "bytes": 2826,
+          "exact_extracted_matches": [
+            "_staging/subclass-staging/staged/college_of_lore.json"
+          ]
+        },
+        {
+          "name": "staged/path_of_the_berserker.json",
+          "sha256": "08bca9476d1ce83f0e501da31e225b3c978d9694194781ef445e7fd729c60d7d",
+          "bytes": 2346,
+          "exact_extracted_matches": [
+            "_staging/subclass-staging/staged/path_of_the_berserker.json"
+          ]
+        },
+        {
+          "name": "staged/thief.json",
+          "sha256": "7cd0c68a3fec04715a3b78c53a0adc9f4ac6069cb275974fa24198445a7db7da",
+          "bytes": 2493,
+          "exact_extracted_matches": [
+            "_staging/subclass-staging/staged/thief.json"
+          ]
+        },
+        {
+          "name": "staged/evoker.json",
+          "sha256": "483e50a3d9d1457e5fdf5314fc01fff2ff62878a3c4e6063f995c2d604170bcb",
+          "bytes": 2775,
+          "exact_extracted_matches": [
+            "_staging/subclass-staging/staged/evoker.json"
+          ]
+        },
+        {
+          "name": "staged/circle_of_the_land.json",
+          "sha256": "dfe5b13b5a9429140d70bd77b95ea9f633d4270ddb563c83085e7fa6776b0637",
+          "bytes": 3086,
+          "exact_extracted_matches": [
+            "_staging/subclass-staging/staged/circle_of_the_land.json"
+          ]
+        },
+        {
+          "name": "staged/life_domain.json",
+          "sha256": "d39971ff5133112852949015bea21794935e76843a77cf8f39ce7b0a326b0786",
+          "bytes": 4390,
+          "exact_extracted_matches": [
+            "_staging/subclass-staging/staged/life_domain.json"
+          ]
+        },
+        {
+          "name": "staged/hunter.json",
+          "sha256": "c9c5d585514fa2e91a9dfe8a77f7e5af7a18c18226ff84534fc99b59ac1d8b78",
+          "bytes": 2789,
+          "exact_extracted_matches": [
+            "_staging/subclass-staging/staged/hunter.json"
+          ]
+        },
+        {
+          "name": "staged/oath_of_devotion.json",
+          "sha256": "3b06f4f99814119c34e8756acba97948ed5491ac15637a23a7ff954e4dd2f087",
+          "bytes": 5212,
+          "exact_extracted_matches": [
+            "_staging/subclass-staging/staged/oath_of_devotion.json"
+          ]
+        },
+        {
+          "name": "staged/draconic_sorcery.json",
+          "sha256": "76722df256a84a4b2f9691066a9563446328e4591ceaa53fe62db48149dbd7c6",
+          "bytes": 4717,
+          "exact_extracted_matches": [
+            "_staging/subclass-staging/staged/draconic_sorcery.json"
+          ]
+        },
+        {
+          "name": "STATUS.md",
+          "sha256": "6cee3b6b8dcf3deb8067b12de2e02c542c062770ba2fe16cd4377c1dda10c479",
+          "bytes": 2565,
+          "exact_extracted_matches": [
+            "_staging/subclass-staging/STATUS.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/diviner.md",
+          "sha256": "59600db4a47161cd09e61110ed7e4cd8b964acd4e47bd9fb3c611787d8ad5491",
+          "bytes": 2625,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/diviner.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/diviner.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/aberrant_sorcery.json",
+          "sha256": "c352370864e5d2c584e68d5ae1de713a661d1041a5ebca72abe14b6475cb528b",
+          "bytes": 7957,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/aberrant_sorcery.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/aberrant_sorcery.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/circle_of_the_stars.json",
+          "sha256": "4cb4a3d13498bbb69b7191515f8d9a9d90e4e61194893e9e2b922f24037ab75c",
+          "bytes": 9941,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/circle_of_the_stars.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/circle_of_the_stars.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/circle_of_the_sea.md",
+          "sha256": "6424da52c8f8da613fa5952443fdd7cb2c5861fc18a3a4916fe2c2ca356dc38f",
+          "bytes": 2892,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/circle_of_the_sea.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/circle_of_the_sea.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/champion.json",
+          "sha256": "050b7de0f26f02d2d7db3da4de4b6cae729c112c0818cbad73458cdfe7fd91f1",
+          "bytes": 5290,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/champion.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/champion.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/assassin.md",
+          "sha256": "b9109d1dc203a475df4ceead7d7fe95f32a315c55cb917009fcd801ea6e315d8",
+          "bytes": 2150,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/assassin.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/assassin.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/aberrant_sorcery.md",
+          "sha256": "01c672206c0361b4697b450157acac6ae700ab2acd94809eda8be224ea4b81a5",
+          "bytes": 3596,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/aberrant_sorcery.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/aberrant_sorcery.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/path_of_the_zealot.json",
+          "sha256": "fe2867bca55181cbe45f2032c8ef58682fedf41013877767e9f9ed14273afbbd",
+          "bytes": 5873,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/path_of_the_zealot.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/path_of_the_zealot.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/diviner.json",
+          "sha256": "e89b73d4433df5d6e44e6a7a370f74324508f6304b85852982520eeb1611282f",
+          "bytes": 5423,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/diviner.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/diviner.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/light_domain.md",
+          "sha256": "e61329f787019f5f493396f4cfd4f8fd8f54ce20542fd5ebb549e4a81e9cb4a0",
+          "bytes": 3549,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/light_domain.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/light_domain.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/assassin.json",
+          "sha256": "25d29f0177a3b6c9577334d2b015646eaee9e0e08e8a9748b277980ce6feea5e",
+          "bytes": 4968,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/assassin.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/assassin.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/great_old_one_patron.json",
+          "sha256": "26ce1bb00d0dca51f53440c422ceac394ff740416595025812c0fad718d8d33f",
+          "bytes": 8828,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/great_old_one_patron.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/great_old_one_patron.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/archfey_patron.json",
+          "sha256": "c5d0ff3157888d93cb0dc4eb2cb9ce2124a3f00a11ec9deb6c9e2dd1041e23d0",
+          "bytes": 7495,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/archfey_patron.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/archfey_patron.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/college_of_lore.json",
+          "sha256": "5338f76dcf77be098b0e2a93616c76399b31a36137deeae5eb2caef9f1eed987",
+          "bytes": 4443,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/college_of_lore.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/college_of_lore.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/warrior_of_the_open_hand.md",
+          "sha256": "edba9a4a7178abe4c846c800db844c5ec07f243f8e47df4b3805e37904600277",
+          "bytes": 2536,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/warrior_of_the_open_hand.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/warrior_of_the_open_hand.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/beast_master.md",
+          "sha256": "71f6a0a20d14d69c1a9882875e386292892df2ee7f935b29d32c797fdafe18ff",
+          "bytes": 2395,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/beast_master.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/beast_master.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/illusionist.md",
+          "sha256": "2a3b9def81488bcf909d0448644f9b84fa283a9d2ec52e2bd03f3dd485fb63eb",
+          "bytes": 2813,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/illusionist.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/illusionist.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/evoker.md",
+          "sha256": "7b08f0d787ce444d74b7f4713c014d7341dc31a745834127c8e09f32cdd54ad5",
+          "bytes": 2397,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/evoker.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/evoker.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/trickery_domain.md",
+          "sha256": "fe159d633afa3e7ad2203ba46e010512ff07001b69a4a58a5138123456187de3",
+          "bytes": 3171,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/trickery_domain.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/trickery_domain.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/warrior_of_the_elements.md",
+          "sha256": "c3bd6b887aee5c38c43432e24b991ffd9ab071859fcba24cf16b77e3d0eb7529",
+          "bytes": 2944,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/warrior_of_the_elements.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/warrior_of_the_elements.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/college_of_glamour.md",
+          "sha256": "8a64c76d666774eb0d36fca75a537602d1f34b40d801ac69c0b47ba406b34f97",
+          "bytes": 2756,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/college_of_glamour.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/college_of_glamour.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/wild_magic_sorcery.json",
+          "sha256": "957ea200def651c68224bbc12578283f1c985a774d25c02d18d8d65a0bfde57c",
+          "bytes": 6392,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/wild_magic_sorcery.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/wild_magic_sorcery.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/fey_wanderer.md",
+          "sha256": "bba6c794f00eeaa6eb003d2cddeecc9a6d2ed6e1d579e194855c3d20cf8f4fdf",
+          "bytes": 3411,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/fey_wanderer.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/fey_wanderer.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/path_of_the_berserker.md",
+          "sha256": "7402fd3b2281656486c1aba5ac8ce31bc75068ebc637682ecccb67286db7c57b",
+          "bytes": 2116,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/path_of_the_berserker.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/path_of_the_berserker.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/path_of_the_zealot.md",
+          "sha256": "d88aae8d37783d1e5db4bd115bcbbd534ac7f4c4d07e65dc47ac5cb8f248b9e6",
+          "bytes": 2996,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/path_of_the_zealot.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/path_of_the_zealot.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/champion.md",
+          "sha256": "006adea2aa8e3e112adb9463b42d5cb23df9a00507688581b7769468ba63f608",
+          "bytes": 2198,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/champion.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/champion.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/oath_of_the_ancients.md",
+          "sha256": "862e04887c1acadf5f6e76c39302fbbbe38a430f01898d1c2ac1f5a75f07e82d",
+          "bytes": 3452,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/oath_of_the_ancients.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/oath_of_the_ancients.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/oath_of_glory.md",
+          "sha256": "568ad2cf52f2cff8bfb430674c7697986dde6ee78b298d26a41c4c76631038cd",
+          "bytes": 4017,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/oath_of_glory.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/oath_of_glory.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/oath_of_the_ancients.json",
+          "sha256": "14ac821674a2b9de2b09d96d57f5d9cf79a6b342932579512a934f691eaca73a",
+          "bytes": 7591,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/oath_of_the_ancients.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/oath_of_the_ancients.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/path_of_the_berserker.json",
+          "sha256": "a5265ccfd4ee79c478e451fd17a09a4a466096319a3a5fd37676b703d9523acf",
+          "bytes": 4339,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/path_of_the_berserker.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/path_of_the_berserker.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/beast_master.json",
+          "sha256": "711530633ec17fd78c22512a15e9db886f86098d4f95f0b1f313b33e5af303d9",
+          "bytes": 4755,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/beast_master.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/beast_master.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/abjurer.json",
+          "sha256": "cdd08fee36b70bcc0809388f34976aca45486153948b015d54657310e032aa70",
+          "bytes": 5426,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/abjurer.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/abjurer.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/eldritch_knight.json",
+          "sha256": "e2ea50c76ca7d3737e555a79e2e6bb991aa53c8405fa1676cbcbba51bd700523",
+          "bytes": 6361,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/eldritch_knight.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/eldritch_knight.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/thief.json",
+          "sha256": "9dbaa3fd86dd01c208291ad1b5eba3c686fa9bd44b180c899e5bfa9267f2f09e",
+          "bytes": 5220,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/thief.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/thief.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/light_domain.json",
+          "sha256": "362d55e4d6661c502504aba5bd77d7b03e43f1369289cbb48fa63e0732408960",
+          "bytes": 7593,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/light_domain.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/light_domain.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/path_of_the_world_tree.json",
+          "sha256": "cdda13efb8ab70a3fe06f2e09b82cfb844a0c5751c6d01ecee9e18d1b584ae52",
+          "bytes": 4613,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/path_of_the_world_tree.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/path_of_the_world_tree.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/fiend_patron.json",
+          "sha256": "7a89fee096eb1d583848893305c221056f7bfb50faa6fffcba796c6a9f517cf7",
+          "bytes": 6919,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/fiend_patron.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/fiend_patron.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/wild_magic_sorcery.md",
+          "sha256": "28cedecc12a653f45b5bb1fc91179e01fc9c2d1fd302cd974559df1b7c3b730b",
+          "bytes": 2754,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/wild_magic_sorcery.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/wild_magic_sorcery.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/great_old_one_patron.md",
+          "sha256": "6f1c286af8d7de59da6e1f026f542e13146f34968e4ba0a5157fc8daa9255637",
+          "bytes": 4106,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/great_old_one_patron.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/great_old_one_patron.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/archfey_patron.md",
+          "sha256": "f41067f05e0d9712523c8fa44f8e6f9042d779271e5504b76ff7ed4fc58f4d40",
+          "bytes": 3384,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/archfey_patron.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/archfey_patron.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/battle_master.md",
+          "sha256": "6b283a9264289232bb54f96d26305877c6d0a3159fbcaac02b74b3d94949f3bc",
+          "bytes": 3063,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/battle_master.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/battle_master.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/arcane_trickster.md",
+          "sha256": "77fc59a15d654100a87df94798577b027a6a389b77caa616a7dcec44ce0d50ba",
+          "bytes": 2767,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/arcane_trickster.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/arcane_trickster.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/oath_of_devotion.md",
+          "sha256": "2182eef8d34eb49dcb172a338d769b61446362eda4e9902ebb867796f4943824",
+          "bytes": 3429,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/oath_of_devotion.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/oath_of_devotion.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/gloom_stalker.md",
+          "sha256": "caded90889d3c5e2e15c5b12d18c5d9fd3e5c2a2e6b2761cea32a8c3e1fcd41c",
+          "bytes": 3421,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/gloom_stalker.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/gloom_stalker.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/evoker.json",
+          "sha256": "b590b9f1dba36f829a2484e50335f9cb4a4361afa2149aa0524ae3df9aa02be3",
+          "bytes": 5085,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/evoker.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/evoker.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/circle_of_the_sea.json",
+          "sha256": "9adec5aeaaef6a30bc949cca790706c4ea4776123781b1115bccfc81cb6dc223",
+          "bytes": 6761,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/circle_of_the_sea.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/circle_of_the_sea.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/path_of_the_world_tree.md",
+          "sha256": "99628fd1437c31fd652afadb09b26d86df7424e1fc4e41fc32bbc74f32d5d9ff",
+          "bytes": 2302,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/path_of_the_world_tree.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/path_of_the_world_tree.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/circle_of_the_land.json",
+          "sha256": "caf51f3022955171a4db3682018673c555599c3ae745406c52ba0759eb2b302c",
+          "bytes": 10303,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/circle_of_the_land.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/circle_of_the_land.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/life_domain.json",
+          "sha256": "3aef068d380d813163cc0f73fdc594f5c5a48ad81558eacd70a124b9c39401a4",
+          "bytes": 6578,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/life_domain.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/life_domain.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/psi_warrior.json",
+          "sha256": "d28f4e5fd12cc0a999c33364179c50b92a274212682453048f93d19841c54fce",
+          "bytes": 11335,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/psi_warrior.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/psi_warrior.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/fey_wanderer.json",
+          "sha256": "8491936fa18529512326be349d39d1d07b2131aefda05304c168e997a86b2434",
+          "bytes": 8262,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/fey_wanderer.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/fey_wanderer.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/soulknife.md",
+          "sha256": "c2c00fdf3c1fceaeec1aa5aba370bdef194905be39a3a18d62ff12d22d11fe93",
+          "bytes": 4808,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/soulknife.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/soulknife.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/gloom_stalker.json",
+          "sha256": "a624e0807704d4f0014d5396e9acc20dc3934dee47b0c76c23866e5168aa342f",
+          "bytes": 7978,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/gloom_stalker.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/gloom_stalker.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/draconic_sorcery.md",
+          "sha256": "df799deebbf20451dd7b056ad6f2988086019b5daf2d8294c67049c46e521686",
+          "bytes": 3070,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/draconic_sorcery.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/draconic_sorcery.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/hunter.json",
+          "sha256": "970cdff0c848ef5cd8a6213da16ddf44630eeb342c08e23bfd9a10e97a59376b",
+          "bytes": 5237,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/hunter.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/hunter.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/trickery_domain.json",
+          "sha256": "e7d70c2dffaf0749d8ceb5d2b9032eefa79cd655d55a14c28c66ab46a730e912",
+          "bytes": 7260,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/trickery_domain.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/trickery_domain.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/circle_of_the_moon.md",
+          "sha256": "eed42383c5897134bcb610c4bda425c3f91106d206ebe721982e08f2ef12f373",
+          "bytes": 3167,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/circle_of_the_moon.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/circle_of_the_moon.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/college_of_valor.json",
+          "sha256": "7cd95cb1966dc7c49494da66237429844d8a3c1ecabc7ec5efe97cde6d7b807a",
+          "bytes": 4529,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/college_of_valor.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/college_of_valor.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/clockwork_sorcery.json",
+          "sha256": "fdd8bf46c7b101a6ecee0ba48a95135aa1b79433aa3fe51f4bc684c392fa203a",
+          "bytes": 8500,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/clockwork_sorcery.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/clockwork_sorcery.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/clockwork_sorcery.md",
+          "sha256": "bd029c408f19b03281a7d7e3ab10b921d55b59b51da6caa60302e335656ae7d7",
+          "bytes": 3647,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/clockwork_sorcery.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/clockwork_sorcery.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/oath_of_devotion.json",
+          "sha256": "b0d8682413876db65ff4fd73b33d5e6b77c83c24b4fe8c1af02a45136a1c1862",
+          "bytes": 7533,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/oath_of_devotion.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/oath_of_devotion.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/eldritch_knight.md",
+          "sha256": "466381f32af44a095e231c3377a8e21a910c3cde7db8a823c95ce59044661c36",
+          "bytes": 3094,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/eldritch_knight.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/eldritch_knight.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/warrior_of_shadow.json",
+          "sha256": "4ea402798012e6dc40b8f251e69487e695342a155130879d3bdb6bf737a608f7",
+          "bytes": 6963,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/warrior_of_shadow.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/warrior_of_shadow.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/battle_master.json",
+          "sha256": "b00c491f7dcdd969536d2f6dc17c20d2bc6ec8d8a19799e6fd50fa27f0bc9ac7",
+          "bytes": 7551,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/battle_master.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/battle_master.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/path_of_the_wild_heart.json",
+          "sha256": "055f093a3d34e4bd3ab3ee0553545448ac030a0e0b582a23a56ab7bad1d5d67f",
+          "bytes": 5736,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/path_of_the_wild_heart.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/path_of_the_wild_heart.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/celestial_patron.md",
+          "sha256": "0b9ab49f3eb6a9e34c0a0a91575690812f0c143ee5b87640d1f66ed485ec9d54",
+          "bytes": 3077,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/celestial_patron.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/celestial_patron.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/thief.md",
+          "sha256": "c303b1807f41a7269b346c2ec4459aee25aa88df3aa7bdcefbe44dcc4450471e",
+          "bytes": 2278,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/thief.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/thief.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/circle_of_the_land.md",
+          "sha256": "bca23549dbfed4fff64d882b51ed27887ee7d1af36d34eb4d15dc54c0264f3da",
+          "bytes": 3644,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/circle_of_the_land.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/circle_of_the_land.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/illusionist.json",
+          "sha256": "50349c3d982f914be2f803d0cb7885f2093c3ff6bcd767355d9c443be7176e29",
+          "bytes": 5627,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/illusionist.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/illusionist.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/college_of_glamour.json",
+          "sha256": "cbdd09f0bcbc23b0f33ed5d135a7bbd3bd28c9a8dd33bffdbbb961e61de48f41",
+          "bytes": 5388,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/college_of_glamour.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/college_of_glamour.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/hunter.md",
+          "sha256": "6f6cd507e2fdc009f2c8118f926a0dbadecf47e5e3de3d10e90b18ebb99c0082",
+          "bytes": 2422,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/hunter.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/hunter.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/arcane_trickster.json",
+          "sha256": "ab91aacc28c76004f68964160c49787b4c65d4af9c3db973bbcfbf51a6fa564a",
+          "bytes": 5648,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/arcane_trickster.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/arcane_trickster.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/warrior_of_the_open_hand.json",
+          "sha256": "f1240c1b5d143da4c681e3a9dcbe650f91a155d503618d7c6b2bf2a3fb3fe7a6",
+          "bytes": 4959,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/warrior_of_the_open_hand.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/warrior_of_the_open_hand.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/celestial_patron.json",
+          "sha256": "5abddf88f78fb62c2f2a1b22b8c1a07f84c371db846ef60530b2dde946ae1094",
+          "bytes": 6876,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/celestial_patron.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/celestial_patron.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/oath_of_glory.json",
+          "sha256": "0b1c8983ddb536f557bda48f50cd60683075117b53578e71933fe2f50e2d1a06",
+          "bytes": 8677,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/oath_of_glory.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/oath_of_glory.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/war_domain.json",
+          "sha256": "fa43f5dc616af617e783374124577e4e2540f9c9688f5608268a3a5ba0eecfe8",
+          "bytes": 6871,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/war_domain.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/war_domain.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/college_of_dance.md",
+          "sha256": "e03479ddcfca8497d8f7cd04848f357912b397dbf3c5784e098b72c8f9253649",
+          "bytes": 3493,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/college_of_dance.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/college_of_dance.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/warrior_of_mercy.md",
+          "sha256": "2f0c1fd47c6e8052e1ced7e42ae96bced425bc5158116e2cea90bfbe2fcfd472",
+          "bytes": 3167,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/warrior_of_mercy.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/warrior_of_mercy.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/circle_of_the_moon.json",
+          "sha256": "bd4e4e5ccbcbfacba26170d38e5f90e59df937936377508a053818268667c40d",
+          "bytes": 7208,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/circle_of_the_moon.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/circle_of_the_moon.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/oath_of_vengeance.json",
+          "sha256": "a0e04819723adcad5c4d2d91627db297afd1b1fdcbcb6bafbac6ee941630aff7",
+          "bytes": 7553,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/oath_of_vengeance.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/oath_of_vengeance.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/college_of_valor.md",
+          "sha256": "4076161e1b85607bba0b573a11d48c2975ba2a9c59183879caa09dd3f65ae4e6",
+          "bytes": 2145,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/college_of_valor.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/college_of_valor.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/soulknife.json",
+          "sha256": "749002c4e8769f750610445f2229fb640f5e48ce77d4d9439ae96416335a1d35",
+          "bytes": 10447,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/soulknife.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/soulknife.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/abjurer.md",
+          "sha256": "9a5db323dbf4b15a9666a956890429dedf0d1f8434d6966d7d0fb4eb29379491",
+          "bytes": 2644,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/abjurer.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/abjurer.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/path_of_the_wild_heart.md",
+          "sha256": "c2a20ba1dfbe0fda831c7c93b71f2ba0f1892dee9362a3f687f1dbec5d7d95c2",
+          "bytes": 2686,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/path_of_the_wild_heart.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/path_of_the_wild_heart.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/circle_of_the_stars.md",
+          "sha256": "cc4bad4efa117ed11d0f9ba42c5ec3d6aba11bef0c04ba0151a11ccd0d9e2aa0",
+          "bytes": 4708,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/circle_of_the_stars.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/circle_of_the_stars.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/life_domain.md",
+          "sha256": "be25abe135691bd81ef7de3275c85200b4926c4c9ce38121c868cf5b0aa79c8c",
+          "bytes": 2742,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/life_domain.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/life_domain.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/college_of_lore.md",
+          "sha256": "a61135997da625b485a3b86bdfd69b871d09117236eb64672c9dbb986f93b247",
+          "bytes": 2087,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/college_of_lore.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/college_of_lore.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/fiend_patron.md",
+          "sha256": "7f6a76d41a602f791df6947df644847f5f99401d807fc2d7d069ffd1ee171171",
+          "bytes": 3088,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/fiend_patron.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/fiend_patron.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/psi_warrior.md",
+          "sha256": "8b146a7193f8d33e159ca9099ef981dce7156578e0ba096bb0cce78e18d7445c",
+          "bytes": 5242,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/psi_warrior.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/psi_warrior.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/war_domain.md",
+          "sha256": "a4634af20fd42923898b7fb3d34bb5c63496a13b818df4a522023a4ad5e9da8c",
+          "bytes": 2946,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/war_domain.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/war_domain.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/warrior_of_the_elements.json",
+          "sha256": "e033e1845c67c08988591852dbcc767089064d333acd13dd71df797684e1cc4f",
+          "bytes": 5909,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/warrior_of_the_elements.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/warrior_of_the_elements.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/oath_of_vengeance.md",
+          "sha256": "69ab8379391a630c626b9ec7ea36c80d7c00e3d2f3175b5ddd69f55a2a5ea554",
+          "bytes": 3430,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/oath_of_vengeance.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/oath_of_vengeance.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/draconic_sorcery.json",
+          "sha256": "a4ae59faa1282f5e4ad17c87bcf486d4a6d358ecd717e3dc5552ac23282d160b",
+          "bytes": 6875,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/draconic_sorcery.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/draconic_sorcery.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/warrior_of_shadow.md",
+          "sha256": "c266ad8d0177e4458288f31549a95c3ff09ad1f8f8aba8d7db06440fc0f6549a",
+          "bytes": 3169,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/warrior_of_shadow.md",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/warrior_of_shadow.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/warrior_of_mercy.json",
+          "sha256": "b14a7c269a1527e764c0e36d18729bf32d0160fe352c72a5a57cfa31c34423a1",
+          "bytes": 6440,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/warrior_of_mercy.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/warrior_of_mercy.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/by_subclass/college_of_dance.json",
+          "sha256": "8c6d9bb6f983691047b347afb7f3b75b90bac18af93b8d779138d17580fcc0f6",
+          "bytes": 7605,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/by_subclass/college_of_dance.json",
+            "_staging/subclass-staging/extracts/5etools/by_subclass/college_of_dance.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/index.json",
+          "sha256": "1d44310021ce7f0affc684c8448842ae018e668720eef5262071f341d2b08856",
+          "bytes": 10678,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/index.json",
+            "_staging/subclass-staging/extracts/5etools/index.json"
+          ]
+        },
+        {
+          "name": "extracts/5etools/README.md",
+          "sha256": "7c6df908e94d5bbd3594afd46068287ca7fa150d9adc63a743e3c7571ded6445",
+          "bytes": 1569,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/README.md",
+            "_staging/subclass-staging/extracts/5etools/README.md"
+          ]
+        },
+        {
+          "name": "extracts/5etools/INDEX.md",
+          "sha256": "4e6eddc4606ba684067be9807d946b4315242f2a609adf73692f263db73c5f9f",
+          "bytes": 4114,
+          "exact_extracted_matches": [
+            "_staging/extracts/5etools/INDEX.md",
+            "_staging/subclass-staging/extracts/5etools/INDEX.md"
+          ]
+        },
+        {
+          "name": "templates/champion.json",
+          "sha256": "55489dd74f8e3f4d4ed80bc7771d6b588e1d65ebab2b50227508751ebccfa657",
+          "bytes": 2752,
+          "exact_extracted_matches": [
+            "_staging/subclass-staging/templates/champion.json",
+            "_staging/templates/champion.json",
+            "data/core/subclasses/champion.json"
+          ]
+        },
+        {
+          "name": "templates/fiend_patron.json",
+          "sha256": "a5319f94120d1799405a91183248dc966600b055c8235a3ad7357308ecc0bdaf",
+          "bytes": 4698,
+          "exact_extracted_matches": [
+            "_staging/subclass-staging/templates/fiend_patron.json",
+            "_staging/templates/fiend_patron.json",
+            "data/core/subclasses/fiend_patron.json"
+          ]
+        }
+      ]
+    }
+  ],
+  "markdown": [
+    {
+      "path": "_staging/extracts/5etools/by_subclass/aberrant_sorcery.md",
+      "sha256": "01c672206c0361b4697b450157acac6ae700ab2acd94809eda8be224ea4b81a5",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/abjurer.md",
+      "sha256": "9a5db323dbf4b15a9666a956890429dedf0d1f8434d6966d7d0fb4eb29379491",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/arcane_trickster.md",
+      "sha256": "77fc59a15d654100a87df94798577b027a6a389b77caa616a7dcec44ce0d50ba",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/archfey_patron.md",
+      "sha256": "f41067f05e0d9712523c8fa44f8e6f9042d779271e5504b76ff7ed4fc58f4d40",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/assassin.md",
+      "sha256": "b9109d1dc203a475df4ceead7d7fe95f32a315c55cb917009fcd801ea6e315d8",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/battle_master.md",
+      "sha256": "6b283a9264289232bb54f96d26305877c6d0a3159fbcaac02b74b3d94949f3bc",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/beast_master.md",
+      "sha256": "71f6a0a20d14d69c1a9882875e386292892df2ee7f935b29d32c797fdafe18ff",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/celestial_patron.md",
+      "sha256": "0b9ab49f3eb6a9e34c0a0a91575690812f0c143ee5b87640d1f66ed485ec9d54",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/champion.md",
+      "sha256": "006adea2aa8e3e112adb9463b42d5cb23df9a00507688581b7769468ba63f608",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/circle_of_the_land.md",
+      "sha256": "bca23549dbfed4fff64d882b51ed27887ee7d1af36d34eb4d15dc54c0264f3da",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/circle_of_the_moon.md",
+      "sha256": "eed42383c5897134bcb610c4bda425c3f91106d206ebe721982e08f2ef12f373",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/circle_of_the_sea.md",
+      "sha256": "6424da52c8f8da613fa5952443fdd7cb2c5861fc18a3a4916fe2c2ca356dc38f",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/circle_of_the_stars.md",
+      "sha256": "cc4bad4efa117ed11d0f9ba42c5ec3d6aba11bef0c04ba0151a11ccd0d9e2aa0",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/clockwork_sorcery.md",
+      "sha256": "bd029c408f19b03281a7d7e3ab10b921d55b59b51da6caa60302e335656ae7d7",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/college_of_dance.md",
+      "sha256": "e03479ddcfca8497d8f7cd04848f357912b397dbf3c5784e098b72c8f9253649",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/college_of_glamour.md",
+      "sha256": "8a64c76d666774eb0d36fca75a537602d1f34b40d801ac69c0b47ba406b34f97",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/college_of_lore.md",
+      "sha256": "a61135997da625b485a3b86bdfd69b871d09117236eb64672c9dbb986f93b247",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/college_of_valor.md",
+      "sha256": "4076161e1b85607bba0b573a11d48c2975ba2a9c59183879caa09dd3f65ae4e6",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/diviner.md",
+      "sha256": "59600db4a47161cd09e61110ed7e4cd8b964acd4e47bd9fb3c611787d8ad5491",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/draconic_sorcery.md",
+      "sha256": "df799deebbf20451dd7b056ad6f2988086019b5daf2d8294c67049c46e521686",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/eldritch_knight.md",
+      "sha256": "466381f32af44a095e231c3377a8e21a910c3cde7db8a823c95ce59044661c36",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/evoker.md",
+      "sha256": "7b08f0d787ce444d74b7f4713c014d7341dc31a745834127c8e09f32cdd54ad5",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/fey_wanderer.md",
+      "sha256": "bba6c794f00eeaa6eb003d2cddeecc9a6d2ed6e1d579e194855c3d20cf8f4fdf",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/fiend_patron.md",
+      "sha256": "7f6a76d41a602f791df6947df644847f5f99401d807fc2d7d069ffd1ee171171",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/gloom_stalker.md",
+      "sha256": "caded90889d3c5e2e15c5b12d18c5d9fd3e5c2a2e6b2761cea32a8c3e1fcd41c",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/great_old_one_patron.md",
+      "sha256": "6f1c286af8d7de59da6e1f026f542e13146f34968e4ba0a5157fc8daa9255637",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/hunter.md",
+      "sha256": "6f6cd507e2fdc009f2c8118f926a0dbadecf47e5e3de3d10e90b18ebb99c0082",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/illusionist.md",
+      "sha256": "2a3b9def81488bcf909d0448644f9b84fa283a9d2ec52e2bd03f3dd485fb63eb",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/life_domain.md",
+      "sha256": "be25abe135691bd81ef7de3275c85200b4926c4c9ce38121c868cf5b0aa79c8c",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/light_domain.md",
+      "sha256": "e61329f787019f5f493396f4cfd4f8fd8f54ce20542fd5ebb549e4a81e9cb4a0",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/oath_of_devotion.md",
+      "sha256": "2182eef8d34eb49dcb172a338d769b61446362eda4e9902ebb867796f4943824",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/oath_of_glory.md",
+      "sha256": "568ad2cf52f2cff8bfb430674c7697986dde6ee78b298d26a41c4c76631038cd",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/oath_of_the_ancients.md",
+      "sha256": "862e04887c1acadf5f6e76c39302fbbbe38a430f01898d1c2ac1f5a75f07e82d",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/oath_of_vengeance.md",
+      "sha256": "69ab8379391a630c626b9ec7ea36c80d7c00e3d2f3175b5ddd69f55a2a5ea554",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/path_of_the_berserker.md",
+      "sha256": "7402fd3b2281656486c1aba5ac8ce31bc75068ebc637682ecccb67286db7c57b",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/path_of_the_wild_heart.md",
+      "sha256": "c2a20ba1dfbe0fda831c7c93b71f2ba0f1892dee9362a3f687f1dbec5d7d95c2",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/path_of_the_world_tree.md",
+      "sha256": "99628fd1437c31fd652afadb09b26d86df7424e1fc4e41fc32bbc74f32d5d9ff",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/path_of_the_zealot.md",
+      "sha256": "d88aae8d37783d1e5db4bd115bcbbd534ac7f4c4d07e65dc47ac5cb8f248b9e6",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/psi_warrior.md",
+      "sha256": "8b146a7193f8d33e159ca9099ef981dce7156578e0ba096bb0cce78e18d7445c",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/soulknife.md",
+      "sha256": "c2c00fdf3c1fceaeec1aa5aba370bdef194905be39a3a18d62ff12d22d11fe93",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/thief.md",
+      "sha256": "c303b1807f41a7269b346c2ec4459aee25aa88df3aa7bdcefbe44dcc4450471e",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/trickery_domain.md",
+      "sha256": "fe159d633afa3e7ad2203ba46e010512ff07001b69a4a58a5138123456187de3",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/war_domain.md",
+      "sha256": "a4634af20fd42923898b7fb3d34bb5c63496a13b818df4a522023a4ad5e9da8c",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/warrior_of_mercy.md",
+      "sha256": "2f0c1fd47c6e8052e1ced7e42ae96bced425bc5158116e2cea90bfbe2fcfd472",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/warrior_of_shadow.md",
+      "sha256": "c266ad8d0177e4458288f31549a95c3ff09ad1f8f8aba8d7db06440fc0f6549a",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/warrior_of_the_elements.md",
+      "sha256": "c3bd6b887aee5c38c43432e24b991ffd9ab071859fcba24cf16b77e3d0eb7529",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/warrior_of_the_open_hand.md",
+      "sha256": "edba9a4a7178abe4c846c800db844c5ec07f243f8e47df4b3805e37904600277",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/by_subclass/wild_magic_sorcery.md",
+      "sha256": "28cedecc12a653f45b5bb1fc91179e01fc9c2d1fd302cd974559df1b7c3b730b",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/INDEX.md",
+      "sha256": "4e6eddc4606ba684067be9807d946b4315242f2a609adf73692f263db73c5f9f",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/extracts/5etools/README.md",
+      "sha256": "7c6df908e94d5bbd3594afd46068287ca7fa150d9adc63a743e3c7571ded6445",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/aberrant_sorcery.md",
+      "sha256": "a683ecd978558b62f4d9d5c67abdbdde8e995d163eaaae1d0ae773c04dec5b96",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/abjurer.md",
+      "sha256": "51789595b1e38f8b53d68529474b88943f59e2798a6c7a27153346a7ee9d297a",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/arcane_trickster.md",
+      "sha256": "155b9b8e3a9222254910c3f32587ce3008b401162c35d7abc2a36b12ec61ab77",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/archfey_patron.md",
+      "sha256": "24b14cf78852f5731c8512efe7f6d0e8990341240145fa3a4f607aa752a439f7",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/assassin.md",
+      "sha256": "620f67f5dae8434006348d47ce32ab2b5acd9d302601666fb9903ef6540dbb7c",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/battle_master.md",
+      "sha256": "ee4e78181fff798d5ec72ab7ea67ed258c86dcb43dd9e48778b787b843df51d8",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/beast_master.md",
+      "sha256": "e212e6410cccd1fc0e1feaced3de345d6495751635929df54f53696f9053d911",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/celestial_patron.md",
+      "sha256": "7a0aa6f0c8bc7410eb38254eafb2472d1edfbddbc77ca26d1b8cb6694f0cc688",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/circle_of_the_land.md",
+      "sha256": "e0e6311e614a574b249c0c3d343f33f509a36dfee5306882400782898002217c",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/circle_of_the_moon.md",
+      "sha256": "3c8fa45d973671cfcfa59f1eda354a3e4d68336ea892b2a227e05de10a13b488",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/circle_of_the_sea.md",
+      "sha256": "39c69045bcab797d6ec35b7c1637db57ded673b217ce1860dab5f2dbd799a46f",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/circle_of_the_stars.md",
+      "sha256": "aa52ffc4b84f11f07c285a86d1b1ce837883c6decdc056486fee2825aaaa8881",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/clockwork_sorcery.md",
+      "sha256": "70ec2c857d056591223d90743015ed648b243e1e43350897c5bc5a1750c74d38",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/college_of_dance.md",
+      "sha256": "a5c0484f4d4019fa315524786893bd403488ffd710b4063ce8b6c494a0e230c3",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/college_of_glamour.md",
+      "sha256": "8f65e14213a41112fa64bb743e73e6e1634a1bbf6c140d181287a1e0b1fed8aa",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/college_of_lore.md",
+      "sha256": "afe08f873c67f0a31e5079fd77d471254eb299f1d6a1e5e2d1ea7cd1930dbc83",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/college_of_valor.md",
+      "sha256": "79baed446a200cf633514759839c5acac999f3d867890a2d4616557b20be8269",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/diviner.md",
+      "sha256": "bbfbcb2a39f10a0334e5e471faa155373491c4e12d7f207b89ee7a725e5617c9",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/draconic_sorcery.md",
+      "sha256": "1a6e7dcd9a7b16095b2a56b61d005ecd22d86144a16fb7fa8abf1d6bdea1416e",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/eldritch_knight.md",
+      "sha256": "e82990d37007886005383a0036fd628310d00d0eea9804b8f8fcc25b4f0adf54",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/evoker.md",
+      "sha256": "a2c51cb4362620970a3ec39659bf94c2e34e52b2df3e183cdc0dec5f1fd6b2a5",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/fey_wanderer.md",
+      "sha256": "6255ecf3d8b9d13fab630e310c90e807af129f26166f9b81c3bda200d794297d",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/gloom_stalker.md",
+      "sha256": "c63ab0eda5a5d97f05f709ef0656e627912ca01576b08a0bacb3e96d162b8ce0",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/great_old_one_patron.md",
+      "sha256": "9543260ea78098affe242e5c57302b1aeef4d0c0c859a47ac519d3cfc98886b7",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/hunter.md",
+      "sha256": "64e908ce02921d4880cde49cbb4cad069980fe8041a82381963b37ecd18879aa",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/illusionist.md",
+      "sha256": "4903e71c7b0c2faf5b9a03d253125fda2e3dbe512047391c6d218958beab0f5c",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/life_domain.md",
+      "sha256": "adc0c9bd9778980716fa898b0d505e9f4cd640a107f9ed8da65cd84ac694b252",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/light_domain.md",
+      "sha256": "b2561fa6643defdf72131c31ebb8444c86a438d4b7196e2c3288217a0d195145",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/oath_of_devotion.md",
+      "sha256": "05fa9098c579910e2ce5011e59bdd2f67732e1cbfcf61f52c81acdc604df022b",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/oath_of_glory.md",
+      "sha256": "0cafb244a870982ccc9ded64bb5254a0acebcb51909fe9cc36aac523fb392a46",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/oath_of_the_ancients.md",
+      "sha256": "8bd73f760b260c81221b2521c1e3897c1e6d2145efbc7a096552329582c11c1f",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/oath_of_vengeance.md",
+      "sha256": "8651e37ffd8248ce8e6bb045e3d690213b518370ca6789b7632969fdfdd25c42",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/path_of_the_berserker.md",
+      "sha256": "e80f8113aa6090f0802f0abd08010ec227dfa4989e513a4f3b0282a883840676",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/path_of_the_wild_heart.md",
+      "sha256": "3754d992c71745e7460ea807e9384b304b17904aede98b3c7211bcad5ac19215",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/path_of_the_world_tree.md",
+      "sha256": "276267f38afb0d33a7ac88d5a2bd08039e433085bd5d28bb7556bf5a8b6811bb",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/path_of_the_zealot.md",
+      "sha256": "87b43a53a63d701748f084f27a3c4278e8a98da0f6fa2d0e96ee2f437acacf9f",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/psi_warrior.md",
+      "sha256": "578d417a6e9e82010009505dfd1d8024a86e349211d2eaf07371f47a97a968fb",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/soulknife.md",
+      "sha256": "71a22965852ce4a58416d9eaaec2fa89d65ed13c3bf364d1e3bd4815f173b30d",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/thief.md",
+      "sha256": "be517fe2705e081e396afb213ed23a047ad30e829fce86c22d0785eb6126f5de",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/trickery_domain.md",
+      "sha256": "c03231e8e176f753fb543e53af6b30b4901fa359fb45a2a998d03bb7722acbd2",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/war_domain.md",
+      "sha256": "5f0cd79782ac261647d18fdf54a56cc5fe07e641bd584b6ae19638e4b1f4196d",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/warrior_of_mercy.md",
+      "sha256": "58a061c8f00d6563de4c0ecb5a6204f3dc094b0ff58be10bc24bdc0144d4ccf1",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/warrior_of_shadow.md",
+      "sha256": "a49384294be41ede09c92bebf5a2b04b40ee5fe548a0dc283f1197024934d07a",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/warrior_of_the_elements.md",
+      "sha256": "5924e8c9934d0da35b41dce41a1702c051d214f3297e59fd138d17bf3e8ee542",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/notes/wild_magic_sorcery.md",
+      "sha256": "8a8569c430accddcf19a76bfa617916a5cc132a16c32e49548c6f9247cc21ecb",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/phb_dmg/notes/aberrant_sorcery.md",
+      "sha256": "a683ecd978558b62f4d9d5c67abdbdde8e995d163eaaae1d0ae773c04dec5b96",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/phb_dmg/notes/abjurer.md",
+      "sha256": "51789595b1e38f8b53d68529474b88943f59e2798a6c7a27153346a7ee9d297a",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/phb_dmg/notes/arcane_trickster.md",
+      "sha256": "155b9b8e3a9222254910c3f32587ce3008b401162c35d7abc2a36b12ec61ab77",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/phb_dmg/notes/archfey_patron.md",
+      "sha256": "24b14cf78852f5731c8512efe7f6d0e8990341240145fa3a4f607aa752a439f7",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/phb_dmg/notes/assassin.md",
+      "sha256": "620f67f5dae8434006348d47ce32ab2b5acd9d302601666fb9903ef6540dbb7c",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/phb_dmg/notes/battle_master.md",
+      "sha256": "ee4e78181fff798d5ec72ab7ea67ed258c86dcb43dd9e48778b787b843df51d8",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/phb_dmg/notes/beast_master.md",
+      "sha256": "e212e6410cccd1fc0e1feaced3de345d6495751635929df54f53696f9053d911",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/phb_dmg/notes/celestial_patron.md",
+      "sha256": "7a0aa6f0c8bc7410eb38254eafb2472d1edfbddbc77ca26d1b8cb6694f0cc688",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/phb_dmg/notes/circle_of_the_moon.md",
+      "sha256": "3c8fa45d973671cfcfa59f1eda354a3e4d68336ea892b2a227e05de10a13b488",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/phb_dmg/notes/circle_of_the_sea.md",
+      "sha256": "39c69045bcab797d6ec35b7c1637db57ded673b217ce1860dab5f2dbd799a46f",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/phb_dmg/notes/circle_of_the_stars.md",
+      "sha256": "aa52ffc4b84f11f07c285a86d1b1ce837883c6decdc056486fee2825aaaa8881",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/phb_dmg/notes/clockwork_sorcery.md",
+      "sha256": "70ec2c857d056591223d90743015ed648b243e1e43350897c5bc5a1750c74d38",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/phb_dmg/notes/college_of_dance.md",
+      "sha256": "a5c0484f4d4019fa315524786893bd403488ffd710b4063ce8b6c494a0e230c3",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/phb_dmg/notes/college_of_glamour.md",
+      "sha256": "8f65e14213a41112fa64bb743e73e6e1634a1bbf6c140d181287a1e0b1fed8aa",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/phb_dmg/notes/college_of_valor.md",
+      "sha256": "79baed446a200cf633514759839c5acac999f3d867890a2d4616557b20be8269",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/phb_dmg/notes/diviner.md",
+      "sha256": "bbfbcb2a39f10a0334e5e471faa155373491c4e12d7f207b89ee7a725e5617c9",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/phb_dmg/notes/eldritch_knight.md",
+      "sha256": "e82990d37007886005383a0036fd628310d00d0eea9804b8f8fcc25b4f0adf54",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/phb_dmg/notes/fey_wanderer.md",
+      "sha256": "6255ecf3d8b9d13fab630e310c90e807af129f26166f9b81c3bda200d794297d",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/phb_dmg/notes/gloom_stalker.md",
+      "sha256": "c63ab0eda5a5d97f05f709ef0656e627912ca01576b08a0bacb3e96d162b8ce0",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/phb_dmg/notes/great_old_one_patron.md",
+      "sha256": "9543260ea78098affe242e5c57302b1aeef4d0c0c859a47ac519d3cfc98886b7",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/phb_dmg/notes/illusionist.md",
+      "sha256": "4903e71c7b0c2faf5b9a03d253125fda2e3dbe512047391c6d218958beab0f5c",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/phb_dmg/notes/light_domain.md",
+      "sha256": "b2561fa6643defdf72131c31ebb8444c86a438d4b7196e2c3288217a0d195145",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/phb_dmg/notes/oath_of_glory.md",
+      "sha256": "0cafb244a870982ccc9ded64bb5254a0acebcb51909fe9cc36aac523fb392a46",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/phb_dmg/notes/oath_of_the_ancients.md",
+      "sha256": "8bd73f760b260c81221b2521c1e3897c1e6d2145efbc7a096552329582c11c1f",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/phb_dmg/notes/oath_of_vengeance.md",
+      "sha256": "8651e37ffd8248ce8e6bb045e3d690213b518370ca6789b7632969fdfdd25c42",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/phb_dmg/notes/path_of_the_wild_heart.md",
+      "sha256": "3754d992c71745e7460ea807e9384b304b17904aede98b3c7211bcad5ac19215",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/phb_dmg/notes/path_of_the_world_tree.md",
+      "sha256": "276267f38afb0d33a7ac88d5a2bd08039e433085bd5d28bb7556bf5a8b6811bb",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/phb_dmg/notes/path_of_the_zealot.md",
+      "sha256": "87b43a53a63d701748f084f27a3c4278e8a98da0f6fa2d0e96ee2f437acacf9f",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/phb_dmg/notes/psi_warrior.md",
+      "sha256": "578d417a6e9e82010009505dfd1d8024a86e349211d2eaf07371f47a97a968fb",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/phb_dmg/notes/soulknife.md",
+      "sha256": "71a22965852ce4a58416d9eaaec2fa89d65ed13c3bf364d1e3bd4815f173b30d",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/phb_dmg/notes/trickery_domain.md",
+      "sha256": "c03231e8e176f753fb543e53af6b30b4901fa359fb45a2a998d03bb7722acbd2",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/phb_dmg/notes/war_domain.md",
+      "sha256": "5f0cd79782ac261647d18fdf54a56cc5fe07e641bd584b6ae19638e4b1f4196d",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/phb_dmg/notes/warrior_of_mercy.md",
+      "sha256": "58a061c8f00d6563de4c0ecb5a6204f3dc094b0ff58be10bc24bdc0144d4ccf1",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/phb_dmg/notes/warrior_of_shadow.md",
+      "sha256": "a49384294be41ede09c92bebf5a2b04b40ee5fe548a0dc283f1197024934d07a",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/phb_dmg/notes/warrior_of_the_elements.md",
+      "sha256": "5924e8c9934d0da35b41dce41a1702c051d214f3297e59fd138d17bf3e8ee542",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/phb_dmg/notes/wild_magic_sorcery.md",
+      "sha256": "8a8569c430accddcf19a76bfa617916a5cc132a16c32e49548c6f9247cc21ecb",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/phb_dmg/STATUS.md",
+      "sha256": "40837dd767b70a02d28f135e5011887b9530efd44bfe24223a2dd1d88ef83657",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/STATUS.md",
+      "sha256": "75856d2d7ab2c4b7a09107db1b222b502318cb60dff3183f047a61afbd82e9a1",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/aberrant_sorcery.md",
+      "sha256": "01c672206c0361b4697b450157acac6ae700ab2acd94809eda8be224ea4b81a5",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/abjurer.md",
+      "sha256": "9a5db323dbf4b15a9666a956890429dedf0d1f8434d6966d7d0fb4eb29379491",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/arcane_trickster.md",
+      "sha256": "77fc59a15d654100a87df94798577b027a6a389b77caa616a7dcec44ce0d50ba",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/archfey_patron.md",
+      "sha256": "f41067f05e0d9712523c8fa44f8e6f9042d779271e5504b76ff7ed4fc58f4d40",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/assassin.md",
+      "sha256": "b9109d1dc203a475df4ceead7d7fe95f32a315c55cb917009fcd801ea6e315d8",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/battle_master.md",
+      "sha256": "6b283a9264289232bb54f96d26305877c6d0a3159fbcaac02b74b3d94949f3bc",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/beast_master.md",
+      "sha256": "71f6a0a20d14d69c1a9882875e386292892df2ee7f935b29d32c797fdafe18ff",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/celestial_patron.md",
+      "sha256": "0b9ab49f3eb6a9e34c0a0a91575690812f0c143ee5b87640d1f66ed485ec9d54",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/champion.md",
+      "sha256": "006adea2aa8e3e112adb9463b42d5cb23df9a00507688581b7769468ba63f608",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/circle_of_the_land.md",
+      "sha256": "bca23549dbfed4fff64d882b51ed27887ee7d1af36d34eb4d15dc54c0264f3da",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/circle_of_the_moon.md",
+      "sha256": "eed42383c5897134bcb610c4bda425c3f91106d206ebe721982e08f2ef12f373",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/circle_of_the_sea.md",
+      "sha256": "6424da52c8f8da613fa5952443fdd7cb2c5861fc18a3a4916fe2c2ca356dc38f",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/circle_of_the_stars.md",
+      "sha256": "cc4bad4efa117ed11d0f9ba42c5ec3d6aba11bef0c04ba0151a11ccd0d9e2aa0",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/clockwork_sorcery.md",
+      "sha256": "bd029c408f19b03281a7d7e3ab10b921d55b59b51da6caa60302e335656ae7d7",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/college_of_dance.md",
+      "sha256": "e03479ddcfca8497d8f7cd04848f357912b397dbf3c5784e098b72c8f9253649",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/college_of_glamour.md",
+      "sha256": "8a64c76d666774eb0d36fca75a537602d1f34b40d801ac69c0b47ba406b34f97",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/college_of_lore.md",
+      "sha256": "a61135997da625b485a3b86bdfd69b871d09117236eb64672c9dbb986f93b247",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/college_of_valor.md",
+      "sha256": "4076161e1b85607bba0b573a11d48c2975ba2a9c59183879caa09dd3f65ae4e6",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/diviner.md",
+      "sha256": "59600db4a47161cd09e61110ed7e4cd8b964acd4e47bd9fb3c611787d8ad5491",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/draconic_sorcery.md",
+      "sha256": "df799deebbf20451dd7b056ad6f2988086019b5daf2d8294c67049c46e521686",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/eldritch_knight.md",
+      "sha256": "466381f32af44a095e231c3377a8e21a910c3cde7db8a823c95ce59044661c36",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/evoker.md",
+      "sha256": "7b08f0d787ce444d74b7f4713c014d7341dc31a745834127c8e09f32cdd54ad5",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/fey_wanderer.md",
+      "sha256": "bba6c794f00eeaa6eb003d2cddeecc9a6d2ed6e1d579e194855c3d20cf8f4fdf",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/fiend_patron.md",
+      "sha256": "7f6a76d41a602f791df6947df644847f5f99401d807fc2d7d069ffd1ee171171",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/gloom_stalker.md",
+      "sha256": "caded90889d3c5e2e15c5b12d18c5d9fd3e5c2a2e6b2761cea32a8c3e1fcd41c",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/great_old_one_patron.md",
+      "sha256": "6f1c286af8d7de59da6e1f026f542e13146f34968e4ba0a5157fc8daa9255637",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/hunter.md",
+      "sha256": "6f6cd507e2fdc009f2c8118f926a0dbadecf47e5e3de3d10e90b18ebb99c0082",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/illusionist.md",
+      "sha256": "2a3b9def81488bcf909d0448644f9b84fa283a9d2ec52e2bd03f3dd485fb63eb",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/life_domain.md",
+      "sha256": "be25abe135691bd81ef7de3275c85200b4926c4c9ce38121c868cf5b0aa79c8c",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/light_domain.md",
+      "sha256": "e61329f787019f5f493396f4cfd4f8fd8f54ce20542fd5ebb549e4a81e9cb4a0",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/oath_of_devotion.md",
+      "sha256": "2182eef8d34eb49dcb172a338d769b61446362eda4e9902ebb867796f4943824",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/oath_of_glory.md",
+      "sha256": "568ad2cf52f2cff8bfb430674c7697986dde6ee78b298d26a41c4c76631038cd",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/oath_of_the_ancients.md",
+      "sha256": "862e04887c1acadf5f6e76c39302fbbbe38a430f01898d1c2ac1f5a75f07e82d",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/oath_of_vengeance.md",
+      "sha256": "69ab8379391a630c626b9ec7ea36c80d7c00e3d2f3175b5ddd69f55a2a5ea554",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/path_of_the_berserker.md",
+      "sha256": "7402fd3b2281656486c1aba5ac8ce31bc75068ebc637682ecccb67286db7c57b",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/path_of_the_wild_heart.md",
+      "sha256": "c2a20ba1dfbe0fda831c7c93b71f2ba0f1892dee9362a3f687f1dbec5d7d95c2",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/path_of_the_world_tree.md",
+      "sha256": "99628fd1437c31fd652afadb09b26d86df7424e1fc4e41fc32bbc74f32d5d9ff",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/path_of_the_zealot.md",
+      "sha256": "d88aae8d37783d1e5db4bd115bcbbd534ac7f4c4d07e65dc47ac5cb8f248b9e6",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/psi_warrior.md",
+      "sha256": "8b146a7193f8d33e159ca9099ef981dce7156578e0ba096bb0cce78e18d7445c",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/soulknife.md",
+      "sha256": "c2c00fdf3c1fceaeec1aa5aba370bdef194905be39a3a18d62ff12d22d11fe93",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/thief.md",
+      "sha256": "c303b1807f41a7269b346c2ec4459aee25aa88df3aa7bdcefbe44dcc4450471e",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/trickery_domain.md",
+      "sha256": "fe159d633afa3e7ad2203ba46e010512ff07001b69a4a58a5138123456187de3",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/war_domain.md",
+      "sha256": "a4634af20fd42923898b7fb3d34bb5c63496a13b818df4a522023a4ad5e9da8c",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/warrior_of_mercy.md",
+      "sha256": "2f0c1fd47c6e8052e1ced7e42ae96bced425bc5158116e2cea90bfbe2fcfd472",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/warrior_of_shadow.md",
+      "sha256": "c266ad8d0177e4458288f31549a95c3ff09ad1f8f8aba8d7db06440fc0f6549a",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/warrior_of_the_elements.md",
+      "sha256": "c3bd6b887aee5c38c43432e24b991ffd9ab071859fcba24cf16b77e3d0eb7529",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/warrior_of_the_open_hand.md",
+      "sha256": "edba9a4a7178abe4c846c800db844c5ec07f243f8e47df4b3805e37904600277",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/by_subclass/wild_magic_sorcery.md",
+      "sha256": "28cedecc12a653f45b5bb1fc91179e01fc9c2d1fd302cd974559df1b7c3b730b",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/INDEX.md",
+      "sha256": "4e6eddc4606ba684067be9807d946b4315242f2a609adf73692f263db73c5f9f",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/extracts/5etools/README.md",
+      "sha256": "7c6df908e94d5bbd3594afd46068287ca7fa150d9adc63a743e3c7571ded6445",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/notes/circle_of_the_land.md",
+      "sha256": "e0e6311e614a574b249c0c3d343f33f509a36dfee5306882400782898002217c",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/notes/college_of_lore.md",
+      "sha256": "afe08f873c67f0a31e5079fd77d471254eb299f1d6a1e5e2d1ea7cd1930dbc83",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/notes/draconic_sorcery.md",
+      "sha256": "1a6e7dcd9a7b16095b2a56b61d005ecd22d86144a16fb7fa8abf1d6bdea1416e",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/notes/evoker.md",
+      "sha256": "a2c51cb4362620970a3ec39659bf94c2e34e52b2df3e183cdc0dec5f1fd6b2a5",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/notes/hunter.md",
+      "sha256": "64e908ce02921d4880cde49cbb4cad069980fe8041a82381963b37ecd18879aa",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/notes/life_domain.md",
+      "sha256": "adc0c9bd9778980716fa898b0d505e9f4cd640a107f9ed8da65cd84ac694b252",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/notes/oath_of_devotion.md",
+      "sha256": "05fa9098c579910e2ce5011e59bdd2f67732e1cbfcf61f52c81acdc604df022b",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/notes/path_of_the_berserker.md",
+      "sha256": "e80f8113aa6090f0802f0abd08010ec227dfa4989e513a4f3b0282a883840676",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/notes/thief.md",
+      "sha256": "be517fe2705e081e396afb213ed23a047ad30e829fce86c22d0785eb6126f5de",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/phb_dmg/STATUS.md",
+      "sha256": "1d27fd7938acb3834318eea98e60d33f5eba420e01fd093e2403451b5e53d818",
+      "status": "pending_markdown_review"
+    },
+    {
+      "path": "_staging/subclass-staging/STATUS.md",
+      "sha256": "6cee3b6b8dcf3deb8067b12de2e02c542c062770ba2fe16cd4377c1dda10c479",
+      "status": "pending_markdown_review"
+    }
+  ],
+  "total_units": 11128,
+  "unique_record_hashes": 9584,
+  "text_units": 8082,
+  "unique_text_records": 7234,
+  "review_status_counts": {
+    "no_text_structural_review_required": 1359,
+    "pending": 5149,
+    "reviewed_container": 725,
+    "reviewed_not_loaded": 1074,
+    "reviewed_partial": 1620,
+    "reviewed_bounded": 130,
+    "reviewed_gap": 772,
+    "reviewed_incomplete_source": 59,
+    "reviewed_prose": 12,
+    "reviewed_unavailable": 228
+  },
+  "domain_counts": {
+    "campaigns": {
+      "pending": 9,
+      "no_text_structural_review_required": 21
+    },
+    "classes": {
+      "reviewed_container": 14,
+      "reviewed_not_loaded": 57,
+      "reviewed_partial": 200,
+      "reviewed_bounded": 82
+    },
+    "events": {
+      "no_text_structural_review_required": 4,
+      "pending": 101
+    },
+    "items": {
+      "reviewed_bounded": 24,
+      "reviewed_partial": 274,
+      "reviewed_gap": 71,
+      "reviewed_incomplete_source": 56,
+      "reviewed_prose": 10,
+      "reviewed_not_loaded": 940,
+      "no_text_structural_review_required": 232,
+      "pending": 1498
+    },
+    "loot": {
+      "no_text_structural_review_required": 75
+    },
+    "monsters": {
+      "reviewed_container": 697,
+      "reviewed_partial": 950,
+      "reviewed_gap": 677,
+      "reviewed_bounded": 6,
+      "reviewed_incomplete_source": 3
+    },
+    "races": {
+      "reviewed_container": 9,
+      "reviewed_gap": 24,
+      "reviewed_partial": 11,
+      "reviewed_prose": 2,
+      "pending": 320,
+      "no_text_structural_review_required": 63
+    },
+    "raw_classes": {
+      "no_text_structural_review_required": 676,
+      "pending": 1965
+    },
+    "skills": {
+      "reviewed_not_loaded": 36
+    },
+    "spells": {
+      "reviewed_bounded": 11,
+      "reviewed_partial": 172,
+      "reviewed_unavailable": 228,
+      "reviewed_not_loaded": 16
+    },
+    "staged_subclasses": {
+      "no_text_structural_review_required": 288,
+      "pending": 1256
+    },
+    "subclasses": {
+      "reviewed_container": 5,
+      "reviewed_not_loaded": 25,
+      "reviewed_bounded": 7,
+      "reviewed_partial": 13
+    }
+  }
+}

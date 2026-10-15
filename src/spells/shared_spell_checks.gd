@@ -3,9 +3,17 @@ class_name SharedSpellChecks
 extends RefCounted
 
 static func run(check: Callable) -> void:
-	var original_spells := DataLoader.spells.duplicate(true)
 	DataLoader._load_content_type("res://data/fixtures/shared_spells/spells/", "spell")
 	check.call(DataLoader.get_load_errors().is_empty(), "Shared JSON fixtures load through the production loader")
+	_outcome_mapping_checks(check)
+	_batch_c_boundary_checks(check)
+	_fact_predicate_checks(check)
+	_entity_binding_checks(check)
+	_relationship_query_checks(check)
+	_acceptance_repair_checks(check)
+	_shared_result_sum_checks(check)
+	_shared_prior_measure_checks(check)
+	_shared_margin_hp_gate_checks(check)
 	var caster := Character.new()
 	caster.initialize("Shared caster", "human", "wizard", AbilityScores.new())
 	caster.character_id = "shared-unit-caster"
@@ -1791,8 +1799,609 @@ static func run(check: Callable) -> void:
 	SpellDamageRolls.clear_pending_requests()
 
 	_ordered_roll_choice_checks(check)
-	DataLoader.spells = original_spells
+	_p1_correction_checks(check)
+	_failed_save_numeric_bonus_checks(check)
+	_failed_save_outcome_override_checks(check)
+	_shared_spell_attack_bonus_checks(check)
+	_attack_result_adjustment_checks(check)
+	_post_roll_die_bonus_checks(check)
+	# Fixture loading also updates DataLoader's source index; reload one coherent
+	# production registry before another logic group uses it in the same process.
+	DataLoader.load_all_data()
 	print("SHARED_SPELL_CHECKS_COMPLETE")
+
+
+## Regressions for the acceptance review's numeric, window and outcome defects.
+static func _outcome_mapping_checks(check: Callable) -> void:
+	var attack := DataLoader.get_spell("sandbox:outcome_attack_neutral")
+	var ordered_attack := DataLoader.get_spell("sandbox:outcome_attack_ordered")
+	var save := DataLoader.get_spell("sandbox:outcome_save_renamed")
+	var ordered_save := DataLoader.get_spell("sandbox:outcome_save_ordered_renamed")
+	check.call(not attack.is_empty() and not ordered_attack.is_empty() and not save.is_empty() and not ordered_save.is_empty() and [attack, ordered_attack, save, ordered_save].all(func(spell): return SharedSpell.content_error(spell).is_empty()), "Neutral attack and renamed save outcome maps load and validate for flat and ordered delivery")
+	var invalid_attack: Dictionary = attack.duplicate(true)
+	invalid_attack["damage_scale_by_outcome"] = {"hit": 1}
+	var invalid_rider: Dictionary = save.duplicate(true)
+	invalid_rider["effects"][0]["rider_by_outcome"] = {"failure": true}
+	var invalid_scale: Dictionary = ordered_save.duplicate(true)
+	invalid_scale["steps"][0]["damage_scale_by_outcome"] = {"success": 0.5, "failure": 2}
+	check.call(not SharedSpell.content_error(invalid_attack).is_empty() and not SharedSpell.content_error(invalid_rider).is_empty() and not SharedSpell.content_error(invalid_scale).is_empty(), "Outcome maps reject absent outcomes and unsupported scales during preflight")
+	var caster := Character.new()
+	caster.initialize("Outcome caster", "human", "wizard", AbilityScores.new())
+	caster.character_id = "s098-caster"
+	var miss_target := {"id": "s098-miss", "name": "Miss target", "current_hp": 100, "max_hp": 100, "is_alive": true, "armor_class": 100, "conditions": {}, "condition_sources": {}, "temp_hp": 0}
+	FighterChecks._seed_die(20, 5)
+	var miss := CombatAction.resolve_spell(caster, miss_target, attack, false, {}, [], 1, 5)
+	check.call(not bool(miss.get("hit", true)) and int(miss.get("damage", 0)) == 2 and miss.get("damage_scale_decision", {}).get("outcome", "") == "miss" and not CombatAction.has_condition(miss_target, "frightened") and miss.get("rider_decisions", []).size() == 1 and not bool(miss["rider_decisions"][0].get("eligible", true)), "Flat attack miss remains a miss, floors half of odd damage, records both decisions, and suppresses its hit-only condition")
+	var hit_target := {"id": "s098-hit", "name": "Hit target", "current_hp": 100, "max_hp": 100, "is_alive": true, "armor_class": -100, "conditions": {}, "condition_sources": {}, "temp_hp": 0}
+	FighterChecks._seed_die(20, 10)
+	var hit := CombatAction.resolve_spell(caster, hit_target, attack, false, {}, [], 1, 5)
+	check.call(bool(hit.get("hit", false)) and int(hit.get("damage", 0)) == 5 and CombatAction.has_condition(hit_target, "frightened") and bool(hit.get("rider_decisions", [])[0].get("eligible", false)), "Flat attack hit uses its independent full-damage entry and applies its hit-only rider")
+	var ordered_target := {"id": "s098-ordered-miss", "name": "Ordered miss target", "current_hp": 100, "max_hp": 100, "is_alive": true, "armor_class": 100, "conditions": {}, "condition_sources": {}, "temp_hp": 0}
+	FighterChecks._seed_die(20, 5)
+	var ordered_miss := CombatAction.resolve_spell(caster, ordered_target, ordered_attack, false, {}, [], 1, 5)
+	var ordered_occurrence: Dictionary = ordered_miss.get("step_results", [])[0].get("target_outcomes", [])[0]
+	check.call(not bool(ordered_occurrence.get("hit", true)) and int(ordered_occurrence.get("damage", 0)) == 2 and ordered_occurrence.get("damage_scale_decision", {}).get("outcome", "") == "miss" and ordered_occurrence.get("rider_decisions", []).size() == 1 and not bool(ordered_occurrence["rider_decisions"][0].get("eligible", true)) and not CombatAction.has_condition(ordered_target, "frightened") and int(ordered_target.get("temp_hp", 0)) == 1, "Ordered attack miss exposes its per-target maps, settles half damage without its hit rider, then continues to its following step")
+	var fail_target := Character.new()
+	fail_target.initialize("Save failure", "human", "fighter", AbilityScores.new())
+	fail_target.character_id = "s098-save-fail"
+	FighterChecks._seed_die(20, 1)
+	var failed := CombatAction.resolve_spell(caster, fail_target, save, false, {}, [], 1, 5)
+	check.call(not bool(failed.get("saved", true)) and int(failed.get("damage", 0)) == 5 and CombatAction.has_condition(fail_target, "restrained") and failed.get("damage_scale_decision", {}).get("outcome", "") == "failure", "Renamed flat save applies its configured failure damage and condition maps")
+	var success_target := Character.new()
+	success_target.initialize("Save success", "human", "fighter", AbilityScores.new())
+	success_target.character_id = "s098-save-success"
+	FighterChecks._seed_die(20, 20)
+	var succeeded := CombatAction.resolve_spell(caster, success_target, save, false, {}, [], 1, 5)
+	check.call(bool(succeeded.get("saved", false)) and int(succeeded.get("damage", 0)) == 2 and not CombatAction.has_condition(success_target, "restrained") and succeeded.get("damage_scale_decision", {}).get("outcome", "") == "success", "Renamed flat save floors half of odd damage after success and suppresses the failure-only condition")
+	var ordered_save_target := Character.new()
+	ordered_save_target.initialize("Ordered save failure", "human", "fighter", AbilityScores.new())
+	ordered_save_target.character_id = "s098-ordered-save-failure"
+	FighterChecks._seed_die(20, 1)
+	var ordered_failed := CombatAction.resolve_spell(caster, ordered_save_target, ordered_save, false, {}, [], 1, 5)
+	var ordered_save_result: Dictionary = ordered_failed.get("step_results", [])[0].get("target_outcomes", [])[0]
+	check.call(not bool(ordered_save_result.get("saved", true)) and int(ordered_save_result.get("damage", 0)) == 5 and ordered_save_result.get("damage_scale_decision", {}).get("outcome", "") == "failure" and ordered_save_result.get("rider_decisions", []).size() == 1 and bool(ordered_save_result["rider_decisions"][0].get("eligible", false)) and CombatAction.has_condition(ordered_save_target, "restrained") and ordered_save_target.temp_hp == 1, "Ordered renamed save exposes its per-target failure maps and continues to its following step")
+	var ordered_success_target := Character.new()
+	ordered_success_target.initialize("Ordered save success", "human", "fighter", AbilityScores.new())
+	ordered_success_target.character_id = "s098-ordered-save-success"
+	FighterChecks._seed_die(20, 20)
+	var ordered_succeeded := CombatAction.resolve_spell(caster, ordered_success_target, ordered_save, false, {}, [], 1, 5)
+	var ordered_success_result: Dictionary = ordered_succeeded.get("step_results", [])[0].get("target_outcomes", [])[0]
+	check.call(bool(ordered_success_result.get("saved", false)) and int(ordered_success_result.get("damage", 0)) == 2 and not CombatAction.has_condition(ordered_success_target, "restrained") and ordered_success_target.temp_hp == 1, "Ordered renamed save applies its success scale independently, suppresses the failure rider and continues once")
+
+
+static func _batch_c_boundary_checks(check: Callable) -> void:
+	var caster := Character.new()
+	caster.initialize("Batch C caster", "human", "wizard", AbilityScores.new())
+	caster.character_id = "batch-c-review-caster"
+	var ordered := DataLoader.get_spell("sandbox:outcome_save_ordered_renamed").duplicate(true)
+	for explicit_id in [true, false]:
+		var component := {"damage": "5", "damage_type": "cold"}
+		if explicit_id: component["id"] = "only_cold"
+		var expected_id := "only_cold" if explicit_id else "cold:1"
+		ordered["steps"][0].erase("damage")
+		ordered["steps"][0].erase("damage_type")
+		ordered["steps"][0]["damage_components"] = [component]
+		ordered["steps"][1]["effects"][0]["value"] = {"result": {"step": "save", "target": "same", "component": "cold", "component_id": expected_id, "measure": "raw"}}
+		var target := {"id": "batch-c-component", "name": "Single component", "current_hp": 100, "max_hp": 100, "is_alive": true, "ability_scores": {"DEX": 100}, "conditions": {}, "temp_hp": 0}
+		var result := CombatAction.resolve_spell(caster, target, ordered, false, {}, [], 1, 5)
+		var outcomes: Array = result.get("step_results", [])[0].get("target_outcomes", [])
+		check.call(SharedSpell.content_error(ordered).is_empty() and int(target["current_hp"]) == 98 and int(target["temp_hp"]) == 2 and outcomes[0].get("damage_components", [])[0].get("component_id", "") == expected_id, "Single-entry component list retains %s identity through mapped damage and a later authored consumer" % expected_id)
+	var automatic := DataLoader.get_spell("sandbox:outcome_save_renamed").duplicate(true)
+	automatic.erase("save")
+	automatic["effects"] = []
+	var automatic_rider := automatic.duplicate(true)
+	automatic_rider.erase("damage_scale_by_outcome")
+	automatic_rider["effects"] = [{"type": "temporary_hp", "value": 9, "rider_by_outcome": {"success": false, "failure": true}}]
+	var outer_map := ordered.duplicate(true)
+	outer_map["damage_scale_by_outcome"] = {"success": 0, "failure": 0}
+	var outer_rider := ordered.duplicate(true)
+	outer_rider["effects"] = automatic_rider["effects"].duplicate(true)
+	for malformed in [automatic, automatic_rider, outer_map, outer_rider]:
+		var target := {"id": "batch-c-preflight", "name": "Preflight target", "current_hp": 100, "max_hp": 100, "is_alive": true, "ability_scores": {"DEX": 100}, "conditions": {}, "temp_hp": 0}
+		caster.spell_slots["1"] = 2
+		var result := CombatAction.resolve_spell(caster, target, malformed, true, {}, [], 1, 5)
+		check.call(not SharedSpell.content_error(malformed).is_empty() and not bool(result.get("success", true)) and int(caster.spell_slots["1"]) == 2 and int(target["current_hp"]) == 100 and int(target["temp_hp"]) == 0, "Outcome maps without a flat attack/save or an owning ordered step refuse before slot payment and effects (%s)" % str(malformed.keys()))
+	for scale in [0.0, 0.5]:
+		var attack := DataLoader.get_spell("sandbox:outcome_attack_neutral").duplicate(true)
+		attack["damage_scale_by_outcome"]["hit"] = scale
+		var defender := Character.new()
+		defender.initialize("Dodging mapped hit", "human", "fighter", AbilityScores.new())
+		defender.character_id = "batch-c-dodge"
+		defender.max_hp = 100
+		defender.current_hp = 100
+		defender.features.append({"id": "rogue_uncanny_dodge"})
+		FighterChecks._seed_die(20, 19)
+		var result := CombatAction.resolve_spell(caster, defender, attack, false, {"uncanny_dodge": true}, [], 1, 5)
+		var expected_damage := int(floor(5.0 * scale * 0.5))
+		check.call(bool(result.get("hit", false)) and int(result.get("damage", -1)) == expected_damage and defender.current_hp == 100 - expected_damage and is_equal_approx(float(result.get("damage_scale_decision", {}).get("scale", -1)), scale), "Uncanny Dodge halves the authored hit scale %s without replacing the map decision or creating damage" % str(scale))
+	randomize()
+
+
+static func _acceptance_repair_checks(check: Callable) -> void:
+	var caster := Character.new()
+	caster.initialize("Review Caster", "human", "wizard", AbilityScores.new())
+	caster.character_id = "review-window-caster"
+	var numeric_effects: Array = JSON.parse_string('[{"type":"heal","value":5},{"type":"temporary_hp","value":7}]')
+	var target := Character.new()
+	target.initialize("Review Target", "human", "fighter", AbilityScores.new())
+	target.character_id = "review-window-target"
+	target.max_hp = 100
+	target.current_hp = 1
+	SharedSpell.apply_custom_effects(caster, target, numeric_effects, {}, 1)
+	check.call(target.current_hp == 6 and target.temp_hp == 7, "Integral JSON numeric healing and Temporary HP reach Character recipients as fixed amounts")
+	var monster := {"id": "review-window-monster", "name": "Review Monster", "current_hp": 1, "max_hp": 100, "is_alive": true, "armor_class": 5, "temp_hp": 0, "conditions": {}}
+	SharedSpell.apply_custom_effects(caster, monster, numeric_effects, {}, 1)
+	check.call(int(monster["current_hp"]) == 6 and int(monster["temp_hp"]) == 7, "Integral JSON numeric healing and Temporary HP also reach dictionary recipients")
+	check.call(not SharedSpell._validate_single_effect({"type": "heal", "value": 5.5}).is_empty(), "Fractional scalar healing remains invalid rather than being silently truncated")
+	monster["current_hp"] = 100
+	monster["temp_hp"] = 0
+	var spell: Dictionary = DataLoader.get_spell("sandbox:owned_spell_attack_renamed").duplicate(true)
+	FighterChecks._seed_die(20, 20)
+	var direct := CombatAction.resolve_spell(caster, monster, spell)
+	check.call(bool(direct.get("hit", false)) and CombatAction.has_condition(monster, "deafened") and CombatAction.has_condition(monster, "restrained"), "Direct ordered attack effects and following effects consume the actual post-damage window")
+	var cast := SpellResolutionContext.new()
+	cast.caster = caster
+	cast.target = monster
+	cast.spell = spell
+	cast.spell_definition_id = str(spell["id"])
+	cast.effect_cast = SpellEffects.begin_cast(caster, spell)
+	var adapter := SharedStepExecutor.SpellAdapter.new(cast)
+	var step: Dictionary = spell["steps"][1]
+	FighterChecks._seed_die(20, 20)
+	adapter.resolve_attack_step(step, monster, 1, 0, [], 0, [], false, true, false, false, [], [monster], 0, true)
+	var first_occurrence := str(cast.resolution_window.get("occurrence_id", ""))
+	check.call(SharedStepExecutor.evaluate_predicate({"fact": "resolution.window", "eq": "post_damage"}, adapter, monster, []) and not SharedStepExecutor.evaluate_predicate({"fact": "resolution.window", "eq": "post_damage"}, adapter, caster, []), "Current ordered receipt qualifies its exact recipient but cannot qualify another actor")
+	# The first fixture hit restrained this target. Remove that Advantage before
+	# seeding the single natural-1 miss used to check a new occurrence.
+	SpellEffects.consume_spell(monster, str(spell["id"]))
+	monster["conditions"] = {}
+	FighterChecks._seed_die(20, 1)
+	adapter.resolve_attack_step(step, monster, 1, 0, [], 0, [], false, true, false, false, [], [monster], 0, true)
+	check.call(str(cast.resolution_window.get("occurrence_id", "")) != first_occurrence and not SharedStepExecutor.evaluate_predicate({"fact": "resolution.window", "eq": "post_damage"}, adapter, monster, []) and not SharedStepExecutor._read_fact("resolution.damage_hp_loss", adapter, monster).get("available", false), "A fresh missed occurrence replaces the previous damage window and cannot reuse its facts")
+	DataLoader._load_content_type("res://data/fixtures/failed_save_bonus/classes/", "class")
+	var override_class: Dictionary = DataLoader.get_character_class("fixture:save_success_override_class")
+	var feature: Dictionary = override_class["features_by_level"]["1"][1]
+	for domain in ["weapon_attack", "shared_spell_attack"]:
+		var mixed := feature.duplicate(true)
+		mixed["passive_effects"].append({"type": "weapon_attack_numeric_bonus", "domains": [domain], "amount": 1, "cost": 1})
+		var override_first := DataLoader._feature_content_error(mixed)
+		mixed["passive_effects"].reverse()
+		check.call(not override_first.is_empty() and not DataLoader._feature_content_error(mixed).is_empty(), "Same-source numeric/outcome conflict refuses in both authoring orders for %s" % domain)
+		var duplicate := feature.duplicate(true)
+		duplicate["passive_effects"].append(feature["passive_effects"][0].duplicate(true))
+		check.call(not DataLoader._feature_content_error(duplicate).is_empty(), "Duplicate attack outcome declarations cannot produce ambiguous source choices")
+		var actor := Character.new()
+		actor.initialize("Review Peerless", "human", "fighter", AbilityScores.new())
+		actor.character_id = "review-peerless-%s" % domain
+		actor.fighter_training["boon"] = "combat_prowess"
+		var source := "review:override:%s" % domain
+		var owned := feature.duplicate(true)
+		owned["source_instance_id"] = source
+		actor.features.append(owned)
+		ResourcePoolRules.acquire(actor, feature, source)
+		target.current_hp = 100
+		target.temp_hp = 0
+		var hud := CombatHUD.new()
+		var host := SpellCastContext.new()
+		host.caster = actor
+		host.hud = hud
+		host.owner_label_for_character = func(_owner): return "Owner"
+		FighterChecks._seed_die(20, 20)
+		var pending: Dictionary
+		if domain == "weapon_attack":
+			pending = CombatAction.resolve_weapon_attack(actor, target, {"name": "Review Weapon", "damage": "1d6", "damage_type": "slashing", "ability": "STR", "range": 1}, false, false, {"allow_weapon_attack_bonus": true})
+		else:
+			pending = CombatAction.resolve_spell(actor, target, DataLoader.get_spell("sandbox:owned_spell_attack_neutral"), false, {"cast_context": host}, [], 1, 12)
+		var final := SpellDamageRolls.settle_weapon_attack_bonus(actor, target, pending, source)
+		check.call(pending.has("weapon_attack_bonus_request") and not bool(final.get("hit", true)) and target.current_hp == 100 and not bool(actor.feature_uses.get("epic_boon_combat_prowess_used", false)) and int(ResourcePoolRules.availability(actor, source).get("current", -1)) == 3, "Forced miss charges its source once and preserves unused Peerless Aim for %s" % domain)
+		SpellDamageRolls.clear_pending_requests()
+		host.hud = null
+		hud.free()
+
+
+static func _failed_save_outcome_override_checks(check: Callable) -> void:
+	DataLoader._load_content_type("res://data/fixtures/failed_save_bonus/classes/", "class")
+	var neutral_class: Dictionary = DataLoader.get_character_class("fixture:save_success_override_class")
+	var renamed_class: Dictionary = DataLoader.get_character_class("fixture:resolute_success_class")
+	var neutral_feature: Dictionary = neutral_class.get("features_by_level", {}).get("1", [{}])[0]
+	var renamed_feature: Dictionary = renamed_class.get("features_by_level", {}).get("1", [{}])[0]
+	var neutral_roll_feature: Dictionary = {}
+	var renamed_roll_feature: Dictionary = {}
+	for feature in neutral_class.get("features_by_level", {}).get("1", []):
+		if str(feature.get("id", "")) == "fixture:steadfast_roll_outcomes": neutral_roll_feature = feature
+	for feature in renamed_class.get("features_by_level", {}).get("1", []):
+		if str(feature.get("id", "")) == "fixture:resolute_roll_outcomes": renamed_roll_feature = feature
+	check.call(not neutral_feature.is_empty() and DataLoader._feature_content_error(neutral_feature).is_empty(), "Neutral DEX outcome-override feature loads and validates as an owned passive operation")
+	check.call(not renamed_feature.is_empty() and DataLoader._feature_content_error(renamed_feature).is_empty(), "Renamed CON outcome-override feature validates different data without ID dispatch")
+	check.call(not neutral_roll_feature.is_empty() and DataLoader._feature_content_error(neutral_roll_feature).is_empty() and not renamed_roll_feature.is_empty() and DataLoader._feature_content_error(renamed_roll_feature).is_empty(), "Neutral and renamed authored hit/miss/save-failure operations pass source validation")
+	var duplicate_operation := neutral_feature.duplicate(true)
+	duplicate_operation["passive_effects"].append({"type": "failed_save_numeric_bonus", "ability": "DEX", "amount": 5, "cost": 1})
+	check.call(not DataLoader._feature_content_error(duplicate_operation).is_empty(), "One passive source cannot declare two same-ability failed-save modifications")
+	var invalid_override := neutral_feature.duplicate(true)
+	invalid_override["passive_effects"][0]["outcome"] = "natural_20"
+	check.call(not DataLoader._feature_content_error(invalid_override).is_empty(), "Outcome override data cannot author a natural-roll replacement or extra field")
+	var invalid_cost := neutral_feature.duplicate(true)
+	invalid_cost["passive_effects"][0]["cost"] = 0
+	check.call(not DataLoader._feature_content_error(invalid_cost).is_empty(), "Outcome override requires a positive bounded exact-pool cost")
+	var invalid_stage := neutral_roll_feature.duplicate(true)
+	invalid_stage["passive_effects"][0]["stage"] = "after_damage"
+	check.call(not DataLoader._feature_content_error(invalid_stage).is_empty(), "Attack outcome override rejects a stage outside its authorized provisional window")
+
+	var caster := Character.new()
+	caster.initialize("Outcome Override Caster", "human", "wizard", AbilityScores.new())
+	var target := Character.new()
+	target.initialize("Outcome Override Owner", "human", "fighter", AbilityScores.new())
+	target.character_id = "outcome-override-owner"
+	target.ability_scores.dexterity = 10
+	target.max_hp = 100
+	target.current_hp = 100
+	var numeric_fixture: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://data/fixtures/shared_failed_save_numeric_bonus.json"))
+	var numeric_feature: Dictionary = numeric_fixture.get("features_by_level", {}).get("1", [{}])[0]
+	var numeric_source := "fixture:outcome_override_numeric_source"
+	var numeric_instance := numeric_feature.duplicate(true)
+	numeric_instance["source_instance_id"] = numeric_source
+	target.features.append(numeric_instance)
+	var numeric_acquired := ResourcePoolRules.acquire(target, numeric_feature, numeric_source)
+	var override_source := "fixture:outcome_override_success_source"
+	var override_instance := neutral_feature.duplicate(true)
+	override_instance["source_instance_id"] = override_source
+	target.features.append(override_instance)
+	var override_acquired := ResourcePoolRules.acquire(target, neutral_feature, override_source)
+	var choices := SpellDamageRolls.failed_save_choice_options(target, "DEX")
+	check.call(bool(numeric_acquired.get("success", false)) and bool(override_acquired.get("success", false)) and choices.size() == 2, "Numeric and outcome-override sources remain separate selectable exact choices")
+	check.call(SpellDamageRolls.failed_save_choice_options(target, "STR").is_empty(), "The explicit success operation is restricted to its authored save ability")
+
+	var host := SpellCastContext.new()
+	host.caster = caster
+	var test_hud := CombatHUD.new()
+	host.hud = test_hud
+	host.owner_label_for_character = func(_owner): return "Owner"
+	var spell: Dictionary = DataLoader.get_spell("sandbox:steady_save_burst").duplicate(true)
+	spell["_save_dc_override"] = 12
+	var failure_target := Character.new()
+	failure_target.initialize("Failure Override Owner", "human", "fighter", AbilityScores.new())
+	failure_target.character_id = "failure-outcome-override-owner"
+	failure_target.max_hp = 100
+	failure_target.current_hp = 100
+	var failure_source := "fixture:steadfast_roll_outcomes:failure-owner"
+	var failure_instance := neutral_roll_feature.duplicate(true)
+	failure_instance["source_instance_id"] = failure_source
+	failure_target.features.append(failure_instance)
+	var failure_pool := ResourcePoolRules.acquire(failure_target, neutral_roll_feature, failure_source)
+	FighterChecks._seed_die(20, 20)
+	var failure_pending := CombatAction.resolve_spell(caster, failure_target, spell, false, {"cast_context": host})
+	var failure_record := SpellDamageRolls.failed_save_numeric_bonus_record(caster, failure_target, failure_pending)
+	check.call(bool(failure_pool.get("success", false)) and failure_pending.has("save_bonus_request") and bool(failure_pending.get("saved", false)) and failure_record.get("options", []).size() == 1 and str(failure_record.get("options", [])[0].get("outcome", "")) == "failure", "An actually rolled successful shared save offers only its authored failure override")
+	var failure_natural := int(failure_record.get("save_test", {}).get("natural_roll", -1))
+	var failure_total := int(failure_record.get("save_test", {}).get("total", -1))
+	var failure_result := SpellDamageRolls.settle_failed_save_numeric_bonus(caster, failure_target, failure_pending, failure_source)
+	check.call(not bool(failure_result.get("saved", true)) and str(failure_result.get("save_outcome_override", "")) == "failure" and str(failure_result.get("save_outcome_override_source", "")) == failure_source and str(failure_result.get("save_outcome_override_feature_id", "")) == "fixture:steadfast_roll_outcomes" and str(failure_result.get("save_outcome_override_owner_id", "")) == failure_target.character_id and int(failure_result.get("save_natural_roll", -1)) == failure_natural and int(failure_result.get("save_total", -2)) == failure_total and int(failure_result.get("save_dc", -1)) == 12 and int(ResourcePoolRules.availability(failure_target, failure_source).get("current", -1)) == 3 and failure_target.current_hp < 100, "Forced save failure keeps the natural, modifier, total and DC facts, records feature/owner provenance, pays once, and resumes failed-save consequences")
+
+	DataLoader._load_content_type("res://data/fixtures/shared_spells/spells/", "spell")
+	var attack_caster := Character.new()
+	attack_caster.initialize("Attack Outcome Owner", "human", "wizard", AbilityScores.new())
+	attack_caster.character_id = "attack-outcome-override-owner"
+	var attack_source := "fixture:steadfast_roll_outcomes:attack-owner"
+	var attack_instance := neutral_roll_feature.duplicate(true)
+	attack_instance["source_instance_id"] = attack_source
+	attack_caster.features.append(attack_instance)
+	var attack_pool := ResourcePoolRules.acquire(attack_caster, neutral_roll_feature, attack_source)
+	var attack_host := SpellCastContext.new()
+	attack_host.caster = attack_caster
+	attack_host.hud = test_hud
+	attack_host.owner_label_for_character = func(_owner): return "Owner"
+	var attack_target := Character.new()
+	attack_target.initialize("Attack Outcome Target", "human", "fighter", AbilityScores.new())
+	attack_target.max_hp = 100
+	attack_target.current_hp = 100
+	var attack_spell: Dictionary = DataLoader.get_spell("sandbox:owned_spell_attack_neutral").duplicate(true)
+	FighterChecks._seed_die(20, 1)
+	var forced_hit_pending := CombatAction.resolve_spell(attack_caster, attack_target, attack_spell, false, {"cast_context": attack_host}, [], 1, 12)
+	var forced_hit_record := SpellDamageRolls.weapon_attack_bonus_record(attack_caster, attack_target, forced_hit_pending)
+	var forced_hit_natural := int(forced_hit_record.get("context", {}).get("attack_result", {}).get("natural", -1))
+	var forced_hit_total := int(forced_hit_pending.get("attack_roll", -1))
+	var hp_before_forced_hit := attack_target.current_hp
+	var forced_hit := SpellDamageRolls.settle_weapon_attack_bonus(attack_caster, attack_target, forced_hit_pending, attack_source)
+	check.call(bool(attack_pool.get("success", false)) and forced_hit_pending.has("weapon_attack_bonus_request") and forced_hit_natural == 1 and hp_before_forced_hit == 100 and bool(forced_hit.get("hit", false)) and not bool(forced_hit.get("crit", false)) and int(forced_hit.get("attack_roll", -2)) == forced_hit_total and int(forced_hit.get("numeric_margin", 999)) == forced_hit_total - int(forced_hit.get("attack_target_ac", 0)) and int(forced_hit.get("numeric_margin", 0)) < 0 and str(forced_hit.get("attack_outcome_override", "")) == "hit" and str(forced_hit.get("attack_outcome_override_source", "")) == attack_source and str(forced_hit.get("attack_outcome_override_feature_id", "")) == "fixture:steadfast_roll_outcomes" and str(forced_hit.get("attack_outcome_override_owner_id", "")) == attack_caster.character_id and int(ResourcePoolRules.availability(attack_caster, attack_source).get("current", -1)) == 3, "Forced hit on natural 1 remains noncritical, preserves its negative numeric margin separately from final hit, and records exact source, feature and owner before one-time consequences")
+	attack_target.current_hp = 100
+	FighterChecks._seed_die(20, 20)
+	var forced_miss_pending := CombatAction.resolve_spell(attack_caster, attack_target, attack_spell, false, {"cast_context": attack_host}, [], 1, 12)
+	var forced_miss_record := SpellDamageRolls.weapon_attack_bonus_record(attack_caster, attack_target, forced_miss_pending)
+	var forced_miss_total := int(forced_miss_record.get("context", {}).get("attack_result", {}).get("total", -1))
+	var hp_before_forced_miss := attack_target.current_hp
+	var forced_miss := SpellDamageRolls.settle_weapon_attack_bonus(attack_caster, attack_target, forced_miss_pending, attack_source)
+	check.call(forced_miss_pending.has("weapon_attack_bonus_request") and bool(forced_miss_record.get("context", {}).get("attack_result", {}).get("is_crit", false)) and not bool(forced_miss.get("hit", true)) and not bool(forced_miss.get("crit", false)) and int(forced_miss.get("attack_roll", -2)) == forced_miss_total and str(forced_miss.get("attack_outcome_override", "")) == "miss" and str(forced_miss.get("attack_outcome_override_source", "")) == attack_source and attack_target.current_hp == hp_before_forced_miss and int(ResourcePoolRules.availability(attack_caster, attack_source).get("current", -1)) == 2, "Forced miss on natural 20 suppresses critical damage, preserves its total and pays once without touching target HP")
+	var ordered_caster := Character.new()
+	ordered_caster.initialize("Ordered Outcome Owner", "human", "sorcerer", AbilityScores.new())
+	ordered_caster.character_id = "ordered-outcome-override-owner"
+	ordered_caster.current_hp = 5
+	ordered_caster.max_hp = 10
+	ordered_caster.features.append({"id": "sorcerer_metamagic"})
+	ordered_caster.sorcerer_metamagic_choices.append("empowered_spell")
+	ordered_caster.feature_uses["sorcery_points"] = 2
+	var ordered_source := "fixture:resolute_roll_outcomes:attack-continuation"
+	var ordered_instance := renamed_roll_feature.duplicate(true)
+	ordered_instance["source_instance_id"] = ordered_source
+	ordered_caster.features.append(ordered_instance)
+	var ordered_pool := ResourcePoolRules.acquire(ordered_caster, renamed_roll_feature, ordered_source)
+	var ordered_host := SpellCastContext.new()
+	ordered_host.caster = ordered_caster
+	ordered_host.hud = test_hud
+	ordered_host.owner_label_for_character = func(_owner): return "Owner"
+	var ordered_attack_spell: Dictionary = DataLoader.get_spell("sandbox:owned_spell_attack_renamed").duplicate(true)
+	FighterChecks._seed_die(20, 1)
+	var ordered_pending := CombatAction.resolve_spell(ordered_caster, attack_target, ordered_attack_spell, false, {"cast_context": ordered_host, "metamagic:empowered": true, "defer_empowered": true}, [], 1, 12)
+	var ordered_deferred := SpellDamageRolls.settle_weapon_attack_bonus(ordered_caster, attack_target, ordered_pending, ordered_source)
+	var target_hp_after_ordered_outcome := attack_target.current_hp
+	check.call(bool(ordered_pool.get("success", false)) and ordered_pending.has("weapon_attack_bonus_request") and ordered_caster.current_hp == 7 and not CombatAction.has_condition(attack_target, "restrained") and ordered_deferred.has("damage_request") and target_hp_after_ordered_outcome == 100 and int(ResourcePoolRules.availability(ordered_caster, ordered_source).get("current", -1)) == 6, "Ordered earlier step settles once while forced-hit damage and its rider remain suspended at the later damage choice")
+	var ordered_attack_finished := CombatAction.finish_pending_spell_damage(ordered_caster, attack_target, ordered_deferred, {"metamagic:empowered": true, "metamagic:empowered_dice": []})
+	var continued_attack_result: Dictionary = {}
+	var continued_steps: Array = ordered_attack_finished.get("step_results", [])
+	if continued_steps.size() > 1:
+		var continued_attack_outcomes: Array = continued_steps[1].get("target_outcomes", [])
+		if not continued_attack_outcomes.is_empty():
+			continued_attack_result = continued_attack_outcomes[0].get("result", {})
+	check.call(bool(ordered_attack_finished.get("success", false)) and not ordered_attack_finished.has("damage_request") and str(continued_attack_result.get("attack_outcome_override", "")) == "hit" and str(continued_attack_result.get("attack_outcome_override_source", "")) == ordered_source and CombatAction.has_condition(attack_target, "restrained") and attack_target.current_hp < 100 and int(ResourcePoolRules.availability(ordered_caster, ordered_source).get("current", -1)) == 6, "Completing the later damage choice retains the exact attack override receipt, then applies the hit rider and damage once")
+	target.feature_uses["bardic_inspiration_die"] = "1d6"
+	var bardic_seed := -1
+	for candidate in 100000:
+		seed(candidate)
+		var candidate_d20 := randi_range(1, 20)
+		var candidate_d6 := randi_range(1, 6)
+		if candidate_d20 == 1 and candidate_d6 == 1:
+			bardic_seed = candidate
+			break
+	check.call(bardic_seed >= 0, "A deterministic failed save and still-failing Inspiration sequence is available")
+	seed(bardic_seed)
+	var dice_counts := {"d20": 0, "d6": 0}
+	var count_save_and_inspiration := func(payload: Dictionary) -> void:
+		if int(payload.get("sides", 0)) == 20: dice_counts["d20"] += 1
+		if int(payload.get("sides", 0)) == 6: dice_counts["d6"] += 1
+	Dice.dice_rolled.connect(count_save_and_inspiration)
+	var hp_before_decline := target.current_hp
+	var bardic_pending := CombatAction.resolve_spell(caster, target, spell, false, {"cast_context": host, "bardic_inspiration": true})
+	var bardic_record := SpellDamageRolls.failed_save_numeric_bonus_record(caster, target, bardic_pending)
+	var bardic_test: Dictionary = bardic_record.get("save_test", {})
+	check.call(bardic_pending.has("save_bonus_request") and int(bardic_test.get("total", -1)) == 2 and int(bardic_test.get("bardic_inspiration_bonus", -1)) == 1 and bool(bardic_test.get("_post_roll_flags", {}).get("bardic_inspiration_used", false)), "Still-failing Bardic Inspiration is captured in the pending save before a further choice")
+	var declined_bardic := SpellDamageRolls.settle_failed_save_numeric_bonus(caster, target, bardic_pending, "")
+	Dice.dice_rolled.disconnect(count_save_and_inspiration)
+	check.call(bool(declined_bardic.get("success", false)) and not bool(declined_bardic.get("saved", true)) and int(declined_bardic.get("save_total", -1)) == 2 and int(declined_bardic.get("save_natural_roll", -1)) == 1 and int(declined_bardic.get("save_modifier", -1)) == 0 and int(declined_bardic.get("save_dc", -1)) == 12 and bool(declined_bardic.get("bardic_inspiration_used", false)), "Declining after Inspiration retains its adjusted failed total and original roll/DC")
+	check.call(target.current_hp == hp_before_decline - 4 and not target.feature_uses.has("bardic_inspiration_die") and dice_counts["d20"] == 1 and dice_counts["d6"] == 1, "Decline applies full failed-save damage without repeating the d20 or Inspiration die")
+
+	# The fixed bonus uses the post-Inspiration total and converts only when both apply.
+	target.current_hp = 100
+	target.feature_uses["bardic_inspiration_die"] = "1d6"
+	var combined_seed := -1
+	for candidate in 100000:
+		seed(candidate)
+		var candidate_d20 := randi_range(1, 20)
+		var candidate_d6 := randi_range(1, 6)
+		if candidate_d20 == 1 and candidate_d6 == 6:
+			combined_seed = candidate
+			break
+	seed(combined_seed)
+	dice_counts["d20"] = 0
+	dice_counts["d6"] = 0
+	Dice.dice_rolled.connect(count_save_and_inspiration)
+	var combined_pending := CombatAction.resolve_spell(caster, target, spell, false, {"cast_context": host, "bardic_inspiration": true})
+	var combined_record := SpellDamageRolls.failed_save_numeric_bonus_record(caster, target, combined_pending)
+	var combined_request_test: Dictionary = combined_record.get("save_test", {})
+	var hp_before_combined := target.current_hp
+	var combined_result := SpellDamageRolls.settle_failed_save_numeric_bonus(caster, target, combined_pending, numeric_source)
+	Dice.dice_rolled.disconnect(count_save_and_inspiration)
+	check.call(int(combined_request_test.get("total", -1)) == 7 and int(combined_request_test.get("bardic_inspiration_bonus", -1)) == 6, "The pending choice snapshots Bardic Inspiration's adjusted total before the numeric bonus")
+	check.call(bool(combined_result.get("saved", false)) and int(combined_result.get("save_natural_roll", -1)) == 1 and int(combined_result.get("save_modifier", -1)) == 0 and int(combined_result.get("save_total", -1)) == 12 and int(combined_result.get("save_post_roll_bonus", -1)) == 5 and int(combined_result.get("save_test", {}).get("bardic_inspiration_bonus", -1)) == 6, "A fixed bonus converts the save only after the retained Inspiration bonus is included")
+	check.call(target.current_hp == hp_before_combined - 2 and dice_counts["d20"] == 1 and dice_counts["d6"] == 1 and int(ResourcePoolRules.availability(target, numeric_source).get("current", -1)) == 1 and int(ResourcePoolRules.availability(target, override_source).get("current", -1)) == 2, "Combined save settles half damage once, spends only the chosen numeric source, and rolls each die once")
+
+	# Explicit override preserves the failed numeric result and does not stack the other source.
+	target.current_hp = 100
+	FighterChecks._seed_die(20, 1)
+	var override_pending := CombatAction.resolve_spell(caster, target, spell, false, {"cast_context": host})
+	var override_record := SpellDamageRolls.failed_save_numeric_bonus_record(caster, target, override_pending)
+	var original_test: Dictionary = override_record.get("save_test", {})
+	var original_numeric_pool := int(ResourcePoolRules.availability(target, numeric_source).get("current", -1))
+	var original_override_pool := int(ResourcePoolRules.availability(target, override_source).get("current", -1))
+	var hp_before_override := target.current_hp
+	target.numeric_resource_pools[override_source]["current"] = 0
+	var stale_override := SpellDamageRolls.settle_failed_save_numeric_bonus(caster, target, override_pending, override_source)
+	check.call(bool(stale_override.get("refused", false)) and target.current_hp == hp_before_override and int(ResourcePoolRules.availability(target, override_source).get("current", -1)) == 0, "A source that becomes empty while the override is pending refuses without damage")
+	target.numeric_resource_pools[override_source]["current"] = original_override_pool
+	var override_result := SpellDamageRolls.settle_failed_save_numeric_bonus(caster, target, override_pending, override_source)
+	var override_test: Dictionary = override_result.get("save_test", {})
+	check.call(bool(override_result.get("saved", false)) and int(override_result.get("save_natural_roll", -1)) == int(original_test.get("natural_roll", -2)) and int(override_result.get("save_total", -1)) == int(original_test.get("total", -2)) and int(override_result.get("save_dc", -1)) == int(original_test.get("dc", -2)), "Forced success keeps the natural roll, numeric total, modifier and DC unchanged")
+	check.call(int(override_result.get("numeric_margin", 999)) == int(override_result.get("save_total", 0)) - int(override_result.get("save_dc", 0)) and int(override_result.get("numeric_margin", 0)) < 0 and bool(override_result.get("saved", false)), "S-092 forced success preserves its negative numeric margin separately from the final successful outcome")
+	check.call(str(override_result.get("save_outcome_override", "")) == "success" and str(override_result.get("save_outcome_override_source", "")) == override_source and str(override_test.get("outcome_override", "")) == "success" and str(override_test.get("outcome_override_source", "")) == override_source and not override_result.has("save_post_roll_bonus"), "Override is explicit with exact source metadata and never appears as a numeric bonus")
+	check.call(target.current_hp == hp_before_override - 2 and int(ResourcePoolRules.availability(target, override_source).get("current", -1)) == original_override_pool - 1 and int(ResourcePoolRules.availability(target, numeric_source).get("current", -1)) == original_numeric_pool, "Downstream half-on-save damage uses the override and only its selected source pays")
+	var override_replay := SpellDamageRolls.settle_failed_save_numeric_bonus(caster, target, override_pending, override_source)
+	check.call(bool(override_replay.get("refused", false)) and target.current_hp == hp_before_override - 2 and int(ResourcePoolRules.availability(target, override_source).get("current", -1)) == original_override_pool - 1, "Outcome-override request replay cannot spend or apply its effect twice")
+
+	var renamed_target := Character.new()
+	renamed_target.initialize("Renamed Override Owner", "human", "fighter", AbilityScores.new())
+	renamed_target.character_id = "renamed-outcome-override-owner"
+	renamed_target.ability_scores.constitution = 10
+	renamed_target.max_hp = 100
+	renamed_target.current_hp = 100
+	var renamed_source := "fixture:resolute_success:renamed-instance"
+	var renamed_instance := renamed_feature.duplicate(true)
+	renamed_instance["source_instance_id"] = renamed_source
+	renamed_target.features.append(renamed_instance)
+	var renamed_pool := ResourcePoolRules.acquire(renamed_target, renamed_feature, renamed_source)
+	var renamed_options := SpellDamageRolls.failed_save_choice_options(renamed_target, "CON")
+	var con_spell: Dictionary = DataLoader.get_spell("sandbox:failed_save_bonus_con_area").duplicate(true)
+	con_spell["_save_dc_override"] = 12
+	FighterChecks._seed_die(20, 1)
+	var renamed_pending := CombatAction.resolve_spell(caster, renamed_target, con_spell, false, {"cast_context": host})
+	var renamed_result := SpellDamageRolls.settle_failed_save_numeric_bonus(caster, renamed_target, renamed_pending, renamed_source)
+	check.call(bool(renamed_pool.get("success", false)) and renamed_options.size() == 1 and int(renamed_options[0].get("cost", -1)) == 2 and bool(renamed_result.get("saved", false)) and int(renamed_result.get("save_natural_roll", -1)) == 1 and int(renamed_result.get("save_total", -1)) == 3 and int(renamed_result.get("save_modifier", -1)) == 2 and str(renamed_result.get("save_outcome_override_source", "")) == renamed_source and int(ResourcePoolRules.availability(renamed_target, renamed_source).get("current", -1)) == 1 and renamed_target.current_hp == 98, "Renamed CON/cost data uses the same explicit override and existing half-damage gate")
+
+	# A save choice inside an ordered save must keep its parent continuation if
+	# replaying the save opens a deferred Empowered Spell damage choice.
+	DataLoader._load_content_type("res://data/fixtures/shared_spells/spells/", "spell")
+	var empowered_ordered_spell: Dictionary = DataLoader.get_spell("sandbox:failed_save_override_empowered_ordered").duplicate(true)
+	check.call(SharedSpell.content_error(empowered_ordered_spell).is_empty(), "Ordered save and Empowered Spell continuation fixture validates through DataLoader")
+	caster.class_id = "sorcerer"
+	caster.features.append({"id": "sorcerer_metamagic"})
+	caster.sorcerer_metamagic_choices.append("empowered_spell")
+	caster.ability_scores.charisma = 16
+	caster.feature_uses["sorcery_points"] = 2
+	target.current_hp = 100
+	target.remove_condition("poisoned")
+	target.remove_condition("blessed")
+	target.remove_condition("frightened")
+	target.numeric_resource_pools[override_source]["current"] = 1
+	var empowered_cast := SpellResolutionContext.new()
+	empowered_cast.caster = caster
+	empowered_cast.target = target
+	empowered_cast.spell = empowered_ordered_spell
+	empowered_cast.slot_level = 1
+	empowered_cast.has_damage_payload = true
+	empowered_cast.effect_cast = SpellEffects.begin_cast(caster, empowered_ordered_spell)
+	empowered_cast.decisions = {
+		"cast_context": host,
+		"metamagic:empowered": true,
+		"defer_empowered": true,
+	}
+	FighterChecks._seed_die(20, 1)
+	var hp_before_ordered_choice := target.current_hp
+	var ordered_choice := SharedSpell.resolve(empowered_cast)
+	var ordered_record := SpellDamageRolls.failed_save_numeric_bonus_record(caster, target, ordered_choice)
+	var ordered_request_id := str(ordered_choice.get("save_bonus_request", {}).get("request_id", ""))
+	var ordered_original_dc := int(ordered_record.get("save_test", {}).get("dc", -1))
+	caster.ability_scores.charisma = 20
+	check.call(ordered_choice.has("save_bonus_request") and not target.has_condition("poisoned") and not target.has_condition("frightened") and target.current_hp == hp_before_ordered_choice, "Ordered save defers failed-save riders, damage and HP changes until its save chooser answers")
+	var ordered_pool_before := int(ResourcePoolRules.availability(target, override_source).get("current", -1))
+	var ordered_bonus_settled := SpellDamageRolls.settle_failed_save_numeric_bonus(caster, target, ordered_choice, override_source)
+	var ordered_damage_request: Dictionary = ordered_bonus_settled.get("damage_request", {})
+	var ordered_damage_id := str(ordered_damage_request.get("request_id", ""))
+	check.call(ordered_bonus_settled.has("damage_request") and not target.has_condition("blessed") and not target.has_condition("poisoned") and not target.has_condition("frightened") and target.current_hp == hp_before_ordered_choice and int(ResourcePoolRules.availability(target, override_source).get("current", -1)) == ordered_pool_before - 1 and caster.get_sorcery_points() == 2, "Accepting override spends only its source once and suspends for Empowered dice without advancing riders or damage")
+	var ordered_damage_replay_payload := {"damage_request": {"request_id": ordered_damage_id}}
+	var ordered_finished := CombatAction.finish_pending_spell_damage(caster, target, ordered_bonus_settled, {"metamagic:empowered_dice": [0]})
+	var hp_after_ordered_finish := target.current_hp
+	var pool_after_ordered_finish := int(ResourcePoolRules.availability(target, override_source).get("current", -1))
+	var final_ordered_dc := -2
+	var final_ordered_override := ""
+	var final_ordered_override_source := ""
+	var final_ordered_steps: Array = ordered_finished.get("step_results", [])
+	if not final_ordered_steps.is_empty():
+		var final_target_outcomes: Array = final_ordered_steps[0].get("target_outcomes", [])
+		if not final_target_outcomes.is_empty():
+			var final_save_receipt: Dictionary = final_target_outcomes[0].get("result", {})
+			final_ordered_dc = int(final_save_receipt.get("save_dc", -2))
+			final_ordered_override = str(final_save_receipt.get("save_outcome_override", ""))
+			final_ordered_override_source = str(final_save_receipt.get("save_outcome_override_source", ""))
+	var old_save_replay := SpellDamageRolls.settle_failed_save_numeric_bonus(caster, target, {"save_bonus_request": {"request_id": ordered_request_id}}, override_source)
+	var old_damage_replay := CombatAction.finish_pending_spell_damage(caster, target, ordered_damage_replay_payload, {"metamagic:empowered_dice": [0]})
+	check.call(ordered_finished.get("success", false) and not ordered_finished.has("damage_request") and final_ordered_dc == ordered_original_dc and final_ordered_override == "success" and final_ordered_override_source == override_source and target.has_condition("blessed") and not target.has_condition("poisoned") and not target.has_condition("frightened") and hp_after_ordered_finish < hp_before_ordered_choice and caster.get_sorcery_points() == 1 and pool_after_ordered_finish == ordered_pool_before - 1, "Deferred ordered damage completes once, follows the overridden save, and retains its exact outcome receipt and captured DC after caster-stat changes")
+	check.call(bool(old_save_replay.get("refused", false)) and target.current_hp == hp_after_ordered_finish and int(ResourcePoolRules.availability(target, override_source).get("current", -1)) == pool_after_ordered_finish and str(ordered_record.get("request_id", "")) == ordered_request_id and not ordered_damage_id.is_empty(), "Old save and damage completions cannot reapply effects, damage, or source payment after the newer continuation settles")
+	SpellDamageRolls.clear_pending_requests()
+	host.hud = null
+	test_hud.free()
+
+
+static func _seed_failed_d20_and_d6(wanted_d6: int) -> int:
+	for candidate in 100000:
+		seed(candidate)
+		var d20 := randi_range(1, 20)
+		var d6 := randi_range(1, 6)
+		if d20 == 1 and d6 == wanted_d6:
+			seed(candidate)
+			return candidate
+	return -1
+
+
+static func _p1_correction_checks(check: Callable) -> void:
+	var caster := Character.new()
+	caster.initialize("P1 caster", "human", "wizard", AbilityScores.new())
+	caster.character_id = "p1-correction-caster"
+	caster.ability_scores.intelligence = 16
+	caster.spell_slots["1"] = 2
+	caster.max_hp = 100
+	caster.current_hp = 40
+	var character_target := Character.new()
+	character_target.initialize("P1 target", "human", "fighter", AbilityScores.new())
+	character_target.character_id = "p1-correction-target"
+	character_target.max_hp = 100
+	character_target.current_hp = 5
+	character_target.temp_hp = 3
+	var dictionary_target := {"id": "p1-dictionary", "name": "P1 dictionary", "current_hp": 5, "max_hp": 100, "temp_hp": 3, "is_alive": true, "conditions": {}}
+	for target in [character_target, dictionary_target]:
+		var settled := SpellDamageRolls._finish_spell_damage(caster, target, {"final_total": 12}, 0, 1.0, "fire", {}, {"success": true, "message": "P1 deals {damage}."}, 1, [{"type": "cold", "details": {"final_total": 4}}])
+		var components: Array = settled.get("damage_components", [])
+		check.call(components.size() == 2 and components[0].raw == 12 and components[0].resolved == 12 and components[0].hp_loss == 5, "P1 component HP loss excludes Temporary HP and overkill for %s" % ("Character" if target is Character else "Dictionary"))
+		check.call(components.size() == 2 and components[1].resolved == 4 and components[1].hp_loss == 0, "P1 later component cannot remove HP already lost for %s" % ("Character" if target is Character else "Dictionary"))
+
+	var spell := DataLoader.get_spell("sandbox:ember_echo").duplicate(true)
+	spell["steps"][0]["when"] = {"fact": "actor.level", "lt": 0}
+	spell["steps"][1].erase("when")
+	var effect: Dictionary = spell["steps"][1]["effects"][0]
+	effect.erase("when")
+	effect["ability_bonus_from_caster"] = true
+	check.call(SharedSpell.content_error(spell).is_empty(), "P1 permits a reference to an earlier conditional damage step")
+	var missing_result := CombatAction.resolve_spell(caster, dictionary_target, spell, false)
+	check.call(missing_result.get("success", false) and caster.current_hp == 40 and int(missing_result.get("healing", 0)) == 0, "P1 missing damage outcome skips healing including the caster bonus")
+	for kind in ["heal", "temporary_hp"]:
+		effect["type"] = kind
+		effect["value"] = {"op": "floor_divide", "left": 8, "right": {"op": "subtract", "left": 1, "right": 1}}
+		check.call(SharedSpell.content_error(spell).is_empty(), "P1 accepts a calculated divisor for %s" % kind)
+		var zero_divisor_result := CombatAction.resolve_spell(caster, dictionary_target, spell, false)
+		check.call(zero_divisor_result.get("success", false) and caster.current_hp == 40 and caster.temp_hp == 0 and int(zero_divisor_result.get("healing", 0)) == 0, "P1 runtime zero divisor skips %s including the caster bonus" % kind)
+	effect["type"] = "heal"
+	for divisor in [0, 0.0, "0"]:
+		effect["value"] = {"op": "floor_divide", "left": 8, "right": divisor}
+		check.call(not SharedSpell.content_error(spell).is_empty(), "P1 rejects a literal zero divisor of type %s" % type_string(typeof(divisor)))
+	effect["value"] = {"op": "floor_divide", "left": 0, "right": 2}
+	var valid_zero_result := CombatAction.resolve_spell(caster, dictionary_target, spell, false)
+	var healing_step: Dictionary = valid_zero_result["step_results"][1]["target_outcomes"][0]["result"]
+	check.call(caster.current_hp == 43 and int(healing_step.get("healing", 0)) == 3, "P1 valid zero calculation still applies its declared caster bonus")
+
+	var formula_cast := SpellResolutionContext.new()
+	formula_cast.caster = caster
+	formula_cast.slot_level = 3
+	var formula_adapter := SharedStepExecutor.SpellAdapter.new(formula_cast)
+	var formula_refs := [
+		[{"caster_level": true}, caster.level],
+		[{"caster_class_level": "wizard"}, caster.get_class_level("wizard")],
+		[{"caster_proficiency_bonus": true}, caster.proficiency_bonus],
+		[{"caster_ability_modifier": "INT"}, 3],
+		[{"selected_slot_level": true}, 3]
+	]
+	for item in formula_refs:
+		var evaluated := SharedStepExecutor.evaluate_formula(item[0], formula_adapter, caster, [])
+		check.call(bool(evaluated.get("success", false)) and int(evaluated.get("value", -1)) == int(item[1]), "P1 character/cast formula reference evaluates %s" % str(item[0]))
+	var breakpoint_spell := DataLoader.get_spell("sandbox:breakpoint_lookup_probe")
+	var breakpoint_hp_before := caster.current_hp
+	var breakpoint_cast := CombatAction.resolve_spell(caster, caster, breakpoint_spell, false, {}, [], 1, 5)
+	check.call(not breakpoint_spell.is_empty() and SharedSpell.content_error(breakpoint_spell).is_empty() and breakpoint_cast.get("success", false) and caster.current_hp == breakpoint_hp_before + 3, "An ordinary shared spell composes breakpoint lookup with arithmetic through production spell resolution")
+	caster.current_hp = breakpoint_hp_before
+	var constant_breakpoint_spell := DataLoader.get_spell("sandbox:breakpoint_constant_probe")
+	var constant_breakpoint_caster := Character.new()
+	constant_breakpoint_caster.initialize("Constant Breakpoint Caster", "human", "wizard", AbilityScores.new())
+	constant_breakpoint_caster.max_hp = 20
+	constant_breakpoint_caster.current_hp = 10
+	var constant_breakpoint_cast := CombatAction.resolve_spell(constant_breakpoint_caster, constant_breakpoint_caster, constant_breakpoint_spell, false)
+	check.call(not constant_breakpoint_spell.is_empty() and SharedSpell.content_error(constant_breakpoint_spell).is_empty() and constant_breakpoint_cast.get("success", false) and constant_breakpoint_caster.current_hp == 17, "DataLoader and shared spell resolution accept deterministic constant expression 3+2 as a breakpoint input")
+	var actor_cast_only := SharedStepExecutor.evaluate_actor_formula({"op": "add", "left": 1, "right": {"selected_slot_level": true}}, caster)
+	check.call(not actor_cast_only.get("success", true), "Actor formula evaluation safely refuses nested cast-only leaves when no cast context exists")
+	var dice_lookup_error := SharedStepExecutor.formula_content_error({"op": "breakpoint_lookup", "input": "1d4", "breakpoints": [{"threshold": 1, "value": 2}]})
+	check.call(not dice_lookup_error.is_empty(), "Breakpoint lookup still rejects dice input after allowing deterministic constant expressions")
+
+	var slotward := DataLoader.get_spell("sandbox:slotward").duplicate(true)
+	var slotward_result := CombatAction.resolve_spell(caster, caster, slotward, false, {}, [], 2)
+	check.call(slotward_result.get("success", false) and caster.temp_hp == 5 and int(caster.spell_slots["1"]) == 2, "P1 Slotward uses INT modifier + selected slot level even when no slot is paid")
+	caster.temp_hp = 0
+	for bad_reference in [{"caster_class_level": "not_a_class"}, {"caster_ability_modifier": "INTELLIGENCE"}, {"selected_slot_level": false}, {"selected_slot_level": true, "caster_level": true}]:
+		slotward["steps"][0]["effects"][0]["value"] = bad_reference
+		check.call(not SharedSpell.content_error(slotward).is_empty(), "P1 rejects malformed or unknown formula reference %s" % str(bad_reference))
+		var refused_reference := CombatAction.resolve_spell(caster, caster, slotward, true, {}, [], 1)
+		check.call(not refused_reference.get("success", true) and int(caster.spell_slots["1"]) == 2 and caster.temp_hp == 0, "P1 invalid formula reference refuses before slot or Temporary HP mutation")
+
+	for top_effect in [{"type": "heal", "value": {"unsupported": true}}, {"type": "heal", "value": "4", "when": {"fact": "unsupported.fact", "eq": true}}]:
+		var invalid := DataLoader.get_spell("sandbox:ember_echo").duplicate(true)
+		invalid["effects"] = [top_effect]
+		check.call(not SharedSpell.content_error(invalid).is_empty(), "P1 rejects spell-level formulas/predicates even with valid ordered steps")
+		caster.spell_slots["1"] = 2
+		var refused := CombatAction.resolve_spell(caster, dictionary_target, invalid, true)
+		check.call(not refused.get("success", true) and int(caster.spell_slots["1"]) == 2 and caster.current_hp == 43, "P1 spell-level expression refusal occurs before slot or HP mutation")
 
 
 static func _ordered_roll_choice_checks(check: Callable) -> void:
@@ -1878,3 +2487,1054 @@ static func _ordered_roll_choice_checks(check: Callable) -> void:
 	var stale := CombatAction.resolve_spell(caster, target, spell, false, decisions)
 	SpellDamageRolls.clear_pending_requests()
 	check.call(bool(SpellDamageRolls.settle_roll_choice(caster, target, stale, {}).get("refused", false)) and target.current_hp == 98, "Encounter teardown invalidates pending pre-roll choices")
+
+
+static func _failed_save_numeric_bonus_checks(check: Callable) -> void:
+	var fixture: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://data/fixtures/shared_failed_save_numeric_bonus.json"))
+	var feature: Dictionary = fixture.get("features_by_level", {}).get("1", [])[0]
+	check.call(DataLoader._feature_content_error(feature).is_empty(), "Failed-save bonus fixture validates as a passive exact-pool carrier")
+	var renamed: Dictionary = feature.duplicate(true)
+	renamed["id"] = "fixture:steadfast_resolve"
+	renamed["resource_pool"]["id"] = "fixture:steadfast_resolve_pool"
+	renamed["passive_effects"][0]["ability"] = "CON"
+	renamed["passive_effects"][0]["amount"] = 7
+	check.call(DataLoader._feature_content_error(renamed).is_empty(), "Renamed bonus feature validates different ability and amount without identity dispatch")
+	DataLoader._load_content_type("res://data/fixtures/failed_save_bonus/classes/", "class")
+	var pay_choice_class: Dictionary = DataLoader.get_character_class("fixture:save_bonus_pay_on_choice_class")
+	var pay_success_class: Dictionary = DataLoader.get_character_class("fixture:save_bonus_pay_on_success_class")
+	var pay_choice_feature: Dictionary = pay_choice_class.get("features_by_level", {}).get("1", [{}])[0]
+	var pay_success_feature: Dictionary = pay_success_class.get("features_by_level", {}).get("1", [{}])[0]
+	check.call(DataLoader._feature_content_error(pay_choice_feature).is_empty() and DataLoader._feature_content_error(pay_success_feature).is_empty(), "Neutral pay-on-choice and renamed pay-on-converted-success policy fixtures validate through production DataLoader")
+	var invalid_payment_policy: Dictionary = pay_success_feature.duplicate(true)
+	invalid_payment_policy["passive_effects"][0]["payment_policy"] = "refund_if_failed"
+	check.call(not DataLoader._feature_content_error(invalid_payment_policy).is_empty(), "Unknown failed-save payment policies refuse during content validation")
+	var duplicate_ability: Dictionary = feature.duplicate(true)
+	duplicate_ability["passive_effects"].append(duplicate_ability["passive_effects"][0].duplicate(true))
+	check.call(not DataLoader._feature_content_error(duplicate_ability).is_empty(), "One source refuses ambiguous duplicate bonus operations for the same ability")
+	var invalid_amount: Dictionary = feature.duplicate(true)
+	invalid_amount["passive_effects"][0]["amount"] = 0
+	check.call(not DataLoader._feature_content_error(invalid_amount).is_empty(), "Failed-save bonuses reject zero or nonpositive authored amounts")
+
+	var caster := Character.new()
+	caster.initialize("Save Bonus Caster", "human", "wizard", AbilityScores.new())
+	var target := Character.new()
+	target.initialize("Save Bonus Owner", "human", "fighter", AbilityScores.new())
+	target.character_id = "failed-save-bonus-owner"
+	target.ability_scores.dexterity = 2
+	target.max_hp = 100
+	target.current_hp = 100
+	target.features.append(feature.duplicate(true))
+	var source_id := str(feature["id"])
+	check.call(ResourcePoolRules.acquire(target, feature, source_id).get("success", false), "Passive pool carrier acquires one exact source quantity")
+	var renamed_source := renamed.duplicate(true)
+	target.features.append(renamed_source)
+	check.call(ResourcePoolRules.acquire(target, renamed_source, str(renamed_source["id"])).get("success", false), "Renamed passive carrier owns an independent exact source pool")
+	var options := SpellDamageRolls.failed_save_numeric_bonus_options(target, "DEX")
+	check.call(options.size() == 1 and str(options[0].get("source_instance_id", "")) == source_id and str(options[0].get("payment_policy", "")) == "pay_on_choice", "Only the matching available source is offered and omitted policy preserves pay-on-choice")
+	check.call(SpellDamageRolls.failed_save_numeric_bonus_options(target, "STR").is_empty(), "A nonmatching save ability does not offer the bonus")
+
+	var host := SpellCastContext.new()
+	host.caster = caster
+	var test_hud := CombatHUD.new()
+	host.hud = test_hud
+	host.owner_label_for_character = func(_owner): return "Owner"
+	var spell: Dictionary = DataLoader.get_spell("sandbox:steady_save_burst")
+	check.call(not spell.is_empty(), "Neutral save-bonus consumer loads through the shared-spell fixture loader")
+	FighterChecks._seed_die(20, 1)
+	var pending := CombatAction.resolve_spell(caster, target, spell, false, {"cast_context": host})
+	check.call(pending.has("save_bonus_request") and target.current_hp == 100, "Rolled matching failed save suspends before damage when a combat chooser exists")
+	var before_pool := int(ResourcePoolRules.availability(target, source_id).get("current", -1))
+	var forged := SpellDamageRolls.settle_failed_save_numeric_bonus(caster, target, pending, "fixture:forged")
+	check.call(bool(forged.get("refused", false)) and int(ResourcePoolRules.availability(target, source_id).get("current", -1)) == before_pool and target.current_hp == 100, "Forged source answer refuses before payment or damage")
+	var settled := SpellDamageRolls.settle_failed_save_numeric_bonus(caster, target, pending, source_id)
+	check.call(bool(settled.get("success", false)) and not bool(settled.get("saved", true)) and int(settled.get("save_total", 0)) == int(settled.get("save_natural_roll", 0)) + int(settled.get("save_modifier", 0)) + 5 and int(settled.get("save_post_roll_bonus", 0)) == 5 and int(settled.get("save_natural_roll", 0)) == 1 and target.current_hp == 96 and int(ResourcePoolRules.availability(target, source_id).get("current", -1)) == before_pool - 1, "Accepted +5 retains the natural roll and modifier, pays once and settles before damage")
+	var replay := SpellDamageRolls.settle_failed_save_numeric_bonus(caster, target, pending, source_id)
+	check.call(bool(replay.get("refused", false)) and target.current_hp == 96 and int(ResourcePoolRules.availability(target, source_id).get("current", -1)) == before_pool - 1, "Save-bonus completion replay cannot charge or apply damage again")
+
+	var success_source := str(pay_success_feature.get("id", ""))
+	caster.ability_scores.intelligence = 20
+	var conditional_target := Character.new()
+	conditional_target.initialize("Conditional Save Owner", "human", "wizard", AbilityScores.new())
+	conditional_target.character_id = "conditional-save-bonus-owner"
+	conditional_target.max_hp = 100
+	conditional_target.current_hp = 100
+	conditional_target.ability_scores.constitution = 2
+	conditional_target.features.append(pay_success_feature.duplicate(true))
+	var success_pool := ResourcePoolRules.acquire(conditional_target, pay_success_feature, success_source)
+	var conditional_options := SpellDamageRolls.failed_save_numeric_bonus_options(conditional_target, "CON")
+	check.call(bool(success_pool.get("success", false)) and conditional_options.size() == 1 and str(conditional_options[0].get("payment_policy", "")) == "pay_on_converted_success", "Renamed conditional source offers only with its exact pool and authored payment policy")
+	var con_spell: Dictionary = DataLoader.get_spell("sandbox:failed_save_bonus_con_area")
+	check.call(not con_spell.is_empty(), "Conditional payment probe uses the loaded shared CON-save spell")
+	var conditional_hp := conditional_target.current_hp
+	FighterChecks._seed_die(20, 1)
+	var conditional_failure := CombatAction.resolve_spell(caster, conditional_target, con_spell, false, {"cast_context": host})
+	var conditional_failure_result := SpellDamageRolls.settle_failed_save_numeric_bonus(caster, conditional_target, conditional_failure, success_source)
+	check.call(bool(conditional_failure_result.get("success", false)) and not bool(conditional_failure_result.get("saved", true)) and int(conditional_failure_result.get("save_total", 0)) == -3 + 7 and int(conditional_failure_result.get("save_post_roll_bonus", 0)) == 7 and str(conditional_failure_result.get("save_payment_policy", "")) == "pay_on_converted_success" and not bool(conditional_failure_result.get("save_cost_paid", true)) and conditional_target.current_hp == conditional_hp - 4 and int(ResourcePoolRules.availability(conditional_target, success_source).get("current", -1)) == 2, "Accepted conditional bonus stays applied on a remaining failure, causes full damage, and pays nothing")
+	conditional_target.ability_scores.constitution = 20
+	conditional_target.numeric_resource_pools[success_source]["current"] = 1
+	var before_stale_commit_hp := conditional_target.current_hp
+	FighterChecks._seed_die(20, 8)
+	var insufficient_pending := CombatAction.resolve_spell(caster, conditional_target, con_spell, false, {"cast_context": host})
+	conditional_target.numeric_resource_pools[success_source]["current"] = 0
+	var insufficient_commit := SpellDamageRolls.settle_failed_save_numeric_bonus(caster, conditional_target, insufficient_pending, success_source)
+	check.call(bool(insufficient_commit.get("refused", false)) and conditional_target.current_hp == before_stale_commit_hp and int(ResourcePoolRules.availability(conditional_target, success_source).get("current", -1)) == 0, "A changed-to-empty exact source refuses settlement before bonus, payment or consequences")
+	conditional_target.numeric_resource_pools[success_source]["current"] = 1
+	var converted := SpellDamageRolls.settle_failed_save_numeric_bonus(caster, conditional_target, insufficient_pending, success_source)
+	check.call(bool(converted.get("success", false)) and bool(converted.get("saved", false)) and int(converted.get("save_natural_roll", 0)) == 8 and int(converted.get("save_total", 0)) == 20 and bool(converted.get("save_cost_paid", false)) and conditional_target.current_hp == before_stale_commit_hp - 2 and int(ResourcePoolRules.availability(conditional_target, success_source).get("current", -1)) == 0, "After funds are restored, converted success pays once and applies half damage using the final save")
+	var empty_pool_hp := conditional_target.current_hp
+	FighterChecks._seed_die(20, 1)
+	var empty_source_result := CombatAction.resolve_spell(caster, conditional_target, con_spell, false, {"cast_context": host})
+	check.call(not empty_source_result.has("save_bonus_request") and not bool(empty_source_result.get("saved", true)) and conditional_target.current_hp == empty_pool_hp - 4 and int(ResourcePoolRules.availability(conditional_target, success_source).get("current", -1)) == 0, "An empty conditional source is not offered and cannot provide a free bonus")
+	# Settled requests remain as replay tombstones. This test's request retains
+	# the real cast context (and its temporary HUD), so clear it before freeing
+	# the HUD just as an encounter/session teardown does.
+	SpellDamageRolls.clear_pending_requests()
+	host.hud = null
+	test_hud.free()
+
+
+static func _shared_spell_attack_bonus_checks(check: Callable) -> void:
+	DataLoader._load_content_type("res://data/fixtures/failed_save_bonus/classes/", "class")
+	DataLoader._load_content_type("res://data/fixtures/shared_spells/spells/", "spell")
+	var neutral_class: Dictionary = DataLoader.get_character_class("fixture:weapon_attack_bonus_neutral_class")
+	var renamed_class: Dictionary = DataLoader.get_character_class("fixture:weapon_attack_bonus_renamed_class")
+	var neutral_feature: Dictionary = neutral_class.get("features_by_level", {}).get("1", [{}])[0]
+	var renamed_feature: Dictionary = renamed_class.get("features_by_level", {}).get("1", [{}])[0]
+	var flat_spell: Dictionary = DataLoader.get_spell("sandbox:owned_spell_attack_neutral")
+	var ordered_spell: Dictionary = DataLoader.get_spell("sandbox:owned_spell_attack_renamed")
+	check.call(not neutral_feature.is_empty() and not renamed_feature.is_empty() and not DataLoader._feature_content_error(neutral_feature) and not DataLoader._feature_content_error(renamed_feature), "Neutral and renamed attack sources validate both weapon and shared-spell domains")
+	check.call(not flat_spell.is_empty() and not ordered_spell.is_empty() and SharedSpell.content_error(flat_spell).is_empty() and SharedSpell.content_error(ordered_spell).is_empty() and str(flat_spell.get("damage_type", "")) == "fire" and str(ordered_spell.get("steps", [{}, {}])[1].get("damage_type", "")) == "cold", "Production loader registers flat Fire and ordered Cold shared-attack fixtures with distinct payloads")
+	var unsupported_domain: Dictionary = neutral_feature.duplicate(true)
+	unsupported_domain["passive_effects"][0]["domains"] = ["spell_attack"]
+	check.call(not DataLoader._feature_content_error(unsupported_domain).is_empty(), "Attack bonus accepts only its explicitly supported weapon and shared-spell domains")
+
+	var caster := Character.new()
+	caster.initialize("Shared Attack Bonus Caster", "human", "sorcerer", AbilityScores.new())
+	caster.character_id = "fixture:shared_attack_bonus_caster"
+	caster.ability_scores.charisma = 20
+	while caster.level < 3:
+		caster.level_up()
+	caster.sorcerer_metamagic_choices.append("empowered_spell")
+	caster.feature_uses["sorcery_points"] = 3
+	var neutral_source := "fixture:shared_attack_bonus:neutral"
+	var renamed_source := "fixture:shared_attack_bonus:renamed"
+	var neutral_instance := neutral_feature.duplicate(true)
+	neutral_instance["source_instance_id"] = neutral_source
+	var renamed_instance := renamed_feature.duplicate(true)
+	renamed_instance["source_instance_id"] = renamed_source
+	caster.features.append(neutral_instance)
+	caster.features.append(renamed_instance)
+	var neutral_acquired := ResourcePoolRules.acquire(caster, neutral_feature, neutral_source)
+	var renamed_acquired := ResourcePoolRules.acquire(caster, renamed_feature, renamed_source)
+	var choices := SpellDamageRolls.attack_numeric_bonus_options(caster, "shared_spell_attack")
+	check.call(bool(neutral_acquired.get("success", false)) and bool(renamed_acquired.get("success", false)) and choices.size() == 2 and int(choices[0].get("amount", 0)) == 5 and int(choices[1].get("amount", 0)) == 8, "One source option builder offers independent authored +5/cost 1 and +8/cost 2 spell bonuses")
+
+	var target := {"id": "fixture:shared_attack_bonus_target", "name": "Attack target", "armor_class": 20, "current_hp": 100, "max_hp": 100, "is_alive": true, "temp_hp": 0, "conditions": {}}
+	var cast_host := SpellCastContext.new()
+	cast_host.caster = caster
+	var test_hud := CombatHUD.new()
+	cast_host.hud = test_hud
+	cast_host.owner_label_for_character = func(_owner): return "Caster"
+	var decisions := {"players": [{"character": caster}], "monsters": [target], "cast_context": cast_host, "hud": cast_host.hud}
+	FighterChecks._seed_die(20, 8)
+	var noninteractive := CombatAction.resolve_spell(caster, target, flat_spell, false, {"players": [{"character": caster}], "monsters": [target]})
+	check.call(not noninteractive.has("weapon_attack_bonus_request") and not bool(noninteractive.get("hit", true)), "A shared spell caller without the real combat chooser keeps ordinary miss resolution")
+	var dice_counts := {"d20": 0}
+	var count_d20 := func(payload: Dictionary) -> void:
+		if int(payload.get("sides", 0)) == 20:
+			dice_counts["d20"] += 1
+	Dice.dice_rolled.connect(count_d20)
+	FighterChecks._seed_die(20, 8)
+	var pending := CombatAction.resolve_spell(caster, target, flat_spell, false, decisions)
+	var record := SpellDamageRolls.weapon_attack_bonus_record(caster, target, pending)
+	var flat_roll: Dictionary = record.get("context", {}).get("attack_result", {})
+	var flat_pending_windows: Array = pending.get("resolution_windows", [])
+	var hp_before := int(target.get("current_hp", 0))
+	var pool_before := int(ResourcePoolRules.availability(caster, neutral_source).get("current", -1))
+	check.call(pending.has("weapon_attack_bonus_request") and not pending.has("damage_request") and int(flat_roll.get("natural", 0)) == 8 and hp_before == 100 and flat_pending_windows.map(func(window): return str(window.get("window", ""))) == ["before_roll", "after_natural", "provisional_outcome"], "Flat shared spell attack suspends after its provisional window with original d20 and HP intact")
+	var flat_resolved := SpellDamageRolls.settle_weapon_attack_bonus(caster, target, pending, neutral_source)
+	check.call(bool(flat_resolved.get("success", false)) and bool(flat_resolved.get("hit", false)) and int(flat_resolved.get("post_roll_bonus", 0)) == 5 and int(flat_resolved.get("attack_roll", 0)) == int(flat_roll.get("total", 0)) + 5 and int(ResourcePoolRules.availability(caster, neutral_source).get("current", -1)) == pool_before - 1 and int(dice_counts["d20"]) == 1, "Flat +5 resumes without reroll, pays its exact source once, then applies fire damage")
+	var flat_windows: Array = flat_resolved.get("resolution_windows", [])
+	var flat_window_names: Array[String] = []
+	for window in flat_windows:
+		flat_window_names.append(str(window.get("window", "")))
+	var flat_receipts_bound := flat_windows.size() == 5
+	var flat_window_facts_observed := flat_windows.size() == 5
+	var flat_cast: SpellResolutionContext = record.get("context", {}).get("spell_cast")
+	var flat_adapter := SharedStepExecutor.SpellAdapter.new(flat_cast)
+	for index in range(flat_windows.size()):
+		var window: Dictionary = flat_windows[index]
+		flat_receipts_bound = flat_receipts_bound and str(window.get("occurrence_id", "")) == str(flat_resolved.get("resolution_occurrence_id", "")) and str(window.get("kind", "")) == "spell_attack" and str(window.get("actor_id", "")) == caster.character_id and str(window.get("target_id", "")) == str(target.get("id", "")) and str(window.get("source_definition_id", "")) == str(flat_spell.get("id", "")) and str(window.get("source_owner_id", "")) == caster.character_id
+		flat_cast.resolution_window = window
+		flat_window_facts_observed = flat_window_facts_observed and SharedStepExecutor.evaluate_predicate({"fact": "resolution.window", "eq": str(window.get("window", ""))}, flat_adapter, target, [])
+	var before_fields: Array = flat_windows[0].get("available_fields", []) if flat_windows.size() == 5 else []
+	var natural_fields: Array = flat_windows[1].get("available_fields", []) if flat_windows.size() == 5 else []
+	var provisional_fields: Array = flat_windows[2].get("available_fields", []) if flat_windows.size() == 5 else []
+	var pre_damage_fields: Array = flat_windows[3].get("available_fields", []) if flat_windows.size() == 5 else []
+	var post_fields: Array = flat_windows[4].get("available_fields", []) if flat_windows.size() == 5 else []
+	var windows_gate_facts := flat_window_names == SpellDamageRolls.RESOLUTION_WINDOW_ORDER and not before_fields.has("roll_natural") and natural_fields.has("roll_natural") and not natural_fields.has("final_hit") and provisional_fields.has("provisional_hit") and not provisional_fields.has("final_hit") and not provisional_fields.has("damage_raw") and pre_damage_fields.has("final_hit") and not pre_damage_fields.has("damage_raw") and post_fields.has("damage_raw") and post_fields.has("damage_resolved") and post_fields.has("damage_hp_loss")
+	check.call(flat_receipts_bound and flat_window_facts_observed and windows_gate_facts, "All five loaded neutral spell-attack windows expose ordered exact bindings and only facts available at that stage")
+	var post_damage: Dictionary = flat_windows[4] if flat_windows.size() == 5 else {}
+	var primary_damage_component: Dictionary = flat_resolved.get("damage_components", [{}])[0] if not flat_resolved.get("damage_components", []).is_empty() else {}
+	flat_cast.resolution_window = post_damage
+	var damage_occurrence_matches_receipt: bool = SharedStepExecutor.evaluate_predicate({"fact": "resolution.damage_occurrence_id", "eq": int(post_damage.get("damage_occurrence_id", 0))}, flat_adapter, target, [])
+	check.call(int(post_damage.get("damage_occurrence_id", 0)) > 0 and damage_occurrence_matches_receipt and str(post_damage.get("damage_type", "")) == str(primary_damage_component.get("type", "")) and int(post_damage.get("damage_raw", -1)) == int(primary_damage_component.get("raw", -2)) and int(post_damage.get("damage_resolved", -1)) == int(primary_damage_component.get("resolved", -2)) and int(post_damage.get("damage_hp_loss", -1)) == int(primary_damage_component.get("hp_loss", -2)), "Post-damage window selects the existing raw/resolved/HP-loss component receipt")
+	var flat_replay := SpellDamageRolls.settle_weapon_attack_bonus(caster, target, pending, neutral_source)
+	check.call(bool(flat_replay.get("refused", false)) and int(dice_counts["d20"]) == 1, "Flat shared spell attack completion replay cannot reroll or charge again")
+	target["current_hp"] = 100
+	var neutral_pool_before_decline := int(ResourcePoolRules.availability(caster, neutral_source).get("current", -1))
+	FighterChecks._seed_die(20, 8)
+	var declined_pending := CombatAction.resolve_spell(caster, target, flat_spell, false, decisions)
+	var declined_miss := SpellDamageRolls.settle_weapon_attack_bonus(caster, target, declined_pending, "")
+	check.call(bool(declined_miss.get("success", false)) and not bool(declined_miss.get("hit", true)) and not declined_miss.has("damage_request") and not declined_miss.has("damage_components") and int(ResourcePoolRules.availability(caster, neutral_source).get("current", -1)) == neutral_pool_before_decline and declined_miss.get("resolution_windows", []).map(func(window): return str(window.get("window", ""))) == ["before_roll", "after_natural", "provisional_outcome"], "Declining a miss keeps its original cost and never opens or charges a damage-only consumer")
+	SpellDamageRolls.clear_pending_requests()
+
+	# The renamed ordered spell pauses the attack step, then resumes its own
+	# target/step continuation before applying the hit rider and later steps.
+	target["armor_class"] = 23
+	target["current_hp"] = 100
+	target["conditions"] = {}
+	FighterChecks._seed_die(20, 8)
+	var ordered_decisions := decisions.duplicate()
+	ordered_decisions["metamagic:empowered"] = true
+	ordered_decisions["defer_empowered"] = true
+	var ordered_pending := CombatAction.resolve_spell(caster, target, ordered_spell, false, ordered_decisions)
+	var ordered_record := SpellDamageRolls.weapon_attack_bonus_record(caster, target, ordered_pending)
+	var ordered_hp_before := int(target.get("current_hp", 0))
+	var renamed_pool_before := int(ResourcePoolRules.availability(caster, renamed_source).get("current", -1))
+	check.call(ordered_pending.has("weapon_attack_bonus_request") and ordered_pending.has("ordered_continuation") and ordered_hp_before == 100, "Ordered shared attack suspends with its canonical continuation before damage or riders")
+	var ordered_damage_pending := SpellDamageRolls.settle_weapon_attack_bonus(caster, target, ordered_pending, renamed_source)
+	check.call(ordered_damage_pending.has("damage_request") and target.get("current_hp", 0) == 100 and not CombatAction.has_condition(target, "restrained") and int(ResourcePoolRules.availability(caster, renamed_source).get("current", -1)) == renamed_pool_before - 2, "A hit bonus charges once but keeps damage and ordered riders pending for the existing Empowered choice")
+	var ordered_cast: SpellResolutionContext = ordered_record.get("context", {}).get("spell_cast")
+	var ordered_occurrence_id := str(ordered_cast.resolution_window_context.get("base", {}).get("occurrence_id", "")) if ordered_cast != null else ""
+	var ordered_paused_windows: Array = ordered_damage_pending.get("resolution_windows", [])
+	check.call(ordered_paused_windows.map(func(window): return str(window.get("window", ""))) == ["before_roll", "after_natural", "provisional_outcome", "pre_damage"] and not ordered_damage_pending.has("_resolution_context"), "Renamed ordered attack retains the same occurrence through pre-damage pause without exposing internal host state")
+	var ordered_resolved := CombatAction.finish_pending_spell_damage(caster, target, ordered_damage_pending, {"metamagic:empowered": true, "metamagic:empowered_dice": []})
+	var ordered_steps: Array = ordered_resolved.get("step_results", [])
+	var ordered_first: Dictionary = ordered_steps[1] if ordered_steps.size() > 1 else {}
+	var ordered_attack_result: Dictionary = ordered_first.get("target_outcomes", [{}])[0].get("result", {}) if ordered_first.get("target_outcomes", []).size() > 0 else {}
+	check.call(bool(ordered_resolved.get("success", false)) and ordered_first.get("hit", false) and int(ordered_attack_result.get("post_roll_bonus", 0)) == 8 and int(ResourcePoolRules.availability(caster, renamed_source).get("current", -1)) == renamed_pool_before - 2, "Renamed +8/cost 2 resumes the same ordered attack and charges only its exact source")
+	check.call(str(ordered_attack_result.get("resolution_occurrence_id", "")) == ordered_occurrence_id and ordered_attack_result.get("resolution_windows", []).map(func(window): return str(window.get("window", ""))) == SpellDamageRolls.RESOLUTION_WINDOW_ORDER, "Renamed ordered attack completes all five windows on its original occurrence after Empowered settlement")
+	check.call(ordered_steps.size() == 4 and str(ordered_steps[0].get("step_id", "")) == "rime_guard" and CombatAction.has_condition(target, "restrained") and not CombatAction.has_condition(target, "poisoned") and int(dice_counts["d20"]) == 3, "Prior self-grant step remains ordered before the final hit rider; miss rider stays absent and no attack rerolls")
+	var ordered_hp_after := int(target.get("current_hp", 0))
+	var ordered_replay := SpellDamageRolls.settle_weapon_attack_bonus(caster, target, ordered_pending, renamed_source)
+	check.call(bool(ordered_replay.get("refused", false)) and int(target.get("current_hp", 0)) == ordered_hp_after and int(ResourcePoolRules.availability(caster, renamed_source).get("current", -1)) == renamed_pool_before - 2, "Ordered continuation cannot be applied twice by replaying its completed bonus")
+	var renamed_pool: Dictionary = caster.numeric_resource_pools.get(renamed_source, {})
+	if not renamed_pool.is_empty():
+		renamed_pool["current"] = int(renamed_pool.get("maximum", 2))
+	target["current_hp"] = 100
+	target["armor_class"] = 20
+	FighterChecks._seed_die(20, 8)
+	var old_occurrence_answer := CombatAction.resolve_spell(caster, target, flat_spell, false, decisions)
+	var old_occurrence_id := str(old_occurrence_answer.get("resolution_occurrence_id", ""))
+	var old_decline := SpellDamageRolls.settle_weapon_attack_bonus(caster, target, old_occurrence_answer, "")
+	FighterChecks._seed_die(20, 8)
+	var fresh_occurrence_answer := CombatAction.resolve_spell(caster, target, flat_spell, false, decisions)
+	var fresh_occurrence_id := str(fresh_occurrence_answer.get("resolution_occurrence_id", ""))
+	var old_answer_against_fresh := SpellDamageRolls.settle_weapon_attack_bonus(caster, target, old_occurrence_answer, neutral_source)
+	check.call(bool(old_decline.get("success", false)) and not old_occurrence_id.is_empty() and fresh_occurrence_id != old_occurrence_id and bool(old_answer_against_fresh.get("refused", false)), "An old occurrence answer is refused while a fresh occurrence remains pending")
+	var attack_monsters: Array = decisions["monsters"]
+	attack_monsters.clear()
+	var removed_host_answer := SpellDamageRolls.settle_weapon_attack_bonus(caster, target, fresh_occurrence_answer, "")
+	check.call(bool(removed_host_answer.get("refused", false)) and int(target.get("current_hp", 0)) == 100, "Removing the captured target from its encounter host invalidates its pending spell-attack answer")
+	attack_monsters.append(target)
+	SpellDamageRolls.clear_pending_requests()
+	FighterChecks._seed_die(20, 8)
+	var removed_source_answer := CombatAction.resolve_spell(caster, target, flat_spell, false, decisions)
+	var removed_source_pool_before := int(ResourcePoolRules.availability(caster, renamed_source).get("current", -1))
+	var removed_source_was_offered: bool = removed_source_answer.get("options", []).any(func(option): return str(option.get("source_instance_id", "")) == renamed_source)
+	caster.numeric_resource_pools.erase(renamed_source)
+	var removed_source_result := SpellDamageRolls.settle_weapon_attack_bonus(caster, target, removed_source_answer, renamed_source)
+	check.call(removed_source_was_offered and bool(removed_source_result.get("refused", false)) and int(target.get("current_hp", 0)) == 100 and not bool(ResourcePoolRules.availability(caster, renamed_source).get("available", false)) and removed_source_pool_before >= 0, "Removing the exact offered source refuses before payment or damage")
+	Dice.dice_rolled.disconnect(count_d20)
+	SpellDamageRolls.clear_pending_requests()
+	cast_host.hud = null
+	test_hud.free()
+
+
+static func _attack_result_adjustment_checks(check: Callable) -> void:
+	DataLoader._load_content_type("res://data/fixtures/failed_save_bonus/classes/", "class")
+	DataLoader._load_content_type("res://data/fixtures/shared_spells/spells/", "spell")
+	var adjustment_fixture: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://data/fixtures/failed_save_bonus/classes/attack_result_adjustments.json"))
+	var neutral_class: Dictionary = DataLoader.get_character_class("fixture:attack_total_adjustment_class")
+	var renamed_class: Dictionary = DataLoader.get_character_class("fixture:defending_ac_adjustment_class")
+	var neutral_feature: Dictionary = neutral_class.get("features_by_level", {}).get("1", [{}])[0]
+	var renamed_feature: Dictionary = renamed_class.get("features_by_level", {}).get("1", [{}])[0]
+	check.call(adjustment_fixture is Array and adjustment_fixture.size() == 2 and not DataLoader._feature_content_error(neutral_feature) and not DataLoader._feature_content_error(renamed_feature) and SharedSpell.content_error(DataLoader.get_spell("sandbox:owned_spell_attack_neutral")).is_empty(), "Loaded neutral total-subtraction and renamed defending-AC definitions validate without content-ID rules")
+	var malformed := neutral_feature.duplicate(true)
+	malformed["passive_effects"][0]["trigger"] = "failed_save"
+	check.call(not DataLoader._feature_content_error(malformed).is_empty(), "Attack adjustments reject a trigger outside the declared provisional-hit window")
+	var caster := Character.new()
+	caster.initialize("S095 Attack Owner", "human", "sorcerer", AbilityScores.new())
+	caster.character_id = "fixture:s095_attack_owner"
+	caster.ability_scores.charisma = 18
+	while caster.level < 3:
+		caster.level_up()
+	caster.sorcerer_metamagic_choices.append("empowered_spell")
+	caster.feature_uses["sorcery_points"] = 3
+	var neutral_source := "fixture:s095:downward_total"
+	var renamed_source := "fixture:s095:raised_defense"
+	var neutral_instance := neutral_feature.duplicate(true)
+	neutral_instance["source_instance_id"] = neutral_source
+	var renamed_instance := renamed_feature.duplicate(true)
+	renamed_instance["source_instance_id"] = renamed_source
+	caster.features.append(neutral_instance)
+	caster.features.append(renamed_instance)
+	var neutral_pool := ResourcePoolRules.acquire(caster, neutral_feature, neutral_source)
+	var renamed_pool := ResourcePoolRules.acquire(caster, renamed_feature, renamed_source)
+	var choices := SpellDamageRolls.attack_choice_options(caster, "shared_spell_attack", true, false, true)
+	check.call(bool(neutral_pool.get("success", false)) and bool(renamed_pool.get("success", false)) and choices.size() == 2 and choices.any(func(option): return str(option.get("resolution", "")) == "attack_total_adjustment" and int(option.get("amount", 0)) == 6 and int(option.get("cost", 0)) == 1) and choices.any(func(option): return str(option.get("resolution", "")) == "defending_ac_adjustment" and int(option.get("amount", 0)) == 2 and int(option.get("cost", 0)) == 2), "Only the attack owner's exact live pools offer the loaded amount-6 subtraction and renamed amount-2 AC change")
+	check.call(SpellDamageRolls.attack_choice_options(caster, "shared_spell_attack", false, false, true).is_empty(), "A miss cannot open an adjustment authored only for a provisional hit")
+	var weapon_choices := SpellDamageRolls.attack_choice_options(caster, "weapon_attack", true, false, true)
+	var natural_twenty := {"natural": 20, "modifier": 6, "total": 26, "is_crit": true}
+	var critical_adjusted := SpellDamageRolls.apply_attack_result_adjustment(natural_twenty, 17, choices[0])
+	check.call(weapon_choices.size() == 2 and SpellDamageRolls.attack_choice_options(caster, "weapon_attack", true, false, false).is_empty() and SpellDamageRolls.attack_choice_options(caster, "weapon_attack", true, false, true).size() == 2 and bool(critical_adjusted.get("attack_result", {}).get("is_crit", false)) and int(critical_adjusted.get("attack_result", {}).get("natural", 0)) == 20, "Both authored effects expose the weapon domain only when its provisional-hit chooser enables them, while the captured natural-20 critical marker remains unchanged")
+	var target := {"id": "fixture:s095_target", "name": "S095 Target", "armor_class": 17, "current_hp": 100, "max_hp": 100, "is_alive": true, "temp_hp": 0, "conditions": {}}
+	var cast_host := SpellCastContext.new()
+	cast_host.caster = caster
+	var hud := CombatHUD.new()
+	cast_host.hud = hud
+	cast_host.owner_label_for_character = func(_owner): return "Attack Owner"
+	var decisions := {"players": [{"character": caster}], "monsters": [target], "cast_context": cast_host}
+	var spell: Dictionary = DataLoader.get_spell("sandbox:owned_spell_attack_neutral")
+	FighterChecks._seed_die(20, 15)
+	var total_pending := CombatAction.resolve_spell(caster, target, spell, false, decisions)
+	var total_record := SpellDamageRolls.weapon_attack_bonus_record(caster, target, total_pending)
+	var original_attack: Dictionary = total_record.get("context", {}).get("attack_result", {}).duplicate(true)
+	var original_hp := int(target["current_hp"])
+	var before_pool := int(ResourcePoolRules.availability(caster, neutral_source).get("current", -1))
+	var unrelated := Character.new()
+	unrelated.initialize("Wrong S095 Owner", "human", "wizard", AbilityScores.new())
+	var wrong_actor := SpellDamageRolls.settle_weapon_attack_bonus(unrelated, target, total_pending, neutral_source)
+	var pool_record: Dictionary = caster.numeric_resource_pools.get(neutral_source, {})
+	caster.numeric_resource_pools.erase(neutral_source)
+	var removed_source := SpellDamageRolls.settle_weapon_attack_bonus(caster, target, total_pending, neutral_source)
+	caster.numeric_resource_pools[neutral_source] = pool_record
+	var total_miss := SpellDamageRolls.settle_weapon_attack_bonus(caster, target, total_pending, neutral_source)
+	var miss_receipt: Dictionary = total_miss.get("attack_adjustment_receipt", {})
+	check.call(total_pending.has("weapon_attack_bonus_request") and bool(wrong_actor.get("refused", false)) and bool(removed_source.get("refused", false)) and int(ResourcePoolRules.availability(caster, neutral_source).get("current", -1)) == before_pool - 1 and bool(total_miss.get("success", false)) and not bool(total_miss.get("hit", true)) and int(target["current_hp"]) == original_hp and int(miss_receipt.get("original", {}).get("natural", -1)) == int(original_attack.get("natural", -2)) and int(miss_receipt.get("original", {}).get("modifier", -9)) == int(original_attack.get("modifier", -8)) and int(miss_receipt.get("original", {}).get("total", -9)) == int(original_attack.get("total", -8)) and int(miss_receipt.get("original", {}).get("target_ac", -1)) == 17 and int(miss_receipt.get("final", {}).get("total", -9)) == int(original_attack.get("total", -8)) - 6 and str(miss_receipt.get("source_instance_id", "")) == neutral_source and str(miss_receipt.get("owner_id", "")) == caster.character_id and bool(miss_receipt.get("cost_paid", false)), "The captured total subtraction turns only the provisional hit into a miss; wrong owner/removal refuse, original roll/profile/AC and exact paid-source receipt remain, and no damage applies")
+	var replay := SpellDamageRolls.settle_weapon_attack_bonus(caster, target, total_pending, neutral_source)
+	check.call(bool(replay.get("refused", false)) and int(ResourcePoolRules.availability(caster, neutral_source).get("current", -1)) == before_pool - 1 and int(target["current_hp"]) == original_hp, "Replaying the settled adjustment cannot spend again or change the completed miss")
+	FighterChecks._seed_die(20, 15)
+	var decline_pending := CombatAction.resolve_spell(caster, target, spell, false, decisions)
+	var stale_answer := SpellDamageRolls.settle_weapon_attack_bonus(caster, target, total_pending, neutral_source)
+	var declined := SpellDamageRolls.settle_weapon_attack_bonus(caster, target, decline_pending, "")
+	check.call(bool(stale_answer.get("refused", false)) and bool(declined.get("success", false)) and bool(declined.get("hit", false)) and not declined.has("attack_adjustment_receipt") and int(ResourcePoolRules.availability(caster, neutral_source).get("current", -1)) == before_pool - 1 and int(target["current_hp"]) < original_hp, "A declined new occurrence resolves its captured hit without adjustment payment; an old replay cannot consume or mutate that occurrence")
+	SpellDamageRolls.clear_pending_requests()
+	target["armor_class"] = 17
+	target["current_hp"] = 100
+	var ordered_spell: Dictionary = DataLoader.get_spell("sandbox:owned_spell_attack_renamed")
+	var ordered_decisions := decisions.duplicate()
+	ordered_decisions["metamagic:empowered"] = true
+	ordered_decisions["defer_empowered"] = true
+	FighterChecks._seed_die(20, 15)
+	var ordered_pending := CombatAction.resolve_spell(caster, target, ordered_spell, false, ordered_decisions)
+	var ordered_record := SpellDamageRolls.weapon_attack_bonus_record(caster, target, ordered_pending)
+	var ordered_original: Dictionary = ordered_record.get("context", {}).get("attack_result", {}).duplicate(true)
+	var defense_before := int(ResourcePoolRules.availability(caster, renamed_source).get("current", -1))
+	var damage_pending := SpellDamageRolls.settle_weapon_attack_bonus(caster, target, ordered_pending, renamed_source)
+	var defense_receipt: Dictionary = damage_pending.get("attack_adjustment_receipt", {})
+	var pre_damage_windows: Array = damage_pending.get("resolution_windows", [])
+	var pre_damage: Dictionary = pre_damage_windows[3] if pre_damage_windows.size() > 3 else {}
+	check.call(ordered_pending.has("weapon_attack_bonus_request") and damage_pending.has("damage_request") and bool(defense_receipt.get("final", {}).get("hit", false)) and int(defense_receipt.get("original", {}).get("natural", -1)) == int(ordered_original.get("natural", -2)) and int(defense_receipt.get("original", {}).get("modifier", -9)) == int(ordered_original.get("modifier", -8)) and int(defense_receipt.get("original", {}).get("total", -9)) == int(ordered_original.get("total", -8)) and int(defense_receipt.get("original", {}).get("target_ac", -1)) == 17 and int(defense_receipt.get("final", {}).get("total", -9)) == int(ordered_original.get("total", -8)) and int(defense_receipt.get("final", {}).get("target_ac", -1)) == 19 and str(defense_receipt.get("source_instance_id", "")) == renamed_source and int(ResourcePoolRules.availability(caster, renamed_source).get("current", -1)) == defense_before - 2 and str(pre_damage.get("attack_adjustment", {}).get("source_instance_id", "")) == renamed_source and int(target["current_hp"]) == 100 and int(target["armor_class"]) == 17, "The renamed +2 defending-AC change leaves the captured hit, keeps original AC and source receipt through the real ordered damage choice, and pays its exact cost once without changing target AC")
+	var settled := CombatAction.finish_pending_spell_damage(caster, target, damage_pending, {"metamagic:empowered": true, "metamagic:empowered_dice": []})
+	var settled_steps: Array = settled.get("step_results", [])
+	var attack_step: Dictionary = settled_steps[1] if settled_steps.size() > 1 else {}
+	var attack_outcome: Dictionary = attack_step.get("target_outcomes", [{}])[0].get("result", {}) if attack_step.get("target_outcomes", []).size() > 0 else {}
+	var replay_ac := SpellDamageRolls.settle_weapon_attack_bonus(caster, target, ordered_pending, renamed_source)
+	check.call(bool(settled.get("success", false)) and bool(attack_outcome.get("hit", false)) and str(attack_outcome.get("attack_adjustment_receipt", {}).get("source_instance_id", "")) == renamed_source and int(attack_outcome.get("numeric_margin", -999)) == int(attack_outcome.get("attack_roll", 0)) - int(attack_outcome.get("attack_target_ac", 0)) and int(attack_outcome.get("attack_target_ac", -1)) == 19 and int(ResourcePoolRules.availability(caster, renamed_source).get("current", -1)) == defense_before - 2 and bool(replay_ac.get("refused", false)), "After the following ordered damage choice the same attack stays a hit, retains its adjusted numeric margin and AC receipt, and rejects replay without repaying")
+	SpellDamageRolls.clear_pending_requests()
+	DataLoader.load_all_data()
+	cast_host.hud = null
+	hud.free()
+
+
+static func _post_roll_die_bonus_checks(check: Callable) -> void:
+	DataLoader._load_content_type("res://data/fixtures/failed_save_bonus/classes/", "class")
+	DataLoader._load_content_type("res://data/fixtures/shared_spells/spells/", "spell")
+	var neutral_class: Dictionary = DataLoader.get_character_class("fixture:post_roll_die_neutral_class")
+	var renamed_class: Dictionary = DataLoader.get_character_class("fixture:post_roll_die_renamed_class")
+	var neutral_feature: Dictionary = neutral_class.get("features_by_level", {}).get("1", [{}])[0].duplicate(true)
+	var renamed_feature: Dictionary = renamed_class.get("features_by_level", {}).get("1", [{}])[0].duplicate(true)
+	check.call(not neutral_feature.is_empty() and not renamed_feature.is_empty() and DataLoader._feature_content_error(neutral_feature).is_empty() and DataLoader._feature_content_error(renamed_feature).is_empty(), "Production DataLoader accepts neutral d6/cost1 and renamed d8/cost2 source-die definitions")
+	if neutral_feature.is_empty() or renamed_feature.is_empty():
+		return
+	var malformed_both: Dictionary = neutral_feature.duplicate(true)
+	malformed_both["passive_effects"][0]["amount"] = 4
+	var unsupported_die: Dictionary = renamed_feature.duplicate(true)
+	unsupported_die["passive_effects"][0]["die_size"] = 5
+	check.call(not DataLoader._feature_content_error(malformed_both).is_empty() and not DataLoader._feature_content_error(unsupported_die).is_empty(), "A post-roll operation rejects simultaneous fixed amount and die_size plus unsupported die sizes")
+	var caster := Character.new()
+	caster.initialize("Post-roll Die Caster", "human", "wizard", AbilityScores.new())
+	caster.character_id = "fixture:post_roll_die_caster"
+	var cast_host := SpellCastContext.new()
+	cast_host.caster = caster
+	var test_hud := CombatHUD.new()
+	cast_host.hud = test_hud
+	cast_host.owner_label_for_character = func(_owner): return "Caster"
+	var dice_counts := {20: 0, 6: 0, 8: 0}
+	var bonus_roll_payloads: Array[Dictionary] = []
+	var count_bonus_rolls := func(payload: Dictionary) -> void:
+		var sides := int(payload.get("sides", 0))
+		if dice_counts.has(sides):
+			dice_counts[sides] += 1
+			if sides in [6, 8]:
+				bonus_roll_payloads.append(payload.duplicate(true))
+	Dice.dice_rolled.connect(count_bonus_rolls)
+	var save_owner := Character.new()
+	save_owner.initialize("Neutral Die Save Owner", "human", "fighter", AbilityScores.new())
+	save_owner.character_id = "fixture:post_roll_die_save_owner"
+	save_owner.ability_scores.dexterity = -100
+	var neutral_source := "fixture:post_roll_die_save_source"
+	neutral_feature["source_instance_id"] = neutral_source
+	save_owner.features.append(neutral_feature)
+	var neutral_pool := ResourcePoolRules.acquire(save_owner, neutral_feature, neutral_source)
+	var save_spell: Dictionary = DataLoader.get_spell("sandbox:steady_save_burst")
+	var count_before_save := dice_counts.duplicate()
+	FighterChecks._seed_die(20, 1)
+	var save_pending := CombatAction.resolve_spell(caster, save_owner, save_spell, false, {"cast_context": cast_host})
+	var save_record := SpellDamageRolls.failed_save_numeric_bonus_record(caster, save_owner, save_pending)
+	var save_test: Dictionary = save_pending.get("save_test", {})
+	var save_options := SpellDamageRolls.failed_save_choice_options(save_owner, "DEX")
+	var save_source_offered := save_options.any(func(option): return str(option.get("source_instance_id", "")) == neutral_source and str(option.get("resolution", "")) == "die_bonus" and int(option.get("die_size", 0)) == 6)
+	var no_save_die_before_accept := int(dice_counts[6]) == int(count_before_save[6])
+	SpellDamageRolls.failed_save_choice_options(save_owner, "DEX")
+	var die_save_query_is_pure := int(dice_counts[6]) == int(count_before_save[6])
+	var save_pool_before := int(ResourcePoolRules.availability(save_owner, neutral_source).get("current", -1))
+	var save_result := SpellDamageRolls.settle_failed_save_numeric_bonus(caster, save_owner, save_pending, neutral_source)
+	var settled_save_test: Dictionary = save_result.get("save_test", {})
+	var saved_d6: Dictionary = settled_save_test.get("post_roll_bonus_die", {})
+	var save_roll_proof := int(save_result.get("save_total", -1)) == int(settled_save_test.get("natural_roll", -100)) + int(settled_save_test.get("modifier", 0)) + int(saved_d6.get("total", 0))
+	check.call(bool(neutral_pool.get("success", false)) and save_pending.has("save_bonus_request") and save_source_offered and no_save_die_before_accept and die_save_query_is_pure, "Neutral failed-save source offers d6 without rolling during the save or either availability query")
+	check.call(not bool(save_result.get("saved", true)) and save_roll_proof and int(saved_d6.get("sides", 0)) == 6 and int(dice_counts[20]) == int(count_before_save[20]) + 1 and int(dice_counts[6]) == int(count_before_save[6]) + 1 and int(save_pool_before - ResourcePoolRules.availability(save_owner, neutral_source).get("current", -1)) == 1, "Accepted d6 is rolled once, adds to the captured save, and pay-on-choice charges one use while failure remains")
+	var save_replay := SpellDamageRolls.settle_failed_save_numeric_bonus(caster, save_owner, save_pending, neutral_source)
+	check.call(bool(save_replay.get("refused", false)) and int(dice_counts[6]) == int(count_before_save[6]) + 1, "Save die completion replay cannot roll again")
+	SpellDamageRolls.clear_pending_requests()
+	var renamed_owner := Character.new()
+	renamed_owner.initialize("Renamed Die Save Owner", "human", "wizard", AbilityScores.new())
+	renamed_owner.character_id = "fixture:post_roll_die_renamed_save_owner"
+	renamed_owner.ability_scores.constitution = -100
+	var renamed_source := "fixture:post_roll_die_renamed_save_source"
+	renamed_feature["source_instance_id"] = renamed_source
+	renamed_owner.features.append(renamed_feature)
+	var renamed_pool := ResourcePoolRules.acquire(renamed_owner, renamed_feature, renamed_source)
+	var con_spell: Dictionary = DataLoader.get_spell("sandbox:failed_save_bonus_con_area")
+	FighterChecks._seed_die(20, 1)
+	var con_pending := CombatAction.resolve_spell(caster, renamed_owner, con_spell, false, {"cast_context": cast_host})
+	var con_options := SpellDamageRolls.failed_save_choice_options(renamed_owner, "CON")
+	var con_die_offered := con_options.any(func(option): return str(option.get("source_instance_id", "")) == renamed_source and str(option.get("resolution", "")) == "die_bonus" and int(option.get("die_size", 0)) == 8)
+	var renamed_pool_before := int(ResourcePoolRules.availability(renamed_owner, renamed_source).get("current", -1))
+	var count_before_d8 := int(dice_counts[8])
+	var con_result := SpellDamageRolls.settle_failed_save_numeric_bonus(caster, renamed_owner, con_pending, renamed_source)
+	var saved_d8: Dictionary = con_result.get("save_test", {}).get("post_roll_bonus_die", {})
+	check.call(bool(renamed_pool.get("success", false)) and con_pending.has("save_bonus_request") and con_die_offered and not bool(con_result.get("saved", true)) and int(saved_d8.get("sides", 0)) == 8 and int(dice_counts[8]) == count_before_d8 + 1 and int(renamed_pool_before - ResourcePoolRules.availability(renamed_owner, renamed_source).get("current", -1)) == 0, "Renamed d8/cost2 remains an authored alternative and pay-on-converted-success leaves a still-failing save free")
+	SpellDamageRolls.clear_pending_requests()
+	var attack_owner := ClassFeatureChecks._character("sorcerer", 3)
+	attack_owner.sorcerer_metamagic_choices.append("empowered_spell")
+	attack_owner.feature_uses["sorcery_points"] = 3
+	attack_owner.ability_scores.charisma = 14
+	attack_owner.character_id = "fixture:post_roll_die_shared_attack_owner"
+	var attack_source := "fixture:post_roll_die_shared_attack_source"
+	renamed_feature["source_instance_id"] = attack_source
+	attack_owner.features.append(renamed_feature)
+	var attack_pool := ResourcePoolRules.acquire(attack_owner, renamed_feature, attack_source)
+	var attack_target := {"id": "fixture:post_roll_die_shared_attack_target", "name": "Shared Attack Target", "armor_class": 13, "current_hp": 100, "max_hp": 100, "is_alive": true, "conditions": {}}
+	var attack_host := SpellCastContext.new()
+	attack_host.caster = attack_owner
+	attack_host.hud = test_hud
+	attack_host.owner_label_for_character = func(_owner): return "Die Owner"
+	var attack_decisions := {"players": [{"character": attack_owner}], "monsters": [attack_target], "cast_context": attack_host, "hud": test_hud, "metamagic:empowered": true, "defer_empowered": true}
+	var attack_spell: Dictionary = DataLoader.get_spell("sandbox:owned_spell_attack_renamed")
+	var count_before_attack := int(dice_counts[8])
+	FighterChecks._seed_die(20, 8)
+	var attack_pending := CombatAction.resolve_spell(attack_owner, attack_target, attack_spell, false, attack_decisions)
+	var attack_record := SpellDamageRolls.weapon_attack_bonus_record(attack_owner, attack_target, attack_pending)
+	var captured_attack: Dictionary = attack_record.get("context", {}).get("attack_result", {})
+	var attack_options := SpellDamageRolls.attack_numeric_bonus_options(attack_owner, "shared_spell_attack")
+	var attack_die_offered := attack_options.any(func(option): return str(option.get("source_instance_id", "")) == attack_source and str(option.get("bonus_kind", "")) == "die" and int(option.get("die_size", 0)) == 8)
+	SpellDamageRolls.attack_numeric_bonus_options(attack_owner, "shared_spell_attack")
+	var no_spell_die_before_accept := int(dice_counts[8]) == count_before_attack
+	var d20_before_attack_accept := int(dice_counts[20])
+	var bonus_payload_count_before_attack := bonus_roll_payloads.size()
+	var attack_pool_before := int(ResourcePoolRules.availability(attack_owner, attack_source).get("current", -1))
+	var attack_result := SpellDamageRolls.settle_weapon_attack_bonus(attack_owner, attack_target, attack_pending, attack_source)
+	var ordered_die_total := int(bonus_roll_payloads[bonus_payload_count_before_attack].get("total", -1)) if bonus_roll_payloads.size() > bonus_payload_count_before_attack else -1
+	var d8_roll_count_after_accept := int(dice_counts[8])
+	var pending_attack_hit: bool = attack_result.has("damage_request") and int(attack_target.get("current_hp", 0)) == 100
+	var attack_cost_paid_once := int(attack_pool_before - ResourcePoolRules.availability(attack_owner, attack_source).get("current", -1)) == 2
+	var attack_resolved := CombatAction.finish_pending_spell_damage(attack_owner, attack_target, attack_result, {"metamagic:empowered": true, "metamagic:empowered_dice": []}) if pending_attack_hit else attack_result
+	var attack_steps: Array = attack_resolved.get("step_results", [])
+	var attack_step: Dictionary = attack_steps[1] if attack_steps.size() > 1 else {}
+	var attack_outcomes: Array = attack_step.get("target_outcomes", [])
+	var attack_spell_outcome: Dictionary = attack_outcomes[0].get("result", {}) if not attack_outcomes.is_empty() else attack_resolved
+	var attack_die: Dictionary = attack_spell_outcome.get("post_roll_bonus_die", {})
+	var resolved_attack_roll := int(attack_spell_outcome.get("attack_roll", attack_result.get("attack_roll", -1)))
+	check.call(bool(attack_pool.get("success", false)) and attack_pending.has("weapon_attack_bonus_request") and attack_pending.has("ordered_continuation") and attack_die_offered and no_spell_die_before_accept, "Shared-spell attack offers the renamed d8 through its ordered chooser without rolling on query")
+	check.call(pending_attack_hit and attack_cost_paid_once and int(dice_counts[20]) == d20_before_attack_accept and d8_roll_count_after_accept == count_before_attack + 2, "Accepted shared-spell d8 converts the captured miss; one accepted d8 and one spell-damage d8 are rolled before suspension")
+	check.call(bool(attack_resolved.get("success", false)) and bool(attack_spell_outcome.get("hit", false)) and int(attack_die.get("sides", 0)) == 8 and int(attack_die.get("total", -1)) == ordered_die_total and resolved_attack_roll == int(captured_attack.get("total", 0)) + ordered_die_total and int(dice_counts[8]) == d8_roll_count_after_accept and int(dice_counts[20]) == d20_before_attack_accept and int(attack_pool_before - ResourcePoolRules.availability(attack_owner, attack_source).get("current", -1)) == 2, "The same accepted d8 and final hit survive the Empowered damage continuation without rerolling or repaying")
+	check.call(attack_steps.size() == 4 and CombatAction.has_condition(attack_target, "restrained") and not CombatAction.has_condition(attack_target, "poisoned"), "Ordered shared-spell hit rider waits for the resumed die-modified result")
+	Dice.dice_rolled.disconnect(count_bonus_rolls)
+	SpellDamageRolls.clear_pending_requests()
+	attack_host.hud = null
+	cast_host.hud = null
+	test_hud.free()
+
+
+static func _fact_predicate_checks(check: Callable) -> void:
+	var neutral: Dictionary = DataLoader.get_spell("sandbox:fact_window_neutral")
+	var renamed: Dictionary = DataLoader.get_spell("sandbox:fact_window_renamed")
+	check.call(not neutral.is_empty() and not renamed.is_empty() and SharedSpell.content_error(neutral).is_empty() and SharedSpell.content_error(renamed).is_empty(), "Neutral and renamed nested fact predicates load through shared spell validation")
+	if neutral.is_empty() or renamed.is_empty(): return
+	var caster := Character.new()
+	caster.initialize("Fact caster", "human", "wizard", AbilityScores.new())
+	caster.character_id = "fact-caster"
+	caster.spell_slots["1"] = 2
+	caster.current_hp = 10
+	var target := caster
+	var cast_context := SpellResolutionContext.new()
+	cast_context.caster = caster
+	cast_context.target = target
+	cast_context.spell = neutral
+	cast_context.effect_cast = {"source_id": "fact-source", "caster_id": caster.character_id}
+	cast_context.spell_definition_id = str(neutral.get("id", ""))
+	cast_context.source_definition_id = cast_context.spell_definition_id
+	cast_context.source_instance_id = "fact-source"
+	cast_context.source_owner_id = caster.character_id
+	var adapter := SharedStepExecutor.SpellAdapter.new(cast_context)
+	var neutral_when: Dictionary = neutral["steps"][0]["effects"][1]["when"]
+	var renamed_when: Dictionary = renamed["steps"][0]["effects"][0]["when"]
+	check.call(SharedStepExecutor.evaluate_predicate(neutral_when, adapter, target, []) and not SharedStepExecutor.evaluate_predicate(renamed_when, adapter, target, []), "Nested all/any/not predicates distinguish authored neutral and renamed eligibility")
+	var pool_definition := {"id": "fact-pool", "level": 1, "resource_pool": {"id": "fact-pool", "capacity_formula": 2, "initial_quantity": 2}}
+	var pool_acquired := ResourcePoolRules.acquire(caster, pool_definition, "fact-source")
+	var grant_added := caster.add_campaign_modifier("stat", "AC", 2, 60, 0, "fact-source")
+	caster.max_hp = 100
+	var pool_before: Dictionary = caster.numeric_resource_pools.duplicate(true)
+	var grant_before: Array = caster.modifiers.duplicate(true)
+	caster.current_hp = 25
+	cast_context.spell = neutral
+	var neutral_off := CombatAction.resolve_spell(caster, caster, neutral, false)
+	var neutral_off_hp := caster.current_hp
+	caster.level = 3
+	caster.current_hp = 20
+	var renamed_on := CombatAction.resolve_spell(caster, caster, renamed, false)
+	var renamed_on_hp := caster.current_hp
+	var renamed_steps: Array = renamed_on.get("step_results", [])
+	var renamed_outcomes: Array = renamed_steps[0].get("target_outcomes", []) if not renamed_steps.is_empty() else []
+	var renamed_effect_result: Dictionary = renamed_outcomes[0].get("result", {}) if not renamed_outcomes.is_empty() else {}
+	caster.current_hp = 45
+	var renamed_off := CombatAction.resolve_spell(caster, caster, renamed, false)
+	check.call(pool_acquired.get("success", false) and grant_added.get("success", false) and int(neutral_off.get("healing", 0)) == 0 and neutral_off_hp == 25 and int(renamed_effect_result.get("healing", 0)) == 5 and renamed_on_hp == 25 and int(renamed_off.get("healing", 0)) == 0 and caster.current_hp == 45, "Loaded spell effect eligibility follows changed represented facts and applies only its authored effect (pool %s grant %s neutral %s hp%s renamed %s hp%s max%s final%s)" % [str(pool_acquired), str(grant_added), str(neutral_off), str(neutral_off_hp), str(renamed_on), str(renamed_on_hp), str(caster.max_hp), str(caster.current_hp)])
+	check.call(caster.numeric_resource_pools == pool_before and caster.modifiers == grant_before and int(caster.spell_slots["1"]) == 2, "Fact queries and eligibility changes do not reacquire, spend, or restart an owned pool or timed grant")
+
+	var missing_context := SpellResolutionContext.new()
+	missing_context.caster = Character.new()
+	missing_context.spell = neutral
+	missing_context.effect_cast = {}
+	var missing_adapter := SharedStepExecutor.SpellAdapter.new(missing_context)
+	var missing_target := {"name": "No current HP fact"}
+	var missing_id_under_not := {"not": {"fact": "target.id", "eq": "some-target"}}
+	var missing_number_under_not := {"not": {"fact": "target.current_hp", "ne": 0}}
+	var present_zero_under_not := {"not": {"fact": "target.current_hp", "ne": 0}}
+	var missing_result_measure_under_not := {"not": {"result": {"step": "prior", "target": "same", "component": "fire", "measure": "resolved"}, "ne": 0}}
+	var present_zero_result_under_not := {"not": {"result": {"step": "prior", "target": "same", "component": "fire", "measure": "resolved"}, "ne": 0}}
+	var zero_target := {"current_hp": 0}
+	var valid_or_missing := {"any": [missing_id_under_not, {"fact": "target.current_hp", "eq": 0}]}
+	var missing_measure_results: Array = [{"step_id": "prior", "target_outcomes": [{"target": zero_target, "damage_components": [{"type": "fire", "raw": 0}]}]}]
+	var present_zero_results: Array = [{"step_id": "prior", "target_outcomes": [{"target": zero_target, "damage_components": [{"type": "fire", "raw": 0, "resolved": 0}]}]}]
+	check.call(not SharedStepExecutor.evaluate_predicate(missing_id_under_not, missing_adapter, missing_target, []) and not SharedStepExecutor.evaluate_predicate(missing_number_under_not, missing_adapter, missing_target, []) and SharedStepExecutor.evaluate_predicate(present_zero_under_not, missing_adapter, zero_target, []) and not SharedStepExecutor.evaluate_predicate(missing_result_measure_under_not, missing_adapter, zero_target, missing_measure_results) and SharedStepExecutor.evaluate_predicate(present_zero_result_under_not, missing_adapter, zero_target, present_zero_results) and SharedStepExecutor.evaluate_predicate(valid_or_missing, missing_adapter, zero_target, []), "Unavailable facts/results stay nonqualifying under not while represented zero remains distinct and valid OR branches can qualify")
+
+	var invalid_bool_numeric := neutral.duplicate(true)
+	invalid_bool_numeric["steps"][0]["effects"][0]["when"] = {"fact": "actor.level", "eq": true}
+	var invalid_empty_fact_not := neutral.duplicate(true)
+	invalid_empty_fact_not["steps"][0]["effects"][0]["when"] = {"not": {"fact": "missing.world_fact", "eq": true}}
+	var invalid_numeric_string := neutral.duplicate(true)
+	invalid_numeric_string["steps"][0]["effects"][0]["when"] = {"fact": "target.current_hp", "gt": "0"}
+	check.call(not SharedSpell.content_error(invalid_bool_numeric).is_empty() and not SharedSpell.content_error(invalid_empty_fact_not).is_empty() and not SharedSpell.content_error(invalid_numeric_string).is_empty(), "Malformed, unknown-fact and wrong-type predicates refuse content before execution")
+	var slots_before := int(caster.spell_slots["1"])
+	var refused := CombatAction.resolve_spell(caster, caster, invalid_bool_numeric, true)
+	check.call(not refused.get("success", true) and int(caster.spell_slots["1"]) == slots_before and caster.current_hp == 45 and caster.numeric_resource_pools == pool_before and caster.modifiers == grant_before, "Invalid predicate content refuses a production cast before slot or target/source mutation")
+
+
+static func _entity_binding_checks(check: Callable) -> void:
+	var neutral: Dictionary = DataLoader.get_spell("sandbox:entity_bindings_neutral")
+	var renamed: Dictionary = DataLoader.get_spell("sandbox:entity_bindings_renamed")
+	check.call(not neutral.is_empty() and not renamed.is_empty() and SharedSpell.content_error(neutral).is_empty() and SharedSpell.content_error(renamed).is_empty(), "Neutral and renamed entity-binding definitions load through SharedSpell validation")
+	if neutral.is_empty() or renamed.is_empty(): return
+	var owner := Character.new()
+	owner.initialize("Binding owner", "human", "wizard", AbilityScores.new())
+	owner.character_id = "binding-owner"
+	var other_owner := Character.new()
+	other_owner.initialize("Other owner", "human", "wizard", AbilityScores.new())
+	other_owner.character_id = "renamed-owner"
+	var target := Character.new()
+	target.initialize("Binding target", "human", "fighter", AbilityScores.new())
+	target.character_id = "binding-target"
+	var other_target := Character.new()
+	other_target.initialize("Other target", "human", "fighter", AbilityScores.new())
+	other_target.character_id = "renamed-target"
+	owner.inventory.add_item("diamond_300gp")
+	owner.inventory.add_item("diamond_300gp")
+	owner.inventory.copies.sync(owner.inventory)
+	var diamond_copies: Array[String] = []
+	for copy_id in owner.inventory.copies.backpack:
+		if str(owner.inventory.copies.records.get(copy_id, {}).get("definition_id", "")) == "diamond_300gp":
+			diamond_copies.append(str(copy_id))
+	var copy_one := diamond_copies[0]
+	var copy_two := diamond_copies[1]
+	var context := SpellResolutionContext.new()
+	context.caster = owner
+	context.target = target
+	context.spell = neutral
+	context.effect_cast = {"source_id": "source-copy-one", "spell_id": str(neutral["id"]), "caster_id": owner.character_id}
+	context.spell_definition_id = str(neutral["id"])
+	context.source_definition_id = str(neutral["id"])
+	context.source_instance_id = "source-copy-one"
+	context.source_owner_id = owner.character_id
+	context.action_id = "magic"
+	context.action_invocation_id = "action-invocation-one"
+	context.invocation_id = "spell-invocation-one"
+	context.item_definition_id = "diamond_300gp"
+	context.item_instance_id = copy_one
+	context.item_copy_validated = true
+	var adapter := SharedStepExecutor.SpellAdapter.new(context)
+	var neutral_when: Dictionary = neutral["steps"][1]["effects"][0]["when"]
+	var renamed_when: Dictionary = renamed["steps"][1]["effects"][0]["when"]
+	check.call(SharedStepExecutor.evaluate_predicate(neutral_when, adapter, target, []) and not SharedStepExecutor.evaluate_predicate(renamed_when, adapter, target, []), "Actor, target, spell definition and source definition resolve from their own bindings")
+	check.call(not SharedStepExecutor.evaluate_predicate(neutral_when, adapter, other_target, []) and not SharedStepExecutor.evaluate_predicate(neutral_when, adapter, other_owner, []), "Owner and recipient identities cannot be substituted through the same id field")
+	var source_two := SpellResolutionContext.new()
+	source_two.caster = owner
+	source_two.target = target
+	source_two.spell = neutral
+	source_two.effect_cast = {"source_id": "source-copy-two", "spell_id": str(neutral["id"]), "caster_id": owner.character_id}
+	source_two.spell_definition_id = str(neutral["id"])
+	source_two.source_definition_id = str(neutral["id"])
+	source_two.source_instance_id = "source-copy-two"
+	source_two.source_owner_id = owner.character_id
+	var first_source: Dictionary = SharedStepExecutor._read_fact("source.instance_id", adapter, target)
+	var second_source: Dictionary = SharedStepExecutor._read_fact("source.instance_id", SharedStepExecutor.SpellAdapter.new(source_two), target)
+	check.call(first_source.get("available", false) and second_source.get("available", false) and first_source.get("value") != second_source.get("value") and SharedStepExecutor._read_fact("source.definition_id", adapter, target).get("value") == SharedStepExecutor._read_fact("source.definition_id", SharedStepExecutor.SpellAdapter.new(source_two), target).get("value"), "Two source instances of one spell definition stay distinct from the shared definition ID")
+	var copy_one_fact: Dictionary = SharedStepExecutor._read_fact("item.instance_id", adapter, target)
+	context.item_instance_id = copy_two
+	var copy_two_fact: Dictionary = SharedStepExecutor._read_fact("item.instance_id", adapter, target)
+	check.call(copy_one_fact.get("available", false) and copy_two_fact.get("available", false) and copy_one_fact.get("value") != copy_two_fact.get("value") and SharedStepExecutor._read_fact("item.definition_id", adapter, target).get("value") == "diamond_300gp", "Two owned copies retain distinct runtime IDs under one loaded item definition")
+	var routed_host := SpellCastContext.new()
+	routed_host.caster = owner
+	routed_host.action_id = "magic"
+	routed_host.component_item_id = "diamond_300gp"
+	routed_host.component_instance_id = copy_one
+	routed_host.component_copy_validated = true
+	var routed_spell := neutral.duplicate(true)
+	routed_spell["steps"][1]["effects"][0]["when"] = {"all": [
+		{"fact": "action.id", "eq": "magic"},
+		{"fact": "action.invocation_id", "eq": routed_host.action_invocation_id},
+		{"fact": "spell.invocation_id", "eq": routed_host.invocation_id},
+		{"fact": "item.instance_id", "eq": copy_one},
+		{"fact": "source.instance_id", "ne": "missing-source"}
+	]}
+	routed_host.spell = routed_spell
+	target.current_hp = 1
+	var spoofed_host_result := CombatAction.resolve_spell(owner, target, routed_spell, false, {"cast_context": routed_host})
+	var spoofed_host_refused_fact := target.current_hp == 1
+	var routed_result := CombatAction.resolve_spell(owner, target, routed_spell, false, {}, [], 1, -1, routed_host)
+	check.call(spoofed_host_refused_fact and target.current_hp == 2 and target.has_condition("blessed") and not str(routed_result.get("effect_cast", {}).get("source_id", "")).is_empty() and routed_result.get("success", false), "Caller decision metadata cannot impersonate the host; the owned host supplies invocation/item facts and the real effect source")
+	context.item_copy_validated = false
+	context.item_instance_id = ""
+	check.call(not SharedStepExecutor.evaluate_predicate({"not": {"fact": "item.instance_id", "eq": "missing-copy"}}, adapter, target, []), "A spell-only host with no validated item copy leaves item facts unavailable under not")
+	context.item_copy_validated = true
+	context.item_instance_id = copy_one
+	context.spell = neutral.duplicate(true)
+	context.spell["steps"] = []
+	var continuation_step := {"id": "bind", "type": "effect", "effects": [{"type": "heal", "value": "1", "when": {"all": [
+		{"fact": "actor.id", "eq": "binding-owner"},
+		{"fact": "target.id", "eq": "binding-target"},
+		{"fact": "action.invocation_id", "eq": "action-invocation-one"},
+		{"fact": "spell.invocation_id", "eq": "spell-invocation-one"},
+		{"fact": "item.instance_id", "eq": copy_one},
+		{"fact": "source.instance_id", "eq": "source-copy-one"}
+	]}}]}
+	target.current_hp = 1
+	other_target.current_hp = 1
+	var continuation := {"cast": context, "step": continuation_step, "pending_target": target, "step_index": 0, "target_index": 0}
+	var resumed := SharedStepExecutor.resume_spell_steps(other_owner, other_target, {"success": true, "hit": true}, {}, continuation)
+	check.call(target.current_hp == 2 and other_target.current_hp == 1 and resumed.get("success", false), "Captured action, spell, item and source identities survive resume; caller owner/target substitutions do not replace them")
+	var invalid_kind := neutral.duplicate(true)
+	invalid_kind["steps"][1]["effects"][0]["when"] = {"fact": "item.instance_id", "eq": 3}
+	check.call(not SharedSpell.content_error(invalid_kind).is_empty(), "Identity bindings reject wrong-kind numeric comparisons before execution")
+
+
+static func _relationship_query_checks(check: Callable) -> void:
+	var neutral: Dictionary = DataLoader.get_spell("sandbox:relationship_neutral")
+	var renamed: Dictionary = DataLoader.get_spell("sandbox:relationship_renamed")
+	check.call(not neutral.is_empty() and not renamed.is_empty() and SharedSpell.content_error(neutral).is_empty() and SharedSpell.content_error(renamed).is_empty(), "Neutral and renamed relationship consumers load and validate")
+	var caster := Character.new()
+	caster.initialize("Relation caster", "human", "wizard", AbilityScores.new())
+	caster.character_id = "relation-caster"
+	var ally := Character.new()
+	ally.initialize("Willing ally", "human", "fighter", AbilityScores.new())
+	ally.character_id = "relation-ally"
+	ally.willingness = "willing"
+	ally.current_hp = 1
+	var enemy := Character.new()
+	enemy.initialize("Unwilling enemy", "human", "fighter", AbilityScores.new())
+	enemy.character_id = "relation-enemy"
+	enemy.willingness = "unwilling"
+	enemy.current_hp = 1
+	var players := [{"character": caster}, {"character": ally}]
+	var monsters := [enemy]
+	var ally_source := "spell:relation-caster:1"
+	var enemy_source := "spell:relation-caster:2"
+	_seed_relation_condition(ally, caster.character_id, ally_source, "charmed")
+	_seed_relation_condition(enemy, caster.character_id, enemy_source, "hunters_mark")
+	var neutral_gate: Dictionary = neutral["steps"][0]["effects"][0]["when"]
+	var renamed_gate: Dictionary = renamed["steps"][0]["effects"][0]["when"]
+	var neutral_result := CombatAction.resolve_spell(caster, ally, neutral, false, {"players": players, "monsters": monsters})
+	var renamed_result := CombatAction.resolve_spell(caster, enemy, renamed, false, {"players": players, "monsters": monsters})
+	check.call(neutral_result.get("success", false) and ally.current_hp == 3 and renamed_result.get("success", false) and enemy.current_hp == 6, "Loaded neutral ally/willing/charm and renamed enemy/unwilling/mark consumers qualify through shared effect settlement")
+	var neutral_context := SpellResolutionContext.new()
+	neutral_context.caster = caster
+	neutral_context.target = ally
+	neutral_context.spell = neutral
+	neutral_context.decisions = {"players": players, "monsters": monsters}
+	var adapter := SharedStepExecutor.SpellAdapter.new(neutral_context)
+	check.call(SharedStepExecutor.evaluate_predicate(neutral_gate, adapter, ally, []) and SharedStepExecutor._read_fact("target.relationship", adapter, ally).get("value") == "ally", "Current participant control classifies an ally from the live player roster")
+	var continuation_cast := SpellResolutionContext.new()
+	continuation_cast.caster = caster
+	continuation_cast.target = ally
+	continuation_cast.spell = neutral
+	continuation_cast.decisions = {"players": players, "monsters": monsters}
+	ally.current_hp = 1
+	var other_giver := Character.new()
+	other_giver.initialize("Other giver", "human", "wizard", AbilityScores.new())
+	other_giver.character_id = "relation-other-giver"
+	var other_recipient := Character.new()
+	other_recipient.initialize("Substitute target", "human", "fighter", AbilityScores.new())
+	other_recipient.character_id = "relation-substitute"
+	other_recipient.current_hp = 1
+	var continuation := {"cast": continuation_cast, "step": neutral["steps"][0], "pending_target": ally, "step_index": 0, "target_index": 0}
+	var continued := SharedStepExecutor.resume_spell_steps(other_giver, other_recipient, {"success": true, "hit": true}, {}, continuation)
+	check.call(continued.get("success", false) and ally.current_hp == 3 and other_recipient.current_hp == 1, "Continuation retains captured caster, recipient and participant bindings when called with substituted entities")
+	neutral_context.decisions["players"] = [{"character": caster}]
+	neutral_context.decisions["monsters"] = [ally, enemy]
+	check.call(SharedStepExecutor._read_fact("target.relationship", adapter, ally).get("value") == "enemy", "Changing represented control changes the live relationship query")
+	ally.willingness = "unknown"
+	check.call(not SharedStepExecutor._read_fact("target.willingness", adapter, ally).get("available", false) and not SharedStepExecutor.evaluate_predicate({"not": {"fact": "target.willingness", "eq": "willing"}}, adapter, ally, []), "Unknown willingness stays unavailable, including under not, and is never consent")
+	var no_roster := SpellResolutionContext.new()
+	no_roster.caster = caster
+	no_roster.target = enemy
+	no_roster.spell = neutral
+	var no_roster_adapter := SharedStepExecutor.SpellAdapter.new(no_roster)
+	check.call(not SharedStepExecutor._read_fact("target.relationship", no_roster_adapter, enemy).get("available", false), "Missing allegiance/control participants yield an unavailable relationship")
+	var second_charm_source := "spell:relation-other-giver:1"
+	_seed_relation_condition(ally, other_giver.character_id, second_charm_source, "charmed")
+	var caster_context := SpellResolutionContext.new()
+	caster_context.caster = caster
+	caster_context.target = ally
+	caster_context.spell = neutral
+	var caster_adapter := SharedStepExecutor.SpellAdapter.new(caster_context)
+	var second_context := SpellResolutionContext.new()
+	second_context.caster = other_giver
+	second_context.target = ally
+	second_context.spell = neutral
+	var second_adapter := SharedStepExecutor.SpellAdapter.new(second_context)
+	check.call(SharedStepExecutor._read_fact("target.charmed_by_actor", caster_adapter, ally).get("value", false) and SharedStepExecutor._read_fact("target.charmed_by_actor", second_adapter, ally).get("value", false), "Two independent givers of the same Charmed effect each match their own retained source record")
+	SpellEffects.remove(ally, ally_source)
+	check.call(not SharedStepExecutor._read_fact("target.charmed_by_actor", caster_adapter, ally).get("value", true) and SharedStepExecutor._read_fact("target.charmed_by_actor", second_adapter, ally).get("value", false), "Removing one exact source preserves the other giver's same-kind effect")
+	var persistence := ally.to_dict()
+	var restored := Character.new()
+	restored.from_dict(persistence)
+	check.call(restored.willingness == "unknown" and Character.saved_willingness_error(persistence).is_empty() and not Character.saved_willingness_error({"willingness": "maybe"}).is_empty(), "Explicit willingness values persist and malformed values are rejected")
+
+
+static func _seed_relation_condition(target: Character, giver_id: String, source_id: String, condition: String) -> void:
+	var grants: Dictionary = target.condition_sources.get(condition, {})
+	grants[source_id] = 10
+	target.condition_sources[condition] = grants
+	target.conditions[condition] = 10
+	target.spell_effects[source_id] = {"source_id": source_id, "caster_id": giver_id, "conditions": [condition], "remaining_seconds": 60}
+
+
+static func _shared_result_sum_checks(check: Callable) -> void:
+	var spell: Dictionary = DataLoader.get_spell("sandbox:area_hp_tithe")
+	var renamed: Dictionary = DataLoader.get_spell("sandbox:area_hp_tithe_renamed")
+	check.call(not spell.is_empty() and not renamed.is_empty() and SharedSpell.content_error(spell).is_empty() and SharedSpell.content_error(renamed).is_empty(), "Neutral and renamed earlier-step damage-sum fixtures load and validate")
+	var caster := Character.new()
+	caster.initialize("Area Tithe Caster", "human", "wizard", AbilityScores.new())
+	caster.character_id = "area_tithe_caster"
+	caster.max_hp = 100
+	caster.current_hp = 10
+	var short_target := {"id": "tithe-short", "definition_id": "fixture:training_dummy", "name": "Short target", "current_hp": 3, "max_hp": 100, "is_alive": true, "temp_hp": 0, "conditions": {}}
+	var resistant_target := {"id": "tithe-resistant", "definition_id": "fixture:training_dummy", "name": "Resistant target", "current_hp": 50, "max_hp": 100, "is_alive": true, "temp_hp": 4, "damage_resistances": ["fire"], "conditions": {}}
+	var immune_target := {"id": "tithe-immune", "name": "Immune target", "current_hp": 100, "max_hp": 100, "is_alive": true, "temp_hp": 0, "damage_immunities": ["fire"], "conditions": {}}
+	var neutral_decisions := {"area_targets": [short_target, resistant_target, immune_target]}
+	var neutral_result := CombatAction.resolve_spell(caster, short_target, spell, false, neutral_decisions)
+	var neutral_outcomes: Array = neutral_result.get("step_results", [])[0].get("target_outcomes", []) if neutral_result.get("step_results", []).size() > 0 else []
+	var neutral_context := SpellResolutionContext.new()
+	neutral_context.caster = caster
+	neutral_context.target = short_target
+	neutral_context.spell = spell
+	neutral_context.decisions = neutral_decisions
+	var neutral_adapter := SharedStepExecutor.SpellAdapter.new(neutral_context)
+	var hp_loss_sum := SharedStepExecutor.evaluate_formula({"result_sum": {"step": "blast", "component": "fire", "measure": "hp_loss"}}, neutral_adapter, caster, neutral_result.get("step_results", []))
+	var resolved_sum := SharedStepExecutor.evaluate_formula({"result_sum": {"step": "blast", "component": "fire", "measure": "resolved"}}, neutral_adapter, caster, neutral_result.get("step_results", []))
+	var raw_sum := SharedStepExecutor.evaluate_formula({"result_sum": {"step": "blast", "component": "fire", "measure": "raw"}}, neutral_adapter, caster, neutral_result.get("step_results", []))
+	var single_target_value := SharedStepExecutor.evaluate_formula({"result": {"step": "blast", "target": "cast_target", "component": "fire", "measure": "hp_loss"}}, neutral_adapter, caster, neutral_result.get("step_results", []))
+	var neutral_heal: Dictionary = neutral_result.get("step_results", [])[1].get("target_outcomes", [])[0].get("result", {}) if neutral_result.get("step_results", []).size() > 1 else {}
+	check.call(bool(neutral_result.get("success", false)) and neutral_outcomes.size() == 3 and short_target.current_hp == 0 and resistant_target.current_hp == 48 and resistant_target.temp_hp == 0 and immune_target.current_hp == 100, "Neutral ordered area damage settles once per target across overkill, resistance, Temporary HP, and immunity")
+	check.call(hp_loss_sum.get("success", false) and int(hp_loss_sum.get("value", -1)) == 5 and resolved_sum.get("success", false) and int(resolved_sum.get("value", -1)) == 18 and raw_sum.get("success", false) and int(raw_sum.get("value", -1)) == 36, "Aggregate selector separately sums actual HP loss, resolved damage, and raw damage")
+	check.call(int(single_target_value.get("value", -1)) == 3 and caster.current_hp == 12 and int(neutral_heal.get("healing", -1)) == 2, "Existing single-target selectors remain intact and area heal occurs once using floor(total HP loss / 2)")
+
+	caster.current_hp = 10
+	var renamed_short := {"id": "tithe-renamed-short", "name": "Renamed short", "current_hp": 4, "max_hp": 100, "is_alive": true, "temp_hp": 0, "conditions": {}}
+	var renamed_resistant := {"id": "tithe-renamed-resistant", "name": "Renamed resistant", "current_hp": 20, "max_hp": 100, "is_alive": true, "temp_hp": 2, "damage_resistances": ["cold"], "conditions": {}}
+	var renamed_immune := {"id": "tithe-renamed-immune", "name": "Renamed immune", "current_hp": 100, "max_hp": 100, "is_alive": true, "temp_hp": 0, "damage_immunities": ["cold"], "conditions": {}}
+	var renamed_decisions := {"area_targets": [renamed_short, renamed_resistant, renamed_immune]}
+	var renamed_result := CombatAction.resolve_spell(caster, renamed_short, renamed, false, renamed_decisions)
+	var renamed_sum := SharedStepExecutor.evaluate_formula({"result_sum": {"step": "flare", "component": "cold", "measure": "hp_loss"}}, neutral_adapter, caster, renamed_result.get("step_results", []))
+	var renamed_heal: Dictionary = renamed_result.get("step_results", [])[1].get("target_outcomes", [])[0].get("result", {}) if renamed_result.get("step_results", []).size() > 1 else {}
+	check.call(bool(renamed_result.get("success", false)) and renamed_sum.get("success", false) and int(renamed_sum.get("value", -1)) == 7 and caster.current_hp == 13 and int(renamed_heal.get("healing", -1)) == 3, "Renamed Cold/10 fixture uses its own step, component and value through the same aggregate path")
+
+	var empty_sum := SharedStepExecutor.evaluate_formula({"result_sum": {"step": "blast", "component": "fire", "measure": "hp_loss"}}, neutral_adapter, caster, [{"step_id": "blast", "type": "damage", "target_outcomes": []}])
+	var skipped_sum := SharedStepExecutor.evaluate_formula({"result_sum": {"step": "blast", "component": "fire", "measure": "hp_loss"}}, neutral_adapter, caster, [{"step_id": "blast", "type": "damage", "target_outcomes": [{"target": short_target, "skipped": true}]}])
+	var missing_sum := SharedStepExecutor.evaluate_formula({"result_sum": {"step": "blast", "component": "fire", "measure": "hp_loss"}}, neutral_adapter, caster, [])
+	var malformed_sum := SharedStepExecutor.evaluate_formula({"result_sum": {"step": "blast", "component": "fire", "measure": "hp_loss"}}, neutral_adapter, caster, [{"step_id": "blast", "type": "damage", "target_outcomes": ["bad"]}])
+	var duplicate_sum := SharedStepExecutor.evaluate_formula({"result_sum": {"step": "blast", "component": "fire", "measure": "raw"}}, neutral_adapter, caster, [{"step_id": "blast", "type": "damage", "target_outcomes": [{"target": short_target, "damage": 12, "damage_components": [{"type": "fire", "raw": 12}]}, {"target": short_target, "damage": 12, "damage_components": [{"type": "fire", "raw": 12}]}]}])
+	var sum_predicate := SharedStepExecutor.evaluate_predicate({"result_sum": {"step": "blast", "component": "fire", "measure": "hp_loss"}, "gt": 0}, neutral_adapter, caster, [{"step_id": "blast", "target_outcomes": []}])
+	check.call(empty_sum.get("success", false) and int(empty_sum.get("value", -1)) == 0 and skipped_sum.get("success", false) and int(skipped_sum.get("value", -1)) == 0 and not sum_predicate and duplicate_sum.get("success", false) and int(duplicate_sum.get("value", -1)) == 12, "Present empty/skipped outcomes sum to zero, predicates gate effects, and repeated target records count once")
+	check.call(not missing_sum.get("success", true) and not malformed_sum.get("success", true), "Absent and malformed prior outcome data fails instead of fabricating zero")
+
+	var invalid_future := spell.duplicate(true)
+	invalid_future["steps"][1]["effects"][0]["value"]["left"]["result_sum"]["step"] = "after_heal"
+	invalid_future["steps"].append({"id": "after_heal", "type": "effect", "target": "self", "effects": [{"type": "heal", "value": 1}]})
+	var invalid_current := spell.duplicate(true)
+	invalid_current["steps"][1]["effects"][0]["value"]["left"]["result_sum"]["step"] = "tithe_heal"
+	var invalid_component := spell.duplicate(true)
+	invalid_component["steps"][1]["effects"][0]["value"]["left"]["result_sum"]["component"] = "cold"
+	var invalid_predicate := spell.duplicate(true)
+	invalid_predicate["steps"][1]["when"]["result_sum"]["measure"] = "overkill"
+	check.call(not SharedSpell.content_error(invalid_future).is_empty() and not SharedSpell.content_error(invalid_current).is_empty() and not SharedSpell.content_error(invalid_component).is_empty() and not SharedSpell.content_error(invalid_predicate).is_empty(), "Future/current-step references, wrong damage components and unsupported measures refuse content before costs")
+	var preflight_caster := Character.new()
+	preflight_caster.initialize("Aggregate Preflight", "human", "wizard", AbilityScores.new())
+	preflight_caster.spell_slots["1"] = 2
+	for invalid_spell in [invalid_future, invalid_current, invalid_component]:
+		var refused_cast := CombatAction.resolve_spell(preflight_caster, short_target, invalid_spell, true, {"area_targets": [short_target]}, [], 1)
+		check.call(not refused_cast.get("success", true) and int(preflight_caster.spell_slots.get("1", -1)) == 2, "Invalid aggregate reference refuses the production cast before spell-slot payment")
+
+	# Resume a real loaded aggregate spell through the established per-target save-choice continuation.
+	# Settling each target appends one outcome; only the completed damage step may run the caster heal.
+	var continuation_caster := Character.new()
+	continuation_caster.initialize("Aggregate Continuation", "human", "wizard", AbilityScores.new())
+	continuation_caster.character_id = "aggregate_continuation_caster"
+	while continuation_caster.level < 3:
+		continuation_caster.level_up()
+	ClassProgression.choose_subclass(continuation_caster, "diviner")
+	continuation_caster.current_hp = 10
+	continuation_caster.max_hp = 100
+	continuation_caster.spell_slots["1"] = 2
+	continuation_caster.roll_tokens["diviner_portent"] = [{"token_id": "aggregate:20", "value": 20, "feature_id": "diviner_portent", "pool_id": "diviner_portent", "die_sides": 20}]
+	var continuation_short := {"id": "aggregate-short", "definition_id": "fixture:training_dummy", "name": "Aggregate short", "current_hp": 3, "max_hp": 100, "is_alive": true, "temp_hp": 0, "ability_scores": {"DEX": -100}, "conditions": {}}
+	var continuation_resistant := {"id": "aggregate-resistant", "definition_id": "fixture:training_dummy", "name": "Aggregate resistant", "current_hp": 50, "max_hp": 100, "is_alive": true, "temp_hp": 2, "damage_resistances": ["fire"], "ability_scores": {"DEX": -100}, "conditions": {}}
+	var continuation_immune := {"id": "aggregate-immune", "name": "Aggregate immune", "current_hp": 100, "max_hp": 100, "is_alive": true, "temp_hp": 0, "damage_immunities": ["fire"], "ability_scores": {"DEX": -100}, "conditions": {}}
+	var continuation_spell := spell.duplicate(true)
+	continuation_spell["steps"][0]["type"] = "save"
+	continuation_spell["steps"][0]["save"] = "DEX"
+	var continuation_host := SpellCastContext.new()
+	continuation_host.caster = continuation_caster
+	continuation_host.collect_roll_token_decision = func(_roller, _kind, _label, _seed = {}): return {}
+	var continuation_decisions := {"cast_context": continuation_host, "target_visible": true, "area_targets": [continuation_short, continuation_resistant, continuation_immune]}
+	FighterChecks._seed_die(20, 10)
+	var continuation_result := CombatAction.resolve_spell(continuation_caster, continuation_short, continuation_spell, true, continuation_decisions, [], 1, 6)
+	var slot_after_cast := int(continuation_caster.spell_slots.get("1", -1))
+	var roll_resumes := 0
+	while continuation_result.has("roll_choice_request") and roll_resumes < 4:
+		var roll_record := SpellDamageRolls.roll_choice_record(continuation_caster, continuation_result)
+		var roll_target = roll_record.get("roller", null)
+		if roll_target == null:
+			break
+		FighterChecks._seed_die(20, 10 + roll_resumes)
+		continuation_result = SpellDamageRolls.settle_roll_choice(continuation_caster, roll_target, continuation_result, {})
+		roll_resumes += 1
+	var continuation_steps: Array = continuation_result.get("step_results", [])
+	var continuation_outcomes: Array = continuation_steps[0].get("target_outcomes", []) if continuation_steps.size() > 0 else []
+	var continuation_sum := SharedStepExecutor.evaluate_formula({"result_sum": {"step": "blast", "component": "fire", "measure": "hp_loss"}}, neutral_adapter, continuation_caster, continuation_steps)
+	var resumed_exact_result := SharedStepExecutor.evaluate_formula({"result": {"step": "blast", "target": "same", "component": "fire", "measure": "hp_loss"}}, neutral_adapter, continuation_short, continuation_steps)
+	var resumed_hp_before_mutation := int(continuation_short["current_hp"])
+	continuation_short["current_hp"] = 77
+	var resumed_after_live_hp_change := SharedStepExecutor.evaluate_formula({"result": {"step": "blast", "target": "same", "component": "fire", "measure": "hp_loss"}}, neutral_adapter, continuation_short, continuation_steps)
+	continuation_short["current_hp"] = resumed_hp_before_mutation
+	var continuation_heal: Dictionary = continuation_steps[1].get("target_outcomes", [])[0].get("result", {}) if continuation_steps.size() > 1 and continuation_steps[1].get("target_outcomes", []).size() > 0 else {}
+	var continuation_hp := [int(continuation_short["current_hp"]), int(continuation_resistant["current_hp"]), int(continuation_immune["current_hp"])]
+	var continuation_caster_hp := continuation_caster.current_hp
+	var continuation_slot_count := int(continuation_caster.spell_slots.get("1", -1))
+	var replayed_continuation := SpellDamageRolls.settle_roll_choice(continuation_caster, continuation_short, continuation_result, {})
+	check.call(roll_resumes == 3 and continuation_result.get("success", false) and continuation_outcomes.size() == 3 and int(slot_after_cast) == 1 and continuation_slot_count == 1, "Resumed loaded aggregate cast settles all distinct same-definition targets and pays its spell slot once")
+	check.call(continuation_sum.get("success", false) and continuation_sum.get("value", -1) > 0 and int(continuation_heal.get("healing", -1)) == floor(float(continuation_sum.get("value", 0)) / 2.0) and continuation_caster.current_hp == 10 + int(continuation_heal.get("healing", 0)), "Aggregate predicate runs after all resumed outcomes and heals the caster once from actual HP loss")
+	check.call(roll_resumes == 3 and resumed_exact_result.get("success", false) and resumed_exact_result.get("value", -1) == 3 and resumed_after_live_hp_change.get("value", -1) == 3, "Exact component HP-loss receipt survives a later-target pause/resume and subsequent target HP change")
+	check.call(continuation_short.current_hp == 0, "Resumed area damage preserves overkill against the low-HP target")
+	check.call(continuation_resistant.current_hp < 50 and continuation_resistant.temp_hp == 0, "Resumed area damage applies resistance after absorbing the resistant target's Temporary HP (HP %s, temp %s, outcome %s)" % [str(continuation_resistant.current_hp), str(continuation_resistant.temp_hp), str(continuation_outcomes[1] if continuation_outcomes.size() > 1 else {})])
+	check.call(continuation_immune.current_hp == 100, "Resumed area damage preserves the immune target's HP")
+	check.call(bool(replayed_continuation.get("refused", false)) and continuation_caster.current_hp == continuation_caster_hp and continuation_caster.spell_slots.get("1", -1) == continuation_slot_count and continuation_short.current_hp == continuation_hp[0] and continuation_resistant.current_hp == continuation_hp[1] and continuation_immune.current_hp == continuation_hp[2], "Replaying the completed continuation cannot repeat damage, aggregate healing, or cast cost")
+
+
+static func _shared_prior_measure_checks(check: Callable) -> void:
+	var spell: Dictionary = DataLoader.get_spell("sandbox:receipt_probe")
+	var renamed: Dictionary = DataLoader.get_spell("sandbox:receipt_probe_renamed")
+	check.call(not spell.is_empty() and not renamed.is_empty() and SharedSpell.content_error(spell).is_empty() and SharedSpell.content_error(renamed).is_empty(), "Neutral and renamed measure consumers load and validate through DataLoader")
+	var caster := Character.new()
+	caster.initialize("Receipt Caster", "human", "wizard", AbilityScores.new())
+	caster.character_id = "receipt-caster"
+	caster.spell_slots["1"] = 2
+	var target_a := {"id": "receipt-target-a", "definition_id": "fixture:shared_dummy", "name": "Resistant with Temporary HP", "current_hp": 9, "max_hp": 30, "is_alive": true, "temp_hp": 4, "damage_resistances": ["fire"], "damage_immunities": ["force"], "ability_scores": {"DEX": -100}, "conditions": {}}
+	var target_b := {"id": "receipt-target-b", "definition_id": "fixture:shared_dummy", "name": "Unresistant twin", "current_hp": 100, "max_hp": 150, "is_alive": true, "temp_hp": 0, "damage_immunities": ["force"], "ability_scores": {"DEX": -100}, "conditions": {}}
+	var target_immune := {"id": "receipt-target-immune", "definition_id": "fixture:shared_dummy", "name": "Immune twin", "current_hp": 100, "max_hp": 100, "is_alive": true, "temp_hp": 0, "damage_immunities": ["force", "fire"], "ability_scores": {"DEX": -100}, "conditions": {}}
+	FighterChecks._seed_die(20, 1)
+	var cast_result := CombatAction.resolve_spell(caster, target_a, spell, false, {"area_targets": [target_a, target_b, target_immune]})
+	var steps: Array = cast_result.get("step_results", [])
+	var damage_outcomes: Array = []
+	for step in steps:
+		if str(step.get("step_id", "")) == "impact": damage_outcomes = step.get("target_outcomes", [])
+	var healed_outcomes: Array = []
+	for step in steps:
+		if str(step.get("step_id", "")) == "mend":
+			healed_outcomes = step.get("target_outcomes", [])
+	var adapter_cast := SpellResolutionContext.new()
+	adapter_cast.caster = caster
+	adapter_cast.target = target_a
+	adapter_cast.spell = spell
+	adapter_cast.effect_cast = {"caster_id": caster.character_id}
+	var adapter := SharedStepExecutor.SpellAdapter.new(adapter_cast)
+	var select := func(target, component_id: String, measure: String, component_type: String = "fire") -> Dictionary:
+		return SharedStepExecutor.evaluate_formula({"result": {"step": "impact", "target": "same", "component": component_type, "component_id": component_id, "measure": measure}}, adapter, target, steps)
+	var raw_a: Dictionary = select.call(target_a, "fire_a", "raw")
+	var resolved_a: Dictionary = select.call(target_a, "fire_a", "resolved")
+	var prevented_a: Dictionary = select.call(target_a, "fire_a", "prevented")
+	var absorbed_a: Dictionary = select.call(target_a, "fire_a", "absorbed")
+	var hp_loss_a: Dictionary = select.call(target_a, "fire_a", "hp_loss")
+	var repeated_type_a: Dictionary = select.call(target_a, "fire_b", "raw")
+	var repeated_type_hp_loss: Dictionary = select.call(target_a, "fire_b", "hp_loss")
+	var target_b_raw: Dictionary = select.call(target_b, "fire_a", "raw")
+	var target_b_hp_loss: Dictionary = select.call(target_b, "fire_a", "hp_loss")
+	var immune_prevented: Dictionary = select.call(target_immune, "fire_a", "prevented")
+	var type_only_ambiguous := SharedStepExecutor.evaluate_formula({"result": {"step": "impact", "target": "same", "component": "fire", "measure": "raw"}}, adapter, target_a, steps)
+	check.call(cast_result.get("success", false) and damage_outcomes.size() == 3 and raw_a.get("success", false) and raw_a.get("value", -1) == 6 and resolved_a.get("value", -1) == 3 and prevented_a.get("value", -1) == 3 and absorbed_a.get("value", -1) == 3 and hp_loss_a.get("value", -1) == 0 and repeated_type_a.get("value", -1) == 4 and repeated_type_hp_loss.get("value", -1) == 1, "Exact component receipts separate raw, resisted prevention, Temporary HP absorption and actual HP loss")
+	check.call(target_b_raw.get("value", -1) == 6 and target_b_hp_loss.get("value", -1) == 6 and not type_only_ambiguous.get("success", true) and str(type_only_ambiguous.get("error", "")).contains("Ambiguous"), "Runtime target identity separates same-definition actors and ambiguous same-type selection refuses")
+	var heal_selector := {"result": {"step": "mend", "target": "same", "measure": "healed"}}
+	var healed_a := SharedStepExecutor.evaluate_formula(heal_selector, adapter, target_a, steps)
+	var healed_b := SharedStepExecutor.evaluate_formula(heal_selector, adapter, target_b, steps)
+	var actual_healing_a: int = int(healed_outcomes[0].get("result", {}).get("healing", -1)) if healed_outcomes.size() > 0 else -1
+	check.call(healed_a.get("success", false) and healed_a.get("value", -1) == 5 and healed_b.get("success", false) and healed_b.get("value", -1) == 10 and actual_healing_a == 5 and target_a.get("temp_hp", -1) == 5 and target_b.get("temp_hp", -1) == 10, "Capped actual healing is read from its effect receipt and the later consumer observes that amount")
+	var hp_before_mutation := int(target_a.get("current_hp", -1))
+	target_a["current_hp"] = 0
+	var retained_after_hp_change: Dictionary = select.call(target_a, "fire_b", "hp_loss")
+	target_a["current_hp"] = hp_before_mutation
+	check.call(retained_after_hp_change.get("success", false) and retained_after_hp_change.get("value", -1) == 1, "Settled damage receipt survives later live HP changes")
+	var invalid_ambiguous := spell.duplicate(true)
+	var component_consumer_index := -1
+	for index in invalid_ambiguous["steps"].size():
+		if str(invalid_ambiguous["steps"][index].get("id", "")) == "echo_absorbed": component_consumer_index = index
+	invalid_ambiguous["steps"][component_consumer_index]["effects"][0]["value"] = {"result": {"step": "impact", "target": "same", "component": "fire", "measure": "raw"}}
+	var runtime_ambiguous: Dictionary = SharedStepExecutor.evaluate_formula(invalid_ambiguous["steps"][component_consumer_index]["effects"][0]["value"], adapter, target_a, steps)
+	var invalid_component := spell.duplicate(true)
+	invalid_component["steps"][component_consumer_index]["effects"][0]["value"] = {"result": {"step": "impact", "target": "same", "component": "fire", "component_id": "missing", "measure": "raw"}}
+	var invalid_healed_component := spell.duplicate(true)
+	var afterglow_index := -1
+	for index in invalid_healed_component["steps"].size():
+		if str(invalid_healed_component["steps"][index].get("id", "")) == "afterglow": afterglow_index = index
+	invalid_healed_component["steps"][afterglow_index]["effects"][0]["value"] = {"result": {"step": "mend", "target": "same", "component": "fire", "measure": "healed"}}
+	check.call(SharedSpell.content_error(invalid_ambiguous).is_empty() and not runtime_ambiguous.get("success", true) and str(runtime_ambiguous.get("error", "")).contains("Ambiguous") and not SharedSpell.content_error(invalid_component).is_empty() and not SharedSpell.content_error(invalid_healed_component).is_empty(), "Ambiguous types refuse at runtime instead of taking first; missing identities and component-bound healing selectors refuse")
+	var missing_heal := SharedStepExecutor.evaluate_formula(heal_selector, adapter, target_a, [{"step_id": "mend", "type": "effect", "target_outcomes": [{"target": target_a, "result": {}}]}])
+	var real_zero: Dictionary = select.call(target_immune, "fire_a", "hp_loss")
+	check.call(not missing_heal.get("success", true) and real_zero.get("success", false) and real_zero.get("value", -1) == 0 and immune_prevented.get("success", false) and immune_prevented.get("value", -1) == 6, "Missing healing stays unavailable while immunity records prevented damage and a real zero HP-loss receipt")
+	var renamed_caster := Character.new()
+	renamed_caster.initialize("Renamed Receipt Caster", "human", "wizard", AbilityScores.new())
+	var renamed_target := {"id": "renamed-receipt-target", "current_hp": 20, "max_hp": 20, "is_alive": true, "temp_hp": 0, "damage_resistances": ["cold"], "ability_scores": {"DEX": -100}, "conditions": {}}
+	FighterChecks._seed_die(20, 1)
+	var renamed_result := CombatAction.resolve_spell(renamed_caster, renamed_target, renamed, false, {"area_targets": [renamed_target]})
+	var renamed_steps: Array = renamed_result.get("step_results", [])
+	var renamed_context := SpellResolutionContext.new()
+	renamed_context.caster = renamed_caster
+	renamed_context.target = renamed_target
+	renamed_context.spell = renamed
+	var renamed_adapter := SharedStepExecutor.SpellAdapter.new(renamed_context)
+	var renamed_prevented := SharedStepExecutor.evaluate_formula({"result": {"step": "flare", "target": "same", "component": "cold", "component_id": "cold_a", "measure": "prevented"}}, renamed_adapter, renamed_target, renamed_steps)
+	check.call(renamed_result.get("success", false) and renamed_prevented.get("success", false) and renamed_prevented.get("value", -1) == 2, "Renamed data selects its own typed component and measure without ID-specific behavior")
+
+
+static func _shared_margin_hp_gate_checks(check: Callable) -> void:
+	var margin_spell: Dictionary = DataLoader.get_spell("sandbox:margin_gate_neutral")
+	var hp_spell: Dictionary = DataLoader.get_spell("sandbox:settlement_hp_gate_renamed")
+	check.call(not margin_spell.is_empty() and not hp_spell.is_empty() and SharedSpell.content_error(margin_spell).is_empty() and SharedSpell.content_error(hp_spell).is_empty(), "Neutral margin and renamed settlement-HP gate consumers load and validate")
+
+	var sorcerer := Character.new()
+	sorcerer.initialize("Margin Gate Sorcerer", "human", "sorcerer", AbilityScores.new())
+	sorcerer.character_id = "margin-gate-sorcerer"
+	sorcerer.sorcerer_metamagic_choices.append("empowered_spell")
+	sorcerer.features.append({"id": "sorcerer_metamagic"})
+	sorcerer.feature_uses["sorcery_points"] = 3
+	sorcerer.spell_slots["1"] = 2
+	var save_target := {"id": "margin-gate-target", "name": "Margin Gate Target", "current_hp": 100, "max_hp": 100, "temp_hp": 0, "is_alive": true, "ability_scores": {"CON": -100}, "conditions": {}}
+	FighterChecks._seed_die(20, 4)
+	var pending := CombatAction.resolve_spell(sorcerer, save_target, margin_spell, true, {"metamagic:empowered": true, "defer_empowered": true}, [], 1, 5)
+	var pending_margin := int(pending.get("numeric_margin", 999))
+	check.call(pending.has("damage_request") and pending.get("suspended_step", -1) == 0 and pending_margin <= -5 and not bool(pending.get("saved", true)) and int(save_target["temp_hp"]) == 0 and int(sorcerer.spell_slots.get("1", -1)) == 1, "The failed-save margin is captured while damage and its aftermath remain suspended for the existing Empowered choice")
+	var settled := CombatAction.finish_pending_spell_damage(sorcerer, save_target, pending, {"metamagic:empowered": true, "metamagic:empowered_dice": [0]})
+	var settled_steps: Array = settled.get("step_results", [])
+	var save_outcome: Dictionary = settled_steps[0].get("target_outcomes", [{}])[0] if settled_steps.size() > 0 else {}
+	var aftermath_outcomes: Array = settled_steps[1].get("target_outcomes", []) if settled_steps.size() > 1 else []
+	var settled_margin := SharedStepExecutor.evaluate_formula({"result": {"step": "save", "target": "same", "measure": "margin"}}, SharedStepExecutor.SpellAdapter.new(_margin_adapter_context(sorcerer, save_target, margin_spell)), save_target, settled_steps)
+	var hp_after_empowered := int(save_outcome.get("hp_after", -1))
+	var hp_at_live_mutation := int(save_target["current_hp"])
+	save_target["current_hp"] = 70
+	var margin_after_live_change := SharedStepExecutor.evaluate_formula({"result": {"step": "save", "target": "same", "measure": "margin"}}, SharedStepExecutor.SpellAdapter.new(_margin_adapter_context(sorcerer, save_target, margin_spell)), save_target, settled_steps)
+	save_target["current_hp"] = hp_at_live_mutation
+	var saved_sp := int(sorcerer.feature_uses.get("sorcery_points", -1))
+	var saved_slot := int(sorcerer.spell_slots.get("1", -1))
+	var saved_hp := int(save_target["current_hp"])
+	var replay := CombatAction.finish_pending_spell_damage(sorcerer, save_target, pending, {"metamagic:empowered": true, "metamagic:empowered_dice": [0]})
+	check.call(bool(settled.get("success", false)) and int(save_outcome.get("result", {}).get("numeric_margin", 999)) == pending_margin and settled_margin.get("value", 999) == pending_margin and margin_after_live_change.get("value", 999) == pending_margin, "The named save margin survives settlement and later HP changes without being recomputed from live state")
+	check.call(aftermath_outcomes.size() == 1 and int(save_target["temp_hp"]) == 2 and hp_after_empowered >= 0 and saved_sp == 2 and saved_slot == 1 and int(save_target["current_hp"]) == saved_hp and int(sorcerer.feature_uses.get("sorcery_points", -1)) == saved_sp, "The failed-margin aftermath waits for damage settlement, applies once, and replay cannot repeat effects or costs (aftermath=%d, thp=%d, hp_after=%d, sp=%d, slot=%d, replay=%s)" % [aftermath_outcomes.size(), int(save_target["temp_hp"]), hp_after_empowered, saved_sp, saved_slot, str(replay)])
+
+	var margin_context := _margin_adapter_context(sorcerer, save_target, margin_spell)
+	var margin_adapter := SharedStepExecutor.SpellAdapter.new(margin_context)
+	var exact_boundary := [{"step_id": "save", "type": "save", "target_outcomes": [{"target": save_target, "saved": false, "result": {"numeric_margin": -5}}]}]
+	var one_above := [{"step_id": "save", "type": "save", "target_outcomes": [{"target": save_target, "saved": false, "result": {"numeric_margin": -4}}]}]
+	var equality_success := [{"step_id": "save", "type": "save", "target_outcomes": [{"target": save_target, "saved": true, "result": {"numeric_margin": 0}}]}]
+	var margin_gate: Dictionary = margin_spell["steps"][1]["effects"][0]["when"]
+	check.call(SharedStepExecutor.evaluate_predicate(margin_gate, margin_adapter, save_target, exact_boundary) and not SharedStepExecutor.evaluate_predicate(margin_gate, margin_adapter, save_target, one_above) and SharedStepExecutor.evaluate_predicate({"result": {"step": "save", "target": "same", "measure": "margin"}, "eq": 0}, margin_adapter, save_target, equality_success), "Signed margin threshold includes exact equality, excludes one point above, and zero at DC is an available successful save margin")
+	var no_roll := [{"step_id": "save", "type": "save", "target_outcomes": [{"target": save_target, "saved": false, "result": {}}]}]
+	check.call(not SharedStepExecutor.evaluate_formula({"result": {"step": "save", "target": "same", "measure": "margin"}}, margin_adapter, save_target, no_roll).get("success", true), "An overridden/no-roll outcome without numeric roll fields has no fabricated margin")
+
+	var hp_target := {"id": "settlement-hp-target", "name": "Settlement HP Target", "current_hp": 10, "max_hp": 100, "temp_hp": 0, "is_alive": true, "conditions": {}}
+	var hp_result := CombatAction.resolve_spell(sorcerer, hp_target, hp_spell, false, {}, [], 1, 5)
+	var hp_steps: Array = hp_result.get("step_results", [])
+	var impact_outcome: Dictionary = hp_steps[0].get("target_outcomes", [{}])[0] if hp_steps.size() > 0 else {}
+	var captured_hp := SharedStepExecutor.evaluate_formula({"result": {"step": "impact", "target": "same", "measure": "hp_after"}}, SharedStepExecutor.SpellAdapter.new(_margin_adapter_context(sorcerer, hp_target, hp_spell)), hp_target, hp_steps)
+	var hp_before_change := int(hp_target["current_hp"])
+	hp_target["current_hp"] = 40
+	var captured_hp_after_change := SharedStepExecutor.evaluate_formula({"result": {"step": "impact", "target": "same", "measure": "hp_after"}}, SharedStepExecutor.SpellAdapter.new(_margin_adapter_context(sorcerer, hp_target, hp_spell)), hp_target, hp_steps)
+	hp_target["current_hp"] = hp_before_change
+	check.call(bool(hp_result.get("success", false)) and int(impact_outcome.get("hp_after", -1)) == 2 and int(hp_target["current_hp"]) == 5 and int(hp_target["temp_hp"]) == 3 and captured_hp.get("value", -1) == 2 and captured_hp_after_change.get("value", -1) == 2, "Renamed HP gate uses post-damage HP despite later healing, damage and live HP changes")
+	var explicit_zero_hp := [{"step_id": "impact", "type": "damage", "target_outcomes": [{"target": hp_target, "hp_after": 0}]}]
+	check.call(SharedStepExecutor.evaluate_formula({"result": {"step": "impact", "target": "same", "measure": "hp_after"}}, SharedStepExecutor.SpellAdapter.new(_margin_adapter_context(sorcerer, hp_target, hp_spell)), hp_target, explicit_zero_hp).get("value", -1) == 0 and not SharedStepExecutor.evaluate_formula({"result": {"step": "impact", "target": "same", "measure": "hp_after"}}, SharedStepExecutor.SpellAdapter.new(_margin_adapter_context(sorcerer, hp_target, hp_spell)), hp_target, []).get("success", true), "A settled zero HP receipt remains distinct from a missing HP receipt")
+	var unknown_ref := hp_spell.duplicate(true)
+	unknown_ref["steps"][3]["effects"][0]["when"]["result"]["step"] = "absent"
+	var malformed_ref := hp_spell.duplicate(true)
+	malformed_ref["steps"][3]["effects"][0]["when"]["result"]["component"] = "force"
+	var future_ref := hp_spell.duplicate(true)
+	future_ref["steps"][3]["effects"][0]["when"]["result"]["step"] = "afterimage"
+	var invalid_refs: Array = [unknown_ref, malformed_ref, future_ref]
+	var invalid_refs_refused := true
+	for invalid_ref in invalid_refs:
+		var slots_before_refusal := int(sorcerer.spell_slots.get("1", -1))
+		var hp_before_refusal := int(hp_target["current_hp"])
+		var refused_ref := CombatAction.resolve_spell(sorcerer, hp_target, invalid_ref, true, {}, [], 1, 5)
+		invalid_refs_refused = invalid_refs_refused and not SharedSpell.content_error(invalid_ref).is_empty() and not bool(refused_ref.get("success", true)) and int(sorcerer.spell_slots.get("1", -1)) == slots_before_refusal and int(hp_target["current_hp"]) == hp_before_refusal
+	check.call(invalid_refs_refused, "Unknown, malformed and future gate references refuse before slot payment or HP changes")
+
+
+static func _margin_adapter_context(caster: Character, target, spell: Dictionary) -> SpellResolutionContext:
+	var context := SpellResolutionContext.new()
+	context.caster = caster
+	context.target = target
+	context.spell = spell
+	context.effect_cast = {"caster_id": caster.character_id}
+	return context

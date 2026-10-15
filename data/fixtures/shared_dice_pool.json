@@ -1,0 +1,34 @@
+{
+  "id": "fixture:ember_dice_class",
+  "name": "Fixture Ember Dice",
+  "description": "Test-only class used to validate bounded source-owned dice pools.",
+  "hit_die": "d8",
+  "primary_ability": "WIS",
+  "features_by_level": {
+    "1": [
+      {
+        "id": "fixture:ember_dice",
+        "name": "Ember Dice",
+        "description": "Spend one or two d6 uses and heal yourself by the sum.",
+        "executor": "class_feature",
+        "type": "active",
+        "target": "self",
+        "action_cost": "bonus_action",
+        "resource_pool": {
+          "id": "fixture:ember_dice_pool",
+          "capacity_formula": { "caster_proficiency_bonus": true },
+          "initial_quantity": 2,
+          "die_size": 6,
+          "spend_choice": { "minimum": 1, "maximum": 2 },
+          "recovery": {
+            "short_rest_completed": { "mode": "restore_fixed", "amount": 1 },
+            "long_rest_completed": { "mode": "restore_to_capacity" }
+          }
+        },
+        "effects": [
+          { "type": "heal_by_pool_rolls" }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,42 @@
+[
+  {
+    "id": "fixture:post_roll_die_neutral_class",
+    "name": "Fixture Steady Die",
+    "hit_die": "d8",
+    "primary_ability": "DEX",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:post_roll_die_neutral",
+          "name": "Steady Die",
+          "type": "passive",
+          "resource_pool": { "id": "fixture:post_roll_die_neutral_pool", "capacity_formula": 3, "initial_quantity": 3 },
+          "passive_effects": [
+            { "type": "failed_save_numeric_bonus", "ability": "DEX", "die_size": 6, "cost": 1, "payment_policy": "pay_on_choice" },
+            { "type": "weapon_attack_numeric_bonus", "domains": ["weapon_attack", "shared_spell_attack"], "die_size": 6, "cost": 1, "payment_policy": "pay_on_choice" }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "fixture:post_roll_die_renamed_class",
+    "name": "Fixture Sure Die",
+    "hit_die": "d10",
+    "primary_ability": "CON",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:post_roll_die_renamed",
+          "name": "Sure Die",
+          "type": "passive",
+          "resource_pool": { "id": "fixture:post_roll_die_renamed_pool", "capacity_formula": 3, "initial_quantity": 3 },
+          "passive_effects": [
+            { "type": "failed_save_numeric_bonus", "ability": "CON", "die_size": 8, "cost": 2, "payment_policy": "pay_on_converted_success" },
+            { "type": "weapon_attack_numeric_bonus", "domains": ["weapon_attack", "shared_spell_attack"], "die_size": 8, "cost": 2, "payment_policy": "pay_on_converted_success" }
+          ]
+        }
+      ]
+    }
+  }
+]

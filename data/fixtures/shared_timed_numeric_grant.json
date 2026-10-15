@@ -1,0 +1,28 @@
+{
+  "id": "fixture:campaign_guard_class",
+  "name": "Fixture Campaign Guard",
+  "description": "Test-only class used to validate source-owned campaign-time numeric grants.",
+  "hit_die": "d8",
+  "primary_ability": "INT",
+  "features_by_level": {
+    "1": [
+      {
+        "id": "fixture:campaign_guard",
+        "name": "Campaign Guard",
+        "executor": "class_feature",
+        "type": "active",
+        "target": "self",
+        "action_cost": "free",
+        "resource_cost": 1,
+        "resource_pool": {
+          "id": "fixture:campaign_guard_pool",
+          "capacity_formula": 4,
+          "initial_quantity": 4
+        },
+        "effects": [
+          { "type": "timed_numeric_modifier", "kind": "stat", "key": "AC", "amount": 2, "duration_seconds": 60 }
+        ]
+      }
+    ]
+  }
+}

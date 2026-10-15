@@ -102,7 +102,7 @@ static func _resolve_object_target(cast: SpellCastContext, object: Dictionary, t
 	var decisions := SpellCastResults._spell_decisions_for_target(cast, cast.counterspell_decisions, cast.counterspell_pending)
 	decisions["spell_visibility"] = {"grid": cast.grid, "caster_position": origin, "target_position": target_hex}
 	var observers := cast.counterspell_observers if cast.counterspell_pending else []
-	var result := CombatAction.resolve_spell(cast.caster, target, cast.spell, false, decisions, observers, cast.slot_level_used, distance_feet)
+	var result := CombatAction.resolve_spell(cast.caster, target, cast.spell, false, decisions, observers, cast.slot_level_used, distance_feet, cast)
 	cast.spell["_last_object_hit"] = bool(result.get("hit", false))
 	result = await SpellCastResults._settle_empowered_spell(cast, target, result, decisions)
 	CombatObjectRules.sync_resolution_target(object, target)
@@ -175,7 +175,9 @@ static func _resolve_player_target(cast: SpellCastContext, p_target: Character, 
 			target_spell_data["_scorching_ray_count_for_target"] = assigned_count
 	if str(target_spell_data.get("attack_type", "none")) != "none":
 		target_spell_data["_conjure_minor_elementals_bonus_packets"] = await SpellZoneConjurations._conjure_minor_elementals_spell_attack_choices(cast.areas, cast.caster, p_target, target_spell_data)
-	var res := CombatAction.resolve_spell(cast.caster, p_target, target_spell_data, false, target_spell_decisions, target_observers, cast.slot_level_used, spell_target_distance)
+	var res := CombatAction.resolve_spell(cast.caster, p_target, target_spell_data, false, target_spell_decisions, target_observers, cast.slot_level_used, spell_target_distance, cast)
+	res = await _settle_failed_save_numeric_bonus(cast, p_target, res)
+	res = await _settle_shared_spell_attack_bonus(cast, p_target, res)
 	if str(cast.spell.get("id", "")) == "moonbeam" and not bool(res.get("saved", true)) and p_target_was_shape_shifted:
 		SpellZoneTerrain._apply_moonbeam_shape_change(cast.areas, p_target, cast.area_source_id, cast.shape_locked_targets, true)
 	if str(cast.spell.get("id", "")) == "entangle" and not bool(res.get("saved", true)):
@@ -252,6 +254,8 @@ static func _resolve_monster_target(cast: SpellCastContext, m_target: Dictionary
 	target_spell_decisions["grid"] = cast.grid
 	target_spell_decisions["players"] = cast.players
 	target_spell_decisions["monsters"] = cast.monsters
+	target_spell_decisions["cast_context"] = cast
+	target_spell_decisions["hud"] = cast.hud
 	if cast.collect_roll_token_decision.is_valid():
 		if CombatAction.spell_requires_saving_throw(cast.spell):
 			target_spell_decisions.merge(await cast.collect_roll_token_decision.call(m_target, "monster_save", "%s saving throw against %s" % [str(cast.spell.get("save", "Spell")), str(cast.spell.get("name", "spell"))], target_spell_decisions), true)
@@ -274,7 +278,8 @@ static func _resolve_monster_target(cast: SpellCastContext, m_target: Dictionary
 			target_spell_data["_scorching_ray_count_for_target"] = assigned_count
 	if str(target_spell_data.get("attack_type", "none")) != "none":
 		target_spell_data["_conjure_minor_elementals_bonus_packets"] = await SpellZoneConjurations._conjure_minor_elementals_spell_attack_choices(cast.areas, cast.caster, m_target, target_spell_data)
-	var res := CombatAction.resolve_spell(cast.caster, m_target, target_spell_data, false, target_spell_decisions, cast.counterspell_observers if cast.counterspell_pending else [], cast.slot_level_used, spell_target_distance)
+	var res := CombatAction.resolve_spell(cast.caster, m_target, target_spell_data, false, target_spell_decisions, cast.counterspell_observers if cast.counterspell_pending else [], cast.slot_level_used, spell_target_distance, cast)
+	res = await _settle_shared_spell_attack_bonus(cast, m_target, res)
 	if str(cast.spell.get("id", "")) == "entangle" and not bool(res.get("saved", true)):
 		CombatAction.apply_condition(m_target, "restrained", 99, cast.area_source_id)
 		if CombatAction.has_condition_source(m_target, cast.area_source_id):
@@ -416,7 +421,7 @@ static func _resolve_ice_knife_splash(cast: SpellCastContext, center: Vector2i, 
 		if p_target != null:
 			decisions.merge(await cast.collect_stroke_of_luck_save_decision.call(p_target, "Ice Knife"), true)
 			decisions.merge(await cast.collect_bardic_inspiration_save_decision.call(p_target, splash_data), true)
-		var result := CombatAction.resolve_spell(cast.caster, target, splash_data, false, decisions, [], slot_level, distance_feet)
+		var result := CombatAction.resolve_spell(cast.caster, target, splash_data, false, decisions, [], slot_level, distance_feet, cast)
 		result = await SpellCastResults._settle_empowered_spell(cast, target, result, decisions)
 		if int(result.get("damage", 0)) > 0:
 			ClericRules.clear_turning_after_damage(target)
@@ -529,9 +534,77 @@ static func _settle_stepped_spell_actors(cast: SpellCastContext, res: Dictionary
 						cast.trigger_enemy_defeat_features.call(actor, cast.caster)
 
 
+static func _settle_failed_save_numeric_bonus(cast: SpellCastContext, target: Character, result: Dictionary) -> Dictionary:
+	if not result.has("save_bonus_request") or target == null:
+		return result
+	var record := SpellDamageRolls.failed_save_numeric_bonus_record(cast.caster, target, result)
+	if record.is_empty():
+		return {"success": false, "refused": true, "message": "The failed-save bonus choice is no longer available."}
+	var selected_source_id := ""
+	if cast.hud != null and cast.owner_label_for_character.is_valid():
+		selected_source_id = await cast.hud.request_failed_save_numeric_bonus(
+			cast.owner_label_for_character.call(target), str(record.get("ability", "")),
+			int(record.get("save_test", {}).get("total", 0)), int(record.get("save_test", {}).get("dc", 0)), record.get("options", []), bool(record.get("provisional_saved", false))
+		)
+	var settled := SpellDamageRolls.settle_failed_save_numeric_bonus(cast.caster, target, result, selected_source_id)
+	# The chooser can outlive the offered pool state. If its selected source is
+	# stale, refuse that purchase and finish the captured roll as a decline so
+	# the spell does not remain suspended with its original consequences unpaid.
+	if not selected_source_id.is_empty() and bool(settled.get("refused", false)):
+		var declined := SpellDamageRolls.settle_failed_save_numeric_bonus(cast.caster, target, result, "")
+		if not bool(declined.get("refused", false)):
+			return declined
+	return settled
+
+
+static func _settle_shared_spell_attack_bonus(cast: SpellCastContext, target, result: Dictionary) -> Dictionary:
+	if not result.has("weapon_attack_bonus_request") or target == null:
+		return result
+	var record := SpellDamageRolls.weapon_attack_bonus_record(cast.caster, target, result)
+	if record.is_empty():
+		return {"success": false, "refused": true, "message": "The shared spell attack bonus choice is no longer available."}
+	var selected_source_id := ""
+	if cast.hud != null:
+		var owner_label := cast.owner_label
+		if cast.owner_label_for_character.is_valid():
+			owner_label = str(cast.owner_label_for_character.call(cast.caster))
+		selected_source_id = await cast.hud.request_weapon_attack_numeric_bonus(
+			owner_label, int(record.get("context", {}).get("attack_result", {}).get("total", 0)),
+			int(record.get("context", {}).get("original_target_ac", 10)), record.get("options", []), "spell attack", bool(record.get("context", {}).get("provisional_hit", false))
+		)
+	var settled := SpellDamageRolls.settle_weapon_attack_bonus(cast.caster, target, result, selected_source_id)
+	# As above, a stale selection must not strand the base spell attack. Decline
+	# the captured request without consuming or rolling the invalid source.
+	if not selected_source_id.is_empty() and bool(settled.get("refused", false)):
+		var declined := SpellDamageRolls.settle_weapon_attack_bonus(cast.caster, target, result, "")
+		if not bool(declined.get("refused", false)):
+			return declined
+	return settled
+
+
 static func _settle_ordered_choices(cast: SpellCastContext, target, result: Dictionary, decisions: Dictionary) -> Dictionary:
-	while result.has("roll_choice_request") or result.has("damage_request") or result.has("concentration_request"):
-		if result.has("roll_choice_request"):
+	while result.has("roll_choice_request") or result.has("save_bonus_request") or result.has("weapon_attack_bonus_request") or result.has("damage_request") or result.has("concentration_request"):
+		if result.has("weapon_attack_bonus_request"):
+			var bonus_target = SpellDamageRolls.owner_target(result)
+			if bonus_target == null:
+				var attack_record: Dictionary = SpellDamageRolls.weapon_attack_bonus_record(cast.caster, target, result)
+				bonus_target = attack_record.get("target")
+			if bonus_target == null:
+				return {"success": false, "refused": true, "message": "The shared spell attack bonus owner is unavailable."}
+			result = await _settle_shared_spell_attack_bonus(cast, bonus_target, result)
+			if bool(result.get("refused", false)):
+				return result
+		elif result.has("save_bonus_request"):
+			var bonus_target: Variant = SpellDamageRolls.owner_target(result)
+			if not bonus_target is Character:
+				var bonus_record: Dictionary = SpellDamageRolls.failed_save_numeric_bonus_record(cast.caster, target if target is Character else null, result)
+				bonus_target = bonus_record.get("target")
+			if not bonus_target is Character:
+				return {"success": false, "refused": true, "message": "The failed-save bonus owner is unavailable."}
+			result = await _settle_failed_save_numeric_bonus(cast, bonus_target, result)
+			if bool(result.get("refused", false)):
+				return result
+		elif result.has("roll_choice_request"):
 			var record := SpellDamageRolls.roll_choice_record(cast.caster, result)
 			if record.is_empty():
 				return {"success": false, "refused": true, "message": "The spell's roll choice is no longer available."}
@@ -594,7 +667,7 @@ static func _resolve_stepped_spell_cast(cast: SpellCastContext) -> void:
 		target_spell_decisions.merge(await cast.collect_projected_ward_decision.call(target), true)
 
 	var observers := cast.counterspell_observers if cast.counterspell_pending else []
-	var res := CombatAction.resolve_spell(cast.caster, target, cast.spell, false, target_spell_decisions, observers, cast.slot_level_used, distance_feet)
+	var res := CombatAction.resolve_spell(cast.caster, target, cast.spell, false, target_spell_decisions, observers, cast.slot_level_used, distance_feet, cast)
 	res = await SpellCastResults._settle_ordered_choices(cast, target, res, target_spell_decisions)
 	await SpellCastResults._settle_stepped_spell_actors(cast, res)
 

@@ -1,0 +1,29 @@
+[
+  {
+    "id": "fixture:ability_check_roll_modes_neutral_class",
+    "name": "Fixture Survey Reader",
+    "hit_die": "d8",
+    "primary_ability": "INT",
+    "features_by_level": {
+      "1": [
+        {"id": "fixture:survey_advantage_one", "name": "First Reading", "type": "passive", "passive_effects": [{"type": "ability_check_roll_mode", "id": "first_reading", "domain": "event_skill_check", "mode": "advantage", "ability": "INT", "skill": "Investigation", "task_id": "survey_archive", "purpose_id": "locate_nest", "source_event_id": "fixture:survey_map_event", "source_check_id": "read_map_check"}]},
+        {"id": "fixture:survey_advantage_two", "name": "Second Reading", "type": "passive", "passive_effects": [{"type": "ability_check_roll_mode", "id": "second_reading", "domain": "event_skill_check", "mode": "advantage", "ability": "INT", "skill": "Investigation", "task_id": "survey_archive", "purpose_id": "locate_nest", "source_event_id": "fixture:survey_map_event", "source_check_id": "read_map_check"}]},
+        {"id": "fixture:survey_disadvantage", "name": "Crosswind", "type": "passive", "passive_effects": [{"type": "ability_check_roll_mode", "id": "crosswind", "domain": "event_skill_check", "mode": "disadvantage", "ability": "INT", "skill": "Investigation", "task_id": "survey_archive", "purpose_id": "locate_nest", "source_event_id": "fixture:survey_map_event", "source_check_id": "read_map_check"}]},
+        {"id": "fixture:survey_cancel", "name": "Cancel Common Advantage", "type": "passive", "passive_effects": [{"type": "ability_check_roll_mode_policy", "id": "cancel_common_advantage", "domain": "event_skill_check", "operation": "cancel", "mode": "advantage", "ability": "INT", "skill": "Investigation", "task_id": "survey_archive", "purpose_id": "locate_nest", "source_event_id": "fixture:survey_map_event", "source_check_id": "read_map_check", "exempt_source_definition_ids": ["fixture:survey_advantage_one"]}]},
+        {"id": "fixture:survey_prohibition", "name": "Forbid Common Advantage", "type": "passive", "passive_effects": [{"type": "ability_check_roll_mode_policy", "id": "forbid_common_advantage", "domain": "event_skill_check", "operation": "prohibit", "mode": "advantage", "ability": "INT", "skill": "Investigation", "task_id": "survey_archive", "purpose_id": "locate_nest", "source_event_id": "fixture:survey_map_event", "source_check_id": "read_map_check", "exempt_source_definition_ids": ["fixture:survey_advantage_one"]}]},
+        {"id": "fixture:choice_estimate_advantage", "name": "Measured Estimate", "type": "passive", "passive_effects": [{"type": "ability_check_roll_mode", "id": "estimate_advantage", "domain": "event_skill_check", "mode": "advantage", "ability": "INT", "skill": "", "task_id": "survey_archive", "purpose_id": "choice_estimate_distance", "source_event_id": "fixture:ability_bonus_choice_event", "source_check_id": "choice_estimate_check"}]}
+      ]
+    }
+  },
+  {
+    "id": "fixture:ability_check_roll_modes_renamed_class",
+    "name": "Fixture Marsh Naturalist",
+    "hit_die": "d10",
+    "primary_ability": "WIS",
+    "features_by_level": {
+      "1": [
+        {"id": "fixture:marsh_disadvantage", "name": "Tidal Surge", "type": "passive", "passive_effects": [{"type": "ability_check_roll_mode", "id": "tidal_surge", "domain": "event_skill_check", "mode": "disadvantage", "ability": "WIS", "skill": "Nature", "task_id": "sample_tidal_herbs", "purpose_id": "identify_safe_spot", "source_event_id": "fixture:tidal_herbs_event", "source_check_id": "identify_herbs_check"}]}
+      ]
+    }
+  }
+]

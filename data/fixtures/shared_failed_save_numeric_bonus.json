@@ -1,0 +1,24 @@
+{
+  "id": "fixture:steady_saving_class",
+  "name": "Fixture Steady Saving",
+  "description": "Neutral passive source for a fixed bonus after a rolled failed save.",
+  "hit_die": "d8",
+  "primary_ability": "DEX",
+  "features_by_level": {
+    "1": [
+      {
+        "id": "fixture:steady_saving",
+        "name": "Steady Saving",
+        "type": "passive",
+        "resource_pool": {
+          "id": "fixture:steady_saving_pool",
+          "capacity_formula": 2,
+          "initial_quantity": 2
+        },
+        "passive_effects": [
+          { "type": "failed_save_numeric_bonus", "ability": "DEX", "amount": 5, "cost": 1 }
+        ]
+      }
+    ]
+  }
+}

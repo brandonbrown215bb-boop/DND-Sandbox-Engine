@@ -13,8 +13,14 @@ helpers describe the migration starting point, not the design to repeat.
 | Loading, collisions and import promotion | [Content pipeline](content_pipeline.md) |
 | Development and proportionate verification | [Development](operations/development.md), [testing](testing.md), [runner contract](operations/validation.md) |
 | Supported behavior and remaining clauses | [Behavior contracts](mechanics/README.md); [spell status](mechanics/spell-status.md) |
+| Purpose-aware event checks and owned-tool authoring | [Check context](mechanics/purpose-aware-check-context.md) |
+| Owned post-roll ability-check modifier authoring | [Check modifiers](mechanics/owned-ability-check-modifiers.md) |
 | Player presentation and visual evidence | [UI contract](ui/PLAYER_UI_CONTRACT.md), [visual acceptance](ui/VISUAL_ACCEPTANCE.md) |
 | Rules-runtime design detail | [Class design](architecture/data-driven-2024-class-execution-plan.md), [creature design](architecture/data-driven-2024-monster-execution-plan.md) |
+| Code building blocks, checked subsets and remaining scope | [Vocabulary checklist](reviews/dnd-code-vocabulary-gap-checklist.md) |
+| Countable build/validation chunks, prerequisites and whole-scope denominator | [Vocabulary delivery slices](planning/vocabulary-slices.md) |
+| Copyable fresh-chat prompts for the next 26 slices and batch reviews | [Next-26 prompt pack](planning/vocabulary-next-26-prompts.md), [prompt workflow](planning/vocabulary-prompt-workflow.md) |
+| Data-to-runtime review in progress (2026-10-11 snapshot) | [Smallest wiring and gap distance](reviews/dnd-runtime-wiring-map.md), [structural first pass](reviews/dnd-data-runtime-gap-review.md), [description coverage](reviews/dnd-description-runtime-review.md) |
 
 ## Authority
 

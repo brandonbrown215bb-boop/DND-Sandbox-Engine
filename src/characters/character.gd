@@ -4,6 +4,222 @@
 class_name Character
 extends RefCounted
 
+static func saved_campaign_modifier_error(data: Dictionary, campaign_seconds: int) -> String:
+	var modifiers: Variant = data.get("modifiers", [])
+	if not modifiers is Array:
+		return "Character modifier state is not an array."
+	var cooldowns: Variant = data.get("campaign_modifier_cooldowns", [])
+	if not cooldowns is Array:
+		return "Campaign modifier cooldown state is not an array."
+	var owner_id := str(data.get("character_id", ""))
+	var pools: Variant = data.get("numeric_resource_pools", {})
+	if not pools is Dictionary:
+		return "Timed modifier source pools are invalid."
+	var saved_serial: Variant = data.get("timed_modifier_grant_serial", 0)
+	if not (saved_serial is int or saved_serial is float) or not is_finite(float(saved_serial)) or float(saved_serial) != floor(float(saved_serial)) or int(saved_serial) < 0:
+		return "Timed modifier grant serial is invalid."
+	var seen_grants: Dictionary = {}
+	var active_sources: Dictionary = {}
+	var cooldown_sources: Dictionary = {}
+	var maximum_grant_serial := 0
+	for modifier in modifiers:
+		if not modifier is Dictionary:
+			continue
+		var has_timed_identity: bool = modifier.has("owner_id") or modifier.has("source_instance_id") or modifier.has("grant_instance_id") or modifier.has("cooldown_seconds")
+		if not modifier.has("expires_at_seconds"):
+			if has_timed_identity:
+				return "Tagged timed modifier is missing its campaign deadline."
+			continue
+		var expiry: Variant = modifier.get("expires_at_seconds", null)
+		var amount: Variant = modifier.get("amount", null)
+		var source_id := str(modifier.get("source_instance_id", ""))
+		var grant_id := str(modifier.get("grant_instance_id", ""))
+		if str(modifier.get("owner_id", "")) != owner_id or owner_id.is_empty() or source_id.is_empty() or grant_id.is_empty():
+			return "Timed modifier owner/source/grant identity is invalid."
+		var source_pool: Variant = pools.get(source_id, null)
+		if not source_pool is Dictionary or str(source_pool.get("owner_id", "")) != owner_id or str(source_pool.get("source_instance_id", "")) != source_id:
+			return "Timed modifier source does not own a saved numeric resource pool."
+		if str(modifier.get("kind", "")) != "stat" or str(modifier.get("key", "")) != "AC":
+			return "Timed modifier contains an unsupported stat."
+		var grant_prefix := "%s:%s:" % [owner_id, source_id]
+		var grant_serial_text := grant_id.get_slice(":", grant_id.get_slice_count(":") - 1)
+		if not grant_id.begins_with(grant_prefix) or not grant_serial_text.is_valid_int() or int(grant_serial_text) < 1:
+			return "Timed modifier grant identity does not match its owner/source."
+		maximum_grant_serial = maxi(maximum_grant_serial, int(grant_serial_text))
+		if not (expiry is int or expiry is float) or not is_finite(float(expiry)) or float(expiry) != floor(float(expiry)) or float(expiry) < 1:
+			return "Timed modifier campaign deadline is invalid."
+		if not (amount is int or amount is float) or not is_finite(float(amount)) or float(amount) != floor(float(amount)) or int(amount) == 0 or abs(int(amount)) > 100:
+			return "Timed modifier amount is invalid."
+		var cooldown_seconds: Variant = modifier.get("cooldown_seconds", 0)
+		if not _saved_integer(cooldown_seconds, 0, 86400):
+			return "Timed modifier cooldown duration is invalid."
+		if seen_grants.has(grant_id):
+			return "Timed modifier grant identity is duplicated."
+		seen_grants[grant_id] = true
+		if int(expiry) > campaign_seconds:
+			if active_sources.has(source_id):
+				return "A source has more than one active timed modifier grant."
+			active_sources[source_id] = true
+	for cooldown in cooldowns:
+		if not cooldown is Dictionary:
+			return "Campaign modifier cooldown must be an object."
+		var source_id := str(cooldown.get("source_instance_id", ""))
+		var grant_id := str(cooldown.get("grant_instance_id", ""))
+		var started_at: Variant = cooldown.get("started_at_seconds", null)
+		var ready_at: Variant = cooldown.get("ready_at_seconds", null)
+		var cooldown_seconds: Variant = cooldown.get("cooldown_seconds", null)
+		if owner_id.is_empty() or str(cooldown.get("owner_id", "")) != owner_id or source_id.is_empty() or grant_id.is_empty():
+			return "Campaign modifier cooldown owner/source/grant identity is invalid."
+		var source_pool: Variant = pools.get(source_id, null)
+		if not source_pool is Dictionary or str(source_pool.get("owner_id", "")) != owner_id or str(source_pool.get("source_instance_id", "")) != source_id:
+			return "Campaign modifier cooldown source does not own a saved numeric resource pool."
+		var grant_prefix := "%s:%s:" % [owner_id, source_id]
+		var grant_serial_text := grant_id.get_slice(":", grant_id.get_slice_count(":") - 1)
+		if not grant_id.begins_with(grant_prefix) or not grant_serial_text.is_valid_int() or int(grant_serial_text) < 1:
+			return "Campaign modifier cooldown grant identity does not match its owner/source."
+		maximum_grant_serial = maxi(maximum_grant_serial, int(grant_serial_text))
+		if str(cooldown.get("end_reason", "")) not in ["expired", "dismissed"]:
+			return "Campaign modifier cooldown end reason is unsupported."
+		if not _saved_integer(started_at, 0, 2147483647) or not _saved_integer(cooldown_seconds, 1, 86400) or not _saved_integer(ready_at, 1, 2147483647) or int(ready_at) != int(started_at) + int(cooldown_seconds):
+			return "Campaign modifier cooldown deadline is invalid."
+		if seen_grants.has(grant_id):
+			return "Campaign modifier grant identity is active and cooling down at once."
+		seen_grants[grant_id] = true
+		if int(ready_at) > campaign_seconds:
+			if cooldown_sources.has(source_id) or active_sources.has(source_id):
+				return "A source has overlapping active timed grants or cooldowns."
+			cooldown_sources[source_id] = true
+	if int(saved_serial) < maximum_grant_serial:
+		return "Timed modifier grant serial would reuse a saved identity."
+	return ""
+
+
+static func saved_willingness_error(data: Dictionary) -> String:
+	if not data.has("willingness"):
+		return ""
+	if not data["willingness"] is String or str(data["willingness"]) not in ["unknown", "willing", "unwilling"]:
+		return "Character willingness must be unknown, willing, or unwilling."
+	return ""
+
+
+static func _saved_integer(value: Variant, minimum: int, maximum: int) -> bool:
+	return not value is bool and (value is int or value is float) and is_finite(float(value)) and float(value) == floor(float(value)) and int(value) >= minimum and int(value) <= maximum
+
+
+static func saved_next_weapon_hit_grants_error(data: Dictionary, campaign_seconds: int) -> String:
+	var grants: Variant = data.get("next_weapon_hit_grants", [])
+	if not grants is Array:
+		return "Next weapon-hit grant state is not an array."
+	var owner_id := str(data.get("character_id", ""))
+	var saved_serial: Variant = data.get("next_weapon_hit_grant_serial", 0)
+	if not (saved_serial is int or saved_serial is float) or not is_finite(float(saved_serial)) or float(saved_serial) != floor(float(saved_serial)) or int(saved_serial) < 0:
+		return "Next weapon-hit grant serial is invalid."
+	var pools: Variant = data.get("numeric_resource_pools", {})
+	if not pools is Dictionary:
+		return "Next weapon-hit grant pools are invalid."
+	var seen_grants: Dictionary = {}
+	var seen_orders: Dictionary = {}
+	var active_sources: Dictionary = {}
+	var maximum_order := 0
+	for grant in grants:
+		if not grant is Dictionary:
+			return "Next weapon-hit grant is not an object."
+		var source_id := str(grant.get("source_instance_id", ""))
+		var grant_id := str(grant.get("grant_instance_id", ""))
+		var order: Variant = grant.get("acquisition_order", null)
+		var expiry: Variant = grant.get("expires_at_seconds", null)
+		var amount: Variant = grant.get("amount", null)
+		if owner_id.is_empty() or str(grant.get("owner_id", "")) != owner_id or source_id.is_empty() or not pools.has(source_id):
+			return "Next weapon-hit grant owner/source identity is invalid."
+		if not (order is int or order is float) or not is_finite(float(order)) or float(order) != floor(float(order)) or int(order) < 1:
+			return "Next weapon-hit acquisition order is invalid."
+		if seen_orders.has(int(order)):
+			return "Next weapon-hit acquisition order is duplicated."
+		seen_orders[int(order)] = true
+		if grant_id != "next-hit:%s:%s:%d" % [owner_id, source_id, int(order)]:
+			return "Next weapon-hit grant identity does not match its owner/source/order."
+		var damage_type := str(grant.get("damage_type", ""))
+		if str(grant.get("matcher", "")) != "melee_weapon_hit" or damage_type not in DataLoader.VALID_DAMAGE_TYPES or damage_type == "none":
+			return "Next weapon-hit grant contains an unsupported matcher or damage type."
+		if not (amount is int or amount is float) or not is_finite(float(amount)) or float(amount) != floor(float(amount)) or int(amount) < 1 or int(amount) > 100:
+			return "Next weapon-hit grant amount is invalid."
+		if not (expiry is int or expiry is float) or not is_finite(float(expiry)) or float(expiry) != floor(float(expiry)) or int(expiry) < 1:
+			return "Next weapon-hit grant deadline is invalid."
+		if seen_grants.has(grant_id):
+			return "Next weapon-hit grant identity is duplicated."
+		seen_grants[grant_id] = true
+		maximum_order = maxi(maximum_order, int(order))
+		if int(expiry) > campaign_seconds:
+			if active_sources.has(source_id):
+				return "A source has more than one active next weapon-hit grant."
+			active_sources[source_id] = true
+	if int(saved_serial) < maximum_order:
+		return "Next weapon-hit grant serial would reuse a saved acquisition order."
+	return ""
+
+
+static func saved_timed_temporary_hp_error(data: Dictionary, campaign_seconds: int) -> String:
+	var carries_new_state := data.has("timed_temporary_hp_grant_serial") or data.has("timed_temporary_hp_grants") or data.has("timed_temporary_hp_current_grant_id")
+	if carries_new_state and (not data.has("timed_temporary_hp_grant_serial") or not data.has("timed_temporary_hp_grants") or not data.has("timed_temporary_hp_current_grant_id")):
+		return "Timed Temporary HP checkpoint state is missing a required field."
+	var grants: Variant = data.get("timed_temporary_hp_grants", [])
+	if not grants is Array:
+		return "Timed Temporary HP grant state is not an array."
+	var pools: Variant = data.get("numeric_resource_pools", {})
+	if not pools is Dictionary:
+		return "Timed Temporary HP source pools are invalid."
+	var owner_id := str(data.get("character_id", ""))
+	var saved_serial: Variant = data.get("timed_temporary_hp_grant_serial", 0)
+	if not _saved_integer(saved_serial, 0, 2147483647):
+		return "Timed Temporary HP grant serial is invalid."
+	var current_grant_id: Variant = data.get("timed_temporary_hp_current_grant_id", "")
+	if not current_grant_id is String:
+		return "Timed Temporary HP current grant identity is invalid."
+	var current_temp_hp: Variant = data.get("temp_hp", 0)
+	if not _saved_integer(current_temp_hp, 0, 100000):
+		return "Temporary HP amount is invalid."
+	var seen_sources: Dictionary = {}
+	var seen_grants: Dictionary = {}
+	var maximum_serial := 0
+	var current_id_found := str(current_grant_id).is_empty()
+	for grant in grants:
+		if not grant is Dictionary:
+			return "Timed Temporary HP grant must be an object."
+		var source_id := str(grant.get("source_instance_id", ""))
+		var grant_id := str(grant.get("grant_instance_id", ""))
+		var amount: Variant = grant.get("amount", null)
+		var expiry: Variant = grant.get("expires_at_seconds", null)
+		if owner_id.is_empty() or str(grant.get("owner_id", "")) != owner_id or source_id.is_empty() or grant_id.is_empty():
+			return "Timed Temporary HP owner/source/grant identity is invalid."
+		var source_pool: Variant = pools.get(source_id, null)
+		if not source_pool is Dictionary or str(source_pool.get("owner_id", "")) != owner_id or str(source_pool.get("source_instance_id", "")) != source_id:
+			return "Timed Temporary HP source does not own a saved numeric resource pool."
+		var prefix := "%s:%s:" % [owner_id, source_id]
+		var serial_text := grant_id.get_slice(":", grant_id.get_slice_count(":") - 1)
+		if not grant_id.begins_with(prefix) or not serial_text.is_valid_int() or int(serial_text) < 1:
+			return "Timed Temporary HP grant identity does not match its owner/source."
+		maximum_serial = maxi(maximum_serial, int(serial_text))
+		if not _saved_integer(amount, 1, 100000) or not _saved_integer(expiry, 1, 2147483647):
+			return "Timed Temporary HP amount or campaign deadline is invalid."
+		for field in grant:
+			if field not in ["owner_id", "source_instance_id", "grant_instance_id", "amount", "expires_at_seconds"]:
+				return "Timed Temporary HP grant contains an unsupported field."
+		if seen_sources.has(source_id) or seen_grants.has(grant_id):
+			return "Timed Temporary HP source or grant identity is duplicated."
+		seen_sources[source_id] = true
+		seen_grants[grant_id] = true
+		if str(current_grant_id) == grant_id:
+			current_id_found = true
+			if int(expiry) <= campaign_seconds:
+				return "Current timed Temporary HP is past its campaign deadline."
+			if int(current_temp_hp) <= 0 or int(current_temp_hp) > int(amount):
+				return "Current timed Temporary HP amount does not match its grant."
+	if int(saved_serial) < maximum_serial:
+		return "Timed Temporary HP serial would reuse a saved identity."
+	if not current_id_found or (not str(current_grant_id).is_empty() and int(current_temp_hp) <= 0):
+		return "Current Temporary HP grant does not own a positive saved amount."
+	return ""
+
 ## Character identity.
 var character_id: String = ""
 var character_name: String = ""
@@ -30,7 +246,18 @@ var ability_scores: AbilityScores = AbilityScores.new()
 ## Hit points.
 var max_hp: int = 10
 var current_hp: int = 10
-var temp_hp: int = 0
+var _temp_hp_value: int = 0
+var temp_hp: int:
+	set(value):
+		var next_value := maxi(0, value)
+		if next_value <= 0 or next_value != _temp_hp_value:
+			timed_temporary_hp_current_grant_id = ""
+		_temp_hp_value = next_value
+	get:
+		return _temp_hp_value
+var timed_temporary_hp_grant_serial: int = 0
+var timed_temporary_hp_grants: Array[Dictionary] = []
+var timed_temporary_hp_current_grant_id: String = ""
 ## Combat-only spell effects that temporarily prevent Hit Point recovery.
 var healing_suppression_sources: Dictionary = {}
 ## Transient combat-only command imposed by the Command spell.
@@ -132,6 +359,13 @@ var delayed_spell_damage: Array[Dictionary] = []
 ## Timed numeric modifiers: [{"kind": "stat"/"roll", "key": String,
 ## "amount": int, "remaining_turns": int}].
 var modifiers: Array[Dictionary] = []
+## Monotonic identity for durable source-owned campaign-time modifier grants.
+var timed_modifier_grant_serial: int = 0
+## Cooldowns created when a timed campaign modifier expires or is dismissed.
+var campaign_modifier_cooldowns: Array[Dictionary] = []
+## Unspent next-melee-hit grants; ordering survives allowed campaign checkpoints.
+var next_weapon_hit_grants: Array[Dictionary] = []
+var next_weapon_hit_grant_serial: int = 0
 
 ## Inventory.
 var inventory: Inventory = Inventory.new()
@@ -139,6 +373,8 @@ var inventory: Inventory = Inventory.new()
 ## Per-combat/per-rest resource tracking for features.
 ## feature_id -> remaining uses
 var feature_uses: Dictionary = {}
+## Source-instance ID -> validated mutable numeric pool DTO.
+var numeric_resource_pools: Dictionary = {}
 
 ## Whether this character is alive.
 var is_alive: bool = true
@@ -147,6 +383,8 @@ var disintegrated: bool = false
 var corpse_state: Dictionary = {}
 var body_death_serial: int = 0
 var revival_willing: bool = true
+## Explicit character-level permission preference. Unknown never grants eligibility.
+var willingness := "unknown"
 var body_missing_parts: Array[String] = []
 var stable_recovery_at_seconds: int = 0
 
@@ -769,6 +1007,7 @@ func initialize(p_name: String, p_race_id: String, p_class_id: String, scores: A
 	corpse_state.clear()
 	body_death_serial = 0
 	revival_willing = true
+	willingness = "unknown"
 	body_missing_parts.clear()
 
 	FighterRules.initialize_training(self)
@@ -882,6 +1121,17 @@ func _unlock_features_for_level(lvl: int, acquiring: bool = true) -> void:
 				gained.append(feature)
 	for feature in gained:
 		_apply_passive_feature(feature, acquiring)
+		if acquiring and feature.get("type", "") == "passive" and feature.has("resource_pool"):
+			var carries_save_bonus := false
+			for effect in feature.get("passive_effects", []):
+				if effect is Dictionary and str(effect.get("type", "")) in ["failed_save_numeric_bonus", "ability_check_numeric_bonus"]:
+					carries_save_bonus = true
+					break
+			if carries_save_bonus:
+				var source_id := str(feature.get("source_instance_id", feature.get("id", "")))
+				var acquired := ResourcePoolRules.acquire(self, feature, source_id)
+				if not acquired.get("success", false):
+					push_warning("[Character] Could not acquire passive save-bonus pool '%s': %s" % [source_id, str(acquired.get("message", "unknown error"))])
 		if acquiring and feature.get("type", "") in ["active", "triggered", "resource"]:
 			var pool := str(feature.get("resource_id", feature["id"]))
 			if not feature_uses.has(pool):
@@ -1085,7 +1335,7 @@ func take_damage(amount: int, accepted_relentless_rage_inspiration: bool = false
 
 	var incoming_damage := amount
 	var absorbed := mini(amount, maxi(0, temp_hp))
-	temp_hp -= absorbed
+	absorb_temporary_hp(absorbed)
 	var hp_damage := amount - absorbed
 
 	if current_hp <= 0:
@@ -1695,6 +1945,261 @@ func add_modifier(kind: String, key: String, amount: int, duration: int) -> void
 	})
 
 
+## Add a source-owned numeric modifier that expires on the campaign clock.
+func add_campaign_modifier(kind: String, key: String, amount: int, duration_seconds: int, cooldown_seconds: int, source_instance_id: String) -> Dictionary:
+	if kind.is_empty() or key.is_empty() or amount == 0 or duration_seconds < 1 or duration_seconds > 86400 or cooldown_seconds < 0 or cooldown_seconds > 86400 or source_instance_id.strip_edges().is_empty() or character_id.is_empty():
+		return {"success": false, "message": "Campaign modifier parameters are invalid."}
+	expire_campaign_modifiers(int(GameManager.campaign_elapsed_seconds))
+	if has_campaign_modifier_source(source_instance_id):
+		return {"success": false, "message": "This source already has an active grant."}
+	if campaign_modifier_cooldown_for_source(source_instance_id, int(GameManager.campaign_elapsed_seconds)) > 0:
+		return {"success": false, "message": "This source is still cooling down."}
+	timed_modifier_grant_serial += 1
+	var grant_id := "%s:%s:%d" % [character_id, source_instance_id, timed_modifier_grant_serial]
+	var expires_at := int(GameManager.campaign_elapsed_seconds) + duration_seconds
+	modifiers.append({
+		"kind": kind,
+		"key": key,
+		"amount": amount,
+		"owner_id": character_id,
+		"source_instance_id": source_instance_id,
+		"grant_instance_id": grant_id,
+		"expires_at_seconds": expires_at,
+		"cooldown_seconds": cooldown_seconds,
+	})
+	return {"success": true, "grant_instance_id": grant_id, "expires_at_seconds": expires_at, "cooldown_seconds": cooldown_seconds}
+
+
+func has_campaign_modifier_source(source_instance_id: String) -> bool:
+	for modifier in modifiers:
+		if modifier.has("expires_at_seconds") and str(modifier.get("owner_id", "")) == character_id and str(modifier.get("source_instance_id", "")) == source_instance_id and int(modifier.get("expires_at_seconds", 0)) > int(GameManager.campaign_elapsed_seconds):
+			return true
+	return false
+
+
+func campaign_modifier_source_is_cooling_down(source_instance_id: String, now_seconds: int) -> bool:
+	return campaign_modifier_cooldown_for_source(source_instance_id, now_seconds) > 0
+
+
+func campaign_modifier_cooldown_for_source(source_instance_id: String, now_seconds: int) -> int:
+	for cooldown in campaign_modifier_cooldowns:
+		if str(cooldown.get("owner_id", "")) == character_id and str(cooldown.get("source_instance_id", "")) == source_instance_id and int(cooldown.get("ready_at_seconds", 0)) > now_seconds:
+			return int(cooldown["ready_at_seconds"])
+	return 0
+
+
+func has_timed_temporary_hp_grant_source(source_instance_id: String, now_seconds: int) -> bool:
+	expire_timed_temporary_hp_grants(now_seconds)
+	for grant in timed_temporary_hp_grants:
+		if str(grant.get("owner_id", "")) == character_id and str(grant.get("source_instance_id", "")) == source_instance_id:
+			return true
+	return false
+
+
+func offer_timed_temporary_hp(amount: int, duration_seconds: int, source_instance_id: String) -> Dictionary:
+	if amount < 1 or amount > 100000 or duration_seconds < 1 or duration_seconds > 86400 or source_instance_id.strip_edges().is_empty() or character_id.is_empty():
+		return {"success": false, "message": "Timed Temporary HP parameters are invalid."}
+	var owned_pool: Variant = numeric_resource_pools.get(source_instance_id, null)
+	if not owned_pool is Dictionary or str(owned_pool.get("owner_id", "")) != character_id or str(owned_pool.get("source_instance_id", "")) != source_instance_id:
+		return {"success": false, "message": "Timed Temporary HP requires its exact owned resource pool."}
+	var now_seconds := int(GameManager.campaign_elapsed_seconds)
+	var deadline := now_seconds + duration_seconds
+	if now_seconds < 0 or deadline > 2147483647:
+		return {"success": false, "message": "Timed Temporary HP deadline exceeds the campaign clock limit."}
+	expire_timed_temporary_hp_grants(now_seconds)
+	if has_timed_temporary_hp_grant_source(source_instance_id, now_seconds):
+		return {"success": false, "message": "This source already has a pending timed Temporary HP grant."}
+	if amount <= temp_hp:
+		return {"success": true, "accepted": false, "amount": temp_hp, "message": "%s keeps their existing temporary HP." % character_name}
+	if timed_temporary_hp_grant_serial >= 2147483647:
+		return {"success": false, "message": "This Temporary HP source has reached its grant limit."}
+	timed_temporary_hp_grant_serial += 1
+	var grant_id := "%s:%s:%d" % [character_id, source_instance_id, timed_temporary_hp_grant_serial]
+	var grant := {
+		"owner_id": character_id,
+		"source_instance_id": source_instance_id,
+		"grant_instance_id": grant_id,
+		"amount": amount,
+		"expires_at_seconds": deadline,
+	}
+	timed_temporary_hp_grants.append(grant)
+	temp_hp = amount
+	timed_temporary_hp_current_grant_id = grant_id
+	return {"success": true, "accepted": true, "grant": grant.duplicate(true), "message": "%s gains %d Temporary HP for %d campaign seconds." % [character_name, amount, duration_seconds]}
+
+
+func absorb_temporary_hp(amount: int) -> int:
+	if amount <= 0 or _temp_hp_value <= 0:
+		return 0
+	var absorbed := mini(amount, _temp_hp_value)
+	_temp_hp_value -= absorbed
+	if _temp_hp_value <= 0:
+		_temp_hp_value = 0
+		timed_temporary_hp_current_grant_id = ""
+	return absorbed
+
+
+func expire_timed_temporary_hp_grants(now_seconds: int) -> void:
+	var kept: Array[Dictionary] = []
+	for grant in timed_temporary_hp_grants:
+		if int(grant.get("expires_at_seconds", 0)) > now_seconds:
+			kept.append(grant)
+		elif str(grant.get("grant_instance_id", "")) == timed_temporary_hp_current_grant_id:
+			temp_hp = 0
+	timed_temporary_hp_grants = kept
+	if not timed_temporary_hp_current_grant_id.is_empty() and not kept.any(func(g): return str(g.get("grant_instance_id", "")) == timed_temporary_hp_current_grant_id):
+		timed_temporary_hp_current_grant_id = ""
+
+
+func remove_timed_temporary_hp_grants_from_source(source_instance_id: String) -> void:
+	var kept: Array[Dictionary] = []
+	for grant in timed_temporary_hp_grants:
+		if str(grant.get("source_instance_id", "")) != source_instance_id:
+			kept.append(grant)
+		elif str(grant.get("grant_instance_id", "")) == timed_temporary_hp_current_grant_id:
+			temp_hp = 0
+	timed_temporary_hp_grants = kept
+	if not timed_temporary_hp_current_grant_id.is_empty() and not kept.any(func(g): return str(g.get("grant_instance_id", "")) == timed_temporary_hp_current_grant_id):
+		timed_temporary_hp_current_grant_id = ""
+
+
+func active_campaign_modifier_grants() -> Array[Dictionary]:
+	var grants: Array[Dictionary] = []
+	for modifier in modifiers:
+		if modifier.has("grant_instance_id") and str(modifier.get("owner_id", "")) == character_id and int(modifier.get("expires_at_seconds", 0)) > int(GameManager.campaign_elapsed_seconds):
+			grants.append(modifier.duplicate(true))
+	return grants
+
+
+func has_campaign_modifier_grant(source_instance_id: String, grant_instance_id: String, now_seconds: int) -> bool:
+	for modifier in modifiers:
+		if modifier.has("grant_instance_id") and str(modifier.get("owner_id", "")) == character_id and str(modifier.get("source_instance_id", "")) == source_instance_id and str(modifier.get("grant_instance_id", "")) == grant_instance_id and int(modifier.get("expires_at_seconds", 0)) > now_seconds:
+			return true
+	return false
+
+
+func dismiss_campaign_modifier(source_instance_id: String, grant_instance_id: String, now_seconds: int) -> Dictionary:
+	expire_campaign_modifiers(now_seconds)
+	for index in range(modifiers.size()):
+		var modifier: Dictionary = modifiers[index]
+		if not has_campaign_modifier_grant(source_instance_id, grant_instance_id, now_seconds):
+			continue
+		if str(modifier.get("grant_instance_id", "")) != grant_instance_id:
+			continue
+		var cooldown_seconds := int(modifier.get("cooldown_seconds", 0))
+		_record_campaign_modifier_cooldown(modifier, "dismissed", now_seconds)
+		modifiers.remove_at(index)
+		return {"success": true, "cooldown_seconds": cooldown_seconds, "ready_at_seconds": now_seconds + cooldown_seconds}
+	return {"success": false, "message": "That exact timed grant is no longer active."}
+
+
+func remove_campaign_modifiers_from_source(source_instance_id: String) -> void:
+	var kept: Array[Dictionary] = []
+	for modifier in modifiers:
+		if not modifier.has("expires_at_seconds") or str(modifier.get("source_instance_id", "")) != source_instance_id:
+			kept.append(modifier)
+	modifiers = kept
+
+
+func remove_campaign_modifier_cooldowns_from_source(source_instance_id: String) -> void:
+	var kept: Array[Dictionary] = []
+	for cooldown in campaign_modifier_cooldowns:
+		if str(cooldown.get("source_instance_id", "")) != source_instance_id:
+			kept.append(cooldown)
+	campaign_modifier_cooldowns = kept
+
+
+func expire_campaign_modifiers(now_seconds: int) -> void:
+	var kept: Array[Dictionary] = []
+	for modifier in modifiers:
+		if not modifier.has("expires_at_seconds") or int(modifier.get("expires_at_seconds", 0)) > now_seconds:
+			kept.append(modifier)
+		elif modifier.has("grant_instance_id") and str(modifier.get("owner_id", "")) == character_id:
+			_record_campaign_modifier_cooldown(modifier, "expired", int(modifier["expires_at_seconds"]))
+	modifiers = kept
+	var active_cooldowns: Array[Dictionary] = []
+	for cooldown in campaign_modifier_cooldowns:
+		if int(cooldown.get("ready_at_seconds", 0)) > now_seconds:
+			active_cooldowns.append(cooldown)
+	campaign_modifier_cooldowns = active_cooldowns
+	expire_next_weapon_hit_grants(now_seconds)
+	expire_timed_temporary_hp_grants(now_seconds)
+
+
+func _record_campaign_modifier_cooldown(modifier: Dictionary, end_reason: String, started_at_seconds: int) -> void:
+	var grant_id := str(modifier.get("grant_instance_id", ""))
+	var source_id := str(modifier.get("source_instance_id", ""))
+	var cooldown_seconds := int(modifier.get("cooldown_seconds", 0))
+	if grant_id.is_empty() or source_id.is_empty() or str(modifier.get("owner_id", "")) != character_id or cooldown_seconds < 1 or cooldown_seconds > 86400:
+		return
+	for existing in campaign_modifier_cooldowns:
+		if str(existing.get("grant_instance_id", "")) == grant_id:
+			return
+	campaign_modifier_cooldowns.append({
+		"owner_id": character_id,
+		"source_instance_id": source_id,
+		"grant_instance_id": grant_id,
+		"end_reason": end_reason,
+		"started_at_seconds": started_at_seconds,
+		"cooldown_seconds": cooldown_seconds,
+		"ready_at_seconds": started_at_seconds + cooldown_seconds,
+	})
+
+
+func add_next_melee_hit_grant(amount: int, damage_type: String, duration_seconds: int, source_instance_id: String) -> Dictionary:
+	if amount < 1 or amount > 100 or damage_type not in DataLoader.VALID_DAMAGE_TYPES or damage_type == "none" or duration_seconds < 1 or duration_seconds > 86400 or source_instance_id.strip_edges().is_empty() or character_id.is_empty():
+		return {"success": false, "message": "Next melee-hit grant parameters are invalid."}
+	if has_next_melee_hit_grant_source(source_instance_id):
+		return {"success": false, "message": "This source already has an unspent next melee-hit grant."}
+	next_weapon_hit_grant_serial += 1
+	var expires_at := int(GameManager.campaign_elapsed_seconds) + duration_seconds
+	var grant_id := "next-hit:%s:%s:%d" % [character_id, source_instance_id, next_weapon_hit_grant_serial]
+	var grant := {
+		"owner_id": character_id,
+		"source_instance_id": source_instance_id,
+		"grant_instance_id": grant_id,
+		"acquisition_order": next_weapon_hit_grant_serial,
+		"matcher": "melee_weapon_hit",
+		"amount": amount,
+		"damage_type": damage_type,
+		"expires_at_seconds": expires_at,
+	}
+	next_weapon_hit_grants.append(grant)
+	return {"success": true, "grant": grant.duplicate(true), "grant_instance_id": grant_id, "expires_at_seconds": expires_at}
+
+
+func has_next_melee_hit_grant_source(source_instance_id: String) -> bool:
+	for grant in next_weapon_hit_grants:
+		if str(grant.get("owner_id", "")) == character_id and str(grant.get("source_instance_id", "")) == source_instance_id and int(grant.get("expires_at_seconds", 0)) > int(GameManager.campaign_elapsed_seconds):
+			return true
+	return false
+
+
+func take_oldest_next_melee_hit_grant(now_seconds: int) -> Dictionary:
+	expire_next_weapon_hit_grants(now_seconds)
+	if next_weapon_hit_grants.is_empty():
+		return {}
+	next_weapon_hit_grants.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return int(a.get("acquisition_order", 0)) < int(b.get("acquisition_order", 0)))
+	var grant: Dictionary = next_weapon_hit_grants.pop_front()
+	return grant.duplicate(true)
+
+
+func remove_next_melee_hit_grants_from_source(source_instance_id: String) -> void:
+	var kept: Array[Dictionary] = []
+	for grant in next_weapon_hit_grants:
+		if str(grant.get("source_instance_id", "")) != source_instance_id:
+			kept.append(grant)
+	next_weapon_hit_grants = kept
+
+
+func expire_next_weapon_hit_grants(now_seconds: int) -> void:
+	var kept: Array[Dictionary] = []
+	for grant in next_weapon_hit_grants:
+		if int(grant.get("expires_at_seconds", 0)) > now_seconds:
+			kept.append(grant)
+	next_weapon_hit_grants = kept
+
+
 ## Refresh matching timed effects without creating duplicate stacked modifiers.
 func refresh_modifier(kind: String, key: String, duration: int) -> void:
 	for modifier in modifiers:
@@ -1706,7 +2211,7 @@ func refresh_modifier(kind: String, key: String, duration: int) -> void:
 func get_modifier(kind: String, key: String) -> int:
 	var total := 0
 	for modifier in modifiers:
-		if str(modifier.get("kind", "")) == kind and str(modifier.get("key", "")) == key:
+		if str(modifier.get("kind", "")) == kind and str(modifier.get("key", "")) == key and (not modifier.has("expires_at_seconds") or int(modifier.get("expires_at_seconds", 0)) > int(GameManager.campaign_elapsed_seconds)):
 			total += int(modifier.get("amount", 0))
 	return total
 
@@ -1716,6 +2221,10 @@ func tick_modifiers() -> void:
 	var remaining: Array[Dictionary] = []
 	for modifier in modifiers:
 		var next := modifier.duplicate(true)
+		if next.has("expires_at_seconds"):
+			if int(next.get("expires_at_seconds", 0)) > int(GameManager.campaign_elapsed_seconds):
+				remaining.append(next)
+			continue
 		next["remaining_turns"] = int(next.get("remaining_turns", 1)) - 1
 		if int(next["remaining_turns"]) > 0:
 			remaining.append(next)
@@ -1780,6 +2289,9 @@ func to_dict() -> Dictionary:
 		"max_hp": max_hp,
 		"current_hp": current_hp,
 		"temp_hp": temp_hp,
+		"timed_temporary_hp_grant_serial": timed_temporary_hp_grant_serial,
+		"timed_temporary_hp_grants": timed_temporary_hp_grants.duplicate(true),
+		"timed_temporary_hp_current_grant_id": timed_temporary_hp_current_grant_id,
 		"base_ac": base_ac,
 		"speed": speed,
 		"movement_speeds_feet": movement_speeds_feet.duplicate(true),
@@ -1829,13 +2341,19 @@ func to_dict() -> Dictionary:
 		"spell_cast_serial": spell_cast_serial,
 		"spell_concentration": SpellEffects.saved_concentration(self),
 		"modifiers": modifiers.duplicate(true),
+		"timed_modifier_grant_serial": timed_modifier_grant_serial,
+		"campaign_modifier_cooldowns": campaign_modifier_cooldowns.duplicate(true),
+		"next_weapon_hit_grants": next_weapon_hit_grants.duplicate(true),
+		"next_weapon_hit_grant_serial": next_weapon_hit_grant_serial,
 		"inventory": inventory.to_dict(),
 		"feature_uses": feature_uses.duplicate(),
+		"numeric_resource_pools": numeric_resource_pools.duplicate(true),
 		"is_alive": is_alive,
 		"disintegrated": disintegrated,
 		"corpse_state": corpse_state.duplicate(true),
 		"body_death_serial": body_death_serial,
 		"revival_willing": revival_willing,
+		"willingness": willingness,
 		"body_missing_parts": body_missing_parts.duplicate(),
 		"crit_range": crit_range,
 		"extra_attacks": extra_attacks,
@@ -1859,6 +2377,7 @@ func to_dict() -> Dictionary:
 func from_dict(data: Dictionary) -> void:
 	familiar_senses = null
 	character_id = str(data.get("character_id", ""))
+	willingness = str(data.get("willingness", "unknown")) if str(data.get("willingness", "unknown")) in ["unknown", "willing", "unwilling"] else "unknown"
 	character_name = data.get("name", "")
 	race_id = data.get("race_id", "")
 	class_id = data.get("class_id", "")
@@ -2033,7 +2552,24 @@ func from_dict(data: Dictionary) -> void:
 	for modifier in data.get("modifiers", []):
 		if modifier is Dictionary:
 			modifiers.append(modifier.duplicate(true))
+	timed_modifier_grant_serial = maxi(0, int(data.get("timed_modifier_grant_serial", 0)))
+	campaign_modifier_cooldowns.clear()
+	for cooldown in data.get("campaign_modifier_cooldowns", []):
+		if cooldown is Dictionary:
+			campaign_modifier_cooldowns.append(cooldown.duplicate(true))
+	next_weapon_hit_grants.clear()
+	for grant in data.get("next_weapon_hit_grants", []):
+		if grant is Dictionary:
+			next_weapon_hit_grants.append(grant.duplicate(true))
+	next_weapon_hit_grant_serial = maxi(0, int(data.get("next_weapon_hit_grant_serial", 0)))
+	timed_temporary_hp_grant_serial = maxi(0, int(data.get("timed_temporary_hp_grant_serial", 0)))
+	timed_temporary_hp_grants.clear()
+	for grant in data.get("timed_temporary_hp_grants", []):
+		if grant is Dictionary:
+			timed_temporary_hp_grants.append(grant.duplicate(true))
+	timed_temporary_hp_current_grant_id = str(data.get("timed_temporary_hp_current_grant_id", ""))
 	feature_uses = data.get("feature_uses", {}).duplicate()
+	numeric_resource_pools = data.get("numeric_resource_pools", {}).duplicate(true)
 	roll_tokens = RollTokenRules.deserialize_tokens(data.get("roll_tokens", {}))
 	roll_token_generation_serial = maxi(0, int(data.get("roll_token_generation_serial", 0)))
 	damage_wards = WardRules.deserialize_wards(data.get("damage_wards", {}))
@@ -2063,6 +2599,7 @@ func from_dict(data: Dictionary) -> void:
 		inventory.add_item("spellbook")
 	DruidRules.restore_saved_form(self, data.get("wild_shape_state", {}))
 	CorpseRules.restore(self, data)
+	expire_timed_temporary_hp_grants(int(GameManager.campaign_elapsed_seconds))
 
 
 ## Resolve a known-DC saving throw. The sheet exposes automatic resource choices.

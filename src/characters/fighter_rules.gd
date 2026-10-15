@@ -225,11 +225,12 @@ static func mastery(c: Character, weapon: Dictionary) -> String:
 static func tactical_mind(c: Character, total: int, dc: int) -> Dictionary:
 	if total >= dc or not c.has_feature("fighter_tactical_mind") or int(c.feature_uses.get("fighter_second_wind", 0)) <= 0:
 		return {"total": total, "bonus": 0, "spent": false}
-	var bonus := Dice.roll(10, c)
+	var roll_details: Dictionary = Dice.roll_single_details(10, c)
+	var bonus := int(roll_details.get("total", 0))
 	var spent := total + bonus >= dc
 	if spent:
 		c.use_feature("fighter_second_wind")
-	return {"total": total + bonus, "bonus": bonus, "spent": spent}
+	return {"total": total + bonus, "bonus": bonus, "roll_details": roll_details, "spent": spent}
 
 static func start_turn(c: Character) -> int:
 	c.feature_uses.erase("fighter_action_surge_used")

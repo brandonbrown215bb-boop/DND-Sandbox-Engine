@@ -31,6 +31,7 @@ for accepted evidence. Old implementation restrictions do not override later dec
 | [0020 — Roll tokens and pre-roll replacement](0020-roll-tokens-and-pre-roll-replacement.md) | Accepted; Slice 2 shared `roll_token_pool` runtime, Diviner Portent/Greater Portent, and save preflight |
 | [0021 — Damage interception and wards](0021-damage-interception-and-wards.md) | Accepted; Slice 3 shared `damage_ward_pool` / `damage_ward_projection`, 5-step damage order, Abjurer Arcane/Projected Ward, and save preflight |
 | [0022 — Rest completion and slot recovery](0022-rest-completion-and-slot-recovery.md) | Accepted; Slice 4A/4B bounded Short/Long Rest completion, `rest_slot_recovery` window, Wizard Arcane Recovery, and single-owner execution |
+| [0023 — Vocabulary-first delivery and bounded world judgment](0023-vocabulary-first-delivery-and-bounded-world-judgment.md) | Accepted direction; separate discovery/build/check/translation, stage-based resolution, current save priorities, observer-specific illusions and executable campaign Wish outcomes |
 
 New ADRs must state the decision, reason, compatibility constraints, acceptance
 boundary and affected earlier decisions. Keep implementation diaries and latest

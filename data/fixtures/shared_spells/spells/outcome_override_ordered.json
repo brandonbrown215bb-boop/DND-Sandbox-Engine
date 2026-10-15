@@ -1,0 +1,96 @@
+[
+  {
+    "id": "sandbox:steadfast_success_ordered",
+    "name": "Steadfast Success",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 12,
+    "target": "area",
+    "effects": [
+      { "type": "area_selection", "shape": "sphere", "radius": 1 }
+    ],
+    "steps": [
+      {
+        "id": "save",
+        "type": "save",
+        "target": "area",
+        "shape": "sphere",
+        "radius": 1,
+        "save": "DEX",
+        "damage": "4",
+        "damage_type": "fire",
+        "half_on_save": true,
+        "effects": [
+          { "type": "grant_condition", "condition": "poisoned", "on_failed_save": true }
+        ]
+      },
+      {
+        "id": "success_rider",
+        "type": "effect",
+        "gate": "successful_save",
+        "gate_step": "save",
+        "effects": [
+          { "type": "grant_condition", "condition": "blessed" }
+        ]
+      },
+      {
+        "id": "failure_rider",
+        "type": "effect",
+        "gate": "failed_save",
+        "gate_step": "save",
+        "effects": [
+          { "type": "grant_condition", "condition": "frightened" }
+        ]
+      }
+    ],
+    "duration_seconds": 60
+  },
+  {
+    "id": "sandbox:resolute_success_ordered",
+    "name": "Resolute Success",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 12,
+    "target": "area",
+    "effects": [
+      { "type": "area_selection", "shape": "sphere", "radius": 1 }
+    ],
+    "steps": [
+      {
+        "id": "saving_throw",
+        "type": "save",
+        "target": "area",
+        "shape": "sphere",
+        "radius": 1,
+        "save": "CON",
+        "damage": "6",
+        "damage_type": "cold",
+        "half_on_save": true,
+        "effects": [
+          { "type": "grant_condition", "condition": "poisoned", "on_failed_save": true }
+        ]
+      },
+      {
+        "id": "success_rider",
+        "type": "effect",
+        "gate": "successful_save",
+        "gate_step": "saving_throw",
+        "effects": [
+          { "type": "grant_condition", "condition": "blessed" }
+        ]
+      },
+      {
+        "id": "failure_rider",
+        "type": "effect",
+        "gate": "failed_save",
+        "gate_step": "saving_throw",
+        "effects": [
+          { "type": "grant_condition", "condition": "frightened" }
+        ]
+      }
+    ],
+    "duration_seconds": 60
+  }
+]

@@ -4,6 +4,10 @@ extends RefCounted
 
 static func resolve(cast: SpellResolutionContext) -> Dictionary:
 	# Standard spell attack roll
+	var tracks_resolution_windows := SharedSpell.uses(cast.spell)
+	if tracks_resolution_windows:
+		SpellDamageRolls.begin_resolution_occurrence(cast, "spell_attack")
+		SpellDamageRolls.record_resolution_window(cast, "before_roll")
 	var spell_stat := cast.caster.get_spellcasting_ability()
 	var spell_attack_distance := maxi(0, cast.distance_feet)
 	var fog_obscures_attack := CombatAction.has_condition(cast.caster, "fog_cloud_obscured") or CombatAction.has_condition(cast.target, "fog_cloud_obscured") or CombatAction.has_condition(cast.caster, "darkness_obscured") or CombatAction.has_condition(cast.target, "darkness_obscured")
@@ -64,7 +68,85 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 	if is_hit and (CombatAction.is_unconscious(cast.target) or CombatAction.is_paralyzed(cast.target)) and int(cast.spell.get("range", 6)) <= 1:
 		is_crit = true
 		attack_result["is_crit"] = true
+	if tracks_resolution_windows:
+		SpellDamageRolls.record_resolution_window(cast, "after_natural", {
+			"roll_natural": int(attack_result.get("natural", 0)),
+			"roll_modifier": int(attack_result.get("modifier", 0)),
+			"roll_total": int(attack_result.get("total", 0)),
+		})
+		SpellDamageRolls.record_resolution_window(cast, "provisional_outcome", {
+			"roll_natural": int(attack_result.get("natural", 0)),
+			"roll_modifier": int(attack_result.get("modifier", 0)),
+			"roll_total": int(attack_result.get("total", 0)),
+			"target_ac": target_ac,
+			"provisional_hit": is_hit,
+			"provisional_critical": is_crit,
+		})
 
+	# Shared attacks may wait here for the owner's exact source choice. Native
+	# rerolls and bonuses above are already settled and are captured once.
+	if SharedSpell.uses(cast.spell) and SpellDamageRolls.has_attack_bonus_choice_host(cast.decisions):
+		var allow_numeric_bonus := not is_hit and not bool(attack_result.get("is_miss", false)) and not is_crit and int(attack_result.get("natural", 0)) != 1
+		var allow_hit_adjustments := is_hit and not is_crit and not bool(attack_result.get("is_miss", false))
+		var bonus_options := SpellDamageRolls.attack_choice_options(cast.caster, "shared_spell_attack", is_hit, allow_numeric_bonus, allow_hit_adjustments)
+		if not bonus_options.is_empty():
+			var captured := {
+				"attack_result": attack_result.duplicate(true), "original_target_ac": target_ac,
+				"original_attack_result": attack_result.duplicate(true),
+				"provisional_hit": is_hit,
+				"spell_attack_advantage": spell_attack_advantage,
+				"spell_attack_disadvantage": spell_attack_disadvantage,
+				"reaction_msg": reaction_msg, "seeking_spell_used": seeking_spell_used,
+				"stroke_of_luck_used": stroke_of_luck_used, "spell_cast": cast,
+			}
+			var pending_choice := SpellDamageRolls.create_weapon_attack_bonus_request(cast.caster, cast.target, captured, bonus_options, cast.decisions, "shared_spell_attack")
+			SpellDamageRolls.publish_resolution_windows(cast, pending_choice)
+			return pending_choice
+	return _finish_attack(cast, attack_result, target_ac, spell_attack_advantage, spell_attack_disadvantage, reaction_msg, seeking_spell_used, stroke_of_luck_used, {})
+
+
+static func resume_numeric_bonus(record: Dictionary, selected: Dictionary) -> Dictionary:
+	var captured: Dictionary = record.get("context", {})
+	var cast: SpellResolutionContext = captured.get("spell_cast")
+	if cast == null:
+		return {"success": false, "refused": true, "message": "The captured spell attack is no longer available."}
+	var attack_result: Dictionary = captured.get("attack_result", {}).duplicate(true)
+	if not selected.is_empty() and str(selected.get("resolution", "")) not in ["outcome_override", "attack_total_adjustment", "defending_ac_adjustment"]:
+		var bonus := int(selected.get("bonus_amount", selected.get("amount", 0)))
+		attack_result["total"] = int(attack_result.get("total", 0)) + bonus
+		attack_result["post_roll_bonus"] = bonus
+		attack_result["post_roll_bonus_source"] = str(selected.get("source_instance_id", ""))
+		if str(selected.get("bonus_kind", "numeric")) == "die":
+			var bonus_roll: Dictionary = selected.get("bonus_roll", {})
+			var bonus_terms: Array = attack_result.get("bonus_dice_terms", [])
+			bonus_terms.append({
+				"count": 1, "sides": int(selected.get("die_size", 0)),
+				"results": bonus_roll.get("rolls", []).duplicate(true),
+				"kept": bonus_roll.get("kept", []).duplicate(true),
+				"label": str(selected.get("label", "Spell Attack Bonus")), "subtotal": bonus,
+			})
+			attack_result["bonus_dice_terms"] = bonus_terms
+			attack_result["post_roll_bonus_die"] = bonus_roll.duplicate(true)
+	return _finish_attack(cast, attack_result, int(captured.get("original_target_ac", 10)), bool(captured.get("spell_attack_advantage", false)), bool(captured.get("spell_attack_disadvantage", false)), str(captured.get("reaction_msg", "")), bool(captured.get("seeking_spell_used", false)), bool(captured.get("stroke_of_luck_used", false)), selected)
+
+
+static func _finish_attack(cast: SpellResolutionContext, attack_result: Dictionary, original_target_ac: int, spell_attack_advantage: bool, spell_attack_disadvantage: bool, reaction_msg: String, seeking_spell_used: bool, stroke_of_luck_used: bool, selected_bonus: Dictionary) -> Dictionary:
+	var tracks_resolution_windows := SharedSpell.uses(cast.spell)
+	var original_attack_result: Dictionary = attack_result.duplicate(true)
+	var target_ac := original_target_ac
+	if str(selected_bonus.get("resolution", "")) == "outcome_override":
+		attack_result["outcome_override"] = str(selected_bonus.get("outcome", ""))
+		attack_result["outcome_override_source"] = str(selected_bonus.get("source_instance_id", ""))
+		attack_result["outcome_override_domain"] = str(selected_bonus.get("domain", "shared_spell_attack"))
+		attack_result["outcome_override_stage"] = str(selected_bonus.get("stage", "provisional_outcome"))
+	var is_crit := bool(attack_result.get("is_crit", false))
+	var override_outcome := str(attack_result.get("outcome_override", ""))
+	# Settle native reactions from the numeric roll before applying the explicit
+	# outcome. In particular, a forced miss must not consume Peerless Aim.
+	var is_hit: bool = is_crit or (not bool(attack_result.get("is_miss", false)) and int(attack_result.get("total", 0)) >= target_ac)
+	if is_hit and (CombatAction.is_unconscious(cast.target) or CombatAction.is_paralyzed(cast.target)) and int(cast.spell.get("range", 6)) <= 1:
+		is_crit = true
+		attack_result["is_crit"] = true
 	# Shield can be cast even when the triggering attack is a critical hit;
 	# the Reaction still raises AC against any later attacks this turn.
 	if is_hit and cast.target is Character:
@@ -81,41 +163,144 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 					reaction_msg += "[color=cyan]%s[/color]\n" % str(ward_ev["message"])
 
 	is_hit = FighterRules.peerless_aim(cast.caster, is_hit)
+	if override_outcome in ["hit", "miss"]:
+		is_hit = override_outcome == "hit"
+		if not is_hit:
+			is_crit = false
+			attack_result["is_crit"] = false
+		elif (CombatAction.is_unconscious(cast.target) or CombatAction.is_paralyzed(cast.target)) and int(cast.spell.get("range", 6)) <= 1:
+			is_crit = true
+			attack_result["is_crit"] = true
+	var adjustment_operation := str(selected_bonus.get("resolution", ""))
+	if adjustment_operation in ["attack_total_adjustment", "defending_ac_adjustment"]:
+		var adjusted := SpellDamageRolls.apply_attack_result_adjustment(attack_result, target_ac, selected_bonus)
+		attack_result = adjusted.get("attack_result", attack_result)
+		target_ac = int(adjusted.get("target_ac", target_ac))
+		is_hit = is_crit or (not bool(attack_result.get("is_miss", false)) and int(attack_result.get("total", 0)) >= target_ac)
+	var adjustment_cost_paid := false
+	if not selected_bonus.is_empty():
+		var payment_policy := "pay_on_choice" if str(selected_bonus.get("resolution", "")) == "outcome_override" else str(selected_bonus.get("payment_policy", "pay_on_choice"))
+		if payment_policy not in SpellDamageRolls.FAILED_SAVE_BONUS_PAYMENT_POLICIES:
+			return {"success": false, "refused": true, "message": "The selected attack bonus policy is unsupported."}
+		if payment_policy == "pay_on_choice" or is_hit:
+			var payment := ResourcePoolRules.spend(cast.caster, str(selected_bonus.get("source_instance_id", "")), int(selected_bonus.get("cost", 0)))
+			if not bool(payment.get("success", false)):
+				return {"success": false, "refused": true, "message": str(payment.get("message", "The selected attack source cannot pay."))}
+			adjustment_cost_paid = true
+	var adjustment_receipt := SpellDamageRolls.attack_adjustment_receipt(selected_bonus, original_attack_result, original_target_ac, attack_result, target_ac, is_hit, is_crit, adjustment_cost_paid, {"domain": "shared_spell_attack", "ability": cast.caster.get_spellcasting_ability(), "spell_id": str(cast.spell.get("id", "")), "advantage": spell_attack_advantage, "disadvantage": spell_attack_disadvantage})
 	var token_replaced := bool(attack_result.get("roll_token_replaced", false))
 	var token_id := str(attack_result.get("roll_token_id", ""))
 	var token_value := int(attack_result.get("roll_token_value", 0))
+	var numeric_margin_fields := {}
+	if attack_result.has("natural") and attack_result.has("total"):
+		# S-092 outcome overrides and S-095 numeric adjustments change final hit
+		# independently. Keep the adjusted numeric margin beside the final outcome.
+		numeric_margin_fields = {
+			"numeric_margin": int(attack_result["total"]) - target_ac,
+			"attack_target_ac": target_ac,
+		}
 	if not is_hit:
 		FighterRules.record_miss(cast.caster, cast.target)
-		if cast.spell.has("miss_damage_scale") and cast.spell.has("damage"):
+		if (cast.spell.has("miss_damage_scale") or cast.spell.has("damage_scale_by_outcome")) and cast.spell.has("damage"):
+			if tracks_resolution_windows:
+				var miss_window_fields := {
+					"roll_natural": int(attack_result.get("natural", 0)),
+					"roll_modifier": int(attack_result.get("modifier", 0)),
+					"roll_total": int(attack_result.get("total", 0)),
+					"target_ac": target_ac,
+					"final_hit": false,
+					"critical": false,
+				}
+				if not adjustment_receipt.is_empty(): miss_window_fields["attack_adjustment"] = adjustment_receipt.duplicate(true)
+				var miss_override_receipt := _outcome_override_receipt(selected_bonus, override_outcome)
+				if not miss_override_receipt.is_empty(): miss_window_fields["roll_outcome_override"] = miss_override_receipt
+				SpellDamageRolls.record_resolution_window(cast, "pre_damage", miss_window_fields)
 			var miss_damage_str := SpellDamageRolls.spell_damage_formula(cast.caster, cast.spell, cast.slot_level)
 			var miss_damage_details := SpellDamageRolls._roll_spell_damage(cast.caster, miss_damage_str, 1, cast.decisions)
 			var miss_base := {
 				"success": true, "hit": false, "slot_level": cast.slot_level,
+				"attack_roll": int(attack_result.get("total", 0)),
+				"attack_advantage": spell_attack_advantage,
+				"attack_disadvantage": spell_attack_disadvantage,
 				"metamagic_used": seeking_spell_used, "stroke_of_luck_used": stroke_of_luck_used,
 				"roll_token_replaced": token_replaced,
 				"message": reaction_msg + "Spell misses for half damage: {damage} %s damage." % cast.spell.get("damage_type", "fire")
 			}
+			for field in numeric_margin_fields: miss_base[field] = numeric_margin_fields[field]
+			if not selected_bonus.is_empty():
+				if not adjustment_receipt.is_empty():
+					miss_base["attack_adjustment_receipt"] = adjustment_receipt.duplicate(true)
+					miss_base["original_attack_result"] = original_attack_result.duplicate(true)
+					miss_base["original_target_ac"] = original_target_ac
+				elif override_outcome in ["hit", "miss"]:
+					_apply_outcome_override_metadata(miss_base, selected_bonus)
+				else:
+					_apply_post_roll_bonus_metadata(miss_base, selected_bonus)
+					miss_base["post_roll_bonus_paid"] = str(selected_bonus.get("payment_policy", "pay_on_choice")) == "pay_on_choice"
 			if token_replaced:
 				miss_base["roll_token_id"] = token_id
 				miss_base["roll_token_value"] = token_value
-			return SpellDamageRolls._finish_spell_damage(cast.caster, cast.target, miss_damage_details, CombatAction.spell_damage_bonus(cast.caster, cast.spell), float(cast.spell.get("miss_damage_scale", 0.0)), str(cast.spell.get("damage_type", "fire")), cast.decisions, miss_base)
+			if tracks_resolution_windows:
+				miss_base["_resolution_context"] = cast
+			var miss_scale := SharedSpell.authored_damage_scale(cast.spell, "miss", float(cast.spell.get("miss_damage_scale", 0.0)))
+			SharedSpell.record_damage_scale(miss_base, cast.spell, "miss", miss_scale)
+			return SpellDamageRolls._finish_spell_damage(cast.caster, cast.target, miss_damage_details, CombatAction.spell_damage_bonus(cast.caster, cast.spell), miss_scale, str(cast.spell.get("damage_type", "fire")), cast.decisions, miss_base)
 		var miss_out := {"success": true, "hit": false, "slot_level": cast.slot_level, "attack_roll": attack_result["total"], "attack_advantage": spell_attack_advantage, "attack_disadvantage": spell_attack_disadvantage, "metamagic_used": seeking_spell_used, "stroke_of_luck_used": stroke_of_luck_used, "roll_token_replaced": token_replaced, "message": reaction_msg + "Spell missed! Ranged spell attack %d vs AC %d" % [attack_result["total"], target_ac]}
+		for field in numeric_margin_fields: miss_out[field] = numeric_margin_fields[field]
+		if not selected_bonus.is_empty():
+			if not adjustment_receipt.is_empty():
+				miss_out["attack_adjustment_receipt"] = adjustment_receipt.duplicate(true)
+				miss_out["original_attack_result"] = original_attack_result.duplicate(true)
+				miss_out["original_target_ac"] = original_target_ac
+			elif override_outcome in ["hit", "miss"]:
+				_apply_outcome_override_metadata(miss_out, selected_bonus)
+			else:
+				_apply_post_roll_bonus_metadata(miss_out, selected_bonus)
+				miss_out["post_roll_bonus_paid"] = str(selected_bonus.get("payment_policy", "pay_on_choice")) == "pay_on_choice"
+		if tracks_resolution_windows and not adjustment_receipt.is_empty():
+			# This branch has no damage roll, so it never reaches _finish_spell_damage,
+			# which normally publishes the settled pre-damage receipt. Keep the
+			# selected adjustment inspectable in the same ordered result windows.
+			SpellDamageRolls.record_resolution_window(cast, "pre_damage", {
+				"roll_natural": int(attack_result.get("natural", 0)),
+				"roll_modifier": int(attack_result.get("modifier", 0)),
+				"roll_total": int(attack_result.get("total", 0)),
+				"target_ac": target_ac,
+				"final_hit": false,
+				"critical": false,
+				"attack_adjustment": adjustment_receipt.duplicate(true),
+			})
 		if token_replaced:
 			miss_out["roll_token_id"] = token_id
 			miss_out["roll_token_value"] = token_value
+		SpellDamageRolls.publish_resolution_windows(cast, miss_out)
 		return miss_out
 
+	if tracks_resolution_windows:
+		var hit_window_fields := {
+			"roll_natural": int(attack_result.get("natural", 0)),
+			"roll_modifier": int(attack_result.get("modifier", 0)),
+			"roll_total": int(attack_result.get("total", 0)),
+			"target_ac": target_ac,
+			"final_hit": true,
+			"critical": bool(attack_result.get("is_crit", false)),
+		}
+		if not adjustment_receipt.is_empty(): hit_window_fields["attack_adjustment"] = adjustment_receipt.duplicate(true)
+		var hit_override_receipt := _outcome_override_receipt(selected_bonus, override_outcome)
+		if not hit_override_receipt.is_empty(): hit_window_fields["roll_outcome_override"] = hit_override_receipt
+		SpellDamageRolls.record_resolution_window(cast, "pre_damage", hit_window_fields)
 	var damage_str := SpellDamageRolls.spell_damage_formula(cast.caster, cast.spell, cast.slot_level)
 	var damage_type: String = cast.spell.get("damage_type", "fire")
 	var is_sorcerous_burst := str(cast.spell.get("id", "")) == "sorcerous_burst"
 	var rolled_damage_formula := "%s + %s" % [damage_str, damage_str] if bool(attack_result["is_crit"]) else damage_str
 	var damage_details := SpellDamageRolls._roll_sorcerous_burst_damage(cast.caster, rolled_damage_formula, int(cast.spell.get("explode_on_max", 8)), str(cast.spell.get("maximum_bonus_dice_ability", "CHA"))) if is_sorcerous_burst else SpellDamageRolls._roll_spell_damage(cast.caster, damage_str, 2 if attack_result["is_crit"] else 1, cast.decisions)
-	var damage_scale := 1.0
+	var authored_scale := SharedSpell.authored_damage_scale(cast.spell, "hit", 1.0)
+	var damage_scale := authored_scale
 
 	# Uncanny Dodge halves the settled roll, including any selected rerolls.
 	if cast.target is Character and cast.target.reaction_available and (cast.target.has_feature("uncanny_dodge") or cast.target.has_feature("rogue_uncanny_dodge")) and CombatAction._reaction_accepted("uncanny_dodge", cast.decisions):
 		cast.target.reaction_available = false
-		damage_scale = 0.5
+		damage_scale *= 0.5
 		reaction_msg += "[color=cyan]%s uses Uncanny Dodge as a reaction to halve incoming damage![/color]\n" % cast.target.character_name
 	var attack_critical := bool(attack_result["is_crit"]) or ((CombatAction.is_unconscious(cast.target) or CombatAction.is_paralyzed(cast.target)) and int(cast.spell.get("range", 6)) <= 1)
 	var attack_damage_packets := CombatAction._roll_attack_damage_packets(cast.caster, cast.spell.get("_conjure_minor_elementals_bonus_packets", []), [attack_critical])
@@ -130,6 +315,20 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 		"effect_cast": cast.effect_cast,
 		"message": reaction_msg + "Spell Hit! Dealing {damage} %s damage." % damage_type
 	}
+	SharedSpell.record_damage_scale(hit_base, cast.spell, "hit", authored_scale)
+	for field in numeric_margin_fields: hit_base[field] = numeric_margin_fields[field]
+	if tracks_resolution_windows:
+		hit_base["_resolution_context"] = cast
+	if not selected_bonus.is_empty():
+		if not adjustment_receipt.is_empty():
+			hit_base["attack_adjustment_receipt"] = adjustment_receipt.duplicate(true)
+			hit_base["original_attack_result"] = original_attack_result.duplicate(true)
+			hit_base["original_target_ac"] = original_target_ac
+		elif override_outcome in ["hit", "miss"]:
+			_apply_outcome_override_metadata(hit_base, selected_bonus)
+		else:
+			_apply_post_roll_bonus_metadata(hit_base, selected_bonus)
+			hit_base["post_roll_bonus_paid"] = true
 	if token_replaced:
 		hit_base["roll_token_id"] = token_id
 		hit_base["roll_token_value"] = token_value
@@ -137,5 +336,38 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 	cast.decisions.erase("damage_is_critical")
 	cast.decisions.erase("critical")
 	return res
+
+
+static func _apply_post_roll_bonus_metadata(result: Dictionary, selected_bonus: Dictionary) -> void:
+	result["post_roll_bonus"] = int(selected_bonus.get("bonus_amount", selected_bonus.get("amount", 0)))
+	result["post_roll_bonus_source"] = str(selected_bonus.get("source_instance_id", ""))
+	if selected_bonus.get("bonus_roll", {}) is Dictionary and not selected_bonus.get("bonus_roll", {}).is_empty():
+		result["post_roll_bonus_die"] = selected_bonus["bonus_roll"].duplicate(true)
+
+
+static func _apply_outcome_override_metadata(result: Dictionary, selected: Dictionary) -> void:
+	result["attack_outcome_override"] = str(selected.get("outcome", ""))
+	result["attack_outcome_override_source"] = str(selected.get("source_instance_id", ""))
+	result["attack_outcome_override_feature_id"] = str(selected.get("feature_id", ""))
+	result["attack_outcome_override_pool_definition_id"] = str(selected.get("pool_definition_id", ""))
+	result["attack_outcome_override_owner_id"] = str(selected.get("source_owner_id", ""))
+	result["attack_outcome_override_domain"] = str(selected.get("domain", "shared_spell_attack"))
+	result["attack_outcome_override_stage"] = str(selected.get("stage", "provisional_outcome"))
+	result["attack_outcome_override_cost_paid"] = true
+
+
+static func _outcome_override_receipt(selected: Dictionary, outcome: String) -> Dictionary:
+	if str(selected.get("resolution", "")) != "outcome_override" or outcome not in ["hit", "miss"]:
+		return {}
+	return {
+		"outcome": outcome,
+		"source_instance_id": str(selected.get("source_instance_id", "")),
+		"feature_id": str(selected.get("feature_id", "")),
+		"pool_definition_id": str(selected.get("pool_definition_id", "")),
+		"owner_id": str(selected.get("source_owner_id", "")),
+		"domain": str(selected.get("domain", "shared_spell_attack")),
+		"stage": str(selected.get("stage", "provisional_outcome")),
+		"cost_paid": true,
+	}
 
 

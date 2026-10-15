@@ -1,0 +1,48 @@
+[
+  {
+    "id": "fixture:steady_saving_class",
+    "name": "Fixture Steady Saving",
+    "hit_die": "d8",
+    "primary_ability": "DEX",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:steady_saving",
+          "name": "Steady Saving",
+          "type": "passive",
+          "resource_pool": {
+            "id": "fixture:steady_saving_pool",
+            "capacity_formula": 2,
+            "initial_quantity": 2
+          },
+          "passive_effects": [
+            { "type": "failed_save_numeric_bonus", "ability": "DEX", "amount": 5, "cost": 1 }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "fixture:steadfast_resolve_class",
+    "name": "Fixture Steadfast Resolve",
+    "hit_die": "d8",
+    "primary_ability": "CON",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:steadfast_resolve",
+          "name": "Steadfast Resolve",
+          "type": "passive",
+          "resource_pool": {
+            "id": "fixture:steadfast_resolve_pool",
+            "capacity_formula": 3,
+            "initial_quantity": 3
+          },
+          "passive_effects": [
+            { "type": "failed_save_numeric_bonus", "ability": "CON", "amount": 7, "cost": 1 }
+          ]
+        }
+      ]
+    }
+  }
+]

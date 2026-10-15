@@ -20,7 +20,7 @@ func _ready() -> void:
 				_logic_groups.append(group)
 			if _logic_groups.is_empty():
 				_assert(false, "logic group selection cannot be empty")
-	var valid_groups := ["all", "data", "spells", "effects", "barbarian", "bard", "cleric", "combat", "conditions", "classes", "persistence", "world", "ui"]
+	var valid_groups := ["all", "data", "spells", "effects", "barbarian", "bard", "cleric", "combat", "conditions", "classes", "persistence", "world", "ui", "check_context"]
 	for group in _logic_groups:
 		if group not in valid_groups:
 			_assert(false, "unknown logic group: %s" % group)
@@ -80,6 +80,8 @@ func _ready() -> void:
 	_run_group("world", _test_party_manager)
 	_run_group("world", _test_campaign_contracts)
 	_run_group("world", _test_event_system)
+	if _logic_groups.is_empty() or "all" in _logic_groups or "check_context" in _logic_groups:
+		await CheckContextChecks.run(_assert)
 	_run_group("world", _test_fog_of_war)
 	_run_group("world", _test_hexutils)
 	_run_group("world", _test_dungeon_lifecycle)

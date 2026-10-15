@@ -1,0 +1,36 @@
+[
+  {
+    "id": "sandbox:failed_save_rider_flat_dex",
+    "name": "Steady Failure Test",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 12,
+    "target": "single",
+    "save": "DEX",
+    "damage": "4",
+    "damage_type": "fire",
+    "half_on_save": true,
+    "duration_seconds": 60,
+    "effects": [
+      { "type": "grant_condition", "condition": "poisoned", "on_failed_save": true }
+    ]
+  },
+  {
+    "id": "sandbox:failed_save_rider_flat_con",
+    "name": "Resolute Failure Test",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 12,
+    "target": "single",
+    "save": "CON",
+    "damage": "4",
+    "damage_type": "fire",
+    "half_on_save": true,
+    "duration_seconds": 60,
+    "effects": [
+      { "type": "grant_condition", "condition": "poisoned", "on_failed_save": true }
+    ]
+  }
+]

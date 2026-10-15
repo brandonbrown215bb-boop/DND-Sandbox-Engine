@@ -1,0 +1,41 @@
+{
+  "id": "sandbox:failed_save_override_empowered_ordered",
+  "name": "Ordered Empowered Save Test",
+  "execution": "shared",
+  "level": 1,
+  "casting_time": "action",
+  "range": 12,
+  "target": "single",
+  "duration_seconds": 60,
+  "steps": [
+    {
+      "id": "save",
+      "type": "save",
+      "save": "DEX",
+      "damage": "2d6",
+      "damage_type": "fire",
+      "half_on_save": true,
+      "effects": [
+        { "type": "grant_condition", "condition": "poisoned", "on_failed_save": true }
+      ]
+    },
+    {
+      "id": "success_rider",
+      "type": "effect",
+      "gate": "successful_save",
+      "gate_step": "save",
+      "effects": [
+        { "type": "grant_condition", "condition": "blessed" }
+      ]
+    },
+    {
+      "id": "failure_rider",
+      "type": "effect",
+      "gate": "failed_save",
+      "gate_step": "save",
+      "effects": [
+        { "type": "grant_condition", "condition": "frightened" }
+      ]
+    }
+  ]
+}

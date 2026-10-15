@@ -1,0 +1,54 @@
+[
+  {
+    "id": "fixture:surveyors_tools",
+    "name": "Fixture Surveyor's Tools",
+    "type": "tool",
+    "effects": [
+      {
+        "type": "skill_check_context_bonus",
+        "id": "read_map_bonus",
+        "ability": "INT",
+        "skill": "Investigation",
+        "task_id": "survey_archive",
+        "purpose_id": "locate_nest",
+        "required_tool_id": "fixture:surveyors_tools",
+        "source_event_id": "fixture:survey_map_event",
+        "source_check_id": "read_map_check",
+        "bonus": 3
+      }
+    ],
+    "value": 10
+  },
+  {
+    "id": "fixture:field_guide",
+    "name": "Fixture Field Guide",
+    "type": "tool",
+    "effects": [
+      {
+        "type": "skill_check_context_bonus",
+        "id": "identify_herbs_bonus",
+        "ability": "WIS",
+        "skill": "Nature",
+        "task_id": "sample_tidal_herbs",
+        "purpose_id": "identify_safe_spot",
+        "required_tool_id": "fixture:field_guide",
+        "source_event_id": "fixture:tidal_herbs_event",
+        "source_check_id": "identify_herbs_check",
+        "bonus": 5
+      },
+      {
+        "type": "skill_check_context_bonus",
+        "id": "identify_herbs_choice_bonus",
+        "ability": "WIS",
+        "skill": "Nature",
+        "task_id": "sample_tidal_herbs",
+        "purpose_id": "identify_safe_spot",
+        "required_tool_id": "fixture:field_guide",
+        "source_event_id": "fixture:choice_herbs_event",
+        "source_check_id": "identify_choice_check",
+        "bonus": 5
+      }
+    ],
+    "value": 15
+  }
+]

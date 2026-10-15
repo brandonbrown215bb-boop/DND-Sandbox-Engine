@@ -1,0 +1,32 @@
+{
+  "id": "fixture:steady_spark_class",
+  "name": "Fixture Steady Spark",
+  "description": "Test-only class used to validate source-owned numeric pools.",
+  "hit_die": "d8",
+  "primary_ability": "INT",
+  "features_by_level": {
+    "1": [
+      {
+        "id": "fixture:steady_spark",
+        "name": "Steady Spark",
+        "executor": "class_feature",
+        "type": "active",
+        "target": "self",
+        "action_cost": "bonus_action",
+        "resource_cost": 1,
+        "resource_pool": {
+          "id": "fixture:steady_spark_pool",
+          "capacity_formula": { "caster_proficiency_bonus": true },
+          "initial_quantity": 1,
+          "recovery": {
+            "short_rest_completed": { "mode": "restore_fixed", "amount": 1 },
+            "long_rest_completed": { "mode": "restore_to_capacity" }
+          }
+        },
+        "effects": [
+          { "type": "grant_condition", "condition": "steady_spark", "duration": 1 }
+        ]
+      }
+    ]
+  }
+}

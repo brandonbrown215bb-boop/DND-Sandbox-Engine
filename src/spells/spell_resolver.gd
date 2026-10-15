@@ -2,14 +2,25 @@
 class_name SpellResolver
 extends RefCounted
 
-static func resolve(caster: Character, target_entity, spell_data: Dictionary, deduct_slot: bool = false, reaction_decisions: Dictionary = {}, reaction_observers: Array = [], slot_level_override: int = 0, distance_feet: int = -1) -> Dictionary:
+static func resolve(caster: Character, target_entity, spell_data: Dictionary, deduct_slot: bool = false, reaction_decisions: Dictionary = {}, reaction_observers: Array = [], slot_level_override: int = 0, distance_feet: int = -1, owned_cast_context: SpellCastContext = null) -> Dictionary:
 	var cast := SpellResolutionContext.new()
 	cast.caster = caster
 	cast.target = target_entity
 	cast.spell = spell_data
+	cast.spell_definition_id = str(spell_data.get("id", ""))
 	cast.decisions = reaction_decisions.duplicate()
 	cast.observers = reaction_observers
 	cast.distance_feet = distance_feet
+	var invocation_host := owned_cast_context
+	var owned_host_valid := false
+	if invocation_host != null and invocation_host.caster == caster and str(invocation_host.spell.get("id", "")) == cast.spell_definition_id:
+		owned_host_valid = true
+		cast.invocation_id = invocation_host.invocation_id
+		cast.action_id = invocation_host.action_id
+		cast.action_invocation_id = invocation_host.action_invocation_id
+		cast.item_definition_id = str(invocation_host.component_item_id)
+		cast.item_instance_id = str(invocation_host.component_instance_id)
+		cast.item_copy_validated = bool(invocation_host.component_copy_validated)
 	var support := SpellSupport.availability(cast.spell)
 	if not support["available"]:
 		return {"success": false, "unavailable": true, "message": support["reason"]}
@@ -47,9 +58,14 @@ static func resolve(caster: Character, target_entity, spell_data: Dictionary, de
 		SpellEffects.consume_spell(cast.caster, "sanctuary")
 		if str(cast.spell.get("id", "")) != "invisibility":
 			SpellEffects.consume_spell(cast.caster, "invisibility")
+	var source_created_for_cast := false
 	cast.effect_cast = cast.spell.get("_effect_cast", {})
 	if SpellEffects.manages(cast.spell) and cast.effect_cast.is_empty():
 		cast.effect_cast = SpellEffects.begin_cast(cast.caster, cast.spell)
+		source_created_for_cast = true
+	cast.source_definition_id = cast.spell_definition_id
+	cast.source_instance_id = str(cast.effect_cast.get("source_id", "")) if owned_host_valid or source_created_for_cast else ""
+	cast.source_owner_id = SpellEffects.caster_id(caster) if caster != null else ""
 
 	var interruption := _resolve_counterspell(cast)
 	for key in ["counterspell_saved_by", "counterspell_save_total", "counterspell_save_dc"]:

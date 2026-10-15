@@ -1,0 +1,82 @@
+[
+  {
+    "id": "sandbox:outcome_attack_neutral",
+    "name": "Outcome Probe",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 12,
+    "attack_type": "ranged_spell",
+    "damage": "5",
+    "damage_type": "fire",
+    "damage_scale_by_outcome": { "hit": 1, "miss": 0.5 },
+    "duration_seconds": 60,
+    "effects": [
+      { "type": "grant_condition", "condition": "frightened", "rider_by_outcome": { "hit": true, "miss": false } }
+    ]
+  },
+  {
+    "id": "sandbox:outcome_attack_ordered",
+    "name": "Outcome Probe, Ordered",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 12,
+    "duration_seconds": 60,
+    "steps": [
+      {
+        "id": "strike",
+        "type": "attack",
+        "attack_type": "ranged_spell",
+        "damage": "5",
+        "damage_type": "fire",
+        "damage_scale_by_outcome": { "hit": 1, "miss": 0.5 },
+        "effects": [
+          { "type": "grant_condition", "condition": "frightened", "rider_by_outcome": { "hit": true, "miss": false } }
+        ]
+      },
+      { "id": "after", "type": "effect", "effects": [{ "type": "temporary_hp", "value": 1 }] }
+    ]
+  },
+  {
+    "id": "sandbox:outcome_save_renamed",
+    "name": "Mapped Saving Flare",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 12,
+    "save": "DEX",
+    "damage": "5",
+    "damage_type": "cold",
+    "half_on_save": true,
+    "damage_scale_by_outcome": { "success": 0.5, "failure": 1 },
+    "duration_seconds": 60,
+    "effects": [
+      { "type": "grant_condition", "condition": "restrained", "rider_by_outcome": { "success": false, "failure": true } }
+    ]
+  },
+  {
+    "id": "sandbox:outcome_save_ordered_renamed",
+    "name": "Mapped Saving Flare, Ordered",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 12,
+    "duration_seconds": 60,
+    "steps": [
+      {
+        "id": "save",
+        "type": "save",
+        "save": "DEX",
+        "damage": "5",
+        "damage_type": "cold",
+        "half_on_save": true,
+        "damage_scale_by_outcome": { "success": 0.5, "failure": 1 },
+        "effects": [
+          { "type": "grant_condition", "condition": "restrained", "rider_by_outcome": { "success": false, "failure": true } }
+        ]
+      },
+      { "id": "after", "type": "effect", "effects": [{ "type": "temporary_hp", "value": 1 }] }
+    ]
+  }
+]

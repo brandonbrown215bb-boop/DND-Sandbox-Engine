@@ -1,0 +1,303 @@
+[
+  {
+    "id": "fixture:ability_check_bonus_neutral_class",
+    "name": "Fixture Pathfinder",
+    "hit_die": "d8",
+    "primary_ability": "INT",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:ability_check_bonus_neutral",
+          "name": "Pathfinder's Focus",
+          "type": "passive",
+          "resource_pool": { "id": "fixture:pathfinder_focus_pool", "capacity_formula": 3, "initial_quantity": 3 },
+          "passive_effects": [
+            {
+              "type": "ability_check_numeric_bonus",
+              "id": "survey_archive_bonus",
+              "domain": "event_skill_check",
+              "ability": "INT",
+              "skill": "Investigation",
+              "task_id": "survey_archive",
+              "purpose_id": "locate_nest",
+              "required_tool_id": "fixture:surveyors_tools",
+              "source_event_id": "fixture:survey_map_event",
+              "source_check_id": "read_map_check",
+              "amount": 5,
+              "cost": 1,
+              "payment_policy": "pay_on_choice"
+            }
+          ]
+        },
+        {
+          "id": "fixture:ability_check_reroll_neutral",
+          "name": "Surveyor's Second Look",
+          "type": "passive",
+          "resource_pool": { "id": "fixture:second_look_pool", "capacity_formula": 2, "initial_quantity": 2 },
+          "passive_effects": [
+            {
+              "type": "ability_check_mandatory_reroll",
+              "id": "survey_archive_reroll",
+              "domain": "event_skill_check",
+              "ability": "INT",
+              "skill": "Investigation",
+              "task_id": "survey_archive",
+              "purpose_id": "locate_nest",
+              "required_tool_id": "fixture:surveyors_tools",
+              "source_event_id": "fixture:survey_map_event",
+              "source_check_id": "read_map_check",
+              "eligible_outcomes": ["failure"],
+              "reroll_mode": "natural_only",
+              "bonus_dice_policy": "keep",
+              "cost": 1
+            },
+            {
+              "type": "ability_check_mandatory_reroll",
+              "id": "survey_floor_reroll",
+              "domain": "event_skill_check",
+              "ability": "INT",
+              "skill": "Investigation",
+              "task_id": "survey_archive",
+              "purpose_id": "test_floor_order",
+              "required_tool_id": "fixture:surveyors_tools",
+              "source_event_id": "fixture:s105_floor_check_event",
+              "source_check_id": "s105_floor_check",
+              "eligible_outcomes": ["failure"],
+              "reroll_mode": "whole_test",
+              "bonus_dice_policy": "reroll",
+              "cost": 1
+            },
+            {
+              "type": "ability_check_mandatory_reroll",
+              "id": "unlikely_feat_negative_reroll",
+              "domain": "event_skill_check",
+              "ability": "STR",
+              "skill": "Athletics",
+              "task_id": "attempt_unlikely_feat",
+              "purpose_id": "test_negative_check",
+              "required_tool_id": "fixture:surveyors_tools",
+              "source_event_id": "fixture:s105_negative_check_event",
+              "source_check_id": "s105_negative_check",
+              "eligible_outcomes": ["failure"],
+              "reroll_mode": "natural_only",
+              "bonus_dice_policy": "keep",
+              "cost": 1
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "fixture:ability_check_bonus_renamed_class",
+    "name": "Fixture Naturalist",
+    "hit_die": "d10",
+    "primary_ability": "WIS",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:ability_check_bonus_renamed",
+          "name": "Field Notes",
+          "type": "passive",
+          "resource_pool": { "id": "fixture:field_notes_pool", "capacity_formula": 3, "initial_quantity": 3 },
+          "passive_effects": [
+            {
+              "type": "ability_check_numeric_bonus",
+              "id": "tidal_herbs_bonus",
+              "domain": "event_skill_check",
+              "ability": "WIS",
+              "skill": "Nature",
+              "task_id": "sample_tidal_herbs",
+              "purpose_id": "identify_safe_spot",
+              "required_tool_id": "fixture:field_guide",
+              "source_event_id": "fixture:tidal_herbs_event",
+              "source_check_id": "identify_herbs_check",
+              "die_size": 8,
+              "cost": 2,
+              "payment_policy": "pay_on_converted_success"
+            }
+          ]
+        },
+        {
+          "id": "fixture:ability_check_reroll_renamed",
+          "name": "Naturalist's Second Reading",
+          "type": "passive",
+          "resource_pool": { "id": "fixture:second_reading_pool", "capacity_formula": 2, "initial_quantity": 2 },
+          "passive_effects": [
+            {
+              "type": "ability_check_mandatory_reroll",
+              "id": "tidal_herbs_full_reroll",
+              "domain": "event_skill_check",
+              "ability": "WIS",
+              "skill": "Nature",
+              "task_id": "sample_tidal_herbs",
+              "purpose_id": "identify_safe_spot",
+              "required_tool_id": "fixture:field_guide",
+              "source_event_id": "fixture:tidal_herbs_event",
+              "source_check_id": "identify_herbs_check",
+              "eligible_outcomes": ["failure", "success"],
+              "reroll_mode": "whole_test",
+              "bonus_dice_policy": "reroll",
+              "cost": 2
+            },
+            {
+              "type": "ability_check_mandatory_reroll",
+              "id": "athletics_disadvantage_reroll",
+              "domain": "event_skill_check",
+              "ability": "STR",
+              "skill": "Athletics",
+              "task_id": "climb_rocky_bank",
+              "purpose_id": "test_disadvantage_reroll",
+              "required_tool_id": "fixture:field_guide",
+              "source_event_id": "fixture:s105_disadvantage_check_event",
+              "source_check_id": "s105_disadvantage_check",
+              "eligible_outcomes": ["failure", "success"],
+              "reroll_mode": "whole_test",
+              "bonus_dice_policy": "keep",
+              "cost": 2
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "fixture:ability_check_bonus_unskilled_class",
+    "name": "Fixture Estimator",
+    "hit_die": "d8",
+    "primary_ability": "INT",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:ability_check_unskilled_fixed",
+          "name": "Quick Estimate",
+          "type": "passive",
+          "resource_pool": { "id": "fixture:estimate_fixed_pool", "capacity_formula": 3, "initial_quantity": 3 },
+          "passive_effects": [
+            {
+              "type": "ability_check_numeric_bonus",
+              "id": "estimate_distance_fixed",
+              "domain": "event_skill_check",
+              "ability": "INT",
+              "skill": "",
+              "task_id": "survey_archive",
+              "purpose_id": "estimate_distance",
+              "required_tool_id": "",
+              "source_event_id": "fixture:unskilled_estimate_event",
+              "source_check_id": "estimate_distance_check",
+              "amount": 4,
+              "cost": 1,
+              "payment_policy": "pay_on_choice"
+            }
+          ]
+        },
+        {
+          "id": "fixture:ability_check_unskilled_die",
+          "name": "Measured Estimate",
+          "type": "passive",
+          "resource_pool": { "id": "fixture:estimate_die_pool", "capacity_formula": 3, "initial_quantity": 3 },
+          "passive_effects": [
+            {
+              "type": "ability_check_numeric_bonus",
+              "id": "estimate_distance_die",
+              "domain": "event_skill_check",
+              "ability": "INT",
+              "skill": "",
+              "task_id": "survey_archive",
+              "purpose_id": "estimate_distance",
+              "required_tool_id": "",
+              "source_event_id": "fixture:unskilled_estimate_event",
+              "source_check_id": "estimate_distance_check",
+              "die_size": 6,
+              "cost": 2,
+              "payment_policy": "pay_on_converted_success"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "fixture:ability_check_bonus_choice_class",
+    "name": "Fixture Choice Surveyor",
+    "hit_die": "d8",
+    "primary_ability": "INT",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:ability_check_choice_bonus",
+          "name": "Choice Survey Focus",
+          "type": "passive",
+          "resource_pool": { "id": "fixture:choice_survey_focus_pool", "capacity_formula": 3, "initial_quantity": 3 },
+          "passive_effects": [
+            {
+              "type": "ability_check_numeric_bonus",
+              "id": "choice_estimate_bonus",
+              "domain": "event_skill_check",
+              "ability": "INT",
+              "skill": "",
+              "task_id": "survey_archive",
+              "purpose_id": "choice_estimate_distance",
+              "required_tool_id": "fixture:surveyors_tools",
+              "source_event_id": "fixture:ability_bonus_choice_event",
+              "source_check_id": "choice_estimate_check",
+              "amount": 5,
+              "cost": 1,
+              "payment_policy": "pay_on_choice"
+            }
+          ]
+        },
+        {
+          "id": "fixture:ability_check_choice_reroll",
+          "name": "Choice Surveyor's Reroll",
+          "type": "passive",
+          "resource_pool": { "id": "fixture:choice_survey_reroll_pool", "capacity_formula": 2, "initial_quantity": 2 },
+          "passive_effects": [
+            {
+              "type": "ability_check_mandatory_reroll",
+              "id": "choice_estimate_reroll",
+              "domain": "event_skill_check",
+              "ability": "INT",
+              "skill": "",
+              "task_id": "survey_archive",
+              "purpose_id": "choice_estimate_distance",
+              "required_tool_id": "fixture:surveyors_tools",
+              "source_event_id": "fixture:ability_bonus_choice_event",
+              "source_check_id": "choice_estimate_check",
+              "eligible_outcomes": ["failure"],
+              "reroll_mode": "whole_test",
+              "bonus_dice_policy": "keep",
+              "cost": 1
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "fixture:s105_check_test_rules_class",
+    "name": "Fixture Check Test Rules",
+    "hit_die": "d8",
+    "primary_ability": "INT",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:s105_intelligence_check_floor",
+          "name": "Steady Survey Method",
+          "type": "passive",
+          "passive_effects": [
+            { "type": "ability_check_floor", "ability": "INT", "applies_to": ["ability_check"] }
+          ]
+        },
+        {
+          "id": "fixture:s105_wisdom_check_advantage",
+          "name": "Naturalist's Preparation",
+          "type": "passive",
+          "passive_effects": [
+            { "type": "ability_check_advantage", "ability": "WIS" }
+          ]
+        }
+      ]
+    }
+  }
+]

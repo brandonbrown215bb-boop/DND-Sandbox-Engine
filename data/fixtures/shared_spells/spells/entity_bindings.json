@@ -1,0 +1,80 @@
+[
+  {
+    "id": "sandbox:entity_bindings_neutral",
+    "name": "Entity Bindings",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "components": ["M"],
+    "material_component_item_id": "diamond_300gp",
+    "material_component_cost": 300,
+    "material_component_consumed": true,
+    "duration_seconds": 60,
+    "steps": [{
+      "id": "save",
+      "type": "save",
+      "save": "DEX"
+    }, {
+      "id": "bind",
+      "type": "effect",
+      "target": "target",
+      "effects": [
+        {"type": "heal", "value": 1, "when": {"all": [
+          {"fact": "actor.id", "eq": "binding-owner"},
+          {"fact": "target.id", "eq": "binding-target"},
+          {"fact": "action.id", "eq": "magic"},
+          {"fact": "action.invocation_id", "ne": ""},
+          {"fact": "item.definition_id", "eq": "diamond_300gp"},
+          {"fact": "item.instance_id", "ne": "missing-copy"},
+          {"fact": "spell.definition_id", "eq": "sandbox:entity_bindings_neutral"},
+          {"fact": "spell.invocation_id", "ne": ""},
+          {"fact": "source.definition_id", "eq": "sandbox:entity_bindings_neutral"},
+          {"fact": "source.owner_id", "eq": "binding-owner"},
+          {"fact": "source.instance_id", "ne": "missing-source"}
+        ]}},
+        {"type": "grant_condition", "condition": "blessed", "when": {"fact": "source.instance_id", "ne": "missing-source"}}
+      ]
+    }]
+  },
+  {
+    "id": "sandbox:entity_bindings_renamed",
+    "name": "Renamed Entity Bindings",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "components": ["M"],
+    "material_component_item_id": "diamond_300gp",
+    "material_component_cost": 300,
+    "material_component_consumed": true,
+    "duration_seconds": 60,
+    "steps": [{
+      "id": "save",
+      "type": "save",
+      "save": "DEX"
+    }, {
+      "id": "bind",
+      "type": "effect",
+      "target": "target",
+      "effects": [
+        {"type": "heal", "value": 3, "when": {"all": [
+          {"fact": "actor.id", "eq": "renamed-owner"},
+          {"fact": "target.id", "eq": "renamed-target"},
+          {"fact": "action.id", "eq": "magic"},
+          {"fact": "action.invocation_id", "ne": ""},
+          {"fact": "item.definition_id", "eq": "diamond_300gp"},
+          {"fact": "item.instance_id", "ne": "missing-copy"},
+          {"fact": "spell.definition_id", "eq": "sandbox:entity_bindings_renamed"},
+          {"fact": "spell.invocation_id", "ne": ""},
+          {"fact": "source.definition_id", "eq": "sandbox:entity_bindings_renamed"},
+          {"fact": "source.owner_id", "eq": "renamed-owner"},
+          {"fact": "source.instance_id", "ne": "missing-source"}
+        ]}},
+        {"type": "grant_condition", "condition": "blessed", "when": {"fact": "source.instance_id", "ne": "missing-source"}}
+      ]
+    }]
+  }
+]

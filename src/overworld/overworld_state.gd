@@ -361,8 +361,14 @@ func _execute_rest_command(command: PlayerCommand) -> void:
 		hud.update_hud()
 		_recalculate_reachable()
 		return
-	_rest_party()
-	report_animal_messenger_notifications(GameManager.advance_campaign_time(28800))
+	var long_res := RestRules.complete_long_rest(
+		_get_party_characters(),
+		{"source": "overworld", "companion_roster_open": companion_roster_open}
+	)
+	if not bool(long_res.get("success", false)):
+		hud.add_log("[color=orange]%s[/color]" % str(long_res.get("message", "Cannot rest right now.")))
+		return
+	report_animal_messenger_notifications(long_res.get("notifications", []))
 	hud.add_log("[color=green]The party makes camp and rests. HP, spell slots, and feature uses restored.[/color]")
 	hud.update_hud()
 	_recalculate_reachable()

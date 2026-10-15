@@ -3,6 +3,11 @@
 Date: 2026-10-09
 Status: Accepted direction; implementation staged
 
+> [ADR-0023](0023-vocabulary-first-delivery-and-bounded-world-judgment.md)
+> clarifies vocabulary-first delivery, bounded illusion/campaign Wish behavior
+> and current save priorities. Compatibility planning and a universal GM
+> workflow are not prerequisites for ordinary capability work.
+
 ## Context
 
 The owner is moving toward data-driven engines and requested reconciliation
@@ -70,11 +75,13 @@ The [class design](../architecture/data-driven-2024-class-execution-plan.md)
 and [creature design](../architecture/data-driven-2024-monster-execution-plan.md)
 are working specifications, not accepted executable syntax, a blanket
 implementation schedule or full-catalog certification. Pin actual rule clauses
-and source corrections before converting each mechanic. Fictional judgment
-needs an explicit adjudication workflow before full support can be claimed.
+and source corrections before converting each mechanic. Follow ADR-0023 for
+represented fiction, observer-specific illusions and campaign-authored Wish
+outcomes; unrepresented open-ended outcomes remain explicit gaps.
 
 This decision accepts direction, not a finished interpreter. It does not
 authorize legacy conversion, a new save namespace/schema, mid-combat or
-mid-decision saves, or rewriting schema-2 files. Decide compatibility for new
-durable interpreter state explicitly before releasing it. Current accepted
+mid-decision saves, or rewriting unrelated save files. ADR-0023 removes blanket
+compatibility/version planning as a prerequisite while retaining correct state
+and existing checkpoint boundaries. Current accepted
 runtime evidence and open work stay in the [checkpoint](../operations/current.md).

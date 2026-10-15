@@ -292,6 +292,8 @@ func _read_save(slot_name: String) -> Dictionary:
 
 
 func _validate_save_data(data: Dictionary) -> String:
+	var campaign_clock: Variant = data.get("campaign_ledger", {})
+	var saved_campaign_seconds := int(campaign_clock.get("campaign_elapsed_seconds", 0)) if campaign_clock is Dictionary else 0
 	if int(data.get("schema_version", -1)) != SAVE_SCHEMA_VERSION:
 		return "unsupported schema version"
 	if str(data.get("ruleset_id", "")) != RULESET_ID:
@@ -327,6 +329,8 @@ func _validate_save_data(data: Dictionary) -> String:
 			if not survival_error.is_empty(): return survival_error
 			var corpse_error := CorpseRules.saved_error(character_data)
 			if not corpse_error.is_empty(): return corpse_error
+			var willingness_error := Character.saved_willingness_error(character_data)
+			if not willingness_error.is_empty(): return willingness_error
 			var familiar_error := FamiliarRules.saved_error(character_data)
 			if not familiar_error.is_empty(): return familiar_error
 			var steed_error := PaladinRules.saved_steed_error(character_data)
@@ -342,11 +346,20 @@ func _validate_save_data(data: Dictionary) -> String:
 			var spell_error := SpellEffects.saved_state_error(character_data)
 			if not spell_error.is_empty():
 				return spell_error
+			var timed_modifier_error := Character.saved_campaign_modifier_error(character_data, saved_campaign_seconds)
+			if not timed_modifier_error.is_empty():
+				return timed_modifier_error
+			var next_hit_grant_error := Character.saved_next_weapon_hit_grants_error(character_data, saved_campaign_seconds)
+			if not next_hit_grant_error.is_empty():
+				return next_hit_grant_error
+			var timed_temporary_hp_error := Character.saved_timed_temporary_hp_error(character_data, saved_campaign_seconds)
+			if not timed_temporary_hp_error.is_empty():
+				return timed_temporary_hp_error
 	var party_data = data.get("party")
 	if party_data != null:
 		if not party_data is Dictionary:
 			return "party DTO is not an object"
-		var party_error := _validate_party_data(party_data)
+		var party_error := _validate_party_data(party_data, saved_campaign_seconds)
 		if not party_error.is_empty():
 			return party_error
 	if not data.get("defeated_monsters", []) is Array:
@@ -411,7 +424,7 @@ func _valid_json_coordinate(value: Variant) -> bool:
 	return is_finite(float(value)) and value >= -2147483648 and value <= 2147483647 and float(value) == floor(float(value))
 
 
-func _validate_party_data(data: Dictionary) -> String:
+func _validate_party_data(data: Dictionary, campaign_seconds: int = 0) -> String:
 	var slots = data.get("party_slots", [])
 	var characters = data.get("characters", {})
 	var roster = data.get("companion_roster", {})
@@ -451,8 +464,12 @@ func _validate_party_data(data: Dictionary) -> String:
 			return "party character references unknown content"
 		var survival_error := SurvivalRules.saved_state_error(character_data)
 		if not survival_error.is_empty(): return survival_error
+		var numeric_pool_error := ResourcePoolRules.saved_state_error(character_data)
+		if not numeric_pool_error.is_empty(): return numeric_pool_error
 		var corpse_error := CorpseRules.saved_error(character_data)
 		if not corpse_error.is_empty(): return corpse_error
+		var willingness_error := Character.saved_willingness_error(character_data)
+		if not willingness_error.is_empty(): return willingness_error
 		var familiar_error := FamiliarRules.saved_error(character_data)
 		if not familiar_error.is_empty(): return familiar_error
 		var steed_error := PaladinRules.saved_steed_error(character_data)
@@ -468,6 +485,15 @@ func _validate_party_data(data: Dictionary) -> String:
 		var spell_error := SpellEffects.saved_state_error(character_data)
 		if not spell_error.is_empty():
 			return spell_error
+		var timed_modifier_error := Character.saved_campaign_modifier_error(character_data, campaign_seconds)
+		if not timed_modifier_error.is_empty():
+			return timed_modifier_error
+		var next_hit_grant_error := Character.saved_next_weapon_hit_grants_error(character_data, campaign_seconds)
+		if not next_hit_grant_error.is_empty():
+			return next_hit_grant_error
+		var timed_temporary_hp_error := Character.saved_timed_temporary_hp_error(character_data, campaign_seconds)
+		if not timed_temporary_hp_error.is_empty():
+			return timed_temporary_hp_error
 	var leader_slot_id := str(data.get("leader_slot_id", "slot_0"))
 	var effect_party_error := SpellEffects.saved_party_error(characters)
 	if not effect_party_error.is_empty():

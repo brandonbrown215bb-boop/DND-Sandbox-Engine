@@ -77,7 +77,7 @@ func _build_title_page() -> void:
 	var title := Label.new()
 	title.theme_type_variation = "DisplayLabel"
 	title.add_theme_font_size_override("font_size", 40)
-	title.text = "Top Down Party Game"
+	title.text = "Crown & Company"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(title)
 	var subtitle := Label.new()

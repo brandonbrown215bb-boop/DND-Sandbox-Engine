@@ -25,7 +25,10 @@ behavior before reopening a finding or claiming broader support.
 
 | Shared/world behavior | Contract |
 |---|---|
+| Purpose-aware event skill-check context and owned tools | [Check context](purpose-aware-check-context.md) |
+| Owned post-roll ability-check modifiers | [Check modifiers](owned-ability-check-modifiers.md) |
 | Ordinary JSON spells supported now | [Authoring](shared-spells.md) |
+| Shared source-owned numeric pools (numeric, recovery and dice slices validated; fixed exchange awaiting separate acceptance) | [Resource pools](shared-resource-pools.md) |
 | Generated per-spell availability and gaps | [Spell status](spell-status.md) |
 | World dependency gaps | [Foundations](spell-foundations.md), [Wave 4 checklist](wave4-acceptance.md) |
 | Familiar identity, casting and commands | [Find Familiar](find-familiar-2024.md) |

@@ -432,8 +432,13 @@ func _execute_rest_command(command: PlayerCommand) -> void:
 		hud.add_log("[color=cyan]The party takes a Short Rest (1 hour). Short-rest features recovered.[/color]")
 		hud.update_hud()
 		return
-	GameManager.advance_campaign_time(28800)
-	_rest_party()
+	var long_res := RestRules.complete_long_rest(
+		PartyManager.get_active_characters(),
+		{"source": "dungeon", "local_view": local_view}
+	)
+	if not bool(long_res.get("success", false)):
+		hud.add_log("[color=orange]%s[/color]" % str(long_res.get("message", "Cannot rest right now.")))
+		return
 	hud.add_log("[color=green]The party makes camp and rests. HP, spell slots, and feature uses restored.[/color]")
 	hud.update_hud()
 

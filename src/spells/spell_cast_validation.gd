@@ -343,6 +343,10 @@ static func validate_creatures_and_components(cast: SpellCastContext) -> bool:
 		cast.clear_pending(SpellCastContext.CLEAR_WISH)
 		cast.highlight_reachable.call()
 		return false
+	cast.component_copy_validated = false
+	if not cast.component_instance_id.is_empty():
+		var component_copy: Dictionary = cast.caster.inventory.copies.records.get(cast.component_instance_id, {})
+		cast.component_copy_validated = str(component_copy.get("instance_id", "")) == cast.component_instance_id and str(component_copy.get("definition_id", "")) == cast.component_item_id
 	var excluded_creature_types: Array = cast.spell.get("target_creature_type_exclusions", [])
 	if not excluded_creature_types.is_empty():
 		var excluded_target_coords: Array[Vector2i] = [cast.target_coord]

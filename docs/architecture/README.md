@@ -3,6 +3,9 @@
 Current boundaries inspected 2026-10-09. This is an implementation map,
 not a rules-completion claim. [ADR-0018](../decisions/0018-shared-data-driven-rules-runtime.md)
 owns the target architecture; [roadmap](../../roadmap.md) selects the work.
+[ADR-0023](../decisions/0023-vocabulary-first-delivery-and-bounded-world-judgment.md)
+clarifies vocabulary-first delivery, bounded illusions/campaign Wish and the
+owner's current save priorities. Its planning decisions do not add runtime support.
 
 ## Runtime and content
 
@@ -26,6 +29,27 @@ retains named-class paths. `AIController` selects native behavior profiles and
 `AICommand` accepts a bounded command vocabulary. These are migration starting
 points, not the intended extensibility boundary.
 
+## Current class-feature resources
+
+`ResourcePoolRules` stores bounded numeric capacity/current quantities on the
+owning Character under an exact source-instance ID. Shared `ClassFeature`
+activation and its combat menu/command path carry that identity through
+availability and spending. Capacity uses the shared formula evaluator; growth
+does not refill and shrink clamps remaining quantity. SaveManager checkpoints
+restore these quantities without acquisition replay.
+
+`RestRules` applies authored fixed/fill recovery after matching successful
+Short/Long completion for currently eligible party actors. Source-owned
+weapon-hit rider limits reuse CombatAction's actual active-turn serial and exact
+actor/source/option/target keys. Their locks stay transient. These numeric-pool,
+rest and rider slices have retained production evidence. Bounded dice activation,
+numeric exchange, timed AC grants, next-melee-hit fixed typed grants and optional
+expiry/dismissal cooldowns are also checked. Source-owned expiring Temporary HP,
+numeric lookup and prior-step typed damage
+totals now have bounded evidence too. Broader grant/acquisition domains,
+other recovery/limit scopes and general subscriptions remain unfinished. See the [resource contract](../mechanics/shared-resource-pools.md)
+and [checked subsets](../reviews/dnd-code-vocabulary-gap-checklist.md#verified-subsets-to-mark-off).
+
 ## Current spell execution
 
 `execution: "shared"` uses `SharedSpell` validation and ordinary payloads
@@ -37,6 +61,34 @@ attack, save, damage and effect operations with per-target gates through
 `SharedStepExecutor` ([ADR-0019](../decisions/0019-shared-ordered-execution-and-zero-hp-replacement.md)).
 Pre-roll replacement, damage rerolls and concentration reactions resume at the
 pending actor and step while retaining settled effects and cast-wide costs.
+The combat chooser also supports one owned post-roll failed-save modification:
+a fixed total bonus with either payment policy, or an explicit success override
+that preserves numeric roll fields. Snapshots retain spent Inspiration and DC;
+ordered and flat effects wait for settlement, including a following deferred
+damage choice. These are checked VS-18–20 subsets, not general roll editing.
+
+VS-21 extends captured post-roll fixed bonuses to normal player weapon Attack
+and Extra Attack. Each swing settles once before damage and hit-only grants;
+the Attack action is paid once. Eligible native Stroke uses the validated
+captured request before the source chooser. VS-22 checks the same authored
+modifier on flat/ordered shared-spell attacks, with cast costs and successive
+token/bonus/damage choices retained once. VS-23 accepts a captured single source
+die in those attack and rolled-save consumers. Source validation precedes RNG;
+the receipt survives later choices, and payment follows the final result policy.
+The actual spell host finishes a selected-source refusal as a decline on the
+same canonical roll, so an unavailable bonus cannot strand the cast. Weapon-
+only native Stroke checks the canonical domain before spending. The trio has
+passed combined review; broader hosts, domains and roll editing remain open.
+
+Shared-spell attack windows are emitted by the existing roll/damage owners.
+The ordered adapter binds the child attack's canonical receipt before authored
+effects read it, including deferred settlement, and restricts it to that
+recipient and occurrence. New untracked save/damage steps clear the attack
+context. Explicit outcomes apply after native attack handling; source-domain
+validation prevents ambiguous numeric/outcome choices. Shared healing accepts
+integral JSON numeric scalars through the existing parser. These bounded
+S-025/S-041/S-091/S-092 repairs and current production evidence are recorded in
+the [acceptance review](../reviews/slice-acceptance-2026-10-14.md).
 
 `CombatState` coordinates input, encounter bindings, turn order and the cast
 sequence. Focused `SpellCast*` modules own selection, validation/choices,
@@ -53,6 +105,30 @@ areas. Terrain/conjuration modules retain existing native spell policy.
 `LocalRoomSharedSpells` reuses shared resolution for bounded exploration casts.
 New shared capabilities should replace native policy progressively without
 duplicating damage or cost. Availability and full rules support are distinct.
+
+## Current ability-check context
+
+`EventDialog` resolves uniquely identified context-aware event/choice checks
+from loaded `DataLoader` records. It passes task, purpose, optional required
+tool and originating table/event/check to `EventResolver`; copied popup fields
+cannot replace the check, DC or consequences. `Inventory` queries authored
+contextual bonuses on the rolling actor's exact carried/equipped tool copies.
+The result retains actor, context and exact item/effect/location through event
+closure. No-tool/no-bonus checks remain ordinary; undeclared/direct checks retain
+their existing route. This context is checked as VS-24. VS-25 adds one captured
+owned fixed/die bonus to failed loaded skilled/ability-only and choice-owned
+checks before consequences, using SpellDamageRolls' existing source requests and
+payment semantics. EventDialog retains native bonuses and the final closed
+receipt; popup generations/canonical actors guard stale awaits, and re-popup/
+exit cancel only this host's requests/menu. Decisions remain transient and no
+durable state is added. VS-26 adds mandatory-new natural/whole-test rerolls
+as alternatives in that same post-roll menu. EventResolver preflights captured
+receipts before payment or RNG and retains raw natural, original/new mode,
+bonus-die provenance and explicit floor stages. Native payments are not replayed;
+the worse new result still settles once. Broader hosts and an old/new picker
+remain open. See the
+[check context contract](../mechanics/purpose-aware-check-context.md) and
+[owned modifier contract](../mechanics/owned-ability-check-modifiers.md).
 
 ## Party, world and durable identities
 
@@ -129,6 +205,8 @@ behavior until the shared replacement is accepted.
 The [class design](data-driven-2024-class-execution-plan.md) and
 [creature design](data-driven-2024-monster-execution-plan.md) contain proposed
 language, source gaps and adversarial cases. They are not executable schemas.
-Versioning, migrations and fictional adjudication require concrete acceptance
-before release. [Testing](../testing.md) owns validation practice; dated gate
+Compatibility frameworks and a universal adjudication interface do not gate
+ordinary vocabulary work under ADR-0023. Correct state/time/rest wiring and
+represented outcomes still require actual implementation and later validation.
+[Testing](../testing.md) owns validation practice; dated gate
 reports and reviews supply historical evidence only.

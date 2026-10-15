@@ -236,6 +236,7 @@ const VALID_SPELL_TARGETS := ["self", "single", "single_ally", "multi", "area", 
 const VALID_SPELL_SCHOOLS := ["abjuration", "conjuration", "divination", "enchantment", "evocation", "illusion", "necromancy", "necrotic", "transmutation"]
 const VALID_DAMAGE_TYPES := ["acid", "bludgeoning", "cold", "fire", "force", "lightning", "necrotic", "piercing", "poison", "psychic", "radiant", "slashing", "thunder", "none"]
 const VALID_ABILITIES := ["STR", "DEX", "CON", "INT", "WIS", "CHA"]
+const VALID_SKILLS := ["Acrobatics", "Animal Handling", "Arcana", "Athletics", "Deception", "History", "Insight", "Intimidation", "Investigation", "Medicine", "Nature", "Perception", "Performance", "Persuasion", "Religion", "Sleight of Hand", "Stealth", "Survival"]
 const DICE_FIELDS := ["damage", "damage_per_dart", "healing", "hit_points", "versatile_damage", "dice"]
 
 var _load_errors: Array[String] = []
@@ -453,6 +454,16 @@ func _validate_content(data: Dictionary, content_type: String, source: String) -
 	if content_type == "item" and str(data.get("type", "")) not in ["weapon", "armor", "shield", "ring", "wand", "consumable", "tool", "currency", "spell_component"]:
 		_load_errors.append("Item has unsupported type '%s' in %s" % [data.get("type"), source])
 		return false
+	if content_type == "item":
+		var context_effect_error := _check_context_item_effect_error(data)
+		if not context_effect_error.is_empty():
+			_load_errors.append("Item in %s: %s" % [source, context_effect_error])
+			return false
+	if content_type == "event":
+		var event_context_error := _check_context_event_error(data)
+		if not event_context_error.is_empty():
+			_load_errors.append("Event table in %s: %s" % [source, event_context_error])
+			return false
 	if content_type in ["class", "subclass"]:
 		var layout_error := _feature_layout_error(data)
 		if not layout_error.is_empty():
@@ -528,6 +539,77 @@ func _validate_semantics(data: Dictionary, content_type: String, source: String)
 		valid = false
 	valid = _validate_nested_values(data, source) and valid
 	return valid
+
+
+func _check_context_item_effect_error(item: Dictionary) -> String:
+	for effect_value in item.get("effects", []):
+		if not effect_value is Dictionary or str(effect_value.get("type", "")) != "skill_check_context_bonus":
+			continue
+		var effect: Dictionary = effect_value
+		if str(item.get("type", "")) != "tool":
+			return "skill_check_context_bonus requires a tool item"
+		for field in ["id", "ability", "skill", "task_id", "purpose_id", "required_tool_id", "source_event_id", "source_check_id", "bonus"]:
+			if not effect.has(field):
+				return "skill_check_context_bonus requires '%s'" % field
+		if str(effect.get("id", "")).is_empty() or not _is_context_token(str(effect.get("id", ""))):
+			return "skill_check_context_bonus id must be a lowercase token"
+		if str(effect.get("ability", "")) not in VALID_ABILITIES or str(effect.get("skill", "")) not in VALID_SKILLS:
+			return "skill_check_context_bonus ability or skill is unsupported"
+		for field in ["task_id", "purpose_id", "source_check_id"]:
+			if not _is_context_token(str(effect.get(field, ""))):
+				return "skill_check_context_bonus %s must be a lowercase token" % field
+		if str(effect.get("required_tool_id", "")) != str(item.get("id", "")):
+			return "skill_check_context_bonus required_tool_id must match its item"
+		if str(effect.get("source_event_id", "")).strip_edges().is_empty() or effect.get("source_event_id") != str(effect.get("source_event_id", "")).strip_edges():
+			return "skill_check_context_bonus source_event_id must be a non-empty exact ID"
+		var bonus: Variant = effect.get("bonus")
+		if not (bonus is int or bonus is float) or float(bonus) != float(int(bonus)) or int(bonus) < 1 or int(bonus) > 20:
+			return "skill_check_context_bonus bonus must be an integer from 1 to 20"
+	return ""
+
+
+func _check_context_event_error(table: Dictionary) -> String:
+	var events_value: Variant = table.get("events", [])
+	if not events_value is Array:
+		return "events must be an array"
+	for event_value in events_value:
+		if not event_value is Dictionary:
+			continue
+		var event_record: Dictionary = event_value
+		var checks: Array = []
+		if event_record.get("check", {}) is Dictionary and not event_record.get("check", {}).is_empty():
+			checks.append(event_record["check"])
+		for choice_value in event_record.get("choices", []):
+			if choice_value is Dictionary and choice_value.get("check", {}) is Dictionary and not choice_value.get("check", {}).is_empty():
+				checks.append(choice_value["check"])
+		for check_value in checks:
+			var check: Dictionary = check_value
+			if not check.has("check_context"):
+				continue
+			var context_value: Variant = check.get("check_context")
+			if not context_value is Dictionary or str(event_record.get("id", "")).strip_edges().is_empty() or not _is_context_token(str(check.get("id", ""))):
+				return "a context-aware check requires event/check IDs and a context object"
+			var context: Dictionary = context_value
+			for field in context:
+				if str(field) not in ["task_id", "purpose_id", "required_tool_id"]:
+					return "check_context has unsupported field '%s'" % field
+			for field in ["task_id", "purpose_id"]:
+				if not context.has(field) or str(context.get(field, "")).strip_edges().is_empty():
+					return "check_context requires '%s'" % field
+			if not _is_context_token(str(context["task_id"])) or not _is_context_token(str(context["purpose_id"])):
+				return "check_context task_id and purpose_id must be lowercase tokens"
+			if context.has("required_tool_id") and str(context.get("required_tool_id", "")).strip_edges().is_empty():
+				return "check_context required_tool_id must be omitted or a non-empty item ID"
+			var check_skill := str(check.get("skill", ""))
+			if str(check.get("ability", "")) not in VALID_ABILITIES or (not check_skill.is_empty() and check_skill not in VALID_SKILLS):
+				return "context-aware check requires a supported ability and, when present, a supported skill"
+	return ""
+
+
+func _is_context_token(value: String) -> bool:
+	var pattern := RegEx.new()
+	pattern.compile("^[a-z][a-z0-9_]{0,63}$")
+	return pattern.search(value) != null
 
 
 func _validate_enum(data: Dictionary, field: String, allowed: Array, content_type: String, source: String) -> bool:
@@ -669,14 +751,247 @@ func _feature_content_error(feature: Dictionary) -> String:
 			return ""
 		return "" if resolver == "fighter_rules" and feature.get("id", "") in implemented else "Resolver has no registered behavior for this feature"
 	var supported := ["heal_self", "grant_extra_action", "extra_attack", "modify_crit_range", "asi", "ability_score_increase", "skill_proficiency_choice", "skill_expertise_choice", "jack_of_all_trades", "short_rest_recharge", "initiative_resource_recovery", "resource_from_spell_slot", "spellcasting", "spell_list_expansion", "always_prepared_spells", "spell_free_cast", "concentration_protection", "spell_damage_dice_override", "attack_advantage_against_condition", "saving_throw_proficiency", "saving_throw_aura", "aura_radius_expansion", "condition_immunity_aura", "additional_spell_target", "countercharm", "epic_boon_choice", "feature_choice", "grant_condition", "stat_modifier", "unarmored_defense", "reckless_attack", "monk_bonus_action", "martial_arts", "unarmed_attack", "monk_focus", "unarmored_movement", "speed_bonus", "initiative_advantage", "saving_throw_advantage", "ability_check_override", "ability_check_advantage", "ability_check_floor", "weapon_mastery", "weapon_damage_rider", "uncanny_metabolism", "reaction", "stunning_strike", "empowered_strikes", "evasion", "heightened_focus", "self_restoration", "fleet_step", "deflect_energy", "disciplined_survivor", "perfect_focus", "superior_defense", "divine_smite", "defense_style", "archery", "lay_on_hands", "divine_sense", "abjure_foes", "bardic_inspiration", "favored_foe", "sneak_attack", "cunning_strike", "cunning_action", "recover_spell_slots", "pact_magic", "pact_magic_recovery", "sorcery_points", "sorcerer_font_of_magic", "innate_sorcery", "metamagic", "metamagic_choices", "sorcery_incarnate", "arcane_apotheosis", "blindsight", "wizard_ritual_casting", "wizard_memorize_spell", "wizard_spell_mastery", "wizard_signature_spells", "elusive", "rogue_steady_aim", "stroke_of_luck", "give_item"]
-	supported.append_array(["warlock_invocations", "warlock_mystic_arcanum", "concentration_save_advantage", "dark_ones_blessing", "dark_ones_own_luck", "fiendish_resilience", "hurl_through_hell", "roll_token_pool", "roll_token_pool_upgrade", "damage_ward_pool", "damage_ward_projection", "rest_slot_recovery"])
+	supported.append_array(["warlock_invocations", "warlock_mystic_arcanum", "concentration_save_advantage", "dark_ones_blessing", "dark_ones_own_luck", "fiendish_resilience", "hurl_through_hell", "roll_token_pool", "roll_token_pool_upgrade", "damage_ward_pool", "damage_ward_projection", "rest_slot_recovery", "failed_save_numeric_bonus", "failed_save_outcome_override", "roll_outcome_override", "weapon_attack_numeric_bonus", "attack_total_adjustment", "defending_ac_adjustment", "ability_check_numeric_bonus", "ability_check_mandatory_reroll", "ability_check_roll_mode", "ability_check_roll_mode_policy"])
 	var effects: Array = feature.get("effects", []).duplicate()
 	effects.append_array(feature.get("passive_effects", []))
+	var failed_save_modification_abilities: Array[String] = []
+	var weapon_attack_bonus_domains: Array[String] = []
+	var ability_check_bonus_filters: Array[String] = []
+	var ability_check_reroll_filters: Array[String] = []
 	for effect in effects:
 		if not effect is Dictionary or effect.get("type", "") not in supported:
 			return "Unknown or unimplemented effect operation"
-		if effect.get("type", "") in ["asi", "ability_score_increase", "skill_proficiency_choice", "skill_expertise_choice", "jack_of_all_trades", "short_rest_recharge", "initiative_resource_recovery", "resource_from_spell_slot", "spellcasting", "spell_list_expansion", "always_prepared_spells", "spell_free_cast", "concentration_protection", "spell_damage_dice_override", "attack_advantage_against_condition", "saving_throw_proficiency", "saving_throw_aura", "aura_radius_expansion", "condition_immunity_aura", "additional_spell_target", "countercharm", "epic_boon_choice", "feature_choice", "modify_crit_range", "extra_attack", "speed_bonus", "initiative_advantage", "saving_throw_advantage", "ability_check_override", "ability_check_advantage", "ability_check_floor", "weapon_mastery", "blindsight", "wizard_ritual_casting", "wizard_memorize_spell", "wizard_spell_mastery", "wizard_signature_spells", "sorcerer_font_of_magic", "roll_token_pool", "roll_token_pool_upgrade", "damage_ward_pool", "damage_ward_projection"] and feature.get("type", "") != "passive":
+		if effect.get("type", "") in ["asi", "ability_score_increase", "skill_proficiency_choice", "skill_expertise_choice", "jack_of_all_trades", "short_rest_recharge", "initiative_resource_recovery", "resource_from_spell_slot", "spellcasting", "spell_list_expansion", "always_prepared_spells", "concentration_protection", "spell_damage_dice_override", "attack_advantage_against_condition", "saving_throw_proficiency", "saving_throw_aura", "aura_radius_expansion", "condition_immunity_aura", "additional_spell_target", "countercharm", "epic_boon_choice", "feature_choice", "modify_crit_range", "extra_attack", "speed_bonus", "initiative_advantage", "saving_throw_advantage", "ability_check_override", "ability_check_advantage", "ability_check_floor", "ability_check_roll_mode", "ability_check_roll_mode_policy", "weapon_mastery", "blindsight", "wizard_ritual_casting", "wizard_memorize_spell", "wizard_spell_mastery", "wizard_signature_spells", "sorcerer_font_of_magic", "roll_token_pool", "roll_token_pool_upgrade", "damage_ward_pool", "damage_ward_projection", "failed_save_numeric_bonus", "weapon_attack_numeric_bonus", "attack_total_adjustment", "defending_ac_adjustment"] and feature.get("type", "") != "passive":
 			return "This class progression effect requires a passive feature"
+		if effect.get("type", "") == "failed_save_numeric_bonus":
+			var ability := str(effect.get("ability", "")).to_upper()
+			var amount: Variant = effect.get("amount", null)
+			var has_numeric_bonus: bool = effect.has("amount") and not effect.has("die_size") and ResourcePoolRules._integer(amount, 1, 20)
+			var has_die_bonus: bool = effect.has("die_size") and not effect.has("amount") and ResourcePoolRules._integer(effect.get("die_size"), 1, 20) and int(effect.get("die_size")) in ResourcePoolRules.SUPPORTED_DIE_SIZES
+			var cost: Variant = effect.get("cost", null)
+			var payment_policy: Variant = effect.get("payment_policy", "pay_on_choice")
+			if ability not in VALID_ABILITIES or not (has_numeric_bonus or has_die_bonus) or not ResourcePoolRules._integer(cost, 1, ResourcePoolRules.MAX_CAPACITY):
+				return "Failed-save bonuses require a supported ability, one amount (1-20) or supported die_size, and pool cost 1-100"
+			if not payment_policy is String or str(payment_policy) not in SpellDamageRolls.FAILED_SAVE_BONUS_PAYMENT_POLICIES:
+				return "Failed-save numeric bonuses require a supported payment_policy"
+			if ability in failed_save_modification_abilities:
+				return "A passive source can declare only one failed-save modification per ability"
+			failed_save_modification_abilities.append(ability)
+			if feature.get("type", "") != "passive" or not feature.has("resource_pool") or not feature["resource_pool"] is Dictionary:
+				return "Failed-save numeric bonuses require a passive feature with its owned numeric pool"
+			var pool_error := ResourcePoolRules.definition_error(feature)
+			if not pool_error.is_empty():
+				return "Failed-save numeric bonus pool is invalid: %s" % pool_error
+			for field in effect:
+				if field not in ["type", "ability", "amount", "die_size", "cost", "payment_policy"]:
+					return "Failed-save numeric bonus contains an unsupported field"
+		if effect.get("type", "") == "weapon_attack_numeric_bonus":
+			var attack_amount: Variant = effect.get("amount", null)
+			var attack_cost: Variant = effect.get("cost", null)
+			var attack_domains: Variant = effect.get("domains", [])
+			var attack_policy: Variant = effect.get("payment_policy", "pay_on_choice")
+			var has_numeric_bonus: bool = effect.has("amount") and not effect.has("die_size") and ResourcePoolRules._integer(attack_amount, 1, 20)
+			var has_die_bonus: bool = effect.has("die_size") and not effect.has("amount") and ResourcePoolRules._integer(effect.get("die_size"), 1, 20) and int(effect.get("die_size")) in ResourcePoolRules.SUPPORTED_DIE_SIZES
+			if not (has_numeric_bonus or has_die_bonus) or not ResourcePoolRules._integer(attack_cost, 1, ResourcePoolRules.MAX_CAPACITY):
+				return "Attack bonuses require one amount (1-20) or supported die_size and pool cost from 1 to 100"
+			if not attack_domains is Array or attack_domains.is_empty() or attack_domains.size() > 2:
+				return "Attack bonuses must name one or more supported attack domains"
+			var seen_attack_domains: Array[String] = []
+			for attack_domain in attack_domains:
+				if not attack_domain is String or attack_domain not in ["weapon_attack", "shared_spell_attack"] or attack_domain in seen_attack_domains:
+					return "Attack bonuses must name unique weapon_attack or shared_spell_attack domains"
+				if attack_domain in weapon_attack_bonus_domains:
+					return "A passive source can declare only one modification per attack domain"
+				seen_attack_domains.append(str(attack_domain))
+				weapon_attack_bonus_domains.append(str(attack_domain))
+			if not attack_policy is String or str(attack_policy) not in SpellDamageRolls.FAILED_SAVE_BONUS_PAYMENT_POLICIES:
+				return "Attack bonuses require a supported payment_policy"
+			if feature.get("type", "") != "passive" or not feature.has("resource_pool") or not feature["resource_pool"] is Dictionary:
+				return "Weapon attack bonuses require a passive feature with its owned numeric pool"
+			var attack_pool_error := ResourcePoolRules.definition_error(feature)
+			if not attack_pool_error.is_empty():
+				return "Attack bonus pool is invalid: %s" % attack_pool_error
+			for attack_field in effect:
+				if attack_field not in ["type", "amount", "die_size", "cost", "domains", "payment_policy"]:
+					return "Attack bonus contains an unsupported field"
+		if effect.get("type", "") in ["attack_total_adjustment", "defending_ac_adjustment"]:
+			var adjustment_amount: Variant = effect.get("amount", null)
+			var adjustment_cost: Variant = effect.get("cost", null)
+			var adjustment_domains: Variant = effect.get("domains", null)
+			var adjustment_policy: Variant = effect.get("payment_policy", "pay_on_choice")
+			var adjustment_trigger: Variant = effect.get("trigger", null)
+			if not ResourcePoolRules._integer(adjustment_amount, 1, 20) or not ResourcePoolRules._integer(adjustment_cost, 1, ResourcePoolRules.MAX_CAPACITY):
+				return "Attack-result adjustments require a positive amount (1-20) and pool cost from 1 to 100"
+			if not adjustment_domains is Array or adjustment_domains.is_empty() or adjustment_domains.size() > 2:
+				return "Attack-result adjustments must name supported attack domains"
+			var seen_adjustment_domains: Array[String] = []
+			for adjustment_domain in adjustment_domains:
+				if not adjustment_domain is String or adjustment_domain not in ["weapon_attack", "shared_spell_attack"] or str(adjustment_domain) in seen_adjustment_domains:
+					return "Attack-result adjustments require unique weapon_attack or shared_spell_attack domains"
+				if str(adjustment_domain) in weapon_attack_bonus_domains:
+					return "A passive source can declare only one modification per attack domain"
+				seen_adjustment_domains.append(str(adjustment_domain))
+				weapon_attack_bonus_domains.append(str(adjustment_domain))
+			if adjustment_trigger != "provisional_hit":
+				return "Attack-result adjustments must trigger on one provisional hit"
+			if not adjustment_policy is String or str(adjustment_policy) not in SpellDamageRolls.FAILED_SAVE_BONUS_PAYMENT_POLICIES:
+				return "Attack-result adjustments require a supported payment_policy"
+			if feature.get("type", "") != "passive" or not feature.has("resource_pool") or not feature["resource_pool"] is Dictionary:
+				return "Attack-result adjustments require a passive feature with its owned numeric pool"
+			var adjustment_pool_error := ResourcePoolRules.definition_error(feature)
+			if not adjustment_pool_error.is_empty():
+				return "Attack-result adjustment pool is invalid: %s" % adjustment_pool_error
+			for adjustment_field in effect:
+				if adjustment_field not in ["type", "amount", "cost", "domains", "trigger", "payment_policy"]:
+					return "Attack-result adjustment contains an unsupported field"
+		if effect.get("type", "") == "weapon_attack_numeric_bonus":
+			var attack_amount: Variant = effect.get("amount", null)
+			var attack_cost: Variant = effect.get("cost", null)
+			var attack_domains: Variant = effect.get("domains", [])
+			var attack_policy: Variant = effect.get("payment_policy", "pay_on_choice")
+			var has_numeric_bonus: bool = effect.has("amount") and not effect.has("die_size") and ResourcePoolRules._integer(attack_amount, 1, 20)
+			var has_die_bonus: bool = effect.has("die_size") and not effect.has("amount") and ResourcePoolRules._integer(effect.get("die_size"), 1, 20) and int(effect.get("die_size")) in ResourcePoolRules.SUPPORTED_DIE_SIZES
+			if not (has_numeric_bonus or has_die_bonus) or not ResourcePoolRules._integer(attack_cost, 1, ResourcePoolRules.MAX_CAPACITY):
+				return "Weapon attack bonuses require one amount (1-20) or supported die_size and pool cost from 1 to 100"
+			if not attack_domains is Array or attack_domains.is_empty() or attack_domains.size() > 2:
+				return "Attack bonuses must name one or more supported attack domains"
+			for attack_domain in attack_domains:
+				if not attack_domain is String or attack_domain not in ["weapon_attack", "shared_spell_attack"] or attack_domains.count(attack_domain) != 1:
+					return "Attack bonuses must name unique weapon_attack or shared_spell_attack domains"
+			if not attack_policy is String or str(attack_policy) not in SpellDamageRolls.FAILED_SAVE_BONUS_PAYMENT_POLICIES:
+				return "Attack bonuses require a supported payment_policy"
+			if feature.get("type", "") != "passive" or not feature.has("resource_pool") or not feature["resource_pool"] is Dictionary:
+				return "Weapon attack bonuses require a passive feature with its owned numeric pool"
+			var attack_pool_error := ResourcePoolRules.definition_error(feature)
+			if not attack_pool_error.is_empty():
+				return "Attack bonus pool is invalid: %s" % attack_pool_error
+			for attack_field in effect:
+				if attack_field not in ["type", "amount", "die_size", "cost", "domains", "payment_policy"]:
+					return "Attack bonus contains an unsupported field"
+		if effect.get("type", "") == "failed_save_outcome_override":
+			var ability := str(effect.get("ability", "")).to_upper()
+			var cost: Variant = effect.get("cost", null)
+			if ability not in VALID_ABILITIES or not ResourcePoolRules._integer(cost, 1, ResourcePoolRules.MAX_CAPACITY):
+				return "Failed-save outcome overrides require a supported ability and pool cost from 1 to 100"
+			if ability in failed_save_modification_abilities:
+				return "A passive source can declare only one failed-save modification per ability"
+			failed_save_modification_abilities.append(ability)
+			if feature.get("type", "") != "passive" or not feature.has("resource_pool") or not feature["resource_pool"] is Dictionary:
+				return "Failed-save outcome overrides require a passive feature with its owned numeric pool"
+			var pool_error := ResourcePoolRules.definition_error(feature)
+			if not pool_error.is_empty():
+				return "Failed-save outcome override pool is invalid: %s" % pool_error
+			for field in effect:
+				if field not in ["type", "ability", "cost"]:
+					return "Failed-save outcome override contains an unsupported field"
+		if effect.get("type", "") == "roll_outcome_override":
+			var override_domains: Variant = effect.get("domains", null)
+			var override_outcomes: Variant = effect.get("outcomes", null)
+			var override_cost: Variant = effect.get("cost", null)
+			if not override_domains is Array or override_domains.is_empty() or not override_outcomes is Array or override_outcomes.is_empty() or not ResourcePoolRules._integer(override_cost, 1, ResourcePoolRules.MAX_CAPACITY):
+				return "Roll outcome overrides require domains, outcomes and a pool cost from 1 to 100"
+			var seen_domains: Array[String] = []
+			for override_domain in override_domains:
+				if not override_domain is String or override_domain not in ["weapon_attack", "shared_spell_attack", "shared_spell_save"] or str(override_domain) in seen_domains:
+					return "Roll outcome override contains an unsupported or duplicate domain"
+				seen_domains.append(str(override_domain))
+			var seen_outcomes: Array[String] = []
+			for override_outcome in override_outcomes:
+				if not override_outcome is String or override_outcome not in ["hit", "miss", "success", "failure"] or str(override_outcome) in seen_outcomes:
+					return "Roll outcome override contains an unsupported or duplicate outcome"
+				seen_outcomes.append(str(override_outcome))
+			for override_domain in seen_domains:
+				var expected_outcomes: Array = ["success", "failure"] if override_domain == "shared_spell_save" else ["hit", "miss"]
+				for override_outcome in seen_outcomes:
+					if override_outcome not in expected_outcomes:
+						return "Roll outcome override outcome does not match its domain"
+				var override_stage := "after_roll_before_consequences" if override_domain == "shared_spell_save" else "provisional_outcome"
+				if str(effect.get("stage", "")) != override_stage:
+					return "Roll outcome override stage does not match its authorized domain window"
+				if override_domain != "shared_spell_save":
+					if override_domain in weapon_attack_bonus_domains:
+						return "A passive source can declare only one modification per attack domain"
+					weapon_attack_bonus_domains.append(override_domain)
+			if seen_domains.has("shared_spell_save") and str(effect.get("ability", "")).to_upper() not in VALID_ABILITIES:
+				return "Saving-throw outcome overrides require a supported ability"
+			if seen_domains.has("shared_spell_save"):
+				var override_ability := str(effect.get("ability", "")).to_upper()
+				if override_ability in failed_save_modification_abilities:
+					return "A passive source can declare only one failed-save modification per ability"
+				failed_save_modification_abilities.append(override_ability)
+			if not seen_domains.has("shared_spell_save") and effect.has("ability"):
+				return "Attack outcome overrides cannot declare a save ability"
+			if feature.get("type", "") != "passive" or not feature.has("resource_pool") or not feature["resource_pool"] is Dictionary:
+				return "Roll outcome overrides require a passive feature with its owned numeric pool"
+			var override_pool_error := ResourcePoolRules.definition_error(feature)
+			if not override_pool_error.is_empty():
+				return "Roll outcome override pool is invalid: %s" % override_pool_error
+			for field in effect:
+				if field not in ["type", "domains", "outcomes", "stage", "ability", "cost"]:
+					return "Roll outcome override contains an unsupported field"
+		if effect.get("type", "") == "ability_check_numeric_bonus":
+			var check_amount: Variant = effect.get("amount", null)
+			var check_cost: Variant = effect.get("cost", null)
+			var check_policy: Variant = effect.get("payment_policy", "pay_on_choice")
+			var has_check_amount: bool = effect.has("amount") and not effect.has("die_size") and ResourcePoolRules._integer(check_amount, 1, 20)
+			var has_check_die: bool = effect.has("die_size") and not effect.has("amount") and ResourcePoolRules._integer(effect.get("die_size"), 1, 20) and int(effect.get("die_size")) in ResourcePoolRules.SUPPORTED_DIE_SIZES
+			for required_field in ["id", "domain", "ability", "skill", "task_id", "purpose_id", "required_tool_id", "source_event_id", "source_check_id"]:
+				if not effect.get(required_field, "") is String:
+					return "Ability-check bonus eligibility fields must be strings"
+				if required_field not in ["skill", "required_tool_id"] and str(effect.get(required_field, "")).strip_edges().is_empty():
+					return "Ability-check bonuses require explicit identity and check-context eligibility fields"
+			var effect_skill := str(effect.get("skill", ""))
+			if not str(effect.get("id", "")).is_valid_identifier() or str(effect.get("domain", "")) != "event_skill_check" or str(effect.get("ability", "")).to_upper() not in VALID_ABILITIES or (not effect_skill.is_empty() and effect_skill not in VALID_SKILLS):
+				return "Ability-check bonuses require a supported domain, ability, optional supported skill and effect ID"
+			if not str(effect.get("task_id", "")).is_valid_identifier() or not str(effect.get("purpose_id", "")).is_valid_identifier() or not str(effect.get("source_check_id", "")).is_valid_identifier():
+				return "Ability-check task, purpose and source-check IDs must be lowercase identifiers"
+			if not (has_check_amount or has_check_die) or not ResourcePoolRules._integer(check_cost, 1, ResourcePoolRules.MAX_CAPACITY):
+				return "Ability-check bonuses require one amount (1-20) or supported die_size and pool cost from 1 to 100"
+			if not check_policy is String or str(check_policy) not in SpellDamageRolls.FAILED_SAVE_BONUS_PAYMENT_POLICIES:
+				return "Ability-check bonuses require a supported payment_policy"
+			var check_filter := "%s|%s|%s|%s|%s|%s|%s|%s" % [str(effect.get("domain", "")), str(effect.get("ability", "")).to_upper(), str(effect.get("skill", "")), str(effect.get("task_id", "")), str(effect.get("purpose_id", "")), str(effect.get("required_tool_id", "")), str(effect.get("source_event_id", "")), str(effect.get("source_check_id", ""))]
+			if check_filter in ability_check_bonus_filters:
+				return "A passive source can declare only one ability-check modification for one exact context"
+			ability_check_bonus_filters.append(check_filter)
+			if feature.get("type", "") != "passive" or not feature.has("resource_pool") or not feature["resource_pool"] is Dictionary:
+				return "Ability-check numeric bonuses require a passive feature with its owned numeric pool"
+			var check_pool_error := ResourcePoolRules.definition_error(feature)
+			if not check_pool_error.is_empty():
+				return "Ability-check bonus pool is invalid: %s" % check_pool_error
+			for check_field in effect:
+				if check_field not in ["type", "id", "domain", "ability", "skill", "task_id", "purpose_id", "required_tool_id", "source_event_id", "source_check_id", "amount", "die_size", "cost", "payment_policy"]:
+					return "Ability-check bonus contains an unsupported field"
+		if effect.get("type", "") == "ability_check_mandatory_reroll":
+			var reroll_cost: Variant = effect.get("cost", null)
+			var outcomes: Variant = effect.get("eligible_outcomes", null)
+			var reroll_mode := str(effect.get("reroll_mode", ""))
+			var bonus_policy := str(effect.get("bonus_dice_policy", ""))
+			for required_field in ["id", "domain", "ability", "skill", "task_id", "purpose_id", "required_tool_id", "source_event_id", "source_check_id"]:
+				if not effect.get(required_field, "") is String:
+					return "Ability-check reroll eligibility fields must be strings"
+				if required_field not in ["skill", "required_tool_id"] and str(effect.get(required_field, "")).strip_edges().is_empty():
+					return "Ability-check rerolls require explicit identity and check-context eligibility fields"
+			var reroll_skill := str(effect.get("skill", ""))
+			if not str(effect.get("id", "")).is_valid_identifier() or str(effect.get("domain", "")) != "event_skill_check" or str(effect.get("ability", "")).to_upper() not in VALID_ABILITIES or (not reroll_skill.is_empty() and reroll_skill not in VALID_SKILLS):
+				return "Ability-check rerolls require a supported domain, ability, optional supported skill and effect ID"
+			if not str(effect.get("task_id", "")).is_valid_identifier() or not str(effect.get("purpose_id", "")).is_valid_identifier() or not str(effect.get("source_check_id", "")).is_valid_identifier():
+				return "Ability-check reroll task, purpose and source-check IDs must be lowercase identifiers"
+			if not outcomes is Array or outcomes.is_empty() or outcomes.size() > 2 or outcomes.any(func(value): return value not in ["success", "failure"]) or (outcomes.size() == 2 and outcomes[0] == outcomes[1]):
+				return "Ability-check rerolls must declare unique eligible outcomes"
+			if reroll_mode not in ["natural_only", "whole_test"] or bonus_policy not in ["keep", "reroll"] or not ResourcePoolRules._integer(reroll_cost, 1, ResourcePoolRules.MAX_CAPACITY):
+				return "Ability-check rerolls require a supported reroll mode, bonus-dice policy and pool cost"
+			var reroll_filter := "%s|%s|%s|%s|%s|%s|%s|%s|%s" % [str(effect.get("domain", "")), str(effect.get("ability", "")).to_upper(), reroll_skill, str(effect.get("task_id", "")), str(effect.get("purpose_id", "")), str(effect.get("required_tool_id", "")), str(effect.get("source_event_id", "")), str(effect.get("source_check_id", "")), str(effect.get("id", ""))]
+			if reroll_filter in ability_check_reroll_filters:
+				return "A passive source cannot repeat one ability-check reroll effect ID"
+			ability_check_reroll_filters.append(reroll_filter)
+			if feature.get("type", "") != "passive" or not feature.has("resource_pool") or not feature["resource_pool"] is Dictionary:
+				return "Ability-check rerolls require a passive feature with its owned numeric pool"
+			var reroll_pool_error := ResourcePoolRules.definition_error(feature)
+			if not reroll_pool_error.is_empty():
+				return "Ability-check reroll pool is invalid: %s" % reroll_pool_error
+			for reroll_field in effect:
+				if reroll_field not in ["type", "id", "domain", "ability", "skill", "task_id", "purpose_id", "required_tool_id", "source_event_id", "source_check_id", "eligible_outcomes", "reroll_mode", "bonus_dice_policy", "cost"]:
+					return "Ability-check reroll contains an unsupported field"
 		if effect.get("type", "") in ["warlock_invocations", "warlock_mystic_arcanum"] and feature.get("type", "") != "passive":
 			return "Warlock progression features must be passive"
 		if effect.get("type", "") == "warlock_mystic_arcanum" and int(effect.get("spell_level", 0)) not in [6, 7, 8, 9]:
@@ -770,6 +1085,8 @@ func _feature_content_error(feature: Dictionary) -> String:
 			var rider_error := _weapon_damage_rider_error(effect)
 			if not rider_error.is_empty():
 				return rider_error
+			if effect.has("use_limit") and (not feature.has("resource_pool") or not feature["resource_pool"] is Dictionary or feature["resource_pool"].is_empty()):
+				return "A bounded weapon damage rider requires its feature's exact source resource pool"
 		if effect.get("type", "") == "additional_spell_target" and (not effect.get("spells", []) is Array or effect.get("spells", []).is_empty() or int(effect.get("additional_targets", 0)) < 1 or int(effect.get("range_from_primary_feet", 0)) < 1):
 			return "Additional spell targets requires spell IDs, a target count, and a range"
 		if effect.get("type", "") == "epic_boon_choice":
@@ -1206,6 +1523,76 @@ func _validate_cross_references() -> void:
 
 	for table_id in events:
 		_validate_event_references(events[table_id], str(table_id))
+	_validate_check_context_cross_references()
+
+
+func _validate_check_context_cross_references() -> void:
+	for table_id in events:
+		var table: Dictionary = events[table_id]
+		for event_value in table.get("events", []):
+			if not event_value is Dictionary:
+				continue
+			var event_record: Dictionary = event_value
+			for check in _checks_in_event(event_record):
+				if not check.has("check_context"):
+					continue
+				var context_value: Variant = check.get("check_context", {})
+				if not context_value is Dictionary:
+					continue
+				var tool_id := str(context_value.get("required_tool_id", ""))
+				if tool_id.is_empty():
+					continue
+				var tool: Dictionary = items.get(tool_id, {})
+				if tool.is_empty() or str(tool.get("type", "")) != "tool":
+					_load_errors.append("Event '%s' check '%s' references missing/non-tool context source '%s'" % [event_record.get("id", ""), check.get("id", ""), tool_id])
+	for tool_id in items:
+		var tool: Dictionary = items[tool_id]
+		for effect_value in tool.get("effects", []):
+			if not effect_value is Dictionary or str(effect_value.get("type", "")) != "skill_check_context_bonus":
+				continue
+			var effect: Dictionary = effect_value
+			var linked: Dictionary = get_event_check_record(str(effect.get("source_event_id", "")), str(effect.get("source_check_id", "")))
+			var linked_check: Dictionary = linked.get("check", {})
+			var linked_context: Dictionary = linked_check.get("check_context", {})
+			if str(tool_id) != str(effect.get("required_tool_id", "")) or linked.is_empty() or linked_context.is_empty() or str(linked_check.get("ability", "")) != str(effect.get("ability", "")) or str(linked_check.get("skill", "")) != str(effect.get("skill", "")) or str(linked_context.get("task_id", "")) != str(effect.get("task_id", "")) or str(linked_context.get("purpose_id", "")) != str(effect.get("purpose_id", "")) or str(linked_context.get("required_tool_id", "")) != str(effect.get("required_tool_id", "")):
+				_load_errors.append("Tool '%s' context bonus '%s' does not match a loaded event/check context" % [tool_id, effect.get("id", "")])
+	for class_id in classes:
+		var class_data: Dictionary = classes[class_id]
+		for level in class_data.get("features_by_level", {}):
+			for feature in class_data["features_by_level"][level]:
+				if not feature is Dictionary:
+					continue
+				for effect_value in feature.get("passive_effects", []):
+					if not effect_value is Dictionary or str(effect_value.get("type", "")) not in ["ability_check_numeric_bonus", "ability_check_mandatory_reroll", "ability_check_roll_mode", "ability_check_roll_mode_policy"]:
+						continue
+					var effect: Dictionary = effect_value
+					var effect_type := str(effect.get("type", ""))
+					var linked := get_event_check_record(str(effect.get("source_event_id", "")), str(effect.get("source_check_id", "")))
+					var linked_check: Dictionary = linked.get("check", {})
+					var linked_context: Dictionary = linked_check.get("check_context", {})
+					var context_mismatch := linked.is_empty() or linked_context.is_empty() or str(linked_check.get("skill", "")) != str(effect.get("skill", "")) or str(linked_context.get("task_id", "")) != str(effect.get("task_id", "")) or str(linked_context.get("purpose_id", "")) != str(effect.get("purpose_id", ""))
+					if effect_type in ["ability_check_roll_mode", "ability_check_roll_mode_policy"]:
+						context_mismatch = context_mismatch or str(linked_check.get("ability", "")).to_upper() != str(effect.get("ability", "")).to_upper()
+					else:
+						context_mismatch = context_mismatch or str(linked_context.get("required_tool_id", "")) != str(effect.get("required_tool_id", ""))
+					if context_mismatch:
+						_load_errors.append("Class '%s' ability-check operation '%s' does not match a unique loaded event/check context" % [class_id, effect.get("id", "")])
+
+
+func _checks_in_event(event_record: Dictionary) -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	var check_value: Variant = event_record.get("check", {})
+	if check_value is Dictionary and not check_value.is_empty():
+		result.append(check_value)
+	var choices_value: Variant = event_record.get("choices", [])
+	if choices_value is Array:
+		for choice_value in choices_value:
+			if not choice_value is Dictionary:
+				continue
+			var choice_check: Variant = choice_value.get("check", {})
+			if choice_check is Dictionary and not choice_check.is_empty():
+				result.append(choice_check)
+	return result
 
 
 func _validate_event_references(value, source: String) -> void:
@@ -1233,6 +1620,8 @@ func _weapon_damage_rider_error(effect: Dictionary) -> String:
 	var once_per_turn: Variant = effect.get("once_per_turn", effect.get("uses_per", "") == "turn")
 	if effect.get("trigger", "") != "weapon_attack_hit" or not damage_type_valid or not dice_table is Dictionary or dice_table.is_empty() or not once_per_turn is bool:
 		return "Weapon damage riders require a weapon-hit trigger, damage type, and dice table"
+	if effect.has("use_limit") and (effect.has("once_per_turn") or effect.has("uses_per")):
+		return "Weapon damage rider cannot combine a bounded use_limit with a legacy turn cadence"
 	if effect.has("uses_per") and effect["uses_per"] != "turn":
 		return "Weapon damage riders only support a turn limit"
 	if effect.has("melee_only") and not effect["melee_only"] is bool:
@@ -1240,6 +1629,12 @@ func _weapon_damage_rider_error(effect: Dictionary) -> String:
 	for key in dice_table:
 		if not str(key).is_valid_int() or str(int(key)) != str(key) or int(key) < 1 or int(key) > 20 or str(dice_table[key]).is_empty():
 			return "Weapon damage rider levels and dice are invalid"
+		var dice_pattern := RegEx.new()
+		dice_pattern.compile("^[1-9][0-9]?d(4|6|8|10|12|20)(\\+[0-9]{1,3})?$")
+		if dice_pattern.search(str(dice_table[key])) == null:
+			return "Weapon damage rider dice must use a supported bounded damage expression"
+	if effect.has("use_limit") and (str(effect["use_limit"]) not in ["once_per_combat_turn", "once_per_target_per_combat_turn", "once_per_owner_turn_interval"] or not str(effect.get("id", "")).is_valid_identifier()):
+		return "Weapon damage rider use_limit requires a supported bounded limit and option ID"
 	return ""
 
 
@@ -1339,6 +1734,55 @@ func get_monster(id: String) -> Dictionary:
 
 func get_event_table(table_id: String) -> Dictionary:
 	return events.get(table_id, {})
+
+
+func get_event_record(event_id: String) -> Dictionary:
+	var matches: Array[Dictionary] = []
+	for table_id in events:
+		var table: Dictionary = events[table_id]
+		for event_value in table.get("events", []):
+			if not event_value is Dictionary:
+				continue
+			var found := _find_event_record(event_value, event_id, str(table_id))
+			if not found.is_empty():
+				matches.append(found)
+	if matches.size() != 1:
+		return {}
+	return matches[0]
+
+
+func _find_event_record(value: Dictionary, event_id: String, table_id: String) -> Dictionary:
+	if str(value.get("id", "")) == event_id:
+		return {"event": value.duplicate(true), "table_id": table_id}
+	var nested: Variant = value.get("chain_event", {})
+	if nested is Dictionary and not nested.is_empty():
+		return _find_event_record(nested, event_id, table_id)
+	return {}
+
+
+func get_event_check_record(event_id: String, check_id: String) -> Dictionary:
+	var event_result := get_event_record(event_id)
+	if event_result.is_empty():
+		return {}
+	var event_record: Dictionary = event_result.get("event", {})
+	var matching_check: Dictionary = {}
+	var check_owner: Dictionary = {}
+	var top_check: Variant = event_record.get("check", {})
+	if top_check is Dictionary and str(top_check.get("id", "")) == check_id:
+		matching_check = top_check
+		check_owner = event_record
+	for choice_value in event_record.get("choices", []):
+		if not choice_value is Dictionary:
+			continue
+		var choice_check: Variant = choice_value.get("check", {})
+		if choice_check is Dictionary and str(choice_check.get("id", "")) == check_id:
+			if not matching_check.is_empty():
+				return {}
+			matching_check = choice_check
+			check_owner = choice_value
+	if matching_check.is_empty():
+		return {}
+	return {"event": event_record, "check": matching_check.duplicate(true), "check_owner": check_owner.duplicate(true), "table_id": event_result.get("table_id", "")}
 
 func get_all_campaigns() -> Array:
 	return _sorted_values(campaigns)

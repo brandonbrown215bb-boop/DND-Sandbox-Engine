@@ -39,7 +39,7 @@ func _setup_world() -> void:
 	var camp = DataLoader.campaigns.values()[0]
 	GameManager.active_campaign = camp
 	GameManager.current_state = GameManager.GameState.OVERWORLD
-	GameManager.transition_context = {"terrain": "plains", "monster_ids": ["goblin", "goblin"]}
+	GameManager.transition_context = {"terrain": "plains", "monster_ids": ["goblin"]}
 	GameManager.is_loading_save = false
 	GameManager.game_in_progress = false
 	GameManager.test_mode = true
@@ -241,10 +241,33 @@ func _run_scenario(scenario: String) -> void:
 		"mixed_mechanics_encounter": await test_mixed_mechanics_encounter()
 		"spell_effect_lifetime": await test_spell_effect_lifetime()
 		"shared_spell_flow": await test_shared_spell_flow()
+		"shared_spell_p1_flow": await test_shared_spell_p1_flow()
+		"shared_numeric_pool_flow": await test_shared_numeric_pool_flow()
+		"shared_numeric_breakpoint_flow": await test_shared_numeric_breakpoint_flow()
+		"shared_timed_numeric_grant_flow": await test_shared_timed_numeric_grant_flow()
+		"shared_timed_numeric_cooldown_flow": await test_shared_timed_numeric_cooldown_flow()
+		"shared_timed_temporary_hp_flow": await test_shared_timed_temporary_hp_flow()
+		"shared_next_melee_hit_grant_flow": await test_shared_next_melee_hit_grant_flow()
+		"shared_dice_pool_flow": await test_shared_dice_pool_flow()
+		"shared_numeric_pool_exchange_flow": await test_shared_numeric_pool_exchange_flow()
+		"shared_combat_use_limits_flow": await test_shared_combat_use_limits_flow()
 		"shared_spell_normal_controls_flow": await test_shared_spell_normal_controls_flow()
+		"shared_fact_predicate_flow": await test_shared_fact_predicate_flow()
+		"shared_entity_binding_flow": await test_shared_entity_binding_flow()
+		"s026_relationship_willingness_flow": await test_s026_relationship_willingness_flow()
+		"shared_prior_result_identity_flow": await test_shared_prior_result_identity_flow()
+		"shared_margin_hp_gate_flow": await test_shared_margin_hp_gate_flow()
+		"shared_spell_outcome_maps_flow": await test_shared_spell_outcome_maps_flow()
+		"shared_spell_malformed_outcome_preflight_flow": await test_shared_spell_malformed_outcome_preflight_flow()
+		"failed_save_numeric_bonus_flow": await test_failed_save_numeric_bonus_flow()
+		"shared_spell_attack_bonus_flow": await test_shared_spell_attack_bonus_flow()
+		"post_roll_die_bonus_flow": await test_post_roll_die_bonus_flow()
+		"weapon_attack_numeric_bonus_flow": await test_weapon_attack_numeric_bonus_flow()
+		"attack_result_adjustment_flow": await test_attack_result_adjustment_flow()
 		"roll_token_normal_controls_flow": await test_roll_token_normal_controls_flow()
 		"ward_normal_controls_flow": await test_ward_normal_controls_flow()
 		"short_rest_arcane_recovery_normal_controls_flow": await test_short_rest_arcane_recovery_normal_controls_flow()
+		"numeric_pool_rest_recovery_normal_controls_flow": await test_numeric_pool_rest_recovery_normal_controls_flow()
 		"jump_spell_movement": await test_jump_spell_movement()
 		"ranger_action_flow": await test_ranger_action_flow()
 		"ranger_natures_veil_blindsight": await test_ranger_natures_veil_blindsight()
@@ -332,6 +355,7 @@ func _run_scenario(scenario: String) -> void:
 		"playtest_fixes": await test_playtest_fixes()
 		"dungeon": await test_dungeon()
 		"event_dialog": await test_event_dialog()
+		"check_context_flow": await test_check_context_flow()
 		"crown_event_fairy_ring": await test_crown_event_fairy_ring()
 		"dungeon_reentry_round_trip": await test_dungeon_reentry_round_trip()
 		"local_room_object_flow": await test_local_room_object_flow()
@@ -3627,7 +3651,7 @@ func test_spirit_guardians_spell_flow() -> void:
 	combat.active_character = cleric
 	combat.active_combatant = {"id": "spirit_guardians_cleric", "is_player": true, "entity": cleric}
 	combat.player_entities[0]["hex_position"] = Vector2i.ZERO
-	combat.player_entities[1]["hex_position"] = Vector2i(2, 0)
+	combat.player_entities[1]["hex_position"] = Vector2i(1, 0)
 	combat.turn_budget.reset(cleric, combat.player_entities)
 	combat.remaining_attack_swings = 0
 	var first_target: Dictionary = {"id": "spirit_guardians_first", "name": "First Spirit Target", "creature_type": "humanoid", "hex_position": Vector2i(1, 0), "is_alive": true, "current_hp": 1000, "max_hp": 1000, "armor_class": 12, "conditions": {}, "condition_sources": {}, "spell_effects": {}, "saving_throw_bonuses": {"WIS": -1000}, "spell_slots": {}}
@@ -6965,6 +6989,1097 @@ func test_dungeon() -> void:
 	_teardown_scene(dungeon)
 	_exit_test()
 
+## Purpose-aware event checks through the real EventDialog and PlayerCommand controls.
+func test_check_context_flow() -> void:
+	_enter_test("check_context_flow")
+	DataLoader._load_content_type("res://data/fixtures/check_context/items/", "item")
+	DataLoader._load_content_type("res://data/fixtures/check_context/events/", "event")
+	DataLoader._validate_check_context_cross_references()
+	_assert(DataLoader.get_load_errors().is_empty(), "Neutral and renamed acceptance definitions pass production DataLoader and cross-reference validation")
+	var survey_record: Dictionary = DataLoader.get_event_check_record("fixture:survey_map_event", "read_map_check")
+	var renamed_record: Dictionary = DataLoader.get_event_check_record("fixture:tidal_herbs_event", "identify_herbs_check")
+	var choice_record: Dictionary = DataLoader.get_event_check_record("fixture:choice_herbs_event", "identify_choice_check")
+	var choice_bonus_record: Dictionary = DataLoader.get_event_check_record("fixture:ability_bonus_choice_event", "choice_estimate_check")
+	var unrelated_record: Dictionary = DataLoader.get_event_check_record("fixture:unrelated_survey_event", "mark_boundary_check")
+	var no_tool_record: Dictionary = DataLoader.get_event_check_record("fixture:untooled_field_event", "cross_field_check")
+	var unknown_purpose_record: Dictionary = DataLoader.get_event_check_record("fixture:unknown_purpose_event", "unknown_purpose_check")
+	var legacy_record: Dictionary = DataLoader.get_event_check_record("fixture:legacy_check_event", "legacy_trail_check")
+	var ambiguous_record: Dictionary = DataLoader.get_event_record("fixture:ambiguous_context_event")
+	DataLoader._load_content_type("res://data/fixtures/check_context/classes/", "class")
+	DataLoader._validate_check_context_cross_references()
+	_assert(not survey_record.is_empty() and not renamed_record.is_empty() and not choice_record.is_empty(), "Production DataLoader resolves neutral, renamed, and choice-owned event/check definitions")
+	_assert(not unrelated_record.is_empty() and not no_tool_record.is_empty() and not unknown_purpose_record.is_empty() and not legacy_record.is_empty() and not ambiguous_record.is_empty(), "Production DataLoader resolves unrelated, no-tool, unknown-purpose, legacy, and ambiguous event fixtures")
+	_assert(DataLoader.get_event_check_record("fixture:ambiguous_context_event", "ambiguous_check").is_empty(), "Ambiguous duplicate check identity cannot produce an authoritative check record")
+	if survey_record.is_empty() or renamed_record.is_empty() or choice_record.is_empty() or unrelated_record.is_empty() or no_tool_record.is_empty() or unknown_purpose_record.is_empty() or legacy_record.is_empty() or ambiguous_record.is_empty():
+		_exit_test()
+		return
+
+	var owner_scores := AbilityScores.new()
+	owner_scores.from_dict({"STR": 10, "DEX": 10, "CON": 10, "INT": 14, "WIS": 14, "CHA": 10})
+	var owner := Character.new()
+	owner.initialize("Context Owner", "human", "wizard", owner_scores)
+	owner.character_id = "check_context_acceptance_owner"
+	owner.inventory.add_item("fixture:surveyors_tools")
+	owner.inventory.add_item("fixture:surveyors_tools")
+	owner.inventory.add_item("fixture:field_guide")
+	var other_scores := AbilityScores.new()
+	other_scores.from_dict({"STR": 10, "DEX": 10, "CON": 10, "INT": 14, "WIS": 14, "CHA": 10})
+	var other_actor := Character.new()
+	other_actor.initialize("Other Context Actor", "human", "wizard", other_scores)
+	other_actor.character_id = "check_context_acceptance_other"
+	other_actor.inventory.add_item("fixture:field_guide")
+	var owned_instances: Array[Dictionary] = owner.inventory.backpack_instances()
+	var survey_instances: Array[String] = []
+	for instance in owned_instances:
+		if str(instance.get("definition_id", "")) == "fixture:surveyors_tools":
+			survey_instances.append(str(instance.get("instance_id", "")))
+	_assert(survey_instances.size() == 2, "Owner has two independent survey-tool copies and a separate renamed tool source")
+	var feature_uses_before: Dictionary = owner.feature_uses.duplicate(true)
+	var gold_before := owner.inventory.gold
+	var forged_event: Dictionary = survey_record.get("event", {}).duplicate(true)
+	forged_event["check"]["dc"] = 1
+	forged_event["check"]["check_context"]["task_id"] = "caller_task"
+	forged_event["success"] = {"description": "FORGED", "effects": [{"type": "gold", "value": 999}]}
+	var neutral_run: Dictionary = await _run_check_context_controls(owner, forged_event)
+	var neutral: Dictionary = neutral_run.get("check_result", {})
+	var neutral_source: Dictionary = neutral.get("context_tool_source", {})
+	var neutral_context: Dictionary = neutral.get("check_context", {})
+	var neutral_location: Dictionary = neutral_source.get("tool_location", {})
+	var closed_neutral: Dictionary = neutral_run.get("event_result", {}).get("check_result", {})
+	var expected_investigation_modifier := owner.get_skill_check_modifier("Investigation", "INT")
+	_assert(bool(neutral_run.get("roll_enabled", false)) and int(neutral.get("dc", -1)) == 14 and str(neutral_context.get("task_id", "")) == "survey_archive" and str(neutral_context.get("purpose_id", "")) == "locate_nest", "Real Roll control discards copied task/DC fields and uses the loaded survey check")
+	_assert(int(neutral.get("natural_roll", 0)) >= 1 and int(neutral.get("natural_roll", 0)) <= 20 and neutral.get("rolls", []).size() == 1 and not bool(neutral.get("advantage", true)) and int(neutral.get("modifier", -999)) == expected_investigation_modifier + 3 and int(neutral.get("contextual_tool_bonus", 0)) == 3, "Neutral control rolls one ordinary d20 and adds exactly the authored task/tool bonus")
+	_assert(int(neutral.get("total", -999)) == int(neutral.get("natural_roll", 0)) + int(neutral.get("modifier", 0)) + int(neutral.get("guidance_bonus", 0)) and bool(neutral.get("success", false)) == (int(neutral.get("total", -1)) >= int(neutral.get("dc", 0))), "Neutral total and success agree with the retained natural, modifiers, and original DC")
+	_assert(str(neutral.get("actor_id", "")) == owner.character_id and str(neutral_source.get("tool_item_id", "")) == "fixture:surveyors_tools" and str(neutral_source.get("tool_instance_id", "")) in survey_instances and str(neutral_source.get("tool_effect_id", "")) == "read_map_bonus" and str(neutral_source.get("origin_event_id", "")) == "fixture:survey_map_event" and str(neutral_source.get("origin_check_id", "")) == "read_map_check" and neutral_location.get("kind", "") == "backpack" and int(neutral_location.get("index", -1)) >= 0 and closed_neutral == neutral, "event_resolved.check_result preserves actor, origin, exact tool copy/effect/location, and the final roll")
+	_assert(owner.inventory.gold == gold_before + 1 and owner.feature_uses == feature_uses_before, "Loaded consequence applies once; this ordinary check has zero feature/resource cost")
+	var first_source_id := str(neutral_source.get("tool_instance_id", ""))
+	var unrelated_gold := owner.inventory.gold
+	var unrelated_run: Dictionary = await _run_check_context_controls(owner, unrelated_record.get("event", {}).duplicate(true))
+	var unrelated: Dictionary = unrelated_run.get("check_result", {})
+	_assert(int(unrelated.get("contextual_tool_bonus", -1)) == 0 and int(unrelated.get("dc", -1)) == 12 and str(unrelated.get("check_context", {}).get("task_id", "")) == "mark_boundary" and int(unrelated.get("modifier", -999)) == expected_investigation_modifier, "Same-ability loaded unrelated task retains ordinary modifier/DC with no inherited benefit")
+	_assert(owner.inventory.gold == unrelated_gold + 1, "Unrelated check applies its loaded consequence once")
+	var unknown_gold := owner.inventory.gold
+	var unknown_purpose_run: Dictionary = await _run_check_context_controls(owner, unknown_purpose_record.get("event", {}).duplicate(true))
+	var unknown_purpose: Dictionary = unknown_purpose_run.get("check_result", {})
+	_assert(int(unknown_purpose.get("contextual_tool_bonus", -1)) == 0 and str(unknown_purpose.get("check_context", {}).get("purpose_id", "")) == "map_a_hidden_river" and owner.inventory.gold == unknown_gold + 1, "Unknown loaded purpose carries normally but cannot silently qualify the known tool benefit")
+	var wrong_tool_run: Dictionary = await _run_check_context_controls(other_actor, survey_record.get("event", {}).duplicate(true))
+	var wrong_tool: Dictionary = wrong_tool_run.get("check_result", {})
+	var wrong_tool_source: Dictionary = wrong_tool.get("context_tool_source", {})
+	_assert(str(wrong_tool.get("actor_id", "")) == other_actor.character_id and int(wrong_tool.get("contextual_tool_bonus", -1)) == 0 and str(wrong_tool_source.get("tool_item_id", "")) == "" and str(wrong_tool_source.get("tool_instance_id", "")) == "", "Another actor's different tool copy cannot satisfy the survey check")
+	var missing_actor := _fresh_char("No Tool", "human", "wizard", {"STR": 10, "DEX": 10, "CON": 10, "INT": 14, "WIS": 14, "CHA": 10})
+	missing_actor.character_id = "check_context_acceptance_missing"
+	var missing_tool_run: Dictionary = await _run_check_context_controls(missing_actor, survey_record.get("event", {}).duplicate(true))
+	_assert(int(missing_tool_run.get("check_result", {}).get("contextual_tool_bonus", -1)) == 0, "Missing required tool keeps the ordinary loaded check available without the benefit")
+
+	var removed_first: Dictionary = owner.inventory.destroy_instance(first_source_id)
+	var after_first_run: Dictionary = await _run_check_context_controls(owner, survey_record.get("event", {}).duplicate(true))
+	var after_first: Dictionary = after_first_run.get("check_result", {})
+	var second_source_id := str(after_first.get("context_tool_source", {}).get("tool_instance_id", ""))
+	_assert(not removed_first.is_empty() and int(after_first.get("contextual_tool_bonus", 0)) == 3 and second_source_id in survey_instances and second_source_id != first_source_id, "Removing one exact survey copy leaves the other copy independently eligible")
+	owner.inventory.destroy_instance(second_source_id)
+	var after_both_run: Dictionary = await _run_check_context_controls(owner, survey_record.get("event", {}).duplicate(true))
+	_assert(int(after_both_run.get("check_result", {}).get("contextual_tool_bonus", -1)) == 0, "Removing both survey copies ends only that task's source")
+	var renamed_run: Dictionary = await _run_check_context_controls(owner, renamed_record.get("event", {}).duplicate(true))
+	var renamed: Dictionary = renamed_run.get("check_result", {})
+	_assert(int(renamed.get("contextual_tool_bonus", 0)) == 5 and str(renamed.get("context_tool_source", {}).get("tool_effect_id", "")) == "identify_herbs_bonus" and str(renamed.get("check_context", {}).get("purpose_id", "")) == "identify_safe_spot", "Separate field-guide source still grants its renamed task benefit after survey-source removal")
+
+	var no_tool_run: Dictionary = await _run_check_context_controls(owner, no_tool_record.get("event", {}).duplicate(true))
+	var no_tool: Dictionary = no_tool_run.get("check_result", {})
+	var expected_survival_modifier := owner.get_skill_check_modifier("Survival", "WIS")
+	_assert(int(no_tool.get("contextual_tool_bonus", -1)) == 0 and int(no_tool.get("modifier", -999)) == expected_survival_modifier and int(no_tool.get("dc", -1)) == 11 and str(no_tool.get("check_context", {}).get("purpose_id", "")) == "avoid_soft_ground", "Loaded no-tool context rolls with its ordinary modifier and original DC")
+	var choice_payload: Dictionary = choice_record.get("event", {}).duplicate(true)
+	choice_payload["choices"][0]["check"]["dc"] = 20
+	choice_payload["choices"][0]["check"]["check_context"]["task_id"] = "forged_choice_task"
+	choice_payload["choices"][0]["success"] = {"effects": [{"type": "gold", "value": 999}]}
+	var choice_gold := owner.inventory.gold
+	var choice_run: Dictionary = await _run_check_context_controls(owner, choice_payload)
+	var choice_result: Dictionary = choice_run.get("check_result", {})
+	var closed_choice: Dictionary = choice_run.get("event_result", {}).get("check_result", {})
+	_assert(bool(choice_run.get("choice_selected", false)) and int(choice_result.get("dc", -1)) == 1 and str(choice_result.get("check_context", {}).get("task_id", "")) == "sample_tidal_herbs" and int(choice_result.get("contextual_tool_bonus", 0)) == 5, "Actual choice button resolves its loaded choice-owned check and ignores copied check facts")
+	_assert(owner.inventory.gold == choice_gold + 2 and str(choice_result.get("context_tool_source", {}).get("tool_effect_id", "")) == "identify_herbs_choice_bonus" and str(choice_result.get("context_tool_source", {}).get("origin_event_id", "")) == "fixture:choice_herbs_event" and str(choice_result.get("context_tool_source", {}).get("origin_check_id", "")) == "identify_choice_check" and closed_choice == choice_result, "Choice-check consequence applies once and its exact result/source survives event closure")
+	var legacy_gold := owner.inventory.gold
+	var legacy_run: Dictionary = await _run_check_context_controls(owner, legacy_record.get("event", {}).duplicate(true))
+	var legacy: Dictionary = legacy_run.get("check_result", {})
+	var legacy_context: Dictionary = legacy.get("check_context", {})
+	_assert(bool(legacy_run.get("roll_enabled", false)) and not legacy_context.has("task_id") and not legacy_context.has("origin_event_id") and int(legacy.get("contextual_tool_bonus", -1)) == 0 and int(legacy.get("dc", -1)) == 12 and legacy.get("rolls", []).size() == 1 and owner.inventory.gold == legacy_gold + 1, "Undeclared legacy event check remains an ordinary one-d20 roll with its loaded consequence")
+	var ambiguous_gold := owner.inventory.gold
+	var ambiguous_run: Dictionary = await _run_check_context_controls(owner, ambiguous_record.get("event", {}).duplicate(true))
+	_assert(bool(ambiguous_run.get("choice_selected", false)) and not bool(ambiguous_run.get("roll_enabled", true)) and int(ambiguous_run.get("d20_count", -1)) == 0 and ambiguous_run.get("check_result", {}).is_empty() and owner.inventory.gold == ambiguous_gold, "Ambiguous loaded check source is refused before rolling or applying copied consequences")
+	var unknown_payload := {"id": "caller:unknown_context_event", "type": "skill_check", "check": {"id": "caller_check", "ability": "INT", "skill": "Investigation", "dc": 1, "check_context": {"task_id": "survey_archive", "purpose_id": "locate_nest", "required_tool_id": "fixture:surveyors_tools"}}, "success": {"effects": [{"type": "gold", "value": 999}]}, "failure": {"effects": [{"type": "gold", "value": 999}]}}
+	var unknown_source_gold := owner.inventory.gold
+	var unknown_source_run: Dictionary = await _run_check_context_controls(owner, unknown_payload)
+	_assert(not bool(unknown_source_run.get("roll_enabled", true)) and unknown_source_run.get("check_result", {}).is_empty() and owner.inventory.gold == unknown_source_gold, "Unknown originating source is refused before roll or caller consequence")
+	await _test_owned_ability_check_controls(survey_record, renamed_record, choice_bonus_record)
+	await _test_authored_roll_mode_controls(survey_record, renamed_record, unrelated_record, choice_bonus_record)
+	_exit_test()
+
+
+func _test_authored_roll_mode_controls(neutral_record: Dictionary, renamed_record: Dictionary, unrelated_record: Dictionary, choice_record: Dictionary) -> void:
+	var neutral_class: Dictionary = DataLoader.classes.get("fixture:ability_check_roll_modes_neutral_class", {})
+	var renamed_class: Dictionary = DataLoader.classes.get("fixture:ability_check_roll_modes_renamed_class", {})
+	var neutral_features: Array = neutral_class.get("features_by_level", {}).get("1", [])
+	var renamed_features: Array = renamed_class.get("features_by_level", {}).get("1", [])
+	_assert(neutral_features.size() == 6 and renamed_features.size() == 1, "Neutral and renamed mode definitions are loaded for actual-control validation")
+	if neutral_features.size() != 6 or renamed_features.size() != 1:
+		return
+	var neutral_owner := _fresh_char("Mode Surveyor", "human", "wizard", {"STR": 10, "DEX": 10, "CON": 10, "INT": 14, "WIS": 14, "CHA": 10})
+	neutral_owner.character_id = "s091_control_neutral_owner"
+	var first_grant: Dictionary = neutral_features[0].duplicate(true)
+	first_grant["source_instance_id"] = "s091_neutral_first"
+	var second_grant: Dictionary = neutral_features[1].duplicate(true)
+	second_grant["source_instance_id"] = "s091_neutral_second"
+	neutral_owner.features.append(first_grant)
+	neutral_owner.features.append(second_grant)
+	var neutral_check: Dictionary = neutral_record.get("check", {})
+	var neutral_context: Dictionary = {"task_id": neutral_check.get("check_context", {}).get("task_id", ""), "purpose_id": neutral_check.get("check_context", {}).get("purpose_id", ""), "origin_event_id": neutral_record.get("event", {}).get("id", ""), "origin_check_id": neutral_check.get("id", ""), "source_table_id": neutral_record.get("table_id", "")}
+	var query_rolls := {"count": 0}
+	var query_watcher := func(details: Dictionary):
+		if int(details.get("sides", 0)) == 20:
+			query_rolls["count"] = int(query_rolls["count"]) + int(details.get("count", details.get("rolls", []).size()))
+	var uses_before_query: Dictionary = neutral_owner.feature_uses.duplicate(true)
+	Dice.dice_rolled.connect(query_watcher)
+	var pure_query := EventResolver.ability_check_roll_mode(neutral_owner, "INT", "Investigation", neutral_context)
+	var rolls_from_query := int(query_rolls["count"])
+	Dice.dice_rolled.disconnect(query_watcher)
+	_assert(str(pure_query.get("effective_mode", "")) == "advantage" and rolls_from_query == 0 and neutral_owner.feature_uses == uses_before_query, "Real-route eligibility query changes neither dice nor feature state")
+	var duplicate_run: Dictionary = await _run_check_context_controls(neutral_owner, neutral_record.get("event", {}).duplicate(true))
+	var duplicate_result: Dictionary = duplicate_run.get("check_result", {})
+	var duplicate_closed: Dictionary = duplicate_run.get("event_result", {}).get("check_result", {})
+	var duplicate_sources: Array = duplicate_result.get("roll_mode_contributors", []).filter(func(row): return str(row.get("mode", "")) == "advantage" and str(row.get("status", "")) == "active")
+	_assert(str(duplicate_result.get("roll_mode", "")) == "advantage" and duplicate_result.get("rolls", []).size() == 2 and int(duplicate_run.get("d20_count", 0)) == 2 and duplicate_sources.size() == 2 and duplicate_sources.any(func(row): return str(row.get("source_instance_id", "")) == "s091_neutral_first") and duplicate_sources.any(func(row): return str(row.get("source_instance_id", "")) == "s091_neutral_second") and duplicate_closed == duplicate_result, "Actual Roll uses Advantage once and Close retains both exact same-mode source instances")
+	var opposing_grant: Dictionary = neutral_features[2].duplicate(true)
+	opposing_grant["source_instance_id"] = "s091_neutral_opposite"
+	neutral_owner.features.append(opposing_grant)
+	var opposite_run: Dictionary = await _run_check_context_controls(neutral_owner, neutral_record.get("event", {}).duplicate(true))
+	var opposite_result: Dictionary = opposite_run.get("check_result", {})
+	_assert(str(opposite_result.get("roll_mode", "")) == "normal" and opposite_result.get("rolls", []).size() == 1 and int(opposite_run.get("d20_count", 0)) == 1 and opposite_result.get("roll_mode_contributors", []).size() == 3, "Actual opposite grants use the normal single-die engine resolution with all sources in the receipt")
+	neutral_owner.features.erase(opposing_grant)
+	var cancel_policy: Dictionary = neutral_features[3].duplicate(true)
+	cancel_policy["source_instance_id"] = "s091_neutral_cancel_policy"
+	neutral_owner.features.append(cancel_policy)
+	var cancel_run: Dictionary = await _run_check_context_controls(neutral_owner, neutral_record.get("event", {}).duplicate(true))
+	var cancel_result: Dictionary = cancel_run.get("check_result", {})
+	var cancel_sources: Array = cancel_result.get("roll_mode_contributors", [])
+	_assert(str(cancel_result.get("roll_mode", "")) == "advantage" and cancel_result.get("rolls", []).size() == 2 and cancel_sources.any(func(row): return str(row.get("source_definition_id", "")) == "fixture:survey_advantage_one" and str(row.get("status", "")) == "active") and cancel_sources.any(func(row): return str(row.get("source_definition_id", "")) == "fixture:survey_advantage_two" and str(row.get("status", "")) == "canceled"), "Actual selective cancellation retains its exempt source and suppresses only the other source")
+	neutral_owner.features.erase(cancel_policy)
+	var prohibition: Dictionary = neutral_features[4].duplicate(true)
+	prohibition["source_instance_id"] = "s091_neutral_prohibition"
+	neutral_owner.features.append(prohibition)
+	var prohibition_run: Dictionary = await _run_check_context_controls(neutral_owner, neutral_record.get("event", {}).duplicate(true))
+	var prohibition_result: Dictionary = prohibition_run.get("check_result", {})
+	var prohibited_grant: Dictionary = {}
+	for row in prohibition_result.get("roll_mode_contributors", []):
+		if str(row.get("source_definition_id", "")) == "fixture:survey_advantage_two":
+			prohibited_grant = row
+	_assert(str(prohibition_result.get("roll_mode", "")) == "advantage" and prohibition_result.get("rolls", []).size() == 2 and str(prohibited_grant.get("status", "")) == "prohibited" and prohibited_grant.get("suppressed_by", []).any(func(row): return str(row.get("source_instance_id", "")) == "s091_neutral_prohibition"), "Actual selective prohibition preserves the exempt grant and records its exact suppressing source")
+	var renamed_owner := _fresh_char("Marsh Reader", "human", "druid", {"STR": 10, "DEX": 10, "CON": 10, "INT": 10, "WIS": 14, "CHA": 10})
+	renamed_owner.character_id = "s091_control_renamed_owner"
+	var renamed_grant: Dictionary = renamed_features[0].duplicate(true)
+	renamed_grant["source_instance_id"] = "s091_renamed_source"
+	renamed_owner.features.append(renamed_grant)
+	var renamed_run: Dictionary = await _run_check_context_controls(renamed_owner, renamed_record.get("event", {}).duplicate(true))
+	var renamed_result: Dictionary = renamed_run.get("check_result", {})
+	_assert(str(renamed_result.get("roll_mode", "")) == "disadvantage" and renamed_result.get("rolls", []).size() == 2 and renamed_result.get("roll_mode_contributors", []).any(func(row): return str(row.get("source_instance_id", "")) == "s091_renamed_source" and str(row.get("status", "")) == "active"), "Renamed loaded source selects its data-declared Disadvantage through the actual Roll control")
+	var choice_owner := _fresh_char("Estimate Reader", "human", "wizard", {"STR": 10, "DEX": 10, "CON": 10, "INT": 14, "WIS": 10, "CHA": 10})
+	choice_owner.character_id = "s091_control_choice_owner"
+	var choice_grant: Dictionary = neutral_features[5].duplicate(true)
+	choice_grant["source_instance_id"] = "s091_choice_source"
+	choice_owner.features.append(choice_grant)
+	var choice_run: Dictionary = await _run_check_context_controls(choice_owner, choice_record.get("event", {}).duplicate(true))
+	var choice_result: Dictionary = choice_run.get("check_result", {})
+	_assert(bool(choice_run.get("choice_selected", false)) and str(choice_result.get("roll_mode", "")) == "advantage" and choice_result.get("rolls", []).size() == 2 and str(choice_result.get("check_context", {}).get("origin_check_id", "")) == "choice_estimate_check" and choice_result.get("roll_mode_contributors", []).any(func(row): return str(row.get("source_instance_id", "")) == "s091_choice_source"), "Choice button and Roll control carry the exact choice-owned check context into its captured Advantage receipt")
+	var removed_owner := _fresh_char("Removed Grant", "human", "wizard", {"STR": 10, "DEX": 10, "CON": 10, "INT": 14, "WIS": 10, "CHA": 10})
+	removed_owner.character_id = "s091_control_removed_owner"
+	var removed_grant: Dictionary = neutral_features[0].duplicate(true)
+	removed_grant["source_instance_id"] = "s091_removed_before_roll"
+	removed_owner.features.append(removed_grant)
+	var removal_query := EventResolver.ability_check_roll_mode(removed_owner, "INT", "Investigation", neutral_context)
+	var removal_run: Dictionary = await _run_check_context_controls(removed_owner, neutral_record.get("event", {}).duplicate(true), ["s091_removed_before_roll"])
+	var removal_result: Dictionary = removal_run.get("check_result", {})
+	_assert(str(removal_query.get("effective_mode", "")) == "advantage" and str(removal_result.get("roll_mode", "")) == "normal" and removal_result.get("rolls", []).size() == 1 and removal_result.get("roll_mode_contributors", []).all(func(row): return str(row.get("source_instance_id", "")) != "s091_removed_before_roll"), "Removing the exact source after an eligibility read but before Roll revalidates to Normal")
+	var nonqualifying_owner := _fresh_char("Unrelated Task", "human", "wizard", {"STR": 10, "DEX": 10, "CON": 10, "INT": 14, "WIS": 10, "CHA": 10})
+	nonqualifying_owner.character_id = "s091_control_nonqualifying_owner"
+	nonqualifying_owner.features.append(first_grant.duplicate(true))
+	var nonqualifying_run: Dictionary = await _run_check_context_controls(nonqualifying_owner, unrelated_record.get("event", {}).duplicate(true))
+	var nonqualifying_result: Dictionary = nonqualifying_run.get("check_result", {})
+	_assert(str(nonqualifying_result.get("roll_mode", "")) == "normal" and nonqualifying_result.get("rolls", []).size() == 1 and nonqualifying_result.get("roll_mode_contributors", []).is_empty(), "A different loaded task on the same skill rolls normally without inheriting the Advantage source")
+
+
+func _test_owned_ability_check_controls(neutral_record: Dictionary, renamed_record: Dictionary, choice_record: Dictionary) -> void:
+	var previous_test_mode := GameManager.test_mode
+	GameManager.test_mode = false
+	var neutral_class: Dictionary = DataLoader.classes.get("fixture:ability_check_bonus_neutral_class", {})
+	var renamed_class: Dictionary = DataLoader.classes.get("fixture:ability_check_bonus_renamed_class", {})
+	var unskilled_class: Dictionary = DataLoader.classes.get("fixture:ability_check_bonus_unskilled_class", {})
+	var choice_class: Dictionary = DataLoader.classes.get("fixture:ability_check_bonus_choice_class", {})
+	var neutral_features: Array = neutral_class.get("features_by_level", {}).get("1", [])
+	var renamed_features: Array = renamed_class.get("features_by_level", {}).get("1", [])
+	var unskilled_features: Array = unskilled_class.get("features_by_level", {}).get("1", [])
+	var choice_features: Array = choice_class.get("features_by_level", {}).get("1", [])
+	if neutral_features.is_empty() or renamed_features.is_empty() or unskilled_features.size() != 2 or choice_features.is_empty() or choice_record.is_empty():
+		_assert(false, "Loaded S-094 features are available to actual EventDialog controls")
+		GameManager.test_mode = previous_test_mode
+		return
+	var neutral_owner := _owned_check_bonus_actor("S094 Pathfinder", "check_context_s094_neutral", neutral_features[0], "check_context_s094_neutral_source", "fixture:surveyors_tools")
+	var renamed_owner := _owned_check_bonus_actor("S094 Naturalist", "check_context_s094_renamed", renamed_features[0], "check_context_s094_renamed_source", "fixture:field_guide")
+	var neutral_source := "check_context_s094_neutral_source"
+	var renamed_source := "check_context_s094_renamed_source"
+	var neutral_other_source := "check_context_s094_neutral_other_source"
+	var neutral_other_feature: Dictionary = renamed_features[0].duplicate(true)
+	neutral_other_feature["source_instance_id"] = neutral_other_source
+	neutral_owner.features.append(neutral_other_feature)
+	neutral_owner.inventory.add_item("fixture:field_guide")
+	ResourcePoolRules.acquire(neutral_owner, neutral_other_feature, neutral_other_source)
+	var neutral_pool: Dictionary = neutral_owner.numeric_resource_pools.get(neutral_source, {})
+	var renamed_pool: Dictionary = renamed_owner.numeric_resource_pools.get(renamed_source, {})
+	_assert(not neutral_pool.is_empty() and not renamed_pool.is_empty(), "Neutral and renamed actual-control actors own separate bonus pools")
+	if neutral_pool.is_empty() or renamed_pool.is_empty():
+		GameManager.test_mode = previous_test_mode
+		return
+	var counters := {"d20": 0, "d6": 0, "d8": 0}
+	var watcher: Callable = func(details: Dictionary) -> void:
+		var sides := int(details.get("sides", 0))
+		var key := str("d", sides)
+		if counters.has(key):
+			var rolls: Variant = details.get("rolls", [])
+			var die_count := int(details.get("count", rolls.size() if rolls is Array and not rolls.is_empty() else 1))
+			counters[key] = int(counters[key]) + die_count
+	Dice.dice_rolled.connect(watcher)
+
+	# Pay-on-choice fixed +5 converts a seeded failed roll through the visible menu.
+	var neutral_seed := _seed_for_loaded_check(neutral_owner, neutral_record, 8, 0, 0)
+	seed(neutral_seed)
+	var neutral_before_d20 := int(counters["d20"])
+	var neutral_before_d8 := int(counters["d8"])
+	var neutral_run: Dictionary = await _run_owned_check_controls(neutral_owner, neutral_record.get("event", {}), "Pathfinder's Focus", false, "", neutral_source)
+	var neutral_result: Dictionary = neutral_run.get("check_result", {})
+	var neutral_closed: Dictionary = neutral_run.get("event_result", {}).get("check_result", {})
+	_assert(bool(neutral_run.get("menu_seen", false)) and bool(neutral_result.get("success", false)) and int(neutral_result.get("total", -1)) == int(neutral_run.get("captured_total", -100)) + 5 and int(neutral_result.get("natural_roll", -1)) == 8 and int(neutral_result.get("modifier", -1)) == 3 and int(neutral_result.get("dc", -1)) == 14, "Real neutral Roll and owned-source menu convert the captured failed check without changing its natural, modifier, or DC")
+	_assert(int(counters["d20"]) == neutral_before_d20 + 1 and int(counters["d8"]) == neutral_before_d8 and int(neutral_run.get("gold_during_menu", -1)) == int(neutral_run.get("gold_before", -2)), "Neutral query and pending state roll only the original d20 and defer its consequence")
+	_assert(int(neutral_run.get("pool_after", -1)) == int(neutral_run.get("pool_before", -2)) - 1 and int(neutral_run.get("other_pool_after", -1)) == int(neutral_run.get("other_pool_before", -2)), "Neutral pay-on-choice spends one exact source use and leaves the other source unchanged")
+	_assert(neutral_closed == neutral_result and int(neutral_run.get("gold_after", -1)) == int(neutral_run.get("gold_before", -2)) + 1, "Neutral final receipt survives Close and its loaded consequence applies once")
+	var replay_request_id := str(neutral_run.get("request_id", ""))
+	var replay_selected_pool_before := int(ResourcePoolRules.availability(neutral_owner, neutral_source).get("current", -1))
+	var replay_other_pool_id := str(neutral_run.get("other_pool_id", ""))
+	var replay_other_pool_before := int(ResourcePoolRules.availability(neutral_owner, replay_other_pool_id).get("current", -1)) if not replay_other_pool_id.is_empty() else -1
+	var replay_gold_before := neutral_owner.inventory.gold
+	var replay_dice_before: Dictionary = counters.duplicate(true)
+	var replay_receipt_before: Dictionary = neutral_run.get("event_result", {}).get("check_result", {}).duplicate(true)
+	var completed_replay := SpellDamageRolls.settle_ability_check_post_roll(neutral_owner, {"ability_check_post_roll_request": {"request_id": replay_request_id}}, "")
+	var replay_selected_pool_after := int(ResourcePoolRules.availability(neutral_owner, neutral_source).get("current", -1))
+	var replay_other_pool_after := int(ResourcePoolRules.availability(neutral_owner, replay_other_pool_id).get("current", -1)) if not replay_other_pool_id.is_empty() else -1
+	_assert(not replay_request_id.is_empty() and replay_other_pool_id == neutral_other_source and bool(completed_replay.get("refused", false)) and counters == replay_dice_before and replay_selected_pool_after == replay_selected_pool_before and replay_other_pool_after == replay_other_pool_before and neutral_owner.inventory.gold == replay_gold_before and replay_receipt_before == neutral_result and replay_receipt_before == neutral_run.get("event_result", {}).get("check_result", {}), "Replaying a completed accepted request refuses without another die, selected/unselected pool charge, consequence, or receipt change")
+
+	# A loaded choice-owned check uses the same source operation after its real
+	# choice button exposes the ordinary Roll and source controls.
+	var choice_feature: Dictionary = choice_features[0].duplicate(true)
+	var choice_source := "check_context_s094_choice_source"
+	var choice_owner := _owned_check_bonus_actor("S094 Choice Surveyor", "check_context_s094_choice", choice_feature, choice_source, "fixture:surveyors_tools")
+	var choice_other_source := "check_context_s094_choice_other_source"
+	var choice_other_feature: Dictionary = renamed_features[0].duplicate(true)
+	choice_other_feature["source_instance_id"] = choice_other_source
+	choice_owner.features.append(choice_other_feature)
+	choice_owner.inventory.add_item("fixture:field_guide")
+	ResourcePoolRules.acquire(choice_owner, choice_other_feature, choice_other_source)
+	var choice_seed := _seed_for_loaded_check(choice_owner, choice_record, 8, 0, 0)
+	seed(choice_seed)
+	var choice_d20_before := int(counters["d20"])
+	var choice_bonus_die_before := int(counters["d8"])
+	var choice_gold_before := choice_owner.inventory.gold
+	var choice_pool_before := int(ResourcePoolRules.availability(choice_owner, choice_source).get("current", -1))
+	var choice_run: Dictionary = await _run_owned_check_controls(choice_owner, choice_record.get("event", {}), "Choice Survey Focus", false, "", choice_source, "Estimate the distance")
+	var choice_result: Dictionary = choice_run.get("check_result", {})
+	var choice_closed: Dictionary = choice_run.get("event_result", {}).get("check_result", {})
+	var choice_context: Dictionary = choice_result.get("check_context", {})
+	_assert(bool(choice_run.get("choice_selected", false)) and bool(choice_run.get("menu_seen", false)) and int(choice_result.get("natural_roll", -1)) == 8 and int(choice_result.get("dc", -1)) == 13 and int(choice_result.get("total", -1)) == int(choice_run.get("captured_total", -100)) + 5 and bool(choice_result.get("success", false)) and str(choice_context.get("origin_event_id", "")) == "fixture:ability_bonus_choice_event" and str(choice_context.get("origin_check_id", "")) == "choice_estimate_check", "Actual choice button and Roll/menu controls apply the loaded choice-owned fixed bonus to its captured failed check")
+	_assert(int(counters["d20"]) == choice_d20_before + 1 and int(counters["d8"]) == choice_bonus_die_before and int(ResourcePoolRules.availability(choice_owner, choice_source).get("current", -1)) == choice_pool_before - 1 and str(choice_run.get("other_pool_id", "")) == choice_other_source and int(choice_run.get("other_pool_after", -1)) == int(choice_run.get("other_pool_before", -2)) and choice_owner.inventory.gold == choice_gold_before + 1 and choice_closed == choice_result, "Choice-owned check preserves its exact selected cost and unselected pool, one original test, Close receipt, and consequence")
+
+	# Pay-on-choice sources also require their full authored cost before an offer.
+	neutral_owner.numeric_resource_pools[neutral_source]["current"] = 0
+	seed(_seed_for_loaded_check(neutral_owner, neutral_record, 1, 0, 0))
+	var choice_cost_insufficient_d20_before := int(counters["d20"])
+	var choice_cost_insufficient_d8_before := int(counters["d8"])
+	var choice_cost_insufficient: Dictionary = await _run_owned_check_controls(neutral_owner, neutral_record.get("event", {}), "", false, "", neutral_source)
+	_assert(not bool(choice_cost_insufficient.get("menu_seen", true)) and int(choice_cost_insufficient.get("d20_count", -1)) == 1 and int(counters["d20"]) == choice_cost_insufficient_d20_before + 1 and int(counters["d8"]) == choice_cost_insufficient_d8_before and int(choice_cost_insufficient.get("pool_after", -1)) == 0 and str(choice_cost_insufficient.get("other_pool_id", "")) == neutral_other_source and int(choice_cost_insufficient.get("gold_after", -1)) == int(choice_cost_insufficient.get("gold_before", -2)) + 1, "An unaffordable pay-on-choice source never appears; its original check and one consequence settle without a source die")
+	neutral_owner.numeric_resource_pools[neutral_source]["current"] = 3
+
+	# Renamed d8 policy: one accepted die can convert or leave the check failed;
+	# the conditional source pays only on conversion. Separate attempts have reset baselines.
+	var renamed_convert_seed := _seed_for_loaded_check(renamed_owner, renamed_record, 7, 8, 1)
+	seed(renamed_convert_seed)
+	var renamed_before_convert := int(counters["d20"])
+	var d8_before_convert := int(counters["d8"])
+	var renamed_convert: Dictionary = await _run_owned_check_controls(renamed_owner, renamed_record.get("event", {}), "Field Notes", false, "", renamed_source)
+	var renamed_converted_result: Dictionary = renamed_convert.get("check_result", {})
+	_assert(bool(renamed_convert.get("menu_seen", false)) and bool(renamed_converted_result.get("success", false)) and int(counters["d20"]) == renamed_before_convert + 1 and int(counters["d8"]) == d8_before_convert + 1, "Real renamed chooser rolls one d8 after one original d20 and converts the captured check")
+	_assert(int(renamed_convert.get("pool_after", -1)) == int(renamed_convert.get("pool_before", -2)) - 2 and int(renamed_convert.get("other_pool_after", -1)) == int(renamed_convert.get("other_pool_before", -2)), "Converted renamed check spends exactly two uses from its chosen source")
+	renamed_owner.numeric_resource_pools[renamed_source]["current"] = 3
+	var renamed_failure_seed := _seed_for_loaded_check(renamed_owner, renamed_record, 1, 8, 1)
+	seed(renamed_failure_seed)
+	var renamed_before_failure_d20 := int(counters["d20"])
+	var renamed_before_failure_d8 := int(counters["d8"])
+	var renamed_failure: Dictionary = await _run_owned_check_controls(renamed_owner, renamed_record.get("event", {}), "Field Notes", false, "", renamed_source)
+	var renamed_failed_result: Dictionary = renamed_failure.get("check_result", {})
+	_assert(bool(renamed_failure.get("menu_seen", false)) and not bool(renamed_failed_result.get("success", true)) and int(counters["d20"]) == renamed_before_failure_d20 + 1 and int(counters["d8"]) == renamed_before_failure_d8 + 1 and int(renamed_failed_result.get("natural_roll", -1)) == 1 and int(renamed_failed_result.get("modifier", -1)) == 5 and int(renamed_failed_result.get("dc", -1)) == 15, "Real renamed chooser can keep the original check failed after exactly one d8 while retaining its test fields")
+	_assert(int(renamed_failure.get("pool_after", -1)) == int(renamed_failure.get("pool_before", -2)) and int(renamed_failure.get("other_pool_after", -1)) == int(renamed_failure.get("other_pool_before", -2)), "Conditional renamed failure costs zero and preserves the unselected source")
+	_assert(int(renamed_failure.get("gold_after", -1)) == int(renamed_failure.get("gold_before", -2)) + 1 and renamed_failure.get("event_result", {}).get("check_result", {}) == renamed_failed_result, "Remaining failure applies one consequence and exposes the same receipt on Close")
+
+	# Ability-only check: both authored alternatives appear on the actual menu.
+	var estimator := Character.new()
+	estimator.initialize("S094 Estimator", "human", "wizard", AbilityScores.new())
+	estimator.character_id = "check_context_s094_estimator"
+	var fixed_feature: Dictionary = unskilled_features[0].duplicate(true)
+	var die_feature: Dictionary = unskilled_features[1].duplicate(true)
+	var fixed_id := "check_context_s094_estimate_fixed"
+	var die_id := "check_context_s094_estimate_die"
+	_estimate_acquire_source(estimator, fixed_feature, fixed_id)
+	_estimate_acquire_source(estimator, die_feature, die_id)
+	var unskilled_record: Dictionary = DataLoader.get_event_check_record("fixture:unskilled_estimate_event", "estimate_distance_check")
+	var estimate_event: Dictionary = unskilled_record.get("event", {})
+	var estimate_seed := _seed_for_loaded_check(estimator, unskilled_record, 20, 6, 5)
+	seed(estimate_seed)
+	var estimate_d20_before := int(counters["d20"])
+	var estimate_d6_before := int(counters["d6"])
+	var estimate_die: Dictionary = await _run_owned_check_controls(estimator, estimate_event, "Measured Estimate", false, "", die_id)
+	var estimate_die_result: Dictionary = estimate_die.get("check_result", {})
+	_assert(bool(estimate_die.get("menu_seen", false)) and bool(estimate_die_result.get("success", false)) and str(estimate_die_result.get("check_context", {}).get("skill", "")) == "" and int(estimate_die_result.get("dc", -1)) == 25 and str(estimate_die.get("selected_source_id", "")) == die_id and str(estimate_die.get("selected_operation_kind", "")) == "numeric_bonus", "Actual ability-only menu exposes the d6 alternative and converts without inventing a skill")
+	_assert(int(counters["d20"]) == estimate_d20_before + 1 and int(counters["d6"]) == estimate_d6_before + 1 and int(estimate_die.get("pool_after", -1)) == int(estimate_die.get("pool_before", -2)) - 2 and int(estimate_die.get("other_pool_after", -1)) == int(estimate_die.get("other_pool_before", -2)), "Ability-only d6 rolls once after the test, pays only its conditional source, and leaves fixed-source uses unchanged")
+	var fixed_estimate_seed := _seed_for_loaded_check(estimator, unskilled_record, 1, 0, 0)
+	seed(fixed_estimate_seed)
+	var estimate_fixed: Dictionary = await _run_owned_check_controls(estimator, estimate_event, "Quick Estimate", false, "", fixed_id)
+	var estimate_fixed_result: Dictionary = estimate_fixed.get("check_result", {})
+	_assert(bool(estimate_fixed.get("menu_seen", false)) and not bool(estimate_fixed_result.get("success", true)) and int(estimate_fixed_result.get("total", -1)) == int(estimate_fixed.get("captured_total", -100)) + 4 and int(estimate_fixed.get("pool_after", -1)) == int(estimate_fixed.get("pool_before", -2)) - 1 and int(estimate_fixed.get("other_pool_after", -1)) == int(estimate_fixed.get("other_pool_before", -2)), "Actual ability-only fixed +4 is a distinct pay-on-choice alternative and retains its failure without spending the d6 source")
+
+	# Native Inspiration is resolved first through its visible confirmation, then
+	# the optional pool menu acts on that captured result without a second d20.
+	neutral_owner.numeric_resource_pools[neutral_source]["current"] = 3
+	neutral_owner.feature_uses["bardic_inspiration_die"] = "1d6"
+	var native_seed := _seed_for_check_and_following_die(neutral_owner, neutral_record, 6, 6, 1, 2)
+	seed(native_seed)
+	var native_d20_before := int(counters["d20"])
+	var native_d6_before := int(counters["d6"])
+	var native_run: Dictionary = await _run_owned_check_controls(neutral_owner, neutral_record.get("event", {}), "Pathfinder's Focus", true, "", neutral_source)
+	var native_result: Dictionary = native_run.get("check_result", {})
+	_assert(bool(native_run.get("native_choice_seen", false)) and int(counters["d20"]) == native_d20_before + 1 and int(counters["d6"]) == native_d6_before + 1 and int(native_result.get("inspiration_bonus", 0)) >= 1, "Actual Bardic Inspiration choice precedes the owned bonus and its captured die remains in the result")
+	_assert(bool(native_result.get("success", false)) and int(native_result.get("total", -1)) == int(native_run.get("captured_total", -100)) + 5 and int(native_result.get("inspiration_bonus", 0)) >= 1 and int(native_result.get("natural_roll", -1)) == 6 and int(native_result.get("modifier", -1)) == 3 and int(native_result.get("dc", -1)) == 14 and native_run.get("event_result", {}).get("check_result", {}) == native_result and not neutral_owner.feature_uses.has("bardic_inspiration_die"), "The generic fixed bonus uses the Inspiration-adjusted result without replaying/restoring its native use and Close preserves the same receipt")
+
+	# Source mutation while the real menu is open declines to the captured result;
+	# an initially unaffordable source never appears.
+	neutral_owner.numeric_resource_pools[neutral_source]["current"] = 3
+	var changed_seed := _seed_for_loaded_check(neutral_owner, neutral_record, 1, 0, 0)
+	seed(changed_seed)
+	var changed: Dictionary = await _run_owned_check_controls(neutral_owner, neutral_record.get("event", {}), "Pathfinder's Focus", false, neutral_source, neutral_source)
+	_assert(bool(changed.get("menu_seen", false)) and bool(changed.get("source_mutated", false)) and int(changed.get("pool_after", -1)) == 0 and int(changed.get("d8_count_after", 0)) == int(changed.get("d8_count_before", 0)) and int(changed.get("check_result", {}).get("total", -1)) == int(changed.get("captured_total", -2)) and bool(changed.get("source_changed", false)), "Selecting a newly depleted offered source rolls/spends nothing and settles the captured original check")
+	neutral_owner.numeric_resource_pools[neutral_source]["current"] = 3
+	seed(_seed_for_loaded_check(neutral_owner, neutral_record, 1, 0, 0))
+	var declined: Dictionary = await _run_owned_check_controls(neutral_owner, neutral_record.get("event", {}), "<cancel>", false, "", neutral_source)
+	_assert(bool(declined.get("menu_seen", false)) and bool(declined.get("menu_closed", false)) and int(declined.get("pool_after", -1)) == int(declined.get("pool_before", -2)) and int(declined.get("check_result", {}).get("total", -1)) == int(declined.get("captured_total", -2)) and int(declined.get("gold_after", -1)) == int(declined.get("gold_before", -2)) + 1, "Closing the real source PopupMenu declines without a bonus roll or cost and resolves one original consequence")
+	neutral_owner.numeric_resource_pools[neutral_source]["current"] = 3
+	seed(_seed_for_loaded_check(neutral_owner, neutral_record, 1, 0, 0))
+	var forged: Dictionary = await _run_owned_check_controls(neutral_owner, neutral_record.get("event", {}), "<forged>", false, "", neutral_source)
+	_assert(bool(forged.get("menu_seen", false)) and bool(forged.get("forged_refused", false)) and bool(forged.get("forged_pending_preserved", false)) and int(forged.get("pool_after", -1)) == int(forged.get("pool_before", -2)) and int(forged.get("d8_count_after", 0)) == int(forged.get("d8_count_before", 0)) and int(forged.get("check_result", {}).get("total", -1)) == int(forged.get("captured_total", -2)), "A forged source answer is refused while the real chooser stays answerable; closing it rolls/spends nothing")
+	neutral_owner.numeric_resource_pools[neutral_source]["current"] = 3
+	seed(_seed_for_loaded_check(neutral_owner, neutral_record, 1, 0, 0))
+	var removed: Dictionary = await _run_owned_check_controls(neutral_owner, neutral_record.get("event", {}), "Pathfinder's Focus", false, "@remove_source@", neutral_source)
+	_assert(bool(removed.get("menu_seen", false)) and bool(removed.get("source_removed", false)) and int(removed.get("pool_after", -1)) == -1 and int(removed.get("d8_count_after", 0)) == int(removed.get("d8_count_before", 0)) and int(removed.get("check_result", {}).get("total", -1)) == int(removed.get("captured_total", -2)), "Removing an offered source before its real menu answer settles the captured check without a bonus die or source payment")
+	renamed_owner.numeric_resource_pools[renamed_source]["current"] = 0
+	var empty_seed := _seed_for_loaded_check(renamed_owner, renamed_record, 1, 0, 0)
+	seed(empty_seed)
+	var empty: Dictionary = await _run_owned_check_controls(renamed_owner, renamed_record.get("event", {}), "", false, "", renamed_source)
+	_assert(not bool(empty.get("menu_seen", true)) and int(empty.get("d20_count", -1)) == 1 and int(empty.get("pool_after", -1)) == int(empty.get("pool_before", -2)) and int(empty.get("gold_after", -1)) == int(empty.get("gold_before", -2)) + 1, "An empty source is unavailable before answer and the ordinary failed check settles once")
+	renamed_owner.numeric_resource_pools[renamed_source]["current"] = 1
+	seed(_seed_for_loaded_check(renamed_owner, renamed_record, 1, 0, 0))
+	var insufficient: Dictionary = await _run_owned_check_controls(renamed_owner, renamed_record.get("event", {}), "", false, "", renamed_source)
+	_assert(not bool(insufficient.get("menu_seen", true)) and int(insufficient.get("pool_after", -1)) == 1 and int(insufficient.get("d8_count_after", 0)) == int(insufficient.get("d8_count_before", 0)), "Upfront affordability blocks an underfunded two-use source before the chooser")
+
+	# Two host instances have independent requests. Freeing one cancels only its
+	# own source menu; the other remains answerable through the same real UI path.
+	await _test_check_bonus_host_teardown(neutral_features[0], neutral_record, neutral_features[1])
+	await CheckContextChecks._ability_check_dialog_repopup(Callable(self, "_assert"), neutral_features[0], neutral_record, neutral_features[1])
+	await _test_owned_ability_check_reroll_controls(neutral_record, renamed_record, choice_record)
+	if Dice.dice_rolled.is_connected(watcher):
+		Dice.dice_rolled.disconnect(watcher)
+	GameManager.test_mode = previous_test_mode
+
+
+func _test_owned_ability_check_reroll_controls(neutral_record: Dictionary, renamed_record: Dictionary, choice_record: Dictionary) -> void:
+	var neutral_class: Dictionary = DataLoader.classes.get("fixture:ability_check_bonus_neutral_class", {})
+	var renamed_class: Dictionary = DataLoader.classes.get("fixture:ability_check_bonus_renamed_class", {})
+	var choice_class: Dictionary = DataLoader.classes.get("fixture:ability_check_bonus_choice_class", {})
+	var rules_class: Dictionary = DataLoader.classes.get("fixture:s105_check_test_rules_class", {})
+	var neutral_features: Array = neutral_class.get("features_by_level", {}).get("1", []).duplicate(true)
+	var renamed_features: Array = renamed_class.get("features_by_level", {}).get("1", []).duplicate(true)
+	var choice_features: Array = choice_class.get("features_by_level", {}).get("1", []).duplicate(true)
+	var rules_features: Array = rules_class.get("features_by_level", {}).get("1", []).duplicate(true)
+	var floor_record: Dictionary = DataLoader.get_event_check_record("fixture:s105_floor_check_event", "s105_floor_check")
+	var disadvantage_record: Dictionary = DataLoader.get_event_check_record("fixture:s105_disadvantage_check_event", "s105_disadvantage_check")
+	var negative_record: Dictionary = DataLoader.get_event_check_record("fixture:s105_negative_check_event", "s105_negative_check")
+	_assert(neutral_features.size() == 2 and renamed_features.size() == 2 and choice_features.size() == 2 and rules_features.size() == 2 and not floor_record.is_empty() and not disadvantage_record.is_empty() and not negative_record.is_empty(), "Production DataLoader resolves S105 natural-only, whole-test, choice-owned, floor, mode, and negative-check fixtures")
+	if neutral_features.size() != 2 or renamed_features.size() != 2 or choice_features.size() != 2 or rules_features.size() != 2 or floor_record.is_empty() or disadvantage_record.is_empty() or negative_record.is_empty():
+		return
+
+	var neutral_bonus_source := "check_context_s105_neutral_bonus"
+	var neutral_reroll_source := "check_context_s105_neutral_reroll"
+	var neutral_owner := Character.new()
+	neutral_owner.initialize("S105 Surveyor", "human", "wizard", AbilityScores.new())
+	neutral_owner.character_id = "check_context_s105_neutral"
+	neutral_owner.inventory.add_item("fixture:surveyors_tools")
+	neutral_owner.conditions["guidance"] = 1
+	neutral_owner.guidance_skill = "Investigation"
+	var neutral_bonus_feature: Dictionary = neutral_features[0].duplicate(true)
+	var neutral_reroll_feature: Dictionary = neutral_features[1].duplicate(true)
+	neutral_bonus_feature["source_instance_id"] = neutral_bonus_source
+	neutral_reroll_feature["source_instance_id"] = neutral_reroll_source
+	neutral_owner.features.append_array([neutral_bonus_feature, neutral_reroll_feature])
+	var neutral_bonus_acquired := ResourcePoolRules.acquire(neutral_owner, neutral_bonus_feature, neutral_bonus_source)
+	var neutral_reroll_acquired := ResourcePoolRules.acquire(neutral_owner, neutral_reroll_feature, neutral_reroll_source)
+	_assert(bool(neutral_bonus_acquired.get("success", false)) and bool(neutral_reroll_acquired.get("success", false)), "Neutral actual-control actor owns independent fixed-bonus and natural-only reroll sources")
+	if not bool(neutral_bonus_acquired.get("success", false)) or not bool(neutral_reroll_acquired.get("success", false)):
+		return
+	var neutral_worse_seed := _seed_for_check_reroll_transition(neutral_owner, neutral_record, "natural_only", "keep", false, -1, true)
+	seed(neutral_worse_seed)
+	var neutral_reroll_run: Dictionary = await _run_owned_check_controls(neutral_owner, neutral_record.get("event", {}), "Surveyor's Second Look", false, "", neutral_reroll_source)
+	var neutral_reroll_result: Dictionary = neutral_reroll_run.get("check_result", {})
+	var neutral_original: Dictionary = neutral_reroll_result.get("post_roll_reroll", {}).get("original", {})
+	var neutral_menu_counts: Dictionary = neutral_reroll_run.get("counts_at_menu", {})
+	var neutral_answer_counts: Dictionary = neutral_reroll_run.get("counts_after_answer", {})
+	var neutral_menu_pools: Dictionary = neutral_reroll_run.get("pool_balances_at_menu", {})
+	var neutral_answer_pools: Dictionary = neutral_reroll_run.get("pool_balances_after_answer", {})
+	var neutral_both_offered := false
+	var neutral_offer_ids: Array[String] = neutral_reroll_run.get("offer_ids_at_menu", [])
+	neutral_both_offered = neutral_reroll_run.get("menu_entries", []).any(func(label): return str(label).contains("Surveyor's Second Look") and str(label).contains("reroll the kept natural d20")) and neutral_reroll_run.get("menu_entries", []).any(func(label): return str(label).contains("Pathfinder's Focus") and str(label).contains("+5")) and neutral_offer_ids.size() == 2 and neutral_offer_ids[0] != neutral_offer_ids[1]
+	_assert(neutral_both_offered and bool(neutral_reroll_run.get("close_ready", false)) and not bool(neutral_reroll_run.get("menu_still_visible", true)) and str(neutral_reroll_result.get("post_roll_reroll", {}).get("source_instance_id", "")) == neutral_reroll_source and int(neutral_reroll_result.get("total", 0)) < int(neutral_original.get("total", 0)) and not bool(neutral_reroll_result.get("success", true)) and int(neutral_reroll_result.get("dc", -1)) == int(neutral_original.get("dc", -2)) and neutral_reroll_result.get("check_context", {}) == neutral_original.get("check_context", {}), "One real menu visibly offers both operations; natural-only keeps the worse captured check without a second chooser")
+	_assert(int(neutral_menu_counts.get("d20", -1)) == 1 and int(neutral_answer_counts.get("d20", -1)) == 2 and int(neutral_menu_counts.get("d4", -1)) == 1 and int(neutral_answer_counts.get("d4", -1)) == 1 and neutral_reroll_result.get("check_bonus_dice", []) == neutral_original.get("bonus_dice", []) and int(neutral_reroll_result.get("guidance_bonus", -1)) == int(neutral_original.get("bonus_dice", [{}])[0].get("value", -2)), "Actual natural-only answer rolls exactly one new d20 and keeps the already-rolled Guidance die")
+	_assert(int(neutral_menu_pools.get(neutral_reroll_source, -1)) == 2 and int(neutral_answer_pools.get(neutral_reroll_source, -1)) == 1 and int(neutral_menu_pools.get(neutral_bonus_source, -1)) == 3 and int(neutral_answer_pools.get(neutral_bonus_source, -1)) == 3 and int(neutral_reroll_run.get("gold_after", -1)) == int(neutral_reroll_run.get("gold_before", -2)) + 1 and neutral_reroll_run.get("event_result", {}).get("check_result", {}) == neutral_reroll_result, "Accepted reroll spends exactly its pool use, preserves the unselected bonus pool, and resolves one final consequence/Close receipt")
+	var replay_id := str(neutral_reroll_run.get("request_id", ""))
+	var replay_selected_offer := str(neutral_reroll_run.get("selected_offer_id", ""))
+	var replay_pools_before: Dictionary = _numeric_pool_balances(neutral_owner)
+	var replay_gold_before := neutral_owner.inventory.gold
+	var replay_receipt_before: Dictionary = neutral_reroll_result.duplicate(true)
+	var replay_dice := {"count": 0}
+	var replay_watcher: Callable = func(details: Dictionary) -> void:
+		var rolls: Variant = details.get("rolls", [])
+		replay_dice["count"] = int(replay_dice["count"]) + int(details.get("count", rolls.size() if rolls is Array and not rolls.is_empty() else 1))
+	Dice.dice_rolled.connect(replay_watcher)
+	var replay_result := SpellDamageRolls.settle_ability_check_post_roll(neutral_owner, {"ability_check_post_roll_request": {"request_id": replay_id}}, replay_selected_offer)
+	if Dice.dice_rolled.is_connected(replay_watcher):
+		Dice.dice_rolled.disconnect(replay_watcher)
+	_assert(not replay_id.is_empty() and not replay_selected_offer.is_empty() and bool(replay_result.get("refused", false)) and int(replay_dice["count"]) == 0 and _numeric_pool_balances(neutral_owner) == replay_pools_before and neutral_owner.inventory.gold == replay_gold_before and neutral_reroll_result == replay_receipt_before, "Replaying a completed accepted reroll changes no dice, selected/unselected pools, gold or closed receipt")
+
+	# Pick the numeric alternative on another real failure. The unused reroll
+	# source remains whole and no replacement die is generated.
+	seed(_seed_for_loaded_check(neutral_owner, neutral_record, 7, 0, 0))
+	var neutral_bonus_run: Dictionary = await _run_owned_check_controls(neutral_owner, neutral_record.get("event", {}), "Pathfinder's Focus", false, "", neutral_bonus_source)
+	var neutral_bonus_result: Dictionary = neutral_bonus_run.get("check_result", {})
+	_assert(neutral_bonus_run.get("menu_entries", []).any(func(label): return str(label).contains("Surveyor's Second Look")) and int(neutral_bonus_run.get("counts_after_answer", {}).get("d20", -1)) == int(neutral_bonus_run.get("counts_at_menu", {}).get("d20", -2)) and int(neutral_bonus_run.get("counts_after_answer", {}).get("d4", -1)) == int(neutral_bonus_run.get("counts_at_menu", {}).get("d4", -2)) and int(neutral_bonus_result.get("post_roll_bonus", 0)) == 5 and not neutral_bonus_result.has("post_roll_reroll"), "Choosing the fixed bonus alternative rolls no replacement die and does not also apply the reroll")
+	_assert(int(neutral_bonus_run.get("pool_balances_at_menu", {}).get(neutral_bonus_source, -1)) == 3 and int(neutral_bonus_run.get("pool_balances_after_answer", {}).get(neutral_bonus_source, -1)) == 2 and int(neutral_bonus_run.get("pool_balances_at_menu", {}).get(neutral_reroll_source, -1)) == 1 and int(neutral_bonus_run.get("pool_balances_after_answer", {}).get(neutral_reroll_source, -1)) == 1 and int(neutral_bonus_run.get("gold_after", -1)) == int(neutral_bonus_run.get("gold_before", -2)) + 1, "The chosen fixed bonus spends its exact source only; reroll uses and one consequence remain independent")
+
+	# A captured source whose funds disappear after the visible offer settles the
+	# original roll without replacement dice; removing a later offer is identical.
+	seed(_seed_for_check_reroll_transition(neutral_owner, neutral_record, "natural_only", "keep", false, -1, false))
+	var emptied_reroll_run: Dictionary = await _run_owned_check_controls(neutral_owner, neutral_record.get("event", {}), "Surveyor's Second Look", false, neutral_reroll_source, neutral_reroll_source)
+	_assert(bool(emptied_reroll_run.get("menu_seen", false)) and int(emptied_reroll_run.get("counts_after_answer", {}).get("d20", -1)) == int(emptied_reroll_run.get("counts_at_menu", {}).get("d20", -2)) and int(emptied_reroll_run.get("counts_after_answer", {}).get("d4", -1)) == int(emptied_reroll_run.get("counts_at_menu", {}).get("d4", -2)) and bool(emptied_reroll_run.get("source_changed", false)) and not emptied_reroll_run.get("check_result", {}).has("post_roll_reroll") and int(emptied_reroll_run.get("gold_after", -1)) == int(emptied_reroll_run.get("gold_before", -2)) + 1, "Selecting an emptied offered reroll source settles the original check with no reroll dice or partial cost")
+	neutral_owner.numeric_resource_pools[neutral_reroll_source]["current"] = 2
+	seed(_seed_for_check_reroll_transition(neutral_owner, neutral_record, "natural_only", "keep", false, -1, false))
+	var removed_reroll_run: Dictionary = await _run_owned_check_controls(neutral_owner, neutral_record.get("event", {}), "Surveyor's Second Look", false, "@remove_source@", neutral_reroll_source)
+	_assert(bool(removed_reroll_run.get("menu_seen", false)) and int(removed_reroll_run.get("counts_after_answer", {}).get("d20", -1)) == int(removed_reroll_run.get("counts_at_menu", {}).get("d20", -2)) and int(removed_reroll_run.get("counts_after_answer", {}).get("d4", -1)) == int(removed_reroll_run.get("counts_at_menu", {}).get("d4", -2)) and bool(removed_reroll_run.get("source_removed", false)) and not removed_reroll_run.get("check_result", {}).has("post_roll_reroll"), "Removing a visible reroll source settles the original result without generating replacement dice")
+	var reacquired_reroll := ResourcePoolRules.acquire(neutral_owner, neutral_reroll_feature, neutral_reroll_source)
+	_assert(bool(reacquired_reroll.get("success", false)), "Reroll fixture source is restored after the production removal probe")
+	if not bool(reacquired_reroll.get("success", false)):
+		return
+	neutral_owner.numeric_resource_pools[neutral_reroll_source]["current"] = 0
+	seed(_seed_for_loaded_check(neutral_owner, neutral_record, 7, 0, 0))
+	var empty_reroll_run: Dictionary = await _run_owned_check_controls(neutral_owner, neutral_record.get("event", {}), "", false, "", neutral_reroll_source)
+	_assert(not empty_reroll_run.get("menu_entries", []).any(func(label): return str(label).contains("Surveyor's Second Look")) and int(empty_reroll_run.get("counts_after_answer", {}).get("d20", -1)) == int(empty_reroll_run.get("counts_at_menu", {}).get("d20", -2)) and int(empty_reroll_run.get("pool_balances_after_answer", {}).get(neutral_reroll_source, -1)) == 0, "An empty reroll source is not offered and cannot roll or spend on a decline")
+	neutral_owner.numeric_resource_pools[neutral_reroll_source]["current"] = 2
+	seed(_seed_for_loaded_check(neutral_owner, neutral_record, 7, 0, 0))
+	var forged_reroll_run: Dictionary = await _run_owned_check_controls(neutral_owner, neutral_record.get("event", {}), "<forged>", false, "", neutral_reroll_source)
+	_assert(bool(forged_reroll_run.get("forged_refused", false)) and bool(forged_reroll_run.get("forged_pending_preserved", false)) and int(forged_reroll_run.get("counts_after_answer", {}).get("d20", -1)) == int(forged_reroll_run.get("counts_at_menu", {}).get("d20", -2)) and _numeric_pool_balances(neutral_owner) == forged_reroll_run.get("pool_balances_at_menu", {}), "An unoffered source answer is refused while the current real reroll menu remains safe to decline")
+
+	# A choice-owned check uses the same menu and canonical continuation after the
+	# actual choice button exposes its loaded check.
+	var choice_owner := Character.new()
+	choice_owner.initialize("S105 Choice Surveyor", "human", "wizard", AbilityScores.new())
+	choice_owner.character_id = "check_context_s105_choice"
+	choice_owner.inventory.add_item("fixture:surveyors_tools")
+	var choice_bonus_source := "check_context_s105_choice_bonus"
+	var choice_reroll_source := "check_context_s105_choice_reroll"
+	var choice_bonus_feature: Dictionary = choice_features[0].duplicate(true)
+	var choice_reroll_feature: Dictionary = choice_features[1].duplicate(true)
+	choice_bonus_feature["source_instance_id"] = choice_bonus_source
+	choice_reroll_feature["source_instance_id"] = choice_reroll_source
+	choice_owner.features.append_array([choice_bonus_feature, choice_reroll_feature])
+	ResourcePoolRules.acquire(choice_owner, choice_bonus_feature, choice_bonus_source)
+	ResourcePoolRules.acquire(choice_owner, choice_reroll_feature, choice_reroll_source)
+	var choice_reroll_seed := _seed_for_check_reroll_transition(choice_owner, choice_record, "whole_test", "keep", false, -1, false)
+	seed(choice_reroll_seed)
+	var choice_reroll_run: Dictionary = await _run_owned_check_controls(choice_owner, choice_record.get("event", {}), "Choice Surveyor's Reroll", false, "", choice_reroll_source, "Estimate the distance")
+	var choice_reroll_result: Dictionary = choice_reroll_run.get("check_result", {})
+	_assert(bool(choice_reroll_run.get("choice_selected", false)) and bool(choice_reroll_run.get("menu_seen", false)) and str(choice_reroll_result.get("check_context", {}).get("origin_check_id", "")) == "choice_estimate_check" and str(choice_reroll_result.get("post_roll_reroll", {}).get("source_instance_id", "")) == choice_reroll_source and str(choice_reroll_result.get("roll_mode", "")) == "normal" and int(choice_reroll_run.get("counts_after_answer", {}).get("d20", -1)) == int(choice_reroll_run.get("counts_at_menu", {}).get("d20", -2)) + 1, "The real choice button can settle its loaded choice-owned check with one whole-test Normal reroll")
+	_assert(int(choice_reroll_run.get("pool_balances_at_menu", {}).get(choice_reroll_source, -1)) == 2 and int(choice_reroll_run.get("pool_balances_after_answer", {}).get(choice_reroll_source, -1)) == 1 and int(choice_reroll_run.get("pool_balances_at_menu", {}).get(choice_bonus_source, -1)) == 3 and int(choice_reroll_run.get("pool_balances_after_answer", {}).get(choice_bonus_source, -1)) == 3 and int(choice_reroll_run.get("gold_after", -1)) == int(choice_reroll_run.get("gold_before", -2)) + 1 and choice_reroll_run.get("event_result", {}).get("check_result", {}) == choice_reroll_result, "Choice-owned reroll pays only its exact source and preserves one final consequence/Close receipt")
+
+	# Renamed data permits either prior outcome and captures whole Advantage tests.
+	var renamed_scores := AbilityScores.new()
+	renamed_scores.from_dict({"STR": 10, "DEX": 10, "CON": 10, "INT": 10, "WIS": 14, "CHA": 10})
+	var renamed_owner := Character.new()
+	renamed_owner.initialize("S105 Naturalist", "human", "wizard", renamed_scores)
+	renamed_owner.character_id = "check_context_s105_renamed"
+	renamed_owner.inventory.add_item("fixture:field_guide")
+	renamed_owner.conditions["guidance"] = 1
+	renamed_owner.guidance_skill = "Nature"
+	var renamed_bonus_source := "check_context_s105_renamed_bonus"
+	var renamed_reroll_source := "check_context_s105_renamed_reroll"
+	var renamed_bonus_feature: Dictionary = renamed_features[0].duplicate(true)
+	var renamed_reroll_feature: Dictionary = renamed_features[1].duplicate(true)
+	var advantage_feature: Dictionary = rules_features[1].duplicate(true)
+	renamed_bonus_feature["source_instance_id"] = renamed_bonus_source
+	renamed_reroll_feature["source_instance_id"] = renamed_reroll_source
+	renamed_owner.features.append_array([renamed_bonus_feature, renamed_reroll_feature, advantage_feature])
+	ResourcePoolRules.acquire(renamed_owner, renamed_bonus_feature, renamed_bonus_source)
+	ResourcePoolRules.acquire(renamed_owner, renamed_reroll_feature, renamed_reroll_source)
+	for direction in ["failure_to_success", "success_to_failure"]:
+		var old_success: bool = direction == "success_to_failure"
+		var new_success: bool = not old_success
+		var transition_seed := _seed_for_check_reroll_transition(renamed_owner, renamed_record, "whole_test", "reroll", old_success, int(new_success), false)
+		seed(transition_seed)
+		var transition_gold_before := renamed_owner.inventory.gold
+		var transition_run: Dictionary = await _run_owned_check_controls(renamed_owner, renamed_record.get("event", {}), "Naturalist's Second Reading", false, "", renamed_reroll_source)
+		var transition_result: Dictionary = transition_run.get("check_result", {})
+		var transition_original: Dictionary = transition_result.get("post_roll_reroll", {}).get("original", {})
+		var transition_menu_counts: Dictionary = transition_run.get("counts_at_menu", {})
+		var transition_answer_counts: Dictionary = transition_run.get("counts_after_answer", {})
+		var transition_menu_pools: Dictionary = transition_run.get("pool_balances_at_menu", {})
+		var transition_answer_pools: Dictionary = transition_run.get("pool_balances_after_answer", {})
+		var transition_guidance := int(transition_result.get("check_bonus_dice", [{}])[0].get("value", 0)) if not transition_result.get("check_bonus_dice", []).is_empty() else 0
+		var transition_guidance_roll: Dictionary = transition_result.get("check_bonus_dice", [{}])[0].get("roll", {}) if not transition_result.get("check_bonus_dice", []).is_empty() else {}
+		_assert(bool(transition_run.get("menu_seen", false)) and bool(transition_original.get("success", false)) == old_success and bool(transition_result.get("success", false)) == new_success and int(transition_result.get("total", -1)) < (int(transition_original.get("total", -1)) if new_success == false else 1000) and str(transition_result.get("original_roll_mode", "")) == "advantage" and str(transition_result.get("reroll_roll_mode", "")) == "advantage" and bool(transition_result.get("advantage", false)) and not bool(transition_result.get("disadvantage", true)), "Renamed actual Advantage reroll supports %s and keeps the new result%s" % [direction.replace("_", " "), " even when worse" if not new_success else ""])
+		_assert(not str(transition_run.get("menu_title", "")).begins_with("Failed ability check"), "The whole-test reroll is labelled as a choice for the current successful or failed result")
+		var original_guidance: Dictionary = transition_result.get("post_roll_reroll", {}).get("original", {}).get("bonus_dice", [{}])[0]
+		_assert(int(transition_menu_counts.get("d20", -1)) == 2 and int(transition_answer_counts.get("d20", -1)) == 4 and int(transition_menu_counts.get("d4", -1)) == 1 and int(transition_answer_counts.get("d4", -1)) == 2 and transition_guidance == int(transition_guidance_roll.get("total", -1)) and bool(transition_result.get("check_bonus_dice", [{}])[0].get("rerolled", false)) and int(original_guidance.get("value", -1)) == int(original_guidance.get("roll", {}).get("total", -2)), "Whole Advantage reroll emits two new d20s, rolls one replacement Guidance die, and retains the original die receipt separately")
+		_assert(int(transition_run.get("emissions_at_menu", {}).get("d20", -1)) == 1 and int(transition_run.get("emissions_after_answer", {}).get("d20", -1)) == 2, "Advantage source path emits one aggregate two-face original test and one aggregate two-face replacement test")
+		_assert(int(transition_menu_pools.get(renamed_reroll_source, -1)) == 2 and int(transition_answer_pools.get(renamed_reroll_source, -1)) == 0 and int(transition_menu_pools.get(renamed_bonus_source, -1)) == 3 and int(transition_answer_pools.get(renamed_bonus_source, -1)) == 3 and renamed_owner.inventory.gold == transition_gold_before + 1 and transition_run.get("event_result", {}).get("check_result", {}) == transition_result and not bool(transition_run.get("menu_still_visible", true)), "Renamed whole-test answer pays only the reroll source, settles one consequence and opens no old/new or second-modifier choice")
+		renamed_owner.numeric_resource_pools[renamed_reroll_source]["current"] = 2
+		renamed_owner.numeric_resource_pools[renamed_bonus_source]["current"] = 3
+		await get_tree().process_frame
+	var transition_fail_seed := _seed_for_check_reroll_transition(renamed_owner, renamed_record, "whole_test", "reroll", false, -1, false)
+	seed(transition_fail_seed)
+	var declined_reroll: Dictionary = await _run_owned_check_controls(renamed_owner, renamed_record.get("event", {}), "", false, "", renamed_reroll_source)
+	_assert(bool(declined_reroll.get("menu_seen", false)) and int(declined_reroll.get("counts_after_answer", {}).get("d20", -1)) == int(declined_reroll.get("counts_at_menu", {}).get("d20", -2)) and int(declined_reroll.get("counts_after_answer", {}).get("d4", -1)) == int(declined_reroll.get("counts_at_menu", {}).get("d4", -2)) and int(declined_reroll.get("pool_balances_after_answer", {}).get(renamed_reroll_source, -1)) == 2 and not declined_reroll.get("check_result", {}).has("post_roll_reroll"), "Declining the renamed reroll spends no source and generates no replacement dice")
+	var reroll_menu_seed := _seed_for_check_reroll_transition(renamed_owner, renamed_record, "whole_test", "reroll", false, -1, false)
+	seed(reroll_menu_seed)
+	var empty_renamed_reroll: Dictionary = await _run_owned_check_controls(renamed_owner, renamed_record.get("event", {}), "Naturalist's Second Reading", false, renamed_reroll_source, renamed_reroll_source)
+	_assert(bool(empty_renamed_reroll.get("menu_seen", false)) and int(empty_renamed_reroll.get("counts_after_answer", {}).get("d20", -1)) == int(empty_renamed_reroll.get("counts_at_menu", {}).get("d20", -2)) and int(empty_renamed_reroll.get("counts_after_answer", {}).get("d4", -1)) == int(empty_renamed_reroll.get("counts_at_menu", {}).get("d4", -2)) and bool(empty_renamed_reroll.get("source_changed", false)) and not empty_renamed_reroll.get("check_result", {}).has("post_roll_reroll"), "Changed renamed-source funds fall back to the captured Advantage result before any replacement roll")
+	renamed_owner.numeric_resource_pools[renamed_reroll_source]["current"] = 2
+	# The renamed source costs two uses. One remaining use is insufficient even
+	# though the separate fixed-bonus source can still offer its own menu row.
+	renamed_owner.numeric_resource_pools[renamed_reroll_source]["current"] = 1
+	seed(reroll_menu_seed)
+	var underfunded_renamed: Dictionary = await _run_owned_check_controls(renamed_owner, renamed_record.get("event", {}), "", false, "", renamed_reroll_source)
+	_assert(bool(underfunded_renamed.get("menu_seen", false)) and not underfunded_renamed.get("menu_entries", []).any(func(label): return str(label).contains("Naturalist's Second Reading")) and int(underfunded_renamed.get("pool_balances_after_answer", {}).get(renamed_reroll_source, -1)) == 1 and int(underfunded_renamed.get("counts_after_answer", {}).get("d20", -1)) == int(underfunded_renamed.get("counts_at_menu", {}).get("d20", -2)), "A renamed two-use reroll cannot be offered with only one use, while the unrelated menu remains answerable")
+	renamed_owner.numeric_resource_pools[renamed_reroll_source]["current"] = 2
+	renamed_owner.add_condition("ray_of_enfeeblement", 2)
+	var disadvantage_seed := _seed_for_check_reroll_transition(renamed_owner, disadvantage_record, "whole_test", "keep", false, -1, false)
+	seed(disadvantage_seed)
+	var disadvantage_run: Dictionary = await _run_owned_check_controls(renamed_owner, disadvantage_record.get("event", {}), "Naturalist's Second Reading", false, "", renamed_reroll_source)
+	var disadvantage_result: Dictionary = disadvantage_run.get("check_result", {})
+	var disadvantage_counts_before: Dictionary = disadvantage_run.get("counts_at_menu", {})
+	var disadvantage_counts_after: Dictionary = disadvantage_run.get("counts_after_answer", {})
+	_assert(bool(disadvantage_run.get("menu_seen", false)) and renamed_owner.has_condition("ray_of_enfeeblement") and bool(disadvantage_result.get("original_disadvantage", true)) and bool(disadvantage_result.get("disadvantage", false)) and str(disadvantage_result.get("original_roll_mode", "")) == "disadvantage" and str(disadvantage_result.get("reroll_roll_mode", "")) == "disadvantage" and int(disadvantage_counts_before.get("d20", -1)) == 2 and int(disadvantage_counts_after.get("d20", -1)) == 4 and int(disadvantage_counts_after.get("d4", -1)) == int(disadvantage_counts_before.get("d4", -2)), "Actual Disadvantage whole-test choice rolls two replacement d20s and retains its mode without rerolling absent bonus dice")
+	_assert(int(disadvantage_run.get("emissions_at_menu", {}).get("d20", -1)) == 1 and int(disadvantage_run.get("emissions_after_answer", {}).get("d20", -1)) == 2, "Disadvantage source path emits one aggregate two-face original test and one aggregate two-face replacement test")
+	_assert(int(disadvantage_run.get("pool_balances_at_menu", {}).get(renamed_reroll_source, -1)) == 2 and int(disadvantage_run.get("pool_balances_after_answer", {}).get(renamed_reroll_source, -1)) == 0 and int(disadvantage_run.get("gold_after", -1)) == int(disadvantage_run.get("gold_before", -2)) + 1 and disadvantage_run.get("event_result", {}).get("check_result", {}) == disadvantage_result, "Disadvantage reroll spends the exact renamed source and resolves one final consequence")
+	var negative_scores := AbilityScores.new()
+	negative_scores.from_dict({"STR": 1, "DEX": 10, "CON": 10, "INT": 10, "WIS": 10, "CHA": 10})
+	var negative_owner := Character.new()
+	negative_owner.initialize("S105 Negative Modifier", "human", "wizard", negative_scores)
+	negative_owner.character_id = "check_context_s105_negative"
+	negative_owner.inventory.add_item("fixture:surveyors_tools")
+	var negative_reroll_feature: Dictionary = neutral_features[1].duplicate(true)
+	var negative_reroll_source := "check_context_s105_negative_reroll"
+	negative_reroll_feature["source_instance_id"] = negative_reroll_source
+	negative_owner.features.append(negative_reroll_feature)
+	var negative_reroll_acquired := ResourcePoolRules.acquire(negative_owner, negative_reroll_feature, negative_reroll_source)
+	_assert(bool(negative_reroll_acquired.get("success", false)), "Negative-score actor owns the same loaded natural-only reroll operation")
+	var negative_seed := _seed_for_check_reroll_transition(negative_owner, negative_record, "natural_only", "keep", false, -1, false, 0)
+	seed(negative_seed)
+	var negative_gold_before := negative_owner.inventory.gold
+	var negative_run: Dictionary = await _run_owned_check_controls(negative_owner, negative_record.get("event", {}), "Surveyor's Second Look", false, "", negative_reroll_source)
+	var negative_result: Dictionary = negative_run.get("check_result", {})
+	_assert(bool(negative_run.get("menu_seen", false)) and int(negative_run.get("counts_at_menu", {}).get("d20", -1)) == 1 and int(negative_run.get("counts_after_answer", {}).get("d20", -1)) == 2 and int(negative_result.get("raw_natural_roll", 0)) >= 1 and int(negative_result.get("total", 0)) < 0 and not bool(negative_result.get("total_floor_active", true)) and negative_result.get("check_context", {}) == negative_result.get("post_roll_reroll", {}).get("original", {}).get("check_context", {}) and negative_result.get("dc", -1) == negative_result.get("post_roll_reroll", {}).get("original", {}).get("dc", -2), "Real loaded reroll keeps a negative no-floor check below zero with its captured context and DC")
+	_assert(int(negative_run.get("pool_balances_at_menu", {}).get(negative_reroll_source, -1)) == 2 and int(negative_run.get("pool_balances_after_answer", {}).get(negative_reroll_source, -1)) == 1 and negative_run.get("event_result", {}).get("check_result", {}) == negative_result and negative_owner.inventory.gold == negative_gold_before + 1, "Negative no-floor reroll pays its exact source once and resolves one consequence/Close receipt")
+
+	# Real loaded total-floor feature + native Inspiration: both are settled before
+	# the reroll request, whose reroll policy replaces both captured bonus dice.
+	var floor_owner := Character.new()
+	floor_owner.initialize("S105 Floor Surveyor", "human", "wizard", AbilityScores.new())
+	floor_owner.character_id = "check_context_s105_floor"
+	floor_owner.inventory.add_item("fixture:surveyors_tools")
+	floor_owner.conditions["guidance"] = 1
+	floor_owner.guidance_skill = "Investigation"
+	floor_owner.feature_uses["bardic_inspiration_die"] = "1d6"
+	var floor_neutral_bonus: Dictionary = neutral_features[0].duplicate(true)
+	var floor_neutral_reroll: Dictionary = neutral_features[1].duplicate(true)
+	var int_floor_feature: Dictionary = rules_features[0].duplicate(true)
+	floor_neutral_bonus["source_instance_id"] = "check_context_s105_floor_bonus"
+	floor_neutral_reroll["source_instance_id"] = "check_context_s105_floor_reroll"
+	floor_owner.features.append_array([floor_neutral_bonus, floor_neutral_reroll, int_floor_feature])
+	ResourcePoolRules.acquire(floor_owner, floor_neutral_bonus, str(floor_neutral_bonus["source_instance_id"]))
+	ResourcePoolRules.acquire(floor_owner, floor_neutral_reroll, str(floor_neutral_reroll["source_instance_id"]))
+	var floor_seed := _seed_for_floor_order_reroll(floor_owner, floor_record)
+	seed(floor_seed)
+	var floor_run: Dictionary = await _run_owned_check_controls(floor_owner, floor_record.get("event", {}), "Surveyor's Second Look", true, "", str(floor_neutral_reroll["source_instance_id"]))
+	var floor_result: Dictionary = floor_run.get("check_result", {})
+	var floor_original: Dictionary = floor_result.get("post_roll_reroll", {}).get("original", {})
+	var floor_bonus_dice: Array = floor_result.get("check_bonus_dice", [])
+	var current_guidance := 0
+	var current_inspiration := 0
+	var current_guidance_roll: Dictionary = {}
+	var current_inspiration_roll: Dictionary = {}
+	var floor_original_bonus_dice: Array = floor_original.get("bonus_dice", [])
+	for bonus_die in floor_bonus_dice:
+		if not bonus_die is Dictionary:
+			continue
+		if str(bonus_die.get("source", "")) == "guidance":
+			current_guidance = int(bonus_die.get("value", 0))
+			current_guidance_roll = bonus_die.get("roll", {})
+		elif str(bonus_die.get("source", "")) == "bardic_inspiration":
+			current_inspiration = int(bonus_die.get("value", 0))
+			current_inspiration_roll = bonus_die.get("roll", {})
+	var floor_base := int(floor_result.get("natural_roll", 0)) + int(floor_result.get("base_modifier", 0)) + current_guidance
+	var floor_expected_total := maxi(int(floor_original.get("total_floor_minimum", 0)), floor_base) + current_inspiration
+	_assert(bool(floor_run.get("native_choice_seen", false)) and int(floor_run.get("native_choice_count", 0)) == 1 and int(floor_run.get("counts_at_menu", {}).get("d20", -1)) == 1 and int(floor_run.get("counts_after_answer", {}).get("d20", -1)) == 2 and int(floor_run.get("counts_at_menu", {}).get("d4", -1)) == 1 and int(floor_run.get("counts_after_answer", {}).get("d4", -1)) == 2 and int(floor_run.get("counts_at_menu", {}).get("d6", -1)) == 1 and int(floor_run.get("counts_after_answer", {}).get("d6", -1)) == 2, "Native Inspiration is confirmed once before the actual whole-test reroll, which generates one replacement natural, Guidance and Bardic die")
+	_assert(bool(floor_original.get("total_floor_active", false)) and int(floor_original.get("total_floor_minimum", 0)) == floor_owner.ability_scores.get_score("INT") and floor_base < int(floor_original.get("total_floor_minimum", 0)) and current_guidance == int(current_guidance_roll.get("total", -1)) and current_inspiration == int(current_inspiration_roll.get("total", -1)) and current_guidance == int(floor_result.get("guidance_bonus", -2)) and current_inspiration == int(floor_result.get("inspiration_bonus", -2)) and int(floor_expected_total) == int(floor_result.get("total", -1)) and floor_original_bonus_dice.size() == 2 and int(floor_original_bonus_dice[0].get("value", -1)) == int(floor_original_bonus_dice[0].get("roll", {}).get("total", -2)) and int(floor_original_bonus_dice[1].get("value", -1)) == int(floor_original_bonus_dice[1].get("roll", {}).get("total", -2)) and int(floor_original_bonus_dice[1].get("value", -1)) != current_inspiration and bool(floor_result.get("check_bonus_dice", [{}])[0].get("rerolled", false)) and bool(floor_result.get("check_bonus_dice", [{}, {}])[1].get("rerolled", false)) and int(floor_result.get("dc", -1)) == int(floor_original.get("dc", -2)) and floor_result.get("check_context", {}) == floor_original.get("check_context", {}) and int(floor_result.get("modifier", -1)) == int(floor_original.get("modifier", -2)) and str(floor_run.get("final_roll_label", "")).contains("Bardic Inspiration %d" % current_inspiration), "Floor-stage actual reroll keeps its deliberately sub-floor new total, rerolls a different native Inspiration die, and updates scalar/label while retaining originals")
+	_assert(int(floor_run.get("pool_balances_at_menu", {}).get(str(floor_neutral_reroll["source_instance_id"]), -1)) == 2 and int(floor_run.get("pool_balances_after_answer", {}).get(str(floor_neutral_reroll["source_instance_id"]), -1)) == 1 and not floor_owner.feature_uses.has("bardic_inspiration_die") and floor_run.get("event_result", {}).get("check_result", {}) == floor_result and int(floor_run.get("gold_after", -1)) == int(floor_run.get("gold_before", -2)) + 1, "Native payment remains spent once, reroll uses one exact source, and the final floor check/consequence survives Close")
+
+
+func _seed_for_check_reroll_transition(owner: Character, record: Dictionary, reroll_mode: String, bonus_dice_policy: String, old_success: bool, new_success: int, require_worse: bool, new_total_below: int = 2147483647) -> int:
+	var check_data: Dictionary = record.get("check", {})
+	var loaded_event: Dictionary = record.get("event", {})
+	var raw_context: Dictionary = check_data.get("check_context", {})
+	var context := raw_context.duplicate(true)
+	context["origin_event_id"] = str(loaded_event.get("id", ""))
+	context["origin_check_id"] = str(check_data.get("id", ""))
+	context["source_table_id"] = str(record.get("table_id", ""))
+	for attempt in range(1, 50001):
+		var candidate_seed := 780000 + attempt
+		seed(candidate_seed)
+		var captured: Dictionary = EventResolver.resolve_skill_check(owner, check_data, {}, context)
+		if bool(captured.get("success", false)) != old_success:
+			continue
+		var rerolled: Dictionary = EventResolver.reroll_captured_skill_check(owner, captured, reroll_mode, bonus_dice_policy)
+		if rerolled.is_empty() or (new_success >= 0 and bool(rerolled.get("success", false)) != bool(new_success)):
+			continue
+		if require_worse and int(rerolled.get("total", 0)) >= int(captured.get("total", 0)):
+			continue
+		if int(rerolled.get("total", 0)) >= new_total_below:
+			continue
+		return candidate_seed
+	return 780001
+
+
+func _seed_for_floor_order_reroll(owner: Character, record: Dictionary) -> int:
+	var check_data: Dictionary = record.get("check", {})
+	var loaded_event: Dictionary = record.get("event", {})
+	var context: Dictionary = check_data.get("check_context", {}).duplicate(true)
+	context["origin_event_id"] = str(loaded_event.get("id", ""))
+	context["origin_check_id"] = str(check_data.get("id", ""))
+	context["source_table_id"] = str(record.get("table_id", ""))
+	for attempt in range(1, 50001):
+		var candidate_seed := 880000 + attempt
+		seed(candidate_seed)
+		var captured: Dictionary = EventResolver.resolve_skill_check(owner, check_data, {}, context)
+		if int(captured.get("raw_natural_roll", 0)) != 1 or bool(captured.get("success", true)):
+			continue
+		var original_inspiration := Dice.roll_single_details(6, owner, false)
+		var replacement := Dice.roll_single_details(20, owner, false)
+		var replacement_guidance := Dice.roll_single_details(4, owner, false)
+		var replacement_inspiration := Dice.roll_single_details(6, owner, false)
+		var pre_floor_total := maxi(int(captured.get("roll_floor_minimum", 1)), int(replacement.get("total", 1))) + int(captured.get("base_modifier", 0)) + int(replacement_guidance.get("total", 0))
+		if pre_floor_total < int(captured.get("total_floor_minimum", 0)) and int(original_inspiration.get("total", -1)) != int(replacement_inspiration.get("total", -2)):
+			return candidate_seed
+	return 880001
+
+
+func _owned_check_bonus_actor(actor_name: String, actor_id: String, feature_template: Dictionary, source_id: String, tool_id: String) -> Character:
+	var owner := Character.new()
+	owner.initialize(actor_name, "human", "wizard", AbilityScores.new())
+	owner.character_id = actor_id
+	owner.inventory.add_item(tool_id)
+	var feature: Dictionary = feature_template.duplicate(true)
+	feature["source_instance_id"] = source_id
+	owner.features.append(feature)
+	ResourcePoolRules.acquire(owner, feature, source_id)
+	return owner
+
+
+func _estimate_acquire_source(owner: Character, feature: Dictionary, source_id: String) -> void:
+	feature["source_instance_id"] = source_id
+	owner.features.append(feature)
+	ResourcePoolRules.acquire(owner, feature, source_id)
+
+
+func _seed_for_loaded_check(owner: Character, event_check: Dictionary, required_natural: int, die_sides: int, required_die_minimum: int) -> int:
+	var check_data: Dictionary = event_check.get("check", {})
+	var context: Dictionary = {
+		"task_id": check_data.get("check_context", {}).get("task_id", ""),
+		"purpose_id": check_data.get("check_context", {}).get("purpose_id", ""),
+		"required_tool_id": check_data.get("check_context", {}).get("required_tool_id", ""),
+		"origin_event_id": event_check.get("event", {}).get("id", ""),
+		"origin_check_id": check_data.get("id", ""),
+		"source_table_id": event_check.get("table_id", ""),
+	}
+	for candidate in 100000:
+		seed(candidate + 1)
+		var result: Dictionary = EventResolver.resolve_skill_check(owner, check_data, {}, context)
+		if int(result.get("natural_roll", 0)) == required_natural and not bool(result.get("success", true)):
+			if die_sides == 0 or Dice.roll(die_sides, owner) >= required_die_minimum:
+				return candidate + 1
+	return 1
+
+
+func _seed_for_check_and_following_die(owner: Character, event_check: Dictionary, required_natural: int, die_sides: int, minimum: int, maximum: int) -> int:
+	var check_data: Dictionary = event_check.get("check", {})
+	var context: Dictionary = {
+		"task_id": check_data.get("check_context", {}).get("task_id", ""),
+		"purpose_id": check_data.get("check_context", {}).get("purpose_id", ""),
+		"required_tool_id": check_data.get("check_context", {}).get("required_tool_id", ""),
+		"origin_event_id": event_check.get("event", {}).get("id", ""),
+		"origin_check_id": check_data.get("id", ""),
+		"source_table_id": event_check.get("table_id", ""),
+	}
+	for candidate in 100000:
+		seed(candidate + 1)
+		var result: Dictionary = EventResolver.resolve_skill_check(owner, check_data, {}, context)
+		if int(result.get("natural_roll", 0)) != required_natural or bool(result.get("success", true)):
+			continue
+		var following := Dice.roll(die_sides, owner)
+		if following >= minimum and following <= maximum:
+			return candidate + 1
+	return 1
+
+
+func _run_owned_check_controls(owner: Character, event_payload: Dictionary, source_label: String, accept_native: bool, mutate_source_id: String, expected_source_id: String, choice_button_text: String = "") -> Dictionary:
+	var dialog_scene := load("res://scenes/ui/event_dialog.tscn") as PackedScene
+	var dialog := dialog_scene.instantiate() as EventDialog
+	add_child(dialog)
+	await get_tree().process_frame
+	var emitted: Dictionary = {}
+	dialog.event_resolved.connect(func(result: Dictionary): emitted.merge(result, true))
+	dialog.popup_event(owner, event_payload)
+	var choice_selected := choice_button_text.is_empty()
+	if not choice_button_text.is_empty():
+		for child in dialog.choice_container.get_children():
+			if child is Button and child.text == choice_button_text:
+				child.pressed.emit()
+				choice_selected = true
+				break
+		await get_tree().process_frame
+	var gold_before := owner.inventory.gold
+	var source_id := expected_source_id
+	var pool_before := int(owner.numeric_resource_pools.get(source_id, {}).get("current", -1)) if not source_id.is_empty() else -1
+	var other_pool_id := ""
+	for pool_id in owner.numeric_resource_pools:
+		if str(pool_id) != source_id:
+			other_pool_id = str(pool_id)
+			break
+	var other_pool_before := int(owner.numeric_resource_pools.get(other_pool_id, {}).get("current", -1)) if not other_pool_id.is_empty() else -1
+	var counts := {"d20": 0, "d4": 0, "d6": 0, "d8": 0}
+	var emissions := {"d20": 0, "d4": 0, "d6": 0, "d8": 0}
+	var watcher: Callable = func(details: Dictionary) -> void:
+		var sides := int(details.get("sides", 0))
+		var key := str("d", sides)
+		if counts.has(key):
+			var rolls: Variant = details.get("rolls", [])
+			var faces: int = rolls.size() if rolls is Array and not rolls.is_empty() else 1
+			counts[key] = int(counts[key]) + faces
+			emissions[key] = int(emissions[key]) + 1
+	Dice.dice_rolled.connect(watcher)
+	if choice_selected:
+		dialog.btn_roll.pressed.emit()
+	var native_choice_seen := false
+	var menu_seen := false
+	var gold_during_menu := -1
+	var source_mutated := false
+	var menu_closed := false
+	var source_changed := false
+	var source_removed := false
+	var forged_refused := false
+	var forged_pending_preserved := false
+	var native_choice_count := 0
+	var native_dialog_ids: Array[int] = []
+	var captured_total := -1
+	var request_id := ""
+	var selected_offer_id := ""
+	var selected_source_id := ""
+	var selected_operation_kind := ""
+	var d8_before := int(counts["d8"])
+	var counts_at_menu: Dictionary = {}
+	var emissions_at_menu: Dictionary = {}
+	var menu_entries: Array[String] = []
+	var menu_title := ""
+	var offer_ids_at_menu: Array[String] = []
+	var pool_balances_at_menu: Dictionary = {}
+	var limit := Time.get_ticks_msec() + 12000
+	while Time.get_ticks_msec() < limit:
+		for child in dialog.get_children():
+			if child is ConfirmationDialog and child.visible and str(child.title).begins_with("Bardic Inspiration"):
+				native_choice_seen = true
+				var native_id := int(child.get_instance_id())
+				if native_id not in native_dialog_ids:
+					native_dialog_ids.append(native_id)
+					native_choice_count += 1
+				if accept_native:
+					child.get_ok_button().pressed.emit()
+				else:
+					child.get_cancel_button().pressed.emit()
+				await get_tree().process_frame
+				break
+		if is_instance_valid(dialog._active_ability_bonus_menu) and dialog._active_ability_bonus_menu.visible:
+			menu_seen = true
+			gold_during_menu = owner.inventory.gold
+			d8_before = int(counts["d8"])
+			counts_at_menu = counts.duplicate(true)
+			emissions_at_menu = emissions.duplicate(true)
+			pool_balances_at_menu = _numeric_pool_balances(owner)
+			var active_id := str(SpellDamageRolls._active_request_id_by_caster.get(str(owner.get_instance_id()), ""))
+			request_id = active_id
+			var pending: Dictionary = SpellDamageRolls._pending_requests.get(active_id, {})
+			captured_total = int(pending.get("check_result", {}).get("total", -1))
+			for offered_option in pending.get("options", []):
+				if offered_option is Dictionary:
+					offer_ids_at_menu.append(str(offered_option.get("offer_id", "")))
+			var menu := dialog._active_ability_bonus_menu
+			menu_title = menu.title
+			for item_index in menu.item_count:
+				menu_entries.append(menu.get_item_text(item_index))
+			var selected_id := -1
+			for item_index in menu.item_count:
+				if menu.get_item_text(item_index).contains(source_label):
+					selected_id = menu.get_item_id(item_index)
+					var pending_options: Array = pending.get("options", [])
+					for offered_option in pending_options:
+						if offered_option is Dictionary and str(offered_option.get("source_instance_id", "")) == expected_source_id and str(offered_option.get("label", "")).contains(source_label):
+							selected_offer_id = str(offered_option.get("offer_id", ""))
+							selected_source_id = str(offered_option.get("source_instance_id", ""))
+							selected_operation_kind = str(offered_option.get("operation_kind", ""))
+							break
+					break
+			if selected_id < 0 and source_label == "":
+				selected_id = menu.get_item_id(0)
+			if selected_id >= 0:
+				if mutate_source_id == "@remove_source@":
+					source_removed = ResourcePoolRules.remove(owner, expected_source_id)
+					source_mutated = source_removed
+				elif not mutate_source_id.is_empty():
+					owner.numeric_resource_pools[mutate_source_id]["current"] = 0
+					source_mutated = true
+				menu.id_pressed.emit(selected_id)
+			elif source_label == "<forged>":
+				var forged_id := str(SpellDamageRolls._active_request_id_by_caster.get(str(owner.get_instance_id()), ""))
+				var forged_answer := SpellDamageRolls.settle_ability_check_post_roll(owner, {"ability_check_post_roll_request": {"request_id": forged_id}}, "caller:unoffered_source")
+				forged_refused = bool(forged_answer.get("refused", false))
+				forged_pending_preserved = str(SpellDamageRolls._active_request_id_by_caster.get(str(owner.get_instance_id()), "")) == forged_id
+				menu.hide()
+				menu_closed = true
+			elif source_label == "<cancel>":
+				menu.hide()
+				menu_closed = true
+			else:
+				menu.hide()
+			break
+		if dialog.btn_close.visible and not dialog.last_skill_check_result.is_empty():
+			break
+		await get_tree().process_frame
+	for _frame in 240:
+		if dialog.btn_close.visible and not dialog.last_skill_check_result.is_empty():
+			break
+		await get_tree().process_frame
+	var check_result: Dictionary = dialog.last_skill_check_result.duplicate(true)
+	var close_ready := dialog.btn_close.visible and not check_result.is_empty()
+	var menu_still_visible := is_instance_valid(dialog._active_ability_bonus_menu) and dialog._active_ability_bonus_menu.visible
+	var final_roll_label := dialog.roll_result_lbl.text
+	var pool_after := int(owner.numeric_resource_pools.get(source_id, {}).get("current", -1)) if not source_id.is_empty() else -1
+	var other_pool_after := int(owner.numeric_resource_pools.get(other_pool_id, {}).get("current", -1)) if not other_pool_id.is_empty() else -1
+	if dialog.btn_close.visible:
+		dialog.btn_close.pressed.emit()
+	await get_tree().process_frame
+	var output := {
+		"menu_seen": menu_seen,
+		"close_ready": close_ready,
+		"menu_still_visible": menu_still_visible,
+		"choice_selected": choice_selected,
+		"native_choice_seen": native_choice_seen,
+		"native_choice_count": native_choice_count,
+		"source_mutated": source_mutated,
+		"source_removed": source_removed,
+		"source_changed": bool(check_result.get("post_roll_bonus_source", "").is_empty()) and source_mutated,
+		"forged_refused": forged_refused,
+		"forged_pending_preserved": forged_pending_preserved,
+		"menu_closed": menu_closed,
+		"gold_before": gold_before,
+		"gold_during_menu": gold_during_menu,
+		"gold_after": owner.inventory.gold,
+		"pool_before": pool_before,
+		"pool_after": pool_after,
+		"other_pool_before": other_pool_before,
+		"other_pool_after": other_pool_after,
+		"other_pool_id": other_pool_id,
+		"request_id": request_id,
+		"selected_offer_id": selected_offer_id,
+		"selected_source_id": selected_source_id,
+		"selected_operation_kind": selected_operation_kind,
+		"d20_count": int(counts["d20"]),
+		"d6_count": int(counts["d6"]),
+		"d8_count_before": d8_before,
+		"d8_count_after": int(counts["d8"]),
+		"d4_count_before": int(counts_at_menu.get("d4", 0)),
+		"d4_count_after": int(counts["d4"]),
+		"counts_at_menu": counts_at_menu,
+		"counts_after_answer": counts.duplicate(true),
+		"emissions_at_menu": emissions_at_menu,
+		"emissions_after_answer": emissions.duplicate(true),
+		"pool_balances_at_menu": pool_balances_at_menu,
+		"pool_balances_after_answer": _numeric_pool_balances(owner),
+		"menu_entries": menu_entries,
+		"menu_title": menu_title,
+		"offer_ids_at_menu": offer_ids_at_menu,
+		"final_roll_label": final_roll_label,
+		"captured_total": captured_total if captured_total >= 0 else int(check_result.get("total", -1)),
+		"check_result": check_result,
+		"event_result": emitted.duplicate(true),
+	}
+	if Dice.dice_rolled.is_connected(watcher):
+		Dice.dice_rolled.disconnect(watcher)
+	if is_instance_valid(dialog):
+		dialog.queue_free()
+	await get_tree().process_frame
+	await get_tree().process_frame
+	return output
+
+
+func _numeric_pool_balances(owner: Character) -> Dictionary:
+	var balances: Dictionary = {}
+	for source_id in owner.numeric_resource_pools:
+		balances[str(source_id)] = int(owner.numeric_resource_pools[source_id].get("current", -1))
+	return balances
+
+
+func _test_check_bonus_host_teardown(feature: Dictionary, event_check: Dictionary, reroll_feature: Dictionary = {}) -> void:
+	var owner_a := _owned_check_bonus_actor("Host A", "check_context_host_a", feature, "check_context_host_a_source", "fixture:surveyors_tools")
+	var owner_b := _owned_check_bonus_actor("Host B", "check_context_host_b", feature, "check_context_host_b_source", "fixture:surveyors_tools")
+	var reroll_source_a := "check_context_host_a_reroll_source"
+	var reroll_source_b := "check_context_host_b_reroll_source"
+	if not reroll_feature.is_empty():
+		for pair in [[owner_a, reroll_source_a], [owner_b, reroll_source_b]]:
+			var owner: Character = pair[0]
+			var owned_feature: Dictionary = reroll_feature.duplicate(true)
+			owned_feature["source_instance_id"] = pair[1]
+			owner.features.append(owned_feature)
+			ResourcePoolRules.acquire(owner, owned_feature, str(pair[1]))
+	var dialog_scene := load("res://scenes/ui/event_dialog.tscn") as PackedScene
+	var dialog_a := dialog_scene.instantiate() as EventDialog
+	var dialog_b := dialog_scene.instantiate() as EventDialog
+	add_child(dialog_a)
+	add_child(dialog_b)
+	await get_tree().process_frame
+	var first_ready := await _roll_host_until_menu(dialog_a, owner_a, event_check)
+	var second_ready := await _roll_host_until_menu(dialog_b, owner_b, event_check)
+	var request_a := str(SpellDamageRolls._active_request_id_by_caster.get(str(owner_a.get_instance_id()), ""))
+	var request_b := str(SpellDamageRolls._active_request_id_by_caster.get(str(owner_b.get_instance_id()), ""))
+	var pool_a := int(owner_a.numeric_resource_pools["check_context_host_a_source"].get("current", 0))
+	var pool_b := int(owner_b.numeric_resource_pools["check_context_host_b_source"].get("current", 0))
+	var reroll_pool_a := int(owner_a.numeric_resource_pools.get(reroll_source_a, {}).get("current", -1))
+	var reroll_pool_b := int(owner_b.numeric_resource_pools.get(reroll_source_b, {}).get("current", -1))
+	var gold_a_before_pending := owner_a.inventory.gold
+	var gold_b_before_pending := owner_b.inventory.gold
+	var b_result: Dictionary = {}
+	dialog_b.event_resolved.connect(func(result: Dictionary): b_result.merge(result, true))
+	dialog_a.queue_free()
+	await get_tree().process_frame
+	_assert(first_ready and second_ready and not request_a.is_empty() and not request_b.is_empty() and str(SpellDamageRolls._active_request_id_by_caster.get(str(owner_a.get_instance_id()), "")).is_empty() and str(SpellDamageRolls._active_request_id_by_caster.get(str(owner_b.get_instance_id()), "")) == request_b, "Freeing one pending EventDialog cancels only its own request while the other host remains live")
+	if is_instance_valid(dialog_b) and is_instance_valid(dialog_b._active_ability_bonus_menu):
+		dialog_b._active_ability_bonus_menu.id_pressed.emit(dialog_b._active_ability_bonus_menu.get_item_id(0))
+	for _frame in 240:
+		if dialog_b.btn_close.visible:
+			break
+		await get_tree().process_frame
+	var b_final_result: Dictionary = dialog_b.last_skill_check_result.duplicate(true) if is_instance_valid(dialog_b) else {}
+	if dialog_b.btn_close.visible:
+		dialog_b.btn_close.pressed.emit()
+	await get_tree().process_frame
+	var host_cleanup_ok: bool = int(owner_a.numeric_resource_pools["check_context_host_a_source"].get("current", 0)) == pool_a and int(owner_b.numeric_resource_pools["check_context_host_b_source"].get("current", 0)) == pool_b and int(owner_a.numeric_resource_pools.get(reroll_source_a, {}).get("current", -1)) == reroll_pool_a and int(owner_b.numeric_resource_pools.get(reroll_source_b, {}).get("current", -1)) == reroll_pool_b and owner_a.inventory.gold == gold_a_before_pending and owner_b.inventory.gold == gold_b_before_pending + 1 and not b_final_result.is_empty() and b_result.get("check_result", {}) == b_final_result
+	_assert(host_cleanup_ok, "Freeing a pending host adds no consequence or reroll-source charge, while the surviving host settles once and preserves its Close receipt: %s" % str({"a_pool": owner_a.numeric_resource_pools["check_context_host_a_source"].get("current", 0), "a_before": pool_a, "a_reroll": reroll_pool_a, "a_gold": owner_a.inventory.gold, "a_pending_gold": gold_a_before_pending, "b_pool": owner_b.numeric_resource_pools["check_context_host_b_source"].get("current", 0), "b_before": pool_b, "b_reroll": reroll_pool_b, "b_gold": owner_b.inventory.gold, "b_pending_gold": gold_b_before_pending, "b_result": not b_final_result.is_empty(), "receipt_equal": b_result.get("check_result", {}) == b_final_result}))
+	if is_instance_valid(dialog_a):
+		dialog_a.queue_free()
+	if is_instance_valid(dialog_b):
+		dialog_b.queue_free()
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+
+func _roll_host_until_menu(dialog: EventDialog, owner: Character, event_check: Dictionary) -> bool:
+	for attempt in 80:
+		dialog.popup_event(owner, event_check.get("event", {}))
+		seed(attempt + 991)
+		dialog.btn_roll.pressed.emit()
+		for _frame in 240:
+			if is_instance_valid(dialog._active_ability_bonus_menu) and dialog._active_ability_bonus_menu.visible:
+				for item_index in dialog._active_ability_bonus_menu.item_count:
+					if dialog._active_ability_bonus_menu.get_item_text(item_index).contains("Pathfinder's Focus"):
+						return true
+			if dialog.btn_close.visible:
+				break
+			await get_tree().process_frame
+	return false
+
+
+func _run_check_context_controls(actor: Character, event_payload: Dictionary, remove_sources_before_roll: Array[String] = []) -> Dictionary:
+	var scene := load("res://scenes/ui/event_dialog.tscn") as PackedScene
+	var dialog := scene.instantiate() as EventDialog
+	add_child(dialog)
+	await get_tree().process_frame
+	var emitted: Dictionary = {}
+	var d20_counter := {"count": 0}
+	var dice_watcher := func(details: Dictionary):
+		if int(details.get("sides", 0)) == 20:
+			var rolls: Array = details.get("rolls", [])
+			d20_counter["count"] = int(d20_counter["count"]) + (int(details.get("count", rolls.size())) if not rolls.is_empty() else int(details.get("count", 0)))
+	Dice.dice_rolled.connect(dice_watcher)
+	dialog.event_resolved.connect(func(result: Dictionary): emitted.merge(result, true))
+	dialog.popup_event(actor, event_payload)
+	var choice_selected := false
+	if str(dialog.event.get("type", "")) == "choice" and dialog.choice_container.get_child_count() > 0:
+		var choice_button := dialog.choice_container.get_child(0) as Button
+		choice_button.pressed.emit()
+		choice_selected = not dialog.chosen_option.is_empty()
+	var roll_enabled := not dialog.btn_roll.disabled and not dialog._pending_check_data.is_empty()
+	var pending_context: Dictionary = dialog._pending_authored_context.duplicate(true)
+	if roll_enabled:
+		for source_instance_id in remove_sources_before_roll:
+			for index in range(actor.features.size() - 1, -1, -1):
+				if str(actor.features[index].get("source_instance_id", "")) == source_instance_id:
+					actor.features.remove_at(index)
+		dialog.btn_roll.pressed.emit()
+		await get_tree().create_timer(1.25).timeout
+	var check_result: Dictionary = dialog.last_skill_check_result.duplicate(true)
+	if dialog.btn_close.visible:
+		dialog.btn_close.pressed.emit()
+	await get_tree().process_frame
+	Dice.dice_rolled.disconnect(dice_watcher)
+	var d20_count := int(d20_counter["count"])
+	var expected_d20_count := 0
+	if roll_enabled:
+		expected_d20_count = 1 if str(check_result.get("roll_details", {}).get("mode", "")) == "replaced" or str(check_result.get("roll_mode", "")) == "normal" else 2
+	_assert(d20_count == expected_d20_count, "Each enabled EventDialog control executes the captured d20 mode once; refused checks execute none")
+	return {
+		"roll_enabled": roll_enabled,
+		"choice_selected": choice_selected,
+		"pending_context": pending_context,
+		"check_result": check_result,
+		"event_result": emitted,
+		"d20_count": d20_count,
+	}
+
+
 ## EventDialog UI: choice + skill-check events, roll seam, re-popup regression.
 func test_event_dialog() -> void:
 	_enter_test("event_dialog")
@@ -7013,6 +8128,1000 @@ func test_event_dialog() -> void:
 
 	_teardown_scene(ev_dialog)
 	_exit_test()
+
+## S-024: loaded nested fact predicates settle conditional spell effects through
+## the production spell picker, command, target click and ordered-step resolver.
+func test_shared_fact_predicate_flow() -> void:
+	_enter_test("shared_fact_predicate_flow")
+	_setup_world()
+	var prior_spells: Dictionary = DataLoader.spells.duplicate(true)
+	var prior_wizard_list: Array = DataLoader.classes.get("wizard", {}).get("spell_list_ids", []).duplicate()
+	DataLoader._load_content_type("res://data/fixtures/shared_spells/spells/", "spell")
+	var neutral: Dictionary = DataLoader.get_spell("sandbox:fact_window_neutral")
+	var renamed: Dictionary = DataLoader.get_spell("sandbox:fact_window_renamed")
+	var missing_probe: Dictionary = DataLoader.get_spell("sandbox:fact_window_missing_probe")
+	_assert(not neutral.is_empty() and not renamed.is_empty() and not missing_probe.is_empty() and SharedSpell.content_error(neutral).is_empty() and SharedSpell.content_error(renamed).is_empty() and SharedSpell.content_error(missing_probe).is_empty(), "Loaded neutral, renamed and missing-fact probe spell definitions validate")
+	if neutral.is_empty() or renamed.is_empty() or missing_probe.is_empty():
+		_exit_test()
+		return
+	var spell_ids: Array[String] = ["sandbox:fact_window_neutral", "sandbox:fact_window_renamed", "sandbox:fact_window_missing_probe"]
+	DataLoader.classes["wizard"]["spell_list_ids"].append_array(spell_ids)
+	var owner := _fresh_char("Fact Window Wizard", "human", "wizard", {"STR": 8, "DEX": 14, "CON": 14, "INT": 18, "WIS": 12, "CHA": 10})
+	owner.character_id = "fact-window-owner"
+	owner.level = 3
+	owner.max_hp = 100
+	owner.current_hp = 25
+	owner.known_spells.assign(spell_ids)
+	owner.wizard_spellbook = owner.known_spells.duplicate()
+	owner.spell_slots["1"] = 8
+	var ally := _fresh_char("Downed Fact Target", "human", "fighter", {"STR": 14, "DEX": 12, "CON": 14, "INT": 10, "WIS": 10, "CHA": 8})
+	ally.character_id = "fact-window-ally"
+	ally.max_hp = 100
+	ally.current_hp = 30
+	PlayerManager.reset()
+	PartyManager.reset()
+	PlayerManager.add_player("Fact Wizard")
+	PlayerManager.add_player("Fact Ally")
+	PlayerManager.set_player_character(0, owner)
+	PlayerManager.set_player_character(1, ally)
+	PartyManager.register_player_character(0, owner)
+	PartyManager.register_player_character(1, ally)
+	var pool_source := "fact-window-pool-source"
+	var pool_definition := {"id": "fixture:fact_window_pool", "resource_pool": {"id": "fixture:fact_window_pool", "capacity_formula": 2, "initial_quantity": 2}}
+	var acquired := ResourcePoolRules.acquire(owner, pool_definition, pool_source)
+	var grant := owner.add_campaign_modifier("stat", "AC", 2, 60, 0, pool_source)
+	var pool_snapshot: Dictionary = owner.numeric_resource_pools.duplicate(true)
+	var modifier_snapshot: Array = owner.modifiers.duplicate(true)
+	_assert(bool(acquired.get("success", false)) and bool(grant.get("success", false)), "Acceptance fixture acquires one exact pool and timed modifier source")
+	GameManager.current_state = GameManager.GameState.COMBAT
+	GameManager.transition_context = {"terrain": "plains", "monster_ids": []}
+	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 0.6)
+	combat.current_player_idx = 0
+	combat.active_character = owner
+	combat.active_combatant = {"id": "player_0", "is_player": true, "entity": owner}
+	combat.player_entities[0]["hex_position"] = Vector2i.ZERO
+	combat.player_entities[1]["hex_position"] = Vector2i(2, 0)
+	combat.turn_budget.reset(owner, combat.player_entities)
+	combat.hud.update_hud(owner, combat.tracker)
+	var wizard_hex: Vector2i = combat.player_entities[0]["hex_position"]
+	var ally_hex: Vector2i = combat.player_entities[1]["hex_position"]
+	var before_slots: int = int(owner.spell_slots["1"])
+	var neutral_false := await _cast_fact_spell_from_picker(combat, "sandbox:fact_window_neutral", wizard_hex)
+	_assert(bool(neutral_false.get("selected", false)) and bool(neutral_false.get("settled", false)) and owner.current_hp == 25 and not str(neutral_false.get("log", "")).contains("regains 2 Hit Points") and int(owner.spell_slots["1"]) == before_slots - 1 and not combat.turn_budget.can_spend("magic_action"), "Actual neutral spell picker keeps its effect off at HP 25 while paying one slot and Magic action")
+	combat.turn_budget.reset(owner, combat.player_entities)
+	owner.current_hp = 10
+	before_slots = int(owner.spell_slots["1"])
+	var neutral_true := await _cast_fact_spell_from_picker(combat, "sandbox:fact_window_neutral", wizard_hex)
+	_assert(bool(neutral_true.get("selected", false)) and bool(neutral_true.get("settled", false)) and owner.current_hp == 12 and str(neutral_true.get("log", "")).contains("regains 2 Hit Points") and int(owner.spell_slots["1"]) == before_slots - 1 and not bool(neutral_true.get("magic_action_available", true)), "Actual neutral ordered effect turns on when the live HP fact changes and resolves once")
+	combat.turn_budget.reset(owner, combat.player_entities)
+	owner.current_hp = 45
+	before_slots = int(owner.spell_slots["1"])
+	var renamed_self_false := await _cast_fact_spell_from_picker(combat, "sandbox:fact_window_renamed", wizard_hex)
+	_assert(bool(renamed_self_false.get("selected", false)) and bool(renamed_self_false.get("settled", false)) and owner.current_hp == 45 and not str(renamed_self_false.get("log", "")).contains("regains 5 Hit Points") and int(owner.spell_slots["1"]) == before_slots - 1 and not bool(renamed_self_false.get("magic_action_available", true)), "Renamed nested OR plus NOT skips its guarded effect for the source owner outside the HP threshold")
+	combat.turn_budget.reset(owner, combat.player_entities)
+	ally.current_hp = 45
+	ally.is_alive = true
+	before_slots = int(owner.spell_slots["1"])
+	var renamed_other_true := await _cast_fact_spell_from_picker(combat, "sandbox:fact_window_renamed", ally_hex)
+	_assert(bool(renamed_other_true.get("selected", false)) and bool(renamed_other_true.get("settled", false)) and ally.current_hp == 50 and str(renamed_other_true.get("log", "")).contains("regains 5 Hit Points") and int(owner.spell_slots["1"]) == before_slots - 1 and not bool(renamed_other_true.get("magic_action_available", true)), "Renamed ordered effect changes eligibility when the live source-owner relationship changes (%s target_hp=%d slot_delta=%d)" % [str(renamed_other_true), ally.current_hp, before_slots - int(owner.spell_slots["1"])])
+	combat.turn_budget.reset(owner, combat.player_entities)
+	ally.current_hp = 0
+	ally.is_alive = false
+	before_slots = int(owner.spell_slots["1"])
+	var zero_target := await _cast_fact_spell_from_picker(combat, "sandbox:fact_window_neutral", ally_hex)
+	var zero_log: String = str(zero_target.get("log", ""))
+	_assert(bool(zero_target.get("selected", false)) and bool(zero_target.get("settled", false)) and ally.current_hp == 3 and ally.is_alive and zero_log.contains("regains 1 Hit Points") and zero_log.contains("regains 2 Hit Points") and int(owner.spell_slots["1"]) == before_slots - 1 and not bool(zero_target.get("magic_action_available", true)), "Represented numeric zero selects its exact equality effect before the nested heal, preserving both receipts and one cost (%s target_hp=%d alive=%s slot_delta=%d)" % [str(zero_target), ally.current_hp, str(ally.is_alive), before_slots - int(owner.spell_slots["1"])])
+	combat.turn_budget.reset(owner, combat.player_entities)
+	var missing_hex := Vector2i(0, 1)
+	_assert(combat.hex_grid.has_tile(missing_hex) and missing_hex != wizard_hex and missing_hex != ally_hex, "Missing-fact probe has a real in-range empty battlefield target")
+	before_slots = int(owner.spell_slots["1"])
+	var missing_result := await _cast_fact_spell_from_picker(combat, "sandbox:fact_window_missing_probe", missing_hex)
+	_assert(bool(missing_result.get("selected", false)) and bool(missing_result.get("settled", false)) and int(owner.spell_slots["1"]) == before_slots - 1 and owner.current_hp == 45 and not str(missing_result.get("log", "")).contains("regains 7 Hit Points") and not bool(missing_result.get("magic_action_available", true)), "A loaded mixed known/unknown condition with missing HP beneath NOT does not grant its heal")
+	_assert(owner.numeric_resource_pools == pool_snapshot and owner.modifiers == modifier_snapshot, "Predicate changes and actual casts never reacquire or restart the source pool or absolute modifier deadline")
+	var invalid: Dictionary = neutral.duplicate(true)
+	invalid["id"] = "sandbox:fact_window_invalid_acceptance"
+	invalid["steps"][0]["effects"][0]["when"] = {"not": {"fact": "missing.world_fact", "eq": true}}
+	var wrong_type: Dictionary = neutral.duplicate(true)
+	wrong_type["id"] = "sandbox:fact_window_wrong_type_acceptance"
+	wrong_type["steps"][0]["effects"][0]["when"] = {"fact": "actor.level", "eq": true}
+	DataLoader.spells["sandbox:fact_window_invalid_acceptance"] = invalid
+	DataLoader.spells["sandbox:fact_window_wrong_type_acceptance"] = wrong_type
+	owner.known_spells.append("sandbox:fact_window_invalid_acceptance")
+	owner.known_spells.append("sandbox:fact_window_wrong_type_acceptance")
+	combat.hud._show_spell_selection()
+	var invalid_index := -1
+	var wrong_type_index := -1
+	for index in combat.hud.spells_registered.size():
+		var spell_id := str(combat.hud.spells_registered[index].get("id", ""))
+		if spell_id == "sandbox:fact_window_invalid_acceptance":
+			invalid_index = index
+		elif spell_id == "sandbox:fact_window_wrong_type_acceptance":
+			wrong_type_index = index
+	var invalid_disabled: bool = invalid_index >= 0 and combat.hud.spell_list.is_item_disabled(invalid_index)
+	var wrong_type_disabled: bool = wrong_type_index >= 0 and combat.hud.spell_list.is_item_disabled(wrong_type_index)
+	var state_before_refusal: Dictionary = {"hp": owner.current_hp, "slots": int(owner.spell_slots["1"]), "pool": owner.numeric_resource_pools.duplicate(true), "modifiers": owner.modifiers.duplicate(true)}
+	combat.turn_budget.reset(owner, combat.player_entities)
+	await combat._on_hud_action("cast_spell", {"spell": invalid})
+	await combat._on_hud_action("cast_spell", {"spell": wrong_type})
+	_assert(invalid_disabled and wrong_type_disabled and owner.current_hp == int(state_before_refusal["hp"]) and int(owner.spell_slots["1"]) == int(state_before_refusal["slots"]) and owner.numeric_resource_pools == state_before_refusal["pool"] and owner.modifiers == state_before_refusal["modifiers"] and combat.turn_budget.can_spend("magic_action"), "Malformed unknown and wrong-type expressions are disabled in the real menu and direct commands refuse before costs/effects")
+	DataLoader.spells = prior_spells
+	DataLoader.classes["wizard"]["spell_list_ids"] = prior_wizard_list
+	_teardown_scene(combat)
+	await get_tree().process_frame
+	_exit_test()
+
+
+func _cast_fact_spell_from_picker(combat: Node, spell_id: String, target_coord: Vector2i) -> Dictionary:
+	combat.hud.update_hud(combat.active_character, combat.tracker)
+	combat.hud._show_spell_selection()
+	var selected_index := -1
+	for index in combat.hud.spells_registered.size():
+		if str(combat.hud.spells_registered[index].get("id", "")) == spell_id:
+			selected_index = index
+			break
+	if selected_index < 0 or combat.hud.spell_list.is_item_disabled(selected_index):
+		return {"selected": false, "settled": false, "log": str(combat.hud.log_text.text)}
+	var previous_log: String = str(combat.hud.log_text.text)
+	combat.hud.spell_list.item_selected.emit(selected_index)
+	for _frame in 60:
+		if str(combat.pending_action_type) == "spell":
+			break
+		await get_tree().process_frame
+	if str(combat.pending_action_type) != "spell" or str(combat.pending_spell_data.get("id", "")) != spell_id:
+		return {"selected": true, "settled": false, "log": str(combat.hud.log_text.text).trim_prefix(previous_log)}
+	await combat._on_hex_clicked(target_coord)
+	for _frame in 60:
+		if str(combat.pending_action_type) == "" and not bool(combat.resolving_player_action):
+			break
+		await get_tree().process_frame
+	return {"selected": true, "settled": str(combat.pending_action_type) == "" and not bool(combat.resolving_player_action), "magic_action_available": combat.turn_budget.can_spend("magic_action"), "log": str(combat.hud.log_text.text).trim_prefix(previous_log)}
+
+
+## S-025: actual loaded identity selectors survive the HUD cast and a real
+## Portent choice continuation, including exact consumed component copies.
+func test_shared_entity_binding_flow() -> void:
+	_enter_test("shared_entity_binding_flow")
+	_setup_world()
+	var prior_spells: Dictionary = DataLoader.spells.duplicate(true)
+	var prior_wizard_list: Array = DataLoader.classes.get("wizard", {}).get("spell_list_ids", []).duplicate()
+	DataLoader._load_content_type("res://data/fixtures/shared_spells/spells/", "spell")
+	var neutral: Dictionary = DataLoader.get_spell("sandbox:entity_bindings_neutral")
+	var renamed: Dictionary = DataLoader.get_spell("sandbox:entity_bindings_renamed")
+	var spell_ids: Array[String] = ["sandbox:entity_bindings_neutral", "sandbox:entity_bindings_renamed"]
+	_assert(not neutral.is_empty() and not renamed.is_empty() and SharedSpell.content_error(neutral).is_empty() and SharedSpell.content_error(renamed).is_empty(), "Loaded neutral and renamed identity-bound spell definitions pass production validation")
+	if neutral.is_empty() or renamed.is_empty():
+		_exit_test()
+		return
+	DataLoader.classes["wizard"]["spell_list_ids"].append_array(spell_ids)
+	var owner := _fresh_char("Entity Binding Diviner", "human", "wizard", {"STR": 8, "DEX": 14, "CON": 14, "INT": 18, "WIS": 12, "CHA": 10})
+	while owner.level < 3:
+		owner.level_up()
+	_assert(ClassProgression.choose_subclass(owner, "diviner"), "Binding cast owner has a real Diviner roll-token consumer")
+	owner.character_id = "binding-owner"
+	owner.known_spells.assign(spell_ids)
+	owner.wizard_spellbook.assign(spell_ids)
+	owner.spell_slots["1"] = 2
+	owner.roll_tokens["diviner_portent"] = [
+		{"token_id": "binding-portent:20", "value": 20, "feature_id": "diviner_portent", "pool_id": "diviner_portent", "die_sides": 20},
+	]
+	_assert(owner.inventory.add_item("diamond_300gp") and owner.inventory.add_item("diamond_300gp"), "Two exact same-definition material copies are present before the cast")
+	owner.inventory.copies.sync(owner.inventory)
+	var diamond_copies: Array[String] = []
+	for copy_id in owner.inventory.copies.backpack:
+		if str(owner.inventory.copies.records.get(copy_id, {}).get("definition_id", "")) == "diamond_300gp":
+			diamond_copies.append(str(copy_id))
+	_assert(diamond_copies.size() == 2, "The captured copy IDs belong to the two diamond records")
+	var first_copy := diamond_copies[0]
+	var second_copy := diamond_copies[1]
+	PlayerManager.reset()
+	PartyManager.reset()
+	PlayerManager.add_player("Binding Diviner")
+	PlayerManager.set_player_character(0, owner)
+	PartyManager.register_player_character(0, owner)
+	GameManager.current_state = GameManager.GameState.COMBAT
+	GameManager.transition_context = {"terrain": "plains", "monster_ids": ["goblin"]}
+	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 0.6)
+	combat.current_player_idx = 0
+	combat.active_character = owner
+	combat.active_combatant = {"id": "player_0", "is_player": true, "entity": owner}
+	combat.player_entities[0]["hex_position"] = Vector2i.ZERO
+	combat.turn_budget.reset(owner, combat.player_entities)
+	var target: Dictionary = combat.monster_entities[0]
+	target["id"] = "binding-target"
+	target["name"] = "Bound Target"
+	target["hex_position"] = Vector2i(1, 0)
+	target["current_hp"] = 10
+	target["max_hp"] = 30
+	target["is_alive"] = true
+	target["saving_throw_bonuses"] = {"DEX": 0}
+	target["conditions"] = {}
+	for index in range(1, combat.monster_entities.size()):
+		combat.monster_entities[index]["is_alive"] = false
+		combat.monster_entities[index]["current_hp"] = 0
+	combat._update_grid_entities()
+	combat.hud.update_hud(owner, combat.tracker)
+	GameManager.test_mode = false
+	var slots_before := int(owner.spell_slots["1"])
+	var first_cast := await _cast_binding_spell_from_picker(combat, spell_ids[0], Vector2i(1, 0))
+	var first_sources: Array = SpellEffects.records(target).keys()
+	_assert(bool(first_cast.get("selected", false)) and bool(first_cast.get("choice_seen", false)) and bool(first_cast.get("settled", false)), "CombatHUD cast waits at and resumes through the real Portent choice")
+	_assert(int(target["current_hp"]) == 11 and CombatAction.has_condition(target, "blessed") and int(owner.spell_slots["1"]) == slots_before - 1 and not combat.turn_budget.can_spend("magic_action"), "Neutral loaded selectors match caster, target, action, invocation, exact item, spell and generated source; one heal and cast cost settle")
+	_assert(not owner.inventory.copies.records.has(first_copy) and owner.inventory.copies.records.has(second_copy) and first_sources.size() == 1 and str(first_sources[0]).begins_with("spell:binding-owner:"), "First cast consumes only its exact selected copy and leaves its actual generated source receipt")
+	combat.turn_budget.reset(owner, combat.player_entities)
+	owner.character_id = "renamed-owner"
+	target["id"] = "renamed-target"
+	owner.roll_tokens["diviner_portent"] = [
+		{"token_id": "binding-portent:3", "value": 3, "feature_id": "diviner_portent", "pool_id": "diviner_portent", "die_sides": 20},
+	]
+	combat.hud.update_hud(owner, combat.tracker)
+	slots_before = int(owner.spell_slots["1"])
+	var second_cast := await _cast_binding_spell_from_picker(combat, spell_ids[1], Vector2i(1, 0))
+	var second_sources: Array = SpellEffects.records(target).keys()
+	_assert(bool(second_cast.get("selected", false)) and bool(second_cast.get("choice_seen", false)) and bool(second_cast.get("settled", false)), "Renamed loaded definition retains its separate choice continuation")
+	_assert(int(target["current_hp"]) == 14 and int(owner.spell_slots["1"]) == slots_before - 1 and not combat.turn_budget.can_spend("magic_action"), "Renamed actor/target/source/spell selectors settle the distinct authored amount once")
+	_assert(not owner.inventory.copies.records.has(second_copy) and second_sources.size() == 2 and second_sources[0] != second_sources[1], "Second cast consumes the other exact copy and keeps two distinct generated source receipts")
+	DataLoader.spells = prior_spells
+	DataLoader.classes["wizard"]["spell_list_ids"] = prior_wizard_list
+	GameManager.test_mode = true
+	_teardown_scene(combat)
+	await get_tree().process_frame
+	_exit_test()
+
+
+## S-026: run relationship and willingness consumers through the real
+## Character Sheet control, CombatHUD picker, target click and fresh Godot reload.
+func test_s026_relationship_willingness_flow() -> void:
+	_enter_test("s026_relationship_willingness_flow")
+	await get_tree().process_frame
+	_setup_world()
+	var prior_spells: Dictionary = DataLoader.spells.duplicate(true)
+	var prior_wizard_list: Array = DataLoader.classes.get("wizard", {}).get("spell_list_ids", []).duplicate()
+	DataLoader._load_content_type("res://data/fixtures/shared_spells/spells/", "spell")
+	var neutral_id := "sandbox:relationship_neutral"
+	var renamed_id := "sandbox:relationship_renamed"
+	var neutral: Dictionary = DataLoader.get_spell(neutral_id)
+	var renamed: Dictionary = DataLoader.get_spell(renamed_id)
+	_assert(not neutral.is_empty() and not renamed.is_empty() and SharedSpell.content_error(neutral).is_empty() and SharedSpell.content_error(renamed).is_empty(), "Loaded neutral and renamed relationship consumers validate")
+	if neutral.is_empty() or renamed.is_empty():
+		DataLoader.spells = prior_spells
+		_exit_test()
+		return
+	DataLoader.classes["wizard"]["spell_list_ids"].append_array([neutral_id, renamed_id])
+
+	PlayerManager.reset()
+	PartyManager.reset()
+	var caster_a := _fresh_char("Relation Giver A", "human", "wizard", {"STR": 8, "DEX": 14, "CON": 14, "INT": 18, "WIS": 12, "CHA": 10})
+	var caster_b := _fresh_char("Relation Giver B", "elf", "wizard", {"STR": 8, "DEX": 14, "CON": 14, "INT": 16, "WIS": 12, "CHA": 10})
+	var ally := _fresh_char("Willing Ally", "human", "fighter", {"STR": 16, "DEX": 12, "CON": 14, "INT": 10, "WIS": 13, "CHA": 8})
+	caster_a.character_id = "s026-giver-a"
+	caster_b.character_id = "s026-giver-b"
+	ally.character_id = "s026-ally"
+	for entry in [["Relation Giver A", caster_a], ["Relation Giver B", caster_b], ["Willing Ally", ally]]:
+		var player_index := PlayerManager.get_player_count()
+		PlayerManager.add_player(str(entry[0]))
+		PlayerManager.set_player_character(player_index, entry[1])
+		PartyManager.register_player_character(player_index, entry[1])
+	for caster in [caster_a, caster_b]:
+		caster.known_spells.assign([neutral_id, renamed_id])
+		caster.wizard_spellbook.assign([neutral_id, renamed_id])
+		caster.spell_slots["1"] = 5
+
+	GameManager.current_state = GameManager.GameState.COMBAT
+	GameManager.game_in_progress = true
+	GameManager.transition_context = {"terrain": "plains", "monster_ids": ["goblin"], "return_state": GameManager.GameState.OVERWORLD}
+	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 0.6)
+	combat.current_player_idx = 0
+	combat.active_character = caster_a
+	combat.active_combatant = {"id": "player_0", "is_player": true, "entity": caster_a}
+	combat.turn_budget.reset(caster_a, combat.player_entities)
+	var ally_entity: Dictionary = {}
+	for entity in combat.player_entities:
+		if entity.get("character") == ally:
+			ally_entity = entity
+	var enemy: Dictionary = combat.monster_entities[0] if not combat.monster_entities.is_empty() else {}
+	_assert(not ally_entity.is_empty() and not enemy.is_empty(), "Real combat scene exposes represented ally and enemy targets")
+	if ally_entity.is_empty() or enemy.is_empty():
+		DataLoader.spells = prior_spells
+		DataLoader.classes["wizard"]["spell_list_ids"] = prior_wizard_list
+		_teardown_scene(combat)
+		_exit_test()
+		return
+	ally.current_hp = 10
+	ally.max_hp = 20
+	ally.is_alive = true
+	enemy["current_hp"] = 3
+	enemy["max_hp"] = 20
+	enemy["is_alive"] = true
+	enemy["willingness"] = "unwilling"
+	combat._update_grid_entities()
+	combat.hud.update_hud(caster_a, combat.tracker)
+	var charm_a := _seed_s026_relation_source(ally, caster_a, "charm_person", "charmed")
+	var charm_b := _seed_s026_relation_source(ally, caster_b, "charm_person", "charmed")
+	var marker_a := _seed_s026_relation_source(enemy, caster_a, "hunters_mark", "hunters_mark")
+	_assert(SpellEffects.records(ally).has(charm_a) and SpellEffects.records(ally).has(charm_b) and SpellEffects.records(ally)[charm_a].get("spell_id") == SpellEffects.records(ally)[charm_b].get("spell_id"), "Two real SpellEffects grants create distinct same-definition source records on one target")
+
+	var sheet_unknown := _s026_choose_willingness(ally, 0)
+	_assert(sheet_unknown and ally.willingness == "unknown", "Character Sheet Unknown selection updates the target Character")
+	var captured_context := _s026_relationship_context(caster_a, ally, neutral, combat.player_entities, combat.monster_entities)
+	var captured_adapter := SharedStepExecutor.SpellAdapter.new(captured_context)
+	var unknown_not_consent := not SharedStepExecutor.evaluate_predicate({"not": {"fact": "target.willingness", "eq": "willing"}}, captured_adapter, ally, [])
+	_assert(unknown_not_consent, "Unknown willingness remains unavailable under not and cannot grant consent")
+	var relation_ally: Dictionary = SharedStepExecutor._read_fact("target.relationship", captured_adapter, ally)
+	var relation_self: Dictionary = SharedStepExecutor._read_fact("target.relationship", captured_adapter, caster_a)
+	var relation_enemy: Dictionary = SharedStepExecutor._read_fact("target.relationship", captured_adapter, enemy)
+	var other := _fresh_char("Unrepresented", "human", "fighter", {"STR": 10, "DEX": 10, "CON": 10, "INT": 10, "WIS": 10, "CHA": 10})
+	var relation_other: Dictionary = SharedStepExecutor._read_fact("target.relationship", captured_adapter, other)
+	var ambiguous_context := _s026_relationship_context(caster_a, enemy, neutral, combat.player_entities + [enemy], combat.monster_entities)
+	var relation_ambiguous: Dictionary = SharedStepExecutor._read_fact("target.relationship", SharedStepExecutor.SpellAdapter.new(ambiguous_context), enemy)
+	_assert(relation_ally.get("available", false) and relation_ally.get("value") == "ally" and relation_self.get("available", false) and relation_self.get("value") == "ally", "Captured represented player control yields ally, including self")
+	_assert(relation_enemy.get("available", false) and relation_enemy.get("value") == "enemy", "Represented opposing control yields enemy: %s" % str(relation_enemy))
+	_assert(not relation_other.get("available", false) and not relation_ambiguous.get("available", false), "Missing or ambiguous membership stays unavailable: other=%s ambiguous=%s" % [str(relation_other), str(relation_ambiguous)])
+	var mutable_players: Array = []
+	var mutable_monsters: Array = []
+	for participant in combat.player_entities: mutable_players.append(participant)
+	for participant in combat.monster_entities: mutable_monsters.append(participant)
+	var membership_context := _s026_relationship_context(caster_a, ally, neutral, mutable_players, mutable_monsters)
+	var membership_adapter := SharedStepExecutor.SpellAdapter.new(membership_context)
+	mutable_players.erase(ally_entity)
+	mutable_monsters.append(ally)
+	var changed_allegiance: Dictionary = SharedStepExecutor._read_fact("target.relationship", membership_adapter, ally)
+	_assert(changed_allegiance.get("available", false) and changed_allegiance.get("value") == "enemy", "Live relationship query follows a changed captured control roster while its caster and target stay bound")
+
+	var slots_a_before := int(caster_a.spell_slots["1"])
+	var hp_before := ally.current_hp
+	var unknown_cast := await _cast_s026_spell_from_picker(combat, neutral_id, ally_entity["hex_position"])
+	_assert(unknown_cast.get("selected", false) and unknown_cast.get("settled", false) and ally.current_hp == hp_before and int(caster_a.spell_slots["1"]) == slots_a_before - 1 and not combat.turn_budget.can_spend("magic_action"), "Unknown target refuses the neutral loaded effect while the supported cast settles one slot and one action")
+
+	_assert(_s026_choose_willingness(ally, 2) and ally.willingness == "unwilling", "Character Sheet Unwilling selection updates the actual intended target")
+	combat.turn_budget.reset(caster_a, combat.player_entities)
+	combat.hud.update_hud(caster_a, combat.tracker)
+	hp_before = ally.current_hp
+	var slots_before_unwilling := int(caster_a.spell_slots["1"])
+	var unwilling_cast := await _cast_s026_spell_from_picker(combat, neutral_id, ally_entity["hex_position"])
+	_assert(unwilling_cast.get("settled", false) and ally.current_hp == hp_before and int(caster_a.spell_slots["1"]) == slots_before_unwilling - 1 and not combat.turn_budget.can_spend("magic_action"), "Selected Unwilling target fails the loaded willing-ally consumer and the cast still pays once")
+
+	_assert(_s026_choose_willingness(ally, 1) and ally.willingness == "willing", "Character Sheet Willing selection updates the target Character")
+	combat.turn_budget.reset(caster_a, combat.player_entities)
+	combat.hud.update_hud(caster_a, combat.tracker)
+	hp_before = ally.current_hp
+	var slots_before_willing := int(caster_a.spell_slots["1"])
+	var willing_cast := await _cast_s026_spell_from_picker(combat, neutral_id, ally_entity["hex_position"])
+	_assert(willing_cast.get("selected", false) and willing_cast.get("settled", false) and ally.current_hp == hp_before + 2 and int(caster_a.spell_slots["1"]) == slots_before_willing - 1 and not combat.turn_budget.can_spend("magic_action"), "Loaded neutral consumer heals its represented willing ally and settles one slot/action through the real picker and target click")
+
+	var alice_serial_before_query := caster_a.spell_cast_serial
+	var bob_serial_before_query := caster_b.spell_cast_serial
+	var bob_lifetime_before_query := int(SpellEffects.records(ally).get(charm_b, {}).get("remaining_seconds", -1))
+	var alice_before_remove := _s026_relationship_fact(caster_a, ally, neutral, combat.player_entities, combat.monster_entities)
+	var bob_before_remove := _s026_relationship_fact(caster_b, ally, neutral, combat.player_entities, combat.monster_entities)
+	_assert(alice_before_remove.get("available", false) and alice_before_remove.get("value", false) and bob_before_remove.get("available", false) and bob_before_remove.get("value", false), "Both independent givers query their own same-kind Charmed source")
+	_assert(caster_a.spell_cast_serial == alice_serial_before_query and caster_b.spell_cast_serial == bob_serial_before_query and int(SpellEffects.records(ally).get(charm_b, {}).get("remaining_seconds", -1)) == bob_lifetime_before_query, "Eligibility queries do not reacquire sources, increment cast serials or reset the other giver's lifetime")
+	SpellEffects.remove(ally, charm_a)
+	var alice_after_remove := _s026_relationship_fact(caster_a, ally, neutral, combat.player_entities, combat.monster_entities)
+	var bob_after_remove := _s026_relationship_fact(caster_b, ally, neutral, combat.player_entities, combat.monster_entities)
+	_assert(not alice_after_remove.get("value", true) and bob_after_remove.get("value", false), "Removing giver A's exact source changes only A's query; giver B remains eligible")
+	_assert(captured_context.caster == caster_a and captured_context.target == ally and not _s026_relationship_fact(caster_a, ally, neutral, combat.player_entities, combat.monster_entities).get("value", true), "The captured actor and target remain fixed while source eligibility is read live")
+
+	var alice_hp_without_source := ally.current_hp
+	combat.turn_budget.reset(caster_a, combat.player_entities)
+	combat.hud.update_hud(caster_a, combat.tracker)
+	var slots_before_no_source := int(caster_a.spell_slots["1"])
+	var no_source_cast := await _cast_s026_spell_from_picker(combat, neutral_id, ally_entity["hex_position"])
+	_assert(no_source_cast.get("settled", false) and ally.current_hp == alice_hp_without_source and int(caster_a.spell_slots["1"]) == slots_before_no_source - 1 and not combat.turn_budget.can_spend("magic_action"), "Alice's loaded consumer no longer qualifies after only her source is removed; the attempted cast still pays once")
+
+	combat.current_player_idx = 1
+	combat.active_character = caster_b
+	combat.active_combatant = {"id": "player_1", "is_player": true, "entity": caster_b}
+	combat.turn_budget.reset(caster_b, combat.player_entities)
+	combat.hud.update_hud(caster_b, combat.tracker)
+	var hp_before_bob := ally.current_hp
+	var bob_cast := await _cast_s026_spell_from_picker(combat, neutral_id, ally_entity["hex_position"])
+	_assert(bob_cast.get("settled", false) and ally.current_hp == hp_before_bob + 2 and int(caster_b.spell_slots["1"]) == 4 and not combat.turn_budget.can_spend("magic_action"), "Second giver's same-kind source independently enables its loaded consumer and pays once")
+
+	combat.current_player_idx = 0
+	combat.active_character = caster_a
+	combat.active_combatant = {"id": "player_0", "is_player": true, "entity": caster_a}
+	combat.turn_budget.reset(caster_a, combat.player_entities)
+	combat.hud.update_hud(caster_a, combat.tracker)
+	var enemy_hp_before := int(enemy["current_hp"])
+	var slots_before_renamed := int(caster_a.spell_slots["1"])
+	var renamed_cast := await _cast_s026_spell_from_picker(combat, renamed_id, enemy["hex_position"])
+	var mark_context := _s026_relationship_context(caster_a, enemy, renamed, combat.player_entities, combat.monster_entities)
+	var marked_fact: Dictionary = SharedStepExecutor._read_fact("target.marked_by_actor", SharedStepExecutor.SpellAdapter.new(mark_context), enemy)
+	_assert(renamed_cast.get("settled", false) and int(enemy["current_hp"]) == enemy_hp_before + 5 and int(caster_a.spell_slots["1"]) == slots_before_renamed - 1 and not combat.turn_budget.can_spend("magic_action"), "Loaded renamed consumer uses represented enemy and exact caster-owned mark, paying once; cast=%s HP=%d->%d marked=%s source=%s" % [str(renamed_cast), enemy_hp_before, int(enemy["current_hp"]), str(marked_fact), marker_a])
+
+	_assert(_s026_choose_willingness(ally, 2) and ally.willingness == "unwilling", "Character Sheet selection stores the actual target's Unwilling value before checkpoint")
+	CharacterSheet.teardown_for_tests()
+	SpellEffects.remove(ally, charm_b)
+	enemy["condition_sources"] = {}
+	enemy["conditions"] = {}
+	enemy["spell_effects"] = {}
+	_teardown_scene(combat)
+	await get_tree().process_frame
+	GameManager.current_state = GameManager.GameState.OVERWORLD
+	GameManager.transition_context = {}
+	GameManager.active_dungeon_state.clear()
+	GameManager.game_in_progress = true
+	var slot := "s026_relationship_willingness"
+	_assert(SaveManager.get_save_block_reason().is_empty() and SaveManager.save_game(slot), "Selected Character willingness values save through the supported safe-save path")
+	var save_text := FileAccess.get_file_as_string(SaveManager.SAVE_DIR + slot + ".sav")
+	var malformed: Variant = JSON.parse_string(save_text)
+	if malformed is Dictionary:
+		malformed["party"]["characters"][ally.character_id]["willingness"] = "maybe"
+	var malformed_file := FileAccess.open(SaveManager.SAVE_DIR + slot + "_malformed.sav", FileAccess.WRITE)
+	if malformed_file != null and malformed is Dictionary:
+		malformed_file.store_string(JSON.stringify(malformed))
+		malformed_file.close()
+	var live_owner = PlayerManager.get_player(0).get("character")
+	var malformed_refused: bool = malformed_file != null and not SaveManager.load_game(slot + "_malformed") and PlayerManager.get_player(0).get("character") == live_owner and ally.willingness == "unwilling"
+	_assert(malformed_refused, "Malformed saved willingness is refused before replacing the live campaign")
+	OS.set_environment("S026_RELATIONSHIP_RELAUNCH_PHASE", "recover")
+	var child_output: Array = []
+	var child_exit := OS.execute(OS.get_executable_path(), ["--headless", "--path", ProjectSettings.globalize_path("res://"), "--script", "res://src/s026_relationship_relaunch_probe.gd"], child_output, true)
+	OS.set_environment("S026_RELATIONSHIP_RELAUNCH_PHASE", "")
+	var child_text := "\n".join(PackedStringArray(child_output))
+	_assert(child_exit == 0 and child_text.contains("S026 RELAUNCH PASSED"), "Fresh Godot process restores all three actual Character Sheet choices; exit=%d output=%s" % [child_exit, child_text])
+	DataLoader.spells = prior_spells
+	DataLoader.classes["wizard"]["spell_list_ids"] = prior_wizard_list
+	GameManager.test_mode = true
+	_setup_world()
+	_exit_test()
+
+
+func _cast_s026_spell_from_picker(combat: Node, spell_id: String, target_coord: Vector2i) -> Dictionary:
+	combat.hud.update_hud(combat.active_character, combat.tracker)
+	combat.hud._show_spell_selection()
+	var spell_index := -1
+	for index in combat.hud.spells_registered.size():
+		if str(combat.hud.spells_registered[index].get("id", "")) == spell_id:
+			spell_index = index
+			break
+	if spell_index < 0 or combat.hud.spell_list.is_item_disabled(spell_index):
+		return {"selected": false, "settled": false}
+	combat.hud.spell_list.item_selected.emit(spell_index)
+	for _frame in 60:
+		if str(combat.pending_action_type) == "spell":
+			break
+		await get_tree().process_frame
+	if str(combat.pending_action_type) != "spell" or str(combat.pending_spell_data.get("id", "")) != spell_id:
+		return {"selected": true, "settled": false}
+	combat.call_deferred("_on_hex_clicked", target_coord)
+	for _frame in 180:
+		await get_tree().process_frame
+		if str(combat.pending_action_type).is_empty() and not bool(combat.resolving_player_action):
+			return {"selected": true, "settled": true}
+	return {"selected": true, "settled": false}
+
+
+func _s026_choose_willingness(character: Character, index: int) -> bool:
+	CharacterSheet.show_sheet(character)
+	var choice: OptionButton = CharacterSheet._content.find_child("TargetWillingness", true, false)
+	if choice == null or index < 0 or index >= choice.item_count:
+		CharacterSheet.close_sheet()
+		return false
+	choice.select(index)
+	choice.item_selected.emit(index)
+	var expected: String = ["unknown", "willing", "unwilling"][index]
+	CharacterSheet.close_sheet()
+	return character.willingness == expected
+
+
+func _s026_relationship_context(caster: Character, target, spell: Dictionary, players: Array, monsters: Array) -> SpellResolutionContext:
+	var context := SpellResolutionContext.new()
+	context.caster = caster
+	context.target = target
+	context.spell = spell
+	context.decisions = {"players": players, "monsters": monsters}
+	return context
+
+
+func _s026_relationship_fact(caster: Character, target, spell: Dictionary, players: Array, monsters: Array) -> Dictionary:
+	var context := _s026_relationship_context(caster, target, spell, players, monsters)
+	return SharedStepExecutor._read_fact("target.charmed_by_actor", SharedStepExecutor.SpellAdapter.new(context), target)
+
+
+func _seed_s026_relation_source(target, giver: Character, spell_id: String, condition: String) -> String:
+	var definition: Dictionary = DataLoader.get_spell(spell_id)
+	if definition.is_empty():
+		definition = {"id": spell_id, "duration_seconds": 60}
+	definition = definition.duplicate(true)
+	definition["concentration"] = false
+	var cast: Dictionary = SpellEffects.begin_cast(giver, definition)
+	SpellEffects.grant(target, cast, condition, "start", 60)
+	return str(cast.get("source_id", ""))
+
+
+func test_shared_prior_result_identity_flow() -> void:
+	_enter_test("shared_prior_result_identity_flow")
+	_setup_world()
+	var prior_spells: Dictionary = DataLoader.spells.duplicate(true)
+	var prior_wizard_list: Array = DataLoader.classes.get("wizard", {}).get("spell_list_ids", []).duplicate()
+	DataLoader._load_content_type("res://data/fixtures/shared_spells/spells/", "spell")
+	var spell_ids: Array[String] = ["sandbox:receipt_probe", "sandbox:receipt_probe_renamed"]
+	var neutral: Dictionary = DataLoader.get_spell(spell_ids[0])
+	var renamed: Dictionary = DataLoader.get_spell(spell_ids[1])
+	_assert(not neutral.is_empty() and not renamed.is_empty() and SharedSpell.content_error(neutral).is_empty() and SharedSpell.content_error(renamed).is_empty(), "Neutral and renamed ordered receipt consumers load and pass production validation")
+	if neutral.is_empty() or renamed.is_empty():
+		DataLoader.spells = prior_spells
+		_exit_test()
+		return
+	DataLoader.classes["wizard"]["spell_list_ids"].append_array(spell_ids)
+	var caster := _fresh_char("Receipt Diviner", "human", "wizard", {"STR": 8, "DEX": 14, "CON": 14, "INT": 18, "WIS": 12, "CHA": 10})
+	while caster.level < 3: caster.level_up()
+	_assert(ClassProgression.choose_subclass(caster, "diviner"), "Receipt probe uses a legally selected Diviner choice host")
+	caster.character_id = "receipt-owner-before-pause"
+	caster.known_spells.assign(spell_ids)
+	caster.wizard_spellbook.assign(spell_ids)
+	caster.spell_slots = {"1": 2}
+	caster.roll_tokens["diviner_portent"] = [
+		{"token_id": "receipt-portent:a", "value": 3, "feature_id": "diviner_portent", "pool_id": "diviner_portent", "die_sides": 20},
+		{"token_id": "receipt-portent:b", "value": 4, "feature_id": "diviner_portent", "pool_id": "diviner_portent", "die_sides": 20}
+	]
+	PlayerManager.reset()
+	PartyManager.reset()
+	PlayerManager.add_player("Receipt Diviner")
+	PlayerManager.set_player_character(0, caster)
+	PartyManager.register_player_character(0, caster)
+	GameManager.current_state = GameManager.GameState.COMBAT
+	GameManager.transition_context = {"terrain": "plains", "monster_ids": ["goblin", "goblin"]}
+	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 0.6)
+	combat.current_player_idx = 0
+	combat.active_character = caster
+	combat.active_combatant = {"id": "player_0", "is_player": true, "entity": caster}
+	combat.player_entities[0]["hex_position"] = Vector2i(-4, 0)
+	combat.turn_budget.reset(caster, combat.player_entities)
+	var target_a: Dictionary = combat.monster_entities[0]
+	var target_b: Dictionary
+	if combat.monster_entities.size() < 2:
+		target_b = target_a.duplicate(true)
+		target_b["id"] = "receipt-target-b"
+		target_b["name"] = "Receipt Twin"
+		combat.monster_entities.append(target_b)
+	else:
+		target_b = combat.monster_entities[1]
+	for index in combat.monster_entities.size():
+		var target: Dictionary = combat.monster_entities[index]
+		target["hex_position"] = Vector2i(1 + index, 0)
+		target["is_alive"] = index < 2
+		target["current_hp"] = 24 if index == 0 else 11
+		target["max_hp"] = 40 if index == 0 else 20
+		target["temp_hp"] = 2 if index == 0 else 0
+		target["saving_throw_bonuses"] = {"DEX": -100}
+		target["damage_resistances"] = ["fire"] if index == 0 else []
+		target["damage_immunities"] = ["force"]
+		if index == 1: target["damage_immunities"].append("fire")
+		if index > 1: target["current_hp"] = 0
+	combat._update_grid_entities()
+	combat.hud.update_hud(caster, combat.tracker)
+	GameManager.test_mode = false
+	var slots_before := int(caster.spell_slots["1"])
+	combat.hud._show_spell_selection()
+	var spell_index := -1
+	for index in combat.hud.spells_registered.size():
+		if str(combat.hud.spells_registered[index].get("id", "")) == spell_ids[0]: spell_index = index
+	_assert(spell_index >= 0 and not combat.hud.spell_list.is_item_disabled(spell_index), "Neutral receipt probe is available in the real HUD spell picker")
+	if spell_index >= 0 and not combat.hud.spell_list.is_item_disabled(spell_index):
+		combat.hud.spell_list.item_selected.emit(spell_index)
+		for _frame in 60:
+			if str(combat.pending_action_type) == "spell": break
+			await get_tree().process_frame
+		combat.call_deferred("_on_hex_clicked", Vector2i(1, 0))
+		var choices_seen := 0
+		var changed_during_pause := false
+		var dialog_was_open := false
+		for _frame in 360:
+			await get_tree().process_frame
+			var dialog = _find_open_roll_token_dialog(combat.hud)
+			if dialog is ConfirmationDialog and not dialog_was_open:
+				dialog_was_open = true
+				choices_seen += 1
+				if choices_seen == 1:
+					target_b["current_hp"] = 5
+					caster.character_id = "receipt-owner-after-pause"
+					changed_during_pause = true
+				dialog.confirmed.emit()
+			elif dialog is PopupMenu and not dialog_was_open:
+				dialog_was_open = true
+				choices_seen += 1
+				if choices_seen == 1:
+					target_b["current_hp"] = 5
+					caster.character_id = "receipt-owner-after-pause"
+					changed_during_pause = true
+				dialog.id_pressed.emit(1)
+			elif dialog == null:
+				dialog_was_open = false
+			if str(combat.pending_action_type).is_empty() and not bool(combat.resolving_player_action): break
+		_assert(choices_seen == 1 and changed_during_pause, "The real ordered area cast resumes from its roll choice after live target HP and caster identity change; choices=%d changed=%s" % [choices_seen, str(changed_during_pause)])
+	_assert(int(target_a["current_hp"]) == 40 and int(target_a["temp_hp"]) == 2 and int(target_b["current_hp"]) == 20 and int(target_b["temp_hp"]) == 1, "Neutral aftermath records resistance/absorption and capped healing on one target, and immunity/zero HP loss on its same-definition twin (A=%d/%d B=%d/%d)" % [int(target_a["current_hp"]), int(target_a["temp_hp"]), int(target_b["current_hp"]), int(target_b["temp_hp"])])
+	_assert(int(caster.spell_slots["1"]) == slots_before - 1 and not combat.turn_budget.can_spend("magic_action"), "Neutral HUD route pays one spell slot and one Magic Action despite the pause")
+	combat.turn_budget.reset(caster, combat.player_entities)
+	target_a["current_hp"] = 16
+	target_a["max_hp"] = 30
+	target_a["temp_hp"] = 1
+	target_a["damage_resistances"] = ["cold"]
+	target_a["damage_immunities"] = ["force"]
+	target_b["current_hp"] = 11
+	target_b["max_hp"] = 20
+	target_b["temp_hp"] = 0
+	target_b["damage_resistances"] = []
+	target_b["damage_immunities"] = ["force", "cold"]
+	combat.hud.update_hud(caster, combat.tracker)
+	combat.hud._show_spell_selection()
+	spell_index = -1
+	for index in combat.hud.spells_registered.size():
+		if str(combat.hud.spells_registered[index].get("id", "")) == spell_ids[1]: spell_index = index
+	_assert(spell_index >= 0 and not combat.hud.spell_list.is_item_disabled(spell_index), "Renamed receipt probe remains available through the real HUD picker")
+	if spell_index >= 0 and not combat.hud.spell_list.is_item_disabled(spell_index):
+		combat.hud.spell_list.item_selected.emit(spell_index)
+		for _frame in 60:
+			if str(combat.pending_action_type) == "spell": break
+			await get_tree().process_frame
+		combat.call_deferred("_on_hex_clicked", Vector2i(1, 0))
+		for _frame in 240:
+			await get_tree().process_frame
+			var dialog = _find_open_roll_token_dialog(combat.hud)
+			if dialog is ConfirmationDialog: dialog.confirmed.emit()
+			elif dialog is PopupMenu: dialog.id_pressed.emit(1)
+			if str(combat.pending_action_type).is_empty() and not bool(combat.resolving_player_action): break
+	_assert(int(target_a["current_hp"]) == 30 and int(target_a["temp_hp"]) == 4 and int(target_b["current_hp"]) == 20 and int(target_b["temp_hp"]) == 0, "Renamed aftermath state A=%d/%d B=%d/%d" % [int(target_a["current_hp"]), int(target_a["temp_hp"]), int(target_b["current_hp"]), int(target_b["temp_hp"])])
+	_assert(int(caster.spell_slots["1"]) == slots_before - 2 and not combat.turn_budget.can_spend("magic_action"), "Renamed HUD route pays its one declared slot/action exactly once")
+	DataLoader.spells = prior_spells
+	DataLoader.classes["wizard"]["spell_list_ids"] = prior_wizard_list
+	GameManager.test_mode = true
+	_teardown_scene(combat)
+	await get_tree().process_frame
+	_exit_test()
+
+
+func _run_margin_gate_control_cast(combat: Node, caster: Character, spell_id: String, natural_roll: int, override_source_id: String = "") -> Dictionary:
+	combat.turn_budget.reset(caster, combat.player_entities)
+	combat.hud.update_hud(caster, combat.tracker)
+	if not await _start_fixture_spell_from_picker(combat, spell_id):
+		return {"started": false}
+	FighterChecks._seed_die(20, natural_roll)
+	var hp_before := caster.current_hp
+	var slots_before := int(caster.spell_slots.get("1", 0))
+	combat.call_deferred("_on_hex_clicked", Vector2i.ZERO)
+	var save_prompt_seen := false
+	var save_test: Dictionary = {}
+	var save_option_id := 0
+	var pending_hp_unchanged := false
+	for _frame in 240:
+		await get_tree().process_frame
+		for child in combat.hud.get_children():
+			if child is PopupMenu and child.visible and str(child.title).contains("CON save") and not save_prompt_seen:
+				save_prompt_seen = true
+				var save_record := _active_save_bonus_record_for_test()
+				save_test = save_record.get("save_test", {}).duplicate(true)
+				pending_hp_unchanged = caster.current_hp == hp_before and caster.temp_hp == 0
+				if not override_source_id.is_empty():
+					save_option_id = _save_bonus_menu_id_for_source(child, save_record, override_source_id)
+				child.id_pressed.emit(save_option_id)
+				break
+		if combat.pending_action_type.is_empty() and not bool(combat.resolving_player_action):
+			break
+	return {
+		"started": true,
+		"save_prompt_seen": save_prompt_seen,
+		"save_test": save_test,
+		"save_option_id": save_option_id,
+		"pending_hp_unchanged": pending_hp_unchanged,
+		"hp_before": hp_before,
+		"hp_after": caster.current_hp,
+		"temp_hp": caster.temp_hp,
+		"slots_before": slots_before,
+		"slots_after": int(caster.spell_slots.get("1", 0)),
+		"action_spent": not combat.turn_budget.can_spend("magic_action"),
+		"settled": combat.pending_action_type.is_empty() and not bool(combat.resolving_player_action),
+	}
+
+
+func _run_margin_gate_empowered_control_cast(combat: Node, caster: Character, spell_id: String, natural_roll: int) -> Dictionary:
+	combat.turn_budget.reset(caster, combat.player_entities)
+	combat.hud.update_hud(caster, combat.tracker)
+	if not await _start_fixture_spell_from_picker(combat, spell_id):
+		return {"started": false}
+	FighterChecks._seed_die(20, natural_roll)
+	var hp_before := int(caster.current_hp)
+	var slots_before := int(caster.spell_slots.get("1", 0))
+	var points_before := caster.get_sorcery_points()
+	combat.call_deferred("_on_hex_clicked", Vector2i.ZERO)
+	var empowered_prompt_seen := false
+	var save_prompt_seen := false
+	var damage_choice_seen := false
+	var pending_hp_unchanged := false
+	var pending_temp_hp_unchanged := false
+	var save_test: Dictionary = {}
+	var aftermath_temp_hp := -1
+	for _frame in 360:
+		await get_tree().process_frame
+		for child in combat.hud.get_children():
+			if child is ConfirmationDialog and child.visible and str(child.title).contains("Empowered Spell") and not empowered_prompt_seen:
+				empowered_prompt_seen = true
+				child.confirmed.emit()
+				break
+			if child is PopupMenu and child.visible and str(child.title).contains("CON save") and not save_prompt_seen:
+				save_prompt_seen = true
+				var save_record := _active_save_bonus_record_for_test()
+				save_test = save_record.get("save_test", {}).duplicate(true)
+				child.id_pressed.emit(0)
+				break
+			if child is PopupMenu and child.visible and str(child.title).begins_with("Empowered Spell: choose up to"):
+				damage_choice_seen = true
+				pending_hp_unchanged = int(caster.current_hp) == hp_before
+				pending_temp_hp_unchanged = int(caster.temp_hp) == 0
+				if child.item_count > 0:
+					child.id_pressed.emit(child.get_item_id(0))
+				break
+		if combat.pending_action_type.is_empty() and not bool(combat.resolving_player_action):
+			break
+	for _frame in 240:
+		if combat.pending_action_type.is_empty() and not bool(combat.resolving_player_action): break
+		await get_tree().process_frame
+	aftermath_temp_hp = int(caster.temp_hp)
+	return {
+		"started": true,
+		"empowered_prompt_seen": empowered_prompt_seen,
+		"save_prompt_seen": save_prompt_seen,
+		"damage_choice_seen": damage_choice_seen,
+		"pending_hp_unchanged": pending_hp_unchanged,
+		"pending_temp_hp_unchanged": pending_temp_hp_unchanged,
+		"save_test": save_test,
+		"hp_before": hp_before,
+		"hp_after": int(caster.current_hp),
+		"temp_hp": aftermath_temp_hp,
+		"slots_before": slots_before,
+		"slots_after": int(caster.spell_slots.get("1", 0)),
+		"points_before": points_before,
+		"points_after": caster.get_sorcery_points(),
+		"settled": combat.pending_action_type.is_empty() and not bool(combat.resolving_player_action),
+	}
+
+
+func test_shared_margin_hp_gate_flow() -> void:
+	_enter_test("shared_margin_hp_gate_flow")
+	_setup_world()
+	var prior_spells := DataLoader.spells.duplicate(true)
+	var prior_classes := DataLoader.classes.duplicate(true)
+	var prior_sorcerer_list: Array = DataLoader.classes.get("sorcerer", {}).get("spell_list_ids", []).duplicate()
+	DataLoader._load_content_type("res://data/fixtures/shared_spells/spells/", "spell")
+	DataLoader._load_content_type("res://data/fixtures/failed_save_bonus/classes/", "class")
+	var margin_spell: Dictionary = DataLoader.get_spell("sandbox:margin_gate_neutral")
+	var hp_spell: Dictionary = DataLoader.get_spell("sandbox:settlement_hp_gate_renamed")
+	var zero_hp_spell := hp_spell.duplicate(true)
+	zero_hp_spell["id"] = "sandbox:settlement_hp_gate_zero"
+	zero_hp_spell["name"] = "Ashfall Zero-Damage Afterimage"
+	zero_hp_spell["steps"][0]["damage"] = "0"
+	DataLoader.spells["sandbox:settlement_hp_gate_zero"] = zero_hp_spell
+	var outcome_class: Dictionary = DataLoader.classes.get("fixture:resolute_success_class", {})
+	var fail_outcome_class: Dictionary = DataLoader.classes.get("fixture:resolute_success_class", {})
+	var success_override: Dictionary = outcome_class.get("features_by_level", {}).get("1", [{}])[0]
+	var failure_override: Dictionary = fail_outcome_class.get("features_by_level", {}).get("1", [{}, {}])[1]
+	var spell_ids: Array[String] = ["sandbox:margin_gate_neutral", "sandbox:settlement_hp_gate_renamed", "sandbox:settlement_hp_gate_zero"]
+	var bad_step_spell := margin_spell.duplicate(true)
+	bad_step_spell["id"] = "sandbox:margin_gate_no_roll"
+	bad_step_spell["name"] = "Margin Gate No Roll"
+	bad_step_spell["steps"][0]["save"] = "STR"
+	DataLoader.spells["sandbox:margin_gate_no_roll"] = bad_step_spell
+	spell_ids.append("sandbox:margin_gate_no_roll")
+	var bad_reference_cases := [
+		["unknown", "absent", false],
+		["malformed", "impact", true],
+		["future", "afterimage", false],
+	]
+	for invalid in bad_reference_cases:
+		var invalid_spell := hp_spell.duplicate(true)
+		invalid_spell["id"] = "sandbox:s043_bad_%s" % str(invalid[0])
+		invalid_spell["name"] = "S043 Bad %s Reference" % str(invalid[0])
+		invalid_spell["steps"][3]["effects"][0]["when"]["result"]["step"] = str(invalid[1])
+		if bool(invalid[2]):
+			invalid_spell["steps"][3]["effects"][0]["when"]["result"]["component"] = "force"
+		DataLoader.spells[str(invalid_spell["id"])] = invalid_spell
+		spell_ids.append(str(invalid_spell["id"]))
+	_assert(not margin_spell.is_empty() and not hp_spell.is_empty() and SharedSpell.content_error(margin_spell).is_empty() and SharedSpell.content_error(hp_spell).is_empty() and not success_override.is_empty() and not failure_override.is_empty(), "Real DataLoader accepts both loaded S043 consumers and the S092 save outcome sources")
+	if margin_spell.is_empty() or hp_spell.is_empty() or success_override.is_empty() or failure_override.is_empty():
+		DataLoader.spells = prior_spells
+		DataLoader.classes = prior_classes
+		_exit_test()
+		return
+	DataLoader.classes["sorcerer"]["spell_list_ids"].append_array(spell_ids)
+	var caster := _fresh_char("Margin Gate Sorcerer", "human", "sorcerer", {"STR": 10, "DEX": 30, "CON": 8, "INT": 10, "WIS": 10, "CHA": 16})
+	caster.level_up()
+	caster.character_id = "fixture:s043_margin_gate_owner"
+	caster.known_spells.assign(spell_ids)
+	caster.spell_slots["1"] = 10
+	caster.max_hp = 100
+	caster.current_hp = 100
+	var ally := _fresh_char("Margin Gate Ally", "human", "fighter", {"STR": 8, "DEX": 10, "CON": 10, "INT": 10, "WIS": 10, "CHA": 10})
+	ally.character_id = "fixture:s043_margin_gate_ally"
+	ally.max_hp = 100
+	ally.current_hp = 100
+	var success_source := "fixture:s043:force_success"
+	var failure_source := "fixture:s043:force_failure"
+	for pair in [[success_override, success_source], [failure_override, failure_source]]:
+		var owned_feature: Dictionary = pair[0].duplicate(true)
+		owned_feature["source_instance_id"] = str(pair[1])
+		caster.features.append(owned_feature)
+		var acquired := ResourcePoolRules.acquire(caster, pair[0], str(pair[1]))
+		_assert(bool(acquired.get("success", false)), "S092 test outcome source acquires its exact owner pool")
+	PlayerManager.reset()
+	PartyManager.reset()
+	PlayerManager.add_player("Margin Sorcerer")
+	PlayerManager.add_player("Margin Gate Ally")
+	PlayerManager.set_player_character(0, caster)
+	PlayerManager.set_player_character(1, ally)
+	PartyManager.register_player_character(0, caster)
+	PartyManager.register_player_character(1, ally)
+	GameManager.current_state = GameManager.GameState.COMBAT
+	GameManager.transition_context = {"terrain": "plains", "monster_ids": ["goblin"]}
+	FighterChecks._seed_die(20, 20)
+	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 0.8)
+	combat.current_player_idx = 0
+	combat.active_character = caster
+	combat.active_combatant = {"id": "player_0", "is_player": true, "entity": caster}
+	combat.player_entities[0]["hex_position"] = Vector2i.ZERO
+	combat.player_entities[1]["hex_position"] = Vector2i(1, 0)
+	combat.turn_budget.reset(caster, combat.player_entities)
+	for enemy in combat.monster_entities:
+		enemy["is_alive"] = false
+		enemy["current_hp"] = 0
+	combat._update_grid_entities()
+	combat.hud.update_hud(caster, combat.tracker)
+	GameManager.test_mode = false
+	var exact_fail := await _run_margin_gate_control_cast(combat, caster, "sandbox:margin_gate_neutral", 7)
+	var exact_margin := int(exact_fail.get("save_test", {}).get("total", 0)) - int(exact_fail.get("save_test", {}).get("dc", 0))
+	_assert(exact_fail.get("started", false) and exact_fail.get("save_prompt_seen", false) and exact_fail.get("pending_hp_unchanged", false), "Real picker, target selection and S092 save choice pause before damage and aftermath")
+	_assert(exact_margin == -5 and int(exact_fail.get("temp_hp", -1)) == 2 and int(exact_fail.get("hp_after", 100)) < 100, "Production settlement preserves the exact signed -5 failed-save margin and applies its aftermath once")
+	_assert(int(exact_fail.get("slots_before", 0)) - int(exact_fail.get("slots_after", 0)) == 1 and exact_fail.get("action_spent", false) and exact_fail.get("settled", false), "The exact-boundary cast pays one slot and one Magic Action")
+	caster.features.append({"id": "sorcerer_metamagic", "name": "Fixture Empowered Spell", "type": "passive"})
+	caster.sorcerer_metamagic_choices.append("empowered_spell")
+	caster.feature_uses["sorcery_points"] = 3
+	caster.current_hp = 100
+	caster.temp_hp = 0
+	var empowered_margin_cast := await _run_margin_gate_empowered_control_cast(combat, caster, "sandbox:margin_gate_neutral", 7)
+	var empowered_margin := int(empowered_margin_cast.get("save_test", {}).get("total", 0)) - int(empowered_margin_cast.get("save_test", {}).get("dc", 0))
+	_assert(empowered_margin_cast.get("started", false) and empowered_margin_cast.get("empowered_prompt_seen", false) and empowered_margin_cast.get("save_prompt_seen", false) and empowered_margin_cast.get("damage_choice_seen", false), "Real ordered failed-save cast reaches the S092 outcome and later Empowered damage choices")
+	_assert(empowered_margin == -5 and empowered_margin_cast.get("pending_hp_unchanged", false) and empowered_margin_cast.get("pending_temp_hp_unchanged", false) and int(empowered_margin_cast.get("temp_hp", -1)) == 2, "Margin gate input survives the pending damage choice; neither damage nor aftermath applies until settlement, then aftermath applies once")
+	_assert(int(empowered_margin_cast.get("slots_before", 0)) - int(empowered_margin_cast.get("slots_after", 0)) == 1 and int(empowered_margin_cast.get("points_before", 0)) - int(empowered_margin_cast.get("points_after", 0)) == 1 and empowered_margin_cast.get("settled", false), "Resumed Empowered gate cast settles one slot, one Sorcery Point and its final result once")
+	caster.sorcerer_metamagic_choices.erase("empowered_spell")
+	for feature_index in range(caster.features.size() - 1, -1, -1):
+		if str(caster.features[feature_index].get("id", "")) == "sorcerer_metamagic":
+			caster.features.remove_at(feature_index)
+			break
+	caster.current_hp = 100
+	caster.temp_hp = 0
+	var above_fail := await _run_margin_gate_control_cast(combat, caster, "sandbox:margin_gate_neutral", 8)
+	var above_margin := int(above_fail.get("save_test", {}).get("total", 0)) - int(above_fail.get("save_test", {}).get("dc", 0))
+	_assert(above_margin == -4 and int(above_fail.get("temp_hp", -1)) == 0 and int(above_fail.get("hp_after", 100)) < 100, "Production failure one above the -5 threshold still damages but does not take the margin branch")
+	caster.current_hp = 100
+	caster.temp_hp = 0
+	var forced_fail := await _run_margin_gate_control_cast(combat, caster, "sandbox:margin_gate_neutral", 12, failure_source)
+	var forced_fail_margin := int(forced_fail.get("save_test", {}).get("total", 0)) - int(forced_fail.get("save_test", {}).get("dc", 0))
+	_assert(forced_fail.get("save_prompt_seen", false) and int(forced_fail.get("save_test", {}).get("natural_roll", 0)) == 12 and int(forced_fail.get("save_option_id", 0)) > 0 and int(forced_fail.get("hp_after", 100)) < 100, "Real S092 choice forces a rolled successful equality save to failure and resumes damage")
+	_assert(forced_fail_margin == 0 and int(forced_fail.get("temp_hp", -1)) == 0, "A final failed outcome with numeric margin zero remains distinct and does not qualify for the -5 gate")
+	caster.current_hp = 100
+	caster.temp_hp = 0
+	var forced_success := await _run_margin_gate_control_cast(combat, caster, "sandbox:margin_gate_neutral", 1, success_source)
+	var forced_success_test: Dictionary = forced_success.get("save_test", {})
+	var forced_success_margin := int(forced_success_test.get("total", 0)) - int(forced_success_test.get("dc", 0))
+	_assert(forced_success.get("save_prompt_seen", false) and forced_success.get("save_option_id", 0) > 0 and forced_success_margin <= -5, "Real S092 choice overrides a rolled failure whose numeric margin independently qualifies")
+	_assert(int(forced_success.get("hp_before", 0)) == int(forced_success.get("hp_after", -1)) and int(forced_success.get("temp_hp", -1)) == 0 and int(forced_success.get("slots_before", 0)) - int(forced_success.get("slots_after", 0)) == 1, "Final success blocks failed-save aftermath while preserving one slot/action cost")
+	ally.add_condition("paralyzed", 99)
+	ally.current_hp = 100
+	ally.temp_hp = 0
+	combat.turn_budget.reset(caster, combat.player_entities)
+	combat.hud.update_hud(caster, combat.tracker)
+	_assert(await _start_fixture_spell_from_picker(combat, "sandbox:margin_gate_no_roll"), "Loaded no-roll STR-save variant starts through the real spell picker")
+	combat.call_deferred("_on_hex_clicked", Vector2i(1, 0))
+	for _frame in 240:
+		if combat.pending_action_type.is_empty() and not combat.resolving_player_action: break
+		await get_tree().process_frame
+	_assert(ally.current_hp < 100 and ally.temp_hp == 0, "No-roll failed save settles its damage once without making the unavailable margin gate qualify")
+	ally.remove_condition("paralyzed")
+	ally.current_hp = 10
+	ally.temp_hp = 0
+	combat.turn_budget.reset(caster, combat.player_entities)
+	combat.hud.update_hud(caster, combat.tracker)
+	var hp_slots_before := int(caster.spell_slots.get("1", 0))
+	_assert(await _start_fixture_spell_from_picker(combat, "sandbox:settlement_hp_gate_renamed"), "Renamed loaded HP gate is selectable in the actual CombatHUD spell picker")
+	combat.call_deferred("_on_hex_clicked", Vector2i(1, 0))
+	for _frame in 240:
+		if combat.pending_action_type.is_empty() and not combat.resolving_player_action: break
+		await get_tree().process_frame
+	_assert(ally.current_hp == 5 and ally.temp_hp == 3 and ally.is_alive, "Renamed branch reads the damage-settlement HP of 2 despite later healing to 7 and unrelated damage to final HP 5")
+	_assert(hp_slots_before - int(caster.spell_slots.get("1", 0)) == 1 and not combat.turn_budget.can_spend("magic_action"), "Renamed HP-gate cast pays one spell slot and one Magic Action")
+	ally.current_hp = 100
+	ally.temp_hp = 12
+	combat.turn_budget.reset(caster, combat.player_entities)
+	combat.hud.update_hud(caster, combat.tracker)
+	var thp_slots_before := int(caster.spell_slots.get("1", 0))
+	_assert(await _start_fixture_spell_from_picker(combat, "sandbox:settlement_hp_gate_renamed"), "Renamed HP gate can be selected for a temporary-HP settlement probe")
+	combat.call_deferred("_on_hex_clicked", Vector2i(1, 0))
+	for _frame in 240:
+		if combat.pending_action_type.is_empty() and not combat.resolving_player_action: break
+		await get_tree().process_frame
+	_assert(ally.current_hp == 100 and ally.temp_hp == 2, "HP gate uses the settled HP value 100 when damage is absorbed by temporary HP; later damage still resolves")
+	_assert(thp_slots_before - int(caster.spell_slots.get("1", 0)) == 1, "Temporary-HP settlement probe pays one slot")
+	ally.current_hp = 4
+	ally.temp_hp = 0
+	combat.turn_budget.reset(caster, combat.player_entities)
+	combat.hud.update_hud(caster, combat.tracker)
+	var overkill_slots_before := int(caster.spell_slots.get("1", 0))
+	_assert(await _start_fixture_spell_from_picker(combat, "sandbox:settlement_hp_gate_renamed"), "Renamed HP gate can be selected for an overkill settlement probe")
+	combat.call_deferred("_on_hex_clicked", Vector2i(1, 0))
+	for _frame in 240:
+		if combat.pending_action_type.is_empty() and not combat.resolving_player_action: break
+		await get_tree().process_frame
+	_assert(ally.current_hp == 3 and ally.temp_hp == 3 and ally.is_alive, "HP gate retains post-overkill HP 0 after ordered healing and unrelated damage change current HP to 3")
+	_assert(overkill_slots_before - int(caster.spell_slots.get("1", 0)) == 1, "Overkill settlement probe pays one slot")
+	ally.current_hp = 3
+	ally.temp_hp = 0
+	combat.turn_budget.reset(caster, combat.player_entities)
+	combat.hud.update_hud(caster, combat.tracker)
+	var zero_slots_before := int(caster.spell_slots.get("1", 0))
+	_assert(await _start_fixture_spell_from_picker(combat, "sandbox:settlement_hp_gate_zero"), "Loaded zero-damage variant remains selectable in the actual CombatHUD picker")
+	combat.call_deferred("_on_hex_clicked", Vector2i(1, 0))
+	for _frame in 240:
+		if combat.pending_action_type.is_empty() and not combat.resolving_player_action: break
+		await get_tree().process_frame
+	_assert(ally.current_hp == 6 and ally.temp_hp == 3, "Zero-damage receipt preserves post-settlement HP 3 for its branch before later healing and unrelated damage")
+	_assert(zero_slots_before - int(caster.spell_slots.get("1", 0)) == 1, "Zero-damage settlement probe pays one slot")
+	var invalid_preflights_pass := true
+	for invalid_id in ["sandbox:s043_bad_unknown", "sandbox:s043_bad_malformed", "sandbox:s043_bad_future"]:
+		ally.current_hp = 30
+		ally.temp_hp = 0
+		combat.turn_budget.reset(caster, combat.player_entities)
+		combat.hud.update_hud(caster, combat.tracker)
+		var slots_before_invalid := int(caster.spell_slots.get("1", 0))
+		combat.hud._show_spell_selection()
+		var invalid_index := -1
+		for spell_index in combat.hud.spells_registered.size():
+			if str(combat.hud.spells_registered[spell_index].get("id", "")) == invalid_id: invalid_index = spell_index
+		var disabled: bool = invalid_index >= 0 and combat.hud.spell_list.is_item_disabled(invalid_index)
+		if invalid_index >= 0: combat.hud._on_spell_selected(invalid_index)
+		invalid_preflights_pass = invalid_preflights_pass and disabled and combat.pending_action_type != "spell" and int(caster.spell_slots.get("1", 0)) == slots_before_invalid and ally.current_hp == 30 and ally.temp_hp == 0
+	_assert(invalid_preflights_pass, "Unknown, malformed and forward step references are refused in the picker before payment or effects")
+	DataLoader.spells = prior_spells
+	DataLoader.classes = prior_classes
+	DataLoader.classes["sorcerer"]["spell_list_ids"] = prior_sorcerer_list
+	GameManager.test_mode = true
+	_teardown_scene(combat)
+	await get_tree().process_frame
+	_exit_test()
+
+
+func _cast_binding_spell_from_picker(combat: Node, spell_id: String, target_coord: Vector2i) -> Dictionary:
+	combat.hud.update_hud(combat.active_character, combat.tracker)
+	combat.hud._show_spell_selection()
+	var spell_index := -1
+	for index in combat.hud.spells_registered.size():
+		if str(combat.hud.spells_registered[index].get("id", "")) == spell_id:
+			spell_index = index
+			break
+	if spell_index < 0 or combat.hud.spell_list.is_item_disabled(spell_index):
+		return {"selected": false, "choice_seen": false, "settled": false}
+	combat.hud.spell_list.item_selected.emit(spell_index)
+	for _frame in 60:
+		if str(combat.pending_action_type) == "spell": break
+		await get_tree().process_frame
+	if str(combat.pending_action_type) != "spell" or str(combat.pending_spell_data.get("id", "")) != spell_id:
+		return {"selected": true, "choice_seen": false, "settled": false}
+	combat.call_deferred("_on_hex_clicked", target_coord)
+	var choice_seen := false
+	for _frame in 120:
+		await get_tree().process_frame
+		var dialog := _find_open_roll_token_dialog(combat.hud)
+		if dialog is ConfirmationDialog:
+			choice_seen = true
+			dialog.confirmed.emit()
+			break
+		elif dialog is PopupMenu:
+			choice_seen = true
+			dialog.id_pressed.emit(1)
+			break
+	for _frame in 120:
+		if str(combat.pending_action_type).is_empty() and not bool(combat.resolving_player_action): break
+		await get_tree().process_frame
+	return {"selected": true, "choice_seen": choice_seen, "settled": str(combat.pending_action_type).is_empty() and not bool(combat.resolving_player_action)}
 
 ## Production Crown event chain: verify the Fairy Ring follow-up, every legal
 ## choice, and each deterministic branch outcome through shared resolvers.
@@ -9223,6 +11332,1744 @@ func test_shared_spell_flow() -> void:
 		_teardown_scene(dungeon)
 	class_data["spell_list_ids"] = previous_list
 	print("SHARED_SPELL_LIVE_FLOW_CHECKS_COMPLETE")
+	_exit_test()
+
+
+func test_shared_numeric_pool_flow() -> void:
+	_enter_test("shared_numeric_pool_flow")
+	_setup_world()
+	DataLoader._load_json_file("res://data/fixtures/shared_numeric_pool.json", "class")
+	var loaded_class: Dictionary = DataLoader.get_character_class("fixture:steady_spark_class")
+	var feature: Dictionary = loaded_class.get("features_by_level", {}).get("1", [{}])[0].duplicate(true)
+	_assert(not loaded_class.is_empty() and str(loaded_class.get("_source", "")).ends_with("shared_numeric_pool.json") and ClassFeature.content_error(feature).is_empty(), "The neutral pool definition loads and validates through production DataLoader")
+
+	var renamed_class := loaded_class.duplicate(true)
+	renamed_class["id"] = "fixture:steady_spark_class_renamed"
+	renamed_class["name"] = "Fixture Steady Spark Renamed"
+	var renamed_feature: Dictionary = renamed_class["features_by_level"]["1"][0]
+	renamed_feature["id"] = "fixture:steady_spark_renamed"
+	renamed_feature["name"] = "Steady Spark Renamed"
+	renamed_feature["resource_pool"]["id"] = "fixture:steady_spark_pool_renamed"
+	DataLoader._register_content(renamed_class, "class", "res://data/fixtures/shared_numeric_pool.json#renamed")
+	var registered_renamed: Dictionary = DataLoader.get_character_class("fixture:steady_spark_class_renamed")
+	_assert(not registered_renamed.is_empty() and ClassFeature.content_error(registered_renamed.get("features_by_level", {}).get("1", [{}])[0]).is_empty(), "A renamed equivalent passes the same production content-registration path")
+
+	PlayerManager.reset()
+	PartyManager.reset()
+	PlayerManager.add_player("Pool Owner")
+	var actor := _fresh_char("Pool Owner", "human", "fixture:steady_spark_class", {"STR": 10, "DEX": 10, "CON": 10, "INT": 16, "WIS": 10, "CHA": 10})
+	PlayerManager.set_player_character(0, actor)
+	PartyManager.register_player_character(0, actor)
+	actor.max_hp = 20
+	actor.current_hp = 20
+	var owned_feature := actor.get_feature("fixture:steady_spark")
+	var owned_feature_index := actor.features.find(owned_feature)
+	var source_a := "fixture:steady_spark:source_a"
+	var source_b := "fixture:steady_spark:source_b"
+	var acquire_a := ResourcePoolRules.acquire(actor, owned_feature, source_a)
+	var acquire_b := ResourcePoolRules.acquire(actor, owned_feature, source_b)
+	var first_query := ResourcePoolRules.availability(actor, source_a)
+	var repeated_query := ResourcePoolRules.availability(actor, source_a)
+	_assert(acquire_a.get("success", false) and acquire_b.get("success", false) and int(first_query.get("capacity", 0)) == actor.proficiency_bonus and int(first_query.get("current", 0)) == 1 and first_query == repeated_query, "Production feature acquisition sets formula capacity and authored initial quantity; queries do not refill")
+	_assert(ResourcePoolRules.availability(actor, source_a).get("current", -1) == 1 and ResourcePoolRules.availability(actor, source_b).get("current", -1) == 1, "Two instances of one loaded definition begin with independent quantities")
+
+	var cancelled_budget := CombatTurnBudget.new()
+	cancelled_budget.bonus_action_available = false
+	var cancelled := ClassFeature.execute(actor, owned_feature, null, cancelled_budget, source_b)
+	_assert(not cancelled.get("success", true) and int(ResourcePoolRules.availability(actor, source_b).get("current", -1)) == 1 and not actor.has_condition("steady_spark"), "Cancelled action leaves the selected pool and effect untouched")
+	GameManager.current_state = GameManager.GameState.COMBAT
+	GameManager.transition_context = {"terrain": "plains", "monster_ids": ["goblin"]}
+	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 1.2)
+	combat.current_player_idx = 0
+	combat.active_character = actor
+	combat.active_combatant = {"is_player": true, "entity": actor}
+	combat.turn_budget.reset(actor, combat.player_entities)
+	combat.hud.update_hud(actor, combat.tracker)
+	combat.hud._show_feature_selection()
+	var menu_source_index := -1
+	for index in combat.hud.features_registered.size():
+		var menu_feature: Dictionary = combat.hud.features_registered[index]
+		if str(menu_feature.get("id", "")) == str(owned_feature.get("id", "")) and str(menu_feature.get("source_instance_id", "")) == source_a:
+			menu_source_index = index
+	_assert(menu_source_index >= 0 and not combat.hud.feature_list.is_item_disabled(menu_source_index), "The real feature menu offers the exact owned source instance")
+	combat.hud.btn_cancel_features.pressed.emit()
+	_assert(int(ResourcePoolRules.availability(actor, source_a).get("current", -1)) == 1 and int(ResourcePoolRules.availability(actor, source_b).get("current", -1)) == 1 and not actor.has_condition("steady_spark") and combat.turn_budget.bonus_action_available, "Canceling the real feature menu leaves both pools and the turn budget untouched")
+	combat.hud._show_feature_selection()
+	menu_source_index = -1
+	for index in combat.hud.features_registered.size():
+		var menu_feature: Dictionary = combat.hud.features_registered[index]
+		if str(menu_feature.get("id", "")) == str(owned_feature.get("id", "")) and str(menu_feature.get("source_instance_id", "")) == source_a:
+			menu_source_index = index
+	if menu_source_index >= 0:
+		combat.hud._on_feature_selected(menu_source_index)
+	for frame in 180:
+		if not combat.resolving_player_action:
+			await get_tree().process_frame
+			if combat.turn_budget.bonus_action_available == false:
+				break
+		else:
+			await get_tree().process_frame
+	var activation := {"success": menu_source_index >= 0 and not combat.turn_budget.bonus_action_available}
+	var condition_duration := int(actor.conditions.get("steady_spark", 0))
+	_assert(activation.get("success", false) and condition_duration == 1 and int(ResourcePoolRules.availability(actor, source_a).get("current", -1)) == 0 and int(ResourcePoolRules.availability(actor, source_b).get("current", -1)) == 1, "Successful activation applies its effect once and spends exactly one use from the exact source")
+	_teardown_scene(combat)
+	GameManager.current_state = GameManager.GameState.OVERWORLD
+	var depleted_budget := CombatTurnBudget.new()
+	var depleted := ClassFeature.execute(actor, owned_feature, null, depleted_budget, source_a)
+	_assert(not depleted.get("success", true) and int(ResourcePoolRules.availability(actor, source_a).get("current", -1)) == 0 and int(actor.conditions.get("steady_spark", 0)) == condition_duration and depleted_budget.bonus_action_available, "Depleted activation refuses without another effect or action expenditure")
+
+	var invalid_owned := owned_feature.duplicate(true)
+	var wrong_source_definition := owned_feature.duplicate(true)
+	wrong_source_definition["resource_pool"]["id"] = "fixture:another_pool"
+	actor.features[owned_feature_index] = wrong_source_definition
+	var wrong_source_budget := CombatTurnBudget.new()
+	var wrong_source_activation := ClassFeature.execute(actor, wrong_source_definition, null, wrong_source_budget, source_b)
+	_assert(not wrong_source_activation.get("success", true) and int(ResourcePoolRules.availability(actor, source_b).get("current", -1)) == 1 and wrong_source_budget.bonus_action_available, "A source instance cannot activate a different pool definition")
+	actor.features[owned_feature_index] = owned_feature
+	invalid_owned["resource_pool"]["capacity_formula"] = {"caster_proficiency_bonus": true, "selected_slot_level": true}
+	actor.features[owned_feature_index] = invalid_owned
+	var invalid_budget := CombatTurnBudget.new()
+	var invalid_activation := ClassFeature.execute(actor, invalid_owned, null, invalid_budget, source_b)
+	_assert(not invalid_activation.get("success", true) and int(ResourcePoolRules.availability(actor, source_b).get("current", -1)) == 1 and invalid_budget.bonus_action_available, "Invalid owned activation refuses before spending its use or action")
+	actor.features[owned_feature_index] = owned_feature
+
+	actor.proficiency_bonus = 3
+	var grown := ResourcePoolRules.recalculate_capacity(actor, owned_feature, source_b)
+	_assert(grown.get("success", false) and int(grown.get("pool", {}).get("capacity", 0)) == 3 and int(grown.get("pool", {}).get("current", -1)) == 1, "Capacity growth follows the live formula without refilling")
+	var shrink_definition := owned_feature.duplicate(true)
+	shrink_definition["resource_pool"]["initial_quantity"] = 2
+	var source_c := "fixture:steady_spark:source_c"
+	var acquire_c := ResourcePoolRules.acquire(actor, shrink_definition, source_c)
+	actor.proficiency_bonus = 1
+	var shrunk := ResourcePoolRules.recalculate_capacity(actor, shrink_definition, source_c)
+	_assert(acquire_c.get("success", false) and shrunk.get("success", false) and int(shrunk.get("pool", {}).get("capacity", 0)) == 1 and int(shrunk.get("pool", {}).get("current", -1)) == 1, "Capacity shrink clamps an over-capacity current quantity")
+	actor.proficiency_bonus = 2
+	ResourcePoolRules.recalculate_capacity(actor, owned_feature, source_b)
+	_assert(ResourcePoolRules.remove(actor, source_a) and ResourcePoolRules.availability(actor, source_b).get("available", false) and int(ResourcePoolRules.availability(actor, source_b).get("current", -1)) == 1, "Ending one source leaves the other instance's pool available")
+	ResourcePoolRules.remove(actor, source_c)
+
+	var renamed_actor := _fresh_char("Renamed Pool Owner", "human", "fixture:steady_spark_class_renamed", {"STR": 10, "DEX": 10, "CON": 10, "INT": 16, "WIS": 10, "CHA": 10})
+	renamed_actor.character_id = "fixture:renamed_pool_owner"
+	var renamed_owned := renamed_actor.get_feature("fixture:steady_spark_renamed")
+	var renamed_source := "fixture:steady_spark_renamed:source"
+	var renamed_acquired := ResourcePoolRules.acquire(renamed_actor, renamed_owned, renamed_source)
+	var renamed_activation := ClassFeature.execute(renamed_actor, renamed_owned, null, null, renamed_source)
+	_assert(renamed_acquired.get("success", false) and renamed_activation.get("success", false) and renamed_actor.has_condition("steady_spark") and int(ResourcePoolRules.availability(renamed_actor, renamed_source).get("current", -1)) == 0, "Renamed loaded definition acquires and activates through the same shared pool path")
+
+	GameManager.game_in_progress = true
+	_assert(SaveManager.save_game("numeric_pool_acceptance") and SaveManager.load_game("numeric_pool_acceptance"), "Spent source-owned pool reaches and restores through an allowed SaveManager checkpoint")
+	var restored: Character = PlayerManager.get_player(0).get("character")
+	var restored_pool: Dictionary = restored.numeric_resource_pools.get(source_b, {}) if restored != null else {}
+	_assert(restored != actor and restored.numeric_resource_pools.size() == 1 and ResourcePoolRules.saved_state_error(restored.to_dict()).is_empty() and str(restored_pool.get("owner_id", "")) == restored.character_id and str(restored_pool.get("source_instance_id", "")) == source_b and int(restored_pool.get("capacity", -1)) == 2 and int(restored_pool.get("current", -1)) == 1 and ResourcePoolRules.availability(restored, source_b).get("current", -1) == 1, "Checkpoint reload preserves owner, source, capacity and remaining quantity without reacquisition")
+	SaveManager.delete_save("numeric_pool_acceptance")
+	DataLoader.load_all_data()
+	_exit_test()
+
+
+func test_shared_numeric_breakpoint_flow() -> void:
+	_enter_test("shared_numeric_breakpoint_flow")
+	_setup_world()
+	DataLoader._load_json_file("res://data/fixtures/shared_numeric_breakpoint_pool.json", "class")
+	DataLoader._load_json_file("res://data/fixtures/shared_spells/spells/examples.json", "spell")
+	var neutral_class: Dictionary = DataLoader.get_character_class("fixture:breakpoint_spark_class")
+	var neutral: Dictionary = neutral_class.get("features_by_level", {}).get("1", [{}])[0].duplicate(true)
+	_assert(not neutral_class.is_empty() and str(neutral_class.get("_source", "")).ends_with("shared_numeric_breakpoint_pool.json") and ClassFeature.content_error(neutral).is_empty(), "Neutral breakpoint feature loads through production DataLoader")
+	var renamed_class := neutral_class.duplicate(true)
+	renamed_class["id"] = "fixture:breakpoint_spark_renamed_class"
+	renamed_class["name"] = "Fixture Breakpoint Spark Renamed"
+	var renamed: Dictionary = renamed_class["features_by_level"]["1"][0]
+	renamed["id"] = "fixture:breakpoint_spark_renamed"
+	renamed["name"] = "Breakpoint Spark Renamed"
+	renamed["resource_pool"]["id"] = "fixture:breakpoint_spark_renamed_pool"
+	renamed["resource_pool"]["capacity_formula"]["breakpoints"] = [
+		{"threshold": 2, "value": 1},
+		{"threshold": 6, "value": 5},
+		{"threshold": 10, "value": 7},
+	]
+	renamed["resource_pool"]["initial_quantity"] = 1
+	DataLoader._register_content(renamed_class, "class", "res://data/fixtures/shared_numeric_breakpoint_pool.json#renamed")
+	var loaded_renamed_class: Dictionary = DataLoader.get_character_class("fixture:breakpoint_spark_renamed_class")
+	var loaded_renamed: Dictionary = loaded_renamed_class.get("features_by_level", {}).get("1", [{}])[0]
+	_assert(not loaded_renamed_class.is_empty() and ClassFeature.content_error(loaded_renamed).is_empty(), "Renamed thresholds and values validate through production content registration")
+
+	var actor := _fresh_char("Breakpoint Owner", "human", "fighter", {"STR": 10, "DEX": 10, "CON": 10, "INT": 16, "WIS": 10, "CHA": 10})
+	actor.character_id = "fixture:breakpoint_lookup_live_owner"
+	actor.features.append(neutral.duplicate(true))
+	actor.features.append(loaded_renamed.duplicate(true))
+	actor.level = 1
+	var neutral_source := "fixture:breakpoint_spark:live_source"
+	var renamed_source := "fixture:breakpoint_spark_renamed:live_source"
+	actor.level = 0
+	var below_first := SharedStepExecutor.evaluate_actor_formula(neutral["resource_pool"]["capacity_formula"], actor)
+	var missing_pool := ResourcePoolRules.acquire(actor, neutral, "fixture:breakpoint_spark:below_first")
+	_assert(not below_first.get("success", true) and str(below_first.get("error", "")).contains("below the first threshold") and not missing_pool.get("success", true) and not actor.numeric_resource_pools.has("fixture:breakpoint_spark:below_first"), "Below-first threshold fails explicitly and cannot create a pool")
+	actor.level = 1
+	var acquired_neutral := ResourcePoolRules.acquire(actor, neutral, neutral_source)
+	actor.level = 2
+	var acquired_renamed := ResourcePoolRules.acquire(actor, loaded_renamed, renamed_source)
+	_assert(acquired_neutral.get("success", false) and int(ResourcePoolRules.availability(actor, neutral_source).get("capacity", -1)) == 2 and int(ResourcePoolRules.availability(actor, neutral_source).get("current", -1)) == 2, "Neutral capacity is 2 at its first threshold and begins with its authored quantity")
+	_assert(acquired_renamed.get("success", false) and int(ResourcePoolRules.availability(actor, renamed_source).get("capacity", -1)) == 1 and int(ResourcePoolRules.availability(actor, renamed_source).get("current", -1)) == 1, "Renamed table selects its distinct threshold and output")
+
+	GameManager.current_state = GameManager.GameState.COMBAT
+	GameManager.transition_context = {"terrain": "plains", "monster_ids": ["goblin"]}
+	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 1.2)
+	var activation_neutral := await _activate_timed_grant_from_combat_menu(combat, actor, str(neutral["id"]), neutral_source)
+	_assert(activation_neutral.get("found", false) and not activation_neutral.get("disabled", true) and int(activation_neutral.get("current", -1)) == 1, "Real feature-menu activation spends exactly one neutral pool use")
+	actor.level = 5
+	var grown := ResourcePoolRules.recalculate_capacity(actor, neutral, neutral_source)
+	var neutral_stable := true
+	for _query in 5:
+		neutral_stable = neutral_stable and int(ResourcePoolRules.availability(actor, neutral_source).get("current", -1)) == 1
+	_assert(grown.get("success", false) and int(grown.get("pool", {}).get("capacity", -1)) == 3 and int(grown.get("pool", {}).get("current", -1)) == 1 and neutral_stable, "Exact threshold growth updates capacity without refill; repeated availability queries neither spend nor roll")
+	actor.level = 3
+	var between := ResourcePoolRules.recalculate_capacity(actor, neutral, neutral_source)
+	actor.level = 9
+	var exact_last := ResourcePoolRules.recalculate_capacity(actor, neutral, neutral_source)
+	actor.level = 20
+	var above_last := ResourcePoolRules.recalculate_capacity(actor, neutral, neutral_source)
+	_assert(int(between.get("pool", {}).get("capacity", -1)) == 2 and int(exact_last.get("pool", {}).get("capacity", -1)) == 4 and int(above_last.get("pool", {}).get("capacity", -1)) == 4, "Neutral lookup handles between, exact-last and above-last inputs")
+	var refill := ResourcePoolRules.recover(actor, neutral, neutral_source, "long_rest_completed")
+	actor.level = 1
+	var shrink := ResourcePoolRules.recalculate_capacity(actor, neutral, neutral_source)
+	_assert(refill.get("success", false) and int(refill.get("current", -1)) == 4 and int(shrink.get("pool", {}).get("capacity", -1)) == 2 and int(shrink.get("pool", {}).get("current", -1)) == 2, "Rest refills to the expanded capacity and later shrink clamps current quantity")
+	actor.level = 6
+	var renamed_growth := ResourcePoolRules.recalculate_capacity(actor, loaded_renamed, renamed_source)
+	_assert(int(renamed_growth.get("pool", {}).get("capacity", -1)) == 5 and int(renamed_growth.get("pool", {}).get("current", -1)) == 1, "Renamed exact threshold selects 5 while preserving its spent quantity")
+	actor.level = 15
+	var renamed_above := ResourcePoolRules.recalculate_capacity(actor, loaded_renamed, renamed_source)
+	_assert(int(renamed_above.get("pool", {}).get("capacity", -1)) == 7, "Renamed above-last input selects its own last value")
+	actor.level = 1
+	var renamed_menu := await _activate_timed_grant_from_combat_menu(combat, actor, str(loaded_renamed["id"]), renamed_source)
+	_assert(renamed_menu.get("found", false) and not renamed_menu.get("disabled", true) and int(renamed_menu.get("current", -1)) == 0, "Renamed feature also activates from the real menu and charges its own pool")
+
+	var composed := SharedStepExecutor.evaluate_actor_formula({"op": "add", "left": neutral["resource_pool"]["capacity_formula"].duplicate(true), "right": 10}, actor)
+	var failed_formula := {"op": "breakpoint_lookup", "input": {"op": "floor_divide", "left": 1, "right": {"op": "subtract", "left": {"caster_level": true}, "right": 1}}, "breakpoints": [{"threshold": 1, "value": 2}]}
+	var failed_result := SharedStepExecutor.evaluate_actor_formula(failed_formula, actor)
+	_assert(composed.get("success", false) and int(composed.get("value", -1)) == 12 and not failed_result.get("success", true), "Lookup composes with arithmetic and propagates an unavailable nested value instead of using zero")
+
+	var pool_before_rejections := int(ResourcePoolRules.availability(actor, neutral_source).get("current", -1))
+	var invalid_cases: Array[Dictionary] = []
+	for rows in [[], [{"threshold": 1, "value": 2}, {"threshold": 1, "value": 3}], [{"threshold": 5, "value": 2}, {"threshold": 1, "value": 3}], [{"threshold": 1, "value": "1d4"}]]:
+		invalid_cases.append({"rows": rows})
+	var random_case := {"rows": [{"threshold": 1, "value": 2}], "input": "1d4"}
+	for case_index in invalid_cases.size() + 1:
+		var bad_class := neutral_class.duplicate(true)
+		bad_class["id"] = "fixture:breakpoint_invalid_%d" % case_index
+		var bad_feature: Dictionary = bad_class["features_by_level"]["1"][0]
+		bad_feature["id"] = "fixture:breakpoint_invalid_feature_%d" % case_index
+		bad_feature["resource_pool"]["id"] = "fixture:breakpoint_invalid_pool_%d" % case_index
+		if case_index == invalid_cases.size():
+			bad_feature["resource_pool"]["capacity_formula"]["breakpoints"] = random_case["rows"]
+			bad_feature["resource_pool"]["capacity_formula"]["input"] = random_case["input"]
+		else:
+			bad_feature["resource_pool"]["capacity_formula"]["breakpoints"] = invalid_cases[case_index]["rows"]
+		var bad_id := str(bad_class["id"])
+		var error_count_before := DataLoader._load_errors.size()
+		DataLoader._register_content(bad_class, "class", "res://fixtures/invalid_breakpoint_%d.json" % case_index)
+		_assert(DataLoader.get_character_class(bad_id).is_empty() and DataLoader._load_errors.size() > error_count_before and int(ResourcePoolRules.availability(actor, neutral_source).get("current", -1)) == pool_before_rejections and not actor.numeric_resource_pools.has("fixture:breakpoint_invalid_source_%d" % case_index), "Production DataLoader rejects malformed breakpoint table %d before any activation cost" % case_index)
+
+	actor.level = 1
+	actor.current_hp = 10
+	actor.max_hp = 20
+	var spell := DataLoader.get_spell("sandbox:breakpoint_lookup_probe")
+	var spell_cast := CombatAction.resolve_spell(actor, actor, spell, false, {}, [], 1, 0)
+	_assert(spell_cast.get("success", false) and actor.current_hp == 13, "Ordinary shared spell heals by the same breakpoint-plus-arithmetic evaluator")
+	_teardown_scene(combat)
+	DataLoader.load_all_data()
+	_exit_test()
+
+
+func _activate_timed_grant_from_combat_menu(combat: Node, actor: Character, feature_id: String, source_id: String) -> Dictionary:
+	combat.current_player_idx = 0
+	combat.active_character = actor
+	combat.active_combatant = {"is_player": true, "entity": actor}
+	combat.turn_budget.reset(actor, combat.player_entities)
+	combat.hud.update_hud(actor, combat.tracker)
+	combat.hud._show_feature_selection()
+	var feature_index := -1
+	for index in combat.hud.features_registered.size():
+		var entry: Dictionary = combat.hud.features_registered[index]
+		if str(entry.get("id", "")) == feature_id and str(entry.get("source_instance_id", "")) == source_id:
+			feature_index = index
+			break
+	if feature_index < 0:
+		return {"found": false}
+	var disabled: bool = combat.hud.feature_list.is_item_disabled(feature_index)
+	var before := int(ResourcePoolRules.availability(actor, source_id).get("current", -1))
+	if not disabled:
+		combat.hud._on_feature_selected(feature_index)
+		for _frame in 180:
+			await get_tree().process_frame
+			if int(ResourcePoolRules.availability(actor, source_id).get("current", -1)) < before:
+				break
+	var grant: Dictionary = {}
+	for modifier in actor.modifiers:
+		if str(modifier.get("source_instance_id", "")) == source_id and modifier.has("grant_instance_id"):
+			grant = modifier.duplicate(true)
+			break
+	return {"found": true, "disabled": disabled, "current": int(ResourcePoolRules.availability(actor, source_id).get("current", -1)), "grant": grant}
+
+
+func _dismiss_timed_grant_from_combat_menu(combat: Node, actor: Character, source_id: String, grant_id: String) -> Dictionary:
+	combat.current_player_idx = 0
+	combat.active_character = actor
+	combat.active_combatant = {"is_player": true, "entity": actor}
+	combat.hud.update_hud(actor, combat.tracker)
+	combat.hud._show_feature_selection()
+	var feature_index := -1
+	for index in combat.hud.features_registered.size():
+		var entry: Dictionary = combat.hud.features_registered[index]
+		if str(entry.get("id", "")) == "dismiss_timed_numeric_modifier" and str(entry.get("source_instance_id", "")) == source_id and str(entry.get("grant_instance_id", "")) == grant_id:
+			feature_index = index
+			break
+	if feature_index < 0:
+		return {"found": false}
+	var disabled: bool = combat.hud.feature_list.is_item_disabled(feature_index)
+	var action_before: bool = combat.turn_budget.action_available
+	var bonus_before: bool = combat.turn_budget.bonus_action_available
+	if not disabled:
+		combat.hud._on_feature_selected(feature_index)
+		for _frame in 180:
+			await get_tree().process_frame
+			if not actor.has_campaign_modifier_grant(source_id, grant_id, int(GameManager.campaign_elapsed_seconds)):
+				break
+	var cooldown: Dictionary = {}
+	for candidate in actor.campaign_modifier_cooldowns:
+		if str(candidate.get("grant_instance_id", "")) == grant_id:
+			cooldown = candidate.duplicate(true)
+			break
+	return {"found": true, "disabled": disabled, "cooldown": cooldown, "action_unchanged": action_before == combat.turn_budget.action_available and bonus_before == combat.turn_budget.bonus_action_available}
+
+
+func test_shared_timed_numeric_grant_flow() -> void:
+	_enter_test("shared_timed_numeric_grant_flow")
+	_setup_world()
+	DataLoader._load_json_file("res://data/fixtures/shared_timed_numeric_grant.json", "class")
+	var loaded_class: Dictionary = DataLoader.get_character_class("fixture:campaign_guard_class")
+	var feature: Dictionary = loaded_class.get("features_by_level", {}).get("1", [{}])[0].duplicate(true)
+	_assert(not loaded_class.is_empty() and str(loaded_class.get("_source", "")).ends_with("shared_timed_numeric_grant.json") and ClassFeature.content_error(feature).is_empty(), "Neutral timed-grant definition loads through production DataLoader")
+	var renamed_class := loaded_class.duplicate(true)
+	renamed_class["id"] = "fixture:campaign_guard_class_renamed"
+	renamed_class["name"] = "Fixture Campaign Guard Renamed"
+	var renamed_feature: Dictionary = renamed_class["features_by_level"]["1"][0]
+	renamed_feature["id"] = "fixture:campaign_guard_renamed"
+	renamed_feature["name"] = "Campaign Guard Renamed"
+	renamed_feature["resource_pool"]["id"] = "fixture:campaign_guard_pool_renamed"
+	renamed_feature["resource_pool"]["initial_quantity"] = 1
+	renamed_feature["resource_pool"]["capacity_formula"] = 1
+	renamed_feature["effects"][0]["duration_seconds"] = 3600
+	DataLoader._register_content(renamed_class, "class", "res://data/fixtures/shared_timed_numeric_grant.json#renamed-hour")
+	var registered_renamed: Dictionary = DataLoader.get_character_class("fixture:campaign_guard_class_renamed")
+	_assert(not registered_renamed.is_empty() and ClassFeature.content_error(registered_renamed.get("features_by_level", {}).get("1", [{}])[0]).is_empty(), "Renamed hour-duration definition validates through production content registration")
+
+	var actor: Character = PlayerManager.get_player(0).get("character")
+	actor.character_id = "fixture:campaign_guard_owner"
+	actor.features.append(feature.duplicate(true))
+	actor.features.append(renamed_feature.duplicate(true))
+	var source_a := "fixture:campaign_guard:source_a"
+	var source_b := "fixture:campaign_guard:source_b"
+	var source_c := "fixture:campaign_guard:source_c"
+	var source_hour := "fixture:campaign_guard:source_hour"
+	var acquire_a := ResourcePoolRules.acquire(actor, feature, source_a)
+	var acquire_b := ResourcePoolRules.acquire(actor, feature, source_b)
+	var acquire_c := ResourcePoolRules.acquire(actor, feature, source_c)
+	var acquire_hour := ResourcePoolRules.acquire(actor, renamed_feature, source_hour)
+	actor.add_modifier("stat", "AC", 1, 100)
+	GameManager.campaign_elapsed_seconds = 100
+	GameManager.current_state = GameManager.GameState.COMBAT
+	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 1.2)
+	combat.current_player_idx = 0
+	combat.active_character = actor
+	combat.active_combatant = {"is_player": true, "entity": actor}
+	combat.turn_budget.reset(actor, combat.player_entities)
+	combat.hud.update_hud(actor, combat.tracker)
+	var base_ac := actor.get_ac()
+	var activated_a := await _activate_timed_grant_from_combat_menu(combat, actor, "fixture:campaign_guard", source_a)
+	var deadline_a := int(activated_a.get("grant", {}).get("expires_at_seconds", -1))
+	_assert(acquire_a.get("success", false) and acquire_b.get("success", false) and acquire_c.get("success", false) and acquire_hour.get("success", false) and activated_a.get("found", false) and not activated_a.get("disabled", true) and int(activated_a.get("current", -1)) == 3 and actor.get_ac() == base_ac + 2 and deadline_a == 160, "Real combat feature menu pays one exact pool use and adds +2 AC through the 60-second grant")
+	var duplicate := ClassFeature.execute(actor, feature, null, null, source_a)
+	_assert(not duplicate.get("success", true) and int(ResourcePoolRules.availability(actor, source_a).get("current", -1)) == 3 and actor.get_ac() == base_ac + 2, "Repeated activation of the same live source refuses without extra payment")
+	var clock_before_combat_round := int(GameManager.campaign_elapsed_seconds)
+	for _turn in 12:
+		if int(GameManager.campaign_elapsed_seconds) > clock_before_combat_round:
+			break
+		await combat._end_active_turn()
+		await get_tree().process_frame
+	_assert(int(GameManager.campaign_elapsed_seconds) == clock_before_combat_round + 6 and actor.get_modifier("stat", "AC") == 3, "A real combat round advances the campaign clock while its turn ticks do not reduce the absolute modifier")
+	_teardown_scene(combat)
+	GameManager.current_state = GameManager.GameState.OVERWORLD
+	GameManager.advance_campaign_time(24)
+	var current_clock := int(GameManager.campaign_elapsed_seconds)
+	var activated_b: Dictionary = {}
+	# Re-enter combat to activate the second and third exact source instances.
+	GameManager.current_state = GameManager.GameState.COMBAT
+	combat = await _spawn_scene("res://scenes/combat.tscn", 1.2)
+	activated_b = await _activate_timed_grant_from_combat_menu(combat, actor, "fixture:campaign_guard", source_b)
+	var activated_c := await _activate_timed_grant_from_combat_menu(combat, actor, "fixture:campaign_guard", source_c)
+	var activated_hour := await _activate_timed_grant_from_combat_menu(combat, actor, "fixture:campaign_guard_renamed", source_hour)
+	var deadline_b := int(activated_b.get("grant", {}).get("expires_at_seconds", -1))
+	var deadline_c := int(activated_c.get("grant", {}).get("expires_at_seconds", -1))
+	var deadline_hour := int(activated_hour.get("grant", {}).get("expires_at_seconds", -1))
+	_assert(activated_b.get("found", false) and activated_c.get("found", false) and activated_hour.get("found", false) and int(ResourcePoolRules.availability(actor, source_b).get("current", -1)) == 3 and int(ResourcePoolRules.availability(actor, source_c).get("current", -1)) == 3 and int(ResourcePoolRules.availability(actor, source_hour).get("current", -1)) == 0 and deadline_b == current_clock + 60 and deadline_c == current_clock + 60 and deadline_hour == current_clock + 3600 and actor.get_ac() == base_ac + 8, "Two later exact sources receive staggered minute deadlines and the renamed hour parameter remains source-bound")
+	_teardown_scene(combat)
+	GameManager.current_state = GameManager.GameState.COMBAT
+	GameManager.advance_campaign_time(29)
+	_assert(actor.get_modifier("stat", "AC") == 9, "All minute grants remain active immediately before source A expiry")
+	GameManager.advance_campaign_time(1)
+	_assert(actor.get_modifier("stat", "AC") == 7 and int(GameManager.campaign_elapsed_seconds) == deadline_a, "At source A's exact deadline only its +2 AC is removed")
+	GameManager.advance_campaign_time(1)
+	_assert(actor.get_modifier("stat", "AC") == 7, "Source B and the hour grant survive after source A's deadline")
+	var removed_c := ResourcePoolRules.remove(actor, source_c)
+	_assert(removed_c and actor.get_modifier("stat", "AC") == 5 and ResourcePoolRules.availability(actor, source_b).get("available", false), "Removing source C clears only its contribution and preserves source B, the hour grant and ordinary AC")
+	GameManager.advance_campaign_time(28)
+	_assert(int(GameManager.campaign_elapsed_seconds) == deadline_b - 1 and actor.get_modifier("stat", "AC") == 5, "Source B remains active just before its independent deadline")
+	GameManager.advance_campaign_time(1)
+	_assert(actor.get_modifier("stat", "AC") == 3 and int(GameManager.campaign_elapsed_seconds) == deadline_b, "Source B expires exactly at its own campaign deadline")
+	GameManager.advance_campaign_time(1)
+	_assert(actor.get_modifier("stat", "AC") == 3, "Minute grants stay absent after their expiry boundary")
+	GameManager.current_state = GameManager.GameState.DUNGEON
+	GameManager.transition_context = {"dungeon_id": "ruins_of_ashvale"}
+	var dungeon: DungeonState = await _spawn_scene("res://scenes/dungeon.tscn", 0.5)
+	var move_target := Vector2i.ZERO
+	for neighbor in HexUtils.get_neighbors(dungeon.party_position):
+		if neighbor in dungeon.rooms and dungeon.rooms[neighbor].type not in [Room.RoomType.COMBAT, Room.RoomType.BOSS]:
+			move_target = neighbor
+			break
+	var exploration_clock_before := int(GameManager.campaign_elapsed_seconds)
+	if move_target != Vector2i.ZERO:
+		dungeon._on_room_clicked(move_target)
+	_assert(move_target != Vector2i.ZERO and int(GameManager.campaign_elapsed_seconds) == exploration_clock_before + 60 and actor.get_modifier("stat", "AC") == 3 and int(actor.modifiers.filter(func(m): return str(m.get("source_instance_id", "")) == source_hour)[0].get("expires_at_seconds", -1)) == deadline_hour, "Actual dungeon exploration advances campaign time across a scene change without resetting the hour deadline")
+	_teardown_scene(dungeon)
+	GameManager.advance_campaign_time(deadline_hour - int(GameManager.campaign_elapsed_seconds) - 1)
+	_assert(int(GameManager.campaign_elapsed_seconds) == deadline_hour - 1 and actor.get_modifier("stat", "AC") == 3, "Hour grant remains active immediately before its absolute 3600-second deadline")
+	GameManager.advance_campaign_time(1)
+	_assert(actor.get_modifier("stat", "AC") == 1 and int(GameManager.campaign_elapsed_seconds) == deadline_hour, "Hour grant expires at the exact absolute deadline")
+	GameManager.advance_campaign_time(7200)
+	_assert(actor.get_modifier("stat", "AC") == 1 and not actor.has_campaign_modifier_source(source_hour), "A large clock jump leaves the expired benefit gone")
+	GameManager.current_state = GameManager.GameState.OVERWORLD
+	GameManager.game_in_progress = false
+	DataLoader.load_all_data()
+	_exit_test()
+
+
+func _activate_temporary_hp_grant_from_combat_menu(combat: Node, actor: Character, feature_id: String, source_id: String) -> Dictionary:
+	combat.current_player_idx = 0
+	combat.active_character = actor
+	combat.active_combatant = {"is_player": true, "entity": actor}
+	combat.turn_budget.reset(actor, combat.player_entities)
+	combat.hud.update_hud(actor, combat.tracker)
+	combat.hud._show_feature_selection()
+	var feature_index := -1
+	for index in combat.hud.features_registered.size():
+		var entry: Dictionary = combat.hud.features_registered[index]
+		if str(entry.get("id", "")) == feature_id and str(entry.get("source_instance_id", "")) == source_id:
+			feature_index = index
+			break
+	if feature_index < 0:
+		return {"found": false}
+	var disabled: bool = combat.hud.feature_list.is_item_disabled(feature_index)
+	var before := int(ResourcePoolRules.availability(actor, source_id).get("current", -1))
+	if not disabled:
+		combat.hud._on_feature_selected(feature_index)
+		for _frame in 180:
+			await get_tree().process_frame
+			if int(ResourcePoolRules.availability(actor, source_id).get("current", -1)) < before:
+				break
+	var grant: Dictionary = {}
+	for candidate in actor.timed_temporary_hp_grants:
+		if str(candidate.get("source_instance_id", "")) == source_id:
+			grant = candidate.duplicate(true)
+			break
+	return {"found": true, "disabled": disabled, "current": int(ResourcePoolRules.availability(actor, source_id).get("current", -1)), "grant": grant}
+
+
+func test_shared_timed_temporary_hp_flow() -> void:
+	_enter_test("shared_timed_temporary_hp_flow")
+	_setup_world()
+	DataLoader._load_json_file("res://data/fixtures/shared_timed_temporary_hp.json", "class")
+	var neutral_class: Dictionary = DataLoader.get_character_class("fixture:timed_guard_class")
+	var neutral: Dictionary = neutral_class.get("features_by_level", {}).get("1", [{}])[0].duplicate(true)
+	_assert(not neutral_class.is_empty() and str(neutral_class.get("_source", "")).ends_with("shared_timed_temporary_hp.json") and ClassFeature.content_error(neutral).is_empty(), "Neutral amount/duration variant loads and validates through production DataLoader")
+	var renamed_class := neutral_class.duplicate(true)
+	renamed_class["id"] = "fixture:timed_guard_class_renamed"
+	renamed_class["name"] = "Fixture Timed Guard Renamed"
+	var renamed: Dictionary = renamed_class["features_by_level"]["1"][0]
+	renamed["id"] = "fixture:timed_guard_renamed"
+	renamed["name"] = "Timed Guard Renamed"
+	renamed["resource_pool"]["id"] = "fixture:timed_guard_pool_renamed"
+	renamed["resource_pool"]["capacity_formula"] = 2
+	renamed["resource_pool"]["initial_quantity"] = 1
+	renamed["effects"][0]["amount"] = 16
+	renamed["effects"][0]["duration_seconds"] = 120
+	DataLoader._register_content(renamed_class, "class", "res://data/fixtures/shared_timed_temporary_hp.json#renamed")
+	var loaded_renamed: Dictionary = DataLoader.get_character_class("fixture:timed_guard_class_renamed")
+	_assert(not loaded_renamed.is_empty() and ClassFeature.content_error(loaded_renamed.get("features_by_level", {}).get("1", [{}])[0]).is_empty(), "Renamed amount 16/duration 120 definition passes production content registration")
+
+	var actor: Character = PlayerManager.get_player(0).get("character")
+	actor.character_id = "fixture:timed_temporary_hp_owner"
+	actor.character_name = "Timed Guard"
+	actor.features.append(neutral.duplicate(true))
+	actor.features.append(renamed.duplicate(true))
+	var source_a := "fixture:timed_guard:source_a"
+	var source_b := "fixture:timed_guard:source_b"
+	var source_c := "fixture:timed_guard:source_c"
+	var source_d := "fixture:timed_guard:source_d"
+	var acquire_a := ResourcePoolRules.acquire(actor, neutral, source_a)
+	var acquire_b := ResourcePoolRules.acquire(actor, renamed, source_b)
+	GameManager.campaign_elapsed_seconds = 1000
+	GameManager.current_state = GameManager.GameState.COMBAT
+	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 1.2)
+	var activated_a := await _activate_temporary_hp_grant_from_combat_menu(combat, actor, "fixture:timed_guard", source_a)
+	var grant_a: Dictionary = activated_a.get("grant", {})
+	var grant_a_id := str(grant_a.get("grant_instance_id", ""))
+	_assert(acquire_a.get("success", false) and acquire_b.get("success", false) and activated_a.get("found", false) and not activated_a.get("disabled", true) and actor.temp_hp == 10 and grant_a_id == "%s:%s:1" % [actor.character_id, source_a] and int(grant_a.get("expires_at_seconds", -1)) == 1060 and int(activated_a.get("current", -1)) == 3, "Real feature menu activation pays one exact pool use and captures the neutral amount, owner, grant identity and deadline")
+	var duplicate_before := int(ResourcePoolRules.availability(actor, source_a).get("current", -1))
+	var duplicate := ClassFeature.execute(actor, neutral, null, null, source_a)
+	_assert(not duplicate.get("success", true) and int(ResourcePoolRules.availability(actor, source_a).get("current", -1)) == duplicate_before, "Duplicate same-source activation refuses before a second pool payment")
+	var lower := actor.offer_timed_temporary_hp(5, 30, source_b)
+	var equal := actor.offer_timed_temporary_hp(10, 30, source_b)
+	var false_life := SpellResolutionContext.new()
+	false_life.caster = actor
+	false_life.spell = DataLoader.get_spell("false_life")
+	var ordinary_spell_result := SpellWardResolver.false_life(false_life)
+	_assert(lower.get("success", false) and not lower.get("accepted", true) and equal.get("success", false) and not equal.get("accepted", true) and ordinary_spell_result.get("success", false) and actor.temp_hp == 10 and actor.timed_temporary_hp_current_grant_id == grant_a_id and int(actor.timed_temporary_hp_grants[0].get("expires_at_seconds", -1)) == 1060, "Lower/equal timed offers and an ordinary False Life spell preserve the current grant owner and deadline")
+	var hp_before_partial := actor.current_hp
+	var partial_damage := CombatAction.resolve_damage(actor, 4, "slashing")
+	_assert(actor.current_hp == hp_before_partial and actor.temp_hp == 6 and actor.timed_temporary_hp_current_grant_id == grant_a_id and int(partial_damage.get("damage", -1)) == 0, "Actual damage settlement partially absorbs Temporary HP and retains its source provenance")
+
+	GameManager.advance_campaign_time(10)
+	var activated_b := await _activate_temporary_hp_grant_from_combat_menu(combat, actor, "fixture:timed_guard_renamed", source_b)
+	var grant_b: Dictionary = activated_b.get("grant", {})
+	var grant_b_id := str(grant_b.get("grant_instance_id", ""))
+	_assert(activated_b.get("found", false) and not activated_b.get("disabled", true) and actor.temp_hp == 16 and grant_b_id.ends_with(":2") and str(grant_b.get("source_instance_id", "")) == source_b and int(grant_b.get("expires_at_seconds", -1)) == 1130 and int(activated_b.get("current", -1)) == 0, "Renamed feature activation replaces lower Temporary HP with its captured amount and deadline after one payment")
+	GameManager.advance_campaign_time(49)
+	_assert(int(GameManager.campaign_elapsed_seconds) == 1059 and actor.temp_hp == 16 and actor.timed_temporary_hp_current_grant_id == grant_b_id, "The newer timed replacement remains owned immediately before the old source deadline")
+	GameManager.advance_campaign_time(1)
+	_assert(int(GameManager.campaign_elapsed_seconds) == 1060 and actor.temp_hp == 16 and actor.timed_temporary_hp_current_grant_id == grant_b_id, "Exact expiry of the older grant preserves the newer timed replacement")
+	_assert(ResourcePoolRules.remove(actor, source_a) and actor.temp_hp == 16 and actor.timed_temporary_hp_current_grant_id == grant_b_id, "Removing the expired older source leaves the newer timed replacement intact")
+	var ranger: Dictionary = DataLoader.get_character_class("ranger")
+	var tireless: Dictionary = ranger.get("features_by_level", {}).get("10", [{}])[0].duplicate(true)
+	actor.features.append(tireless)
+	actor.ability_scores.set_score("WIS", 30)
+	actor.feature_uses["ranger_tireless"] = 1
+	var second_partial := CombatAction.resolve_damage(actor, 12, "cold")
+	var second_partial_buffer := actor.temp_hp
+	var hp_before_tireless := actor.current_hp
+	var tireless_result := ClassFeature.execute(actor, tireless)
+	_assert(second_partial_buffer == 4 and actor.temp_hp > second_partial_buffer and actor.timed_temporary_hp_current_grant_id.is_empty() and tireless_result.get("success", false) and actor.current_hp == hp_before_tireless, "An ordinary Ranger Tireless class activation replaces the timed buffer and clears only its current-owner tag")
+	GameManager.advance_campaign_time(70)
+	_assert(int(GameManager.campaign_elapsed_seconds) == 1130 and actor.temp_hp > 4 and actor.timed_temporary_hp_grants.is_empty(), "Exact expiry of the newer grant preserves the ordinary untimed replacement and removes only source records")
+	_assert(ResourcePoolRules.remove(actor, source_b) and actor.temp_hp > 4, "Removing the replaced newer source cannot erase the ordinary class buffer")
+
+	actor.temp_hp = 0
+	var acquire_c := ResourcePoolRules.acquire(actor, neutral, source_c)
+	var activated_c := await _activate_temporary_hp_grant_from_combat_menu(combat, actor, "fixture:timed_guard", source_c)
+	var grant_c: Dictionary = activated_c.get("grant", {})
+	var grant_c_id := str(grant_c.get("grant_instance_id", ""))
+	var grant_c_ready := actor.temp_hp == 10 and grant_c_id.ends_with(":3") and int(grant_c.get("expires_at_seconds", -1)) == 1190
+	var hp_before_full := actor.current_hp
+	var full_damage := CombatAction.resolve_damage(actor, 10, "fire")
+	_assert(acquire_c.get("success", false) and activated_c.get("found", false) and grant_c_ready, "A later source can activate after the prior sources end and receives its own absolute deadline")
+	_assert(actor.current_hp == hp_before_full and actor.temp_hp == 0 and actor.timed_temporary_hp_current_grant_id.is_empty() and int(full_damage.get("damage", -1)) == 0, "Actual damage fully absorbs the timed buffer and clears its current owner")
+	GameManager.advance_campaign_time(59)
+	_assert(actor.temp_hp == 0 and actor.timed_temporary_hp_grants.size() == 1 and actor.has_timed_temporary_hp_grant_source(source_c, 1189), "Queries and clock advancement cannot regenerate fully depleted Temporary HP")
+	GameManager.advance_campaign_time(1)
+	_assert(actor.temp_hp == 0 and actor.timed_temporary_hp_grants.is_empty() and actor.timed_temporary_hp_current_grant_id.is_empty(), "Exact deadline removes an already depleted grant without restoring its amount")
+	GameManager.advance_campaign_time(600)
+	_assert(actor.temp_hp == 0 and actor.timed_temporary_hp_grants.is_empty(), "A large campaign-time jump leaves the expired buffer absent")
+
+	var acquire_d := ResourcePoolRules.acquire(actor, neutral, source_d)
+	var activated_d := await _activate_temporary_hp_grant_from_combat_menu(combat, actor, "fixture:timed_guard", source_d)
+	_assert(acquire_d.get("success", false) and activated_d.get("found", false) and actor.temp_hp == 10 and ResourcePoolRules.remove(actor, source_d) and actor.temp_hp == 0 and actor.timed_temporary_hp_grants.is_empty(), "Exact-source removal clears a surviving buffer owned by that source")
+
+	var downed := Character.new()
+	downed.character_id = "fixture:timed_temporary_hp_downed"
+	downed.character_name = "Downed Guard"
+	downed.features.append(neutral.duplicate(true))
+	var downed_source := "fixture:timed_guard:downed"
+	var downed_acquired := ResourcePoolRules.acquire(downed, neutral, downed_source)
+	var downed_activation := ClassFeature.execute(downed, neutral, null, null, downed_source)
+	downed.current_hp = 0
+	var downed_damage := downed.take_damage(4)
+	_assert(downed_acquired.get("success", false) and downed_activation.get("success", false) and downed_damage == 0 and downed.current_hp == 0 and downed.death_save_failures == 1 and downed.temp_hp == 6 and not downed.timed_temporary_hp_current_grant_id.is_empty(), "At zero HP, damage is absorbed by the timed buffer and still causes the existing death-save failure")
+	SpellEffects.grant_death_ward(downed, {"source_id": "spell:fixture_death_ward", "remaining_seconds": 28800, "expiry_phase": "start", "conditions": []})
+	downed.current_hp = 4
+	var warded_damage := CombatAction.resolve_damage(downed, 10, "slashing")
+	_assert(bool(warded_damage.get("death_ward_prevented", false)) and downed.current_hp == 1 and downed.temp_hp == 0 and downed.timed_temporary_hp_current_grant_id.is_empty(), "Death Ward settlement fully absorbs the owned Temporary HP and preserves its one-time zero-HP replacement")
+
+	_assert(Character.saved_timed_temporary_hp_error(actor.to_dict(), int(GameManager.campaign_elapsed_seconds)).is_empty(), "Production actor state with no timed grant remains valid after expiry and replacement")
+	_teardown_scene(combat)
+	GameManager.current_state = GameManager.GameState.OVERWORLD
+	GameManager.game_in_progress = false
+	DataLoader.load_all_data()
+	_exit_test()
+
+
+func test_shared_timed_numeric_cooldown_flow() -> void:
+	_enter_test("shared_timed_numeric_cooldown_flow")
+	_setup_world()
+	DataLoader._load_json_file("res://data/fixtures/shared_timed_numeric_grant.json", "class")
+	DataLoader._load_json_file("res://data/fixtures/shared_timed_numeric_cooldown.json", "class")
+	var legacy_class: Dictionary = DataLoader.get_character_class("fixture:campaign_guard_class")
+	var legacy_feature: Dictionary = legacy_class.get("features_by_level", {}).get("1", [{}])[0].duplicate(true)
+	var neutral_class: Dictionary = DataLoader.get_character_class("fixture:campaign_guard_cooldown_class")
+	var neutral_feature: Dictionary = neutral_class.get("features_by_level", {}).get("1", [{}])[0].duplicate(true)
+	_assert(not legacy_class.is_empty() and not neutral_class.is_empty() and ClassFeature.content_error(legacy_feature).is_empty() and ClassFeature.content_error(neutral_feature).is_empty(), "DataLoader loads the existing no-cooldown VS-12 definition and the neutral +2 AC/+3600-second cooldown definition")
+	var renamed_class := neutral_class.duplicate(true)
+	renamed_class["id"] = "fixture:campaign_guard_cooldown_renamed_class"
+	renamed_class["name"] = "Renamed Campaign Guard"
+	var renamed_feature: Dictionary = renamed_class["features_by_level"]["1"][0]
+	renamed_feature["id"] = "fixture:campaign_guard_cooldown_renamed"
+	renamed_feature["name"] = "Renamed Campaign Guard"
+	renamed_feature["resource_pool"]["id"] = "fixture:campaign_guard_cooldown_renamed_pool"
+	renamed_feature["resource_pool"]["initial_quantity"] = 1
+	renamed_feature["resource_pool"]["capacity_formula"] = 1
+	renamed_feature["effects"][0]["amount"] = 3
+	renamed_feature["effects"][0]["duration_seconds"] = 120
+	renamed_feature["effects"][0]["cooldown_seconds"] = 7200
+	DataLoader._register_content(renamed_class, "class", "res://data/fixtures/shared_timed_numeric_cooldown.json#renamed")
+	var loaded_renamed: Dictionary = DataLoader.get_character_class("fixture:campaign_guard_cooldown_renamed_class")
+	_assert(not loaded_renamed.is_empty() and ClassFeature.content_error(loaded_renamed.get("features_by_level", {}).get("1", [{}])[0]).is_empty(), "Renamed +3 AC definition with a 120/7200-second parameter pair passes production DataLoader validation")
+	var zero_class := legacy_class.duplicate(true)
+	zero_class["id"] = "fixture:campaign_guard_zero_cooldown_class"
+	var zero_feature: Dictionary = zero_class["features_by_level"]["1"][0]
+	zero_feature["id"] = "fixture:campaign_guard_zero_cooldown"
+	zero_feature["resource_pool"]["id"] = "fixture:campaign_guard_zero_cooldown_pool"
+	zero_feature["effects"][0]["cooldown_seconds"] = 0
+	DataLoader._register_content(zero_class, "class", "res://data/fixtures/shared_timed_numeric_grant.json#zero-cooldown")
+	_assert(ClassFeature.content_error(zero_feature).is_empty(), "An explicit zero cooldown remains a valid no-lock VS-12 definition")
+
+	var actor: Character = PlayerManager.get_player(0).get("character")
+	actor.character_id = "fixture:timed_cooldown_acceptance_owner"
+	var base_modifier := actor.get_modifier("stat", "AC")
+	actor.features.append_array([neutral_feature.duplicate(true), renamed_feature.duplicate(true), legacy_feature.duplicate(true), zero_feature.duplicate(true)])
+	var source_a := "fixture:timed_cooldown_acceptance:neutral"
+	var source_b := "fixture:timed_cooldown_acceptance:renamed"
+	var source_c := "fixture:timed_cooldown_acceptance:omitted"
+	var source_d := "fixture:timed_cooldown_acceptance:zero"
+	var acquired: bool = ResourcePoolRules.acquire(actor, neutral_feature, source_a).get("success", false)
+	acquired = acquired and ResourcePoolRules.acquire(actor, renamed_feature, source_b).get("success", false)
+	acquired = acquired and ResourcePoolRules.acquire(actor, legacy_feature, source_c).get("success", false)
+	acquired = acquired and ResourcePoolRules.acquire(actor, zero_feature, source_d).get("success", false)
+	GameManager.campaign_elapsed_seconds = 1000
+	GameManager.current_state = GameManager.GameState.COMBAT
+	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 1.2)
+	combat.current_player_idx = 0
+	combat.active_character = actor
+	combat.active_combatant = {"is_player": true, "entity": actor}
+	combat.turn_budget.reset(actor, combat.player_entities)
+	var pool_a_before: int = int(ResourcePoolRules.availability(actor, source_a).get("current", -1))
+	var pool_b_before: int = int(ResourcePoolRules.availability(actor, source_b).get("current", -1))
+	var pool_c_before: int = int(ResourcePoolRules.availability(actor, source_c).get("current", -1))
+	var pool_d_before: int = int(ResourcePoolRules.availability(actor, source_d).get("current", -1))
+	var activated_a := await _activate_timed_grant_from_combat_menu(combat, actor, str(neutral_feature["id"]), source_a)
+	var activated_b := await _activate_timed_grant_from_combat_menu(combat, actor, str(renamed_feature["id"]), source_b)
+	var activated_c := await _activate_timed_grant_from_combat_menu(combat, actor, str(legacy_feature["id"]), source_c)
+	var activated_d := await _activate_timed_grant_from_combat_menu(combat, actor, str(zero_feature["id"]), source_d)
+	var grant_a_id := str(activated_a.get("grant", {}).get("grant_instance_id", ""))
+	var grant_b_id := str(activated_b.get("grant", {}).get("grant_instance_id", ""))
+	var grant_c_id := str(activated_c.get("grant", {}).get("grant_instance_id", ""))
+	var grant_d_id := str(activated_d.get("grant", {}).get("grant_instance_id", ""))
+	_assert(acquired and activated_a.get("found", false) and activated_b.get("found", false) and activated_c.get("found", false) and activated_d.get("found", false) and not activated_a.get("disabled", true) and int(activated_a.get("current", -1)) == pool_a_before - 1 and int(activated_b.get("current", -1)) == pool_b_before - 1 and int(activated_c.get("current", -1)) == pool_c_before - 1 and int(activated_d.get("current", -1)) == pool_d_before - 1 and actor.get_modifier("stat", "AC") == base_modifier + 9 and int(activated_a.get("grant", {}).get("cooldown_seconds", 0)) == 3600 and int(activated_b.get("grant", {}).get("cooldown_seconds", 0)) == 7200 and int(activated_a.get("grant", {}).get("expires_at_seconds", -1)) == 1060 and int(activated_b.get("grant", {}).get("expires_at_seconds", -1)) == 1120, "Real feature menu activation pays once per source and captures neutral/renamed values and absolute deadlines")
+	var duplicate_a := await _activate_timed_grant_from_combat_menu(combat, actor, str(neutral_feature["id"]), source_a)
+	_assert(duplicate_a.get("disabled", false) and int(duplicate_a.get("current", -1)) == pool_a_before - 1 and combat.turn_budget.action_available, "An active-source duplicate refuses in the real menu before payment or action cost")
+	GameManager.advance_campaign_time(20)
+	var action_before_dismissal: bool = combat.turn_budget.action_available
+	var dismissed_b := await _dismiss_timed_grant_from_combat_menu(combat, actor, source_b, grant_b_id)
+	var dismissed_pool := int(ResourcePoolRules.availability(actor, source_b).get("current", -1))
+	var blocked_b := await _activate_timed_grant_from_combat_menu(combat, actor, str(renamed_feature["id"]), source_b)
+	_assert(dismissed_b.get("found", false) and not dismissed_b.get("disabled", true) and dismissed_b.get("action_unchanged", false) and str(dismissed_b.get("cooldown", {}).get("end_reason", "")) == "dismissed" and int(dismissed_b.get("cooldown", {}).get("started_at_seconds", 0)) == 1020 and int(dismissed_b.get("cooldown", {}).get("ready_at_seconds", 0)) == 8220 and dismissed_pool == 0 and blocked_b.get("disabled", false) and int(blocked_b.get("current", -1)) == 0 and combat.turn_budget.action_available == action_before_dismissal, "Actual exact-source dismissal starts the renamed cooldown at 1020; blocked reactivation spends no pool or action")
+	var stale_before_rest := actor.dismiss_campaign_modifier(source_b, grant_b_id, int(GameManager.campaign_elapsed_seconds))
+	_assert(not stale_before_rest.get("success", false) and int(actor.campaign_modifier_cooldowns.filter(func(c): return str(c.get("grant_instance_id", "")) == grant_b_id)[0].get("ready_at_seconds", 0)) == 8220, "Repeated end for the same grant is refused without extending its existing deadline")
+	var wrong_owner: Character = PlayerManager.get_player(1).get("character")
+	_assert(CombatCommand.from_hud_for_character("dismiss_timed_numeric_modifier", {"source_instance_id": source_a, "grant_instance_id": grant_a_id}, wrong_owner) == null, "A different owner cannot submit the source's dismissal command")
+	GameManager.advance_campaign_time(39)
+	_assert(int(GameManager.campaign_elapsed_seconds) == 1059 and actor.get_modifier("stat", "AC") == base_modifier + 6 and actor.has_campaign_modifier_grant(source_a, grant_a_id, 1059), "Neutral grant remains active immediately before scheduled expiry")
+	GameManager.advance_campaign_time(1)
+	var cooldown_a: Dictionary = actor.campaign_modifier_cooldowns.filter(func(c): return str(c.get("grant_instance_id", "")) == grant_a_id)[0]
+	var no_lock_c := ClassFeature.availability(actor, legacy_feature, null, source_c)
+	var no_lock_d := ClassFeature.availability(actor, zero_feature, null, source_d)
+	_assert(int(GameManager.campaign_elapsed_seconds) == 1060 and actor.get_modifier("stat", "AC") == base_modifier and int(cooldown_a.get("started_at_seconds", 0)) == 1060 and int(cooldown_a.get("ready_at_seconds", 0)) == 4660 and no_lock_c.get("available", false) and no_lock_d.get("available", false) and grant_c_id != grant_d_id, "Exact expiry starts cooldown at the scheduled deadline; omitted/zero cooldown variants are immediately reusable")
+	var no_cooldown_c := await _activate_timed_grant_from_combat_menu(combat, actor, str(legacy_feature["id"]), source_c)
+	var no_cooldown_d := await _activate_timed_grant_from_combat_menu(combat, actor, str(zero_feature["id"]), source_d)
+	_assert(not no_cooldown_c.get("disabled", true) and not no_cooldown_d.get("disabled", true) and int(no_cooldown_c.get("current", -1)) == 2 and int(no_cooldown_d.get("current", -1)) == 2, "Both omitted and explicit zero cooldowns can reactivate through the real menu after their deadline")
+	_assert(actor.campaign_modifier_cooldown_for_source(source_a, 4659) > 0 and actor.campaign_modifier_cooldown_for_source(source_a, 4660) == 0, "Cooldown blocks just before its absolute ready time and permits use at the exact boundary")
+	var probe_clock_before_rest := int(GameManager.campaign_elapsed_seconds)
+	GameManager.current_state = GameManager.GameState.OVERWORLD
+	var rest_result := RestRules.complete_short_rest([actor], {"source": "timed_cooldown_acceptance"})
+	var locked_b_after_rest := ClassFeature.availability(actor, renamed_feature, null, source_b)
+	var ready_a_at_boundary := ClassFeature.availability(actor, neutral_feature, null, source_a)
+	var cooldown_b_after_rest: Array[Dictionary] = actor.campaign_modifier_cooldowns.filter(func(c): return str(c.get("grant_instance_id", "")) == grant_b_id)
+	_assert(rest_result.get("success", false) and int(GameManager.campaign_elapsed_seconds) == probe_clock_before_rest + RestRules.SHORT_REST_SECONDS and int(GameManager.campaign_elapsed_seconds) == 4660 and int(ResourcePoolRules.availability(actor, source_b).get("current", -1)) == 1 and ready_a_at_boundary.get("available", false) and not locked_b_after_rest.get("available", true) and actor.campaign_modifier_cooldowns.filter(func(c): return str(c.get("grant_instance_id", "")) == grant_a_id).is_empty() and cooldown_b_after_rest.size() == 1, "Actual Short Rest advances to the exact readiness boundary and refills the renamed pool without bypassing its longer cooldown")
+	var ready_a := ClassFeature.availability(actor, neutral_feature, null, source_a)
+	var new_a := await _activate_timed_grant_from_combat_menu(combat, actor, str(neutral_feature["id"]), source_a)
+	var new_a_id := str(new_a.get("grant", {}).get("grant_instance_id", ""))
+	actor.expire_campaign_modifiers(1060)
+	var stale_dismiss := actor.dismiss_campaign_modifier(source_a, grant_a_id, int(GameManager.campaign_elapsed_seconds))
+	var stale_command := CombatCommand.from_hud_for_character("dismiss_timed_numeric_modifier", {"source_instance_id": source_a, "grant_instance_id": grant_a_id}, actor)
+	_assert(ready_a.get("available", false) and not new_a.get("disabled", true) and not new_a_id.is_empty() and new_a_id != grant_a_id and actor.has_campaign_modifier_grant(source_a, new_a_id, 4660) and actor.get_modifier("stat", "AC") == base_modifier + 2 and not stale_dismiss.get("success", false) and stale_command == null and int(ResourcePoolRules.availability(actor, source_a).get("current", -1)) == 3, "Exact cooldown readiness permits a new paid grant; replayed/stale old end and dismissal leave it untouched")
+	GameManager.current_state = GameManager.GameState.COMBAT
+	GameManager.advance_campaign_time(3661)
+	var ready_after_jump_a := ClassFeature.availability(actor, neutral_feature, null, source_a)
+	var ready_after_jump_b := ClassFeature.availability(actor, renamed_feature, null, source_b)
+	_assert(int(GameManager.campaign_elapsed_seconds) == 8321 and ready_after_jump_a.get("available", false) and ready_after_jump_b.get("available", false) and actor.campaign_modifier_cooldowns.is_empty(), "One jump beyond both sources' effect and cooldown deadlines leaves both ready at their original absolute times")
+	_teardown_scene(combat)
+	GameManager.current_state = GameManager.GameState.OVERWORLD
+	GameManager.game_in_progress = false
+	DataLoader.load_all_data()
+	_exit_test()
+
+
+func test_shared_next_melee_hit_grant_flow() -> void:
+	_enter_test("shared_next_melee_hit_grant_flow")
+	_setup_world()
+	DataLoader._load_json_file("res://data/fixtures/shared_next_melee_hit_grant.json", "class")
+	var fixture_class: Dictionary = DataLoader.get_character_class("fixture:flame_on_edge_class")
+	var neutral: Dictionary = fixture_class.get("features_by_level", {}).get("1", [{}])[0].duplicate(true)
+	_assert(not fixture_class.is_empty() and str(fixture_class.get("_source", "")).ends_with("shared_next_melee_hit_grant.json") and ClassFeature.content_error(neutral).is_empty(), "Neutral next-hit definition loads and validates through production DataLoader")
+	var renamed_class := fixture_class.duplicate(true)
+	renamed_class["id"] = "fixture:flame_on_edge_class_renamed"
+	renamed_class["name"] = "Fixture Flame on the Edge Renamed"
+	var renamed: Dictionary = renamed_class["features_by_level"]["1"][0]
+	renamed["id"] = "fixture:flame_on_edge_renamed"
+	renamed["name"] = "Flame on the Edge Renamed"
+	renamed["resource_pool"]["id"] = "fixture:flame_on_the_edge_pool_renamed"
+	renamed["effects"][0]["amount"] = 3
+	renamed["effects"][0]["damage_type"] = "cold"
+	renamed["effects"][0]["duration_seconds"] = 3600
+	DataLoader._register_content(renamed_class, "class", "res://data/fixtures/shared_next_melee_hit_grant.json#renamed")
+	var loaded_renamed: Dictionary = DataLoader.get_character_class("fixture:flame_on_edge_class_renamed")
+	_assert(not loaded_renamed.is_empty() and ClassFeature.content_error(loaded_renamed.get("features_by_level", {}).get("1", [{}])[0]).is_empty(), "Renamed definition and hour parameter pass production registration")
+
+	var actor: Character = PlayerManager.get_player(0).get("character")
+	var other_actor: Character = PlayerManager.get_player(1).get("character")
+	actor.character_id = "fixture:flame_on_edge_owner"
+	other_actor.character_id = "fixture:other_melee_owner"
+	actor.features.append(neutral.duplicate(true))
+	actor.features.append(renamed.duplicate(true))
+	for owner in [actor, other_actor]:
+		owner.features.append({"id": "fixture:forced_attack_roll", "type": "passive", "effects": [{"type": "roll_token_pool", "pool_id": "fixture:forced_attack_roll", "token_count": 1, "die_sides": 20}]})
+	var source_a := "fixture:flame_on_edge:source_a"
+	var source_b := "fixture:flame_on_edge:source_b"
+	var source_c := "fixture:flame_on_edge:source_c"
+	var source_remove := "fixture:flame_on_edge:source_remove"
+	var source_immunity := "fixture:flame_on_edge:source_immunity"
+	var source_expire_a := "fixture:flame_on_edge:source_expire_a"
+	var source_expire_b := "fixture:flame_on_edge:source_expire_b"
+	var source_other := "fixture:flame_on_edge:source_other_owner"
+	var acquire_ok := true
+	for source in [source_a, source_b, source_c, source_remove, source_immunity, source_expire_a, source_expire_b]:
+		var feature: Dictionary = renamed if source == source_c else neutral
+		acquire_ok = acquire_ok and ResourcePoolRules.acquire(actor, feature, source).get("success", false)
+	var other_acquire := ResourcePoolRules.acquire(other_actor, neutral, source_other)
+	GameManager.campaign_elapsed_seconds = 100
+	GameManager.current_state = GameManager.GameState.COMBAT
+	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 1.2)
+	combat.current_player_idx = 0
+	combat.active_character = actor
+	combat.active_combatant = {"is_player": true, "entity": actor}
+	combat.turn_budget.reset(actor, combat.player_entities)
+	var activated_a := await _activate_next_hit_grant_from_combat_menu(combat, actor, "fixture:flame_on_edge", source_a)
+	var initial_a_id := str(activated_a.get("grant", {}).get("grant_instance_id", ""))
+	var initial_a_deadline := int(activated_a.get("grant", {}).get("expires_at_seconds", -1))
+	GameManager.advance_campaign_time(10)
+	var activated_b := await _activate_next_hit_grant_from_combat_menu(combat, actor, "fixture:flame_on_edge", source_b)
+	var activated_c := await _activate_next_hit_grant_from_combat_menu(combat, actor, "fixture:flame_on_edge_renamed", source_c)
+	var duplicate := await _activate_next_hit_grant_from_combat_menu(combat, actor, "fixture:flame_on_edge", source_a)
+	_assert(acquire_ok and other_acquire.get("success", false) and activated_a.get("found", false) and activated_b.get("found", false) and activated_c.get("found", false) and int(activated_a.get("current", -1)) == 3 and int(activated_b.get("current", -1)) == 3 and int(activated_c.get("current", -1)) == 3 and initial_a_deadline == 160 and int(activated_c.get("grant", {}).get("expires_at_seconds", -1)) == 3710, "Neutral and renamed real-menu activations pay once and capture their own absolute deadlines")
+	_assert(duplicate.get("found", false) and duplicate.get("disabled", false) and int(duplicate.get("current", -1)) == 3 and actor.next_weapon_hit_grants.size() == 3, "The real feature menu disables a duplicate source before another pool payment")
+	combat.pending_action_type = "attack"
+	combat._cancel_pending_action()
+	_assert(actor.next_weapon_hit_grants.size() == 3 and int(ResourcePoolRules.availability(actor, source_a).get("current", -1)) == 3, "Cancelling attack targeting before resolution preserves the grant and its paid pool state")
+
+	var weapon := {"id": "longsword", "type": "weapon", "name": "Fixture Longsword", "damage": "1", "damage_type": "bludgeoning", "ability": "STR", "range": 1, "fixed_damage": true, "attack_bonus_override": 100, "properties": []}
+	var ranged := {"id": "shortbow", "type": "weapon", "name": "Fixture Shortbow", "damage": "1", "damage_type": "piercing", "ability": "DEX", "range": 80, "fixed_damage": true, "attack_bonus_override": 100, "properties": ["ranged", "ammunition"]}
+	var ranged_target := {"id": "fixture:next_ranged_target", "armor_class": 1, "current_hp": 50, "max_hp": 50, "conditions": {}, "damage_resistances": []}
+	var ranged_result := _resolve_next_hit_acceptance_attack(actor, ranged_target, ranged, 15, "ranged_hit")
+	var outsider_target := {"id": "fixture:next_outsider_target", "armor_class": 1, "current_hp": 50, "max_hp": 50, "conditions": {}, "damage_resistances": []}
+	var outsider_result := _resolve_next_hit_acceptance_attack(other_actor, outsider_target, weapon, 15, "other_actor_hit")
+	var miss_target := {"id": "fixture:next_miss_target", "armor_class": 200, "current_hp": 50, "max_hp": 50, "conditions": {}, "damage_resistances": []}
+	var miss_result := _resolve_next_hit_acceptance_attack(actor, miss_target, weapon, 10, "melee_miss")
+	_assert(ranged_result.get("hit", false) and ranged_result.get("consumed_next_hit_grant", {}).is_empty() and outsider_result.get("hit", false) and outsider_result.get("consumed_next_hit_grant", {}).is_empty() and not miss_result.get("hit", false) and actor.next_weapon_hit_grants.size() == 3, "Production ranged hits, another owner's hit and a melee miss preserve the owner's grants")
+
+	var resistant_target := {"id": "fixture:next_resistant_target", "armor_class": 1, "current_hp": 50, "max_hp": 50, "conditions": {}, "damage_resistances": ["fire"]}
+	var before_resistant_hp := int(resistant_target["current_hp"])
+	var critical := _resolve_next_hit_acceptance_attack(actor, resistant_target, weapon, 20, "critical_hit")
+	var critical_fire: Array = critical.get("damage_components", []).filter(func(component): return str(component.get("type", "")) == "fire")
+	_assert(critical.get("hit", false) and critical.get("crit", false) and str(critical.get("consumed_next_hit_grant", {}).get("grant_instance_id", "")) == initial_a_id and critical_fire.size() == 1 and int(critical_fire[0].get("value", 0)) == 1 and int(critical.get("damage", 0)) == 2 and before_resistant_hp - int(resistant_target["current_hp"]) == 2, "A real critical consumes the oldest grant once; fixed +2 Fire is not doubled and resistance settles it to 1")
+	var old_completion := critical.duplicate(true)
+	var target_hp_after_old_hit := int(resistant_target["current_hp"])
+	var rearmed := await _activate_next_hit_grant_from_combat_menu(combat, actor, "fixture:flame_on_edge", source_a)
+	var rearmed_id := str(rearmed.get("grant", {}).get("grant_instance_id", ""))
+	DruidRules.apply_attack_effects(actor, resistant_target, weapon, old_completion)
+	_assert(not rearmed_id.is_empty() and rearmed_id != initial_a_id and actor.next_weapon_hit_grants.any(func(grant): return str(grant.get("grant_instance_id", "")) == rearmed_id) and int(resistant_target["current_hp"]) == target_hp_after_old_hit, "Completing an old hit result after rearming cannot consume the fresh grant or apply damage twice")
+
+	var second_target := {"id": "fixture:next_second_target", "armor_class": 1, "current_hp": 50, "max_hp": 50, "conditions": {}, "damage_resistances": []}
+	var second := _resolve_next_hit_acceptance_attack(actor, second_target, weapon, 15, "second_melee_hit")
+	var cold_resistant_target := {"id": "fixture:next_cold_resistant_target", "armor_class": 1, "current_hp": 50, "max_hp": 50, "conditions": {}, "damage_resistances": ["cold"]}
+	var cold_resistant := _resolve_next_hit_acceptance_attack(actor, cold_resistant_target, weapon, 15, "cold_resistant_melee_hit")
+	var fourth_target := {"id": "fixture:next_fourth_target", "armor_class": 1, "current_hp": 50, "max_hp": 50, "conditions": {}, "damage_resistances": []}
+	var fourth := _resolve_next_hit_acceptance_attack(actor, fourth_target, weapon, 15, "fourth_melee_hit")
+	var repeat_target := {"id": "fixture:next_repeat_target", "armor_class": 1, "current_hp": 50, "max_hp": 50, "conditions": {}, "damage_resistances": []}
+	var repeat_hit := _resolve_next_hit_acceptance_attack(actor, repeat_target, weapon, 15, "repeat_melee_hit")
+	var cold_components: Array = cold_resistant.get("damage_components", []).filter(func(component): return str(component.get("type", "")) == "cold")
+	_assert(str(second.get("consumed_next_hit_grant", {}).get("source_instance_id", "")) == source_b and str(cold_resistant.get("consumed_next_hit_grant", {}).get("source_instance_id", "")) == source_c and cold_components.size() == 1 and int(cold_components[0].get("value", 0)) == 1 and str(fourth.get("consumed_next_hit_grant", {}).get("grant_instance_id", "")) == rearmed_id and repeat_hit.get("consumed_next_hit_grant", {}).is_empty() and actor.next_weapon_hit_grants.is_empty(), "Source order survives rearm; renamed +3 Cold uses the selected typed damage and resistance, then no repeat bonus remains")
+
+	var down_grant := await _activate_next_hit_grant_from_combat_menu(combat, actor, "fixture:flame_on_edge", source_a)
+	var down_target := {"id": "fixture:next_downed_target", "armor_class": 1, "current_hp": 1, "max_hp": 1, "conditions": {}, "damage_resistances": []}
+	var downing := _resolve_next_hit_acceptance_attack(actor, down_target, weapon, 15, "downing_hit")
+	_assert(down_grant.get("found", false) and int(down_target.get("current_hp", 1)) <= 0 and str(downing.get("consumed_next_hit_grant", {}).get("source_instance_id", "")) == source_a, "A production hit that downs its target still consumes the pending grant")
+	var immune_grant := await _activate_next_hit_grant_from_combat_menu(combat, actor, "fixture:flame_on_edge", source_immunity)
+	var immune_target := {"id": "fixture:next_immune_target", "armor_class": 1, "current_hp": 50, "max_hp": 50, "conditions": {}, "damage_immunities": ["fire"]}
+	var immune_hit := _resolve_next_hit_acceptance_attack(actor, immune_target, weapon, 15, "fire_immune_melee_hit")
+	_assert(immune_grant.get("found", false) and str(immune_hit.get("consumed_next_hit_grant", {}).get("source_instance_id", "")) == source_immunity and immune_hit.get("damage_components", []).all(func(component): return str(component.get("type", "")) != "fire") and int(immune_target.get("current_hp", 0)) == 49, "Fire immunity reduces the typed bonus to zero while consuming the matching grant once")
+
+	var removed_grant := await _activate_next_hit_grant_from_combat_menu(combat, actor, "fixture:flame_on_edge", source_remove)
+	var retained_grant := await _activate_next_hit_grant_from_combat_menu(combat, actor, "fixture:flame_on_edge", source_b)
+	var removed_source := ResourcePoolRules.remove(actor, source_remove)
+	var retained_target := {"id": "fixture:next_retained_target", "armor_class": 1, "current_hp": 50, "max_hp": 50, "conditions": {}, "damage_resistances": []}
+	var retained_hit := _resolve_next_hit_acceptance_attack(actor, retained_target, weapon, 15, "retained_after_remove")
+	_assert(removed_grant.get("found", false) and retained_grant.get("found", false) and removed_source and not actor.has_next_melee_hit_grant_source(source_remove) and str(retained_hit.get("consumed_next_hit_grant", {}).get("source_instance_id", "")) == source_b, "Exact-source removal drops only its pending benefit and leaves another source eligible")
+
+	var expiry_a := await _activate_next_hit_grant_from_combat_menu(combat, actor, "fixture:flame_on_edge", source_expire_a)
+	GameManager.advance_campaign_time(10)
+	var expiry_b := await _activate_next_hit_grant_from_combat_menu(combat, actor, "fixture:flame_on_edge", source_expire_b)
+	var expiry_a_deadline := int(expiry_a.get("grant", {}).get("expires_at_seconds", -1))
+	var expiry_b_deadline := int(expiry_b.get("grant", {}).get("expires_at_seconds", -1))
+	GameManager.advance_campaign_time(expiry_a_deadline - int(GameManager.campaign_elapsed_seconds) - 1)
+	var just_before := actor.next_weapon_hit_grants.size() == 2 and actor.has_next_melee_hit_grant_source(source_expire_a) and actor.has_next_melee_hit_grant_source(source_expire_b)
+	GameManager.advance_campaign_time(1)
+	var exact_expiry := not actor.has_next_melee_hit_grant_source(source_expire_a) and actor.has_next_melee_hit_grant_source(source_expire_b) and actor.next_weapon_hit_grants.size() == 1
+	GameManager.advance_campaign_time(7200)
+	var expired_target := {"id": "fixture:next_after_expiry_target", "armor_class": 1, "current_hp": 50, "max_hp": 50, "conditions": {}, "damage_resistances": []}
+	var after_expiry := _resolve_next_hit_acceptance_attack(actor, expired_target, weapon, 15, "after_expiry_hit")
+	_assert(expiry_a.get("found", false) and expiry_b.get("found", false) and expiry_a_deadline + 10 == expiry_b_deadline and just_before and exact_expiry and actor.next_weapon_hit_grants.is_empty() and after_expiry.get("consumed_next_hit_grant", {}).is_empty() and int(expired_target["current_hp"]) == 49, "Staggered deadlines expire only the older source at the exact time; a large jump leaves no stale damage")
+	_assert(int(ResourcePoolRules.availability(actor, source_a).get("current", -1)) == 1 and int(ResourcePoolRules.availability(actor, source_b).get("current", -1)) == 2, "Weapon hits never make a second pool payment")
+
+	_teardown_scene(combat)
+	GameManager.current_state = GameManager.GameState.OVERWORLD
+	GameManager.game_in_progress = false
+	DataLoader.load_all_data()
+	_exit_test()
+
+
+func _resolve_next_hit_acceptance_attack(attacker: Character, target: Dictionary, weapon: Dictionary, roll_value: int, token_id: String) -> Dictionary:
+	var pool_id := "fixture:forced_attack_roll"
+	RollTokenRules.clear_turn_counter(attacker, pool_id)
+	attacker.roll_tokens[pool_id] = [{"token_id": token_id, "value": roll_value, "feature_id": pool_id, "pool_id": pool_id, "die_sides": 20}]
+	var decisions := {"attack_roll_token_replacement": {"owner": attacker, "pool_id": pool_id, "token_id": token_id, "test_kind": "attack"}}
+	return CombatAction.resolve_weapon_attack(attacker, target, weapon, false, false, decisions)
+
+
+func _activate_next_hit_grant_from_combat_menu(combat: Node, actor: Character, feature_id: String, source_id: String) -> Dictionary:
+	combat.current_player_idx = 0
+	combat.active_character = actor
+	combat.active_combatant = {"is_player": true, "entity": actor}
+	combat.turn_budget.reset(actor, combat.player_entities)
+	combat.hud.update_hud(actor, combat.tracker)
+	combat.hud._show_feature_selection()
+	var feature_index := -1
+	for index in combat.hud.features_registered.size():
+		var entry: Dictionary = combat.hud.features_registered[index]
+		if str(entry.get("id", "")) == feature_id and str(entry.get("source_instance_id", "")) == source_id:
+			feature_index = index
+			break
+	if feature_index < 0:
+		return {"found": false}
+	var disabled: bool = combat.hud.feature_list.is_item_disabled(feature_index)
+	var before := int(ResourcePoolRules.availability(actor, source_id).get("current", -1))
+	if not disabled:
+		combat.hud._on_feature_selected(feature_index)
+		for _frame in 180:
+			await get_tree().process_frame
+			if int(ResourcePoolRules.availability(actor, source_id).get("current", -1)) < before:
+				break
+	var grant: Dictionary = {}
+	for candidate in actor.next_weapon_hit_grants:
+		if str(candidate.get("source_instance_id", "")) == source_id:
+			grant = candidate.duplicate(true)
+			break
+	return {"found": true, "disabled": disabled, "current": int(ResourcePoolRules.availability(actor, source_id).get("current", -1)), "grant": grant}
+
+
+func _find_visible_exchange_popup(combat: Node, title_prefix: String) -> PopupMenu:
+	for child in combat.hud.get_children():
+		if child is PopupMenu and child.visible and not child.is_queued_for_deletion() and str(child.title).begins_with(title_prefix):
+			return child
+	return null
+
+
+func _perform_numeric_pool_exchange_menu_activation(combat: Node, character: Character, player_index: int, feature_id: String, payment_source_id: String, restoration_source_id: String, cancel_stage: String = "") -> Dictionary:
+	combat.current_player_idx = player_index
+	combat.active_character = character
+	combat.active_combatant = {"is_player": true, "entity": character}
+	combat.turn_budget.reset(character, combat.player_entities)
+	combat.hud.update_hud(character, combat.tracker)
+	combat.hud._show_feature_selection()
+	var feature_index := -1
+	for index in combat.hud.features_registered.size():
+		if str(combat.hud.features_registered[index].get("id", "")) == feature_id:
+			feature_index = index
+			break
+	if feature_index < 0:
+		return {"menu_found": false}
+	var payment_before := character.numeric_resource_pools.duplicate(true)
+	var captured: Dictionary = {}
+	var capture_listener := func(action_type: String, data: Dictionary) -> void:
+		if action_type == "use_feature":
+			captured["data"] = data.duplicate(true)
+	combat.hud.action_selected.connect(capture_listener)
+	combat.hud._on_feature_selected(feature_index)
+	var payment_menu: PopupMenu
+	for _frame in 90:
+		await get_tree().process_frame
+		payment_menu = _find_visible_exchange_popup(combat, "Choose the exact pool source to pay")
+		if payment_menu != null:
+			break
+	if payment_menu == null:
+		combat.hud.action_selected.disconnect(capture_listener)
+		return {"menu_found": true, "payment_menu_found": false}
+	var payment_choices: Array[String] = []
+	for index in payment_menu.item_count:
+		payment_choices.append(payment_menu.get_item_text(index))
+	if cancel_stage == "payment":
+		payment_menu.popup_hide.emit()
+		for _frame in 4: await get_tree().process_frame
+		combat.hud.action_selected.disconnect(capture_listener)
+		return {"menu_found": true, "payment_menu_found": true, "payment_choices": payment_choices, "cancelled": captured.is_empty(), "pools_unchanged": character.numeric_resource_pools == payment_before, "action_available": combat.turn_budget.action_available}
+	var payment_index := -1
+	for index in payment_menu.item_count:
+		if payment_menu.get_item_text(index).contains(payment_source_id):
+			payment_index = index
+			break
+	if payment_index < 0:
+		payment_menu.popup_hide.emit()
+		combat.hud.action_selected.disconnect(capture_listener)
+		return {"menu_found": true, "payment_menu_found": true, "payment_choices": payment_choices, "payment_selected": false}
+	payment_menu.id_pressed.emit(payment_index)
+	var restoration_menu: PopupMenu
+	for _frame in 90:
+		await get_tree().process_frame
+		restoration_menu = _find_visible_exchange_popup(combat, "Choose the exact pool source to restore")
+		if restoration_menu != null:
+			break
+	if restoration_menu == null:
+		combat.hud.action_selected.disconnect(capture_listener)
+		return {"menu_found": true, "payment_menu_found": true, "restoration_menu_found": false, "payment_choices": payment_choices}
+	var restoration_choices: Array[String] = []
+	for index in restoration_menu.item_count:
+		restoration_choices.append(restoration_menu.get_item_text(index))
+	if cancel_stage == "restoration":
+		restoration_menu.popup_hide.emit()
+		for _frame in 4: await get_tree().process_frame
+		combat.hud.action_selected.disconnect(capture_listener)
+		return {"menu_found": true, "payment_menu_found": true, "restoration_menu_found": true, "payment_choices": payment_choices, "restoration_choices": restoration_choices, "cancelled": captured.is_empty(), "pools_unchanged": character.numeric_resource_pools == payment_before, "action_available": combat.turn_budget.action_available}
+	var restoration_index := -1
+	for index in restoration_menu.item_count:
+		if restoration_menu.get_item_text(index).contains(restoration_source_id):
+			restoration_index = index
+			break
+	if restoration_index < 0:
+		restoration_menu.popup_hide.emit()
+		combat.hud.action_selected.disconnect(capture_listener)
+		return {"menu_found": true, "payment_menu_found": true, "restoration_menu_found": true, "payment_choices": payment_choices, "restoration_choices": restoration_choices, "restoration_selected": false}
+	var payment_state_before: Dictionary = ResourcePoolRules.availability(character, payment_source_id)
+	var restoration_state_before: Dictionary = ResourcePoolRules.availability(character, restoration_source_id)
+	restoration_menu.id_pressed.emit(restoration_index)
+	for _frame in 240:
+		await get_tree().process_frame
+		if not combat.turn_budget.action_available and not combat.resolving_player_action:
+			break
+	combat.hud.action_selected.disconnect(capture_listener)
+	return {
+		"menu_found": true,
+		"payment_menu_found": true,
+		"restoration_menu_found": true,
+		"payment_choices": payment_choices,
+		"restoration_choices": restoration_choices,
+		"payment_before": int(payment_state_before.get("current", -1)),
+		"payment_after": int(ResourcePoolRules.availability(character, payment_source_id).get("current", -1)),
+		"restoration_before": int(restoration_state_before.get("current", -1)),
+		"restoration_after": int(ResourcePoolRules.availability(character, restoration_source_id).get("current", -1)),
+		"action_available": combat.turn_budget.action_available,
+		"submitted_data": captured.get("data", {}),
+	}
+
+
+func _perform_dice_pool_menu_activation(combat: Node, character: Character, player_index: int, source_instance_id: String, selected_quantity: int) -> Dictionary:
+	combat.current_player_idx = player_index
+	combat.active_character = character
+	combat.active_combatant = {"is_player": true, "entity": character}
+	combat.turn_budget.reset(character, combat.player_entities)
+	combat.hud.update_hud(character, combat.tracker)
+	combat.hud._show_feature_selection()
+	var feature_index := -1
+	for index in combat.hud.features_registered.size():
+		var entry: Dictionary = combat.hud.features_registered[index]
+		if str(entry.get("source_instance_id", "")) == source_instance_id:
+			feature_index = index
+			break
+	if feature_index < 0:
+		return {"menu_found": false}
+	var current_before := int(ResourcePoolRules.availability(character, source_instance_id).get("current", -1))
+	var hp_before := character.current_hp
+	combat.hud._on_feature_selected(feature_index)
+	await get_tree().process_frame
+	var quantity_menu: PopupMenu
+	for child in combat.hud.get_children():
+		if child is PopupMenu and child.visible and str(child.title).begins_with("Choose how many d6 uses") and not child.is_queued_for_deletion():
+			quantity_menu = child
+			break
+	if quantity_menu == null or quantity_menu.item_count < selected_quantity:
+		return {"menu_found": true, "quantity_menu_found": false}
+	if selected_quantity <= 0:
+		quantity_menu.popup_hide.emit()
+		for _frame in 3:
+			await get_tree().process_frame
+	else:
+		quantity_menu.id_pressed.emit(selected_quantity - 1)
+		for _frame in 120:
+			await get_tree().process_frame
+			var remaining := int(ResourcePoolRules.availability(character, source_instance_id).get("current", -1))
+			if remaining == current_before - selected_quantity and not combat.turn_budget.bonus_action_available:
+				break
+	return {
+		"menu_found": true,
+		"quantity_menu_found": true,
+		"current_before": current_before,
+		"current_after": int(ResourcePoolRules.availability(character, source_instance_id).get("current", -1)),
+		"hp_before": hp_before,
+		"hp_after": character.current_hp,
+		"action_available": combat.turn_budget.bonus_action_available,
+	}
+
+
+func test_shared_numeric_pool_exchange_flow() -> void:
+	_enter_test("shared_numeric_pool_exchange_flow")
+	_setup_world()
+	DataLoader._load_json_file("res://data/fixtures/shared_numeric_pool_exchange.json", "class")
+	var neutral_class: Dictionary = DataLoader.get_character_class("fixture:pool_exchange_class")
+	var neutral_features: Array = neutral_class.get("features_by_level", {}).get("1", [])
+	var payment_definition: Dictionary = neutral_features[0].duplicate(true) if neutral_features.size() > 0 else {}
+	var restoration_definition: Dictionary = neutral_features[1].duplicate(true) if neutral_features.size() > 1 else {}
+	var neutral_feature: Dictionary = neutral_features[2].duplicate(true) if neutral_features.size() > 2 else {}
+	_assert(not neutral_class.is_empty() and ClassFeature.content_error(payment_definition).is_empty() and ClassFeature.content_error(restoration_definition).is_empty() and ClassFeature.content_error(neutral_feature).is_empty(), "Neutral fixed exchange and both numeric pool definitions validate through production DataLoader")
+
+	var renamed_class: Dictionary = neutral_class.duplicate(true)
+	renamed_class["id"] = "fixture:pool_exchange_class_renamed"
+	renamed_class["name"] = "Fixture Pool Exchange Renamed"
+	var renamed_features: Array = renamed_class["features_by_level"]["1"]
+	var renamed_payment: Dictionary = renamed_features[0]
+	var renamed_restoration: Dictionary = renamed_features[1]
+	var renamed_feature: Dictionary = renamed_features[2]
+	renamed_payment["id"] = "fixture:exchange_pool_a_renamed"
+	renamed_payment["name"] = "Exchange Pool A Renamed"
+	renamed_payment["resource_pool"]["id"] = "fixture:exchange_pool_a_uses_renamed"
+	renamed_restoration["id"] = "fixture:exchange_pool_b_renamed"
+	renamed_restoration["name"] = "Exchange Pool B Renamed"
+	renamed_restoration["resource_pool"]["id"] = "fixture:exchange_pool_b_uses_renamed"
+	renamed_feature["id"] = "fixture:exchange_two_for_one_renamed"
+	renamed_feature["name"] = "Exchange Two for One Renamed"
+	renamed_feature["resource_exchange"]["payment_pool_id"] = "fixture:exchange_pool_a_uses_renamed"
+	renamed_feature["resource_exchange"]["restoration_pool_id"] = "fixture:exchange_pool_b_uses_renamed"
+	DataLoader._register_content(renamed_class, "class", "res://data/fixtures/shared_numeric_pool_exchange.json#renamed")
+	renamed_class = DataLoader.get_character_class("fixture:pool_exchange_class_renamed")
+	renamed_features = renamed_class.get("features_by_level", {}).get("1", [])
+	renamed_payment = renamed_features[0] if renamed_features.size() > 0 else {}
+	renamed_restoration = renamed_features[1] if renamed_features.size() > 1 else {}
+	renamed_feature = renamed_features[2] if renamed_features.size() > 2 else {}
+	_assert(not renamed_class.is_empty() and ClassFeature.content_error(renamed_payment).is_empty() and ClassFeature.content_error(renamed_restoration).is_empty() and ClassFeature.content_error(renamed_feature).is_empty(), "Renamed pool IDs and exchange references register and validate without content-ID behavior")
+
+	var neutral_owner := _fresh_char("Exchange Owner", "human", "fighter", {"STR": 10, "DEX": 10, "CON": 12, "INT": 16, "WIS": 10, "CHA": 10})
+	var renamed_owner := _fresh_char("Renamed Exchange Owner", "human", "fighter", {"STR": 10, "DEX": 10, "CON": 12, "INT": 16, "WIS": 10, "CHA": 10})
+	neutral_owner.character_id = "fixture:exchange_owner"
+	neutral_owner.level = 1
+	neutral_owner.features.clear()
+	neutral_owner.features.append_array([payment_definition.duplicate(true), restoration_definition.duplicate(true), neutral_feature.duplicate(true)])
+	renamed_owner.character_id = "fixture:renamed_exchange_owner"
+	renamed_owner.level = 1
+	renamed_owner.features.clear()
+	renamed_owner.features.append_array([renamed_payment.duplicate(true), renamed_restoration.duplicate(true), renamed_feature.duplicate(true)])
+	var foreign_owner := _fresh_char("Other Actor", "human", "fighter", {"STR": 10, "DEX": 10, "CON": 12, "INT": 16, "WIS": 10, "CHA": 10})
+	foreign_owner.character_id = "fixture:other_exchange_owner"
+	foreign_owner.features.clear()
+	foreign_owner.features.append_array([payment_definition.duplicate(true), restoration_definition.duplicate(true), neutral_feature.duplicate(true)])
+	PlayerManager.reset()
+	PartyManager.reset()
+	PlayerManager.add_player("Exchange Owner")
+	PlayerManager.add_player("Renamed Exchange Owner")
+	PlayerManager.set_player_character(0, neutral_owner)
+	PlayerManager.set_player_character(1, renamed_owner)
+	PartyManager.register_player_character(0, neutral_owner)
+	PartyManager.register_player_character(1, renamed_owner)
+	var neutral_payment := str(payment_definition["resource_pool"]["id"])
+	var neutral_restoration := str(restoration_definition["resource_pool"]["id"])
+	var neutral_payment_main := "fixture:exchange_owner:payment_main"
+	var neutral_payment_selected := "fixture:exchange_owner:payment_selected"
+	var neutral_payment_stale := "fixture:exchange_owner:payment_stale"
+	var neutral_restoration_main := "fixture:exchange_owner:restoration_main"
+	var neutral_restoration_selected := "fixture:exchange_owner:restoration_selected"
+	var neutral_restoration_stale := "fixture:exchange_owner:restoration_stale"
+	var acquired_neutral := [
+		ResourcePoolRules.acquire(neutral_owner, payment_definition, neutral_payment_main),
+		ResourcePoolRules.acquire(neutral_owner, payment_definition, neutral_payment_selected),
+		ResourcePoolRules.acquire(neutral_owner, payment_definition, neutral_payment_stale),
+		ResourcePoolRules.acquire(neutral_owner, restoration_definition, neutral_restoration_main),
+		ResourcePoolRules.acquire(neutral_owner, restoration_definition, neutral_restoration_selected),
+		ResourcePoolRules.acquire(neutral_owner, restoration_definition, neutral_restoration_stale),
+	]
+	var renamed_payment_main := "fixture:renamed_exchange_owner:payment_main"
+	var renamed_payment_selected := "fixture:renamed_exchange_owner:payment_selected"
+	var renamed_restoration_main := "fixture:renamed_exchange_owner:restoration_main"
+	var renamed_restoration_selected := "fixture:renamed_exchange_owner:restoration_selected"
+	var acquired_renamed := [
+		ResourcePoolRules.acquire(renamed_owner, renamed_payment, renamed_payment_main),
+		ResourcePoolRules.acquire(renamed_owner, renamed_payment, renamed_payment_selected),
+		ResourcePoolRules.acquire(renamed_owner, renamed_restoration, renamed_restoration_main),
+		ResourcePoolRules.acquire(renamed_owner, renamed_restoration, renamed_restoration_selected),
+	]
+	var foreign_source := "fixture:other_exchange_owner:restoration"
+	var acquired_foreign := ResourcePoolRules.acquire(foreign_owner, restoration_definition, foreign_source)
+	_assert(acquired_neutral.all(func(result: Dictionary): return bool(result.get("success", false))) and acquired_renamed.all(func(result: Dictionary): return bool(result.get("success", false))) and acquired_foreign.get("success", false), "Neutral, renamed and other-actor fixtures acquire independent source instances")
+	GameManager.current_state = GameManager.GameState.COMBAT
+	GameManager.transition_context = {"terrain": "plains", "monster_ids": ["goblin"]}
+	GameManager.test_mode = false
+	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 1.0)
+	var cancel_payment := await _perform_numeric_pool_exchange_menu_activation(combat, neutral_owner, 0, str(neutral_feature["id"]), neutral_payment_selected, neutral_restoration_selected, "payment")
+	_assert(cancel_payment.get("menu_found", false) and cancel_payment.get("payment_menu_found", false) and cancel_payment.get("cancelled", false) and cancel_payment.get("pools_unchanged", false) and cancel_payment.get("action_available", false), "Canceling the production payment-source popup leaves every pool and the Action unchanged")
+	var cancel_restoration := await _perform_numeric_pool_exchange_menu_activation(combat, neutral_owner, 0, str(neutral_feature["id"]), neutral_payment_selected, neutral_restoration_selected, "restoration")
+	_assert(cancel_restoration.get("payment_menu_found", false) and cancel_restoration.get("restoration_menu_found", false) and cancel_restoration.get("cancelled", false) and cancel_restoration.get("pools_unchanged", false) and cancel_restoration.get("action_available", false), "Canceling after payment-source choice leaves every pool and the Action unchanged")
+	var neutral_activation := await _perform_numeric_pool_exchange_menu_activation(combat, neutral_owner, 0, str(neutral_feature["id"]), neutral_payment_selected, neutral_restoration_selected)
+	var own_choice_only: bool = neutral_activation.get("payment_choices", []).any(func(label: String): return label.contains(neutral_payment_main) or label.contains(neutral_payment_selected)) and neutral_activation.get("payment_choices", []).all(func(label: String): return not label.contains("renamed_exchange_owner") and not label.contains("other_exchange_owner"))
+	_assert(neutral_activation.get("menu_found", false) and neutral_activation.get("payment_menu_found", false) and neutral_activation.get("restoration_menu_found", false) and own_choice_only and neutral_activation.get("payment_choices", []).any(func(label: String): return label.contains(neutral_payment_selected)) and neutral_activation.get("restoration_choices", []).any(func(label: String): return label.contains(neutral_restoration_selected)), "Production combat choices expose the neutral actor's exact eligible payment and restoration sources only")
+	_assert(int(neutral_activation.get("payment_before", -1)) == 3 and int(neutral_activation.get("payment_after", -1)) == 1 and int(neutral_activation.get("restoration_before", -1)) == 0 and int(neutral_activation.get("restoration_after", -1)) == 1 and not bool(neutral_activation.get("action_available", true)), "Neutral 2-for-1 source choices commit once through the real combat activation")
+	var neutral_unrelated_unchanged: bool = int(ResourcePoolRules.availability(neutral_owner, neutral_payment_main).get("current", -1)) == 3 and int(ResourcePoolRules.availability(neutral_owner, neutral_restoration_main).get("current", -1)) == 0 and int(ResourcePoolRules.availability(renamed_owner, renamed_payment_selected).get("current", -1)) == 3 and int(ResourcePoolRules.availability(renamed_owner, renamed_restoration_selected).get("current", -1)) == 0
+	_assert(neutral_unrelated_unchanged, "The neutral activation leaves unselected same-actor sources and every renamed actor source unchanged")
+	var submitted: Dictionary = neutral_activation.get("submitted_data", {})
+	var submitted_command := CombatCommand.from_hud_for_character("use_feature", submitted, neutral_owner)
+	var after_neutral_replay := neutral_owner.numeric_resource_pools.duplicate(true)
+	_assert(submitted_command == null and neutral_owner.numeric_resource_pools == after_neutral_replay, "Repeated submission of the production choice is stale after its one successful exchange and cannot replay it")
+
+	var forged_payload := {"feature": {"id": str(neutral_feature["id"]), "selected_payment_source_instance_id": neutral_payment_main, "selected_restoration_source_instance_id": neutral_restoration_main, "resource_exchange": {"payment_pool_id": "forged:pool", "payment_quantity": 1, "restoration_pool_id": "forged:pool", "restoration_quantity": 100}}}
+	var forged_command := CombatCommand.from_hud_for_character("use_feature", forged_payload, neutral_owner)
+	var forged_budget := CombatTurnBudget.new()
+	var forged_before_payment := int(ResourcePoolRules.availability(neutral_owner, neutral_payment_main).get("current", -1))
+	var forged_before_restoration := int(ResourcePoolRules.availability(neutral_owner, neutral_restoration_main).get("current", -1))
+	var forged_activation: Dictionary = ClassFeature.execute(neutral_owner, forged_command.payload["feature"], null, forged_budget) if forged_command != null else {"success": false}
+	_assert(forged_command != null and forged_command.payload["feature"].get("resource_exchange", {}) == neutral_feature.get("resource_exchange", {}) and forged_activation.get("success", false) and forged_before_payment - int(ResourcePoolRules.availability(neutral_owner, neutral_payment_main).get("current", -1)) == 2 and int(ResourcePoolRules.availability(neutral_owner, neutral_restoration_main).get("current", -1)) - forged_before_restoration == 1, "Forged choice metadata cannot author exchange definitions or quantities; shared activation commits the owned 2-for-1")
+	var forged_after := neutral_owner.numeric_resource_pools.duplicate(true)
+	var forged_replay_budget := CombatTurnBudget.new()
+	var forged_replay: Dictionary = ClassFeature.execute(neutral_owner, forged_command.payload["feature"], null, forged_replay_budget) if forged_command != null else {"success": false}
+	_assert(not forged_replay.get("success", true) and neutral_owner.numeric_resource_pools == forged_after and forged_replay_budget.action_available, "Repeating the forged command after commit refuses without charging either source again")
+
+	var insufficient_before_payment: Dictionary = neutral_owner.numeric_resource_pools[neutral_payment_selected].duplicate(true)
+	var insufficient_before_restoration: Dictionary = neutral_owner.numeric_resource_pools[neutral_restoration_selected].duplicate(true)
+	var insufficient_command := CombatCommand.from_hud_for_character("use_feature", {"feature": {"id": str(neutral_feature["id"]), "selected_payment_source_instance_id": neutral_payment_selected, "selected_restoration_source_instance_id": neutral_restoration_selected}}, neutral_owner)
+	_assert(insufficient_command == null and neutral_owner.numeric_resource_pools[neutral_payment_selected] == insufficient_before_payment and neutral_owner.numeric_resource_pools[neutral_restoration_selected] == insufficient_before_restoration, "Insufficient payment is refused at the production command boundary with both exact counts preserved")
+	neutral_owner.numeric_resource_pools[neutral_restoration_main]["current"] = int(neutral_owner.numeric_resource_pools[neutral_restoration_main]["capacity"])
+	var full_before_payment: Dictionary = neutral_owner.numeric_resource_pools[neutral_payment_main].duplicate(true)
+	var full_before_restoration: Dictionary = neutral_owner.numeric_resource_pools[neutral_restoration_main].duplicate(true)
+	var full_command := CombatCommand.from_hud_for_character("use_feature", {"feature": {"id": str(neutral_feature["id"]), "selected_payment_source_instance_id": neutral_payment_main, "selected_restoration_source_instance_id": neutral_restoration_main}}, neutral_owner)
+	_assert(full_command == null and neutral_owner.numeric_resource_pools[neutral_payment_main] == full_before_payment and neutral_owner.numeric_resource_pools[neutral_restoration_main] == full_before_restoration, "A full destination is refused before charging the selected payment source")
+	var same_source_before: Dictionary = neutral_owner.numeric_resource_pools[neutral_payment_main].duplicate(true)
+	var same_source_command := CombatCommand.from_hud_for_character("use_feature", {"feature": {"id": str(neutral_feature["id"]), "selected_payment_source_instance_id": neutral_payment_main, "selected_restoration_source_instance_id": neutral_payment_main}}, neutral_owner)
+	_assert(same_source_command == null and neutral_owner.numeric_resource_pools[neutral_payment_main] == same_source_before, "Same-source selection is rejected with its source quantity unchanged")
+	var foreign_before: Dictionary = foreign_owner.numeric_resource_pools[foreign_source].duplicate(true)
+	var cross_actor_before: Dictionary = neutral_owner.numeric_resource_pools[neutral_payment_stale].duplicate(true)
+	var cross_actor_command := CombatCommand.from_hud_for_character("use_feature", {"feature": {"id": str(neutral_feature["id"]), "selected_payment_source_instance_id": neutral_payment_stale, "selected_restoration_source_instance_id": foreign_source}}, neutral_owner)
+	_assert(cross_actor_command == null and neutral_owner.numeric_resource_pools[neutral_payment_stale] == cross_actor_before and foreign_owner.numeric_resource_pools[foreign_source] == foreign_before, "Another actor's exact source cannot be selected or changed by this actor's exchange")
+	var stale_command := CombatCommand.from_hud_for_character("use_feature", {"feature": {"id": str(neutral_feature["id"]), "selected_payment_source_instance_id": neutral_payment_stale, "selected_restoration_source_instance_id": neutral_restoration_stale}}, neutral_owner)
+	ResourcePoolRules.remove(neutral_owner, neutral_restoration_stale)
+	var stale_budget := CombatTurnBudget.new()
+	var stale_activation: Dictionary = ClassFeature.execute(neutral_owner, stale_command.payload["feature"], null, stale_budget) if stale_command != null else {"success": false}
+	var stale_refused: bool = stale_command != null and not stale_activation.get("success", true) and int(neutral_owner.numeric_resource_pools[neutral_payment_stale].get("current", -1)) == int(cross_actor_before.get("current", -2)) and not neutral_owner.numeric_resource_pools.has(neutral_restoration_stale) and stale_budget.action_available
+	ResourcePoolRules.acquire(neutral_owner, restoration_definition, neutral_restoration_stale)
+	_assert(stale_refused, "A source removed after choice makes the activation stale; payment stays untouched and the destination is not recreated")
+	_teardown_scene(combat)
+
+	var renamed_combat: Node = await _spawn_scene("res://scenes/combat.tscn", 0.6)
+	var renamed_activation := await _perform_numeric_pool_exchange_menu_activation(renamed_combat, renamed_owner, 1, str(renamed_feature["id"]), renamed_payment_selected, renamed_restoration_selected)
+	_assert(renamed_activation.get("payment_menu_found", false) and renamed_activation.get("restoration_menu_found", false) and int(renamed_activation.get("payment_before", -1)) == 3 and int(renamed_activation.get("payment_after", -1)) == 1 and int(renamed_activation.get("restoration_before", -1)) == 0 and int(renamed_activation.get("restoration_after", -1)) == 1 and not bool(renamed_activation.get("action_available", true)), "Renamed definitions take the same real menu and shared 2-for-1 activation path")
+	_assert(int(ResourcePoolRules.availability(renamed_owner, renamed_payment_main).get("current", -1)) == 3 and int(ResourcePoolRules.availability(renamed_owner, renamed_restoration_main).get("current", -1)) == 0, "Renamed activation leaves its unselected exact source pair unchanged")
+	_teardown_scene(renamed_combat)
+
+	GameManager.current_state = GameManager.GameState.OVERWORLD
+	GameManager.game_in_progress = true
+	SaveManager.delete_save("numeric_pool_exchange_acceptance")
+	var wrote_checkpoint := SaveManager.save_game("numeric_pool_exchange_acceptance")
+	var loaded_checkpoint := SaveManager.load_game("numeric_pool_exchange_acceptance") if wrote_checkpoint else false
+	var loaded_neutral: Character = PlayerManager.get_player(0).get("character") if loaded_checkpoint else null
+	var loaded_renamed: Character = PlayerManager.get_player(1).get("character") if loaded_checkpoint else null
+	var checkpoint_ok: bool = wrote_checkpoint and loaded_checkpoint and loaded_neutral != neutral_owner and loaded_renamed != renamed_owner
+	if checkpoint_ok:
+		checkpoint_ok = int(loaded_neutral.numeric_resource_pools.get(neutral_payment_selected, {}).get("current", -1)) == 1 and int(loaded_neutral.numeric_resource_pools.get(neutral_restoration_selected, {}).get("current", -1)) == 1 and int(loaded_neutral.numeric_resource_pools.get(neutral_payment_main, {}).get("current", -1)) == 1 and int(loaded_neutral.numeric_resource_pools.get(neutral_restoration_main, {}).get("current", -1)) == 3 and int(loaded_neutral.numeric_resource_pools.get(neutral_payment_stale, {}).get("current", -1)) == 3 and int(loaded_neutral.numeric_resource_pools.get(neutral_restoration_stale, {}).get("current", -1)) == 0 and int(loaded_renamed.numeric_resource_pools.get(renamed_payment_selected, {}).get("current", -1)) == 1 and int(loaded_renamed.numeric_resource_pools.get(renamed_restoration_selected, {}).get("current", -1)) == 1 and int(loaded_renamed.numeric_resource_pools.get(renamed_payment_main, {}).get("current", -1)) == 3 and int(loaded_renamed.numeric_resource_pools.get(renamed_restoration_main, {}).get("current", -1)) == 0 and ResourcePoolRules.saved_state_error(loaded_neutral.to_dict()).is_empty() and ResourcePoolRules.saved_state_error(loaded_renamed.to_dict()).is_empty()
+	_assert(checkpoint_ok, "Allowed checkpoint save/load preserves both exchanged neutral and renamed exact source counts without replaying the exchange")
+	SaveManager.delete_save("numeric_pool_exchange_acceptance")
+	DataLoader.load_all_data()
+	_exit_test()
+
+
+func test_shared_dice_pool_flow() -> void:
+	_enter_test("shared_dice_pool_flow")
+	_setup_world()
+	DataLoader._load_json_file("res://data/fixtures/shared_dice_pool.json", "class")
+	var neutral_class: Dictionary = DataLoader.get_character_class("fixture:ember_dice_class")
+	var neutral_feature: Dictionary = neutral_class.get("features_by_level", {}).get("1", [{}])[0].duplicate(true)
+	_assert(not neutral_class.is_empty() and str(neutral_class.get("_source", "")).ends_with("shared_dice_pool.json") and ClassFeature.content_error(neutral_feature).is_empty(), "Neutral d6 pool definition loads and validates through production DataLoader")
+
+	var renamed_class := neutral_class.duplicate(true)
+	renamed_class["id"] = "fixture:ember_dice_class_renamed"
+	renamed_class["name"] = "Fixture Ember Dice Renamed"
+	var renamed_feature: Dictionary = renamed_class["features_by_level"]["1"][0]
+	renamed_feature["id"] = "fixture:ember_dice_renamed"
+	renamed_feature["name"] = "Ember Dice Renamed"
+	renamed_feature["resource_pool"]["id"] = "fixture:ember_dice_pool_renamed"
+	DataLoader._register_content(renamed_class, "class", "res://data/fixtures/shared_dice_pool.json#renamed")
+	renamed_class = DataLoader.get_character_class("fixture:ember_dice_class_renamed")
+	renamed_feature = renamed_class.get("features_by_level", {}).get("1", [{}])[0].duplicate(true)
+	_assert(not renamed_class.is_empty() and ClassFeature.content_error(renamed_feature).is_empty(), "Renamed equivalent registers and validates through production DataLoader")
+
+	var invalid_die: Dictionary = neutral_feature.duplicate(true)
+	invalid_die["resource_pool"]["die_size"] = 7
+	var invalid_minimum: Dictionary = neutral_feature.duplicate(true)
+	invalid_minimum["resource_pool"]["spend_choice"]["minimum"] = 0
+	var invalid_range: Dictionary = neutral_feature.duplicate(true)
+	invalid_range["resource_pool"]["spend_choice"] = {"minimum": 2, "maximum": 1}
+	_assert(not ClassFeature.content_error(invalid_die).is_empty() and not ClassFeature.content_error(invalid_minimum).is_empty() and not ClassFeature.content_error(invalid_range).is_empty(), "Production feature validation rejects unsupported die sizes and invalid spend ranges")
+
+	PlayerManager.reset()
+	PartyManager.reset()
+	PlayerManager.add_player("Dice Owner")
+	PlayerManager.add_player("Renamed Dice Owner")
+	var owner := _fresh_char("Dice Owner", "human", "fixture:ember_dice_class", {"STR": 10, "DEX": 10, "CON": 12, "INT": 10, "WIS": 16, "CHA": 10})
+	var renamed_owner := _fresh_char("Renamed Dice Owner", "human", "fixture:ember_dice_class_renamed", {"STR": 10, "DEX": 10, "CON": 12, "INT": 10, "WIS": 16, "CHA": 10})
+	owner.character_id = "fixture:ember_dice_owner"
+	renamed_owner.character_id = "fixture:renamed_dice_owner"
+	owner.max_hp = 24
+	owner.current_hp = 5
+	renamed_owner.max_hp = 24
+	renamed_owner.current_hp = 5
+	PlayerManager.set_player_character(0, owner)
+	PlayerManager.set_player_character(1, renamed_owner)
+	PartyManager.register_player_character(0, owner)
+	PartyManager.register_player_character(1, renamed_owner)
+	var source_one := "fixture:ember_dice:owner_source_one"
+	var source_spare := "fixture:ember_dice:owner_spare"
+	var renamed_source := "fixture:ember_dice_renamed:renamed_source"
+	var acquire_one := ResourcePoolRules.acquire(owner, owner.get_feature("fixture:ember_dice"), source_one)
+	var acquire_spare := ResourcePoolRules.acquire(owner, owner.get_feature("fixture:ember_dice"), source_spare)
+	var acquire_renamed := ResourcePoolRules.acquire(renamed_owner, renamed_owner.get_feature("fixture:ember_dice_renamed"), renamed_source)
+	_assert(acquire_one.get("success", false) and acquire_spare.get("success", false) and acquire_renamed.get("success", false), "Neutral and renamed owners acquire independent exact-source d6 pools")
+	_assert(ResourcePoolRules.availability(owner, source_one).get("current", -1) == 2 and ResourcePoolRules.availability(owner, source_spare).get("current", -1) == 2 and ResourcePoolRules.availability(renamed_owner, renamed_source).get("current", -1) == 2, "Pool counts remain independent across both sources and actors")
+
+	var dice_roll_events: Array[Dictionary] = []
+	var dice_listener := func(details: Dictionary) -> void:
+		if str(details.get("type", "")) == "multiple" and int(details.get("sides", 0)) == 6:
+			dice_roll_events.append(details.duplicate(true))
+	GameManager.current_state = GameManager.GameState.COMBAT
+	GameManager.transition_context = {"terrain": "plains", "monster_ids": ["goblin"]}
+	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 1.0)
+	Dice.dice_rolled.connect(dice_listener)
+	combat.current_player_idx = 0
+	combat.active_character = owner
+	combat.active_combatant = {"is_player": true, "entity": owner}
+	GameManager.test_mode = false
+	var cancelled := await _perform_dice_pool_menu_activation(combat, owner, 0, source_one, 0)
+	_assert(cancelled.get("menu_found", false) and cancelled.get("quantity_menu_found", false) and int(cancelled.get("current_after", -1)) == 2 and int(cancelled.get("hp_after", -1)) == int(cancelled.get("hp_before", -2)) and bool(cancelled.get("action_available", false)) and dice_roll_events.is_empty(), "Canceling the production quantity choice rolls nothing, spends nothing or HP, and preserves the Bonus Action")
+	var one_die := await _perform_dice_pool_menu_activation(combat, owner, 0, source_one, 1)
+	var one_roll: Dictionary = dice_roll_events[0] if not dice_roll_events.is_empty() else {}
+	var one_sum := 0
+	for roll in one_roll.get("rolls", []):
+		one_sum += int(roll)
+	_assert(int(one_die.get("current_before", -1)) == 2 and int(one_die.get("current_after", -1)) == 1 and int(one_roll.get("count", 0)) == 1 and one_roll.get("rolls", []).size() == 1 and int(one_roll.get("total", -1)) == one_sum and int(one_die.get("hp_after", -1)) - int(one_die.get("hp_before", -1)) == one_sum and not bool(one_die.get("action_available", true)), "Production one-d6 choice spends one use and heals by the recorded individual result")
+	var no_source_command := CombatCommand.from_hud_for_character("use_feature", {"feature": {"id": "fixture:ember_dice_renamed", "source_instance_id": source_one, "selected_pool_quantity": 1}}, renamed_owner)
+	_assert(no_source_command == null and ResourcePoolRules.availability(owner, source_spare).get("current", -1) == 2, "An actor cannot activate another owner's source and its other exact pool remains untouched")
+	var invalid_quantity_command := CombatCommand.from_hud_for_character("use_feature", {"feature": {"id": "fixture:ember_dice", "source_instance_id": source_one, "selected_pool_quantity": 3}}, owner)
+	var insufficient_budget := CombatTurnBudget.new()
+	var insufficient_roll_count := dice_roll_events.size()
+	var insufficient_activation := ClassFeature.execute(owner, owner.get_feature("fixture:ember_dice"), null, insufficient_budget, source_one, 2)
+	_assert(invalid_quantity_command == null and not insufficient_activation.get("success", true) and ResourcePoolRules.availability(owner, source_one).get("current", -1) == 1 and dice_roll_events.size() == insufficient_roll_count and insufficient_budget.bonus_action_available, "Out-of-range and insufficient quantities refuse before payment, action cost or rolling")
+
+	var renamed_two_die := await _perform_dice_pool_menu_activation(combat, renamed_owner, 1, renamed_source, 2)
+	var two_roll: Dictionary = dice_roll_events[1] if dice_roll_events.size() > 1 else {}
+	var two_sum := 0
+	for roll in two_roll.get("rolls", []):
+		two_sum += int(roll)
+	_assert(int(renamed_two_die.get("current_before", -1)) == 2 and int(renamed_two_die.get("current_after", -1)) == 0 and int(two_roll.get("count", 0)) == 2 and two_roll.get("rolls", []).size() == 2 and int(two_roll.get("total", -1)) == two_sum and int(renamed_two_die.get("hp_after", -1)) - int(renamed_two_die.get("hp_before", -1)) == two_sum and not bool(renamed_two_die.get("action_available", true)), "Renamed production two-d6 choice spends two uses and heals by both recorded results")
+	_teardown_scene(combat)
+
+	var owner_feature: Dictionary = owner.get_feature("fixture:ember_dice")
+	var direct_budget := CombatTurnBudget.new()
+	var direct_before_hp := owner.current_hp
+	var direct_activation := ClassFeature.execute(owner, owner_feature, null, direct_budget, source_one, 1)
+	var direct_heal: Dictionary = direct_activation.get("results", [{}])[0]
+	var direct_sum := 0
+	for roll in direct_heal.get("rolls", []):
+		direct_sum += int(roll)
+	_assert(direct_activation.get("success", false) and direct_heal.get("rolls", []).size() == 1 and int(direct_heal.get("total", -1)) == direct_sum and int(direct_heal.get("amount", -1)) == direct_sum and str(direct_heal.get("owner_id", "")) == owner.character_id and str(direct_heal.get("source_instance_id", "")) == source_one and str(direct_heal.get("activation_id", "")) == source_one + ":2" and owner.current_hp - direct_before_hp == direct_sum, "Settled feature result retains its individual roll, total, healing and exact owner/source/activation identity")
+	var saved_pool_before_capacity: Dictionary = owner.numeric_resource_pools[source_spare].duplicate(true)
+	owner.proficiency_bonus = 3
+	var grown_pool := ResourcePoolRules.recalculate_capacity(owner, owner_feature, source_spare)
+	var growth_ok: bool = grown_pool.get("success", false) and int(grown_pool.get("pool", {}).get("capacity", 0)) == 3 and int(grown_pool.get("pool", {}).get("current", -1)) == int(saved_pool_before_capacity["current"])
+	owner.proficiency_bonus = 1
+	var shrunk_pool := ResourcePoolRules.recalculate_capacity(owner, owner_feature, source_spare)
+	_assert(growth_ok and shrunk_pool.get("success", false) and int(shrunk_pool.get("pool", {}).get("capacity", 0)) == 1 and int(shrunk_pool.get("pool", {}).get("current", -1)) == 1, "Capacity growth does not refill; shrink clamps an over-capacity dice count")
+	owner.proficiency_bonus = 2
+	ResourcePoolRules.recalculate_capacity(owner, owner_feature, source_spare)
+	var saved_activation_serial := int(owner.numeric_resource_pools[source_one].get("activation_serial", -1))
+	var roll_event_count_before_recovery := dice_roll_events.size()
+
+	GameManager.current_state = GameManager.GameState.OVERWORLD
+	GameManager.campaign_elapsed_seconds = 0
+	GameManager.game_in_progress = true
+	RestRules.reset_windows()
+	var overworld: Node = await _spawn_scene("res://scenes/overworld.tscn", 0.6)
+	overworld.hud.btn_rest.pressed.emit()
+	await get_tree().process_frame
+	var rest_choice := RestRules.get_active_rest_choice_modal()
+	_assert(rest_choice != null, "Production Overworld Rest control offers the authored dice-pool recovery choice")
+	if rest_choice != null:
+		(rest_choice.get_meta("btn_short_rest") as Button).pressed.emit()
+		await get_tree().process_frame
+	var after_short_owner := ResourcePoolRules.availability(owner, source_one)
+	var after_short_renamed := ResourcePoolRules.availability(renamed_owner, renamed_source)
+	_assert(int(after_short_owner.get("current", -1)) == 1 and int(after_short_renamed.get("current", -1)) == 1 and int(owner.numeric_resource_pools[source_one].get("activation_serial", -1)) == saved_activation_serial and dice_roll_events.size() == roll_event_count_before_recovery, "Short Rest restores only authored counts, without generating dice results or changing activation identity")
+	_teardown_scene(overworld)
+
+	GameManager.current_state = GameManager.GameState.DUNGEON
+	var dungeon: Node = await _spawn_scene("res://scenes/dungeon.tscn", 0.6)
+	dungeon.hud.btn_rest.pressed.emit()
+	await get_tree().process_frame
+	rest_choice = RestRules.get_active_rest_choice_modal()
+	_assert(rest_choice != null, "Production Dungeon entrance offers the authored dice-pool Long Rest recovery")
+	if rest_choice != null:
+		(rest_choice.get_meta("btn_long_rest") as Button).pressed.emit()
+		await get_tree().process_frame
+	_assert(int(ResourcePoolRules.availability(renamed_owner, renamed_source).get("current", -1)) == 2 and int(renamed_owner.numeric_resource_pools[renamed_source].get("activation_serial", -1)) == 1 and dice_roll_events.size() == roll_event_count_before_recovery, "Long Rest fills the authored dice count without rolling or replaying activation")
+
+	var all_roll_count_before_save := dice_roll_events.size()
+	SaveManager.delete_save("dice_pool_acceptance")
+	var wrote_checkpoint := SaveManager.save_game("dice_pool_acceptance")
+	var loaded_checkpoint := SaveManager.load_game("dice_pool_acceptance") if wrote_checkpoint else false
+	var loaded_owner: Character = PlayerManager.get_player(0).get("character") if loaded_checkpoint else null
+	var loaded_renamed: Character = PlayerManager.get_player(1).get("character") if loaded_checkpoint else null
+	var loaded_neutral_pool: Dictionary = loaded_owner.numeric_resource_pools.get(source_one, {}) if loaded_owner != null else {}
+	var loaded_renamed_pool: Dictionary = loaded_renamed.numeric_resource_pools.get(renamed_source, {}) if loaded_renamed != null else {}
+	_assert(wrote_checkpoint and loaded_checkpoint and loaded_owner != owner and loaded_renamed != renamed_owner and ResourcePoolRules.saved_state_error(loaded_owner.to_dict()).is_empty() and str(loaded_neutral_pool.get("owner_id", "")) == owner.character_id and str(loaded_neutral_pool.get("source_instance_id", "")) == source_one and str(loaded_neutral_pool.get("definition_id", "")) == "fixture:ember_dice_pool" and int(loaded_neutral_pool.get("die_size", 0)) == 6 and int(loaded_neutral_pool.get("current", -1)) == 2 and int(loaded_neutral_pool.get("activation_serial", -1)) == saved_activation_serial and str(loaded_renamed_pool.get("owner_id", "")) == renamed_owner.character_id and str(loaded_renamed_pool.get("source_instance_id", "")) == renamed_source and str(loaded_renamed_pool.get("definition_id", "")) == "fixture:ember_dice_pool_renamed" and int(loaded_renamed_pool.get("die_size", 0)) == 6 and int(loaded_renamed_pool.get("current", -1)) == 2 and int(loaded_renamed_pool.get("activation_serial", -1)) == 1 and dice_roll_events.size() == all_roll_count_before_save, "Allowed checkpoint reload preserves owner/source/die/count/serial without acquisition, recovery or random-result replay")
+	var invalid_saved_pool := loaded_owner.to_dict()
+	invalid_saved_pool["numeric_resource_pools"][source_one]["die_size"] = 7
+	_assert(not ResourcePoolRules.saved_state_error(invalid_saved_pool).is_empty(), "Save preflight rejects unsupported saved dice metadata")
+	SaveManager.delete_save("dice_pool_acceptance")
+	RestRules.reset_windows()
+	Dice.dice_rolled.disconnect(dice_listener)
+	_teardown_scene(dungeon)
+	DataLoader.load_all_data()
+	_exit_test()
+
+
+func test_shared_combat_use_limits_flow() -> void:
+	_enter_test("shared_combat_use_limits_flow")
+	_setup_world()
+	DataLoader._load_json_file("res://data/fixtures/shared_combat_use_limits.json", "class")
+	var source_class: Dictionary = DataLoader.get_character_class("fixture:bounded_hit_rider_class")
+	var source_feature: Dictionary = source_class.get("features_by_level", {}).get("1", [{}])[0].duplicate(true)
+	_assert(not source_class.is_empty() and ClassFeature.content_error(source_feature).is_empty(), "Neutral bounded rider definition loads and validates through production DataLoader")
+
+	var renamed_class := source_class.duplicate(true)
+	renamed_class["id"] = "fixture:bounded_hit_rider_class_renamed"
+	renamed_class["name"] = "Fixture Bounded Hit Rider Renamed"
+	var renamed_feature: Dictionary = renamed_class["features_by_level"]["1"][0]
+	renamed_feature["id"] = "fixture:bounded_hit_rider_renamed"
+	renamed_feature["name"] = "Bounded Hit Rider Renamed"
+	renamed_feature["resource_pool"]["id"] = "fixture:bounded_hit_rider_pool_renamed"
+	renamed_feature["passive_effects"][0]["id"] = "fixture_bounded_hit_target_renamed"
+	renamed_feature["passive_effects"][0]["use_limit"] = "once_per_combat_turn"
+	var renamed_interval_feature: Dictionary = renamed_class["features_by_level"]["1"][1]
+	renamed_interval_feature["id"] = "fixture:bounded_owner_interval_rider_renamed"
+	renamed_interval_feature["name"] = "Owner Interval Hit Rider Renamed"
+	renamed_interval_feature["resource_pool"]["id"] = "fixture:bounded_owner_interval_rider_pool_renamed"
+	renamed_interval_feature["passive_effects"][0]["id"] = "fixture_bounded_owner_interval_hit_renamed"
+	DataLoader._register_content(renamed_class, "class", "res://data/fixtures/shared_combat_use_limits.json#renamed")
+	var registered_renamed: Dictionary = DataLoader.get_character_class("fixture:bounded_hit_rider_class_renamed")
+	_assert(not registered_renamed.is_empty() and ClassFeature.content_error(registered_renamed.get("features_by_level", {}).get("1", [{}])[0]).is_empty() and ClassFeature.content_error(registered_renamed.get("features_by_level", {}).get("1", [{}, {}])[1]).is_empty(), "Renamed combat-turn and owner-interval options and pools validate through production registration")
+
+	var alice := _fresh_char("Rider Alice", "human", "fixture:bounded_hit_rider_class", {"STR": 18, "DEX": 14, "CON": 14, "INT": 10, "WIS": 10, "CHA": 8})
+	var bob := _fresh_char("Rider Bob", "human", "fixture:bounded_hit_rider_class_renamed", {"STR": 18, "DEX": 14, "CON": 14, "INT": 10, "WIS": 10, "CHA": 8})
+	alice.character_id = "fixture:rider_alice"
+	bob.character_id = "fixture:rider_bob"
+	alice.level = 5
+	bob.level = 5
+	alice.current_hp = 80
+	alice.max_hp = 80
+	bob.current_hp = 80
+	bob.max_hp = 80
+	PlayerManager.set_player_character(0, alice)
+	PlayerManager.set_player_character(1, bob)
+	PartyManager.reset()
+	PartyManager.register_player_character(0, alice)
+	PartyManager.register_player_character(1, bob)
+	var alice_feature: Dictionary = alice.get_feature("fixture:bounded_hit_rider")
+	var bob_feature: Dictionary = bob.get_feature("fixture:bounded_hit_rider_renamed")
+	var alice_interval_feature: Dictionary = alice.get_feature("fixture:bounded_owner_interval_rider")
+	var bob_interval_feature: Dictionary = bob.get_feature("fixture:bounded_owner_interval_rider_renamed")
+	var source_a := "fixture:bounded_hit_rider:alice_a"
+	var source_b := "fixture:bounded_hit_rider:alice_b"
+	var source_d := "fixture:bounded_hit_rider:alice_eligibility"
+	var source_c := "fixture:bounded_hit_rider_renamed:bob"
+	var interval_source_a := "fixture:bounded_owner_interval_rider:alice"
+	var interval_source_b := "fixture:bounded_owner_interval_rider_renamed:bob"
+	alice_feature["source_instance_id"] = source_a
+	bob_feature["source_instance_id"] = source_c
+	alice_interval_feature["source_instance_id"] = interval_source_a
+	bob_interval_feature["source_instance_id"] = interval_source_b
+	var alice_copy := alice_feature.duplicate(true)
+	alice_copy["source_instance_id"] = source_b
+	alice_copy["passive_effects"] = []
+	alice.features.append(alice_copy)
+	var alice_eligibility_copy := alice_feature.duplicate(true)
+	alice_eligibility_copy["source_instance_id"] = source_d
+	alice_eligibility_copy["passive_effects"] = []
+	alice.features.append(alice_eligibility_copy)
+	var acquired_a := ResourcePoolRules.acquire(alice, alice_feature, source_a)
+	var acquired_b := ResourcePoolRules.acquire(alice, alice_copy, source_b)
+	var acquired_d := ResourcePoolRules.acquire(alice, alice_eligibility_copy, source_d)
+	var acquired_c := ResourcePoolRules.acquire(bob, bob_feature, source_c)
+	var acquired_interval_a := ResourcePoolRules.acquire(alice, alice_interval_feature, interval_source_a)
+	var acquired_interval_b := ResourcePoolRules.acquire(bob, bob_interval_feature, interval_source_b)
+	_assert(acquired_a.get("success", false) and acquired_b.get("success", false) and acquired_c.get("success", false) and acquired_d.get("success", false) and acquired_interval_a.get("success", false) and acquired_interval_b.get("success", false), "Each actor and exact source instance owns an independently acquired pool")
+
+	GameManager.current_state = GameManager.GameState.COMBAT
+	GameManager.transition_context = {"terrain": "plains", "monster_ids": ["goblin", "goblin"]}
+	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 1.2)
+	combat.player_entities.clear()
+	combat.player_entities.append({"character": alice, "owner_player_index": 0, "combat_id": "fixture:rider_alice", "is_steed": false, "is_familiar": false, "reaction_available": true, "hex_position": Vector2i(0, 0)})
+	combat.player_entities.append({"character": bob, "owner_player_index": 1, "combat_id": "fixture:rider_bob", "is_steed": false, "is_familiar": false, "reaction_available": true, "hex_position": Vector2i(20, 20)})
+	CombatAction.bounded_owner_turn_rider_locks[alice.character_id] = {"stale_before_combat": true}
+	CombatAction.bounded_owner_turn_rider_locks[bob.character_id] = {"stale_before_combat": true}
+	FighterChecks._seed_die(20, 20)
+	await combat._roll_initiative_and_start()
+	var combat_entry_cleared_owner_locks := not CombatAction.bounded_owner_turn_rider_locks.has(alice.character_id) and not CombatAction.bounded_owner_turn_rider_locks.has(bob.character_id)
+	combat.tracker.clear()
+	combat.tracker.add_combatant("fixture:rider_alice", alice.character_name, true, alice, 20, 2)
+	combat.tracker.add_combatant("fixture:rider_bob", bob.character_name, true, bob, 10, 2)
+	combat.tracker.active_index = 0
+	await combat._start_combat_turn()
+	var target_a: Dictionary = {"id": "fixture:rider_target_a", "name": "Target A", "is_alive": true, "current_hp": 1000, "max_hp": 1000, "armor_class": 1, "conditions": {}, "condition_sources": {}, "hex_position": Vector2i.ZERO}
+	var target_b: Dictionary = {"id": "fixture:rider_target_b", "name": "Target B", "is_alive": true, "current_hp": 1000, "max_hp": 1000, "armor_class": 1, "conditions": {}, "condition_sources": {}, "hex_position": Vector2i(1, 0)}
+	var weapon: Dictionary = {"id": "fixture:rider_weapon", "name": "Fixture Sword", "type": "weapon", "range": 1, "damage": "1d4", "damage_type": "slashing", "ability": "STR", "properties": []}
+	_assert(combat_entry_cleared_owner_locks and combat.active_character == alice and CombatAction.active_turn_actor_id == alice.get_instance_id(), "The production initiative entry clears stale owner locks and starts Alice's initial interval")
+	for player in combat.player_entities:
+		var interval_owner: Character = player.get("character")
+		player["reaction_available"] = interval_owner == bob
+		interval_owner.reaction_available = interval_owner == bob
+		player["hex_position"] = Vector2i.ZERO if interval_owner == bob else Vector2i(20, 20)
+	var bob_combat_turn_effects: Array = bob_feature.get("passive_effects", []).duplicate(true)
+	bob_feature["passive_effects"] = []
+	GameManager.test_mode = false
+	FighterChecks._seed_die(20, 20)
+	combat._check_opportunity_attacks_for_path(null, target_b, [Vector2i(1, 0), Vector2i(2, 0)], true)
+	_assert(await _answer_audit_dialog(combat.hud, "Reaction"), "The actual Opportunity Attack prompt is available for the renamed owner-interval rider")
+	for _frame in 12:
+		await get_tree().process_frame
+	GameManager.test_mode = true
+	var bob_pre_first_pool := ResourcePoolRules.availability(bob, interval_source_b)
+	_assert(bob.reaction_available == false and int(target_b.get("current_hp", 0)) < 1000 and int(bob_pre_first_pool.get("current", -1)) == 1, "Bob's qualifying off-turn Opportunity Attack applies the renamed rider in the pre-first-turn interval")
+	var bob_pre_first_repeat := CombatAction.resolve_weapon_damage_riders(bob, target_a, {}, weapon)
+	_assert(bob_pre_first_repeat.is_empty() and int(ResourcePoolRules.availability(bob, interval_source_b).get("current", -1)) == 1, "A second pre-first-turn attempt is locked without another pool payment")
+	FighterChecks._seed_die(20, 20)
+	var first_attack: Dictionary = CombatAction.resolve_weapon_attack(alice, target_a, weapon)
+	var first_base_damage := int(first_attack.get("damage", 0))
+	await combat._finish_fighter_attack(target_a, weapon, first_attack, alice)
+	var first_pool := ResourcePoolRules.availability(alice, source_a)
+	var first_rider_damage := int(first_attack.get("damage", 0))
+	_assert(first_attack.get("hit", false) and int(first_pool.get("current", -1)) == 1 and first_rider_damage > first_base_damage, "The real weapon resolver keeps the attack and spends one verified neutral pool use on a qualifying hit (attack=%s pool=%s)" % [str(first_attack), str(first_pool)])
+	await combat._finish_fighter_attack(target_a, weapon, first_attack, alice)
+	var once_damage := int(first_attack.get("damage", 0))
+	_assert(int(ResourcePoolRules.availability(alice, source_a).get("current", -1)) == 1 and once_damage == first_rider_damage, "Repeated CombatState completion for the same hit cannot spend or apply the rider twice")
+
+	var second_source_effects: Dictionary = source_feature.get("passive_effects", [])[0].duplicate(true)
+	second_source_effects["id"] = "fixture_bounded_hit_source_b"
+	second_source_effects["use_limit"] = "once_per_combat_turn"
+	alice_copy["passive_effects"] = [second_source_effects]
+	FighterChecks._seed_die(20, 20)
+	var second_target_attack: Dictionary = CombatAction.resolve_weapon_attack(alice, target_a, weapon)
+	await combat._finish_fighter_attack(target_a, weapon, second_target_attack, alice)
+	_assert(second_target_attack.get("hit", false) and int(ResourcePoolRules.availability(alice, source_b).get("current", -1)) == 1, "A distinct option and exact source instance remain independent for the same actor and turn")
+	FighterChecks._seed_die(20, 20)
+	var same_turn_repeat: Dictionary = CombatAction.resolve_weapon_attack(alice, target_a, weapon)
+	await combat._finish_fighter_attack(target_a, weapon, same_turn_repeat, alice)
+	_assert(int(ResourcePoolRules.availability(alice, source_a).get("current", -1)) == 1, "Once-per-target limit blocks another qualifying hit on that target during the same turn")
+	FighterChecks._seed_die(20, 20)
+	var another_target: Dictionary = CombatAction.resolve_weapon_attack(alice, target_b, weapon)
+	await combat._finish_fighter_attack(target_b, weapon, another_target, alice)
+	_assert(int(ResourcePoolRules.availability(alice, source_a).get("current", -1)) == 0, "The same actor and source can use a target-bounded limit once against a second target in the same turn")
+	_assert(int(ResourcePoolRules.availability(alice, interval_source_a).get("current", -1)) == 1 and first_rider_damage > first_base_damage, "A qualifying hit during the owner's first turn spends the owner-interval pool once")
+	var second_interval_option: Dictionary = alice_interval_feature["passive_effects"][0].duplicate(true)
+	second_interval_option["id"] = "fixture_bounded_owner_interval_option_two"
+	alice_interval_feature["passive_effects"].append(second_interval_option)
+	var alice_interval_copy: Dictionary = alice_interval_feature.duplicate(true)
+	var interval_source_copy := "fixture:bounded_owner_interval_rider:alice_copy"
+	alice_interval_copy["source_instance_id"] = interval_source_copy
+	alice_interval_copy["passive_effects"] = [alice_interval_feature["passive_effects"][0].duplicate(true)]
+	alice.features.append(alice_interval_copy)
+	var acquired_interval_copy := ResourcePoolRules.acquire(alice, alice_interval_copy, interval_source_copy)
+	var independent_interval_riders := CombatAction.resolve_weapon_damage_riders(alice, target_a, {}, weapon)
+	_assert(acquired_interval_copy.get("success", false) and independent_interval_riders.size() == 2 and int(ResourcePoolRules.availability(alice, interval_source_a).get("current", -1)) == 0 and int(ResourcePoolRules.availability(alice, interval_source_copy).get("current", -1)) == 1, "A distinct option on the exact source and the same option on a new source each get independent interval locks")
+	alice.features.erase(alice_interval_feature)
+	var removed_interval_source := ResourcePoolRules.remove(alice, interval_source_a)
+	alice.features.append(alice_interval_feature)
+	var reacquired_interval_source := ResourcePoolRules.acquire(alice, alice_interval_feature, interval_source_a)
+	var same_source_reacquisition := CombatAction.resolve_weapon_damage_riders(alice, target_a, {}, weapon)
+	_assert(removed_interval_source and reacquired_interval_source.get("success", false) and same_source_reacquisition.is_empty() and int(ResourcePoolRules.availability(alice, interval_source_a).get("current", -1)) == 2 and int(ResourcePoolRules.availability(alice, interval_source_copy).get("current", -1)) == 1, "Removing and reacquiring the same source ID leaves both of its used options locked until Alice's next turn")
+	await combat._end_active_turn()
+	_assert(combat.active_character == bob and CombatAction.active_turn_actor_id == bob.get_instance_id(), "The production end-turn and initiative path advances to the next owning actor")
+	bob_feature["passive_effects"] = bob_combat_turn_effects
+	FighterChecks._seed_die(20, 20)
+	var bob_attack: Dictionary = CombatAction.resolve_weapon_attack(bob, target_a, weapon)
+	await combat._finish_fighter_attack(target_a, weapon, bob_attack, bob)
+	_assert(bob_attack.get("hit", false) and int(ResourcePoolRules.availability(bob, source_c).get("current", -1)) == 1 and int(ResourcePoolRules.availability(bob, interval_source_b).get("current", -1)) == 0, "Bob's first actual turn start clears the pre-first-turn lock and the renamed combat-turn and owner-interval riders commit")
+
+	# The renamed option has the once-per-turn policy; target identity does not grant a second use.
+	FighterChecks._seed_die(20, 20)
+	var bob_other_target: Dictionary = CombatAction.resolve_weapon_attack(bob, target_b, weapon)
+	await combat._finish_fighter_attack(target_b, weapon, bob_other_target, bob)
+	_assert(int(ResourcePoolRules.availability(bob, source_c).get("current", -1)) == 1, "Renamed once-per-turn option refuses a second target in the same turn")
+	for player in combat.player_entities:
+		var interval_owner: Character = player.get("character")
+		player["reaction_available"] = interval_owner == alice
+		interval_owner.reaction_available = interval_owner == alice
+		player["hex_position"] = Vector2i.ZERO if interval_owner == alice else Vector2i(20, 20)
+	target_b["hex_position"] = Vector2i(1, 0)
+	var alice_off_turn_hp := int(target_b.get("current_hp", 0))
+	GameManager.test_mode = false
+	FighterChecks._seed_die(20, 20)
+	combat._check_opportunity_attacks_for_path(null, target_b, [Vector2i(1, 0), Vector2i(2, 0)], true)
+	_assert(await _answer_audit_dialog(combat.hud, "Reaction"), "Alice can make the actual off-turn Opportunity Attack during Bob's turn")
+	for _frame in 12:
+		await get_tree().process_frame
+	GameManager.test_mode = true
+	_assert(alice.reaction_available == false and int(target_b.get("current_hp", 0)) < alice_off_turn_hp and int(ResourcePoolRules.availability(alice, interval_source_a).get("current", -1)) == 2 and int(ResourcePoolRules.availability(alice, interval_source_copy).get("current", -1)) == 1, "Alice's qualifying off-turn attack keeps its base hit and cannot reuse either already-locked source option")
+	await combat._end_active_turn()
+	_assert(combat.active_character == alice and CombatAction.active_turn_actor_id == alice.get_instance_id(), "The next actual initiative turn returns to the first actor after the opponent turn")
+	var before_interval_reset_attack := int(target_a.get("current_hp", 0))
+	FighterChecks._seed_die(20, 20)
+	var alice_next_interval: Dictionary = CombatAction.resolve_weapon_attack(alice, target_a, weapon)
+	await combat._finish_fighter_attack(target_a, weapon, alice_next_interval, alice)
+	_assert(alice_next_interval.get("hit", false) and int(target_a.get("current_hp", 0)) < before_interval_reset_attack and int(ResourcePoolRules.availability(alice, interval_source_a).get("current", -1)) == 0 and int(ResourcePoolRules.availability(alice, interval_source_copy).get("current", -1)) == 0, "Alice's next actual turn start resets only her interval locks and the production attack spends each newly available option")
+
+	var before_exhausted_hit := int(target_a["current_hp"])
+	FighterChecks._seed_die(20, 20)
+	var exhausted_attack: Dictionary = CombatAction.resolve_weapon_attack(alice, target_a, weapon)
+	await combat._finish_fighter_attack(target_a, weapon, exhausted_attack, alice)
+	_assert(exhausted_attack.get("hit", false) and int(target_a["current_hp"]) < before_exhausted_hit and int(ResourcePoolRules.availability(alice, source_a).get("current", -1)) == 0, "An exhausted pool skips only the rider; the original attack still resolves")
+	var eligibility_effect: Dictionary = alice_interval_feature.get("passive_effects", [])[0].duplicate(true)
+	eligibility_effect["id"] = "fixture_bounded_hit_eligibility"
+	eligibility_effect["melee_only"] = true
+	alice_eligibility_copy["passive_effects"] = [eligibility_effect]
+	var before_miss_pool := int(ResourcePoolRules.availability(alice, source_d).get("current", -1))
+	var hard_target := target_a.duplicate(true)
+	hard_target["id"] = "fixture:rider_miss_target"
+	hard_target["armor_class"] = 10000
+	FighterChecks._seed_die(20, 1)
+	var miss := CombatAction.resolve_weapon_attack(alice, hard_target, weapon)
+	await combat._finish_fighter_attack(hard_target, weapon, miss, alice)
+	_assert(not miss.get("hit", true) and int(ResourcePoolRules.availability(alice, source_d).get("current", -1)) == before_miss_pool, "A miss consumes neither a rider use nor a pool use")
+	var ranged_weapon := weapon.duplicate(true)
+	ranged_weapon["range"] = 6
+	FighterChecks._seed_die(20, 20)
+	var ineligible := CombatAction.resolve_weapon_attack(alice, target_b, ranged_weapon)
+	await combat._finish_fighter_attack(target_b, ranged_weapon, ineligible, alice)
+	_assert(ineligible.get("hit", false) and int(ResourcePoolRules.availability(alice, source_d).get("current", -1)) == before_miss_pool, "A hit that fails rider eligibility keeps its attack but consumes no rider use")
+	FighterChecks._seed_die(20, 20)
+	var eligible_after_skips := CombatAction.resolve_weapon_attack(alice, target_b, weapon)
+	await combat._finish_fighter_attack(target_b, weapon, eligible_after_skips, alice)
+	_assert(eligible_after_skips.get("hit", false) and int(ResourcePoolRules.availability(alice, source_d).get("current", -1)) == before_miss_pool - 1, "Miss and ineligibility leave the same option unlocked for a later qualifying hit")
+	var empty_interval_source := "fixture:bounded_owner_interval_rider:alice_empty"
+	var empty_interval_feature: Dictionary = alice_interval_feature.duplicate(true)
+	empty_interval_feature["source_instance_id"] = empty_interval_source
+	empty_interval_feature["resource_pool"] = empty_interval_feature["resource_pool"].duplicate(true)
+	empty_interval_feature["resource_pool"]["id"] = "fixture:bounded_owner_interval_rider_pool_empty"
+	empty_interval_feature["resource_pool"]["initial_quantity"] = 0
+	empty_interval_feature["passive_effects"] = [alice_interval_feature["passive_effects"][0].duplicate(true)]
+	alice.features.append(empty_interval_feature)
+	var acquired_empty_interval := ResourcePoolRules.acquire(alice, empty_interval_feature, empty_interval_source)
+	var before_empty_pool_hit := int(target_b.get("current_hp", 0))
+	FighterChecks._seed_die(20, 20)
+	var empty_pool_attack: Dictionary = CombatAction.resolve_weapon_attack(alice, target_b, weapon)
+	await combat._finish_fighter_attack(target_b, weapon, empty_pool_attack, alice)
+	var empty_owner_locks: Dictionary = CombatAction.bounded_owner_turn_rider_locks.get(alice.character_id, {})
+	var empty_lock_key := CombatAction._bounded_owner_turn_rider_lock_key(empty_interval_source, "fixture_bounded_owner_interval_hit")
+	_assert(acquired_empty_interval.get("success", false) and empty_pool_attack.get("hit", false) and int(target_b.get("current_hp", 0)) < before_empty_pool_hit and int(ResourcePoolRules.availability(alice, empty_interval_source).get("current", -1)) == 0 and not empty_owner_locks.has(empty_lock_key), "An empty pool skips only the rider, preserves the qualifying hit and does not lock the source option")
+
+	# Only a real next-turn boundary clears current-turn locks; pool quantities stay spent.
+	await combat._end_active_turn()
+	_assert(combat.active_character == bob and CombatAction.active_turn_actor_id == bob.get_instance_id(), "The following actual end-turn path advances the active actor and lock serial")
+	FighterChecks._seed_die(20, 20)
+	var reset_attack: Dictionary = CombatAction.resolve_weapon_attack(bob, target_a, weapon)
+	await combat._finish_fighter_attack(target_a, weapon, reset_attack, bob)
+	_assert(reset_attack.get("hit", false) and int(ResourcePoolRules.availability(bob, source_c).get("current", -1)) == 0, "The next combat turn permits the renamed once-per-turn limit again without refilling its pool")
+	CombatAction.bounded_hit_rider_locks.clear()
+	CombatAction.reset_bounded_owner_turn_rider_locks()
+	_teardown_scene(combat)
+	DataLoader.load_all_data()
+	_exit_test()
+
+
+func test_shared_spell_p1_flow() -> void:
+	_enter_test("shared_spell_p1_flow")
+	_setup_world()
+	DataLoader._load_content_type("res://data/fixtures/shared_spells/spells/", "spell")
+	var formula_source: Dictionary = DataLoader.get_spell("sandbox:formula_reference_probe")
+	var formula_spell := formula_source.duplicate(true)
+	formula_spell["id"] = "sandbox:formula_reference_probe_renamed"
+	formula_spell["name"] = "Renamed Formula Probe"
+	_assert(not formula_source.is_empty() and str(formula_source.get("_source", "")).ends_with("examples.json") and SharedSpell.content_error(formula_spell).is_empty(), "P1 formula probe loads from JSON and remains valid after renaming")
+	var formula_caster := _fresh_char("Formula Probe", "human", "sorcerer", {"STR": 10, "DEX": 14, "CON": 14, "INT": 16, "WIS": 10, "CHA": 10})
+	formula_caster.max_hp = 100
+	formula_caster.current_hp = 50
+	formula_caster.spell_slots = {"1": 2}
+	var formula_free_cast := CombatAction.resolve_spell(formula_caster, formula_caster, formula_spell, false, {}, [], 2)
+	var formula_free_steps: Array = formula_free_cast.get("step_results", [])
+	var expected_formula_values := [1, 1, 2, 3, 2]
+	var formula_values_match := bool(formula_free_cast.get("success", false)) and formula_free_steps.size() == 6
+	for formula_index in expected_formula_values.size():
+		var formula_outcomes: Array = formula_free_steps[formula_index + 1].get("target_outcomes", []) if formula_free_steps.size() > formula_index + 1 else []
+		var formula_result: Dictionary = formula_outcomes[0].get("result", {}) if not formula_outcomes.is_empty() else {}
+		if int(formula_result.get("healing", -1)) != int(expected_formula_values[formula_index]): formula_values_match = false
+	_assert(formula_values_match and int(formula_caster.spell_slots["1"]) == 2, "Renamed JSON free cast evaluates character level, selected class level, proficiency, ability modifier and selected slot level without paying a slot")
+	formula_spell["steps"][1]["effects"][0]["value"] = {"caster_class_level": "unknown_class"}
+	var formula_hp_before_refusal := formula_caster.current_hp
+	var formula_slots_before_refusal := int(formula_caster.spell_slots["1"])
+	var invalid_formula_cast := CombatAction.resolve_spell(formula_caster, formula_caster, formula_spell, true, {}, [], 2)
+	_assert(not invalid_formula_cast.get("success", true) and formula_caster.current_hp == formula_hp_before_refusal and int(formula_caster.spell_slots["1"]) == formula_slots_before_refusal, "Unknown class formula reference refuses before payment or effect mutation")
+	formula_spell["steps"][1]["effects"][0]["value"] = {"caster_level": true}
+	var spell: Dictionary = DataLoader.get_spell("sandbox:ember_echo")
+	var renamed_spell: Dictionary = DataLoader.get_spell("sandbox:ember_echo_renamed")
+	_assert(not spell.is_empty() and str(spell.get("_source", "")).ends_with("examples.json"), "P1 production loader registers sandbox:ember_echo from the fixture")
+	_assert(SharedSpell.content_error(spell).is_empty() and SharedSpell.content_error(renamed_spell).is_empty(), "P1 primary and renamed definitions pass production validation")
+
+	var caster := _fresh_char("P1 Wizard", "human", "wizard", {"STR": 10, "DEX": 14, "CON": 14, "INT": 16, "WIS": 10, "CHA": 10})
+	var damage_cases := [
+		{"name": "normal", "mode": "normal", "hp": 100, "temp": 0},
+		{"name": "resistance", "mode": "resistance", "hp": 100, "temp": 0},
+		{"name": "immunity", "mode": "immunity", "hp": 100, "temp": 0},
+		{"name": "Temporary HP", "mode": "normal", "hp": 100, "temp": 3},
+		{"name": "overkill", "mode": "normal", "hp": 1, "temp": 0}
+	]
+	for fixture in damage_cases:
+		var target := _fresh_char("P1 %s" % str(fixture["name"]), "human", "fighter", {"STR": 16, "DEX": 12, "CON": 14, "INT": 10, "WIS": 10, "CHA": 10})
+		target.max_hp = 100
+		target.current_hp = int(fixture["hp"])
+		target.temp_hp = int(fixture["temp"])
+		target.feature_uses["damage_resistances"] = ["fire"] if fixture["mode"] == "resistance" else []
+		target.feature_uses["damage_immunities"] = ["fire"] if fixture["mode"] == "immunity" else []
+		var cast := CombatAction.resolve_spell(caster, target, spell, false, {}, [], 1, 30)
+		var outcomes: Array = cast.get("step_results", [])[0].get("target_outcomes", [])
+		var settled: Dictionary = outcomes[0].get("result", {}) if not outcomes.is_empty() else {}
+		var components: Array = settled.get("damage_components", [])
+		var component: Dictionary = components[0] if not components.is_empty() else {}
+		var raw := int(component.get("raw", -1))
+		var resolved := int(component.get("resolved", -1))
+		var hp_loss := int(component.get("hp_loss", -1))
+		var expected_resolved := int(floor(float(raw) / 2.0)) if fixture["mode"] == "resistance" else (0 if fixture["mode"] == "immunity" else raw)
+		var expected_hp_loss := mini(int(fixture["hp"]), maxi(0, expected_resolved - int(fixture["temp"])))
+		_assert(bool(cast.get("success", false)) and raw >= 2 and resolved == expected_resolved and hp_loss == expected_hp_loss, "P1 %s component reports raw %d, resolved %d, HP loss %d" % [fixture["name"], raw, resolved, hp_loss])
+
+	var ally := _fresh_char("P1 Other Ally", "human", "fighter", {"STR": 16, "DEX": 12, "CON": 14, "INT": 10, "WIS": 10, "CHA": 10})
+	ally.max_hp = 30
+	ally.current_hp = 10
+	caster.max_hp = 30
+	caster.current_hp = 20
+	var healing_target := _fresh_char("P1 Target", "human", "fighter", {"STR": 16, "DEX": 12, "CON": 14, "INT": 10, "WIS": 10, "CHA": 10})
+	healing_target.max_hp = 100
+	healing_target.current_hp = 100
+	var healing_cast := CombatAction.resolve_spell(caster, healing_target, spell, false, {}, [], 1, 30)
+	var damage_component: Dictionary = healing_cast.step_results[0].target_outcomes[0].result.damage_components[0]
+	var expected_heal := int(floor(float(damage_component.resolved) / 2.0))
+	var heal_outcomes: Array = healing_cast.step_results[1].get("target_outcomes", [])
+	var heal_result: Dictionary = heal_outcomes[0].get("result", {}) if not heal_outcomes.is_empty() else {}
+	_assert(expected_heal > 0 and int(heal_result.get("healing", -1)) == expected_heal and caster.current_hp == 20 + expected_heal and ally.current_hp == 10, "P1 earlier resolved Fire component heals its wounded source owner by floor(component / 2) only")
+
+	caster.current_hp = caster.max_hp
+	ally.current_hp = 10
+	healing_target.current_hp = 100
+	var ineligible_cast := CombatAction.resolve_spell(caster, healing_target, spell, false, {}, [], 1, 30)
+	var ineligible_outcomes: Array = ineligible_cast.step_results[1].get("target_outcomes", [])
+	var ineligible_result: Dictionary = ineligible_outcomes[0].get("result", {}) if not ineligible_outcomes.is_empty() else {}
+	_assert(caster.current_hp == caster.max_hp and ally.current_hp == 10 and int(ineligible_result.get("healing", 0)) == 0, "P1 failed wounded-target eligibility suppresses healing despite another wounded party member")
+
+	var resume_caster := _fresh_char("P1 Resume Sorcerer", "human", "sorcerer", {"STR": 10, "DEX": 14, "CON": 14, "INT": 10, "WIS": 10, "CHA": 16})
+	resume_caster.max_hp = 30
+	resume_caster.current_hp = 20
+	resume_caster.features.append({"id": "sorcerer_sorcery_points"})
+	resume_caster.features.append({"id": "sorcerer_metamagic"})
+	resume_caster.sorcerer_metamagic_choices.append("empowered_spell")
+	resume_caster.feature_uses["sorcery_points"] = 3
+	resume_caster.spell_slots = {"1": 2}
+	PlayerManager.reset()
+	PartyManager.reset()
+	PlayerManager.add_player("P1 Sorcerer")
+	PlayerManager.add_player("P1 Ally")
+	PlayerManager.set_player_character(0, resume_caster)
+	PlayerManager.set_player_character(1, ally)
+	PartyManager.register_player_character(0, resume_caster)
+	PartyManager.register_player_character(1, ally)
+	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 0.5)
+	combat.current_player_idx = 0
+	combat.active_character = resume_caster
+	combat.active_combatant = {"id": "p1_resume_caster", "is_player": true, "entity": resume_caster}
+	var foe: Dictionary = combat.monster_entities[0]
+	foe["current_hp"] = 1000
+	foe["max_hp"] = 1000
+	var foe_hp_before := int(foe["current_hp"])
+	var owner_hp_before := resume_caster.current_hp
+	var slot_before := int(resume_caster.spell_slots["1"])
+	var points_before := resume_caster.get_sorcery_points()
+	var decisions := {"metamagic:empowered": true, "defer_empowered": true, "players": combat.player_entities, "monsters": combat.monster_entities}
+	var suspended := CombatAction.resolve_spell(resume_caster, foe, renamed_spell, true, decisions, [], 1, 30)
+	_assert(suspended.has("damage_request") and foe.current_hp == foe_hp_before and resume_caster.current_hp == owner_hp_before and int(resume_caster.spell_slots["1"]) == slot_before - 1, "P1 renamed production cast pauses before damage, with its slot charged once and no settlement yet")
+	var replay_callback := {"damage_request": suspended.get("damage_request", {}).duplicate()}
+	var resumed := CombatAction.finish_pending_spell_damage(resume_caster, foe, suspended, {"metamagic:empowered_dice": [0]})
+	var resumed_steps: Array = resumed.get("step_results", [])
+	var resumed_damage_outcomes: Array = resumed_steps[0].get("target_outcomes", []) if resumed_steps.size() > 0 else []
+	var resumed_components: Array = resumed_damage_outcomes[0].get("result", {}).get("damage_components", []) if not resumed_damage_outcomes.is_empty() else []
+	var resumed_component: Dictionary = resumed_components[0] if not resumed_components.is_empty() else {}
+	var resumed_heal_outcomes: Array = resumed_steps[1].get("target_outcomes", []) if resumed_steps.size() > 1 else []
+	var resumed_heal: Dictionary = resumed_heal_outcomes[0].get("result", {}) if not resumed_heal_outcomes.is_empty() else {}
+	var resumed_heal_amount := int(floor(float(resumed_component.get("resolved", 0)) / 2.0))
+	_assert(bool(resumed.get("success", false)) and resumed_steps.size() == 2 and str(resumed_steps[0].get("step_id", "")) == "burn" and int(resumed_component.get("raw", 0)) == int(resumed_component.get("resolved", -1)) and int(resumed_component.get("hp_loss", -1)) == int(resumed_component.get("resolved", 0)) and int(resumed_heal.get("healing", -1)) == resumed_heal_amount and resume_caster.current_hp == owner_hp_before + resumed_heal_amount, "P1 resume retains the earlier typed result reference and heals from its settled component")
+	_assert(int(foe.current_hp) == foe_hp_before - int(resumed_component.get("hp_loss", 0)) and resume_caster.get_sorcery_points() == points_before - 1 and int(resume_caster.spell_slots["1"]) == slot_before - 1, "P1 resumed damage, Empowered cost and spell slot each settle once")
+	var replayed := CombatAction.finish_pending_spell_damage(resume_caster, foe, replay_callback, {"metamagic:empowered_dice": [0]})
+	_assert(bool(replayed.get("refused", false)) and int(foe.current_hp) == foe_hp_before - int(resumed_component.get("hp_loss", 0)) and resume_caster.current_hp == owner_hp_before + resumed_heal_amount and resume_caster.get_sorcery_points() == points_before - 1 and int(resume_caster.spell_slots["1"]) == slot_before - 1, "P1 replayed continuation callback refuses without repeating damage, healing or costs")
+	var formula_resume_caster := _fresh_char("Formula Resume Sorcerer", "human", "sorcerer", {"STR": 10, "DEX": 14, "CON": 14, "INT": 16, "WIS": 10, "CHA": 16})
+	formula_resume_caster.max_hp = 100
+	formula_resume_caster.current_hp = 50
+	formula_resume_caster.features.append({"id": "sorcerer_sorcery_points"})
+	formula_resume_caster.features.append({"id": "sorcerer_metamagic"})
+	formula_resume_caster.sorcerer_metamagic_choices.append("empowered_spell")
+	formula_resume_caster.feature_uses["sorcery_points"] = 3
+	formula_resume_caster.spell_slots = {"1": 2}
+	var formula_slots_before_pause := int(formula_resume_caster.spell_slots["1"])
+	var formula_decisions := {"metamagic:empowered": true, "defer_empowered": true, "players": combat.player_entities, "monsters": combat.monster_entities}
+	var formula_pause := CombatAction.resolve_spell(formula_resume_caster, formula_resume_caster, formula_spell, false, formula_decisions, [], 3, 0)
+	_assert(formula_pause.has("damage_request") and formula_resume_caster.current_hp == 50 and int(formula_resume_caster.spell_slots["1"]) == formula_slots_before_pause, "Renamed formula JSON definition pauses before its effects while retaining a free selected level-3 cast")
+	formula_resume_caster.level = 5
+	formula_resume_caster.proficiency_bonus = 3
+	formula_resume_caster.ability_scores.intelligence = 20
+	var formula_resumed := CombatAction.finish_pending_spell_damage(formula_resume_caster, formula_resume_caster, formula_pause, {"metamagic:empowered_dice": [0]})
+	var formula_resumed_steps: Array = formula_resumed.get("step_results", [])
+	var formula_damage_outcomes: Array = formula_resumed_steps[0].get("target_outcomes", []) if not formula_resumed_steps.is_empty() else []
+	var formula_damage_result: Dictionary = formula_damage_outcomes[0].get("result", {}) if not formula_damage_outcomes.is_empty() else {}
+	var expected_resumed_values := [5, 5, 3, 5, 3]
+	var resumed_formula_values_match := bool(formula_resumed.get("success", false)) and formula_resumed_steps.size() == 6
+	for formula_index in expected_resumed_values.size():
+		var formula_outcomes: Array = formula_resumed_steps[formula_index + 1].get("target_outcomes", []) if formula_resumed_steps.size() > formula_index + 1 else []
+		var formula_result: Dictionary = formula_outcomes[0].get("result", {}) if not formula_outcomes.is_empty() else {}
+		if int(formula_result.get("healing", -1)) != int(expected_resumed_values[formula_index]): resumed_formula_values_match = false
+	var expected_resume_hp := 50 - int(formula_damage_result.get("hp_loss", 0)) + 21
+	_assert(resumed_formula_values_match and formula_resume_caster.current_hp == expected_resume_hp and int(formula_resume_caster.spell_slots["1"]) == formula_slots_before_pause, "Resume rereads live level/class level/proficiency/INT but keeps captured slot level 3 and pays no slot")
+	_teardown_scene(combat)
+	await get_tree().process_frame
 	_exit_test()
 
 
@@ -11702,6 +15549,3015 @@ func _find_open_roll_token_dialog(hud: Node) -> Node:
 	return null
 
 
+func test_shared_spell_malformed_outcome_preflight_flow() -> void:
+	_enter_test("shared_spell_malformed_outcome_preflight_flow")
+	_setup_world()
+	var prior_spells := DataLoader.spells.duplicate(true)
+	var prior_classes := DataLoader.classes.duplicate(true)
+	DataLoader._load_content_type("res://data/fixtures/shared_spells/spells/", "spell")
+	var malformed: Dictionary = DataLoader.get_spell("sandbox:outcome_attack_neutral").duplicate(true)
+	malformed["id"] = "sandbox:outcome_attack_malformed_preflight"
+	malformed["name"] = "Outcome Map Invalid Preflight"
+	malformed["damage_scale_by_outcome"] = {"hit": 1}
+	var malformed_definitions: Array = [malformed]
+	var automatic := DataLoader.get_spell("sandbox:outcome_save_renamed").duplicate(true)
+	automatic["id"] = "sandbox:automatic_map_invalid_preflight"
+	automatic["name"] = "Automatic Damage Map Invalid Preflight"
+	automatic.erase("save")
+	automatic["effects"] = []
+	malformed_definitions.append(automatic)
+	var automatic_rider := automatic.duplicate(true)
+	automatic_rider["id"] = "sandbox:automatic_rider_invalid_preflight"
+	automatic_rider["name"] = "Automatic Rider Invalid Preflight"
+	automatic_rider.erase("damage_scale_by_outcome")
+	automatic_rider["effects"] = [{"type": "temporary_hp", "value": 9, "rider_by_outcome": {"success": false, "failure": true}}]
+	malformed_definitions.append(automatic_rider)
+	var outer_map := DataLoader.get_spell("sandbox:outcome_save_ordered_renamed").duplicate(true)
+	outer_map["id"] = "sandbox:outer_map_invalid_preflight"
+	outer_map["name"] = "Outer Damage Map Invalid Preflight"
+	outer_map["damage_scale_by_outcome"] = {"success": 0, "failure": 0}
+	malformed_definitions.append(outer_map)
+	var outer_rider := DataLoader.get_spell("sandbox:outcome_save_ordered_renamed").duplicate(true)
+	outer_rider["id"] = "sandbox:outer_rider_invalid_preflight"
+	outer_rider["name"] = "Outer Rider Invalid Preflight"
+	outer_rider["effects"] = automatic_rider["effects"].duplicate(true)
+	malformed_definitions.append(outer_rider)
+	for definition in malformed_definitions:
+		DataLoader.spells[str(definition["id"])] = definition
+		DataLoader.classes["sorcerer"]["spell_list_ids"].append(str(definition["id"]))
+	var owner := _fresh_char("Malformed Map Sorcerer", "human", "sorcerer", {"STR": 10, "DEX": 10, "CON": 12, "INT": 10, "WIS": 10, "CHA": 16})
+	owner.character_id = "fixture:malformed_outcome_owner"
+	for definition in malformed_definitions: owner.known_spells.append(str(definition["id"]))
+	owner.spell_slots["1"] = 4
+	var ally := _fresh_char("Malformed Map Ally", "human", "fighter", {"STR": 10, "DEX": 10, "CON": 10, "INT": 10, "WIS": 10, "CHA": 10})
+	PlayerManager.reset()
+	PartyManager.reset()
+	PlayerManager.add_player("Malformed Map Sorcerer")
+	PlayerManager.add_player("Malformed Map Ally")
+	PlayerManager.set_player_character(0, owner)
+	PlayerManager.set_player_character(1, ally)
+	PartyManager.register_player_character(0, owner)
+	PartyManager.register_player_character(1, ally)
+	GameManager.current_state = GameManager.GameState.COMBAT
+	GameManager.transition_context = {"terrain": "plains", "monster_ids": ["goblin"]}
+	# Guarantee this fixture's player turn from the initial scene setup; replacing
+	# a monster-first turn below would leave its delayed AI callback pending.
+	var malformed_owner_dex := owner.ability_scores.get_score("DEX")
+	owner.ability_scores.set_score("DEX", 54)
+	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 0.8)
+	owner.ability_scores.set_score("DEX", malformed_owner_dex)
+	combat.current_player_idx = 0
+	combat.active_character = owner
+	combat.active_combatant = {"id": "player_0", "is_player": true, "entity": owner}
+	for enemy in combat.monster_entities:
+		enemy["is_alive"] = false
+		enemy["current_hp"] = 0
+	combat._update_grid_entities()
+	combat.turn_budget.reset(owner, combat.player_entities)
+	combat.hud.update_hud(owner, combat.tracker)
+	GameManager.test_mode = false
+	var slots_before := int(owner.spell_slots["1"])
+	var hp_before := int(owner.current_hp)
+	var action_available: bool = combat.turn_budget.can_spend("magic_action")
+	for definition in malformed_definitions:
+		var malformed_error := SharedSpell.content_error(definition)
+		var started := await _start_fixture_spell_from_picker(combat, str(definition["id"]))
+		_assert(not malformed_error.is_empty() and not started and combat.pending_action_type.is_empty() and int(owner.spell_slots["1"]) == slots_before and int(owner.current_hp) == hp_before and combat.turn_budget.can_spend("magic_action") == action_available, "%s fails real picker preflight without paying slot/action or mutating target state" % str(definition["name"]))
+	GameManager.test_mode = true
+	_teardown_scene(combat)
+	DataLoader.spells = prior_spells
+	DataLoader.classes = prior_classes
+	_exit_test()
+
+
+func test_shared_spell_outcome_maps_flow() -> void:
+	_enter_test("shared_spell_outcome_maps_flow")
+	_setup_world()
+	var prior_spells := DataLoader.spells.duplicate(true)
+	var prior_classes := DataLoader.classes.duplicate(true)
+	DataLoader._load_content_type("res://data/fixtures/shared_spells/spells/", "spell")
+	DataLoader._load_content_type("res://data/fixtures/failed_save_bonus/classes/", "class")
+	var ids: Array[String] = ["sandbox:outcome_attack_neutral", "sandbox:outcome_attack_ordered", "sandbox:outcome_save_renamed", "sandbox:outcome_save_ordered_renamed"]
+	var damage_choice_spell: Dictionary = DataLoader.get_spell("sandbox:outcome_attack_ordered").duplicate(true)
+	damage_choice_spell["id"] = "sandbox:outcome_attack_ordered_damage_choice"
+	damage_choice_spell["name"] = "Outcome Probe, Ordered Damage Choice"
+	damage_choice_spell["steps"][0]["damage"] = "1d6+1"
+	DataLoader.spells[str(damage_choice_spell["id"])] = damage_choice_spell
+	ids.append(str(damage_choice_spell["id"]))
+	var flat_area_save: Dictionary = DataLoader.get_spell(ids[2]).duplicate(true)
+	flat_area_save["id"] = "sandbox:outcome_save_flat_area_control"
+	flat_area_save["name"] = "Mapped Saving Flare, Area Control"
+	flat_area_save["target"] = "area"
+	flat_area_save["area_radius"] = 2
+	flat_area_save["effects"].insert(0, {"type": "area_selection", "shape": "sphere", "radius": 2})
+	DataLoader.spells[str(flat_area_save["id"])] = flat_area_save
+	ids.append(str(flat_area_save["id"]))
+	var ordered_area_save: Dictionary = DataLoader.get_spell(ids[3]).duplicate(true)
+	ordered_area_save["id"] = "sandbox:outcome_save_ordered_area_control"
+	ordered_area_save["name"] = "Mapped Saving Flare, Ordered Area Control"
+	ordered_area_save["target"] = "area"
+	ordered_area_save["area_radius"] = 2
+	ordered_area_save["effects"] = [{"type": "area_selection", "shape": "sphere", "radius": 2}]
+	ordered_area_save["steps"][0]["target"] = "area"
+	ordered_area_save["steps"][0]["shape"] = "sphere"
+	ordered_area_save["steps"][0]["radius"] = 2
+	ordered_area_save["steps"][0].erase("damage")
+	ordered_area_save["steps"][0].erase("damage_type")
+	ordered_area_save["steps"][0]["damage_components"] = [{"id": "only_cold", "damage": "5", "damage_type": "cold"}]
+	ordered_area_save["steps"][1]["effects"][0]["value"] = {"result": {"step": "save", "target": "same", "component": "cold", "component_id": "only_cold", "measure": "raw"}}
+	ordered_area_save["steps"][1]["when"] = {"all": [{"result": {"step": "save", "target": "same", "measure": "hp_after"}, "eq": 99}, {"result": {"step": "save", "target": "same", "measure": "margin"}, "lte": -5}]}
+	DataLoader.spells[str(ordered_area_save["id"])] = ordered_area_save
+	ids.append(str(ordered_area_save["id"]))
+	var sorcerer_class: Dictionary = DataLoader.classes.get("sorcerer", {})
+	var known_ids: Array = sorcerer_class.get("spell_list_ids", [])
+	known_ids.append_array(ids)
+	sorcerer_class["spell_list_ids"] = known_ids
+	var owner := _fresh_char("Outcome Map Sorcerer", "human", "sorcerer", {"STR": 10, "DEX": 10, "CON": 12, "INT": 10, "WIS": 10, "CHA": 16})
+	owner.character_id = "fixture:outcome_map_owner"
+	owner.known_spells.assign(ids)
+	owner.spell_slots["1"] = 12
+	var defense_class: Dictionary = DataLoader.classes.get("fixture:defending_ac_adjustment_class", {})
+	var defense_feature: Dictionary = defense_class.get("features_by_level", {}).get("1", [{}])[0]
+	var defense_source := "fixture:outcome_map:defense"
+	var owned_defense: Dictionary = defense_feature.duplicate(true)
+	owned_defense["source_instance_id"] = defense_source
+	owner.features.append(owned_defense)
+	var acquired_defense := ResourcePoolRules.acquire(owner, defense_feature, defense_source)
+	_assert(bool(acquired_defense.get("success", false)), "Real loaded AC adjustment source is available for the mapped final-outcome probe")
+	var ally := _fresh_char("Outcome Map Ally", "human", "fighter", {"STR": 10, "DEX": 10, "CON": 10, "INT": 10, "WIS": 10, "CHA": 10})
+	PlayerManager.reset()
+	PartyManager.reset()
+	PlayerManager.add_player("Outcome Map Sorcerer")
+	PlayerManager.add_player("Outcome Map Ally")
+	PlayerManager.set_player_character(0, owner)
+	PlayerManager.set_player_character(1, ally)
+	PartyManager.register_player_character(0, owner)
+	PartyManager.register_player_character(1, ally)
+	GameManager.current_state = GameManager.GameState.COMBAT
+	GameManager.transition_context = {"terrain": "plains", "monster_ids": ["goblin", "goblin"]}
+	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 0.8)
+	combat.current_player_idx = 0
+	combat.active_character = owner
+	combat.active_combatant = {"id": "player_0", "is_player": true, "entity": owner}
+	combat.player_entities[0]["hex_position"] = Vector2i.ZERO
+	combat.player_entities[1]["hex_position"] = Vector2i(6, 0)
+	for enemy_index in combat.monster_entities.size():
+		var enemy: Dictionary = combat.monster_entities[enemy_index]
+		if enemy_index <= 1:
+			enemy["hex_position"] = Vector2i(1, 0)
+			if enemy_index == 1: enemy["hex_position"] = Vector2i(2, 0)
+			enemy["current_hp"] = 100
+			enemy["max_hp"] = 100
+			enemy["conditions"] = {}
+			enemy["attacks"] = []
+			enemy["condition_sources"] = {}
+			enemy["saving_throw_bonuses"] = {"DEX": -100 if enemy_index == 1 else 0}
+		else:
+			enemy["is_alive"] = false
+			enemy["current_hp"] = 0
+	combat._update_grid_entities()
+	combat.turn_budget.reset(owner, combat.player_entities)
+	combat.hud.update_hud(owner, combat.tracker)
+	GameManager.test_mode = false
+	var target: Dictionary = combat.monster_entities[0]
+	var second_target: Dictionary = combat.monster_entities[1]
+	# Natural 8 plus the real +5 spell attack total is provisionally a hit at AC 13.
+	# The actual defending-AC chooser raises AC to 15, so the final receipt is a miss.
+	target["armor_class"] = 13
+	target["damage_resistances"] = ["fire"]
+	target["temp_hp"] = 1
+	var slots_before := int(owner.spell_slots["1"])
+	var defense_before := int(ResourcePoolRules.availability(owner, defense_source).get("current", 0))
+	_assert(await _start_fixture_spell_from_picker(combat, ids[0]), "Real picker starts the flat mapped attack")
+	FighterChecks._seed_die(20, 8)
+	combat.call_deferred("_on_hex_clicked", Vector2i(1, 0))
+	var attack_popup: PopupMenu = null
+	for _frame in 240:
+		await get_tree().process_frame
+		attack_popup = _visible_shared_spell_attack_bonus_popup(combat.hud)
+		if attack_popup != null: break
+	var attack_request := _pending_shared_spell_attack_bonus_record_for_test(owner)
+	var attack_request_id := str(attack_request.get("request_id", ""))
+	var target_hp_before := int(target["current_hp"])
+	var attack_cost_pending := int(owner.spell_slots["1"]) == slots_before - 1
+	_assert(attack_popup != null and attack_cost_pending and int(target["current_hp"]) == target_hp_before and int(ResourcePoolRules.availability(owner, defense_source).get("current", 0)) == defense_before, "The actual post-roll query retains the paid cast but has not changed target health or adjustment pool")
+	if attack_popup != null:
+		var defense_index := _weapon_bonus_popup_index(attack_request, defense_source)
+		if defense_index >= 0: attack_popup.id_pressed.emit(attack_popup.get_item_id(defense_index))
+	for _frame in 240:
+		if combat.pending_action_type.is_empty() and not combat.resolving_player_action: break
+		await get_tree().process_frame
+	var attack_activity: Dictionary = ActivityHistory.get_records().back() if not ActivityHistory.get_records().is_empty() else {}
+	var attacks: Array = attack_activity.get("payload", {}).get("sections", {}).get("attacks", [])
+	var attack_roll: Dictionary = attacks[0].get("roll", {}) if not attacks.is_empty() else {}
+	var attack_receipt: Dictionary = attack_roll.get("attack_adjustment_receipt", {})
+	var attack_cast: SpellResolutionContext = attack_request.get("context", {}).get("spell_cast")
+	var attack_windows: Array = attack_cast.resolution_window_context.get("windows", []) if attack_cast != null else []
+	for window in attack_windows:
+		if window is Dictionary and window.get("attack_adjustment", {}) is Dictionary and not window.get("attack_adjustment", {}).is_empty(): attack_receipt = window["attack_adjustment"]
+	_assert(bool(attack_request.get("settled", false)) and str(attack_receipt.get("source_instance_id", "")) == defense_source and not bool(attack_receipt.get("final", {}).get("hit", true)), "The real receipt preserves the selected AC source and final miss outcome")
+	_assert(int(target["current_hp"]) == target_hp_before and int(target["temp_hp"]) == 0 and not CombatAction.has_condition(target, "frightened"), "Final miss uses floor(5 x 1/2)=2, Resistance floors to 1, Temporary HP absorbs it, and the hit-only rider is suppressed")
+	_assert(int(owner.spell_slots["1"]) == slots_before - 1 and int(ResourcePoolRules.availability(owner, defense_source).get("current", 0)) == defense_before and not combat.turn_budget.can_spend("magic_action"), "Adjusted final miss pays one slot/action and follows converted-success policy by not spending the AC adjustment source")
+	# Ordered hit independently covers the hit map/rider and its following step.
+	target["armor_class"] = 1
+	target["damage_resistances"] = ["fire"]
+	target["temp_hp"] = 0
+	target["current_hp"] = 100
+	target["conditions"] = {}
+	second_target["damage_resistances"] = ["cold"]
+	second_target["temp_hp"] = 1
+	second_target["current_hp"] = 100
+	second_target["conditions"] = {}
+	second_target["saving_throw_bonuses"] = {"DEX": -100}
+	owner.temp_hp = 0
+	combat.turn_budget.reset(owner, combat.player_entities)
+	combat.current_player_idx = 0
+	combat.active_character = owner
+	combat.active_combatant = {"id": "player_0", "is_player": true, "entity": owner}
+	combat.hud.update_hud(owner, combat.tracker)
+	_assert(await _start_fixture_spell_from_picker(combat, ids[1]), "Real picker starts the ordered mapped attack")
+	FighterChecks._seed_die(20, 20)
+	combat.call_deferred("_on_hex_clicked", Vector2i(1, 0))
+	for _frame in 240:
+		if combat.pending_action_type.is_empty() and not combat.resolving_player_action: break
+		await get_tree().process_frame
+	_assert(int(target["current_hp"]) < 100 and CombatAction.has_condition(target, "frightened") and int(target.get("temp_hp", 0)) == 1, "Ordered final hit uses full damage, grants the hit rider, then continues through its following temporary-HP step (target=%s)" % str(target))
+	# A dice-bearing copy reaches the real Empowered damage chooser. The authored
+	# maps/rider remain identical; the choice suspends settlement between roll
+	# and damage/step continuation.
+	owner.features.append({"id": "sorcerer_metamagic", "name": "Fixture Empowered Spell", "type": "passive"})
+	owner.sorcerer_metamagic_choices.append("empowered_spell")
+	owner.feature_uses["sorcery_points"] = 3
+	owner.features.erase(owned_defense)
+	target["armor_class"] = 1
+	target["damage_resistances"] = []
+	target["temp_hp"] = 0
+	target["current_hp"] = 100
+	target["conditions"] = {}
+	var choice_slots_before := int(owner.spell_slots["1"])
+	var choice_points_before := owner.get_sorcery_points()
+	var choice_rolls := {"d20": 0}
+	var count_choice_d20 := func(payload: Dictionary) -> void:
+		if int(payload.get("sides", 0)) == 20: choice_rolls["d20"] = int(choice_rolls["d20"]) + 1
+	Dice.dice_rolled.connect(count_choice_d20)
+	combat.turn_budget.reset(owner, combat.player_entities)
+	combat.current_player_idx = 0
+	combat.active_character = owner
+	combat.active_combatant = {"id": "player_0", "is_player": true, "entity": owner}
+	combat.hud.update_hud(owner, combat.tracker)
+	_assert(await _start_fixture_spell_from_picker(combat, ids[4]), "Real picker starts the ordered mapped attack with a damage choice")
+	FighterChecks._seed_die(20, 20)
+	combat.call_deferred("_on_hex_clicked", Vector2i(1, 0))
+	var damage_popup: PopupMenu = null
+	var pending_damage: Dictionary = {}
+	for _frame in 360:
+		await get_tree().process_frame
+		for child in combat.hud.get_children():
+			if child is ConfirmationDialog and child.visible and str(child.title).contains("Empowered Spell"):
+				child.confirmed.emit()
+				break
+		for child in combat.hud.get_children():
+			if child is PopupMenu and child.visible and str(child.title).begins_with("Empowered Spell: choose up to"):
+				damage_popup = child
+				break
+		if damage_popup != null: break
+	for request_value in SpellDamageRolls._pending_requests.values():
+		var pending_target: Variant = request_value.get("target")
+		if str(request_value.get("kind", "")) == "damage" and pending_target is Dictionary and str(pending_target.get("id", "")) == str(target.get("id", "")) and not bool(request_value.get("settled", false)):
+			pending_damage = request_value
+			break
+	var pending_steps: Array = pending_damage.get("ordered_continuation", {}).get("step_results", [])
+	_assert(damage_popup != null and int(target["current_hp"]) == 100 and not CombatAction.has_condition(target, "frightened") and int(target["temp_hp"]) == 0 and pending_steps.is_empty() and int(owner.spell_slots["1"]) == choice_slots_before - 1, "The actual ordered damage choice pauses before damage, rider and following step, after exactly one cast payment")
+	if damage_popup != null and damage_popup.item_count > 0: damage_popup.id_pressed.emit(damage_popup.get_item_id(damage_popup.item_count - 1))
+	for _frame in 240:
+		if bool(pending_damage.get("settled", false)) and combat.pending_action_type.is_empty() and not combat.resolving_player_action: break
+		await get_tree().process_frame
+	var completed_steps: Array = pending_damage.get("ordered_continuation", {}).get("step_results", [])
+	_assert(bool(pending_damage.get("settled", false)) and int(target["current_hp"]) < 100 and CombatAction.has_condition(target, "frightened") and int(target["temp_hp"]) == 1 and int(owner.spell_slots["1"]) == choice_slots_before - 1 and int(choice_rolls["d20"]) == 1, "After one real damage-choice answer, mapped hit damage/rider and following step settle once (hp=%d conditions=%s thp=%d slots=%d/%d d20=%d)" % [int(target["current_hp"]), str(target.get("conditions", {})), int(target["temp_hp"]), int(owner.spell_slots["1"]), choice_slots_before, int(choice_rolls["d20"])])
+	Dice.dice_rolled.disconnect(count_choice_d20)
+	owner.sorcerer_metamagic_choices.erase("empowered_spell")
+	for feature_index in range(owner.features.size() - 1, -1, -1):
+		if str(owner.features[feature_index].get("id", "")) == "sorcerer_metamagic":
+			owner.features.remove_at(feature_index)
+	# The flat success and ordered failure use the independently authored save maps.
+	target["damage_resistances"] = ["cold"]
+	target["temp_hp"] = 1
+	target["current_hp"] = 100
+	target["conditions"] = {}
+	combat.turn_budget.reset(owner, combat.player_entities)
+	combat.current_player_idx = 0
+	combat.active_character = owner
+	combat.active_combatant = {"id": "player_0", "is_player": true, "entity": owner}
+	combat.hud.update_hud(owner, combat.tracker)
+	_assert(await _start_fixture_spell_from_picker(combat, ids[5]), "Real picker starts the renamed flat mapped area save")
+	FighterChecks._seed_die(20, 20)
+	combat.call_deferred("_on_hex_clicked", Vector2i(1, 0))
+	for _frame in 240:
+		if combat.pending_action_type.is_empty() and not combat.resolving_player_action: break
+		await get_tree().process_frame
+	_assert(int(target["current_hp"]) == 100 and int(target["temp_hp"]) == 0 and not CombatAction.has_condition(target, "restrained") and int(second_target["current_hp"]) == 99 and CombatAction.has_condition(second_target, "restrained"), "Flat area save maps each target independently: success gets half damage/no condition, failure gets full damage/restrained")
+	target["damage_resistances"] = ["cold"]
+	target["temp_hp"] = 1
+	target["current_hp"] = 100
+	target["conditions"] = {}
+	target["saving_throw_bonuses"] = {"DEX": -100}
+	second_target["damage_resistances"] = []
+	second_target["temp_hp"] = 0
+	second_target["current_hp"] = 100
+	second_target["conditions"] = {}
+	second_target["saving_throw_bonuses"] = {"DEX": 100}
+	owner.temp_hp = 0
+	combat.turn_budget.reset(owner, combat.player_entities)
+	combat.current_player_idx = 0
+	combat.active_character = owner
+	combat.active_combatant = {"id": "player_0", "is_player": true, "entity": owner}
+	combat.hud.update_hud(owner, combat.tracker)
+	_assert(await _start_fixture_spell_from_picker(combat, ids[6]), "Real picker starts the ordered renamed mapped area save")
+	FighterChecks._seed_die(20, 1)
+	combat.call_deferred("_on_hex_clicked", Vector2i(1, 0))
+	for _frame in 240:
+		if combat.pending_action_type.is_empty() and not combat.resolving_player_action: break
+		await get_tree().process_frame
+	_assert(int(target["current_hp"]) == 99 and int(target["temp_hp"]) == 5 and CombatAction.has_condition(target, "restrained") and int(second_target["current_hp"]) == 98 and not CombatAction.has_condition(second_target, "restrained"), "Ordered area save maps targets independently, then its HP/margin gate grants exactly the selected single cold component's raw 5 as Temporary HP")
+	_assert(int(owner.spell_slots["1"]) == slots_before - 5, "Five actual mapped picker casts each pay exactly one level-1 slot")
+	GameManager.test_mode = true
+	_teardown_scene(combat)
+	DataLoader.spells = prior_spells
+	DataLoader.classes = prior_classes
+	_exit_test()
+
+
+func _start_fixture_spell_from_picker(combat: Node, spell_id: String) -> bool:
+	combat.hud._show_spell_selection()
+	var spell_index := -1
+	for idx in combat.hud.spells_registered.size():
+		if str(combat.hud.spells_registered[idx].get("id", "")) == spell_id:
+			spell_index = idx
+			break
+	if spell_index < 0:
+		return false
+	combat.hud._on_spell_selected(spell_index)
+	for _frame in 30:
+		if combat.pending_action_type == "spell":
+			break
+		await get_tree().process_frame
+	return combat.pending_action_type == "spell" and str(combat.pending_spell_data.get("id", "")) == spell_id
+
+
+func _active_save_bonus_record_for_test() -> Dictionary:
+	for record_value in SpellDamageRolls._pending_requests.values():
+		if str(record_value.get("kind", "")) == "save_bonus" and not bool(record_value.get("settled", false)):
+			return record_value
+	return {}
+
+
+func _save_bonus_menu_id_for_source(menu: PopupMenu, record: Dictionary, source_id: String) -> int:
+	var options: Array = record.get("options", [])
+	for option_index in options.size():
+		if str(options[option_index].get("source_instance_id", "")) != source_id:
+			continue
+		var item_id := option_index + 1
+		if item_id < menu.item_count and (menu.get_item_text(item_id).contains("make this save succeed") or menu.get_item_text(item_id).contains("make this save fail")):
+			return item_id
+	return 0
+
+
+func _visible_weapon_attack_bonus_popup(hud: Node) -> PopupMenu:
+	for child in hud.get_children():
+		if child is PopupMenu and child.visible and not child.is_queued_for_deletion() and str(child.title).to_lower().contains("provisionally") and str(child.title).to_lower().contains("attack"):
+			return child
+	return null
+
+
+func _pending_weapon_attack_bonus_record_for_test(owner: Character) -> Dictionary:
+	for value in SpellDamageRolls._pending_requests.values():
+		if str(value.get("kind", "")) == "weapon_attack_bonus" and value.get("caster") == owner and not bool(value.get("settled", false)):
+			return value
+	return {}
+
+
+func _weapon_bonus_popup_index(record: Dictionary, source_id: String) -> int:
+	var options: Array = record.get("options", [])
+	for index in options.size():
+		if str(options[index].get("source_instance_id", "")) == source_id:
+			return index + 1 # The first PopupMenu entry is Decline.
+	return -1
+
+
+func _visible_shared_spell_attack_bonus_popup(hud: Node) -> PopupMenu:
+	for child in hud.get_children():
+		if child is PopupMenu and child.visible and not child.is_queued_for_deletion() and str(child.title).to_lower().contains("provisionally") and str(child.title).to_lower().contains("attack"):
+			return child
+	return null
+
+
+func _pending_shared_spell_attack_bonus_record_for_test(owner: Character) -> Dictionary:
+	for value in SpellDamageRolls._pending_requests.values():
+		if str(value.get("kind", "")) == "weapon_attack_bonus" and value.get("caster") == owner and not bool(value.get("settled", false)):
+			return value
+	return {}
+
+
+func _spell_attack_window_receipts_match(cast: SpellResolutionContext, expected_windows: Array, spell_id: String, target_id: String) -> bool:
+	if cast == null or cast.resolution_window_context.is_empty():
+		return false
+	var base: Dictionary = cast.resolution_window_context.get("base", {})
+	var windows: Array = cast.resolution_window_context.get("windows", [])
+	if windows.size() != expected_windows.size() or str(base.get("kind", "")) != "spell_attack":
+		return false
+	if str(base.get("actor_id", "")) != cast.caster.character_id or str(base.get("target_id", "")) != target_id:
+		return false
+	if str(base.get("spell_definition_id", "")) != spell_id or str(base.get("source_definition_id", "")) != spell_id or str(base.get("source_owner_id", "")) != cast.caster.character_id:
+		return false
+	var occurrence_id := str(base.get("occurrence_id", ""))
+	if occurrence_id.is_empty() or cast.action_invocation_id.is_empty() or cast.invocation_id.is_empty():
+		return false
+	for index in expected_windows.size():
+		var receipt: Dictionary = windows[index]
+		var window := str(expected_windows[index])
+		if str(receipt.get("window", "")) != window or str(receipt.get("occurrence_id", "")) != occurrence_id:
+			return false
+		for binding in SpellDamageRolls.RESOLUTION_COMMON_FIELDS:
+			if base.has(binding):
+				if receipt.get(binding) != base[binding]:
+					return false
+			elif receipt.has(binding):
+				return false
+		var allowed_fields: Array = ["window", "occurrence_id"]
+		for binding in SpellDamageRolls.RESOLUTION_COMMON_FIELDS:
+			if base.has(binding) and not str(base[binding]).is_empty():
+				allowed_fields.append(binding)
+		allowed_fields.append_array(SpellDamageRolls.RESOLUTION_WINDOW_FIELDS[window])
+		var actual_available: Array = receipt.get("available_fields", []).duplicate()
+		actual_available.sort()
+		var actual_keys: Array = receipt.keys()
+		actual_keys.sort()
+		var expected_keys := allowed_fields.duplicate()
+		expected_keys.append("available_fields")
+		expected_keys.sort()
+		allowed_fields.sort()
+		if actual_available != allowed_fields or actual_keys != expected_keys:
+			return false
+	return true
+
+
+func test_shared_spell_attack_bonus_flow() -> void:
+	_enter_test("shared_spell_attack_bonus_flow")
+	_setup_world()
+	var prior_spells := DataLoader.spells.duplicate(true)
+	var prior_classes := DataLoader.classes.duplicate(true)
+	DataLoader._load_content_type("res://data/fixtures/failed_save_bonus/classes/", "class")
+	DataLoader._load_content_type("res://data/fixtures/shared_spells/spells/", "spell")
+	var neutral_class: Dictionary = DataLoader.classes.get("fixture:weapon_attack_bonus_neutral_class", {})
+	var renamed_class: Dictionary = DataLoader.classes.get("fixture:weapon_attack_bonus_renamed_class", {})
+	var neutral_feature: Dictionary = neutral_class.get("features_by_level", {}).get("1", [{}])[0]
+	var renamed_feature: Dictionary = renamed_class.get("features_by_level", {}).get("1", [{}])[0]
+	var outcome_class: Dictionary = DataLoader.classes.get("fixture:neutral_roll_outcome_class", {})
+	var renamed_outcome_class: Dictionary = DataLoader.classes.get("fixture:renamed_roll_outcome_class", {})
+	var outcome_feature: Dictionary = outcome_class.get("features_by_level", {}).get("1", [{}])[0]
+	var renamed_outcome_feature: Dictionary = renamed_outcome_class.get("features_by_level", {}).get("1", [{}])[0]
+	var flat_spell: Dictionary = DataLoader.spells.get("sandbox:owned_spell_attack_neutral", {})
+	var ordered_spell: Dictionary = DataLoader.spells.get("sandbox:owned_spell_attack_renamed", {})
+	_assert(not neutral_feature.is_empty() and not renamed_feature.is_empty() and not outcome_feature.is_empty() and not renamed_outcome_feature.is_empty() and not flat_spell.is_empty() and not ordered_spell.is_empty(), "Production DataLoader loads neutral/renamed numeric and outcome sources with flat/ordered attack spells")
+	_assert(SharedSpell.content_error(flat_spell).is_empty() and SharedSpell.content_error(ordered_spell).is_empty(), "Both shared spell attack definitions pass production content validation")
+	if neutral_feature.is_empty() or renamed_feature.is_empty() or outcome_feature.is_empty() or renamed_outcome_feature.is_empty() or flat_spell.is_empty() or ordered_spell.is_empty():
+		DataLoader.spells = prior_spells
+		DataLoader.classes = prior_classes
+		_exit_test()
+		return
+	PlayerManager.reset()
+	PartyManager.reset()
+	PlayerManager.add_player("Attack Spell Owner")
+	PlayerManager.add_player("Attack Spell Ally")
+	var owner := _fresh_char("Attack Spell Owner", "human", "wizard", {"STR": 8, "DEX": 14, "CON": 14, "INT": 18, "WIS": 12, "CHA": 10})
+	owner.character_id = "fixture:shared_spell_attack_owner"
+	while owner.level < 3:
+		owner.level_up()
+	_assert(ClassProgression.choose_subclass(owner, "diviner"), "The spell owner uses the production Diviner subclass for a real pre-roll token choice")
+	owner.known_spells.assign(["sandbox:owned_spell_attack_neutral", "sandbox:owned_spell_attack_renamed"])
+	owner.wizard_spellbook.assign(["sandbox:owned_spell_attack_neutral", "sandbox:owned_spell_attack_renamed"])
+	owner.spell_slots["1"] = 8
+	var wizard_class: Dictionary = DataLoader.classes.get("wizard", {})
+	var wizard_spell_list: Array = wizard_class.get("spell_list_ids", [])
+	wizard_spell_list.append_array(["sandbox:owned_spell_attack_neutral", "sandbox:owned_spell_attack_renamed"])
+	wizard_class["spell_list_ids"] = wizard_spell_list
+	var neutral_source := "fixture:shared_spell_attack:neutral"
+	var renamed_source := "fixture:shared_spell_attack:renamed"
+	for pair in [[neutral_feature, neutral_source], [renamed_feature, renamed_source]]:
+		var feature: Dictionary = pair[0].duplicate(true)
+		feature["source_instance_id"] = str(pair[1])
+		owner.features.append(feature)
+		var acquired := ResourcePoolRules.acquire(owner, pair[0], str(pair[1]))
+		_assert(bool(acquired.get("success", false)), "Production resource rules acquire independent neutral and renamed attack sources")
+	var neutral_outcome_source := "fixture:shared_spell_outcome:neutral"
+	var renamed_outcome_source := "fixture:shared_spell_outcome:renamed"
+	for pair in [[outcome_feature, neutral_outcome_source], [renamed_outcome_feature, renamed_outcome_source]]:
+		var feature: Dictionary = pair[0].duplicate(true)
+		feature["source_instance_id"] = str(pair[1])
+		owner.features.append(feature)
+		var acquired := ResourcePoolRules.acquire(owner, pair[0], str(pair[1]))
+		_assert(bool(acquired.get("success", false)), "Production resource rules acquire exact neutral/renamed outcome pools")
+	var ally := _fresh_char("Attack Spell Ally", "human", "fighter", {"STR": 12, "DEX": 12, "CON": 12, "INT": 10, "WIS": 10, "CHA": 10})
+	PlayerManager.set_player_character(0, owner)
+	PlayerManager.set_player_character(1, ally)
+	PartyManager.register_player_character(0, owner)
+	PartyManager.register_player_character(1, ally)
+	GameManager.current_state = GameManager.GameState.COMBAT
+	var owner_dex_before := owner.ability_scores.get_score("DEX")
+	var portent_tokens_before: Array = owner.roll_tokens.get("diviner_portent", []).duplicate(true)
+	owner.ability_scores.set_score("DEX", 20)
+	owner.roll_tokens["diviner_portent"] = [{"token_id": "fixture:attack_spell:initiative", "value": 20, "feature_id": "diviner_portent", "pool_id": "diviner_portent", "die_sides": 20}]
+	GameManager.transition_context = {"terrain": "plains", "monster_ids": ["goblin"], "initiative_decisions": {owner.character_id: {"pool_id": "diviner_portent", "token_id": "fixture:attack_spell:initiative"}}}
+	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 0.6)
+	owner.ability_scores.set_score("DEX", owner_dex_before)
+	owner.roll_tokens["diviner_portent"] = portent_tokens_before
+	RollTokenRules.clear_turn_counter(owner, "diviner_portent")
+	combat.current_player_idx = 0
+	combat.active_character = owner
+	combat.active_combatant = {"is_player": true, "entity": owner}
+	combat.player_entities[0]["hex_position"] = Vector2i.ZERO
+	combat.player_entities[1]["hex_position"] = Vector2i(6, 0)
+	for enemy_index in combat.monster_entities.size():
+		var enemy: Dictionary = combat.monster_entities[enemy_index]
+		if enemy_index == 0:
+			enemy["hex_position"] = Vector2i(1, 0)
+			enemy["armor_class"] = 20
+			enemy["current_hp"] = 100
+			enemy["max_hp"] = 100
+			enemy["conditions"] = {}
+		else:
+			enemy["is_alive"] = false
+			enemy["current_hp"] = 0
+	combat._update_grid_entities()
+	combat.turn_budget.reset(owner, combat.player_entities)
+	combat.hud.update_hud(owner, combat.tracker)
+	GameManager.test_mode = false
+	var target: Dictionary = combat.monster_entities[0]
+	var neutral_pool_before := int(owner.numeric_resource_pools[neutral_source].get("current", 0))
+	var renamed_pool_before := int(owner.numeric_resource_pools[renamed_source].get("current", 0))
+	var slots_before := int(owner.spell_slots.get("1", 0))
+	var hp_before := int(target["current_hp"])
+	var d20_counter := {"count": 0}
+	var count_d20 := func(payload: Dictionary) -> void:
+		if int(payload.get("sides", 0)) == 20:
+			d20_counter["count"] = int(d20_counter["count"]) + 1
+	Dice.dice_rolled.connect(count_d20)
+	var flat_started := await _start_fixture_spell_from_picker(combat, "sandbox:owned_spell_attack_neutral")
+	_assert(flat_started, "Normal spell picker selects the neutral flat Fire attack and enters real targeting")
+	owner.roll_tokens["diviner_portent"] = [{"token_id": "fixture:attack_spell:flat9", "value": 9, "feature_id": "diviner_portent", "pool_id": "diviner_portent", "die_sides": 20}]
+	RollTokenRules.clear_turn_counter(owner, "diviner_portent")
+	combat.call_deferred("_on_hex_clicked", Vector2i(1, 0))
+	var flat_token_seen := false
+	var flat_popup: PopupMenu = null
+	for _frame in 240:
+		await get_tree().process_frame
+		for child in combat.hud.get_children():
+			if child is ConfirmationDialog and child.visible and str(child.title).contains("Portent"):
+				flat_token_seen = true
+				child.confirmed.emit()
+				break
+		flat_popup = _visible_shared_spell_attack_bonus_popup(combat.hud)
+		if flat_popup != null:
+			break
+	var flat_record := _pending_shared_spell_attack_bonus_record_for_test(owner)
+	var flat_request_id := str(flat_record.get("request_id", ""))
+	var flat_attack: Dictionary = flat_record.get("context", {}).get("attack_result", {})
+	var flat_cast: SpellResolutionContext = flat_record.get("context", {}).get("spell_cast")
+	_assert(flat_token_seen and flat_popup != null, "Actual pre-roll Portent choice resumes into the shared spell attack chooser")
+	_assert(int(flat_attack.get("natural", 0)) == 9 and int(flat_attack.get("total", 0)) == 15 and int(flat_record.get("context", {}).get("original_target_ac", 0)) == 20 and d20_counter["count"] == 0, "Captured spell attack keeps the selected Portent, numeric total and original AC without another d20")
+	var flat_pending_windows := ["before_roll", "after_natural", "provisional_outcome"]
+	var flat_cast_adapter := SharedStepExecutor.SpellAdapter.new(flat_cast) if flat_cast != null else null
+	var future_final_fact: Dictionary = SharedStepExecutor._read_fact("resolution.final_hit", flat_cast_adapter, target)
+	var future_damage_fact: Dictionary = SharedStepExecutor._read_fact("resolution.damage_raw", flat_cast_adapter, target)
+	_assert(_spell_attack_window_receipts_match(flat_cast, flat_pending_windows, "sandbox:owned_spell_attack_neutral", str(target.get("id", ""))) and str(flat_cast.resolution_window.get("window", "")) == "provisional_outcome" and not bool(future_final_fact.get("available", false)) and not bool(future_damage_fact.get("available", false)), "Real chooser exposes only the first three exactly bound windows; final outcome and future damage remain unavailable")
+	_assert(int(target["current_hp"]) == hp_before and int(owner.numeric_resource_pools[neutral_source].get("current", 0)) == neutral_pool_before and int(owner.spell_slots.get("1", 0)) == slots_before - 1, "Pending flat attack applies no damage or pool cost and commits the spell slot once")
+	var wrong_actor_spell_answer := SpellDamageRolls.settle_weapon_attack_bonus(ally, target, {"weapon_attack_bonus_request": {"request_id": flat_request_id}}, neutral_outcome_source)
+	var flat_after_wrong_actor := _pending_shared_spell_attack_bonus_record_for_test(owner)
+	_assert(bool(wrong_actor_spell_answer.get("refused", false)) and str(flat_after_wrong_actor.get("request_id", "")) == flat_request_id and int(target["current_hp"]) == hp_before and int(owner.numeric_resource_pools[neutral_source].get("current", 0)) == neutral_pool_before, "Wrong actor cannot answer the visible spell chooser or spend its exact source")
+	var neutral_outcome_before := int(owner.numeric_resource_pools[neutral_outcome_source].get("current", 0))
+	var captured_neutral_pool: Dictionary = owner.numeric_resource_pools[neutral_outcome_source].duplicate(true)
+	owner.numeric_resource_pools.erase(neutral_outcome_source)
+	var removed_source_refusal := SpellDamageRolls.settle_weapon_attack_bonus(owner, target, {"weapon_attack_bonus_request": {"request_id": flat_request_id}}, neutral_outcome_source)
+	owner.numeric_resource_pools[neutral_outcome_source] = captured_neutral_pool
+	_assert(bool(removed_source_refusal.get("refused", false)) and not bool(flat_record.get("settled", true)) and int(target["current_hp"]) == hp_before and int(owner.numeric_resource_pools[neutral_outcome_source].get("current", 0)) == neutral_outcome_before, "Removing the exact source while the menu is open refuses payment and keeps the live request")
+	if flat_popup != null:
+		flat_popup.id_pressed.emit(_weapon_bonus_popup_index(flat_record, neutral_outcome_source))
+	for _frame in 240:
+		if combat.pending_action_type.is_empty() and not combat.resolving_player_action:
+			break
+		await get_tree().process_frame
+	_assert(int(target["current_hp"]) < hp_before and int(owner.numeric_resource_pools[neutral_outcome_source].get("current", 0)) == neutral_outcome_before - 1 and int(owner.numeric_resource_pools[neutral_source].get("current", 0)) == neutral_pool_before and int(owner.numeric_resource_pools[renamed_source].get("current", 0)) == renamed_pool_before, "Neutral explicit hit converts the flat miss, damages the target and charges only its exact outcome source")
+	_assert(int(owner.spell_slots.get("1", 0)) == slots_before - 1 and d20_counter["count"] == 0, "Resuming the flat chooser neither repeats slot payment nor rerolls the Portent result")
+	var flat_settled_windows: Array = flat_cast.resolution_window_context.get("windows", []) if flat_cast != null else []
+	var flat_post_damage: Dictionary = flat_settled_windows.back() if flat_settled_windows.size() == 5 else {}
+	_assert(_spell_attack_window_receipts_match(flat_cast, SpellDamageRolls.RESOLUTION_WINDOW_ORDER, "sandbox:owned_spell_attack_neutral", str(target.get("id", ""))) and int(flat_post_damage.get("damage_hp_loss", -1)) == hp_before - int(target["current_hp"]) and int(flat_post_damage.get("damage_raw", -1)) == int(flat_post_damage.get("damage_resolved", -2)) and str(flat_post_damage.get("damage_type", "")) == "fire" and int(flat_post_damage.get("damage_occurrence_id", 0)) > 0, "Settled neutral attack publishes all five windows with the existing raw/resolved/HP-loss damage receipt")
+	var old_payload := {"weapon_attack_bonus_request": {"request_id": flat_request_id}}
+	var hp_after_flat := int(target["current_hp"])
+	var pool_renamed_after_flat := int(owner.numeric_resource_pools[renamed_source].get("current", 0))
+
+	# A renamed conditional-payment source can add its authored +8 and still
+	# finish as a miss; the cost remains zero under that policy.
+	combat.turn_budget.reset(owner, combat.player_entities)
+	combat.hud.update_hud(owner, combat.tracker)
+	target["armor_class"] = 35
+	target["current_hp"] = 100
+	var renamed_started := await _start_fixture_spell_from_picker(combat, "sandbox:owned_spell_attack_neutral")
+	FighterChecks._seed_die(20, 5)
+	combat.call_deferred("_on_hex_clicked", Vector2i(1, 0))
+	var renamed_popup: PopupMenu = null
+	for _frame in 240:
+		await get_tree().process_frame
+		renamed_popup = _visible_shared_spell_attack_bonus_popup(combat.hud)
+		if renamed_popup != null:
+			break
+	var renamed_record := _pending_shared_spell_attack_bonus_record_for_test(owner)
+	_assert(renamed_started and renamed_popup != null and str(renamed_record.get("options", [{}])[1].get("payment_policy", "")) == "pay_on_converted_success", "Renamed source appears through the real picker chooser with its conditional policy")
+	var renamed_hp_before_answer := int(target["current_hp"])
+	if renamed_popup != null:
+		renamed_popup.id_pressed.emit(_weapon_bonus_popup_index(renamed_record, renamed_source))
+	for _frame in 240:
+		if combat.pending_action_type.is_empty() and not combat.resolving_player_action:
+			break
+		await get_tree().process_frame
+	_assert(int(target["current_hp"]) == renamed_hp_before_answer and int(owner.numeric_resource_pools[renamed_source].get("current", 0)) == pool_renamed_after_flat, "A renamed +8 that still misses applies no damage and pays zero under converted-success policy")
+	# Explicit outcomes can override the natural boundaries while preserving the
+	# captured d20 and its independent critical status.
+	combat.turn_budget.reset(owner, combat.player_entities)
+	combat.hud.update_hud(owner, combat.tracker)
+	target["armor_class"] = 1
+	var hp_before_natural1 := int(target["current_hp"])
+	var natural1_started := await _start_fixture_spell_from_picker(combat, "sandbox:owned_spell_attack_neutral")
+	FighterChecks._seed_die(20, 1)
+	combat.call_deferred("_on_hex_clicked", Vector2i(1, 0))
+	var natural1_popup: PopupMenu = null
+	for _frame in 180:
+		await get_tree().process_frame
+		natural1_popup = _visible_shared_spell_attack_bonus_popup(combat.hud)
+		if natural1_popup != null:
+			break
+	var natural1_record := _pending_shared_spell_attack_bonus_record_for_test(owner)
+	var natural1_attack: Dictionary = natural1_record.get("context", {}).get("attack_result", {})
+	var neutral_outcome_before_natural1 := int(owner.numeric_resource_pools[neutral_outcome_source].get("current", 0))
+	var natural1_override_offered: bool = natural1_record.get("options", []).any(func(option): return str(option.get("source_instance_id", "")) == neutral_outcome_source and str(option.get("outcome", "")) == "hit")
+	if natural1_popup != null:
+		natural1_popup.id_pressed.emit(_weapon_bonus_popup_index(natural1_record, neutral_outcome_source))
+	for _frame in 180:
+		if combat.pending_action_type.is_empty() and not combat.resolving_player_action:
+			break
+		await get_tree().process_frame
+	_assert(natural1_override_offered, "The real shared spell attack request offers a source-owned hit override for natural 1")
+	_assert(int(natural1_attack.get("natural", 0)) == 1 and bool(natural1_attack.get("is_miss", false)), "Captured natural 1 remains a numeric provisional miss")
+	_assert(int(target["current_hp"]) < hp_before_natural1 and int(owner.numeric_resource_pools[neutral_outcome_source].get("current", 0)) == neutral_outcome_before_natural1 - 1, "The chosen natural-1 hit settles damage and charges the neutral source once")
+	combat.turn_budget.reset(owner, combat.player_entities)
+	combat.hud.update_hud(owner, combat.tracker)
+	target["armor_class"] = 100
+	var natural20_hp_before := int(target["current_hp"])
+	var peerless_choice := {"id": "fixture:review_epic_boon", "effects": [{"type": "epic_boon_choice"}]}
+	owner.features.append(peerless_choice)
+	owner.feature_choices["fixture:review_epic_boon"] = ["combat_prowess"]
+	owner.feature_uses.erase("epic_boon_combat_prowess_used")
+	owner.feature_uses.erase("fighter_peerless_used")
+	var natural20_started := await _start_fixture_spell_from_picker(combat, "sandbox:owned_spell_attack_neutral")
+	FighterChecks._seed_die(20, 20)
+	combat.call_deferred("_on_hex_clicked", Vector2i(1, 0))
+	var natural20_popup: PopupMenu = null
+	for _frame in 180:
+		await get_tree().process_frame
+		natural20_popup = _visible_shared_spell_attack_bonus_popup(combat.hud)
+		if natural20_popup != null:
+			break
+	var natural20_record := _pending_shared_spell_attack_bonus_record_for_test(owner)
+	var natural20_attack: Dictionary = natural20_record.get("context", {}).get("attack_result", {})
+	var renamed_outcome_before_natural20 := int(owner.numeric_resource_pools[renamed_outcome_source].get("current", 0))
+	var natural20_override_offered: bool = natural20_record.get("options", []).any(func(option): return str(option.get("source_instance_id", "")) == renamed_outcome_source and str(option.get("outcome", "")) == "miss")
+	if natural20_popup != null:
+		natural20_popup.id_pressed.emit(_weapon_bonus_popup_index(natural20_record, renamed_outcome_source))
+	for _frame in 180:
+		if combat.pending_action_type.is_empty() and not combat.resolving_player_action:
+			break
+		await get_tree().process_frame
+	_assert(natural20_override_offered, "The real shared spell attack request offers a source-owned miss override for natural 20")
+	_assert(int(natural20_attack.get("natural", 0)) == 20 and bool(natural20_attack.get("is_crit", false)), "Captured natural 20 remains a numeric critical before explicit override")
+	_assert(int(target["current_hp"]) == natural20_hp_before and int(owner.numeric_resource_pools[renamed_outcome_source].get("current", 0)) == renamed_outcome_before_natural20 - 2, "The chosen natural-20 miss prevents critical damage and charges the exact renamed source once")
+	_assert(ClassProgression.has_epic_boon(owner, "combat_prowess") and not bool(owner.feature_uses.get("epic_boon_combat_prowess_used", false)) and not bool(owner.feature_uses.get("fighter_peerless_used", false)), "The real forced-miss spell choice preserves unused Combat Prowess instead of feeding its synthetic miss into Peerless Aim")
+	owner.features.erase(peerless_choice)
+	owner.feature_choices.erase("fixture:review_epic_boon")
+
+	# The ordered renamed attack follows the same real chooser. Empowered Spell
+	# creates a subsequent damage-dice popup; replaying the old flat answer while
+	# this new request is live must leave the new request intact.
+	combat.turn_budget.reset(owner, combat.player_entities)
+	combat.hud.update_hud(owner, combat.tracker)
+	target["armor_class"] = 23
+	target["current_hp"] = 100
+	target["conditions"] = {}
+	owner.temp_hp = 0
+	owner.roll_tokens["diviner_portent"] = [{"token_id": "fixture:attack_spell:ordered9", "value": 9, "feature_id": "diviner_portent", "pool_id": "diviner_portent", "die_sides": 20}]
+	RollTokenRules.clear_turn_counter(owner, "diviner_portent")
+	owner.features.append({"id": "sorcerer_metamagic", "name": "Fixture Empowered Spell", "type": "passive"})
+	owner.sorcerer_metamagic_choices.append("empowered_spell")
+	owner.feature_uses["sorcery_points"] = 3
+	var ordered_started := await _start_fixture_spell_from_picker(combat, "sandbox:owned_spell_attack_renamed")
+	combat.call_deferred("_on_hex_clicked", Vector2i(1, 0))
+	var empowered_prompt_seen := false
+	var ordered_token_seen := false
+	var ordered_popup: PopupMenu = null
+	for _frame in 300:
+		await get_tree().process_frame
+		for child in combat.hud.get_children():
+			if child is ConfirmationDialog and child.visible and str(child.title).contains("Empowered Spell") and not empowered_prompt_seen:
+				empowered_prompt_seen = true
+				child.confirmed.emit()
+				break
+			if child is ConfirmationDialog and child.visible and str(child.title).contains("Portent") and not ordered_token_seen:
+				ordered_token_seen = true
+				child.confirmed.emit()
+				break
+		ordered_popup = _visible_shared_spell_attack_bonus_popup(combat.hud)
+		if ordered_popup != null:
+			break
+	var ordered_record := _pending_shared_spell_attack_bonus_record_for_test(owner)
+	var ordered_request_id := str(ordered_record.get("request_id", ""))
+	var ordered_hp_pending := int(target["current_hp"])
+	var ordered_bonus_before := int(owner.numeric_resource_pools[renamed_source].get("current", 0))
+	var ordered_cast: SpellResolutionContext = ordered_record.get("context", {}).get("spell_cast")
+	var ordered_continuation: Dictionary = ordered_record.get("ordered_continuation", {})
+	var ordered_prior_steps: Array = ordered_continuation.get("step_results", [])
+	var ordered_outcome_pool_before := int(owner.numeric_resource_pools[renamed_outcome_source].get("current", 0))
+	_assert(ordered_started and empowered_prompt_seen and ordered_token_seen and ordered_popup != null, "Real ordered spell picker resumes Empowered and Portent choices into the source chooser")
+	_assert(ordered_prior_steps.size() == 1 and str(ordered_prior_steps[0].get("step_id", "")) == "rime_guard", "The earlier ordered step has one settled result before the attack choice")
+	_assert(_spell_attack_window_receipts_match(ordered_cast, ["before_roll", "after_natural", "provisional_outcome"], "sandbox:owned_spell_attack_renamed", str(target.get("id", ""))) and str(ordered_cast.resolution_window.get("window", "")) == "provisional_outcome", "Renamed loaded definition reaches the same first three exact windows through the real ordered cast")
+	_assert(int(target["current_hp"]) == ordered_hp_pending and not CombatAction.has_condition(target, "restrained") and not CombatAction.has_condition(target, "poisoned"), "The unresolved ordered attack has no damage or gated rider while its source choice is pending")
+	var old_replay: Dictionary = {}
+	var old_refusal_kept_new := false
+	var wrong_actor_ordered := {}
+	var wrong_actor_kept_ordered := false
+	var removed_host_ordered := {}
+	var restored_host_ordered := false
+	if ordered_popup != null:
+		wrong_actor_ordered = SpellDamageRolls.settle_weapon_attack_bonus(ally, target, {"weapon_attack_bonus_request": {"request_id": ordered_request_id}}, renamed_source)
+		var live_after_wrong_actor := _pending_shared_spell_attack_bonus_record_for_test(owner)
+		wrong_actor_kept_ordered = bool(wrong_actor_ordered.get("refused", false)) and str(live_after_wrong_actor.get("request_id", "")) == ordered_request_id and int(owner.numeric_resource_pools[renamed_source].get("current", 0)) == ordered_bonus_before and int(target["current_hp"]) == ordered_hp_pending
+		var ordered_host_players: Array = ordered_record.get("host_players", [])
+		var owner_host_index := -1
+		for host_index in ordered_host_players.size():
+			var host_entry: Variant = ordered_host_players[host_index]
+			if host_entry is Dictionary and host_entry.get("character") == owner:
+				owner_host_index = host_index
+				break
+		if owner_host_index >= 0:
+			var removed_host_entry: Variant = ordered_host_players[owner_host_index]
+			ordered_host_players.remove_at(owner_host_index)
+			removed_host_ordered = SpellDamageRolls.settle_weapon_attack_bonus(owner, target, {"weapon_attack_bonus_request": {"request_id": ordered_request_id}}, renamed_source)
+			ordered_host_players.insert(owner_host_index, removed_host_entry)
+			var live_after_host_restore := _pending_shared_spell_attack_bonus_record_for_test(owner)
+			restored_host_ordered = bool(removed_host_ordered.get("refused", false)) and str(live_after_host_restore.get("request_id", "")) == ordered_request_id and int(owner.numeric_resource_pools[renamed_source].get("current", 0)) == ordered_bonus_before and int(target["current_hp"]) == ordered_hp_pending
+		old_replay = SpellDamageRolls.settle_weapon_attack_bonus(owner, target, old_payload, renamed_source)
+		var live_after_old := _pending_shared_spell_attack_bonus_record_for_test(owner)
+		old_refusal_kept_new = bool(old_replay.get("refused", false)) and str(live_after_old.get("request_id", "")) == ordered_request_id and not bool(live_after_old.get("settled", true)) and int(target["current_hp"]) == ordered_hp_pending and int(owner.numeric_resource_pools[renamed_source].get("current", 0)) == ordered_bonus_before
+		ordered_popup.id_pressed.emit(_weapon_bonus_popup_index(ordered_record, renamed_outcome_source))
+	_assert(wrong_actor_kept_ordered and restored_host_ordered, "Wrong actor and removed encounter host are refused without consuming or charging the live ordered request")
+	_assert(old_refusal_kept_new, "Replaying the completed flat answer cannot settle or charge the newer ordered attack choice")
+	var damage_popup: PopupMenu = null
+	for _frame in 240:
+		await get_tree().process_frame
+		for child in combat.hud.get_children():
+			if child is PopupMenu and child.visible and str(child.title).begins_with("Empowered Spell: choose up to"):
+				damage_popup = child
+				break
+		if damage_popup != null:
+			break
+	var hp_before_damage_choice := int(target["current_hp"])
+	var ordered_hit_pending := not CombatAction.has_condition(target, "restrained") and not CombatAction.has_condition(target, "poisoned") and not CombatAction.has_condition(target, "deafened")
+	_assert(damage_popup != null and ordered_hit_pending and int(owner.numeric_resource_pools[renamed_source].get("current", 0)) == ordered_bonus_before and int(owner.numeric_resource_pools[renamed_outcome_source].get("current", 0)) == ordered_outcome_pool_before - 2, "Renamed explicit hit pays once; ordered effects wait for the later damage choice")
+	var ordered_damage_pending_windows: Array = ordered_cast.resolution_window_context.get("windows", []) if ordered_cast != null else []
+	var ordered_pending_adapter := SharedStepExecutor.SpellAdapter.new(ordered_cast) if ordered_cast != null else null
+	var ordered_pending_damage_fact: Dictionary = SharedStepExecutor._read_fact("resolution.damage_raw", ordered_pending_adapter, target)
+	_assert(_spell_attack_window_receipts_match(ordered_cast, ["before_roll", "after_natural", "provisional_outcome", "pre_damage"], "sandbox:owned_spell_attack_renamed", str(target.get("id", ""))) and ordered_damage_pending_windows.size() == 4 and str(ordered_cast.resolution_window.get("window", "")) == "pre_damage" and not bool(ordered_pending_damage_fact.get("available", false)), "Before the Empowered damage answer, pre-damage is final while raw damage remains unavailable")
+	if damage_popup != null and damage_popup.item_count > 0:
+		damage_popup.id_pressed.emit(damage_popup.get_item_id(0))
+	for _frame in 240:
+		if combat.pending_action_type.is_empty() and not combat.resolving_player_action:
+			break
+		await get_tree().process_frame
+	_assert(int(target["current_hp"]) < hp_before_damage_choice and CombatAction.has_condition(target, "deafened") and CombatAction.has_condition(target, "restrained") and not CombatAction.has_condition(target, "poisoned"), "After the real damage-dice choice, the attack effect and following rider read their post-damage window and apply once")
+	var ordered_settled_windows: Array = ordered_cast.resolution_window_context.get("windows", []) if ordered_cast != null else []
+	var ordered_post_damage: Dictionary = ordered_settled_windows.back() if ordered_settled_windows.size() == 5 else {}
+	_assert(_spell_attack_window_receipts_match(ordered_cast, SpellDamageRolls.RESOLUTION_WINDOW_ORDER, "sandbox:owned_spell_attack_renamed", str(target.get("id", ""))) and int(ordered_post_damage.get("damage_hp_loss", -1)) == hp_before_damage_choice - int(target["current_hp"]) and int(ordered_post_damage.get("damage_raw", -1)) == int(ordered_post_damage.get("damage_resolved", -2)) and str(ordered_post_damage.get("damage_type", "")) == "cold" and int(ordered_post_damage.get("damage_occurrence_id", 0)) > 0, "Damage answer appends the fifth same-occurrence receipt from the settled primary component")
+	var settled_ordered_continuation: Dictionary = ordered_record.get("ordered_continuation", {})
+	var settled_prior_steps: Array = settled_ordered_continuation.get("step_results", [])
+	_assert(settled_prior_steps.size() == 1 and str(settled_prior_steps[0].get("step_id", "")) == "rime_guard", "Resuming the ordered attack does not replay its already-settled earlier step")
+	var ordered_receipts: Array = ordered_cast.resolution_window_context.get("windows", []) if ordered_cast != null else []
+	var ordered_pre_damage: Dictionary = ordered_receipts[3] if ordered_receipts.size() == 5 else {}
+	var ordered_override_receipt: Dictionary = ordered_pre_damage.get("roll_outcome_override", {})
+	_assert(ordered_override_receipt.get("outcome") == "hit" and ordered_override_receipt.get("source_instance_id") == renamed_outcome_source and ordered_override_receipt.get("feature_id") == str(renamed_outcome_feature.get("id", "")) and ordered_override_receipt.get("pool_definition_id") == str(renamed_outcome_feature.get("resource_pool", {}).get("id", "")) and ordered_override_receipt.get("owner_id") == owner.character_id and ordered_override_receipt.get("domain") == "shared_spell_attack" and ordered_override_receipt.get("stage") == "provisional_outcome" and ordered_override_receipt.get("cost_paid", false), "The final pre-damage receipt retains the exact explicit hit source and its provenance after the later damage choice")
+	combat.turn_budget.reset(owner, combat.player_entities)
+	combat.hud.update_hud(owner, combat.tracker)
+	target["armor_class"] = 30
+	target["current_hp"] = 100
+	target["conditions"] = {}
+	var miss_sorcery_points_before := owner.get_sorcery_points()
+	var ordered_miss_started := await _start_fixture_spell_from_picker(combat, "sandbox:owned_spell_attack_renamed")
+	FighterChecks._seed_die(20, 5)
+	combat.call_deferred("_on_hex_clicked", Vector2i(1, 0))
+	var ordered_miss_popup: PopupMenu = null
+	var ordered_miss_empowered_prompt := false
+	for _frame in 240:
+		await get_tree().process_frame
+		for child in combat.hud.get_children():
+			if child is ConfirmationDialog and child.visible and str(child.title).contains("Empowered Spell"):
+				ordered_miss_empowered_prompt = true
+				child.confirmed.emit()
+				break
+		ordered_miss_popup = _visible_shared_spell_attack_bonus_popup(combat.hud)
+		if ordered_miss_popup != null:
+			break
+	var ordered_miss_record := _pending_shared_spell_attack_bonus_record_for_test(owner)
+	var ordered_miss_hp_pending := int(target["current_hp"])
+	var ordered_miss_pool_before := int(owner.numeric_resource_pools[renamed_source].get("current", 0))
+	_assert(ordered_miss_started and ordered_miss_empowered_prompt and ordered_miss_popup != null and not CombatAction.has_condition(target, "restrained") and not CombatAction.has_condition(target, "poisoned"), "The ordered renamed miss exposes its attack choice before either gated rider")
+	if ordered_miss_popup != null:
+		ordered_miss_popup.id_pressed.emit(_weapon_bonus_popup_index(ordered_miss_record, renamed_source))
+	for _frame in 240:
+		if combat.pending_action_type.is_empty() and not combat.resolving_player_action:
+			break
+		await get_tree().process_frame
+	var live_ordered_miss_damage_requests := SpellDamageRolls._pending_requests.values().filter(func(request): return str(request.get("kind", "")) == "damage" and request.get("caster") == owner and request.get("target") is Dictionary and str(request.get("target", {}).get("id", "")) == str(target.get("id", "")) and not bool(request.get("settled", false)))
+	var miss_damage_popup_absent := true
+	for child in combat.hud.get_children():
+		if child is PopupMenu and child.visible and str(child.title).begins_with("Empowered Spell: choose up to"):
+			miss_damage_popup_absent = false
+	_assert(int(target["current_hp"]) == ordered_miss_hp_pending and int(owner.numeric_resource_pools[renamed_source].get("current", 0)) == ordered_miss_pool_before and CombatAction.has_condition(target, "poisoned") and not CombatAction.has_condition(target, "restrained"), "Final ordered miss keeps conditional payment free and applies only the miss rider once")
+	_assert(miss_damage_popup_absent and live_ordered_miss_damage_requests.is_empty() and owner.get_sorcery_points() == miss_sorcery_points_before, "Confirmed Empowered choice on a final miss never opens or charges its damage-only consumer")
+	for feature_index in range(owner.features.size() - 1, -1, -1):
+		if str(owner.features[feature_index].get("id", "")) == "sorcerer_metamagic":
+			owner.features.remove_at(feature_index)
+	owner.sorcerer_metamagic_choices.erase("empowered_spell")
+	_assert(int(owner.spell_slots.get("1", 0)) == slots_before - 6 and int(d20_counter["count"]) == 4, "Six flat/renamed casts each spend one slot; only the four non-token rolls add d20s")
+	combat.turn_budget.reset(owner, combat.player_entities)
+	combat.hud.update_hud(owner, combat.tracker)
+	target["armor_class"] = 35
+	target["current_hp"] = 100
+	target["conditions"] = {}
+	var teardown_pool_before := int(owner.numeric_resource_pools[neutral_source].get("current", 0))
+	var teardown_slots_before := int(owner.spell_slots.get("1", 0))
+	var teardown_cast_started := await _start_fixture_spell_from_picker(combat, "sandbox:owned_spell_attack_neutral")
+	FighterChecks._seed_die(20, 5)
+	combat.call_deferred("_on_hex_clicked", Vector2i(1, 0))
+	var teardown_popup: PopupMenu = null
+	for _frame in 240:
+		await get_tree().process_frame
+		teardown_popup = _visible_shared_spell_attack_bonus_popup(combat.hud)
+		if teardown_popup != null:
+			break
+	var teardown_record := _pending_shared_spell_attack_bonus_record_for_test(owner)
+	var teardown_request_id := str(teardown_record.get("request_id", ""))
+	var teardown_hp_before := int(target["current_hp"])
+	_assert(teardown_cast_started and teardown_popup != null and not teardown_request_id.is_empty(), "A final real picker cast leaves an actual shared spell chooser outstanding for host teardown")
+	Dice.dice_rolled.disconnect(count_d20)
+	GameManager.test_mode = true
+	_teardown_scene(combat)
+	await get_tree().process_frame
+	var teardown_answer := SpellDamageRolls.settle_weapon_attack_bonus(owner, target, {"weapon_attack_bonus_request": {"request_id": teardown_request_id}}, neutral_source)
+	_assert(SpellDamageRolls._pending_requests.is_empty() and bool(teardown_answer.get("refused", false)) and int(owner.numeric_resource_pools[neutral_source].get("current", 0)) == teardown_pool_before and int(target["current_hp"]) == teardown_hp_before and int(owner.spell_slots.get("1", 0)) == teardown_slots_before - 1, "Host teardown cancels the live occurrence; its old visible answer cannot spend or apply consequences")
+	DataLoader.spells = prior_spells
+	DataLoader.classes = prior_classes
+	_exit_test()
+
+
+func _seed_d8_then_d20(wanted: int) -> bool:
+	for candidate in 100000:
+		seed(candidate)
+		randi_range(1, 8) # The selected weapon deals one d8 before Extra Attack.
+		if randi_range(1, 20) == wanted:
+			seed(candidate)
+			return true
+	return false
+
+
+func test_weapon_attack_numeric_bonus_flow() -> void:
+	_enter_test("weapon_attack_numeric_bonus_flow")
+	_setup_world()
+	var prior_classes := DataLoader.classes.duplicate(true)
+	DataLoader._load_content_type("res://data/fixtures/failed_save_bonus/classes/", "class")
+	DataLoader._load_json_file("res://data/fixtures/shared_next_melee_hit_grant.json", "class")
+	var neutral_class: Dictionary = DataLoader.classes.get("fixture:weapon_attack_bonus_neutral_class", {})
+	var renamed_class: Dictionary = DataLoader.classes.get("fixture:weapon_attack_bonus_renamed_class", {})
+	var neutral_outcome_class: Dictionary = DataLoader.classes.get("fixture:neutral_roll_outcome_class", {})
+	var renamed_outcome_class: Dictionary = DataLoader.classes.get("fixture:renamed_roll_outcome_class", {})
+	var neutral_feature: Dictionary = neutral_class.get("features_by_level", {}).get("1", [{}])[0]
+	var renamed_feature: Dictionary = renamed_class.get("features_by_level", {}).get("1", [{}])[0]
+	var neutral_outcome_feature: Dictionary = neutral_outcome_class.get("features_by_level", {}).get("1", [{}])[0]
+	var renamed_outcome_feature: Dictionary = renamed_outcome_class.get("features_by_level", {}).get("1", [{}])[0]
+	_assert(not neutral_feature.is_empty() and not renamed_feature.is_empty() and not neutral_outcome_feature.is_empty() and not renamed_outcome_feature.is_empty(), "DataLoader loads neutral/renamed numeric and explicit outcome attack sources")
+	if neutral_feature.is_empty() or renamed_feature.is_empty() or neutral_outcome_feature.is_empty() or renamed_outcome_feature.is_empty():
+		DataLoader.classes = prior_classes
+		_exit_test()
+		return
+	var hit_grant_class: Dictionary = DataLoader.classes.get("fixture:flame_on_edge_class", {})
+	var hit_grant_feature: Dictionary = hit_grant_class.get("features_by_level", {}).get("1", [{}])[0]
+	_assert(not hit_grant_feature.is_empty(), "Production DataLoader registers the next-hit timing fixture")
+	var owner := _fresh_char("Attack Bonus Fighter", "human", "fighter", {"STR": 16, "DEX": 12, "CON": 14, "INT": 10, "WIS": 10, "CHA": 8})
+	owner.character_id = "fixture:weapon_bonus_viewport_owner"
+	while owner.level < 5:
+		owner.level_up()
+	owner.inventory.equip(Inventory.Slot.SHIELD, "shield", true)
+	owner.inventory.equip(Inventory.Slot.WEAPON, "longsword", true)
+	var source_a := "fixture:attack_bonus:steady:a"
+	var source_b := "fixture:attack_bonus:steady:b"
+	var source_renamed := "fixture:attack_bonus:sure:renamed"
+	var neutral_outcome_source := "fixture:attack_outcome:neutral"
+	var renamed_outcome_source := "fixture:attack_outcome:renamed"
+	var hit_grant_source_a := "fixture:weapon_bonus:next_hit:converted"
+	var hit_grant_source_b := "fixture:weapon_bonus:next_hit:declined"
+	for source_id in [source_a, source_b]:
+		var owned_neutral: Dictionary = neutral_feature.duplicate(true)
+		owned_neutral["source_instance_id"] = source_id
+		owner.features.append(owned_neutral)
+		var acquired := ResourcePoolRules.acquire(owner, neutral_feature, source_id)
+		_assert(bool(acquired.get("success", false)), "Neutral attack bonus source acquires its own numeric pool")
+	var owned_renamed: Dictionary = renamed_feature.duplicate(true)
+	owned_renamed["source_instance_id"] = source_renamed
+	owner.features.append(owned_renamed)
+	var renamed_acquired := ResourcePoolRules.acquire(owner, renamed_feature, source_renamed)
+	_assert(bool(renamed_acquired.get("success", false)), "Renamed attack bonus source acquires its independent numeric pool")
+	for pair in [[neutral_outcome_feature, neutral_outcome_source], [renamed_outcome_feature, renamed_outcome_source]]:
+		var owned_outcome: Dictionary = pair[0].duplicate(true)
+		owned_outcome["source_instance_id"] = str(pair[1])
+		owner.features.append(owned_outcome)
+		var outcome_pool := ResourcePoolRules.acquire(owner, pair[0], str(pair[1]))
+		_assert(bool(outcome_pool.get("success", false)), "Neutral and renamed outcome sources acquire separate production pools")
+	for source_id in [hit_grant_source_a, hit_grant_source_b]:
+		var owned_hit_grant: Dictionary = hit_grant_feature.duplicate(true)
+		owned_hit_grant["source_instance_id"] = source_id
+		owner.features.append(owned_hit_grant)
+		var hit_pool := ResourcePoolRules.acquire(owner, hit_grant_feature, source_id)
+		_assert(bool(hit_pool.get("success", false)), "Next-hit timing source acquires its own owned pool")
+	PlayerManager.set_player_character(0, owner)
+	PartyManager.reset()
+	PartyManager.register_player_character(0, owner)
+	PartyManager.register_player_character(1, PlayerManager.get_player(1).get("character"))
+	GameManager.current_state = GameManager.GameState.COMBAT
+	var old_dex := owner.ability_scores.get_score("DEX")
+	owner.ability_scores.set_score("DEX", 54)
+	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 1.2)
+	owner.ability_scores.set_score("DEX", old_dex)
+	combat.current_player_idx = 0
+	combat.active_character = owner
+	combat.active_combatant = {"is_player": true, "entity": owner}
+	combat.player_entities[0]["hex_position"] = Vector2i.ZERO
+	combat.player_entities[1]["hex_position"] = Vector2i(6, 0)
+	for enemy_index in combat.monster_entities.size():
+		var enemy: Dictionary = combat.monster_entities[enemy_index]
+		if enemy_index == 0:
+			enemy["hex_position"] = Vector2i(1, 0)
+			enemy["armor_class"] = 18
+			enemy["current_hp"] = 10000
+			enemy["max_hp"] = 10000
+		else:
+			enemy["is_alive"] = false
+			enemy["current_hp"] = 0
+	combat._update_grid_entities()
+	combat.turn_budget.reset(owner, combat.player_entities)
+	combat.hud.update_hud(owner, combat.tracker)
+	GameManager.test_mode = false
+	var target: Dictionary = combat.monster_entities[0]
+	var armed_conversion := await _activate_next_hit_grant_from_combat_menu(combat, owner, "fixture:flame_on_edge", hit_grant_source_a)
+	_assert(bool(armed_conversion.get("found", false)) and not armed_conversion.get("grant", {}).is_empty(), "Actual feature menu arms a source-owned next-hit grant before the attack")
+	var hp_before := int(target["current_hp"])
+	var source_a_before := int(owner.numeric_resource_pools[source_a].get("current", 0))
+	var source_b_before := int(owner.numeric_resource_pools[source_b].get("current", 0))
+	var renamed_before := int(owner.numeric_resource_pools[source_renamed].get("current", 0))
+	var record_count_before := ActivityHistory.get_records().size()
+	var d20_counter := {"count": 0}
+	var count_d20 := func(payload: Dictionary) -> void:
+		if int(payload.get("sides", 0)) == 20:
+			d20_counter["count"] = int(d20_counter["count"]) + 1
+	Dice.dice_rolled.connect(count_d20)
+	FighterChecks._seed_die(20, 7)
+	combat.hud.btn_attack.pressed.emit()
+	_assert(combat.pending_action_type == "attack" and combat.active_character == owner, "The actual Attack button opens ordinary weapon targeting")
+	combat.call_deferred("_on_hex_clicked", Vector2i(1, 0))
+	var first_popup: PopupMenu = null
+	for frame in 180:
+		first_popup = _visible_weapon_attack_bonus_popup(combat.hud)
+		if first_popup != null:
+			break
+		await get_tree().process_frame
+	_assert(first_popup != null, "Normal Attack reaches the actual missed-attack source chooser")
+	if first_popup != null:
+		var first_record := _pending_weapon_attack_bonus_record_for_test(owner)
+		var first_request_id := str(first_record.get("request_id", ""))
+		var options: Array = first_record.get("options", [])
+		var saw_neutral_a := false
+		var saw_neutral_b := false
+		var saw_renamed := false
+		for option in options:
+			var option_id := str(option.get("source_instance_id", ""))
+			saw_neutral_a = saw_neutral_a or option_id == source_a and int(option.get("amount", 0)) == 5 and int(option.get("cost", 0)) == 1
+			saw_neutral_b = saw_neutral_b or option_id == source_b and int(option.get("amount", 0)) == 5 and int(option.get("cost", 0)) == 1
+			saw_renamed = saw_renamed or option_id == source_renamed and int(option.get("amount", 0)) == 8 and int(option.get("cost", 0)) == 2 and str(option.get("payment_policy", "")) == "pay_on_converted_success"
+		_assert(saw_neutral_a and saw_neutral_b and saw_renamed, "Production chooser offers both exact neutral instances and the renamed conditional-payment definition")
+		_assert(first_popup.get_item_text(_weapon_bonus_popup_index(first_record, source_a)).contains("paid when chosen") and first_popup.get_item_text(_weapon_bonus_popup_index(first_record, source_renamed)).contains("paid only if the final attack hits"), "Popup explains both authored payment policies")
+		_assert(hp_before == int(target["current_hp"]) and int(owner.numeric_resource_pools[source_a].get("current", 0)) == source_a_before, "The pending choice has no provisional damage or pool payment")
+		_assert(owner.next_weapon_hit_grants.size() == 1, "A next-hit grant remains armed while the attack result is pending")
+		# The initial roll and the real optional selection must settle one captured
+		# attack; seed the d8 then next d20 so Extra Attack has a second real miss.
+		_assert(_seed_d8_then_d20(5), "Deterministic damage/Extra Attack seed is available")
+		var source_a_menu_index := _weapon_bonus_popup_index(first_record, source_a)
+		var source_a_item_id := first_popup.get_item_id(source_a_menu_index) if source_a_menu_index >= 0 and source_a_menu_index < first_popup.item_count else -1
+		first_popup.id_pressed.emit(source_a_item_id)
+		var second_popup: PopupMenu = null
+		for frame in 180:
+			await get_tree().process_frame
+			var candidate_popup := _visible_weapon_attack_bonus_popup(combat.hud)
+			var candidate_record := _pending_weapon_attack_bonus_record_for_test(owner)
+			if bool(first_record.get("settled", false)) and candidate_popup != null and str(candidate_record.get("request_id", "")) != first_request_id:
+				second_popup = candidate_popup
+				break
+		_assert(second_popup != null, "The same Attack action reaches a second actual chooser for Extra Attack")
+		if second_popup != null:
+			var second_record := _pending_weapon_attack_bonus_record_for_test(owner)
+			var second_request_id := str(second_record.get("request_id", ""))
+			_assert(not first_request_id.is_empty() and not second_request_id.is_empty() and first_request_id != second_request_id, "Extra Attack owns a fresh request after the first source settles")
+			_assert(int(owner.numeric_resource_pools[source_a].get("current", 0)) == source_a_before - 1 and int(owner.numeric_resource_pools[source_b].get("current", 0)) == source_b_before, "First source pays once while the distinct source remains untouched")
+			_assert(int(target["current_hp"]) < hp_before and int(target["current_hp"]) > 0, "First converted hit settles damage before Extra Attack")
+			_assert(owner.next_weapon_hit_grants.is_empty(), "The pending next-hit grant is consumed only after the selected bonus makes the final attack hit")
+			# A stale response is refused without consuming the newer request.
+			var stale := SpellDamageRolls.settle_weapon_attack_bonus(owner, target, {"weapon_attack_bonus_request": {"request_id": first_request_id}}, source_b)
+			_assert(bool(stale.get("refused", false)) and not bool(second_record.get("settled", false)) and int(owner.numeric_resource_pools[source_b].get("current", 0)) == source_b_before, "Old completion cannot spend or settle the newer Extra Attack request")
+			second_popup.id_pressed.emit(_weapon_bonus_popup_index(second_record, source_renamed))
+		for frame in 180:
+			if not combat.resolving_player_action:
+				break
+			await get_tree().process_frame
+		_assert(int(owner.numeric_resource_pools[source_renamed].get("current", 0)) == renamed_before - 2 and int(owner.numeric_resource_pools[source_b].get("current", 0)) == source_b_before, "Converted Extra Attack pays the chosen renamed source once, not its sibling")
+		_assert(int(owner.feature_uses.get("fighter_extra_attack", 0)) == 0 or owner.extra_attacks == 1, "Character retains exactly one Extra Attack for this turn")
+		_assert(int(d20_counter["count"]) == 2, "Attack and Extra Attack each roll one d20; resolving a choice never re-enters preparation")
+		var attack_actions := 0
+		for activity in ActivityHistory.get_records().slice(record_count_before):
+			if activity.get("payload", {}).get("sections", {}).get("attacks", []).size() == 2:
+				attack_actions += 1
+		_assert(attack_actions == 1 and not combat.turn_budget.action_available, "Both settled swings publish once under one spent Attack action")
+		# Reuse this known-open production HUD for cancellation so the test closes
+		# the actual chooser instance rather than a popup from a replacement scene.
+		owner.extra_attacks = 0
+		combat.turn_budget.reset(owner, combat.player_entities)
+		combat.remaining_attack_swings = 0
+		combat.current_player_idx = 0
+		combat.active_character = owner
+		combat.active_combatant = {"is_player": true, "entity": owner}
+		target["armor_class"] = 1000
+		combat.hud.update_hud(owner, combat.tracker)
+		GameManager.test_mode = false
+		var armed_declined := await _activate_next_hit_grant_from_combat_menu(combat, owner, "fixture:flame_on_edge", hit_grant_source_b)
+		_assert(bool(armed_declined.get("found", false)) and not armed_declined.get("grant", {}).is_empty(), "A distinct owned next-hit source arms through its actual feature menu")
+		owner.extra_attacks = 0
+		combat.remaining_attack_swings = 0
+		combat.current_player_idx = 0
+		combat.active_character = owner
+		combat.active_combatant = {"is_player": true, "entity": owner}
+		combat.hud.update_hud(owner, combat.tracker)
+		GameManager.test_mode = false
+		combat.hud.btn_attack.pressed.emit()
+		FighterChecks._seed_die(20, 5)
+		combat.call_deferred("_on_hex_clicked", Vector2i(1, 0))
+		var cancel_popup: PopupMenu = null
+		for frame in 180:
+			cancel_popup = _visible_weapon_attack_bonus_popup(combat.hud)
+			if cancel_popup != null:
+				break
+			await get_tree().process_frame
+		var cancel_popup_was_visible := cancel_popup != null and cancel_popup.visible
+		var hp_before_cancel := int(target["current_hp"])
+		var pool_a_before_cancel := int(owner.numeric_resource_pools[source_a].get("current", 0))
+		var cancel_record := _pending_weapon_attack_bonus_record_for_test(owner)
+		var cancel_source_b_before := int(owner.numeric_resource_pools[source_b].get("current", 0))
+		var stale_funds_answer: Dictionary = {}
+		var refused_left_request_pending := false
+		if cancel_popup != null:
+			owner.numeric_resource_pools[source_b]["current"] = 0
+			stale_funds_answer = SpellDamageRolls.settle_weapon_attack_bonus(owner, target, {"weapon_attack_bonus_request": {"request_id": str(cancel_record.get("request_id", ""))}}, source_b)
+			refused_left_request_pending = not bool(cancel_record.get("settled", false))
+			cancel_popup.hide()
+		for frame in 180:
+			if not combat.resolving_player_action:
+				break
+			await get_tree().process_frame
+		_assert(cancel_popup_was_visible and bool(stale_funds_answer.get("refused", false)) and refused_left_request_pending and bool(cancel_record.get("settled", false)) and int(owner.numeric_resource_pools[source_a].get("current", 0)) == pool_a_before_cancel and int(target["current_hp"]) == hp_before_cancel, "An unaffordable offered source is refused while pending; closing the actual visible menu settles the miss without cost or damage")
+		owner.numeric_resource_pools[source_b]["current"] = cancel_source_b_before
+		_assert(owner.next_weapon_hit_grants.size() == 1 and owner.has_next_melee_hit_grant_source(hit_grant_source_b), "Declining a bonus preserves the separately armed next-hit grant")
+	Dice.dice_rolled.disconnect(count_d20)
+	GameManager.test_mode = true
+	_teardown_scene(combat)
+	# Exercise Stroke through the normal combat controller. Its source chooser
+	# must take priority and settle the captured roll without entering it again.
+	_setup_world()
+	var rogue := _fresh_char("Stroke Fixture Rogue", "human", "rogue", {"STR": 16, "DEX": 16, "CON": 14, "INT": 10, "WIS": 10, "CHA": 8})
+	rogue.character_id = "fixture:weapon_bonus_stroke_rogue"
+	while rogue.level < 20:
+		rogue.level_up()
+	rogue.feature_uses["rogue_stroke_of_luck"] = 1
+	rogue.inventory.unequip(Inventory.Slot.SHIELD)
+	rogue.inventory.equip(Inventory.Slot.WEAPON, "longsword", true)
+	var rogue_source_feature: Dictionary = neutral_feature.duplicate(true)
+	rogue_source_feature["source_instance_id"] = "fixture:attack_bonus:stroke:optional"
+	rogue.features.append(rogue_source_feature)
+	var rogue_pool_result := ResourcePoolRules.acquire(rogue, neutral_feature, "fixture:attack_bonus:stroke:optional")
+	_assert(bool(rogue_pool_result.get("success", false)) and rogue.has_feature("rogue_stroke_of_luck"), "Rogue owns an independent numeric source and its native Stroke feature")
+	PlayerManager.set_player_character(0, rogue)
+	PartyManager.reset()
+	PartyManager.register_player_character(0, rogue)
+	PartyManager.register_player_character(1, PlayerManager.get_player(1).get("character"))
+	GameManager.current_state = GameManager.GameState.COMBAT
+	var rogue_dex := rogue.ability_scores.get_score("DEX")
+	rogue.ability_scores.set_score("DEX", 54)
+	var rogue_combat: Node = await _spawn_scene("res://scenes/combat.tscn", 1.2)
+	rogue.ability_scores.set_score("DEX", rogue_dex)
+	rogue_combat.current_player_idx = 0
+	rogue_combat.active_character = rogue
+	rogue_combat.active_combatant = {"is_player": true, "entity": rogue}
+	rogue_combat.player_entities[0]["hex_position"] = Vector2i.ZERO
+	for enemy_index in rogue_combat.monster_entities.size():
+		var enemy: Dictionary = rogue_combat.monster_entities[enemy_index]
+		if enemy_index == 0:
+			enemy["hex_position"] = Vector2i(1, 0)
+			enemy["armor_class"] = 30
+			enemy["current_hp"] = 10000
+			enemy["max_hp"] = 10000
+		else:
+			enemy["is_alive"] = false
+			enemy["current_hp"] = 0
+	rogue_combat._update_grid_entities()
+	rogue_combat.turn_budget.reset(rogue, rogue_combat.player_entities)
+	rogue_combat.hud.update_hud(rogue, rogue_combat.tracker)
+	GameManager.test_mode = false
+	var rogue_target: Dictionary = rogue_combat.monster_entities[0]
+	var rogue_hp_before := int(rogue_target["current_hp"])
+	var rogue_pool_before := int(rogue.numeric_resource_pools["fixture:attack_bonus:stroke:optional"].get("current", 0))
+	var rogue_d20_counter := {"count": 0}
+	var count_rogue_d20 := func(payload: Dictionary) -> void:
+		if int(payload.get("sides", 0)) == 20:
+			rogue_d20_counter["count"] = int(rogue_d20_counter["count"]) + 1
+	Dice.dice_rolled.connect(count_rogue_d20)
+	FighterChecks._seed_die(20, 5)
+	rogue_combat.hud.btn_attack.pressed.emit()
+	rogue_combat.call_deferred("_on_hex_clicked", Vector2i(1, 0))
+	var stroke_prompt_seen := false
+	for frame in 180:
+		for child in rogue_combat.hud.get_children():
+			if child is ConfirmationDialog and child.visible and str(child.title).contains("Stroke of Luck"):
+				stroke_prompt_seen = true
+				break
+		if stroke_prompt_seen:
+			break
+		await get_tree().process_frame
+	_assert(stroke_prompt_seen and _visible_weapon_attack_bonus_popup(rogue_combat.hud) == null, "A real failed Attack offers native Stroke before the optional numeric chooser")
+	var answered_stroke := await _answer_class_dialog(rogue_combat.hud, "Stroke of Luck", true)
+	for frame in 180:
+		if not rogue_combat.resolving_player_action:
+			break
+		await get_tree().process_frame
+	_assert(answered_stroke and int(rogue.feature_uses.get("rogue_stroke_of_luck", 1)) == 0 and int(rogue.numeric_resource_pools["fixture:attack_bonus:stroke:optional"].get("current", 0)) == rogue_pool_before, "Accepted real Stroke spends its native use without charging the optional source")
+	_assert(int(rogue_target["current_hp"]) < rogue_hp_before and int(rogue_d20_counter["count"]) == 1 and not rogue_combat.resolving_player_action, "Stroke settles the captured attack once without replaying the d20 or leaving a pending chooser")
+	Dice.dice_rolled.disconnect(count_rogue_d20)
+	GameManager.test_mode = true
+	_teardown_scene(rogue_combat)
+	DataLoader.classes = prior_classes
+	_exit_test()
+
+
+func test_attack_result_adjustment_flow() -> void:
+	_enter_test("attack_result_adjustment_flow")
+	_setup_world()
+	var prior_spells := DataLoader.spells.duplicate(true)
+	var prior_classes := DataLoader.classes.duplicate(true)
+	DataLoader._load_content_type("res://data/fixtures/failed_save_bonus/classes/", "class")
+	DataLoader._load_content_type("res://data/fixtures/shared_spells/spells/", "spell")
+	var total_class: Dictionary = DataLoader.classes.get("fixture:attack_total_adjustment_class", {})
+	var ac_class: Dictionary = DataLoader.classes.get("fixture:defending_ac_adjustment_class", {})
+	var total_feature: Dictionary = total_class.get("features_by_level", {}).get("1", [{}])[0]
+	var ac_feature: Dictionary = ac_class.get("features_by_level", {}).get("1", [{}])[0]
+	var flat_spell: Dictionary = DataLoader.spells.get("sandbox:owned_spell_attack_neutral", {})
+	_assert(not total_feature.is_empty() and not ac_feature.is_empty() and not flat_spell.is_empty(), "Production DataLoader loads the neutral subtraction and renamed AC adjustment definitions and shared attack spell")
+	if total_feature.is_empty() or ac_feature.is_empty() or flat_spell.is_empty():
+		DataLoader.classes = prior_classes
+		DataLoader.spells = prior_spells
+		_exit_test()
+		return
+	var owner := _fresh_char("Adjustment Wizard", "human", "wizard", {"STR": 16, "DEX": 14, "CON": 14, "INT": 18, "WIS": 12, "CHA": 10})
+	owner.character_id = "fixture:attack_adjustment_owner"
+	while owner.level < 3:
+		owner.level_up()
+	owner.inventory.equip(Inventory.Slot.WEAPON, "dagger", true)
+	owner.known_spells.assign(["sandbox:owned_spell_attack_neutral", "sandbox:owned_spell_attack_renamed"])
+	owner.wizard_spellbook.assign(["sandbox:owned_spell_attack_neutral", "sandbox:owned_spell_attack_renamed"])
+	owner.spell_slots["1"] = 8
+	var empowered_feature := {"id": "sorcerer_metamagic", "name": "Fixture Empowered Spell", "type": "passive"}
+	var wizard_class: Dictionary = DataLoader.classes.get("wizard", {})
+	var wizard_spells: Array = wizard_class.get("spell_list_ids", [])
+	wizard_spells.append_array(["sandbox:owned_spell_attack_neutral", "sandbox:owned_spell_attack_renamed"])
+	wizard_class["spell_list_ids"] = wizard_spells
+	var total_source := "fixture:attack_adjustment:total"
+	var ac_source := "fixture:attack_adjustment:ac"
+	for pair in [[total_feature, total_source], [ac_feature, ac_source]]:
+		var feature: Dictionary = pair[0].duplicate(true)
+		feature["source_instance_id"] = str(pair[1])
+		owner.features.append(feature)
+		var acquired := ResourcePoolRules.acquire(owner, pair[0], str(pair[1]))
+		_assert(bool(acquired.get("success", false)), "Each loaded adjustment source acquires its own attacker's pool")
+	var ally := _fresh_char("Adjustment Ally", "human", "fighter", {"STR": 12, "DEX": 12, "CON": 14, "INT": 10, "WIS": 10, "CHA": 10})
+	PlayerManager.set_player_character(0, owner)
+	PlayerManager.set_player_character(1, ally)
+	PartyManager.reset()
+	PartyManager.register_player_character(0, owner)
+	PartyManager.register_player_character(1, ally)
+	GameManager.current_state = GameManager.GameState.COMBAT
+	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 0.8)
+	combat.current_player_idx = 0
+	combat.active_character = owner
+	combat.active_combatant = {"is_player": true, "entity": owner}
+	combat.player_entities[0]["hex_position"] = Vector2i.ZERO
+	combat.player_entities[1]["hex_position"] = Vector2i(6, 0)
+	for enemy_index in combat.monster_entities.size():
+		var enemy: Dictionary = combat.monster_entities[enemy_index]
+		if enemy_index == 0:
+			enemy["hex_position"] = Vector2i(1, 0)
+			enemy["current_hp"] = 1000
+			enemy["max_hp"] = 1000
+			enemy["conditions"] = {}
+		else:
+			enemy["is_alive"] = false
+			enemy["current_hp"] = 0
+	combat._update_grid_entities()
+	combat.turn_budget.reset(owner, combat.player_entities)
+	combat.hud.update_hud(owner, combat.tracker)
+	GameManager.test_mode = false
+	var target: Dictionary = combat.monster_entities[0]
+	var initial_slots := int(owner.spell_slots.get("1", 0))
+	var d20 := {"count": 0}
+	var count_d20 := func(payload: Dictionary) -> void:
+		if int(payload.get("sides", 0)) == 20:
+			d20["count"] = int(d20["count"]) + 1
+	Dice.dice_rolled.connect(count_d20)
+	var cases := [
+		{"domain": "weapon_attack", "natural": 8, "ac": 11, "source": total_source, "hit": false, "pool_delta": 1, "spell": ""},
+		{"domain": "weapon_attack", "natural": 10, "ac": 12, "source": ac_source, "hit": true, "pool_delta": 2, "spell": ""},
+		{"domain": "shared_spell_attack", "natural": 12, "ac": 12, "source": total_source, "hit": true, "pool_delta": 1, "spell": "sandbox:owned_spell_attack_renamed"},
+		{"domain": "shared_spell_attack", "natural": 10, "ac": 15, "source": ac_source, "hit": false, "pool_delta": 0, "spell": "sandbox:owned_spell_attack_neutral"},
+	]
+	# Declining through the actual menu's first (Decline) row must resolve the
+	# captured attack normally without spending either source.
+	var decline_pool_before := int(owner.numeric_resource_pools[total_source].get("current", 0))
+	var decline_ac_pool_before := int(owner.numeric_resource_pools[ac_source].get("current", 0))
+	target["current_hp"] = 1000
+	target["conditions"] = {}
+	target["armor_class"] = 11
+	await _start_class_fixture_turn(combat, owner)
+	combat.turn_budget.reset(owner, combat.player_entities)
+	combat.current_player_idx = 0
+	combat.active_character = owner
+	combat.active_combatant = {"is_player": true, "entity": owner}
+	combat.hud.update_hud(owner, combat.tracker)
+	FighterChecks._seed_die(20, 10)
+	combat.hud.btn_attack.pressed.emit()
+	combat.call_deferred("_on_hex_clicked", Vector2i(1, 0))
+	var decline_popup: PopupMenu = null
+	for _frame in 240:
+		await get_tree().process_frame
+		decline_popup = _visible_shared_spell_attack_bonus_popup(combat.hud)
+		if decline_popup != null:
+			break
+	var decline_request := _pending_shared_spell_attack_bonus_record_for_test(owner)
+	var decline_request_id := str(decline_request.get("request_id", ""))
+	_assert(decline_popup != null and not decline_request_id.is_empty() and decline_popup.item_count > 0, "Actual weapon Attack chooser exposes its Decline row")
+	if decline_popup != null and decline_popup.item_count > 0:
+		decline_popup.id_pressed.emit(decline_popup.get_item_id(0))
+	for _frame in 240:
+		if bool(decline_request.get("settled", false)) and not combat.resolving_player_action:
+			break
+		await get_tree().process_frame
+	_assert(bool(decline_request.get("settled", false)) and int(target.get("current_hp", 1000)) < 1000 and int(owner.numeric_resource_pools[total_source].get("current", 0)) == decline_pool_before and int(owner.numeric_resource_pools[ac_source].get("current", 0)) == decline_ac_pool_before, "Declining the real chooser resolves the captured hit without spending either owned adjustment source")
+	var previous_request_id := ""
+	for case_index in cases.size():
+		var case: Dictionary = cases[case_index]
+		var domain := str(case["domain"])
+		var source_id := str(case["source"])
+		var pool_before := int(owner.numeric_resource_pools[source_id].get("current", 0))
+		var hp_before := int(target["current_hp"])
+		target["current_hp"] = 1000
+		target["conditions"] = {}
+		target["armor_class"] = int(case["ac"])
+		await _start_class_fixture_turn(combat, owner)
+		combat.turn_budget.reset(owner, combat.player_entities)
+		combat.current_player_idx = 0
+		combat.active_character = owner
+		combat.active_combatant = {"is_player": true, "entity": owner}
+		combat.hud.update_hud(owner, combat.tracker)
+		var slots_before_cast := int(owner.spell_slots.get("1", 0))
+		if domain == "weapon_attack":
+			FighterChecks._seed_die(20, int(case["natural"]))
+			combat.hud.btn_attack.pressed.emit()
+			combat.call_deferred("_on_hex_clicked", Vector2i(1, 0))
+		else:
+			if str(case["spell"]) == "sandbox:owned_spell_attack_renamed":
+				owner.features.append(empowered_feature)
+				owner.sorcerer_metamagic_choices.append("empowered_spell")
+				owner.feature_uses["sorcery_points"] = maxi(3, owner.get_sorcery_points())
+			_assert(await _start_fixture_spell_from_picker(combat, str(case["spell"])), "Actual spell picker opens the shared attack before its owned chooser")
+			FighterChecks._seed_die(20, int(case["natural"]))
+			combat.call_deferred("_on_hex_clicked", Vector2i(1, 0))
+		var popup: PopupMenu = null
+		for _frame in 240:
+			await get_tree().process_frame
+			popup = _visible_shared_spell_attack_bonus_popup(combat.hud)
+			for child in combat.hud.get_children():
+				if child is ConfirmationDialog and child.visible and str(child.title).contains("Empowered Spell"):
+					child.confirmed.emit()
+			if popup != null:
+				break
+		var request := _pending_shared_spell_attack_bonus_record_for_test(owner)
+		var request_id := str(request.get("request_id", ""))
+		var attack: Dictionary = request.get("context", {}).get("attack_result", {})
+		var option: Dictionary = {}
+		for candidate in request.get("options", []):
+			if str(candidate.get("source_instance_id", "")) == source_id:
+				option = candidate
+				break
+		_assert(popup != null and not request_id.is_empty() and str(option.get("resolution", "")) == ("attack_total_adjustment" if source_id == total_source else "defending_ac_adjustment") and str(option.get("domain", "")) == domain, "Real %s chooser offers the authored %s option for its captured attack" % [domain, str(option.get("resolution", ""))])
+		_assert(int(attack.get("natural", 0)) == int(case["natural"]) and not bool(attack.get("is_crit", false)) and not bool(attack.get("is_miss", false)), "The chooser retains the original noncritical natural result before selection (attack=%s expected=%s)" % [str(attack), str(case["natural"])])
+		var wrong_owner := SpellDamageRolls.settle_weapon_attack_bonus(ally, target, {"weapon_attack_bonus_request": {"request_id": request_id}}, source_id)
+		_assert(bool(wrong_owner.get("refused", false)) and int(target["current_hp"]) == 1000 and int(owner.numeric_resource_pools[source_id].get("current", 0)) == pool_before, "Wrong actor cannot answer or spend this live attack occurrence")
+		var wrong_window := SpellDamageRolls.settle_failed_save_numeric_bonus(owner, ally, {"weapon_attack_bonus_request": {"request_id": request_id}}, source_id)
+		_assert(bool(wrong_window.get("refused", false)) and not bool(request.get("settled", true)) and int(owner.numeric_resource_pools[source_id].get("current", 0)) == pool_before, "A save-window answer cannot consume or spend the live attack request")
+		if not previous_request_id.is_empty():
+			var old_answer := SpellDamageRolls.settle_weapon_attack_bonus(owner, target, {"weapon_attack_bonus_request": {"request_id": previous_request_id}}, source_id)
+			_assert(bool(old_answer.get("refused", false)) and not bool(request.get("settled", true)) and int(owner.numeric_resource_pools[source_id].get("current", 0)) == pool_before, "A stale answer cannot settle or spend against a newer attack occurrence")
+		if popup != null:
+			popup.id_pressed.emit(_weapon_bonus_popup_index(request, source_id))
+		var ordered_damage_record: Dictionary = {}
+		var damage_popup: PopupMenu = null
+		if domain == "shared_spell_attack" and str(case["spell"]) == "sandbox:owned_spell_attack_renamed" and bool(case["hit"]):
+			for _frame in 240:
+				await get_tree().process_frame
+				for child in combat.hud.get_children():
+					if child is PopupMenu and child.visible and str(child.title).begins_with("Empowered Spell: choose up to"):
+						damage_popup = child
+						break
+				for pending_value in SpellDamageRolls._pending_requests.values():
+					var pending_target: Variant = pending_value.get("target")
+					if str(pending_value.get("kind", "")) == "damage" and pending_target is Dictionary and str(pending_target.get("id", "")) == str(target.get("id", "")) and not bool(pending_value.get("settled", false)):
+						ordered_damage_record = pending_value
+						break
+				if damage_popup != null:
+					break
+			var damage_receipt: Dictionary = ordered_damage_record.get("result_base", {}).get("attack_adjustment_receipt", {})
+			var cast_context: SpellResolutionContext = request.get("context", {}).get("spell_cast")
+			var final_windows: Array = cast_context.resolution_window_context.get("windows", []) if cast_context != null else []
+			var pre_damage: Dictionary = final_windows.back() if not final_windows.is_empty() else {}
+			var ordered_continuation: Dictionary = ordered_damage_record.get("ordered_continuation", {})
+			var ordered_prior_steps: Array = ordered_continuation.get("step_results", [])
+			_assert(damage_popup != null and str(damage_receipt.get("source_instance_id", "")) == source_id and str(pre_damage.get("attack_adjustment", {}).get("source_instance_id", "")) == source_id and int(target.get("current_hp", 0)) == 1000 and not CombatAction.has_condition(target, "restrained") and not CombatAction.has_condition(target, "deafened") and not CombatAction.has_condition(target, "poisoned") and ordered_prior_steps.size() == 1 and str(ordered_prior_steps[0].get("step_id", "")) == "rime_guard", "The actual Empowered choice carries the exact adjustment receipt; no attack damage/rider runs early and the earlier ordered step is settled once")
+			if damage_popup != null and damage_popup.item_count > 0:
+				damage_popup.id_pressed.emit(damage_popup.get_item_id(0))
+		for _frame in 240:
+			if bool(request.get("settled", false)) and not combat.resolving_player_action and combat.pending_action_type.is_empty() and (damage_popup == null or bool(ordered_damage_record.get("settled", false))):
+				break
+			await get_tree().process_frame
+		if domain == "shared_spell_attack" and str(case["spell"]) == "sandbox:owned_spell_attack_renamed" and bool(case["hit"]):
+			var settled_continuation: Dictionary = ordered_damage_record.get("ordered_continuation", {})
+			var settled_prior_steps: Array = settled_continuation.get("step_results", [])
+			_assert(int(target.get("current_hp", 1000)) < 1000 and CombatAction.has_condition(target, "restrained") and CombatAction.has_condition(target, "deafened") and not CombatAction.has_condition(target, "poisoned") and settled_prior_steps.size() == 1 and str(settled_prior_steps[0].get("step_id", "")) == "rime_guard", "After the damage choice, ordered hit damage/riders apply once and the prior step is not replayed")
+		var activity: Dictionary = ActivityHistory.get_records().back() if not ActivityHistory.get_records().is_empty() else {}
+		var attack_sections: Array = activity.get("payload", {}).get("sections", {}).get("attacks", [])
+		var roll: Dictionary = attack_sections[0].get("roll", {}) if not attack_sections.is_empty() else {}
+		var receipt: Dictionary = roll.get("attack_adjustment_receipt", {})
+		if domain == "shared_spell_attack":
+			var settled_cast: SpellResolutionContext = request.get("context", {}).get("spell_cast")
+			var settled_windows: Array = settled_cast.resolution_window_context.get("windows", []) if settled_cast != null else []
+			for settled_window in settled_windows:
+				if settled_window is Dictionary and settled_window.get("attack_adjustment", {}) is Dictionary and not settled_window.get("attack_adjustment", {}).is_empty():
+					receipt = settled_window["attack_adjustment"]
+		var final_hit := bool(case["hit"])
+		var expected_total := int(attack.get("total", 0)) - (6 if source_id == total_source else 0)
+		var expected_ac := int(case["ac"]) + (2 if source_id == ac_source else 0)
+		var expected_profile: Dictionary = {}
+		if domain == "weapon_attack":
+			expected_profile = {"domain": "weapon_attack", "ability": str(request.get("context", {}).get("ability", "")), "weapon": request.get("context", {}).get("weapon_data", {})}
+		else:
+			var profile_cast: SpellResolutionContext = request.get("context", {}).get("spell_cast")
+			expected_profile = {"domain": "shared_spell_attack", "ability": owner.get_spellcasting_ability(), "spell_id": str(profile_cast.spell.get("id", "")) if profile_cast != null else "", "advantage": bool(request.get("context", {}).get("spell_attack_advantage", false)), "disadvantage": bool(request.get("context", {}).get("spell_attack_disadvantage", false))}
+		_assert((int(target["current_hp"]) < 1000) == final_hit and int(owner.numeric_resource_pools[source_id].get("current", 0)) == pool_before - int(case["pool_delta"]), "Settled %s %s applies damage and its declared once-only source cost (hp=%s pool=%s/%s result=%s)" % [domain, str(option.get("resolution", "")), str(target.get("current_hp", -1)), str(owner.numeric_resource_pools[source_id].get("current", -1)), str(pool_before), str(receipt)])
+		_assert(int(owner.spell_slots.get("1", 0)) == (slots_before_cast - 1 if domain == "shared_spell_attack" else slots_before_cast), "The actual route pays exactly one spell slot and no weapon slot")
+		var receipt_matches: bool = not receipt.is_empty() and str(receipt.get("source_instance_id", "")) == source_id and int(receipt.get("original", {}).get("natural", 0)) == int(attack.get("natural", 0)) and int(receipt.get("original", {}).get("modifier", 0)) == int(attack.get("modifier", 0)) and int(receipt.get("original", {}).get("total", 0)) == int(attack.get("total", 0)) and receipt.get("original", {}).get("profile", {}) == expected_profile and int(receipt.get("final", {}).get("total", 0)) == expected_total and int(receipt.get("original", {}).get("target_ac", 0)) == int(case["ac"]) and int(receipt.get("final", {}).get("target_ac", 0)) == expected_ac and bool(receipt.get("final", {}).get("hit", false)) == final_hit and not bool(receipt.get("final", {}).get("critical", true))
+		if domain == "shared_spell_attack" and not final_hit:
+			_assert(receipt_matches and int(target.get("armor_class", 0)) == int(case["ac"]), "Converted shared-spell miss exposes its exact settled receipt and leaves defender AC unchanged")
+		else:
+			_assert(receipt_matches and int(target.get("armor_class", 0)) == int(case["ac"]), "Final adjustment receipt preserves roll/profile/AC and adjusted result (receipt=%s expected=%s/%s/%s/%s)" % [str(receipt), str(expected_total), str(expected_ac), str(final_hit), str(attack)])
+		if domain == "weapon_attack":
+			_assert(not combat.turn_budget.action_available, "Normal Attack pays its action once across the chooser continuation")
+		if str(case["spell"]) == "sandbox:owned_spell_attack_renamed":
+			owner.features.erase(empowered_feature)
+			owner.sorcerer_metamagic_choices.erase("empowered_spell")
+		var replay := SpellDamageRolls.settle_weapon_attack_bonus(owner, target, {"weapon_attack_bonus_request": {"request_id": request_id}}, source_id)
+		_assert(bool(replay.get("refused", false)) and int(owner.numeric_resource_pools[source_id].get("current", 0)) == pool_before - int(case["pool_delta"]), "Replayed completion cannot spend a second time")
+		previous_request_id = request_id
+		if int(target["current_hp"]) <= 0:
+			target["current_hp"] = 1000
+	# Mutate the exact source after selection in the actual chooser signal, before
+	# its awaiting caller resumes. Both cases must fall back to the captured roll.
+	for source_change in [{"mode": "depleted"}, {"mode": "removed"}]:
+		var source_mode := str(source_change["mode"])
+		var source_pool_before := int(owner.numeric_resource_pools[ac_source].get("current", 0))
+		target["current_hp"] = 1000
+		target["conditions"] = {}
+		target["armor_class"] = 12
+		await _start_class_fixture_turn(combat, owner)
+		combat.turn_budget.reset(owner, combat.player_entities)
+		combat.current_player_idx = 0
+		combat.active_character = owner
+		combat.active_combatant = {"is_player": true, "entity": owner}
+		combat.hud.update_hud(owner, combat.tracker)
+		_assert(await _start_fixture_spell_from_picker(combat, "sandbox:owned_spell_attack_neutral"), "Actual spell picker opens a %s-source probe" % source_mode)
+		FighterChecks._seed_die(20, 10)
+		combat.call_deferred("_on_hex_clicked", Vector2i(1, 0))
+		var source_popup: PopupMenu = null
+		for _frame in 240:
+			await get_tree().process_frame
+			source_popup = _visible_shared_spell_attack_bonus_popup(combat.hud)
+			if source_popup != null:
+				break
+		var source_request := _pending_shared_spell_attack_bonus_record_for_test(owner)
+		var source_request_id := str(source_request.get("request_id", ""))
+		var source_option_index := _weapon_bonus_popup_index(source_request, ac_source)
+		var source_mutation := {"removed_feature": {}}
+		_assert(source_popup != null and not source_request_id.is_empty() and source_option_index > 0, "The live shared-spell chooser offers its exact source before %s" % source_mode)
+		if source_popup != null and source_option_index > 0:
+			source_popup.id_pressed.connect(func(item_id: int) -> void:
+				if item_id != source_popup.get_item_id(source_option_index):
+					return
+				if source_mode == "depleted":
+					owner.numeric_resource_pools[ac_source]["current"] = 0
+				else:
+					for feature_index in owner.features.size():
+						if str(owner.features[feature_index].get("source_instance_id", "")) == ac_source:
+							source_mutation["removed_feature"] = owner.features[feature_index].duplicate(true)
+							owner.features.remove_at(feature_index)
+							break
+			)
+			source_popup.id_pressed.emit(source_popup.get_item_id(source_option_index))
+		for _frame in 240:
+			if bool(source_request.get("settled", false)) and not combat.resolving_player_action:
+				break
+			await get_tree().process_frame
+		var source_cast: SpellResolutionContext = source_request.get("context", {}).get("spell_cast")
+		var source_windows: Array = source_cast.resolution_window_context.get("windows", []) if source_cast != null else []
+		var source_receipt_found := false
+		for source_window in source_windows:
+			if source_window is Dictionary and not source_window.get("attack_adjustment", {}).is_empty():
+				source_receipt_found = true
+		var expected_pool_after := 0 if source_mode == "depleted" else source_pool_before
+		_assert(bool(source_request.get("settled", false)) and int(target.get("current_hp", 1000)) < 1000 and int(owner.numeric_resource_pools[ac_source].get("current", -1)) == expected_pool_after and not source_receipt_found, "A %s source change during the real chooser refuses the adjustment and resolves the captured attack without a second spend" % source_mode)
+		if source_mode == "depleted":
+			owner.numeric_resource_pools[ac_source]["current"] = source_pool_before
+		else:
+			var removed_feature: Dictionary = source_mutation.get("removed_feature", {})
+			if not removed_feature.is_empty():
+				owner.features.append(removed_feature)
+	var boundary_cases := [
+		{"domain": "weapon_attack", "natural": 1, "ac": 1, "spell": ""},
+		{"domain": "weapon_attack", "natural": 20, "ac": 100, "spell": ""},
+		{"domain": "shared_spell_attack", "natural": 1, "ac": 1, "spell": "sandbox:owned_spell_attack_neutral"},
+		{"domain": "shared_spell_attack", "natural": 20, "ac": 100, "spell": "sandbox:owned_spell_attack_neutral"},
+	]
+	var total_pool_at_boundary := int(owner.numeric_resource_pools[total_source].get("current", 0))
+	var ac_pool_at_boundary := int(owner.numeric_resource_pools[ac_source].get("current", 0))
+	for boundary in boundary_cases:
+		var boundary_domain := str(boundary["domain"])
+		target["current_hp"] = 1000
+		target["conditions"] = {}
+		target["armor_class"] = int(boundary["ac"])
+		await _start_class_fixture_turn(combat, owner)
+		combat.turn_budget.reset(owner, combat.player_entities)
+		combat.current_player_idx = 0
+		combat.active_character = owner
+		combat.active_combatant = {"is_player": true, "entity": owner}
+		combat.hud.update_hud(owner, combat.tracker)
+		if boundary_domain == "weapon_attack":
+			FighterChecks._seed_die(20, int(boundary["natural"]))
+			combat.hud.btn_attack.pressed.emit()
+			combat.call_deferred("_on_hex_clicked", Vector2i(1, 0))
+		else:
+			_assert(await _start_fixture_spell_from_picker(combat, str(boundary["spell"])), "Actual spell picker opens a natural-boundary probe")
+			FighterChecks._seed_die(20, int(boundary["natural"]))
+			combat.call_deferred("_on_hex_clicked", Vector2i(1, 0))
+		var boundary_popup: PopupMenu = null
+		for _frame in 180:
+			await get_tree().process_frame
+			boundary_popup = _visible_shared_spell_attack_bonus_popup(combat.hud)
+			if boundary_popup != null or (not combat.resolving_player_action and combat.pending_action_type.is_empty()):
+				break
+		var boundary_hit := int(target["current_hp"]) < 1000
+		_assert(boundary_popup == null and boundary_hit == (int(boundary["natural"]) == 20) and int(owner.numeric_resource_pools[total_source].get("current", 0)) == total_pool_at_boundary and int(owner.numeric_resource_pools[ac_source].get("current", 0)) == ac_pool_at_boundary, "Natural %d %s keeps its ordinary miss/critical boundary with no adjustment menu or source cost" % [int(boundary["natural"]), boundary_domain])
+	Dice.dice_rolled.disconnect(count_d20)
+	_assert(int(d20["count"]) == cases.size() + boundary_cases.size() + 3, "Each attack route rolls one d20; chooser answers never replay it (observed=%d expected=%d)" % [int(d20["count"]), cases.size() + boundary_cases.size() + 3])
+	_assert(int(owner.spell_slots.get("1", 0)) == initial_slots - 6, "Each shared-spell source choice, integrity probe, and natural-boundary cast consumes one slot")
+	GameManager.test_mode = true
+	_teardown_scene(combat)
+	DataLoader.spells = prior_spells
+	DataLoader.classes = prior_classes
+	_exit_test()
+
+
+func test_post_roll_die_bonus_flow() -> void:
+	_enter_test("post_roll_die_bonus_flow")
+	_setup_world()
+	var prior_spells := DataLoader.spells.duplicate(true)
+	var prior_classes := DataLoader.classes.duplicate(true)
+	DataLoader._load_content_type("res://data/fixtures/failed_save_bonus/classes/", "class")
+	DataLoader._load_content_type("res://data/fixtures/shared_spells/spells/", "spell")
+	var neutral_class: Dictionary = DataLoader.classes.get("fixture:post_roll_die_neutral_class", {})
+	var renamed_class: Dictionary = DataLoader.classes.get("fixture:post_roll_die_renamed_class", {})
+	var neutral_outcome_class: Dictionary = DataLoader.classes.get("fixture:neutral_roll_outcome_class", {})
+	var renamed_outcome_class: Dictionary = DataLoader.classes.get("fixture:renamed_roll_outcome_class", {})
+	var neutral_feature: Dictionary = neutral_class.get("features_by_level", {}).get("1", [{}])[0]
+	var renamed_feature: Dictionary = renamed_class.get("features_by_level", {}).get("1", [{}])[0]
+	var neutral_outcome_feature: Dictionary = neutral_outcome_class.get("features_by_level", {}).get("1", [{}])[0]
+	var renamed_outcome_feature: Dictionary = renamed_outcome_class.get("features_by_level", {}).get("1", [{}])[0]
+	var save_spell: Dictionary = DataLoader.spells.get("sandbox:failed_save_bonus_area", {})
+	var con_spell: Dictionary = DataLoader.spells.get("sandbox:failed_save_bonus_con_area", {})
+	var flat_spell: Dictionary = DataLoader.spells.get("sandbox:owned_spell_attack_neutral", {})
+	var ordered_spell: Dictionary = DataLoader.spells.get("sandbox:owned_spell_attack_renamed", {})
+	_assert(not neutral_feature.is_empty() and not renamed_feature.is_empty() and not save_spell.is_empty() and not con_spell.is_empty() and not flat_spell.is_empty() and not ordered_spell.is_empty(), "Production DataLoader loads neutral d6/cost1, renamed d8/cost2 and all real chooser spell definitions")
+	if neutral_feature.is_empty() or renamed_feature.is_empty() or save_spell.is_empty() or con_spell.is_empty() or flat_spell.is_empty() or ordered_spell.is_empty():
+		DataLoader.spells = prior_spells
+		DataLoader.classes = prior_classes
+		_exit_test()
+		return
+	var owner := _fresh_char("Captured Die Wizard", "human", "wizard", {"STR": 8, "DEX": 10, "CON": 10, "INT": 18, "WIS": 12, "CHA": 10})
+	owner.character_id = "fixture:post_roll_die_production_owner"
+	while owner.level < 3: owner.level_up()
+	owner.max_hp = 100
+	owner.current_hp = 100
+	owner.known_spells.assign(["sandbox:failed_save_bonus_area", "sandbox:failed_save_bonus_con_area", "sandbox:owned_spell_attack_neutral", "sandbox:owned_spell_attack_renamed"])
+	owner.wizard_spellbook = owner.known_spells.duplicate()
+	owner.spell_slots["1"] = 12
+	for spell_id in owner.known_spells:
+		if spell_id not in DataLoader.classes["wizard"].get("spell_list_ids", []):
+			DataLoader.classes["wizard"]["spell_list_ids"].append(spell_id)
+	var neutral_source := "fixture:post_roll_die:neutral"
+	var renamed_source := "fixture:post_roll_die:renamed"
+	for pair in [[neutral_feature, neutral_source], [renamed_feature, renamed_source]]:
+		var owned: Dictionary = pair[0].duplicate(true)
+		owned["source_instance_id"] = str(pair[1])
+		owner.features.append(owned)
+		var acquired := ResourcePoolRules.acquire(owner, pair[0], str(pair[1]))
+		_assert(bool(acquired.get("success", false)), "Production pool acquisition registers the exact source-die definition")
+	# Keep existing fixed and explicit-success operations visible as alternatives on
+	# the same save result. They are not stacked with the die choice.
+	for pair in [["fixture:steady_saving_class", "fixture:post_roll_die:fixed"], ["fixture:save_success_override_class", "fixture:post_roll_die:override"]]:
+		var class_data: Dictionary = DataLoader.classes.get(str(pair[0]), {})
+		var alternative: Dictionary = class_data.get("features_by_level", {}).get("1", [{}])[0]
+		if not alternative.is_empty():
+			var owned_alternative: Dictionary = alternative.duplicate(true)
+			owned_alternative["source_instance_id"] = str(pair[1])
+			owner.features.append(owned_alternative)
+			var alternative_pool := ResourcePoolRules.acquire(owner, alternative, str(pair[1]))
+			_assert(bool(alternative_pool.get("success", false)), "Existing fixed/override choice remains an independent authored alternative")
+	var dex_options := SpellDamageRolls.failed_save_choice_options(owner, "DEX")
+	_assert(dex_options.any(func(option): return str(option.get("source_instance_id", "")) == neutral_source and str(option.get("resolution", "")) == "die_bonus") and dex_options.any(func(option): return str(option.get("resolution", "")) == "numeric_bonus") and dex_options.any(func(option): return str(option.get("resolution", "")) == "outcome_override"), "One rolled DEX save offers fixed, die and explicit-success alternatives without stacking them")
+	var ally := _fresh_char("Die Check Ally", "human", "fighter", {"STR": 12, "DEX": 12, "CON": 12, "INT": 10, "WIS": 10, "CHA": 10})
+	PlayerManager.reset()
+	PartyManager.reset()
+	PlayerManager.add_player("Die Wizard")
+	PlayerManager.add_player("Die Ally")
+	PlayerManager.set_player_character(0, owner)
+	PlayerManager.set_player_character(1, ally)
+	PartyManager.register_player_character(0, owner)
+	PartyManager.register_player_character(1, ally)
+	GameManager.current_state = GameManager.GameState.COMBAT
+	var original_dex := owner.ability_scores.get_score("DEX")
+	owner.ability_scores.set_score("DEX", 54)
+	GameManager.transition_context = {"terrain": "plains", "monster_ids": ["goblin"], "initiative_decisions": {}}
+	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 0.6)
+	owner.ability_scores.set_score("DEX", original_dex)
+	combat.current_player_idx = 0
+	combat.active_character = owner
+	combat.active_combatant = {"is_player": true, "entity": owner}
+	combat.player_entities[0]["hex_position"] = Vector2i.ZERO
+	combat.player_entities[1]["hex_position"] = Vector2i(6, 0)
+	combat.monster_entities[0]["is_alive"] = false
+	combat.monster_entities[0]["current_hp"] = 0
+	combat._update_grid_entities()
+	combat.turn_budget.reset(owner, combat.player_entities)
+	combat.hud.update_hud(owner, combat.tracker)
+	GameManager.test_mode = false
+	var die_rolls := {"d20": 0, "d6_single": 0, "d8_single": 0, "d8_damage": 0}
+	var roll_receipts: Array[Dictionary] = []
+	var count_die_rolls := func(payload: Dictionary) -> void:
+		if int(payload.get("sides", 0)) == 20 and str(payload.get("type", "")) == "single": die_rolls["d20"] += 1
+		if int(payload.get("sides", 0)) == 6 and str(payload.get("type", "")) == "single": die_rolls["d6_single"] += 1; roll_receipts.append(payload.duplicate(true))
+		if int(payload.get("sides", 0)) == 8 and str(payload.get("type", "")) == "single": die_rolls["d8_single"] += 1; roll_receipts.append(payload.duplicate(true))
+		if int(payload.get("sides", 0)) == 8 and str(payload.get("type", "")) == "multiple": die_rolls["d8_damage"] += int(payload.get("count", 0))
+	Dice.dice_rolled.connect(count_die_rolls)
+	var save_pool_before := int(ResourcePoolRules.availability(owner, neutral_source).get("current", -1))
+	var slots_before := int(owner.spell_slots.get("1", 0))
+	_assert(await _start_fixture_spell_from_picker(combat, "sandbox:failed_save_bonus_area"), "Normal spell picker starts the neutral DEX-save spell")
+	FighterChecks._seed_die(20, 8)
+	combat.call_deferred("_on_hex_clicked", Vector2i.ZERO)
+	var dex_popup: PopupMenu = null
+	for _frame in 240:
+		await get_tree().process_frame
+		for child in combat.hud.get_children():
+			if child is PopupMenu and child.visible and str(child.title).contains("Failed DEX save"):
+				dex_popup = child
+				break
+		if dex_popup != null: break
+	var dex_record := _active_save_bonus_record_for_test()
+	var dex_test: Dictionary = dex_record.get("save_test", {})
+	var dex_option_index := -1
+	for option_index in dex_record.get("options", []).size():
+		if str(dex_record["options"][option_index].get("source_instance_id", "")) == neutral_source: dex_option_index = option_index
+	var save_query_count := int(die_rolls["d6_single"])
+	SpellDamageRolls.failed_save_choice_options(owner, "DEX")
+	_assert(dex_popup != null and dex_option_index >= 0 and int(dex_test.get("natural_roll", 0)) == 8 and int(dex_test.get("modifier", 0)) == 0 and int(dex_test.get("dc", 0)) == 14 and int(dex_test.get("total", 0)) == 8 and int(die_rolls["d20"]) == 1 and int(die_rolls["d6_single"]) == save_query_count, "Real DEX chooser preserves natural d20/modifier/DC and option queries do not roll the d6 (test=%s rolls=%s)" % [str(dex_test), str(die_rolls)])
+	FighterChecks._seed_die(6, 6)
+	var owner_hp_before_save := owner.current_hp
+	if dex_popup != null and dex_option_index >= 0: dex_popup.id_pressed.emit(dex_option_index + 1)
+	for _frame in 240:
+		if combat.pending_action_type.is_empty() and not combat.resolving_player_action: break
+		await get_tree().process_frame
+	_assert(int(die_rolls["d20"]) == 1 and int(die_rolls["d6_single"]) == save_query_count + 1 and owner.current_hp == owner_hp_before_save - 2 and int(ResourcePoolRules.availability(owner, neutral_source).get("current", -1)) == save_pool_before - 1 and int(owner.spell_slots["1"]) == slots_before - 1, "Real accepted d6 converts the captured DEX save, rolls once, charges its exact source and applies half damage (rolls=%s hp=%d/%d pool=%d/%d slot=%d/%d)" % [str(die_rolls), owner.current_hp, owner_hp_before_save, int(ResourcePoolRules.availability(owner, neutral_source).get("current", -1)), save_pool_before, int(owner.spell_slots["1"]), slots_before])
+	var old_save_payload := {"save_bonus_request": {"request_id": str(dex_record.get("request_id", ""))}}
+	var old_source_current := int(ResourcePoolRules.availability(owner, renamed_source).get("current", -1))
+	# The renamed CON d8 is accepted on an actual still-failing roll: conditional
+	# payment remains zero. A stale old DEX answer cannot touch this live request.
+	combat.turn_budget.reset(owner, combat.player_entities)
+	combat.hud.update_hud(owner, combat.tracker)
+	_assert(await _start_fixture_spell_from_picker(combat, "sandbox:failed_save_bonus_con_area"), "Normal spell picker starts the renamed CON-save spell")
+	FighterChecks._seed_die(20, 1)
+	var d8_count_before := int(die_rolls["d8_single"])
+	combat.call_deferred("_on_hex_clicked", Vector2i.ZERO)
+	var con_popup: PopupMenu = null
+	for _frame in 240:
+		await get_tree().process_frame
+		for child in combat.hud.get_children():
+			if child is PopupMenu and child.visible and str(child.title).contains("Failed CON save"):
+				con_popup = child
+				break
+		if con_popup != null: break
+	var con_record := _active_save_bonus_record_for_test()
+	var con_test: Dictionary = con_record.get("save_test", {})
+	var con_option_index := -1
+	for option_index in con_record.get("options", []).size():
+		if str(con_record["options"][option_index].get("source_instance_id", "")) == renamed_source: con_option_index = option_index
+	var current_d8_definition: Dictionary = owner.features.filter(func(feature): return str(feature.get("source_instance_id", "")) == renamed_source)[0]
+	var d8_effect: Dictionary = current_d8_definition["passive_effects"][0]
+	var original_d8_size := int(d8_effect.get("die_size", 0))
+	var stale_before_rolls := int(die_rolls["d8_single"])
+	var renamed_before_stale_choice := int(ResourcePoolRules.availability(owner, renamed_source).get("current", -1))
+	d8_effect["die_size"] = 6
+	var stale_save_popup_was_visible := con_popup != null and con_popup.visible
+	var old_save_refusal := SpellDamageRolls.settle_failed_save_numeric_bonus(owner, owner, old_save_payload, neutral_source)
+	var live_after_old_save := _active_save_bonus_record_for_test()
+	var old_save_refused_without_touching_live := bool(old_save_refusal.get("refused", false)) and str(live_after_old_save.get("request_id", "")) == str(con_record.get("request_id", "")) and not bool(con_record.get("settled", true))
+	var changed_die_answer_refused := false
+	if con_popup != null and con_option_index >= 0:
+		con_popup.id_pressed.emit(con_option_index + 1)
+	for _frame in 240:
+		if bool(con_record.get("settled", false)): break
+		await get_tree().process_frame
+	d8_effect["die_size"] = original_d8_size
+	var changed_die_live := _active_save_bonus_record_for_test()
+	changed_die_answer_refused = bool(con_record.get("settled", false)) and changed_die_live.is_empty()
+	_assert(stale_save_popup_was_visible and con_option_index >= 0 and int(con_test.get("natural_roll", 0)) == 1 and int(con_test.get("modifier", -1)) == 0 and int(con_test.get("dc", 0)) == 14 and changed_die_answer_refused and int(die_rolls["d8_single"]) == stale_before_rolls and int(ResourcePoolRules.availability(owner, renamed_source).get("current", -1)) == renamed_before_stale_choice, "Changed die metadata on the real selected menu refuses payment/roll then settles the captured result as decline (popup=%s index=%d test=%s settled=%s active=%s rolls=%s pool=%d/%d)" % [str(stale_save_popup_was_visible), con_option_index, str(con_test), str(con_record.get("settled", false)), str(changed_die_live.get("request_id", "")), str(die_rolls), int(ResourcePoolRules.availability(owner, renamed_source).get("current", -1)), renamed_before_stale_choice])
+	_assert(old_save_refused_without_touching_live, "An old save answer cannot mutate a newer live d8 choice")
+	# A separate live request proves converted-success policy still works after
+	# the stale-menu decline has released the first cast's canonical registry slot.
+	combat.turn_budget.reset(owner, combat.player_entities)
+	combat.hud.update_hud(owner, combat.tracker)
+	_assert(await _start_fixture_spell_from_picker(combat, "sandbox:failed_save_bonus_con_area"), "The renamed save spell remains selectable after stale-choice recovery")
+	FighterChecks._seed_die(20, 1)
+	combat.call_deferred("_on_hex_clicked", Vector2i.ZERO)
+	con_popup = null
+	for _frame in 240:
+		await get_tree().process_frame
+		for child in combat.hud.get_children():
+			if child is PopupMenu and child.visible and str(child.title).contains("Failed CON save"): con_popup = child; break
+		if con_popup != null: break
+	con_record = _active_save_bonus_record_for_test()
+	con_option_index = -1
+	for option_index in con_record.get("options", []).size():
+		if str(con_record["options"][option_index].get("source_instance_id", "")) == renamed_source: con_option_index = option_index
+	var owner_hp_before_con := owner.current_hp
+	if con_popup != null and con_option_index >= 0:
+		FighterChecks._seed_die(8, 1)
+		con_popup.id_pressed.emit(con_option_index + 1)
+	for _frame in 240:
+		if combat.pending_action_type.is_empty() and not combat.resolving_player_action: break
+		await get_tree().process_frame
+	_assert(int(die_rolls["d20"]) == 3 and int(die_rolls["d8_single"]) == d8_count_before + 1 and owner.current_hp == owner_hp_before_con - 4 and int(ResourcePoolRules.availability(owner, renamed_source).get("current", -1)) == old_source_current, "Real renamed d8 leaves the failed CON save failed, rolls once and pays zero under converted-success")
+	# A second authored CON roll converts and charges the conditional source.
+	combat.turn_budget.reset(owner, combat.player_entities)
+	combat.hud.update_hud(owner, combat.tracker)
+	_assert(await _start_fixture_spell_from_picker(combat, "sandbox:failed_save_bonus_con_area"), "The renamed spell remains selectable for its converted-success case")
+	FighterChecks._seed_die(20, 8)
+	combat.call_deferred("_on_hex_clicked", Vector2i.ZERO)
+	con_popup = null
+	for _frame in 240:
+		await get_tree().process_frame
+		for child in combat.hud.get_children():
+			if child is PopupMenu and child.visible and str(child.title).contains("Failed CON save"): con_popup = child; break
+		if con_popup != null: break
+	con_record = _active_save_bonus_record_for_test()
+	con_option_index = -1
+	for option_index in con_record.get("options", []).size():
+		if str(con_record["options"][option_index].get("source_instance_id", "")) == renamed_source: con_option_index = option_index
+	var owner_hp_before_con_success := owner.current_hp
+	var renamed_before_con_success := int(ResourcePoolRules.availability(owner, renamed_source).get("current", -1))
+	if con_popup != null and con_option_index >= 0:
+		FighterChecks._seed_die(8, 8)
+		con_popup.id_pressed.emit(con_option_index + 1)
+	for _frame in 240:
+		if combat.pending_action_type.is_empty() and not combat.resolving_player_action: break
+		await get_tree().process_frame
+	_assert(owner.current_hp == owner_hp_before_con_success - 2 and int(ResourcePoolRules.availability(owner, renamed_source).get("current", -1)) == renamed_before_con_success - 2 and int(die_rolls["d8_single"]) == d8_count_before + 2, "The same conditional d8 converts the CON save, reduces damage and pays only on success (hp=%d/%d pool=%d/%d rolls=%s)" % [owner.current_hp, owner_hp_before_con_success, int(ResourcePoolRules.availability(owner, renamed_source).get("current", -1)), renamed_before_con_success, str(die_rolls)])
+	# Shared spell attack, including an ordered later damage choice. Exact original
+	# AC and d20 are captured before the die; the accepted d8 must survive resume.
+	var monster: Dictionary = combat.monster_entities[0]
+	monster["is_alive"] = true
+	monster["current_hp"] = 200
+	monster["max_hp"] = 200
+	monster["armor_class"] = 15
+	monster["hex_position"] = Vector2i(1, 0)
+	combat._update_grid_entities()
+	combat.turn_budget.reset(owner, combat.player_entities)
+	combat.hud.update_hud(owner, combat.tracker)
+	var attack_neutral_before := int(ResourcePoolRules.availability(owner, neutral_source).get("current", -1))
+	var attack_slots_before := int(owner.spell_slots.get("1", 0))
+	_assert(await _start_fixture_spell_from_picker(combat, "sandbox:owned_spell_attack_neutral"), "Normal picker starts the neutral shared-spell attack")
+	var spell_d20_before := int(die_rolls["d20"])
+	FighterChecks._seed_die(20, 8)
+	combat.call_deferred("_on_hex_clicked", Vector2i(1, 0))
+	var spell_popup: PopupMenu = null
+	for _frame in 240:
+		await get_tree().process_frame
+		spell_popup = _visible_shared_spell_attack_bonus_popup(combat.hud)
+		if spell_popup != null: break
+	var spell_record := _pending_shared_spell_attack_bonus_record_for_test(owner)
+	var spell_roll: Dictionary = spell_record.get("context", {}).get("attack_result", {})
+	var spell_pool_before_roll := int(die_rolls["d6_single"])
+	var spell_option_index := _weapon_bonus_popup_index(spell_record, neutral_source)
+	var saved_spell_request_id := str(spell_record.get("request_id", ""))
+	_assert(spell_popup != null and int(spell_roll.get("natural", 0)) == 8 and int(spell_record.get("context", {}).get("original_target_ac", 0)) == 15 and int(die_rolls["d20"]) == spell_d20_before + 1 and int(die_rolls["d6_single"]) == spell_pool_before_roll, "Real spell-attack chooser captures its natural roll/AC and menu queries do not roll (attack=%s rolls=%s)" % [str(spell_roll), str(die_rolls)])
+	if spell_popup != null and spell_option_index >= 0: spell_popup.id_pressed.emit(spell_popup.get_item_id(spell_option_index))
+	for _frame in 240:
+		if combat.pending_action_type.is_empty() and not combat.resolving_player_action: break
+		await get_tree().process_frame
+	_assert(int(monster["current_hp"]) < 200 and int(ResourcePoolRules.availability(owner, neutral_source).get("current", -1)) == attack_neutral_before - 1 and int(owner.spell_slots["1"]) == attack_slots_before - 1 and int(die_rolls["d20"]) == spell_d20_before + 1 and int(die_rolls["d6_single"]) == spell_pool_before_roll + 1, "Real shared-spell d6 converts the miss, deals damage, and pays one exact pool and one spell slot (hp=%d source=%d/%d slots=%d/%d rolls=%s)" % [int(monster["current_hp"]), int(ResourcePoolRules.availability(owner, neutral_source).get("current", -1)), attack_neutral_before, int(owner.spell_slots["1"]), attack_slots_before, str(die_rolls)])
+	var old_spell_answer := {"weapon_attack_bonus_request": {"request_id": saved_spell_request_id}}
+	# The wrong-domain Stroke check above is followed by a real Decline, which
+	# proves the shared-spell chooser remains usable after refusal.
+	var stale_attack_slots_before := int(owner.spell_slots.get("1", 0))
+	var stale_attack_d8_before := int(die_rolls["d8_single"])
+	monster["current_hp"] = 200
+	monster["armor_class"] = 15
+	monster["conditions"] = {}
+	combat.turn_budget.reset(owner, combat.player_entities)
+	combat.hud.update_hud(owner, combat.tracker)
+	var renamed_pool_for_stale: Dictionary = owner.numeric_resource_pools.get(renamed_source, {}).duplicate(true)
+	renamed_pool_for_stale["current"] = int(renamed_pool_for_stale.get("capacity", 3))
+	owner.numeric_resource_pools[renamed_source] = renamed_pool_for_stale
+	var stale_attack_pool_at_offer := int(ResourcePoolRules.availability(owner, renamed_source).get("current", -1))
+	_assert(await _start_fixture_spell_from_picker(combat, "sandbox:owned_spell_attack_renamed"), "Real picker starts renamed attack for stale-source selection")
+	FighterChecks._seed_die(20, 5)
+	combat.call_deferred("_on_hex_clicked", Vector2i(1, 0))
+	var stale_spell_popup: PopupMenu = null
+	for _frame in 240:
+		await get_tree().process_frame
+		stale_spell_popup = _visible_shared_spell_attack_bonus_popup(combat.hud)
+		if stale_spell_popup != null: break
+	var stale_spell_record := _pending_shared_spell_attack_bonus_record_for_test(owner)
+	var stale_spell_id := str(stale_spell_record.get("request_id", ""))
+	var stale_spell_source_index := _weapon_bonus_popup_index(stale_spell_record, renamed_source)
+	var stale_spell_visible := stale_spell_popup != null and stale_spell_popup.visible
+	owner.features.append({"id": "rogue_stroke_of_luck", "name": "Fixture Stroke of Luck", "type": "passive"})
+	owner.feature_uses["rogue_stroke_of_luck"] = 1
+	var stroke_pool_before_wrong_domain: int = int(ResourcePoolRules.availability(owner, renamed_source).get("current", -1))
+	var stroke_die_rolls_before_wrong_domain: int = int(die_rolls["d8_single"])
+	var rejected_weapon_stroke: Dictionary = SpellDamageRolls.settle_weapon_attack_bonus_with_stroke(owner, monster, {"weapon_attack_bonus_request": {"request_id": stale_spell_id}}, true)
+	var still_live_spell_record: Dictionary = _pending_shared_spell_attack_bonus_record_for_test(owner)
+	var wrong_domain_stroke_safe: bool = bool(rejected_weapon_stroke.get("refused", false)) and int(owner.feature_uses.get("rogue_stroke_of_luck", 0)) == 1 and int(die_rolls["d8_single"]) == stroke_die_rolls_before_wrong_domain and int(ResourcePoolRules.availability(owner, renamed_source).get("current", -1)) == stroke_pool_before_wrong_domain and str(still_live_spell_record.get("request_id", "")) == stale_spell_id and not bool(still_live_spell_record.get("settled", true))
+	_assert(wrong_domain_stroke_safe, "Weapon-only Stroke settlement refuses a native-eligible actor's shared-spell request before spending or consuming it; the real spell chooser stays answerable (result=%s domain=%s use=%d/%d d8=%d/%d source=%d/%d live=%s/%s)" % [str(rejected_weapon_stroke), str(stale_spell_record.get("attack_domain", "")), int(owner.feature_uses.get("rogue_stroke_of_luck", 0)), 1, int(die_rolls["d8_single"]), stroke_die_rolls_before_wrong_domain, int(ResourcePoolRules.availability(owner, renamed_source).get("current", -1)), stroke_pool_before_wrong_domain, str(still_live_spell_record.get("request_id", "")), str(still_live_spell_record.get("settled", true))])
+	owner.features.erase(owner.features.back())
+	owner.feature_uses.erase("rogue_stroke_of_luck")
+	if stale_spell_popup != null: stale_spell_popup.id_pressed.emit(stale_spell_popup.get_item_id(0))
+	for _frame in 240:
+		if bool(stale_spell_record.get("settled", false)): break
+		await get_tree().process_frame
+	var stale_spell_after := _pending_shared_spell_attack_bonus_record_for_test(owner)
+	_assert(stale_spell_visible and stale_spell_source_index >= 0 and wrong_domain_stroke_safe and bool(stale_spell_record.get("settled", false)) and stale_spell_after.is_empty() and int(die_rolls["d8_single"]) == stale_attack_d8_before and int(ResourcePoolRules.availability(owner, renamed_source).get("current", -1)) == stale_attack_pool_at_offer and int(owner.spell_slots.get("1", 0)) == stale_attack_slots_before - 1 and CombatAction.has_condition(monster, "poisoned") and not CombatAction.has_condition(monster, "restrained"), "After wrong-domain Stroke refusal, Decline settles the real ordered spell miss/rider once and spends no source")
+	# Remove an offered source while its actual menu is open, then select that
+	# exact item. It must fall back to the captured miss without half-settlement.
+	var empty_spell_slots_before: int = int(owner.spell_slots.get("1", 0))
+	var empty_attack_d8_before: int = int(die_rolls["d8_single"])
+	monster["current_hp"] = 200
+	monster["armor_class"] = 15
+	monster["conditions"] = {}
+	combat.turn_budget.reset(owner, combat.player_entities)
+	combat.hud.update_hud(owner, combat.tracker)
+	var renamed_pool_for_empty_answer: Dictionary = owner.numeric_resource_pools.get(renamed_source, {}).duplicate(true)
+	renamed_pool_for_empty_answer["current"] = int(renamed_pool_for_empty_answer.get("capacity", 3))
+	owner.numeric_resource_pools[renamed_source] = renamed_pool_for_empty_answer
+	_assert(await _start_fixture_spell_from_picker(combat, "sandbox:owned_spell_attack_renamed"), "A follow-up picker cast can open the renamed source again after the prior decline")
+	FighterChecks._seed_die(20, 5)
+	combat.call_deferred("_on_hex_clicked", Vector2i(1, 0))
+	var empty_spell_popup: PopupMenu = null
+	for _frame in 240:
+		await get_tree().process_frame
+		empty_spell_popup = _visible_shared_spell_attack_bonus_popup(combat.hud)
+		if empty_spell_popup != null: break
+	var empty_spell_record: Dictionary = _pending_shared_spell_attack_bonus_record_for_test(owner)
+	var empty_spell_source_index: int = _weapon_bonus_popup_index(empty_spell_record, renamed_source)
+	var empty_spell_request_id: String = str(empty_spell_record.get("request_id", ""))
+	var empty_spell_popup_was_visible: bool = empty_spell_popup != null and empty_spell_popup.visible
+	var empty_source_pool_at_offer: int = int(ResourcePoolRules.availability(owner, renamed_source).get("current", -1))
+	var empty_spell_hp_at_offer: int = int(monster.get("current_hp", 0))
+	var removed_source_feature_index := -1
+	for feature_index in owner.features.size():
+		if str(owner.features[feature_index].get("source_instance_id", "")) == renamed_source:
+			removed_source_feature_index = feature_index
+			break
+	var removed_source_feature: Dictionary = owner.features[removed_source_feature_index].duplicate(true) if removed_source_feature_index >= 0 else {}
+	if removed_source_feature_index >= 0: owner.features.remove_at(removed_source_feature_index)
+	if empty_spell_popup != null and empty_spell_source_index >= 0: empty_spell_popup.id_pressed.emit(empty_spell_popup.get_item_id(empty_spell_source_index))
+	for _frame in 240:
+		if bool(empty_spell_record.get("settled", false)): break
+		await get_tree().process_frame
+	if removed_source_feature_index >= 0: owner.features.insert(removed_source_feature_index, removed_source_feature)
+	var empty_spell_after: Dictionary = _pending_shared_spell_attack_bonus_record_for_test(owner)
+	var restored_source_feature: bool = removed_source_feature_index >= 0 and owner.features.any(func(feature): return str(feature.get("source_instance_id", "")) == renamed_source)
+	_assert(empty_spell_popup_was_visible and empty_spell_source_index >= 0 and empty_source_pool_at_offer > 0 and not removed_source_feature.is_empty(), "Real visible renamed spell chooser offered the owned d8 before its exact feature was removed (request=%s popup_was_visible=%s index=%d pool=%d)" % [empty_spell_request_id, str(empty_spell_popup_was_visible), empty_spell_source_index, empty_source_pool_at_offer])
+	_assert(bool(empty_spell_record.get("settled", false)) and empty_spell_after.is_empty() and restored_source_feature and int(die_rolls["d8_single"]) == empty_attack_d8_before and int(ResourcePoolRules.availability(owner, renamed_source).get("current", -1)) == empty_source_pool_at_offer and int(monster.get("current_hp", 0)) == empty_spell_hp_at_offer and int(owner.spell_slots.get("1", 0)) == empty_spell_slots_before - 1 and CombatAction.has_condition(monster, "poisoned") and not CombatAction.has_condition(monster, "restrained"), "Selecting the old d8 after exact source removal rolls/pays nothing and finishes only the original miss/rider (settled=%s active=%s restored=%s d8=%d/%d pool=%d/%d hp=%d/%d slots=%d/%d poisoned=%s restrained=%s)" % [str(empty_spell_record.get("settled", false)), str(empty_spell_after), str(restored_source_feature), int(die_rolls["d8_single"]), empty_attack_d8_before, int(ResourcePoolRules.availability(owner, renamed_source).get("current", -1)), empty_source_pool_at_offer, int(monster.get("current_hp", 0)), empty_spell_hp_at_offer, int(owner.spell_slots.get("1", 0)), empty_spell_slots_before, str(CombatAction.has_condition(monster, "poisoned")), str(CombatAction.has_condition(monster, "restrained"))])
+	# Ordered attack yields a fresh source request and a real damage popup.
+	owner.features.append({"id": "sorcerer_metamagic", "name": "Fixture Empowered Spell", "type": "passive"})
+	owner.sorcerer_metamagic_choices.append("empowered_spell")
+	owner.feature_uses["sorcery_points"] = 3
+	var renamed_owned_pool: Dictionary = owner.numeric_resource_pools.get(renamed_source, {})
+	renamed_owned_pool["current"] = int(renamed_owned_pool.get("capacity", 3))
+	owner.numeric_resource_pools[renamed_source] = renamed_owned_pool
+	monster["current_hp"] = 200
+	monster["armor_class"] = 12
+	monster["conditions"] = {}
+	combat.turn_budget.reset(owner, combat.player_entities)
+	combat.hud.update_hud(owner, combat.tracker)
+	var ordered_attack_pool_before := int(ResourcePoolRules.availability(owner, renamed_source).get("current", -1))
+	var ordered_slots_before := int(owner.spell_slots.get("1", 0))
+	var ordered_damage_dice_before: int = int(die_rolls["d8_damage"])
+	_assert(await _start_fixture_spell_from_picker(combat, "sandbox:owned_spell_attack_renamed"), "Normal picker starts the renamed ordered spell attack")
+	FighterChecks._seed_die(20, 5)
+	combat.call_deferred("_on_hex_clicked", Vector2i(1, 0))
+	var ordered_popup: PopupMenu = null
+	var empowered_seen := false
+	for _frame in 300:
+		await get_tree().process_frame
+		for child in combat.hud.get_children():
+			if child is ConfirmationDialog and child.visible and str(child.title).contains("Empowered Spell"):
+				empowered_seen = true
+				child.confirmed.emit()
+				break
+		ordered_popup = _visible_shared_spell_attack_bonus_popup(combat.hud)
+		if ordered_popup != null: break
+	var ordered_record := _pending_shared_spell_attack_bonus_record_for_test(owner)
+	var ordered_request_id := str(ordered_record.get("request_id", ""))
+	var ordered_cont: Dictionary = ordered_record.get("ordered_continuation", {})
+	var ordered_prior_results: Array = ordered_cont.get("step_results", [])
+	var prior_step_count: int = ordered_prior_results.size()
+	var ordered_die_count_before := int(die_rolls["d8_single"])
+	var ordered_receipt_count_before := roll_receipts.filter(func(receipt): return int(receipt.get("sides", 0)) == 8).size()
+	var ordered_d20_before := int(die_rolls["d20"])
+	var ordered_hp_before := int(monster["current_hp"])
+	var old_replay := SpellDamageRolls.settle_weapon_attack_bonus(owner, monster, old_spell_answer, neutral_source)
+	var live_ordered := _pending_shared_spell_attack_bonus_record_for_test(owner)
+	_assert(empowered_seen and ordered_popup != null and prior_step_count == 1 and ordered_hp_before == 200 and bool(old_replay.get("refused", false)) and str(live_ordered.get("request_id", "")) == ordered_request_id and not bool(ordered_record.get("settled", true)), "Old spell completion cannot affect the newer ordered die chooser or its earlier settled step")
+	var ordered_option_index := _weapon_bonus_popup_index(ordered_record, renamed_source)
+	if ordered_popup != null and ordered_option_index >= 0: ordered_popup.id_pressed.emit(ordered_popup.get_item_id(ordered_option_index))
+	var damage_popup: PopupMenu = null
+	for _frame in 240:
+		await get_tree().process_frame
+		for child in combat.hud.get_children():
+			if child is PopupMenu and child.visible and str(child.title).begins_with("Empowered Spell: choose up to"):
+				damage_popup = child
+				break
+		if damage_popup != null: break
+	var d8_receipts_at_damage_choice := roll_receipts.filter(func(receipt): return int(receipt.get("sides", 0)) == 8)
+	var accepted_ordered_source_receipt: Dictionary = d8_receipts_at_damage_choice[ordered_receipt_count_before] if ordered_receipt_count_before < d8_receipts_at_damage_choice.size() else {}
+	var ordered_damage_record: Dictionary = {}
+	for pending_value in SpellDamageRolls._pending_requests.values():
+		var damage_target: Variant = pending_value.get("target")
+		if str(pending_value.get("kind", "")) == "damage" and damage_target is Dictionary and str(damage_target.get("id", "")) == str(monster.get("id", "")) and not bool(pending_value.get("settled", false)):
+			ordered_damage_record = pending_value
+			break
+	var damage_result_base: Dictionary = ordered_damage_record.get("result_base", {})
+	var ordered_damage_request_id := str(ordered_damage_record.get("request_id", ""))
+	var source_receipt_on_damage_request: Dictionary = damage_result_base.get("post_roll_bonus_die", {})
+	var pending_ordered_health := int(monster["current_hp"])
+	var ordered_not_paid_twice := int(ordered_attack_pool_before - ResourcePoolRules.availability(owner, renamed_source).get("current", -1)) == 2
+	_assert(damage_popup != null and pending_ordered_health == 200 and ordered_not_paid_twice and int(die_rolls["d8_single"]) == ordered_die_count_before + 1 and int(die_rolls["d20"]) == ordered_d20_before, "Real ordered chooser rolls one d8, pays conditionally once, and suspends before damage/rider")
+	if damage_popup != null and damage_popup.item_count > 0: damage_popup.id_pressed.emit(damage_popup.get_item_id(0))
+	for _frame in 240:
+		if combat.pending_action_type.is_empty() and not combat.resolving_player_action: break
+		await get_tree().process_frame
+	_assert(int(monster["current_hp"]) < pending_ordered_health and CombatAction.has_condition(monster, "restrained") and not CombatAction.has_condition(monster, "poisoned") and prior_step_count == 1, "After the actual damage choice, ordered hit damage/rider apply and prior step is not replayed")
+	var accepted_d8_receipts := roll_receipts.filter(func(receipt): return int(receipt.get("sides", 0)) == 8)
+	var persisted_bonus_receipt: Dictionary = ordered_damage_record.get("result_base", {}).get("post_roll_bonus_die", {})
+	var base_receipt_matches: bool = int(persisted_bonus_receipt.get("sides", 0)) == 8 and persisted_bonus_receipt.get("rolls", []) == accepted_ordered_source_receipt.get("rolls", [])
+	var request_receipt_matches: bool = int(source_receipt_on_damage_request.get("sides", 0)) == 8 and source_receipt_on_damage_request.get("rolls", []) == accepted_ordered_source_receipt.get("rolls", [])
+	var accepted_receipt_survived: bool = base_receipt_matches and request_receipt_matches
+	var ordinary_damage_details: Dictionary = ordered_damage_record.get("details", {})
+	var ordinary_damage_die_seen: bool = int(die_rolls["d8_damage"]) >= ordered_damage_dice_before + 1
+	var ordinary_damage_terms: Array = ordinary_damage_details.get("dice_terms", [])
+	var ordinary_d8_term_found: bool = false
+	for damage_term_value in ordinary_damage_terms:
+		if damage_term_value is Dictionary and int(damage_term_value.get("count", 0)) == 1 and int(damage_term_value.get("sides", 0)) == 8 and not damage_term_value.get("results", []).is_empty():
+			ordinary_d8_term_found = true
+	ordinary_damage_die_seen = ordinary_damage_die_seen and ordinary_d8_term_found
+	var settled_damage_record: Dictionary = SpellDamageRolls._pending_requests.get(ordered_damage_request_id, {})
+	var damage_choice_released: bool = not ordered_damage_request_id.is_empty() and bool(settled_damage_record.get("settled", false))
+	_assert(accepted_receipt_survived and ordinary_damage_die_seen and damage_choice_released, "The accepted d8 source receipt survives the real damage choice, while ordinary d8 damage/reroll dice are counted separately (before=%s after=%s source=%s matches=%s/%s damage=%s ordinary_d8=%d released=%s counts=%s)" % [str(source_receipt_on_damage_request), str(persisted_bonus_receipt), str(accepted_ordered_source_receipt), str(request_receipt_matches), str(base_receipt_matches), str(ordinary_damage_details), int(die_rolls["d8_damage"]) - ordered_damage_dice_before, str(damage_choice_released), str(die_rolls)])
+	_assert(int(owner.spell_slots["1"]) == ordered_slots_before - 1 and int(owner.spell_slots["1"]) == attack_slots_before - 4, "Flat, wrong-domain decline, depleted-source fallback and ordered attack casts each charge one slot exactly once")
+	Dice.dice_rolled.disconnect(count_die_rolls)
+	GameManager.test_mode = true
+	_teardown_scene(combat)
+	DataLoader.spells = prior_spells
+	DataLoader.classes = prior_classes
+	# Normal weapon Attack and Extra Attack use the same actual chooser, with one
+	# action and one captured d20 per swing. The high AC leaves both bonuses short.
+	_setup_world()
+	DataLoader._load_content_type("res://data/fixtures/failed_save_bonus/classes/", "class")
+	neutral_class = DataLoader.classes.get("fixture:post_roll_die_neutral_class", {})
+	renamed_class = DataLoader.classes.get("fixture:post_roll_die_renamed_class", {})
+	# Reuse the already production-loaded immutable fixture definitions captured
+	# before scene teardown; the second DataLoader pass is not part of this probe.
+	var fighter := _fresh_char("Post-roll Die Fighter", "human", "fighter", {"STR": 16, "DEX": 12, "CON": 14, "INT": 10, "WIS": 10, "CHA": 8})
+	fighter.character_id = "fixture:post_roll_die_weapon_owner"
+	var neutral_outcome_source := "fixture:post_roll_outcome:neutral"
+	var renamed_outcome_source := "fixture:post_roll_outcome:renamed"
+	for pair in [[neutral_outcome_feature, neutral_outcome_source], [renamed_outcome_feature, renamed_outcome_source]]:
+		var owned_outcome: Dictionary = pair[0].duplicate(true)
+		owned_outcome["source_instance_id"] = str(pair[1])
+		fighter.features.append(owned_outcome)
+		var outcome_pool := ResourcePoolRules.acquire(fighter, pair[0], str(pair[1]))
+		_assert(bool(outcome_pool.get("success", false)), "Neutral and renamed explicit outcome features acquire an exact production pool")
+	while fighter.level < 5: fighter.level_up()
+	fighter.inventory.equip(Inventory.Slot.SHIELD, "shield", true)
+	fighter.inventory.equip(Inventory.Slot.WEAPON, "longsword", true)
+	for pair in [[neutral_feature, "fixture:post_roll_die:weapon:d6"], [renamed_feature, "fixture:post_roll_die:weapon:d8"]]:
+		var weapon_feature: Dictionary = pair[0].duplicate(true)
+		weapon_feature["source_instance_id"] = str(pair[1])
+		fighter.features.append(weapon_feature)
+		var weapon_pool := ResourcePoolRules.acquire(fighter, pair[0], str(pair[1]))
+		_assert(bool(weapon_pool.get("success", false)), "Actual weapon owner acquires each exact authored die source (%s)" % str(weapon_pool))
+	PlayerManager.reset()
+	PartyManager.reset()
+	PlayerManager.add_player("Weapon Die Owner")
+	PlayerManager.add_player("Weapon Die Ally")
+	PlayerManager.set_player_character(0, fighter)
+	PartyManager.register_player_character(0, fighter)
+	PartyManager.register_player_character(1, PlayerManager.get_player(1).get("character"))
+	GameManager.current_state = GameManager.GameState.COMBAT
+	var original_fighter_dex := fighter.ability_scores.get_score("DEX")
+	fighter.ability_scores.set_score("DEX", 54)
+	GameManager.transition_context = {"terrain": "plains", "monster_ids": ["goblin"]}
+	var weapon_combat: Node = await _spawn_scene("res://scenes/combat.tscn", 0.6)
+	fighter.ability_scores.set_score("DEX", original_fighter_dex)
+	weapon_combat.current_player_idx = 0
+	weapon_combat.active_character = fighter
+	weapon_combat.active_combatant = {"is_player": true, "entity": fighter}
+	weapon_combat.player_entities[0]["hex_position"] = Vector2i.ZERO
+	if weapon_combat.player_entities.size() > 1:
+		weapon_combat.player_entities[1]["hex_position"] = Vector2i(6, 0)
+	for enemy_index in weapon_combat.monster_entities.size():
+		var enemy: Dictionary = weapon_combat.monster_entities[enemy_index]
+		if enemy_index == 0:
+			enemy["hex_position"] = Vector2i(1, 0)
+			enemy["armor_class"] = 100
+			enemy["current_hp"] = 1000
+			enemy["max_hp"] = 1000
+		else:
+			enemy["is_alive"] = false
+			enemy["current_hp"] = 0
+	weapon_combat._update_grid_entities()
+	weapon_combat.turn_budget.reset(fighter, weapon_combat.player_entities)
+	weapon_combat.hud.update_hud(fighter, weapon_combat.tracker)
+	GameManager.test_mode = false
+	var weapon_target: Dictionary = weapon_combat.monster_entities[0]
+	var weapon_roll_counts := {"d20": 0, "d6": 0, "d8": 0}
+	var count_weapon_rolls := func(payload: Dictionary) -> void:
+		if str(payload.get("type", "")) != "single": return
+		if int(payload.get("sides", 0)) == 20: weapon_roll_counts["d20"] += 1
+		if int(payload.get("sides", 0)) == 6: weapon_roll_counts["d6"] += 1
+		if int(payload.get("sides", 0)) == 8: weapon_roll_counts["d8"] += 1
+	Dice.dice_rolled.connect(count_weapon_rolls)
+	var weapon_pool_neutral_before := int(ResourcePoolRules.availability(fighter, "fixture:post_roll_die:weapon:d6").get("current", -1))
+	var weapon_pool_renamed_before := int(ResourcePoolRules.availability(fighter, "fixture:post_roll_die:weapon:d8").get("current", -1))
+	weapon_combat.hud.btn_attack.pressed.emit()
+	FighterChecks._seed_die(20, 5)
+	weapon_combat.call_deferred("_on_hex_clicked", Vector2i(1, 0))
+	var weapon_popup: PopupMenu = null
+	for _frame in 180:
+		await get_tree().process_frame
+		weapon_popup = _visible_weapon_attack_bonus_popup(weapon_combat.hud)
+		if weapon_popup != null: break
+	var first_weapon_record := _pending_weapon_attack_bonus_record_for_test(fighter)
+	var first_weapon_id := str(first_weapon_record.get("request_id", ""))
+	var first_weapon_source := "fixture:post_roll_die:weapon:d6"
+	var first_weapon_index := _weapon_bonus_popup_index(first_weapon_record, first_weapon_source)
+	var weapon_options_queried := SpellDamageRolls.attack_numeric_bonus_options(fighter, "weapon_attack")
+	_assert(weapon_popup != null and first_weapon_index >= 0 and weapon_options_queried.any(func(option): return str(option.get("source_instance_id", "")) == first_weapon_source and int(option.get("die_size", 0)) == 6) and int(weapon_roll_counts["d6"]) == 0, "The real normal Attack chooser offers d6 and option queries do not roll it")
+	# Change authored metadata after offer: acceptance refuses before cost or RNG.
+	var owned_weapon_neutral: Dictionary = fighter.features.filter(func(feature): return str(feature.get("source_instance_id", "")) == first_weapon_source)[0]
+	var owned_weapon_effects: Array = owned_weapon_neutral.get("passive_effects", [])
+	var weapon_die_effect_index := -1
+	for effect_index in owned_weapon_effects.size():
+		if str(owned_weapon_effects[effect_index].get("type", "")) == "weapon_attack_numeric_bonus": weapon_die_effect_index = effect_index
+	_assert(weapon_die_effect_index >= 0, "Weapon source includes its typed attack-die metadata")
+	if weapon_die_effect_index >= 0: owned_weapon_effects[weapon_die_effect_index]["die_size"] = 8
+	var changed_weapon_refusal := SpellDamageRolls.settle_weapon_attack_bonus(fighter, weapon_target, {"weapon_attack_bonus_request": {"request_id": first_weapon_id}}, first_weapon_source)
+	if weapon_die_effect_index >= 0: owned_weapon_effects[weapon_die_effect_index]["die_size"] = 6
+	_assert(bool(changed_weapon_refusal.get("refused", false)) and int(weapon_roll_counts["d6"]) == 0 and int(ResourcePoolRules.availability(fighter, first_weapon_source).get("current", -1)) == weapon_pool_neutral_before, "Changed weapon die metadata refuses before rolling or paying while the actual menu remains answerable")
+	if weapon_popup != null and first_weapon_index >= 0: weapon_popup.id_pressed.emit(weapon_popup.get_item_id(first_weapon_index))
+	var second_weapon_popup: PopupMenu = null
+	for _frame in 180:
+		await get_tree().process_frame
+		var candidate_popup := _visible_weapon_attack_bonus_popup(weapon_combat.hud)
+		var candidate_record := _pending_weapon_attack_bonus_record_for_test(fighter)
+		if bool(first_weapon_record.get("settled", false)) and candidate_popup != null and str(candidate_record.get("request_id", "")) != first_weapon_id:
+			second_weapon_popup = candidate_popup
+			break
+	var second_weapon_record := _pending_weapon_attack_bonus_record_for_test(fighter)
+	var second_weapon_source := "fixture:post_roll_die:weapon:d8"
+	var second_weapon_index := _weapon_bonus_popup_index(second_weapon_record, second_weapon_source)
+	var stale_weapon_replay := SpellDamageRolls.settle_weapon_attack_bonus(fighter, weapon_target, {"weapon_attack_bonus_request": {"request_id": first_weapon_id}}, second_weapon_source)
+	_assert(second_weapon_popup != null and second_weapon_index >= 0 and bool(stale_weapon_replay.get("refused", false)) and not bool(second_weapon_record.get("settled", true)) and int(ResourcePoolRules.availability(fighter, second_weapon_source).get("current", -1)) == weapon_pool_renamed_before, "Old normal-Attack completion leaves the Extra Attack d8 source/request unchanged")
+	if second_weapon_popup != null and second_weapon_index >= 0: second_weapon_popup.id_pressed.emit(second_weapon_popup.get_item_id(second_weapon_index))
+	for _frame in 240:
+		if not weapon_combat.resolving_player_action: break
+		await get_tree().process_frame
+	_assert(int(weapon_roll_counts["d20"]) == 2 and int(weapon_roll_counts["d6"]) == 1 and int(weapon_roll_counts["d8"]) == 1 and int(ResourcePoolRules.availability(fighter, first_weapon_source).get("current", -1)) == weapon_pool_neutral_before - 1 and int(ResourcePoolRules.availability(fighter, second_weapon_source).get("current", -1)) == weapon_pool_renamed_before and not weapon_combat.turn_budget.action_available, "Normal Attack and Extra Attack settle one d20/bonus die each, with pay-on-choice/final-failure cost behavior under one action")
+	# Reuse the real normal-Attack chooser for a deterministic hit under each
+	# payment policy. STR 16/PB 3 plus natural 5 gives 11, so either die's minimum
+	# result reaches the captured AC 12 without relying on a favorable die roll.
+	fighter.extra_attacks = 0
+	weapon_target["armor_class"] = 12
+	for source_case in [[first_weapon_source, 6, 1], [second_weapon_source, 8, 2]]:
+		var hit_source_id: String = str(source_case[0])
+		var hit_source_sides: int = int(source_case[1])
+		var hit_source_cost: int = int(source_case[2])
+		weapon_target["current_hp"] = 1000
+		weapon_target["conditions"] = {}
+		weapon_combat.turn_budget.reset(fighter, weapon_combat.player_entities)
+		weapon_combat.hud.update_hud(fighter, weapon_combat.tracker)
+		var hit_source_before: int = int(ResourcePoolRules.availability(fighter, hit_source_id).get("current", -1))
+		var hit_d20_before: int = int(weapon_roll_counts["d20"])
+		var hit_source_die_before: int = int(weapon_roll_counts["d6"] if hit_source_sides == 6 else weapon_roll_counts["d8"])
+		var hit_other_die_before: int = int(weapon_roll_counts["d8"] if hit_source_sides == 6 else weapon_roll_counts["d6"])
+		var hit_target_hp_before: int = int(weapon_target["current_hp"])
+		weapon_combat.hud.btn_attack.pressed.emit()
+		FighterChecks._seed_die(20, 5)
+		weapon_combat.call_deferred("_on_hex_clicked", Vector2i(1, 0))
+		var hit_source_popup: PopupMenu = null
+		for _frame in 180:
+			await get_tree().process_frame
+			hit_source_popup = _visible_weapon_attack_bonus_popup(weapon_combat.hud)
+			if hit_source_popup != null: break
+		var hit_source_record: Dictionary = _pending_weapon_attack_bonus_record_for_test(fighter)
+		var hit_source_request_id: String = str(hit_source_record.get("request_id", ""))
+		var hit_source_index: int = _weapon_bonus_popup_index(hit_source_record, hit_source_id)
+		var hit_other_source_id: String = second_weapon_source if hit_source_id == first_weapon_source else first_weapon_source
+		var hit_other_pool_before: int = int(ResourcePoolRules.availability(fighter, hit_other_source_id).get("current", -1))
+		var captured_hit_attack: Dictionary = hit_source_record.get("context", {}).get("attack_result", {})
+		var captured_hit_ac: int = int(hit_source_record.get("context", {}).get("original_target_ac", 0))
+		_assert(hit_source_popup != null and hit_source_index >= 0 and int(captured_hit_attack.get("natural", 0)) == 5 and int(captured_hit_attack.get("total", 0)) == 11 and captured_hit_ac == 12, "Real weapon chooser captures natural 5 and total 11 against AC 12 before the %dd%d source" % [hit_source_cost, hit_source_sides])
+		if hit_source_popup != null and hit_source_index >= 0: hit_source_popup.id_pressed.emit(hit_source_popup.get_item_id(hit_source_index))
+		for _frame in 240:
+			if bool(hit_source_record.get("settled", false)) and not weapon_combat.resolving_player_action: break
+			await get_tree().process_frame
+		var hit_source_hit_hp_before_replay: int = int(weapon_target.get("current_hp", 0))
+		var hit_source_pool_before_replay: int = int(ResourcePoolRules.availability(fighter, hit_source_id).get("current", -1))
+		var hit_other_pool_before_replay: int = int(ResourcePoolRules.availability(fighter, hit_other_source_id).get("current", -1))
+		var hit_d6_before_replay: int = int(weapon_roll_counts["d6"])
+		var hit_d8_before_replay: int = int(weapon_roll_counts["d8"])
+		var hit_d20_before_replay: int = int(weapon_roll_counts["d20"])
+		var hit_source_replay: Dictionary = SpellDamageRolls.settle_weapon_attack_bonus(fighter, weapon_target, {"weapon_attack_bonus_request": {"request_id": hit_source_request_id}}, hit_source_id)
+		var accepted_source_die_count: int = int(weapon_roll_counts["d6"] if hit_source_sides == 6 else weapon_roll_counts["d8"])
+		var accepted_other_die_count: int = int(weapon_roll_counts["d8"] if hit_source_sides == 6 else weapon_roll_counts["d6"])
+		var expected_source_die_before_replay: int = hit_source_die_before + 1
+		var expected_other_die_before_replay: int = hit_other_die_before
+		_assert(bool(hit_source_record.get("settled", false)) and int(weapon_roll_counts["d20"]) == hit_d20_before + 1 and accepted_source_die_count == expected_source_die_before_replay and accepted_other_die_count == expected_other_die_before_replay and int(weapon_target.get("current_hp", 0)) == hit_source_hit_hp_before_replay and int(ResourcePoolRules.availability(fighter, hit_source_id).get("current", -1)) == hit_source_pool_before_replay and int(ResourcePoolRules.availability(fighter, hit_other_source_id).get("current", -1)) == hit_other_pool_before_replay and bool(hit_source_replay.get("refused", false)) and hit_source_hit_hp_before_replay < hit_target_hp_before and hit_source_pool_before_replay == hit_source_before - hit_source_cost and hit_other_pool_before_replay == hit_other_pool_before and not weapon_combat.turn_budget.action_available, "Accepted d%d converts the captured miss to a hit, rolls only its source die, applies damage once, follows its exact payment policy, and refuses replay" % hit_source_sides)
+	# Explicit real decline remains a no-roll/no-cost answer.
+	fighter.extra_attacks = 0
+	weapon_combat.turn_budget.reset(fighter, weapon_combat.player_entities)
+	weapon_combat.remaining_attack_swings = 0
+	weapon_combat.hud.update_hud(fighter, weapon_combat.tracker)
+	weapon_combat.hud.btn_attack.pressed.emit()
+	FighterChecks._seed_die(20, 5)
+	weapon_combat.call_deferred("_on_hex_clicked", Vector2i(1, 0))
+	weapon_popup = null
+	for _frame in 180:
+		await get_tree().process_frame
+		weapon_popup = _visible_weapon_attack_bonus_popup(weapon_combat.hud)
+		if weapon_popup != null: break
+	var decline_d6_before := int(weapon_roll_counts["d6"])
+	var decline_d8_before := int(weapon_roll_counts["d8"])
+	var decline_pool_before := int(ResourcePoolRules.availability(fighter, first_weapon_source).get("current", -1))
+	var decline_popup_was_visible := weapon_popup != null and weapon_popup.visible
+	var decline_record := _pending_weapon_attack_bonus_record_for_test(fighter)
+	if weapon_popup != null: weapon_popup.id_pressed.emit(weapon_popup.get_item_id(0))
+	for _frame in 180:
+		if bool(decline_record.get("settled", false)): break
+		await get_tree().process_frame
+	_assert(decline_popup_was_visible and bool(decline_record.get("settled", false)) and int(weapon_roll_counts["d6"]) == decline_d6_before and int(weapon_roll_counts["d8"]) == decline_d8_before and int(ResourcePoolRules.availability(fighter, first_weapon_source).get("current", -1)) == decline_pool_before, "Choosing Decline in the real weapon source menu rolls no die and pays nothing")
+	fighter.extra_attacks = 0
+	weapon_combat.turn_budget.reset(fighter, weapon_combat.player_entities)
+	weapon_combat.hud.update_hud(fighter, weapon_combat.tracker)
+	var natural_one_hp_before: int = int(weapon_target.get("current_hp", 0))
+	var natural_one_d6_before: int = int(weapon_roll_counts["d6"])
+	var natural_one_d8_before: int = int(weapon_roll_counts["d8"])
+	var natural_one_d20_before: int = int(weapon_roll_counts["d20"])
+	var natural_one_source_before := int(ResourcePoolRules.availability(fighter, neutral_outcome_source).get("current", -1))
+	weapon_combat.hud.btn_attack.pressed.emit()
+	FighterChecks._seed_die(20, 1)
+	weapon_combat.call_deferred("_on_hex_clicked", Vector2i(1, 0))
+	var natural_one_popup: PopupMenu = null
+	for _frame in 180:
+		await get_tree().process_frame
+		natural_one_popup = _visible_weapon_attack_bonus_popup(weapon_combat.hud)
+		if natural_one_popup != null: break
+	var natural_one_record: Dictionary = _pending_weapon_attack_bonus_record_for_test(fighter)
+	var natural_one_captured: Dictionary = natural_one_record.get("context", {}).get("attack_result", {})
+	var natural_one_offered: bool = natural_one_record.get("options", []).any(func(option): return str(option.get("source_instance_id", "")) == neutral_outcome_source and str(option.get("outcome", "")) == "hit")
+	if natural_one_popup != null:
+		natural_one_popup.id_pressed.emit(_weapon_bonus_popup_index(natural_one_record, neutral_outcome_source))
+	for _frame in 180:
+		if bool(natural_one_record.get("settled", false)) and not weapon_combat.resolving_player_action: break
+		await get_tree().process_frame
+	var natural_one_history: Dictionary = ActivityHistory.get_records().back() if not ActivityHistory.get_records().is_empty() else {}
+	var natural_one_attack_sections: Array = natural_one_history.get("payload", {}).get("sections", {}).get("attacks", [])
+	var natural_one_roll: Dictionary = natural_one_attack_sections[0].get("roll", {}) if not natural_one_attack_sections.is_empty() else {}
+	var natural_one_override: Dictionary = natural_one_roll.get("outcome_override", {})
+	_assert(natural_one_offered and int(natural_one_captured.get("natural", 0)) == 1 and int(weapon_roll_counts["d20"]) == natural_one_d20_before + 1 and int(weapon_target.get("current_hp", 0)) < natural_one_hp_before and int(ResourcePoolRules.availability(fighter, neutral_outcome_source).get("current", -1)) == natural_one_source_before - 1, "Actual weapon Attack forces a natural-1 miss to hit without rerolling and spends the neutral source once")
+	_assert(str(natural_one_attack_sections[0].get("outcome", "")) == "hit" and natural_one_roll.get("natural_total") == 1 and natural_one_roll.get("comparison", {}).get("result") == "hit" and natural_one_override.get("outcome") == "hit" and natural_one_override.get("source_instance_id") == neutral_outcome_source and natural_one_override.get("owner_id") == fighter.character_id and natural_one_override.get("domain") == "weapon_attack" and natural_one_override.get("stage") == "provisional_outcome" and natural_one_override.get("cost_paid", false), "Final weapon activity receipt preserves natural 1, reports a non-critical hit and records exact outcome provenance")
+	# Natural 20 remains a critical roll unless the explicit miss is selected; the
+	# override suppresses its critical damage and appears in the public receipt.
+	fighter.extra_attacks = 0
+	weapon_combat.turn_budget.reset(fighter, weapon_combat.player_entities)
+	weapon_combat.remaining_attack_swings = 0
+	weapon_target["armor_class"] = 1
+	weapon_target["current_hp"] = 10000
+	weapon_combat.hud.update_hud(fighter, weapon_combat.tracker)
+	var natural_twenty_hp_before := int(weapon_target["current_hp"])
+	var renamed_outcome_before := int(ResourcePoolRules.availability(fighter, renamed_outcome_source).get("current", -1))
+	var natural_twenty_d20_before := int(weapon_roll_counts["d20"])
+	fighter.fighter_training["boon"] = "combat_prowess"
+	fighter.feature_uses.erase("epic_boon_combat_prowess_used")
+	fighter.feature_uses.erase("fighter_peerless_used")
+	weapon_combat.hud.btn_attack.pressed.emit()
+	FighterChecks._seed_die(20, 20)
+	weapon_combat.call_deferred("_on_hex_clicked", Vector2i(1, 0))
+	var natural_twenty_popup: PopupMenu = null
+	for _frame in 180:
+		await get_tree().process_frame
+		natural_twenty_popup = _visible_weapon_attack_bonus_popup(weapon_combat.hud)
+		if natural_twenty_popup != null: break
+	var natural_twenty_record: Dictionary = _pending_weapon_attack_bonus_record_for_test(fighter)
+	var natural_twenty_attack: Dictionary = natural_twenty_record.get("context", {}).get("attack_result", {})
+	var natural_twenty_offered: bool = natural_twenty_record.get("options", []).any(func(option): return str(option.get("source_instance_id", "")) == renamed_outcome_source and str(option.get("outcome", "")) == "miss")
+	if natural_twenty_popup != null:
+		natural_twenty_popup.id_pressed.emit(_weapon_bonus_popup_index(natural_twenty_record, renamed_outcome_source))
+	for _frame in 180:
+		if bool(natural_twenty_record.get("settled", false)) and not weapon_combat.resolving_player_action: break
+		await get_tree().process_frame
+	var natural_twenty_history: Dictionary = ActivityHistory.get_records().back() if not ActivityHistory.get_records().is_empty() else {}
+	var natural_twenty_sections: Array = natural_twenty_history.get("payload", {}).get("sections", {}).get("attacks", [])
+	var natural_twenty_roll: Dictionary = natural_twenty_sections[0].get("roll", {}) if not natural_twenty_sections.is_empty() else {}
+	var natural_twenty_override: Dictionary = natural_twenty_roll.get("outcome_override", {})
+	_assert(natural_twenty_offered and int(natural_twenty_attack.get("natural", 0)) == 20 and bool(natural_twenty_attack.get("is_crit", false)) and int(weapon_roll_counts["d20"]) == natural_twenty_d20_before + 1 and int(weapon_target.get("current_hp", 0)) == natural_twenty_hp_before and int(ResourcePoolRules.availability(fighter, renamed_outcome_source).get("current", -1)) == renamed_outcome_before - 2, "Actual weapon Attack forces a natural-20 critical to miss, deals no damage and pays the renamed source once")
+	_assert(ClassProgression.has_epic_boon(fighter, "combat_prowess") and not bool(fighter.feature_uses.get("epic_boon_combat_prowess_used", false)) and not bool(fighter.feature_uses.get("fighter_peerless_used", false)), "The real forced-miss weapon choice preserves unused Combat Prowess")
+	_assert(natural_twenty_sections.size() == 1 and str(natural_twenty_sections[0].get("outcome", "")) == "miss" and natural_twenty_roll.get("natural_total") == 20 and natural_twenty_roll.get("comparison", {}).get("target") == 1 and natural_twenty_override.get("outcome") == "miss" and natural_twenty_override.get("source_instance_id") == renamed_outcome_source, "The final weapon receipt retains natural 20 and original AC while recording forced miss with no critical")
+	Dice.dice_rolled.disconnect(count_weapon_rolls)
+	GameManager.test_mode = true
+	_teardown_scene(weapon_combat)
+	DataLoader.classes = prior_classes
+	DataLoader.spells = prior_spells
+	_exit_test()
+
+
+func test_failed_save_numeric_bonus_flow() -> void:
+	_enter_test("failed_save_numeric_bonus_flow")
+	_setup_world()
+	var prior_spells := DataLoader.spells.duplicate(true)
+	var prior_classes := DataLoader.classes.duplicate(true)
+	DataLoader._load_content_type("res://data/fixtures/failed_save_bonus/classes/", "class")
+	DataLoader._load_content_type("res://data/fixtures/shared_spells/spells/", "spell")
+	var neutral_class: Dictionary = DataLoader.classes.get("fixture:steady_saving_class", {})
+	var neutral_feature: Dictionary = neutral_class.get("features_by_level", {}).get("1", [{}])[0]
+	var renamed_class: Dictionary = DataLoader.classes.get("fixture:steadfast_resolve_class", {})
+	var renamed_feature: Dictionary = renamed_class.get("features_by_level", {}).get("1", [{}])[0]
+	var pay_choice_class: Dictionary = DataLoader.classes.get("fixture:save_bonus_pay_on_choice_class", {})
+	var pay_choice_feature: Dictionary = pay_choice_class.get("features_by_level", {}).get("1", [{}])[0]
+	var override_class: Dictionary = DataLoader.classes.get("fixture:save_success_override_class", {})
+	var override_feature: Dictionary = override_class.get("features_by_level", {}).get("1", [{}])[0]
+	var generic_outcome_class: Dictionary = DataLoader.classes.get("fixture:neutral_roll_outcome_class", {})
+	var generic_renamed_class: Dictionary = DataLoader.classes.get("fixture:renamed_roll_outcome_class", {})
+	var generic_outcome_feature: Dictionary = generic_outcome_class.get("features_by_level", {}).get("1", [{}])[0]
+	var generic_renamed_feature: Dictionary = generic_renamed_class.get("features_by_level", {}).get("1", [{}])[0]
+	var pay_success_class: Dictionary = DataLoader.classes.get("fixture:save_bonus_pay_on_success_class", {})
+	var pay_success_feature: Dictionary = pay_success_class.get("features_by_level", {}).get("1", [{}])[0]
+	var spell: Dictionary = DataLoader.spells.get("sandbox:failed_save_bonus_area", {})
+	var flat_dex_spell: Dictionary = DataLoader.spells.get("sandbox:failed_save_rider_flat_dex", {})
+	var flat_con_spell: Dictionary = DataLoader.spells.get("sandbox:failed_save_rider_flat_con", {})
+	_assert(not neutral_feature.is_empty() and not renamed_feature.is_empty() and not override_feature.is_empty() and not generic_outcome_feature.is_empty() and not generic_renamed_feature.is_empty() and not pay_choice_feature.is_empty() and not pay_success_feature.is_empty() and not spell.is_empty() and not flat_dex_spell.is_empty() and not flat_con_spell.is_empty(), "DataLoader production-loads neutral, renamed, generic outcome, payment-policy, and flat rider fixtures")
+	if neutral_feature.is_empty() or pay_choice_feature.is_empty() or pay_success_feature.is_empty() or spell.is_empty():
+		DataLoader.spells = prior_spells
+		DataLoader.classes = prior_classes
+		_exit_test()
+		return
+
+	PlayerManager.reset()
+	PartyManager.reset()
+	PlayerManager.add_player("Save Owner")
+	PlayerManager.add_player("Save Ally")
+	var owner := _fresh_char("Save Owner", "human", "wizard", {"STR": 8, "DEX": 14, "CON": 14, "INT": 18, "WIS": 12, "CHA": 10})
+	owner.character_id = "fixture:failed_save_owner"
+	while owner.level < 3:
+		owner.level_up()
+	ClassProgression.choose_subclass(owner, "diviner")
+	owner.known_spells.assign(["sandbox:failed_save_bonus_area", "sandbox:failed_save_bonus_con_area", "sandbox:steadfast_success_ordered", "sandbox:resolute_success_ordered", "sandbox:failed_save_rider_flat_dex", "sandbox:failed_save_rider_flat_con"])
+	owner.wizard_spellbook.assign(["sandbox:failed_save_bonus_area", "sandbox:failed_save_bonus_con_area", "sandbox:steadfast_success_ordered", "sandbox:resolute_success_ordered", "sandbox:failed_save_rider_flat_dex", "sandbox:failed_save_rider_flat_con"])
+	owner.spell_slots["1"] = 2
+	owner.roll_tokens["diviner_portent"] = [
+		{"token_id": "fixture:portent:8", "value": 8, "feature_id": "diviner_portent", "pool_id": "diviner_portent", "die_sides": 20},
+		{"token_id": "fixture:portent:2", "value": 2, "feature_id": "diviner_portent", "pool_id": "diviner_portent", "die_sides": 20},
+	]
+	var second := _fresh_char("Save Ally", "human", "fighter", {"STR": 12, "DEX": 12, "CON": 12, "INT": 10, "WIS": 10, "CHA": 10})
+	second.character_id = "fixture:failed_save_ally"
+	for pair in [[neutral_feature, "fixture:steady_saving:first"], [neutral_feature, "fixture:steady_saving:second"]]:
+		var feature: Dictionary = pair[0].duplicate(true)
+		feature["source_instance_id"] = str(pair[1])
+		owner.features.append(feature)
+		var acquired := ResourcePoolRules.acquire(owner, neutral_feature, str(pair[1]))
+		_assert(bool(acquired.get("success", false)), "Fixture source instance acquires its exact owned numeric pool")
+	var first_source := "fixture:steady_saving:first"
+	var second_source := "fixture:steady_saving:second"
+	owner.features.append(renamed_feature.duplicate(true))
+	owner.features.back()["source_instance_id"] = "fixture:steadfast_resolve:other-ability"
+	var renamed_acquired := ResourcePoolRules.acquire(owner, renamed_feature, "fixture:steadfast_resolve:other-ability")
+	_assert(bool(renamed_acquired.get("success", false)), "Renamed CON feature definition uses the same production pool acquisition path")
+	owner.features.back()["source_instance_id"] = "fixture:steadfast_resolve:other-ability"
+	owner.features.append(pay_success_feature.duplicate(true))
+	owner.features.back()["source_instance_id"] = "fixture:save_bonus_pay_on_success:conditional"
+	var pay_success_acquired := ResourcePoolRules.acquire(owner, pay_success_feature, "fixture:save_bonus_pay_on_success:conditional")
+	_assert(bool(pay_success_acquired.get("success", false)), "Conditional-payment CON feature acquires its exact source through production pool rules")
+	var dex_override_source := "fixture:steadfast_success:owner"
+	var con_override_class: Dictionary = DataLoader.classes.get("fixture:resolute_success_class", {})
+	var con_override_feature: Dictionary = con_override_class.get("features_by_level", {}).get("1", [{}])[0]
+	var con_override_source := "fixture:resolute_success:owner"
+	var dex_outcome_source := "fixture:roll_outcomes:neutral_save"
+	var con_outcome_source := "fixture:roll_outcomes:renamed_save"
+	for pair in [[generic_outcome_feature, dex_outcome_source], [generic_renamed_feature, con_outcome_source]]:
+		var feature: Dictionary = pair[0].duplicate(true)
+		feature["source_instance_id"] = str(pair[1])
+		owner.features.append(feature)
+		var acquired := ResourcePoolRules.acquire(owner, pair[0], str(pair[1]))
+		_assert(bool(acquired.get("success", false)), "Generic neutral and renamed save outcome sources acquire through production resource rules")
+	var ally_options := SpellDamageRolls.failed_save_numeric_bonus_options(owner, "DEX")
+	_assert(ally_options.size() == 2 and ally_options[0].get("amount") == 5 and ally_options[1].get("amount") == 5, "Two separate instances of the same DEX definition are offered as independent exact sources")
+	_assert(SpellDamageRolls.failed_save_numeric_bonus_options(owner, "CON").size() == 2 and SpellDamageRolls.failed_save_numeric_bonus_options(second, "DEX").is_empty(), "Renamed and conditional CON definitions stay ability-bound and another actor cannot borrow the owner's sources")
+
+	PlayerManager.set_player_character(0, owner)
+	PlayerManager.set_player_character(1, second)
+	PartyManager.register_player_character(0, owner)
+	PartyManager.register_player_character(1, second)
+	GameManager.current_state = GameManager.GameState.COMBAT
+	# Keep CombatState's real asynchronous turn setup aligned with the harness's
+	# player-owned cast. A monster-first initiative would leave a delayed AI
+	# callback pending while this test installs its player turn below.
+	var owner_dex_before_fixture_initiative := owner.ability_scores.get_score("DEX")
+	var owner_portent_before_fixture_initiative: Array = owner.roll_tokens.get("diviner_portent", []).duplicate(true)
+	owner.ability_scores.set_score("DEX", 20)
+	owner.roll_tokens["diviner_portent"].append({"token_id": "fixture:portent:init20", "value": 20, "feature_id": "diviner_portent", "pool_id": "diviner_portent", "die_sides": 20})
+	GameManager.transition_context = {
+		"terrain": "plains",
+		"monster_ids": ["goblin"],
+		"initiative_decisions": {
+			owner.character_id: {"pool_id": "diviner_portent", "token_id": "fixture:portent:init20"}
+		},
+	}
+	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 0.6)
+	owner.ability_scores.set_score("DEX", owner_dex_before_fixture_initiative)
+	owner.roll_tokens["diviner_portent"] = owner_portent_before_fixture_initiative
+	RollTokenRules.clear_turn_counter(owner, "diviner_portent")
+	combat.current_player_idx = 0
+	combat.active_character = owner
+	combat.active_combatant = {"is_player": true, "entity": owner}
+	combat.player_entities[0]["hex_position"] = Vector2i.ZERO
+	combat.player_entities[1]["hex_position"] = Vector2i(1, 0)
+	combat.turn_budget.reset(owner, combat.player_entities)
+	for enemy in combat.monster_entities:
+		enemy["is_alive"] = false
+		enemy["current_hp"] = 0
+	combat.tracker.combatants = combat.tracker.combatants.filter(func(combatant): return bool(combatant.get("is_player", false)) and combatant.get("entity") == owner)
+	combat.tracker.active_index = 0
+	combat._update_grid_entities()
+	combat.hud.update_hud(owner, combat.tracker)
+	GameManager.test_mode = false
+	combat.hud._show_spell_selection()
+	var spell_index := -1
+	for idx in combat.hud.spells_registered.size():
+		if str(combat.hud.spells_registered[idx].get("id", "")) == "sandbox:failed_save_bonus_area":
+			spell_index = idx
+			break
+	_assert(spell_index >= 0, "Normal production spell picker lists the DataLoader-loaded fixture spell")
+	if spell_index >= 0:
+		combat.hud._on_spell_selected(spell_index)
+	for _frame in 30:
+		if combat.pending_action_type == "spell": break
+		await get_tree().process_frame
+	var owner_hp_before := owner.current_hp
+	var ally_hp_before := second.current_hp
+	var slots_before := int(owner.spell_slots.get("1", 0))
+	var d20_rolls := 0
+	var count_d20 := func(payload: Dictionary) -> void:
+		if int(payload.get("sides", 0)) == 20: d20_rolls += 1
+	Dice.dice_rolled.connect(count_d20)
+	combat.call_deferred("_on_hex_clicked", Vector2i.ZERO)
+	var saw_portent := false
+	var saw_bonus := false
+	var captured_original: Dictionary = {}
+	for _frame in 240:
+		await get_tree().process_frame
+		for child in combat.hud.get_children():
+			if child is ConfirmationDialog and child.visible and str(child.title).contains("Portent") and not saw_portent:
+				saw_portent = true
+				child.confirmed.emit()
+				break
+			if child is PopupMenu and child.visible and str(child.title).contains("Failed DEX save") and not saw_bonus:
+				saw_bonus = true
+				for record_value in SpellDamageRolls._pending_requests.values():
+					if str(record_value.get("kind", "")) == "save_bonus":
+						captured_original = record_value.get("save_test", {}).duplicate(true)
+				_assert(captured_original.get("natural_roll") == 8 and captured_original.get("modifier") == 2 and captured_original.get("dc") == 14 and captured_original.get("total") == 10, "The chooser preserves the Portent natural roll, existing DEX modifier and original DC before bonus settlement")
+				child.id_pressed.emit(2)
+				break
+		if saw_bonus: break
+	Dice.dice_rolled.disconnect(count_d20)
+	for _frame in 180:
+		if combat.pending_action_type.is_empty() and not combat.resolving_player_action: break
+		await get_tree().process_frame
+	var first_pool: Dictionary = owner.numeric_resource_pools.get(first_source, {})
+	var second_pool: Dictionary = owner.numeric_resource_pools.get(second_source, {})
+	_assert(saw_portent and saw_bonus, "Actual pre-roll Portent choice resumes into the actual failed-save source chooser")
+	_assert(int(first_pool.get("current", -1)) == 2 and int(second_pool.get("current", -1)) == 1, "Selecting the second matching source charges only that exact pool once")
+	_assert(int(owner.spell_slots.get("1", -1)) == slots_before - 1, "Resumed area cast spends its owned spell slot exactly once")
+	_assert(owner.current_hp == owner_hp_before - 2 and second.current_hp < ally_hp_before, "Converted save uses half damage before applying it while the other area target resolves normally")
+	_assert(d20_rolls <= 1, "Portent plus the resumed failed-save choice does not roll another d20 for the same target")
+	_assert(not SpellDamageRolls._pending_requests.is_empty(), "Settled request tombstones remain available to reject replay until encounter cleanup")
+	owner.roll_tokens["diviner_portent"] = []
+	owner.current_hp = 100
+	owner.max_hp = 100
+	second.current_hp = 100
+	second.max_hp = 100
+	combat.turn_budget.reset(owner, combat.player_entities)
+	owner.spell_slots["1"] = 5
+	combat.hud.update_hud(owner, combat.tracker)
+	combat.hud._show_spell_selection()
+	spell_index = -1
+	for idx in combat.hud.spells_registered.size():
+		if str(combat.hud.spells_registered[idx].get("id", "")) == "sandbox:failed_save_bonus_con_area":
+			spell_index = idx
+			break
+	_assert(spell_index >= 0, "The normal picker also lists the renamed CON/+7 fixture spell")
+	if spell_index >= 0: combat.hud._on_spell_selected(spell_index)
+	for _frame in 30:
+		if combat.pending_action_type == "spell": break
+		await get_tree().process_frame
+	var con_owner_hp := owner.current_hp
+	var con_slots_before := int(owner.spell_slots.get("1", 0))
+	var con_options := SpellDamageRolls.failed_save_numeric_bonus_options(owner, "CON")
+	var pay_choice_con_menu_id := 0
+	for option_index in con_options.size():
+		if str(con_options[option_index].get("source_instance_id", "")) == "fixture:steadfast_resolve:other-ability":
+			pay_choice_con_menu_id = option_index + 1
+	FighterChecks._seed_die(20, 8)
+	combat.call_deferred("_on_hex_clicked", Vector2i.ZERO)
+	var con_prompt_seen := false
+	var con_original: Dictionary = {}
+	for _frame in 240:
+		await get_tree().process_frame
+		for child in combat.hud.get_children():
+			if not child is PopupMenu or not child.visible or not str(child.title).contains("Failed CON save"): continue
+			con_prompt_seen = true
+			for record_value in SpellDamageRolls._pending_requests.values():
+				if str(record_value.get("kind", "")) == "save_bonus": con_original = record_value.get("save_test", {}).duplicate(true)
+			child.id_pressed.emit(pay_choice_con_menu_id)
+			break
+		if con_prompt_seen: break
+	for _frame in 180:
+		if combat.pending_action_type.is_empty() and not combat.resolving_player_action: break
+		await get_tree().process_frame
+	_assert(con_prompt_seen and con_original.get("natural_roll") == 8 and con_original.get("modifier") == 2 and con_original.get("dc") == 14 and con_original.get("total") == 10, "Renamed pay-on-choice CON/+7 source is chosen through the real menu while preserving its original roll and DC")
+	_assert(owner.current_hp == con_owner_hp - 2 and int(owner.numeric_resource_pools.get("fixture:steadfast_resolve:other-ability", {}).get("current", -1)) == 2, "Renamed +7 CON data converts the failed save, applies half damage first and charges only its source")
+	_assert(int(owner.spell_slots.get("1", 0)) == con_slots_before - 1, "Renamed CON cast's existing spell resource also settles once")
+
+	# Availability uses the same production option list consumed by the real chooser.
+	owner.numeric_resource_pools["fixture:save_bonus_pay_on_success:conditional"]["current"] = 0
+	var empty_conditional_options := SpellDamageRolls.failed_save_numeric_bonus_options(owner, "CON")
+	var empty_conditional_offered := false
+	for option in empty_conditional_options:
+		if str(option.get("source_instance_id", "")) == "fixture:save_bonus_pay_on_success:conditional":
+			empty_conditional_offered = true
+	_assert(not empty_conditional_offered and empty_conditional_options.size() == 1, "The production chooser's options omit the conditional source when its exact pool is empty")
+	owner.numeric_resource_pools["fixture:save_bonus_pay_on_success:conditional"]["current"] = 2
+
+	# Accepted failure keeps the conditional modifier/result but spends no use.
+	owner.current_hp = 100
+	owner.spell_slots["1"] = 5
+	combat.turn_budget.reset(owner, combat.player_entities)
+	combat.hud.update_hud(owner, combat.tracker)
+	combat.hud._show_spell_selection()
+	spell_index = -1
+	for idx in combat.hud.spells_registered.size():
+		if str(combat.hud.spells_registered[idx].get("id", "")) == "sandbox:failed_save_bonus_con_area":
+			spell_index = idx
+			break
+	if spell_index >= 0: combat.hud._on_spell_selected(spell_index)
+	for _frame in 30:
+		if combat.pending_action_type == "spell": break
+		await get_tree().process_frame
+	var conditional_failure_hp := owner.current_hp
+	FighterChecks._seed_die(20, 1)
+	combat.call_deferred("_on_hex_clicked", Vector2i.ZERO)
+	var conditional_failure_prompt := false
+	var conditional_failure_original: Dictionary = {}
+	var conditional_failure_request_id := ""
+	var conditional_stale_refused := false
+	for _frame in 240:
+		await get_tree().process_frame
+		for child in combat.hud.get_children():
+			if not child is PopupMenu or not child.visible or not str(child.title).contains("Failed CON save"): continue
+			conditional_failure_prompt = true
+			for record_value in SpellDamageRolls._pending_requests.values():
+				if str(record_value.get("kind", "")) == "save_bonus":
+					conditional_failure_original = record_value.get("save_test", {}).duplicate(true)
+					conditional_failure_request_id = str(record_value.get("request_id", ""))
+			var conditional_options := SpellDamageRolls.failed_save_numeric_bonus_options(owner, "CON")
+			var conditional_menu_id := 0
+			for option_index in conditional_options.size():
+				if str(conditional_options[option_index].get("source_instance_id", "")) == "fixture:save_bonus_pay_on_success:conditional":
+					conditional_menu_id = option_index + 1
+			_assert(conditional_menu_id > 0 and child.get_item_text(conditional_menu_id).contains("paid only if this converts to a success"), "Real chooser label identifies the authored conditional-payment policy")
+			var conditional_before_stale: Dictionary = owner.numeric_resource_pools["fixture:save_bonus_pay_on_success:conditional"].duplicate(true)
+			owner.numeric_resource_pools["fixture:save_bonus_pay_on_success:conditional"]["current"] = 0
+			var stale_result := SpellDamageRolls.settle_failed_save_numeric_bonus(owner, owner, {"save_bonus_request": {"request_id": conditional_failure_request_id}}, "fixture:save_bonus_pay_on_success:conditional")
+			conditional_stale_refused = bool(stale_result.get("refused", false))
+			owner.numeric_resource_pools["fixture:save_bonus_pay_on_success:conditional"] = conditional_before_stale
+			child.id_pressed.emit(conditional_menu_id)
+			break
+		if conditional_failure_prompt: break
+	for _frame in 180:
+		if combat.pending_action_type.is_empty() and not combat.resolving_player_action: break
+		await get_tree().process_frame
+	_assert(conditional_failure_prompt and conditional_failure_original.get("natural_roll") == 1 and conditional_failure_original.get("modifier") == 2 and conditional_failure_original.get("dc") == 14 and conditional_failure_original.get("total") == 3, "Conditional bonus chooser retains the original natural roll, modifier and DC")
+	_assert(conditional_stale_refused, "Changing the exact source balance to zero while the chooser is open refuses settlement before applying the bonus")
+	_assert(owner.current_hp == conditional_failure_hp - 4 and int(owner.numeric_resource_pools["fixture:save_bonus_pay_on_success:conditional"].get("current", -1)) == 2, "Accepted +7 that still fails preserves full damage and spends zero conditional uses")
+
+	# A new roll converted by that same conditional source pays exactly once.
+	owner.current_hp = 100
+	owner.spell_slots["1"] = 5
+	combat.turn_budget.reset(owner, combat.player_entities)
+	combat.hud.update_hud(owner, combat.tracker)
+	combat.hud._show_spell_selection()
+	spell_index = -1
+	for idx in combat.hud.spells_registered.size():
+		if str(combat.hud.spells_registered[idx].get("id", "")) == "sandbox:failed_save_bonus_con_area":
+			spell_index = idx
+			break
+	if spell_index >= 0: combat.hud._on_spell_selected(spell_index)
+	for _frame in 30:
+		if combat.pending_action_type == "spell": break
+		await get_tree().process_frame
+	var conditional_success_hp := owner.current_hp
+	var conditional_success_slots := int(owner.spell_slots.get("1", 0))
+	FighterChecks._seed_die(20, 8)
+	combat.call_deferred("_on_hex_clicked", Vector2i.ZERO)
+	var conditional_success_prompt := false
+	var conditional_success_original: Dictionary = {}
+	for _frame in 240:
+		await get_tree().process_frame
+		for child in combat.hud.get_children():
+			if not child is PopupMenu or not child.visible or not str(child.title).contains("Failed CON save"): continue
+			conditional_success_prompt = true
+			for record_value in SpellDamageRolls._pending_requests.values():
+				if str(record_value.get("kind", "")) == "save_bonus": conditional_success_original = record_value.get("save_test", {}).duplicate(true)
+			var conditional_options := SpellDamageRolls.failed_save_numeric_bonus_options(owner, "CON")
+			var conditional_menu_id := 0
+			for option_index in conditional_options.size():
+				if str(conditional_options[option_index].get("source_instance_id", "")) == "fixture:save_bonus_pay_on_success:conditional":
+					conditional_menu_id = option_index + 1
+			child.id_pressed.emit(conditional_menu_id)
+			break
+		if conditional_success_prompt: break
+	for _frame in 180:
+		if combat.pending_action_type.is_empty() and not combat.resolving_player_action: break
+		await get_tree().process_frame
+	_assert(conditional_success_prompt and conditional_success_original.get("natural_roll") == 8 and conditional_success_original.get("modifier") == 2 and conditional_success_original.get("dc") == 14 and conditional_success_original.get("total") == 10, "Conditional conversion starts from the preserved original failed total")
+	_assert(owner.current_hp == conditional_success_hp - 2 and int(owner.numeric_resource_pools["fixture:save_bonus_pay_on_success:conditional"].get("current", -1)) == 1, "Converted success applies half damage and pays the conditional source exactly once")
+	_assert(int(owner.spell_slots.get("1", -1)) == conditional_success_slots - 1 and int(owner.numeric_resource_pools["fixture:steadfast_resolve:other-ability"].get("current", -1)) == 2, "Conditional settlement does not charge the other CON source or repeat the spell-slot cost")
+
+	# Add an explicit pay-on-choice DEX source for the still-failed acceptance case.
+	var explicit_pay_choice_source := "fixture:save_bonus_pay_on_choice:explicit_instance"
+	owner.features.append(pay_choice_feature.duplicate(true))
+	owner.features.back()["source_instance_id"] = explicit_pay_choice_source
+	var explicit_pay_choice_acquired := ResourcePoolRules.acquire(owner, pay_choice_feature, explicit_pay_choice_source)
+	_assert(bool(explicit_pay_choice_acquired.get("success", false)), "Explicit pay-on-choice fixture acquires an independent exact source")
+	var pool_a_before_edges := int(owner.numeric_resource_pools.get(first_source, {}).get("current", -1))
+	var pool_b_before_edges := int(owner.numeric_resource_pools.get(second_source, {}).get("current", -1))
+	var explicit_pool_before_edges := int(owner.numeric_resource_pools.get(explicit_pay_choice_source, {}).get("current", -1))
+	for edge in ["stays_failed", "decline", "cancel"]:
+		owner.spell_slots["1"] = 5
+		combat.turn_budget.reset(owner, combat.player_entities)
+		combat.hud.update_hud(owner, combat.tracker)
+		combat.hud._show_spell_selection()
+		spell_index = -1
+		for idx in combat.hud.spells_registered.size():
+			if str(combat.hud.spells_registered[idx].get("id", "")) == "sandbox:failed_save_bonus_area":
+				spell_index = idx
+				break
+		if spell_index >= 0: combat.hud._on_spell_selected(spell_index)
+		for _frame in 30:
+			if combat.pending_action_type == "spell": break
+			await get_tree().process_frame
+		FighterChecks._seed_die(20, 1)
+		var edge_owner_hp := owner.current_hp
+		var edge_slot_count := int(owner.spell_slots.get("1", 0))
+		combat.call_deferred("_on_hex_clicked", Vector2i.ZERO)
+		var edge_prompt_seen := false
+		var edge_refusals_passed: bool = edge != "stays_failed"
+		for _frame in 240:
+			await get_tree().process_frame
+			for child in combat.hud.get_children():
+				if not child is PopupMenu or not child.visible or not str(child.title).contains("Failed DEX save"): continue
+				edge_prompt_seen = true
+				if edge == "stays_failed":
+					for record_value in SpellDamageRolls._pending_requests.values():
+						if str(record_value.get("kind", "")) != "save_bonus": continue
+						var edge_request := {"save_bonus_request": {"request_id": str(record_value.get("request_id", ""))}}
+						var forged := SpellDamageRolls.settle_failed_save_numeric_bonus(owner, owner, edge_request, "fixture:forged")
+						var wrong_owner := SpellDamageRolls.settle_failed_save_numeric_bonus(second, owner, edge_request, first_source)
+						var wrong_target := SpellDamageRolls.settle_failed_save_numeric_bonus(owner, second, edge_request, first_source)
+						var saved_pool: Dictionary = owner.numeric_resource_pools[first_source].duplicate(true)
+						owner.numeric_resource_pools[first_source]["current"] = 0
+						var empty_source := SpellDamageRolls.settle_failed_save_numeric_bonus(owner, owner, edge_request, first_source)
+						owner.numeric_resource_pools[first_source] = saved_pool
+						owner.numeric_resource_pools.erase(first_source)
+						var removed_source := SpellDamageRolls.settle_failed_save_numeric_bonus(owner, owner, edge_request, first_source)
+						owner.numeric_resource_pools[first_source] = saved_pool
+						edge_refusals_passed = bool(forged.get("refused", false)) and bool(wrong_owner.get("refused", false)) and bool(wrong_target.get("refused", false)) and bool(empty_source.get("refused", false)) and bool(removed_source.get("refused", false))
+						_assert(edge_refusals_passed, "Live production request refuses forged source, another owner/target, empty source and removed source before settlement")
+						break
+				if edge == "stays_failed":
+					var dex_options := SpellDamageRolls.failed_save_numeric_bonus_options(owner, "DEX")
+					var explicit_menu_id := 0
+					for option_index in dex_options.size():
+						if str(dex_options[option_index].get("source_instance_id", "")) == explicit_pay_choice_source:
+							explicit_menu_id = option_index + 1
+					_assert(explicit_menu_id > 0 and child.get_item_text(explicit_menu_id).contains("paid when chosen"), "Real chooser label identifies explicit pay-on-choice policy")
+					child.id_pressed.emit(explicit_menu_id)
+				elif edge == "decline": child.id_pressed.emit(0)
+				elif edge == "cancel": child.popup_hide.emit()
+				else: child.id_pressed.emit(1)
+				break
+		_assert(edge_prompt_seen, "%s reaches the production optional-choice window" % edge)
+		for _frame in 180:
+			if combat.pending_action_type.is_empty() and not combat.resolving_player_action: break
+			await get_tree().process_frame
+		var edge_slot_count_after := int(owner.spell_slots.get("1", 0))
+		_assert(edge_slot_count_after == edge_slot_count - 1, "%s resumes the cast without replaying its slot cost" % edge)
+		if edge == "stays_failed":
+			_assert(owner.current_hp == edge_owner_hp - 4 and int(owner.numeric_resource_pools[explicit_pay_choice_source].get("current", -1)) == explicit_pool_before_edges - 1 and int(owner.numeric_resource_pools[first_source].get("current", -1)) == pool_a_before_edges and int(owner.numeric_resource_pools[second_source].get("current", -1)) == pool_b_before_edges, "Explicit pay-on-choice +5 that still fails pays only its chosen source and retains full failed-save damage")
+			explicit_pool_before_edges -= 1
+		elif edge in ["decline", "cancel"]:
+			_assert(owner.current_hp == edge_owner_hp - 4 and int(owner.numeric_resource_pools[explicit_pay_choice_source].get("current", -1)) == explicit_pool_before_edges and int(owner.numeric_resource_pools[first_source].get("current", -1)) == pool_a_before_edges and int(owner.numeric_resource_pools[second_source].get("current", -1)) == pool_b_before_edges, "%s leaves the failed save and all independent pools unchanged" % edge)
+
+	var before_replay_first := int(owner.numeric_resource_pools.get(first_source, {}).get("current", -1))
+	var before_replay_second := int(owner.numeric_resource_pools.get(second_source, {}).get("current", -1))
+	for record_value in SpellDamageRolls._pending_requests.values():
+		if str(record_value.get("kind", "")) != "save_bonus": continue
+		var request_id := str(record_value.get("request_id", ""))
+		var replay := SpellDamageRolls.settle_failed_save_numeric_bonus(owner, owner, {"save_bonus_request": {"request_id": request_id}}, second_source)
+		_assert(not bool(replay.get("success", false)) and bool(replay.get("refused", false)), "Completed save-bonus request refuses direct replay")
+		break
+	_assert(int(owner.numeric_resource_pools.get(first_source, {}).get("current", -1)) == before_replay_first and int(owner.numeric_resource_pools.get(second_source, {}).get("current", -1)) == before_replay_second, "Replay refusal cannot charge either source again")
+
+	# Keep the new outcome overrides out of the earlier V-035 menu checks; those
+	# checks intentionally exercise only their numeric sources.
+	var dex_override_instance := override_feature.duplicate(true)
+	dex_override_instance["source_instance_id"] = dex_override_source
+	owner.features.append(dex_override_instance)
+	var dex_override_acquired := ResourcePoolRules.acquire(owner, override_feature, dex_override_source)
+	var con_override_instance := con_override_feature.duplicate(true)
+	con_override_instance["source_instance_id"] = con_override_source
+	owner.features.append(con_override_instance)
+	var con_override_acquired := ResourcePoolRules.acquire(owner, con_override_feature, con_override_source)
+	_assert(bool(dex_override_acquired.get("success", false)) and bool(con_override_acquired.get("success", false)), "Neutral DEX and renamed CON override features acquire independent exact pools through production rules")
+
+	# P3 V-013: force an explicit save outcome through an ordered, real combat cast.
+	var dex_ordered_spell: Dictionary = DataLoader.spells.get("sandbox:steadfast_success_ordered", {})
+	var con_ordered_spell: Dictionary = DataLoader.spells.get("sandbox:resolute_success_ordered", {})
+	_assert(not dex_ordered_spell.is_empty() and SharedSpell.content_error(dex_ordered_spell).is_empty() and not con_ordered_spell.is_empty() and SharedSpell.content_error(con_ordered_spell).is_empty(), "Production DataLoader accepts the neutral and renamed ordered save/rider fixtures")
+	combat.player_entities[1]["hex_position"] = Vector2i(6, 0)
+	combat._update_grid_entities()
+	for condition in ["blessed", "poisoned", "frightened"]:
+		owner.remove_condition(condition)
+	owner.current_hp = 100
+	owner.spell_slots["1"] = 5
+	combat.turn_budget.reset(owner, combat.player_entities)
+	combat.hud.update_hud(owner, combat.tracker)
+	var dex_ordered_started := await _start_fixture_spell_from_picker(combat, "sandbox:steadfast_success_ordered")
+	_assert(dex_ordered_started, "The normal combat spell picker offers the ordered neutral DEX definition")
+	FighterChecks._seed_die(20, 1)
+	var dex_ordered_hp := owner.current_hp
+	var dex_ordered_slots := int(owner.spell_slots.get("1", 0))
+	var dex_numeric_before := int(owner.numeric_resource_pools.get(first_source, {}).get("current", -1))
+	combat.call_deferred("_on_hex_clicked", Vector2i.ZERO)
+	var dex_override_prompt := false
+	var dex_override_request_id := ""
+	var dex_override_original: Dictionary = {}
+	var dex_override_menu_id := 0
+	var override_refusal_checks_passed := false
+	for _frame in 240:
+		await get_tree().process_frame
+		for child in combat.hud.get_children():
+			if not child is PopupMenu or not child.visible or not str(child.title).contains("Failed DEX save"):
+				continue
+			dex_override_prompt = true
+			var record := _active_save_bonus_record_for_test()
+			dex_override_request_id = str(record.get("request_id", ""))
+			dex_override_original = record.get("save_test", {}).duplicate(true)
+			var pending_payload := {"save_bonus_request": {"request_id": dex_override_request_id}}
+			var override_pool_snapshot: Dictionary = owner.numeric_resource_pools.get(dex_override_source, {}).duplicate(true)
+			var hp_before_refusals := owner.current_hp
+			var forged := SpellDamageRolls.settle_failed_save_numeric_bonus(owner, owner, pending_payload, "fixture:forged_override")
+			var wrong_owner := SpellDamageRolls.settle_failed_save_numeric_bonus(second, owner, pending_payload, dex_override_source)
+			var wrong_target := SpellDamageRolls.settle_failed_save_numeric_bonus(owner, second, pending_payload, dex_override_source)
+			owner.numeric_resource_pools[dex_override_source]["current"] = 0
+			var empty := SpellDamageRolls.settle_failed_save_numeric_bonus(owner, owner, pending_payload, dex_override_source)
+			owner.numeric_resource_pools[dex_override_source] = override_pool_snapshot.duplicate(true)
+			var feature_index := -1
+			for feature_idx in owner.features.size():
+				if str(owner.features[feature_idx].get("source_instance_id", "")) == dex_override_source:
+					feature_index = feature_idx
+					break
+			var removed_feature: Dictionary = owner.features[feature_index].duplicate(true) if feature_index >= 0 else {}
+			if feature_index >= 0:
+				owner.features.remove_at(feature_index)
+			owner.numeric_resource_pools.erase(dex_override_source)
+			var removed := SpellDamageRolls.settle_failed_save_numeric_bonus(owner, owner, pending_payload, dex_override_source)
+			if feature_index >= 0:
+				owner.features.insert(feature_index, removed_feature)
+			owner.numeric_resource_pools[dex_override_source] = override_pool_snapshot.duplicate(true)
+			var offered_sources: Array[String] = []
+			for option in record.get("options", []):
+				offered_sources.append(str(option.get("source_instance_id", "")))
+			dex_override_menu_id = _save_bonus_menu_id_for_source(child, record, dex_override_source)
+			var active_record := _active_save_bonus_record_for_test()
+			override_refusal_checks_passed = bool(forged.get("refused", false)) and bool(wrong_owner.get("refused", false)) and bool(wrong_target.get("refused", false)) and bool(empty.get("refused", false)) and bool(removed.get("refused", false)) and active_record.get("request_id", "") == dex_override_request_id and not bool(active_record.get("settled", true)) and owner.current_hp == hp_before_refusals and int(owner.numeric_resource_pools[dex_override_source].get("current", -1)) == int(override_pool_snapshot.get("current", -2)) and offered_sources.has(dex_override_source) and not offered_sources.has(con_override_source)
+			child.id_pressed.emit(dex_override_menu_id)
+			break
+		if dex_override_prompt:
+			break
+	for _frame in 180:
+		if combat.pending_action_type.is_empty() and not combat.resolving_player_action:
+			break
+		await get_tree().process_frame
+	_assert(dex_override_prompt and dex_override_original.get("natural_roll") == 1 and dex_override_original.get("modifier") == 2 and dex_override_original.get("dc") == 14 and dex_override_original.get("total") == 3, "The real ordered DEX chooser starts from the captured natural roll, modifier, total, and DC")
+	_assert(override_refusal_checks_passed, "Forged, wrong-owner/target, empty, and removed exact override sources refuse while the real choice stays answerable")
+	_assert(owner.current_hp == dex_ordered_hp - 2 and int(owner.numeric_resource_pools[dex_override_source].get("current", -1)) == 1 and int(owner.numeric_resource_pools[first_source].get("current", -1)) == dex_numeric_before and int(owner.spell_slots.get("1", 0)) == dex_ordered_slots - 1, "The chosen neutral source alone pays once; the explicit success halves ordered Fire damage and the spell slot pays once")
+	_assert(owner.has_condition("blessed") and not owner.has_condition("poisoned") and not owner.has_condition("frightened") and combat.hud.log_text.text.contains("overridden to success by %s" % dex_override_source), "Successful-save ordered rider runs, failed-save riders stay out, and the combat log shows the explicit source override")
+
+	# An old completed answer must not invalidate the next live answer for this caster.
+	var old_override_payload := {"save_bonus_request": {"request_id": dex_override_request_id}}
+	owner.remove_condition("blessed")
+	for condition in ["poisoned", "frightened"]:
+		owner.remove_condition(condition)
+	owner.current_hp = 100
+	owner.spell_slots["1"] = 5
+	combat.turn_budget.reset(owner, combat.player_entities)
+	combat.hud.update_hud(owner, combat.tracker)
+	var con_ordered_started := await _start_fixture_spell_from_picker(combat, "sandbox:resolute_success_ordered")
+	_assert(con_ordered_started, "The normal combat spell picker offers the renamed ordered CON definition")
+	FighterChecks._seed_die(20, 1)
+	var con_ordered_hp := owner.current_hp
+	var con_ordered_slots := int(owner.spell_slots.get("1", 0))
+	combat.call_deferred("_on_hex_clicked", Vector2i.ZERO)
+	var con_override_prompt := false
+	var con_override_request_id := ""
+	var con_override_original: Dictionary = {}
+	var con_override_menu_id := 0
+	var old_replay_refused_with_new_live := false
+	var con_old_replay_pool := int(owner.numeric_resource_pools.get(con_override_source, {}).get("current", -1))
+	for _frame in 240:
+		await get_tree().process_frame
+		for child in combat.hud.get_children():
+			if not child is PopupMenu or not child.visible or not str(child.title).contains("Failed CON save"):
+				continue
+			con_override_prompt = true
+			var current_record := _active_save_bonus_record_for_test()
+			con_override_request_id = str(current_record.get("request_id", ""))
+			con_override_original = current_record.get("save_test", {}).duplicate(true)
+			var hp_before_replay := owner.current_hp
+			var replay := SpellDamageRolls.settle_failed_save_numeric_bonus(owner, owner, old_override_payload, dex_override_source)
+			var still_active := _active_save_bonus_record_for_test()
+			old_replay_refused_with_new_live = bool(replay.get("refused", false)) and str(still_active.get("request_id", "")) == con_override_request_id and not bool(still_active.get("settled", true)) and owner.current_hp == hp_before_replay and int(owner.numeric_resource_pools.get(con_override_source, {}).get("current", -1)) == con_old_replay_pool and int(owner.numeric_resource_pools.get(dex_override_source, {}).get("current", -1)) == 1
+			con_override_menu_id = _save_bonus_menu_id_for_source(child, current_record, con_override_source)
+			child.id_pressed.emit(con_override_menu_id)
+			break
+		if con_override_prompt:
+			break
+	for _frame in 180:
+		if combat.pending_action_type.is_empty() and not combat.resolving_player_action:
+			break
+		await get_tree().process_frame
+	_assert(con_override_prompt and con_override_original.get("natural_roll") == 1 and con_override_original.get("modifier") == 2 and con_override_original.get("dc") == 14 and con_override_original.get("total") == 3, "Renamed CON chooser preserves its rolled fields before accepting the explicit override")
+	_assert(old_replay_refused_with_new_live, "Replaying a settled DEX completion while a new CON choice is pending leaves its request, HP, and both pools untouched")
+	_assert(owner.current_hp == con_ordered_hp - 3 and int(owner.numeric_resource_pools[con_override_source].get("current", -1)) == 1 and int(owner.numeric_resource_pools[dex_override_source].get("current", -1)) == 1 and int(owner.spell_slots.get("1", 0)) == con_ordered_slots - 1, "The fresh renamed cost-2 source remains answerable, pays once, halves Cold damage, and does not spend the old source")
+	_assert(owner.has_condition("blessed") and not owner.has_condition("poisoned") and not owner.has_condition("frightened"), "Renamed successful-save step applies only the successful-save rider")
+
+	# Cancel preserves the original failed outcome; an empty pool isn't offered.
+	owner.remove_condition("blessed")
+	for condition in ["poisoned", "frightened"]:
+		owner.remove_condition(condition)
+	owner.current_hp = 100
+	owner.spell_slots["1"] = 5
+	combat.turn_budget.reset(owner, combat.player_entities)
+	combat.hud.update_hud(owner, combat.tracker)
+	var cancel_started := await _start_fixture_spell_from_picker(combat, "sandbox:steadfast_success_ordered")
+	FighterChecks._seed_die(20, 1)
+	var cancel_hp := owner.current_hp
+	var cancel_pool := int(owner.numeric_resource_pools[dex_override_source].get("current", -1))
+	combat.call_deferred("_on_hex_clicked", Vector2i.ZERO)
+	var cancel_prompt := false
+	var cancel_original: Dictionary = {}
+	for _frame in 240:
+		await get_tree().process_frame
+		for child in combat.hud.get_children():
+			if not child is PopupMenu or not child.visible or not str(child.title).contains("Failed DEX save"):
+				continue
+			cancel_prompt = true
+			cancel_original = _active_save_bonus_record_for_test().get("save_test", {}).duplicate(true)
+			child.popup_hide.emit()
+			break
+		if cancel_prompt:
+			break
+	for _frame in 180:
+		if combat.pending_action_type.is_empty() and not combat.resolving_player_action:
+			break
+		await get_tree().process_frame
+	_assert(cancel_started and cancel_prompt and str(cancel_original.get("outcome_override", "")).is_empty(), "Cancel returns through the real ordered save choice with no captured override")
+	_assert(owner.current_hp == cancel_hp - 4 and int(owner.numeric_resource_pools[dex_override_source].get("current", -1)) == cancel_pool and not owner.has_condition("blessed") and owner.has_condition("poisoned") and owner.has_condition("frightened"), "Cancel retains the original failed-save damage and failed-save riders without charging the override")
+	owner.remove_condition("poisoned")
+	owner.remove_condition("frightened")
+	owner.current_hp = 100
+	owner.spell_slots["1"] = 5
+	var dex_empty_snapshots: Dictionary = {}
+	for dex_option in SpellDamageRolls.failed_save_choice_options(owner, "DEX"):
+		var source_id := str(dex_option.get("source_instance_id", ""))
+		if not owner.numeric_resource_pools.has(source_id):
+			continue
+		dex_empty_snapshots[source_id] = owner.numeric_resource_pools[source_id].duplicate(true)
+		owner.numeric_resource_pools[source_id]["current"] = 0
+	combat.turn_budget.reset(owner, combat.player_entities)
+	combat.hud.update_hud(owner, combat.tracker)
+	var empty_started := await _start_fixture_spell_from_picker(combat, "sandbox:steadfast_success_ordered")
+	FighterChecks._seed_die(20, 1)
+	var empty_hp := owner.current_hp
+	combat.call_deferred("_on_hex_clicked", Vector2i.ZERO)
+	var empty_popup := false
+	for _frame in 100:
+		await get_tree().process_frame
+		for child in combat.hud.get_children():
+			if child is PopupMenu and child.visible and str(child.title).contains("Failed DEX save"):
+				empty_popup = true
+		if combat.pending_action_type.is_empty() and not combat.resolving_player_action:
+			break
+	_assert(empty_started and not empty_popup and owner.current_hp == empty_hp - 4 and owner.has_condition("poisoned") and owner.has_condition("frightened"), "With every eligible DEX source empty, the ordered spell completes without an optional chooser and keeps failed-save consequences")
+	for source_id in dex_empty_snapshots:
+		owner.numeric_resource_pools[source_id] = dex_empty_snapshots[source_id]
+
+	# Flat spells must defer their top-level effects until the owner settles the
+	# failed-save chooser, just like ordered save effects do.
+	owner.remove_condition("poisoned")
+	owner.remove_condition("frightened")
+	owner.remove_condition("blessed")
+	owner.current_hp = 100
+	owner.spell_slots["1"] = 5
+	owner.numeric_resource_pools[dex_override_source]["current"] = 1
+	combat.turn_budget.reset(owner, combat.player_entities)
+	combat.hud.update_hud(owner, combat.tracker)
+	var flat_decline_started := await _start_fixture_spell_from_picker(combat, "sandbox:failed_save_rider_flat_dex")
+	FighterChecks._seed_die(20, 1)
+	var flat_decline_hp := owner.current_hp
+	var flat_decline_pool := int(owner.numeric_resource_pools[dex_override_source].get("current", -1))
+	combat.call_deferred("_on_hex_clicked", Vector2i.ZERO)
+	var flat_decline_prompt := false
+	var flat_decline_clean_before_answer := false
+	for _frame in 240:
+		await get_tree().process_frame
+		for child in combat.hud.get_children():
+			if not child is PopupMenu or not child.visible or not str(child.title).contains("Failed DEX save"):
+				continue
+			flat_decline_prompt = true
+			flat_decline_clean_before_answer = not owner.has_condition("poisoned") and owner.current_hp == flat_decline_hp and not bool(_active_save_bonus_record_for_test().get("settled", true))
+			child.id_pressed.emit(0)
+			break
+		if flat_decline_prompt:
+			break
+	for _frame in 180:
+		if combat.pending_action_type.is_empty() and not combat.resolving_player_action:
+			break
+		await get_tree().process_frame
+	_assert(flat_decline_started and flat_decline_prompt and flat_decline_clean_before_answer and owner.current_hp == flat_decline_hp - 4 and owner.has_condition("poisoned") and int(owner.numeric_resource_pools[dex_override_source].get("current", -1)) == flat_decline_pool, "Flat shared failure effects wait for the real chooser, then decline applies its failed rider once without payment")
+
+	owner.remove_condition("poisoned")
+	owner.current_hp = 100
+	owner.spell_slots["1"] = 5
+	var flat_numeric_source := "fixture:steadfast_resolve:other-ability"
+	var flat_numeric_pool := int(owner.numeric_resource_pools.get(flat_numeric_source, {}).get("current", -1))
+	if flat_numeric_pool <= 0:
+		owner.numeric_resource_pools[flat_numeric_source]["current"] = maxi(1, int(owner.numeric_resource_pools[flat_numeric_source].get("maximum", 1)))
+		flat_numeric_pool = int(owner.numeric_resource_pools[flat_numeric_source].get("current", -1))
+	combat.turn_budget.reset(owner, combat.player_entities)
+	combat.hud.update_hud(owner, combat.tracker)
+	var flat_numeric_started := await _start_fixture_spell_from_picker(combat, "sandbox:failed_save_rider_flat_con")
+	FighterChecks._seed_die(20, 1)
+	var flat_numeric_hp := owner.current_hp
+	combat.call_deferred("_on_hex_clicked", Vector2i.ZERO)
+	var flat_numeric_prompt := false
+	var flat_numeric_preanswer_clear := false
+	for _frame in 240:
+		await get_tree().process_frame
+		for child in combat.hud.get_children():
+			if not child is PopupMenu or not child.visible or not str(child.title).contains("Failed CON save"):
+				continue
+			flat_numeric_prompt = true
+			flat_numeric_preanswer_clear = not owner.has_condition("poisoned") and owner.current_hp == flat_numeric_hp
+			var numeric_menu_id := 0
+			for option_index in SpellDamageRolls.failed_save_numeric_bonus_options(owner, "CON").size():
+				if str(SpellDamageRolls.failed_save_numeric_bonus_options(owner, "CON")[option_index].get("source_instance_id", "")) == flat_numeric_source:
+					numeric_menu_id = option_index + 1
+			child.id_pressed.emit(numeric_menu_id)
+			break
+		if flat_numeric_prompt:
+			break
+	for _frame in 180:
+		if combat.pending_action_type.is_empty() and not combat.resolving_player_action:
+			break
+		await get_tree().process_frame
+	_assert(flat_numeric_started and flat_numeric_prompt and flat_numeric_preanswer_clear and owner.current_hp == flat_numeric_hp - 4 and owner.has_condition("poisoned") and int(owner.numeric_resource_pools[flat_numeric_source].get("current", -1)) == flat_numeric_pool - 1, "An accepted renamed numeric bonus that still fails applies the flat failed-save rider after final resolution and charges once")
+
+	owner.remove_condition("poisoned")
+	owner.current_hp = 100
+	owner.spell_slots["1"] = 5
+	var flat_override_pool := int(owner.numeric_resource_pools[dex_override_source].get("current", -1))
+	combat.turn_budget.reset(owner, combat.player_entities)
+	combat.hud.update_hud(owner, combat.tracker)
+	var flat_override_started := await _start_fixture_spell_from_picker(combat, "sandbox:failed_save_rider_flat_dex")
+	FighterChecks._seed_die(20, 1)
+	var flat_override_hp := owner.current_hp
+	combat.call_deferred("_on_hex_clicked", Vector2i.ZERO)
+	var flat_override_prompt := false
+	var flat_override_preanswer_clear := false
+	for _frame in 240:
+		await get_tree().process_frame
+		for child in combat.hud.get_children():
+			if not child is PopupMenu or not child.visible or not str(child.title).contains("Failed DEX save"):
+				continue
+			flat_override_prompt = true
+			flat_override_preanswer_clear = not owner.has_condition("poisoned") and owner.current_hp == flat_override_hp
+			child.id_pressed.emit(_save_bonus_menu_id_for_source(child, _active_save_bonus_record_for_test(), dex_override_source))
+			break
+		if flat_override_prompt:
+			break
+	for _frame in 180:
+		if combat.pending_action_type.is_empty() and not combat.resolving_player_action:
+			break
+		await get_tree().process_frame
+	_assert(flat_override_started and flat_override_prompt and flat_override_preanswer_clear and owner.current_hp == flat_override_hp - 2 and not owner.has_condition("poisoned") and int(owner.numeric_resource_pools[dex_override_source].get("current", -1)) == flat_override_pool - 1, "A successful flat outcome override applies half damage and suppresses the failed-save rider after the chooser")
+
+	# A natural success and a no-roll automatic failure never open the choice.
+	owner.remove_condition("poisoned")
+	owner.remove_condition("frightened")
+	owner.numeric_resource_pools[dex_override_source]["current"] = 1
+	owner.current_hp = 100
+	var success_host := SpellCastContext.new()
+	success_host.caster = owner
+	success_host.hud = combat.hud
+	success_host.owner_label_for_character = func(_who): return "Save Owner"
+	var successful_save_override_options := SpellDamageRolls.failed_save_choice_options(owner, "DEX", true)
+	_assert(successful_save_override_options.any(func(option): return str(option.get("resolution", "")) == "outcome_override" and str(option.get("outcome", "")) == "failure" and str(option.get("source_instance_id", "")) == dex_outcome_source), "A rolled successful save offers the authored opposite outcome from its exact eligible source")
+	owner.add_condition("paralyzed", 1, "fixture:save_override_no_roll")
+	FighterChecks._seed_die(20, 1)
+	var automatic_failure := CombatAction.resolve_spell(owner, owner, spell, false, {"cast_context": success_host})
+	_assert(not bool(automatic_failure.get("saved", true)) and int(automatic_failure.get("save_total", 0)) <= -1000 and not automatic_failure.has("save_bonus_request") and int(owner.numeric_resource_pools[dex_override_source].get("current", -1)) == 1, "A no-roll paralyzed-save failure cannot obtain the explicit post-roll success choice")
+	owner.remove_condition("paralyzed")
+	owner.remove_condition("poisoned")
+	owner.remove_condition("frightened")
+	owner.remove_condition("blessed")
+	owner.roll_tokens["diviner_portent"] = []
+	owner.current_hp = 100
+	owner.spell_slots["1"] = 5
+	combat.turn_budget.reset(owner, combat.player_entities)
+	combat.hud.update_hud(owner, combat.tracker)
+	var generic_failure_started := await _start_fixture_spell_from_picker(combat, "sandbox:failed_save_rider_flat_dex")
+	FighterChecks._seed_die(20, 20)
+	var generic_failure_hp_before := owner.current_hp
+	var generic_failure_slots_before := int(owner.spell_slots.get("1", 0))
+	var generic_failure_pool_before := int(owner.numeric_resource_pools[dex_outcome_source].get("current", 0))
+	var generic_failure_log_start: int = combat.hud.log_text.get_parsed_text().length()
+	combat.call_deferred("_on_hex_clicked", Vector2i.ZERO)
+	var generic_failure_menu: PopupMenu = null
+	var generic_failure_record: Dictionary = {}
+	for _frame in 240:
+		await get_tree().process_frame
+		for child in combat.hud.get_children():
+			if child is PopupMenu and child.visible and str(child.title).contains("Successful DEX save"):
+				generic_failure_menu = child
+				break
+		if generic_failure_menu != null: break
+	var generic_failure_record_id := str(_active_save_bonus_record_for_test().get("request_id", ""))
+	generic_failure_record = _active_save_bonus_record_for_test()
+	var successful_save_facts: Dictionary = generic_failure_record.get("save_test", {}).duplicate(true)
+	var wrong_domain_answer := SpellDamageRolls.settle_failed_save_numeric_bonus(owner, owner, {"save_bonus_request": {"request_id": generic_failure_record_id}}, con_outcome_source)
+	var generic_failure_preanswer_clean := owner.current_hp == generic_failure_hp_before and not owner.has_condition("poisoned") and int(owner.numeric_resource_pools[dex_outcome_source].get("current", 0)) == generic_failure_pool_before and int(owner.spell_slots.get("1", 0)) == generic_failure_slots_before - 1
+	var generic_pool_snapshot: Dictionary = owner.numeric_resource_pools[dex_outcome_source].duplicate(true)
+	owner.numeric_resource_pools.erase(dex_outcome_source)
+	var generic_stale_source := SpellDamageRolls.settle_failed_save_numeric_bonus(owner, owner, {"save_bonus_request": {"request_id": generic_failure_record_id}}, dex_outcome_source)
+	owner.numeric_resource_pools[dex_outcome_source] = generic_pool_snapshot
+	if generic_failure_menu != null:
+		generic_failure_menu.id_pressed.emit(_save_bonus_menu_id_for_source(generic_failure_menu, generic_failure_record, dex_outcome_source))
+	for _frame in 180:
+		if combat.pending_action_type.is_empty() and not combat.resolving_player_action: break
+		await get_tree().process_frame
+	var generic_failure_log: String = combat.hud.log_text.get_parsed_text().substr(generic_failure_log_start)
+	_assert(int(successful_save_facts.get("natural_roll", 0)) == 20 and int(successful_save_facts.get("modifier", 0)) == 2 and int(successful_save_facts.get("dc", 0)) == 14 and int(successful_save_facts.get("total", 0)) == 22, "The real successful save menu captures its natural 20, DEX modifier, total and original DC")
+	_assert(bool(wrong_domain_answer.get("refused", false)) and bool(generic_stale_source.get("refused", false)) and generic_failure_preanswer_clean, "Wrong-ability and removed-source answers refuse before payment or consequences while the original spell slot remains paid once")
+	_assert(owner.current_hp == generic_failure_hp_before - 4 and owner.has_condition("poisoned") and int(owner.numeric_resource_pools[dex_outcome_source].get("current", 0)) == generic_failure_pool_before - 1 and int(owner.spell_slots.get("1", 0)) == generic_failure_slots_before - 1, "The chosen generic failure source charges once and settles the full failed-save damage/rider once")
+	_assert(bool(generic_failure_record.get("settled", false)) and generic_failure_record.get("options", []).any(func(option): return str(option.get("source_instance_id", "")) == dex_outcome_source and str(option.get("outcome", "")) == "failure") and generic_failure_log.contains("overridden to failure by %s" % dex_outcome_source) and generic_failure_log.contains("natural roll 20, total 22 vs DC 14"), "The successful natural-20 receipt retains its exact forced-failure source and numeric facts through settlement")
+	owner.remove_condition("poisoned")
+	owner.current_hp = 100
+	owner.spell_slots["1"] = 5
+	combat.turn_budget.reset(owner, combat.player_entities)
+	combat.hud.update_hud(owner, combat.tracker)
+	var generic_success_log_start: int = combat.hud.log_text.get_parsed_text().length()
+	var generic_success_started := await _start_fixture_spell_from_picker(combat, "sandbox:failed_save_rider_flat_con")
+	FighterChecks._seed_die(20, 1)
+	var generic_success_hp_before := owner.current_hp
+	var generic_success_slots_before := int(owner.spell_slots.get("1", 0))
+	var generic_success_pool_before := int(owner.numeric_resource_pools[con_outcome_source].get("current", 0))
+	combat.call_deferred("_on_hex_clicked", Vector2i.ZERO)
+	var generic_success_menu: PopupMenu = null
+	for _frame in 240:
+		await get_tree().process_frame
+		for child in combat.hud.get_children():
+			if child is PopupMenu and child.visible and str(child.title).contains("Failed CON save"):
+				generic_success_menu = child
+				break
+		if generic_success_menu != null: break
+	var generic_success_record := _active_save_bonus_record_for_test()
+	var failed_save_facts: Dictionary = generic_success_record.get("save_test", {}).duplicate(true)
+	if generic_success_menu != null:
+		generic_success_menu.id_pressed.emit(_save_bonus_menu_id_for_source(generic_success_menu, generic_success_record, con_outcome_source))
+	for _frame in 180:
+		if combat.pending_action_type.is_empty() and not combat.resolving_player_action: break
+		await get_tree().process_frame
+	var generic_success_log: String = combat.hud.log_text.get_parsed_text().substr(generic_success_log_start)
+	_assert(int(failed_save_facts.get("natural_roll", 0)) == 1 and int(failed_save_facts.get("modifier", 0)) == 2 and int(failed_save_facts.get("dc", 0)) == 14 and int(failed_save_facts.get("total", 0)) == 3, "The real failed CON save menu captures natural 1, modifier, total and original DC")
+	_assert(owner.current_hp == generic_success_hp_before - 2 and not owner.has_condition("poisoned") and int(owner.numeric_resource_pools[con_outcome_source].get("current", 0)) == generic_success_pool_before - 2 and int(owner.spell_slots.get("1", 0)) == generic_success_slots_before - 1, "The renamed generic success source charges twice, halves Cold damage and suppresses the failed-save rider")
+	_assert(bool(generic_success_record.get("settled", false)) and generic_success_record.get("options", []).any(func(option): return str(option.get("source_instance_id", "")) == con_outcome_source and str(option.get("outcome", "")) == "success") and generic_success_log.contains("overridden to success by %s" % con_outcome_source) and generic_success_log.contains("natural roll 1, total 3 vs DC 14"), "The natural-1 receipt retains its exact forced-success source and numeric facts through settlement")
+	SpellDamageRolls.clear_pending_requests()
+	GameManager.test_mode = true
+	# Prevent an initiative timer from advancing into the test's already-dead
+	# monster fixtures while this isolated combat scene is being torn down.
+	combat.tracker.clear()
+	_teardown_scene(combat)
+	await get_tree().process_frame
+	_assert(SpellDamageRolls._pending_requests.is_empty(), "Production CombatState scene exit clears retained cast, chooser and HUD references")
+	DataLoader.spells = prior_spells
+	DataLoader.classes = prior_classes
+	_exit_test()
+
+
 func test_roll_token_normal_controls_flow() -> void:
 	_enter_test("roll_token_normal_controls_flow")
 	_setup_world()
@@ -12190,6 +19046,147 @@ func test_short_rest_arcane_recovery_normal_controls_flow() -> void:
 	await get_tree().process_frame
 	_assert(RestRules.get_active_recovery_modal() == null and int(wiz.spell_slots.get("1", 0)) == 2 and int(wiz.feature_uses.get("wizard_arcane_recovery", 0)) == 1, "Declining Arcane Recovery in Dungeon closes the modal without spending the feature use")
 
+	RestRules.reset_windows()
+	_teardown_scene(dungeon)
+	_exit_test()
+
+
+func test_numeric_pool_rest_recovery_normal_controls_flow() -> void:
+	_enter_test("numeric_pool_rest_recovery_normal_controls_flow")
+	RestRules.reset_windows()
+	_setup_world()
+	GameManager.campaign_elapsed_seconds = 0
+
+	DataLoader._load_json_file("res://data/fixtures/shared_numeric_pool.json", "class")
+	var neutral_class: Dictionary = DataLoader.get_character_class("fixture:steady_spark_class")
+	var neutral_feature: Dictionary = neutral_class.get("features_by_level", {}).get("1", [{}])[0].duplicate(true)
+	_assert(not neutral_class.is_empty() and ClassFeature.content_error(neutral_feature).is_empty(), "Neutral rest-recovery pool fixture loads and validates in production DataLoader")
+	var renamed_class: Dictionary = neutral_class.duplicate(true)
+	renamed_class["id"] = "fixture:steady_spark_rest_class_renamed"
+	renamed_class["name"] = "Fixture Steady Spark Rest Renamed"
+	var renamed_feature: Dictionary = renamed_class["features_by_level"]["1"][0]
+	renamed_feature["id"] = "fixture:steady_spark_rest_renamed"
+	renamed_feature["name"] = "Steady Spark Rest Renamed"
+	renamed_feature["resource_pool"]["id"] = "fixture:steady_spark_rest_pool_renamed"
+	DataLoader._register_content(renamed_class, "class", "res://data/fixtures/shared_numeric_pool.json#rest-renamed")
+	renamed_class = DataLoader.get_character_class("fixture:steady_spark_rest_class_renamed")
+	renamed_feature = renamed_class.get("features_by_level", {}).get("1", [{}])[0].duplicate(true)
+	_assert(not renamed_class.is_empty() and ClassFeature.content_error(renamed_feature).is_empty(), "Renamed equivalent registers with both authored rest policies intact")
+
+	PlayerManager.reset()
+	PartyManager.reset()
+	var pool_owner := _fresh_char("Pool Rest Owner", "human", "fixture:steady_spark_class", {"STR": 10, "DEX": 18, "CON": 14, "INT": 16, "WIS": 10, "CHA": 10})
+	var renamed_owner := _fresh_char("Renamed Rest Owner", "human", "fixture:steady_spark_rest_class_renamed", {"STR": 10, "DEX": 14, "CON": 14, "INT": 16, "WIS": 10, "CHA": 10})
+	var unrelated_owner := _fresh_char("Unrelated Pool Owner", "human", "fighter", {"STR": 14, "DEX": 12, "CON": 14, "INT": 10, "WIS": 10, "CHA": 10})
+	var downed_owner := _fresh_char("Downed Pool Owner", "human", "fixture:steady_spark_class", {"STR": 10, "DEX": 10, "CON": 12, "INT": 14, "WIS": 10, "CHA": 10})
+	pool_owner.character_id = "fixture:normal_rest_pool_owner"
+	renamed_owner.character_id = "fixture:normal_rest_renamed_owner"
+	unrelated_owner.character_id = "fixture:normal_rest_unrelated_owner"
+	downed_owner.character_id = "fixture:normal_rest_downed_owner"
+	PlayerManager.add_player("Pool Rest Owner")
+	PlayerManager.add_player("Renamed Rest Owner")
+	PlayerManager.add_player("Unrelated Pool Owner")
+	PlayerManager.add_player("Downed Pool Owner")
+	for pair in [[0, pool_owner], [1, renamed_owner], [2, unrelated_owner], [3, downed_owner]]:
+		PlayerManager.set_player_character(int(pair[0]), pair[1])
+		PartyManager.register_player_character(int(pair[0]), pair[1])
+	downed_owner.current_hp = 0
+
+	var neutral_a := "fixture:normal_rest:source_a"
+	var neutral_b := "fixture:normal_rest:source_b"
+	var renamed_source := "fixture:normal_rest:renamed_source"
+	var downed_source := "fixture:normal_rest:downed_source"
+	var neutral_aq := ResourcePoolRules.acquire(pool_owner, pool_owner.get_feature("fixture:steady_spark"), neutral_a)
+	var neutral_bq := ResourcePoolRules.acquire(pool_owner, pool_owner.get_feature("fixture:steady_spark"), neutral_b)
+	var renamed_aq := ResourcePoolRules.acquire(renamed_owner, renamed_owner.get_feature("fixture:steady_spark_rest_renamed"), renamed_source)
+	var downed_aq := ResourcePoolRules.acquire(downed_owner, downed_owner.get_feature("fixture:steady_spark"), downed_source)
+	var unrelated_feature: Dictionary = neutral_feature.duplicate(true)
+	unrelated_feature["id"] = "fixture:unrelated_pool_feature"
+	unrelated_feature["name"] = "Unrelated Pool"
+	unrelated_feature["resource_pool"]["id"] = "fixture:unrelated_rest_pool"
+	unrelated_feature["resource_pool"].erase("recovery")
+	unrelated_owner.features.append(unrelated_feature)
+	var unrelated_source := "fixture:normal_rest:unrelated_source"
+	var unrelated_aq := ResourcePoolRules.acquire(unrelated_owner, unrelated_feature, unrelated_source)
+	pool_owner.numeric_resource_pools[neutral_b]["current"] = int(pool_owner.numeric_resource_pools[neutral_b]["capacity"])
+	ResourcePoolRules.spend(pool_owner, neutral_a)
+	ResourcePoolRules.spend(renamed_owner, renamed_source)
+	ResourcePoolRules.spend(downed_owner, downed_source)
+	var capacity := int(ResourcePoolRules.availability(pool_owner, neutral_a).get("capacity", 0))
+	_assert(neutral_aq.get("success", false) and neutral_bq.get("success", false) and renamed_aq.get("success", false) and downed_aq.get("success", false) and unrelated_aq.get("success", false) and capacity == pool_owner.proficiency_bonus and int(ResourcePoolRules.availability(pool_owner, neutral_a).get("current", -1)) == 0 and int(ResourcePoolRules.availability(pool_owner, neutral_b).get("current", -1)) == capacity and int(ResourcePoolRules.availability(renamed_owner, renamed_source).get("current", -1)) == 0 and int(ResourcePoolRules.availability(downed_owner, downed_source).get("current", -1)) == 0 and int(ResourcePoolRules.availability(unrelated_owner, unrelated_source).get("current", -1)) == 1, "Neutral, renamed, downed and unrelated pools begin at distinct exact actor/source quantities")
+	var wrong_actor_recovery := ResourcePoolRules.recover(renamed_owner, neutral_feature, neutral_a, "short_rest_completed")
+	_assert(not wrong_actor_recovery.get("success", true) and int(ResourcePoolRules.availability(pool_owner, neutral_a).get("current", -1)) == 0, "Recovery refuses a source ID owned by another actor")
+
+	var elapsed_before := GameManager.campaign_elapsed_seconds
+	GameManager.advance_campaign_time(900)
+	_assert(GameManager.campaign_elapsed_seconds == elapsed_before + 900 and int(ResourcePoolRules.availability(pool_owner, neutral_a).get("current", -1)) == 0 and int(ResourcePoolRules.availability(renamed_owner, renamed_source).get("current", -1)) == 0 and int(ResourcePoolRules.availability(downed_owner, downed_source).get("current", -1)) == 0 and int(ResourcePoolRules.availability(unrelated_owner, unrelated_source).get("current", -1)) == 1, "Ordinary elapsed campaign time advances without impersonating either rest-completion trigger")
+
+	GameManager.current_state = GameManager.GameState.OVERWORLD
+	var overworld: Node = await _spawn_scene("res://scenes/overworld.tscn", 0.6)
+	var ow_hud: Node = overworld.hud
+	var before_start := GameManager.campaign_elapsed_seconds
+	ow_hud.btn_rest.pressed.emit()
+	await get_tree().process_frame
+	var choice_modal := RestRules.get_active_rest_choice_modal()
+	_assert(choice_modal != null and int(ResourcePoolRules.availability(pool_owner, neutral_a).get("current", -1)) == 0 and int(ResourcePoolRules.availability(renamed_owner, renamed_source).get("current", -1)) == 0 and GameManager.campaign_elapsed_seconds == before_start, "Starting the actual Overworld Rest control opens choices without premature recovery or elapsed time")
+	(choice_modal.get_meta("btn_cancel") as Button).pressed.emit()
+	await get_tree().process_frame
+	_assert(RestRules.get_active_rest_choice_modal() == null and GameManager.campaign_elapsed_seconds == before_start and int(ResourcePoolRules.availability(pool_owner, neutral_a).get("current", -1)) == 0 and int(ResourcePoolRules.availability(renamed_owner, renamed_source).get("current", -1)) == 0, "Cancelling the normal Rest control preserves campaign time and every spent pool")
+
+	ow_hud.btn_rest.pressed.emit()
+	await get_tree().process_frame
+	choice_modal = RestRules.get_active_rest_choice_modal()
+	(choice_modal.get_meta("btn_short_rest") as Button).pressed.emit()
+	await get_tree().process_frame
+	_assert(GameManager.campaign_elapsed_seconds == before_start + 3600 and int(ResourcePoolRules.availability(pool_owner, neutral_a).get("current", -1)) == 1 and int(ResourcePoolRules.availability(pool_owner, neutral_b).get("current", -1)) == capacity and int(ResourcePoolRules.availability(renamed_owner, renamed_source).get("current", -1)) == 1, "Normal-control Short Rest restores one fixed use, respects capacity and works for the renamed definition")
+	_assert(int(ResourcePoolRules.availability(downed_owner, downed_source).get("current", -1)) == 0 and int(ResourcePoolRules.availability(unrelated_owner, unrelated_source).get("current", -1)) == 1, "Short Rest eligibility excludes the downed owner and leaves an unrelated pool untouched")
+	ResourcePoolRules.spend(pool_owner, neutral_a)
+	ResourcePoolRules.spend(renamed_owner, renamed_source)
+	_assert(int(ResourcePoolRules.availability(pool_owner, neutral_a).get("current", -1)) == 0 and int(ResourcePoolRules.availability(pool_owner, neutral_b).get("current", -1)) == capacity, "The next rest begins with one depleted exact source and one full source")
+
+	_teardown_scene(overworld)
+	GameManager.current_state = GameManager.GameState.DUNGEON
+	var dungeon: Node = await _spawn_scene("res://scenes/dungeon.tscn", 0.6)
+	GameManager.game_in_progress = true
+	downed_owner.current_hp = 0
+	var before_refusal := GameManager.campaign_elapsed_seconds
+	dungeon.hud.btn_rest.pressed.emit()
+	await get_tree().process_frame
+	choice_modal = RestRules.get_active_rest_choice_modal()
+	_assert(choice_modal != null and int(ResourcePoolRules.availability(pool_owner, neutral_a).get("current", -1)) == 0 and GameManager.campaign_elapsed_seconds == before_refusal, "Starting the actual Dungeon Long Rest choice also leaves resources and time alone")
+	pool_owner.current_hp = 0
+	renamed_owner.current_hp = 0
+	unrelated_owner.current_hp = 0
+	(choice_modal.get_meta("btn_long_rest") as Button).pressed.emit()
+	await get_tree().process_frame
+	_assert(RestRules.get_active_rest_choice_modal() == null and GameManager.campaign_elapsed_seconds == before_refusal and int(ResourcePoolRules.availability(pool_owner, neutral_a).get("current", -1)) == 0 and int(ResourcePoolRules.availability(pool_owner, neutral_b).get("current", -1)) == capacity and int(ResourcePoolRules.availability(renamed_owner, renamed_source).get("current", -1)) == 0, "Long Rest refusal with no conscious party members preserves time and all pool quantities")
+	pool_owner.current_hp = pool_owner.max_hp
+	renamed_owner.current_hp = renamed_owner.max_hp
+	unrelated_owner.current_hp = unrelated_owner.max_hp
+
+	var before_long_choice := GameManager.campaign_elapsed_seconds
+	dungeon.hud.btn_rest.pressed.emit()
+	await get_tree().process_frame
+	choice_modal = RestRules.get_active_rest_choice_modal()
+	_assert(choice_modal != null and int(ResourcePoolRules.availability(pool_owner, neutral_a).get("current", -1)) == 0 and int(ResourcePoolRules.availability(renamed_owner, renamed_source).get("current", -1)) == 0, "Long Rest selection does not recover before the actual control is chosen")
+	(choice_modal.get_meta("btn_long_rest") as Button).pressed.emit()
+	await get_tree().process_frame
+	_assert(GameManager.campaign_elapsed_seconds == before_long_choice + 28800 and int(ResourcePoolRules.availability(pool_owner, neutral_a).get("current", -1)) == capacity and int(ResourcePoolRules.availability(pool_owner, neutral_b).get("current", -1)) == capacity and int(ResourcePoolRules.availability(renamed_owner, renamed_source).get("current", -1)) == capacity, "Normal-control Long Rest advances eight hours and fills each eligible exact pool to capacity")
+	_assert(int(ResourcePoolRules.availability(downed_owner, downed_source).get("current", -1)) == 0 and int(ResourcePoolRules.availability(unrelated_owner, unrelated_source).get("current", -1)) == 1, "Long Rest still excludes the downed owner and does not touch the unrelated pool")
+
+	ResourcePoolRules.spend(pool_owner, neutral_a)
+	ResourcePoolRules.spend(renamed_owner, renamed_source)
+	var saved_time := GameManager.campaign_elapsed_seconds
+	SaveManager.delete_save("numeric_pool_rest_recovery_acceptance")
+	_assert(SaveManager.save_game("numeric_pool_rest_recovery_acceptance"), "Post-rest remaining pool uses save at the actual Dungeon entrance checkpoint")
+	_assert(SaveManager.load_game("numeric_pool_rest_recovery_acceptance"), "Rest-recovered pool state reloads through the production SaveManager")
+	var restored_owner: Character = PlayerManager.get_player(0).get("character")
+	var restored_renamed: Character = PlayerManager.get_player(1).get("character")
+	var restored_unrelated: Character = PlayerManager.get_player(2).get("character")
+	var restored_downed: Character = PlayerManager.get_player(3).get("character")
+	_assert(GameManager.campaign_elapsed_seconds == saved_time and int(ResourcePoolRules.availability(restored_owner, neutral_a).get("current", -1)) == capacity - 1 and int(ResourcePoolRules.availability(restored_owner, neutral_b).get("current", -1)) == capacity and int(ResourcePoolRules.availability(restored_renamed, renamed_source).get("current", -1)) == capacity - 1, "Save reload preserves remaining exact-source quantities without replaying Long Rest recovery")
+	_assert(int(ResourcePoolRules.availability(restored_unrelated, unrelated_source).get("current", -1)) == 1 and int(ResourcePoolRules.availability(restored_downed, downed_source).get("current", -1)) == 0, "Save reload preserves unrelated and ineligible pool quantities")
+	SaveManager.delete_save("numeric_pool_rest_recovery_acceptance")
 	RestRules.reset_windows()
 	_teardown_scene(dungeon)
 	_exit_test()

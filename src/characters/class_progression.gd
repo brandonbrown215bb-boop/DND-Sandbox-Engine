@@ -155,9 +155,22 @@ static func selected_feature_effects_of_type(c: Character, effect_type: String) 
 	for feature in c.features:
 		for effect in feature.get("effects", []) + feature.get("passive_effects", []):
 			if str(effect.get("type", "")) == effect_type:
-				var declared_effect: Dictionary = effect.duplicate(true)
-				declared_effect["feature_id"] = str(feature.get("id", ""))
-				matches.append(declared_effect)
+				var source_ids: Array[String] = []
+				var source_id := str(feature.get("source_instance_id", ""))
+				if not source_id.is_empty():
+					source_ids.append(source_id)
+				elif effect.has("use_limit") and feature.has("resource_pool") and feature["resource_pool"] is Dictionary and feature["resource_pool"].has("id"):
+					source_ids = ResourcePoolRules.source_instance_ids(c, str(feature["resource_pool"]["id"]))
+				else:
+					source_ids.append(str(feature.get("id", "")))
+				for exact_source_id in source_ids:
+					var declared_effect: Dictionary = effect.duplicate(true)
+					declared_effect["feature_id"] = str(feature.get("id", ""))
+					declared_effect["feature_name"] = str(feature.get("name", feature.get("id", "")))
+					declared_effect["source_instance_id"] = exact_source_id
+					if feature.has("resource_pool") and feature["resource_pool"] is Dictionary and feature["resource_pool"].has("id"):
+						declared_effect["resource_pool_definition_id"] = str(feature["resource_pool"]["id"])
+					matches.append(declared_effect)
 	for effect in selected_feature_effects(c):
 		if str(effect.get("type", "")) == effect_type:
 			matches.append(effect)

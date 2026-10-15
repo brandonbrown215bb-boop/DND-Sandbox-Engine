@@ -704,6 +704,7 @@ func _setup_combat_monsters() -> void:
 func _roll_initiative_and_start() -> void:
 	tracker.clear()
 	CombatAction.advance_combat_turn(null)
+	CombatAction.reset_bounded_owner_turn_rider_locks()
 	var seeded_init_map: Dictionary = GameManager.transition_context.get("initiative_decisions", {}) if GameManager.transition_context.get("initiative_decisions") is Dictionary else {}
 
 	# Roll players
@@ -792,6 +793,8 @@ func _start_combat_turn() -> void:
 	CreatedCreatureCombat.reconcile(self)
 	var next_entity: Variant = tracker.get_active().get("entity")
 	CombatAction.advance_combat_turn(next_entity if next_entity is Character else null)
+	if next_entity is Character:
+		CombatAction.start_bounded_owner_turn_interval(next_entity)
 	for player in player_entities:
 		var member: Character = player.get("character")
 		if member != null:
@@ -2098,6 +2101,15 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 		"cancel":
 			_cancel_pending_action()
 			return
+		"dismiss_timed_numeric_modifier":
+			var dismissed := active_character.dismiss_campaign_modifier(str(extra_data.get("source_instance_id", "")), str(extra_data.get("grant_instance_id", "")), int(GameManager.campaign_elapsed_seconds))
+			if dismissed.get("success", false):
+				var end_message := "The timed benefit ends without a cooldown." if int(dismissed.get("cooldown_seconds", 0)) == 0 else "The timed benefit ends; this source's cooldown begins now."
+				hud.add_log(end_message)
+			else:
+				hud.add_log(str(dismissed.get("message", "That timed benefit is no longer active.")))
+			hud.update_hud(active_character, tracker)
+			return
 		"toggle_find_steed_mount":
 			_toggle_find_steed_mount()
 			return
@@ -2235,6 +2247,11 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 				_highlight_spell_targets()
 		"use_feature":
 			var feature: Dictionary = extra_data.get("feature", {})
+			if feature.has("resource_pool") and feature["resource_pool"].has("die_size"):
+				var pool_state := ResourcePoolRules.availability(active_character, str(feature.get("source_instance_id", "")))
+				if not pool_state.get("available", false):
+					hud.add_log(str(pool_state.get("message", "No dice remain for that source.")))
+					return
 			if str(feature.get("id", "")) in ["created_attack", "created_guard"]:
 				if str(feature["id"]) == "created_attack":
 					pending_action_type = "created_creature_order"
@@ -2640,6 +2657,34 @@ func _offer_weapon_damage_riders(actor: Character, target: Dictionary, weapon: D
 	for rider in CombatAction.resolve_weapon_damage_riders(actor, target, choices, weapon, bool(result.get("crit", false))):
 		result["damage"] = int(result.get("damage", 0)) + int(rider.get("damage", 0))
 		hud.add_log("%s deals %d extra %s damage." % [str(rider.get("feature_id", "Damage rider")), int(rider.get("damage", 0)), str(rider.get("damage_type", "radiant"))], false)
+
+
+func _resolve_player_weapon_attack(attacker: Character, target, weapon: Dictionary, advantage: bool, disadvantage: bool, decisions: Dictionary, additional_damage: Dictionary) -> Dictionary:
+	var attack_decisions := decisions.duplicate(true)
+	attack_decisions["allow_weapon_attack_bonus"] = true
+	attack_decisions["players"] = player_entities
+	attack_decisions["monsters"] = monster_entities
+	var result := CombatAction.resolve_weapon_attack(attacker, target, weapon, advantage, disadvantage, attack_decisions, additional_damage)
+	if not result.has("weapon_attack_bonus_request"):
+		return result
+	var record := SpellDamageRolls.weapon_attack_bonus_record(attacker, target, result)
+	if record.is_empty():
+		return SpellDamageRolls.settle_weapon_attack_bonus(attacker, target, result, "")
+	if attacker.has_feature("rogue_stroke_of_luck") and int(attacker.feature_uses.get("rogue_stroke_of_luck", 0)) > 0:
+		var stroke_accepted := await hud.request_reaction(_owner_label_for_character(attacker), "stroke_of_luck", "This attack failed (%d vs AC %d). Turn the captured d20 into a 20?" % [int(result.get("attack_roll", 0)), int(result.get("target_ac", 0))], "Use Stroke of Luck?", "Stroke of Luck", "Stroke of Luck — %s" % _owner_label_for_character(attacker))
+		if stroke_accepted:
+			var stroke_settlement := SpellDamageRolls.settle_weapon_attack_bonus_with_stroke(attacker, target, result, true)
+			if not bool(stroke_settlement.get("refused", false)):
+				return stroke_settlement
+			hud.add_log("[color=yellow]%s[/color]" % str(stroke_settlement.get("message", "Stroke of Luck was no longer available.")))
+	var source_id := await hud.request_weapon_attack_numeric_bonus(_owner_label_for_character(attacker), int(result.get("attack_roll", 0)), int(result.get("target_ac", 0)), record.get("options", []), "weapon attack", bool(record.get("context", {}).get("provisional_hit", false)))
+	var settled := SpellDamageRolls.settle_weapon_attack_bonus(attacker, target, result, source_id)
+	if bool(settled.get("refused", false)):
+		hud.add_log("[color=yellow]%s The attack bonus was declined; the captured roll continues unchanged.[/color]" % str(settled.get("message", "The selected source is no longer valid.")))
+		settled = SpellDamageRolls.settle_weapon_attack_bonus(attacker, target, result, "")
+	if settled is Dictionary:
+		settled["weapon_attack_bonus_settled"] = true
+	return settled
 
 func _pending_spell_origin() -> Vector2i:
 	var origin: Vector2i = player_entities[current_player_idx]["hex_position"]
@@ -3273,9 +3318,9 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 		# Resolve weapon attack
 		var conjure_minor_elementals_packet := await _conjure_minor_elementals_damage_choice(active_character, clicked_monster)
 		var attack_additional_damage := {"packets": [conjure_minor_elementals_packet]} if not conjure_minor_elementals_packet.is_empty() else {}
-		var result := CombatAction.resolve_weapon_attack(active_character, clicked_monster, weapon, has_advantage, has_disadvantage, attack_reaction_decisions, attack_additional_damage)
+		var result := await _resolve_player_weapon_attack(active_character, clicked_monster, weapon, has_advantage, has_disadvantage, attack_reaction_decisions, attack_additional_damage)
 		rogue_steady_aim_armed = false
-		if not result.get("hit", false) and active_character.has_feature("rogue_stroke_of_luck") and int(active_character.feature_uses.get("rogue_stroke_of_luck", 0)) > 0:
+		if not bool(result.get("weapon_attack_bonus_settled", false)) and not result.get("hit", false) and active_character.has_feature("rogue_stroke_of_luck") and int(active_character.feature_uses.get("rogue_stroke_of_luck", 0)) > 0:
 			var stroke_accepted := await hud.request_reaction(_owner_label_for_character(active_character), "stroke_of_luck", "This attack failed (%d vs AC %d). Turn the d20 into a 20?" % [int(result.get("attack_roll", 0)), int(result.get("target_ac", 0))], "Use Stroke of Luck?", "Stroke of Luck", "Stroke of Luck — %s" % _owner_label_for_character(active_character))
 			if stroke_accepted:
 				attack_reaction_decisions["stroke_of_luck"] = true
@@ -3328,7 +3373,7 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 				extra_decisions["barbarian_brutal_strike_effects"] = extra_brutal
 			var extra_packet := await _conjure_minor_elementals_damage_choice(active_character, clicked_monster)
 			var extra_additional_damage := {"packets": [extra_packet]} if not extra_packet.is_empty() else {}
-			var extra_result := CombatAction.resolve_weapon_attack(active_character, clicked_monster, weapon, has_advantage, has_disadvantage, extra_decisions, extra_additional_damage)
+			var extra_result := await _resolve_player_weapon_attack(active_character, clicked_monster, weapon, has_advantage, has_disadvantage, extra_decisions, extra_additional_damage)
 			await _offer_divine_smite(clicked_monster, weapon, extra_result)
 			await _offer_sneak_attack(clicked_monster, weapon, extra_result, active_character, has_advantage, has_disadvantage)
 			if int(extra_result.get("damage", 0)) > 0:
@@ -3629,6 +3674,7 @@ func _execute_player_spell(target_coord: Vector2i, additional_target_coord: Vect
 
 func _spell_cast_context(target_coord: Vector2i = Vector2i.ZERO, additional_target_coord: Vector2i = Vector2i(9999, 9999), extra_target_coords: Array[Vector2i] = [], chain_target_ids: Array[String] = []) -> SpellCastContext:
 	var cast := SpellCastContext.new()
+	cast.action_id = "magic"
 	cast.caster = active_character
 	cast.spell = pending_spell_data
 	cast.target_coord = target_coord
@@ -4150,7 +4196,7 @@ func _execute_class_feature(feature: Dictionary) -> void:
 		await _execute_cleric_turn_undead(feature)
 		return
 	if feature.has("executor"):
-		var result := ClassFeature.execute(active_character, feature, null, turn_budget)
+		var result := ClassFeature.execute(active_character, feature, null, turn_budget, str(feature.get("source_instance_id", "")), int(feature.get("selected_pool_quantity", 0)))
 		if not result.get("success", false):
 			hud.add_log(result.get("message", "Feature unavailable."))
 			return

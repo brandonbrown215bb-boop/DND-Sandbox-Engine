@@ -1,0 +1,56 @@
+{
+  "id": "fixture:pool_exchange_class",
+  "name": "Fixture Pool Exchange",
+  "description": "Neutral class fixture for fixed exchanges between exact source-owned numeric pools.",
+  "hit_die": "d8",
+  "primary_ability": "INT",
+  "features_by_level": {
+    "1": [
+      {
+        "id": "fixture:exchange_pool_a",
+        "name": "Exchange Pool A",
+        "executor": "class_feature",
+        "type": "active",
+        "target": "self",
+        "action_cost": "free",
+        "resource_cost": 1,
+        "resource_pool": {
+          "id": "fixture:exchange_pool_a_uses",
+          "capacity_formula": 3,
+          "initial_quantity": 3
+        },
+        "effects": [{ "type": "grant_condition", "condition": "exchange_pool_a_used", "duration": 1 }]
+      },
+      {
+        "id": "fixture:exchange_pool_b",
+        "name": "Exchange Pool B",
+        "executor": "class_feature",
+        "type": "active",
+        "target": "self",
+        "action_cost": "free",
+        "resource_cost": 1,
+        "resource_pool": {
+          "id": "fixture:exchange_pool_b_uses",
+          "capacity_formula": 3,
+          "initial_quantity": 0
+        },
+        "effects": [{ "type": "grant_condition", "condition": "exchange_pool_b_used", "duration": 1 }]
+      },
+      {
+        "id": "fixture:exchange_two_for_one",
+        "name": "Exchange Two for One",
+        "executor": "class_feature",
+        "type": "active",
+        "target": "self",
+        "action_cost": "action",
+        "resource_exchange": {
+          "payment_pool_id": "fixture:exchange_pool_a_uses",
+          "payment_quantity": 2,
+          "restoration_pool_id": "fixture:exchange_pool_b_uses",
+          "restoration_quantity": 1
+        },
+        "effects": []
+      }
+    ]
+  }
+}

@@ -1,0 +1,40 @@
+[
+  {
+    "id": "fixture:attack_total_adjustment_class",
+    "name": "Fixture Attack Total Adjustment",
+    "hit_die": "d8",
+    "primary_ability": "DEX",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:downward_total",
+          "name": "Downward Total",
+          "type": "passive",
+          "resource_pool": { "id": "fixture:downward_total_pool", "capacity_formula": 4, "initial_quantity": 4 },
+          "passive_effects": [
+            { "type": "attack_total_adjustment", "amount": 6, "cost": 1, "domains": ["weapon_attack", "shared_spell_attack"], "trigger": "provisional_hit", "payment_policy": "pay_on_choice" }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "fixture:defending_ac_adjustment_class",
+    "name": "Fixture Defending AC Adjustment",
+    "hit_die": "d10",
+    "primary_ability": "CON",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:raised_defense",
+          "name": "Raised Defense",
+          "type": "passive",
+          "resource_pool": { "id": "fixture:raised_defense_pool", "capacity_formula": 4, "initial_quantity": 4 },
+          "passive_effects": [
+            { "type": "defending_ac_adjustment", "amount": 2, "cost": 2, "domains": ["weapon_attack", "shared_spell_attack"], "trigger": "provisional_hit", "payment_policy": "pay_on_converted_success" }
+          ]
+        }
+      ]
+    }
+  }
+]

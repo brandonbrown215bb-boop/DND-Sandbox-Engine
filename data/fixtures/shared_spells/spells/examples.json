@@ -152,5 +152,602 @@
         "half_on_save": false
       }
     ]
+  },
+  {
+    "id": "sandbox:ember_echo",
+    "name": "Ember Echo",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "school": "evocation",
+    "steps": [
+      {
+        "id": "burn",
+        "type": "damage",
+        "damage": "2d6",
+        "damage_type": "fire"
+      },
+      {
+        "id": "echo_heal",
+        "type": "effect",
+        "target": "self",
+        "when": {
+          "result": {
+            "step": "burn",
+            "target": "cast_target",
+            "component": "fire",
+            "measure": "resolved"
+          },
+          "gt": 0
+        },
+        "effects": [
+          {
+            "type": "heal",
+            "value": {
+              "op": "floor_divide",
+              "left": {
+                "result": {
+                  "step": "burn",
+                  "target": "cast_target",
+                  "component": "fire",
+                  "measure": "resolved"
+                }
+              },
+              "right": 2
+            },
+            "when": {
+              "all": [
+                { "fact": "target.is_source_owner", "eq": true },
+                { "fact": "target.is_wounded", "eq": true }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sandbox:ember_echo_renamed",
+    "name": "Cinder Return",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "school": "evocation",
+    "steps": [
+      {
+        "id": "burn",
+        "type": "damage",
+        "damage": "2d6",
+        "damage_type": "fire"
+      },
+      {
+        "id": "echo_heal",
+        "type": "effect",
+        "target": "self",
+        "when": {
+          "result": {
+            "step": "burn",
+            "target": "cast_target",
+            "component": "fire",
+            "measure": "resolved"
+          },
+          "gt": 0
+        },
+        "effects": [
+          {
+            "type": "heal",
+            "value": {
+              "op": "floor_divide",
+              "left": {
+                "result": {
+                  "step": "burn",
+                  "target": "cast_target",
+                  "component": "fire",
+                  "measure": "resolved"
+                }
+              },
+              "right": 2
+            },
+            "when": {
+              "all": [
+                { "fact": "target.is_source_owner", "eq": true },
+                { "fact": "target.is_wounded", "eq": true }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sandbox:slotward",
+    "name": "Slotward",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 0,
+    "target": "self",
+    "steps": [
+      {
+        "id": "grant_guard",
+        "type": "effect",
+        "target": "self",
+        "effects": [
+          {
+            "type": "temporary_hp",
+            "value": {
+              "op": "max",
+              "left": 1,
+              "right": {
+                "op": "add",
+                "left": { "caster_ability_modifier": "INT" },
+                "right": { "selected_slot_level": true }
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sandbox:formula_reference_probe",
+    "name": "Formula Reference Probe",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 0,
+    "target": "self",
+    "steps": [
+      { "id": "pause_damage", "type": "damage", "target": "self", "damage": "2d6", "damage_type": "force" },
+      { "id": "character_level", "type": "effect", "target": "self", "effects": [{ "type": "heal", "value": { "caster_level": true } }] },
+      { "id": "class_level", "type": "effect", "target": "self", "effects": [{ "type": "heal", "value": { "caster_class_level": "sorcerer" } }] },
+      { "id": "proficiency", "type": "effect", "target": "self", "effects": [{ "type": "heal", "value": { "caster_proficiency_bonus": true } }] },
+      { "id": "ability_modifier", "type": "effect", "target": "self", "effects": [{ "type": "heal", "value": { "caster_ability_modifier": "INT" } }] },
+      { "id": "selected_slot", "type": "effect", "target": "self", "effects": [{ "type": "heal", "value": { "selected_slot_level": true } }] }
+    ]
+  },
+  {
+    "id": "sandbox:breakpoint_lookup_probe",
+    "name": "Breakpoint Lookup Probe",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 0,
+    "target": "self",
+    "steps": [
+      {
+        "id": "heal_by_level_band",
+        "type": "effect",
+        "target": "self",
+        "effects": [
+          {
+            "type": "heal",
+            "value": {
+              "op": "add",
+              "left": {
+                "op": "breakpoint_lookup",
+                "input": { "caster_level": true },
+                "breakpoints": [
+                  { "threshold": 1, "value": 2 },
+                  { "threshold": 3, "value": 4 },
+                  { "threshold": 9, "value": 6 }
+                ]
+              },
+              "right": 1
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sandbox:breakpoint_constant_probe",
+    "name": "Constant Breakpoint Probe",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 0,
+    "target": "self",
+    "steps": [
+      {
+        "id": "heal_by_constant_band",
+        "type": "effect",
+        "target": "self",
+        "effects": [
+          {
+            "type": "heal",
+            "value": {
+              "op": "breakpoint_lookup",
+              "input": "3+2",
+              "breakpoints": [
+                { "threshold": 1, "value": 4 },
+                { "threshold": 5, "value": 7 },
+                { "threshold": 9, "value": 10 }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sandbox:area_hp_tithe",
+    "name": "Area HP Tithe",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "area",
+    "school": "evocation",
+    "effects": [{ "type": "area_selection", "shape": "sphere", "radius": 2 }],
+    "steps": [
+      {
+        "id": "blast",
+        "type": "damage",
+        "target": "area",
+        "shape": "sphere",
+        "radius": 2,
+        "damage": "12",
+        "damage_type": "fire"
+      },
+      {
+        "id": "tithe_heal",
+        "type": "effect",
+        "target": "self",
+        "when": {
+          "result_sum": { "step": "blast", "component": "fire", "measure": "hp_loss" },
+          "gt": 0
+        },
+        "effects": [
+          {
+            "type": "heal",
+            "value": {
+              "op": "floor_divide",
+              "left": { "result_sum": { "step": "blast", "component": "fire", "measure": "hp_loss" } },
+              "right": 2
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sandbox:area_hp_tithe_renamed",
+    "name": "Cinder Tithe",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "area",
+    "school": "evocation",
+    "effects": [{ "type": "area_selection", "shape": "sphere", "radius": 2 }],
+    "steps": [
+      {
+        "id": "flare",
+        "type": "damage",
+        "target": "area",
+        "shape": "sphere",
+        "radius": 2,
+        "damage": "10",
+        "damage_type": "cold"
+      },
+      {
+        "id": "return_vigor",
+        "type": "effect",
+        "target": "self",
+        "when": {
+          "result_sum": { "step": "flare", "component": "cold", "measure": "hp_loss" },
+          "gt": 0
+        },
+        "effects": [
+          {
+            "type": "heal",
+            "value": {
+              "op": "floor_divide",
+              "left": { "result_sum": { "step": "flare", "component": "cold", "measure": "hp_loss" } },
+              "right": 2
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sandbox:steady_save_burst",
+    "name": "Steady Save Burst",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 12,
+    "target": "single",
+    "save": "DEX",
+    "damage": "4",
+    "damage_type": "fire",
+    "half_on_save": true
+  },
+  {
+    "id": "sandbox:fact_window_neutral",
+    "name": "Wounded Spark",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "steps": [
+      {
+        "id": "eligible_mend",
+        "type": "effect",
+        "target": "target",
+        "effects": [{
+          "type": "heal",
+          "value": "1",
+          "when": { "fact": "target.current_hp", "eq": 0 }
+        }, {
+          "type": "heal",
+          "value": "2",
+          "when": {
+            "all": [
+              { "fact": "actor.level", "gte": 1 },
+              { "fact": "actor.id", "ne": "" },
+              {
+                "any": [
+                  { "fact": "target.current_hp", "lt": 20 },
+                  { "not": { "fact": "target.is_alive", "eq": true } }
+                ]
+              }
+            ]
+          }
+        }]
+      }
+    ]
+  },
+  {
+    "id": "sandbox:fact_window_renamed",
+    "name": "Cinder's Return",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "steps": [
+      {
+        "id": "return_vigor",
+        "type": "effect",
+        "target": "target",
+        "effects": [{
+          "type": "heal",
+          "value": "5",
+          "when": {
+            "all": [
+              { "fact": "actor.level", "gte": 3 },
+              { "fact": "actor.id", "ne": "" },
+              {
+                "any": [
+                  { "fact": "target.current_hp", "lt": 40 },
+                  { "not": { "fact": "target.is_source_owner", "eq": true } }
+                ]
+              }
+            ]
+          }
+        }]
+      }
+    ]
+  },
+  {
+    "id": "sandbox:fact_window_missing_probe",
+    "name": "Uncertain Echo",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "steps": [
+      {
+        "id": "missing_fact_probe",
+        "type": "effect",
+        "target": "target",
+        "effects": [{
+          "type": "heal",
+          "value": "7",
+          "when": {
+            "all": [
+              { "fact": "actor.level", "gte": 1 },
+              {
+                "any": [
+                  { "fact": "actor.level", "lte": 2 },
+                  { "not": { "fact": "target.current_hp", "ne": 0 } }
+                ]
+              }
+            ]
+          }
+        }]
+      }
+    ]
+  },
+  {
+    "id": "sandbox:receipt_probe",
+    "name": "Receipt Probe",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "area",
+    "effects": [{ "type": "area_selection", "shape": "sphere", "radius": 2 }],
+    "steps": [
+      {
+        "id": "prelude",
+        "type": "damage",
+        "target": "area",
+        "shape": "sphere",
+        "radius": 2,
+        "damage": "2",
+        "damage_type": "force"
+      },
+      {
+        "id": "impact",
+        "type": "save",
+        "target": "area",
+        "shape": "sphere",
+        "radius": 2,
+        "save": "DEX",
+        "damage_components": [
+          { "id": "fire_a", "damage": "6", "damage_type": "fire" },
+          { "id": "fire_b", "damage": "4", "damage_type": "fire" }
+        ]
+      },
+      {
+        "id": "echo_retained",
+        "type": "effect",
+        "target": "area",
+        "shape": "sphere",
+        "radius": 2,
+        "effects": [{ "type": "heal", "value": { "result": { "step": "prelude", "target": "same", "component": "force", "component_id": "prelude:force", "measure": "raw" } } }]
+      },
+      {
+        "id": "echo_absorbed",
+        "type": "effect",
+        "target": "area",
+        "shape": "sphere",
+        "radius": 2,
+        "effects": [{ "type": "heal", "value": { "result": { "step": "impact", "target": "same", "component": "fire", "component_id": "fire_a", "measure": "absorbed" } } }]
+      },
+      {
+        "id": "echo_prevented",
+        "type": "effect",
+        "target": "area",
+        "shape": "sphere",
+        "radius": 2,
+        "effects": [{ "type": "heal", "value": { "result": { "step": "impact", "target": "same", "component": "fire", "component_id": "fire_a", "measure": "prevented" } } }]
+      },
+      {
+        "id": "echo_raw",
+        "type": "effect", "target": "area", "shape": "sphere", "radius": 2,
+        "effects": [{ "type": "heal", "value": { "result": { "step": "impact", "target": "same", "component": "fire", "component_id": "fire_a", "measure": "raw" } } }]
+      },
+      {
+        "id": "echo_resolved",
+        "type": "effect", "target": "area", "shape": "sphere", "radius": 2,
+        "effects": [{ "type": "heal", "value": { "result": { "step": "impact", "target": "same", "component": "fire", "component_id": "fire_a", "measure": "resolved" } } }]
+      },
+      {
+        "id": "echo_hp_loss",
+        "type": "effect", "target": "area", "shape": "sphere", "radius": 2,
+        "effects": [{ "type": "heal", "value": { "result": { "step": "impact", "target": "same", "component": "fire", "component_id": "fire_a", "measure": "hp_loss" } } }]
+      },
+      {
+        "id": "mend",
+        "type": "effect",
+        "target": "area",
+        "shape": "sphere",
+        "radius": 2,
+        "effects": [{ "type": "heal", "value": "10" }]
+      },
+      {
+        "id": "afterglow",
+        "type": "effect",
+        "target": "area",
+        "shape": "sphere",
+        "radius": 2,
+        "effects": [{
+          "type": "temporary_hp",
+          "value": { "result": { "step": "mend", "target": "same", "measure": "healed" } }
+        }]
+      }
+    ]
+  },
+  {
+    "id": "sandbox:receipt_probe_renamed",
+    "name": "Ashen Receipt",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "area",
+    "effects": [{ "type": "area_selection", "shape": "sphere", "radius": 2 }],
+    "steps": [
+      {
+        "id": "prelude",
+        "type": "damage",
+        "target": "area",
+        "shape": "sphere",
+        "radius": 2,
+        "damage": "2",
+        "damage_type": "force"
+      },
+      {
+        "id": "flare",
+        "type": "save",
+        "target": "area",
+        "shape": "sphere",
+        "radius": 2,
+        "save": "DEX",
+        "damage_components": [
+          { "id": "cold_a", "damage": "4", "damage_type": "cold" },
+          { "id": "cold_b", "damage": "2", "damage_type": "cold" }
+        ]
+      },
+      {
+        "id": "echo_retained",
+        "type": "effect",
+        "target": "area",
+        "shape": "sphere",
+        "radius": 2,
+        "effects": [{ "type": "heal", "value": { "result": { "step": "prelude", "target": "same", "component": "force", "component_id": "prelude:force", "measure": "raw" } } }]
+      },
+      {
+        "id": "echo_absorbed",
+        "type": "effect",
+        "target": "area",
+        "shape": "sphere",
+        "radius": 2,
+        "effects": [{ "type": "heal", "value": { "result": { "step": "flare", "target": "same", "component": "cold", "component_id": "cold_a", "measure": "absorbed" } } }]
+      },
+      {
+        "id": "echo_prevented",
+        "type": "effect",
+        "target": "area",
+        "shape": "sphere",
+        "radius": 2,
+        "effects": [{ "type": "heal", "value": { "result": { "step": "flare", "target": "same", "component": "cold", "component_id": "cold_a", "measure": "prevented" } } }]
+      },
+      {
+        "id": "echo_raw",
+        "type": "effect", "target": "area", "shape": "sphere", "radius": 2,
+        "effects": [{ "type": "heal", "value": { "result": { "step": "flare", "target": "same", "component": "cold", "component_id": "cold_a", "measure": "raw" } } }]
+      },
+      {
+        "id": "echo_resolved",
+        "type": "effect", "target": "area", "shape": "sphere", "radius": 2,
+        "effects": [{ "type": "heal", "value": { "result": { "step": "flare", "target": "same", "component": "cold", "component_id": "cold_a", "measure": "resolved" } } }]
+      },
+      {
+        "id": "echo_hp_loss",
+        "type": "effect", "target": "area", "shape": "sphere", "radius": 2,
+        "effects": [{ "type": "heal", "value": { "result": { "step": "flare", "target": "same", "component": "cold", "component_id": "cold_a", "measure": "hp_loss" } } }]
+      },
+      {
+        "id": "renewal",
+        "type": "effect",
+        "target": "area",
+        "shape": "sphere",
+        "radius": 2,
+        "effects": [{ "type": "heal", "value": "8" }]
+      },
+      {
+        "id": "cinder_gift",
+        "type": "effect",
+        "target": "area",
+        "shape": "sphere",
+        "radius": 2,
+        "effects": [{
+          "type": "temporary_hp",
+          "value": { "result": { "step": "renewal", "target": "same", "measure": "healed" } }
+        }]
+      }
+    ]
   }
 ]

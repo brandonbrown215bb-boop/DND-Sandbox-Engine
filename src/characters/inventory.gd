@@ -200,6 +200,69 @@ func skill_tool_bonus(skill: String, context: String) -> int:
 	return best_bonus
 
 
+## Resolve one task-specific tool benefit from an exact carried tool copy.
+## Check context can select an authored match, but never supplies its own bonus.
+func skill_check_context_bonus(ability: String, skill: String, check_context: Dictionary) -> Dictionary:
+	var empty := {
+		"bonus": 0,
+		"tool_item_id": "",
+		"tool_instance_id": "",
+		"tool_location": {},
+		"tool_effect_id": "",
+		"origin_event_id": str(check_context.get("origin_event_id", "")),
+		"origin_check_id": str(check_context.get("origin_check_id", "")),
+	}
+	var task_id := str(check_context.get("task_id", ""))
+	var purpose_id := str(check_context.get("purpose_id", ""))
+	var required_tool_id := str(check_context.get("required_tool_id", ""))
+	var origin_event_id := str(check_context.get("origin_event_id", ""))
+	var origin_check_id := str(check_context.get("origin_check_id", ""))
+	if ability.is_empty() or skill.is_empty() or task_id.is_empty() or purpose_id.is_empty() or required_tool_id.is_empty() or origin_event_id.is_empty() or origin_check_id.is_empty():
+		return empty
+	copies.sync(self)
+	var best := empty.duplicate(true)
+	for instance_id in copies.backpack + copies.equipped.values():
+		var item_instance: Dictionary = copies.records.get(instance_id, {})
+		var item_id := str(item_instance.get("definition_id", ""))
+		if item_id != required_tool_id:
+			continue
+		var item := DataLoader.get_item(item_id)
+		if str(item.get("type", "")) != "tool":
+			continue
+		for effect_value in item.get("effects", []):
+			if not effect_value is Dictionary or str(effect_value.get("type", "")) != "skill_check_context_bonus":
+				continue
+			var effect: Dictionary = effect_value
+			if str(effect.get("ability", "")).to_upper() != ability.to_upper() or str(effect.get("skill", "")).to_lower() != skill.to_lower():
+				continue
+			if str(effect.get("task_id", "")) != task_id or str(effect.get("purpose_id", "")) != purpose_id or str(effect.get("required_tool_id", "")) != item_id:
+				continue
+			if str(effect.get("source_event_id", "")) != origin_event_id or str(effect.get("source_check_id", "")) != origin_check_id:
+				continue
+			var candidate := {
+				"bonus": int(effect.get("bonus", 0)),
+				"tool_item_id": item_id,
+				"tool_instance_id": str(instance_id),
+				"tool_location": _context_tool_location(str(instance_id)),
+				"tool_effect_id": str(effect.get("id", "")),
+				"origin_event_id": origin_event_id,
+				"origin_check_id": origin_check_id,
+			}
+			if int(candidate["bonus"]) > int(best["bonus"]) or (int(candidate["bonus"]) == int(best["bonus"]) and str(candidate["tool_instance_id"]) < str(best["tool_instance_id"])):
+				best = candidate
+	return best
+
+
+func _context_tool_location(instance_id: String) -> Dictionary:
+	var backpack_index := copies.backpack.find(instance_id)
+	if backpack_index >= 0:
+		return {"kind": "backpack", "index": backpack_index}
+	for slot in copies.equipped:
+		if str(copies.equipped[slot]) == instance_id:
+			return {"kind": "equipped", "slot": int(slot)}
+	return {}
+
+
 ## Check Material requirements and hand use without spending or consuming items.
 func has_required_spell_component(spell_data: Dictionary, class_id: String = "") -> bool:
 	var components: Array = spell_data.get("components", [])

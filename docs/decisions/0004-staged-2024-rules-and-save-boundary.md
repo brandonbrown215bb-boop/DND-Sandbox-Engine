@@ -7,6 +7,10 @@ Status: Accepted; original rollout order superseded by the current roadmap
 > runtime. Monk-first delivery and narrow native resource methods below
 > describe the initial rollout, not the continuing architecture or priority.
 > The save/rules isolation and evidence boundaries remain binding.
+> [ADR-0023](0023-vocabulary-first-delivery-and-bounded-world-judgment.md)
+> records the owner's statement that no player campaigns currently need
+> preservation. Migration/compatibility planning is not a delivery gate;
+> save isolation and non-destructive file handling remain.
 
 The owner chose broader level 1-5 mechanics, the 2024 rules, Monk first,
 and project-local workflow simplification. SRD 5.2.1 is the default rules

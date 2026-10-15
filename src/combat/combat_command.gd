@@ -4,7 +4,7 @@
 class_name CombatCommand
 extends RefCounted
 
-const TYPES := ["attack", "cast_spell", "activate_magic_item", "use_feature", "use_item", "eat_goodberry", "font_of_magic_convert", "font_of_magic_create", "toggle_find_steed_mount", "move_dancing_lights", "move_moonbeam", "move_cloud_of_daggers", "move_conjure_animals", "move_conjure_celestial", "move_conjure_fey", "conjure_woodland_beings_disengage", "dismiss_light", "detect_magic_inspect", "control_mage_hand", "dismiss_mage_hand", "dodge", "end_turn", "cancel", "move"]
+const TYPES := ["attack", "cast_spell", "activate_magic_item", "use_feature", "use_item", "eat_goodberry", "font_of_magic_convert", "font_of_magic_create", "toggle_find_steed_mount", "move_dancing_lights", "move_moonbeam", "move_cloud_of_daggers", "move_conjure_animals", "move_conjure_celestial", "move_conjure_fey", "conjure_woodland_beings_disengage", "dismiss_light", "dismiss_timed_numeric_modifier", "detect_magic_inspect", "control_mage_hand", "dismiss_mage_hand", "dodge", "end_turn", "cancel", "move"]
 
 var action_type: String
 var payload: Dictionary
@@ -94,6 +94,31 @@ static func from_hud_for_character(kind: String, data: Dictionary, character: Ch
 					has_slot_recovery = true
 			if owned_feature.is_empty() or (str(owned_feature.get("type", "")) != "active" and not has_slot_recovery):
 				return null
+			if owned_feature.has("resource_pool"):
+				var source_instance_id := str(feature.get("source_instance_id", ""))
+				var pool_state := ResourcePoolRules.availability(character, source_instance_id)
+				if source_instance_id.is_empty() or not pool_state.has("owner_id") or str(character.numeric_resource_pools.get(source_instance_id, {}).get("definition_id", "")) != str(owned_feature["resource_pool"].get("id", "")):
+					return null
+				owned_feature["source_instance_id"] = source_instance_id
+				if owned_feature["resource_pool"].has("die_size"):
+					var selected_quantity: Variant = feature.get("selected_pool_quantity", null)
+					if not selected_quantity is int:
+						return null
+					var pool_availability := ClassFeature.availability(character, owned_feature, null, source_instance_id, int(selected_quantity))
+					if not pool_availability.get("available", false):
+						return null
+					owned_feature["selected_pool_quantity"] = int(selected_quantity)
+			if owned_feature.has("resource_exchange"):
+				var exchange: Variant = owned_feature["resource_exchange"]
+				if not exchange is Dictionary:
+					return null
+				var payment_source_id := str(feature.get("selected_payment_source_instance_id", ""))
+				var restoration_source_id := str(feature.get("selected_restoration_source_instance_id", ""))
+				var exchange_state := ResourcePoolRules.exchange(character, payment_source_id, restoration_source_id, str(exchange.get("payment_pool_id", "")), int(exchange.get("payment_quantity", 0)), str(exchange.get("restoration_pool_id", "")), int(exchange.get("restoration_quantity", 0)), false)
+				if not exchange_state.get("success", false):
+					return null
+				owned_feature["selected_payment_source_instance_id"] = payment_source_id
+				owned_feature["selected_restoration_source_instance_id"] = restoration_source_id
 			if has_slot_recovery:
 				owned_feature["selected_spell_slot_level"] = selected_spell_slot_level
 			if feature.has("selected_action"):
@@ -102,6 +127,11 @@ static func from_hud_for_character(kind: String, data: Dictionary, character: Ch
 					return null
 				owned_feature["selected_action"] = str(feature["selected_action"])
 			command.payload["feature"] = owned_feature
+		"dismiss_timed_numeric_modifier":
+			var source_id := str(command.payload.get("source_instance_id", ""))
+			var grant_id := str(command.payload.get("grant_instance_id", ""))
+			if source_id.is_empty() or grant_id.is_empty() or not character.has_campaign_modifier_grant(source_id, grant_id, int(GameManager.campaign_elapsed_seconds)):
+				return null
 		"detect_magic_inspect":
 			if not SpellEffects.has_spell(character, "detect_magic"):
 				return null
@@ -159,6 +189,8 @@ func is_valid() -> bool:
 			return payload.get("spell", {}) is Dictionary and not payload.get("spell", {}).is_empty()
 		"use_feature":
 			return payload.get("feature", {}) is Dictionary and not payload.get("feature", {}).is_empty()
+		"dismiss_timed_numeric_modifier":
+			return not str(payload.get("source_instance_id", "")).is_empty() and not str(payload.get("grant_instance_id", "")).is_empty()
 		"use_item":
 			return payload.get("item", {}) is Dictionary and not payload.get("item", {}).is_empty()
 		"activate_magic_item":

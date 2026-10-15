@@ -10,9 +10,15 @@ const ABILITIES := ["STR", "DEX", "CON", "INT", "WIS", "CHA"]
 const SPELL_STEP_TYPES := ["attack", "save", "damage", "effect"]
 const SPELL_STEP_FIELDS := [
 	"id", "type", "gate", "gate_step", "target", "shape", "radius", "size",
-	"attack_type", "damage", "damage_type", "scaling", "upcast",
-	"save", "half_on_save", "effects"
+	"attack_type", "damage", "damage_type", "damage_components", "component_id", "scaling", "upcast",
+	"save", "half_on_save", "damage_scale_by_outcome", "effects", "when"
 ]
+const RULE_FACTS := ["actor.id", "actor.level", "target.id", "target.current_hp", "target.max_hp", "target.is_alive", "target.is_wounded", "target.is_source_owner", "target.relationship", "target.willingness", "target.charmed_by_actor", "target.marked_by_actor", "source.id", "source.owner_id", "action.id", "action.invocation_id", "item.definition_id", "item.instance_id", "spell.definition_id", "spell.invocation_id", "source.definition_id", "source.instance_id", "resolution.window", "resolution.occurrence_id", "resolution.kind", "resolution.actor_id", "resolution.target_id", "resolution.action_id", "resolution.action_invocation_id", "resolution.spell_definition_id", "resolution.spell_invocation_id", "resolution.source_definition_id", "resolution.source_instance_id", "resolution.source_owner_id", "resolution.roll_natural", "resolution.roll_modifier", "resolution.roll_total", "resolution.target_ac", "resolution.provisional_hit", "resolution.provisional_critical", "resolution.final_hit", "resolution.critical", "resolution.damage_occurrence_id", "resolution.damage_type", "resolution.damage_raw", "resolution.damage_resolved", "resolution.damage_hp_loss"]
+const PREDICATE_UNKNOWN := -1
+const PREDICATE_FALSE := 0
+const PREDICATE_TRUE := 1
+const FORMULA_OPS := ["add", "subtract", "multiply", "floor_divide", "min", "max"]
+const PREDICATE_OPS := ["eq", "ne", "lt", "lte", "gt", "gte"]
 
 const EVENT_STEP_TYPES := ["save", "replace_hp"]
 const EVENT_STEP_FIELDS := [
@@ -40,6 +46,635 @@ static func _formula(value: Variant) -> bool:
 	var expression := RegEx.new()
 	expression.compile("^([0-9]{1,3}|[1-9][0-9]?d(4|6|8|10|12|20))([+][0-9]{1,3})?$")
 	return expression.search(str(value).replace(" ", "")) != null
+
+
+static func formula_content_error(value: Variant) -> String:
+	return _validate_formula_expression(value, {}, 0)
+
+
+static func _validate_formula_expression(value: Variant, step_ids: Dictionary, before_index: int, all_steps: Array = []) -> String:
+	return _validate_formula_expression_bounded(value, step_ids, before_index, all_steps, 0, false)
+
+
+static func _validate_formula_expression_bounded(value: Variant, step_ids: Dictionary, before_index: int, all_steps: Array, depth: int, deterministic_only: bool) -> String:
+	if depth > 12:
+		return "Formula nesting exceeds the supported depth."
+	if _formula(value):
+		if deterministic_only and value is String and str(value).to_lower().contains("d"):
+			return "Breakpoint lookup inputs cannot contain dice or random formulas."
+		return ""
+	if not value is Dictionary: return "Expected a number, dice expression, or shared formula object."
+	if value.get("op", "") == "breakpoint_lookup":
+		if value.size() != 3 or not value.has("input") or not value.has("breakpoints"):
+			return "breakpoint_lookup requires input and breakpoints only."
+		var input_error := _validate_formula_expression_bounded(value["input"], step_ids, before_index, all_steps, depth + 1, true)
+		if not input_error.is_empty(): return input_error
+		var breakpoints: Variant = value["breakpoints"]
+		if not breakpoints is Array or breakpoints.is_empty() or breakpoints.size() > 20:
+			return "breakpoint_lookup requires 1 to 20 bounded rows."
+		var previous_threshold := -1000
+		for row in breakpoints:
+			if not row is Dictionary or row.size() != 2 or not row.has("threshold") or not row.has("value"):
+				return "breakpoint_lookup rows require threshold and value only."
+			var threshold: Variant = row["threshold"]
+			var output: Variant = row["value"]
+			if not _integer(threshold, -999, 999) or not _integer(output, 0, 999):
+				return "breakpoint_lookup thresholds and values must be bounded integers."
+			if int(threshold) <= previous_threshold:
+				return "breakpoint_lookup thresholds must be strictly increasing and unique."
+			previous_threshold = int(threshold)
+		return ""
+	if value.has("caster_level") or value.has("caster_proficiency_bonus") or value.has("caster_class_level") or value.has("caster_ability_modifier") or value.has("selected_slot_level"):
+		if value.size() != 1: return "Character/cast formula references must contain exactly one selector."
+		if value.has("caster_level") and value["caster_level"] is bool and value["caster_level"]: return ""
+		if value.has("caster_proficiency_bonus") and value["caster_proficiency_bonus"] is bool and value["caster_proficiency_bonus"]: return ""
+		if value.has("selected_slot_level") and value["selected_slot_level"] is bool and value["selected_slot_level"]: return ""
+		if value.has("caster_class_level"):
+			var class_id: Variant = value["caster_class_level"]
+			if class_id is String and not class_id.strip_edges().is_empty() and not DataLoader.get_character_class(class_id).is_empty(): return ""
+			return "caster_class_level requires a known class ID."
+		if value.has("caster_ability_modifier"):
+			if value["caster_ability_modifier"] is String and str(value["caster_ability_modifier"]) in ABILITIES: return ""
+			return "caster_ability_modifier requires one of STR, DEX, CON, INT, WIS, or CHA."
+		return "Character/cast formula selectors require Boolean true."
+	if value.has("result"):
+		if value.size() != 1 or not value["result"] is Dictionary: return "Result formula must contain only a result selector."
+		var selector: Dictionary = value["result"]
+		for key in selector:
+			if key not in ["step", "target", "component", "component_id", "measure"]: return "Unsupported result selector field '%s'." % str(key)
+		var ref_id := str(selector.get("step", ""))
+		if not step_ids.has(ref_id) or int(step_ids[ref_id]) >= before_index: return "Formula references nonexistent or forward step '%s'." % ref_id
+		var ref_index := int(step_ids[ref_id])
+		if ref_index >= all_steps.size() or not all_steps[ref_index] is Dictionary: return "Formula result step '%s' is unavailable." % ref_id
+		var ref_step: Dictionary = all_steps[ref_index]
+		if selector.get("target", "") not in ["same", "cast_target"]: return "Result references require target 'same' or 'cast_target'."
+		var measure := str(selector.get("measure", ""))
+		if measure == "margin":
+			if selector.has("component") or selector.has("component_id"):
+				return "A roll margin selects one target's attack/save result and takes no damage component."
+			if str(ref_step.get("type", "")) not in ["attack", "save"]:
+				return "Formula result step '%s' has no attack/save margin." % ref_id
+			return ""
+		if measure == "hp_after":
+			if selector.has("component") or selector.has("component_id"):
+				return "Post-settlement HP selects one target's step result and takes no damage component."
+			if str(ref_step.get("type", "")) not in ["attack", "save", "damage"] or (not ref_step.has("damage") and not ref_step.has("damage_components")):
+				return "Formula result step '%s' has no damage settlement HP receipt." % ref_id
+			return ""
+		if measure == "healed":
+			if selector.has("component") or selector.has("component_id"):
+				return "The healed measure selects the target's heal receipt and does not take a damage component."
+			if str(ref_step.get("type", "")) != "effect" or not _step_has_heal_effect(ref_step):
+				return "Formula result step '%s' has no healing effect receipt." % ref_id
+			return ""
+		if str(ref_step.get("type", "")) not in ["attack", "save", "damage"] or (not ref_step.has("damage") and not ref_step.has("damage_components")):
+			return "Formula result step '%s' has no damage payload." % ref_id
+		if not selector.get("component", "") is String or str(selector.get("component", "")).is_empty(): return "Result references require a damage component type."
+		if selector.has("component_id") and (not selector["component_id"] is String or str(selector["component_id"]).is_empty()):
+			return "Result component_id must be a non-empty string."
+		if not _step_has_damage_component(ref_step, str(selector.get("component", "")), str(selector.get("component_id", ""))):
+			return "Formula result step '%s' has no '%s' damage component." % [ref_id, str(selector.get("component", ""))]
+		if measure not in ["raw", "resolved", "hp_loss", "prevented", "absorbed"]: return "Result references require a supported damage or healing measure."
+		return ""
+	if value.has("result_sum"):
+		if value.size() != 1 or not value["result_sum"] is Dictionary:
+			return "Result sums must contain one sum selector."
+		var selector: Dictionary = value["result_sum"]
+		if selector.size() != 3 or not selector.has("step") or not selector.has("component") or not selector.has("measure"):
+			return "Result sums require step, component, and measure only."
+		if not selector["step"] is String or str(selector["step"]).is_empty():
+			return "Result sums require a named earlier step."
+		var ref_id := str(selector["step"])
+		if not step_ids.has(ref_id) or int(step_ids[ref_id]) >= before_index:
+			return "Formula references nonexistent or forward step '%s'." % ref_id
+		var ref_index := int(step_ids[ref_id])
+		if ref_index >= all_steps.size() or not all_steps[ref_index] is Dictionary:
+			return "Formula result step '%s' is unavailable." % ref_id
+		var ref_step: Dictionary = all_steps[ref_index]
+		if str(ref_step.get("type", "")) not in ["attack", "save", "damage"] or not ref_step.has("damage"):
+			return "Formula result step '%s' has no damage payload." % ref_id
+		if not selector["component"] is String or str(selector["component"]).is_empty() or str(ref_step.get("damage_type", "")) != str(selector["component"]):
+			return "Formula result step '%s' has no '%s' damage component." % [ref_id, str(selector.get("component", ""))]
+		if selector["measure"] not in ["raw", "resolved", "hp_loss"]:
+			return "Result sums require measure raw, resolved, or hp_loss."
+		return ""
+	if value.size() != 3 or not value.has("op") or value.get("op") not in FORMULA_OPS or not value.has("left") or not value.has("right"):
+		return "Formula objects require op, left, and right using a supported arithmetic operation."
+	for key in ["left", "right"]:
+		var err := _validate_formula_expression_bounded(value[key], step_ids, before_index, all_steps, depth + 1, deterministic_only)
+		if not err.is_empty(): return err
+	if value["op"] == "floor_divide":
+		var divisor = value["right"]
+		if (divisor is int or divisor is float) and int(divisor) <= 0:
+			return "floor_divide requires a positive divisor."
+		if divisor is String and divisor.replace(" ", "").is_valid_int() and int(divisor) <= 0:
+			return "floor_divide requires a positive divisor."
+	return ""
+
+
+static func _validate_predicate(predicate: Variant, step_ids: Dictionary, before_index: int, all_steps: Array = [], depth: int = 0) -> String:
+	if depth > 12 or not predicate is Dictionary: return "Predicates must be bounded objects."
+	if predicate.has("all") or predicate.has("any"):
+		var key := "all" if predicate.has("all") else "any"
+		if predicate.size() != 1 or not predicate[key] is Array or predicate[key].is_empty(): return "Boolean predicates require a non-empty all/any array."
+		for child in predicate[key]:
+			var child_err := _validate_predicate(child, step_ids, before_index, all_steps, depth + 1)
+			if not child_err.is_empty(): return child_err
+		return ""
+	if predicate.has("not"):
+		if predicate.size() != 1: return "not predicates accept one child only."
+		return _validate_predicate(predicate["not"], step_ids, before_index, all_steps, depth + 1)
+	var value_key := "fact" if predicate.has("fact") else ("result" if predicate.has("result") else ("result_sum" if predicate.has("result_sum") else ""))
+	if value_key.is_empty(): return "Predicate requires a fact or result selector."
+	if value_key == "fact":
+		if predicate.size() != 2 or str(predicate["fact"]) not in RULE_FACTS: return "Unknown or malformed shared fact '%s'." % str(predicate.get("fact", ""))
+	else:
+		var selector_err := _validate_formula_expression({value_key: predicate[value_key]}, step_ids, before_index, all_steps)
+		if not selector_err.is_empty(): return selector_err
+		if predicate.size() != 2: return "Result predicates require exactly one comparison."
+	var comparison := ""
+	for op in PREDICATE_OPS:
+		if predicate.has(op): comparison = op
+	if comparison.is_empty() or predicate.size() != 2: return "Predicates require one eq/ne/lt/lte/gt/gte comparison."
+	if comparison in ["lt", "lte", "gt", "gte"] and (not (predicate[comparison] is int or predicate[comparison] is float) or predicate[comparison] is bool):
+		return "Ordered predicate comparisons require a numeric value."
+	var compare_value = predicate[comparison]
+	if compare_value is Dictionary or compare_value is Array: return "Predicate comparison values must be scalar."
+	if value_key in ["result", "result_sum"] and (not (compare_value is int or compare_value is float) or compare_value is bool): return "Damage-result predicates require a numeric comparison value."
+	if value_key == "fact":
+		var fact_name := str(predicate["fact"])
+		var numeric_fact := fact_name in ["actor.level", "target.current_hp", "target.max_hp", "resolution.roll_natural", "resolution.roll_modifier", "resolution.roll_total", "resolution.target_ac", "resolution.damage_occurrence_id", "resolution.damage_raw", "resolution.damage_resolved", "resolution.damage_hp_loss"]
+		var boolean_fact := fact_name in ["target.is_alive", "target.is_wounded", "target.is_source_owner", "target.charmed_by_actor", "target.marked_by_actor", "resolution.provisional_hit", "resolution.provisional_critical", "resolution.final_hit", "resolution.critical"]
+		if numeric_fact and (not (compare_value is int or compare_value is float) or compare_value is bool):
+			return "Numeric facts require a numeric comparison value."
+		if boolean_fact and (comparison not in ["eq", "ne"] or not compare_value is bool):
+			return "Predicate comparison type does not match fact '%s'." % fact_name
+		if _is_string_fact(fact_name) and (comparison not in ["eq", "ne"] or not compare_value is String):
+			return "Identity facts require string equality/inequality."
+		if fact_name == "target.relationship" and compare_value not in ["ally", "enemy"]:
+			return "Relationship facts compare only ally or enemy."
+		if fact_name == "target.willingness" and compare_value not in ["willing", "unwilling"]:
+			return "Willingness facts compare only explicit willing or unwilling values."
+	return ""
+
+
+static func _step_has_heal_effect(step: Dictionary) -> bool:
+	var effects: Variant = step.get("effects", [])
+	if not effects is Array:
+		return false
+	for effect in effects:
+		if effect is Dictionary and str(effect.get("type", "")) == "heal":
+			return true
+	return false
+
+
+static func _step_has_damage_component(step: Dictionary, component_type: String, component_id: String = "") -> bool:
+	var components: Variant = step.get("damage_components", null)
+	if components is Array:
+		var type_counts: Dictionary = {}
+		for i in components.size():
+			var component: Variant = components[i]
+			if not component is Dictionary:
+				continue
+			var kind := str(component.get("damage_type", ""))
+			var expected_id := str(component.get("id", "%s:%d" % [kind, int(type_counts.get(kind, 0)) + 1]))
+			if component_id.is_empty() or expected_id == component_id:
+				if kind == component_type:
+					return true
+			type_counts[kind] = int(type_counts.get(kind, 0)) + 1
+		return false
+	if str(step.get("damage_type", "")) != component_type:
+		return false
+	var expected := str(step.get("component_id", "%s:%s" % [str(step.get("id", "")), component_type]))
+	return component_id.is_empty() or expected == component_id
+
+
+static func _numeric_fact_value(value: Variant) -> Dictionary:
+	if (value is int or value is float) and not value is bool and is_finite(float(value)):
+		return {"available": true, "value": value}
+	return {"available": false}
+
+
+static func _identity_fact_value(value: Variant) -> Dictionary:
+	if value is String and not str(value).strip_edges().is_empty():
+		return {"available": true, "value": str(value)}
+	return {"available": false}
+
+
+static func _boolean_fact_value(value: Variant) -> Dictionary:
+	if value is bool:
+		return {"available": true, "value": value}
+	return {"available": false}
+
+
+static func _actor_fact(actor: Variant, field: String) -> Dictionary:
+	if actor is Character:
+		match field:
+			"id": return _identity_fact_value(actor.character_id)
+			"level": return _numeric_fact_value(actor.level)
+			"current_hp": return _numeric_fact_value(actor.current_hp)
+			"max_hp": return _numeric_fact_value(actor.max_hp)
+			"is_alive": return _boolean_fact_value(actor.is_alive and not actor.is_dead())
+			"is_wounded": return _boolean_fact_value(actor.current_hp < actor.max_hp)
+		return {"available": false}
+	if actor is Dictionary:
+		match field:
+			"id": return _identity_fact_value(actor.get("id", null))
+			"level": return _numeric_fact_value(actor.get("level", null))
+			"current_hp": return _numeric_fact_value(actor.get("current_hp", null))
+			"max_hp": return _numeric_fact_value(actor.get("max_hp", null))
+			"is_alive": return _boolean_fact_value(actor.get("is_alive", null))
+			"is_wounded":
+				var current_hp: Dictionary = _numeric_fact_value(actor.get("current_hp", null))
+				var max_hp: Dictionary = _numeric_fact_value(actor.get("max_hp", null))
+				if not current_hp.get("available", false) or not max_hp.get("available", false): return {"available": false}
+				return _boolean_fact_value(float(current_hp["value"]) < float(max_hp["value"]))
+	return {"available": false}
+
+
+static func _item_fact(cast: SpellResolutionContext, field: String) -> Dictionary:
+	if not cast.item_copy_validated or cast.item_instance_id.is_empty() or cast.item_definition_id.is_empty():
+		return {"available": false}
+	return _identity_fact_value(cast.item_definition_id if field == "definition_id" else cast.item_instance_id)
+
+
+static func _is_string_fact(fact_name: String) -> bool:
+	return fact_name in ["actor.id", "target.id", "target.relationship", "target.willingness", "source.id", "source.owner_id", "action.id", "action.invocation_id", "item.definition_id", "item.instance_id", "spell.definition_id", "spell.invocation_id", "source.definition_id", "source.instance_id", "resolution.window", "resolution.occurrence_id", "resolution.kind", "resolution.actor_id", "resolution.target_id", "resolution.action_id", "resolution.action_invocation_id", "resolution.spell_definition_id", "resolution.spell_invocation_id", "resolution.source_definition_id", "resolution.source_instance_id", "resolution.source_owner_id", "resolution.damage_type"]
+
+
+## Each attack resolves on a child cast. Bind its canonical receipt to the
+## ordered consumer, including after an awaited attack/damage choice.
+static func _bind_resolution_window(cast: SpellResolutionContext, target, result: Dictionary) -> void:
+	cast.resolution_window = {}
+	cast.resolution_window_context = {}
+	cast.resolution_window_target = null
+	var windows: Array = result.get("resolution_windows", [])
+	if windows.is_empty():
+		return
+	cast.resolution_window = windows.back().duplicate(true)
+	cast.resolution_window_context = {"base": windows[0].duplicate(true), "windows": windows.duplicate(true)}
+	cast.resolution_window_target = target
+
+
+static func _read_resolution_fact(fact: String, cast: SpellResolutionContext, target) -> Dictionary:
+	if not _same_actor(cast.resolution_window_target, target):
+		return {"available": false}
+	var receipt: Dictionary = cast.resolution_window
+	var field := fact.trim_prefix("resolution.")
+	if field == "window":
+		return _identity_fact_value(receipt.get("window", ""))
+	if not receipt.get("available_fields", []).has(field):
+		return {"available": false}
+	var value: Variant = receipt.get(field)
+	if field in ["provisional_hit", "provisional_critical", "final_hit", "critical"]:
+		return _boolean_fact_value(value)
+	if field in ["roll_natural", "roll_modifier", "roll_total", "target_ac", "damage_occurrence_id", "damage_raw", "damage_resolved", "damage_hp_loss"]:
+		return _numeric_fact_value(value)
+	return _identity_fact_value(value)
+
+
+static func _read_fact(fact: String, adapter: Object, target):
+	if adapter == null or not adapter is SpellAdapter or adapter.cast == null:
+		return {"available": false}
+	var cast: SpellResolutionContext = adapter.cast
+	match fact:
+		"actor.id": return _actor_fact(cast.caster, "id")
+		"actor.level": return _actor_fact(cast.caster, "level")
+		"target.id": return _actor_fact(target, "id")
+		"target.current_hp": return _actor_fact(target, "current_hp")
+		"target.max_hp": return _actor_fact(target, "max_hp")
+		"target.is_alive": return _actor_fact(target, "is_alive")
+		"target.is_wounded": return _actor_fact(target, "is_wounded")
+		"target.willingness": return _actor_willingness(target)
+		"target.relationship": return _actor_relationship(cast, target)
+		"target.charmed_by_actor": return _target_has_source_condition(target, cast.caster, "charmed")
+		"target.marked_by_actor": return _target_has_source_condition(target, cast.caster, "hunters_mark")
+		"source.id":
+			var source_id: Variant = cast.effect_cast.get("source_id", cast.source_definition_id)
+			return _identity_fact_value(source_id)
+		"source.definition_id":
+			return _identity_fact_value(cast.source_definition_id)
+		"source.instance_id":
+			return _identity_fact_value(cast.source_instance_id)
+		"source.owner_id":
+			return _identity_fact_value(cast.source_owner_id)
+		"action.id": return _identity_fact_value(cast.action_id)
+		"action.invocation_id": return _identity_fact_value(cast.action_invocation_id)
+		"item.definition_id": return _item_fact(cast, "definition_id")
+		"item.instance_id": return _item_fact(cast, "instance_id")
+		"spell.definition_id": return _identity_fact_value(cast.spell_definition_id)
+		"spell.invocation_id": return _identity_fact_value(cast.invocation_id)
+		"resolution.window", "resolution.occurrence_id", "resolution.kind", "resolution.actor_id", "resolution.target_id", "resolution.action_id", "resolution.action_invocation_id", "resolution.spell_definition_id", "resolution.spell_invocation_id", "resolution.source_definition_id", "resolution.source_instance_id", "resolution.source_owner_id", "resolution.roll_natural", "resolution.roll_modifier", "resolution.roll_total", "resolution.target_ac", "resolution.provisional_hit", "resolution.provisional_critical", "resolution.final_hit", "resolution.critical", "resolution.damage_occurrence_id", "resolution.damage_type", "resolution.damage_raw", "resolution.damage_resolved", "resolution.damage_hp_loss":
+			return _read_resolution_fact(fact, cast, target)
+		"target.is_source_owner":
+			var target_id: Dictionary = _actor_fact(target, "id")
+			var source_owner: Dictionary = _read_fact("source.owner_id", adapter, target)
+			if not target_id.get("available", false) or not source_owner.get("available", false): return {"available": false}
+			return {"available": true, "value": str(target_id["value"]) == str(source_owner["value"])}
+	return {"available": false}
+
+
+static func _actor_willingness(actor) -> Dictionary:
+	var value: Variant = actor.willingness if actor is Character else actor.get("willingness", null) if actor is Dictionary else null
+	if value is String and value in ["willing", "unwilling"]:
+		return {"available": true, "value": value}
+	return {"available": false}
+
+
+static func _actor_relationship(cast: SpellResolutionContext, target) -> Dictionary:
+	if _same_actor(cast.caster, target):
+		return {"available": true, "value": "ally"}
+	var players: Variant = cast.decisions.get("players", null)
+	var monsters: Variant = cast.decisions.get("monsters", null)
+	if not players is Array or not monsters is Array:
+		return {"available": false}
+	var caster_side := _participant_side(cast.caster, players, monsters)
+	var target_side := _participant_side(target, players, monsters)
+	if caster_side.is_empty() or target_side.is_empty():
+		return {"available": false}
+	return {"available": true, "value": "ally" if caster_side == target_side else "enemy"}
+
+
+static func _participant_side(actor, players: Array, monsters: Array) -> String:
+	var player_match := false
+	for entry in players:
+		var participant = entry.get("character", entry) if entry is Dictionary else entry
+		if _same_actor(actor, participant): player_match = true
+	var monster_match := false
+	for participant in monsters:
+		if _same_actor(actor, participant): monster_match = true
+	if player_match == monster_match: return ""
+	return "players" if player_match else "monsters"
+
+
+static func _target_has_source_condition(target, giver, condition: String) -> Dictionary:
+	var giver_id := SpellEffects.caster_id(giver) if giver is Character else str(giver.get("id", "")) if giver is Dictionary else ""
+	if giver_id.is_empty(): return {"available": false}
+	var conditions: Dictionary = target.condition_sources if target is Character else target.get("condition_sources", {}) if target is Dictionary else {}
+	var effects: Dictionary = target.spell_effects if target is Character else target.get("spell_effects", {}) if target is Dictionary else {}
+	var grants: Variant = conditions.get(condition, {})
+	if not grants is Dictionary or not effects is Dictionary: return {"available": false}
+	for source_id in grants:
+		if not effects.has(source_id): continue
+		var record: Variant = effects[source_id]
+		if not record is Dictionary or str(record.get("caster_id", "")) != giver_id: continue
+		if not record.get("conditions", []) is Array or condition not in record["conditions"]: continue
+		return {"available": true, "value": true}
+	return {"available": true, "value": false}
+
+
+static func _result_component(selector: Dictionary, adapter: Object, target, step_results: Array) -> Dictionary:
+	if adapter == null or not adapter is SpellAdapter or adapter.cast == null:
+		return {"success": false, "value": 0}
+	var cast: SpellResolutionContext = adapter.cast
+	var selected_target = target if selector.get("target") == "same" else cast.target
+	var selected_step: Dictionary = {}
+	for step_result in step_results:
+		if not step_result is Dictionary:
+			return {"success": false, "value": 0, "error": "Malformed prior step result."}
+		if str(step_result.get("step_id", "")) != str(selector.get("step", "")):
+			continue
+		if not selected_step.is_empty():
+			return {"success": false, "value": 0, "error": "Duplicate prior step results."}
+		selected_step = step_result
+	if selected_step.is_empty():
+		return {"success": false, "value": 0, "error": "Referenced prior step result is absent."}
+	var outcomes: Variant = selected_step.get("target_outcomes", null)
+	if not outcomes is Array:
+		return {"success": false, "value": 0, "error": "Malformed prior target outcomes."}
+	var selected_outcome: Dictionary = {}
+	for outcome in outcomes:
+		if not outcome is Dictionary or not outcome.has("target") or outcome.get("target") == null:
+			return {"success": false, "value": 0, "error": "Malformed prior target outcome."}
+		if not _same_actor(outcome["target"], selected_target):
+			continue
+		if not selected_outcome.is_empty():
+			return {"success": false, "value": 0, "error": "Ambiguous prior target outcome."}
+		selected_outcome = outcome
+	if selected_outcome.is_empty():
+		return {"success": false, "value": 0, "error": "Referenced runtime target outcome is absent."}
+	var measure := str(selector.get("measure", ""))
+	if measure == "margin":
+		var roll_result: Variant = selected_outcome.get("result", null)
+		if not roll_result is Dictionary or not _integer(roll_result.get("numeric_margin", null), -1000000, 1000000):
+			return {"success": false, "value": 0, "error": "Numeric roll margin is unavailable for this result."}
+		return {"success": true, "value": int(roll_result["numeric_margin"])}
+	if measure == "hp_after":
+		var hp_after: Variant = selected_outcome.get("hp_after", null)
+		if not _integer(hp_after, 0, 1000000):
+			return {"success": false, "value": 0, "error": "Post-settlement target HP receipt is unavailable."}
+		return {"success": true, "value": int(hp_after)}
+	if measure == "healed":
+		var effect_result: Variant = selected_outcome.get("result", null)
+		if not effect_result is Dictionary or not _integer(effect_result.get("healing", null), 0, 1000000):
+			return {"success": false, "value": 0, "error": "Actual healing receipt is unavailable."}
+		return {"success": true, "value": int(effect_result["healing"])}
+	var components: Variant = selected_outcome.get("damage_components", null)
+	if not components is Array:
+		return {"success": false, "value": 0, "error": "Prior damage components are unavailable."}
+	var selected_component: Dictionary = {}
+	for component in components:
+		if not component is Dictionary or not component.has("type"):
+			return {"success": false, "value": 0, "error": "Malformed prior damage component."}
+		if str(component.get("type", "")) != str(selector.get("component", "")):
+			continue
+		if selector.has("component_id") and str(component.get("component_id", "")) != str(selector["component_id"]):
+			continue
+		if not selected_component.is_empty():
+			return {"success": false, "value": 0, "error": "Ambiguous prior damage component; specify component_id."}
+		selected_component = component
+	if selected_component.is_empty():
+		return {"success": false, "value": 0, "error": "Referenced typed damage component is absent."}
+	var amount: Variant = selected_component.get(measure, null)
+	if not _integer(amount, 0, 1000000):
+		return {"success": false, "value": 0, "error": "Prior damage measure is unavailable."}
+	return {"success": true, "value": int(amount)}
+
+
+static func _result_component_sum(selector: Dictionary, step_results: Array) -> Dictionary:
+	var selected_step: Dictionary = {}
+	for step_result in step_results:
+		if not step_result is Dictionary:
+			return {"success": false, "value": 0, "error": "Malformed prior step result."}
+		if str(step_result.get("step_id", "")) == str(selector.get("step", "")):
+			if not selected_step.is_empty():
+				return {"success": false, "value": 0, "error": "Duplicate prior step results."}
+			selected_step = step_result
+	if selected_step.is_empty():
+		return {"success": false, "value": 0, "error": "Referenced prior step result is absent."}
+	if str(selected_step.get("type", "")) not in ["attack", "save", "damage"]:
+		return {"success": false, "value": 0, "error": "Referenced prior step result has an unsupported type."}
+	var outcomes: Variant = selected_step.get("target_outcomes", null)
+	if not outcomes is Array:
+		return {"success": false, "value": 0, "error": "Referenced prior step outcomes are malformed."}
+	var total := 0
+	var seen_targets: Array = []
+	for outcome in outcomes:
+		if not outcome is Dictionary or not outcome.has("target") or outcome.get("target") == null or not (outcome["target"] is Character or outcome["target"] is Dictionary):
+			return {"success": false, "value": 0, "error": "Referenced prior target outcome is malformed."}
+		if outcome.has("skipped") and not outcome["skipped"] is bool:
+			return {"success": false, "value": 0, "error": "Referenced prior skipped state is malformed."}
+		if bool(outcome.get("skipped", false)):
+			continue
+		var duplicate_target := false
+		for seen_target in seen_targets:
+			if _same_actor(seen_target, outcome["target"]):
+				duplicate_target = true
+				break
+		if duplicate_target:
+			continue
+		seen_targets.append(outcome["target"])
+		var components: Variant = outcome.get("damage_components", null)
+		var explicit_zero_damage: bool = outcome.has("damage") and _integer(outcome["damage"], 0, 1000000) and int(outcome["damage"]) == 0
+		var explicit_no_damage: bool = explicit_zero_damage and ((outcome.has("hit") and outcome["hit"] is bool and not bool(outcome["hit"])) or (outcome.has("saved") and outcome["saved"] is bool and bool(outcome["saved"])))
+		if not components is Array:
+			if explicit_no_damage:
+				continue
+			return {"success": false, "value": 0, "error": "Referenced target damage components are absent or malformed."}
+		var component_found := false
+		for component in components:
+			if not component is Dictionary or not component.has("type"):
+				return {"success": false, "value": 0, "error": "Referenced damage component is malformed."}
+			if str(component.get("type", "")) != str(selector.get("component", "")):
+				continue
+			var measure := str(selector.get("measure", ""))
+			var amount: Variant = component.get(measure, null)
+			if not _integer(amount, 0, 1000000):
+				return {"success": false, "value": 0, "error": "Referenced damage measure is absent or malformed."}
+			total += int(amount)
+			component_found = true
+			break
+		if not component_found and not explicit_no_damage:
+			return {"success": false, "value": 0, "error": "Referenced target is missing the selected damage component."}
+	return {"success": true, "value": total}
+
+
+static func evaluate_formula(value: Variant, adapter: Variant, target, step_results: Array) -> Dictionary:
+	if value is int or value is float: return {"success": true, "value": int(value)}
+	if value is String:
+		var cast = adapter.get("cast")
+		var roller: Character = cast.caster if cast != null else null
+		return {"success": true, "value": Dice.parse_dice_string(value, {}, roller)}
+	if not value is Dictionary: return {"success": false, "value": 0}
+	var cast = adapter.get("cast")
+	if str(value.get("op", "")) == "breakpoint_lookup":
+		var input_result := evaluate_formula(value.get("input"), adapter, target, step_results)
+		if not bool(input_result.get("success", false)):
+			return {"success": false, "value": 0, "error": str(input_result.get("error", "Breakpoint lookup input failed."))}
+		var input_value := int(input_result.get("value", 0))
+		var selected := false
+		var selected_value := 0
+		for row in value.get("breakpoints", []):
+			if input_value < int(row.get("threshold", 0)):
+				break
+			selected = true
+			selected_value = int(row.get("value", 0))
+		if not selected:
+			return {"success": false, "value": 0, "error": "Breakpoint lookup input is below the first threshold."}
+		return {"success": true, "value": selected_value}
+	if value.has("caster_level") or value.has("caster_proficiency_bonus") or value.has("caster_class_level") or value.has("caster_ability_modifier") or value.has("selected_slot_level"):
+		var caster: Character = cast.caster if cast != null else adapter.get("actor")
+		if value.size() != 1 or not caster is Character: return {"success": false, "value": 0}
+		if value.has("caster_level") and value["caster_level"] is bool and value["caster_level"]: return {"success": true, "value": caster.level}
+		if value.has("caster_proficiency_bonus") and value["caster_proficiency_bonus"] is bool and value["caster_proficiency_bonus"]: return {"success": true, "value": caster.proficiency_bonus}
+		if value.has("caster_class_level") and value["caster_class_level"] is String: return {"success": true, "value": caster.get_class_level(str(value["caster_class_level"]))}
+		if value.has("caster_ability_modifier") and value["caster_ability_modifier"] is String and str(value["caster_ability_modifier"]) in ABILITIES:
+			return {"success": true, "value": caster.ability_scores.get_ability_modifier(str(value["caster_ability_modifier"]))}
+		if value.has("selected_slot_level") and value["selected_slot_level"] is bool and value["selected_slot_level"] and cast != null: return {"success": true, "value": int(cast.slot_level)}
+		return {"success": false, "value": 0}
+	if value.has("result"): return _result_component(value["result"], adapter, target, step_results)
+	if value.has("result_sum"): return _result_component_sum(value["result_sum"], step_results)
+	var left := evaluate_formula(value.get("left"), adapter, target, step_results)
+	var right := evaluate_formula(value.get("right"), adapter, target, step_results)
+	if not left.success or not right.success: return {"success": false, "value": 0}
+	var a := int(left.value)
+	var b := int(right.value)
+	match str(value.get("op", "")):
+		"add": return {"success": true, "value": a + b}
+		"subtract": return {"success": true, "value": a - b}
+		"multiply": return {"success": true, "value": a * b}
+		"floor_divide": return {"success": b > 0, "value": int(floor(float(a) / float(b))) if b > 0 else 0}
+		"min": return {"success": true, "value": mini(a, b)}
+		"max": return {"success": true, "value": maxi(a, b)}
+	return {"success": false, "value": 0}
+
+
+## Evaluate the same shared formula vocabulary against an owned actor, outside a cast.
+static func evaluate_actor_formula(value: Variant, actor: Character) -> Dictionary:
+	if actor == null:
+		return {"success": false, "value": 0}
+	if _actor_formula_has_cast_only_reference(value):
+		return {"success": false, "value": 0}
+	return evaluate_formula(value, {"actor": actor}, null, [])
+
+
+static func _actor_formula_has_cast_only_reference(value: Variant) -> bool:
+	if not value is Dictionary:
+		return false
+	if value.has("result") or value.has("result_sum") or value.has("selected_slot_level"):
+		return true
+	if str(value.get("op", "")) == "breakpoint_lookup":
+		return _actor_formula_has_cast_only_reference(value.get("input"))
+	if str(value.get("op", "")) in FORMULA_OPS:
+		return _actor_formula_has_cast_only_reference(value.get("left")) or _actor_formula_has_cast_only_reference(value.get("right"))
+	return false
+
+
+static func evaluate_predicate(predicate: Dictionary, adapter: Object, target, step_results: Array) -> bool:
+	return _evaluate_predicate_state(predicate, adapter, target, step_results) == PREDICATE_TRUE
+
+
+static func _evaluate_predicate_state(predicate: Dictionary, adapter: Object, target, step_results: Array) -> int:
+	if predicate.has("all"):
+		var has_unknown := false
+		for child in predicate["all"]:
+			var child_state := _evaluate_predicate_state(child, adapter, target, step_results)
+			if child_state == PREDICATE_FALSE: return PREDICATE_FALSE
+			if child_state == PREDICATE_UNKNOWN: has_unknown = true
+		return PREDICATE_UNKNOWN if has_unknown else PREDICATE_TRUE
+	if predicate.has("any"):
+		var has_unknown := false
+		for child in predicate["any"]:
+			var child_state := _evaluate_predicate_state(child, adapter, target, step_results)
+			if child_state == PREDICATE_TRUE: return PREDICATE_TRUE
+			if child_state == PREDICATE_UNKNOWN: has_unknown = true
+		return PREDICATE_UNKNOWN if has_unknown else PREDICATE_FALSE
+	if predicate.has("not"):
+		var child_state := _evaluate_predicate_state(predicate["not"], adapter, target, step_results)
+		if child_state == PREDICATE_UNKNOWN: return PREDICATE_UNKNOWN
+		return PREDICATE_FALSE if child_state == PREDICATE_TRUE else PREDICATE_TRUE
+	var actual: Variant
+	if predicate.has("fact"):
+		var fact_value: Dictionary = _read_fact(str(predicate["fact"]), adapter, target)
+		if not fact_value.get("available", false): return PREDICATE_UNKNOWN
+		actual = fact_value.get("value")
+	else:
+		var selected_result := _result_component_sum(predicate["result_sum"], step_results) if predicate.has("result_sum") else _result_component(predicate["result"], adapter, target, step_results)
+		if not bool(selected_result.get("success", false)): return PREDICATE_UNKNOWN
+		actual = selected_result.get("value", 0)
+	var expected: Variant = predicate.get("eq", predicate.get("ne", predicate.get("lt", predicate.get("lte", predicate.get("gt", predicate.get("gte"))))))
+	if predicate.has("fact"):
+		var fact_name := str(predicate["fact"])
+		var numeric_fact := fact_name in ["actor.level", "target.current_hp", "target.max_hp", "resolution.roll_natural", "resolution.roll_modifier", "resolution.roll_total", "resolution.target_ac", "resolution.damage_occurrence_id", "resolution.damage_raw", "resolution.damage_resolved", "resolution.damage_hp_loss"]
+		var boolean_fact := fact_name in ["target.is_alive", "target.is_wounded", "target.is_source_owner", "resolution.provisional_hit", "resolution.provisional_critical", "resolution.final_hit", "resolution.critical"]
+		if numeric_fact and (not (actual is int or actual is float) or actual is bool or not (expected is int or expected is float) or expected is bool): return PREDICATE_UNKNOWN
+		if boolean_fact and (not actual is bool or not expected is bool): return PREDICATE_UNKNOWN
+		if _is_string_fact(fact_name) and (not actual is String or not expected is String): return PREDICATE_UNKNOWN
+	else:
+		if not (actual is int or actual is float) or actual is bool or not (expected is int or expected is float) or expected is bool: return PREDICATE_UNKNOWN
+	if (expected is bool and not actual is bool) or (actual is bool and not expected is bool):
+		return PREDICATE_UNKNOWN
+	var comparison_name := "eq" if predicate.has("eq") else ("ne" if predicate.has("ne") else ("lt" if predicate.has("lt") else ("lte" if predicate.has("lte") else ("gt" if predicate.has("gt") else "gte"))))
+	if comparison_name in ["lt", "lte", "gt", "gte"] and (not (actual is int or actual is float) or actual is bool or not (expected is int or expected is float) or expected is bool):
+		return PREDICATE_UNKNOWN
+	match comparison_name:
+		"eq": return PREDICATE_TRUE if actual == expected else PREDICATE_FALSE
+		"ne": return PREDICATE_TRUE if actual != expected else PREDICATE_FALSE
+		"lt": return PREDICATE_TRUE if float(actual) < float(expected) else PREDICATE_FALSE
+		"lte": return PREDICATE_TRUE if float(actual) <= float(expected) else PREDICATE_FALSE
+		"gt": return PREDICATE_TRUE if float(actual) > float(expected) else PREDICATE_FALSE
+		"gte": return PREDICATE_TRUE if float(actual) >= float(expected) else PREDICATE_FALSE
+	return PREDICATE_UNKNOWN
 
 
 static func validate_spatial_context_for_steps(steps: Array, decisions: Dictionary) -> String:
@@ -79,6 +714,19 @@ static func validate_step(step: Variant, step_index: int, step_ids: Dictionary, 
 	var step_type := str(step["type"])
 	if step_type not in allowed_types:
 		return "Unsupported shared step type '%s'." % step_type
+	if step.has("damage_scale_by_outcome"):
+		if step_type not in ["attack", "save"]: return "damage_scale_by_outcome requires an attack or save step."
+		if not step.has("damage") and not step.has("damage_components"): return "damage_scale_by_outcome requires a damage payload."
+		var scale_error := SharedSpell.validate_outcome_map(step["damage_scale_by_outcome"], SharedSpell.outcome_domain_for_delivery(step_type == "attack"), "damage_scale_by_outcome")
+		if not scale_error.is_empty(): return scale_error
+	if step.has("effects") and step["effects"] is Array and step_type in ["attack", "save"]:
+		for effect in step["effects"]:
+			if effect is Dictionary and effect.has("rider_by_outcome"):
+				var rider_error := SharedSpell.validate_outcome_map(effect["rider_by_outcome"], SharedSpell.outcome_domain_for_delivery(step_type == "attack"), "rider_by_outcome", true)
+				if not rider_error.is_empty(): return rider_error
+	if step.has("effects") and step["effects"] is Array and step_type not in ["attack", "save"]:
+		for effect in step["effects"]:
+			if effect is Dictionary and effect.has("rider_by_outcome"): return "rider_by_outcome requires an attack or save step."
 	var gate := "always"
 	if step.has("gate"):
 		if not step["gate"] is String:
@@ -153,13 +801,40 @@ static func validate_step(step: Variant, step_index: int, step_ids: Dictionary, 
 					return "Invalid shared upcast amount."
 			else:
 				return "Unsupported shared step upcast operation '%s'." % key
+	if step.has("component_id") and (not step["component_id"] is String or str(step["component_id"]).is_empty()):
+		return "Damage component_id must be a non-empty string."
+	if step.has("damage_components"):
+		if step_type != "save" or not step["damage_components"] is Array or step["damage_components"].is_empty():
+			return "damage_components are supported only as a non-empty save-step component list."
+		var component_ids: Array[String] = []
+		var type_counts: Dictionary = {}
+		for component in step["damage_components"]:
+			if not component is Dictionary or not _formula(component.get("damage")) or not component.get("damage_type") is String or str(component["damage_type"]) not in DataLoader.VALID_DAMAGE_TYPES:
+				return "Each damage component requires a valid damage formula and damage_type."
+			if component.has("id") and (not component["id"] is String or str(component["id"]).is_empty()):
+				return "Damage component id must be a non-empty string."
+			var component_type := str(component["damage_type"])
+			var component_id := str(component.get("id", "%s:%d" % [component_type, int(type_counts.get(component_type, 0)) + 1]))
+			if component_id in component_ids:
+				return "Damage component ids must be unique within a step."
+			component_ids.append(component_id)
+			type_counts[component_type] = int(type_counts.get(component_type, 0)) + 1
 
-	if step.has("effects") and step_type != "effect":
+	if step.has("effects"):
 		if not step["effects"] is Array:
 			return "Shared step effects must be an array."
 		for eff in step["effects"]:
 			var err := SharedSpell._validate_single_effect(eff)
 			if not err.is_empty(): return err
+			if eff is Dictionary and eff.has("value") and eff["value"] is Dictionary:
+				var value_err := _validate_formula_expression(eff["value"], step_ids, step_index, all_steps)
+				if not value_err.is_empty(): return value_err
+			if eff is Dictionary and eff.has("when"):
+				var effect_when_err := _validate_predicate(eff["when"], step_ids, step_index, all_steps)
+				if not effect_when_err.is_empty(): return effect_when_err
+	if step.has("when"):
+		var when_err := _validate_predicate(step["when"], step_ids, step_index, all_steps)
+		if not when_err.is_empty(): return when_err
 
 	match step_type:
 		"attack":
@@ -177,6 +852,8 @@ static func validate_step(step: Variant, step_index: int, step_ids: Dictionary, 
 					return "half_on_save must be a boolean."
 				if step.has("damage") and (not _formula(step["damage"]) or not step.get("damage_type") is String or step.get("damage_type") not in DataLoader.VALID_DAMAGE_TYPES):
 					return "Shared save step damage requires valid formula and damage type."
+				if step.has("damage_components") and step.has("damage"):
+					return "Shared save step chooses damage or damage_components, not both."
 			else:
 				var ability_val = step.get("save", step.get("save_ability", ""))
 				if not ability_val is String or ability_val not in ABILITIES:
@@ -355,6 +1032,23 @@ static func _same_actor(a, b) -> bool:
 	return false
 
 
+static func _copy_damage_components_for_step(components: Array, step: Dictionary) -> Array:
+	var copied: Array = components.duplicate(true)
+	# List entries already carry their authored ID or type ordinal, even when
+	# there is only one. Step-derived IDs belong to scalar damage payloads.
+	if step.has("damage_components"):
+		return copied
+	var component_type := str(step.get("damage_type", ""))
+	var component_id := str(step.get("component_id", "%s:%s" % [str(step.get("id", "")), component_type]))
+	if copied.size() == 1 and copied[0] is Dictionary:
+		copied[0]["component_id"] = component_id
+		return copied
+	for component in copied:
+		if component is Dictionary and not component.has("component_id"):
+			component["component_id"] = component_id
+	return copied
+
+
 static func _copy_target_outcomes(outcomes: Array) -> Array:
 	var copy: Array = []
 	for outcome in outcomes:
@@ -362,6 +1056,8 @@ static func _copy_target_outcomes(outcomes: Array) -> Array:
 			var outcome_copy: Dictionary = outcome.duplicate(false)
 			if outcome_copy.has("result") and outcome_copy["result"] is Dictionary:
 				outcome_copy["result"] = outcome_copy["result"].duplicate(false)
+			if outcome_copy.has("damage_components") and outcome_copy["damage_components"] is Array:
+				outcome_copy["damage_components"] = outcome_copy["damage_components"].duplicate(true)
 			copy.append(outcome_copy)
 		else:
 			copy.append(outcome)
@@ -467,6 +1163,9 @@ static func execute_steps(steps: Array, adapter: Object, start_step_index: int =
 			var s_target = step_targets[target_idx]
 			if not adapter.is_target_eligible(step, s_target):
 				continue
+			if step.has("when") and not evaluate_predicate(step["when"], adapter, s_target, step_results):
+				target_outcomes.append({"target": s_target, "target_name": adapter.get_target_name(s_target), "skipped": true, "reason": "when_not_satisfied"})
+				continue
 
 			# Per-target gate evaluation
 			if gate != "always":
@@ -555,7 +1254,7 @@ static func execute_steps(steps: Array, adapter: Object, start_step_index: int =
 					var is_first_attack := not has_attack
 					has_attack = true
 					var res: Dictionary = adapter.resolve_attack_step(step, s_target, i, target_idx, step_results, total_damage, messages, first_attack_hit, has_attack, primary_save_saved, has_save, target_outcomes, step_targets, step_damage, is_first_attack)
-					if res.has("damage_request"):
+					if res.has("damage_request") or res.has("weapon_attack_bonus_request"):
 						return res
 					var hit := bool(res.get("hit", false))
 					step_hit = hit
@@ -573,9 +1272,11 @@ static func execute_steps(steps: Array, adapter: Object, start_step_index: int =
 						"damage": dmg,
 						"result": res
 					}
-					for fact in ["resolved", "ward_absorbed", "ward_remaining_hp", "ward_projected", "temp_hp_absorbed", "hp_loss", "hp_before", "hp_after", "temp_hp_before", "temp_hp_after", "is_alive_before", "is_alive_after", "critical", "damage_is_critical"]:
+					for fact in ["resolved", "ward_absorbed", "ward_remaining_hp", "ward_projected", "temp_hp_absorbed", "hp_loss", "hp_before", "hp_after", "temp_hp_before", "temp_hp_after", "is_alive_before", "is_alive_after", "critical", "damage_is_critical", "damage_scale_decision", "rider_decisions"]:
 						if res.has(fact):
 							outcome_entry[fact] = res[fact]
+					if res.has("damage_components"):
+						outcome_entry["damage_components"] = _copy_damage_components_for_step(res["damage_components"], step)
 					if adapter.has_method("settle_target_occurrence"):
 						var settle_susp = adapter.settle_target_occurrence(s_target, step, res, outcome_entry, i, target_idx, step_results, total_damage, step_damage, messages, first_attack_hit, has_attack, primary_save_saved, has_save, target_outcomes, step_targets, is_first_attack)
 						if settle_susp is Dictionary and (settle_susp.has("concentration_request") or settle_susp.has("roll_choice_request")):
@@ -585,7 +1286,7 @@ static func execute_steps(steps: Array, adapter: Object, start_step_index: int =
 				"save":
 					has_save = true
 					var res: Dictionary = adapter.resolve_save_step(step, s_target, i, target_idx, step_results, total_damage, messages, first_attack_hit, has_attack, primary_save_saved, has_save, target_outcomes, step_targets, step_damage)
-					if res.has("damage_request"):
+					if res.has("damage_request") or res.has("save_bonus_request"):
 						return res
 					var saved := bool(res.get("saved", false))
 					step_saved = saved
@@ -603,9 +1304,11 @@ static func execute_steps(steps: Array, adapter: Object, start_step_index: int =
 						"damage": dmg,
 						"result": res
 					}
-					for fact in ["resolved", "ward_absorbed", "ward_remaining_hp", "ward_projected", "temp_hp_absorbed", "hp_loss", "hp_before", "hp_after", "temp_hp_before", "temp_hp_after", "is_alive_before", "is_alive_after", "critical", "damage_is_critical"]:
+					for fact in ["resolved", "ward_absorbed", "ward_remaining_hp", "ward_projected", "temp_hp_absorbed", "hp_loss", "hp_before", "hp_after", "temp_hp_before", "temp_hp_after", "is_alive_before", "is_alive_after", "critical", "damage_is_critical", "damage_scale_decision", "rider_decisions"]:
 						if res.has(fact):
 							outcome_entry[fact] = res[fact]
+					if res.has("damage_components"):
+						outcome_entry["damage_components"] = _copy_damage_components_for_step(res["damage_components"], step)
 					if adapter.has_method("settle_target_occurrence"):
 						var settle_susp = adapter.settle_target_occurrence(s_target, step, res, outcome_entry, i, target_idx, step_results, total_damage, step_damage, messages, first_attack_hit, has_attack, primary_save_saved, has_save, target_outcomes, step_targets, false)
 						if settle_susp is Dictionary and (settle_susp.has("concentration_request") or settle_susp.has("roll_choice_request")):
@@ -630,6 +1333,8 @@ static func execute_steps(steps: Array, adapter: Object, start_step_index: int =
 					for fact in ["resolved", "ward_absorbed", "ward_remaining_hp", "ward_projected", "temp_hp_absorbed", "hp_loss", "hp_before", "hp_after", "temp_hp_before", "temp_hp_after", "is_alive_before", "is_alive_after", "critical", "damage_is_critical"]:
 						if res.has(fact):
 							outcome_entry[fact] = res[fact]
+					if res.has("damage_components"):
+						outcome_entry["damage_components"] = _copy_damage_components_for_step(res["damage_components"], step)
 					if adapter.has_method("settle_target_occurrence"):
 						var settle_susp = adapter.settle_target_occurrence(s_target, step, res, outcome_entry, i, target_idx, step_results, total_damage, step_damage, messages, first_attack_hit, has_attack, primary_save_saved, has_save, target_outcomes, step_targets, false)
 						if settle_susp is Dictionary and (settle_susp.has("concentration_request") or settle_susp.has("roll_choice_request")):
@@ -637,7 +1342,7 @@ static func execute_steps(steps: Array, adapter: Object, start_step_index: int =
 					target_outcomes.append(outcome_entry)
 
 				"effect":
-					var res: Dictionary = adapter.resolve_effect_step(step, s_target)
+					var res: Dictionary = adapter.resolve_effect_step(step, s_target, step_results)
 					var msg := str(res.get("message", "")).strip_edges()
 					if not msg.is_empty(): messages.append(msg)
 					target_outcomes.append({
@@ -732,14 +1437,20 @@ static func resume_spell_steps(caster: Character, target, settled_result: Dictio
 	var pending_target = ordered_cont.get("pending_target", target)
 	var step: Dictionary = ordered_cont.get("step", {})
 	var cast: SpellResolutionContext = ordered_cont["cast"]
+	var step_results: Array = _copy_step_results(ordered_cont.get("step_results", []))
+	var adapter := SpellAdapter.new(cast)
 
 	# Apply step effects if save or attack had effects and was pending
+	_bind_resolution_window(cast, pending_target, settled_result)
 	if step.has("effects") and not bool(settled_result.get("step_effects_applied", false)):
 		settled_result["step_effects_applied"] = true
-		settled_result = SharedSpell.apply_custom_effects(cast.caster, pending_target, step["effects"], settled_result, cast.slot_level)
+		var effects_to_apply: Array = step["effects"]
+		if str(step.get("type", "")) == "attack" and not bool(settled_result.get("hit", false)):
+			effects_to_apply = effects_to_apply.filter(func(effect): return effect is Dictionary and effect.has("rider_by_outcome"))
+		if not effects_to_apply.is_empty():
+			settled_result = SharedSpell.apply_custom_effects(cast.caster, pending_target, effects_to_apply, settled_result, cast.slot_level, step_results, adapter)
 
 	var target_outcomes: Array = _copy_target_outcomes(ordered_cont.get("target_outcomes", []))
-	var step_results: Array = _copy_step_results(ordered_cont.get("step_results", []))
 	var total_damage: int = int(ordered_cont.get("total_damage", 0)) + int(settled_result.get("damage", 0))
 	var step_damage: int = int(ordered_cont.get("step_damage", 0)) + int(settled_result.get("damage", 0))
 	var messages: Array[String] = []
@@ -748,7 +1459,6 @@ static func resume_spell_steps(caster: Character, target, settled_result: Dictio
 	if not settled_msg.is_empty():
 		messages.append(settled_msg)
 
-	var adapter := SpellAdapter.new(cast)
 	var step_targets: Array = ordered_cont.get("step_targets", [])
 	var next_target_idx := target_index + 1
 	var is_first_attack: bool = bool(ordered_cont.get("is_first_attack", false))
@@ -764,9 +1474,11 @@ static func resume_spell_steps(caster: Character, target, settled_result: Dictio
 		"damage": int(settled_result.get("damage", 0)),
 		"result": settled_result
 	}
-	for fact in ["resolved", "ward_absorbed", "ward_remaining_hp", "ward_projected", "temp_hp_absorbed", "hp_loss", "hp_before", "hp_after", "temp_hp_before", "temp_hp_after", "is_alive_before", "is_alive_after", "critical", "damage_is_critical"]:
+	for fact in ["resolved", "ward_absorbed", "ward_remaining_hp", "ward_projected", "temp_hp_absorbed", "hp_loss", "hp_before", "hp_after", "temp_hp_before", "temp_hp_after", "is_alive_before", "is_alive_after", "critical", "damage_is_critical", "damage_scale_decision", "rider_decisions"]:
 		if settled_result.has(fact):
 			outcome_entry[fact] = settled_result[fact]
+	if settled_result.has("damage_components"):
+		outcome_entry["damage_components"] = _copy_damage_components_for_step(settled_result["damage_components"], step)
 	if adapter.has_method("settle_target_occurrence"):
 		var settle_susp = adapter.settle_target_occurrence(pending_target, step, settled_result, outcome_entry, step_index, target_index, step_results, total_damage, step_damage, messages, current_first_attack_hit, bool(ordered_cont.get("has_attack", false)), bool(ordered_cont.get("primary_save_saved", false)), bool(ordered_cont.get("has_save", false)), target_outcomes, step_targets, is_first_attack)
 		if settle_susp is Dictionary and (settle_susp.has("concentration_request") or settle_susp.has("roll_choice_request")):
@@ -1263,17 +1975,21 @@ class SpellAdapter:
 		step_spell.erase("attack_type")
 		step_spell.erase("save")
 		step_spell.erase("half_on_save")
+		step_spell.erase("damage_scale_by_outcome")
 		step_spell.erase("damage")
 		step_spell.erase("damage_type")
+		step_spell.erase("damage_components")
 		step_spell.erase("scaling")
 		step_spell.erase("upcast")
 		step_spell.erase("effects")
 		if step.has("damage"):
 			step_spell["damage"] = step["damage"]
 			step_spell["damage_type"] = step.get("damage_type", "untyped")
+		if step.has("damage_components"): step_spell["damage_components"] = step["damage_components"]
 		if step.has("scaling"): step_spell["scaling"] = step["scaling"]
 		if step.has("upcast"): step_spell["upcast"] = step["upcast"]
 		if step.has("effects"): step_spell["effects"] = step["effects"]
+		if step.has("damage_scale_by_outcome"): step_spell["damage_scale_by_outcome"] = step["damage_scale_by_outcome"]
 		return step_spell
 
 	func _create_step_cast(s_target, step_spell: Dictionary) -> SpellResolutionContext:
@@ -1284,8 +2000,10 @@ class SpellAdapter:
 		step_spell["attack_type"] = step["attack_type"]
 		var step_cast := _create_step_cast(s_target, step_spell)
 		var res := SpellAttackResolver.resolve(step_cast)
-		if res.has("damage_request"):
-			var req_id: String = str(res["damage_request"].get("request_id", ""))
+		SharedStepExecutor._bind_resolution_window(cast, s_target, res)
+		if res.has("damage_request") or res.has("weapon_attack_bonus_request"):
+			var request_key := "weapon_attack_bonus_request" if res.has("weapon_attack_bonus_request") else "damage_request"
+			var req_id: String = str(res[request_key].get("request_id", ""))
 			var continuation := {
 				"continuation_id": req_id if not req_id.is_empty() else "cont_%d_%d_%d" % [cast.get_instance_id(), i, target_idx],
 				"request_id": req_id,
@@ -1312,18 +2030,26 @@ class SpellAdapter:
 			res["suspended_step"] = i
 			res["step_results"] = SharedStepExecutor._copy_step_results(step_results)
 			return res
-		if bool(res.get("hit", false)) and step.has("effects"):
-			res = SharedSpell.apply_custom_effects(cast.caster, s_target, step["effects"], res, cast.slot_level)
+		if step.has("effects"):
+			var effects_to_apply: Array = step["effects"]
+			if not bool(res.get("hit", false)):
+				effects_to_apply = effects_to_apply.filter(func(effect): return effect is Dictionary and effect.has("rider_by_outcome"))
+			if not effects_to_apply.is_empty():
+				res = SharedSpell.apply_custom_effects(cast.caster, s_target, effects_to_apply, res, cast.slot_level, step_results, self)
 		return res
 
 	func resolve_save_step(step: Dictionary, s_target, i: int, target_idx: int, step_results: Array, total_damage: int, messages: Array, first_attack_hit: bool, has_attack: bool, primary_save_saved: bool, has_save: bool, target_outcomes: Array, step_targets: Array, step_damage: int) -> Dictionary:
 		var step_spell := _clean_step_spell(step)
 		step_spell["save"] = step["save"]
 		step_spell["half_on_save"] = bool(step.get("half_on_save", false))
+		step_spell["_shared_spell_step"] = true
+		step_spell["_save_bonus_result_key"] = "step:%s:%d:%d:%s" % [str(step.get("id", i)), i, target_idx, str(s_target.get_instance_id()) if s_target is Object else str(s_target.get("id", "target"))]
 		var step_cast := _create_step_cast(s_target, step_spell)
 		var res := SpellSaveResolver.resolve(step_cast)
-		if res.has("damage_request"):
-			var req_id: String = str(res["damage_request"].get("request_id", ""))
+		SharedStepExecutor._bind_resolution_window(cast, s_target, res)
+		if res.has("damage_request") or res.has("save_bonus_request"):
+			var request_key := "save_bonus_request" if res.has("save_bonus_request") else "damage_request"
+			var req_id: String = str(res[request_key].get("request_id", ""))
 			var continuation := {
 				"continuation_id": req_id if not req_id.is_empty() else "cont_%d_%d_%d" % [cast.get_instance_id(), i, target_idx],
 				"request_id": req_id,
@@ -1351,10 +2077,11 @@ class SpellAdapter:
 			res["step_results"] = SharedStepExecutor._copy_step_results(step_results)
 			return res
 		if step.has("effects"):
-			res = SharedSpell.apply_custom_effects(cast.caster, s_target, step["effects"], res, cast.slot_level)
+			res = SharedSpell.apply_custom_effects(cast.caster, s_target, step["effects"], res, cast.slot_level, step_results, self)
 		return res
 
 	func resolve_damage_step(step: Dictionary, s_target, i: int, target_idx: int, step_results: Array, total_damage: int, messages: Array, first_attack_hit: bool, has_attack: bool, primary_save_saved: bool, has_save: bool, target_outcomes: Array, step_targets: Array, step_damage: int) -> Dictionary:
+		SharedStepExecutor._bind_resolution_window(cast, s_target, {})
 		var step_spell := _clean_step_spell(step)
 		var formula := SpellDamageRolls.spell_damage_formula(cast.caster, step_spell, cast.slot_level)
 		var roll := SpellDamageRolls._roll_spell_damage(cast.caster, formula, 1, cast.decisions)
@@ -1388,13 +2115,13 @@ class SpellAdapter:
 			res["step_results"] = SharedStepExecutor._copy_step_results(step_results)
 			return res
 		if step.has("effects"):
-			res = SharedSpell.apply_custom_effects(cast.caster, s_target, step["effects"], res, cast.slot_level)
+			res = SharedSpell.apply_custom_effects(cast.caster, s_target, step["effects"], res, cast.slot_level, step_results, self)
 		return res
 
-	func resolve_effect_step(step: Dictionary, s_target) -> Dictionary:
+	func resolve_effect_step(step: Dictionary, s_target, step_results: Array = []) -> Dictionary:
 		if step.has("effects"):
 			var res := {"success": true, "hit": true, "slot_level": cast.slot_level, "effect_cast": cast.effect_cast}
-			res = SharedSpell.apply_custom_effects(cast.caster, s_target, step["effects"], res, cast.slot_level)
+			res = SharedSpell.apply_custom_effects(cast.caster, s_target, step["effects"], res, cast.slot_level, step_results, self)
 			return res
 		return {}
 

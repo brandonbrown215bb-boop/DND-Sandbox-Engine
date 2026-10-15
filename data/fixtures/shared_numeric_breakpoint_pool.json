@@ -1,0 +1,39 @@
+{
+  "id": "fixture:breakpoint_spark_class",
+  "name": "Fixture Breakpoint Spark",
+  "description": "Test-only class used to exercise deterministic numeric breakpoint capacity.",
+  "hit_die": "d8",
+  "primary_ability": "INT",
+  "features_by_level": {
+    "1": [
+      {
+        "id": "fixture:breakpoint_spark",
+        "name": "Breakpoint Spark",
+        "executor": "class_feature",
+        "type": "active",
+        "target": "self",
+        "action_cost": "bonus_action",
+        "resource_cost": 1,
+        "resource_pool": {
+          "id": "fixture:breakpoint_spark_pool",
+          "capacity_formula": {
+            "op": "breakpoint_lookup",
+            "input": { "caster_level": true },
+            "breakpoints": [
+              { "threshold": 1, "value": 2 },
+              { "threshold": 5, "value": 3 },
+              { "threshold": 9, "value": 4 }
+            ]
+          },
+          "initial_quantity": 2,
+          "recovery": {
+            "long_rest_completed": { "mode": "restore_to_capacity" }
+          }
+        },
+        "effects": [
+          { "type": "grant_condition", "condition": "breakpoint_spark", "duration": 1 }
+        ]
+      }
+    ]
+  }
+}

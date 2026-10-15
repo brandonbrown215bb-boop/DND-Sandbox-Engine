@@ -7,11 +7,13 @@ static func consume(target: Character) -> Dictionary:
 	if not has_die(target):
 		return {"success": false, "bonus": 0, "message": "No Bardic Inspiration die is held."}
 	var die := str(target.feature_uses.get("bardic_inspiration_die", "1d6"))
-	var bonus := Dice.parse_dice_string(die, {}, target)
+	var die_size := int(die.trim_prefix("1d"))
+	var roll_details: Dictionary = Dice.roll_single_details(die_size, target)
+	var bonus := int(roll_details.get("total", 0))
 	target.feature_uses.erase("bardic_inspiration_die")
 	target.feature_uses.erase("bardic_inspiration_source")
 	target.feature_uses.erase("bardic_inspiration_seconds_remaining")
-	return {"success": true, "bonus": bonus, "die": die, "message": "%s adds Bardic Inspiration (%d)." % [target.character_name, bonus]}
+	return {"success": true, "bonus": bonus, "die": die, "roll_details": roll_details, "message": "%s adds Bardic Inspiration (%d)." % [target.character_name, bonus]}
 
 
 static func apply_to_test(target: Character, total: int, dc: int, accepted: bool, natural_roll: int = 0, attack_roll: bool = false) -> Dictionary:
@@ -29,6 +31,7 @@ static func apply_to_test(target: Character, total: int, dc: int, accepted: bool
 		"total": adjusted_total,
 		"bonus": int(inspiration.get("bonus", 0)),
 		"die": str(inspiration.get("die", "1d6")),
+		"roll_details": inspiration.get("roll_details", {}).duplicate(true),
 		"success": adjusted_total >= dc,
 		"message": str(inspiration.get("message", "Bardic Inspiration")),
 	}

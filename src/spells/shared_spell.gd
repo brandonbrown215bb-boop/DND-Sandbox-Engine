@@ -6,10 +6,10 @@ extends RefCounted
 const CONDITIONS := ["blinded", "deafened", "frightened", "poisoned", "prone", "restrained", "stunned", "paralyzed", "incapacitated", "blessed", "baned", "shield_of_faith"]
 const ABILITIES := ["STR", "DEX", "CON", "INT", "WIS", "CHA"]
 const EFFECTS := ["heal", "temporary_hp", "grant_condition", "remove_condition", "area_selection"]
-const STEP_FIELDS := ["id", "type", "gate", "gate_step", "target", "shape", "radius", "size", "attack_type", "damage", "damage_type", "scaling", "upcast", "save", "half_on_save", "effects"]
+const STEP_FIELDS := ["id", "type", "gate", "gate_step", "target", "shape", "radius", "size", "attack_type", "damage", "damage_type", "damage_components", "component_id", "scaling", "upcast", "save", "half_on_save", "damage_scale_by_outcome", "effects"]
 const STEP_TYPES := ["attack", "save", "damage", "effect"]
 const STEP_GATES := ["always", "hit", "miss", "failed_save", "successful_save"]
-const FIELDS := ["id", "name", "description", "execution", "level", "casting_time", "range", "range_kind", "range_by_character_level_feet", "target", "base_targets", "attack_type", "damage", "damage_type", "scaling", "upcast", "save", "half_on_save", "requires_target_sight", "target_creature_types", "target_creature_type_exclusions", "target_sizes", "ignore_cover_on_save", "effects", "concentration", "duration", "duration_seconds", "repeat_save", "targets_objects", "ignites_objects", "area_radius", "cone_size", "end_on_target_damage", "end_on_any_damage", "end_on_party_damage", "components", "material", "material_component_item_id", "material_component_cost", "material_component_consumed", "consumed_material_item_id", "ritual", "rules_source", "rules_status", "school", "classes", "source", "trigger", "steps"]
+const FIELDS := ["id", "name", "description", "execution", "level", "casting_time", "range", "range_kind", "range_by_character_level_feet", "target", "base_targets", "attack_type", "damage", "damage_type", "scaling", "upcast", "save", "half_on_save", "damage_scale_by_outcome", "requires_target_sight", "target_creature_types", "target_creature_type_exclusions", "target_sizes", "ignore_cover_on_save", "effects", "concentration", "duration", "duration_seconds", "repeat_save", "targets_objects", "ignites_objects", "area_radius", "cone_size", "end_on_target_damage", "end_on_any_damage", "end_on_party_damage", "components", "material", "material_component_item_id", "material_component_cost", "material_component_consumed", "consumed_material_item_id", "ritual", "rules_source", "rules_status", "school", "classes", "source", "trigger", "steps"]
 
 static func uses(spell: Dictionary) -> bool:
 	return spell.get("execution", "") == "shared"
@@ -18,10 +18,11 @@ static func _validate_single_effect(effect: Variant) -> String:
 	if not effect is Dictionary or effect.get("type", "") not in EFFECTS:
 		return "Unsupported shared effect operation."
 	var kind := str(effect["type"])
-	var allowed := ["type", "on_spell_hit", "on_failed_save"]
+	var allowed := ["type", "on_spell_hit", "on_failed_save", "rider_by_outcome", "when"]
+	if effect.has("when") and not effect["when"] is Dictionary: return "Shared effect when must be a predicate object."
 	if kind in ["heal", "temporary_hp"]:
 		allowed.append_array(["value", "ability_bonus_from_caster"])
-		if not _formula(effect.get("value")): return "Shared healing/temporary HP requires a valid value."
+		if not _formula(effect.get("value")) and not effect.get("value") is Dictionary: return "Shared healing/temporary HP requires a valid value."
 		if effect.has("ability_bonus_from_caster") and not effect["ability_bonus_from_caster"] is bool: return "ability_bonus_from_caster must be Boolean."
 	elif kind in ["grant_condition", "remove_condition"]:
 		allowed.append("condition")
@@ -35,7 +36,37 @@ static func _validate_single_effect(effect: Variant) -> String:
 		if key not in allowed: return "Unsupported field '%s' for shared %s." % [key, kind]
 	for gate in ["on_spell_hit", "on_failed_save"]:
 		if effect.has(gate) and not effect[gate] is bool: return "Shared effect gates must be Boolean."
+	if effect.has("rider_by_outcome"):
+		var map_error := validate_outcome_map(effect["rider_by_outcome"], ["hit", "miss"], "rider_by_outcome", true)
+		if not map_error.is_empty():
+			map_error = validate_outcome_map(effect["rider_by_outcome"], ["success", "failure"], "rider_by_outcome", true)
+		if not map_error.is_empty(): return map_error
 	return ""
+
+static func validate_outcome_map(value: Variant, outcomes: Array, label: String, boolean_values: bool = false) -> String:
+	if not value is Dictionary or value.size() != outcomes.size():
+		return "%s must explicitly map every outcome: %s." % [label, str(outcomes)]
+	for outcome in outcomes:
+		if not value.has(outcome): return "%s is missing '%s'." % [label, outcome]
+		var entry: Variant = value[outcome]
+		if boolean_values:
+			if not entry is bool: return "%s values must be Boolean." % label
+		elif not ((entry is int or entry is float) and not entry is bool and is_finite(float(entry)) and float(entry) >= 0.0 and float(entry) <= 1.0):
+			return "%s values must be finite scales from 0 through 1." % label
+	for key in value:
+		if not outcomes.has(str(key)): return "%s has unsupported outcome '%s'." % [label, str(key)]
+	return ""
+
+static func outcome_domain_for_delivery(attack: bool) -> Array:
+	return ["hit", "miss"] if attack else ["success", "failure"]
+
+static func authored_damage_scale(payload: Dictionary, outcome: String, default_scale: float) -> float:
+	var mapping: Variant = payload.get("damage_scale_by_outcome", {})
+	return float(mapping[outcome]) if mapping is Dictionary and mapping.has(outcome) else default_scale
+
+static func record_damage_scale(result: Dictionary, payload: Dictionary, outcome: String, scale: float) -> void:
+	if payload.has("damage_scale_by_outcome"):
+		result["damage_scale_decision"] = {"outcome": outcome, "scale": scale, "source": "authored_map", "rounding": "floor_after_bonus_before_typed_settlement"}
 
 static func _steps_error(spell: Dictionary) -> String:
 	var err := SharedStepExecutor.validate_steps(spell.get("steps", []), "spell")
@@ -66,6 +97,8 @@ static func content_error(spell: Dictionary) -> String:
 	if spell.get("target", "single") not in ["single", "self", "multi", "area", "cone"]:
 		return "Unsupported shared target selector."
 	if spell.has("steps"):
+		if spell.has("damage_scale_by_outcome"):
+			return "Ordered damage outcome maps must belong to an attack or save step."
 		var steps_err := _steps_error(spell)
 		if not steps_err.is_empty():
 			return steps_err
@@ -76,6 +109,11 @@ static func content_error(spell: Dictionary) -> String:
 			return "Shared saving throws require an ability."
 		if spell.has("save") and spell.get("attack_type", "none") != "none":
 			return "Choose either attack or saving-throw delivery."
+		if spell.has("damage_scale_by_outcome"):
+			if not spell.has("save") and spell.get("attack_type", "none") == "none": return "damage_scale_by_outcome requires attack or save delivery."
+			if not spell.has("damage"): return "damage_scale_by_outcome requires a damage payload."
+			var scale_error := validate_outcome_map(spell["damage_scale_by_outcome"], outcome_domain_for_delivery(spell.get("attack_type", "none") != "none"), "damage_scale_by_outcome")
+			if not scale_error.is_empty(): return scale_error
 		if spell.has("damage") and (not _formula(spell["damage"]) or spell.get("damage_type", "") not in DataLoader.VALID_DAMAGE_TYPES):
 			return "Shared damage requires a valid formula and damage type."
 		if spell.get("attack_type", "none") != "none" and not spell.has("damage"):
@@ -125,8 +163,16 @@ static func content_error(spell: Dictionary) -> String:
 	var timed := false
 	var areas := 0
 	for effect in spell.get("effects", []):
+		if effect is Dictionary and effect.has("when"): return "Shared effect predicates must be inside ordered steps."
+		if effect is Dictionary and effect.get("value") is Dictionary: return "Shared formula objects must be inside ordered steps."
 		var eff_err := _validate_single_effect(effect)
 		if not eff_err.is_empty(): return eff_err
+		if effect is Dictionary and effect.has("rider_by_outcome"):
+			if spell.has("steps"): return "Ordered rider outcome maps must belong to an attack or save step."
+			if not spell.has("save") and spell.get("attack_type", "none") == "none": return "rider_by_outcome requires attack or save delivery."
+			var domain := outcome_domain_for_delivery(spell.get("attack_type", "none") != "none")
+			var rider_error := validate_outcome_map(effect["rider_by_outcome"], domain, "rider_by_outcome", true)
+			if not rider_error.is_empty(): return rider_error
 		var kind := str(effect.get("type", ""))
 		if kind == "grant_condition": timed = true
 		elif kind == "area_selection": areas += 1
@@ -179,9 +225,21 @@ static func _create_step_cast(cast: SpellResolutionContext, target, step_spell: 
 	step_cast.slot_level = cast.slot_level
 	step_cast.distance_feet = cast.distance_feet
 	step_cast.effect_cast = cast.effect_cast
+	# A step attack is a new resolver context for its target, but it is still
+	# part of the exact parent cast/action and must retain those canonical IDs.
+	step_cast.invocation_id = cast.invocation_id
+	step_cast.spell_definition_id = cast.spell_definition_id
+	step_cast.action_id = cast.action_id
+	step_cast.action_invocation_id = cast.action_invocation_id
+	step_cast.item_definition_id = cast.item_definition_id
+	step_cast.item_instance_id = cast.item_instance_id
+	step_cast.item_copy_validated = cast.item_copy_validated
+	step_cast.source_definition_id = cast.source_definition_id
+	step_cast.source_instance_id = cast.source_instance_id
+	step_cast.source_owner_id = cast.source_owner_id
 	step_cast.incoming_slot_spent = cast.incoming_slot_spent
 	step_cast.incoming_slot_key = cast.incoming_slot_key
-	step_cast.has_damage_payload = step_spell.has("damage")
+	step_cast.has_damage_payload = step_spell.has("damage") or not step_spell.get("damage_components", []).is_empty()
 	return step_cast
 
 static func _resolve_steps(cast: SpellResolutionContext, start_step_index: int = 0, prior_state: Dictionary = {}) -> Dictionary:
@@ -197,7 +255,7 @@ static func resume_pending_occurrence(caster: Character, target, settled_result:
 static func resolve(cast: SpellResolutionContext) -> Dictionary:
 	if cast.spell.has("steps"):
 		return _resolve_steps(cast)
-	cast.has_damage_payload = cast.spell.has("damage")
+	cast.has_damage_payload = cast.spell.has("damage") or not cast.spell.get("damage_components", []).is_empty()
 	var result: Dictionary
 	if cast.spell.has("save"):
 		result = SpellSaveResolver.resolve(cast)
@@ -213,18 +271,39 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 	result["effect_cast"] = cast.effect_cast
 	return apply(cast.caster, cast.target, cast.spell, result)
 
-static func apply_custom_effects(caster: Character, target, effects: Array, result: Dictionary, slot_level: int) -> Dictionary:
+static func apply_custom_effects(caster: Character, target, effects: Array, result: Dictionary, slot_level: int, step_results: Array = [], adapter: Object = null) -> Dictionary:
 	var messages: Array[String] = []
 	var target_name: String = target.character_name if target is Character else str(target.get("name", "Target"))
+	var outcome := ("hit" if bool(result.get("hit", false)) else "miss") if result.has("hit") else (("success" if bool(result.get("saved", false)) else "failure") if result.has("saved") else "")
+	if effects.any(func(effect): return effect is Dictionary and effect.has("rider_by_outcome")):
+		for effect in effects:
+			if effect is Dictionary and effect.has("rider_by_outcome") and (outcome.is_empty() or not effect["rider_by_outcome"].has(outcome)):
+				return {"success": false, "refused": true, "error": "Authored rider outcome is unavailable."}
 	for effect in effects:
 		if not effect is Dictionary: continue
+		if effect.has("rider_by_outcome"):
+			var eligible := bool(effect["rider_by_outcome"][outcome])
+			var decisions: Array = result.get("rider_decisions", [])
+			decisions.append({"effect": str(effect.get("type", "")), "outcome": outcome, "eligible": eligible, "source": "authored_map"})
+			result["rider_decisions"] = decisions
+			if not eligible: continue
 		if bool(effect.get("on_spell_hit", false)) and not result.get("hit", false): continue
 		if bool(effect.get("on_failed_save", false)) and result.get("saved", true): continue
+		if effect.has("when") and (adapter == null or not SharedStepExecutor.evaluate_predicate(effect["when"], adapter, target, step_results)): continue
 		match str(effect.get("type", "")):
 			"heal", "temporary_hp":
-				var formula := str(effect.get("value", "0"))
-				var amount := Dice.parse_dice_string(formula, {}, caster)
-				if effect["type"] == "heal": amount = SpellEffects.maximize_healing(target, amount, Dice.maximum_dice_string(formula))
+				var formula_value = effect.get("value", "0")
+				# JSON decodes integral numbers as floats; the dice parser expects
+				# integer text rather than e.g. "5.0" for an accepted fixed value.
+				var formula := str(int(formula_value)) if formula_value is int or formula_value is float else str(formula_value) if not formula_value is Dictionary else ""
+				var amount := 0
+				if formula_value is Dictionary:
+					var evaluated := SharedStepExecutor.evaluate_formula(formula_value, adapter, target, step_results)
+					if not evaluated.get("success", false): continue
+					amount = int(evaluated["value"])
+				else:
+					amount = Dice.parse_dice_string(formula, {}, caster)
+				if effect["type"] == "heal" and not formula_value is Dictionary: amount = SpellEffects.maximize_healing(target, amount, Dice.maximum_dice_string(formula))
 				if bool(effect.get("ability_bonus_from_caster", false)): amount += caster.ability_scores.get_ability_modifier(caster.get_spellcasting_ability())
 				amount = maxi(0, amount)
 				if effect["type"] == "temporary_hp":
@@ -256,7 +335,7 @@ static func apply_custom_effects(caster: Character, target, effects: Array, resu
 
 ## Applied once after attack/save and any awaited Empowered damage settlement.
 static func apply(caster: Character, target, spell: Dictionary, result: Dictionary) -> Dictionary:
-	if result.get("shared_effects_applied", false) or not result.get("success", false) or result.get("sanctuary_blocked", false) or result.has("damage_request"):
+	if result.get("shared_effects_applied", false) or not result.get("success", false) or result.get("sanctuary_blocked", false) or result.has("damage_request") or result.has("save_bonus_request") or result.has("weapon_attack_bonus_request"):
 		return result
 	result["shared_effects_applied"] = true
 	var effects := SpellDamageRolls.spell_effects_for_slot_level(spell, int(result.get("slot_level", spell.get("level", 0))))

@@ -1,0 +1,40 @@
+[
+  {
+    "id": "fixture:save_bonus_pay_on_choice_class",
+    "name": "Fixture Save Bonus Pay on Choice",
+    "hit_die": "d8",
+    "primary_ability": "DEX",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:save_bonus_pay_on_choice",
+          "name": "Steady Saving",
+          "type": "passive",
+          "resource_pool": { "id": "fixture:save_bonus_pay_on_choice_pool", "capacity_formula": 2, "initial_quantity": 2 },
+          "passive_effects": [
+            { "type": "failed_save_numeric_bonus", "ability": "DEX", "amount": 5, "cost": 1, "payment_policy": "pay_on_choice" }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "fixture:save_bonus_pay_on_success_class",
+    "name": "Fixture Save Bonus Pay on Converted Success",
+    "hit_die": "d8",
+    "primary_ability": "CON",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:save_bonus_pay_on_success",
+          "name": "Steadfast Resolve",
+          "type": "passive",
+          "resource_pool": { "id": "fixture:save_bonus_pay_on_success_pool", "capacity_formula": 2, "initial_quantity": 2 },
+          "passive_effects": [
+            { "type": "failed_save_numeric_bonus", "ability": "CON", "amount": 7, "cost": 1, "payment_policy": "pay_on_converted_success" }
+          ]
+        }
+      ]
+    }
+  }
+]

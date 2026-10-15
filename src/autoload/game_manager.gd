@@ -386,6 +386,7 @@ func advance_campaign_time(elapsed_seconds: int) -> Array[Dictionary]:
 	for room_state in saved_local_room_states():
 		LocalRoomAreas.expire(room_state, campaign_elapsed_seconds)
 	for character in PartyManager.characters.values():
+		character.expire_campaign_modifiers(campaign_elapsed_seconds)
 		LightSourceRules.advance_inventory(character.inventory, elapsed_seconds)
 		BarbarianRules.advance_rage_time(character, elapsed_seconds)
 		BardicInspirationRules.advance_time(character, elapsed_seconds)

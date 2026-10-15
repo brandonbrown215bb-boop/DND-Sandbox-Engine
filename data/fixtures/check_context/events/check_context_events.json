@@ -1,0 +1,252 @@
+{
+  "table_id": "fixture:check_context_events",
+  "terrain_type": "plains",
+  "events": [
+    {
+      "id": "fixture:survey_map_event",
+      "name": "Old Survey Map",
+      "weight": 1,
+      "type": "skill_check",
+      "check": {
+        "id": "read_map_check",
+        "ability": "INT",
+        "skill": "Investigation",
+        "dc": 14,
+        "check_context": {
+          "task_id": "survey_archive",
+          "purpose_id": "locate_nest",
+          "required_tool_id": "fixture:surveyors_tools"
+        }
+      },
+      "success": {"description": "The map reveals the route.", "effects": [{"type": "gold", "value": 1}]},
+      "failure": {"description": "The map remains unclear.", "effects": [{"type": "gold", "value": 1}]}
+    },
+    {
+      "id": "fixture:tidal_herbs_event",
+      "name": "Tidal Herbs",
+      "weight": 1,
+      "type": "skill_check",
+      "check": {
+        "id": "identify_herbs_check",
+        "ability": "WIS",
+        "skill": "Nature",
+        "dc": 15,
+        "check_context": {
+          "task_id": "sample_tidal_herbs",
+          "purpose_id": "identify_safe_spot",
+          "required_tool_id": "fixture:field_guide"
+        }
+      },
+      "success": {"description": "The field guide identifies a safe patch.", "effects": [{"type": "gold", "value": 1}]},
+      "failure": {"description": "The herbs remain uncertain.", "effects": [{"type": "gold", "value": 1}]}
+    },
+    {
+      "id": "fixture:unrelated_survey_event",
+      "name": "Another Map Question",
+      "weight": 1,
+      "type": "skill_check",
+      "check": {
+        "id": "mark_boundary_check",
+        "ability": "INT",
+        "skill": "Investigation",
+        "dc": 12,
+        "check_context": {
+          "task_id": "mark_boundary",
+          "purpose_id": "avoid_old_road",
+          "required_tool_id": "fixture:surveyors_tools"
+        }
+      },
+      "success": {"description": "The old road is marked.", "effects": [{"type": "gold", "value": 1}]},
+      "failure": {"description": "The map gives no useful boundary.", "effects": [{"type": "gold", "value": 1}]}
+    },
+    {
+      "id": "fixture:untooled_field_event",
+      "name": "Cross the Wet Field",
+      "weight": 1,
+      "type": "skill_check",
+      "check": {
+        "id": "cross_field_check",
+        "ability": "WIS",
+        "skill": "Survival",
+        "dc": 11,
+        "check_context": {
+          "task_id": "cross_wet_field",
+          "purpose_id": "avoid_soft_ground"
+        }
+      },
+      "success": {"description": "The party finds firm footing.", "effects": [{"type": "gold", "value": 1}]},
+      "failure": {"description": "The field slows the crossing.", "effects": [{"type": "gold", "value": 1}]}
+    },
+    {
+      "id": "fixture:unskilled_estimate_event",
+      "name": "Estimate the Buried Distance",
+      "weight": 1,
+      "type": "skill_check",
+      "check": {
+        "id": "estimate_distance_check",
+        "ability": "INT",
+        "dc": 25,
+        "check_context": {
+          "task_id": "survey_archive",
+          "purpose_id": "estimate_distance"
+        }
+      },
+      "success": {"description": "The estimate is close enough.", "effects": [{"type": "gold", "value": 1}]},
+      "failure": {"description": "The estimate remains uncertain.", "effects": [{"type": "gold", "value": 1}]}
+    },
+    {
+      "id": "fixture:choice_herbs_event",
+      "name": "Choose a Herb Patch",
+      "weight": 1,
+      "type": "choice",
+      "choices": [
+        {
+          "text": "Check the marked tidal patch",
+          "description": "The patch is assessed.",
+          "check": {
+            "id": "identify_choice_check",
+            "ability": "WIS",
+            "skill": "Nature",
+            "dc": 1,
+            "check_context": {
+              "task_id": "sample_tidal_herbs",
+              "purpose_id": "identify_safe_spot",
+              "required_tool_id": "fixture:field_guide"
+            }
+          },
+          "success": {"description": "A safe patch is identified.", "effects": [{"type": "gold", "value": 2}]},
+          "failure": {"description": "The patch remains uncertain.", "effects": [{"type": "gold", "value": 2}]}
+        }
+      ]
+    },
+    {
+      "id": "fixture:ability_bonus_choice_event",
+      "name": "Estimate from the Survey Map",
+      "weight": 1,
+      "type": "choice",
+      "choices": [
+        {
+          "text": "Estimate the distance",
+          "description": "The distance estimate is recorded.",
+          "check": {
+            "id": "choice_estimate_check",
+            "ability": "INT",
+            "dc": 13,
+            "check_context": {
+              "task_id": "survey_archive",
+              "purpose_id": "choice_estimate_distance",
+              "required_tool_id": "fixture:surveyors_tools"
+            }
+          },
+          "success": {"description": "The estimate is close enough.", "effects": [{"type": "gold", "value": 1}]},
+          "failure": {"description": "The estimate remains uncertain.", "effects": [{"type": "gold", "value": 1}]}
+        }
+      ]
+    },
+    {
+      "id": "fixture:s105_floor_check_event",
+      "name": "Steady Survey Method",
+      "weight": 1,
+      "type": "skill_check",
+      "check": {
+        "id": "s105_floor_check",
+        "ability": "INT",
+        "skill": "Investigation",
+        "dc": 35,
+        "check_context": {
+          "task_id": "survey_archive",
+          "purpose_id": "test_floor_order",
+          "required_tool_id": "fixture:surveyors_tools"
+        }
+      },
+      "success": {"description": "The floor-order check succeeds.", "effects": [{"type": "gold", "value": 1}]},
+      "failure": {"description": "The floor-order check remains difficult.", "effects": [{"type": "gold", "value": 1}]}
+    },
+    {
+      "id": "fixture:s105_disadvantage_check_event",
+      "name": "Climb the Rocky Bank",
+      "weight": 1,
+      "type": "skill_check",
+      "check": {
+        "id": "s105_disadvantage_check",
+        "ability": "STR",
+        "skill": "Athletics",
+        "dc": 14,
+        "check_context": {
+          "task_id": "climb_rocky_bank",
+          "purpose_id": "test_disadvantage_reroll",
+          "required_tool_id": "fixture:field_guide"
+        }
+      },
+      "success": {"description": "The climb succeeds.", "effects": [{"type": "gold", "value": 1}]},
+      "failure": {"description": "The climb fails.", "effects": [{"type": "gold", "value": 1}]}
+    },
+    {
+      "id": "fixture:s105_negative_check_event",
+      "name": "An Unlikely Feat",
+      "weight": 1,
+      "type": "skill_check",
+      "check": {
+        "id": "s105_negative_check",
+        "ability": "STR",
+        "skill": "Athletics",
+        "dc": 20,
+        "check_context": {
+          "task_id": "attempt_unlikely_feat",
+          "purpose_id": "test_negative_check",
+          "required_tool_id": "fixture:surveyors_tools"
+        }
+      },
+      "success": {"description": "The unlikely feat succeeds.", "effects": [{"type": "gold", "value": 1}]},
+      "failure": {"description": "The unlikely feat fails.", "effects": [{"type": "gold", "value": 1}]}
+    },
+    {
+      "id": "fixture:unknown_purpose_event",
+      "name": "Unmapped Survey Purpose",
+      "weight": 1,
+      "type": "skill_check",
+      "check": {
+        "id": "unknown_purpose_check",
+        "ability": "INT",
+        "skill": "Investigation",
+        "dc": 10,
+        "check_context": {
+          "task_id": "survey_archive",
+          "purpose_id": "map_a_hidden_river",
+          "required_tool_id": "fixture:surveyors_tools"
+        }
+      },
+      "success": {"description": "The river is marked.", "effects": [{"type": "gold", "value": 1}]},
+      "failure": {"description": "The river remains hidden.", "effects": [{"type": "gold", "value": 1}]}
+    },
+    {
+      "id": "fixture:legacy_check_event",
+      "name": "Old Trail Check",
+      "weight": 1,
+      "type": "skill_check",
+      "check": {"id": "legacy_trail_check", "ability": "WIS", "skill": "Survival", "dc": 12},
+      "success": {"description": "The old trail is found.", "effects": [{"type": "gold", "value": 1}]},
+      "failure": {"description": "The old trail is missed.", "effects": [{"type": "gold", "value": 1}]}
+    },
+    {
+      "id": "fixture:ambiguous_context_event",
+      "name": "Ambiguous Context Check",
+      "weight": 1,
+      "type": "choice",
+      "choices": [
+        {
+          "text": "Use the first ambiguous check",
+          "check": {"id": "ambiguous_check", "ability": "INT", "skill": "Investigation", "dc": 1, "check_context": {"task_id": "survey_archive", "purpose_id": "locate_nest", "required_tool_id": "fixture:surveyors_tools"}},
+          "success": {"effects": [{"type": "gold", "value": 999}]},
+          "failure": {"effects": [{"type": "gold", "value": 999}]}
+        },
+        {
+          "text": "Use the second ambiguous check",
+          "check": {"id": "ambiguous_check", "ability": "INT", "skill": "Investigation", "dc": 1, "check_context": {"task_id": "survey_archive", "purpose_id": "locate_nest", "required_tool_id": "fixture:surveyors_tools"}},
+          "success": {"effects": [{"type": "gold", "value": 999}]},
+          "failure": {"effects": [{"type": "gold", "value": 999}]}
+        }
+      ]
+    }
+  ]
+}

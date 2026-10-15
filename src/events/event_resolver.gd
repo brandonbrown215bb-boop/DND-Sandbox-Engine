@@ -20,40 +20,69 @@ static func is_effect_supported(effect_type: String) -> bool:
 
 ## Resolve a skill check for an event.
 ## Returns {"success": bool, "roll": int, "dc": int, "modifier": int}.
-static func resolve_skill_check(character: Character, check_data: Dictionary, decisions: Dictionary = {}) -> Dictionary:
+static func resolve_skill_check(character: Character, check_data: Dictionary, decisions: Dictionary = {}, authored_context: Dictionary = {}) -> Dictionary:
 	var skill := str(check_data.get("skill", ""))
 	var ability: String = character.get_skill_check_ability(str(check_data.get("ability", "STR")), skill, bool(check_data.get("use_primal_knowledge", true)))
 	var dc: int = int(check_data.get("dc", 10))
 	var familiar_help := bool(check_data.get("request_familiar_help", false)) and FamiliarRules.skill_help_available(character, check_data)
 
-	var advantage := familiar_help or character.has_ability_check_advantage(ability) or (character.has_feature("champion_remarkable_athlete") and ability == "STR" and skill == "Athletics")
-	var disadvantage := ability == "STR" and character.has_condition("ray_of_enfeeblement")
+	var mode_receipt := ability_check_roll_mode(character, ability, skill, authored_context, familiar_help)
+	var advantage := bool(mode_receipt.get("advantage", false))
+	var disadvantage := bool(mode_receipt.get("disadvantage", false))
 	var merged_decisions := check_data.duplicate(true)
 	merged_decisions.merge(decisions, true)
 	var d20_details: Dictionary = RollTokenRules.resolve_d20_test(character, "ability_check", advantage, disadvantage, merged_decisions)
 	var roll := int(d20_details.get("total", 1))
+	var raw_natural := roll
 	roll = character.apply_skill_check_roll_floor(roll, skill)
+	var roll_floor := character.apply_skill_check_roll_floor(1, skill)
 	var tool_bonus := character.inventory.skill_tool_bonus(skill, str(check_data.get("context", "")))
-	var modifier := character.get_skill_check_modifier(skill, ability) + tool_bonus
+	var check_context: Dictionary = authored_context.duplicate(true)
+	check_context["ability"] = ability
+	check_context["skill"] = skill
+	check_context["dc"] = dc
+	var context_tool: Dictionary = character.inventory.skill_check_context_bonus(ability, skill, check_context)
+	var contextual_tool_bonus := int(context_tool.get("bonus", 0))
+	var modifier := character.get_skill_check_modifier(skill, ability) + tool_bonus + contextual_tool_bonus
+	var base_modifier := modifier
 	var total := roll + modifier
 	var guidance_bonus := 0
+	var bonus_dice: Array[Dictionary] = []
 	if character.has_condition("guidance") and character.guidance_skill == skill:
-		guidance_bonus = Dice.roll(4, character)
+		var guidance_roll: Dictionary = Dice.roll_single_details(4, character)
+		guidance_bonus = int(guidance_roll.get("total", 0))
 		total += guidance_bonus
+		bonus_dice.append({"source": "guidance", "label": "Guidance", "sides": 4, "value": guidance_bonus, "roll": guidance_roll.duplicate(true), "included_in_modifier": false, "applied_before_total_floor": true})
+	var natural_total_floor := character.apply_feature_check_floor(0, ability, "ability_check")
+	var total_floor_active := natural_total_floor > 0
 	total = character.apply_feature_check_floor(total, ability, "ability_check")
 
 	return {
 		"success": total >= dc,
 		"roll": roll,
 		"natural_roll": roll,
+		"raw_natural_roll": raw_natural,
 		"total": total,
 		"modifier": modifier,
+		"base_modifier": base_modifier,
 		"dc": dc,
 		"ability": ability,
 		"guidance_bonus": guidance_bonus,
 		"tool_bonus": tool_bonus,
+		"contextual_tool_bonus": contextual_tool_bonus,
+		"check_context": check_context,
+		"context_tool_source": context_tool,
+		"actor_id": character.character_id,
 		"familiar_help": familiar_help,
 		"advantage": advantage and not disadvantage,
+		"disadvantage": disadvantage and not advantage,
+		"roll_mode": "advantage" if advantage and not disadvantage else ("disadvantage" if disadvantage and not advantage else "normal"),
+		"roll_mode_contributors": mode_receipt.get("contributors", []).duplicate(true),
+		"roll_details": d20_details.duplicate(true),
+		"roll_floor_minimum": roll_floor,
+		"total_floor_minimum": natural_total_floor,
+		"total_floor_active": total_floor_active,
+		"check_bonus_dice": bonus_dice,
 		"rolls": d20_details.get("rolls", [roll]),
 		"kept": d20_details.get("kept", [true]),
 		"roll_token_replaced": bool(d20_details.get("replaced", false)),
@@ -62,6 +91,220 @@ static func resolve_skill_check(character: Character, check_data: Dictionary, de
 		"roll_token_value": int(d20_details.get("roll_token_value", 0)),
 		"roll_token_error": str(d20_details.get("roll_token_error", "")),
 	}
+
+
+## Pure eligibility query for the selected loaded EventDialog check domain.
+## Call again immediately before RollTokenRules commits the original d20.
+static func ability_check_roll_mode(character: Character, ability: String, skill: String, context: Dictionary, familiar_help: bool = false) -> Dictionary:
+	var grants: Array[Dictionary] = []
+	var policies: Array[Dictionary] = []
+	var bound := not str(context.get("origin_event_id", "")).is_empty() and not str(context.get("origin_check_id", "")).is_empty() and not str(context.get("task_id", "")).is_empty() and not str(context.get("purpose_id", "")).is_empty()
+	if character != null and bound:
+		for feature in character.features:
+			if not feature is Dictionary or not bool(feature.get("enabled", true)):
+				continue
+			var feature_id := str(feature.get("id", ""))
+			var source_instance_id := str(feature.get("source_instance_id", feature_id))
+			for effect in feature.get("effects", []) + feature.get("passive_effects", []):
+				if not effect is Dictionary or str(effect.get("type", "")) not in ["ability_check_roll_mode", "ability_check_roll_mode_policy"]:
+					continue
+				if not _roll_mode_effect_matches(effect, ability, skill, context):
+					continue
+				var contribution := {"source_owner_id": character.character_id, "source_definition_id": feature_id, "source_instance_id": source_instance_id, "effect_id": str(effect.get("id", "")), "mode": str(effect.get("mode", "")), "operation": str(effect.get("operation", "grant")), "status": "pending"}
+				if contribution["operation"] == "grant":
+					grants.append(contribution)
+				else:
+					contribution["exempt_source_definition_ids"] = effect.get("exempt_source_definition_ids", []).duplicate()
+					contribution["exempt_source_instance_ids"] = effect.get("exempt_source_instance_ids", []).duplicate()
+					policies.append(contribution)
+	var contributors: Array[Dictionary] = []
+	var has_advantage := familiar_help
+	var has_disadvantage := ability.to_upper() == "STR" and character != null and character.has_condition("ray_of_enfeeblement")
+	if familiar_help:
+		contributors.append({"source_kind": "native", "source_id": "familiar_help", "mode": "advantage", "status": "active"})
+	if character != null and character.has_ability_check_advantage(ability):
+		has_advantage = true
+		contributors.append({"source_kind": "native", "source_id": "existing_ability_check_advantage", "mode": "advantage", "status": "active"})
+	if character != null and character.has_feature("champion_remarkable_athlete") and ability.to_upper() == "STR" and skill == "Athletics":
+		has_advantage = true
+		contributors.append({"source_kind": "native", "source_id": "champion_remarkable_athlete", "mode": "advantage", "status": "active"})
+	if has_disadvantage:
+		contributors.append({"source_kind": "native", "source_id": "ray_of_enfeeblement", "mode": "disadvantage", "status": "active"})
+	for grant in grants:
+		var suppressors: Array[Dictionary] = []
+		for policy in policies:
+			if str(policy.get("mode", "")) != str(grant.get("mode", "")):
+				continue
+			if str(grant.get("source_definition_id", "")) in policy.get("exempt_source_definition_ids", []) or str(grant.get("source_instance_id", "")) in policy.get("exempt_source_instance_ids", []):
+				continue
+			suppressors.append(policy)
+		var accepted := suppressors.is_empty()
+		var outcome := grant.duplicate(true)
+		outcome["status"] = "active" if accepted else ("prohibited" if suppressors.any(func(item): return str(item.get("operation", "")) == "prohibit") else "canceled")
+		if not suppressors.is_empty():
+			outcome["suppressed_by"] = suppressors.map(func(item): return {"source_owner_id": item.get("source_owner_id", ""), "source_definition_id": item.get("source_definition_id", ""), "source_instance_id": item.get("source_instance_id", ""), "effect_id": item.get("effect_id", ""), "operation": item.get("operation", "")})
+		contributors.append(outcome)
+		if accepted:
+			if str(grant.get("mode", "")) == "advantage":
+				has_advantage = true
+			else:
+				has_disadvantage = true
+	for policy in policies:
+		contributors.append({"source_owner_id": policy.get("source_owner_id", ""), "source_definition_id": policy.get("source_definition_id", ""), "source_instance_id": policy.get("source_instance_id", ""), "effect_id": policy.get("effect_id", ""), "mode": policy.get("mode", ""), "operation": policy.get("operation", ""), "exempt_source_definition_ids": policy.get("exempt_source_definition_ids", []).duplicate(), "exempt_source_instance_ids": policy.get("exempt_source_instance_ids", []).duplicate(), "status": "applied"})
+	return {"advantage": has_advantage, "disadvantage": has_disadvantage, "effective_mode": "advantage" if has_advantage and not has_disadvantage else ("disadvantage" if has_disadvantage and not has_advantage else "normal"), "contributors": contributors}
+
+
+static func _roll_mode_effect_matches(effect: Dictionary, ability: String, skill: String, context: Dictionary) -> bool:
+	return str(effect.get("domain", "")) == "event_skill_check" and str(effect.get("ability", "")).to_upper() == ability.to_upper() and str(effect.get("skill", "")) == skill and str(effect.get("task_id", "")) == str(context.get("task_id", "")) and str(effect.get("purpose_id", "")) == str(context.get("purpose_id", "")) and str(effect.get("source_event_id", "")) == str(context.get("origin_event_id", "")) and str(effect.get("source_check_id", "")) == str(context.get("origin_check_id", ""))
+
+
+## Reroll only the captured d20 and explicitly selected bonus dice. This does
+## not rerun skill modifiers, loaded context, roll-token replacement or native
+## feature choices that have already settled.
+static func reroll_captured_skill_check(character: Character, captured: Dictionary, reroll_mode: String, bonus_dice_policy: String) -> Dictionary:
+	if character == null or not can_reroll_captured_skill_check(captured, reroll_mode, bonus_dice_policy):
+		return {}
+	var original_mode := str(captured.get("roll_mode", "normal"))
+	var d20_details: Dictionary
+	if reroll_mode == "whole_test" and original_mode == "advantage":
+		d20_details = Dice.roll_with_advantage_details(20, character)
+	elif reroll_mode == "whole_test" and original_mode == "disadvantage":
+		d20_details = Dice.roll_with_disadvantage_details(20, character)
+	else:
+		d20_details = Dice.roll_single_details(20, character)
+	var raw_natural := int(d20_details.get("total", 1))
+	var natural := maxi(int(captured.get("roll_floor_minimum", 1)), raw_natural)
+	var bonus_dice: Array = captured.get("check_bonus_dice", []).duplicate(true)
+	if bonus_dice_policy == "reroll":
+		for index in bonus_dice.size():
+			var bonus: Dictionary = bonus_dice[index]
+			var sides := int(bonus.get("sides", 0))
+			if sides not in ResourcePoolRules.SUPPORTED_DIE_SIZES:
+				return {}
+			var rolled: Dictionary = Dice.roll_single_details(sides, character)
+			bonus["value"] = int(rolled.get("total", 0))
+			bonus["roll"] = rolled.duplicate(true)
+			bonus["rerolled"] = true
+			bonus_dice[index] = bonus
+	var base_modifier := int(captured.get("base_modifier", captured.get("modifier", 0)))
+	var pre_floor_total := natural + base_modifier
+	for bonus in bonus_dice:
+		if bonus is Dictionary and bool(bonus.get("applied_before_total_floor", false)):
+			pre_floor_total += int(bonus.get("value", 0))
+	var total := maxi(int(captured.get("total_floor_minimum", 0)), pre_floor_total) if bool(captured.get("total_floor_active", false)) else pre_floor_total
+	var modifier := base_modifier
+	for bonus in bonus_dice:
+		if not bonus is Dictionary:
+			continue
+		if bool(bonus.get("included_in_modifier", false)):
+			modifier += int(bonus.get("value", 0))
+		if not bool(bonus.get("applied_before_total_floor", false)):
+			total += int(bonus.get("value", 0))
+	var rerolled := captured.duplicate(true)
+	rerolled["roll"] = natural
+	rerolled["natural_roll"] = natural
+	rerolled["raw_natural_roll"] = raw_natural
+	rerolled["total"] = total
+	rerolled["modifier"] = modifier
+	rerolled["success"] = total >= int(captured.get("dc", 0))
+	rerolled["roll_details"] = d20_details.duplicate(true)
+	rerolled["rolls"] = d20_details.get("rolls", [raw_natural]).duplicate(true)
+	rerolled["kept"] = d20_details.get("kept", [true]).duplicate(true)
+	rerolled["check_bonus_dice"] = bonus_dice
+	var actual_mode := original_mode if reroll_mode == "whole_test" else "normal"
+	rerolled["original_roll_mode"] = original_mode
+	rerolled["roll_mode"] = actual_mode
+	rerolled["reroll_roll_mode"] = actual_mode
+	rerolled["original_advantage"] = bool(captured.get("advantage", original_mode == "advantage"))
+	rerolled["original_disadvantage"] = bool(captured.get("disadvantage", original_mode == "disadvantage"))
+	rerolled["original_familiar_help"] = bool(captured.get("familiar_help", false))
+	rerolled["advantage"] = actual_mode == "advantage"
+	rerolled["disadvantage"] = actual_mode == "disadvantage"
+	# Familiar Help may explain the captured advantage, but a natural-only reroll
+	# does not roll with that advantage again.
+	rerolled["familiar_help"] = bool(captured.get("familiar_help", false)) and reroll_mode == "whole_test"
+	for bonus in bonus_dice:
+		if not bonus is Dictionary:
+			continue
+		match str(bonus.get("source", "")):
+			"guidance": rerolled["guidance_bonus"] = int(bonus.get("value", 0))
+			"bardic_inspiration": rerolled["inspiration_bonus"] = int(bonus.get("value", 0))
+			"fighter_tactical_mind": rerolled["tactical_mind_bonus"] = int(bonus.get("value", 0))
+	return rerolled
+
+
+static func can_reroll_captured_skill_check(captured: Dictionary, reroll_mode: String, bonus_dice_policy: String) -> bool:
+	if reroll_mode not in ["natural_only", "whole_test"] or bonus_dice_policy not in ["keep", "reroll"]:
+		return false
+	if str(captured.get("roll_mode", "")) not in ["normal", "advantage", "disadvantage"]:
+		return false
+	var raw_natural: Variant = captured.get("raw_natural_roll", null)
+	var floor_minimum: Variant = captured.get("roll_floor_minimum", null)
+	var total_floor: Variant = captured.get("total_floor_minimum", null)
+	var details: Variant = captured.get("roll_details", null)
+	if not ResourcePoolRules._integer(raw_natural, 1, 20) or not ResourcePoolRules._integer(floor_minimum, 1, 20) or not ResourcePoolRules._integer(total_floor, 0, 30) or not captured.get("total_floor_active") is bool or not details is Dictionary:
+		return false
+	if bool(captured.get("total_floor_active", false)) != (int(total_floor) > 0):
+		return false
+	if not _valid_captured_d20_receipt(details, str(captured.get("roll_mode", "")), raw_natural):
+		return false
+	var bonus_dice: Variant = captured.get("check_bonus_dice", [])
+	if not bonus_dice is Array:
+		return false
+	for bonus in bonus_dice:
+		if not bonus is Dictionary or int(bonus.get("sides", 0)) not in ResourcePoolRules.SUPPORTED_DIE_SIZES or int(bonus.get("value", 0)) < 1 or int(bonus.get("value", 0)) > int(bonus.get("sides", 0)):
+			return false
+		var bonus_roll: Variant = bonus.get("roll", null)
+		if not bonus_roll is Dictionary or int(bonus_roll.get("total", -1)) != int(bonus.get("value", 0)):
+			return false
+		var bonus_rolls: Variant = bonus_roll.get("rolls", null)
+		var bonus_kept: Variant = bonus_roll.get("kept", null)
+		if not bonus_rolls is Array or bonus_rolls.is_empty() or not bonus_kept is Array or bonus_kept.size() != bonus_rolls.size():
+			return false
+		var kept_count := 0
+		var kept_total := -1
+		for index in bonus_rolls.size():
+			if not ResourcePoolRules._integer(bonus_rolls[index], 1, int(bonus.get("sides", 0))) or not bonus_kept[index] is bool:
+				return false
+			if bool(bonus_kept[index]):
+				kept_count += 1
+				kept_total = int(bonus_rolls[index])
+		if kept_count != 1 or kept_total != int(bonus.get("value", 0)):
+			return false
+	return true
+
+
+static func _valid_captured_d20_receipt(details: Dictionary, mode: String, expected_total: int) -> bool:
+	var rolls: Variant = details.get("rolls", null)
+	var kept: Variant = details.get("kept", null)
+	if not rolls is Array or rolls.is_empty() or not kept is Array or kept.size() != rolls.size():
+		return false
+	var replaced := bool(details.get("replaced_by_roll_token", details.get("replaced", false)))
+	if replaced and str(details.get("mode", "")) != "replaced":
+		return false
+	var expected_count := 2 if mode in ["advantage", "disadvantage"] and not replaced else 1
+	if rolls.size() != expected_count or int(details.get("total", -1)) != expected_total:
+		return false
+	var kept_count := 0
+	var kept_total := -1
+	var high := -1
+	var low := 21
+	for index in rolls.size():
+		if not ResourcePoolRules._integer(rolls[index], 1, 20) or not kept[index] is bool:
+			return false
+		var value := int(rolls[index])
+		high = maxi(high, value)
+		low = mini(low, value)
+		if bool(kept[index]):
+			kept_count += 1
+			kept_total = value
+	if kept_count != 1 or kept_total != expected_total:
+		return false
+	if not replaced and mode == "advantage" and expected_total != high:
+		return false
+	if not replaced and mode == "disadvantage" and expected_total != low:
+		return false
+	return true
 
 
 ## Validate a transient combat area-selection descriptor. The selected hexes
@@ -173,7 +416,9 @@ static func _apply_single_effect(character: Character, effect: Dictionary, rolle
 
 		"temporary_hp":
 			var temp_str := _level_scaled_expression(effect, "value_by_level", "value", character.level, "1d6")
-			var temp_amount := Dice.parse_dice_string(temp_str, {"level": character.level}, roller)
+			var modifiers := character.ability_scores.get_all_modifiers()
+			modifiers["level"] = character.level
+			var temp_amount := Dice.parse_dice_string(temp_str, modifiers, roller)
 			if temp_amount <= character.temp_hp:
 				return {"type": "temporary_hp", "amount": 0, "message": "%s keeps their existing temporary HP." % character.character_name}
 			character.temp_hp = temp_amount

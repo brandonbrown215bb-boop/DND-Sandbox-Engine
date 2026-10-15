@@ -1,0 +1,86 @@
+[
+  {
+    "id": "sandbox:margin_gate_neutral",
+    "name": "Margin Gate Probe",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "school": "evocation",
+    "steps": [
+      {
+        "id": "save",
+        "type": "save",
+        "target": "target",
+        "save": "CON",
+        "damage": "2d6",
+        "damage_type": "fire"
+      },
+      {
+        "id": "aftermath",
+        "type": "effect",
+        "target": "target",
+        "gate": "failed_save",
+        "gate_step": "save",
+        "effects": [
+          {
+            "type": "temporary_hp",
+            "value": 2,
+            "when": {
+              "result": { "step": "save", "target": "same", "measure": "margin" },
+              "lte": -5
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sandbox:settlement_hp_gate_renamed",
+    "name": "Ashfall Afterimage",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "school": "evocation",
+    "steps": [
+      {
+        "id": "impact",
+        "type": "damage",
+        "target": "target",
+        "damage": "8",
+        "damage_type": "force"
+      },
+      {
+        "id": "unrelated_recovery",
+        "type": "effect",
+        "target": "target",
+        "effects": [{ "type": "heal", "value": 5 }]
+      },
+      {
+        "id": "unrelated_damage",
+        "type": "damage",
+        "target": "target",
+        "damage": "2",
+        "damage_type": "cold"
+      },
+      {
+        "id": "afterimage",
+        "type": "effect",
+        "target": "target",
+        "effects": [
+          {
+            "type": "temporary_hp",
+            "value": 3,
+            "when": {
+              "result": { "step": "impact", "target": "same", "measure": "hp_after" },
+              "lte": 4
+            }
+          }
+        ]
+      }
+    ]
+  }
+]

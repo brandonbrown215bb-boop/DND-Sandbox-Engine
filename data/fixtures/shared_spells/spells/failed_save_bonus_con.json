@@ -1,0 +1,16 @@
+{
+  "id": "sandbox:failed_save_bonus_con_area",
+  "name": "Steadfast Resolve Burst",
+  "execution": "shared",
+  "level": 1,
+  "casting_time": "action",
+  "range": 12,
+  "target": "area",
+  "save": "CON",
+  "damage": "4",
+  "damage_type": "fire",
+  "half_on_save": true,
+  "effects": [
+    { "type": "area_selection", "shape": "sphere", "radius": 1 }
+  ]
+}

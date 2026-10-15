@@ -3,10 +3,246 @@ class_name ClassFeatureChecks
 extends RefCounted
 
 static func run(check: Callable) -> void:
+	_weapon_attack_numeric_bonus(check)
+	_shared_numeric_pool(check)
+	_shared_numeric_breakpoint_formula(check)
+	_shared_timed_numeric_grant(check)
+	_shared_timed_numeric_cooldown(check)
+	_shared_timed_temporary_hp(check)
+	_shared_next_matching_hit_grant(check)
+	_shared_numeric_pool_exchange(check)
+	_shared_combat_use_limits(check)
 	_audit_defect_repairs(check)
 	_shared_rules_regressions(check)
 	_rogue_rules(check)
 	_warlock_rules(check)
+
+
+static func _weapon_attack_numeric_bonus(check: Callable) -> void:
+	var prior_classes: Dictionary = DataLoader.classes.duplicate(true)
+	DataLoader._load_content_type("res://data/fixtures/failed_save_bonus/classes/", "class")
+	var fixture_ids := ["fixture:weapon_attack_bonus_neutral_class", "fixture:weapon_attack_bonus_renamed_class"]
+	var expected_amounts := [5, 8]
+	var expected_costs := [1, 2]
+	var invalid_definition: Dictionary = DataLoader.classes.get(fixture_ids[0], {}).duplicate(true)
+	invalid_definition["id"] = "fixture:duplicate_weapon_bonus_class"
+	invalid_definition["features_by_level"]["1"][0]["id"] = "fixture:duplicate_weapon_bonus"
+	invalid_definition["features_by_level"]["1"][0]["passive_effects"].append(invalid_definition["features_by_level"]["1"][0]["passive_effects"][0].duplicate(true))
+	var weapon_validator: Node = DataLoader.get_script().new()
+	check.call(not weapon_validator._validate_content(invalid_definition, "class", "fixture-duplicate-weapon-bonus"), "Loader refuses two weapon attack modifications from one exact passive source")
+	weapon_validator.free()
+	for index in fixture_ids.size():
+		var class_data: Dictionary = DataLoader.classes.get(fixture_ids[index], {})
+		var feature: Dictionary = class_data.get("features_by_level", {}).get("1", [{}])[0].duplicate(true)
+		check.call(not feature.is_empty(), "DataLoader accepts the neutral and renamed weapon attack bonus fixture")
+		if feature.is_empty():
+			continue
+		var owner := _character("fighter", 1)
+		owner.character_id = "fixture:weapon_bonus_owner_%d" % index
+		var source_id := "fixture:weapon_bonus_source_%d" % index
+		feature["source_instance_id"] = source_id
+		owner.features.append(feature)
+		var acquired := ResourcePoolRules.acquire(owner, feature, source_id)
+		check.call(bool(acquired.get("success", false)), "Weapon bonus fixture acquires an exact numeric source")
+		var second_source_id := source_id + ":second"
+		var second_feature: Dictionary = feature.duplicate(true)
+		second_feature["source_instance_id"] = second_source_id
+		owner.features.append(second_feature)
+		ResourcePoolRules.acquire(owner, second_feature, second_source_id)
+		var target := {"id": "fixture:weapon_bonus_target_%d" % index, "name": "Target", "armor_class": 10, "current_hp": 20, "is_alive": true, "conditions": {}}
+		var weapon := {"id": "fixture:weapon_bonus_test_blade", "type": "weapon", "damage": "1", "damage_type": "slashing", "ability": "STR", "range": 1, "attack_bonus_override": -40}
+		var proved := false
+		for attempt in 20:
+			var pending := CombatAction.resolve_weapon_attack(owner, target, weapon, false, false, {"allow_weapon_attack_bonus": true})
+			if not pending.has("weapon_attack_bonus_request"):
+				continue
+			var offered := SpellDamageRolls.weapon_attack_bonus_record(owner, target, pending)
+			var offered_options: Array = offered.get("options", [])
+			if offered_options.size() != 2:
+				break
+			var pool_before := int(owner.numeric_resource_pools[source_id].get("current", -1))
+			var second_pool_before := int(owner.numeric_resource_pools[second_source_id].get("current", -1))
+			var request_total := int(pending.get("attack_roll", 0))
+			var live_hp := int(target.get("current_hp", 0))
+			var selected := SpellDamageRolls.settle_weapon_attack_bonus(owner, target, pending, source_id)
+			var actual_cost := pool_before - int(owner.numeric_resource_pools[source_id].get("current", -1))
+			var second_cost := second_pool_before - int(owner.numeric_resource_pools[second_source_id].get("current", -1))
+			var expected_cost: int = int(expected_costs[index]) if index == 0 else 0
+			var fixed_settlement_ok: bool = not bool(selected.get("hit", false)) and int(selected.get("attack_roll", 0)) == request_total + int(expected_amounts[index]) and int(selected.get("damage", 0)) == 0 and int(target.get("current_hp", -1)) == live_hp
+			check.call(fixed_settlement_ok, "Captured weapon settlement: hit=%s roll=%d expected=%d damage=%d hp=%d/%d" % [str(selected.get("hit", false)), int(selected.get("attack_roll", 0)), request_total + int(expected_amounts[index]), int(selected.get("damage", 0)), int(target.get("current_hp", -1)), live_hp])
+			check.call(actual_cost == expected_cost and second_cost == 0, "One selected exact source follows its payment policy while the same-definition source stays independent")
+			var replay := SpellDamageRolls.settle_weapon_attack_bonus(owner, target, pending, source_id)
+			check.call(bool(replay.get("refused", false)) and int(owner.numeric_resource_pools[source_id].get("current", -1)) == pool_before - expected_cost, "Settled weapon attack choice refuses replay without another payment")
+			proved = true
+			break
+		check.call(proved, "A non-natural-1 missed attack exposes one owned bonus choice")
+	var shield_owner := _character("fighter", 1)
+	shield_owner.character_id = "fixture:weapon_bonus_shield_owner"
+	var neutral_class: Dictionary = DataLoader.classes.get(fixture_ids[0], {})
+	var shield_feature: Dictionary = neutral_class.get("features_by_level", {}).get("1", [{}])[0].duplicate(true)
+	var shield_source := "fixture:weapon_bonus_shield_source"
+	shield_feature["source_instance_id"] = shield_source
+	shield_owner.features.append(shield_feature)
+	ResourcePoolRules.acquire(shield_owner, shield_feature, shield_source)
+	var conditional_class: Dictionary = DataLoader.classes.get(fixture_ids[1], {})
+	var conditional_feature: Dictionary = conditional_class.get("features_by_level", {}).get("1", [{}])[0].duplicate(true)
+	var conditional_source := "fixture:weapon_bonus_shield_conditional"
+	conditional_feature["source_instance_id"] = conditional_source
+	shield_owner.features.append(conditional_feature)
+	ResourcePoolRules.acquire(shield_owner, conditional_feature, conditional_source)
+	var defender := _character("wizard", 1)
+	# Put the captured bonus-created roll below the post-Shield AC as well as
+	# above the original AC, so this probes the actual reaction reversal path.
+	defender.base_ac = 16
+	defender.conditions.erase("shield")
+	defender.known_spells.append("shield")
+	defender.spell_slots["1"] = 1
+	defender.reaction_available = true
+	var shield_pending_found := false
+	for attempt in 80:
+		# Each real resolver call can consume the reaction, cast Shield, or
+		# change HP; isolate each sampled d20 before deciding whether to settle.
+		defender.conditions.erase("shield")
+		defender.condition_sources.erase("shield")
+		defender.reaction_available = true
+		defender.spell_slots["1"] = 1
+		defender.current_hp = defender.max_hp
+		var conditional_pool: Dictionary = shield_owner.numeric_resource_pools.get(conditional_source, {})
+		conditional_pool["current"] = int(conditional_pool.get("capacity", 0))
+		var shield_pending := CombatAction.resolve_weapon_attack(shield_owner, defender, {"id": "fixture:shield_probe_blade", "type": "weapon", "damage": "1", "damage_type": "slashing", "ability": "STR", "range": 1, "attack_bonus_override": 0}, false, false, {"allow_weapon_attack_bonus": true, "shield": true})
+		if not shield_pending.has("weapon_attack_bonus_request"):
+			continue
+		var shield_record := SpellDamageRolls.weapon_attack_bonus_record(shield_owner, defender, shield_pending)
+		var shield_options: Array = shield_record.get("options", [])
+		if shield_options.is_empty():
+			break
+		var conditional_option: Dictionary = shield_options.filter(func(option): return str(option.get("source_instance_id", "")) == conditional_source)[0] if shield_options.any(func(option): return str(option.get("source_instance_id", "")) == conditional_source) else {}
+		if conditional_option.is_empty():
+			SpellDamageRolls.settle_weapon_attack_bonus(shield_owner, defender, shield_pending, "")
+			break
+		var bonus_total := int(shield_pending.get("attack_roll", 0)) + int(conditional_option.get("amount", 0))
+		var defender_ac := defender.get_ac()
+		if bonus_total < defender_ac or bonus_total >= defender_ac + 5:
+			SpellDamageRolls.settle_weapon_attack_bonus(shield_owner, defender, shield_pending, "")
+			continue
+		var shield_pool_before := int(shield_owner.numeric_resource_pools[conditional_source].get("current", -1))
+		var shield_result := SpellDamageRolls.settle_weapon_attack_bonus(shield_owner, defender, shield_pending, conditional_source)
+		var shield_payment: int = shield_pool_before - int(shield_owner.numeric_resource_pools[conditional_source].get("current", -1))
+		check.call(not bool(shield_result.get("hit", false)) and defender.has_condition("shield") and shield_payment == 0, "Conditional Shield result hit=%s shield=%s payment=%d roll=%d ac=%d initial_ac=%d pending=%d amount=%d probe_total=%d msg=%s" % [str(shield_result.get("hit", false)), str(defender.has_condition("shield")), shield_payment, int(shield_result.get("attack_roll", -1)), int(shield_result.get("target_ac", -1)), defender_ac, int(shield_pending.get("attack_roll", -1)), int(conditional_option.get("amount", -1)), bonus_total, str(shield_result.get("message", ""))])
+		shield_pending_found = true
+		break
+	check.call(shield_pending_found, "The captured Character-defender request path lets Shield reverse a bonus-created hit")
+	var converted_success_found := false
+	for attempt in 80:
+		var conversion_target := {"id": "fixture:weapon_bonus_conversion_target", "name": "Conversion Target", "armor_class": 10, "current_hp": 20, "is_alive": true, "conditions": {}}
+		var conversion_pending := CombatAction.resolve_weapon_attack(shield_owner, conversion_target, {"id": "fixture:conversion_blade", "type": "weapon", "damage": "1", "damage_type": "slashing", "ability": "STR", "range": 1, "attack_bonus_override": 0}, false, false, {"allow_weapon_attack_bonus": true})
+		if not conversion_pending.has("weapon_attack_bonus_request"):
+			continue
+		var conversion_record := SpellDamageRolls.weapon_attack_bonus_record(shield_owner, conversion_target, conversion_pending)
+		var conversion_options: Array = conversion_record.get("options", [])
+		if not conversion_options.any(func(option): return str(option.get("source_instance_id", "")) == conditional_source):
+			SpellDamageRolls.settle_weapon_attack_bonus(shield_owner, conversion_target, conversion_pending, "")
+			continue
+		var conditional_before := int(shield_owner.numeric_resource_pools[conditional_source].get("current", -1))
+		var conversion_result := SpellDamageRolls.settle_weapon_attack_bonus(shield_owner, conversion_target, conversion_pending, conditional_source)
+		check.call(bool(conversion_result.get("hit", false)) and int(conversion_result.get("attack_roll", 0)) == int(conversion_pending.get("attack_roll", 0)) + 8 and int(shield_owner.numeric_resource_pools[conditional_source].get("current", -1)) == conditional_before - 2 and int(conversion_target.get("current_hp", 20)) < 20, "Conditional hit result hit=%s roll=%d expected=%d pool=%d/%d hp=%d msg=%s" % [str(conversion_result.get("hit", false)), int(conversion_result.get("attack_roll", -1)), int(conversion_pending.get("attack_roll", 0)) + 8, int(shield_owner.numeric_resource_pools[conditional_source].get("current", -1)), conditional_before, int(conversion_target.get("current_hp", -1)), str(conversion_result.get("message", ""))])
+		converted_success_found = true
+		break
+	check.call(converted_success_found, "Conditional payment success path was reached in the focused probe")
+	var rogue_owner := _character("rogue", 20)
+	rogue_owner.character_id = "fixture:weapon_bonus_stroke_owner"
+	rogue_owner.feature_uses["rogue_stroke_of_luck"] = 1
+	var rogue_bonus_feature: Dictionary = neutral_class.get("features_by_level", {}).get("1", [{}])[0].duplicate(true)
+	var rogue_bonus_source := "fixture:weapon_bonus_stroke_source"
+	rogue_bonus_feature["source_instance_id"] = rogue_bonus_source
+	rogue_owner.features.append(rogue_bonus_feature)
+	ResourcePoolRules.acquire(rogue_owner, rogue_bonus_feature, rogue_bonus_source)
+	var forged_stroke_owner := _character("fighter", 1)
+	forged_stroke_owner.character_id = "fixture:weapon_bonus_forged_stroke_owner"
+	var forged_stroke_feature: Dictionary = neutral_class.get("features_by_level", {}).get("1", [{}])[0].duplicate(true)
+	var forged_stroke_source := "fixture:weapon_bonus_forged_stroke_source"
+	forged_stroke_feature["source_instance_id"] = forged_stroke_source
+	forged_stroke_owner.features.append(forged_stroke_feature)
+	ResourcePoolRules.acquire(forged_stroke_owner, forged_stroke_feature, forged_stroke_source)
+	var forged_stroke_safe := false
+	for attempt in 40:
+		var forged_target := {"id": "fixture:forged_stroke_target", "name": "Forged Stroke Target", "armor_class": 10, "current_hp": 20, "is_alive": true, "conditions": {}}
+		var forged_pending := CombatAction.resolve_weapon_attack(forged_stroke_owner, forged_target, {"id": "fixture:forged_stroke_blade", "type": "weapon", "damage": "1", "damage_type": "slashing", "ability": "STR", "range": 1, "attack_bonus_override": -40}, false, false, {"allow_weapon_attack_bonus": true})
+		if not forged_pending.has("weapon_attack_bonus_request"):
+			continue
+		var forged_pool_before := int(forged_stroke_owner.numeric_resource_pools[forged_stroke_source].get("current", -1))
+		var forged_hp_before := int(forged_target.get("current_hp", -1))
+		var forged_attempt := SpellDamageRolls.settle_weapon_attack_bonus_with_stroke(forged_stroke_owner, forged_target, forged_pending, true)
+		check.call(bool(forged_attempt.get("refused", false)) and not forged_stroke_owner.has_feature("rogue_stroke_of_luck") and int(forged_stroke_owner.numeric_resource_pools[forged_stroke_source].get("current", -1)) == forged_pool_before and int(forged_target.get("current_hp", -1)) == forged_hp_before, "A forged Stroke acceptance cannot make a non-Rogue hit or spend either resource")
+		var still_answerable := SpellDamageRolls.settle_weapon_attack_bonus(forged_stroke_owner, forged_target, forged_pending, "")
+		check.call(bool(still_answerable.get("refused", false)) == false, "A rejected Stroke attempt leaves the canonical numeric request answerable")
+		forged_stroke_safe = true
+		break
+	check.call(forged_stroke_safe, "A captured non-Rogue miss is available for forged-Stroke refusal")
+	var stroke_captured := false
+	for attempt in 40:
+		var stroke_target := {"id": "fixture:stroke_captured_target", "name": "Stroke Target", "armor_class": 10, "current_hp": 20, "is_alive": true, "conditions": {}}
+		var stroke_pending := CombatAction.resolve_weapon_attack(rogue_owner, stroke_target, {"id": "fixture:stroke_probe_blade", "type": "weapon", "damage": "1", "damage_type": "slashing", "ability": "DEX", "range": 1, "attack_bonus_override": -40}, false, false, {"allow_weapon_attack_bonus": true})
+		if not stroke_pending.has("weapon_attack_bonus_request"):
+			continue
+		var stroke_pool_before := int(rogue_owner.numeric_resource_pools[rogue_bonus_source].get("current", -1))
+		var stroke_uses_before := int(rogue_owner.feature_uses.get("rogue_stroke_of_luck", 0))
+		var stroke_settlement := SpellDamageRolls.settle_weapon_attack_bonus_with_stroke(rogue_owner, stroke_target, stroke_pending, true)
+		check.call(stroke_uses_before == 1 and int(rogue_owner.feature_uses.get("rogue_stroke_of_luck", 0)) == 0 and bool(stroke_settlement.get("hit", false)) and bool(stroke_settlement.get("stroke_of_luck_used", false)) and int(rogue_owner.numeric_resource_pools[rogue_bonus_source].get("current", -1)) == stroke_pool_before and int(stroke_target.get("current_hp", 20)) < 20, "Authentic Stroke uses the owner's native feature once, settles the captured attack, and charges no optional pool")
+		var stroke_replay := SpellDamageRolls.settle_weapon_attack_bonus(rogue_owner, stroke_target, stroke_pending, rogue_bonus_source)
+		check.call(bool(stroke_replay.get("refused", false)) and int(rogue_owner.feature_uses.get("rogue_stroke_of_luck", 0)) == 0 and int(rogue_owner.numeric_resource_pools[rogue_bonus_source].get("current", -1)) == stroke_pool_before, "Captured Stroke completion cannot replay or charge either source")
+		stroke_captured = true
+		break
+	check.call(stroke_captured, "A captured attack is available for the existing Stroke of Luck choice")
+	var critical_found := false
+	for attempt in 80:
+		var critical_result := CombatAction.resolve_weapon_attack(shield_owner, {"id": "fixture:high_ac_critical", "armor_class": 1000, "current_hp": 100, "is_alive": true, "conditions": {}}, {"id": "fixture:critical_probe_blade", "type": "weapon", "damage": "1", "damage_type": "slashing", "ability": "STR", "range": 1, "attack_bonus_override": -100}, false, false, {"allow_weapon_attack_bonus": true})
+		if int(critical_result.get("activity_roll", {}).get("natural_total", 0)) == 20:
+			check.call(bool(critical_result.get("hit", false)) and not critical_result.has("weapon_attack_bonus_request"), "High-AC natural-20 critical is already a hit and exposes no bonus choice")
+			critical_found = true
+			break
+	check.call(critical_found, "Critical no-choice path was reached in the focused probe")
+	var die_classes := ["fixture:post_roll_die_neutral_class", "fixture:post_roll_die_renamed_class"]
+	var die_sizes := [6, 8]
+	var die_costs := [1, 2]
+	var die_policies := ["pay_on_choice", "pay_on_converted_success"]
+	var die_counts := {6: 0, 8: 0}
+	var count_bonus_dice := func(payload: Dictionary) -> void:
+		if int(payload.get("sides", 0)) in die_counts:
+			die_counts[int(payload["sides"])] += 1
+	Dice.dice_rolled.connect(count_bonus_dice)
+	for die_index in die_classes.size():
+		var die_class: Dictionary = DataLoader.get_character_class(die_classes[die_index])
+		var die_feature: Dictionary = die_class.get("features_by_level", {}).get("1", [{}])[0].duplicate(true)
+		check.call(not die_feature.is_empty() and DataLoader._feature_content_error(die_feature).is_empty(), "Neutral d6 and renamed d8 source-die features validate")
+		if die_feature.is_empty():
+			continue
+		var die_owner := _character("fighter", 1)
+		die_owner.character_id = "fixture:post_roll_die_owner_%d" % die_index
+		var die_source := "fixture:post_roll_die_source_%d" % die_index
+		die_feature["source_instance_id"] = die_source
+		die_owner.features.append(die_feature)
+		var die_pool := ResourcePoolRules.acquire(die_owner, die_feature, die_source)
+		var die_target := {"id": "fixture:post_roll_die_target_%d" % die_index, "name": "Die Target", "armor_class": 1000, "current_hp": 20, "is_alive": true, "conditions": {}}
+		FighterChecks._seed_die(20, 8)
+		var die_pending := CombatAction.resolve_weapon_attack(die_owner, die_target, {"id": "fixture:post_roll_die_blade", "type": "weapon", "damage": "1", "damage_type": "slashing", "ability": "STR", "range": 1, "attack_bonus_override": -40}, false, false, {"allow_weapon_attack_bonus": true})
+		var die_record := SpellDamageRolls.weapon_attack_bonus_record(die_owner, die_target, die_pending)
+		var die_options: Array = die_record.get("options", [])
+		var die_option: Dictionary = die_options.filter(func(option): return str(option.get("source_instance_id", "")) == die_source)[0] if die_options.any(func(option): return str(option.get("source_instance_id", "")) == die_source) else {}
+		var die_query_rolls_before := int(die_counts[int(die_sizes[die_index])])
+		var attack_total_before_die := int(die_record.get("context", {}).get("attack_result", {}).get("total", 0))
+		SpellDamageRolls.attack_numeric_bonus_options(die_owner, "weapon_attack")
+		var no_die_before_accept := int(die_counts[int(die_sizes[die_index])]) == die_query_rolls_before
+		var die_pool_before := int(ResourcePoolRules.availability(die_owner, die_source).get("current", -1))
+		var die_settled := SpellDamageRolls.settle_weapon_attack_bonus(die_owner, die_target, die_pending, die_source)
+		var captured_die: Dictionary = die_settled.get("post_roll_bonus_die", {})
+		var expected_die_cost := int(die_costs[die_index]) if die_policies[die_index] == "pay_on_choice" else 0
+		check.call(bool(die_pool.get("success", false)) and die_pending.has("weapon_attack_bonus_request") and die_option.get("bonus_kind", "") == "die" and int(die_option.get("die_size", 0)) == int(die_sizes[die_index]) and no_die_before_accept, "Attack die availability/query does not roll; the exact d%d option is offered" % int(die_sizes[die_index]))
+		check.call(not bool(die_settled.get("hit", true)) and int(die_settled.get("attack_roll", -1)) == attack_total_before_die + int(captured_die.get("total", 0)) and int(captured_die.get("sides", 0)) == int(die_sizes[die_index]) and int(die_counts[int(die_sizes[die_index])]) == die_query_rolls_before + 1 and die_pool_before - int(ResourcePoolRules.availability(die_owner, die_source).get("current", -1)) == expected_die_cost, "Accepted d%d modifies the captured weapon result once and follows its payment policy" % int(die_sizes[die_index]))
+		var die_replay := SpellDamageRolls.settle_weapon_attack_bonus(die_owner, die_target, die_pending, die_source)
+		check.call(bool(die_replay.get("refused", false)) and int(die_counts[int(die_sizes[die_index])]) == die_query_rolls_before + 1, "A settled weapon die answer refuses replay without another roll")
+	Dice.dice_rolled.disconnect(count_bonus_dice)
+	DataLoader.classes = prior_classes
 	var monk := _character("monk", 20)
 	var saved := JSON.parse_string(JSON.stringify(monk.to_dict())) as Dictionary
 	var restored := Character.new()
@@ -1280,3 +1516,672 @@ static func _character(id: String, target_level: int) -> Character:
 	while c.level < target_level:
 		c.level_up()
 	return c
+
+
+static func _shared_numeric_pool(check: Callable) -> void:
+	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://data/fixtures/shared_numeric_pool.json"))
+	var fixture_class: Dictionary = parsed if parsed is Dictionary else {}
+	var feature: Dictionary = fixture_class.get("features_by_level", {}).get("1", [{}])[0]
+	var validator: Node = DataLoader.get_script().new()
+	check.call(validator._validate_content(fixture_class, "class", "fixture-numeric-pool-class"), "DataLoader accepts the neutral numeric-pool activation through the ordinary class-feature path")
+	var actor := _character("fighter", 1)
+	actor.character_id = "fixture:pool_owner"
+	actor.features.append(feature.duplicate(true))
+	var pool_a := ResourcePoolRules.acquire(actor, feature, "fixture:steady_spark:copy_a")
+	var pool_b := ResourcePoolRules.acquire(actor, feature, "fixture:steady_spark:copy_b")
+	check.call(validator._feature_content_error(feature).is_empty() and pool_a.get("success", false) and pool_b.get("success", false) and int(pool_a.get("pool", {}).get("capacity", 0)) == actor.proficiency_bonus, "Shared JSON activation creates exact source-owned pools with proficiency-bonus capacity")
+	check.call(ClassFeature.availability(actor, feature, null, "fixture:steady_spark:copy_a").get("available", false) and ClassFeature.availability(actor, feature, null, "fixture:steady_spark:copy_b").get("available", false), "Same definition instances have independent current quantities")
+	var activated := ClassFeature.execute(actor, feature, null, null, "fixture:steady_spark:copy_a")
+	check.call(activated.get("success", false) and actor.has_condition("steady_spark") and int(ResourcePoolRules.availability(actor, "fixture:steady_spark:copy_a").get("current", -1)) == 0 and int(ResourcePoolRules.availability(actor, "fixture:steady_spark:copy_b").get("current", -1)) == 1, "Shared activation spends one use only from the exact selected source instance")
+	var rest_host := Control.new()
+	var rest_choices: Array[String] = []
+	var rest_choice := RestRules.open_rest_choice_dialog(rest_host, func(choice: String): rest_choices.append(choice))
+	var cancel_rest_button: Button = rest_choice.get("modal").get_meta("btn_cancel")
+	cancel_rest_button.pressed.emit()
+	check.call(bool(rest_choice.get("opened", false)) and rest_choices == [""] and int(ResourcePoolRules.availability(actor, "fixture:steady_spark:copy_a").get("current", -1)) == 0 and int(ResourcePoolRules.availability(actor, "fixture:steady_spark:copy_b").get("current", -1)) == 1 and not RestRules.is_rest_window_open(), "Opening and cancelling the rest choice does not complete a rest or recover pools")
+	rest_host.free()
+	ResourcePoolRules.spend(actor, "fixture:steady_spark:copy_b")
+	var short_pool_rest := RestRules.complete_short_rest([actor], {"allow_in_test": true, "skip_campaign_time": true})
+	check.call(bool(short_pool_rest.get("success", false)) and short_pool_rest.get("pool_recoveries", []).size() == 2 and int(ResourcePoolRules.availability(actor, "fixture:steady_spark:copy_a").get("current", -1)) == 1 and int(ResourcePoolRules.availability(actor, "fixture:steady_spark:copy_b").get("current", -1)) == 1 and str(short_pool_rest.get("pool_recoveries", [])[0].get("trigger", "")) == "short_rest_completed", "Successful Short Rest applies the authored fixed recovery once to each exact source pool")
+	ResourcePoolRules.spend(actor, "fixture:steady_spark:copy_a")
+	ResourcePoolRules.spend(actor, "fixture:steady_spark:copy_b")
+	var other_actor := _character("fighter", 1)
+	other_actor.character_id = "fixture:other_pool_owner"
+	other_actor.features.append(feature.duplicate(true))
+	ResourcePoolRules.acquire(other_actor, feature, "fixture:other_owner_copy")
+	var long_pool_rest := RestRules.complete_long_rest([actor], {"allow_in_test": true, "skip_campaign_time": true})
+	var other_pool_untouched := ResourcePoolRules.availability(other_actor, "fixture:other_owner_copy")
+	check.call(bool(long_pool_rest.get("success", false)) and long_pool_rest.get("pool_recoveries", []).size() == 2 and str(long_pool_rest.get("pool_recoveries", [])[0].get("trigger", "")) == "long_rest_completed" and int(ResourcePoolRules.availability(actor, "fixture:steady_spark:copy_a").get("current", -1)) == 2 and int(ResourcePoolRules.availability(actor, "fixture:steady_spark:copy_b").get("current", -1)) == 2 and int(other_pool_untouched.get("current", -1)) == 1, "Successful Long Rest fills only this actor's exact pools through its Long Rest policy")
+	var recovered_snapshot := actor.to_dict()
+	var recovered_reload := Character.new()
+	recovered_reload.from_dict(JSON.parse_string(JSON.stringify(recovered_snapshot)))
+	check.call(ResourcePoolRules.saved_state_error(recovered_snapshot).is_empty() and int(ResourcePoolRules.availability(recovered_reload, "fixture:steady_spark:copy_a").get("current", -1)) == 2 and int(ResourcePoolRules.availability(recovered_reload, "fixture:steady_spark:copy_b").get("current", -1)) == 2, "Allowed Character checkpoint state preserves quantities produced by rest recovery")
+	var short_after_long := RestRules.complete_short_rest([actor], {"allow_in_test": true, "skip_campaign_time": true})
+	check.call(bool(short_after_long.get("success", false)) and int(ResourcePoolRules.availability(actor, "fixture:steady_spark:copy_a").get("current", -1)) == 2 and int(ResourcePoolRules.availability(actor, "fixture:steady_spark:copy_b").get("current", -1)) == 2, "A later Short Rest cannot push a filled pool above capacity")
+	var wrong_owner_recovery := ResourcePoolRules.recover(other_actor, feature, "fixture:steady_spark:copy_a", "long_rest_completed")
+	check.call(not wrong_owner_recovery.get("success", true) and int(ResourcePoolRules.availability(actor, "fixture:steady_spark:copy_a").get("current", -1)) == 2, "Pool recovery refuses when actor and source ownership do not match")
+	ResourcePoolRules.spend(actor, "fixture:steady_spark:copy_a")
+	actor.current_hp = 0
+	var refused_pool_rest := RestRules.complete_short_rest([actor], {"allow_in_test": true, "skip_campaign_time": true})
+	check.call(not refused_pool_rest.get("success", true) and int(ResourcePoolRules.availability(actor, "fixture:steady_spark:copy_a").get("current", -1)) == 1, "A refused rest for an unconscious-only party does not recover numeric pools")
+	actor.current_hp = actor.max_hp
+	ResourcePoolRules.spend(actor, "fixture:steady_spark:copy_a")
+	ResourcePoolRules.spend(actor, "fixture:steady_spark:copy_b")
+	var invalid_recovery := feature.duplicate(true)
+	invalid_recovery["resource_pool"]["recovery"]["short_rest_completed"]["amount"] = 0
+	check.call(not ResourcePoolRules.definition_error(invalid_recovery).is_empty(), "Pool recovery rejects a zero fixed quantity")
+	actor.proficiency_bonus += 1
+	var changed_capacity := ResourcePoolRules.recalculate_capacity(actor, feature, "fixture:steady_spark:copy_a")
+	check.call(changed_capacity.get("success", false) and int(changed_capacity.get("pool", {}).get("capacity", 0)) == actor.proficiency_bonus and int(changed_capacity.get("pool", {}).get("current", -1)) == 0, "Capacity recalculation preserves depleted quantity and does not refill")
+	var shrinking_definition := feature.duplicate(true)
+	shrinking_definition["resource_pool"]["initial_quantity"] = 2
+	var shrinking_pool := ResourcePoolRules.acquire(actor, shrinking_definition, "fixture:steady_spark:shrinking_copy")
+	actor.proficiency_bonus = 1
+	var reduced_capacity := ResourcePoolRules.recalculate_capacity(actor, shrinking_definition, "fixture:steady_spark:shrinking_copy")
+	check.call(shrinking_pool.get("success", false) and reduced_capacity.get("success", false) and int(reduced_capacity.get("pool", {}).get("capacity", 0)) == 1 and int(reduced_capacity.get("pool", {}).get("current", -1)) == 1, "Capacity shrink clamps quantity to the new limit without refilling")
+	var dto := actor.to_dict()
+	var restored := Character.new()
+	restored.from_dict(JSON.parse_string(JSON.stringify(dto)))
+	var restored_b: Dictionary = restored.numeric_resource_pools.get("fixture:steady_spark:copy_b", {})
+	check.call(ResourcePoolRules.saved_state_error(dto).is_empty() and restored.numeric_resource_pools.size() == actor.numeric_resource_pools.size() and str(restored_b.get("owner_id", "")) == actor.character_id and str(restored_b.get("source_instance_id", "")) == "fixture:steady_spark:copy_b" and int(restored_b.get("capacity", -1)) == 2 and int(restored_b.get("current", -1)) == 1, "Pool owner, source identity, capacity and current quantity survive character reload without acquisition")
+	var invalid := feature.duplicate(true)
+	invalid["resource_pool"]["initial_quantity"] = 101
+	var rejected := ResourcePoolRules.acquire(actor, invalid, "fixture:invalid_copy")
+	check.call(not rejected.get("success", true) and not actor.numeric_resource_pools.has("fixture:invalid_copy"), "Invalid pool definitions refuse before adding or changing pool state")
+	var random_capacity := feature.duplicate(true)
+	random_capacity["resource_pool"]["capacity_formula"] = {"op": "add", "left": "1d4", "right": 1}
+	var random_result := ResourcePoolRules.acquire(actor, random_capacity, "fixture:random_capacity")
+	check.call(not random_result.get("success", true) and not actor.numeric_resource_pools.has("fixture:random_capacity"), "Random dice are rejected from deterministic pool-capacity formulas before acquisition")
+
+
+	var cast_capacity := feature.duplicate(true)
+	cast_capacity["resource_pool"]["capacity_formula"] = {"op": "add", "left": {"selected_slot_level": true}, "right": 1}
+	var cast_result := ResourcePoolRules.acquire(actor, cast_capacity, "fixture:cast_capacity")
+	check.call(not cast_result.get("success", true) and not actor.numeric_resource_pools.has("fixture:cast_capacity"), "Cast-local formulas are rejected from actor-owned pool capacity before acquisition")
+	var conflicting := feature.duplicate(true)
+	conflicting["uses"] = 2
+	var conflicting_result := ResourcePoolRules.acquire(actor, conflicting, "fixture:conflicting_copy")
+	check.call(not ClassFeature.content_error(conflicting).is_empty() and not conflicting_result.get("success", true) and not actor.numeric_resource_pools.has("fixture:conflicting_copy"), "Mixed legacy and source-owned resource definitions refuse before acquisition")
+	var bad_saved := dto.duplicate(true)
+	var bad_pool: Dictionary = bad_saved["numeric_resource_pools"].get("fixture:steady_spark:copy_b", {})
+	bad_pool["owner_id"] = "another_actor"
+	bad_saved["numeric_resource_pools"]["fixture:steady_spark:copy_b"] = bad_pool
+	check.call(not ResourcePoolRules.saved_state_error(bad_saved).is_empty() and ResourcePoolRules.remove(actor, "fixture:steady_spark:copy_a") and not ResourcePoolRules.availability(actor, "fixture:steady_spark:copy_a").get("available", true) and ResourcePoolRules.availability(actor, "fixture:steady_spark:copy_b").get("available", false), "Save validation rejects foreign pool ownership and source removal leaves other instances intact")
+	validator.free()
+
+
+static func _shared_numeric_breakpoint_formula(check: Callable) -> void:
+	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://data/fixtures/shared_numeric_breakpoint_pool.json"))
+	var fixture_class: Dictionary = parsed if parsed is Dictionary else {}
+	var feature: Dictionary = fixture_class.get("features_by_level", {}).get("1", [{}])[0]
+	var validator: Node = DataLoader.get_script().new()
+	check.call(validator._validate_content(fixture_class, "class", "fixture-breakpoint-pool"), "DataLoader content validation accepts bounded actor-level breakpoint capacity")
+	var renamed_class := fixture_class.duplicate(true)
+	renamed_class["id"] = "fixture:breakpoint_spark_renamed_class"
+	var renamed_feature: Dictionary = renamed_class["features_by_level"]["1"][0]
+	renamed_feature["id"] = "fixture:breakpoint_spark_renamed"
+	renamed_feature["resource_pool"]["id"] = "fixture:breakpoint_spark_renamed_pool"
+	renamed_feature["resource_pool"]["capacity_formula"]["breakpoints"] = [
+		{"threshold": 2, "value": 1},
+		{"threshold": 6, "value": 5},
+		{"threshold": 10, "value": 7},
+	]
+	renamed_feature["resource_pool"]["initial_quantity"] = 1
+	check.call(validator._validate_content(renamed_class, "class", "fixture-breakpoint-pool-renamed"), "DataLoader content validation accepts renamed thresholds and different values")
+
+	var actor := _character("fighter", 1)
+	actor.character_id = "fixture:breakpoint_lookup_owner"
+	var capacity_formula: Variant = feature["resource_pool"]["capacity_formula"]
+	var level_checks := [[1, 2], [3, 2], [5, 3], [9, 4], [20, 4]]
+	var boundaries_match := true
+	for item in level_checks:
+		actor.level = int(item[0])
+		var evaluated := SharedStepExecutor.evaluate_actor_formula(capacity_formula, actor)
+		boundaries_match = boundaries_match and bool(evaluated.get("success", false)) and int(evaluated.get("value", -1)) == int(item[1])
+	check.call(boundaries_match, "Breakpoint lookup chooses the greatest threshold at/below input across exact, between and above-last levels")
+	actor.level = 0
+	var below_first := SharedStepExecutor.evaluate_actor_formula(capacity_formula, actor)
+	var below_pool := ResourcePoolRules.acquire(actor, feature, "fixture:breakpoint_lookup:below_first")
+	check.call(not below_first.get("success", true) and str(below_first.get("error", "")).contains("below the first threshold") and not below_pool.get("success", true) and not actor.numeric_resource_pools.has("fixture:breakpoint_lookup:below_first"), "Below-first lookup fails explicitly and pool acquisition propagates failure without creating a pool")
+	actor.level = 1
+	var acquired := ResourcePoolRules.acquire(actor, feature, "fixture:breakpoint_lookup:capacity")
+	var spent := ResourcePoolRules.spend(actor, "fixture:breakpoint_lookup:capacity")
+	actor.level = 5
+	var grown := ResourcePoolRules.recalculate_capacity(actor, feature, "fixture:breakpoint_lookup:capacity")
+	check.call(acquired.get("success", false) and spent.get("success", false) and int(grown.get("pool", {}).get("capacity", -1)) == 3 and int(grown.get("pool", {}).get("current", -1)) == 1, "Breakpoint capacity growth changes the limit without refilling the spent quantity")
+	actor.level = 9
+	var above_growth := ResourcePoolRules.recalculate_capacity(actor, feature, "fixture:breakpoint_lookup:capacity")
+	var queries_stable := true
+	for _index in 5:
+		queries_stable = queries_stable and int(ResourcePoolRules.availability(actor, "fixture:breakpoint_lookup:capacity").get("current", -1)) == 1
+	check.call(int(above_growth.get("pool", {}).get("capacity", -1)) == 4 and int(above_growth.get("pool", {}).get("current", -1)) == 1 and queries_stable, "Repeated capacity/availability queries do not roll, pay or change current quantity")
+	var restored := ResourcePoolRules.recover(actor, feature, "fixture:breakpoint_lookup:capacity", "long_rest_completed")
+	actor.level = 1
+	var shrunk := ResourcePoolRules.recalculate_capacity(actor, feature, "fixture:breakpoint_lookup:capacity")
+	check.call(restored.get("success", false) and int(restored.get("current", -1)) == 4 and int(shrunk.get("pool", {}).get("capacity", -1)) == 2 and int(shrunk.get("pool", {}).get("current", -1)) == 2, "Breakpoint capacity shrink clamps a restored pool to the lower limit")
+	var composed_formula := {"op": "add", "left": capacity_formula.duplicate(true), "right": 10}
+	var composed := SharedStepExecutor.evaluate_actor_formula(composed_formula, actor)
+	check.call(composed.get("success", false) and int(composed.get("value", -1)) == 12, "Breakpoint lookup composes with the existing arithmetic formula operations")
+	var failed_input := {"op": "breakpoint_lookup", "input": {"op": "floor_divide", "left": 1, "right": {"op": "subtract", "left": {"caster_level": true}, "right": 1}}, "breakpoints": [{"threshold": 1, "value": 2}]}
+	actor.level = 1
+	var propagated := SharedStepExecutor.evaluate_actor_formula(failed_input, actor)
+	check.call(not propagated.get("success", true), "A failed nested numeric input propagates through breakpoint lookup instead of selecting zero")
+	for rows in [[], [{"threshold": 1, "value": 2}, {"threshold": 1, "value": 3}], [{"threshold": 5, "value": 2}, {"threshold": 1, "value": 3}], [{"threshold": 1, "value": "1d4"}]]:
+		var invalid_feature := feature.duplicate(true)
+		invalid_feature["resource_pool"]["capacity_formula"]["breakpoints"] = rows
+		var invalid_result := ResourcePoolRules.acquire(actor, invalid_feature, "fixture:invalid_breakpoint:%d" % rows.size())
+		check.call(not ResourcePoolRules.definition_error(invalid_feature).is_empty() and not invalid_result.get("success", true), "Malformed/unsorted/duplicate/non-numeric breakpoint rows refuse before pool acquisition")
+	var random_feature := feature.duplicate(true)
+	random_feature["resource_pool"]["capacity_formula"]["input"] = "1d4"
+	var random_result := ResourcePoolRules.acquire(actor, random_feature, "fixture:random_breakpoint")
+	check.call(not ResourcePoolRules.definition_error(random_feature).is_empty() and not random_result.get("success", true), "Breakpoint lookup rejects dice/random input before acquisition")
+	var overdeep: Variant = {"caster_level": true}
+	for _index in 13:
+		overdeep = {"op": "add", "left": overdeep, "right": 1}
+	var too_deep := {"op": "breakpoint_lookup", "input": overdeep, "breakpoints": [{"threshold": 1, "value": 1}]}
+	check.call(not SharedStepExecutor.formula_content_error(too_deep).is_empty(), "Breakpoint lookup enforces the shared formula nesting bound")
+	validator.free()
+
+
+static func _shared_timed_numeric_grant(check: Callable) -> void:
+	var previous_clock := int(GameManager.campaign_elapsed_seconds)
+	GameManager.campaign_elapsed_seconds = 100
+	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://data/fixtures/shared_timed_numeric_grant.json"))
+	var fixture_class: Dictionary = parsed if parsed is Dictionary else {}
+	var feature: Dictionary = fixture_class.get("features_by_level", {}).get("1", [{}])[0]
+	var validator: Node = DataLoader.get_script().new()
+	check.call(validator._validate_content(fixture_class, "class", "fixture-timed-grant-class"), "DataLoader accepts the neutral campaign-time numeric grant")
+	var duplicate_timed := feature.duplicate(true)
+	duplicate_timed["effects"].append(feature["effects"][0].duplicate(true))
+	var duplicate_timed_class := fixture_class.duplicate(true)
+	duplicate_timed_class["features_by_level"]["1"] = [duplicate_timed]
+	check.call(not validator._validate_content(duplicate_timed_class, "class", "fixture-duplicate-timed-grant-class"), "Production DataLoader rejects two timed AC grants in one source activation")
+	var actor := _character("fighter", 1)
+	actor.character_id = "fixture:timed_grant_owner"
+	actor.features.append(feature.duplicate(true))
+	ResourcePoolRules.acquire(actor, feature, "fixture:campaign_guard:copy_a")
+	ResourcePoolRules.acquire(actor, feature, "fixture:campaign_guard:copy_b")
+	actor.add_modifier("stat", "AC", 1, 3)
+	var activation := ClassFeature.execute(actor, feature, null, null, "fixture:campaign_guard:copy_a")
+	var grant_id := str(activation.get("results", [{}])[0].get("grant_instance_id", ""))
+	check.call(activation.get("success", false) and not grant_id.is_empty() and actor.get_modifier("stat", "AC") == 3 and int(ResourcePoolRules.availability(actor, "fixture:campaign_guard:copy_a").get("current", -1)) == 3 and int(ResourcePoolRules.availability(actor, "fixture:campaign_guard:copy_b").get("current", -1)) == 4, "Activation pays one exact source use and adds +2 AC alongside an existing modifier")
+	var duplicate := ClassFeature.execute(actor, feature, null, null, "fixture:campaign_guard:copy_a")
+	check.call(not duplicate.get("success", false) and int(ResourcePoolRules.availability(actor, "fixture:campaign_guard:copy_a").get("current", -1)) == 3, "Duplicate activation refuses before paying again")
+	var second := ClassFeature.execute(actor, feature, null, null, "fixture:campaign_guard:copy_b")
+	check.call(second.get("success", false) and actor.get_modifier("stat", "AC") == 5, "A distinct source instance grants an independent additive modifier")
+	actor.tick_modifiers()
+	check.call(actor.get_modifier("stat", "AC") == 5, "Combat turn ticks reduce only turn-based modifiers, not campaign-time grants")
+	var saved := actor.to_dict()
+	var loaded := Character.new()
+	loaded.from_dict(JSON.parse_string(JSON.stringify(saved)))
+	var loaded_grants: Array = loaded.modifiers.filter(func(m): return m.has("grant_instance_id"))
+	check.call(Character.saved_campaign_modifier_error(saved, 100).is_empty() and loaded.get_modifier("stat", "AC") == 5 and not loaded_grants.is_empty() and str(loaded_grants[0].get("grant_instance_id", "")) == grant_id, "Allowed character checkpoint retains grant identity and its unreset campaign deadline")
+	GameManager.campaign_elapsed_seconds = 159
+	check.call(loaded.get_modifier("stat", "AC") == 5, "Campaign modifier remains active immediately before its absolute deadline")
+	GameManager.campaign_elapsed_seconds = 160
+	loaded.expire_campaign_modifiers(GameManager.campaign_elapsed_seconds)
+	check.call(loaded.get_modifier("stat", "AC") == 1 and loaded.modifiers.all(func(m): return not m.has("grant_instance_id")) and loaded.campaign_modifier_cooldowns.is_empty(), "At the exact deadline a legacy timed grant without cooldown expires, preserving unrelated AC and adding no lock")
+	var invalid_saved := saved.duplicate(true)
+	var saved_grants: Array = invalid_saved["modifiers"].filter(func(m): return m.has("grant_instance_id"))
+	if not saved_grants.is_empty():
+		saved_grants[0]["owner_id"] = "fixture:wrong_owner"
+	check.call(not Character.saved_campaign_modifier_error(invalid_saved, 100).is_empty(), "Malformed timed grant owner state fails save preflight")
+	var missing_pool := saved.duplicate(true)
+	missing_pool["numeric_resource_pools"].erase(str(saved_grants[0].get("source_instance_id", "")))
+	check.call(not Character.saved_campaign_modifier_error(missing_pool, 100).is_empty(), "Checkpoint validation rejects an active timed grant whose exact pool source is missing")
+	var missing_deadline := saved.duplicate(true)
+	var missing_deadline_grant: Dictionary = missing_deadline["modifiers"].filter(func(m): return m.has("grant_instance_id"))[0]
+	missing_deadline_grant.erase("expires_at_seconds")
+	check.call(not Character.saved_campaign_modifier_error(missing_deadline, 100).is_empty(), "Checkpoint validation rejects a tagged timed grant after its campaign deadline field is removed")
+	var replay_serial := saved.duplicate(true)
+	replay_serial["timed_modifier_grant_serial"] = 0
+	check.call(not Character.saved_campaign_modifier_error(replay_serial, 100).is_empty(), "Checkpoint validation rejects a grant serial that could reuse an active grant identity")
+	GameManager.campaign_elapsed_seconds = 100
+	var removal_actor := Character.new()
+	removal_actor.from_dict(saved)
+	ResourcePoolRules.remove(removal_actor, "fixture:campaign_guard:copy_a")
+	check.call(removal_actor.get_modifier("stat", "AC") == 3, "Removing one source removes only its timed contribution and leaves the other source and ordinary modifier")
+	GameManager.campaign_elapsed_seconds = previous_clock
+	validator.free()
+
+
+static func _shared_timed_numeric_cooldown(check: Callable) -> void:
+	var previous_clock := int(GameManager.campaign_elapsed_seconds)
+	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://data/fixtures/shared_timed_numeric_cooldown.json"))
+	var fixture_class: Dictionary = parsed if parsed is Dictionary else {}
+	var feature: Dictionary = fixture_class.get("features_by_level", {}).get("1", [{}])[0]
+	var validator: Node = DataLoader.get_script().new()
+	check.call(validator._validate_content(fixture_class, "class", "fixture-timed-cooldown-class") and ClassFeature.content_error(feature).is_empty(), "DataLoader accepts an optional bounded cooldown after the timed AC grant")
+	var invalid_cooldown := feature.duplicate(true)
+	invalid_cooldown["effects"][0]["cooldown_seconds"] = 86401
+	check.call(not ClassFeature.content_error(invalid_cooldown).is_empty(), "Timed-grant cooldowns above the campaign-time bound are rejected")
+	var owner := _character("fighter", 1)
+	owner.character_id = "fixture:timed_cooldown_owner"
+	owner.features.append(feature.duplicate(true))
+	var source_id := "fixture:timed_cooldown_owner:guard"
+	check.call(ResourcePoolRules.acquire(owner, feature, source_id).get("success", false), "The cooldown fixture acquires one exact-source numeric pool")
+	GameManager.campaign_elapsed_seconds = 3000
+	var activation := ClassFeature.execute(owner, feature, null, null, source_id)
+	var grant_id := str(activation.get("results", [{}])[0].get("grant_instance_id", ""))
+	var captured_modifier: Dictionary = owner.modifiers.filter(func(m): return str(m.get("grant_instance_id", "")) == grant_id)[0]
+	check.call(activation.get("success", false) and grant_id.ends_with(":1") and int(captured_modifier.get("expires_at_seconds", 0)) == 3060 and int(captured_modifier.get("cooldown_seconds", 0)) == 3600 and int(ResourcePoolRules.availability(owner, source_id).get("current", -1)) == 0, "Activation captures absolute effect and cooldown values while paying once")
+	var active_saved := owner.to_dict()
+	var active_restored := Character.new()
+	active_restored.from_dict(JSON.parse_string(JSON.stringify(active_saved)))
+	active_restored.features.append(feature.duplicate(true))
+	check.call(Character.saved_campaign_modifier_error(active_saved, 3000).is_empty() and active_restored.modifiers[0].get("grant_instance_id", "") == grant_id and int(active_restored.modifiers[0].get("expires_at_seconds", 0)) == 3060 and int(active_restored.modifiers[0].get("cooldown_seconds", 0)) == 3600, "Active timed grant checkpoint retains exact cooldown parameters without replay")
+	feature["effects"][0]["cooldown_seconds"] = 7200
+	check.call(int(active_restored.modifiers[0].get("cooldown_seconds", 0)) == 3600, "Changing the loaded definition cannot alter the captured cooldown")
+	feature["effects"][0]["cooldown_seconds"] = 3600
+	GameManager.campaign_elapsed_seconds = 3020
+	var dismiss_command := CombatCommand.from_hud_for_character("dismiss_timed_numeric_modifier", {"source_instance_id": source_id, "grant_instance_id": grant_id}, active_restored)
+	var forged_command := CombatCommand.from_hud_for_character("dismiss_timed_numeric_modifier", {"source_instance_id": source_id, "grant_instance_id": "fixture:other:1"}, active_restored)
+	var dismiss_result := active_restored.dismiss_campaign_modifier(source_id, grant_id, int(GameManager.campaign_elapsed_seconds)) if dismiss_command != null else {}
+	var cooldown: Dictionary = active_restored.campaign_modifier_cooldowns[0] if not active_restored.campaign_modifier_cooldowns.is_empty() else {}
+	check.call(dismiss_result.get("success", false) and forged_command == null and active_restored.get_modifier("stat", "AC") == 0 and int(cooldown.get("started_at_seconds", 0)) == 3020 and int(cooldown.get("ready_at_seconds", 0)) == 6620, "The owned combat dismissal control starts the cooldown at actual dismissal and rejects a forged grant")
+	var cooldown_saved := active_restored.to_dict()
+	var orphan_cooldown := cooldown_saved.duplicate(true)
+	orphan_cooldown["numeric_resource_pools"].erase(source_id)
+	check.call(not Character.saved_campaign_modifier_error(orphan_cooldown, 3020).is_empty(), "Checkpoint validation rejects a cooldown-only record whose exact pool source is missing")
+	var cooldown_restored := Character.new()
+	cooldown_restored.from_dict(JSON.parse_string(JSON.stringify(cooldown_saved)))
+	cooldown_restored.features.append(feature.duplicate(true))
+	check.call(Character.saved_campaign_modifier_error(cooldown_saved, 3020).is_empty() and cooldown_restored.campaign_modifier_cooldowns.size() == 1 and int(cooldown_restored.campaign_modifier_cooldowns[0].get("ready_at_seconds", 0)) == 6620, "Cooldown-only checkpoint preserves its absolute ready deadline")
+	var rest := ResourcePoolRules.recover(cooldown_restored, feature, source_id, "long_rest_completed")
+	var blocked_after_rest := ClassFeature.availability(cooldown_restored, feature, null, source_id)
+	check.call(rest.get("success", false) and int(ResourcePoolRules.availability(cooldown_restored, source_id).get("current", -1)) == 4 and not blocked_after_rest.get("available", true), "Long Rest can refill the numeric pool but cannot bypass its active source cooldown")
+	GameManager.campaign_elapsed_seconds = 6619
+	check.call(not ClassFeature.availability(cooldown_restored, feature, null, source_id).get("available", true), "Source remains blocked one second before the exact cooldown deadline")
+	GameManager.campaign_elapsed_seconds = 6620
+	var ready_at_deadline := ClassFeature.availability(cooldown_restored, feature, null, source_id)
+	check.call(ready_at_deadline.get("available", false) and cooldown_restored.campaign_modifier_cooldowns.is_empty(), "Source becomes available at the exact cooldown deadline")
+	var reactivation := ClassFeature.execute(cooldown_restored, feature, null, null, source_id)
+	check.call(reactivation.get("success", false) and int(ResourcePoolRules.availability(cooldown_restored, source_id).get("current", -1)) == 3, "Exact-deadline reactivation pays once after cooldown settlement")
+	var removal_actor := Character.new()
+	removal_actor.from_dict(JSON.parse_string(JSON.stringify(cooldown_saved)))
+	removal_actor.features.append(feature.duplicate(true))
+	var source_b := "fixture:timed_cooldown_owner:guard_b"
+	var acquired_b := ResourcePoolRules.acquire(removal_actor, feature, source_b)
+	var activation_b := ClassFeature.execute(removal_actor, feature, null, null, source_b)
+	var grant_b_id := str(activation_b.get("results", [{}])[0].get("grant_instance_id", ""))
+	var dismissed_b := removal_actor.dismiss_campaign_modifier(source_b, grant_b_id, int(GameManager.campaign_elapsed_seconds))
+	var retained_b_list: Array[Dictionary] = removal_actor.campaign_modifier_cooldowns.filter(func(c): return str(c.get("source_instance_id", "")) == source_b)
+	var retained_b: Dictionary = retained_b_list[0] if not retained_b_list.is_empty() else {}
+	check.call(acquired_b.get("success", false) and activation_b.get("success", false) and dismissed_b.get("success", false) and ResourcePoolRules.remove(removal_actor, source_id) and not removal_actor.numeric_resource_pools.has(source_id) and removal_actor.campaign_modifier_cooldowns.size() == 1 and str(retained_b.get("source_instance_id", "")) == source_b and Character.saved_campaign_modifier_error(removal_actor.to_dict(), int(GameManager.campaign_elapsed_seconds)).is_empty(), "Removing one cooling exact source clears only its cooldown and keeps another cooling source save-valid")
+
+	GameManager.campaign_elapsed_seconds = 8000
+	var expiry_owner := _character("fighter", 1)
+	expiry_owner.character_id = "fixture:timed_cooldown_expiry_owner"
+	expiry_owner.features.append(feature.duplicate(true))
+	var expiry_source := "fixture:timed_cooldown_expiry_owner:guard"
+	ResourcePoolRules.acquire(expiry_owner, feature, expiry_source)
+	var expiry_activation := ClassFeature.execute(expiry_owner, feature, null, null, expiry_source)
+	var expiry_grant_id := str(expiry_activation.get("results", [{}])[0].get("grant_instance_id", ""))
+	GameManager.campaign_elapsed_seconds = 8059
+	check.call(expiry_owner.get_modifier("stat", "AC") == 2 and expiry_owner.campaign_modifier_cooldowns.is_empty(), "Timed benefit remains active immediately before its scheduled expiry")
+	GameManager.campaign_elapsed_seconds = 8060
+	expiry_owner.expire_campaign_modifiers(int(GameManager.campaign_elapsed_seconds))
+	check.call(expiry_owner.get_modifier("stat", "AC") == 0 and int(expiry_owner.campaign_modifier_cooldowns[0].get("started_at_seconds", 0)) == 8060, "Exact scheduled expiry ends the benefit and starts its cooldown")
+	GameManager.campaign_elapsed_seconds = 8067
+	expiry_owner.expire_campaign_modifiers(int(GameManager.campaign_elapsed_seconds))
+	var expiry_cooldown: Dictionary = expiry_owner.campaign_modifier_cooldowns[0] if not expiry_owner.campaign_modifier_cooldowns.is_empty() else {}
+	var blocked_expiry := ClassFeature.execute(expiry_owner, feature, null, null, expiry_source)
+	check.call(expiry_grant_id.ends_with(":1") and int(expiry_cooldown.get("started_at_seconds", 0)) == 8060 and int(expiry_cooldown.get("ready_at_seconds", 0)) == 11660 and not blocked_expiry.get("success", false) and int(ResourcePoolRules.availability(expiry_owner, expiry_source).get("current", -1)) == 0, "A replayed late expiry callback does not restart cooldown or charge another pool use")
+	var cooldown_save := expiry_owner.to_dict()
+	var malformed_cooldown := cooldown_save.duplicate(true)
+	malformed_cooldown["campaign_modifier_cooldowns"][0]["ready_at_seconds"] = 11661
+	check.call(not Character.saved_campaign_modifier_error(malformed_cooldown, 8067).is_empty(), "Cooldown checkpoint validation rejects a mismatched absolute deadline")
+	GameManager.campaign_elapsed_seconds = 12000
+	expiry_owner.expire_campaign_modifiers(int(GameManager.campaign_elapsed_seconds))
+	var refilled_after_jump := ResourcePoolRules.recover(expiry_owner, feature, expiry_source, "long_rest_completed")
+	var ready_after_jump := ClassFeature.availability(expiry_owner, feature, null, expiry_source)
+	check.call(refilled_after_jump.get("success", false) and expiry_owner.campaign_modifier_cooldowns.is_empty() and ready_after_jump.get("available", false), "One campaign-time jump past both deadlines leaves the source ready rather than starting a new cooldown")
+	GameManager.campaign_elapsed_seconds = previous_clock
+	validator.free()
+
+
+static func _shared_timed_temporary_hp(check: Callable) -> void:
+	var previous_clock := int(GameManager.campaign_elapsed_seconds)
+	GameManager.campaign_elapsed_seconds = 5000
+	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://data/fixtures/shared_timed_temporary_hp.json"))
+	var fixture_class: Dictionary = parsed if parsed is Dictionary else {}
+	var feature: Dictionary = fixture_class.get("features_by_level", {}).get("1", [{}])[0]
+	var validator: Node = DataLoader.get_script().new()
+	check.call(validator._validate_content(fixture_class, "class", "fixture-timed-temporary-hp"), "Production DataLoader accepts a neutral source-owned timed Temporary HP operation")
+	var duplicate := feature.duplicate(true)
+	duplicate["effects"].append(feature["effects"][0].duplicate(true))
+	var duplicate_class := fixture_class.duplicate(true)
+	duplicate_class["features_by_level"]["1"] = [duplicate]
+	check.call(not validator._validate_content(duplicate_class, "class", "fixture-duplicate-timed-temporary-hp"), "Production DataLoader rejects duplicate timed Temporary HP grants from one source activation")
+	var actor := Character.new()
+	actor.character_id = "fixture:timed_temporary_hp_owner"
+	actor.character_name = "Timed Guard"
+	actor.features.append(feature.duplicate(true))
+	var source_id := "fixture:timed_temporary_hp_owner:guard"
+	var other_source_id := "fixture:timed_temporary_hp_owner:other_guard"
+	check.call(ResourcePoolRules.acquire(actor, feature, source_id).get("success", false), "Timed Temporary HP fixture acquires its exact source pool")
+	check.call(ResourcePoolRules.acquire(actor, feature, other_source_id).get("success", false), "A second source pool can independently offer Temporary HP")
+	var activation := ClassFeature.execute(actor, feature, null, null, source_id)
+	var activation_result: Dictionary = activation.get("results", [{}])[0]
+	var grant_id := str(activation_result.get("grant_instance_id", ""))
+	check.call(activation.get("success", false) and actor.temp_hp == 10 and grant_id == "fixture:timed_temporary_hp_owner:%s:1" % source_id and int(activation_result.get("expires_at_seconds", 0)) == 5060 and int(ResourcePoolRules.availability(actor, source_id).get("current", -1)) == 3, "Activation pays one use and captures amount, exact source/grant identity and absolute deadline")
+	var before_duplicate := int(ResourcePoolRules.availability(actor, source_id).get("current", -1))
+	var blocked := ClassFeature.execute(actor, feature, null, null, source_id)
+	check.call(not blocked.get("success", false) and actor.temp_hp == 10 and int(ResourcePoolRules.availability(actor, source_id).get("current", -1)) == before_duplicate, "A pending grant from the exact source blocks reactivation before cost")
+	var lower_offer := actor.offer_timed_temporary_hp(5, 30, other_source_id)
+	var equal_offer := actor.offer_timed_temporary_hp(10, 30, other_source_id)
+	check.call(lower_offer.get("success", false) and equal_offer.get("success", false) and not lower_offer.get("accepted", false) and not equal_offer.get("accepted", false) and actor.temp_hp == 10 and actor.timed_temporary_hp_current_grant_id == grant_id and actor.timed_temporary_hp_grants.size() == 1 and actor.timed_temporary_hp_grant_serial == 1, "Lower and equal keep-higher offers cannot steal provenance, create a grant or restart the deadline")
+	actor.ability_scores.set_score("WIS", 14)
+	var lower_ordinary := EventResolver._apply_single_effect(actor, {"type": "temporary_hp", "value": "1d4+WIS"})
+	check.call(int(lower_ordinary.get("amount", -1)) == 0 and actor.temp_hp == 10 and actor.timed_temporary_hp_current_grant_id == grant_id, "An ordinary ability-scaled Temporary HP effect below the existing grant keeps its amount and timed provenance")
+	var ordinary_actor := Character.new()
+	ordinary_actor.character_id = "fixture:ordinary_temporary_hp_ability"
+	ordinary_actor.ability_scores.set_score("WIS", 20)
+	ordinary_actor.temp_hp = 4
+	var ability_scaled_ordinary := EventResolver._apply_single_effect(ordinary_actor, {"type": "temporary_hp", "value": "1d4+WIS"})
+	check.call(int(ability_scaled_ordinary.get("amount", 0)) >= 6 and ordinary_actor.temp_hp == int(ability_scaled_ordinary.get("amount", 0)) and ordinary_actor.timed_temporary_hp_current_grant_id.is_empty(), "Ordinary class Temporary HP expressions include the declared ability modifier and replace only a lower buffer")
+	var saved := actor.to_dict()
+	var loaded := Character.new()
+	loaded.from_dict(JSON.parse_string(JSON.stringify(saved)))
+	var saved_grant: Dictionary = loaded.timed_temporary_hp_grants[0] if not loaded.timed_temporary_hp_grants.is_empty() else {}
+	check.call(Character.saved_timed_temporary_hp_error(saved, 5000).is_empty() and loaded.temp_hp == 10 and loaded.timed_temporary_hp_current_grant_id == grant_id and int(saved_grant.get("expires_at_seconds", 0)) == 5060, "Allowed character checkpoint preserves timed Temporary HP identity and deadline")
+	var missing_source := saved.duplicate(true)
+	missing_source["numeric_resource_pools"].erase(source_id)
+	var missing_deadline := saved.duplicate(true)
+	missing_deadline["timed_temporary_hp_grants"][0].erase("expires_at_seconds")
+	var missing_state_field := saved.duplicate(true)
+	missing_state_field.erase("timed_temporary_hp_current_grant_id")
+	check.call(not Character.saved_timed_temporary_hp_error(missing_source, 5000).is_empty() and not Character.saved_timed_temporary_hp_error(missing_deadline, 5000).is_empty() and not Character.saved_timed_temporary_hp_error(missing_state_field, 5000).is_empty(), "Malformed Temporary HP source, missing field and deadline state fail checkpoint preflight")
+	loaded.current_hp = 20
+	loaded.take_damage(3)
+	check.call(loaded.temp_hp == 7 and loaded.timed_temporary_hp_current_grant_id == grant_id, "Partial damage preserves the exact grant as owner of remaining Temporary HP")
+	loaded.take_damage(20)
+	check.call(loaded.temp_hp == 0 and loaded.timed_temporary_hp_current_grant_id.is_empty() and loaded.timed_temporary_hp_grants.size() == 1, "Full depletion clears current ownership without deleting or regenerating the spent grant")
+	var spent_restore := Character.new()
+	spent_restore.from_dict(JSON.parse_string(JSON.stringify(loaded.to_dict())))
+	check.call(spent_restore.temp_hp == 0 and spent_restore.timed_temporary_hp_current_grant_id.is_empty() and spent_restore.timed_temporary_hp_grants.size() == 1, "Loading a fully depleted pending grant cannot regenerate its Temporary HP")
+	GameManager.campaign_elapsed_seconds = 5059
+	loaded.expire_campaign_modifiers(5059)
+	check.call(loaded.timed_temporary_hp_grants.size() == 1 and loaded.temp_hp == 0, "A depleted grant remains pending immediately before its expiry without restoring its value")
+	GameManager.campaign_elapsed_seconds = 5060
+	loaded.expire_campaign_modifiers(5060)
+	check.call(loaded.temp_hp == 0 and loaded.timed_temporary_hp_grants.is_empty(), "Exact expiry removes the spent grant without restoring Temporary HP")
+	var replacement := Character.new()
+	replacement.from_dict(saved)
+	replacement.temp_hp = 12
+	replacement.expire_timed_temporary_hp_grants(5060)
+	check.call(replacement.temp_hp == 12 and replacement.timed_temporary_hp_current_grant_id.is_empty(), "A later untimed replacement survives expiry of the old source grant")
+	var surviving := Character.new()
+	surviving.from_dict(saved)
+	surviving.expire_timed_temporary_hp_grants(5060)
+	check.call(surviving.temp_hp == 0 and surviving.timed_temporary_hp_current_grant_id.is_empty(), "Expiry clears Temporary HP only while the exact timed grant still owns it")
+	var newer_timed := Character.new()
+	newer_timed.from_dict(saved)
+	var newer_grant := newer_timed.offer_timed_temporary_hp(12, 120, other_source_id)
+	newer_timed.expire_timed_temporary_hp_grants(5060)
+	check.call(newer_grant.get("accepted", false) and newer_timed.temp_hp == 12 and newer_timed.timed_temporary_hp_current_grant_id == str(newer_grant.get("grant", {}).get("grant_instance_id", "")), "An older grant expiry leaves a later timed replacement intact")
+	var remove_actor := Character.new()
+	remove_actor.from_dict(saved)
+	check.call(ResourcePoolRules.remove(remove_actor, source_id) and remove_actor.temp_hp == 0 and remove_actor.timed_temporary_hp_grants.is_empty(), "Removing the owning pool removes its exact surviving timed Temporary HP")
+	var remove_old := Character.new()
+	remove_old.from_dict(newer_timed.to_dict())
+	check.call(ResourcePoolRules.remove(remove_old, source_id) and remove_old.temp_hp == 12 and remove_old.timed_temporary_hp_grants.size() == 1, "Removing an earlier source leaves a newer timed replacement intact")
+	var downed := Character.new()
+	downed.character_id = "fixture:downed_temporary_hp"
+	downed.character_name = "Downed"
+	downed.current_hp = 0
+	downed.temp_hp = 3
+	var hp_damage := downed.take_damage(1)
+	check.call(hp_damage == 0 and downed.current_hp == 0 and downed.death_save_failures == 1 and downed.temp_hp == 2, "At zero HP, Temporary HP absorbs damage while the existing death-save failure rule remains")
+	GameManager.campaign_elapsed_seconds = previous_clock
+	validator.free()
+
+
+static func _shared_next_matching_hit_grant(check: Callable) -> void:
+	var previous_clock := int(GameManager.campaign_elapsed_seconds)
+	GameManager.campaign_elapsed_seconds = 2000
+	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://data/fixtures/shared_next_melee_hit_grant.json"))
+	var fixture_class: Dictionary = parsed if parsed is Dictionary else {}
+	var neutral: Dictionary = fixture_class.get("features_by_level", {}).get("1", [{}])[0]
+	var validator: Node = DataLoader.get_script().new()
+	check.call(validator._validate_content(fixture_class, "class", "fixture-next-melee-hit"), "DataLoader accepts the neutral next-melee-hit grant definition")
+	check.call(ClassFeature.content_error(neutral).is_empty(), "The neutral activation is bounded to a source-owned fixed +2 Fire grant with a campaign deadline")
+	var duplicate_next_hit := neutral.duplicate(true)
+	duplicate_next_hit["effects"].append(neutral["effects"][0].duplicate(true))
+	var duplicate_next_hit_class := fixture_class.duplicate(true)
+	duplicate_next_hit_class["features_by_level"]["1"] = [duplicate_next_hit]
+	check.call(not validator._validate_content(duplicate_next_hit_class, "class", "fixture-duplicate-next-hit-class"), "Production DataLoader rejects two next-hit grants in one source activation")
+	var invalid_amount := neutral.duplicate(true)
+	invalid_amount["effects"][0]["amount"] = 0
+	var invalid_type := neutral.duplicate(true)
+	invalid_type["effects"][0]["damage_type"] = "none"
+	var invalid_matcher := neutral.duplicate(true)
+	invalid_matcher["effects"][0]["matcher"] = "any_attack"
+	check.call(not ClassFeature.content_error(invalid_amount).is_empty() and not ClassFeature.content_error(invalid_type).is_empty() and not ClassFeature.content_error(invalid_matcher).is_empty(), "Nonpositive amounts, untyped damage and general match-language fields are rejected")
+	var renamed := neutral.duplicate(true)
+	renamed["id"] = "fixture:flame_on_edge_renamed"
+	renamed["name"] = "Renamed Flame"
+	renamed["resource_pool"]["id"] = "fixture:renamed_flame_pool"
+	renamed["effects"][0]["amount"] = 3
+	renamed["effects"][0]["damage_type"] = "cold"
+	var renamed_class := fixture_class.duplicate(true)
+	renamed_class["id"] = "fixture:renamed_flame_class"
+	renamed_class["features_by_level"]["1"] = [renamed]
+	check.call(validator._validate_content(renamed_class, "class", "fixture-renamed-next-melee-hit"), "A renamed equivalent passes the same DataLoader feature validation")
+
+	var owner := _character("fighter", 1)
+	owner.character_id = "fixture:next_hit_owner"
+	owner.features.append_array([neutral.duplicate(true), renamed.duplicate(true), {"id": "fixture:forced_attack_roll", "type": "passive", "effects": [{"type": "roll_token_pool", "pool_id": "fixture:forced_attack_roll", "token_count": 1, "die_sides": 20}]}])
+	var source_a := "fixture:next_hit_owner:source_a"
+	var source_b := "fixture:next_hit_owner:source_b"
+	var source_c := "fixture:next_hit_owner:source_renamed"
+	var acquire_a := ResourcePoolRules.acquire(owner, neutral, source_a)
+	var acquire_b := ResourcePoolRules.acquire(owner, neutral, source_b)
+	var acquire_c := ResourcePoolRules.acquire(owner, renamed, source_c)
+	var activate_a := ClassFeature.execute(owner, neutral, null, null, source_a)
+	var first_grant_id := str(activate_a.get("results", [{}])[0].get("grant_instance_id", ""))
+	var activate_b := ClassFeature.execute(owner, neutral, null, null, source_b)
+	var second_grant_id := str(activate_b.get("results", [{}])[0].get("grant_instance_id", ""))
+	var activate_c := ClassFeature.execute(owner, renamed, null, null, source_c)
+	var renamed_grant_id := str(activate_c.get("results", [{}])[0].get("grant_instance_id", ""))
+	var duplicate := ClassFeature.execute(owner, neutral, null, null, source_a)
+	check.call(acquire_a.get("success", false) and acquire_b.get("success", false) and acquire_c.get("success", false) and activate_a.get("success", false) and activate_b.get("success", false) and activate_c.get("success", false) and first_grant_id != second_grant_id and second_grant_id != renamed_grant_id and int(ResourcePoolRules.availability(owner, source_a).get("current", -1)) == 3 and int(ResourcePoolRules.availability(owner, source_b).get("current", -1)) == 3 and int(ResourcePoolRules.availability(owner, source_c).get("current", -1)) == 3, "Neutral and renamed activations pay one exact pool use and retain independent ordered grants")
+	check.call(not duplicate.get("success", true) and int(ResourcePoolRules.availability(owner, source_a).get("current", -1)) == 3 and owner.next_weapon_hit_grants.size() == 3, "An unspent source grant blocks duplicate activation before another pool use")
+	var saved_state := owner.to_dict()
+	var loaded := Character.new()
+	loaded.from_dict(JSON.parse_string(JSON.stringify(saved_state)))
+	loaded.features.append_array([neutral.duplicate(true), renamed.duplicate(true), {"id": "fixture:forced_attack_roll", "type": "passive", "effects": [{"type": "roll_token_pool", "pool_id": "fixture:forced_attack_roll", "token_count": 1, "die_sides": 20}]}])
+	var save_valid := Character.saved_next_weapon_hit_grants_error(saved_state, 2000).is_empty()
+	check.call(save_valid and loaded.next_weapon_hit_grants.size() == 3 and loaded.next_weapon_hit_grants[0].get("grant_instance_id", "") == first_grant_id and int(loaded.next_weapon_hit_grants[0].get("expires_at_seconds", 0)) == 2060 and loaded.next_weapon_hit_grant_serial == 3, "Allowed Character checkpoints preserve exact grant identity, deadline and acquisition order without activation replay")
+	var malformed := saved_state.duplicate(true)
+	malformed["next_weapon_hit_grants"][0]["amount"] = 101
+	check.call(not Character.saved_next_weapon_hit_grants_error(malformed, 2000).is_empty(), "Malformed out-of-bounds fixed-damage grant payload fails checkpoint validation")
+	var duplicate_order := saved_state.duplicate(true)
+	duplicate_order["next_weapon_hit_grants"][1]["acquisition_order"] = 1
+	duplicate_order["next_weapon_hit_grants"][1]["grant_instance_id"] = "next-hit:%s:%s:1" % [str(duplicate_order["character_id"]), str(duplicate_order["next_weapon_hit_grants"][1]["source_instance_id"])]
+	check.call(not Character.saved_next_weapon_hit_grants_error(duplicate_order, 2000).is_empty(), "Checkpoint validation rejects duplicate acquisition order across distinct sources")
+
+	var weapon := {"id": "longsword", "type": "weapon", "range": 1, "damage": "1", "damage_type": "bludgeoning", "ability": "STR", "fixed_damage": true, "attack_bonus_override": 100, "properties": []}
+	var ranged_weapon := {"id": "shortbow", "type": "weapon", "range": 80, "damage": "1", "damage_type": "piercing", "ability": "DEX", "fixed_damage": true, "attack_bonus_override": 100, "properties": ["ranged", "ammunition"]}
+	var ranged_result := _resolve_next_hit_fixture_attack(loaded, {"id": "fixture:ranged_target", "armor_class": 1, "current_hp": 50, "max_hp": 50, "conditions": {}, "damage_resistances": []}, ranged_weapon, 20, "ranged")
+	var outsider := _character("fighter", 1)
+	outsider.character_id = "fixture:other_hit_owner"
+	outsider.features.append({"id": "fixture:forced_attack_roll", "type": "passive", "effects": [{"type": "roll_token_pool", "pool_id": "fixture:forced_attack_roll", "token_count": 1, "die_sides": 20}]})
+	var outsider_result := _resolve_next_hit_fixture_attack(outsider, {"id": "fixture:outsider_target", "armor_class": 1, "current_hp": 50, "max_hp": 50, "conditions": {}, "damage_resistances": []}, weapon, 20, "outsider")
+	var miss_result := _resolve_next_hit_fixture_attack(loaded, {"id": "fixture:miss_target", "armor_class": 30, "current_hp": 50, "max_hp": 50, "conditions": {}, "damage_resistances": []}, weapon, 1, "miss")
+	check.call(ranged_result.get("hit", false) and ranged_result.get("consumed_next_hit_grant", {}).is_empty() and outsider_result.get("hit", false) and outsider_result.get("consumed_next_hit_grant", {}).is_empty() and not miss_result.get("hit", false) and loaded.next_weapon_hit_grants.size() == 3, "Ranged hits, another actor's hit and a melee miss leave every owner's grants untouched")
+
+	var resistant_target := {"id": "fixture:fire_resistant_target", "armor_class": 1, "current_hp": 50, "max_hp": 50, "conditions": {}, "damage_resistances": ["fire"]}
+	var first_hit := _resolve_next_hit_fixture_attack(loaded, resistant_target, weapon, 20, "first_crit")
+	var fire_components: Array = first_hit.get("damage_components", []).filter(func(component): return str(component.get("type", "")) == "fire")
+	var remaining_ids: Array = loaded.next_weapon_hit_grants.map(func(grant): return str(grant.get("grant_instance_id", "")))
+	check.call(first_hit.get("hit", false) and first_hit.get("crit", false) and str(first_hit.get("consumed_next_hit_grant", {}).get("grant_instance_id", "")) == first_grant_id and int(first_hit.get("consumed_next_hit_grant", {}).get("amount", 0)) == 2 and fire_components.size() == 1 and int(fire_components[0].get("value", 0)) == 1 and first_grant_id not in remaining_ids, "The oldest matching critical melee hit consumes once and typed Fire resistance halves the fixed +2 component")
+	var old_hit_id := str(first_hit.get("consumed_next_hit_grant", {}).get("grant_instance_id", ""))
+	var rearmed := ClassFeature.execute(loaded, neutral, null, null, source_a)
+	var rearmed_id := str(rearmed.get("results", [{}])[0].get("grant_instance_id", ""))
+	check.call(rearmed.get("success", false) and not rearmed_id.is_empty() and rearmed_id != old_hit_id and loaded.next_weapon_hit_grants.any(func(grant): return str(grant.get("grant_instance_id", "")) == rearmed_id), "Rearming after a completed hit creates a new identity that the old hit snapshot cannot consume")
+	var second_hit := _resolve_next_hit_fixture_attack(loaded, {"id": "fixture:second_target", "armor_class": 1, "current_hp": 50, "max_hp": 50, "conditions": {}, "damage_resistances": []}, weapon, 15, "second_hit")
+	check.call(str(second_hit.get("consumed_next_hit_grant", {}).get("grant_instance_id", "")) == second_grant_id, "The next qualifying hit consumes the oldest remaining grant even after reload and rearm")
+	var third_hit := _resolve_next_hit_fixture_attack(loaded, {"id": "fixture:third_target", "armor_class": 1, "current_hp": 50, "max_hp": 50, "conditions": {}, "damage_resistances": []}, weapon, 15, "third_hit")
+	var third_cold: Array = third_hit.get("damage_components", []).filter(func(component): return str(component.get("type", "")) == "cold")
+	var renamed_hit := _resolve_next_hit_fixture_attack(loaded, {"id": "fixture:renamed_target", "armor_class": 1, "current_hp": 50, "max_hp": 50, "conditions": {}, "damage_resistances": []}, weapon, 15, "renamed_hit")
+	check.call(str(third_hit.get("consumed_next_hit_grant", {}).get("grant_instance_id", "")) == renamed_grant_id and third_cold.size() == 1 and int(third_cold[0].get("value", 0)) == 3 and str(renamed_hit.get("consumed_next_hit_grant", {}).get("grant_instance_id", "")) == rearmed_id, "A renamed grant uses its own fixed +3 Cold payload through typed settlement; source ordering stays independent")
+	var no_repeat_hit := _resolve_next_hit_fixture_attack(loaded, {"id": "fixture:no_repeat_target", "armor_class": 1, "current_hp": 50, "max_hp": 50, "conditions": {}, "damage_resistances": []}, weapon, 15, "no_repeat_hit")
+	check.call(no_repeat_hit.get("consumed_next_hit_grant", {}).is_empty() and no_repeat_hit.get("damage_components", []).all(func(component): return str(component.get("type", "")) != "fire"), "A later qualifying melee hit gets no second benefit after all pending grants were consumed")
+
+	var downed_grant := ClassFeature.execute(loaded, neutral, null, null, source_a)
+	var downed_target := _character("fighter", 1)
+	downed_target.character_id = "fixture:next_hit_down_target"
+	downed_target.current_hp = 1
+	var downing_hit := _resolve_next_hit_fixture_attack(loaded, downed_target, weapon, 20, "downing_hit")
+	check.call(downed_grant.get("success", false) and downed_target.is_downed() and str(downing_hit.get("consumed_next_hit_grant", {}).get("source_instance_id", "")) == source_a and not loaded.next_weapon_hit_grants.any(func(grant): return str(grant.get("source_instance_id", "")) == source_a), "A matching melee hit consumes its grant even when base damage downs the target")
+
+	var preserve_b := ClassFeature.execute(loaded, neutral, null, null, source_b)
+	var reactivate_c := ClassFeature.execute(loaded, renamed, null, null, source_c)
+	var source_b_grant := loaded.next_weapon_hit_grants.size()
+	var removed_c := ResourcePoolRules.remove(loaded, source_c)
+	check.call(preserve_b.get("success", false) and reactivate_c.get("success", false) and removed_c and not loaded.has_next_melee_hit_grant_source(source_c) and loaded.has_next_melee_hit_grant_source(source_b) and source_b_grant > loaded.next_weapon_hit_grants.size(), "Removing one source clears only its unspent grant")
+	ResourcePoolRules.acquire(loaded, renamed, source_c)
+	var expiry_activation := ClassFeature.execute(loaded, renamed, null, null, source_c)
+	var expiry_deadline := int(expiry_activation.get("results", [{}])[0].get("expires_at_seconds", 0))
+	GameManager.campaign_elapsed_seconds = expiry_deadline
+	check.call(expiry_activation.get("success", false) and loaded.take_oldest_next_melee_hit_grant(expiry_deadline).is_empty() and loaded.next_weapon_hit_grants.is_empty(), "The grant remains available before its deadline, then expires at the exact time without a hit")
+	GameManager.campaign_elapsed_seconds = previous_clock
+	validator.free()
+
+
+static func _resolve_next_hit_fixture_attack(attacker: Character, target, weapon: Dictionary, roll_value: int, token_id: String) -> Dictionary:
+	var pool_id := "fixture:forced_attack_roll"
+	RollTokenRules.clear_turn_counter(attacker, pool_id)
+	attacker.roll_tokens[pool_id] = [{"token_id": token_id, "value": roll_value, "feature_id": pool_id, "pool_id": pool_id, "die_sides": 20}]
+	var decisions := {"attack_roll_token_replacement": {"owner": attacker, "pool_id": pool_id, "token_id": token_id, "test_kind": "attack"}}
+	return CombatAction.resolve_weapon_attack(attacker, target, weapon, false, false, decisions)
+
+
+static func _shared_numeric_pool_exchange(check: Callable) -> void:
+	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://data/fixtures/shared_numeric_pool_exchange.json"))
+	var fixture_class: Dictionary = parsed if parsed is Dictionary else {}
+	var features: Array = fixture_class.get("features_by_level", {}).get("1", [])
+	var payment_definition: Dictionary = features[0] if features.size() > 0 else {}
+	var restoration_definition: Dictionary = features[1] if features.size() > 1 else {}
+	var exchange_feature: Dictionary = features[2] if features.size() > 2 else {}
+	var validator: Node = DataLoader.get_script().new()
+	check.call(validator._validate_content(fixture_class, "class", "fixture-numeric-pool-exchange"), "DataLoader accepts the neutral fixed numeric-pool exchange fixture")
+	validator.free()
+	var actor := _character("fighter", 1)
+	actor.character_id = "fixture:exchange_owner"
+	actor.features.append_array([payment_definition.duplicate(true), restoration_definition.duplicate(true), exchange_feature.duplicate(true)])
+	var payment_id := "fixture:exchange_owner:pool_a"
+	var restoration_id := "fixture:exchange_owner:pool_b"
+	var payment := ResourcePoolRules.acquire(actor, payment_definition, payment_id)
+	var restoration := ResourcePoolRules.acquire(actor, restoration_definition, restoration_id)
+	check.call(payment.get("success", false) and restoration.get("success", false) and ClassFeature.content_error(exchange_feature).is_empty(), "Exchange fixture owns two distinct numeric pool definitions and a valid shared activation")
+	var command := CombatCommand.from_hud_for_character("use_feature", {"feature": {"id": exchange_feature.get("id", ""), "selected_payment_source_instance_id": payment_id, "selected_restoration_source_instance_id": restoration_id, "resource_exchange": {"payment_pool_id": "forged", "payment_quantity": 100, "restoration_pool_id": "forged", "restoration_quantity": 100}}}, actor)
+	check.call(command != null and command.payload["feature"].get("resource_exchange", {}) == exchange_feature.get("resource_exchange", {}), "Command binds exact source choices to the owned feature's authored exchange and ignores untrusted exchange metadata")
+	var cancelled_budget := CombatTurnBudget.new()
+	var cancelled_command := CombatCommand.from_hud_for_character("use_feature", {"feature": {"id": exchange_feature.get("id", "")}}, actor)
+	check.call(cancelled_command == null and int(ResourcePoolRules.availability(actor, payment_id).get("current", -1)) == 3 and int(ResourcePoolRules.availability(actor, restoration_id).get("current", -1)) == 0 and cancelled_budget.action_available, "Cancelling source selection leaves both exchange pools and action budget unchanged")
+	var exchange_budget := CombatTurnBudget.new()
+	var exchanged := ClassFeature.execute(actor, command.payload["feature"], null, exchange_budget)
+	check.call(exchanged.get("success", false) and int(ResourcePoolRules.availability(actor, payment_id).get("current", -1)) == 1 and int(ResourcePoolRules.availability(actor, restoration_id).get("current", -1)) == 1 and not exchange_budget.action_available, "Shared activation spends two exact payment uses and restores one destination use together")
+	var after_success_payment := ResourcePoolRules.availability(actor, payment_id)
+	var after_success_restoration := ResourcePoolRules.availability(actor, restoration_id)
+	var insufficient := ResourcePoolRules.exchange(actor, payment_id, restoration_id, "fixture:exchange_pool_a_uses", 2, "fixture:exchange_pool_b_uses", 1)
+	check.call(not insufficient.get("success", true) and ResourcePoolRules.availability(actor, payment_id) == after_success_payment and ResourcePoolRules.availability(actor, restoration_id) == after_success_restoration, "Insufficient payment refuses without changing either pool")
+	var same_source := ResourcePoolRules.exchange(actor, payment_id, payment_id, "fixture:exchange_pool_a_uses", 1, "fixture:exchange_pool_a_uses", 1)
+	check.call(not same_source.get("success", true) and ResourcePoolRules.availability(actor, payment_id) == after_success_payment, "An exchange refuses the same exact source on both sides")
+	var stale_command := CombatCommand.from_hud_for_character("use_feature", {"feature": {"id": exchange_feature.get("id", ""), "selected_payment_source_instance_id": payment_id, "selected_restoration_source_instance_id": "fixture:stale_source"}}, actor)
+	check.call(stale_command == null and ResourcePoolRules.availability(actor, payment_id) == after_success_payment and ResourcePoolRules.availability(actor, restoration_id) == after_success_restoration, "A stale destination selection is rejected before either pool changes")
+	actor.numeric_resource_pools[restoration_id]["current"] = int(after_success_restoration["capacity"])
+	var full_before_payment := ResourcePoolRules.availability(actor, payment_id)
+	var full_before_restoration := ResourcePoolRules.availability(actor, restoration_id)
+	var full_destination := ResourcePoolRules.exchange(actor, payment_id, restoration_id, "fixture:exchange_pool_a_uses", 1, "fixture:exchange_pool_b_uses", 1)
+	check.call(not full_destination.get("success", true) and ResourcePoolRules.availability(actor, payment_id) == full_before_payment and ResourcePoolRules.availability(actor, restoration_id) == full_before_restoration, "A full destination refuses the full restoration before charging payment")
+	var wrong_owner := _character("fighter", 1)
+	wrong_owner.character_id = "fixture:wrong_exchange_owner"
+	var other_source := "fixture:other_owner:pool_b"
+	ResourcePoolRules.acquire(wrong_owner, restoration_definition, other_source)
+	var cross_actor := ResourcePoolRules.exchange(actor, payment_id, other_source, "fixture:exchange_pool_a_uses", 1, "fixture:exchange_pool_b_uses", 1)
+	check.call(not cross_actor.get("success", true) and ResourcePoolRules.availability(actor, payment_id) == full_before_payment, "Pool exchange refuses a source owned by another actor")
+
+
+static func _shared_combat_use_limits(check: Callable) -> void:
+	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://data/fixtures/shared_combat_use_limits.json"))
+	var fixture_class: Dictionary = parsed if parsed is Dictionary else {}
+	var feature: Dictionary = fixture_class.get("features_by_level", {}).get("1", [{}])[0].duplicate(true)
+	var validator: Node = DataLoader.get_script().new()
+	check.call(validator._validate_content(fixture_class, "class", "fixture-combat-use-limits"), "Neutral pool-backed weapon-hit rider validates through the ordinary data loader")
+	validator.free()
+	var actor := _character("fighter", 1)
+	actor.character_id = "fixture:limited_owner"
+	var once_target_feature := feature.duplicate(true)
+	once_target_feature["source_instance_id"] = "fixture:limited_source:target"
+	var once_turn_feature := feature.duplicate(true)
+	once_turn_feature["source_instance_id"] = "fixture:limited_source:turn"
+	once_turn_feature["passive_effects"][0]["id"] = "fixture_steady_spark_turn"
+	once_turn_feature["passive_effects"][0]["use_limit"] = "once_per_combat_turn"
+	actor.features.append(once_target_feature)
+	actor.features.append(once_turn_feature)
+	ResourcePoolRules.acquire(actor, once_target_feature, "fixture:limited_source:target")
+	ResourcePoolRules.acquire(actor, once_turn_feature, "fixture:limited_source:turn")
+	var target_a := {"id": "fixture:limit_target_a", "name": "Target A", "is_alive": true, "max_hp": 30, "current_hp": 30, "damage_immunities": [], "damage_resistances": [], "conditions": {}}
+	var target_b := {"id": "fixture:limit_target_b", "name": "Target B", "is_alive": true, "max_hp": 30, "current_hp": 30, "damage_immunities": [], "damage_resistances": [], "conditions": {}}
+	CombatAction.advance_combat_turn(actor)
+	var dead_target := target_a.duplicate(true)
+	dead_target["is_alive"] = false
+	var ineligible := CombatAction.resolve_weapon_damage_riders(actor, dead_target, {}, {"type": "weapon", "range": 1})
+	check.call(ineligible.is_empty() and int(ResourcePoolRules.availability(actor, "fixture:limited_source:target").get("current", -1)) == 2 and int(ResourcePoolRules.availability(actor, "fixture:limited_source:turn").get("current", -1)) == 2, "Failed target eligibility skips the rider without spending either exact source pool")
+	var miss_target := target_b.duplicate(true)
+	var hp_before_miss := int(miss_target.get("current_hp", 0))
+	var before_miss := int(ResourcePoolRules.availability(actor, "fixture:limited_source:turn").get("current", -1))
+	var missed := CombatAction.resolve_weapon_damage_riders(actor, miss_target, {}, {"type": "weapon", "range": 1}, false, false)
+	check.call(missed.is_empty() and before_miss == 2 and int(ResourcePoolRules.availability(actor, "fixture:limited_source:turn").get("current", -1)) == before_miss and int(miss_target.get("current_hp", 0)) == hp_before_miss, "A miss skips the rider without spending available pool uses or changing the target")
+	var riders_a := CombatAction.resolve_weapon_damage_riders(actor, target_a, {}, {"type": "weapon", "range": 1})
+	var source_after_first := ResourcePoolRules.availability(actor, "fixture:limited_source:target")
+	var repeat_target := CombatAction.resolve_weapon_damage_riders(actor, target_a, {}, {"type": "weapon", "range": 1})
+	var other_target := CombatAction.resolve_weapon_damage_riders(actor, target_b, {}, {"type": "weapon", "range": 1})
+	var second_source_same_turn := ResourcePoolRules.availability(actor, "fixture:limited_source:turn")
+	check.call(riders_a.size() == 2 and int(source_after_first.get("current", -1)) == 1 and repeat_target.is_empty() and other_target.size() == 1 and int(second_source_same_turn.get("current", -1)) == 1, "Each authored limit spends one exact pool use on a qualifying hit and the per-target limit allows a different target")
+	var same_turn_other_target := CombatAction.resolve_weapon_damage_riders(actor, target_a, {}, {"type": "weapon", "range": 1})
+	check.call(same_turn_other_target.is_empty(), "Once-per-combat-turn rider blocks another target during the same actual turn")
+	CombatAction.advance_combat_turn(actor)
+	var new_turn_target := CombatAction.resolve_weapon_damage_riders(actor, target_a, {}, {"type": "weapon", "range": 1})
+	check.call(new_turn_target.size() == 1 and int(ResourcePoolRules.availability(actor, "fixture:limited_source:target").get("current", -1)) == 0, "A new actual turn clears transient locks while a depleted pool independently skips its rider")
+	var exhausted_target := CombatAction.resolve_weapon_damage_riders(actor, target_b, {}, {"type": "weapon", "range": 1})
+	check.call(exhausted_target.is_empty(), "An exhausted pool skips a rider without creating another effect")
+	var interval_feature: Dictionary = fixture_class.get("features_by_level", {}).get("1", [{}, {}])[1].duplicate(true)
+	var interval_actor := _character("fighter", 1)
+	interval_actor.character_id = "fixture:owner_interval_owner"
+	interval_feature["source_instance_id"] = "fixture:owner_interval_source"
+	interval_actor.features.append(interval_feature)
+	var interval_source := str(interval_feature["source_instance_id"])
+	var interval_acquired := ResourcePoolRules.acquire(interval_actor, interval_feature, interval_source)
+	var interval_target := {"id": "fixture:owner_interval_target", "is_alive": true, "max_hp": 30, "current_hp": 30, "damage_immunities": [], "damage_resistances": [], "conditions": {}}
+	var other_turn_actor := _character("wizard", 1)
+	other_turn_actor.character_id = "fixture:owner_interval_other_actor"
+	CombatAction.reset_bounded_owner_turn_rider_locks()
+	CombatAction.advance_combat_turn(other_turn_actor)
+	var off_turn_rider := CombatAction.resolve_weapon_damage_riders(interval_actor, interval_target, {}, {"type": "weapon", "range": 1})
+	var interval_after_first := ResourcePoolRules.availability(interval_actor, interval_source)
+	var hp_after_first_interval_rider := int(interval_target.get("current_hp", 0))
+	var off_turn_repeat := CombatAction.resolve_weapon_damage_riders(interval_actor, interval_target, {}, {"type": "weapon", "range": 1})
+	check.call(interval_acquired.get("success", false) and off_turn_rider.size() == 1 and off_turn_repeat.is_empty() and int(interval_after_first.get("current", -1)) == 1 and int(ResourcePoolRules.availability(interval_actor, interval_source).get("current", -1)) == 1 and int(interval_target.get("current_hp", 0)) == hp_after_first_interval_rider, "The neutral owner-interval rider commits one off-turn lock, pool payment and effect; repeat completion skips only the rider")
+	CombatAction.advance_combat_turn(other_turn_actor)
+	var after_other_turn := CombatAction.resolve_weapon_damage_riders(interval_actor, interval_target, {}, {"type": "weapon", "range": 1})
+	check.call(after_other_turn.is_empty(), "Another actor's combat turn does not reset the owner-interval lock")
+	interval_actor.features.erase(interval_feature)
+	var removed_interval_source := ResourcePoolRules.remove(interval_actor, interval_source)
+	interval_actor.features.append(interval_feature)
+	var reacquired_interval_source := ResourcePoolRules.acquire(interval_actor, interval_feature, interval_source)
+	var same_source_reacquisition := CombatAction.resolve_weapon_damage_riders(interval_actor, interval_target, {}, {"type": "weapon", "range": 1})
+	check.call(removed_interval_source and reacquired_interval_source.get("success", false) and same_source_reacquisition.is_empty() and int(ResourcePoolRules.availability(interval_actor, interval_source).get("current", -1)) == 2, "Removing and reacquiring the same source ID keeps its lock for the current owner interval")
+	var interval_copy: Dictionary = interval_feature.duplicate(true)
+	var independent_source := "fixture:owner_interval_source_copy"
+	interval_copy["source_instance_id"] = independent_source
+	interval_actor.features.append(interval_copy)
+	var independent_acquired := ResourcePoolRules.acquire(interval_actor, interval_copy, independent_source)
+	var new_source_rider := CombatAction.resolve_weapon_damage_riders(interval_actor, interval_target, {}, {"type": "weapon", "range": 1})
+	check.call(independent_acquired.get("success", false) and new_source_rider.size() == 1 and int(ResourcePoolRules.availability(interval_actor, independent_source).get("current", -1)) == 1, "A different exact source instance has an independent owner-interval lock and pool")
+	CombatAction.start_bounded_owner_turn_interval(interval_actor)
+	var next_owner_interval := CombatAction.resolve_weapon_damage_riders(interval_actor, interval_target, {}, {"type": "weapon", "range": 1})
+	check.call(next_owner_interval.size() == 2 and int(ResourcePoolRules.availability(interval_actor, interval_source).get("current", -1)) == 1 and int(ResourcePoolRules.availability(interval_actor, independent_source).get("current", -1)) == 0, "The owner's next turn start resets both exact-source interval locks while preserving their separate spent quantities")

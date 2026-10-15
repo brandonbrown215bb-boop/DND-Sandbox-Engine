@@ -3,12 +3,18 @@
 class_name SpellCastContext
 extends RefCounted
 
+static var _next_invocation_serial := 1
+
 const CLEAR_ACTION := 1
 const CLEAR_SPELL := 2
 const CLEAR_INTERVENTION := 4
 const CLEAR_WISH := 8
 
 var caster: Character
+var invocation_id := ""
+var action_id := ""
+var action_invocation_id := ""
+var component_copy_validated := false
 var spell: Dictionary = {}
 var players: Array[Dictionary] = []
 var monsters: Array[Dictionary] = []
@@ -99,6 +105,12 @@ var area_source_id := ""
 var restrained_targets: Array = []
 var initial_targets: Dictionary = {}
 var shape_locked_targets: Array = []
+
+func _init() -> void:
+	invocation_id = "spell-invocation:%d" % _next_invocation_serial
+	_next_invocation_serial += 1
+	action_invocation_id = "action-invocation:%d" % _next_invocation_serial
+	_next_invocation_serial += 1
 
 func clear_pending(flags: int) -> void:
 	if flags & CLEAR_SPELL:

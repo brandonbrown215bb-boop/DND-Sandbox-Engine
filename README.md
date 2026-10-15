@@ -1,4 +1,4 @@
-# Top Down Party Game
+# Crown & Company
 
 Godot 4.7 top-down party game prototype with local 1–4 player Crown campaigns.
 Development is moving toward one shared data-driven rules runtime. The current
