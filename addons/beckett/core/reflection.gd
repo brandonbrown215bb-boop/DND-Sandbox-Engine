@@ -7,17 +7,98 @@ class_name BeckettReflect
 ## resources, enums). This is what lets a handful of generic tools drive any class.
 
 
+const PathGuard := preload("res://addons/beckett/core/path_guard.gd")  # a resource loaded by path is a read like any other
+const Internals := preload("res://addons/beckett/core/internals.gd")  # what a tool may never name: Beckett's own objects, and the editor around the open scene
+
+## The unit suite points this at a scene of its own: a plain engine run has no editor, so no edited scene.
+## Nothing else sets it.
+static var scene_root_override: Node = null
+
+
+## The root of the scene open in the editor, or null when there is none (and, outside an editor, null).
+static func scene_root() -> Node:
+	if scene_root_override != null and is_instance_valid(scene_root_override):
+		return scene_root_override
+	if not Engine.is_editor_hint():
+		return null
+	return EditorInterface.get_edited_scene_root()
+
+
 ## Resolve a string target to a live Object.
 ##   "res://path.tscn"/"uid://..."   -> loaded Resource
 ##   "."/root name                    -> the edited scene root
 ##   node path or node name           -> a node in the edited scene
-## Returns null if nothing matched (callers may then treat it as a class name).
+## Returns null if nothing matched (callers may then treat it as a class name). A resource path the
+## read rule refuses (outside the project, or through a link that leaves it) matches nothing, and a
+## tool that wants to say why asks PathGuard.check_read for the same path.
+##
+## Never an object of Beckett's own, and never a node outside the open scene (the editor's panels, the
+## plugin nodes, the tree root): those match nothing either, so a tool that forgets to ask why still
+## fails closed, and refusal_for / miss say why (internals.gd has the reasons).
 static func resolve(target: String) -> Object:
+	var obj := _resolve_raw(target)
+	if obj != null and not refusal_of(obj).is_empty():
+		return null
+	return obj
+
+
+## The node a scene-editing tool means by `target`: "", "." and "/root" and the root's own name are the open
+## scene's root; anything else is a path from the root (or an absolute /root/... path to a node of this scene),
+## or the first node of that name below it. The same rule as resolve for a node, minus resources and
+## sub-resources, and the same answer for what is off limits: null.
+static func scene_node(target: String) -> Node:
+	var n := _scene_node_raw(target)
+	if n != null and not refusal_of(n).is_empty():
+		return null
+	return n
+
+
+## Why a tool may not touch `obj`, or "" when it may: one of Beckett's own objects, or a node in the tree that
+## is not part of the open scene.
+static func refusal_of(obj: Object, what: String = "") -> String:
+	return Internals.refusal(obj, scene_root(), what)
+
+
+## Why `target` is refused, or "" when it is not (it may still match nothing). Resolves again without the
+## refusal, which only a miss pays for: a resource path is never the editor's own, so it is not asked.
+static func refusal_for(target: String) -> String:
+	if target.is_empty() or target.begins_with("res://") or target.begins_with("uid://"):
+		return ""
+	var obj := _resolve_raw(target)
+	if obj == null:
+		return ""
+	return refusal_of(obj, target)
+
+
+## The error for a target that matched nothing: the off-limits sentence when it names something a tool may not
+## touch, else "Could not resolve <noun>: <target>".
+static func miss(target: String, noun: String = "target") -> String:
+	var why := refusal_for(target)
+	if not why.is_empty():
+		return why
+	return "Could not resolve %s: %s" % [noun, target]
+
+
+static func _scene_node_raw(target: String) -> Node:
+	var root := scene_root()
+	if root == null:
+		return null
+	if target.is_empty() or target == "." or target == "/root" or target == root.name:
+		return root
+	var n := root.get_node_or_null(NodePath(target))
+	if n == null:
+		n = root.find_child(target, true, false)
+	return n
+
+
+static func _resolve_raw(target: String) -> Object:
 	if target == null or target.is_empty():
 		return null
 	if target.begins_with("res://") or target.begins_with("uid://"):
+		if PathGuard.check_read(target).has("error"):
+			return null
 		return ResourceLoader.load(target)
-	var root := EditorInterface.get_edited_scene_root()
+	var root := scene_root()
 	if root != null:
 		if target == "." or target == "/root" or target == root.name:
 			return root
@@ -27,6 +108,11 @@ static func resolve(target: String) -> Object:
 		n = root.find_child(target, true, false)
 		if n != null:
 			return n
+		# Walk a path that dips from a node into its resource sub-properties, e.g.
+		# "Cube/mesh" or "WorldEnvironment/environment/sky": resolve the longest node
+		# prefix, then follow the remaining segments as Object-typed properties. This is
+		# what lets `set_property target=Cube/mesh property=size` and friends work — the
+		# resolver reaches the embedded sub-resource, not just nodes.
 		var walked := _resolve_property_walk(root, target)
 		if walked != null:
 			return walked
@@ -36,6 +122,11 @@ static func resolve(target: String) -> Object:
 ## Resolve "Node/prop/subprop..." by taking the longest leading node path, then following
 ## each remaining segment as an Object-valued property. Returns null if no node prefix
 ## matches or a segment is missing / not an Object (so callers still fail loudly).
+##
+## The walk stops at the first object a tool may not touch and returns THAT one, so the caller's refusal
+## names it. Without that, a prefix that reaches one of Beckett's nodes and a property that holds its socket
+## (".../BeckettRuntimeBridge/_peer") would hand back an object that carries no Beckett script of its own, and
+## put_data on it would write straight into the game's channel past everything send_command checks.
 static func _resolve_property_walk(root: Node, target: String) -> Object:
 	var parts := target.split("/", false)
 	if parts.size() < 2:
@@ -52,13 +143,92 @@ static func _resolve_property_walk(root: Node, target: String) -> Object:
 	if node == null:
 		return null
 	var cur: Object = node
+	if not refusal_of(cur).is_empty():
+		return cur
 	for i in range(consumed, parts.size()):
 		var v: Variant = cur.get(parts[i])
 		if v is Object:
 			cur = v
+			if not refusal_of(cur).is_empty():
+				return cur
 		else:
 			return null
 	return cur
+
+
+## Longer than any real node, class or property name — bounds the DP row on a hostile query.
+const NEAREST_MAX_QUERY := 64
+## Ceiling on candidates compared. A big scene tree, or the whole ClassDB (968 classes on a
+## headless 4.4.1, more in the editor) — both fit, so nothing useful is silently dropped.
+const NEAREST_MAX_CANDIDATES := 4000
+
+
+## Candidates within one typo per four query characters, closest first, at most `limit`.
+## Empty when nothing is close: a confident wrong name costs the agent more than a miss.
+## Matching is case-insensitive, so a pure case slip ("sprite2d" for "Sprite2D") scores 0
+## and wins — that is the commonest miss, not an exotic one.
+## The (query, candidates, limit) shape is deliberate: an engine-side fuzzy matcher can
+## replace the body without touching a call site. Godot's FuzzySearch is not exposed to
+## script on 4.4.1, 4.6.2 or 4.7 (measured), so there is nothing to gate on today.
+static func nearest(query: String, candidates: Array, limit: int = 3) -> Array:
+	var q := query.strip_edges().to_lower()
+	if q.is_empty() or q.length() > NEAREST_MAX_QUERY or candidates.is_empty() or limit <= 0:
+		return []
+	var budget: int = maxi(1, q.length() / 4)
+	# Bucket by distance instead of sorting: the budget is tiny, and this keeps the order
+	# stable (closest first, input order within a distance) without a comparator.
+	var buckets: Array = []
+	for _i in range(budget + 1):
+		buckets.append([])
+	var seen: Dictionary = {}
+	var n: int = mini(candidates.size(), NEAREST_MAX_CANDIDATES)
+	for i in range(n):
+		var c := str(candidates[i])
+		if c.is_empty() or seen.has(c):
+			continue
+		seen[c] = true
+		var lc := c.to_lower()
+		# A length gap alone can blow the budget — skip the DP for those, which is most of
+		# a real tree or class list.
+		if absi(lc.length() - q.length()) > budget:
+			continue
+		var d := _lev(q, lc)
+		if d <= budget:
+			buckets[d].append(c)
+	var out: Array = []
+	for d in range(buckets.size()):
+		for c in buckets[d]:
+			out.append(c)
+			if out.size() >= limit:
+				return out
+	return out
+
+
+## Levenshtein distance, two rows instead of a full matrix. Pure GDScript on purpose:
+## it behaves identically on every engine from 4.0 up, and it only runs on a miss path.
+static func _lev(a: String, b: String) -> int:
+	var la := a.length()
+	var lb := b.length()
+	if la == 0:
+		return lb
+	if lb == 0:
+		return la
+	var prev := PackedInt32Array()
+	prev.resize(lb + 1)
+	var cur := PackedInt32Array()
+	cur.resize(lb + 1)
+	for j in range(lb + 1):
+		prev[j] = j
+	for i in range(1, la + 1):
+		cur[0] = i
+		var ca := a.unicode_at(i - 1)
+		for j in range(1, lb + 1):
+			var cost := 0 if ca == b.unicode_at(j - 1) else 1
+			cur[j] = mini(mini(cur[j - 1] + 1, prev[j] + 1), prev[j - 1] + cost)
+		var swap := prev
+		prev = cur
+		cur = swap
+	return prev[lb]
 
 
 ## Human-readable signature for a class_get_method_list / get_method_list entry.
@@ -130,6 +300,7 @@ static func to_json_safe(v: Variant) -> Variant:
 				d[str(k)] = to_json_safe(v[k])
 			return d
 		_:
+			# Vectors/Transforms/etc not special-cased above: stringify the literal.
 			return var_to_str(v)
 
 
@@ -138,6 +309,10 @@ static func to_json_safe(v: Variant) -> Variant:
 static func coerce_for_property(obj: Object, prop: String, value: Variant) -> Variant:
 	var cur: Variant = obj.get(prop)
 	var want := typeof(cur)
+	# A null/unset property has no live type to mirror — read the declared type from
+	# the property list instead, so an unset Vector2/Color export still coerces (e.g.
+	# "100 50" -> Vector2). Without this, want stays TYPE_NIL and the value passes
+	# through uncoerced.
 	if want == TYPE_NIL:
 		want = _declared_type(obj, prop)
 	return coerce_to_type(value, want)
@@ -153,6 +328,9 @@ static func _declared_type(obj: Object, prop: String) -> int:
 
 
 static func coerce_to_type(value: Variant, want: int) -> Variant:
+	# MCP clients sometimes JSON-stringify array/object values for an untyped param, so
+	# [1, 0.91, 0.78] can arrive as the String "[1, 0.91, 0.78]". Recover the structure
+	# before matching, else a Color/Vector falls to the string branch (e.g. Color() black).
 	if value is String:
 		var raw := (value as String).strip_edges()
 		if raw.begins_with("[") or raw.begins_with("{"):
@@ -162,6 +340,7 @@ static func coerce_to_type(value: Variant, want: int) -> Variant:
 	var have := typeof(value)
 	if have == want:
 		return value
+	# JSON gives us strings/numbers/bools/arrays/dicts; bridge to Godot types.
 	match want:
 		TYPE_VECTOR2:
 			return _to_vec(value, 2, false)
@@ -194,6 +373,7 @@ static func coerce_to_type(value: Variant, want: int) -> Variant:
 		TYPE_STRING, TYPE_STRING_NAME:
 			return str(value)
 		_:
+			# Try a Godot literal (e.g. "Vector3(1, 0, 0)", "&\"name\"", a NodePath).
 			if value is String:
 				var parsed: Variant = str_to_var(value)
 				if parsed != null:
@@ -204,6 +384,9 @@ static func coerce_to_type(value: Variant, want: int) -> Variant:
 static func _to_vec(value: Variant, dim: int, as_int: bool) -> Variant:
 	var comps: Array = []
 	if value is String:
+		# Accept a real Godot literal like "Vector2(1, 2)"; but str_to_var("100 50")
+		# partial-parses to 100, so only trust it when it yields an actual vector —
+		# otherwise fall through to whitespace-separated components.
 		var parsed: Variant = str_to_var(value)
 		match typeof(parsed):
 			TYPE_VECTOR2, TYPE_VECTOR2I, TYPE_VECTOR3, TYPE_VECTOR3I, TYPE_VECTOR4, TYPE_VECTOR4I:

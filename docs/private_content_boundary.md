@@ -24,7 +24,7 @@ redistribution:
 - `data/core/items/imported_*.json`, `data/core/monsters/imported_monsters.json`,
   and `data/core/spells/imported_spells.json` contain imported content records
   used by the runtime registries.
-- `docs/5etools_data_review.md` and converter scripts describe or transform
+- `docs/archive/reports/5etools_data_review.md` and converter scripts describe or transform
   imported data but do not establish permission to redistribute it.
 
 The `data/imported/` output area is generation-only and ignored. The importer

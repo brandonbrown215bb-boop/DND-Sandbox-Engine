@@ -1,0 +1,29 @@
+{
+  "id": "ember_pack:wand_of_cinders",
+  "name": "Wand of Cinders",
+  "type": "wand",
+  "rarity": "uncommon",
+  "value": 300,
+  "weight": 1.0,
+  "description": "Charred ironwood wand that grants access to fire spells using charges.",
+  "spell_permissions": [
+    {
+      "spells": [
+        "burning_hands",
+        "scorching_ray"
+      ],
+      "ability": "INT",
+      "charges": 5,
+      "maximum_charges": 5,
+      "charge_recovery": "1d4+1"
+    }
+  ],
+  "_editor_meta": {
+    "parked_top_level": {
+      "starting_equipment_classes": [
+        "wizard",
+        "sorcerer"
+      ]
+    }
+  }
+}

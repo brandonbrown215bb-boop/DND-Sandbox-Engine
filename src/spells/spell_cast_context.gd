@@ -14,8 +14,13 @@ var caster: Character
 var invocation_id := ""
 var action_id := ""
 var action_invocation_id := ""
+var parent_source_id := ""
 var component_copy_validated := false
+## Exploration ritual completion; elapsed before creating the new effect.
+var ritual_seconds := 0
 var spell: Dictionary = {}
+var formula_inputs: Dictionary = {}
+var ordered_result: Dictionary = {}
 var players: Array[Dictionary] = []
 var monsters: Array[Dictionary] = []
 var player_index := -1
@@ -25,6 +30,8 @@ var effect_boundary_rounds: Dictionary = {}
 var grid: HexGrid
 var hud: CombatHUD
 var tracker: InitiativeTracker
+## Encounter-only action history. Never serialized with the transient cast.
+var action_history: CombatActionHistory
 var turn_budget: CombatTurnBudget
 var areas: CombatSpellZones
 var prestidigitation_effects: Dictionary = {}
@@ -35,6 +42,7 @@ var target_coord := Vector2i.ZERO
 var additional_target_coord := Vector2i(9999, 9999)
 var extra_target_coords: Array[Vector2i] = []
 
+var commit_guard: Callable
 var can_spend: Callable
 var highlight_reachable: Callable
 var reset_pending: Callable
@@ -72,6 +80,7 @@ var produce_flame_markers: Dictionary = {}
 var refresh_poison_senses: Callable
 var refresh_creature_senses: Callable
 var end_concentration: Callable
+var publish_source_range_events: Callable
 var end_resilient_sphere: Callable
 var push_blocked_hexes: Callable
 var redraw_entities: Callable
@@ -87,8 +96,13 @@ var component_item_id := ""
 var component_instance_id := ""
 var spell_level := 0
 var slot_level_used := 0
+var payment_receipt: Dictionary = {}
 var incoming_slot_spent := false
+var incoming_slot_pool_id := "ordinary"
+var result_recovery_queued := false
 var reaction_decisions: Dictionary = {}
+## Canonical transient exemption choice; caller decisions are never its authority.
+var recipient_exemption_selection: Dictionary = {}
 var spell_attack_available := false
 var apotheosis_available := false
 var apotheosis_assigned := false
@@ -101,6 +115,8 @@ var counterspell_pending := true
 var successful := false
 var interrupted := false
 var damage_dealt := 0
+## Published only after the cast and its area effects have settled.
+var completed_cast_facts: Dictionary = {}
 var area_source_id := ""
 var restrained_targets: Array = []
 var initial_targets: Dictionary = {}

@@ -4,7 +4,7 @@
 class_name CombatCommand
 extends RefCounted
 
-const TYPES := ["attack", "cast_spell", "activate_magic_item", "use_feature", "use_item", "eat_goodberry", "font_of_magic_convert", "font_of_magic_create", "toggle_find_steed_mount", "move_dancing_lights", "move_moonbeam", "move_cloud_of_daggers", "move_conjure_animals", "move_conjure_celestial", "move_conjure_fey", "conjure_woodland_beings_disengage", "dismiss_light", "dismiss_timed_numeric_modifier", "detect_magic_inspect", "control_mage_hand", "dismiss_mage_hand", "dodge", "end_turn", "cancel", "move"]
+const TYPES := ["choose_aura_protection", "use_captured_grant", "dismiss_source_benefit", "attack", "cast_spell", "activate_magic_item", "use_feature", "use_item", "eat_goodberry", "font_of_magic_convert", "font_of_magic_create", "toggle_find_steed_mount", "move_dancing_lights", "move_moonbeam", "move_cloud_of_daggers", "move_conjure_animals", "move_conjure_celestial", "move_conjure_fey", "conjure_woodland_beings_disengage", "dismiss_light", "dismiss_timed_numeric_modifier", "choose_protection", "detect_magic_inspect", "control_mage_hand", "dismiss_mage_hand", "dodge", "end_turn", "cancel", "move"]
 
 var action_type: String
 var payload: Dictionary
@@ -53,31 +53,37 @@ static func from_hud_for_character(kind: String, data: Dictionary, character: Ch
 		"cast_spell":
 			var spell: Dictionary = command.payload.get("spell", {})
 			var spell_id := str(spell.get("id", ""))
-			if spell_id.is_empty() or spell_id not in character.known_spells:
+			if spell_id.is_empty():
 				return null
-			var production_spell := DataLoader.get_spell(spell_id)
+			var production_spell := DataLoader.get_spell(spell_id).duplicate(true)
 			if production_spell.is_empty() or not str(production_spell.get("trigger", "")).is_empty():
 				return null
-			var wants_wizard_free_cast := bool(spell.get("_wizard_free_cast", false))
-			var wants_wizard_slot_cast := bool(spell.get("_force_spell_slot", false))
-			if wants_wizard_free_cast or wants_wizard_slot_cast:
-				var free_cast: Dictionary = character.free_spell_cast_feature(spell_id)
-				var is_wizard_capstone: bool = character.class_id == "wizard" and str(free_cast.get("feature_id", "")) in ["wizard_spell_mastery", "wizard_signature_spells"]
-				if not is_wizard_capstone or wants_wizard_free_cast == wants_wizard_slot_cast:
-					return null
-				if wants_wizard_slot_cast and CombatAction.get_spell_slot_level(character, production_spell) <= 0:
-					return null
-				if wants_wizard_slot_cast:
-					var eligible_slot := false
-					for slot_level in character.spell_slots:
-						if int(slot_level) >= int(production_spell.get("level", 0)) and int(character.spell_slots[slot_level]) > 0:
-							eligible_slot = true
-							break
-					if not eligible_slot:
-						return null
-				production_spell["_wizard_free_cast"] = wants_wizard_free_cast
-				production_spell["_force_spell_slot"] = wants_wizard_slot_cast
+			var permissions := SpellPermissionRules.for_spell(character, production_spell)
+			var permission_id := str(spell.get("_source_permission_id", ""))
+			var permission: Dictionary = {}
+			for candidate in permissions:
+				if not permission_id.is_empty() and str(candidate.get("id", "")) == permission_id:
+					permission = candidate
+					break
+			if permission.is_empty():
+				return null
+			if not SpellPermissionRules.selection_valid(character, spell):
+				return null
+			var selected_payment := str(spell.get("_spell_payment_kind", ""))
+			production_spell["_source_permission_id"] = str(permission.get("id", ""))
+			production_spell["_source_permissions"] = permissions.duplicate(true)
+			production_spell["_spellcasting_ability"] = str(permission.get("ability", character.get_spellcasting_ability()))
+			production_spell["_spell_payment_kind"] = selected_payment
+			for field in ["_spell_payment_source_id", "_selected_spell_slot_level", "_spell_slot_pool_id"]:
+				if spell.has(field):
+					production_spell[field] = spell[field]
+			production_spell["_force_spell_slot"] = selected_payment == "slot"
+			production_spell["_arcanum_payment"] = selected_payment == "free_cast" and permission.source_id == "warlock_mystic_arcanum"
 			command.payload["spell"] = production_spell.duplicate(true)
+		"use_captured_grant":
+			var grant_id := str(command.payload.get("grant_id", ""))
+			if not CapturedGrantRules.query(character).any(func(grant): return grant.grant_id == grant_id): return null
+			command.payload = {"grant_id":grant_id}
 		"use_feature":
 			var feature: Dictionary = command.payload.get("feature", {})
 			var selected_spell_slot_level := int(feature.get("selected_spell_slot_level", 0))
@@ -100,7 +106,7 @@ static func from_hud_for_character(kind: String, data: Dictionary, character: Ch
 				if source_instance_id.is_empty() or not pool_state.has("owner_id") or str(character.numeric_resource_pools.get(source_instance_id, {}).get("definition_id", "")) != str(owned_feature["resource_pool"].get("id", "")):
 					return null
 				owned_feature["source_instance_id"] = source_instance_id
-				if owned_feature["resource_pool"].has("die_size"):
+				if owned_feature["resource_pool"].has("die_size") and not owned_feature.has("transfer_grant") and not owned_feature.has("allocation"):
 					var selected_quantity: Variant = feature.get("selected_pool_quantity", null)
 					if not selected_quantity is int:
 						return null
@@ -114,7 +120,7 @@ static func from_hud_for_character(kind: String, data: Dictionary, character: Ch
 					return null
 				var payment_source_id := str(feature.get("selected_payment_source_instance_id", ""))
 				var restoration_source_id := str(feature.get("selected_restoration_source_instance_id", ""))
-				var exchange_state := ResourcePoolRules.exchange(character, payment_source_id, restoration_source_id, str(exchange.get("payment_pool_id", "")), int(exchange.get("payment_quantity", 0)), str(exchange.get("restoration_pool_id", "")), int(exchange.get("restoration_quantity", 0)), false)
+				var exchange_state := ResourcePoolRules.exchange(character, payment_source_id, restoration_source_id, str(exchange.get("payment_pool_id", "")), int(exchange.get("payment_quantity", 0)), str(exchange.get("restoration_pool_id", "")), int(exchange.get("restoration_quantity", 0)), false, str(exchange.get("restoration_recipient", "self")) == "party_member")
 				if not exchange_state.get("success", false):
 					return null
 				owned_feature["selected_payment_source_instance_id"] = payment_source_id
@@ -127,6 +133,18 @@ static func from_hud_for_character(kind: String, data: Dictionary, character: Ch
 					return null
 				owned_feature["selected_action"] = str(feature["selected_action"])
 			command.payload["feature"] = owned_feature
+		"choose_aura_protection":
+			var group := str(command.payload.get("group", ""))
+			if AuraProtectionRules.offers(character, group).is_empty(): return null
+			command.payload = {"group":group}
+		"choose_protection":
+			var group := str(command.payload.get("group",""))
+			if not ProtectionRules.owned(character).any(func(g): return g.effect.group==group and g.effect.stacking=="exclusive"): return null
+			command.payload={"group":group}
+		"dismiss_source_benefit":
+			var source := str(command.payload.get("source_instance_id", ""))
+			if not SourceBenefitRules.can_dismiss(character, source): return null
+			command.payload = {"source_instance_id":source}
 		"dismiss_timed_numeric_modifier":
 			var source_id := str(command.payload.get("source_instance_id", ""))
 			var grant_id := str(command.payload.get("grant_instance_id", ""))
@@ -138,8 +156,13 @@ static func from_hud_for_character(kind: String, data: Dictionary, character: Ch
 		"use_item":
 			var item: Dictionary = command.payload.get("item", {})
 			var item_id := str(item.get("id", ""))
-			if item_id.is_empty() or str(item.get("type", "")) != "consumable" or not character.inventory.has_item(item_id):
-				return null
+			var production := DataLoader.get_item(item_id).duplicate(true)
+			if production.get("type") != "consumable" or not character.inventory.has_item(item_id): return null
+			if item.has("instance_id"):
+				var copy := character.inventory.get_instance(str(item.instance_id))
+				if copy.get("definition_id") != item_id or not character.inventory.backpack_instances().any(func(entry): return entry.instance_id == item.instance_id): return null
+				production["instance_id"] = str(item.instance_id)
+			command.payload = {"item":production}
 		"eat_goodberry":
 			if SpellEffects.goodberry_count_for_party(PartyManager.characters.values()) <= 0:
 				return null
@@ -189,6 +212,10 @@ func is_valid() -> bool:
 			return payload.get("spell", {}) is Dictionary and not payload.get("spell", {}).is_empty()
 		"use_feature":
 			return payload.get("feature", {}) is Dictionary and not payload.get("feature", {}).is_empty()
+		"choose_protection", "choose_aura_protection":
+			return payload.size()==1 and payload.get("group") is String and str(payload.group).is_valid_identifier()
+		"dismiss_source_benefit":
+			return payload.size() == 1 and not str(payload.get("source_instance_id", "")).is_empty()
 		"dismiss_timed_numeric_modifier":
 			return not str(payload.get("source_instance_id", "")).is_empty() and not str(payload.get("grant_instance_id", "")).is_empty()
 		"use_item":

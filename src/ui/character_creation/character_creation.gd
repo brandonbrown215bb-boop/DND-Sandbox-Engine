@@ -417,12 +417,26 @@ func _creation_choices() -> Dictionary:
 
 
 func _creation_choice_error() -> String:
+	if PermanentProgressionRules.enabled(selected_class_id):
+		var error := PermanentProgressionRules.definition_error(DataLoader.get_character_class(selected_class_id))
+		if not error.is_empty(): return error
+		if not PermanentProgressionRules.can_fit(Character.new(), PermanentProgressionRules.expected_receipts([selected_class_id])):
+			return "Starting equipment will not fit in the backpack. Choose another class."
+		return ""
 	if selected_class_id == "cleric" and cleric_divine_order not in ["protector", "thaumaturge"]:
 		return "Choose your Divine Order."
 	return ClassProgression.creation_choices_error(selected_class_id, selected_race_id, _creation_choices()) if selected_class_id in ["bard", "cleric"] else ""
 
 
 func _starting_gear_ids() -> Array:
+	if PermanentProgressionRules.enabled(selected_class_id):
+		var gear: Array = []
+		if not PermanentProgressionRules.definition_error(DataLoader.get_character_class(selected_class_id)).is_empty(): return gear
+		for receipt in PermanentProgressionRules.expected_receipts([selected_class_id]).values():
+			for grant in receipt.grants:
+				if grant.type == "equipment_grant":
+					for _copy in int(grant.quantity): gear.append(grant.item_id)
+		return gear
 	var mode := str(_creation_choices()["equipment"]) if selected_class_id in ["bard", "cleric"] else barbarian_starting_equipment_choice
 	if selected_class_id in ["bard", "barbarian", "cleric"] and mode == "gold":
 		return []
@@ -528,6 +542,11 @@ func _build_equipment_ui() -> void:
 	# Clear list
 	for child in equip_list.get_children():
 		child.queue_free()
+	if PermanentProgressionRules.enabled(selected_class_id) and not _creation_choice_error().is_empty():
+		var status := Label.new()
+		status.text = _creation_choice_error()
+		status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		equip_list.add_child(status)
 
 	# Keep class choices in this existing equipment step.
 	var cls := DataLoader.get_character_class(selected_class_id)
@@ -618,6 +637,8 @@ func _build_summary_ui() -> void:
 		var item := DataLoader.get_item(gear_id)
 		equip_text += "- %s (%s)\n" % [item.get("name", gear_id), item.get("description", "")]
 	summary_equip_label.text = equip_text
+	if PermanentProgressionRules.enabled(selected_class_id) and not _creation_choice_error().is_empty():
+		summary_equip_label.text += _creation_choice_error()
 	if selected_class_id in ["barbarian", "bard", "cleric"]:
 		summary_equip_label.text += "Gold: %d GP" % _starting_gold()
 
@@ -649,6 +670,8 @@ func _confirm_and_save_character() -> void:
 		return
 	var character := Character.new()
 	character.initialize(selected_name, selected_race_id, selected_class_id, selected_stats.duplicate_scores(), barbarian_starting_equipment_choice if selected_class_id == "barbarian" else str(_creation_choices()["equipment"]) if selected_class_id in ["bard", "cleric"] else "equipment", _creation_choices() if selected_class_id in ["bard", "cleric"] else {})
+	if character.class_id != selected_class_id:
+		return
 	
 	if selected_class_id == "cleric":
 		ClassProgression.choose_feature_option(character, "cleric_divine_order", cleric_divine_order)

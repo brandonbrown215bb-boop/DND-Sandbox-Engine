@@ -1,0 +1,51 @@
+[
+  {
+    "id": "sandbox:recipient_map_neutral",
+    "name": "Measured Burst",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 12,
+    "target": "area",
+    "save": "DEX",
+    "damage": "5",
+    "damage_type": "fire",
+    "half_on_save": true,
+    "damage_scale_by_outcome": {"success": 0.5, "failure": 1},
+    "save_context": {"cause_id": "measured_burst", "purpose_id": "contain_area", "origin_effect_id": "burst_damage"},
+    "duration_seconds": 60,
+    "effects": [
+      {"type": "area_selection", "shape": "sphere", "radius": 2},
+      {"type": "grant_condition", "condition": "restrained", "rider_by_outcome": {"success": false, "failure": true}}
+    ]
+  },
+  {
+    "id": "sandbox:recipient_exemption_renamed",
+    "name": "Selective Measured Burst",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 12,
+    "target": "area",
+    "save": "DEX",
+    "damage": "5",
+    "damage_type": "fire",
+    "half_on_save": true,
+    "damage_scale_by_outcome": {"success": 0.5, "failure": 1},
+    "save_context": {"cause_id": "measured_burst", "purpose_id": "contain_area", "origin_effect_id": "burst_damage"},
+    "recipient_exemption_choice": {
+      "selection_id": "selective_burst_recipients",
+      "selection_limit": 1,
+      "stage": "before_target_saves",
+      "save_ability": "DEX",
+      "cause_id": "measured_burst",
+      "purpose_id": "contain_area",
+      "origin_effect_id": "burst_damage"
+    },
+    "duration_seconds": 60,
+    "effects": [
+      {"type": "area_selection", "shape": "sphere", "radius": 2},
+      {"type": "grant_condition", "condition": "restrained", "rider_by_outcome": {"success": false, "failure": true}}
+    ]
+  }
+]

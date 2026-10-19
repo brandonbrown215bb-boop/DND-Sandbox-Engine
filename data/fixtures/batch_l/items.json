@@ -1,0 +1,48 @@
+[
+  {
+    "id": "fixture:l_ring_plain",
+    "name": "Carrier ring plain",
+    "type": "ring",
+    "source_benefits": [
+      {
+        "stat": "AC",
+        "amount": 2
+      },
+      {
+        "stat": "speed",
+        "amount": 1
+      }
+    ]
+  },
+  {
+    "id": "fixture:l_ring_changed",
+    "name": "Carrier ring changed",
+    "type": "ring",
+    "source_benefits": [
+      {
+        "stat": "AC",
+        "amount": 3
+      },
+      {
+        "stat": "speed",
+        "amount": 2
+      }
+    ]
+  },
+  {
+    "id": "fixture:l_ring_attuned",
+    "name": "Attuned carrier ring",
+    "type": "ring",
+    "source_benefits": [
+      {
+        "stat": "AC",
+        "amount": 2
+      },
+      {
+        "stat": "speed",
+        "amount": 1
+      }
+    ],
+    "requires_attunement": true
+  }
+]

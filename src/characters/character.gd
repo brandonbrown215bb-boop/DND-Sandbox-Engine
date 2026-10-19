@@ -25,7 +25,7 @@ static func saved_campaign_modifier_error(data: Dictionary, campaign_seconds: in
 	for modifier in modifiers:
 		if not modifier is Dictionary:
 			continue
-		var has_timed_identity: bool = modifier.has("owner_id") or modifier.has("source_instance_id") or modifier.has("grant_instance_id") or modifier.has("cooldown_seconds")
+		var has_timed_identity: bool = modifier.has("owner_id") or modifier.has("source_instance_id") or modifier.has("grant_instance_id") or modifier.has("cooldown_seconds") or modifier.has("used_rider_options")
 		if not modifier.has("expires_at_seconds"):
 			if has_timed_identity:
 				return "Tagged timed modifier is missing its campaign deadline."
@@ -53,6 +53,14 @@ static func saved_campaign_modifier_error(data: Dictionary, campaign_seconds: in
 		var cooldown_seconds: Variant = modifier.get("cooldown_seconds", 0)
 		if not _saved_integer(cooldown_seconds, 0, 86400):
 			return "Timed modifier cooldown duration is invalid."
+		var used_options: Variant = modifier.get("used_rider_options", [])
+		if not used_options is Array or used_options.size() > 100:
+			return "Timed modifier rider locks must be a bounded option list."
+		var seen_options: Dictionary = {}
+		for option in used_options:
+			if not option is String or not str(option).is_valid_identifier() or seen_options.has(option):
+				return "Timed modifier rider lock has an invalid or duplicate option."
+			seen_options[option] = true
 		if seen_grants.has(grant_id):
 			return "Timed modifier grant identity is duplicated."
 		seen_grants[grant_id] = true
@@ -102,8 +110,68 @@ static func saved_willingness_error(data: Dictionary) -> String:
 	return ""
 
 
+static func saved_damage_history_error(data: Dictionary, campaign_seconds: int) -> String:
+	if not data.has("recent_damage_history"):
+		return ""
+	var entries: Variant = data.get("recent_damage_history")
+	if not entries is Array or entries.size() > 128:
+		return "Recent damage history must be an array of at most 128 entries."
+	var owner_id := str(data.get("character_id", ""))
+	for entry in entries:
+		if not entry is Dictionary or entry.size() != 9:
+			return "Recent damage history entry is malformed."
+		for key in entry:
+			if key not in ["target_actor_id", "source_actor_id", "source_instance_id", "at_seconds", "raw", "prevented", "absorbed", "resolved", "hp_loss"]:
+				return "Recent damage history entry contains an unsupported field."
+		var target_id: Variant = entry.get("target_actor_id", null)
+		var source_id: Variant = entry.get("source_actor_id", null)
+		var source_instance_id: Variant = entry.get("source_instance_id", null)
+		var at: Variant = entry.get("at_seconds", null)
+		if owner_id.is_empty() or not target_id is String or str(target_id) != owner_id or not source_id is String or str(source_id).is_empty() or not source_instance_id is String or str(source_instance_id).is_empty() or not _saved_integer(at, 0, campaign_seconds):
+			return "Recent damage history source or campaign timestamp is invalid."
+		for measure in ["raw", "prevented", "absorbed", "resolved", "hp_loss"]:
+			if not _saved_integer(entry.get(measure, null), 0, 2000000):
+				return "Recent damage history measure '%s' is invalid." % measure
+	return ""
+
+
 static func _saved_integer(value: Variant, minimum: int, maximum: int) -> bool:
 	return not value is bool and (value is int or value is float) and is_finite(float(value)) and float(value) == floor(float(value)) and int(value) >= minimum and int(value) <= maximum
+
+
+func record_recent_damage(source_actor_id: String, source_instance_id: String, raw: int, prevented: int, absorbed: int, resolved: int, hp_loss: int, at_seconds: int) -> void:
+	if character_id.is_empty() or source_actor_id.is_empty() or source_instance_id.is_empty() or at_seconds < 0:
+		return
+	_prune_recent_damage_history(at_seconds)
+	var measures := {"raw": maxi(0, raw), "prevented": maxi(0, prevented), "absorbed": maxi(0, absorbed), "resolved": maxi(0, resolved), "hp_loss": maxi(0, hp_loss)}
+	for entry in recent_damage_history:
+		if str(entry.get("target_actor_id", "")) == character_id and str(entry.get("source_actor_id", "")) == source_actor_id and str(entry.get("source_instance_id", "")) == source_instance_id and int(entry.get("at_seconds", -1)) == at_seconds:
+			for measure in measures:
+				entry[measure] = int(entry.get(measure, 0)) + int(measures[measure])
+			return
+	recent_damage_history.append({"target_actor_id": character_id, "source_actor_id": source_actor_id, "source_instance_id": source_instance_id, "at_seconds": at_seconds}.merged(measures))
+	while recent_damage_history.size() > 128:
+		recent_damage_history.pop_front()
+
+
+func recent_damage_measure(source_actor_id: String, source_instance_id: String, measure: String, now_seconds: int) -> Dictionary:
+	if character_id.is_empty() or source_actor_id.is_empty() or source_instance_id.is_empty() or measure not in ["raw", "prevented", "absorbed", "resolved", "hp_loss"] or now_seconds < 0:
+		return {"available": false}
+	var total := 0
+	for entry in recent_damage_history:
+		var at := int(entry.get("at_seconds", -1))
+		if str(entry.get("target_actor_id", "")) == character_id and str(entry.get("source_actor_id", "")) == source_actor_id and str(entry.get("source_instance_id", "")) == source_instance_id and at <= now_seconds and now_seconds - at < 60:
+			total += int(entry.get(measure, 0))
+	return {"available": true, "value": total}
+
+
+func _prune_recent_damage_history(now_seconds: int) -> void:
+	var retained: Array[Dictionary] = []
+	for entry in recent_damage_history:
+		var at := int(entry.get("at_seconds", -1))
+		if at >= 0 and at <= now_seconds and now_seconds - at < 60:
+			retained.append(entry)
+	recent_damage_history = retained
 
 
 static func saved_next_weapon_hit_grants_error(data: Dictionary, campaign_seconds: int) -> String:
@@ -225,6 +293,8 @@ var character_id: String = ""
 var character_name: String = ""
 var race_id: String = ""
 var class_id: String = ""
+## Explicit represented allocation. Empty retains existing single-class state.
+var class_levels: Dictionary = {}
 var subclass_id: String = ""
 ## Stable improvement entitlements; saved totals are never replayed on reload.
 var feature_choices: Dictionary = {}
@@ -241,7 +311,19 @@ var level: int = 1
 var xp: int = 0
 
 ## Ability scores.
-var ability_scores: AbilityScores = AbilityScores.new()
+var ability_scores: AbilityScores = AbilityScores.new():
+	get:
+		ability_scores.projection_owner=weakref(self)
+		return ability_scores
+	set(value):
+		ability_scores=value
+		ability_scores.projection_owner=weakref(self)
+
+var protection_grants: Array[Dictionary] = []
+var protection_selections: Dictionary = {}
+var protection_serial: int = 0
+var protection_choice_generation: int = 0
+var pending_protection_choice: Dictionary = {}
 
 ## Hit points.
 var max_hp: int = 10
@@ -252,9 +334,14 @@ var temp_hp: int:
 		var next_value := maxi(0, value)
 		if next_value <= 0 or next_value != _temp_hp_value:
 			timed_temporary_hp_current_grant_id = ""
+			linked_temporary_hp = {}
 		_temp_hp_value = next_value
 	get:
 		return _temp_hp_value
+var temporary_hp_supply_serial: int = 0
+var linked_temporary_hp: Dictionary = {}
+var aura_entry_receipts: Dictionary = {}
+var aura_protection_selections: Dictionary = {}
 var timed_temporary_hp_grant_serial: int = 0
 var timed_temporary_hp_grants: Array[Dictionary] = []
 var timed_temporary_hp_current_grant_id: String = ""
@@ -287,6 +374,8 @@ var saving_throw_proficiencies: Array[String] = []
 var skill_proficiencies: Array[String] = []
 var tool_proficiencies: Array[String] = []
 var creation_choices: Dictionary = {}
+## Ordered acquired classes, pending milestone levels and once-only permanent receipts.
+var permanent_progression: Dictionary = {}
 var weapon_proficiencies: Array[String] = []
 var armor_proficiencies: Array[String] = []
 
@@ -300,6 +389,8 @@ var features: Array[Dictionary] = []
 
 ## Spell slots: level -> remaining uses. (e.g., {1: 2, 2: 1})
 var spell_slots: Dictionary = {}
+## Pact Magic remains its own recoverable pool alongside ordinary slots.
+var pact_spell_slots: Dictionary = {}
 
 ## Currently concentrating spell info: {"spell_id": String, "targets": Array}
 var concentrating_on: Dictionary = {}
@@ -322,6 +413,7 @@ var exhaustion_recovery_blockers: Array[String] = []
 var days_without_food: int = 0
 ## A spellcasting choice is offered at creation and after each class level gain.
 var spell_choices_pending: bool = false
+var spell_repertoire_state: Dictionary = {}
 ## Wizard spellbook knowledge is independent from currently prepared spells.
 var wizard_spellbook: Array[String] = []
 var wizard_spellbook_pending: int = 0
@@ -363,6 +455,8 @@ var modifiers: Array[Dictionary] = []
 var timed_modifier_grant_serial: int = 0
 ## Cooldowns created when a timed campaign modifier expires or is dismissed.
 var campaign_modifier_cooldowns: Array[Dictionary] = []
+## Bounded, source-attributed finalized damage from the last 60 campaign seconds.
+var recent_damage_history: Array[Dictionary] = []
 ## Unspent next-melee-hit grants; ordering survives allowed campaign checkpoints.
 var next_weapon_hit_grants: Array[Dictionary] = []
 var next_weapon_hit_grant_serial: int = 0
@@ -370,11 +464,19 @@ var next_weapon_hit_grant_serial: int = 0
 ## Inventory.
 var inventory: Inventory = Inventory.new()
 
+func _init() -> void:
+	inventory.owner_character_ref = weakref(self)
+
 ## Per-combat/per-rest resource tracking for features.
 ## feature_id -> remaining uses
 var feature_uses: Dictionary = {}
 ## Source-instance ID -> validated mutable numeric pool DTO.
 var numeric_resource_pools: Dictionary = {}
+## Recipient-owned captured gifts; giver serial is independent of pool reacquisition.
+var captured_grants: Array[Dictionary] = []
+var grant_transfer_serial: int = 0
+## High-water marks prevent transferred die identities being regenerated after source removal.
+var transferred_die_serials: Dictionary = {}
 
 ## Whether this character is alive.
 var is_alive: bool = true
@@ -406,7 +508,7 @@ var death_save_failures: int = 0
 var is_stable: bool = false
 var last_save_note: String = ""
 ## Live combat-only aura sources; positions and owners are rebuilt by CombatState.
-var saving_throw_aura_sources: Array[Dictionary] = []
+var aura_source_memberships: Array[Dictionary] = []
 ## Live CombatState-owned sources that grant Aura of Life while the character is in range.
 var aura_of_life_sources: Array[String] = []
 var fiendish_resilience_type: String = ""
@@ -438,7 +540,7 @@ func get_speed(ignore_restrained: bool = false) -> int:
 				if int(key) <= level and int(key) > threshold:
 					threshold = int(key)
 			movement_bonus += int(table[str(threshold)]) if threshold > 0 else int(effect.get("bonus", 0))
-	return maxi(0, speed + movement_bonus + get_modifier("stat", "speed") - exhaustion_level)
+	return maxi(0, speed + movement_bonus + SourceBenefitRules.total(self, "speed") + get_modifier("stat", "speed") - exhaustion_level)
 
 
 func movement_speed_feet(mode: String = "walk", ignore_restrained: bool = false) -> int:
@@ -491,7 +593,7 @@ func get_spellcasting_capacity(kind: String) -> int:
 	var capacities: Dictionary = effect.get("capacity_by_level", {})
 	var threshold := 0
 	for key in capacities:
-		if int(key) <= level and int(key) > threshold:
+		if int(key) <= get_class_level() and int(key) > threshold:
 			threshold = int(key)
 	if threshold == 0:
 		return 0
@@ -503,28 +605,33 @@ func get_spellcasting_capacity(kind: String) -> int:
 
 
 ## Return the feature granting an available once-per-rest free casting.
-func free_spell_cast_feature(spell_id: String) -> Dictionary:
+func free_spell_cast_feature(spell_id: String, preferred_source_id: String = "") -> Dictionary:
 	if spell_id.is_empty():
 		return {}
 	for feature in features:
 		for effect in _feature_effects(feature):
 			if effect.get("type", "") != "spell_free_cast" or spell_id not in effect.get("spells", []):
 				continue
-			var resource_id := _free_spell_cast_resource_id(str(feature.get("id", "")))
+			var feature_id := str(feature.get("id", ""))
+			if not preferred_source_id.is_empty() and feature_id != preferred_source_id:
+				continue
+			var resource_id := _free_spell_cast_resource_id(feature_id)
 			var maximum := _spell_free_cast_maximum(effect)
 			if maximum > 0 and int(feature_uses.get(resource_id, maximum)) > 0:
-				return {"feature_id": str(feature.get("id", "")), "resource_id": resource_id, "effect": effect}
+				return {"feature_id": feature_id, "resource_id": resource_id, "effect": effect}
 	for effect in ClassProgression.selected_feature_effects(self):
 		if effect.get("type", "") != "spell_free_cast" or spell_id not in effect.get("spells", []) or not bool(effect.get("at_will", false)):
 			continue
-		return {"feature_id": str(effect.get("invocation_selection", "warlock_invocation")), "resource_id": "", "effect": effect}
+		var invocation_id := str(effect.get("invocation_selection", "warlock_invocation"))
+		if preferred_source_id.is_empty() or invocation_id == preferred_source_id:
+			return {"feature_id": invocation_id, "resource_id": "", "effect": effect}
 	if class_id == "wizard":
 		var mastery_spell_level := int(DataLoader.get_spell(spell_id).get("level", 0))
-		if has_feature("wizard_spell_mastery") and str(wizard_spell_mastery.get(str(mastery_spell_level), "")) == spell_id and mastery_spell_level in [1, 2]:
+		if (preferred_source_id.is_empty() or preferred_source_id == "wizard_spell_mastery") and has_feature("wizard_spell_mastery") and str(wizard_spell_mastery.get(str(mastery_spell_level), "")) == spell_id and mastery_spell_level in [1, 2]:
 			return {"feature_id": "wizard_spell_mastery", "resource_id": "", "effect": {"at_will": true, "lowest_level_only": true}}
 		if has_feature("wizard_signature_spells") and spell_id in wizard_signature_spells:
 			var signature_resource := "wizard_signature_spell:%s" % spell_id
-			if int(feature_uses.get(signature_resource, 1)) > 0:
+			if (preferred_source_id.is_empty() or preferred_source_id == "wizard_signature_spells") and int(feature_uses.get(signature_resource, 1)) > 0:
 				return {"feature_id": "wizard_signature_spells", "resource_id": signature_resource, "effect": {"uses": 1, "uses_per": "short_or_long_rest"}}
 	return {}
 
@@ -546,8 +653,8 @@ func has_free_spell_cast(spell_id: String) -> bool:
 	return not free_spell_cast_feature(spell_id).is_empty()
 
 
-func spend_free_spell_cast(spell_id: String) -> bool:
-	var available := free_spell_cast_feature(spell_id)
+func spend_free_spell_cast(spell_id: String, preferred_source_id: String = "") -> bool:
+	var available := free_spell_cast_feature(spell_id, preferred_source_id)
 	if available.is_empty():
 		return false
 	if bool(available.get("effect", {}).get("at_will", false)):
@@ -555,6 +662,27 @@ func spend_free_spell_cast(spell_id: String) -> bool:
 	var resource_id := str(available.get("resource_id", ""))
 	feature_uses[resource_id] = int(feature_uses.get(resource_id, int(available.get("effect", {}).get("uses", 1)))) - 1
 	return true
+
+
+func restore_free_spell_cast(spell_id: String, preferred_source_id: String = "") -> bool:
+	if spell_id.is_empty():
+		return false
+	if class_id == "wizard" and (preferred_source_id.is_empty() or preferred_source_id == "wizard_signature_spells") and has_feature("wizard_signature_spells") and spell_id in wizard_signature_spells:
+		var signature_resource := "wizard_signature_spell:%s" % spell_id
+		feature_uses[signature_resource] = 1
+		return true
+	for feature in features:
+		for effect in _feature_effects(feature):
+			if effect.get("type", "") != "spell_free_cast" or spell_id not in effect.get("spells", []):
+				continue
+			var feature_id := str(feature.get("id", ""))
+			if not preferred_source_id.is_empty() and feature_id != preferred_source_id:
+				continue
+			var resource_id := _free_spell_cast_resource_id(feature_id)
+			var maximum := _spell_free_cast_maximum(effect)
+			feature_uses[resource_id] = mini(maximum, int(feature_uses.get(resource_id, 0)) + 1)
+			return true
+	return false
 
 
 static func _free_spell_cast_resource_id(feature_id: String) -> String:
@@ -613,14 +741,19 @@ func get_spell_option_ids(cantrips: bool) -> Array[String]:
 	return options
 
 
+func get_spell_permissions(spell_id: String) -> Array[Dictionary]:
+	return SpellPermissionRules.for_spell(self, DataLoader.get_spell(spell_id))
+
+
 func get_max_spell_slot_level() -> int:
 	var class_data := DataLoader.get_character_class(class_id)
+	var source_level := get_class_level()
 	var pact_table: Dictionary = class_data.get("pact_magic_by_level", {})
-	if pact_table.has(str(level)):
-		return int(pact_table[str(level)].get("slot_level", 0))
+	if pact_table.has(str(source_level)):
+		return int(pact_table[str(source_level)].get("slot_level", 0))
 	var table: Dictionary = class_data.get("spell_slots_by_character_level", {})
-	if table.has(str(level)):
-		var slots: Array = table[str(level)]
+	if table.has(str(source_level)):
+		var slots: Array = table[str(source_level)]
 		for index in range(slots.size() - 1, -1, -1):
 			if int(slots[index]) > 0:
 				return index + 1
@@ -628,9 +761,11 @@ func get_max_spell_slot_level() -> int:
 
 
 func refresh_spell_selection_from_choices() -> void:
+	SpellRepertoireRules.prune_removed(self)
 	var spellcasting_id := get_spellcasting_feature_id()
 	if spellcasting_id.is_empty() or not feature_choices.has(spellcasting_id):
 		_append_warlock_arcanum_spells()
+		_append_separate_repertoires()
 		return
 	known_spells.clear()
 	for spell_id in feature_choices[spellcasting_id]:
@@ -641,6 +776,12 @@ func refresh_spell_selection_from_choices() -> void:
 			known_spells.append(id)
 	_append_always_prepared_spells()
 	_append_warlock_arcanum_spells()
+	_append_separate_repertoires()
+
+func _append_separate_repertoires() -> void:
+	for source in SpellRepertoireRules.sources(self):
+		for id in feature_choices.get(source.id, []):
+			if str(id) not in known_spells and not SpellRepertoireRules.permissions(self, DataLoader.get_spell(str(id))).is_empty(): known_spells.append(str(id))
 
 
 func _append_warlock_arcanum_spells() -> void:
@@ -711,6 +852,7 @@ func get_skill_proficiency_bonus(skill: String) -> int:
 		var choice: Variant = feature_choices.get(feature_id, [])
 		if skill in choice:
 			multiplier = 2
+	if PermanentProgressionRules.expertise(self, skill): multiplier = 2
 	if multiplier == 0 and has_feature_effect("jack_of_all_trades"):
 		return int(floor(float(proficiency_bonus) / 2.0))
 	return proficiency_bonus * multiplier
@@ -918,13 +1060,21 @@ func use_uncanny_metabolism() -> Dictionary:
 
 ## Initialize a character from race and class data.
 func initialize(p_name: String, p_race_id: String, p_class_id: String, scores: AbilityScores, starting_equipment_choice: String = "equipment", selected_creation_choices: Dictionary = {}) -> void:
+	if not permanent_progression.is_empty(): return # Creation is not a repeatable acquisition.
+	var managed := PermanentProgressionRules.enabled(p_class_id)
+	if managed:
+		var definition := DataLoader.get_character_class(p_class_id)
+		if not PermanentProgressionRules.definition_error(definition).is_empty(): return
+		var initial := PermanentProgressionRules.expected_receipts([p_class_id])
+		if not PermanentProgressionRules.can_fit(self, initial): return
 	var choices := selected_creation_choices.duplicate(true)
-	if p_class_id in ["bard", "cleric"]:
+	if not managed and p_class_id in ["bard", "cleric"]:
 		if choices.is_empty():
 			choices = ClassProgression.default_creation_choices(p_class_id, p_race_id)
 		choices["equipment"] = starting_equipment_choice
 		if not ClassProgression.creation_choices_error(p_class_id, p_race_id, choices).is_empty():
 			return # Validate before changing character or granting inventory.
+	spell_repertoire_state.clear()
 	character_name = p_name
 	race_id = p_race_id
 	class_id = p_class_id
@@ -933,6 +1083,8 @@ func initialize(p_name: String, p_race_id: String, p_class_id: String, scores: A
 
 	var race_data := DataLoader.get_race(race_id)
 	var class_data := DataLoader.get_character_class(class_id)
+	weapon_proficiencies.assign([] if managed else class_data.get("weapon_proficiencies", []))
+	armor_proficiencies.assign([] if managed else class_data.get("armor_proficiencies", []))
 
 	# Apply racial bonuses
 	ability_scores.apply_racial_bonuses(race_data)
@@ -976,9 +1128,7 @@ func initialize(p_name: String, p_race_id: String, p_class_id: String, scores: A
 						armor_proficiencies.append(str(armor_id))
 
 	# Apply class base stats
-	saving_throw_proficiencies.assign(class_data.get("saving_throw_proficiencies", []))
-	weapon_proficiencies.assign(class_data.get("weapon_proficiencies", []))
-	armor_proficiencies.assign(class_data.get("armor_proficiencies", []))
+	saving_throw_proficiencies.assign([] if managed else class_data.get("saving_throw_proficiencies", []))
 	creation_choices = choices
 	if not choices.is_empty():
 		for skill in choices.get("skills", []):
@@ -987,20 +1137,20 @@ func initialize(p_name: String, p_race_id: String, p_class_id: String, scores: A
 		tool_proficiencies.assign(choices.get("tools", []))
 
 	# Starting equipment
-	var starting_equipment: Array = class_data.get("starting_equipment", []).duplicate()
-	if class_id == "bard":
+	var starting_equipment: Array = [] if managed else class_data.get("starting_equipment", []).duplicate()
+	if not managed and class_id == "bard":
 		starting_equipment.append(str(choices.get("instrument", "lute")))
-	if class_id == "barbarian" and starting_equipment_choice == "gold":
+	if not managed and class_id == "barbarian" and starting_equipment_choice == "gold":
 		inventory.gold = 75
-	elif class_id in ["bard", "cleric"] and starting_equipment_choice == "gold":
+	elif not managed and class_id in ["bard", "cleric"] and starting_equipment_choice == "gold":
 		inventory.gold = int(class_data.get("starting_gold_alternative", 90))
 	else:
 		inventory.add_starting_equipment(starting_equipment)
-		inventory.gold = int(class_data.get("starting_gold", 0))
+		inventory.gold = 0 if managed else int(class_data.get("starting_gold", 0))
 
 	# Calculate initial HP: hit die max + CON modifier
 	var hit_die_sides := _parse_hit_die(class_data.get("hit_die", "d8"))
-	max_hp = hit_die_sides + ability_scores.get_ability_modifier("CON")
+	max_hp = hit_die_sides + AbilityScores.get_modifier(ability_scores.get_permanent_score("CON"))
 	max_hp = maxi(max_hp, 1)
 	current_hp = max_hp
 	disintegrated = false
@@ -1010,13 +1160,14 @@ func initialize(p_name: String, p_race_id: String, p_class_id: String, scores: A
 	willingness = "unknown"
 	body_missing_parts.clear()
 
-	FighterRules.initialize_training(self)
-	if class_id == "fighter":
+	if managed: PermanentProgressionRules.initialize(self)
+	if not managed: FighterRules.initialize_training(self)
+	if not managed and class_id == "fighter":
 		FighterRules.choose_skills(self, "Athletics", "Perception")
 	# Unlock level 1 features
 	_unlock_features_for_level(1)
 	weapon_masteries.clear()
-	if class_id == "fighter":
+	if not managed and class_id == "fighter":
 		for mastery_id in fighter_training.get("masteries", []):
 			weapon_masteries.append(str(mastery_id))
 	_initialize_spell_access()
@@ -1030,6 +1181,12 @@ func initialize(p_name: String, p_race_id: String, p_class_id: String, scores: A
 
 ## Level up this character (milestone-based).
 func level_up() -> void:
+	if PermanentProgressionRules.enabled(class_id):
+		PermanentProgressionRules.request_level(self)
+		return
+	if not class_levels.is_empty():
+		push_warning("Explicit class allocations require an authored level update; native leveling is unavailable.")
+		return
 	var previous_focus_maximum := get_max_focus_points()
 	if level >= 20:
 		return
@@ -1052,7 +1209,7 @@ func level_up() -> void:
 
 	# HP increase: roll hit die (or average) + CON modifier
 	var hp_roll := Dice.roll(hit_die_sides, self)
-	var con_mod := ability_scores.get_ability_modifier("CON")
+	var con_mod := AbilityScores.get_modifier(ability_scores.get_permanent_score("CON"))
 	var hp_gain := maxi(hp_roll + con_mod, 1)
 	max_hp += hp_gain
 	if is_alive and not is_dead(): current_hp = max_hp  # Living characters retain the existing level-up heal.
@@ -1162,11 +1319,45 @@ func _apply_passive_feature(feature: Dictionary, acquiring: bool = true) -> void
 					ClassProgression.apply_fixed_score_increase(self, effect)
 
 
-## Return the character's level in a specific class. While multiclass progression
-## remains deferred, single-class characters return `level` for their own `class_id`
-## (or when `target_class_id` is empty/self) and `0` for any other class ID.
+static func saved_class_levels_error(data: Dictionary) -> String:
+	var allocation: Variant = data.get("class_levels", {})
+	if not allocation is Dictionary or allocation.size() > 12: return "Class levels must be a bounded allocation."
+	if allocation.is_empty(): return ""
+	var total := 0
+	for key in allocation:
+		if not key is String or DataLoader.get_character_class(key).is_empty() or not ResourcePoolRules._integer(allocation[key], 1, 20): return "Class allocation contains an unknown class or invalid level."
+		total += int(allocation[key])
+	if not allocation.has(str(data.get("class_id", ""))) or not ResourcePoolRules._integer(data.get("level"), 1, 20) or total != int(data.level): return "Class allocation must include the primary class and sum to character level."
+	return ""
+
+
+static func saved_pact_spell_slots_error(data: Dictionary) -> String:
+	if not data.has("pact_spell_slots"): return ""
+	var saved: Variant = data.get("pact_spell_slots")
+	if not saved is Dictionary: return "Pact spell slots are not an object"
+	var allocation: Dictionary = data.get("class_levels", {}).duplicate(true)
+	if allocation.is_empty(): allocation[str(data.get("class_id", ""))] = int(data.get("level", 0))
+	var maximum := {}
+	for class_id in allocation:
+		var class_data := DataLoader.get_character_class(str(class_id))
+		var table: Dictionary = class_data.get("pact_magic_by_level", {})
+		var row: Dictionary = table.get(str(int(allocation[class_id])), {})
+		if not row.is_empty():
+			maximum = {str(int(row.get("slot_level", 1))):int(row.get("slots", 0))}
+			break
+	if not saved.is_empty() and maximum.is_empty(): return "Pact slots have no acquired Pact Magic source"
+	for key in saved:
+		if not str(key).is_valid_int() or int(key) < 1 or int(key) > 9 or not saved[key] is int or int(saved[key]) < 0 or int(saved[key]) > int(maximum.get(str(key), 0)):
+			return "Pact spell slot count is invalid"
+	return ""
+
+
+## Explicit allocations never borrow character level for a missing class.
 func get_class_level(target_class_id: String = "") -> int:
 	var normalized := target_class_id.strip_edges()
+	if not class_levels.is_empty():
+		if not saved_class_levels_error({"class_levels":class_levels,"class_id":class_id,"level":level}).is_empty(): return -1
+		return int(class_levels.get(class_id if normalized.is_empty() or normalized == "self" else normalized, 0))
 	if normalized.is_empty() or normalized == "self" or normalized == class_id:
 		return maxi(0, level)
 	return 0
@@ -1175,9 +1366,12 @@ func get_class_level(target_class_id: String = "") -> int:
 ## Return the maximum spell slots dictionary for this character's current class and level.
 func get_max_spell_slots() -> Dictionary:
 	var class_data := DataLoader.get_character_class(class_id)
+	var combined := SpellSlotRules.ordinary_maximum(self)
+	if not combined.is_empty():
+		return combined
 	var pact_table: Dictionary = class_data.get("pact_magic_by_level", {})
 	if not pact_table.is_empty():
-		var pact_entry: Dictionary = pact_table.get(str(level), {})
+		var pact_entry: Dictionary = pact_table.get(str(get_class_level(class_id)), {})
 		if not pact_entry.is_empty():
 			return {str(int(pact_entry.get("slot_level", 1))): int(pact_entry.get("slots", 0))}
 	var progression: Dictionary = class_data.get("spell_slots_by_character_level", {})
@@ -1202,6 +1396,12 @@ func get_max_spell_slots() -> Dictionary:
 ## Update spell slots based on class and level.
 func _update_spell_slots() -> void:
 	spell_slots = get_max_spell_slots()
+	var pact_maximum := SpellSlotRules.pact_maximum(self)
+	var ordinary_maximum := SpellSlotRules.ordinary_maximum(self)
+	if not pact_maximum.is_empty() and (not ordinary_maximum.is_empty() or class_id != "warlock"):
+		pact_spell_slots = pact_maximum
+	else:
+		pact_spell_slots = {}
 
 
 ## Seed known spells from the production class record. DataLoader supplies the
@@ -1257,21 +1457,20 @@ func _parse_hit_die(hit_die: String) -> int:
 
 
 ## Recalculate armor class from equipment and DEX.
-func _recalculate_ac() -> void:
+func _equipment_base_ac() -> int:
+	var computed_base := 10
 	var dex_mod := ability_scores.get_ability_modifier("DEX")
 	var armor_id := inventory.get_armor()
 	var shield_id := inventory.get_equipped(Inventory.Slot.SHIELD)
-	if not armor_id.is_empty() and has_condition("mage_armor"):
-		SpellEffects.end_mage_armor_if_armored(self)
 
 	if armor_id.is_empty():
 		var unarmored_defense := get_feature_effect("unarmored_defense")
 		if not unarmored_defense.is_empty() and (bool(unarmored_defense.get("allows_shield", false)) or shield_id.is_empty()):
 			var secondary_ability := str(unarmored_defense.get("ability", "WIS"))
-			base_ac = 10 + dex_mod + ability_scores.get_ability_modifier(secondary_ability)
+			computed_base = 10 + dex_mod + ability_scores.get_ability_modifier(secondary_ability)
 		else:
 			# No armor: AC = 10 + DEX
-			base_ac = 10 + dex_mod
+			computed_base = 10 + dex_mod
 	else:
 		var armor_data := DataLoader.get_item(armor_id)
 		var armor_type: String = armor_data.get("armor_type", "light")
@@ -1279,11 +1478,11 @@ func _recalculate_ac() -> void:
 
 		match armor_type:
 			"light":
-				base_ac = armor_ac + dex_mod
+				computed_base = armor_ac + dex_mod
 			"medium":
-				base_ac = armor_ac + mini(dex_mod, 2)
+				computed_base = armor_ac + mini(dex_mod, 2)
 			"heavy":
-				base_ac = armor_ac  # No DEX bonus
+				computed_base = armor_ac  # No DEX bonus
 
 	# Shield bonus
 	var shield_ac: int = 0
@@ -1291,8 +1490,15 @@ func _recalculate_ac() -> void:
 		var shield_data := DataLoader.get_item(shield_id)
 		shield_ac = int(shield_data.get("ac_bonus", 2))
 
-	base_ac += shield_ac
+	computed_base += shield_ac
 
+	return computed_base
+
+
+func _recalculate_ac() -> void:
+	if not inventory.get_armor().is_empty() and has_condition("mage_armor"):
+		SpellEffects.end_mage_armor_if_armored(self)
+	base_ac = _equipment_base_ac()
 
 ## Get effective AC (base + conditions/buffs).
 func get_ac() -> int:
@@ -1300,7 +1506,9 @@ func get_ac() -> int:
 		var form_ac := DruidRules.armor_class(self)
 		if form_ac >= 0:
 			return form_ac
-	var ac := base_ac
+	var ac := _equipment_base_ac() if not protection_grants.is_empty() else base_ac
+	var protection := ProtectionRules.ac(self,ac)
+	ac = int(protection.base)
 	var armor_id := inventory.get_armor()
 	
 	# Mage Armor offers the 13 + DEX calculation; retain any better unarmored base.
@@ -1314,6 +1522,7 @@ func get_ac() -> int:
 				shield_ac = int(shield_data.get("ac_bonus", 2))
 			ac = maxi(ac, 13 + dex_mod + shield_ac)
 
+	ac += int(protection.addition)
 	# Shield spell grants +5 AC
 	if has_condition("shield"):
 		ac += 5
@@ -1325,7 +1534,7 @@ func get_ac() -> int:
 	if FighterRules.has_style(self, "defense") and not armor_id.is_empty():
 		ac += 1
 	ac += inventory.magic_item_saving_bonus(character_id)
-	return SpellEffects.effective_ac(self, ac)
+	return SpellEffects.effective_ac(self, ac) + SourceBenefitRules.total(self, "AC")
 
 
 ## Take damage. Returns actual damage dealt after temp HP absorption.
@@ -1333,6 +1542,7 @@ func take_damage(amount: int, accepted_relentless_rage_inspiration: bool = false
 	if amount <= 0 or is_dead():
 		return 0
 
+	TemporaryHPRules.prune(self, int(GameManager.campaign_elapsed_seconds))
 	var incoming_damage := amount
 	var absorbed := mini(amount, maxi(0, temp_hp))
 	absorb_temporary_hp(absorbed)
@@ -1471,14 +1681,25 @@ func make_saving_throw_result(ability: String, advantage: bool = false, disadvan
 	if is_proficient_in_save(ability):
 		mod += proficiency_bonus
 	mod += AuraRules.saving_throw_bonus(self)
+	mod += TemporaryHPRules.bonus(self, "save_bonus") + AuraProtectionRules.bonus(self, "save_bonus")
 	mod += inventory.magic_item_saving_bonus(character_id)
+	var captured_bonus_dice: Array[Dictionary] = []
 	if has_condition("blessed"):
-		mod += Dice.roll(4, self)
-	var bane_penalty := Dice.roll(4, self) if has_condition("baned") else 0
+		var bless_details := Dice.roll_single_details(4, self)
+		var bless_value := int(bless_details.get("total", 0))
+		mod += bless_value
+		captured_bonus_dice.append({"source": "bless", "sides": 4, "value": bless_value, "sign": 1, "included_in_modifier": false, "applied_before_total_floor": false, "roll": bless_details.duplicate(true)})
+	var bane_details := Dice.roll_single_details(4, self) if has_condition("baned") else {}
+	var bane_penalty := int(bane_details.get("total", 0)) if not bane_details.is_empty() else 0
+	if bane_penalty > 0:
+		captured_bonus_dice.append({"source": "bane", "sides": 4, "value": bane_penalty, "sign": -1, "included_in_modifier": false, "applied_before_total_floor": false, "roll": bane_details.duplicate(true)})
 	mod -= bane_penalty
 	mod += get_modifier("roll", "save")
 	mod += get_modifier("roll", "save:%s" % ability.to_upper())
 	mod -= exhaustion_level * 2
+	var captured_bonus_modifier := 0
+	for bonus_die in captured_bonus_dice:
+		captured_bonus_modifier += int(bonus_die.get("value", 0)) * int(bonus_die.get("sign", 1))
 	var raw_total := roll + mod
 	var total := apply_feature_check_floor(raw_total, ability, "saving_throw")
 	var out := {
@@ -1486,7 +1707,11 @@ func make_saving_throw_result(ability: String, advantage: bool = false, disadvan
 		"natural_roll": roll,
 		"rolls": d20_details.get("rolls", [roll]),
 		"kept": d20_details.get("kept", [true]),
+		"roll_mode": "advantage" if advantage and not disadvantage else ("disadvantage" if disadvantage and not advantage else "normal"),
+		"roll_details": d20_details.duplicate(true),
 		"modifier": mod,
+		"base_modifier": mod - captured_bonus_modifier,
+		"check_bonus_dice": captured_bonus_dice,
 		"bane_penalty": bane_penalty,
 		"raw_total": raw_total,
 		"total": total,
@@ -1728,6 +1953,7 @@ func short_rest() -> void:
 ## Restore long-rest resources and the character's normal between-encounter state.
 func long_rest() -> void:
 	if is_dead() or current_hp <= 0: return
+	SpellRepertoireRules.long_rest(self)
 	BardicInspirationRules.advance_time(self, 28800)
 	if exhaustion_level > 0 and exhaustion_recovery_blockers.is_empty():
 		exhaustion_level -= 1
@@ -1806,29 +2032,28 @@ func _restore_features_for_cadences(cadences: Array[String]) -> void:
 
 
 func _restore_pact_magic_slots() -> void:
-	var class_data := DataLoader.get_character_class(class_id)
-	var pact_table: Dictionary = class_data.get("pact_magic_by_level", {})
-	if pact_table.is_empty():
+	var maximum := SpellSlotRules.pact_maximum(self)
+	if maximum.is_empty(): return
+	if pact_spell_slots.is_empty():
+		# Existing single-class Warlock saves store Pact Magic in spell_slots.
+		if class_id == "warlock" and get_max_spell_slots() == maximum:
+			spell_slots = maximum
 		return
-	var pact_entry: Dictionary = pact_table.get(str(level), {})
-	if pact_entry.is_empty():
-		return
-	spell_slots = {str(int(pact_entry.get("slot_level", 1))): int(pact_entry.get("slots", 0))}
+	pact_spell_slots = maximum
 
 
 ## Recover up to a fraction of the Warlock's maximum Pact Magic slots.
 func recover_pact_magic_slots(fraction: float = 0.5) -> int:
-	var class_data := DataLoader.get_character_class(class_id)
-	var pact_table: Dictionary = class_data.get("pact_magic_by_level", {})
-	var pact_entry: Dictionary = pact_table.get(str(level), {})
-	if pact_entry.is_empty():
-		return 0
-	var slot_level := str(int(pact_entry.get("slot_level", 1)))
-	var maximum := int(pact_entry.get("slots", 0))
-	var current := int(spell_slots.get(slot_level, 0))
+	var maxima := SpellSlotRules.pact_maximum(self)
+	if maxima.is_empty(): return 0
+	var pact_is_separate := not pact_spell_slots.is_empty()
+	var slot_level := str(maxima.keys()[0])
+	var maximum := int(maxima[slot_level])
+	var current := int((pact_spell_slots if pact_is_separate else spell_slots).get(slot_level, 0))
 	var recovery := maxi(1, int(ceil(float(maximum) * clampf(fraction, 0.0, 1.0))))
 	var restored := mini(maximum, current + recovery) - current
-	spell_slots[slot_level] = current + restored
+	if pact_is_separate: pact_spell_slots[slot_level] = current + restored
+	else: spell_slots[slot_level] = current + restored
 	return restored
 
 
@@ -1892,8 +2117,11 @@ func add_condition(condition_name: String, duration: int, source: String = "") -
 func remove_condition(condition_name: String) -> void:
 	if condition_name == "exhaustion":
 		return
+	var had_condition := conditions.has(condition_name)
 	conditions.erase(condition_name)
 	condition_sources.erase(condition_name)
+	if had_condition:
+		SpellEffects.publish_event(self, {"type": "status", "actor_id": SpellEffects.caster_id(self), "status": condition_name, "state": "removed"})
 
 
 ## Tick conditions at end of turn (reduce durations, remove expired).
@@ -2036,6 +2264,7 @@ func absorb_temporary_hp(amount: int) -> int:
 	if _temp_hp_value <= 0:
 		_temp_hp_value = 0
 		timed_temporary_hp_current_grant_id = ""
+		linked_temporary_hp = {}
 	return absorbed
 
 
@@ -2124,6 +2353,7 @@ func expire_campaign_modifiers(now_seconds: int) -> void:
 	campaign_modifier_cooldowns = active_cooldowns
 	expire_next_weapon_hit_grants(now_seconds)
 	expire_timed_temporary_hp_grants(now_seconds)
+	TemporaryHPRules.prune(self, now_seconds)
 
 
 func _record_campaign_modifier_cooldown(modifier: Dictionary, end_reason: String, started_at_seconds: int) -> void:
@@ -2275,20 +2505,32 @@ func _get_active_feature_ids() -> Array[String]:
 ## Serialize character to dictionary.
 func to_dict() -> Dictionary:
 	SpellEffects.prune(self)
+	TemporaryHPRules.prune(self, int(GameManager.campaign_elapsed_seconds))
+	ProtectionRules.prune(self,int(GameManager.campaign_elapsed_seconds))
+	_prune_recent_damage_history(int(GameManager.campaign_elapsed_seconds))
 	return {
 		"character_id": character_id,
 		"name": character_name,
 		"race_id": race_id,
 		"class_id": class_id,
+		"class_levels": class_levels.duplicate(true),
+		"permanent_progression": permanent_progression.duplicate(true),
 		"subclass_id": subclass_id,
 		"feature_choices": feature_choices.duplicate(true),
 		"barbarian_relentless_rage_enabled": barbarian_relentless_rage_enabled,
 		"level": level,
 		"xp": xp,
 		"ability_scores": ability_scores.to_dict(),
+		"protection_grants": protection_grants.duplicate(true),
+		"protection_selections": protection_selections.duplicate(true),
+		"protection_serial": protection_serial,
 		"max_hp": max_hp,
 		"current_hp": current_hp,
 		"temp_hp": temp_hp,
+		"temporary_hp_supply_serial": temporary_hp_supply_serial,
+		"linked_temporary_hp": linked_temporary_hp.duplicate(true),
+		"aura_entry_receipts": aura_entry_receipts.duplicate(true),
+		"aura_protection_selections": aura_protection_selections.duplicate(true),
 		"timed_temporary_hp_grant_serial": timed_temporary_hp_grant_serial,
 		"timed_temporary_hp_grants": timed_temporary_hp_grants.duplicate(true),
 		"timed_temporary_hp_current_grant_id": timed_temporary_hp_current_grant_id,
@@ -2314,6 +2556,7 @@ func to_dict() -> Dictionary:
 		"exhaustion_recovery_blockers": exhaustion_recovery_blockers.duplicate(),
 		"days_without_food": days_without_food,
 		"spell_choices_pending": spell_choices_pending,
+		"spell_repertoire_state": spell_repertoire_state.duplicate(true),
 		"wizard_spellbook": wizard_spellbook.duplicate(),
 		"wizard_spellbook_pending": wizard_spellbook_pending,
 		"cleric_spells_trained": cleric_spells_trained,
@@ -2335,6 +2578,7 @@ func to_dict() -> Dictionary:
 		"warlock_arcanum_uses": warlock_arcanum_uses.duplicate(),
 		"warlock_arcanum_replacement_available": warlock_arcanum_replacement_available,
 		"spell_slots": spell_slots.duplicate(),
+		"pact_spell_slots": pact_spell_slots.duplicate(),
 		"conditions": conditions.duplicate(),
 		"condition_sources": condition_sources.duplicate(true),
 		"spell_effects": spell_effects.duplicate(true),
@@ -2343,11 +2587,15 @@ func to_dict() -> Dictionary:
 		"modifiers": modifiers.duplicate(true),
 		"timed_modifier_grant_serial": timed_modifier_grant_serial,
 		"campaign_modifier_cooldowns": campaign_modifier_cooldowns.duplicate(true),
+		"recent_damage_history": recent_damage_history.duplicate(true),
 		"next_weapon_hit_grants": next_weapon_hit_grants.duplicate(true),
 		"next_weapon_hit_grant_serial": next_weapon_hit_grant_serial,
 		"inventory": inventory.to_dict(),
 		"feature_uses": feature_uses.duplicate(),
 		"numeric_resource_pools": numeric_resource_pools.duplicate(true),
+		"captured_grants": captured_grants.duplicate(true),
+		"grant_transfer_serial": grant_transfer_serial,
+		"transferred_die_serials": transferred_die_serials.duplicate(),
 		"is_alive": is_alive,
 		"disintegrated": disintegrated,
 		"corpse_state": corpse_state.duplicate(true),
@@ -2376,11 +2624,21 @@ func to_dict() -> Dictionary:
 ## Deserialize character from dictionary.
 func from_dict(data: Dictionary) -> void:
 	familiar_senses = null
+	protection_grants.clear()
+	protection_selections.clear()
+	pending_protection_choice.clear()
+	protection_choice_generation+=1
 	character_id = str(data.get("character_id", ""))
+	recent_damage_history.clear()
+	for damage_entry in data.get("recent_damage_history", []):
+		if damage_entry is Dictionary:
+			recent_damage_history.append(damage_entry.duplicate(true))
 	willingness = str(data.get("willingness", "unknown")) if str(data.get("willingness", "unknown")) in ["unknown", "willing", "unwilling"] else "unknown"
 	character_name = data.get("name", "")
 	race_id = data.get("race_id", "")
 	class_id = data.get("class_id", "")
+	permanent_progression = data.get("permanent_progression", {}).duplicate(true)
+	class_levels = data.get("class_levels", {}).duplicate(true) if data.get("class_levels", {}) is Dictionary else {"_invalid": -1}
 	level = clampi(int(data.get("level", 1)), 1, 20)
 	subclass_id = str(data.get("subclass_id", DataLoader.get_character_class(class_id).get("legacy_subclass", "") if level >= int(DataLoader.get_character_class(class_id).get("subclass_level", 3)) else ""))
 	feature_choices = data.get("feature_choices", {}).duplicate(true)
@@ -2455,6 +2713,8 @@ func from_dict(data: Dictionary) -> void:
 			exhaustion_recovery_blockers.append(str(blocker))
 	days_without_food = maxi(0, int(data.get("days_without_food", 0)))
 	spell_choices_pending = bool(data.get("spell_choices_pending", false))
+	spell_repertoire_state = data.get("spell_repertoire_state", {}).duplicate(true)
+	for receipt in spell_repertoire_state.values(): receipt["level"] = int(receipt.get("level", 0))
 	wizard_spellbook.clear()
 	for val in data.get("wizard_spellbook", []):
 		var spell_id := str(val)
@@ -2524,7 +2784,7 @@ func from_dict(data: Dictionary) -> void:
 	# Clear and rebuild features
 	features.clear()
 	extra_attacks = 0
-	for l in range(1, level + 1):
+	for l in range(1, maxi(0, get_class_level()) + 1):
 		_unlock_features_for_level(l, false)
 	ClassProgression.apply_feature_choice_grants(self)
 	if weapon_masteries.is_empty() and class_id == "fighter":
@@ -2547,7 +2807,7 @@ func from_dict(data: Dictionary) -> void:
 	concentrating_on = data.get("spell_concentration", {}).duplicate(true)
 	if not concentrating_on.is_empty():
 		concentrating_on["targets"] = []
-	saving_throw_aura_sources.clear()
+		aura_source_memberships.clear()
 	modifiers.clear()
 	for modifier in data.get("modifiers", []):
 		if modifier is Dictionary:
@@ -2562,6 +2822,10 @@ func from_dict(data: Dictionary) -> void:
 		if grant is Dictionary:
 			next_weapon_hit_grants.append(grant.duplicate(true))
 	next_weapon_hit_grant_serial = maxi(0, int(data.get("next_weapon_hit_grant_serial", 0)))
+	temporary_hp_supply_serial = int(data.get("temporary_hp_supply_serial", 0))
+	linked_temporary_hp = data.get("linked_temporary_hp", {}).duplicate(true)
+	aura_entry_receipts = data.get("aura_entry_receipts", {}).duplicate(true)
+	aura_protection_selections = data.get("aura_protection_selections", {}).duplicate(true)
 	timed_temporary_hp_grant_serial = maxi(0, int(data.get("timed_temporary_hp_grant_serial", 0)))
 	timed_temporary_hp_grants.clear()
 	for grant in data.get("timed_temporary_hp_grants", []):
@@ -2570,6 +2834,9 @@ func from_dict(data: Dictionary) -> void:
 	timed_temporary_hp_current_grant_id = str(data.get("timed_temporary_hp_current_grant_id", ""))
 	feature_uses = data.get("feature_uses", {}).duplicate()
 	numeric_resource_pools = data.get("numeric_resource_pools", {}).duplicate(true)
+	captured_grants.assign(data.get("captured_grants", []).duplicate(true))
+	grant_transfer_serial = int(data.get("grant_transfer_serial", 0))
+	transferred_die_serials = data.get("transferred_die_serials", {}).duplicate()
 	roll_tokens = RollTokenRules.deserialize_tokens(data.get("roll_tokens", {}))
 	roll_token_generation_serial = maxi(0, int(data.get("roll_token_generation_serial", 0)))
 	damage_wards = WardRules.deserialize_wards(data.get("damage_wards", {}))
@@ -2591,9 +2858,20 @@ func from_dict(data: Dictionary) -> void:
 		var raw_slots: Dictionary = data.get("spell_slots", {})
 		for slot_key in raw_slots:
 			spell_slots[str(slot_key)] = int(raw_slots[slot_key])
+	if data.has("pact_spell_slots") and data.get("pact_spell_slots") is Dictionary:
+		pact_spell_slots.clear()
+		var raw_pact_slots: Dictionary = data.get("pact_spell_slots", {})
+		for slot_key in raw_pact_slots:
+			pact_spell_slots[str(slot_key)] = int(raw_pact_slots[slot_key])
 	
+	protection_grants.assign(data.get("protection_grants",[]).duplicate(true))
+	protection_selections=data.get("protection_selections",{}).duplicate(true)
+	protection_serial=int(data.get("protection_serial",0))
+	ProtectionRules.prune(self,int(GameManager.campaign_elapsed_seconds))
+
 	# Restore inventory
 	inventory = Inventory.new()
+	inventory.owner_character_ref = weakref(self)
 	inventory.from_dict(data.get("inventory", {}))
 	if class_id == "wizard" and not inventory.has_item("spellbook"):
 		inventory.add_item("spellbook")

@@ -1,0 +1,46 @@
+[
+  {
+    "id": "fixture:recipient_map_neutral_class",
+    "name": "Measured Ward",
+    "hit_die": "d8",
+    "primary_ability": "DEX",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:recipient_map_neutral_feature",
+          "name": "Measured Ward",
+          "type": "passive",
+          "passive_effects": [
+            {"type": "recipient_damage_map", "id": "measured_evasion", "domain": "shared_spell_save", "ability": "DEX", "cause_id": "measured_burst", "purpose_id": "contain_area", "origin_effect_id": "burst_damage", "success_scale": 0, "failure_scale": 0.5}
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "fixture:recipient_map_renamed_class",
+    "name": "Selective Ward",
+    "hit_die": "d8",
+    "primary_ability": "DEX",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:recipient_map_renamed_feature",
+          "name": "Selective Ward",
+          "type": "passive",
+          "passive_effects": [
+            {"type": "recipient_damage_map", "id": "selective_evasion", "domain": "shared_spell_save", "ability": "DEX", "cause_id": "measured_burst", "purpose_id": "contain_area", "origin_effect_id": "burst_damage", "success_scale": 0.5, "failure_scale": 1}
+          ]
+        },
+        {
+          "id": "fixture:recipient_map_wrong_cause_feature",
+          "name": "Unrelated Ward",
+          "type": "passive",
+          "passive_effects": [
+            {"type": "recipient_damage_map", "id": "wrong_cause", "domain": "shared_spell_save", "ability": "DEX", "cause_id": "unrelated_blast", "purpose_id": "contain_area", "origin_effect_id": "burst_damage", "success_scale": 0, "failure_scale": 0}
+          ]
+        }
+      ]
+    }
+  }
+]

@@ -7,11 +7,10 @@ static func _resolve_magic_missile(caster: Character, target_entity, spell_data:
 	if target_entity is Character:
 		if target_entity.has_condition("shield"):
 			return {"success": true, "hit": true, "damage": 0, "dart_count": dart_count, "shield_blocked": true, "message": "%s takes no damage from Magic Missile because Shield blocks it." % target_entity.character_name}
-		if target_entity.reaction_available and "shield" in target_entity.known_spells and int(target_entity.spell_slots.get("1", 0)) > 0 and CombatAction._reaction_accepted("shield", reaction_decisions):
-			target_entity.reaction_available = false
-			target_entity.spell_slots["1"] -= 1
+		var shield_payment := SpellPermissionRules.spend_reaction(target_entity, "shield", reaction_decisions) if target_entity.reaction_available and CombatAction._reaction_accepted("shield", reaction_decisions) else {}
+		if not shield_payment.is_empty():
 			target_entity.add_condition("shield", 1)
-			var ward_events := WardRules.on_slot_spell_cast(target_entity, DataLoader.get_spell("shield"), 1)
+			var ward_events: Array = shield_payment.get("ward_events", [])
 			var shield_msg := "%s casts Shield as a Reaction and takes no damage from Magic Missile." % target_entity.character_name
 			for ward_ev in ward_events:
 				if not str(ward_ev.get("message", "")).is_empty():
@@ -62,7 +61,7 @@ static func _resolve_scorching_ray(caster: Character, target_entity, spell_data:
 		var spell_attack_disadvantage := (caster.get_creature_type() in CombatAction.protected_creature_types_for_target(target_entity)) or (SpellEffects.has_spell(target_entity, "blur") and not CombatAction.can_perceive_blur(caster, maxi(0, distance_feet))) or ray_fog_obscures_attack or unseen_target
 		var helped_attack := CombatAction.consume_attack_help(target_entity)
 		spell_attack_advantage = spell_attack_advantage or helped_attack
-		var attack_result := caster.make_attack_roll(caster.get_spellcasting_ability(), spell_attack_advantage, spell_attack_disadvantage)
+		var attack_result := caster.make_attack_roll(SpellPermissionRules.selected_ability(spell_data, caster.get_spellcasting_ability()), spell_attack_advantage, spell_attack_disadvantage)
 		var hit: bool = bool(attack_result.get("is_crit", false)) or (not attack_result.get("is_miss", false) and int(attack_result.get("total", 0)) >= target_ac)
 		if not hit and not stroke_of_luck_used and bool(reaction_decisions.get("stroke_of_luck", false)) and caster.has_feature("rogue_stroke_of_luck"):
 			var stroke_result := RogueRules.apply_stroke_of_luck_to_attack(caster, attack_result, true)
@@ -74,11 +73,9 @@ static func _resolve_scorching_ray(caster: Character, target_entity, spell_data:
 		if ray_inspiration.get("used", false):
 			hit = bool(ray_inspiration["success"])
 		hit = FighterRules.peerless_aim(caster, hit)
-		if hit and not shield_used and target_entity is Character and target_entity.reaction_available and "shield" in target_entity.known_spells and int(target_entity.spell_slots.get("1", 0)) > 0 and CombatAction._reaction_accepted("shield", reaction_decisions):
-			target_entity.reaction_available = false
-			target_entity.spell_slots["1"] -= 1
+		var shield_payment := SpellPermissionRules.spend_reaction(target_entity, "shield", reaction_decisions) if hit and not shield_used and target_entity is Character and target_entity.reaction_available and CombatAction._reaction_accepted("shield", reaction_decisions) else {}
+		if not shield_payment.is_empty():
 			target_entity.add_condition("shield", 1)
-			WardRules.on_slot_spell_cast(target_entity, DataLoader.get_spell("shield"), 1)
 			target_ac = target_entity.get_ac()
 			shield_used = true
 			hit = bool(attack_result.get("is_crit", false)) or int(attack_result.get("total", 0)) >= target_ac

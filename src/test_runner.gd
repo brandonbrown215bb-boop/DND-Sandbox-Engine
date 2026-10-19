@@ -43,6 +43,8 @@ func _ready() -> void:
 	_run_group("combat", _test_player_commands)
 	_run_group("combat", _test_initiative)
 	_run_group("spells", _test_spellcasting)
+	_run_group("spells", func(): SpellPermissionChecks.run(_assert))
+	_run_group("spells", func(): SpellSlotChecks.run(_assert))
 	_run_group("spells", func(): SharedSpellChecks.run(_assert))
 	_run_group("spells", func(): TrueStrikeChecks.run(_assert))
 	_run_group("spells", func(): MassCureWoundsChecks.run(_assert))
@@ -68,6 +70,7 @@ func _ready() -> void:
 	_run_group("spells", _test_barkskin_spell)
 	_run_group("spells", _test_mage_armor_spell)
 	_run_group("effects", func(): SpellEffectChecks.run(_assert))
+	_run_group("effects", func(): Batch026Checks.run(_assert))
 	_run_group("effects", func(): SpellZoneChecks.run(_assert))
 	_run_group("barbarian", func(): BarbarianChecks.run(_assert))
 	_run_group("bard", func(): BardChecks.run(_assert))
@@ -75,6 +78,11 @@ func _ready() -> void:
 	_run_group("combat", _test_ai_controller)
 	_run_group("persistence", _test_inventory)
 	_run_group("conditions", _test_conditions)
+	_run_group("conditions", func(): Batch020Checks.run(_assert))
+	_run_group("classes", func(): Batch027Checks.run(_assert))
+	_run_group("classes", func(): Batch028Checks.run(_assert))
+	_run_group("classes", func(): Batch029Checks.run(_assert))
+	_run_group("classes", func(): Batch030Checks.run(_assert))
 	_run_group("persistence", _test_character_serialization)
 	_run_group("world", _test_player_manager)
 	_run_group("world", _test_party_manager)
@@ -676,12 +684,14 @@ func _test_data_loader() -> void:
 	failed_counterspell_caster.spell_slots = {"1": 1}
 	failed_counterspell_caster.add_modifier("roll", "save:CON", -1000, 4)
 	var counterspell_slot_before := int(mastery_roundtrip.spell_slots.get("3", 0))
-	var counterspell_result := CombatAction.resolve_spell(failed_counterspell_caster, counterspell_target, DataLoader.get_spell("magic_missile"), true, {"counterspell:%s" % mastery_roundtrip.character_name: true}, [mastery_roundtrip])
-	_assert(not counterspell_result.get("success", true) and counterspell_result.get("countered", false) and counterspell_result.get("incoming_spell_slot_refunded", false) and int(failed_counterspell_caster.spell_slots.get("1", 0)) == 1 and not mastery_roundtrip.has_free_spell_cast("counterspell") and int(mastery_roundtrip.spell_slots.get("3", 0)) == counterspell_slot_before, "Failed Counterspell Constitution save interrupts the cast, refunds its spell slot, and spends Signature Spell plus the Reaction")
+	var signature_payment: Dictionary = SpellPermissionRules.payment_choices(mastery_roundtrip, "counterspell").filter(func(row): return row.get("_spell_payment_kind") == "free_cast" and row.get("_spell_payment_source_id") == "wizard_signature_spells")[0]
+	var signature_decisions := {"counterspell:%s" % mastery_roundtrip.character_name:true, SpellPermissionRules.reaction_key(mastery_roundtrip, "counterspell"):signature_payment}
+	var counterspell_result := CombatAction.resolve_spell(failed_counterspell_caster, counterspell_target, DataLoader.get_spell("magic_missile"), true, signature_decisions, [mastery_roundtrip])
+	_assert(not counterspell_result.get("success", true) and counterspell_result.get("countered", false) and counterspell_result.get("incoming_spell_slot_refunded", false) and int(failed_counterspell_caster.spell_slots.get("1", 0)) == 1 and not mastery_roundtrip.has_free_spell_cast("counterspell") and not mastery_roundtrip.reaction_available and int(mastery_roundtrip.spell_slots.get("3", 0)) == counterspell_slot_before, "Failed Counterspell Constitution save interrupts the cast, refunds its spell slot, and spends Signature Spell plus the Reaction")
 	var saved_counterspell_caster: Character = _fresh_char("Counterspell Save Success", "human", "wizard", {"STR": 8, "DEX": 14, "CON": 14, "INT": 16, "WIS": 12, "CHA": 10})
 	saved_counterspell_caster.add_modifier("roll", "save:CON", 1000, 4)
 	var slot_only_counterspeller: Character = _fresh_char("Slot Counterspeller", "human", "wizard", {"STR": 8, "DEX": 12, "CON": 12, "INT": 16, "WIS": 12, "CHA": 10})
-	slot_only_counterspeller.known_spells.append("counterspell")
+	SpellPermissionChecks.grant_slot_permission(slot_only_counterspeller, ["counterspell"])
 	slot_only_counterspeller.spell_slots = {"4": 1}
 	var saved_counterspell_decisions := {"counterspell:%s" % slot_only_counterspeller.character_name: true}
 	var counterspell_save_result := CombatAction.resolve_spell(saved_counterspell_caster, counterspell_target, DataLoader.get_spell("magic_missile"), false, saved_counterspell_decisions, [slot_only_counterspeller])
@@ -1017,7 +1027,10 @@ func _test_combat_action() -> void:
 	var command_spells: Array[String] = ["fire_bolt", "ray_of_frost", "light", "magic_missile", "shield", "mage_armor", "sleep"]
 	_assert(ClassProgression.choose_wizard_spellbook(command_caster, command_book), "command fixture learns its Wizard spellbook before combat")
 	_assert(ClassProgression.choose_spell_selection(command_caster, command_spells), "command fixture prepares the spell it will cast")
-	_assert(CombatCommand.from_hud_for_character("cast_spell", {"spell": DataLoader.get_spell("magic_missile")}, command_caster) != null, "combat command accepts a spell the active character knows")
+	var command_spell := DataLoader.get_spell("magic_missile").duplicate(true)
+	command_spell["_source_permission_id"] = "class:" + command_caster.get_spellcasting_feature_id()
+	command_spell["_spell_payment_kind"] = "slot"
+	_assert(CombatCommand.from_hud_for_character("cast_spell", {"spell": command_spell}, command_caster) != null, "combat command accepts an owned prepared spell with an explicit allowed payment")
 	_assert(CombatCommand.from_hud_for_character("cast_spell", {"spell": {"id": "not_a_spell"}}, command_caster) == null, "combat command rejects an inaccessible spell before targeting")
 	_assert(CombatCommand.from_hud_for_character("use_feature", {"feature": {"id": "not_a_feature"}}, command_caster) == null, "combat command rejects an unowned feature before mutation")
 	command_caster.inventory.add_item("potion_healing")
@@ -2449,7 +2462,7 @@ func _test_spellcasting() -> void:
 	_assert(CombatAction.magic_missile_dart_count(one_dart_spell, 1) == 1 and CombatAction.magic_missile_dart_count(two_dart_spell, 1) == 2 and CombatAction.magic_missile_dart_count(mm, 2) == 4, "Magic Missile resolves only the darts assigned to each target and scales assignments when upcast")
 	var shield_target := Character.new()
 	shield_target.character_name = "Shielded Target"
-	shield_target.known_spells.assign(["shield"])
+	SpellPermissionChecks.grant_slot_permission(shield_target, ["shield"])
 	shield_target.spell_slots = {"1": 1}
 	var shielded_missile := CombatAction.resolve_spell(caster2, shield_target, mm, false, {"shield": true})
 	_assert(shielded_missile.get("shield_used", false) and int(shielded_missile.get("damage", -1)) == 0 and not shield_target.reaction_available and int(shield_target.spell_slots.get("1", 0)) == 0 and shield_target.has_condition("shield"), "Shield reaction blocks Magic Missile before damage and spends one Reaction and slot")
@@ -2466,7 +2479,7 @@ func _test_spellcasting() -> void:
 	_assert(ray_cast.get("success", false) and int(ray_cast.get("ray_count", 0)) == 3 and int(ray_cast.get("rays_hit", 0)) > 0 and int(ray_cast.get("damage", 0)) > 0, "Scorching Ray resolves one spell attack and damage roll per ray")
 	var shielded_ray_target := Character.new()
 	shielded_ray_target.character_name = "Shielded Ray Target"
-	shielded_ray_target.known_spells.assign(["shield"])
+	SpellPermissionChecks.grant_slot_permission(shielded_ray_target, ["shield"])
 	shielded_ray_target.spell_slots = {"1": 1}
 	shielded_ray_target.add_modifier("stat", "AC", -20, 5)
 	var shielded_ray_ac_before := shielded_ray_target.get_ac()
@@ -2475,7 +2488,7 @@ func _test_spellcasting() -> void:
 	var eldritch_blast_data: Dictionary = DataLoader.get_spell("eldritch_blast")
 	var shielded_blast_target := Character.new()
 	shielded_blast_target.character_name = "Shielded Blast Target"
-	shielded_blast_target.known_spells.assign(["shield"])
+	SpellPermissionChecks.grant_slot_permission(shielded_blast_target, ["shield"])
 	shielded_blast_target.spell_slots = {"1": 1}
 	shielded_blast_target.add_modifier("stat", "AC", -20, 5)
 	var shielded_blast_ac_before := shielded_blast_target.get_ac()
@@ -2673,7 +2686,7 @@ func _test_spellcasting() -> void:
 	var consumed_subtle := SorcererRules.apply_subtle_spell({"components": ["V", "S", "M"], "material_component_consumed": true})
 	_assert(costly_subtle.get("components", []) == ["M"] and consumed_subtle.get("components", []) == ["M"] and not SorcererRules.can_subtle_spell(subtle_sorcerer, {"components": ["M"], "material_component_cost": 100}), "Subtle Spell preserves costly or consumed Material components and offers no useless component-only choice")
 	var subtle_counterspeller: Character = _fresh_char("Subtle Counterspeller", "human", "wizard", {"STR": 8, "DEX": 12, "CON": 12, "INT": 16, "WIS": 12, "CHA": 10})
-	subtle_counterspeller.known_spells.append("counterspell")
+	SpellPermissionChecks.grant_slot_permission(subtle_counterspeller, ["counterspell"])
 	subtle_counterspeller.spell_slots["3"] = 1
 	var subtle_counter_result := CombatAction.resolve_spell(subtle_sorcerer, subtle_counterspeller, subtle_fireball, false, {"counterspell:%s" % subtle_counterspeller.character_name: true}, [subtle_counterspeller])
 	var costly_counterspell_data := DataLoader.get_spell("fireball").duplicate(true)
@@ -2681,7 +2694,7 @@ func _test_spellcasting() -> void:
 	costly_counterspell_data = SorcererRules.apply_subtle_spell(costly_counterspell_data)
 	subtle_sorcerer.add_modifier("roll", "save:CON", -1000, 4)
 	var costly_counterspeller: Character = _fresh_char("Costly Counterspeller", "human", "wizard", {"STR": 8, "DEX": 12, "CON": 12, "INT": 16, "WIS": 12, "CHA": 10})
-	costly_counterspeller.known_spells.append("counterspell")
+	SpellPermissionChecks.grant_slot_permission(costly_counterspeller, ["counterspell"])
 	costly_counterspeller.spell_slots["3"] = 1
 	costly_counterspeller.add_modifier("roll", "save:CON", -1000, 4)
 	var costly_counter_result := CombatAction.resolve_spell(subtle_sorcerer, costly_counterspeller, costly_counterspell_data, false, {"counterspell:%s" % costly_counterspeller.character_name: true}, [costly_counterspeller])
@@ -2769,7 +2782,9 @@ func _test_spellcasting() -> void:
 	# Counterspell reactions resolve a Constitution save before the incoming spell.
 	var victim: Character = _fresh_char("Victim", "human", "wizard",
 		{"STR": 8, "DEX": 14, "CON": 14, "INT": 16, "WIS": 12, "CHA": 10})
-	victim.known_spells.append("counterspell")
+	SpellPermissionChecks.grant_slot_permission(victim, ["counterspell"])
+	victim.max_hp = 1000
+	victim.current_hp = 1000
 	victim.spell_slots = {"3": 1}
 	victim.reaction_available = true
 	var caster3: Character = _fresh_char("Mage3", "human", "wizard",
@@ -2784,6 +2799,7 @@ func _test_spellcasting() -> void:
 	victim.spell_slots["3"] = 1
 	caster3.add_modifier("roll", "save:CON", -1000, 4)
 	var accepted_counterspell := CombatAction.resolve_spell(caster3, target, fb, false, {"counterspell:%s" % victim.character_name: true}, [victim])
+	if not accepted_counterspell.get("countered", false): print("021 reaction diagnostic: " + JSON.stringify({"result":accepted_counterspell,"choices":SpellPermissionRules.payment_choices(victim,"counterspell"),"slots":victim.spell_slots,"reaction":victim.reaction_available}))
 	_assert(accepted_counterspell.get("countered", false) and not victim.reaction_available and victim.spell_slots["3"] == 0, "An accepted Counterspell spends its slot and Reaction and interrupts on a failed Constitution save")
 	print("COUNTERSPELL_SAVE_AND_REFUND_CHECKS_COMPLETE")
 

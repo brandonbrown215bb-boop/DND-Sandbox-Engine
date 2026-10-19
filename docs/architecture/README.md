@@ -1,11 +1,35 @@
 # Architecture
 
-Current boundaries inspected 2026-10-09. This is an implementation map,
-not a rules-completion claim. [ADR-0018](../decisions/0018-shared-data-driven-rules-runtime.md)
+This is an implementation map; the current checkpoint owns the latest accepted
+evidence. It is not a rules-completion claim. [ADR-0018](../decisions/0018-shared-data-driven-rules-runtime.md)
 owns the target architecture; [roadmap](../../roadmap.md) selects the work.
 [ADR-0023](../decisions/0023-vocabulary-first-delivery-and-bounded-world-judgment.md)
 clarifies vocabulary-first delivery, bounded illusions/campaign Wish and the
 owner's current save priorities. Its planning decisions do not add runtime support.
+
+## Recipient HP and aura entries (027; VS-84/85/86 accepted)
+
+`TemporaryHPRules` owns recipient decisions, exact supplier payment and captured
+HP links. `AuraProtectionRules` owns source/recipient entry receipts and selection;
+`AuraRules` publishes actual combat membership; CombatState clears it on scene
+exit while retaining timed entry receipts. Character AC/save queries derive
+fixed bonuses without acquiring state. SaveManager checks both DTO routes and
+participant links before restore. See [authoring and bounded hosts](../mechanics/temporary-hp-and-entry-protections.md)
+and [ADR-0032](../decisions/0032-recipient-temporary-hp-and-aura-entry-receipts.md).
+
+## Paid parents and child continuations (028; VS-97–99)
+
+`CombatChildActions` owns encounter-local parent identity, chooser state,
+remaining children and exact-once receipts. CombatState's ordinary strike, spell
+and movement paths execute those children with a local action waiver. Exact
+Attack/Flurry quantities, item copies and self-healing uses keep their existing
+owners. Weapon rider receipts and spell contexts retain parent source and
+classification. Prepaid combat slots reach cancellation with their actual pool;
+spell finish remains the owner of successful host Ward settlement. Awaited
+callbacks revalidate the exact parent/child before touching controls. See
+[authoring](../mechanics/attack-unit-substitution.md),
+[ADR-0033](../decisions/0033-parent-action-child-continuations.md) and
+[independent acceptance](../../.artifacts/planning/vocabulary-reports/batch-028-completion-review.md).
 
 ## Runtime and content
 
@@ -29,7 +53,52 @@ retains named-class paths. `AIController` selects native behavior profiles and
 `AICommand` accepts a bounded command vocabulary. These are migration starting
 points, not the intended extensibility boundary.
 
+## Permanent progression (018; VS-68/69 accepted)
+
+`PermanentProgressionRules` owns opt-in starting/multiclass and permanent level
+grants on Character. Ordered class history distinguishes class and total levels;
+exact entry receipts prevent acquisition replay. Milestones create pending levels,
+and ClassTraining confirms one chosen class with stale-state and inventory-space
+preflight. Existing ClassProgression owns score/CON arithmetic; inventory copies
+and applied totals persist through current checkpoints. SaveManager validates
+both DTO paths before restore. Primary passive proficiency choices are retained;
+secondary native features, subclass/casting progression and catalog conversion
+remain outside this host. See [authoring](../mechanics/permanent-progression.md)
+and [ADR-0030](../decisions/0030-permanent-acquisition-receipts.md). Existing
+native classes retain their current route. Independent
+[review](../../.artifacts/planning/vocabulary-reports/batch-018-review.md) repaired
+blank-character registration after a refused creation and rejected ignored
+primary-choice fields; those choices support weapon/armor/skill arrays only.
+
+## Casting sources and slot pools (021–022; VS-76–81 accepted)
+
+`SpellPermissionRules` derives current class/book/feature/item-copy permissions.
+Commands rebuild production spell data and preserve the selected source ability,
+policy and allowed payment; resource commitment revalidates after choices.
+`SpellRepertoireRules` owns opted-in per-source preparation and replacement
+receipts, validated on both full-save DTO paths without acquisition replay.
+`SpellSlotRules` combines supported full/half-up ordinary contributions while
+retaining separate Pact pools and fixed-level Arcanum uses. Reaction casting
+retains the selected pool through the same payment boundary.
+
+Character-sheet exploration controls invoke exact source-specific rituals through
+`ClassProgression`, with physical components, normal-plus-extra time and prior
+concentration cleanup. Completion rechecks actor/source/components after clock
+settlement; the effect begins afterward. The bounded host and production evidence
+are in the [independent acceptance review](../../.artifacts/planning/vocabulary-reports/batch-021-023-acceptance-review.md),
+[casting contract](../mechanics/spell-permissions-and-preparation.md) and
+[slot/ritual contract](../mechanics/spell-slots-and-ritual-casting.md).
+
 ## Current class-feature resources
+
+`ClassProgression` owns filtered passive feature-option acquisition and opt-in
+replacement. Proposed selections are checked before mutation against explicit
+prerequisites and trained spell capacity/list dependencies; retained sources
+preserve their proficiencies. `ClassTraining` refreshes dependent pending picks
+and revalidates stale buttons. Full-save preflight uses the same represented
+class eligibility and every selected spell-grant occurrence, with separate
+cantrip/leveled lists and earned primary features. Existing checkpoint storage
+remains; see [progression choices](../mechanics/progression-choices.md).
 
 `ResourcePoolRules` stores bounded numeric capacity/current quantities on the
 owning Character under an exact source-instance ID. Shared `ClassFeature`
@@ -37,6 +106,15 @@ activation and its combat menu/command path carry that identity through
 availability and spending. Capacity uses the shared formula evaluator; growth
 does not refill and shrink clamps remaining quantity. SaveManager checkpoints
 restore these quantities without acquisition replay.
+
+Batch 023 extends the same feature/command/HUD exchange path with exact
+ordinary/Pact slots, captured dice or eligible backpack-copy quantities as
+payment. Numeric destinations may belong to self or an eligible active party
+member. Both sides validate before synchronous mutation; stale copies never
+substitute siblings, and resolved same-pool aliases refuse. Existing inventory
+and pool DTOs preserve results at allowed checkpoints. VS-82/83 are independently
+accepted; other destination types and conditional settlement remain outside this
+host. See the [exchange contract](../mechanics/shared-resource-pools.md#bounded-resource-exchange--batch-023-accepted).
 
 `RestRules` applies authored fixed/fill recovery after matching successful
 Short/Long completion for currently eligible party actors. Source-owned
@@ -49,6 +127,86 @@ numeric lookup and prior-step typed damage
 totals now have bounded evidence too. Broader grant/acquisition domains,
 other recovery/limit scopes and general subscriptions remain unfinished. See the [resource contract](../mechanics/shared-resource-pools.md)
 and [checked subsets](../reviews/dnd-code-vocabulary-gap-checklist.md#verified-subsets-to-mark-off).
+
+Batch 020 extends `AuraRules` membership to condition-only auras and retains
+source/bearer/recipient identities in the live combat projection. Conditions
+remain source-owned and keep ticking while suppressed; overlapping bearers
+remain independent. Independent review accepts the direct Character aura host
+as VS-73/74/75. Current host limits are recorded in the
+[suppression and aura contract](../mechanics/condition-suppression-and-auras.md)
+and [review report](../../.artifacts/planning/vocabulary-reports/batch-020-review.md).
+
+Batch N adds `CombatPoolRecovery` as encounter-local state beside the existing
+pool quantity owner. CombatState emits actual settled Initiative and tracked
+turn-start boundaries; fixed/fill/floor policies and optional exclusive source
+groups reuse ResourcePoolRules settlement. Same-event replay and stale source/
+actor/definition choices refuse; pending menus/locks never enter saves. This
+numeric Character-host boundary is accepted as VS-62 after independent
+[source/evidence review](../../.artifacts/planning/vocabulary-reports/batch-N-review.md).
+Native resource conversion, dice-pool combat recovery and recovery options with
+secondary payments/effects remain separate work. See the
+[authoring contract](../mechanics/shared-resource-pools.md#combat-boundary-recovery-vs-62-independent-review-accepted).
+
+Batch J adds numeric-pool weapon-rider round/roll/active-grant limits and an
+exact-source conditional pool-payment waiver. Initiative owns the round; action
+budget refresh preserves that context. Settled weapon receipts bind the real
+actor, target and captured weapon profile. Active-grant `used_rider_options`
+persists on the existing timed AC modifier; transient roll/round locks do not.
+Completed rider resolution closes the hit even when no option qualifies;
+later grants cannot reopen it. Independent review accepts VS-54/55/56; see
+[ADR-0025](../decisions/0025-source-owned-rider-occurrence-locks.md) and the
+[authoring boundary](../mechanics/shared-resource-pools.md#batch-j-round-roll-active-instance-limits-and-numeric-payment-waiver).
+
+Optional explicit `Character.class_levels` now supplies actual per-class formula
+inputs separately from total level, proficiency and selected slot. Declared numeric
+and die-size progression tables reuse the shared evaluator; exact pool capacity/
+size recalculation preserves spent quantity. Allocations use existing checkpoint
+preflight/recovery; this bounded behavior is accepted as VS-44 after independent
+[Batch F review](../../.artifacts/planning/vocabulary-reports/batch-F-review.md).
+Cast preparation preflights all parameter availability before costs, storing only
+captured values; live consumption still reevaluates. This does not add full native multiclass acquisition or a
+leveling UI; see [ADR-0024](../decisions/0024-explicit-class-level-formula-inputs.md)
+and the [pool contract](../mechanics/shared-resource-pools.md).
+
+Batch L adds `SourceBenefitRules` projections for fixed additive AC and walking
+speed on exact equipped copies, passive progression/choice occurrences and flat
+automatic self-casts. Item/choice benefits reuse existing identities rather than
+mutating permanent stats; casts reuse timed SpellEffects records. Normal
+Class Progression Equip/Stow and Choose/Replace controls, combat casting and
+exact-cast Dismiss commands own changes. Saved cast payload/identity preflight
+runs through the existing spell validator on both DTO paths. Independent review
+accepts this bounded behavior as VS-59/60. Current-turn movement refreshes from
+live speed while retaining spent distance, including after concentration loss. See [source carriers](../mechanics/source-benefit-carriers.md)
+and [ADR-0026](../decisions/0026-derived-source-benefit-carriers.md) for the additive,
+self-only and form limits.
+
+Batch M's S-051 implementation extends the same `ResourcePoolRules` pool DTO
+with opt-in captured faces and per-die source identities. Declared class-level
+capacity/size tables remain the progression owner; recalculation changes future
+dice while retained dice keep their original size/face. Existing feature quantity
+controls spend oldest dice, and existing completed-rest recovery generates only
+vacancies. Both full-save DTO paths validate captured state before replacement.
+Independent review accepts S-051 as VS-61 within the existing self-healing
+consumer and explicit recalculation boundary. See
+[captured pool authoring](../mechanics/shared-resource-pools.md#captured-dice-inventory-vs-61-independent-review-accepted)
+and [ADR-0027](../decisions/0027-captured-source-pool-dice.md).
+
+Batch P adds `CapturedGrantRules` recipient-owned committed gifts and combat-local
+transfer choices. `ResourcePoolRules` pays the giver once; each recipient uses
+its own current-turn budget/Reaction from the Features menu. Exact captured dice,
+formula permissions and one shared rolled value retain original source, group
+and deadline through allowed checkpoints. Transferred die serial high-water marks
+prevent regeneration after source reacquisition. Both DTO paths and cross-actor
+links validate before replacement. Independent review accepts S-082 as VS-63.
+Independent Batch Q review accepts S-083 as VS-64 for the shared captured
+weapon-attack bonus. `PartyInterventionRules` adds exact-helper Reaction
+and source payment to the existing weapon request; `PartyAllocationRules` owns
+one transient fixed/rolled/exact-dice allocation through the combat Features
+menu. S-097/S-101/S-102 are accepted as VS-65/66/67 for fixed helper bonuses and
+HP/Temporary HP allocations. Completed state reuses existing Character/pool fields. Other intervention
+hosts and casting permissions remain outside this boundary. See
+[party authoring](../mechanics/party-intervention-and-allocation.md). See [captured grants](../mechanics/captured-grants.md)
+and [ADR-0028](../decisions/0028-captured-recipient-grants.md).
 
 ## Current spell execution
 
@@ -99,12 +257,19 @@ families; `CombatAction` also owns shared weapon and typed-damage settlement.
 The [spell module map](../../src/spells/README.md) locates current code.
 
 `SpellEffects` owns cast sources, clocks and cleanup. Benefits and persistence
-have focused modules. `SpellEncounterLifecycle` coordinates repeat saves and
-encounter expiry; `CombatSpellZones` owns spatial/turn triggers and source-owned
+have focused modules. `SpellEncounterLifecycle` dispatches target-turn repeat
+saves; source-owned records also track elapsed-time deadlines, counted stages
+and escalating DC history for shared definitions. `CombatSpellZones` owns spatial/turn triggers and source-owned
 areas. Terrain/conjuration modules retain existing native spell policy.
 `LocalRoomSharedSpells` reuses shared resolution for bounded exploration casts.
 New shared capabilities should replace native policy progressively without
-duplicating damage or cost. Availability and full rules support are distinct.
+duplicating damage or cost. Shared timed effects can subscribe to canonical
+attack, completed-cast, movement, status, equipment, range and settled-damage
+events with `source_end_rules`; cleanup removes the matching source and keeps
+an exact transient end receipt. This Batch 019 support awaits independent
+acceptance and does not imply converted catalog consumers. See the
+[authoring contract](../mechanics/source-end-rules.md). Availability and full
+rules support are distinct.
 
 ## Current ability-check context
 
@@ -125,10 +290,75 @@ durable state is added. VS-26 adds mandatory-new natural/whole-test rerolls
 as alternatives in that same post-roll menu. EventResolver preflights captured
 receipts before payment or RNG and retains raw natural, original/new mode,
 bonus-die provenance and explicit floor stages. Native payments are not replayed;
-the worse new result still settles once. Broader hosts and an old/new picker
-remain open. See the
+the worse new result still settles once. VS-48 adds declared old/new choice,
+new-test mode and captured actor-formula bonus. Source loss before payment
+settles the original; paid replacement rolls retain both full receipts. Further
+hosts remain open. See the
 [check context contract](../mechanics/purpose-aware-check-context.md) and
 [owned modifier contract](../mechanics/owned-ability-check-modifiers.md).
+
+VS-49 reuses that captured-test arithmetic for normal Attack/Extra Attack and
+flat/ordered combat shared-spell attacks/saves. Paid keep stages remain canonical
+requests with exact actor/host/kind/newer-request checks. Signed dice, fixed
+contributions, original AC/DC and weapon critical range stay captured; the kept
+natural controls damage and natural20-only aftermath. Visible bonus-die receipts
+use the kept test's actual faces. VS-50 adds exact-context Character recipient
+maps and flat shared-spell caster-chosen damage exemptions. Exemption authority
+is transient state on the exact cast/invocation and recipient objects, not caller
+decisions. Saves and independent riders remain unchanged; native Evasion retains
+priority. See [Batch H review](../../.artifacts/planning/vocabulary-reports/batch-H-review.md)
+for repairs, actual controls and remaining host limits. No durable state or new
+save boundary was added.
+
+VS-51 extends selected numeric-source payment with final-success/final-failure
+reservations and canonical commit/refund receipts. VS-52/53 carry exact damage
+component/occurrence reductions and selected mitigation layers through existing
+shared spell adapters and pending damage settlement. Actor formula availability
+is checked before costs; typed component receipts retain reduction separately
+from mitigation and THP. Sphere bypass remains limited to damage-only ordered
+typed-component save payloads, including the normal casting controls. Other
+damage hosts and prevention policies remain open. See
+[Batch I review](../../.artifacts/planning/vocabulary-reports/batch-I-review.md).
+
+## Source-owned stat projections (Batch G; VS-45–47 accepted)
+
+`CheckFloorRules` adds separately authored natural-d20/final-total floors to the
+existing EventResolver/EventDialog check and mandatory-new reroll host. It reuses
+shared actor formulas, source identities and captured receipts; attack/save floor
+policies are unavailable. `ProtectionRules` owns typed timed self-protections on
+Character numeric-pool sources, equipment eligibility, score/AC combination and
+exact-grant recipient selection. AbilityScores retains permanent fields while
+score/modifier reads project current eligible benefits. ClassProgression's
+permanent increases still read/write underlying scores.
+
+The existing feature picker/CombatCommand/common activation and recipient popup
+own costs/choices. GameManager's campaign clock prunes the original deadlines;
+ResourcePoolRules source removal cleans only matching grants. SaveManager checks
+both DTO paths before restore; Character restores grants/selection without source
+acquisition. Pending menus/generations stay transient. See the
+[authoring contract](../mechanics/source-owned-stat-protections.md) and
+[Batch G evidence](../../.artifacts/planning/vocabulary-reports/batch-G-build-validation.md).
+The [independent review](../../.artifacts/planning/vocabulary-reports/batch-G-review.md)
+also repaired level-up HP and Epic Boon eligibility/options reading temporary
+scores: permanent progression now reads the underlying values. This adds no aura,
+item-effect grant host, form policy, temporary-CON HP grant or new save boundary.
+
+## Encounter projection and check-filter maintenance
+
+Encounter monster dictionaries preserve declared vulnerability, represented
+senses, proficiency and fly/climb speeds. Temporary casting Characters use the
+same proficiency, sight and movement values; this does not supply source fields
+that imported definitions lack or add general flying/climbing monster AI.
+Countercharm's flat Frightened shared-save path uses the shared condition query
+at both prompt and resolution, retaining existing native Charmed saves. Shared
+Charmed grants remain unsupported. Initial class grants precede species additions,
+so creation retains both weapon/armor proficiency sources.
+
+Loaded check modifiers use optional task/purpose/event/check filters while the
+check's DC, consequences and represented context still come from the canonical
+record. Identified loaded checks without context retain verified origin without
+invented task facts. Exact skill/tool matching and the existing floor/tool
+contracts remain; see [optional filters](../mechanics/owned-ability-check-modifiers.md#optional-event-filters).
 
 ## Party, world and durable identities
 

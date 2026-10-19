@@ -137,13 +137,14 @@ static func selected_feature_effects(c: Character) -> Array[Dictionary]:
 	var selected_effects: Array[Dictionary] = []
 	for feature_id in feature_choice_ids(c):
 		var choice: Variant = c.feature_choices.get(feature_id, [])
-		if not choice is Array or choice.size() != 1:
+		if not choice is Array or choice.is_empty():
 			continue
 		var effect := feature_choice_effect(c, feature_id)
-		for option in effect.get("options", []):
-			if str(option.get("id", "")) == str(choice[0]):
-				for option_effect in option.get("effects", []):
-					selected_effects.append(option_effect)
+		for chosen_id in choice:
+			for option in effect.get("options", []):
+				if str(option.get("id", "")) == str(chosen_id):
+					for option_effect in option.get("effects", []):
+						selected_effects.append(option_effect)
 	selected_effects.append_array(WarlockRules.selected_invocation_effects(c))
 	return selected_effects
 
@@ -177,23 +178,287 @@ static func selected_feature_effects_of_type(c: Character, effect_type: String) 
 	return matches
 
 
-static func choose_feature_option(c: Character, feature_id: String, option_id: String) -> bool:
+
+static func _choice_class_matches(primary_class: String, allocation: Dictionary, required_class: String) -> bool:
+	return int(allocation.get(required_class, 0)) > 0 if not allocation.is_empty() else primary_class == required_class
+
+
+static func available_feature_options(c: Character, feature_id: String, candidate_choices: Array = []) -> Array[Dictionary]:
+	var available: Array[Dictionary] = []
+	if c == null:
+		return available
+	var effect := feature_choice_effect(c, feature_id)
+	if effect.is_empty():
+		return available
+	var current_choices: Array = c.feature_choices.get(feature_id, [])
+	var allow_duplicates := bool(effect.get("allow_duplicates", false))
+	for option in effect.get("options", []):
+		var opt_id := str(option.get("id", ""))
+		if opt_id.is_empty():
+			continue
+		if not allow_duplicates and not bool(option.get("repeatable", false)):
+			if opt_id in current_choices or opt_id in candidate_choices:
+				continue
+		if option.has("minimum_level") and c.level < int(option["minimum_level"]):
+			continue
+		if option.has("class_id") and not _choice_class_matches(c.class_id, c.class_levels, str(option["class_id"])):
+			continue
+		if option.has("when") and not SharedStepExecutor.evaluate_actor_predicate(option["when"], c):
+			continue
+		var reqs_met := true
+		for req_choice in option.get("requires_choices", []):
+			var req_found := false
+			if req_choice in candidate_choices:
+				req_found = true
+			else:
+				for existing_f_id in c.feature_choices:
+					if req_choice in c.feature_choices[existing_f_id]:
+						req_found = true
+						break
+			if not req_found:
+				reqs_met = false
+				break
+		if not reqs_met:
+			continue
+		available.append(option)
+	return available
+
+
+static func choose_feature_options(c: Character, feature_id: String, option_ids: Array[String]) -> bool:
 	if c == null or feature_id not in pending_feature_choices(c):
 		return false
 	var effect := feature_choice_effect(c, feature_id)
-	var selected_option: Dictionary = {}
-	for option in effect.get("options", []):
-		if str(option.get("id", "")) == option_id:
-			selected_option = option
-			break
-	if selected_option.is_empty():
+	if effect.is_empty():
 		return false
-	c.feature_choices[feature_id] = [option_id]
+	var expected_count := int(effect.get("count", effect.get("pick", 1)))
+	if option_ids.size() != expected_count:
+		return false
+	var allow_duplicates := bool(effect.get("allow_duplicates", false))
+	var seen: Dictionary = {}
+	var options_by_id: Dictionary = {}
+	for opt in effect.get("options", []):
+		options_by_id[str(opt.get("id", ""))] = opt
+
+	for opt_id in option_ids:
+		if not options_by_id.has(opt_id):
+			return false
+		var opt: Dictionary = options_by_id[opt_id]
+		if not allow_duplicates and not bool(opt.get("repeatable", false)) and seen.has(opt_id):
+			return false
+		seen[opt_id] = true
+		if opt.has("minimum_level") and c.level < int(opt["minimum_level"]):
+			return false
+		if opt.has("class_id") and not _choice_class_matches(c.class_id, c.class_levels, str(opt["class_id"])):
+			return false
+		if opt.has("when") and not SharedStepExecutor.evaluate_actor_predicate(opt["when"], c):
+			return false
+		for req in opt.get("requires_choices", []):
+			var req_met := false
+			if req in option_ids:
+				req_met = true
+			else:
+				for existing_f_id in c.feature_choices:
+					if req in c.feature_choices[existing_f_id]:
+						req_met = true
+						break
+			if not req_met:
+				return false
+
+	c.feature_choices[feature_id] = option_ids.duplicate()
+	_apply_feature_choice_grants(c)
+	return true
+
+
+static func choose_feature_option(c: Character, feature_id: String, option_id: String) -> bool:
+	return choose_feature_options(c, feature_id, [option_id])
+
+
+static func can_replace_feature_option(c: Character, feature_id: String, old_option_id: String, new_option_id: String) -> Dictionary:
+	if c == null or not c.feature_choices.has(feature_id):
+		return {"allowed": false, "reason": "Character does not have this feature choice"}
+	var current_choices: Array = c.feature_choices[feature_id]
+	if old_option_id not in current_choices:
+		return {"allowed": false, "reason": "Old option is not currently selected"}
+	if old_option_id == new_option_id:
+		return {"allowed": false, "reason": "New option must be different from old option"}
+	var effect := feature_choice_effect(c, feature_id)
+	if effect.is_empty():
+		return {"allowed": false, "reason": "Feature choice definition not found"}
+	if not bool(effect.get("allow_replacement", false)):
+		return {"allowed": false, "reason": "Replacement is not permitted for this feature"}
+
+	var options_by_id: Dictionary = {}
+	for opt in effect.get("options", []):
+		options_by_id[str(opt.get("id", ""))] = opt
+	if not options_by_id.has(new_option_id):
+		return {"allowed": false, "reason": "New option is not in available options"}
+
+	var new_opt: Dictionary = options_by_id[new_option_id]
+	var allow_duplicates := bool(effect.get("allow_duplicates", false))
+	if not allow_duplicates and not bool(new_opt.get("repeatable", false)) and new_option_id in current_choices:
+		return {"allowed": false, "reason": "New option is already selected"}
+
+	if new_opt.has("minimum_level") and c.level < int(new_opt["minimum_level"]):
+		return {"allowed": false, "reason": "Level prerequisite not met for new option"}
+	if new_opt.has("class_id") and not _choice_class_matches(c.class_id, c.class_levels, str(new_opt["class_id"])):
+		return {"allowed": false, "reason": "Class prerequisite not met for new option"}
+	if new_opt.has("when") and not SharedStepExecutor.evaluate_actor_predicate(new_opt["when"], c):
+		return {"allowed": false, "reason": "Predicate requirement not met for new option"}
+	var proposed := c.feature_choices.duplicate(true)
+	proposed[feature_id][current_choices.find(old_option_id)] = new_option_id
+	# Validate the resulting selections, including another occurrence of a repeated prerequisite.
+	for f_id in proposed:
+		var f_effect := feature_choice_effect(c, f_id)
+		var f_options: Dictionary = {}
+		for opt in f_effect.get("options", []):
+			f_options[str(opt.get("id", ""))] = opt
+		for ch in proposed[f_id]:
+			var active_opt: Dictionary = f_options.get(str(ch), {})
+			for req in active_opt.get("requires_choices", []):
+				if not proposed.values().any(func(selected): return req in selected):
+					return {"allowed": false, "reason": "Active choice '%s' requires '%s'" % [ch, req]}
+	# Spell capacity/list grants can support existing training without an explicit requires_choices field.
+	var class_data := DataLoader.get_character_class(c.class_id)
+	var subclass := DataLoader.get_subclass(c.subclass_id)
+	for feature in c.features:
+		for spell_effect in c._feature_effects(feature):
+			if spell_effect.get("type", "") != "spellcasting" or not proposed.has(str(feature.get("id", ""))):
+				continue
+			var spell_error := _saved_spell_choice_error(proposed[str(feature.id)], spell_effect, class_data, subclass, c.level, proposed, true, c.wizard_spellbook, c.get_class_level())
+			if not spell_error.is_empty():
+				return {"allowed": false, "reason": "Replacement would invalidate trained spells: " + spell_error}
+
+	return {"allowed": true, "reason": ""}
+
+
+static func _revoke_feature_option_grants(c: Character, feature_id: String, old_option_id: String) -> void:
+	if c == null:
+		return
+	var f_effect := feature_choice_effect(c, feature_id)
+	var old_effects: Array = []
+	for opt in f_effect.get("options", []):
+		if opt is Dictionary and str(opt.get("id", "")) == old_option_id:
+			old_effects = opt.get("effects", [])
+			break
+	if old_effects.is_empty():
+		return
+
+	var class_data := DataLoader.get_character_class(c.class_id)
+	var race_data := DataLoader.get_race(c.race_id)
+
+	for effect in old_effects:
+		if not effect is Dictionary or effect.get("type", "") != "proficiency_grant":
+			continue
+
+		for w in effect.get("weapon_proficiencies", []):
+			var w_str := str(w)
+			var keep := PermanentProgressionRules.retains(c, "weapon_proficiencies", w_str)
+			if w_str in class_data.get("weapon_proficiencies", []):
+				keep = true
+			if not keep:
+				for trait_val in race_data.get("traits", []):
+					if trait_val is Dictionary:
+						for r_eff in trait_val.get("effects", []):
+							if r_eff is Dictionary and r_eff.get("type", "") == "weapon_proficiency" and w_str in r_eff.get("weapons", []):
+								keep = true
+								break
+					if keep:
+						break
+			if not keep:
+				for feature in c.features:
+					for f_eff in c._feature_effects(feature):
+						if f_eff.get("type", "") == "proficiency_grant" and w_str in f_eff.get("weapon_proficiencies", []):
+							keep = true
+							break
+					if keep:
+						break
+			if not keep:
+				for act_eff in selected_feature_effects(c):
+					if act_eff.get("type", "") == "proficiency_grant" and w_str in act_eff.get("weapon_proficiencies", []):
+						keep = true
+						break
+			if not keep:
+				c.weapon_proficiencies.erase(w_str)
+
+		for a in effect.get("armor_proficiencies", []):
+			var a_str := str(a)
+			var keep := PermanentProgressionRules.retains(c, "armor_proficiencies", a_str)
+			if a_str in class_data.get("armor_proficiencies", []):
+				keep = true
+			if not keep:
+				for trait_val in race_data.get("traits", []):
+					if trait_val is Dictionary:
+						for r_eff in trait_val.get("effects", []):
+							if r_eff is Dictionary and r_eff.get("type", "") == "armor_proficiency" and a_str in r_eff.get("armor", []):
+								keep = true
+								break
+					if keep:
+						break
+			if not keep:
+				for feature in c.features:
+					for f_eff in c._feature_effects(feature):
+						if f_eff.get("type", "") == "proficiency_grant" and a_str in f_eff.get("armor_proficiencies", []):
+							keep = true
+							break
+					if keep:
+						break
+			if not keep:
+				for act_eff in selected_feature_effects(c):
+					if act_eff.get("type", "") == "proficiency_grant" and a_str in act_eff.get("armor_proficiencies", []):
+						keep = true
+						break
+			if not keep:
+				c.armor_proficiencies.erase(a_str)
+
+		for s in effect.get("skill_proficiencies", []):
+			var s_str := str(s)
+			var keep := PermanentProgressionRules.retains(c, "skill_proficiencies", s_str)
+			if s_str in race_data.get("proficiencies", []):
+				keep = true
+			if not keep and s_str in c.creation_choices.get("skills", []):
+				keep = true
+			if not keep and c.class_id == "fighter" and s_str in c.fighter_training.get("skills", []):
+				keep = true
+			if not keep:
+				for feature_id_check in skill_choice_ids(c):
+					if s_str in c.feature_choices.get(feature_id_check, []):
+						keep = true
+						break
+			if not keep:
+				for feature in c.features:
+					for f_eff in c._feature_effects(feature):
+						if f_eff.get("type", "") == "proficiency_grant" and s_str in f_eff.get("skill_proficiencies", []):
+							keep = true
+							break
+					if keep:
+						break
+			if not keep:
+				for act_eff in selected_feature_effects(c):
+					if act_eff.get("type", "") == "proficiency_grant" and s_str in act_eff.get("skill_proficiencies", []):
+						keep = true
+						break
+			if not keep:
+				c.skill_proficiencies.erase(s_str)
+
+
+static func replace_feature_option(c: Character, feature_id: String, old_option_id: String, new_option_id: String) -> bool:
+	var check := can_replace_feature_option(c, feature_id, old_option_id, new_option_id)
+	if not bool(check.get("allowed", false)):
+		return false
+	var list: Array = c.feature_choices[feature_id].duplicate()
+	var idx := list.find(old_option_id)
+	if idx < 0:
+		return false
+	list[idx] = new_option_id
+	c.feature_choices[feature_id] = list
+	_revoke_feature_option_grants(c, feature_id, old_option_id)
 	_apply_feature_choice_grants(c)
 	return true
 
 
 static func _apply_feature_choice_grants(c: Character) -> void:
+	if c == null:
+		return
 	for effect in selected_feature_effects(c):
 		if effect.get("type", "") != "proficiency_grant":
 			continue
@@ -206,6 +471,7 @@ static func _apply_feature_choice_grants(c: Character) -> void:
 		for proficiency in effect.get("skill_proficiencies", []):
 			if str(proficiency) not in c.skill_proficiencies:
 				c.skill_proficiencies.append(str(proficiency))
+
 	var base_extra := 0
 	for feature in c.features:
 		for effect in c._feature_effects(feature):
@@ -216,10 +482,20 @@ static func _apply_feature_choice_grants(c: Character) -> void:
 		if effect.get("type", "") == "extra_attack":
 			choice_extra = maxi(choice_extra, int(effect.get("count", 1)))
 	c.extra_attacks = maxi(base_extra, choice_extra)
+	var spellcasting_id := c.get_spellcasting_feature_id()
+	if not spellcasting_id.is_empty() and c.feature_choices.has(spellcasting_id):
+		var cantrips := 0
+		var prepared := 0
+		for spell_id in c.feature_choices[spellcasting_id]:
+			if int(DataLoader.get_spell(str(spell_id)).get("level", 0)) == 0: cantrips += 1
+			else: prepared += 1
+		if cantrips < c.get_spellcasting_capacity("cantrips") or prepared < c.get_spellcasting_capacity("prepared_spells"):
+			c.spell_choices_pending = true
 
 
 static func apply_feature_choice_grants(c: Character) -> void:
 	_apply_feature_choice_grants(c)
+
 
 static func choose_spell_selection(c: Character, spell_ids: Array[String]) -> bool:
 	if c == null or not c.spell_choices_pending:
@@ -383,21 +659,81 @@ static func copy_wizard_spell(destination: Character, source: Character, spell_i
 
 
 static func cast_wizard_ritual(c: Character, spell_id: String) -> Dictionary:
-	if c == null or c.class_id != "wizard" or not c.has_feature("wizard_ritual_adept"):
-		return {"success": false, "message": "Ritual casting requires a Wizard with Ritual Adept."}
+	return cast_ritual(c, spell_id)
+
+
+static func _spell_casting_time_seconds(spell: Dictionary) -> int:
+	if spell.has("cast_time_seconds"):
+		return clampi(int(spell.cast_time_seconds), 1, 86400)
+	match str(spell.get("casting_time", "action")):
+		"minute": return 60
+		"hour": return 3600
+		"action", "bonus_action", "reaction": return 6
+		_: return 6
+
+
+static func ritual_host_error(spell: Dictionary) -> String:
+	if spell.has("steps"):
+		return "This ritual needs an exploration control for its ordered steps."
+	if str(spell.get("target", "single")) != "self" or spell.has("damage") or spell.has("save") or str(spell.get("attack_type", "none")) != "none":
+		return "This ritual needs a target or room control; the character sheet supports self rituals."
+	if not SharedSpell.uses(spell):
+		if not SpellEffects.manages(spell) or spell.get("effects", []).is_empty():
+			return "This ritual needs its dedicated exploration control."
+		for effect in spell.get("effects", []):
+			if effect.get("type", "") != "grant_condition": return "This ritual needs its dedicated exploration control."
+	return ""
+
+
+static func cast_ritual(c: Character, spell_id: String, permission_id: String = "", expected_permission: Dictionary = {}) -> Dictionary:
+	if c == null:
+		return {"success": false, "message": "Ritual casting needs a caster."}
 	if GameManager.current_state == GameManager.GameState.COMBAT:
-		return {"success": false, "message": "Ritual casting takes at least 10 minutes and cannot be completed in combat."}
-	if spell_id not in c.wizard_spellbook:
-		return {"success": false, "message": "The spell must be recorded in your spellbook."}
+		return {"success": false, "message": "Ritual casting takes longer than a combat turn and cannot be completed in combat."}
+	if CombatAction.is_incapacitated(c) or c.is_dead():
+		return {"success": false, "message": "You cannot cast a ritual in this state."}
 	var spell := DataLoader.get_spell(spell_id)
 	var spell_level := int(spell.get("level", 0))
-	if spell.is_empty() or spell_level < 1 or spell_level > c.get_max_spell_slot_level() or not bool(spell.get("ritual", false)):
-		return {"success": false, "message": "That spell is not an eligible Wizard ritual."}
-	# Ritual resolution does not deduct a slot. The existing resolver applies
-	# whatever spell behavior this game currently models.
-	var result := CombatAction.resolve_spell(c, c, spell, false)
+	if spell.is_empty() or spell_level < 1 or not bool(spell.get("ritual", false)):
+		return {"success": false, "message": "That spell is not an eligible ritual."}
+	var eligible := SpellPermissionRules.ritual_permissions(c, spell)
+	var ritual_only_sources := eligible.filter(func(row): return bool(row.get("ritual_only", false)))
+	if permission_id.is_empty() and ritual_only_sources.size() == 1: eligible = ritual_only_sources
+	if permission_id.is_empty() and eligible.size() != 1:
+		return {"success": false, "message": "Choose one spell source for this ritual."}
+	var permission: Dictionary = {}
+	for candidate in eligible:
+		if permission_id.is_empty() or str(candidate.get("id", "")) == permission_id:
+			permission = candidate
+			break
+	if permission.is_empty(): return {"success": false, "message": "That spell source cannot cast this ritual."}
+	if not expected_permission.is_empty() and permission != expected_permission:
+		return {"success": false, "message": "That ritual source changed. Reopen the character sheet and select it again."}
+	var host_error := ritual_host_error(spell)
+	if not host_error.is_empty(): return {"success":false,"message":host_error}
+	var source_class := str(permission.get("class_id", c.class_id))
+	if not c.inventory.has_required_spell_component(spell, source_class):
+		return {"success": false, "message": "The spell's required components are unavailable."}
+	var cast_spell := spell.duplicate(true)
+	cast_spell["_source_permission_id"] = str(permission.id)
+	cast_spell["_source_permissions"] = eligible.duplicate(true)
+	cast_spell["_spellcasting_ability"] = str(permission.ability)
+	cast_spell["_ritual_cast"] = true
+	var ritual_extra_seconds := clampi(int(permission.get("ritual_time_seconds", 600)), 600, 86400)
+	var ritual_seconds := mini(86400, _spell_casting_time_seconds(spell) + ritual_extra_seconds)
+	var context := SpellCastContext.new()
+	context.caster = c
+	context.spell = cast_spell
+	context.ritual_seconds = ritual_seconds
+	context.component_instance_id = c.inventory.required_spell_component_instance(spell)
+	var result := CombatAction.resolve_spell(c, c, cast_spell, false, {}, [], 0, -1, context)
 	if bool(result.get("success", false)):
-		result["message"] = "%s (ritual; no spell slot used; takes 10 minutes longer). %s" % [spell.get("name", spell_id), result.get("message", "")]
+		if not SharedSpell.uses(cast_spell):
+			result = SharedSpell.apply(c, c, cast_spell, result)
+		if bool(spell.get("concentration", false)):
+			c.concentrating_on = {"spell_id":spell_id,"effect_source":str(result.get("effect_cast", {}).get("source_id", "")),"targets":[c]}
+		result["ritual_seconds"] = ritual_seconds
+		result["message"] = "%s (ritual; no spell slot used; takes %d minutes total). %s" % [spell.get("name", spell_id), int(ceil(float(ritual_seconds) / 60.0)), result.get("message", "")]
 	return result
 
 
@@ -469,7 +805,7 @@ static func pending_epic_boon_choices(c: Character) -> Array[String]:
 	return pending
 
 static func choose_epic_boon(c: Character, feature_id: String, boon: String, ability: String) -> bool:
-	if feature_id not in pending_epic_boon_choices(c) or ability not in AbilityScores.ABILITIES or c.ability_scores.get_score(ability) >= 30:
+	if feature_id not in pending_epic_boon_choices(c) or ability not in AbilityScores.ABILITIES or c.ability_scores.get_permanent_score(ability) >= 30:
 		return false
 	var feature := c.get_feature(feature_id)
 	var available: Array = []
@@ -552,7 +888,7 @@ static func improve_scores(c: Character, first: String, second: String) -> bool:
 	var gains := {first: 1}
 	gains[second] = int(gains.get(second, 0)) + 1
 	for ability in gains:
-		if c.ability_scores.get_score(ability) + int(gains[ability]) > 20:
+		if c.ability_scores.get_permanent_score(ability) + int(gains[ability]) > 20:
 			return false
 	for ability in gains:
 		increase_score(c, ability, int(gains[ability]))
@@ -563,16 +899,16 @@ static func improve_scores(c: Character, first: String, second: String) -> bool:
 	return true
 
 static func increase_score(c: Character, ability: String, amount: int) -> void:
-	var old_con := c.ability_scores.get_ability_modifier("CON")
+	var old_con := AbilityScores.get_modifier(c.ability_scores.get_permanent_score("CON"))
 	var maxima := {}
 	for feature in c.features:
 		if feature.get("uses_ability", "") == ability:
 			maxima[str(feature["id"])] = c.get_feature_max_uses(str(feature["id"]))
-	c.ability_scores.set_score(ability, c.ability_scores.get_score(ability) + amount)
+	c.ability_scores.set_score(ability, c.ability_scores.get_permanent_score(ability) + amount)
 	for id in maxima:
 		c.feature_uses[id] = mini(c.get_feature_max_uses(id), int(c.feature_uses.get(id, 0)) + maxi(0, c.get_feature_max_uses(id) - int(maxima[id])))
 	if ability == "CON":
-		var hp_gain := (c.ability_scores.get_ability_modifier("CON") - old_con) * c.level
+		var hp_gain := (AbilityScores.get_modifier(c.ability_scores.get_permanent_score("CON")) - old_con) * c.level
 		c.max_hp += hp_gain
 		c.current_hp += hp_gain
 
@@ -583,7 +919,7 @@ static func apply_fixed_score_increase(c: Character, effect: Dictionary) -> void
 	for ability in scores:
 		if str(ability).to_upper() not in AbilityScores.ABILITIES:
 			continue
-		var current := c.ability_scores.get_score(str(ability))
+		var current := c.ability_scores.get_permanent_score(str(ability))
 		var gained := mini(maxi(0, maximum - current), maxi(0, int(scores[ability])))
 		if gained > 0:
 			increase_score(c, str(ability), gained)
@@ -649,6 +985,9 @@ static func saved_choices_error(dto: Dictionary) -> String:
 	var class_id := str(dto.get("class_id", ""))
 	var data := DataLoader.get_character_class(class_id)
 	var level := int(dto.get("level", 1))
+	var allocation_error := Character.saved_class_levels_error(dto)
+	if not allocation_error.is_empty(): return allocation_error
+	var feature_level := int(dto.get("class_levels", {}).get(class_id, level))
 	var subclass_id: Variant = dto.get("subclass_id", data.get("legacy_subclass", "") if level >= int(data.get("subclass_level", 3)) else "")
 	if not subclass_id is String:
 		return "Subclass selection is not an ID"
@@ -666,6 +1005,8 @@ static func saved_choices_error(dto: Dictionary) -> String:
 		return "Feature choices are not an object"
 	if dto.has("spell_choices_pending") and not dto["spell_choices_pending"] is bool:
 		return "Spell-choice pending status is invalid"
+	var repertoire_error := SpellRepertoireRules.saved_error(dto)
+	if not repertoire_error.is_empty(): return repertoire_error
 	var wizard_spellbook: Variant = dto.get("wizard_spellbook", [])
 	if class_id == "wizard":
 		if not dto.has("wizard_spellbook"):
@@ -677,12 +1018,12 @@ static func saved_choices_error(dto: Dictionary) -> String:
 						wizard_spellbook.append(str(legacy_spell_id))
 		if not wizard_spellbook is Array:
 			return "Wizard spellbook is not an array"
-		var expected_learned := 6 + 2 * (level - 1)
+		var expected_learned := 6 + 2 * (feature_level - 1)
 		var pending_book_spells := int(dto.get("wizard_spellbook_pending", maxi(0, expected_learned - wizard_spellbook.size())))
 		if pending_book_spells < 0 or pending_book_spells > expected_learned or wizard_spellbook.size() + pending_book_spells < expected_learned:
 			return "Wizard spellbook learning count is invalid"
 		var allowed_book: Dictionary = {}
-		var wizard_max_spell_level := _max_spell_slot_level(data, level)
+		var wizard_max_spell_level := _max_spell_slot_level(data, feature_level)
 		for spell in DataLoader.get_spell_list_options(["wizard"]):
 			var spell_level := int(spell.get("level", -1))
 			if spell_level > 0 and spell_level <= wizard_max_spell_level:
@@ -696,13 +1037,13 @@ static func saved_choices_error(dto: Dictionary) -> String:
 		if not mastery is Dictionary:
 			return "Wizard Spell Mastery choices are invalid"
 		for spell_level in mastery:
-			if str(spell_level) not in ["1", "2"] or level < 18 or str(mastery[spell_level]) not in wizard_spellbook:
+			if str(spell_level) not in ["1", "2"] or feature_level < 18 or str(mastery[spell_level]) not in wizard_spellbook:
 				return "Wizard Spell Mastery choices are invalid"
 			var mastery_spell := DataLoader.get_spell(str(mastery[spell_level]))
 			if int(mastery_spell.get("level", -1)) != int(spell_level) or str(mastery_spell.get("casting_time", "action")) != "action":
 				return "Wizard Spell Mastery requires an action spell at the matching level"
 		var signature: Variant = dto.get("wizard_signature_spells", [])
-		if not signature is Array or signature.size() > 2 or (not signature.is_empty() and level < 20):
+		if not signature is Array or signature.size() > 2 or (not signature.is_empty() and feature_level < 20):
 			return "Wizard Signature Spell choices are invalid"
 		var seen_signature: Dictionary = {}
 		for signature_id in signature:
@@ -713,7 +1054,7 @@ static func saved_choices_error(dto: Dictionary) -> String:
 	for field in ["cleric_spells_trained", "cleric_preparation_free_change", "cleric_cantrip_replacement_available", "wizard_preparation_free_change", "wizard_memorize_spell_pending", "wizard_mastery_replacement_available"]:
 		if dto.has(field) and not dto[field] is bool:
 			return "Wizard preparation state is invalid"
-	if bool(dto.get("wizard_mastery_replacement_available", false)) and (class_id != "wizard" or level < 18):
+	if bool(dto.get("wizard_mastery_replacement_available", false)) and (class_id != "wizard" or feature_level < 18):
 		return "Wizard Spell Mastery replacement is unearned"
 	if class_id == "sorcerer":
 		var metamagic: Variant = dto.get("sorcerer_metamagic_choices", [])
@@ -798,9 +1139,12 @@ static func saved_choices_error(dto: Dictionary) -> String:
 	var proficiencies: Array = dto.get("skill_proficiencies", [])
 	var saved_expertise_choices: Array[String] = []
 	var mastery_effect: Dictionary = {}
+	var predicate_actor := Character.new()
+	predicate_actor.character_id = str(dto.get("character_id", ""))
+	predicate_actor.level = level
 	for source in [data, subclass]:
 		for level_key in source.get("features_by_level", {}):
-			if int(level_key) > level:
+			if int(level_key) > feature_level:
 				continue
 			for feature in source["features_by_level"][level_key]:
 				for effect in feature.get("effects", []):
@@ -819,6 +1163,10 @@ static func saved_choices_error(dto: Dictionary) -> String:
 					if effect.get("type", "") == "feature_choice":
 						feature_choice_entitlements[str(feature["id"])] = effect
 	# Retain the obsolete level-10 grant only when reconstructing an existing save.
+	var separate_spell_sources := {}
+	for source in SpellRepertoireRules.sources_for(class_id, level, dto.get("class_levels", {})):
+		spell_entitlements[source.id] = source
+		separate_spell_sources[source.id] = true
 	# New characters never receive this entitlement.
 	if class_id == "barbarian" and level >= 10 and choices.has("barbarian_primal_knowledge_10"):
 		skill_entitlements["barbarian_primal_knowledge_10"] = {"count": 1, "options": data.get("skill_choices", {}).get("from", [])}
@@ -827,14 +1175,42 @@ static func saved_choices_error(dto: Dictionary) -> String:
 			return "Feature choice references a missing or unearned improvement"
 		var abilities: Array = choices[id]
 		if feature_choice_entitlements.has(id):
-			var allowed_options: Array[String] = []
-			for option in feature_choice_entitlements[id].get("options", []):
-				allowed_options.append(str(option.get("id", "")))
-			if abilities.size() != 1 or not abilities[0] is String or str(abilities[0]) not in allowed_options:
-				return "Feature option choice must include exactly one available option"
+			var entitlement: Dictionary = feature_choice_entitlements[id]
+			var expected_count := int(entitlement.get("count", entitlement.get("pick", 1)))
+			if abilities.size() != expected_count:
+				return "Feature option choice count must match the required count"
+			var allowed_options: Dictionary = {}
+			for option in entitlement.get("options", []):
+				allowed_options[str(option.get("id", ""))] = option
+			var allow_duplicates := bool(entitlement.get("allow_duplicates", false))
+			var seen_choices := {}
+			for chosen_item in abilities:
+				if not chosen_item is String or not allowed_options.has(str(chosen_item)):
+					return "Feature option choice contains an invalid option"
+				var chosen_id := str(chosen_item)
+				var opt: Dictionary = allowed_options[chosen_id]
+				if not allow_duplicates and not bool(opt.get("repeatable", false)) and seen_choices.has(chosen_id):
+					return "Feature option choice cannot contain duplicates"
+				seen_choices[chosen_id] = true
+				if opt.has("minimum_level") and level < int(opt["minimum_level"]):
+					return "Feature option choice level prerequisite is not met"
+				if opt.has("class_id") and not _choice_class_matches(class_id, dto.get("class_levels", {}), str(opt["class_id"])):
+					return "Feature option choice class prerequisite is not met"
+				if opt.has("when") and not SharedStepExecutor.evaluate_actor_predicate(opt["when"], predicate_actor):
+					return "Feature option choice fact prerequisite is not met"
+				for req_choice in opt.get("requires_choices", []):
+					var req_met := false
+					for other_id in choices:
+						var other_list = choices[other_id]
+						if other_list is Array and str(req_choice) in other_list:
+							req_met = true
+							break
+					if not req_met:
+						return "Feature option choice prerequisite is not selected"
 			continue
 		if spell_entitlements.has(id):
-			var spell_error := _saved_spell_choice_error(abilities, spell_entitlements[id], data, subclass, level, choices, bool(dto.get("spell_choices_pending", false)), wizard_spellbook if class_id == "wizard" else [])
+			if separate_spell_sources.has(id): continue # Validated against its own class level/list above.
+			var spell_error := _saved_spell_choice_error(abilities, spell_entitlements[id], data, subclass, level, choices, bool(dto.get("spell_choices_pending", false)), wizard_spellbook if class_id == "wizard" else [], feature_level)
 			if not spell_error.is_empty():
 				return spell_error
 			continue
@@ -912,11 +1288,12 @@ static func saved_choices_error(dto: Dictionary) -> String:
 	return ""
 
 
-static func _saved_spell_choice_error(choice: Array, effect: Dictionary, class_data: Dictionary, subclass: Dictionary, level: int, feature_choices: Dictionary, allow_incomplete: bool, wizard_spellbook: Array = []) -> String:
+static func _saved_spell_choice_error(choice: Array, effect: Dictionary, class_data: Dictionary, subclass: Dictionary, level: int, feature_choices: Dictionary, allow_incomplete: bool, wizard_spellbook: Array = [], feature_level: int = -1) -> String:
+	var source_level := level if feature_level < 0 else feature_level
 	var capacities: Dictionary = effect.get("capacity_by_level", {})
 	var threshold := 0
 	for key in capacities:
-		if int(key) <= level and int(key) > threshold:
+		if int(key) <= source_level and int(key) > threshold:
 			threshold = int(key)
 	if threshold == 0:
 		return "Spellcasting choice has no capacity for this level"
@@ -924,43 +1301,37 @@ static func _saved_spell_choice_error(choice: Array, effect: Dictionary, class_d
 	var expected_cantrips := int(capacity.get("cantrips", 0))
 	var expected_prepared := int(capacity.get("prepared_spells", 0))
 	var spell_lists: Array = effect.get("spell_lists", []).duplicate()
+	var cantrip_lists: Array = [] if bool(effect.get("level_1_plus_only", false)) else spell_lists.duplicate()
+	var granted_effects: Array = []
 	for source in [class_data, subclass]:
 		for level_key in source.get("features_by_level", {}):
-			if int(level_key) > level:
-				continue
+			if int(level_key) > (level if feature_level < 0 else feature_level): continue
 			for feature in source["features_by_level"][level_key]:
-				var saved_option: Variant = feature_choices.get(str(feature.get("id", "")), [])
-				if not saved_option is Array or saved_option.size() != 1:
-					continue
-				for feature_effect in feature.get("effects", []):
+				for feature_effect in feature.get("effects", []) + feature.get("passive_effects", []):
 					if feature_effect.get("type", "") != "feature_choice":
+						granted_effects.append(feature_effect)
 						continue
-					for option in feature_effect.get("options", []):
-						if str(option.get("id", "")) != str(saved_option[0]):
-							continue
-						for option_effect in option.get("effects", []):
-							if option_effect.get("type", "") == "spell_list_expansion":
-								for list_id in option_effect.get("spell_lists", []):
-									if list_id not in spell_lists:
-										spell_lists.append(list_id)
-							elif option_effect.get("type", "") == "spellcasting_capacity_bonus":
-								if option_effect.get("kind", "") == "cantrips":
-									expected_cantrips += int(option_effect.get("amount", 0))
-								elif option_effect.get("kind", "") == "prepared_spells":
-									expected_prepared += int(option_effect.get("amount", 0))
-	for source in [class_data, subclass]:
-		for level_key in source.get("features_by_level", {}):
-			if int(level_key) > level:
-				continue
-			for feature in source["features_by_level"][level_key]:
-				for feature_effect in feature.get("effects", []):
-					if feature_effect.get("type", "") == "spell_list_expansion":
-						for list_id in feature_effect.get("spell_lists", []):
-							if list_id not in spell_lists:
-								spell_lists.append(list_id)
+					var saved_options: Variant = feature_choices.get(str(feature.get("id", "")), [])
+					if not saved_options is Array: continue
+					for selected_id in saved_options:
+						for option in feature_effect.get("options", []):
+							if str(option.get("id", "")) == str(selected_id):
+								granted_effects.append_array(option.get("effects", []))
+	for grant in granted_effects:
+		if grant.get("type", "") == "spellcasting_capacity_bonus":
+			if grant.get("kind", "") == "cantrips": expected_cantrips += int(grant.get("amount", 0))
+			elif grant.get("kind", "") == "prepared_spells": expected_prepared += int(grant.get("amount", 0))
+		elif grant.get("type", "") == "spell_list_expansion":
+			for list_id in grant.get("spell_lists", []):
+				if list_id not in spell_lists: spell_lists.append(list_id)
+				if not bool(grant.get("level_1_plus_only", false)) and list_id not in cantrip_lists: cantrip_lists.append(list_id)
+	var allowed_cantrips: Dictionary = {}
+	for spell in DataLoader.get_spell_list_options(cantrip_lists):
+		if int(spell.get("level", -1)) == 0: allowed_cantrips[str(spell.get("id", ""))] = true
 	var allowed: Dictionary = {}
 	for spell in DataLoader.get_spell_list_options(spell_lists):
-		allowed[str(spell.get("id", ""))] = spell
+		var spell_id := str(spell.get("id", ""))
+		if int(spell.get("level", -1)) != 0 or allowed_cantrips.has(spell_id): allowed[spell_id] = spell
 	if str(class_data.get("id", "")) == "wizard":
 		for spell_id in allowed.keys():
 			if int(allowed[spell_id].get("level", -1)) > 0 and spell_id not in wizard_spellbook:
@@ -968,7 +1339,7 @@ static func _saved_spell_choice_error(choice: Array, effect: Dictionary, class_d
 	var cantrip_count := 0
 	var prepared_count := 0
 	var seen: Dictionary = {}
-	var maximum_slot_level := _max_spell_slot_level(class_data, level)
+	var maximum_slot_level := _max_spell_slot_level(class_data, source_level)
 	for spell_id in choice:
 		if not spell_id is String or seen.has(spell_id) or not allowed.has(spell_id):
 			return "Spellcasting choice contains a duplicate or unavailable spell"

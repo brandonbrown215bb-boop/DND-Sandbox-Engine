@@ -1,0 +1,190 @@
+[
+  {
+    "id": "sandbox:formula_die_neutral",
+    "name": "Captured Measure",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 12,
+    "target": "single",
+    "school": "evocation",
+    "duration_seconds": 60,
+    "steps": [
+      {
+        "id": "rime_guard",
+        "type": "effect",
+        "target": "self",
+        "effects": [
+          {
+            "type": "heal",
+            "value": {
+              "op": "add",
+              "left": 1,
+              "right": 1
+            }
+          }
+        ]
+      },
+      {
+        "id": "rime_strike",
+        "type": "attack",
+        "attack_type": "ranged_spell",
+        "damage": "1d8",
+        "damage_type": "cold",
+        "effects": [
+          {
+            "type": "grant_condition",
+            "condition": "deafened",
+            "when": {
+              "all": [
+                {
+                  "fact": "resolution.window",
+                  "eq": "post_damage"
+                },
+                {
+                  "fact": "resolution.damage_hp_loss",
+                  "gt": 0
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "rime_hit_rider",
+        "type": "effect",
+        "gate": "hit",
+        "gate_step": "rime_strike",
+        "effects": [
+          {
+            "type": "grant_condition",
+            "condition": "restrained",
+            "when": {
+              "all": [
+                {
+                  "fact": "resolution.window",
+                  "eq": "post_damage"
+                },
+                {
+                  "fact": "resolution.final_hit",
+                  "eq": true
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "rime_miss_rider",
+        "type": "effect",
+        "gate": "miss",
+        "gate_step": "rime_strike",
+        "effects": [
+          {
+            "type": "grant_condition",
+            "condition": "poisoned"
+          }
+        ]
+      },
+      {
+        "id": "die_return",
+        "type": "effect",
+        "target": "self",
+        "effects": [
+          {
+            "type": "heal",
+            "value": {
+              "op": "multiply",
+              "left": {
+                "source_die": {
+                  "step": "rime_strike",
+                  "target": "cast_target",
+                  "pool_id": "fixture:post_roll_die_renamed_pool",
+                  "policy": "captured"
+                }
+              },
+              "right": 2
+            }
+          },
+          {
+            "type": "temporary_hp",
+            "value": {
+              "source_die": {
+                "step": "rime_strike",
+                "target": "cast_target",
+                "pool_id": "fixture:post_roll_die_renamed_pool",
+                "policy": "revalidate"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sandbox:formula_number_renamed",
+    "name": "Chosen Return",
+    "execution": "shared",
+    "level": 1,
+    "range": 6,
+    "target": "single",
+    "casting_time": "action",
+    "school": "evocation",
+    "formula_inputs": {
+      "amount": {
+        "kind": "number_choice",
+        "minimum": 1,
+        "maximum": 3,
+        "policy": "captured"
+      },
+      "captured_wis": {
+        "kind": "parameter",
+        "formula": {
+          "caster_ability_modifier": "WIS"
+        },
+        "policy": "captured"
+      },
+      "live_wis": {
+        "kind": "parameter",
+        "formula": {
+          "caster_ability_modifier": "WIS"
+        },
+        "policy": "live"
+      }
+    },
+    "steps": [
+      {
+        "id": "delay",
+        "type": "damage",
+        "target": "target",
+        "damage": "1d4",
+        "damage_type": "fire"
+      },
+      {
+        "id": "chosen_return",
+        "type": "effect",
+        "target": "self",
+        "effects": [
+          {
+            "type": "heal",
+            "value": {
+              "op": "add",
+              "left": {
+                "input_value": "amount"
+              },
+              "right": {
+                "input_value": "captured_wis"
+              }
+            }
+          },
+          {
+            "type": "temporary_hp",
+            "value": {
+              "input_value": "live_wis"
+            }
+          }
+        ]
+      }
+    ]
+  }
+]

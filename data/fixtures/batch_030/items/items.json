@@ -1,0 +1,38 @@
+[
+  {
+    "id": "fixture:030_iron_pebble",
+    "name": "Iron Pebble",
+    "type": "consumable",
+    "value": 1,
+    "size": "tiny",
+    "material": "iron",
+    "weight": 1.0,
+    "fixed": false
+  },
+  {
+    "id": "fixture:030_glass_vial",
+    "name": "Glass Vial",
+    "type": "consumable",
+    "value": 2,
+    "size": "tiny",
+    "material": "glass",
+    "weight": 0.5,
+    "fixed": false
+  },
+  {
+    "id": "fixture:030_iron_anvil",
+    "name": "Iron Anvil",
+    "type": "tool",
+    "value": 50,
+    "size": "medium",
+    "material": "iron",
+    "weight": 200.0,
+    "fixed": true
+  },
+  {
+    "id": "fixture:030_unknown_gadget",
+    "name": "Unknown Gadget",
+    "type": "tool",
+    "value": 10
+  }
+]

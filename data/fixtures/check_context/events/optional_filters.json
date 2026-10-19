@@ -1,0 +1,137 @@
+{
+  "table_id": "fixture:optional_filter_events",
+  "events": [
+    {
+      "id": "fixture:maintenance_plain",
+      "type": "skill_check",
+      "name": "Maintenance plain",
+      "description": "A bounded general check fixture.",
+      "check": {
+        "id": "maintenance_plain_check",
+        "skill": "Investigation",
+        "ability": "INT",
+        "dc": 100
+      },
+      "success": {
+        "description": "Passed.",
+        "effects": [
+          {
+            "type": "gold",
+            "value": 2
+          }
+        ]
+      },
+      "failure": {
+        "description": "Failed.",
+        "effects": [
+          {
+            "type": "gold",
+            "value": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "fixture:maintenance_alpha",
+      "type": "skill_check",
+      "name": "Maintenance alpha",
+      "description": "A bounded general check fixture.",
+      "check": {
+        "id": "maintenance_alpha_check",
+        "skill": "Investigation",
+        "ability": "INT",
+        "dc": 100,
+        "check_context": {
+          "task_id": "maintenance_alpha",
+          "purpose_id": "find_route"
+        }
+      },
+      "success": {
+        "description": "Passed.",
+        "effects": [
+          {
+            "type": "gold",
+            "value": 2
+          }
+        ]
+      },
+      "failure": {
+        "description": "Failed.",
+        "effects": [
+          {
+            "type": "gold",
+            "value": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "fixture:maintenance_beta",
+      "type": "skill_check",
+      "name": "Maintenance beta",
+      "description": "A bounded general check fixture.",
+      "check": {
+        "id": "maintenance_beta_check",
+        "skill": "Investigation",
+        "ability": "INT",
+        "dc": 100,
+        "check_context": {
+          "task_id": "maintenance_beta",
+          "purpose_id": "find_exit"
+        }
+      },
+      "success": {
+        "description": "Passed.",
+        "effects": [
+          {
+            "type": "gold",
+            "value": 2
+          }
+        ]
+      },
+      "failure": {
+        "description": "Failed.",
+        "effects": [
+          {
+            "type": "gold",
+            "value": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "fixture:maintenance_cancel",
+      "type": "skill_check",
+      "name": "Maintenance cancel",
+      "description": "A bounded general check fixture.",
+      "check": {
+        "id": "maintenance_cancel_check",
+        "skill": "Investigation",
+        "ability": "INT",
+        "dc": 100,
+        "check_context": {
+          "task_id": "maintenance_cancel",
+          "purpose_id": "find_route"
+        }
+      },
+      "success": {
+        "description": "Passed.",
+        "effects": [
+          {
+            "type": "gold",
+            "value": 2
+          }
+        ]
+      },
+      "failure": {
+        "description": "Failed.",
+        "effects": [
+          {
+            "type": "gold",
+            "value": 1
+          }
+        ]
+      }
+    }
+  ]
+}

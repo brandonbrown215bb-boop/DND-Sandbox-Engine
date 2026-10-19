@@ -155,6 +155,25 @@
               "reroll_mode": "whole_test",
               "bonus_dice_policy": "keep",
               "cost": 2
+            },
+            {
+              "type": "ability_check_mandatory_reroll",
+              "id": "renamed_choose_old_new_reroll",
+              "domain": "event_skill_check",
+              "ability": "WIS",
+              "skill": "Nature",
+              "task_id": "choose_reroll",
+              "purpose_id": "choose_old_new",
+              "required_tool_id": "fixture:field_guide",
+              "source_event_id": "fixture:chosen_reroll_event",
+              "source_check_id": "chosen_reroll_check",
+              "eligible_outcomes": ["failure", "success"],
+              "reroll_mode": "whole_test",
+              "bonus_dice_policy": "reroll",
+              "selection_policy": "choose_old_or_new",
+              "new_roll_mode": "advantage",
+              "level_bonus_formula": {"caster_level": true},
+              "cost": 1
             }
           ]
         }

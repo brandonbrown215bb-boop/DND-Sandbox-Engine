@@ -1,0 +1,41 @@
+{
+  "id": "ember_pack:cinder_lance",
+  "name": "Cinder Lance",
+  "description": "You hurl a mote of fire at a creature or object within range. Make a ranged spell attack. On a hit, the target takes 1d10 Fire damage.",
+  "level": 1,
+  "school": "evocation",
+  "casting_time": "action",
+  "range": 12,
+  "target": "single",
+  "attack_type": "ranged_spell",
+  "damage": "2d6",
+  "damage_type": "fire",
+  "components": [
+    "V",
+    "S"
+  ],
+  "rules_source": "SRD 5.2.1",
+  "rules_status": "2024-gameplay-partial",
+  "execution": "shared",
+  "targets_objects": true,
+  "ignites_objects": true,
+  "classes": [
+    "wizard",
+    "sorcerer"
+  ],
+  "duration": "Instantaneous",
+  "concentration": false,
+  "upcast": {
+    "damage_per_level": "1d6"
+  },
+  "_editor_meta": {
+    "parked_top_level": {
+      "source_unresolved_clauses": [
+        {
+          "clause": "Ignites unattended flammable objects",
+          "slice_dependency": "world_object_ignition"
+        }
+      ]
+    }
+  }
+}

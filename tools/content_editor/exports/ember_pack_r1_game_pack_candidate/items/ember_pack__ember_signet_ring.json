@@ -1,0 +1,27 @@
+{
+  "id": "ember_pack:ember_signet_ring",
+  "name": "Ember Signet Ring",
+  "type": "ring",
+  "rarity": "uncommon",
+  "value": 250,
+  "weight": 0.1,
+  "description": "Warm iron ring etched with a phoenix crest. Grants +1 AC and +5 ft walking speed while worn.",
+  "source_benefits": [
+    {
+      "stat": "AC",
+      "amount": 1
+    },
+    {
+      "stat": "speed",
+      "amount": 1
+    }
+  ],
+  "_editor_meta": {
+    "parked_top_level": {
+      "starting_equipment_classes": [
+        "wizard",
+        "fighter"
+      ]
+    }
+  }
+}

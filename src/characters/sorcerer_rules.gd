@@ -70,6 +70,9 @@ static func is_careful_spell_target(caster: Character, spell_data: Dictionary, t
 
 
 static func can_extend_spell(caster: Character, spell_data: Dictionary) -> bool:
+	# Fixed source-carrier durations have no captured upgrade policy yet.
+	if SharedSpell.has_effect(spell_data, "grant_source_benefits"):
+		return false
 	return caster != null and caster.class_id == "sorcerer" and caster.has_feature("sorcerer_metamagic") and "extended_spell" in caster.sorcerer_metamagic_choices and not bool(spell_data.get("_metamagic_extended", false)) and int(spell_data.get("duration_seconds", 0)) >= 60
 
 

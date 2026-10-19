@@ -22,6 +22,74 @@ static func run(check: Callable) -> void:
 	var first := _character("effects-first")
 	var second := _character("effects-second")
 	var ally := _character("effects-ally")
+	var end_rule_target := _character("effects-end-rule-target")
+	end_rule_target.current_hp = 20
+	end_rule_target.max_hp = 20
+	end_rule_target.is_alive = true
+	var causal_cast := SpellEffects.begin_cast(first, {"id": "neutral_causal_effect", "duration_seconds": 60})
+	causal_cast["source_end_rules"] = [{"event": "damage", "except_source_id": "this_source"}]
+	SpellEffects.grant(end_rule_target, causal_cast, "neutral_causal_effect")
+	SpellEffects.clear_source_end_events()
+	var own_damage := CombatAction.resolve_damage(end_rule_target, 4, "fire", {"damage_source_instance_id": str(causal_cast["source_id"])}, false, false, first)
+	check.call(int(own_damage.get("damage", 0)) == 4 and SpellEffects.source_end_events().is_empty() and SpellEffects.has_spell(end_rule_target, "neutral_causal_effect"), "A damage termination rule exempts only damage from its exact originating source")
+	var unrelated_damage := CombatAction.resolve_damage(end_rule_target, 4, "fire", {"damage_source_instance_id": "spell:effects-second:8"}, false, false, second)
+	var unrelated_end_events := SpellEffects.source_end_events()
+	check.call(int(unrelated_damage.get("damage", 0)) == 4 and unrelated_end_events.size() == 1 and unrelated_end_events[0].get("end_reason", "") == "damage" and unrelated_end_events[0].get("cause", {}).get("source_instance_id", "") == "spell:effects-second:8" and not SpellEffects.has_spell(end_rule_target, "neutral_causal_effect"), "Unrelated settled damage ends the exact source and publishes its causal end receipt")
+	var cast_rule_source := SpellEffects.begin_cast(first, {"id": "neutral_cast_effect", "duration_seconds": 60})
+	cast_rule_source["source_end_rules"] = [{"event": "cast", "actor": "recipient", "school": "abjuration", "paid_slot_level": 2}]
+	SpellEffects.grant(end_rule_target, cast_rule_source, "neutral_cast_effect")
+	check.call(SpellEffects.publish_event(end_rule_target, {"type": "cast", "actor_id": SpellEffects.caster_id(end_rule_target), "school": "abjuration", "paid_slot_level": 2, "completed": false}).is_empty(), "A cast attempt cannot publish completed-cast facts before resolution settles")
+	check.call(SpellEffects.publish_event(end_rule_target, {"type": "cast", "actor_id": SpellEffects.caster_id(end_rule_target), "school": "evocation", "paid_slot_level": 2, "completed": true}).is_empty() and SpellEffects.has_spell(end_rule_target, "neutral_cast_effect"), "A completed cast event with the wrong school cannot end the source")
+	var completed_cast_endings := SpellEffects.publish_event(end_rule_target, {"type": "cast", "actor_id": SpellEffects.caster_id(end_rule_target), "school": "abjuration", "spell_id": "neutral_test", "slot_level": 3, "paid_slot_level": 2, "completed": true, "source_instance_id": "spell:effects-end-rule-target:9"})
+	check.call(completed_cast_endings.size() == 1 and completed_cast_endings[0].get("end_reason", "") == "cast" and completed_cast_endings[0].get("cause", {}).get("paid_slot_level", -1) == 2 and not SpellEffects.has_spell(end_rule_target, "neutral_cast_effect"), "A matching completed cast ends only its subscribed source with paid slot and school facts")
+	var actual_cast_fact_target := _character("effects-cast-fact-target")
+	var cast_fact_source := SpellEffects.begin_cast(first, {"id": "neutral_cast_fact_effect", "duration_seconds": 60})
+	cast_fact_source["source_end_rules"] = [{"event": "cast", "actor": "recipient", "school": "enchantment", "paid_slot_level": 3}]
+	SpellEffects.grant(actual_cast_fact_target, cast_fact_source, "neutral_cast_fact_effect")
+	var completed_cast := SpellCastContext.new()
+	completed_cast.caster = actual_cast_fact_target
+	completed_cast.spell = {"id": "neutral_completed_cast", "school": "enchantment", "_effect_cast": {"source_id": "spell:effects-cast-fact-target:9"}}
+	completed_cast.slot_level_used = 3
+	completed_cast.incoming_slot_spent = true
+	completed_cast.successful = true
+	completed_cast.players = [{"character": actual_cast_fact_target}]
+	SpellCastResults._publish_completed_cast(completed_cast)
+	check.call(completed_cast.completed_cast_facts.get("completed", false) and completed_cast.completed_cast_facts.get("school", "") == "enchantment" and int(completed_cast.completed_cast_facts.get("slot_level", 0)) == 3 and int(completed_cast.completed_cast_facts.get("paid_slot_level", 0)) == 3 and not SpellEffects.has_spell(actual_cast_fact_target, "neutral_cast_fact_effect"), "The real cast completion publisher retains spell school, effective level and actual paid slot")
+	var equipment_source := SpellEffects.begin_cast(first, {"id": "neutral_equipment_effect", "duration_seconds": 60})
+	equipment_source["source_end_rules"] = [{"event": "equipment", "actor": "recipient", "equipment": "leather_armor", "state": "equipped"}]
+	SpellEffects.grant(end_rule_target, equipment_source, "neutral_equipment_effect")
+	var armor_added := end_rule_target.inventory.add_item("leather_armor")
+	var armor_equipped := end_rule_target.inventory.equip(Inventory.Slot.BODY, "leather_armor")
+	check.call(armor_added and armor_equipped == "" and end_rule_target.inventory.get_equipped(Inventory.Slot.BODY) == "leather_armor" and not SpellEffects.has_spell(end_rule_target, "neutral_equipment_effect"), "An actual successful equipment control publishes the matching gear event and ends the subscribed source")
+	var status_source := SpellEffects.begin_cast(first, {"id": "neutral_status_effect", "duration_seconds": 60})
+	status_source["source_end_rules"] = [{"event": "status", "actor": "recipient", "status": "poisoned", "state": "applied"}]
+	SpellEffects.grant(end_rule_target, status_source, "blessed")
+	CombatAction.apply_condition(end_rule_target, "poisoned", 2, "neutral_status_probe")
+	check.call(not SpellEffects.has_spell(end_rule_target, "neutral_status_effect") and end_rule_target.has_condition("poisoned"), "An applied status event ends only its matching source while keeping the newly applied condition")
+	var movement_source := SpellEffects.begin_cast(first, {"id": "neutral_movement_effect", "duration_seconds": 60})
+	movement_source["source_end_rules"] = [{"event": "movement", "actor": "recipient"}]
+	SpellEffects.grant(end_rule_target, movement_source, "shield_of_faith")
+	var moved_entity := {"id": end_rule_target.character_id, "character": end_rule_target, "hex_position": Vector2i.ZERO}
+	var movement_result := CombatAction.resolve_movement_step(moved_entity, Vector2i.ZERO, Vector2i.RIGHT)
+	check.call(movement_result.get("success", false) and not SpellEffects.has_spell(end_rule_target, "neutral_movement_effect"), "A successful movement step publishes its actor and ends the subscribed source")
+	var monster_movement_source := SpellEffects.begin_cast(first, {"id": "neutral_monster_movement_effect", "duration_seconds": 60})
+	monster_movement_source["source_end_rules"] = [{"event": "movement", "actor": "recipient"}]
+	var monster_movement_target := {"id": "effects-moving-monster", "is_alive": true, "conditions": {}, "condition_sources": {}, "spell_effects": {}}
+	SpellEffects.grant(monster_movement_target, monster_movement_source, "neutral_monster_movement_effect")
+	monster_movement_target["hex_position"] = Vector2i.ZERO
+	var monster_movement_result := CombatAction.resolve_movement_step(monster_movement_target, Vector2i.ZERO, Vector2i.RIGHT)
+	check.call(monster_movement_result.get("success", false) and not SpellEffects.has_spell(monster_movement_target, "neutral_monster_movement_effect"), "A successful monster movement step publishes its actor and ends the subscribed source")
+	var range_owner := _character("effects-range-owner")
+	var range_recipient := _character("effects-range-recipient")
+	var range_source := SpellEffects.begin_cast(range_owner, {"id": "neutral_range_effect", "duration_seconds": 60})
+	range_source["source_end_rules"] = [{"event": "range", "maximum_range_feet": 5}]
+	SpellEffects.grant(range_recipient, range_source, "blessed")
+	var range_host := CombatState.new()
+	range_host.player_entities = [{"character": range_owner, "hex_position": Vector2i.ZERO}, {"character": range_recipient, "hex_position": Vector2i(2, 0)}]
+	range_host._publish_source_range_events()
+	check.call(not SpellEffects.has_spell(range_recipient, "neutral_range_effect"), "A real encounter range recheck ends the source only after its recipient exceeds the authored distance")
+	range_host.free()
+	check.call(SharedSpell.source_end_rules_error([{"event": "range", "maximum_range_feet": 30}]).is_empty() and not SharedSpell.source_end_rules_error([{"event": "made_up"}]).is_empty() and not SharedSpell.source_end_rules_error([{"event": "damage", "arbitrary": true}]).is_empty(), "Source-end rule authoring accepts bounded range and rejects unknown event/fields")
 	var monster := {"id": "effects-monster", "name": "Effect target", "is_alive": true, "current_hp": 500, "max_hp": 500, "armor_class": 10, "creature_type": "humanoid", "conditions": {}, "saving_throw_bonuses": {"WIS": -100, "CON": -100}}
 	var sunburst_spell := DataLoader.get_spell("sunburst")
 	var sunburst_target := {"id": "sunburst-effect-target", "name": "Sunburst target", "is_alive": true, "current_hp": 500, "max_hp": 500, "armor_class": 10, "creature_type": "humanoid", "conditions": {}, "condition_sources": {}, "spell_effects": {}, "saving_throw_bonuses": {"CON": -100}}

@@ -1,0 +1,186 @@
+{
+  "id": "fixture:batch_j_renamed",
+  "name": "Batch J Renamed",
+  "description": "Test-only scoped numeric-pool weapon riders.",
+  "hit_die": "d8",
+  "primary_ability": "STR",
+  "features_by_level": {
+    "1": [
+      {
+        "id": "fixture:k_round",
+        "name": "K Round",
+        "executor": "class_feature",
+        "type": "active",
+        "target": "self",
+        "action_cost": "bonus_action",
+        "resource_cost": 1,
+        "resource_pool": {
+          "id": "fixture:k_round_pool",
+          "capacity_formula": 10,
+          "initial_quantity": 10
+        },
+        "effects": [
+          {
+            "type": "grant_condition",
+            "condition": "k_round",
+            "duration": 1
+          }
+        ],
+        "passive_effects": [
+          {
+            "type": "weapon_damage_rider",
+            "id": "k_round",
+            "trigger": "weapon_attack_hit",
+            "damage_type": "force",
+            "dice_by_level": {
+              "1": "1d6"
+            },
+            "use_limit": "once_per_round",
+            "own_turn_only": false
+          }
+        ]
+      },
+      {
+        "id": "fixture:k_first",
+        "name": "K First",
+        "executor": "class_feature",
+        "type": "active",
+        "target": "self",
+        "action_cost": "bonus_action",
+        "resource_cost": 1,
+        "resource_pool": {
+          "id": "fixture:k_first_pool",
+          "capacity_formula": 10,
+          "initial_quantity": 10
+        },
+        "effects": [
+          {
+            "type": "grant_condition",
+            "condition": "k_first",
+            "duration": 1
+          }
+        ],
+        "passive_effects": [
+          {
+            "type": "weapon_damage_rider",
+            "id": "k_first",
+            "trigger": "weapon_attack_hit",
+            "damage_type": "force",
+            "dice_by_level": {
+              "1": "1d6"
+            },
+            "use_limit": "once_per_round",
+            "first_round_only": true
+          }
+        ]
+      },
+      {
+        "id": "fixture:k_roll",
+        "name": "K Roll",
+        "executor": "class_feature",
+        "type": "active",
+        "target": "self",
+        "action_cost": "bonus_action",
+        "resource_cost": 1,
+        "resource_pool": {
+          "id": "fixture:k_roll_pool",
+          "capacity_formula": 10,
+          "initial_quantity": 10
+        },
+        "effects": [
+          {
+            "type": "grant_condition",
+            "condition": "k_roll",
+            "duration": 1
+          }
+        ],
+        "passive_effects": [
+          {
+            "type": "weapon_damage_rider",
+            "id": "k_roll",
+            "trigger": "weapon_attack_hit",
+            "damage_type": "force",
+            "dice_by_level": {
+              "1": "1d6"
+            },
+            "use_limit": "once_per_roll"
+          }
+        ]
+      },
+      {
+        "id": "fixture:k_active",
+        "name": "K Active",
+        "executor": "class_feature",
+        "type": "active",
+        "target": "self",
+        "action_cost": "bonus_action",
+        "resource_cost": 1,
+        "resource_pool": {
+          "id": "fixture:k_active_pool",
+          "capacity_formula": 10,
+          "initial_quantity": 10
+        },
+        "effects": [
+          {
+            "type": "timed_numeric_modifier",
+            "kind": "stat",
+            "key": "AC",
+            "amount": 1,
+            "duration_seconds": 60
+          }
+        ],
+        "passive_effects": [
+          {
+            "type": "weapon_damage_rider",
+            "id": "k_active",
+            "trigger": "weapon_attack_hit",
+            "damage_type": "force",
+            "dice_by_level": {
+              "1": "1d6"
+            },
+            "use_limit": "once_per_active_instance"
+          }
+        ]
+      },
+      {
+        "id": "fixture:k_waiver",
+        "name": "K Waiver",
+        "executor": "class_feature",
+        "type": "active",
+        "target": "self",
+        "action_cost": "bonus_action",
+        "resource_cost": 1,
+        "resource_pool": {
+          "id": "fixture:k_waiver_pool",
+          "capacity_formula": 10,
+          "initial_quantity": 10
+        },
+        "effects": [
+          {
+            "type": "timed_numeric_modifier",
+            "kind": "stat",
+            "key": "AC",
+            "amount": 1,
+            "duration_seconds": 60
+          }
+        ],
+        "passive_effects": [
+          {
+            "type": "weapon_damage_rider",
+            "id": "k_waiver",
+            "trigger": "weapon_attack_hit",
+            "damage_type": "force",
+            "dice_by_level": {
+              "1": "1d6"
+            },
+            "use_limit": "once_per_round",
+            "payment_waiver": {
+              "parent": "weapon_attack",
+              "requires_active_source": true
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

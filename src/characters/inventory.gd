@@ -27,9 +27,16 @@ var gold: int = 0
 
 ## Catalog projections above remain compatible; copies retain individual state.
 var copies := InventoryCopies.new()
+## Runtime owner link used only to publish actual equipment changes.
+var owner_character_ref: WeakRef
 
 ## Maximum backpack size.
 const MAX_BACKPACK_SIZE := 40
+
+func _publish_equipment_change(definition_id: String, state: String, instance_id: String) -> void:
+	var owner_character = owner_character_ref.get_ref() if owner_character_ref != null else null
+	if owner_character != null:
+		SpellEffects.publish_event(owner_character, {"type": "equipment", "actor_id": SpellEffects.caster_id(owner_character), "equipment": definition_id, "state": state, "instance_id": instance_id})
 
 
 ## Add an item to the backpack.
@@ -363,6 +370,7 @@ func equip(slot: Slot, item_id: String, allow_unowned: bool = false) -> String:
 		copies.records[record["instance_id"]] = record
 		copies.equipped[slot] = record["instance_id"]
 		equipped[slot] = item_id
+		_publish_equipment_change(item_id, "equipped", str(record["instance_id"]))
 	return previous
 
 
@@ -380,6 +388,7 @@ func unequip(slot: Slot) -> String:
 			return ""
 		equipped.erase(slot)
 		backpack.append(item_id)
+		_publish_equipment_change(item_id, "unequipped", instance_id)
 	return item_id
 
 
@@ -656,6 +665,7 @@ func destroy_instance(instance_id: String) -> Dictionary:
 	if slot_to_clear >= 0:
 		copies.equipped.erase(slot_to_clear)
 		equipped.erase(slot_to_clear)
+		_publish_equipment_change(str(record.get("definition_id", "")), "destroyed", instance_id)
 	else:
 		var index := copies.backpack.find(instance_id)
 		if index >= 0:
@@ -682,6 +692,7 @@ func drop_equipped_instance(slot: Slot) -> Dictionary:
 	copies.equipped.erase(slot)
 	copies.records.erase(instance_id)
 	equipped.erase(slot)
+	_publish_equipment_change(str(record.get("definition_id", "")), "dropped", instance_id)
 	return record
 
 
@@ -732,8 +743,10 @@ func equip_instance(slot: Slot, id: String) -> bool:
 	if not previous.is_empty():
 		copies.backpack.append(previous)
 		backpack.append(str(copies.records[previous]["definition_id"]))
+		_publish_equipment_change(str(copies.records[previous]["definition_id"]), "unequipped", previous)
 	copies.equipped[slot] = id
 	equipped[slot] = definition
+	_publish_equipment_change(definition, "equipped", id)
 	return true
 
 

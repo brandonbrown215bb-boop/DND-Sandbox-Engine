@@ -1,0 +1,196 @@
+[
+  {
+    "id": "fixture:batch024_plain",
+    "name": "Clock Recovery",
+    "hit_die": "d8",
+    "primary_ability": "WIS",
+    "spell_slots_by_character_level": { "1": [2] },
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:batch024_dawn_plain",
+          "name": "Dawn Recovery",
+          "type": "active",
+          "target": "self",
+          "executor": "class_feature",
+          "action_cost": "bonus_action",
+          "resource_pool": {
+            "id": "fixture:batch024_dawn_pool_plain",
+            "capacity_formula": 5,
+            "initial_quantity": 0,
+            "recovery": {
+              "dawn": { "mode": "restore_fixed", "amount": 2 }
+            }
+          },
+          "effects": [{ "type": "grant_condition", "condition": "batch024_ready", "duration": 1 }]
+        },
+        {
+          "id": "fixture:batch024_dusk_plain",
+          "name": "Dusk Recovery",
+          "type": "active",
+          "target": "self",
+          "executor": "class_feature",
+          "action_cost": "bonus_action",
+          "resource_pool": {
+            "id": "fixture:batch024_dusk_pool_plain",
+            "capacity_formula": 5,
+            "initial_quantity": 0,
+            "recovery": {
+              "dusk": { "mode": "restore_fixed", "amount_dice": { "count": 1, "faces": 4 } }
+            }
+          },
+          "effects": [{ "type": "grant_condition", "condition": "batch024_ready", "duration": 1 }]
+        },
+        {
+          "id": "fixture:batch024_cooldown_plain",
+          "name": "Cooldown Recovery",
+          "type": "active",
+          "target": "self",
+          "executor": "class_feature",
+          "action_cost": "bonus_action",
+          "resource_pool": {
+            "id": "fixture:batch024_cooldown_pool_plain",
+            "capacity_formula": 5,
+            "initial_quantity": 1,
+            "recovery": {
+              "cooldown": { "mode": "restore_fixed", "amount": 1, "cooldown_seconds": 1800 }
+            }
+          },
+          "effects": [{ "type": "grant_condition", "condition": "batch024_ready", "duration": 1 }]
+        },
+        {
+          "id": "fixture:batch024_budgeted_recovery_plain",
+          "name": "Bounded Recovery",
+          "type": "triggered",
+          "uses": 1,
+          "uses_per": "short_rest",
+          "effects": [{
+            "type": "rest_slot_recovery",
+            "trigger": "short_rest_completed",
+            "class_level_source": "self",
+            "budget_formula": "flat",
+            "flat_budget": 3,
+            "min_slot_level": 1,
+            "max_slot_level": 3,
+            "recoverable_pool_ids": ["fixture:batch024_dawn_pool_plain", "fixture:batch024_dusk_pool_plain"],
+            "excluded_resource_pool_ids": ["fixture:batch024_dusk_pool_plain"]
+          }]
+        },
+        {
+          "id": "fixture:batch024_paid_slot_recovery_plain",
+          "name": "Lower Than Paid Recovery",
+          "type": "triggered",
+          "uses": 2,
+          "uses_per": "long_rest",
+          "effects": [{
+            "type": "rest_slot_recovery",
+            "trigger": "spell_cast_completed",
+            "class_level_source": "self",
+            "budget_formula": "flat",
+            "flat_budget": 4,
+            "min_slot_level": 1,
+            "max_slot_level": 5,
+            "lower_than_paid_slot": true
+          }]
+        }
+      ]
+    }
+  },
+  {
+    "id": "fixture:batch024_renamed",
+    "name": "Clock Recovery Two",
+    "hit_die": "d8",
+    "primary_ability": "WIS",
+    "spell_slots_by_character_level": { "1": [2] },
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:batch024_restored_at_sunrise",
+          "name": "Sunrise Refill",
+          "type": "active",
+          "target": "self",
+          "executor": "class_feature",
+          "action_cost": "bonus_action",
+          "resource_pool": {
+            "id": "fixture:batch024_sunrise_pool",
+            "capacity_formula": 6,
+            "initial_quantity": 0,
+            "recovery": {
+              "dawn": { "mode": "restore_fixed", "amount": 3 }
+            }
+          },
+          "effects": [{ "type": "grant_condition", "condition": "batch024_ready", "duration": 1 }]
+        },
+        {
+          "id": "fixture:batch024_restored_at_sundown",
+          "name": "Sundown Refill",
+          "type": "active",
+          "target": "self",
+          "executor": "class_feature",
+          "action_cost": "bonus_action",
+          "resource_pool": {
+            "id": "fixture:batch024_sundown_pool",
+            "capacity_formula": 6,
+            "initial_quantity": 0,
+            "recovery": {
+              "dusk": { "mode": "restore_fixed", "amount_dice": { "count": 1, "faces": 6 } }
+            }
+          },
+          "effects": [{ "type": "grant_condition", "condition": "batch024_ready", "duration": 1 }]
+        },
+        {
+          "id": "fixture:batch024_restored_after_wait",
+          "name": "Wait Refill",
+          "type": "active",
+          "target": "self",
+          "executor": "class_feature",
+          "action_cost": "bonus_action",
+          "resource_pool": {
+            "id": "fixture:batch024_wait_pool",
+            "capacity_formula": 6,
+            "initial_quantity": 0,
+            "recovery": {
+              "cooldown": { "mode": "restore_to_capacity", "cooldown_seconds": 2400 }
+            }
+          },
+          "effects": [{ "type": "grant_condition", "condition": "batch024_ready", "duration": 1 }]
+        },
+        {
+          "id": "fixture:batch024_budgeted_recovery_renamed",
+          "name": "Bounded Recovery Two",
+          "type": "triggered",
+          "uses": 1,
+          "uses_per": "short_rest",
+          "effects": [{
+            "type": "rest_slot_recovery",
+            "trigger": "short_rest_completed",
+            "class_level_source": "self",
+            "budget_formula": "flat",
+            "flat_budget": 4,
+            "min_slot_level": 1,
+            "max_slot_level": 3,
+            "recoverable_pool_ids": ["fixture:batch024_sunrise_pool", "fixture:batch024_sundown_pool"],
+            "excluded_resource_pool_ids": ["fixture:batch024_sundown_pool"]
+          }]
+        },
+        {
+          "id": "fixture:batch024_lowest_recovery_renamed",
+          "name": "Lowest Slot Recovery",
+          "type": "triggered",
+          "uses": 2,
+          "uses_per": "long_rest",
+          "effects": [{
+            "type": "rest_slot_recovery",
+            "trigger": "spell_cast_completed",
+            "class_level_source": "self",
+            "budget_formula": "flat",
+            "flat_budget": 3,
+            "min_slot_level": 1,
+            "max_slot_level": 5,
+            "lowest_eligible_slot": true
+          }]
+        }
+      ]
+    }
+  }
+]

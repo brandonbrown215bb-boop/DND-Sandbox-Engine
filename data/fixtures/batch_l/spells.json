@@ -1,0 +1,98 @@
+[
+  {
+    "id": "fixture:l_spell_plain",
+    "name": "Carrier spell plain",
+    "execution": "shared",
+    "level": 1,
+    "school": "abjuration",
+    "casting_time": "action",
+    "range": 0,
+    "target": "self",
+    "attack_type": "none",
+    "components": [],
+    "classes": [
+      "cleric"
+    ],
+    "duration_seconds": 60,
+    "concentration": false,
+    "effects": [
+      {
+        "type": "grant_source_benefits",
+        "benefits": [
+          {
+            "stat": "AC",
+            "amount": 2
+          },
+          {
+            "stat": "speed",
+            "amount": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "fixture:l_spell_changed",
+    "name": "Carrier spell changed",
+    "execution": "shared",
+    "level": 1,
+    "school": "abjuration",
+    "casting_time": "action",
+    "range": 0,
+    "target": "self",
+    "attack_type": "none",
+    "components": [],
+    "classes": [
+      "cleric"
+    ],
+    "duration_seconds": 120,
+    "concentration": false,
+    "effects": [
+      {
+        "type": "grant_source_benefits",
+        "benefits": [
+          {
+            "stat": "AC",
+            "amount": 3
+          },
+          {
+            "stat": "speed",
+            "amount": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "fixture:l_spell_focus",
+    "name": "Carrier focus",
+    "execution": "shared",
+    "level": 1,
+    "school": "abjuration",
+    "casting_time": "action",
+    "range": 0,
+    "target": "self",
+    "attack_type": "none",
+    "components": [],
+    "classes": [
+      "cleric"
+    ],
+    "duration_seconds": 90,
+    "concentration": true,
+    "effects": [
+      {
+        "type": "grant_source_benefits",
+        "benefits": [
+          {
+            "stat": "AC",
+            "amount": 4
+          },
+          {
+            "stat": "speed",
+            "amount": 2
+          }
+        ]
+      }
+    ]
+  }
+]

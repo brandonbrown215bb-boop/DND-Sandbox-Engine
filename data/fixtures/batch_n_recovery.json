@@ -1,0 +1,336 @@
+[
+  {
+    "id": "fixture:n_class_plain",
+    "name": "Boundary recovery plain",
+    "hit_die": "d8",
+    "primary_ability": "WIS",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:n_fixed_plain",
+          "name": "Fixed plain",
+          "executor": "class_feature",
+          "type": "active",
+          "target": "self",
+          "action_cost": "bonus_action",
+          "resource_cost": 1,
+          "resource_pool": {
+            "id": "fixture:n_fixed_pool_plain",
+            "capacity_formula": 5,
+            "initial_quantity": 0,
+            "recovery": {
+              "turn_started": {
+                "mode": "restore_fixed",
+                "amount_formula": 1
+              }
+            }
+          },
+          "effects": [
+            {
+              "type": "grant_condition",
+              "condition": "n_ready",
+              "duration": 1
+            }
+          ]
+        },
+        {
+          "id": "fixture:n_floor_plain",
+          "name": "Floor plain",
+          "executor": "class_feature",
+          "type": "active",
+          "target": "self",
+          "action_cost": "bonus_action",
+          "resource_cost": 1,
+          "resource_pool": {
+            "id": "fixture:n_floor_pool_plain",
+            "capacity_formula": 6,
+            "initial_quantity": 0,
+            "recovery": {
+              "initiative_rolled": {
+                "mode": "restore_to_floor",
+                "amount_formula": {
+                  "caster_proficiency_bonus": true
+                }
+              },
+              "turn_started": {
+                "mode": "restore_to_floor",
+                "amount_formula": {
+                  "op": "add",
+                  "left": {
+                    "caster_proficiency_bonus": true
+                  },
+                  "right": 1
+                }
+              }
+            }
+          },
+          "effects": [
+            {
+              "type": "grant_condition",
+              "condition": "n_ready",
+              "duration": 1
+            }
+          ]
+        },
+        {
+          "id": "fixture:n_fill_plain",
+          "name": "Fill plain",
+          "executor": "class_feature",
+          "type": "active",
+          "target": "self",
+          "action_cost": "bonus_action",
+          "resource_cost": 1,
+          "resource_pool": {
+            "id": "fixture:n_fill_pool_plain",
+            "capacity_formula": 5,
+            "initial_quantity": 0,
+            "recovery": {
+              "turn_started": {
+                "mode": "restore_to_capacity"
+              }
+            }
+          },
+          "effects": [
+            {
+              "type": "grant_condition",
+              "condition": "n_ready",
+              "duration": 1
+            }
+          ]
+        },
+        {
+          "id": "fixture:n_choice_a_plain",
+          "name": "Choice_a plain",
+          "executor": "class_feature",
+          "type": "active",
+          "target": "self",
+          "action_cost": "bonus_action",
+          "resource_cost": 1,
+          "resource_pool": {
+            "id": "fixture:n_choice_a_pool_plain",
+            "capacity_formula": 7,
+            "initial_quantity": 0,
+            "recovery": {
+              "initiative_rolled": {
+                "mode": "restore_fixed",
+                "amount_formula": 2,
+                "choice_group": "boundary"
+              },
+              "turn_started": {
+                "mode": "restore_fixed",
+                "amount_formula": 1,
+                "choice_group": "boundary"
+              }
+            }
+          },
+          "effects": [
+            {
+              "type": "grant_condition",
+              "condition": "n_ready",
+              "duration": 1
+            }
+          ]
+        },
+        {
+          "id": "fixture:n_choice_b_plain",
+          "name": "Choice_b plain",
+          "executor": "class_feature",
+          "type": "active",
+          "target": "self",
+          "action_cost": "bonus_action",
+          "resource_cost": 1,
+          "resource_pool": {
+            "id": "fixture:n_choice_b_pool_plain",
+            "capacity_formula": 8,
+            "initial_quantity": 0,
+            "recovery": {
+              "initiative_rolled": {
+                "mode": "restore_to_floor",
+                "amount_formula": 4,
+                "choice_group": "boundary"
+              },
+              "turn_started": {
+                "mode": "restore_to_capacity",
+                "choice_group": "boundary"
+              }
+            }
+          },
+          "effects": [
+            {
+              "type": "grant_condition",
+              "condition": "n_ready",
+              "duration": 1
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "fixture:n_class_changed",
+    "name": "Boundary recovery changed",
+    "hit_die": "d8",
+    "primary_ability": "WIS",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:n_fixed_changed",
+          "name": "Fixed changed",
+          "executor": "class_feature",
+          "type": "active",
+          "target": "self",
+          "action_cost": "bonus_action",
+          "resource_cost": 1,
+          "resource_pool": {
+            "id": "fixture:n_fixed_pool_changed",
+            "capacity_formula": 5,
+            "initial_quantity": 0,
+            "recovery": {
+              "turn_started": {
+                "mode": "restore_fixed",
+                "amount_formula": 2
+              }
+            }
+          },
+          "effects": [
+            {
+              "type": "grant_condition",
+              "condition": "n_ready",
+              "duration": 1
+            }
+          ]
+        },
+        {
+          "id": "fixture:n_floor_changed",
+          "name": "Floor changed",
+          "executor": "class_feature",
+          "type": "active",
+          "target": "self",
+          "action_cost": "bonus_action",
+          "resource_cost": 1,
+          "resource_pool": {
+            "id": "fixture:n_floor_pool_changed",
+            "capacity_formula": 6,
+            "initial_quantity": 0,
+            "recovery": {
+              "initiative_rolled": {
+                "mode": "restore_to_floor",
+                "amount_formula": {
+                  "caster_ability_modifier": "WIS"
+                }
+              },
+              "turn_started": {
+                "mode": "restore_to_floor",
+                "amount_formula": {
+                  "op": "add",
+                  "left": {
+                    "caster_ability_modifier": "WIS"
+                  },
+                  "right": 1
+                }
+              }
+            }
+          },
+          "effects": [
+            {
+              "type": "grant_condition",
+              "condition": "n_ready",
+              "duration": 1
+            }
+          ]
+        },
+        {
+          "id": "fixture:n_fill_changed",
+          "name": "Fill changed",
+          "executor": "class_feature",
+          "type": "active",
+          "target": "self",
+          "action_cost": "bonus_action",
+          "resource_cost": 1,
+          "resource_pool": {
+            "id": "fixture:n_fill_pool_changed",
+            "capacity_formula": 6,
+            "initial_quantity": 0,
+            "recovery": {
+              "turn_started": {
+                "mode": "restore_to_capacity"
+              }
+            }
+          },
+          "effects": [
+            {
+              "type": "grant_condition",
+              "condition": "n_ready",
+              "duration": 1
+            }
+          ]
+        },
+        {
+          "id": "fixture:n_choice_a_changed",
+          "name": "Choice_a changed",
+          "executor": "class_feature",
+          "type": "active",
+          "target": "self",
+          "action_cost": "bonus_action",
+          "resource_cost": 1,
+          "resource_pool": {
+            "id": "fixture:n_choice_a_pool_changed",
+            "capacity_formula": 7,
+            "initial_quantity": 0,
+            "recovery": {
+              "initiative_rolled": {
+                "mode": "restore_fixed",
+                "amount_formula": 3,
+                "choice_group": "boundary"
+              },
+              "turn_started": {
+                "mode": "restore_fixed",
+                "amount_formula": 2,
+                "choice_group": "boundary"
+              }
+            }
+          },
+          "effects": [
+            {
+              "type": "grant_condition",
+              "condition": "n_ready",
+              "duration": 1
+            }
+          ]
+        },
+        {
+          "id": "fixture:n_choice_b_changed",
+          "name": "Choice_b changed",
+          "executor": "class_feature",
+          "type": "active",
+          "target": "self",
+          "action_cost": "bonus_action",
+          "resource_cost": 1,
+          "resource_pool": {
+            "id": "fixture:n_choice_b_pool_changed",
+            "capacity_formula": 8,
+            "initial_quantity": 0,
+            "recovery": {
+              "initiative_rolled": {
+                "mode": "restore_to_floor",
+                "amount_formula": 5,
+                "choice_group": "boundary"
+              },
+              "turn_started": {
+                "mode": "restore_to_capacity",
+                "choice_group": "boundary"
+              }
+            }
+          },
+          "effects": [
+            {
+              "type": "grant_condition",
+              "condition": "n_ready",
+              "duration": 1
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

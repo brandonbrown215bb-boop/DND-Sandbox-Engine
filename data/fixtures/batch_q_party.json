@@ -1,0 +1,306 @@
+[
+  {
+    "id": "fixture:q_class_plain",
+    "name": "Party rules plain",
+    "hit_die": "d8",
+    "primary_ability": "WIS",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:q_fixed_total_plain",
+          "name": "Fixed_Total plain",
+          "executor": "class_feature",
+          "type": "active",
+          "target": "self",
+          "action_cost": "bonus_action",
+          "resource_pool": {
+            "id": "fixture:q_pool_fixed_total_plain",
+            "capacity_formula": 4,
+            "initial_quantity": 4,
+            "recovery": {
+              "long_rest_completed": {
+                "mode": "restore_to_capacity"
+              }
+            }
+          },
+          "effects": [],
+          "allocation": {
+            "mode": "fixed_total",
+            "effect": "heal",
+            "max_recipients": 2,
+            "per_target_cap": 7,
+            "unspent_policy": "forfeit",
+            "cancel_policy": "no_payment",
+            "total_formula": 12
+          }
+        },
+        {
+          "id": "fixture:q_rolled_total_plain",
+          "name": "Rolled_Total plain",
+          "executor": "class_feature",
+          "type": "active",
+          "target": "self",
+          "action_cost": "bonus_action",
+          "resource_pool": {
+            "id": "fixture:q_pool_rolled_total_plain",
+            "capacity_formula": 4,
+            "initial_quantity": 4,
+            "recovery": {
+              "long_rest_completed": {
+                "mode": "restore_to_capacity"
+              }
+            }
+          },
+          "effects": [],
+          "allocation": {
+            "mode": "rolled_total",
+            "effect": "heal",
+            "max_recipients": 2,
+            "per_target_cap": 7,
+            "unspent_policy": "forfeit",
+            "cancel_policy": "forfeit",
+            "die_size": 6
+          }
+        },
+        {
+          "id": "fixture:q_captured_dice_plain",
+          "name": "Captured_Dice plain",
+          "executor": "class_feature",
+          "type": "active",
+          "target": "self",
+          "action_cost": "bonus_action",
+          "resource_pool": {
+            "id": "fixture:q_pool_captured_dice_plain",
+            "capacity_formula": 4,
+            "initial_quantity": 4,
+            "recovery": {
+              "long_rest_completed": {
+                "mode": "restore_to_capacity"
+              }
+            },
+            "die_size": 4,
+            "capture_policy": "on_acquire",
+            "upgrade_policy": "new_dice_only",
+            "spend_choice": {
+              "minimum": 1,
+              "maximum": 4
+            }
+          },
+          "effects": [],
+          "allocation": {
+            "mode": "captured_dice",
+            "effect": "heal",
+            "max_recipients": 2,
+            "per_target_cap": 2,
+            "unspent_policy": "retain_unselected_dice",
+            "cancel_policy": "no_payment"
+          }
+        },
+        {
+          "id": "fixture:q_help_plain",
+          "name": "Help plain",
+          "executor": "class_feature",
+          "type": "active",
+          "target": "self",
+          "action_cost": "free",
+          "resource_pool": {
+            "id": "fixture:q_pool_help_plain",
+            "capacity_formula": 4,
+            "initial_quantity": 4,
+            "recovery": {
+              "long_rest_completed": {
+                "mode": "restore_to_capacity"
+              }
+            }
+          },
+          "effects": [],
+          "roll_intervention": {
+            "domain": "weapon_attack",
+            "amount": 5,
+            "use_cost": "reaction"
+          }
+        },
+        {
+          "id": "fixture:q_gift_plain",
+          "name": "Gift plain",
+          "executor": "class_feature",
+          "type": "active",
+          "target": "self",
+          "action_cost": "bonus_action",
+          "resource_pool": {
+            "id": "fixture:q_pool_gift_plain",
+            "capacity_formula": 4,
+            "initial_quantity": 4,
+            "recovery": {
+              "long_rest_completed": {
+                "mode": "restore_to_capacity"
+              }
+            }
+          },
+          "effects": [],
+          "transfer_grant": {
+            "kind": "die",
+            "value_policy": "shared_roll",
+            "die_size": 6,
+            "effect": "weapon_attack_bonus",
+            "use_cost": "reaction",
+            "duration_seconds": 60,
+            "max_recipients": 2
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "fixture:q_class_changed",
+    "name": "Party rules changed",
+    "hit_die": "d8",
+    "primary_ability": "WIS",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:q_fixed_total_changed",
+          "name": "Fixed_Total changed",
+          "executor": "class_feature",
+          "type": "active",
+          "target": "self",
+          "action_cost": "bonus_action",
+          "resource_pool": {
+            "id": "fixture:q_pool_fixed_total_changed",
+            "capacity_formula": 4,
+            "initial_quantity": 4,
+            "recovery": {
+              "long_rest_completed": {
+                "mode": "restore_to_capacity"
+              }
+            }
+          },
+          "effects": [],
+          "allocation": {
+            "mode": "fixed_total",
+            "effect": "temporary_hp",
+            "max_recipients": 2,
+            "per_target_cap": 7,
+            "unspent_policy": "forfeit",
+            "cancel_policy": "no_payment",
+            "total_formula": 8
+          }
+        },
+        {
+          "id": "fixture:q_rolled_total_changed",
+          "name": "Rolled_Total changed",
+          "executor": "class_feature",
+          "type": "active",
+          "target": "self",
+          "action_cost": "bonus_action",
+          "resource_pool": {
+            "id": "fixture:q_pool_rolled_total_changed",
+            "capacity_formula": 4,
+            "initial_quantity": 4,
+            "recovery": {
+              "long_rest_completed": {
+                "mode": "restore_to_capacity"
+              }
+            }
+          },
+          "effects": [],
+          "allocation": {
+            "mode": "rolled_total",
+            "effect": "temporary_hp",
+            "max_recipients": 2,
+            "per_target_cap": 7,
+            "unspent_policy": "forfeit",
+            "cancel_policy": "forfeit",
+            "die_size": 8
+          }
+        },
+        {
+          "id": "fixture:q_captured_dice_changed",
+          "name": "Captured_Dice changed",
+          "executor": "class_feature",
+          "type": "active",
+          "target": "self",
+          "action_cost": "bonus_action",
+          "resource_pool": {
+            "id": "fixture:q_pool_captured_dice_changed",
+            "capacity_formula": 4,
+            "initial_quantity": 4,
+            "recovery": {
+              "long_rest_completed": {
+                "mode": "restore_to_capacity"
+              }
+            },
+            "die_size": 6,
+            "capture_policy": "on_acquire",
+            "upgrade_policy": "new_dice_only",
+            "spend_choice": {
+              "minimum": 1,
+              "maximum": 4
+            }
+          },
+          "effects": [],
+          "allocation": {
+            "mode": "captured_dice",
+            "effect": "temporary_hp",
+            "max_recipients": 2,
+            "per_target_cap": 2,
+            "unspent_policy": "retain_unselected_dice",
+            "cancel_policy": "no_payment"
+          }
+        },
+        {
+          "id": "fixture:q_help_changed",
+          "name": "Help changed",
+          "executor": "class_feature",
+          "type": "active",
+          "target": "self",
+          "action_cost": "free",
+          "resource_pool": {
+            "id": "fixture:q_pool_help_changed",
+            "capacity_formula": 4,
+            "initial_quantity": 4,
+            "recovery": {
+              "long_rest_completed": {
+                "mode": "restore_to_capacity"
+              }
+            }
+          },
+          "effects": [],
+          "roll_intervention": {
+            "domain": "weapon_attack",
+            "amount": 8,
+            "use_cost": "reaction"
+          }
+        },
+        {
+          "id": "fixture:q_gift_changed",
+          "name": "Gift changed",
+          "executor": "class_feature",
+          "type": "active",
+          "target": "self",
+          "action_cost": "bonus_action",
+          "resource_pool": {
+            "id": "fixture:q_pool_gift_changed",
+            "capacity_formula": 4,
+            "initial_quantity": 4,
+            "recovery": {
+              "long_rest_completed": {
+                "mode": "restore_to_capacity"
+              }
+            }
+          },
+          "effects": [],
+          "transfer_grant": {
+            "kind": "die",
+            "value_policy": "shared_roll",
+            "die_size": 8,
+            "effect": "weapon_attack_bonus",
+            "use_cost": "reaction",
+            "duration_seconds": 90,
+            "max_recipients": 2
+          }
+        }
+      ]
+    }
+  }
+]

@@ -1,0 +1,17 @@
+[
+  {
+    "id": "fixture:028_draught",
+    "name": "Strike draught",
+    "type": "consumable",
+    "action_cost": "action",
+    "attack_unit_substitution": {
+      "units": 2
+    },
+    "effects": [
+      {
+        "type": "heal",
+        "value": "4"
+      }
+    ]
+  }
+]

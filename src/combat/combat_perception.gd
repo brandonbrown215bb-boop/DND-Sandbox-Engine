@@ -55,6 +55,19 @@ static func can_see_target(observer, target, observer_position: Vector2i, target
 	return _target_is_illuminated(observer, target_position, grid, distance_feet)
 
 
+## Checks only senses with an existing production owner. Unknown sense names are
+## unavailable instead of silently falling back to sight or a caller assertion.
+static func has_required_sense(observer, target, observer_position: Vector2i, target_position: Vector2i, grid: HexGrid, sense: String) -> bool:
+	var distance_feet := HexUtils.get_distance(observer_position, target_position) * 5
+	match sense:
+		"see":
+			return can_see_target(observer, target, observer_position, target_position, grid)
+		"darkvision":
+			return _darkvision_range_feet(observer) >= distance_feet and _darkvision_range_feet(observer) > 0 and not _has_condition(observer, "blinded") and can_see_target(observer, target, observer_position, target_position, grid)
+		_:
+			return false
+
+
 static func _target_is_illuminated(observer, target: Vector2i, grid: HexGrid, distance_feet: int) -> bool:
 	if illumination_level_at(grid, target) != "dark" or _has_truesight(observer, distance_feet) or _has_blindsight(observer, distance_feet):
 		return true

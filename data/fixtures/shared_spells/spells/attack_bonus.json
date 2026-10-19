@@ -80,6 +80,18 @@
                 {
                   "fact": "resolution.final_hit",
                   "eq": true
+                },
+                {
+                  "child_group": {
+                    "mode": "all",
+                    "steps": [
+                      "rime_strike"
+                    ],
+                    "targets": "cast_target",
+                    "outcome": "hit",
+                    "empty": "fail",
+                    "skipped": "exclude"
+                  }
                 }
               ]
             }

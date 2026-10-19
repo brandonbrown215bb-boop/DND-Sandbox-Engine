@@ -2,9 +2,17 @@
 class_name SpellSaveResolver
 extends RefCounted
 
+## Components consume one occurrence's edit budget in authored order. Read the
+## roll receipt as well when area damage reuses an already captured primary roll.
+static func _consume_dice_policy(remaining: Dictionary, details: Dictionary) -> void:
+	var applied: Dictionary = details.get("damage_dice_policy", {})
+	for field in ["remove", "maximize"]:
+		if remaining.has(field):
+			remaining[field] = maxi(0, int(remaining[field]) - int(applied.get("removed" if field == "remove" else "maximized", 0)))
+
 static func resolve(cast: SpellResolutionContext) -> Dictionary:
 	var save_ability: String = cast.spell.get("save", "DEX")
-	var save_dc := 15 if str(cast.spell.get("id", "")) == "contact_other_plane" else int(cast.spell.get("_save_dc_override", cast.caster.get_spell_save_dc()))
+	var save_dc := 15 if str(cast.spell.get("id", "")) == "contact_other_plane" else int(cast.spell.get("_save_dc_override", SpellPermissionRules.save_dc(cast.caster, cast.spell)))
 	var contact_patron_saved := str(cast.spell.get("id", "")) == "contact_other_plane" and cast.caster.has_feature("warlock_contact_patron")
 	var willing_target_no_save := bool(cast.spell.get("willing_target_skips_save", false)) and cast.target is Character
 	var careful_saved := not willing_target_no_save and SorcererRules.is_careful_spell_target(cast.caster, cast.spell, cast.target, cast.decisions.get("metamagic:careful_targets", []))
@@ -67,15 +75,23 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 		save_roll = int(save_test.get("total", 0))
 		if save_ability in ["STR", "DEX"] and cast.target.get("conditions", {}).has("stunned"):
 			save_roll = -1000
+	var save_context_receipt := SpellDamageRolls.save_context_receipt(cast)
+	if save_context_receipt.is_empty():
+		save_test.erase("save_context")
+	else:
+		save_test["save_context"] = save_context_receipt.duplicate(true)
 
 	var outcome_override := str(save_test.get("outcome_override", ""))
 	var saved := outcome_override == "success" or (outcome_override != "failure" and (contact_patron_saved or careful_saved or (not willing_target_no_save and save_roll >= save_dc)))
 	var target_name: String = cast.target.character_name if cast.target is Character else str(cast.target.get("name", "Target"))
 	var countercharm_used := bool(cached_post_roll_flags.get("countercharm_used", false))
 	var inflicted_condition := str(cast.spell.get("condition_on_failed_save", ""))
-	if SharedSpell.uses(cast.spell) and CombatAction.spell_grants_condition(cast.spell, "frightened"):
+	if SharedSpell.uses(cast.spell):
 		# SharedSpell applies the grant; this name only enables Countercharm.
-		inflicted_condition = "frightened"
+		for candidate in ["charmed", "frightened"]:
+			if CombatAction.spell_grants_condition(cast.spell, candidate):
+				inflicted_condition = candidate
+				break
 	if cached_save_test.is_empty() and not saved and not automatically_fails and cast.target is Character and inflicted_condition in ["charmed", "frightened"]:
 		for observer in cast.observers:
 			if not observer is Character or not observer.is_alive or CombatAction.is_incapacitated(observer) or not observer.has_feature("bard_countercharm") or not observer.reaction_available:
@@ -113,7 +129,7 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 	var shared_spell := SharedSpell.uses(cast.spell) or bool(cast.spell.get("_shared_spell_step", false))
 	var has_rolled_save := save_test.has("natural_roll") or save_test.has("natural")
 	if shared_spell and SpellDamageRolls.has_failed_save_choice_host(cast.decisions) and not automatically_fails and not willing_target_no_save and not careful_saved and not contact_patron_saved and cast.target is Character and cached_save_test.is_empty() and has_rolled_save:
-		var bonus_options := SpellDamageRolls.failed_save_choice_options(cast.target, save_ability, saved)
+		var bonus_options := SpellDamageRolls.failed_save_choice_options(cast.target, save_ability, saved, cast, save_test)
 		if not bonus_options.is_empty():
 			save_test["_post_roll_flags"] = {"heightened": heightened, "stroke_of_luck_used": stroke_of_luck_used, "bardic_inspiration_used": bardic_inspiration_used, "countercharm_used": countercharm_used}
 			return SpellDamageRolls.create_failed_save_numeric_bonus_request(cast, cast.target, save_ability, save_test, result_key, bonus_options, saved)
@@ -128,7 +144,9 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 	var damage_str := SpellDamageRolls.spell_damage_formula(cast.caster, primary_damage_spell, cast.slot_level)
 	var damage_type: String = primary_component.get("damage_type", cast.spell.get("damage_type", "fire"))
 	component_counts[damage_type] = 1
-	var damage_details := SpellDamageRolls._roll_spell_damage(cast.caster, damage_str, 1, cast.decisions) if cast.has_damage_payload else {"dice_terms": [], "final_total": 0}
+	var damage_details := SpellDamageRolls._roll_spell_damage(cast.caster, damage_str, 1, cast.decisions, cast.spell.get("damage_dice_policy", {})) if cast.has_damage_payload else {"dice_terms": [], "final_total": 0}
+	var remaining_dice_policy: Dictionary = cast.spell.get("damage_dice_policy", {}).duplicate()
+	_consume_dice_policy(remaining_dice_policy, damage_details)
 	var additional_damage_packets: Array[Dictionary] = []
 	for component_index in range(1, damage_components.size()):
 		var component: Dictionary = damage_components[component_index]
@@ -136,7 +154,8 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 		var component_formula := SpellDamageRolls.spell_damage_formula(cast.caster, component_spell, cast.slot_level)
 		var component_decisions := cast.decisions.duplicate()
 		component_decisions.erase("spell_damage_context")
-		var component_details := SpellDamageRolls._roll_spell_damage(cast.caster, component_formula, 1, component_decisions)
+		var component_details := SpellDamageRolls._roll_spell_damage(cast.caster, component_formula, 1, component_decisions, remaining_dice_policy)
+		_consume_dice_policy(remaining_dice_policy, component_details)
 		additional_damage_packets.append({
 			"component_id": str(component.get("id", "%s:%d" % [str(component.get("damage_type", "fire")), int(component_counts.get(str(component.get("damage_type", "fire")), 0)) + 1])),
 			"details": component_details,
@@ -165,6 +184,12 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 	var save_outcome := "success" if saved else "failure"
 	if cast.spell.has("damage_scale_by_outcome") and not has_evasion and not careful_saved:
 		damage_scale = SharedSpell.authored_damage_scale(cast.spell, save_outcome, damage_scale)
+	var recipient_damage_receipt: Dictionary = _recipient_damage_map(cast, save_outcome) if not has_evasion and not careful_saved else {}
+	if not recipient_damage_receipt.is_empty():
+		damage_scale = float(recipient_damage_receipt.get("scale", damage_scale))
+	var exemption_receipt := _recipient_damage_exemption(cast)
+	if not exemption_receipt.is_empty():
+		damage_scale = 0.0
 	var msg := ""
 	if outcome_override in ["success", "failure"]:
 		msg = "%s's %s save was overridden to %s by %s (natural roll %d, total %d vs DC %d)." % [target_name, save_ability, outcome_override, str(save_test.get("outcome_override_source", "an owned source")), int(save_test.get("natural_roll", save_test.get("natural", save_roll))), save_roll, save_dc]
@@ -207,10 +232,16 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 	var effective_save_disadvantage: bool = (target_save_disadvantage or heightened) and not target_save_advantage
 	var base_res := {"success": true, "saved": saved, "save_total": save_roll, "save_dc": save_dc, "save_disadvantage": effective_save_disadvantage, "effect_cast": cast.effect_cast, "condition": inflicted_condition if not saved and not SharedSpell.uses(cast.spell) else "", "condition_source": "animal_friendship:%s" % cast.caster.character_id if str(cast.spell.get("id", "")) == "animal_friendship" else "", "caster_creature_type": cast.caster.creature_type, "countercharm_used": countercharm_used, "bardic_inspiration_used": bardic_inspiration_used, "stroke_of_luck_used": stroke_of_luck_used, "metamagic_used": careful_saved, "roll_token_replaced": bool(save_test.get("roll_token_replaced", false)), "message": msg}
 	base_res["save_test"] = save_test.duplicate(true)
+	if not save_context_receipt.is_empty():
+		base_res["save_context"] = save_context_receipt.duplicate(true)
 	if cast.spell.has("damage_scale_by_outcome") and not has_evasion and not careful_saved:
 		SharedSpell.record_damage_scale(base_res, cast.spell, save_outcome, damage_scale)
 	base_res["save_natural_roll"] = int(save_test.get("natural_roll", save_test.get("natural", save_roll)))
 	base_res["save_modifier"] = int(save_test.get("modifier", 0))
+	if not recipient_damage_receipt.is_empty():
+		base_res["recipient_damage_map"] = recipient_damage_receipt.duplicate(true)
+	if not exemption_receipt.is_empty():
+		base_res["recipient_damage_exemption"] = exemption_receipt.duplicate(true)
 	# Preserve a numeric roll margin separately from the final saved/failed result.
 	# Automatic/no-roll outcomes deliberately have no numeric margin receipt.
 	if save_test.has("natural_roll") or save_test.has("natural"):
@@ -220,6 +251,9 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 		base_res["save_post_roll_bonus_source"] = str(save_test.get("post_roll_bonus_source", ""))
 		if save_test.get("post_roll_bonus_die", {}) is Dictionary and not save_test.get("post_roll_bonus_die", {}).is_empty():
 			base_res["save_post_roll_bonus_die"] = save_test["post_roll_bonus_die"].duplicate(true)
+			var source_id := str(save_test.get("post_roll_bonus_source", ""))
+			var source_pool: Dictionary = cast.target.numeric_resource_pools.get(source_id, {}) if cast.target is Character else {}
+			base_res["formula_source_die"] = {"source_instance_id":source_id, "owner_id":str(source_pool.get("owner_id", "")), "pool_definition_id":str(source_pool.get("definition_id", "")), "sides":int(save_test.post_roll_bonus_die.get("sides", 0)), "face":int(save_test.post_roll_bonus_die.get("total", 0))}
 		base_res["save_payment_policy"] = str(save_test.get("save_payment_policy", "pay_on_choice"))
 		base_res["save_cost_paid"] = bool(save_test.get("save_cost_paid", true))
 	if outcome_override in ["success", "failure"]:
@@ -235,7 +269,62 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 		base_res["roll_token_id"] = str(save_test.get("roll_token_id", ""))
 		base_res["roll_token_value"] = int(save_test.get("roll_token_value", 0))
 	var settlement_decisions := cast.decisions.duplicate(true)
-	settlement_decisions["_shared_component_id"] = str(primary_component.get("id", "%s:1" % damage_type))
-	return SpellDamageRolls._finish_spell_damage(cast.caster, cast.target, damage_details, CombatAction.spell_damage_bonus(cast.caster, cast.spell) if cast.has_damage_payload else 0, damage_scale, damage_type, settlement_decisions, base_res, maxi(1, int(cast.spell.get("condition_duration", 1))), additional_damage_packets)
+	settlement_decisions["damage_result_multiplier"] = cast.spell.get("damage_result_multiplier", {})
+	settlement_decisions["_shared_component_id"] = str(primary_component.get("id", cast.spell.get("component_id", "%s:1" % damage_type)))
+	return SpellDamageRolls._finish_spell_damage(cast.caster, cast.target, damage_details, CombatAction.spell_damage_bonus(cast.caster, cast.spell) if cast.has_damage_payload else 0, damage_scale, damage_type, settlement_decisions, base_res, maxi(1, int(cast.spell.get("condition_duration", 1))), additional_damage_packets, cast.spell.get("damage_reductions", []), cast.spell.get("damage_bypasses", []))
+
+
+static func _recipient_damage_map(cast: SpellResolutionContext, outcome: String) -> Dictionary:
+	if cast == null or not cast.target is Character or outcome not in ["success", "failure"]:
+		return {}
+	var declaration: Dictionary = cast.spell.get("save_context", {})
+	var matches: Array[Dictionary] = []
+	for effect in ClassProgression.selected_feature_effects_of_type(cast.target, "recipient_damage_map"):
+		if str(effect.get("domain", "")) != "shared_spell_save" or str(effect.get("ability", "")).to_upper() != str(cast.spell.get("save", "")).to_upper():
+			continue
+		var eligible := true
+		for field in ["cause_id", "purpose_id", "origin_effect_id"]:
+			if str(effect.get(field, "")) != str(declaration.get(field, "")):
+				eligible = false
+		if eligible:
+			matches.append(effect)
+	if matches.size() != 1:
+		return {}
+	var selected: Dictionary = matches[0]
+	return {
+		"owner_id": str(selected.get("source_owner_id", cast.target.character_id)),
+		"feature_id": str(selected.get("feature_id", "")),
+		"source_instance_id": str(selected.get("source_instance_id", "")),
+		"effect_id": str(selected.get("id", "")),
+		"domain": "shared_spell_save", "cause_id": str(declaration.get("cause_id", "")),
+		"purpose_id": str(declaration.get("purpose_id", "")), "origin_effect_id": str(declaration.get("origin_effect_id", "")),
+		"outcome": outcome, "scale": float(selected.get("success_scale" if outcome == "success" else "failure_scale", 1.0)),
+	}
+
+
+static func _recipient_damage_exemption(cast: SpellResolutionContext) -> Dictionary:
+	var declaration: Variant = cast.spell.get("recipient_exemption_choice", {})
+	var host := cast.spatial_host
+	if host == null: return {}
+	var binding := host.recipient_exemption_selection
+	if binding.is_empty() or binding.get("caster")!=cast.caster or binding.get("invocation_id")!=cast.invocation_id or binding.get("declaration")!=declaration or binding.get("save_context")!=cast.spell.get("save_context",{}) or not SpellDamageRolls._host_contains(host.players,host.monsters,cast.caster) or not SpellDamageRolls._host_contains(host.players,host.monsters,cast.target): return {}
+	if not binding.get("recipients",[]).any(func(actor): return SpellDamageRolls._is_canonical_actor(actor,cast.target)): return {}
+	var selection: Variant = binding.get("receipt",{})
+	if not declaration is Dictionary or declaration.is_empty() or not selection is Dictionary:
+		return {}
+	var recipient_id := SorcererRules.careful_spell_target_id(cast.target)
+	var recipients: Variant = selection.get("recipient_ids", null)
+	var eligible: Variant = selection.get("eligible_recipient_ids", null)
+	if recipient_id.is_empty() or not recipients is Array or not eligible is Array or recipient_id not in recipients or recipient_id not in eligible:
+		return {}
+	if str(selection.get("selection_id", "")) != str(declaration.get("selection_id", "")) or str(selection.get("spell_definition_id", "")) != str(cast.spell.get("id", "")) or str(selection.get("caster_id", "")) != cast.caster.character_id:
+		return {}
+	var unique_ids := {}
+	for id in recipients:
+		if not id is String or id not in eligible or unique_ids.has(id): return {}
+		unique_ids[id]=true
+	if recipients.size() > int(declaration.get("selection_limit", 0)):
+		return {}
+	return {"selection_id": str(selection.get("selection_id", "")), "spell_definition_id": str(cast.spell.get("id", "")), "caster_id": cast.caster.character_id, "recipient_id": recipient_id, "stage": "after_save_before_damage", "save_unchanged": true, "riders_unchanged": true, "scale": 0.0}
 
 

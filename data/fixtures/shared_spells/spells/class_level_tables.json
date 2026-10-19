@@ -1,0 +1,226 @@
+[
+  {
+    "id": "sandbox:class_table_neutral",
+    "name": "Class Return neutral",
+    "execution": "shared",
+    "level": 1,
+    "range": 6,
+    "target": "single",
+    "casting_time": "action",
+    "school": "evocation",
+    "formula_inputs": {
+      "selected": {
+        "kind": "number_choice",
+        "minimum": 1,
+        "maximum": 2,
+        "policy": "captured"
+      },
+      "captured_class": {
+        "kind": "parameter",
+        "formula": {
+          "op": "progression_lookup",
+          "input": {
+            "caster_class_level": "wizard"
+          },
+          "value_type": "number",
+          "below_first": "unavailable",
+          "breakpoints": [
+            {
+              "threshold": 1,
+              "value": 2
+            },
+            {
+              "threshold": 3,
+              "value": 5
+            },
+            {
+              "threshold": 5,
+              "value": 9
+            }
+          ]
+        },
+        "policy": "captured"
+      },
+      "live_class": {
+        "kind": "parameter",
+        "formula": {
+          "op": "progression_lookup",
+          "input": {
+            "caster_class_level": "wizard"
+          },
+          "value_type": "number",
+          "below_first": "unavailable",
+          "breakpoints": [
+            {
+              "threshold": 1,
+              "value": 2
+            },
+            {
+              "threshold": 3,
+              "value": 5
+            },
+            {
+              "threshold": 5,
+              "value": 9
+            }
+          ]
+        },
+        "policy": "live"
+      },
+      "character_level": {
+        "kind": "parameter",
+        "formula": {
+          "caster_level": true
+        },
+        "policy": "captured"
+      },
+      "proficiency": {
+        "kind": "parameter",
+        "formula": {
+          "caster_proficiency_bonus": true
+        },
+        "policy": "captured"
+      }
+    },
+    "steps": [
+      {
+        "id": "delay",
+        "type": "damage",
+        "target": "target",
+        "damage": "1d4",
+        "damage_type": "fire"
+      },
+      {
+        "id": "return",
+        "type": "effect",
+        "target": "self",
+        "effects": [
+          {
+            "type": "heal",
+            "value": {
+              "input_value": "captured_class"
+            }
+          },
+          {
+            "type": "temporary_hp",
+            "value": {
+              "input_value": "live_class"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sandbox:class_table_renamed",
+    "name": "Class Return renamed",
+    "execution": "shared",
+    "level": 1,
+    "range": 6,
+    "target": "single",
+    "casting_time": "action",
+    "school": "evocation",
+    "formula_inputs": {
+      "selected": {
+        "kind": "number_choice",
+        "minimum": 1,
+        "maximum": 2,
+        "policy": "captured"
+      },
+      "captured_class": {
+        "kind": "parameter",
+        "formula": {
+          "op": "progression_lookup",
+          "input": {
+            "caster_class_level": "cleric"
+          },
+          "value_type": "number",
+          "below_first": "unavailable",
+          "breakpoints": [
+            {
+              "threshold": 2,
+              "value": 3
+            },
+            {
+              "threshold": 4,
+              "value": 7
+            },
+            {
+              "threshold": 7,
+              "value": 11
+            }
+          ]
+        },
+        "policy": "captured"
+      },
+      "live_class": {
+        "kind": "parameter",
+        "formula": {
+          "op": "progression_lookup",
+          "input": {
+            "caster_class_level": "cleric"
+          },
+          "value_type": "number",
+          "below_first": "unavailable",
+          "breakpoints": [
+            {
+              "threshold": 2,
+              "value": 3
+            },
+            {
+              "threshold": 4,
+              "value": 7
+            },
+            {
+              "threshold": 7,
+              "value": 11
+            }
+          ]
+        },
+        "policy": "live"
+      },
+      "character_level": {
+        "kind": "parameter",
+        "formula": {
+          "caster_level": true
+        },
+        "policy": "captured"
+      },
+      "proficiency": {
+        "kind": "parameter",
+        "formula": {
+          "caster_proficiency_bonus": true
+        },
+        "policy": "captured"
+      }
+    },
+    "steps": [
+      {
+        "id": "delay",
+        "type": "damage",
+        "target": "target",
+        "damage": "1d4",
+        "damage_type": "fire"
+      },
+      {
+        "id": "return",
+        "type": "effect",
+        "target": "self",
+        "effects": [
+          {
+            "type": "heal",
+            "value": {
+              "input_value": "captured_class"
+            }
+          },
+          {
+            "type": "temporary_hp",
+            "value": {
+              "input_value": "live_class"
+            }
+          }
+        ]
+      }
+    ]
+  }
+]

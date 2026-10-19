@@ -1,0 +1,18 @@
+{
+  "id": "fixture:030_shatter_metal_crystal",
+  "name": "Shatter Metal Crystal",
+  "execution": "shared",
+  "level": 2,
+  "school": "evocation",
+  "casting_time": "action",
+  "range": 12,
+  "target": "single",
+  "targets_objects": true,
+  "components": ["V", "S", "M"],
+  "physical_requirements": {
+    "allowed_materials": ["metal", "iron", "glass", "crystal"],
+    "reject_unknown": true
+  },
+  "damage": "3d8",
+  "damage_type": "thunder"
+}

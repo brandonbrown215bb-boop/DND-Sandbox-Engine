@@ -5,6 +5,9 @@ extends RefCounted
 
 const MANAGED_SPELLS := ["bless", "bane", "jump", "fly", "levitate", "spider_climb", "freedom_of_movement", "water_walk", "aid", "alter_self", "barkskin", "mage_armor", "hold_monster", "ray_of_sickness", "ray_of_enfeeblement", "animal_friendship", "charm_person", "charm_monster", "power_word_stun", "sleep", "blindness/deafness", "sunburst", "beacon_of_hope", "divine_favor", "death_ward", "sanctuary", "heroism", "magic_weapon", "enhance_ability", "faerie_fire", "invisibility", "darkvision", "see_invisibility", "true_seeing", "detect_magic", "blur", "detect_evil_and_good", "detect_poison_and_disease", "identify", "goodberry"]
 const PERSISTED_AREA_MARKER_SPELLS := ["fog_cloud", "darkness", "black_tentacles", "antilife_shell", "spike_growth", "entangle", "cloud_of_daggers", "sleet_storm", "moonbeam", "wall_of_fire", "animate_objects"]
+static var _source_end_events: Array[Dictionary] = []
+static var _repeat_save_turn_locks: Dictionary = {}
+static var _repeat_save_turn_serial := -1
 
 static func manages(spell: Dictionary) -> bool:
 	if spell.has("execution"):
@@ -20,7 +23,7 @@ static func is_spell_source(source_id: String) -> bool:
 	var spell_id := source_id.get_slice(":", 0)
 	return not spell_id.is_empty() and not DataLoader.get_spell(spell_id).is_empty()
 
-static func begin_cast(caster: Character, spell: Dictionary) -> Dictionary:
+static func begin_cast(caster: Character, spell: Dictionary, cast_facts: Dictionary = {}) -> Dictionary:
 	caster.spell_cast_serial += 1
 	var owner := caster_id(caster)
 	var spell_id := str(spell.get("id", ""))
@@ -30,7 +33,24 @@ static func begin_cast(caster: Character, spell: Dictionary) -> Dictionary:
 	elif spell_id == "identify":
 		duration = int(spell.get("cast_time_seconds", 60))
 	var expiry_phase := "target_end" if spell_id == "sunburst" else "start"
-	return {"source_id": "spell:%s:%d" % [owner, caster.spell_cast_serial], "caster_id": owner, "spell_id": str(spell.get("id", "")), "remaining_seconds": duration, "expiry_phase": expiry_phase, "save_dc": caster.get_spell_save_dc(), "concentration": bool(spell.get("concentration", false)), "end_on_target_damage": bool(spell.get("end_on_target_damage", spell.get("end_on_party_damage", false))), "end_on_any_damage": bool(spell.get("end_on_any_damage", false)), "conditions": []}
+	var record := {"source_id": "spell:%s:%d" % [owner, caster.spell_cast_serial], "caster_id": owner, "spell_id": spell_id, "remaining_seconds": duration, "expiry_phase": expiry_phase, "save_dc": SpellPermissionRules.save_dc(caster, spell), "concentration": bool(spell.get("concentration", false)), "end_on_target_damage": bool(spell.get("end_on_target_damage", spell.get("end_on_party_damage", false))), "end_on_any_damage": bool(spell.get("end_on_any_damage", false)), "conditions": []}
+	if SharedSpell.uses(spell) and spell.has("repeat_save"):
+		var schedule := str(spell.get("repeat_save_schedule", "target_turn_end"))
+		record["repeat_save_schedule"] = schedule
+		record["repeat_save_attempts"] = 0
+		record["repeat_save_dc_adjustment"] = 0
+		record["repeat_save_stage_index"] = 0
+		record["repeat_save_stage_successes"] = 0
+		record["repeat_save_context"] = spell.get("save_context", {}).duplicate(true)
+		record["repeat_save_purpose"] = str(spell.get("save_context", {}).get("purpose_id", "repeat_save"))
+		if schedule == "elapsed_seconds":
+			record["repeat_save_next_at_seconds"] = int(GameManager.campaign_elapsed_seconds) + int(spell.get("repeat_save_interval_seconds", 1))
+		if spell.has("repeat_save_stages"): record["repeat_save_stages"] = spell["repeat_save_stages"].duplicate(true)
+		if spell.has("repeat_save_dc_progression"): record["repeat_save_dc_progression"] = spell["repeat_save_dc_progression"].duplicate(true)
+	var rules: Variant = spell.get("source_end_rules", [])
+	if rules is Array and not rules.is_empty(): record["source_end_rules"] = rules.duplicate(true)
+	if not cast_facts.is_empty(): record["cast_facts"] = cast_facts.duplicate(true)
+	return record
 
 static func records(target) -> Dictionary:
 	return target.spell_effects if target is Character else target.get("spell_effects", {})
@@ -40,6 +60,7 @@ static func grant(target, cast: Dictionary, condition: String, expiry_phase: Str
 		return
 	var source := str(cast["source_id"])
 	var record: Dictionary = records(target).get(source, cast.duplicate(true))
+	record["recipient_id"] = caster_id(target) if target is Character else str(target.get("id", "")) if target is Dictionary else ""
 	record["expiry_phase"] = expiry_phase
 	if seconds >= 0:
 		record["remaining_seconds"] = seconds
@@ -155,10 +176,10 @@ static func magic_weapon_bonus(target, weapon_id: String) -> int:
 
 
 
-static func consume_spell(target, spell_id: String) -> void:
+static func consume_spell(target, spell_id: String, end_reason: String = "consumed", cause: Dictionary = {}) -> void:
 	for source in records(target).keys().duplicate():
 		if str(records(target)[source].get("spell_id", "")) == spell_id:
-			remove(target, str(source))
+			remove(target, str(source), end_reason, cause)
 
 
 static func maximize_healing(target, rolled_amount: int, maximum_amount: int) -> int:
@@ -182,21 +203,79 @@ static func has_grant(target, source: String, condition: String) -> bool:
 	var sources: Dictionary = target.condition_sources if target is Character else target.get("condition_sources", {})
 	return sources.get(condition, {}).has(source)
 
-static func remove(target, source: String) -> void:
+static func remove(target, source: String, end_reason: String = "source_removed", cause: Dictionary = {}) -> Dictionary:
 	var all_records := records(target)
 	if not all_records.has(source):
-		return
-	var record: Dictionary = all_records[source]
+		return {}
+	var record: Dictionary = all_records[source].duplicate(true)
 	CombatAction.remove_condition_source(target, source, record.get("conditions", []))
 	var aid_bonus := maxi(0, int(record.get("aid_hp_bonus", 0)))
 	if aid_bonus > 0 and target is Character:
 		target.max_hp = maxi(1, target.max_hp - aid_bonus)
 		target.current_hp = mini(target.current_hp, target.max_hp)
 	all_records.erase(source)
+	var event := {"source_id": source, "spell_id": str(record.get("spell_id", "")), "caster_id": str(record.get("caster_id", "")), "end_reason": end_reason, "cause": cause.duplicate(true), "record": record}
+	_source_end_events.append(event.duplicate(true))
+	while _source_end_events.size() > 128: _source_end_events.pop_front()
 	if target is Dictionary:
 		target["spell_effects"] = all_records
 		if not has_spell(target, "animal_friendship"):
 			target.erase("animal_friendship_caster_ids")
+	return event
+
+static func source_end_events() -> Array[Dictionary]:
+	return _source_end_events.duplicate(true)
+
+static func clear_source_end_events() -> void:
+	_source_end_events.clear()
+
+## Evaluate source-owned termination rules against a canonical completed event.
+## A matching event ends each source at most once; unrelated records are retained.
+static func publish_event(target, event: Dictionary) -> Array[Dictionary]:
+	var ended: Array[Dictionary] = []
+	if target == null or str(event.get("type", "")).is_empty(): return ended
+	if str(event.get("type", "")) == "cast" and not bool(event.get("completed", false)): return ended
+	var canonical_event := event.duplicate(true)
+	canonical_event["subject_id"] = caster_id(target) if target is Character else str(target.get("id", "")) if target is Dictionary else ""
+	for source in records(target).keys().duplicate():
+		var record: Dictionary = records(target).get(source, {})
+		var matching := _matching_end_rule(record, canonical_event)
+		if matching.is_empty(): continue
+		var reason := str(event.get("type", "event"))
+		var end_event := remove(target, str(source), reason, canonical_event)
+		if not end_event.is_empty(): ended.append(end_event)
+	return ended
+
+static func _matching_end_rule(record: Dictionary, event: Dictionary) -> Dictionary:
+	var rules: Variant = record.get("source_end_rules", [])
+	if not rules is Array: return {}
+	for rule in rules:
+		if not rule is Dictionary or str(rule.get("event", "")) != str(event.get("type", "")): continue
+		if event.has("range_source_id") and str(event.get("range_source_id", "")) != str(record.get("source_id", "")): continue
+		var actor_scope := str(rule.get("actor", "any"))
+		var actor_id := str(event.get("actor_id", ""))
+		if actor_scope == "caster" and actor_id != str(record.get("caster_id", "")): continue
+		if actor_scope == "recipient" and actor_id != str(event.get("subject_id", "")): continue
+		if rule.has("school") and str(rule.get("school", "")) != str(event.get("school", "")): continue
+		if rule.has("spell_id") and str(rule.get("spell_id", "")) != str(event.get("spell_id", "")): continue
+		if rule.has("action") and str(rule.get("action", "")) != str(event.get("action", "")): continue
+		if rule.has("status") and str(rule.get("status", "")) != str(event.get("status", "")): continue
+		if rule.has("equipment") and str(rule.get("equipment", "")) != str(event.get("equipment", "")): continue
+		if rule.has("state") and str(rule.get("state", "")) != str(event.get("state", "")): continue
+		if rule.has("paid_slot_level") and int(rule.get("paid_slot_level", -1)) != int(event.get("paid_slot_level", -1)): continue
+		if rule.has("maximum_range_feet") and (not event.has("distance_feet") or int(event.get("distance_feet", -1)) <= int(rule.get("maximum_range_feet", -1))): continue
+		var except_source := str(rule.get("except_source_id", ""))
+		if except_source == "this_source": except_source = str(record.get("source_id", ""))
+		if str(event.get("type", "")) == "damage" and not except_source.is_empty() and except_source == str(event.get("source_instance_id", "")): continue
+		return rule
+	return {}
+
+static func _has_end_rule_for_event(record: Dictionary, event_type: String) -> bool:
+	var rules: Variant = record.get("source_end_rules", [])
+	if not rules is Array: return false
+	for rule in rules:
+		if rule is Dictionary and str(rule.get("event", "")) == event_type: return true
+	return false
 
 static func has_spell(target, spell_id: String) -> bool:
 	for record in records(target).values():
@@ -210,7 +289,7 @@ static func _advance(target, source: String, seconds: int) -> void:
 		return # Repeat-save spells can persist until their own rules end the grant.
 	var remaining := int(record["remaining_seconds"]) - seconds
 	if remaining <= 0:
-		remove(target, source)
+		remove(target, source, "expired", {"remaining_before": int(record["remaining_seconds"]), "elapsed_seconds": seconds})
 		return
 	record["remaining_seconds"] = remaining
 	var sources: Dictionary = target.condition_sources if target is Character else target.get("condition_sources", {})
@@ -220,6 +299,77 @@ static func _advance(target, source: String, seconds: int) -> void:
 			continue
 		sources[condition][source] = maxi(1, int(ceil(float(remaining) / 6.0)))
 		conditions[condition] = int(sources[condition].values().max())
+
+static func repeat_save_schedule(target, source: String) -> String:
+	var record: Dictionary = records(target).get(source, {})
+	var spell := DataLoader.get_spell(str(record.get("spell_id", "")))
+	if not SharedSpell.uses(spell) or not spell.has("repeat_save"): return ""
+	return str(record.get("repeat_save_schedule", spell.get("repeat_save_schedule", "target_turn_end")))
+
+static func repeat_save_due(target, source: String, schedule: String, now_seconds: int = -1) -> bool:
+	if repeat_save_schedule(target, source) != schedule: return false
+	var record: Dictionary = records(target).get(source, {})
+	if schedule == "target_turn_end": return true
+	if schedule == "elapsed_seconds": return now_seconds >= 0 and now_seconds >= int(record.get("repeat_save_next_at_seconds", 2147483647))
+	return false
+
+static func claim_target_turn_repeat_save(target, source: String, turn_serial: int) -> bool:
+	if not repeat_save_due(target, source, "target_turn_end"): return false
+	if turn_serial != _repeat_save_turn_serial:
+		_repeat_save_turn_locks.clear()
+		_repeat_save_turn_serial = turn_serial
+	var recipient_id := caster_id(target) if target is Character else str(target.get("id", "")) if target is Dictionary else ""
+	var key := "%s|%s|%d" % [str(source), recipient_id, turn_serial]
+	if _repeat_save_turn_locks.has(key): return false
+	_repeat_save_turn_locks[key] = true
+	return true
+
+static func record_shared_repeat_save(target, source: String, saved: bool, total: int, dc: int) -> Dictionary:
+	var all_records := records(target)
+	if not all_records.has(source): return {"success": false}
+	var record: Dictionary = all_records[source]
+	var spell := DataLoader.get_spell(str(record.get("spell_id", "")))
+	var attempts := int(record.get("repeat_save_attempts", 0)) + 1
+	record["repeat_save_attempts"] = attempts
+	var progression: Dictionary = spell.get("repeat_save_dc_progression", {})
+	if not progression.is_empty():
+		if saved and bool(progression.get("reset_on_success", false)):
+			record["repeat_save_dc_adjustment"] = 0
+		elif str(progression.get("increase_on", "failure")) == "attempt" or not saved:
+			record["repeat_save_dc_adjustment"] = mini(int(progression.get("maximum", 0)), int(record.get("repeat_save_dc_adjustment", 0)) + int(progression.get("amount", 0)))
+	var stages: Array = record.get("repeat_save_stages", [])
+	if not stages.is_empty():
+		var stage_index := clampi(int(record.get("repeat_save_stage_index", 0)), 0, stages.size() - 1)
+		var stage: Dictionary = stages[stage_index]
+		var margin := total - dc
+		var route := "stay"
+		if saved and margin >= int(stage.get("minimum_margin", 0)):
+			var qualified := int(record.get("repeat_save_stage_successes", 0)) + 1
+			record["repeat_save_stage_successes"] = qualified
+			if qualified >= int(stage.get("successes_required", 1)): route = "advance"
+		elif not saved:
+			route = str(stage.get("on_failure", "stay"))
+			if bool(stage.get("reset_successes_on_failure", false)): record["repeat_save_stage_successes"] = 0
+		if route == "end":
+			remove(target, source, "repeat_save_stage_ended", {"attempt": attempts, "saved": saved, "total": total, "dc": dc, "stage_index": stage_index})
+			return {"success": true, "ended": true, "attempt": attempts, "stage_index": stage_index}
+		if route == "advance":
+			var old_conditions: Array = record.get("conditions", []).duplicate()
+			CombatAction.remove_condition_source(target, source, old_conditions)
+			var next_index := stage_index + 1
+			if next_index >= stages.size():
+				remove(target, source, "repeat_save_stages_completed", {"attempt": attempts, "saved": saved, "total": total, "dc": dc, "stage_index": stage_index})
+				return {"success": true, "ended": true, "attempt": attempts, "stage_index": stage_index}
+			record["repeat_save_stage_index"] = next_index
+			record["repeat_save_stage_successes"] = 0
+			record["conditions"] = []
+			all_records[source] = record
+			grant(target, record, str(stages[next_index]["condition"]))
+		if target is Dictionary: target["spell_effects"] = all_records
+		return {"success": true, "attempt": attempts, "stage_index": int(record.get("repeat_save_stage_index", 0)), "stage_successes": int(record.get("repeat_save_stage_successes", 0)), "dc_adjustment": int(record.get("repeat_save_dc_adjustment", 0))}
+	if saved:
+		remove(target, source, "repeat_save_succeeded", {"attempt": attempts, "total": total, "dc": dc})
+	return {"success": true, "attempt": attempts, "dc_adjustment": int(record.get("repeat_save_dc_adjustment", 0))}
 
 static func tick_boundary(targets: Array, owner: String, phase: String) -> void:
 	for target in targets:
@@ -231,11 +381,48 @@ static func tick_boundary(targets: Array, owner: String, phase: String) -> void:
 static func advance_time(targets: Array, elapsed_seconds: int) -> void:
 	if elapsed_seconds <= 0:
 		return
-	for target in targets:
-		for source in records(target).keys():
-			_advance(target, str(source), elapsed_seconds)
+	var final_seconds := int(GameManager.campaign_elapsed_seconds)
+	var cursor := final_seconds - elapsed_seconds
 	var casters: Array = targets.filter(func(target): return target is Character)
+	GameManager.campaign_elapsed_seconds = cursor
 	reconcile(casters, targets)
+	# An overdue retained deadline resolves at the start without negative aging.
+	resolve_elapsed_repeat_saves(targets, cursor)
+	while cursor < final_seconds:
+		var boundary := final_seconds
+		for target in targets:
+			for source in records(target):
+				var record: Dictionary = records(target)[source]
+				var remaining := int(record.get("remaining_seconds", -1))
+				if remaining > 0: boundary = mini(boundary, cursor + remaining)
+				if repeat_save_schedule(target, str(source)) == "elapsed_seconds":
+					var next_at := int(record.get("repeat_save_next_at_seconds", final_seconds))
+					if next_at > cursor: boundary = mini(boundary, next_at)
+		GameManager.campaign_elapsed_seconds = boundary
+		for target in targets:
+			for source in records(target).keys():
+				if records(target).has(source): _advance(target, str(source), boundary - cursor)
+		cursor = boundary
+		# Expiry wins a tie with a save. All targets age before any due save,
+		# so expired save benefits and lost concentration cannot affect it.
+		reconcile(casters, targets)
+		resolve_elapsed_repeat_saves(targets, cursor)
+	GameManager.campaign_elapsed_seconds = final_seconds
+	reconcile(casters, targets)
+
+static func resolve_elapsed_repeat_saves(targets: Array, now_seconds: int) -> void:
+	for target in targets:
+		for source in records(target).keys().duplicate():
+			var source_id := str(source)
+			if repeat_save_due(target, source_id, "elapsed_seconds", now_seconds):
+				var record: Dictionary = records(target).get(source_id, {})
+				var spell := DataLoader.get_spell(str(record.get("spell_id", "")))
+				var interval := maxi(1, int(spell.get("repeat_save_interval_seconds", 1)))
+				while records(target).has(source_id) and int(records(target)[source_id].get("repeat_save_next_at_seconds", 0)) <= now_seconds:
+					var next_at := int(records(target)[source_id].get("repeat_save_next_at_seconds", now_seconds))
+					var result := CombatAction.resolve_condition_spell_repeat_save(target, source_id)
+					if not result.get("success", false): break
+					if records(target).has(source_id): records(target)[source_id]["repeat_save_next_at_seconds"] = next_at + interval
 
 static func end_concentration(caster: Character, targets: Array) -> bool:
 	AnimatedObjectRules.end_source(caster.character_id, str(caster.concentrating_on.get("effect_source", "")))
@@ -244,7 +431,7 @@ static func end_concentration(caster: Character, targets: Array) -> bool:
 	if source.is_empty():
 		return false
 	for target in targets:
-		remove(target, source)
+		remove(target, source, "concentration_ended", {"caster_id": caster_id(caster)})
 	caster.concentrating_on.clear()
 	return true
 
@@ -252,6 +439,8 @@ static func end_concentration(caster: Character, targets: Array) -> bool:
 static func prune(target) -> void:
 	for source in records(target).keys():
 		var record: Dictionary = records(target)[source]
+		if record.has("source_benefits"):
+			continue # The exact cast owns projections rather than conditions.
 		if str(record.get("spell_id", "")) in ["beacon_of_hope", "divine_favor", "death_ward", "sanctuary", "heroism", "magic_weapon", "enhance_ability"]:
 			continue # This benefit is represented by the source record, not a condition.
 		if str(record.get("spell_id", "")) == "identify" and record.has("identify_target"):

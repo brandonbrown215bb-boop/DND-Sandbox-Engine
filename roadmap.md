@@ -15,6 +15,43 @@ records accepted evidence and unfinished work; the Quest Board owns the exact
 next action. The class and creature design documents supply requirements and
 stress cases, not two separate engines or mandatory up-front module scaffolds.
 
+## Parallel editor work
+
+The owner requested two concurrent pipelines on 2026-10-18.
+[Luna owns runtime/game integration; Antigravity owns the standalone editor and staged content](docs/planning/runtime-editor-parallel-pipelines.md).
+The plan defines exclusive file ownership and explicit artifact handoffs.
+Runtime slice order and acceptance remain as below; editor work can start with
+existing records and supported contracts without waiting for all engine slices.
+Keep one exact next action per pipeline on separate Quest Board cards.
+
+## Proposed next batches: 018-030
+
+The owner requested the next thirteen batch outlines after Q. The
+[numbered batch plan](docs/planning/vocabulary-batches-018-030.md) proposes
+39 existing slices, beginning with **018: S-047/S-048** for starting versus
+multiclass acquisition and permanent progression. It then covers effect endings,
+suppression/auras, casting permissions and slot accounting, resource exchange/
+recovery, damage dice, repeat saves, linked protections, child actions, cast
+interruption and physical movement facts. Its prerequisites are ordered against
+the accepted 67-slice baseline; implementation selection and independent
+acceptance remain separate. Historical A-Q names stay unchanged. Independent
+[Batch 018 review](.artifacts/planning/vocabulary-reports/batch-018-review.md)
+accepts S-047/S-048 as VS-68/69 after two bounded repairs. Batch 019 is accepted
+as VS-70/71/72 after independent review repaired monster movement event
+publication, and Batch 020 as VS-73/74/75 for directly owned Character combat
+aura sources. The
+current count is **106/226**, including accepted 024 recovery, 025 damage/healing
+dice, 026 repeat-save
+history, 027 protections, 028 substitutions/child continuations and 029 cast
+interruption. [Current verification](.artifacts/planning/vocabulary-reports/batch-024-026-verification.md)
+closes the reported 025/026 bugs and accepts 024/026; [025 completion review](.artifacts/planning/vocabulary-reports/batch-025-completion-review.md)
+accepts the remaining dice/payment slices as VS-103–106. [028 review](.artifacts/planning/vocabulary-reports/batch-028-completion-review.md)
+accepts its three completed slices. Batch 025's cost-dice edits, authored
+healing rerolls, critical exclusions and payment replacement are accepted on
+bounded hosts.
+[029/030 review](.artifacts/planning/vocabulary-reports/batch-029-030-review.md)
+retains repaired 029 and accepts 030 physical/space/movement as VS-100–102. V-050/V-053 remain partial.
+
 ## Starting point
 
 The initial shared-runtime proof is already accepted in the
@@ -26,187 +63,57 @@ again. Their broader generality remains partial.
 The [vocabulary checklist](docs/reviews/dnd-code-vocabulary-gap-checklist.md)
 retains 31 navigation families and 97 concrete V-series capabilities. Each
 concrete row supplies a boundary, source examples, current status, likely hook and
-dependencies. Its [35 checked subsets](docs/reviews/dnd-code-vocabulary-gap-checklist.md#checked-subsets-and-bounded-implementation)
-record the accepted P1/P2/P3 slices separately from the 97 broad requirements.
+dependencies. Its [106 checked subsets](docs/reviews/dnd-code-vocabulary-gap-checklist.md#checked-subsets-and-bounded-implementation)
+record the accepted P1–P5 slices separately from the 97 broad requirements.
 “Partial” or “uncertain” is not full capability completion. These
 are building blocks to extend existing owners, not 97 new modules.
 
 The [counted delivery plan](docs/planning/vocabulary-slices.md) maps every known
-V-series requirement to **226 defined build/validation slices**: **35 verified,
-191 not yet accepted** through S-098's 2026-10-14 acceptance. It owns slice IDs,
+V-series requirement to **226 defined build/validation slices**: **106 verified,
+120 not yet accepted** through the current independent reviews finalized on 2026-10-19. It owns slice IDs,
 finish lines, prerequisites, phase counts and source follow-up. Count each slice
 once even when several capabilities use it; the denominator measures defined
 scope, not time or effort. Missing rule bodies can reveal additional work.
 
 ## Work order
 
-Keep these activities separate:
+Follow this sequence:
 
 1. **Discover vocabulary.** Read descriptions and code enough to name distinct
    requirements. Consolidate repeated needs. No Godot, probes, catalog correctness
    ledger or content mutations. The completed discovery pass and remaining source
    gaps are recorded in the checklist.
-2. **Build a selected capability batch.** Implement shared operations and the
-   required world hooks. Use small neutral examples as consumers; do not make
-   rewriting the spell/class/monster/item catalog part of this task.
-3. **Check that vocabulary.** After implementation, run a bounded production
-   Godot validation of its actual inputs, stages, results, choices/costs and
-   source-owned state. Check interactions with affected existing behavior. Mark
-   the concrete capability complete only for the demonstrated boundary.
+2. **Build and production-validate the selected capability batch.** Implement
+   shared operations and required world hooks, then exercise actual inputs,
+   stages, results, choices/costs and source-owned state with bounded production
+   Godot checks in the same owner-authorized work chat. Use small neutral examples
+   as consumers; do not rewrite the spell/class/monster/item catalog.
+3. **Review independently.** After the builder records commands, logs, receipts
+   and limits, an independent review checks the source and production evidence,
+   repairs reproduced defects and reconciles acceptance. Only then select the
+   next batch.
 4. **Translate content.** Convert definitions using the checked building blocks.
    Track separate content support; a verified building block does not certify
    every spell or class using it. Broader playing/usability checks follow useful
    content batches.
 
-Testing is not part of discovery or roadmap preparation. Implementation and
-capability checks are separate task steps; unverified code is described honestly
-until the checks happen. This sequence does not add a second engine in Python.
+Testing is not part of discovery or roadmap preparation. Build and bounded
+production validation are recorded together for an authorized batch; independent
+review and acceptance remain separate. This sequence does not add a second engine
+in Python.
 
-## Accepted vocabulary slices
+## Accepted work and reuse
 
-The [current checkpoint](docs/operations/current.md) and checklist VS-01–17
-record production evidence for these selected boundaries:
+The [current checkpoint](docs/operations/current.md) records accepted behavior,
+production evidence and exact host limits. The
+[slice registry](docs/planning/vocabulary-slices.md) and
+[checked subsets](docs/reviews/dnd-code-vocabulary-gap-checklist.md#checked-subsets-and-bounded-implementation)
+retain the individual finish lines. Reuse those implementations and unchanged
+proof; an open parent capability does not make its accepted subset new work.
 
-| Workstream | Checked building blocks | Remaining boundary |
-|---|---|---|
-| P1 facts/results (`V-001`, `V-002`, `V-006`, `V-007`, `V-011`) | Source-owner/wounded eligibility; one earlier Fire component's raw/resolved/HP-loss values; rounded aftermath; live caster inputs and captured selected-slot level; renamed data and continuation | Broader facts/relations, target/component combinations, result aggregation, tables, multiclass and other timing policies |
-| P1/P2 sources and pools (`V-027`, `V-038`, `V-057`) | Independent exact-source numeric pools, formula capacity, spending, growth/shrink/removal, bounded one/two-die activation, authored recovery and allowed same-process checkpoint preservation | Source acquisition UI, broader grant domains, exchanges, other pool definitions, transferable/pre-rolled dice, class dice tables, post-success payment and fresh-process recovery of new state |
-| P2 rest recovery (`V-044`, `V-048`) | Fixed Short Rest and capacity Long Rest recovery through actual controls; completion/eligibility/source boundaries and checkpoint reload | Other rest/eligibility policies, Hit Dice, rest-start expiry, Initiative/dawn/dusk and cooldowns |
-| P2 use limits (`V-041`) | Weapon-hit rider once per combat turn, per target per combat turn, or per owner-turn interval; real turn progression and independent pool/lock commitment | UI target selection, own-turn-only restriction, round/roll/active-instance scopes and general event subscriptions |
-
-Do not schedule these same build/acceptance slices again merely because their
-broader V-series parent rows remain open. They are reusable bounded building
-blocks, not certification of a whole phase or the content catalog.
-
-## Accepted recent P2 extensions
-
-The accepted exchange slice extends exact-source numeric pools with one data-authored
-fixed exchange (`V-039`): spend two uses from one owned numeric source and
-restore one use to a different owned source of the same actor, only when the
-full restoration fits. It reuses the shared feature activation and exact-source
-combat choice path. The neutral fixture and implementation boundary are in the
-[shared pool contract](docs/mechanics/shared-resource-pools.md#bounded-numeric-pool-exchange--production-validated-2026-10-12).
-Production acceptance is recorded as VS-11 in the
-[vocabulary checklist](docs/reviews/dnd-code-vocabulary-gap-checklist.md#verified-subsets-to-mark-off).
-It checked neutral and renamed definitions, exact source choices, one 2-for-1
-commit, refusal boundaries and allowed-checkpoint reload. Spell slots, dice,
-currency, conditional/post-roll payment, cross-actor transfers, catalog
-conversion and other selectors/policies remain open. Reuse VS-01–17; do not
-rerun accepted proof just because its parent rows remain open.
-
-The selected follow-up for `V-041`, a bounded limit between the owner's turn
-starts, is now production validated with neutral and renamed fixture data,
-actual off-turn Opportunity Attacks and real initiative progression. The
-focused Godot scenario and 727 class checks are recorded under VS-08 in the
-[vocabulary checklist](docs/reviews/dnd-code-vocabulary-gap-checklist.md#verified-subsets-to-mark-off)
-and the [current checkpoint](docs/operations/current.md). This closes only the
-selected slice; own-turn-only restrictions, other timing scopes, general event
-subscriptions and the broader `V-041` requirements remain open. The six
-prepared build/validation prompts remain in the local
-[prompt set](.artifacts/planning/next-p2-goals.md).
-
-## Accepted effect-lifetime batch
-
-VS-12 checks the source-owned timed AC self-grant; VS-13 checks the oldest
-qualifying melee-hit grant with fixed typed damage; VS-14 checks optional
-cooldown starting at expiry or voluntary dismissal. Each has separate
-production acceptance and fresh-process state recovery. Combined review also
-closed orphaned timed-state loading, exact-source cooldown cleanup and silent
-partial application of duplicate grant operations. Broader matching, grant,
-end-reason and accumulated-use policies remain open. Reuse this evidence rather
-than repeating the [effect-lifetime prompt set](.artifacts/planning/next-p2-effect-goals.md).
-
-## Accepted Temporary HP and formula/result batch
-
-VS-15 binds remaining Temporary HP to its supplier; old expiry/removal preserves
-later timed/untimed replacement. VS-16 adds deterministic numeric breakpoint
-lookup; VS-17 sums one earlier typed damage measure across actual target outcomes
-and heals once after the step. Separate production acceptance and combined review
-passed, including constant-expression lookup and schema corrections. THP uses
-the current keep-higher policy; replacement choices, linked benefits, dice tables
-and general reducers remain open. Reuse the local [accepted prompt set](.artifacts/planning/next-vocabulary-values-and-temp-hp.md).
-
-## Accepted P3 saving-throw decision batch
-
-VS-18–20 accept an owned post-roll fixed bonus, both payment policies, and an
-explicit success override for rolled failed shared-spell saves. Original roll
-fields/DC, source selection, ordered/flat rider timing and successive choices
-have retained production/regression evidence. Combined review closed the
-snapshot/suspension defects listed in the checkpoint. Wider V-013/014/035,
-other hosts/rolls and automatic outcomes remain open.
-
-## Accepted P3 attack results and rolled bonuses
-
-VS-21–23 extend the owned optional numeric bonus to normal player weapon Attack/
-Extra Attack and flat/ordered shared-spell attacks, and add a captured source
-die bonus to those attack and accepted save consumers. They retain natural-1/critical
-rules, final hit reevaluation, both payment policies, original action/slot costs
-and successive-choice continuations. One captured roll is settled once; calling
-the complete attack resolver again is not a post-roll adjustment.
-
-The six completed build/validation prompts are retained in the local
-[attack decision set](.artifacts/planning/next-p3-attack-decisions.md). Reuse their
-accepted evidence. Other attack hosts, defensive/third-party
-changes and further roll domains stay in remaining scope; content conversion
-remains separate.
-
-The three pairs are accepted as VS-21–23 for fixed bonuses through normal
-player Attack/Extra Attack and flat/ordered shared-spell attacks, plus captured
-d6/d8 bonuses in those consumers and the accepted save choices. Combined review
-closed canonical Stroke validation, invalid spell-source fallback and wrong-
-domain Stroke settlement. Exact source costs, retained die receipts and actual
-controls have focused evidence; wider roll hosts and catalogs remain open.
-
-The accepted **S-028 → S-094 → S-105** trio covers purpose-aware checks,
-owned fixed/die modifiers on failed ability checks, and declared mandatory-new
-rerolls. Each received a build, separate validation and combined review. These reuse
-accepted source/roll rules instead of converting named content catalogs.
-
-S-028 is accepted as VS-24 for loaded EventDialog event/choice checks. Task,
-purpose, optional tool and exact owned-tool benefit/source receipts survive the
-real Roll and Close controls. Loaded records retain check/DC/consequence authority;
-unrelated/no-tool/no-bonus checks remain ordinary. S-094 is accepted as VS-25:
-fixed/die bonuses through loaded event-level and choice-owned skilled/ability-only
-checks, both payment policies, retained native bonuses, completed replay refusal
-and host cancellation. S-105 is accepted as VS-26 for mandatory-new natural/test
-rerolls through that host. Declared mode/bonus policies, original/new receipts,
-floor stages, source costs and one final consequence are proven; broader hosts
-and choosing between old/new remain open. Combined review is complete.
-
-The accepted prerequisite trio is **S-024 → S-025 → S-041**:
-combine eligibility conditions, bind facts to the correct entities, and expose
-actual roll/damage windows. S-024 and S-025 are accepted as VS-27/28. S-041
-is accepted as VS-31 after its authored-consumer repair and independent
-[review](docs/reviews/slice-acceptance-2026-10-14.md). S-091 remains VS-29 and
-S-092 is restored as VS-30 after native-use and source-option conflict repairs.
-The healing parser defect is fixed. Batch B **S-091/S-092/S-095** has passed
-independent source/evidence review; S-095 is accepted as VS-32. S-034 is accepted
-as VS-33 after fresh-chat reconciliation of its retained separate production
-validation. S-043 is accepted as VS-34 after its separate production validation;
-there are **35/226 accepted, 191 not yet accepted**. S-042 remains planned.
-Batch C **S-034/S-043/S-098** passed independent review after targeted repairs;
-the [review report](.artifacts/planning/vocabulary-reports/batch-C-review.md)
-retains VS-33–35. **S-026 BUILD** is next with S-002 and S-025 already accepted;
-S-099 remains later in the prompt queue and also requires S-026.
-The [Batch B report](.artifacts/planning/vocabulary-reports/batch-B-review.md) records
-the precise scope; the Quest Board owns the next action. Older prompts remain in the local
-[facts and windows set](.artifacts/planning/next-facts-and-windows.md).
-
-At the owner's request, the [next-26 prompt pack](docs/planning/vocabulary-next-26-prompts.md)
-prepares S-025/S-041 plus eight following trios in dependency order. Its
-S-091/S-092/S-095 and S-034/S-043/S-098 trios are now complete. The remaining queue covers relation,
-history, formula/stat, reroll-consumer and damage-stage slices. Each selected row
-has separate BUILD and VALIDATE prompts and each batch has a fresh-chat REVIEW.
-The [shared workflow](docs/planning/vocabulary-prompt-workflow.md) lets separate
-validation record precise acceptance before a dependent build, with independent
-batch review of shared boundaries. No continuously supervising agent is required.
-
-This explicit prompt-preparation request supersedes waiting for each trio's review
-to write the next prompts. Execution still waits for actual prerequisites and the
-preceding batch review; later selections are conditional on those findings.
-Preparation adds no accepted scope, dispatches no workers and does not replace
-the full counted plan. The prompt pack's preparation baseline was 28/226;
-current acceptance is 32/226.
+The [historical batch narrative](docs/archive/planning/roadmap-accepted-batches-through-q.md)
+preserves earlier receipts and status text. It is not a queue to resume. Current
+proposals are batches 018-030 above; the Quest Board owns actual selection.
 
 ## Capability workstreams
 
@@ -231,9 +138,37 @@ behind a broad family name.
 Source gathering remains a separate later task: locate missing intended 2024
 optional-feature/feat, common item and other rule bodies; add any distinct
 building blocks, especially exceptions affecting illusion or Wish behavior.
+The locally inspected Foundry PHB/MM packs now supply candidate descriptions,
+progression records and structured actions for selected source gaps. Use the
+[Foundry adoption plan](docs/planning/foundry-adoption.md) to reuse that work;
+Ravenloft remains optional later material. Source discovery and offline
+conversion do not complete runtime slices or invalidate accepted evidence.
 Do not resume the old all-record correctness audit. Missing source needed by a
 chosen capability is resolved for that capability; unrelated catalog discovery
 does not block work whose requirements are already concrete.
+
+## Future map integration: walls and crossings
+
+Add map walls as independent world-coordinate segments aligned with the map
+image and our hex overlay, with separate movement and sight restrictions.
+Doors use existing world-object open/closed/locked state. A shared boundary
+query must serve player/AI paths, actual movement and visibility; door changes
+refresh affected paths and sight. Reuse current A*, terrain and turn budgets.
+
+Start with one small imported-map sample proving a solid wall, a window and an
+openable door, including corners, narrow passages and creature clearance.
+Rejected movement spends no distance; supported door state survives the existing
+allowed checkpoint. Broader sound/light thresholds, directional restrictions,
+levels/surfaces and arbitrary scene scripts are separate scope when needed.
+
+This is future P7 world integration aligned with **S-179** (movement costs),
+**S-184/S-185** (crossings/barriers) and **S-190** (observer obstruction).
+Basic wall import does not by itself finish those broader slices. Coordinate
+with Batch 030's physical/movement facts without expanding its three-slice
+finish line into a full map importer. The
+[adoption plan](docs/planning/foundry-adoption.md) records slice impacts and
+the first sample's boundary. No implementation batch is selected here, and the
+226-slice denominator and accepted counts remain unchanged.
 
 ## How content becomes available
 

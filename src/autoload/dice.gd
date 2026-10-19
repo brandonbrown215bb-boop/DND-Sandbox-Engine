@@ -86,7 +86,7 @@ func parse_dice_string(dice_string: String, modifiers: Dictionary = {}, roller: 
 
 ## Return the highest possible total for the supported signed dice expression.
 ## Used by effects such as Beacon of Hope without rolling or spending Inspiration.
-func maximum_dice_string(dice_string: String, modifiers: Dictionary = {}) -> int:
+func maximum_dice_string(dice_string: String, modifiers: Dictionary = {}, damage_policy: Dictionary = {}) -> int:
 	var expression := dice_string.strip_edges().to_upper().replace(" ", "")
 	for key in modifiers:
 		var key_name := str(key).to_upper()
@@ -95,6 +95,8 @@ func maximum_dice_string(dice_string: String, modifiers: Dictionary = {}) -> int
 	while "+-" in expression or "--" in expression or "-+" in expression or "++" in expression:
 		expression = expression.replace("+-", "-").replace("--", "+").replace("-+", "-").replace("++", "+")
 	var total := 0
+	var remove_remaining := maxi(0, int(damage_policy.get("remove", 0)))
+	var policy_sides := int(damage_policy.get("sides", 0))
 	for token_value in _tokenize_expression(expression):
 		var token := str(token_value).strip_edges()
 		if token.is_empty():
@@ -112,6 +114,10 @@ func maximum_dice_string(dice_string: String, modifiers: Dictionary = {}) -> int
 			var count := 1 if parts[0].is_empty() else int(parts[0])
 			var sides := int(parts[1])
 			if count > 0 and sides > 0:
+				if sign > 0 and (policy_sides == 0 or policy_sides == sides):
+					var removed := mini(count, remove_remaining)
+					count -= removed
+					remove_remaining -= removed
 				total += sign * count * sides
 		elif token.is_valid_int():
 			total += sign * int(token)
@@ -119,7 +125,7 @@ func maximum_dice_string(dice_string: String, modifiers: Dictionary = {}) -> int
 
 
 ## Evaluate a dice expression while retaining the exact dice and modifiers used.
-func parse_dice_details(dice_string: String, modifiers: Dictionary = {}, roller: Character = null) -> Dictionary:
+func parse_dice_details(dice_string: String, modifiers: Dictionary = {}, roller: Character = null, damage_policy: Dictionary = {}) -> Dictionary:
 	var total := 0
 	var expression := dice_string.strip_edges().to_upper()
 	var resolved_modifiers: Array[Dictionary] = []
@@ -142,6 +148,11 @@ func parse_dice_details(dice_string: String, modifiers: Dictionary = {}, roller:
 	var tokens := _tokenize_expression(expression)
 
 	var dice_terms: Array[Dictionary] = []
+	var remove_remaining := maxi(0, int(damage_policy.get("remove", 0)))
+	var maximize_remaining := maxi(0, int(damage_policy.get("maximize", 0)))
+	var policy_sides := int(damage_policy.get("sides", 0))
+	var removed_dice := 0
+	var maximized_dice := 0
 	for token in tokens:
 		token = token.strip_edges()
 		if token.is_empty():
@@ -167,6 +178,18 @@ func parse_dice_details(dice_string: String, modifiers: Dictionary = {}, roller:
 				var kept: Array[bool] = []
 				var roll_total := 0
 				for die in count:
+					var eligible := sign > 0 and (policy_sides == 0 or policy_sides == sides)
+					if eligible and remove_remaining > 0:
+						remove_remaining -= 1
+						removed_dice += 1
+						continue
+					if eligible and maximize_remaining > 0:
+						maximize_remaining -= 1
+						maximized_dice += 1
+						rolls.append(sides)
+						kept.append(true)
+						roll_total += sides
+						continue
 					var detail := roll_single_details(sides, roller, false)
 					rolls.append_array(detail["rolls"])
 					kept.append_array(detail["kept"])
@@ -189,7 +212,20 @@ func parse_dice_details(dice_string: String, modifiers: Dictionary = {}, roller:
 		"dice_terms": dice_terms,
 		"modifiers": resolved_modifiers,
 		"final_total": total,
+		"damage_dice_policy": {"removed": removed_dice, "maximized": maximized_dice} if not damage_policy.is_empty() else {},
 	}
+
+
+## Apply a declared integer multiplier at an explicit result stage. Rounding is
+## part of the input so callers cannot silently disagree about halves.
+func apply_damage_multiplier(value: int, numerator: int, denominator: int = 1, rounding: String = "floor") -> Dictionary:
+	if numerator < 0 or numerator > 20 or denominator < 1 or denominator > 20 or rounding not in ["floor", "ceil", "nearest"]:
+		return {"success": false, "value": value, "message": "Damage multiplier or rounding policy is unsupported."}
+	var raw := float(value * numerator) / float(denominator)
+	var resolved := int(floor(raw))
+	if rounding == "ceil": resolved = int(ceil(raw))
+	elif rounding == "nearest": resolved = int(round(raw))
+	return {"success": true, "value": resolved, "unscaled": value, "numerator": numerator, "denominator": denominator, "rounding": rounding}
 
 
 ## Flatten only kept, positive dice. Constants and discarded Inspiration rolls
@@ -218,24 +254,32 @@ func valid_reroll_selection(details: Dictionary, indices: Array, maximum: int) -
 	return true
 
 
-## Retain old and new rolls for the activity record; the new result must stand.
-func reroll_selected_dice(details: Dictionary, indices: Array, maximum: int, roller: Character = null) -> Dictionary:
+## Retain all faces for the activity record and keep the declared old/new result.
+func reroll_selected_dice(details: Dictionary, indices: Array, maximum: int, roller: Character = null, keep_policy: String = "new") -> Dictionary:
 	if not valid_reroll_selection(details, indices, maximum):
+		return {"success": false, "details": details}
+	if keep_policy not in ["new", "higher", "lower"]:
 		return {"success": false, "details": details}
 	var updated := details.duplicate(true)
 	var dice := selectable_dice(details)
+	var receipts: Array[Dictionary] = []
 	for index in indices:
 		var die: Dictionary = dice[index]
 		var term: Dictionary = updated["dice_terms"][die["term"]]
 		var reroll := roll_single_details(int(die["sides"]), roller)
-		var delta := int(reroll["total"]) - int(die["value"])
-		term["kept"][die["roll"]] = false
+		var old_value := int(die["value"])
+		var new_value := int(reroll["total"])
+		var keep_new := keep_policy == "new" or (keep_policy == "higher" and new_value > old_value) or (keep_policy == "lower" and new_value < old_value)
+		var delta := new_value - old_value if keep_new else 0
+		term["kept"][die["roll"]] = not keep_new
 		term["results"].append_array(reroll["rolls"])
-		term["kept"].append_array(reroll["kept"])
+		for kept in reroll["kept"]:
+			term["kept"].append(keep_new and bool(kept))
 		term["count"] = term["results"].size()
 		term["subtotal"] = int(term["subtotal"]) + delta
 		updated["final_total"] = int(updated["final_total"]) + delta
-	return {"success": true, "details": updated}
+		receipts.append({"term": int(die["term"]), "original_index": int(die["roll"]), "original": old_value, "new": new_value, "kept": "new" if keep_new else "original", "keep_policy": keep_policy})
+	return {"success": true, "details": updated, "rerolls": receipts}
 
 
 ## Tokenize a dice expression string into individual terms.

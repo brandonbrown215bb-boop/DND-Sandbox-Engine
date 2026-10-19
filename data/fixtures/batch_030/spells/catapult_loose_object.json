@@ -1,0 +1,19 @@
+{
+  "id": "fixture:030_catapult_loose_object",
+  "name": "Catapult Loose Object",
+  "execution": "shared",
+  "level": 1,
+  "school": "transmutation",
+  "casting_time": "action",
+  "range": 18,
+  "target": "single",
+  "targets_objects": true,
+  "components": ["V", "S"],
+  "physical_requirements": {
+    "required_status": "loose",
+    "max_mass_lb": 5.0,
+    "reject_unknown": true
+  },
+  "damage": "3d8",
+  "damage_type": "bludgeoning"
+}

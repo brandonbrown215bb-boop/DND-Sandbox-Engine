@@ -1,0 +1,100 @@
+{
+  "id": "fixture:018_secondary_changed",
+  "name": "018 secondary changed",
+  "description": "Neutral permanent progression consumer.",
+  "hit_die": "d8",
+  "primary_ability": "WIS",
+  "permanent_progression": {
+    "starting": [
+      {
+        "type": "proficiency_grant",
+        "skill_proficiencies": [
+          "Arcana"
+        ],
+        "expertise": [
+          "Arcana"
+        ],
+        "weapon_proficiencies": [
+          "martial"
+        ],
+        "armor_proficiencies": [
+          "heavy"
+        ],
+        "saving_throw_proficiencies": [
+          "WIS"
+        ]
+      },
+      {
+        "type": "equipment_grant",
+        "item_id": "dagger",
+        "quantity": 1
+      }
+    ],
+    "multiclass": [
+      {
+        "type": "proficiency_grant",
+        "skill_proficiencies": [
+          "Nature"
+        ],
+        "armor_proficiencies": [
+          "light"
+        ]
+      },
+      {
+        "type": "equipment_grant",
+        "item_id": "quarterstaff",
+        "quantity": 2
+      }
+    ],
+    "level_hit_points": 3,
+    "levels": [
+      {
+        "id": "class_two",
+        "basis": "class",
+        "at": 2,
+        "grants": [
+          {
+            "type": "ability_delta",
+            "ability": "WIS",
+            "amount": 2,
+            "maximum": 20
+          },
+          {
+            "type": "max_hp_delta",
+            "amount": 4
+          }
+        ]
+      },
+      {
+        "id": "character_three",
+        "basis": "character",
+        "at": 3,
+        "grants": [
+          {
+            "type": "proficiency_grant",
+            "skill_proficiencies": [
+              "History"
+            ]
+          },
+          {
+            "type": "max_hp_delta",
+            "amount": 3
+          }
+        ]
+      },
+      {
+        "id": "class_three",
+        "basis": "class",
+        "at": 3,
+        "grants": [
+          {
+            "type": "equipment_grant",
+            "item_id": "dagger",
+            "quantity": 1
+          }
+        ]
+      }
+    ]
+  },
+  "features_by_level": {}
+}

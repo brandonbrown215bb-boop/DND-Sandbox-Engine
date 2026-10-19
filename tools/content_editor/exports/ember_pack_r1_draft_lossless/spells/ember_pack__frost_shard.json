@@ -1,0 +1,50 @@
+{
+  "id": "ember_pack:frost_shard",
+  "name": "Frost Shard",
+  "description": "Fling a shard of lancing ice at a target. Hit or miss, the shard shatters in a 5-foot burst.",
+  "execution": "shared",
+  "level": 1,
+  "school": "conjuration",
+  "casting_time": "action",
+  "range": 12,
+  "target": "single",
+  "duration": "instantaneous",
+  "concentration": false,
+  "components": [
+    "S",
+    "M"
+  ],
+  "material": "a drop of water or piece of ice",
+  "classes": [
+    "druid",
+    "sorcerer",
+    "wizard"
+  ],
+  "steps": [
+    {
+      "id": "shard_attack",
+      "type": "attack",
+      "gate": "always",
+      "target": "target",
+      "attack_type": "ranged_spell",
+      "damage": "1d10",
+      "damage_type": "piercing"
+    },
+    {
+      "id": "burst_save",
+      "type": "save",
+      "gate": "always",
+      "target": "area",
+      "shape": "sphere",
+      "radius": 1,
+      "save": "DEX",
+      "half_on_save": false,
+      "damage": "2d6",
+      "damage_type": "cold",
+      "upcast": {
+        "damage_per_level": "1d6"
+      }
+    }
+  ],
+  "effects": []
+}

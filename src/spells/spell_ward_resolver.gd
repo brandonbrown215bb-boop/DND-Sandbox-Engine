@@ -36,7 +36,7 @@ static func heroism(cast: SpellResolutionContext) -> Dictionary:
 	if cast.target is not Character:
 		return {"success": false, "message": "Heroism requires a willing living party character."}
 	var heroism_target_name: String = cast.target.character_name
-	var temporary_hp_per_turn := maxi(0, AbilityScores.get_modifier(cast.caster.ability_scores.get_score(cast.caster.get_spellcasting_ability())))
+	var temporary_hp_per_turn := maxi(0, AbilityScores.get_modifier(cast.caster.ability_scores.get_score(SpellPermissionRules.selected_ability(cast.spell, cast.caster.get_spellcasting_ability()))))
 	SpellEffects.grant_heroism(cast.target, cast.effect_cast, temporary_hp_per_turn)
 	return {"success": true, "hit": true, "damage": 0, "effect_cast": cast.effect_cast, "temporary_hp_per_turn": temporary_hp_per_turn, "message": "%s is immune to Frightened and gains %d Temporary Hit Points at the start of each turn while %s concentrates." % [heroism_target_name, temporary_hp_per_turn, cast.caster.character_name]}
 

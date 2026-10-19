@@ -1,0 +1,31 @@
+{
+  "id": "magic_missile",
+  "name": "Magic Missile",
+  "description": "Three glowing darts of magical force strike their targets automatically (Ember Pack balance pass).",
+  "level": 1,
+  "school": "evocation",
+  "casting_time": "action",
+  "range": 24,
+  "target": "multi",
+  "max_targets": 3,
+  "requires_target_sight": true,
+  "auto_hit": true,
+  "damage_per_dart": "1d4 + 1",
+  "damage_type": "force",
+  "components": [
+    "V",
+    "S"
+  ],
+  "dart_count": 3,
+  "upcast": {
+    "extra_darts_per_level": 1
+  },
+  "attack_type": "none",
+  "damage": "1d4+1",
+  "classes": [
+    "sorcerer",
+    "wizard"
+  ],
+  "duration": "Instantaneous",
+  "concentration": false
+}

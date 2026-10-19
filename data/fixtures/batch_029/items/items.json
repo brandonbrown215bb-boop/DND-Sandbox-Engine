@@ -1,0 +1,60 @@
+[
+  {
+    "id": "fixture:029_negation_talisman",
+    "name": "Talisman of Spell Negation",
+    "type": "ring",
+    "slot": "ring",
+    "incoming_negation_rule": {
+      "target_scope": "recipient_effect",
+      "max_spell_level": 3,
+      "schools": [
+        "evocation"
+      ]
+    }
+  },
+  {
+    "id": "fixture:029_stopping_scroll",
+    "name": "Scroll of Interruption",
+    "type": "consumable",
+    "action_cost": "reaction",
+    "cancellation_rule": {
+      "target_scope": "whole_cast",
+      "max_spell_level": 3,
+      "contest": {
+        "type": "check",
+        "ability": "INT",
+        "dc": 12
+      }
+    },
+    "stopping_cost_policy": {
+      "on_success": {
+        "item": "dispose_copy"
+      },
+      "on_failure": {
+        "item": "dispose_copy"
+      }
+    }
+  },
+  {
+    "id": "fixture:029_charge_ring",
+    "name": "Settlement Ring",
+    "type": "ring",
+    "magical": true,
+    "maximum_charges": 5,
+    "spell_permissions": [
+      {
+        "spells": [
+          "fixture:029_target_refund",
+          "fixture:029_charge_stop"
+        ],
+        "ability": "INT",
+        "charges": 2,
+        "maximum_spell_level": 3,
+        "allowed_components": [
+          "V",
+          "S"
+        ]
+      }
+    ]
+  }
+]

@@ -60,10 +60,7 @@ static func _make_item_object(record: Dictionary, source_id: String, carried: bo
 		"item_id": definition_id,
 		"definition_id": definition_id,
 		"copy_state": record.get("state", {}).duplicate(true),
-		"material": str(item.get("material", "mixed")),
-		"size": str(item.get("size", "Tiny")),
-		"weight_lb": float(item.get("weight", 1.0)),
-		"fixed": false,
+		"fixed": bool(item.get("fixed", false)),
 		"hp": item_hp,
 		"max_hp": maxi(item_hp, int(item.get("object_hp", 1))),
 		"magical": bool(item.get("magical", false)) or item.has("rarity"),
@@ -75,6 +72,10 @@ static func _make_item_object(record: Dictionary, source_id: String, carried: bo
 		"removed": false,
 		"position": [position.x, position.y],
 	}
+	# Absence is an unknown physical fact, not a one-pound Tiny object.
+	for field in ["material", "size", "thickness_inches"]:
+		if item.has(field): object[field] = item[field]
+	if item.has("weight"): object["weight_lb"] = item.weight
 	return object
 
 

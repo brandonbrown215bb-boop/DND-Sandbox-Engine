@@ -1,0 +1,101 @@
+{
+  "id": "fixture:batch_k_renamed",
+  "name": "Batch K Renamed",
+  "description": "Renamed progression choice acquisition and safe replacement.",
+  "hit_die": "d8",
+  "primary_ability": "WIS",
+  "weapon_proficiencies": [
+    "simple"
+  ],
+  "armor_proficiencies": [
+    "light"
+  ],
+  "saving_throw_proficiencies": [
+    "CON",
+    "WIS"
+  ],
+  "features_by_level": {
+    "1": [
+      {
+        "id": "fixture:k_renamed_choice",
+        "name": "K Renamed Choice",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "feature_choice",
+            "count": 1,
+            "allow_replacement": true,
+            "options": [
+              {
+                "id": "k_renamed_alpha",
+                "name": "Renamed Alpha",
+                "effects": [
+                  {
+                    "type": "proficiency_grant",
+                    "armor_proficiencies": [
+                      "heavy"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "k_renamed_beta",
+                "name": "Renamed Beta",
+                "effects": [
+                  {
+                    "type": "proficiency_grant",
+                    "skill_proficiencies": [
+                      "Stealth"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "fixture:k_renamed_child",
+        "name": "K Renamed Child",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "feature_choice",
+            "count": 1,
+            "options": [
+              {
+                "id": "k_renamed_dep",
+                "name": "Renamed Dependent",
+                "minimum_level": 2,
+                "requires_choices": [
+                  "k_renamed_alpha"
+                ],
+                "effects": [
+                  {
+                    "type": "proficiency_grant",
+                    "weapon_proficiencies": [
+                      "martial"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "k_renamed_solo",
+                "name": "Renamed Solo",
+                "minimum_level": 1,
+                "effects": [
+                  {
+                    "type": "proficiency_grant",
+                    "armor_proficiencies": [
+                      "medium"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

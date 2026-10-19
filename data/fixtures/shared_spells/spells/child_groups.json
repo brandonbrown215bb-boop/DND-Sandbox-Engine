@@ -1,0 +1,264 @@
+[
+  {
+    "execution": "shared",
+    "level": 1,
+    "range": 6,
+    "target": "area",
+    "school": "evocation",
+    "effects": [
+      {
+        "type": "area_selection",
+        "shape": "sphere",
+        "radius": 1
+      }
+    ],
+    "id": "sandbox:child_group_neutral",
+    "name": "Grouped Return neutral",
+    "casting_time": "action",
+    "steps": [
+      {
+        "id": "first",
+        "type": "save",
+        "save": "DEX",
+        "target": "area",
+        "shape": "sphere",
+        "radius": 1,
+        "damage": "1",
+        "damage_type": "fire"
+      },
+      {
+        "id": "second",
+        "type": "save",
+        "save": "DEX",
+        "target": "area",
+        "shape": "sphere",
+        "radius": 1,
+        "damage": "1",
+        "damage_type": "fire"
+      },
+      {
+        "id": "skipped",
+        "type": "save",
+        "save": "DEX",
+        "target": "area",
+        "shape": "sphere",
+        "radius": 1,
+        "damage": "1",
+        "damage_type": "fire",
+        "when": {
+          "fact": "actor.level",
+          "lt": 0
+        }
+      },
+      {
+        "id": "return",
+        "type": "effect",
+        "target": "self",
+        "effects": [
+          {
+            "type": "heal",
+            "value": 1,
+            "when": {
+              "child_group": {
+                "mode": "count",
+                "steps": [
+                  "first",
+                  "second"
+                ],
+                "targets": "all",
+                "outcome": "failed_save",
+                "empty": "fail",
+                "skipped": "exclude",
+                "comparison": "gte",
+                "threshold": 1
+              }
+            }
+          },
+          {
+            "type": "heal",
+            "value": 3,
+            "when": {
+              "child_group": {
+                "mode": "count",
+                "steps": [
+                  "first",
+                  "second"
+                ],
+                "targets": "all",
+                "outcome": "failed_save",
+                "empty": "fail",
+                "skipped": "exclude",
+                "comparison": "gte",
+                "threshold": 2
+              }
+            }
+          },
+          {
+            "type": "heal",
+            "value": 9,
+            "when": {
+              "child_group": {
+                "mode": "count",
+                "steps": [
+                  "first",
+                  "second"
+                ],
+                "targets": "all",
+                "outcome": "failed_save",
+                "empty": "fail",
+                "skipped": "exclude",
+                "comparison": "gte",
+                "threshold": 3
+              }
+            }
+          },
+          {
+            "type": "temporary_hp",
+            "value": 7,
+            "when": {
+              "child_group": {
+                "mode": "any",
+                "steps": [
+                  "first",
+                  "second"
+                ],
+                "targets": "all",
+                "outcome": "failed_save",
+                "empty": "fail",
+                "skipped": "exclude"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "execution": "shared",
+    "level": 1,
+    "range": 6,
+    "target": "area",
+    "school": "evocation",
+    "effects": [
+      {
+        "type": "area_selection",
+        "shape": "sphere",
+        "radius": 1
+      }
+    ],
+    "id": "sandbox:child_group_renamed",
+    "name": "Grouped Return renamed",
+    "casting_time": "bonus_action",
+    "steps": [
+      {
+        "id": "first",
+        "type": "save",
+        "save": "DEX",
+        "target": "area",
+        "shape": "sphere",
+        "radius": 1,
+        "damage": "1",
+        "damage_type": "fire"
+      },
+      {
+        "id": "second",
+        "type": "save",
+        "save": "DEX",
+        "target": "area",
+        "shape": "sphere",
+        "radius": 1,
+        "damage": "1",
+        "damage_type": "fire"
+      },
+      {
+        "id": "skipped",
+        "type": "save",
+        "save": "DEX",
+        "target": "area",
+        "shape": "sphere",
+        "radius": 1,
+        "damage": "1",
+        "damage_type": "fire",
+        "when": {
+          "fact": "actor.level",
+          "lt": 0
+        }
+      },
+      {
+        "id": "return",
+        "type": "effect",
+        "target": "self",
+        "effects": [
+          {
+            "type": "heal",
+            "value": 1,
+            "when": {
+              "child_group": {
+                "mode": "all",
+                "steps": [
+                  "first",
+                  "second"
+                ],
+                "targets": "all",
+                "outcome": "failed_save",
+                "empty": "fail",
+                "skipped": "exclude"
+              }
+            }
+          },
+          {
+            "type": "heal",
+            "value": 3,
+            "when": {
+              "child_group": {
+                "mode": "all",
+                "steps": [
+                  "first",
+                  "second",
+                  "skipped"
+                ],
+                "targets": "all",
+                "outcome": "failed_save",
+                "empty": "fail",
+                "skipped": "exclude"
+              }
+            }
+          },
+          {
+            "type": "heal",
+            "value": 9,
+            "when": {
+              "child_group": {
+                "mode": "all",
+                "steps": [
+                  "skipped"
+                ],
+                "targets": "all",
+                "outcome": "failed_save",
+                "empty": "pass",
+                "skipped": "exclude"
+              }
+            }
+          },
+          {
+            "type": "temporary_hp",
+            "value": 11,
+            "when": {
+              "child_group": {
+                "mode": "any",
+                "steps": [
+                  "first",
+                  "second"
+                ],
+                "targets": "all",
+                "outcome": "failed_save",
+                "empty": "fail",
+                "skipped": "exclude"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+]

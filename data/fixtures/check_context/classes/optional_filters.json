@@ -1,0 +1,88 @@
+{
+  "id": "fixture:optional_filters",
+  "name": "Filter Fixture",
+  "hit_die": "d6",
+  "primary_ability": "INT",
+  "features_by_level": {
+    "1": [
+      {
+        "id": "fixture:optional_filters_0",
+        "name": "General Check 0",
+        "type": "passive",
+        "passive_effects": [
+          {
+            "type": "ability_check_roll_mode",
+            "id": "general_advantage",
+            "domain": "event_skill_check",
+            "ability": "INT",
+            "skill": "Investigation",
+            "mode": "advantage"
+          }
+        ]
+      },
+      {
+        "id": "fixture:optional_filters_1",
+        "name": "General Check 1",
+        "type": "passive",
+        "passive_effects": [
+          {
+            "type": "ability_check_roll_mode_policy",
+            "id": "bounded_cancel",
+            "domain": "event_skill_check",
+            "ability": "INT",
+            "skill": "Investigation",
+            "mode": "advantage",
+            "operation": "cancel",
+            "task_id": "maintenance_cancel"
+          }
+        ]
+      },
+      {
+        "id": "fixture:optional_filters_2",
+        "name": "General Check 2",
+        "type": "passive",
+        "passive_effects": [
+          {
+            "type": "ability_check_numeric_bonus",
+            "id": "general_bonus",
+            "domain": "event_skill_check",
+            "ability": "INT",
+            "skill": "Investigation",
+            "amount": 5,
+            "cost": 1
+          }
+        ],
+        "resource_pool": {
+          "id": "fixture:optional_filters_pool_2",
+          "capacity_formula": 8,
+          "initial_quantity": 8
+        }
+      },
+      {
+        "id": "fixture:optional_filters_3",
+        "name": "General Check 3",
+        "type": "passive",
+        "passive_effects": [
+          {
+            "type": "ability_check_mandatory_reroll",
+            "id": "general_reroll",
+            "domain": "event_skill_check",
+            "ability": "INT",
+            "skill": "Investigation",
+            "eligible_outcomes": [
+              "failure"
+            ],
+            "reroll_mode": "natural_only",
+            "bonus_dice_policy": "keep",
+            "cost": 1
+          }
+        ],
+        "resource_pool": {
+          "id": "fixture:optional_filters_pool_3",
+          "capacity_formula": 8,
+          "initial_quantity": 8
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,132 @@
+[
+  {
+    "id": "fixture:027_class_plain",
+    "name": "Guard plain",
+    "hit_die": "d8",
+    "primary_ability": "CON",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:027_guard_plain",
+          "name": "Protect plain",
+          "executor": "class_feature",
+          "type": "active",
+          "target": "self",
+          "action_cost": "bonus_action",
+          "resource_pool": {
+            "id": "fixture:027_guard_plain_pool",
+            "capacity_formula": 4,
+            "initial_quantity": 4
+          },
+          "temporary_hp_grant": {
+            "amount": 8,
+            "duration_seconds": 60,
+            "beneficiary": "recipient",
+            "benefits": {
+              "ac_bonus": 2,
+              "save_bonus": 1
+            }
+          },
+          "effects": []
+        },
+        {
+          "id": "fixture:027_aura_plain",
+          "name": "Entry plain",
+          "type": "passive",
+          "effects": [
+            {
+              "type": "protection_aura",
+              "group": "entry_guard",
+              "radius_feet": 10,
+              "duration_seconds": 30,
+              "entry_policy": "once_per_source",
+              "benefits": {
+                "ac_bonus": 2,
+                "save_bonus": 1
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "fixture:027_class_renamed",
+    "name": "Guard renamed",
+    "hit_die": "d8",
+    "primary_ability": "CON",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:027_guard_renamed",
+          "name": "Protect renamed",
+          "executor": "class_feature",
+          "type": "active",
+          "target": "self",
+          "action_cost": "bonus_action",
+          "resource_pool": {
+            "id": "fixture:027_guard_renamed_pool",
+            "capacity_formula": 4,
+            "initial_quantity": 4
+          },
+          "temporary_hp_grant": {
+            "amount": 5,
+            "duration_seconds": 60,
+            "beneficiary": "supplier",
+            "benefits": {
+              "ac_bonus": 3,
+              "save_bonus": 2
+            }
+          },
+          "effects": []
+        },
+        {
+          "id": "fixture:027_aura_renamed",
+          "name": "Entry renamed",
+          "type": "passive",
+          "effects": [
+            {
+              "type": "protection_aura",
+              "group": "entry_guard",
+              "radius_feet": 10,
+              "duration_seconds": 30,
+              "entry_policy": "once_per_source",
+              "benefits": {
+                "ac_bonus": 3,
+                "save_bonus": 2
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "fixture:027_membership_class",
+    "name": "Membership Guard",
+    "hit_die": "d8",
+    "primary_ability": "CON",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:027_membership_feature",
+          "name": "Membership Guard",
+          "type": "passive",
+          "effects": [
+            {
+              "type": "protection_aura",
+              "group": "membership_guard",
+              "radius_feet": 10,
+              "duration_seconds": 0,
+              "entry_policy": "membership",
+              "benefits": {
+                "ac_bonus": 1,
+                "save_bonus": 1
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

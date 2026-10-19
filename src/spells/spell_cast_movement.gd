@@ -14,6 +14,7 @@ static func _resolve_spell_cast_movement(cast: SpellCastContext) -> bool:
 			PaladinRules.dismiss_find_steed(cast.caster)
 			cast.hud.add_log("[color=orange]%s[/color]" % summon_result.get("message", "Find Steed could not place the steed."))
 			return true
+		cast.successful = true
 		cast.hud.add_log("[color=cyan]%s[/color]" % steed_result.get("message", "Find Steed appears."))
 		cast.spend_action_cost.call(cast.action_cost_for_command.call("cast_spell", {"spell": cast.spell}))
 		cast.clear_pending(SpellCastContext.CLEAR_ACTION)
@@ -35,6 +36,9 @@ static func _resolve_spell_cast_movement(cast: SpellCastContext) -> bool:
 			cast.highlight_reachable.call()
 			return true
 		cast.players[cast.player_index]["hex_position"] = cast.target_coord
+		cast.successful = true
+		SpellEffects.publish_event(cast.caster, {"type": "movement", "actor_id": SpellEffects.caster_id(cast.caster), "from": [origin.x, origin.y], "to": [cast.target_coord.x, cast.target_coord.y], "distance_feet": HexUtils.get_distance(origin, cast.target_coord) * 5})
+		if cast.publish_source_range_events.is_valid(): cast.publish_source_range_events.call()
 		await cast.areas._resolve_spell_zone_entries(cast.caster, origin, cast.target_coord)
 		cast.hud.add_log("[color=cyan]%s teleports from %s to %s.[/color]" % [cast.caster.character_name, origin, cast.target_coord])
 		var teleport_cost := str(cast.spell.get("casting_time", "action"))

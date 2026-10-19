@@ -7,8 +7,19 @@ class_name BeckettReflectionTools
 ## These few tools reach any Node / Resource / Object without per-domain wrappers.
 
 const Reflect := preload("res://addons/beckett/core/reflection.gd")
+const Internals := preload("res://addons/beckett/core/internals.gd")  # which methods fan out to every node below the target
+const CallArgs := preload("res://addons/beckett/core/callargs.gd")
+const BuiltinApi := preload("res://addons/beckett/core/builtin_api.gd")
+const PersistGuard := preload("res://addons/beckett/core/persist_guard.gd")
+const PathGuard := preload("res://addons/beckett/core/path_guard.gd")  # why a res:// target would not resolve
 
-var server
+## What a built-in type result has to tell the agent, since call_method cannot take it.
+const BUILTIN_NOTE := "A built-in Variant type (a value, not an Object): call these methods on values in GDScript code. call_method and set_property work on Objects only."
+
+## Cap on names harvested for a "did you mean" — a whole big scene tree, and no more.
+const SUGGEST_CANDIDATE_MAX := 2000
+
+var server  # mcp_server node (for get_undo_redo); set by the caller
 
 
 func _register(registry) -> void:
@@ -16,12 +27,13 @@ func _register(registry) -> void:
 		"name": "get_godot_version",
 		"description": "Return the running Godot engine version info.",
 		"readonly": true,
+		"always_load": true,  # bootstrap set (tool_registry.gd): ~220 bytes, and the first thing to know before writing engine API calls
 		"input_schema": {"type": "object", "properties": {}},
 		"handler": Callable(self, "_get_godot_version"),
 	})
 	registry.register({
 		"name": "find_classes",
-		"description": "Search classes by name substring — engine classes AND your project's own types (GDScript class_name + C# [GlobalClass]). Optional 'base' restricts to subclasses (e.g. base=Node2D). The discovery entry point — pair with describe_class.",
+		"description": "Search classes by name substring — engine classes, built-in Variant types (Vector3, Transform3D, Color...) AND your project's own types (GDScript class_name + C# [GlobalClass]). Optional 'base' restricts to subclasses (e.g. base=Node2D). The discovery entry point — pair with describe_class.",
 		"readonly": true,
 		"input_schema": {"type": "object", "properties": {
 			"query": {"type": "string", "description": "case-insensitive name substring"},
@@ -32,8 +44,12 @@ func _register(registry) -> void:
 	})
 	registry.register({
 		"name": "describe_class",
-		"description": "List a class's properties and methods (with signatures) so you know exactly what to set_property / call_method. The discovery key for full domain coverage.",
+		"description": "List a class's properties and methods (with signatures) so you know exactly what to set_property / call_method. The discovery key for full domain coverage. Also covers built-in Variant types (Vector3, Transform3D, Basis, Color, String...) and your class_name types.",
 		"readonly": true,
+		# Claude Code spills a result over 50,000 chars to a file, and a signature list cut to a
+		# preview is useless. Measured on 4.6.2 with inherited=true: 17 of 1,040 engine classes
+		# cross that line, the largest (CodeEdit) at 81 KB. 100,000 clears all of them.
+		"max_result_chars": 100000,
 		"input_schema": {"type": "object", "properties": {
 			"class": {"type": "string"},
 			"inherited": {"type": "boolean", "description": "include inherited members (default false)"},
@@ -42,7 +58,7 @@ func _register(registry) -> void:
 	})
 	registry.register({
 		"name": "find_methods",
-		"description": "Search methods by name substring, optionally restricted to a class (incl. inherited). Any result is invokable via call_method.",
+		"description": "Search methods by name substring, optionally restricted to a class (incl. inherited). Covers engine classes, built-in Variant types (Vector3, Transform3D, Color...) and your class_name types. Object methods are invokable via call_method; kind=builtin results are called on values in GDScript. An unknown class is an error, never a silent search of everything.",
 		"readonly": true,
 		"input_schema": {"type": "object", "properties": {
 			"query": {"type": "string"},
@@ -53,7 +69,7 @@ func _register(registry) -> void:
 	})
 	registry.register({
 		"name": "describe_object",
-		"description": "Dump a live object's properties as JSON. target = a res:// path, a node name/path in the open scene, or a class name (falls back to describe_class).",
+		"description": "Dump a live object's properties as JSON. target = a res:// path, a node name/path in the OPEN scene, or a class name (falls back to describe_class). While a game is running it also resolves live nodes (/root/Main/Player), the same paths runtime_get_property takes; the answer says which scope it came from, since the edited scene and the running game share one path syntax but are different worlds.",
 		"readonly": true,
 		"input_schema": {"type": "object", "properties": {
 			"target": {"type": "string"},
@@ -73,7 +89,7 @@ func _register(registry) -> void:
 	})
 	registry.register({
 		"name": "call_method",
-		"description": "Invoke a method on a resolved object. args = a positional array. Returns the result as JSON.",
+		"description": "Invoke a method on a resolved object. args = a positional array, coerced to the declared param types: vectors accept [x,y,z] / {\"x\":..} / \"x y z\", colors hex or [r,g,b,a], object params a node name/path or res:// path. Wrong types or counts return an ERROR (never a silent no-op). Returns the result as JSON.",
 		"destructive": true,
 		"input_schema": {"type": "object", "properties": {
 			"target": {"type": "string"},
@@ -86,11 +102,13 @@ func _register(registry) -> void:
 		"name": "get_scene_tree",
 		"description": "Return the node tree of the scene currently open in the editor (name/class/script, nested).",
 		"readonly": true,
+		"always_load": true,  # bootstrap set (tool_registry.gd): ~260 bytes, and the first call of almost every session
 		"input_schema": {"type": "object", "properties": {}},
 		"handler": Callable(self, "_get_scene_tree"),
 	})
 
 
+# ---------------------------------------------------------------- handlers
 
 func _get_godot_version(_args: Dictionary) -> Dictionary:
 	return {"json": Engine.get_version_info()}
@@ -106,11 +124,25 @@ func _find_classes(args: Dictionary) -> Dictionary:
 	else:
 		src = ClassDB.get_class_list()
 	var out: Array = []
+	# Built-in Variant types first: there are only ~38, they are the math and container types
+	# code touches constantly, and ClassDB (below) never lists them. They have no base class,
+	# so a 'base' filter excludes them.
+	if base.is_empty():
+		for bn in BuiltinApi.type_names():
+			if query.is_empty() or bn.to_lower().contains(query):
+				out.append({"name": bn, "parent": "", "kind": "builtin"})
+				if out.size() >= maxn:
+					break
 	for c in src:
+		if out.size() >= maxn:
+			break
 		if query.is_empty() or String(c).to_lower().contains(query):
 			out.append({"name": String(c), "parent": String(ClassDB.get_parent_class(c))})
 			if out.size() >= maxn:
 				break
+	# Also surface user-defined global classes (GDScript class_name + C# [GlobalClass]) —
+	# ClassDB never lists these. Tagged with language + script path so the agent knows they
+	# are project types (drive them the same way: create_node / set_property / call_method).
 	if out.size() < maxn:
 		for e in _global_classes():
 			var nm := String(e.get("class", ""))
@@ -135,11 +167,13 @@ func _find_classes(args: Dictionary) -> Dictionary:
 func _describe_class(args: Dictionary) -> Dictionary:
 	var cls := str(args.get("class", ""))
 	if not ClassDB.class_exists(cls):
+		if BuiltinApi.is_builtin(cls):
+			return _describe_builtin(cls)
 		var gentry := _global_class_entry(cls)
 		if not gentry.is_empty():
 			return _describe_global_class(cls, gentry)
 		return {"error": "No such class: %s" % cls, "suggestion": _did_you_mean(cls)}
-	var no_inh := not bool(args.get("inherited", false))
+	var no_inh := not CallArgs.flag(args, "inherited")
 	var props: Array = []
 	for p in ClassDB.class_get_property_list(cls, no_inh):
 		var usage := int(p.get("usage", 0))
@@ -162,39 +196,147 @@ func _find_methods(args: Dictionary) -> Dictionary:
 	var cls := str(args.get("class", ""))
 	var maxn := int(args.get("max", 50))
 	var out: Array = []
-	if not cls.is_empty() and ClassDB.class_exists(cls):
-		for m in ClassDB.class_get_method_list(cls, false):
-			if query.is_empty() or String(m.get("name", "")).to_lower().contains(query):
-				out.append({"class": cls, "name": String(m.get("name", "")), "signature": Reflect.method_signature(m)})
-				if out.size() >= maxn:
-					break
+	var result := {}
+	if not cls.is_empty():
+		# A named class must be one we can actually search. Until 2026-09 an unknown name fell
+		# through to the search-everything branch below, so class=Transform3D answered with
+		# other classes' methods and no error at all.
+		if ClassDB.class_exists(cls):
+			for m in ClassDB.class_get_method_list(cls, false):
+				if _method_matches(m, query):
+					out.append({"class": cls, "name": String(m.get("name", "")), "signature": Reflect.method_signature(m)})
+					if out.size() >= maxn:
+						break
+		elif BuiltinApi.is_builtin(cls):
+			var t := BuiltinApi.table()
+			if t.is_empty():
+				return _builtin_unavailable(cls)
+			for m in (t.get(cls, {}) as Dictionary).get("methods", []):
+				if _method_matches(m, query):
+					out.append({"class": cls, "name": str(m["name"]), "signature": str(m["signature"]), "kind": "builtin"})
+					if out.size() >= maxn:
+						break
+			result["note"] = BUILTIN_NOTE
+		else:
+			var entry := _global_class_entry(cls)
+			if entry.is_empty():
+				return {"error": "No such class: %s" % cls, "suggestion": _did_you_mean(cls)}
+			_script_methods(cls, entry, query, maxn, out)
 	else:
 		for c in ClassDB.get_class_list():
 			for m in ClassDB.class_get_method_list(c, true):
-				if String(m.get("name", "")).to_lower().contains(query):
+				if _method_matches(m, query):
 					out.append({"class": String(c), "name": String(m.get("name", "")), "signature": Reflect.method_signature(m)})
 					if out.size() >= maxn:
 						break
 			if out.size() >= maxn:
 				break
-	return {"json": {"count": out.size(), "methods": out}}
+		if out.size() < maxn:
+			var t := BuiltinApi.table()
+			if t.is_empty():
+				result["note"] = "Built-in Variant types (Vector3, Transform3D, ...) were not searched: %s" % BuiltinApi.last_error()
+			else:
+				for bn in t:
+					for m in (t[bn] as Dictionary).get("methods", []):
+						if _method_matches(m, query):
+							out.append({"class": str(bn), "name": str(m["name"]), "signature": str(m["signature"]), "kind": "builtin"})
+							if out.size() >= maxn:
+								break
+					if out.size() >= maxn:
+						break
+	result["count"] = out.size()
+	result["truncated"] = out.size() >= maxn
+	result["methods"] = out
+	return {"json": result}
+
+
+func _method_matches(m: Dictionary, query: String) -> bool:
+	return query.is_empty() or String(m.get("name", "")).to_lower().contains(query)
+
+
+## A class_name type's own script methods (inherited script methods included), then the
+## engine class it ultimately extends.
+func _script_methods(cls: String, entry: Dictionary, query: String, maxn: int, out: Array) -> void:
+	var path := String(entry.get("path", ""))
+	var scr: Variant = load(path) if not path.is_empty() else null
+	if not (scr is Script):
+		return
+	for m in (scr as Script).get_script_method_list():
+		if _method_matches(m, query):
+			out.append({"class": cls, "name": String(m.get("name", "")), "signature": Reflect.method_signature(m), "kind": "script"})
+			if out.size() >= maxn:
+				return
+	var native := String((scr as Script).get_instance_base_type())
+	if ClassDB.class_exists(native):
+		for m in ClassDB.class_get_method_list(native, false):
+			if _method_matches(m, query):
+				out.append({"class": native, "name": String(m.get("name", "")), "signature": Reflect.method_signature(m)})
+				if out.size() >= maxn:
+					return
+
+
+func _describe_builtin(cls: String) -> Dictionary:
+	var t := BuiltinApi.table()
+	if t.is_empty():
+		return _builtin_unavailable(cls)
+	var info: Dictionary = t.get(cls, {})
+	return {"json": {
+		"class": cls,
+		"kind": "builtin",
+		"note": BUILTIN_NOTE,
+		"properties": info.get("members", []),
+		"methods": info.get("methods", []),
+		"constants": info.get("constants", []),
+	}}
+
+
+func _builtin_unavailable(cls: String) -> Dictionary:
+	return {"error": "%s is a built-in Variant type. Its method list comes from the engine's own API dump, which could not be produced here: %s" % [cls, BuiltinApi.last_error()],
+		"suggestion": "Check the Godot docs for %s, or validate_script a snippet that calls the method you expect." % cls}
 
 
 func _describe_object(args: Dictionary) -> Dictionary:
 	var target := str(args.get("target", ""))
+	var guard := _target_guard(target)
+	if guard.has("error"):
+		return guard
 	var obj := Reflect.resolve(target)
 	if obj == null:
-		if ClassDB.class_exists(target) or not _global_class_entry(target).is_empty():
+		# One of Beckett's own objects, or the editor around the open scene: say so, and do not ask the game
+		# about a path that names a node of the editor (the game has no such node, and "not found" would hide why).
+		var off := Reflect.refusal_for(target)
+		if not off.is_empty():
+			return {"error": off}
+		# The editor and the running game are two different scopes that share one path
+		# syntax, and nothing said so: runtime_get_property happily takes /root/Main/Player
+		# while describe_object on the same string said "could not resolve" and sent the
+		# agent off to get_remote_tree to guess. If the game is up, just ask it.
+		if server.bridge.is_game_connected():
+			var r: Dictionary = server.bridge.send_command({"cmd": "describe", "path": target})
+			if bool(r.get("ok", false)):
+				return {"json": {
+					"target": target,
+					"scope": "runtime (the running game — not the edited scene)",
+					"class": r.get("class", ""),
+					"resolved": r.get("resolved", target),
+					"properties": r.get("properties", {}),
+				}}
+		if ClassDB.class_exists(target) or BuiltinApi.is_builtin(target) or not _global_class_entry(target).is_empty():
 			return _describe_class({"class": target, "inherited": args.get("inherited", false)})
+		var how := "Use a res:// path, a node name/path in the OPEN scene, a class name, or (while the game is running) a live node path such as /root/Main/Player."
+		# This miss path is reached for RUNTIME targets too (the branch above), so the
+		# suggestion has to come from the tree the agent is actually driving — naming the
+		# edited scene's nodes mid-playtest points at the wrong world entirely.
+		var near := _did_you_mean_target(target, true)
 		return {
 			"error": "Could not resolve target: %s" % target,
-			"suggestion": "Use a res:// path, a node name/path in the open scene, or a class name.",
+			"suggestion": ("%s %s" % [near, how]) if not near.is_empty() else how,
 		}
-	return {"json": {
+	return PathGuard.noted({"json": {
 		"target": target,
 		"class": obj.get_class(),
 		"properties": Reflect.properties_of(obj),
-	}}
+	}}, guard)
 
 
 func _set_property(args: Dictionary) -> Dictionary:
@@ -204,7 +346,7 @@ func _set_property(args: Dictionary) -> Dictionary:
 		return {"error": "value is required"}
 	var obj := Reflect.resolve(target)
 	if obj == null:
-		return {"error": "Could not resolve target: %s" % target}
+		return _unresolved(target)
 	if not _has_property(obj, prop):
 		return {"error": "%s has no property '%s'" % [obj.get_class(), prop],
 			"suggestion": "Call describe_object target=%s (or describe_class) to see valid properties." % target}
@@ -217,7 +359,10 @@ func _set_property(args: Dictionary) -> Dictionary:
 		ur.commit_action()
 	else:
 		obj.set(prop, coerced)
-	return {"text": "set %s.%s = %s" % [target, prop, str(coerced)]}
+	var reply := {"text": "set %s.%s = %s" % [target, prop, str(coerced)]}
+	if obj is Node:  # a resource or a sub-resource has no place in the scene tree to judge
+		return PersistGuard.attach(reply, PersistGuard.verdict(EditorInterface.get_edited_scene_root(), obj as Node, PersistGuard.SET))
+	return reply
 
 
 func _call_method(args: Dictionary) -> Dictionary:
@@ -225,16 +370,61 @@ func _call_method(args: Dictionary) -> Dictionary:
 	var method := str(args.get("method", ""))
 	var obj := Reflect.resolve(target)
 	if obj == null:
-		return {"error": "Could not resolve target: %s" % target}
-	if not obj.has_method(method):
-		return {"error": "%s has no method '%s'" % [obj.get_class(), method],
-			"suggestion": "Call find_methods query=%s class=%s to discover callable methods." % [method, obj.get_class()]}
+		return _unresolved(target)
 	var call_args: Array = []
 	var incoming: Variant = args.get("args", [])
 	if incoming is Array:
 		call_args = incoming
-	var ret: Variant = obj.callv(method, call_args)
-	return {"json": {"result": Reflect.to_json_safe(ret)}}
+	# A method that runs something on every node below its target (propagate_call), or runs another method by
+	# name (call, callv, call_deferred, so call("propagate_call", ...) too), reaches Beckett's own objects from any
+	# node that has them below it, and the target itself being fine does not make that call fine.
+	var off := Internals.dispatch_refusal(obj, method, call_args)
+	if not off.is_empty():
+		return {"error": off}
+	if not obj.has_method(method):
+		return {"error": "%s has no method '%s'" % [obj.get_class(), method],
+			"suggestion": "Call find_methods query=%s class=%s to discover callable methods." % [method, obj.get_class()]}
+	# Coerce BEFORE callv: a mis-typed callv does NOT execute the method (the engine
+	# prints to the editor console and returns null), which this handler used to wrap
+	# as success - the silent-argument trap. Coercion failures now fail the call.
+	var prep: Dictionary = CallArgs.prepare(obj, method, call_args, self)
+	if not bool(prep.get("ok", false)):
+		return {"error": "call_method %s.%s: %s" % [obj.get_class(), method, str(prep.get("error", "argument mismatch"))],
+			"suggestion": "describe_class class=%s shows the declared signature; vectors accept [x,y,z]." % obj.get_class()}
+	var ret: Variant = obj.callv(method, prep["args"])
+	var payload := {"result": Reflect.to_json_safe(ret)}
+	var warn := _stale_script_warning(obj)
+	if not warn.is_empty():
+		payload["warning"] = warn
+	return {"json": payload}
+
+
+func _resolve_object_arg(spec: String) -> Object:
+	return Reflect.resolve(spec)
+
+
+## Why an object argument that did not resolve was refused (CallArgs.prepare asks): handing one of Beckett's
+## objects to add_child, reparent, connect or the like is a way to them as good as naming one as the target.
+func _object_arg_refusal(spec: String) -> String:
+	return Reflect.refusal_for(spec)
+
+
+## call_method executes the LOADED script. A .gd changed outside write_script/
+## script_patch (the agent's own file tools, an external editor) stays stale in a
+## driven editor - reload-on-focus never fires headless - so results quietly stop
+## matching the file. Detect the drift and say so in the response.
+func _stale_script_warning(obj: Object) -> String:
+	var scr: Variant = obj.get_script()
+	if scr == null or not (scr is GDScript):
+		return ""
+	var path: String = (scr as GDScript).resource_path
+	if not path.begins_with("res://") or not FileAccess.file_exists(path):
+		return ""
+	var disk := FileAccess.get_file_as_string(path).replace("\r\n", "\n")
+	var loaded := str((scr as GDScript).source_code).replace("\r\n", "\n")
+	if disk.is_empty() or loaded.is_empty() or disk == loaded:
+		return ""
+	return "script %s differs on disk from the loaded version - this call ran the LOADED code. Rewrite it via write_script/script_patch (they reload), then call again." % path
 
 
 func _get_scene_tree(_args: Dictionary) -> Dictionary:
@@ -244,6 +434,7 @@ func _get_scene_tree(_args: Dictionary) -> Dictionary:
 	return {"json": _node_tree(root)}
 
 
+# ---------------------------------------------------------------- helpers
 
 func _node_tree(n: Node) -> Dictionary:
 	var d: Dictionary = {"name": String(n.name), "class": n.get_class()}
@@ -268,20 +459,116 @@ func _has_property(obj: Object, prop: String) -> bool:
 func _did_you_mean(cls: String) -> String:
 	var q := cls.to_lower()
 	var hits: Array = []
+	for bn in BuiltinApi.type_names():
+		if hits.size() >= 5:
+			break
+		if bn.to_lower().contains(q):
+			hits.append(bn)
 	for c in ClassDB.get_class_list():
+		if hits.size() >= 5:
+			break
 		if String(c).to_lower().contains(q):
 			hits.append(String(c))
 			if hits.size() >= 5:
 				break
-	for e in _global_classes():
+	for e in _global_classes():  # include the project's own types in suggestions
 		if hits.size() >= 5:
 			break
 		var nm := String(e.get("class", ""))
 		if not nm.is_empty() and nm.to_lower().contains(q) and not hits.has(nm):
 			hits.append(nm)
+	# Substring only finds names that CONTAIN the query, so a typo ("Sprit2D") has zero hits
+	# and used to fall through to the generic advice. Edit distance catches exactly that.
+	# Order matters: substring first, so a prefix query like "Light" still lists the family.
+	if hits.is_empty():
+		hits = Reflect.nearest(cls, _class_name_pool(), 5)
 	if hits.is_empty():
 		return "Use find_classes to search for the right class name."
 	return "Did you mean: %s" % ", ".join(hits)
+
+
+## Every class name a describe_class query could legitimately have meant: engine classes
+## plus the project's own global types. Built only on a miss.
+func _class_name_pool() -> Array:
+	var pool: Array = Array(BuiltinApi.type_names())
+	for c in ClassDB.get_class_list():
+		pool.append(String(c))
+	for e in _global_classes():
+		var nm := String(e.get("class", ""))
+		if not nm.is_empty():
+			pool.append(nm)
+	return pool
+
+
+## "Did you mean ...?" for a target that did not resolve, or "" when nothing is close.
+## The candidate SCOPE is the CALLER's scope, never "whatever is reachable": describe_object
+## also answers for the running game, so its misses match against the live tree, while
+## set_property / call_method only ever touch the edited scene and would send the agent after
+## a node they cannot address if they borrowed the game's names.
+func _did_you_mean_target(target: String, from_runtime: bool) -> String:
+	# A res:// / uid:// miss is a load failure, not a mistyped node name — say nothing.
+	if target.begins_with("res://") or target.begins_with("uid://"):
+		return ""
+	var leaf := target.get_file()  # "/root/Main/Playr" -> "Playr"; a bare name is unchanged
+	if leaf.is_empty():
+		return ""
+	var runtime: bool = from_runtime and server != null and server.bridge != null and server.bridge.is_game_connected()
+	var by_leaf: Dictionary = {}  # leaf name -> the exact string to pass back
+	if runtime:
+		var r: Dictionary = server.bridge.send_command({"cmd": "find", "recursive": true, "max": SUGGEST_CANDIDATE_MAX})
+		for e in r.get("nodes", []):  # absent on a failed find, which just means no suggestion
+			var p := str((e as Dictionary).get("path", ""))
+			if not p.is_empty():
+				by_leaf[p.get_file()] = p
+	else:
+		var root := EditorInterface.get_edited_scene_root()
+		if root == null:
+			return ""
+		by_leaf[String(root.name)] = String(root.name)
+		_collect_node_names(root, by_leaf)
+	var hits: Array = Reflect.nearest(leaf, by_leaf.keys(), 3)
+	if hits.is_empty():
+		return ""
+	var names: Array = []
+	for h in hits:
+		names.append(str(by_leaf[h]))
+	var scope := "live nodes in the RUNNING game" if runtime else "nodes in the OPEN scene"
+	return "Did you mean %s? (%s)" % [", ".join(names), scope]
+
+
+## Every node name under the edited scene root, keyed by itself: Reflect.resolve finds a node
+## by bare name anywhere in the tree, so the name IS the string to hand back.
+func _collect_node_names(n: Node, into: Dictionary) -> void:
+	for c in n.get_children():
+		if into.size() >= SUGGEST_CANDIDATE_MAX:
+			return
+		into[String(c.name)] = String(c.name)
+		_collect_node_names(c, into)
+
+
+## The read rule's verdict on `target` when it is a res:// or uid:// resource path, else {}. Reflect.resolve
+## returns null for a path the rule refuses, and "could not resolve" would hide why: callers return the
+## verdict's error as it is, and add its note (outside reads switched on) to what they answer.
+func _target_guard(target: String) -> Dictionary:
+	if not (target.begins_with("res://") or target.begins_with("uid://")):
+		return {}
+	return PathGuard.check_read(target)
+
+
+## The shared "target did not resolve" error for the EDITOR-scoped tools, carrying a nearby
+## name when there is one.
+func _unresolved(target: String) -> Dictionary:
+	var guard := _target_guard(target)
+	if guard.has("error"):
+		return guard
+	var off := Reflect.refusal_for(target)  # one of Beckett's own objects, or a node outside the open scene
+	if not off.is_empty():
+		return {"error": off}
+	var out := {"error": "Could not resolve target: %s" % target}
+	var near := _did_you_mean_target(target, false)
+	if not near.is_empty():
+		out["suggestion"] = near
+	return out
 
 
 ## User-defined global classes (GDScript class_name + C# [GlobalClass]) — the surface

@@ -13,6 +13,7 @@ const CombatActivityRecordModel = preload("res://src/activity/combat_activity_re
 
 # Initiative queue
 var tracker: InitiativeTracker = InitiativeTracker.new()
+var action_history := CombatActionHistory.new()
 
 # Tactical entities state
 # Maps entity_id -> position (Vector2i)
@@ -41,6 +42,9 @@ var current_player_idx: int = -1
 var active_combatant: Dictionary = {} # Reference from tracker
 var active_character: Character = null # If active_combatant is player
 var remaining_speed: float = 0.0
+var _movement_speed_shortfall := 0.0
+var _movement_speed_owner: Character
+var _movement_speed_snapshot := 0.0
 var active_movement_mode := "walk"
 var extra_movement_speed_hexes := 0.0
 var player_moved_this_turn: bool = false
@@ -50,6 +54,8 @@ var turn_budget: CombatTurnBudget = CombatTurnBudget.new()
 # Targeting action mode
 var pending_action_type: String = "" # "attack", "spell", "lay_on_hands", "bardic_inspiration", "unarmed_attack"
 var resolving_player_action := false
+var pool_recovery := CombatPoolRecovery.new()
+var _pool_recovery_pending := false
 var pending_spell_data: Dictionary = {}
 var pending_divine_intervention := false
 var pending_divine_intervention_wish := false
@@ -63,6 +69,11 @@ var fighter_move_waiting := false
 var fighter_move_done := false
 var fighter_move_entity: Dictionary = {}
 var remaining_attack_swings := 0
+var attack_unit_substitution: Dictionary = {}
+var child_actions := CombatChildActions.new()
+var remaining_flurry_swings := 0
+var strike_unit_parent := "attack"
+var _cast_in_progress := false
 var light_attack_weapon: Dictionary = {}
 
 # Guards against double-triggering battle end (victory/defeat).
@@ -684,6 +695,14 @@ func _setup_combat_monsters() -> void:
 			"spell_slots": base_monster.get("spell_slots", {}).duplicate(true),
 			"damage_immunities": base_monster.get("damage_immunities", []).duplicate(true),
 			"damage_resistances": base_monster.get("damage_resistances", []).duplicate(true),
+			"damage_vulnerabilities": base_monster.get("damage_vulnerabilities", []).duplicate(true),
+			"senses": base_monster.get("senses", {}).duplicate(true),
+			"darkvision_range_feet": int(base_monster.get("darkvision_range_feet", base_monster.get("senses", {}).get("darkvision", 0))),
+			"blindsight_range_feet": int(base_monster.get("blindsight_range_feet", base_monster.get("senses", {}).get("blindsight", 0))),
+			"truesight_range_feet": int(base_monster.get("truesight_range_feet", base_monster.get("senses", {}).get("truesight", 0))),
+			"proficiency_bonus": int(base_monster.get("proficiency_bonus", 2)),
+			"fly_speed_feet": int(base_monster.get("fly_speed_feet", 0)),
+			"climb_speed_feet": int(base_monster.get("climb_speed_feet", 0)),
 			"condition_immunities": base_monster.get("condition_immunities", []).duplicate(true),
 			"saving_throw_bonuses": base_monster.get("saving_throw_bonuses", {}).duplicate(true),
 			"special_abilities": base_monster.get("special_abilities", []).duplicate(true),
@@ -703,6 +722,7 @@ func _setup_combat_monsters() -> void:
 
 func _roll_initiative_and_start() -> void:
 	tracker.clear()
+	action_history.reset()
 	CombatAction.advance_combat_turn(null)
 	CombatAction.reset_bounded_owner_turn_rider_locks()
 	var seeded_init_map: Dictionary = GameManager.transition_context.get("initiative_decisions", {}) if GameManager.transition_context.get("initiative_decisions") is Dictionary else {}
@@ -748,6 +768,8 @@ func _roll_initiative_and_start() -> void:
 			var init_d20 := RollTokenRules.resolve_d20_test(char_data, "initiative", initiative_advantage, false, init_decisions)
 			var roll = int(init_d20.get("total", 1)) - char_data.exhaustion_level * 2
 			total = roll + mod
+			await _recover_combat_pools(char_data, "initiative_rolled", 0)
+			if not is_inside_tree(): return
 		var owner_index := int(p.get("owner_player_index", -1))
 		var turn_name := char_data.character_name
 		if owner_index >= 0:
@@ -790,9 +812,11 @@ func _roll_initiative_and_start() -> void:
 
 
 func _start_combat_turn() -> void:
+	if _pool_recovery_pending: return
 	CreatedCreatureCombat.reconcile(self)
 	var next_entity: Variant = tracker.get_active().get("entity")
-	CombatAction.advance_combat_turn(next_entity if next_entity is Character else null)
+	action_history.begin_turn(next_entity, tracker.current_round)
+	CombatAction.advance_combat_turn(next_entity if next_entity is Character else null, tracker.current_round)
 	if next_entity is Character:
 		CombatAction.start_bounded_owner_turn_interval(next_entity)
 	for player in player_entities:
@@ -837,6 +861,8 @@ func _start_combat_turn() -> void:
 					return
 			if not player_entities[current_player_idx].get("is_steed", false):
 				active_character.feature_uses.erase("find_steed_mount_transition_used_this_turn")
+			await _recover_combat_pools(active_character, "turn_started", tracker.current_round)
+			if not is_inside_tree(): return
 			_expire_conjure_fey_frightened(active_character)
 			await _advance_cloudkill_zones_for_caster(active_character)
 			await _resolve_spell_zone_start_turn(active_character, player_entities[current_player_idx].get("hex_position", Vector2i.ZERO))
@@ -1381,6 +1407,11 @@ func _execute_monster_attack(monster: Dictionary, target_player_name: String, at
 		reaction_decisions
 	)
 	if result.has("attack_roll"):
+		# The AI's selected command can still fail target/LOS/movement checks.
+		# Record only a real roll, using the monster rather than its temporary
+		# Character projection (which has no stable actor ID).
+		action_history.record_action(monster)
+		action_history.record_attack(monster, target_char)
 		SpellEffects.consume_spell(monster, "invisibility")
 	_sync_consumed_monster_attack_conditions(monster, monster_attacker)
 	var rider_save_decisions: Dictionary = {}
@@ -1476,6 +1507,8 @@ func _execute_monster_spell(monster: Dictionary, target_player_name: String, spe
 	spell_reaction_observers.append_array(countercharm_context.get("observers", []))
 	var spell_target_distance := HexUtils.get_distance(monster.get("hex_position", Vector2i.ZERO), target_pos) * 5
 	var result := CombatAction.resolve_spell(caster, target_char, spell_data, true, spell_reaction_decisions, spell_reaction_observers, 0, spell_target_distance)
+	if bool(result.get("success", false)) or bool(result.get("countered", false)):
+		action_history.record_action(monster)
 	monster["spell_slots"] = caster.spell_slots.duplicate(true)
 	hud.add_log(result.get("message", "%s's spell failed." % monster.get("name", "Monster")))
 	if spell_reaction_decisions.has("counterspell_saved_by"):
@@ -1495,7 +1528,11 @@ func _execute_monster_spell(monster: Dictionary, target_player_name: String, spe
 func _collect_countercharm_decisions(target: Character, target_position: Vector2i, spell_data: Dictionary) -> Dictionary:
 	var decisions: Dictionary = {}
 	var observers: Array[Character] = []
-	var condition := str(spell_data.get("condition_on_failed_save", ""))
+	var condition := ""
+	for candidate in ["charmed", "frightened"]:
+		if CombatAction.spell_grants_condition(spell_data, candidate):
+			condition = candidate
+			break
 	if target == null or condition not in ["charmed", "frightened"]:
 		return {"decisions": decisions, "observers": observers}
 	for player_entity in player_entities:
@@ -1542,6 +1579,7 @@ func _collect_reaction_decisions(target: Character) -> Dictionary:
 	var decisions: Dictionary = {}
 	if target == null:
 		return decisions
+	decisions["combat_history"] = action_history
 	var owner_label := target.character_name
 	for player_entity in player_entities:
 		if player_entity.get("character") != target:
@@ -1551,8 +1589,12 @@ func _collect_reaction_decisions(target: Character) -> Dictionary:
 		break
 	if target.reaction_available and (target.has_feature("uncanny_dodge") or target.has_feature("rogue_uncanny_dodge")):
 		decisions["uncanny_dodge"] = await hud.request_reaction(owner_label, "uncanny_dodge", "Halve the incoming weapon damage.")
-	if target.reaction_available and "shield" in target.known_spells and target.spell_slots.get("1", 0) > 0:
+	if target.reaction_available and not SpellPermissionRules.payment_choices(target, "shield").is_empty():
 		decisions["shield"] = await hud.request_reaction(owner_label, "shield", "Add the Shield spell's AC bonus before the attack resolves.")
+		if decisions["shield"]:
+			var payment := await hud.request_spell_payment(target, "shield")
+			decisions["shield"] = not payment.is_empty()
+			decisions[SpellPermissionRules.reaction_key(target, "shield")] = payment
 	if target.reaction_available and target.has_feature("monk_deflect_attacks"):
 		var prompt_text := "Use your Reaction to reduce incoming damage if this attack hits." if target.has_feature("monk_deflect_energy") else "Use your Reaction to reduce damage if this physical attack hits."
 		decisions["deflect_attacks"] = await hud.request_reaction(owner_label, "deflect_attacks", prompt_text)
@@ -1626,35 +1668,50 @@ func _offer_deflect_redirect(monk: Character, origin: Vector2i, attack: Dictiona
 func _collect_counterspell_decisions(caster: Character, spell_data: Dictionary = {}, caster_position: Vector2i = Vector2i.ZERO, visibility_target = null) -> Dictionary:
 	var decisions: Dictionary = {}
 	var observers: Array[Character] = []
-	if not SpellSupport.is_available(DataLoader.get_spell("counterspell")):
-		return {"decisions": decisions, "observers": observers}
-	if caster == null:
-		return {"decisions": decisions, "observers": observers}
+	if caster == null: return {"decisions":decisions,"observers":observers}
+	# This reaction window observes a perceptible component-bearing cast.
 	var components: Array = spell_data.get("components", [])
-	if components.is_empty() or not components.any(func(component): return str(component) in ["V", "S", "M"]):
-		return {"decisions": decisions, "observers": observers}
+	if not components.any(func(component): return str(component) in ["V", "S", "M"]):
+		return {"decisions":decisions,"observers":observers}
+	var stopping_spells: Array[Dictionary] = []
+	var native := DataLoader.get_spell("counterspell")
+	if SpellSupport.is_available(native): stopping_spells.append(native)
+	for candidate in DataLoader.get_all_spells():
+		if candidate.get("id", "") != "counterspell" and candidate.get("casting_time", "") == "reaction" and candidate.has("cancellation_rule") and SpellSupport.is_available(candidate):
+			stopping_spells.append(candidate)
+	var incoming := SpellResolutionContext.new()
+	incoming.caster = caster
+	incoming.spell = spell_data
+	incoming.spell_definition_id = str(spell_data.get("id", ""))
+	incoming.slot_level = int(spell_data.get("_selected_spell_slot_level", spell_data.get("level", 0)))
+	# The normal command carries its validated pre-payment permission even when
+	# the last use has just been spent. Resolution still checks the paid receipt.
+	for permission in spell_data.get("_source_permissions", []):
+		if permission.get("id", "") == spell_data.get("_source_permission_id", ""):
+			incoming.decisions["cast_payment_receipt"] = {"permission_kind":permission.get("kind", "")}
 	var visible_target = visibility_target if visibility_target != null else caster
 	for player_entity in player_entities:
 		var observer: Character = player_entity.get("character")
-		if observer == null or observer == caster or not observer.is_alive:
-			continue
+		if observer == null or observer == caster or not observer.is_alive or not observer.reaction_available or CombatAction.is_incapacitated(observer): continue
 		var observer_position: Vector2i = player_entity.get("hex_position", Vector2i.ZERO)
 		var distance_feet := HexUtils.get_distance(observer_position, caster_position) * 5
-		var has_counterspell_slot := false
-		for slot_level in observer.spell_slots:
-			if int(slot_level) >= 3 and int(observer.spell_slots[slot_level]) > 0:
-				has_counterspell_slot = true
-				break
-		if not Targeting.is_in_range(observer_position, caster_position, int(DataLoader.get_spell("counterspell").get("range", 12))) or not CombatPerception.can_see_target(observer, visible_target, observer_position, caster_position, hex_grid) or not CombatAction.spell_target_is_visible_to(observer, visible_target, {"requires_target_sight": true}, distance_feet):
-			continue
-		if not observer.reaction_available or CombatAction.is_incapacitated(observer) or "counterspell" not in observer.known_spells or (not has_counterspell_slot and not observer.has_free_spell_cast("counterspell")):
-			continue
-		observers.append(observer)
-		var observer_key := "counterspell:%s" % observer.character_name
-		decisions[observer_key] = await hud.request_reaction(_owner_label_for_character(observer), "counterspell", "You see %s casting a spell within 60 feet. Force a Constitution save against your spell save DC to interrupt it?" % caster.character_name)
-		if decisions[observer_key]:
+		if not CombatPerception.can_see_target(observer, visible_target, observer_position, caster_position, hex_grid) or not CombatAction.spell_target_is_visible_to(observer, visible_target, {"requires_target_sight":true}, distance_feet): continue
+		for stopping in stopping_spells:
+			var id := str(stopping.id)
+			if not Targeting.is_in_range(observer_position, caster_position, int(stopping.get("range", 12))) or SpellPermissionRules.payment_choices(observer, id).is_empty(): continue
+			if stopping.has("cancellation_rule") and not CastInterruptionRules.is_cast_matching_cancellation(incoming, stopping.cancellation_rule).get("matches", false): continue
+			if observer not in observers: observers.append(observer)
+			var detail := "You see %s casting a spell. Use %s to try to interrupt it?" % [caster.character_name, str(stopping.get("name", id))]
+			if id == "counterspell": detail = "You see %s casting a spell within 60 feet. Force a Constitution save against your spell save DC to interrupt it?" % caster.character_name
+			var accepted := await hud.request_reaction(_owner_label_for_character(observer), id, detail)
+			if not accepted: continue
+			var payment := await hud.request_spell_payment(observer, id)
+			if payment.is_empty(): continue
+			decisions[SpellPermissionRules.reaction_key(observer, id)] = payment
+			if id == "counterspell": decisions["counterspell:%s" % observer.character_name] = true
+			else: decisions["stopping_spell:%s" % observer.character_name] = id
 			break
-	return {"decisions": decisions, "observers": observers}
+	return {"decisions":decisions,"observers":observers}
 
 
 static func _make_temp_monster_character(m: Dictionary) -> Character:
@@ -1665,9 +1722,15 @@ static func _make_temp_monster_character(m: Dictionary) -> Character:
 	c.feature_uses["monster_source"] = m
 	var senses: Dictionary = m.get("senses", {})
 	c.feature_uses["monster_blindsight_range_feet"] = int(m.get("blindsight_range_feet", senses.get("blindsight", 0)))
+	c.feature_uses["creature_blindsight_range_feet"] = c.feature_uses["monster_blindsight_range_feet"]
 	c.feature_uses["monster_truesight_range_feet"] = int(m.get("truesight_range_feet", senses.get("truesight", 0)))
+	c.darkvision_feet = int(m.get("darkvision_range_feet", senses.get("darkvision", 0)))
+	c.darkvision = c.darkvision_feet > 0
+	c.speed = int(m.get("speed", 6))
+	c.set_movement_speed_feet("fly", int(m.get("fly_speed_feet", 0)))
+	c.set_movement_speed_feet("climb", int(m.get("climb_speed_feet", 0)))
 	c.ability_scores.from_dict(m.get("ability_scores", {}))
-	c.proficiency_bonus = 2
+	c.proficiency_bonus = int(m.get("proficiency_bonus", 2))
 	var conditions: Dictionary = m.get("conditions", {})
 	if conditions.has("vicious_mockery_disadvantage"):
 		c.add_condition("vicious_mockery_disadvantage", int(conditions["vicious_mockery_disadvantage"]))
@@ -1833,6 +1896,7 @@ static func _sync_consumed_monster_attack_conditions(monster: Dictionary, attack
 
 
 func _highlight_reachable() -> void:
+	_sync_changed_movement_speed()
 	_clear_path_preview()
 	if hex_grid == null or player_entities.is_empty() or current_player_idx < 0 or current_player_idx >= player_entities.size():
 		return
@@ -1854,19 +1918,20 @@ func _highlight_reachable() -> void:
 
 
 func _on_movement_mode_selected(mode: String) -> void:
+	_sync_changed_movement_speed()
 	if active_character == null:
 		hud.set_movement_modes(active_character, active_movement_mode, _movement_speed_overrides(active_character))
 		return
 	if mode not in ["walk", "climb", "swim", "fly"] or _movement_speed_feet(mode, active_character) <= 0:
 		hud.set_movement_modes(active_character, active_movement_mode, _movement_speed_overrides(active_character))
 		return
-	var used_speed := maxf(0.0, _active_movement_speed_hexes() + extra_movement_speed_hexes - remaining_speed)
+	var prone_factor := 0.5 if active_character.has_condition("prone") else 1.0
+	var used_speed := maxf(0.0, _active_movement_speed_hexes() * prone_factor + extra_movement_speed_hexes - remaining_speed + _movement_speed_shortfall)
 	active_movement_mode = mode
-	remaining_speed = maxf(0.0, _active_movement_speed_hexes() + extra_movement_speed_hexes - used_speed)
+	var available_speed := _active_movement_speed_hexes() * prone_factor + extra_movement_speed_hexes - used_speed
 	active_character.feature_uses.erase("find_steed_just_mounted_this_turn")
-	if active_character.has_condition("prone"):
-		remaining_speed /= 2.0
-	remaining_speed += extra_movement_speed_hexes
+	_set_remaining_movement(available_speed)
+	_movement_speed_snapshot = _active_movement_speed_hexes()
 	_highlight_reachable()
 
 
@@ -1932,7 +1997,8 @@ func _movement_speed_feet(mode: String, character: Character) -> int:
 	if character == null:
 		return 0
 	if not PaladinRules.find_steed_is_mounted(character):
-		return character.movement_speed_feet(mode)
+		var speed_feet := character.movement_speed_feet(mode)
+		return character.movement_speed_feet("walk") if mode in ["climb", "swim"] and speed_feet <= 0 else speed_feet
 	var steed := _find_steed_entity(character)
 	var steed_character: Character = steed.get("character")
 	if steed_character == null:
@@ -1941,7 +2007,7 @@ func _movement_speed_feet(mode: String, character: Character) -> int:
 
 
 func _movement_speed_overrides(character: Character) -> Dictionary:
-	if character == null or not PaladinRules.find_steed_is_mounted(character):
+	if character == null:
 		return {}
 	return {
 		"walk": _movement_speed_feet("walk", character),
@@ -1992,8 +2058,9 @@ func _toggle_find_steed_mount() -> void:
 		if not found_space:
 			hud.add_log("There is no open space beside the steed to dismount.")
 			return
+	_sync_changed_movement_speed()
 	var old_speed := _active_movement_speed_hexes()
-	var used_speed := maxf(0.0, old_speed - remaining_speed)
+	var used_speed := maxf(0.0, old_speed - remaining_speed + _movement_speed_shortfall)
 	var mount_state := PaladinRules.find_steed_state(active_character)
 	if not PaladinRules.set_find_steed_mounted(active_character, not was_mounted):
 		hud.add_log("The bonded steed state is unavailable.")
@@ -2001,19 +2068,20 @@ func _toggle_find_steed_mount() -> void:
 	if was_mounted:
 		rider_entity["hex_position"] = destination
 		var rider_speed := float(active_character.movement_speed_feet("walk")) / 5.0
-		remaining_speed = maxf(0.0, rider_speed - used_speed - float(half_speed_cost))
+		_set_remaining_movement(rider_speed - used_speed - float(half_speed_cost))
 		hud.add_log("You dismount, spending %d feet of movement." % (half_speed_cost * 5))
 	else:
 		steed_entity["hex_position"] = steed_position
 		rider_entity["hex_position"] = steed_position
 		var steed_speed := float(mount_state.get("speed_feet", 60)) / 5.0
-		remaining_speed = maxf(0.0, steed_speed - used_speed - float(half_speed_cost))
+		_set_remaining_movement(steed_speed - used_speed - float(half_speed_cost))
 		active_character.feature_uses["find_steed_just_mounted_this_turn"] = true
 		if int(mount_state.get("fly_speed_feet", 0)) > 0:
 			steed_character.set_movement_speed_feet("fly", int(mount_state["fly_speed_feet"]))
 		hud.add_log("You mount your steed, spending %d feet of movement." % (half_speed_cost * 5))
 	player_moved_this_turn = true
 	active_movement_mode = "walk"
+	_movement_speed_snapshot = _active_movement_speed_hexes()
 	player_entities[current_player_idx]["altitude_feet"] = int(player_entities[current_player_idx].get("altitude_feet", 0))
 	steed_entity["altitude_feet"] = player_entities[current_player_idx]["altitude_feet"]
 	hud.set_movement_modes(active_character, active_movement_mode, _movement_speed_overrides(active_character))
@@ -2035,9 +2103,10 @@ func _sync_mounted_steed_position(owner: Character, position: Vector2i) -> void:
 
 
 func _grant_extra_movement_speed() -> void:
+	_sync_changed_movement_speed()
 	var bonus := _active_movement_speed_hexes()
 	extra_movement_speed_hexes += bonus
-	remaining_speed += bonus
+	_set_remaining_movement(remaining_speed - _movement_speed_shortfall + bonus)
 
 
 func _can_use_spell_jump() -> bool:
@@ -2058,6 +2127,13 @@ func _spell_jump_move_cost(origin: Vector2i, destination: Vector2i, reachable: D
 # --- Action handlers ---
 
 func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
+	if _pool_recovery_pending or _cast_in_progress: return
+	if not child_actions.frame.is_empty():
+		if action_type == "cancel" and not resolving_player_action:
+			pending_action_type = ""
+			pending_spell_data = {}
+			await child_actions.cancel(self)
+		return
 	if fighter_move_waiting:
 		if action_type == "cancel":
 			fighter_move_done = true
@@ -2085,9 +2161,16 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 	if action_type == "cast_spell" and SorcererRules.quickened_spell_blocks_cast(active_character, extra_data.get("spell", {})):
 		hud.add_log("You can't cast another level 1+ spell this turn after using Quickened Spell.")
 		return
-	var has_action_budget := _can_spend_action_cost(cost_type)
+	var has_action_budget := active_character.reaction_available if cost_type == "reaction" and extra_data.get("feature", {}).has("child_actions") else _can_spend_action_cost(cost_type)
 	var selected_spell: Dictionary = extra_data.get("spell", {})
+	var definition: Dictionary = selected_spell if action_type == "cast_spell" else extra_data.get("item", {}) if action_type == "use_item" else extra_data.get("feature", {}) if action_type == "use_feature" else {}
+	var attack_substitution_units := _attack_unit_substitution_units(definition) if action_type == "cast_spell" else CombatChildActions.units(definition)
+	var use_attack_substitution := cost_type in ["action", "magic_action"] and attack_substitution_units > 0 and _remaining_strike_units() >= attack_substitution_units
+	if use_attack_substitution:
+		has_action_budget = true
 	var choosing_produce_flame_mode := action_type == "cast_spell" and str(selected_spell.get("id", "")) == "produce_flame" and active_character != null and produce_flame_markers.has(active_character.character_id)
+	if action_type == "use_feature" and str(extra_data.get("feature", {}).get("id", "")) in ["monk_flurry_of_blows", "monk_bonus_unarmed_strike"] and remaining_flurry_swings > 0:
+		has_action_budget = true
 	if not has_action_budget and choosing_produce_flame_mode:
 		has_action_budget = _can_spend_action_cost("magic_action") or _can_spend_action_cost("bonus_action")
 	if not has_action_budget and not (action_type == "attack" and remaining_attack_swings > 0) and action_type not in ["end_turn", "cancel", "move", "toggle_find_steed_mount"]:
@@ -2100,6 +2183,35 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 	match action_type:
 		"cancel":
 			_cancel_pending_action()
+			return
+		"use_captured_grant":
+			var result := CapturedGrantRules.use(active_character, str(extra_data.get("grant_id", "")), turn_budget)
+			if result.get("success", false):
+				if result.grant.use_cost != "reaction": action_history.record_action(active_character)
+				for entry in player_entities:
+					if entry.get("character") == active_character: entry["reaction_available"] = active_character.reaction_available
+				hud.add_log(result.message)
+				print("CAPTURED GIFT USE: " + JSON.stringify(result))
+			hud.update_hud(active_character, tracker)
+			return
+		"choose_aura_protection":
+			await _choose_aura_protection(str(extra_data.get("group", "")))
+			return
+		"choose_protection":
+			var protection_owner := active_character
+			var request := ProtectionRules.begin_choice(protection_owner,str(extra_data.get("group","")))
+			var selected_id: String = await hud.request_protection_choice(request)
+			if active_character!=protection_owner or hud.active_character!=protection_owner or not is_inside_tree() or not player_entities.any(func(entry): return entry.get("character")==protection_owner):
+				ProtectionRules.answer(protection_owner,request,"")
+				return
+			if not ProtectionRules.answer(protection_owner,request,selected_id): hud.add_log("That protection choice is no longer available.")
+			hud.update_hud(active_character,tracker)
+			return
+		"dismiss_source_benefit":
+			if SourceBenefitRules.dismiss(active_character, str(extra_data.get("source_instance_id", ""))):
+				hud.add_log("The selected spell benefit ends.")
+			hud.update_hud(active_character, tracker)
+			_highlight_reachable()
 			return
 		"dismiss_timed_numeric_modifier":
 			var dismissed := active_character.dismiss_campaign_modifier(str(extra_data.get("source_instance_id", "")), str(extra_data.get("grant_instance_id", "")), int(GameManager.campaign_elapsed_seconds))
@@ -2187,7 +2299,7 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 			return
 		"conjure_woodland_beings_disengage":
 			var woodland_source := _conjure_woodland_beings_zone_source_for_caster(active_character)
-			if woodland_source.is_empty() or not turn_budget.spend("bonus_action"):
+			if woodland_source.is_empty() or not _spend_action_cost("bonus_action"):
 				return
 			active_character.add_condition("disengaging", 1)
 			hud.add_log("[color=green]%s uses Conjure Woodland Beings: Disengage.[/color]" % active_character.character_name)
@@ -2235,18 +2347,32 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 			_highlight_reachable()
 			return
 		"attack":
+			strike_unit_parent = "attack"
 			pending_action_type = "attack"
 			hud.show_hint("Attack: click an enemy in highlighted reach. Esc/Cancel to back out.")
 			hud.add_log("Click on an enemy to attack with your Beast form." if DruidRules.is_shaped(active_character) else "Click on an enemy to Attack.")
 			_highlight_attack_targets()
 		"cast_spell":
 			if await SpellCastSelection.choose(_spell_cast_context(), extra_data.get("spell", {})):
+				if use_attack_substitution:
+					pending_spell_data["_attack_unit_substitution_units"] = attack_substitution_units
+					pending_spell_data["_parent_action_id"] = "attack"
 				_highlight_spell_targets()
 		"activate_magic_item":
 			if await SpellCastSelection.choose(_spell_cast_context(), extra_data.get("spell", {})):
 				_highlight_spell_targets()
 		"use_feature":
 			var feature: Dictionary = extra_data.get("feature", {})
+			if feature.has("child_actions"):
+				await child_actions.start(self, feature)
+				return
+			if use_attack_substitution and feature.has("executor") and feature.get("effects", []).all(func(effect): return str(effect.get("type", "")) in ["heal", "heal_self"]):
+				var result := ClassFeature.execute(active_character, feature, null, null)
+				if result.get("success", false):
+					_consume_strike_units(attack_substitution_units)
+					hud.add_log("%s replaces %d strike units." % [feature.get("name", "Healing"), attack_substitution_units])
+					hud.update_hud(active_character, tracker)
+				return
 			if feature.has("resource_pool") and feature["resource_pool"].has("die_size"):
 				var pool_state := ResourcePoolRules.availability(active_character, str(feature.get("source_instance_id", "")))
 				if not pool_state.get("available", false):
@@ -2486,7 +2612,7 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 				if feature.get("id", "") == "monk_bonus_unarmed_strike" and not active_character.can_use_martial_arts():
 					hud.add_log("Martial Arts requires no armor or shield and only Monk weapons.")
 					return
-				if active_character.get_focus_points() < int(feature.get("focus_cost", 0)):
+				if remaining_flurry_swings <= 0 and active_character.get_focus_points() < int(feature.get("focus_cost", 0)):
 					hud.add_log("Not enough Focus.")
 					return
 				pending_action_type = "unarmed_attack"
@@ -2498,7 +2624,7 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 			_execute_class_feature(feature)
 		"use_item":
 			var item: Dictionary = extra_data.get("item", {})
-			_execute_item(item)
+			_execute_item(item, attack_substitution_units if use_attack_substitution else 0)
 		"eat_goodberry":
 			_execute_goodberry()
 		"dodge":
@@ -2515,6 +2641,11 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 ## Bound to the HUD Cancel button and the Esc key so the player is never
 ## trapped in targeting mode with no way back to movement.
 func _cancel_pending_action() -> void:
+	if not child_actions.frame.is_empty():
+		pending_action_type = ""
+		pending_spell_data = {}
+		await child_actions.cancel(self)
+		return
 	if fighter_move_waiting:
 		fighter_move_done = true
 		return
@@ -2522,6 +2653,7 @@ func _cancel_pending_action() -> void:
 		return
 	var old := pending_action_type
 	pending_action_type = ""
+	attack_unit_substitution = {}
 	pending_spell_data = {}
 	pending_divine_intervention = false
 	pending_divine_intervention_wish = false
@@ -2654,13 +2786,18 @@ func _offer_weapon_damage_riders(actor: Character, target: Dictionary, weapon: D
 	if not result.get("hit", false) or str(weapon.get("type", "")) != "weapon":
 		return
 	var choices := await _request_weapon_damage_rider_choices(actor)
-	for rider in CombatAction.resolve_weapon_damage_riders(actor, target, choices, weapon, bool(result.get("crit", false))):
+	for rider in CombatAction.resolve_weapon_damage_riders(actor, target, choices, weapon, bool(result.get("crit", false)), true, result):
 		result["damage"] = int(result.get("damage", 0)) + int(rider.get("damage", 0))
+		if not result.has("weapon_riders"): result["weapon_riders"] = []
+		result["weapon_riders"].append(rider.duplicate(true))
 		hud.add_log("%s deals %d extra %s damage." % [str(rider.get("feature_id", "Damage rider")), int(rider.get("damage", 0)), str(rider.get("damage_type", "radiant"))], false)
 
 
 func _resolve_player_weapon_attack(attacker: Character, target, weapon: Dictionary, advantage: bool, disadvantage: bool, decisions: Dictionary, additional_damage: Dictionary) -> Dictionary:
 	var attack_decisions := decisions.duplicate(true)
+	attack_decisions["combat_history"] = action_history
+	if child_actions.current("strike"):
+		attack_decisions["parent_action"] = {"invocation_id":child_actions.frame.invocation, "action_id":child_actions.frame.feature.child_actions.classification, "source_id":child_actions.frame.feature.id}
 	attack_decisions["allow_weapon_attack_bonus"] = true
 	attack_decisions["players"] = player_entities
 	attack_decisions["monsters"] = monster_entities
@@ -2679,6 +2816,10 @@ func _resolve_player_weapon_attack(attacker: Character, target, weapon: Dictiona
 			hud.add_log("[color=yellow]%s[/color]" % str(stroke_settlement.get("message", "Stroke of Luck was no longer available.")))
 	var source_id := await hud.request_weapon_attack_numeric_bonus(_owner_label_for_character(attacker), int(result.get("attack_roll", 0)), int(result.get("target_ac", 0)), record.get("options", []), "weapon attack", bool(record.get("context", {}).get("provisional_hit", false)))
 	var settled := SpellDamageRolls.settle_weapon_attack_bonus(attacker, target, result, source_id)
+	if settled.has("reroll_keep_request"):
+		var keep_request: Dictionary = settled["reroll_keep_request"]
+		var keep_choice := await hud.request_reroll_keep_choice(_owner_label_for_character(attacker), str(keep_request.get("domain", "weapon_attack")), int(keep_request.get("original_total", 0)), int(keep_request.get("new_total", 0)))
+		settled = SpellDamageRolls.settle_weapon_attack_reroll_keep(settled, keep_choice)
 	if bool(settled.get("refused", false)):
 		hud.add_log("[color=yellow]%s The attack bonus was declined; the captured roll continues unchanged.[/color]" % str(settled.get("message", "The selected source is no longer valid.")))
 		settled = SpellDamageRolls.settle_weapon_attack_bonus(attacker, target, result, "")
@@ -2867,10 +3008,24 @@ func _highlight_unarmed_targets() -> void:
 
 
 func _on_hex_clicked(coord: Vector2i) -> void:
+	if _pool_recovery_pending or _cast_in_progress: return
+	if not child_actions.frame.is_empty() and not child_actions.valid(self):
+		child_actions.clear()
+		_cancel_pending_action()
+		return
+	var child_move := child_actions.current("move")
+	var move_origin: Vector2i = player_entities[current_player_idx].hex_position if current_player_idx >= 0 else Vector2i.ZERO
+	if child_move:
+		if resolving_player_action or HexUtils.get_distance(move_origin, coord) > int(child_actions.frame.current.distance): return
+		var reachable := _player_reachable(move_origin, remaining_speed, active_character)
+		if not reachable.has(coord) or float(reachable[coord]) > float(child_actions.frame.current.distance) or coord == move_origin: return
+		pending_action_type = ""
+	_sync_changed_movement_speed()
 	if fighter_move_waiting:
 		if coord in fighter_move_choices:
 			var entity: Dictionary = fighter_move_entity
-			CombatAction.resolve_movement_step(entity, entity["hex_position"], coord)
+			var movement_result := CombatAction.resolve_movement_step(entity, entity["hex_position"], coord)
+			if movement_result.get("success", false): _publish_source_range_events()
 			fighter_move_done = true
 		return
 	if current_player_idx == -1 or resolving_player_action: return # Not player turn
@@ -3237,16 +3392,22 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 		# A valid target commits the Attack action before any optional prompts
 		# yield. Clearing targeting here prevents a second click from starting a
 		# concurrent attack while an optional feature decision is open.
-		if remaining_attack_swings <= 0 and not turn_budget.can_spend("action"):
+		var parent_strike := child_actions.current("strike")
+		if parent_strike and not child_actions.valid(self): return
+		if not parent_strike and remaining_attack_swings <= 0 and not turn_budget.can_spend("action"):
 			hud.add_log("No action remains for this attack.")
 			return
 		weapon["attack_distance"] = atk_dist
 		pending_action_type = ""
 		resolving_player_action = true
-		if remaining_attack_swings <= 0:
+		if parent_strike:
+			if not child_actions.settle(self):
+				resolving_player_action = false
+				return
+		elif remaining_attack_swings <= 0:
 			_spend_action_cost("action")
 			remaining_attack_swings = 1 if "loading" in weapon.get("properties", []) else 1 + active_character.extra_attacks
-		remaining_attack_swings -= 1
+		if not parent_strike: remaining_attack_swings -= 1
 		if "light" in weapon.get("properties", []):
 			light_attack_weapon = weapon
 
@@ -3358,7 +3519,7 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 
 		# Extra Attack is part of one Attack action, not a second action-cost.
 		# Resolve the additional swings through the same CombatAction boundary.
-		for extra_index in remaining_attack_swings:
+		for extra_index in (0 if parent_strike or _has_attack_substitutions() else remaining_attack_swings):
 			if not clicked_monster.get("is_alive", false):
 				break
 			var live_origin: Vector2i = player_entities[current_player_idx]["hex_position"]
@@ -3398,7 +3559,9 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 		await _offer_light_attack(clicked_monster)
 		resolving_player_action = false
 		_check_battle_end_conditions()
-		if remaining_attack_swings > 0 and not _battle_ending:
+		if parent_strike:
+			await child_actions.complete(self)
+		elif remaining_attack_swings > 0 and not _battle_ending:
 			pending_action_type = "attack"
 			hud.add_log("%d attacks remain. Choose a target, move, or end your turn." % remaining_attack_swings)
 			_highlight_attack_targets()
@@ -3464,26 +3627,24 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 			return
 		var feature_id := str(pending_feature_data.get("id", ""))
 		var focus_cost := int(pending_feature_data.get("focus_cost", 0))
-		if not _can_spend_action_cost("bonus_action") or active_character.get_focus_points() < focus_cost:
-			return
-		if feature_id == "monk_bonus_unarmed_strike" and not active_character.can_use_martial_arts():
-			return
-		if not active_character.use_feature(str(pending_feature_data.get("id", ""))):
-			hud.add_log("No Bonus Unarmed Strike uses remain this turn.")
-			return
-		active_character.spend_focus_points(focus_cost)
-		_spend_action_cost("bonus_action")
-		if active_character.has_feature("monk_fleet_step"):
-			_grant_extra_movement_speed()
-			hud.add_log("Fleet Step grants Step of the Wind dash movement.")
+		if remaining_flurry_swings <= 0:
+			if not _can_spend_action_cost("bonus_action") or active_character.get_focus_points() < focus_cost: return
+			if feature_id == "monk_bonus_unarmed_strike" and not active_character.can_use_martial_arts(): return
+			if not active_character.use_feature(feature_id): return
+			active_character.spend_focus_points(focus_cost)
+			_spend_action_cost("bonus_action")
+			if active_character.has_feature("monk_fleet_step"): _grant_extra_movement_speed()
+			remaining_flurry_swings = 3 if feature_id == "monk_flurry_of_blows" and active_character.has_feature("monk_heightened_focus") else 2 if feature_id == "monk_flurry_of_blows" else 1
+		strike_unit_parent = "flurry"
 		pending_action_type = ""
 		pending_feature_data = {}
 		resolving_player_action = true
 		var unarmed_results: Array[Dictionary] = []
-		var strike_count := 3 if (feature_id == "monk_flurry_of_blows" and active_character.has_feature("monk_heightened_focus")) else (2 if feature_id == "monk_flurry_of_blows" else 1)
+		var strike_count := 1 if _has_attack_substitutions() else remaining_flurry_swings
 		for strike in strike_count:
 			if int(unarmed_target.get("current_hp", 0)) <= 0:
 				break
+			remaining_flurry_swings -= 1
 			var result := CombatAction.resolve_unarmed_attack(active_character, unarmed_target)
 			await _offer_divine_smite(unarmed_target, {"id": "unarmed_strike"}, result)
 			unarmed_results.append(result)
@@ -3623,6 +3784,7 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 					var movement_result := CombatAction.resolve_movement_step(player_entities[current_player_idx], path[path_index - 1], path[path_index])
 					if not movement_result.get("success", false):
 						break
+					_publish_source_range_events()
 					_sync_mounted_steed_position(active_character, path[path_index])
 					if await _apply_room_fall_damage(active_character, path[path_index - 1], path[path_index]):
 						break
@@ -3631,6 +3793,7 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 			else:
 				# Teleport normally if disengaged or path too short
 				CombatAction.resolve_movement_step(player_entities[current_player_idx], player_pos, coord)
+				_publish_source_range_events()
 				_sync_mounted_steed_position(active_character, coord)
 				await _resolve_spell_zone_entries(active_character, player_pos, coord)
 			
@@ -3649,9 +3812,47 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 	if active_character != null:
 		hud.update_hud(active_character, tracker)
 
+	if child_move and player_entities[current_player_idx].hex_position != move_origin and child_actions.settle(self):
+		await child_actions.complete(self)
+
 
 func _execute_player_spell(target_coord: Vector2i, additional_target_coord: Vector2i = Vector2i(9999, 9999), extra_target_coords: Array[Vector2i] = [], chain_target_ids: Array[String] = []) -> void:
+	if _cast_in_progress: return
+	var parent_cast := child_actions.current("cast")
 	var cast := _spell_cast_context(target_coord, additional_target_coord, extra_target_coords, chain_target_ids)
+	if parent_cast: child_actions.frame["cast_invocation"] = cast.invocation_id
+	var actor := active_character
+	var turn := CombatAction.active_turn_serial
+	var count := int(pending_spell_data.get("_attack_unit_substitution_units", 0))
+	if count > 0:
+		attack_unit_substitution = {"actor":actor, "spell_id":str(cast.spell.id), "units":count, "parent":strike_unit_parent, "invocation_id":cast.invocation_id, "settled":false}
+		cast.action_id = strike_unit_parent
+	if parent_cast:
+		cast.action_invocation_id = str(child_actions.frame.invocation)
+		cast.parent_source_id = str(child_actions.frame.feature.id)
+		cast.action_id = str(child_actions.frame.feature.child_actions.classification)
+	var payment_frame := attack_unit_substitution
+	var selected_spell := cast.spell
+	cast.commit_guard = func():
+		if active_character != actor or CombatAction.active_turn_serial != turn or not actor.is_alive or CombatAction.is_incapacitated(actor): return false
+		if parent_cast: return child_actions.valid(self) and child_actions.current("cast") and not child_actions.frame.settled
+		if count > 0: return _remaining_strike_units() >= count and _attack_unit_substitution_units(selected_spell) == count
+		return _can_spend_action_cost(_action_cost_for_command("cast_spell", {"spell":selected_spell}))
+	var commit_guard := cast.commit_guard
+	cast.can_spend = func(cost: String):
+		return commit_guard.call() if cost == "magic_action" and (parent_cast or count > 0) else _can_spend_action_cost(cost)
+	_cast_in_progress = true
+	await _execute_selected_spell(cast)
+	_cast_in_progress = false
+	resolving_player_action = false
+	if parent_cast:
+		if not child_actions.frame.is_empty() and child_actions.frame.settled: await child_actions.complete(self)
+		elif pending_action_type.is_empty(): await child_actions.cancel(self)
+	elif not payment_frame.is_empty() and payment_frame.get("settled", false):
+		attack_unit_substitution = {}
+	if hud != null: hud.update_hud(active_character, tracker)
+
+func _execute_selected_spell(cast: SpellCastContext) -> void:
 	if not await SpellCastPreparation.validate_and_choose(cast):
 		return
 	if not await SpellCastPreparation.choose_target_options(cast):
@@ -3661,9 +3862,12 @@ func _execute_player_spell(target_coord: Vector2i, additional_target_coord: Vect
 	if not SpellCastResources.commit_spell_resource(cast):
 		return
 	if await _resolve_spell_cast_movement(cast):
+		SpellCastResults._publish_completed_cast(cast)
 		return
 	await _collect_spell_cast_reactions(cast)
 	if await _resolve_spell_cast_markers(cast):
+		cast.successful = true # Marker handlers return only after accepting/settling this cast.
+		SpellCastResults._publish_completed_cast(cast)
 		return
 	await SpellCastTargeting.collect_targets(cast)
 	await _prepare_spell_cast_effects(cast)
@@ -3672,9 +3876,52 @@ func _execute_player_spell(target_coord: Vector2i, additional_target_coord: Vect
 	await _finish_spell_cast(cast)
 
 
+func _sync_changed_movement_speed() -> void:
+	var current_speed := _active_movement_speed_hexes()
+	if active_character != _movement_speed_owner:
+		_movement_speed_owner = active_character
+		_movement_speed_snapshot = current_speed
+		return
+	var delta := current_speed - _movement_speed_snapshot
+	_movement_speed_snapshot = current_speed
+	if active_character != null and active_character.has_condition("prone"):
+		delta /= 2.0
+	_set_remaining_movement(remaining_speed - _movement_speed_shortfall + delta)
+
+func _set_remaining_movement(allowance: float) -> void:
+	remaining_speed = maxf(0.0, allowance)
+	# A later speed increase must not refund distance spent above a reduced speed.
+	_movement_speed_shortfall = maxf(0.0, -allowance)
+
+## Recheck exact source owners after a real encounter position change.
+func _publish_source_range_events() -> void:
+	var positions: Dictionary = {}
+	var actors: Array = []
+	for player in player_entities:
+		var actor: Character = player.get("character")
+		if actor == null: continue
+		var id := SpellEffects.caster_id(actor)
+		positions[id] = player.get("hex_position", Vector2i.ZERO)
+		actors.append(actor)
+	for monster in monster_entities:
+		var id := str(monster.get("id", ""))
+		if id.is_empty(): continue
+		positions[id] = monster.get("hex_position", Vector2i.ZERO)
+		actors.append(monster)
+	for target in actors:
+		var target_id := SpellEffects.caster_id(target) if target is Character else str(target.get("id", ""))
+		var target_position: Vector2i = positions.get(target_id, Vector2i.ZERO)
+		for source in SpellEffects.records(target).keys().duplicate():
+			var record: Dictionary = SpellEffects.records(target).get(source, {})
+			var caster_position: Variant = positions.get(str(record.get("caster_id", "")), null)
+			if not caster_position is Vector2i: continue
+			var distance_feet := HexUtils.get_distance(target_position, caster_position) * 5
+			SpellEffects.publish_event(target, {"type": "range", "actor_id": target_id, "distance_feet": distance_feet, "range_source_id": str(source)})
+
+
 func _spell_cast_context(target_coord: Vector2i = Vector2i.ZERO, additional_target_coord: Vector2i = Vector2i(9999, 9999), extra_target_coords: Array[Vector2i] = [], chain_target_ids: Array[String] = []) -> SpellCastContext:
 	var cast := SpellCastContext.new()
-	cast.action_id = "magic"
+	cast.action_id = str(pending_spell_data.get("_parent_action_id", "magic"))
 	cast.caster = active_character
 	cast.spell = pending_spell_data
 	cast.target_coord = target_coord
@@ -3687,6 +3934,7 @@ func _spell_cast_context(target_coord: Vector2i = Vector2i.ZERO, additional_targ
 	cast.grid = hex_grid
 	cast.hud = hud
 	cast.tracker = tracker
+	cast.action_history = action_history
 	cast.turn_budget = turn_budget
 	cast.areas = _spell_zones()
 	cast.prestidigitation_effects = prestidigitation_effects
@@ -3721,7 +3969,7 @@ func _spell_cast_context(target_coord: Vector2i = Vector2i.ZERO, additional_targ
 	cast.offer_divine_smite = _offer_divine_smite
 	cast.offer_weapon_damage_riders = _offer_weapon_damage_riders
 	cast.publish_true_strike_activity = _publish_true_strike_activity
-	cast.spend_action_cost = _spend_action_cost
+	cast.spend_action_cost = _spend_action_cost.bind(cast.invocation_id)
 	cast.trigger_enemy_defeat_features = _trigger_enemy_defeat_features
 	cast.finish_targeting = _finish_spell_targeting
 	cast.begin_targeting = _begin_spell_targeting
@@ -3733,6 +3981,7 @@ func _spell_cast_context(target_coord: Vector2i = Vector2i.ZERO, additional_targ
 	cast.refresh_poison_senses = _refresh_detect_poison_and_disease_senses
 	cast.refresh_creature_senses = _refresh_detect_evil_and_good_senses
 	cast.end_concentration = _end_concentration
+	cast.publish_source_range_events = _publish_source_range_events
 	cast.end_resilient_sphere = _end_resilient_sphere_for_target
 	cast.push_blocked_hexes = _spell_push_blocked_hexes
 	cast.redraw_entities = _update_grid_entities
@@ -3743,6 +3992,7 @@ func _spell_cast_context(target_coord: Vector2i = Vector2i.ZERO, additional_targ
 func _reset_pending_spell_cast(flags: int) -> void:
 	if flags & SpellCastContext.CLEAR_ACTION:
 		pending_action_type = ""
+		attack_unit_substitution = {}
 	if flags & SpellCastContext.CLEAR_SPELL:
 		pending_spell_data = {}
 	if flags & SpellCastContext.CLEAR_INTERVENTION:
@@ -3814,7 +4064,7 @@ func _spell_decisions_for_target(cast_decisions: Dictionary, first_target: bool)
 
 
 func _collect_spell_shield_decision(target: Character, spell_data: Dictionary, existing_decisions: Dictionary) -> Dictionary:
-	if target == null or not target.reaction_available or "shield" not in target.known_spells or int(target.spell_slots.get("1", 0)) <= 0:
+	if target == null or not target.reaction_available or SpellPermissionRules.payment_choices(target, "shield").is_empty():
 		return {}
 	for decision_key in existing_decisions:
 		if str(decision_key) == "counterspell:%s" % target.character_name and bool(existing_decisions[decision_key]):
@@ -3822,11 +4072,16 @@ func _collect_spell_shield_decision(target: Character, spell_data: Dictionary, e
 	var spell_id := str(spell_data.get("id", ""))
 	var attack_type := str(spell_data.get("attack_type", "none"))
 	if spell_id == "magic_missile":
-		return {"shield": await hud.request_reaction(_owner_label_for_character(target), "shield", "Magic Missile targets you. Shield prevents all its damage and adds +5 AC until your next turn.")}
+		return await _choose_shield_payment(target, await hud.request_reaction(_owner_label_for_character(target), "shield", "Magic Missile targets you. Shield prevents all its damage and adds +5 AC until your next turn."))
 	if attack_type not in ["ranged_spell", "melee_spell"]:
 		return {}
 	var spell_name := str(spell_data.get("name", "This spell"))
-	return {"shield": await hud.request_reaction(_owner_label_for_character(target), "shield", "If %s hits you, cast Shield as a Reaction? It spends only if an attack hits. The +5 AC applies against the triggering attack and later attacks until the start of your next turn." % spell_name, "Use Shield if hit?", "Use Reaction", "Shield — %s" % _owner_label_for_character(target))}
+	return await _choose_shield_payment(target, await hud.request_reaction(_owner_label_for_character(target), "shield", "If %s hits you, cast Shield as a Reaction? It spends only if an attack hits. The +5 AC applies against the triggering attack and later attacks until the start of your next turn." % spell_name, "Use Shield if hit?", "Use Reaction", "Shield — %s" % _owner_label_for_character(target)))
+
+func _choose_shield_payment(target: Character, accepted: bool) -> Dictionary:
+	if not accepted: return {"shield":false}
+	var payment := await hud.request_spell_payment(target, "shield")
+	return {"shield":not payment.is_empty(), SpellPermissionRules.reaction_key(target, "shield"):payment}
 
 
 func _settle_empowered_spell(target, result: Dictionary, decisions: Dictionary) -> Dictionary:
@@ -3929,6 +4184,7 @@ func _tick_spell_healing_suppression(caster: Character) -> void:
 
 
 func _end_active_turn() -> void:
+	if _pool_recovery_pending: return
 	_waiting_for_owner_rebind = false
 	_rebind_wait_before_turn_setup = false
 	# Resolve victory/defeat before advancing the turn order. This is the
@@ -3990,6 +4246,7 @@ func _end_active_turn() -> void:
 	if round_complete:
 		# Combat owns effect/light ticks; advance only the durable campaign clock here.
 		GameManager.campaign_elapsed_seconds += 6
+		SpellEffects.resolve_elapsed_repeat_saves(_spell_effect_targets(), int(GameManager.campaign_elapsed_seconds))
 		for player in player_entities:
 			CorpseRules.advance_time(player["character"], GameManager.campaign_elapsed_seconds)
 		_tick_portable_light_sources()
@@ -4121,6 +4378,7 @@ func _end_battle(result: String) -> void:
 	LocalRoomCombat.capture_spell_zones(player_entities, active_spell_zones)
 	LocalRoomCombat.capture(player_entities)
 	CombatAction.active_turn_actor_id = 0
+	CombatAction.reset_bounded_owner_turn_rider_locks()
 	for source_id_value in active_spell_zones.keys().duplicate():
 		_remove_spell_zone(str(source_id_value))
 	SpellEffects.finish_encounter(_spell_casters(), _spell_effect_targets())
@@ -4151,13 +4409,38 @@ func _clear_monk_battle_effects() -> void:
 
 
 func _exit_tree() -> void:
+	child_actions.clear()
+	aura_choice_generation += 1
+	temporary_hp_grants.clear()
+	grant_transfers.clear()
+	party_allocations.clear()
+	pool_recovery.clear()
+	CombatAction.reset_bounded_owner_turn_rider_locks()
 	for entity in player_entities:
 		var character: Character = entity.get("character")
-		if character != null: character.familiar_senses = null
+		if character != null:
+			# Combat owns these positions; range-only auras cannot outlive it.
+			character.aura_source_memberships.clear()
+			character.familiar_senses = null
+			ProtectionRules.cancel_choice(character)
 	CombatAction.active_turn_actor_id = 0
 	_clear_monk_battle_effects()
 	_clear_delayed_spell_damage()
 	SpellDamageRolls.clear_pending_requests()
+
+
+func _recover_combat_pools(actor: Character, trigger: String, occurrence: int) -> void:
+	_pool_recovery_pending = true
+	var receipt_start := pool_recovery.receipts.size()
+	var requests := pool_recovery.begin(actor, trigger, occurrence)
+	for request in requests:
+		var selected := await hud.request_pool_recovery(request)
+		if not is_inside_tree(): return
+		var result := pool_recovery.settle(str(request.request_id), actor, selected)
+		if not result.get("success", false): hud.add_log(str(result.get("message", "Recovery unavailable.")))
+	for receipt in pool_recovery.receipts.slice(receipt_start):
+		hud.add_log("%s regains %d pool uses (%d/%d) at %s." % [actor.character_name, int(receipt.recovered), int(receipt.current), int(receipt.capacity), trigger.replace("_", " ")])
+	_pool_recovery_pending = false
 
 
 func _clear_delayed_spell_damage() -> void:
@@ -4178,6 +4461,15 @@ func _refresh_paladin_divine_sense(paladin: Character) -> void:
 
 
 func _execute_class_feature(feature: Dictionary) -> void:
+	if feature.has("temporary_hp_grant"):
+		await _execute_temporary_hp_grant(feature)
+		return
+	if feature.has("allocation"):
+		await _execute_party_allocation(feature)
+		return
+	if feature.has("transfer_grant"):
+		await _execute_captured_grant_transfer(feature)
+		return
 	if str(feature.get("id", "")) == "rogue_steady_aim":
 		if player_moved_this_turn or rogue_steady_aim_armed:
 			hud.add_log("Steady Aim requires that you have not moved this turn.")
@@ -4378,18 +4670,20 @@ func _execute_cleric_turn_undead(feature: Dictionary) -> void:
 	_check_battle_end_conditions()
 	_highlight_reachable()
 
-func _execute_item(item: Dictionary) -> void:
+func _execute_item(item: Dictionary, substitution_units: int = 0) -> void:
 	var item_id := str(item.get("id", ""))
 	var item_data := DataLoader.get_item(item_id)
 	var cost_type := str(item_data.get("action_cost", "action"))
-	if not _can_spend_action_cost(cost_type):
+	if substitution_units <= 0 and not _can_spend_action_cost(cost_type):
 		hud.add_log("You have no %s available to use that item." % cost_type.replace("_", " "))
 		return
-	var result := active_character.inventory.consume(item_id, active_character)
+	if substitution_units > 0 and (_remaining_strike_units() < substitution_units or CombatChildActions.units(item_data) != substitution_units): return
+	var result := active_character.inventory.consume_instance(str(item.instance_id), active_character) if item.has("instance_id") else active_character.inventory.consume(item_id, active_character)
 	if not result.get("success", false):
 		hud.add_log("[color=orange]%s[/color]" % result.get("message", "Item could not be used."))
 		return
-	_spend_action_cost(cost_type)
+	if substitution_units > 0: _consume_strike_units(substitution_units)
+	else: _spend_action_cost(cost_type)
 	for effect_result in result.get("results", []):
 		hud.add_log(effect_result.get("message", ""))
 	hud.update_hud(active_character, tracker)
@@ -4636,7 +4930,7 @@ func _offer_light_attack(target: Dictionary) -> void:
 			continue
 		active_character.feature_uses["fighter_light_used"] = true
 		if not nick:
-			turn_budget.spend("bonus_action")
+			_spend_action_cost("bonus_action")
 		weapon["light_extra"] = true
 		weapon["attack_distance"] = HexUtils.get_distance(origin, candidate["hex_position"])
 		var light_effects := await _request_brutal_strike(active_character, weapon)
@@ -4701,6 +4995,7 @@ func _trigger_enemy_defeat_features(defeated_target: Dictionary, killer_characte
 
 
 func _action_cost_for_command(action_type: String, extra_data: Dictionary) -> String:
+	if action_type == "use_item": return str(DataLoader.get_item(str(extra_data.get("item", {}).get("id", ""))).get("action_cost", "action"))
 	if action_type == "toggle_find_steed_mount":
 		return "free"
 	if action_type == "activate_magic_item":
@@ -4739,9 +5034,16 @@ func _can_spend_action_cost(cost_type: String) -> bool:
 
 
 func _reset_turn_action_economy() -> void:
+	child_actions.clear()
+	remaining_flurry_swings = 0
+	strike_unit_parent = "attack"
+	attack_unit_substitution = {}
 	turn_budget.reset(active_character, player_entities)
 	player_moved_this_turn = false
 	extra_movement_speed_hexes = 0.0
+	_movement_speed_shortfall = 0.0
+	_movement_speed_owner = active_character
+	_movement_speed_snapshot = _active_movement_speed_hexes()
 	rogue_steady_aim_armed = false
 	if active_character != null:
 		active_character.feature_uses.erase("conjure_animals_moved_this_turn")
@@ -4750,9 +5052,41 @@ func _reset_turn_action_economy() -> void:
 		active_character.feature_uses.erase("conjure_celestial_pillar_moved_this_turn")
 
 
-func _spend_action_cost(cost_type: String) -> bool:
+func _spend_action_cost(cost_type: String, invocation_id: String = "") -> bool:
+	if child_actions.current("cast"):
+		if cost_type != "magic_action" or invocation_id != str(child_actions.frame.get("cast_invocation", "")): return false
+		return child_actions.settle(self)
+	if not attack_unit_substitution.is_empty():
+		if cost_type != "magic_action" or invocation_id.is_empty() or invocation_id != str(attack_unit_substitution.get("invocation_id", "")) or attack_unit_substitution.get("actor") != active_character or bool(attack_unit_substitution.get("settled", false)) or _remaining_strike_units() < int(attack_unit_substitution.get("units", 0)):
+			return false
+		_consume_strike_units(int(attack_unit_substitution["units"]))
+		attack_unit_substitution["settled"] = true
+		return true
 	var spent := turn_budget.spend(cost_type)
+	if spent and cost_type in ["action", "magic_action", "bonus_action"] and active_character != null:
+		action_history.record_action(active_character)
 	return spent
+
+
+func _attack_unit_substitution_units(spell: Dictionary) -> int:
+	var authoritative := DataLoader.get_spell(str(spell.get("id", "")))
+	return CombatChildActions.units(authoritative) if authoritative.get("execution") == "shared" and authoritative.get("casting_time", "action") == "action" else 0
+
+func _remaining_strike_units() -> int:
+	return remaining_flurry_swings if strike_unit_parent == "flurry" else remaining_attack_swings
+
+func _consume_strike_units(count: int) -> void:
+	if strike_unit_parent == "flurry": remaining_flurry_swings -= count
+	else: remaining_attack_swings -= count
+
+func _has_attack_substitutions() -> bool:
+	for id in SpellPermissionRules.spell_ids(active_character):
+		if _attack_unit_substitution_units(DataLoader.get_spell(id)) > 0: return true
+	for feature in active_character.features:
+		if CombatChildActions.units(feature) > 0: return true
+	for item in active_character.inventory.backpack_instances():
+		if CombatChildActions.units(DataLoader.get_item(str(item.definition_id))) > 0: return true
+	return false
 
 
 func _offer_divine_smite(target, weapon: Dictionary, result: Dictionary, actor: Character = null) -> void:
@@ -5195,17 +5529,31 @@ func _conjure_minor_elementals_spell_attack_choices(caster: Character, target, s
 
 
 func _player_movement_cost(coord: Vector2i, character: Character) -> float:
-	var ignores_difficult_terrain := character != null and SpellEffects.has_spell(character, "freedom_of_movement")
+	var ignores_difficult_terrain := (character != null and SpellEffects.has_spell(character, "freedom_of_movement")) or (active_movement_mode == "fly")
 	var cost := hex_grid.get_hex_cost(coord, ignores_difficult_terrain)
 	var room := LocalRoomCombat.room()
+	var surface := _movement_surface_at(coord)
+	if active_movement_mode == "fly":
+		cost = 1.0
+	elif LocalRoomRules.requires_surface_traversal(surface):
+		cost = 1.0 + (1.0 if not ignores_difficult_terrain and hex_grid.is_difficult_terrain(coord) else 0.0)
 	if not room.is_empty():
-		if LocalRoomRules.requires_surface_traversal(LocalRoomRules.surface_at(room, coord)):
-			cost = 1.0
 		if LocalRoomRules.has_wall(room, coord) and active_movement_mode == "climb":
 			cost += float(LocalRoomRules.wall_height_feet(room, coord)) / 5.0
+	if active_movement_mode == "climb" and character != null and character.movement_speed_feet("climb") <= 0 and not SpellEffects.has_spell(character, "spider_climb"):
+		cost += 1.0
+	if active_movement_mode == "swim" and character != null and character.movement_speed_feet("swim") <= 0 and not (character != null and SpellEffects.has_spell(character, "freedom_of_movement")):
+		cost += 1.0
 	if not ignores_difficult_terrain and _spirit_guardians_movement_slowed(character, coord):
 		cost *= 2.0
 	return cost
+
+
+func _movement_surface_at(coord: Vector2i) -> String:
+	var room := LocalRoomCombat.room()
+	if not room.is_empty(): return LocalRoomRules.surface_at(room, coord)
+	if hex_grid != null and hex_grid.has_tile(coord) and hex_grid.tiles[coord].terrain == HexTile.TerrainType.WATER: return "water"
+	return "ground"
 
 
 func _player_step_movement_cost(from_hex: Vector2i, to_hex: Vector2i, character: Character) -> float:
@@ -5256,14 +5604,28 @@ func _apply_room_fall_damage(target, from_hex: Vector2i, to_hex: Vector2i) -> bo
 
 
 func _player_can_enter(coord: Vector2i, character: Character) -> bool:
+	if hex_grid == null or not hex_grid.has_tile(coord): return false
+	for player in player_entities:
+		var occupant: Character = player.get("character")
+		if player.get("hex_position") == coord and occupant != null and occupant != character and occupant.is_alive and not (bool(player.get("is_steed", false)) and player.get("steed_owner") == character): return false
+	for monster in monster_entities:
+		if monster.get("hex_position") == coord and monster.get("is_alive", false): return false
+	for object in CombatObjectRules.all_at(hex_grid, coord):
+		if object.get("fixed", false) or object.get("blocks_movement", false): return false
 	var room := LocalRoomCombat.room()
+	var surface := _movement_surface_at(coord)
+	if character != null:
+		var req := PhysicalFactsRules.check_surface_and_hand_requirements(character, active_movement_mode, surface)
+		if not req.allowed:
+			return false
 	if room.is_empty():
+		if bool(hex_grid.tiles[coord].custom_properties.get("blocks_movement", false)): return false
+		if surface == "water": return active_movement_mode in ["fly", "swim"] or SpellEffects.has_spell(character, "water_walk") or character.has_condition("water_walk")
 		return hex_grid.is_hex_passable(coord)
 	var current_position: Vector2i = player_entities[current_player_idx].get("hex_position", Vector2i.ZERO)
 	var current_altitude := int(player_entities[current_player_idx].get("altitude_feet", LocalRoomRules.elevation_feet(room, current_position)))
 	if active_movement_mode != "fly" and current_altitude > LocalRoomRules.elevation_feet(room, current_position):
 		return false
-	var surface := LocalRoomRules.surface_at(room, coord)
 	if LocalRoomRules.requires_surface_traversal(surface):
 		var can_surface_traverse := active_movement_mode == "fly" or (surface == "water" and active_movement_mode == "swim") or SpellEffects.has_spell(character, "water_walk")
 		if not can_surface_traverse: return false
@@ -5572,6 +5934,7 @@ func _resolve_hold_monster_repeat_save(target) -> void:
 
 func _end_concentration(caster: Character) -> void:
 	SpellEncounterLifecycle._end_concentration(_spell_cast_context(), caster)
+	_highlight_reachable()
 
 
 func _end_resilient_sphere_for_target(target) -> void:
@@ -5642,6 +6005,7 @@ func _check_opportunity_attacks_for_path(entity, entity_dict: Dictionary, path: 
 		var movement_result := CombatAction.resolve_movement_step(entity_dict, from_hex, to_hex)
 		if not movement_result.get("success", false):
 			return
+		_publish_source_range_events()
 		if not is_entity_monster:
 			_sync_mounted_steed_position(entity, to_hex)
 		
@@ -5763,3 +6127,210 @@ func _finish_spell_targeting() -> void:
 	pending_words_primary_selected = false
 	pending_command_target_coords.clear()
 	pending_command_target_ids.clear()
+
+
+var grant_transfers := CapturedGrantRules.new()
+var temporary_hp_grants := TemporaryHPRules.new()
+var aura_choice_generation := 0
+var last_temporary_hp_grant: Dictionary = {}
+
+func _execute_temporary_hp_grant(feature: Dictionary) -> void:
+	var supplier := active_character
+	var original_feature := supplier.get_feature(str(feature.id)).duplicate(true)
+	var original_source := str(feature.get("source_instance_id", ""))
+	var original_pool: Dictionary = supplier.numeric_resource_pools.get(original_source, {})
+	var original_quantity := original_pool.duplicate(true)
+	var original_budget := turn_budget
+	var original_turn := CombatAction.active_turn_serial
+	var original_clock := int(GameManager.campaign_elapsed_seconds)
+	var original_generation := temporary_hp_grants.generation
+	var recipients := _gift_recipients().filter(func(actor): return TemporaryHPRules.eligible(actor))
+	var options: Array[String] = []
+	var labels := {}
+	for recipient in recipients:
+		options.append(recipient.character_id)
+		labels[recipient.character_id] = recipient.character_name
+	if options.is_empty(): return
+	resolving_player_action = true
+	var id: String = await hud._request_popup_choice("Temporary HP recipient", options, labels)
+	if not _temporary_hp_actor_current(supplier) or temporary_hp_grants.generation != original_generation or original_budget != turn_budget or original_turn != CombatAction.active_turn_serial or original_clock != int(GameManager.campaign_elapsed_seconds) or supplier.get_feature(str(feature.id)) != original_feature or not is_same(supplier.numeric_resource_pools.get(original_source), original_pool) or supplier.numeric_resource_pools.get(original_source) != original_quantity:
+		resolving_player_action = false
+		return
+	var recipient: Character
+	for candidate in recipients:
+		if candidate.character_id == id: recipient = candidate
+	if recipient == null or recipient not in _gift_recipients():
+		resolving_player_action = false
+		return
+	var request := temporary_hp_grants.begin(supplier, str(feature.id), str(feature.get("source_instance_id", "")), turn_budget, recipient)
+	if request.is_empty():
+		resolving_player_action = false
+		return
+	var replace := true
+	if int(request.current) > 0:
+		var answer: String = await hud._request_popup_choice("Temporary HP: keep or replace", ["keep", "replace"], {"keep":"Keep %d Temporary HP and its original source/deadline" % int(request.current), "replace":"Replace with %d Temporary HP" % int(request.incoming)})
+		if not _temporary_hp_actor_current(supplier) or temporary_hp_grants.pending.get("budget") != turn_budget or answer not in ["keep", "replace"]:
+			temporary_hp_grants.clear()
+			resolving_player_action = false
+			return
+		replace = answer == "replace"
+	last_temporary_hp_grant = temporary_hp_grants.settle(request, replace, _gift_recipients())
+	resolving_player_action = false
+	if last_temporary_hp_grant.get("success", false) and not last_temporary_hp_grant.get("declined", false):
+		if feature.action_cost != "free": action_history.record_action(supplier)
+		hud.add_log("%s replaces Temporary HP from %s." % [recipient.character_name, supplier.character_name])
+	else: hud.add_log("Temporary HP kept, canceled or no longer available.")
+	hud.update_hud(active_character, tracker)
+
+func _temporary_hp_actor_current(actor: Character) -> bool:
+	return is_inside_tree() and actor == active_character and hud.active_character == actor and actor in _gift_recipients()
+
+func _choose_aura_protection(group: String) -> void:
+	var actor := active_character
+	var snapshot := AuraProtectionRules.offers(actor, group)
+	var options: Array[String] = []
+	var labels := {}
+	for key in snapshot:
+		options.append(key)
+		var duration := "while in range" if snapshot[key].effect.entry_policy == "membership" else "%d seconds" % (int(snapshot[key].expires_at_seconds)-int(GameManager.campaign_elapsed_seconds))
+		labels[key] = "%s: AC +%d, saves +%d (%s)" % [snapshot[key].source_owner_id, int(snapshot[key].effect.benefits.ac_bonus), int(snapshot[key].effect.benefits.save_bonus), duration]
+	aura_choice_generation += 1
+	var generation := aura_choice_generation
+	var turn := CombatAction.active_turn_serial
+	resolving_player_action = true
+	var answer: String = await hud._request_popup_choice("Choose aura protection: " + group, options, labels)
+	resolving_player_action = false
+	if generation != aura_choice_generation or turn != CombatAction.active_turn_serial or not _temporary_hp_actor_current(actor): return
+	if not AuraProtectionRules.choose(actor, snapshot, answer): hud.add_log("Aura choice canceled or no longer available.")
+	hud.update_hud(active_character, tracker)
+var party_allocations := PartyAllocationRules.new()
+var last_party_allocation: Dictionary = {}
+
+func _execute_party_allocation(feature: Dictionary) -> void:
+	var actor := active_character
+	var request := party_allocations.begin(actor, str(feature.id), str(feature.get("source_instance_id", "")), turn_budget, _gift_recipients())
+	if request.is_empty():
+		hud.add_log("No eligible recipient or available allocation source.")
+		return
+	resolving_player_action = true
+	var spec: Dictionary = request.spec
+	if spec.mode == "rolled_total" and feature.action_cost != "free": action_history.record_action(actor)
+	var rows: Array = []
+	var used := 0
+	var canceled := false
+	while used < int(request.total):
+		var ids: Array[String] = []
+		var labels := {}
+		for id in request.recipient_ids:
+			var existing := -1
+			for index in rows.size():
+				if rows[index].recipient_id == id: existing = index
+			if existing < 0 and rows.size() >= int(spec.max_recipients): continue
+			var allocated: int = 0 if existing < 0 else (rows[existing].dice_ids.size() if spec.mode == "captured_dice" else int(rows[existing].amount))
+			if allocated >= int(spec.per_target_cap): continue
+			ids.append(str(id))
+			for recipient in _gift_recipients():
+				if recipient.character_id == id: labels[id] = "%s (%d allocated)" % [recipient.character_name, allocated]
+		if not rows.is_empty():
+			ids.append("__done")
+			labels["__done"] = "Confirm allocation (%d of %d)" % [used, int(request.total)]
+		if ids.is_empty(): break
+		var answer: String = await hud._request_popup_choice("Allocate: %d remaining%s" % [int(request.total)-used, " — use already spent; cancel forfeits" if spec.mode == "rolled_total" else ""], ids, labels)
+		if not _allocation_actor_current(actor):
+			party_allocations.clear()
+			resolving_player_action = false
+			return
+		if answer == "__done": break
+		if answer not in request.recipient_ids:
+			canceled = true
+			break
+		var index := -1
+		for i in rows.size():
+			if rows[i].recipient_id == answer: index = i
+		var allocated: int = 0 if index < 0 else (rows[index].dice_ids.size() if spec.mode == "captured_dice" else int(rows[index].amount))
+		var choices: Array[String] = []
+		labels = {}
+		if spec.mode == "captured_dice":
+			for die in request.dice:
+				if rows.any(func(row): return die.die_id in row.dice_ids): continue
+				choices.append(str(die.die_id))
+				labels[die.die_id] = "d%d: %d [%s]" % [int(die.die_size), int(die.face), die.die_id]
+		else:
+			for amount in range(1, mini(int(spec.per_target_cap)-allocated, int(request.total)-used)+1):
+				choices.append(str(amount))
+				labels[str(amount)] = str(amount)
+		var quantity: String = await hud._request_popup_choice("Choose a retained die" if spec.mode == "captured_dice" else "Choose amount", choices, labels)
+		if not _allocation_actor_current(actor):
+			party_allocations.clear()
+			resolving_player_action = false
+			return
+		if quantity not in choices:
+			canceled = true
+			break
+		if index < 0:
+			rows.append({"recipient_id":answer, "dice_ids":[]} if spec.mode == "captured_dice" else {"recipient_id":answer, "amount":0})
+			index = rows.size()-1
+		if spec.mode == "captured_dice": rows[index].dice_ids.append(quantity)
+		else: rows[index].amount += int(quantity)
+		used += 1 if spec.mode == "captured_dice" else int(quantity)
+	last_party_allocation = party_allocations.settle(str(request.request_id), actor, [] if canceled else rows, _gift_recipients())
+	resolving_player_action = false
+	if last_party_allocation.get("success", false) and not last_party_allocation.get("declined", false):
+		if spec.mode != "rolled_total" and feature.action_cost != "free": action_history.record_action(actor)
+		hud.add_log("Allocation completed.")
+	else:
+		hud.add_log("Allocation canceled or no longer available.%s" % [" Revealed roll is forfeited." if spec.mode == "rolled_total" else ""])
+	print("PARTY ALLOCATION: " + JSON.stringify(last_party_allocation))
+	hud.update_hud(active_character, tracker)
+	_highlight_reachable()
+
+func _allocation_actor_current(actor: Character) -> bool:
+	return is_inside_tree() and active_character == actor and hud.active_character == actor and party_allocations._pending.get("budget") == turn_budget and player_entities.any(func(entry): return entry.get("character") == actor)
+
+func _gift_recipients() -> Array:
+	var recipients: Array = []
+	for entry in player_entities:
+		var recipient: Character = entry.get("character")
+		if recipient != null and recipient not in recipients: recipients.append(recipient)
+	return recipients
+
+func _execute_captured_grant_transfer(feature: Dictionary) -> void:
+	var giver := active_character
+	var request := grant_transfers.begin(giver, str(feature.id), str(feature.get("source_instance_id", "")), turn_budget, _gift_recipients())
+	if request.is_empty():
+		hud.add_log("No eligible willing recipient or available transfer source.")
+		return
+	resolving_player_action = true
+	var selected: Array = []
+	var options: Array[String] = []
+	var labels := {}
+	for id in request.recipient_ids:
+		options.append(str(id))
+		for recipient in _gift_recipients():
+			if recipient.character_id == id: labels[id] = recipient.character_name
+	while selected.size() < int(request.max_recipients) and not options.is_empty():
+		var offered: Array[String] = options.duplicate()
+		if not selected.is_empty():
+			offered.append("__done")
+			labels["__done"] = "Give to selected recipients"
+		var answer: String = await hud._request_popup_choice("Give captured gift", offered, labels)
+		if active_character != giver or hud.active_character != giver or not is_inside_tree():
+			grant_transfers.clear()
+			resolving_player_action = false
+			return
+		if answer == "__done": break
+		if answer not in options:
+			selected.clear()
+			break
+		selected.append(answer)
+		options.erase(answer)
+	var result := grant_transfers.settle(str(request.request_id), giver, selected, _gift_recipients())
+	resolving_player_action = false
+	if result.get("success", false) and not result.get("declined", false):
+		if feature.action_cost != "free": action_history.record_action(giver)
+		hud.add_log(str(result.message))
+		print("CAPTURED GIFT TRANSFER: " + JSON.stringify(result))
+	else:
+		hud.add_log("Gift canceled or no longer available.")
+	hud.update_hud(active_character, tracker)
+	_highlight_reachable()

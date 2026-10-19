@@ -1,0 +1,29 @@
+{
+  "id": "fixture:029_spell_breaker",
+  "name": "Spell breaker rebuttal",
+  "execution": "shared",
+  "level": 3,
+  "school": "abjuration",
+  "casting_time": "reaction",
+  "range": 12,
+  "target": "single",
+  "components": ["S"],
+  "cancellation_rule": {
+    "target_scope": "whole_cast",
+    "contest": {
+      "type": "save",
+      "ability": "CON",
+      "dc_from": "stopping_caster"
+    }
+  },
+  "stopping_cost_policy": {
+    "on_success": {
+      "slot": "commit",
+      "reaction": "commit"
+    },
+    "on_failure": {
+      "slot": "refund",
+      "reaction": "commit"
+    }
+  }
+}

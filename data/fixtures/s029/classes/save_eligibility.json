@@ -1,0 +1,40 @@
+[
+  {
+    "id": "fixture:s029_sense_class",
+    "name": "Save Eligibility",
+    "hit_die": "d8",
+    "primary_ability": "CON",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:s029_see_poison",
+          "name": "Poison Sense",
+          "type": "passive",
+          "resource_pool": { "id": "fixture:s029_see_pool", "capacity_formula": 4, "initial_quantity": 4 },
+          "passive_effects": [
+            { "type": "failed_save_numeric_bonus", "ability": "CON", "amount": 2, "cost": 1, "cause_id": "poison_exposure", "purpose_id": "avoid", "required_sense": "see" }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "fixture:s029_darkvision_class",
+    "name": "Alternate Save Eligibility",
+    "hit_die": "d10",
+    "primary_ability": "CON",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:s029_darkvision_end",
+          "name": "End the Toxin",
+          "type": "passive",
+          "resource_pool": { "id": "fixture:s029_darkvision_pool", "capacity_formula": 4, "initial_quantity": 4 },
+          "passive_effects": [
+            { "type": "failed_save_numeric_bonus", "ability": "CON", "amount": 3, "cost": 1, "cause_id": "toxin_condition", "purpose_id": "end", "required_sense": "darkvision" }
+          ]
+        }
+      ]
+    }
+  }
+]

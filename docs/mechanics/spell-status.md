@@ -25,7 +25,7 @@ Production casting currently enables 133 explicit gameplay slices and refuses 22
 
 ## Dependency waves
 
-The owner-approved [foundation roadmap](spell-foundations.md) now controls delivery: playable foundations first, then separate named spell integrations, in waves 1–5. Every catalog ID has a `dependency_plan` with multiple capability requirements, a named integration card, later dependencies and first-version exclusions. These are minimum planning assignments; the per-spell clause audit remains open. Foundation status and spell evidence are separate. This checklist does not itself change availability or rules completeness.
+The [current roadmap](../../roadmap.md) controls delivery. The historical [foundation plan](spell-foundations.md) retains capability gaps and wave groupings, not a live execution order. Catalog `dependency_plan` entries retain minimum requirements and exclusions; they do not select implementation work or certify a spell. Foundation status, availability and production evidence remain separate.
 
 | Capability | Wave | Foundation status |
 |---|---:|---|

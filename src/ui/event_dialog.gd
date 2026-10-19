@@ -33,6 +33,8 @@ var _familiar_help_choice: CheckBox
 var _popup_generation: int = 0
 var _active_ability_bonus_menu: PopupMenu
 var _active_ability_bonus_decision: Dictionary = {}
+var _active_reroll_keep_menu: PopupMenu
+var _active_reroll_keep_decision: Dictionary = {}
 
 
 func _ready() -> void:
@@ -185,6 +187,8 @@ func _setup_skill_check_section(option_or_event: Dictionary, origin_event_id: St
 			if not authoritative.is_empty():
 				check_data = authoritative.get("check", check_data).duplicate(true)
 				option_or_event = authoritative.get("check_owner", option_or_event).duplicate(true)
+				_pending_authored_context = check_data.get("check_context", {}).duplicate(true)
+				_pending_authored_context.merge({"origin_event_id": origin_event_id, "origin_check_id": check_id, "source_table_id": str(authoritative.get("table_id", ""))})
 	# Persist the check payload and bind a stable handler. A one-shot lambda
 	# (CONNECT_ONE_SHOT) breaks when a chained event re-opens the dialog -- the
 	# button stays visible but never fires. Disconnect any prior binding first
@@ -278,9 +282,9 @@ func _perform_roll(check_data: Dictionary, option_or_event: Dictionary, authored
 		inspiration_dialog.queue_free()
 		if not _is_current_roll(roll_generation, roll_owner):
 			return
-		var inspiration := BardicInspirationRules.apply_to_test(roll_owner, int(result["total"]), int(result["dc"]), bool(inspiration_decision["accepted"]))
+		var inspiration := BardicInspirationRules.apply_to_test(roll_owner, int(result["total"])-int(result.get("authored_floor_adjustment",0)), int(result["dc"]), bool(inspiration_decision["accepted"]))
 		if inspiration.get("used", false):
-			result["total"] = int(inspiration["total"])
+			result["total"] = int(inspiration["total"])+int(result.get("authored_floor_adjustment",0))
 			result["success"] = bool(inspiration["success"])
 			result["inspiration_bonus"] = int(inspiration["bonus"])
 			result["check_bonus_dice"].append({"source": "bardic_inspiration", "label": "Bardic Inspiration", "sides": int(str(inspiration.get("die", "1d6")).trim_prefix("1d")), "value": int(inspiration["bonus"]), "roll": inspiration.get("roll_details", {}).duplicate(true), "included_in_modifier": false, "applied_before_total_floor": false, "payment_already_settled": true})
@@ -305,11 +309,12 @@ func _perform_roll(check_data: Dictionary, option_or_event: Dictionary, authored
 		if not _is_current_roll(roll_generation, roll_owner):
 			return
 		if decision["accepted"]:
-			var tactical := FighterRules.tactical_mind(roll_owner, result["total"], result["dc"])
-			result["total"] = tactical["total"]
+			var tactical := FighterRules.tactical_mind(roll_owner, int(result["total"])-int(result.get("authored_floor_adjustment",0)), result["dc"])
+			result["total"] = int(tactical["total"])+int(result.get("authored_floor_adjustment",0))
 			result["modifier"] += tactical["bonus"]
 			result["check_bonus_dice"].append({"source": "fighter_tactical_mind", "label": "Tactical Mind", "sides": 10, "value": int(tactical["bonus"]), "roll": tactical.get("roll_details", {}).duplicate(true), "included_in_modifier": true, "applied_before_total_floor": false, "payment_already_settled": bool(tactical.get("spent", false))})
 			result["success"] = result["total"] >= result["dc"]
+	CheckFloorRules.finish(result)
 	var stroke_note := ""
 	if not result["success"] and roll_owner.has_feature("rogue_stroke_of_luck") and int(roll_owner.feature_uses.get("rogue_stroke_of_luck", 0)) > 0:
 		var stroke_dialog := ConfirmationDialog.new()
@@ -334,6 +339,9 @@ func _perform_roll(check_data: Dictionary, option_or_event: Dictionary, authored
 		var stroke_result := RogueRules.apply_stroke_of_luck(roll_owner, result, bool(stroke_decision["accepted"]))
 		if stroke_result.get("used", false):
 			result = stroke_result["result"]
+			result.erase("authored_floor_adjustment")
+			result["roll"]=int(result["natural_roll"])
+			CheckFloorRules.finish(result)
 			result["stroke_of_luck_used"] = true
 			stroke_note = " (Stroke of Luck)"
 	if not GameManager.test_mode and not authored_context.is_empty():
@@ -348,14 +356,41 @@ func _perform_roll(check_data: Dictionary, option_or_event: Dictionary, authored
 				var settlement := SpellDamageRolls.settle_ability_check_post_roll(roll_owner, request, selected_offer_id)
 				if bool(settlement.get("success", false)):
 					result = settlement["check_result"]
+					var selected_offer: Dictionary = {}
+					for available_offer in post_roll_options:
+						if str(available_offer.get("offer_id", "")) == selected_offer_id:
+							selected_offer = available_offer
+							break
+					if str(selected_offer.get("selection_policy", "mandatory_new")) == "choose_old_or_new" and not result.get("post_roll_reroll", {}).is_empty():
+						var kept_result := await _request_reroll_keep_choice()
+						if not _is_current_roll(roll_generation, roll_owner):
+							return
+						if kept_result == "old":
+							var reroll_receipt: Dictionary = result.get("post_roll_reroll", {}).duplicate(true)
+							var new_test := result.duplicate(true)
+							new_test.erase("post_roll_reroll")
+							new_test.erase("post_roll_reroll_source")
+							new_test.erase("post_roll_reroll_cost_paid")
+							var original_check: Dictionary = reroll_receipt.get("original", {}).get("complete_check_result", {}).duplicate(true)
+							original_check["post_roll_reroll"] = reroll_receipt
+							original_check["post_roll_reroll"]["kept"] = "old"
+							original_check["post_roll_reroll"]["new_test"] = new_test
+							original_check["ability_check_bonus_resolved"] = true
+							original_check["ability_check_reroll_resolved"] = true
+							original_check["post_roll_reroll_source"] = str(reroll_receipt.get("source_instance_id", ""))
+							original_check["post_roll_reroll_cost_paid"] = true
+							result = original_check
 				else:
 					return
 	var inspiration_note := " + Bardic Inspiration %d" % int(result.get("inspiration_bonus", 0)) if result.has("inspiration_bonus") else ""
 	var post_roll_note := " + owned bonus %d" % int(result.get("post_roll_bonus", 0)) if result.has("post_roll_bonus") else ""
 	if not _is_current_roll(roll_generation, roll_owner):
 		return
+	CheckFloorRules.finish(result)
 	last_skill_check_result = result.duplicate(true)
 	roll_result_lbl.text = "Rolled: %d + %d%s%s = %d!%s" % [result["natural_roll"], result["modifier"], inspiration_note, post_roll_note, result["total"], stroke_note]
+	if not result.get("floor_sources", []).is_empty():
+		roll_result_lbl.text += " (raw d20 %d; effective %d; subtotal %d; floor adjustment %d)" % [result.raw_natural_roll, result.natural_roll, result.pre_floor_subtotal, result.authored_floor_adjustment]
 	if bool(result.get("familiar_help", false)):
 		roll_result_lbl.text += " (Familiar Help: Advantage)"
 	
@@ -381,7 +416,10 @@ func _request_ability_check_bonus_choice(options: Array[Dictionary], total: int,
 		if str(option.get("operation_kind", "")) == "mandatory_reroll":
 			var scope := "reroll the kept natural d20" if str(option.get("reroll_mode", "")) == "natural_only" else "reroll the whole test"
 			var dice_policy := "keep captured bonus dice" if str(option.get("bonus_dice_policy", "")) == "keep" else "reroll captured bonus dice"
-			action_label = "%s; %s" % [scope, dice_policy]
+			var kept_policy := "choose old or new" if str(option.get("selection_policy", "mandatory_new")) == "choose_old_or_new" else "new result stands"
+			var mode_note := str(option.get("new_roll_mode", "captured"))
+			var level_note := " +%d captured level bonus" % int(option.get("level_bonus", 0)) if int(option.get("level_bonus", 0)) != 0 else ""
+			action_label = "%s; %s; %s mode%s; %s" % [scope, dice_policy, mode_note, level_note, kept_policy]
 		else:
 			var policy := str(option.get("payment_policy", "pay_on_choice"))
 			var payment_note := "paid only if this converts to success" if policy == "pay_on_converted_success" else "paid when chosen"
@@ -417,6 +455,33 @@ func _request_ability_check_bonus_choice(options: Array[Dictionary], total: int,
 	return choices[selected] if selected > 0 and selected < choices.size() else ""
 
 
+func _request_reroll_keep_choice() -> String:
+	var menu := PopupMenu.new()
+	_active_reroll_keep_menu = menu
+	menu.title = "Keep the original or rerolled check?"
+	menu.add_item("Keep original check", 0)
+	menu.add_item("Keep new check", 1)
+	add_child(menu)
+	var decision := {"selected": -1, "done": false}
+	_active_reroll_keep_decision = decision
+	menu.id_pressed.connect(func(id: int): decision["selected"] = id; decision["done"] = true)
+	menu.popup_hide.connect(func(): decision["done"] = true)
+	menu.popup_centered(Vector2i(360, 120))
+	var timeout_at_msec := Time.get_ticks_msec() + 30000
+	while not decision["done"] and Time.get_ticks_msec() < timeout_at_msec and is_inside_tree():
+		if not menu.visible:
+			await get_tree().process_frame
+			continue
+		await get_tree().process_frame
+	if is_instance_valid(menu):
+		menu.queue_free()
+	if _active_reroll_keep_menu == menu:
+		_active_reroll_keep_menu = null
+	if _active_reroll_keep_decision == decision:
+		_active_reroll_keep_decision = {}
+	return "new" if int(decision["selected"]) == 1 else "old"
+
+
 func _is_current_roll(generation: int, roll_owner: Character) -> bool:
 	return is_inside_tree() and generation == _popup_generation and active_character == roll_owner
 
@@ -424,6 +489,13 @@ func _is_current_roll(generation: int, roll_owner: Character) -> bool:
 func _cancel_ability_bonus_prompt() -> void:
 	if not _active_ability_bonus_decision.is_empty():
 		_active_ability_bonus_decision["done"] = true
+	if not _active_reroll_keep_decision.is_empty():
+		_active_reroll_keep_decision["done"] = true
+	if is_instance_valid(_active_reroll_keep_menu):
+		_active_reroll_keep_menu.hide()
+		_active_reroll_keep_menu.queue_free()
+	_active_reroll_keep_menu = null
+	_active_reroll_keep_decision = {}
 	if is_instance_valid(_active_ability_bonus_menu):
 		_active_ability_bonus_menu.hide()
 		_active_ability_bonus_menu.queue_free()

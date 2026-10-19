@@ -2,6 +2,8 @@
 class_name ClassTraining
 extends VBoxContainer
 
+signal ritual_completed(message: String)
+
 static func setup_hint(c: Character) -> String:
 	if c == null:
 		return ""
@@ -14,7 +16,7 @@ static func setup_hint(c: Character) -> String:
 		return "Learn an eligible Beast form under Class Progression before using Wild Shape."
 	return ""
 
-func configure(c: Character, refresh: Callable) -> void:
+func configure(c: Character, refresh: Callable, ritual_message: String = "") -> void:
 	add_theme_constant_override("separation", 8)
 	var title := Label.new()
 	title.text = "Class Progression"
@@ -39,6 +41,8 @@ func configure(c: Character, refresh: Callable) -> void:
 		add_child(label)
 	if GameManager.current_state == GameManager.GameState.COMBAT:
 		return
+	_build_permanent_level(c, refresh)
+	_build_source_equipment(c, refresh)
 	_build_wild_shape_form_choices(c, refresh)
 	var available := DataLoader.get_subclasses_for_class(c.class_id)
 	if c.subclass_id.is_empty() and c.level >= int(DataLoader.get_character_class(c.class_id).get("subclass_level", 3)) and not available.is_empty():
@@ -59,6 +63,9 @@ func configure(c: Character, refresh: Callable) -> void:
 		_build_weapon_mastery(c, refresh)
 	for feature_id in ClassProgression.pending_feature_choices(c):
 		_build_feature_choice(c, feature_id, refresh)
+	for feature_id in ClassProgression.feature_choice_ids(c):
+		if c.feature_choices.has(feature_id):
+			_build_feature_choice_replacement(c, feature_id, refresh)
 	for feature_id in ClassProgression.pending_skill_choices(c):
 		_build_skill_choice(c, feature_id, refresh)
 	for feature_id in ClassProgression.pending_skill_expertise_choices(c):
@@ -70,7 +77,7 @@ func configure(c: Character, refresh: Callable) -> void:
 		_build_wizard_mastery_choices(c, refresh)
 		_build_wizard_signature_choices(c, refresh)
 		_build_wizard_spell_copy(c, refresh)
-		_build_wizard_rituals(c, refresh)
+	_build_rituals(c, refresh, ritual_message)
 	if c.class_id == "warlock":
 		_build_warlock_invocations(c, refresh)
 		_build_warlock_arcanum(c, refresh)
@@ -78,7 +85,9 @@ func configure(c: Character, refresh: Callable) -> void:
 		_build_sorcerer_font_of_magic(c, refresh)
 	if c.class_id == "sorcerer" and (c.sorcerer_metamagic_pending > 0 or c.sorcerer_metamagic_replacement_available):
 		_build_sorcerer_metamagic(c, refresh)
-	if not c.get_spellcasting_feature_id().is_empty():
+	for source in SpellRepertoireRules.sources(c):
+		_build_repertoire(c, source, refresh)
+	if not c.get_spellcasting_feature_id().is_empty() and not bool(c.get_feature_effect("spellcasting").get("separate_repertoire", false)):
 		_build_spell_selection(c, refresh)
 	var pending := ClassProgression.pending_improvements(c)
 	if pending.is_empty():
@@ -262,7 +271,7 @@ func _build_epic_boon_choice(c: Character, feature_id: String, refresh: Callable
 		ability.clear()
 		var required: Array = abilities_by_option.get(selected_boon, [])
 		for score in AbilityScores.ABILITIES:
-			if c.ability_scores.get_score(score) < 30 and (required.is_empty() or score in required):
+			if c.ability_scores.get_permanent_score(score) < 30 and (required.is_empty() or score in required):
 				ability.add_item(score)
 	add_ability_options.call(str(boon.get_item_metadata(boon.selected)) if boon.selected >= 0 else "")
 	boon.item_selected.connect(func(index: int): add_ability_options.call(str(boon.get_item_metadata(index))))
@@ -322,6 +331,41 @@ func _build_weapon_mastery(c: Character, refresh: Callable) -> void:
 				refresh.call()
 		)
 		row.add_child(button)
+
+
+func _build_repertoire(c: Character, source: Dictionary, refresh: Callable) -> void:
+	var heading := Label.new()
+	heading.text = "%s spells (%s): %d cantrips, %d prepared" % [source.name, source.get("ability", ""), SpellRepertoireRules.capacity(source, "cantrips"), SpellRepertoireRules.capacity(source, "prepared_spells")]
+	add_child(heading)
+	if not SpellRepertoireRules.can_edit(c, source): return
+	var selectors: Array[OptionButton] = []
+	for cantrips in [true, false]:
+		var options := SpellRepertoireRules.options(source, cantrips)
+		var count := mini(SpellRepertoireRules.capacity(source, "cantrips" if cantrips else "prepared_spells"), options.size())
+		var old: Array = c.feature_choices.get(source.id, []).filter(func(id): return id in options)
+		for index in count:
+			var selector := OptionButton.new()
+			selector.set_meta("repertoire_source", source.id)
+			for id in options:
+				selector.add_item(str(DataLoader.get_spell(id).get("name", id)))
+				selector.set_item_metadata(selector.item_count - 1, id)
+			selector.select(options.find(old[index]) if index < old.size() else index)
+			add_child(selector)
+			selectors.append(selector)
+	var status := Label.new()
+	add_child(status)
+	var button := Button.new()
+	button.text = "Choose %s spells" % source.name
+	button.set_meta("repertoire_source", source.id)
+	button.pressed.connect(func():
+		var ids: Array[String] = []
+		for selector in selectors:
+			if selector.selected < 0: return
+			ids.append(str(selector.get_item_metadata(selector.selected)))
+		if SpellRepertoireRules.choose(c, str(source.id), ids, source): refresh.call()
+		else: status.text = "These spells are unavailable or outside this source's replacement allowance."
+	)
+	add_child(button)
 
 
 func _build_spell_selection(c: Character, refresh: Callable) -> void:
@@ -588,33 +632,36 @@ func _build_wizard_spell_copy(c: Character, refresh: Callable) -> void:
 	add_child(copy)
 
 
-func _build_wizard_rituals(c: Character, refresh: Callable) -> void:
-	if not c.has_feature("wizard_ritual_adept"):
-		return
-	var rituals: Array[String] = []
-	for spell_id in c.wizard_spellbook:
-		var spell := DataLoader.get_spell(spell_id)
-		if bool(spell.get("ritual", false)) and int(spell.get("level", 0)) <= c.get_max_spell_slot_level():
-			rituals.append(spell_id)
+func _build_rituals(c: Character, _refresh: Callable, ritual_message: String = "") -> void:
+	var rituals := SpellPermissionRules.ritual_choices(c)
 	if rituals.is_empty():
 		return
 	var title := Label.new()
-	title.text = "Rituals in your spellbook (10 extra minutes; no spell slot)"
+	title.text = "Rituals (10 extra minutes; no spell slot)"
 	add_child(title)
-	for spell_id in rituals:
+	var status := Label.new()
+	status.name = "RitualStatus"
+	status.text = ritual_message
+	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	add_child(status)
+	for choice in rituals:
+		var spell_id := str(choice.spell_id)
+		var permission: Dictionary = choice.permission.duplicate(true)
 		var row := HBoxContainer.new()
 		add_child(row)
 		var name := Label.new()
-		name.text = str(DataLoader.get_spell(spell_id).get("name", spell_id))
+		name.text = "%s · %s (%s)" % [DataLoader.get_spell(spell_id).get("name", spell_id), permission.label, permission.ability]
 		name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.add_child(name)
 		var cast := Button.new()
 		cast.text = "Cast ritual"
+		cast.tooltip_text = ClassProgression.ritual_host_error(DataLoader.get_spell(spell_id))
+		cast.disabled = not cast.tooltip_text.is_empty()
+		cast.set_meta("ritual_choice", choice.duplicate(true))
 		cast.pressed.connect(func():
-			var result := ClassProgression.cast_wizard_ritual(c, spell_id)
-			name.tooltip_text = str(result.get("message", ""))
-			if bool(result.get("success", false)):
-				refresh.call()
+			var result := ClassProgression.cast_ritual(c, spell_id, str(permission.id), permission)
+			status.text = str(result.get("message", ""))
+			if bool(result.get("success", false)): ritual_completed.emit(status.text)
 		)
 		row.add_child(cast)
 
@@ -824,18 +871,149 @@ func _build_warlock_arcanum(c: Character, refresh: Callable) -> void:
 func _build_feature_choice(c: Character, feature_id: String, refresh: Callable) -> void:
 	var feature := c.get_feature(feature_id)
 	var effect := ClassProgression.feature_choice_effect(c, feature_id)
-	var options: Array = effect.get("options", [])
+	var expected_count := int(effect.get("count", effect.get("pick", 1)))
 	var row := HBoxContainer.new()
 	add_child(row)
-	var selected := OptionButton.new()
-	for option in options:
-		selected.add_item(str(option.get("name", option.get("id", "Option"))))
-		selected.set_item_metadata(selected.item_count - 1, str(option.get("id", "")))
-	row.add_child(selected)
+	var pick_buttons: Array[OptionButton] = []
+	for i in expected_count:
+		var sel := OptionButton.new()
+		row.add_child(sel)
+		pick_buttons.append(sel)
+	for sel in pick_buttons:
+		sel.item_selected.connect(func(_index: int): _refresh_feature_choice_options(c, feature_id, pick_buttons))
+	_refresh_feature_choice_options(c, feature_id, pick_buttons)
 	var button := Button.new()
-	button.text = "%s: choose an option" % feature.get("name", "Class Feature")
+	button.text = ("%s: choose %d options" % [feature.get("name", "Class Feature"), expected_count]) if expected_count > 1 else ("%s: choose an option" % feature.get("name", "Class Feature"))
 	button.pressed.connect(func():
-		if selected.selected >= 0 and ClassProgression.choose_feature_option(c, feature_id, str(selected.get_item_metadata(selected.selected))):
+		var chosen: Array[String] = []
+		for sel in pick_buttons:
+			if sel.selected >= 0:
+				chosen.append(str(sel.get_item_metadata(sel.selected)))
+		if ClassProgression.choose_feature_options(c, feature_id, chosen):
 			refresh.call()
+	)
+	row.add_child(button)
+
+
+func _refresh_feature_choice_options(c: Character, feature_id: String, selectors: Array[OptionButton]) -> void:
+	# Removing a prerequisite clears its dependent selection too, including chains.
+	for _pass in selectors.size() + 1:
+		var changed := false
+		for index in selectors.size():
+			var selector := selectors[index]
+			var previous := str(selector.get_item_metadata(selector.selected)) if selector.selected >= 0 else ""
+			var candidates: Array[String] = []
+			for other in selectors:
+				if other != selector and other.selected >= 0:
+					var candidate := str(other.get_item_metadata(other.selected))
+					if not candidate.is_empty(): candidates.append(candidate)
+			selector.clear()
+			if selectors.size() > 1:
+				selector.add_item("Choose an option")
+				selector.set_item_metadata(0, "")
+			var selected_index := 0
+			for option in ClassProgression.available_feature_options(c, feature_id, candidates):
+				selector.add_item(str(option.get("name", option.id)))
+				selector.set_item_metadata(selector.item_count - 1, str(option.id))
+				if str(option.id) == previous: selected_index = selector.item_count - 1
+			if selector.item_count > 0:
+				selector.select(selected_index)
+				if str(selector.get_item_metadata(selected_index)) != previous: changed = true
+		if not changed: break
+
+
+func _build_feature_choice_replacement(c: Character, feature_id: String, refresh: Callable) -> void:
+	var effect := ClassProgression.feature_choice_effect(c, feature_id)
+	if effect.is_empty() or not bool(effect.get("allow_replacement", false)):
+		return
+	var feature := c.get_feature(feature_id)
+	var current_choices: Array = c.feature_choices.get(feature_id, [])
+	var all_options: Array = effect.get("options", [])
+	var options_by_id: Dictionary = {}
+	for opt in all_options:
+		options_by_id[str(opt.get("id", ""))] = opt
+
+	for old_id in current_choices:
+		var old_name := str(options_by_id.get(old_id, {}).get("name", old_id))
+		var replacements: Array[Dictionary] = []
+		for opt in all_options:
+			var new_id := str(opt.get("id", ""))
+			if new_id != old_id and ClassProgression.can_replace_feature_option(c, feature_id, old_id, new_id).get("allowed", false):
+				replacements.append(opt)
+		if replacements.is_empty():
+			continue
+		var row := HBoxContainer.new()
+		add_child(row)
+		var label := Label.new()
+		label.text = "%s: replace %s with" % [feature.get("name", "Feature"), old_name]
+		row.add_child(label)
+		var new_sel := OptionButton.new()
+		for opt in replacements:
+			new_sel.add_item(str(opt.get("name", opt.get("id", "Option"))))
+			new_sel.set_item_metadata(new_sel.item_count - 1, str(opt.get("id", "")))
+		row.add_child(new_sel)
+		var btn := Button.new()
+		btn.text = "Replace"
+		btn.pressed.connect(func():
+			if new_sel.selected >= 0:
+				var chosen_new := str(new_sel.get_item_metadata(new_sel.selected))
+				if ClassProgression.replace_feature_option(c, feature_id, old_id, chosen_new):
+					refresh.call()
+		)
+		row.add_child(btn)
+
+
+func _build_source_equipment(c: Character, refresh: Callable) -> void:
+	# Exact copies stay visible even when their catalog names are identical.
+	for copy in c.inventory.backpack_instances():
+		var item := DataLoader.get_item(str(copy.definition_id))
+		if not item.has("source_benefits"): continue
+		var row := HBoxContainer.new()
+		add_child(row)
+		var label := Label.new()
+		label.text = "%s (%s)" % [item.name, copy.instance_id]
+		row.add_child(label)
+		for slot in Inventory.Slot.values():
+			if not c.inventory.can_equip(slot, str(item.id)): continue
+			var button := Button.new()
+			button.text = "Equip %s" % str(Inventory.Slot.keys()[slot]).capitalize()
+			button.pressed.connect(func():
+				if GameManager.current_state != GameManager.GameState.COMBAT and c.inventory.equip_instance(slot, str(copy.instance_id)):
+					c._recalculate_ac()
+					refresh.call()
+			)
+			row.add_child(button)
+	for slot in Inventory.Slot.values():
+		var copy_id := c.inventory.equipped_instance_id(slot)
+		var item := DataLoader.get_item(c.inventory.get_equipped(slot))
+		if not item.has("source_benefits"): continue
+		var button := Button.new()
+		button.text = "Stow %s (%s)" % [item.name, copy_id]
+		button.pressed.connect(func():
+			if GameManager.current_state != GameManager.GameState.COMBAT and c.inventory.equipped_instance_id(slot) == copy_id:
+				if not c.inventory.unequip(slot).is_empty():
+					c._recalculate_ac()
+					refresh.call()
+		)
+		add_child(button)
+
+
+func _build_permanent_level(c: Character, refresh: Callable) -> void:
+	if not PermanentProgressionRules.enabled(c.class_id) or int(c.permanent_progression.get("pending_levels", 0)) <= 0: return
+	var choices := PermanentProgressionRules.available_classes(c)
+	var captured := c.permanent_progression.duplicate(true)
+	var row := HBoxContainer.new()
+	add_child(row)
+	var options := OptionButton.new()
+	options.name = "ProgressionClass"
+	for id in choices:
+		options.add_item(str(DataLoader.get_character_class(id).get("name", id)))
+	row.add_child(options)
+	var button := Button.new()
+	button.name = "AcquireClassLevel"
+	button.text = "Gain class level (%d pending)" % int(c.permanent_progression.pending_levels)
+	button.disabled = choices.is_empty()
+	button.pressed.connect(func():
+		if options.selected >= 0 and options.selected < choices.size() and PermanentProgressionRules.advance(c, choices[options.selected], captured): refresh.call()
 	)
 	row.add_child(button)

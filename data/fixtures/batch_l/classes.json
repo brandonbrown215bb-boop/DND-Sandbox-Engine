@@ -1,0 +1,470 @@
+[
+  {
+    "id": "fixture:l_class_plain",
+    "name": "Carrier plain",
+    "hit_die": "d8",
+    "primary_ability": "WIS",
+    "saving_throw_proficiencies": [
+      "WIS",
+      "CHA"
+    ],
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:l_magic_plain",
+          "name": "Casting",
+          "type": "passive",
+          "effects": [
+            {
+              "type": "spellcasting",
+              "ability": "WIS",
+              "spell_lists": [
+                "fixture:l_class_plain"
+              ],
+              "default_cantrips": [],
+              "default_prepared_spells": [
+                "fixture:l_spell_plain",
+                "fixture:l_spell_focus"
+              ],
+              "capacity_by_level": {
+                "1": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "2": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "3": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "4": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "5": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "6": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "7": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "8": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "9": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "10": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "11": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "12": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "13": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "14": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "15": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "16": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "17": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "18": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "19": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "20": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "fixture:l_choice_plain",
+          "name": "Carrier choice",
+          "type": "passive",
+          "effects": [
+            {
+              "type": "feature_choice",
+              "count": 1,
+              "allow_replacement": true,
+              "options": [
+                {
+                  "id": "l_grant_plain",
+                  "name": "Ward",
+                  "effects": [
+                    {
+                      "type": "source_benefits",
+                      "benefits": [
+                        {
+                          "stat": "AC",
+                          "amount": 2
+                        },
+                        {
+                          "stat": "speed",
+                          "amount": 1
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "l_empty_plain",
+                  "name": "No ward",
+                  "effects": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "spell_slots_by_character_level": {
+      "1": [
+        4
+      ],
+      "2": [
+        4
+      ],
+      "3": [
+        4
+      ],
+      "4": [
+        4
+      ],
+      "5": [
+        4
+      ],
+      "6": [
+        4
+      ],
+      "7": [
+        4
+      ],
+      "8": [
+        4
+      ],
+      "9": [
+        4
+      ],
+      "10": [
+        4
+      ],
+      "11": [
+        4
+      ],
+      "12": [
+        4
+      ],
+      "13": [
+        4
+      ],
+      "14": [
+        4
+      ],
+      "15": [
+        4
+      ],
+      "16": [
+        4
+      ],
+      "17": [
+        4
+      ],
+      "18": [
+        4
+      ],
+      "19": [
+        4
+      ],
+      "20": [
+        4
+      ]
+    },
+    "spell_list_ids": [
+      "fixture:l_spell_plain",
+      "fixture:l_spell_focus"
+    ]
+  },
+  {
+    "id": "fixture:l_class_changed",
+    "name": "Carrier changed",
+    "hit_die": "d8",
+    "primary_ability": "WIS",
+    "saving_throw_proficiencies": [
+      "WIS",
+      "CHA"
+    ],
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:l_magic_changed",
+          "name": "Casting",
+          "type": "passive",
+          "effects": [
+            {
+              "type": "spellcasting",
+              "ability": "WIS",
+              "spell_lists": [
+                "fixture:l_class_changed"
+              ],
+              "default_cantrips": [],
+              "default_prepared_spells": [
+                "fixture:l_spell_changed",
+                "fixture:l_spell_focus"
+              ],
+              "capacity_by_level": {
+                "1": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "2": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "3": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "4": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "5": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "6": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "7": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "8": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "9": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "10": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "11": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "12": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "13": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "14": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "15": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "16": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "17": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "18": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "19": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "20": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "fixture:l_choice_changed",
+          "name": "Carrier choice",
+          "type": "passive",
+          "effects": [
+            {
+              "type": "feature_choice",
+              "count": 1,
+              "allow_replacement": true,
+              "options": [
+                {
+                  "id": "l_grant_changed",
+                  "name": "Ward",
+                  "effects": [
+                    {
+                      "type": "source_benefits",
+                      "benefits": [
+                        {
+                          "stat": "AC",
+                          "amount": 3
+                        },
+                        {
+                          "stat": "speed",
+                          "amount": 2
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "l_empty_changed",
+                  "name": "No ward",
+                  "effects": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "spell_slots_by_character_level": {
+      "1": [
+        4
+      ],
+      "2": [
+        4
+      ],
+      "3": [
+        4
+      ],
+      "4": [
+        4
+      ],
+      "5": [
+        4
+      ],
+      "6": [
+        4
+      ],
+      "7": [
+        4
+      ],
+      "8": [
+        4
+      ],
+      "9": [
+        4
+      ],
+      "10": [
+        4
+      ],
+      "11": [
+        4
+      ],
+      "12": [
+        4
+      ],
+      "13": [
+        4
+      ],
+      "14": [
+        4
+      ],
+      "15": [
+        4
+      ],
+      "16": [
+        4
+      ],
+      "17": [
+        4
+      ],
+      "18": [
+        4
+      ],
+      "19": [
+        4
+      ],
+      "20": [
+        4
+      ]
+    },
+    "spell_list_ids": [
+      "fixture:l_spell_changed",
+      "fixture:l_spell_focus"
+    ]
+  },
+  {
+    "id": "fixture:l_class_passive",
+    "name": "Passive carrier",
+    "hit_die": "d8",
+    "primary_ability": "WIS",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:l_passive",
+          "name": "Passive ward",
+          "type": "passive",
+          "effects": [
+            {
+              "type": "source_benefits",
+              "benefits": [
+                {
+                  "stat": "AC",
+                  "amount": 4
+                },
+                {
+                  "stat": "speed",
+                  "amount": 2
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

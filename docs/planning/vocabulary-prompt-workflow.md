@@ -1,15 +1,13 @@
-# Workflow for the next 26 vocabulary prompts
+# Vocabulary batch build and review workflow
 
-Prepared 2026-10-13. This is a prompt contract for fresh chats, not gameplay
-evidence or a new rules architecture. The owner requested the prompts in advance;
-this supersedes the earlier instruction to prepare only the next trio's prompts.
-Execution still proceeds one slice and one stage at a time, with batch review.
+Use this workflow for the currently selected vocabulary batch. The roadmap and
+Quest Board choose work; this guide does not dispatch it or establish gameplay
+support. Build and production validation may share an owner-authorized builder
+chat; independent review and acceptance reconciliation remain separate.
 
-The copyable prompts and dependency order are in
-[the prompt pack](vocabulary-next-26-prompts.md). No worker or automation was
-dispatched by preparing these files. At preparation time, the pack did not
-accept S-024 or change the 26/226 baseline; later separate validations now accept
-S-024 and S-025 as VS-27/28.
+The original A-I prompt pack is [archived and completed](../archive/planning/vocabulary-next-26-prompts.md).
+Current proposed work is in [batches 018-030](vocabulary-batches-018-030.md),
+subject to owner selection, actual prerequisite acceptance and review findings.
 
 ## Starting a fresh chat
 
@@ -17,12 +15,13 @@ S-024 and S-025 as VS-27/28.
    `docs/architecture/README.md`, `roadmap.md`, ADR-0018 and ADR-0023 once. Read the
    selected slice and its V-series parent in the delivery plan/checklist. Read
    only the relevant mechanics contract and source after that; don't repeat a
-   corpus audit. The prompt pack's queue replaces the old candidate queue for
-   this requested work, subject to real prerequisite acceptance and batch findings.
+   corpus audit. Use the currently selected batch, its accepted prerequisites
+   and review findings; archived prompt queues do not choose work.
 2. Run the Quest Board brief as your own actor. Reuse and claim the existing
    selected-slice card, or add one if absent. Respect another actor's live claim.
-   BUILD, VALIDATE and REVIEW share a card with an exact stage in `next_action`;
-   a card labeled review alone is not proof that separate validation happened.
+   BUILD, VALIDATE and REVIEW share a card with an exact stage in `next_action`.
+   An owner-authorized combined BUILD/VALIDATE run records both stages; a card
+   labeled review alone is not proof that production validation happened.
 3. Attempt Agent Ground status once if callable. Try CodeGraph first when
    available and check language coverage. At preparation its database indexes
    Python/Liquid, not GDScript; use `rg` and source for game behavior. Missing
@@ -75,14 +74,16 @@ S-024 and S-025 as VS-27/28.
 Implement, add focused development checks that protect the new behavior, and
 update the relevant authoring contract. Record changed files, implemented entity
 and host coverage, exact syntax, supported and unsupported cases, focused Godot
-evidence and the exact next validation action. Move/handoff the slice card so its
-   next action says separate VALIDATE, then stop. Do not update accepted counts or
-claim production acceptance from helper/development checks. Do not start the
-next slice or run its separate acceptance in this chat.
+evidence and the exact next action. If the owner authorizes BUILD plus production
+VALIDATE in this chat, perform the VALIDATE finish line below and leave the card
+in REVIEW for independent reconciliation. Otherwise move/handoff the slice card
+with separate VALIDATE as next action. Do not update accepted counts or start the
+next slice.
 
 ## VALIDATE finish line
 
-Begin in a separate chat after BUILD. Read its card/report, source and fixtures.
+Begin after BUILD, in a separate chat unless the owner authorized both stages
+together. Read the card/report, source and fixtures.
 Check behavior through the real supported selection/input/command/choice route,
 not merely a directly called helper. Automated viewport harness controls count
 when they exercise that route; manual clicking is not required for every check.
@@ -137,15 +138,17 @@ Leave a concise validation report at
 commands, artifact paths, actual host/controls, expected versus observed important
 receipts/costs, current-source pass/fail result and limitations. Update the slice
 card to REVIEW with that report and the next batch review action. If the current
-source and separate production validation satisfy the entire selected slice's
-declared finish line, this fresh validation chat may record its exact VS entry,
+source and production validation satisfy the entire selected slice's declared
+finish line, a separate validation chat may record its exact VS entry,
 verified slice state, derived counts and current checkpoint. That precise acceptance
 is enough for the next dependent BUILD; the card remains REVIEW until the batch's
 independent shared-boundary review. No root supervisor or extra chat per card is
 needed. Use current registries to allocate IDs and derive counts, not predicted
 numbers in this pack. Then stop.
 
-Do not inflate counts or close a broad V-series parent. A strict subset may be
+For an owner-authorized combined builder chat, leave acceptance reconciliation to
+independent review and do not change counts. Do not inflate counts or close a
+broad V-series parent. A strict subset may be
 useful evidence, but cannot silently replace the planned slice's finish line.
 If a required host/capability remains missing, record partial/blocked work precisely
 and do not let dependent slices treat it as accepted. Previously passed validation

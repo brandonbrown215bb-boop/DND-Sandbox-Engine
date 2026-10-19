@@ -1,0 +1,78 @@
+[
+  {
+    "id": "sandbox:result_reduce_neutral",
+    "name": "Measured Return",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "school": "evocation",
+    "steps": [
+      {"id": "ember", "type": "damage", "target": "target", "damage": "4", "damage_type": "fire"},
+      {"id": "flare", "type": "damage", "target": "target", "damage": "7", "damage_type": "fire"},
+      {"id": "return", "type": "effect", "target": "self", "effects": [
+        {"type": "heal", "value": {"op": "floor_divide", "left": {"result_reduce": {"reducer": "sum", "steps": ["ember", "flare"], "targets": "all", "component": "fire", "measure": "hp_loss", "empty": "zero"}}, "right": 2}},
+        {"type": "temporary_hp", "value": {"result_reduce": {"reducer": "max", "steps": ["ember", "flare"], "targets": "cast_target", "component": "fire", "measure": "resolved", "empty": "unavailable"}}}
+      ]}
+    ]
+  },
+  {
+    "id": "sandbox:result_reduce_renamed",
+    "name": "Tide of Measures",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "bonus_action",
+    "range": 6,
+    "target": "single",
+    "school": "evocation",
+    "steps": [
+      {"id": "cinder", "type": "damage", "target": "target", "damage": "3", "damage_type": "fire"},
+      {"id": "surge", "type": "damage", "target": "target", "damage": "11", "damage_type": "fire"},
+      {"id": "return", "type": "effect", "target": "self", "effects": [
+        {"type": "heal", "value": {"op": "floor_divide", "left": {"result_reduce": {"reducer": "sum", "steps": ["cinder", "surge"], "targets": "all", "component": "fire", "measure": "hp_loss", "empty": "zero"}}, "right": 2}},
+        {"type": "temporary_hp", "value": {"result_reduce": {"reducer": "min", "steps": ["cinder", "surge"], "targets": "cast_target", "component": "fire", "measure": "resolved", "empty": "unavailable"}}}
+      ]}
+    ]
+  },
+  {
+    "id": "sandbox:result_reduce_area",
+    "name": "Selected Embers",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "area",
+    "school": "evocation",
+    "effects": [{"type": "area_selection", "shape": "sphere", "radius": 1}],
+    "steps": [
+      {"id": "impact", "type": "save", "save": "DEX", "target": "area", "shape": "sphere", "radius": 1, "damage_components": [
+        {"id": "ember", "damage": "5", "damage_type": "fire"},
+        {"id": "excluded", "damage": "19", "damage_type": "fire"},
+        {"id": "frost", "damage": "7", "damage_type": "cold"}
+      ]},
+      {"id": "echo", "type": "damage", "target": "area", "shape": "sphere", "radius": 1, "damage": "3", "damage_type": "fire", "component_id": "ember"},
+      {"id": "return", "type": "effect", "target": "self", "effects": [
+        {"type": "heal", "value": {"op": "floor_divide", "left": {"result_reduce": {"reducer": "sum", "steps": ["impact", "echo"], "targets": "all", "component": "fire", "component_id": "ember", "measure": "hp_loss", "empty": "zero"}}, "right": 2}},
+        {"type": "heal", "value": {"result_reduce": {"reducer": "min", "steps": ["impact"], "targets": "all", "component": "fire", "component_id": "ember", "measure": "resolved", "empty": "unavailable"}}},
+        {"type": "temporary_hp", "value": {"result_reduce": {"reducer": "max", "steps": ["impact", "echo"], "targets": "all", "component": "fire", "component_id": "ember", "measure": "resolved", "empty": "unavailable"}}}
+      ]}
+    ]
+  },
+  {
+    "id": "sandbox:result_reduce_paused",
+    "name": "Measured Continuation",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "school": "evocation",
+    "steps": [
+      {"id": "strike", "type": "damage", "target": "target", "damage": "2d4", "damage_type": "fire"},
+      {"id": "return", "type": "effect", "target": "self", "effects": [
+        {"type": "heal", "value": {"op": "floor_divide", "left": {"result_reduce": {"reducer": "sum", "steps": ["strike"], "targets": "all", "component": "fire", "measure": "resolved", "empty": "zero"}}, "right": 2}}
+      ]}
+    ]
+  }
+]

@@ -32,6 +32,24 @@ for accepted evidence. Old implementation restrictions do not override later dec
 | [0021 — Damage interception and wards](0021-damage-interception-and-wards.md) | Accepted; Slice 3 shared `damage_ward_pool` / `damage_ward_projection`, 5-step damage order, Abjurer Arcane/Projected Ward, and save preflight |
 | [0022 — Rest completion and slot recovery](0022-rest-completion-and-slot-recovery.md) | Accepted; Slice 4A/4B bounded Short/Long Rest completion, `rest_slot_recovery` window, Wizard Arcane Recovery, and single-owner execution |
 | [0023 — Vocabulary-first delivery and bounded world judgment](0023-vocabulary-first-delivery-and-bounded-world-judgment.md) | Accepted direction; separate discovery/build/check/translation, stage-based resolution, current save priorities, observer-specific illusions and executable campaign Wish outcomes |
+| [0024 - Explicit represented class-level formula inputs](0024-explicit-class-level-formula-inputs.md) | Accepted bounded implementation (VS-44, independent Batch F review) |
+| [0025 — Source-owned rider occurrence locks](0025-source-owned-rider-occurrence-locks.md) | Accepted bounded implementation (VS-54/55/56); actual roll completion, durable active-grant option locks and bounded numeric payment waiver |
+
+| [0026 - Derived source benefit carriers](0026-derived-source-benefit-carriers.md) | Accepted bounded direction and behavior (VS-59/60); exact existing carriers and derived AC/speed additions |
+
+| [0027 - Captured source-pool dice](0027-captured-source-pool-dice.md) | Accepted bounded implementation (VS-61); on-acquire capture and new-dice-only progression |
+
+| [0028 - Captured recipient grants](0028-captured-recipient-grants.md) | Accepted bounded direction and S-082 (VS-63); S-083 extension accepted in ADR-0029 (VS-64) |
+
+| [0029 - Party roll contributions and allocations](0029-party-roll-contributions-and-allocations.md) | Accepted bounded implementation (VS-64/65/66/67); shared attack gift, fixed helper modifier and HP/Temporary HP allocations |
+
+| [0030 - Ordered permanent acquisition receipts](0030-permanent-acquisition-receipts.md) | Accepted bounded direction; Batch 018 independently accepted as VS-68/69 |
+
+| [0031 - Derived casting permissions and preparation receipts](0031-derived-casting-permissions-and-repertoire-receipts.md) | Accepted bounded implementation (Batch 021, VS-76–78) |
+
+| [0032 - Recipient Temporary HP and aura entry receipts](0032-recipient-temporary-hp-and-aura-entry-receipts.md) | Accepted bounded direction and implementation (VS-84/85/86) |
+
+| [0033 - Parent action child continuations](0033-parent-action-child-continuations.md) | Encounter-local paid parents, local child action waivers and source-owned continuation |
 
 New ADRs must state the decision, reason, compatibility constraints, acceptance
 boundary and affected earlier decisions. Keep implementation diaries and latest

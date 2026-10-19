@@ -88,14 +88,14 @@ static func _create_conjure_celestial_zone(zones: CombatSpellZones, active_chara
 	zones.highlight_reachable.call()
 
 
-static func _apply_conjure_celestial_healing(zones: CombatSpellZones, target, caster: Character, slot_level: int) -> int:
+static func _apply_conjure_celestial_healing(zones: CombatSpellZones, target, caster: Character, slot_level: int, ability: String = "") -> int:
 	if target == null or caster == null:
 		return 0
 	var healing_dice := 4 + maxi(0, slot_level - 7)
 	var healing_formula := "%dd12" % healing_dice
 	var amount := Dice.parse_dice_string(healing_formula, {}, caster)
 	amount = SpellEffects.maximize_healing(target, amount, Dice.maximum_dice_string(healing_formula))
-	amount += caster.ability_scores.get_ability_modifier(caster.get_spellcasting_ability())
+	amount += caster.ability_scores.get_ability_modifier(ability if ability in AbilityScores.ABILITIES else caster.get_spellcasting_ability())
 	var healing := 0
 	if target is Character:
 		healing = target.heal(maxi(0, amount))
@@ -131,7 +131,7 @@ static func _resolve_conjure_celestial_zone_trigger(zones: CombatSpellZones, tar
 	last_trigger_turn_by_target[target_id] = current_turn
 	zone["last_trigger_turn_by_target"] = last_trigger_turn_by_target
 	if light_choice == "healing":
-		var healing := SpellZoneConjurations._apply_conjure_celestial_healing(zones, target, caster, int(zone.get("slot_level", 7)))
+		var healing := SpellZoneConjurations._apply_conjure_celestial_healing(zones, target, caster, int(zone.get("slot_level", 7)), str(zone.get("spellcasting_ability", "")))
 		return {"success": true, "healing": healing, "light": "healing"}
 	var spell_data: Dictionary = DataLoader.get_spell("conjure_celestial").duplicate(true)
 	spell_data["_ongoing_zone_trigger"] = true
@@ -421,7 +421,8 @@ static func _resolve_conjure_fey_attack(zones: CombatSpellZones, zone: Dictionar
 	if HexUtils.get_distance(center, target_hex) > 1:
 		return {"success": false, "reason": "target_out_of_reach"}
 	var spell_data: Dictionary = DataLoader.get_spell("conjure_fey").duplicate(true)
-	spell_data["_spell_damage_bonus_override"] = caster.ability_scores.get_ability_modifier(caster.get_spellcasting_ability())
+	spell_data["_spellcasting_ability"] = str(zone.get("spellcasting_ability", caster.get_spellcasting_ability()))
+	spell_data["_spell_damage_bonus_override"] = caster.ability_scores.get_ability_modifier(spell_data["_spellcasting_ability"])
 	var decisions: Dictionary = await zones.collect_attack_decision.call(caster)
 	if target is Character:
 		decisions.merge(await zones.collect_shield_decision.call(target, spell_data, decisions), true)

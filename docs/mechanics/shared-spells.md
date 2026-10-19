@@ -1,5 +1,7 @@
 # Author ordinary spells in JSON
 
+Batch L adds a bounded `grant_source_benefits` self-cast host for fixed AC and walking-speed additions; see [source carriers](source-benefit-carriers.md) for syntax, independent-review status and limits.
+
 Declare `"execution": "shared"` to use the ordinary spell pipeline without
 adding an ID to a code list. Use a unique namespaced ID and put the JSON file
 directly in `data/mods/spells/`. Add its ID to the intended class's
@@ -37,6 +39,84 @@ Upcast dice are plain expressions such as `1d6`. Fixed healing increases require
 an integer base healing value; choose either fixed or dice healing increases.
 Healing and Temporary HP increases apply every additional slot level.
 
+### Damage and healing dice edits (Batch 025 build)
+
+Shared spells and ordered attack/save/damage steps may declare bounded
+`damage_dice_policy`:
+
+```json
+"damage_dice_policy": {"remove": 1, "maximize": 1, "sides": 6}
+```
+
+The runtime skips `remove` eligible positive dice before rolling, then sets up
+to `maximize` eligible dice to their maximum without RNG. `sides` optionally
+limits both operations to one supported die size. Constants and negative dice
+terms are excluded. The roll receipt records the numbers removed and maximized;
+critical repetitions apply the same policy to each repeated damage roll by
+default. Set `"apply_to_critical": false` to spend the edit count on the base
+damage roll only; added critical dice roll normally and do not consume that
+count. The receipt counts edits actually applied.
+Typed save components share one removal/maximization quantity in authored
+component order; ineligible sizes do not consume it. Ordered attack/save/damage
+steps use their own declared policies, without inheriting top-level policies.
+Healing and Temporary HP effects may use the same object as `dice_policy`.
+Beacon of Hope maximizes only the remaining healing dice after removal.
+
+Healing effects may also declare a deterministic `reroll_policy`:
+
+```json
+"reroll_policy": {
+  "count": 1,
+  "selection": "lowest",
+  "sides": 6,
+  "keep": "new",
+  "cost": {"source_instance_id": "feature:healing-reroll", "amount": 1}
+}
+```
+
+The runtime selects up to `count` retained positive dice of the optional `sides`
+size, choosing lowest or highest faces in stable formula order, then rerolls each
+once. `keep` is `new` (default), `higher`, or `lower`. An optional cost spends
+the stated quantity from that exact caster-owned source when enough eligible
+dice exist; if the source cannot pay, the reroll is skipped and the original
+healing stands. The result records original/new faces, kept face, exact source,
+requested quantity and the pool payment/refusal receipt (including captured
+die identities when that pool holds dice).
+Retained original faces stay selectable under `higher`/`lower`; discarded faces,
+including extra Heroic Inspiration rolls, retain one matching kept flag per face.
+This policy runs once for each authored heal effect application. Temporary HP
+effects cannot declare it. This is an automatic authored selection rule; it does
+not add a new chooser or alter the existing Empowered Spell damage chooser.
+If Beacon of Hope already maximizes the target's healing, the reroll policy is
+skipped without spending its cost.
+
+Shared damage can also declare a rational `damage_result_multiplier`, and heal
+or Temporary HP effects can declare `result_multiplier`:
+
+```json
+"damage_result_multiplier": {"numerator": 1, "denominator": 2, "rounding": "floor"}
+```
+
+The multiplier runs after the ordinary rolled total, bonus and outcome scale,
+and before typed damage prevention/resistance. Its receipt keeps numerator,
+denominator and rounding explicit. Healing and Temporary HP apply their
+multiplier to numeric or formula values after adding the caster bonus, with
+Beacon maximization before that bonus. Supported rounding is `floor`, `ceil` or
+`nearest`; malformed policies refuse during shared content validation. Damage
+multiplier objects may set `"exclude_critical": true`; the critical result keeps
+its unmultiplied amount and the receipt states that the multiplier was excluded.
+This applies to every typed component, including additional packets; their raw
+and prevented damage history uses the same amounts as settlement.
+
+Selected damage-die rerolls keep using the existing Empowered Spell chooser:
+the owner selects from the actual retained positive dice, each chosen die is
+rerolled once, its old face remains in the receipt, and unselected siblings do
+not change. This build does not add a separate general reroll chooser or
+catalog conversion. Exact-source weapon-rider payment waivers continue to use
+their existing active-grant and parent-action checks; they waive only that
+rider's pool charge, leaving the parent Action/Reaction and other riders'
+payments intact.
+
 ### Final attack/save outcome maps (S-098 BUILD)
 
 Shared attack payloads and attack steps may declare
@@ -71,9 +151,11 @@ integer to typed damage settlement. Thus 5 damage at 0.5 becomes 2 before
 resistance, immunity, interception, Temporary HP and HP loss. Flat delivery
 uses `SpellAttackResolver` or `SpellSaveResolver`; ordered delivery uses those
 same resolvers through `SharedStepExecutor`. Existing continuation retains the
-same cast, roll and cost while the later damage choice settles. This slice does
-not add recipient-specific Evasion/exemptions (S-099), new spell hosts, or maps
-for standalone damage/effect steps.
+same cast, roll and cost while the later damage choice settles. S-099 separately
+adds exact per-recipient save maps and an authored flat-spell damage exemption
+choice. Neither changes other recipients or the independent rider policy. New
+spell hosts and maps for standalone damage/effect steps remain outside this
+subset.
 
 Target selectors are `single`, `self`, `multi`, `area` and `cone`. Multi-target
 spells declare `base_targets`. Area spells include an `area_selection` effect
@@ -180,6 +262,11 @@ The current fact vocabulary is deliberately small:
 | `target.relationship` | Current `ally`/`enemy` relation to the caster from captured participant control lists; unavailable when not represented |
 | `target.willingness` | Explicit `willing`/`unwilling` character preference; unknown stays unavailable |
 | `target.charmed_by_actor`, `target.marked_by_actor` | Whether an exact source-owned charm/mark condition record names the bound caster as giver |
+| `target.actor_hex_distance_feet` | Live axial hex distance from the bound caster's current battlefield position to the current target, in 5-foot steps |
+| `target.source_hex_distance_feet` | Live axial hex distance from the exact located source instance's current area center to the current target, in 5-foot steps |
+| `target.damage_{raw,prevented,absorbed,resolved,hp_loss}_since_combat_turn` | Numeric finalized damage total for this target, exact caster actor and current cast damage-source instance since the active initiative turn began |
+| `target.damage_{raw,prevented,absorbed,resolved,hp_loss}_since_owner_turn` | Same exact source/target measures since this target's most recent actual initiative turn began; unavailable until that target has a turn boundary |
+| `target.damage_{raw,prevented,absorbed,resolved,hp_loss}_within_last_minute` | Same exact source/target measure over campaign timestamps with age `< 60` seconds; equality at 60 expires |
 | `source.id`, `source.owner_id` | Current spell/source identity and owner identity |
 | `action.id`, `action.invocation_id` | The action kind and runtime action invocation captured by the combat spell host (`magic` plus its transient invocation ID) |
 | `item.definition_id`, `item.instance_id` | The exact validated Material component copy selected for this cast; unavailable when the cast has no owned copy |
@@ -197,14 +284,91 @@ unknown, including under `not`.
 
 | Selected host | Bindings available | Values queried live versus captured |
 | --- | --- | --- |
-| Combat shared-spell step/effect host | Actor/caster; current step target; action kind and action invocation; spell definition and invocation; source definition, exact source instance when an effect record exists, and source owner; exact item definition/copy only for a validated material component | Actor and target fields read from their current Character/target records at predicate evaluation. Definition IDs, invocation IDs, validated item-copy IDs and effect-source IDs are captured for this cast and retained by its existing continuation. An already settled effect is not reevaluated. |
-| Direct spell resolution without the CombatState cast host | Caster, current target, spell definition, and available effect-source metadata. Action/invocation/item facts without a captured cast host are unavailable. | Same live actor/target query policy; optional cast-host identities remain unavailable rather than inferred from caller-supplied decisions. |
+| Combat shared-spell step/effect host | Actor/caster; current step target; action kind and action invocation; spell definition and invocation; source definition, exact source instance when an effect record exists, and source owner; exact item definition/copy only for a validated material component; current `SpellCastContext` participant positions and exact active spell-zone records | Actor distance resolves the exact live Character/monster object in the battlefield arrays. Source distance resolves only `source.instance_id` in the current `CombatSpellZones.active_spell_zones` map and uses that zone's `center`. Both are queried again when the predicate runs. Definition IDs, invocation IDs, validated item-copy IDs and effect-source IDs remain captured for the cast. An already settled effect is not reevaluated. |
+| Direct spell resolution without the CombatState cast host | Caster, current target, spell definition, and available effect-source metadata. Action/invocation/item facts without a captured cast host are unavailable. | Distance can use a Character's current room-owned party position; battlefield participant and located-zone positions are unavailable without the live cast host. Optional cast-host identities remain unavailable rather than inferred from caller-supplied decisions. |
 
 The spell-only host does not invent an item. Item facts exist only when cast
 validation selected and verified an actual owned Material copy; an absent or
 invalid copy does not fall back to the item definition name or another entity's
 ID. Consumed copies retain the already validated invocation receipt through the
 cast continuation.
+
+### Damage history (S-031)
+
+Damage-history facts compare numeric quantities against the actual caster's
+stable actor ID and this cast's exact damage-source instance ID. A managed
+effect uses its saved source instance; an instant cast uses its captured
+invocation ID (or a unique caster cast serial when no host is present). Two
+casters or two source instances never share a bucket. Turn facts read bounded
+per-encounter totals: the combat-turn baseline snapshots at each actual
+initiative turn; the owner-turn baseline snapshots when that exact target
+starts its own turn. Encounter reset drops these aggregates. Menu queries,
+canceled commands, previews and scene changes do not touch either baseline.
+
+Campaign-time facts keep at most 128 target/source/second aggregates per
+Character. A fresh settlement at the same second and exact source is combined.
+An entry is eligible only when `0 <= now - at_seconds < 60`; at exactly 60
+seconds it is expired. A large campaign-time jump neither creates a receipt nor
+restarts its timestamp. Character DTOs carry target ID, causal actor ID, exact
+source instance, absolute campaign second and each measure. Checkpoint
+preflight rejects malformed identities, measures, timestamps and oversized
+history before session replacement. Old schema-2 Characters with no history
+field remain valid. This writes only allowed overworld/dungeon-entry checkpoints;
+active combat stays unsaveable.
+
+| Measure | Damage-history meaning |
+|---|---|
+| `raw` | Nonnegative amount presented to typed settlement, before reductions |
+| `prevented` | `max(0, raw - resolved)`; includes mitigation, immunity and ward prevention before Temporary HP |
+| `absorbed` | Ward amount plus Temporary HP actually consumed; this intentionally overlaps `prevented` for ward absorption |
+| `resolved` | Amount remaining after resistance, immunity and ward absorption, before Temporary HP |
+| `hp_loss` | Actual HP removed, capped to current HP and read from the final settlement receipt |
+
+The current bounded history requires a Character target and an exact Character
+causal actor. Dictionary-only combatants and damage with no actor source do not
+produce these actor-source facts. When a Character's 128-entry window is full,
+the oldest entry is dropped. These limits keep the history bounded; they do not
+certify a general combat journal or arbitrary duration selector.
+
+### Explicit settled-result reducers (S-035)
+
+An ordered formula may select prior damage receipts with
+`{"result_reduce":{"reducer":"sum|min|max","steps":["step_id"],"targets":"all|same|cast_target","component":"fire","component_id":"optional-id","measure":"raw|prevented|absorbed|resolved|hp_loss","empty":"zero|unavailable"}}`.
+The reducer and empty policy are paired: `sum` requires `empty: "zero"`; `min`
+and `max` require `empty: "unavailable"`. `steps` is an explicit, unique list
+of up to 20 earlier settled attack/save/damage steps. `all` selects each distinct
+target outcome for those steps once; `same` selects the current effect target;
+`cast_target` selects the captured cast target. Each value is the named typed
+component's already-settled integer measure. The reducer combines those values
+once in listed step order; it does not round intermediate receipts or infer
+other components. Put integer rounding in the surrounding formula (for example,
+`floor_divide` after `sum`).
+
+An empty selection returns 0 only for `sum`. Empty `min`/`max`, missing or
+unfinished steps, malformed receipts and missing component measures are
+unavailable; they do not fabricate zero. A known component with a settled value
+of 0 remains a value for all three reducers. Repeated same-type components must
+name an exact `component_id`; ambiguous or forward selectors are rejected before
+costs where the authored step structure makes that knowable. This operation
+does not add grouped all/any/count behavior or a general collection language.
+
+A resolved miss or successful save with explicit zero damage and no component
+receipts is a known empty damage selection. A malformed or absent measure on
+an existing component remains unavailable. Reducer `absorbed` preserves the
+prior-result measure below (Temporary HP consumed); damage-history `absorbed`
+separately includes ward absorption. Component-list payloads declare `id`, and
+the selector uses `component_id` to choose it.
+
+`sandbox:result_reduce_neutral` and `sandbox:result_reduce_renamed` exercise
+different loaded sums with max/min. `result_reducer_flow` drives each through
+the real picker and aftermath with distinct integer totals, exact HP/THP
+receipts, one slot and one turn action each. Detailed current-source production
+evidence is retained in the S-035 validation report.
+The independent Batch E area control additionally selects two same-definition
+combatants across two steps with repeated fire components. The exact `ember`
+component produces sum 11 (rounded once to 5), min 2 and max 5, excluding the
+19-point fire component. See the
+[Batch E review](../../.artifacts/planning/vocabulary-reports/batch-E-review.md).
 
 The development fixtures `sandbox:fact_window_neutral` and
 `sandbox:fact_window_renamed` show different nested predicates over this same
@@ -227,6 +391,47 @@ scenario, is retained at
 shared-spell step/effect eligibility through that combat host; whole-spell
 availability, other hosts, broader world facts and all other V-001 requirements
 remain open.
+
+### Located distance predicates (S-027)
+
+The authored numeric facts `target.actor_hex_distance_feet` and
+`target.source_hex_distance_feet` state both the metric and units. Positions are
+the existing pointy-top axial hex coordinates; one hex step is 5 feet and the
+distance is `HexUtils.get_distance * 5`. A range boundary is explicit in the
+comparison itself: `lte: 10` includes exactly 10 feet, while `lt: 10` does not.
+This is center-to-center hex distance; it does not calculate elevation,
+footprint/edge distance, path cost, obstruction or line of sight.
+
+The actor-relative fact measures the bound caster to the current step target.
+Both must be the exact live Character/monster participant objects in the active
+`SpellCastContext`; reused IDs or copied projections do not resolve. Outside an
+encounter, the current active party Character may resolve through `LocalRoomRules`'
+party-owned `party_positions` map. A copied Character with the same ID cannot use
+that position. A missing combat participant never falls back to a room position.
+Other unrepresented actors have no distance fact.
+
+The source-relative fact measures the current target to the center of the exact
+`source.instance_id` entry in the live combat area's `active_spell_zones` map.
+It cannot resolve a spell/zone definition ID, source owner, bearer position, or
+another instance sharing that definition. Moving the bearer changes the target
+endpoint only when that bearer is the current target; moving the zone changes the
+source endpoint. Moving the zone's caster/bearer does not relocate its center.
+Removing the exact zone,
+missing either position, or lacking this combat host makes the value unavailable,
+including under `not`. Room objects and arbitrary effect records are not located
+sources for this first slice.
+
+These are live predicates: they read the current endpoints when the ordered
+effect's `when` runs. A decision already settled in its declared step is not
+reopened by later movement. No move, source creation/removal, aura membership
+update, or visibility/line-of-sight action occurs as a side effect of reading
+distance. Loaded development consumers and focused checks are in
+`data/fixtures/shared_spells/spells/distance.json` and
+`SharedSpellChecks._distance_predicate_checks`. Production evidence and the exact
+accepted host limits are recorded in the [Batch D review](../../.artifacts/planning/vocabulary-reports/batch-D-review.md).
+The source-relative fixture receives an exact existing zone source through the
+internal cast adapter; this adds no generic source picker or authorable lookup by
+definition/name. Instant spells without a located source remain unavailable.
 
 Fixed healing and Temporary HP accept integral JSON numbers as well as integer
 text. SharedSpell normalizes decoded integral floats to integer text before
@@ -533,9 +738,48 @@ Frightened, Poisoned, Prone, Restrained, Stunned, Paralyzed, Incapacitated, and
 the existing `blessed`, `baned` and `shield_of_faith` benefits. Their lowercase
 IDs are used in JSON. `duration_seconds` must be 1–86400; `concentration: true`
 uses normal replacement/loss/expiry. `repeat_save: "CON"` (or another ability)
-offers the existing target-end repeat save against the captured casting DC and
-removes that source on success. Saved effects require their spell definition
-to remain installed; missing content rejects loading before session mutation.
+uses the captured casting DC. By default it repeats at the end of each affected
+creature's turn and removes that source on success. Batch 026 adds optional
+schedule, staged-condition and DC-history fields:
+
+```json
+"repeat_save": "WIS",
+"repeat_save_schedule": "elapsed_seconds",
+"repeat_save_interval_seconds": 60,
+"repeat_save_stages": [
+  {"condition": "restrained", "successes_required": 2, "minimum_margin": 2,
+   "on_failure": "stay", "reset_successes_on_failure": true},
+  {"condition": "paralyzed", "successes_required": 1, "on_failure": "end"}
+],
+"repeat_save_dc_progression": {
+  "increase_on": "failure", "amount": 1, "maximum": 5,
+  "reset_on_success": true
+}
+```
+
+Use `target_turn_end` or `elapsed_seconds`; the elapsed schedule requires an
+interval from 1 to 86400 seconds. Stage 1 must match the condition granted in
+`effects`. A qualifying success has `total - current DC >= minimum_margin`;
+the configured number advances the source to the next stage, and the final
+stage ends that source. A failed save follows `on_failure` (`stay`, `advance`
+or `end`); `reset_successes_on_failure` optionally clears that stage's count.
+DC increases apply to later attempts after the current save. An authored
+successful-save reset clears the increase. Attempt count, deadline, DC
+adjustment, stage cursor and original save purpose/context live on the exact
+effect record and are validated against the loaded definition before restore.
+Elapsed-time advancement visits deadlines and effect expirations in time order
+across all represented targets. Expiry wins an equal-time tie; no save runs at
+or after that source's expiration. The final campaign clock is preserved.
+Definitions declaring scheduling, stages or DC progression require complete
+saved history, including default-valued context/counters. Old unstaged
+default-turn definitions may still restore their older records without history.
+All stage conditions must be supported condition IDs. This is generic
+shared-spell behavior; no catalog spell is converted by Batch 026.
+
+The builder implementation and retained checks are pending independent Batch
+026 review. Effects on monsters still end with the encounter; only party
+Character state participates in campaign-save recovery. A missing spell
+definition rejects saved effects before session mutation.
 
 Values accept a nonnegative integer or bounded dice expression such as `2d8`,
 `2d8+3`. `ability_bonus_from_caster` adds the caster's spellcasting
@@ -590,13 +834,16 @@ remain unsupported. This proves one fixed bonus after an owner's rolled failed
 save against a shared spell, not general post-roll result editing.
 
 The optional `payment_policy` on a `failed_save_numeric_bonus` effect accepts
-`pay_on_choice` or `pay_on_converted_success`. Omission defaults to the existing
-pay-on-choice behavior. Both policies require the exact source pool to cover the
+`pay_on_choice`, `pay_on_converted_success`, `pay_on_final_success` or
+`pay_on_final_failure`. Omission defaults to the existing pay-on-choice behavior.
+All policies require the exact source pool to cover the
 authored cost when offered and again when the answer is settled. A converted
 success under `pay_on_converted_success` pays once before damage/riders; if the
 bonus leaves the save failed, the modified result remains but no use is spent.
 If the exact source no longer has enough uses, settlement refuses before
 applying the bonus or consequences. The choices are shown in the combat prompt.
+Final-result predicates reserve only the chosen exact source and commit/refund
+against its final outcome; see the [payment contract](shared-resource-pools.md#final-result-payment-predicates-s-100).
 Development fixtures are in
 [`payment_policies.json`](../../data/fixtures/failed_save_bonus/classes/payment_policies.json);
 production acceptance checked both policies through the real DataLoader, combat
@@ -802,7 +1049,9 @@ attack (`attack_type: ranged_spell` or `melee_spell`) resolved by
 Noninteractive callers get the same receipt. A combat attack-bonus choice pauses
 after `provisional_outcome`; an existing deferred damage choice pauses after
 `pre_damage`. Resuming either request keeps the same `resolution_occurrence_id`,
-original roll and source bindings. No spell reroll is used to rebuild a receipt.
+original roll and source bindings. S-225 test rerolls replace only the captured
+attack/save test through its owning resolver; they do not replay the spell or
+rebuild the cast receipt.
 
 Each entry has `window`, `occurrence_id`, `kind`, and the available nonempty
 bindings among `actor_id`, `target_id`, `action_id`, `action_invocation_id`,
@@ -844,3 +1093,204 @@ explicit hit/miss choices use the separate S-092 contract above. An ordinary fin
 does not create a damage choice or charge a damage-only source. S-042 cast/source
 end windows, other roll domains, roll-mode edits and defensive edits remain
 outside this subset. S-092 separately supports the declared explicit outcomes.
+
+### Round and actor action history (S-030)
+
+The shared `when` predicate accepts six Boolean history facts:
+`target.first_round`, `target.first_own_turn`,
+`target.acted_since_combat_turn`, `target.acted_since_owner_turn`,
+`target.attacked_since_combat_turn`, and `target.attacked_since_owner_turn`.
+They query the current target's stable combat actor identity. First round is
+available after initiative begins and is true only in round 1. First own turn
+is unavailable until that actor's first initiative turn starts, then remains
+false on later turns. The `*_since_combat_turn` facts use the current
+initiative actor's turn-start boundary; `*_since_owner_turn` facts use that
+target's most recent own-turn start and are unavailable until that boundary
+exists, including under negation. An action means an actual spent Action,
+Magic action, or Bonus Action. An attack means a resolved attack occurrence;
+misses qualify, canceled targeting and refused actions do not. Attack history
+is indexed to the target, not the attacker.
+
+History is encounter-local and bounded to latest event serials per actor. It
+resets only on encounter initialization and actual initiative turn starts;
+resuming the same active turn after owner reconnection does not create a new
+boundary. Menus, queries, map movement and location changes do not change it.
+The action-history fixture exercises a real Bonus Action followed by another
+actor's owner-turn consumer, and a natural-1 spell attack whose loaded consumer
+still settles once. This evidence covers shared-spell predicates through the
+interactive combat host; other action/attack hosts, general event subscriptions
+and durable campaign history remain out of scope.
+Batch E review also checks the existing monster weapon executor's refused
+target, miss and hit controls. It records action/attack events only after an
+actual roll; rejected AI movement/target selection cannot fabricate an action.
+The existing monster spell executor records a committed successful or countered
+cast after resolution. Other native commands and broad attack hosts remain
+uncertified. Exact evidence and limits are in the
+[Batch E review](../../.artifacts/planning/vocabulary-reports/batch-E-review.md).
+
+
+### Grouped final child outcomes (S-044, accepted VS-42)
+
+Ordered `when` supports `{"child_group":{"mode":"count","steps":["first","second"],"targets":"all","outcome":"failed_save","empty":"fail","skipped":"exclude","comparison":"gte","threshold":2}}`.
+`mode` is `all`, `any` or `count` (only count takes comparison/threshold).
+Each explicit unique earlier step must be an attack for hit/miss or a save for
+successful_save/failed_save. Targets are all actual targets, same current target,
+or exact cast_target. Repeated attempts on one target in different steps remain
+separate children. Distinct same-definition actors remain separate targets.
+
+Every selected step must carry its completed result before evaluation, including
+ANY and already-reached count thresholds. Missing/unfinished results are unknown,
+including under negation. Results are written complete only after all children
+and their result/damage/concentration choices settle. Final hit/saved flags own
+the gate, including supported overrides; natural arithmetic does not replace them.
+`skipped` explicitly excludes, counts as nonmatching (`fail`), or makes the group
+unavailable. After exclusions, `empty` explicitly passes, fails or is unavailable.
+An empty group policy also governs count zero; it is not inferred from arithmetic.
+Queries do not roll or pay. This is transient ordered shared-spell result state;
+there is no new save permission or durable state, action composition or general
+workflow engine.
+
+
+### Formula inputs and capture policy (S-036, accepted VS-43)
+
+Ordered formula `{"input_value":"amount"}` reads a declared cast input, for example
+`"formula_inputs":{"amount":{"kind":"number_choice","minimum":1,"maximum":3,"policy":"captured"}}`.
+The real caster popup chooses an integer inside the loaded bounds before the slot
+is paid. Wrong type/range, canceled choice, repeated capture and caller decision
+substitution refuse. Up to eight inputs, maximum twenty-one integer options in
+0..99. Input values live on the exact transient cast host, bound to its owner,
+spell and invocation. Direct resolver callers cannot supply them via decisions.
+
+A deterministic actor parameter declares
+`{"kind":"parameter","formula":{"caster_ability_modifier":"WIS"},"policy":"captured"}`
+or `policy:"live"`. Captured parameters are read once during cast preparation,
+after all numeric selections, independent of declaration order; live parameters reevaluate at consumption.
+Preparation also checks live parameter availability before costs, without storing
+the preflight value. An initially unavailable live-only input refuses before a
+slot/action is spent; later consumption still follows the declared live policy. Both survive
+later ordered choice continuation with the original host. Live evaluation never
+rerolls a committed value. Unknown inputs are unavailable, including before costs.
+
+`{"source_die":{"step":"strike","target":"cast_target","pool_id":"owned_pool","policy":"captured"}}`
+reads the committed bonus-die face from an earlier completed attack/save child.
+Targets are exact `same` or `cast_target`. The retained receipt records exact
+source instance, pool definition, owner, sides and face. Declined/no-die/skipped/
+missing or unfinished child cannot supply a value. `captured` uses that committed
+receipt even after source removal; `revalidate` additionally requires its exact
+owned pool still to exist. Neither policy rolls, pays again, borrows a different
+copy or changes the committed face. Existing source selection revalidates before
+RNG/payment. Surrounding arithmetic uses the face; formula_reads on effect results
+retain the formula and evaluated receipt for inspection.
+
+Supported hosts are ordered combat shared spells and their existing bonus-die
+attack/rolled-save choices; numeric choices use the existing popup owner. This
+adds no dice inventory, transferable tokens or new durable fields. Inputs, menus,
+ordered results and choices remain transient; allowed-save boundaries are unchanged.
+
+
+S-037 adds declared `progression_lookup` numeric/die-size rows and actual explicit
+class-level allocations to those parameter inputs; see [pool/class-level contract](shared-resource-pools.md#explicit-class-levels-and-progression-tables-s-037-accepted-vs-44).
+Captured class rows follow the accepted post-number-selection boundary. Total
+character level, each class, proficiency and selected slot remain distinct.
+
+## Recipient damage maps and caster-chosen exemptions (S-099 / VS-50)
+
+A Character passive may declare a `recipient_damage_map` for a shared-spell
+save. It matches the exact save domain, ability and authored `save_context`
+(`cause_id`, `purpose_id`, `origin_effect_id`), and provides independent
+`success_scale` and `failure_scale` values from 0 through 1. The target's
+matching map changes that recipient's damage only. Ambiguous matching maps do
+not choose arbitrarily. The per-recipient save receipt records the selected
+map, outcome and scale. Scaling uses the existing floor before typed damage,
+resistance and Temporary HP settlement. Evasion's existing rule retains its
+normal priority.
+
+A flat shared save spell may author an optional `recipient_exemption_choice`:
+
+```json
+{
+  "recipient_exemption_choice": {
+    "selection_id": "selective_burst_recipients",
+    "selection_limit": 1,
+    "stage": "before_target_saves",
+    "save_ability": "DEX",
+    "cause_id": "measured_burst",
+    "purpose_id": "contain_area",
+    "origin_effect_id": "burst_damage"
+  }
+}
+```
+
+The declaration must match the spell's exact save and save context. The caster
+chooses from actual, alive recipients in the selected area through the existing
+multi-target control. The cast captures selection ID, spell definition, caster,
+eligible recipient IDs and chosen recipient IDs before saves. A transient
+selection on the exact cast owns the original caster, invocation, declaration
+and recipient objects; caller decision dictionaries cannot grant an exemption.
+At settlement the runtime checks those bindings again. A copied actor ID,
+replacement recipient or selection from another invocation cannot inherit it.
+Chosen recipients take zero spell damage, but their saving throw and
+independently authored riders resolve normally. Unchosen recipients use their
+own Evasion/map/outcome scale. The exemption is free and shares the ordinary
+one-time spell action/slot payment. An empty/deleted target list, source/spell
+mismatch, over-limit, duplicate or ineligible recipient grants no exemption.
+
+The current exemption declaration is supported on flat shared spells, not on
+ordered spell-step payloads. Damage maps are Character-owned passives. This
+subset does not add a general monster-specific map catalog or map arbitrary
+damage/effect steps. See the [Batch H build/validation report](../../.artifacts/planning/vocabulary-reports/batch-H-build-validation.md)
+for the exact production target scenarios and limits.
+The accepted [independent Batch H review](../../.artifacts/planning/vocabulary-reports/batch-H-review.md)
+records canonical cast/recipient binding, native Evasion priority and final
+production evidence after repairs.
+
+## Incoming damage reductions and bypasses (S-109/S-110; VS-52/53)
+
+Flat shared damage and ordered shared spell damage steps can declare separate
+`damage_reductions` and `damage_bypasses` arrays. Ordered declarations belong on
+the exact step that owns the occurrence. A single payload retains its explicit
+`component_id`, or defaults to `type:1` for flat spells and `step_id:type` for
+ordered steps; save component lists retain their own authored/generated IDs.
+Reduction has the `after_scale_before_mitigation` stage and a fixed nonnegative
+integer or deterministic actor-only formula object. String expressions are
+rejected. Initially unavailable formulas refuse before slot/action payment or
+dice; settlement reevaluates live actor values after a pending choice. Formula results
+are floored, then clamped at zero. A `component` reduction names an exact
+`component_id`; an `occurrence` reduction allocates through typed components in
+their authored order. Declarations themselves run in authored order. Each
+component receives at most its remaining raw damage. Any requested excess is
+discarded; it does not carry into another occurrence. No reduction can produce
+negative damage.
+
+The component receipt retains original `raw`, `reduction_prevented`,
+`reduction_receipts`, `resolved`, `absorbed`, and `hp_loss`. The step outcome
+also retains declaration-level `damage_reduction_receipts` with requested,
+applied, overflow and allocated component IDs. This reduction occurs after the
+save/attack outcome scale and before ordinary mitigation. Temporary HP remains
+a later, separate absorption measure.
+
+Bypasses are a separate `damage_bypasses` declaration at the `mitigation`
+stage. Scope is `component` with an exact component ID or `occurrence` for every
+component in that one occurrence. `layers` must explicitly select one or more
+of `resistance`, `immunity`, `ward`, and `prevention`; unknown and duplicate
+layers are rejected. The normal settlement order is Resilient Sphere
+prevention, Resistance, Ward absorption, Immunity, Temporary HP absorption,
+then HP loss. A selected bypass skips only its named layer. Unselected layers,
+other components and damage from other sources retain their normal behavior.
+Bypass receipts remain on each component and the settlement receipt lists the
+layers actually skipped. Reduction receipts never imply a bypass.
+
+The `prevention` bypass crosses the earlier spell-level Resilient Sphere gate
+only for ordered shared spells whose steps use typed-component save payloads,
+with no riders or other effects. Both the casting controls and direct resolver
+honor this narrow gate for a protected caster or target. At settlement,
+only components whose own policy selects `prevention` cross the barrier;
+unselected components remain blocked. Flat shared spells, other prevention
+rules and non-damage effects do not use this bypass. These policy declarations
+have no resource cost. They reuse the existing save/attack roll, damage request,
+CombatAction and WardRules owners and introduce no saved reservation state.
+
+See the [Batch I build/validation report](../../.artifacts/planning/vocabulary-reports/batch-I-build-validation.md)
+for original exercised routes and receipts. The accepted
+[independent Batch I review](../../.artifacts/planning/vocabulary-reports/batch-I-review.md)
+records repairs, final production controls, commands/logs and exact limits.

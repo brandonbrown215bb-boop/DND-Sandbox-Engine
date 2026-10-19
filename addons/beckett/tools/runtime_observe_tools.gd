@@ -9,28 +9,57 @@ class_name BeckettRuntimeObserveTools
 ## only READS it — nothing injects input or mutates state.
 ##
 ## This is a CORE module: it ships in the free Lite edition, so Lite can SEE the
-## running game (screenshot, live tree, runtime reads). DRIVING it — input, clicks,
-## drag/scroll, runtime writes, assertions — is the Full-edition layer in
-## runtime_tools.gd. Keeping observe here (core) and drive there (the trimmed
-## sentinel) is what lets Lite see the game without shipping the drive code as source.
+## running game (screenshot, live tree, runtime reads). DRIVING it (input, clicks,
+## drag/scroll, runtime writes, assertions) is the Full-edition layer in
+## runtime_tools.gd. Keeping observe here (core) and the drive TOOLS there (the
+## trimmed sentinel) is what lets Lite see the game without shipping the tools
+## that drive it. The game-side runtime (runtime/mcp_runtime.gd) is one file for
+## both editions and does ship in Lite. Its drive commands stay out of reach
+## because Lite's own tools never send them and core/runtime_bridge.gd refuses
+## them (command_refusal), not because the code is absent.
 
-var server
+var server  # mcp_server node (exposes .bridge)
+
+const MCPJobsScript := preload("res://addons/beckett/core/jobs.gd")  # poll_until (B2)
+const CapturesScript := preload("res://addons/beckett/core/captures.gd")  # deliver=link (v1.14)
+const CallArgs := preload("res://addons/beckett/core/callargs.gd")  # flags arrive as text from lenient clients
+const PathGuard := preload("res://addons/beckett/core/path_guard.gd")  # save_to: no write through a link that leaves the project
+const GameState := preload("res://addons/beckett/runtime/game_state.gd")  # state_fields: the caps a game's state answer is held to again
+
+## Long-edge cap applied to a screenshot call that asked for no framing of its own (1.13).
+## A bare capture of a 1440p game moved 5.5 MB of base64 for a picture the model reads just
+## as well at 1280 px; any explicit sizing argument opts out (see _screenshot).
+const DEFAULT_MAX_DIM := 1280
 
 
 func _register(registry) -> void:
 	registry.register({
 		"name": "screenshot",
-		"description": "Capture an image the agent can see (inline PNG). target=game (default) screenshots the RUNNING game via the runtime channel; target=editor captures the 2D editor viewport. region=[x,y,w,h] in pixels crops to that rect (clamped) to save tokens — screenshot full once to learn the size, then crop.",
+		"description": "Capture an image the agent can see. target=game (default) captures the RUNNING game; target=editor captures the 2D editor viewport (PNG only). A bare call caps the long edge at max_dim=1280 — pass scale, region, max_dim=0, format or save_to to opt out. annotate=ui draws numbered Set-of-Mark boxes and returns the legend. For pure functional state ui_snapshot is cheaper. Token dials + delivery: help(tool=\"screenshot\").",
+		"help": "Token-cost dials (game target):\n  scale=0.5        quarters the pixels\n  max_dim=N        caps the LONG EDGE in px. A call passing NO framing argument defaults to max_dim=1280, because a bare 1440p capture was measured at 5,583,634 bytes of result body for a picture the model reads just as well smaller. Opt out with scale, region, max_dim=0, format or save_to: any of those means you already decided what you wanted back.\n  format=jpeg|webp with quality (default 0.8) compresses far below PNG on a game frame\n  region=[x, y, w, h]  crops, clamped to the frame\n\nannotate=ui draws numbered Set-of-Mark boxes over every visible interactive control AND returns the legend as structured {marks:[{i, path, rect, text?}]}. One glance answers both \"does it look right\" and \"what can I click where\"; follow up with click_control path=<the legend path> (Full). The 1280 cap is folded into the same factor that draws the boxes, so an annotated capture stays pixel-accurate at any size.\n\ndeliver (1.14) chooses the CHANNEL, not the framing:\n  inline (default)  the image rides in the result, as it always has\n  link              the frame is parked in the capture store and you get a capture:// resource_link plus the absolute path, with no base64 in the transcript at all\n  both              link and image\nA client older than MCP 2025-06-18 cannot read a resource_link, so deliver=link degrades to both rather than returning a picture nobody can see.\n\nsave_to also writes the frame to a path of your choosing (res://, user:// or absolute) so later captures can be diffed against it (compare_screenshots, Full). That is how a baseline is minted, which is why it opts out of the size cap.",
 		"readonly": true,
+		# Bootstrap set (tool_registry.gd) and the heaviest member of it (~1.6 KB, most of it the
+		# argument list): it is the half of run-and-see that no other tool can stand in for, and the
+		# product's headline. L4, so it only rides when the dial is at See or above.
+		"always_load": true,
 		"input_schema": {"type": "object", "properties": {
 			"target": {"type": "string", "description": "game | editor"},
 			"region": {"type": "array", "description": "[x,y,w,h] pixel crop"},
+			"scale": {"type": "number", "description": "0.05..1.0 downscale before encode (game target; default 1.0)"},
+			"max_dim": {"type": "integer", "description": "cap the long edge in px (default 1280 on a call with no other framing argument; 0 = no cap)"},
+			"format": {"type": "string", "description": "png (default) | jpeg | webp (game target)"},
+			"quality": {"type": "number", "description": "jpeg/webp quality 0.1..1.0 (default 0.8)"},
+			"annotate": {"type": "string", "description": "'ui' = draw numbered marks on interactive controls + return the legend (game target)"},
+			"max_marks": {"type": "integer", "description": "cap on annotate marks (default 40)"},
+			"save_to": {"type": "string", "description": "also write the frame to this path (res://, user:// or absolute); mints a diff baseline"},
+			"deliver": {"type": "string", "description": "inline (default) | link (a capture:// resource_link, no base64) | both"},
 		}},
 		"handler": Callable(self, "_screenshot"),
 	})
 	registry.register({
 		"name": "get_remote_tree",
-		"description": "Dump the live scene tree of the RUNNING game (runtime counterpart of get_scene_tree). SCOPE IT to stay under token limits — a full game tree blows the budget. path=subtree root (name, relative, or absolute /root/...); depth=levels (-1=all); max_nodes (default 250); max_children per node (default 50); collapse=true groups runs of identical leaf siblings (e.g. '8x CPUParticles2D'). Returns {tree, node_count, truncated?}.",
+		"description": "Dump the live scene tree of the RUNNING game (runtime counterpart of get_scene_tree). SCOPE IT to stay under token limits — a full game tree blows the budget. path=subtree root (name, relative, or absolute /root/...); depth=levels (-1=all); max_nodes (default 250); max_children per node (default 50); collapse=true groups runs of identical leaf siblings (e.g. '8x CPUParticles2D'); state=true adds game-owned state (help(tool=\"get_remote_tree\")). Returns {tree, node_count, truncated?}.",
+		"help": "state=true (1.16) returns the game-owned state beside the tree: {state: {<node path>: {...}}, state_nodes: N}.\n\nThe convention: a node that knows what its game means by \"state\" says so. Put it in the group \"beckett_state\" and give its script\n  func _beckett_state() -> Dictionary:\n      return {\"hp\": hp, \"inventory\": items, \"phase\": \"boss\"}\nThe same convention under the other name some tools use works unchanged: the group \"mcp_state\" with _mcp_state() (leftos/godot-mcp and wgt19861219/godot-mcp-enhanced). A node that has both is read through _beckett_state. Beckett calls the method on every read (and, in Full, a playtest state step on every poll), so keep it a plain read of live fields with no side effects.\n\nWhat comes back: every such node of the WHOLE game, autoloads included (not only the subtree path= scopes the tree to), keyed by its path: relative to the scene root, or /root/... for an autoload. Values are plain JSON: numbers, strings, bools, lists and dictionaries; a Vector2, a Color or a node comes back as its text. The reply is capped (40 nodes, 6,000 characters per node, 12,000 in all, 64 entries per list or dictionary, depth 6, 120 characters per string) and says when it cut: state_truncated:true plus state_truncated_nodes, the nodes that lost something. A node that is in the group but cannot answer (no method, or the method did not return a Dictionary) is listed in state_errors with the reason, so a missing key never looks like a game that has no state. With no such node at all, state is {} and state_hint says how to add one.\n\ndepth=0 with state=true is the cheap way to read just the state.\n\nTo ASSERT on it, the Full edition's playtest tool has a state step (the playtest skill has its grammar).",
 		"readonly": true,
 		"input_schema": {"type": "object", "properties": {
 			"path": {"type": "string"},
@@ -38,12 +67,27 @@ func _register(registry) -> void:
 			"max_nodes": {"type": "integer"},
 			"max_children": {"type": "integer"},
 			"collapse": {"type": "boolean"},
+			"state": {"type": "boolean"},
 		}},
 		"handler": Callable(self, "_get_remote_tree"),
 	})
 	registry.register({
+		"name": "ui_snapshot",
+		"description": "One-call UI snapshot of the RUNNING game: every visible Control as structured data (path, class, text, rect, and the semantic state pixels cannot tell you: disabled, focused, checked, value, selected, editable, tooltip) plus per-control honesty flags. For FUNCTIONAL UI checks this replaces a screenshot plus a read per control; keep screenshot for visual/render bugs. Every field, and the free since_hash re-read: help(tool=\"ui_snapshot\").",
+		"help": "Per control: path, class (plus a custom class_name when it has one), text, rect [x, y, w, h] in gui space as ints, and the semantic state a picture cannot carry —\n  disabled, focused, checked (toggles), value + range (sliders / spin / progress), selected (+ selected_text / tabs / item_count), editable / placeholder / secret (text fields), tooltip, mouse_ignore.\n\nInteractive controls also carry honesty flags:\n  clipped        scrolled out of view\n  occluded_by    another control would swallow the click (popup, modal, overlay)\n\nTop level: the focus owner, open popup / dialog windows (exclusive = modal), the viewport size, and a stable content 'hash'.\n\nThe hash is the cheap re-read: pass it back as since_hash and an UNCHANGED UI returns {unchanged:true} instead of the payload. Polling a menu costs almost nothing that way.\n\nScope: walks the whole SceneTree root, so autoload HUD layers and popups are included. Narrow with path=, slim with interactive_only=true, cap with max_nodes.",
+		"readonly": true,
+		"input_schema": {"type": "object", "properties": {
+			"path": {"type": "string", "description": "subtree root to scope the walk (name, relative, or /root/...)"},
+			"interactive_only": {"type": "boolean", "description": "only buttons/sliders/fields/lists/tabs + focusables (default false = all visible controls)"},
+			"occlusion": {"type": "boolean", "description": "compute occluded_by for interactive controls (default true; one hit-test walk per interactive control)"},
+			"max_nodes": {"type": "integer", "description": "cap on emitted controls (default 150)"},
+			"since_hash": {"type": "string", "description": "hash from a previous call — unchanged UI returns {unchanged:true} instead of the payload"},
+		}},
+		"handler": Callable(self, "_ui_snapshot"),
+	})
+	registry.register({
 		"name": "find_nodes",
-		"description": "Find LIVE nodes in the RUNNING game by type and/or name; returns their paths to feed into runtime_call/runtime_get_property/runtime_set_property. 'class' matches native classes AND custom class_name scripts (is_class alone misses custom nodes — they read as @Node@NN). name=substring on the node name. path=scope root (default scene root). recursive=true. max=cap (default 100).",
+		"description": "Find LIVE nodes in the RUNNING game by type and/or name; returns their paths to feed into runtime_get_property (in Full also runtime_call and runtime_set_property). 'class' matches native classes AND custom class_name scripts (is_class alone misses custom nodes, which read as @Node@NN). name=substring on the node name. path=scope root (default scene root). recursive=true. max=cap (default 100).",
 		"readonly": true,
 		"input_schema": {"type": "object", "properties": {
 			"class": {"type": "string"}, "name": {"type": "string"},
@@ -65,7 +109,7 @@ func _register(registry) -> void:
 	})
 	registry.register({
 		"name": "wait_for_node",
-		"description": "Block until a node appears in the RUNNING game (by path/name) or timeout. Use after play_scene to sync before driving.",
+		"description": "Block until a node appears in the RUNNING game (by path/name) or timeout. Use after play_scene to sync before you read the game (or, in Full, drive it).",
 		"readonly": true,
 		"input_schema": {"type": "object", "properties": {
 			"path": {"type": "string"}, "timeout_ms": {"type": "integer"},
@@ -84,10 +128,23 @@ func _register(registry) -> void:
 	})
 	registry.register({
 		"name": "get_performance_monitors",
-		"description": "Profiling: read Performance monitors (fps, frame time, memory, object/node counts, draw calls, video mem, physics). target=game (default when a play session is connected) samples the RUNNING game; target=editor samples the editor.",
+		"description": "Profiling: read Performance monitors (fps, frame time, memory, object/node counts, draw calls, video mem, physics) — measured engine counters, never estimates. target=game (default with a play session) | editor. duration_s>0 samples over time and returns per-monitor {min, avg, p95, max}. Sampling rules and why an editor-target window is refused: help(tool=\"get_performance_monitors\").",
+		# Two success shapes — a snapshot returns `monitors`, an over-time window returns
+		# `stats` — so `target` is the only key on both, and it is also what tells the
+		# client which of the two it got.
+		"output_schema": {"type": "object", "properties": {
+			"target": {"type": "string"}, "monitors": {"type": "object"},
+			"stats": {"type": "object"}, "samples": {"type": "integer"},
+			"window_ms": {"type": "integer"}, "interval_ms": {"type": "integer"},
+			"series": {"type": "array"},
+		}, "required": ["target"]},
+		"help": "target=game is the default whenever a play session is connected; target=editor reads the editor process instead.\n\nduration_s > 0 (game only, max 30) SAMPLES OVER TIME: it polls every interval_ms (default 100, minimum 30) while the game keeps running, then returns per-monitor stats {min, avg, p95, max}. That is how you get fps.p95 or process_time.max across a stress window rather than one lucky instant.\n\nseries=true also returns the raw per-sample series. It is token-heavy — ask for it only when you need the shape of the curve, not its bounds.\n\nEditor-target sampling is refused honestly rather than faked: a tool call blocks the editor's own loop, so an over-time editor read would measure nothing but a stalled editor.",
 		"readonly": true,
 		"input_schema": {"type": "object", "properties": {
 			"target": {"type": "string", "description": "game | editor | auto"},
+			"duration_s": {"type": "number", "description": "sampling window in seconds (0 = single snapshot; max 30; game target only)"},
+			"interval_ms": {"type": "integer", "description": "sampling interval (default 100, min 30)"},
+			"series": {"type": "boolean", "description": "include the raw per-sample series, capped at 300 samples (default false)"},
 		}},
 		"handler": Callable(self, "_get_perf"),
 	})
@@ -102,23 +159,81 @@ func _register(registry) -> void:
 		}},
 		"handler": Callable(self, "_game_logs"),
 	})
+	registry.register({
+		"name": "render_probe",
+		"description": "Ask WHY a 3D node is or is not on screen, as data instead of pixels — the \"node exists, visible is true, log is clean, and I still see nothing\" case. Returns a 'warnings' list naming the stage that broke, or a verdict that the geometry does reach the camera. USE THIS BEFORE tuning lighting, fog, exposure or palette on anything you cannot clearly see. The stages it checks: help(tool=\"render_probe\").",
+		"help": "Stages checked, in the order the renderer would fail them:\n  * the visibility chain (the node and every ancestor);\n  * the world AABB;\n  * the frustum test;\n  * distance vs the far plane and vs the node's visibility range;\n  * layers vs the camera's cull_mask;\n  * per-surface material and cull mode;\n  * the triangle winding the camera actually sees.\n\nThat last one earns its place: facing_camera=0 with back-face culling on means a REVERSED index buffer. Godot treats CLOCKWISE winding as the FRONT face, and a mesh exported the other way is invisible from the side you are looking at while being perfectly present in the tree.\n\nWhy it comes first in a debugging session: an invisible mesh and an under-lit mesh look identical in a screenshot, and \"tune the lighting\" is the expensive wrong answer. Probe first, then light.",
+		"readonly": true,
+		"input_schema": {"type": "object", "properties": {
+			"path": {"type": "string", "description": "node path or name in the running game"},
+			"class": {"type": "string"}, "name": {"type": "string"},
+			"nth": {"type": "integer"}, "under": {"type": "string"},
+		}},
+		"handler": Callable(self, "_render_probe"),
+	})
+	registry.register({
+		"name": "set_debug_draw",
+		"description": "Switch the RUNNING game's viewport debug draw mode, then screenshot to see one render stage in isolation. unshaded = albedo only (clears lighting/fog/exposure as suspects in one shot). wireframe = is the geometry even there (culled or degenerate meshes show as nothing). overdraw = transparency cost. normal_buffer = flipped or NaN normals. lighting = light contribution only. normal = back to the real image. Reach for this FIRST when the picture is wrong; render_probe then answers the same question in numbers.",
+		"input_schema": {"type": "object", "properties": {
+			"mode": {"type": "string", "description": "normal | unshaded | lighting | overdraw | wireframe | normal_buffer"},
+		}, "required": ["mode"]},
+		"handler": Callable(self, "_set_debug_draw"),
+	})
 
 
+# ---------------------------------------------------------------- runtime-channel (read)
 
 func _screenshot(args: Dictionary) -> Dictionary:
 	var target := str(args.get("target", "game"))
 	if target == "editor":
 		return _editor_screenshot(args)
 	var cmd := {"cmd": "screenshot"}
-	if args.has("region"):
-		cmd["region"] = args["region"]
-	var r: Dictionary = server.bridge.send_command(cmd)
+	for k in ["region", "scale", "format", "quality", "annotate", "max_marks", "max_dim"]:
+		if args.has(k):
+			cmd[k] = args[k]
+	# Cap the DEFAULT capture only. Any argument that frames or sizes the frame means the
+	# caller already decided what they want back: scale/region/max_dim are explicit sizing,
+	# format is a deliberate quality call, and save_to is how a baseline gets minted, which
+	# must be native. annotate is deliberately NOT in that list: the cap rides in `scale`
+	# runtime-side, so the marks and their legend stay correct at any factor.
+	if not (args.has("scale") or args.has("region") or args.has("max_dim") \
+			or args.has("format") or args.has("save_to")):
+		cmd["max_dim"] = DEFAULT_MAX_DIM
+	# Big frames + jpeg/webp encode + the annotate walk can push a cold heavy scene
+	# past the 4 s default — same reasoning as ui_snapshot's longer deadline.
+	var r: Dictionary = server.bridge.send_command(cmd, 10000)
 	if not bool(r.get("ok", false)):
 		return {"error": str(r.get("error", "screenshot failed"))}
-	var note := ""
+	var desc := "game screenshot %dx%d (%s)" % [int(r.get("w", 0)), int(r.get("h", 0)), str(r.get("mime", "image/png"))]
 	if int(r.get("w", 0)) != int(r.get("full_w", r.get("w", 0))) or int(r.get("h", 0)) != int(r.get("full_h", r.get("h", 0))):
-		note = " (cropped from %dx%d)" % [int(r.get("full_w", 0)), int(r.get("full_h", 0))]
-	return {"image_png_base64": str(r.get("png", "")), "text": "game screenshot %dx%d%s" % [int(r.get("w", 0)), int(r.get("h", 0)), note]}
+		desc += " (from %dx%d)" % [int(r.get("full_w", 0)), int(r.get("full_h", 0))]
+	if r.has("note"):
+		desc += " — " + str(r.get("note", ""))
+	var b64 := str(r.get("data", r.get("png", "")))
+	var out := {"image_base64": b64, "image_mime": str(r.get("mime", "image/png"))}
+	# Hold the bytes in a LOCAL across delivery. deliver=link erases image_base64 from `out`,
+	# and reading an erased key is a hard GDScript error that aborts the whole handler — so
+	# save_to + deliver=link wrote no file, returned no picture and no link, and still came
+	# back isError:false. The editor path below has always saved from its own local; so does
+	# this one now. Anything that needs the frame after _apply_delivery reads b64, not `out`.
+	desc = _apply_delivery(args, out, desc)
+	if args.has("save_to"):
+		# The bytes are already here — saving them server-side costs nothing and removes the
+		# only reason an agent ever had to edit the GAME (adding a capture() helper to the
+		# deliverable) just to look at it. It also gives compare_screenshots (Full) a baseline.
+		var saved := _save_capture(b64, str(args["save_to"]))
+		if saved.is_empty():
+			desc += " → saved %s" % str(args["save_to"])
+		else:
+			desc += " (save failed: %s)" % saved
+	out["text"] = desc
+	if r.has("marks"):
+		# Legend rides as structuredContent, beside the plain line. Before v1.13.0 the
+		# serializer's if/elif made these exclusive, so annotated captures had to bury
+		# the readable line inside the json to keep both - and the line is not repeated
+		# in here now that it does not have to be.
+		out["json"] = {"marks": r.get("marks", [])}
+	return out
 
 
 func _editor_screenshot(args: Dictionary) -> Dictionary:
@@ -136,7 +251,105 @@ func _editor_screenshot(args: Dictionary) -> Dictionary:
 		var h := clampi(int(rg[3]), 1, img.get_height() - y)
 		img = img.get_region(Rect2i(x, y, w, h))
 	var b64 := Marshalls.raw_to_base64(img.save_png_to_buffer())
-	return {"image_png_base64": b64, "text": "editor viewport %dx%d" % [img.get_width(), img.get_height()]}
+	var desc := "editor viewport %dx%d" % [img.get_width(), img.get_height()]
+	var out := {"image_png_base64": b64}
+	# The editor path takes `deliver` too. It shipped in 1.14.0 wired only into the game
+	# path, so target=editor silently ignored the argument — the exact dishonesty class
+	# v1.10.2 was spent removing. An editor capture is always PNG.
+	desc = _apply_delivery(args, out, desc, "image/png")
+	if args.has("save_to"):
+		var saved := _save_capture(b64, str(args["save_to"]))
+		desc += (" → saved %s" % str(args["save_to"])) if saved.is_empty() else (" (save failed: %s)" % saved)
+	out["text"] = desc
+	return out
+
+
+## v1.14 delivery: choose the CHANNEL the picture rides on. Mutates `out` in place and
+## returns the (possibly extended) text line.
+##
+## deliver=link parks the frame in the capture store and drops the inline base64 entirely —
+## that is the whole saving, ~1.6 MB of result body for a default 1280 px capture. The text
+## block still carries the absolute path, so a client that ignores resource_link can open the
+## file with its own read tool and nothing is lost.
+##
+## Degradation: resource_link is a 2025-06-18 content type. A peer that negotiated
+## 2025-03-26 would get the link stripped by the serializer gate, so on those clients
+## deliver=link becomes deliver=both rather than a result with no picture in it at all.
+func _apply_delivery(args: Dictionary, out: Dictionary, desc: String, mime_hint: String = "") -> String:
+	if not args.has("deliver"):
+		return desc
+	var mode := str(args["deliver"]).strip_edges().to_lower()
+	if mode == "inline":
+		return desc
+	if not (mode in ["link", "both"]):
+		# Never swallow a value we did not understand: a typo'd deliver=lnik used to look
+		# exactly like deliver=inline, so the caller would go on believing it had a link.
+		return desc + " (deliver='%s' is not a known mode — use inline | link | both; returned inline)" % str(args["deliver"])
+	var b64 := str(out.get("image_base64", out.get("image_png_base64", "")))
+	var mime := str(out.get("image_mime", mime_hint if not mime_hint.is_empty() else "image/png"))
+	var stored: Dictionary = CapturesScript.store(b64, mime)
+	if stored.has("error"):
+		# Never lose the picture over a failed park: fall back to inline and say why.
+		return desc + " (deliver=%s failed: %s — returned inline)" % [mode, str(stored["error"])]
+	out["resource_links"] = [{
+		"uri": str(stored["uri"]),
+		"name": str(stored["id"]),
+		"description": "Game capture, %d bytes." % int(stored["bytes"]),
+		"mimeType": str(stored["mime"]),
+	}]
+	desc += " → %s (%d B on disk: %s)" % [str(stored["uri"]), int(stored["bytes"]), str(stored["path"])]
+	if mode == "link" and server.supports_resource_link():
+		out.erase("image_base64")
+		out.erase("image_png_base64")
+	elif mode == "link":
+		desc += " — client negotiated MCP %s, which predates resource_link, so the image still rides inline" % str(server._negotiated_version)
+	return desc
+
+
+## Write a base64 capture to disk. Returns "" on success, else the reason — a failed save
+## must never look like a successful one, and must never lose the image either (the caller
+## still returns the frame inline).
+func _save_capture(b64: String, path: String) -> String:
+	if path.is_empty():
+		return "empty path"
+	# Refuse to mint a 0-byte PNG and call it a baseline. An empty frame reaches here when
+	# the runtime answered with no data at all, and the whole point of this function is that
+	# "→ saved" means a file worth diffing against exists.
+	if b64.is_empty():
+		return "no image data to save"
+	# save_to takes an absolute path on purpose, so it is not held to the write_file rule. A res:// or
+	# user:// path is the project's own space though, and it must not go through a link that leaves it.
+	if path.begins_with("res://") or path.begins_with("user://"):
+		var lerr: String = PathGuard.link_escape_error(path)
+		if not lerr.is_empty():
+			return lerr
+	var dir := path.get_base_dir()
+	if not dir.is_empty() and not DirAccess.dir_exists_absolute(dir):
+		var derr := DirAccess.make_dir_recursive_absolute(dir)
+		if derr != OK:
+			return "cannot create %s: %s" % [dir, error_string(derr)]
+	var f := FileAccess.open(path, FileAccess.WRITE)
+	if f == null:
+		return error_string(FileAccess.get_open_error())
+	f.store_buffer(Marshalls.base64_to_raw(b64))
+	f.close()
+	return ""
+
+
+func _ui_snapshot(args: Dictionary) -> Dictionary:
+	var cmd := {"cmd": "ui_snapshot"}
+	for k in ["path", "interactive_only", "occlusion", "max_nodes", "since_hash"]:
+		if args.has(k):
+			cmd[k] = args[k]
+	# A cold heavy scene can stall frames past the default 4 s deadline (measured on a
+	# real RPG right after load) — a snapshot is worth the longer wait, never a desync.
+	var r: Dictionary = server.bridge.send_command(cmd, 10000)
+	if not bool(r.get("ok", false)):
+		return {"error": str(r.get("error", "ui_snapshot failed"))}
+	var out := r.duplicate()
+	out.erase("ok")
+	out.erase("_id")
+	return {"json": out}
 
 
 func _get_remote_tree(args: Dictionary) -> Dictionary:
@@ -151,7 +364,83 @@ func _get_remote_tree(args: Dictionary) -> Dictionary:
 	if bool(r.get("truncated", false)):
 		out["truncated"] = true
 		out["hint"] = str(r.get("hint", ""))
+	if CallArgs.flag(args, "state"):
+		var sr: Dictionary = server.bridge.send_command({"cmd": "game_state"})
+		if not bool(sr.get("ok", false)):
+			# The agent asked for state and did not get it: that is an error it can act on, not a tree with a
+			# silent hole. The usual cause is a game that started before Beckett was updated (its runtime
+			# does not know the command).
+			return {"error": "state=true: the running game could not collect its state (%s). If the game started before Beckett was updated, restart it (stop_scene, then play_scene). Call again without state=true for the tree alone." % str(sr.get("error", "no answer")).left(160)}
+		out.merge(state_fields(sr))
 	return {"json": out}
+
+
+## The `state` part of a get_remote_tree reply, from the game's `game_state` answer: the states themselves, how
+## many nodes answered, what was cut, which nodes could not answer, and a hint when nothing exposes state at
+## all. What a game sent is held to the caps again here (recap_states): it ends up in a reply a model reads, and
+## the game is another program, so the size it kept to on its side is not taken on trust.
+static func state_fields(sr: Dictionary) -> Dictionary:
+	var out := {}
+	var recapped := recap_states(sr.get("states", {}))
+	out["state"] = recapped["states"]
+	out["state_nodes"] = _whole(sr.get("count", 0))
+	if bool(sr.get("truncated", false)) or bool(recapped["truncated"]):
+		out["state_truncated"] = true
+		var cut: Array = []
+		var theirs: Variant = sr.get("truncated_nodes", [])
+		if theirs is Array:
+			cut.append_array((theirs as Array).slice(0, 10))
+		cut.append_array((recapped["cut"] as Array).slice(0, 10))
+		out["state_truncated_nodes"] = _capped_list(cut, 10, 200)
+	var errs: Variant = sr.get("errors", [])
+	if errs is Array and not (errs as Array).is_empty():
+		var shown: Array = []
+		for e in (errs as Array).slice(0, 10):
+			if e is Dictionary:
+				shown.append({"node": str((e as Dictionary).get("node", "")).left(200), "error": str((e as Dictionary).get("error", "")).left(160)})
+		out["state_errors"] = shown
+	if _whole(sr.get("nodes_total", 0)) == 0:
+		out["state_hint"] = "no node is in the group beckett_state (or mcp_state): add the group to a node and give its script func _beckett_state() -> Dictionary, then restart the scene. help(tool=\"get_remote_tree\")"
+	return out
+
+
+## The game's collection of states ({node path: data}) held to the caps game_state.gd collected it under: at most
+## MAX_NODES_HARD nodes, MAX_CHARS of data in all and MAX_CHARS_NODE of them for one node, every string, key, list
+## and depth cut the same way. The game applies them itself, and an honest answer comes back unchanged; one that
+## did not (a game that answers the bridge on its own) is cut here instead of reaching a model whole.
+## {states, truncated, cut}: `cut` names the nodes this left out or shortened.
+static func recap_states(v: Variant) -> Dictionary:
+	var states := {}
+	var cut: Array = []
+	var truncated := false
+	if v is Dictionary:
+		var spent := 0
+		for k in (v as Dictionary):
+			var key := str(k).left(GameState.MAX_PATH)
+			if states.size() >= GameState.MAX_NODES_HARD or spent >= GameState.MAX_CHARS or states.has(key):
+				cut.append(key)
+				truncated = true
+				continue
+			var budget := {"chars": 0, "max": mini(GameState.MAX_CHARS_NODE, GameState.MAX_CHARS - spent), "truncated": false}
+			states[key] = GameState.json_safe((v as Dictionary)[k], budget, 0)
+			spent += int(budget["chars"])
+			if bool(budget["truncated"]):
+				cut.append(key)
+				truncated = true
+	return {"states": states, "truncated": truncated, "cut": cut}
+
+
+## A whole number from an answer that may hold anything: 0 for what is not a number.
+static func _whole(v: Variant) -> int:
+	return int(v) if (v is int or v is float) else 0
+
+
+static func _capped_list(v: Variant, count: int, each: int) -> Array:
+	var out: Array = []
+	if v is Array:
+		for e in (v as Array).slice(0, count):
+			out.append(str(e).left(each))
+	return out
 
 
 func _find_nodes(args: Dictionary) -> Dictionary:
@@ -174,6 +463,40 @@ func _add_target(cmd: Dictionary, args: Dictionary) -> void:
 			cmd[k] = args[k]
 
 
+## --- render diagnosis (v1.12) ------------------------------------------------
+## Observation, so it lives in the CORE module and ships in Lite: the free edition's whole
+## promise is that the AI can SEE the running game, and "I can see it is wrong but not why"
+## was the largest remaining hole in that promise.
+
+func _render_probe(args: Dictionary) -> Dictionary:
+	if not server.bridge.is_game_connected():
+		return {"error": "game not running (no runtime connection). Call play_scene first, then wait_until condition=game_connected."}
+	var cmd := {"cmd": "render_probe"}
+	_add_target(cmd, args)
+	# Sampling the index buffer of a dense mesh reads its arrays once — worth a longer
+	# deadline than a plain property read, same reasoning as ui_snapshot.
+	var r: Dictionary = server.bridge.send_command(cmd, 10000)
+	if not bool(r.get("ok", false)):
+		return {"error": str(r.get("error", "render_probe failed")), "suggestion": str(r.get("suggestion", ""))}
+	var out := r.duplicate()
+	out.erase("ok")
+	out.erase("_id")
+	return {"json": out}
+
+
+func _set_debug_draw(args: Dictionary) -> Dictionary:
+	if not server.bridge.is_game_connected():
+		return {"error": "game not running (no runtime connection). Call play_scene first, then wait_until condition=game_connected."}
+	var r: Dictionary = server.bridge.send_command({"cmd": "debug_draw", "mode": str(args.get("mode", "normal"))})
+	if not bool(r.get("ok", false)):
+		return {"error": str(r.get("error", "set_debug_draw failed")), "suggestion": str(r.get("suggestion", ""))}
+	var text := "debug draw: %s (was %s)" % [str(r.get("mode", "")), str(r.get("previous", ""))]
+	if r.has("note"):
+		text += " — " + str(r["note"])
+	text += ". Take a screenshot to see it; set_debug_draw mode=normal restores the real image."
+	return {"text": text}
+
+
 func _runtime_get(args: Dictionary) -> Dictionary:
 	var cmd := {"cmd": "get", "prop": str(args.get("property", ""))}
 	_add_target(cmd, args)
@@ -188,14 +511,13 @@ func _wait_for_node(args: Dictionary) -> Dictionary:
 		return {"error": "game not running"}
 	var path := str(args.get("path", ""))
 	var timeout: int = clampi(int(args.get("timeout_ms", 5000)), 100, 60000)
-	var t0 := Time.get_ticks_msec()
-	while Time.get_ticks_msec() - t0 < timeout:
-		server.bridge.poll_once()
+	var tick := func() -> Dictionary:
 		var r: Dictionary = server.bridge.send_command({"cmd": "exists", "path": path}, 1000)
-		if bool(r.get("exists", false)):
-			return {"text": "node appeared: %s" % path}
-		OS.delay_msec(120)
-	return {"error": "timeout waiting for node: %s" % path}
+		return {"found": true} if bool(r.get("exists", false)) else {}
+	var res: Dictionary = MCPJobsScript.poll_until(timeout, 120, tick, Callable(server.bridge, "poll_once"))
+	if res.has("timeout"):
+		return {"error": "timeout waiting for node: %s" % path}
+	return {"text": "node appeared: %s" % path}
 
 
 func _monitor_properties(args: Dictionary) -> Dictionary:
@@ -205,18 +527,23 @@ func _monitor_properties(args: Dictionary) -> Dictionary:
 	var prop := str(args.get("property", ""))
 	var n: int = clampi(int(args.get("samples", 10)), 1, 120)
 	var interval: int = clampi(int(args.get("interval_ms", 50)), 10, 2000)
-	var series: Array = []
-	for i in n:
-		server.bridge.poll_once()
+	var series: Array = []  # captured by reference into the tick lambda
+	var tick := func() -> Dictionary:
 		var r: Dictionary = server.bridge.send_command({"cmd": "get", "path": path, "prop": prop}, 1000)
 		series.append(r.get("value"))
-		OS.delay_msec(interval)
+		return {"done": true} if series.size() >= n else {}
+	MCPJobsScript.poll_until(n * interval + 5000, interval, tick, Callable(server.bridge, "poll_once"))
 	return {"json": {"path": path, "property": prop, "samples": series}}
 
 
 func _get_perf(args: Dictionary) -> Dictionary:
 	var target := str(args.get("target", "auto"))
 	var use_game: bool = target == "game" or (target == "auto" and server.bridge != null and server.bridge.is_game_connected())
+	var duration_s: float = clampf(float(args.get("duration_s", 0.0)), 0.0, 30.0)
+	if duration_s > 0.0:
+		if not use_game:
+			return {"error": "duration_s sampling needs target=game with a play session connected — a tool call blocks the editor's own loop, so an over-time editor sample would only measure a stalled editor. Use single snapshots for the editor."}
+		return _sample_perf(duration_s, clampi(int(args.get("interval_ms", 100)), 30, 2000), CallArgs.flag(args, "series"))
 	if use_game:
 		var r: Dictionary = server.bridge.send_command({"cmd": "perf"})
 		if not bool(r.get("ok", false)):
@@ -226,6 +553,49 @@ func _get_perf(args: Dictionary) -> Dictionary:
 	for pair in _perf_pairs():
 		out[pair[0]] = Performance.get_monitor(pair[1])
 	return {"json": {"target": "editor", "monitors": out}}
+
+
+## Sample the running game's monitors over a window (v1.9): poll cmd=perf every interval,
+## then reduce each numeric monitor to {min, avg, p95, max}. The handler blocks the EDITOR
+## for the window (sync-handler constraint) while the GAME — its own process — keeps running
+## frames, so the numbers are real gameplay measurements. Measured, never modeled.
+func _sample_perf(duration_s: float, interval_ms: int, want_series: bool) -> Dictionary:
+	if not server.bridge.is_game_connected():
+		return {"error": "game not running (runtime channel not connected) — play_scene, then wait_until game_connected"}
+	var series: Array = []  # captured by reference; poll_until's timeout IS the window end
+	var t0 := Time.get_ticks_msec()
+	var tick := func() -> Dictionary:
+		var r: Dictionary = server.bridge.send_command({"cmd": "perf"}, 1000)
+		if bool(r.get("ok", false)) and r.get("monitors", {}) is Dictionary:
+			series.append(r.get("monitors"))
+		return {}
+	MCPJobsScript.poll_until(int(duration_s * 1000.0), interval_ms, tick, Callable(server.bridge, "poll_once"))
+	if series.is_empty():
+		return {"error": "no samples collected — the game stopped answering during the window"}
+	var stats: Dictionary = {}
+	var first: Dictionary = series[0]
+	for key in first:
+		var vals := PackedFloat64Array()
+		for s in series:
+			var v: Variant = (s as Dictionary).get(key)
+			if v is int or v is float:
+				vals.append(float(v))
+		if vals.is_empty():
+			continue
+		vals.sort()
+		var total := 0.0
+		for v in vals:
+			total += v
+		stats[key] = {
+			"min": vals[0],
+			"avg": total / float(vals.size()),
+			"p95": vals[clampi(int(ceil(float(vals.size()) * 0.95)) - 1, 0, vals.size() - 1)],
+			"max": vals[vals.size() - 1],
+		}
+	var out := {"target": "game", "samples": series.size(), "window_ms": Time.get_ticks_msec() - t0, "interval_ms": interval_ms, "stats": stats}
+	if want_series:
+		out["series"] = series.slice(0, 300)
+	return {"json": out}
 
 
 func _perf_pairs() -> Array:
@@ -263,6 +633,9 @@ func _game_logs(args: Dictionary) -> Dictionary:
 	var entries: Array = r.get("entries", [])
 	var level := str(args.get("level", "error"))
 	var meta := "buffer=%d, dropped=%d" % [int(r.get("buffer_size", 0)), int(r.get("dropped", 0))]
+	# On Godot < 4.5 the game side can't install the log sink (the Logger API is 4.5+), so
+	# the buffer is always empty. Say so explicitly — an empty result here must NOT read as
+	# "the game logged no errors" when it really means capture isn't available on this engine.
 	if not bool(r.get("capture_active", true)):
 		return {"text": "game_logs is unavailable on this Godot version — real-time capture needs the Logger API (OS.add_logger), which is Godot 4.5+. The running game's errors/warnings/prints are NOT captured here; use logs_read (file log) instead, or run on Godot 4.5+."}
 	if entries.is_empty():

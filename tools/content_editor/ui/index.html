@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Grimoire Content Workbench — Rook 5e-Lite (VS-83)</title>
+  <link rel="stylesheet" href="/ui/styles.css" />
+</head>
+<body>
+  <!-- Top Grimoire Header Bar -->
+  <header class="grimoire-topbar">
+    <div class="brand-cluster">
+      <div class="brand-crest" title="Grimoire Content Workbench">❖</div>
+      <div class="brand-titles">
+        <div class="brand-title">
+          GRIMOIRE CONTENT WORKBENCH
+          <span class="contract-pill" id="contract-rev-pill">VS-83 PINNED</span>
+        </div>
+        <div class="brand-subtitle" id="authority-subtitle">
+          Read-only catalog over <code>data/core/</code> + <code>data/content_manifest.json</code> · Composable pack exports
+        </div>
+      </div>
+    </div>
+
+    <div class="topbar-controls">
+      <div class="pack-switcher-group">
+        <span class="pack-switcher-label">Active Pack</span>
+        <select id="pack-selector" style="width: 155px; padding: 4px 8px; font-weight: 600;"></select>
+        <button class="btn btn-sm" id="btn-pack-settings" title="Edit Pack Metadata or Create New Pack">⚙ Pack</button>
+      </div>
+      <button class="btn btn-gold" id="btn-open-template">+ New from Template</button>
+      <button class="btn btn-success" id="btn-open-export">⬇ Export Pack Bundle</button>
+    </div>
+  </header>
+
+  <!-- Main 3-Pane Workbench Grid -->
+  <main class="workbench-grid">
+    <!-- LEFT PANE: Catalog Browser & Workspace Drafts Tray -->
+    <aside class="pane-left">
+      <nav class="type-nav" id="type-nav">
+        <button class="type-nav-btn active" data-type="spell">
+          <span>Spells</span>
+          <span class="type-nav-count" id="count-type-spell">—</span>
+        </button>
+        <button class="type-nav-btn" data-type="item">
+          <span>Items</span>
+          <span class="type-nav-count" id="count-type-item">—</span>
+        </button>
+        <button class="type-nav-btn" data-type="class">
+          <span>Classes</span>
+          <span class="type-nav-count" id="count-type-class">—</span>
+        </button>
+        <button class="type-nav-btn" data-type="monster">
+          <span>Monsters</span>
+          <span class="type-nav-count" id="count-type-monster">—</span>
+        </button>
+        <button class="type-nav-btn" data-type="race">
+          <span>Races</span>
+          <span class="type-nav-count" id="count-type-race">—</span>
+        </button>
+      </nav>
+
+      <div class="catalog-filter-box">
+        <div class="search-wrapper">
+          <input
+            type="text"
+            id="catalog-search"
+            class="search-input"
+            placeholder="Search by name or ID..."
+            autocomplete="off"
+          />
+          <span class="search-shortcut-hint">/</span>
+        </div>
+        <div class="status-filter-pills" id="status-filter-pills">
+          <button class="filter-pill active" data-status="">
+            All <span id="filter-count-all"></span>
+          </button>
+          <button class="filter-pill" data-status="shared-ready" title="Playable under SharedSpell / DataLoader without C#/GDScript edits">
+            <span class="dot dot-ready"></span>Shared-Ready <span id="filter-count-ready"></span>
+          </button>
+          <button class="filter-pill" data-status="native-id-bound" title="Works on original ID via SpellSupport.AVAILABLE_SLICES; breaks if cloned without Shared conversion">
+            <span class="dot dot-native"></span>Native-ID <span id="filter-count-native"></span>
+          </button>
+          <button class="filter-pill" data-status="draft-unsupported" title="Contains unsupported effects/fields or unmigrated mechanics">
+            <span class="dot dot-unsupported"></span>Blocked <span id="filter-count-unsupported"></span>
+          </button>
+        </div>
+      </div>
+
+      <div class="catalog-list" id="catalog-list"></div>
+
+      <section class="drafts-tray">
+        <div class="drafts-tray-header">
+          <span>WORKSPACE DRAFTS (<span id="drafts-count">0</span>)</span>
+          <span style="font-family: var(--font-mono); font-size: 10px; color: var(--text-muted);" id="active-pack-badge">ember_pack</span>
+        </div>
+        <div class="drafts-list" id="drafts-list"></div>
+      </section>
+    </aside>
+
+    <!-- CENTER PANE: Interactive Visual Workbench -->
+    <section class="pane-center">
+      <div class="workbench-header" id="workbench-header">
+        <div>
+          <div class="workbench-title-row">
+            <h1 class="workbench-title" id="wb-title">Select a Catalog Entry or Draft</h1>
+            <span class="id-lock-chip" id="wb-id-chip" style="display: none;"></span>
+            <span id="wb-origin-chip"></span>
+            <span id="wb-status-chip"></span>
+            <span class="dirty-indicator" id="wb-dirty-chip" style="display: none;">● Unsaved Edits</span>
+          </div>
+          <div id="wb-provenance-line" style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
+            Choose any spell, item, or 2024 class from the left catalog to inspect or author.
+          </div>
+        </div>
+        <div class="workbench-actions" id="wb-actions"></div>
+      </div>
+
+      <div class="workbench-scroll" id="workbench-scroll"></div>
+    </section>
+
+    <!-- RIGHT PANE: Live VS-83 Inspector, Source Diff, Pack Manifest, & JSON -->
+    <aside class="pane-right">
+      <div class="inspector-tabs" id="inspector-tabs">
+        <button class="inspector-tab active" data-tab="diagnostics">VS-83 Check</button>
+        <button class="inspector-tab" data-tab="diff">Source Diff</button>
+        <button class="inspector-tab" data-tab="manifest">pack.json</button>
+        <button class="inspector-tab" data-tab="json">Raw / Meta</button>
+      </div>
+      <div class="inspector-body" id="inspector-body"></div>
+    </aside>
+  </main>
+
+  <!-- MODAL 1: Create New Homebrew from Template -->
+  <dialog class="grimoire-modal" id="modal-template">
+    <div class="modal-header">
+      <h3 class="modal-title">❖ Create Homebrew from VS-83 Archetype</h3>
+      <button class="btn btn-sm" data-close-modal="modal-template">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size: 12px; color: var(--text-secondary);">
+        Pick a verified SharedSpell or Item carrier archetype. The new record receives a stable namespaced ID
+        (<code>&lt;pack_id&gt;:&lt;slug&gt;</code>) that never mutates when you rename its display label later.
+      </div>
+      <div class="template-grid" id="template-grid"></div>
+      <div class="field-grid-2">
+        <div class="field-group">
+          <label class="field-label">Display Name</label>
+          <input type="text" id="tmpl-input-name" placeholder="e.g. Cinder Lance" />
+        </div>
+        <div class="field-group">
+          <label class="field-label">
+            <span>Immutable Slug</span>
+            <span class="field-hint" id="tmpl-id-preview">ember_pack:cinder_lance</span>
+          </label>
+          <input type="text" id="tmpl-input-slug" class="mono-input" placeholder="cinder_lance" />
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" data-close-modal="modal-template">Cancel</button>
+      <button class="btn btn-gold" id="btn-confirm-template">Create Homebrew Draft</button>
+    </div>
+  </dialog>
+
+  <!-- MODAL 2: Duplicate as Homebrew -->
+  <dialog class="grimoire-modal" id="modal-clone">
+    <div class="modal-header">
+      <h3 class="modal-title">❖ Duplicate as New Homebrew Record</h3>
+      <button class="btn btn-sm" data-close-modal="modal-clone">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="clone-modal-notice" class="callout-banner callout-info"></div>
+      <div class="field-grid-2">
+        <div class="field-group">
+          <label class="field-label">New Display Name</label>
+          <input type="text" id="clone-input-name" />
+        </div>
+        <div class="field-group">
+          <label class="field-label">
+            <span>Immutable Namespaced Slug</span>
+            <span class="field-hint" id="clone-id-preview"></span>
+          </label>
+          <input type="text" id="clone-input-slug" class="mono-input" />
+        </div>
+      </div>
+      <label class="toggle-pill active" id="clone-auto-convert-pill" style="width: fit-content;">
+        <input type="checkbox" id="clone-auto-convert" checked />
+        <span>Automatically convert cloned spell to <code>execution: "shared"</code></span>
+      </label>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" data-close-modal="modal-clone">Cancel</button>
+      <button class="btn btn-gold" id="btn-confirm-clone">Create Homebrew Clone</button>
+    </div>
+  </dialog>
+
+  <!-- MODAL 3: Export Pack Bundle -->
+  <dialog class="grimoire-modal" id="modal-export">
+    <div class="modal-header">
+      <h3 class="modal-title">⬇ Export Composable Content Pack</h3>
+      <button class="btn btn-sm" data-close-modal="modal-export">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field-grid-2">
+        <div class="field-group">
+          <label class="field-label">Export Mode</label>
+          <select id="export-mode-select">
+            <option value="both">Both Modes (Game Pack Candidate + Draft Lossless)</option>
+            <option value="game_pack_candidate">Game Pack Candidate (_editor_meta parked for SharedSpell)</option>
+            <option value="draft_lossless">Draft Lossless (100% raw fields in place)</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Revision Tag</label>
+          <input type="text" id="export-revision-input" class="mono-input" value="r1" />
+        </div>
+      </div>
+      <div style="font-size: 12px; color: var(--text-secondary);">
+        <strong>Game Pack Candidate</strong> parks non-<code>SharedSpell</code> top-level and nested fields under
+        <code>_editor_meta</code> so <code>SharedSpell.content_error()</code> accepts the record without losing your
+        staged data, and emits composable <code>spell_list_additions</code> and
+        <code>starting_equipment_additions</code> in <code>pack.json</code>.
+      </div>
+      <div id="export-receipt-box" style="display: none;"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" data-close-modal="modal-export">Close</button>
+      <button class="btn btn-success" id="btn-confirm-export">Run Export Now</button>
+    </div>
+  </dialog>
+
+  <!-- MODAL 4: Pack Settings & Workspace Switcher -->
+  <dialog class="grimoire-modal" id="modal-pack">
+    <div class="modal-header">
+      <h3 class="modal-title">⚙ Active Pack Metadata & New Workspace</h3>
+      <button class="btn btn-sm" data-close-modal="modal-pack">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="grimoire-card">
+        <div class="grimoire-card-header">
+          <span class="grimoire-card-title">Current Workspace Metadata</span>
+          <span class="field-hint" id="pack-meta-id-label"></span>
+        </div>
+        <div class="grimoire-card-body">
+          <div class="field-grid-3">
+            <div class="field-group">
+              <label class="field-label">Pack Display Name</label>
+              <input type="text" id="pack-meta-name" />
+            </div>
+            <div class="field-group">
+              <label class="field-label">Author</label>
+              <input type="text" id="pack-meta-author" />
+            </div>
+            <div class="field-group">
+              <label class="field-label">Version</label>
+              <input type="text" id="pack-meta-version" class="mono-input" />
+            </div>
+          </div>
+          <div>
+            <button class="btn btn-gold btn-sm" id="btn-save-pack-meta">Save Pack Metadata</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grimoire-card">
+        <div class="grimoire-card-header">
+          <span class="grimoire-card-title">Create / Switch to New Workspace Pack</span>
+        </div>
+        <div class="grimoire-card-body">
+          <div class="field-grid-2">
+            <div class="field-group">
+              <label class="field-label">New Pack Slug</label>
+              <input type="text" id="new-pack-slug" class="mono-input" placeholder="e.g. shadowfell_pack" />
+            </div>
+            <div class="field-group" style="justify-content: flex-end;">
+              <button class="btn" id="btn-create-switch-pack">Create & Switch Workspace</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" data-close-modal="modal-pack">Done</button>
+    </div>
+  </dialog>
+
+  <div class="toast-container" id="toast-container"></div>
+  <script src="/ui/workbench.js"></script>
+</body>
+</html>

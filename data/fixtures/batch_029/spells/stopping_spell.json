@@ -1,0 +1,29 @@
+{
+  "id": "fixture:029_stopping_spell",
+  "name": "Stopping ward",
+  "execution": "shared",
+  "level": 2,
+  "school": "abjuration",
+  "casting_time": "reaction",
+  "range": 12,
+  "target": "single",
+  "components": ["S"],
+  "cancellation_rule": {
+    "target_scope": "whole_cast",
+    "max_spell_level": 3,
+    "schools": ["evocation", "abjuration"],
+    "contest": {
+      "type": "none"
+    }
+  },
+  "stopping_cost_policy": {
+    "on_success": {
+      "slot": "commit",
+      "reaction": "commit"
+    },
+    "on_failure": {
+      "slot": "commit",
+      "reaction": "commit"
+    }
+  }
+}

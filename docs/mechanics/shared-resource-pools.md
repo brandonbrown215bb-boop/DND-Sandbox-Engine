@@ -1,5 +1,143 @@
 # Shared numeric resource pools
 
+## Combat-boundary recovery (VS-62; independent review accepted)
+
+Numeric class/subclass pools can add `initiative_rolled` and `turn_started`
+entries to their existing `recovery` map:
+
+```json
+{
+  "initiative_rolled": {
+    "mode": "restore_to_floor",
+    "amount_formula": { "caster_proficiency_bonus": true }
+  },
+  "turn_started": { "mode": "restore_fixed", "amount_formula": 1 }
+}
+```
+
+Both events accept `restore_fixed`, `restore_to_floor`, or
+`restore_to_capacity`. Fixed recovery adds the amount; floor recovery raises
+current uses only as far as the amount; fill recovery reaches the owned
+capacity. All clamp to that capacity; a lower floor never removes uses.
+Fixed/floor require `amount_formula`, using the existing deterministic actor
+formula vocabulary, with an available integral result from 1 to 100. Fill
+forbids an amount. Missing class inputs, dice, slot/result references and
+unsupported policy fields cannot recover anything. Rest policies retain their
+existing `amount` syntax and completed-rest triggers.
+
+Omitting `choice_group` makes the policy automatic. Adding the same nonempty
+`choice_group` string to policies on one actor makes their eligible exact
+sources alternatives in one menu for that event. The player chooses one or
+declines the entire group. Separate actors/groups/events stay independent.
+For example, two pools can declare these alternative Initiative policies:
+
+```json
+{ "mode": "restore_fixed", "amount_formula": 2, "choice_group": "opening" }
+{ "mode": "restore_to_capacity", "choice_group": "opening" }
+```
+
+The encounter owner emits Initiative recovery after that Character's settled
+Initiative test, before the turn order starts. Turn recovery runs on that
+Character's actual tracked turn before other start-of-turn effects, after
+skipping a controlled mounted steed's turn. Recovery currently requires a
+living Character in the encounter's player-entity route. Monster dictionaries
+and steeds borrowing their owner's Initiative do not gain Initiative recovery.
+
+Every event is consumed once, even with no eligible source or a declined
+choice. Budget resets, redraws, location changes, another actor's turn and
+resuming the same turn do not recover uses. Each source recovers independently
+unless its policy explicitly joins a choice group. An explicit feature
+`source_instance_id` restricts the policy to that source. Definitions, exact
+pool instances, capacity, actor and captured amount are checked again on
+selection. Removal/reacquisition, changed definitions or formula results,
+wrong owners and stale/duplicate answers cannot commit a recovery.
+
+Input stays paused while the menu is open. Closing/timing out declines it;
+scene teardown cancels its authority. Recovery costs no action or RNG and
+does not recalculate capacity. Receipts retain owner, definition, exact source,
+trigger/occurrence, before/recovered/current quantities and capacity. Only the
+existing pool quantities persist at allowed checkpoints; requests and event
+locks remain encounter-local. No save boundary or DTO field was added.
+
+This slice excludes dice-pool combat recovery, cross-actor restoration,
+additional payments/effects on a recovery option, native resource conversion,
+random/time recovery and catalog conversion. Existing native Initiative
+features retain their current routes. Neutral and renamed fixtures are in
+`data/fixtures/batch_n_recovery.json`; production evidence and review handoff
+are in the [builder report](../../.artifacts/planning/vocabulary-reports/batch-N-build-validation.md).
+[Independent review](../../.artifacts/planning/vocabulary-reports/batch-N-review.md)
+accepts S-062 as VS-62 within this boundary. This does not certify named native
+class rules or options with secondary payments/effects.
+
+## Captured dice inventory (VS-61; independent review accepted)
+
+An active class/subclass dice-pool feature can opt into retained faces:
+
+```json
+{
+  "id": "example:captured_dice",
+  "capacity_formula": {
+    "op": "progression_lookup",
+    "input": { "caster_class_level": "wizard" },
+    "value_type": "number",
+    "below_first": "unavailable",
+    "breakpoints": [{ "threshold": 1, "value": 3 }, { "threshold": 3, "value": 5 }]
+  },
+  "initial_quantity": 3,
+  "die_size": {
+    "op": "progression_lookup",
+    "input": { "caster_class_level": "wizard" },
+    "value_type": "die_size",
+    "below_first": "unavailable",
+    "breakpoints": [{ "threshold": 1, "value": 4 }, { "threshold": 3, "value": 8 }]
+  },
+  "spend_choice": { "minimum": 1, "maximum": 3 },
+  "capture_policy": "on_acquire",
+  "upgrade_policy": "new_dice_only",
+  "recovery": { "long_rest_completed": { "mode": "restore_to_capacity" } }
+}
+```
+
+This is the `resource_pool` object, paired with the existing single
+`{"type":"heal_by_pool_rolls"}` effect and common self-activation. Both policy
+fields are required together. Omitting both keeps existing roll-on-spend pools.
+Only `on_acquire` / `new_dice_only` is supported; other policies refuse loading.
+
+Acquisition rolls each initial die once. Every remaining die stores `die_id`,
+`serial`, `owner_id`, `source_instance_id`, `face`, `die_size`, and
+`generation_level`. Equal faces have different IDs. Queries and canceled
+quantity menus do not roll. The menu shows the oldest selected quantity's
+faces/sizes; successful use spends that quantity, one authored action budget,
+and heals using those exact faces. Receipts include `captured_dice` alongside
+the existing `rolls`, total and activation identity. The receipt's top-level
+`die_size` describes the pool's current generation size; each captured record
+owns the actual size of its die, including mixed generations.
+
+Explicit `ResourcePoolRules.recalculate_capacity` updates capacity and the size
+of future dice without refilling or rerolling old dice. Shrink discards newest
+excess dice. Completed rest recovery adds only the missing declared quantity,
+with new serials and the recalculated size; a full pool generates nothing.
+Recovery does not implicitly recalculate progression. This does not add a
+leveling UI or automatic native multiclass acquisition.
+
+Remaining faces, generation sizes and serials live in the existing pool DTO
+and survive allowed checkpoints without RNG or acquisition replay. Malformed
+faces, identities, order, quantities and partial/changed policy fields refuse
+full-save preflight on both player and party records. Captured pools must match
+an authored pool on their owning class/subclass. Their inventories end with
+the exact source. Numeric exchanges/reservations cannot borrow these dice.
+
+[Independent Batch M review](../../.artifacts/planning/vocabulary-reports/batch-M-review.md)
+accepts S-051 as VS-61 within this boundary.
+Fixtures: `data/fixtures/batch_m_dice.json`. Decisions:
+[ADR-0027](../decisions/0027-captured-source-pool-dice.md). VS-67 adds exact individual
+die selection for [party HP/Temporary HP allocation](party-intervention-and-allocation.md).
+Other consumers and other upgrade policies remain separate slices.
+[Captured grants](captured-grants.md) now supplies VS-63 oldest-die transfer,
+recipient self-benefit use and transferred-source serial continuation; it does
+not itself add roll bonus/replacement or casting consumers. VS-64 adds shared captured
+weapon-attack bonuses. This is vocabulary evidence, not named class/catalog support.
+
 ## Numeric breakpoint formulas — production checked
 
 The existing shared numeric formula evaluator accepts a deterministic
@@ -59,7 +197,7 @@ in allowed Character checkpoints.
 
 The neutral example is
 `data/fixtures/shared_next_melee_hit_grant.json`. Production and focused
-development checks are recorded in the [current checkpoint](../operations/current.md#accepted-slice--next-matching-melee-hit-grant-2026-10-12).
+development checks are recorded in the [current checkpoint](../archive/checkpoints/checkpoint-through-batch-k-2026-10-16.md#accepted-slice--next-matching-melee-hit-grant-2026-10-12).
 Production acceptance also loaded a renamed +3 Cold variant, proved Fire
 resistance and immunity plus Cold resistance, actual attack/menu outcomes,
 source order/removal/expiry and fresh-process checkpoint recovery with malformed
@@ -98,7 +236,7 @@ pool; a tagged grant without its deadline refuses loading. Definitions may
 contain at most one timed numeric grant and one next-hit grant per activation;
 duplicate same-kind operations refuse at loading rather than partially applying
 after payment. See the [current
-checkpoint](../operations/current.md#accepted-slice--optional-cooldown-after-timed-grant-end-2026-10-13),
+checkpoint](../archive/checkpoints/checkpoint-through-batch-k-2026-10-16.md#accepted-slice--optional-cooldown-after-timed-grant-end-2026-10-13),
 [production scenario](../../.artifacts/tests/2b29a42808f848dcb577f74d69d88500/)
 and [fresh-process probe](../../.artifacts/tests/timed-numeric-cooldown-relaunch-1bd96120f7504b64a3e1933fbe653946/).
 
@@ -194,12 +332,18 @@ rest recovery and rider-limit scenarios together. Dice pools, exchanges, source 
 conversion, other definitions and fresh-process/manual gameplay remain outside
 this checked subset.
 
-## Bounded numeric-pool exchange — production validated (2026-10-12)
+## Bounded resource exchange — Batch 023 accepted
+
+S-052/S-053 are independently accepted as VS-82/83. The
+[acceptance review](../../.artifacts/planning/vocabulary-reports/batch-021-023-acceptance-review.md)
+records final 41/0 controls, distinct-process exact inventory/pool recovery and
+eight malformed full-save refusals, plus retained affected logic evidence.
 
 An active shared `class_feature` may declare one fixed exchange instead of its
-own use pool. The payment and restoration IDs name existing numeric pool
-definitions on the same actor; each quantity is a fixed positive integer from 1
-to 100:
+own use pool. Numeric pool IDs name existing pool definitions. Payment may
+instead name `spell_slots:ordinary` or `spell_slots:pact`; the production menu
+then offers each eligible level from that exact slot pool. Each declared
+quantity is a fixed positive integer from 1 to 100:
 
 ```json
 "resource_exchange": {
@@ -211,17 +355,39 @@ to 100:
 "effects": []
 ```
 
-At activation the production choice path offers exact owned source instances
-for each side. They must be different sources. The command takes only those
-source IDs from the choice; the pool definitions and quantities come again from
-the actor's owned feature. Both pools must still belong to that actor, match the
-authored definitions, and satisfy payment and full restoration capacity. Dice
-pools are not eligible. The entire restoration must fit; partial recovery is
-not allowed.
+Payment may also name `inventory:<item_id>` for an existing item definition,
+with a fixed quantity from 1 to 40. The menu captures the oldest eligible
+backpack copies as one exact bundle. Equipped and cursed-bound copies are
+ineligible. The selected IDs are rechecked before commitment; losing one copy
+refuses the whole exchange even if identical siblings remain. All selected
+copies are consumed only after the full numeric destination fits. Unselected
+copies keep their identities and state. Classes load before items, so content
+validation checks the reference's shape; offer/commit checks item existence.
+
+An exchange can add `"restoration_recipient": "party_member"` to offer matching
+numeric destination pools on the active party. The default `self` keeps the
+original actor-only destination list. The command rebuilds and validates the
+exact recipient and exact owned source before commit. A captured-dice pool can
+pay a fixed quantity only when its remaining die records are present and match
+its current quantity; the oldest captured dice are removed and their exact
+records are returned in the result. Dice pools remain ineligible as
+destinations. The feature definition owns quantities and pool IDs; the HUD
+supplies only selected slot/source identities.
+
+At activation the production choice path offers exact eligible payment and
+destination choices. Payment can be an exact source-owned numeric pool, one
+selected level in the authored ordinary/Pact slot pool, or a captured-dice
+pool or exact backpack-copy bundle. A destination is a numeric pool on the user or (when enabled) an active
+party member. The command takes only exact identities from the choice; pool
+definitions and quantities come again from the owned feature. Both owners,
+definitions, unreserved payment quantity, captured dice and full destination
+capacity are rechecked before either pool changes. Partial restoration is not
+allowed.
 
 Validation computes both new quantities before either is stored. A successful
 exchange writes both exact source states once. Cancel, changed/stale ownership,
-same-source selection, insufficient payment, unknown/mismatched definitions,
+same-source selection (including a party token naming the payer
+and same exact pool), insufficient payment, unknown/mismatched definitions,
 and insufficient destination room leave both quantities unchanged. The neutral
 two-for-one example is `data/fixtures/shared_numeric_pool_exchange.json`.
 Production Godot acceptance also loaded a renamed equivalent and drove both
@@ -237,10 +403,12 @@ bootstrap, parse, boot, class logic, pool, dice, exchange and recovery run;
 dedicated exchange log:
 `.artifacts/tests/e0621b7db58a4165b1386dd90ff0380a/shared_numeric_pool_exchange_flow.stdout.log`.
 
-This is the fixed numeric-pool subset of V-039 only. Spell-slot/dice payments,
-arbitrary currencies, conditional or post-roll costs, cross-actor transfers,
-catalog conversion, and other exchange selectors/policies remain unverified.
-No save fields were added.
+The 2026-10-12 evidence below proves the original fixed numeric-pool subset.
+Batch 023 adds ordinary/Pact slot payment, captured-dice payment, and an
+optional active-party destination; its fresh production evidence and independent
+review report own the newer boundary, including exact inventory-copy payment. Arbitrary
+currencies, conditional or post-roll costs, catalog conversion, and other
+selectors/policies remain unsupported. No save fields were added.
 
 ## Completed-rest recovery policies — production validated (2026-10-12)
 
@@ -318,7 +486,7 @@ character or creature ID. The turn serial advances at the existing combat turn
 boundary; it is not the round number. The once-per-combat-turn and
 per-target-per-combat-turn limits share that boundary. The owner-turn-interval
 form below uses a separate per-owner lock reset at the existing turn-start
-hook; once-per-round policies remain unsupported.
+hook. Batch J extends these policies below as VS-54/55/56.
 
 A miss, dead/ineligible target, missing or mismatched pool, empty pool, or
 already-used limit skips the rider. None changes the original attack result.
@@ -527,3 +695,162 @@ not roll it. `pay_on_choice` charges on acceptance, while
 hits. The bounded post-roll die fixture uses d6/cost 1 and renamed d8/cost 2;
 it exercises only failed saves, the player's normal Attack/Extra Attack, and
 shared-spell attack choices. It does not add dice to other roll domains.
+
+
+## Explicit class levels and progression tables (S-037, accepted VS-44)
+
+Character `class_levels` is an optional saved dictionary of known class IDs to
+positive integral levels, summing to character `level` and including `class_id`.
+Empty/absent retains existing single-class behavior. An explicit missing class
+reads zero; malformed allocation is unavailable, never guessed from total level.
+`caster_class_level` reads that actual allocation; `caster_level`, proficiency
+and selected slot remain separate. Native level-up refuses explicit allocations;
+this adds no leveling UI or full multiclass acquisition/slot rules. Restore rebuilds
+primary-class features only through that class's represented level; it does not
+invent secondary-class grants or acquisition events. SaveManager preflights player
+and party allocations before replacing any live state. Legacy saves remain readable.
+
+A declared table uses:
+
+```json
+{"op":"progression_lookup","input":{"caster_class_level":"wizard"},
+ "value_type":"die_size","below_first":"unavailable",
+ "breakpoints":[{"threshold":1,"value":6},{"threshold":3,"value":8},{"threshold":5,"value":12}]}
+```
+
+`value_type` is `number` (0..999) or `die_size` (4/6/8/10/12/20).
+`below_first` is explicitly `unavailable`, or `zero` for numeric tables only.
+One to twenty strictly increasing unique integral thresholds (-999..999) select
+the greatest threshold no higher than the input; above-last keeps the last row.
+Inputs must be deterministic; no random dice expressions, missing data inference,
+duplicate thresholds, fractional rows or unsupported die sizes are accepted.
+Existing three-field `breakpoint_lookup` remains numeric with its original
+below-first-unavailable policy.
+
+Resource-pool `die_size` may now hold that actor-only die_size table instead of
+a fixed size. Acquisition/recalculate_capacity evaluates both capacity and size
+before storing anything. Recalculation changes metadata without refilling current
+uses or resetting activation serial; shrink clamps remaining. Queries are pure.
+A level change does not implicitly recalculate or recover a pool: availability
+refuses mismatched saved/authored sizes until the owner explicitly recalculates.
+The quantity chooser displays the resulting exact pool die; command commitment
+revalidates against current authored rows before dice/payment. Actual activation
+rolls the stored selected size once. Rest recovery remains the only declared refill.
+
+Spell parameter inputs reuse S-036's captured/live timing for progression formulas:
+all numeric choices complete before captured class rows are evaluated. Changes
+while the number menu is open affect capture; later changes affect only declared
+live reads. Preparation checks every parameter, including live-only tables, before
+costs. That live check is availability preflight, not a stored value; consumption
+still reevaluates. An initially unavailable row refuses without spending a slot/action. Committed source dice never reroll on a formula read. Fixtures are
+`data/fixtures/class_level_tables.json` and shared-spell `class_level_tables.json`.
+This is represented class-level/formula/pool behavior, not certification of all
+native multiclass rules, class acquisition or combined spell-slot progression.
+
+## Final-result payment predicates (S-100)
+
+Selected numeric/die bonus sources may declare `pay_on_final_success` or
+`pay_on_final_failure`, alongside the existing choice/converted-success policies.
+Success means the final save/check success or attack hit. The selected exact
+source must be affordable upfront even when its predicate will not match.
+Reservation locks uses without changing `current`; `spendable` subtracts that
+lock. Final settlement commits only on a match and otherwise releases it.
+Cancellation/refusal/source loss cannot charge a parent slot/action or sibling
+source, and settled requests cannot charge again. Reservations stay transient
+and session teardown clears them. Removal and recreation under the same source
+ID cannot inherit an old reservation.
+
+The actual save chooser verifies both predicates and mismatches with distinct
+one-use/two-use sources. Ability-check and weapon/shared-spell attack numeric
+owners reuse the helper; this acceptance adds no new reroll payment policy,
+cross-actor currency, slot exchange or mid-decision save support. See the
+[Batch I review](../../.artifacts/planning/vocabulary-reports/batch-I-review.md)
+for production receipts, evidence and exact limits.
+
+## Batch J: round, roll, active-instance limits and numeric payment waiver
+
+S-056/S-057/S-058 extend the **numeric-pool weapon-hit rider**. Independent review
+accepts this bounded host as VS-54/55/56. See
+[the Batch J review](../../.artifacts/planning/vocabulary-reports/batch-J-review.md)
+and [ADR-0025](../decisions/0025-source-owned-rider-occurrence-locks.md).
+
+Alongside the existing limits, `use_limit` accepts:
+
+- `once_per_round`: exact actor/source/option, reset only when actual initiative
+  enters a different round. Another turn or refreshed action budget does not reset it.
+- `once_per_roll`: exact source/option on the actual settled weapon-hit receipt.
+  Different real rolls have separate allowances; replay or copied receipts do not.
+- `once_per_active_instance`: exact source/option on its current timed AC grant.
+  Requires this feature's `timed_numeric_modifier` activation, paid through the
+  ordinary feature picker. No active grant means no rider. A new roll, another
+  actor's turn or a new encounter does not restore the grant's consumed option.
+
+Boolean `own_turn_only` and `first_round_only` are independent eligibility
+filters. `first_round_only` requires a bounded `use_limit` and actual round1;
+unknown round information cannot qualify. An off-turn hit can use an unrestricted
+round allowance but cannot borrow an own-turn-only allowance. Existing native
+own-turn declarations and the earlier turn/target/owner-interval policies remain.
+
+For a bounded numeric payment waiver, keep the feature's exact `resource_pool`
+and timed AC activation and add this to its passive rider:
+
+```json
+{
+  "type": "weapon_damage_rider",
+  "id": "guarded_strike",
+  "trigger": "weapon_attack_hit",
+  "damage_type": "force",
+  "dice_by_level": { "1": "1d4" },
+  "use_limit": "once_per_round",
+  "payment_waiver": {
+    "parent": "opportunity_attack",
+    "requires_active_source": true
+  }
+}
+```
+
+`parent` is exactly `weapon_attack` (ordinary weapon attacks) or
+`opportunity_attack`. Classification and weapon/critical profile come from the
+real settled attack, not display fields passed back by a caller. The active grant
+must belong to this same actor and source. If it matches, the rider's one-use
+numeric payment is zero even when that owned pool is empty. Otherwise the
+ordinary one-use payment applies; insufficient quantity skips the rider.
+The original Action/Reaction, activation cost and all option locks still apply.
+Missing sources, sibling active grants, misses, invalid eligibility and stale
+receipts cannot supply free uses. Queries/refusals do not roll or spend.
+
+An authored alternate payment can replace that rider's own pool charge:
+
+```json
+"payment_replacement": {"pool_id": "mod:damage_dice", "quantity": 1}
+```
+
+The actor must own an eligible source for that pool definition with the full
+quantity available. The rider spends that exact source once (captured-dice
+pools spend their oldest retained dice), and leaves its own pool untouched.
+The replacement is committed only for the rider that declared it; sibling
+riders keep their own costs. If the alternate source cannot pay, that rider is
+skipped before rolling. A replacement cannot be combined with `payment_waiver`.
+
+Applied `weapon_riders` receipts retain source, option, use limit, rolled formula,
+damage, actual roll ID, active grant ID, original pool cost, replacement source
+and its spend receipt, plus `payment_waived`.
+Per-active-instance consumption stores at most100 unique option IDs in the existing
+grant's `used_rider_options`; an omitted list means unused. Safe checkpoints keep
+this list with the exact owner/source/grant/deadline and spent pool. Malformed
+lists/identities refuse before replacing the live session. Expiry/removal ends
+only that grant; a later activation gets a new allowance and pays its usual cost.
+
+Rider resolution completes once on the actual hit, including when every option
+is ineligible or declined. Replaying that completed hit cannot consume a later
+activation, newly available pool quantity or another source. A fresh grant needs
+a fresh hit. This completion marker stays transient with the roll receipt.
+
+Fixtures: `data/fixtures/batch_j_limits.json` and
+`data/fixtures/batch_j_limits_renamed.json`. Renamed data changes d4 to d6,
+own-turn eligibility and the waiver's actual parent. The controls cover normal
+Attack/hex input, feature selection, Opportunity Reaction and initiative; the
+fresh-process probe checks recovery and malformed full saves. This is not a
+general subscription system, every roll domain, every active-effect carrier,
+slot/Action replacement, dice-pool free use or content-catalog certification.
+Combat and pending choices remain unsaveable.

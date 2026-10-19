@@ -62,6 +62,7 @@ static func _collect_spell_cast_reactions(cast: SpellCastContext) -> void:
 
 
 static func _prepare_spell_cast_effects(cast: SpellCastContext) -> void:
+	await _choose_authored_recipient_exemptions(cast)
 	if bool(cast.reaction_decisions.get("metamagic:empowered", false)):
 		cast.counterspell_decisions["defer_empowered"] = true
 	if cast.target_type in ["area", "cone"]:
@@ -118,6 +119,8 @@ static func _prepare_spell_cast_effects(cast: SpellCastContext) -> void:
 					cast.reaction_decisions["metamagic:arcane_apotheosis"] = true
 					cast.counterspell_decisions["metamagic:arcane_apotheosis"] = true
 					cast.apotheosis_assigned = true
+
+
 			else:
 				cast.hud.add_log("[color=orange]Extended Spell could not spend a Sorcery Point.[/color]")
 
@@ -154,14 +157,84 @@ static func _prepare_spell_cast_effects(cast: SpellCastContext) -> void:
 		elif str(cast.spell.get("id", "")) == "ray_of_enfeeblement":
 			cast.caster.concentrating_on["duration_rounds_remaining"] = 10
 			cast.caster.concentrating_on["duration_started_round"] = cast.tracker.current_round
-			cast.caster.concentrating_on["save_dc"] = cast.caster.get_spell_save_dc()
+			cast.caster.concentrating_on["save_dc"] = SpellPermissionRules.save_dc(cast.caster, cast.spell)
 		elif str(cast.spell.get("id", "")) == "resilient_sphere":
 			cast.caster.concentrating_on["duration_rounds_remaining"] = 20 if bool(cast.spell.get("_metamagic_extended", false)) else 10
 			cast.caster.concentrating_on["duration_started_round"] = cast.tracker.current_round
 		elif str(cast.spell.get("id", "")) == "hold_monster":
 			cast.caster.concentrating_on["duration_rounds_remaining"] = 20 if bool(cast.spell.get("_metamagic_extended", false)) else 10
 			cast.caster.concentrating_on["duration_started_round"] = cast.tracker.current_round
-			cast.caster.concentrating_on["save_dc"] = cast.caster.get_spell_save_dc()
+			cast.caster.concentrating_on["save_dc"] = SpellPermissionRules.save_dc(cast.caster, cast.spell)
+
+
+static func _choose_authored_recipient_exemptions(cast: SpellCastContext) -> void:
+	cast.recipient_exemption_selection.clear()
+	var declaration: Variant = cast.spell.get("recipient_exemption_choice", {})
+	if not declaration is Dictionary or declaration.is_empty() or cast.hud == null:
+		return
+	var context: Dictionary = cast.spell.get("save_context", {})
+	if str(declaration.get("stage", "")) != "before_target_saves" or str(declaration.get("save_ability", "")).to_upper() != str(cast.spell.get("save", "")).to_upper():
+		return
+	for context_field in ["cause_id", "purpose_id", "origin_effect_id"]:
+		if str(declaration.get(context_field, "")) != str(context.get(context_field, "")):
+			return
+	var candidates: Array[Dictionary] = []
+	var offered_actors: Dictionary = {}
+	var original_caster := cast.caster
+	var original_invocation := cast.invocation_id
+	var original_spell := cast.spell.duplicate(true)
+	var seen_ids: Dictionary = {}
+	for target_hex in cast.targets:
+		for player_entity in cast.players:
+			var player_character: Character = player_entity.get("character")
+			if player_entity.get("hex_position") != target_hex or player_character == null or not player_character.is_alive:
+				continue
+			var player_id := SorcererRules.careful_spell_target_id(player_character)
+			if not player_id.is_empty() and not seen_ids.has(player_id):
+				seen_ids[player_id] = true
+				offered_actors[player_id] = player_character
+				candidates.append({"id": player_id, "name": player_character.character_name})
+		for monster_entity in cast.monsters:
+			if monster_entity.get("hex_position") != target_hex or not bool(monster_entity.get("is_alive", false)):
+				continue
+			var monster_id := SorcererRules.careful_spell_target_id(monster_entity)
+			if not monster_id.is_empty() and not seen_ids.has(monster_id):
+				seen_ids[monster_id] = true
+				offered_actors[monster_id] = monster_entity
+				candidates.append({"id": monster_id, "name": str(monster_entity.get("name", "Creature"))})
+	if candidates.is_empty():
+		return
+	var limit := int(declaration.get("selection_limit", 0))
+	var selected := await cast.hud.request_sorcerer_careful_spell_targets(cast.caster, candidates, limit, "Choose up to %d actual target(s) to exempt from this spell's damage" % limit)
+	if cast.caster != original_caster or cast.invocation_id != original_invocation or cast.spell != original_spell or not SpellDamageRolls._host_contains(cast.players,cast.monsters,original_caster):
+		return
+	var valid_ids: Array[String] = []
+	var live_target_hexes: Dictionary = {}
+	for target_hex in cast.targets:
+		live_target_hexes[target_hex] = true
+	for player_entity in cast.players:
+		var player_character: Character = player_entity.get("character")
+		if player_character == null or not player_character.is_alive or not live_target_hexes.has(player_entity.get("hex_position")):
+			continue
+		var player_id := SorcererRules.careful_spell_target_id(player_character)
+		if not player_id.is_empty() and player_id not in valid_ids and SpellDamageRolls._is_canonical_actor(offered_actors.get(player_id),player_character):
+			valid_ids.append(player_id)
+	for monster_entity in cast.monsters:
+		if not bool(monster_entity.get("is_alive", false)) or not live_target_hexes.has(monster_entity.get("hex_position")):
+			continue
+		var monster_id := SorcererRules.careful_spell_target_id(monster_entity)
+		if not monster_id.is_empty() and monster_id not in valid_ids and SpellDamageRolls._is_canonical_actor(offered_actors.get(monster_id),monster_entity):
+			valid_ids.append(monster_id)
+	var accepted: Array[String] = []
+	for target_id in selected:
+		if target_id in valid_ids and target_id not in accepted and accepted.size() < limit:
+			accepted.append(target_id)
+	var selection := {"selection_id": str(declaration.get("selection_id", "")), "spell_definition_id": str(cast.spell.get("id", "")), "caster_id": cast.caster.character_id, "eligible_recipient_ids": valid_ids, "recipient_ids": accepted}
+	var selected_actors: Array = []
+	for recipient_id in accepted: selected_actors.append(offered_actors[recipient_id])
+	cast.recipient_exemption_selection={"receipt":selection.duplicate(true),"caster":original_caster,"invocation_id":original_invocation,"declaration":declaration.duplicate(true),"save_context":context.duplicate(true),"recipients":selected_actors}
+	cast.reaction_decisions["recipient_damage_exemption_selection"] = selection
+	cast.counterspell_decisions["recipient_damage_exemption_selection"] = selection.duplicate(true)
 
 
 static func _spell_has_damage_payload(spell_data: Dictionary) -> bool:

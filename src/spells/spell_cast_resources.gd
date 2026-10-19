@@ -2,16 +2,43 @@
 class_name SpellCastResources
 extends RefCounted
 
+static func revalidate_selection(cast: SpellCastContext) -> bool:
+	if cast.commit_guard.is_valid() and not cast.commit_guard.call():
+		cast.hud.add_log("The parent action or its remaining units are no longer available.")
+		cast.clear_pending(SpellCastContext.CLEAR_ACTION | SpellCastContext.CLEAR_SPELL)
+		return false
+	# Special legacy casts retain their existing authority; ordinary commands carry an ID.
+	if not cast.spell.has("_source_permission_id"): return true
+	if SpellPermissionRules.selection_valid(cast.caster, cast.spell): return true
+	cast.hud.add_log("The selected spell source or payment is no longer available.")
+	cast.clear_pending(SpellCastContext.CLEAR_ACTION | SpellCastContext.CLEAR_SPELL)
+	if cast.highlight_reachable.is_valid(): cast.highlight_reachable.call()
+	return false
+
 static func commit_metamagic(cast: SpellCastContext) -> bool:
+	if not revalidate_selection(cast): return false
 	var metamagic_cost_to_commit := 0
+	var free_selections := 0
+	for kind in ["quickened", "distant", "transmuted", "subtle", "twinned"]:
+		if bool(cast.spell.get("_metamagic_" + kind, false)) and bool(cast.spell.get("_metamagic_" + kind + "_free", false)): free_selections += 1
+	if free_selections > 0 and (free_selections > 1 or not cast.caster.has_feature("sorcerer_arcane_apotheosis") or not cast.caster.has_condition("innate_sorcery") or bool(cast.caster.feature_uses.get("sorcerer_arcane_apotheosis_used_this_turn", false))):
+		cast.hud.add_log("The selected free Metamagic use is no longer available.")
+		cast.clear_pending(SpellCastContext.CLEAR_ACTION | SpellCastContext.CLEAR_SPELL)
+		if cast.highlight_reachable.is_valid(): cast.highlight_reachable.call()
+		return false
 	metamagic_cost_to_commit += SorcererRules.QUICKENED_SPELL_COST if bool(cast.spell.get("_metamagic_quickened", false)) else 0
 	metamagic_cost_to_commit += 1 if bool(cast.spell.get("_metamagic_distant", false)) else 0
 	metamagic_cost_to_commit += 1 if bool(cast.spell.get("_metamagic_transmuted", false)) else 0
 	metamagic_cost_to_commit += 1 if bool(cast.spell.get("_metamagic_subtle", false)) else 0
 	metamagic_cost_to_commit += SorcererRules.TWINNED_SPELL_COST if bool(cast.spell.get("_metamagic_twinned", false)) else 0
-	var metamagic_free_costs := int(bool(cast.spell.get("_metamagic_quickened_free", false))) + int(bool(cast.spell.get("_metamagic_distant_free", false))) + int(bool(cast.spell.get("_metamagic_transmuted_free", false))) + int(bool(cast.spell.get("_metamagic_subtle_free", false)))
+	var metamagic_free_costs := SorcererRules.QUICKENED_SPELL_COST * int(bool(cast.spell.get("_metamagic_quickened_free", false))) + int(bool(cast.spell.get("_metamagic_distant_free", false))) + int(bool(cast.spell.get("_metamagic_transmuted_free", false))) + int(bool(cast.spell.get("_metamagic_subtle_free", false)))
 	metamagic_free_costs += int(bool(cast.spell.get("_metamagic_twinned_free", false)))
-	if cast.caster.class_id == "sorcerer" and cast.caster.get_sorcery_points() < maxi(0, metamagic_cost_to_commit - metamagic_free_costs):
+	var spell_points_to_commit := 0
+	if cast.spell.get("_spell_payment_kind", "") == "points":
+		var permission := SpellPermissionRules.selected_permission(cast.caster, cast.spell)
+		if permission.get("point_payment", {}).get("resource_id", "") == "sorcery_points":
+			spell_points_to_commit = SpellPermissionRules.point_payment_cost(permission, int(cast.spell.get("level", 0)))
+	if cast.caster.class_id == "sorcerer" and cast.caster.get_sorcery_points() < spell_points_to_commit + maxi(0, metamagic_cost_to_commit - metamagic_free_costs):
 		cast.hud.add_log("You do not have enough Sorcery Points for the selected Metamagic options.")
 		cast.clear_pending(SpellCastContext.CLEAR_ACTION)
 		cast.clear_pending(SpellCastContext.CLEAR_SPELL)
@@ -77,6 +104,8 @@ static func commit_metamagic(cast: SpellCastContext) -> bool:
 
 
 static func commit_spell_resource(cast: SpellCastContext) -> bool:
+	if not revalidate_selection(cast): return false
+	var payment_permission := SpellPermissionRules.selected_permission(cast.caster, cast.spell)
 	if cast.divine_intervention:
 		if not cast.turn_budget.can_spend("magic_action") or not cast.caster.use_feature("cleric_divine_intervention"):
 			cast.hud.add_log("Divine Intervention is unavailable or you have no Magic action.")
@@ -113,16 +142,52 @@ static func commit_spell_resource(cast: SpellCastContext) -> bool:
 				cast.hud.add_log("The Wand of Magic Missiles expended its last charge. It survives the destruction roll (%d)." % destruction_roll)
 		else:
 			cast.hud.add_log("The Wand of Magic Missiles expended %d charge%s." % [charges, "" if charges == 1 else "s"])
-	if cast.spell_level > 0 and not cast.divine_intervention and not magic_item_activation:
+	var selected_item_payment := str(cast.spell.get("_spell_payment_kind", "")) == "item_charges"
+	if selected_item_payment:
+		var permission := SpellPermissionRules.selected_permission(cast.caster, cast.spell)
+		var copy_id := str(permission.source_id)
+		var copy := cast.caster.inventory.get_instance(copy_id)
+		copy.state["charges"] = int(copy.state.charges) - int(permission.charge_cost)
+		cast.caster.inventory.copies.records[copy_id] = copy
+	if cast.spell_level > 0 and not selected_item_payment and not cast.divine_intervention and not magic_item_activation:
 		var spell_id := str(cast.spell.get("id", ""))
-		if cast.caster.has_free_spell_cast(spell_id) and not bool(cast.spell.get("_force_spell_slot", false)):
-			if not cast.caster.spend_free_spell_cast(spell_id):
+		var selected_payment := str(cast.spell.get("_spell_payment_kind", ""))
+		var selected_payment_source := str(cast.spell.get("_spell_payment_source_id", ""))
+		if selected_payment == "points":
+			var selected_permission := {}
+			for permission in SpellPermissionRules.for_spell(cast.caster, cast.spell):
+				if str(permission.get("id", "")) == str(cast.spell.get("_source_permission_id", "")):
+					selected_permission = permission
+					break
+			if not SpellPermissionRules.spend_points(cast.caster, selected_permission, cast.spell_level):
+				cast.hud.add_log("The selected spell-point payment is no longer available.")
+				cast.clear_pending(SpellCastContext.CLEAR_ACTION)
+				cast.highlight_reachable.call()
+				return false
+			var point_cost := SpellPermissionRules.point_payment_cost(selected_permission, cast.spell_level)
+			var point_resource := str(selected_permission.get("point_payment", {}).get("resource_id", "points"))
+			cast.hud.add_log("%s spent %d %s to cast %s." % [cast.caster.character_name, point_cost, point_resource, cast.spell.get("name", spell_id)])
+			selected_payment = "points_paid"
+		var use_free_cast := (selected_payment == "free_cast" or (selected_payment.is_empty() and cast.caster.has_free_spell_cast(spell_id))) and not bool(cast.spell.get("_force_spell_slot", false))
+		if selected_payment == "points_paid":
+			cast.slot_level_used = cast.spell_level
+		elif selected_payment == "free_cast" and bool(cast.spell.get("_arcanum_payment", false)):
+			use_free_cast = true
+			cast.slot_level_used = WarlockRules.arcanum_cast_level(cast.caster, spell_id)
+			if cast.slot_level_used <= 0 or not WarlockRules.spend_arcanum_cast(cast.caster, spell_id):
+				use_free_cast = false
+				cast.hud.add_log("That Mystic Arcanum payment is no longer available.")
+				cast.clear_pending(SpellCastContext.CLEAR_ACTION)
+				cast.highlight_reachable.call()
+				return false
+		elif use_free_cast:
+			if not cast.caster.spend_free_spell_cast(spell_id, selected_payment_source):
 				cast.hud.add_log("[color=orange]No free cast remains for %s.[/color]" % cast.spell.get("name", "this spell"))
 				cast.clear_pending(SpellCastContext.CLEAR_ACTION)
 				cast.highlight_reachable.call()
 				return false
 			cast.hud.add_log("%s used its free Long Rest cast of %s." % [cast.caster.character_name, cast.spell.get("name", "this spell")])
-		elif WarlockRules.arcanum_cast_level(cast.caster, spell_id) > 0:
+		elif selected_payment.is_empty() and WarlockRules.arcanum_cast_level(cast.caster, spell_id) > 0:
 			cast.slot_level_used = WarlockRules.arcanum_cast_level(cast.caster, spell_id)
 			if not WarlockRules.spend_arcanum_cast(cast.caster, spell_id):
 				cast.hud.add_log("[color=orange]That Mystic Arcanum cast has already been used.[/color]")
@@ -144,6 +209,7 @@ static func commit_spell_resource(cast: SpellCastContext) -> bool:
 				return false
 			cast.slot_level_used = int(slot_result.get("slot_level", cast.spell_level))
 			cast.incoming_slot_spent = not bool(slot_result.get("slot_recalled", false))
+			cast.incoming_slot_pool_id = str(slot_result.get("slot_pool_id", "ordinary"))
 			if slot_result.get("slot_recalled", false):
 				cast.hud.add_log("[color=cyan]%s's Boon of Spell Recall preserves the level %d slot.[/color]" % [cast.caster.character_name, int(slot_result.get("slot_level", cast.spell_level))])
 			else:
@@ -160,6 +226,7 @@ static func commit_spell_resource(cast: SpellCastContext) -> bool:
 		SorcererRules.mark_spell_cast_this_turn(cast.caster, cast.spell)
 	if bool(cast.spell.get("_metamagic_quickened", false)):
 		cast.caster.feature_uses["sorcerer_quickened_spell_cast_this_turn"] = true
+	cast.payment_receipt = CastInterruptionRules.payment_receipt(cast.caster, cast.spell, {"slot_level":cast.slot_level_used,"slot_pool_id":cast.incoming_slot_pool_id,"slot_recalled":not cast.incoming_slot_spent} if cast.incoming_slot_spent or cast.spell.get("_spell_payment_kind", "") == "slot" else {}, payment_permission)
 	FamiliarSpellDelivery.commit(cast)
 	return true
 

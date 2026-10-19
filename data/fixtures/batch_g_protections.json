@@ -1,0 +1,209 @@
+[
+  {
+    "id": "fixture:batch_g_protections",
+    "name": "Protection Probes",
+    "hit_die": "d8",
+    "primary_ability": "STR",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:g_neutral",
+          "name": "Open Guard",
+          "type": "active",
+          "executor": "class_feature",
+          "target": "self",
+          "action_cost": "free",
+          "resource_pool": {
+            "id": "fixture:g_neutral_pool",
+            "capacity_formula": 3,
+            "initial_quantity": 3
+          },
+          "effects": [
+            {
+              "type": "timed_protection",
+              "duration_seconds": 60,
+              "group": "stance",
+              "stacking": "exclusive",
+              "eligibility": {
+                "armor": "none",
+                "shield": "any"
+              },
+              "benefits": [
+                {
+                  "stat": "AC",
+                  "operation": "base",
+                  "value": {
+                    "op": "add",
+                    "left": 13,
+                    "right": {
+                      "caster_ability_modifier": "DEX"
+                    }
+                  }
+                },
+                {
+                  "stat": "STR",
+                  "operation": "set",
+                  "value": 18
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "fixture:g_renamed",
+          "name": "Quiet Shell",
+          "type": "active",
+          "executor": "class_feature",
+          "target": "self",
+          "action_cost": "free",
+          "resource_pool": {
+            "id": "fixture:g_renamed_pool",
+            "capacity_formula": 3,
+            "initial_quantity": 3
+          },
+          "effects": [
+            {
+              "type": "timed_protection",
+              "duration_seconds": 90,
+              "group": "stance",
+              "stacking": "exclusive",
+              "eligibility": {
+                "armor": "none",
+                "shield": "none"
+              },
+              "benefits": [
+                {
+                  "stat": "AC",
+                  "operation": "base",
+                  "value": {
+                    "op": "add",
+                    "left": 12,
+                    "right": {
+                      "caster_ability_modifier": "WIS"
+                    }
+                  }
+                },
+                {
+                  "stat": "STR",
+                  "operation": "floor",
+                  "value": 16
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "fixture:g_compatible",
+          "name": "Steady Edge",
+          "type": "active",
+          "executor": "class_feature",
+          "target": "self",
+          "action_cost": "free",
+          "resource_pool": {
+            "id": "fixture:g_compatible_pool",
+            "capacity_formula": 3,
+            "initial_quantity": 3
+          },
+          "effects": [
+            {
+              "type": "timed_protection",
+              "duration_seconds": 120,
+              "group": "edge",
+              "stacking": "stack",
+              "eligibility": {
+                "armor": "any",
+                "shield": "any"
+              },
+              "benefits": [
+                {
+                  "stat": "AC",
+                  "operation": "add",
+                  "value": 2
+                },
+                {
+                  "stat": "STR",
+                  "operation": "cap",
+                  "value": 17
+                },
+                {
+                  "stat": "STR",
+                  "operation": "add",
+                  "value": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "fixture:g_armored",
+          "name": "Plate Practice",
+          "type": "active",
+          "executor": "class_feature",
+          "target": "self",
+          "action_cost": "free",
+          "resource_pool": {
+            "id": "fixture:g_armored_pool",
+            "capacity_formula": 3,
+            "initial_quantity": 3
+          },
+          "effects": [
+            {
+              "type": "timed_protection",
+              "duration_seconds": 120,
+              "group": "armored",
+              "stacking": "stack",
+              "eligibility": {
+                "armor": "worn",
+                "shield": "any"
+              },
+              "benefits": [
+                {
+                  "stat": "AC",
+                  "operation": "base",
+                  "value": 20
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "fixture:g_incompatible",
+          "name": "Bright Rival",
+          "type": "active",
+          "executor": "class_feature",
+          "target": "self",
+          "action_cost": "free",
+          "resource_pool": {
+            "id": "fixture:g_incompatible_pool",
+            "capacity_formula": 3,
+            "initial_quantity": 3
+          },
+          "effects": [
+            {
+              "type": "timed_protection",
+              "duration_seconds": 120,
+              "group": "stance",
+              "stacking": "exclusive",
+              "eligibility": {
+                "armor": "none",
+                "shield": "any"
+              },
+              "benefits": [
+                {
+                  "stat": "AC",
+                  "operation": "base",
+                  "value": 19
+                },
+                {
+                  "stat": "STR",
+                  "operation": "set",
+                  "value": 20
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

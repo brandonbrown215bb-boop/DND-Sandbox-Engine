@@ -1,0 +1,32 @@
+[
+  {
+    "id": "sandbox:distance_actor_neutral",
+    "name": "Near Ally Ward",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "components": ["V"],
+    "steps": [{
+      "id": "distance",
+      "type": "effect",
+      "effects": [{"type": "heal", "value": 2, "when": {"fact": "target.actor_hex_distance_feet", "lte": 10}}]
+    }]
+  },
+  {
+    "id": "sandbox:distance_source_renamed",
+    "name": "Near Placed Beacon",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "components": ["V"],
+    "steps": [{
+      "id": "distance",
+      "type": "effect",
+      "effects": [{"type": "heal", "value": 5, "when": {"fact": "target.source_hex_distance_feet", "lte": 10}}]
+    }]
+  }
+]

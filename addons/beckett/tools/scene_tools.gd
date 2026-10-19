@@ -4,11 +4,16 @@ class_name BeckettSceneTools
 
 ## Scene/Node authoring on the currently-open scene. Every mutation goes through
 ## EditorUndoRedoManager, so it's atomic + undoable in the editor (D6). New nodes get
-## their owner set to the scene root so they actually persist on save.
+## their owner set to the scene root so they actually persist on save. An edit inside an
+## instanced scene, or one that deletes or reorders a node an inherited scene gets from its base,
+## can still be dropped by that save; PersistGuard says so in the reply.
 
 const Reflect := preload("res://addons/beckett/core/reflection.gd")
+const Internals := preload("res://addons/beckett/core/internals.gd")  # instance_scene never puts one of Beckett's own scenes in the player's
+const PersistGuard := preload("res://addons/beckett/core/persist_guard.gd")
+const PathGuard := preload("res://addons/beckett/core/path_guard.gd")  # the read rule for a scene opened by path, the write rule for one saved to a path
 
-var server
+var server  # mcp_server node
 
 
 func _register(registry) -> void:
@@ -93,17 +98,22 @@ func _register(registry) -> void:
 	})
 
 
+# ---------------------------------------------------------------- handlers
 
 func _create_node(args: Dictionary) -> Dictionary:
 	var root := EditorInterface.get_edited_scene_root()
 	if root == null:
 		return {"error": "No scene is open in the editor.", "suggestion": "Call open_scene first."}
 	var type := str(args.get("type", ""))
+	# class_exists FIRST, and it has to stay first: a global script class (class_name) is not a
+	# ClassDB class, and from Godot 4.8 (#123379) can_instantiate() on one returns false AND
+	# prints an error, where 4.7 and older returned true. The short-circuit keeps both
+	# can_instantiate and instantiate to native classes.
 	if not ClassDB.class_exists(type) or not ClassDB.can_instantiate(type):
 		return {"error": "Cannot instantiate class: %s" % type, "suggestion": "Use find_classes base=Node to find a node type."}
 	var parent := _node(str(args.get("parent", "")))
 	if parent == null:
-		return {"error": "Could not resolve parent: %s" % str(args.get("parent", ""))}
+		return {"error": Reflect.miss(str(args.get("parent", "")), "parent")}
 
 	var node := ClassDB.instantiate(type) as Node
 	if node == null:
@@ -118,20 +128,23 @@ func _create_node(args: Dictionary) -> Dictionary:
 	ur.add_do_reference(node)
 	ur.add_undo_method(parent, "remove_child", node)
 	ur.commit_action()
-	return {"text": "created %s '%s' under %s" % [type, node.name, parent.name],
-		"focus": {"kind": "node", "target": str(root.get_path_to(node))}}
+	# Focus the NEW node (not the parent) — get_path_to is valid now it's in the tree.
+	return PersistGuard.attach({"text": "created %s '%s' under %s" % [type, node.name, parent.name],
+		"focus": {"kind": "node", "target": str(root.get_path_to(node))}},
+		PersistGuard.verdict(root, parent, PersistGuard.ADD))
 
 
 func _delete_node(args: Dictionary) -> Dictionary:
 	var node := _node(str(args.get("target", "")))
 	if node == null:
-		return {"error": "Could not resolve target: %s" % str(args.get("target", ""))}
+		return {"error": Reflect.miss(str(args.get("target", "")))}
 	var root := EditorInterface.get_edited_scene_root()
 	if node == root:
 		return {"error": "Refusing to delete the scene root."}
 	var parent := node.get_parent()
 	if parent == null:
 		return {"error": "Node has no parent."}
+	var verdict := PersistGuard.verdict(root, node, PersistGuard.REMOVE)  # before: it reads the owner
 	var ur: EditorUndoRedoManager = server.get_undo_redo()
 	ur.create_action("MCP delete_node %s" % node.name)
 	ur.add_do_method(parent, "remove_child", node)
@@ -139,13 +152,13 @@ func _delete_node(args: Dictionary) -> Dictionary:
 	ur.add_undo_method(node, "set_owner", root)
 	ur.add_undo_reference(node)
 	ur.commit_action()
-	return {"text": "deleted node %s" % str(args.get("target", ""))}
+	return PersistGuard.attach({"text": "deleted node %s" % str(args.get("target", ""))}, verdict)
 
 
 func _rename_node(args: Dictionary) -> Dictionary:
 	var node := _node(str(args.get("target", "")))
 	if node == null:
-		return {"error": "Could not resolve target: %s" % str(args.get("target", ""))}
+		return {"error": Reflect.miss(str(args.get("target", "")))}
 	var new_name := str(args.get("name", ""))
 	if new_name.is_empty():
 		return {"error": "name is required"}
@@ -162,14 +175,19 @@ func _rename_node(args: Dictionary) -> Dictionary:
 func _reparent_node(args: Dictionary) -> Dictionary:
 	var node := _node(str(args.get("target", "")))
 	if node == null:
-		return {"error": "Could not resolve target: %s" % str(args.get("target", ""))}
+		return {"error": Reflect.miss(str(args.get("target", "")))}
 	var new_parent := _node(str(args.get("new_parent", "")))
 	if new_parent == null:
-		return {"error": "Could not resolve new_parent: %s" % str(args.get("new_parent", ""))}
+		return {"error": Reflect.miss(str(args.get("new_parent", "")), "new_parent")}
 	var old_parent := node.get_parent()
 	if old_parent == null:
 		return {"error": "Node has no current parent."}
 	var root := EditorInterface.get_edited_scene_root()
+	# Two questions, both asked before the move (it re-owns the node): can the node leave where it
+	# is, and will the place it lands be saved.
+	var verdict := PersistGuard.verdict(root, node, PersistGuard.REMOVE)
+	if bool(verdict["persisted"]):
+		verdict = PersistGuard.verdict(root, new_parent, PersistGuard.ADD)
 	var ur: EditorUndoRedoManager = server.get_undo_redo()
 	ur.create_action("MCP reparent_node")
 	ur.add_do_method(old_parent, "remove_child", node)
@@ -179,8 +197,8 @@ func _reparent_node(args: Dictionary) -> Dictionary:
 	ur.add_undo_method(old_parent, "add_child", node)
 	ur.add_undo_method(node, "set_owner", root)
 	ur.commit_action()
-	return {"text": "reparented %s under %s" % [node.name, new_parent.name],
-		"focus": {"kind": "node", "target": str(root.get_path_to(node))}}
+	return PersistGuard.attach({"text": "reparented %s under %s" % [node.name, new_parent.name],
+		"focus": {"kind": "node", "target": str(root.get_path_to(node))}}, verdict)
 
 
 func _instance_scene(args: Dictionary) -> Dictionary:
@@ -188,12 +206,18 @@ func _instance_scene(args: Dictionary) -> Dictionary:
 	if root == null:
 		return {"error": "No scene is open in the editor.", "suggestion": "Call open_scene first."}
 	var scene_path := str(args.get("scene", ""))
+	var guard := PathGuard.check_read(scene_path)
+	if guard.has("error"):
+		return guard
+	if Internals.is_beckett_path(scene_path):
+		return {"error": Internals.file_text(scene_path)}
 	var packed := ResourceLoader.load(scene_path) as PackedScene
 	if packed == null:
 		return {"error": "Could not load PackedScene: %s" % scene_path}
 	var parent := _node(str(args.get("parent", "")))
 	if parent == null:
-		return {"error": "Could not resolve parent."}
+		var off := Reflect.refusal_for(str(args.get("parent", "")))
+		return {"error": off if not off.is_empty() else "Could not resolve parent."}
 	var inst := packed.instantiate()
 	if args.has("name"):
 		inst.name = str(args["name"])
@@ -204,8 +228,9 @@ func _instance_scene(args: Dictionary) -> Dictionary:
 	ur.add_do_reference(inst)
 	ur.add_undo_method(parent, "remove_child", inst)
 	ur.commit_action()
-	return {"text": "instanced %s as '%s'" % [scene_path, inst.name],
-		"focus": {"kind": "node", "target": str(root.get_path_to(inst))}}
+	return PathGuard.noted(PersistGuard.attach({"text": "instanced %s as '%s'" % [scene_path, inst.name],
+		"focus": {"kind": "node", "target": str(root.get_path_to(inst))}},
+		PersistGuard.verdict(root, parent, PersistGuard.ADD)), guard)
 
 
 func _save_scene(args: Dictionary) -> Dictionary:
@@ -214,26 +239,34 @@ func _save_scene(args: Dictionary) -> Dictionary:
 		return {"error": "No scene is open to save."}
 	var path := str(args.get("path", ""))
 	if path.is_empty():
-		var err := EditorInterface.save_scene()
+		var err := EditorInterface.save_scene()  # returns Error
 		if err != OK:
 			return {"error": "save failed: %s" % error_string(err)}
 		return {"text": "saved scene"}
-	EditorInterface.save_scene_as(path, true)
+	# A save-as is a write to a path the caller names: the same rule as write_file (res:// or user://,
+	# no "..", no link that leaves the project), checked before the editor is asked to write anything.
+	var perr: String = PathGuard.write_path_error(path)
+	if not perr.is_empty():
+		return {"error": "%s: %s" % [path, perr]}
+	EditorInterface.save_scene_as(path, true)  # returns void
 	return {"text": "saved scene as %s" % path}
 
 
 func _open_scene(args: Dictionary) -> Dictionary:
 	var path := str(args.get("path", ""))
+	var guard := PathGuard.check_read(path)
+	if guard.has("error"):
+		return guard
 	if not ResourceLoader.exists(path):
 		return {"error": "No scene at: %s" % path}
 	EditorInterface.open_scene_from_path(path)
-	return {"text": "opened %s" % path}
+	return PathGuard.noted({"text": "opened %s" % path}, guard)
 
 
 func _duplicate_node(args: Dictionary) -> Dictionary:
 	var node := _node(str(args.get("target", "")))
 	if node == null:
-		return {"error": "Could not resolve target: %s" % str(args.get("target", ""))}
+		return {"error": Reflect.miss(str(args.get("target", "")))}
 	var root := EditorInterface.get_edited_scene_root()
 	if node == root:
 		return {"error": "Refusing to duplicate the scene root."}
@@ -250,14 +283,15 @@ func _duplicate_node(args: Dictionary) -> Dictionary:
 	ur.add_do_reference(dup)
 	ur.add_undo_method(parent, "remove_child", dup)
 	ur.commit_action()
-	return {"text": "duplicated %s as '%s'" % [node.name, dup.name],
-		"focus": {"kind": "node", "target": str(root.get_path_to(dup))}}
+	return PersistGuard.attach({"text": "duplicated %s as '%s'" % [node.name, dup.name],
+		"focus": {"kind": "node", "target": str(root.get_path_to(dup))}},
+		PersistGuard.verdict(root, parent, PersistGuard.ADD))
 
 
 func _move_node(args: Dictionary) -> Dictionary:
 	var node := _node(str(args.get("target", "")))
 	if node == null:
-		return {"error": "Could not resolve target: %s" % str(args.get("target", ""))}
+		return {"error": Reflect.miss(str(args.get("target", "")))}
 	var parent := node.get_parent()
 	if parent == null:
 		return {"error": "Node has no parent."}
@@ -269,25 +303,26 @@ func _move_node(args: Dictionary) -> Dictionary:
 	ur.add_undo_method(parent, "move_child", node, from_index)
 	ur.commit_action()
 	var root := EditorInterface.get_edited_scene_root()
-	return {"text": "moved %s to index %d" % [node.name, to_index],
-		"focus": {"kind": "node", "target": str(root.get_path_to(node))}}
+	return PersistGuard.attach({"text": "moved %s to index %d" % [node.name, to_index],
+		"focus": {"kind": "node", "target": str(root.get_path_to(node))}},
+		PersistGuard.verdict(root, node, PersistGuard.REORDER))  # after: it reads the new order
 
 
+# ---------------------------------------------------------------- helpers
 
+## The node a target names in the open scene. The shared resolver (reflection.gd) answers, so this tool and every
+## other one agree on what a target is, and on what no target may be: a node outside the open scene, or one of
+## Beckett's own. This used to be a private copy of the lookup, one that also took any absolute path in the editor.
 func _node(target: String) -> Node:
-	var root := EditorInterface.get_edited_scene_root()
-	if root == null:
-		return null
-	if target.is_empty() or target == "." or target == "/root" or target == root.name:
-		return root
-	var n := root.get_node_or_null(NodePath(target))
-	if n == null:
-		n = root.find_child(target, true, false)
-	return n
+	return Reflect.scene_node(target)
 
 
-## Set owner on a node and all descendants so a duplicated subtree persists on save.
+## Set owner on a duplicated subtree so it persists on save. Only on nodes that have none yet:
+## a duplicated instance arrives with its sub-scene's nodes already owned by that instance, and
+## owning them to the scene as well makes the saved file list them a second time next to the
+## ones the instance rebuilds (found by persist_guard's pack-and-compare proof; 4.5+ doubled them).
 func _own_recursive(node: Node, owner: Node) -> void:
-	node.owner = owner
+	if node.owner == null:
+		node.owner = owner
 	for c in node.get_children():
 		_own_recursive(c, owner)

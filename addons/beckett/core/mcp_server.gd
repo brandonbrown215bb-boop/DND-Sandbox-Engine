@@ -5,17 +5,33 @@ extends Node
 ## lifecycle (initialize / tools / resources / prompts) over JSON-RPC 2.0, and applies
 ## security gates before any tool runs. Everything executes on the editor main thread.
 
-const PROTOCOL_VERSION := "2025-06-18"
-const SUPPORTED_PROTOCOL_VERSIONS: Array[String] = ["2025-06-18", "2025-03-26"]
+const PROTOCOL_VERSION := "2025-11-25"
+# Revisions we can honestly serve (all Streamable-HTTP). initialize echoes the
+# client's requested revision when it's one of these; otherwise our latest.
+#
+# 2025-11-25 is advertised because the two things it MANDATES of a server shaped like this
+# are both true here: input-validation failures come back as tool RESULTS with isError so
+# the model can self-correct (SEP-1303 — see _call_tool's _validate_args gate), and an
+# invalid Origin answers 403 (see _check_origin). The revision's other additions are
+# optional (icons), client-side (sampling tools, elicitation), experimental (tasks), or
+# about OAuth flows this server does not use — it authenticates with a local bearer token.
+const SUPPORTED_PROTOCOL_VERSIONS: Array[String] = ["2025-11-25", "2025-06-18", "2025-03-26"]
 const SERVER_NAME := "beckett-godot-mcp"
-const SERVER_VERSION := "1.0.0"
 
-const IDEMPOTENCY_MAX := 128
-const AUDIT_MAX := 200
+const IDEMPOTENCY_MAX := 128  # bound the result cache (FIFO eviction)
+# ...and bound it by BYTES too. An entry count alone is not a bound when a single
+# screenshot result is ~5 MB of base64: 128 of those parked ~700 MB in the editor.
+# A result larger than the ceiling is simply not cached (the repeat call re-runs).
+const IDEMPOTENCY_MAX_BYTES := 8 * 1024 * 1024
+const AUDIT_MAX := 200        # in-memory audit ring: last N tool calls
 
 const MCPHttpServerScript := preload("res://addons/beckett/core/http_server.gd")
 const MCPToolRegistryScript := preload("res://addons/beckett/core/tool_registry.gd")
 const MCPJsonRpcScript := preload("res://addons/beckett/core/json_rpc.gd")
+# Tool modules are loaded at runtime (not preloaded) so the free Lite build can
+# physically ship WITHOUT its higher-tier modules — a trimmed-away module just
+# doesn't exist, so there's no flag to flip back on (honor-system friendly).
+# Anything missing is skipped in _register_tools via ResourceLoader.exists.
 const TOOL_MODULES := [
 	"res://addons/beckett/tools/reflection_tools.gd",
 	"res://addons/beckett/tools/scene_tools.gd",
@@ -27,6 +43,7 @@ const TOOL_MODULES := [
 	"res://addons/beckett/tools/signal_tools.gd",
 	"res://addons/beckett/tools/resource_tools.gd",
 	"res://addons/beckett/tools/project_tools.gd",
+	"res://addons/beckett/tools/help_tools.gd",
 	"res://addons/beckett/tools/skill_tools.gd",
 	"res://addons/beckett/tools/template_tools.gd",
 	"res://addons/beckett/tools/qa_tools.gd",
@@ -38,44 +55,71 @@ const TOOL_MODULES := [
 	"res://addons/beckett/tools/scatter_tools.gd",
 	"res://addons/beckett/tools/batch_tools.gd",
 	"res://addons/beckett/tools/test_tools.gd",
+	"res://addons/beckett/tools/playtest_tools.gd",
 ]
 
+# Sentinel: an L5 (drive) module the Lite build trims. Present => Full edition
+# (effort 1..6); absent => Lite edition (capped at L4 — inspect, author, run, SEE).
+# Lite still ships runtime_observe_tools.gd (L4 See, a core module) so the free tier
+# can watch the running game; only this drive module is Full. See setup().
 const SENTINEL_FULL_MODULE := "res://addons/beckett/tools/runtime_tools.gd"
 const RuntimeBridgeScript := preload("res://addons/beckett/core/runtime_bridge.gd")
 const ResourcesScript := preload("res://addons/beckett/resources/resources.gd")
 const PromptsScript := preload("res://addons/beckett/prompts/prompts.gd")
 const MCPJobsScript := preload("res://addons/beckett/core/jobs.gd")
 const MCPEffortScript := preload("res://addons/beckett/core/effort.gd")
+const MCPClientConfigScript := preload("res://addons/beckett/core/client_config.gd")
+const MCPVersionScript := preload("res://addons/beckett/core/version.gd")  # serverInfo.version: the one reader of plugin.cfg
+# Shared with the game runtime: the same log-sink module gives the EDITOR process a
+# per-call engine-error window (v1.11 error echo). Logger API is 4.5+; graceful no-op below.
+const LogSinkScript := preload("res://addons/beckett/runtime/game_log_sink.gd")
 
-var plugin: EditorPlugin
+var error_echo = null  # LogSinkScript instance while serving; null = echo off (env/stopped)
+
+# Auth-token file (v1.9): lives in a self-gitignored project dir so the secret never lands
+# in VCS. File present == auth on; the dock's enable/rotate/disable buttons manage it.
+const AUTH_TOKEN_FILE := "res://.beckett/token"
+
+var plugin: EditorPlugin  # set by plugin.gd; exposes get_undo_redo()
 
 var http: MCPHttpServerScript
 var registry: MCPToolRegistryScript
-var bridge: RuntimeBridgeScript
-var jobs: MCPJobsScript
+var bridge: RuntimeBridgeScript  # runtime channel to the played game (B2)
+var jobs: MCPJobsScript          # background subprocess jobs (D6) — e.g. export
 
 var _resources
 var _prompts
 var _runtime_port: int = 8771
 
-var _session_id: String = ""
+var _session_id: String = ""  # minted at initialize, echoed by clients, never checked (see handle_http)
+# The revision `initialize` actually agreed on. Computed since forever, PERSISTED since
+# v1.14: the resource_link serializer branch has to know whether the peer can read one
+# (resource_link is 2025-06-18+, and we still serve 2025-03-26 clients). Defaults to our
+# latest so a client that skipped the handshake gets the modern shape rather than a
+# silently degraded one.
+var _negotiated_version: String = PROTOCOL_VERSION
 var _token: String = ""
+var _runtime_token: String = ""  # game-channel handshake secret (v1.9.1; see start_server)
 var _readonly: bool = false
 var _confirm_destructive: bool = false
-var _allowlist: Array[String] = []
-var _disabled: Dictionary = {}
-var _idempotency: Dictionary = {}
-var _audit: Array = []
-var _audit_total := 0
-var _client_info: Dictionary = {}
-var _client_ua: String = ""
-var _last_activity_ms: int = 0
-var _tool_modules: Array = []
-var _effort: int = 6
-var _max_effort: int = 6
+var _allowlist: Array[String] = []  # regex strings; empty = allow all
+var _disabled: Dictionary = {}       # tool name -> true: dock per-tool off switches (beckett/disabled_tools)
+var _idempotency: Dictionary = {}    # key -> cached result dict (FIFO-capped at IDEMPOTENCY_MAX)
+var _idempotency_sizes: Dictionary = {}  # same keys -> approx byte size, so eviction can hold a byte ceiling
+var _idempotency_bytes := 0          # running total of _idempotency_sizes (see IDEMPOTENCY_MAX_BYTES)
+var _audit: Array = []               # ring of {t, tool, ms, ok, args[, error|result]} — who did what (D6)
+var _audit_total := 0                # total calls this session (the ring keeps only the last AUDIT_MAX)
+var _client_info: Dictionary = {}    # clientInfo {name, version} from the last initialize
+var _client_ua: String = ""          # last request's User-Agent (best-effort fallback identity)
+var _last_activity_ms: int = 0       # Time.get_ticks_msec() of the last request (0 = none yet)
+var _tool_modules: Array = []        # keep tool-module instances alive (their Callables hold them)
+var _effort: int = 6                 # AI effort tier 1..6; caps which tools tools/list advertises (see effort.gd)
+var _max_effort: int = 6             # edition ceiling: Full=6, Lite=4 (its L5/L6 modules aren't shipped)
 
 
 func _process(_delta: float) -> void:
+	# Keep background jobs' pipes drained so their subprocesses never block on a
+	# full pipe buffer between job_status polls.
 	if jobs != null:
 		jobs.tick()
 
@@ -102,7 +146,9 @@ func setup() -> void:
 	if rp != "" and rp.is_valid_int():
 		_runtime_port = rp.to_int()
 
-	_token = OS.get_environment("BECKETT_TOKEN")
+	# Security config (env still wins for CI; see _resolve_auth_token for the file-token
+	# and fresh-setup default-on logic behind the v1.9 loopback auth).
+	_token = _resolve_auth_token()
 	_readonly = _env_flag("BECKETT_READONLY")
 	_confirm_destructive = _env_flag("BECKETT_CONFIRM_DESTRUCTIVE")
 	var al := OS.get_environment("BECKETT_ALLOWLIST")
@@ -110,7 +156,16 @@ func setup() -> void:
 		for part in al.split(",", false):
 			_allowlist.append(part.strip_edges())
 
+	# AI effort tier (1..6): how much of the tool surface we advertise. Lower =
+	# cheaper model context, fewer capabilities. Persisted in project.godot and
+	# driven by the dock panel. The edition ceiling caps it: Full=6, Lite=4 — the
+	# free edition keeps the whole inspect/author/run loop AND seeing the running
+	# game; only the agent-DRIVES (L5) and ship (L6) layers are Full.
 	_max_effort = MCPEffortScript.MAX_LEVEL if ResourceLoader.exists(SENTINEL_FULL_MODULE) else 4
+	# Effort-tier schema migration. v1 had 5 tiers (… Playtest=4, Max=5). v2 (2026-07)
+	# split Playtest into See=4 + Drive=5 and pushed ship to Max=6. Remap a v1-persisted
+	# dial so a user who sat at the old max keeps the WHOLE surface (old 4->5, old 5->6)
+	# instead of silently losing the ship tools — "dialing down is opt-in, never a silent loss".
 	var saved := int(ProjectSettings.get_setting("beckett/effort", MCPEffortScript.DEFAULT_LEVEL))
 	if int(ProjectSettings.get_setting("beckett/effort_schema", 1)) < 2:
 		if ProjectSettings.has_setting("beckett/effort"):
@@ -128,18 +183,89 @@ func setup() -> void:
 func _register_tools() -> void:
 	for path in TOOL_MODULES:
 		if not ResourceLoader.exists(path):
-			continue
+			continue  # Lite build: this module was trimmed at pack time — skip it
 		var m = load(path).new()
 		m.server = self
 		m._register(registry)
 		_tool_modules.append(m)
 
 
+## Start the HTTP endpoint + the runtime bridge. v1.9 (B5): on a bind failure both walk up
+## to 10 ports from their base — two editors side-by-side just work. The actual bound ports
+## land in http.port / _runtime_port; BECKETT_RUNTIME_PORT is (re)exported into THIS editor
+## process's environment so games it launches dial the RIGHT bridge (children inherit env —
+## without this, editor B's games would connect to editor A's default-port bridge). The live
+## HTTP port is also dropped in res://.beckett/port for out-of-band discovery.
 func start_server(port: int) -> int:
-	var err := http.start(port, "127.0.0.1")
-	if err == OK and bridge != null:
-		bridge.start(_runtime_port, "127.0.0.1")
-	return err
+	var err := ERR_CANT_CREATE
+	for offset in 10:
+		err = http.start(port + offset, "127.0.0.1")
+		if err == OK:
+			break
+	if err != OK:
+		return err
+	if http.port != port:
+		print("[beckett] port %d busy — serving on %d (client configs follow the live port)" % [port, http.port])
+	if bridge != null:
+		var rp_err := ERR_CANT_CREATE
+		for offset in 10:
+			rp_err = bridge.start(_runtime_port + offset, "127.0.0.1")
+			if rp_err == OK:
+				_runtime_port = bridge.port
+				break
+		if rp_err != OK:
+			push_error("[beckett] runtime bridge could not bind %d..%d — play-session tools will not connect" % [_runtime_port, _runtime_port + 9])
+		OS.set_environment("BECKETT_RUNTIME_PORT", str(_runtime_port))
+		# v1.9.1: per-session shared secret for the game handshake, delivered to launched
+		# games the same way the port is (children inherit this editor's environment).
+		# BECKETT_AUTH=0 disables it alongside HTTP auth; a preset BECKETT_RUNTIME_TOKEN
+		# (e.g. wiring up a standalone game run) is honored instead of minting one.
+		var kill := OS.get_environment("BECKETT_AUTH").to_lower()
+		if kill == "0" or kill == "false":
+			_runtime_token = ""
+		elif not OS.get_environment("BECKETT_RUNTIME_TOKEN").is_empty():
+			_runtime_token = OS.get_environment("BECKETT_RUNTIME_TOKEN")
+		else:
+			_runtime_token = Crypto.new().generate_random_bytes(16).hex_encode()
+		bridge.expected_token = _runtime_token
+		if not _runtime_token.is_empty():
+			OS.set_environment("BECKETT_RUNTIME_TOKEN", _runtime_token)
+	_write_port_discovery(http.port)
+	# v1.11 error echo: run an OS log sink in the EDITOR process so engine errors that
+	# fire while a tool handler runs get attached to that call's response (the "ok:true
+	# but the engine errored" class). 4.5+ only; BECKETT_ERROR_ECHO=0 opts out.
+	if error_echo == null and OS.get_environment("BECKETT_ERROR_ECHO") != "0":
+		error_echo = LogSinkScript.new()
+		error_echo.install()
+	return OK
+
+
+## Persist the live HTTP port next to the auth token (same self-gitignored dir) so external
+## tooling can find a negotiated port without parsing editor logs.
+func _write_port_discovery(bound: int) -> void:
+	# Not through a link: a `port` (or a whole .beckett) that links elsewhere would have that file overwritten.
+	if not MCPClientConfigScript.linked_part(AUTH_TOKEN_FILE.get_base_dir() + "/port").is_empty():
+		return
+	var dir := _ensure_beckett_dir()
+	var f := FileAccess.open(dir + "/port", FileAccess.WRITE)
+	if f != null:
+		f.store_string(str(bound) + "\n")
+		f.close()
+
+
+## res://.beckett/ — project-local runtime state (token, live port), seeded with a
+## self-gitignore so none of it ever lands in VCS. Returns the dir path.
+func _ensure_beckett_dir() -> String:
+	var dir := AUTH_TOKEN_FILE.get_base_dir()
+	if not DirAccess.dir_exists_absolute(dir):
+		DirAccess.make_dir_recursive_absolute(dir)
+	var gi_path := dir + "/.gitignore"
+	if not FileAccess.file_exists(gi_path):
+		var gi := FileAccess.open(gi_path, FileAccess.WRITE)
+		if gi != null:
+			gi.store_string("*\n")
+			gi.close()
+	return dir
 
 
 func stop_server() -> void:
@@ -147,6 +273,9 @@ func stop_server() -> void:
 		http.stop()
 	if bridge != null:
 		bridge.stop()
+	if error_echo != null:
+		error_echo.uninstall()
+		error_echo = null
 
 
 func is_running() -> bool:
@@ -182,6 +311,10 @@ func is_lite() -> bool:
 	return _max_effort < MCPEffortScript.MAX_LEVEL
 
 
+func is_readonly() -> bool:
+	return _readonly
+
+
 ## Per-tool off switches the dock owns, kept SEPARATE from the env _allowlist (which stays a
 ## CI/headless control). Stored comma-joined in project.godot so the choice survives a restart.
 func _load_disabled() -> void:
@@ -202,7 +335,7 @@ func is_tool_enabled(name: String) -> bool:
 ## tools/list_changed so live clients re-fetch the surface. Returns streams notified.
 func set_tool_enabled(name: String, on: bool) -> int:
 	if on == (not _disabled.has(name)):
-		return 0
+		return 0  # no change
 	if on:
 		_disabled.erase(name)
 	else:
@@ -227,8 +360,10 @@ func disabled_tools() -> PackedStringArray:
 
 ## The tools actually advertised right now: effort-tier filtered, minus the off switches.
 ## Single source of truth shared by tools/list and the dock's count so they never disagree.
+## The per-tool `_meta` hints ride only to a peer whose negotiated revision defines Tool._meta
+## (see supports_tool_meta), so doctor's and the dock's byte figures stay the wire figure.
 func effective_specs(level: int) -> Array:
-	var specs: Array = registry.list_specs(level)
+	var specs: Array = registry.list_specs(level, supports_tool_meta())
 	if _disabled.is_empty():
 		return specs
 	return specs.filter(func(s: Dictionary) -> bool: return not _disabled.has(str(s.get("name", ""))))
@@ -245,6 +380,7 @@ func _notify_list_changed() -> int:
 	return http.sse_broadcast(MCPJsonRpcScript.make_notification("notifications/tools/list_changed"))
 
 
+# ---------------------------------------------------------------- HTTP entry
 
 func handle_http(req: Dictionary) -> Dictionary:
 	var headers: Dictionary = req.get("headers", {})
@@ -254,21 +390,41 @@ func handle_http(req: Dictionary) -> Dictionary:
 		_client_ua = ua
 
 	if not _check_origin(headers):
-		return _http(403, {}, "forbidden origin")
-	if not _check_token(headers):
-		return _http(401, {}, "unauthorized")
-	if not _check_session(headers):
-		return _http(404, {}, "unknown session")
+		return _refuse(403, "forbidden origin")
+	if not _check_host(headers):
+		return _refuse(403, "forbidden host (this server only answers to a loopback Host)")
+	if not _check_token(headers, str(req.get("path", ""))):
+		return _refuse(401, "unauthorized")
+	# Deliberately NO session gate. Through v1.15.1 a _check_session() here answered 404 to any
+	# Mcp-Session-Id other than the one minted at initialize. That id names no server-side
+	# state (every client shares it, DELETE tears nothing down, a restart forgets it), so all
+	# the 404 could do was punish a client for an editor restart: A keeps its old id, B
+	# initializes and mints a new one, A's next request is refused. Live-tested 2026-09-19:
+	# Claude Code 2.1.275 echoes the id on every request and retries its event stream with
+	# the stale one; the 404 left that stream dead until a manual reconnect, and a client
+	# that treats one 404 as fatal (Claude Code #94273) drops the server outright. A 404 is
+	# only owed for a session the server TERMINATED, and this server never terminates one.
 
 	match method:
 		"GET":
+			# Streamable HTTP server->client channel: a GET accepting text/event-stream
+			# opens the SSE stream we push notifications down (tools/list_changed when
+			# the effort dial moves). Anything else has nothing to GET.
 			if str(headers.get("accept", "")).to_lower().contains("text/event-stream"):
 				return {"status": 200, "headers": {}, "body": "", "sse": true}
 			return _http(405, {"Allow": "POST, DELETE"}, "")
 		"DELETE":
-			return _http(200, {}, "")
+			return _http(200, {}, "")  # stateless: nothing to tear down
 		"POST":
-			pass
+			# A browser can send a cross-origin POST without a CORS preflight only as a
+			# "simple request": Content-Type text/plain, application/x-www-form-urlencoded,
+			# multipart/form-data, or none at all. This server never approves a preflight, so a
+			# page that has to send application/json can never reach dispatch. That matters for
+			# loopback pages (another local dev server): the Origin gate lets those through by
+			# design, and this is what keeps their text/plain "simple" POSTs out. Clients with no
+			# Origin header (Claude Code, Cursor, curl) are not browsers and never trip it.
+			if headers.has("origin") and not is_json_content_type(str(headers.get("content-type", ""))):
+				return _refuse(415, "unsupported media type (a POST that carries an Origin header must be Content-Type: application/json)")
 		_:
 			return _http(405, {"Allow": "POST"}, "")
 
@@ -278,32 +434,53 @@ func handle_http(req: Dictionary) -> Dictionary:
 
 	var msg: Dictionary = parsed
 	var id: Variant = msg.get("id", null)
+	# JSON numbers parse as float in GDScript; echo integer ids back as integers
+	# so strict clients that match id by exact type are satisfied.
 	if typeof(id) == TYPE_FLOAT and id == floor(id):
 		id = int(id)
 	var rpc_method: String = str(msg.get("method", ""))
 	var params: Dictionary = msg.get("params", {}) if typeof(msg.get("params")) == TYPE_DICTIONARY else {}
 
+	# Notifications (no id) get 202 with no body.
 	if id == null:
 		return _http(202, {}, "")
 
 	return _dispatch(id, rpc_method, params)
 
 
+# ---------------------------------------------------------------- dispatch
 
 ## Working notes handed to the agent at initialize. Keep these SHORT — they ride
 ## along once per session. The Lite text states the edition boundary plainly so
 ## the agent recommends the Full edition exactly when the user hits it.
 func _instructions() -> String:
-	var core := "Reflection tools (find_classes, describe_class, set_property, call_method) reach every engine class — prefer them when no dedicated tool fits. Script writes are parse-validated before touching disk; scene edits are undoable; batch_execute rolls back on failure."
+	var core := "Reflection tools (find_classes, describe_class, set_property, call_method) reach every engine class — prefer them when no dedicated tool fits. Script writes are parse-validated before touching disk and read back after (disk_verified); scene edits are undoable and reply persisted:false when a save would drop them (edits inside an instanced scene, deleting or reordering what an inherited scene gets from its base); batch_execute rolls back on failure."
 	if is_lite():
 		return ("Beckett — MCP for Godot, free Lite edition (inspect + author + run + SEE the running game). " + core
 			+ " Dev loop: edit -> play_scene -> wait_until game_connected -> SEE it (screenshot, get_remote_tree, runtime_get_property, game_logs) -> diagnose -> fix."
 			+ " Lite can SEE the running game but cannot DRIVE it: input injection, UI/3D clicks, drag/scroll, runtime writes, assertions, the test runner, animation_manage, background exports and the skill packs are Full-edition features."
 			+ " If the user asks for one of those, say it needs the Full edition (upgrade link on the Beckett dock panel).")
+	var packs := _skill_pack_count()
 	return ("Beckett — MCP for Godot, Full edition. " + core
 		+ " Loop: author -> play_scene -> wait_until game_connected -> playtest (screenshot, simulate_input, click_button_by_text, assert_*, test_run) -> logs_read -> fix -> export_project (background; poll job_status)."
-		+ " Call list_skills early: 40 knowledge packs name the exact classes/properties/methods per domain (physics, shaders, animation, multiplayer, ...)."
+		+ " Call list_skills early: " + ("%d knowledge packs" % packs if packs > 0 else "knowledge packs") + " name the exact classes/properties/methods per domain (physics, shaders, animation, multiplayer, ...)."
 		+ " For a 'make me a game' request, however vague: load_skill name=game-oneshot FIRST and follow it — it expands the idea, routes to a genre blueprint pack, and gates each build phase.")
+
+
+## Count the knowledge packs actually on disk, bundled plus any project overrides, the
+## same way list_skills does. Derived rather than written down: the literal that used to
+## live in the instructions had already drifted one pack behind the addon.
+func _skill_pack_count() -> int:
+	var names := {}
+	for dir_path in ["res://addons/beckett/skills", "res://.beckett/skills"]:
+		var dir := DirAccess.open(dir_path)
+		if dir == null:
+			continue
+		for f in dir.get_files():
+			if f.ends_with(".md"):
+				names[f.get_basename()] = true
+	return names.size()
+
 
 func _dispatch(id: Variant, rpc_method: String, params: Dictionary) -> Dictionary:
 	_last_activity_ms = Time.get_ticks_msec()
@@ -314,11 +491,16 @@ func _dispatch(id: Variant, rpc_method: String, params: Dictionary) -> Dictionar
 				_client_info = ci
 			if _session_id.is_empty():
 				_session_id = _gen_session_id()
+			# Version negotiation: echo the client's revision when we support it,
+			# otherwise offer our latest (the client then decides whether to proceed).
 			var requested := str(params.get("protocolVersion", PROTOCOL_VERSION))
 			var negotiated := requested if requested in SUPPORTED_PROTOCOL_VERSIONS else PROTOCOL_VERSION
+			_negotiated_version = negotiated
 			var result := {
 				"protocolVersion": negotiated,
 				"capabilities": {
+					# tools/list really does change at runtime (the effort dial); we
+					# announce it over the SSE stream so clients refresh seamlessly.
 					"tools": {"listChanged": true},
 					"resources": {"listChanged": false},
 					"prompts": {"listChanged": false},
@@ -326,8 +508,12 @@ func _dispatch(id: Variant, rpc_method: String, params: Dictionary) -> Dictionar
 				"serverInfo": {
 					"name": SERVER_NAME,
 					"title": "Beckett — MCP for Godot" + (" (Lite)" if is_lite() else ""),
-					"version": SERVER_VERSION,
+					"version": MCPVersionScript.current(),
 				},
+				# Per-edition working notes for the agent (spec 2025-06-18). For Lite
+				# this doubles as the honest capability boundary: the agent learns what
+				# the Full edition adds, so when the user asks for it the agent can say
+				# so at the moment of need instead of flailing.
 				"instructions": _instructions(),
 			}
 			return _http(200, {"Mcp-Session-Id": _session_id}, MCPJsonRpcScript.result(id, result))
@@ -349,11 +535,15 @@ func _dispatch(id: Variant, rpc_method: String, params: Dictionary) -> Dictionar
 			var rr: Dictionary = _resources.read(uri)
 			if not bool(rr.get("ok", false)):
 				return _body(MCPJsonRpcScript.error(id, MCPJsonRpcScript.INVALID_PARAMS, str(rr.get("error", "read failed"))))
-			return _body(MCPJsonRpcScript.result(id, {"contents": [{
-				"uri": uri,
-				"mimeType": str(rr.get("mime", "text/plain")),
-				"text": str(rr.get("text", "")),
-			}]}))
+			# Binary resources (v1.14 captures) carry `blob` — base64, per the MCP resource
+			# contents shape — and a text resource carries `text`. They are mutually
+			# exclusive in the spec, so pick one rather than emitting an empty sibling.
+			var rcontent := {"uri": uri, "mimeType": str(rr.get("mime", "text/plain"))}
+			if rr.has("blob"):
+				rcontent["blob"] = str(rr["blob"])
+			else:
+				rcontent["text"] = str(rr.get("text", ""))
+			return _body(MCPJsonRpcScript.result(id, {"contents": [rcontent]}))
 
 		"prompts/list":
 			return _body(MCPJsonRpcScript.result(id, {"prompts": _prompts.list()}))
@@ -382,24 +572,38 @@ func _call_tool(id: Variant, params: Dictionary) -> Dictionary:
 
 	var tool: Dictionary = registry.get_tool(name)
 
+	# Security gates.
 	var gate := _gate(name, tool, args)
 	if not gate.is_empty():
 		_audit_record(name, args, 0, gate)
 		return _body(MCPJsonRpcScript.result(id, _tool_result({"error": gate})))
 
+	# Input validation against the declared input_schema. A single source of truth for
+	# required-field/type checking so a malformed call gets one clean -32602-style error
+	# instead of a handler-specific one. Deliberately LENIENT (see _validate_args):
+	# numbers/strings interchange (the reflection layer coerces them), so valid calls
+	# behave identically — only already-failing calls get a cleaner message. Handlers
+	# keep their own .get() guards as defense-in-depth; this never replaces them.
 	var verr := _validate_args(tool, args)
 	if not verr.is_empty():
 		_audit_record(name, args, 0, verr)
 		return _body(MCPJsonRpcScript.result(id, _tool_result({"error": verr})))
 
+	# Idempotency: a repeated call with the same key returns the first result.
 	var idem := str(args.get("idempotency_key", ""))
 	if not idem.is_empty() and _idempotency.has(idem):
 		return _body(MCPJsonRpcScript.result(id, _idempotency[idem]))
 
 	var t0 := Time.get_ticks_msec()
+	# v1.11 error echo: engine errors pushed while THIS handler runs belong in its
+	# response. Handlers are synchronous on the main thread, so the window is tight.
+	var echo_mark: int = error_echo.mark() if error_echo != null else 0
 	var raw: Variant
 	var handler: Callable = tool["handler"]
 	raw = handler.call(args)
+	# Normalize the handler return. Dicts pass through (the rich convention); a bare
+	# Array becomes JSON output (pretty text for every client) instead of GDScript's
+	# Array.to_string(); anything else is stringified.
 	var r: Dictionary
 	if typeof(raw) == TYPE_DICTIONARY:
 		r = raw
@@ -407,7 +611,15 @@ func _call_tool(id: Variant, params: Dictionary) -> Dictionary:
 		r = {"json": raw}
 	else:
 		r = {"text": str(raw)}
+	if r.get("error") is String:
+		r["error"] = explain_error(r["error"])
+	if error_echo != null and not r.has("engine_errors"):
+		var echoes: Array = error_echo.echo_since(echo_mark)
+		if not echoes.is_empty():
+			r["engine_errors"] = echoes
 	var result := _tool_result(r)
+	# A short preview of the outcome (not just the args) so the dock feed shows what the
+	# call actually did — capped like args to keep the ring light.
 	var rprev := ""
 	if not r.has("error"):
 		if r.has("text"):
@@ -419,10 +631,55 @@ func _call_tool(id: Variant, params: Dictionary) -> Dictionary:
 	_audit_record(name, args, Time.get_ticks_msec() - t0, str(r.get("error", "")), rprev, r.get("focus", {}))
 
 	if not idem.is_empty():
-		if _idempotency.size() >= IDEMPOTENCY_MAX:
-			_idempotency.erase(_idempotency.keys()[0])
-		_idempotency[idem] = result
+		_idempotency_put(idem, result)
 	return _body(MCPJsonRpcScript.result(id, result))
+
+
+## "game not running" is what every runtime tool's own pre-check says when the channel has no peer. For a game that
+## broke into the editor's debugger before its runtime could say hello that is the wrong news (it IS running, and
+## playing it again meets the same wall), so the places every tool answer passes through (this one, and
+## batch_execute's steps) swap it for what is really going on. Any other error comes back as it was.
+func explain_error(err: String) -> String:
+	if bridge != null and err.begins_with("game not running"):
+		var paused: String = bridge.break_text()
+		if not paused.is_empty():
+			return paused
+	return err
+
+## Cache a result under an idempotency key, holding BOTH bounds (entry count and total
+## bytes). Oversized results are skipped rather than evicting the whole cache for one
+## screenshot; the repeat call just re-runs, which is the pre-cache behaviour.
+func _idempotency_put(key: String, result: Dictionary) -> void:
+	var size := _result_bytes(result)
+	if size > IDEMPOTENCY_MAX_BYTES:
+		return
+	if _idempotency.has(key):
+		_idempotency_bytes -= int(_idempotency_sizes.get(key, 0))
+		_idempotency.erase(key)
+		_idempotency_sizes.erase(key)
+	while not _idempotency.is_empty() and (_idempotency.size() >= IDEMPOTENCY_MAX or _idempotency_bytes + size > IDEMPOTENCY_MAX_BYTES):
+		var oldest: String = str(_idempotency.keys()[0])  # FIFO: insertion order is preserved
+		_idempotency_bytes -= int(_idempotency_sizes.get(oldest, 0))
+		_idempotency.erase(oldest)
+		_idempotency_sizes.erase(oldest)
+	_idempotency[key] = result
+	_idempotency_sizes[key] = size
+	_idempotency_bytes += size
+
+
+## Approximate the wire size of a tool result without re-serializing it: String.length()
+## is O(1) in Godot, and text + base64 image data are where every byte that matters is.
+func _result_bytes(result: Dictionary) -> int:
+	var total := 0
+	var content: Variant = result.get("content", [])
+	if content is Array:
+		for c in content:
+			if c is Dictionary:
+				total += str(c.get("text", "")).length()
+				total += str(c.get("data", "")).length()
+	if result.has("structuredContent"):
+		total += 512  # structured payloads are small next to a capture; charge a flat estimate
+	return total
 
 
 ## Append one entry to the audit ring (D6: see who/what ran, when, how long).
@@ -443,6 +700,8 @@ func _audit_record(tool_name: String, args: Dictionary, ms: int, error: String, 
 		entry["error"] = error.substr(0, 200)
 	elif result != "":
 		entry["result"] = result.substr(0, 200) + ("…" if result.length() > 200 else "")
+	# Where this call points in the editor, for the dock's reveal button — a handler-supplied
+	# focus (exact node) wins over the tool+args guess. Resolved live; scene stamped for jumps.
 	var focus: Dictionary = result_focus if not result_focus.is_empty() else _focus_hint(tool_name, args)
 	if not focus.is_empty():
 		if focus.get("kind") == "node" and not focus.has("scene") and Engine.is_editor_hint():
@@ -461,29 +720,39 @@ func _audit_record(tool_name: String, args: Dictionary, ms: int, error: String, 
 ## against the live scene at click time. Returns {} for tools with no editor subject
 ## (reads of class API, runtime/L4 calls on the played game, exports, batch).
 static func _focus_hint(tool_name: String, args: Dictionary) -> Dictionary:
+	# nodes — the arg holds the node path directly (these don't move the node).
 	if tool_name in ["set_property", "call_method", "attach_script", "set_resource", "list_signals"]:
 		var t := str(args.get("target", ""))
 		return {"kind": "node", "target": t} if t != "" else {}
+	# nodes — the emitter side of a signal wiring.
 	if tool_name in ["connect_signal", "disconnect_signal"]:
 		var f := str(args.get("from", ""))
 		return {"kind": "node", "target": f} if f != "" else {}
+	# Node create/move tools return their own exact focus from the handler (root.get_path_to,
+	# see scene_tools.gd); this parent is only a create_node/instance_scene fallback.
 	if tool_name in ["create_node", "instance_scene"]:
 		var p := str(args.get("parent", ""))
 		return {"kind": "node", "target": p if p != "" else "."}
+	# scripts — open in the script editor.
 	if tool_name in ["write_script", "read_script", "script_patch", "validate_script"]:
 		var p := str(args.get("path", ""))
 		return {"kind": "script", "path": p} if p != "" else {}
+	# resource — open in the inspector.
 	if tool_name == "create_resource":
 		var p := str(args.get("path", ""))
 		return {"kind": "resource", "path": p} if p != "" else {}
+	# scenes — open it (save_scene only carries a path on save-as).
 	if tool_name in ["open_scene", "save_scene"]:
 		var p := str(args.get("path", ""))
 		return {"kind": "scene", "path": p} if p != "" else {}
+	# files — reveal in the FileSystem dock.
 	if tool_name in ["write_file", "read_file", "list_dir"]:
 		var p := str(args.get("path", ""))
 		return {"kind": "file", "path": p} if p != "" else {}
+	# main-screen switches.
 	if tool_name in ["asset_lib_search", "asset_lib_info", "asset_lib_install"]:
 		return {"kind": "screen", "name": "AssetLib"}
+	# runtime/playtest tools act on the played game — jump to the Game view (dock gates it on playing).
 	if tool_name in ["screenshot", "compare_screenshots", "simulate_input", "click_button_by_text", "click_control", "click_node3d", "click_world", "scroll", "drag", "get_control_rect", "find_ui_elements", "record_input", "replay_input", "runtime_call", "runtime_get_property", "runtime_set_property", "get_remote_tree", "find_nodes", "wait_for_node", "monitor_properties", "assert_node_state", "assert_screen_text"]:
 		return {"kind": "screen", "name": "Game"}
 	return {}
@@ -517,6 +786,11 @@ func client_status() -> Dictionary:
 
 ## Returns "" if allowed, otherwise an error message explaining the block.
 func _gate(name: String, tool: Dictionary, args: Dictionary) -> String:
+	# Edition cap (Lite=4): a tool above the edition's ceiling may not run even if
+	# it somehow got registered (defense-in-depth — premium modules are also
+	# physically absent from the Lite package). Note this checks _max_effort (the
+	# edition), NOT _effort (the user's context dial): dialing effort down only
+	# trims what tools/list advertises, it never blocks a call.
 	if MCPEffortScript.tier_of(name) > _max_effort:
 		return "Tool '%s' requires the Full edition (this build is capped at L%d)." % [name, _max_effort]
 	if _readonly and not bool(tool.get("readonly", false)):
@@ -595,27 +869,75 @@ func _type_mismatch(want: String, value: Variant) -> String:
 	return ""
 
 
+# ---------------------------------------------------------------- result formatting
 
 ## Convert a handler's return dict into an MCP tool result {content:[...], isError}.
-## Handler dict conventions: {text} | {json} | {image_png_base64[,text]} | {error[,suggestion]}
+## Handler dict conventions: {text} | {json} | {image_png_base64[,text]} |
+## {image_base64, image_mime[,text|json]} (v1.10: jpeg/webp screenshots ride with an
+## explicit mime; json alongside an image carries e.g. the Set-of-Mark legend) |
+## {error[,suggestion]}
 func _tool_result(r: Dictionary) -> Dictionary:
 	var content: Array = []
 	var is_error := false
 	var structured: Variant = null
 	if r.has("error"):
+		# An error stays exclusive: a failed handler's half-written text must not ride
+		# along and read like a partial success.
 		is_error = true
 		var msg := "Error: " + str(r["error"])
 		if r.has("suggestion"):
 			msg += "\nSuggestion: " + str(r["suggestion"])
 		content.append({"type": "text", "text": msg})
-	elif r.has("text"):
-		content.append({"type": "text", "text": str(r["text"])})
-	elif r.has("json"):
-		content.append({"type": "text", "text": JSON.stringify(r["json"], "  ")})
-		if typeof(r["json"]) == TYPE_DICTIONARY:
-			structured = r["json"]
+	else:
+		# text and json are INDEPENDENT (they were an if/elif until v1.13.0, which
+		# silently dropped whichever came second - an annotated screenshot had to hide
+		# its human-readable line inside the json to survive).
+		if r.has("text"):
+			content.append({"type": "text", "text": str(r["text"])})
+		if r.has("json"):
+			# Text for every client + structuredContent (spec 2025-06-18) for the ones
+			# that can consume machine-readable results directly. Compact on purpose:
+			# the 2-space indent was pure token cost for the model that reads this.
+			content.append({"type": "text", "text": JSON.stringify(r["json"])})
+			if typeof(r["json"]) == TYPE_DICTIONARY:
+				structured = r["json"]
 	if r.has("image_png_base64"):
 		content.append({"type": "image", "data": str(r["image_png_base64"]), "mimeType": "image/png"})
+	elif r.has("image_base64"):
+		content.append({"type": "image", "data": str(r["image_base64"]), "mimeType": str(r.get("image_mime", "image/png"))})
+	# v1.14 resource_link: hand the client a URI instead of a megabyte of base64. The
+	# revision gate lives HERE and not in any tool, so one check covers every present and
+	# future producer — resource_link is a 2025-06-18 content type and we still serve
+	# 2025-03-26 peers, which would choke on an unknown block. A producer that cares about
+	# the degradation (screenshot's deliver=link) inspects supports_resource_link() itself
+	# and keeps a readable channel; everything else just loses the link, never the result.
+	if r.has("resource_links") and r["resource_links"] is Array and supports_resource_link():
+		for rl in r["resource_links"]:
+			if not (rl is Dictionary) or not rl.has("uri"):
+				continue
+			var block := {"type": "resource_link", "uri": str(rl["uri"])}
+			for k in ["name", "description", "mimeType"]:
+				if rl.has(k):
+					block[k] = str(rl[k])
+			content.append(block)
+	# v1.11 error echo: engine errors captured during the handler ride BOTH channels -
+	# a text block every client can read, structuredContent.engine_errors for parsers.
+	# Advisory by design: isError is untouched (the handler DID complete); the agent
+	# decides whether the errors invalidate the effect.
+	if r.has("engine_errors") and r["engine_errors"] is Array and not (r["engine_errors"] as Array).is_empty():
+		var elines: Array = []
+		for e in r["engine_errors"]:
+			var ed: Dictionary = e if e is Dictionary else {"message": str(e)}
+			var eline := "- [%s] %s" % [str(ed.get("severity", "error")), str(ed.get("message", ""))]
+			var ewhere := str(ed.get("where", ""))
+			if not ewhere.is_empty():
+				eline += " (%s)" % ewhere
+			elines.append(eline)
+		content.append({"type": "text", "text": "Engine errors during this call (it still ran - verify its effect):\n" + "\n".join(elines)})
+		if structured is Dictionary:
+			structured["engine_errors"] = r["engine_errors"]
+		elif structured == null:
+			structured = {"engine_errors": r["engine_errors"]}
 	if content.is_empty():
 		content.append({"type": "text", "text": "(no output)"})
 	var out := {"content": content, "isError": is_error}
@@ -624,33 +946,259 @@ func _tool_result(r: Dictionary) -> Dictionary:
 	return out
 
 
+## Can the peer read a `resource_link` content block? It arrived in spec 2025-06-18 and we
+## still serve 2025-03-26. The revisions are ISO dates, so a string compare IS the ordering
+## — no table to keep in sync when a revision is added to SUPPORTED_PROTOCOL_VERSIONS.
+func supports_resource_link() -> bool:
+	return _negotiated_version >= "2025-06-18"
+
+
+## Can the peer read `_meta` on a Tool? Tool._meta was added in the same revision as
+## resource_link, so this is the same ISO-date compare; it is a separate name so each call
+## site says which capability it is gating.
+func supports_tool_meta() -> bool:
+	return _negotiated_version >= "2025-06-18"
+
+
+# ---------------------------------------------------------------- security helpers
 
 func _check_origin(headers: Dictionary) -> bool:
+	# Anti DNS-rebind: reject any cross-origin browser request. Non-browser clients
+	# (Claude Code, Cursor) send no Origin — allow those. 403 is what spec 2025-11-25
+	# requires for an invalid Origin (it was previously unstated).
 	if not headers.has("origin"):
 		return true
-	var origin: String = str(headers["origin"]).to_lower()
-	return origin.begins_with("http://127.0.0.1") \
-		or origin.begins_with("http://localhost") \
-		or origin.begins_with("http://[::1]")
+	return origin_is_loopback(str(headers["origin"]))
 
 
-func _check_token(headers: Dictionary) -> bool:
+## Is `origin` (an Origin header value) a loopback WEB origin? Parsed, not prefix-matched:
+## through v1.15.2 this was `begins_with("http://127.0.0.1")` and two siblings, which also
+## admits http://127.0.0.1.evil.com and http://localhost.evil.com, the exact flaw behind
+## CVE-2026-102878 (mcp-chrome-bridge, origin.startsWith). Accepted: scheme http or https; host
+## exactly 127.0.0.1, localhost or [::1]; an optional port of 1-5 digits; one trailing "/".
+## Everything else is a no: userinfo, a path, query or fragment, the literal "null" that
+## sandboxed iframes and file:// pages send, and anything that does not parse.
+static func origin_is_loopback(origin: String) -> bool:
+	var o := origin.to_lower()
+	if o.ends_with("/"):
+		o = o.substr(0, o.length() - 1)
+	var sep := o.find("://")
+	if sep == -1:
+		return false
+	var scheme := o.substr(0, sep)
+	if scheme != "http" and scheme != "https":
+		return false
+	var authority := o.substr(sep + 3)
+	# Only the characters a host[:port] can carry. That one rule already rules out userinfo
+	# (@), a path (/), a query (?), a fragment (#), backslashes, whitespace and control bytes.
+	const AUTHORITY_CHARS := "abcdefghijklmnopqrstuvwxyz0123456789.-:[]"
+	for i in authority.length():
+		if AUTHORITY_CHARS.find(authority[i]) == -1:
+			return false
+	var host := authority
+	var port := ""
+	var has_port := false
+	var bracketed := authority.begins_with("[")
+	if bracketed:                                    # [::1]:8080
+		var close := authority.find("]")
+		if close == -1:
+			return false
+		host = authority.substr(1, close - 1)
+		var rest := authority.substr(close + 1)
+		if not rest.is_empty():
+			if not rest.begins_with(":"):
+				return false                         # [::1].evil.com
+			has_port = true
+			port = rest.substr(1)
+	else:
+		var colon := authority.find(":")
+		if colon != -1:
+			host = authority.substr(0, colon)
+			has_port = true
+			port = authority.substr(colon + 1)
+	if bracketed:
+		if host != "::1":
+			return false
+	elif host != "127.0.0.1" and host != "localhost":
+		return false
+	if has_port:
+		if port.is_empty() or port.length() > 5:
+			return false
+		for i in port.length():
+			if port[i] < "0" or port[i] > "9":
+				return false
+		if port.to_int() > 65535:
+			return false
+	return true
+
+
+## Does a Content-Type header value declare JSON? "application/json" alone or followed by
+## parameters ("; charset=utf-8"), case-insensitive. "application/jsonp" and friends are not.
+static func is_json_content_type(content_type: String) -> bool:
+	var ct := content_type.strip_edges().to_lower()
+	if not ct.begins_with("application/json"):
+		return false
+	var rest := ct.substr("application/json".length()).strip_edges()
+	return rest.is_empty() or rest.begins_with(";")
+
+
+## The other half of the DNS-rebinding gate, and the half that actually closes it.
+## Origin CANNOT close it on its own: a legitimate non-browser client sends no Origin, so
+## Origin-less requests must pass — and that is exactly the shape a rebinding attack takes.
+## The HOST header is what the browser was TOLD to connect to, and in an attack it carries
+## the attacker's name, never a loopback literal. Mirrors official SDK >= 0.25 behaviour
+## (CVE-2026-11624). Runs before the token check, so it holds with BECKETT_AUTH=0 too.
+func _check_host(headers: Dictionary) -> bool:
+	if not headers.has("host"):
+		return true  # HTTP/1.0 or a hand-rolled client: nothing was asserted to check
+	var host := str(headers["host"]).to_lower().strip_edges()
+	var host_name := host
+	var host_port := ""
+	if host_name.begins_with("["):            # [::1]:8770
+		var close := host_name.find("]")
+		if close != -1:
+			host_port = host_name.substr(close + 1).lstrip(":")
+			host_name = host_name.substr(1, close - 1)
+	else:
+		var colon := host_name.rfind(":")
+		if colon != -1:
+			host_port = host_name.substr(colon + 1)
+			host_name = host_name.substr(0, colon)
+	if not (host_name in ["127.0.0.1", "localhost", "::1"]):
+		return false
+	# A port that disagrees with the socket the request actually arrived on means the
+	# client was aimed somewhere else; only compare when we know our own port.
+	if not host_port.is_empty() and http != null and http.port > 0:
+		return host_port == str(http.port)
+	return true
+
+
+func _check_token(headers: Dictionary, path: String = "") -> bool:
 	if _token.is_empty():
 		return true
-	return str(headers.get("authorization", "")) == "Bearer " + _token
-
-
-## Validate the session header ONLY when the client actually sends one. The spec lets
-## the server assign an id at initialize and have the client echo it back; we reject a
-## *mismatched* id (404 -> the client re-initializes) but never REQUIRE its presence,
-## so clients that omit it (e.g. Claude Code) keep working unchanged.
-func _check_session(headers: Dictionary) -> bool:
-	var sid := str(headers.get("mcp-session-id", ""))
-	if sid.is_empty() or _session_id.is_empty():
+	var auth := str(headers.get("authorization", ""))
+	if auth.begins_with("Bearer ") and _secure_equals(auth.substr(7), _token):
 		return true
-	return sid == _session_id
+	# URL-path form (/mcp/<token>): the universal carrier — every client config can hold a
+	# URL, only some can hold custom headers. client_config writes this form on setup.
+	var p := path.split("?")[0]
+	while p.ends_with("/"):
+		p = p.substr(0, p.length() - 1)
+	return _secure_equals(p.get_file(), _token)
 
 
+## Constant-time string compare for auth: never early-outs on the first differing byte, so
+## response timing leaks nothing about how much of a guessed token matched (length excepted).
+static func _secure_equals(a: String, b: String) -> bool:
+	var ab := a.to_utf8_buffer()
+	var bb := b.to_utf8_buffer()
+	var diff := ab.size() ^ bb.size()
+	for i in mini(ab.size(), bb.size()):
+		diff |= ab[i] ^ bb[i]
+	return diff == 0
+
+
+# ---------------------------------------------------------------- auth token (v1.9)
+
+## Resolve the auth token at startup: env kill-switch > env token (CI/headless) > project
+## token file > first-run generation. Only a FRESH setup (no project client config carries
+## our entry yet) gets a generated token by default — an upgraded project keeps auth off
+## until the dock enables it, so existing client configs never start 401ing after an update.
+func _resolve_auth_token() -> String:
+	var kill := OS.get_environment("BECKETT_AUTH").to_lower()
+	if kill == "0" or kill == "false":
+		return ""
+	var envt := OS.get_environment("BECKETT_TOKEN")
+	if not envt.is_empty():
+		return envt
+	# The token file is not read, tightened or written through a link (see _token_link_text).
+	var linked := token_link()
+	if not linked.is_empty():
+		push_warning("[beckett] " + _token_link_text(linked))
+		return ""
+	if FileAccess.file_exists(AUTH_TOKEN_FILE):
+		# Tokens minted before v1.16 were left at the umask default (world-readable on a shared
+		# Unix box); tighten them here, best effort, so an upgrade does not need a rotate.
+		restrict_to_owner(AUTH_TOKEN_FILE)
+		return FileAccess.get_file_as_string(AUTH_TOKEN_FILE).strip_edges()
+	if MCPClientConfigScript.any_entry_in_project():
+		return ""  # upgrade path: tokenless configs already point at us
+	return _write_new_token()
+
+
+## Generate + persist a fresh token (32 hex chars) under res://.beckett/, seeding the dir
+## with a self-gitignore so the secret stays out of VCS. Returns the token ("" on IO failure,
+## which degrades to auth-off rather than a wedged server).
+func _write_new_token() -> String:
+	var linked := token_link()
+	if not linked.is_empty():
+		push_error("[beckett] " + _token_link_text(linked))
+		return ""
+	_ensure_beckett_dir()
+	var tok := Crypto.new().generate_random_bytes(16).hex_encode()
+	var f := FileAccess.open(AUTH_TOKEN_FILE, FileAccess.WRITE)
+	if f == null:
+		push_error("[beckett] could not write auth token file %s (%s) — auth stays off" % [AUTH_TOKEN_FILE, error_string(FileAccess.get_open_error())])
+		return ""
+	f.store_string(tok + "\n")
+	f.close()
+	# After the close, not before: the editor writes through a temp file and renames it into
+	# place, so only now does the path name the finished file.
+	var perr := restrict_to_owner(AUTH_TOKEN_FILE)
+	if perr != OK:
+		push_warning("[beckett] could not restrict %s to its owner (%s): other local users may be able to read the token" % [AUTH_TOKEN_FILE, error_string(perr)])
+	return tok
+
+
+## Owner read/write only (0600) on Unix-likes: a token every local user can read is a token
+## every local user holds. Windows has no such bit (the file inherits its folder's ACL), so
+## there is nothing to set there and the answer is OK. Static so the unit suite can run it
+## against a scratch file instead of the project's real token.
+static func restrict_to_owner(path: String) -> Error:
+	if OS.get_name() == "Windows":
+		return OK
+	# chmod follows a link: through one it would change the mode of whatever file the link names.
+	if not MCPClientConfigScript.linked_part(path).is_empty():
+		return ERR_UNAUTHORIZED
+	return FileAccess.set_unix_permissions(path, FileAccess.UNIX_READ_OWNER | FileAccess.UNIX_WRITE_OWNER)
+
+
+## The link between the project and the token file, as an OS path, or "": the file itself, or the
+## .beckett folder that holds it. A link can point anywhere, so through one the file would be read as
+## the token (whatever file the link names would end up in every client config's URL), chmod-ed (any
+## file of the user's) or rewritten (any file of the user's, overwritten with a token).
+static func token_link() -> String:
+	return MCPClientConfigScript.linked_part(AUTH_TOKEN_FILE)
+
+
+static func _token_link_text(linked: String) -> String:
+	return "%s is a symbolic link or junction, so the auth token file was not read, changed or written through it (a link can point anywhere) and token auth stays OFF. Replace it with a regular file or folder, or set BECKETT_TOKEN to use a token without a token file." % linked
+
+
+func auth_token() -> String:
+	return _token
+
+
+func auth_enabled() -> bool:
+	return not _token.is_empty()
+
+
+## Dock: enable (or rotate) token auth — mint a fresh token, persist it, apply it live.
+## The caller then re-writes client configs (ensure_all with the new token) or connected
+## clients start 401ing. Returns the new token ("" on IO failure = still off).
+func rotate_auth_token() -> String:
+	_token = _write_new_token()
+	return _token
+
+
+## Dock: turn token auth off and keep it off across restarts (removes the token file).
+func set_auth_disabled() -> void:
+	_token = ""
+	if FileAccess.file_exists(AUTH_TOKEN_FILE):
+		DirAccess.remove_absolute(AUTH_TOKEN_FILE)
+
+
+# ---------------------------------------------------------------- small utils
 
 func get_undo_redo() -> EditorUndoRedoManager:
 	return plugin.get_undo_redo() if plugin != null else null
@@ -662,6 +1210,17 @@ func _http(status: int, headers: Dictionary, body: String) -> Dictionary:
 
 func _body(json_string: String) -> Dictionary:
 	return {"status": 200, "headers": {}, "body": json_string}
+
+
+## A refusal from the gates at the top of handle_http: the reason in plain words, sent as the
+## text/plain it is. Those gates run before the body is parsed, so there is no request id a
+## JSON-RPC error could answer and the reason stays a bare sentence. It has to carry its own
+## Content-Type because http_server stamps the JSON default on any unlabeled body: through
+## v1.15.1 these went out as application/json over a body like `unauthorized`, and a client
+## that picks its parser from that header reported a JSON parse error instead of the 401/403
+## it was actually given.
+func _refuse(status: int, reason: String) -> Dictionary:
+	return _http(status, {"Content-Type": "text/plain; charset=utf-8"}, reason)
 
 
 static func _env_flag(key: String) -> bool:

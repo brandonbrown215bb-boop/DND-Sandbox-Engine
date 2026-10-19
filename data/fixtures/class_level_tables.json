@@ -1,0 +1,162 @@
+[
+  {
+    "id": "fixture:class_table_neutral_class",
+    "name": "Fixture neutral",
+    "hit_die": "d8",
+    "primary_ability": "WIS",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:class_table_neutral",
+          "name": "Class Table neutral",
+          "executor": "class_feature",
+          "type": "active",
+          "target": "self",
+          "action_cost": "bonus_action",
+          "resource_pool": {
+            "id": "fixture:class_table_neutral_pool",
+            "capacity_formula": {
+              "op": "progression_lookup",
+              "input": {
+                "caster_class_level": "wizard"
+              },
+              "value_type": "number",
+              "below_first": "unavailable",
+              "breakpoints": [
+                {
+                  "threshold": 1,
+                  "value": 3
+                },
+                {
+                  "threshold": 3,
+                  "value": 5
+                },
+                {
+                  "threshold": 5,
+                  "value": 7
+                }
+              ]
+            },
+            "initial_quantity": 2,
+            "die_size": {
+              "op": "progression_lookup",
+              "input": {
+                "caster_class_level": "wizard"
+              },
+              "value_type": "die_size",
+              "below_first": "unavailable",
+              "breakpoints": [
+                {
+                  "threshold": 1,
+                  "value": 6
+                },
+                {
+                  "threshold": 3,
+                  "value": 8
+                },
+                {
+                  "threshold": 5,
+                  "value": 12
+                }
+              ]
+            },
+            "spend_choice": {
+              "minimum": 1,
+              "maximum": 2
+            },
+            "recovery": {
+              "long_rest_completed": {
+                "mode": "restore_to_capacity"
+              }
+            }
+          },
+          "effects": [
+            {
+              "type": "heal_by_pool_rolls"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "fixture:class_table_renamed_class",
+    "name": "Fixture renamed",
+    "hit_die": "d8",
+    "primary_ability": "WIS",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:class_table_renamed",
+          "name": "Class Table renamed",
+          "executor": "class_feature",
+          "type": "active",
+          "target": "self",
+          "action_cost": "bonus_action",
+          "resource_pool": {
+            "id": "fixture:class_table_renamed_pool",
+            "capacity_formula": {
+              "op": "progression_lookup",
+              "input": {
+                "caster_class_level": "cleric"
+              },
+              "value_type": "number",
+              "below_first": "unavailable",
+              "breakpoints": [
+                {
+                  "threshold": 1,
+                  "value": 2
+                },
+                {
+                  "threshold": 4,
+                  "value": 4
+                },
+                {
+                  "threshold": 7,
+                  "value": 6
+                }
+              ]
+            },
+            "initial_quantity": 2,
+            "die_size": {
+              "op": "progression_lookup",
+              "input": {
+                "caster_class_level": "cleric"
+              },
+              "value_type": "die_size",
+              "below_first": "unavailable",
+              "breakpoints": [
+                {
+                  "threshold": 2,
+                  "value": 4
+                },
+                {
+                  "threshold": 4,
+                  "value": 6
+                },
+                {
+                  "threshold": 7,
+                  "value": 10
+                }
+              ]
+            },
+            "spend_choice": {
+              "minimum": 1,
+              "maximum": 2
+            },
+            "recovery": {
+              "long_rest_completed": {
+                "mode": "restore_to_capacity"
+              }
+            }
+          },
+          "effects": [
+            {
+              "type": "heal_by_pool_rolls"
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

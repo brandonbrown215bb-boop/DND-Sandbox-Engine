@@ -3,6 +3,14 @@ class_name ClassFeatureChecks
 extends RefCounted
 
 static func run(check: Callable) -> void:
+	BatchJChecks.run(check)
+	BatchKChecks.run(check)
+	BatchLChecks.run(check)
+	BatchMChecks.run(check)
+	BatchNChecks.run(check)
+	BatchPChecks.run(check)
+	BatchQChecks.run(check)
+	Batch018Checks.run(check)
 	_weapon_attack_numeric_bonus(check)
 	_shared_numeric_pool(check)
 	_shared_numeric_breakpoint_formula(check)
@@ -95,7 +103,7 @@ static func _weapon_attack_numeric_bonus(check: Callable) -> void:
 	# above the original AC, so this probes the actual reaction reversal path.
 	defender.base_ac = 16
 	defender.conditions.erase("shield")
-	defender.known_spells.append("shield")
+	SpellPermissionChecks.grant_slot_permission(defender, ["shield"])
 	defender.spell_slots["1"] = 1
 	defender.reaction_available = true
 	var shield_pending_found := false
@@ -196,6 +204,7 @@ static func _weapon_attack_numeric_bonus(check: Callable) -> void:
 	check.call(stroke_captured, "A captured attack is available for the existing Stroke of Luck choice")
 	var critical_found := false
 	for attempt in 80:
+		FighterChecks._seed_die(20, 20)
 		var critical_result := CombatAction.resolve_weapon_attack(shield_owner, {"id": "fixture:high_ac_critical", "armor_class": 1000, "current_hp": 100, "is_alive": true, "conditions": {}}, {"id": "fixture:critical_probe_blade", "type": "weapon", "damage": "1", "damage_type": "slashing", "ability": "STR", "range": 1, "attack_bonus_override": -100}, false, false, {"allow_weapon_attack_bonus": true})
 		if int(critical_result.get("activity_roll", {}).get("natural_total", 0)) == 20:
 			check.call(bool(critical_result.get("hit", false)) and not critical_result.has("weapon_attack_bonus_request"), "High-AC natural-20 critical is already a hit and exposes no bonus choice")
@@ -468,6 +477,7 @@ static func _weapon_attack_numeric_bonus(check: Callable) -> void:
 	validator.free()
 	DataLoader._load_directory("res://data/fixtures/class_building_blocks/")
 	DataLoader._validate_cross_references()
+	if not DataLoader.get_load_errors().is_empty(): print("[batch_h_class_load_errors] ", DataLoader.get_load_errors())
 	check.call(DataLoader.get_load_errors().is_empty(), "Data-only class and additive subclasses pass production content validation")
 	var warden := _character("fixture:warden", 4)
 	check.call(warden.subclass_id.is_empty() and not warden.has_feature("fixture:renewal") and warden.crit_range == 20, "Multiple subclass options remain pending and grant no combined features")
@@ -1136,11 +1146,14 @@ static func _audit_defect_repairs(check: Callable) -> void:
 	var area_spell := {"id": "fire_bolt", "name": "Area fixture", "level": 0, "save": "DEX", "damage": "2d6", "damage_type": "fire", "half_on_save": true, "range": 12}
 	decisions = {"metamagic:empowered": true, "defer_empowered": true, "spell_damage_context": {}}
 	result = CombatAction.resolve_spell(sorcerer, area_target, area_spell, false, decisions)
+	var area_request_id := str(result.get("damage_request", {}).get("request_id", ""))
 	decisions["metamagic:empowered_dice"] = [0]
 	result = CombatAction.finish_pending_spell_damage(sorcerer, area_target, result, decisions)
+	# The registered cast owns the settled cache; the answer is only a selection.
+	decisions["spell_damage_context"] = SpellDamageRolls._pending_requests[area_request_id]["decisions"]["spell_damage_context"]
 	var second_target := area_target.duplicate(true)
 	var second := CombatAction.resolve_spell(sorcerer, second_target, area_spell, false, decisions)
-	check.call(not second.has("damage_request") and second["damage_roll"] == result["damage_roll"] and sorcerer.get_sorcery_points() == points - 2, "Empowered area spell reuses one settled damage roll and pays once for the cast")
+	check.call(not second.has("damage_request") and second["damage_roll"] == result["damage_roll"] and sorcerer.get_sorcery_points() == points - 2, "Empowered area spell reuses one settled damage roll and pays once for the cast (first=%s second=%s points=%d/%d context=%s)" % [str(result),str(second),sorcerer.get_sorcery_points(),points-2,str(decisions)])
 
 
 static func _roll_token_rules(check: Callable) -> void:
@@ -1266,6 +1279,7 @@ static func _ward_rules(check: Callable) -> void:
 	check.call(free_events.is_empty() and item_events.is_empty() and countered_events.is_empty() and not WardRules.is_ward_active(abjurer, "abjurer_arcane_ward"), "Free casts, magic-item casts, and countered casts do not create or recharge Arcane Ward")
 
 	abjurer.known_spells.append_array(["mage_armor", "shield", "protection_from_evil_and_good"])
+	SpellPermissionChecks.grant_slot_permission(abjurer, ["shield"])
 	var cast_mage_armor := CombatAction.resolve_spell(abjurer, abjurer, DataLoader.get_spell("mage_armor"), true)
 	check.call(bool(cast_mage_armor.get("success", false)) and WardRules.is_ward_active(abjurer, "abjurer_arcane_ward") and WardRules.current_ward_hp(abjurer, "abjurer_arcane_ward") == 9 and WardRules.max_ward_hp(abjurer, "abjurer_arcane_ward") == 9, "First slot-expending Abjuration spell creates Arcane Ward at full capacity (2 * level + INT mod = 9 HP)")
 

@@ -19,8 +19,9 @@ class_name BeckettEffort
 ## modules.
 
 const MAX_LEVEL := 6
-const DEFAULT_LEVEL := 6
+const DEFAULT_LEVEL := 6  # full surface — dialing down is opt-in, never a silent loss
 
+# Human-facing label and a short tagline for each level (shown on the dock).
 const LEVELS := {
 	1: {"name": "Inspect",  "tag": "Read-only recon"},
 	2: {"name": "Author",   "tag": "Edit and build"},
@@ -30,48 +31,110 @@ const LEVELS := {
 	6: {"name": "Max",      "tag": "Orchestrate and ship"},
 }
 
+# Tools UNLOCKED AT each level (the delta over the level below). Grouped by the
+# tool module they come from. When you add a tool, slot it here — an UNLISTED
+# tool falls back to level 1 (always visible), so a new tool never silently
+# vanishes; it just won't help thin out the low tiers until it's classified.
 const _DELTA := {
+	# L1 — pure read: understand the project without touching it. Cheapest surface.
 	1: [
+		# reflection (read)
 		"get_scene_tree", "get_godot_version", "describe_class", "describe_object",
 		"find_classes", "find_methods",
+		# files & project (read)
 		"read_script", "read_file", "list_dir", "search_files", "get_project_setting",
+		# project overview (read) + lazy knowledge packs
 		"get_project_statistics", "list_skills", "load_skill",
+		# self-diagnosis (v1.9): must survive ANY effort cap — it is how a capped
+		# surface explains itself (the 1.7.0 "42-tool trap" postmortem)
+		"doctor",
+		# the long form of every trimmed description (v1.14 context diet). Same rule as
+		# doctor: the tool that explains a capped surface cannot itself be capped away,
+		# and every short description points at it.
+		"help",
 	],
+	# L2 — author static content: the core editor authoring loop.
 	2: [
+		# reflection (write)
 		"set_property", "call_method",
+		# scene & nodes
 		"create_node", "delete_node", "duplicate_node", "instance_scene", "move_node",
 		"open_scene", "rename_node", "reparent_node", "save_scene",
+		# scripts (write)
 		"attach_script", "script_patch", "validate_script", "write_script",
+		# C#/.NET dev-loop (compile-check via the .NET SDK the project already needs)
 		"build_csharp",
+		# resources
 		"create_resource", "set_resource",
+		# signals
 		"connect_signal", "disconnect_signal", "list_signals",
+		# files & project (write)
 		"write_file", "set_project_setting",
+		# catch the editor up with files written outside it (class_name registration, imports)
+		"rescan_filesystem",
+		# scaffold from a bundled/project template
 		"apply_template",
+		# batching authoring steps
 		"batch_execute",
 	],
+	# L3 — run: close the basic dev loop (edit -> play -> read errors -> fix).
+	# The human plays and reports; the agent launches, waits, and tails the log.
 	3: [
 		"play_scene", "stop_scene", "get_play_state", "wait_until", "logs_read",
 	],
+	# L4 — SEE: the agent observes the RUNNING game, read-only (screenshot, live
+	# tree, find/read live nodes, perf, the runtime log stream). This tier is the
+	# Lite edition's CEILING — the free tier can watch and diagnose the game (the #1
+	# wow), while DRIVING it is the paid step up. Backed by the CORE module
+	# runtime_observe_tools.gd, which ships in Lite.
 	4: [
 		"get_remote_tree", "find_nodes", "wait_for_node", "screenshot",
 		"monitor_properties", "get_performance_monitors", "game_logs",
 		"runtime_get_property",
+		# one-call structured UI read (v1.10) — pure observation, so it Sees in Lite
+		"ui_snapshot",
+		# render diagnosis (v1.12): why is this mesh not on screen, and which render stage
+		# broke the image. Seeing that something is wrong was never the gap — saying WHICH
+		# STAGE is, and that answer belongs to the tier whose whole promise is sight.
+		"render_probe", "set_debug_draw",
 	],
+	# L5 — DRIVE & verify: the agent drives the game (input, clicks, drag/scroll,
+	# runtime writes/calls, record/replay) and checks results (asserts, test_run),
+	# plus the authoring power tools that loop needs (animation, scatter). Full-only:
+	# runtime_tools.gd is the trimmed sentinel that flags the Lite/Full boundary.
 	5: [
+		# drive it
 		"runtime_call", "runtime_set_property",
 		"simulate_input", "click_button_by_text", "click_control",
 		"click_node3d", "click_world", "scroll", "drag",
 		"get_control_rect", "find_ui_elements",
+		# real per-char typing into text fields (v1.10)
+		"type_text",
+		# one-call semantic UI flow + deterministic layout QA (v1.10 P1)
+		"ui_do", "ui_audit",
 		"record_input", "replay_input",
+		# deterministic playtest control (freeze / frame-step / step-until / time-scale)
 		"time_control",
+		# hot-swap an edited .gdshader into the live game (v1.12) — a live MUTATION of the
+		# running game's materials, so it belongs to Drive, not to See
+		"reload_shader",
+		# verify it
 		"assert_node_state", "assert_screen_text", "assert_scene", "compare_screenshots",
 		"test_run",
+		# save + rerun recorded playtests as regression suites (v1.8)
+		"playtest",
+		# animation authoring + playback
 		"animation_manage",
+		# scene authoring at scale (Scene Paint analog)
 		"scatter_nodes",
 	],
+	# L6 — ship & advanced: niche, slower, or external-facing tools.
 	6: [
+		# export (job_status polls background exports)
 		"export_project", "list_export_presets", "job_status",
+		# asset library
 		"asset_lib_search", "asset_lib_info", "asset_lib_install",
+		# project analysis (heavier scans)
 		"detect_circular_dependencies", "find_unused_resources",
 	],
 }

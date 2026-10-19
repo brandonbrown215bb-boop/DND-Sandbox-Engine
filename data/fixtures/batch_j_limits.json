@@ -1,0 +1,186 @@
+{
+  "id": "fixture:batch_j",
+  "name": "Batch J Neutral",
+  "description": "Test-only scoped numeric-pool weapon riders.",
+  "hit_die": "d8",
+  "primary_ability": "STR",
+  "features_by_level": {
+    "1": [
+      {
+        "id": "fixture:j_round",
+        "name": "J Round",
+        "executor": "class_feature",
+        "type": "active",
+        "target": "self",
+        "action_cost": "bonus_action",
+        "resource_cost": 1,
+        "resource_pool": {
+          "id": "fixture:j_round_pool",
+          "capacity_formula": 10,
+          "initial_quantity": 10
+        },
+        "effects": [
+          {
+            "type": "grant_condition",
+            "condition": "j_round",
+            "duration": 1
+          }
+        ],
+        "passive_effects": [
+          {
+            "type": "weapon_damage_rider",
+            "id": "j_round",
+            "trigger": "weapon_attack_hit",
+            "damage_type": "force",
+            "dice_by_level": {
+              "1": "1d4"
+            },
+            "use_limit": "once_per_round",
+            "own_turn_only": true
+          }
+        ]
+      },
+      {
+        "id": "fixture:j_first",
+        "name": "J First",
+        "executor": "class_feature",
+        "type": "active",
+        "target": "self",
+        "action_cost": "bonus_action",
+        "resource_cost": 1,
+        "resource_pool": {
+          "id": "fixture:j_first_pool",
+          "capacity_formula": 10,
+          "initial_quantity": 10
+        },
+        "effects": [
+          {
+            "type": "grant_condition",
+            "condition": "j_first",
+            "duration": 1
+          }
+        ],
+        "passive_effects": [
+          {
+            "type": "weapon_damage_rider",
+            "id": "j_first",
+            "trigger": "weapon_attack_hit",
+            "damage_type": "force",
+            "dice_by_level": {
+              "1": "1d4"
+            },
+            "use_limit": "once_per_round",
+            "first_round_only": true
+          }
+        ]
+      },
+      {
+        "id": "fixture:j_roll",
+        "name": "J Roll",
+        "executor": "class_feature",
+        "type": "active",
+        "target": "self",
+        "action_cost": "bonus_action",
+        "resource_cost": 1,
+        "resource_pool": {
+          "id": "fixture:j_roll_pool",
+          "capacity_formula": 10,
+          "initial_quantity": 10
+        },
+        "effects": [
+          {
+            "type": "grant_condition",
+            "condition": "j_roll",
+            "duration": 1
+          }
+        ],
+        "passive_effects": [
+          {
+            "type": "weapon_damage_rider",
+            "id": "j_roll",
+            "trigger": "weapon_attack_hit",
+            "damage_type": "force",
+            "dice_by_level": {
+              "1": "1d4"
+            },
+            "use_limit": "once_per_roll"
+          }
+        ]
+      },
+      {
+        "id": "fixture:j_active",
+        "name": "J Active",
+        "executor": "class_feature",
+        "type": "active",
+        "target": "self",
+        "action_cost": "bonus_action",
+        "resource_cost": 1,
+        "resource_pool": {
+          "id": "fixture:j_active_pool",
+          "capacity_formula": 10,
+          "initial_quantity": 10
+        },
+        "effects": [
+          {
+            "type": "timed_numeric_modifier",
+            "kind": "stat",
+            "key": "AC",
+            "amount": 1,
+            "duration_seconds": 60
+          }
+        ],
+        "passive_effects": [
+          {
+            "type": "weapon_damage_rider",
+            "id": "j_active",
+            "trigger": "weapon_attack_hit",
+            "damage_type": "force",
+            "dice_by_level": {
+              "1": "1d4"
+            },
+            "use_limit": "once_per_active_instance"
+          }
+        ]
+      },
+      {
+        "id": "fixture:j_waiver",
+        "name": "J Waiver",
+        "executor": "class_feature",
+        "type": "active",
+        "target": "self",
+        "action_cost": "bonus_action",
+        "resource_cost": 1,
+        "resource_pool": {
+          "id": "fixture:j_waiver_pool",
+          "capacity_formula": 10,
+          "initial_quantity": 10
+        },
+        "effects": [
+          {
+            "type": "timed_numeric_modifier",
+            "kind": "stat",
+            "key": "AC",
+            "amount": 1,
+            "duration_seconds": 60
+          }
+        ],
+        "passive_effects": [
+          {
+            "type": "weapon_damage_rider",
+            "id": "j_waiver",
+            "trigger": "weapon_attack_hit",
+            "damage_type": "force",
+            "dice_by_level": {
+              "1": "1d4"
+            },
+            "use_limit": "once_per_round",
+            "payment_waiver": {
+              "parent": "opportunity_attack",
+              "requires_active_source": true
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

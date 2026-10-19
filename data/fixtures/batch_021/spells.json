@@ -1,0 +1,131 @@
+[
+  {
+    "id": "fixture:021_a0",
+    "name": "Practice A0",
+    "execution": "shared",
+    "level": 1,
+    "school": "evocation",
+    "casting_time": "action",
+    "range": 0,
+    "target": "self",
+    "attack_type": "none",
+    "components": [],
+    "classes": [
+      "fixture:021_a"
+    ],
+    "effects": [
+      {
+        "type": "heal",
+        "value": 2
+      }
+    ]
+  },
+  {
+    "id": "fixture:021_a1",
+    "name": "Practice A1",
+    "execution": "shared",
+    "level": 1,
+    "school": "evocation",
+    "casting_time": "action",
+    "range": 0,
+    "target": "self",
+    "attack_type": "none",
+    "components": [],
+    "classes": [
+      "fixture:021_a"
+    ],
+    "effects": [
+      {
+        "type": "heal",
+        "value": 2
+      }
+    ]
+  },
+  {
+    "id": "fixture:021_b0",
+    "name": "Practice B0",
+    "execution": "shared",
+    "level": 1,
+    "school": "evocation",
+    "casting_time": "action",
+    "range": 0,
+    "target": "self",
+    "attack_type": "none",
+    "components": [],
+    "classes": [
+      "fixture:021_b"
+    ],
+    "effects": [
+      {
+        "type": "heal",
+        "value": 2
+      }
+    ]
+  },
+  {
+    "id": "fixture:021_b1",
+    "name": "Practice B1",
+    "execution": "shared",
+    "level": 1,
+    "school": "evocation",
+    "casting_time": "action",
+    "range": 0,
+    "target": "self",
+    "attack_type": "none",
+    "components": [],
+    "classes": [
+      "fixture:021_b"
+    ],
+    "effects": [
+      {
+        "type": "heal",
+        "value": 2
+      }
+    ]
+  },
+  {
+    "id": "fixture:021_shared0",
+    "name": "Practice SHARED0",
+    "execution": "shared",
+    "level": 1,
+    "school": "evocation",
+    "casting_time": "action",
+    "range": 0,
+    "target": "self",
+    "attack_type": "none",
+    "components": [],
+    "classes": [
+      "fixture:021_a",
+      "fixture:021_b"
+    ],
+    "effects": [
+      {
+        "type": "heal",
+        "value": 2
+      }
+    ]
+  },
+  {
+    "id": "fixture:021_save",
+    "name": "Practice Bind",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "components": [],
+    "save": "WIS",
+    "repeat_save": "WIS",
+    "duration_seconds": 60,
+    "classes": [
+      "fixture:021_b"
+    ],
+    "effects": [
+      {
+        "type": "grant_condition",
+        "condition": "frightened",
+        "on_failed_save": true
+      }
+    ]
+  }
+]

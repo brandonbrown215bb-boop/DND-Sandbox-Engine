@@ -1,0 +1,41 @@
+[
+  {
+    "id": "fixture:combat_reroll_neutral_class",
+    "name": "Combat Reroller",
+    "hit_die": "d8",
+    "primary_ability": "STR",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:combat_reroll_neutral_feature",
+          "name": "Second Swing",
+          "type": "passive",
+          "resource_pool": {"id": "fixture:combat_reroll_neutral_pool", "capacity_formula": 2, "initial_quantity": 2},
+          "passive_effects": [
+            {"type": "ability_check_mandatory_reroll", "id": "weapon_test_reroll", "domain": "weapon_attack", "ability": "STR", "eligible_outcomes": ["hit", "miss"], "reroll_mode": "natural_only", "bonus_dice_policy": "keep", "selection_policy": "mandatory_new", "new_roll_mode": "normal", "cost": 1}
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "fixture:combat_reroll_renamed_class",
+    "name": "Spell Reroller",
+    "hit_die": "d8",
+    "primary_ability": "CHA",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:combat_reroll_renamed_feature",
+          "name": "Second Reading",
+          "type": "passive",
+          "resource_pool": {"id": "fixture:combat_reroll_renamed_pool", "capacity_formula": 3, "initial_quantity": 3},
+          "passive_effects": [
+            {"type": "ability_check_mandatory_reroll", "id": "spell_attack_test_reroll", "domain": "shared_spell_attack", "ability": "INT", "eligible_outcomes": ["hit", "miss"], "reroll_mode": "whole_test", "bonus_dice_policy": "keep", "selection_policy": "choose_old_or_new", "new_roll_mode": "advantage", "level_bonus_formula": {"caster_level": true}, "cost": 1},
+            {"type": "ability_check_mandatory_reroll", "id": "spell_save_test_reroll", "domain": "shared_spell_save", "ability": "DEX", "eligible_outcomes": ["success", "failure"], "reroll_mode": "whole_test", "bonus_dice_policy": "keep", "selection_policy": "mandatory_new", "new_roll_mode": "captured", "level_bonus_formula": {"caster_level": true}, "cost": 1}
+          ]
+        }
+      ]
+    }
+  }
+]

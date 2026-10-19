@@ -4,7 +4,7 @@ extends RefCounted
 const SHORT_REST_SECONDS := 3600
 const LONG_REST_SECONDS := 28800
 const SUPPORTED_REST_TYPES := ["short_rest", "long_rest"]
-const SUPPORTED_TRIGGERS := ["short_rest_completed", "long_rest_completed"]
+const SUPPORTED_TRIGGERS := ["short_rest_completed", "long_rest_completed", "spell_cast_completed"]
 const SUPPORTED_BUDGET_FORMULAS := ["half_class_level_ceil", "class_level", "flat"]
 
 static var _active_rest_choice_modal: Control = null
@@ -405,7 +405,7 @@ static func compute_recovery_budget(character: Character, effect: Dictionary) ->
 			return 0
 
 
-static func eligible_missing_slots(character: Character, effect: Dictionary) -> Dictionary:
+static func eligible_missing_slots(character: Character, effect: Dictionary, event: Dictionary = {}) -> Dictionary:
 	if character == null:
 		return {}
 	var budget := compute_recovery_budget(character, effect)
@@ -413,21 +413,55 @@ static func eligible_missing_slots(character: Character, effect: Dictionary) -> 
 		return {}
 	var min_slot_level := maxi(1, int(effect.get("min_slot_level", 1)))
 	var max_slot_level := clampi(int(effect.get("max_slot_level", 5)), min_slot_level, 9)
-	var max_slots := character.get_max_spell_slots()
+	if bool(effect.get("lower_than_paid_slot", false)):
+		var paid_slot_level := int(event.get("paid_slot_level", 0))
+		if paid_slot_level <= 1: return {}
+		max_slot_level = mini(max_slot_level, paid_slot_level - 1)
+	if max_slot_level < min_slot_level: return {}
+	var slot_pool_id := str(event.get("paid_slot_pool_id", effect.get("slot_pool", SpellSlotRules.default_pool_id(character))))
+	if bool(effect.get("lower_than_paid_slot", false)) and int(event.get("paid_slot_level", 0)) <= 1: return {}
+	if bool(effect.get("lower_than_paid_slot", false)) and str(event.get("paid_slot_pool_id", "")).is_empty(): return {}
+	var max_slots: Dictionary = SpellSlotRules.pact_maximum(character) if slot_pool_id == "pact" else SpellSlotRules.ordinary_maximum(character)
+	if max_slots.is_empty(): max_slots = character.get_max_spell_slots()
+	var slot_current: Dictionary = character.pact_spell_slots if slot_pool_id == "pact" and not character.pact_spell_slots.is_empty() else character.spell_slots
 	var missing := {}
 	for lvl in range(min_slot_level, max_slot_level + 1):
 		if lvl > budget:
 			continue
 		var key := str(lvl)
 		var max_count := int(max_slots.get(key, 0))
-		var cur_count := int(character.spell_slots.get(key, 0))
+		var cur_count := int(slot_current.get(key, 0))
 		var diff := max_count - cur_count
 		if diff > 0:
 			missing[key] = diff
+	if bool(effect.get("lowest_eligible_slot", false)) and not missing.is_empty():
+		var eligible_levels: Array[int] = []
+		for key in missing: eligible_levels.append(int(key))
+		eligible_levels.sort()
+		var lowest := eligible_levels[0]
+		for key in missing.keys():
+			if int(key) != lowest: missing.erase(key)
 	return missing
 
 
-static func find_rest_slot_recovery_candidates(character: Character, trigger: String = "short_rest_completed") -> Array[Dictionary]:
+static func eligible_missing_resource_pools(character: Character, effect: Dictionary) -> Dictionary:
+	var out: Dictionary = {}
+	var allowed: Array = effect.get("recoverable_pool_ids", [])
+	var excluded: Array = effect.get("excluded_resource_pool_ids", [])
+	if character == null or allowed.is_empty(): return out
+	for source_id_variant in character.numeric_resource_pools.keys():
+		var source_id := str(source_id_variant)
+		var pool: Dictionary = character.numeric_resource_pools[source_id]
+		var definition_id := str(pool.get("definition_id", ""))
+		if definition_id not in allowed or definition_id in excluded or pool.has("die_size"): continue
+		var current := int(pool.get("current", -1))
+		var capacity := int(pool.get("capacity", -1))
+		if current < 0 or capacity <= current or str(pool.get("owner_id", "")) != character.character_id or str(pool.get("source_instance_id", "")) != source_id: continue
+		out[source_id] = {"definition_id":definition_id,"current":current,"capacity":capacity,"missing":capacity-current}
+	return out
+
+
+static func find_rest_slot_recovery_candidates(character: Character, trigger: String = "short_rest_completed", event: Dictionary = {}) -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
 	if character == null or character.is_dead() or character.current_hp <= 0:
 		return out
@@ -445,17 +479,41 @@ static func find_rest_slot_recovery_candidates(character: Character, trigger: St
 				continue
 			if str(effect.get("trigger", "short_rest_completed")) != trigger:
 				continue
-			var missing := eligible_missing_slots(character, effect)
-			if missing.is_empty():
+			var missing := eligible_missing_slots(character, effect, event)
+			var missing_pools := eligible_missing_resource_pools(character, effect)
+			if missing.is_empty() and missing_pools.is_empty():
 				continue
 			out.append({
 				"character": character,
 				"feature": feature,
 				"effect": effect,
 				"missing_by_level": missing,
+				"missing_pools": missing_pools,
 				"budget": compute_recovery_budget(character, effect),
 			})
 	return out
+
+
+## A completed paid spell result carries its exact selected slot pool/level into
+## recovery choices. No caster-level or sibling-pool inference is performed.
+static func queue_spell_result_recovery(character: Character, result: Dictionary, paid_slot_level: int, paid_slot_pool_id: String, host_parent: Node) -> void:
+	if character == null or host_parent == null or not is_instance_valid(host_parent) or paid_slot_level < 1 or paid_slot_pool_id not in ["ordinary", "pact"] or is_rest_window_open(): return
+	var event := {
+		"event_id":"spell_result:%s:%d" % [character.character_id, _window_epoch + 1],
+		"trigger":"spell_cast_completed",
+		"paid_slot_level":paid_slot_level,
+		"paid_slot_pool_id":paid_slot_pool_id,
+		"result":result.duplicate(true),
+	}
+	var candidates := find_rest_slot_recovery_candidates(character, "spell_cast_completed", event)
+	if candidates.is_empty(): return
+	_pending_recovery_queue = candidates
+	_pending_recovery_results.clear()
+	_pending_pool_recoveries.clear()
+	_pending_recovery_host = host_parent
+	_pending_rest_event = event
+	_pending_recovery_finished = Callable()
+	_advance_interactive_recovery_queue()
 
 
 static func open_recovery_window(character: Character, feature: Dictionary, effect: Dictionary, event: Dictionary = {}) -> Dictionary:
@@ -469,11 +527,15 @@ static func open_recovery_window(character: Character, feature: Dictionary, effe
 	var budget := compute_recovery_budget(character, effect)
 	if budget <= 0:
 		return {"opened": false, "reason": "zero_budget"}
-	var missing := eligible_missing_slots(character, effect)
-	if missing.is_empty():
+	var missing := eligible_missing_slots(character, effect, event)
+	var missing_pools := eligible_missing_resource_pools(character, effect)
+	if missing.is_empty() and missing_pools.is_empty():
 		return {"opened": false, "reason": "no_eligible_missing_slots"}
 	var min_slot_level := maxi(1, int(effect.get("min_slot_level", 1)))
 	var max_slot_level := clampi(int(effect.get("max_slot_level", 5)), min_slot_level, 9)
+	var slot_pool_id := str(event.get("paid_slot_pool_id", effect.get("slot_pool", SpellSlotRules.default_pool_id(character))))
+	if bool(effect.get("lower_than_paid_slot", false)) and (int(event.get("paid_slot_level", 0)) <= 1 or str(event.get("paid_slot_pool_id", "")).is_empty()):
+		return {"opened":false,"reason":"missing_paid_slot_result"}
 
 	_window_epoch += 1
 	var request_id := "rest_slot_recovery:%d" % _window_epoch
@@ -495,6 +557,11 @@ static func open_recovery_window(character: Character, feature: Dictionary, effe
 		"min_slot_level": min_slot_level,
 		"max_slot_level": max_slot_level,
 		"missing_by_level": missing.duplicate(true),
+		"missing_pools": missing_pools.duplicate(true),
+		"pool_before": character.numeric_resource_pools.duplicate(true),
+		"slot_pool_id": slot_pool_id,
+		"slot_counts_at_open": (character.pact_spell_slots if slot_pool_id == "pact" and not character.pact_spell_slots.is_empty() else character.spell_slots).duplicate(true),
+		"paid_slot_level": int(event.get("paid_slot_level", 0)),
 		"settled": false,
 	}
 	return {"opened": true, "window": _active_recovery_window.duplicate(false)}
@@ -571,14 +638,28 @@ static func validate_slot_selection(window: Dictionary, decision: Variant) -> Di
 			"message": str(normalized.get("message", "Invalid slot selection.")),
 		}
 	var counts: Dictionary = normalized["counts"]
-	if counts.is_empty():
-		return {"valid": false, "error": "empty_selection", "message": "Choose at least one expended spell slot or decline recovery."}
+	var selected_pools: Variant = dec.get("selected_pools", {})
+	if not selected_pools is Dictionary:
+		return {"valid": false, "error": "invalid_pool_selection", "message": "Resource-pool selection must map exact sources to quantities."}
+	if counts.is_empty() and selected_pools.is_empty():
+		return {"valid": false, "error": "empty_selection", "message": "Choose at least one eligible expended resource or decline recovery."}
 
 	var min_slot_level := int(window.get("min_slot_level", 1))
 	var max_slot_level := int(window.get("max_slot_level", 5))
 	var budget := int(window.get("budget", 0))
-	var max_slots := character.get_max_spell_slots()
+	var slot_pool_id := str(window.get("slot_pool_id", "ordinary"))
+	var max_slots: Dictionary = SpellSlotRules.pact_maximum(character) if slot_pool_id == "pact" else SpellSlotRules.ordinary_maximum(character)
+	if max_slots.is_empty(): max_slots = character.get_max_spell_slots()
+	var current_slots: Dictionary = character.pact_spell_slots if slot_pool_id == "pact" and not character.pact_spell_slots.is_empty() else character.spell_slots
 	var total_level_sum := 0
+	var missing_by_level: Dictionary = window.get("missing_by_level", {})
+	var lowest_level := 0
+	if bool(window.get("effect", {}).get("lowest_eligible_slot", false)) and not missing_by_level.is_empty():
+		var levels: Array[int] = []
+		for available_level in missing_by_level: levels.append(int(available_level))
+		levels.sort()
+		lowest_level = levels[0]
+	var paid_slot_level := int(window.get("paid_slot_level", 0))
 
 	for key in counts:
 		var lvl := int(key)
@@ -589,9 +670,15 @@ static func validate_slot_selection(window: Dictionary, decision: Variant) -> Di
 				"error": "slot_level_ineligible",
 				"message": "Slot level %d is outside the eligible range (%d-%d)." % [lvl, min_slot_level, max_slot_level],
 			}
+		if lowest_level > 0 and lvl != lowest_level:
+			return {"valid":false,"error":"not_lowest_eligible","message":"Only the lowest eligible spell slot can be recovered."}
+		if bool(window.get("effect", {}).get("lower_than_paid_slot", false)) and (paid_slot_level <= 1 or lvl >= paid_slot_level):
+			return {"valid":false,"error":"not_lower_than_paid","message":"Recovered slot must be lower than the exact paid slot."}
 		var max_for_lvl := int(max_slots.get(key, 0))
-		var cur_for_lvl := int(character.spell_slots.get(key, 0))
+		var cur_for_lvl := int(current_slots.get(key, 0))
 		var missing_for_lvl := maxi(0, max_for_lvl - cur_for_lvl)
+		if int(window.get("slot_counts_at_open", {}).get(key, cur_for_lvl)) != cur_for_lvl:
+			return {"valid":false,"error":"stale_slot_pool","message":"Spell-slot quantities changed while recovery was open."}
 		if req_count > missing_for_lvl:
 			return {
 				"valid": false,
@@ -599,6 +686,24 @@ static func validate_slot_selection(window: Dictionary, decision: Variant) -> Di
 				"message": "Cannot recover %d level-%d slot(s); only %d expended." % [req_count, lvl, missing_for_lvl],
 			}
 		total_level_sum += lvl * req_count
+	var offered_pools: Dictionary = window.get("missing_pools", {})
+	for source_id_variant in selected_pools:
+		var source_id := str(source_id_variant)
+		var quantity_variant: Variant = selected_pools[source_id_variant]
+		if not ResourcePoolRules._integer(quantity_variant, 1, ResourcePoolRules.MAX_CAPACITY):
+			return {"valid":false,"error":"invalid_pool_quantity","message":"Pool recovery quantity must be a positive integer."}
+		if not offered_pools.has(source_id):
+			return {"valid":false,"error":"pool_not_offered","message":"The selected exact pool is not eligible for this recovery."}
+		var offer: Dictionary = offered_pools[source_id]
+		var owned: Dictionary = character.numeric_resource_pools.get(source_id, {})
+		if owned.is_empty() or str(owned.get("owner_id", "")) != character.character_id or str(owned.get("definition_id", "")) != str(offer.definition_id) or int(owned.get("current", -1)) != int(offer.current) or int(owned.get("capacity", -1)) != int(offer.capacity):
+			return {"valid":false,"error":"stale_pool","message":"The selected exact pool changed while recovery was open."}
+		if int(quantity_variant) > int(offer.missing):
+			return {"valid":false,"error":"pool_over_capacity","message":"Selected recovery exceeds the exact pool's remaining capacity."}
+		var effect: Dictionary = window.get("effect", {})
+		if str(offer.definition_id) not in effect.get("recoverable_pool_ids", []) or str(offer.definition_id) in effect.get("excluded_resource_pool_ids", []):
+			return {"valid":false,"error":"pool_excluded","message":"The exact pool is excluded from recovery."}
+		total_level_sum += int(quantity_variant)
 
 	if total_level_sum > budget:
 		return {
@@ -611,6 +716,7 @@ static func validate_slot_selection(window: Dictionary, decision: Variant) -> Di
 		"valid": true,
 		"declined": false,
 		"selected_slots": counts,
+		"selected_pools": selected_pools.duplicate(true),
 		"budget_spent": total_level_sum,
 		"budget_max": budget,
 	}
@@ -653,13 +759,22 @@ static func settle_recovery_window(decision: Variant) -> Dictionary:
 		}
 
 	var counts: Dictionary = check["selected_slots"]
+	var pool_selections: Dictionary = check.get("selected_pools", {})
+	var slot_pool_id := str(_active_recovery_window.get("slot_pool_id", "ordinary"))
 	var summary_parts: Array[String] = []
 	var sorted_keys := counts.keys()
 	sorted_keys.sort_custom(func(a, b): return int(a) < int(b))
 	for key in sorted_keys:
 		var count := int(counts[key])
-		character.spell_slots[key] = int(character.spell_slots.get(key, 0)) + count
+		for index in count: SpellSlotRules.restore(character, slot_pool_id, int(key))
 		summary_parts.append("%d×L%s" % [count, key])
+	var pool_receipts: Array[Dictionary] = []
+	for source_id in pool_selections:
+		var offer: Dictionary = _active_recovery_window.get("missing_pools", {}).get(source_id, {})
+		var pool_receipt := ResourcePoolRules.recover_selected_quantity(character, str(source_id), str(offer.get("definition_id", "")), int(pool_selections[source_id]), int(offer.get("current", -1)), int(offer.get("capacity", -1)))
+		if not pool_receipt.get("success", false):
+			return {"success":false,"error":"stale_pool","message":str(pool_receipt.get("message", "Pool recovery refused."))}
+		pool_receipts.append(pool_receipt)
 
 	var budget_spent := int(check.get("budget_spent", 0))
 	_active_recovery_window["settled"] = true
@@ -672,6 +787,7 @@ static func settle_recovery_window(decision: Variant) -> Dictionary:
 		"feature_id": feature_id,
 		"feature_name": feature_name,
 		"restored_slots": counts.duplicate(true),
+		"restored_pools": pool_receipts,
 		"budget_spent": budget_spent,
 		"budget_max": budget,
 		"message": "%s uses %s to recover spell slots (%s; %d/%d budget)." % [
@@ -694,6 +810,7 @@ static func _open_slot_recovery_modal(host_parent: Node, window: Dictionary, not
 	var budget := int(window.get("budget", 1))
 	var max_slot_level := int(window.get("max_slot_level", 5))
 	var missing_by_level: Dictionary = window.get("missing_by_level", {})
+	var missing_pools: Dictionary = window.get("missing_pools", {})
 
 	var overlay := ColorRect.new()
 	overlay.name = "SlotRecoveryModalOverlay"
@@ -707,7 +824,7 @@ static func _open_slot_recovery_modal(host_parent: Node, window: Dictionary, not
 
 	var panel := PanelContainer.new()
 	panel.name = "SlotRecoveryPanel"
-	panel.custom_minimum_size = Vector2(460, 280)
+	panel.custom_minimum_size = Vector2(520, 360)
 	center.add_child(panel)
 
 	var margin := MarginContainer.new()
@@ -729,7 +846,7 @@ static func _open_slot_recovery_modal(host_parent: Node, window: Dictionary, not
 
 	var desc := Label.new()
 	desc.name = "DescriptionLabel"
-	desc.text = "Choose expended spell slots to recover (combined slot levels up to %d; max slot level %d)." % [budget, max_slot_level]
+	desc.text = "Choose eligible expended slots or pool uses within the %d-point budget." % budget
 	desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	vbox.add_child(desc)
 
@@ -744,6 +861,8 @@ static func _open_slot_recovery_modal(host_parent: Node, window: Dictionary, not
 
 	var selected_counts := {}
 	var row_controls := {}
+	var selected_pools := {}
+	var pool_controls := {}
 	var level_keys := missing_by_level.keys()
 	level_keys.sort_custom(func(a, b): return int(a) < int(b))
 	for key in level_keys:
@@ -761,8 +880,12 @@ static func _open_slot_recovery_modal(host_parent: Node, window: Dictionary, not
 		var spent := 0
 		for k in selected_counts:
 			spent += int(k) * int(selected_counts[k])
-		budget_label.text = "Selected Slot Budget: %d / %d" % [spent, budget]
-		btn_confirm.disabled = spent <= 0 or spent > budget
+		for source_id in selected_pools:
+			spent += int(selected_pools[source_id])
+		budget_label.text = "Selected Recovery Budget: %d / %d" % [spent, budget]
+		var chosen := not selected_counts.is_empty() and selected_counts.values().any(func(q): return int(q) > 0)
+		chosen = chosen or selected_pools.values().any(func(q): return int(q) > 0)
+		btn_confirm.disabled = not chosen or spent > budget
 		for k in row_controls:
 			var lvl := int(k)
 			var count := int(selected_counts.get(k, 0))
@@ -774,6 +897,15 @@ static func _open_slot_recovery_modal(host_parent: Node, window: Dictionary, not
 			lbl.text = "Level %d Slots: %d / %d expended selected" % [lvl, count, max_missing]
 			btn_sub.disabled = count <= 0
 			btn_add.disabled = count >= max_missing or (spent + lvl) > budget
+		for source_id in pool_controls:
+			var ctrl: Dictionary = pool_controls[source_id]
+			var count := int(selected_pools.get(source_id, 0))
+			var offer: Dictionary = missing_pools[source_id]
+			var btn_sub: Button = ctrl["btn_sub"]
+			var btn_add: Button = ctrl["btn_add"]
+			ctrl["label"].text = "%s — %d / %d uses selected" % [str(offer.definition_id), count, int(offer.missing)]
+			btn_sub.disabled = count <= 0
+			btn_add.disabled = count >= int(offer.missing) or (spent + 1) > budget
 
 	for key in level_keys:
 		var k_str := str(key)
@@ -810,8 +942,45 @@ static func _open_slot_recovery_modal(host_parent: Node, window: Dictionary, not
 			var cur_s := 0
 			for sk in selected_counts:
 				cur_s += int(sk) * int(selected_counts[sk])
+			for pool_key in selected_pools: cur_s += int(selected_pools[pool_key])
 			if int(selected_counts.get(k_str, 0)) < max_m and (cur_s + int(k_str)) <= budget:
 				selected_counts[k_str] = int(selected_counts.get(k_str, 0)) + 1
+				refresh_ui.call()
+		)
+	var pool_source_ids: Array = missing_pools.keys()
+	pool_source_ids.sort()
+	for source_id_variant in pool_source_ids:
+		var source_id := str(source_id_variant)
+		selected_pools[source_id] = 0
+		var offer: Dictionary = missing_pools[source_id]
+		var hbox := HBoxContainer.new()
+		hbox.name = "PoolRecoveryRow_%d" % pool_controls.size()
+		rows_vbox.add_child(hbox)
+		var row_label := Label.new()
+		row_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		hbox.add_child(row_label)
+		var btn_sub := Button.new()
+		btn_sub.name = "BtnSubPool%d" % pool_controls.size()
+		btn_sub.text = "-"
+		hbox.add_child(btn_sub)
+		var btn_add := Button.new()
+		btn_add.name = "BtnAddPool%d" % pool_controls.size()
+		btn_add.text = "+"
+		hbox.add_child(btn_add)
+		pool_controls[source_id] = {"label":row_label,"btn_sub":btn_sub,"btn_add":btn_add}
+		var meta_source_id := source_id.replace(":", "_").replace("/", "_").replace("-", "_").replace(".", "_")
+		overlay.set_meta("btn_sub_pool_%s" % meta_source_id, btn_sub)
+		overlay.set_meta("btn_add_pool_%s" % meta_source_id, btn_add)
+		btn_sub.pressed.connect(func():
+			selected_pools[source_id] = maxi(0, int(selected_pools.get(source_id, 0)) - 1)
+			refresh_ui.call()
+		)
+		btn_add.pressed.connect(func():
+			var cur_spent := 0
+			for slot_key in selected_counts: cur_spent += int(slot_key) * int(selected_counts[slot_key])
+			for pool_key in selected_pools: cur_spent += int(selected_pools[pool_key])
+			if int(selected_pools.get(source_id, 0)) < int(offer.missing) and cur_spent < budget:
+				selected_pools[source_id] = int(selected_pools.get(source_id, 0)) + 1
 				refresh_ui.call()
 		)
 
@@ -826,6 +995,7 @@ static func _open_slot_recovery_modal(host_parent: Node, window: Dictionary, not
 	overlay.set_meta("btn_decline", btn_decline)
 	overlay.set_meta("budget_label", budget_label)
 	overlay.set_meta("selected_counts", selected_counts)
+	overlay.set_meta("selected_pools", selected_pools)
 
 	refresh_ui.call()
 	_active_recovery_modal = overlay
@@ -837,6 +1007,7 @@ static func _open_slot_recovery_modal(host_parent: Node, window: Dictionary, not
 			"request_id": window.get("request_id", ""),
 			"owner_id": window.get("owner_id", 0),
 			"selected_slots": selected_counts.duplicate(true),
+			"selected_pools": selected_pools.duplicate(true),
 		})
 		if not bool(res.get("success", false)):
 			return

@@ -89,8 +89,23 @@ static func validate_actor(cast: SpellCastContext) -> bool:
 		cast.clear_pending(SpellCastContext.CLEAR_WISH)
 		cast.highlight_reachable.call()
 		return false
+	if not bool(cast.spell.get("_magic_item_activation", false)) and cast.spell.has("_source_permission_id"):
+		var current_permissions := SpellPermissionRules.for_spell(cast.caster, cast.spell)
+		var selected_permission_id := str(cast.spell.get("_source_permission_id", ""))
+		var permission_found := false
+		for permission in current_permissions:
+			if str(permission.get("id", "")) == selected_permission_id:
+				permission_found = true
+				break
+		if not permission_found:
+			cast.hud.add_log("That spell permission is no longer available from its selected source.")
+			cast.clear_pending(SpellCastContext.CLEAR_ACTION)
+			cast.clear_pending(SpellCastContext.CLEAR_SPELL)
+			cast.highlight_reachable.call()
+			return false
 	var spell_origin_for_barrier: Vector2i = cast.players[cast.player_index].get("hex_position", Vector2i.ZERO)
-	if cast.caster.has_condition("resilient_sphere") and cast.target_coord != spell_origin_for_barrier:
+	var damage_prevention_bypass := SharedSpell.allows_damage_prevention_bypass(cast.spell)
+	if cast.caster.has_condition("resilient_sphere") and cast.target_coord != spell_origin_for_barrier and not damage_prevention_bypass:
 		cast.hud.add_log("Resilient Sphere prevents spells from passing through its barrier.")
 		cast.clear_pending(SpellCastContext.CLEAR_ACTION)
 		cast.clear_pending(SpellCastContext.CLEAR_SPELL)
@@ -99,7 +114,7 @@ static func validate_actor(cast: SpellCastContext) -> bool:
 		cast.highlight_reachable.call()
 		return false
 	var sphere_target := SpellCastTargeting._creature_at_coord_has_condition(cast, cast.target_coord, "resilient_sphere")
-	if sphere_target and cast.target_coord != spell_origin_for_barrier and str(cast.spell.get("id", "")) != "disintegrate":
+	if sphere_target and cast.target_coord != spell_origin_for_barrier and str(cast.spell.get("id", "")) != "disintegrate" and not damage_prevention_bypass:
 		cast.hud.add_log("Resilient Sphere blocks the spell's effect across its barrier.")
 		cast.clear_pending(SpellCastContext.CLEAR_ACTION)
 		cast.clear_pending(SpellCastContext.CLEAR_SPELL)
@@ -329,6 +344,27 @@ static func validate_creatures_and_components(cast: SpellCastContext) -> bool:
 		cast.hud.add_log("[color=orange]%s needs a %s target.[/color]" % [cast.spell.get("name", "This spell"), " or ".join(required_target_sizes)])
 		cast.highlight_reachable.call()
 		return false
+	if cast.spell.has("physical_requirements"):
+		var physical_coords: Array[Vector2i] = [cast.target_coord]
+		for coord in cast.command_selection + cast.extra_target_coords:
+			if coord not in physical_coords: physical_coords.append(coord)
+		if cast.additional_target_coord != Vector2i(9999, 9999) and cast.additional_target_coord not in physical_coords:
+			physical_coords.append(cast.additional_target_coord)
+		for target_index in physical_coords.size():
+			var target_obj = _physical_target(cast, physical_coords[target_index], target_index)
+			var phys_eval := PhysicalFactsRules.evaluate_physical_eligibility(target_obj, cast.spell["physical_requirements"])
+			if not phys_eval.eligible:
+				cast.hud.add_log("[color=orange]%s: Target is ineligible (%s).[/color]" % [cast.spell.get("name", "This spell"), phys_eval.reason])
+				cast.highlight_reachable.call()
+				return false
+	if cast.spell.has("spatial_requirements"):
+		var req_space: Dictionary = cast.spell["spatial_requirements"]
+		var room := LocalRoomCombat.room()
+		var space_eval := PhysicalFactsRules.evaluate_spatial_eligibility(cast.grid, cast.target_coord, req_space, {"players": cast.players, "monsters": cast.monsters, "caster": cast.caster, "ignore_entity": cast.caster, "room": room, "plane": str(room.get("plane", PhysicalFactsRules.DEFAULT_PLANE))})
+		if not space_eval.eligible:
+			cast.hud.add_log("[color=orange]%s: Space unavailable (%s).[/color]" % [cast.spell.get("name", "This spell"), space_eval.reason])
+			cast.highlight_reachable.call()
+			return false
 	cast.component_item_id = str(cast.spell.get("material_component_item_id", cast.spell.get("consumed_material_item_id", "")))
 	cast.component_instance_id = cast.caster.inventory.required_spell_component_instance(cast.spell)
 	var component_cost := int(cast.spell.get("material_component_cost", 0))
@@ -432,3 +468,21 @@ static func validate_area(cast: SpellCastContext) -> bool:
 	return true
 
 
+
+
+static func _physical_target(cast: SpellCastContext, coord: Vector2i, index: int):
+	var selected_id := cast.chain_target_ids[index] if index < cast.chain_target_ids.size() else ""
+	if selected_id.begins_with("object:"):
+		var key := selected_id.trim_prefix("object:")
+		var object := CombatObjectRules.by_key(cast.grid, coord, key)
+		if not object.is_empty(): return object
+		var owned := CombatObjectRules.owned_item_record_at(cast.players, coord, key)
+		if not owned.is_empty():
+			return CombatObjectRules.make_owned_item(owned.record, owned.character.character_id, key in owned.character.inventory.copies.equipped.values(), coord)
+		return null
+	for player in cast.players:
+		var actor: Character = player.get("character")
+		if actor != null and actor.is_alive and player.get("hex_position") == coord and (selected_id.is_empty() or selected_id == "player:" + actor.character_id): return actor
+	for monster in cast.monsters:
+		if monster.get("is_alive", false) and monster.get("hex_position") == coord and (selected_id.is_empty() or selected_id == "monster:" + str(monster.get("id", ""))): return monster
+	return CombatObjectRules.at(cast.grid, coord) if selected_id.is_empty() else null

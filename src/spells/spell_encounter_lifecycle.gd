@@ -105,8 +105,12 @@ static func _tick_spell_effect_boundary(cast: SpellCastContext, caster: Characte
 
 static func _resolve_condition_spell_repeat_saves(cast: SpellCastContext, target) -> void:
 	for source in SpellEffects.records(target).keys():
-		var result := CombatAction.resolve_condition_spell_repeat_save(target, str(source))
-		if result.get("success", false):
+		var source_id := str(source)
+		var schedule := SpellEffects.repeat_save_schedule(target, source_id)
+		if not schedule.is_empty() and (schedule != "target_turn_end" or not SpellEffects.claim_target_turn_repeat_save(target, source_id, CombatAction.active_turn_serial)):
+			continue
+		var result := CombatAction.resolve_condition_spell_repeat_save(target, source_id)
+		if result.get("success", false) and cast != null and cast.hud != null:
 			var target_name: String = target.character_name if target is Character else str(target.get("name", "The target"))
 			if str(result["spell_id"]) == "sleep" and str(result.get("condition", "")) == "unconscious":
 				cast.hud.add_log("%s fails the second Wisdom save against Sleep (%d vs DC %d) and becomes Unconscious." % [target_name, int(result["total"]), int(result["save_dc"])])

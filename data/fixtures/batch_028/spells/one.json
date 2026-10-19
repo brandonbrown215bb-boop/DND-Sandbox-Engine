@@ -1,0 +1,21 @@
+{
+  "id": "fixture:028_one",
+  "name": "Strike remedy one",
+  "execution": "shared",
+  "level": 1,
+  "casting_time": "action",
+  "range": 6,
+  "target": "single",
+  "components": [
+    "V"
+  ],
+  "attack_unit_substitution": {
+    "units": 1
+  },
+  "effects": [
+    {
+      "type": "heal",
+      "value": 2
+    }
+  ]
+}

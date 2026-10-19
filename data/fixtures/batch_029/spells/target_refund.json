@@ -1,0 +1,15 @@
+{
+  "id": "fixture:029_target_refund",
+  "name": "Target refund bolt",
+  "execution": "shared",
+  "level": 1,
+  "school": "evocation",
+  "casting_time": "action",
+  "range": 6,
+  "target": "single",
+  "components": ["V", "S"],
+  "attack_type": "ranged_spell",
+  "damage": "2d6",
+  "damage_type": "force",
+  "interruption_policy": "refund"
+}

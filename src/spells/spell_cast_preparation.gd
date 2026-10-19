@@ -7,6 +7,12 @@ static func validate_and_choose(cast: SpellCastContext) -> bool:
 		return false
 	if not SpellCastValidation.validate_actor(cast):
 		return false
+	if not await SpellFormulaInputs.choose(cast):
+		return false
+	var damage_policy_error := SharedSpell.damage_policy_availability_error(cast.spell, cast.caster)
+	if not damage_policy_error.is_empty():
+		cast.hud.add_log(damage_policy_error)
+		return false
 	if not await SpellCastChoices.choose_identify(cast):
 		return false
 	if not SpellCastValidation.validate_weapon_and_steed(cast):

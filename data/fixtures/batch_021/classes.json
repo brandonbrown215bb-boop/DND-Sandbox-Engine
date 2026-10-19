@@ -1,0 +1,362 @@
+[
+  {
+    "id": "fixture:021_a",
+    "name": "Source A",
+    "hit_die": "d8",
+    "primary_ability": "CHA",
+    "saving_throw_proficiencies": [],
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:021_a_casting",
+          "name": "Source A casting",
+          "type": "passive",
+          "effects": [
+            {
+              "type": "spellcasting",
+              "ability": "CHA",
+              "spell_lists": [
+                "fixture:021_a"
+              ],
+              "separate_repertoire": true,
+              "replacement": "level",
+              "replacement_count": 1,
+              "maximum_spell_level": 1,
+              "default_cantrips": [],
+              "default_prepared_spells": [],
+              "capacity_by_level": {
+                "1": {
+                  "cantrips": 0,
+                  "prepared_spells": 1
+                },
+                "2": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "3": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "4": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "5": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "6": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "7": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "8": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "9": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "10": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "11": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "12": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "13": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "14": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "15": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "16": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "17": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "18": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "19": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "20": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "spell_slots_by_character_level": {
+      "1": [
+        2
+      ],
+      "2": [
+        2
+      ],
+      "3": [
+        2
+      ],
+      "4": [
+        2
+      ],
+      "5": [
+        2
+      ],
+      "6": [
+        2
+      ],
+      "7": [
+        2
+      ],
+      "8": [
+        2
+      ],
+      "9": [
+        2
+      ],
+      "10": [
+        2
+      ],
+      "11": [
+        2
+      ],
+      "12": [
+        2
+      ],
+      "13": [
+        2
+      ],
+      "14": [
+        2
+      ],
+      "15": [
+        2
+      ],
+      "16": [
+        2
+      ],
+      "17": [
+        2
+      ],
+      "18": [
+        2
+      ],
+      "19": [
+        2
+      ],
+      "20": [
+        2
+      ]
+    },
+    "spell_list_ids": [
+      "fixture:021_a0",
+      "fixture:021_a1",
+      "fixture:021_shared0"
+    ]
+  },
+  {
+    "id": "fixture:021_b",
+    "name": "Source B",
+    "hit_die": "d8",
+    "primary_ability": "WIS",
+    "saving_throw_proficiencies": [],
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:021_b_casting",
+          "name": "Source B casting",
+          "type": "passive",
+          "effects": [
+            {
+              "type": "spellcasting",
+              "ability": "WIS",
+              "spell_lists": [
+                "fixture:021_b"
+              ],
+              "separate_repertoire": true,
+              "replacement": "long_rest",
+              "replacement_count": 1,
+              "maximum_spell_level": 1,
+              "default_cantrips": [],
+              "default_prepared_spells": [],
+              "capacity_by_level": {
+                "1": {
+                  "cantrips": 0,
+                  "prepared_spells": 1
+                },
+                "2": {
+                  "cantrips": 0,
+                  "prepared_spells": 1
+                },
+                "3": {
+                  "cantrips": 0,
+                  "prepared_spells": 1
+                },
+                "4": {
+                  "cantrips": 0,
+                  "prepared_spells": 1
+                },
+                "5": {
+                  "cantrips": 0,
+                  "prepared_spells": 1
+                },
+                "6": {
+                  "cantrips": 0,
+                  "prepared_spells": 1
+                },
+                "7": {
+                  "cantrips": 0,
+                  "prepared_spells": 1
+                },
+                "8": {
+                  "cantrips": 0,
+                  "prepared_spells": 1
+                },
+                "9": {
+                  "cantrips": 0,
+                  "prepared_spells": 1
+                },
+                "10": {
+                  "cantrips": 0,
+                  "prepared_spells": 1
+                },
+                "11": {
+                  "cantrips": 0,
+                  "prepared_spells": 1
+                },
+                "12": {
+                  "cantrips": 0,
+                  "prepared_spells": 1
+                },
+                "13": {
+                  "cantrips": 0,
+                  "prepared_spells": 1
+                },
+                "14": {
+                  "cantrips": 0,
+                  "prepared_spells": 1
+                },
+                "15": {
+                  "cantrips": 0,
+                  "prepared_spells": 1
+                },
+                "16": {
+                  "cantrips": 0,
+                  "prepared_spells": 1
+                },
+                "17": {
+                  "cantrips": 0,
+                  "prepared_spells": 1
+                },
+                "18": {
+                  "cantrips": 0,
+                  "prepared_spells": 1
+                },
+                "19": {
+                  "cantrips": 0,
+                  "prepared_spells": 1
+                },
+                "20": {
+                  "cantrips": 0,
+                  "prepared_spells": 1
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "spell_slots_by_character_level": {
+      "1": [
+        2
+      ],
+      "2": [
+        2
+      ],
+      "3": [
+        2
+      ],
+      "4": [
+        2
+      ],
+      "5": [
+        2
+      ],
+      "6": [
+        2
+      ],
+      "7": [
+        2
+      ],
+      "8": [
+        2
+      ],
+      "9": [
+        2
+      ],
+      "10": [
+        2
+      ],
+      "11": [
+        2
+      ],
+      "12": [
+        2
+      ],
+      "13": [
+        2
+      ],
+      "14": [
+        2
+      ],
+      "15": [
+        2
+      ],
+      "16": [
+        2
+      ],
+      "17": [
+        2
+      ],
+      "18": [
+        2
+      ],
+      "19": [
+        2
+      ],
+      "20": [
+        2
+      ]
+    },
+    "spell_list_ids": [
+      "fixture:021_b0",
+      "fixture:021_b1",
+      "fixture:021_shared0"
+    ]
+  }
+]

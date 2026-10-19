@@ -4,16 +4,28 @@ extends RefCounted
 
 static func run(check: Callable) -> void:
 	DataLoader._load_content_type("res://data/fixtures/shared_spells/spells/", "spell")
+	_save_context_eligibility_checks(check)
 	check.call(DataLoader.get_load_errors().is_empty(), "Shared JSON fixtures load through the production loader")
 	_outcome_mapping_checks(check)
 	_batch_c_boundary_checks(check)
 	_fact_predicate_checks(check)
+	_action_history_checks(check)
+	_damage_history_checks(check)
+	_distance_predicate_checks(check)
 	_entity_binding_checks(check)
 	_relationship_query_checks(check)
 	_acceptance_repair_checks(check)
+	_class_level_table_checks(check)
+	_formula_input_checks(check)
+	_child_group_checks(check)
+	_result_reducer_checks(check)
+	_batch_e_boundary_checks(check)
+	_damage_stage_policy_checks(check)
 	_shared_result_sum_checks(check)
 	_shared_prior_measure_checks(check)
 	_shared_margin_hp_gate_checks(check)
+	_batch_025_dice_checks(check)
+	_batch_025_review_regressions(check)
 	var caster := Character.new()
 	caster.initialize("Shared caster", "human", "wizard", AbilityScores.new())
 	caster.character_id = "shared-unit-caster"
@@ -58,6 +70,8 @@ static func run(check: Callable) -> void:
 	var blocked := CombatAction.resolve_spell(caster, protected_target, ember, false, {}, [], 1, 5)
 	caster.ability_scores.wisdom = original_wisdom
 	check.call(blocked.get("sanctuary_blocked", false) and int(protected_target["current_hp"]) == 100, "Shared attacks preserve Sanctuary's pre-damage protection and use the attacker's saving throw")
+
+
 	ally.current_hp = 0
 	ally.is_alive = false
 	ally.add_condition("poisoned", 10)
@@ -1811,7 +1825,308 @@ static func run(check: Callable) -> void:
 	print("SHARED_SPELL_CHECKS_COMPLETE")
 
 
+static func _damage_stage_policy_checks(check: Callable) -> void:
+	DataLoader._load_content_type("res://data/fixtures/failed_save_bonus/classes/", "class")
+	var neutral: Dictionary = DataLoader.get_spell("fixture:typed_reduction_neutral")
+	var renamed: Dictionary = DataLoader.get_spell("fixture:occurrence_reduction_renamed")
+	var bypass: Dictionary = DataLoader.get_spell("fixture:layer_bypass_neutral")
+	var combined: Dictionary = DataLoader.get_spell("fixture:combined_bypass_renamed")
+	check.call(not neutral.is_empty() and not renamed.is_empty() and not bypass.is_empty() and not combined.is_empty() and SharedSpell.content_error(neutral).is_empty() and SharedSpell.content_error(renamed).is_empty() and SharedSpell.content_error(bypass).is_empty() and SharedSpell.content_error(combined).is_empty(), "S-109/S-110 neutral and renamed damage policies load and validate")
+	var success_feature: Dictionary = DataLoader.get_character_class("fixture:save_bonus_final_success_class").get("features_by_level", {}).get("1", [{}])[0]
+	var failure_feature: Dictionary = DataLoader.get_character_class("fixture:save_bonus_final_failure_class").get("features_by_level", {}).get("1", [{}])[0]
+	var payment_owner := Character.new()
+	payment_owner.initialize("Predicate payment owner", "human", "wizard", AbilityScores.new())
+	payment_owner.character_id = "predicate-payment-owner"
+	var success_source := "fixture:final-success:chosen"
+	var failure_source := "fixture:final-failure:chosen"
+	var sibling_source := "fixture:final-success:sibling"
+	for pair in [[success_feature, success_source], [failure_feature, failure_source], [success_feature, sibling_source]]:
+		var feature: Dictionary = pair[0].duplicate(true)
+		feature["source_instance_id"] = str(pair[1])
+		payment_owner.features.append(feature)
+		check.call(bool(ResourcePoolRules.acquire(payment_owner, pair[0], str(pair[1])).get("success", false)), "S-100 loaded result-payment source acquires exact pool %s" % str(pair[1]))
+	var success_selection := {"source_instance_id": success_source, "pool_definition_id": str(success_feature.get("resource_pool", {}).get("id", "")), "cost": 1, "payment_policy": "pay_on_final_success"}
+	var failure_selection := {"source_instance_id": failure_source, "pool_definition_id": str(failure_feature.get("resource_pool", {}).get("id", "")), "cost": 2, "payment_policy": "pay_on_final_failure"}
+	var insufficient_selection: Dictionary = success_selection.duplicate(true)
+	insufficient_selection["cost"] = 3
+	var insufficient_reservation := SpellDamageRolls.begin_selected_payment(payment_owner, insufficient_selection)
+	check.call(not bool(insufficient_reservation.get("success", false)) and int(ResourcePoolRules.availability(payment_owner, success_source).get("current", -1)) == 2 and int(ResourcePoolRules.availability(payment_owner, success_source).get("reserved", -1)) == 0, "S-100 upfront availability rejects a cost larger than the exact pool without reservation or charge")
+	var success_reservation := SpellDamageRolls.begin_selected_payment(payment_owner, success_selection)
+	var success_reserved_id := str(success_reservation.get("reservation_id", ""))
+	var sibling_before := int(ResourcePoolRules.availability(payment_owner, sibling_source).get("current", -1))
+	var success_reserved_state: Dictionary = ResourcePoolRules.availability(payment_owner, success_source)
+	var success_refund := SpellDamageRolls.finish_selected_payment(payment_owner, success_selection, false, success_reserved_id)
+	var success_refund_current := int(ResourcePoolRules.availability(payment_owner, success_source).get("current", -1))
+	var success_commit_reservation := SpellDamageRolls.begin_selected_payment(payment_owner, success_selection)
+	var success_commit := SpellDamageRolls.finish_selected_payment(payment_owner, success_selection, true, str(success_commit_reservation.get("reservation_id", "")))
+	var failure_commit_reservation := SpellDamageRolls.begin_selected_payment(payment_owner, failure_selection)
+	var failure_commit := SpellDamageRolls.finish_selected_payment(payment_owner, failure_selection, false, str(failure_commit_reservation.get("reservation_id", "")))
+	var failure_commit_current := int(ResourcePoolRules.availability(payment_owner, failure_source).get("current", -1))
+	var failure_refund_reservation := SpellDamageRolls.begin_selected_payment(payment_owner, failure_selection)
+	var failure_refund := SpellDamageRolls.finish_selected_payment(payment_owner, failure_selection, true, str(failure_refund_reservation.get("reservation_id", "")))
+	var failure_refund_current := int(ResourcePoolRules.availability(payment_owner, failure_source).get("current", -1))
+	var canceled_reservation := ResourcePoolRules.reserve_payment(payment_owner, success_source, 1)
+	var cancel_settlement := ResourcePoolRules.settle_payment_reservation(str(canceled_reservation.get("reservation", {}).get("reservation_id", "")), false)
+	var s100_pass: bool = int(success_reserved_state.get("current", -1)) == 2 and int(success_reserved_state.get("reserved", -1)) == 1 and int(success_reserved_state.get("spendable", -1)) == 1 and success_refund.get("state", "") == "refunded" and success_refund_current == 2 and success_commit.get("state", "") == "committed" and int(ResourcePoolRules.availability(payment_owner, success_source).get("current", -1)) == 1 and failure_commit.get("state", "") == "committed" and failure_commit_current == 2 and failure_refund.get("state", "") == "refunded" and failure_refund_current == 2 and cancel_settlement.get("state", "") == "refunded" and int(ResourcePoolRules.availability(payment_owner, sibling_source).get("current", -1)) == sibling_before and int(ResourcePoolRules.availability(payment_owner, success_source).get("reserved", -1)) == 0
+	check.call(s100_pass, "S-100 reserves only the selected exact pool, commits matching final success/failure, refunds mismatches and cancellation, and releases every reservation")
+	var removed_reservation := ResourcePoolRules.reserve_payment(payment_owner, success_source, 1)
+	ResourcePoolRules.remove(payment_owner, success_source)
+	var recreated_source := ResourcePoolRules.acquire(payment_owner, success_feature, success_source)
+	var removed_settlement := ResourcePoolRules.settle_payment_reservation(str(removed_reservation.get("reservation", {}).get("reservation_id", "")), true)
+	check.call(bool(recreated_source.get("success", false)) and not bool(removed_settlement.get("success", false)) and str(removed_settlement.get("message", "")).contains("no payment was charged") and int(ResourcePoolRules.availability(payment_owner, success_source).get("current", -1)) == 2 and int(ResourcePoolRules.availability(payment_owner, success_source).get("reserved", -1)) == 0 and int(ResourcePoolRules.availability(payment_owner, sibling_source).get("current", -1)) == sibling_before, "S-100 removed-and-recreated source identity cannot inherit an old reservation or charge its parent/sibling")
+	var caster := Character.new()
+	caster.initialize("Damage policy caster", "human", "wizard", AbilityScores.new())
+	caster.character_id = "damage-policy-caster"
+	caster.ability_scores.intelligence = 30
+	var target := Character.new()
+	target.initialize("Damage policy target", "human", "fighter", AbilityScores.new())
+	target.character_id = "damage-policy-target"
+	target.max_hp = 100
+	target.current_hp = 100
+	target.temp_hp = 1
+	target.ability_scores.dexterity = -100
+	var reduced := CombatAction.resolve_spell(caster, target, neutral, false, {}, [], 1)
+	var reduced_outcome: Dictionary = reduced.get("step_results", [])[0].get("target_outcomes", [])[0]
+	var reduced_components: Array = reduced_outcome.get("damage_components", [])
+	var reduction_receipts: Array = reduced_outcome.get("damage_reduction_receipts", [])
+	var component_overflow := int(reduced_components[2].get("reduction_receipts", [{}])[0].get("requested", -1)) - int(reduced_components[2].get("reduction_receipts", [{}])[0].get("applied", -1))
+	check.call(reduced_components.size() == 3 and reduced_components[0].get("component_id", "") == "flame" and int(reduced_components[0].get("raw", -1)) == 4 and int(reduced_components[0].get("reduction_prevented", -1)) == 2 and int(reduced_components[0].get("resolved", -1)) == 2 and int(reduced_components[0].get("absorbed", -1)) == 1 and int(reduced_components[0].get("hp_loss", -1)) == 1 and int(reduced_components[1].get("reduction_prevented", -1)) == 4 and int(reduced_components[1].get("resolved", -1)) == 0 and int(reduced_components[2].get("reduction_prevented", -1)) == 4 and component_overflow == 4 and target.current_hp == 99 and target.temp_hp == 0, "S-109 component reductions below, equal to and above typed amounts floor at zero, preserve raw/prevented/resolved/absorbed/HP-loss and discard excess")
+	var pending_spell: Dictionary = neutral.duplicate(true)
+	pending_spell["id"] = "fixture:pending_damage_policy_renamed"
+	for component in pending_spell["steps"][0]["damage_components"]:
+		component["damage"] = "1d6"
+	var pending_target := Character.new()
+	pending_target.initialize("Pending policy target", "human", "fighter", AbilityScores.new())
+	pending_target.character_id = "pending-policy-target"
+	pending_target.max_hp = 100
+	pending_target.current_hp = 100
+	pending_target.ability_scores.dexterity = -100
+	caster.features.append({"id": "sorcerer_metamagic"})
+	caster.sorcerer_metamagic_choices.append("empowered_spell")
+	caster.feature_uses["sorcery_points"] = 3
+	caster.ability_scores.charisma = 16
+	FighterChecks._seed_die(20, 1)
+	FighterChecks._seed_die(6, 1)
+	var pending_damage := CombatAction.resolve_spell(caster, pending_target, pending_spell, false, {"metamagic:empowered": true, "defer_empowered": true}, [], 1)
+	var pending_damage_id := str(pending_damage.get("damage_request", {}).get("request_id", ""))
+	var pending_hp_before := pending_target.current_hp
+	var pending_points_before := caster.get_sorcery_points()
+	var wrong_occurrence := CombatAction.finish_pending_spell_damage(caster, pending_target, {"damage_request": {"request_id": pending_damage_id + ":wrong"}}, {"metamagic:empowered_dice": [0]})
+	check.call(not pending_damage_id.is_empty() and pending_target.current_hp == pending_hp_before and wrong_occurrence.get("refused", false) and caster.get_sorcery_points() == pending_points_before, "S-109 pending typed occurrence rejects a wrong occurrence before spending Empowered points or applying damage")
+	FighterChecks._seed_die(6, 6)
+	var pending_final := CombatAction.finish_pending_spell_damage(caster, pending_target, pending_damage, {"metamagic:empowered_dice": [0]})
+	var pending_outcomes: Array = pending_final.get("step_results", [])[0].get("target_outcomes", [])
+	var pending_components: Array = pending_outcomes[0].get("damage_components", []) if not pending_outcomes.is_empty() else []
+	var pending_replay := CombatAction.finish_pending_spell_damage(caster, pending_target, {"damage_request": {"request_id": pending_damage_id}}, {"metamagic:empowered_dice": [0]})
+	check.call(pending_components.size() == 3 and int(pending_components[0].get("raw", -1)) == 6 and int(pending_components[0].get("reduction_prevented", -1)) == 2 and int(pending_components[0].get("resolved", -1)) == 4 and int(pending_components[1].get("resolved", -1)) == 0 and int(pending_components[2].get("resolved", -1)) == 0 and pending_target.current_hp == 96 and caster.get_sorcery_points() == pending_points_before - 1 and pending_replay.get("refused", false), "S-109 applies reductions once after the real deferred damage roll, preserves component receipts and refuses replay")
+	pending_target.current_hp = 100
+	FighterChecks._seed_die(20, 1)
+	FighterChecks._seed_die(6, 1)
+	var teardown_pending := CombatAction.resolve_spell(caster, pending_target, pending_spell, false, {"metamagic:empowered": true, "defer_empowered": true}, [], 1)
+	SpellDamageRolls.clear_pending_requests()
+	var stale_after_teardown := CombatAction.finish_pending_spell_damage(caster, pending_target, teardown_pending, {"metamagic:empowered_dice": [0]})
+	check.call(teardown_pending.has("damage_request") and stale_after_teardown.get("refused", false) and pending_target.current_hp == 100 and caster.get_sorcery_points() == pending_points_before - 1 and ResourcePoolRules._payment_reservations.is_empty(), "S-109 teardown invalidates a pending policy occurrence without hidden reservations, new point cost or stale damage")
+	var miss_spell: Dictionary = neutral.duplicate(true)
+	miss_spell["id"] = "fixture:miss_damage_policy_renamed"
+	miss_spell["steps"][0]["type"] = "attack"
+	miss_spell["steps"][0]["attack_type"] = "ranged_spell"
+	miss_spell["steps"][0].erase("save")
+	miss_spell["steps"][0].erase("damage_components")
+	miss_spell["steps"][0]["damage"] = "4"
+	miss_spell["steps"][0]["damage_type"] = "fire"
+	miss_spell["steps"][0]["damage_reductions"] = [{"scope": "occurrence", "amount": 2, "stage": "after_scale_before_mitigation"}]
+	var miss_target := {"name": "Policy miss target", "current_hp": 100, "max_hp": 100, "is_alive": true, "armor_class": 1000, "conditions": {}}
+	var miss_result := CombatAction.resolve_spell(caster, miss_target, miss_spell, false, {}, [], 1)
+	var miss_step_results: Array = miss_result.get("step_results", [])
+	var miss_target_outcomes: Array = miss_step_results[0].get("target_outcomes", []) if not miss_step_results.is_empty() else []
+	var miss_damage_components: Array = miss_target_outcomes[0].get("damage_components", []) if not miss_target_outcomes.is_empty() else []
+	check.call(not bool(miss_result.get("hit", true)) and miss_damage_components.is_empty() and int(miss_target.get("current_hp", 0)) == 100 and ResourcePoolRules._payment_reservations.is_empty(), "S-109 final miss never starts a damage occurrence, applies reduction, spends a damage-only resource or leaves a reservation")
+	var whole_target := Character.new()
+	whole_target.initialize("Whole occurrence target", "human", "fighter", AbilityScores.new())
+	whole_target.character_id = "whole-occurrence-target"
+	whole_target.max_hp = 100
+	whole_target.current_hp = 100
+	whole_target.ability_scores.dexterity = -100
+	var whole := CombatAction.resolve_spell(caster, whole_target, renamed, false, {}, [], 1)
+	var whole_outcome: Dictionary = whole.get("step_results", [])[0].get("target_outcomes", [])[0]
+	var whole_components: Array = whole_outcome.get("damage_components", [])
+	var whole_receipt: Dictionary = whole_outcome.get("damage_reduction_receipts", [])[0]
+	check.call(int(whole_receipt.get("requested", -1)) == 10 and int(whole_receipt.get("applied", -1)) == 9 and int(whole_receipt.get("overflow", -1)) == 1 and whole_receipt.get("allocated_component_ids", []) == ["ember", "rime", "spore"] and whole_components.all(func(c): return int(c.get("resolved", -1)) == 0 and int(c.get("hp_loss", -1)) == 0) and whole_target.current_hp == 100, "S-109 whole-occurrence actor formula is floored, allocated in declared component order and excess is discarded")
+	var ward_target := Character.new()
+	ward_target.initialize("Layer bypass target", "human", "fighter", AbilityScores.new())
+	ward_target.character_id = "layer-bypass-target"
+	ward_target.max_hp = 100
+	ward_target.current_hp = 100
+	ward_target.temp_hp = 2
+	ward_target.ability_scores.dexterity = -100
+	ward_target.feature_uses["damage_resistances"] = ["fire", "cold"]
+	ward_target.feature_uses["damage_immunities"] = ["cold"]
+	ward_target.features.append({"id": "fixture:policy_ward", "effects": [{"type": "damage_ward_pool", "pool_id": "policy_ward", "trigger_schools": ["Abjuration"], "max_hp_level_multiplier": 0, "max_hp_flat_bonus": 3}]})
+	WardRules.on_slot_spell_cast(ward_target, {"level": 1, "school": "Abjuration"}, 1)
+	var layers := CombatAction.resolve_spell(caster, ward_target, bypass, false, {}, [], 1)
+	var layer_outcome: Dictionary = layers.get("step_results", [])[0].get("target_outcomes", [])[0]
+	var layer_components: Array = layer_outcome.get("damage_components", [])
+	check.call(int(layer_components[0].get("resolved", -1)) == 4 and layer_components[1].get("bypass_layers", []).size() == 1 and int(layer_components[1].get("resolved", -1)) == 1 and int(layer_components[1].get("prevented", -1)) == 3 and layer_components[2].get("bypass_layers", []).size() == 1 and int(layer_components[2].get("resolved", -1)) == 2 and layer_components[2].get("bypass_layers", []) == ["immunity"] and int(layer_components[3].get("resolved", -1)) == 4 and int(layer_outcome.get("ward_absorbed", -1)) == 3 and int(ward_target.damage_wards.pools.policy_ward.current_hp) == 0 and ward_target.temp_hp == 0 and ward_target.current_hp == 91, "S-110 independently bypasses ward, Resistance or Immunity while unselected layers, unrelated components, ward and Temporary HP keep normal order")
+	var sphere_target := Character.new()
+	sphere_target.initialize("Prevention bypass target", "human", "fighter", AbilityScores.new())
+	sphere_target.character_id = "prevention-bypass-target"
+	sphere_target.max_hp = 100
+	sphere_target.current_hp = 100
+	sphere_target.ability_scores.dexterity = -100
+	sphere_target.add_condition("resilient_sphere", 10)
+	var prevention := CombatAction.resolve_spell(caster, sphere_target, bypass, false, {}, [], 1)
+	var prevention_steps: Array = prevention.get("step_results", [])
+	var prevention_outcomes: Array = prevention_steps[0].get("target_outcomes", []) if not prevention_steps.is_empty() else []
+	var prevention_components: Array = prevention_outcomes[0].get("damage_components", []) if not prevention_outcomes.is_empty() else []
+	check.call(prevention_components.size() == 4 and int(prevention_components[0].get("resolved", -1)) == 0 and int(prevention_components[1].get("resolved", -1)) == 0 and int(prevention_components[2].get("resolved", -1)) == 0 and int(prevention_components[3].get("resolved", -1)) == 4 and sphere_target.current_hp == 96, "S-110 prevention bypass applies only to the selected component; Resilient Sphere still blocks siblings")
+	var combined_target := Character.new()
+	combined_target.initialize("Combined bypass target", "human", "fighter", AbilityScores.new())
+	combined_target.character_id = "combined-bypass-target"
+	combined_target.max_hp = 100
+	combined_target.current_hp = 100
+	combined_target.ability_scores.dexterity = -100
+	combined_target.feature_uses["damage_resistances"] = ["fire"]
+	combined_target.feature_uses["damage_immunities"] = ["fire"]
+	combined_target.add_condition("resilient_sphere", 10)
+	combined_target.features.append({"id": "fixture:combined_ward", "effects": [{"type": "damage_ward_pool", "pool_id": "combined_ward", "trigger_schools": ["Abjuration"], "max_hp_level_multiplier": 0, "max_hp_flat_bonus": 3}]})
+	WardRules.on_slot_spell_cast(combined_target, {"level": 1, "school": "Abjuration"}, 1)
+	var combination := CombatAction.resolve_spell(caster, combined_target, combined, false, {}, [], 1)
+	var combination_components: Array = combination.get("step_results", [])[0].get("target_outcomes", [])[0].get("damage_components", [])
+	var ordinary := CombatAction.resolve_damage(combined_target, 4, "fire", {}, false, false, caster)
+	check.call(int(combination_components[0].get("resolved", -1)) == 4 and combination_components[0].get("bypass_layers", []) == ["resistance", "immunity", "ward", "prevention"] and int(combination_components[1].get("resolved", -1)) == 0 and int(ordinary.get("resolved", -1)) == 0 and combined_target.current_hp == 96, "S-110 combined layers stay on one loaded source/component, siblings and a later source retain normal prevention")
+	var invalid := neutral.duplicate(true)
+	invalid.steps[0].damage_bypasses = [{"scope": "occurrence", "layers": ["resistance", "everything"], "stage": "mitigation"}]
+	check.call(not SharedSpell.content_error(invalid).is_empty(), "S-110 unsupported bypass layers reject during content preflight")
+
+
 ## Regressions for the acceptance review's numeric, window and outcome defects.
+static func _s029_cast_host(caster: Character, target: Character, spell: Dictionary) -> SpellCastContext:
+	var host := SpellCastContext.new()
+	host.caster = caster
+	host.spell = spell
+	host.spell_origin = Vector2i.ZERO
+	host.target_coord = Vector2i(2, 0)
+	host.grid = HexGrid.new()
+	for x in range(-2, 3):
+		for y in range(-2, 3):
+			var tile := HexTile.new()
+			tile.coord = Vector2i(x, y)
+			host.grid.add_tile(tile)
+	host.players = [{"character": target, "hex_position": host.target_coord}]
+	host.owner_label_for_character = func(_owner): return "Save Owner"
+	return host
+
+
+static func _s029_attach_source(target: Character, feature: Dictionary) -> String:
+	var source_id := str(feature.get("id", "")) + ":owned"
+	var owned := feature.duplicate(true)
+	owned["source_instance_id"] = source_id
+	target.features.append(owned)
+	ResourcePoolRules.acquire(target, owned, source_id)
+	return source_id
+
+
+static func _save_context_eligibility_checks(check: Callable) -> void:
+	DataLoader._load_content_type("res://data/fixtures/s029/classes/", "class")
+	DataLoader._load_content_type("res://data/fixtures/s029/spells/", "spell")
+	var see_class: Dictionary = DataLoader.get_character_class("fixture:s029_sense_class")
+	var darkvision_class: Dictionary = DataLoader.get_character_class("fixture:s029_darkvision_class")
+	var see_feature: Dictionary = see_class.get("features_by_level", {}).get("1", [{}])[0]
+	var darkvision_feature: Dictionary = darkvision_class.get("features_by_level", {}).get("1", [{}])[0]
+	var avoid_spell: Dictionary = DataLoader.get_spell("fixture:s029_poison_avoid")
+	var end_spell: Dictionary = DataLoader.get_spell("fixture:s029_toxin_end")
+	var maintain_spell: Dictionary = DataLoader.get_spell("fixture:s029_poison_maintain")
+	var ordinary_spell: Dictionary = DataLoader.get_spell("fixture:s029_ordinary_con")
+	check.call(not see_feature.is_empty() and not darkvision_feature.is_empty() and SharedSpell.content_error(avoid_spell).is_empty() and SharedSpell.content_error(end_spell).is_empty() and SharedSpell.content_error(maintain_spell).is_empty() and SharedSpell.content_error(ordinary_spell).is_empty(), "Neutral/renamed save contexts and ordinary Constitution control load and validate")
+	var malformed_context := avoid_spell.duplicate(true)
+	malformed_context["save_context"]["purpose_id"] = "Avoiding poison"
+	check.call(not SharedSpell.content_error(malformed_context).is_empty(), "Save cause and purpose are structured identifier fields, never prose")
+	var malformed_steps := avoid_spell.duplicate(true)
+	malformed_steps["steps"] = null
+	check.call(not SharedSpell.content_error(malformed_steps).is_empty(), "Malformed step containers refuse before the save-context scan")
+
+	var caster := Character.new()
+	caster.initialize("S029 Cause", "human", "wizard", AbilityScores.new())
+	caster.character_id = "fixture:s029_origin_caster"
+	var target := Character.new()
+	target.initialize("S029 Save Owner", "human", "fighter", AbilityScores.new())
+	target.character_id = "fixture:s029_save_owner"
+	target.ability_scores.constitution = -100
+	target.current_hp = 100
+	target.max_hp = 100
+	var see_source := _s029_attach_source(target, see_feature)
+	var test_hud := CombatHUD.new()
+	var see_host := _s029_cast_host(caster, target, avoid_spell)
+	see_host.hud = test_hud
+	var see_pending := CombatAction.resolve_spell(caster, target, avoid_spell, false, {"cast_context": see_host}, [], 0, -1, see_host)
+	var see_record := SpellDamageRolls.failed_save_numeric_bonus_record(caster, target, see_pending)
+	var see_choice: Dictionary = {}
+	for option in see_record.get("options", []):
+		if str(option.get("source_instance_id", "")) == see_source: see_choice = option
+	var captured_context: Dictionary = see_record.get("save_test", {}).get("save_context", {})
+	check.call(see_pending.has("save_bonus_request") and not see_choice.is_empty() and str(captured_context.get("cause_id", "")) == "poison_exposure" and str(captured_context.get("purpose_id", "")) == "avoid" and str(captured_context.get("origin_effect_id", "")) == "spore_burst" and str(captured_context.get("spell_definition_id", "")) == str(avoid_spell.get("id", "")) and str(captured_context.get("source_definition_id", "")) == str(avoid_spell.get("id", "")) and str(captured_context.get("source_owner_id", "")) == caster.character_id, "Sight-gated CON modifier captures the loaded cause, avoid purpose, originating effect, exact spell/source owner, and the existing save-choice request")
+	var see_tile: HexTile = see_host.grid.get_tile(Vector2i(1, 0))
+	see_tile.custom_properties["blocks_sight"] = true
+	var changed_sense := SpellDamageRolls.settle_failed_save_numeric_bonus(caster, target, see_pending, see_source)
+	check.call(bool(changed_sense.get("refused", false)) and int(ResourcePoolRules.availability(target, see_source).get("current", -1)) == 4, "Sight is rechecked when the paused save choice commits; changed availability refuses without payment")
+	see_tile.custom_properties["blocks_sight"] = false
+	var settled := SpellDamageRolls.settle_failed_save_numeric_bonus(caster, target, see_pending, see_source)
+	check.call(bool(settled.get("success", false)) and str(settled.get("save_context", {}).get("origin_effect_id", "")) == "spore_burst" and int(ResourcePoolRules.availability(target, see_source).get("current", -1)) == 3, "Restored sense permits the same captured choice to settle once with its original context")
+
+	var target_end := Character.new()
+	target_end.initialize("S029 Renamed Owner", "human", "fighter", AbilityScores.new())
+	target_end.character_id = "fixture:s029_renamed_owner"
+	target_end.ability_scores.constitution = -100
+	target_end.darkvision_feet = 60
+	var darkvision_source := _s029_attach_source(target_end, darkvision_feature)
+	var end_host := _s029_cast_host(caster, target_end, end_spell)
+	end_host.hud = test_hud
+	var end_pending := CombatAction.resolve_spell(caster, target_end, end_spell, false, {"cast_context": end_host}, [], 0, -1, end_host)
+	var end_record := SpellDamageRolls.failed_save_numeric_bonus_record(caster, target_end, end_pending)
+	var end_choice: Dictionary = end_record.get("options", [{}])[0] if not end_record.get("options", []).is_empty() else {}
+	check.call(end_pending.has("save_bonus_request") and str(end_choice.get("cause_id", "")) == "toxin_condition" and str(end_choice.get("purpose_id", "")) == "end" and str(end_choice.get("required_sense", "")) == "darkvision", "Renamed loaded consumer selects only its distinct originating cause, end purpose, and represented darkvision requirement")
+	target_end.add_condition("blinded", 1, "review:blind")
+	var blind_end := SpellDamageRolls.settle_failed_save_numeric_bonus(caster, target_end, end_pending, darkvision_source)
+	check.call(bool(blind_end.get("refused", false)) and int(ResourcePoolRules.availability(target_end, darkvision_source).get("current", -1)) == 4, "Darkvision cannot qualify a blinded save owner or charge its paused source")
+	target_end.remove_condition("blinded")
+	end_host.grid.get_tile(Vector2i(1, 0)).custom_properties["blocks_sight"] = true
+	check.call(SpellDamageRolls.failed_save_choice_options(target_end, "CON", false, end_record.get("cast")).is_empty(), "Darkvision cannot qualify through a represented wall")
+	end_host.grid.get_tile(Vector2i(1, 0)).custom_properties["blocks_sight"] = false
+	var wrong_purpose := SpellDamageRolls.failed_save_choice_options(target, "CON", false, _s029_make_resolution(caster, target, maintain_spell, see_host))
+	check.call(wrong_purpose.is_empty(), "Maintaining a condition does not match an otherwise identical CON save declared to end it")
+	var ordinary := SpellDamageRolls.failed_save_choice_options(target_end, "CON", false, _s029_make_resolution(caster, target_end, ordinary_spell, end_host))
+	check.call(ordinary.is_empty(), "An ordinary Constitution save with the same ability and DC receives no cause-specific source")
+
+	var unknown_sense_effect := see_feature.duplicate(true)
+	unknown_sense_effect["passive_effects"][0]["required_sense"] = "hearing"
+	var unknown_sense_target := Character.new()
+	unknown_sense_target.initialize("Unknown Sense Owner", "human", "fighter", AbilityScores.new())
+	unknown_sense_target.character_id = "fixture:s029_unknown_sense_owner"
+	var unknown_source := _s029_attach_source(unknown_sense_target, unknown_sense_effect)
+	var unknown_host := _s029_cast_host(caster, unknown_sense_target, avoid_spell)
+	unknown_host.hud = test_hud
+	var unknown_context := _s029_make_resolution(caster, unknown_sense_target, avoid_spell, unknown_host)
+	check.call(not unknown_source.is_empty() and SpellDamageRolls.failed_save_choice_options(unknown_sense_target, "CON", false, unknown_context).is_empty(), "Unknown hearing capability stays unavailable rather than falling back to sight")
+
+	SpellDamageRolls.clear_pending_requests()
+	for test_host in [see_host, end_host, unknown_host]:
+		test_host.hud = null
+		if is_instance_valid(test_host.grid): test_host.grid.free()
+	if is_instance_valid(test_hud): test_hud.free()
+
+
+static func _s029_make_resolution(caster: Character, target: Character, spell: Dictionary, host: SpellCastContext) -> SpellResolutionContext:
+	var cast := SpellResolutionContext.new()
+	cast.caster = caster
+	cast.target = target
+	cast.spell = spell
+	cast.spatial_host = host
+	cast.spell_definition_id = str(spell.get("id", ""))
+	cast.source_definition_id = cast.spell_definition_id
+	cast.source_instance_id = "fixture:s029-origin-instance"
+	cast.source_owner_id = caster.character_id
+	cast.invocation_id = "fixture:s029-origin-invocation"
+	return cast
 static func _outcome_mapping_checks(check: Callable) -> void:
 	var attack := DataLoader.get_spell("sandbox:outcome_attack_neutral")
 	var ordered_attack := DataLoader.get_spell("sandbox:outcome_attack_ordered")
@@ -3055,6 +3370,213 @@ static func _fact_predicate_checks(check: Callable) -> void:
 	check.call(not refused.get("success", true) and int(caster.spell_slots["1"]) == slots_before and caster.current_hp == 45 and caster.numeric_resource_pools == pool_before and caster.modifiers == grant_before, "Invalid predicate content refuses a production cast before slot or target/source mutation")
 
 
+static func _action_history_checks(check: Callable) -> void:
+	var neutral: Dictionary = DataLoader.get_spell("sandbox:action_history_neutral")
+	var renamed: Dictionary = DataLoader.get_spell("sandbox:action_history_renamed")
+	check.call(not neutral.is_empty() and not renamed.is_empty() and SharedSpell.content_error(neutral).is_empty() and SharedSpell.content_error(renamed).is_empty(), "Neutral and renamed action-history consumers load through shared spell validation")
+	if neutral.is_empty() or renamed.is_empty():
+		return
+	var history := CombatActionHistory.new()
+	var first := {"id": "history-first"}
+	var second := {"id": "history-second"}
+	history.begin_turn(first, 1)
+	var host := SpellCastContext.new()
+	host.action_history = history
+	var cast := SpellResolutionContext.new()
+	cast.caster = Character.new()
+	cast.spatial_host = host
+	cast.spell = neutral
+	var adapter := SharedStepExecutor.SpellAdapter.new(cast)
+	var acted_query: Dictionary = neutral["steps"][0]["effects"][0]["when"]
+	var attacked_query: Dictionary = renamed["steps"][1]["effects"][0]["when"]
+	check.call(SharedStepExecutor.evaluate_predicate({"fact": "target.first_round", "eq": true}, adapter, first, []) and SharedStepExecutor.evaluate_predicate({"fact": "target.first_own_turn", "eq": true}, adapter, first, []) and not SharedStepExecutor.evaluate_predicate({"fact": "target.first_own_turn", "eq": true}, adapter, second, []), "First round and current first own turn are separate actor-boundary facts")
+	history.record_action(first)
+	var turn_serial_before_resume := history._turn_serial
+	history.begin_turn(first, 1)
+	history.record_attack(first, second)
+	check.call(history._turn_serial == turn_serial_before_resume and SharedStepExecutor.evaluate_predicate(acted_query, adapter, first, []) and SharedStepExecutor.evaluate_predicate(attacked_query, adapter, second, []) and not SharedStepExecutor.evaluate_predicate(attacked_query, adapter, first, []), "Committed action and resolved attack receipts stay on their actual actor/target, and resuming the same initiative turn does not reset its boundary")
+	history.begin_turn(second, 1)
+	check.call(SharedStepExecutor.evaluate_predicate({"fact": "target.first_own_turn", "eq": true}, adapter, second, []) and not SharedStepExecutor.evaluate_predicate({"fact": "target.attacked_since_owner_turn", "eq": true}, adapter, second, []), "Another actor turn resets combat-turn and owner-turn intervals without borrowing prior history")
+	history.record_action(second)
+	history.record_attack(first, second)
+	check.call(SharedStepExecutor.evaluate_predicate(attacked_query, adapter, second, []) and SharedStepExecutor.evaluate_predicate({"fact": "target.acted_since_owner_turn", "eq": true}, adapter, second, []), "Events after the named turn boundary qualify once for that exact subject")
+	var joined_late := {"id": "history-joined-after-initiative"}
+	var late_first_turn_before_start: Dictionary = history.fact(joined_late, "target.first_own_turn")
+	check.call(not SharedStepExecutor.evaluate_predicate({"not": {"fact": "target.acted_since_owner_turn", "eq": true}}, adapter, joined_late, []) and not bool(history.fact(joined_late, "target.attacked_since_owner_turn").get("available", true)), "An actor with no own-turn boundary stays unavailable under action-history negation")
+	history.begin_turn(joined_late, 2)
+	check.call(not bool(late_first_turn_before_start.get("available", true)) and SharedStepExecutor.evaluate_predicate({"fact": "target.first_own_turn", "eq": true}, adapter, joined_late, []) and not bool(history.fact(joined_late, "target.first_round").get("value", true)), "A participant joining in round two gets its first own turn without inheriting first-round eligibility")
+	history.begin_turn(first, 2)
+	check.call(not SharedStepExecutor.evaluate_predicate({"fact": "target.first_round", "eq": true}, adapter, first, []) and not SharedStepExecutor.evaluate_predicate({"fact": "target.first_own_turn", "eq": true}, adapter, first, []) and not SharedStepExecutor.evaluate_predicate({"fact": "target.attacked_since_combat_turn", "eq": true}, adapter, second, []), "Later round and current-turn boundaries reset explicitly while owner interval history remains independent")
+	var malformed := neutral.duplicate(true)
+	malformed["steps"][0]["effects"][0]["when"] = {"fact": "target.attacked_since_combat_turn", "eq": 1}
+	check.call(not SharedSpell.content_error(malformed).is_empty(), "History facts reject non-Boolean authored comparisons before a cast")
+
+
+static func _damage_history_checks(check: Callable) -> void:
+	var source_spell: Dictionary = DataLoader.get_spell("sandbox:damage_history_source")
+	var turn_spell: Dictionary = DataLoader.get_spell("sandbox:damage_history_turn_neutral")
+	var time_spell: Dictionary = DataLoader.get_spell("sandbox:damage_history_time_renamed")
+	check.call(not source_spell.is_empty() and not turn_spell.is_empty() and not time_spell.is_empty() and SharedSpell.content_error(source_spell).is_empty() and SharedSpell.content_error(turn_spell).is_empty() and SharedSpell.content_error(time_spell).is_empty(), "Neutral turn, renamed campaign-time, and loaded damage source definitions pass shared validation")
+	if source_spell.is_empty() or turn_spell.is_empty() or time_spell.is_empty(): return
+	var prior_seconds := int(GameManager.campaign_elapsed_seconds)
+	GameManager.campaign_elapsed_seconds = 5000
+	var source := Character.new()
+	source.character_id = "damage-source-a"
+	var second_source := Character.new()
+	second_source.character_id = "damage-source-b"
+	var target := Character.new()
+	target.character_id = "damage-target-a"
+	target.max_hp = 30
+	target.current_hp = 30
+	target.temp_hp = 3
+	var history := CombatActionHistory.new()
+	history.begin_turn(source, 1)
+	var fire_receipt: Dictionary = CombatAction.resolve_damage(target, 8, "fire", {"combat_history": history, "damage_source_instance_id": "spell:test:damage-a"}, false, false, source)
+	var time_fact: Dictionary = target.recent_damage_measure(source.character_id, "spell:test:damage-a", "hp_loss", 5000)
+	var source_isolated: Dictionary = target.recent_damage_measure(second_source.character_id, "spell:test:damage-a", "hp_loss", 5000)
+	var turn_fact: Dictionary = history.damage_measure(target, source, "spell:test:damage-a", "hp_loss", "combat_turn")
+	var raw_turn: Dictionary = history.damage_measure(target, source, "spell:test:damage-a", "raw", "combat_turn")
+	var absorbed_turn: Dictionary = history.damage_measure(target, source, "spell:test:damage-a", "absorbed", "combat_turn")
+	check.call(int(fire_receipt.get("raw", -1)) == 8 and int(fire_receipt.get("resolved", -1)) == 8 and int(fire_receipt.get("absorbed", -1)) == 3 and int(fire_receipt.get("hp_loss", -1)) == 5 and int(turn_fact.get("value", -1)) == 5 and int(raw_turn.get("value", -1)) == 8 and int(absorbed_turn.get("value", -1)) == 3 and int(time_fact.get("value", -1)) == 5 and int(source_isolated.get("value", -1)) == 0, "One real typed settlement records distinct raw/resolved/absorbed/HP-loss measures against exact target and source IDs")
+	var second_target := Character.new()
+	second_target.character_id = "damage-target-b"
+	second_target.max_hp = 40
+	second_target.current_hp = 40
+	var second_target_receipt: Dictionary = CombatAction.resolve_damage(second_target, 4, "fire", {"combat_history": history, "damage_source_instance_id": "spell:test:damage-a"}, false, false, source)
+	var first_target_history: Dictionary = target.recent_damage_measure(source.character_id, "spell:test:damage-a", "raw", 5000)
+	var second_target_history: Dictionary = second_target.recent_damage_measure(source.character_id, "spell:test:damage-a", "raw", 5000)
+	check.call(int(second_target_receipt.get("hp_loss", -1)) == 4 and int(first_target_history.get("value", -1)) == 8 and int(second_target_history.get("value", -1)) == 4, "Two actual Character targets sharing one exact source instance keep independent settled histories")
+	var overkill_target := Character.new()
+	overkill_target.character_id = "damage-target-overkill"
+	overkill_target.max_hp = 30
+	overkill_target.current_hp = 2
+	var overkill_receipt: Dictionary = CombatAction.resolve_damage(overkill_target, 9, "fire", {"combat_history": history, "damage_source_instance_id": "spell:test:overkill"}, false, false, source)
+	var overkill_history: Dictionary = overkill_target.recent_damage_measure(source.character_id, "spell:test:overkill", "hp_loss", 5000)
+	check.call(int(overkill_receipt.get("raw", -1)) == 9 and int(overkill_receipt.get("resolved", -1)) == 9 and int(overkill_receipt.get("hp_loss", -1)) == 2 and int(overkill_history.get("value", -1)) == 2, "Overkill retains resolved damage while HP-loss history caps at the target's actual remaining HP")
+	history.begin_turn(target, 1)
+	var owner_source_start: Dictionary = history.damage_measure(target, source, "spell:test:damage-a", "hp_loss", "owner_turn")
+	check.call(owner_source_start.get("available", false) and int(owner_source_start.get("value", -1)) == 0, "The target's explicit own-turn start creates an empty independent damage boundary")
+	target.feature_uses["damage_immunities"] = ["fire"]
+	var immune_receipt: Dictionary = CombatAction.resolve_damage(target, 6, "fire", {"combat_history": history, "damage_source_instance_id": "spell:test:damage-b"}, false, false, second_source)
+	var first_source_still_isolated: Dictionary = history.damage_measure(target, source, "spell:test:damage-a", "raw", "owner_turn")
+	var second_source_prevented: Dictionary = history.damage_measure(target, second_source, "spell:test:damage-b", "prevented", "owner_turn")
+	check.call(int(immune_receipt.get("raw", -1)) == 6 and int(immune_receipt.get("resolved", -1)) == 0 and int(immune_receipt.get("hp_loss", -1)) == 0 and int(first_source_still_isolated.get("value", -1)) == 0 and int(second_source_prevented.get("value", -1)) == 6, "Immunity records prevented damage under the second exact source without aliasing the first")
+	var saved := target.to_dict()
+	var loaded := Character.new()
+	var save_valid := Character.saved_damage_history_error(saved, 5000).is_empty()
+	loaded.from_dict(saved)
+	var restored_measure: Dictionary = loaded.recent_damage_measure(second_source.character_id, "spell:test:damage-b", "prevented", 5000)
+	var malformed := saved.duplicate(true)
+	malformed["recent_damage_history"][0]["source_actor_id"] = ""
+	var future := saved.duplicate(true)
+	future["recent_damage_history"][0]["at_seconds"] = 5001
+	check.call(save_valid and int(restored_measure.get("value", -1)) == 6 and not Character.saved_damage_history_error(malformed, 5000).is_empty() and not Character.saved_damage_history_error(future, 5000).is_empty(), "Allowed Character DTO retains attributed measures and preflight rejects missing source IDs and future timestamps")
+	var before_deadline: Dictionary = loaded.recent_damage_measure(second_source.character_id, "spell:test:damage-b", "prevented", 5059)
+	var at_deadline: Dictionary = loaded.recent_damage_measure(second_source.character_id, "spell:test:damage-b", "prevented", 5060)
+	var after_jump: Dictionary = loaded.recent_damage_measure(second_source.character_id, "spell:test:damage-b", "prevented", 9000)
+	check.call(int(before_deadline.get("value", -1)) == 6 and int(at_deadline.get("value", -1)) == 0 and int(after_jump.get("value", -1)) == 0, "Campaign history expires at the declared equality boundary and time jumps do not restart or fabricate receipts")
+	var attack_probe: Dictionary = DataLoader.get_spell("sandbox:action_history_renamed")
+	var miss_target := {"id": "damage-miss-target", "name": "Damage History Miss", "armor_class": 100, "max_hp": 30, "current_hp": 30, "is_alive": true, "conditions": {}}
+	# High AC still allows a natural 20; this check requires an actual miss.
+	FighterChecks._seed_die(20, 1)
+	var miss_result: Dictionary = CombatAction.resolve_spell(source, miss_target, attack_probe, false, {}, [], 1, 5)
+	randomize()
+	var refused_spell := turn_spell.duplicate(true)
+	refused_spell["steps"][1]["effects"][0]["when"]["fact"] = "target.not_a_damage_history_fact"
+	var refused_before := target.recent_damage_history.size()
+	var refused_result: Dictionary = CombatAction.resolve_spell(source, target, refused_spell, true, {}, [], 1, 5)
+	check.call(not bool(miss_result.get("hit", true)) and int(miss_target.get("current_hp", -1)) == 30 and not bool(refused_result.get("success", true)) and target.recent_damage_history.size() == refused_before, "A real attack miss and malformed/refused command add no damage-history entry")
+	GameManager.campaign_elapsed_seconds = prior_seconds
+
+
+static func _distance_predicate_checks(check: Callable) -> void:
+	var neutral: Dictionary = DataLoader.get_spell("sandbox:distance_actor_neutral")
+	var renamed: Dictionary = DataLoader.get_spell("sandbox:distance_source_renamed")
+	check.call(not neutral.is_empty() and not renamed.is_empty() and SharedSpell.content_error(neutral).is_empty() and SharedSpell.content_error(renamed).is_empty(), "Neutral actor-relative and renamed source-relative distance consumers load through shared spell validation")
+	if neutral.is_empty() or renamed.is_empty(): return
+	var caster := Character.new()
+	caster.initialize("Distance caster", "human", "fighter", AbilityScores.new())
+	caster.character_id = "distance-caster"
+	var first_target := Character.new()
+	first_target.initialize("First twin", "human", "fighter", AbilityScores.new())
+	first_target.character_id = "distance-target-one"
+	var second_target := Character.new()
+	second_target.initialize("Second twin", "human", "fighter", AbilityScores.new())
+	second_target.character_id = "distance-target-two"
+	var host := SpellCastContext.new()
+	host.caster = caster
+	host.spell = renamed
+	host.players = [
+		{"character": caster, "hex_position": Vector2i.ZERO},
+		{"character": first_target, "hex_position": Vector2i(2, 0)},
+		{"character": second_target, "hex_position": Vector2i(4, 0)}
+	]
+	host.areas = CombatSpellZones.new()
+	host.areas.active_spell_zones = {
+		"source-one": {"spell_id": str(renamed.get("id", "")), "caster_id": caster.character_id, "center": Vector2i.ZERO},
+		"source-two": {"spell_id": str(renamed.get("id", "")), "caster_id": caster.character_id, "center": Vector2i(6, 0)}
+	}
+	var cast := SpellResolutionContext.new()
+	cast.caster = caster
+	cast.target = first_target
+	cast.spell = neutral
+	cast.spatial_host = host
+	cast.source_definition_id = str(renamed.get("id", ""))
+	cast.source_instance_id = "source-one"
+	var adapter := SharedStepExecutor.SpellAdapter.new(cast)
+	var actor_when: Dictionary = neutral["steps"][0]["effects"][0]["when"]
+	var source_when: Dictionary = renamed["steps"][0]["effects"][0]["when"]
+	var exact_actor_range: Dictionary = SharedStepExecutor._read_fact("target.actor_hex_distance_feet", adapter, first_target)
+	check.call(exact_actor_range.get("available", false) and int(exact_actor_range.get("value", -1)) == 10 and SharedStepExecutor.evaluate_predicate(actor_when, adapter, first_target, []) and not SharedStepExecutor.evaluate_predicate({"fact": "target.actor_hex_distance_feet", "lt": 10}, adapter, first_target, []), "Axial hex distance is expressed in feet and the authored inclusive range boundary includes exact equality")
+	host.players[0]["hex_position"] = Vector2i(1, 0)
+	check.call(SharedStepExecutor.evaluate_predicate(actor_when, adapter, first_target, []), "Moving the actor endpoint updates a live distance query")
+	host.players[0]["hex_position"] = Vector2i.ZERO
+	host.players[1]["hex_position"] = Vector2i(3, 0)
+	check.call(not SharedStepExecutor.evaluate_predicate(actor_when, adapter, first_target, []), "Moving the target endpoint updates a live distance query")
+	check.call(not SharedStepExecutor.evaluate_predicate(actor_when, adapter, second_target, []) and int(SharedStepExecutor._read_fact("target.actor_hex_distance_feet", adapter, second_target).get("value", -1)) == 20, "Two represented actors of the same definition resolve their own distinct live positions")
+	host.players[1]["hex_position"] = Vector2i(2, 0)
+	var source_at_ten: Dictionary = SharedStepExecutor._read_fact("target.source_hex_distance_feet", adapter, first_target)
+	check.call(source_at_ten.get("available", false) and int(source_at_ten.get("value", -1)) == 10 and SharedStepExecutor.evaluate_predicate(source_when, adapter, first_target, []), "A represented placed source is measured from its exact instance center with inclusive range equality")
+	host.players[0]["hex_position"] = Vector2i(5, 0)
+	check.call(SharedStepExecutor.evaluate_predicate(source_when, adapter, first_target, []) and not SharedStepExecutor.evaluate_predicate(actor_when, adapter, first_target, []), "Moving the source bearer does not move the located source endpoint")
+	host.players[0]["hex_position"] = Vector2i.ZERO
+	host.players[1]["hex_position"] = Vector2i(3, 0)
+	check.call(not SharedStepExecutor.evaluate_predicate(source_when, adapter, first_target, []), "Moving the bearer/target changes source-relative range while the placed source remains fixed")
+	host.areas.active_spell_zones["source-one"]["center"] = Vector2i(1, 0)
+	check.call(SharedStepExecutor.evaluate_predicate(source_when, adapter, first_target, []), "Moving the located source changes its live range while the bearer stays fixed")
+	cast.source_instance_id = "source-two"
+	check.call(not SharedStepExecutor.evaluate_predicate(source_when, adapter, first_target, []) and int(SharedStepExecutor._read_fact("target.source_hex_distance_feet", adapter, first_target).get("value", -1)) == 15, "Two located source instances sharing one definition resolve independently by exact instance identity")
+	cast.source_instance_id = "source-one"
+	cast.source_instance_id = ""
+	check.call(not SharedStepExecutor._read_fact("target.source_hex_distance_feet", adapter, first_target).get("available", false) and not SharedStepExecutor.evaluate_predicate({"not": source_when}, adapter, first_target, []), "Definition identity alone cannot supply a location and unavailable source distance stays unavailable under not")
+	cast.source_instance_id = "source-one"
+	host.areas.active_spell_zones.erase("source-one")
+	check.call(not SharedStepExecutor._read_fact("target.source_hex_distance_feet", adapter, first_target).get("available", false), "Removing the exact located source makes its distance unavailable")
+	var stale_target := Character.new()
+	stale_target.initialize("Stale first twin", "human", "fighter", AbilityScores.new())
+	stale_target.character_id = first_target.character_id
+	check.call(not SharedStepExecutor._read_fact("target.actor_hex_distance_feet", adapter, stale_target).get("available", false), "A stale actor projection with a reused ID cannot borrow a live participant position")
+	var prior_transition: Dictionary = GameManager.transition_context.duplicate(true)
+	GameManager.transition_context["local_room"] = {"party_positions": {caster.character_id: [0, 0], first_target.character_id: [1, 0]}}
+	check.call(not SharedStepExecutor._read_fact("target.actor_hex_distance_feet", adapter, stale_target).get("available", false), "A stale combat actor cannot borrow the room position of a live actor with the same ID")
+	host.players.erase(host.players[1])
+	check.call(not SharedStepExecutor._read_fact("target.actor_hex_distance_feet", adapter, first_target).get("available", false), "Removing a combat endpoint cannot fall back to its old room position")
+	host.players.clear()
+	host.monsters.clear()
+	cast.spatial_host = null
+	var prior_characters := PartyManager.characters.duplicate()
+	var prior_slots := PartyManager.party_slots.duplicate(true)
+	PartyManager.characters[caster.character_id] = caster
+	PartyManager.characters[first_target.character_id] = first_target
+	PartyManager.party_slots = [{"occupied": true, "character_id": caster.character_id}, {"occupied": true, "character_id": first_target.character_id}]
+	var room_distance: Dictionary = SharedStepExecutor._read_fact("target.actor_hex_distance_feet", adapter, first_target)
+	check.call(room_distance.get("available", false) and int(room_distance.get("value", -1)) == 5, "Outside an encounter, actor distance uses the room-owned party position map")
+	check.call(not SharedStepExecutor._read_fact("target.actor_hex_distance_feet", adapter, stale_target).get("available", false), "A room distance requires the current party Character, not a copied ID")
+	PartyManager.characters = prior_characters
+	PartyManager.party_slots = prior_slots
+	GameManager.transition_context = prior_transition
+
+
 static func _entity_binding_checks(check: Callable) -> void:
 	var neutral: Dictionary = DataLoader.get_spell("sandbox:entity_bindings_neutral")
 	var renamed: Dictionary = DataLoader.get_spell("sandbox:entity_bindings_renamed")
@@ -3197,6 +3719,9 @@ static func _relationship_query_checks(check: Callable) -> void:
 	neutral_context.decisions = {"players": players, "monsters": monsters}
 	var adapter := SharedStepExecutor.SpellAdapter.new(neutral_context)
 	check.call(SharedStepExecutor.evaluate_predicate(neutral_gate, adapter, ally, []) and SharedStepExecutor._read_fact("target.relationship", adapter, ally).get("value") == "ally", "Current participant control classifies an ally from the live player roster")
+	var stale_ally := Character.new()
+	stale_ally.character_id = ally.character_id
+	check.call(not SharedStepExecutor._read_fact("target.relationship", adapter, stale_ally).get("available", false), "A stale same-ID actor cannot borrow a live participant's allegiance")
 	var continuation_cast := SpellResolutionContext.new()
 	continuation_cast.caster = caster
 	continuation_cast.target = ally
@@ -3251,6 +3776,130 @@ static func _seed_relation_condition(target: Character, giver_id: String, source
 	target.condition_sources[condition] = grants
 	target.conditions[condition] = 10
 	target.spell_effects[source_id] = {"source_id": source_id, "caster_id": giver_id, "conditions": [condition], "remaining_seconds": 60}
+
+
+static func _result_reducer_checks(check: Callable) -> void:
+	var neutral: Dictionary = DataLoader.get_spell("sandbox:result_reduce_neutral")
+	var renamed: Dictionary = DataLoader.get_spell("sandbox:result_reduce_renamed")
+	check.call(not neutral.is_empty() and not renamed.is_empty() and SharedSpell.content_error(neutral).is_empty() and SharedSpell.content_error(renamed).is_empty(), "Neutral and renamed explicit sum/min/max consumers load and pass shared validation")
+	if neutral.is_empty() or renamed.is_empty(): return
+	var caster := Character.new()
+	caster.initialize("Reducer caster", "human", "wizard", AbilityScores.new())
+	caster.character_id = "reducer-caster"
+	caster.max_hp = 100
+	caster.current_hp = 50
+	var target := Character.new()
+	target.initialize("Reducer target", "human", "fighter", AbilityScores.new())
+	target.character_id = "reducer-target"
+	target.max_hp = 100
+	target.current_hp = 100
+	var neutral_cast: Dictionary = CombatAction.resolve_spell(caster, target, neutral, false, {}, [], 1)
+	var neutral_steps: Array = neutral_cast.get("step_results", [])
+	var neutral_outcome: Dictionary = neutral_steps[2].get("target_outcomes", [{}])[0] if neutral_steps.size() > 2 else {}
+	var neutral_receipt: Dictionary = neutral_outcome.get("result", {})
+	var neutral_hp_loss := int(neutral_steps[0].get("target_outcomes", [{}])[0].get("damage_components", [{}])[0].get("hp_loss", -1)) + int(neutral_steps[1].get("target_outcomes", [{}])[0].get("damage_components", [{}])[0].get("hp_loss", -1))
+	var neutral_values_ok := bool(neutral_cast.get("success", false)) and neutral_hp_loss == 11 and int(caster.current_hp) == 55 and int(caster.temp_hp) == 7 and int(neutral_receipt.get("healing", -1)) == 5
+	caster.current_hp = 50
+	caster.temp_hp = 0
+	target.current_hp = 100
+	var renamed_cast: Dictionary = CombatAction.resolve_spell(caster, target, renamed, false, {}, [], 1)
+	var renamed_steps: Array = renamed_cast.get("step_results", [])
+	var renamed_outcome: Dictionary = renamed_steps[2].get("target_outcomes", [{}])[0] if renamed_steps.size() > 2 else {}
+	var renamed_receipt: Dictionary = renamed_outcome.get("result", {})
+	var renamed_values_ok := bool(renamed_cast.get("success", false)) and int(caster.current_hp) == 57 and int(caster.temp_hp) == 3 and int(renamed_receipt.get("healing", -1)) == 7
+	check.call(neutral_values_ok and renamed_values_ok, "Loaded ordered consumers apply distinct settled sums and max/min receipts once (neutral heal/thp=%d/%d renamed=%d/%d)" % [int(neutral_receipt.get("healing", -1)), int(caster.temp_hp if renamed_values_ok else -1), int(renamed_receipt.get("healing", -1)), int(caster.temp_hp)])
+	var a := Character.new()
+	a.character_id = "reducer-target-a"
+	var b := Character.new()
+	b.character_id = "reducer-target-b"
+	var context := SpellResolutionContext.new()
+	context.caster = caster
+	context.target = a
+	context.spell = neutral
+	var adapter := SharedStepExecutor.SpellAdapter.new(context)
+	var outcomes: Array = [
+		{"step_id": "one", "type": "damage", "target_outcomes": [{"target": a, "damage_components": [{"type": "fire", "raw": 4, "resolved": 4, "hp_loss": 4}]}, {"target": b, "damage_components": [{"type": "fire", "raw": 8, "resolved": 8, "hp_loss": 8}]}]},
+		{"step_id": "two", "type": "damage", "target_outcomes": [{"target": a, "damage_components": [{"type": "fire", "raw": 7, "resolved": 7, "hp_loss": 7}]}, {"target": b, "damage_components": [{"type": "fire", "raw": 2, "resolved": 2, "hp_loss": 2}]}]},
+		{"step_id": "unselected_high", "type": "damage", "target_outcomes": [{"target": a, "damage_components": [{"type": "fire", "raw": 99, "resolved": 99, "hp_loss": 99}]}]}
+	]
+	var base := {"steps": ["one", "two"], "targets": "all", "component": "fire", "measure": "hp_loss", "empty": "zero"}
+	var sum_selector := base.duplicate(true)
+	sum_selector["reducer"] = "sum"
+	var min_selector := base.duplicate(true)
+	min_selector["reducer"] = "min"
+	min_selector["empty"] = "unavailable"
+	var max_selector := base.duplicate(true)
+	max_selector["reducer"] = "max"
+	max_selector["empty"] = "unavailable"
+	var sum_value: Dictionary = SharedStepExecutor.evaluate_formula({"result_reduce": sum_selector}, adapter, a, outcomes)
+	var min_value: Dictionary = SharedStepExecutor.evaluate_formula({"result_reduce": min_selector}, adapter, a, outcomes)
+	var max_value: Dictionary = SharedStepExecutor.evaluate_formula({"result_reduce": max_selector}, adapter, a, outcomes)
+	var same_selector := sum_selector.duplicate(true)
+	same_selector["targets"] = "same"
+	var same_value: Dictionary = SharedStepExecutor.evaluate_formula({"result_reduce": same_selector}, adapter, a, outcomes)
+	var cast_target_selector := sum_selector.duplicate(true)
+	cast_target_selector["targets"] = "cast_target"
+	var cast_target_value: Dictionary = SharedStepExecutor.evaluate_formula({"result_reduce": cast_target_selector}, adapter, a, outcomes)
+	var empty_outcomes: Array = [{"step_id": "one", "type": "damage", "target_outcomes": [{"target": a, "skipped": true}]}, {"step_id": "two", "type": "damage", "target_outcomes": []}]
+	var empty_sum: Dictionary = SharedStepExecutor.evaluate_formula({"result_reduce": sum_selector}, adapter, a, empty_outcomes)
+	var empty_min: Dictionary = SharedStepExecutor.evaluate_formula({"result_reduce": min_selector}, adapter, a, empty_outcomes)
+	var missing_input: Dictionary = SharedStepExecutor.evaluate_formula({"result_reduce": max_selector}, adapter, a, [outcomes[0]])
+	var duplicate_outcomes := outcomes.duplicate(true)
+	duplicate_outcomes[0]["target_outcomes"].append(duplicate_outcomes[0]["target_outcomes"][0].duplicate(true))
+	var duplicate_rejected: Dictionary = SharedStepExecutor.evaluate_formula({"result_reduce": sum_selector}, adapter, a, duplicate_outcomes)
+	var zero_outcomes: Array = [{"step_id": "one", "type": "damage", "target_outcomes": [{"target": a, "damage_components": [{"type": "fire", "raw": 0, "resolved": 0, "hp_loss": 0}]}]}, {"step_id": "two", "type": "damage", "target_outcomes": [{"target": a, "damage_components": [{"type": "fire", "raw": 0, "resolved": 0, "hp_loss": 0}]}]}]
+	var zero_min: Dictionary = SharedStepExecutor.evaluate_formula({"result_reduce": min_selector}, adapter, a, zero_outcomes)
+	check.call(int(sum_value.get("value", -1)) == 21 and int(min_value.get("value", -1)) == 2 and int(max_value.get("value", -1)) == 8 and int(same_value.get("value", -1)) == 11 and int(cast_target_value.get("value", -1)) == 11 and int(empty_sum.get("value", -1)) == 0 and not empty_min.get("success", true) and int(zero_min.get("value", -1)) == 0 and not missing_input.get("success", true) and not duplicate_rejected.get("success", true), "Reducers select each exact target/step once, exclude an unrelated high value, preserve same/cast-target scope, and distinguish known zero from empty/missing/duplicate inputs")
+	var repeated := neutral.duplicate(true)
+	repeated["steps"][0]["type"] = "save"
+	repeated["steps"][0]["save"] = "DEX"
+	repeated["steps"][0]["damage_components"] = [{"damage_type": "fire", "damage": "4"}, {"damage_type": "fire", "damage": "2"}]
+	repeated["steps"][0].erase("damage")
+	repeated["steps"][0].erase("damage_type")
+	check.call(not SharedSpell.content_error(repeated).is_empty(), "Repeated damage component without an explicit component_id is rejected during content preflight")
+	var empty_gate := {"result_reduce": sum_selector, "eq": 0}
+	check.call(SharedStepExecutor.evaluate_predicate(empty_gate, adapter, a, empty_outcomes), "Predicate consumers can explicitly observe an empty sum as zero")
+
+
+static func _batch_e_boundary_checks(check: Callable) -> void:
+	var caster := Character.new()
+	caster.initialize("Batch E caster", "human", "wizard", AbilityScores.new())
+	caster.character_id = "batch-e-caster"
+	var target := Character.new()
+	target.initialize("Batch E target", "human", "fighter", AbilityScores.new())
+	target.character_id = "batch-e-target"
+	target.max_hp = 100
+	target.current_hp = 100
+	var instant: Dictionary = DataLoader.get_spell("sandbox:result_reduce_neutral")
+	CombatAction.resolve_spell(caster, target, instant, false, {}, [], 1)
+	var first_source := str(target.recent_damage_history.back().get("source_instance_id", ""))
+	CombatAction.resolve_spell(caster, target, instant, false, {}, [], 1)
+	var second_source := str(target.recent_damage_history.back().get("source_instance_id", ""))
+	check.call(first_source != second_source and target.recent_damage_history.size() == 2, "Batch E: repeated instant casts without a combat host retain independent causal source instances")
+	target.features.append({"id": "batch_e_ward", "effects": [{"type": "damage_ward_pool", "pool_id": "batch_e_ward", "trigger_schools": ["Abjuration"], "max_hp_level_multiplier": 0, "max_hp_flat_bonus": 3}]})
+	WardRules.on_slot_spell_cast(target, {"level": 1, "school": "Abjuration"}, 1)
+	target.temp_hp = 2
+	var ward_cast: Dictionary = CombatAction.resolve_spell(caster, target, instant, false, {}, [], 1)
+	var ward_component: Dictionary = ward_cast.get("step_results", [])[0]["target_outcomes"][0]["damage_components"][0]
+	var ward_history: Dictionary = target.recent_damage_history.back()
+	check.call(int(ward_component.get("absorbed", -1)) == 1 and int(ward_component.get("prevented", -1)) == 3 and int(ward_history.get("absorbed", -1)) == 5, "Batch E: component absorption retains its accepted Temporary HP measure while history separately includes ward absorption")
+	var context := SpellResolutionContext.new()
+	context.caster = caster
+	context.target = target
+	var adapter := SharedStepExecutor.SpellAdapter.new(context)
+	var selector := {"reducer": "sum", "steps": ["miss"], "targets": "all", "component": "fire", "measure": "hp_loss", "empty": "zero"}
+	var missed: Array = [{"step_id": "miss", "type": "attack", "target_outcomes": [{"target": target, "hit": false, "damage": 0}]}]
+	var miss_sum := SharedStepExecutor.evaluate_formula({"result_reduce": selector}, adapter, target, missed)
+	check.call(bool(miss_sum.get("success", false)) and int(miss_sum.get("value", -1)) == 0, "Batch E: a settled miss is a known empty damage selection, not missing input")
+	var miss_spell := instant.duplicate(true)
+	miss_spell["steps"][0]["type"] = "attack"
+	miss_spell["steps"][0]["attack_type"] = "ranged_spell"
+	caster.current_hp = 50
+	caster.max_hp = 100
+	var miss_target := {"id": "batch-e-miss", "armor_class": 100, "current_hp": 100, "max_hp": 100, "is_alive": true, "conditions": {}}
+	FighterChecks._seed_die(20, 1)
+	var actual_miss := CombatAction.resolve_spell(caster, miss_target, miss_spell, false, {}, [], 1)
+	check.call(bool(actual_miss.get("success", false)) and caster.current_hp == 53 and miss_target.current_hp == 93, "Batch E: loaded ordered reducer continues past a real missed attack and consumes only the later settled damage")
 
 
 static func _shared_result_sum_checks(check: Callable) -> void:
@@ -3538,3 +4187,302 @@ static func _margin_adapter_context(caster: Character, target, spell: Dictionary
 	context.spell = spell
 	context.effect_cast = {"caster_id": caster.character_id}
 	return context
+
+
+static func _child_group_checks(check: Callable) -> void:
+	var actor := Character.new()
+	actor.initialize("Group", "human", "wizard", AbilityScores.new())
+	var other := Character.new()
+	other.initialize("Twin", "human", "wizard", AbilityScores.new())
+	var cast := SpellResolutionContext.new()
+	cast.caster = actor
+	cast.target = actor
+	var adapter := SharedStepExecutor.SpellAdapter.new(cast)
+	var group := {"mode":"count", "steps":["a","b"], "targets":"all", "outcome":"hit", "empty":"fail", "skipped":"exclude", "comparison":"gte", "threshold":2}
+	var results := [{"step_id":"a", "type":"attack", "complete":true, "target_outcomes":[{"target":actor,"hit":true},{"target":other,"hit":false}]}, {"step_id":"b", "type":"attack", "complete":true, "target_outcomes":[{"target":actor,"hit":true}]}]
+	for threshold in [1,2,3]:
+		group.threshold=threshold
+		check.call(SharedStepExecutor.evaluate_predicate({"child_group":group},adapter,actor,results)==(threshold<=2), "Child count below/at/above threshold retains repeated actor attempts")
+	group.erase("comparison")
+	group.erase("threshold")
+	for mode in ["all","any"]:
+		group.mode=mode
+		check.call(SharedStepExecutor.evaluate_predicate({"child_group":group},adapter,actor,results)==(mode=="any"), "Child group mixed final outcomes: "+mode)
+		results[1].complete=false
+		check.call(SharedStepExecutor._evaluate_predicate_state({"child_group":group},adapter,actor,results)==-1, "Unfinished child blocks even already satisfied "+mode)
+		results[1].complete=true
+	group.steps=["a"]
+	results[0].target_outcomes=[]
+	for policy in ["pass","fail","unavailable"]:
+		group.empty=policy
+		check.call(SharedStepExecutor._evaluate_predicate_state({"child_group":group},adapter,actor,results)==(1 if policy=="pass" else (0 if policy=="fail" else -1)), "Known empty group explicit policy: "+policy)
+	results[0].target_outcomes=[{"target":actor,"skipped":true}]
+	group.empty="pass"
+	for policy in ["exclude","fail","unavailable"]:
+		group.skipped=policy
+		check.call(SharedStepExecutor._evaluate_predicate_state({"child_group":group},adapter,actor,results)==(1 if policy=="exclude" else (0 if policy=="fail" else -1)), "Skipped child explicit policy: "+policy)
+	group.steps=["missing"]
+	check.call(SharedStepExecutor._evaluate_predicate_state({"not":{"child_group":group}},adapter,actor,results)==-1, "Missing child group remains unknown under negation")
+	for id in ["sandbox:child_group_neutral","sandbox:child_group_renamed"]:
+		check.call(SharedSpell.content_error(DataLoader.get_spell(id)).is_empty(), "Loaded child group fixture validates: "+id)
+
+
+static func _formula_input_checks(check: Callable) -> void:
+	var actor := Character.new()
+	actor.initialize("Input", "human", "wizard", AbilityScores.new())
+	var host := SpellCastContext.new()
+	host.caster=actor
+	host.spell=DataLoader.get_spell("sandbox:formula_number_renamed").duplicate(true)
+	for invalid in [true, "2", 1.5, -1, 4, null]:
+		check.call(not SpellFormulaInputs.capture(host,"amount",invalid) and host.formula_inputs.is_empty(), "Numeric input refuses wrong type/range: "+str(invalid))
+	check.call(SpellFormulaInputs.capture(host,"amount",1) and not SpellFormulaInputs.capture(host,"amount",3), "Numeric input captures once at lower edge; replay cannot replace it")
+	var cast := SpellResolutionContext.new()
+	cast.caster=actor
+	cast.spatial_host=host
+	cast.invocation_id=host.invocation_id
+	cast.spell=host.spell
+	cast.spell_definition_id=str(host.spell.id)
+	var read := SpellFormulaInputs.read(cast,"amount")
+	check.call(read.get("success",false) and read.get("value")==1 and not SpellFormulaInputs.read(cast,"unknown").get("success",true), "Only declared host-captured numeric value is available")
+	host.formula_inputs.clear()
+	check.call(SpellFormulaInputs.capture(host,"amount",3) and SpellFormulaInputs.read(cast,"amount").get("value")==3, "Numeric upper edge remains exact")
+	for id in ["sandbox:formula_die_neutral","sandbox:formula_number_renamed"]:
+		check.call(SharedSpell.content_error(DataLoader.get_spell(id)).is_empty(), "Loaded formula input definition validates: "+id)
+
+
+static func _class_level_table_checks(check: Callable) -> void:
+	DataLoader._load_json_file("res://data/fixtures/class_level_tables.json","class")
+	var actor := Character.new()
+	actor.initialize("Allocation", "human", "wizard", AbilityScores.new())
+	actor.character_id="fixture:allocation"
+	actor.level=8
+	actor.class_levels={"wizard":3,"cleric":5}
+	var neutral: Dictionary = DataLoader.classes["fixture:class_table_neutral_class"].features_by_level["1"][0]
+	var renamed: Dictionary = DataLoader.classes["fixture:class_table_renamed_class"].features_by_level["1"][0]
+	check.call(actor.get_class_level("wizard")==3 and actor.get_class_level("cleric")==5 and actor.get_class_level("fighter")==0, "Actual allocation separates each class and absent class from total eight")
+	var a := ResourcePoolRules.acquire(actor,neutral,"fixture:allocation:a")
+	var b := ResourcePoolRules.acquire(actor,renamed,"fixture:allocation:b")
+	check.call(a.get("success",false) and b.get("success",false) and a.pool.capacity==5 and a.pool.die_size==8 and b.pool.capacity==4 and b.pool.die_size==6, "Independent source pools select declared numeric and die-size rows")
+	ResourcePoolRules.spend(actor,"fixture:allocation:a",1)
+	actor.class_levels={"wizard":5,"cleric":3}
+	var grown := ResourcePoolRules.recalculate_capacity(actor,neutral,"fixture:allocation:a")
+	check.call(grown.get("success",false) and grown.pool.capacity==7 and grown.pool.current==1 and grown.pool.die_size==12 and actor.numeric_resource_pools["fixture:allocation:b"].current==2, "Growth updates numeric/die-size rows, preserves spent quantity and unrelated source")
+	actor.class_levels={"wizard":1,"cleric":7}
+	var shrunk := ResourcePoolRules.recalculate_capacity(actor,neutral,"fixture:allocation:a")
+	check.call(shrunk.pool.capacity==3 and shrunk.pool.current==1 and shrunk.pool.die_size==6, "Shrink keeps/clamps remaining instead of reacquiring")
+	var table: Dictionary = neutral.resource_pool.die_size.duplicate(true)
+	for bad in [7,0,21,3.5,true]:
+		table.breakpoints[0].value=bad
+		check.call(not ResourcePoolRules.die_size_error(table).is_empty(), "Unsupported die-size row refuses before RNG: "+str(bad))
+	table=neutral.resource_pool.capacity_formula.duplicate(true)
+	actor.class_levels={"wizard":1,"cleric":7}
+	table.breakpoints=[{"threshold":2,"value":4}]
+	check.call(not SharedStepExecutor.evaluate_actor_formula(table,actor).get("success",true), "Below-first unavailable is explicit")
+	table.below_first="zero"
+	check.call(SharedStepExecutor.evaluate_actor_formula(table,actor).get("value")==0, "Numeric below-first zero policy is explicit")
+	table.breakpoints=[{"threshold":2,"value":4},{"threshold":2,"value":5}]
+	check.call(not SharedStepExecutor.formula_content_error(table).is_empty(), "Duplicate progression thresholds refuse")
+	actor.class_levels={"wizard":2,"cleric":7}
+	check.call(not SharedStepExecutor.evaluate_actor_formula({"caster_class_level":"wizard"},actor).get("success",true), "Malformed total cannot guess a class level")
+	for allocation in [{"wizard":2,"cleric":7},{"wizard":8,"unknown":1},{"wizard":true},{"cleric":8},[8]]:
+		check.call(not Character.saved_class_levels_error({"class_levels":allocation,"class_id":"wizard","level":8}).is_empty(), "Malformed saved class allocation refuses: "+str(allocation))
+
+
+static func _batch_025_dice_checks(check: Callable) -> void:
+	BatchJChecks.run(check)
+	var multiplier_floor := Dice.apply_damage_multiplier(5, 1, 2, "floor")
+	var multiplier_ceil := Dice.apply_damage_multiplier(5, 1, 2, "ceil")
+	check.call(multiplier_floor.success and multiplier_floor.value == 2 and multiplier_ceil.value == 3, "Damage-result multipliers apply their explicit floor or ceiling rounding")
+	check.call(not Dice.apply_damage_multiplier(5, 1, 0, "floor").success, "Damage-result multiplier rejects a zero denominator")
+	var caster := Character.new()
+	caster.initialize("Dice policy", "human", "wizard", AbilityScores.new())
+	var target := {"id": "fixture:batch025_target", "name": "Dice target", "current_hp": 100, "max_hp": 100, "is_alive": true, "conditions": {}}
+	var spell := {
+		"id": "fixture:batch025_damage", "name": "Bounded Dice", "execution": "shared", "level": 0,
+		"casting_time": "action", "range": 1, "target": "single", "damage": "3d6",
+		"damage_type": "force", "damage_dice_policy": {"remove": 1, "maximize": 1},
+		"damage_result_multiplier": {"numerator": 1, "denominator": 2, "rounding": "floor"}
+	}
+	check.call(SharedSpell.content_error(spell).is_empty(), "Loaded shared spell accepts bounded removal, maximization and a rounded final multiplier")
+	var resolved := CombatAction.resolve_spell(caster, target, spell, false, {}, [], 1, 0)
+	var details: Dictionary = resolved.get("damage_roll", {})
+	var roll_policy: Dictionary = details.get("damage_dice_policy", {})
+	var multiplier_receipt: Dictionary = resolved.get("damage_multiplier_receipt", {})
+	var expected_damage := int(floor(float(int(details.get("final_total", 0))) / 2.0))
+	check.call(resolved.get("success", false) and int(roll_policy.get("removed", -1)) == 1 and int(roll_policy.get("maximized", -1)) == 1 and int(resolved.get("damage", -1)) == expected_damage and target.current_hp == 100 - expected_damage and int(multiplier_receipt.get("numerator", 0)) == 1 and int(multiplier_receipt.get("denominator", 0)) == 2 and str(multiplier_receipt.get("rounding", "")) == "floor", "Shared spell host removes and maximizes dice before rolling, then records its final multiplier receipt")
+	var healing_target := {"id": "fixture:batch025_heal_target", "name": "Healing dice target", "current_hp": 50, "max_hp": 100, "is_alive": true, "conditions": {}, "temp_hp": 0}
+	var healing_spell := {"id": "fixture:batch025_healing", "name": "Bounded Healing", "execution": "shared", "level": 1, "casting_time": "action", "range": 1, "target": "single", "effects": [{"type": "heal", "value": "3d6", "dice_policy": {"remove": 1, "maximize": 1}, "result_multiplier": {"numerator": 1, "denominator": 2, "rounding": "floor"}}]}
+	var healing_result := CombatAction.resolve_spell(caster, healing_target, healing_spell, false, {}, [], 1, 1)
+	check.call(SharedSpell.content_error(healing_spell).is_empty() and healing_result.get("success", false) and int(healing_result.get("healing", -1)) >= 3 and int(healing_result.get("healing", -1)) <= 6 and int(healing_target.current_hp) == 50 + int(healing_result.get("healing", 0)), "Shared heal effect applies pre-roll die edits and the explicit final-result rounding")
+	var malformed := spell.duplicate(true)
+	malformed["damage_dice_policy"] = {"remove": -1}
+	check.call(not SharedSpell.content_error(malformed).is_empty(), "Malformed dice edits refuse at shared content validation")
+	var reroll_input := Dice.parse_dice_details("2d6")
+	var reroll_old := int(reroll_input.dice_terms[0].results[0])
+	var rerolled := Dice.reroll_selected_dice(reroll_input, [0], 1)
+	var reroll_detail: Dictionary = rerolled.details.dice_terms[0]
+	check.call(rerolled.success and not bool(reroll_detail.kept[0]) and int(reroll_detail.results[0]) == reroll_old and reroll_detail.results.size() == 3 and int(rerolled.details.final_total) == int(reroll_detail.subtotal), "Selected-die reroll preserves the old face and unchanged sibling while replacing exactly one result")
+	for keep_case in [{"policy": "higher", "original": 6}, {"policy": "lower", "original": 1}]:
+		var original_face := int(keep_case.original)
+		var retained_input := {"dice_terms": [{"sides": 6, "results": [original_face], "kept": [true], "subtotal": original_face, "count": 1}], "final_total": original_face}
+		seed(1)
+		var retained := Dice.reroll_selected_dice(retained_input, [0], 1, null, keep_case.policy)
+		var retained_dice := Dice.selectable_dice(retained.details)
+		check.call(retained_dice.size() == 1 and int(retained_dice[0].value) == original_face and int(retained.details.final_total) == original_face, "Retained %s reroll keeps the original face selectable and excludes its discarded replacement" % keep_case.policy)
+	var inspired_roller := Character.new()
+	inspired_roller.initialize("Inspired reroll", "human", "wizard", AbilityScores.new())
+	inspired_roller.heroic_inspiration = true
+	inspired_roller.fighter_training["inspiration_any_die"] = true
+	seed(3)
+	var inspired := Dice.reroll_selected_dice({"dice_terms": [{"sides": 6, "results": [6], "kept": [true], "subtotal": 6, "count": 1}], "final_total": 6}, [0], 1, inspired_roller)
+	var inspired_term: Dictionary = inspired.details.dice_terms[0]
+	var aligned: bool = inspired_term.results.size() == inspired_term.kept.size()
+	check.call(not inspired_roller.heroic_inspiration and inspired_term.results.size() == 3 and aligned, "An inspired selected reroll preserves one kept flag per original and Inspiration face")
+	if aligned:
+		var inspired_dice := Dice.selectable_dice(inspired.details)
+		check.call(inspired_dice.size() == 1 and int(inspired_dice[0].value) == int(inspired.details.final_total), "An inspired selected reroll remains safely selectable with exactly the final kept face")
+	var critical_dice_policy := {"remove": 1, "apply_to_critical": false}
+	FighterChecks._seed_die(6, 3)
+	var critical_dice := SpellDamageRolls._roll_spell_damage(caster, "1d6", 2, {}, critical_dice_policy)
+	check.call(int(critical_dice.get("final_total", -1)) == 3 and int(critical_dice.get("damage_dice_policy", {}).get("removed", 0)) == 1, "Critical damage dice edits can spend their declared count on the base die while leaving the added critical die eligible to roll")
+	var critical_target := {"id": "fixture:batch025_critical_target", "name": "Critical target", "current_hp": 20, "max_hp": 20, "is_alive": true, "conditions": {}, "temp_hp": 0}
+	var critical_result := SpellDamageRolls._finish_spell_damage(caster, critical_target, {"final_total": 5, "dice_terms": []}, 0, 1.0, "force", {"critical": true, "damage_result_multiplier": {"numerator": 2, "exclude_critical": true}}, {"success": true, "hit": true, "message": "Test deals {damage}."})
+	var critical_multiplier: Dictionary = critical_result.get("damage_multiplier_receipt", {})
+	check.call(int(critical_result.get("damage", -1)) == 5 and critical_multiplier.get("applied", true) == false and critical_multiplier.get("excluded_critical", false), "An authored damage-result multiplier can explicitly leave critical results unchanged and records the exclusion")
+	caster.character_id = "fixture:batch025_packet_caster"
+	for critical in [true, false]:
+		var packet_target := Character.new()
+		packet_target.initialize("Critical packet history", "human", "fighter", AbilityScores.new())
+		packet_target.character_id = "fixture:batch025_packet_history"
+		packet_target.max_hp = 100
+		packet_target.current_hp = 100
+		var packet_result := SpellDamageRolls._finish_spell_damage(caster, packet_target, {"final_total": 5, "dice_terms": []}, 0, 1.0, "force", {"critical": critical, "damage_result_multiplier": {"numerator": 2, "exclude_critical": true}}, {"success": true, "message": "Test {damage}"}, 1, [{"type": "cold", "details": {"final_total": 4, "dice_terms": []}}])
+		var expected_total := 9 if critical else 18
+		var packet_history: Dictionary = packet_target.recent_damage_history.back()
+		check.call(packet_result.damage == expected_total and packet_target.current_hp == 100 - expected_total and int(packet_result.damage_components[1].raw) == (4 if critical else 8), "Critical exclusion applies consistently to additional packet HP and raw receipts: critical=%s" % str(critical))
+		check.call(int(packet_history.raw) == expected_total and int(packet_history.prevented) == 0 and int(packet_history.resolved) == expected_total, "Additional packet history never invents prevention when a critical multiplier is excluded: critical=%s" % str(critical))
+	var heal_pool := {"id": "fixture:batch025_healing_reroll", "resource_pool": {"id": "fixture:batch025_healing_reroll_pool", "capacity_formula": 2, "initial_quantity": 1}}
+	caster.character_id = "fixture:batch025_healing_reroll_owner"
+	check.call(ResourcePoolRules.acquire(caster, heal_pool, "fixture:batch025_healing_reroll_source").get("success", false), "Healing reroll fixture acquires its exact authored payment source")
+	var healing_policy := {"count": 1, "selection": "lowest", "keep": "new", "sides": 6, "cost": {"source_instance_id": "fixture:batch025_healing_reroll_source", "amount": 1}}
+	var authored_heal := {"type": "heal", "value": "1d6", "reroll_policy": healing_policy}
+	var reroll_target := {"id": "fixture:batch025_authored_heal", "name": "Authored heal target", "current_hp": 0, "max_hp": 20, "is_alive": true, "conditions": {}, "temp_hp": 0}
+	FighterChecks._seed_die(6, 1)
+	var authored_heal_result := SharedSpell.apply_custom_effects(caster, reroll_target, [authored_heal], {"success": true}, 1, [], null, {"id": "fixture:authored_healing_reroll"})
+	var authored_reroll: Dictionary = authored_heal_result.get("healing_rerolls", [{}])[0]
+	var authored_die: Dictionary = authored_reroll.get("rerolls", [{}])[0]
+	var authored_payment: Dictionary = authored_reroll.get("payment", {})
+	check.call(int(authored_reroll.get("selected", []).size()) == 1 and int(authored_die.get("original", 0)) == 1 and str(authored_die.get("kept", "")) == "new" and authored_reroll.get("paid", false) and str(authored_reroll.get("source_instance_id", "")) == "fixture:batch025_healing_reroll_source" and int(authored_reroll.get("cost_amount", 0)) == 1 and authored_payment.get("success", false) and int(ResourcePoolRules.availability(caster, "fixture:batch025_healing_reroll_source").get("current", -1)) == 0 and int(authored_heal_result.get("healing", -1)) == int(authored_die.get("new", 0)), "Authored healing reroll selects one eligible rolled die, keeps its replacement and records its exact paid pool receipt")
+	var highest_seed := -1
+	var highest_first := 0
+	var highest_second := 0
+	for seed_value in 10000:
+		seed(seed_value)
+		highest_first = randi_range(1, 6)
+		highest_second = randi_range(1, 6)
+		if highest_first < highest_second:
+			highest_seed = seed_value
+			break
+	seed(highest_seed)
+	var highest_target := {"id": "fixture:batch025_highest", "name": "Highest target", "current_hp": 0, "max_hp": 20, "is_alive": true, "conditions": {}, "temp_hp": 0}
+	var highest_result := SharedSpell.apply_custom_effects(caster, highest_target, [{"type": "heal", "value": "2d6", "reroll_policy": {"count": 1, "selection": "highest", "keep": "new"}}], {"success": true}, 1, [], null, {"id": "fixture:authored_healing_reroll"})
+	var highest_reroll: Dictionary = highest_result.get("healing_rerolls", [{}])[0].get("rerolls", [{}])[0]
+	check.call(int(highest_reroll.get("original", 0)) == highest_second and int(highest_result.get("healing", -1)) == int(highest_reroll.get("new", 0)) + highest_first, "Authored healing reroll selection=highest chooses the highest eligible face and freezes its sibling")
+	for keep_case in [{"policy": "higher", "first": 6, "second": 1}, {"policy": "lower", "first": 1, "second": 6}]:
+		var pair_seed := -1
+		for seed_value in 10000:
+			seed(seed_value)
+			if randi_range(1, 6) == int(keep_case.first) and randi_range(1, 6) == int(keep_case.second):
+				pair_seed = seed_value
+				break
+		seed(pair_seed)
+		var keep_target := {"id": "fixture:batch025_keep_%s" % keep_case.policy, "name": "Keep target", "current_hp": 0, "max_hp": 20, "is_alive": true, "conditions": {}, "temp_hp": 0}
+		var keep_effect := {"type": "heal", "value": "1d6", "reroll_policy": {"count": 1, "selection": "lowest", "keep": str(keep_case.policy)}}
+		var keep_result := SharedSpell.apply_custom_effects(caster, keep_target, [keep_effect], {"success": true}, 1, [], null, {"id": "fixture:authored_healing_reroll"})
+		var keep_receipt: Dictionary = keep_result.get("healing_rerolls", [{}])[0]
+		var keep_roll: Dictionary = keep_receipt.get("rerolls", [{}])[0]
+		check.call(str(keep_roll.get("kept", "")) == "original" and int(keep_roll.get("original", 0)) == int(keep_case.first) and int(keep_roll.get("new", 0)) == int(keep_case.second) and int(keep_result.get("healing", -1)) == int(keep_case.first), "Authored healing keep=%s rerolls once but preserves the selected original face when it wins" % str(keep_case.policy))
+	var sides_target := {"id": "fixture:batch025_sides", "name": "Sides target", "current_hp": 0, "max_hp": 20, "is_alive": true, "conditions": {}, "temp_hp": 0}
+	FighterChecks._seed_die(6, 2)
+	var sides_result := SharedSpell.apply_custom_effects(caster, sides_target, [{"type": "heal", "value": "1d6", "reroll_policy": {"count": 1, "selection": "lowest", "sides": 4}}], {"success": true}, 1, [], null, {"id": "fixture:authored_healing_reroll"})
+	var sides_receipt: Dictionary = sides_result.get("healing_rerolls", [{}])[0]
+	check.call(sides_receipt.get("selected", []).is_empty() and sides_receipt.get("rerolls", []).is_empty() and int(sides_result.get("healing", -1)) == 2, "Authored healing reroll excludes dice of an ineligible size without rerolling them")
+	FighterChecks._seed_die(6, 1)
+	var unpaid_target := {"id": "fixture:batch025_unpaid", "name": "Unpaid target", "current_hp": 0, "max_hp": 20, "is_alive": true, "conditions": {}, "temp_hp": 0}
+	var unpaid_result := SharedSpell.apply_custom_effects(caster, unpaid_target, [authored_heal], {"success": true}, 1, [], null, {"id": "fixture:authored_healing_reroll"})
+	var unpaid_receipt: Dictionary = unpaid_result.get("healing_rerolls", [{}])[0]
+	var refused_payment: Dictionary = unpaid_receipt.get("payment", {})
+	check.call(unpaid_receipt.get("payment_refused", false) and str(unpaid_receipt.get("source_instance_id", "")) == "fixture:batch025_healing_reroll_source" and int(unpaid_receipt.get("cost_amount", 0)) == 1 and refused_payment.get("success", true) == false and unpaid_receipt.get("selected", []).is_empty() and unpaid_receipt.get("rerolls", []).is_empty() and int(unpaid_result.get("healing", -1)) == 1 and int(ResourcePoolRules.availability(caster, "fixture:batch025_healing_reroll_source").get("current", -1)) == 0, "Authored healing reroll records exact-source refusal and skips cleanly when its cost source is empty")
+	ResourcePoolRules.acquire(caster, heal_pool, "fixture:batch025_beacon_reroll_source")
+	var beacon_target := {"id": "fixture:batch025_beacon", "name": "Beacon target", "current_hp": 0, "max_hp": 20, "is_alive": true, "conditions": {}, "temp_hp": 0, "spell_effects": {"fixture:beacon": {"spell_id": "beacon_of_hope"}}}
+	var beacon_policy: Dictionary = healing_policy.duplicate(true)
+	beacon_policy.cost.source_instance_id = "fixture:batch025_beacon_reroll_source"
+	FighterChecks._seed_die(6, 2)
+	var beacon_result := SharedSpell.apply_custom_effects(caster, beacon_target, [{"type": "heal", "value": "1d6", "reroll_policy": beacon_policy}], {"success": true}, 1, [], null, {"id": "fixture:authored_healing_reroll"})
+	var beacon_receipt: Dictionary = beacon_result.get("healing_rerolls", [{}])[0]
+	check.call(beacon_receipt.get("skipped_reason", "") == "beacon_maximizes_healing" and not beacon_receipt.get("paid", true) and int(ResourcePoolRules.availability(caster, "fixture:batch025_beacon_reroll_source").get("current", -1)) == 1 and int(beacon_result.get("healing", -1)) == 6, "Beacon's maximized healing makes rerolls redundant and leaves their declared payment untouched")
+	var invalid_heal := {"id": "fixture:invalid_heal_reroll", "name": "Invalid reroll", "execution": "shared", "level": 1, "casting_time": "action", "range": 1, "target": "single", "effects": [{"type": "heal", "value": "2d6", "reroll_policy": {"count": 0}}]}
+	check.call(not SharedSpell.content_error(invalid_heal).is_empty(), "Malformed authored healing reroll policy refuses before execution")
+
+
+static func _batch_025_review_regressions(check: Callable) -> void:
+	var caster := Character.new()
+	var scores := AbilityScores.new()
+	scores.from_dict({"INT": 16})
+	caster.initialize("Review dice caster", "human", "wizard", scores)
+	var target := {"id": "review-dice-target", "name": "Dice target", "current_hp": 100, "max_hp": 100, "is_alive": true, "armor_class": -100, "conditions": {}, "spell_effects": {}, "saving_throw_bonuses": {"WIS": -100}}
+	var spell := {"id": "fixture:review_dice", "name": "Review dice", "execution": "shared", "level": 1, "casting_time": "action", "range": 6, "target": "single", "steps": []}
+	for delivery in ["attack", "save"]:
+		var step := {"id": "impact", "type": delivery, "damage": "1d6", "damage_type": "force", "damage_dice_policy": {"remove": 1}, "damage_result_multiplier": {"numerator": 2}}
+		step["attack_type" if delivery == "attack" else "save"] = "ranged_spell" if delivery == "attack" else "WIS"
+		spell["steps"] = [step]
+		FighterChecks._seed_die(20, 10)
+		var result := CombatAction.resolve_spell(caster, target, spell, false, {}, [], 1, 5)
+		check.call(SharedSpell.content_error(spell).is_empty() and result.get("success", false) and int(result.get("damage", -1)) == 0, "Batch 025 ordered %s forwards dice removal" % delivery)
+		step.erase("damage_dice_policy")
+		step["damage"] = "5"
+		FighterChecks._seed_die(20, 10)
+		result = CombatAction.resolve_spell(caster, target, spell, false, {}, [], 1, 5)
+		check.call(result.get("success", false) and int(result.get("damage", -1)) == 10, "Batch 025 ordered %s forwards its result multiplier" % delivery)
+	# A top-level policy must not leak into an unrelated ordered sibling.
+	spell["damage_dice_policy"] = {"remove": 20}
+	spell["damage_result_multiplier"] = {"numerator": 0}
+	spell["steps"] = [{"id": "plain", "type": "save", "save": "WIS", "damage": "5", "damage_type": "force"}]
+	var result := CombatAction.resolve_spell(caster, target, spell, false, {}, [], 1, 5)
+	check.call(int(result.get("damage", -1)) == 5, "Batch 025 ordered sibling does not inherit undeclared dice/result policies")
+	spell.erase("damage_dice_policy")
+	spell.erase("damage_result_multiplier")
+	for policy in [{"remove": 2}, {"remove": 1, "maximize": 1}, {"maximize": 1, "sides": 8}, {"remove": 1}, {"maximize": 1}]:
+		var components := [{"id": "fire", "damage_type": "fire", "damage": "1d6"}, {"id": "cold", "damage_type": "cold", "damage": "1d8"}]
+		spell["steps"] = [{"id": "typed", "type": "save", "save": "WIS", "damage_components": components, "damage_dice_policy": policy}]
+		result = CombatAction.resolve_spell(caster, target, spell, false, {}, [], 1, 5)
+		var damage := int(result.get("damage", -1))
+		var expected := 0 if policy.get("remove", 0) == 2 else 8
+		var outcome: Dictionary = result.get("step_results", [])[0].get("target_outcomes", [])[0].get("result", {})
+		var primary_policy: Dictionary = outcome.get("damage_roll", {}).get("damage_dice_policy", {})
+		var secondary_policy: Dictionary = outcome.get("additional_damage_components", [])[0].get("roll", {}).get("damage_dice_policy", {})
+		var exact_budget := int(primary_policy.get("removed", 0)) + int(secondary_policy.get("removed", 0)) == int(policy.get("remove", 0)) and int(primary_policy.get("maximized", 0)) + int(secondary_policy.get("maximized", 0)) == int(policy.get("maximize", 0))
+		var amount_ok := damage >= 1 and damage <= 14
+		if int(policy.get("remove", 0)) == 2 or policy.has("remove") and policy.has("maximize"): amount_ok = damage == expected
+		check.call(SharedSpell.content_error(spell).is_empty() and exact_budget and amount_ok, "Batch 025 typed components share one dice-edit budget and keep size eligibility: %s" % str(policy))
+	for kind in ["heal", "temporary_hp"]:
+		spell.erase("steps")
+		spell["effects"] = [{"type": kind, "value": 5, "ability_bonus_from_caster": true, "result_multiplier": {"numerator": 2}}]
+		target["current_hp"] = 1
+		target["temp_hp"] = 0
+		result = CombatAction.resolve_spell(caster, target, spell, false, {}, [], 1, 5)
+		check.call((int(result.get("healing", -1)) if kind == "heal" else int(target.get("temp_hp", -1))) == 16, "Batch 025 %s multiplies the complete value including the caster bonus" % kind)
+		spell.erase("effects")
+		spell["steps"] = [{"id": "restore", "type": "effect", "effects": [{"type": kind, "value": {"op": "add", "left": 2, "right": 3}, "result_multiplier": {"numerator": 2}}]}]
+		target["current_hp"] = 1
+		target["temp_hp"] = 0
+		result = CombatAction.resolve_spell(caster, target, spell, false, {}, [], 1, 5)
+		check.call(SharedSpell.content_error(spell).is_empty() and (int(target.current_hp) == 11 if kind == "heal" else int(target.temp_hp) == 10), "Batch 025 %s formula result receives its declared multiplier" % kind)
+	spell.erase("steps")
+	target["spell_effects"] = {"fixture:beacon": {"spell_id": "beacon_of_hope"}}
+	for numerator in [0, 2]:
+		spell["effects"] = [{"type": "heal", "value": "2d6", "dice_policy": {"remove": 1}, "result_multiplier": {"numerator": numerator}}]
+		target["current_hp"] = 1
+		result = CombatAction.resolve_spell(caster, target, spell, false, {}, [], 1, 5)
+		check.call(int(result.get("healing", -1)) == 6 * numerator, "Batch 025 Beacon maximizes only remaining healing dice before multiplication: %d" % numerator)
+	randomize()

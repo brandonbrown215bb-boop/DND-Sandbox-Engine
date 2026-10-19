@@ -33,6 +33,13 @@ support status from newly written but unverified hooks.
 
 ## Import staging
 
+For ordinary revised-class source preparation, use the
+[2024 reference view](../reference/2024/README.md). It selects revised records
+without translating them and maps them back to unchanged mixed-edition inputs.
+The view is outside runtime loading and does not certify official SRD coverage.
+The importer below still consumes its original explicit raw/external inputs;
+do not treat source-view generation as content promotion.
+
 `src/convert_all_5etools.py` requires `--external-data-dir`, accepts explicit
 raw/output roots, and defaults output to `data/imported/`. Output/report paths
 inside `data/core/` are refused. Directory discovery is sorted.

@@ -11,10 +11,17 @@ const COMMON_SELF_EFFECTS := [
 	"remove_all_conditions", "stat_modifier", "ac_bonus",
 	"speed_modifier", "roll_modifier", "restore_resource",
 	"pact_magic_recovery", "innate_sorcery", "clear_concentration",
-	"heal_by_pool_rolls", "timed_numeric_modifier", "next_matching_melee_hit", "timed_temporary_hp",
+	"timed_protection", "heal_by_pool_rolls", "timed_numeric_modifier", "next_matching_melee_hit", "timed_temporary_hp",
 ]
 
 static func content_error(feature: Dictionary) -> String:
+	if feature.has("attack_unit_substitution"):
+		if CombatChildActions.units(feature) == 0 or feature.get("action_cost") != "action" or feature.get("executor") != "class_feature" or feature.has("resource_pool") or feature.get("effects", []).is_empty() or not feature.get("effects", []).all(func(effect): return effect is Dictionary and str(effect.get("type", "")) in ["heal", "heal_self"]): return "Strike substitution supports ordinary self-healing activations only."
+	if feature.has("child_actions"): return CombatChildActions.content_error(feature)
+	if feature.has("temporary_hp_grant"): return TemporaryHPRules.content_error(feature)
+	if feature.has("allocation"): return PartyAllocationRules.content_error(feature)
+	if feature.has("roll_intervention"): return PartyInterventionRules.content_error(feature)
+	if feature.has("transfer_grant"): return CapturedGrantRules.content_error(feature)
 	if feature.get("executor", "") != "class_feature":
 		return "Unknown feature executor"
 	if feature.get("type", "") != "active" or feature.get("target", "self") != "self":
@@ -25,10 +32,19 @@ static func content_error(feature: Dictionary) -> String:
 		if not exchange is Dictionary:
 			return "A resource exchange must be an object."
 		for field in exchange:
-			if field not in ["payment_pool_id", "payment_quantity", "restoration_pool_id", "restoration_quantity"]:
+			if field not in ["payment_pool_id", "payment_quantity", "restoration_pool_id", "restoration_quantity", "restoration_recipient"]:
 				return "Resource exchange contains an unsupported field."
-		if str(exchange.get("payment_pool_id", "")).strip_edges().is_empty() or str(exchange.get("restoration_pool_id", "")).strip_edges().is_empty() or not ResourcePoolRules._integer(exchange.get("payment_quantity", null), 1, ResourcePoolRules.MAX_CAPACITY) or not ResourcePoolRules._integer(exchange.get("restoration_quantity", null), 1, ResourcePoolRules.MAX_CAPACITY):
-			return "Resource exchange requires two pool IDs and fixed positive quantities from 1 to 100."
+		if str(exchange.get("restoration_recipient", "self")) not in ["self", "party_member"]:
+			return "Resource exchange recipient must be self or an active party member."
+		var payment_id := str(exchange.get("payment_pool_id", "")).strip_edges()
+		var slot_payment := payment_id in ["spell_slots:ordinary", "spell_slots:pact"]
+		# Classes load before items. Resolve item existence when offering/committing.
+		if payment_id.begins_with("inventory:") and (payment_id.trim_prefix("inventory:").strip_edges().is_empty() or not ResourcePoolRules._integer(exchange.get("payment_quantity", null), 1, Inventory.MAX_BACKPACK_SIZE)):
+			return "Inventory exchange requires an item ID and a backpack quantity from 1 to 40."
+		if payment_id.is_empty() or str(exchange.get("restoration_pool_id", "")).strip_edges().is_empty() or not ResourcePoolRules._integer(exchange.get("payment_quantity", null), 1, ResourcePoolRules.MAX_CAPACITY) or not ResourcePoolRules._integer(exchange.get("restoration_quantity", null), 1, ResourcePoolRules.MAX_CAPACITY):
+			return "Resource exchange requires eligible pool IDs and fixed positive quantities from 1 to 100."
+		if slot_payment and payment_id == "spell_slots:ordinary" and exchange.get("payment_quantity", 0) > 9:
+			return "Spell-slot exchange quantity exceeds the supported pool size."
 		for field in ["resource_pool", "resource_id", "resource_cost", "uses", "uses_by_level", "uses_ability", "uses_per", "minimum_uses", "short_rest_recovery"]:
 			if feature.has(field):
 				return "An exchange activation uses only its authored exchange payment."
@@ -56,6 +72,11 @@ static func content_error(feature: Dictionary) -> String:
 		return "Resource cost must be a positive integer up to 100"
 	if not feature.get("effects", []) is Array or (feature.get("effects", []).is_empty() and not has_exchange):
 		return "Common class activations require an effect"
+	var protection_count := 0
+	for effect in feature["effects"]:
+		if effect is Dictionary and effect.get("type")=="timed_protection": protection_count+=1
+	if protection_count>0 and (feature["effects"].size()!=1 or not feature.has("resource_pool")):
+		return "Protection activation requires one effect and its exact resource pool."
 	var timed_grant_count := 0
 	var next_hit_grant_count := 0
 	var timed_temporary_hp_grant_count := 0
@@ -106,10 +127,25 @@ static func passive_effect_content_error(effect: Variant) -> String:
 	if not effect is Dictionary:
 		return "Passive class effects must be dictionaries"
 	var effect_type := str(effect.get("type", ""))
+	if effect_type in ["ability_check_roll_mode", "ability_check_roll_mode_policy", "ability_check_numeric_bonus"] or (effect_type == "ability_check_mandatory_reroll" and str(effect.get("domain", "")) == "event_skill_check"):
+		var filter_error := ability_check_filter_error(effect)
+		if not filter_error.is_empty(): return filter_error
+	if effect_type == "check_floor": return CheckFloorRules.content_error(effect)
 	if effect_type == "weapon_damage_rider":
 		return DataLoader._weapon_damage_rider_error(effect)
-	if effect_type not in ["ability_check_override", "ability_check_advantage", "ability_check_floor", "saving_throw_advantage", "weapon_attack_numeric_bonus", "ability_check_numeric_bonus", "ability_check_mandatory_reroll", "ability_check_roll_mode", "ability_check_roll_mode_policy", "roll_outcome_override"]:
+	if effect_type not in ["ability_check_override", "ability_check_advantage", "ability_check_floor", "saving_throw_advantage", "weapon_attack_numeric_bonus", "ability_check_numeric_bonus", "ability_check_mandatory_reroll", "ability_check_roll_mode", "ability_check_roll_mode_policy", "roll_outcome_override", "recipient_damage_map"]:
 		return "Unsupported shared passive operation"
+	if effect_type == "recipient_damage_map":
+		if str(effect.get("domain", "")) != "shared_spell_save" or str(effect.get("id", "")).is_empty() or not str(effect.get("id", "")).is_valid_identifier() or str(effect.get("ability", "")).to_upper() not in DataLoader.VALID_ABILITIES:
+			return "Recipient damage maps require a shared_spell_save domain, effect ID and save ability."
+		for field in ["cause_id", "purpose_id", "origin_effect_id"]:
+			if not str(effect.get(field, "")).is_valid_identifier(): return "Recipient damage maps require exact save-cause context."
+		if not ((effect.get("success_scale") is int or effect.get("success_scale") is float) and float(effect.success_scale) >= 0.0 and float(effect.success_scale) <= 1.0 and (effect.get("failure_scale") is int or effect.get("failure_scale") is float) and float(effect.failure_scale) >= 0.0 and float(effect.failure_scale) <= 1.0):
+			return "Recipient damage maps require success and failure scales from 0 through 1."
+		for field in effect:
+			if field not in ["type", "id", "domain", "ability", "cause_id", "purpose_id", "origin_effect_id", "success_scale", "failure_scale"]:
+				return "Recipient damage map contains an unsupported field."
+		return ""
 	if effect_type == "roll_outcome_override":
 		var domains: Variant = effect.get("domains", null)
 		var outcomes: Variant = effect.get("outcomes", null)
@@ -143,8 +179,8 @@ static func passive_effect_content_error(effect: Variant) -> String:
 		var skill := str(effect.get("skill", ""))
 		var exemptions: Variant = effect.get("exempt_source_definition_ids", [])
 		var instance_exemptions: Variant = effect.get("exempt_source_instance_ids", [])
-		if not str(effect.get("id", "")).is_valid_identifier() or str(effect.get("domain", "")) != "event_skill_check" or mode not in ["advantage", "disadvantage"] or operation not in ["grant", "cancel", "prohibit"] or ability not in ["STR", "DEX", "CON", "INT", "WIS", "CHA"] or (not skill.is_empty() and skill not in DataLoader.VALID_SKILLS) or not str(effect.get("task_id", "")).is_valid_identifier() or not str(effect.get("purpose_id", "")).is_valid_identifier() or str(effect.get("source_event_id", "")).is_empty() or not str(effect.get("source_check_id", "")).is_valid_identifier() or not exemptions is Array or not instance_exemptions is Array:
-			return "Ability-check roll modes require exact event/check context, ability, mode and supported operation"
+		if not str(effect.get("id", "")).is_valid_identifier() or str(effect.get("domain", "")) != "event_skill_check" or mode not in ["advantage", "disadvantage"] or operation not in ["grant", "cancel", "prohibit"] or ability not in ["STR", "DEX", "CON", "INT", "WIS", "CHA"] or (not skill.is_empty() and skill not in DataLoader.VALID_SKILLS) or not exemptions is Array or not instance_exemptions is Array:
+			return "Ability-check roll modes require an ability, mode and supported operation"
 		for source_definition_id in exemptions:
 			if not source_definition_id is String or str(source_definition_id).strip_edges().is_empty():
 				return "Roll-mode exemptions must name source definition IDs"
@@ -166,10 +202,8 @@ static func passive_effect_content_error(effect: Variant) -> String:
 		if str(effect.get("domain", "")) != "event_skill_check" or not str(effect.get("id", "")).is_valid_identifier() or not (has_amount or has_die) or not ResourcePoolRules._integer(effect.get("cost", null), 1, ResourcePoolRules.MAX_CAPACITY):
 			return "Ability-check modifier requires an event_skill_check domain, effect ID, one bounded bonus and pool cost"
 		var effect_skill := str(effect.get("skill", ""))
-		if str(effect.get("ability", "")).to_upper() not in ["STR", "DEX", "CON", "INT", "WIS", "CHA"] or (not effect_skill.is_empty() and effect_skill not in DataLoader.VALID_SKILLS) or not str(effect.get("task_id", "")).is_valid_identifier() or not str(effect.get("purpose_id", "")).is_valid_identifier():
-			return "Ability-check modifier requires exact ability, optional skill, task and purpose eligibility"
-		if str(effect.get("source_event_id", "")).is_empty() or not str(effect.get("source_check_id", "")).is_valid_identifier():
-			return "Ability-check modifier requires originating event/check eligibility"
+		if str(effect.get("ability", "")).to_upper() not in ["STR", "DEX", "CON", "INT", "WIS", "CHA"] or (not effect_skill.is_empty() and effect_skill not in DataLoader.VALID_SKILLS):
+			return "Ability-check modifier requires an ability and optional skill eligibility"
 		if str(effect.get("payment_policy", "pay_on_choice")) not in SpellDamageRolls.FAILED_SAVE_BONUS_PAYMENT_POLICIES:
 			return "Ability-check modifier uses an unsupported payment policy"
 		for field in effect:
@@ -178,20 +212,29 @@ static func passive_effect_content_error(effect: Variant) -> String:
 		return ""
 	if effect_type == "ability_check_mandatory_reroll":
 		var outcomes: Variant = effect.get("eligible_outcomes", null)
-		if str(effect.get("domain", "")) != "event_skill_check" or not str(effect.get("id", "")).is_valid_identifier() or not ResourcePoolRules._integer(effect.get("cost", null), 1, ResourcePoolRules.MAX_CAPACITY):
-			return "Ability-check rerolls require a supported event_skill_check domain, effect ID and pool cost"
+		var domain := str(effect.get("domain", ""))
+		if domain not in ["event_skill_check", "weapon_attack", "shared_spell_attack", "shared_spell_save"] or not str(effect.get("id", "")).is_valid_identifier() or not ResourcePoolRules._integer(effect.get("cost", null), 1, ResourcePoolRules.MAX_CAPACITY):
+			return "Test rerolls require a supported domain, effect ID and pool cost"
 		var skill := str(effect.get("skill", ""))
-		if str(effect.get("ability", "")).to_upper() not in ["STR", "DEX", "CON", "INT", "WIS", "CHA"] or (not skill.is_empty() and skill not in DataLoader.VALID_SKILLS) or not str(effect.get("task_id", "")).is_valid_identifier() or not str(effect.get("purpose_id", "")).is_valid_identifier():
-			return "Ability-check rerolls require exact ability, optional skill, task and purpose eligibility"
-		if str(effect.get("source_event_id", "")).is_empty() or not str(effect.get("source_check_id", "")).is_valid_identifier():
-			return "Ability-check rerolls require a source-check identifier"
-		if not outcomes is Array or outcomes.is_empty() or outcomes.size() > 2 or outcomes.any(func(value): return value not in ["success", "failure"]) or (outcomes.size() == 2 and outcomes[0] == outcomes[1]):
-			return "Ability-check rerolls require unique eligible outcomes"
+		if str(effect.get("ability", "")).to_upper() not in ["STR", "DEX", "CON", "INT", "WIS", "CHA"]:
+			return "Test rerolls require an exact ability"
+		var allowed_outcomes: Array = ["success", "failure"] if domain in ["event_skill_check", "shared_spell_save"] else ["hit", "miss"]
+		if domain == "event_skill_check":
+			if (not skill.is_empty() and skill not in DataLoader.VALID_SKILLS):
+				return "Event-check rerolls require valid optional skill eligibility"
+		elif not skill.is_empty() or effect.has("task_id") or effect.has("purpose_id") or effect.has("required_tool_id") or effect.has("source_event_id") or effect.has("source_check_id"):
+			return "Combat rerolls cannot declare event-check eligibility fields"
+		if not outcomes is Array or outcomes.is_empty() or outcomes.size() > 2 or outcomes.any(func(value): return value not in allowed_outcomes) or (outcomes.size() == 2 and outcomes[0] == outcomes[1]):
+			return "Test rerolls require unique eligible outcomes for their domain"
 		if str(effect.get("reroll_mode", "")) not in ["natural_only", "whole_test"] or str(effect.get("bonus_dice_policy", "")) not in ["keep", "reroll"]:
 			return "Ability-check rerolls require a supported reroll and bonus-dice policy"
+		if str(effect.get("selection_policy", "mandatory_new")) not in ["mandatory_new", "choose_old_or_new"] or str(effect.get("new_roll_mode", "captured")) not in ["captured", "normal", "advantage", "disadvantage"]:
+			return "Ability-check rerolls require a supported kept-result and new-test mode policy"
+		if effect.has("level_bonus_formula") and (not SharedStepExecutor.formula_content_error(effect.get("level_bonus_formula")).is_empty() or not ResourcePoolRules._actor_formula_error(effect.get("level_bonus_formula")).is_empty()):
+			return "Ability-check reroll level bonus requires a deterministic actor-only formula"
 		for field in effect:
-			if field not in ["type", "id", "domain", "ability", "skill", "task_id", "purpose_id", "required_tool_id", "source_event_id", "source_check_id", "eligible_outcomes", "reroll_mode", "bonus_dice_policy", "cost"]:
-				return "Ability-check reroll contains an unsupported field"
+			if field not in ["type", "id", "domain", "ability", "skill", "task_id", "purpose_id", "required_tool_id", "source_event_id", "source_check_id", "spell_id", "eligible_outcomes", "reroll_mode", "bonus_dice_policy", "selection_policy", "new_roll_mode", "level_bonus_formula", "cost"]:
+				return "Test reroll contains an unsupported field"
 		return ""
 	if effect_type == "weapon_attack_numeric_bonus":
 		var amount: Variant = effect.get("amount", null)
@@ -241,6 +284,7 @@ static func _effect_content_error(effect: Variant, feature: Dictionary) -> Strin
 	if not effect is Dictionary or str(effect.get("type", "")) not in COMMON_SELF_EFFECTS:
 		return "Unsupported common self-effect"
 	var effect_type := str(effect["type"])
+	if effect_type=="timed_protection": return ProtectionRules.content_error(effect)
 	if effect_type == "timed_numeric_modifier":
 		if feature.get("resource_pool", {}) is not Dictionary or feature.get("resource_pool", {}).is_empty():
 			return "A timed numeric modifier requires its exact source resource pool."
@@ -350,6 +394,10 @@ static func _effect_content_error(effect: Variant, feature: Dictionary) -> Strin
 
 static func availability(character: Character, feature: Dictionary, budget: CombatTurnBudget = null, source_instance_id: String = "", selected_pool_quantity: int = 0) -> Dictionary:
 	var owned := character.get_feature(str(feature.get("id", "")))
+	if owned.has("allocation"): return PartyAllocationRules.availability(character, owned, budget, source_instance_id)
+	if owned.has("roll_intervention"): return {"available":false, "reason":"Available during an ally’s missed weapon attack", "remaining":0, "maximum":0, "cost":1, "action_cost":"free"}
+	if owned.has("temporary_hp_grant"): return TemporaryHPRules.availability(character, owned, budget, source_instance_id)
+	if owned.has("transfer_grant"): return CapturedGrantRules.availability(character, owned, budget, source_instance_id)
 	var error := "Feature is not owned" if owned.is_empty() else content_error(owned)
 	var exact_source_id := source_instance_id if not source_instance_id.is_empty() else str(owned.get("source_instance_id", ""))
 	var pool := str(owned.get("resource_id", owned.get("id", "")))
@@ -384,6 +432,9 @@ static func availability(character: Character, feature: Dictionary, budget: Comb
 		error = "Activation requires its exact source-instance identity."
 	if error.is_empty():
 		for effect in owned.get("effects", []):
+			if str(effect.get("type", "")) == "timed_protection":
+				error=ProtectionRules.activation_error(character,owned,exact_source_id,effect)
+				if not error.is_empty(): break
 			if str(effect.get("type", "")) == "timed_numeric_modifier":
 				character.expire_campaign_modifiers(int(GameManager.campaign_elapsed_seconds))
 				if character.has_campaign_modifier_source(exact_source_id):
@@ -406,8 +457,12 @@ static func availability(character: Character, feature: Dictionary, budget: Comb
 					break
 	if error.is_empty() and owned.has("resource_pool") and str(character.numeric_resource_pools.get(exact_source_id, {}).get("definition_id", "")) != str(owned["resource_pool"].get("id", "")):
 		error = "The selected source instance does not own this resource-pool definition."
-	if error.is_empty() and is_dice_pool and int(character.numeric_resource_pools.get(exact_source_id, {}).get("die_size", 0)) != int(pool_definition["die_size"]):
-		error = "The selected source's saved die size does not match its authored pool."
+	if error.is_empty() and is_dice_pool:
+		var die := ResourcePoolRules.evaluate_die_size(pool_definition["die_size"], character)
+		if not die.get("success", false) or int(character.numeric_resource_pools.get(exact_source_id, {}).get("die_size", 0)) != int(die.get("value", 0)):
+			error = "The selected source's saved die size does not match its authored progression."
+		if pool_definition.has("capture_policy") != character.numeric_resource_pools.get(exact_source_id, {}).has("captured_dice"):
+			error = "The selected source's capture policy does not match its owned definition."
 	if error.is_empty() and owned.has("resource_pool") and not pool_state.get("available", false):
 		error = str(pool_state.get("message", "No uses remaining"))
 	if error.is_empty() and bool(owned.get("requires_no_heavy_armor", false)) and character._is_wearing_heavy_armor():
@@ -432,6 +487,8 @@ static func execute(character: Character, feature: Dictionary, target = null, bu
 	if not selected_payment_source_id.is_empty() or not selected_restoration_source_id.is_empty():
 		feature["selected_payment_source_instance_id"] = selected_payment_source_id
 		feature["selected_restoration_source_instance_id"] = selected_restoration_source_id
+	if feature.has("temporary_hp_grant"): return {"success":false, "message":"Choose a Temporary HP recipient through combat controls."}
+	if feature.has("transfer_grant"): return {"success":false, "message":"Choose gift recipients through combat controls."}
 	var feature_id: String = feature.get("id", "")
 	var feature_name: String = feature.get("name", "Unknown")
 	var sorcery_incarnate_reactivation := feature_id == "sorcerer_innate_sorcery" and character.class_id == "sorcerer" and character.level >= 7 and int(character.feature_uses.get(feature_id, 0)) <= 0
@@ -450,12 +507,12 @@ static func execute(character: Character, feature: Dictionary, target = null, bu
 			var payment_source_id := str(feature.get("selected_payment_source_instance_id", ""))
 			var restoration_source_id := str(feature.get("selected_restoration_source_instance_id", ""))
 			var exchange: Dictionary = feature["resource_exchange"]
-			var exchanged := ResourcePoolRules.exchange(character, payment_source_id, restoration_source_id, str(exchange["payment_pool_id"]), int(exchange["payment_quantity"]), str(exchange["restoration_pool_id"]), int(exchange["restoration_quantity"]))
+			var exchanged := ResourcePoolRules.exchange(character, payment_source_id, restoration_source_id, str(exchange["payment_pool_id"]), int(exchange["payment_quantity"]), str(exchange["restoration_pool_id"]), int(exchange["restoration_quantity"]), true, str(exchange.get("restoration_recipient", "self")) == "party_member")
 			if not exchanged.get("success", false):
 				return exchanged
 			if budget != null:
 				budget.spend(str(feature.get("action_cost", "action")))
-			return {"success": true, "feature_name": feature.get("name", "Resource Exchange"), "results": [{"message": "%s exchanges %d uses for %d uses." % [character.character_name, int(exchange["payment_quantity"]), int(exchange["restoration_quantity"])]}], "exchange": exchanged}
+			return {"success": true, "feature_name": feature.get("name", "Resource Exchange"), "results": [{"message": "%s exchanges %d resources for %d uses." % [character.character_name, int(exchange["payment_quantity"]), int(exchange["restoration_quantity"])]}], "exchange": exchanged}
 	elif budget != null and not budget.can_spend(str(feature.get("action_cost", "action"))):
 		return {"success": false, "message": "Action unavailable."}
 	if feature_id == "barbarian_rage" and character.has_condition("raging"):
@@ -486,7 +543,10 @@ static func execute(character: Character, feature: Dictionary, target = null, bu
 
 	for effect in effects:
 		var result: Dictionary
-		if str(effect.get("type", "")) == "timed_numeric_modifier":
+		if str(effect.get("type", "")) == "timed_protection":
+			var protection := ProtectionRules.grant(character,feature,exact_source_id,effect)
+			result={"type":"timed_protection","grant":protection,"message":"%s gains %s until campaign second %d." % [character.character_name,feature_name,int(protection.expires_at_seconds)]}
+		elif str(effect.get("type", "")) == "timed_numeric_modifier":
 			var cooldown_seconds := int(effect.get("cooldown_seconds", 0))
 			var grant := character.add_campaign_modifier(str(effect["kind"]), str(effect["key"]), int(effect["amount"]), int(effect["duration_seconds"]), cooldown_seconds, exact_source_id)
 			var cooldown_message := "; this source then waits %d seconds before reuse" % cooldown_seconds if cooldown_seconds > 0 else ""
@@ -499,7 +559,12 @@ static func execute(character: Character, feature: Dictionary, target = null, bu
 			result = {"type": "timed_temporary_hp", "source_instance_id": exact_source_id, "grant_instance_id": str(temporary_hp_grant.get("grant", {}).get("grant_instance_id", "")), "expires_at_seconds": int(temporary_hp_grant.get("grant", {}).get("expires_at_seconds", 0)), "accepted": bool(temporary_hp_grant.get("accepted", false)), "message": str(temporary_hp_grant.get("message", ""))} if temporary_hp_grant.get("success", false) else {}
 		elif str(effect.get("type", "")) == "heal_by_pool_rolls":
 			var pool_state: Dictionary = character.numeric_resource_pools.get(exact_source_id, {})
-			var rolls := Dice.roll_multiple(selected_pool_quantity, int(pool_state.get("die_size", 0)), character)
+			var captured: Array = pool_activation.get("captured_dice", [])
+			var rolls: Array = []
+			if pool_state.has("capture_policy"):
+				for die in captured: rolls.append(int(die.face))
+			else:
+				rolls = Dice.roll_multiple(selected_pool_quantity, int(pool_state.get("die_size", 0)), character)
 			var total := 0
 			for roll in rolls:
 				total += roll
@@ -507,6 +572,7 @@ static func execute(character: Character, feature: Dictionary, target = null, bu
 			result = {
 				"type": "heal",
 				"rolls": rolls,
+				"captured_dice": captured.duplicate(true),
 				"die_size": int(pool_state.get("die_size", 0)),
 				"total": total,
 				"amount": int(healing_result.get("amount", 0)),
@@ -541,3 +607,15 @@ static func _resolve_feature_effect(character: Character, effect: Dictionary, ta
 		_:
 			# Pass through to EventResolver for common effects
 			return EventResolver._apply_single_effect(character, effect)
+
+
+## Omitted event filters are unrestricted; present filters must be meaningful.
+static func ability_check_filter_error(effect: Dictionary) -> String:
+	for field in ["task_id", "purpose_id", "source_event_id", "source_check_id"]:
+		if not effect.has(field): continue
+		var value: Variant = effect[field]
+		if not value is String or str(value).strip_edges().is_empty():
+			return "Ability-check filters must be nonempty strings when declared"
+		if field != "source_event_id" and not str(value).is_valid_identifier():
+			return "Ability-check task, purpose and check filters must be identifiers"
+	return ""

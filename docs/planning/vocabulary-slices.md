@@ -1,7 +1,7 @@
 # Vocabulary delivery slices
 
 Static denominator and slice map prepared 2026-10-13; acceptance counts are
-current through 2026-10-14. Rook mapped the known vocabulary after the owner
+reconciled through the Batches 029/030 review finalized on 2026-10-19. Rook mapped the known vocabulary after the owner
 asked for an honest denominator. This document divides the
 [97 capability requirements](../reviews/dnd-code-vocabulary-gap-checklist.md#concrete-vocabulary-checklist)
 into observable build/validation pairs. [Roadmap](../../roadmap.md) chooses
@@ -9,13 +9,48 @@ priorities; the Quest Board owns live work. This plan is not runtime evidence.
 
 ## Count and scope
 
-**226 defined slices: 36 verified, zero in progress, 190 planned.**
-That leaves **190 not yet accepted**. S-025 remains VS-28, S-091 remains VS-29,
+Independent [024–026 verification](../../.artifacts/planning/vocabulary-reports/batch-024-026-verification.md)
+accepts S-054/S-055/S-063 as VS-91/92/93 and S-068/S-069/S-090 as VS-94/95/96.
+[Batch 025 completion review](../../.artifacts/planning/vocabulary-reports/batch-025-completion-review.md)
+accepts S-123/S-124/S-125 as VS-103/104/105 and dependent S-059 as VS-106.
+[Batch 028 completion review](../../.artifacts/planning/vocabulary-reports/batch-028-completion-review.md)
+accepts S-146/S-148/S-149 as VS-97/98/99 on its bounded combat host.
+Batch 029 retains VS-87–90; Batch 027 retains VS-84–86. Batch 025's reported
+bugs remain repaired, and its original cost-dice, authored healing-reroll,
+critical-exclusion and payment-replacement slices are now accepted on their
+bounded production hosts. [Batches 029/030 review](../../.artifacts/planning/vocabulary-reports/batch-029-030-review.md)
+retains repaired VS-87–90 and accepts S-032/S-033/S-179 as VS-100/101/102
+on the documented represented combat host.
+
+**226 defined slices: 106 verified, 120 not yet accepted.**
+Independent [Batches 021–023 acceptance](../../.artifacts/planning/vocabulary-reports/batch-021-023-acceptance-review.md) accepts
+S-134/S-135/S-137 as VS-76/77/78, S-138/S-139/S-136 as VS-79/80/81,
+and S-052/S-053 as VS-82/83 on the report's documented production hosts.
+
+Independent [Batch 019 review](../../.artifacts/planning/vocabulary-reports/batch-019-review.md)
+accepts S-042/S-072/S-073 as VS-70/71/72 after repairing monster movement
+event publication. The bounded limits remain in the review report.
+Independent [Batch 020 review](../../.artifacts/planning/vocabulary-reports/batch-020-review.md)
+accepts S-074/S-075/S-080 as VS-73/74/75 for source-owned suppression,
+overlapping suppressors and directly owned moving Character auras.
+Independent [Batch 018 review](../../.artifacts/planning/vocabulary-reports/batch-018-review.md)
+accepts S-047 first as VS-68, then S-048 as VS-69 for opt-in starting/multiclass
+grants and permanent class/character-level deltas with no acquisition replay on
+restore. Primary proficiency choices and feature-empty secondary classes are the
+bounded host; catalog conversion and multiclass casting remain separate work.
+Independent [Batch Q review](../../.artifacts/planning/vocabulary-reports/batch-Q-review.md)
+accepts S-083/S-097/S-101/S-102 as VS-64/65/66/67: shared captured weapon-attack
+bonuses, a fixed helper modifier, and fixed/rolled/exact-dice HP/Temporary HP
+allocations on living Character combat hosts. Other roll hosts, defensive/
+outcome/reroll/token interventions and catalog conversion remain open.
+Batch P S-082 remains VS-63; see its [independent review](../../.artifacts/planning/vocabulary-reports/batch-P-review.md).
+Batch N S-062 is accepted as VS-62 after [independent source/evidence review](../../.artifacts/planning/vocabulary-reports/batch-N-review.md).
+Batch M S-051 is accepted as VS-61 after [independent source/evidence review](../../.artifacts/planning/vocabulary-reports/batch-M-review.md).
+Batch L S-049/S-050 is accepted as VS-59/60 after [independent review and repairs](../../.artifacts/planning/vocabulary-reports/batch-L-review.md). S-025 remains VS-28, S-091 remains VS-29,
 S-092 remains VS-30, repaired S-041 remains VS-31, and S-095 is accepted as VS-32
 after separate production validation and [Batch B review](../../.artifacts/planning/vocabulary-reports/batch-B-review.md). The
 [2026-10-14 review and repairs](../reviews/slice-acceptance-2026-10-14.md) record
-the closed findings, independent review and clean production batch. S-042
-remains planned. S-034 is accepted as VS-33 after fresh-chat reconciliation of
+the closed findings, independent review and clean production batch. S-034 is accepted as VS-33 after fresh-chat reconciliation of
 its retained production validation; see the [acceptance review](../../.artifacts/planning/vocabulary-reports/S-034-acceptance-review.md).
 S-043 is accepted as VS-34 after separate production validation; see the
 [validation report](../../.artifacts/planning/vocabulary-reports/S-043-validation.md).
@@ -26,7 +61,40 @@ S-026 is accepted as VS-36 after separate actual-control validation; see its
 The independent [Batch C review](../../.artifacts/planning/vocabulary-reports/batch-C-review.md)
 retains VS-33–35 after repairing single-entry component identity, unsupported
 outcome-map hosts and Uncanny Dodge scale composition. Batch C is complete.
-S-026 is accepted; S-027 is now eligible as the next dependent BUILD.
+Batch D is complete after independent review and targeted repairs. S-026 remains
+VS-36; S-027 and S-029 are accepted as VS-37/38. The
+[Batch D report](../../.artifacts/planning/vocabulary-reports/batch-D-review.md)
+records actual control evidence and exact host limits. Batch E accepts S-030,
+S-031 and S-035 as VS-39/40/41 after independent review and bounded repairs;
+[the Batch E report](../../.artifacts/planning/vocabulary-reports/batch-E-review.md)
+records current evidence and limits. Staged independent review accepts S-044 as
+VS-42 and S-036 as VS-43, including the parameter snapshot timing repair; see
+their [S-044](../../.artifacts/planning/vocabulary-reports/S-044-acceptance-review.md)
+and [S-036](../../.artifacts/planning/vocabulary-reports/S-036-acceptance-review.md)
+acceptance reports. The final [Batch F review](../../.artifacts/planning/vocabulary-reports/batch-F-review.md)
+retains VS-42/43 and accepts S-037 as VS-44 after repairing live-only parameter
+preflight. Batch F is complete. Independent [Batch G review](../../.artifacts/planning/vocabulary-reports/batch-G-review.md)
+accepts S-038/S-039/S-040 as VS-45/46/47 after permanent-progression repairs.
+Independent [Batch H review](../../.artifacts/planning/vocabulary-reports/batch-H-review.md)
+accepts S-106/S-225/S-099 as VS-48/49/50 after bounded repairs and current-source
+production proof. Independent [Batch I review](../../.artifacts/planning/vocabulary-reports/batch-I-review.md)
+accepts S-100/S-109/S-110 as VS-51/52/53 after payment-receipt, component,
+casting-control and formula-preflight repairs. The requested pack is complete;
+Independent [Batch J review](../../.artifacts/planning/vocabulary-reports/batch-J-review.md)
+accepts S-056/S-057/S-058 as VS-54/55/56 after repairing completed-hit replay
+against later active grants. The owner subsequently selected Batch K (S-045/S-046).
+Its [independent review](../../.artifacts/planning/vocabulary-reports/batch-K-review.md)
+found eight defects. Owner-requested [repairs and independent recheck](../../.artifacts/planning/vocabulary-reports/batch-K-repairs.md)
+accept S-045/S-046 as VS-57/58. The owner then selected Batch L; VS-59/60 accepts
+its exact fixed AC/walking-speed carriers and real acquisition/removal controls.
+Batch M subsequently accepts S-051 as VS-61 for captured source-owned dice.
+Batch N accepts S-062 as VS-62 for actual Initiative/turn-start numeric-pool
+fixed/fill/floor recovery and exclusive source choices. Batch P accepts S-082 as
+VS-63 for captured recipient grants. Batch Q completes S-083 as VS-64 before
+accepting dependent S-097 as VS-65, plus S-101/S-102 as VS-66/67. The fixed helper
+modifier satisfies the row's one already-supported operation boundary; other
+intervention operations remain unaccepted. Batch 018 subsequently accepts
+S-047/S-048 as VS-68/69; subsequent acceptance is recorded above.
 
 S-001–023 map directly to VS-01–23. The accepted checklist owns their exact
 boundary and logs; no broad V-series parent is closed by this mapping.
@@ -53,24 +121,24 @@ Content translation and individual-record correctness are separate work.
 Missing bodies are tracked under source follow-up below, rather than assigned
 imaginary mechanical requirements. New requirements can change this baseline.
 
-One slice is one observable building block with a build prompt and a separate
-validation prompt. Renamed definitions, host cases and refusal/regression probes
+One slice is one observable building block with implementation and production
+validation finish lines. Renamed definitions, host cases and refusal/regression probes
 within a slice are evidence for that slice, not additional completion boxes.
 Counts measure accepted scope, not hours or effort: body/form/world slices can
 cost much more than a numeric modifier. These are delivery chunks, not modules.
 
 | Phase | Defined | Verified | Not yet accepted |
 |---|---:|---:|---:|
-| P1 — Facts, results and grants | 34 | 14 | 20 |
-| P2 — Pools, time and effect state | 50 | 10 | 40 |
-| P3 — Rolls and decisions | 27 | 12 | 15 |
-| P4 — Damage and consequences | 25 | 0 | 25 |
-| P5 — Casting and action composition | 20 | 0 | 20 |
+| P1 — Facts, results and grants | 34 | 34 | 0 |
+| P2 — Pools, time and effect state | 50 | 34 | 16 |
+| P3 — Rolls and decisions | 27 | 19 | 8 |
+| P4 — Damage and consequences | 25 | 7 | 18 |
+| P5 — Casting and action composition | 20 | 11 | 9 |
 | P6 — Actors and forms | 23 | 0 | 23 |
-| P7 — Space, perception and illusions | 19 | 0 | 19 |
+| P7 — Space, perception and illusions | 19 | 1 | 18 |
 | P8 — Physical items and bodies | 18 | 0 | 18 |
 | P9 — Procedures and campaign outcomes | 10 | 0 | 10 |
-| **Total** | **226** | **36** | **190** |
+| **Total** | **226** | **106** | **120** |
 
 ## How to use a row
 
@@ -84,10 +152,11 @@ cost much more than a numeric modifier. These are delivery chunks, not modules.
   Match prerequisites to the selected behavior; don't demand a universal engine
   or wholesale combat extraction as a prerequisite.
 - At build time use neutral/renamed data where relevant, the actual world hook
-  and a focused development check. Stop before separate validation. At validation
-  use the real supported input/choice route and production Godot evidence for
-  timing, result fields, once-only costs/effects and refusal/cleanup. Reuse
-  unaffected proof rather than running every green group again.
+  and a focused development check. Production validation uses the real supported
+  input/choice route for timing, result fields, once-only costs/effects and
+  refusal/cleanup. Build and validation can share an owner-authorized chat;
+  independent batch review remains separate. Reuse unaffected proof rather than
+  running every green group again.
 - Every new durable state belongs to its implementing slice: owner/source/recipient,
   exact payload, counters and clocks survive allowed checkpoints without replay;
   malformed loading refuses before replacing the session. Decisions/turn locks
@@ -96,54 +165,22 @@ cost much more than a numeric modifier. These are delivery chunks, not modules.
 - Human/source questions park only their affected row; continue independent ready
   work. Unknown facts/actions stay explicit. ADR-0023 governs observer-specific
   illusions, campaign outcomes/Wish and current save priorities.
-- Review three completed build/validation pairs together, fixing only reproduced
-  shared-boundary defects and reconciling evidence before selecting the next trio.
+- Review the selected batch's completed implementation/validation together,
+  fixing reproduced shared-boundary defects and reconciling evidence before
+  dependent work. Batch size follows the behavior, not a mandatory trio.
 
 ## Current and next queue
 
-1. Reuse the accepted S-021–023 attack/die trio. Combined review closed canonical
-   target/Stroke trust, stale spell-source fallback and wrong-domain Stroke
-   defects. Do not schedule their existing acceptance again.
-2. Accepted trio: **S-028 → S-094 → S-105**. Carry purpose/tool/source facts
-   through checks; reuse fixed/die modifiers on failed ability checks; then allow
-   a declared mandatory-new natural/test reroll. The first row supplies the actual
-   check context the other two need. Use fixtures rather than convert named
-   class/feature catalogs; resolve missing source text only if that selection needs it.
-   Six separate build/validation prompts are prepared in the local
-   [next prompt set](../../.artifacts/planning/next-check-context-and-rerolls.md).
-   S-028's loaded event/check context and owned-tool eligibility are accepted
-   as VS-24. S-094's loaded EventDialog fixed/die modifiers are accepted as
-   VS-25. S-105's mandatory-new rerolls are accepted as VS-26. Combined review
-   closed captured-stage, preflight, stale-host and result-presentation findings.
-3. The selected prerequisite trio was **S-024 → S-025 → S-041**. It extended explicit
-   boolean/missing-fact eligibility, typed entity bindings and authored roll-window
-   context. These prerequisites open later Advantage/Disadvantage and chosen-reroll
-   work. Choose only the fact/window fields the selected consumer actually needs;
-   do not turn this into a universal event framework.
-   Six separate build/validation prompts are prepared in the local
-   [facts and windows set](../../.artifacts/planning/next-facts-and-windows.md).
-   S-024 and S-025 are accepted as VS-27/28 from retained BUILD and separate
-   actual-control evidence. S-041 is accepted as VS-31 after the window consumer
-   repair, full logic and deferred-damage controls. S-091 remains VS-29 and
-   S-092 remains VS-30 after review repairs. S-095 is accepted as VS-32 after
-   separate validation and Batch B review. The Quest Board owns the exact stage.
-4. Completed Batch B is **S-091 → S-092 → S-095** for roll mode, authorized
-   outcomes and defensive changes. S-034 is accepted as VS-33 after review of
-   its retained production validation. Batch C **S-034 → S-043 → S-098** is
-   complete after shared-boundary review and targeted repairs. **S-026** is
-   accepted as VS-36 after separate actual-control validation. **S-027 BUILD**
-   is now eligible for distance queries and its listed prerequisite is accepted. The owner subsequently requested
-   advance preparation of the [next 26 prompt pairs](vocabulary-next-26-prompts.md),
-   which preserves these trios and supplies eight following trios including them.
-   This overrides the earlier prompt-writing restriction, not execution prerequisites.
-5. Follow the prompt pack's numbered queue for this requested work, one separate
-   BUILD/VALIDATE pair at a time with independent batch review. Its
-   [shared workflow](vocabulary-prompt-workflow.md) allows exact per-slice acceptance
-   from a fresh validation chat before dependent builds, without a live supervisor.
-   If review reveals a real blocker, revisit only affected later selections.
-   The rest of the table remains the full intended scope. Phase labels organize
-   requirements; they do not force finish-P1-first. No accepted counts change
-   merely because the prompts are prepared.
+The accepted 018 baseline is recorded above. The completed A-I prompt pack and
+[previous queue narrative](../archive/planning/vocabulary-queue-through-q.md)
+are historical; do not dispatch them again.
+
+The owner-requested [batches 018-030](vocabulary-batches-018-030.md) cover 39
+existing slices, now independently accepted on their documented bounded hosts,
+including the Batch 025 completion. The total is 106/226; no later capability
+batch is selected here. The Quest Board owns the actual next action.
+Review findings may change affected later selections;
+phase labels do not require finishing an entire phase first.
 
 ## Verified baseline
 
@@ -185,74 +222,74 @@ cost much more than a numeric modifier. These are delivery chunks, not modules.
 | S-024 — Boolean combinations and missing facts | Verified (VS-27) | V-001 | Author nested AND/OR/NOT and typed comparisons; absent facts have an explicit result, with no silent truth or coerced values. | S-001 |
 | S-025 — Actor/action/item/source fact bindings | Verified (VS-28) | V-001 | Bind the actual actor, target, action, item copy, spell and source; the same field name cannot read a different entity by accident. | S-024 |
 | S-026 — Ally/enemy/willingness and giver relations | Verified (VS-36) | V-002 | Read represented ally/enemy relation and explicit willingness; charm/mark queries identify their exact giver rather than a condition name. | S-002, S-025 |
-| S-027 — Distance to another actor or source | Planned | V-002 | Evaluate distance against an actual related actor/source; removal and moved participants change only live queries. | S-026 |
-| S-029 — Required senses and causal save purpose | Planned | V-003 | Carry actual sensory requirements and avoid/end/maintain reasons; Constitution saves for different causes remain distinct. | S-028 |
-| S-030 — Round and actor action history | Planned | V-004 | Read first round, first own turn and whether an actual target acted/was attacked since an explicit boundary; reset on the named event. | S-008 |
-| S-031 — Damage-since-boundary history | Planned | V-004, V-006, V-057 | Track actual settled damage by actor/source and declared time/turn boundary; attempted, prevented and HP-loss amounts stay distinct. | S-030, S-003 |
-| S-032 — Physical size/mass/material/equipment facts | Planned | V-005 | Represent/query size, mass, material/thickness and worn/carried/fixed status on actual actors and copies; unknown values refuse eligible-only actions. | S-025 |
-| S-033 — Plane and available-space facts | Planned | V-005 | Represent actual plane/location and free space for a body or object; facts query placement without themselves moving or creating anything. | S-032 |
+| S-027 — Distance to another actor or source | Verified (VS-37) | V-002 | Evaluate distance against an actual related actor/source; removal and moved participants change only live queries. | S-026 |
+| S-029 — Required senses and causal save purpose | Verified (VS-38) | V-003 | Carry actual sensory requirements and avoid/end/maintain reasons; Constitution saves for different causes remain distinct. | S-028 |
+| S-030 — Round and actor action history | Verified (VS-39) | V-004 | Read first round, first own turn and whether an actual target acted/was attacked since an explicit boundary; reset on the named event. | S-008 |
+| S-031 — Damage-since-boundary history | Verified (VS-40) | V-004, V-006, V-057 | Track actual settled damage by actor/source and declared time/turn boundary; attempted, prevented and HP-loss amounts stay distinct. | S-030, S-003 |
+| S-032 — Physical size/mass/material/equipment facts | Verified (VS-100; bounded represented combat host) | V-005 | Represent/query size, mass, material/thickness and worn/carried/fixed status on actual actors and copies; unknown values refuse eligible-only actions. | S-025 |
+| S-033 — Plane and available-space facts | Verified (VS-101; bounded represented combat host) | V-005 | Represent actual plane/location and free space for a body or object; facts query placement without themselves moving or creating anything. | S-032 |
 | S-034 — Prior-result identity and additional measures | Verified (VS-33) | V-006 | Bind selected step/target/component plus prevented, absorbed or healed quantity; result IDs survive a later choice without reading live HP as the receipt. | S-003, S-017 |
-| S-035 — Declared multi-result reducers | Planned | V-006 | Sum/min/max only explicitly selected results/components, preserve rounding and handle empty selections explicitly; reuse existing sum for its accepted case. | S-034 |
-| S-036 — Source die/choice inputs and capture policy | Planned | V-007 | Expose an exact source die and chosen numeric value to formulas; declared capture versus reevaluation survives source/actor changes. | S-016, S-023 |
-| S-037 — Class-level inputs and declared progression tables | Planned | V-007 | Distinguish character level from each class level; bounded numeric/die-size tables select a declared row without inventing missing data. | S-036 |
-| S-038 — Natural-d20 and final-total floors | Planned | V-008 | Apply a declared floor to natural or final total separately; retain provenance and ordinary critical/miss rules for the actual roll domain. | S-023 |
-| S-039 — AC alternatives and score setting | Planned | V-009 | Choose among legal base AC formulas; score setting/floors/caps remain distinct from permanent increases and conditional additive modifiers. | S-024, S-004 |
-| S-040 — Recipient choice and overlapping modifiers | Planned | V-009 | Apply declared stacking/exclusivity and let the recipient choose among incompatible equivalent protections; removal restores the still-owned alternative. | S-039 |
+| S-035 — Declared multi-result reducers | Verified (VS-41) | V-006 | Sum/min/max only explicitly selected results/components, preserve rounding and handle empty selections explicitly; reuse existing sum for its accepted case. | S-034 |
+| S-036 — Source die/choice inputs and capture policy | Verified (VS-43) | V-007 | Expose an exact source die and chosen numeric value to formulas; declared capture versus reevaluation survives source/actor changes. | S-016, S-023 |
+| S-037 — Class-level inputs and declared progression tables | Verified (VS-44) | V-007 | Distinguish character level from each class level; bounded numeric/die-size tables select a declared row without inventing missing data. | S-036 |
+| S-038 — Natural-d20 and final-total floors | Verified (VS-45) | V-008 | Apply a declared floor to natural or final total separately; retain provenance and ordinary critical/miss rules for the actual roll domain. | S-023 |
+| S-039 — AC alternatives and score setting | Verified (VS-46) | V-009 | Choose among legal base AC formulas; score setting/floors/caps remain distinct from permanent increases and conditional additive modifiers. | S-024, S-004 |
+| S-040 — Recipient choice and overlapping modifiers | Verified (VS-47) | V-009 | Apply declared stacking/exclusivity and let the recipient choose among incompatible equivalent protections; removal restores the still-owned alternative. | S-039 |
 | S-041 — Authored roll/damage window context | Verified (VS-31) | V-010 | Expose declared before-roll, after-natural, provisional outcome and pre-/post-damage windows with exact kind/source/target receipt; answer one window once. | S-023, S-025 |
-| S-042 — Cast-completion and source-end context | Planned | V-010 | Expose school, actual paid slot, completed cast and exact source-end reason to eligible consumers; emitted facts are not an automatic grant of another action. | S-041 |
+| S-042 — Cast-completion and source-end context | Verified (VS-70) | V-010 | Expose school, actual paid slot, completed cast and exact source-end reason to eligible consumers; emitted facts are not an automatic grant of another action. | S-041 |
 | S-043 — Margin and post-settlement HP gates | Verified (VS-34) | V-011 | Branch on success/failure margin and settled HP/receipts; don't treat provisional roll or current unrelated HP as the final result. | S-005, S-034 |
-| S-044 — All/any/count child-result gates | Planned | V-011 | Evaluate grouped attack/save results for the declared targets and steps; suspended children cannot prematurely satisfy all/any/count. | S-043, S-035 |
-| S-045 — Filtered progression choice acquisition | Planned | V-025 | Acquire declared option count with level/class/fact filters and duplication policy through a real choice route; invalid choices pay/grant nothing. | S-024 |
-| S-046 — Replace choices with dependent grants | Planned | V-025, V-027 | Replace an existing selection while validating its dependents; remove only the replaced exact source or refuse without partial revocation. | S-045, S-026 |
-| S-047 — Starting versus multiclass grants | Planned | V-026, V-027 | Apply the declared proficiency/expertise/equipment grants once at the correct acquisition boundary; multiclass entry uses its own grant set. | S-045 |
-| S-048 — Level-based permanent deltas | Planned | V-026, V-007, V-057 | Apply ability/max-HP/proficiency progression once, with class/character levels distinguished; checkpoint recovery must not replay the grant. | S-047, S-037 |
-| S-049 — Item/cast/progression source carriers | Planned | V-027, V-057 | Attach reusable benefits to an exact item copy, cast or progression acquisition; removal/unequip ends that source only and allowed reload retains identities. | S-006, S-046 |
-| S-050 — Benefit acquisition/removal through real controls | Planned | V-027 | Route class/item/cast acquisition and deliberate removal to the same source rules; independent identical sources remain independently queryable. | S-049 |
+| S-044 — All/any/count child-result gates | Verified (VS-42) | V-011 | Evaluate grouped attack/save results for the declared targets and steps; suspended children cannot prematurely satisfy all/any/count. | S-043, S-035 |
+| S-045 — Filtered progression choice acquisition | Verified (VS-57) | V-025 | Acquire declared option count with level/class/fact filters and duplication policy through a real choice route; invalid choices pay/grant nothing. | S-024 |
+| S-046 — Replace choices with dependent grants | Verified (VS-58) | V-025, V-027 | Replace an existing selection while validating its dependents; remove only the replaced exact source or refuse without partial revocation. | S-045, S-026 |
+| S-047 — Starting versus multiclass grants | Verified (VS-68) | V-026, V-027 | Apply the declared proficiency/expertise/equipment grants once at the correct acquisition boundary; multiclass entry uses its own grant set. | S-045 |
+| S-048 — Level-based permanent deltas | Verified (VS-69) | V-026, V-007, V-057 | Apply ability/max-HP/proficiency progression once, with class/character levels distinguished; checkpoint recovery must not replay the grant. | S-047, S-037 |
+| S-049 — Item/cast/progression source carriers | Verified (VS-59) | V-027, V-057 | Attach reusable benefits to an exact item copy, cast or progression acquisition; removal/unequip ends that source only and allowed reload retains identities. | S-006, S-046 |
+| S-050 — Benefit acquisition/removal through real controls | Verified (VS-60) | V-027 | Route class/item/cast acquisition and deliberate removal to the same source rules; independent identical sources remain independently queryable. | S-049 |
 
 ## P2 — Pools, time and effect state
 
 | Slice | State | Capability coverage | Build and acceptance finish line | After |
 |---|---|---|---|---|
-| S-051 — Dice-pool progression and captured faces | Planned | V-038, V-007, V-057 | Use declared per-source capacity/die tables; retained rolled dice have distinct identities even for equal faces, and upgrades follow explicit snapshot policy. | S-010, S-036, S-037 |
-| S-052 — Slot-to-pool exchange selectors | Planned | V-039, V-031 | Select eligible exact slot/pool and declared quantities; fit and affordability validate before either side changes, preserving Pact versus ordinary slots. | S-011, S-135 |
-| S-053 — Dice/quantity and cross-actor exchanges | Planned | V-039 | Exchange declared dice or represented inventory quantities between eligible sources/recipients atomically; no currency is invented solely for this slice. | S-052, S-051, S-026 |
-| S-054 — Budgeted slot/pool recovery | Planned | V-040 | Choose expended quantities within a formula budget and exclusions; original pool identity and no-overcapacity rules survive cancellation or refusal. | S-007, S-137 |
-| S-055 — Outcome-selected resource recovery | Planned | V-040 | Recover lowest eligible or lower-than-paid quantities from the actual result/slot, not a guessed caster level or another pool. | S-054, S-043 |
-| S-056 — Own-turn, round and first-round limits | Planned | V-041, V-004 | Author own-turn eligibility and round/first-round limits separately from existing once-per-turn locks; off-turn actions cannot borrow an own-turn allowance. | S-008, S-030 |
-| S-057 — Per-roll and per-active-instance limits | Planned | V-041 | Lock an option to one actual result/effect instance; an unrelated roll, duplicate source or new activation has its own identity. | S-056, S-041 |
-| S-058 — Conditional payment waiver | Planned | V-042 | Waive only the declared cost for a qualifying parent action/source; other budgets and option locks still apply, with refusal before side effects. | S-023, S-056 |
-| S-059 — Payment replacement and free die use | Planned | V-042, V-023 | Substitute a declared payment or allowed free die without consuming the original pool; don't waive a sibling feature's cost or duplicate its roll. | S-058, S-051, S-123 |
+| S-051 — Dice-pool progression and captured faces | Verified (VS-61) | V-038, V-007, V-057 | Use declared per-source capacity/die tables; retained rolled dice have distinct identities even for equal faces, and upgrades follow explicit snapshot policy. | S-010, S-036, S-037 |
+| S-052 — Slot-to-pool exchange selectors | Verified (VS-82; numeric destinations) | V-039, V-031 | Select eligible exact slot/pool and declared quantities; fit and affordability validate before either side changes, preserving Pact versus ordinary slots. | S-011, S-135 |
+| S-053 — Dice/quantity and cross-actor exchanges | Verified (VS-83; captured-dice/inventory payments) | V-039 | Exchange declared dice or represented inventory quantities between eligible sources/recipients atomically; no currency is invented solely for this slice. | S-052, S-051, S-026 |
+| S-054 — Budgeted slot/pool recovery | Verified (VS-91; budgeted Character recovery) | V-040 | Choose expended quantities within a formula budget and exclusions; original pool identity and no-overcapacity rules survive cancellation or refusal. | S-007, S-137 |
+| S-055 — Outcome-selected resource recovery | Verified (VS-92; actual paid-result recovery) | V-040 | Recover lowest eligible or lower-than-paid quantities from the actual result/slot, not a guessed caster level or another pool. | S-054, S-043 |
+| S-056 — Own-turn, round and first-round limits | Verified (VS-54) | V-041, V-004 | Author own-turn eligibility and round/first-round limits separately from existing once-per-turn locks; off-turn actions cannot borrow an own-turn allowance. | S-008, S-030 |
+| S-057 — Per-roll and per-active-instance limits | Verified (VS-55) | V-041 | Lock an option to one actual result/effect instance; an unrelated roll, duplicate source or new activation has its own identity. | S-056, S-041 |
+| S-058 — Conditional payment waiver | Verified (VS-56) | V-042 | Waive only the declared cost for a qualifying parent action/source; other budgets and option locks still apply, with refusal before side effects. | S-023, S-056 |
+| S-059 — Payment replacement and free die use | Verified (VS-106; bounded captured-die rider replacement) | V-042, V-023 | Substitute a declared payment or allowed free die without consuming the original pool; don't waive a sibling feature's cost or duplicate its roll. | S-058, S-051, S-123 |
 | S-060 — Last-charge aftermath on exact copies | Planned | V-043, V-079 | After a real spend, trigger declared depletion roll/destruction/degradation on that exact copy once; preserve the declared surviving mundane properties. | S-049, S-042 |
 | S-061 — Current versus lifetime capacity/overflow | Planned | V-043 | Keep cumulative received energy and current spendable energy separate; validate capacity, overflow outcome and any gain/spend aftermath once. | S-060, S-006 |
-| S-062 — Turn-start/Initiative floor recovery | Planned | V-044, V-041 | Recover one/fill/up-to-floor at the declared actual event, with mutually exclusive choices and exact-source quantities; no refill from location changes. | S-007, S-056 |
-| S-063 — Dawn/dusk/cooldown random recovery | Planned | V-044, V-045 | Apply declared fixed or rolled recovery at campaign-time events; late observation/time jumps don't repeatedly roll or extend a captured cooldown. | S-062, S-014 |
+| S-062 — Turn-start/Initiative floor recovery | Verified (VS-62) | V-044, V-041 | Recover one/fill/up-to-floor at the declared actual event, with mutually exclusive choices and exact-source quantities; no refill from location changes. | S-007, S-056 |
+| S-063 — Dawn/dusk/cooldown random recovery | Verified (VS-93; dawn/dusk/cooldown occurrences) | V-044, V-045 | Apply declared fixed or rolled recovery at campaign-time events; late observation/time jumps don't repeatedly roll or extend a captured cooldown. | S-062, S-014 |
 | S-064 — Pause/resume cumulative active time | Planned | V-045, V-057 | Accumulate qualified on-time across interruptions without restarting fuel/flight allowance; persisted source deadlines and cooldown start remain separate. | S-014, S-049 |
 | S-065 — Cumulative distance allowance | Planned | V-045 | Spend actual eligible travel distance across pause/resume and mode changes; no charge for failed movement or fresh allowance on reactivation. | S-064, S-179 |
 | S-066 — Qualified work/study progress | Planned | V-046, V-057 | Accumulate actual eligible work with proximity/concentration/participants and daily rest; leaving/interruption follows authored keep/reset policy. | S-064, S-032 |
 | S-067 — Work deadline and paid-material interruption | Planned | V-046 | Enforce time window and qualified hours independently; expiry/interruption loses only specified progress/material and completion fires once. | S-066 |
-| S-068 — Scheduled repeat saves | Planned | V-047 | Declare target-turn or elapsed-time repetition and eligibility; each due attempt resolves once with its source/recipient and original purpose. | S-029, S-041 |
-| S-069 — Counted saves and staged conditions | Planned | V-047, V-057 | Count qualifying successes/margins and transition/end linked conditions by explicit routes; other cures or source removal cannot erase unrelated stages. | S-068, S-043 |
+| S-068 — Scheduled repeat saves | Verified (VS-94; turn/elapsed repeat saves) | V-047 | Declare target-turn or elapsed-time repetition and eligibility; each due attempt resolves once with its source/recipient and original purpose. | S-029, S-041 |
+| S-069 — Counted saves and staged conditions | Verified (VS-95; counted staged conditions) | V-047, V-057 | Count qualifying successes/margins and transition/end linked conditions by explicit routes; other cures or source removal cannot erase unrelated stages. | S-068, S-043 |
 | S-070 — Rest-start expiry and actor-specific duration | Planned | V-048 | Separate starting a rest, eligible elapsed duration, interruption and successful completion; authored Trance/duration rules don't grant benefits at start. | S-007, S-064 |
 | S-071 — Benefit-only recovery and Hit Dice | Planned | V-048 | Apply immediate declared rest-like benefits without falsely emitting rest completion; select actual Hit Dice/cost/amount only for eligible actors. | S-070, S-054 |
-| S-072 — Action/status/equipment/range termination | Planned | V-049 | End an exact source on declared attack/cast/movement/status/gear/range event, preserving sources that don't match and the actor whose event matters. | S-012, S-042, S-026 |
-| S-073 — Causal damage exceptions to termination | Planned | V-049 | Use settled causal source identity to exempt only specified damage; ordinary unrelated damage still ends the grant when required. | S-072, S-034 |
-| S-074 — Suppression without removing condition | Planned | V-050, V-057 | Mask qualifying condition effects while retaining original source/clock; suppression ending restores only unexpired conditions and never reacquires them. | S-072 |
-| S-075 — Recipient/source-specific suppression | Planned | V-050 | Overlapping suppressors and eligible recipients are independent; movement/removal of one suppressor cannot restore a condition another still masks. | S-074, S-026 |
+| S-072 — Action/status/equipment/range termination | Verified (VS-71) | V-049 | End an exact source on declared attack/cast/movement/status/gear/range event, preserving sources that don't match and the actor whose event matters. | S-012, S-042, S-026 |
+| S-073 — Causal damage exceptions to termination | Verified (VS-72) | V-049 | Use settled causal source identity to exempt only specified damage; ordinary unrelated damage still ends the grant when required. | S-072, S-034 |
+| S-074 — Suppression without removing condition | Verified (VS-73) | V-050, V-057 | Mask qualifying condition effects while retaining original source/clock; suppression ending restores only unexpired conditions and never reacquires them. | S-072 |
+| S-075 — Recipient/source-specific suppression | Verified (VS-74) | V-050 | Overlapping suppressors and eligible recipients are independent; movement/removal of one suppressor cannot restore a condition another still masks. | S-074, S-026 |
 | S-076 — Next selected attack/result grant | Planned | V-051, V-014 | Match actor/target/attack kind and consume at the declared roll/hit boundary; nonmatching events retain the grant, and ordered sources consume only as declared. | S-013, S-057, S-026 |
 | S-077 — Next own-source save or post-movement event | Planned | V-051 | Match the exact originating spell/movement and beneficiary; consume a captured grant only when its declared qualifying event occurs before expiry. | S-076, S-049 |
-| S-078 — Temporary-HP replacement choice | Planned | V-052, V-009 | Offer recipient choice between actual current and incoming Temporary HP without resetting the retained supplier/expiry; reject stale choices before replacement. | S-015, S-040 |
-| S-079 — Cross-actor Temporary HP and linked benefit | Planned | V-052, V-054, V-057 | Supplier and recipient differ; retain benefit only while that source's qualifying Temporary HP survives, with replacement/removal/expiry ending it exactly once. | S-078, S-082 |
-| S-080 — Dynamic aura bearer/recipient membership | Planned | V-053 | Recompute eligible moving recipients, range and suppression using giver values separately from bearer/recipient; exit removes only benefits requiring membership. | S-027, S-075 |
-| S-081 — Chosen aura and lingering entry benefits | Planned | V-053 | Choose overlapping aura protection and retain explicitly timed entry benefits after exit; entering twice cannot restart a use beyond its declared policy. | S-080, S-040 |
-| S-082 — Captured die/token/permission transfer | Planned | V-054, V-057 | Give an exact recipient a source-linked captured grant; generation level/die/permission and expiry don't change when giver later levels or removes another grant. | S-051, S-049 |
-| S-083 — Recipient use budgets and shared rolled value | Planned | V-054 | Recipient spends its own declared Reaction/action; a shared one-time rolled bonus is captured once and not independently rerolled for every beneficiary. | S-082, S-041 |
+| S-078 — Temporary-HP replacement choice | Verified (VS-84; recipient Keep/Replace) | V-052, V-009 | Offer recipient choice between actual current and incoming Temporary HP without resetting the retained supplier/expiry; reject stale choices before replacement. | S-015, S-040 |
+| S-079 — Cross-actor Temporary HP and linked benefit | Verified (VS-85; cross-actor linked AC/saves) | V-052, V-054, V-057 | Supplier and recipient differ; retain benefit only while that source's qualifying Temporary HP survives, with replacement/removal/expiry ending it exactly once. | S-078, S-082 |
+| S-080 — Dynamic aura bearer/recipient membership | Verified (VS-75; directly owned Character aura host) | V-053 | Recompute eligible moving recipients, range and suppression using giver values separately from bearer/recipient; exit removes only benefits requiring membership. | S-027, S-075 |
+| S-081 — Chosen aura and lingering entry benefits | Verified (VS-86; chosen aura and timed entry receipts) | V-053 | Choose overlapping aura protection and retain explicitly timed entry benefits after exit; entering twice cannot restart a use beyond its declared policy. | S-080, S-040 |
+| S-082 — Captured die/token/permission transfer | Verified (VS-63) | V-054, V-057 | Give an exact recipient a source-linked captured grant; generation level/die/permission and expiry don't change when giver later levels or removes another grant. | S-051, S-049 |
+| S-083 — Recipient use budgets and shared rolled value | Verified (VS-64; shared weapon-attack bonus) | V-054 | Recipient spends its own declared Reaction/action; a shared one-time rolled bonus is captured once and not independently rerolled for every beneficiary. | S-082, S-041 |
 | S-084 — Rule parameter upgrades | Planned | V-055 | Change count/die/targets/end predicates of an existing owned rule through data once; don't mutate catalog data or duplicate the base benefit on reload. | S-036, S-049 |
 | S-085 — Rule options and exclusive replacements | Planned | V-055, V-037 | Add/remove legal modes/permissions/masteries through source-owned upgrades; mutually exclusive Extra Attack/AC policies remain alternatives. | S-084, S-103 |
 | S-086 — Source-end reason and located aftermath | Planned | V-056 | Emit one final owned state/origin for expiry/dismissal/destruction/death; declared follow-up effects fire once and don't conflate end reasons. | S-014, S-072 |
 | S-087 — Source-end child effect/timer continuation | Planned | V-056 | Run a declared heal/hazard/timer from the captured end event, preserving final location and costs across any child choice; delayed end observation doesn't relocate it. | S-086, S-034 |
 | S-088 — Ordered procedure position | Planned | V-081, V-057 | Retain exact next procedure step and choice/deadline across interruption, allowed reload and reset; sequence position isn't a use pool. | S-214, S-064 |
 | S-089 — Remaining faces/cards and replacement | Planned | V-081 | Track exact remaining membership; equal faces/copies stay separate, with declared discard/replace/reset and no redraw on replay. | S-088, S-051 |
-| S-090 — Escalating DC/chance and reset history | Planned | V-088, V-057 | Calculate DC/risk from owned attempts; increment only at the stated attempted/accepted/result boundary and reset only at the declared event. | S-016, S-062, S-043 |
+| S-090 — Escalating DC/chance and reset history | Verified (VS-96; owned repeat-save DC history) | V-088, V-057 | Calculate DC/risk from owned attempts; increment only at the stated attempted/accepted/result boundary and reset only at the declared event. | S-016, S-062, S-043 |
 
 ## P3 — Rolls and decisions
 
@@ -263,42 +300,42 @@ cost much more than a numeric modifier. These are delivery chunks, not modules.
 | S-093 — No-roll outcome and Death Save cancellation | Planned | V-013 | Declare eligible automatic outcome/canceled upcoming Death Save before consequences; no d20 is rolled or numeric bonus offered when the rule says no roll. | S-092, S-117 |
 | S-095 — Subtract total or change defending AC | Verified (VS-32) | V-014 | Offer a qualifying downward total/defensive AC change after a provisional hit; final miss prevents damage-side spending and exposes its new result. | S-023, S-041 |
 | S-096 — Off-turn and creature-owned attack choices | Planned | V-014 | Extend the same operation to Opportunity/reaction attacks and data-owned creature sources through their actual control/AI routes; exact roll and budget ownership remain. | S-023, S-057, S-156 |
-| S-097 — Another actor's optional roll intervention | Planned | V-014, V-013, V-035, V-089, V-090 | Select the legitimate helping/defending source and its budget for an already-supported modifier/outcome/reroll/token operation at its authorized window; wrong owners cannot settle, and follow-up actions share the same occurrence. | S-095, S-083 |
+| S-097 — Another actor's optional roll intervention | Verified (VS-65; fixed helping weapon-attack modifier only) | V-014, V-013, V-035, V-089, V-090 | Select the legitimate helping/defending source and its budget for an already-supported modifier/outcome/reroll/token operation at its authorized window; wrong owners cannot settle, and follow-up actions share the same occurrence. | S-095, S-083 |
 | S-098 — Independent save/miss damage and riders | Verified (VS-35) | V-015 | Choose damage scale and rider eligibility independently for each settled success/failure/miss; a half-damage miss doesn't grant a hit-only rider. | S-022, S-043 |
-| S-099 — Evasion and chosen recipient exemptions | Planned | V-015 | Author eligibility and chosen target exceptions for the actual occurrence; one recipient's mapping cannot alter others or turn saved into a different roll. | S-098, S-026 |
-| S-100 — Other declared result-payment predicates | Planned | V-035 | Commit/refund/reserve only the chosen resource when its explicit success/failure predicate matches; preserve required upfront funds and one final outcome across suspension. | S-019, S-094, S-043 |
-| S-101 — One integer budget across recipients | Planned | V-036 | Choose eligible recipients and integer amounts under total/count/per-target caps; finalize once, with declared unspent/cancel policy and no partial payment on refusal. | S-023, S-026, S-036 |
-| S-102 — Roll-derived and dice-count allocations | Planned | V-036, V-038 | Allocate one captured rolled total or selected owned dice among recipients; don't reroll per recipient or double-spend the original quantity. | S-101, S-051 |
+| S-099 — Evasion and chosen recipient exemptions | Verified (VS-50) | V-015 | Author eligibility and chosen target exceptions for the actual occurrence; one recipient's mapping cannot alter others or turn saved into a different roll. | S-098, S-026 |
+| S-100 — Other declared result-payment predicates | Verified (VS-51) | V-035 | Commit/refund/reserve only the chosen resource when its explicit success/failure predicate matches; preserve required upfront funds and one final outcome across suspension. | S-019, S-094, S-043 |
+| S-101 — One integer budget across recipients | Verified (VS-66; HP/Temporary HP) | V-036 | Choose eligible recipients and integer amounts under total/count/per-target caps; finalize once, with declared unspent/cancel policy and no partial payment on refusal. | S-023, S-026, S-036 |
+| S-102 — Roll-derived and dice-count allocations | Verified (VS-67; HP/Temporary HP) | V-036, V-038 | Allocate one captured rolled total or selected owned dice among recipients; don't reroll per recipient or double-spend the original quantity. | S-101, S-051 |
 | S-103 — Rest/per-activation mode choices | Planned | V-037, V-025 | Select a declared mode at rest or activation and replace its owned grants; permanent progression choices remain different and parent use/lifetime doesn't restart. | S-045, S-049 |
 | S-104 — Per-hit/turn-start mode switches | Planned | V-037 | Change only legal mode parameters at the declared hit/turn event; earlier settled outcomes and parent activation cost/deadline stay fixed. | S-103, S-056 |
-| S-106 — Chosen old/new reroll with mode/bonus | Planned | V-089, V-012 | Offer old versus new only where declared; apply specified Advantage or level bonus to the new test without replaying spent tokens or effects. | S-105, S-091, S-037 |
+| S-106 — Chosen old/new reroll with mode/bonus | Verified (VS-48) | V-089, V-012 | Offer old versus new only where declared; apply specified Advantage or level bonus to the new test without replaying spent tokens or effects. | S-105, S-091, S-037 |
 | S-107 — Authored replacement-token generation/reset | Planned | V-090, V-013, V-057 | Generate/capture distinct visible/hidden owner tokens with declared reset and equal-face identities; reuse accepted pre-roll consumer, and reload cannot generate fresh values. | S-051, S-063 |
 | S-108 — Post-roll natural-result token replacement | Planned | V-090, V-013 | Replace the natural result at a separately authorized failed/successful window using one exact token or fixed value; recompute totals/outcome without another d20. | S-107, S-041 |
 | S-224 — Noncombat spell/check modifier choice hosts | Planned | V-014, V-013, V-035, V-089, V-090 | Route already-supported captured modifier/outcome/reroll/token choices in represented local-room/event exploration hosts; retain original actor/target/DC/AC and once-only costs across scene/control changes. | S-094, S-022, S-225, S-108, S-226 |
-| S-225 — Weapon and shared-spell reroll consumers | Planned | V-089, V-012, V-014 | Reuse declared mandatory-new/chosen rerolls in actual weapon and flat/ordered shared-spell attack/save routes; preserve natural/critical rules, original profile/DC, token/source costs and later damage/step continuation. | S-105, S-106, S-022 |
+| S-225 — Weapon and shared-spell reroll consumers | Verified (VS-49) | V-089, V-012, V-014 | Reuse declared mandatory-new/chosen rerolls in actual weapon and flat/ordered shared-spell attack/save routes; preserve natural/critical rules, original profile/DC, token/source costs and later damage/step continuation. | S-105, S-106, S-022 |
 | S-226 — Death Save and concentration roll choices | Planned | V-013, V-014, V-035, V-089, V-090 | Apply only source-authorized captured bonus/outcome/reroll/token operations to actually rolled Death Saves/concentration; preserve original failure/success policy, counters/zero-HP effects and earlier damage/cast payment once. | S-225, S-092, S-108, S-109 |
 
 ## P4 — Damage and consequences
 
 | Slice | State | Capability coverage | Build and acceptance finish line | After |
 |---|---|---|---|---|
-| S-109 — Component versus whole-occurrence damage edits | Planned | V-016 | Apply declared fixed/formula reduction at the named incoming stage; retain component typing/overflow and record prevention before HP/aftereffects settle. | S-034, S-041 |
-| S-110 — Precisely scoped mitigation bypass | Planned | V-016 | Bypass only declared resistance/immunity/ward/prevention layers for an eligible component; other layers and unrelated components still settle normally. | S-109 |
+| S-109 — Component versus whole-occurrence damage edits | Verified (VS-52) | V-016 | Apply declared fixed/formula reduction at the named incoming stage; retain component typing/overflow and record prevention before HP/aftereffects settle. | S-034, S-041 |
+| S-110 — Precisely scoped mitigation bypass | Verified (VS-53) | V-016 | Bypass only declared resistance/immunity/ward/prevention layers for an eligible component; other layers and unrelated components still settle normally. | S-109 |
 | S-111 — Linked split-damage settlement | Planned | V-017 | Split one eligible incoming occurrence with declared rounding into actual recipients; preserve total, independent mitigation and original causal identity. | S-109, S-026 |
 | S-112 — Redirect incoming damage to linked recipient | Planned | V-017 | Transfer the declared share/all to another eligible actor without replaying attack/riders; missing recipient or refused choice follows declared fallback. | S-111 |
 | S-113 — Incoming damage replacement/healing | Planned | V-018 | Use qualifying raw/resolved amount at the specified stage to absorb/replace/heal, including declared immunity interaction; don't count prevented damage as HP loss. | S-109, S-034 |
 | S-114 — Settled-damage countereffects and feedback limits | Planned | V-018 | Create linked counter-damage/heal from actual taken/prevented amount, honoring declared recursion/causal limits so a response doesn't trigger itself forever. | S-113, S-034 |
-| S-115 — Whole pending cast cancellation | Planned | V-019 | Cancel eligible pending spell effects by actual level/school/source, retaining specified spent costs and already-final facts; don't cancel unrelated casts. | S-135, S-042 |
-| S-116 — One recipient's incoming effect negation | Planned | V-019 | Exclude only the qualifying recipient/step from an original cast, leaving other targets intact; reflection/retargeting remains a separate operation. | S-115, S-098 |
+| S-115 — Whole pending cast cancellation | Verified (VS-88) | V-019 | Cancel eligible pending spell effects by actual level/school/source, retaining specified spent costs and already-final facts; don't cancel unrelated casts. | S-135, S-042 |
+| S-116 — One recipient's incoming effect negation | Verified (VS-90) | V-019 | Exclude only the qualifying recipient/step from an original cast, leaving other targets intact; reflection/retargeting remains a separate operation. | S-115, S-098 |
 | S-117 — Authored zero-HP replacement eligibility | Planned | V-020 | Reuse the existing zero-HP boundary with declared damage/critical/outright-death exclusions and replacement HP formula; intercept before unconsciousness/death. | S-004, S-109 |
 | S-118 — Escalating-save zero-HP replacement | Planned | V-020, V-088 | At the same boundary resolve a declared save/DC history and increment/reset policy; failure uses original proposed outcome and success applies once. | S-117, S-090 |
 | S-119 — Death/destruction distinct from ordinary HP loss | Planned | V-021 | Apply eligible instant death/destruction with declared gear/remains policy, preserving original identity and actual cause for later revival. | S-117, S-032 |
 | S-120 — Aftermath successor actor or hazard | Planned | V-021 | Create the declared actor/object/hazard from final death/destruction once at its actual location, with exclusions and retained/disposed gear as specified. | S-119, S-154 |
 | S-121 — Required legal exit before outcome settlement | Planned | V-022 | Choose/validate legal exit placement before final save/outcome; no space changes outcome only as authored, without premature escape or failed-save effects. | S-033, S-043 |
 | S-122 — Creation/arrival placement and failure costs | Planned | V-022 | Validate required space before creation/arrival and apply the declared no-space cost/result; placement refusal never silently creates an overlapping actor. | S-121, S-135 |
-| S-123 — Damage/healing dice removal and maximizing | Planned | V-023 | Remove a declared dice quantity before rolling or maximize eligible dice; separate noncritical cost dice from critical/result multiplication. | S-010, S-034 |
-| S-124 — Selected damage/healing dice rerolls | Planned | V-023 | Reuse actual rolled-dice selection with declared eligibility/kept policy/count/cost; chosen dice reroll once and frozen siblings remain unchanged. | S-123 |
-| S-125 — Critical and final-result multipliers | Planned | V-023 | Multiply the declared dice/component/result at its stated stage with explicit rounding; fixed bonuses, typed components and critical exclusions remain distinct. | S-123, S-109 |
+| S-123 — Damage/healing dice removal and maximizing | Verified (VS-103; critical base-die cost boundary) | V-023 | Remove a declared dice quantity before rolling or maximize eligible dice; separate noncritical cost dice from critical/result multiplication. | S-010, S-034 |
+| S-124 — Selected damage/healing dice rerolls | Verified (VS-104; authored healing policy and exact payment receipt) | V-023 | Reuse actual rolled-dice selection with declared eligibility/kept policy/count/cost; chosen dice reroll once and frozen siblings remain unchanged. | S-123 |
+| S-125 — Critical and final-result multipliers | Verified (VS-105; explicit critical exclusion) | V-023 | Multiply the declared dice/component/result at its stated stage with explicit rounding; fixed bonuses, typed components and critical exclusions remain distinct. | S-123, S-109 |
 | S-126 — Qualifying ability/die/type/attack/DC replacement | Planned | V-024 | Build a scoped actual attack/cast profile with replaced/additive/inherited fields; chosen damage type or fixed attack/DC cannot mutate catalog or unrelated actions. | S-036, S-024 |
 | S-127 — Reach/mastery and damage-type choice | Planned | V-024 | Offer legal per-hit/activation reach/mastery/type options for the qualifying profile; property source and selection timing remain explicit. | S-126, S-103 |
 | S-128 — Source-specific unrecoverable injury | Planned | V-085, V-057 | Record exact unhealable damage separately from other missing HP; ordinary heal/rest honors its amount, source cure removes only that restriction. | S-034, S-071, S-072 |
@@ -312,22 +349,22 @@ cost much more than a numeric modifier. These are delivery chunks, not modules.
 
 | Slice | State | Capability coverage | Build and acceptance finish line | After |
 |---|---|---|---|---|
-| S-134 — Source-owned casting permission | Planned | V-028, V-027 | Offer prepared/book/item/innate permissions with their own spell, ability, level/list/component restrictions; eligibility is not merely knowledge of an ID. | S-049, S-045 |
-| S-135 — Alternative slot/free/point casting payment | Planned | V-028, V-031 | Select one allowed permission/payment before invocation; one source's free use or point cost doesn't consume another source's slot or permit an unavailable child. | S-134, S-006 |
-| S-136 — Ritual and component eligibility | Planned | V-028 | Apply source-specific ritual access, timing and components through actual casting routes; ritual-only access cannot become a normal action/slot permission. | S-134, S-028 |
-| S-137 — Per-source repertoire/preparation replacement | Planned | V-029, V-057 | Keep each class/source list, ability, preparation limit and replacement boundary distinct; source removal/reload retains only actually acquired permissions. | S-134, S-037 |
-| S-138 — Combined versus Pact slot progression | Planned | V-029 | Calculate declared multiclass rounding and class-specific contributions; ordinary slots, Pact slots and preparation limits remain separate. | S-137, S-037 |
-| S-139 — Fixed-level/source spell uses | Planned | V-029 | Represent fixed-level limited permissions separately from payable slot pools; restoring/upcasting/selection obey that source's rules. | S-138, S-135 |
+| S-134 — Source-owned casting permission | Verified (VS-76) | V-028, V-027 | Offer prepared/book/item/innate permissions with their own spell, ability, level/list/component restrictions; eligibility is not merely knowledge of an ID. | S-049, S-045 |
+| S-135 — Alternative slot/free/point casting payment | Verified (VS-77) | V-028, V-031 | Select one allowed permission/payment before invocation; one source's free use or point cost doesn't consume another source's slot or permit an unavailable child. | S-134, S-006 |
+| S-136 — Ritual and component eligibility | Verified (VS-81) | V-028 | Apply source-specific ritual access, timing and components through actual casting routes; ritual-only access cannot become a normal action/slot permission. | S-134, S-028 |
+| S-137 — Per-source repertoire/preparation replacement | Verified (VS-78) | V-029, V-057 | Keep each class/source list, ability, preparation limit and replacement boundary distinct; source removal/reload retains only actually acquired permissions. | S-134, S-037 |
+| S-138 — Combined versus Pact slot progression | Verified (VS-79) | V-029 | Calculate declared multiclass rounding and class-specific contributions; ordinary slots, Pact slots and preparation limits remain separate. | S-137, S-037 |
+| S-139 — Fixed-level/source spell uses | Verified (VS-80) | V-029 | Represent fixed-level limited permissions separately from payable slot pools; restoring/upcasting/selection obey that source's rules. | S-138, S-135 |
 | S-140 — Cast-local school/range/components/timing | Planned | V-030 | Transform only qualifying invocation fields after selection, preserving catalog data and unrelated casts; multiple compatible source changes apply once. | S-134, S-126 |
 | S-141 — Cast-local duration/concentration/summon parameters | Planned | V-030 | Alter declared duration, concentration or created-actor values on that invocation; expiry and removal use its captured settings and source. | S-140, S-154 |
-| S-142 — Interruption/failure reserve and refund | Planned | V-031 | Apply declared commit/refund policy to the actual interrupted/failed cast and source payment; empty effect does not automatically mean refund. | S-135, S-043 |
-| S-143 — Stopping-spell success/failure cost policy | Planned | V-031 | Use the real stopping result to keep/refund eligible slot/use and consume/dispose exact item as declared; do not repay original target spell. | S-142, S-115 |
+| S-142 — Interruption/failure reserve and refund | Verified (VS-87) | V-031 | Apply declared commit/refund policy to the actual interrupted/failed cast and source payment; empty effect does not automatically mean refund. | S-135, S-043 |
+| S-143 — Stopping-spell success/failure cost policy | Verified (VS-89) | V-031 | Use the real stopping result to keep/refund eligible slot/use and consume/dispose exact item as declared; do not repay original target spell. | S-142, S-115 |
 | S-144 — Extra eligible recipients in one cast | Planned | V-032 | Add declared targets while retaining one invocation, original costs and independent per-target outcomes; refused extras cannot replay the original target. | S-134, S-026, S-022 |
 | S-145 — One invocation's alternate cast origin | Planned | V-032, V-074 | Select a legal sensor/object/illusion origin while retaining actual caster senses, cost, source and targets; origin is not a second caster. | S-144, S-192 |
-| S-146 — Attack/strike unit substitution | Planned | V-033 | Treat current Attack/Flurry as explicit remaining units; one permitted spell/item/heal substitutes declared one/two units without a second action payment. | S-134, S-021 |
+| S-146 — Attack/strike unit substitution | Verified (VS-97; Attack/Flurry substitutions) | V-033 | Treat current Attack/Flurry as explicit remaining units; one permitted spell/item/heal substitutes declared one/two units without a second action payment. | S-134, S-021 |
 | S-147 — Companion command replaces attack unit | Planned | V-033, V-059 | Substitute a declared command unit for the owner's attack while checking real companion authority/availability; preserve both actors' remaining budgets. | S-146, S-156 |
-| S-148 — Child actions inside parent budget | Planned | V-034 | Invoke declared strike/cast/move children from a parent Action/Bonus/Reaction using local cost waiver and classification, preserving original causal source. | S-146, S-058 |
-| S-149 — Child-action choice and interrupted parent | Planned | V-034 | Resume a pending child exactly once and preserve remaining siblings/parent budgets; cancel/refusal follows explicit policy instead of restarting the parent. | S-148, S-022 |
+| S-148 — Child actions inside parent budget | Verified (VS-98; declared combat children) | V-034 | Invoke declared strike/cast/move children from a parent Action/Bonus/Reaction using local cost waiver and classification, preserving original causal source. | S-146, S-058 |
+| S-149 — Child-action choice and interrupted parent | Verified (VS-99; once-only child continuation) | V-034 | Resume a pending child exactly once and preserve remaining siblings/parent budgets; cancel/refusal follows explicit policy instead of restarting the parent. | S-148, S-022 |
 | S-150 — Store an exact spell with original caster snapshot | Planned | V-084, V-057 | Charge an owned exact copy within capacity, suppressing normal effects; retain spell/paid level/DC/attack/ability and declared full-capacity waste policy. | S-135, S-049, S-138 |
 | S-151 — Release stored spell once | Planned | V-084 | New holder chooses actual legal targets using stored numbers and declared ownership; release consumes only the selected stored entry and does not repay its original slot. | S-150, S-144 |
 | S-152 — Temporary preparation theft and enemy prohibition | Planned | V-087, V-057 | A qualifying failed save grants exact spell permission and denies that enemy's matching spell for the captured deadline, without storing a cast or removing others' knowledge. | S-116, S-137, S-049 |
@@ -367,7 +404,7 @@ cost much more than a numeric modifier. These are delivery chunks, not modules.
 |---|---|---|---|---|
 | S-177 — Known destinations and actual plane/location | Planned | V-068, V-057 | Represent declared known/unknown destination and plane with actual saved arrival/previous point; unknown names cannot create invented reachable places. | S-033, S-049 |
 | S-178 — Temporary removal versus travel and return | Planned | V-068 | Move/remove actual eligible actors/passengers with declared return deadline and nearest-legal fallback; ordinary travel does not automatically promise a return. | S-177, S-121, S-086 |
-| S-179 — Speed/mode and terrain/surface costs | Planned | V-069 | Use declared walking/climbing/swimming/flying/hover speeds, terrain and actual hand/surface requirements; movement refusal spends no distance or unrelated mode. | S-032, S-033 |
+| S-179 — Speed/mode and terrain/surface costs | Verified (VS-102; bounded represented combat host) | V-069 | Use declared walking/climbing/swimming/flying/hover speeds, terrain and actual hand/surface requirements; movement refusal spends no distance or unrelated mode. | S-032, S-033 |
 | S-180 — Phasing/burrowing/pass-through occupancy | Planned | V-069 | Permit declared passage through eligible material/occupants without treating it as legal end space; unknown obstructions and forbidden surfaces still block. | S-179, S-032 |
 | S-181 — Expired flight/fall/descent/shunt | Planned | V-069 | When movement permission ends, use actual position and declared controlled descent/fall/shunt; legal end placement precedes final consequences. | S-180, S-072, S-121 |
 | S-182 — Linked willing passenger movement | Planned | V-070 | Select legal willing passengers and actual destinations within source limits; move one group once, retain carried identities and declared opportunity suppression. | S-179, S-026, S-121 |
@@ -540,10 +577,21 @@ content conversion or individual-record correctness ledger belongs in them.
 
 | Source task | Boundary | When needed |
 |---|---|---|
-| SRC-01 | Locate intended 2024 maneuver, Metamagic, invocation, Fighting Style and Origin/Epic/other feat bodies referenced but not supplied locally; name distinct requirements only. | Before converting those selections or claiming their vocabulary exhausted. |
+| SRC-01 | Resolve intended 2024 maneuver, Metamagic, invocation, Fighting Style and Origin/Epic/other feat bodies absent from the selected source view; use identified local donors where available and name distinct requirements only. | Before converting those selections or claiming their vocabulary exhausted. |
 | SRC-02 | Resolve missing common itemEntry, itemGroup, Hazard/Artifact/book references such as Ioun Stone, Dragon Scale Mail and Enspelled text; name distinct mechanical exceptions. | Before a selected item requirement depends on its missing body. |
 | SRC-03 | Obtain/read missing intended revised spell and monster bodies/discriminators; preserve original scope and provenance, without promoting unloaded records. | Before using their clauses as requirements or claiming full corpus discovery. |
 | SRC-04 | Read required repertoire/slot/progression tables and source-conflicting clauses for the selected vocabulary, including illusion/Wish exceptions. | Before implementation needs an unknown table/exception; no global fidelity audit prerequisite. |
+
+Local Foundry PHB/MM donors have now been inventoried for descriptions,
+progression, spell lists and structured actions; consult the
+[Foundry adoption plan](foundry-adoption.md) before repeating a source search.
+This changes where SRC-01/SRC-03/SRC-04 can obtain selected inputs, not their
+completion status or the rules authority. SRC-02 is only helped for records
+actually present; PHB/MM are not a complete magic-item source. Offline
+conversion and map ingestion remain outside this capability denominator.
+Future wall/crossing integration aligns with S-179/S-184/S-185/S-190 without
+accepting or enlarging those rows here. No accepted slice is reopened merely
+because another source format or broader consumer becomes available.
 
 A new distinct requirement gets a V-series entry or a precise refinement, then
 its own S-ID only if existing rows cannot express its finish line. Missing

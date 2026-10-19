@@ -4,6 +4,8 @@ class_name AbilityScores
 extends RefCounted
 
 ## The six ability scores.
+var projection_owner: WeakRef
+
 var strength: int = 10
 var dexterity: int = 10
 var constitution: int = 10
@@ -38,6 +40,12 @@ func get_ability_modifier(ability: String) -> int:
 
 ## Get a score by ability name (case-insensitive).
 func get_score(ability: String) -> int:
+	var permanent := get_permanent_score(ability)
+	var actor: Character = projection_owner.get_ref() if projection_owner!=null else null
+	return ProtectionRules.score(actor, ability.to_upper().left(3), permanent) if actor!=null else permanent
+
+
+func get_permanent_score(ability: String) -> int:
 	match ability.to_upper():
 		"STR", "STRENGTH":
 			return strength
@@ -80,7 +88,7 @@ func set_score(ability: String, value: int) -> void:
 func apply_racial_bonuses(race_data: Dictionary) -> void:
 	var bonuses: Dictionary = race_data.get("ability_bonuses", {})
 	for ability in bonuses:
-		var current := get_score(ability)
+		var current := get_permanent_score(ability)
 		set_score(ability, current + int(bonuses[ability]))
 
 

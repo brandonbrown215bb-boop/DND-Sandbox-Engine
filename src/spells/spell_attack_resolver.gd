@@ -8,7 +8,7 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 	if tracks_resolution_windows:
 		SpellDamageRolls.begin_resolution_occurrence(cast, "spell_attack")
 		SpellDamageRolls.record_resolution_window(cast, "before_roll")
-	var spell_stat := cast.caster.get_spellcasting_ability()
+	var spell_stat := SpellPermissionRules.selected_ability(cast.spell, cast.caster.get_spellcasting_ability())
 	var spell_attack_distance := maxi(0, cast.distance_feet)
 	var fog_obscures_attack := CombatAction.has_condition(cast.caster, "fog_cloud_obscured") or CombatAction.has_condition(cast.target, "fog_cloud_obscured") or CombatAction.has_condition(cast.caster, "darkness_obscured") or CombatAction.has_condition(cast.target, "darkness_obscured")
 	var spell_attack_advantage := FighterRules.attack_advantage(cast.caster, cast.target) or CombatAction.has_condition(cast.target, "restrained") or SpellEffects.has_spell(cast.target, "faerie_fire") or fog_obscures_attack or cast.caster.has_condition("innate_sorcery") or CombatAction.is_unconscious(cast.target) or CombatAction.is_paralyzed(cast.target)
@@ -88,7 +88,7 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 	if SharedSpell.uses(cast.spell) and SpellDamageRolls.has_attack_bonus_choice_host(cast.decisions):
 		var allow_numeric_bonus := not is_hit and not bool(attack_result.get("is_miss", false)) and not is_crit and int(attack_result.get("natural", 0)) != 1
 		var allow_hit_adjustments := is_hit and not is_crit and not bool(attack_result.get("is_miss", false))
-		var bonus_options := SpellDamageRolls.attack_choice_options(cast.caster, "shared_spell_attack", is_hit, allow_numeric_bonus, allow_hit_adjustments)
+		var bonus_options := SpellDamageRolls.attack_choice_options(cast.caster, "shared_spell_attack", is_hit, allow_numeric_bonus, allow_hit_adjustments, attack_result, spell_stat, target_ac, str(cast.spell.get("id", "")))
 		if not bonus_options.is_empty():
 			var captured := {
 				"attack_result": attack_result.duplicate(true), "original_target_ac": target_ac,
@@ -111,7 +111,7 @@ static func resume_numeric_bonus(record: Dictionary, selected: Dictionary) -> Di
 	if cast == null:
 		return {"success": false, "refused": true, "message": "The captured spell attack is no longer available."}
 	var attack_result: Dictionary = captured.get("attack_result", {}).duplicate(true)
-	if not selected.is_empty() and str(selected.get("resolution", "")) not in ["outcome_override", "attack_total_adjustment", "defending_ac_adjustment"]:
+	if not selected.is_empty() and str(selected.get("resolution", "")) not in ["outcome_override", "attack_total_adjustment", "defending_ac_adjustment", "test_reroll"]:
 		var bonus := int(selected.get("bonus_amount", selected.get("amount", 0)))
 		attack_result["total"] = int(attack_result.get("total", 0)) + bonus
 		attack_result["post_roll_bonus"] = bonus
@@ -132,6 +132,7 @@ static func resume_numeric_bonus(record: Dictionary, selected: Dictionary) -> Di
 
 static func _finish_attack(cast: SpellResolutionContext, attack_result: Dictionary, original_target_ac: int, spell_attack_advantage: bool, spell_attack_disadvantage: bool, reaction_msg: String, seeking_spell_used: bool, stroke_of_luck_used: bool, selected_bonus: Dictionary) -> Dictionary:
 	var tracks_resolution_windows := SharedSpell.uses(cast.spell)
+	cast.decisions["_shared_component_id"] = str(cast.spell.get("component_id", "%s:1" % str(cast.spell.get("damage_type", "fire"))))
 	var original_attack_result: Dictionary = attack_result.duplicate(true)
 	var target_ac := original_target_ac
 	if str(selected_bonus.get("resolution", "")) == "outcome_override":
@@ -150,11 +151,10 @@ static func _finish_attack(cast: SpellResolutionContext, attack_result: Dictiona
 	# Shield can be cast even when the triggering attack is a critical hit;
 	# the Reaction still raises AC against any later attacks this turn.
 	if is_hit and cast.target is Character:
-		if cast.target.reaction_available and "shield" in cast.target.known_spells and cast.target.spell_slots.get("1", 0) > 0 and CombatAction._reaction_accepted("shield", cast.decisions):
-			cast.target.reaction_available = false
-			cast.target.spell_slots["1"] -= 1
+		var shield_payment := SpellPermissionRules.spend_reaction(cast.target, "shield", cast.decisions) if cast.target.reaction_available and CombatAction._reaction_accepted("shield", cast.decisions) else {}
+		if not shield_payment.is_empty():
 			cast.target.add_condition("shield", 1)
-			var ward_events := WardRules.on_slot_spell_cast(cast.target, DataLoader.get_spell("shield"), 1)
+			var ward_events: Array = shield_payment.get("ward_events", [])
 			target_ac = cast.target.get_ac()
 			is_hit = is_crit or attack_result["total"] >= target_ac
 			reaction_msg = "[color=cyan]%s casts Shield as a reaction! AC increases to %d.[/color]\n" % [cast.target.character_name, target_ac]
@@ -178,16 +178,24 @@ static func _finish_attack(cast: SpellResolutionContext, attack_result: Dictiona
 		target_ac = int(adjusted.get("target_ac", target_ac))
 		is_hit = is_crit or (not bool(attack_result.get("is_miss", false)) and int(attack_result.get("total", 0)) >= target_ac)
 	var adjustment_cost_paid := false
-	if not selected_bonus.is_empty():
+	var selected_payment_receipt: Dictionary = {}
+	if not selected_bonus.is_empty() and str(selected_bonus.get("resolution", "")) != "test_reroll":
 		var payment_policy := "pay_on_choice" if str(selected_bonus.get("resolution", "")) == "outcome_override" else str(selected_bonus.get("payment_policy", "pay_on_choice"))
 		if payment_policy not in SpellDamageRolls.FAILED_SAVE_BONUS_PAYMENT_POLICIES:
 			return {"success": false, "refused": true, "message": "The selected attack bonus policy is unsupported."}
-		if payment_policy == "pay_on_choice" or is_hit:
-			var payment := ResourcePoolRules.spend(cast.caster, str(selected_bonus.get("source_instance_id", "")), int(selected_bonus.get("cost", 0)))
-			if not bool(payment.get("success", false)):
-				return {"success": false, "refused": true, "message": str(payment.get("message", "The selected attack source cannot pay."))}
-			adjustment_cost_paid = true
-	var adjustment_receipt := SpellDamageRolls.attack_adjustment_receipt(selected_bonus, original_attack_result, original_target_ac, attack_result, target_ac, is_hit, is_crit, adjustment_cost_paid, {"domain": "shared_spell_attack", "ability": cast.caster.get_spellcasting_ability(), "spell_id": str(cast.spell.get("id", "")), "advantage": spell_attack_advantage, "disadvantage": spell_attack_disadvantage})
+		var payment_selection := selected_bonus.duplicate(true)
+		payment_selection["payment_policy"] = payment_policy
+		var payment_reservation := SpellDamageRolls.begin_selected_payment(cast.caster, payment_selection)
+		if not bool(payment_reservation.get("success", false)):
+			return {"success": false, "refused": true, "message": str(payment_reservation.get("message", "The selected attack source cannot reserve its payment."))}
+		var payment := SpellDamageRolls.finish_selected_payment(cast.caster, payment_selection, is_hit, str(payment_reservation.get("reservation_id", "")))
+		if not bool(payment.get("success", false)):
+			return {"success": false, "refused": true, "message": str(payment.get("message", "The selected attack source cannot pay."))}
+		selected_payment_receipt = payment
+		adjustment_cost_paid = str(payment.get("state", "")) == "committed"
+	if cast.spatial_host != null and cast.spatial_host.action_history != null:
+		cast.spatial_host.action_history.record_attack(cast.caster, cast.target)
+	var adjustment_receipt := SpellDamageRolls.attack_adjustment_receipt(selected_bonus, original_attack_result, original_target_ac, attack_result, target_ac, is_hit, is_crit, adjustment_cost_paid, {"domain": "shared_spell_attack", "ability": SpellPermissionRules.selected_ability(cast.spell, cast.caster.get_spellcasting_ability()), "spell_id": str(cast.spell.get("id", "")), "advantage": spell_attack_advantage, "disadvantage": spell_attack_disadvantage})
 	var token_replaced := bool(attack_result.get("roll_token_replaced", false))
 	var token_id := str(attack_result.get("roll_token_id", ""))
 	var token_value := int(attack_result.get("roll_token_value", 0))
@@ -199,6 +207,8 @@ static func _finish_attack(cast: SpellResolutionContext, attack_result: Dictiona
 			"numeric_margin": int(attack_result["total"]) - target_ac,
 			"attack_target_ac": target_ac,
 		}
+	if attack_result.get("post_roll_reroll", {}) is Dictionary and not attack_result.get("post_roll_reroll", {}).is_empty():
+		numeric_margin_fields["post_roll_reroll"] = attack_result["post_roll_reroll"].duplicate(true)
 	if not is_hit:
 		FighterRules.record_miss(cast.caster, cast.target)
 		if (cast.spell.has("miss_damage_scale") or cast.spell.has("damage_scale_by_outcome")) and cast.spell.has("damage"):
@@ -216,7 +226,7 @@ static func _finish_attack(cast: SpellResolutionContext, attack_result: Dictiona
 				if not miss_override_receipt.is_empty(): miss_window_fields["roll_outcome_override"] = miss_override_receipt
 				SpellDamageRolls.record_resolution_window(cast, "pre_damage", miss_window_fields)
 			var miss_damage_str := SpellDamageRolls.spell_damage_formula(cast.caster, cast.spell, cast.slot_level)
-			var miss_damage_details := SpellDamageRolls._roll_spell_damage(cast.caster, miss_damage_str, 1, cast.decisions)
+			var miss_damage_details := SpellDamageRolls._roll_spell_damage(cast.caster, miss_damage_str, 1, cast.decisions, cast.spell.get("damage_dice_policy", {}))
 			var miss_base := {
 				"success": true, "hit": false, "slot_level": cast.slot_level,
 				"attack_roll": int(attack_result.get("total", 0)),
@@ -228,6 +238,7 @@ static func _finish_attack(cast: SpellResolutionContext, attack_result: Dictiona
 			}
 			for field in numeric_margin_fields: miss_base[field] = numeric_margin_fields[field]
 			if not selected_bonus.is_empty():
+				miss_base["selected_payment"] = selected_payment_receipt.duplicate(true)
 				if not adjustment_receipt.is_empty():
 					miss_base["attack_adjustment_receipt"] = adjustment_receipt.duplicate(true)
 					miss_base["original_attack_result"] = original_attack_result.duplicate(true)
@@ -236,7 +247,7 @@ static func _finish_attack(cast: SpellResolutionContext, attack_result: Dictiona
 					_apply_outcome_override_metadata(miss_base, selected_bonus)
 				else:
 					_apply_post_roll_bonus_metadata(miss_base, selected_bonus)
-					miss_base["post_roll_bonus_paid"] = str(selected_bonus.get("payment_policy", "pay_on_choice")) == "pay_on_choice"
+					miss_base["post_roll_bonus_paid"] = adjustment_cost_paid
 			if token_replaced:
 				miss_base["roll_token_id"] = token_id
 				miss_base["roll_token_value"] = token_value
@@ -244,10 +255,11 @@ static func _finish_attack(cast: SpellResolutionContext, attack_result: Dictiona
 				miss_base["_resolution_context"] = cast
 			var miss_scale := SharedSpell.authored_damage_scale(cast.spell, "miss", float(cast.spell.get("miss_damage_scale", 0.0)))
 			SharedSpell.record_damage_scale(miss_base, cast.spell, "miss", miss_scale)
-			return SpellDamageRolls._finish_spell_damage(cast.caster, cast.target, miss_damage_details, CombatAction.spell_damage_bonus(cast.caster, cast.spell), miss_scale, str(cast.spell.get("damage_type", "fire")), cast.decisions, miss_base)
+			return SpellDamageRolls._finish_spell_damage(cast.caster, cast.target, miss_damage_details, CombatAction.spell_damage_bonus(cast.caster, cast.spell), miss_scale, str(cast.spell.get("damage_type", "fire")), cast.decisions, miss_base, 1, [], cast.spell.get("damage_reductions", []), cast.spell.get("damage_bypasses", []))
 		var miss_out := {"success": true, "hit": false, "slot_level": cast.slot_level, "attack_roll": attack_result["total"], "attack_advantage": spell_attack_advantage, "attack_disadvantage": spell_attack_disadvantage, "metamagic_used": seeking_spell_used, "stroke_of_luck_used": stroke_of_luck_used, "roll_token_replaced": token_replaced, "message": reaction_msg + "Spell missed! Ranged spell attack %d vs AC %d" % [attack_result["total"], target_ac]}
 		for field in numeric_margin_fields: miss_out[field] = numeric_margin_fields[field]
 		if not selected_bonus.is_empty():
+			miss_out["selected_payment"] = selected_payment_receipt.duplicate(true)
 			if not adjustment_receipt.is_empty():
 				miss_out["attack_adjustment_receipt"] = adjustment_receipt.duplicate(true)
 				miss_out["original_attack_result"] = original_attack_result.duplicate(true)
@@ -256,7 +268,7 @@ static func _finish_attack(cast: SpellResolutionContext, attack_result: Dictiona
 				_apply_outcome_override_metadata(miss_out, selected_bonus)
 			else:
 				_apply_post_roll_bonus_metadata(miss_out, selected_bonus)
-				miss_out["post_roll_bonus_paid"] = str(selected_bonus.get("payment_policy", "pay_on_choice")) == "pay_on_choice"
+				miss_out["post_roll_bonus_paid"] = adjustment_cost_paid
 		if tracks_resolution_windows and not adjustment_receipt.is_empty():
 			# This branch has no damage roll, so it never reaches _finish_spell_damage,
 			# which normally publishes the settled pre-damage receipt. Keep the
@@ -293,7 +305,7 @@ static func _finish_attack(cast: SpellResolutionContext, attack_result: Dictiona
 	var damage_type: String = cast.spell.get("damage_type", "fire")
 	var is_sorcerous_burst := str(cast.spell.get("id", "")) == "sorcerous_burst"
 	var rolled_damage_formula := "%s + %s" % [damage_str, damage_str] if bool(attack_result["is_crit"]) else damage_str
-	var damage_details := SpellDamageRolls._roll_sorcerous_burst_damage(cast.caster, rolled_damage_formula, int(cast.spell.get("explode_on_max", 8)), str(cast.spell.get("maximum_bonus_dice_ability", "CHA"))) if is_sorcerous_burst else SpellDamageRolls._roll_spell_damage(cast.caster, damage_str, 2 if attack_result["is_crit"] else 1, cast.decisions)
+	var damage_details := SpellDamageRolls._roll_sorcerous_burst_damage(cast.caster, rolled_damage_formula, int(cast.spell.get("explode_on_max", 8)), str(cast.spell.get("maximum_bonus_dice_ability", "CHA"))) if is_sorcerous_burst else SpellDamageRolls._roll_spell_damage(cast.caster, damage_str, 2 if attack_result["is_crit"] else 1, cast.decisions, cast.spell.get("damage_dice_policy", {}))
 	var authored_scale := SharedSpell.authored_damage_scale(cast.spell, "hit", 1.0)
 	var damage_scale := authored_scale
 
@@ -303,6 +315,7 @@ static func _finish_attack(cast: SpellResolutionContext, attack_result: Dictiona
 		damage_scale *= 0.5
 		reaction_msg += "[color=cyan]%s uses Uncanny Dodge as a reaction to halve incoming damage![/color]\n" % cast.target.character_name
 	var attack_critical := bool(attack_result["is_crit"]) or ((CombatAction.is_unconscious(cast.target) or CombatAction.is_paralyzed(cast.target)) and int(cast.spell.get("range", 6)) <= 1)
+	cast.decisions["damage_result_multiplier"] = cast.spell.get("damage_result_multiplier", {})
 	var attack_damage_packets := CombatAction._roll_attack_damage_packets(cast.caster, cast.spell.get("_conjure_minor_elementals_bonus_packets", []), [attack_critical])
 	cast.decisions["damage_is_critical"] = attack_critical
 	cast.decisions["critical"] = attack_critical
@@ -320,6 +333,7 @@ static func _finish_attack(cast: SpellResolutionContext, attack_result: Dictiona
 	if tracks_resolution_windows:
 		hit_base["_resolution_context"] = cast
 	if not selected_bonus.is_empty():
+		hit_base["selected_payment"] = selected_payment_receipt.duplicate(true)
 		if not adjustment_receipt.is_empty():
 			hit_base["attack_adjustment_receipt"] = adjustment_receipt.duplicate(true)
 			hit_base["original_attack_result"] = original_attack_result.duplicate(true)
@@ -328,11 +342,11 @@ static func _finish_attack(cast: SpellResolutionContext, attack_result: Dictiona
 			_apply_outcome_override_metadata(hit_base, selected_bonus)
 		else:
 			_apply_post_roll_bonus_metadata(hit_base, selected_bonus)
-			hit_base["post_roll_bonus_paid"] = true
+			hit_base["post_roll_bonus_paid"] = adjustment_cost_paid
 	if token_replaced:
 		hit_base["roll_token_id"] = token_id
 		hit_base["roll_token_value"] = token_value
-	var res := SpellDamageRolls._finish_spell_damage(cast.caster, cast.target, damage_details, CombatAction.spell_damage_bonus(cast.caster, cast.spell), damage_scale, damage_type, cast.decisions, hit_base, 1, attack_damage_packets)
+	var res := SpellDamageRolls._finish_spell_damage(cast.caster, cast.target, damage_details, CombatAction.spell_damage_bonus(cast.caster, cast.spell), damage_scale, damage_type, cast.decisions, hit_base, 1, attack_damage_packets, cast.spell.get("damage_reductions", []), cast.spell.get("damage_bypasses", []))
 	cast.decisions.erase("damage_is_critical")
 	cast.decisions.erase("critical")
 	return res
@@ -343,6 +357,7 @@ static func _apply_post_roll_bonus_metadata(result: Dictionary, selected_bonus: 
 	result["post_roll_bonus_source"] = str(selected_bonus.get("source_instance_id", ""))
 	if selected_bonus.get("bonus_roll", {}) is Dictionary and not selected_bonus.get("bonus_roll", {}).is_empty():
 		result["post_roll_bonus_die"] = selected_bonus["bonus_roll"].duplicate(true)
+		result["formula_source_die"] = {"source_instance_id":str(selected_bonus.get("source_instance_id", "")), "owner_id":str(selected_bonus.get("source_owner_id", "")), "pool_definition_id":str(selected_bonus.get("pool_definition_id", "")), "sides":int(selected_bonus.bonus_roll.get("sides", 0)), "face":int(selected_bonus.bonus_roll.get("total", 0))}
 
 
 static func _apply_outcome_override_metadata(result: Dictionary, selected: Dictionary) -> void:

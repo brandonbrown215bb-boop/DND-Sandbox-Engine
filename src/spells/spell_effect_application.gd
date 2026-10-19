@@ -3,6 +3,7 @@ class_name SpellEffectApplication
 extends RefCounted
 
 static func apply(cast: SpellCastContext, p_target: Character = null, m_target: Dictionary = {}, spell_data: Dictionary = {}, origin: Vector2i = Vector2i.ZERO, target_coord: Vector2i = Vector2i.ZERO, resolution: Dictionary = {}) -> void:
+	if bool(resolution.get("recipient_negated", false)): return
 	if SharedSpell.uses(spell_data):
 		SharedSpell.apply(cast.caster, p_target if p_target != null else m_target, spell_data, resolution)
 		await _apply_repelling_blast(cast, m_target, spell_data, origin, resolution)
@@ -217,14 +218,14 @@ static func _apply_payloads(cast: SpellCastContext, p_target: Character = null, 
 					cast.hud.add_log("[color=red]%s is disintegrated into gray dust.[/color]" % m_target.get("name", "Target"))
 			"heal", "heal_self", "temporary_hp", "reduce_speed", "vision_bonus":
 				if p_target != null:
-					for result in EventResolver.apply_effects(p_target, [effect], cast.caster):
+					for result in EventResolver.apply_effects(p_target, [effect], cast.caster, SpellPermissionRules.selected_ability(cast.spell, cast.caster.get_spellcasting_ability())):
 						cast.hud.add_log(result.get("message", ""))
 				elif not m_target.is_empty() and type == "heal":
 					var healing_formula := str(effect.get("value", "0"))
 					var healing_request := Dice.parse_dice_string(healing_formula, {}, cast.caster)
 					healing_request = SpellEffects.maximize_healing(m_target, healing_request, Dice.maximum_dice_string(healing_formula))
 					if bool(effect.get("ability_bonus_from_caster", false)):
-						healing_request += cast.caster.ability_scores.get_ability_modifier(cast.caster.get_spellcasting_ability())
+						healing_request += cast.caster.ability_scores.get_ability_modifier(SpellPermissionRules.selected_ability(cast.spell, cast.caster.get_spellcasting_ability()))
 					var healing := 0
 					if not CombatAction.is_healing_suppressed(m_target):
 						healing = mini(maxi(0, healing_request), maxi(0, int(m_target.get("max_hp", 0)) - int(m_target.get("current_hp", 0))))

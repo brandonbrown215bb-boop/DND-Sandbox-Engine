@@ -36,5 +36,43 @@
         }
       ]
     }
+  },
+  {
+    "id": "fixture:save_bonus_final_success_class",
+    "name": "Fixture Final Success Payment",
+    "hit_die": "d8",
+    "primary_ability": "CON",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:save_bonus_final_success",
+          "name": "Commit on the Final Success",
+          "type": "passive",
+          "resource_pool": { "id": "fixture:save_bonus_final_success_pool", "capacity_formula": 2, "initial_quantity": 2 },
+          "passive_effects": [
+            { "type": "failed_save_numeric_bonus", "ability": "CON", "amount": 7, "cost": 1, "payment_policy": "pay_on_final_success" }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "fixture:save_bonus_final_failure_class",
+    "name": "Fixture Final Failure Payment",
+    "hit_die": "d8",
+    "primary_ability": "CON",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:save_bonus_final_failure",
+          "name": "Commit on the Final Failure",
+          "type": "passive",
+          "resource_pool": { "id": "fixture:save_bonus_final_failure_pool", "capacity_formula": 4, "initial_quantity": 4 },
+          "passive_effects": [
+            { "type": "failed_save_numeric_bonus", "ability": "CON", "amount": 7, "cost": 2, "payment_policy": "pay_on_final_failure" }
+          ]
+        }
+      ]
+    }
   }
 ]

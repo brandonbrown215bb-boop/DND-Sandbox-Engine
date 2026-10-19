@@ -1,0 +1,174 @@
+[
+  {
+    "id": "fixture:m_class_plain",
+    "name": "Captured Dice plain",
+    "hit_die": "d8",
+    "primary_ability": "WIS",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:m_dice_plain",
+          "name": "Captured Dice plain",
+          "executor": "class_feature",
+          "type": "active",
+          "target": "self",
+          "action_cost": "bonus_action",
+          "resource_pool": {
+            "id": "fixture:m_pool_plain",
+            "capacity_formula": {
+              "op": "progression_lookup",
+              "input": {
+                "caster_class_level": "wizard"
+              },
+              "value_type": "number",
+              "below_first": "unavailable",
+              "breakpoints": [
+                {
+                  "threshold": 1,
+                  "value": 3
+                },
+                {
+                  "threshold": 3,
+                  "value": 5
+                },
+                {
+                  "threshold": 5,
+                  "value": 7
+                }
+              ]
+            },
+            "initial_quantity": 3,
+            "die_size": {
+              "op": "progression_lookup",
+              "input": {
+                "caster_class_level": "wizard"
+              },
+              "value_type": "die_size",
+              "below_first": "unavailable",
+              "breakpoints": [
+                {
+                  "threshold": 1,
+                  "value": 4
+                },
+                {
+                  "threshold": 3,
+                  "value": 8
+                },
+                {
+                  "threshold": 5,
+                  "value": 12
+                }
+              ]
+            },
+            "spend_choice": {
+              "minimum": 1,
+              "maximum": 3
+            },
+            "recovery": {
+              "long_rest_completed": {
+                "mode": "restore_to_capacity"
+              },
+              "short_rest_completed": {
+                "mode": "restore_fixed",
+                "amount": 1
+              }
+            },
+            "capture_policy": "on_acquire",
+            "upgrade_policy": "new_dice_only"
+          },
+          "effects": [
+            {
+              "type": "heal_by_pool_rolls"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "fixture:m_class_changed",
+    "name": "Captured Dice changed",
+    "hit_die": "d8",
+    "primary_ability": "WIS",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:m_dice_changed",
+          "name": "Captured Dice changed",
+          "executor": "class_feature",
+          "type": "active",
+          "target": "self",
+          "action_cost": "bonus_action",
+          "resource_pool": {
+            "id": "fixture:m_pool_changed",
+            "capacity_formula": {
+              "op": "progression_lookup",
+              "input": {
+                "caster_class_level": "wizard"
+              },
+              "value_type": "number",
+              "below_first": "unavailable",
+              "breakpoints": [
+                {
+                  "threshold": 1,
+                  "value": 3
+                },
+                {
+                  "threshold": 3,
+                  "value": 5
+                },
+                {
+                  "threshold": 5,
+                  "value": 7
+                }
+              ]
+            },
+            "initial_quantity": 3,
+            "die_size": {
+              "op": "progression_lookup",
+              "input": {
+                "caster_class_level": "wizard"
+              },
+              "value_type": "die_size",
+              "below_first": "unavailable",
+              "breakpoints": [
+                {
+                  "threshold": 1,
+                  "value": 6
+                },
+                {
+                  "threshold": 3,
+                  "value": 10
+                },
+                {
+                  "threshold": 5,
+                  "value": 20
+                }
+              ]
+            },
+            "spend_choice": {
+              "minimum": 1,
+              "maximum": 3
+            },
+            "recovery": {
+              "long_rest_completed": {
+                "mode": "restore_to_capacity"
+              },
+              "short_rest_completed": {
+                "mode": "restore_fixed",
+                "amount": 1
+              }
+            },
+            "capture_policy": "on_acquire",
+            "upgrade_policy": "new_dice_only"
+          },
+          "effects": [
+            {
+              "type": "heal_by_pool_rolls"
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

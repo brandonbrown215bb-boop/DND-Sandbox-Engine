@@ -1,0 +1,21 @@
+[
+  {
+    "id": "fixture:021_ring",
+    "name": "Practice Ring",
+    "type": "ring",
+    "magical": true,
+    "maximum_charges": 3,
+    "requires_attunement": true,
+    "spell_permissions": [
+      {
+        "spells": [
+          "fixture:021_shared0"
+        ],
+        "ability": "INT",
+        "charges": 1,
+        "maximum_spell_level": 1,
+        "allowed_components": []
+      }
+    ]
+  }
+]

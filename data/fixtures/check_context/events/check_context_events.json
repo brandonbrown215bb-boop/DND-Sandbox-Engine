@@ -3,6 +3,25 @@
   "terrain_type": "plains",
   "events": [
     {
+      "id": "fixture:chosen_reroll_event",
+      "name": "Choose the Better Reading",
+      "weight": 1,
+      "type": "skill_check",
+      "check": {
+        "id": "chosen_reroll_check",
+        "ability": "WIS",
+        "skill": "Nature",
+        "dc": 14,
+        "check_context": {
+          "task_id": "choose_reroll",
+          "purpose_id": "choose_old_new",
+          "required_tool_id": "fixture:field_guide"
+        }
+      },
+      "success": {"description": "The naturalist keeps the useful reading.", "effects": [{"type": "gold", "value": 1}]},
+      "failure": {"description": "The reading remains uncertain.", "effects": [{"type": "gold", "value": 1}]}
+    },
+    {
       "id": "fixture:survey_map_event",
       "name": "Old Survey Map",
       "weight": 1,

@@ -1,0 +1,144 @@
+{
+  "id": "fixture:018_plain",
+  "name": "018 plain",
+  "description": "Neutral permanent progression consumer.",
+  "hit_die": "d8",
+  "primary_ability": "CON",
+  "permanent_progression": {
+    "starting": [
+      {
+        "type": "proficiency_grant",
+        "skill_proficiencies": [
+          "Stealth"
+        ],
+        "expertise": [
+          "Stealth"
+        ],
+        "weapon_proficiencies": [
+          "martial"
+        ],
+        "armor_proficiencies": [
+          "heavy"
+        ],
+        "saving_throw_proficiencies": [
+          "WIS"
+        ]
+      },
+      {
+        "type": "equipment_grant",
+        "item_id": "dagger",
+        "quantity": 1
+      }
+    ],
+    "multiclass": [
+      {
+        "type": "proficiency_grant",
+        "skill_proficiencies": [
+          "Nature"
+        ],
+        "armor_proficiencies": [
+          "light"
+        ]
+      },
+      {
+        "type": "equipment_grant",
+        "item_id": "quarterstaff",
+        "quantity": 2
+      }
+    ],
+    "level_hit_points": 5,
+    "levels": [
+      {
+        "id": "class_two",
+        "basis": "class",
+        "at": 2,
+        "grants": [
+          {
+            "type": "ability_delta",
+            "ability": "CON",
+            "amount": 2,
+            "maximum": 20
+          },
+          {
+            "type": "max_hp_delta",
+            "amount": 2
+          }
+        ]
+      },
+      {
+        "id": "character_three",
+        "basis": "character",
+        "at": 3,
+        "grants": [
+          {
+            "type": "proficiency_grant",
+            "skill_proficiencies": [
+              "History"
+            ]
+          },
+          {
+            "type": "max_hp_delta",
+            "amount": 3
+          }
+        ]
+      },
+      {
+        "id": "class_three",
+        "basis": "class",
+        "at": 3,
+        "grants": [
+          {
+            "type": "equipment_grant",
+            "item_id": "dagger",
+            "quantity": 1
+          }
+        ]
+      }
+    ]
+  },
+  "features_by_level": {
+    "1": [
+      {
+        "id": "fixture:018_choice_plain",
+        "name": "Permanent overlap choice",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "feature_choice",
+            "count": 1,
+            "allow_replacement": true,
+            "options": [
+              {
+                "id": "overlap",
+                "name": "Overlap",
+                "effects": [
+                  {
+                    "type": "proficiency_grant",
+                    "skill_proficiencies": [
+                      "Stealth"
+                    ],
+                    "armor_proficiencies": [
+                      "heavy"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "other",
+                "name": "Other",
+                "effects": [
+                  {
+                    "type": "proficiency_grant",
+                    "skill_proficiencies": [
+                      "Survival"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

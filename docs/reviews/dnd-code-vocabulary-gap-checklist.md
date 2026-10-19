@@ -25,7 +25,7 @@ The target is the current 2024 shared-runtime direction in [ADR-0018](../decisio
 
 ## Checked subsets and bounded implementation
 
-VS-01–36 are accepted subsets from the selected P1/P2/P3 batches. The
+VS-01–38 are accepted subsets from the selected P1/P2/P3 batches. The
 [2026-10-14 review and repairs](slice-acceptance-2026-10-14.md) reconfirmed
 S-025, restored VS-30 and accepted repaired S-041 as VS-31.
 [Batch B review](../../.artifacts/planning/vocabulary-reports/batch-B-review.md)
@@ -95,9 +95,8 @@ is still open.
   Same-source removal/reacquisition retains the lock, while source and option
   identities remain independent. Misses, failed eligibility, empty pools and
   locked options preserve the base attack and spend no additional use. UI target
-  selection, an own-turn-only eligibility restriction, round/roll/active-instance
-  scopes and general subscriptions
-  remain open. Earlier combat-turn evidence:
+  selection and general subscriptions remain open. VS-54/55 extend own-turn,
+  round/roll/active-instance scopes below. Earlier combat-turn evidence:
   [rider scenario](../../.artifacts/tests/31bbd8579b194f46b3589b20a6b96517/shared_combat_use_limits_flow.stdout.log).
   Owner-interval production evidence:
   [focused scenario](../../.artifacts/tests/9973f2cacd994a55872977a7977104af/shared_combat_use_limits_flow.stdout.log);
@@ -648,6 +647,662 @@ V-series parents retain their uncovered boundaries.
   broader V-002 remain open. [Separate validation](../../.artifacts/planning/vocabulary-reports/S-026-validation.md);
   [actual controls and gates](../../.artifacts/tests/0d5e70835a3d452f865c05e32d30a079/).
 
+- [x] **VS-37 — Live located distance predicates (`S-027`, bounded `V-002`).**
+  Loaded neutral actor-relative and renamed source-relative consumers execute
+  through the real combat spell picker/target route. Axial center distance is
+  measured in feet at 5 per hex, including exact 10-foot equality. Moving the
+  actual target or exact placed zone changes eligibility; removing the zone is
+  unavailable. Two same-definition actors/sources retain distinct endpoints.
+  An existing save-choice pause proves subsequent predicates use live caster
+  position, while settled effects remain once-only. Copied/removed actors cannot
+  borrow old combat/room positions. Room lookup requires the current active
+  party Character and has focused owner checks, not new room UI acceptance.
+  The located-source fixture binds an existing zone through the internal cast
+  adapter; arbitrary source selection, auras, elevation/path/footprint distance,
+  movement and LOS operations remain open.
+  [Independent review](../../.artifacts/planning/vocabulary-reports/batch-D-review.md);
+  [actor/source controls](../../.artifacts/tests/0dbbdd7308fa4fb19050d062172eff2d/shared_distance_predicate_flow.stdout.log);
+  [paused live-range controls](../../.artifacts/tests/b40c4f5c2e8642a0a436c67d7a132c0b/s029_save_context_flow.stdout.log).
+
+- [x] **VS-38 — Required senses and causal save context (`S-029`, bounded
+  `V-003`).** Loaded flat and ordered shared-spell saves retain authored
+  cause/purpose/origin-effect and canonical definition/owner/invocation/step
+  receipts. Owned failed-save bonuses match ability plus authored cause/purpose
+  and optional represented see/darkvision. Otherwise identical avoid/end,
+  maintain and ordinary CON controls remain distinct; unknown hearing is
+  unavailable. Darkvision requires usable sight as well as range. The real
+  chooser rechecks live saving-actor position/grid against captured cast origin;
+  changed sense/source, wrong owner, same-ID replacement and replay cannot pay
+  for a different occurrence. Actual ordered controls retain one prelude,
+  original save/DC and cast cost, settle accepted recovery once, and apply the
+  original 5 damage once when lost sight forces decline. No new durable state.
+  EventDialog sensory additions, other roll hosts, Death Saves/concentration
+  choices, general perception and free-text inference remain open.
+  [Independent review](../../.artifacts/planning/vocabulary-reports/batch-D-review.md);
+  [final controls and focused 1131/0 checks](../../.artifacts/tests/b40c4f5c2e8642a0a436c67d7a132c0b/).
+
+- [x] **VS-39 — Round and actor action history (`S-030`, bounded `V-004`).**
+  Shared combat predicates distinguish first round, an actor's active first own
+  turn, committed action and attacked-target history since combat-turn/owner-turn
+  starts. Owner-turn facts are unavailable before that subject has a boundary,
+  including under negation. Late round-two participants retain their own first
+  turn. Cancel/refusal/query do not fabricate events; resolved misses count as
+  attacks. Same-turn resume is idempotent; fresh encounters reset transient state.
+  Actual loaded consumers retain exact recipients and once-only costs/effects.
+  Narrow monster weapon controls additionally verify refused targets, off-turn
+  hit/miss and recording after execution rather than AI intent. Other native
+  commands/attack hosts and durable action history remain open. No new rider-lock
+  or source-pool policy. [Final controls and gates](../../.artifacts/tests/f6c4e731558b41bcbf8a8e032836022f/);
+  [independent review](../../.artifacts/planning/vocabulary-reports/batch-E-review.md).
+
+- [x] **VS-40 — Exact-source damage history (`S-031`, bounded `V-004/006/057`).**
+  Settled Character damage retains exact recipient, causal actor/source and raw,
+  prevented, ward-plus-THP absorbed, pre-THP resolved and capped HP-loss measures.
+  Combat-turn and target owner-turn baselines reset on actual starts. Bounded
+  last-minute history keeps at most 128 source/second buckets, expires at age 60
+  and survives allowed checkpoints with its absolute clock and identities.
+  Direct casts allocate distinct sources; paused completion and replay cannot
+  duplicate settlement. Loaded neutral/renamed controls, immunity/overkill and
+  source/target isolation pass. Two fresh processes and production clock advances
+  verify recovery, 59/60 equality, large jumps and malformed source/quantity/time
+  refusal before live replacement. Dictionary-only/unattributed damage,
+  arbitrary source/interval selectors and broader durable state remain open.
+  [Recovery](../../.artifacts/tests/s031-damage-history-relaunch-a4de2f85c31a4bcc955ba0e3352b141c/);
+  [independent review](../../.artifacts/planning/vocabulary-reports/batch-E-review.md).
+
+- [x] **VS-41 — Explicit settled-result sum/min/max (`S-035`, bounded `V-006`).**
+  Earlier settled attack/save/damage steps select exact runtime targets and
+  typed component IDs once. Sum's empty policy is zero; empty min/max and
+  missing/malformed/unfinished inputs are unavailable. Explicit misses without
+  damage components are known empty selections; actual component zero is a
+  value. Forward/ambiguous selections refuse before ordinary costs. Neutral and
+  renamed actual casts produce different sum/min/max aftermath; the added real
+  area cast selects two same-definition goblins and repeated fire components,
+  excluding 19-point packets. Selected sum 11 rounds once to healing 5, min adds
+  healing 2 and max grants 5 THP. Empowered suspension retains finalized input
+  and once-only history/cost/aftermath through replay refusal. Existing VS-17 sum
+  and VS-33 component absorption semantics remain. General collections remain open; grouped all/any/count is accepted separately
+  as VS-42 below. [1158/0 logic and passing reducer cases](../../.artifacts/tests/bac96b5e3bfe4657a5778535730d0143/)
+  (combined runner's old action fixture failed, then passed separately above);
+  [independent review](../../.artifacts/planning/vocabulary-reports/batch-E-review.md).
+
+- [x] **VS-42 — Completed all/any/count child groups (`S-044`, bounded `V-011`).**
+  Ordered combat shared spells select explicit earlier attack/save steps and
+  exact all/same/cast targets. Every selected step completes before any/count
+  can pass; final flags include supported overrides. Repeated attempts and
+  same-definition actors remain distinct. Empty and skipped policies are explicit;
+  missing/unfinished/wrong-target groups remain unknown under negation. Actual
+  loaded save controls prove count below/at/above, mixed all/any and skipped/empty
+  policies; actual attack/Empowered controls prove suspension, final override,
+  once-only costs/riders and stale/replay/teardown refusal. No durable fields or
+  arbitrary action composition. [Independent acceptance and retained evidence](../../.artifacts/planning/vocabulary-reports/S-044-acceptance-review.md).
+
+- [x] **VS-43 — Source die/number formula inputs and timing (`S-036`, bounded `V-007`).**
+  Exact transient cast inputs bind loaded integer bounds, owner/spell/invocation
+  and captured/live actor parameters. Every number choice precedes parameter
+  capture regardless of declaration order; review reproduced and repaired this
+  timing defect. Actual lower/upper choices heal 2/4, captured WIS stays +1 and
+  live WIS becomes +4 through Empowered damage; cancel/old answers/caller
+  substitution cannot spend or supply a new input. The actual source-die attack
+  consumer retains exact face 7/source/owner after removal, heals 14 once, refuses
+  revalidated THP and repeats queries without RNG/payment. Save receipt code and
+  existing bonus controls were inspected; no separate actual save-to-formula
+  consumer is certified. No transferable dice inventory, new durable fields,
+  progression tables or broad formula hosts. [Independent acceptance, repair and evidence](../../.artifacts/planning/vocabulary-reports/S-036-acceptance-review.md);
+  [final numeric controls/gates](../../.artifacts/tests/917d53e5fbe8475daadd3063d94d888f/).
+
+- [x] **VS-44 — Represented class levels and progression tables (`S-037`, bounded `V-007`).**
+  Optional saved class allocations distinguish each known owned class from total
+  level, proficiency and selected slot. Absent class is zero; malformed allocation
+  is unavailable and invalid saves refuse before live replacement. Declared bounded
+  numeric/die-size rows validate thresholds, supported dice and below-first policy.
+  Actual feature/quantity/command controls roll two independent source dice;
+  capacity growth preserves current, shrink clamps and neither refills nor resets
+  activation serial. Actual spell controls retain captured rows5/7 while live
+  rows become9/11 through later Empowered selection. Review repaired unavailable
+  live-only inputs spending a slot/action; preparation now preflights every
+  parameter before costs without capturing live values. Final actual class-table
+  and numeric controls/gates pass; distinct fresh processes retain allocation and
+  two spent pools, and five malformed full saves refuse. Primary restore is bounded;
+  native leveling refuses explicit allocations. No full native multiclass grants/
+  slots, leveling UI, transferable dice or broad formula hosts.
+  [Independent Batch F review](../../.artifacts/planning/vocabulary-reports/batch-F-review.md);
+  [final controls/gates](../../.artifacts/tests/cba950a9a99b41b6b80be713053392e0/);
+  [fresh-process recovery](../../.artifacts/tests/s037-class-levels-relaunch-9f300cfab84d4205a79debbc85ac3991/).
+
+- [x] **VS-45 — Authored natural-d20 and final-total floors (`S-038`, bounded `V-008`).**
+  Loaded EventDialog ability checks capture actor-formula thresholds and exact
+  owner/definition/instance/effect provenance before RNG. Raw/effective natural,
+  modifiers/bonus dice, native floor stage, pre-floor subtotal, authored uplift and
+  final total remain distinct. Actual controls cover below/equal/above, natural1/20,
+  signed modifiers, no-floor negative totals, Advantage/Disadvantage, independent
+  sources and source removal. Mandatory-new rerolls retain captured thresholds
+  and original receipts after source/stat changes without duplicate RNG/payment.
+  This domain compares total/DC; attack/save floors, critical/outcome overrides
+  and chosen old/new rerolls remain outside it. No new durable state.
+  [Independent Batch G review](../../.artifacts/planning/vocabulary-reports/batch-G-review.md);
+  [36-assertion actual floor controls/gates](../../.artifacts/tests/fea394f5f346441597ea5f630aaceb17/).
+
+- [x] **VS-46 — Legal AC alternatives and permanent-preserving scores (`S-039`, bounded `V-009`).**
+  Typed self-targeted numeric-pool feature protections compare eligible authored
+  base AC with equipment/native AC by maximum, include a legal shield once and
+  apply compatible additions afterward. Fixed set/floor/cap/add score operations
+  project over permanent fields. Actual feature/equipment and monster weapon
+  controls distinguish selected AC19/17 at attack total18, unknown equipment,
+  removal/expiry and original source costs/clocks. Permanent fixed increases stay
+  beneath a temporary setting. Review repaired temporary CON becoming permanent
+  level-up HP and temporary scores changing Epic Boon eligibility/options; seeded
+  progression and actual boon-panel regressions pass. Fresh-process saves retain
+  permanent scores, grants and spent pools; malformed saves refuse before mutation.
+  No item/aura grant host, form AC or temporary-CON HP adjustment is certified.
+  [Independent review/repairs](../../.artifacts/planning/vocabulary-reports/batch-G-review.md);
+  [40-assertion final protection controls/gates](../../.artifacts/tests/4e2b7113085e4e949bc68efb7698fbfe/).
+
+- [x] **VS-47 — Exact recipient choice among overlapping protections (`S-040`, bounded `V-009`).**
+  Declared stack/exclusive groups preserve exact equal-value grants and exclude
+  incompatible benefits across definition IDs. Actual recipient popup chooses an
+  exact still-owned grant for free. Equipment suppression retains preference;
+  selected removal/expiry clears it and falls back to an original eligible source
+  without acquisition, deadline restart or refill. Wrong actor, recipient/source
+  loss, decline, mutated request, old generation, replay and teardown cannot change
+  newer selection. Lasting selection/grants/four spent pools survive distinct
+  fresh processes; pending menus do not. Fourteen malformed full-save cases reject
+  before live replacement. Cross-actor auras and THP replacement remain open.
+  [Independent review and final controls](../../.artifacts/planning/vocabulary-reports/batch-G-review.md);
+  [retained fresh recovery](../../.artifacts/tests/batch-g-relaunch-4dcebe341d684e689b305385bbdd45d4/).
+
+- [x] **VS-48 — Declared old/new EventDialog rerolls (`S-106`, bounded `V-089/V-012`).**
+  Actual loaded event/check controls choose old/new for better/worse replacements,
+  or retain mandatory-new policy. New-test mode and actor-formula bonus capture
+  before payment; full original/replacement receipts retain floor stages, ordinary
+  modifiers and bonus-dice policy. Cancel after dice retains old after one paid
+  replacement. Source loss before purchase settles the original without an invalid
+  keep menu, extra RNG or another consequence. Re-popup/teardown tracks the correct
+  pending decision. No new durable state or another actor's intervention.
+  [Independent review/repairs](../../.artifacts/planning/vocabulary-reports/batch-H-review.md);
+  [final review controls and gates](../../.artifacts/tests/f8b8c3ab7e1b4f8e95566d47d68f106f/).
+
+- [x] **VS-49 — Weapon and shared-spell reroll consumers (`S-225`, bounded `V-089/V-012/V-014`).**
+  Actual normal Attack/Extra Attack, flat/ordered shared attacks and flat/ordered
+  shared saves consume the common captured-test operation. Original AC/DC, fixed
+  bonuses, signed Bless/Bane/Blade Ward dice, pre-roll token facts and weapon
+  critical range survive. Final kept natural controls critical/damage/next-hit
+  aftermath; visible bonus-die receipts use the kept faces. Paid keep stages
+  retain canonical kind/actor/host/current-request ownership through continuation.
+  Real shared-save old/new popups, wrong-kind answers and completed replay checks
+  supplement mandatory-new save controls. Earlier swings/steps, following damage
+  choice and original action/slot/native/source payments settle once. Off-turn,
+  exploration, Death Save and concentration choice hosts remain outside this row.
+  [Review and exact commands](../../.artifacts/planning/vocabulary-reports/batch-H-review.md);
+  [47 review + 41 weapon + 54 shared-attack + 31 map assertions](../../.artifacts/tests/f8b8c3ab7e1b4f8e95566d47d68f106f/).
+
+- [x] **VS-50 — Recipient damage maps and chosen exemptions (`S-099`, bounded `V-015`).**
+  Character-owned success/failure maps match exact shared-save ability/cause/
+  purpose/origin; native Evasion retains priority. Flat shared spells' actual
+  caster popup selects bounded live area recipients. Authority belongs to the
+  exact cast/invocation and recipient objects; forged decisions, copied IDs,
+  replaced recipients, source loss, duplicate selections and another invocation
+  grant no exemption. Same-definition targets retain independent save/damage/
+  rider outcomes. Scaling floors before Resistance/THP; chosen zero damage leaves
+  the original save and independent rider mapping intact. Decline spends only
+  the original cast. No aura, universal Evasion, monster map catalog or ordered-
+  step exemption declaration is certified; new choice state stays transient.
+  [Independent review](../../.artifacts/planning/vocabulary-reports/batch-H-review.md);
+  [final production controls](../../.artifacts/tests/f8b8c3ab7e1b4f8e95566d47d68f106f/).
+
+- [x] **VS-51 — Final-result payment predicates (`S-100`, bounded `V-035`).**
+  Selected exact numeric-pool sources reserve without pre-spending, require upfront
+  funds, commit on declared final success/failure and refund mismatches/cancel.
+  Real save chooser controls verify one-use/two-use costs, both matches and
+  mismatches, captured roll/DC, independent pools and once-only original slot.
+  Source loss/recreation, replay and teardown leave no charge or hidden lock.
+  Shared attack paid flags match actual receipt/pool settlement. Reroll-specific
+  payment predicates, cross-actor budgets and other roll hosts remain open.
+  [Review and evidence](../../.artifacts/planning/vocabulary-reports/batch-I-review.md).
+
+- [x] **VS-52 — Component and whole-occurrence reductions (`S-109`, bounded `V-016`).**
+  Fixed integers/actor-only formulas reduce scaled typed damage before mitigation.
+  Exact component IDs survive flat/ordered attack/save/automatic-damage adapters;
+  occurrence allocation follows authored component order, floors at zero and
+  discards overflow. Raw/prevented/resolved/THP-absorbed/HP-loss stay distinct.
+  Initially unavailable formulas refuse before slots/actions/RNG; canonical pending
+  Empowered requests settle once and refuse wrong occurrence/stale/replay/teardown.
+  Optional paid prevention and other damage hosts remain open.
+  [Review and limits](../../.artifacts/planning/vocabulary-reports/batch-I-review.md).
+
+- [x] **VS-53 — Scoped mitigation bypass (`S-110`, bounded `V-016`).**
+  Exact component/occurrence declarations independently select resistance,
+  immunity, ward and the narrow Sphere prevention gate. Other layers, sibling
+  components, later sources and THP retain normal settlement. Actual casting
+  controls honor the damage-only typed-component save definition through either
+  caster/target Sphere; ordinary spells remain blocked without costs. Pending
+  Empowered policy remains canonical against forged display policy/new occurrences.
+  Flat/other prevention, general monster/world damage and paid bypass remain open.
+  [Independent review](../../.artifacts/planning/vocabulary-reports/batch-I-review.md).
+
+- [x] **VS-54 — Own-turn, round and first-round rider limits (`S-056`, bounded `V-041`, `V-004`).**
+  Numeric-pool weapon-hit riders independently declare own-turn/first-round
+  eligibility and once-per-round limits. Actual initiative supplies the round;
+  extra turns and refreshed action budgets do not unlock an already used option.
+  Real Attack/hex and off-turn controls preserve exact actor/source/option
+  ownership, original Action and pool quantities. Renamed d6 data changes the
+  own-turn policy. Other action hosts and general subscriptions remain open.
+  [Independent review and production controls](../../.artifacts/planning/vocabulary-reports/batch-J-review.md).
+
+- [x] **VS-55 — Actual-roll and active-grant rider limits (`S-057`, bounded `V-041`).**
+  Weapon riders bind actual actor/target objects and settled roll identity with
+  captured weapon/critical profile. Independent exact sources retain separate
+  allowances. Once-per-active-instance consumption belongs to the source's timed
+  AC grant; used options survive allowed fresh-process checkpoints with the
+  original grant/deadline and spent pool. Eight malformed full saves refuse
+  before session replacement. Completed hits, including ineligible hits, cannot
+  consume later grants through replay; new grants require new hits. Other roll
+  hosts and active-effect carriers remain open.
+  [Review, repair and retained recovery evidence](../../.artifacts/planning/vocabulary-reports/batch-J-review.md).
+
+- [x] **VS-56 — Exact-source conditional rider payment waiver (`S-058`, bounded `V-042`).**
+  An owned active timed AC grant can waive its numeric rider's one-use payment
+  for the declared ordinary weapon or Opportunity Attack parent. Actual controls
+  work with an empty owned pool, preserve original Action/Reaction and activation
+  payment, and still consume the option lock. Renamed data changes parent and die;
+  sibling grants cannot waive another source. Payment substitutions, free dice
+  inventory and other budgets/hosts remain open.
+  [Independent review and receipts](../../.artifacts/planning/vocabulary-reports/batch-J-review.md).
+
+- [x] **VS-57 — Filtered progression choice acquisition (`S-045`, bounded `V-025`).**
+  Real ClassTraining selectors acquire the declared count with level, represented
+  class, typed stable actor facts, prerequisites and duplicate/repeatable rules.
+  Pending dependent menus refresh; invalid or replayed choices grant nothing.
+  Loader refuses malformed count/pick/level values and unsupported fact contexts.
+  Neutral and renamed actual controls plus saved predicate/class eligibility
+  and fresh-process multi-pick spell recovery pass.
+  [Repairs, review and evidence](../../.artifacts/planning/vocabulary-reports/batch-K-repairs.md).
+
+- [x] **VS-58 — Safe opt-in progression replacement (`S-046`, bounded `V-025/V-027`).**
+  Proposed selections validate explicit prerequisites and existing trained spell
+  capacity/list dependencies before mutation. Cantrip versus leveled expansions
+  and earned primary features stay distinct. Existing represented independent
+  class/race/permanent/creation/skill/Fighter/active-option sources retain grants.
+  Actual renamed/stale/replayed controls and eight malformed full-save refusal
+  cases pass. General item/cast carriers, mode boundaries and full native
+  multiclass acquisition remain open.
+  [Repairs, review and evidence](../../.artifacts/planning/vocabulary-reports/batch-K-repairs.md).
+
+- [x] **VS-59 — Exact item/cast/progression carriers (`S-049`, bounded `V-027/V-057`).**
+  The same fixed additive AC/walking-speed payload projects from exact equipped
+  copies, passive progression entitlements/selected occurrences and timed flat
+  automatic self-casts. Independent identical definitions retain separate source
+  receipts; stow, replacement, destruction, expiry and concentration cleanup end
+  only the applicable source. Derived stats do not become permanent bonuses.
+  Fresh-process checkpoints retain original identities, payloads, spent slots and
+  remaining time; both player and party DTOs refuse malformed carriers, including
+  concentration pointing at an ordinary sibling cast, before session replacement.
+  [Independent review, repairs and evidence](../../.artifacts/planning/vocabulary-reports/batch-L-review.md).
+
+- [x] **VS-60 — Real source acquisition/removal controls (`S-050`, bounded `V-027`).**
+  Actual Choose/Replace, exact-copy Equip/Stow, ordinary spell selection/casting
+  and exact-cast Dismiss controls use the same owned sources. Stale/wrong-kind
+  commands refuse; original Action/slot costs settle once. Current-turn movement
+  follows acquisition, dismissal and concentration loss without refunding spent
+  distance after exhaustion, mode selection or Dash. Neutral/renamed fixtures
+  change amounts and lifetimes through the same runtime. Fixed duration carriers
+  do not offer unsupported Extended Spell; other recipients, general resource
+  grants, named nonstacking policies, forms and catalog conversion remain open.
+  [Independent review and actual-control receipts](../../.artifacts/planning/vocabulary-reports/batch-L-review.md).
+
+- [x] **VS-61 — Dice-pool progression and captured faces (`S-051`, bounded `V-038/V-007/V-057`).**
+  Opt-in `on_acquire` / `new_dice_only` pools capture distinct owner/source/serial
+  dice even for equal faces. Declared class-level capacity/size tables and explicit
+  recalculation preserve retained faces/sizes without refill; shrink keeps oldest
+  dice and completed rests generate only vacancies with new identities. Actual
+  feature/quantity/command controls cancel without RNG or spend the oldest selected
+  quantity and one authored action using stored faces. Sibling sources survive
+  spending/removal. Numeric reservations/exchanges cannot consume captured dice.
+  Fresh-process checkpoints retain mixed generations and serials without RNG;
+  22 malformed full saves across both DTO paths refuse before session replacement.
+  Retained evidence: 1182/0 class/persistence checks, 69/0 focused assertions
+  (12 actual-control checks), 202-script parse/boot and existing dice/rest controls.
+  Authored class/subclass pools and the existing self-healing consumer only;
+  arbitrary die selection, transfers, other consumers/policies, leveling UI,
+  tokens, exchanges and catalog conversion remain open. No gameplay rerun or
+  runtime repair was needed on matched source during independent review.
+  [Independent review and receipts](../../.artifacts/planning/vocabulary-reports/batch-M-review.md).
+
+- [x] **VS-62 — Turn-start/Initiative numeric-pool recovery (`S-062`, bounded `V-044/V-041`).**
+  Actual settled Initiative and tracked turn-start events restore fixed/fill/floor
+  quantities on exact numeric sources, clamped to owned capacity. Actor-only
+  formulas require available integral values; location changes and capacity
+  recalculation do not emit recovery. Eligible sources in a declared group are
+  mutually exclusive or declined. Same-event entry, budget reset, stale/replayed
+  choices, public metadata edits, changed definitions/formula results/capacity,
+  wrong actor and removed/reacquired sources cannot commit another recovery.
+  Actual controls prove Initiative choice, turn recovery, exact feature/source
+  spending, blocked actions while pending, decline, next-own-turn recovery and
+  teardown with zero recovery RNG/action cost. Retained evidence: 1227/0 earlier
+  class/persistence checks; final 67/0 N assertions (20 actual-control checks),
+  204-script parse/boot, Monk 61/0, numeric rest 19/0 and dice pool 18/0.
+  Existing quantities persist without new DTO fields or checkpoint permission.
+  Living Character player-entity hosts only; native resource conversion, combat
+  dice recovery, cross-actor recovery, secondary option costs/effects, extra-turn
+  hosts, random/time policies and catalog conversion remain outside acceptance.
+  All sixteen source hashes match; no runtime repair or repeated gameplay run.
+  [Independent review and receipts](../../.artifacts/planning/vocabulary-reports/batch-N-review.md).
+
+- [x] **VS-63 — Captured recipient grants (`S-082`, bounded `V-054/V-057`).**
+  Exact captured pool dice move oldest-first with original face, size, generation
+  and identity; formula tokens/permissions capture one self-benefit value.
+  Original giver payment, recipient selection and immutable source/giver/recipient/
+  group/deadline commit once through Features, CombatCommand and the recipient
+  popup. Cancel, stale objects/sources/pools/definitions/turns/budgets, replay and
+  teardown preserve costs and RNG. Later giver progression/removal leaves gifts
+  intact; transferred-source high-water marks prevent die identity reuse after
+  reacquisition. Recipient Action/Bonus Action/own-turn Reaction consumes each
+  gift once for healing or ordinary Temporary HP. Both DTO paths and cross-actor
+  links preflight before replacement; recovery retains original expiry and serials.
+  Retained proof: final 1221/0 class checks, 138/0 P assertions (38 actual controls),
+  207-script parse/boot; earlier 1328/0 classes/persistence and 69/0 M controls;
+  distinct-process recovery with 30 malformed-save refusals. All 28 builder hashes
+  matched before review; no runtime change or repeated gameplay run was needed.
+  Batch P left S-083 partial; VS-64 below accepts Q's shared captured weapon-attack
+  bonus consumer. VS-63 alone adds no roll replacement, casting permission,
+  off-turn intervention, broader origins or catalog acceptance.
+  [Independent review and receipts](../../.artifacts/planning/vocabulary-reports/batch-P-review.md).
+
+- [x] **VS-64 — Recipient budget and shared captured bonus (`S-083`, bounded `V-054`).**
+  One transfer captures a single shared weapon-attack bonus face, one original
+  giver quantity and independent source/group/recipient/deadline records. Each
+  beneficiary selects that stored face in its missed normal Attack/Extra Attack,
+  pays its own Reaction and consumes only its gift, without bonus RNG. Standalone
+  HP commands cannot consume an attack gift. Actual controls prove both recipients;
+  stale/expired/replayed/revoked answers cannot spend. Distinct-process recovery
+  retains face 2 and deadline 60 at clock 17 after giver level/source removal.
+  S-082/VS-63 and S-051/VS-61 remain accepted prerequisites. No other roll host,
+  casting permission, replacement token or catalog certification is implied.
+  [Independent Q review](../../.artifacts/planning/vocabulary-reports/batch-Q-review.md).
+
+- [x] **VS-65 — Another Character's fixed helping modifier (`S-097`, bounded `V-014/V-035`).**
+  A willing conscious party helper contributes a fixed bonus to another Character's
+  missed normal weapon Attack/Extra Attack. Its exact source object/definition/pool
+  and its own Reaction pay once; a spent attacker Reaction does not prohibit help.
+  Wrong owners, same-ID helper/source replacement, definition/budget/turn/clock
+  changes and replay refuse before unintended payment/RNG/effects. Stale visible
+  choices decline through the original request, retaining its roll/action and
+  continuation; actual controls prove one helper payment and two original swings.
+  This satisfies S-097's one already-supported operation with a fixed modifier;
+  defensive, outcome, reroll and token interventions and other roll hosts remain
+  unaccepted. No broad V-013/V-089/V-090 completion follows from the slice's mapping.
+  [Independent Q review](../../.artifacts/planning/vocabulary-reports/batch-Q-review.md).
+
+- [x] **VS-66 — Integer allocation across recipients (`S-101`, bounded `V-036`).**
+  Loaded neutral/changed Features/source controls allocate one fixed actor-formula
+  total as integer HP/Temporary HP under recipient count, total and per-target caps.
+  Validate the complete selection and exact actor/recipients/source/budget/turn/clock
+  before one source quantity/action and any HP effect. Cancel/refusal pays nothing;
+  declared forfeit/require-full remainder policies are checked. Duplicate, fractional,
+  excess, stale and wrong-owner rows cannot partially settle. Actual plain 12 split
+  4/3 heals HP 1 to 5/4; changed 8 split 4/3 grants keep-higher Temporary HP 4/3.
+  Living combat Character hosts only; no half-max-HP or arbitrary effect policy.
+  [Independent Q review](../../.artifacts/planning/vocabulary-reports/batch-Q-review.md).
+
+- [x] **VS-67 — Rolled total and exact retained-die allocation (`S-102`, bounded `V-036/V-038`).**
+  One numeric source quantity/action buys one revealed d6/d8 total, split across
+  recipients without reroll or further payment. Cancel/refusal forfeits that paid
+  reveal. Captured-dice mode instead confirms exact owned die IDs without RNG,
+  including non-prefix selections; per-recipient die-count and source spend bounds
+  apply. Unselected ordered identities/faces remain in the pool. Both total and
+  die modes validate all recipients before HP/Temporary HP consequences; requests
+  stay transient. Recovery preserves the selected pool subset without regeneration;
+  both DTO paths reject duplicate/quantity-mismatched dice before session replacement.
+  Q evidence: retained 1358/0 class checks, 108/0 persistence, 138/0 P assertions
+  (38 actual controls), distinct-process recovery and 14 malformed-save refusals;
+  final 70/0 Q controls and 212-script parse/boot after a punctuation-only repair.
+  No new durable field, save permission, catalog or broader allocation effect.
+  [Independent Q review](../../.artifacts/planning/vocabulary-reports/batch-Q-review.md).
+
+- [x] **VS-68 — Starting versus multiclass permanent grants (`S-047`, bounded `V-026/V-027`).**
+  Loaded opt-in class data grants distinct starting and multiclass proficiency,
+  expertise and exact backpack equipment once through real creation and class-level
+  controls. Returning to a class retains its original entry receipt. Full-grant
+  capacity and stale-state checks refuse before mutation; oversized creation now
+  explains refusal and cannot register a blank actor. Independent permanent
+  proficiencies survive feature-choice replacement. Primary choices support only
+  weapon/armor/skill arrays; secondary native feature tables must be empty.
+  No native multiclass casting, subclasses or catalog certification.
+  [Independent 018 review and repairs](../../.artifacts/planning/vocabulary-reports/batch-018-review.md).
+
+- [x] **VS-69 — Permanent class/character-level deltas (`S-048`, bounded `V-026/V-007/V-057`).**
+  Ordered acquisitions distinguish each class allocation from total character
+  level. Authored positive permanent ability/fixed max-HP gains and total-level
+  proficiency execute once; CON uses underlying scores and existing retroactive
+  HP arithmetic. Both acquired classes observe their character-level entries,
+  while a sibling class cannot borrow primary class levels. Saved history,
+  pending levels and exact receipts validate on both DTO paths; restore reads
+  saved totals/items without applying grants. Removed starting gear stays removed.
+  Final proof: 1543/0 class/persistence checks, 18 actual-control checks,
+  215-script parse/boot and distinct-process recovery (20260/40480), 20 malformed
+  full-save refusals, zero RNG. Fixed level HP, existing living full heal and
+  explicit opt-in classes only; reversible HP effects/resources/casting remain open.
+  [Independent 018 review and repairs](../../.artifacts/planning/vocabulary-reports/batch-018-review.md).
+
+- [x] **VS-70 — Cast-completion and source-end context (`S-042`, bounded `V-010`).**
+  Successful shared combat casts publish school, spell identity, effective and
+  paid slot, source, invocation/action and completion facts after resolution;
+  source-end receipts retain the exact reason/cause. Publishing a fact grants no
+  action. Focused Godot checks and the production spell lifetime scenario passed.
+  Catalog consumers and exploration casting remain open.
+  [Batch 019 review](../../.artifacts/planning/vocabulary-reports/batch-019-review.md).
+
+- [x] **VS-71 — Source-linked event termination (`S-072`, bounded `V-049`).**
+  Shared spell rules match attack, completed cast, movement, Character status,
+  inventory equipment and represented-combat range events; only the exact
+  subscribed source ends. Player and monster movement publish from the shared
+  step. Monster status-removal paths outside shared controls, exploration range
+  and catalog conversions remain open. Final evidence: 1729/0 logic checks,
+  215-script parse/boot and production spell lifetime scenario with 0 failures.
+  [Batch 019 review](../../.artifacts/planning/vocabulary-reports/batch-019-review.md).
+
+- [x] **VS-72 — Exact causal damage exception (`S-073`, bounded `V-049`).**
+  Settled damage retains its source-instance ID; `this_source` exempts only the
+  matching source while unrelated damage ends the subscribed source and records
+  the cause. Focused Godot checks cover both outcomes. End receipts are transient
+  and bounded to 128 entries.
+  [Batch 019 review](../../.artifacts/planning/vocabulary-reports/batch-019-review.md).
+
+- [x] **VS-73 — Suppression without removal (`S-074`, bounded `V-050/V-057`).**
+  A source-owned condition remains stored with its original duration while
+  suppressed; its clock advances, and an expired condition never returns on
+  exit. [Batch 020 review](../../.artifacts/planning/vocabulary-reports/batch-020-review.md).
+
+- [x] **VS-74 — Independent suppressor ownership (`S-075`, bounded `V-050`).**
+  Overlapping aura sources and recipients retain separate identities. Removing
+  or moving one source does not expose a condition another source still masks.
+  [Batch 020 review](../../.artifacts/planning/vocabulary-reports/batch-020-review.md).
+
+- [x] **VS-75 — Moving Character aura membership (`S-080`, bounded `V-053`).**
+  The combat projection recomputes direct Character bearer/recipient distance;
+  actual movement out and back across the authored radius restores and suppresses
+  the same condition. Source and bearer are the same Character in this bounded
+  host. [Batch 020 review](../../.artifacts/planning/vocabulary-reports/batch-020-review.md).
+
+- [x] **VS-76 — Source-owned casting permission (`S-134`, bounded `V-028/V-027`).**
+  Prepared/book/item/innate sources retain their own spell, ability and
+  restrictions; exact equipped/attuned item copies stay independent.
+
+- [x] **VS-77 — Exact casting permission/payment (`S-135`, bounded `V-028/V-031`).**
+  Commands rebuild current owned permissions; forged pairings and stale policies
+  refuse before costs. Slot/free/point/item payments retain their selected source.
+
+- [x] **VS-78 — Per-source preparation and replacement (`S-137`, bounded `V-029/V-057`).**
+  Authored class opt-in supplies independent lists, class-level limits, abilities
+  and spent replacement windows. Both full-save DTO paths validate receipts;
+  distinct-process recovery does not reopen windows or refill exact item charges.
+
+- [x] **VS-79 — Combined ordinary versus Pact slots (`S-138`, bounded `V-029`).**
+  Full/half-up contributions combine independently of Pact/preparation. Actual
+  casts and Shield/Counterspell reactions pay the selected pool without fallback.
+
+- [x] **VS-80 — Fixed-level source spell uses (`S-139`, bounded `V-029`).**
+  Existing Arcanum permissions retain fixed level/use and Long Rest recovery,
+  separately from payable slot pools.
+
+- [x] **VS-81 — Source-specific ritual controls (`S-136`, bounded `V-028`).**
+  Actual exploration controls select exact class/book/feature/item sources,
+  components and normal-plus-ten-minute time. Ritual-only access never authorizes
+  normal combat casting; post-delay interruption refuses completion.
+
+- [x] **VS-82 — Exact slot/pool exchange selectors (`S-052`, bounded `V-039/V-031`).**
+  Ordinary/Pact or numeric-pool payments select exact sources and authored fixed
+  quantities. Affordability and full numeric destination fit precede mutation.
+
+- [x] **VS-83 — Captured-dice/inventory and party exchange (`S-053`, bounded `V-039`).**
+  Captured dice or exact eligible backpack copies pay numeric self/active-party
+  destinations atomically. Cancellation, stale copies, full destinations and
+  same-pool party aliases refuse intact; spent/unspent copy identities and both
+  actors' quantities survive fresh-process recovery.
+
+[Batches 021–023 independent acceptance](../../.artifacts/planning/vocabulary-reports/batch-021-023-acceptance-review.md)
+owns VS-76–83 finish lines, source hashes, 2,837/0 affected logic, 21/20/41
+actual-control assertions and retained/new distinct-process recovery evidence.
+No broad V-series parent or catalog completion is implied.
+
+- [x] **VS-84 — Recipient Temporary HP replacement (`S-078`, bounded `V-052/V-009`).**
+  Actual Keep/Replace controls use current HP, including smaller incoming grants.
+  Keep/Cancel preserve the exact supplier, remaining HP and deadline without cost;
+  stale HP/source/pool/clock/turn/generation answers refuse before payment.
+
+- [x] **VS-85 — Cross-actor linked Temporary HP (`S-079`, bounded `V-052/V-054/V-057`).**
+  Exact supplier/source/recipient/serial and fixed AC/save benefits follow the
+  surviving captured grant. Partial absorption retains it; depletion, replacement,
+  exact source removal and expiry end it. Both save DTO paths validate before
+  live replacement; distinct-process recovery retains partial HP and deadlines.
+
+- [x] **VS-86 — Chosen aura and timed entry benefits (`S-081`, bounded `V-053`).**
+  Character combat recipients choose one exact source per nonstacking group.
+  Membership protection ends outside range or on combat exit; fixed campaign-time
+  once-per-source receipts retain their original deadline after exit/reentry/reload.
+  Expired receipts prevent reacquisition. Owner equals bearer; broader hosts and
+  entry reset policies remain open.
+
+- [x] **VS-87 — Interruption/failure reserve and refund (`S-142`, bounded `V-031`).**
+  Upfront payment reservation captures slot, free-cast, item charge, or pool point
+  payments upon invocation. Interruption and failure evaluate declared commit or refund
+  policies, restoring spent resources on refund. Spells resolving with empty effect
+  payloads commit payment by default unless explicit refund is authored.
+  [Batch 029 review](../../.artifacts/planning/vocabulary-reports/batch-029-review.md).
+
+- [x] **VS-88 — Whole pending cast cancellation (`S-115`, bounded `V-019`).**
+  Predicate filtering matches qualifying level, school, source, and spell ID allowlists;
+  non-matching casts are preserved. Evaluates reaction contest (save, check, or none);
+  successful cancellation marks the target cast as interrupted, settles payment per target
+  interruption policy, and aborts further resolution without affecting bystanders.
+  [Batch 029 review](../../.artifacts/planning/vocabulary-reports/batch-029-review.md).
+
+- [x] **VS-89 — Stopping-spell cost policy (`S-143`, bounded `V-031`).**
+  Evaluates stopping outcome against declared on_success and on_failure branches to
+  commit or refund the stopping caster's slot, reaction, or free cast, and dispose
+  single-use item copies. A failed stop refunds or commits the stopping resource as
+  authored and never repays or alters the original target spell.
+  [Batch 029 review](../../.artifacts/planning/vocabulary-reports/batch-029-review.md).
+
+- [x] **VS-90 — One recipient's incoming effect negation (`S-116`, bounded `V-019`).**
+  Evaluates negation rules on recipient features, equipped items, or runtime decisions.
+  Excludes qualifying recipient from cast and stepped execution (`skipped: true, negated: true`)
+  without damage or condition effects. Other targets in multi-target or area spells take full
+  normal effect; reflection and retargeting remain distinct operations.
+  [Batch 029 review](../../.artifacts/planning/vocabulary-reports/batch-029-review.md).
+
+- [x] **VS-91 — Budgeted slot/pool recovery (`S-054`).**
+  Real rest controls retain exact sources, formula budgets, exclusions and capacity through cancellation/refusal.
+  [Independent evidence](../../.artifacts/planning/vocabulary-reports/batch-024-026-verification.md).
+
+- [x] **VS-92 — Outcome-selected recovery (`S-055`).**
+  Actual settled spell result and paid ordinary slot select only the eligible lower or lowest recovery.
+  [Independent evidence](../../.artifacts/planning/vocabulary-reports/batch-024-026-verification.md).
+
+- [x] **VS-93 — Dawn/dusk/cooldown recovery (`S-063`).**
+  Campaign boundaries settle exact-source occurrences once, including missed days and fresh-process recovery.
+  [Independent evidence](../../.artifacts/planning/vocabulary-reports/batch-024-026-verification.md).
+
+- [x] **VS-94 — Scheduled repeat saves (`S-068`).**
+  Represented target-turn and elapsed schedules retain recipient/source/purpose and resolve due attempts once; expiry wins equal deadlines.
+  [Independent evidence](../../.artifacts/planning/vocabulary-reports/batch-024-026-verification.md).
+
+- [x] **VS-95 — Counted saves and staged conditions (`S-069`).**
+  Owned success/margin history advances linked stages and survives recovery; malformed missing history refuses before session replacement.
+  [Independent evidence](../../.artifacts/planning/vocabulary-reports/batch-024-026-verification.md).
+
+- [x] **VS-96 — Repeat-save DC history (`S-090`).**
+  Declared failed-attempt DC increases and success reset retain exact source/recipient history. Broader cumulative-risk hosts remain open.
+  [Independent evidence](../../.artifacts/planning/vocabulary-reports/batch-024-026-verification.md).
+
+- [x] **VS-97 — Attack/Flurry unit substitution (`S-146`).**
+  Actual spell/item/self-heal controls replace one/two remaining units without another parent action payment; spell costs and exact copies remain independent.
+  [Independent evidence](../../.artifacts/planning/vocabulary-reports/batch-028-completion-review.md).
+
+- [x] **VS-98 — Child actions inside a paid parent (`S-148`).**
+  Declared single strikes, shared Action casts and ordinary movement use local action waivers with original parent invocation/source/classification. Reaction parents use the active actor only.
+  [Independent evidence](../../.artifacts/planning/vocabulary-reports/batch-028-completion-review.md).
+
+- [x] **VS-99 — Child choice and interrupted continuation (`S-149`).**
+  Real chooser/target/reaction controls settle children once, retain siblings and paid parent, apply explicit skip/stop cancellation, and refuse stale old-popup callbacks.
+  [Independent evidence](../../.artifacts/planning/vocabulary-reports/batch-028-completion-review.md).
+
+- [x] **VS-100 — Represented physical eligibility (`S-032`).**
+  Actual actor/object/copy facts preserve unknowns; required mass/material/status
+  refuses before payment. Loaded object-target controls verify refusal/success.
+- [x] **VS-101 — Plane and available-space queries (`S-033`).**
+  Read-only single-cell placement uses actual plane, occupants, objects and
+  vertical clearance. Actual spatial-cast controls verify plane/clearance costs.
+- [x] **VS-102 — Combat speed/mode/surface costs (`S-179`).**
+  Character movement controls retain distance through mode/Dash/prone changes,
+  apply represented terrain/water costs and spend nothing on initial refusals.
+
+[Batches 029/030 review and repairs](../../.artifacts/planning/vocabulary-reports/batch-029-030-review.md)
+retains VS-87–90 and accepts VS-100–102 on the documented combat host. Final
+proof: 3005/0 classes/spells, 37/0 Batch 029, 36/0 Batch 030 and 34/0 Batch 028
+scenario assertions, bootstrap/244-script parse/boot, exit 0. The original 13
+Batch 029 checks were helper calls, not button workflows. New actual input
+controls and remaining host limits are identified separately in the review.
+
+[Batch 027 independent review](../../.artifacts/planning/vocabulary-reports/batch-027-review.md)
+accepts VS-84/85/86 separately after repairing stale membership on combat exit.
+Final proof: 23/0 actual controls, 3/0 Batch 020 movement controls, 235-script
+parse/boot; unchanged 1628/0 logic and distinct-process recovery with 24 malformed
+full-save refusals are retained. Batches 024–026 are accepted on their verified hosts.
+
+Independent [Batch 025 completion review](../../.artifacts/planning/vocabulary-reports/batch-025-completion-review.md)
+accepts S-123/S-124/S-125 as VS-103/104/105 and dependent S-059 as VS-106.
+Bounded checks cover critical base-die cost separation, authored heal reroll
+selection/eligibility/keep/payment receipts, critical multiplier exclusion and
+actual Attack payment replacement. These do not complete broad V-023 or V-042.
+
+Batch E accepts VS-39–41 after independent source/evidence review and bounded
+repairs. V-004, V-006 and V-057 remain partial. Completed independent Batch F
+review retains S-044/S-036 as VS-42/43 and accepts S-037 as VS-44 after live-only
+preflight repair. Batch G accepts S-038/S-039/S-040 as VS-45/46/47 after independent
+review and permanent-progression repairs. Batch H accepts S-106/S-225/S-099 as
+VS-48/49/50 after roll/choice/recipient repairs and final production proof.
+Batch I accepts S-100/S-109/S-110 as VS-51/52/53 after independent review and
+bounded repairs. Batch J accepts S-056/S-057/S-058 as VS-54/55/56 after completed-hit
+replay repair. Batch K accepts S-045/S-046 as VS-57/58 after owner-requested
+repairs and independent source/evidence recheck. Batch L accepts S-049/S-050 as
+VS-59/60 after independent review and bounded movement/save repairs. Batch M
+accepts S-051 as VS-61 after independent source/evidence review. Batch N accepts
+S-062 as VS-62 after independent source/evidence review. Batch P accepts S-082
+as VS-63. Batch Q accepts S-083 first as VS-64, then S-097/S-101/S-102 as
+VS-65/66/67. Batch 018 accepts S-047 first as VS-68, then S-048 as VS-69 after
+creation-refusal and choice-contract repairs. Registry:
+**106/226 accepted, 120 remaining; P1 34/34, P2 33/50, P3 20/27, P4 7/25, P5–P9 12/90**.
+Batch 019 accepts S-042/S-072/S-073 as VS-70/71/72 after repairing monster
+movement event publication. Batch 020 accepts S-074/S-075/S-080 as VS-73/74/75
+for directly owned Character combat aura sources. V-007/V-008/V-009/V-011/V-012/
+V-014/V-015/V-016/V-026/V-027/
+V-035/V-041/V-042/V-044/V-057/V-089 remain partial.
+
+Batch D retains VS-36 after repairing exact participant identity in allegiance
+queries, and accepts VS-37/38 after distance/sense repairs and independent
+production controls. V-002 and V-003 remain partial.
+
 Combined VS-18–20 review closed five stage/snapshot defects: spent Inspiration
 is retained in the paused total, ordered save choices reach the chooser, a
 following deferred damage choice retains the original continuation, flat
@@ -758,14 +1413,14 @@ rule can ask for; “formula” must identify which values it can calculate with
 | [ ] V-001 — Typed predicates and combinations | Read declared facts and combine comparisons with AND/OR/NOT and explicit missing-fact behavior. Distinguish actor, target, action, item, spell and source facts. | C-Barbarian: Brutal Strike requires Reckless Attack and no Disadvantage; C-Monk: Martial Arts equipment eligibility. | Partial: VS-27 checks nested typed predicates and missing-safe evaluation; VS-28 binds actor/target/action/item-copy/spell/source identities through the combat shared-spell host. Other hosts, fact domains and broader combinations remain open. | — |
 | [ ] V-002 — Actor/source relationships | Query ally/enemy/willingness, who charmed or marked a target, and distance to another actor or source. A condition name alone cannot identify its giver. | C-Bard: Mantle of Majesty auto-failure only when charmed by that Bard; C-Ranger: companion attacking its owner's marked target. | Partial: current source-owner relation is checked in VS-02; ally/enemy/willingness, charm/mark provenance and distance relations remain open. | V-001 |
 | [ ] V-003 — Check purpose and required sense | Carry the actual task, tool, sensory requirement and originating effect into a check/save. “Avoid or end Poisoned” differs from any Constitution save. | I: Perfume influences an Indifferent Humanoid nearby; R: Dwarven Resilience; C-Bard: Dance Virtuoso. | Partial: VS-24 checks loaded EventDialog task/purpose/optional-tool context and exact carried-tool eligibility/source receipt through closure. Other hosts, sensory requirements, causal save purposes and broader interpretation remain open (`EventResolver`, `Inventory`). | V-001 |
-| [ ] V-004 — Scoped action and damage history | Query first round, first own turn, whether a target acted/was attacked, and damage since a named boundary. Current turn and since owner's previous turn are different intervals. | C-Rogue: Assassinate; C-Ranger: Horde Breaker; M: Hydra head/regrowth histories. | Partial: existing active-turn serial supplies VS-08 locks, not arbitrary authored action/damage history. First-round/own-turn and since-boundary queries remain open (`CombatState`). | V-001 |
+| [ ] V-004 — Scoped action and damage history | Query first round, first own turn, whether a target acted/was attacked, and damage since a named boundary. Current turn and since owner's previous turn are different intervals. | C-Rogue: Assassinate; C-Ranger: Horde Breaker; M: Hydra head/regrowth histories. | Partial: VS-08 retains independent rider locks; VS-39/40 add first-round/own-turn action and exact-source settled damage history in the selected combat/shared-spell host, including bounded last-minute checkpoint recovery. Other native hosts, history intervals and broader scope locks remain open. | V-001 |
 | [ ] V-005 — Physical eligibility facts | Query actual size, mass, worn/carried/fixed status, material, plane and available space rather than infer them from content names. | C-Psi Warrior: Telekinetic Movement's loose-object limit; R: Goliath Large Form needs space; I: Horn of Blasting glass/crystal damage. | Partial: room/object fields, `CombatObjectRules`, `LocalRoomRules`; many facts unmodeled. | V-001 |
-| [ ] V-006 — Numeric references to prior results | Bind an exact step/target/component result: raw damage, mitigated damage, prevented amount, actual HP loss or healing. Aggregate only the declared results; preserve rounding. | I: Rod of Lordly Might heals half its extra Necrotic damage; C-Warlock: Beguiling Defenses reflects damage taken; C-Sorcerer: surge heals sum of Necrotic damage. | Partial: explicit earlier step/target/type/measure selectors and one explicit cross-target sum are checked in VS-03/17. Other component/result combinations, prevented/healed amounts and general reducers remain open. | V-001 |
-| [ ] V-007 — Runtime formulas and tables | Calculate from declared class/character level, selected slot, ability, proficiency, source die or a choice; support min/max, rounding and table lookup. Freeze or reevaluate at the declared boundary. | C-Zealot: Rage Damage bonus determines dice count; C-Soulknife: rolled teleport distance; R: character-level breath scaling. | Partial: shared arithmetic, caster/cast leaves, and one deterministic numeric breakpoint table exist (VS-04/16). Dice/source-die tables, choices, multiclass progression and broader capture policies remain open. | V-001, V-006 |
-| [ ] V-008 — Natural-roll versus final-total floors | Alter the natural d20 separately from the modified total; neither operation changes the other's meaning. | C-Rogue: Reliable Talent floors d20; C-Barbarian: Indomitable Might replaces a low final total with Strength score. | Partial: native floor methods in `Character`; authorable selectors/order uncertain. | V-007 |
-| [ ] V-009 — Modifier and base-stat combination | Select among base AC formulas, apply conditional bonuses/score floors/caps, and use declared stacking or recipient choice. Keep a score-setting effect separate from a permanent increase. | I: Gauntlets of Ogre Power; C-Druid: Moon's higher AC; C-Paladin: recipient chooses one overlapping protection aura. | Partial: `Character`/inventory stat paths; broad combination policy uncertain. | V-001, V-007 |
+| [ ] V-006 — Numeric references to prior results | Bind an exact step/target/component result: raw damage, mitigated damage, prevented amount, actual HP loss or healing. Aggregate only the declared results; preserve rounding. | I: Rod of Lordly Might heals half its extra Necrotic damage; C-Warlock: Beguiling Defenses reflects damage taken; C-Sorcerer: surge heals sum of Necrotic damage. | Partial: VS-03/17/33/41 check exact settled step/target/component measures, bounded sum/min/max, explicit empty policies and rounding across continuation. VS-40 adds bounded exact-source damage history. General collection selectors and other hosts/result combinations remain open. | V-001 |
+| [ ] V-007 — Runtime formulas and tables | Calculate from declared class/character level, selected slot, ability, proficiency, source die or a choice; support min/max, rounding and table lookup. Freeze or reevaluate at the declared boundary. | C-Zealot: Rage Damage bonus determines dice count; C-Soulknife: rolled teleport distance; R: character-level breath scaling. | Partial: shared arithmetic, caster/cast leaves, and one deterministic numeric breakpoint table exist (VS-04/16). VS-43 adds exact committed source-die and bounded number-choice formula access with captured/live parameters in ordered combat shared spells. VS-44 adds represented per-class inputs, declared numeric/die-size rows and explicit pool capacity/size recalculation without refill, with allowed recovery. VS-61 adds captured source-owned dice with explicit new-dice-only progression. VS-63 adds exact captured-die transfer and captured actor-formula self-benefit gifts. VS-69 adds opt-in permanent class/character-level acquisition deltas. Full native multiclass acquisition/slots and broader formula hosts/capture policies remain open. | V-001, V-006 |
+| [ ] V-008 — Natural-roll versus final-total floors | Alter the natural d20 separately from the modified total; neither operation changes the other's meaning. | C-Rogue: Reliable Talent floors d20; C-Barbarian: Indomitable Might replaces a low final total with Strength score. | Partial: VS-45 accepts authored loaded EventDialog floors and captured mandatory-new reapplication; other roll hosts remain open. | V-007 |
+| [ ] V-009 — Modifier and base-stat combination | Select among base AC formulas, apply conditional bonuses/score floors/caps, and use declared stacking or recipient choice. Keep a score-setting effect separate from a permanent increase. | I: Gauntlets of Ogre Power; C-Druid: Moon's higher AC; C-Paladin: recipient chooses one overlapping protection aura. | Partial: VS-46/47 accept self-feature AC/score projections and exact protection choice; item/aura/form hosts and THP replacement remain open. | V-001, V-007 |
 | [ ] V-010 — Resolution event facts and windows | Expose before-roll, after-natural-roll, provisional hit/failure, pre-damage, settled damage, cast completion and source end as distinct windows. Carry attack kind, school, paid slot, source and targets. | C-Lore: Cutting Words after success; C-Glamour: Beguiling Magic after a slot-paid cast; I: Gloves of Missile Snaring after a ranged hit. | Partial: named hooks and verified rest/weapon-hit paths (VS-07/08/13), plus the rolled-failed-save pre-consequence choice and subsequent damage-choice handoff (VS-18–20). VS-31 also checks exact shared-spell attack window receipts and ordered effect consumers across deferred damage; general subscriptions, cast/source-end windows and other hosts remain open. | V-001 |
-| [ ] V-011 — Result predicates and cross-step gates | Branch on margin, post-damage HP, all/any child outcomes and earlier result references, not just hit/miss or save success. | I: Lolth's Sting fails by 5; I: Tentacle Rod hits same target three times; I: Mace of Disruption checks HP after damage. | Partial: `when` predicates and explicit earlier-result comparisons now supplement simple gates; VS-05 checks a positive component across continuation and VS-17 checks positive aggregate HP loss after a settled area step. Margins/grouped outcomes/other gates remain open. | V-006, V-010 |
+| [ ] V-011 — Result predicates and cross-step gates | Branch on margin, post-damage HP, all/any child outcomes and earlier result references, not just hit/miss or save success. | I: Lolth's Sting fails by 5; I: Tentacle Rod hits same target three times; I: Mace of Disruption checks HP after damage. | Partial: `when` predicates and explicit earlier-result comparisons now supplement simple gates; VS-05 checks a positive component across continuation and VS-17 checks positive aggregate HP loss after a settled area step. VS-34 adds margin/post-damage HP gates; VS-42 adds completed all/any/count child groups in ordered combat shared spells. Other hosts and arbitrary child action composition remain open. | V-006, V-010 |
 
 ### Rolls, outcomes, interception and damage
 
@@ -774,18 +1429,18 @@ automatic outcome are three different operations.
 
 | Open ID — capability | Boundary to implement and mark off | Description examples | Current support / likely hook | Depends on |
 |---|---|---|---|---|
-| [ ] V-012 — Pre-roll Advantage/Disadvantage policy | Add/cancel/forbid Advantage or Disadvantage before rolling; resolve multiple sources and exemptions without confusing a roll-mode change with replacing a natural result. | C-Clockwork: Restore Balance; C-Rogue: Elusive; C-Barbarian: Brutal Strike gives up Advantage. | Partial: VS-29 authors exact-context owned add/cancel/prohibit policies with source exemptions for loaded EventDialog ability checks; other roll hosts, native feature coverage and S-106 rerolls remain open. | V-001, V-010 |
+| [ ] V-012 — Pre-roll Advantage/Disadvantage policy | Add/cancel/forbid Advantage or Disadvantage before rolling; resolve multiple sources and exemptions without confusing a roll-mode change with replacing a natural result. | C-Clockwork: Restore Balance; C-Rogue: Elusive; C-Barbarian: Brutal Strike gives up Advantage. | Partial: VS-29 authors exact-context owned add/cancel/prohibit policies with source exemptions for loaded EventDialog ability checks; VS-48/49 add captured new-test modes to EventDialog and supported combat rerolls; further hosts/native feature coverage remain open. | V-001, V-010 |
 | [ ] V-013 — Natural result or automatic outcome replacement | Replace natural d20, force hit/miss/save success/failure, or cancel an upcoming Death Save. A forced success is not a numeric bonus or a newly rolled 20. | I: Ring of Evasion; C-Paladin: Unerring Strike; C-Glamour: Command auto-failure; C-Celestial: Searing Vengeance before Death Save. | Partial: VS-20/30 check explicit save outcomes and VS-30 checks supported weapon/shared-spell attack outcomes after its reviewed native-use and source-option repairs; no-roll outcomes, canceled Death Saves, other hosts and general token replacement remain open. | V-010, V-011 |
-| [ ] V-014 — Reevaluate a provisional result | Add/subtract a post-roll total or change AC for one triggering attack, then recalculate its result before consequences; expose that new result to a follow-up. | C-Paladin: Glorious Defense counterattack only if changed hit misses; C-War: Guided Strike; C-Soulknife: Homing Strikes. | Partial: VS-18 checks a fixed failed shared-spell save bonus; VS-21/22 add normal player Attack/Extra Attack and flat/ordered shared-spell attacks; VS-23 adds one captured d6/d8 through these checked combat choices; VS-25 adds fixed/die bonuses to failed loaded EventDialog ability checks. Other rolls, hosts, defensive edits and broader reevaluation remain open. | V-010, V-011 |
-| [ ] V-015 — Save and miss consequence remapping | Independently select damage and riders on success/failure/miss; support evasion and chosen target exemptions without changing other targets' outcomes. | C-Evoker: Potent Cantrip damage after miss without rider; Sculpt Spells; C-Dance: share Evasion for same save. | Partial: shared save gates/half damage; native Evasion; generic per-recipient remapping uncertain. | V-011, V-013 |
-| [ ] V-016 — Damage stages and scoped bypass | Modify one incoming component or whole occurrence at a declared stage, retain overflow, and declare exactly which mitigation layers are bypassed. | C-Monk: reduce entire eligible attack; I: Sword of Answering ignores Resistance/Immunity; C-Evoker: Overchannel harm. | Partial: damage/ward settlement is shared in bounded paths; generic stage/bypass policy uncertain (`CombatAction`, `WardRules`). | V-006, V-010 |
+| [ ] V-014 — Reevaluate a provisional result | Add/subtract a post-roll total or change AC for one triggering attack, then recalculate its result before consequences; expose that new result to a follow-up. | C-Paladin: Glorious Defense counterattack only if changed hit misses; C-War: Guided Strike; C-Soulknife: Homing Strikes. | Partial: VS-18 checks a fixed failed shared-spell save bonus; VS-21/22 add normal player Attack/Extra Attack and flat/ordered shared-spell attacks; VS-23 adds one captured d6/d8 through these checked combat choices; VS-25 adds fixed/die bonuses to failed loaded EventDialog ability checks. VS-32 accepts bounded defensive edits and VS-49 adds kept-result rerolls in the supported combat hosts. VS-64/65 add shared captured bonuses and fixed helping Character modifiers in normal weapon Attack/Extra Attack. Other rolls/hosts and broader reevaluation remain open. | V-010, V-011 |
+| [ ] V-015 — Save and miss consequence remapping | Independently select damage and riders on success/failure/miss; support evasion and chosen target exemptions without changing other targets' outcomes. | C-Evoker: Potent Cantrip damage after miss without rider; Sculpt Spells; C-Dance: share Evasion for same save. | Partial: VS-35 accepts bounded outcome damage/rider maps; VS-50 adds exact-context Character recipient maps and flat shared-spell chosen exemptions. Broader domains, auras and universal Evasion remain open. | V-011, V-013 |
+| [ ] V-016 — Damage stages and scoped bypass | Modify one incoming component or whole occurrence at a declared stage, retain overflow, and declare exactly which mitigation layers are bypassed. | C-Monk: reduce entire eligible attack; I: Sword of Answering ignores Resistance/Immunity; C-Evoker: Overchannel harm. | Partial: VS-52/53 accept fixed/formula component/occurrence reductions and scoped resistance/immunity/ward/narrow Sphere bypass in shared spells; other damage hosts, optional paid prevention and broader stages remain open (`CombatAction`, `WardRules`). | V-006, V-010 |
 | [ ] V-017 — Split or transfer damage to another actor | Split a specific incoming occurrence using declared rounding and eligibility; create the other recipient's linked settlement without replaying the original attack. | M: Animated Rug of Smothering linked victim damage; earlier wiring map: guardian partner damage. | Uncertain: likely typed damage settlement and actor-pair state. | V-002, V-006, V-016 |
 | [ ] V-018 — Damage absorption and feedback control | Bind a replacement/healing/counter-damage to the qualifying incoming or settled amount, and preserve causal identity so feedback follows its declared limits. | M: Iron Golem Fire absorption despite immunity; C-Great Old One: Thought Shield; I: absorption/prevention examples in prior map. | Partial: ordinary healing/damage; absorption and feedback policies uncertain (`CombatAction`). | V-006, V-010, V-016 |
-| [ ] V-019 — Cancel a cast or negate a recipient | Cancel all qualifying pending spell effects or exclude only a named recipient, with declared level/target/school predicates and already-spent costs retained. Reflection is separately V-097. | I: Ioun Stone Absorption; C-Arcane Trickster: Spell Thief negates only its own effect. | Partial: native reaction pipeline; generic negation scope uncertain (`SpellCast*`). | V-010, V-011, V-014 |
+| [ ] V-019 — Cancel a cast or negate a recipient | Cancel all qualifying pending spell effects or exclude only a named recipient, with declared level/target/school predicates and already-spent costs retained. Reflection is separately V-097. | I: Ioun Stone Absorption; C-Arcane Trickster: Spell Thief negates only its own effect. | Partial: VS-88/90 add predicate-based whole-cast cancellation (S-115) and single-recipient incoming effect negation (S-116) in shared spell and stepped execution without reflection or retargeting; other negation hosts remain open. | V-010, V-011, V-014 |
 | [ ] V-020 — Replace a proposed zero-HP outcome | Intercept before unconsciousness/death, distinguish outright death and declared damage/critical exclusions, and allow a save with escalating DC or replacement HP formula. | R: Orc Relentless Endurance; C-Barbarian: Relentless Rage; C-Zealot: ally revival Reaction; typed Zombie rule. | Partial: shared `replace_hp` and zero-HP rule fields; actor/form-specific extensions uncertain. | V-007, V-010, V-011 |
 | [ ] V-021 — Destruction, death and aftermath | Apply instant destruction or death distinctly from ordinary HP loss; retain or destroy gear/remains, create a successor actor/hazard, and pass facts to revival eligibility. | I: Mace of Smiting destroys weak Construct; Sphere of Annihilation leaves gear; Eye/Hand combined creates slime. | Partial: `CorpseRules`, created-creature/object paths; generic aftermath uncertain. | V-005, V-011, V-020 |
 | [ ] V-022 — Outcome contingent on legal placement | Resolve required exit/arrival space before finalizing a result when no legal space changes that result; ordinary successful-save settlement cannot commit early. | M: Gelatinous Cube save can fail if no legal exit; I: Titan summoning wastes scroll on insufficient space. | Uncertain: likely spatial validation and pending step decisions. | V-005, V-011 |
-| [ ] V-023 — Dice-level edits and result multipliers | Remove damage dice before rolling, reroll/maximize selected dice, then apply declared critical or post-result multipliers to the correct component. | C-Rogue: Cunning Strike pays Sneak dice; C-Assassin: Death Strike doubles attack damage; C-Life: maximum healing dice. | Partial: native metamagic/Sneak paths; generic dice/result transforms uncertain (`Dice`, `CombatAction`). | V-006, V-007, V-010 |
+| [ ] V-023 — Dice-level edits and result multipliers | Remove damage dice before rolling, reroll/maximize selected dice, then apply declared critical or post-result multipliers to the correct component. | C-Rogue: Cunning Strike pays Sneak dice; C-Assassin: Death Strike doubles attack damage; C-Life: maximum healing dice. | Partial: VS-103/104/105 accept bounded shared removal/maximization, selected damage/healing rerolls, explicit critical exclusions and final multipliers. Other dice consumers, full rule combinations and broader hosts remain unverified. | V-006, V-007, V-010 |
 | [ ] V-024 — Scoped attack/damage parameter replacement | Select ability, damage die/type, reach, mastery or fixed attack/DC for the actual qualifying attack/cast; distinguish replace, add and inherit-original-type. | C-Elements: choose type after hit; C-World Tree: extra mastery; I: fixed +7 Ring of the Ram; C-Dance: nonconsuming class-die damage. | Partial: native attack profiles/shared spell fields; cross-domain authoring uncertain. | V-001, V-007, V-010 |
 
 ### Choices, grants, casting and costs
@@ -795,18 +1450,18 @@ and the resulting spell parameters must remain separate facts.
 
 | Open ID — capability | Boundary to implement and mark off | Description examples | Current support / likely hook | Depends on |
 |---|---|---|---|---|
-| [ ] V-025 — Choice acquisition, replacement and prerequisites | Define option count/filter, selection boundary, duplication allowance and dependent prerequisites. Replacing a choice must preserve dependent grants or refuse. | C-Warlock: invocation dependencies; C-Hunter: rest-swapped tactics; R: lineage and spellcasting ability choices. | Partial: `ClassProgression` choice methods; reusable lifecycle uncertain. | V-001 |
-| [ ] V-026 — Permanent progression grants | Apply proficiencies, expertise, ability/max-HP changes and equipment exactly once at creation/class/character-level boundaries; distinguish starting from multiclass grants. | R: Dwarven Toughness; C-Draconic: per-Sorcerer-level HP; raw class multiclass proficiency fields. | Partial: `ClassProgression`, `Character`; data-wide acquisition policy uncertain. | V-007, V-025 |
-| [ ] V-027 — Grants owned by exact source instances | Acquire/query/remove a benefit from the correct class, item copy, spell or actor source; one source ending must not revoke another equivalent grant. | I: Hat of Disguise removal ends its spell; R: lineage spell entitlement; C-Warlock: pact versus other-class grants. | Partial: numeric pools (VS-06), timed AC (VS-12), next-melee-hit grants (VS-13), optional cooldowns (VS-14) and expiring Temporary HP provenance (VS-15) are checked. Broader grant domains, cross-actor grants and acquisition UI remain open. | V-002, V-025 |
-| [ ] V-028 — Casting permissions and alternative payment | Offer a spell via prepared, book ritual, item, innate, limited-free, point-paid or slot-paid permission. Retain source ability, allowed level, list and components. | C-Aberrant: Psionic Sorcery; C-Wizard: Ritual Adept; I: scroll; C-Barbarian: ritual-only Animal Speaker. | Partial: named casting paths; generic permission objects uncertain (`ClassProgression`, `SpellCast*`). | V-025, V-027 |
-| [ ] V-029 — Per-source repertoire and slot progression | Keep each class's preparation limit/list/ability distinct from combined payable slots, Pact slots and fixed Arcanum uses. Apply declared rounding and replacement boundary. | C-Eldritch Knight/Arcane Trickster one-third casting; C-Warlock: Arcanum; class design multiclass examples. | Partial: native spell-access/slot tables; generic profiles uncertain (`DataLoader`, `ClassProgression`). | V-007, V-025, V-028 |
+| [ ] V-025 — Choice acquisition, replacement and prerequisites | Define option count/filter, selection boundary, duplication allowance and dependent prerequisites. Replacing a choice must preserve dependent grants or refuse. | C-Warlock: invocation dependencies; C-Hunter: rest-swapped tactics; R: lineage and spellcasting ability choices. | Partial: VS-57/58 accept filtered passive progression acquisition and opt-in dependent-safe replacement through actual controls and checkpoints. Rest/activation modes and broader hosts remain open. | V-001 |
+| [ ] V-026 — Permanent progression grants | Apply proficiencies, expertise, ability/max-HP changes and equipment exactly once at creation/class/character-level boundaries; distinguish starting from multiclass grants. | R: Dwarven Toughness; C-Draconic: per-Sorcerer-level HP; raw class multiclass proficiency fields. | Partial: VS-68/69 accept opt-in starting/multiclass proficiency, expertise and exact gear plus permanent class/character-level ability, fixed HP and total-level proficiency gains. Ordered receipts restore without replay on both DTO paths. Primary proficiency choices and feature-empty secondary classes only; native resources, subclasses, casting and catalog conversion remain open (`PermanentProgressionRules`, `Character`, `ClassProgression`). | V-007, V-025 |
+| [ ] V-027 — Grants owned by exact source instances | Acquire/query/remove a benefit from the correct class, item copy, spell or actor source; one source ending must not revoke another equivalent grant. | I: Hat of Disguise removal ends its spell; R: lineage spell entitlement; C-Warlock: pact versus other-class grants. | Partial: numeric pools (VS-06), timed AC (VS-12), next-melee-hit grants (VS-13), optional cooldowns (VS-14) and expiring Temporary HP provenance (VS-15) are checked. VS-58 adds dependent-safe progression removal preserving represented independent proficiency sources. VS-59/60 accepts bounded equipped-copy/progression/self-cast AC and speed carriers after independent review ([contract](../mechanics/source-benefit-carriers.md)). VS-68 adds exact permanent acquisition receipts and preserves overlapping permanent proficiencies during choice replacement. Broader item/cast operations and cross-actor grants remain open. | V-002, V-025 |
+| [ ] V-028 — Casting permissions and alternative payment | Offer a spell via prepared, book ritual, item, innate, limited-free, point-paid or slot-paid permission. Retain source ability, allowed level, list and components. | C-Aberrant: Psionic Sorcery; C-Wizard: Ritual Adept; I: scroll; C-Barbarian: ritual-only Animal Speaker. | Partial: VS-76/77/81 accept derived prepared/book/item/innate permissions, exact allowed payments and source-specific self-utility ritual controls. General native routes, broad components and catalog conversion remain open. | V-025, V-027 |
+| [ ] V-029 — Per-source repertoire and slot progression | Keep each class's preparation limit/list/ability distinct from combined payable slots, Pact slots and fixed Arcanum uses. Apply declared rounding and replacement boundary. | C-Eldritch Knight/Arcane Trickster one-third casting; C-Warlock: Arcanum; class design multiclass examples. | Partial: VS-78/79/80 accept opted-in per-source preparation/replacement receipts, full/half-up combined ordinary slots, separate Pact pools and existing fixed-level Arcanum uses. General native multiclass acquisition, one-third contributions and multiple editable books remain open. | V-007, V-025, V-028 |
 | [ ] V-030 — Cast-local parameter transformations | Alter school, range, origin, action timing, components, concentration, duration or summon HP only for the qualifying invocation; never mutate its catalog definition. | C-Illusionist: Phantasmal Creatures; C-Fey Wanderer: non-Concentration short summon; C-Great Old One: Psychic Spells. | Partial: native benefits/metamagic; shared transform contract uncertain (`SpellCast*`, `SpellEffects`). | V-001, V-028 |
-| [ ] V-031 — Cast costs based on exact outcome | Reserve/commit/refund the correct slot/use for interruption, failed activation or failed spell stopping. Costs can remain spent even when no payload happens. | C-Abjurer: Spell Breaker refunds failed stopping; I: scroll preserves on interruption but disappears on failed check; Hat of Many Spells spends before check. | Partial: ordered casts preserve cost once; generic outcome payment/refund uncertain. | V-010, V-011, V-028 |
+| [ ] V-031 — Cast costs based on exact outcome | Reserve/commit/refund the correct slot/use for interruption, failed activation or failed spell stopping. Costs can remain spent even when no payload happens. | C-Abjurer: Spell Breaker refunds failed stopping; I: scroll preserves on interruption but disappears on failed check; Hat of Many Spells spends before check. | Partial: VS-77/82 add alternative payment and slot exchanges; VS-87/89 add upfront payment reservation with declared interruption/failure commit/refund policy, default commit for empty effects, and stopping-reaction cost/disposal policies that never repay the original target spell (S-142/143). | V-010, V-011, V-028 |
 | [ ] V-032 — Extend targets or redirect origin for one invocation | Add allowed targets or change a selected origin while preserving one cast, the originating senses and independent target outcomes. | C-Beast Master: Share Spells; C-Bard: Words of Creation second target; C-Trickery: Duplicity origin uses caster senses. | Partial: shared targets and native targeting; generic extension/origin bindings uncertain. | V-002, V-028, V-030 |
 | [ ] V-033 — Replace attack/strike units | Treat an Attack/Flurry as a declared set of units; substitute one or multiple units with a permitted spell, item use, heal or companion command. | C-Eldritch Knight: spell replaces two attacks; C-Mercy: healing replaces Flurry strikes; R: breath replaces one attack; I: Net. | Partial: native budgets/actions; generic unit replacements uncertain (`CombatTurnBudget`, `CombatState`). | V-025, V-028 |
 | [ ] V-034 — Nested actions and local cost overrides | Invoke permitted child actions inside a parent action/Bonus/Reaction with explicit waived costs and classifications; preserve remaining budgets and actual causal source. | C-Dance: strike when Inspiration spent; C-Archfey: child Misty Step in same action; C-Wild Heart: Dash plus Disengage. | Partial: named composites; general action composition uncertain. | V-010, V-031, V-033 |
-| [ ] V-035 — Optional payment after success or failure | Reserve a chosen resource during a modification, reevaluate, and charge only the declared outcome. The modifier may still require a resource available upfront. | C-Soulknife: Knack/Homing spend only if converted to success; C-Lore: Peerless Skill; C-Fighter: Tactical Mind. | Partial: VS-19/21/22 check pay-on-choice and converted-success on owned failed saves and weapon/shared-spell attacks; VS-23 adds one captured die with upfront availability and final-outcome payment; VS-25 checks both policies for loaded EventDialog ability-check fixed/die bonuses. Other policies, roll domains and hosts remain open alongside named helpers. | V-011, V-014 |
-| [ ] V-036 — Allocate one numeric pool across recipients | Choose eligible recipients and distribute an integer total without exceeding pool, per-target cap or declared recipient count. Unspent remainder and refusal follow explicit cost policy. | C-Life: Preserve Life caps at half max HP; C-Glory: split rolled Temporary HP; C-Clockwork: Cavalcade healing. | Partial: native Lay on Hands; generic multi-recipient allocator uncertain. | V-005, V-007, V-025, V-035 |
+| [ ] V-035 — Optional payment after success or failure | Reserve a chosen resource during a modification, reevaluate, and charge only the declared outcome. The modifier may still require a resource available upfront. | C-Soulknife: Knack/Homing spend only if converted to success; C-Lore: Peerless Skill; C-Fighter: Tactical Mind. | Partial: VS-19/21/22 check pay-on-choice and converted-success on owned failed saves and weapon/shared-spell attacks; VS-23 adds one captured die with upfront availability and final-outcome payment; VS-25 checks both policies for loaded EventDialog ability-check fixed/die bonuses. VS-51 adds final-success/final-failure reservation/commit/refund for selected exact numeric sources. VS-65 adds a helper-owned Reaction and exact numeric payment on choice for a fixed weapon-attack modifier. Broader budgets, roll domains and hosts remain open alongside named helpers. | V-011, V-014 |
+| [ ] V-036 — Allocate one numeric pool across recipients | Choose eligible recipients and distribute an integer total without exceeding pool, per-target cap or declared recipient count. Unspent remainder and refusal follow explicit cost policy. | C-Life: Preserve Life caps at half max HP; C-Glory: split rolled Temporary HP; C-Clockwork: Cavalcade healing. | Partial: VS-66/67 check Character HP/Temporary HP allocation of fixed integer totals, one paid revealed roll or exact captured die IDs; count/total/per-target caps, explicit cancel/remainder and atomic refusal are enforced through Features controls. Half-max-HP and other effect/actor policies remain open; native Lay on Hands remains separate. | V-005, V-007, V-025, V-035 |
 | [ ] V-037 — Choose modes at declared boundaries | Separate permanent choice, rest choice, per-activation choice, per-hit choice and turn-start switch. Replace prior mode grants without resetting the parent lifetime/use. | C-Wild Heart: choice each Rage; C-Stars: constellation switch at turn start; C-Elements: resistance switch; C-Land: rest land choice. | Partial: progression/native feature choices; common mode lifecycle uncertain. | V-010, V-025, V-027 |
 
 ### Resources, limits, time and recovery
@@ -816,13 +1471,13 @@ procedure's current position are not interchangeable counters.
 
 | Open ID — capability | Boundary to implement and mark off | Description examples | Current support / likely hook | Depends on |
 |---|---|---|---|---|
-| [ ] V-038 — Source-owned numeric and dice pools | Define capacity/die size, spend selected quantity, retain captured die identity where needed, and keep class/copy pools separate even if they share names. | C-Psi Warrior and Soulknife have separate Psionic dice; C-Zealot/C-Celestial healing dice pools. | Partial: exact-source numeric capacity/current/query/spend and formula capacity are checked in VS-06; bounded die-size/count activation in VS-10; one captured post-roll die paid from a numeric source in VS-23. Transferable/pre-rolled dice, wider acquisition/progression and source examples remain open (`ResourcePoolRules`). | V-007, V-027 |
-| [ ] V-039 — Restore one resource by spending another | Validate which depleted use can be restored, select payment/amount and atomically exchange resources; do not grant extra uses when at capacity. | C-Moon: slot restores Moonlight Step uses; C-Barbarian: Rage restores intimidation; C-Warlock: Pact slot restores Hurl use. | Partial: the fixed 2-for-1 numeric-pool subset is production checked in VS-11; `ClassProgression.restore_resource_from_spell_slot` remains separate code. Spell-slot/dice payments, arbitrary currency, conditional/post-roll costs, cross-actor transfer, catalog conversion and other selectors/policies remain unverified. | V-031, V-038 |
+| [ ] V-038 — Source-owned numeric and dice pools | Define capacity/die size, spend selected quantity, retain captured die identity where needed, and keep class/copy pools separate even if they share names. | C-Psi Warrior and Soulknife have separate Psionic dice; C-Zealot/C-Celestial healing dice pools. | Partial: exact-source numeric capacity/current/query/spend and formula capacity are checked in VS-06; bounded die-size/count activation in VS-10; one captured post-roll die paid from a numeric source in VS-23. VS-61 adds on-acquire captured dice, equal-face identities, explicit new-dice-only progression and oldest-quantity self-healing. VS-63 adds oldest exact captured-die transfer to a willing Character with recipient self-benefit use. VS-67 adds selected exact-die HP/Temporary HP allocation while retaining unselected ordered identities and recovery. Other consumers/policies, wider acquisition and source examples remain open (`ResourcePoolRules`). | V-007, V-027 |
+| [ ] V-039 — Restore one resource by spending another | Validate which depleted use can be restored, select payment/amount and atomically exchange resources; do not grant extra uses when at capacity. | C-Moon: slot restores Moonlight Step uses; C-Barbarian: Rage restores intimidation; C-Warlock: Pact slot restores Hurl use. | Partial: VS-11 retains fixed numeric exchange; VS-82/83 add ordinary/Pact slot, captured-dice and exact backpack-quantity payment to numeric self/active-party destinations with atomic refusal and checkpoint recovery. Other destination types and conditional/post-roll settlement remain open. | V-031, V-038 |
 | [ ] V-040 — Budgeted and filtered recovery | Select expended slots/pools within a formula budget, exclude levels, or recover lowest eligible/lower-than-paid slot; retain source pool distinction. | Arcane/Natural Recovery; C-Diviner: Expert Divination; C-Sorcerer: surge lowest expended slot. | Partial: `RestRules` budgeted slot recovery; additional selectors uncertain. | V-007, V-029, V-038 |
-| [ ] V-041 — Use locks with explicit scope and subject | Scope limit to each turn, own turn, target per turn, roll, active effect instance, first round, or owner-turn interval. Pool availability and per-option lock are independent. | C-Fey Wanderer: target once per turn; C-Zealot: once per Rage; M: dragon legendary pool and option lock. | Partial: independent actor/source/option combat-turn and target-per-turn rider locks are checked in VS-08. Own-turn/round/roll/active-instance/first-round scopes and general history remain open. | V-004, V-027, V-038 |
-| [ ] V-042 — Conditional free uses and cost replacement | Waive a qualifying payment while keeping other limits; replace one pool's payment without spending a different option's use. A free die roll needn't consume a die. | C-Battle Master: Relentless substitute d8; C-Mercy: free Hand within Flurry; I: Thief charge waiver; C-Sorcerer: one free Metamagic per own turn. | Partial: native waivers; generic cost proposal uncertain. | V-023, V-031, V-038, V-041 |
+| [ ] V-041 — Use locks with explicit scope and subject | Scope limit to each turn, own turn, target per turn, roll, active effect instance, first round, or owner-turn interval. Pool availability and per-option lock are independent. | C-Fey Wanderer: target once per turn; C-Zealot: once per Rage; M: dragon legendary pool and option lock. | Partial: VS-08/54/55 check exact-source weapon-rider combat-turn, target-per-turn, owner-turn-interval, round, actual-roll and timed-AC-grant limits with own-turn/first-round eligibility and completed-hit replay refusal. VS-62 adds actor/event numeric-pool recovery locks and exclusive source choices on actual Initiative/turn starts. Other roll/effect hosts and general subscriptions remain open. | V-004, V-027, V-038 |
+| [ ] V-042 — Conditional free uses and cost replacement | Waive a qualifying payment while keeping other limits; replace one pool's payment without spending a different option's use. A free die roll needn't consume a die. | C-Battle Master: Relentless substitute d8; C-Mercy: free Hand within Flurry; I: Thief charge waiver; C-Sorcerer: one free Metamagic per own turn. | Partial: VS-56 checks exact-active-source numeric weapon-rider waiver; VS-106 checks captured-die payment replacement for one weapon rider while preserving its pool and parent Action. Free die use and other hosts remain open. | V-023, V-031, V-038, V-041 |
 | [ ] V-043 — Depletion and overflow consequences | After spending/gaining, branch on last charge, cumulative capacity or failed roll; destroy/degrade/recharge the exact copy while preserving declared residual properties. | I: Staff of Power depletion; Staff of the Magi absorption overflow; Rod of Absorption lifetime capacity separate from current stored energy. | Partial: `Inventory.spend_instance_charges/destroy_instance`; generic aftermath/overflow uncertain. | V-011, V-027, V-038 |
-| [ ] V-044 — Recovery event and amount policy | Restore one/all/up-to-floor/random quantity at turn start, Initiative, rest completion, dawn/dusk or elapsed cooldown. Changing capacity or location must not imply refill. | C-Bard: Initiative floor two; I: Robe of Stars dusk recovery; M: in-lair capacity; C-Monk: mutually exclusive Initiative recovery choices. | Partial: fixed/capacity recovery on matching numeric-pool rest completion is checked in VS-07; growth does not refill (VS-06). Initiative/floor/random/dawn/dusk/cooldown policies remain open. | V-007, V-010, V-038, V-041 |
+| [ ] V-044 — Recovery event and amount policy | Restore one/all/up-to-floor/random quantity at turn start, Initiative, rest completion, dawn/dusk or elapsed cooldown. Changing capacity or location must not imply refill. | C-Bard: Initiative floor two; I: Robe of Stars dusk recovery; M: in-lair capacity; C-Monk: mutually exclusive Initiative recovery choices. | Partial: fixed/capacity recovery on matching numeric-pool rest completion is checked in VS-07; growth does not refill (VS-06). VS-62 adds fixed/fill/floor numeric recovery at actual Initiative/turn starts, clamping and exact-source exclusive choices with stale/replay refusal. Living Character player-entity hosts only; native conversion, dice combat recovery, secondary option payments/effects and random/dawn/dusk/cooldown policies remain open. | V-007, V-010, V-038, V-041 |
 | [ ] V-045 — Active-use budget versus wall-clock duration | Retain cumulative on-time or distance and pause/resume it without restarting allowance; begin cooldown at the declared end rather than activation. | I: Oil fuel can burn nonconsecutively; Wings of Flying cooldown starts when wings disappear; prior Figurine time budgets. | Partial: VS-14 checks cooldown from scheduled expiry or actual dismissal, including late observation and a jump past both deadlines. Cumulative on-time/distance and pause/resume budgets remain open. | V-027, V-038, V-044 |
 | [ ] V-046 — Work progress with deadlines and interruption | Accumulate qualified study/work, require proximity/concentration/participants, constrain daily rest and time window, and distinguish lost progress from lost paid material. | I: Manuals 48 hours within six days; Golem manuals; Hag Eye coven rite; Nolzur's Pigments. | Uncertain: likely campaign clock, inventory, source-owned procedure state. | V-005, V-031, V-045 |
 | [ ] V-047 — Repeat saves, counts and staged outcomes | Repeat at target-turn or elapsed-time boundaries, count qualifying successes, branch on margin or transition to next condition stage. Dependent conditions end only by specified routes. | I: Pale Tincture seven successful saves; Wand of Wonder staged petrification; Lolth's Sting linked sleep. | Partial: `SpellEncounterLifecycle` repeat saves; arbitrary counters/stages uncertain. | V-010, V-011, V-038, V-041 |
@@ -836,14 +1491,14 @@ bearing actor and the actor whose clock expires it can be different identities.
 | Open ID — capability | Boundary to implement and mark off | Description examples | Current support / likely hook | Depends on |
 |---|---|---|---|---|
 | [ ] V-049 — Source-linked termination predicates | End a grant on declared damage, attack roll, spell cast, movement, equipment removal, Incapacitated/Unconscious/death, range or replacement. Exempt damage from an explicitly identified causal source. | C-Cleric: Sear damage does not end Turn Undead; C-Barbarian: Persistent Rage changes termination; I: invisibility differs by potion. | Partial: VS-12/13 check campaign expiry and exact-source removal; VS-14 adds owned voluntary dismissal. Declared action/status/range predicates and causal damage exemptions remain unverified. | V-002, V-010, V-027 |
-| [ ] V-050 — Suppress a condition without removing it | Query a condition as ineffective for eligible recipients while its original source/duration remains, then restore its effect when suppression ends. | C-Paladin: Courage/Devotion aura suppresses existing Fear/Charm; earlier map Ear Horn. | Partial: native immunity/aura paths; general suppression uncertain (`Character`). | V-001, V-027, V-049 |
+| [ ] V-050 — Suppress a condition without removing it | Query a condition as ineffective for eligible recipients while its original source/duration remains, then restore its effect when suppression ends. | C-Paladin: Courage/Devotion aura suppresses existing Fear/Charm; earlier map Ear Horn. | Partial: VS-73/74 accept timed condition preservation and overlapping directly owned Character aura sources; broader origins and hosts remain open. | V-001, V-027, V-049 |
 | [ ] V-051 — Consume the next matching grant | Store eligibility/source/target and spend a one-shot benefit only on the next qualifying event before expiry; ignore nonmatching events. | C-Eldritch Knight: next save against own spell; C-Fighter: next attack against missed target; C-Moon: next attack after teleport. | Partial: VS-13 checks one source-owned melee-weapon-hit matcher with bounded fixed typed damage, ordered consumption, expiry/removal and allowed-checkpoint state. Other matchers, target predicates, general event authoring and cross-domain grants remain unverified. | V-002, V-010, V-027, V-041 |
 | [ ] V-052 — Expiring Temporary HP and linked benefits | Track which source supplied remaining Temporary HP and remove only that source's surviving amount/benefits at expiry; don't treat all Temporary HP as permanent. | C-World Tree: recipient Temporary HP vanish when Rage ends; I: Potion of Heroism timed Temporary HP. | Partial: exact-source timed Temporary HP, keep-higher replacement and current owner cleanup are checked by VS-15; replacement-choice UI, cross-actor ownership and linked benefits remain open. | V-027, V-049 |
-| [ ] V-053 — Dynamic aura membership and chosen beneficiary | Recompute moving emanation recipients and suppression; preserve transient entry benefits beyond leaving when declared. Separate owner's formula/DC from bearer and recipient. | C-Sea: Oceanic Gift aura uses giver's values; C-Glory: entry Speed lasts through next turn; C-Paladin: aura selection. | Partial: native combat auras/zones; generic bearer/membership lifecycle uncertain. | V-002, V-007, V-009, V-049, V-050 |
-| [ ] V-054 — Transfer a captured grant to another actor | Give a recipient an owned token/die/permission with captured generation values, independent expiry and spender budget. Granting actor leveling later must follow declared snapshot policy. | Bardic Inspiration and Valor recipient Reaction; C-Dance: shared single rolled Initiative bonus. | Partial: `RollTokenRules` saved tokens/native Inspiration; generic transferable grants uncertain. | V-027, V-038, V-049 |
+| [ ] V-053 — Dynamic aura membership and chosen beneficiary | Recompute moving emanation recipients and suppression; preserve transient entry benefits beyond leaving when declared. Separate owner's formula/DC from bearer and recipient. | C-Sea: Oceanic Gift aura uses giver's values; C-Glory: entry Speed lasts through next turn; C-Paladin: aura selection. | Partial: VS-75 accepts direct Character bearer/recipient membership and source-owned suppression; distinct giver/bearer transfer, monster/exploration auras, selected protection and lingering benefits remain open. | V-002, V-007, V-009, V-049, V-050 |
+| [ ] V-054 — Transfer a captured grant to another actor | Give a recipient an owned token/die/permission with captured generation values, independent expiry and spender budget. Granting actor leveling later must follow declared snapshot policy. | Bardic Inspiration and Valor recipient Reaction; C-Dance: shared single rolled Initiative bonus. | Partial: VS-63 checks exact captured die/formula self-benefit gifts, giver payment, recipient own-turn budgets, independent expiry, source reacquisition and checkpoint ownership. VS-64 completes S-083 with one shared captured weapon-attack bonus, independent recipient Reactions, exact original deadlines and fresh-process recovery. Other roll hosts, roll replacement, casting permissions, broader origins and catalog examples remain open. | V-027, V-038, V-049 |
 | [ ] V-055 — Modify another rule's parameters or options | A feature extends/replaces an existing rule's count, die, targets, options, permissions or end predicates. Apply once and avoid stacking mutually exclusive Extra Attack/base AC policies. | C-Mercy: Flurry upgrades; C-World Tree: extra mastery; C-Barbarian: Persistent Rage; C-Ranger: Foe Slayer die replacement. | Partial: named upgrades; general data-defined feature modification uncertain. | V-009, V-024, V-025, V-037 |
 | [ ] V-056 — Aftermath on source end | Emit one source-end event with final state/origin, then start follow-up timer or effect; distinguish dismissal, expiry, destruction and death when required. | C-Trickery: Duplicity heals near illusion on end; I: Wings cooldown; prior Draakhorn aftermath. | Partial: VS-14 checks one captured cooldown aftermath for expiry/dismissal without replay. Source removal starts no cooldown. Destruction/death reasons, arbitrary aftermath and general source-end subscriptions remain open. | V-006, V-010, V-027, V-049 |
-| [ ] V-057 — Durable rule state at allowed checkpoints | Save exact instances, relations, choices, counters and deadlines; restore without replaying acquisition or generating new rolls. Validate before session replacement. Active decisions remain transient. | Stored spell contents; Quivering Palm target; item study/use histories; existing ward/token recovery. | Partial: numeric pools (VS-09), fresh-process timed AC/next-hit/cooldown state (VS-12–14), Temporary HP provenance (VS-15) and malformed source/deadline refusal are checked. Lookup/sum add no durable state. Other payloads and generic envelopes remain open; decisions/turn locks stay transient. | V-027, V-038, V-045, V-049 |
+| [ ] V-057 — Durable rule state at allowed checkpoints | Save exact instances, relations, choices, counters and deadlines; restore without replaying acquisition or generating new rolls. Validate before session replacement. Active decisions remain transient. | Stored spell contents; Quivering Palm target; item study/use histories; existing ward/token recovery. | Partial: numeric pools (VS-09), timed AC/next-hit/cooldown state (VS-12–14), Temporary HP provenance (VS-15) and bounded exact-source last-minute damage history (VS-40) have fresh-process recovery and malformed-load refusal. VS-61 adds exact captured dice/serials and mixed-generation recovery with malformed-save refusal on both DTO paths. VS-63 adds recipient-owned captured gifts, original expiry, giver/group serials and transferred-die high-water recovery with both DTO paths and cross-actor preflight. VS-69 adds ordered permanent acquisitions, pending levels and exact receipts, with wounded HP/exact gear recovery and no acquisition replay. Other payloads and generic envelopes remain open; decisions/turn locks stay transient. | V-027, V-038, V-045, V-049 |
 
 ### Actors, action control, forms and spaces
 
@@ -907,7 +1562,7 @@ state or execution requirements. They are grouped here to keep V-001–086 stabl
 |---|---|---|---|---|
 | [ ] V-087 — Steal temporary casting permission | On the qualifying failed enemy save, grant the thief preparation and forbid that enemy's casting of the exact spell for a deadline; remove only those restrictions/grants afterward. This does not store a cast. | C-Arcane Trickster: Spell Thief's eight-hour knowledge theft. | Uncertain: `ClassProgression`, casting eligibility and owned timed grants are likely hooks. | V-019, V-027, V-028, V-049, V-057 |
 | [ ] V-088 — Escalating DC or cumulative risk | Store the count/history used to calculate current DC/chance, reset only at the declared boundary, and choose when attempts increment it. | C-Barbarian: Relentless Rage DC rises; I: Wind Fan and Potion of Longevity cumulative failure chances. | Partial: native Relentless counter; generic authored risk uncertain. | V-007, V-038, V-044, V-057, V-080 |
-| [ ] V-089 — Reroll with declared kept-result policy | Reroll a qualifying natural die or entire test at the stated window; choose old/new only where allowed, apply declared bonuses/mode and settle once. | R: Halfling must use new result; C-Bard: Countercharm adds Advantage; C-Fighter: Indomitable adds level to reroll. | Partial: VS-26 checks owned mandatory-new natural/whole-test rerolls in loaded EventDialog event/choice checks, declared mode/bonus policy, floor stages, original/new receipts and one cost/settlement. Old/new selection, other roll hosts and broader bonus/mode edits remain open alongside native rerolls and `RollTokenRules`. | V-010, V-012, V-023 |
+| [ ] V-089 — Reroll with declared kept-result policy | Reroll a qualifying natural die or entire test at the stated window; choose old/new only where allowed, apply declared bonuses/mode and settle once. | R: Halfling must use new result; C-Bard: Countercharm adds Advantage; C-Fighter: Indomitable adds level to reroll. | Partial: VS-26 checks owned mandatory-new natural/whole-test rerolls in loaded EventDialog event/choice checks, declared mode/bonus policy, floor stages, original/new receipts and one cost/settlement. VS-48/49 add declared old/new, captured mode/formula bonus and normal weapon/flat/ordered combat shared-spell attack/save hosts. Further hosts and cross-actor intervention remain open. | V-010, V-012, V-023 |
 | [ ] V-090 — Natural-result replacement tokens | Generate/capture distinct result tokens with owner, visibility and reset; replace before rolling or at a separately authorized post-roll window. Equal values remain different tokens; don't roll another d20 unless required. | C-Diviner: Portent; C-Rogue: Stroke of Luck sets failed roll to 20. | Partial: shared pre-roll `RollTokenRules`; post-roll natural replacement uncertain. | V-010, V-027, V-038, V-041, V-057 |
 | [ ] V-091 — Air supply and breathing eligibility | Model available air shared by actual breathing occupants, environment adaptation and suffocation progression; an exemption changes consumption as well as consequence. | I: Portable Hole/Haversack air budgets; Necklace of Adaptation; Potion of Water Breathing. | Uncertain: world/survival adapters are likely hooks; general breathing model not established. | V-005, V-045, V-065, V-078 |
 | [ ] V-092 — Body-part loss and restoration | Store lost/attached parts, functional effects and eligible restoration progress; interrupt regrowth when required living-HP condition ceases. | I: Ring of Regeneration; Prosthetic Limb; M: Troll/Hydra part lifecycle. | Uncertain: original actor identity/corpse/form ledgers are likely hooks. | V-005, V-021, V-046, V-057, V-067 |

@@ -2,7 +2,7 @@
 class_name SpellDamageRolls
 extends RefCounted
 
-const FAILED_SAVE_BONUS_PAYMENT_POLICIES := ["pay_on_choice", "pay_on_converted_success"]
+const FAILED_SAVE_BONUS_PAYMENT_POLICIES := ["pay_on_choice", "pay_on_converted_success", "pay_on_final_success", "pay_on_final_failure"]
 const RESOLUTION_WINDOW_ORDER := ["before_roll", "after_natural", "provisional_outcome", "pre_damage", "post_damage"]
 const RESOLUTION_COMMON_FIELDS := ["kind", "actor_id", "target_id", "action_id", "action_invocation_id", "spell_definition_id", "spell_invocation_id", "source_definition_id", "source_instance_id", "source_owner_id"]
 const RESOLUTION_WINDOW_FIELDS := {
@@ -91,16 +91,25 @@ static func spell_effects_for_slot_level(spell_data: Dictionary, slot_level: int
 	return effects
 
 
-static func _roll_spell_damage(caster: Character, formula: String, repetitions: int, decisions: Dictionary) -> Dictionary:
+static func _roll_spell_damage(caster: Character, formula: String, repetitions: int, decisions: Dictionary, damage_dice_policy: Dictionary = {}) -> Dictionary:
 	var context: Dictionary = decisions.get("spell_damage_context", {})
 	# A damaging area spell rolls damage once for every target of that cast.
 	if context.has("details"):
 		return context["details"]
 	var details := {"formula": formula, "dice_terms": [], "modifiers": [], "final_total": 0}
-	for _repeat in repetitions:
-		var roll := Dice.parse_dice_details(formula, {}, caster)
+	var policy_totals := {"removed": 0, "maximized": 0}
+	for repeat_index in repetitions:
+		var repeat_policy := damage_dice_policy
+		if repeat_index > 0 and not bool(damage_dice_policy.get("apply_to_critical", true)):
+			repeat_policy = {}
+		var roll := Dice.parse_dice_details(formula, {}, caster, repeat_policy)
 		details["dice_terms"].append_array(roll["dice_terms"])
 		details["final_total"] = int(details["final_total"]) + int(roll["final_total"])
+		var applied_policy: Dictionary = roll.get("damage_dice_policy", {})
+		for field in policy_totals:
+			policy_totals[field] += int(applied_policy.get(field, 0))
+	if not damage_dice_policy.is_empty():
+		details["damage_dice_policy"] = policy_totals
 	if decisions.has("spell_damage_context"):
 		context["details"] = details
 	return details
@@ -206,6 +215,7 @@ static func _apply_empowered_spell(caster: Character, details: Dictionary, decis
 
 
 static var _pending_requests: Dictionary = {}
+static var _pending_reroll_keep_choices: Dictionary = {}
 static var _active_request_id_by_caster: Dictionary = {}
 static var _request_counter: int = 0
 static var _epoch: int = 0
@@ -273,19 +283,62 @@ static func publish_resolution_windows(cast: SpellResolutionContext, result: Dic
 	result["resolution_windows"] = cast.resolution_window_context.get("windows", []).duplicate(true)
 
 
-static func failed_save_numeric_bonus_options(target: Character, ability: String) -> Array[Dictionary]:
+static func _save_target_position(cast: SpellResolutionContext, target: Character) -> Variant:
+	if cast == null or cast.spatial_host == null:
+		return null
+	for participant in cast.spatial_host.players:
+		if participant.get("character") == target and participant.get("hex_position") is Vector2i:
+			return participant["hex_position"]
+	return null
+
+
+static func _required_sense_available(target: Character, cast: SpellResolutionContext, sense: String) -> bool:
+	if sense.is_empty(): return true
+	if cast == null or cast.spatial_host == null or cast.caster == null:
+		return false
+	var target_position: Variant = _save_target_position(cast, target)
+	if target_position == null or cast.spatial_host.grid == null:
+		return false
+	return CombatPerception.has_required_sense(target, cast.caster, target_position, cast.spatial_host.spell_origin, cast.spatial_host.grid, sense)
+
+
+static func save_context_receipt(cast: SpellResolutionContext) -> Dictionary:
+	if cast == null or not cast.spell.get("save_context", {}) is Dictionary or cast.spell.get("save_context", {}).is_empty():
+		return {}
+	var receipt: Dictionary = cast.spell["save_context"].duplicate(true)
+	receipt["spell_definition_id"] = cast.spell_definition_id
+	receipt["source_definition_id"] = cast.source_definition_id
+	receipt["source_instance_id"] = cast.source_instance_id
+	receipt["source_owner_id"] = cast.source_owner_id
+	receipt["invocation_id"] = cast.invocation_id
+	if not cast.originating_step_id.is_empty():
+		receipt["step_id"] = cast.originating_step_id
+	return receipt
+
+
+static func failed_save_numeric_bonus_options(target: Character, ability: String, cast: SpellResolutionContext = null) -> Array[Dictionary]:
 	var options: Array[Dictionary] = []
 	if target == null:
 		return options
+	var declared_context: Dictionary = cast.spell.get("save_context", {}) if cast != null and cast.spell.get("save_context", {}) is Dictionary else {}
+	var save_context := save_context_receipt(cast)
 	for effect in ClassProgression.selected_feature_effects_of_type(target, "failed_save_numeric_bonus"):
 		if str(effect.get("ability", "")).to_upper() != ability.to_upper():
+			continue
+		var required_cause := str(effect.get("cause_id", ""))
+		var required_purpose := str(effect.get("purpose_id", ""))
+		if not required_cause.is_empty() or not required_purpose.is_empty():
+			if declared_context.is_empty() or str(declared_context.get("cause_id", "")) != required_cause or str(declared_context.get("purpose_id", "")) != required_purpose:
+				continue
+		var required_sense := str(effect.get("required_sense", ""))
+		if not _required_sense_available(target, cast, required_sense):
 			continue
 		var source_id := str(effect.get("source_instance_id", ""))
 		var pool_id := str(effect.get("resource_pool_definition_id", ""))
 		var pool: Variant = target.numeric_resource_pools.get(source_id, {})
 		if source_id.is_empty() or pool_id.is_empty() or not pool is Dictionary:
 			continue
-		if str(pool.get("owner_id", "")) != target.character_id or str(pool.get("source_instance_id", "")) != source_id or str(pool.get("definition_id", "")) != pool_id or int(pool.get("current", 0)) < int(effect.get("cost", 0)):
+		if str(pool.get("owner_id", "")) != target.character_id or str(pool.get("source_instance_id", "")) != source_id or str(pool.get("definition_id", "")) != pool_id or int(ResourcePoolRules.availability(target, source_id).get("spendable", 0)) < int(effect.get("cost", 0)):
 			continue
 		options.append({
 			"resolution": "die_bonus" if effect.has("die_size") else "numeric_bonus",
@@ -298,6 +351,10 @@ static func failed_save_numeric_bonus_options(target: Character, ability: String
 			"die_size": int(effect.get("die_size", 0)),
 			"cost": int(effect.get("cost", 0)),
 			"payment_policy": str(effect.get("payment_policy", "pay_on_choice")),
+			"cause_id": required_cause,
+			"purpose_id": required_purpose,
+			"required_sense": required_sense,
+			"save_context": save_context.duplicate(true),
 			"label": str(effect.get("feature_name", effect.get("feature_id", source_id))),
 		})
 	options.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return str(a.get("source_instance_id", "")) < str(b.get("source_instance_id", "")))
@@ -355,7 +412,7 @@ static func ability_check_numeric_bonus_options(owner: Character, check_result: 
 	var loaded: Dictionary = DataLoader.get_event_check_record(origin_event_id, origin_check_id)
 	var loaded_check: Dictionary = loaded.get("check", {})
 	var loaded_context: Dictionary = loaded_check.get("check_context", {})
-	if loaded.is_empty() or loaded_context.is_empty() or str(loaded_check.get("skill", "")) != str(context.get("skill", "")) or int(loaded_check.get("dc", -1)) != int(check_result.get("dc", -2)):
+	if loaded.is_empty() or str(loaded_check.get("skill", "")) != str(context.get("skill", "")) or int(loaded_check.get("dc", -1)) != int(check_result.get("dc", -2)):
 		return options
 	for field in ["task_id", "purpose_id", "required_tool_id"]:
 		if str(loaded_context.get(field, "")) != str(context.get(field, "")):
@@ -369,11 +426,9 @@ static func ability_check_numeric_bonus_options(owner: Character, check_result: 
 			continue
 		if str(effect.get("skill", "")) != str(context.get("skill", "")):
 			continue
-		if str(effect.get("task_id", "")) != str(context.get("task_id", "")) or str(effect.get("purpose_id", "")) != str(context.get("purpose_id", "")):
+		if not EventResolver.ability_check_context_matches(effect, context):
 			continue
 		if str(effect.get("required_tool_id", "")) != str(context.get("required_tool_id", "")):
-			continue
-		if str(effect.get("source_event_id", "")) != str(context.get("origin_event_id", "")) or str(effect.get("source_check_id", "")) != str(context.get("origin_check_id", "")):
 			continue
 		var source_id := str(effect.get("source_instance_id", ""))
 		var pool_id := str(effect.get("resource_pool_definition_id", ""))
@@ -437,7 +492,7 @@ static func ability_check_mandatory_reroll_options(owner: Character, check_resul
 	var loaded: Dictionary = DataLoader.get_event_check_record(origin_event_id, origin_check_id)
 	var loaded_check: Dictionary = loaded.get("check", {})
 	var loaded_context: Dictionary = loaded_check.get("check_context", {})
-	if loaded.is_empty() or loaded_context.is_empty() or str(loaded_check.get("skill", "")) != str(context.get("skill", "")) or int(loaded_check.get("dc", -1)) != int(check_result.get("dc", -2)):
+	if loaded.is_empty() or str(loaded_check.get("skill", "")) != str(context.get("skill", "")) or int(loaded_check.get("dc", -1)) != int(check_result.get("dc", -2)):
 		return options
 	for field in ["task_id", "purpose_id", "required_tool_id"]:
 		if str(loaded_context.get(field, "")) != str(context.get(field, "")):
@@ -450,12 +505,16 @@ static func ability_check_mandatory_reroll_options(owner: Character, check_resul
 			continue
 		if str(effect.get("ability", "")).to_upper() != str(check_result.get("ability", "")).to_upper() or str(effect.get("skill", "")) != str(context.get("skill", "")):
 			continue
-		if str(effect.get("task_id", "")) != str(context.get("task_id", "")) or str(effect.get("purpose_id", "")) != str(context.get("purpose_id", "")) or str(effect.get("required_tool_id", "")) != str(context.get("required_tool_id", "")):
-			continue
-		if str(effect.get("source_event_id", "")) != origin_event_id or str(effect.get("source_check_id", "")) != origin_check_id:
+		if not EventResolver.ability_check_context_matches(effect, context) or str(effect.get("required_tool_id", "")) != str(context.get("required_tool_id", "")):
 			continue
 		if not EventResolver.can_reroll_captured_skill_check(check_result, str(effect.get("reroll_mode", "")), str(effect.get("bonus_dice_policy", ""))):
 			continue
+		var level_bonus := 0
+		if effect.has("level_bonus_formula"):
+			var evaluated_bonus := SharedStepExecutor.evaluate_actor_formula(effect.get("level_bonus_formula"), owner)
+			if not bool(evaluated_bonus.get("success", false)) or not ResourcePoolRules._integer(evaluated_bonus.get("value"), -100, 100):
+				continue
+			level_bonus = int(evaluated_bonus.get("value", 0))
 		var source_id := str(effect.get("source_instance_id", ""))
 		var pool_id := str(effect.get("resource_pool_definition_id", ""))
 		var cost := int(effect.get("cost", 0))
@@ -475,11 +534,172 @@ static func ability_check_mandatory_reroll_options(owner: Character, check_resul
 			"eligible_outcomes": effect.get("eligible_outcomes", []).duplicate(true),
 			"reroll_mode": str(effect.get("reroll_mode", "")),
 			"bonus_dice_policy": str(effect.get("bonus_dice_policy", "")),
+			"selection_policy": str(effect.get("selection_policy", "mandatory_new")),
+			"new_roll_mode": str(effect.get("new_roll_mode", "captured")),
+			"level_bonus": level_bonus,
 			"cost": cost, "label": str(effect.get("feature_name", effect.get("feature_id", source_id))),
 		}
 		option["offer_id"] = _ability_check_offer_id(option)
 		options.append(option)
 	return options
+
+
+static func _common_roll_test(captured: Dictionary, domain: String, ability: String, dc: int) -> Dictionary:
+	var natural := int(captured.get("natural", captured.get("natural_roll", 0)))
+	var rolls: Array = captured.get("roll_results", captured.get("rolls", [natural])).duplicate(true)
+	var kept: Array = captured.get("roll_kept", captured.get("kept", [true])).duplicate(true)
+	var mode := str(captured.get("roll_mode", ""))
+	if mode.is_empty():
+		mode = "advantage" if bool(captured.get("advantage", false)) else ("disadvantage" if bool(captured.get("disadvantage", false)) else "normal")
+	var details: Dictionary = captured.get("roll_details", {}).duplicate(true)
+	if details.is_empty():
+		var replaced := bool(captured.get("roll_token_replaced", false))
+		details = {"total": natural, "rolls": rolls.duplicate(true), "kept": kept.duplicate(true), "mode": "replaced" if replaced else mode,"replaced":replaced,"replaced_by_roll_token":replaced}
+	var bonus_dice: Array = captured.get("check_bonus_dice", []).duplicate(true)
+	if bonus_dice.is_empty():
+		for term in captured.get("bonus_dice_terms", []):
+			if not term is Dictionary or int(term.get("sides", 0)) not in ResourcePoolRules.SUPPORTED_DIE_SIZES:
+				return {}
+			var term_rolls: Array = term.get("results", []).duplicate(true)
+			var term_kept: Array = term.get("kept", []).duplicate(true)
+			if term_rolls.size() != 1 or term_kept.size() != 1:
+				return {}
+			var term_sign := -1 if int(term.get("subtotal",int(term_rolls[0]))) < 0 else 1
+			bonus_dice.append({"label":str(term.get("label","Bonus die")),"sides": int(term.get("sides", 0)), "value": int(term_rolls[0]), "sign": term_sign, "included_in_modifier": false, "applied_before_total_floor": false, "roll": {"total": int(term_rolls[0]), "rolls": term_rolls, "kept": term_kept}})
+	var base_modifier := int(captured.get("base_modifier", captured.get("modifier", 0)))
+	if domain in ["weapon_attack","shared_spell_attack"] and not captured.has("base_modifier"):
+		# Attack modifier fields omit some fixed bonuses already in the captured
+		# total. Separate only the exact bonus dice; keep every other contribution.
+		base_modifier=int(captured.get("total",natural+base_modifier))-natural
+		for bonus in bonus_dice:
+			base_modifier-=int(bonus.get("value",0))*int(bonus.get("sign",1))
+	if captured.has("check_bonus_dice") and not captured.has("base_modifier"):
+		for bonus in bonus_dice:
+			if bonus is Dictionary and bool(bonus.get("included_in_modifier", false)):
+				base_modifier -= int(bonus.get("value", 0)) * int(bonus.get("sign", 1))
+	return {
+		"domain": domain, "ability": ability.to_upper(), "raw_natural_roll": natural,
+		"natural_roll": natural, "roll_mode": mode, "roll_details": details,
+		"base_modifier": base_modifier, "modifier": int(captured.get("modifier", base_modifier)),
+		"dc": dc, "total": int(captured.get("total", natural + base_modifier)),
+		"roll_floor_minimum": int(captured.get("roll_floor_minimum", 1)),
+		"total_floor_minimum": int(captured.get("total_floor_minimum", 0)),
+		"total_floor_active": bool(captured.get("total_floor_active", false)),
+		"check_bonus_dice": bonus_dice,
+		"check_context": captured.get("check_context", {}).duplicate(true),
+	}
+
+
+static func combat_test_reroll_options(owner: Character, domain: String, ability: String, outcome: String, captured: Dictionary, spell_id: String = "") -> Array[Dictionary]:
+	var options: Array[Dictionary] = []
+	if owner == null or domain not in ["weapon_attack", "shared_spell_attack", "shared_spell_save"] or outcome not in (["hit", "miss"] if domain != "shared_spell_save" else ["success", "failure"]):
+		return options
+	var dc := int(captured.get("dc", 0))
+	if domain in ["weapon_attack", "shared_spell_attack"]:
+		dc = int(captured.get("target_ac", captured.get("ac", 0)))
+	var common := _common_roll_test(captured, domain, ability, dc)
+	if common.is_empty():
+		return options
+	var seen: Dictionary = {}
+	for effect in ClassProgression.selected_feature_effects_of_type(owner, "ability_check_mandatory_reroll"):
+		if str(effect.get("domain", "")) != domain or str(effect.get("ability", "")).to_upper() != ability.to_upper() or outcome not in effect.get("eligible_outcomes", []):
+			continue
+		if effect.has("spell_id") and str(effect.get("spell_id", "")) != spell_id:
+			continue
+		if domain in ["shared_spell_attack", "shared_spell_save"] and spell_id.is_empty():
+			continue
+		var reroll_mode := str(effect.get("reroll_mode", ""))
+		var bonus_policy := str(effect.get("bonus_dice_policy", ""))
+		if not EventResolver.can_reroll_captured_skill_check(common, reroll_mode, bonus_policy):
+			continue
+		var source_id := str(effect.get("source_instance_id", ""))
+		var pool_id := str(effect.get("resource_pool_definition_id", ""))
+		var pool: Variant = owner.numeric_resource_pools.get(source_id, {})
+		var cost := int(effect.get("cost", 0))
+		if source_id.is_empty() or pool_id.is_empty() or not pool is Dictionary or str(pool.get("owner_id", "")) != owner.character_id or str(pool.get("definition_id", "")) != pool_id or int(pool.get("current", 0)) < cost:
+			continue
+		var bonus := 0
+		if effect.has("level_bonus_formula"):
+			var evaluation := SharedStepExecutor.evaluate_actor_formula(effect.get("level_bonus_formula"), owner)
+			if not bool(evaluation.get("success", false)) or not ResourcePoolRules._integer(evaluation.get("value"), -100, 100):
+				continue
+			bonus = int(evaluation.get("value", 0))
+		var option := {
+			"effect_id": str(effect.get("id", "")), "source_instance_id": source_id,
+			"feature_id": str(effect.get("feature_id", "")), "pool_definition_id": pool_id,
+			"operation_kind": "mandatory_reroll", "resolution": "test_reroll", "domain": domain,
+			"ability": ability.to_upper(), "spell_id": spell_id, "eligible_outcomes": effect.get("eligible_outcomes", []).duplicate(true),
+			"reroll_mode": reroll_mode, "bonus_dice_policy": bonus_policy,
+			"selection_policy": str(effect.get("selection_policy", "mandatory_new")),
+			"new_roll_mode": str(effect.get("new_roll_mode", "captured")), "level_bonus": bonus,
+			"cost": cost, "payment_policy": "pay_on_choice",
+			"label": str(effect.get("feature_name", effect.get("feature_id", source_id))),
+		}
+		var offer_id := "%s|%s|%s" % [domain, source_id, str(effect.get("id", ""))]
+		if seen.has(offer_id): continue
+		seen[offer_id] = true
+		option["offer_id"] = offer_id
+		options.append(option)
+	return options
+
+
+static func _resolve_combat_reroll(actor: Character, raw_test: Dictionary, domain: String, ability: String, dc: int, selected: Dictionary) -> Dictionary:
+	var captured := _common_roll_test(raw_test, domain, ability, dc)
+	if captured.is_empty() or actor == null:
+		return {}
+	var replacement := EventResolver.reroll_captured_skill_check(actor, captured, str(selected.get("reroll_mode", "")), str(selected.get("bonus_dice_policy", "")), str(selected.get("new_roll_mode", "captured")), int(selected.get("level_bonus", 0)))
+	if replacement.is_empty():
+		return {}
+	replacement["domain"] = domain
+	replacement["ability"] = ability.to_upper()
+	replacement["dc"] = dc
+	replacement["success"] = int(replacement.get("total", 0)) >= dc
+	return {
+		"captured": captured,
+		"new_test": replacement,
+		"receipt": {
+			"source_instance_id": str(selected.get("source_instance_id", "")),
+			"effect_id": str(selected.get("effect_id", "")),
+			"domain": domain,
+			"ability": ability.to_upper(),
+			"reroll_mode": str(selected.get("reroll_mode", "")),
+			"bonus_dice_policy": str(selected.get("bonus_dice_policy", "")),
+			"selection_policy": str(selected.get("selection_policy", "mandatory_new")),
+			"new_test_roll_mode": str(replacement.get("new_test_roll_mode", "normal")),
+			"level_bonus": int(selected.get("level_bonus", 0)),
+			"kept": "new",
+			"original": {"complete_test": raw_test.duplicate(true), "normalized_test": captured.duplicate(true)},
+			"new_test": replacement.duplicate(true),
+		}
+	}
+
+
+static func _apply_attack_reroll(attack_result: Dictionary, target_ac: int, resolved: Dictionary, crit_range: int = 20) -> Dictionary:
+	var attack := attack_result.duplicate(true)
+	var new_test: Dictionary = resolved.get("new_test", {})
+	if new_test.is_empty(): return {}
+	var natural := int(new_test.get("raw_natural_roll", new_test.get("natural_roll", 0)))
+	attack["natural"] = natural
+	attack["total"] = int(new_test.get("total", 0))
+	attack["modifier"] = int(new_test.get("modifier", attack.get("modifier", 0)))
+	attack["roll_results"] = new_test.get("rolls", [natural]).duplicate(true)
+	attack["roll_kept"] = new_test.get("kept", [true]).duplicate(true)
+	attack["advantage"] = str(new_test.get("roll_mode", "normal")) == "advantage"
+	attack["disadvantage"] = str(new_test.get("roll_mode", "normal")) == "disadvantage"
+	attack["is_miss"] = natural == 1
+	attack["is_crit"] = natural >= crit_range
+	attack["target_ac"] = target_ac
+	var bonus_terms: Array[Dictionary] = []
+	for bonus in new_test.get("check_bonus_dice",[]):
+		var label := str(bonus.get("label",bonus.get("source","Bonus die")))
+		var value := int(bonus.value)*int(bonus.get("sign",1))
+		bonus_terms.append({"count":1,"sides":int(bonus.sides),"results":bonus.roll.rolls.duplicate(),"kept":bonus.roll.kept.duplicate(),"label":label,"subtotal":value})
+		for modifier in attack.get("activity_modifiers",[]):
+			if str(modifier.get("label","")).to_lower()==label.to_lower().trim_suffix(" penalty"):
+				modifier["value"]=value
+	attack["bonus_dice_terms"]=bonus_terms
+	attack["post_roll_reroll"] = resolved.get("receipt", {}).duplicate(true)
+	return attack
 
 
 static func _ability_check_offer_id(option: Dictionary) -> String:
@@ -525,7 +745,7 @@ static func settle_ability_check_post_roll(owner: Character, request: Dictionary
 			if str(option.get("offer_id", "")) == selected_offer_id:
 				current = option
 				break
-		for field in ["effect_id", "source_instance_id", "feature_id", "pool_definition_id", "operation_kind", "domain", "ability", "skill", "task_id", "purpose_id", "required_tool_id", "source_event_id", "source_check_id", "cost", "payment_policy", "amount", "die_size", "bonus_kind", "eligible_outcomes", "reroll_mode", "bonus_dice_policy"]:
+		for field in ["effect_id", "source_instance_id", "feature_id", "pool_definition_id", "operation_kind", "domain", "ability", "skill", "task_id", "purpose_id", "required_tool_id", "source_event_id", "source_check_id", "cost", "payment_policy", "amount", "die_size", "bonus_kind", "eligible_outcomes", "reroll_mode", "bonus_dice_policy", "selection_policy", "new_roll_mode"]:
 			if current.is_empty() or current.get(field) != selected.get(field):
 				selected.clear()
 				break
@@ -544,13 +764,23 @@ static func settle_ability_check_post_roll(owner: Character, request: Dictionary
 		_consume_request(record)
 		result["source_changed"] = true
 		return {"success": true, "check_result": result, "selected_source_id": "", "source_changed": true}
+	var payment_reservation: Dictionary = {"success": true, "reservation_id": ""}
+	if str(selected.get("operation_kind", "")) == "numeric_bonus":
+		payment_reservation = begin_selected_payment(owner, selected)
+		if not bool(payment_reservation.get("success", false)):
+			_consume_request(record)
+			result["source_changed"] = true
+			return {"success": true, "check_result": result, "selected_source_id": "", "source_changed": true}
 	var should_pay := true
 	if str(selected.get("operation_kind", "")) == "numeric_bonus":
 		var rolled_option := _roll_accepted_bonus_die(owner, selected)
 		if rolled_option.is_empty():
+			if not str(payment_reservation.get("reservation_id", "")).is_empty():
+				ResourcePoolRules.settle_payment_reservation(str(payment_reservation["reservation_id"]), false)
 			return {"success": false, "refused": true, "message": "The selected ability-check bonus die is unsupported."}
 		var bonus := int(rolled_option.get("bonus_amount", rolled_option.get("amount", 0)))
 		result["total"] = int(result.get("total", 0)) + bonus
+		CheckFloorRules.finish(result)
 		result["success"] = int(result["total"]) >= int(result.get("dc", 0))
 		result["post_roll_bonus"] = bonus
 		result["post_roll_bonus_source"] = str(selected.get("source_instance_id", ""))
@@ -558,7 +788,11 @@ static func settle_ability_check_post_roll(owner: Character, request: Dictionary
 		if selected.get("bonus_kind", "numeric") == "die":
 			result["post_roll_bonus_die"] = rolled_option.get("bonus_roll", {}).duplicate(true)
 			result["post_roll_bonus_die_source"] = str(selected.get("source_instance_id", ""))
-		should_pay = str(selected.get("payment_policy", "pay_on_choice")) == "pay_on_choice" or bool(result.get("success", false))
+		var paid := finish_selected_payment(owner, selected, bool(result.get("success", false)), str(payment_reservation.get("reservation_id", "")))
+		if not bool(paid.get("success", false)):
+			return {"success": false, "refused": true, "message": str(paid.get("message", "The selected source could not settle its payment."))}
+		should_pay = str(paid.get("state", "")) == "committed"
+		result["post_roll_bonus_payment"] = paid.duplicate(true)
 		result["post_roll_bonus_cost_paid"] = should_pay
 	else:
 		var reroll_payment := ResourcePoolRules.spend(owner, str(selected.get("source_instance_id", "")), int(selected.get("cost", 0)))
@@ -581,9 +815,14 @@ static func settle_ability_check_post_roll(owner: Character, request: Dictionary
 			"roll_floor_minimum": captured.get("roll_floor_minimum", 1),
 			"total_floor_minimum": captured.get("total_floor_minimum", 0),
 			"total_floor_active": captured.get("total_floor_active", false),
+			"floor_sources": captured.get("floor_sources", []).duplicate(true),
+			"pre_floor_subtotal": captured.get("pre_floor_subtotal", captured.get("total",0)),
+			"authored_floor_adjustment": captured.get("authored_floor_adjustment",0),
+			"natural_outcome_policy": captured.get("natural_outcome_policy",""),
 			"bonus_dice": captured.get("check_bonus_dice", []).duplicate(true),
+			"complete_check_result": captured.duplicate(true),
 		}
-		var rerolled := EventResolver.reroll_captured_skill_check(owner, captured, str(selected.get("reroll_mode", "")), str(selected.get("bonus_dice_policy", "")))
+		var rerolled := EventResolver.reroll_captured_skill_check(owner, captured, str(selected.get("reroll_mode", "")), str(selected.get("bonus_dice_policy", "")), str(selected.get("new_roll_mode", "captured")), int(selected.get("level_bonus", 0)))
 		if rerolled.is_empty():
 			return {"success": false, "refused": true, "message": "The captured ability-check dice cannot be rerolled under this source."}
 		result = rerolled
@@ -591,8 +830,8 @@ static func settle_ability_check_post_roll(owner: Character, request: Dictionary
 		result["ability_check_reroll_resolved"] = true
 		result["post_roll_reroll_source"] = str(selected.get("source_instance_id", ""))
 		result["post_roll_reroll_cost_paid"] = true
-		result["post_roll_reroll"] = {"source_instance_id": str(selected.get("source_instance_id", "")), "effect_id": str(selected.get("effect_id", "")), "reroll_mode": str(selected.get("reroll_mode", "")), "bonus_dice_policy": str(selected.get("bonus_dice_policy", "")), "original": original_receipt, "new_roll": result.get("roll_details", {}).duplicate(true), "bonus_dice": result.get("check_bonus_dice", []).duplicate(true)}
-	if should_pay:
+		result["post_roll_reroll"] = {"source_instance_id": str(selected.get("source_instance_id", "")), "effect_id": str(selected.get("effect_id", "")), "reroll_mode": str(selected.get("reroll_mode", "")), "bonus_dice_policy": str(selected.get("bonus_dice_policy", "")), "selection_policy": str(selected.get("selection_policy", "mandatory_new")), "new_test_roll_mode": str(result.get("new_test_roll_mode", "normal")), "level_bonus": int(selected.get("level_bonus", 0)), "kept": "new", "original": original_receipt, "new_test": result.duplicate(true)}
+	if should_pay and str(selected.get("operation_kind", "")) != "numeric_bonus":
 		var payment := ResourcePoolRules.spend(owner, str(selected.get("source_instance_id", "")), int(selected.get("cost", 0)))
 		if not bool(payment.get("success", false)):
 			# No reroll is ever generated before this spend succeeds. Numeric bonus
@@ -650,11 +889,18 @@ static func settle_ability_check_numeric_bonus(owner: Character, result: Diction
 				break
 	if not selected.is_empty():
 		var pool: Dictionary = owner.numeric_resource_pools.get(selected_source_id, {})
-		if int(pool.get("current", 0)) < int(selected.get("cost", 0)):
+		if int(ResourcePoolRules.availability(owner, selected_source_id).get("spendable", 0)) < int(selected.get("cost", 0)):
+			selected.clear()
+	var payment_reservation: Dictionary = {"success": true, "reservation_id": ""}
+	if not selected.is_empty():
+		payment_reservation = begin_selected_payment(owner, selected)
+		if not bool(payment_reservation.get("success", false)):
 			selected.clear()
 	if not selected.is_empty():
 		selected = _roll_accepted_bonus_die(owner, selected)
 		if selected.is_empty():
+			if not str(payment_reservation.get("reservation_id", "")).is_empty():
+				ResourcePoolRules.settle_payment_reservation(str(payment_reservation["reservation_id"]), false)
 			return {"success": false, "refused": true, "message": "The selected ability-check bonus die is unsupported."}
 	var bonus := int(selected.get("bonus_amount", selected.get("amount", 0))) if not selected.is_empty() else 0
 	var settled := captured.duplicate(true)
@@ -669,11 +915,11 @@ static func settle_ability_check_numeric_bonus(owner: Character, result: Diction
 		if selected.get("bonus_kind", "numeric") == "die":
 			settled["post_roll_bonus_die"] = selected.get("bonus_roll", {}).duplicate(true)
 			settled["post_roll_bonus_die_source"] = selected_source_id
-		should_pay = not selected.is_empty() and (str(selected.get("payment_policy", "pay_on_choice")) == "pay_on_choice" or bool(settled.get("success", false)))
-	if should_pay:
-		var payment := ResourcePoolRules.spend(owner, selected_source_id, int(selected.get("cost", 0)))
+		var payment := finish_selected_payment(owner, selected, bool(settled.get("success", false)), str(payment_reservation.get("reservation_id", "")))
 		if not bool(payment.get("success", false)):
 			return {"success": false, "refused": true, "message": str(payment.get("message", "The selected source can no longer pay."))}
+		should_pay = str(payment.get("state", "")) == "committed"
+		settled["post_roll_bonus_payment"] = payment.duplicate(true)
 	settled["post_roll_bonus_cost_paid"] = should_pay
 	_consume_request(record)
 	return {"success": true, "check_result": settled, "selected_source_id": selected_source_id if not selected.is_empty() else "", "source_changed": not selected_source_id.is_empty() and selected.is_empty()}
@@ -694,6 +940,7 @@ static func _roll_accepted_bonus_die(owner: Character, option: Dictionary) -> Di
 	if die_size not in ResourcePoolRules.SUPPORTED_DIE_SIZES:
 		return {}
 	var details := Dice.roll_single_details(die_size, owner)
+	captured["source_owner_id"] = owner.character_id
 	captured["bonus_roll"] = details.duplicate(true)
 	captured["bonus_amount"] = int(details.get("total", 0))
 	return captured
@@ -720,6 +967,7 @@ static func create_weapon_attack_bonus_request(owner: Character, target, context
 	captured_context["reaction_decisions"] = context.get("reaction_decisions", {}).duplicate(false)
 	captured_context["attack_domain"] = domain
 	_pending_requests[request_id] = {
+		"party_turn":CombatAction.active_turn_serial, "party_clock":int(GameManager.campaign_elapsed_seconds),
 		"request_id": request_id, "kind": "weapon_attack_bonus", "caster": owner,
 		"target": target, "context": captured_context, "options": options.duplicate(true),
 		"decisions": decisions, "host_players": host_players, "host_monsters": host_monsters,
@@ -751,6 +999,14 @@ static func settle_weapon_attack_bonus(owner: Character, target, result: Diction
 				break
 		if selected.is_empty():
 			return {"success": false, "refused": true, "message": "The selected weapon bonus source was not offered."}
+		if selected.get("resolution") == "party_bonus":
+			if str(record.get("attack_domain", "")) != "weapon_attack" or not PartyInterventionRules.current(selected, owner, record.get("host_players", [])) or int(record.get("party_turn", -1)) != CombatAction.active_turn_serial or int(record.get("party_clock", -1)) != int(GameManager.campaign_elapsed_seconds):
+				return {"success":false, "refused":true, "message":"The recipient gift or helping source is no longer available."}
+			_consume_request(record)
+			var resumed := _resume_weapon_attack_bonus(record, selected)
+			for entry in record.get("host_players", []):
+				if entry.get("character") == selected.spender: entry["reaction_available"] = selected.spender.reaction_available
+			return resumed
 		var current: Dictionary = {}
 		var domain := str(record.get("attack_domain", "weapon_attack"))
 		var captured_attack: Dictionary = record.get("context", {}).get("attack_result", {})
@@ -758,18 +1014,93 @@ static func settle_weapon_attack_bonus(owner: Character, target, result: Diction
 		var provisional_hit := bool(record.get("context", {}).get("provisional_hit", false))
 		var can_offer_numeric := not provisional_hit and natural != 1 and not bool(captured_attack.get("is_crit", false)) and not bool(captured_attack.get("is_miss", false))
 		var can_offer_adjustment := provisional_hit and not bool(captured_attack.get("is_crit", false)) and not bool(captured_attack.get("is_miss", false))
-		for option in attack_choice_options(owner, domain, provisional_hit, can_offer_numeric, can_offer_adjustment):
+		var captured_cast: Variant = record.get("context", {}).get("spell_cast", record.get("context", {}).get("cast"))
+		var selected_spell_id := str(selected.get("spell_id", captured_cast.spell.get("id", "") if captured_cast is SpellResolutionContext else ""))
+		for option in attack_choice_options(owner, domain, provisional_hit, can_offer_numeric, can_offer_adjustment, captured_attack, str(selected.get("ability", record.get("context", {}).get("ability", ""))), int(record.get("context", {}).get("original_target_ac", 0)), selected_spell_id):
 			if str(option.get("source_instance_id", "")) == selected_source_id:
+				if str(selected.get("resolution", "")) == "test_reroll" and str(option.get("effect_id", "")) != str(selected.get("effect_id", "")):
+					continue
 				current = option
 				break
-		for field in ["resolution", "feature_id", "pool_definition_id", "source_owner_id", "amount", "die_size", "bonus_kind", "cost", "payment_policy", "domain", "stage", "outcome", "ability", "trigger"]:
+		for field in ["resolution", "effect_id", "feature_id", "pool_definition_id", "source_owner_id", "amount", "die_size", "bonus_kind", "cost", "payment_policy", "domain", "stage", "outcome", "ability", "trigger", "spell_id", "eligible_outcomes", "reroll_mode", "bonus_dice_policy", "selection_policy", "new_roll_mode"]:
 			if current.is_empty() or current.get(field) != selected.get(field):
 				return {"success": false, "refused": true, "message": "The selected weapon bonus source changed or is no longer available."}
-		if str(selected.get("resolution", "numeric_bonus")) not in ["outcome_override", "attack_total_adjustment", "defending_ac_adjustment"]:
+		if str(selected.get("resolution", "numeric_bonus")) not in ["outcome_override", "attack_total_adjustment", "defending_ac_adjustment", "test_reroll"]:
 			selected = _roll_accepted_bonus_die(owner, selected)
 			if selected.is_empty():
 				return {"success": false, "refused": true, "message": "The selected weapon bonus die is no longer supported."}
 	_consume_request(record)
+	if str(selected.get("resolution", "")) == "test_reroll":
+		var payment := ResourcePoolRules.spend(owner, selected_source_id, int(selected.get("cost", 0)))
+		if not bool(payment.get("success", false)):
+			return CombatAction.resume_weapon_attack_bonus(record, {}) if str(record.get("attack_domain", "weapon_attack")) == "weapon_attack" else SpellAttackResolver.resume_numeric_bonus(record, {})
+		var context: Dictionary = record.get("context", {})
+		var captured_attack: Dictionary = context.get("attack_result", {})
+		var ac := int(context.get("original_target_ac", 0))
+		var ability := str(selected.get("ability", context.get("ability", "")))
+		var rerolled := _resolve_combat_reroll(owner, captured_attack, str(record.get("attack_domain", "weapon_attack")), ability, ac, selected)
+		if rerolled.is_empty():
+			return CombatAction.resume_weapon_attack_bonus(record, {}) if str(record.get("attack_domain", "weapon_attack")) == "weapon_attack" else SpellAttackResolver.resume_numeric_bonus(record, {})
+		var crit_range := int(context.get("crit_range",20))
+		var changed_attack := _apply_attack_reroll(captured_attack, ac, rerolled, crit_range)
+		if changed_attack.is_empty():
+			return CombatAction.resume_weapon_attack_bonus(record, {}) if str(record.get("attack_domain", "weapon_attack")) == "weapon_attack" else SpellAttackResolver.resume_numeric_bonus(record, {})
+		context["attack_result"] = changed_attack
+		context["test_reroll_receipt"] = rerolled.get("receipt", {}).duplicate(true)
+		record["context"] = context
+		selected["post_roll_reroll"] = rerolled.get("receipt", {}).duplicate(true)
+		if str(selected.get("selection_policy", "mandatory_new")) == "choose_old_or_new":
+			_request_counter += 1
+			var keep_id := "reroll_keep_%d_%d" % [_epoch, _request_counter]
+			_pending_reroll_keep_choices[keep_id] = {"epoch": _epoch, "record": record, "selected": selected, "original_attack": captured_attack.duplicate(true), "new_attack": changed_attack.duplicate(true), "receipt": rerolled.get("receipt", {}).duplicate(true)}
+			_register_reroll_keep_request(keep_id,record,"attack")
+			return {"success": true, "reroll_keep_request": {"keep_request_id": keep_id, "domain": str(record.get("attack_domain", "weapon_attack")), "source_instance_id": selected_source_id, "original_total": int(captured_attack.get("total", 0)), "new_total": int(changed_attack.get("total", 0)), "original_natural": int(captured_attack.get("natural", 0)), "new_natural": int(changed_attack.get("natural", 0))}}
+		context["selected_bonus"] = selected
+		record["context"] = context
+	return _resume_weapon_attack_bonus(record, selected)
+
+
+static func settle_weapon_attack_reroll_keep(pending: Dictionary, keep: String) -> Dictionary:
+	var keep_id := str(pending.get("reroll_keep_request", {}).get("keep_request_id", ""))
+	var state: Variant = _pending_reroll_keep_choices.get(keep_id, null)
+	if keep_id.is_empty() or not state is Dictionary or int(state.get("epoch", -1)) != _epoch or keep not in ["old", "new"]:
+		return {"success": false, "refused": true, "message": "The captured reroll keep choice is invalid or expired."}
+	if not _validate_reroll_keep_request(keep_id,state,"attack"):
+		return {"success":false,"refused":true,"message":"The captured attack keep choice is stale or its actors left."}
+	_pending_reroll_keep_choices.erase(keep_id)
+	var record: Dictionary = state.get("record", {})
+	var selected: Dictionary = state.get("selected", {}).duplicate(true)
+	var context: Dictionary = record.get("context", {}).duplicate(true)
+	var receipt: Dictionary = state.get("receipt", {}).duplicate(true)
+	receipt["kept"] = keep
+	selected["post_roll_reroll"] = receipt
+	var final_attack: Dictionary = state.get("new_attack", {}).duplicate(true) if keep == "new" else state.get("original_attack", {}).duplicate(true)
+	final_attack["post_roll_reroll"] = receipt.duplicate(true)
+	context["attack_result"] = final_attack
+	context["selected_bonus"] = selected
+	context["test_reroll_receipt"] = receipt.duplicate(true)
+	record["context"] = context
+	return _resume_weapon_attack_bonus(record, selected)
+
+
+static func _register_reroll_keep_request(id: String, original: Dictionary, kind: String) -> void:
+	var request := original.duplicate(false)
+	request["request_id"]=id
+	request["kind"]="reroll_keep_"+kind
+	request["settled"]=false
+	_pending_requests[id]=request
+	_active_request_id_by_caster[str(original.caster.get_instance_id())]=id
+
+
+static func _validate_reroll_keep_request(id: String, state: Dictionary, kind: String) -> bool:
+	var original: Dictionary = state.get("record",{})
+	var validation := _validate_request(original.get("caster"),original.get("target"),{"reroll_keep_"+kind+"_request":{"request_id":id}},"reroll_keep_"+kind)
+	if not validation.get("valid",false): return false
+	_consume_request(validation.record)
+	return true
+
+
+static func _resume_weapon_attack_bonus(record: Dictionary, selected: Dictionary) -> Dictionary:
 	if str(record.get("attack_domain", "weapon_attack")) == "shared_spell_attack":
 		var resumed := SpellAttackResolver.resume_numeric_bonus(record, selected)
 		var ordered_cont = record.get("ordered_continuation")
@@ -850,21 +1181,27 @@ static func roll_outcome_override_options(owner: Character, domain: String, curr
 	return options
 
 
-static func failed_save_choice_options(target: Character, ability: String, provisional_saved: bool = false) -> Array[Dictionary]:
+static func failed_save_choice_options(target: Character, ability: String, provisional_saved: bool = false, cast: SpellResolutionContext = null, captured_save_test: Dictionary = {}) -> Array[Dictionary]:
 	var options: Array[Dictionary] = []
 	if not provisional_saved:
-		options = failed_save_numeric_bonus_options(target, ability)
+		options = failed_save_numeric_bonus_options(target, ability, cast)
 	options.append_array(roll_outcome_override_options(target, "shared_spell_save", "success" if provisional_saved else "failure", ability))
+	if not captured_save_test.is_empty() and cast != null:
+		options.append_array(combat_test_reroll_options(target, "shared_spell_save", ability, "success" if provisional_saved else "failure", captured_save_test, str(cast.spell.get("id", ""))))
 	return options
 
 
-static func attack_choice_options(owner: Character, domain: String, provisional_hit: bool, allow_numeric_bonus: bool = true, allow_hit_adjustments: bool = false) -> Array[Dictionary]:
+static func attack_choice_options(owner: Character, domain: String, provisional_hit: bool, allow_numeric_bonus: bool = true, allow_hit_adjustments: bool = false, captured_attack: Dictionary = {}, ability: String = "", target_ac: int = 0, spell_id: String = "") -> Array[Dictionary]:
 	var options: Array[Dictionary] = []
 	if allow_numeric_bonus:
 		options = attack_numeric_bonus_options(owner, domain)
 	if provisional_hit and allow_hit_adjustments:
 		options.append_array(attack_result_adjustment_options(owner, domain))
 	options.append_array(roll_outcome_override_options(owner, domain, "hit" if provisional_hit else "miss"))
+	if not captured_attack.is_empty():
+		var reroll_capture := captured_attack.duplicate(true)
+		reroll_capture["target_ac"] = target_ac
+		options.append_array(combat_test_reroll_options(owner, domain, ability, "hit" if provisional_hit else "miss", reroll_capture, spell_id))
 	return options
 
 
@@ -994,21 +1331,50 @@ static func settle_failed_save_numeric_bonus(caster: Character, target: Characte
 				break
 		if selected.is_empty():
 			return {"success": false, "refused": true, "message": "The selected save-bonus source was not offered."}
-		var current_options := failed_save_choice_options(target, str(record.get("ability", "")), bool(record.get("provisional_saved", false)))
+		var current_options := failed_save_choice_options(target, str(record.get("ability", "")), bool(record.get("provisional_saved", false)), record.get("cast"), record.get("save_test", {}))
 		var current: Dictionary = {}
 		for option in current_options:
 			if str(option.get("source_instance_id", "")) == selected_source_id:
 				current = option
 				break
-		for field in ["resolution", "bonus_kind", "feature_id", "pool_definition_id", "source_owner_id", "ability", "amount", "die_size", "cost", "payment_policy", "domain", "stage", "outcome"]:
+		for field in ["resolution", "effect_id", "bonus_kind", "feature_id", "pool_definition_id", "source_owner_id", "ability", "amount", "die_size", "cost", "payment_policy", "domain", "stage", "outcome", "cause_id", "purpose_id", "required_sense", "save_context", "reroll_mode", "bonus_dice_policy", "selection_policy", "new_roll_mode"]:
 			if current.is_empty() or current.get(field) != selected.get(field):
 				return {"success": false, "refused": true, "message": "The selected save-bonus source changed or is no longer available."}
-		if str(selected.get("resolution", "numeric_bonus")) != "outcome_override":
+	var resolution_kind := str(selected.get("resolution", "numeric_bonus")) if not selected.is_empty() else ""
+	var payment_reservation: Dictionary = {"success": true, "reservation_id": ""}
+	if resolution_kind in ["numeric_bonus", "die_bonus", "outcome_override"]:
+		payment_reservation = begin_selected_payment(target, selected)
+		if not bool(payment_reservation.get("success", false)):
+			_consume_request(record)
+			return _resume_failed_save_bonus(record, record["save_test"])
+		if str(selected.get("resolution", "numeric_bonus")) not in ["outcome_override", "test_reroll"]:
 			selected = _roll_accepted_bonus_die(target, selected)
 			if selected.is_empty():
+				if not str(payment_reservation.get("reservation_id", "")).is_empty():
+					ResourcePoolRules.settle_payment_reservation(str(payment_reservation["reservation_id"]), false)
 				return {"success": false, "refused": true, "message": "The selected save bonus die is no longer supported."}
 	var test: Dictionary = record["save_test"].duplicate(true)
-	var resolution_kind := str(selected.get("resolution", "numeric_bonus")) if not selected.is_empty() else ""
+	if resolution_kind == "test_reroll":
+		var reroll_payment := ResourcePoolRules.spend(target, selected_source_id, int(selected.get("cost", 0)))
+		if not bool(reroll_payment.get("success", false)):
+			_consume_request(record)
+			return _resume_failed_save_bonus(record, test)
+		var rerolled := _resolve_combat_reroll(target, test, "shared_spell_save", str(record.get("ability", "")), int(test.get("dc", 0)), selected)
+		if rerolled.is_empty():
+			_consume_request(record)
+			return _resume_failed_save_bonus(record, test)
+		var receipt: Dictionary = rerolled.get("receipt", {}).duplicate(true)
+		selected["post_roll_reroll"] = receipt
+		if str(selected.get("selection_policy", "mandatory_new")) == "choose_old_or_new":
+			_request_counter += 1
+			var keep_id := "reroll_keep_%d_%d" % [_epoch, _request_counter]
+			_pending_reroll_keep_choices[keep_id] = {"epoch": _epoch, "kind": "save", "record": record, "selected": selected, "original_test": test.duplicate(true), "new_test": rerolled.get("new_test", {}).duplicate(true), "receipt": receipt}
+			_consume_request(record)
+			_register_reroll_keep_request(keep_id,record,"save")
+			return {"success": true, "reroll_keep_request": {"keep_request_id": keep_id, "domain": "shared_spell_save", "source_instance_id": selected_source_id, "original_total": int(test.get("total", 0)), "new_total": int(rerolled.get("new_test", {}).get("total", 0)), "original_natural": int(test.get("natural_roll", test.get("natural", 0))), "new_natural": int(rerolled.get("new_test", {}).get("natural_roll", 0))}}
+		test = rerolled.get("new_test", {}).duplicate(true)
+		test["_post_roll_flags"] = record.get("save_test", {}).get("_post_roll_flags", {}).duplicate(true)
+		test["post_roll_reroll"] = receipt
 	var bonus := int(selected.get("bonus_amount", selected.get("amount", 0))) if resolution_kind in ["numeric_bonus", "die_bonus"] else 0
 	if resolution_kind == "outcome_override":
 		test["outcome_override"] = str(selected.get("outcome", "success"))
@@ -1029,21 +1395,70 @@ static func settle_failed_save_numeric_bonus(caster: Character, target: Characte
 	var payment_policy := str(selected.get("payment_policy", "pay_on_choice")) if not selected.is_empty() else "pay_on_choice"
 	if payment_policy not in FAILED_SAVE_BONUS_PAYMENT_POLICIES:
 		return {"success": false, "refused": true, "message": "The selected save-bonus payment policy is unsupported."}
-	var should_pay := not selected.is_empty() and (resolution_kind == "outcome_override" or payment_policy == "pay_on_choice" or bool(test.get("success", false)))
-	if should_pay:
-		var payment := ResourcePoolRules.spend(target, selected_source_id, int(selected.get("cost", 0)))
+	var should_pay := false
+	var payment_receipt: Dictionary = {}
+	if not selected.is_empty() and resolution_kind != "test_reroll":
+		var final_success := bool(test.get("success", false))
+		if resolution_kind == "outcome_override":
+			final_success = str(selected.get("outcome", "success")) == "success"
+		var payment := finish_selected_payment(target, selected, final_success, str(payment_reservation.get("reservation_id", "")))
 		if not bool(payment.get("success", false)):
 			return {"success": false, "refused": true, "message": str(payment.get("message", "The source cannot pay for this bonus."))}
+		payment_receipt = payment
+		should_pay = str(payment.get("state", "")) == "committed"
 	if resolution_kind in ["numeric_bonus", "die_bonus"]:
 		test["save_payment_policy"] = payment_policy
 		test["save_cost_paid"] = should_pay
+		test["save_payment_receipt"] = payment_receipt.duplicate(true)
 	elif resolution_kind == "outcome_override":
 		test["save_cost_paid"] = should_pay
+		test["save_payment_receipt"] = payment_receipt.duplicate(true)
 	var cast: SpellResolutionContext = record["cast"]
 	var cache: Dictionary = cast.decisions.get("failed_save_numeric_bonus_tests", {})
 	cache[str(record["result_key"])] = test
 	cast.decisions["failed_save_numeric_bonus_tests"] = cache
+	if resolution_kind == "test_reroll":
+		# Keep the exact chosen test on the consumed occurrence record as well as
+		# in the cast's one-shot resume cache. The cache is removed when the save
+		# resolver consumes it; this receipt remains attached to the request that
+		# actually paid for the reroll.
+		record["settled_test"] = test.duplicate(true)
+	else:
+		record["selected_source_id"] = selected_source_id
+		record["settled_test"] = test.duplicate(true)
 	_consume_request(record)
+	return _resume_failed_save_bonus(record, test)
+
+
+static func settle_failed_save_reroll_keep(pending: Dictionary, keep: String) -> Dictionary:
+	var keep_id := str(pending.get("reroll_keep_request", {}).get("keep_request_id", ""))
+	var state: Variant = _pending_reroll_keep_choices.get(keep_id, null)
+	if keep_id.is_empty() or not state is Dictionary or int(state.get("epoch", -1)) != _epoch or str(state.get("kind", "")) != "save" or keep not in ["old", "new"]:
+		return {"success": false, "refused": true, "message": "The captured saving-throw reroll keep choice is invalid or expired."}
+	if not _validate_reroll_keep_request(keep_id,state,"save"):
+		return {"success":false,"refused":true,"message":"The captured save keep choice is stale or its actors left."}
+	_pending_reroll_keep_choices.erase(keep_id)
+	var record: Dictionary = state.get("record", {})
+	var receipt: Dictionary = state.get("receipt", {}).duplicate(true)
+	receipt["kept"] = keep
+	var test: Dictionary = state.get("new_test", {}).duplicate(true) if keep == "new" else state.get("original_test", {}).duplicate(true)
+	if keep == "new": test["_post_roll_flags"] = record.get("save_test", {}).get("_post_roll_flags", {}).duplicate(true)
+	test["post_roll_reroll"] = receipt
+	var cast: SpellResolutionContext = record.get("cast")
+	if cast == null:
+		return {"success": false, "refused": true, "message": "The captured save cast is no longer available."}
+	var cache: Dictionary = cast.decisions.get("failed_save_numeric_bonus_tests", {})
+	cache[str(record.get("result_key", ""))] = test
+	cast.decisions["failed_save_numeric_bonus_tests"] = cache
+	record["settled_test"] = test.duplicate(true)
+	return _resume_failed_save_bonus(record, test)
+
+
+static func _resume_failed_save_bonus(record: Dictionary, test: Dictionary) -> Dictionary:
+	var cast: SpellResolutionContext = record.get("cast")
+	var target = record.get("target")
+	if cast == null or cast.caster == null:
+		return {"success": false, "refused": true, "message": "The captured saving-throw continuation is no longer available."}
 	var resumed := SpellSaveResolver.resolve(cast)
 	var ordered_cont = record.get("ordered_continuation")
 	if ordered_cont is Dictionary:
@@ -1069,13 +1484,51 @@ static func failed_save_numeric_bonus_record(caster: Character, target: Characte
 ## same caster/actor.
 static func clear_pending_requests() -> void:
 	_pending_requests.clear()
+	_pending_reroll_keep_choices.clear()
 	_active_request_id_by_caster.clear()
+	ResourcePoolRules.clear_payment_reservations()
 	_epoch += 1
+
+
+static func begin_selected_payment(owner: Character, selected: Dictionary) -> Dictionary:
+	var policy := str(selected.get("payment_policy", "pay_on_choice"))
+	if policy not in ["pay_on_final_success", "pay_on_final_failure"]:
+		return {"success": true, "reservation_id": "", "policy": policy}
+	var reservation := ResourcePoolRules.reserve_payment(owner, str(selected.get("source_instance_id", "")), int(selected.get("cost", 0)))
+	if not bool(reservation.get("success", false)):
+		return reservation
+	var receipt: Dictionary = reservation.get("reservation", {})
+	return {"success": true, "reservation_id": str(receipt.get("reservation_id", "")), "policy": policy, "reservation": {"state": "reserved", "owner_id": str(receipt.get("owner_id", "")), "source_instance_id": str(receipt.get("source_instance_id", "")), "definition_id": str(receipt.get("definition_id", "")), "amount": int(receipt.get("amount", 0)), "current": int(reservation.get("current", 0)), "spendable": int(reservation.get("spendable", 0))}}
+
+
+static func finish_selected_payment(owner: Character, selected: Dictionary, final_success: bool, reservation_id: String = "") -> Dictionary:
+	if selected.get("resolution") == "party_bonus": return PartyInterventionRules.pay(selected)
+	var policy := str(selected.get("payment_policy", "pay_on_choice"))
+	var should_pay := policy == "pay_on_choice" or (policy == "pay_on_converted_success" and final_success) or (policy == "pay_on_final_success" and final_success) or (policy == "pay_on_final_failure" and not final_success)
+	if policy in ["pay_on_final_success", "pay_on_final_failure"]:
+		var settled := ResourcePoolRules.settle_payment_reservation(reservation_id, should_pay)
+		if not bool(settled.get("success", false)):
+			return settled
+		settled["policy"] = policy
+		settled["predicate"] = "success" if final_success else "failure"
+		return settled
+	if not should_pay:
+		return {"success": true, "state": "refunded", "owner_id": owner.character_id if owner != null else "", "source_instance_id": str(selected.get("source_instance_id", "")), "definition_id": str(selected.get("pool_definition_id", "")), "amount": int(selected.get("cost", 0)), "policy": policy, "predicate": "success" if final_success else "failure"}
+	var spent := ResourcePoolRules.spend(owner, str(selected.get("source_instance_id", "")), int(selected.get("cost", 0)))
+	if bool(spent.get("success", false)):
+		spent["state"] = "committed"
+		spent["owner_id"] = owner.character_id if owner != null else ""
+		spent["source_instance_id"] = str(selected.get("source_instance_id", ""))
+		spent["definition_id"] = str(selected.get("pool_definition_id", ""))
+		spent["amount"] = int(selected.get("cost", 0))
+		spent["policy"] = policy
+		spent["predicate"] = "success" if final_success else "failure"
+	return spent
 
 
 ## Registers the one authoritative owner record for a rolled, not-yet-applied
 ## damage packet. Only the request ID is ever read back from a caller payload.
-static func create_damage_request(caster: Character, target, details: Dictionary, bonus: int, scale: float, damage_type: String, condition_duration: int = 1, additional_damage_packets: Array[Dictionary] = [], decisions: Dictionary = {}, base_result: Dictionary = {}) -> String:
+static func create_damage_request(caster: Character, target, details: Dictionary, bonus: int, scale: float, damage_type: String, condition_duration: int = 1, additional_damage_packets: Array[Dictionary] = [], decisions: Dictionary = {}, base_result: Dictionary = {}, damage_reductions: Array = [], damage_bypasses: Array = []) -> String:
 	_request_counter += 1
 	var caster_id := str(caster.get_instance_id()) if caster != null else "0"
 	var request_id := "dmg_req_%d_%s_%d" % [_epoch, caster_id, _request_counter]
@@ -1092,6 +1545,8 @@ static func create_damage_request(caster: Character, target, details: Dictionary
 		"damage_type": damage_type,
 		"condition_duration": condition_duration,
 		"additional_damage_packets": additional_damage_packets,
+		"damage_reductions": damage_reductions.duplicate(true),
+		"damage_bypasses": damage_bypasses.duplicate(true),
 		"decisions": decisions.duplicate(),
 		"result_base": base_result.duplicate(false),
 		"host_players": host_players,
@@ -1303,12 +1758,67 @@ static func _consume_request(record: Dictionary) -> void:
 		record["options"] = []
 
 
-static func _finish_spell_damage(caster: Character, target, details: Dictionary, bonus: int, scale: float, damage_type: String, decisions: Dictionary, result: Dictionary, condition_duration: int = 1, additional_damage_packets: Array[Dictionary] = []) -> Dictionary:
+static func apply_damage_policies(caster: Character, components: Array[Dictionary], reductions: Array, bypasses: Array) -> Dictionary:
+	var ids: Array[String] = []
+	for component in components:
+		ids.append(str(component.get("component_id", "")))
+	var policy_error := SharedStepExecutor.validate_damage_policy(reductions, bypasses, ids)
+	if not policy_error.is_empty(): return {"success": false, "message": policy_error}
+	var adjusted := components.duplicate(true)
+	for component in adjusted:
+		component["reduction_prevented"] = 0
+		component["reduction_receipts"] = []
+		component["bypass_layers"] = []
+		component["bypass_receipts"] = []
+		component["settlement_raw"] = maxi(0, int(component.get("raw", 0)))
+	var reduction_declarations: Array[Dictionary] = []
+	for reduction in reductions:
+		var requested := 0
+		var amount: Variant = reduction.get("amount", 0)
+		if amount is Dictionary:
+			var evaluated := SharedStepExecutor.evaluate_actor_formula(amount, caster)
+			if not bool(evaluated.get("success", false)):
+				return {"success": false, "message": "The authored damage reduction formula is unavailable."}
+			requested = maxi(0, int(floor(float(evaluated.get("value", 0)))))
+		else:
+			requested = maxi(0, int(floor(float(amount))))
+		var remaining := requested
+		var touched: Array[String] = []
+		var applied_total := 0
+		for index in adjusted.size():
+			if remaining <= 0: break
+			var component: Dictionary = adjusted[index]
+			if str(reduction.get("scope", "")) == "component" and str(component.get("component_id", "")) != str(reduction.get("component_id", "")):
+				continue
+			var available := maxi(0, int(component.get("settlement_raw", 0)))
+			var applied := mini(available, remaining)
+			component["settlement_raw"] = available - applied
+			component["reduction_prevented"] = int(component.get("reduction_prevented", 0)) + applied
+			component["reduction_receipts"].append({"scope": str(reduction.get("scope", "")), "component_id": str(reduction.get("component_id", "")), "stage": str(reduction.get("stage", "")), "requested": requested, "applied": applied})
+			adjusted[index] = component
+			remaining -= applied
+			applied_total += applied
+			if applied > 0: touched.append(str(component.get("component_id", "")))
+		reduction_declarations.append({"scope": str(reduction.get("scope", "")), "component_id": str(reduction.get("component_id", "")), "stage": str(reduction.get("stage", "")), "requested": requested, "applied": applied_total, "overflow": maxi(0, remaining), "allocated_component_ids": touched})
+	for bypass in bypasses:
+		for index in adjusted.size():
+			var component: Dictionary = adjusted[index]
+			if str(bypass.get("scope", "")) == "component" and str(component.get("component_id", "")) != str(bypass.get("component_id", "")):
+				continue
+			for layer in bypass.get("layers", []):
+				if str(layer) not in component["bypass_layers"]:
+					component["bypass_layers"].append(str(layer))
+			component["bypass_receipts"].append({"scope": str(bypass.get("scope", "")), "component_id": str(bypass.get("component_id", "")), "layers": bypass.get("layers", []).duplicate(), "stage": str(bypass.get("stage", ""))})
+			adjusted[index] = component
+	return {"success": true, "components": adjusted, "reduction_receipts": reduction_declarations}
+
+
+static func _finish_spell_damage(caster: Character, target, details: Dictionary, bonus: int, scale: float, damage_type: String, decisions: Dictionary, result: Dictionary, condition_duration: int = 1, additional_damage_packets: Array[Dictionary] = [], damage_reductions: Array = [], damage_bypasses: Array = []) -> Dictionary:
 	var context: Dictionary = decisions.get("spell_damage_context", {})
 	if SpellDamageRolls._can_empower(caster, decisions) and bool(decisions.get("defer_empowered", false)) and not context.get("empowered_resolved", false) and not Dice.selectable_dice(details).is_empty():
 		var cha_mod := maxi(1, caster.ability_scores.get_ability_modifier("CHA")) if caster != null else 1
 		var max_dice := mini(int(decisions.get("empowered_remaining_dice", cha_mod)), cha_mod)
-		var req_id := SpellDamageRolls.create_damage_request(caster, target, details, bonus, scale, damage_type, condition_duration, additional_damage_packets, decisions, result)
+		var req_id := SpellDamageRolls.create_damage_request(caster, target, details, bonus, scale, damage_type, condition_duration, additional_damage_packets, decisions, result, damage_reductions, damage_bypasses)
 		var resolution_cast: SpellResolutionContext = result.get("_resolution_context")
 		if resolution_cast != null:
 			SpellDamageRolls.publish_resolution_windows(resolution_cast, result)
@@ -1323,8 +1833,40 @@ static func _finish_spell_damage(caster: Character, target, details: Dictionary,
 	var temp_hp_before: int = target.temp_hp if target is Character else int(target.get("temp_hp", 0))
 	var is_alive_before: bool = target.is_alive if target is Character else bool(target.get("is_alive", true))
 	var amount := int(floor(float(int(details["final_total"]) + bonus) * scale))
+	var multiplier: Variant = decisions.get("damage_result_multiplier", {})
+	var multiplier_receipt: Dictionary = {}
+	if multiplier is Dictionary and not multiplier.is_empty():
+		var excluded_critical := bool(multiplier.get("exclude_critical", false)) and bool(decisions.get("damage_is_critical", decisions.get("critical", false)))
+		if excluded_critical:
+			multiplier_receipt = {"success": true, "applied": false, "excluded_critical": true, "unscaled": amount, "numerator": int(multiplier.get("numerator", 1)), "denominator": int(multiplier.get("denominator", 1)), "rounding": str(multiplier.get("rounding", "floor"))}
+		else:
+			var adjusted := Dice.apply_damage_multiplier(amount, int(multiplier.get("numerator", 1)), int(multiplier.get("denominator", 1)), str(multiplier.get("rounding", "floor")))
+			if not bool(adjusted.get("success", false)):
+				return {"success": false, "refused": true, "message": str(adjusted.get("message", "Unsupported damage multiplier."))}
+			adjusted["applied"] = true
+			multiplier_receipt = adjusted
+			amount = int(adjusted["value"])
+	var primary_component_id := str(decisions.get("_shared_component_id", "%s:1" % damage_type))
+	var policy_components: Array[Dictionary] = [{"component_id": primary_component_id, "type": damage_type, "raw": amount}]
+	var packet_component_ids: Array[String] = []
+	for packet in additional_damage_packets:
+		var packet_details: Dictionary = packet.get("details", {})
+		if packet_details.is_empty(): continue
+		var packet_type := str(packet.get("type", "acid"))
+		var packet_amount := int(floor(float(int(packet_details.get("final_total", 0))) * scale))
+		if multiplier is Dictionary and not multiplier.is_empty() and not (bool(multiplier.get("exclude_critical", false)) and bool(decisions.get("damage_is_critical", decisions.get("critical", false)))):
+			packet_amount = int(Dice.apply_damage_multiplier(packet_amount, int(multiplier.get("numerator", 1)), int(multiplier.get("denominator", 1)), str(multiplier.get("rounding", "floor"))).get("value", packet_amount))
+		var packet_id := str(packet.get("component_id", "%s:%d" % [packet_type, policy_components.size() + 1]))
+		packet_component_ids.append(packet_id)
+		policy_components.append({"component_id": packet_id, "type": packet_type, "raw": packet_amount})
+	var policy_result := apply_damage_policies(caster, policy_components, damage_reductions, damage_bypasses)
+	if not bool(policy_result.get("success", false)):
+		return {"success": false, "refused": true, "message": str(policy_result.get("message", "Invalid damage policy."))}
+	policy_components = policy_result.get("components", [])
+	if not damage_reductions.is_empty(): result["damage_reduction_receipts"] = policy_result.get("reduction_receipts", []).duplicate(true)
 	var damage_occurrence_id := WardRules.next_damage_occurrence_id()
-	var primary_dmg_res := CombatAction.resolve_damage(target, amount, damage_type, decisions, false, false, caster, damage_occurrence_id)
+	var primary_policy: Dictionary = policy_components[0]
+	var primary_dmg_res := CombatAction.resolve_damage(target, int(primary_policy.get("settlement_raw", amount)), damage_type, decisions, false, false, caster, damage_occurrence_id, primary_policy.get("bypass_layers", []), amount, int(primary_policy.get("reduction_prevented", 0)))
 	var actual: int = int(primary_dmg_res.get("damage", 0))
 	var resolved: int = int(primary_dmg_res.get("resolved", 0))
 	var ward_absorbed: int = int(primary_dmg_res.get("ward_absorbed", 0))
@@ -1341,23 +1883,34 @@ static func _finish_spell_damage(caster: Character, target, details: Dictionary,
 		"component_id": str(decisions.get("_shared_component_id", "%s:1" % damage_type)),
 		"type": damage_type,
 		"raw": amount,
+		"reduction_prevented": int(primary_policy.get("reduction_prevented", 0)),
+		"reduction_receipts": primary_policy.get("reduction_receipts", []).duplicate(true),
+		"bypass_layers": primary_policy.get("bypass_layers", []).duplicate(),
+		"bypass_receipts": primary_policy.get("bypass_receipts", []).duplicate(true),
 		"resolved": int(primary_dmg_res.get("resolved", 0)),
 		"prevented": maxi(0, amount - int(primary_dmg_res.get("resolved", 0))),
 		"absorbed": int(primary_dmg_res.get("temp_hp_absorbed", 0)),
 		"hp_loss": int(primary_dmg_res.get("hp_loss", primary_dmg_res.get("damage", 0)))
 	}]
+	var policy_component_index := 1
 	for packet in additional_damage_packets:
 		var packet_details: Dictionary = packet.get("details", {})
 		if packet_details.is_empty():
 			continue
 		var packet_type := str(packet.get("type", "acid"))
-		var packet_amount := int(floor(float(int(packet_details.get("final_total", 0))) * scale))
-		var packet_result := CombatAction.resolve_damage(target, packet_amount, packet_type, decisions, false, false, caster, damage_occurrence_id)
+		var packet_policy: Dictionary = policy_components[policy_component_index]
+		var packet_amount := int(packet_policy["raw"])
+		policy_component_index += 1
+		var packet_result := CombatAction.resolve_damage(target, int(packet_policy.get("settlement_raw", packet_amount)), packet_type, decisions, false, false, caster, damage_occurrence_id, packet_policy.get("bypass_layers", []), packet_amount, int(packet_policy.get("reduction_prevented", 0)))
 		var packet_damage := int(packet_result.get("damage", 0))
 		damage_components.append({
 			"component_id": str(packet.get("component_id", "%s:%d" % [packet_type, damage_components.size() + 1])),
 			"type": packet_type,
 			"raw": packet_amount,
+			"reduction_prevented": int(packet_policy.get("reduction_prevented", 0)),
+			"reduction_receipts": packet_policy.get("reduction_receipts", []).duplicate(true),
+			"bypass_layers": packet_policy.get("bypass_layers", []).duplicate(),
+			"bypass_receipts": packet_policy.get("bypass_receipts", []).duplicate(true),
 			"resolved": int(packet_result.get("resolved", 0)),
 			"prevented": maxi(0, packet_amount - int(packet_result.get("resolved", 0))),
 			"absorbed": int(packet_result.get("temp_hp_absorbed", 0)),
@@ -1404,6 +1957,7 @@ static func _finish_spell_damage(caster: Character, target, details: Dictionary,
 	result["critical"] = bool(decisions.get("damage_is_critical", false))
 	result["damage_is_critical"] = bool(decisions.get("damage_is_critical", false))
 	result["damage_roll"] = details
+	if not multiplier_receipt.is_empty(): result["damage_multiplier_receipt"] = multiplier_receipt.duplicate(true)
 	result["damage_type"] = damage_type
 	result["additional_damage_components"] = additional_components
 	result["damage_components"] = damage_components
@@ -1453,7 +2007,7 @@ static func settle_pending_request(caster: Character, target, result: Dictionary
 	final_decisions.erase("metamagic:empowered_dice")
 	if answer.has("metamagic:empowered_dice"):
 		final_decisions["metamagic:empowered_dice"] = answer["metamagic:empowered_dice"]
-	var settled := SpellDamageRolls._finish_spell_damage(record["caster"], record["target"], record["details"], int(record["bonus"]), float(record["scale"]), str(record["damage_type"]), final_decisions, record["result_base"].duplicate(false), int(record["condition_duration"]), record["additional_damage_packets"])
+	var settled := SpellDamageRolls._finish_spell_damage(record["caster"], record["target"], record["details"], int(record["bonus"]), float(record["scale"]), str(record["damage_type"]), final_decisions, record["result_base"].duplicate(false), int(record["condition_duration"]), record["additional_damage_packets"], record.get("damage_reductions", []), record.get("damage_bypasses", []))
 	for key in ["empowered_sp_spent", "empowered_remaining_dice"]:
 		if final_decisions.has(key):
 			owner_decisions[key] = final_decisions[key]

@@ -26,12 +26,34 @@ static func choose(cast: SpellCastContext, spell_info: Dictionary) -> bool:
 		cast.hud.add_log("Activating %s. Select target hex." % str(spell_info.get("name", "Magic item")))
 		return true
 	var spell_lvl: int = int(spell_info.get("level", 0))
+	var selected_pool := str(spell_info.get("_spell_slot_pool_id", SpellSlotRules.default_pool_id(cast.caster)))
 	if spell_lvl > 0 and cast.caster != null:
 		var slot_key := str(CombatAction.get_spell_slot_level(cast.caster, spell_info))
-		var has_required_slot := int(cast.caster.spell_slots.get(slot_key, 0)) > 0
+		var has_required_slot := SpellSlotRules.available(cast.caster, spell_lvl, selected_pool)
 		if str(spell_info.get("id", "")) == "animal_messenger":
-			has_required_slot = cast.caster.spell_slots.keys().any(func(level: Variant) -> bool: return str(level).is_valid_int() and int(level) >= spell_lvl and int(cast.caster.spell_slots.get(str(level), 0)) > 0)
-		if not has_required_slot and not cast.caster.has_free_spell_cast(str(spell_info.get("id", ""))):
+			has_required_slot = SpellSlotRules.available(cast.caster, spell_lvl, selected_pool)
+		var selected_payment := str(spell_info.get("_spell_payment_kind", ""))
+		var selected_payment_source := str(spell_info.get("_spell_payment_source_id", ""))
+		var selected_free := selected_payment == "free_cast" and not cast.caster.free_spell_cast_feature(str(spell_info.get("id", "")), selected_payment_source).is_empty()
+		if selected_payment == "free_cast" and bool(spell_info.get("_arcanum_payment", false)):
+			selected_free = WarlockRules.arcanum_cast_level(cast.caster, str(spell_info.get("id", ""))) > 0
+		if selected_payment == "slot":
+			has_required_slot = has_required_slot
+		elif selected_payment == "free_cast":
+			has_required_slot = selected_free
+		if selected_payment == "points":
+			var selected_permission := {}
+			for permission in SpellPermissionRules.for_spell(cast.caster, spell_info):
+				if str(permission.get("id", "")) == str(spell_info.get("_source_permission_id", "")):
+					selected_permission = permission
+					break
+			has_required_slot = SpellPermissionRules.can_pay_points(cast.caster, selected_permission, spell_lvl)
+		if selected_payment == "item_charges":
+			has_required_slot = SpellPermissionRules.selection_valid(cast.caster, spell_info)
+		var payment_available := has_required_slot or selected_free
+		if selected_payment.is_empty():
+			payment_available = payment_available or cast.caster.has_free_spell_cast(str(spell_info.get("id", "")))
+		if not payment_available:
 			cast.hud.add_log("[color=orange]No level %s spell slots remaining for %s.[/color]" % [slot_key, spell_info.get("name", "this spell")])
 			return false
 	cast.begin_targeting.call()
@@ -66,7 +88,7 @@ static func choose(cast: SpellCastContext, spell_info: Dictionary) -> bool:
 		else:
 			cast.spell["_produce_flame_create"] = true
 	if bool(cast.spell.get("_force_spell_slot", false)) or str(cast.spell.get("id", "")) in ["command", "animal_messenger"]:
-		var requested_slot_level := await cast.hud.request_spell_slot(cast.caster, spell_lvl)
+		var requested_slot_level := await cast.hud.request_spell_slot(cast.caster, spell_lvl, selected_pool)
 		if requested_slot_level <= 0:
 			cast.clear_pending(SpellCastContext.CLEAR_ACTION)
 			cast.highlight_reachable.call()
@@ -74,12 +96,12 @@ static func choose(cast: SpellCastContext, spell_info: Dictionary) -> bool:
 		cast.spell["_selected_spell_slot_level"] = requested_slot_level
 	elif int(cast.spell.get("upcast", {}).get("additional_targets_per_level", 0)) > 0:
 		var has_higher_target_slot := false
-		for slot_level in cast.caster.spell_slots:
-			if int(slot_level) > spell_lvl and int(cast.caster.spell_slots[slot_level]) > 0:
+		for slot_row in SpellSlotRules.pool_rows(cast.caster):
+			if str(slot_row.pool_id) == selected_pool and int(slot_row.level) > spell_lvl and int(slot_row.remaining) > 0:
 				has_higher_target_slot = true
 				break
 		if has_higher_target_slot:
-			var requested_target_slot := await cast.hud.request_spell_slot(cast.caster, spell_lvl)
+			var requested_target_slot := await cast.hud.request_spell_slot(cast.caster, spell_lvl, selected_pool)
 			if requested_target_slot <= 0:
 				cast.clear_pending(SpellCastContext.CLEAR_ACTION)
 				cast.clear_pending(SpellCastContext.CLEAR_SPELL)

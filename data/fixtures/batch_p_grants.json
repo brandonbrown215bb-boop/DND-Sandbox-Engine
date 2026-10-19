@@ -1,0 +1,266 @@
+[
+  {
+    "id": "fixture:p_class_plain",
+    "name": "Gift maker plain",
+    "hit_die": "d8",
+    "primary_ability": "WIS",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:p_stored_plain",
+          "name": "Stored gift plain",
+          "executor": "class_feature",
+          "type": "active",
+          "target": "self",
+          "action_cost": "bonus_action",
+          "resource_pool": {
+            "id": "fixture:p_pool_stored_plain",
+            "capacity_formula": 4,
+            "initial_quantity": 4,
+            "recovery": {
+              "long_rest_completed": {
+                "mode": "restore_to_capacity"
+              }
+            },
+            "die_size": 4,
+            "spend_choice": {
+              "minimum": 1,
+              "maximum": 1
+            },
+            "capture_policy": "on_acquire",
+            "upgrade_policy": "new_dice_only"
+          },
+          "transfer_grant": {
+            "kind": "die",
+            "value_policy": "pool_die",
+            "effect": "heal_self",
+            "use_cost": "bonus_action",
+            "duration_seconds": 60,
+            "max_recipients": 1
+          },
+          "effects": []
+        },
+        {
+          "id": "fixture:p_shared_plain",
+          "name": "Shared gift plain",
+          "executor": "class_feature",
+          "type": "active",
+          "target": "self",
+          "action_cost": "bonus_action",
+          "resource_pool": {
+            "id": "fixture:p_pool_shared_plain",
+            "capacity_formula": 4,
+            "initial_quantity": 4,
+            "recovery": {
+              "long_rest_completed": {
+                "mode": "restore_to_capacity"
+              }
+            }
+          },
+          "transfer_grant": {
+            "kind": "die",
+            "value_policy": "shared_roll",
+            "effect": "heal_self",
+            "use_cost": "reaction",
+            "duration_seconds": 60,
+            "max_recipients": 2,
+            "die_size": 6
+          },
+          "effects": []
+        },
+        {
+          "id": "fixture:p_token_plain",
+          "name": "Token gift plain",
+          "executor": "class_feature",
+          "type": "active",
+          "target": "self",
+          "action_cost": "bonus_action",
+          "resource_pool": {
+            "id": "fixture:p_pool_token_plain",
+            "capacity_formula": 4,
+            "initial_quantity": 4,
+            "recovery": {
+              "long_rest_completed": {
+                "mode": "restore_to_capacity"
+              }
+            }
+          },
+          "transfer_grant": {
+            "kind": "token",
+            "value_policy": "formula",
+            "effect": "temporary_hp",
+            "use_cost": "action",
+            "duration_seconds": 60,
+            "max_recipients": 1,
+            "amount_formula": {
+              "caster_ability_modifier": "WIS"
+            }
+          },
+          "effects": []
+        },
+        {
+          "id": "fixture:p_permission_plain",
+          "name": "Permission gift plain",
+          "executor": "class_feature",
+          "type": "active",
+          "target": "self",
+          "action_cost": "bonus_action",
+          "resource_pool": {
+            "id": "fixture:p_pool_permission_plain",
+            "capacity_formula": 4,
+            "initial_quantity": 4,
+            "recovery": {
+              "long_rest_completed": {
+                "mode": "restore_to_capacity"
+              }
+            }
+          },
+          "transfer_grant": {
+            "kind": "permission",
+            "value_policy": "formula",
+            "effect": "heal_self",
+            "use_cost": "action",
+            "duration_seconds": 60,
+            "max_recipients": 1,
+            "amount_formula": {
+              "caster_ability_modifier": "WIS"
+            }
+          },
+          "effects": []
+        }
+      ]
+    }
+  },
+  {
+    "id": "fixture:p_class_changed",
+    "name": "Gift maker changed",
+    "hit_die": "d8",
+    "primary_ability": "WIS",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:p_stored_changed",
+          "name": "Stored gift changed",
+          "executor": "class_feature",
+          "type": "active",
+          "target": "self",
+          "action_cost": "bonus_action",
+          "resource_pool": {
+            "id": "fixture:p_pool_stored_changed",
+            "capacity_formula": 4,
+            "initial_quantity": 4,
+            "recovery": {
+              "long_rest_completed": {
+                "mode": "restore_to_capacity"
+              }
+            },
+            "die_size": 6,
+            "spend_choice": {
+              "minimum": 1,
+              "maximum": 1
+            },
+            "capture_policy": "on_acquire",
+            "upgrade_policy": "new_dice_only"
+          },
+          "transfer_grant": {
+            "kind": "die",
+            "value_policy": "pool_die",
+            "effect": "heal_self",
+            "use_cost": "bonus_action",
+            "duration_seconds": 90,
+            "max_recipients": 1
+          },
+          "effects": []
+        },
+        {
+          "id": "fixture:p_shared_changed",
+          "name": "Shared gift changed",
+          "executor": "class_feature",
+          "type": "active",
+          "target": "self",
+          "action_cost": "bonus_action",
+          "resource_pool": {
+            "id": "fixture:p_pool_shared_changed",
+            "capacity_formula": 4,
+            "initial_quantity": 4,
+            "recovery": {
+              "long_rest_completed": {
+                "mode": "restore_to_capacity"
+              }
+            }
+          },
+          "transfer_grant": {
+            "kind": "die",
+            "value_policy": "shared_roll",
+            "effect": "heal_self",
+            "use_cost": "reaction",
+            "duration_seconds": 90,
+            "max_recipients": 2,
+            "die_size": 8
+          },
+          "effects": []
+        },
+        {
+          "id": "fixture:p_token_changed",
+          "name": "Token gift changed",
+          "executor": "class_feature",
+          "type": "active",
+          "target": "self",
+          "action_cost": "bonus_action",
+          "resource_pool": {
+            "id": "fixture:p_pool_token_changed",
+            "capacity_formula": 4,
+            "initial_quantity": 4,
+            "recovery": {
+              "long_rest_completed": {
+                "mode": "restore_to_capacity"
+              }
+            }
+          },
+          "transfer_grant": {
+            "kind": "token",
+            "value_policy": "formula",
+            "effect": "temporary_hp",
+            "use_cost": "action",
+            "duration_seconds": 90,
+            "max_recipients": 1,
+            "amount_formula": {
+              "caster_ability_modifier": "INT"
+            }
+          },
+          "effects": []
+        },
+        {
+          "id": "fixture:p_permission_changed",
+          "name": "Permission gift changed",
+          "executor": "class_feature",
+          "type": "active",
+          "target": "self",
+          "action_cost": "bonus_action",
+          "resource_pool": {
+            "id": "fixture:p_pool_permission_changed",
+            "capacity_formula": 4,
+            "initial_quantity": 4,
+            "recovery": {
+              "long_rest_completed": {
+                "mode": "restore_to_capacity"
+              }
+            }
+          },
+          "transfer_grant": {
+            "kind": "permission",
+            "value_policy": "formula",
+            "effect": "heal_self",
+            "use_cost": "action",
+            "duration_seconds": 90,
+            "max_recipients": 1,
+            "amount_formula": {
+              "caster_ability_modifier": "INT"
+            }
+          },
+          "effects": []
+        }
+      ]
+    }
+  }
+]

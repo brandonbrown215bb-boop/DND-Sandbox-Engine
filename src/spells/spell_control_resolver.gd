@@ -26,7 +26,7 @@ static func sleep(cast: SpellResolutionContext) -> Dictionary:
 	var target_name: String = cast.target.character_name if cast.target is Character else str(cast.target.get("name", "Target"))
 	if CombatAction.is_immune_to_magical_sleep(cast.target):
 		return {"success": true, "hit": true, "saved": true, "automatic_save": true, "damage": 0, "effect_cast": cast.effect_cast, "message": "%s is unaffected by magical sleep and automatically succeeds." % target_name}
-	var save_dc := int(cast.effect_cast.get("save_dc", cast.caster.get_spell_save_dc()))
+	var save_dc := int(cast.effect_cast.get("save_dc", SpellPermissionRules.save_dc(cast.caster, cast.spell)))
 	var save_total: int = int(cast.target.saving_throw_test_to_dc("WIS", save_dc).get("total", 0)) if cast.target is Character else BarbarianRules.roll_monster_save(cast.target, "WIS")
 	var saved := save_total >= save_dc
 	if not saved:

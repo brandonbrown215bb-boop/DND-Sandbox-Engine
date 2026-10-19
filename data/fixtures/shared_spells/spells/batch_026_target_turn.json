@@ -1,0 +1,20 @@
+{
+  "id": "fixture:026_target_turn_staged",
+  "name": "Staged Tangle",
+  "execution": "shared",
+  "level": 1,
+  "casting_time": "action",
+  "range": 6,
+  "target": "single",
+  "save": "WIS",
+  "save_context": { "cause_id": "vine_snare", "purpose_id": "escape_snare", "origin_effect_id": "constricting_vines" },
+  "duration_seconds": 600,
+  "repeat_save": "WIS",
+  "repeat_save_schedule": "target_turn_end",
+  "repeat_save_stages": [
+    { "condition": "restrained", "successes_required": 2, "minimum_margin": 2, "on_failure": "stay", "reset_successes_on_failure": true },
+    { "condition": "paralyzed", "successes_required": 1, "minimum_margin": 0, "on_failure": "stay" }
+  ],
+  "repeat_save_dc_progression": { "increase_on": "failure", "amount": 1, "maximum": 3, "reset_on_success": true },
+  "effects": [{ "type": "grant_condition", "condition": "restrained", "on_failed_save": true }]
+}

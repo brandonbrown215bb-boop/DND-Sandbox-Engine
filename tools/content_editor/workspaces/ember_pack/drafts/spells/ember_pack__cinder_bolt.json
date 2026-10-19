@@ -1,0 +1,36 @@
+{
+  "id": "ember_pack:cinder_bolt",
+  "name": "Cinder Bolt",
+  "description": "You hurl a mote of fire at a creature or object within range. Make a ranged spell attack. On a hit, the target takes 1d10 Fire damage.",
+  "level": 0,
+  "school": "evocation",
+  "casting_time": "action",
+  "range": 24,
+  "target": "single",
+  "attack_type": "ranged_spell",
+  "damage": "1d10",
+  "damage_type": "fire",
+  "components": [
+    "V",
+    "S"
+  ],
+  "scaling": {
+    "5": "2d10",
+    "11": "3d10",
+    "17": "4d10"
+  },
+  "rules_source": "SRD 5.2.1",
+  "rules_status": "2024-gameplay-partial",
+  "execution": "shared",
+  "targets_objects": true,
+  "ignites_objects": true,
+  "classes": [
+    "wizard",
+    "sorcerer"
+  ],
+  "duration": "Instantaneous",
+  "concentration": false,
+  "upcast": {
+    "damage_per_level": "1d10"
+  }
+}

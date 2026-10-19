@@ -1,0 +1,25 @@
+[
+  {
+    "id": "fixture:029_class",
+    "name": "Spell Negator",
+    "hit_die": "d8",
+    "primary_ability": "INT",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:029_spell_negation",
+          "name": "Personal Spell Ward",
+          "type": "passive",
+          "effects": [
+            {
+              "type": "incoming_spell_negation",
+              "target_scope": "recipient_effect",
+              "max_spell_level": 3,
+              "schools": ["evocation"]
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

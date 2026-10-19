@@ -1,0 +1,181 @@
+{
+  "schema_version": 1,
+  "export_status": "game_pack_candidate",
+  "export_note": "Candidate additive pack for Luna's external pack loader. Structural/pinned-contract checks ran in tools/content_editor; production Godot validation owns runtime acceptance.",
+  "revision": "r1",
+  "contract_revision": "2026-10-18-vs83",
+  "pack": {
+    "id": "ember_pack",
+    "name": "Ember & Arcane Pack",
+    "author": "Rook",
+    "version": "0.2.0",
+    "dependencies": [
+      "core"
+    ],
+    "ruleset_compatibility": "rook-5e-lite-v1"
+  },
+  "spell_list_additions": {
+    "wizard": [
+      "ember_pack:cinder_bolt",
+      "ember_pack:cinder_lance",
+      "ember_pack:frost_shard",
+      "magic_missile"
+    ],
+    "sorcerer": [
+      "ember_pack:cinder_bolt",
+      "ember_pack:cinder_lance",
+      "ember_pack:frost_shard",
+      "magic_missile"
+    ],
+    "druid": [
+      "ember_pack:frost_shard",
+      "ember_pack:rallying_aid"
+    ],
+    "bard": [
+      "ember_pack:rallying_aid"
+    ],
+    "cleric": [
+      "ember_pack:rallying_aid"
+    ],
+    "paladin": [
+      "ember_pack:rallying_aid"
+    ],
+    "ranger": [
+      "ember_pack:rallying_aid"
+    ]
+  },
+  "starting_equipment_additions": {
+    "fighter": [
+      "ember_pack:bastion_band",
+      "ember_pack:ember_signet_ring"
+    ],
+    "wizard": [
+      "ember_pack:bastion_band",
+      "ember_pack:ember_signet_ring",
+      "ember_pack:wand_of_cinders"
+    ],
+    "sorcerer": [
+      "ember_pack:wand_of_cinders"
+    ]
+  },
+  "overrides": [
+    {
+      "type": "spell",
+      "id": "magic_missile",
+      "winner": "pack://ember_pack/spells/magic_missile.json#1",
+      "replaces": [
+        "res://data/core/spells/core_spells.json#4",
+        "res://data/core/spells/imported_spells.json#120"
+      ]
+    }
+  ],
+  "diagnostics": [
+    {
+      "id": "ember_pack:bastion_band",
+      "content_type": "item",
+      "origin_mode": "homebrew_clone",
+      "status": "shared-ready",
+      "status_label": "Game-Ready Item (Pinned VS-83 Contract)",
+      "errors": [],
+      "warnings": [],
+      "unit_warnings": [],
+      "unknown_fields": []
+    },
+    {
+      "id": "ember_pack:ember_signet_ring",
+      "content_type": "item",
+      "origin_mode": "homebrew_new",
+      "status": "shared-ready",
+      "status_label": "Game-Ready Item (Pinned VS-83 Contract)",
+      "errors": [],
+      "warnings": [],
+      "unit_warnings": [],
+      "unknown_fields": []
+    },
+    {
+      "id": "ember_pack:wand_of_cinders",
+      "content_type": "item",
+      "origin_mode": "homebrew_new",
+      "status": "shared-ready",
+      "status_label": "Game-Ready Item (Pinned VS-83 Contract)",
+      "errors": [],
+      "warnings": [],
+      "unit_warnings": [],
+      "unknown_fields": []
+    },
+    {
+      "id": "ember_pack:cinder_bolt",
+      "content_type": "spell",
+      "origin_mode": "homebrew_clone",
+      "status": "shared-ready",
+      "status_label": "Shared-Ready (Pinned VS-83 Contract)",
+      "errors": [],
+      "warnings": [],
+      "unit_warnings": [],
+      "unknown_fields": []
+    },
+    {
+      "id": "ember_pack:cinder_lance",
+      "content_type": "spell",
+      "origin_mode": "homebrew_clone",
+      "status": "draft-unsupported",
+      "status_label": "Draft / Shared Contract Errors",
+      "errors": [
+        "Unknown top-level fields rejected by SharedSpell unless parked in _editor_meta: source_unresolved_clauses"
+      ],
+      "warnings": [],
+      "unit_warnings": [],
+      "unknown_fields": [
+        "source_unresolved_clauses"
+      ]
+    },
+    {
+      "id": "ember_pack:frost_shard",
+      "content_type": "spell",
+      "origin_mode": "homebrew_new",
+      "status": "shared-ready",
+      "status_label": "Shared-Ready (Pinned VS-83 Contract)",
+      "errors": [],
+      "warnings": [],
+      "unit_warnings": [],
+      "unknown_fields": []
+    },
+    {
+      "id": "ember_pack:rallying_aid",
+      "content_type": "spell",
+      "origin_mode": "homebrew_clone",
+      "status": "draft-unsupported",
+      "status_label": "Draft / Blocked on Engine or Shared Conversion",
+      "errors": [
+        "Cloned ID 'ember_pack:rallying_aid' is not in SpellSupport.AVAILABLE_SLICES and is missing \"execution\": \"shared\".",
+        "Target selector 'single_ally' is not in supported shared targets ['single', 'self', 'multi', 'area', 'cone'].",
+        "Effect 'aid_hp_bonus' at effects[0] is not a supported shared operation (heal, temporary_hp, grant_condition, remove_condition, area_selection, grant_source_benefits).",
+        "Unsupported shared upcast key 'hit_points_per_level'."
+      ],
+      "warnings": [],
+      "unit_warnings": [],
+      "unknown_fields": []
+    },
+    {
+      "id": "magic_missile",
+      "content_type": "spell",
+      "origin_mode": "override",
+      "status": "native-id-bound",
+      "status_label": "Native-ID-Bound (Breaks If Cloned Without Shared Conversion)",
+      "errors": [],
+      "warnings": [
+        "Spell 'magic_missile' relies on the hardcoded native ID allowlist (SpellSupport.AVAILABLE_SLICES). Cloning it to a new homebrew ID will stop working unless converted to 'execution: shared'.",
+        "If converted to shared: Field 'damage_per_dart' requires a dedicated native handler and is rejected by SharedSpell.",
+        "If converted to shared: Unknown top-level fields rejected by SharedSpell unless parked in _editor_meta: max_targets, auto_hit, damage_per_dart, dart_count",
+        "If converted to shared: Unsupported shared upcast key 'extra_darts_per_level'."
+      ],
+      "unit_warnings": [],
+      "unknown_fields": [
+        "max_targets",
+        "auto_hit",
+        "damage_per_dart",
+        "dart_count"
+      ]
+    }
+  ]
+}

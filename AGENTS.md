@@ -1,3 +1,16 @@
+## Start here
+
+- Current work: `roadmap.md`, `docs/operations/current.md`, and the Quest Board.
+  Read the selected slice/contract next; do not scan old plans to choose work.
+- Current behavior: `src/`, loaded `data/core/` / `data/mods/`, and production
+  evidence named by the current checkpoint. Test fixtures are not catalog support.
+- Rule-source tasks: start with `reference/2024/README.md` and only the selected
+  class view. SRD 5.2.1 remains the staged milestone's rule authority; neither
+  reference metadata nor current game data establishes rules correctness.
+- `docs/archive/`, `_staging/`, raw mixed-edition imports and old reports are
+  historical/reference material. Open them only for a task that needs their
+  source or evidence. Never resume a completed prompt merely because it is present.
+
 <!-- AGENT_GROUND_START -->
 ## Repository Ground
 
@@ -12,6 +25,26 @@
 - Dated gates/reviews and old wave sequences do not choose priorities or block current work. Proposed engine syntax is not executable; verify capability and support claims against source and production Godot checks.
 - Replace stale checkpoint sections instead of appending diaries. Supersede ADR policy explicitly while preserving still-binding identity, cost, source-ownership and save guarantees.
 <!-- AGENT_GROUND_END -->
+
+## Beckett: live Godot access
+
+- Beckett MCP is installed locally. Use it when a task benefits from live UI,
+  screenshots, node/property inspection, runtime errors, engine API discovery,
+  or editor scene authoring. Routine source edits and headless checks do not
+  require starting it.
+- Read [the connection recipe](docs/operations/development.md#beckett-live-godot-access)
+  when needed. Start the existing isolated editor with
+  `& .\.artifacts\beckett-editor\Start-Beckett.ps1`; MCP is at
+  `http://127.0.0.1:8770/mcp`, configured in ignored `.codex/config.toml`.
+- Prefer exposed Beckett tools. If absent from the chat, use the documented
+  authenticated Python fallback; missing native tools alone does not mean the
+  server is unavailable. Keep the token out of output and tracked files.
+- The editor copy is a **snapshot**. Check/refresh the relevant source before
+  claiming current behavior; preserve its local configuration and save profile.
+  Bring desired edits back deliberately. Keep Beckett disabled in the main project.
+- Lite supports observation and editor authoring, not runtime input automation.
+  Use visible paths from `ui_snapshot` rather than ambiguous text selectors.
+  Stop play sessions you started; keep existing gameplay/save checks as appropriate.
 
 <!-- QUEST_BOARD_START -->
 ## Shared Quest Board

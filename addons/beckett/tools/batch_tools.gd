@@ -10,15 +10,18 @@ class_name BeckettBatchTools
 ## NOT rolled back; the result says so. Sub-calls are re-gated, so read-only / allowlist /
 ## confirm-destructive rules still apply per step.
 
-var server
+const CallArgs := preload("res://addons/beckett/core/callargs.gd")
+
+var server  # mcp_server node (owns .registry and ._gate)
 
 
 func _register(registry) -> void:
 	registry.register({
 		"name": "batch_execute",
 		"description": "Run several tool calls in one request, in order. steps = [{tool, args}]. "
-			+ "Stops at the first failure (stop_on_error, default true). When a step fails, scene edits made by the batch are rolled back via the editor undo history (rollback, default true) — file/resource writes are not. "
-			+ "Use to collapse multi-step authoring (create node → set props → attach script) into one atomic call.",
+			+ "Stops at the first failure (stop_on_error, default true). When a step fails, scene edits made by the batch are rolled back via the editor undo history (rollback, default true); file/resource writes are not. "
+			+ "Use to collapse multi-step authoring (create node → set props → attach script) into one atomic call. "
+			+ "ok per step means the handler completed - verify EFFECTS with a trailing read-back step (a get_* or describe_object call; assert_scene / assert_node_state in Full) before trusting a mutation batch.",
 		"input_schema": {"type": "object", "properties": {
 			"steps": {"type": "array", "description": "ordered [{tool: name, args: {...}}]", "items": {"type": "object"}},
 			"stop_on_error": {"type": "boolean", "description": "halt on first failure (default true)"},
@@ -32,8 +35,8 @@ func _batch_execute(args: Dictionary) -> Dictionary:
 	var steps: Variant = args.get("steps", [])
 	if not (steps is Array) or (steps as Array).is_empty():
 		return {"error": "steps must be a non-empty array of {tool, args}."}
-	var stop := bool(args.get("stop_on_error", true))
-	var want_rollback := bool(args.get("rollback", true))
+	var stop := CallArgs.flag(args, "stop_on_error", true)
+	var want_rollback := CallArgs.flag(args, "rollback", true)
 	var registry = server.registry
 
 	var uredo := _scene_undo()
@@ -68,15 +71,26 @@ func _batch_execute(args: Dictionary) -> Dictionary:
 				break
 			continue
 		var handler: Callable = tool["handler"]
+		# v1.11 error echo, per STEP: the server attaches a batch-wide window at the top
+		# level; marking around each sub-call pins every engine error to the step that
+		# caused it.
+		var echo_mark: int = server.error_echo.mark() if server.error_echo != null else 0
 		var raw: Variant = handler.call(sargs)
 		var rd: Dictionary = raw if raw is Dictionary else {"text": str(raw)}
+		var step_echoes: Array = server.error_echo.echo_since(echo_mark) if server.error_echo != null else []
 		if rd.has("error"):
-			results.append({"step": i, "tool": tname, "ok": false, "error": str(rd["error"])})
+			var fail_entry := {"step": i, "tool": tname, "ok": false, "error": server.explain_error(str(rd["error"]))}
+			if not step_echoes.is_empty():
+				fail_entry["engine_errors"] = step_echoes
+			results.append(fail_entry)
 			failed_at = i
 			if stop:
 				break
 			continue
-		results.append({"step": i, "tool": tname, "ok": true, "result": _summarize(rd)})
+		var ok_entry := {"step": i, "tool": tname, "ok": true, "result": _summarize(rd)}
+		if not step_echoes.is_empty():
+			ok_entry["engine_errors"] = step_echoes
+		results.append(ok_entry)
 
 	var out: Dictionary = {
 		"ok": failed_at == -1,
@@ -95,6 +109,7 @@ func _batch_execute(args: Dictionary) -> Dictionary:
 	return {"json": out}
 
 
+# ---------------------------------------------------------------- rollback
 
 ## The plain UndoRedo for the open scene's history (or null if unavailable).
 func _scene_undo() -> UndoRedo:

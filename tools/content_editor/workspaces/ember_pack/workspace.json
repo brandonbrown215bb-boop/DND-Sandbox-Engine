@@ -1,0 +1,108 @@
+{
+  "pack_id": "ember_pack",
+  "name": "Ember & Arcane Pack",
+  "author": "Rook",
+  "version": "0.2.0",
+  "ruleset_compatibility": "rook-5e-lite-v1",
+  "contract_revision": "2026-10-18-vs83",
+  "dependencies": [
+    "core"
+  ],
+  "draft_metadata": {
+    "spell:ember_pack:cinder_lance": {
+      "id": "ember_pack:cinder_lance",
+      "content_type": "spell",
+      "file": "ember_pack__cinder_lance.json",
+      "origin": {
+        "mode": "homebrew_clone",
+        "cloned_from_id": "fire_bolt",
+        "cloned_from_coord": "res://data/core/spells/core_spells.json#1",
+        "replaces": []
+      },
+      "status": "draft-unsupported"
+    },
+    "spell:ember_pack:rallying_aid": {
+      "id": "ember_pack:rallying_aid",
+      "content_type": "spell",
+      "file": "ember_pack__rallying_aid.json",
+      "origin": {
+        "mode": "homebrew_clone",
+        "cloned_from_id": "aid",
+        "cloned_from_coord": "res://data/core/spells/imported_spells.json#2",
+        "replaces": []
+      },
+      "status": "draft-unsupported"
+    },
+    "item:ember_pack:bastion_band": {
+      "id": "ember_pack:bastion_band",
+      "content_type": "item",
+      "file": "ember_pack__bastion_band.json",
+      "origin": {
+        "mode": "homebrew_clone",
+        "cloned_from_id": "ring_of_protection",
+        "cloned_from_coord": "res://data/core/items/wave2_magic_items.json#1",
+        "replaces": []
+      },
+      "status": "shared-ready"
+    },
+    "spell:magic_missile": {
+      "id": "magic_missile",
+      "content_type": "spell",
+      "file": "magic_missile.json",
+      "origin": {
+        "mode": "override",
+        "source_id": "magic_missile",
+        "winner_coord": "res://data/core/spells/core_spells.json#4",
+        "replaces": [
+          "res://data/core/spells/core_spells.json#4",
+          "res://data/core/spells/imported_spells.json#120"
+        ]
+      },
+      "status": "native-id-bound"
+    },
+    "spell:ember_pack:cinder_bolt": {
+      "id": "ember_pack:cinder_bolt",
+      "content_type": "spell",
+      "file": "ember_pack__cinder_bolt.json",
+      "origin": {
+        "mode": "homebrew_clone",
+        "cloned_from_id": "fire_bolt",
+        "cloned_from_coord": "res://data/core/spells/core_spells.json#1",
+        "replaces": []
+      },
+      "status": "shared-ready"
+    },
+    "spell:ember_pack:frost_shard": {
+      "id": "ember_pack:frost_shard",
+      "content_type": "spell",
+      "file": "ember_pack__frost_shard.json",
+      "origin": {
+        "mode": "homebrew_new",
+        "template_id": "spell_ordered_steps",
+        "replaces": []
+      },
+      "status": "shared-ready"
+    },
+    "item:ember_pack:ember_signet_ring": {
+      "id": "ember_pack:ember_signet_ring",
+      "content_type": "item",
+      "file": "ember_pack__ember_signet_ring.json",
+      "origin": {
+        "mode": "homebrew_new",
+        "replaces": []
+      },
+      "status": "shared-ready"
+    },
+    "item:ember_pack:wand_of_cinders": {
+      "id": "ember_pack:wand_of_cinders",
+      "content_type": "item",
+      "file": "ember_pack__wand_of_cinders.json",
+      "origin": {
+        "mode": "homebrew_new",
+        "template_id": "item_spell_wand",
+        "replaces": []
+      },
+      "status": "shared-ready"
+    }
+  }
+}

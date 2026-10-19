@@ -27,6 +27,8 @@ static func saved_state_error(dto: Dictionary) -> String:
 	var serial: Variant = dto.get("spell_cast_serial", 0)
 	if not (serial is int or serial is float) or not is_finite(float(serial)) or float(serial) != floor(float(serial)) or int(serial) < 0:
 		return "invalid saved spell cast serial"
+	var carrier_error := SourceBenefitRules.saved_cast_error(dto)
+	if not carrier_error.is_empty(): return carrier_error
 	for source in state:
 		var record: Variant = state[source]
 		if not source is String or not record is Dictionary:
@@ -34,6 +36,11 @@ static func saved_state_error(dto: Dictionary) -> String:
 		var spell_id := str(record.get("spell_id", ""))
 		if str(record.get("source_id", "")) != source or str(record.get("caster_id", "")).is_empty() or (not SpellEffects.manages(DataLoader.get_spell(spell_id)) and spell_id not in SpellEffects.PERSISTED_AREA_MARKER_SPELLS):
 			return "invalid saved spell effect identity"
+		if record.has("source_end_rules"):
+			var definition := DataLoader.get_spell(spell_id)
+			var end_rules_error := SharedSpell.source_end_rules_error(record.get("source_end_rules"))
+			if not SharedSpell.uses(definition) or not definition.has("source_end_rules") or record["source_end_rules"] != definition["source_end_rules"] or not end_rules_error.is_empty():
+				return "invalid saved spell source end rules"
 		var remaining: Variant = record.get("remaining_seconds", null)
 		var indefinite_power_word_stun := str(record.get("spell_id", "")) == "power_word_stun" and (remaining is int or remaining is float) and float(remaining) == -1.0
 		if not (remaining is int or remaining is float) or not is_finite(float(remaining)) or float(remaining) != floor(float(remaining)) or (int(remaining) <= 0 and not indefinite_power_word_stun) or int(remaining) > 172800:
@@ -41,6 +48,40 @@ static func saved_state_error(dto: Dictionary) -> String:
 		if str(record.get("expiry_phase", "")) not in ["start", "end"] or not record.get("conditions", null) is Array:
 			return "invalid saved spell effect boundary"
 		var save_dc: Variant = record.get("save_dc", null)
+		var repeat_definition := DataLoader.get_spell(spell_id)
+		# Only old, unstaged default-turn definitions may omit history entirely.
+		var requires_repeat_history := SharedSpell.uses(repeat_definition) and (repeat_definition.has("repeat_save_schedule") or repeat_definition.has("repeat_save_stages") or repeat_definition.has("repeat_save_dc_progression"))
+		if requires_repeat_history or record.has("repeat_save_schedule") or record.has("repeat_save_attempts") or record.has("repeat_save_stages") or record.has("repeat_save_dc_progression") or record.has("repeat_save_context") or record.has("repeat_save_purpose"):
+			for field in ["repeat_save_schedule", "repeat_save_attempts", "repeat_save_dc_adjustment", "repeat_save_stage_index", "repeat_save_stage_successes", "repeat_save_context", "repeat_save_purpose", "recipient_id"]:
+				if not record.has(field): return "incomplete saved repeat-save state"
+			var definition := DataLoader.get_spell(spell_id)
+			var schedule := str(record.get("repeat_save_schedule", ""))
+			var attempts: Variant = record.get("repeat_save_attempts", null)
+			var adjustment: Variant = record.get("repeat_save_dc_adjustment", null)
+			var stage_index: Variant = record.get("repeat_save_stage_index", null)
+			var stage_successes: Variant = record.get("repeat_save_stage_successes", null)
+			var expected_stages: Array = definition.get("repeat_save_stages", [])
+			var is_integer := func(value): return (value is int or value is float) and is_finite(float(value)) and float(value) == floor(float(value))
+			var expected_context: Dictionary = definition.get("save_context", {})
+			var expected_purpose := str(expected_context.get("purpose_id", "repeat_save"))
+			if not SharedSpell.uses(definition) or not definition.has("repeat_save") or schedule not in ["target_turn_end", "elapsed_seconds"] or schedule != str(definition.get("repeat_save_schedule", "target_turn_end")) or not is_integer.call(attempts) or int(attempts) < 0 or int(attempts) > 100000 or not is_integer.call(adjustment) or int(adjustment) < 0 or int(adjustment) > 100 or not is_integer.call(stage_index) or not is_integer.call(stage_successes) or str(record.get("recipient_id", "")) != str(dto.get("character_id", "")) or record.get("repeat_save_context", {}) != expected_context or str(record.get("repeat_save_purpose", "")) != expected_purpose:
+				return "invalid saved repeat-save state"
+			if schedule == "elapsed_seconds":
+				var next_at: Variant = record.get("repeat_save_next_at_seconds", null)
+				if not is_integer.call(next_at) or int(next_at) < 0 or int(next_at) > 2147483647: return "invalid saved repeat-save deadline"
+			elif record.has("repeat_save_next_at_seconds"):
+				return "turn-based repeat save cannot have a clock deadline"
+			if record.get("repeat_save_stages", []) != expected_stages or record.get("repeat_save_dc_progression", {}) != definition.get("repeat_save_dc_progression", {}):
+				return "saved repeat-save rules do not match the loaded definition"
+			if expected_stages.is_empty():
+				if int(stage_index) != 0 or int(stage_successes) != 0: return "saved repeat-save has an invalid stage cursor"
+			else:
+				if int(stage_index) < 0 or int(stage_index) >= expected_stages.size() or int(stage_successes) < 0 or int(stage_successes) >= int(expected_stages[int(stage_index)].get("successes_required", 1)) or record.get("conditions", []) != [str(expected_stages[int(stage_index)].get("condition", ""))]:
+					return "saved repeat-save has an invalid stage cursor"
+			var progression: Dictionary = definition.get("repeat_save_dc_progression", {})
+			if int(adjustment) > int(progression.get("maximum", 0)): return "saved repeat-save DC adjustment exceeds its rule"
+		elif record.has("repeat_save_next_at_seconds") or record.has("repeat_save_dc_adjustment") or record.has("repeat_save_stage_index") or record.has("repeat_save_stage_successes"):
+			return "incomplete saved repeat-save state"
 		var aid_value: Variant = record.get("aid_hp_bonus", 0)
 		var barkskin_floor: Variant = record.get("ac_floor", null)
 		var berry_count: Variant = record.get("berries_remaining", null)
@@ -55,7 +96,7 @@ static func saved_state_error(dto: Dictionary) -> String:
 		var valid_identify_target := identify_target is Dictionary and ((identify_kind == "item" and not str(identify_target.get("item_id", "")).is_empty()) or (identify_kind == "creature" and not str(identify_target.get("target_id", "")).is_empty()))
 		var valid_identify_record: bool = str(record.get("spell_id", "")) == "identify" and valid_identify_target and record["conditions"].is_empty() and bool(record.get("concentration", false))
 		var valid_area_marker_record: bool = str(record.get("spell_id", "")) in SpellEffects.PERSISTED_AREA_MARKER_SPELLS and record["conditions"].is_empty() and bool(record.get("concentration", false))
-		if not (save_dc is int or save_dc is float) or not is_finite(float(save_dc)) or float(save_dc) != floor(float(save_dc)) or int(save_dc) < 0 or int(save_dc) > 100 or not record.get("concentration", null) is bool or (record["conditions"].is_empty() and not valid_aid_record and not valid_barkskin_record and not valid_goodberry_record and not valid_identify_record and not valid_area_marker_record):
+		if not (save_dc is int or save_dc is float) or not is_finite(float(save_dc)) or float(save_dc) != floor(float(save_dc)) or int(save_dc) < 0 or int(save_dc) > 100 or not record.get("concentration", null) is bool or (record["conditions"].is_empty() and not valid_aid_record and not valid_barkskin_record and not valid_goodberry_record and not valid_identify_record and not valid_area_marker_record and not record.has("source_benefits")):
 			return "invalid saved spell effect rules"
 		if record.has("aid_hp_bonus") and (not valid_aid_record or str(record.get("spell_id", "")) != "aid"):
 			return "invalid saved Aid bonus"
@@ -82,6 +123,11 @@ static func saved_state_error(dto: Dictionary) -> String:
 								if eff is Dictionary and eff.get("type", "") == "grant_condition" and eff.get("condition", "") == condition:
 									declares_condition = true
 									break
+				if not declares_condition:
+					for stage in definition.get("repeat_save_stages", []):
+						if stage is Dictionary and str(stage.get("condition", "")) == str(condition):
+							declares_condition = true
+							break
 				if not declares_condition:
 					return "saved shared spell has an undeclared condition"
 	if not concentration.is_empty() and (str(concentration.get("effect_source", "")).is_empty() or (not SpellEffects.manages(DataLoader.get_spell(str(concentration.get("spell_id", "")))) and str(concentration.get("spell_id", "")) not in SpellEffects.PERSISTED_AREA_MARKER_SPELLS)):

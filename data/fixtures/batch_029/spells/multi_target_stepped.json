@@ -1,0 +1,28 @@
+{
+  "id": "fixture:029_multi_target_stepped",
+  "name": "Twin spark burst",
+  "execution": "shared",
+  "level": 1,
+  "school": "evocation",
+  "casting_time": "action",
+  "range": 6,
+  "target": "multi",
+  "components": ["V", "S"],
+  "steps": [
+    {
+      "id": "save_step",
+      "type": "save",
+      "save": "DEX",
+      "target": "target"
+    },
+    {
+      "id": "damage_step",
+      "type": "damage",
+      "gate": "failed_save",
+      "gate_step": "save_step",
+      "damage": "3d6",
+      "damage_type": "lightning",
+      "target": "target"
+    }
+  ]
+}

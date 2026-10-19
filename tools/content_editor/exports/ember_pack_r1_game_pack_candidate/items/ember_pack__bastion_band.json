@@ -1,0 +1,29 @@
+{
+  "id": "ember_pack:bastion_band",
+  "name": "Bastion Band",
+  "description": "While worn and attuned, this ring grants a +1 bonus to Armor Class and saving throws.",
+  "type": "ring",
+  "magical": true,
+  "rarity": "rare",
+  "requires_attunement": true,
+  "effects": [],
+  "value": 0,
+  "source_benefits": [
+    {
+      "stat": "AC",
+      "amount": 1
+    },
+    {
+      "stat": "speed",
+      "amount": 1
+    }
+  ],
+  "_editor_meta": {
+    "parked_top_level": {
+      "starting_equipment_classes": [
+        "fighter",
+        "wizard"
+      ]
+    }
+  }
+}

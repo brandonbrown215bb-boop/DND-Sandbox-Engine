@@ -1,0 +1,161 @@
+{
+  "id": "fixture:batch_k",
+  "name": "Batch K Neutral",
+  "description": "Test-only progression choice acquisition and safe replacement.",
+  "hit_die": "d8",
+  "primary_ability": "CHA",
+  "weapon_proficiencies": [
+    "simple"
+  ],
+  "armor_proficiencies": [
+    "light"
+  ],
+  "saving_throw_proficiencies": [
+    "WIS",
+    "CHA"
+  ],
+  "features_by_level": {
+    "1": [
+      {
+        "id": "fixture:k_boon",
+        "name": "K Boon",
+        "type": "passive",
+        "description": "Choose one pact boon.",
+        "effects": [
+          {
+            "type": "feature_choice",
+            "count": 1,
+            "allow_replacement": true,
+            "options": [
+              {
+                "id": "k_blade",
+                "name": "Pact of the Blade",
+                "effects": [
+                  {
+                    "type": "proficiency_grant",
+                    "weapon_proficiencies": [
+                      "martial"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "k_tome",
+                "name": "Pact of the Tome",
+                "effects": [
+                  {
+                    "type": "spellcasting_capacity_bonus",
+                    "kind": "cantrips",
+                    "amount": 2
+                  }
+                ]
+              },
+              {
+                "id": "k_chain",
+                "name": "Pact of the Chain",
+                "effects": [
+                  {
+                    "type": "proficiency_grant",
+                    "skill_proficiencies": [
+                      "Arcana"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "fixture:k_invocations",
+        "name": "K Invocations",
+        "type": "passive",
+        "description": "Choose two invocations.",
+        "effects": [
+          {
+            "type": "feature_choice",
+            "count": 2,
+            "allow_duplicates": false,
+            "allow_replacement": true,
+            "options": [
+              {
+                "id": "k_thirsting_blade",
+                "name": "Thirsting Blade",
+                "minimum_level": 1,
+                "requires_choices": [
+                  "k_blade"
+                ],
+                "effects": [
+                  {
+                    "type": "extra_attack",
+                    "count": 1
+                  }
+                ]
+              },
+              {
+                "id": "k_armor_of_shadows",
+                "name": "Armor of Shadows",
+                "minimum_level": 1,
+                "effects": [
+                  {
+                    "type": "proficiency_grant",
+                    "armor_proficiencies": [
+                      "medium"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "k_agonizing_blast",
+                "name": "Agonizing Blast",
+                "minimum_level": 1,
+                "repeatable": true,
+                "effects": [
+                  {
+                    "type": "spell_damage_bonus",
+                    "ability": "CHA",
+                    "spell_level": 0,
+                    "spell_list": "warlock"
+                  }
+                ]
+              },
+              {
+                "id": "k_lifedrinker",
+                "name": "Lifedrinker",
+                "minimum_level": 3,
+                "requires_choices": [
+                  "k_blade"
+                ],
+                "effects": [
+                  {
+                    "type": "proficiency_grant",
+                    "weapon_proficiencies": [
+                      "martial"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "k_veteran_ward",
+                "name": "Veteran Ward",
+                "minimum_level": 1,
+                "when": {
+                  "fact": "actor.level",
+                  "gte": 2
+                },
+                "effects": [
+                  {
+                    "type": "proficiency_grant",
+                    "armor_proficiencies": [
+                      "heavy"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

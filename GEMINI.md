@@ -1,3 +1,8 @@
+Start with [AGENTS.md](AGENTS.md). It names the current work, source-reference
+entry point and historical boundaries for every agent using this checkout.
+For source extraction, use [the revised class view](reference/2024/README.md)
+before opening the mixed-edition originals. Archived prompts are not a live queue.
+
 <!-- AGENT_GROUND_START -->
 @AGENTS.md
 

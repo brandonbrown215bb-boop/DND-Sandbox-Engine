@@ -1,0 +1,140 @@
+[
+  {
+    "id": "fixture:028_class",
+    "name": "Sequence student",
+    "hit_die": "d8",
+    "primary_ability": "INT",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:028_parent_action",
+          "name": "Sequence action",
+          "executor": "class_feature",
+          "type": "active",
+          "target": "self",
+          "action_cost": "action",
+          "uses": 3,
+          "uses_per": "long_rest",
+          "effects": [],
+          "child_actions": {
+            "classification": "sequence_action",
+            "cancel_policy": "skip",
+            "children": [
+              {
+                "id": "strike",
+                "kind": "strike"
+              },
+              {
+                "id": "remedy",
+                "kind": "cast",
+                "spell_id": "fixture:028_one"
+              },
+              {
+                "id": "step",
+                "kind": "move",
+                "distance": 2
+              }
+            ]
+          }
+        },
+        {
+          "id": "fixture:028_parent_bonus",
+          "name": "Sequence bonus",
+          "executor": "class_feature",
+          "type": "active",
+          "target": "self",
+          "action_cost": "bonus_action",
+          "uses": 3,
+          "uses_per": "long_rest",
+          "effects": [],
+          "child_actions": {
+            "classification": "sequence_bonus",
+            "cancel_policy": "stop",
+            "children": [
+              {
+                "id": "strike",
+                "kind": "strike"
+              },
+              {
+                "id": "remedy",
+                "kind": "cast",
+                "spell_id": "fixture:028_one"
+              },
+              {
+                "id": "step",
+                "kind": "move",
+                "distance": 2
+              }
+            ]
+          }
+        },
+        {
+          "id": "fixture:028_parent_reaction",
+          "name": "Sequence reaction",
+          "executor": "class_feature",
+          "type": "active",
+          "target": "self",
+          "action_cost": "reaction",
+          "uses": 3,
+          "uses_per": "long_rest",
+          "effects": [],
+          "child_actions": {
+            "classification": "sequence_reaction",
+            "cancel_policy": "skip",
+            "children": [
+              {
+                "id": "strike",
+                "kind": "strike"
+              },
+              {
+                "id": "remedy",
+                "kind": "cast",
+                "spell_id": "fixture:028_one"
+              },
+              {
+                "id": "step",
+                "kind": "move",
+                "distance": 2
+              }
+            ]
+          }
+        },
+        {
+          "id": "fixture:028_heal",
+          "name": "Strike recovery",
+          "executor": "class_feature",
+          "type": "active",
+          "target": "self",
+          "action_cost": "action",
+          "uses": 4,
+          "uses_per": "long_rest",
+          "attack_unit_substitution": {
+            "units": 1
+          },
+          "effects": [
+            {
+              "type": "heal_self",
+              "value": "1d4+3"
+            }
+          ]
+        },
+        {
+          "id": "fixture:028_spells",
+          "name": "Remedies",
+          "type": "passive",
+          "effects": [
+            {
+              "type": "always_prepared_spells",
+              "spells": [
+                "fixture:028_one",
+                "fixture:028_two",
+                "fixture:028_renamed"
+              ],
+              "ability": "INT"
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

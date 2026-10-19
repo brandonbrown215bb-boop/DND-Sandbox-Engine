@@ -1,0 +1,40 @@
+{
+  "id": "ember_pack:rallying_aid",
+  "name": "Rallying Aid (Draft)",
+  "description": "You bolster your allies with toughness and resolve. Choose up to three creatures within range. Each target's Hit Point maximum and current Hit Points increase by 5 for the duration.",
+  "level": 2,
+  "school": "abjuration",
+  "casting_time": "action",
+  "range": 6,
+  "target": "single_ally",
+  "attack_type": "none",
+  "classes": [
+    "bard",
+    "cleric",
+    "druid",
+    "paladin",
+    "ranger"
+  ],
+  "components": [
+    "V",
+    "S",
+    "M"
+  ],
+  "material": "a strip of white cloth",
+  "duration": "8 hours",
+  "concentration": false,
+  "duration_seconds": 28800,
+  "rules_source": "SRD5.2.1",
+  "rules_status": "2024-gameplay-partial",
+  "base_targets": 3,
+  "effects": [
+    {
+      "type": "aid_hp_bonus",
+      "value": 5
+    }
+  ],
+  "upcast": {
+    "hit_points_per_level": 5,
+    "starting_level": 2
+  }
+}

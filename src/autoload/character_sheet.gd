@@ -138,7 +138,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			close_sheet()
 
 
-func _populate(c: Character) -> void:
+func _populate(c: Character, ritual_message: String = "") -> void:
 	if c.class_id == "fighter":
 		c._recalculate_ac()
 	_clear_content()
@@ -178,10 +178,11 @@ func _populate(c: Character) -> void:
 		wild_shape_button.tooltip_text = "Choose one of your learned Beast forms. Wild Shape uses recover through the normal Short Rest and Long Rest rules."
 		wild_shape_button.pressed.connect(_choose_wild_shape_form.bind(c))
 		_content.add_child(wild_shape_button)
-	if not DataLoader.get_subclasses_for_class(c.class_id).is_empty() or not ClassProgression.improvement_ids(c).is_empty() or not ClassProgression.skill_choice_ids(c).is_empty() or not ClassProgression.epic_boon_choice_ids(c).is_empty() or c.has_feature_effect("weapon_mastery") or c.has_feature_effect("spellcasting"):
+	if not DataLoader.get_subclasses_for_class(c.class_id).is_empty() or not ClassProgression.improvement_ids(c).is_empty() or not ClassProgression.skill_choice_ids(c).is_empty() or not ClassProgression.epic_boon_choice_ids(c).is_empty() or c.has_feature_effect("weapon_mastery") or c.has_feature_effect("spellcasting") or not SpellPermissionRules.ritual_choices(c).is_empty():
 		var progression := ClassTraining.new()
 		_content.add_child(progression)
-		progression.configure(c, func(): _populate(c))
+		progression.ritual_completed.connect(func(message: String): _populate(c, message))
+		progression.configure(c, func(): _populate(c), ritual_message)
 	if c.class_id == "fighter":
 		var training := FighterTraining.new()
 		_content.add_child(training)

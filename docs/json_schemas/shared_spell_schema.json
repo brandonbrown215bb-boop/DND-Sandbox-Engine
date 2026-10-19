@@ -33,8 +33,25 @@
     "casting_time": {
       "enum": [
         "action",
-        "bonus_action"
+        "bonus_action",
+        "reaction"
       ]
+    },
+    "attack_unit_substitution": {
+      "type": "object",
+      "required": [
+        "units"
+      ],
+      "properties": {
+        "units": {
+          "type": "integer",
+          "enum": [
+            1,
+            2
+          ]
+        }
+      },
+      "additionalProperties": false
     },
     "range": {
       "type": "integer",
@@ -315,6 +332,100 @@
         "CHA"
       ]
     },
+    "repeat_save_schedule": {
+      "enum": [
+        "target_turn_end",
+        "elapsed_seconds"
+      ]
+    },
+    "repeat_save_interval_seconds": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 86400
+    },
+    "repeat_save_stages": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "properties": {
+          "condition": {
+            "type": "string",
+            "enum": [
+              "blinded",
+              "deafened",
+              "frightened",
+              "poisoned",
+              "prone",
+              "restrained",
+              "stunned",
+              "paralyzed",
+              "incapacitated",
+              "blessed",
+              "baned",
+              "shield_of_faith"
+            ]
+          },
+          "successes_required": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20
+          },
+          "minimum_margin": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "on_failure": {
+            "enum": [
+              "stay",
+              "advance",
+              "end"
+            ]
+          },
+          "reset_successes_on_failure": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "condition",
+          "successes_required"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "repeat_save_dc_progression": {
+      "type": "object",
+      "properties": {
+        "increase_on": {
+          "enum": [
+            "attempt",
+            "failure"
+          ]
+        },
+        "amount": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20
+        },
+        "maximum": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "reset_on_success": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "increase_on",
+        "amount",
+        "maximum",
+        "reset_on_success"
+      ],
+      "additionalProperties": false
+    },
     "targets_objects": {
       "type": "boolean"
     },
@@ -388,6 +499,158 @@
       "items": {
         "$ref": "#/definitions/step"
       }
+    },
+    "interruption_policy": {
+      "type": "string",
+      "enum": [
+        "refund",
+        "commit"
+      ]
+    },
+    "failure_policy": {
+      "type": "string",
+      "enum": [
+        "refund",
+        "commit"
+      ]
+    },
+    "empty_effect_policy": {
+      "type": "string",
+      "enum": [
+        "commit",
+        "refund"
+      ]
+    },
+    "cast_settlement": {
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "commit",
+            "refund"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "on_success": {
+              "$ref": "#/definitions/cast_settlement_branch"
+            },
+            "on_failure": {
+              "$ref": "#/definitions/cast_settlement_branch"
+            },
+            "on_interrupted": {
+              "$ref": "#/definitions/cast_settlement_branch"
+            },
+            "on_negated": {
+              "$ref": "#/definitions/cast_settlement_branch"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "cancellation_rule": {
+      "type": "object",
+      "required": [
+        "target_scope"
+      ],
+      "properties": {
+        "target_scope": {
+          "enum": [
+            "whole_cast"
+          ]
+        },
+        "min_spell_level": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9
+        },
+        "max_spell_level": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9
+        },
+        "spell_levels": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9
+          }
+        },
+        "schools": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "spell_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "contest": {
+          "type": "object",
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "enum": [
+                "save",
+                "check",
+                "none"
+              ]
+            },
+            "ability": {
+              "enum": [
+                "STR",
+                "DEX",
+                "CON",
+                "INT",
+                "WIS",
+                "CHA"
+              ]
+            },
+            "dc": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 30
+            },
+            "dc_from": {
+              "enum": [
+                "stopping_caster",
+                "target_caster"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "stopping_cost_policy": {
+          "$ref": "#/definitions/stopping_cost_policy"
+        }
+      },
+      "additionalProperties": false
+    },
+    "stopping_cost_policy": {
+      "$ref": "#/definitions/stopping_cost_policy"
+    },
+    "incoming_negation_rule": {
+      "$ref": "#/definitions/incoming_negation_rule"
+    },
+    "physical_requirements": {
+      "$ref": "#/definitions/physical_requirements"
+    },
+    "spatial_requirements": {
+      "$ref": "#/definitions/spatial_requirements"
     }
   },
   "patternProperties": {
@@ -397,14 +660,82 @@
   "definitions": {
     "damage_scale_by_outcome": {
       "oneOf": [
-        { "type": "object", "required": ["hit", "miss"], "properties": { "hit": { "type": "number", "minimum": 0, "maximum": 1 }, "miss": { "type": "number", "minimum": 0, "maximum": 1 } }, "additionalProperties": false },
-        { "type": "object", "required": ["success", "failure"], "properties": { "success": { "type": "number", "minimum": 0, "maximum": 1 }, "failure": { "type": "number", "minimum": 0, "maximum": 1 } }, "additionalProperties": false }
+        {
+          "type": "object",
+          "required": [
+            "hit",
+            "miss"
+          ],
+          "properties": {
+            "hit": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "miss": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "success",
+            "failure"
+          ],
+          "properties": {
+            "success": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "failure": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "additionalProperties": false
+        }
       ]
     },
     "rider_by_outcome": {
       "oneOf": [
-        { "type": "object", "required": ["hit", "miss"], "properties": { "hit": { "type": "boolean" }, "miss": { "type": "boolean" } }, "additionalProperties": false },
-        { "type": "object", "required": ["success", "failure"], "properties": { "success": { "type": "boolean" }, "failure": { "type": "boolean" } }, "additionalProperties": false }
+        {
+          "type": "object",
+          "required": [
+            "hit",
+            "miss"
+          ],
+          "properties": {
+            "hit": {
+              "type": "boolean"
+            },
+            "miss": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "success",
+            "failure"
+          ],
+          "properties": {
+            "success": {
+              "type": "boolean"
+            },
+            "failure": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        }
       ]
     },
     "formula": {
@@ -422,19 +753,80 @@
     },
     "result_selector": {
       "type": "object",
-      "required": ["step", "target", "measure"],
+      "required": [
+        "step",
+        "target",
+        "measure"
+      ],
       "properties": {
-        "step": { "type": "string", "minLength": 1 },
-        "target": { "enum": ["same", "cast_target"] },
-        "component": { "type": "string", "minLength": 1 },
-        "component_id": { "type": "string", "minLength": 1 },
-        "measure": { "enum": ["raw", "resolved", "hp_loss", "prevented", "absorbed", "healed", "margin", "hp_after"] }
+        "step": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target": {
+          "enum": [
+            "same",
+            "cast_target"
+          ]
+        },
+        "component": {
+          "type": "string",
+          "minLength": 1
+        },
+        "component_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "measure": {
+          "enum": [
+            "raw",
+            "resolved",
+            "hp_loss",
+            "prevented",
+            "absorbed",
+            "healed",
+            "margin",
+            "hp_after"
+          ]
+        }
       },
       "allOf": [
         {
-          "if": { "properties": { "measure": { "enum": ["healed", "margin", "hp_after"] } }, "required": ["measure"] },
-          "then": { "not": { "anyOf": [{ "required": ["component"] }, { "required": ["component_id"] }] } },
-          "else": { "required": ["component"] }
+          "if": {
+            "properties": {
+              "measure": {
+                "enum": [
+                  "healed",
+                  "margin",
+                  "hp_after"
+                ]
+              }
+            },
+            "required": [
+              "measure"
+            ]
+          },
+          "then": {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "component"
+                  ]
+                },
+                {
+                  "required": [
+                    "component_id"
+                  ]
+                }
+              ]
+            }
+          },
+          "else": {
+            "required": [
+              "component"
+            ]
+          }
         }
       ],
       "additionalProperties": false
@@ -442,43 +834,181 @@
     "result_sum_selector": {
       "type": "object",
       "description": "One typed damage component and one measure summed once per actual target in a named earlier damage step.",
-      "required": ["step", "component", "measure"],
+      "required": [
+        "step",
+        "component",
+        "measure"
+      ],
       "properties": {
-        "step": { "type": "string", "minLength": 1 },
-        "component": { "type": "string", "minLength": 1 },
-        "measure": { "enum": ["raw", "resolved", "hp_loss"] }
+        "step": {
+          "type": "string",
+          "minLength": 1
+        },
+        "component": {
+          "type": "string",
+          "minLength": 1
+        },
+        "measure": {
+          "enum": [
+            "raw",
+            "resolved",
+            "hp_loss"
+          ]
+        }
       },
       "additionalProperties": false
     },
     "breakpoint_row": {
       "type": "object",
-      "required": ["threshold", "value"],
+      "required": [
+        "threshold",
+        "value"
+      ],
       "properties": {
-        "threshold": { "type": "integer", "minimum": -999, "maximum": 999 },
-        "value": { "type": "integer", "minimum": 0, "maximum": 999 }
+        "threshold": {
+          "type": "integer",
+          "minimum": -999,
+          "maximum": 999
+        },
+        "value": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 999
+        }
       },
       "additionalProperties": false
     },
     "deterministic_formula_expression": {
       "description": "Existing deterministic shared formulas accepted as breakpoint input. String leaves are bounded integer constants with optional constant addition; dice strings are excluded.",
       "anyOf": [
-        { "type": "integer", "minimum": 0, "maximum": 999 },
-        { "type": "string", "pattern": "^[0-9]{1,3}(\\+[0-9]{1,3})?$" },
-        { "type": "object", "required": ["caster_level"], "properties": { "caster_level": { "const": true } }, "additionalProperties": false },
-        { "type": "object", "required": ["caster_class_level"], "properties": { "caster_class_level": { "type": "string", "minLength": 1 } }, "additionalProperties": false },
-        { "type": "object", "required": ["caster_proficiency_bonus"], "properties": { "caster_proficiency_bonus": { "const": true } }, "additionalProperties": false },
-        { "type": "object", "required": ["caster_ability_modifier"], "properties": { "caster_ability_modifier": { "enum": ["STR", "DEX", "CON", "INT", "WIS", "CHA"] } }, "additionalProperties": false },
-        { "type": "object", "required": ["selected_slot_level"], "properties": { "selected_slot_level": { "const": true } }, "additionalProperties": false },
-        { "type": "object", "required": ["result"], "properties": { "result": { "$ref": "#/definitions/result_selector" } }, "additionalProperties": false },
-        { "type": "object", "required": ["result_sum"], "properties": { "result_sum": { "$ref": "#/definitions/result_sum_selector" } }, "additionalProperties": false },
-        { "$ref": "#/definitions/breakpoint_lookup_expression" },
+        {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 999
+        },
+        {
+          "type": "string",
+          "pattern": "^[0-9]{1,3}(\\+[0-9]{1,3})?$"
+        },
         {
           "type": "object",
-          "required": ["op", "left", "right"],
+          "required": [
+            "caster_level"
+          ],
           "properties": {
-            "op": { "enum": ["add", "subtract", "multiply", "floor_divide", "min", "max"] },
-            "left": { "$ref": "#/definitions/deterministic_formula_expression" },
-            "right": { "$ref": "#/definitions/deterministic_formula_expression" }
+            "caster_level": {
+              "const": true
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "caster_class_level"
+          ],
+          "properties": {
+            "caster_class_level": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "caster_proficiency_bonus"
+          ],
+          "properties": {
+            "caster_proficiency_bonus": {
+              "const": true
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "caster_ability_modifier"
+          ],
+          "properties": {
+            "caster_ability_modifier": {
+              "enum": [
+                "STR",
+                "DEX",
+                "CON",
+                "INT",
+                "WIS",
+                "CHA"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "selected_slot_level"
+          ],
+          "properties": {
+            "selected_slot_level": {
+              "const": true
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "result"
+          ],
+          "properties": {
+            "result": {
+              "$ref": "#/definitions/result_selector"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "result_sum"
+          ],
+          "properties": {
+            "result_sum": {
+              "$ref": "#/definitions/result_sum_selector"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "$ref": "#/definitions/breakpoint_lookup_expression"
+        },
+        {
+          "type": "object",
+          "required": [
+            "op",
+            "left",
+            "right"
+          ],
+          "properties": {
+            "op": {
+              "enum": [
+                "add",
+                "subtract",
+                "multiply",
+                "floor_divide",
+                "min",
+                "max"
+              ]
+            },
+            "left": {
+              "$ref": "#/definitions/deterministic_formula_expression"
+            },
+            "right": {
+              "$ref": "#/definitions/deterministic_formula_expression"
+            }
           },
           "additionalProperties": false
         }
@@ -486,73 +1016,154 @@
     },
     "breakpoint_lookup_expression": {
       "type": "object",
-      "description": "Select the greatest strictly increasing integer threshold not above the deterministic input. Runtime limits tables to 1–20 rows and rejects unsorted or duplicate thresholds.",
-      "required": ["op", "input", "breakpoints"],
+      "description": "Select the greatest strictly increasing integer threshold not above the deterministic input. Runtime limits tables to 1\u201320 rows and rejects unsorted or duplicate thresholds.",
+      "required": [
+        "op",
+        "input",
+        "breakpoints"
+      ],
       "properties": {
-        "op": { "const": "breakpoint_lookup" },
-        "input": { "$ref": "#/definitions/deterministic_formula_expression" },
+        "op": {
+          "const": "breakpoint_lookup"
+        },
+        "input": {
+          "$ref": "#/definitions/deterministic_formula_expression"
+        },
         "breakpoints": {
           "type": "array",
           "minItems": 1,
           "maxItems": 20,
-          "items": { "$ref": "#/definitions/breakpoint_row" }
+          "items": {
+            "$ref": "#/definitions/breakpoint_row"
+          }
         }
       },
       "additionalProperties": false
     },
     "formula_expression": {
       "anyOf": [
-        { "$ref": "#/definitions/formula" },
         {
-          "type": "object",
-          "required": ["caster_level"],
-          "properties": { "caster_level": { "const": true } },
-          "additionalProperties": false
+          "$ref": "#/definitions/formula"
         },
         {
           "type": "object",
-          "required": ["caster_class_level"],
-          "properties": { "caster_class_level": { "type": "string", "minLength": 1 } },
-          "additionalProperties": false
-        },
-        {
-          "type": "object",
-          "required": ["caster_proficiency_bonus"],
-          "properties": { "caster_proficiency_bonus": { "const": true } },
-          "additionalProperties": false
-        },
-        {
-          "type": "object",
-          "required": ["caster_ability_modifier"],
-          "properties": { "caster_ability_modifier": { "enum": ["STR", "DEX", "CON", "INT", "WIS", "CHA"] } },
-          "additionalProperties": false
-        },
-        {
-          "type": "object",
-          "required": ["selected_slot_level"],
-          "properties": { "selected_slot_level": { "const": true } },
-          "additionalProperties": false
-        },
-        {
-          "type": "object",
-          "required": ["result"],
-          "properties": { "result": { "$ref": "#/definitions/result_selector" } },
-          "additionalProperties": false
-        },
-        {
-          "type": "object",
-          "required": ["result_sum"],
-          "properties": { "result_sum": { "$ref": "#/definitions/result_sum_selector" } },
-          "additionalProperties": false
-        },
-        { "$ref": "#/definitions/breakpoint_lookup_expression" },
-        {
-          "type": "object",
-          "required": ["op", "left", "right"],
+          "required": [
+            "caster_level"
+          ],
           "properties": {
-            "op": { "enum": ["add", "subtract", "multiply", "floor_divide", "min", "max"] },
-            "left": { "$ref": "#/definitions/formula_expression" },
-            "right": { "$ref": "#/definitions/formula_expression" }
+            "caster_level": {
+              "const": true
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "caster_class_level"
+          ],
+          "properties": {
+            "caster_class_level": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "caster_proficiency_bonus"
+          ],
+          "properties": {
+            "caster_proficiency_bonus": {
+              "const": true
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "caster_ability_modifier"
+          ],
+          "properties": {
+            "caster_ability_modifier": {
+              "enum": [
+                "STR",
+                "DEX",
+                "CON",
+                "INT",
+                "WIS",
+                "CHA"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "selected_slot_level"
+          ],
+          "properties": {
+            "selected_slot_level": {
+              "const": true
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "result"
+          ],
+          "properties": {
+            "result": {
+              "$ref": "#/definitions/result_selector"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "result_sum"
+          ],
+          "properties": {
+            "result_sum": {
+              "$ref": "#/definitions/result_sum_selector"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "$ref": "#/definitions/breakpoint_lookup_expression"
+        },
+        {
+          "type": "object",
+          "required": [
+            "op",
+            "left",
+            "right"
+          ],
+          "properties": {
+            "op": {
+              "enum": [
+                "add",
+                "subtract",
+                "multiply",
+                "floor_divide",
+                "min",
+                "max"
+              ]
+            },
+            "left": {
+              "$ref": "#/definitions/formula_expression"
+            },
+            "right": {
+              "$ref": "#/definitions/formula_expression"
+            }
           },
           "additionalProperties": false
         }
@@ -560,48 +1171,312 @@
     },
     "predicate": {
       "anyOf": [
-        { "type": "object", "required": ["all"], "properties": { "all": { "type": "array", "minItems": 1, "items": { "$ref": "#/definitions/predicate" } } }, "additionalProperties": false },
-        { "type": "object", "required": ["any"], "properties": { "any": { "type": "array", "minItems": 1, "items": { "$ref": "#/definitions/predicate" } } }, "additionalProperties": false },
-        { "type": "object", "required": ["not"], "properties": { "not": { "$ref": "#/definitions/predicate" } }, "additionalProperties": false },
-        { "type": "object", "required": ["fact"], "properties": { "fact": { "enum": ["actor.id", "actor.level", "target.id", "target.current_hp", "target.max_hp", "target.is_alive", "target.is_wounded", "target.is_source_owner", "source.id", "source.owner_id", "action.id", "action.invocation_id", "item.definition_id", "item.instance_id", "spell.definition_id", "spell.invocation_id", "source.definition_id", "source.instance_id", "resolution.window", "resolution.occurrence_id", "resolution.kind", "resolution.actor_id", "resolution.target_id", "resolution.action_id", "resolution.action_invocation_id", "resolution.spell_definition_id", "resolution.spell_invocation_id", "resolution.source_definition_id", "resolution.source_instance_id", "resolution.source_owner_id", "resolution.roll_natural", "resolution.roll_modifier", "resolution.roll_total", "resolution.target_ac", "resolution.provisional_hit", "resolution.provisional_critical", "resolution.final_hit", "resolution.critical", "resolution.damage_occurrence_id", "resolution.damage_type", "resolution.damage_raw", "resolution.damage_resolved", "resolution.damage_hp_loss"] }, "eq": {}, "ne": {}, "lt": { "type": "number" }, "lte": { "type": "number" }, "gt": { "type": "number" }, "gte": { "type": "number" } }, "additionalProperties": false },
-        { "type": "object", "required": ["result"], "properties": { "result": { "$ref": "#/definitions/result_selector" }, "eq": {}, "ne": {}, "lt": { "type": "number" }, "lte": { "type": "number" }, "gt": { "type": "number" }, "gte": { "type": "number" } }, "additionalProperties": false },
-        { "type": "object", "required": ["result_sum"], "properties": { "result_sum": { "$ref": "#/definitions/result_sum_selector" }, "eq": {}, "ne": {}, "lt": { "type": "number" }, "lte": { "type": "number" }, "gt": { "type": "number" }, "gte": { "type": "number" } }, "additionalProperties": false }
+        {
+          "type": "object",
+          "required": [
+            "all"
+          ],
+          "properties": {
+            "all": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/definitions/predicate"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "any"
+          ],
+          "properties": {
+            "any": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/definitions/predicate"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "not"
+          ],
+          "properties": {
+            "not": {
+              "$ref": "#/definitions/predicate"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "fact"
+          ],
+          "properties": {
+            "fact": {
+              "enum": [
+                "actor.id",
+                "actor.level",
+                "target.id",
+                "target.current_hp",
+                "target.max_hp",
+                "target.is_alive",
+                "target.is_wounded",
+                "target.is_source_owner",
+                "source.id",
+                "source.owner_id",
+                "action.id",
+                "action.invocation_id",
+                "item.definition_id",
+                "item.instance_id",
+                "spell.definition_id",
+                "spell.invocation_id",
+                "source.definition_id",
+                "source.instance_id",
+                "resolution.window",
+                "resolution.occurrence_id",
+                "resolution.kind",
+                "resolution.actor_id",
+                "resolution.target_id",
+                "resolution.action_id",
+                "resolution.action_invocation_id",
+                "resolution.spell_definition_id",
+                "resolution.spell_invocation_id",
+                "resolution.source_definition_id",
+                "resolution.source_instance_id",
+                "resolution.source_owner_id",
+                "resolution.roll_natural",
+                "resolution.roll_modifier",
+                "resolution.roll_total",
+                "resolution.target_ac",
+                "resolution.provisional_hit",
+                "resolution.provisional_critical",
+                "resolution.final_hit",
+                "resolution.critical",
+                "resolution.damage_occurrence_id",
+                "resolution.damage_type",
+                "resolution.damage_raw",
+                "resolution.damage_resolved",
+                "resolution.damage_hp_loss"
+              ]
+            },
+            "eq": {},
+            "ne": {},
+            "lt": {
+              "type": "number"
+            },
+            "lte": {
+              "type": "number"
+            },
+            "gt": {
+              "type": "number"
+            },
+            "gte": {
+              "type": "number"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "result"
+          ],
+          "properties": {
+            "result": {
+              "$ref": "#/definitions/result_selector"
+            },
+            "eq": {},
+            "ne": {},
+            "lt": {
+              "type": "number"
+            },
+            "lte": {
+              "type": "number"
+            },
+            "gt": {
+              "type": "number"
+            },
+            "gte": {
+              "type": "number"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "result_sum"
+          ],
+          "properties": {
+            "result_sum": {
+              "$ref": "#/definitions/result_sum_selector"
+            },
+            "eq": {},
+            "ne": {},
+            "lt": {
+              "type": "number"
+            },
+            "lte": {
+              "type": "number"
+            },
+            "gt": {
+              "type": "number"
+            },
+            "gte": {
+              "type": "number"
+            }
+          },
+          "additionalProperties": false
+        }
       ]
     },
     "step": {
       "type": "object",
-      "required": ["id", "type"],
+      "required": [
+        "id",
+        "type"
+      ],
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "type": { "enum": ["attack", "save", "damage", "effect"] },
-        "gate": { "enum": ["always", "hit", "miss", "failed_save", "successful_save"] },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "enum": [
+            "attack",
+            "save",
+            "damage",
+            "effect"
+          ]
+        },
+        "gate": {
+          "enum": [
+            "always",
+            "hit",
+            "miss",
+            "failed_save",
+            "successful_save"
+          ]
+        },
         "gate_step": {},
-        "target": { "enum": ["target", "self", "area"] },
-        "shape": { "enum": ["sphere", "cone", "cube"] },
-        "radius": { "type": "integer", "minimum": 1, "maximum": 100 },
-        "size": { "type": "integer", "minimum": 1, "maximum": 100 },
-        "attack_type": { "enum": ["ranged_spell", "melee_spell"] },
-        "damage": { "$ref": "#/definitions/formula" },
-        "damage_type": { "enum": ["acid", "bludgeoning", "cold", "fire", "force", "lightning", "necrotic", "piercing", "poison", "psychic", "radiant", "slashing", "thunder"] },
-        "component_id": { "type": "string", "minLength": 1 },
+        "target": {
+          "enum": [
+            "target",
+            "self",
+            "area"
+          ]
+        },
+        "shape": {
+          "enum": [
+            "sphere",
+            "cone",
+            "cube"
+          ]
+        },
+        "radius": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "size": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "attack_type": {
+          "enum": [
+            "ranged_spell",
+            "melee_spell"
+          ]
+        },
+        "damage": {
+          "$ref": "#/definitions/formula"
+        },
+        "damage_type": {
+          "enum": [
+            "acid",
+            "bludgeoning",
+            "cold",
+            "fire",
+            "force",
+            "lightning",
+            "necrotic",
+            "piercing",
+            "poison",
+            "psychic",
+            "radiant",
+            "slashing",
+            "thunder"
+          ]
+        },
+        "component_id": {
+          "type": "string",
+          "minLength": 1
+        },
         "damage_components": {
           "type": "array",
           "minItems": 1,
           "items": {
             "type": "object",
-            "required": ["damage", "damage_type"],
+            "required": [
+              "damage",
+              "damage_type"
+            ],
             "properties": {
-              "id": { "type": "string", "minLength": 1 },
-              "damage": { "$ref": "#/definitions/formula" },
-              "damage_type": { "enum": ["acid", "bludgeoning", "cold", "fire", "force", "lightning", "necrotic", "piercing", "poison", "psychic", "radiant", "slashing", "thunder"] },
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "damage": {
+                "$ref": "#/definitions/formula"
+              },
+              "damage_type": {
+                "enum": [
+                  "acid",
+                  "bludgeoning",
+                  "cold",
+                  "fire",
+                  "force",
+                  "lightning",
+                  "necrotic",
+                  "piercing",
+                  "poison",
+                  "psychic",
+                  "radiant",
+                  "slashing",
+                  "thunder"
+                ]
+              },
               "upcast": {}
             },
             "additionalProperties": false
           }
         },
-        "save": { "enum": ["STR", "DEX", "CON", "INT", "WIS", "CHA"] },
-        "half_on_save": { "type": "boolean" },
-        "damage_scale_by_outcome": { "$ref": "#/definitions/damage_scale_by_outcome" },
+        "save": {
+          "enum": [
+            "STR",
+            "DEX",
+            "CON",
+            "INT",
+            "WIS",
+            "CHA"
+          ]
+        },
+        "half_on_save": {
+          "type": "boolean"
+        },
+        "damage_scale_by_outcome": {
+          "$ref": "#/definitions/damage_scale_by_outcome"
+        },
         "scaling": {},
         "upcast": {},
         "effects": {
@@ -609,22 +1484,340 @@
           "items": {
             "type": "object",
             "properties": {
-              "type": { "enum": ["heal", "temporary_hp", "grant_condition", "remove_condition", "area_selection"] },
-              "value": { "$ref": "#/definitions/formula_expression" },
-              "condition": { "type": "string" },
-              "on_spell_hit": { "type": "boolean" },
-              "on_failed_save": { "type": "boolean" },
-              "rider_by_outcome": { "$ref": "#/definitions/rider_by_outcome" },
-              "when": { "$ref": "#/definitions/predicate" },
-              "ability_bonus_from_caster": { "type": "boolean" },
-              "shape": { "enum": ["sphere", "cone", "cube"] },
-              "radius": { "type": "integer", "minimum": 1, "maximum": 100 },
-              "size": { "type": "integer", "minimum": 1, "maximum": 100 }
+              "type": {
+                "enum": [
+                  "heal",
+                  "temporary_hp",
+                  "grant_condition",
+                  "remove_condition",
+                  "area_selection"
+                ]
+              },
+              "value": {
+                "$ref": "#/definitions/formula_expression"
+              },
+              "condition": {
+                "type": "string"
+              },
+              "on_spell_hit": {
+                "type": "boolean"
+              },
+              "on_failed_save": {
+                "type": "boolean"
+              },
+              "rider_by_outcome": {
+                "$ref": "#/definitions/rider_by_outcome"
+              },
+              "when": {
+                "$ref": "#/definitions/predicate"
+              },
+              "ability_bonus_from_caster": {
+                "type": "boolean"
+              },
+              "shape": {
+                "enum": [
+                  "sphere",
+                  "cone",
+                  "cube"
+                ]
+              },
+              "radius": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              },
+              "size": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              }
             },
             "additionalProperties": false
           }
         },
-        "when": { "$ref": "#/definitions/predicate" }
+        "when": {
+          "$ref": "#/definitions/predicate"
+        },
+        "incoming_negation_rule": {
+          "$ref": "#/definitions/incoming_negation_rule"
+        },
+        "incoming_negation": {
+          "$ref": "#/definitions/incoming_negation_rule"
+        },
+        "physical_requirements": {
+          "$ref": "#/definitions/physical_requirements"
+        },
+        "spatial_requirements": {
+          "$ref": "#/definitions/spatial_requirements"
+        }
+      },
+      "additionalProperties": false
+    },
+    "cast_settlement_branch": {
+      "type": "object",
+      "properties": {
+        "slot": {
+          "enum": [
+            "commit",
+            "refund"
+          ]
+        },
+        "resource": {
+          "enum": [
+            "commit",
+            "refund"
+          ]
+        },
+        "item": {
+          "enum": [
+            "commit",
+            "refund"
+          ]
+        },
+        "free_cast": {
+          "enum": [
+            "commit",
+            "refund"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "settlement_branch": {
+      "type": "object",
+      "properties": {
+        "slot": {
+          "enum": [
+            "commit",
+            "refund"
+          ]
+        },
+        "resource": {
+          "enum": [
+            "commit",
+            "refund"
+          ]
+        },
+        "item": {
+          "enum": [
+            "commit",
+            "refund"
+          ]
+        },
+        "reaction": {
+          "enum": [
+            "commit",
+            "refund"
+          ]
+        },
+        "free_cast": {
+          "enum": [
+            "commit",
+            "refund"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "stopping_cost_policy": {
+      "type": "object",
+      "properties": {
+        "on_success": {
+          "$ref": "#/definitions/stopping_cost_branch"
+        },
+        "on_failure": {
+          "$ref": "#/definitions/stopping_cost_branch"
+        }
+      },
+      "additionalProperties": false
+    },
+    "stopping_cost_branch": {
+      "type": "object",
+      "properties": {
+        "slot": {
+          "enum": [
+            "commit",
+            "refund"
+          ]
+        },
+        "item": {
+          "enum": [
+            "keep",
+            "consume_charge",
+            "dispose_copy"
+          ]
+        },
+        "reaction": {
+          "enum": [
+            "commit",
+            "refund"
+          ]
+        },
+        "free_cast": {
+          "enum": [
+            "commit",
+            "refund"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "incoming_negation_rule": {
+      "type": "object",
+      "required": [
+        "target_scope"
+      ],
+      "properties": {
+        "target_scope": {
+          "enum": [
+            "recipient_effect"
+          ]
+        },
+        "min_spell_level": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9
+        },
+        "max_spell_level": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9
+        },
+        "spell_levels": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9
+          }
+        },
+        "schools": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "spell_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "step_types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "negate_payload": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "physical_requirements": {
+      "type": "object",
+      "properties": {
+        "allowed_sizes": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "tiny",
+              "small",
+              "medium",
+              "large",
+              "huge",
+              "gargantuan"
+            ]
+          }
+        },
+        "min_size": {
+          "enum": [
+            "tiny",
+            "small",
+            "medium",
+            "large",
+            "huge",
+            "gargantuan"
+          ]
+        },
+        "max_size": {
+          "enum": [
+            "tiny",
+            "small",
+            "medium",
+            "large",
+            "huge",
+            "gargantuan"
+          ]
+        },
+        "allowed_materials": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "forbidden_materials": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "min_mass_lb": {
+          "type": "number",
+          "minimum": 0
+        },
+        "max_mass_lb": {
+          "type": "number",
+          "minimum": 0
+        },
+        "max_thickness_inches": {
+          "type": "number",
+          "minimum": 0
+        },
+        "required_status": {
+          "enum": [
+            "loose",
+            "worn",
+            "carried",
+            "fixed",
+            "not_fixed",
+            "not_worn_or_carried",
+            "unattended"
+          ]
+        },
+        "reject_unknown": {
+          "const": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "spatial_requirements": {
+      "type": "object",
+      "properties": {
+        "plane": {
+          "type": "string"
+        },
+        "requires_available_space": {
+          "type": "boolean"
+        },
+        "body_size": {
+          "enum": [
+            "tiny",
+            "small",
+            "medium",
+            "large",
+            "huge",
+            "gargantuan"
+          ]
+        },
+        "clearance_feet": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "same_plane_as_caster": {
+          "type": "boolean"
+        }
       },
       "additionalProperties": false
     }

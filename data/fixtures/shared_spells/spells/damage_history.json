@@ -1,0 +1,49 @@
+[
+  {
+    "id": "sandbox:damage_history_source",
+    "name": "Measured Impact",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "bonus_action",
+    "range": 6,
+    "target": "single",
+    "school": "evocation",
+    "steps": [
+      {"id": "impact", "type": "damage", "target": "target", "damage": "8", "damage_type": "fire"}
+    ]
+  },
+  {
+    "id": "sandbox:damage_history_turn_neutral",
+    "name": "Turn Measure",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "bonus_action",
+    "range": 6,
+    "target": "single",
+    "school": "abjuration",
+    "steps": [
+      {"id": "impact", "type": "damage", "target": "target", "damage": "8", "damage_type": "fire"},
+      {"id": "measure", "type": "effect", "target": "target", "effects": [
+        {"type": "heal", "value": 4, "when": {"fact": "target.damage_hp_loss_since_combat_turn", "gte": 1}},
+        {"type": "temporary_hp", "value": 7, "when": {"fact": "target.damage_resolved_since_combat_turn", "gte": 1}}
+      ]}
+    ]
+  },
+  {
+    "id": "sandbox:damage_history_time_renamed",
+    "name": "Last-Minute Measure",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "school": "abjuration",
+    "steps": [
+      {"id": "impact", "type": "damage", "target": "target", "damage": "8", "damage_type": "fire"},
+      {"id": "measure", "type": "effect", "target": "target", "effects": [
+        {"type": "heal", "value": 6, "when": {"fact": "target.damage_hp_loss_within_last_minute", "gte": 1}},
+        {"type": "temporary_hp", "value": 9, "when": {"fact": "target.damage_absorbed_within_last_minute", "gte": 1}}
+      ]}
+    ]
+  }
+]

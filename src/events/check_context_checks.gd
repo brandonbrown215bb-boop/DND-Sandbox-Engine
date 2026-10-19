@@ -4,10 +4,12 @@ extends RefCounted
 
 
 static func run(check: Callable) -> void:
+	_optional_filters(check)
 	DataLoader._load_content_type("res://data/fixtures/check_context/items/", "item")
 	DataLoader._load_content_type("res://data/fixtures/check_context/events/", "event")
 	DataLoader._load_content_type("res://data/fixtures/check_context/classes/", "class")
 	DataLoader._validate_check_context_cross_references()
+	if not DataLoader.get_load_errors().is_empty(): print("[batch_h_check_context_load_errors] ", DataLoader.get_load_errors())
 	check.call(DataLoader.get_load_errors().is_empty(), "Check-context fixtures pass production loader and cross-reference validation")
 
 	var neutral_record: Dictionary = DataLoader.get_event_check_record("fixture:survey_map_event", "read_map_check")
@@ -622,6 +624,29 @@ static func _dialog_check_owner(feature_template: Dictionary, actor_id: String, 
 	owner.features.append(feature)
 	ResourcePoolRules.acquire(owner, feature, source_id)
 	return owner
+
+
+static func _optional_filters(check: Callable) -> void:
+	var effects: Array[Dictionary] = [
+		{"type": "ability_check_roll_mode", "id": "broad_mode", "domain": "event_skill_check", "ability": "INT", "skill": "Investigation", "mode": "advantage"},
+		{"type": "ability_check_roll_mode_policy", "id": "broad_policy", "domain": "event_skill_check", "ability": "INT", "mode": "disadvantage", "operation": "prohibit"},
+		{"type": "ability_check_numeric_bonus", "id": "broad_bonus", "domain": "event_skill_check", "ability": "INT", "amount": 3, "cost": 1},
+		{"type": "ability_check_mandatory_reroll", "id": "broad_reroll", "domain": "event_skill_check", "ability": "INT", "eligible_outcomes": ["failure"], "reroll_mode": "natural_only", "bonus_dice_policy": "keep", "cost": 1},
+	]
+	var context := {"task_id": "read_map", "purpose_id": "find_exit", "origin_event_id": "fixture:event", "origin_check_id": "check_map"}
+	for effect in effects:
+		check.call(ClassFeature.passive_effect_content_error(effect).is_empty() and EventResolver.ability_check_context_matches(effect, {}), "Omitted filters validate and leave context unrestricted: " + str(effect.type))
+		for field in ["task_id", "purpose_id", "source_event_id", "source_check_id"]:
+			var fact: String = "origin_event_id" if field == "source_event_id" else "origin_check_id" if field == "source_check_id" else field
+			var restricted := effect.duplicate(true)
+			restricted[field] = context[fact]
+			check.call(ClassFeature.passive_effect_content_error(restricted).is_empty() and EventResolver.ability_check_context_matches(restricted, context) and not EventResolver.ability_check_context_matches(restricted, {}) and not EventResolver.ability_check_context_matches(restricted, {fact: "other"}), "One declared filter matches only its represented fact: %s/%s" % [effect.type, field])
+			for invalid in ["", " ", null, 7, [], {}]:
+				restricted[field] = invalid
+				check.call(not ClassFeature.passive_effect_content_error(restricted).is_empty() and not EventResolver.ability_check_context_matches(restricted, context), "Malformed declared filter refuses: %s/%s/%s" % [effect.type, field, str(invalid)])
+		var combined := effect.duplicate(true)
+		combined.merge({"task_id": "read_map", "purpose_id": "find_exit", "source_event_id": "fixture:event", "source_check_id": "check_map"})
+		check.call(EventResolver.ability_check_context_matches(combined, context) and not EventResolver.ability_check_context_matches(combined, _changed(context, "purpose_id", "other")), "Declared filters combine rather than override one another: " + str(effect.type))
 
 
 static func _roll_until_bonus_menu(dialog: EventDialog, owner: Character, event_record: Dictionary, tree: SceneTree) -> bool:

@@ -374,8 +374,13 @@ func register_animal_messenger(caster: Character, origin: Vector2i, spell_slot_l
 func advance_campaign_time(elapsed_seconds: int) -> Array[Dictionary]:
 	if elapsed_seconds <= 0:
 		return []
+	var prior_seconds := campaign_elapsed_seconds
 	var prior_day := floori(float(campaign_elapsed_seconds) / 86400.0)
 	campaign_elapsed_seconds += elapsed_seconds
+	var recovery_receipts: Array[Dictionary] = []
+	for character in PartyManager.characters.values():
+		if character is Character:
+			recovery_receipts.append_array(ResourcePoolRules.advance_campaign_recovery(character, prior_seconds, campaign_elapsed_seconds))
 	var current_day := floori(float(campaign_elapsed_seconds) / 86400.0)
 	for day in range(prior_day, current_day):
 		for character in PartyManager.characters.values():
@@ -386,6 +391,8 @@ func advance_campaign_time(elapsed_seconds: int) -> Array[Dictionary]:
 	for room_state in saved_local_room_states():
 		LocalRoomAreas.expire(room_state, campaign_elapsed_seconds)
 	for character in PartyManager.characters.values():
+		CapturedGrantRules.prune(character,campaign_elapsed_seconds)
+		ProtectionRules.prune(character,campaign_elapsed_seconds)
 		character.expire_campaign_modifiers(campaign_elapsed_seconds)
 		LightSourceRules.advance_inventory(character.inventory, elapsed_seconds)
 		BarbarianRules.advance_rage_time(character, elapsed_seconds)
@@ -393,7 +400,10 @@ func advance_campaign_time(elapsed_seconds: int) -> Array[Dictionary]:
 		CorpseRules.advance_time(character, campaign_elapsed_seconds)
 	var result := AnimalMessengerRulesRef.advance_deliveries(animal_messenger_deliveries, elapsed_seconds)
 	animal_messenger_deliveries.assign(result.get("deliveries", []))
-	return result.get("notifications", [])
+	var notifications: Array[Dictionary] = result.get("notifications", [])
+	for receipt in recovery_receipts:
+		notifications.append({"type":"resource_pool_recovered", "receipt":receipt})
+	return notifications
 
 
 func _reset_campaign_ledgers() -> void:

@@ -325,6 +325,16 @@ func _validate_save_data(data: Dictionary) -> String:
 				return "character DTO is not an object"
 			if DataLoader.get_race(str(character_data.get("race_id", ""))).is_empty() or DataLoader.get_character_class(str(character_data.get("class_id", ""))).is_empty():
 				return "character references unknown content"
+			var progression_error := PermanentProgressionRules.saved_error(character_data)
+			if not progression_error.is_empty(): return progression_error
+			var allocation_error := Character.saved_class_levels_error(character_data)
+			if not allocation_error.is_empty(): return allocation_error
+			var pact_slots_error := Character.saved_pact_spell_slots_error(character_data)
+			if not pact_slots_error.is_empty(): return pact_slots_error
+			var gift_error := CapturedGrantRules.saved_error(character_data, saved_campaign_seconds)
+			if not gift_error.is_empty(): return gift_error
+			var numeric_pool_error := ResourcePoolRules.saved_state_error(character_data)
+			if not numeric_pool_error.is_empty(): return numeric_pool_error
 			var survival_error := SurvivalRules.saved_state_error(character_data)
 			if not survival_error.is_empty(): return survival_error
 			var corpse_error := CorpseRules.saved_error(character_data)
@@ -346,6 +356,12 @@ func _validate_save_data(data: Dictionary) -> String:
 			var spell_error := SpellEffects.saved_state_error(character_data)
 			if not spell_error.is_empty():
 				return spell_error
+			var temporary_hp_error := TemporaryHPRules.saved_error(character_data, saved_campaign_seconds)
+			if not temporary_hp_error.is_empty(): return temporary_hp_error
+			var aura_entry_error := AuraProtectionRules.saved_error(character_data, saved_campaign_seconds)
+			if not aura_entry_error.is_empty(): return aura_entry_error
+			var protection_error := ProtectionRules.saved_error(character_data,saved_campaign_seconds)
+			if not protection_error.is_empty(): return protection_error
 			var timed_modifier_error := Character.saved_campaign_modifier_error(character_data, saved_campaign_seconds)
 			if not timed_modifier_error.is_empty():
 				return timed_modifier_error
@@ -355,6 +371,9 @@ func _validate_save_data(data: Dictionary) -> String:
 			var timed_temporary_hp_error := Character.saved_timed_temporary_hp_error(character_data, saved_campaign_seconds)
 			if not timed_temporary_hp_error.is_empty():
 				return timed_temporary_hp_error
+			var damage_history_error := Character.saved_damage_history_error(character_data, saved_campaign_seconds)
+			if not damage_history_error.is_empty():
+				return damage_history_error
 	var party_data = data.get("party")
 	if party_data != null:
 		if not party_data is Dictionary:
@@ -375,6 +394,12 @@ func _validate_save_data(data: Dictionary) -> String:
 	if not world_error.is_empty(): return world_error
 	creature_error = CreatedCreatureRules.saved_locations_error(campaign_ledger.get("created_creatures", []), DataLoader.get_campaign(str(data["campaign_id"])), campaign_ledger.get("dungeon_snapshots", {}), data.get("active_dungeon_state", {}))
 	if not creature_error.is_empty(): return creature_error
+	var temporary_hp_links_error := TemporaryHPRules.saved_links_error(data)
+	if not temporary_hp_links_error.is_empty(): return temporary_hp_links_error
+	var aura_links_error := AuraProtectionRules.saved_links_error(data)
+	if not aura_links_error.is_empty(): return aura_links_error
+	var gift_links_error := CapturedGrantRules.saved_links_error(data)
+	if not gift_links_error.is_empty(): return gift_links_error
 	var ownership_error := InventoryCopies.ownership_error(data)
 	var animated_rooms: Array = []
 	for dungeon in [data.get("active_dungeon_state", {})] + campaign_ledger.get("dungeon_snapshots", {}).values():
@@ -462,8 +487,16 @@ func _validate_party_data(data: Dictionary, campaign_seconds: int = 0) -> String
 			return "party character DTO is not an object"
 		if DataLoader.get_race(str(character_data.get("race_id", ""))).is_empty() or DataLoader.get_character_class(str(character_data.get("class_id", ""))).is_empty():
 			return "party character references unknown content"
+		var progression_error := PermanentProgressionRules.saved_error(character_data)
+		if not progression_error.is_empty(): return progression_error
+		var allocation_error := Character.saved_class_levels_error(character_data)
+		if not allocation_error.is_empty(): return allocation_error
+		var pact_slots_error := Character.saved_pact_spell_slots_error(character_data)
+		if not pact_slots_error.is_empty(): return pact_slots_error
 		var survival_error := SurvivalRules.saved_state_error(character_data)
 		if not survival_error.is_empty(): return survival_error
+		var gift_error := CapturedGrantRules.saved_error(character_data, campaign_seconds)
+		if not gift_error.is_empty(): return gift_error
 		var numeric_pool_error := ResourcePoolRules.saved_state_error(character_data)
 		if not numeric_pool_error.is_empty(): return numeric_pool_error
 		var corpse_error := CorpseRules.saved_error(character_data)
@@ -485,6 +518,12 @@ func _validate_party_data(data: Dictionary, campaign_seconds: int = 0) -> String
 		var spell_error := SpellEffects.saved_state_error(character_data)
 		if not spell_error.is_empty():
 			return spell_error
+		var temporary_hp_error := TemporaryHPRules.saved_error(character_data, campaign_seconds)
+		if not temporary_hp_error.is_empty(): return temporary_hp_error
+		var aura_entry_error := AuraProtectionRules.saved_error(character_data, campaign_seconds)
+		if not aura_entry_error.is_empty(): return aura_entry_error
+		var protection_error := ProtectionRules.saved_error(character_data,campaign_seconds)
+		if not protection_error.is_empty(): return protection_error
 		var timed_modifier_error := Character.saved_campaign_modifier_error(character_data, campaign_seconds)
 		if not timed_modifier_error.is_empty():
 			return timed_modifier_error
@@ -494,6 +533,9 @@ func _validate_party_data(data: Dictionary, campaign_seconds: int = 0) -> String
 		var timed_temporary_hp_error := Character.saved_timed_temporary_hp_error(character_data, campaign_seconds)
 		if not timed_temporary_hp_error.is_empty():
 			return timed_temporary_hp_error
+		var damage_history_error := Character.saved_damage_history_error(character_data, campaign_seconds)
+		if not damage_history_error.is_empty():
+			return damage_history_error
 	var leader_slot_id := str(data.get("leader_slot_id", "slot_0"))
 	var effect_party_error := SpellEffects.saved_party_error(characters)
 	if not effect_party_error.is_empty():

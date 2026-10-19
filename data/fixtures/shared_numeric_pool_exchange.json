@@ -4,6 +4,7 @@
   "description": "Neutral class fixture for fixed exchanges between exact source-owned numeric pools.",
   "hit_die": "d8",
   "primary_ability": "INT",
+  "pact_magic_by_level": { "3": { "slot_level": 2, "slots": 2 } },
   "features_by_level": {
     "1": [
       {
@@ -48,6 +49,87 @@
           "payment_quantity": 2,
           "restoration_pool_id": "fixture:exchange_pool_b_uses",
           "restoration_quantity": 1
+        },
+        "effects": []
+      },
+      {
+        "id": "fixture:exchange_pact_slot",
+        "name": "Exchange Pact Slot",
+        "executor": "class_feature",
+        "type": "active",
+        "target": "self",
+        "action_cost": "action",
+        "resource_exchange": {
+          "payment_pool_id": "spell_slots:pact",
+          "payment_quantity": 1,
+          "restoration_pool_id": "fixture:exchange_pool_b_uses",
+          "restoration_quantity": 1
+        },
+        "effects": []
+      },
+      {
+        "id": "fixture:exchange_to_party_member",
+        "name": "Exchange to a Party Member",
+        "executor": "class_feature",
+        "type": "active",
+        "target": "self",
+        "action_cost": "action",
+        "resource_exchange": {
+          "payment_pool_id": "fixture:exchange_pool_a_uses",
+          "payment_quantity": 1,
+          "restoration_pool_id": "fixture:exchange_pool_b_uses",
+          "restoration_quantity": 1,
+          "restoration_recipient": "party_member"
+        },
+        "effects": []
+      },
+      {
+        "id": "fixture:exchange_dice_pool",
+        "name": "Exchange Dice Pool",
+        "executor": "class_feature",
+        "type": "active",
+        "target": "self",
+        "action_cost": "bonus_action",
+        "resource_pool": {
+          "id": "fixture:exchange_dice_pool_uses",
+          "capacity_formula": 3,
+          "initial_quantity": 3,
+          "die_size": 6,
+          "spend_choice": { "minimum": 1, "maximum": 3 },
+          "capture_policy": "on_acquire",
+          "upgrade_policy": "new_dice_only"
+        },
+        "effects": [{ "type": "heal_by_pool_rolls" }]
+      },
+      {
+        "id": "fixture:exchange_dice_to_party_member",
+        "name": "Exchange Dice to a Party Member",
+        "executor": "class_feature",
+        "type": "active",
+        "target": "self",
+        "action_cost": "action",
+        "resource_exchange": {
+          "payment_pool_id": "fixture:exchange_dice_pool_uses",
+          "payment_quantity": 2,
+          "restoration_pool_id": "fixture:exchange_pool_b_uses",
+          "restoration_quantity": 1,
+          "restoration_recipient": "party_member"
+        },
+        "effects": []
+      },
+      {
+        "id": "fixture:exchange_inventory_to_party_member",
+        "name": "Exchange Backpack Supplies",
+        "executor": "class_feature",
+        "type": "active",
+        "target": "self",
+        "action_cost": "action",
+        "resource_exchange": {
+          "payment_pool_id": "inventory:torch",
+          "payment_quantity": 2,
+          "restoration_pool_id": "fixture:exchange_pool_b_uses",
+          "restoration_quantity": 1,
+          "restoration_recipient": "party_member"
         },
         "effects": []
       }

@@ -11,9 +11,11 @@ const SPELL_STEP_TYPES := ["attack", "save", "damage", "effect"]
 const SPELL_STEP_FIELDS := [
 	"id", "type", "gate", "gate_step", "target", "shape", "radius", "size",
 	"attack_type", "damage", "damage_type", "damage_components", "component_id", "scaling", "upcast",
-	"save", "half_on_save", "damage_scale_by_outcome", "effects", "when"
+	"save", "half_on_save", "save_context", "damage_scale_by_outcome", "damage_dice_policy", "damage_result_multiplier", "damage_reductions", "damage_bypasses", "effects", "when",
+	"incoming_negation", "incoming_negation_rule", "physical_requirements", "spatial_requirements"
 ]
-const RULE_FACTS := ["actor.id", "actor.level", "target.id", "target.current_hp", "target.max_hp", "target.is_alive", "target.is_wounded", "target.is_source_owner", "target.relationship", "target.willingness", "target.charmed_by_actor", "target.marked_by_actor", "source.id", "source.owner_id", "action.id", "action.invocation_id", "item.definition_id", "item.instance_id", "spell.definition_id", "spell.invocation_id", "source.definition_id", "source.instance_id", "resolution.window", "resolution.occurrence_id", "resolution.kind", "resolution.actor_id", "resolution.target_id", "resolution.action_id", "resolution.action_invocation_id", "resolution.spell_definition_id", "resolution.spell_invocation_id", "resolution.source_definition_id", "resolution.source_instance_id", "resolution.source_owner_id", "resolution.roll_natural", "resolution.roll_modifier", "resolution.roll_total", "resolution.target_ac", "resolution.provisional_hit", "resolution.provisional_critical", "resolution.final_hit", "resolution.critical", "resolution.damage_occurrence_id", "resolution.damage_type", "resolution.damage_raw", "resolution.damage_resolved", "resolution.damage_hp_loss"]
+const DAMAGE_HISTORY_FACTS := ["target.damage_raw_since_combat_turn", "target.damage_prevented_since_combat_turn", "target.damage_absorbed_since_combat_turn", "target.damage_resolved_since_combat_turn", "target.damage_hp_loss_since_combat_turn", "target.damage_raw_since_owner_turn", "target.damage_prevented_since_owner_turn", "target.damage_absorbed_since_owner_turn", "target.damage_resolved_since_owner_turn", "target.damage_hp_loss_since_owner_turn", "target.damage_raw_within_last_minute", "target.damage_prevented_within_last_minute", "target.damage_absorbed_within_last_minute", "target.damage_resolved_within_last_minute", "target.damage_hp_loss_within_last_minute"]
+const RULE_FACTS := ["actor.id", "actor.level", "target.id", "target.current_hp", "target.max_hp", "target.is_alive", "target.is_wounded", "target.is_source_owner", "target.relationship", "target.willingness", "target.charmed_by_actor", "target.marked_by_actor", "target.actor_hex_distance_feet", "target.source_hex_distance_feet", "target.first_round", "target.first_own_turn", "target.acted_since_combat_turn", "target.acted_since_owner_turn", "target.attacked_since_combat_turn", "target.attacked_since_owner_turn", "source.id", "source.owner_id", "action.id", "action.invocation_id", "item.definition_id", "item.instance_id", "spell.definition_id", "spell.invocation_id", "source.definition_id", "source.instance_id", "resolution.window", "resolution.occurrence_id", "resolution.kind", "resolution.actor_id", "resolution.target_id", "resolution.action_id", "resolution.action_invocation_id", "resolution.spell_definition_id", "resolution.spell_invocation_id", "resolution.source_definition_id", "resolution.source_instance_id", "resolution.source_owner_id", "resolution.roll_natural", "resolution.roll_modifier", "resolution.roll_total", "resolution.target_ac", "resolution.provisional_hit", "resolution.provisional_critical", "resolution.final_hit", "resolution.critical", "resolution.damage_occurrence_id", "resolution.damage_type", "resolution.damage_raw", "resolution.damage_resolved", "resolution.damage_hp_loss"] + DAMAGE_HISTORY_FACTS
 const PREDICATE_UNKNOWN := -1
 const PREDICATE_FALSE := 0
 const PREDICATE_TRUE := 1
@@ -52,6 +54,57 @@ static func formula_content_error(value: Variant) -> String:
 	return _validate_formula_expression(value, {}, 0)
 
 
+static func validate_damage_policy(reductions: Variant, bypasses: Variant, component_ids: Array[String]) -> String:
+	if not reductions is Array or reductions.size() > 8:
+		return "damage_reductions must be an array of at most eight entries."
+	for reduction in reductions:
+		if not reduction is Dictionary:
+			return "Each damage reduction must be an object."
+		var scope := str(reduction.get("scope", ""))
+		if scope not in ["component", "occurrence"] or str(reduction.get("stage", "")) != "after_scale_before_mitigation":
+			return "Damage reductions require component/occurrence scope at after_scale_before_mitigation."
+		if not reduction.has("amount") or not formula_content_error(reduction["amount"]).is_empty():
+			return "Damage reduction amount must be a supported fixed or formula value."
+		if reduction["amount"] is String:
+			return "Damage reductions require a fixed integer or deterministic actor formula object."
+		if reduction["amount"] is Dictionary and not ResourcePoolRules._actor_formula_error(reduction["amount"]).is_empty():
+			return "Damage reduction formulas may use actor-only inputs."
+		if scope == "component":
+			var component_id := str(reduction.get("component_id", ""))
+			if component_id.is_empty() or not component_ids.has(component_id):
+				return "Component damage reductions require an exact component_id in this occurrence."
+		else:
+			if reduction.has("component_id"):
+				return "Occurrence damage reductions cannot declare component_id."
+		for field in reduction:
+			if field not in ["scope", "component_id", "amount", "stage"]:
+				return "Damage reduction contains an unsupported field '%s'." % str(field)
+	if not bypasses is Array or bypasses.size() > 8:
+		return "damage_bypasses must be an array of at most eight entries."
+	for bypass in bypasses:
+		if not bypass is Dictionary:
+			return "Each damage bypass must be an object."
+		var scope := str(bypass.get("scope", ""))
+		var layers: Variant = bypass.get("layers", null)
+		if scope not in ["component", "occurrence"] or str(bypass.get("stage", "")) != "mitigation" or not layers is Array or layers.is_empty() or layers.size() > 4:
+			return "Damage bypasses require component/occurrence scope, mitigation stage and selected layers."
+		var seen_layers: Array[String] = []
+		for layer in layers:
+			if not layer is String or str(layer) not in ["resistance", "immunity", "ward", "prevention"] or str(layer) in seen_layers:
+				return "Damage bypass layers must be unique resistance, immunity, ward or prevention entries."
+			seen_layers.append(str(layer))
+		if scope == "component":
+			var component_id := str(bypass.get("component_id", ""))
+			if component_id.is_empty() or not component_ids.has(component_id):
+				return "Component damage bypasses require an exact component_id in this occurrence."
+		elif bypass.has("component_id"):
+			return "Occurrence damage bypasses cannot declare component_id."
+		for field in bypass:
+			if field not in ["scope", "component_id", "layers", "stage"]:
+				return "Damage bypass contains an unsupported field '%s'." % str(field)
+	return ""
+
+
 static func _validate_formula_expression(value: Variant, step_ids: Dictionary, before_index: int, all_steps: Array = []) -> String:
 	return _validate_formula_expression_bounded(value, step_ids, before_index, all_steps, 0, false)
 
@@ -64,9 +117,20 @@ static func _validate_formula_expression_bounded(value: Variant, step_ids: Dicti
 			return "Breakpoint lookup inputs cannot contain dice or random formulas."
 		return ""
 	if not value is Dictionary: return "Expected a number, dice expression, or shared formula object."
-	if value.get("op", "") == "breakpoint_lookup":
-		if value.size() != 3 or not value.has("input") or not value.has("breakpoints"):
+	if value.has("input_value"):
+		return "" if value.size() == 1 and value.input_value is String and value.input_value.is_valid_identifier() else "input_value requires a declared identifier."
+	if value.has("source_die"):
+		if value.size() != 1 or not value.source_die is Dictionary: return "source_die requires one selector."
+		var selector: Dictionary = value.source_die
+		if selector.size() != 4 or selector.get("target") not in ["same", "cast_target"] or selector.get("policy") not in ["captured", "revalidate"] or not selector.get("pool_id") is String or str(selector.pool_id).is_empty(): return "source_die requires step, target, pool_id and captured/revalidate policy."
+		var id: Variant = selector.get("step")
+		if not id is String or not step_ids.has(id) or int(step_ids[id]) >= before_index or int(step_ids[id]) >= all_steps.size() or all_steps[int(step_ids[id])].get("type") not in ["attack", "save"]: return "source_die requires a prior attack/save step."
+		return ""
+	if value.get("op", "") in ["breakpoint_lookup", "progression_lookup"]:
+		var progression: bool = value.get("op") == "progression_lookup"
+		if value.size() != (5 if progression else 3) or not value.has("input") or not value.has("breakpoints"):
 			return "breakpoint_lookup requires input and breakpoints only."
+		if progression and (value.get("value_type") not in ["number", "die_size"] or value.get("below_first") not in ["unavailable", "zero"] or (value.get("value_type") == "die_size" and value.get("below_first") != "unavailable")): return "Progression tables require number/die_size and explicit below_first policy (dice require unavailable)."
 		var input_error := _validate_formula_expression_bounded(value["input"], step_ids, before_index, all_steps, depth + 1, true)
 		if not input_error.is_empty(): return input_error
 		var breakpoints: Variant = value["breakpoints"]
@@ -80,6 +144,7 @@ static func _validate_formula_expression_bounded(value: Variant, step_ids: Dicti
 			var output: Variant = row["value"]
 			if not _integer(threshold, -999, 999) or not _integer(output, 0, 999):
 				return "breakpoint_lookup thresholds and values must be bounded integers."
+			if progression and value.value_type == "die_size" and int(output) not in ResourcePoolRules.SUPPORTED_DIE_SIZES: return "Progression row has an unsupported die size."
 			if int(threshold) <= previous_threshold:
 				return "breakpoint_lookup thresholds must be strictly increasing and unique."
 			previous_threshold = int(threshold)
@@ -158,6 +223,10 @@ static func _validate_formula_expression_bounded(value: Variant, step_ids: Dicti
 		if selector["measure"] not in ["raw", "resolved", "hp_loss"]:
 			return "Result sums require measure raw, resolved, or hp_loss."
 		return ""
+	if value.has("result_reduce"):
+		if value.size() != 1 or not value["result_reduce"] is Dictionary:
+			return "result_reduce must contain one explicit reducer selection."
+		return _validate_result_reducer_selector(value["result_reduce"], step_ids, before_index, all_steps)
 	if value.size() != 3 or not value.has("op") or value.get("op") not in FORMULA_OPS or not value.has("left") or not value.has("right"):
 		return "Formula objects require op, left, and right using a supported arithmetic operation."
 	for key in ["left", "right"]:
@@ -174,6 +243,9 @@ static func _validate_formula_expression_bounded(value: Variant, step_ids: Dicti
 
 static func _validate_predicate(predicate: Variant, step_ids: Dictionary, before_index: int, all_steps: Array = [], depth: int = 0) -> String:
 	if depth > 12 or not predicate is Dictionary: return "Predicates must be bounded objects."
+	if predicate.has("child_group"):
+		if predicate.size() != 1 or not predicate.child_group is Dictionary: return "child_group requires one selector."
+		return _validate_child_group(predicate.child_group, step_ids, before_index, all_steps)
 	if predicate.has("all") or predicate.has("any"):
 		var key := "all" if predicate.has("all") else "any"
 		if predicate.size() != 1 or not predicate[key] is Array or predicate[key].is_empty(): return "Boolean predicates require a non-empty all/any array."
@@ -184,7 +256,7 @@ static func _validate_predicate(predicate: Variant, step_ids: Dictionary, before
 	if predicate.has("not"):
 		if predicate.size() != 1: return "not predicates accept one child only."
 		return _validate_predicate(predicate["not"], step_ids, before_index, all_steps, depth + 1)
-	var value_key := "fact" if predicate.has("fact") else ("result" if predicate.has("result") else ("result_sum" if predicate.has("result_sum") else ""))
+	var value_key := "fact" if predicate.has("fact") else ("result" if predicate.has("result") else ("result_sum" if predicate.has("result_sum") else ("result_reduce" if predicate.has("result_reduce") else "")))
 	if value_key.is_empty(): return "Predicate requires a fact or result selector."
 	if value_key == "fact":
 		if predicate.size() != 2 or str(predicate["fact"]) not in RULE_FACTS: return "Unknown or malformed shared fact '%s'." % str(predicate.get("fact", ""))
@@ -200,11 +272,11 @@ static func _validate_predicate(predicate: Variant, step_ids: Dictionary, before
 		return "Ordered predicate comparisons require a numeric value."
 	var compare_value = predicate[comparison]
 	if compare_value is Dictionary or compare_value is Array: return "Predicate comparison values must be scalar."
-	if value_key in ["result", "result_sum"] and (not (compare_value is int or compare_value is float) or compare_value is bool): return "Damage-result predicates require a numeric comparison value."
+	if value_key in ["result", "result_sum", "result_reduce"] and (not (compare_value is int or compare_value is float) or compare_value is bool): return "Damage-result predicates require a numeric comparison value."
 	if value_key == "fact":
 		var fact_name := str(predicate["fact"])
-		var numeric_fact := fact_name in ["actor.level", "target.current_hp", "target.max_hp", "resolution.roll_natural", "resolution.roll_modifier", "resolution.roll_total", "resolution.target_ac", "resolution.damage_occurrence_id", "resolution.damage_raw", "resolution.damage_resolved", "resolution.damage_hp_loss"]
-		var boolean_fact := fact_name in ["target.is_alive", "target.is_wounded", "target.is_source_owner", "target.charmed_by_actor", "target.marked_by_actor", "resolution.provisional_hit", "resolution.provisional_critical", "resolution.final_hit", "resolution.critical"]
+		var numeric_fact := fact_name in ["actor.level", "target.current_hp", "target.max_hp", "target.actor_hex_distance_feet", "target.source_hex_distance_feet", "resolution.roll_natural", "resolution.roll_modifier", "resolution.roll_total", "resolution.target_ac", "resolution.damage_occurrence_id", "resolution.damage_raw", "resolution.damage_resolved", "resolution.damage_hp_loss"] or fact_name in DAMAGE_HISTORY_FACTS
+		var boolean_fact := fact_name in ["target.is_alive", "target.is_wounded", "target.is_source_owner", "target.charmed_by_actor", "target.marked_by_actor", "target.first_round", "target.first_own_turn", "target.acted_since_combat_turn", "target.acted_since_owner_turn", "target.attacked_since_combat_turn", "target.attacked_since_owner_turn", "resolution.provisional_hit", "resolution.provisional_critical", "resolution.final_hit", "resolution.critical"]
 		if numeric_fact and (not (compare_value is int or compare_value is float) or compare_value is bool):
 			return "Numeric facts require a numeric comparison value."
 		if boolean_fact and (comparison not in ["eq", "ne"] or not compare_value is bool):
@@ -216,6 +288,79 @@ static func _validate_predicate(predicate: Variant, step_ids: Dictionary, before
 		if fact_name == "target.willingness" and compare_value not in ["willing", "unwilling"]:
 			return "Willingness facts compare only explicit willing or unwilling values."
 	return ""
+
+
+static func _validate_child_group(group: Dictionary, step_ids: Dictionary, before_index: int, steps: Array) -> String:
+	for key in group:
+		if key not in ["mode", "steps", "targets", "outcome", "empty", "skipped", "comparison", "threshold"]: return "Unknown child_group field."
+	for key in ["mode", "steps", "targets", "outcome", "empty", "skipped"]:
+		if not group.has(key): return "child_group requires explicit selection, empty and skipped policies."
+	if group.mode not in ["all", "any", "count"] or group.targets not in ["all", "same", "cast_target"]: return "Invalid child_group mode/targets."
+	if group.outcome not in ["hit", "miss", "successful_save", "failed_save"]: return "Invalid child_group outcome."
+	if group.empty not in ["pass", "fail", "unavailable"] or group.skipped not in ["exclude", "fail", "unavailable"]: return "Invalid child_group empty/skipped policy."
+	if not group.steps is Array or group.steps.is_empty() or group.steps.size() > 20: return "child_group requires 1 to 20 prior steps."
+	var seen := {}
+	for id in group.steps:
+		if not id is String or seen.has(id) or not step_ids.has(id) or int(step_ids[id]) >= before_index: return "child_group requires unique existing prior steps."
+		seen[id] = true
+		var index := int(step_ids[id])
+		if index >= steps.size() or str(steps[index].get("type", "")) != ("attack" if group.outcome in ["hit", "miss"] else "save"): return "child_group outcome must match each selected attack/save step."
+	if group.mode == "count":
+		if group.size() != 8 or group.get("comparison", "") not in PREDICATE_OPS or not _integer(group.get("threshold"), 0, 1000): return "Count requires a bounded threshold and comparison."
+	elif group.size() != 6: return "all/any accept no count comparison."
+	return ""
+
+
+static func _child_group_state(group: Dictionary, adapter: Object, target, results: Array) -> int:
+	var cast = adapter.get("cast")
+	var selected = target if group.targets == "same" else (cast.target if group.targets == "cast_target" and cast != null else null)
+	if group.targets != "all" and selected == null: return PREDICATE_UNKNOWN
+	var matched := 0
+	var total := 0
+	# Inspect the entire selection before evaluating ANY or a count threshold.
+	for id in group.steps:
+		var found: Dictionary = {}
+		for row in results:
+			if not row is Dictionary: return PREDICATE_UNKNOWN
+			if row.get("step_id") == id:
+				if not found.is_empty(): return PREDICATE_UNKNOWN
+				found = row
+		if found.is_empty() or found.get("complete") != true or not found.get("target_outcomes") is Array: return PREDICATE_UNKNOWN
+		if found.get("type") != ("attack" if group.outcome in ["hit", "miss"] else "save"): return PREDICATE_UNKNOWN
+		if found.get("skipped", false) and found.target_outcomes.is_empty():
+			if group.skipped == "unavailable": return PREDICATE_UNKNOWN
+			if group.skipped == "fail": total += 1
+		var seen: Array = []
+		for child in found.target_outcomes:
+			if not child is Dictionary or child.get("target") == null: return PREDICATE_UNKNOWN
+			if group.targets != "all" and not is_same(child.target, selected): continue
+			for prior in seen:
+				if is_same(prior, child.target): return PREDICATE_UNKNOWN
+			seen.append(child.target)
+			if child.get("skipped", false):
+				if group.skipped == "unavailable": return PREDICATE_UNKNOWN
+				if group.skipped == "fail": total += 1
+				continue
+			var key := "hit" if group.outcome in ["hit", "miss"] else "saved"
+			if not child.get(key) is bool: return PREDICATE_UNKNOWN
+			total += 1
+			if child[key] == (group.outcome in ["hit", "successful_save"]): matched += 1
+		if group.targets != "all" and not found.target_outcomes.is_empty() and seen.is_empty(): return PREDICATE_UNKNOWN
+	if total == 0:
+		return PREDICATE_TRUE if group.empty == "pass" else (PREDICATE_FALSE if group.empty == "fail" else PREDICATE_UNKNOWN)
+	var passes := false
+	match str(group.mode):
+		"all": passes = matched == total
+		"any": passes = matched > 0
+		"count":
+			match str(group.comparison):
+				"eq": passes = matched == int(group.threshold)
+				"ne": passes = matched != int(group.threshold)
+				"lt": passes = matched < int(group.threshold)
+				"lte": passes = matched <= int(group.threshold)
+				"gt": passes = matched > int(group.threshold)
+				"gte": passes = matched >= int(group.threshold)
+	return PREDICATE_TRUE if passes else PREDICATE_FALSE
 
 
 static func _step_has_heal_effect(step: Dictionary) -> bool:
@@ -247,6 +392,61 @@ static func _step_has_damage_component(step: Dictionary, component_type: String,
 		return false
 	var expected := str(step.get("component_id", "%s:%s" % [str(step.get("id", "")), component_type]))
 	return component_id.is_empty() or expected == component_id
+
+
+static func _validate_result_reducer_selector(selector: Dictionary, step_ids: Dictionary, before_index: int, all_steps: Array) -> String:
+	var allowed := ["reducer", "steps", "targets", "component", "component_id", "measure", "empty"]
+	for key in selector:
+		if key not in allowed:
+			return "result_reduce contains unsupported selector field '%s'." % str(key)
+	for required in ["reducer", "steps", "targets", "component", "measure", "empty"]:
+		if not selector.has(required):
+			return "result_reduce requires explicit reducer, steps, targets, component, measure and empty policy."
+	var reducer := str(selector.get("reducer", ""))
+	if reducer not in ["sum", "min", "max"]:
+		return "result_reduce accepts sum, min or max."
+	var expected_empty := "zero" if reducer == "sum" else "unavailable"
+	if str(selector.get("empty", "")) != expected_empty:
+		return "result_reduce %s requires empty='%s'." % [reducer, expected_empty]
+	if not selector["steps"] is Array or selector["steps"].is_empty() or selector["steps"].size() > 20:
+		return "result_reduce requires 1 to 20 explicitly selected prior steps."
+	if selector.get("targets", "") not in ["all", "same", "cast_target"]:
+		return "result_reduce targets must be all, same or cast_target."
+	if not selector["component"] is String or str(selector["component"]).is_empty():
+		return "result_reduce requires one typed damage component."
+	if selector.has("component_id") and (not selector["component_id"] is String or str(selector["component_id"]).is_empty()):
+		return "result_reduce component_id must be a non-empty string."
+	if str(selector.get("measure", "")) not in ["raw", "prevented", "absorbed", "resolved", "hp_loss"]:
+		return "result_reduce requires a supported settled damage measure."
+	var seen_steps: Dictionary = {}
+	for step_name in selector["steps"]:
+		if not step_name is String or str(step_name).is_empty() or seen_steps.has(step_name):
+			return "result_reduce step IDs must be unique non-empty strings."
+		seen_steps[step_name] = true
+		if not step_ids.has(step_name) or int(step_ids[step_name]) >= before_index:
+			return "result_reduce references nonexistent or forward step '%s'." % str(step_name)
+		var step_index := int(step_ids[step_name])
+		if step_index >= all_steps.size() or not all_steps[step_index] is Dictionary:
+			return "result_reduce step '%s' is unavailable." % str(step_name)
+		var ref_step: Dictionary = all_steps[step_index]
+		if str(ref_step.get("type", "")) not in ["attack", "save", "damage"] or (not ref_step.has("damage") and not ref_step.has("damage_components")):
+			return "result_reduce step '%s' has no settled damage payload." % str(step_name)
+		if not _step_has_damage_component(ref_step, str(selector["component"]), str(selector.get("component_id", ""))):
+			return "result_reduce step '%s' has no selected typed component." % str(step_name)
+		if not selector.has("component_id") and _step_damage_component_count(ref_step, str(selector["component"])) > 1:
+			return "result_reduce step '%s' has an ambiguous component; specify component_id." % str(step_name)
+	return ""
+
+
+static func _step_damage_component_count(step: Dictionary, component_type: String) -> int:
+	var components: Variant = step.get("damage_components", null)
+	if not components is Array:
+		return 1 if str(step.get("damage_type", "")) == component_type else 0
+	var count := 0
+	for component in components:
+		if component is Dictionary and str(component.get("damage_type", "")) == component_type:
+			count += 1
+	return count
 
 
 static func _numeric_fact_value(value: Variant) -> Dictionary:
@@ -349,6 +549,17 @@ static func _read_fact(fact: String, adapter: Object, target):
 		"target.relationship": return _actor_relationship(cast, target)
 		"target.charmed_by_actor": return _target_has_source_condition(target, cast.caster, "charmed")
 		"target.marked_by_actor": return _target_has_source_condition(target, cast.caster, "hunters_mark")
+		"target.actor_hex_distance_feet": return _actor_distance_feet(cast, cast.caster, target)
+		"target.source_hex_distance_feet": return _source_distance_feet(cast, target)
+		"target.first_round", "target.first_own_turn", "target.acted_since_combat_turn", "target.acted_since_owner_turn", "target.attacked_since_combat_turn", "target.attacked_since_owner_turn", "target.damage_raw_since_combat_turn", "target.damage_prevented_since_combat_turn", "target.damage_absorbed_since_combat_turn", "target.damage_resolved_since_combat_turn", "target.damage_hp_loss_since_combat_turn", "target.damage_raw_since_owner_turn", "target.damage_prevented_since_owner_turn", "target.damage_absorbed_since_owner_turn", "target.damage_resolved_since_owner_turn", "target.damage_hp_loss_since_owner_turn":
+			if cast.spatial_host == null or cast.spatial_host.action_history == null:
+				return {"available": false}
+			return cast.spatial_host.action_history.fact(target, fact, cast.caster, str(cast.decisions.get("damage_source_instance_id", "")))
+		"target.damage_raw_within_last_minute", "target.damage_prevented_within_last_minute", "target.damage_absorbed_within_last_minute", "target.damage_resolved_within_last_minute", "target.damage_hp_loss_within_last_minute":
+			if not target is Character or not cast.caster is Character:
+				return {"available": false}
+			var damage_measure_name := fact.trim_prefix("target.damage_").trim_suffix("_within_last_minute")
+			return target.recent_damage_measure(cast.caster.character_id, str(cast.decisions.get("damage_source_instance_id", "")), damage_measure_name, int(GameManager.campaign_elapsed_seconds))
 		"source.id":
 			var source_id: Variant = cast.effect_cast.get("source_id", cast.source_definition_id)
 			return _identity_fact_value(source_id)
@@ -382,7 +593,7 @@ static func _actor_willingness(actor) -> Dictionary:
 
 
 static func _actor_relationship(cast: SpellResolutionContext, target) -> Dictionary:
-	if _same_actor(cast.caster, target):
+	if is_same(cast.caster, target):
 		return {"available": true, "value": "ally"}
 	var players: Variant = cast.decisions.get("players", null)
 	var monsters: Variant = cast.decisions.get("monsters", null)
@@ -399,10 +610,10 @@ static func _participant_side(actor, players: Array, monsters: Array) -> String:
 	var player_match := false
 	for entry in players:
 		var participant = entry.get("character", entry) if entry is Dictionary else entry
-		if _same_actor(actor, participant): player_match = true
+		if is_same(actor, participant): player_match = true
 	var monster_match := false
 	for participant in monsters:
-		if _same_actor(actor, participant): monster_match = true
+		if is_same(actor, participant): monster_match = true
 	if player_match == monster_match: return ""
 	return "players" if player_match else "monsters"
 
@@ -421,6 +632,83 @@ static func _target_has_source_condition(target, giver, condition: String) -> Di
 		if not record.get("conditions", []) is Array or condition not in record["conditions"]: continue
 		return {"available": true, "value": true}
 	return {"available": true, "value": false}
+
+
+static func _actor_distance_feet(cast: SpellResolutionContext, origin_actor, target_actor) -> Dictionary:
+	var origin_position := _live_actor_position(cast, origin_actor)
+	var target_position := _live_actor_position(cast, target_actor)
+	if not origin_position.get("available", false) or not target_position.get("available", false):
+		return {"available": false}
+	return _numeric_fact_value(HexUtils.get_distance(origin_position["value"], target_position["value"]) * 5)
+
+
+static func _source_distance_feet(cast: SpellResolutionContext, target_actor) -> Dictionary:
+	var source_position := _live_source_position(cast)
+	var target_position := _live_actor_position(cast, target_actor)
+	if not source_position.get("available", false) or not target_position.get("available", false):
+		return {"available": false}
+	return _numeric_fact_value(HexUtils.get_distance(source_position["value"], target_position["value"]) * 5)
+
+
+static func _live_actor_position(cast: SpellResolutionContext, actor) -> Dictionary:
+	if actor == null:
+		return {"available": false}
+	var host := cast.spatial_host
+	if host != null:
+		var position := _position_from_live_entries(actor, host.players)
+		if position.get("available", false):
+			return position
+		position = _position_from_live_entries(actor, host.monsters)
+		if position.get("available", false):
+			return position
+		return {"available": false}
+	# LocalRoomRules owns persisted party coordinates outside an encounter. Do not
+	# fall back to hex_position on an actor projection when no live entry matched.
+	if actor is Character and actor in PartyManager.get_active_characters():
+		var room := LocalRoomCombat.room()
+		var party_positions: Variant = room.get("party_positions", null)
+		if party_positions is Dictionary and party_positions.has(actor.character_id):
+			var coordinate: Variant = party_positions[actor.character_id]
+			if coordinate is Array and coordinate.size() == 2 and _integer(coordinate[0], -100000, 100000) and _integer(coordinate[1], -100000, 100000):
+				return {"available": true, "value": Vector2i(int(coordinate[0]), int(coordinate[1]))}
+			if coordinate is Vector2i:
+				return {"available": true, "value": coordinate}
+	return {"available": false}
+
+
+static func _position_from_live_entries(actor, entries: Array) -> Dictionary:
+	for entry in entries:
+		if not entry is Dictionary:
+			continue
+		var participant: Variant = entry.get("character", entry)
+		# Runtime identity must match the actual live entity object. Matching only
+		# a definition or actor ID would admit stale projections and duplicates.
+		if not is_same(actor, participant):
+			continue
+		var position: Variant = entry.get("hex_position", null)
+		if position is Vector2i:
+			return {"available": true, "value": position}
+		return {"available": false}
+	return {"available": false}
+
+
+static func _live_source_position(cast: SpellResolutionContext) -> Dictionary:
+	if cast == null or cast.spatial_host == null or cast.spatial_host.areas == null:
+		return {"available": false}
+	# A definition ID is not a location. Only the exact live source instance can
+	# resolve to a placed area center; removal erases this record from the owner.
+	if cast.source_instance_id.is_empty():
+		return {"available": false}
+	var zones: Dictionary = cast.spatial_host.areas.active_spell_zones
+	if not zones.has(cast.source_instance_id):
+		return {"available": false}
+	var zone: Variant = zones[cast.source_instance_id]
+	if not zone is Dictionary or bool(zone.get("removed", false)):
+		return {"available": false}
+	var center: Variant = zone.get("center", null)
+	if not center is Vector2i:
+		return {"available": false}
+	return {"available": true, "value": center}
 
 
 static func _result_component(selector: Dictionary, adapter: Object, target, step_results: Array) -> Dictionary:
@@ -549,6 +837,85 @@ static func _result_component_sum(selector: Dictionary, step_results: Array) -> 
 	return {"success": true, "value": total}
 
 
+static func _result_reduce(selector: Dictionary, adapter: Variant, target, step_results: Array) -> Dictionary:
+	var cast = adapter.get("cast") if adapter is Object else null
+	var selected_target = target if selector.get("targets") == "same" else (cast.target if selector.get("targets") == "cast_target" and cast != null else null)
+	if selector.get("targets") != "all" and selected_target == null:
+		return {"success": false, "value": 0, "error": "Selected reducer target is unavailable."}
+	var selected_values: Array[int] = []
+	var measure := str(selector.get("measure", ""))
+	var component_type := str(selector.get("component", ""))
+	var component_id := str(selector.get("component_id", ""))
+	for requested_step in selector.get("steps", []):
+		var selected_step: Dictionary = {}
+		for step_result in step_results:
+			if not step_result is Dictionary:
+				return {"success": false, "value": 0, "error": "Malformed prior step result."}
+			if str(step_result.get("step_id", "")) != str(requested_step):
+				continue
+			if not selected_step.is_empty():
+				return {"success": false, "value": 0, "error": "Duplicate prior step results."}
+			selected_step = step_result
+		if selected_step.is_empty():
+			return {"success": false, "value": 0, "error": "Selected reducer step is absent or unfinished."}
+		if str(selected_step.get("type", "")) not in ["attack", "save", "damage"]:
+			return {"success": false, "value": 0, "error": "Selected reducer step has an unsupported type."}
+		var outcomes: Variant = selected_step.get("target_outcomes", null)
+		if not outcomes is Array:
+			return {"success": false, "value": 0, "error": "Selected reducer target outcomes are malformed."}
+		var seen_targets: Array = []
+		for outcome in outcomes:
+			if not outcome is Dictionary or not outcome.has("target") or outcome.get("target") == null or not (outcome["target"] is Character or outcome["target"] is Dictionary):
+				return {"success": false, "value": 0, "error": "Selected reducer target outcome is malformed."}
+			if outcome.has("skipped") and not outcome["skipped"] is bool:
+				return {"success": false, "value": 0, "error": "Selected reducer skipped state is malformed."}
+			if bool(outcome.get("skipped", false)):
+				continue
+			if selector.get("targets") != "all" and not _same_actor(outcome["target"], selected_target):
+				continue
+			var duplicate_target := false
+			for seen_target in seen_targets:
+				if _same_actor(seen_target, outcome["target"]):
+					duplicate_target = true
+					break
+			if duplicate_target:
+				return {"success": false, "value": 0, "error": "Duplicate target outcome would count a settled receipt twice."}
+			seen_targets.append(outcome["target"])
+			var components: Variant = outcome.get("damage_components", null)
+			var explicit_zero_damage: bool = outcome.has("damage") and _integer(outcome["damage"], 0, 1000000) and int(outcome["damage"]) == 0
+			var explicit_no_damage: bool = explicit_zero_damage and ((outcome.get("hit") is bool and not outcome["hit"]) or (outcome.get("saved") is bool and outcome["saved"]))
+			if explicit_no_damage and (components == null or (components is Array and components.is_empty())):
+				continue
+			if not components is Array:
+				return {"success": false, "value": 0, "error": "Selected target damage components are missing or malformed."}
+			var matches: Array = []
+			for component in components:
+				if not component is Dictionary or not component.has("type"):
+					return {"success": false, "value": 0, "error": "Selected damage component is malformed."}
+				if str(component.get("type", "")) != component_type:
+					continue
+				if not component_id.is_empty() and str(component.get("component_id", "")) != component_id:
+					continue
+				matches.append(component)
+			if matches.size() != 1:
+				return {"success": false, "value": 0, "error": "Selected target has a missing or ambiguous damage component."}
+			var amount: Variant = matches[0].get(measure, null)
+			if not _integer(amount, 0, 1000000):
+				return {"success": false, "value": 0, "error": "Selected damage measure is missing or malformed."}
+			selected_values.append(int(amount))
+	if selected_values.is_empty():
+		if str(selector.get("reducer", "")) == "sum":
+			return {"success": true, "value": 0}
+		return {"success": false, "value": 0, "error": "Minimum and maximum are unavailable for an empty selection."}
+	var result := selected_values[0]
+	for index in range(1, selected_values.size()):
+		match str(selector.get("reducer", "")):
+			"sum": result += selected_values[index]
+			"min": result = mini(result, selected_values[index])
+			"max": result = maxi(result, selected_values[index])
+	return {"success": true, "value": result}
+
+
 static func evaluate_formula(value: Variant, adapter: Variant, target, step_results: Array) -> Dictionary:
 	if value is int or value is float: return {"success": true, "value": int(value)}
 	if value is String:
@@ -557,7 +924,9 @@ static func evaluate_formula(value: Variant, adapter: Variant, target, step_resu
 		return {"success": true, "value": Dice.parse_dice_string(value, {}, roller)}
 	if not value is Dictionary: return {"success": false, "value": 0}
 	var cast = adapter.get("cast")
-	if str(value.get("op", "")) == "breakpoint_lookup":
+	if value.has("input_value"): return SpellFormulaInputs.read(cast, str(value.input_value))
+	if value.has("source_die"): return SpellFormulaInputs.source_die(value.source_die, cast, target, step_results)
+	if str(value.get("op", "")) in ["breakpoint_lookup", "progression_lookup"]:
 		var input_result := evaluate_formula(value.get("input"), adapter, target, step_results)
 		if not bool(input_result.get("success", false)):
 			return {"success": false, "value": 0, "error": str(input_result.get("error", "Breakpoint lookup input failed."))}
@@ -570,20 +939,24 @@ static func evaluate_formula(value: Variant, adapter: Variant, target, step_resu
 			selected = true
 			selected_value = int(row.get("value", 0))
 		if not selected:
+			if value.get("below_first") == "zero": return {"success":true,"value":0}
 			return {"success": false, "value": 0, "error": "Breakpoint lookup input is below the first threshold."}
-		return {"success": true, "value": selected_value}
+		return {"success": true, "value": selected_value, "input":input_value, "value_type":str(value.get("value_type", "number"))}
 	if value.has("caster_level") or value.has("caster_proficiency_bonus") or value.has("caster_class_level") or value.has("caster_ability_modifier") or value.has("selected_slot_level"):
 		var caster: Character = cast.caster if cast != null else adapter.get("actor")
 		if value.size() != 1 or not caster is Character: return {"success": false, "value": 0}
 		if value.has("caster_level") and value["caster_level"] is bool and value["caster_level"]: return {"success": true, "value": caster.level}
 		if value.has("caster_proficiency_bonus") and value["caster_proficiency_bonus"] is bool and value["caster_proficiency_bonus"]: return {"success": true, "value": caster.proficiency_bonus}
-		if value.has("caster_class_level") and value["caster_class_level"] is String: return {"success": true, "value": caster.get_class_level(str(value["caster_class_level"]))}
+		if value.has("caster_class_level") and value["caster_class_level"] is String:
+			var class_level := caster.get_class_level(str(value["caster_class_level"]))
+			return {"success":class_level >= 0,"value":class_level}
 		if value.has("caster_ability_modifier") and value["caster_ability_modifier"] is String and str(value["caster_ability_modifier"]) in ABILITIES:
 			return {"success": true, "value": caster.ability_scores.get_ability_modifier(str(value["caster_ability_modifier"]))}
 		if value.has("selected_slot_level") and value["selected_slot_level"] is bool and value["selected_slot_level"] and cast != null: return {"success": true, "value": int(cast.slot_level)}
 		return {"success": false, "value": 0}
 	if value.has("result"): return _result_component(value["result"], adapter, target, step_results)
 	if value.has("result_sum"): return _result_component_sum(value["result_sum"], step_results)
+	if value.has("result_reduce"): return _result_reduce(value["result_reduce"], adapter, target, step_results)
 	var left := evaluate_formula(value.get("left"), adapter, target, step_results)
 	var right := evaluate_formula(value.get("right"), adapter, target, step_results)
 	if not left.success or not right.success: return {"success": false, "value": 0}
@@ -608,12 +981,40 @@ static func evaluate_actor_formula(value: Variant, actor: Character) -> Dictiona
 	return evaluate_formula(value, {"actor": actor}, null, [])
 
 
+## Progression binds only the existing shared actor identity and level facts.
+static func validate_actor_predicate(predicate: Variant) -> String:
+	var error := _validate_predicate(predicate, {}, 0)
+	if not error.is_empty(): return error
+	return _actor_predicate_scope_error(predicate)
+
+
+static func _actor_predicate_scope_error(predicate: Dictionary) -> String:
+	for key in ["all", "any"]:
+		if predicate.has(key):
+			for child in predicate[key]:
+				var error := _actor_predicate_scope_error(child)
+				if not error.is_empty(): return error
+			return ""
+	if predicate.has("not"): return _actor_predicate_scope_error(predicate["not"])
+	if predicate.get("fact", "") not in ["actor.id", "actor.level"]:
+		return "Progression predicates require actor.id or actor.level facts."
+	return ""
+
+
+## Reuse shared typed comparisons and unknown propagation; no target/cast facts are authorized.
+static func evaluate_actor_predicate(predicate: Dictionary, actor: Character) -> bool:
+	if actor == null or not validate_actor_predicate(predicate).is_empty(): return false
+	var context := SpellResolutionContext.new()
+	context.caster = actor
+	return evaluate_predicate(predicate, SpellAdapter.new(context), null, [])
+
+
 static func _actor_formula_has_cast_only_reference(value: Variant) -> bool:
 	if not value is Dictionary:
 		return false
-	if value.has("result") or value.has("result_sum") or value.has("selected_slot_level"):
+	if value.has("input_value") or value.has("source_die") or value.has("result") or value.has("result_sum") or value.has("result_reduce") or value.has("selected_slot_level"):
 		return true
-	if str(value.get("op", "")) == "breakpoint_lookup":
+	if str(value.get("op", "")) in ["breakpoint_lookup", "progression_lookup"]:
 		return _actor_formula_has_cast_only_reference(value.get("input"))
 	if str(value.get("op", "")) in FORMULA_OPS:
 		return _actor_formula_has_cast_only_reference(value.get("left")) or _actor_formula_has_cast_only_reference(value.get("right"))
@@ -625,6 +1026,8 @@ static func evaluate_predicate(predicate: Dictionary, adapter: Object, target, s
 
 
 static func _evaluate_predicate_state(predicate: Dictionary, adapter: Object, target, step_results: Array) -> int:
+	if predicate.has("child_group"):
+		return _child_group_state(predicate.child_group, adapter, target, step_results)
 	if predicate.has("all"):
 		var has_unknown := false
 		for child in predicate["all"]:
@@ -649,14 +1052,14 @@ static func _evaluate_predicate_state(predicate: Dictionary, adapter: Object, ta
 		if not fact_value.get("available", false): return PREDICATE_UNKNOWN
 		actual = fact_value.get("value")
 	else:
-		var selected_result := _result_component_sum(predicate["result_sum"], step_results) if predicate.has("result_sum") else _result_component(predicate["result"], adapter, target, step_results)
+		var selected_result := _result_component_sum(predicate["result_sum"], step_results) if predicate.has("result_sum") else (_result_reduce(predicate["result_reduce"], adapter, target, step_results) if predicate.has("result_reduce") else _result_component(predicate["result"], adapter, target, step_results))
 		if not bool(selected_result.get("success", false)): return PREDICATE_UNKNOWN
 		actual = selected_result.get("value", 0)
 	var expected: Variant = predicate.get("eq", predicate.get("ne", predicate.get("lt", predicate.get("lte", predicate.get("gt", predicate.get("gte"))))))
 	if predicate.has("fact"):
 		var fact_name := str(predicate["fact"])
-		var numeric_fact := fact_name in ["actor.level", "target.current_hp", "target.max_hp", "resolution.roll_natural", "resolution.roll_modifier", "resolution.roll_total", "resolution.target_ac", "resolution.damage_occurrence_id", "resolution.damage_raw", "resolution.damage_resolved", "resolution.damage_hp_loss"]
-		var boolean_fact := fact_name in ["target.is_alive", "target.is_wounded", "target.is_source_owner", "resolution.provisional_hit", "resolution.provisional_critical", "resolution.final_hit", "resolution.critical"]
+		var numeric_fact := fact_name in ["actor.level", "target.current_hp", "target.max_hp", "target.actor_hex_distance_feet", "target.source_hex_distance_feet", "resolution.roll_natural", "resolution.roll_modifier", "resolution.roll_total", "resolution.target_ac", "resolution.damage_occurrence_id", "resolution.damage_raw", "resolution.damage_resolved", "resolution.damage_hp_loss"] or fact_name in DAMAGE_HISTORY_FACTS
+		var boolean_fact := fact_name in ["target.is_alive", "target.is_wounded", "target.is_source_owner", "target.charmed_by_actor", "target.marked_by_actor", "target.first_round", "target.first_own_turn", "target.acted_since_combat_turn", "target.acted_since_owner_turn", "target.attacked_since_combat_turn", "target.attacked_since_owner_turn", "resolution.provisional_hit", "resolution.provisional_critical", "resolution.final_hit", "resolution.critical"]
 		if numeric_fact and (not (actual is int or actual is float) or actual is bool or not (expected is int or expected is float) or expected is bool): return PREDICATE_UNKNOWN
 		if boolean_fact and (not actual is bool or not expected is bool): return PREDICATE_UNKNOWN
 		if _is_string_fact(fact_name) and (not actual is String or not expected is String): return PREDICATE_UNKNOWN
@@ -704,6 +1107,15 @@ static func validate_step(step: Variant, step_index: int, step_ids: Dictionary, 
 			return "Shared step keys must be strings."
 		if str(key) not in allowed_fields:
 			return "Unsupported shared step field '%s'." % str(key)
+	if step.has("incoming_negation_rule"):
+		var negation_error := CastInterruptionRules.incoming_negation_rule_error(step.incoming_negation_rule)
+		if not negation_error.is_empty(): return negation_error
+	if step.has("physical_requirements"):
+		var physical_error := PhysicalFactsRules.physical_requirements_error(step.physical_requirements)
+		if not physical_error.is_empty(): return physical_error
+	if step.has("spatial_requirements"):
+		var spatial_error := PhysicalFactsRules.spatial_requirements_error(step.spatial_requirements)
+		if not spatial_error.is_empty(): return spatial_error
 	if not step.has("id") or not step["id"] is String or str(step["id"]).is_empty():
 		return "Shared steps require a string id."
 	var step_id := str(step["id"])
@@ -819,6 +1231,21 @@ static func validate_step(step: Variant, step_index: int, step_ids: Dictionary, 
 				return "Damage component ids must be unique within a step."
 			component_ids.append(component_id)
 			type_counts[component_type] = int(type_counts.get(component_type, 0)) + 1
+	if step.has("damage_reductions") or step.has("damage_bypasses"):
+		var policy_component_ids: Array[String] = []
+		if step.has("damage_components"):
+			var policy_type_counts: Dictionary = {}
+			for component in step["damage_components"]:
+				var component_type := str(component.get("damage_type", ""))
+				var component_id := str(component.get("id", "%s:%d" % [component_type, int(policy_type_counts.get(component_type, 0)) + 1]))
+				policy_component_ids.append(component_id)
+				policy_type_counts[component_type] = int(policy_type_counts.get(component_type, 0)) + 1
+		elif step.has("damage_type"):
+			policy_component_ids.append(str(step.get("component_id", "%s:%s" % [step_id, str(step.get("damage_type", ""))])))
+		if policy_component_ids.is_empty():
+			return "Damage policies require a typed damage payload."
+		var damage_policy_error := validate_damage_policy(step.get("damage_reductions", []), step.get("damage_bypasses", []), policy_component_ids)
+		if not damage_policy_error.is_empty(): return damage_policy_error
 
 	if step.has("effects"):
 		if not step["effects"] is Array:
@@ -1150,6 +1577,7 @@ static func execute_steps(steps: Array, adapter: Object, start_step_index: int =
 
 		if prereq_skipped:
 			step_results.append({
+			"complete": true,
 				"step_id": step_id,
 				"type": step_type,
 				"target_mode": step_target_mode,
@@ -1163,6 +1591,32 @@ static func execute_steps(steps: Array, adapter: Object, start_step_index: int =
 			var s_target = step_targets[target_idx]
 			if not adapter.is_target_eligible(step, s_target):
 				continue
+			if adapter.has_method("is_recipient_negated") and adapter.is_recipient_negated(s_target, step):
+				target_outcomes.append({
+					"target": s_target,
+					"target_name": adapter.get_target_name(s_target),
+					"skipped": true,
+					"negated": true,
+					"reason": "recipient_effect_negated"
+				})
+				continue
+			var physical_requirements: Dictionary = adapter.physical_requirements(step) if adapter.has_method("physical_requirements") else step.get("physical_requirements", {})
+			if not physical_requirements.is_empty():
+				var phys_eval := PhysicalFactsRules.evaluate_physical_eligibility(s_target, physical_requirements)
+				if not phys_eval.eligible:
+					target_outcomes.append({
+						"target": s_target,
+						"target_name": adapter.get_target_name(s_target),
+						"skipped": true,
+						"ineligible": true,
+						"reason": phys_eval.reason
+					})
+					continue
+			if adapter.has_method("spatial_eligibility"):
+				var spatial: Dictionary = adapter.spatial_eligibility(s_target, step)
+				if not spatial.get("eligible", false):
+					target_outcomes.append({"target":s_target,"target_name":adapter.get_target_name(s_target),"skipped":true,"ineligible":true,"reason":spatial.get("reason", "spatial_ineligible")})
+					continue
 			if step.has("when") and not evaluate_predicate(step["when"], adapter, s_target, step_results):
 				target_outcomes.append({"target": s_target, "target_name": adapter.get_target_name(s_target), "skipped": true, "reason": "when_not_satisfied"})
 				continue
@@ -1272,7 +1726,7 @@ static func execute_steps(steps: Array, adapter: Object, start_step_index: int =
 						"damage": dmg,
 						"result": res
 					}
-					for fact in ["resolved", "ward_absorbed", "ward_remaining_hp", "ward_projected", "temp_hp_absorbed", "hp_loss", "hp_before", "hp_after", "temp_hp_before", "temp_hp_after", "is_alive_before", "is_alive_after", "critical", "damage_is_critical", "damage_scale_decision", "rider_decisions"]:
+					for fact in ["resolved", "ward_absorbed", "ward_remaining_hp", "ward_projected", "temp_hp_absorbed", "hp_loss", "hp_before", "hp_after", "temp_hp_before", "temp_hp_after", "is_alive_before", "is_alive_after", "critical", "damage_is_critical", "damage_scale_decision", "damage_reduction_receipts", "rider_decisions"]:
 						if res.has(fact):
 							outcome_entry[fact] = res[fact]
 					if res.has("damage_components"):
@@ -1304,7 +1758,7 @@ static func execute_steps(steps: Array, adapter: Object, start_step_index: int =
 						"damage": dmg,
 						"result": res
 					}
-					for fact in ["resolved", "ward_absorbed", "ward_remaining_hp", "ward_projected", "temp_hp_absorbed", "hp_loss", "hp_before", "hp_after", "temp_hp_before", "temp_hp_after", "is_alive_before", "is_alive_after", "critical", "damage_is_critical", "damage_scale_decision", "rider_decisions"]:
+					for fact in ["resolved", "ward_absorbed", "ward_remaining_hp", "ward_projected", "temp_hp_absorbed", "hp_loss", "hp_before", "hp_after", "temp_hp_before", "temp_hp_after", "is_alive_before", "is_alive_after", "critical", "damage_is_critical", "damage_scale_decision", "damage_reduction_receipts", "rider_decisions"]:
 						if res.has(fact):
 							outcome_entry[fact] = res[fact]
 					if res.has("damage_components"):
@@ -1371,6 +1825,7 @@ static func execute_steps(steps: Array, adapter: Object, start_step_index: int =
 				break
 
 		step_results.append({
+			"complete": true,
 			"step_id": step_id,
 			"type": step_type,
 			"target_mode": step_target_mode,
@@ -1509,6 +1964,7 @@ static func resume_spell_steps(caster: Character, target, settled_result: Dictio
 		return execute_steps(steps, adapter, step_index, prior_state, next_target_idx)
 	else:
 		step_results.append({
+			"complete": true,
 			"step_id": str(step.get("id", str(step_index))),
 			"type": str(step.get("type", "")),
 			"target_mode": str(step.get("target", "target")),
@@ -1583,6 +2039,7 @@ static func resume_spell_steps_occurrence(caster: Character, target, settled_res
 		return execute_steps(steps, adapter, step_index, prior_state, next_target_idx)
 	else:
 		step_results.append({
+			"complete": true,
 			"step_id": str(step.get("id", str(step_index))),
 			"type": str(step.get("type", "")),
 			"target_mode": str(step.get("target", "target")),
@@ -1966,16 +2423,44 @@ class SpellAdapter:
 			return false
 		return true
 
+	func physical_requirements(step: Dictionary) -> Dictionary:
+		return step.get("physical_requirements", cast.spell.get("physical_requirements", {}))
+
+	func spatial_eligibility(t, step: Dictionary) -> Dictionary:
+		var requirements: Dictionary = step.get("spatial_requirements", cast.spell.get("spatial_requirements", {}))
+		if requirements.is_empty(): return {"eligible":true}
+		var host := cast.spatial_host
+		var grid: HexGrid = host.grid if host != null else cast.decisions.get("grid")
+		var participants: Array = host.players if host != null else cast.decisions.get("players", [])
+		var monsters: Array = host.monsters if host != null else cast.decisions.get("monsters", [])
+		var position := Vector2i(9999, 9999)
+		if t is Dictionary: position = t.get("hex_position", position)
+		else:
+			for participant in participants:
+				if participant.get("character") == t: position = participant.get("hex_position", position)
+		if position == Vector2i(9999, 9999): return {"eligible":false,"reason":"missing_target_position"}
+		var room := LocalRoomCombat.room()
+		return PhysicalFactsRules.evaluate_spatial_eligibility(grid, position, requirements, {"caster":cast.caster,"players":participants,"monsters":monsters,"room":room,"plane":str(room.get("plane", PhysicalFactsRules.DEFAULT_PLANE)),"ignore_entity":cast.caster})
+
+	func is_recipient_negated(t, step: Dictionary = {}) -> bool:
+		return CastInterruptionRules.is_recipient_negated(cast, t, step)
+
 	func get_target_name(t) -> String:
 		return t.character_name if t is Character else str(t.get("name", "Target"))
 
 	func _clean_step_spell(step: Dictionary) -> Dictionary:
 		var step_spell := cast.spell.duplicate(true)
+		var step_type := str(step.get("type", ""))
+		var step_id := str(step.get("id", ""))
 		step_spell.erase("steps")
 		step_spell.erase("attack_type")
 		step_spell.erase("save")
 		step_spell.erase("half_on_save")
 		step_spell.erase("damage_scale_by_outcome")
+		step_spell.erase("damage_dice_policy")
+		step_spell.erase("damage_result_multiplier")
+		step_spell.erase("damage_reductions")
+		step_spell.erase("damage_bypasses")
 		step_spell.erase("damage")
 		step_spell.erase("damage_type")
 		step_spell.erase("damage_components")
@@ -1985,11 +2470,19 @@ class SpellAdapter:
 		if step.has("damage"):
 			step_spell["damage"] = step["damage"]
 			step_spell["damage_type"] = step.get("damage_type", "untyped")
+			step_spell["component_id"] = str(step.get("component_id", "%s:%s" % [step_id, str(step_spell["damage_type"])]))
 		if step.has("damage_components"): step_spell["damage_components"] = step["damage_components"]
 		if step.has("scaling"): step_spell["scaling"] = step["scaling"]
 		if step.has("upcast"): step_spell["upcast"] = step["upcast"]
 		if step.has("effects"): step_spell["effects"] = step["effects"]
 		if step.has("damage_scale_by_outcome"): step_spell["damage_scale_by_outcome"] = step["damage_scale_by_outcome"]
+		if step.has("damage_dice_policy"): step_spell["damage_dice_policy"] = step["damage_dice_policy"]
+		if step.has("damage_result_multiplier"): step_spell["damage_result_multiplier"] = step["damage_result_multiplier"]
+		if step.has("damage_reductions"): step_spell["damage_reductions"] = step["damage_reductions"]
+		if step.has("damage_bypasses"): step_spell["damage_bypasses"] = step["damage_bypasses"]
+		if step.has("component_id"): step_spell["component_id"] = step["component_id"]
+		if step.has("save_context"): step_spell["save_context"] = step["save_context"]
+		if step_type == "save": step_spell["_origin_effect_id"] = step_id
 		return step_spell
 
 	func _create_step_cast(s_target, step_spell: Dictionary) -> SpellResolutionContext:
@@ -2084,8 +2577,11 @@ class SpellAdapter:
 		SharedStepExecutor._bind_resolution_window(cast, s_target, {})
 		var step_spell := _clean_step_spell(step)
 		var formula := SpellDamageRolls.spell_damage_formula(cast.caster, step_spell, cast.slot_level)
-		var roll := SpellDamageRolls._roll_spell_damage(cast.caster, formula, 1, cast.decisions)
-		var res := SpellDamageRolls._finish_spell_damage(cast.caster, s_target, roll, CombatAction.spell_damage_bonus(cast.caster, step_spell), 1.0, str(step_spell["damage_type"]), cast.decisions, {"success": true, "hit": true, "effect_cast": cast.effect_cast, "message": "%s deals {damage} %s damage." % [cast.spell["name"], step_spell["damage_type"]]})
+		var roll := SpellDamageRolls._roll_spell_damage(cast.caster, formula, 1, cast.decisions, step.get("damage_dice_policy", {}))
+		var damage_decisions := cast.decisions.duplicate()
+		damage_decisions["damage_result_multiplier"] = step.get("damage_result_multiplier", {})
+		damage_decisions["_shared_component_id"] = str(step_spell.get("component_id", "%s:%s" % [str(step.get("id", "")), str(step_spell["damage_type"])]))
+		var res := SpellDamageRolls._finish_spell_damage(cast.caster, s_target, roll, CombatAction.spell_damage_bonus(cast.caster, step_spell), 1.0, str(step_spell["damage_type"]), damage_decisions, {"success": true, "hit": true, "effect_cast": cast.effect_cast, "message": "%s deals {damage} %s damage." % [cast.spell["name"], step_spell["damage_type"]]}, 1, [], step_spell.get("damage_reductions", []), step_spell.get("damage_bypasses", []))
 		if res.has("damage_request"):
 			var req_id: String = str(res["damage_request"].get("request_id", ""))
 			var continuation := {
@@ -2189,6 +2685,16 @@ class SpellAdapter:
 					if any_critical:
 						final_result["critical"] = true
 						final_result["damage_is_critical"] = true
+		var any_negated := false
+		var any_resolved := false
+		for row in final_result.get("step_results", []):
+			for outcome in row.get("target_outcomes", []):
+				any_negated = any_negated or bool(outcome.get("negated", false))
+				any_resolved = any_resolved or not bool(outcome.get("skipped", false))
+		if any_negated and not any_resolved:
+			final_result["negated"] = true
+			final_result["recipient_negated"] = true
+			final_result["hit"] = false
 		if cast.spell.has("effects"):
 			final_result = SharedSpell.apply(cast.caster, cast.target, cast.spell, final_result)
 		return final_result

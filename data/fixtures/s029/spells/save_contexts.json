@@ -1,0 +1,74 @@
+[
+  {
+    "id": "fixture:s029_ordered_end",
+    "name": "Measured Toxin Recovery",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 20,
+    "target": "single",
+    "save_context": { "cause_id": "poison_exposure", "purpose_id": "maintain", "origin_effect_id": "outer_control" },
+    "steps": [
+      { "id": "prelude", "type": "effect", "effects": [{ "type": "heal", "value": 1 }] },
+      {
+        "id": "toxin_save", "type": "save", "save": "CON", "damage": "5", "damage_type": "poison",
+        "save_context": { "cause_id": "toxin_condition", "purpose_id": "end", "origin_effect_id": "toxin_tick" }
+      },
+      {
+        "id": "nearby_recovery", "type": "effect", "gate": "successful_save", "gate_step": "toxin_save",
+        "effects": [{ "type": "heal", "value": 5, "when": { "fact": "target.actor_hex_distance_feet", "lte": 10 } }]
+      }
+    ]
+  },
+  {
+    "id": "fixture:s029_poison_avoid",
+    "name": "Poison Exposure",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 20,
+    "target": "single",
+    "save": "CON",
+    "damage": "0",
+    "damage_type": "poison",
+    "save_context": { "cause_id": "poison_exposure", "purpose_id": "avoid", "origin_effect_id": "spore_burst" }
+  },
+  {
+    "id": "fixture:s029_toxin_end",
+    "name": "Toxin Condition",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 20,
+    "target": "single",
+    "save": "CON",
+    "damage": "0",
+    "damage_type": "poison",
+    "save_context": { "cause_id": "toxin_condition", "purpose_id": "end", "origin_effect_id": "toxin_tick" }
+  },
+  {
+    "id": "fixture:s029_poison_maintain",
+    "name": "Maintained Toxin",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 20,
+    "target": "single",
+    "save": "CON",
+    "damage": "0",
+    "damage_type": "poison",
+    "save_context": { "cause_id": "poison_exposure", "purpose_id": "maintain", "origin_effect_id": "maintained_spore" }
+  },
+  {
+    "id": "fixture:s029_ordinary_con",
+    "name": "Ordinary Constitution Test",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 20,
+    "target": "single",
+    "save": "CON",
+    "damage": "0",
+    "damage_type": "poison"
+  }
+]

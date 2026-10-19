@@ -1,0 +1,103 @@
+[
+  {
+    "id": "fixture:typed_reduction_neutral",
+    "name": "Typed Reduction",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "steps": [
+      {
+        "id": "impact",
+        "type": "save",
+        "save": "DEX",
+        "damage_components": [
+          { "id": "flame", "damage_type": "fire", "damage": "4" },
+          { "id": "frost", "damage_type": "cold", "damage": "4" },
+          { "id": "venom", "damage_type": "acid", "damage": "4" }
+        ],
+        "damage_reductions": [
+          { "scope": "component", "component_id": "flame", "amount": 2, "stage": "after_scale_before_mitigation" },
+          { "scope": "component", "component_id": "frost", "amount": 4, "stage": "after_scale_before_mitigation" },
+          { "scope": "component", "component_id": "venom", "amount": 8, "stage": "after_scale_before_mitigation" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "fixture:occurrence_reduction_renamed",
+    "name": "Cinder Echo",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "steps": [
+      {
+        "id": "impact",
+        "type": "save",
+        "save": "DEX",
+        "damage_components": [
+          { "id": "ember", "damage_type": "fire", "damage": "2" },
+          { "id": "rime", "damage_type": "cold", "damage": "4" },
+          { "id": "spore", "damage_type": "acid", "damage": "3" }
+        ],
+        "damage_reductions": [
+          { "scope": "occurrence", "amount": { "caster_ability_modifier": "INT" }, "stage": "after_scale_before_mitigation" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "fixture:layer_bypass_neutral",
+    "name": "Layered Breaker",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "steps": [
+      {
+        "id": "impact",
+        "type": "save",
+        "save": "DEX",
+        "damage_components": [
+          { "id": "venom", "damage_type": "acid", "damage": "4" },
+          { "id": "flame", "damage_type": "fire", "damage": "4" },
+          { "id": "frost", "damage_type": "cold", "damage": "4" },
+          { "id": "force", "damage_type": "force", "damage": "4" }
+        ],
+        "damage_bypasses": [
+          { "scope": "component", "component_id": "venom", "layers": ["ward"], "stage": "mitigation" },
+          { "scope": "component", "component_id": "flame", "layers": ["resistance"], "stage": "mitigation" },
+          { "scope": "component", "component_id": "frost", "layers": ["immunity"], "stage": "mitigation" },
+          { "scope": "component", "component_id": "force", "layers": ["prevention"], "stage": "mitigation" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "fixture:combined_bypass_renamed",
+    "name": "Unbound Cinder",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "steps": [
+      {
+        "id": "impact",
+        "type": "save",
+        "save": "DEX",
+        "damage_components": [
+          { "id": "cinder", "damage_type": "fire", "damage": "4" },
+          { "id": "chill", "damage_type": "cold", "damage": "4" }
+        ],
+        "damage_bypasses": [
+          { "scope": "component", "component_id": "cinder", "layers": ["resistance", "immunity", "ward", "prevention"], "stage": "mitigation" }
+        ]
+      }
+    ]
+  }
+]

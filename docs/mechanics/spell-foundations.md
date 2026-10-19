@@ -5,7 +5,8 @@
 > This document retains capability gaps and bounded acceptance checklists.
 > Its old wave/class order is no longer an implementation instruction.
 
-Owner-approved delivery plan, 2026-10-06. Rules authority: [SRD 5.2.1](https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf).
+Historical delivery plan from 2026-10-06; its scheduling policy is superseded by
+the current roadmap. Rules authority: [SRD 5.2.1](https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf).
 The roadmap covers all dependency families. First versions do not promise every
 catalog spell or every mode. Existing availability remains bounded gameplay;
 no spell is certified complete until its applicable clauses have production evidence.
@@ -20,11 +21,11 @@ versions after the 2026-10-08 review. Separate spell integrations retain
 explicit deferrals. See the
 [current checkpoint](../operations/current.md).
 
-Each wave has two gates: finish its playable foundations, then its named spell
-integrations. A later dependency stays recorded on the integration and keeps
-the spell partial or unavailable. Complete the current wave's supported work
-and explicit deferrals before opening another wave. Class expansion resumes
-when the current class's specific blockers are resolved.
+The historical plan grouped playable foundations and named spell integrations
+into two gates per wave. Those gates no longer schedule implementation or class
+expansion. Retain concrete missing dependencies and bounded evidence below, then
+select work from the current roadmap; unsupported behavior stays partial or
+unavailable until its actual requirements are implemented and checked.
 
 ## Wave 1 — Local spaces, objects, inventory and time
 

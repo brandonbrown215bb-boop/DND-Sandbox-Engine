@@ -1,0 +1,24 @@
+{
+  "id": "fixture:030_planar_space_step",
+  "name": "Planar Space Step",
+  "execution": "shared",
+  "level": 2,
+  "school": "conjuration",
+  "casting_time": "bonus_action",
+  "range": 6,
+  "target": "single",
+  "components": ["V"],
+  "spatial_requirements": {
+    "plane": "material",
+    "requires_available_space": true,
+    "body_size": "medium",
+    "clearance_feet": 10,
+    "same_plane_as_caster": true
+  },
+  "effects": [
+    {
+      "type": "temporary_hp",
+      "value": "5"
+    }
+  ]
+}

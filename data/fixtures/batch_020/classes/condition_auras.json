@@ -1,0 +1,38 @@
+[
+  {
+    "id": "fixture:condition_aura_plain",
+    "name": "Condition Aura Plain",
+    "hit_die": "d8",
+    "primary_ability": "CHA",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:condition_aura_plain_feature",
+          "name": "Condition Aura Plain",
+          "type": "passive",
+          "effects": [
+            {"type": "condition_immunity_aura", "aura_id": "fixture_courage", "condition": "frightened", "radius_feet": 10}
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "fixture:condition_aura_changed",
+    "name": "Condition Aura Changed",
+    "hit_die": "d8",
+    "primary_ability": "CHA",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:condition_aura_changed_feature",
+          "name": "Condition Aura Changed",
+          "type": "passive",
+          "effects": [
+            {"type": "condition_immunity_aura", "aura_id": "fixture_courage_changed", "condition": "frightened", "radius_feet": 15}
+          ]
+        }
+      ]
+    }
+  }
+]

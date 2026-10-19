@@ -1,0 +1,30 @@
+[
+  {
+    "id": "fixture:022_ring",
+    "name": "Practice Ritual Ring",
+    "type": "ring",
+    "magical": true,
+    "maximum_charges": 3,
+    "requires_attunement": true,
+    "spell_permissions": [
+      {
+        "spells": [
+          "fixture:022_renewal",
+          "fixture:022_material",
+          "fixture:022_lasting"
+        ],
+        "ability": "INT",
+        "ritual_allowed": true,
+        "ritual_only": true,
+        "maximum_spell_level": 1,
+        "charges": 1
+      }
+    ]
+  },
+  {
+    "id": "fixture:022_dust",
+    "name": "Practice Dust",
+    "type": "spell_component",
+    "value": 2
+  }
+]

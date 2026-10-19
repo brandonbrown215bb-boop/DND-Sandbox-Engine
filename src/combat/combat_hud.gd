@@ -60,6 +60,7 @@ var movement_mode_picker: OptionButton
 var flight_altitude_label: Label
 var flight_up_button: Button
 var flight_down_button: Button
+var _active_reroll_keep_menu: PopupMenu
 
 
 static func decision_prompt_labels(owner_label: String, reaction_id: String, ok_title: String = "", window_title: String = "") -> Dictionary:
@@ -421,10 +422,11 @@ func _update_sidebar_stats() -> void:
 		text += "Focus: %d / %d\n\n" % [active_character.get_focus_points(), active_character.get_max_focus_points()]
 
 	# List spell slots remaining
-	if not active_character.spell_slots.is_empty():
+	if not SpellSlotRules.pool_rows(active_character).is_empty():
 		text += "Spell Slots:\n"
-		for lvl in active_character.spell_slots:
-			text += "Level %s: %d slots\n" % [lvl, active_character.spell_slots[lvl]]
+		for row in SpellSlotRules.pool_rows(active_character):
+			var pool_label := "Pact Magic" if str(row.pool_id) == "pact" else "Ordinary"
+			text += "%s level %d: %d slots\n" % [pool_label, int(row.level), int(row.remaining)]
 		text += "\n"
 
 	# List active class feature uses
@@ -503,8 +505,8 @@ func _show_spell_selection() -> void:
 	if not setup.is_empty():
 		show_hint(setup + " Open the character sheet outside combat to set this up.")
 
-	# The active Character owns the complete per-turn spell inventory.
-	var list_spells: Array = active_character.known_spells.duplicate()
+	# The visible list is a projection of each spell's actual owning source.
+	var list_spells: Array = SpellPermissionRules.spell_ids(active_character)
 
 	for s_id in list_spells:
 		var spell_data := DataLoader.get_spell(s_id)
@@ -521,47 +523,74 @@ func _show_spell_selection() -> void:
 			spell_list.set_item_tooltip(unavailable_index, str(support["reason"]))
 			spells_registered.append(spell_data)
 			continue
-		var arcanum_level := WarlockRules.arcanum_cast_level(active_character, str(s_id))
-		var free_cast := active_character.free_spell_cast_feature(str(s_id)) if lvl > 0 else {}
-		var free_cast_available := lvl > 0 and (not free_cast.is_empty() or arcanum_level > 0)
-		
-		# Gray out if no spell slots left
-		var disabled := false
+		var permissions := active_character.get_spell_permissions(str(s_id))
+		if permissions.is_empty():
+			continue
+		var disabled_reason := ""
 		if str(spell_data.get("trigger", "")) == "after_melee_weapon_or_unarmed_hit":
-			disabled = true
-			display_name += " [Cast after a melee hit]"
-		if str(spell_data.get("casting_time", "action")) == "reaction":
-			disabled = true
-			display_name += " [Reaction only]"
-		if lvl > 0:
-			var slot_key := str(CombatAction.get_spell_slot_level(active_character, spell_data))
-			var current_slots: int = active_character.spell_slots.get(slot_key, 0)
-			var wizard_feature_cast := active_character.class_id == "wizard" and str(free_cast.get("feature_id", "")) in ["wizard_spell_mastery", "wizard_signature_spells"]
-			if wizard_feature_cast and not disabled and (current_slots > 0 or bool(free_cast.get("effect", {}).get("at_will", false))):
-				var free_spell := spell_data.duplicate(true)
-				free_spell["_wizard_free_cast"] = true
-				spell_list.add_item("%s (%s) — Cast without a slot" % [spell_data.get("name", s_id), lvl_str])
-				var free_index := spell_list.get_item_count() - 1
-				spell_list.set_item_disabled(free_index, false)
+			disabled_reason = "Cast after a melee hit"
+		elif str(spell_data.get("casting_time", "action")) == "reaction":
+			disabled_reason = "Reaction only"
+		var slot_key := str(CombatAction.get_spell_slot_level(active_character, spell_data))
+		var available_pools: Array[String] = []
+		for slot_pool in ["ordinary", "pact"]:
+			if SpellSlotRules.available(active_character, lvl, slot_pool): available_pools.append(slot_pool)
+		for permission in permissions:
+			if bool(permission.get("ritual_only", false)): continue
+			var source_id := str(permission.get("source_id", ""))
+			var source_label := "%s (%s)" % [permission.get("label", "Spell"), permission.ability]
+			var free_cast := active_character.free_spell_cast_feature(str(s_id), source_id) if lvl > 0 else {}
+			var arcanum_level := WarlockRules.arcanum_cast_level(active_character, str(s_id))
+			var has_free := lvl > 0 and bool(permission.get("free_payment_allowed", false)) and (not free_cast.is_empty() or (source_id == "warlock_mystic_arcanum" and arcanum_level > 0))
+			var base_spell := spell_data.duplicate(true)
+			base_spell["_source_permission_id"] = str(permission.get("id", ""))
+			base_spell["_source_permissions"] = permissions.duplicate(true)
+			base_spell["_spellcasting_ability"] = str(permission.get("ability", active_character.get_spellcasting_ability()))
+			var has_any_payment := false
+			if permission.get("kind", "") == "item" and int(permission.get("charge_cost", 0)) > 0 and disabled_reason.is_empty():
+				var item_spell := base_spell.duplicate(true)
+				item_spell["_spell_payment_kind"] = "item_charges"
+				item_spell["_spell_payment_source_id"] = source_id
+				if SpellPermissionRules.selection_valid(active_character, item_spell):
+					spell_list.add_item("%s (%s) — %s (%d charges)" % [spell_data.get("name", s_id), lvl_str, source_label, int(permission.charge_cost)])
+					spells_registered.append(item_spell)
+					has_any_payment = true
+			if has_free and disabled_reason.is_empty():
+				var free_spell := base_spell.duplicate(true)
+				free_spell["_spell_payment_kind"] = "free_cast"
+				free_spell["_spell_payment_source_id"] = source_id
+				free_spell["_arcanum_payment"] = arcanum_level > 0 and free_cast.is_empty()
+				free_spell["_wizard_free_cast"] = source_id in ["wizard_spell_mastery", "wizard_signature_spells"]
+				spell_list.add_item("%s (%s) — %s free cast" % [spell_data.get("name", s_id), lvl_str, source_label])
 				spells_registered.append(free_spell)
-				if current_slots > 0:
-					var slot_spell := spell_data.duplicate(true)
+				has_any_payment = true
+			if lvl > 0 and bool(permission.get("slot_payment_allowed", false)) and disabled_reason.is_empty() and int(permission.get("maximum_level", 9)) >= lvl:
+				for pool_id in available_pools:
+					var slot_spell := base_spell.duplicate(true)
 					slot_spell["_force_spell_slot"] = true
-					spell_list.add_item("%s (%s) — Use a spell slot" % [spell_data.get("name", s_id), lvl_str])
-					var slot_index := spell_list.get_item_count() - 1
+					slot_spell["_spell_payment_kind"] = "slot"
+					slot_spell["_spell_slot_pool_id"] = pool_id
+					var pool_label := "Pact Magic" if pool_id == "pact" else "ordinary"
+					spell_list.add_item("%s (%s) — %s %s slot" % [spell_data.get("name", s_id), lvl_str, source_label, pool_label])
 					spells_registered.append(slot_spell)
-				continue
-			var requires_arcanum := active_character.class_id == "warlock" and lvl > 5 and not free_cast_available
-			if requires_arcanum or (current_slots <= 0 and not free_cast_available):
-				disabled = true
-				display_name += " [No eligible Arcanum]" if requires_arcanum else " [No slots]"
-			elif free_cast_available:
-				display_name += " [Free cast available]"
-
-		spell_list.add_item(display_name)
-		var item_idx := spell_list.get_item_count() - 1
-		spell_list.set_item_disabled(item_idx, disabled)
-		spells_registered.append(spell_data)
+					has_any_payment = true
+			var point_cost := SpellPermissionRules.point_payment_cost(permission, lvl)
+			if lvl > 0 and point_cost > 0 and SpellPermissionRules.can_pay_points(active_character, permission, lvl) and disabled_reason.is_empty():
+				var point_spell := base_spell.duplicate(true)
+				point_spell["_spell_payment_kind"] = "points"
+				spell_list.add_item("%s (%s) — %s points (%d)" % [spell_data.get("name", s_id), lvl_str, str(permission.get("point_payment", {}).get("resource_id", "resource")), point_cost])
+				spells_registered.append(point_spell)
+				has_any_payment = true
+			if lvl == 0 and int(permission.get("charge_cost", 0)) == 0 and disabled_reason.is_empty():
+				spell_list.add_item("%s (%s) — %s" % [spell_data.get("name", s_id), lvl_str, source_label])
+				spells_registered.append(base_spell)
+				has_any_payment = true
+			if not has_any_payment:
+				var locked_spell := base_spell.duplicate(true)
+				spell_list.add_item("%s (%s) — %s [%s]" % [spell_data.get("name", s_id), lvl_str, source_label, disabled_reason if not disabled_reason.is_empty() else "No allowed payment"])
+				var locked_index := spell_list.get_item_count() - 1
+				spell_list.set_item_disabled(locked_index, true)
+				spells_registered.append(locked_spell)
 
 
 func _hide_spell_selection() -> void:
@@ -674,6 +703,11 @@ func _show_feature_selection() -> void:
 		feature_list.set_item_tooltip(feature_list.get_item_count() - 1, "Spend Sorcery Points to create a level 1–5 spell slot. The slot vanishes after a Long Rest.")
 		features_registered.append({"id": "sorcerer_font_of_magic_create", "name": "Create Spell Slot", "type": "active"})
 
+	for copy in active_character.inventory.backpack_instances():
+		var item := DataLoader.get_item(str(copy.definition_id))
+		if item.get("type") != "consumable" or CombatChildActions.units(item) == 0: continue
+		feature_list.add_item("Use %s [%s]" % [str(item.get("name", copy.definition_id)), str(copy.instance_id)])
+		features_registered.append({"id":"consume_copy", "item_id":copy.definition_id, "instance_id":copy.instance_id})
 	var activation_features: Array[Dictionary] = []
 	for owned_feature in active_character.features:
 		if owned_feature.has("executor") and owned_feature.has("resource_pool"):
@@ -690,6 +724,11 @@ func _show_feature_selection() -> void:
 		else:
 			activation_features.append(owned_feature)
 	for f in activation_features:
+		if f.has("child_actions"):
+			feature_list.add_item(str(f.get("name", f.id)) + " (" + str(f.action_cost).replace("_", " ") + ")")
+			feature_list.set_item_disabled(feature_list.item_count - 1, not CombatChildActions.available(active_character, f, turn_budget))
+			features_registered.append(f)
+			continue
 		var resource_slot_effect: Dictionary = {}
 		var ward_slot_effect: Dictionary = {}
 		var has_rest_slot_recovery := false
@@ -809,7 +848,7 @@ func _show_feature_selection() -> void:
 				display_name += " [No uses]"
 		if f.has("executor"):
 			var source_instance_id := str(f.get("source_instance_id", ""))
-			var available := ClassFeature.availability(active_character, f, turn_budget, source_instance_id)
+			var available := ClassFeature.availability(active_character, f, null if _substitution_available(f) else turn_budget, source_instance_id)
 			disabled = not available["available"]
 			display_name = "%s %d/%d (%s)" % [f.get("name", f_id), available["remaining"], available["maximum"], str(available["action_cost"]).replace("_", " ").capitalize()]
 			if f.has("resource_pool") and not source_instance_id.is_empty():
@@ -819,6 +858,9 @@ func _show_feature_selection() -> void:
 			if disabled:
 				display_name += " [%s]" % available["reason"]
 
+		if f_id in ["monk_flurry_of_blows", "monk_bonus_unarmed_strike"] and get_parent().get("remaining_flurry_swings") != null and int(get_parent().remaining_flurry_swings) > 0:
+			disabled = false
+			display_name = "Continue unarmed strikes (%d remaining)" % int(get_parent().remaining_flurry_swings)
 		feature_list.add_item(display_name)
 		var item_idx := feature_list.get_item_count() - 1
 		feature_list.set_item_disabled(item_idx, disabled)
@@ -829,6 +871,30 @@ func _show_feature_selection() -> void:
 		else:
 			feature_list.set_item_tooltip(item_idx, str(f.get("description", "")))
 		features_registered.append(f)
+	for gift in CapturedGrantRules.query(active_character):
+		if gift.effect == "weapon_attack_bonus": continue # Offered on the captured attack, not as an HP command.
+		feature_list.add_item("Gift: %s %d (%s)" % ["Recover HP" if gift.effect == "heal_self" else "Gain Temporary HP", int(gift.value), str(gift.use_cost).replace("_", " ").capitalize()])
+		feature_list.set_item_tooltip(feature_list.item_count - 1, "From %s; expires in %d campaign seconds." % [gift.giver_id, int(gift.expires_at_seconds) - int(GameManager.campaign_elapsed_seconds)])
+		var disabled := not active_character.reaction_available if gift.use_cost == "reaction" else (turn_budget == null or not turn_budget.can_spend(str(gift.use_cost)))
+		feature_list.set_item_disabled(feature_list.item_count - 1, disabled)
+		features_registered.append({"id":"use_captured_grant", "grant_id":gift.grant_id})
+	var aura_groups := {}
+	for record in AuraProtectionRules.offers(active_character).values():
+		var group: String = record.effect.group
+		if aura_groups.has(group): continue
+		aura_groups[group] = true
+		feature_list.add_item("Choose aura protection: " + group)
+		features_registered.append({"id":"choose_aura_protection", "group":group})
+	var protection_groups := {}
+	for grant in ProtectionRules.owned(active_character):
+		if grant.effect.stacking!="exclusive" or protection_groups.has(grant.effect.group): continue
+		protection_groups[grant.effect.group]=true
+		feature_list.add_item("Choose protection: "+str(grant.effect.group))
+		features_registered.append({"id":"choose_protection","group":grant.effect.group})
+	for carrier in SourceBenefitRules.query(active_character):
+		if carrier.kind != "cast": continue
+		feature_list.add_item("Dismiss %s (%s)" % [DataLoader.get_spell(carrier.definition_id).get("name", "benefit"), carrier.source_instance_id])
+		features_registered.append({"id":"dismiss_source_benefit", "source_instance_id":carrier.source_instance_id})
 	for grant in active_character.active_campaign_modifier_grants():
 		var source_id := str(grant.get("source_instance_id", ""))
 		var grant_id := str(grant.get("grant_instance_id", ""))
@@ -877,6 +943,28 @@ func _on_feature_selected(index: int) -> void:
 	var feature_owner := active_character
 	var feature := features_registered[index]
 	_hide_feature_selection()
+	if str(feature.get("id", "")) == "consume_copy":
+		if active_character == feature_owner: action_selected.emit("use_item", {"item":{"id":feature.item_id, "instance_id":feature.instance_id}})
+		return
+	if feature.has("child_actions"):
+		if active_character == feature_owner: action_selected.emit("use_feature", {"feature":feature})
+		return
+	if str(feature.get("id", "")) == "use_captured_grant":
+		if active_character == feature_owner: action_selected.emit("use_captured_grant", {"grant_id":feature.grant_id})
+		return
+	if str(feature.get("id", "")) == "choose_aura_protection":
+		if active_character == feature_owner: action_selected.emit("choose_aura_protection", {"group":feature.group})
+		return
+	if feature.has("transfer_grant") or feature.has("allocation") or feature.has("temporary_hp_grant"):
+		if active_character == feature_owner: action_selected.emit("use_feature", {"feature":feature})
+		return
+	if str(feature.get("id", "")) == "choose_protection":
+		if active_character==feature_owner: action_selected.emit("choose_protection",{"group":feature.get("group","")})
+		return
+	if str(feature.get("id", "")) == "dismiss_source_benefit":
+		if active_character == feature_owner:
+			action_selected.emit("dismiss_source_benefit", {"source_instance_id":str(feature.source_instance_id)})
+		return
 	if str(feature.get("id", "")) == "dismiss_timed_numeric_modifier":
 		if active_character == feature_owner:
 			action_selected.emit("dismiss_timed_numeric_modifier", {"source_instance_id": str(feature.get("source_instance_id", "")), "grant_instance_id": str(feature.get("grant_instance_id", ""))})
@@ -961,7 +1049,8 @@ func _on_feature_selected(index: int) -> void:
 		var minimum := int(spend_choice.get("minimum", 1))
 		if maximum < minimum:
 			return
-		var selected_quantity := await request_pool_quantity(minimum, maximum, int(feature["resource_pool"]["die_size"]))
+		var owned_pool: Dictionary = active_character.numeric_resource_pools.get(source_instance_id, {})
+		var selected_quantity := await request_pool_quantity(minimum, maximum, int(owned_pool.get("die_size", 0)), owned_pool.get("captured_dice", []))
 		if active_character == feature_owner and selected_quantity > 0:
 			feature = feature.duplicate(true)
 			feature["selected_pool_quantity"] = selected_quantity
@@ -974,7 +1063,7 @@ func _on_feature_selected(index: int) -> void:
 			return
 		var payment_labels: Dictionary = {}
 		for source_id in payment_sources:
-			payment_labels[source_id] = "Pay from %s" % source_id
+			payment_labels[source_id] = "Pay from %s" % ResourcePoolRules.exchange_payment_label(active_character, source_id)
 		var payment_source := payment_sources[0] if GameManager.test_mode else await _request_popup_choice("Choose the exact pool source to pay", payment_sources, payment_labels)
 		if payment_source not in payment_sources:
 			return
@@ -983,7 +1072,7 @@ func _on_feature_selected(index: int) -> void:
 			return
 		var restoration_labels: Dictionary = {}
 		for source_id in restoration_sources:
-			restoration_labels[source_id] = "Restore to %s" % source_id
+			restoration_labels[source_id] = ResourcePoolRules.exchange_restoration_label(active_character, source_id)
 		var restoration_source := restoration_sources[0] if GameManager.test_mode else await _request_popup_choice("Choose the exact pool source to restore", restoration_sources, restoration_labels)
 		if restoration_source not in restoration_sources or active_character != feature_owner:
 			return
@@ -1021,11 +1110,11 @@ func _on_feature_selected(index: int) -> void:
 		action_selected.emit("use_feature", {"feature": feature})
 
 
-func request_spell_slot(character: Character, minimum_level: int = 1) -> int:
+func request_spell_slot(character: Character, minimum_level: int = 1, pool_id: String = "ordinary") -> int:
 	var slot_levels: Array[int] = []
-	for key in character.spell_slots:
-		if int(key) >= minimum_level and int(character.spell_slots[key]) > 0:
-			slot_levels.append(int(key))
+	for row in SpellSlotRules.pool_rows(character):
+		if str(row.pool_id) == pool_id and int(row.level) >= minimum_level and int(row.remaining) > 0:
+			slot_levels.append(int(row.level))
 	slot_levels.sort()
 	if slot_levels.is_empty():
 		return 0
@@ -1033,7 +1122,7 @@ func request_spell_slot(character: Character, minimum_level: int = 1) -> int:
 		return slot_levels[0]
 	var menu := PopupMenu.new()
 	for level in slot_levels:
-		menu.add_item("Level %d (%d remaining)" % [level, int(character.spell_slots[str(level)])], level)
+		menu.add_item("Level %d (%d remaining)" % [level, SpellSlotRules.remaining(character, pool_id, level)], level)
 	add_child(menu)
 	var decision := {"slot_level": 0, "done": false}
 	menu.id_pressed.connect(func(id: int):
@@ -1049,13 +1138,28 @@ func request_spell_slot(character: Character, minimum_level: int = 1) -> int:
 	return int(decision["slot_level"])
 
 
-func request_pool_quantity(minimum: int, maximum: int, die_size: int) -> int:
+func request_formula_number(input_id: String, minimum: int, maximum: int) -> Variant:
+	var options: Array[String] = []
+	var labels := {}
+	for number in range(minimum, maximum + 1):
+		options.append(str(number))
+		labels[str(number)] = str(number)
+	if GameManager.test_mode: return minimum
+	var selected := await _request_popup_choice("Choose number: %s" % input_id, options, labels)
+	return int(selected) if selected in options else null
+
+
+func request_pool_quantity(minimum: int, maximum: int, die_size: int, captured_dice: Array = []) -> int:
 	var options: Array[String] = []
 	var labels: Dictionary = {}
 	for quantity in range(minimum, maximum + 1):
 		var key := str(quantity)
 		options.append(key)
 		labels[key] = "%d d%d%s" % [quantity, die_size, "s" if quantity != 1 else ""]
+		if not captured_dice.is_empty():
+			var faces: Array[String] = []
+			for die in captured_dice.slice(0, quantity): faces.append("%d (d%d)" % [int(die.face), int(die.die_size)])
+			labels[key] = "Spend %d captured dice: %s" % [quantity, ", ".join(faces)]
 	if options.is_empty():
 		return 0
 	if GameManager.test_mode:
@@ -1176,6 +1280,23 @@ func request_find_steed_choice(spell_data: Dictionary) -> Dictionary:
 		selected = options[index]
 	menu.queue_free()
 	return selected
+
+
+func request_spell_payment(character: Character, spell_id: String) -> Dictionary:
+	var choices := SpellPermissionRules.payment_choices(character, spell_id)
+	if choices.is_empty(): return {}
+	var ids: Array[String] = []
+	var labels := {}
+	for index in choices.size():
+		var row: Dictionary = choices[index]
+		var permission: Dictionary = row._source_permissions[0]
+		var id := str(index)
+		ids.append(id)
+		var payment := str(row._spell_payment_kind).replace("_", " ")
+		if payment == "slot": payment = "%s level %d slot" % ["Pact Magic" if row.get("_spell_slot_pool_id", "ordinary") == "pact" else "Ordinary", int(row._selected_spell_slot_level)]
+		labels[id] = "%s (%s) — %s" % [permission.get("label", "Spell"), permission.ability, payment]
+	var selected := ids[0] if ids.size() == 1 or GameManager.test_mode else await _request_popup_choice("%s: choose a source and payment" % DataLoader.get_spell(spell_id).get("name", spell_id), ids, labels)
+	return choices[int(selected)] if selected in ids else {}
 
 
 func request_damage_type_choice(options: Array, label: String) -> String:
@@ -1384,9 +1505,9 @@ func request_beacon_of_hope_targets(candidates: Array[Dictionary], seeded_ids: A
 	return selected
 
 
-func request_sorcerer_careful_spell_targets(caster: Character, candidates: Array[Dictionary]) -> Array[String]:
+func request_sorcerer_careful_spell_targets(caster: Character, candidates: Array[Dictionary], selection_limit: int = -1, choice_title: String = "Careful Spell: choose a creature that automatically succeeds") -> Array[String]:
 	var selected: Array[String] = []
-	var maximum := SorcererRules.careful_spell_target_limit(caster)
+	var maximum := SorcererRules.careful_spell_target_limit(caster) if selection_limit < 0 else selection_limit
 	if candidates.is_empty() or maximum <= 0:
 		return selected
 	if GameManager.test_mode:
@@ -1407,7 +1528,7 @@ func request_sorcerer_careful_spell_targets(caster: Character, candidates: Array
 		if options.is_empty():
 			break
 		options.append("__done")
-		var choice := await _request_popup_choice("Careful Spell: choose a creature that automatically succeeds", options, labels)
+		var choice := await _request_popup_choice(choice_title, options, labels)
 		if choice.is_empty() or choice == "__done":
 			break
 		selected.append(choice)
@@ -1531,13 +1652,21 @@ func request_failed_save_numeric_bonus(owner_label: String, ability: String, tot
 		if source_id.is_empty():
 			continue
 		choices.append(source_id)
-		var payment_note := "paid only if this converts to a success" if str(option.get("payment_policy", "pay_on_choice")) == "pay_on_converted_success" else "paid when chosen"
-		if str(option.get("resolution", "numeric_bonus")) == "outcome_override":
+		if str(option.get("resolution", "")) == "test_reroll":
+			var scope := "reroll the kept natural d20" if str(option.get("reroll_mode", "")) == "natural_only" else "reroll the whole test"
+			var dice_policy := "keep captured bonus dice" if str(option.get("bonus_dice_policy", "")) == "keep" else "reroll captured bonus dice"
+			var keep_policy := "choose old or new" if str(option.get("selection_policy", "")) == "choose_old_or_new" else "new result stands"
+			var bonus_note := " +%d captured level bonus" % int(option.get("level_bonus", 0)) if int(option.get("level_bonus", 0)) != 0 else ""
+			labels[source_id] = "%s — %s; %s; %s mode%s; %s (%d use%s)" % [str(option.get("label", source_id)), scope, dice_policy, str(option.get("new_roll_mode", "captured")), bonus_note, keep_policy, int(option.get("cost", 0)), "" if int(option.get("cost", 0)) == 1 else "s"]
+		elif str(option.get("resolution", "numeric_bonus")) == "outcome_override":
+			var payment_note := "paid when chosen"
 			var outcome_label := "make this save succeed" if str(option.get("outcome", "success")) == "success" else "make this save fail"
 			labels[source_id] = "%s — %s (%d use%s; paid when chosen)" % [str(option.get("label", source_id)), outcome_label, int(option.get("cost", 0)), "" if int(option.get("cost", 0)) == 1 else "s"]
 		elif str(option.get("resolution", "")) == "die_bonus":
+			var payment_note := "paid only if this converts to a success" if str(option.get("payment_policy", "pay_on_choice")) == "pay_on_converted_success" else "paid when chosen"
 			labels[source_id] = "%s — roll d%d on this save (%d use%s; %s)" % [str(option.get("label", source_id)), int(option.get("die_size", 0)), int(option.get("cost", 0)), "" if int(option.get("cost", 0)) == 1 else "s", payment_note]
 		else:
+			var payment_note := "paid only if this converts to a success" if str(option.get("payment_policy", "pay_on_choice")) == "pay_on_converted_success" else "paid when chosen"
 			labels[source_id] = "%s — +%d %s (%d use%s; %s)" % [str(option.get("label", source_id)), int(option.get("amount", 0)), ability.to_upper(), int(option.get("cost", 0)), "" if int(option.get("cost", 0)) == 1 else "s", payment_note]
 	if choices.size() <= 1:
 		return ""
@@ -1555,7 +1684,13 @@ func request_weapon_attack_numeric_bonus(owner_label: String, total: int, target
 		if source_id.is_empty():
 			continue
 		choices.append(source_id)
-		if str(option.get("resolution", "")) in ["attack_total_adjustment", "defending_ac_adjustment"]:
+		if str(option.get("resolution", "")) == "test_reroll":
+			var scope := "reroll the kept natural d20" if str(option.get("reroll_mode", "")) == "natural_only" else "reroll the whole test"
+			var dice_policy := "keep captured bonus dice" if str(option.get("bonus_dice_policy", "")) == "keep" else "reroll captured bonus dice"
+			var keep_policy := "choose old or new" if str(option.get("selection_policy", "")) == "choose_old_or_new" else "new result stands"
+			var bonus_note := " +%d captured level bonus" % int(option.get("level_bonus", 0)) if int(option.get("level_bonus", 0)) != 0 else ""
+			labels[source_id] = "%s — %s; %s; %s mode%s; %s (%d use%s)" % [str(option.get("label", source_id)), scope, dice_policy, str(option.get("new_roll_mode", "captured")), bonus_note, keep_policy, int(option.get("cost", 0)), "" if int(option.get("cost", 0)) == 1 else "s"]
+		elif str(option.get("resolution", "")) in ["attack_total_adjustment", "defending_ac_adjustment"]:
 			var payment_note := "paid only if the final attack hits" if str(option.get("payment_policy", "pay_on_choice")) == "pay_on_converted_success" else "paid when chosen"
 			var adjustment_text := "lower this attack total by %d" % int(option.get("amount", 0)) if str(option.get("resolution", "")) == "attack_total_adjustment" else "raise defending AC by %d for this attack" % int(option.get("amount", 0))
 			labels[source_id] = "%s — %s (%d use%s; %s)" % [str(option.get("label", source_id)), adjustment_text, int(option.get("cost", 0)), "" if int(option.get("cost", 0)) == 1 else "s", payment_note]
@@ -1570,6 +1705,25 @@ func request_weapon_attack_numeric_bonus(owner_label: String, total: int, target
 		return ""
 	var outcome_word := "hit" if provisional_hit else "miss"
 	return await _request_popup_choice("%s provisionally %s: %d vs AC %d. Choose one owned option or decline." % [attack_label.capitalize(), outcome_word, total, target_ac], choices, labels)
+
+
+func request_reroll_keep_choice(owner_label: String, domain: String, original_total: int, new_total: int) -> String:
+	var menu := PopupMenu.new()
+	_active_reroll_keep_menu = menu
+	menu.title = "%s %s reroll: choose the kept result" % [owner_label, domain.replace("_", " ")]
+	menu.add_item("Keep original (%d)" % original_total, 0)
+	menu.add_item("Keep new (%d)" % new_total, 1)
+	add_child(menu)
+	var decision := {"selected": -1, "done": false}
+	menu.id_pressed.connect(func(id: int): decision["selected"] = id; decision["done"] = true)
+	menu.popup_hide.connect(func(): decision["done"] = true)
+	menu.popup_centered(Vector2i(420, 140))
+	var timeout_at := Time.get_ticks_msec() + 30000
+	while not decision["done"] and Time.get_ticks_msec() < timeout_at and is_inside_tree():
+		await get_tree().process_frame
+	if is_instance_valid(menu): menu.queue_free()
+	if _active_reroll_keep_menu == menu: _active_reroll_keep_menu = null
+	return "new" if int(decision["selected"]) == 1 else "old"
 
 
 func request_chain_lightning_target_choice(candidates: Array[Dictionary], seeded_target_id: String = "") -> String:
@@ -2228,3 +2382,31 @@ func request_roll_token_replacement(roller_name: String, test_label: String, opt
 		"token_id": str(chosen.get("token_id", "")),
 		"value": int(chosen.get("value", 0)),
 	}
+
+
+func request_protection_choice(request: Dictionary) -> String:
+	var choices: Array[String] = [""]
+	var labels := {"":"Keep current protection"}
+	for grant in request.get("offers",[]):
+		choices.append(grant.grant_instance_id)
+		labels[grant.grant_instance_id]="%s / %s (until %d)" % [str(grant.source_definition_id),str(grant.source_instance_id),int(grant.expires_at_seconds)]
+	return await _request_popup_choice("Choose protection: "+str(request.get("group","")),choices,labels)
+
+
+func request_pool_recovery(request: Dictionary) -> String:
+	if GameManager.test_mode: return ""
+	var choices: Array[String] = [""]
+	var labels := {"":"Decline recovery"}
+	for offer in request.get("offers", []):
+		var id := str(offer.selection_id)
+		choices.append(id)
+		var amount := "fill to %d" % int(offer.capacity)
+		if offer.mode == "restore_fixed": amount = "regain %d" % int(offer.amount)
+		elif offer.mode == "restore_to_floor": amount = "recover up to %d" % mini(int(offer.capacity), int(offer.amount))
+		labels[id] = "%s: %s (%d/%d)" % [str(offer.label), amount, int(offer.current), int(offer.capacity)]
+	return await _request_popup_choice("Pool recovery: choose one or decline", choices, labels)
+
+func _substitution_available(definition: Dictionary) -> bool:
+	var host := get_parent()
+	var count := CombatChildActions.units(definition)
+	return count > 0 and host.has_method("_remaining_strike_units") and int(host._remaining_strike_units()) >= count

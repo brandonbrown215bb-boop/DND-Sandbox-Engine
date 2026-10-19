@@ -1,0 +1,77 @@
+[
+  {
+    "name": "Practice Renewal",
+    "execution": "shared",
+    "level": 1,
+    "school": "abjuration",
+    "casting_time": "action",
+    "range": 0,
+    "target": "self",
+    "attack_type": "none",
+    "ritual": true,
+    "components": [],
+    "classes": [
+      "fixture:022_source"
+    ],
+    "effects": [
+      {
+        "type": "heal",
+        "value": 2,
+        "ability_bonus_from_caster": true
+      }
+    ],
+    "id": "fixture:022_renewal"
+  },
+  {
+    "name": "Practice Renewal",
+    "execution": "shared",
+    "level": 1,
+    "school": "abjuration",
+    "casting_time": "action",
+    "range": 0,
+    "target": "self",
+    "attack_type": "none",
+    "ritual": true,
+    "components": [
+      "M"
+    ],
+    "classes": [
+      "fixture:022_source"
+    ],
+    "effects": [
+      {
+        "type": "heal",
+        "value": 2,
+        "ability_bonus_from_caster": true
+      }
+    ],
+    "id": "fixture:022_material",
+    "material_component_item_id": "fixture:022_dust",
+    "material_component_cost": 2,
+    "material_component_consumed": true
+  },
+  {
+    "name": "Practice Renewal",
+    "execution": "shared",
+    "level": 1,
+    "school": "abjuration",
+    "casting_time": "action",
+    "range": 0,
+    "target": "self",
+    "attack_type": "none",
+    "ritual": true,
+    "components": [],
+    "classes": [
+      "fixture:022_source"
+    ],
+    "effects": [
+      {
+        "type": "grant_condition",
+        "condition": "blessed"
+      }
+    ],
+    "id": "fixture:022_lasting",
+    "duration_seconds": 60,
+    "concentration": true
+  }
+]

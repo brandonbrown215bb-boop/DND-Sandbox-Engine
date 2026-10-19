@@ -7,12 +7,14 @@ class_name BeckettResources
 ## the asset list, and the editor log tail.
 
 const Reflect := preload("res://addons/beckett/core/reflection.gd")
+const Captures := preload("res://addons/beckett/core/captures.gd")
+const PathGuard := preload("res://addons/beckett/core/path_guard.gd")  # the asset walk does not follow a link out of the project
 
 var server
 
 
 func list() -> Array:
-	return [
+	var out: Array = [
 		{"uri": "scene://tree", "name": "Open scene tree", "description": "Node tree of the scene open in the editor.", "mimeType": "application/json"},
 		{"uri": "scene://selection", "name": "Editor selection", "description": "Nodes currently selected in the editor.", "mimeType": "application/json"},
 		{"uri": "project://settings", "name": "Project settings", "description": "Project name, engine version, main scene, autoloads.", "mimeType": "application/json"},
@@ -21,6 +23,17 @@ func list() -> Array:
 		{"uri": "audit://recent", "name": "MCP audit log", "description": "Last %d tool calls this session: time, tool, duration, ok/error, brief args." % 200, "mimeType": "application/json"},
 		{"uri": "status://connection", "name": "Connection status", "description": "Server running state, the connected MCP client (name/version from its handshake), idle time, live tool count. The model is NOT included — MCP does not report it.", "mimeType": "application/json"},
 	]
+	# Captures are DYNAMIC entries (v1.14): screenshot deliver=link parks a frame here and
+	# hands the client a capture:// link instead of a megabyte of inline base64. Listed so a
+	# client that lost the link in a truncated transcript can still find the picture.
+	for c in Captures.list_entries():
+		out.append({
+			"uri": str(c["uri"]),
+			"name": "Capture %s" % str(c["id"]),
+			"description": "Game capture, %d bytes." % int(c["bytes"]),
+			"mimeType": Captures.mime_for_id(str(c["id"])),
+		})
+	return out
 
 
 ## Returns {ok:true, mime:String, text:String} or {ok:false, error:String}.
@@ -39,7 +52,10 @@ func read(uri: String) -> Dictionary:
 		"project://settings":
 			return _json(_project_settings())
 		"assets://list":
-			return _json({"files": _list_assets()})
+			var skipped: Array = []
+			var listing := {"files": _list_assets(500, skipped)}
+			listing.merge(PathGuard.skipped_note(skipped))
+			return _json(listing)
 		"log://output":
 			return _log_tail()
 		"audit://recent":
@@ -48,9 +64,15 @@ func read(uri: String) -> Dictionary:
 		"status://connection":
 			return _json(_connection_status())
 		_:
+			# capture://<16hex>.<ext> — the only dynamic URI family. Captures.read_id does
+			# the validating (regex before any filesystem call), so an unknown or malformed
+			# id falls through to the same "unknown resource" shape as anything else.
+			if uri.begins_with("capture://"):
+				return Captures.read_id(uri.substr(10))
 			return {"ok": false, "error": "unknown resource: %s" % uri}
 
 
+# ---------------------------------------------------------------- builders
 
 func _tree(n: Node) -> Dictionary:
 	var d: Dictionary = {"name": str(n.name), "class": n.get_class()}
@@ -102,13 +124,13 @@ func _connection_status() -> Dictionary:
 	}
 
 
-func _list_assets(limit: int = 500) -> Array:
+func _list_assets(limit: int = 500, skipped: Array = []) -> Array:
 	var out: Array = []
-	_walk("res://", out, limit)
+	_walk("res://", out, limit, skipped, {})
 	return out
 
 
-func _walk(path: String, out: Array, limit: int) -> void:
+func _walk(path: String, out: Array, limit: int, skipped: Array, memo: Dictionary) -> void:
 	if out.size() >= limit:
 		return
 	var dir := DirAccess.open(path)
@@ -123,7 +145,10 @@ func _walk(path: String, out: Array, limit: int) -> void:
 		var full := path.path_join(entry)
 		if dir.current_is_dir():
 			if entry != ".godot":
-				_walk(full, out, limit)
+				if PathGuard.walk_skip(full, memo):
+					skipped.append(full)
+				else:
+					_walk(full, out, limit, skipped, memo)
 		else:
 			if not entry.ends_with(".import") and not entry.ends_with(".uid"):
 				out.append(full)
@@ -146,6 +171,7 @@ func _log_tail(lines: int = 100) -> Dictionary:
 	return {"ok": true, "mime": "text/plain", "text": "\n".join(tail)}
 
 
+# ---------------------------------------------------------------- helpers
 
 func root_rel(n: Node) -> NodePath:
 	var root := EditorInterface.get_edited_scene_root()
@@ -155,4 +181,5 @@ func root_rel(n: Node) -> NodePath:
 
 
 func _json(v: Variant) -> Dictionary:
-	return {"ok": true, "mime": "application/json", "text": JSON.stringify(v, "  ")}
+	# Compact: the reader is a model (or a parser), and the indent was pure token cost.
+	return {"ok": true, "mime": "application/json", "text": JSON.stringify(v)}

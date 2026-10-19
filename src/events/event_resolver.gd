@@ -31,11 +31,13 @@ static func resolve_skill_check(character: Character, check_data: Dictionary, de
 	var disadvantage := bool(mode_receipt.get("disadvantage", false))
 	var merged_decisions := check_data.duplicate(true)
 	merged_decisions.merge(decisions, true)
+	var floor_sources := CheckFloorRules.capture(character, ability, skill, authored_context)
 	var d20_details: Dictionary = RollTokenRules.resolve_d20_test(character, "ability_check", advantage, disadvantage, merged_decisions)
 	var roll := int(d20_details.get("total", 1))
 	var raw_natural := roll
+	roll = CheckFloorRules.natural(roll, floor_sources)
 	roll = character.apply_skill_check_roll_floor(roll, skill)
-	var roll_floor := character.apply_skill_check_roll_floor(1, skill)
+	var roll_floor := CheckFloorRules.natural(character.apply_skill_check_roll_floor(1, skill), floor_sources)
 	var tool_bonus := character.inventory.skill_tool_bonus(skill, str(check_data.get("context", "")))
 	var check_context: Dictionary = authored_context.duplicate(true)
 	check_context["ability"] = ability
@@ -57,7 +59,8 @@ static func resolve_skill_check(character: Character, check_data: Dictionary, de
 	var total_floor_active := natural_total_floor > 0
 	total = character.apply_feature_check_floor(total, ability, "ability_check")
 
-	return {
+	var result := {
+		"floor_sources": floor_sources,
 		"success": total >= dc,
 		"roll": roll,
 		"natural_roll": roll,
@@ -92,13 +95,16 @@ static func resolve_skill_check(character: Character, check_data: Dictionary, de
 		"roll_token_error": str(d20_details.get("roll_token_error", "")),
 	}
 
+	CheckFloorRules.finish(result)
+	return result
+
 
 ## Pure eligibility query for the selected loaded EventDialog check domain.
 ## Call again immediately before RollTokenRules commits the original d20.
 static func ability_check_roll_mode(character: Character, ability: String, skill: String, context: Dictionary, familiar_help: bool = false) -> Dictionary:
 	var grants: Array[Dictionary] = []
 	var policies: Array[Dictionary] = []
-	var bound := not str(context.get("origin_event_id", "")).is_empty() and not str(context.get("origin_check_id", "")).is_empty() and not str(context.get("task_id", "")).is_empty() and not str(context.get("purpose_id", "")).is_empty()
+	var bound := not str(context.get("origin_event_id", "")).is_empty() and not str(context.get("origin_check_id", "")).is_empty()
 	if character != null and bound:
 		for feature in character.features:
 			if not feature is Dictionary or not bool(feature.get("enabled", true)):
@@ -155,20 +161,23 @@ static func ability_check_roll_mode(character: Character, ability: String, skill
 
 
 static func _roll_mode_effect_matches(effect: Dictionary, ability: String, skill: String, context: Dictionary) -> bool:
-	return str(effect.get("domain", "")) == "event_skill_check" and str(effect.get("ability", "")).to_upper() == ability.to_upper() and str(effect.get("skill", "")) == skill and str(effect.get("task_id", "")) == str(context.get("task_id", "")) and str(effect.get("purpose_id", "")) == str(context.get("purpose_id", "")) and str(effect.get("source_event_id", "")) == str(context.get("origin_event_id", "")) and str(effect.get("source_check_id", "")) == str(context.get("origin_check_id", ""))
+	return str(effect.get("domain", "")) == "event_skill_check" and str(effect.get("ability", "")).to_upper() == ability.to_upper() and str(effect.get("skill", "")) == skill and ability_check_context_matches(effect, context)
 
 
 ## Reroll only the captured d20 and explicitly selected bonus dice. This does
 ## not rerun skill modifiers, loaded context, roll-token replacement or native
 ## feature choices that have already settled.
-static func reroll_captured_skill_check(character: Character, captured: Dictionary, reroll_mode: String, bonus_dice_policy: String) -> Dictionary:
+static func reroll_captured_skill_check(character: Character, captured: Dictionary, reroll_mode: String, bonus_dice_policy: String, new_test_mode: String = "captured", level_bonus: int = 0) -> Dictionary:
 	if character == null or not can_reroll_captured_skill_check(captured, reroll_mode, bonus_dice_policy):
 		return {}
 	var original_mode := str(captured.get("roll_mode", "normal"))
+	var selected_mode := original_mode if new_test_mode == "captured" else new_test_mode
+	if selected_mode not in ["normal", "advantage", "disadvantage"]:
+		return {}
 	var d20_details: Dictionary
-	if reroll_mode == "whole_test" and original_mode == "advantage":
+	if reroll_mode == "whole_test" and selected_mode == "advantage":
 		d20_details = Dice.roll_with_advantage_details(20, character)
-	elif reroll_mode == "whole_test" and original_mode == "disadvantage":
+	elif reroll_mode == "whole_test" and selected_mode == "disadvantage":
 		d20_details = Dice.roll_with_disadvantage_details(20, character)
 	else:
 		d20_details = Dice.roll_single_details(20, character)
@@ -186,20 +195,20 @@ static func reroll_captured_skill_check(character: Character, captured: Dictiona
 			bonus["roll"] = rolled.duplicate(true)
 			bonus["rerolled"] = true
 			bonus_dice[index] = bonus
-	var base_modifier := int(captured.get("base_modifier", captured.get("modifier", 0)))
+	var base_modifier := int(captured.get("base_modifier", captured.get("modifier", 0))) + level_bonus
 	var pre_floor_total := natural + base_modifier
 	for bonus in bonus_dice:
 		if bonus is Dictionary and bool(bonus.get("applied_before_total_floor", false)):
-			pre_floor_total += int(bonus.get("value", 0))
+			pre_floor_total += int(bonus.get("value", 0)) * int(bonus.get("sign", 1))
 	var total := maxi(int(captured.get("total_floor_minimum", 0)), pre_floor_total) if bool(captured.get("total_floor_active", false)) else pre_floor_total
 	var modifier := base_modifier
 	for bonus in bonus_dice:
 		if not bonus is Dictionary:
 			continue
 		if bool(bonus.get("included_in_modifier", false)):
-			modifier += int(bonus.get("value", 0))
+			modifier += int(bonus.get("value", 0)) * int(bonus.get("sign", 1))
 		if not bool(bonus.get("applied_before_total_floor", false)):
-			total += int(bonus.get("value", 0))
+			total += int(bonus.get("value", 0)) * int(bonus.get("sign", 1))
 	var rerolled := captured.duplicate(true)
 	rerolled["roll"] = natural
 	rerolled["natural_roll"] = natural
@@ -211,7 +220,7 @@ static func reroll_captured_skill_check(character: Character, captured: Dictiona
 	rerolled["rolls"] = d20_details.get("rolls", [raw_natural]).duplicate(true)
 	rerolled["kept"] = d20_details.get("kept", [true]).duplicate(true)
 	rerolled["check_bonus_dice"] = bonus_dice
-	var actual_mode := original_mode if reroll_mode == "whole_test" else "normal"
+	var actual_mode := selected_mode if reroll_mode == "whole_test" else "normal"
 	rerolled["original_roll_mode"] = original_mode
 	rerolled["roll_mode"] = actual_mode
 	rerolled["reroll_roll_mode"] = actual_mode
@@ -223,6 +232,8 @@ static func reroll_captured_skill_check(character: Character, captured: Dictiona
 	# Familiar Help may explain the captured advantage, but a natural-only reroll
 	# does not roll with that advantage again.
 	rerolled["familiar_help"] = bool(captured.get("familiar_help", false)) and reroll_mode == "whole_test"
+	rerolled["captured_level_bonus"] = level_bonus
+	rerolled["new_test_roll_mode"] = selected_mode
 	for bonus in bonus_dice:
 		if not bonus is Dictionary:
 			continue
@@ -230,6 +241,8 @@ static func reroll_captured_skill_check(character: Character, captured: Dictiona
 			"guidance": rerolled["guidance_bonus"] = int(bonus.get("value", 0))
 			"bardic_inspiration": rerolled["inspiration_bonus"] = int(bonus.get("value", 0))
 			"fighter_tactical_mind": rerolled["tactical_mind_bonus"] = int(bonus.get("value", 0))
+	rerolled.erase("authored_floor_adjustment")
+	CheckFloorRules.finish(rerolled)
 	return rerolled
 
 
@@ -253,6 +266,8 @@ static func can_reroll_captured_skill_check(captured: Dictionary, reroll_mode: S
 		return false
 	for bonus in bonus_dice:
 		if not bonus is Dictionary or int(bonus.get("sides", 0)) not in ResourcePoolRules.SUPPORTED_DIE_SIZES or int(bonus.get("value", 0)) < 1 or int(bonus.get("value", 0)) > int(bonus.get("sides", 0)):
+			return false
+		if int(bonus.get("sign", 1)) not in [-1, 1]:
 			return false
 		var bonus_roll: Variant = bonus.get("roll", null)
 		if not bonus_roll is Dictionary or int(bonus_roll.get("total", -1)) != int(bonus.get("value", 0)):
@@ -361,12 +376,12 @@ static func resolve_area_selection(effect: Dictionary) -> Dictionary:
 
 ## Apply an array of effect dictionaries to a character.
 ## Returns a summary array of applied effects (for display).
-static func apply_effects(character: Character, effects: Array, roller: Character = null) -> Array[Dictionary]:
+static func apply_effects(character: Character, effects: Array, roller: Character = null, casting_ability: String = "") -> Array[Dictionary]:
 	var results: Array[Dictionary] = []
 
 	for effect in effects:
 		var effect_type: String = effect.get("type", "")
-		var result := _apply_single_effect(character, effect, roller)
+		var result := _apply_single_effect(character, effect, roller, casting_ability)
 		if not result.is_empty():
 			results.append(result)
 
@@ -374,7 +389,7 @@ static func apply_effects(character: Character, effects: Array, roller: Characte
 
 
 ## Apply a single effect to a character.
-static func _apply_single_effect(character: Character, effect: Dictionary, roller: Character = null) -> Dictionary:
+static func _apply_single_effect(character: Character, effect: Dictionary, roller: Character = null, casting_ability: String = "") -> Dictionary:
 	var effect_type: String = effect.get("type", "")
 	if roller == null:
 		roller = character
@@ -400,7 +415,7 @@ static func _apply_single_effect(character: Character, effect: Dictionary, rolle
 			var amount := Dice.parse_dice_string(heal_str, modifiers, roller)
 			amount = SpellEffects.maximize_healing(character, amount, Dice.maximum_dice_string(heal_str, modifiers))
 			if bool(effect.get("ability_bonus_from_caster", false)) and roller != null:
-				amount += roller.ability_scores.get_ability_modifier(roller.get_spellcasting_ability())
+				amount += roller.ability_scores.get_ability_modifier(casting_ability if casting_ability in AbilityScores.ABILITIES else roller.get_spellcasting_ability())
 			amount = maxi(0, amount)
 			var actual := character.heal(amount)
 			return {"type": "heal", "amount": actual, "message": "%s healed %d HP!" % [character.character_name, actual]}
@@ -611,3 +626,13 @@ static func _level_scaled_expression(effect: Dictionary, table_field: String, va
 		if attained <= level and attained > threshold:
 			threshold = attained
 	return str(progression[str(threshold)]) if threshold > 0 else str(effect.get(value_field, fallback))
+
+
+## All four authored filters combine; an absent check fact never matches a filter.
+static func ability_check_context_matches(effect: Dictionary, context: Dictionary) -> bool:
+	if not ClassFeature.ability_check_filter_error(effect).is_empty(): return false
+	for field in ["task_id", "purpose_id", "source_event_id", "source_check_id"]:
+		if not effect.has(field): continue
+		var fact: String = "origin_event_id" if field == "source_event_id" else "origin_check_id" if field == "source_check_id" else field
+		if not context.has(fact) or effect[field] != context[fact]: return false
+	return true

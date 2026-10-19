@@ -6,6 +6,15 @@ The engine has useful foundations: character acquisition and saved choices, atta
 
 Code will still implement operations such as rolling dice, applying damage and finding visible targets. The data should choose their numbers, eligibility, timing, choices and costs. A definition using existing operations should work when copied or renamed without registering its identity in loader, UI, resolver or save code.
 
+## Connection maintenance update (2026-10-16)
+
+The bounded monster projection, shared Frightened Countercharm prompt and
+creation proficiency repairs are now production checked; see the
+[maintenance report](../../.artifacts/planning/vocabulary-reports/runtime-maintenance-2026-10-16.md).
+The rows below retain their original audit wording. That report supersedes their
+status only for those repaired connections; typed riders, parameter migration,
+source repair and broader world/catalog behavior remain separate work.
+
 ## Five practical kinds of work
 
 | Gap distance | What is missing | Smallest useful change | Example and priority |

@@ -1,0 +1,90 @@
+[
+  {
+    "id": "fixture:batch_g_floors",
+    "name": "Floor Probes",
+    "hit_die": "d8",
+    "primary_ability": "INT",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:natural_reading",
+          "name": "Natural Reading",
+          "type": "passive",
+          "passive_effects": [
+            {
+              "type": "check_floor",
+              "id": "natural_reading",
+              "domain": "event_skill_check",
+              "stage": "natural_d20",
+              "minimum": 8,
+              "ability": "INT",
+              "skill": "Investigation",
+              "task_id": "survey_archive",
+              "purpose_id": "locate_nest",
+              "source_event_id": "fixture:survey_map_event",
+              "source_check_id": "read_map_check"
+            },
+            {
+              "type": "check_floor",
+              "id": "natural_reading_reroll",
+              "domain": "event_skill_check",
+              "stage": "natural_d20",
+              "minimum": 8,
+              "ability": "INT",
+              "skill": "Investigation",
+              "task_id": "survey_archive",
+              "purpose_id": "test_floor_order",
+              "source_event_id": "fixture:s105_floor_check_event",
+              "source_check_id": "s105_floor_check"
+            }
+          ]
+        },
+        {
+          "id": "fixture:final_reading",
+          "name": "Final Reading",
+          "type": "passive",
+          "passive_effects": [
+            {
+              "type": "check_floor",
+              "id": "final_reading",
+              "domain": "event_skill_check",
+              "stage": "final_total",
+              "minimum": {
+                "op": "add",
+                "left": 10,
+                "right": {
+                  "caster_ability_modifier": "INT"
+                }
+              },
+              "ability": "INT",
+              "skill": "Investigation",
+              "task_id": "survey_archive",
+              "purpose_id": "locate_nest",
+              "source_event_id": "fixture:survey_map_event",
+              "source_check_id": "read_map_check"
+            },
+            {
+              "type": "check_floor",
+              "id": "final_reading_reroll",
+              "domain": "event_skill_check",
+              "stage": "final_total",
+              "minimum": {
+                "op": "add",
+                "left": 10,
+                "right": {
+                  "caster_ability_modifier": "INT"
+                }
+              },
+              "ability": "INT",
+              "skill": "Investigation",
+              "task_id": "survey_archive",
+              "purpose_id": "test_floor_order",
+              "source_event_id": "fixture:s105_floor_check_event",
+              "source_check_id": "s105_floor_check"
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

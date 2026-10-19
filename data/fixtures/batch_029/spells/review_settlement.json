@@ -1,0 +1,99 @@
+[
+  {
+    "id": "fixture:029_empty_refund",
+    "name": "Empty settlement",
+    "execution": "shared",
+    "level": 1,
+    "school": "abjuration",
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "components": [
+      "V",
+      "S"
+    ],
+    "empty_effect_policy": "refund"
+  },
+  {
+    "id": "fixture:029_charge_stop",
+    "name": "Charged interruption",
+    "execution": "shared",
+    "level": 2,
+    "school": "abjuration",
+    "casting_time": "reaction",
+    "range": 6,
+    "target": "single",
+    "components": [
+      "V",
+      "S"
+    ],
+    "cancellation_rule": {
+      "target_scope": "whole_cast",
+      "contest": {
+        "type": "none"
+      }
+    },
+    "stopping_cost_policy": {
+      "on_success": {
+        "slot": "refund",
+        "item": "dispose_copy",
+        "reaction": "commit"
+      }
+    }
+  },
+  {
+    "id": "fixture:029_explicit_dc_stop",
+    "name": "Explicit contest interruption",
+    "execution": "shared",
+    "level": 2,
+    "school": "abjuration",
+    "casting_time": "reaction",
+    "range": 6,
+    "target": "single",
+    "components": [
+      "S"
+    ],
+    "cancellation_rule": {
+      "target_scope": "whole_cast",
+      "contest": {
+        "type": "save",
+        "ability": "CON",
+        "dc": 99
+      }
+    }
+  },
+  {
+    "id": "fixture:029_renamed_breaker",
+    "name": "Renamed Arcane Rebuttal",
+    "execution": "shared",
+    "level": 3,
+    "school": "abjuration",
+    "casting_time": "reaction",
+    "range": 12,
+    "target": "single",
+    "components": [
+      "S"
+    ],
+    "cancellation_rule": {
+      "target_scope": "whole_cast",
+      "contest": {
+        "type": "save",
+        "ability": "CON",
+        "dc_from": "stopping_caster"
+      },
+      "spell_ids": [
+        "fixture:029_target_refund"
+      ]
+    },
+    "stopping_cost_policy": {
+      "on_success": {
+        "slot": "commit",
+        "reaction": "commit"
+      },
+      "on_failure": {
+        "slot": "refund",
+        "reaction": "commit"
+      }
+    }
+  }
+]
