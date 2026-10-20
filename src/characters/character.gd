@@ -2532,6 +2532,7 @@ func to_dict() -> Dictionary:
 	CreatedActorRules.sync(self)
 	AftermathSuccessorRules.sync(self)
 	ItemProjectionRules.sync(self)
+	ItemProjectionRules.settle(self) # Review 042 R1: a destroyed projected actor returns its copy.
 	BondRules.prune(self)
 	TemporaryHPRules.prune(self, int(GameManager.campaign_elapsed_seconds))
 	ProtectionRules.prune(self,int(GameManager.campaign_elapsed_seconds))

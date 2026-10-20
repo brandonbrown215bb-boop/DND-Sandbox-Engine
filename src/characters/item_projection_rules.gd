@@ -106,6 +106,12 @@ static func saved_error(dto: Dictionary) -> String:
 static func attach(state: Node, owner: Character, origin: Vector2i) -> Array:
 	var joined: Array = []
 	var offset := 1
+	settle(owner) # Review 042 R1: destroyed projected actors revert before placement.
+	for entity in state.player_entities.duplicate():
+		var c = entity.get("character", null)
+		if c is Character and c.has_meta("projected_item_id") and str(c.get_meta("projection_owner_id", "")) == owner.character_id and not is_projected(owner, str(c.get_meta("projected_item_id"))):
+			state.player_entities.erase(entity)
+			state.tracker.remove_combatant(c.character_id)
 	for id in owner.item_projections:
 		var a := actor(owner, str(id))
 		if a == null or not a.is_alive or state.player_entities.any(func(e): return e.get("combat_id", "") == a.character_id): continue

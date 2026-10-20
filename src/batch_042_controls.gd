@@ -20,6 +20,21 @@ static func run(h: Node) -> void:
 	var enemy: Dictionary = combat.monster_entities[0]
 	enemy["hex_position"] = Vector2i(2, 0)
 	combat._update_grid_entities()
+	# Review R1: a second projected copy destroyed by an actual hit returns its exact copy on the next placement.
+	var fig2 := Batch042Checks.add(a, Batch042Checks.FIGURINE)
+	ItemProjectionRules.project(a, fig2)
+	ItemProjectionRules.attach(combat, a, Vector2i.ZERO)
+	var pup := ItemProjectionRules.actor(a, fig2)
+	pup.current_hp = 1
+	for _try in 6:
+		if pup.current_hp <= 0: break
+		Batch031Controls._seed_hit()
+		await combat._execute_monster_attack(enemy, pup.character_name, 0)
+	var dead_hp := pup.current_hp
+	ItemProjectionRules.attach(combat, a, Vector2i.ZERO)
+	h._assert(dead_hp <= 0 and not ItemProjectionRules.is_projected(a, fig2) and Batch042Checks.owns(a, fig2) and not combat.player_entities.any(func(e): return e.get("combat_id", "") == pup.character_id), "042 review actual lethal hit returns the exact copy and removes its actor (hp=%d)" % dead_hp)
+	if ItemProjectionRules.is_projected(a, fig2): ItemProjectionRules.revert(a, fig2)
+	a.inventory.destroy_instance(fig2)
 	# S-165: the exact carried copy becomes its actor and joins the owner's side.
 	var r := ItemProjectionRules.project(a, fig)
 	var joined := ItemProjectionRules.attach(combat, a, Vector2i.ZERO)
@@ -50,12 +65,24 @@ static func run(h: Node) -> void:
 	GameManager.current_state = GameManager.GameState.OVERWORLD
 	GameManager.game_in_progress = true
 	GameManager.active_dungeon_state.clear()
+	# Review: a fixture-class companion holds a live linked bond through the real save/load.
+	var lc: Character = PartyManager.characters.get(str(PartyManager.companion_roster.get("b042_review", {}).get("character_id", "")), null)
+	if lc == null:
+		lc = PartyManager.create_companion("b042_review", "Pair Keeper", "human", Batch042Checks.CLASS_ID, {"STR": 12, "DEX": 14, "CON": 14, "INT": 12, "WIS": 12, "CHA": 16})
+		h._assert(lc != null and PartyManager.recruit_companion("b042_review"), "042 review fixture-class companion joins the party")
+	var l1 := Batch042Checks.add(lc, "dagger") if lc != null else ""
+	var l2 := Batch042Checks.add(lc, "dagger") if lc != null else ""
+	var linked_ok: bool = lc != null and BondRules.bond(lc, Batch042Checks.PAIR, l1).get("bonded", false) and BondRules.bond(lc, Batch042Checks.PAIR, l2).get("bonded", false)
 	var slot := "batch_042_projection"
 	var block := SaveManager.get_save_block_reason()
 	var saved: bool = block.is_empty() and SaveManager.save_game(slot)
 	h._assert(saved, "042 actual real save with a projected copy (block='%s')" % block)
 	if saved:
 		var loaded := SaveManager.load_game(slot)
+		var nlc: Character = PartyManager.characters.get(lc.character_id, null) if lc != null else null
+		var linked_back: bool = linked_ok and nlc != null and nlc != lc and BondRules.bonded(nlc, Batch042Checks.PAIR) == [l1, l2]
+		if linked_back: nlc.inventory.destroy_instance(l1)
+		h._assert(linked_back and not Batch042Checks.owns(nlc, l2) and BondRules.bonded(nlc, Batch042Checks.PAIR).is_empty(), "042 review real load keeps the live linked bond, and a loss after reload disposes exactly its mate")
 		var na: Character = PartyManager.characters.get(a.character_id, null)
 		var back := ItemProjectionRules.actor(na, fig) if na != null else null
 		h._assert(loaded and na != null and na != a and back != null and back != hound and back.current_hp == damaged and not na.inventory.has_item(Batch042Checks.FIGURINE), "042 actual real load rebuilds the same hound with its damage and keeps the copy out of the inventory")
