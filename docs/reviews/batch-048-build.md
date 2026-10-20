@@ -29,12 +29,12 @@ Weights are added only where SRD 5.2.1 prints a number:
 
 | Source | Items |
 |---|---|
-| p.94, Adventuring Gear table | Backpack 5, Bedroll 7, Rations 2, Tinderbox 1, Waterskin 5 (the table's "full" weight), Costume 4, Mirror ½, Lamp 1, Blanket 3, Robe 4, Alchemist's Fire 1, Lantern Hooded 2, Lantern Bullseye 2, Healer's Kit 3, Acid 1, Climber's Kit 12, Crowbar 5, Caltrops 2, Oil 1 |
-| p.95, Arcane Focuses | Crystal 1, Orb 3, Rod 2, Staff 4, Wand 1 |
-| p.96, Druidic Focuses | Wooden staff 4 |
-| p.93, Musical Instrument variants | bagpipes 6, drum 3, dulcimer 10, flute 1, horn 2, lute 2, lyre 2, pan flute 2, shawm 1, viol 1 |
+| p.95, Adventuring Gear table | Backpack 5, Bedroll 7, Rations 2, Tinderbox 1, Waterskin 5 (the table's "full" weight), Costume 4, Mirror ½, Lamp 1, Blanket 3, Robe 4, Alchemist's Fire 1, Lantern Hooded 2, Lantern Bullseye 2, Healer's Kit 3, Acid 1, Climber's Kit 12, Crowbar 5, Caltrops 2, Oil 1 |
+| p.96, Arcane Focuses | Crystal 1, Orb 3, Rod 2, Staff 4, Wand 1 |
+| p.97, Druidic Focuses | Wooden staff 4 |
+| p.94, Musical Instrument variants | bagpipes 6, drum 3, dulcimer 10, flute 1, horn 2, lute 2, lyre 2, pan flute 2, shawm 1, viol 1 |
 
-- **Backpack container:** `{"compartments":[{"id":"main","max_weight":30}]}`. SRD 5.2.1 p.95 says "A Backpack holds up to 30 pounds within 1 cubic foot."
+- **Backpack container:** `{"compartments":[{"id":"main","max_weight":30}]}`. SRD 5.2.1 p.96 says "A Backpack holds up to 30 pounds within 1 cubic foot."
   - The 1 cubic foot is **not** enforced. The SRD gives no item volumes, so a volume limit would refuse every item as unmeasurable.
   - No item count is invented.
 - **Left unknown:**

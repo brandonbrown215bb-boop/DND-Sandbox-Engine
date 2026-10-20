@@ -6,7 +6,7 @@ const CIRCLET := "fixture:b048_circlet"
 const CHARM := "fixture:b048_charm"
 const STAFF := "fixture:b048_staff"
 const ROD := "fixture:b048_rod"
-## SRD 5.2.1 p.94 Adventuring Gear table, p.95 Arcane Focuses, p.96 Druidic Focuses, p.93 Musical Instrument variants.
+## SRD 5.2.1 p.95 Adventuring Gear table, p.96 Arcane Focuses, p.97 Druidic Focuses, p.94 Musical Instrument variants (printed page = PDF page).
 const CITED := {"backpack": 5, "bedroll": 7, "crowbar": 5, "climbers_kit": 12, "healers_kit": 3, "lantern_hooded": 2, "caltrops": 2, "mirror": 0.5, "rations": 2, "arcane_staff": 4, "arcane_rod": 2, "wooden_staff": 4, "viol": 1, "dulcimer": 10}
 ## SRD gives "—" or no weight: these stay unknown.
 const UNKNOWN := ["bell", "antitoxin", "basic_poison", "gemstone_100gp"]
@@ -84,7 +84,7 @@ static func _measurements(check: Callable) -> void:
 		if not is_equal_approx(float(DataLoader.get_item(id).get("weight", -1)), float(CITED[id])): wrong.append(id)
 	check.call(wrong.is_empty(), "048 catalog items carry their SRD 5.2.1 weights (wrong=%s)" % str(wrong))
 	check.call(UNKNOWN.all(func(id): return not DataLoader.get_item(id).is_empty() and not DataLoader.get_item(id).has("weight")) and not DataLoader.get_item(BOOTS).has("weight"), "048 items without an SRD weight stay unknown (no invented values)")
-	check.call(is_equal_approx(float(ContainerRules.compartments("backpack").main.max_weight), 30.0) and not ContainerRules.compartments("backpack").main.has("max_count"), "048 the catalog backpack holds up to 30 lb. (SRD 5.2.1 p.95), with no invented count")
+	check.call(is_equal_approx(float(ContainerRules.compartments("backpack").main.max_weight), 30.0) and not ContainerRules.compartments("backpack").main.has("max_count"), "048 the catalog backpack holds up to 30 lb. (SRD 5.2.1 p.96), with no invented count")
 
 static func _backpack(check: Callable) -> void:
 	var a := actor("b048_packer")
