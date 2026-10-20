@@ -1,16 +1,16 @@
 # Batch 038 build: S-104 then S-085
 
-Branch `batch-038-s104-s085`, stacked on `batch-037-s103-s084` (e22215d, PR #4).
+Branch `batch-038-s104-s085`, stacked on `batch-037-s103-s084` (26c2ad6, PR #4, accepted by Runtime Reviewer). It was originally built on e22215d and rebased cleanly onto the reviewer's test-only commits and acceptance doc.
 Quest card Q-20261020-153201-fc66. This is build evidence and has not been reviewed yet.
 Slice counts and the checkpoint are unchanged.
 
 ## Selection
-Registry checked at e22215d. No quest card claims any candidate.
+Registry checked at e22215d (before the rebase). No quest card claims any candidate.
 
 | Candidate | Status | Dependencies | Decision |
 |---|---|---|---|
-| **S-104** Per-hit/turn-start mode switches | Planned | S-103 (built in open 037, **not yet Verified**), S-056 (Verified, VS-54) | **Chosen** |
-| **S-085** Rule options and exclusive replacements | Planned | S-084 and S-103 (both built in open 037, **not yet Verified**) | **Chosen** |
+| **S-104** Per-hit/turn-start mode switches | Planned | S-103 (037, PR #4 accepted, not yet merged or registry-Verified), S-056 (Verified, VS-54) | **Chosen** |
+| **S-085** Rule options and exclusive replacements | Planned | S-084 and S-103 (037, PR #4 accepted, not yet merged or registry-Verified) | **Chosen** |
 | S-127 Reach/mastery and damage-type choice | Planned | S-126 (open 035), S-103 (open 037) | Ready, deferred |
 | S-163 Reversible retained-stat actor projection | Planned | S-154 (still Planned, unbuilt) | **Not ready** |
 
@@ -75,7 +75,7 @@ There are no ID branches.
 
 ## Validation
 - Import, then the translation revert.
-- **Logic:** 4966 passed, 0 failed. The 037 baseline is 4937, so the delta is **+29**, equal to the new checks.
+- **Logic, after the rebase onto 26c2ad6:** 4987 passed, 0 failed. A fresh run of 26c2ad6 in a temporary worktree gives a baseline of 4958, so the delta is **+29**, equal to the new checks. Before the rebase it was 4966 against 4937.
 - **Log grep:** no SCRIPT ERROR, Parse Error or Compile Error in the logic or scenario logs.
 - **Scenarios (all 0 FAIL):**
 
@@ -87,7 +87,7 @@ There are no ID branches.
   | 034 | 10 |
   | 035 | 9 |
   | 036 | 7 |
-  | 037 | 6 |
+  | 037 | 11 (reviewer added the SaveManager mid-activation case) |
   | 038 | 7 |
   | shared_spell_flow | 67 |
 
@@ -98,4 +98,22 @@ There are no ID branches.
 - **Exclusive alternatives:** demonstrated on the mode rule's parameters (targets vs. uses). Native Extra Attack and base-AC formulas are not converted to this path.
 - **UI:** there are no HUD controls for switching or choosing alternatives.
 - **Scenario coverage:** the scenario's fighter carries fixture features as add-ons, so reload is covered in logic only.
-- **Dependencies:** S-103 and S-084 are still unverified (PR #4), so this batch inherits their review risk.
+- **Dependencies:** PR #4 is accepted but not merged.
+- **Reviewer F1 (class-only saved lookup):** inherited, not fixed. The 037 saved-state validator accepts mode state only for rules in the character's own class list. 038's added-mode lookup (`_declared_modes`) and `RuleUpgradeRules.saved_error` use the same class-only lookup. The fix belongs in a shared owned-feature resolver, not here.
+
+## Manifest (diff against 26c2ad6)
+- A	.questboard/quests/Q-20261020-153201-fc66.md
+- A	data/fixtures/batch_038/classes/switches.json
+- M	run_tests.ps1
+- M	src/autoload/save_manager.gd
+- A	src/batch_038_checks.gd
+- A	src/batch_038_checks.gd.uid
+- A	src/batch_038_controls.gd
+- A	src/batch_038_controls.gd.uid
+- M	src/characters/character.gd
+- M	src/characters/feature_mode_rules.gd
+- M	src/characters/rule_upgrade_rules.gd
+- M	src/combat/combat_action.gd
+- M	src/test_runner.gd
+- M	src/viewport_harness.gd
+- A	docs/reviews/batch-038-build.md
