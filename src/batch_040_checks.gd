@@ -42,6 +42,7 @@ static func run(check: Callable) -> void:
 	_projection_validation(check)
 	_projection(check)
 	_projection_saves(check)
+	review_stress(check)
 
 static func _successor_validation(check: Callable) -> void:
 	check.call(ZeroHpAftermathRules.validate_policy(policy()).is_empty(), "040 S-120 declared successor policy validates")
@@ -215,3 +216,66 @@ static func _projection_saves(check: Callable) -> void:
 	dup.source_id = src + "0"
 	two.spell_effects[src + "0"] = dup
 	check.call(not ActorProjectionRules.saved_state_error(two).is_empty(), "040 S-163 a saved actor cannot hold two projections")
+
+## Runtime Reviewer stress (RY1-RY8).
+static func review_stress(check: Callable) -> void:
+	# RY1: refusal before cost - several forms and no selection keep the slot.
+	var a := caster("b040_ry1")
+	a.spell_slots = {"2": 1}
+	var r := SpellResolver.resolve(a, a, DataLoader.get_spell(SHIFT), true, {}, [], 2)
+	check.call(not ActorProjectionRules.is_projected(a) and int(a.spell_slots.get("2", 0)) == 1 and not r.get("success", true), "040 RY1 no form selection is refused before the slot is spent (slots=%s success=%s)" % [str(a.spell_slots), str(r.get("success", null))])
+	# RY2: an active projection refuses a second projection before cost and keeps the first.
+	var b := caster("b040_ry2")
+	shift(b, 2, "b040_hound")
+	b.spell_slots = {"3": 1}
+	var r2 := SpellResolver.resolve(b, b, DataLoader.get_spell(MANTLE), true, {}, [], 3)
+	check.call(ActorProjectionRules.active(b).get("form", {}).get("id", "") == "b040_hound" and int(b.spell_slots.get("3", 0)) == 1 and not r2.get("success", true), "040 RY2 a second projection is refused before the slot is spent (slots=%s)" % str(b.spell_slots))
+	# RY3: Wild Shape active refuses before cost (documented limit: no combined forms).
+	var c := caster("b040_ry3")
+	c.wild_shape_state = {"form_id": "wolf"}
+	c.spell_slots = {"3": 1}
+	var r3 := SpellResolver.resolve(c, c, DataLoader.get_spell(MANTLE), true, {}, [], 3)
+	check.call(not ActorProjectionRules.is_projected(c) and int(c.spell_slots.get("3", 0)) == 1 and not r3.get("success", true), "040 RY3 Wild Shape refuses a projection before the slot is spent (slots=%s)" % str(c.spell_slots))
+	c.wild_shape_state = {}
+	# RY4: creature records reuse ids every encounter (monster_0); a new death gets a fresh successor.
+	var src := caster("b040_ry4")
+	var m1 := {"id": "monster_0", "name": "G", "current_hp": 10, "max_hp": 10, "is_alive": true, "creature_type": "humanoid"}
+	reap(src, m1)
+	var h1: Character = AftermathSuccessorRules.actors(m1)[0]
+	h1.take_damage(999)
+	var m2 := {"id": "monster_0", "name": "G", "current_hp": 10, "max_hp": 10, "is_alive": true, "creature_type": "humanoid"}
+	reap(src, m2)
+	var h2: Array = AftermathSuccessorRules.actors(m2)
+	check.call(h2.size() == 1 and h2[0] != h1 and h2[0].is_alive and h2[0].current_hp == h2[0].max_hp, "040 RY4 a later encounter's same-id creature death raises a fresh successor, not the earlier destroyed one (hp=%s)" % str(h2.map(func(x): return x.current_hp)))
+	# RY5: a reloaded Character host rebuilds its successor from the saved record.
+	var d := Batch031Checks._character("b040_ry5", 20)
+	reap(src, d)
+	var hs: Character = AftermathSuccessorRules.actors(d)[0]
+	hs.current_hp = 9
+	var dto := d.to_dict()
+	hs.take_damage(999)
+	var nd := Character.new()
+	nd.from_dict(dto)
+	var back: Array = AftermathSuccessorRules.actors(nd)
+	check.call(back.size() == 1 and back[0] != hs and back[0].current_hp == 9 and back[0].is_alive, "040 RY5 reload rebuilds the successor at its saved HP, not the post-save cache")
+	# RY6: created-actor R1 still holds after the restack (039 RX1 mirror).
+	var o := Batch039Checks.caster("b040_ry6")
+	Batch039Checks.conjure(o, 2)
+	var w: Character = CreatedActorRules.actors(o)[0]
+	w.take_damage(5)
+	var odto := o.to_dict()
+	w.take_damage(7)
+	var no := Character.new()
+	no.from_dict(odto)
+	check.call(CreatedActorRules.actors(no)[0].current_hp == w.max_hp - 5, "040 RY6 039 R1 owner-instance rebuild survives the shared instance() refactor")
+	# RY7: revert through SpellEffects.remove (not concentration) restores the exact actor once.
+	var e := caster("b040_ry7")
+	var feats := e.features.size()
+	var scores := e.ability_scores.to_dict()
+	shift(e, 2, "b040_hound")
+	var src_id := str(ActorProjectionRules.active(e).source)
+	SpellEffects.remove(e, src_id)
+	SpellEffects.remove(e, src_id)
+	check.call(not ActorProjectionRules.is_projected(e) and e.features.size() == feats and e.ability_scores.to_dict() == scores and e.temp_hp == 0, "040 RY7 removal reverts once; a repeated removal changes nothing")
+	# RY8: a refused cast leaves no orphan source record.
+	check.call(not a.spell_effects.values().any(func(rec): return rec is Dictionary and str(rec.get("spell_id", "")) == SHIFT), "040 RY8 a refused projection leaves no source record")
