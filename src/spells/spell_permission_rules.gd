@@ -279,9 +279,8 @@ static func spend_reaction(character: Character, spell_id: String, decisions: Di
 		"points":
 			if not spend_points(character, permission, int(selection.get("level", 0))): return {}
 		"item_charges":
-			var copy := character.inventory.get_instance(str(permission.source_id))
-			copy.state.charges = int(copy.state.charges) - int(permission.charge_cost)
-			character.inventory.copies.records[permission.source_id] = copy
+			# Review R1: the exact-copy spend boundary settles S-060 last-charge aftermath.
+			if not character.inventory.spend_instance_charges(str(permission.source_id), int(permission.charge_cost)): return {}
 		_: return {}
 	result["payment"] = CastInterruptionRules.payment_receipt(character, selection, result if str(selection.get("_spell_payment_kind", "")) == "slot" else {}, permission)
 	result["reaction_spent"] = true
