@@ -1,0 +1,8 @@
+[
+  {
+    "id": "fixture:b041_charm",
+    "name": "041 warding charm",
+    "type": "ring",
+    "source_benefits": [{"stat": "AC", "amount": 2}]
+  }
+]

@@ -21,6 +21,7 @@ static func query(actor: Character) -> Array[Dictionary]:
 	if actor == null or actor.character_id.is_empty(): return result
 	actor.inventory.copies.sync(actor.inventory)
 	for copy_id in actor.inventory.copies.equipped.values():
+		if ActorProjectionRules.merged(actor, str(copy_id)): continue # S-164 merged copies are suppressed.
 		var copy: Dictionary = actor.inventory.copies.records.get(copy_id, {})
 		var item := DataLoader.get_item(str(copy.get("definition_id", "")))
 		if item.has("source_benefits") and (not bool(item.get("requires_attunement", false)) or copy.get("state", {}).get("attuned_to", "") == actor.character_id):

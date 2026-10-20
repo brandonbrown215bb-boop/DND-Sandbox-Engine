@@ -1,0 +1,30 @@
+[
+  {
+    "id": "fixture:b041_guise",
+    "name": "041 guise",
+    "description": "Self projection that keeps HP, type, mind, features and casting; the caster chooses how worn equipment is handled.",
+    "execution": "shared",
+    "level": 2,
+    "casting_time": "action",
+    "range": 0,
+    "target": "self",
+    "concentration": true,
+    "duration_seconds": 600,
+    "classes": ["wizard"],
+    "effects": [
+      {
+        "type": "actor_projection",
+        "retain": ["hp", "creature_type", "mental_scores", "features", "spellcasting"],
+        "equipment": ["merged", "worn", "dropped"],
+        "forms": [
+          {
+            "id": "b041_ox", "name": "Ox", "creature_type": "beast", "size": "large", "speed": 8,
+            "ability_scores": {"STR": 18, "DEX": 10, "CON": 16, "INT": 2, "WIS": 10, "CHA": 4},
+            "ac": {"base": 12}, "temp_hp": {"base": 12},
+            "attack": {"name": "Gore", "damage": "1d8", "damage_type": "piercing", "range": 1, "bonus": 6}
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -303,6 +303,8 @@ var zero_hp_history: Dictionary = {}
 var zero_hp_attempt_serial: int = 0
 ## S-130 source-owned maximum-HP entries keyed by exact source instance.
 var max_hp_sources: Dictionary = {}
+## S-161 exclusive bonds: bond_id -> {serial, targets:[{target_id, serial}]}.
+var exclusive_bonds: Dictionary = {}
 ## S-103 rest/activation mode selections, keyed by owning feature id.
 var feature_modes: Dictionary = {}
 ## S-085 chosen exclusive upgrade alternatives, keyed "rule|group".
@@ -2527,6 +2529,7 @@ func to_dict() -> Dictionary:
 	SpellEffects.prune(self)
 	CreatedActorRules.sync(self)
 	AftermathSuccessorRules.sync(self)
+	BondRules.prune(self)
 	TemporaryHPRules.prune(self, int(GameManager.campaign_elapsed_seconds))
 	ProtectionRules.prune(self,int(GameManager.campaign_elapsed_seconds))
 	_prune_recent_damage_history(int(GameManager.campaign_elapsed_seconds))
@@ -2542,6 +2545,7 @@ func to_dict() -> Dictionary:
 		"zero_hp_history": zero_hp_history.duplicate(true),
 		"zero_hp_attempt_serial": zero_hp_attempt_serial,
 		"max_hp_sources": max_hp_sources.duplicate(true),
+		"exclusive_bonds": exclusive_bonds.duplicate(true),
 		"feature_modes": feature_modes.duplicate(true),
 		"rule_alternatives": rule_alternatives.duplicate(true),
 		"barbarian_relentless_rage_enabled": barbarian_relentless_rage_enabled,
@@ -2873,6 +2877,7 @@ func from_dict(data: Dictionary) -> void:
 	zero_hp_history = data.get("zero_hp_history", {}).duplicate(true)
 	zero_hp_attempt_serial = int(data.get("zero_hp_attempt_serial", 0))
 	MaxHpSourceRules.restore(self, data)
+	BondRules.restore(self, data)
 	RuleUpgradeRules.restore(self, data)
 	FeatureModeRules.restore(self, data)
 	barbarian_relentless_rage_enabled = bool(data.get("barbarian_relentless_rage_enabled", true))

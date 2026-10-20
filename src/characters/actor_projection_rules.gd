@@ -13,8 +13,10 @@ const FORM_KEYS := ["id", "name", "creature_type", "size", "speed", "ability_sco
 const ATTACK_KEYS := ["name", "damage", "damage_type", "range", "bonus"]
 ## "hp" is mandatory: a projection never replaces the actor's own Hit Points.
 const RETAIN := ["hp", "creature_type", "mental_scores", "features", "spellcasting"]
-const EFFECT_KEYS := ["type", "forms", "retain"]
-const RECORD_KEYS := ["form_id", "level", "original", "granted_temp_hp", "suppressed_features"]
+const EFFECT_KEYS := ["type", "forms", "retain", "equipment"]
+## S-164 legal equipment policies a projection may declare.
+const EQUIPMENT := ["merged", "worn", "dropped"]
+const RECORD_KEYS := ["form_id", "level", "original", "granted_temp_hp", "suppressed_features", "equipment"]
 const MENTAL := ["INT", "WIS", "CHA"]
 
 static func form_error(f: Variant) -> String:
@@ -36,7 +38,10 @@ static func form_error(f: Variant) -> String:
 
 static func effect_error(effect: Dictionary) -> String:
 	for key in effect:
-		if str(key) not in EFFECT_KEYS: return "Actor projection effects accept only type, forms and retain."
+		if str(key) not in EFFECT_KEYS: return "Actor projection effects accept only type, forms, retain and equipment."
+	if effect.has("equipment"):
+		var eq: Variant = effect.equipment
+		if not eq is Array or eq.is_empty() or eq.any(func(v): return not v is String or v not in EQUIPMENT) or eq.size() != _unique(eq).size(): return "actor projection equipment must list legal policies from %s" % str(EQUIPMENT)
 	var forms: Variant = effect.get("forms")
 	if not forms is Array or forms.is_empty() or forms.size() > 6: return "actor projection requires one to six forms"
 	var ids: Array = []
@@ -89,16 +94,26 @@ static func cast_error(caster, spell: Dictionary) -> String:
 	if effect.is_empty() or not caster is Character: return ""
 	if is_projected(caster) or DruidRules.is_shaped(caster): return "You are already in another form."
 	if effect.get("forms", []).size() != 1 and _form(effect, str(spell.get("_projection_form_id", ""))).is_empty(): return "A declared form must be selected."
+	# Review 041 R1: equipment-policy refusals also come before cost.
+	var legal: Array = effect.get("equipment", [])
+	var policy := str(spell.get("_projection_equipment", ""))
+	if legal.is_empty() and not policy.is_empty(): return "This projection declares no equipment policy."
+	if legal.size() > 1 and policy not in legal: return "A legal equipment policy must be selected."
+	if legal.size() == 1 and not policy.is_empty() and policy not in legal: return "A legal equipment policy must be selected."
 	return ""
 
 ## Called by the shared actor_projection effect on the self-cast actor.
-static func apply(actor: Character, cast: Dictionary, effect: Dictionary, slot_level: int, spell: Dictionary, form_id: String) -> Dictionary:
+static func apply(actor: Character, cast: Dictionary, effect: Dictionary, slot_level: int, spell: Dictionary, form_id: String, equipment_policy: String = "") -> Dictionary:
 	var source := str(cast.get("source_id", ""))
 	if actor == null or source.is_empty() or actor.spell_effects.has(source) or not effect_error(effect).is_empty(): return {"projected": false, "reason": "invalid projection"}
 	if is_projected(actor) or DruidRules.is_shaped(actor): return {"projected": false, "reason": "already in another form"}
 	if form_id.is_empty() and effect.forms.size() == 1: form_id = str(effect.forms[0].id)
 	var form := _form(effect, form_id)
 	if form.is_empty(): return {"projected": false, "reason": "a declared form must be selected"}
+	var legal: Array = effect.get("equipment", [])
+	if equipment_policy.is_empty() and legal.size() == 1: equipment_policy = str(legal[0])
+	if not legal.is_empty() and equipment_policy not in legal: return {"projected": false, "reason": "a legal equipment policy must be selected"}
+	if legal.is_empty() and not equipment_policy.is_empty(): return {"projected": false, "reason": "this projection declares no equipment policy"}
 	if spell.is_empty(): spell = DataLoader.get_spell(str(cast.get("spell_id", "")))
 	var level := maxi(0, slot_level - int(spell.get("level", 0)))
 	var granted := CreatedActorRules.value(form.temp_hp, level)
@@ -114,8 +129,38 @@ static func apply(actor: Character, cast: Dictionary, effect: Dictionary, slot_l
 	if "features" not in effect.retain:
 		record.projection.suppressed_features = actor.features.duplicate(true)
 		actor.features.clear()
+	var equipment_receipt := {}
+	if not legal.is_empty():
+		record.projection["equipment"] = _route_equipment(actor, equipment_policy)
+		equipment_receipt = record.projection.equipment.duplicate(true)
 	actor.spell_effects[source] = record
-	return {"projected": true, "source_id": source, "form_id": form_id, "level": level, "temp_hp": granted, "ac": ac(actor), "suppressed_features": record.projection.suppressed_features.size()}
+	return {"equipment": equipment_receipt, "projected": true, "source_id": source, "form_id": form_id, "level": level, "temp_hp": granted, "ac": ac(actor), "suppressed_features": record.projection.suppressed_features.size()}
+
+## S-164: merged copies keep their slot with effects suppressed; dropped
+## copies leave their slots (cursed copies cannot) and stay unequipped; worn
+## copies keep working.
+static func _route_equipment(actor: Character, policy: String) -> Dictionary:
+	var out := {"policy": policy, "merged": [], "dropped": []}
+	actor.inventory.copies.sync(actor.inventory)
+	for slot in actor.inventory.copies.equipped.keys():
+		var id := str(actor.inventory.copies.equipped[slot])
+		if policy == "merged": out.merged.append(id)
+		elif policy == "dropped" and not actor.inventory.unequip(slot).is_empty(): out.dropped.append(id)
+	actor.inventory.copies.sync(actor.inventory)
+	return out
+
+static func equipment_policy(actor) -> String:
+	var a := active(actor)
+	return "" if a.is_empty() else str(a.record.projection.get("equipment", {}).get("policy", ""))
+
+## True when this exact equipped copy is merged into the active form.
+static func merged(actor, instance_id: String) -> bool:
+	var a := active(actor)
+	return not a.is_empty() and instance_id in a.record.projection.get("equipment", {}).get("merged", [])
+
+## A merged or dropped form cannot don equipment.
+static func equip_error(actor) -> String:
+	return "" if equipment_policy(actor) in ["", "worn"] else "This form cannot don equipment."
 
 ## Revert from the ending record. Hit Points and resources stay as they are.
 static func revert(actor, record: Dictionary) -> Dictionary:
@@ -133,7 +178,15 @@ static func revert(actor, record: Dictionary) -> Dictionary:
 		if f is Dictionary and str(f.get("id", "")) not in present:
 			actor.features.append(f.duplicate(true))
 			restored += 1
-	return {"reverted": true, "form_id": str(p.form_id), "restored_features": restored, "current_hp": actor.current_hp}
+	var receipt := {"reverted": true, "form_id": str(p.form_id), "restored_features": restored, "current_hp": actor.current_hp}
+	var eq: Dictionary = p.get("equipment", {})
+	if not eq.is_empty():
+		var owned: Array = actor.inventory.owned_instances().map(func(c): return str(c.instance_id))
+		receipt["equipment_policy"] = str(eq.policy)
+		receipt["merged_restored"] = eq.merged.filter(func(id): return id in owned)
+		receipt["merged_lost"] = eq.merged.filter(func(id): return id not in owned)
+		receipt["dropped"] = eq.dropped.duplicate()
+	return receipt
 
 ## Reapply live suppression after a reload rebuilt class features.
 static func restore(actor: Character) -> void:
@@ -144,7 +197,7 @@ static func restore(actor: Character) -> void:
 static func ac(actor) -> int:
 	var a := active(actor)
 	if a.is_empty(): return -1
-	var value: int = CreatedActorRules.value(a.form.ac, int(a.record.projection.level)) + actor.get_modifier("stat", "AC")
+	var value: int = CreatedActorRules.value(a.form.ac, int(a.record.projection.level)) + actor.get_modifier("stat", "AC") + actor.inventory.magic_item_saving_bonus(actor.character_id)
 	if actor.has_condition("shield"): value += 5
 	return value
 
@@ -186,6 +239,15 @@ static func saved_record_error(dto: Dictionary, record: Dictionary) -> String:
 		if int(scores.get(ability, -1)) != expected: return "saved actor scores contradict its projection"
 	var suppressed: Variant = p.get("suppressed_features")
 	if not suppressed is Array or suppressed.size() > 64 or suppressed.any(func(f): return not f is Dictionary or str(f.get("id", "")).is_empty()) or ("features" in effect.retain and not suppressed.is_empty()): return "invalid saved projection features"
+	var eq: Variant = p.get("equipment", null)
+	var legal: Array = effect.get("equipment", [])
+	if legal.is_empty() != (eq == null): return "saved projection equipment contradicts its effect"
+	if eq != null:
+		if not eq is Dictionary or eq.size() != 3 or str(eq.get("policy", "")) not in legal or not eq.get("merged") is Array or not eq.get("dropped") is Array: return "invalid saved projection equipment"
+		if eq.merged.any(func(v): return not v is String) or eq.dropped.any(func(v): return not v is String) or eq.merged.size() > 16 or eq.dropped.size() > 16: return "invalid saved projection equipment"
+		if (eq.policy != "merged" and not eq.merged.is_empty()) or (eq.policy != "dropped" and not eq.dropped.is_empty()): return "saved projection equipment contradicts its policy"
+		var slots: Array = dto.get("inventory", {}).get("copies", {}).get("equipped", {}).values()
+		if eq.dropped.any(func(id): return id in slots): return "saved dropped equipment is still worn"
 	return ""
 
 ## Projection grants Temporary HP, not a second HP pool; the DTO must hold one projection.

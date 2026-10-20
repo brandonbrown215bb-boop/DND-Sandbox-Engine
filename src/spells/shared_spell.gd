@@ -103,7 +103,7 @@ static func _validate_single_effect(effect: Variant) -> String:
 		var template_error := CreatedActorRules.template_error(effect.get("template"))
 		if not template_error.is_empty(): return template_error
 	elif kind == "actor_projection":
-		allowed.append_array(["forms", "retain"])
+		allowed.append_array(["forms", "retain", "equipment"])
 		var projection_error := ActorProjectionRules.effect_error(effect)
 		if not projection_error.is_empty(): return projection_error
 	elif kind == "grant_damage_link":
@@ -691,7 +691,7 @@ static func apply_custom_effects(caster: Character, target, effects: Array, resu
 						messages.append("%s creates %d %s." % [target_name, int(made.count), str(effect.template.name)])
 			"actor_projection":
 				if target is Character and target == caster:
-					var projected := ActorProjectionRules.apply(target, result.get("effect_cast", {}), effect, slot_level, spell, str(spell.get("_projection_form_id", "")))
+					var projected := ActorProjectionRules.apply(target, result.get("effect_cast", {}), effect, slot_level, spell, str(spell.get("_projection_form_id", "")), str(spell.get("_projection_equipment", "")))
 					result["projection"] = projected
 					if projected.get("projected", false): messages.append("%s takes the %s form." % [target_name, str(projected.form_id)])
 					else: messages.append("%s cannot take that form: %s." % [target_name, str(projected.get("reason", ""))])
