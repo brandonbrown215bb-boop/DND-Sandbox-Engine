@@ -170,7 +170,7 @@ static func _equipment(check: Callable) -> void:
 	var a := wearer("b041_unchosen")
 	var normal_ac := a.get_ac()
 	var r := guise(a)
-	check.call(not r.get("projection", {}).get("projected", true) and not ActorProjectionRules.is_projected(a) and a.get_ac() == normal_ac and SourceBenefitRules.total(a, "AC") == 2, "041 S-164 several legal policies require a choice; refusal changes nothing")
+	check.call(not r.get("success", true) and int(a.spell_slots.get("2", 0)) == 1 and not ActorProjectionRules.is_projected(a) and a.get_ac() == normal_ac and SourceBenefitRules.total(a, "AC") == 2, "041 S-164 several legal policies require a choice; refusal changes nothing")
 	var w := wearer("b041_worn")
 	guise(w, "worn")
 	check.call(w.get_ac() == 12 + 2 + 1 and SourceBenefitRules.total(w, "AC") == 2, "041 S-164 worn equipment keeps its copy effects in the form (ac=%d)" % w.get_ac())
