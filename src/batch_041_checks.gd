@@ -44,7 +44,7 @@ static func guise(actor: Character, policy: String = "") -> Dictionary:
 	var spell := DataLoader.get_spell(GUISE).duplicate(true)
 	if not policy.is_empty(): spell["_projection_equipment"] = policy
 	var r := SpellResolver.resolve(actor, actor, spell, true, {}, [], 2)
-	if r.get("projection", {}).get("projected", false): actor.concentrating_on = {"spell_id": GUISE, "effect_source": str(r.effect_cast.source_id), "targets": [actor]}
+	if r.get("projection", {}).get("projected", false): actor.concentrating_on = {"spell_id": GUISE, "effect_source": str(r.effect_cast.source_id), "targets": []}
 	return r
 
 static func wearer(id: String) -> Character:

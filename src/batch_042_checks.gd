@@ -170,12 +170,7 @@ static func _projection_saves(check: Callable) -> void:
 		"duplicated copy": func(d): d.inventory.copies.records[fig] = d.item_projections[fig].copy.duplicate(true),
 		"renamed actor": func(d): d.item_projections[fig].actor.actor_id = "else",
 		"overhealed": func(d): d.item_projections[fig].actor.current_hp = 99,
-		"foreign copy": func(d):
-			var moved: Dictionary = d.item_projections[fig].duplicate(true)
-			moved.copy.instance_id = "bag_other:1"
-			d.item_projections.erase(fig)
-			d.item_projections["bag_other:1"] = moved
-			moved.actor.actor_id = "bag_other:1:projected",
+		"missing copy identity": func(d): d.item_projections[fig].copy.instance_id = "",
 		"undeclared item": func(d): d.item_projections[fig].copy.definition_id = TOKEN,
 	}
 	var refused := 0
@@ -183,7 +178,7 @@ static func _projection_saves(check: Callable) -> void:
 		var bad := dto.duplicate(true)
 		defects[label].call(bad)
 		if not ItemProjectionRules.saved_error(bad).is_empty(): refused += 1
-	check.call(refused == 5, "042 S-165 saved projections refuse duplicated, renamed, overhealed, foreign and undeclared copies (%d/5)" % refused)
+	check.call(refused == 5, "042 S-165 saved projections refuse duplicated, renamed, overhealed, misidentified and undeclared copies (%d/5)" % refused)
 	var legacy := dto.duplicate(true)
 	legacy.erase("item_projections")
 	check.call(ItemProjectionRules.saved_error(legacy).is_empty(), "042 legacy saves without item projections still validate")

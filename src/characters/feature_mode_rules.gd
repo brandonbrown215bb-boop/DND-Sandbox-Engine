@@ -209,23 +209,30 @@ static func carriers(actor: Character) -> Array[Dictionary]:
 		out.append({"source_instance_id": identity, "definition_id": str(mode.id), "benefits": mode.benefits})
 	return out
 
-static func _declared(data: Dictionary, feature_id: String) -> Dictionary:
+## Match the class/subclass membership rebuilt by Character.from_dict. Other
+## feature carriers still need an acquisition/reconstruction host before use.
+static func declared_features(data: Dictionary) -> Array:
 	var class_data := DataLoader.get_character_class(str(data.get("class_id", "")))
-	for lvl in class_data.get("features_by_level", {}):
-		if int(lvl) > int(data.get("level", 1)): continue
-		for feature in class_data.features_by_level[lvl]:
-			if feature.get("id", "") == feature_id and feature.get("type", "") == "mode_choice": return feature
+	var allocation: Dictionary = data.get("class_levels", {})
+	var level := int(allocation.get(str(data.get("class_id", "")), 0)) if not allocation.is_empty() else int(data.get("level", 1))
+	var subclass_id := str(data.get("subclass_id", class_data.get("legacy_subclass", "") if int(data.get("level", 1)) >= int(class_data.get("subclass_level", 3)) else ""))
+	var out: Array = []
+	for definition in [class_data, DataLoader.get_subclass(subclass_id)]:
+		for lvl in definition.get("features_by_level", {}):
+			if int(lvl) <= level: out.append_array(definition.features_by_level[lvl])
+	return out
+
+static func _declared(data: Dictionary, feature_id: String) -> Dictionary:
+	for feature in declared_features(data):
+		if feature.get("id", "") == feature_id and feature.get("type", "") == "mode_choice": return feature
 	return {}
 
 ## Catalog modes plus modes any owned-level upgrade can add (S-085).
 static func _declared_modes(data: Dictionary, feature_id: String, f: Dictionary) -> Array:
 	var ids: Array = f.get("modes", []).map(func(m): return m.id)
-	var class_data := DataLoader.get_character_class(str(data.get("class_id", "")))
-	for lvl in class_data.get("features_by_level", {}):
-		if int(lvl) > int(data.get("level", 1)): continue
-		for feature in class_data.features_by_level[lvl]:
-			if feature.get("type", "") == "rule_upgrade" and feature.get("rule", "") == feature_id:
-				for m in feature.get("changes", {}).get("modes", {}).get("add", []): ids.append(m.id)
+	for feature in declared_features(data):
+		if feature.get("type", "") == "rule_upgrade" and feature.get("rule", "") == feature_id:
+			for m in feature.get("changes", {}).get("modes", {}).get("add", []): ids.append(m.id)
 	return ids
 
 static func saved_error(data: Dictionary) -> String:

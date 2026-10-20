@@ -137,6 +137,8 @@ static func record_state_error(record: Dictionary) -> String:
 	if not magic_error.is_empty(): return magic_error
 	var active_error := ActiveTimeRules.record_error(record) # S-064.
 	if not active_error.is_empty(): return active_error
+	var work_error := WorkRules.record_error(record) # S-066.
+	if not work_error.is_empty(): return work_error
 	if state.has("food_remaining_daily_fraction"):
 		var remaining_food: Variant = state["food_remaining_daily_fraction"]
 		if str(record["definition_id"]) != "rations" or (not remaining_food is int and not remaining_food is float) or not is_finite(float(remaining_food)) or float(remaining_food) <= 0.0 or float(remaining_food) >= 1.0:
@@ -161,8 +163,19 @@ static func record_state_error(record: Dictionary) -> String:
 static func ownership_error(save: Dictionary) -> String:
 	var seen: Dictionary = {}
 	var party_characters: Dictionary = save.get("party", {}).get("characters", {}) if save.get("party") is Dictionary else {}
+	var work_characters: Array = party_characters.values()
+	var work_owners: Array = party_characters.keys()
+	for player in save.get("players", []):
+		var character: Variant = player.get("character")
+		if not character is Dictionary: continue
+		var owner := str(character.get("character_id", ""))
+		if owner not in work_owners:
+			work_characters.append(character)
+			work_owners.append(owner)
+	var work_error := WorkRules.party_error(work_characters)
+	if not work_error.is_empty(): return work_error
 	for character in party_characters.values():
-		for id in character.get("inventory", {}).get("copies", {}).get("records", {}).keys() + ContainerRules.content_ids(character.get("inventory", {})) + AttachmentRules.attached_ids(character.get("inventory", {})):
+		for id in character.get("inventory", {}).get("copies", {}).get("records", {}).keys() + ContainerRules.content_ids(character.get("inventory", {})) + AttachmentRules.attached_ids(character.get("inventory", {})) + ItemProjectionRules.copy_ids(character):
 			if seen.has(id): return "item copy has multiple character owners"
 			seen[id] = true
 	for player in save.get("players", []):
@@ -171,8 +184,9 @@ static func ownership_error(save: Dictionary) -> String:
 		var owner := str(character.get("character_id", ""))
 		if party_characters.has(owner):
 			if character.get("inventory", {}) != party_characters[owner].get("inventory", {}): return "player inventory differs from its party character"
+			if character.get("item_projections", {}) != party_characters[owner].get("item_projections", {}): return "player item projections differ from its party character"
 			continue
-		for id in character.get("inventory", {}).get("copies", {}).get("records", {}).keys() + ContainerRules.content_ids(character.get("inventory", {})) + AttachmentRules.attached_ids(character.get("inventory", {})):
+		for id in character.get("inventory", {}).get("copies", {}).get("records", {}).keys() + ContainerRules.content_ids(character.get("inventory", {})) + AttachmentRules.attached_ids(character.get("inventory", {})) + ItemProjectionRules.copy_ids(character):
 			if seen.has(id): return "item copy has multiple character owners"
 			seen[id] = true
 	var dungeons: Dictionary = save.get("campaign_ledger", {}).get("dungeon_snapshots", {}).duplicate(true)

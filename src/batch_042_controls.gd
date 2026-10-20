@@ -6,7 +6,9 @@ static func run(h: Node) -> void:
 	h._setup_world()
 	Batch042Checks.load_fixtures()
 	var a: Character = PlayerManager.get_player(0).get("character")
-	var fig := Batch042Checks.add(a, Batch042Checks.FIGURINE)
+	var giver: Character = PlayerManager.get_player(1).get("character")
+	var fig := Batch042Checks.add(giver, Batch042Checks.FIGURINE)
+	h._assert(giver.inventory.transfer_instance(fig, a.inventory), "042 transferred figurine keeps its original copy ID before projection and real save/load")
 	GameManager.transition_context = {"terrain": "plains", "monster_ids": ["goblin"]}
 	GameManager.current_state = GameManager.GameState.COMBAT
 	GameManager.test_mode = false

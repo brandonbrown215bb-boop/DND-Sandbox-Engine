@@ -34,6 +34,7 @@ static func project(owner: Character, instance_id: String) -> Dictionary:
 	# Review 041 R1/R4: a form that blocks equipment refuses before any copy moves.
 	if not ActorProjectionRules.equip_error(owner).is_empty(): return {"projected": false, "reason": ActorProjectionRules.equip_error(owner)}
 	var copy := owner.inventory.get_instance(instance_id)
+	if ActiveTimeRules.is_active(copy) or WorkRules.is_active(copy): return {"projected": false, "reason": "Pause active use and stop work before projecting that copy."}
 	if copy.is_empty() or instance_id not in owner.inventory.backpack_instances().map(func(c): return str(c.instance_id)): return {"projected": false, "reason": "Carry that exact copy, unequipped, to project it."}
 	var policy := _policy(str(copy.definition_id))
 	if policy.is_empty(): return {"projected": false, "reason": "That copy declares no projection."}
@@ -90,17 +91,43 @@ static func saved_error(dto: Dictionary) -> String:
 	if not all is Dictionary: return "item projections are invalid"
 	var copies: Dictionary = dto.get("inventory", {}).get("copies", {})
 	var held: Dictionary = copies.get("records", {})
+	# Validate the same exact records while projected as while carried. The
+	# temporary inventory view also checks serials, nested state and attunements.
+	var inventory: Dictionary = dto.get("inventory", {}).duplicate(true)
+	if not all.is_empty() and (not copies.get("records") is Dictionary or not copies.get("backpack") is Array or not inventory.get("backpack") is Array): return "projected copy inventory is malformed"
 	for id in all:
 		var record: Variant = all[id]
 		if not record is Dictionary or record.size() != 2 or not record.get("copy") is Dictionary or not record.get("actor") is Dictionary: return "item projection record is invalid"
 		var copy: Dictionary = record.copy
 		if str(copy.get("instance_id", "")) != str(id) or held.has(str(id)): return "projected copy is duplicated or misidentified"
-		if not copy.get("state") is Dictionary or not str(id).begins_with(str(copies.get("inventory_id", "")) + ":"): return "projected copy does not belong to this inventory"
+		if not id is String or str(id).is_empty() or not copy.get("state") is Dictionary: return "projected copy is malformed"
 		var policy := _policy(str(copy.get("definition_id", "")))
 		if policy.is_empty(): return "projected copy declares no projection"
+		if ActiveTimeRules.is_active(copy) or WorkRules.is_active(copy): return "projected copy must be paused and not worked on"
 		var a: Dictionary = record.actor
 		if a.size() != 2 or str(a.get("actor_id", "")) != actor_id(str(id)) or not CreatedActorRules._int(a.get("current_hp"), 0, CreatedActorRules.value(policy.template.max_hp, 0)): return "projected actor is invalid"
+		inventory.copies.records[id] = copy.duplicate(true)
+		inventory.copies.backpack.append(id)
+		inventory.backpack.append(str(copy.definition_id))
+	if all.is_empty(): return ""
+	var error := InventoryCopies.saved_error(inventory)
+	if not error.is_empty(): return "projected copy: " + error
+	var combined := {"inventory": inventory}
+	error = ContainerRules.saved_error(combined)
+	if not error.is_empty(): return "projected copy: " + error
+	error = AttachmentRules.saved_error(combined)
+	if not error.is_empty(): return "projected copy: " + error
 	return ""
+
+static func copy_ids(dto: Dictionary) -> Array:
+	var ids: Array = []
+	for record in dto.get("item_projections", {}).values():
+		var copy: Dictionary = record.get("copy", {})
+		ids.append(str(copy.get("instance_id", "")))
+		var inventory := {"copies": {"records": {str(copy.get("instance_id", "")): copy}}}
+		ids.append_array(ContainerRules.content_ids(inventory))
+		ids.append_array(AttachmentRules.attached_ids(inventory))
+	return ids
 
 ## Combat host: living projected actors join their owner's side.
 static func attach(state: Node, owner: Character, origin: Vector2i) -> Array:

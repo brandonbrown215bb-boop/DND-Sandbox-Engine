@@ -81,14 +81,12 @@ static func choose_alternative(actor: Character, rule_id: String, group: String,
 static func saved_error(data: Dictionary) -> String:
 	var choices: Variant = data.get("rule_alternatives", {})
 	if not choices is Dictionary or choices.size() > 16: return "rule alternatives are invalid"
-	var class_data := DataLoader.get_character_class(str(data.get("class_id", "")))
+	var features := FeatureModeRules.declared_features(data)
 	for key in choices:
 		var parts := str(key).split("|")
 		var found := false
-		for lvl in class_data.get("features_by_level", {}):
-			if int(lvl) > int(data.get("level", 1)): continue
-			for feature in class_data.features_by_level[lvl]:
-				if parts.size() == 2 and feature.get("type", "") == "rule_upgrade" and feature.get("rule", "") == parts[0] and feature.get("exclusive_group", "") == parts[1] and feature.get("id", "") == choices[key]: found = true
+		for feature in features:
+			if parts.size() == 2 and feature.get("type", "") == "rule_upgrade" and feature.get("rule", "") == parts[0] and feature.get("exclusive_group", "") == parts[1] and feature.get("id", "") == choices[key]: found = true
 		if not found: return "rule alternative is not an owned option"
 	return ""
 

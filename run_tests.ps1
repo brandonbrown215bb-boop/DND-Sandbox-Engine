@@ -9,6 +9,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+$Scenario = @($Scenario | ForEach-Object { $_ -split ',' } | Where-Object { $_ })
 $Project = Split-Path -Parent $MyInvocation.MyCommand.Path
 if ($Suite -eq "integration" -and ($LogicGroup.Count -ne 1 -or $LogicGroup[0] -ne "all")) {
     throw "-LogicGroup requires -Suite logic or all."
@@ -197,6 +198,7 @@ if ($runIntegration) {
 	$scenarios += "batch_043_container_curse_flow"
 	$scenarios += "batch_044_parts_magic_flow"
 	$scenarios += "batch_045_active_tether_flow"
+	$scenarios += "batch_046_work_rescue_flow"
 	$scenarios += "wave_three_foundations_flow", "owned_creature_lifecycle_flow", "batch_024_recovery_flow", "batch_024_spell_result_flow",
     "find_familiar_exploration_flow", "party_recovery_flow", "downed_area_damage_flow", "created_undead_flow"
     if ($Scenario.Count -gt 0) {

@@ -30,7 +30,7 @@ static func shift(actor: Character, slot: int, form_id: String = "", spell_id: S
 	if not form_id.is_empty(): spell["_projection_form_id"] = form_id
 	var r := SpellResolver.resolve(actor, actor, spell, true, {}, [], slot)
 	var source := str(r.get("effect_cast", {}).get("source_id", ""))
-	if r.get("projection", {}).get("projected", false): actor.concentrating_on = {"spell_id": spell_id, "effect_source": source, "targets": [actor]}
+	if r.get("projection", {}).get("projected", false): actor.concentrating_on = {"spell_id": spell_id, "effect_source": source, "targets": []}
 	return r
 
 static func run(check: Callable) -> void:

@@ -65,6 +65,7 @@ func settle(request: Dictionary, replace: bool, live_recipients: Array) -> Dicti
 	p.budget.spend(str(p.feature.action_cost))
 	actor.temporary_hp_supply_serial += 1
 	var spec: Dictionary = p.feature.temporary_hp_grant
+	recipient.clear_temporary_hp_ownership()
 	recipient.temp_hp = int(spec.amount)
 	# Even equal-value replacement changes ownership; retaining does not.
 	recipient.timed_temporary_hp_current_grant_id = ""

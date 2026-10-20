@@ -438,8 +438,10 @@ static func end_concentration(caster: Character, targets: Array) -> bool:
 	var source := str(caster.concentrating_on.get("effect_source", ""))
 	if source.is_empty():
 		return false
+	# The caster's own source never needs a strong self-reference in targets.
+	remove(caster, source, "concentration_ended", {"caster_id": caster_id(caster)})
 	for target in targets:
-		remove(target, source, "concentration_ended", {"caster_id": caster_id(caster)})
+		if not target is Character or target != caster: remove(target, source, "concentration_ended", {"caster_id": caster_id(caster)})
 	caster.concentrating_on.clear()
 	return true
 
@@ -489,9 +491,10 @@ static func reconcile(casters: Array, targets: Array) -> void:
 			continue
 		var held: Array = []
 		for target in targets:
+			if target is Character and target == caster: continue
 			if records(target).has(source):
 				held.append(target)
-		if held.is_empty():
+		if held.is_empty() and not records(caster).has(source):
 			end_concentration(caster, targets)
 		else:
 			caster.concentrating_on["targets"] = held

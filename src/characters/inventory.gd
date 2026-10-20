@@ -719,6 +719,7 @@ func drop_equipped_instance(slot: Slot) -> Dictionary:
 	var record: Dictionary = copies.records.get(instance_id, {}).duplicate(true)
 	if record.is_empty():
 		return {}
+	WorkRules.on_removed(record)
 	copies.equipped.erase(slot)
 	copies.records.erase(instance_id)
 	equipped.erase(slot)
@@ -747,6 +748,7 @@ func take_instance(id: String) -> Dictionary:
 	if bool(copies.records.get(id, {}).get("state", {}).get("cursed_attunement", false)):
 		return {}
 	var record: Dictionary = copies.records[id].duplicate(true)
+	WorkRules.on_removed(record)
 	backpack.remove_at(index)
 	copies.backpack.remove_at(index)
 	copies.records.erase(id)
@@ -759,7 +761,10 @@ func transfer_instance(id: String, destination: Inventory) -> bool:
 	copies.sync(self)
 	if bool(copies.records.get(id, {}).get("state", {}).get("cursed_attunement", false)):
 		return false
-	if id not in copies.backpack or not destination.receive_instance(copies.records[id]): return false
+	if id not in copies.backpack or destination.backpack.size() >= MAX_BACKPACK_SIZE or destination.get_instance(id) != {}: return false
+	var record: Dictionary = copies.records[id].duplicate(true)
+	WorkRules.on_removed(record)
+	if not destination.receive_instance(record): return false
 	take_instance(id)
 	return true
 

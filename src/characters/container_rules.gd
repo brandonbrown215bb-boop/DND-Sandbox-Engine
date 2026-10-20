@@ -74,6 +74,8 @@ static func put_error(inventory: Inventory, container_id: String, child_id: Stri
 	if comps.is_empty(): return "That item is not a container."
 	if not comps.has(compartment): return "That container has no such compartment."
 	if child_id == container_id: return "A container cannot hold itself."
+	if WorkRules.is_active(inventory.get_instance(child_id)): return "Stop working on that copy before stowing it." # S-066.
+	if ActiveTimeRules.is_active(inventory.get_instance(child_id)): return "Pause that copy before stowing it."
 	if child_id not in inventory.backpack_instances().map(func(c): return str(c.instance_id)): return "Only an unequipped carried copy can be stowed."
 	var child := inventory.get_instance(child_id)
 	var state: Dictionary = child.get("state", {})
@@ -187,6 +189,7 @@ static func saved_error(dto: Dictionary) -> String:
 				if bool(child.state.get("cursed_attunement", false)): return "saved contained copy is cursed"
 				var state_error := InventoryCopies.record_state_error(child)
 				if not state_error.is_empty(): return "saved contained copy: " + state_error
+				if ActiveTimeRules.is_active(child) or WorkRules.is_active(child): return "saved contained copy must be paused and not worked on"
 				if child.state.has("attuned_to"): contained_attuned.append(child)
 				var error := _fits(comps[str(key)], placed, str(child.definition_id))
 				if not error.is_empty(): return "saved contents exceed their compartment"

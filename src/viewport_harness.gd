@@ -282,6 +282,7 @@ func _run_scenario(scenario: String) -> void:
 		"batch_043_container_curse_flow": await Batch043Controls.run(self)
 		"batch_044_parts_magic_flow": await Batch044Controls.run(self)
 		"batch_045_active_tether_flow": await Batch045Controls.run(self)
+		"batch_046_work_rescue_flow": await Batch046Controls.run(self)
 		"batch_027_protections_flow": await Batch027Controls.run(self)
 		"batch_021_spell_permissions_flow": await Batch021Controls.run(self)
 		"batch_022_slot_ritual_flow": await Batch022Controls.run(self)
@@ -16594,6 +16595,14 @@ func test_find_familiar_exploration_flow() -> void:
 	_exit_test()
 
 
+func _slot_spell_choice(actor: Character, spell_id: String) -> Dictionary:
+	var level := int(DataLoader.get_spell(spell_id).get("level", 0))
+	for choice in SpellPermissionRules.payment_choices(actor, spell_id):
+		if choice.get("_spell_payment_kind", "") == "slot" and int(choice.get("_selected_spell_slot_level", 0)) == level:
+			return choice
+	return {}
+
+
 func test_party_recovery_flow() -> void:
 	_enter_test("party_recovery_flow")
 	_setup_world()
@@ -16606,7 +16615,7 @@ func test_party_recovery_flow() -> void:
 	var selection: Array[String] = []
 	var cantrips := cleric.get_spell_option_ids(true)
 	for index in mini(cleric.get_spellcasting_capacity("cantrips"), cantrips.size()): selection.append(cantrips[index])
-	var prepared: Array[String] = ["revivify", "gentle_repose"]
+	var prepared: Array[String] = ["revivify", "gentle_repose", "cure_wounds"]
 	for spell_id in cleric.get_spell_option_ids(false):
 		if prepared.size() >= cleric.get_spellcasting_capacity("prepared_spells"): break
 		if spell_id not in prepared: prepared.append(spell_id)
@@ -16731,7 +16740,7 @@ func test_party_recovery_flow() -> void:
 	member.take_damage(member.current_hp)
 	_assert(member.is_downed() and member.corpse_state.is_empty(), "Combat zero-HP party member is unconscious, without inventing a corpse")
 	before_slots = cleric.spell_slots.duplicate()
-	await combat._on_hud_action("cast_spell", {"spell": DataLoader.get_spell("cure_wounds")})
+	await combat._on_hud_action("cast_spell", {"spell": _slot_spell_choice(cleric, "cure_wounds")})
 	await combat._on_hex_clicked(Vector2i(1, 0))
 	_assert(member.is_alive and member.current_hp > 0 and cleric.spell_slots["1"] == int(before_slots["1"]) - 1 and not combat.turn_budget.can_spend("magic_action"), "Normal Cure Wounds command and clicked unconscious ally restore a living member with an ordinary slot/action")
 	combat.turn_budget.reset(cleric, combat.player_entities)
@@ -16740,11 +16749,11 @@ func test_party_recovery_flow() -> void:
 	cleric.inventory.add_item("diamond_300gp")
 	member.revival_willing = false
 	before_slots = cleric.spell_slots.duplicate()
-	await combat._on_hud_action("cast_spell", {"spell": DataLoader.get_spell("revivify")})
+	await combat._on_hud_action("cast_spell", {"spell": _slot_spell_choice(cleric, "revivify")})
 	await combat._on_hex_clicked(Vector2i(1, 0))
 	_assert(member.is_dead() and cleric.spell_slots == before_slots and cleric.inventory.has_item("diamond_300gp") and combat.turn_budget.can_spend("magic_action"), "Combat corpse targeting refuses an unwilling spirit before committing the action, slot or diamond")
 	member.revival_willing = true
-	await combat._on_hud_action("cast_spell", {"spell": DataLoader.get_spell("revivify")})
+	await combat._on_hud_action("cast_spell", {"spell": _slot_spell_choice(cleric, "revivify")})
 	await combat._on_hex_clicked(Vector2i(1, 0))
 	_assert(member.is_alive and member.current_hp == 1 and cleric.spell_slots["3"] == int(before_slots["3"]) - 1 and not cleric.inventory.has_item("diamond_300gp") and not combat.turn_budget.can_spend("magic_action"), "Normal combat spell command selects the corpse beneath a living caster, spends one Magic action/slot/diamond and restores the same party actor")
 	_teardown_scene(combat)
@@ -16809,7 +16818,7 @@ func test_downed_area_damage_flow() -> void:
 	member.death_save_failures = 2
 	combat.turn_budget.reset(wizard, combat.player_entities)
 	var before_slots := wizard.spell_slots.duplicate()
-	await combat._on_hud_action("cast_spell", {"spell": DataLoader.get_spell("fireball")})
+	await combat._on_hud_action("cast_spell", {"spell": _slot_spell_choice(wizard, "fireball")})
 	await combat._on_hex_clicked(Vector2i(6, 0))
 	_assert(member.is_dead() and member.corpse_state.get("cause") == "death_saves" and member.corpse_state.get("death_at_seconds") == GameManager.campaign_elapsed_seconds and wizard.spell_slots["3"] == int(before_slots["3"]) - 1, "A normal Fireball command affects an unconscious ally and records death from the third failure")
 	if not member.is_dead():
@@ -16822,7 +16831,7 @@ func test_downed_area_damage_flow() -> void:
 	member.is_alive = false
 	member.death_save_failures = 2
 	combat.turn_budget.reset(wizard, combat.player_entities)
-	await combat._on_hud_action("cast_spell", {"spell": DataLoader.get_spell("cloud_of_daggers")})
+	await combat._on_hud_action("cast_spell", {"spell": _slot_spell_choice(wizard, "cloud_of_daggers")})
 	await combat._on_hex_clicked(Vector2i(3, 0))
 	var source_id := combat._cloud_of_daggers_zone_source_for_caster(wizard)
 	_assert(not source_id.is_empty(), "Normal Cloud of Daggers command creates the persistent zone")

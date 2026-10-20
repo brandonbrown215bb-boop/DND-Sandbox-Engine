@@ -54,6 +54,8 @@ static func attach_error(inventory: Inventory, host_id: String, child_id: String
 	if attached(inventory, host_id).has(socket_id): return "That socket is already filled."
 	if child_id == host_id or child_id not in inventory.backpack_instances().map(func(c): return str(c.instance_id)): return "Only an unequipped carried copy can be attached."
 	var child := inventory.get_instance(child_id)
+	if ActiveTimeRules.is_active(child): return "Pause that copy before attaching it."
+	if WorkRules.is_active(child): return "Stop working on that copy before attaching it."
 	var state: Dictionary = child.get("state", {})
 	var definition := str(child.definition_id)
 	if bool(state.get("cursed_attunement", false)) or state.has("attuned_to"): return "An attuned copy cannot be attached."
@@ -152,6 +154,7 @@ static func saved_error(dto: Dictionary) -> String:
 			if child.state.has("attached") or child.state.has("contents") or child.state.has("attuned_to") or is_host(cdef) or ContainerRules.is_container(cdef): return "saved attached copy is not a plain part"
 			var part_error := InventoryCopies.record_state_error(child) # Review 044 R3: parts keep validated per-copy state.
 			if not part_error.is_empty(): return "saved attached copy: " + part_error
+			if ActiveTimeRules.is_active(child) or WorkRules.is_active(child): return "saved attached copy must be paused and not worked on"
 			if socket.has("accepts") and cdef not in socket.accepts: return "saved attachment does not fit its socket"
 			if socket.has("item_types") and str(DataLoader.get_item(cdef).get("type", "")) not in socket.item_types: return "saved attachment does not fit its socket"
 	return ""

@@ -16,7 +16,7 @@ const RETAIN := ["hp", "creature_type", "mental_scores", "features", "spellcasti
 const EFFECT_KEYS := ["type", "forms", "retain", "equipment"]
 ## S-164 legal equipment policies a projection may declare.
 const EQUIPMENT := ["merged", "worn", "dropped"]
-const RECORD_KEYS := ["form_id", "level", "original", "granted_temp_hp", "suppressed_features", "equipment"]
+const RECORD_KEYS := ["form_id", "level", "original", "granted_temp_hp", "temporary_hp_owned", "suppressed_features", "equipment"]
 const MENTAL := ["INT", "WIS", "CHA"]
 
 static func form_error(f: Variant) -> String:
@@ -104,7 +104,17 @@ static func cast_error(caster, spell: Dictionary) -> String:
 	if legal.is_empty() and not policy.is_empty(): return "This projection declares no equipment policy."
 	if legal.size() > 1 and policy not in legal: return "A legal equipment policy must be selected."
 	if legal.size() == 1 and not policy.is_empty() and policy not in legal: return "A legal equipment policy must be selected."
+	if policy.is_empty() and legal.size() == 1: policy = str(legal[0])
+	if policy == "dropped": return _drop_error(caster)
 	return ""
+
+static func _drop_error(actor: Character) -> String:
+	var needed := 0
+	for copy in actor.inventory.owned_instances():
+		if str(copy.instance_id) not in actor.inventory.copies.equipped.values(): continue
+		if bool(copy.state.get("cursed_attunement", false)) and not CurseRules.removal_allowed(copy): continue
+		needed += 1
+	return "There is no room to set aside this form's equipment." if actor.inventory.backpack.size() + needed > Inventory.MAX_BACKPACK_SIZE else ""
 
 ## Called by the shared actor_projection effect on the self-cast actor.
 static func apply(actor: Character, cast: Dictionary, effect: Dictionary, slot_level: int, spell: Dictionary, form_id: String, equipment_policy: String = "") -> Dictionary:
@@ -118,11 +128,13 @@ static func apply(actor: Character, cast: Dictionary, effect: Dictionary, slot_l
 	if equipment_policy.is_empty() and legal.size() == 1: equipment_policy = str(legal[0])
 	if not legal.is_empty() and equipment_policy not in legal: return {"projected": false, "reason": "a legal equipment policy must be selected"}
 	if legal.is_empty() and not equipment_policy.is_empty(): return {"projected": false, "reason": "this projection declares no equipment policy"}
+	if equipment_policy == "dropped" and not _drop_error(actor).is_empty(): return {"projected": false, "reason": _drop_error(actor)}
 	if spell.is_empty(): spell = DataLoader.get_spell(str(cast.get("spell_id", "")))
 	var level := maxi(0, slot_level - int(spell.get("level", 0)))
 	var granted := CreatedActorRules.value(form.temp_hp, level)
 	var record := cast.duplicate(true)
 	record["projection"] = {"form_id": form_id, "level": level, "original": {"ability_scores": actor.ability_scores.to_dict(), "speed": actor.speed}, "granted_temp_hp": granted, "suppressed_features": []}
+	record.projection["temporary_hp_owned"] = granted > actor.temp_hp
 	var scores := AbilityScores.new()
 	scores.from_dict(form.ability_scores)
 	if "mental_scores" in effect.retain:
@@ -174,8 +186,7 @@ static func revert(actor, record: Dictionary) -> Dictionary:
 	scores.from_dict(p.original.ability_scores)
 	actor.ability_scores = scores
 	actor.speed = int(p.original.speed)
-	var granted := int(p.get("granted_temp_hp", 0))
-	if granted > 0 and actor.temp_hp <= granted: actor.temp_hp = 0
+	if bool(p.get("temporary_hp_owned", false)): actor.temp_hp = 0
 	var present: Array = actor.features.map(func(f): return str(f.get("id", "")))
 	var restored := 0
 	for f in p.get("suppressed_features", []):
@@ -233,6 +244,8 @@ static func saved_record_error(dto: Dictionary, record: Dictionary) -> String:
 	var source := str(record.get("source_id", ""))
 	if record.get("caster_id", "") != dto.get("character_id", "") or not source.begins_with("spell:%s:" % str(dto.get("character_id", ""))) or record.get("conditions", []) != []: return "invalid saved projection source"
 	if not CreatedActorRules._int(p.get("level"), 0, 9) or int(p.get("granted_temp_hp", -1)) != CreatedActorRules.value(form.temp_hp, int(p.level)): return "saved projection level differs from its form"
+	if p.has("temporary_hp_owned") and not p.temporary_hp_owned is bool: return "invalid saved projection Temporary HP ownership"
+	if bool(p.get("temporary_hp_owned", false)) and not CreatedActorRules._int(dto.get("temp_hp"), 1, int(p.granted_temp_hp)): return "invalid saved projection Temporary HP"
 	var original: Variant = p.get("original")
 	if not original is Dictionary or original.size() != 2 or not original.get("ability_scores") is Dictionary or original.ability_scores.size() != 6 or CreatedActorRules.ABILITIES.any(func(x): return not CreatedActorRules._int(original.ability_scores.get(x), 1, 30)) or not CreatedActorRules._int(original.get("speed"), 0, 60): return "invalid saved projection original"
 	var scores: Variant = dto.get("ability_scores", {})
