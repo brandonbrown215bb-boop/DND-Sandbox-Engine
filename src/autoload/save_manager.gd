@@ -345,6 +345,10 @@ func _validate_save_data(data: Dictionary) -> String:
 			if not curse_error.is_empty(): return curse_error
 			var container_error := ContainerRules.saved_error(character_data)
 			if not container_error.is_empty(): return container_error
+			var attachment_error := AttachmentRules.saved_error(character_data)
+			if not attachment_error.is_empty(): return attachment_error
+			var magic_error := MagicPropertyRules.saved_error(character_data)
+			if not magic_error.is_empty(): return magic_error
 			var feature_mode_error := FeatureModeRules.saved_error(character_data)
 			if not feature_mode_error.is_empty(): return feature_mode_error
 			var alternative_error := RuleUpgradeRules.saved_error(character_data)
@@ -525,6 +529,10 @@ func _validate_party_data(data: Dictionary, campaign_seconds: int = 0) -> String
 		if not curse_error.is_empty(): return curse_error
 		var container_error := ContainerRules.saved_error(character_data)
 		if not container_error.is_empty(): return container_error
+		var attachment_error := AttachmentRules.saved_error(character_data)
+		if not attachment_error.is_empty(): return attachment_error
+		var magic_error := MagicPropertyRules.saved_error(character_data)
+		if not magic_error.is_empty(): return magic_error
 		var feature_mode_error := FeatureModeRules.saved_error(character_data)
 		if not feature_mode_error.is_empty(): return feature_mode_error
 		var alternative_error := RuleUpgradeRules.saved_error(character_data)

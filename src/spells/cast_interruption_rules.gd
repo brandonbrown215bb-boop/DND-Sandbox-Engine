@@ -509,7 +509,7 @@ static func is_recipient_negated(cast: SpellResolutionContext, recipient: Varian
 			if _matches_negation_predicates(cast, effect, step):
 				return true
 		for copy_id in recipient.inventory.copies.equipped.values():
-			if ActorProjectionRules.merged(recipient, str(copy_id)): continue # Review 041 R2.
+			if ActorProjectionRules.merged(recipient, str(copy_id)) or not MagicPropertyRules.active(recipient, str(copy_id), "incoming_negation_rule"): continue # Review 041 R2; S-203.
 			var copy: Dictionary = recipient.inventory.copies.records.get(copy_id, {})
 			var item_data := DataLoader.get_item(str(copy.get("definition_id", "")))
 			if item_data.has("incoming_negation_rule"):
