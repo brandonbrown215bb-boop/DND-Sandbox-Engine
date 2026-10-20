@@ -89,7 +89,8 @@ static func actors(owner: Character) -> Array:
 		if template.is_empty(): continue
 		for entry in record.created_actors.actors:
 			var id := str(entry.actor_id)
-			if not _live.has(id): _live[id] = _build(owner, str(source), template, int(record.created_actors.level), entry, spell)
+			# Review R1: a reloaded owner is a new object; rebuild from its saved record, never a stale cache.
+			if not _live.has(id) or _live[id].get_meta("created_owner_instance", 0) != owner.get_instance_id(): _live[id] = _build(owner, str(source), template, int(record.created_actors.level), entry, spell)
 			out.append(_live[id])
 	for id in _live.keys():
 		var a: Character = _live[id]
@@ -114,6 +115,7 @@ static func _build(owner: Character, source: String, template: Dictionary, level
 	a.set_meta("created_owner_id", owner.character_id)
 	a.set_meta("created_source_id", source)
 	a.set_meta("created_spell_id", str(spell.get("id", "")))
+	a.set_meta("created_owner_instance", owner.get_instance_id())
 	return a
 
 static func owner_of(actor: Character) -> String:

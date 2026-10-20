@@ -83,7 +83,9 @@ static func run(h: Node) -> void:
 	var saved: bool = block.is_empty() and SaveManager.save_game(slot)
 	h._assert(saved, "039 actual real save with a live created actor (block='%s')" % block)
 	if saved:
-		CreatedActorRules._live.clear()
+		# Review R1: no cache clear; an in-session load must rebuild from the save. Damage after the save must not leak.
+		var cached: Array = CreatedActorRules.actors(b)
+		if not cached.is_empty(): cached[0].take_damage(4)
 		var loaded := SaveManager.load_game(slot)
 		var nb: Character = PartyManager.characters.get(b.character_id, null)
 		var back := CreatedActorRules.actors(nb) if nb != null else []
