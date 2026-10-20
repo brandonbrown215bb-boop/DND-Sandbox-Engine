@@ -41,6 +41,7 @@ static func run(check: Callable) -> void:
 	_projection_validation(check)
 	_projection(check)
 	_projection_saves(check)
+	review_stress(check)
 
 static func _linked_validation(check: Callable) -> void:
 	check.call(BondRules.rule_error(_rule(0)).is_empty() and BondRules.rule_error(_rule(1)).is_empty() and BondRules.rule_error(DataLoader.get_character_class(Batch041Checks.CLASS_ID).features_by_level["1"][0]).is_empty(), "042 S-162 linked policies validate and 041 bonds keep their defaults")
@@ -186,3 +187,69 @@ static func _projection_saves(check: Callable) -> void:
 	var legacy := dto.duplicate(true)
 	legacy.erase("item_projections")
 	check.call(ItemProjectionRules.saved_error(legacy).is_empty(), "042 legacy saves without item projections still validate")
+
+## Runtime Reviewer stress (RQ1-RQ8).
+static func review_stress(check: Callable) -> void:
+	# RQ1: 041 R3 kept through the rebase - a feature-suppressing projection neither ends nor disposes a dispose_group bond.
+	var a := linker("b042_rq1")
+	var w1 := add(a, "dagger")
+	var w2 := add(a, "dagger")
+	BondRules.bond(a, PAIR, w1)
+	BondRules.bond(a, PAIR, w2)
+	BondRules.last_disposal = {}
+	Batch040Checks.shift(a, 2, "b040_hound")
+	var during := BondRules.bonded(a, PAIR)
+	a.to_dict()
+	SpellEffects.end_concentration(a, [a])
+	check.call(during.size() == 2 and BondRules.bonded(a, PAIR).size() == 2 and owns(a, w1) and owns(a, w2) and BondRules.last_disposal.is_empty(), "042 RQ1 suppressed linked bond is kept and nothing is disposed (during=%s)" % str(during))
+	# RQ2: disposal touches only linked identities; an unlinked copy of the same definition survives.
+	var spare := add(a, "dagger")
+	a.inventory.destroy_instance(w1)
+	check.call(not owns(a, w2) and owns(a, spare) and BondRules.bonded(a, PAIR).is_empty(), "042 RQ2 losing one linked copy disposes only its linked mate")
+	# RQ3: a projected actor killed by damage returns its exact copy by the next save (no stranded copy).
+	var b := linker("b042_rq3")
+	var fig := add(b, FIGURINE)
+	ItemProjectionRules.project(b, fig)
+	ItemProjectionRules.actor(b, fig).take_damage(999)
+	var dto := b.to_dict()
+	check.call(not ItemProjectionRules.is_projected(b, fig) and owns(b, fig) and not dto.get("item_projections", {}).has(fig), "042 RQ3 a destroyed projected actor reverts to its copy by the next save (projected=%s)" % str(ItemProjectionRules.is_projected(b, fig)))
+	# RQ4: a projected copy cannot be equipped, taken, transferred or projected again.
+	var c := linker("b042_rq4")
+	var f2 := add(c, FIGURINE)
+	ItemProjectionRules.project(c, f2)
+	var other := linker("b042_rq4_other")
+	check.call(c.inventory.take_instance(f2).is_empty() and not c.inventory.transfer_instance(f2, other.inventory) and not ItemProjectionRules.project(c, f2).projected and c.inventory.count_item(FIGURINE) == 0 and other.inventory.count_item(FIGURINE) == 0, "042 RQ4 a projected copy cannot be taken, given or projected twice")
+	# RQ5: a projected copy keeps a totem bond, and reverting returns it bonded exactly once.
+	var t1 := add(c, FIGURINE)
+	BondRules.bond(c, TOTEM, t1)
+	ItemProjectionRules.project(c, t1)
+	var held := BondRules.bonded(c, TOTEM)
+	ItemProjectionRules.revert(c, t1)
+	check.call(held == [t1] and BondRules.bonded(c, TOTEM) == [t1] and c.inventory.count_item(FIGURINE) == 1, "042 RQ5 projecting and reverting a bonded copy keeps the bond and one copy")
+	# RQ6: destroy-on-replace never destroys a projected copy; it is released and returns intact.
+	var d := linker("b042_rq6")
+	var p1 := add(d, "dagger")
+	var p2 := add(d, "dagger")
+	var p3 := add(d, "dagger")
+	BondRules.bond(d, PAIR, p1)
+	BondRules.bond(d, PAIR, p2)
+	var rep := BondRules.bond(d, PAIR, p3)
+	check.call(rep.get("destroyed", "") == p1 and not owns(d, p1) and owns(d, p2) and owns(d, p3) and BondRules.bonded(d, PAIR) == [p2, p3], "042 RQ6 replacement destroys exactly the released oldest copy")
+	# RQ7: saved projection plus bond reloads with no duplicate copy and the bond intact.
+	var e := linker("b042_rq7")
+	var t2 := add(e, FIGURINE)
+	BondRules.bond(e, TOTEM, t2)
+	ItemProjectionRules.project(e, t2)
+	var edto := e.to_dict()
+	var ne := Character.new()
+	ne.from_dict(edto)
+	check.call(BondRules.saved_error(edto).is_empty() and ItemProjectionRules.saved_error(edto).is_empty() and BondRules.bonded(ne, TOTEM) == [t2] and ne.inventory.count_item(FIGURINE) == 0 and ItemProjectionRules.actor(ne, t2) != null, "042 RQ7 reload keeps the bond on the projected copy with no duplicate")
+	# RQ8: transferring a linked copy is a loss: mate disposed, the given copy intact with the recipient.
+	var g := linker("b042_rq8")
+	var g1 := add(g, "dagger")
+	var g2 := add(g, "dagger")
+	BondRules.bond(g, PAIR, g1)
+	BondRules.bond(g, PAIR, g2)
+	var friend := linker("b042_rq8_friend")
+	var moved := g.inventory.transfer_instance(g1, friend.inventory)
+	check.call(moved and not owns(g, g2) and owns(friend, g1) and BondRules.bonded(g, PAIR).is_empty(), "042 RQ8 giving one linked copy away disposes its mate (documented on_loss semantics)")
