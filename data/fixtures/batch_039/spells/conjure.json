@@ -1,0 +1,37 @@
+[
+  {
+    "id": "fixture:b039_conjure",
+    "name": "039 conjure warden",
+    "description": "Self-cast that creates parameterized wardens owned by this exact cast.",
+    "execution": "shared",
+    "level": 2,
+    "casting_time": "action",
+    "range": 0,
+    "target": "self",
+    "concentration": true,
+    "duration_seconds": 60,
+    "classes": ["wizard"],
+    "effects": [
+      {
+        "type": "create_actor",
+        "template": {
+          "id": "b039_warden",
+          "name": "Warden",
+          "creature_type": "construct",
+          "size": "medium",
+          "speed": 6,
+          "ability_scores": {"STR": 14, "DEX": 12, "CON": 14, "INT": 6, "WIS": 10, "CHA": 4},
+          "ac": {"base": 13, "per_level": 1},
+          "max_hp": {"base": 20, "per_level": 10},
+          "count": {"base": 1, "per_level": 1, "max": 3},
+          "attack": {"name": "Ward Strike", "damage": "1d8", "damage_type": "force", "range": 1},
+          "features": [
+            {"id": "b039_sturdy", "name": "Sturdy", "effects": [{"type": "immunity", "condition": "poisoned"}]},
+            {"id": "b039_no_spawn", "name": "Spawn", "effects": [{"type": "create_actor"}]},
+            {"id": "b039_no_casting", "name": "Casting", "type": "spellcasting"}
+          ]
+        }
+      }
+    ]
+  }
+]
