@@ -2518,6 +2518,7 @@ func _get_active_feature_ids() -> Array[String]:
 ## Serialize character to dictionary.
 func to_dict() -> Dictionary:
 	SpellEffects.prune(self)
+	CreatedActorRules.sync(self)
 	TemporaryHPRules.prune(self, int(GameManager.campaign_elapsed_seconds))
 	ProtectionRules.prune(self,int(GameManager.campaign_elapsed_seconds))
 	_prune_recent_damage_history(int(GameManager.campaign_elapsed_seconds))
