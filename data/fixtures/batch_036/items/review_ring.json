@@ -1,0 +1,15 @@
+[
+  {
+    "id": "fixture:b036_review_ring",
+    "name": "Fading Settlement Ring",
+    "description": "Reviewer fixture: casts through the shared item-charge payment; its last charge leaves a mundane ring.",
+    "type": "ring",
+    "magical": true,
+    "rarity": "uncommon",
+    "maximum_charges": 2,
+    "charge_recovery": {"minimum": 1, "maximum": 2, "cadence": "dawn"},
+    "spell_permissions": [{"spells": ["fixture:029_charge_stop"], "ability": "INT", "charges": 2, "maximum_spell_level": 3, "allowed_components": ["V", "S"]}],
+    "last_charge_aftermath": {"outcome": "degrade", "keep_properties": []},
+    "value": 0
+  }
+]

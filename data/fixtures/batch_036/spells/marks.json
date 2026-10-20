@@ -1,0 +1,22 @@
+[
+  {
+    "id": "fixture:b036_mark",
+    "name": "036 mark",
+    "description": "Owned mark whose end reasons fire distinct follow-ups.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "concentration": true,
+    "duration_seconds": 12,
+    "classes": ["wizard"],
+    "effects": [
+      {"type": "grant_condition", "condition": "blessed"}
+    ],
+    "end_aftermath": [
+      {"id": "lapse", "reasons": ["expired"], "effects": [{"type": "damage", "amount": 3, "damage_type": "force"}]},
+      {"id": "recoil", "reasons": ["dismissed", "concentration_ended"], "effects": [{"type": "condition", "condition": "prone", "rounds": 1}]}
+    ]
+  }
+]

@@ -1,0 +1,38 @@
+[
+  {
+    "id": "fixture:b042_class",
+    "name": "Batch 042 Neutral Class",
+    "hit_die": "d8",
+    "primary_ability": "CHA",
+    "saving_throw_proficiencies": ["WIS", "CHA"],
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:b042_pair_bond",
+          "name": "Paired Blades",
+          "type": "exclusive_bond",
+          "bond_id": "b042:pair",
+          "target": "item",
+          "capacity": 2,
+          "replacement": "release_oldest",
+          "on_replace": "destroy",
+          "on_loss": "dispose_group",
+          "item_types": ["weapon"],
+          "unique": true
+        },
+        {
+          "id": "fixture:b042_totem_bond",
+          "name": "Totem Bond",
+          "type": "exclusive_bond",
+          "bond_id": "b042:totem",
+          "target": "item",
+          "capacity": 2,
+          "replacement": "refuse",
+          "on_loss": "keep_survivors",
+          "item_types": ["tool"],
+          "unique": true
+        }
+      ]
+    }
+  }
+]

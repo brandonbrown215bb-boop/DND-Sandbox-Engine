@@ -1,0 +1,4 @@
+[
+  {"id": "fixture:b046_snare", "name": "046 snare", "description": "Fixture tether: on a failed Strength save the target is restrained by this caster within 3 hexes. The target may escape (Strength or Dexterity); another creature may pull it free with Strength or cut the cord, which has 5 hit points.", "execution": "shared", "level": 1, "casting_time": "action", "range": 6, "target": "single", "save": "STR", "concentration": true, "duration_seconds": 60, "classes": ["wizard"],
+   "effects": [{"type": "bind_tether", "condition": "restrained", "range_hexes": 3, "escape": ["STR", "DEX"], "capacity": 1, "on_failed_save": true, "rescue": ["STR"], "hp": 5}]}
+]

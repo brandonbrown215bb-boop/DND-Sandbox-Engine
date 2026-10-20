@@ -1,0 +1,31 @@
+[
+  {
+    "id": "fixture:b042_figurine",
+    "name": "042 bronze figurine",
+    "type": "tool",
+    "magical": true,
+    "actor_projection": {
+      "template": {
+        "id": "b042_hound",
+        "name": "Bronze Hound",
+        "creature_type": "construct",
+        "size": "medium",
+        "speed": 8,
+        "ability_scores": {"STR": 15, "DEX": 14, "CON": 14, "INT": 3, "WIS": 12, "CHA": 6},
+        "ac": {"base": 14},
+        "max_hp": {"base": 22},
+        "count": {"base": 1},
+        "attack": {"name": "Bite", "damage": "1d8", "damage_type": "piercing", "range": 1},
+        "features": [
+          {"id": "b042_keen", "name": "Keen Nose", "effects": [{"type": "immunity", "condition": "blinded"}]},
+          {"id": "b042_no_cast", "name": "Casting", "type": "spellcasting"}
+        ]
+      }
+    }
+  },
+  {
+    "id": "fixture:b042_plain_token",
+    "name": "042 plain token",
+    "type": "tool"
+  }
+]

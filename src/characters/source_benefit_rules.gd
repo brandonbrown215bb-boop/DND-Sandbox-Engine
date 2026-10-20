@@ -21,10 +21,16 @@ static func query(actor: Character) -> Array[Dictionary]:
 	if actor == null or actor.character_id.is_empty(): return result
 	actor.inventory.copies.sync(actor.inventory)
 	for copy_id in actor.inventory.copies.equipped.values():
+		if ActorProjectionRules.merged(actor, str(copy_id)): continue # S-164 merged copies are suppressed.
 		var copy: Dictionary = actor.inventory.copies.records.get(copy_id, {})
 		var item := DataLoader.get_item(str(copy.get("definition_id", "")))
-		if item.has("source_benefits") and (not bool(item.get("requires_attunement", false)) or copy.get("state", {}).get("attuned_to", "") == actor.character_id):
+		var attuned_ok: bool = not bool(item.get("requires_attunement", false)) or copy.get("state", {}).get("attuned_to", "") == actor.character_id
+		if item.has("source_benefits") and attuned_ok and ActiveTimeRules.benefits_on(copy) and MagicPropertyRules.active(actor, str(copy_id), "source_benefits"):
 			_append(result, actor, "item", str(copy_id), str(item.id), item.source_benefits)
+		# S-210: completed attachment sets on this worn exact host copy.
+		if attuned_ok and MagicPropertyRules.active(actor, str(copy_id), "attachment_sets"):
+			for done in AttachmentRules.complete_sets(copy):
+				_append(result, actor, "item_set", "%s:%s" % [str(copy_id), str(done.set_id)], str(item.id), done.benefits)
 	for feature in actor.features:
 		for effect in actor._feature_effects(feature):
 			if effect.get("type", "") == "source_benefits":
@@ -38,6 +44,8 @@ static func query(actor: Character) -> Array[Dictionary]:
 					if effect.get("type", "") == "source_benefits":
 						var identity := "progression:" + JSON.stringify([actor.character_id, feature.id, option.id, index])
 						_append(result, actor, "progression", identity, str(option.id), effect.get("benefits"))
+	for carrier in FeatureModeRules.carriers(actor):
+		_append(result, actor, "mode", carrier.source_instance_id, carrier.definition_id, carrier.benefits)
 	for source in actor.spell_effects:
 		var record: Dictionary = actor.spell_effects[source]
 		if int(record.get("remaining_seconds", 0)) > 0 and record.get("caster_id", "") == actor.character_id:

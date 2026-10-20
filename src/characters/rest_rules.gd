@@ -197,9 +197,11 @@ static func complete_short_rest(
 		}
 	var living: Array[Character] = eligibility["participants"]
 	var notifications: Array[Dictionary] = []
+	for character in living: WorkRules.interrupt_participant(character, "short_rest")
 	if GameManager != null and not bool(context.get("skip_campaign_time", false)):
 		notifications = GameManager.advance_campaign_time(SHORT_REST_SECONDS)
 	for character in living:
+		MaxHpSourceRules.on_event(character, "short_rest_completed")
 		character.short_rest()
 		SharedStepExecutor.reset_zero_hp_history(character, "short_rest_completed")
 
@@ -335,6 +337,8 @@ static func complete_long_rest(participants: Array, context: Dictionary = {}) ->
 		}
 	var living: Array[Character] = eligibility["participants"]
 	for character in living:
+		WorkRules.interrupt_participant(character, "long_rest")
+		MaxHpSourceRules.on_event(character, "long_rest_completed")
 		character.long_rest()
 		SharedStepExecutor.reset_zero_hp_history(character, "long_rest_completed")
 	var notifications: Array[Dictionary] = []

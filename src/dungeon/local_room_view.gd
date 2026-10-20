@@ -30,6 +30,12 @@ var ration_half_button: Button
 var ration_full_button: Button
 var attune_button: Button
 var unattune_button: Button
+var stow_button: Button
+var retrieve_button: Button
+var attach_button: Button
+var detach_button: Button
+var activate_button: Button
+var pause_button: Button
 var encounter_button: Button
 var pending_teleport_spell := ""
 var pending_water_area_mode := ""
@@ -134,6 +140,24 @@ func start(room: Dictionary, party: Array, room_grid: HexGrid, room_hud: Dungeon
 		_result(actor().inventory.attune_instance(_selected(items), actor().character_id)))
 	unattune_button = _add_button(item_action_row, "Unattune", func():
 		_result(actor().inventory.unattune_instance(_selected(items), actor().character_id)))
+	# S-196: stow the exact selected copy, or take the last stowed copy out of the selected container.
+	stow_button = _add_button(item_action_row, "Stow", func(): _result(ContainerRules.stow(actor().inventory, _selected(items))))
+	retrieve_button = _add_button(item_action_row, "Take out", func(): _result(ContainerRules.retrieve_last(actor().inventory, _selected(items))))
+	# S-210: attach the selected part to a socket, or detach the selected host's last part.
+	attach_button = _add_button(item_action_row, "Attach", func(): _result(AttachmentRules.attach_any(actor().inventory, _selected(items))))
+	# S-064: start or pause the selected copy's cumulative active time.
+	activate_button = _add_button(item_action_row, "Activate", func(): _result(ActiveTimeRules.activate(actor(), _selected(items), int(GameManager.campaign_elapsed_seconds))))
+	pause_button = _add_button(item_action_row, "Pause", func(): _result(ActiveTimeRules.pause(actor(), _selected(items))))
+	# S-066: start, join or stop qualified work on the selected copy.
+	_add_button(item_action_row, "Start work", func(): _result(WorkRules.start(actor(), _selected(items))))
+	_add_button(item_action_row, "Join work", func(): _result(WorkRules.join(actor(), characters[recipients.selected], WorkRules.active_id(characters[recipients.selected]))))
+	_add_button(item_action_row, "Stop work", func(): _result(WorkRules.stop(actor(), _selected(items))))
+	# S-169: free the selected character from a tether by a check or by cutting it.
+	_add_button(item_action_row, "Rescue", func(): _result(TetherRules.rescue(actor(), characters[recipients.selected], characters, "check")))
+	_add_button(item_action_row, "Cut tether", func(): _result(TetherRules.rescue(actor(), characters[recipients.selected], characters, "strike")))
+	# S-168: escape an exact tether outside combat.
+	_add_button(item_action_row, "Escape tether", func(): _result(TetherRules.escape(actor(), characters)))
+	detach_button = _add_button(item_action_row, "Detach", func(): _result(AttachmentRules.detach_last(actor().inventory, _selected(items))))
 	refresh()
 	hud.add_log("%s — select a character, then click a space to move or an object to interact. Each hex is five feet." % state.get("name", "Room"))
 
@@ -201,6 +225,8 @@ func _refresh_item_actions() -> void:
 	var state: Dictionary = record.get("state", {})
 	attune_button.disabled = not bool(definition.get("requires_attunement", false)) or not str(state.get("attuned_to", "")).is_empty()
 	unattune_button.disabled = str(state.get("attuned_to", "")) != actor().character_id
+	if detach_button != null: detach_button.disabled = AttachmentRules.attached(actor().inventory, str(record.get("instance_id", ""))).is_empty()
+	if retrieve_button != null: retrieve_button.disabled = ContainerRules.contents(actor().inventory, str(record.get("instance_id", ""))).is_empty()
 
 func click(position: Vector2i) -> void:
 	if not pending_water_area_mode.is_empty():

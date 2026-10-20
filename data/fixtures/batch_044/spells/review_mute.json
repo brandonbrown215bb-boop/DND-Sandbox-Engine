@@ -1,0 +1,4 @@
+[
+  {"id": "fixture:b044_review_mute", "name": "044 review mute", "description": "Review fixture self-cast that suppresses its caster's worn magic item effects lists while concentrated on.", "execution": "shared", "level": 1, "casting_time": "action", "range": 0, "target": "self", "concentration": true, "duration_seconds": 60, "classes": ["wizard"],
+   "effects": [{"type": "suppress_item_magic", "properties": ["item_effects"]}]}
+]

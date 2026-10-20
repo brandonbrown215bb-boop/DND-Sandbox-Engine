@@ -67,6 +67,8 @@ static func resolve(caster: Character, target_entity, spell_data: Dictionary, de
 			var spatial := adapter.spatial_eligibility(cast.target, {})
 			if not spatial.get("eligible", false): return {"success":false,"refused":true,"message":spatial.get("reason", "Spatial requirements are not met.")}
 
+	var projection_error := ActorProjectionRules.cast_error(caster, cast.spell)
+	if not projection_error.is_empty(): return {"success":false,"refused":true,"message":projection_error}
 	# A validated exploration ritual finishes before its new effect begins.
 	if owned_host_valid and invocation_host.ritual_seconds > 0:
 		var party: Array = PartyManager.characters.values()
@@ -121,6 +123,9 @@ static func resolve(caster: Character, target_entity, spell_data: Dictionary, de
 		var invocation_source_id := cast.invocation_id if not cast.invocation_id.is_empty() else "cast:%d" % caster.spell_cast_serial
 		cast.decisions["damage_source_instance_id"] = "spell:%s:%s:%s" % [cast.spell_definition_id, cast.source_owner_id, invocation_source_id]
 
+	if cast.spell.get("zero_hp_aftermath") is Dictionary:
+		cast.decisions["zero_hp_aftermath"] = cast.spell["zero_hp_aftermath"]
+		cast.decisions["zero_hp_aftermath_carrier"] = "spell:%s" % str(cast.spell.get("id", ""))
 	var interruption := _resolve_counterspell(cast)
 	for key in ["counterspell_saved_by", "counterspell_save_total", "counterspell_save_dc"]:
 		if cast.decisions.has(key):

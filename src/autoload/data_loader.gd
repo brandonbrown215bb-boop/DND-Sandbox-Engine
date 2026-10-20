@@ -557,6 +557,61 @@ func _validate_semantics(data: Dictionary, content_type: String, source: String)
 	if data.has("range") and (not (data.get("range") is int or data.get("range") is float) or float(data.get("range")) < 0):
 		_load_errors.append("Range must be a non-negative number in %s" % source)
 		valid = false
+	if data.has("last_charge_aftermath"):
+		var charge_error := LastChargeRules.validate(data["last_charge_aftermath"])
+		if charge_error.is_empty() and int(data.get("maximum_charges", 0)) <= 0: charge_error = "last_charge_aftermath requires maximum_charges"
+		if not charge_error.is_empty():
+			_load_errors.append("%s in %s" % [charge_error, source])
+			valid = false
+	if content_type == "item" and data.has("container"):
+		var container_error := ContainerRules.policy_error(data["container"])
+		if not container_error.is_empty():
+			_load_errors.append("%s in %s" % [container_error, source])
+			valid = false
+	if content_type == "item" and data.has("active_time"):
+		var active_error := ActiveTimeRules.policy_error(data["active_time"])
+		if not active_error.is_empty():
+			_load_errors.append("%s in %s" % [active_error, source])
+			valid = false
+	if content_type == "item" and data.has("work"):
+		var work_error := WorkRules.policy_error(data["work"])
+		if not work_error.is_empty():
+			_load_errors.append("%s in %s" % [work_error, source])
+			valid = false
+	if content_type == "item" and data.has("attachments"):
+		var attachment_error := AttachmentRules.policy_error(data["attachments"])
+		if not attachment_error.is_empty():
+			_load_errors.append("%s in %s" % [attachment_error, source])
+			valid = false
+	if content_type == "item" and data.has("curse"):
+		var curse_error := CurseRules.policy_error(data)
+		if not curse_error.is_empty():
+			_load_errors.append("%s in %s" % [curse_error, source])
+			valid = false
+	if content_type == "item" and data.has("actor_projection"):
+		var item_projection_error := ItemProjectionRules.policy_error(data["actor_projection"])
+		if not item_projection_error.is_empty():
+			_load_errors.append("%s in %s" % [item_projection_error, source])
+			valid = false
+	if data.has("zero_hp_aftermath"):
+		var aftermath_error := ZeroHpAftermathRules.validate_policy(data["zero_hp_aftermath"])
+		if not aftermath_error.is_empty():
+			_load_errors.append("%s in %s" % [aftermath_error, source])
+			valid = false
+	if content_type == "monster" and data.get("attacks") is Array:
+		for attack in data["attacks"]:
+			if attack is Dictionary and attack.get("extra_effects") is Array:
+				for effect in attack["extra_effects"]:
+					if effect is Dictionary and str(effect.get("type", "")) == "max_hp_source":
+						var source_error := MaxHpSourceRules.validate_rule(effect.get("rule", null))
+						if not source_error.is_empty():
+							_load_errors.append("Attack '%s' %s in %s" % [attack.get("name", ""), source_error, source])
+							valid = false
+			if attack is Dictionary and attack.has("zero_hp_aftermath"):
+				var attack_error := ZeroHpAftermathRules.validate_policy(attack["zero_hp_aftermath"])
+				if not attack_error.is_empty():
+					_load_errors.append("Attack '%s' %s in %s" % [attack.get("name", ""), attack_error, source])
+					valid = false
 	valid = _validate_nested_values(data, source) and valid
 	return valid
 
@@ -703,6 +758,34 @@ func _sanitize_class_features(data: Dictionary, source: String) -> void:
 				var zero_error := SharedStepExecutor.validate_zero_hp_replacement_rule(feature)
 				if not zero_error.is_empty():
 					_load_errors.append("Feature '%s' in %s: %s" % [feature.get("id", ""), source, zero_error])
+				else: kept.append(feature)
+				continue
+			if feature.get("type") == "attack_profile":
+				var profile_error := AttackProfileRules.validate_rule(feature)
+				if not profile_error.is_empty():
+					_load_errors.append("Feature '%s' in %s: %s" % [feature.get("id", ""), source, profile_error])
+				else: kept.append(feature)
+				continue
+			if feature.get("type") in ["mode_choice", "rule_upgrade"]:
+				var declared := {}
+				for any_level in by_level:
+					for other in by_level[any_level]:
+						if other is Dictionary: declared[str(other.get("id", ""))] = true
+				var mode_error := FeatureModeRules.validate_rule(feature) if feature.type == "mode_choice" else RuleUpgradeRules.validate_rule(feature, declared)
+				if not mode_error.is_empty():
+					_load_errors.append("Feature '%s' in %s: %s" % [feature.get("id", ""), source, mode_error])
+				else: kept.append(feature)
+				continue
+			if feature.get("type") == "exclusive_bond":
+				var bond_error := BondRules.rule_error(feature)
+				if not bond_error.is_empty():
+					_load_errors.append("Feature '%s' in %s: %s" % [feature.get("id", ""), source, bond_error])
+				else: kept.append(feature)
+				continue
+			if feature.get("type") == "death_save_outcome":
+				var save_error := ZeroHpAftermathRules.validate_death_save_rule(feature)
+				if not save_error.is_empty():
+					_load_errors.append("Feature '%s' in %s: %s" % [feature.get("id", ""), source, save_error])
 				else: kept.append(feature)
 				continue
 			if feature.has("executor") or feature.get("type", "") == "resource":

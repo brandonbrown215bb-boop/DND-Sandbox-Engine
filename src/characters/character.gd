@@ -301,6 +301,20 @@ var feature_choices: Dictionary = {}
 ## Owner's preselected policy, editable on the sheet even during combat.
 var zero_hp_history: Dictionary = {}
 var zero_hp_attempt_serial: int = 0
+## S-130 source-owned maximum-HP entries keyed by exact source instance.
+var max_hp_sources: Dictionary = {}
+## S-161 exclusive bonds: bond_id -> {serial, targets:[{target_id, serial}]}.
+var exclusive_bonds: Dictionary = {}
+## S-165 projected item copies: instance_id -> {copy, actor}.
+var item_projections: Dictionary = {}
+## S-202 lingering source-linked curses: lost copy instance_id -> {definition_id, blocks_attunement}.
+var item_curses: Dictionary = {}
+## S-168 tethers this actor holds as captor: source_id -> relation.
+var tethers: Dictionary = {}
+## S-103 rest/activation mode selections, keyed by owning feature id.
+var feature_modes: Dictionary = {}
+## S-085 chosen exclusive upgrade alternatives, keyed "rule|group".
+var rule_alternatives: Dictionary = {}
 var barbarian_relentless_rage_enabled: bool = true
 ## Temporary Beast statistics plus the Druid statistics needed to revert safely.
 var wild_shape_state: Dictionary = {}
@@ -335,8 +349,7 @@ var temp_hp: int:
 	set(value):
 		var next_value := maxi(0, value)
 		if next_value <= 0 or next_value != _temp_hp_value:
-			timed_temporary_hp_current_grant_id = ""
-			linked_temporary_hp = {}
+			clear_temporary_hp_ownership()
 		_temp_hp_value = next_value
 	get:
 		return _temp_hp_value
@@ -879,6 +892,8 @@ func get_skill_check_modifier(skill: String, ability: String) -> int:
 func get_creature_type() -> String:
 	if class_id == "familiar": return str(feature_uses.get("creature_type", "fey"))
 	if DruidRules.is_shaped(self): return "beast"
+	var projected_type := ActorProjectionRules.creature_type(self)
+	if not projected_type.is_empty(): return projected_type
 	if not creature_type.is_empty() and creature_type != "humanoid": return creature_type
 	return str(DataLoader.get_race(race_id).get("creature_type", "humanoid"))
 
@@ -887,6 +902,8 @@ func get_creature_size() -> String:
 	if class_id == "created_creature": return str(feature_uses.get("creature_size", "medium"))
 	if class_id == "familiar": return str(feature_uses.get("creature_size", "large" if has_feature("find_steed_slam") else "tiny")).to_lower()
 	if DruidRules.is_shaped(self): return str(DruidRules.current_form(self).get("size", "medium")).to_lower()
+	var projected_size := ActorProjectionRules.size(self)
+	if not projected_size.is_empty(): return projected_size
 	return str(DataLoader.get_race(race_id).get("size", "medium")).to_lower()
 
 
@@ -1292,7 +1309,7 @@ func _unlock_features_for_level(lvl: int, acquiring: bool = true) -> void:
 				var acquired := ResourcePoolRules.acquire(self, feature, source_id)
 				if not acquired.get("success", false):
 					push_warning("[Character] Could not acquire passive save-bonus pool '%s': %s" % [source_id, str(acquired.get("message", "unknown error"))])
-		if acquiring and feature.get("type", "") in ["active", "triggered", "resource"]:
+		if acquiring and feature.get("type", "") in ["active", "triggered", "resource", "mode_choice"]:
 			var pool := str(feature.get("resource_id", feature["id"]))
 			if not feature_uses.has(pool):
 				feature_uses[pool] = get_feature_max_uses(pool)
@@ -1509,6 +1526,9 @@ func get_ac() -> int:
 		var form_ac := DruidRules.armor_class(self)
 		if form_ac >= 0:
 			return form_ac
+	var projected_ac := ActorProjectionRules.ac(self)
+	if projected_ac >= 0:
+		return SpellEffects.effective_ac(self, projected_ac) + SourceBenefitRules.total(self, "AC")
 	var ac := _equipment_base_ac() if not protection_grants.is_empty() else base_ac
 	var protection := ProtectionRules.ac(self,ac)
 	ac = int(protection.base)
@@ -1590,7 +1610,7 @@ func take_damage(amount: int, accepted_relentless_rage_inspiration: bool = false
 			is_alive = false
 			death_save_failures = 3
 			return hp_damage
-		if hp_damage < hp_before_damage + max_hp:
+		if hp_damage < hp_before_damage + max_hp and not ZeroHpAftermathRules.precedes_replacement(self, damage_decisions):
 			var relentless := BarbarianRules.attempt_relentless_rage(self, accepted_relentless_rage_inspiration, damage_decisions)
 			if relentless.get("success", false):
 				return hp_damage
@@ -1880,6 +1900,7 @@ func get_feature_max_uses(feature_id: String, feature_override: Dictionary = {})
 				break
 	if feature_data.is_empty():
 		return -1
+	feature_data = RuleUpgradeRules.effective(self, feature_data)
 	if feature_data.has("resource_id"):
 		return get_feature_max_uses(str(feature_data["resource_id"]))
 	if str(feature_data.get("resource_formula", "")) == "level*5":
@@ -1952,6 +1973,7 @@ func short_rest() -> void:
 	if get_max_focus_points() > 0:
 		feature_uses["focus_points"] = get_max_focus_points()
 	RollTokenRules.generate_for_rest(self, "short_rest")
+	FeatureModeRules.on_rest(self, "short_rest")
 
 
 ## Restore long-rest resources and the character's normal between-encounter state.
@@ -2009,6 +2031,7 @@ func long_rest() -> void:
 		feature_uses["focus_points"] = get_max_focus_points()
 	feature_uses.erase("uncanny_metabolism_used")
 	RollTokenRules.generate_for_rest(self, "long_rest")
+	FeatureModeRules.on_rest(self, "long_rest")
 	WardRules.clear_for_long_rest(self)
 	if class_id == "paladin":
 		PaladinRules.restore_find_steed_ability(self)
@@ -2260,13 +2283,21 @@ func offer_timed_temporary_hp(amount: int, duration_seconds: int, source_instanc
 	return {"success": true, "accepted": true, "grant": grant.duplicate(true), "message": "%s gains %d Temporary HP for %d campaign seconds." % [character_name, amount, duration_seconds]}
 
 
+## Explicit replacement can choose a different source even at the same amount.
+func clear_temporary_hp_ownership() -> void:
+	timed_temporary_hp_current_grant_id = ""
+	linked_temporary_hp = {}
+	for record in spell_effects.values():
+		if record.has("projection"): record.projection["temporary_hp_owned"] = false
+
+
 func absorb_temporary_hp(amount: int) -> int:
 	if amount <= 0 or _temp_hp_value <= 0:
 		return 0
 	var absorbed := mini(amount, _temp_hp_value)
 	_temp_hp_value -= absorbed
 	if _temp_hp_value <= 0:
-		_temp_hp_value = 0
+		temp_hp = 0
 		timed_temporary_hp_current_grant_id = ""
 		linked_temporary_hp = {}
 	return absorbed
@@ -2509,6 +2540,12 @@ func _get_active_feature_ids() -> Array[String]:
 ## Serialize character to dictionary.
 func to_dict() -> Dictionary:
 	SpellEffects.prune(self)
+	CreatedActorRules.sync(self)
+	AftermathSuccessorRules.sync(self)
+	ItemProjectionRules.sync(self)
+	ItemProjectionRules.settle(self) # Review 042 R1: a destroyed projected actor returns its copy.
+	BondRules.prune(self)
+	TetherRules.prune(self)
 	TemporaryHPRules.prune(self, int(GameManager.campaign_elapsed_seconds))
 	ProtectionRules.prune(self,int(GameManager.campaign_elapsed_seconds))
 	_prune_recent_damage_history(int(GameManager.campaign_elapsed_seconds))
@@ -2523,6 +2560,13 @@ func to_dict() -> Dictionary:
 		"feature_choices": feature_choices.duplicate(true),
 		"zero_hp_history": zero_hp_history.duplicate(true),
 		"zero_hp_attempt_serial": zero_hp_attempt_serial,
+		"max_hp_sources": max_hp_sources.duplicate(true),
+		"exclusive_bonds": exclusive_bonds.duplicate(true),
+		"item_projections": item_projections.duplicate(true),
+		"item_curses": item_curses.duplicate(true),
+		"tethers": tethers.duplicate(true),
+		"feature_modes": feature_modes.duplicate(true),
+		"rule_alternatives": rule_alternatives.duplicate(true),
 		"barbarian_relentless_rage_enabled": barbarian_relentless_rage_enabled,
 		"level": level,
 		"xp": xp,
@@ -2851,9 +2895,16 @@ func from_dict(data: Dictionary) -> void:
 	BardicInspirationRules.advance_time(self, 0)
 	zero_hp_history = data.get("zero_hp_history", {}).duplicate(true)
 	zero_hp_attempt_serial = int(data.get("zero_hp_attempt_serial", 0))
+	MaxHpSourceRules.restore(self, data)
+	ItemProjectionRules.restore(self, data)
+	CurseRules.restore(self, data)
+	TetherRules.restore(self, data)
+	BondRules.restore(self, data)
+	RuleUpgradeRules.restore(self, data)
+	FeatureModeRules.restore(self, data)
 	barbarian_relentless_rage_enabled = bool(data.get("barbarian_relentless_rage_enabled", true))
 	for feature in features:
-		if feature.get("type", "") in ["active", "triggered", "resource"]:
+		if feature.get("type", "") in ["active", "triggered", "resource", "mode_choice"]:
 			var pool := str(feature.get("resource_id", feature["id"]))
 			feature_uses[pool] = clampi(int(feature_uses.get(pool, 0)), 0, get_feature_max_uses(pool))
 	if get_max_focus_points() > 0:
@@ -2885,6 +2936,7 @@ func from_dict(data: Dictionary) -> void:
 		inventory.add_item("spellbook")
 	DruidRules.restore_saved_form(self, data.get("wild_shape_state", {}))
 	CorpseRules.restore(self, data)
+	ActorProjectionRules.restore(self)
 	expire_timed_temporary_hp_grants(int(GameManager.campaign_elapsed_seconds))
 
 
@@ -2929,6 +2981,9 @@ func saving_throw_test_to_dc(ability: String, dc: int, advantage: bool = false, 
 func make_death_save(accepted_bardic_inspiration: bool = false, accepted_stroke_of_luck: bool = false, decisions: Dictionary = {}) -> Dictionary:
 	if current_hp > 0 or is_stable or is_dead() or death_save_successes >= 3:
 		return {"rolled": false}
+	var automatic_rule := ZeroHpAftermathRules.pending_death_save_rule(self)
+	if not automatic_rule.is_empty():
+		return ZeroHpAftermathRules.resolve_automatic_death_save(self, automatic_rule)
 	var has_death_save_advantage := has_feature("champion_survivor") or SpellEffects.has_spell(self, "beacon_of_hope")
 	var d20_details := RollTokenRules.resolve_d20_test(self, "death_save", has_death_save_advantage, false, decisions)
 	var natural := int(d20_details.get("total", 1))

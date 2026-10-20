@@ -114,6 +114,7 @@ static func for_spell(character: Character, spell: Dictionary) -> Array[Dictiona
 		permissions.append(ritual_permission)
 	character.inventory.copies.sync(character.inventory)
 	for copy_id in character.inventory.copies.equipped.values():
+		if ActorProjectionRules.merged(character, str(copy_id)) or not MagicPropertyRules.active(character, str(copy_id), "spell_permissions"): continue # Review 041 R2: merged copies grant nothing; S-203 suppressed permissions too.
 		var copy: Dictionary = character.inventory.copies.records.get(copy_id, {})
 		var item := DataLoader.get_item(str(copy.get("definition_id", "")))
 		if bool(item.get("requires_attunement", false)) and copy.get("state", {}).get("attuned_to", "") != character.character_id:
@@ -205,6 +206,7 @@ static func selected_ability(spell: Dictionary, fallback: String) -> String:
 static func save_dc(caster: Character, spell: Dictionary) -> int:
 	var ability := selected_ability(spell, caster.get_spellcasting_ability())
 	var dc := caster.get_spell_save_dc() + caster.ability_scores.get_ability_modifier(ability) - caster.ability_scores.get_ability_modifier(caster.get_spellcasting_ability())
+	dc = AttackProfileRules.spell_dc(caster, spell, dc)
 	return int(spell.get("_save_dc_override", dc))
 
 
@@ -278,9 +280,8 @@ static func spend_reaction(character: Character, spell_id: String, decisions: Di
 		"points":
 			if not spend_points(character, permission, int(selection.get("level", 0))): return {}
 		"item_charges":
-			var copy := character.inventory.get_instance(str(permission.source_id))
-			copy.state.charges = int(copy.state.charges) - int(permission.charge_cost)
-			character.inventory.copies.records[permission.source_id] = copy
+			# Review R1: the exact-copy spend boundary settles S-060 last-charge aftermath.
+			if not character.inventory.spend_instance_charges(str(permission.source_id), int(permission.charge_cost)): return {}
 		_: return {}
 	result["payment"] = CastInterruptionRules.payment_receipt(character, selection, result if str(selection.get("_spell_payment_kind", "")) == "slot" else {}, permission)
 	result["reaction_spent"] = true
@@ -337,6 +338,7 @@ static func spell_ids(character: Character) -> Array[String]:
 					if id not in ids: ids.append(str(id))
 	character.inventory.copies.sync(character.inventory)
 	for copy_id in character.inventory.copies.equipped.values():
+		if ActorProjectionRules.merged(character, str(copy_id)) or not MagicPropertyRules.active(character, str(copy_id), "spell_permissions"): continue # Review 041 R2: merged copies grant nothing; S-203 suppressed permissions too.
 		var copy: Dictionary = character.inventory.copies.records.get(copy_id, {})
 		for policy in DataLoader.get_item(str(copy.get("definition_id", ""))).get("spell_permissions", []):
 			for id in policy.get("spells", []):

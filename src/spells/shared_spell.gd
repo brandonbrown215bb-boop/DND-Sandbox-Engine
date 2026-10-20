@@ -5,11 +5,11 @@ extends RefCounted
 
 const CONDITIONS := ["blinded", "deafened", "frightened", "poisoned", "prone", "restrained", "stunned", "paralyzed", "incapacitated", "blessed", "baned", "shield_of_faith"]
 const ABILITIES := ["STR", "DEX", "CON", "INT", "WIS", "CHA"]
-const EFFECTS := ["heal", "temporary_hp", "grant_condition", "remove_condition", "area_selection", "grant_source_benefits", "grant_damage_link", "grant_damage_response"]
+const EFFECTS := ["heal", "temporary_hp", "grant_condition", "remove_condition", "area_selection", "grant_source_benefits", "grant_damage_link", "grant_damage_response", "create_actor", "actor_projection", "suppress_item_magic", "bind_tether"]
 const STEP_FIELDS := ["id", "type", "gate", "gate_step", "target", "shape", "radius", "size", "attack_type", "damage", "damage_type", "damage_components", "component_id", "scaling", "upcast", "save", "half_on_save", "save_context", "damage_scale_by_outcome", "damage_dice_policy", "damage_result_multiplier", "damage_reductions", "damage_bypasses", "recipient_exemption_choice", "effects", "incoming_negation", "incoming_negation_rule", "physical_requirements", "spatial_requirements"]
 const STEP_TYPES := ["attack", "save", "damage", "effect"]
 const STEP_GATES := ["always", "hit", "miss", "failed_save", "successful_save"]
-const FIELDS := ["id", "name", "description", "execution", "level", "casting_time", "range", "range_kind", "range_by_character_level_feet", "target", "base_targets", "attack_type", "damage", "damage_type", "component_id", "scaling", "upcast", "save", "half_on_save", "save_context", "damage_scale_by_outcome", "damage_dice_policy", "damage_result_multiplier", "damage_reductions", "damage_bypasses", "recipient_exemption_choice", "attack_unit_substitution", "requires_target_sight", "target_creature_types", "target_creature_type_exclusions", "target_sizes", "ignore_cover_on_save", "effects", "concentration", "duration", "duration_seconds", "repeat_save", "repeat_save_schedule", "repeat_save_interval_seconds", "repeat_save_stages", "repeat_save_dc_progression", "targets_objects", "ignites_objects", "area_radius", "cone_size", "end_on_target_damage", "end_on_any_damage", "end_on_party_damage", "source_end_rules", "components", "material", "material_component_item_id", "material_component_cost", "material_component_consumed", "consumed_material_item_id", "ritual", "rules_source", "rules_status", "school", "classes", "source", "trigger", "steps", "formula_inputs", "interruption_policy", "failure_policy", "empty_effect_policy", "cast_settlement", "cancellation_rule", "stopping_cost_policy", "incoming_negation_rule", "physical_requirements", "spatial_requirements"]
+const FIELDS := ["id", "name", "description", "execution", "level", "casting_time", "range", "range_kind", "range_by_character_level_feet", "target", "base_targets", "attack_type", "damage", "damage_type", "component_id", "scaling", "upcast", "save", "half_on_save", "save_context", "damage_scale_by_outcome", "damage_dice_policy", "damage_result_multiplier", "damage_reductions", "damage_bypasses", "recipient_exemption_choice", "attack_unit_substitution", "requires_target_sight", "target_creature_types", "target_creature_type_exclusions", "target_sizes", "ignore_cover_on_save", "effects", "concentration", "duration", "duration_seconds", "repeat_save", "repeat_save_schedule", "repeat_save_interval_seconds", "repeat_save_stages", "repeat_save_dc_progression", "targets_objects", "ignites_objects", "area_radius", "cone_size", "end_on_target_damage", "end_on_any_damage", "end_on_party_damage", "source_end_rules", "components", "material", "material_component_item_id", "material_component_cost", "material_component_consumed", "consumed_material_item_id", "ritual", "rules_source", "rules_status", "school", "classes", "source", "trigger", "steps", "formula_inputs", "interruption_policy", "failure_policy", "empty_effect_policy", "cast_settlement", "cancellation_rule", "stopping_cost_policy", "incoming_negation_rule", "physical_requirements", "spatial_requirements", "zero_hp_aftermath", "end_aftermath"]
 
 static func damage_dice_policy_error(value: Variant) -> String:
 	if not value is Dictionary or value.is_empty():
@@ -97,6 +97,23 @@ static func _validate_single_effect(effect: Variant) -> String:
 		allowed.append("benefits")
 		var error := SourceBenefitRules.benefits_error(effect.get("benefits"))
 		if not error.is_empty(): return error
+	elif kind == "create_actor":
+		if effect.size() != 2: return "Created actor effects accept only type and template."
+		allowed.append("template")
+		var template_error := CreatedActorRules.template_error(effect.get("template"))
+		if not template_error.is_empty(): return template_error
+	elif kind == "bind_tether":
+		allowed.append_array(["condition", "range_hexes", "escape", "capacity", "rescue", "hp"]) # S-169 adds rescue and hp.
+		var tether_error := TetherRules.effect_error(effect)
+		if not tether_error.is_empty(): return tether_error
+	elif kind == "suppress_item_magic":
+		allowed.append_array(["properties", "mode"])
+		var magic_error := MagicPropertyRules.effect_error(effect)
+		if not magic_error.is_empty(): return magic_error
+	elif kind == "actor_projection":
+		allowed.append_array(["forms", "retain", "equipment"])
+		var projection_error := ActorProjectionRules.effect_error(effect)
+		if not projection_error.is_empty(): return projection_error
 	elif kind == "grant_damage_link":
 		if effect.size() != 2: return "Damage link grants accept only type and policy."
 		allowed.append("policy")
@@ -211,7 +228,7 @@ static func _steps_error(spell: Dictionary) -> String:
 	return ""
 
 static func content_error(spell: Dictionary) -> String:
-	if has_effect(spell, "grant_source_benefits"):
+	if has_effect(spell, "grant_source_benefits") or has_effect(spell, "create_actor") or has_effect(spell, "actor_projection") or has_effect(spell, "suppress_item_magic"):
 		if spell.has("steps") or spell.has("repeat_save") or spell.get("target", "") != "self" or spell.has("save") or spell.get("attack_type", "none") != "none" or spell.has("damage") or spell.get("effects", []).size() != 1:
 			return "Source carriers require a flat automatic self-cast with one grant effect."
 	if spell.get("execution", "") != "shared":
@@ -231,6 +248,9 @@ static func content_error(spell: Dictionary) -> String:
 	if spell.has("source_end_rules"):
 		var end_error := source_end_rules_error(spell.get("source_end_rules"))
 		if not end_error.is_empty(): return end_error
+	if spell.has("end_aftermath"):
+		var aftermath_error := SourceEndAftermathRules.validate(spell["end_aftermath"])
+		if not aftermath_error.is_empty(): return aftermath_error
 	if spell.has("damage_dice_policy"):
 		var dice_error := damage_dice_policy_error(spell["damage_dice_policy"])
 		if not dice_error.is_empty(): return dice_error
@@ -413,7 +433,7 @@ static func content_error(spell: Dictionary) -> String:
 			var rider_error := validate_outcome_map(effect["rider_by_outcome"], domain, "rider_by_outcome", true)
 			if not rider_error.is_empty(): return rider_error
 		var kind := str(effect.get("type", ""))
-		if kind in ["grant_condition", "grant_source_benefits", "grant_damage_link", "grant_damage_response"]: timed = true
+		if kind in ["grant_condition", "grant_source_benefits", "grant_damage_link", "grant_damage_response", "create_actor", "actor_projection", "suppress_item_magic", "bind_tether"]: timed = true
 		elif kind == "area_selection": areas += 1
 		has_payload = has_payload or kind != "area_selection"
 		if bool(effect.get("on_spell_hit", false)) and spell.get("attack_type", "none") == "none" and not spell.has("steps"): return "on_spell_hit requires attack delivery."
@@ -533,7 +553,7 @@ static func has_effect(spell: Dictionary, kind: String) -> bool:
 	return false
 
 static func manages(spell: Dictionary) -> bool:
-	return (has_effect(spell, "grant_condition") or has_effect(spell, "grant_source_benefits") or has_effect(spell, "grant_damage_link") or has_effect(spell, "grant_damage_response")) and content_error(spell).is_empty()
+	return (has_effect(spell, "grant_condition") or has_effect(spell, "grant_source_benefits") or has_effect(spell, "grant_damage_link") or has_effect(spell, "grant_damage_response") or has_effect(spell, "create_actor") or has_effect(spell, "actor_projection") or has_effect(spell, "suppress_item_magic") or has_effect(spell, "bind_tether")) and content_error(spell).is_empty()
 
 static func _create_step_cast(cast: SpellResolutionContext, target, step_spell: Dictionary) -> SpellResolutionContext:
 	var step_cast := SpellResolutionContext.new()
@@ -671,6 +691,28 @@ static func apply_custom_effects(caster: Character, target, effects: Array, resu
 			"grant_source_benefits":
 				if target is Character and SourceBenefitRules.grant(target, result.get("effect_cast", {}), effect.benefits):
 					messages.append("%s gains source-owned benefits." % target_name)
+			"create_actor":
+				if target is Character and target == caster:
+					var made := CreatedActorRules.create(target, result.get("effect_cast", {}), effect.template, slot_level, spell)
+					if made.get("created", false):
+						result["created_actors"] = made
+						messages.append("%s creates %d %s." % [target_name, int(made.count), str(effect.template.name)])
+			"actor_projection":
+				if target is Character and target == caster:
+					var projected := ActorProjectionRules.apply(target, result.get("effect_cast", {}), effect, slot_level, spell, str(spell.get("_projection_form_id", "")), str(spell.get("_projection_equipment", "")))
+					result["projection"] = projected
+					if projected.get("projected", false): messages.append("%s takes the %s form." % [target_name, str(projected.form_id)])
+					else: messages.append("%s cannot take that form: %s." % [target_name, str(projected.get("reason", ""))])
+			"bind_tether":
+				var bound := TetherRules.apply(caster, target, result.get("effect_cast", {}), effect, spell)
+				result["tether"] = bound
+				if bound.get("bound", false): messages.append("%s is tethered." % target_name)
+			"suppress_item_magic":
+				if target is Character and target == caster:
+					var muted := MagicPropertyRules.apply(target, result.get("effect_cast", {}), effect)
+					result["magic_suppression"] = muted
+					if muted.get("applied", false): messages.append("%s's magic is %s on %d item%s." % [target_name, "destroyed" if muted.mode == "destroy" else "suppressed", muted.copies.size(), "" if muted.copies.size() == 1 else "s"])
+					else: messages.append("%s: %s" % [target_name, str(muted.get("reason", ""))])
 			"grant_damage_link":
 				if DamageLinkRules.grant(target, result.get("effect_cast", {}), effect.policy):
 					messages.append("%s gains a source-owned damage link." % target_name)

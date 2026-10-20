@@ -1,0 +1,35 @@
+[
+  {
+    "id": "fixture:b041_class",
+    "name": "Batch 041 Neutral Class",
+    "hit_die": "d8",
+    "primary_ability": "CHA",
+    "saving_throw_proficiencies": ["WIS", "CHA"],
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:b041_blade_bond",
+          "name": "Blade Bond",
+          "type": "exclusive_bond",
+          "bond_id": "b041:blade",
+          "target": "item",
+          "capacity": 1,
+          "replacement": "release_oldest",
+          "item_types": ["weapon"],
+          "unique": true
+        },
+        {
+          "id": "fixture:b041_ward_bond",
+          "name": "Ward Bond",
+          "type": "exclusive_bond",
+          "bond_id": "b041:ward",
+          "target": "actor",
+          "capacity": 1,
+          "replacement": "refuse",
+          "creature_types": ["construct"],
+          "unique": true
+        }
+      ]
+    }
+  }
+]

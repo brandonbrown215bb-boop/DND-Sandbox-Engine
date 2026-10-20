@@ -78,6 +78,7 @@ var light_attack_weapon: Dictionary = {}
 ## Last completed input-driven shared spell's damage component receipts.
 var last_spell_damage_receipts: Array[Dictionary] = []
 ## Last completed incoming monster weapon result, including each settled component.
+var last_automatic_death_save: Dictionary = {}
 var last_monster_weapon_attack_result: Dictionary = {}
 
 # Guards against double-triggering battle end (victory/defeat).
@@ -188,6 +189,7 @@ func _update_grid_entities() -> void:
 	_refresh_fog_cloud_conditions()
 	_refresh_darkness_conditions()
 	_refresh_aura_of_life_protection()
+	_enforce_tether_range() # Review 045 R1: a tether beyond its range ends as soon as positions change, not at round end.
 	if hex_grid == null:
 		return
 	hex_grid.clear_entities()
@@ -811,6 +813,7 @@ func _roll_initiative_and_start() -> void:
 			dex
 		)
 
+	_interrupt_work_for_combat()
 	tracker.sort_initiative()
 	_start_combat_turn()
 
@@ -901,7 +904,13 @@ func _start_combat_turn() -> void:
 		var rally := FighterRules.start_turn(active_character)
 		if rally > 0:
 			hud.add_log("Survivor restores %d HP." % rally)
-		if active_character.is_downed():
+		var automatic_death_save := ZeroHpAftermathRules.pending_death_save_rule(active_character) if active_character.is_downed() else {}
+		if not automatic_death_save.is_empty():
+			# A declared no-roll outcome offers no d20 bonus, reroll or token choice.
+			var automatic := active_character.make_death_save()
+			last_automatic_death_save = automatic.duplicate(true)
+			hud.add_log("Death save %s automatically (%d successes, %d failures)." % ["is canceled" if automatic.get("canceled", false) else "is a " + str(automatic.get("outcome", "")), int(automatic.get("successes", 0)), int(automatic.get("failures", 0))])
+		elif active_character.is_downed():
 			var use_bardic_inspiration := false
 			var use_stroke_of_luck := false
 			if active_character.has_feature("rogue_stroke_of_luck") and int(active_character.feature_uses.get("rogue_stroke_of_luck", 0)) > 0:
@@ -1169,7 +1178,7 @@ func _run_monster_ai() -> void:
 		await get_tree().create_timer(1.0).timeout
 		_end_active_turn()
 		return
-	if _try_monster_escape_restrained_zone(monster):
+	if _try_monster_escape_tether(monster) or _try_monster_rescue_tether(monster) or _try_monster_escape_restrained_zone(monster):
 		_update_grid_entities()
 		await get_tree().create_timer(1.0).timeout
 		_end_active_turn()
@@ -1307,6 +1316,62 @@ func _resolve_monster_command(monster: Dictionary, command: Dictionary) -> void:
 		hud.add_log("%s approaches the caster and ends its turn." % name)
 	else:
 		hud.add_log("%s %s and ends its turn." % [name, "approaches" if action == "approach" else "flees"])
+
+
+## S-168: a tethered monster uses its Action to escape that exact tether.
+func _try_monster_escape_tether(monster: Dictionary) -> bool:
+	var captors: Array = player_entities.map(func(p): return p.get("character"))
+	if TetherRules.binding(monster, captors).is_empty(): return false
+	var r := TetherRules.escape(monster, captors)
+	hud.add_log("[color=%s]%s[/color]" % ["green" if r.get("success", false) else "orange", str(r.get("message", ""))])
+	return true
+
+
+## S-169: a monster beside a tethered ally spends its turn freeing it: it cuts a tether
+## that has hp, otherwise pulls with a declared rescue check. Only that tether ends.
+func _try_monster_rescue_tether(monster: Dictionary) -> bool:
+	var captors: Array = player_entities.map(func(p): return p.get("character"))
+	var origin: Vector2i = monster.get("hex_position", Vector2i.ZERO)
+	for ally in monster_entities:
+		if ally == monster or not ally.get("is_alive", false) or HexUtils.get_distance(origin, ally.get("hex_position", Vector2i.ZERO)) > 1: continue
+		for mode in ["strike", "check"]:
+			if not TetherRules.rescue_error(monster, ally, captors, mode).is_empty(): continue
+			var r := TetherRules.rescue(monster, ally, captors, mode)
+			hud.add_log("[color=%s]%s[/color]" % ["green" if r.get("success", false) else "orange", str(r.get("message", ""))])
+			return true
+	return false
+
+
+## S-169: the active character spends its Action to free an adjacent tethered ally.
+func _try_rescue_tether(character: Character, coord: Vector2i, player_pos: Vector2i) -> bool:
+	if character == null or HexUtils.get_distance(coord, player_pos) != 1: return false
+	var ally: Character = null
+	for p in player_entities:
+		if p.get("hex_position", Vector2i(-99, -99)) == coord and p.get("character") is Character: ally = p.character
+	if ally == null: return false
+	var captors: Array = player_entities.map(func(p): return p.get("character"))
+	var mode := "strike" if TetherRules.rescue_error(character, ally, captors, "strike").is_empty() else "check"
+	# Checklist (a): refuse before the Action is spent.
+	if not TetherRules.rescue_error(character, ally, captors, mode).is_empty() or not _can_spend_action_cost("action"): return false
+	_spend_action_cost("action")
+	var r := TetherRules.rescue(character, ally, captors, mode)
+	hud.add_log("[color=%s]%s[/color]" % ["green" if r.get("success", false) else "orange", str(r.get("message", ""))])
+	hud.update_hud(active_character, tracker)
+	_highlight_reachable()
+	return true
+
+
+## S-168: the active character spends its Action to escape an exact tether.
+func _try_escape_tether(character: Character) -> bool:
+	if character == null or not _can_spend_action_cost("action"): return false
+	var captors: Array = player_entities.map(func(p): return p.get("character"))
+	if TetherRules.binding(character, captors).is_empty(): return false
+	_spend_action_cost("action")
+	var r := TetherRules.escape(character, captors)
+	hud.add_log("[color=%s]%s[/color]" % ["green" if r.get("success", false) else "orange", str(r.get("message", ""))])
+	hud.update_hud(active_character, tracker)
+	_highlight_reachable()
+	return true
 
 
 func _try_monster_escape_restrained_zone(monster: Dictionary) -> bool:
@@ -3086,7 +3151,9 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 		return
 	if pending_action_type.is_empty() and coord == player_pos and _try_freedom_of_movement_escape(active_character):
 		return
-	if pending_action_type.is_empty() and coord == player_pos and _try_escape_restrained_zone(active_character):
+	if pending_action_type.is_empty() and coord == player_pos and (_try_escape_tether(active_character) or _try_escape_restrained_zone(active_character)):
+		return
+	if pending_action_type.is_empty() and _try_rescue_tether(active_character, coord, player_pos):
 		return
 	if pending_action_type.is_empty() and _try_shake_sleeping_creature(coord, player_pos):
 		return
@@ -4296,8 +4363,44 @@ func _end_active_turn() -> void:
 		for player in player_entities:
 			CorpseRules.advance_time(player["character"], GameManager.campaign_elapsed_seconds)
 		_tick_portable_light_sources()
+		_tick_active_time_and_tethers()
 		_tick_spell_zones()
 	_start_combat_turn()
+
+
+## S-064 active time spends combat rounds; S-168 tethers beyond range break.
+func _tick_active_time_and_tethers() -> void:
+	for player in player_entities:
+		var character: Character = player.get("character")
+		if character == null: continue
+		ActiveTimeRules.settle(character, 6, int(GameManager.campaign_elapsed_seconds))
+	_enforce_tether_range()
+
+
+## S-066: combat interrupts qualified work; progress follows each work's own policy.
+func _interrupt_work_for_combat() -> void:
+	for player in player_entities:
+		var character: Character = player.get("character")
+		for receipt in WorkRules.interrupt_all(character, "combat"):
+			hud.add_log("[color=orange]%s's work is interrupted by combat (%d seconds kept, %d lost).[/color]" % [character.character_name, int(receipt.kept_seconds), int(receipt.lost_seconds)])
+
+
+## Review 045 R1: S-168 range check against current positions (movement, teleport, forced moves).
+func _enforce_tether_range() -> void:
+	var captors: Array = []
+	var positions := {}
+	var victims := {}
+	for player in player_entities:
+		var character: Character = player.get("character")
+		if character == null: continue
+		captors.append(character)
+		positions[character.character_id] = player.get("hex_position", Vector2i.ZERO)
+		victims[character.character_id] = character
+	for monster in monster_entities:
+		positions[TetherRules.victim_id(monster)] = monster.get("hex_position", Vector2i.ZERO)
+		victims[TetherRules.victim_id(monster)] = monster
+	for source in TetherRules.enforce_range(captors, positions, victims):
+		hud.add_log("[color=cyan]A tether stretches past its range and breaks.[/color]")
 
 
 func _tick_portable_light_sources() -> void:

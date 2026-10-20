@@ -27,6 +27,10 @@ var gold: int = 0
 
 ## Catalog projections above remain compatible; copies retain individual state.
 var copies := InventoryCopies.new()
+## S-060 receipt of the latest real spend; transient, not saved.
+var last_charge_receipt: Dictionary = {}
+## Test-only injection of the declared aftermath roll for the next spend.
+var forced_last_charge_roll: int = 0
 ## Runtime owner link used only to publish actual equipment changes.
 var owner_character_ref: WeakRef
 
@@ -334,7 +338,7 @@ func can_equip(slot: Slot, item_id: String, allow_unowned: bool = false) -> bool
 	if valid_slot != slot:
 		return false
 	var equipped_copy := str(copies.equipped.get(slot, ""))
-	if bool(copies.records.get(equipped_copy, {}).get("state", {}).get("cursed_attunement", false)):
+	if bool(copies.records.get(equipped_copy, {}).get("state", {}).get("cursed_attunement", false)) and not CurseRules.removal_allowed(copies.records.get(equipped_copy, {})):
 		return false
 	if slot == Slot.OFFHAND:
 		if "light" not in item_data.get("properties", []) or is_slot_equipped(Slot.SHIELD) or "light" not in DataLoader.get_item(get_weapon()).get("properties", []):
@@ -354,6 +358,8 @@ func can_equip(slot: Slot, item_id: String, allow_unowned: bool = false) -> bool
 ## empty string) and leaves state unchanged when validation fails.
 func equip(slot: Slot, item_id: String, allow_unowned: bool = false) -> String:
 	copies.sync(self)
+	var wearer = owner_character_ref.get_ref() if owner_character_ref != null else null
+	if wearer != null and not ActorProjectionRules.equip_error(wearer).is_empty(): return ""
 	if not can_equip(slot, item_id, allow_unowned):
 		return ""
 	var previous := str(equipped.get(slot, ""))
@@ -380,7 +386,7 @@ func unequip(slot: Slot) -> String:
 	var item_id: String = equipped.get(slot, "")
 	if not item_id.is_empty():
 		var instance_id := str(copies.equipped.get(slot, ""))
-		if bool(copies.records.get(instance_id, {}).get("state", {}).get("cursed_attunement", false)):
+		if bool(copies.records.get(instance_id, {}).get("state", {}).get("cursed_attunement", false)) and not CurseRules.removal_allowed(copies.records.get(instance_id, {})):
 			push_warning("[Inventory] A cursed attuned item cannot be removed before its curse is broken.")
 			return ""
 		if backpack.size() >= MAX_BACKPACK_SIZE:
@@ -449,11 +455,14 @@ func attune_instance(instance_id: String, character_id: String) -> Dictionary:
 	if not current_owner.is_empty():
 		return {"success": false, "message": "This copy is attuned to someone else."}
 	var attuned_count := 0
-	for owned_record in copies.records.values():
+	for owned_record in copies.records.values() + ContainerRules.contained_records(self):
 		if str(owned_record.get("state", {}).get("attuned_to", "")) == character_id:
 			attuned_count += 1
 			if str(owned_record.get("definition_id", "")) == str(record.get("definition_id", "")) and str(record.get("definition_id", "")) == "ring_of_protection":
 				return {"success": false, "message": "A character can be attuned to only one Ring of Protection at a time."}
+	var lingering := CurseRules.attune_error(owner_character_ref.get_ref() if owner_character_ref != null else null)
+	if not lingering.is_empty():
+		return {"success": false, "message": lingering}
 	if attuned_count >= 3:
 		return {"success": false, "message": "A character can be attuned to no more than three items."}
 	state["attuned_to"] = character_id
@@ -487,6 +496,9 @@ func break_cursed_item_attunements(character_id: String) -> int:
 		var state: Dictionary = record.get("state", {})
 		if str(state.get("attuned_to", "")) != character_id or not bool(state.get("cursed_attunement", false)):
 			continue
+		# S-202: a declared curse breaks only through CurseRules' exact requirements.
+		if not CurseRules.policy(str(record.get("definition_id", ""))).is_empty():
+			continue
 		state.erase("attuned_to")
 		state.erase("cursed_attunement")
 		record["state"] = state
@@ -499,6 +511,9 @@ func has_equipped_attuned_item(definition_id: String, character_id: String) -> b
 	copies.sync(self)
 	for instance_id in copies.equipped.values():
 		var record: Dictionary = copies.records.get(instance_id, {})
+		var holder = owner_character_ref.get_ref() if owner_character_ref != null else null
+		if holder != null and ActorProjectionRules.merged(holder, str(instance_id)): continue
+		if holder != null and not MagicPropertyRules.active(holder, str(instance_id), "item_effects"): continue # Review 044 R2.
 		if str(record.get("definition_id", "")) == definition_id and str(record.get("state", {}).get("attuned_to", "")) == character_id:
 			return true
 	return false
@@ -528,6 +543,8 @@ func recover_daily_charges() -> void:
 		if str(recovery.get("cadence", "")) != "dawn":
 			continue
 		var state: Dictionary = record.get("state", {})
+		if bool(state.get("degraded", false)):
+			continue
 		var maximum := int(item.get("maximum_charges", 0))
 		var amount := Dice.roll(int(recovery.get("maximum", 0)) - int(recovery.get("minimum", 0)) + 1) + int(recovery.get("minimum", 0)) - 1
 		state["charges"] = mini(maximum, int(state.get("charges", 0)) + amount)
@@ -645,9 +662,12 @@ func spend_instance_charges(instance_id: String, amount: int) -> bool:
 	var state: Dictionary = record.get("state", {}).duplicate(true)
 	if record.is_empty() or int(state.get("charges", 0)) < amount:
 		return false
-	state["charges"] = int(state["charges"]) - amount
+	var charges_before := int(state["charges"])
+	state["charges"] = charges_before - amount
 	record["state"] = state
 	copies.records[instance_id] = record
+	last_charge_receipt = LastChargeRules.settle(self, instance_id, charges_before, int(state["charges"]), forced_last_charge_roll)
+	forced_last_charge_roll = 0
 	return true
 
 
@@ -672,6 +692,16 @@ func destroy_instance(instance_id: String) -> Dictionary:
 			copies.backpack.remove_at(index)
 			backpack.remove_at(index)
 	copies.records.erase(instance_id)
+	# Review 043 R3: an ordinary container's destruction spills its exact contents to the holder.
+	if record.get("state", {}).get("contents") is Dictionary:
+		var left := {}
+		for key in record.state.contents:
+			for child in record.state.contents[key]:
+				if not receive_instance(child): left[key] = left.get(key, []) + [child]
+		if left.is_empty(): record.state.erase("contents")
+		else: record.state["contents"] = left
+	CurseRules.on_removed(owner_character_ref.get_ref() if owner_character_ref != null else null, record)
+	BondRules.on_copy_removed(owner_character_ref.get_ref() if owner_character_ref != null else null)
 	return record
 
 
@@ -689,10 +719,13 @@ func drop_equipped_instance(slot: Slot) -> Dictionary:
 	var record: Dictionary = copies.records.get(instance_id, {}).duplicate(true)
 	if record.is_empty():
 		return {}
+	WorkRules.on_removed(record)
 	copies.equipped.erase(slot)
 	copies.records.erase(instance_id)
 	equipped.erase(slot)
 	_publish_equipment_change(str(record.get("definition_id", "")), "dropped", instance_id)
+	CurseRules.on_removed(owner_character_ref.get_ref() if owner_character_ref != null else null, record)
+	BondRules.on_copy_removed(owner_character_ref.get_ref() if owner_character_ref != null else null)
 	return record
 
 
@@ -715,9 +748,11 @@ func take_instance(id: String) -> Dictionary:
 	if bool(copies.records.get(id, {}).get("state", {}).get("cursed_attunement", false)):
 		return {}
 	var record: Dictionary = copies.records[id].duplicate(true)
+	WorkRules.on_removed(record)
 	backpack.remove_at(index)
 	copies.backpack.remove_at(index)
 	copies.records.erase(id)
+	BondRules.on_copy_removed(owner_character_ref.get_ref() if owner_character_ref != null else null)
 	return record
 
 
@@ -726,7 +761,10 @@ func transfer_instance(id: String, destination: Inventory) -> bool:
 	copies.sync(self)
 	if bool(copies.records.get(id, {}).get("state", {}).get("cursed_attunement", false)):
 		return false
-	if id not in copies.backpack or not destination.receive_instance(copies.records[id]): return false
+	if id not in copies.backpack or destination.backpack.size() >= MAX_BACKPACK_SIZE or destination.get_instance(id) != {}: return false
+	var record: Dictionary = copies.records[id].duplicate(true)
+	WorkRules.on_removed(record)
+	if not destination.receive_instance(record): return false
 	take_instance(id)
 	return true
 
@@ -734,6 +772,8 @@ func transfer_instance(id: String, destination: Inventory) -> bool:
 func equip_instance(slot: Slot, id: String) -> bool:
 	copies.sync(self)
 	if id not in copies.backpack: return false
+	var wearer = owner_character_ref.get_ref() if owner_character_ref != null else null
+	if wearer != null and not ActorProjectionRules.equip_error(wearer).is_empty(): return false
 	var definition := str(copies.records[id]["definition_id"])
 	if not can_equip(slot, definition): return false
 	var previous := str(copies.equipped.get(slot, ""))

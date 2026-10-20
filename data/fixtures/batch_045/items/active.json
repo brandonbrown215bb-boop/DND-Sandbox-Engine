@@ -1,0 +1,5 @@
+[
+  {"id": "fixture:b045_wing_ring", "name": "Fixture Wing Ring", "description": "Neutral fixture ring whose speed benefit works only while active; a fixture allowance with a fixture cooldown.", "type": "ring", "magical": true, "rarity": "uncommon", "value": 0,
+   "source_benefits": [{"stat": "speed", "amount": 2}], "active_time": {"budget_seconds": 60, "cooldown_seconds": 600}},
+  {"id": "fixture:b045_fuel_lamp", "name": "Fixture Fuel Lamp", "description": "Neutral fixture fuel item with a one-time active budget and no refresh.", "type": "tool", "weight": 1, "value": 0, "active_time": {"budget_seconds": 120}}
+]

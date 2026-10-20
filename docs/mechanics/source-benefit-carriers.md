@@ -2,7 +2,7 @@
 
 Batch L accepts S-049/S-050 as VS-59/60 after independent source/evidence review
 and bounded repairs. It supplies a common projection for fixed additive AC and
-walking speed benefits; see the [review](../../.artifacts/planning/vocabulary-reports/batch-L-review.md).
+walking speed benefits; see the [slice registry](../planning/vocabulary-slices.md).
 
 ## Payload and hosts
 
@@ -77,6 +77,37 @@ still own their remaining invariants.
 No new save namespace, migration or saving boundary is introduced. Legacy saves
 remain untouched. Fresh-process checks must verify identities, remaining time,
 quantities and malformed-load refusal; helper-only reconstruction is insufficient.
+
+## Modes, forms and exact item state
+
+`mode_choice` and `rule_upgrade` reconstruct ownership from the saved class and
+subclass at the character's class level. Rest/activation choices, added modes,
+exclusive alternatives and event windows retain their existing identities on
+reload. Species, feat and item acquisition of these feature types remains
+outside the current reconstruction host; the broader owned-features follow-up
+is still open.
+
+An `actor_projection` with `equipment: ["dropped"]` sets removable equipped
+copies aside in the backpack. It refuses before casting costs or form changes
+when the backpack cannot hold them. Cursed copies retain their removal policy.
+The projection records whether it actually supplied the current Temporary HP;
+damage preserves that ownership, while an accepted replacement (including an
+equal amount) transfers it. Reversion removes only the projection's own HP.
+Self concentration retains a source record without a strong self-reference.
+
+An item's `projection` preserves its exact identity across transfers. Projected
+copies and their children use the ordinary state, serial and global ownership
+checks, including both player and party checkpoint representations. Active
+`active_time` copies must be paused before stowing, attaching or projecting;
+storage cannot silently freeze an active budget. Work must also be stopped
+before attachment or projection. Losing a work copy, or a participant resting,
+applies its `work.on_interrupt` keep/reset policy immediately. Rest duration
+does not count as work. Each participant can work on one job at a time; both
+party and player-only checkpoints enforce that limit. Work's existing item-only and party-membership limits
+remain; it does not check helpers' spatial co-location.
+
+Regressions live in `src/stack_repair_checks.gd`; these fixture-backed repairs do
+not convert catalog content or accept the full planned slices.
 
 ## Limits
 

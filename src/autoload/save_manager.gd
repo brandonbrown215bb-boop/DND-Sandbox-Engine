@@ -335,6 +335,26 @@ func _validate_save_data(data: Dictionary) -> String:
 			if not gift_error.is_empty(): return gift_error
 			var zero_hp_error := SharedStepExecutor.saved_zero_hp_history_error(character_data)
 			if not zero_hp_error.is_empty(): return zero_hp_error
+			var max_hp_source_error := MaxHpSourceRules.saved_error(character_data)
+			if not max_hp_source_error.is_empty(): return max_hp_source_error
+			var bond_error := BondRules.saved_error(character_data)
+			if not bond_error.is_empty(): return bond_error
+			var item_projection_error := ItemProjectionRules.saved_error(character_data)
+			if not item_projection_error.is_empty(): return item_projection_error
+			var curse_error := CurseRules.saved_error(character_data)
+			if not curse_error.is_empty(): return curse_error
+			var tether_error := TetherRules.saved_error(character_data)
+			if not tether_error.is_empty(): return tether_error
+			var container_error := ContainerRules.saved_error(character_data)
+			if not container_error.is_empty(): return container_error
+			var attachment_error := AttachmentRules.saved_error(character_data)
+			if not attachment_error.is_empty(): return attachment_error
+			var magic_error := MagicPropertyRules.saved_error(character_data)
+			if not magic_error.is_empty(): return magic_error
+			var feature_mode_error := FeatureModeRules.saved_error(character_data)
+			if not feature_mode_error.is_empty(): return feature_mode_error
+			var alternative_error := RuleUpgradeRules.saved_error(character_data)
+			if not alternative_error.is_empty(): return alternative_error
 			var numeric_pool_error := ResourcePoolRules.saved_state_error(character_data)
 			if not numeric_pool_error.is_empty(): return numeric_pool_error
 			var survival_error := SurvivalRules.saved_state_error(character_data)
@@ -501,6 +521,26 @@ func _validate_party_data(data: Dictionary, campaign_seconds: int = 0) -> String
 		if not gift_error.is_empty(): return gift_error
 		var zero_hp_error := SharedStepExecutor.saved_zero_hp_history_error(character_data)
 		if not zero_hp_error.is_empty(): return zero_hp_error
+		var max_hp_source_error := MaxHpSourceRules.saved_error(character_data)
+		if not max_hp_source_error.is_empty(): return max_hp_source_error
+		var bond_error := BondRules.saved_error(character_data)
+		if not bond_error.is_empty(): return bond_error
+		var item_projection_error := ItemProjectionRules.saved_error(character_data)
+		if not item_projection_error.is_empty(): return item_projection_error
+		var curse_error := CurseRules.saved_error(character_data)
+		if not curse_error.is_empty(): return curse_error
+		var tether_error := TetherRules.saved_error(character_data)
+		if not tether_error.is_empty(): return tether_error
+		var container_error := ContainerRules.saved_error(character_data)
+		if not container_error.is_empty(): return container_error
+		var attachment_error := AttachmentRules.saved_error(character_data)
+		if not attachment_error.is_empty(): return attachment_error
+		var magic_error := MagicPropertyRules.saved_error(character_data)
+		if not magic_error.is_empty(): return magic_error
+		var feature_mode_error := FeatureModeRules.saved_error(character_data)
+		if not feature_mode_error.is_empty(): return feature_mode_error
+		var alternative_error := RuleUpgradeRules.saved_error(character_data)
+		if not alternative_error.is_empty(): return alternative_error
 		var numeric_pool_error := ResourcePoolRules.saved_state_error(character_data)
 		if not numeric_pool_error.is_empty(): return numeric_pool_error
 		var corpse_error := CorpseRules.saved_error(character_data)

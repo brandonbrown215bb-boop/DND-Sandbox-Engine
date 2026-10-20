@@ -146,9 +146,13 @@ static func commit_spell_resource(cast: SpellCastContext) -> bool:
 	if selected_item_payment:
 		var permission := SpellPermissionRules.selected_permission(cast.caster, cast.spell)
 		var copy_id := str(permission.source_id)
-		var copy := cast.caster.inventory.get_instance(copy_id)
-		copy.state["charges"] = int(copy.state.charges) - int(permission.charge_cost)
-		cast.caster.inventory.copies.records[copy_id] = copy
+		# Review R1: spend through the exact-copy boundary so S-060 last-charge aftermath settles once.
+		if not cast.caster.inventory.spend_instance_charges(copy_id, int(permission.charge_cost)):
+			cast.hud.add_log("The selected item no longer has the charges this spell needs.")
+			cast.clear_pending(SpellCastContext.CLEAR_ACTION)
+			cast.clear_pending(SpellCastContext.CLEAR_SPELL)
+			cast.highlight_reachable.call()
+			return false
 	if cast.spell_level > 0 and not selected_item_payment and not cast.divine_intervention and not magic_item_activation:
 		var spell_id := str(cast.spell.get("id", ""))
 		var selected_payment := str(cast.spell.get("_spell_payment_kind", ""))
