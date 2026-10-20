@@ -1,6 +1,6 @@
 # Batch 042 build: S-162 / S-165
 
-Stacks on Batch 041 (PR #9, `batch-041-s161-s164` @ 5ae1ba2).
+Stacks on Batch 041 (PR #9, `batch-041-s161-s164` @ 780c538, after the reviewer's R1-R4 fixes).
 
 ## Selection
 - **S-162 linked-copy / group replacement.** Deps S-161 (041) and S-119 (034) are built in the open stack. It extends the S-161 bond rules directly.
@@ -18,9 +18,15 @@ Stacks on Batch 041 (PR #9, `batch-041-s161-s164` @ 5ae1ba2).
   - At 0 HP, or on `revert`, the same copy returns to the inventory.
   - Saves keep the copy record and the actor's HP. `saved_error` rejects duplicates, foreign ids, missing policies and bad HP. DataLoader validates the policy.
 
+## Rebase onto 780c538 (041 review R1-R4)
+- There was one conflict, in `BondRules.prune`. The resolution keeps R3: if the rule is missing because the source feature is suppressed, the bond stays live. Otherwise item targets use the 042 `held()` check, which also counts projected copies. A suppressed rule also never triggers `dispose_group`.
+- R1/R4 interplay: `ItemProjectionRules.project` now refuses while the owner is in a form that blocks equipment (`ActorProjectionRules.equip_error`). It refuses before any copy moves. Item projection itself has no cost, and every refusal happens before anything changes.
+- R2: only carried, unequipped copies can be projected, so merged copies can't be projected.
+- New checks: refusal from a `dropped` form leaves the copy and `item_projections` unchanged (R1/R4); a projected bonded copy keeps its bond while a projection suppresses the feature and after reversion (R3).
+
 ## Validation
-- Logic: **5164 passed / 0 failed**, against a fresh baseline at 5ae1ba2 of 5139/0. That is +25, equal to the 25 checks in `batch_042_checks.gd`.
-- Scenarios: 031 25, 032 33, 033 70, 034 10, 035 9, 036 7, 037 11, 038 7, 039 10, 040 13, 041 9, **042 6**, shared_spell_flow 67. All with 0 FAIL.
+- Logic: **5174 passed / 0 failed**, against a fresh baseline at 780c538 of 5147/0. That is +27, equal to the 27 checks in `batch_042_checks.gd`.
+- Scenarios: 031 25, 032 33, 033 70, 034 10, 035 9, 036 7, 037 11, 038 7, 039 10, 040 13, 041 11, **042 6**, shared_spell_flow 67. All with 0 FAIL.
 - No SCRIPT ERROR or Parse Error in any log.
 - `batch_042_linked_projection_flow` covers:
   - projecting the figurine in combat

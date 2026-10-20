@@ -140,7 +140,7 @@ static func _projection(check: Callable) -> void:
 	var f := linker("b042_form_owner")
 	var fc := add(f, FIGURINE)
 	BondRules.bond(f, TOTEM, fc)
-	Batch040Checks.shift(f, 2, "b040_hound")
+	Batch041Checks.guise(f, "dropped")
 	var blocked := not ActorProjectionRules.equip_error(f).is_empty()
 	var refused := ItemProjectionRules.project(f, fc)
 	check.call(blocked and not refused.projected and owns(f, fc) and f.item_projections.is_empty(), "042 R1/R4 item projection from a blocking form is refused before the copy moves")
