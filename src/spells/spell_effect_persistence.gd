@@ -41,6 +41,9 @@ static func saved_state_error(dto: Dictionary) -> String:
 			var end_rules_error := SharedSpell.source_end_rules_error(record.get("source_end_rules"))
 			if not SharedSpell.uses(definition) or not definition.has("source_end_rules") or record["source_end_rules"] != definition["source_end_rules"] or not end_rules_error.is_empty():
 				return "invalid saved spell source end rules"
+		# Legacy records captured before the field existed may omit it.
+		if record.has("end_aftermath") and (record["end_aftermath"] != DataLoader.get_spell(spell_id).get("end_aftermath", null) or not SourceEndAftermathRules.validate(record["end_aftermath"]).is_empty()):
+			return "invalid saved spell end aftermath"
 		var remaining: Variant = record.get("remaining_seconds", null)
 		var indefinite_power_word_stun := str(record.get("spell_id", "")) == "power_word_stun" and (remaining is int or remaining is float) and float(remaining) == -1.0
 		if not (remaining is int or remaining is float) or not is_finite(float(remaining)) or float(remaining) != floor(float(remaining)) or (int(remaining) <= 0 and not indefinite_power_word_stun) or int(remaining) > 172800:

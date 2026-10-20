@@ -107,6 +107,7 @@ static func _eligible_type(target, policy: Dictionary) -> bool:
 	return kind not in policy.get("excluded_creature_types", [])
 
 static func _is_magic(record: Dictionary) -> bool:
+	if record.get("state", {}).get("magical", null) is bool: return bool(record.state.magical)
 	var definition := DataLoader.get_item(str(record.get("definition_id", "")))
 	return bool(definition.get("magical", false)) or definition.has("rarity") or bool(record.get("state", {}).get("magical", false))
 

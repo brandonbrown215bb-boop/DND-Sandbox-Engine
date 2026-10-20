@@ -123,6 +123,8 @@ static func saved_error(dto: Dictionary) -> String:
 				return "magic item charges are invalid"
 		elif int(item.get("maximum_charges", 0)) > 0:
 			return "charged magic item is missing its charge state"
+		var degraded_error := LastChargeRules.saved_state_error(str(record["definition_id"]), state)
+		if not degraded_error.is_empty(): return degraded_error
 		if state.has("attuned_to") and (not state["attuned_to"] is String or str(state["attuned_to"]).is_empty()):
 			return "magic item attunement is invalid"
 		if state.has("attuned_to") and bool(item.get("requires_attunement", false)):

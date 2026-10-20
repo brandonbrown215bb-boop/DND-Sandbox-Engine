@@ -27,6 +27,10 @@ var gold: int = 0
 
 ## Catalog projections above remain compatible; copies retain individual state.
 var copies := InventoryCopies.new()
+## S-060 receipt of the latest real spend; transient, not saved.
+var last_charge_receipt: Dictionary = {}
+## Test-only injection of the declared aftermath roll for the next spend.
+var forced_last_charge_roll: int = 0
 ## Runtime owner link used only to publish actual equipment changes.
 var owner_character_ref: WeakRef
 
@@ -528,6 +532,8 @@ func recover_daily_charges() -> void:
 		if str(recovery.get("cadence", "")) != "dawn":
 			continue
 		var state: Dictionary = record.get("state", {})
+		if bool(state.get("degraded", false)):
+			continue
 		var maximum := int(item.get("maximum_charges", 0))
 		var amount := Dice.roll(int(recovery.get("maximum", 0)) - int(recovery.get("minimum", 0)) + 1) + int(recovery.get("minimum", 0)) - 1
 		state["charges"] = mini(maximum, int(state.get("charges", 0)) + amount)
@@ -645,9 +651,12 @@ func spend_instance_charges(instance_id: String, amount: int) -> bool:
 	var state: Dictionary = record.get("state", {}).duplicate(true)
 	if record.is_empty() or int(state.get("charges", 0)) < amount:
 		return false
-	state["charges"] = int(state["charges"]) - amount
+	var charges_before := int(state["charges"])
+	state["charges"] = charges_before - amount
 	record["state"] = state
 	copies.records[instance_id] = record
+	last_charge_receipt = LastChargeRules.settle(self, instance_id, charges_before, int(state["charges"]), forced_last_charge_roll)
+	forced_last_charge_roll = 0
 	return true
 
 

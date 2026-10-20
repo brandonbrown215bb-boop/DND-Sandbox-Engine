@@ -187,6 +187,7 @@ if ($runIntegration) {
 	$scenarios += "batch_033_zero_hp_flow"
 	$scenarios += "batch_034_aftermath_flow"
 	$scenarios += "batch_035_profile_max_hp_flow"
+	$scenarios += "batch_036_end_and_charge_flow"
 	$scenarios += "wave_three_foundations_flow", "owned_creature_lifecycle_flow", "batch_024_recovery_flow", "batch_024_spell_result_flow",
     "find_familiar_exploration_flow", "party_recovery_flow", "downed_area_damage_flow", "created_undead_flow"
     if ($Scenario.Count -gt 0) {
