@@ -736,6 +736,16 @@ func _sanitize_class_features(data: Dictionary, source: String) -> void:
 					_load_errors.append("Feature '%s' in %s: %s" % [feature.get("id", ""), source, profile_error])
 				else: kept.append(feature)
 				continue
+			if feature.get("type") in ["mode_choice", "rule_upgrade"]:
+				var declared := {}
+				for any_level in by_level:
+					for other in by_level[any_level]:
+						if other is Dictionary: declared[str(other.get("id", ""))] = true
+				var mode_error := FeatureModeRules.validate_rule(feature) if feature.type == "mode_choice" else RuleUpgradeRules.validate_rule(feature, declared)
+				if not mode_error.is_empty():
+					_load_errors.append("Feature '%s' in %s: %s" % [feature.get("id", ""), source, mode_error])
+				else: kept.append(feature)
+				continue
 			if feature.get("type") == "death_save_outcome":
 				var save_error := ZeroHpAftermathRules.validate_death_save_rule(feature)
 				if not save_error.is_empty():

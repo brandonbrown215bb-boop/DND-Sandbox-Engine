@@ -303,6 +303,8 @@ var zero_hp_history: Dictionary = {}
 var zero_hp_attempt_serial: int = 0
 ## S-130 source-owned maximum-HP entries keyed by exact source instance.
 var max_hp_sources: Dictionary = {}
+## S-103 rest/activation mode selections, keyed by owning feature id.
+var feature_modes: Dictionary = {}
 var barbarian_relentless_rage_enabled: bool = true
 ## Temporary Beast statistics plus the Druid statistics needed to revert safely.
 var wild_shape_state: Dictionary = {}
@@ -1294,7 +1296,7 @@ func _unlock_features_for_level(lvl: int, acquiring: bool = true) -> void:
 				var acquired := ResourcePoolRules.acquire(self, feature, source_id)
 				if not acquired.get("success", false):
 					push_warning("[Character] Could not acquire passive save-bonus pool '%s': %s" % [source_id, str(acquired.get("message", "unknown error"))])
-		if acquiring and feature.get("type", "") in ["active", "triggered", "resource"]:
+		if acquiring and feature.get("type", "") in ["active", "triggered", "resource", "mode_choice"]:
 			var pool := str(feature.get("resource_id", feature["id"]))
 			if not feature_uses.has(pool):
 				feature_uses[pool] = get_feature_max_uses(pool)
@@ -1882,6 +1884,7 @@ func get_feature_max_uses(feature_id: String, feature_override: Dictionary = {})
 				break
 	if feature_data.is_empty():
 		return -1
+	feature_data = RuleUpgradeRules.effective(self, feature_data)
 	if feature_data.has("resource_id"):
 		return get_feature_max_uses(str(feature_data["resource_id"]))
 	if str(feature_data.get("resource_formula", "")) == "level*5":
@@ -1954,6 +1957,7 @@ func short_rest() -> void:
 	if get_max_focus_points() > 0:
 		feature_uses["focus_points"] = get_max_focus_points()
 	RollTokenRules.generate_for_rest(self, "short_rest")
+	FeatureModeRules.on_rest(self, "short_rest")
 
 
 ## Restore long-rest resources and the character's normal between-encounter state.
@@ -2011,6 +2015,7 @@ func long_rest() -> void:
 		feature_uses["focus_points"] = get_max_focus_points()
 	feature_uses.erase("uncanny_metabolism_used")
 	RollTokenRules.generate_for_rest(self, "long_rest")
+	FeatureModeRules.on_rest(self, "long_rest")
 	WardRules.clear_for_long_rest(self)
 	if class_id == "paladin":
 		PaladinRules.restore_find_steed_ability(self)
@@ -2526,6 +2531,7 @@ func to_dict() -> Dictionary:
 		"zero_hp_history": zero_hp_history.duplicate(true),
 		"zero_hp_attempt_serial": zero_hp_attempt_serial,
 		"max_hp_sources": max_hp_sources.duplicate(true),
+		"feature_modes": feature_modes.duplicate(true),
 		"barbarian_relentless_rage_enabled": barbarian_relentless_rage_enabled,
 		"level": level,
 		"xp": xp,
@@ -2855,9 +2861,10 @@ func from_dict(data: Dictionary) -> void:
 	zero_hp_history = data.get("zero_hp_history", {}).duplicate(true)
 	zero_hp_attempt_serial = int(data.get("zero_hp_attempt_serial", 0))
 	MaxHpSourceRules.restore(self, data)
+	FeatureModeRules.restore(self, data)
 	barbarian_relentless_rage_enabled = bool(data.get("barbarian_relentless_rage_enabled", true))
 	for feature in features:
-		if feature.get("type", "") in ["active", "triggered", "resource"]:
+		if feature.get("type", "") in ["active", "triggered", "resource", "mode_choice"]:
 			var pool := str(feature.get("resource_id", feature["id"]))
 			feature_uses[pool] = clampi(int(feature_uses.get(pool, 0)), 0, get_feature_max_uses(pool))
 	if get_max_focus_points() > 0:
