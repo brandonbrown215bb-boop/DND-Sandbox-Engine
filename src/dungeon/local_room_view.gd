@@ -30,6 +30,8 @@ var ration_half_button: Button
 var ration_full_button: Button
 var attune_button: Button
 var unattune_button: Button
+var stow_button: Button
+var retrieve_button: Button
 var encounter_button: Button
 var pending_teleport_spell := ""
 var pending_water_area_mode := ""
@@ -134,6 +136,9 @@ func start(room: Dictionary, party: Array, room_grid: HexGrid, room_hud: Dungeon
 		_result(actor().inventory.attune_instance(_selected(items), actor().character_id)))
 	unattune_button = _add_button(item_action_row, "Unattune", func():
 		_result(actor().inventory.unattune_instance(_selected(items), actor().character_id)))
+	# S-196: stow the exact selected copy, or take the last stowed copy out of the selected container.
+	stow_button = _add_button(item_action_row, "Stow", func(): _result(ContainerRules.stow(actor().inventory, _selected(items))))
+	retrieve_button = _add_button(item_action_row, "Take out", func(): _result(ContainerRules.retrieve_last(actor().inventory, _selected(items))))
 	refresh()
 	hud.add_log("%s — select a character, then click a space to move or an object to interact. Each hex is five feet." % state.get("name", "Room"))
 
@@ -201,6 +206,7 @@ func _refresh_item_actions() -> void:
 	var state: Dictionary = record.get("state", {})
 	attune_button.disabled = not bool(definition.get("requires_attunement", false)) or not str(state.get("attuned_to", "")).is_empty()
 	unattune_button.disabled = str(state.get("attuned_to", "")) != actor().character_id
+	if retrieve_button != null: retrieve_button.disabled = ContainerRules.contents(actor().inventory, str(record.get("instance_id", ""))).is_empty()
 
 func click(position: Vector2i) -> void:
 	if not pending_water_area_mode.is_empty():

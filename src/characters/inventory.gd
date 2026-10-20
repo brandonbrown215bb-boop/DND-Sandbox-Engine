@@ -338,7 +338,7 @@ func can_equip(slot: Slot, item_id: String, allow_unowned: bool = false) -> bool
 	if valid_slot != slot:
 		return false
 	var equipped_copy := str(copies.equipped.get(slot, ""))
-	if bool(copies.records.get(equipped_copy, {}).get("state", {}).get("cursed_attunement", false)):
+	if bool(copies.records.get(equipped_copy, {}).get("state", {}).get("cursed_attunement", false)) and not CurseRules.removal_allowed(copies.records.get(equipped_copy, {})):
 		return false
 	if slot == Slot.OFFHAND:
 		if "light" not in item_data.get("properties", []) or is_slot_equipped(Slot.SHIELD) or "light" not in DataLoader.get_item(get_weapon()).get("properties", []):
@@ -386,7 +386,7 @@ func unequip(slot: Slot) -> String:
 	var item_id: String = equipped.get(slot, "")
 	if not item_id.is_empty():
 		var instance_id := str(copies.equipped.get(slot, ""))
-		if bool(copies.records.get(instance_id, {}).get("state", {}).get("cursed_attunement", false)):
+		if bool(copies.records.get(instance_id, {}).get("state", {}).get("cursed_attunement", false)) and not CurseRules.removal_allowed(copies.records.get(instance_id, {})):
 			push_warning("[Inventory] A cursed attuned item cannot be removed before its curse is broken.")
 			return ""
 		if backpack.size() >= MAX_BACKPACK_SIZE:
@@ -460,6 +460,9 @@ func attune_instance(instance_id: String, character_id: String) -> Dictionary:
 			attuned_count += 1
 			if str(owned_record.get("definition_id", "")) == str(record.get("definition_id", "")) and str(record.get("definition_id", "")) == "ring_of_protection":
 				return {"success": false, "message": "A character can be attuned to only one Ring of Protection at a time."}
+	var lingering := CurseRules.attune_error(owner_character_ref.get_ref() if owner_character_ref != null else null)
+	if not lingering.is_empty():
+		return {"success": false, "message": lingering}
 	if attuned_count >= 3:
 		return {"success": false, "message": "A character can be attuned to no more than three items."}
 	state["attuned_to"] = character_id
@@ -492,6 +495,9 @@ func break_cursed_item_attunements(character_id: String) -> int:
 		var record: Dictionary = copies.records[instance_id]
 		var state: Dictionary = record.get("state", {})
 		if str(state.get("attuned_to", "")) != character_id or not bool(state.get("cursed_attunement", false)):
+			continue
+		# S-202: a declared curse breaks only through CurseRules' exact requirements.
+		if not CurseRules.policy(str(record.get("definition_id", ""))).is_empty():
 			continue
 		state.erase("attuned_to")
 		state.erase("cursed_attunement")
@@ -685,6 +691,7 @@ func destroy_instance(instance_id: String) -> Dictionary:
 			copies.backpack.remove_at(index)
 			backpack.remove_at(index)
 	copies.records.erase(instance_id)
+	CurseRules.on_removed(owner_character_ref.get_ref() if owner_character_ref != null else null, record)
 	BondRules.on_copy_removed(owner_character_ref.get_ref() if owner_character_ref != null else null)
 	return record
 
@@ -707,6 +714,7 @@ func drop_equipped_instance(slot: Slot) -> Dictionary:
 	copies.records.erase(instance_id)
 	equipped.erase(slot)
 	_publish_equipment_change(str(record.get("definition_id", "")), "dropped", instance_id)
+	CurseRules.on_removed(owner_character_ref.get_ref() if owner_character_ref != null else null, record)
 	BondRules.on_copy_removed(owner_character_ref.get_ref() if owner_character_ref != null else null)
 	return record
 

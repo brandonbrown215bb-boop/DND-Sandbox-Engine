@@ -77,6 +77,11 @@ static func _apply_spell_specific(cast: SpellCastContext, p_target: Character = 
 			cast.hud.add_log("[color=cyan]%s's curse ends.[/color]" % p_target.character_name)
 		if p_target != null:
 			var broken_item_attunements := p_target.inventory.break_cursed_item_attunements(p_target.character_id)
+			# S-202: declared curses break only when this cast meets their exact requirement.
+			var declared := CurseRules.break_with(p_target, "remove_curse", int(resolution.get("slot_level", spell_data.get("level", 3))))
+			broken_item_attunements += declared.broken.size() + declared.lingering_ended.size()
+			if not declared.refused.is_empty():
+				cast.hud.add_log("[color=yellow]%d curse%s resist this casting.[/color]" % [declared.refused.size(), "" if declared.refused.size() == 1 else "s"])
 			if broken_item_attunements > 0:
 				cast.hud.add_log("[color=cyan]Remove Curse breaks %s cursed item attunement%s.[/color]" % [broken_item_attunements, "" if broken_item_attunements == 1 else "s"])
 		elif not m_target.is_empty() and m_target.get("conditions", {}).has("cursed"):

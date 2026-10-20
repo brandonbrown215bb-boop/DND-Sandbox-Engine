@@ -1,0 +1,12 @@
+[
+  {"id": "fixture:b043_satchel", "name": "Fixture Satchel", "description": "Neutral fixture container with a main compartment and a narrow sleeve.", "type": "tool", "weight": 1, "value": 0,
+   "container": {"compartments": [
+     {"id": "main", "item_types": ["tool", "consumable"], "max_count": 3, "max_weight": 6},
+     {"id": "sleeve", "item_types": ["tool"], "max_count": 1, "max_volume": 1}
+   ]}},
+  {"id": "fixture:b043_flask", "name": "Fixture Flask", "description": "Neutral fixture tool with weight and volume.", "type": "tool", "weight": 2, "volume": 1, "value": 0},
+  {"id": "fixture:b043_brick", "name": "Fixture Brick", "description": "Neutral fixture tool with weight only.", "type": "tool", "weight": 4, "value": 0},
+  {"id": "fixture:b043_hex_blade", "name": "Fixture Hex Blade", "description": "Neutral fixture cursed weapon whose curse lingers after loss.", "type": "weapon", "damage": "1d8", "damage_type": "slashing", "ability": "STR", "range": 1, "properties": ["versatile"], "magical": true, "rarity": "uncommon", "requires_attunement": true, "cursed": true, "effects": [], "value": 0,
+   "curse": {"removal": "allowed", "lingering": {"blocks_attunement": true}, "break": {"spells": ["remove_curse"], "min_slot_level": 4}}},
+  {"id": "fixture:b043_ward_ring", "name": "Fixture Ward Ring", "description": "Neutral fixture attunement ring.", "type": "ring", "magical": true, "rarity": "uncommon", "requires_attunement": true, "effects": [], "value": 0}
+]

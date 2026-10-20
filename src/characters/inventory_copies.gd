@@ -150,7 +150,7 @@ static func ownership_error(save: Dictionary) -> String:
 	var seen: Dictionary = {}
 	var party_characters: Dictionary = save.get("party", {}).get("characters", {}) if save.get("party") is Dictionary else {}
 	for character in party_characters.values():
-		for id in character.get("inventory", {}).get("copies", {}).get("records", {}):
+		for id in character.get("inventory", {}).get("copies", {}).get("records", {}).keys() + ContainerRules.content_ids(character.get("inventory", {})):
 			if seen.has(id): return "item copy has multiple character owners"
 			seen[id] = true
 	for player in save.get("players", []):
@@ -160,7 +160,7 @@ static func ownership_error(save: Dictionary) -> String:
 		if party_characters.has(owner):
 			if character.get("inventory", {}) != party_characters[owner].get("inventory", {}): return "player inventory differs from its party character"
 			continue
-		for id in character.get("inventory", {}).get("copies", {}).get("records", {}):
+		for id in character.get("inventory", {}).get("copies", {}).get("records", {}).keys() + ContainerRules.content_ids(character.get("inventory", {})):
 			if seen.has(id): return "item copy has multiple character owners"
 			seen[id] = true
 	var dungeons: Dictionary = save.get("campaign_ledger", {}).get("dungeon_snapshots", {}).duplicate(true)
