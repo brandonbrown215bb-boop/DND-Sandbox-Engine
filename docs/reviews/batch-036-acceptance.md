@@ -17,7 +17,7 @@ Independent review by Runtime Reviewer, 2026-10-20. This reviews PR #3 (`batch-0
 | S-130 | Checked | 036 does not touch `MaxHpSourceRules`. The rebase had no conflicts. 035 logic (including the ST1–ST9 stress cases) and the 035 scenario (9/0) pass on the rebased stack. | No interaction |
 | P | Correction to my 034 doc | S-093 is a **P3** slice, not P4. The 034 proposal "P4 15/25" should read P3 +1 and P4 +1. | Noted here |
 
-## Stress cases (`Batch036Checks.review_stress`, 13 assertions)
+## Stress cases (`Batch036Checks.review_stress`, 12 assertions)
 
 - **RS1:** an equipped ring's real item-charge reaction payment takes the last charge and settles the declared degrade once.
 - **RS2:** an empty copy offers no item-charge payment. A forced stale selection is refused before any cost: the reaction is kept and charges stay at 0.
