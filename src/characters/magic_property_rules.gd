@@ -6,7 +6,8 @@ extends RefCounted
 ## charges and identity are untouched). Destruction is permanent and names its
 ## cause. Unlisted properties, and every mundane field, stay as they were.
 
-const PROPERTIES := ["source_benefits", "spell_permissions", "incoming_negation_rule", "attachment_sets"]
+## Review 044 R2: "item_effects" names a magic item's authored effects list (Ring of Protection's AC and save bonus).
+const PROPERTIES := ["source_benefits", "spell_permissions", "incoming_negation_rule", "attachment_sets", "item_effects"]
 
 static func effect_error(effect: Dictionary) -> String:
 	if effect.keys().any(func(k): return str(k) not in ["type", "properties", "mode"]): return "Magic suppression accepts only type, properties and mode."
@@ -24,7 +25,26 @@ static func has_property(definition_id: String, property: String) -> bool:
 	var item := DataLoader.get_item(definition_id)
 	if not (bool(item.get("magical", false)) or item.has("rarity")): return false
 	if property == "attachment_sets": return not item.get("attachments", {}).get("sets", []).is_empty()
+	if property == "item_effects": return not item.get("effects", []).is_empty()
 	return item.has(property)
+
+static func _affected(actor: Character, effect: Dictionary) -> Dictionary:
+	var inv := actor.inventory
+	inv.copies.sync(inv)
+	var affected := {}
+	for copy_id in inv.copies.equipped.values():
+		var definition := str(inv.copies.records.get(copy_id, {}).get("definition_id", ""))
+		var props: Array = effect.properties.filter(func(p): return has_property(definition, str(p)) and not destroyed(inv.copies.records.get(copy_id, {}), str(p)))
+		if not props.is_empty(): affected[str(copy_id)] = props
+	return affected
+
+## Review 044 R1: the no-target refusal happens before the spell slot is spent.
+static func cast_error(caster, spell: Dictionary) -> String:
+	if not caster is Character: return ""
+	for effect in spell.get("effects", []):
+		if effect is Dictionary and effect.get("type", "") == "suppress_item_magic" and effect_error(effect).is_empty() and _affected(caster, effect).is_empty():
+			return "No equipped copy has those magical properties."
+	return ""
 
 ## The shared effect on the self-cast actor: affects its equipped exact copies.
 static func apply(actor: Character, cast: Dictionary, effect: Dictionary) -> Dictionary:
@@ -34,12 +54,7 @@ static func apply(actor: Character, cast: Dictionary, effect: Dictionary) -> Dic
 	if actor.spell_effects.has(source): return {"applied": false, "reason": "source already applied"}
 	var mode := str(effect.get("mode", "suppress"))
 	var inv := actor.inventory
-	inv.copies.sync(inv)
-	var affected := {}
-	for copy_id in inv.copies.equipped.values():
-		var definition := str(inv.copies.records.get(copy_id, {}).get("definition_id", ""))
-		var props: Array = effect.properties.filter(func(p): return has_property(definition, str(p)) and not destroyed(inv.copies.records.get(copy_id, {}), str(p)))
-		if not props.is_empty(): affected[str(copy_id)] = props
+	var affected := _affected(actor, effect)
 	if affected.is_empty(): return {"applied": false, "reason": "No equipped copy has those magical properties."}
 	if mode == "destroy":
 		for copy_id in affected:
@@ -64,16 +79,22 @@ static func active(actor, copy_id: String, property: String) -> bool:
 		if s is Dictionary and str(s.get("mode", "")) == "suppress" and property in s.get("copies", {}).get(copy_id, []): return false
 	return true
 
+## Review 044 R3: per-copy destroyed-magic check, shared with contained and attached copies.
+static func record_error(record: Variant) -> String:
+	if not record is Dictionary or not record.get("state") is Dictionary or not record.state.has("destroyed_magic"): return ""
+	var gone: Variant = record.state.destroyed_magic
+	if not gone is Dictionary or gone.is_empty(): return "destroyed magic is malformed"
+	for p in gone:
+		if not has_property(str(record.get("definition_id", "")), str(p)): return "destroyed magic names a property the item lacks"
+		var why: Variant = gone[p]
+		if not why is Dictionary or why.size() != 2 or str(why.get("cause", "")).is_empty() or str(why.get("source_id", "")).is_empty(): return "destroyed magic lacks its cause"
+	return ""
+
 static func saved_error(dto: Dictionary) -> String:
 	var records: Dictionary = dto.get("inventory", {}).get("copies", {}).get("records", {}) if dto.get("inventory", {}).get("copies", {}).get("records") is Dictionary else {}
 	for record in records.values():
-		if not record is Dictionary or not record.get("state") is Dictionary or not record.state.has("destroyed_magic"): continue
-		var gone: Variant = record.state.destroyed_magic
-		if not gone is Dictionary or gone.is_empty(): return "destroyed magic is malformed"
-		for p in gone:
-			if not has_property(str(record.get("definition_id", "")), str(p)): return "destroyed magic names a property the item lacks"
-			var why: Variant = gone[p]
-			if not why is Dictionary or why.size() != 2 or str(why.get("cause", "")).is_empty() or str(why.get("source_id", "")).is_empty(): return "destroyed magic lacks its cause"
+		var e := record_error(record)
+		if not e.is_empty(): return e
 	for source in dto.get("spell_effects", {}):
 		var record: Variant = dto.spell_effects[source]
 		if not record is Dictionary or not record.has("magic_suppression"): continue

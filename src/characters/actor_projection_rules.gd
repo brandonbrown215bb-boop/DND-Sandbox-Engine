@@ -90,6 +90,8 @@ static func retains(actor, what: String) -> bool:
 
 ## Review R1: the same refusals apply() makes, checked before any cost is paid.
 static func cast_error(caster, spell: Dictionary) -> String:
+	var magic_error := MagicPropertyRules.cast_error(caster, spell) # Review 044 R1: refuse before the slot is spent.
+	if not magic_error.is_empty(): return magic_error
 	var effect := _effect(spell)
 	if effect.is_empty() or not caster is Character: return ""
 	if is_projected(caster) or DruidRules.is_shaped(caster): return "You are already in another form."

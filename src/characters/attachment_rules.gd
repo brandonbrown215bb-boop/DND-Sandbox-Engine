@@ -150,6 +150,8 @@ static func saved_error(dto: Dictionary) -> String:
 			if cid.begins_with(prefix) and cid.get_slice(":", 1).to_int() >= int(copies.get("next_id", 0)): return "inventory serial would reuse an identity"
 			var cdef := str(child.definition_id)
 			if child.state.has("attached") or child.state.has("contents") or child.state.has("attuned_to") or is_host(cdef) or ContainerRules.is_container(cdef): return "saved attached copy is not a plain part"
+			var part_error := InventoryCopies.record_state_error(child) # Review 044 R3: parts keep validated per-copy state.
+			if not part_error.is_empty(): return "saved attached copy: " + part_error
 			if socket.has("accepts") and cdef not in socket.accepts: return "saved attachment does not fit its socket"
 			if socket.has("item_types") and str(DataLoader.get_item(cdef).get("type", "")) not in socket.item_types: return "saved attachment does not fit its socket"
 	return ""

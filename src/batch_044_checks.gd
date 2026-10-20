@@ -43,6 +43,7 @@ static func run(check: Callable) -> void:
 	_magic_validation(check)
 	_magic(check)
 	_magic_saves(check)
+	review_stress(check)
 
 static func _attachment_validation(check: Callable) -> void:
 	var policy: Dictionary = DataLoader.get_item(HOST).attachments.duplicate(true)
@@ -162,7 +163,7 @@ static func _magic(check: Callable) -> void:
 	check.call(hushed == set_ac - 1 and SourceBenefitRules.total(setter, "AC") == set_ac and AttachmentRules.attached(setter.inventory, host).size() == 2, "044 S-203/S-210 suppression mutes attachment sets and restores them with the parts in place")
 	var bare := wearer("b044_bare")
 	var none := cast(bare, HUSH)
-	check.call(not none.get("magic_suppression", {}).get("applied", true), "044 S-203 a suppression with no affected copy applies nothing")
+	check.call(not none.get("magic_suppression", {}).get("applied", false) and int(bare.spell_slots.get("1", 0)) == 1, "044 S-203 a suppression with no affected copy applies nothing and keeps the slot (review 044 R1)")
 
 static func _magic_saves(check: Callable) -> void:
 	var a := wearer("b044_magic_save")
@@ -196,3 +197,84 @@ static func _magic_saves(check: Callable) -> void:
 		defects[label].call(bad)
 		if not MagicPropertyRules.saved_error(bad).is_empty(): refused += 1
 	check.call(refused == 5, "044 S-203 saved magic refuses widened, retyped, empty, uncaused and absent-property records (%d/5)" % refused)
+
+
+## Runtime Reviewer stress (RS1-RS8).
+const MUTE := "fixture:b044_review_mute"
+static func review_stress(check: Callable) -> void:
+	if DataLoader.get_spell(MUTE).is_empty(): DataLoader._load_json_file("res://data/fixtures/batch_044/spells/review_mute.json", "spell")
+	Batch041Checks.load_fixtures()
+	if DataLoader.get_item(Batch043Checks.POUCH).is_empty(): DataLoader._load_json_file("res://data/fixtures/batch_043/items/review_pouch.json", "item")
+	# RS1: no worn copy with the listed property -> refused before the slot is spent.
+	var a := wearer("b044_rs1")
+	a.spell_slots = {"1": 1}
+	var r := SpellResolver.resolve(a, a, DataLoader.get_spell(HUSH).duplicate(true), true, {}, [], 1)
+	check.call(int(a.spell_slots.get("1", 0)) == 1 and not r.get("magic_suppression", {}).get("applied", false) and not ActorProjectionRules.cast_error(a, DataLoader.get_spell(HUSH)).is_empty(), "044 RS1 suppression with nothing to suppress refuses before cost (slots=%s)" % str(a.spell_slots))
+	# RS2: SRD Ring of Protection: its authored AC and save bonus are suppressible together and return after.
+	var b := Batch041Checks.wearer("b044_rs2")
+	var ac0 := b.get_ac()
+	var sv0 := b.inventory.magic_item_saving_bonus(b.character_id)
+	var m := cast(b, MUTE)
+	var ac1 := b.get_ac()
+	var sv1 := b.inventory.magic_item_saving_bonus(b.character_id)
+	SpellEffects.end_concentration(b, [b])
+	check.call(m.get("magic_suppression", {}).get("applied", false) and sv0 == 1 and sv1 == 0 and ac1 == ac0 - 1 and b.get_ac() == ac0 and b.inventory.magic_item_saving_bonus(b.character_id) == 1 and SourceBenefitRules.total(b, "AC") == 2, "044 RS2 Ring of Protection AC and save bonus are suppressed together, charm untouched, restored at end (ac %d->%d save %d->%d)" % [ac0, ac1, sv0, sv1])
+	# RS3: tampered attached part state is refused like carried and contained copies.
+	var c := wearer("b044_rs3")
+	var host := add(c, HOST)
+	var g := add(c, GEM)
+	AttachmentRules.attach(c.inventory, host, g, "gem_a")
+	var dto := c.to_dict()
+	check.call(AttachmentRules.saved_error(dto).is_empty(), "044 RS3 an untampered attached part validates")
+	var bad := dto.duplicate(true)
+	bad.inventory.copies.records[host].state.attached.gem_a.state["charges"] = -5
+	var bad2 := dto.duplicate(true)
+	bad2.inventory.copies.records[host].state.attached.gem_a.state["destroyed_magic"] = {"source_benefits": {"cause": "x", "source_id": "y"}}
+	check.call(not AttachmentRules.saved_error(bad).is_empty() and not AttachmentRules.saved_error(bad2).is_empty(), "044 RS3 tampered attached part state is refused (%s / %s)" % [AttachmentRules.saved_error(bad), AttachmentRules.saved_error(bad2)])
+	# RS4: tampered destroyed magic on a stowed copy is refused.
+	var d := wearer("b044_rs4")
+	var pouch := add(d, Batch043Checks.POUCH)
+	var ring := add(d, MANTLE)
+	ContainerRules.put(d.inventory, pouch, ring, "main")
+	var ddto := d.to_dict()
+	var dbad := ddto.duplicate(true)
+	for rec in dbad.inventory.copies.records.values():
+		for compartment in rec.get("state", {}).get("contents", {}).values():
+			for child in compartment: child.state["destroyed_magic"] = {"attachment_sets": {"cause": "x", "source_id": "y"}}
+	check.call(ContainerRules.saved_error(ddto).is_empty() and not ContainerRules.saved_error(dbad).is_empty(), "044 RS4 tampered destroyed magic on a contained copy is refused (%s)" % ContainerRules.saved_error(dbad))
+	# RS5: stowed copies are not worn and are never suppressed; 043 attunement counting unaffected.
+	var e := wearer("b044_rs5")
+	var p2 := add(e, Batch043Checks.POUCH)
+	var ward := add(e, Batch043Checks.WARD)
+	e.inventory.attune_instance(ward, e.character_id)
+	ContainerRules.put(e.inventory, p2, ward, "main")
+	var mantle := add(e, MANTLE)
+	e.inventory.equip_instance(Inventory.Slot.RING_1, mantle)
+	var h := cast(e, HUSH)
+	var others: Array = []
+	for i in 3: others.append(e.inventory.attune_instance(add(e, Batch043Checks.WARD), e.character_id).get("success", false))
+	check.call(h.magic_suppression.copies.keys() == [mantle] and others == [true, true, false], "044 RS5 suppression touches only worn copies; stowed attuned copy still counts (%s %s)" % [str(h.magic_suppression.copies.keys()), str(others)])
+	# RS6: layering with 041 merged-form suppression: each source restores only its own.
+	var f := Batch041Checks.wearer("b044_rs6")
+	f.inventory.unequip(Inventory.Slot.RING_1)
+	var charm := add(f, MANTLE)
+	f.inventory.equip_instance(Inventory.Slot.RING_1, charm)
+	var applied := MagicPropertyRules.apply(f, {"source_id": "spell:%s:rs6" % f.character_id, "caster_id": f.character_id, "spell_id": HUSH}, DataLoader.get_spell(HUSH).effects[0])
+	Batch041Checks.guise(f, "merged")
+	var during := SourceBenefitRules.total(f, "AC")
+	SpellEffects.end_concentration(f, [f])
+	var after_form := SourceBenefitRules.total(f, "AC")
+	f.spell_effects.erase("spell:%s:rs6" % f.character_id)
+	check.call(applied.applied and charm in applied.copies and during == 0 and after_form == 0 and SourceBenefitRules.total(f, "AC") == 2 and f.inventory.magic_item_saving_bonus(f.character_id) == 1, "044 RS6 merged-form end keeps the live suppression; suppression end then restores (during=%d after_form=%d)" % [during, after_form])
+	# RS7: detaching from a worn host also works and disables only its set.
+	var w := wearer("b044_rs7")
+	var hh := add(w, HOST)
+	for s in ["gem_a", "gem_b"]: AttachmentRules.attach(w.inventory, hh, add(w, GEM), s)
+	w.inventory.equip_instance(Inventory.Slot.RING_1, hh)
+	var ac_full := SourceBenefitRules.total(w, "AC")
+	var off := AttachmentRules.detach(w.inventory, hh, "gem_a")
+	check.call(ac_full == 1 and off.success and SourceBenefitRules.total(w, "AC") == 0 and w.inventory.equipped_instance_id(Inventory.Slot.RING_1) == hh, "044 RS7 detach from a worn host works (ac %d)" % ac_full)
+	# RS8: legacy save without any S-203/S-210 fields validates.
+	var l := Batch041Checks.wearer("b044_rs8")
+	var ldto := l.to_dict()
+	check.call(MagicPropertyRules.saved_error(ldto).is_empty() and AttachmentRules.saved_error(ldto).is_empty() and InventoryCopies.saved_error(ldto.inventory).is_empty(), "044 RS8 a legacy save without parts or suppression validates")
