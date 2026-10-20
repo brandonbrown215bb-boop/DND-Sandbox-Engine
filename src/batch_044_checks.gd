@@ -31,7 +31,7 @@ static func cast(actor: Character, spell_id: String) -> Dictionary:
 	if not actor.concentrating_on.is_empty() and DataLoader.get_spell(spell_id).get("concentration", false): SpellEffects.end_concentration(actor, [actor])
 	var spell := DataLoader.get_spell(spell_id).duplicate(true)
 	var r := SpellResolver.resolve(actor, actor, spell, true, {}, [], 1)
-	if bool(spell.get("concentration", false)) and r.get("magic_suppression", {}).get("applied", false): actor.concentrating_on = {"spell_id": spell_id, "effect_source": str(r.effect_cast.source_id), "targets": [actor]}
+	if bool(spell.get("concentration", false)) and r.get("magic_suppression", {}).get("applied", false): actor.concentrating_on = {"spell_id": spell_id, "effect_source": str(r.effect_cast.source_id), "targets": []}
 	return r
 
 static func run(check: Callable) -> void:

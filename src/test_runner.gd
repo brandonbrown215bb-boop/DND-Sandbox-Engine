@@ -56,6 +56,7 @@ func _ready() -> void:
 	_run_group("combat", func(): Batch044Checks.run(_assert))
 	_run_group("combat", func(): Batch045Checks.run(_assert))
 	_run_group("combat", func(): Batch046Checks.run(_assert))
+	_run_group("combat", func(): StackRepairChecks.run(_assert))
 	_run_group("combat", _test_player_commands)
 	_run_group("combat", _test_initiative)
 	_run_group("spells", _test_spellcasting)
@@ -115,6 +116,9 @@ func _ready() -> void:
 	_run_group("persistence", func(): PlaytestFixChecks.saved_coordinates(_assert))
 	_run_group("ui", _test_widgets)
 	_run_group("classes", func(): ClassFeatureChecks.run(_assert))
+	# Release the real per-turn attack cache before the scene harness exits.
+	CombatAction.reset_bounded_owner_turn_rider_locks()
+	SpellDamageRolls.clear_pending_requests()
 	_report()
 	get_tree().quit(1 if _failed > 0 else 0)
 

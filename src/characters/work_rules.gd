@@ -53,7 +53,8 @@ static func eligibility_error(actor: Character, record: Dictionary) -> String:
 	if people.is_empty() or str(people[0]) != actor.character_id: return "Someone else started this work."
 	for id in people:
 		var c := _party_member(str(id))
-		if c == null or not c.is_alive: return "A participant has left the work."
+		if c == null or not c.is_alive or c.current_hp <= 0 or c.has_condition("incapacitated"): return "A participant has left the work."
+		if bool(p.get("concentration", false)) and not c.concentrating_on.is_empty(): return "The work needs full attention; concentration on a spell breaks it."
 	if people.size() < int(p.get("participants", 1)): return "This work needs %d participants." % int(p.get("participants", 1))
 	if bool(p.get("concentration", false)) and not actor.concentrating_on.is_empty(): return "The work needs full attention; concentration on a spell breaks it."
 	return ""
@@ -142,6 +143,21 @@ static func interrupt_all(actor: Character, reason: String) -> Array:
 		receipts.append(_interrupt(record, reason))
 		actor.inventory.update_instance(record)
 	return receipts
+
+## Resting participants leave their own work and any work they were helping.
+static func interrupt_participant(actor: Character, reason: String) -> void:
+	var workers: Array = PartyManager.characters.values()
+	if actor not in workers: workers.append(actor)
+	for worker in workers:
+		if not worker is Character: continue
+		for record in worker.inventory.owned_instances():
+			if is_active(record) and actor.character_id in record.state.get("work_participants", []):
+				_interrupt(record, reason)
+				worker.inventory.update_instance(record)
+
+## Settle loss at the actual transfer/drop boundary, before the copy can return.
+static func on_removed(record: Dictionary) -> void:
+	if is_active(record): _interrupt(record, "copy_removed")
 
 ## Accrue eligible elapsed time; `now` is the campaign clock after the span.
 static func settle(actor: Character, elapsed: int, now: int) -> Array:

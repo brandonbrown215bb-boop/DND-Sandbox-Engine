@@ -349,8 +349,7 @@ var temp_hp: int:
 	set(value):
 		var next_value := maxi(0, value)
 		if next_value <= 0 or next_value != _temp_hp_value:
-			timed_temporary_hp_current_grant_id = ""
-			linked_temporary_hp = {}
+			clear_temporary_hp_ownership()
 		_temp_hp_value = next_value
 	get:
 		return _temp_hp_value
@@ -2284,13 +2283,21 @@ func offer_timed_temporary_hp(amount: int, duration_seconds: int, source_instanc
 	return {"success": true, "accepted": true, "grant": grant.duplicate(true), "message": "%s gains %d Temporary HP for %d campaign seconds." % [character_name, amount, duration_seconds]}
 
 
+## Explicit replacement can choose a different source even at the same amount.
+func clear_temporary_hp_ownership() -> void:
+	timed_temporary_hp_current_grant_id = ""
+	linked_temporary_hp = {}
+	for record in spell_effects.values():
+		if record.has("projection"): record.projection["temporary_hp_owned"] = false
+
+
 func absorb_temporary_hp(amount: int) -> int:
 	if amount <= 0 or _temp_hp_value <= 0:
 		return 0
 	var absorbed := mini(amount, _temp_hp_value)
 	_temp_hp_value -= absorbed
 	if _temp_hp_value <= 0:
-		_temp_hp_value = 0
+		temp_hp = 0
 		timed_temporary_hp_current_grant_id = ""
 		linked_temporary_hp = {}
 	return absorbed

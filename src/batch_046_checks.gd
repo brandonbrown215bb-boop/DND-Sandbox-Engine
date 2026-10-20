@@ -119,7 +119,7 @@ static func _work_participants(check: Callable) -> void:
 	var moved := {"success": a.inventory.transfer_instance(frame, b.inventory), "message": "transfer_instance"}
 	var lost_hands := WorkRules.settle(b, 600, 3600)
 	var held := b.inventory.get_instance(frame)
-	check.call(not record.is_empty() and (not moved.get("success", false) and WorkRules.eligibility_error(b, record) != "" or moved.get("success", false) and lost_hands.size() == 1 and not WorkRules.is_active(held) and WorkRules.progress(held) == 0), "046 S-066 a copy changing hands is no longer its worker's work; the reset policy applies (moved=%s)" % str(moved.get("message", "")))
+	check.call(not record.is_empty() and moved.get("success", false) and lost_hands.is_empty() and not WorkRules.is_active(held) and WorkRules.progress(held) == 0, "046 S-066 changing hands settles the reset policy immediately, without waiting for time to advance")
 	_leave([a, h, b])
 
 static func _work_saves(check: Callable) -> void:

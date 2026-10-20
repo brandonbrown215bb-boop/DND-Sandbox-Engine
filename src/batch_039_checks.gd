@@ -25,7 +25,7 @@ static func conjure(owner: Character, slot: int) -> Dictionary:
 	if not owner.concentrating_on.is_empty(): SpellEffects.end_concentration(owner, [owner])
 	var r := SpellResolver.resolve(owner, owner, DataLoader.get_spell(CONJURE), true, {}, [], slot)
 	var source := str(r.get("effect_cast", {}).get("source_id", ""))
-	if r.get("success", false): owner.concentrating_on = {"spell_id": CONJURE, "effect_source": source, "targets": [owner]}
+	if r.get("success", false): owner.concentrating_on = {"spell_id": CONJURE, "effect_source": source, "targets": []}
 	return r
 
 static func run(check: Callable) -> void:

@@ -117,6 +117,7 @@ static func _active_saves(check: Callable) -> void:
 	var lamp := add(a, LAMP)
 	ActiveTimeRules.activate(a, lamp, 30)
 	ActiveTimeRules.settle(a, 5, 35)
+	ActiveTimeRules.pause(a, lamp)
 	var put := ContainerRules.put(a.inventory, bag, lamp, "main")
 	var nested := a.to_dict()
 	if put.get("success", false): nested.inventory.copies.records[bag].state.contents.main[0].state.active_used_seconds = 500

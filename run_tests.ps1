@@ -9,6 +9,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+$Scenario = @($Scenario | ForEach-Object { $_ -split ',' } | Where-Object { $_ })
 $Project = Split-Path -Parent $MyInvocation.MyCommand.Path
 if ($Suite -eq "integration" -and ($LogicGroup.Count -ne 1 -or $LogicGroup[0] -ne "all")) {
     throw "-LogicGroup requires -Suite logic or all."
