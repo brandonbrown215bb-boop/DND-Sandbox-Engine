@@ -102,8 +102,8 @@ static func precedes_replacement(target, decisions: Dictionary) -> bool:
 
 static func _eligible_type(target, policy: Dictionary) -> bool:
 	var kind := ""
-	if target is Dictionary: kind = str(target.get("type", ""))
-	elif target is Character: kind = str(target.feature_uses.get("creature_type", "humanoid"))
+	if target is Dictionary: kind = str(target.get("creature_type", target.get("type", "")))
+	elif target is Character: kind = str(target.feature_uses.get("creature_type", target.creature_type))
 	return kind not in policy.get("excluded_creature_types", [])
 
 static func _is_magic(record: Dictionary) -> bool:

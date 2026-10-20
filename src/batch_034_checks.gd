@@ -130,6 +130,12 @@ static func _aftermath(check: Callable) -> void:
 	construct.merge({"id": "b034_construct", "current_hp": 10, "max_hp": 10, "is_alive": true}, true)
 	r = CombatAction.resolve_damage(construct, 40, "force", {"zero_hp_aftermath": render.attacks[0].zero_hp_aftermath})
 	check.call(not construct.is_alive and not construct.has("zero_hp_aftermath") and r.zero_hp_aftermath.is_empty(), "034 S-119 excluded creature type takes ordinary defeat")
+	var live_construct := {"id": "b034_live_construct", "creature_type": "construct", "current_hp": 10, "max_hp": 10, "is_alive": true}
+	r = CombatAction.resolve_damage(live_construct, 40, "force", {"zero_hp_aftermath": render.attacks[0].zero_hp_aftermath})
+	check.call(not live_construct.has("zero_hp_aftermath") and r.zero_hp_aftermath.is_empty(), "034 review: live entity creature_type exclusion is honored")
+	var construct_pc := Character.new()
+	construct_pc.character_id = "b034_construct_pc"; construct_pc.creature_type = "construct"; construct_pc.max_hp = 10; construct_pc.current_hp = 10
+	check.call(not ZeroHpAftermathRules._eligible_type(construct_pc, render.attacks[0].zero_hp_aftermath), "034 review: Character creature_type exclusion is honored")
 
 static func _validation(check: Callable) -> void:
 	for defect in ["outcome", "remains", "gear", "trigger", "mismatch", "cause", "precedes"]:

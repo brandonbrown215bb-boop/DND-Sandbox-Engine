@@ -3,7 +3,7 @@
     "id": "fixture:b034_render",
     "name": "Render",
     "size": "Medium",
-    "type": "construct",
+    "creature_type": "construct",
     "armor_class": 10,
     "hit_points": "3d8",
     "speed": 30,
