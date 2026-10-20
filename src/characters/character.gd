@@ -307,6 +307,8 @@ var max_hp_sources: Dictionary = {}
 var exclusive_bonds: Dictionary = {}
 ## S-165 projected item copies: instance_id -> {copy, actor}.
 var item_projections: Dictionary = {}
+## S-202 lingering source-linked curses: lost copy instance_id -> {definition_id, blocks_attunement}.
+var item_curses: Dictionary = {}
 ## S-103 rest/activation mode selections, keyed by owning feature id.
 var feature_modes: Dictionary = {}
 ## S-085 chosen exclusive upgrade alternatives, keyed "rule|group".
@@ -2551,6 +2553,7 @@ func to_dict() -> Dictionary:
 		"max_hp_sources": max_hp_sources.duplicate(true),
 		"exclusive_bonds": exclusive_bonds.duplicate(true),
 		"item_projections": item_projections.duplicate(true),
+		"item_curses": item_curses.duplicate(true),
 		"feature_modes": feature_modes.duplicate(true),
 		"rule_alternatives": rule_alternatives.duplicate(true),
 		"barbarian_relentless_rage_enabled": barbarian_relentless_rage_enabled,
@@ -2883,6 +2886,7 @@ func from_dict(data: Dictionary) -> void:
 	zero_hp_attempt_serial = int(data.get("zero_hp_attempt_serial", 0))
 	MaxHpSourceRules.restore(self, data)
 	ItemProjectionRules.restore(self, data)
+	CurseRules.restore(self, data)
 	BondRules.restore(self, data)
 	RuleUpgradeRules.restore(self, data)
 	FeatureModeRules.restore(self, data)

@@ -112,21 +112,8 @@ static func saved_error(dto: Dictionary) -> String:
 			return "inventory copy record differs from item"
 		var item: Dictionary = DataLoader.get_item(str(record["definition_id"]))
 		var state: Dictionary = record["state"]
-		if state.has("food_remaining_daily_fraction"):
-			var remaining_food: Variant = state["food_remaining_daily_fraction"]
-			if str(record["definition_id"]) != "rations" or (not remaining_food is int and not remaining_food is float) or not is_finite(float(remaining_food)) or float(remaining_food) <= 0.0 or float(remaining_food) >= 1.0:
-				return "ration portion state is invalid"
-		if state.has("charges"):
-			var charges: Variant = state["charges"]
-			var maximum := int(item.get("maximum_charges", 0))
-			if (not charges is int and not charges is float) or not is_finite(float(charges)) or float(charges) != floorf(float(charges)) or int(charges) < 0 or int(charges) > 10000 or (maximum > 0 and int(charges) > maximum):
-				return "magic item charges are invalid"
-		elif int(item.get("maximum_charges", 0)) > 0:
-			return "charged magic item is missing its charge state"
-		var degraded_error := LastChargeRules.saved_state_error(str(record["definition_id"]), state)
-		if not degraded_error.is_empty(): return degraded_error
-		if state.has("attuned_to") and (not state["attuned_to"] is String or str(state["attuned_to"]).is_empty()):
-			return "magic item attunement is invalid"
+		var state_error := record_state_error(record)
+		if not state_error.is_empty(): return state_error
 		if state.has("attuned_to") and bool(item.get("requires_attunement", false)):
 			var owner := str(state["attuned_to"])
 			attunement_counts[owner] = int(attunement_counts.get(owner, 0)) + 1
@@ -138,10 +125,31 @@ static func saved_error(dto: Dictionary) -> String:
 				return "character is attuned to duplicate copies of one limited item"
 			owner_items[definition] = true
 			attuned_definitions[owner] = owner_items
-		if bool(state.get("cursed_attunement", false)) and (not bool(item.get("cursed", false)) or not state.has("attuned_to")):
-			return "cursed item attunement is invalid"
 		if str(id).begins_with(str(data["inventory_id"]) + ":") and str(id).get_slice(":", 1).to_int() >= int(data["next_id"]):
 			return "inventory serial would reuse an identity"
+	return ""
+
+## Review 043 R1: per-copy state rules, shared by carried and contained copies.
+static func record_state_error(record: Dictionary) -> String:
+	var item: Dictionary = DataLoader.get_item(str(record.get("definition_id", "")))
+	var state: Dictionary = record.get("state", {})
+	if state.has("food_remaining_daily_fraction"):
+		var remaining_food: Variant = state["food_remaining_daily_fraction"]
+		if str(record["definition_id"]) != "rations" or (not remaining_food is int and not remaining_food is float) or not is_finite(float(remaining_food)) or float(remaining_food) <= 0.0 or float(remaining_food) >= 1.0:
+			return "ration portion state is invalid"
+	if state.has("charges"):
+		var charges: Variant = state["charges"]
+		var maximum := int(item.get("maximum_charges", 0))
+		if (not charges is int and not charges is float) or not is_finite(float(charges)) or float(charges) != floorf(float(charges)) or int(charges) < 0 or int(charges) > 10000 or (maximum > 0 and int(charges) > maximum):
+			return "magic item charges are invalid"
+	elif int(item.get("maximum_charges", 0)) > 0:
+		return "charged magic item is missing its charge state"
+	var degraded_error := LastChargeRules.saved_state_error(str(record["definition_id"]), state)
+	if not degraded_error.is_empty(): return degraded_error
+	if state.has("attuned_to") and (not state["attuned_to"] is String or str(state["attuned_to"]).is_empty()):
+		return "magic item attunement is invalid"
+	if bool(state.get("cursed_attunement", false)) and (not bool(item.get("cursed", false)) or not state.has("attuned_to")):
+		return "cursed item attunement is invalid"
 	return ""
 
 ## Party DTOs are canonical; player DTOs repeat the same seat-owned character.
@@ -150,7 +158,7 @@ static func ownership_error(save: Dictionary) -> String:
 	var seen: Dictionary = {}
 	var party_characters: Dictionary = save.get("party", {}).get("characters", {}) if save.get("party") is Dictionary else {}
 	for character in party_characters.values():
-		for id in character.get("inventory", {}).get("copies", {}).get("records", {}):
+		for id in character.get("inventory", {}).get("copies", {}).get("records", {}).keys() + ContainerRules.content_ids(character.get("inventory", {})):
 			if seen.has(id): return "item copy has multiple character owners"
 			seen[id] = true
 	for player in save.get("players", []):
@@ -160,7 +168,7 @@ static func ownership_error(save: Dictionary) -> String:
 		if party_characters.has(owner):
 			if character.get("inventory", {}) != party_characters[owner].get("inventory", {}): return "player inventory differs from its party character"
 			continue
-		for id in character.get("inventory", {}).get("copies", {}).get("records", {}):
+		for id in character.get("inventory", {}).get("copies", {}).get("records", {}).keys() + ContainerRules.content_ids(character.get("inventory", {})):
 			if seen.has(id): return "item copy has multiple character owners"
 			seen[id] = true
 	var dungeons: Dictionary = save.get("campaign_ledger", {}).get("dungeon_snapshots", {}).duplicate(true)

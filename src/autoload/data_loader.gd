@@ -563,6 +563,16 @@ func _validate_semantics(data: Dictionary, content_type: String, source: String)
 		if not charge_error.is_empty():
 			_load_errors.append("%s in %s" % [charge_error, source])
 			valid = false
+	if content_type == "item" and data.has("container"):
+		var container_error := ContainerRules.policy_error(data["container"])
+		if not container_error.is_empty():
+			_load_errors.append("%s in %s" % [container_error, source])
+			valid = false
+	if content_type == "item" and data.has("curse"):
+		var curse_error := CurseRules.policy_error(data)
+		if not curse_error.is_empty():
+			_load_errors.append("%s in %s" % [curse_error, source])
+			valid = false
 	if content_type == "item" and data.has("actor_projection"):
 		var item_projection_error := ItemProjectionRules.policy_error(data["actor_projection"])
 		if not item_projection_error.is_empty():
