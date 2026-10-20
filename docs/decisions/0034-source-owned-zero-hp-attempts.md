@@ -41,7 +41,7 @@ Other instant death/destruction and forms remain later work. New saving throws
 use existing automatic save resolution; post-roll rescue choices are outside this
 bounded host. Dictionary creature history is encounter-local; Character history
 is durable and validated on both DTO paths. Owner-authorized
-[acceptance](../reviews/batch-033-acceptance.md) records S-117/S-118 as VS-111/112
+[acceptance](https://github.com/brandonbrown215bb-boop/DND-Sandbox-Engine/blob/d823423d979f7c566d7511801bd560f5dafb95ee/docs/reviews/batch-033-acceptance.md) records S-117/S-118 as VS-111/112
 after independent review and repair re-review. See
 [authoring](../mechanics/shared-spells.md#authored-zero-hp-eligibility-and-owned-attempts-batch-033-vs-111112-accepted)
 for syntax and supported hosts. Broad V-020/V-088 remain partial.

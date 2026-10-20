@@ -77,17 +77,11 @@ The Recorded slices column counts only `recorded_slice` status. Without recorded
 | Exceptional world or action rules | 6 | 0 | 6 | Keep explicit supported modes for these unusual spells. Do not build a universal rule engine as a prerequisite for ordinary combat spells. |
 | Immediate attacks, saves, healing and area selection | 52 | 29 | 23 | Audit complete target sets, shapes, split damage, extra effects, thresholds and upcasting using existing resolution blocks. A positive damage roll alone is insufficient. |
 
-## Practical delivery order
+## Delivery and verification
 
-1. Wave 1 foundations: finish Ashvale's ordinary room/object/item loop, then campaign time and exploration casting. Arcane Lock, Knock, Mage Hand, Mending, item-target and timed-effect integrations have separate cards; later requirements keep them partial/unavailable.
-2. Wave 2 foundations: components/equipment, magic items, shared perception, condition consequences and full targeting. Integrate the named spells only after the foundations have gameplay and persistence evidence.
-3. Wave 3 foundations: environmental resources/operations, durable areas/barriers and movement modes. Preserve current area trigger caps and concentration cleanup.
-4. Wave 4 foundations: owned creatures/commands, bodies/forms and authored NPC/illusion interactions. Expanded forms retain explicit exclusions.
-5. Wave 5 foundations: campaign knowledge/messages, destinations/refuges/planes and individually scoped stored triggers/exceptional outcomes. Wish duplication uses completed paths; other outcomes remain unsupported.
+The [roadmap](../../roadmap.md) chooses work; the [slice registry](../planning/vocabulary-slices.md) owns engine prerequisites and verified boundaries. Historical wave groupings aren't a delivery sequence. Engine slices can use production-path fixtures; catalog conversion is separate.
 
-Finish a wave's supported integrations and explicit dependency deferrals before opening the next wave. Resume class expansion when its specific blockers are resolved. A foundation does not certify its spells.
-
-Use the [spell extension guide](../../src/spells/README.md) for implementation homes and cast ordering. [Current checkpoint](../operations/current.md) records the latest validation and known baseline/intermittent failures; focused acceptance does not mean the full suite is green. [Roadmap](../../roadmap.md) owns milestone priorities and the Quest Board owns the exact next action.
+Use the [spell extension guide](../../src/spells/README.md) for code ownership and cast ordering. Authoring contracts retain support limits; report relevant checks in the conversation or existing PR. Focused verification does not mean the full suite is green. Quest Board is optional for concurrent coordination.
 
 No wholesale combat extraction, new service, or universal effect language is required. Do not let a safe-refusal check advance a spell into the recorded-playable count.
 

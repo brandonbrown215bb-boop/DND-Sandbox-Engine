@@ -83,5 +83,6 @@ This decision accepts direction, not a finished interpreter. It does not
 authorize legacy conversion, a new save namespace/schema, mid-combat or
 mid-decision saves, or rewriting unrelated save files. ADR-0023 removes blanket
 compatibility/version planning as a prerequisite while retaining correct state
-and existing checkpoint boundaries. Current accepted
-runtime evidence and open work stay in the [checkpoint](../operations/current.md).
+and existing checkpoint boundaries. Verified runtime boundaries stay in the
+[slice registry](../planning/vocabulary-slices.md); authoring limits stay in
+[mechanics](../mechanics/README.md).

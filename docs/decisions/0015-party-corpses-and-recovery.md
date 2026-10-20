@@ -57,4 +57,4 @@ identity, life-state consistency, bounds and preservation clocks against the
 saved campaign clock before writing/loading. Legacy namespaces remain untouched.
 
 See [party recovery clauses and limits](../mechanics/party-recovery-2024.md)
-and [Wave 4 acceptance](../mechanics/wave4-acceptance.md) for scope and evidence.
+and [creature and body requirements](../mechanics/spell-foundations.md#wave-4--creatures-bodies-forms-and-social-interaction) for scope and evidence.

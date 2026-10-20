@@ -1,31 +1,10 @@
 # Spell dependency foundations
 
-> Priority update (2026-10-09): the [roadmap](../../roadmap.md) and
-> [ADR-0018](../decisions/0018-shared-data-driven-rules-runtime.md) govern delivery.
-> This document retains capability gaps and bounded acceptance checklists.
-> Its old wave/class order is no longer an implementation instruction.
-
-Historical delivery plan from 2026-10-06; its scheduling policy is superseded by
-the current roadmap. Rules authority: [SRD 5.2.1](https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf).
-The roadmap covers all dependency families. First versions do not promise every
-catalog spell or every mode. Existing availability remains bounded gameplay;
-no spell is certified complete until its applicable clauses have production evidence.
-
-First delivered implementation card: **W1-F1 — Ashvale's ordinary room/object/item
-loop**. It adds an authored room within the existing dungeon map. The room,
-object and inventory portions passed bounded acceptance; remaining Wave 1
-requirements are listed below. Wave 2's supported first versions subsequently
-passed bounded acceptance, including the 2026-10-07 review corrections. Wave 3
-has completed its supported environment, area/barrier and movement first
-versions after the 2026-10-08 review. Separate spell integrations retain
-explicit deferrals. See the
-[current checkpoint](../operations/current.md).
-
-The historical plan grouped playable foundations and named spell integrations
-into two gates per wave. Those gates no longer schedule implementation or class
-expansion. Retain concrete missing dependencies and bounded evidence below, then
-select work from the current roadmap; unsupported behavior stays partial or
-unavailable until its actual requirements are implemented and checked.
+These are supported world behaviors and remaining integration requirements,
+organized by their original foundation families. The [roadmap](../../roadmap.md)
+selects work; the old wave/card sequence does not. Rules authority remains
+[SRD 5.2.1](https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf).
+A bounded foundation doesn't certify every spell or every mode that uses it.
 
 ## Wave 1 — Local spaces, objects, inventory and time
 
@@ -57,7 +36,7 @@ spell, environmental operation or object-damage clause.
 
 The supported first versions in W2-F1 through W2-F5 are delivered and verified. These bounded slices do not certify complete 2024 spell rules. Carry these concrete gaps forward without blocking the next foundation wave:
 
-The [2026-10-07 review and correction evidence](../reviews/spell-foundations-wave2-2026-10-07.md)
+The [2026-10-07 review and correction evidence](https://github.com/brandonbrown215bb-boop/DND-Sandbox-Engine/blob/d823423d979f7c566d7511801bd560f5dafb95ee/docs/reviews/spell-foundations-wave2-2026-10-07.md)
 closes five defects inside those versions: Chain Lightning's secondary radius
 is measured from its first target; sight is required only where declared;
 curse-bound equipment cannot be replaced; natural light uses actual emitters
@@ -76,7 +55,7 @@ These are intentional scope limits, not claims that the rules are complete. W2 r
 ## Wave 3 — Environment, persistent areas and movement
 
 **Supported first versions delivered and verified, 2026-10-08.** See the
-[review and correction evidence](../reviews/spell-foundations-wave3-2026-10-08.md).
+[review and correction evidence](https://github.com/brandonbrown215bb-boop/DND-Sandbox-Engine/blob/d823423d979f7c566d7511801bd560f5dafb95ee/docs/reviews/spell-foundations-wave3-2026-10-08.md).
 This completes the foundation gate; named spell integrations keep their own
 clause checklists, later dependencies and exclusions.
 
@@ -88,7 +67,7 @@ clause checklists, later dependencies and exclusions.
 
 ### Wave 3 checkpoint and explicit deferrals
 
-The foundation gate is complete at these supported boundaries. Do not interpret
+The supported foundation behaviors below are verified at their stated boundaries. Do not interpret
 this as complete 2024 spell support. Carry forward the following named work:
 
 - **W3-F1:** disease/poison sources beyond authored Sight Rot, general world
@@ -110,11 +89,10 @@ this as complete 2024 spell support. Carry forward the following named work:
 
 The accepted headless checks include refusal without resource spending and
 real safe checkpoint disk reload. Full clause audits and manual visual
-acceptance remain separate. **W4-F1, owned creatures, is now active.**
+checks remain separate from these historical results.
 
 ## Wave 4 — Creatures, bodies, forms and social interaction
 
-**Begun 2026-10-08, with Crown's existing Wild Companion/Find Steed paths.**
 W4-F1's first lifecycle slice adds stable familiar identity/HP, legal placement
 before spending, Crown room summon/dismiss/recall/release controls, independent
 initiative and owner-seat combat commands, pocket recall without initiative
@@ -122,15 +100,15 @@ rerolls, automatic Dodge while the owner cannot command, source-owned Help
 cleanup, encounter return, validated checkpoint reload, and Long Rest/death
 cleanup. Steeds retain room position/HP across encounters, survive a downed
 owner, and cannot prevent a party-wipe defeat. See
-[ADR-0014](../decisions/0014-owned-creature-lifecycle.md) and the current checkpoint.
+[ADR-0014](../decisions/0014-owned-creature-lifecycle.md).
 
-**W4-F1 remains active.** Four curated familiar forms now supply movement,
+Four curated familiar forms now supply movement,
 Darkvision and skill modifiers; combat offers borrowed senses and supported
 Reaction-based Touch delivery. Authored exploration checks offer proficient
 familiar Help. Ordinary Find Familiar has hour/ritual room controls, consumed
 incense, form/type replacement and a lifetime distinct from Wild Companion.
-See [the clause checklist](find-familiar-2024.md) for exclusions and
-[Wave 4 acceptance](wave4-acceptance.md) for the remaining gates. Other creature
+See [the clause checklist](find-familiar-2024.md) for exclusions and the
+requirements below for remaining world behavior. Other creature
 families, their independent control expiry, equipment/condition gaps and the
 bodies/forms and NPC/illusion foundations retain the open requirements below.
 No complete spell or campaign readiness status is promoted.
@@ -145,8 +123,8 @@ consumption/protection and independent control expiry now have a bounded
 Finger of Death's created Zombie and curated reversible forms remain open.
 Animate Objects has partial, unvalidated rules/lifecycle hooks after a usage
 limit interruption; its casting controls and dedicated checks are unfinished.
-See the [current checkpoint](../operations/current.md) for the exact resume
-action. Existing acceptance evidence does not validate those later edits.
+Normal casting, owner-following initiative, commands and room controls remain
+unverified. Its allowlist entry is not evidence that those paths work.
 
 | Card | Playable foundation and completion boundary | Separate spell integrations |
 |---|---|---|

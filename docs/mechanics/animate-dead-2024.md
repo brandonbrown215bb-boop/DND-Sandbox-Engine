@@ -53,7 +53,7 @@ saved identities/control clocks. `created_undead_flow` exercises real Crown
 preparation, room protection/refusal, creation and renewal, feature-picker
 orders, initiative attacks, encounter capture, disk checkpoint/load, in-combat
 expiry and a later hostile projection. Current acceptance and raw log paths
-are recorded in [operations](../operations/current.md).
+are recorded in [operations](README.md).
 
 Initial creation reserves a legal nearby five-foot cell; full multi-cell
 placement is not modeled. Party gear stays with its original Character while

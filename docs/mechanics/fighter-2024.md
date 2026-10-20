@@ -111,4 +111,4 @@ Peerless Aim. The production
 feature menu, restricted Surge actions, four settled attacks, stale targeting,
 Tactical Shift's actual popup/movement, out-of-turn Push/Cleave/critical movement,
 chained prompts and level-20 SaveManager round-trips.
-See [the current checkpoint](../operations/current.md) for dated host evidence.
+See the [slice registry](../planning/vocabulary-slices.md) for verified shared-host boundaries.

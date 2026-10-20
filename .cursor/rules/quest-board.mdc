@@ -1,24 +1,14 @@
 ---
-description: Check and update the shared quest board before and after project work
+description: Optional Quest Board coordination for concurrent work
 globs:
 alwaysApply: true
 ---
 
-## Shared Quest Board
+## Optional Quest Board
 
-This repository uses `.questboard/` as its shared coordination surface.
-
-Before substantial work:
-
-1. Run `python .questboard/quest.py brief --actor "<your name/tool>"`.
-2. Claim the quest before editing its scope. If none exists, add one.
-3. Treat an unexpired claim by someone else as occupied ground.
-
-Before pausing or handing work to another person or agent:
-
-1. Record what changed and the exact next action.
-2. Use `handoff`, `move ... blocked/review`, or `finish` so the status is honest.
-3. Commit `.questboard/quests/` changes with the code they describe.
-
-The quest board is volatile coordination, not architecture documentation. Source, tests,
-ADRs, and project documentation remain authoritative for durable technical facts.
+Use `.questboard/` when concurrent work needs shared ownership or handoffs.
+Solo work, planning and routine reviews need no card or board ritual.
+When using the board, inspect current claims, respect occupied scope, and leave
+the next action when handing work off. Cards record coordination, not duplicate
+build reports. The owner's request and roadmap still choose work; source,
+tests and technical references own durable facts.

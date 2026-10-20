@@ -37,7 +37,7 @@ FAMILIES = {
     "direct_resolution": ("Immediate attacks, saves, healing and area selection", "Audit complete target sets, shapes, split damage, extra effects, thresholds and upcasting using existing resolution blocks. A positive damage roll alone is insufficient.", ""),
 }
 
-# Historical slices reviewed against current.md, test_runner and encounter source.
+# Historical slices reviewed against the retained checkpoint, test_runner and encounter source.
 EVIDENCE_BATCHES = {
     "longstrider-upcast-integration-verified": "longstrider",
     "animal-friendship-final-integration": "animal_friendship",
@@ -562,7 +562,7 @@ def generate(runtime_path: Path, target_path: Path) -> dict:
             status = "recorded_slice"
         if sid == "animate_dead" and created_verified:
             status = "recorded_slice"
-        refs = ["docs/operations/current.md", "src/test_runner.gd"] if status in {"recorded_slice", "existing_checks_need_audit", "implemented_unverified"} else []
+        refs = ["https://github.com/brandonbrown215bb-boop/DND-Sandbox-Engine/blob/d823423d979f7c566d7511801bd560f5dafb95ee/docs/operations/current.md", "src/test_runner.gd"] if status in {"recorded_slice", "existing_checks_need_audit", "implemented_unverified"} else []
         if sid == "find_familiar" and familiar_verified:
             refs += ["docs/mechanics/find-familiar-2024.md", "src/characters/familiar_rules.gd", "src/spells/familiar_spell_delivery.gd", "src/dungeon/local_room_familiars.gd", "src/characters/familiar_checks.gd", "src/viewport_harness.gd", familiar_log.relative_to(ROOT).as_posix()]
         if sid in {"revivify", "gentle_repose"} and recovery_verified:
@@ -749,14 +749,9 @@ def write_report(register: dict) -> None:
         done = sum(r["delivery_status"] == "recorded_slice" for r in members)
         lines.append(f"| {group['name']} | {len(members)} | {done} | {len(members)-done} | {group['next_shared_work']} |")
     lines += [
-        "", "## Practical delivery order", "",
-        "1. Wave 1 foundations: finish Ashvale's ordinary room/object/item loop, then campaign time and exploration casting. Arcane Lock, Knock, Mage Hand, Mending, item-target and timed-effect integrations have separate cards; later requirements keep them partial/unavailable.",
-        "2. Wave 2 foundations: components/equipment, magic items, shared perception, condition consequences and full targeting. Integrate the named spells only after the foundations have gameplay and persistence evidence.",
-        "3. Wave 3 foundations: environmental resources/operations, durable areas/barriers and movement modes. Preserve current area trigger caps and concentration cleanup.",
-        "4. Wave 4 foundations: owned creatures/commands, bodies/forms and authored NPC/illusion interactions. Expanded forms retain explicit exclusions.",
-        "5. Wave 5 foundations: campaign knowledge/messages, destinations/refuges/planes and individually scoped stored triggers/exceptional outcomes. Wish duplication uses completed paths; other outcomes remain unsupported.",
-        "", "Finish a wave's supported integrations and explicit dependency deferrals before opening the next wave. Resume class expansion when its specific blockers are resolved. A foundation does not certify its spells.",
-        "", "Use the [spell extension guide](../../src/spells/README.md) for implementation homes and cast ordering. [Current checkpoint](../operations/current.md) records the latest validation and known baseline/intermittent failures; focused acceptance does not mean the full suite is green. [Roadmap](../../roadmap.md) owns milestone priorities and the Quest Board owns the exact next action.",
+        "", "## Delivery and verification", "",
+        "The [roadmap](../../roadmap.md) chooses work; the [slice registry](../planning/vocabulary-slices.md) owns engine prerequisites and verified boundaries. Historical wave groupings aren't a delivery sequence. Engine slices can use production-path fixtures; catalog conversion is separate.",
+        "", "Use the [spell extension guide](../../src/spells/README.md) for code ownership and cast ordering. Authoring contracts retain support limits; report relevant checks in the conversation or existing PR. Focused verification does not mean the full suite is green. Quest Board is optional for concurrent coordination.",
         "", "No wholesale combat extraction, new service, or universal effect language is required. Do not let a safe-refusal check advance a spell into the recorded-playable count.",
         "", "## One row per spell", "", "Class names are actual runtime memberships; an empty list means the spell is outside these eight core casting-class lists. Evidence is retained in JSON. The detailed limitations below override optimistic imported metadata.", "",
     ]

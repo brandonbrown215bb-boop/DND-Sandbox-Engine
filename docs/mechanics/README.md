@@ -4,7 +4,7 @@ These documents retain partial production behavior, source clauses and
 unimplemented outcomes. They do not prescribe native helper architecture or
 the next class to implement. [Roadmap](../../roadmap.md) chooses work;
 [ADR-0018](../decisions/0018-shared-data-driven-rules-runtime.md) owns direction;
-[checkpoint](../operations/current.md) records the latest accepted batch.
+[slice registry](../planning/vocabulary-slices.md) owns verified subset boundaries.
 Dated counts/failures apply to their named snapshot. Reproduce affected
 behavior before reopening a finding or claiming broader support.
 
@@ -44,7 +44,7 @@ behavior before reopening a finding or claiming broader support.
 | Physical size/mass/material facts, plane/space queries, and speeds/surface movement (Batch 030 built; awaiting review) | [Physical facts, space and movement](physical-facts-space-and-movement.md) |
 | Shared source-owned numeric pools (bounded numeric, recovery, dice and fixed exchanges accepted) | [Resource pools](shared-resource-pools.md) |
 | Generated per-spell availability and gaps | [Spell status](spell-status.md) |
-| World dependency gaps | [Foundations](spell-foundations.md), [Wave 4 checklist](wave4-acceptance.md) |
+| World dependency gaps | [Foundations](spell-foundations.md), [Wave 4 checklist](spell-foundations.md#wave-4--creatures-bodies-forms-and-social-interaction) |
 | Familiar identity, casting and commands | [Find Familiar](find-familiar-2024.md) |
 | Party death, preservation and recovery | [Recovery](party-recovery-2024.md) |
 | Lasting Undead and expiring control | [Animate Dead](animate-dead-2024.md) |

@@ -1,8 +1,9 @@
 ---
-description: Always-on repository grounding and context freshness
+description: Follow current project instructions and source
 alwaysApply: true
 ---
 
 @../../AGENTS.md
 
-Before substantial work, inspect `docs/context-manifest.json` and treat architecture notes as stale when their scoped source changed after `verified_at_commit`. Current source and tests are authoritative.
+Read only the selected task's technical references. Current source and relevant
+tests decide behavior; no Agent Ground status or context-manifest check is required.

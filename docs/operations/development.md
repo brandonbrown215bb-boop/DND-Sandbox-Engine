@@ -1,10 +1,15 @@
 # Development
 
-The [current checkpoint](current.md) records accepted verification; the Quest
-Board owns the exact next action under the [roadmap](../../roadmap.md).
-Work solo by default; use a focused independent reviewer for shared combat rules
-or persistence when the reviewer tooling is available. Missing optional grounding
-tools do not block work. Historical gate reports are not current acceptance.
+Follow the owner's request and [roadmap](../../roadmap.md), then the selected
+slice and relevant contract. Work solo by default. Use one focused independent
+review for shared combat rules or persistence; missing reviewer tooling means
+continuing solo and stating that limitation. Quest Board is optional for actual
+concurrent work; routine work and reviews need no card.
+
+Runtime and editor work exchange pinned examples, exports and diagnostics using
+the [ownership boundary](../content_pipeline.md#runtime-and-editor-handoff).
+Finish with relevant checks and a short conversation/existing-PR result. Update
+the technical reference that changed; separate acceptance reports aren't needed.
 
 On this host, the owner's existing portable Godot is available at
 `.artifacts/tools/godot/Godot_v4.7-stable_win64_console.exe` (ignored, not shipped).

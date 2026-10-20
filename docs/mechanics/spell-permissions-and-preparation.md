@@ -116,6 +116,5 @@ checks do not certify every class or spell route. The item host requires
 equipped copies; carried-only permissions and arbitrary component waivers are
 not implemented. No catalog permission/payment sources were converted.
 
-Batch build evidence is in the vocabulary report linked from
-[`docs/operations/current.md`](../operations/current.md). Independent review
-owns acceptance and any further limits.
+Verified subset limits and retained evidence pointers are in the
+[slice registry](../planning/vocabulary-slices.md#verified-subset-boundaries).
