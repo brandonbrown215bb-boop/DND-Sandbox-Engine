@@ -1,0 +1,30 @@
+[
+  {
+    "id": "fixture:b049_feat",
+    "name": "Batch 049 Neutral Feat",
+    "description": "Neutral fixture feat: one activation per long rest, upgraded by a second feat feature.",
+    "features": [
+      {
+        "id": "fixture:b049_feat_surge",
+        "name": "Feat Surge",
+        "type": "mode_choice",
+        "boundary": "activation",
+        "uses": 1,
+        "uses_per": "long_rest",
+        "duration_seconds": 60,
+        "end_on": ["long_rest", "zero_hp"],
+        "modes": [
+          {"id": "brace", "benefits": [{"stat": "AC", "amount": 2}]},
+          {"id": "dash", "benefits": [{"stat": "speed", "amount": 2}]}
+        ]
+      },
+      {
+        "id": "fixture:b049_feat_extra",
+        "name": "Feat Endurance",
+        "type": "rule_upgrade",
+        "rule": "fixture:b049_feat_surge",
+        "changes": {"uses": {"add": 1}}
+      }
+    ]
+  }
+]

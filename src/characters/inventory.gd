@@ -41,6 +41,12 @@ func _publish_equipment_change(definition_id: String, state: String, instance_id
 	var owner_character = owner_character_ref.get_ref() if owner_character_ref != null else null
 	if owner_character != null:
 		SpellEffects.publish_event(owner_character, {"type": "equipment", "actor_id": SpellEffects.caster_id(owner_character), "equipment": definition_id, "state": state, "instance_id": instance_id})
+		if owner_character is Character: OwnedFeatureSources.sync(owner_character) # Batch 049: exact equipped copies own their features.
+
+
+func _sync_owned_features() -> void:
+	var owner_character = owner_character_ref.get_ref() if owner_character_ref != null else null
+	if owner_character is Character: OwnedFeatureSources.sync(owner_character) # Batch 049: attuned copies own their features.
 
 
 ## Add an item to the backpack.
@@ -397,6 +403,8 @@ func unequip(slot: Slot) -> String:
 		equipped.erase(slot)
 		backpack.append(item_id)
 		_publish_equipment_change(item_id, "unequipped", instance_id)
+		copies.sync(self) # Batch 049: this path moves only the slot arrays; settle the ledger, then the owned features.
+		_sync_owned_features()
 	return item_id
 
 
@@ -472,6 +480,7 @@ func attune_instance(instance_id: String, character_id: String) -> Dictionary:
 		state["cursed_attunement"] = true
 	record["state"] = state
 	copies.records[instance_id] = record
+	_sync_owned_features()
 	return {"success": true, "message": "Attunement takes 1 hour. %s is attuned." % item.get("name", "The item"), "seconds": 3600}
 
 
@@ -487,6 +496,7 @@ func unattune_instance(instance_id: String, character_id: String, break_curse: b
 	state.erase("cursed_attunement")
 	record["state"] = state
 	copies.records[instance_id] = record
+	_sync_owned_features()
 	return {"success": true, "message": "The item is no longer attuned."}
 
 
@@ -506,6 +516,7 @@ func break_cursed_item_attunements(character_id: String) -> int:
 		record["state"] = state
 		copies.records[instance_id] = record
 		broken += 1
+	if broken > 0: _sync_owned_features()
 	return broken
 
 

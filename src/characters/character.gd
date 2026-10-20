@@ -401,6 +401,8 @@ var darkvision_feet: int = 0
 
 ## Unlocked class features (list of feature dictionaries from class JSON).
 var features: Array[Dictionary] = []
+## Batch 049: ids of features acquired from species, feats or exact item copies.
+var acquired_features: Dictionary = {}
 
 ## Spell slots: level -> remaining uses. (e.g., {1: 2, 2: 1})
 var spell_slots: Dictionary = {}
@@ -1185,6 +1187,7 @@ func initialize(p_name: String, p_race_id: String, p_class_id: String, scores: A
 		FighterRules.choose_skills(self, "Athletics", "Perception")
 	# Unlock level 1 features
 	_unlock_features_for_level(1)
+	OwnedFeatureSources.sync(self) # Batch 049: species and species-granted feat features.
 	weapon_masteries.clear()
 	if not managed and class_id == "fighter":
 		for mastery_id in fighter_training.get("masteries", []):
@@ -2833,6 +2836,7 @@ func from_dict(data: Dictionary) -> void:
 	crit_range = 20
 	# Clear and rebuild features
 	features.clear()
+	acquired_features.clear()
 	extra_attacks = 0
 	for l in range(1, maxi(0, get_class_level()) + 1):
 		_unlock_features_for_level(l, false)
@@ -2932,6 +2936,7 @@ func from_dict(data: Dictionary) -> void:
 	inventory = Inventory.new()
 	inventory.owner_character_ref = weakref(self)
 	inventory.from_dict(data.get("inventory", {}))
+	OwnedFeatureSources.sync(self, true) # Batch 049: species/feat/item features from the restored sources.
 	if class_id == "wizard" and not inventory.has_item("spellbook"):
 		inventory.add_item("spellbook")
 	DruidRules.restore_saved_form(self, data.get("wild_shape_state", {}))

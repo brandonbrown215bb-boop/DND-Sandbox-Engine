@@ -1,0 +1,46 @@
+[
+  {
+    "id": "fixture:b049_circlet",
+    "name": "Batch 049 Focus Circlet",
+    "description": "Neutral fixture wondrous item worn on the head; its modes belong to the exact equipped, attuned copy. Weight unknown.",
+    "type": "wondrous",
+    "worn_slot": "head",
+    "magical": true,
+    "rarity": "rare",
+    "requires_attunement": true,
+    "value": 0,
+    "features": [
+      {
+        "id": "focus",
+        "name": "Circlet Focus",
+        "type": "mode_choice",
+        "boundary": "activation",
+        "uses": 2,
+        "uses_per": "long_rest",
+        "duration_seconds": 600,
+        "end_on": ["long_rest", "incapacitated"],
+        "switch_events": ["turn_start"],
+        "modes": [
+          {"id": "ward", "benefits": [{"stat": "AC", "amount": 1}]},
+          {"id": "haste", "benefits": [{"stat": "speed", "amount": 1}]}
+        ]
+      },
+      {
+        "id": "keen",
+        "name": "Keen Focus",
+        "type": "rule_upgrade",
+        "rule": "focus",
+        "exclusive_group": "tuning",
+        "changes": {"switch_events": {"add": ["hit"]}}
+      },
+      {
+        "id": "deep",
+        "name": "Deep Focus",
+        "type": "rule_upgrade",
+        "rule": "focus",
+        "exclusive_group": "tuning",
+        "changes": {"uses": {"add": 1}}
+      }
+    ]
+  }
+]

@@ -10,6 +10,8 @@ signal load_error(message: String)
 var classes: Dictionary = {}
 var subclasses: Dictionary = {}
 var races: Dictionary = {}
+## Batch 049: feats are a content type so species can grant them by id.
+var feats: Dictionary = {}
 var items: Dictionary = {}
 var spells: Dictionary = {}
 var monsters: Dictionary = {}
@@ -253,7 +255,7 @@ func load_all_data() -> void:
 	_load_errors.clear()
 	_validation_warnings.clear()
 	_registered_sources.clear()
-	for registry in [classes, subclasses, races, items, spells, monsters, events, campaigns]:
+	for registry in [classes, subclasses, races, feats, items, spells, monsters, events, campaigns]:
 		registry.clear()
 	_manifest = _read_manifest()
 
@@ -343,6 +345,7 @@ func _load_directory(base_path: String) -> void:
 	_load_content_type(base_path + "classes/", "class")
 	_load_content_type(base_path + "subclasses/", "subclass")
 	_load_content_type(base_path + "races/", "race")
+	_load_content_type(base_path + "feats/", "feat")
 	_load_content_type(base_path + "items/", "item")
 	_load_content_type(base_path + "spells/", "spell")
 	_load_content_type(base_path + "monsters/", "monster")
@@ -448,6 +451,7 @@ func _validate_content(data: Dictionary, content_type: String, source: String) -
 		"class": required = ["id", "name", "hit_die", "primary_ability"]
 		"subclass": required = ["id", "name", "class_id", "features_by_level"]
 		"race": required = ["id", "name"]
+		"feat": required = ["id", "name", "features"]
 		"item": required = ["id", "name", "type"]
 		"spell": required = ["id", "name", "level"]
 		"monster": required = ["id", "name", "hit_points", "armor_class", "speed", "attacks", "ai_behavior"]
@@ -469,6 +473,11 @@ func _validate_content(data: Dictionary, content_type: String, source: String) -
 	if content_type == "item" and str(data.get("type", "")) not in ["weapon", "armor", "shield", "ring", "wand", "staff", "rod", "wondrous", "consumable", "tool", "currency", "spell_component"]:
 		_load_errors.append("Item has unsupported type '%s' in %s" % [data.get("type"), source])
 		return false
+	if content_type in ["race", "feat", "item"]:
+		var owned_error := OwnedFeatureSources.definition_error(data, content_type) # Batch 049: card 209c.
+		if not owned_error.is_empty():
+			_load_errors.append("%s in %s" % [owned_error, source])
+			return false
 	if content_type == "item":
 		var measure_error := ItemTypeRules.definition_error(data) # Batch 048: magic-item types and measurements.
 		if not measure_error.is_empty():
@@ -1626,6 +1635,7 @@ func _get_registry(content_type: String) -> Dictionary:
 		"class": return classes
 		"subclass": return subclasses
 		"race": return races
+		"feat": return feats
 		"item": return items
 		"spell": return spells
 		"monster": return monsters
@@ -1961,6 +1971,9 @@ func get_all_races() -> Array:
 
 func get_race(id: String) -> Dictionary:
 	return races.get(id, {})
+
+func get_feat(id: String) -> Dictionary:
+	return feats.get(id, {})
 
 func get_all_items() -> Array:
 	return _sorted_values(items)

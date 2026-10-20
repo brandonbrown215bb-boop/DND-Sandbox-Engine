@@ -209,8 +209,8 @@ static func carriers(actor: Character) -> Array[Dictionary]:
 		out.append({"source_instance_id": identity, "definition_id": str(mode.id), "benefits": mode.benefits})
 	return out
 
-## Match the class/subclass membership rebuilt by Character.from_dict. Other
-## feature carriers still need an acquisition/reconstruction host before use.
+## Match the membership rebuilt by Character.from_dict: class/subclass levels
+## plus OwnedFeatureSources (species, species feats, exact item copies).
 static func declared_features(data: Dictionary) -> Array:
 	var class_data := DataLoader.get_character_class(str(data.get("class_id", "")))
 	var allocation: Dictionary = data.get("class_levels", {})
@@ -220,6 +220,7 @@ static func declared_features(data: Dictionary) -> Array:
 	for definition in [class_data, DataLoader.get_subclass(subclass_id)]:
 		for lvl in definition.get("features_by_level", {}):
 			if int(lvl) <= level: out.append_array(definition.features_by_level[lvl])
+	out.append_array(OwnedFeatureSources.declared_in(data)) # Batch 049: species, feats, exact equipped/attuned copies.
 	return out
 
 static func _declared(data: Dictionary, feature_id: String) -> Dictionary:
