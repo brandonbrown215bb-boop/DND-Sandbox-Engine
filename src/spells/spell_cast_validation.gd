@@ -189,6 +189,14 @@ static func validate_actor(cast: SpellCastContext) -> bool:
 		cast.clear_pending(SpellCastContext.CLEAR_WISH)
 		cast.highlight_reachable.call()
 		return false
+	if not ActorProjectionRules.can_cast_spells(cast.caster):
+		cast.hud.add_log("You cannot cast spells in this form.")
+		cast.clear_pending(SpellCastContext.CLEAR_ACTION)
+		cast.clear_pending(SpellCastContext.CLEAR_SPELL)
+		cast.clear_pending(SpellCastContext.CLEAR_INTERVENTION)
+		cast.clear_pending(SpellCastContext.CLEAR_WISH)
+		cast.highlight_reachable.call()
+		return false
 	if not DruidRules.can_cast_spell(cast.caster, cast.spell):
 		cast.hud.add_log("This spell has a costly or consumed Material component and cannot be cast in Beast form.")
 		cast.clear_pending(SpellCastContext.CLEAR_ACTION)

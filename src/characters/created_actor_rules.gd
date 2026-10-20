@@ -98,6 +98,15 @@ static func actors(owner: Character) -> Array:
 	return out
 
 static func _build(owner: Character, source: String, template: Dictionary, level: int, entry: Dictionary, spell: Dictionary) -> Character:
+	var a := instance(template, level, entry)
+	a.set_meta("created_owner_id", owner.character_id)
+	a.set_meta("created_source_id", source)
+	a.set_meta("created_spell_id", str(spell.get("id", "")))
+	a.set_meta("created_owner_instance", owner.get_instance_id())
+	return a
+
+## A plain actor from a validated template at a paid level (shared by S-120).
+static func instance(template: Dictionary, level: int, entry: Dictionary) -> Character:
 	var a := Character.new()
 	a.character_id = str(entry.actor_id)
 	a.character_name = "%s %s" % [str(template.name), str(entry.actor_id).get_slice(":", str(entry.actor_id).get_slice_count(":") - 1)]
@@ -112,10 +121,6 @@ static func _build(owner: Character, source: String, template: Dictionary, level
 	a.feature_uses["creature_size"] = str(template.size)
 	for feature in template.get("features", []):
 		if not _forbidden(feature): a.features.append(feature.duplicate(true))
-	a.set_meta("created_owner_id", owner.character_id)
-	a.set_meta("created_source_id", source)
-	a.set_meta("created_spell_id", str(spell.get("id", "")))
-	a.set_meta("created_owner_instance", owner.get_instance_id())
 	return a
 
 static func owner_of(actor: Character) -> String:

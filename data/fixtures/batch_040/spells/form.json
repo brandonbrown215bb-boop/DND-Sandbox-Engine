@@ -1,0 +1,62 @@
+[
+  {
+    "id": "fixture:b040_shift",
+    "name": "040 shift",
+    "description": "Self projection into a selected declared form; keeps own HP, type and mind; features and casting are suppressed.",
+    "execution": "shared",
+    "level": 2,
+    "casting_time": "action",
+    "range": 0,
+    "target": "self",
+    "concentration": true,
+    "duration_seconds": 600,
+    "classes": ["wizard"],
+    "effects": [
+      {
+        "type": "actor_projection",
+        "retain": ["hp", "creature_type", "mental_scores"],
+        "forms": [
+          {
+            "id": "b040_hound", "name": "Hound", "creature_type": "beast", "size": "medium", "speed": 8,
+            "ability_scores": {"STR": 16, "DEX": 15, "CON": 14, "INT": 3, "WIS": 12, "CHA": 6},
+            "ac": {"base": 13, "per_level": 1}, "temp_hp": {"base": 10, "per_level": 5},
+            "attack": {"name": "Bite", "damage": "2d4", "damage_type": "piercing", "range": 1, "bonus": 5}
+          },
+          {
+            "id": "b040_bulwark", "name": "Bulwark", "creature_type": "construct", "size": "large", "speed": 4,
+            "ability_scores": {"STR": 20, "DEX": 6, "CON": 18, "INT": 2, "WIS": 8, "CHA": 1},
+            "ac": {"base": 17}, "temp_hp": {"base": 30},
+            "attack": {"name": "Slam", "damage": "2d8", "damage_type": "bludgeoning", "range": 1, "bonus": 7}
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "fixture:b040_mantle",
+    "name": "040 mantle",
+    "description": "Self projection that changes creature type and mind but keeps features and casting.",
+    "execution": "shared",
+    "level": 3,
+    "casting_time": "action",
+    "range": 0,
+    "target": "self",
+    "concentration": true,
+    "duration_seconds": 600,
+    "classes": ["wizard"],
+    "effects": [
+      {
+        "type": "actor_projection",
+        "retain": ["hp", "features", "spellcasting"],
+        "forms": [
+          {
+            "id": "b040_wisp", "name": "Wisp", "creature_type": "fey", "size": "small", "speed": 10,
+            "ability_scores": {"STR": 6, "DEX": 18, "CON": 10, "INT": 9, "WIS": 9, "CHA": 9},
+            "ac": {"base": 15}, "temp_hp": {"base": 0},
+            "attack": {"name": "Flicker", "damage": "1d4", "damage_type": "radiant", "range": 2, "bonus": 6}
+          }
+        ]
+      }
+    ]
+  }
+]

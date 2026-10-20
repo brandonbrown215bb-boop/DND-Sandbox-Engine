@@ -5,7 +5,7 @@ extends RefCounted
 
 const CONDITIONS := ["blinded", "deafened", "frightened", "poisoned", "prone", "restrained", "stunned", "paralyzed", "incapacitated", "blessed", "baned", "shield_of_faith"]
 const ABILITIES := ["STR", "DEX", "CON", "INT", "WIS", "CHA"]
-const EFFECTS := ["heal", "temporary_hp", "grant_condition", "remove_condition", "area_selection", "grant_source_benefits", "grant_damage_link", "grant_damage_response", "create_actor"]
+const EFFECTS := ["heal", "temporary_hp", "grant_condition", "remove_condition", "area_selection", "grant_source_benefits", "grant_damage_link", "grant_damage_response", "create_actor", "actor_projection"]
 const STEP_FIELDS := ["id", "type", "gate", "gate_step", "target", "shape", "radius", "size", "attack_type", "damage", "damage_type", "damage_components", "component_id", "scaling", "upcast", "save", "half_on_save", "save_context", "damage_scale_by_outcome", "damage_dice_policy", "damage_result_multiplier", "damage_reductions", "damage_bypasses", "recipient_exemption_choice", "effects", "incoming_negation", "incoming_negation_rule", "physical_requirements", "spatial_requirements"]
 const STEP_TYPES := ["attack", "save", "damage", "effect"]
 const STEP_GATES := ["always", "hit", "miss", "failed_save", "successful_save"]
@@ -102,6 +102,10 @@ static func _validate_single_effect(effect: Variant) -> String:
 		allowed.append("template")
 		var template_error := CreatedActorRules.template_error(effect.get("template"))
 		if not template_error.is_empty(): return template_error
+	elif kind == "actor_projection":
+		allowed.append_array(["forms", "retain"])
+		var projection_error := ActorProjectionRules.effect_error(effect)
+		if not projection_error.is_empty(): return projection_error
 	elif kind == "grant_damage_link":
 		if effect.size() != 2: return "Damage link grants accept only type and policy."
 		allowed.append("policy")
@@ -216,7 +220,7 @@ static func _steps_error(spell: Dictionary) -> String:
 	return ""
 
 static func content_error(spell: Dictionary) -> String:
-	if has_effect(spell, "grant_source_benefits") or has_effect(spell, "create_actor"):
+	if has_effect(spell, "grant_source_benefits") or has_effect(spell, "create_actor") or has_effect(spell, "actor_projection"):
 		if spell.has("steps") or spell.has("repeat_save") or spell.get("target", "") != "self" or spell.has("save") or spell.get("attack_type", "none") != "none" or spell.has("damage") or spell.get("effects", []).size() != 1:
 			return "Source carriers require a flat automatic self-cast with one grant effect."
 	if spell.get("execution", "") != "shared":
@@ -421,7 +425,7 @@ static func content_error(spell: Dictionary) -> String:
 			var rider_error := validate_outcome_map(effect["rider_by_outcome"], domain, "rider_by_outcome", true)
 			if not rider_error.is_empty(): return rider_error
 		var kind := str(effect.get("type", ""))
-		if kind in ["grant_condition", "grant_source_benefits", "grant_damage_link", "grant_damage_response", "create_actor"]: timed = true
+		if kind in ["grant_condition", "grant_source_benefits", "grant_damage_link", "grant_damage_response", "create_actor", "actor_projection"]: timed = true
 		elif kind == "area_selection": areas += 1
 		has_payload = has_payload or kind != "area_selection"
 		if bool(effect.get("on_spell_hit", false)) and spell.get("attack_type", "none") == "none" and not spell.has("steps"): return "on_spell_hit requires attack delivery."
@@ -541,7 +545,7 @@ static func has_effect(spell: Dictionary, kind: String) -> bool:
 	return false
 
 static func manages(spell: Dictionary) -> bool:
-	return (has_effect(spell, "grant_condition") or has_effect(spell, "grant_source_benefits") or has_effect(spell, "grant_damage_link") or has_effect(spell, "grant_damage_response") or has_effect(spell, "create_actor")) and content_error(spell).is_empty()
+	return (has_effect(spell, "grant_condition") or has_effect(spell, "grant_source_benefits") or has_effect(spell, "grant_damage_link") or has_effect(spell, "grant_damage_response") or has_effect(spell, "create_actor") or has_effect(spell, "actor_projection")) and content_error(spell).is_empty()
 
 static func _create_step_cast(cast: SpellResolutionContext, target, step_spell: Dictionary) -> SpellResolutionContext:
 	var step_cast := SpellResolutionContext.new()
@@ -685,6 +689,12 @@ static func apply_custom_effects(caster: Character, target, effects: Array, resu
 					if made.get("created", false):
 						result["created_actors"] = made
 						messages.append("%s creates %d %s." % [target_name, int(made.count), str(effect.template.name)])
+			"actor_projection":
+				if target is Character and target == caster:
+					var projected := ActorProjectionRules.apply(target, result.get("effect_cast", {}), effect, slot_level, spell, str(spell.get("_projection_form_id", "")))
+					result["projection"] = projected
+					if projected.get("projected", false): messages.append("%s takes the %s form." % [target_name, str(projected.form_id)])
+					else: messages.append("%s cannot take that form: %s." % [target_name, str(projected.get("reason", ""))])
 			"grant_damage_link":
 				if DamageLinkRules.grant(target, result.get("effect_cast", {}), effect.policy):
 					messages.append("%s gains a source-owned damage link." % target_name)

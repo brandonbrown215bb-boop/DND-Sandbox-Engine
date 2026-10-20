@@ -123,6 +123,7 @@ static func resolve(caster: Character, target_entity, spell_data: Dictionary, de
 
 	if cast.spell.get("zero_hp_aftermath") is Dictionary:
 		cast.decisions["zero_hp_aftermath"] = cast.spell["zero_hp_aftermath"]
+		cast.decisions["zero_hp_aftermath_carrier"] = "spell:%s" % str(cast.spell.get("id", ""))
 	var interruption := _resolve_counterspell(cast)
 	for key in ["counterspell_saved_by", "counterspell_save_total", "counterspell_save_dc"]:
 		if cast.decisions.has(key):
