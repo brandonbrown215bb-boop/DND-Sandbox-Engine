@@ -45,25 +45,53 @@ static func apply(actor: Character, rule: Dictionary, source_instance_id: String
 
 static func _settle(actor: Character, id: String, entry: Dictionary, total: int) -> Dictionary:
 	var before_max := actor.max_hp
-	var base := actor.max_hp - int(entry.applied)
-	var applied := total if entry.kind == "increase" else -mini(total, maxi(0, base - int(entry.floor)))
-	var change := applied - int(entry.applied)
+	var base := _natural_base(actor)
+	var old_applied := int(entry.applied)
 	entry.requested = total
-	entry.applied = applied
 	actor.max_hp_sources[id] = entry
-	actor.max_hp = base + applied
-	if change > 0 and bool(entry.raise_current) and actor.current_hp > 0: actor.current_hp += change
-	actor.current_hp = mini(actor.current_hp, actor.max_hp)
+	_recompute(actor, base)
+	var applied := int(entry.applied)
+	var change := applied - old_applied
+	if change > 0 and bool(entry.raise_current) and actor.current_hp > 0: actor.current_hp = mini(actor.current_hp + change, actor.max_hp)
 	return {"applied": true, "source_instance_id": id, "requested": total, "delta": applied, "clamped": absi(applied) < total, "max_hp_before": before_max, "max_hp_after": actor.max_hp, "current_hp": actor.current_hp}
 
-## Remove one exact source; only its own applied delta is reverted.
+## Maximum with every source's applied delta removed.
+static func _natural_base(actor: Character) -> int:
+	var net := 0
+	for id in actor.max_hp_sources: net += int(actor.max_hp_sources[id].applied)
+	return actor.max_hp - net
+
+## Re-derive every source's applied delta from the natural base so clamping by
+## one source never leaks into another's removal (review R1). Increases apply in
+## full; reductions apply in ownership order up to the strictest floor.
+static func _recompute(actor: Character, base: int) -> void:
+	var increases := 0
+	var floor_hp := 1
+	for id in actor.max_hp_sources:
+		var e: Dictionary = actor.max_hp_sources[id]
+		if e.kind == "increase":
+			e.applied = int(e.requested)
+			increases += int(e.requested)
+		else: floor_hp = maxi(floor_hp, int(e.floor))
+	var room := maxi(0, base + increases - floor_hp)
+	for id in actor.max_hp_sources:
+		var e: Dictionary = actor.max_hp_sources[id]
+		if e.kind != "reduction": continue
+		var take := mini(int(e.requested), room)
+		e.applied = -take
+		room -= take
+	var net := 0
+	for id in actor.max_hp_sources: net += int(actor.max_hp_sources[id].applied)
+	actor.max_hp = maxi(1, base + net)
+	actor.current_hp = mini(actor.current_hp, actor.max_hp)
+
+## Remove one exact source; the others are re-derived from the natural base.
 static func remove(actor: Character, source_instance_id: String, cause: String = "removed") -> Dictionary:
 	if actor == null or not actor.max_hp_sources.has(source_instance_id): return {}
-	var entry: Dictionary = actor.max_hp_sources[source_instance_id]
 	var before := actor.max_hp
-	actor.max_hp = maxi(1, actor.max_hp - int(entry.applied))
+	var base := _natural_base(actor)
 	actor.max_hp_sources.erase(source_instance_id)
-	actor.current_hp = mini(actor.current_hp, actor.max_hp)
+	_recompute(actor, base)
 	return {"removed": true, "source_instance_id": source_instance_id, "cause": cause, "max_hp_before": before, "max_hp_after": actor.max_hp}
 
 ## Completed rest / turn-start events: cure declared sources, grow periodic ones.
