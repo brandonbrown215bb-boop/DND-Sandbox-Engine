@@ -95,8 +95,25 @@ static func declared_in(data: Dictionary) -> Array:
 ## same copy cannot refill them. restoring=true never grants fresh uses.
 static func sync(actor: Character, restoring: bool = false) -> Array:
 	if actor == null or actor.inventory == null: return []
+	var records: Dictionary = actor.inventory.copies.records
 	# Read the copy ledger as-is: re-syncing mid-drop/destroy would resurrect the copy.
 	var wanted := declared(actor.race_id, actor.character_id, actor.inventory.copies.records, actor.inventory.copies.equipped.values())
+	# Review 049 R2: an item's spent uses belong to the copy, not the wearer.
+	# A copy leaving this actor stamps its pool on the record, so a give, sell
+	# or trade cannot hand over a refilled item.
+	var wanted_ids := {}
+	for feature in wanted: wanted_ids[str(feature.id)] = true
+	for feature in actor.features:
+		var fid := str(feature.get("id", ""))
+		var copy := str(feature.get("source_instance_id", ""))
+		if not actor.acquired_features.has(fid) or wanted_ids.has(fid) or copy.is_empty() or not records.get(copy) is Dictionary: continue
+		var pool := str(feature.get("resource_id", fid))
+		if feature.get("type", "") != "mode_choice" or not actor.feature_uses.has(pool): continue
+		var state: Dictionary = records[copy].get("state", {})
+		var held: Dictionary = state.get("feature_uses", {})
+		held[pool] = maxi(0, int(actor.feature_uses[pool]))
+		state["feature_uses"] = held
+		records[copy]["state"] = state
 	var kept: Array[Dictionary] = []
 	var present := {}
 	for feature in actor.features:
@@ -123,6 +140,36 @@ static func sync(actor: Character, restoring: bool = false) -> Array:
 		if feature.get("type", "") != "mode_choice" or feature.get("boundary", "") != "activation": continue
 		var pool := str(feature.get("resource_id", id))
 		var maximum := maxi(0, actor.get_feature_max_uses(pool))
-		if actor.feature_uses.has(pool) or restoring: actor.feature_uses[pool] = clampi(int(actor.feature_uses.get(pool, 0)), 0, maximum)
+		var copy := str(feature.get("source_instance_id", ""))
+		var record: Variant = records.get(copy) if not copy.is_empty() else null
+		if record is Dictionary and record.get("state", {}).get("feature_uses", {}).has(pool):
+			# Review 049 R2: the copy's own stamped pool wins over this actor's ledger and a fresh grant.
+			actor.feature_uses[pool] = clampi(int(record.state.feature_uses[pool]), 0, maximum)
+			record.state.feature_uses.erase(pool)
+			if record.state.feature_uses.is_empty(): record.state.erase("feature_uses")
+		elif actor.feature_uses.has(pool) or restoring: actor.feature_uses[pool] = clampi(int(actor.feature_uses.get(pool, 0)), 0, maximum)
 		else: actor.feature_uses[pool] = maximum
 	return added
+
+## Review 049 R1: a merged copy, or one whose "features" magic is suppressed or
+## destroyed, keeps its owned rules and state but they grant and allow nothing.
+static func copy_active(actor: Character, feature: Dictionary) -> bool:
+	var copy := str(feature.get("source_instance_id", ""))
+	if copy.is_empty(): return true
+	return not ActorProjectionRules.merged(actor, copy) and MagicPropertyRules.active(actor, copy, "features")
+
+## Review 049 R2: a copy's stamped pool names only its own namespaced activation
+## modes and holds a whole number no larger than the item can ever grant.
+static func record_error(record: Dictionary) -> String:
+	var state: Variant = record.get("state", {})
+	if not state is Dictionary or not state.has("feature_uses"): return ""
+	var held: Variant = state.feature_uses
+	if not held is Dictionary or held.is_empty() or held.size() > MAX_FEATURES: return "item feature uses are malformed"
+	var item := DataLoader.get_item(str(record.get("definition_id", "")))
+	var pools := {}
+	for feature in item_features(item, str(record.get("instance_id", ""))):
+		if feature.type == "mode_choice" and feature.get("boundary", "") == "activation": pools[str(feature.get("resource_id", feature.id))] = true
+	for pool in held:
+		var n: Variant = held[pool]
+		if not pools.has(str(pool)) or not (n is int or n is float) or not is_finite(float(n)) or float(n) != floorf(float(n)) or int(n) < 0 or int(n) > 100: return "item feature uses name an unowned pool or an invalid count"
+	return ""

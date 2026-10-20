@@ -70,6 +70,7 @@ static func end_on_error(value: Variant) -> String:
 static func rule(actor: Character, feature_id: String) -> Dictionary:
 	var feature := actor.get_feature(feature_id)
 	if feature.get("type", "") != "mode_choice": return {}
+	if not OwnedFeatureSources.copy_active(actor, feature): return {} # Review 049 R1: merged/suppressed copies grant nothing.
 	return RuleUpgradeRules.effective(actor, feature)
 
 static func _mode(r: Dictionary, mode_id: String) -> Dictionary:
