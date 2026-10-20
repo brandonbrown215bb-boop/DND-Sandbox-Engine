@@ -683,6 +683,7 @@ static func resolve_damage(target, amount: int, damage_type: String, reaction_de
 				target["current_hp"] = new_hp
 				if int(target["current_hp"]) <= 0:
 					target["is_alive"] = false
+	var aftermath_receipt := ZeroHpAftermathRules.settle(target, created_hp_before, is_alive_before, damage_type, reaction_decisions, source_character)
 	if target is Character and target.feature_uses.get("created_form_id", "") == "animated_object": AnimatedObjectRules.damage(target, created_hp_before, maxi(0, resolved - created_temp_hp_before))
 	if resolved > 0:
 		_end_damage_broken_spell_effects(target, source_character != null and not source_character.character_id.is_empty(), {"actor_id": source_character.character_id if source_character != null else "", "source_instance_id": str(reaction_decisions.get("damage_source_instance_id", source_character.character_id if source_character != null else "")), "resolved": resolved})
@@ -742,6 +743,7 @@ static func resolve_damage(target, amount: int, damage_type: String, reaction_de
 	}
 	receipt["zero_hp_receipt"] = reaction_decisions.get("zero_hp_receipt", {}).duplicate(true)
 	reaction_decisions.erase("zero_hp_receipt")
+	receipt["zero_hp_aftermath"] = aftermath_receipt
 	receipt["replacement_receipts"] = incoming_replacement.receipts + resolved_replacement.receipts
 	receipt["replacement_absorbed"] = int(incoming_replacement.replaced) + int(resolved_replacement.replaced)
 	receipt["absorbed"] += int(receipt["replacement_absorbed"])
@@ -1585,6 +1587,8 @@ static func _settle_weapon_attack_context(context: Dictionary) -> Dictionary:
 	var bypass_weapon_resistance := ClassProgression.has_epic_boon(attacker, "irresistible_offense") and damage_type in ["bludgeoning", "piercing", "slashing"]
 	var weapon_damage_decisions := reaction_decisions.duplicate()
 	weapon_damage_decisions["damage_is_critical"] = bool(attack_result["is_crit"])
+	if weapon_data.get("zero_hp_aftermath") is Dictionary:
+		weapon_damage_decisions["zero_hp_aftermath"] = weapon_data["zero_hp_aftermath"]
 	var damage_occurrence_id := WardRules.next_damage_occurrence_id()
 	weapon_damage_decisions = DamageResponseRules.begin(weapon_damage_decisions, damage_occurrence_id, attacker)
 	var weapon_settlement := resolve_damage(target_entity, weapon_component_after_reactions, damage_type, weapon_damage_decisions, bypass_weapon_resistance, false, attacker, damage_occurrence_id)

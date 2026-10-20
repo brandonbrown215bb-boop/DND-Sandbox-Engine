@@ -2213,6 +2213,8 @@ static func resume_spell_steps_occurrence(caster: Character, target, settled_res
 static func resolve_zero_hp_replacement(target, hp_before: int, damage: int, damage_type: String, critical: bool, decisions: Dictionary = {}) -> bool:
 	if hp_before <= 0 or damage <= 0:
 		return false
+	if ZeroHpAftermathRules.precedes_replacement(target, decisions):
+		return false
 	if target is Character and target.is_dead():
 		return false
 	if target is Dictionary and not bool(target.get("is_alive", true)):

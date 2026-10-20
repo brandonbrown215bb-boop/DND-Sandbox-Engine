@@ -121,6 +121,8 @@ static func resolve(caster: Character, target_entity, spell_data: Dictionary, de
 		var invocation_source_id := cast.invocation_id if not cast.invocation_id.is_empty() else "cast:%d" % caster.spell_cast_serial
 		cast.decisions["damage_source_instance_id"] = "spell:%s:%s:%s" % [cast.spell_definition_id, cast.source_owner_id, invocation_source_id]
 
+	if cast.spell.get("zero_hp_aftermath") is Dictionary:
+		cast.decisions["zero_hp_aftermath"] = cast.spell["zero_hp_aftermath"]
 	var interruption := _resolve_counterspell(cast)
 	for key in ["counterspell_saved_by", "counterspell_save_total", "counterspell_save_dc"]:
 		if cast.decisions.has(key):

@@ -270,6 +270,7 @@ func _run_scenario(scenario: String) -> void:
 		"batch_031_linked_damage_flow": await Batch031Controls.run(self)
 		"batch_032_damage_responses_flow": await Batch032Controls.run(self)
 		"batch_033_zero_hp_flow": await Batch033Controls.run(self)
+		"batch_034_aftermath_flow": await Batch034Controls.run(self)
 		"batch_027_protections_flow": await Batch027Controls.run(self)
 		"batch_021_spell_permissions_flow": await Batch021Controls.run(self)
 		"batch_022_slot_ritual_flow": await Batch022Controls.run(self)
