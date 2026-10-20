@@ -96,7 +96,15 @@ static func saved_state_error(dto: Dictionary) -> String:
 		var valid_identify_target := identify_target is Dictionary and ((identify_kind == "item" and not str(identify_target.get("item_id", "")).is_empty()) or (identify_kind == "creature" and not str(identify_target.get("target_id", "")).is_empty()))
 		var valid_identify_record: bool = str(record.get("spell_id", "")) == "identify" and valid_identify_target and record["conditions"].is_empty() and bool(record.get("concentration", false))
 		var valid_area_marker_record: bool = str(record.get("spell_id", "")) in SpellEffects.PERSISTED_AREA_MARKER_SPELLS and record["conditions"].is_empty() and bool(record.get("concentration", false))
-		if not (save_dc is int or save_dc is float) or not is_finite(float(save_dc)) or float(save_dc) != floor(float(save_dc)) or int(save_dc) < 0 or int(save_dc) > 100 or not record.get("concentration", null) is bool or (record["conditions"].is_empty() and not valid_aid_record and not valid_barkskin_record and not valid_goodberry_record and not valid_identify_record and not valid_area_marker_record and not record.has("source_benefits")):
+		var link_value: Variant = record.get("damage_link", null)
+		var valid_damage_link: bool = link_value is Dictionary and str(record.get("recipient_id", "")) == str(dto.get("character_id", "")) and str(record.get("recipient_id", "")) != str(record.get("caster_id", "")) and DamageLinkRules.link_error(link_value).is_empty() and _definition_has_damage_link(DataLoader.get_spell(spell_id), link_value)
+		if record.has("damage_link") and not valid_damage_link: return "invalid saved damage link"
+		var response: Variant = record.get("damage_response", null)
+		var valid_response: bool = response is Dictionary and str(source).begins_with("spell:%s:" % str(record.get("caster_id", ""))) and str(record.get("recipient_id", "")) == str(dto.get("character_id", "")) and DamageResponseRules.policy_error(response).is_empty() and DamageResponseRules.definition_has_policy(DataLoader.get_spell(spell_id), response)
+		if record.has("damage_response") and not valid_response: return "invalid saved damage response"
+		for transient in ["_damage_cause", "countereffect_receipts", "replacement_receipts", "_response_depth"]:
+			if record.has(transient): return "transient damage response state cannot be saved"
+		if not (save_dc is int or save_dc is float) or not is_finite(float(save_dc)) or float(save_dc) != floor(float(save_dc)) or int(save_dc) < 0 or int(save_dc) > 100 or not record.get("concentration", null) is bool or (record["conditions"].is_empty() and not valid_aid_record and not valid_barkskin_record and not valid_goodberry_record and not valid_identify_record and not valid_area_marker_record and not record.has("source_benefits") and not valid_damage_link and not valid_response):
 			return "invalid saved spell effect rules"
 		if record.has("aid_hp_bonus") and (not valid_aid_record or str(record.get("spell_id", "")) != "aid"):
 			return "invalid saved Aid bonus"
@@ -133,6 +141,19 @@ static func saved_state_error(dto: Dictionary) -> String:
 	if not concentration.is_empty() and (str(concentration.get("effect_source", "")).is_empty() or (not SpellEffects.manages(DataLoader.get_spell(str(concentration.get("spell_id", "")))) and str(concentration.get("spell_id", "")) not in SpellEffects.PERSISTED_AREA_MARKER_SPELLS)):
 		return "invalid saved spell concentration"
 	return ""
+
+
+static func _definition_has_damage_link(definition: Dictionary, expected: Dictionary) -> bool:
+	if not SharedSpell.uses(definition): return false
+	for effect in definition.get("effects", []):
+		if effect is Dictionary and str(effect.get("type", "")) == "grant_damage_link" and effect.get("policy", {}) == expected:
+			return true
+	for step in definition.get("steps", []):
+		if not step is Dictionary: continue
+		for effect in step.get("effects", []):
+			if effect is Dictionary and str(effect.get("type", "")) == "grant_damage_link" and effect.get("policy", {}) == expected:
+				return true
+	return false
 
 
 static func saved_party_error(characters: Dictionary) -> String:

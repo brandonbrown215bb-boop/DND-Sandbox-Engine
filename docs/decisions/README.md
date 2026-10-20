@@ -51,6 +51,8 @@ for accepted evidence. Old implementation restrictions do not override later dec
 
 | [0033 - Parent action child continuations](0033-parent-action-child-continuations.md) | Encounter-local paid parents, local child action waivers and source-owned continuation |
 
+| [0034 - Source-owned zero-HP attempts](0034-source-owned-zero-hp-attempts.md) | Accepted bounded direction and implementation (VS-111/112); exact source history and completed-rest resets |
+
 New ADRs must state the decision, reason, compatibility constraints, acceptance
 boundary and affected earlier decisions. Keep implementation diaries and latest
 assertion counts out of ADRs. Superseded means a decision no longer governs its

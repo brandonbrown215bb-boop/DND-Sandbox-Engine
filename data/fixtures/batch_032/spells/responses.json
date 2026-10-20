@@ -1,0 +1,428 @@
+[
+  {
+    "id": "fixture:b032_absorb",
+    "name": "Absorb",
+    "description": "Bounded damage response vocabulary fixture.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "effects": [
+      {
+        "type": "grant_damage_response",
+        "policy": {
+          "kind": "replace",
+          "damage_type": "fire",
+          "stage": "incoming",
+          "immunity": "before",
+          "measure": "stage_amount",
+          "operation": "heal",
+          "numerator": 1,
+          "denominator": 1,
+          "rounding": "floor"
+        }
+      }
+    ],
+    "duration": "1 minute",
+    "duration_seconds": 60,
+    "concentration": false,
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "fixture:b032_renamed_partial",
+    "name": "Renamed Partial",
+    "description": "Bounded damage response vocabulary fixture.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "effects": [
+      {
+        "type": "grant_damage_response",
+        "policy": {
+          "kind": "replace",
+          "damage_type": "fire",
+          "stage": "resolved",
+          "immunity": "after",
+          "measure": "resolved",
+          "operation": "heal",
+          "numerator": 1,
+          "denominator": 1,
+          "rounding": "floor",
+          "limit": 2,
+          "cap": 1
+        }
+      }
+    ],
+    "duration": "1 minute",
+    "duration_seconds": 60,
+    "concentration": false,
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "fixture:b032_mirror",
+    "name": "Mirror",
+    "description": "Bounded damage response vocabulary fixture.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "effects": [
+      {
+        "type": "grant_damage_response",
+        "policy": {
+          "kind": "counter_damage",
+          "damage_type": "fire",
+          "stage": "settled",
+          "measure": "resolved",
+          "numerator": 1,
+          "denominator": 1,
+          "rounding": "floor",
+          "recipient": "origin",
+          "feedback": "once_per_source_per_root",
+          "max_depth": 4,
+          "response_type": "fire"
+        }
+      }
+    ],
+    "duration": "1 minute",
+    "duration_seconds": 60,
+    "concentration": false,
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "fixture:b032_renamed_mirror",
+    "name": "Renamed Mirror",
+    "description": "Bounded damage response vocabulary fixture.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "effects": [
+      {
+        "type": "grant_damage_response",
+        "policy": {
+          "kind": "counter_damage",
+          "damage_type": "fire",
+          "stage": "settled",
+          "measure": "hp_loss",
+          "numerator": 1,
+          "denominator": 2,
+          "rounding": "ceil",
+          "recipient": "origin",
+          "feedback": "once_per_source_per_root",
+          "max_depth": 4,
+          "response_type": "fire"
+        }
+      }
+    ],
+    "duration": "1 minute",
+    "duration_seconds": 60,
+    "concentration": false,
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "fixture:b032_prevented_heal",
+    "name": "Prevented Heal",
+    "description": "Bounded damage response vocabulary fixture.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "effects": [
+      {
+        "type": "grant_damage_response",
+        "policy": {
+          "kind": "counter_heal",
+          "damage_type": "fire",
+          "stage": "settled",
+          "measure": "prevented",
+          "numerator": 1,
+          "denominator": 1,
+          "rounding": "floor",
+          "recipient": "self",
+          "feedback": "once_per_source_per_root",
+          "max_depth": 4
+        }
+      }
+    ],
+    "duration": "1 minute",
+    "duration_seconds": 60,
+    "concentration": false,
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "fixture:b032_absorbed_heal",
+    "name": "Absorbed Heal",
+    "description": "Bounded damage response vocabulary fixture.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "effects": [
+      {
+        "type": "grant_damage_response",
+        "policy": {
+          "kind": "counter_heal",
+          "damage_type": "fire",
+          "stage": "settled",
+          "measure": "absorbed",
+          "numerator": 1,
+          "denominator": 1,
+          "rounding": "floor",
+          "recipient": "self",
+          "feedback": "once_per_source_per_root",
+          "max_depth": 4
+        }
+      }
+    ],
+    "duration": "1 minute",
+    "duration_seconds": 60,
+    "concentration": false,
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "fixture:b032_raw_heal",
+    "name": "Raw Heal",
+    "description": "Bounded damage response vocabulary fixture.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "effects": [
+      {
+        "type": "grant_damage_response",
+        "policy": {
+          "kind": "counter_heal",
+          "damage_type": "fire",
+          "stage": "settled",
+          "measure": "raw",
+          "numerator": 1,
+          "denominator": 1,
+          "rounding": "floor",
+          "recipient": "self",
+          "feedback": "once_per_source_per_root",
+          "max_depth": 4,
+          "cap": 3
+        }
+      }
+    ],
+    "duration": "1 minute",
+    "duration_seconds": 60,
+    "concentration": false,
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "fixture:b032_depth_one",
+    "name": "Depth One",
+    "description": "Bounded damage response vocabulary fixture.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "effects": [
+      {
+        "type": "grant_damage_response",
+        "policy": {
+          "kind": "counter_damage",
+          "damage_type": "fire",
+          "stage": "settled",
+          "measure": "resolved",
+          "numerator": 1,
+          "denominator": 1,
+          "rounding": "floor",
+          "recipient": "origin",
+          "feedback": "once_per_source_per_root",
+          "max_depth": 1,
+          "response_type": "fire"
+        }
+      }
+    ],
+    "duration": "1 minute",
+    "duration_seconds": 60,
+    "concentration": false,
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "fixture:b032_concentration_mirror",
+    "name": "Concentration Mirror",
+    "description": "Bounded damage response vocabulary fixture.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "effects": [
+      {
+        "type": "grant_damage_response",
+        "policy": {
+          "kind": "counter_damage",
+          "damage_type": "fire",
+          "stage": "settled",
+          "measure": "resolved",
+          "numerator": 1,
+          "denominator": 1,
+          "rounding": "floor",
+          "recipient": "origin",
+          "feedback": "once_per_source_per_root",
+          "max_depth": 4,
+          "response_type": "fire"
+        }
+      }
+    ],
+    "duration": "1 minute",
+    "duration_seconds": 60,
+    "concentration": true,
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "fixture:b032_fire",
+    "name": "Receipt Fire",
+    "description": "Fixed typed input.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "damage": "7",
+    "damage_type": "fire",
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "fixture:b032_cold",
+    "name": "Receipt Cold",
+    "description": "Fixed typed input.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "damage": "3",
+    "damage_type": "cold",
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "fixture:b032_ordered",
+    "name": "Receipt Ordered",
+    "description": "Ordered receipt input.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "steps": [
+      {
+        "id": "first",
+        "type": "damage",
+        "damage": "7",
+        "damage_type": "fire"
+      },
+      {
+        "id": "later",
+        "type": "damage",
+        "damage": "3",
+        "damage_type": "fire",
+        "gate": "always"
+      }
+    ],
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "fixture:b032_mixed",
+    "name": "Receipt Mixed",
+    "description": "Ordered receipt input.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "steps": [
+      {
+        "id": "mixed",
+        "type": "save",
+        "damage_components": [
+          {
+            "id": "hot",
+            "damage": "7",
+            "damage_type": "fire"
+          },
+          {
+            "id": "chill",
+            "damage": "3",
+            "damage_type": "cold"
+          }
+        ],
+        "save": "CON",
+        "half_on_save": false
+      }
+    ],
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "fixture:b032_hp_loss_heal",
+    "name": "Settled Wound Recovery",
+    "description": "Bounded damage response vocabulary fixture.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "effects": [
+      {
+        "type": "grant_damage_response",
+        "policy": {
+          "kind": "counter_heal",
+          "damage_type": "fire",
+          "stage": "settled",
+          "measure": "hp_loss",
+          "numerator": 1,
+          "denominator": 1,
+          "rounding": "floor",
+          "recipient": "self",
+          "feedback": "once_per_source_per_root",
+          "max_depth": 4
+        }
+      }
+    ],
+    "duration": "1 minute",
+    "duration_seconds": 60,
+    "concentration": false,
+    "classes": [
+      "wizard"
+    ]
+  }
+]

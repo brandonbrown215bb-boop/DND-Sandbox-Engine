@@ -5,7 +5,7 @@ extends RefCounted
 
 const CONDITIONS := ["blinded", "deafened", "frightened", "poisoned", "prone", "restrained", "stunned", "paralyzed", "incapacitated", "blessed", "baned", "shield_of_faith"]
 const ABILITIES := ["STR", "DEX", "CON", "INT", "WIS", "CHA"]
-const EFFECTS := ["heal", "temporary_hp", "grant_condition", "remove_condition", "area_selection", "grant_source_benefits"]
+const EFFECTS := ["heal", "temporary_hp", "grant_condition", "remove_condition", "area_selection", "grant_source_benefits", "grant_damage_link", "grant_damage_response"]
 const STEP_FIELDS := ["id", "type", "gate", "gate_step", "target", "shape", "radius", "size", "attack_type", "damage", "damage_type", "damage_components", "component_id", "scaling", "upcast", "save", "half_on_save", "save_context", "damage_scale_by_outcome", "damage_dice_policy", "damage_result_multiplier", "damage_reductions", "damage_bypasses", "recipient_exemption_choice", "effects", "incoming_negation", "incoming_negation_rule", "physical_requirements", "spatial_requirements"]
 const STEP_TYPES := ["attack", "save", "damage", "effect"]
 const STEP_GATES := ["always", "hit", "miss", "failed_save", "successful_save"]
@@ -97,6 +97,16 @@ static func _validate_single_effect(effect: Variant) -> String:
 		allowed.append("benefits")
 		var error := SourceBenefitRules.benefits_error(effect.get("benefits"))
 		if not error.is_empty(): return error
+	elif kind == "grant_damage_link":
+		if effect.size() != 2: return "Damage link grants accept only type and policy."
+		allowed.append("policy")
+		var link_error := DamageLinkRules.link_error(effect.get("policy"))
+		if not link_error.is_empty(): return link_error
+	elif kind == "grant_damage_response":
+		if effect.size() != 2: return "Damage response grants accept only type and policy."
+		allowed.append("policy")
+		var response_error := DamageResponseRules.policy_error(effect.get("policy"))
+		if not response_error.is_empty(): return response_error
 	elif kind in ["grant_condition", "remove_condition"]:
 		allowed.append("condition")
 		if effect.get("condition", "") not in CONDITIONS: return "Unsupported shared condition."
@@ -403,7 +413,7 @@ static func content_error(spell: Dictionary) -> String:
 			var rider_error := validate_outcome_map(effect["rider_by_outcome"], domain, "rider_by_outcome", true)
 			if not rider_error.is_empty(): return rider_error
 		var kind := str(effect.get("type", ""))
-		if kind in ["grant_condition", "grant_source_benefits"]: timed = true
+		if kind in ["grant_condition", "grant_source_benefits", "grant_damage_link", "grant_damage_response"]: timed = true
 		elif kind == "area_selection": areas += 1
 		has_payload = has_payload or kind != "area_selection"
 		if bool(effect.get("on_spell_hit", false)) and spell.get("attack_type", "none") == "none" and not spell.has("steps"): return "on_spell_hit requires attack delivery."
@@ -523,7 +533,7 @@ static func has_effect(spell: Dictionary, kind: String) -> bool:
 	return false
 
 static func manages(spell: Dictionary) -> bool:
-	return (has_effect(spell, "grant_condition") or has_effect(spell, "grant_source_benefits")) and content_error(spell).is_empty()
+	return (has_effect(spell, "grant_condition") or has_effect(spell, "grant_source_benefits") or has_effect(spell, "grant_damage_link") or has_effect(spell, "grant_damage_response")) and content_error(spell).is_empty()
 
 static func _create_step_cast(cast: SpellResolutionContext, target, step_spell: Dictionary) -> SpellResolutionContext:
 	var step_cast := SpellResolutionContext.new()
@@ -661,6 +671,12 @@ static func apply_custom_effects(caster: Character, target, effects: Array, resu
 			"grant_source_benefits":
 				if target is Character and SourceBenefitRules.grant(target, result.get("effect_cast", {}), effect.benefits):
 					messages.append("%s gains source-owned benefits." % target_name)
+			"grant_damage_link":
+				if DamageLinkRules.grant(target, result.get("effect_cast", {}), effect.policy):
+					messages.append("%s gains a source-owned damage link." % target_name)
+			"grant_damage_response":
+				if DamageResponseRules.grant(target, result.get("effect_cast", {}), effect.policy):
+					messages.append("%s gains a source-owned damage response." % target_name)
 			"grant_condition":
 				SpellEffects.grant(target, result.get("effect_cast", {}), str(effect["condition"]))
 				if CombatAction.has_condition(target, str(effect["condition"])): messages.append("%s is %s." % [target_name, effect["condition"]])

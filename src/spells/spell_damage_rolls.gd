@@ -1829,6 +1829,18 @@ static func _finish_spell_damage(caster: Character, target, details: Dictionary,
 	var metamagic := SpellDamageRolls._apply_empowered_spell(caster, details, decisions)
 	details = metamagic["details"]
 	details = SpellDamageRolls._resolve_sorcerous_burst_explosions(caster, details)
+	# Reuse the owned damage continuation: damage dice are captured, while HP,
+	# save RNG, history and source payment have not yet settled.
+	var zero_options := SharedStepExecutor.zero_hp_options(target)
+	if not zero_options.is_empty() and not bool(decisions.get("_zero_hp_choice_done", false)):
+		var req_id := create_damage_request(caster, target, details, bonus, scale, damage_type, condition_duration, additional_damage_packets, decisions, result, damage_reductions, damage_bypasses)
+		_pending_requests[req_id]["zero_hp_options"] = zero_options.duplicate(true)
+		_pending_requests[req_id]["zero_hp_live_rules"] = zero_options.duplicate()
+		_pending_requests[req_id]["decisions"]["_zero_hp_choice_done"] = true
+		# Metamagic has already resolved. Never reroll it on this continuation.
+		_pending_requests[req_id]["decisions"]["metamagic:empowered_dice"] = []
+		result["damage_request"] = {"request_id": req_id, "zero_hp": true}
+		return result
 	var hp_before: int = target.current_hp if target is Character else int(target.get("current_hp", 0))
 	var temp_hp_before: int = target.temp_hp if target is Character else int(target.get("temp_hp", 0))
 	var is_alive_before: bool = target.is_alive if target is Character else bool(target.get("is_alive", true))
@@ -1865,6 +1877,7 @@ static func _finish_spell_damage(caster: Character, target, details: Dictionary,
 	policy_components = policy_result.get("components", [])
 	if not damage_reductions.is_empty(): result["damage_reduction_receipts"] = policy_result.get("reduction_receipts", []).duplicate(true)
 	var damage_occurrence_id := WardRules.next_damage_occurrence_id()
+	decisions = DamageResponseRules.begin(decisions, damage_occurrence_id, caster)
 	var primary_policy: Dictionary = policy_components[0]
 	var primary_dmg_res := CombatAction.resolve_damage(target, int(primary_policy.get("settlement_raw", amount)), damage_type, decisions, false, false, caster, damage_occurrence_id, primary_policy.get("bypass_layers", []), amount, int(primary_policy.get("reduction_prevented", 0)))
 	var actual: int = int(primary_dmg_res.get("damage", 0))
@@ -1890,7 +1903,15 @@ static func _finish_spell_damage(caster: Character, target, details: Dictionary,
 		"resolved": int(primary_dmg_res.get("resolved", 0)),
 		"prevented": maxi(0, amount - int(primary_dmg_res.get("resolved", 0))),
 		"absorbed": int(primary_dmg_res.get("temp_hp_absorbed", 0)),
-		"hp_loss": int(primary_dmg_res.get("hp_loss", primary_dmg_res.get("damage", 0)))
+		"settlement_absorbed": int(primary_dmg_res.get("absorbed", 0)),
+		"zero_hp_receipt": primary_dmg_res.get("zero_hp_receipt", {}).duplicate(true),
+		"replacement_receipts": primary_dmg_res.get("replacement_receipts", []).duplicate(true),
+		"countereffect_receipts": primary_dmg_res.get("countereffect_receipts", []).duplicate(true),
+		"root_occurrence_id": primary_dmg_res.get("root_occurrence_id", damage_occurrence_id),
+		"knocked_out": bool(primary_dmg_res.get("knocked_out", false)),
+		"hp_loss": int(primary_dmg_res.get("hp_loss", primary_dmg_res.get("damage", 0))),
+		"recipient_receipts": primary_dmg_res.get("recipient_receipts", []).duplicate(true),
+		"damage_link": primary_dmg_res.get("damage_link", {}).duplicate(true)
 	}]
 	var policy_component_index := 1
 	for packet in additional_damage_packets:
@@ -1914,7 +1935,15 @@ static func _finish_spell_damage(caster: Character, target, details: Dictionary,
 			"resolved": int(packet_result.get("resolved", 0)),
 			"prevented": maxi(0, packet_amount - int(packet_result.get("resolved", 0))),
 			"absorbed": int(packet_result.get("temp_hp_absorbed", 0)),
-			"hp_loss": int(packet_result.get("hp_loss", packet_damage))
+			"settlement_absorbed": int(packet_result.get("absorbed", 0)),
+			"zero_hp_receipt": packet_result.get("zero_hp_receipt", {}).duplicate(true),
+			"replacement_receipts": packet_result.get("replacement_receipts", []).duplicate(true),
+			"countereffect_receipts": packet_result.get("countereffect_receipts", []).duplicate(true),
+			"root_occurrence_id": packet_result.get("root_occurrence_id", damage_occurrence_id),
+			"knocked_out": bool(packet_result.get("knocked_out", false)),
+			"hp_loss": int(packet_result.get("hp_loss", packet_damage)),
+			"recipient_receipts": packet_result.get("recipient_receipts", []).duplicate(true),
+			"damage_link": packet_result.get("damage_link", {}).duplicate(true)
 		})
 		actual += packet_damage
 		resolved += int(packet_result.get("resolved", 0))
@@ -2007,6 +2036,13 @@ static func settle_pending_request(caster: Character, target, result: Dictionary
 	final_decisions.erase("metamagic:empowered_dice")
 	if answer.has("metamagic:empowered_dice"):
 		final_decisions["metamagic:empowered_dice"] = answer["metamagic:empowered_dice"]
+	if record.has("zero_hp_options"):
+		final_decisions["metamagic:empowered_dice"] = []
+		final_decisions["zero_hp_choice"] = {}
+		var selected := str(answer.get("zero_hp_source", ""))
+		for rule in record.zero_hp_options:
+			if str(rule.get("source_instance_id", "")) == selected:
+				final_decisions["zero_hp_choice"] = {"rule": rule.duplicate(true), "live_rule": record.zero_hp_live_rules[record.zero_hp_options.find(rule)], "target": record.target, "used": false}
 	var settled := SpellDamageRolls._finish_spell_damage(record["caster"], record["target"], record["details"], int(record["bonus"]), float(record["scale"]), str(record["damage_type"]), final_decisions, record["result_base"].duplicate(false), int(record["condition_duration"]), record["additional_damage_packets"], record.get("damage_reductions", []), record.get("damage_bypasses", []))
 	for key in ["empowered_sp_spent", "empowered_remaining_dice"]:
 		if final_decisions.has(key):

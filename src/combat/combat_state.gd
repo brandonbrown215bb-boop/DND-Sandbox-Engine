@@ -75,6 +75,10 @@ var remaining_flurry_swings := 0
 var strike_unit_parent := "attack"
 var _cast_in_progress := false
 var light_attack_weapon: Dictionary = {}
+## Last completed input-driven shared spell's damage component receipts.
+var last_spell_damage_receipts: Array[Dictionary] = []
+## Last completed incoming monster weapon result, including each settled component.
+var last_monster_weapon_attack_result: Dictionary = {}
 
 # Guards against double-triggering battle end (victory/defeat).
 var _battle_ending := false
@@ -1394,6 +1398,18 @@ func _execute_monster_attack(monster: Dictionary, target_player_name: String, at
 		has_disadvantage = true
 		monster.erase("fighter_sap_sources")
 	var reaction_decisions := await _collect_reaction_decisions(target_char)
+	var zero_live := SharedStepExecutor.zero_hp_options(target_char)
+	var zero_options := zero_live.duplicate(true)
+	if not zero_options.is_empty():
+		var selected := await SpellCastResults.choose_zero_hp_source(hud, target_char, zero_options)
+		for rule in zero_options:
+			if str(rule.source_instance_id) == selected:
+				reaction_decisions["zero_hp_choice"] = {"rule": rule, "live_rule": zero_live[zero_options.find(rule)], "target": target_char, "used": false}
+
+	reaction_decisions["players"] = player_entities
+	reaction_decisions["monsters"] = monster_entities
+	reaction_decisions["damage_source_actor_id"] = str(monster.get("id", ""))
+	reaction_decisions["damage_source_instance_id"] = str(monster.get("id", ""))
 
 	# Roll attack
 	var monster_attacker := _make_temp_monster_character(monster)
@@ -1406,6 +1422,7 @@ func _execute_monster_attack(monster: Dictionary, target_player_name: String, at
 		has_disadvantage,
 		reaction_decisions
 	)
+	last_monster_weapon_attack_result = result.duplicate(true)
 	if result.has("attack_roll"):
 		# The AI's selected command can still fail target/LOS/movement checks.
 		# Record only a real roll, using the monster rather than its temporary
@@ -1420,12 +1437,21 @@ func _execute_monster_attack(monster: Dictionary, target_player_name: String, at
 			if str(effect.get("type", "")) in ["poison_save", "restrain", "paralyze_save"]:
 				rider_save_decisions = await _collect_roll_token_decision(target_char, "save", "%s saving throw against %s" % [str(effect.get("save", "CON")), str(monster.get("name", "attack"))])
 				break
-	var rider_results := CombatAction.resolve_monster_attack_effects(monster, target_char, attack_data, result, rider_save_decisions)
+	# Base and primary rider damage share the accepted single-use authorization.
+	# Keep the live reference and its consumed flag; copying it could reopen a use.
+	if reaction_decisions.has("zero_hp_choice"):
+		rider_save_decisions["zero_hp_choice"] = reaction_decisions["zero_hp_choice"]
+	rider_save_decisions.merge({"players": player_entities, "monsters": monster_entities, "damage_source_actor_id": str(monster.get("id", "")), "damage_source_instance_id": str(monster.get("id", ""))}, true)
+	var rider_results := CombatAction.resolve_monster_attack_effects(monster, target_char, attack_data, result, rider_save_decisions, monster_attacker)
 	var rider_resolved := 0
 	for rider in rider_results:
 		hud.add_log("[color=orange]%s[/color]" % rider.get("message", "Monster effect resolved."))
 		result["damage"] = int(result.get("damage", 0)) + int(rider.get("damage", 0))
 		rider_resolved += int(rider.get("resolved", rider.get("damage", 0)))
+		if rider.has("damage_components"):
+			if not result.has("damage_components"): result["damage_components"] = []
+			result["damage_components"].append_array(rider["damage_components"])
+	last_monster_weapon_attack_result = result.duplicate(true)
 	if result.get("deflected", false) and rider_results.is_empty():
 		await _offer_deflect_redirect(target_char, target_pos, attack_data, result)
 
@@ -1445,6 +1471,24 @@ func _execute_monster_attack(monster: Dictionary, target_player_name: String, at
 	# ---
 
 	# Check if target died
+	var linked_recipients := DamageLinkRules.recipient_settlements(target_char, result, monster_entities)
+	if not linked_recipients.is_empty():
+		for recipient in linked_recipients:
+			var actor = recipient["actor"]
+			var taken := int(recipient["resolved"])
+			if actor is Dictionary:
+				if int(actor.get("current_hp", 0)) <= 0 and not bool(actor.get("_defeat_processed", false)):
+					actor["_defeat_processed"] = true
+					actor["is_alive"] = false
+					tracker.remove_combatant(str(actor.get("id", "")))
+					_trigger_enemy_defeat_features(actor, recipient.get("source_actor"))
+				continue
+			if not actor.is_alive or bool(recipient.get("knocked_out", false)):
+				hud.add_log("[color=red]%s has been knocked out![/color]" % actor.character_name)
+				_end_concentration(actor)
+			elif taken > 0:
+				await _check_concentration_save(actor, taken)
+		return
 	if not target_char.is_alive:
 		hud.add_log("[color=red]%s has been knocked out![/color]" % target_char.character_name)
 		if not target_char.concentrating_on.is_empty():
@@ -3842,7 +3886,9 @@ func _execute_player_spell(target_coord: Vector2i, additional_target_coord: Vect
 	cast.can_spend = func(cost: String):
 		return commit_guard.call() if cost == "magic_action" and (parent_cast or count > 0) else _can_spend_action_cost(cost)
 	_cast_in_progress = true
+	cast.damage_receipts.clear()
 	await _execute_selected_spell(cast)
+	last_spell_damage_receipts = cast.damage_receipts.duplicate(true)
 	_cast_in_progress = false
 	resolving_player_action = false
 	if parent_cast:

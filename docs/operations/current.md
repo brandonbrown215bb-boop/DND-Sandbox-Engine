@@ -6,7 +6,10 @@ and material limits, not a running batch diary.
 
 ## Accepted scope
 
-**106/226 vocabulary slices accepted; 120 remain.** Independent
+**112/226 vocabulary slices accepted; 114 remain.** Owner-authorized
+[Batch 033 acceptance](../reviews/batch-033-acceptance.md) adds S-117/S-118 as
+VS-111/112 after independent repair re-review. Independent
+[031/032 acceptance](../../.artifacts/planning/vocabulary-reports/batch-031-032-acceptance-review.md) accepts S-111/S-112 as VS-107/108 and S-113/S-114 as VS-109/110 after two recipient-aftermath repairs. Independent
 [024/026 verification](../../.artifacts/planning/vocabulary-reports/batch-024-026-verification.md)
 accepts budgeted/timed recovery and repeat-save history as VS-91–96.
 [028 completion review](../../.artifacts/planning/vocabulary-reports/batch-028-completion-review.md)
@@ -37,12 +40,54 @@ completion claim; maintenance below adds no separate slice acceptance.
 | P1 facts, results and grants | 34/34 |
 | P2 pools, time and effect state | 34/50 |
 | P3 rolls and decisions | 19/27 |
-| P4 damage and consequences | 7/25 |
+| P4 damage and consequences | 13/25 |
 | P5–P9 casting, actors, space, items and procedures | 12/90 |
 
 The [slice registry](../planning/vocabulary-slices.md) owns each finish line;
 the [accepted checklist](../reviews/dnd-code-vocabulary-gap-checklist.md) owns
 bounded support. These counts measure scope, not effort or converted content.
+
+## Batches 031/032 accepted
+
+Fixed source-owned links split/redirect at the declared post-reduction stage,
+with separate recipient defenses and concentration, once-only source penalties
+and parent work, and authored stale/declined fallback. Incoming replacements
+use explicit stages; settled countereffects preserve distinct damage/healing
+measures, exact reacting sources, root identity and finite depth. Later roots
+and independent sources retain eligibility.
+
+Acceptance repaired flat zero-HP-then-healing retaining concentration and extra
+typed weapon packets disappearing from aftermath when Temporary HP took all
+their damage. Final Godot proof passed 1766/0 combat/spell assertions, 25/0 and
+33/0 batch controls plus 90/0 existing spell controls, bootstrap, 252-script
+parse and boot. Unchanged 108/0 persistence checks are retained. Both batches retain actual controls, allowed-checkpoint recovery
+and malformed-load refusal on both DTO paths. Exact evidence is in the
+[acceptance report](../../.artifacts/planning/vocabulary-reports/batch-031-032-acceptance-review.md).
+
+The bounded controllers are incoming monster weapons, including poison riders,
+and player flat/ordered shared spells. Links fix the recipient at grant time;
+responses are automatic. Other controllers, optional paid response choices,
+monster-source persistence, reflection and catalog conversion remain open.
+Broad V-017/V-018 remain partial. See
+[damage authoring](../mechanics/shared-spells.md#linked-incoming-damage-batch-031-vs-107108-accepted).
+
+## Batch 033 accepted
+
+[Acceptance](../reviews/batch-033-acceptance.md) records S-117/S-118 as VS-111/112.
+The existing shared boundary decides authored replacement before defeat, with
+exact actor/source save DC, attempts, payment and completed-rest reset history.
+Independent review closed primary poison-rider authorization loss and inconsistent
+saved attempt counts. Riders share the original authorization's consumed flag;
+both full-save DTO paths validate latest receipt/reset consistency before restore.
+
+Retained Godot evidence passed bootstrap, 255-script parse, boot, **1965/0**
+affected logic and **70/0** actual controls, with **32 malformed full-save
+refusals** and parent/child **1608/1824** recovery without RNG or reacquisition.
+Optional choices cover primary incoming monster-weapon and flat/ordered spell
+targets. Dictionary history is encounter-local; Character history is durable.
+Other controllers, linked/counter optional pickers, post-roll rescue choices,
+general instant death/destruction, forms, revival and catalog conversion remain
+open. Broad V-020/V-088 remain partial. No next batch is selected.
 
 ## Retained source-carrier evidence: Batch L
 

@@ -6,8 +6,11 @@ support. Build and production validation may share an owner-authorized builder
 chat; independent review and acceptance reconciliation remain separate.
 
 The original A-I prompt pack is [archived and completed](../archive/planning/vocabulary-next-26-prompts.md).
-Current proposed work is in [batches 018-030](vocabulary-batches-018-030.md),
-subject to owner selection, actual prerequisite acceptance and review findings.
+The retained [031–033 prompts](vocabulary-batches-031-033.md) are completed.
+Batches 031/032 are [accepted](../../.artifacts/planning/vocabulary-reports/batch-031-032-acceptance-review.md)
+as VS-107–110; owner-authorized [033 acceptance](../reviews/batch-033-acceptance.md)
+adds VS-111/112 after independent repair re-review. No further batch is selected;
+the owner and roadmap choose later work.
 
 ## Starting a fresh chat
 

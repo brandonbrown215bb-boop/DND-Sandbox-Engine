@@ -299,6 +299,8 @@ var subclass_id: String = ""
 ## Stable improvement entitlements; saved totals are never replayed on reload.
 var feature_choices: Dictionary = {}
 ## Owner's preselected policy, editable on the sheet even during combat.
+var zero_hp_history: Dictionary = {}
+var zero_hp_attempt_serial: int = 0
 var barbarian_relentless_rage_enabled: bool = true
 ## Temporary Beast statistics plus the Druid statistics needed to revert safely.
 var wild_shape_state: Dictionary = {}
@@ -1274,8 +1276,9 @@ func _unlock_features_for_level(lvl: int, acquiring: bool = true) -> void:
 	for source in [class_data, DataLoader.get_subclass(subclass_id)]:
 		for feature in source.get("features_by_level", {}).get(str(lvl), []):
 			if not has_feature(str(feature["id"])):
-				features.append(feature)
-				gained.append(feature)
+				var granted: Dictionary = feature.duplicate(true) if feature.get("type") == "zero_hp_replacement" else feature
+				features.append(granted)
+				gained.append(granted)
 	for feature in gained:
 		_apply_passive_feature(feature, acquiring)
 		if acquiring and feature.get("type", "") == "passive" and feature.has("resource_pool"):
@@ -1577,6 +1580,7 @@ func take_damage(amount: int, accepted_relentless_rage_inspiration: bool = false
 		var is_crit: bool = bool(damage_facts.get("critical", critical_hit))
 		current_hp = 0
 		var damage_decisions: Dictionary = damage_facts.get("decisions", {}) if damage_facts.get("decisions") is Dictionary else {}
+		damage_decisions["zero_hp_outright_death"] = hp_damage >= hp_before_damage + max_hp
 		var replaced := SharedStepExecutor.resolve_zero_hp_replacement(self, hp_before_damage, damage_amount, dmg_type, is_crit, damage_decisions)
 		if replaced:
 			damage_facts["zero_hp_replacement_saved"] = true
@@ -2517,6 +2521,8 @@ func to_dict() -> Dictionary:
 		"permanent_progression": permanent_progression.duplicate(true),
 		"subclass_id": subclass_id,
 		"feature_choices": feature_choices.duplicate(true),
+		"zero_hp_history": zero_hp_history.duplicate(true),
+		"zero_hp_attempt_serial": zero_hp_attempt_serial,
 		"barbarian_relentless_rage_enabled": barbarian_relentless_rage_enabled,
 		"level": level,
 		"xp": xp,
@@ -2843,6 +2849,8 @@ func from_dict(data: Dictionary) -> void:
 	WardRules.sync_pools_on_acquire(self)
 	FamiliarRules.restore_legacy(self)
 	BardicInspirationRules.advance_time(self, 0)
+	zero_hp_history = data.get("zero_hp_history", {}).duplicate(true)
+	zero_hp_attempt_serial = int(data.get("zero_hp_attempt_serial", 0))
 	barbarian_relentless_rage_enabled = bool(data.get("barbarian_relentless_rage_enabled", true))
 	for feature in features:
 		if feature.get("type", "") in ["active", "triggered", "resource"]:

@@ -7,6 +7,48 @@ owns the target architecture; [roadmap](../../roadmap.md) selects the work.
 clarifies vocabulary-first delivery, bounded illusions/campaign Wish and the
 owner's current save priorities. Its planning decisions do not add runtime support.
 
+## Owned zero-HP replacement (033; VS-111/112 accepted)
+
+`SharedStepExecutor` extends the existing event adapter with source eligibility,
+represented massive-death exclusions, shared HP/DC formulas and exact-source
+attempt/reset/payment receipts. `Character` retains history and its lifetime
+attempt high-water total. `RestRules` owns completed-rest resets, including
+retained detached histories; both SaveManager DTO paths validate before restore.
+Class acquisition copies typed rule occurrences so reacquisition invalidates old
+transient authorizations without refunding durable history.
+
+Optional primary-target spell damage reuses the owned damage continuation;
+incoming monster weapons collect authorization before attack and share its
+consumed flag with their primary riders. Saved receipts bind the latest attempt
+to its reset generation, with count/receipt consistency checked before restore.
+The actual zero-HP
+boundary rechecks the live source, unchanged policy, eligibility and pool before
+RNG. Attempted payment/history settle before the save; result payment reserves
+its exact numeric quantity until success/failure. Native Death Ward/Relentless
+Rage and existing damage/concentration owners keep their precedence. No new
+interpreter, generic post-roll rescue menu or mid-action save point is added.
+See [authoring](../mechanics/shared-spells.md#authored-zero-hp-eligibility-and-owned-attempts-batch-033-vs-111112-accepted),
+[ADR-0034](../decisions/0034-source-owned-zero-hp-attempts.md) and the
+[builder report](../../.artifacts/planning/vocabulary-reports/batch-033-build-validation.md).
+The [acceptance record](../reviews/batch-033-acceptance.md) owns the verified
+hosts and remaining limits; no catalog-wide support is implied.
+
+## Shared damage links and responses (031/032; VS-107–110 accepted)
+
+`DamageLinkRules` distributes one post-reduction occurrence between exact
+source-owned recipients; `DamageResponseRules` validates timed replacement and
+settled counter policies. `CombatAction` remains the typed settlement owner for
+original and derived damage. Root/source/depth receipts bound feedback without
+replaying attacks or payments. Existing monster-weapon and flat/ordered spell
+controllers settle actual recipient concentration and defeat; executed extra
+typed packets and captured knockout survive Temporary HP and later healing.
+
+Ordinary SpellEffects records and existing save validators retain policy,
+owner, recipient and deadline; causal state and pending callbacks stay transient.
+See [authoring](../mechanics/shared-spells.md#linked-incoming-damage-batch-031-vs-107108-accepted)
+and [independent acceptance](../../.artifacts/planning/vocabulary-reports/batch-031-032-acceptance-review.md) for production evidence and controller limits.
+No broader damage host or catalog support is implied.
+
 ## Recipient HP and aura entries (027; VS-84/85/86 accepted)
 
 `TemporaryHPRules` owns recipient decisions, exact supplier payment and captured

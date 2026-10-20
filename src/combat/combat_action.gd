@@ -567,17 +567,29 @@ static func is_immune_to_damage(target, damage_type: String) -> bool:
 ## One typed settlement path; reductions/saves resolve before calling it.
 ## CombatState keeps concentration prompts and positional/death presentation.
 static func resolve_damage(target, amount: int, damage_type: String, reaction_decisions: Dictionary = {}, bypass_resistance: bool = false, preserve_turning: bool = false, source_character: Character = null, damage_occurrence_id: int = 0, bypass_layers: Array = [], original_raw_amount: int = -1, reduction_prevented: int = 0) -> Dictionary:
+	if damage_occurrence_id <= 0: damage_occurrence_id = WardRules.next_damage_occurrence_id()
+	reaction_decisions = DamageResponseRules.begin(reaction_decisions, damage_occurrence_id, source_character)
+	var linked := DamageLinkRules.settle(target, amount, damage_type, reaction_decisions, source_character, damage_occurrence_id, bypass_layers, original_raw_amount if original_raw_amount >= 0 else amount, reduction_prevented)
+	if bool(linked.get("handled", false)):
+		if linked.has("receipt"): return linked["receipt"]
+		if str(linked.get("fallback", "keep_original")) == "refuse":
+			return {"damage": 0, "raw": maxi(0, amount), "resolved": 0, "prevented": maxi(0, amount), "absorbed": 0, "hp_loss": 0, "damage_link_refused": true, "recipient_receipts": []}
+		# Declined and stale choices keep the original recipient damage intact.
 	var source_is_target := is_same_character(source_character, target)
 	if ((has_condition(target, "resilient_sphere") and not source_is_target) or (source_character != null and has_condition(source_character, "resilient_sphere") and not source_is_target)) and not bypass_layers.has("prevention"):
 		var blocked_raw := maxi(0, original_raw_amount if original_raw_amount >= 0 else amount)
 		var blocked_receipt := {"damage": 0, "raw": blocked_raw, "prevented": blocked_raw, "reduction_prevented": maxi(0, reduction_prevented), "absorbed": 0, "resolved": 0, "hp_loss": 0, "blocked_by_resilient_sphere": true, "bypassed_layers": bypass_layers.duplicate()}
 		_record_settled_damage_history(target, source_character, blocked_receipt, reaction_decisions)
+		_finalize_damage_responses(target, source_character, damage_type, blocked_receipt, reaction_decisions, damage_occurrence_id)
 		return blocked_receipt
 	var resolved := maxi(0, amount)
 	var enfeeblement_penalty := 0
-	if resolved > 0 and source_character != null and source_character.has_condition("ray_of_enfeeblement"):
-		enfeeblement_penalty = mini(resolved, Dice.roll(8, source_character))
+	if resolved > 0 and not bool(reaction_decisions.get("_damage_link_child", false)) and not bool(reaction_decisions.get("_damage_response_child", false)):
+		enfeeblement_penalty = damage_source_penalty(resolved, source_character)
 		resolved -= enfeeblement_penalty
+	var response_raw := maxi(0, original_raw_amount if original_raw_amount >= 0 else amount)
+	var incoming_replacement := DamageResponseRules.replacements(target, "incoming", resolved, response_raw, damage_type, reaction_decisions)
+	resolved = int(incoming_replacement.remaining)
 	var resistance_spell_reduction := 0
 	if resolved > 0 and not bypass_layers.has("resistance") and target is Character and target.has_condition("resistance_spell") and target.resistance_last_turn_serial != active_turn_serial and target.resistance_damage_type == damage_type:
 		resistance_spell_reduction = mini(resolved, Dice.roll(4, target))
@@ -608,6 +620,8 @@ static func resolve_damage(target, amount: int, damage_type: String, reaction_de
 	resolved = int(ward_res.get("remaining_damage", resolved))
 	if resolved > 0 and not bypass_layers.has("immunity") and is_immune_to_damage(target, damage_type):
 		resolved = 0
+	var resolved_replacement := DamageResponseRules.replacements(target, "resolved", resolved, response_raw, damage_type, reaction_decisions)
+	resolved = int(resolved_replacement.remaining)
 	var actual := 0
 	var death_ward_prevented := false
 	var undead_fortitude_saved := false
@@ -655,6 +669,7 @@ static func resolve_damage(target, amount: int, damage_type: String, reaction_de
 			var new_hp := monster_hp - hp_damage
 			if monster_hp > 0 and new_hp <= 0:
 				target["current_hp"] = 0
+				reaction_decisions["zero_hp_outright_death"] = hp_damage >= monster_hp + int(target.get("max_hp", 0))
 				var replaced := resolve_zero_hp_replacement(target, monster_hp, resolved, damage_type, bool(reaction_decisions.get("damage_is_critical", false)), reaction_decisions)
 				if replaced:
 					undead_fortitude_saved = true
@@ -716,6 +731,7 @@ static func resolve_damage(target, amount: int, damage_type: String, reaction_de
 		"temp_hp_after": temp_hp_after,
 		"is_alive_before": is_alive_before,
 		"is_alive_after": is_alive_after,
+		"knocked_out": resolved > 0 and hp_after <= 0,
 		"critical": is_crit,
 		"damage_is_critical": is_crit,
 		"source_roll_penalty": enfeeblement_penalty,
@@ -724,8 +740,29 @@ static func resolve_damage(target, amount: int, damage_type: String, reaction_de
 		"undead_fortitude_saved": undead_fortitude_saved,
 		"zero_hp_replacement_saved": undead_fortitude_saved
 	}
+	receipt["zero_hp_receipt"] = reaction_decisions.get("zero_hp_receipt", {}).duplicate(true)
+	reaction_decisions.erase("zero_hp_receipt")
+	receipt["replacement_receipts"] = incoming_replacement.receipts + resolved_replacement.receipts
+	receipt["replacement_absorbed"] = int(incoming_replacement.replaced) + int(resolved_replacement.replaced)
+	receipt["absorbed"] += int(receipt["replacement_absorbed"])
 	_record_settled_damage_history(target, source_character, receipt, reaction_decisions)
+	_finalize_damage_responses(target, source_character, damage_type, receipt, reaction_decisions, damage_occurrence_id)
 	return receipt
+
+
+static func _finalize_damage_responses(target, source_character: Character, damage_type: String, receipt: Dictionary, reaction_decisions: Dictionary, damage_occurrence_id: int) -> void:
+	receipt["root_occurrence_id"] = reaction_decisions["_damage_cause"].root
+	receipt["damage_occurrence_id"] = damage_occurrence_id
+	var origin = reaction_decisions.get("_damage_origin", source_character)
+	if not reaction_decisions.has("_damage_origin"):
+		var origin_id := str(reaction_decisions.get("damage_source_actor_id", ""))
+		for entity in reaction_decisions.get("monsters", []):
+			if entity is Dictionary and str(entity.get("id", "")) == origin_id: origin = entity; break
+	receipt["countereffect_receipts"] = DamageResponseRules.counters(target, origin, damage_type, receipt, reaction_decisions)
+
+
+static func damage_source_penalty(amount: int, source: Character) -> int:
+	return mini(maxi(0, amount), Dice.roll(8, source)) if amount > 0 and source != null and source.has_condition("ray_of_enfeeblement") else 0
 
 
 static func _record_settled_damage_history(target, source: Character, receipt: Dictionary, decisions: Dictionary) -> void:
@@ -1549,6 +1586,7 @@ static func _settle_weapon_attack_context(context: Dictionary) -> Dictionary:
 	var weapon_damage_decisions := reaction_decisions.duplicate()
 	weapon_damage_decisions["damage_is_critical"] = bool(attack_result["is_crit"])
 	var damage_occurrence_id := WardRules.next_damage_occurrence_id()
+	weapon_damage_decisions = DamageResponseRules.begin(weapon_damage_decisions, damage_occurrence_id, attacker)
 	var weapon_settlement := resolve_damage(target_entity, weapon_component_after_reactions, damage_type, weapon_damage_decisions, bypass_weapon_resistance, false, attacker, damage_occurrence_id)
 	var additional_settlements: Array[Dictionary] = []
 	var additional_actual_dealt := 0
@@ -1562,7 +1600,7 @@ static func _settle_weapon_attack_context(context: Dictionary) -> Dictionary:
 		remaining_additional_after_reactions -= component
 		var settlement: Dictionary = {"resolved": 0, "damage": 0}
 		if component > 0 and not str(packet.get("type", "")).is_empty():
-			settlement = resolve_damage(target_entity, component, str(packet["type"]), reaction_decisions, false, false, attacker, damage_occurrence_id)
+			settlement = resolve_damage(target_entity, component, str(packet["type"]), weapon_damage_decisions, false, false, attacker, damage_occurrence_id)
 		additional_settlements.append(settlement)
 		additional_actual_dealt += int(settlement.get("damage", 0))
 		additional_resolved += int(settlement.get("resolved", 0))
@@ -1594,12 +1632,12 @@ static func _settle_weapon_attack_context(context: Dictionary) -> Dictionary:
 	if not str(additional_damage.get("formula", "")).is_empty():
 		damage_detail["additional_damage_formula"] = str(additional_damage.get("formula", ""))
 		damage_detail["additional_damage_type"] = str(additional_damage.get("type", ""))
-	var damage_components: Array[Dictionary] = [{"label": "%s damage" % damage_type.capitalize(), "value": int(weapon_settlement["damage"]), "type": damage_type}]
+	var damage_components: Array[Dictionary] = [{"label": "%s damage" % damage_type.capitalize(), "value": int(weapon_settlement["damage"]), "type": damage_type, "receipt": weapon_settlement.duplicate(true)}]
 	for index in additional_settlements.size():
 		var settlement: Dictionary = additional_settlements[index]
 		var packet: Dictionary = additional_damage_packets[index]["packet"]
-		if int(settlement.get("damage", 0)) > 0:
-			damage_components.append({"label": str(packet.get("label", "%s damage" % str(packet.get("type", "")).capitalize())), "value": int(settlement["damage"]), "type": str(packet.get("type", "")), "formula": str(packet.get("formula", ""))})
+		if settlement.has("raw"):
+			damage_components.append({"label": str(packet.get("label", "%s damage" % str(packet.get("type", "")).capitalize())), "value": int(settlement["damage"]), "type": str(packet.get("type", "")), "formula": str(packet.get("formula", "")), "receipt": settlement.duplicate(true)})
 	var damage_message := "Dealing %d %s damage." % [actual_dealt, damage_type] if additional_damage_packets.is_empty() else "Dealing %d damage." % actual_dealt
 	var result := {
 		"hit": true,
@@ -1788,7 +1826,7 @@ static func _attack_activity_roll(attack_result: Dictionary, target_ac: int, is_
 ## Resolve production monster attack riders after the base attack hits.
 ## Monster data stays declarative; this boundary owns saves, conditions, and
 ## persistent target damage so AI and player-triggered fixtures share behavior.
-static func resolve_monster_attack_effects(monster: Dictionary, target: Character, attack_data: Dictionary, attack_result: Dictionary, reaction_decisions: Dictionary = {}) -> Array[Dictionary]:
+static func resolve_monster_attack_effects(monster: Dictionary, target: Character, attack_data: Dictionary, attack_result: Dictionary, reaction_decisions: Dictionary = {}, source_character: Character = null) -> Array[Dictionary]:
 	var results: Array[Dictionary] = []
 	if monster.is_empty() or target == null or not attack_result.get("hit", false):
 		return results
@@ -1806,8 +1844,9 @@ static func resolve_monster_attack_effects(monster: Dictionary, target: Characte
 				if effect_type == "poison_save":
 					target.add_condition("poisoned", duration)
 					var poison_damage := Dice.parse_dice_string(str(effect.get("damage", "1d6")))
-					var actual_poison := int(resolve_damage(target, poison_damage, "poison")["damage"])
-					results.append({"type": effect_type, "success": false, "damage": actual_poison, "message": "%s is poisoned and takes %d poison damage." % [target.character_name, actual_poison]})
+					var poison_receipt := resolve_damage(target, poison_damage, "poison", reaction_decisions, false, false, source_character, WardRules.next_damage_occurrence_id())
+					var actual_poison := int(poison_receipt["damage"])
+					results.append({"type": effect_type, "success": false, "damage": actual_poison, "resolved": int(poison_receipt.get("resolved", 0)), "damage_components": [{"type": "poison", "value": actual_poison, "receipt": poison_receipt}], "message": "%s is poisoned and takes %d poison damage." % [target.character_name, actual_poison]})
 				elif effect_type == "restrain":
 					target.add_condition("restrained", duration)
 					results.append({"type": effect_type, "success": false, "message": "%s is restrained for %d turn(s)." % [target.character_name, duration]})
@@ -2395,6 +2434,8 @@ static func finish_pending_spell_damage(caster: Character, target, result: Dicti
 	var answer := {}
 	if decisions.has("metamagic:empowered_dice"):
 		answer["metamagic:empowered_dice"] = decisions["metamagic:empowered_dice"]
+	if decisions.has("zero_hp_source"):
+		answer["zero_hp_source"] = decisions["zero_hp_source"]
 	var settlement := SpellDamageRolls.settle_pending_request(caster, target, result, answer)
 	if not settlement.get("valid", false):
 		if bool(settlement.get("no_op", false)):
@@ -2413,6 +2454,9 @@ static func finish_pending_spell_damage(caster: Character, target, result: Dicti
 
 	var ordered_cont = record.get("ordered_continuation")
 	if ordered_cont is Dictionary:
+		if working_result.has("damage_request"):
+			SpellDamageRolls.attach_continuation(str(working_result.damage_request.request_id), ordered_cont, ordered_cont.get("cast"))
+			return working_result
 		return SharedSpell.resume_pending_steps(record["caster"], record["target"], working_result, record["decisions"], ordered_cont)
 	return working_result
 

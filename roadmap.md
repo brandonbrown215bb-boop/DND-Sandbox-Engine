@@ -24,7 +24,23 @@ Runtime slice order and acceptance remain as below; editor work can start with
 existing records and supported contracts without waiting for all engine slices.
 Keep one exact next action per pipeline on separate Quest Board cards.
 
-## Proposed next batches: 018-030
+## Batches 031–033 accepted
+
+Independent [031/032 acceptance](.artifacts/planning/vocabulary-reports/batch-031-032-acceptance-review.md)
+accepts linked damage splitting/redirection (S-111/S-112) as VS-107/108 and
+incoming replacement/countereffects (S-113/S-114) as VS-109/110 after repairing
+two recipient-aftermath gaps.
+
+Owner-authorized [Batch 033 acceptance](docs/reviews/batch-033-acceptance.md)
+accepts S-117/S-118 as VS-111/112 after independent review and repair re-review.
+The total is **112/226 accepted; 114 remain**. Replacement precedes defeat;
+exact-source attempt/payment/reset history and recovered DC state settle once,
+including primary poison riders and both full-save validators. The retained
+[prompts](docs/planning/vocabulary-batches-031-033.md) are completed. No further
+batch is selected. The external pack connection remains separate; the Quest
+Board owns claims and next actions.
+
+## Completed batches: 018-030
 
 The owner requested the next thirteen batch outlines after Q. The
 [numbered batch plan](docs/planning/vocabulary-batches-018-030.md) proposes
@@ -40,7 +56,9 @@ accepts S-047/S-048 as VS-68/69 after two bounded repairs. Batch 019 is accepted
 as VS-70/71/72 after independent review repaired monster movement event
 publication, and Batch 020 as VS-73/74/75 for directly owned Character combat
 aura sources. The
-current count is **106/226**, including accepted 024 recovery, 025 damage/healing
+current count is **112/226**, including accepted 031–033 damage links/responses
+and zero-HP replacement,
+024 recovery, 025 damage/healing
 dice, 026 repeat-save
 history, 027 protections, 028 substitutions/child continuations and 029 cast
 interruption. [Current verification](.artifacts/planning/vocabulary-reports/batch-024-026-verification.md)
@@ -63,14 +81,14 @@ again. Their broader generality remains partial.
 The [vocabulary checklist](docs/reviews/dnd-code-vocabulary-gap-checklist.md)
 retains 31 navigation families and 97 concrete V-series capabilities. Each
 concrete row supplies a boundary, source examples, current status, likely hook and
-dependencies. Its [106 checked subsets](docs/reviews/dnd-code-vocabulary-gap-checklist.md#checked-subsets-and-bounded-implementation)
+dependencies. Its [112 checked subsets](docs/reviews/dnd-code-vocabulary-gap-checklist.md#checked-subsets-and-bounded-implementation)
 record the accepted P1–P5 slices separately from the 97 broad requirements.
 “Partial” or “uncertain” is not full capability completion. These
 are building blocks to extend existing owners, not 97 new modules.
 
 The [counted delivery plan](docs/planning/vocabulary-slices.md) maps every known
-V-series requirement to **226 defined build/validation slices**: **106 verified,
-120 not yet accepted** through the current independent reviews finalized on 2026-10-19. It owns slice IDs,
+V-series requirement to **226 defined build/validation slices**: **112 verified,
+114 not yet accepted** through owner-authorized acceptance after independent reviews finalized on 2026-10-19. It owns slice IDs,
 finish lines, prerequisites, phase counts and source follow-up. Count each slice
 once even when several capabilities use it; the denominator measures defined
 scope, not time or effort. Missing rule bodies can reveal additional work.
@@ -112,8 +130,8 @@ retain the individual finish lines. Reuse those implementations and unchanged
 proof; an open parent capability does not make its accepted subset new work.
 
 The [historical batch narrative](docs/archive/planning/roadmap-accepted-batches-through-q.md)
-preserves earlier receipts and status text. It is not a queue to resume. Current
-proposals are batches 018-030 above; the Quest Board owns actual selection.
+preserves earlier receipts and status text. It is not a queue to resume. The
+031–033 prompts are completed; the Quest Board owns actual selection of later work.
 
 ## Capability workstreams
 

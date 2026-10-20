@@ -439,8 +439,8 @@ static func end_concentration(caster: Character, targets: Array) -> bool:
 static func prune(target) -> void:
 	for source in records(target).keys():
 		var record: Dictionary = records(target)[source]
-		if record.has("source_benefits"):
-			continue # The exact cast owns projections rather than conditions.
+		if record.has("source_benefits") or record.has("damage_link") or record.has("damage_response"):
+			continue # These exact source records own non-condition behavior.
 		if str(record.get("spell_id", "")) in ["beacon_of_hope", "divine_favor", "death_ward", "sanctuary", "heroism", "magic_weapon", "enhance_ability"]:
 			continue # This benefit is represented by the source record, not a condition.
 		if str(record.get("spell_id", "")) == "identify" and record.has("identify_target"):

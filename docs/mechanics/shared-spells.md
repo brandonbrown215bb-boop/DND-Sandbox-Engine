@@ -108,6 +108,57 @@ its unmultiplied amount and the receipt states that the multiplier was excluded.
 This applies to every typed component, including additional packets; their raw
 and prevented damage history uses the same amounts as settlement.
 
+### Linked damage split and redirection (Batch 031; VS-107/108 accepted)
+
+An ordinary shared spell can carry an incoming-damage link with one
+`grant_damage_link` effect:
+
+```json
+{
+  "effects": [{
+    "type": "grant_damage_link",
+    "policy": {
+      "operation": "split",
+      "share_percent": 50,
+      "rounding": "floor",
+      "fallback": "keep_original",
+      "require_willing": true
+    }
+  }],
+  "duration_seconds": 60,
+  "concentration": true
+}
+```
+
+The grant belongs to the exact spell source and names both its actual recipient
+and caster. `operation` is `split` or `redirect`; the declared percentage is
+transferred from each already-scaled damage occurrence. A split must leave a
+positive share with the original recipient (1–99%). A redirect accepts 1–100%.
+Rounding is `floor` or `ceil`, applied only to the transferred share. `fallback`
+is `keep_original` or `refuse`; willingness is checked on the linked actor when
+`require_willing` is true. Only an explicit source selection can choose among
+overlapping links. If that selected source or recipient is stale or ineligible,
+the fallback applies; the engine does not silently switch to a sibling. A
+declined choice keeps the original recipient under `keep_original`.
+
+The stage is after attack/save outcome scaling and authored damage reductions,
+and before recipient mitigation. Each typed component is split independently.
+The same occurrence, source identity, and cause continue through each receipt;
+the attack, riders, and parent slot/action are not replayed. Each recipient then
+settles Resilient Sphere prevention, resistance, wards, immunity, Temporary HP,
+HP loss, and applicable concentration or zero-HP consequences once, in the
+existing project resolver order. Receipts expose the parent occurrence and a
+separate raw, prevented, resolved, ward/Temporary HP absorbed, and HP-loss
+receipt for each recipient. The split-stage amounts conserve the post-reduction
+damage; later defenses can make the final losses differ.
+
+Flat and ordered shared spells, plus ordinary weapon attacks, use the shared
+settlement boundary. Link records are source-owned save data and are checked
+against their loaded shared-spell definition on restore. Pending selections and
+damage receipts are transient. This build does not link an actor that is outside
+the live party/combat roster, does not provide creature-side authored link
+grants, and does not add link behavior to older named spell handlers.
+
 Selected damage-die rerolls keep using the existing Empowered Spell chooser:
 the owner selects from the actual retained positive dice, each chosen die is
 rerolled once, its old face remains in the receipt, and unselected siblings do
@@ -1294,3 +1345,243 @@ See the [Batch I build/validation report](../../.artifacts/planning/vocabulary-r
 for original exercised routes and receipts. The accepted
 [independent Batch I review](../../.artifacts/planning/vocabulary-reports/batch-I-review.md)
 records repairs, final production controls, commands/logs and exact limits.
+
+## Linked incoming damage (Batch 031; VS-107/108 accepted)
+
+A timed shared spell can grant a source-owned link with an effect such as:
+
+```json
+{"type":"grant_damage_link","policy":{"operation":"split","share_percent":50,"rounding":"floor","fallback":"keep_original","require_willing":true}}
+```
+
+The spell target is the original recipient; its exact caster is the linked
+recipient. The grant is tied to the ordinary spell source instance, lifetime
+and concentration record. `operation` is `split` or `redirect`; the integer
+`share_percent` is 1–99 for a split and 1–100 for a redirect. `rounding` is
+`floor` or `ceil`; it applies to the linked share at the post-scale,
+post-reduction split stage, before either actor's mitigation. `fallback` is
+`keep_original` or `refuse`; `require_willing` checks the linked actor's live
+willingness when damage settles. Missing selected sources may specify the same
+fallback in transient damage decisions, otherwise they keep the original
+recipient. No attack, rider, cast or payment is replayed. Each recipient gets a
+normal independent CombatAction settlement and an entry in the parent
+occurrence receipt. With multiple live links, the exact source selector can
+choose one; absent a selector the lexicographically first exact source is used.
+
+Source-side damage penalties settle once before the split; each recipient then
+applies its own defenses. Monster weapon and flat/ordered shared-spell controls
+check concentration for each actual recipient using that recipient's resolved
+damage. A full redirect does not force a save on the untouched original target.
+Ordered concentration choices retain the original step target and the remaining
+recipients; damage and payments do not repeat while those choices settle. Loss
+of the link owner's concentration ends the exact link before later steps.
+Link grants may share their source with ordinary condition grants, and both
+payloads retain their ownership checks through saving and recovery.
+
+The bounded production hosts are monster weapon damage (including poison
+riders) and player-cast flat/ordered shared spell damage. The separate monster
+spell controller has not been extended with linked-recipient aftermath.
+Link-only spells are retained through normal effect pruning and
+the supported Overworld save checkpoint; loading validates the exact spell
+policy and source/recipient relationship. Pending damage decisions remain
+transient. The current link grant fixes the recipient at cast time; this does
+not add a per-hit recipient picker or expand damage hosts. See the
+[Batch 031 build/validation report](../../.artifacts/planning/vocabulary-reports/batch-031-build-validation.md)
+for original builder evidence. The [independent acceptance](../../.artifacts/planning/vocabulary-reports/batch-031-032-acceptance-review.md)
+accepts S-111/S-112 as VS-107/108 and records final repairs and current limits.
+
+## Incoming replacements and settled countereffects (Batch 032; VS-109/110 accepted)
+
+Rule anchors: [SRD 5.2.1](https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf),
+printed p.302 Iron Golem (Fire immunity alongside Fire Absorption), p.17 damage
+adjustment order, immunity and healing cap, and p.18 Temporary HP before HP.
+The incoming-before-immunity policy expresses the absorption interaction; the
+generic ratios, partial limits and feedback caps below are authored fixture
+policies, not certification of a named spell, class or the monster catalog.
+
+Timed shared spells can grant one automatic response policy to their target:
+
+```json
+{"type":"grant_damage_response","policy":{"kind":"replace","damage_type":"fire","stage":"incoming","immunity":"before","measure":"stage_amount","operation":"heal","numerator":1,"denominator":1,"rounding":"floor"}}
+```
+
+The ordinary cast source owns the policy, caster, recipient, duration and optional
+concentration. Removing that exact source removes its response; sibling sources
+remain independent. Loaded spell definitions authorize policies, rather than HUD
+or incoming-damage metadata. No new class/creature ID handler is involved. Use
+one response grant per spell source; multiple policies need separate sources.
+
+`kind: replace` requires one qualifying `damage_type`, `operation: absorb|heal`,
+and an explicit stage/measure/immunity combination:
+
+| Stage | Immunity | Available measure | Position |
+|---|---|---|---|
+| `incoming` | `before` | `stage_amount` or `raw` | After scaling/reductions, link distribution and the once-only source penalty; before recipient defenses. |
+| `resolved` | `after` | `resolved` | After Resistance, Vulnerability, Ward and Immunity; before Temporary HP and HP loss. |
+
+`raw` is this recipient component's original input before incoming reductions;
+`stage_amount` is its remaining input at this replacement. `resolved` is its
+remaining damage at the resolved replacement. Optional positive integral `limit`
+caps how much damage is replaced. Without it, all remaining damage is replaced.
+For `heal`, the measured amount is multiplied by the authored ratio, rounded,
+and optionally capped by `cap`, then ordinary healing applies the missing-HP
+limit and existing healing suppression. `absorb` replaces without healing.
+The ratio fields `numerator` and `denominator` are required integers 1–20;
+`rounding` is required `floor|ceil`. `cap` is an optional integer 0–100000;
+`limit` is 1–100000. Unknown fields/stages/types/measures refuse at loading.
+
+Replacement sources run in exact source-ID order against the remaining damage.
+A resolved replacement sees zero on an immune recipient; an incoming replacement
+can heal before immunity. Healing receipts capture requested and actual healing
+separately from damage. For example, seven resisted to three, with a replacement
+limit of two and healing cap of one, heals one then loses one HP: net HP is
+unchanged, but actual damage `hp_loss` is one.
+
+Countereffects instead declare a settled receipt measure:
+
+```json
+{"type":"grant_damage_response","policy":{"kind":"counter_damage","damage_type":"fire","stage":"settled","measure":"hp_loss","numerator":1,"denominator":2,"rounding":"ceil","recipient":"origin","response_type":"psychic","feedback":"once_per_source_per_root","max_depth":4}}
+```
+
+`kind` is `counter_damage` or `counter_heal`. `measure` is `raw`, `prevented`,
+`absorbed`, `resolved` or `hp_loss`; `recipient` is the damaged actor (`self`) or
+the immediate damage producer (`origin`). Counter-damage requires a supported
+`response_type`; counter-healing cannot declare one. Ratio/rounding/cap have the
+same bounds as replacements. These measures are captured before countereffects
+change HP: later healing never rewrites earlier HP loss. Zero measures do not
+activate. Counters run after damage-triggered source termination, before the
+concentration prompts; later ordered steps wait for those prompts to finish.
+
+At this boundary, `prevented` is max(0, raw minus resolved), and `absorbed` is
+replacement plus Ward plus Temporary HP absorption. These overlap deliberately:
+they are different views of the same damage, not quantities to add together.
+`resolved` includes Temporary HP damage; `hp_loss` excludes it. Existing shared
+spell component `absorbed` and prior-result references retain their accepted
+Temporary-HP-only meaning. New component `settlement_absorbed` exposes the full
+settlement measure used by these counter policies. The full damage receipt keeps
+`ward_absorbed`, `temp_hp_absorbed`, `replacement_absorbed`, `replacement_receipts`
+and nested `countereffect_receipts` separate.
+
+Every counter requires `feedback: once_per_source_per_root` and an integral
+`max_depth` 1–8. The exact (reacting recipient, source instance) may respond once
+within a root occurrence, across its typed components and derived consequences.
+The source may fire only when the resulting depth is within its own cap. Marking
+it before executing its child prevents reciprocal reentry. A limited response
+records its reason and performs no effect/payment. Another source and a later
+unrelated root retain their own eligibility. Healing does not create damage or
+another trigger. A counter is new derived damage, never another attack, hit rider
+or spell cast: it has no original critical multiplier, attack roll, slot, Action,
+or source penalty to replay. It still uses ordinary recipient mitigation and HP
+settlement. Exact source/root/original-cause/parent-consequence IDs accompany the
+receipt; each derived damage occurrence retains its own aftermath entry.
+Every executed typed weapon packet remains in recipient aftermath even when
+Temporary HP consumes all its damage. The captured `knocked_out` fact still ends concentration if a settled healing
+counter subsequently restores HP; later healing cannot erase that consequence.
+
+The exercised hosts are incoming monster weapons (including ordinary poison
+riders), and player flat/ordered shared spells, with Character response bearers
+and a spell-granted monster absorption bearer. Counter-damage can target the
+actual live attacking monster rather than its temporary Character adapter.
+Concentration/knockout/defeat handling uses actual recipients; pending choices
+retain settled damage and exact source identity without replaying payments.
+These automatic policies add no optional paid response picker. Pending
+concentration refusal/source loss and stale resolver callbacks use the existing
+choice owner. Other weapon/spell controllers, reaction costs, spell reflection,
+catalog conversion and arbitrary formula policies are outside this proof.
+
+Policies and ordinary source deadlines persist at the existing allowed Overworld
+checkpoint. Both full-save DTO paths validate policy equality to loaded data,
+source/owner/recipient identity and ordinary lifetime rules before party restore.
+Root IDs, visited sources, depth, callbacks and consequence receipts are transient
+and do not enter saves. Recovery restores source state without healing, damage,
+acquisition, RNG or a refund. A new incoming occurrence starts a new causal chain.
+See the [build/validation report](../../.artifacts/planning/vocabulary-reports/batch-032-build-validation.md)
+for original builder evidence. [Independent acceptance](../../.artifacts/planning/vocabulary-reports/batch-031-032-acceptance-review.md)
+accepts S-113/S-114 as VS-109/110 after the flat knockout and typed-packet
+aftermath repairs; its final controls use a guaranteed-success save to ensure
+healing cannot conceal the zero-HP consequence.
+
+## Authored zero-HP eligibility and owned attempts (Batch 033; VS-111/112 accepted)
+
+`Character.take_damage` and `CombatAction.resolve_damage` still call the same
+`SharedStepExecutor` event adapter before defeat bookkeeping. Class features and
+creature special abilities can declare `type: "zero_hp_replacement"`,
+`trigger: "zero_hp"` and ordered `save` / `replace_hp` steps. New class rules are
+validated and retained by DataLoader; no definition-ID dispatch is required.
+
+Additional rule fields:
+
+- `bypass_damage_types`, `bypass_critical` retain the typed fortitude exclusions.
+  `bypass_outright_death: true` excludes represented massive damage using the
+  actual HP damage after Temporary HP, compared with prior HP plus maximum HP.
+  Other instant-death/destruction systems are not added here.
+- `required_condition` requires that exact condition on the bearer. Missing or
+  unknown state cannot qualify. `source_instance_id` names the exact occurrence
+  on that actor; siblings must use distinct identities.
+- `optional: true` requires a source selection. The owned spell damage request
+  suspends before settlement; incoming monster weapons collect authorization
+  before their attack roll. Authorization is not an attempt: the zero-HP boundary
+  rechecks live source identity, unchanged policy, condition, exclusions and pool.
+  These bounded controls may offer authorization even when later mitigation or
+  Temporary HP prevents zero HP. Such an answer performs no save, history or cost.
+- `history: {"increment":"attempted", "reset_on":["short_rest_completed",
+  "long_rest_completed"]}` stores exact-source attempt count. Increment can be
+  `attempted`, `accepted`, `success` or `failure`; accepted and attempted coincide
+  when an eligible accepted option reaches this synchronous save boundary.
+  Queries, decline, invalid/stale sources and excluded damage do not increment.
+  Completed `RestRules` events alone perform declared resets; source removal and
+  reacquisition preserve the history. Detached source histories also receive
+  their declared rest reset. Reset stamps and counts persist.
+- `payment: {"source_instance_id":"exact-pool", "amount":1,
+  "on":"attempted"}` spends an existing Character numeric pool. `on` may be
+  `attempted`, `success` or `failure`; failed saves can therefore pay as authored.
+  Every eligible attempt preflights available funds, including conditional costs.
+  Attempted payment commits before save RNG; result payment reserves the exact
+  quantity and commits/releases it at the declared result.
+  This does not acquire or refill pools. Dictionary creatures support unpaid
+  automatic replacements; paid creature consumers use the Character owner.
+
+A save step can use `dc_formula`; `replace_hp.replacement_hp` accepts a number
+or shared arithmetic tree. The bounded leaves are `caster_level`,
+`caster_class_level`, `caster_proficiency_bonus`, `caster_ability_modifier`,
+`incoming_damage` and `zero_hp_attempts`. Actor leaves read the bearer; event
+leaves read captured resolved damage and the count before this attempt. Strings,
+dice, selected slots and earlier spell results are unavailable. All event
+formulas preflight before any save RNG or payment; unavailable facts refuse.
+HP commits clamp to maximum HP and do not grant Temporary HP.
+
+Example save DC: `{"op":"add","left":10,"right":{"op":"multiply",
+"left":5,"right":{"zero_hp_attempts":true}}}`. Example replacement HP:
+`{"op":"multiply","left":2,"right":{"caster_class_level":"barbarian"}}`.
+Loaded neutral/changed definitions live under `data/fixtures/batch_033/`.
+
+Incoming monster weapon base damage and its original primary poison riders
+share the same authorization object. A base packet that never reaches zero
+leaves it available for rider damage; a base replacement consumes it for every
+later rider. Live source/policy eligibility is rechecked at each zero-HP boundary.
+
+Exactly one eligible replacement executes; an explicit optional source selection
+separates siblings. Ambiguous automatic replacements refuse. Native Death Ward
+retains its prior precedence; native Relentless Rage remains the existing fallback.
+This adds no post-roll bonus/token picker for the new saving throw.
+Optional authorization is on the primary incoming target; linked/countereffect
+recipients do not gain a separate optional picker in this batch.
+
+`zero_hp_receipt` travels with typed damage components and records source/owner,
+old/new attempts, save ability/total/DC/result, HP replacement and payment. Durable
+`Character.zero_hp_history` stores that receipt, immutable policy, source/owner,
+attempts and reset stamps. The latest receipt's `reset_count` captures the
+source's completed-rest count when that attempt occurred. Loading checks its
+before/after increment against the declared event and result. In that same reset
+generation, current attempts must equal the receipt's after count; a later reset
+requires current attempts zero. Attempted/accepted history before its first reset
+also agrees with lifetime attempts. Both full-save DTO routes refuse inconsistent
+or incomplete history before session replacement. Legacy saves without zero-HP
+history retain their existing empty default. Pending choices/live references remain transient and existing save
+boundaries remain. Dictionary creature histories are encounter-local; durable
+creature history uses the Character path. General revival, forms and destruction
+remain later slices. [Acceptance](../reviews/batch-033-acceptance.md) records
+S-117/S-118 as VS-111/112 after independent repair re-review; broad V-020/V-088
+remain partial. Detailed local proof is in
+[the Batch 033 report](../../.artifacts/planning/vocabulary-reports/batch-033-build-validation.md)
+and [post-review repair evidence](../../.artifacts/planning/vocabulary-reports/batch-033-repair-validation.md).

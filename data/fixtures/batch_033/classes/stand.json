@@ -1,0 +1,129 @@
+[
+  {
+    "id": "fixture:b033_class",
+    "name": "Batch 033 Neutral Class",
+    "hit_die": 8,
+    "primary_ability": "INT",
+    "saving_throw_proficiencies": [
+      "INT",
+      "WIS"
+    ],
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:b033_stand",
+          "name": "Last Stand",
+          "type": "zero_hp_replacement",
+          "trigger": "zero_hp",
+          "source_instance_id": "b033:stand",
+          "required_condition": "blessed",
+          "bypass_damage_types": [
+            "radiant"
+          ],
+          "bypass_critical": true,
+          "bypass_outright_death": true,
+          "optional": true,
+          "history": {
+            "increment": "attempted",
+            "reset_on": [
+              "short_rest_completed",
+              "long_rest_completed"
+            ]
+          },
+          "payment": {
+            "source_instance_id": "b033:pool",
+            "amount": 1,
+            "on": "attempted"
+          },
+          "steps": [
+            {
+              "id": "endure",
+              "type": "save",
+              "target": "target",
+              "save": "CON",
+              "dc_formula": {
+                "op": "add",
+                "left": 10,
+                "right": {
+                  "op": "multiply",
+                  "left": 5,
+                  "right": {
+                    "zero_hp_attempts": true
+                  }
+                }
+              }
+            },
+            {
+              "id": "stand",
+              "type": "replace_hp",
+              "target": "target",
+              "gate": "successful_save",
+              "gate_step": "endure",
+              "replacement_hp": {
+                "op": "multiply",
+                "left": 2,
+                "right": {
+                  "caster_class_level": "wizard"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "fixture:b033_anchor",
+          "name": "Copper Anchor",
+          "type": "zero_hp_replacement",
+          "trigger": "zero_hp",
+          "source_instance_id": "b033:anchor",
+          "required_condition": "shielded",
+          "bypass_damage_types": [
+            "radiant"
+          ],
+          "bypass_critical": true,
+          "bypass_outright_death": true,
+          "optional": true,
+          "history": {
+            "increment": "success",
+            "reset_on": [
+              "long_rest_completed"
+            ]
+          },
+          "payment": {
+            "source_instance_id": "b033:pool",
+            "amount": 1,
+            "on": "failure"
+          },
+          "steps": [
+            {
+              "id": "endure",
+              "type": "save",
+              "target": "target",
+              "save": "WIS",
+              "dc_formula": {
+                "op": "add",
+                "left": 7,
+                "right": {
+                  "zero_hp_attempts": true
+                }
+              }
+            },
+            {
+              "id": "stand",
+              "type": "replace_hp",
+              "target": "target",
+              "gate": "successful_save",
+              "gate_step": "endure",
+              "replacement_hp": {
+                "op": "add",
+                "left": 3,
+                "right": {
+                  "caster_proficiency_bonus": true
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

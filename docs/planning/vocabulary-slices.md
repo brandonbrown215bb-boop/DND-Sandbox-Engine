@@ -1,7 +1,7 @@
 # Vocabulary delivery slices
 
 Static denominator and slice map prepared 2026-10-13; acceptance counts are
-reconciled through the Batches 029/030 review finalized on 2026-10-19. Rook mapped the known vocabulary after the owner
+reconciled through Batch 033 acceptance on 2026-10-19. Rook mapped the known vocabulary after the owner
 asked for an honest denominator. This document divides the
 [97 capability requirements](../reviews/dnd-code-vocabulary-gap-checklist.md#concrete-vocabulary-checklist)
 into observable build/validation pairs. [Roadmap](../../roadmap.md) chooses
@@ -22,7 +22,10 @@ bounded production hosts. [Batches 029/030 review](../../.artifacts/planning/voc
 retains repaired VS-87–90 and accepts S-032/S-033/S-179 as VS-100/101/102
 on the documented represented combat host.
 
-**226 defined slices: 106 verified, 120 not yet accepted.**
+**226 defined slices: 112 verified, 114 not yet accepted.**
+Owner-authorized [Batch 033 acceptance](../reviews/batch-033-acceptance.md) accepts
+S-117/S-118 as VS-111/112 after independent repair re-review closed both findings.
+Independent [Batches 031/032 acceptance](../../.artifacts/planning/vocabulary-reports/batch-031-032-acceptance-review.md) accepts S-111/S-112 as VS-107/108 and S-113/S-114 as VS-109/110 after recipient-aftermath repairs.
 Independent [Batches 021–023 acceptance](../../.artifacts/planning/vocabulary-reports/batch-021-023-acceptance-review.md) accepts
 S-134/S-135/S-137 as VS-76/77/78, S-138/S-139/S-136 as VS-79/80/81,
 and S-052/S-053 as VS-82/83 on the report's documented production hosts.
@@ -132,13 +135,13 @@ cost much more than a numeric modifier. These are delivery chunks, not modules.
 | P1 — Facts, results and grants | 34 | 34 | 0 |
 | P2 — Pools, time and effect state | 50 | 34 | 16 |
 | P3 — Rolls and decisions | 27 | 19 | 8 |
-| P4 — Damage and consequences | 25 | 7 | 18 |
+| P4 — Damage and consequences | 25 | 13 | 12 |
 | P5 — Casting and action composition | 20 | 11 | 9 |
 | P6 — Actors and forms | 23 | 0 | 23 |
 | P7 — Space, perception and illusions | 19 | 1 | 18 |
 | P8 — Physical items and bodies | 18 | 0 | 18 |
 | P9 — Procedures and campaign outcomes | 10 | 0 | 10 |
-| **Total** | **226** | **106** | **120** |
+| **Total** | **226** | **112** | **114** |
 
 ## How to use a row
 
@@ -177,8 +180,11 @@ are historical; do not dispatch them again.
 
 The owner-requested [batches 018-030](vocabulary-batches-018-030.md) cover 39
 existing slices, now independently accepted on their documented bounded hosts,
-including the Batch 025 completion. The total is 106/226; no later capability
-batch is selected here. The Quest Board owns the actual next action.
+including the Batch 025 completion. Batches 031/032 now accept S-111/S-112
+and S-113/S-114 as VS-107–110 on their documented hosts. Owner-authorized
+[Batch 033 acceptance](../reviews/batch-033-acceptance.md) adds S-117/S-118 as
+VS-111/112, bringing the total to 112/226. The retained prompts are completed;
+no further batch is selected. The Quest Board owns the actual next action.
 Review findings may change affected later selections;
 phase labels do not require finishing an entire phase first.
 
@@ -321,14 +327,14 @@ phase labels do not require finishing an entire phase first.
 |---|---|---|---|---|
 | S-109 — Component versus whole-occurrence damage edits | Verified (VS-52) | V-016 | Apply declared fixed/formula reduction at the named incoming stage; retain component typing/overflow and record prevention before HP/aftereffects settle. | S-034, S-041 |
 | S-110 — Precisely scoped mitigation bypass | Verified (VS-53) | V-016 | Bypass only declared resistance/immunity/ward/prevention layers for an eligible component; other layers and unrelated components still settle normally. | S-109 |
-| S-111 — Linked split-damage settlement | Planned | V-017 | Split one eligible incoming occurrence with declared rounding into actual recipients; preserve total, independent mitigation and original causal identity. | S-109, S-026 |
-| S-112 — Redirect incoming damage to linked recipient | Planned | V-017 | Transfer the declared share/all to another eligible actor without replaying attack/riders; missing recipient or refused choice follows declared fallback. | S-111 |
-| S-113 — Incoming damage replacement/healing | Planned | V-018 | Use qualifying raw/resolved amount at the specified stage to absorb/replace/heal, including declared immunity interaction; don't count prevented damage as HP loss. | S-109, S-034 |
-| S-114 — Settled-damage countereffects and feedback limits | Planned | V-018 | Create linked counter-damage/heal from actual taken/prevented amount, honoring declared recursion/causal limits so a response doesn't trigger itself forever. | S-113, S-034 |
+| S-111 — Linked split-damage settlement | Verified (VS-107; bounded damage hosts) | V-017 | Split one eligible incoming occurrence with declared rounding into actual recipients; preserve total, independent mitigation and original causal identity. | S-109, S-026 |
+| S-112 — Redirect incoming damage to linked recipient | Verified (VS-108; bounded damage hosts) | V-017 | Transfer the declared share/all to another eligible actor without replaying attack/riders; missing recipient or refused choice follows declared fallback. | S-111 |
+| S-113 — Incoming damage replacement/healing | Verified (VS-109; bounded damage hosts) | V-018 | Use qualifying raw/resolved amount at the specified stage to absorb/replace/heal, including declared immunity interaction; don't count prevented damage as HP loss. | S-109, S-034 |
+| S-114 — Settled-damage countereffects and feedback limits | Verified (VS-110; bounded damage hosts) | V-018 | Create linked counter-damage/heal from actual taken/prevented amount, honoring declared recursion/causal limits so a response doesn't trigger itself forever. | S-113, S-034 |
 | S-115 — Whole pending cast cancellation | Verified (VS-88) | V-019 | Cancel eligible pending spell effects by actual level/school/source, retaining specified spent costs and already-final facts; don't cancel unrelated casts. | S-135, S-042 |
 | S-116 — One recipient's incoming effect negation | Verified (VS-90) | V-019 | Exclude only the qualifying recipient/step from an original cast, leaving other targets intact; reflection/retargeting remains a separate operation. | S-115, S-098 |
-| S-117 — Authored zero-HP replacement eligibility | Planned | V-020 | Reuse the existing zero-HP boundary with declared damage/critical/outright-death exclusions and replacement HP formula; intercept before unconsciousness/death. | S-004, S-109 |
-| S-118 — Escalating-save zero-HP replacement | Planned | V-020, V-088 | At the same boundary resolve a declared save/DC history and increment/reset policy; failure uses original proposed outcome and success applies once. | S-117, S-090 |
+| S-117 — Authored zero-HP replacement eligibility | Verified (VS-111; bounded pre-defeat damage hosts) | V-020 | Reuse the existing zero-HP boundary with declared damage/critical/outright-death exclusions and replacement HP formula; intercept before unconsciousness/death. | S-004, S-109 |
+| S-118 — Escalating-save zero-HP replacement | Verified (VS-112; exact source-owned attempt/reset history) | V-020, V-088 | At the same boundary resolve a declared save/DC history and increment/reset policy; failure uses original proposed outcome and success applies once. | S-117, S-090 |
 | S-119 — Death/destruction distinct from ordinary HP loss | Planned | V-021 | Apply eligible instant death/destruction with declared gear/remains policy, preserving original identity and actual cause for later revival. | S-117, S-032 |
 | S-120 — Aftermath successor actor or hazard | Planned | V-021 | Create the declared actor/object/hazard from final death/destruction once at its actual location, with exclusions and retained/disposed gear as specified. | S-119, S-154 |
 | S-121 — Required legal exit before outcome settlement | Planned | V-022 | Choose/validate legal exit placement before final save/outcome; no space changes outcome only as authored, without premature escape or failed-save effects. | S-033, S-043 |

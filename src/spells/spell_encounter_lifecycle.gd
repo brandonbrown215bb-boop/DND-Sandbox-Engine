@@ -129,7 +129,7 @@ static func _end_concentration(cast: SpellCastContext, caster: Character) -> voi
 	if spell_id == "dancing_lights":
 		if cast != null and cast.dancing_light_sets != null:
 			cast.dancing_light_sets.erase(caster.character_id)
-	var effect_targets: Array = cast.areas._spell_effect_targets() if (cast != null and cast.areas != null) else []
+	var effect_targets: Array = cast.areas._spell_effect_targets() if (cast != null and cast.areas != null) else caster.concentrating_on.get("targets", [])
 	if SpellEffects.end_concentration(caster, effect_targets):
 		if cast != null and cast.hud != null:
 			cast.hud.add_log("[color=yellow]%s's concentration ends.[/color]" % caster.character_name)

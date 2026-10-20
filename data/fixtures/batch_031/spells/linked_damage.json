@@ -1,0 +1,93 @@
+[
+  {
+    "id": "fixture:b031_split_link",
+    "name": "Linked Guard",
+    "description": "Links the willing ally to the caster for split damage.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "effects": [{"type": "grant_damage_link", "policy": {"operation": "split", "share_percent": 50, "rounding": "floor", "fallback": "keep_original", "require_willing": true}}],
+    "duration": "1 minute",
+    "duration_seconds": 60,
+    "concentration": true,
+    "classes": ["wizard"]
+  },
+  {
+    "id": "fixture:b031_renamed_redirect_link",
+    "name": "Vow of the Second Shield",
+    "description": "Redirects all linked damage to its willing source owner.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "effects": [{"type": "grant_damage_link", "policy": {"operation": "redirect", "share_percent": 100, "rounding": "ceil", "fallback": "keep_original", "require_willing": true}}],
+    "duration": "1 minute",
+    "duration_seconds": 60,
+    "concentration": true,
+    "classes": ["wizard"]
+  },
+  {
+    "id": "fixture:b031_partial_redirect_link",
+    "name": "Share the Wound",
+    "description": "Redirects a declared share of linked damage.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "effects": [{"type": "grant_damage_link", "policy": {"operation": "redirect", "share_percent": 50, "rounding": "ceil", "fallback": "keep_original", "require_willing": true}}],
+    "duration": "1 minute",
+    "duration_seconds": 60,
+    "concentration": true,
+    "classes": ["wizard"]
+  },
+  {
+    "id": "fixture:b031_combined_link",
+    "name": "Linked Blessing",
+    "description": "A damage link and condition share one timed spell source.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "effects": [
+      {"type": "grant_damage_link", "policy": {"operation": "split", "share_percent": 50, "rounding": "floor", "fallback": "keep_original", "require_willing": true}},
+      {"type": "grant_condition", "condition": "blessed"}
+    ],
+    "duration": "1 minute",
+    "duration_seconds": 60,
+    "concentration": true,
+    "classes": ["wizard"]
+  },
+  {
+    "id": "fixture:b031_flat_arc",
+    "name": "Arc of Shared Burden",
+    "description": "A flat fire-damage test for linked settlement.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "damage": "5",
+    "damage_type": "fire",
+    "classes": ["wizard"]
+  },
+  {
+    "id": "fixture:b031_ordered_arc",
+    "name": "Ordered Arc of Shared Burden",
+    "description": "An ordered damage test preserving one shared cast.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "steps": [
+      {"id": "first_blast", "type": "damage", "damage": "5", "damage_type": "fire"},
+      {"id": "later_blast", "type": "damage", "damage": "2", "damage_type": "cold", "gate": "always"}
+    ],
+    "classes": ["wizard"]
+  }
+]

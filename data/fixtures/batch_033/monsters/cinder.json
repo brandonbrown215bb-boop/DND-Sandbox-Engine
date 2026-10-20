@@ -1,0 +1,73 @@
+[
+  {
+    "id": "fixture:b033_cinder",
+    "name": "Cinder Vessel",
+    "size": "Medium",
+    "type": "undead",
+    "armor_class": 10,
+    "hit_points": "3d8",
+    "speed": 30,
+    "ability_scores": {
+      "STR": 10,
+      "DEX": 10,
+      "CON": 10,
+      "INT": 10,
+      "WIS": 10,
+      "CHA": 10
+    },
+    "special_abilities": [
+      {
+        "id": "fixture:b033_cinder",
+        "name": "Cinder Return",
+        "type": "zero_hp_replacement",
+        "trigger": "zero_hp",
+        "source_instance_id": "b033:cinder",
+        "bypass_damage_types": [
+          "radiant"
+        ],
+        "bypass_critical": true,
+        "bypass_outright_death": true,
+        "optional": false,
+        "history": {
+          "increment": "attempted",
+          "reset_on": [
+            "short_rest_completed",
+            "long_rest_completed"
+          ]
+        },
+        "steps": [
+          {
+            "id": "endure",
+            "type": "save",
+            "target": "target",
+            "save": "CON",
+            "dc_formula": {
+              "op": "add",
+              "left": 5,
+              "right": {
+                "incoming_damage": true
+              }
+            }
+          },
+          {
+            "id": "stand",
+            "type": "replace_hp",
+            "target": "target",
+            "gate": "successful_save",
+            "gate_step": "endure",
+            "replacement_hp": 4
+          }
+        ]
+      }
+    ],
+    "attacks": [
+      {
+        "name": "Tap",
+        "damage": "7",
+        "damage_type": "fire",
+        "attack_bonus_override": 100
+      }
+    ],
+    "ai_behavior": "melee"
+  }
+]

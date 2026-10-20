@@ -115,6 +115,8 @@ var counterspell_pending := true
 var successful := false
 var interrupted := false
 var damage_dealt := 0
+## Transient receipts for every original and linked damage recipient in this cast.
+var damage_receipts: Array[Dictionary] = []
 ## Published only after the cast and its area effects have settled.
 var completed_cast_facts: Dictionary = {}
 var area_source_id := ""

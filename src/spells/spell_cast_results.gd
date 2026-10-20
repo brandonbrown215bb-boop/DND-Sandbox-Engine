@@ -224,6 +224,7 @@ static func _resolve_player_target(cast: SpellCastContext, p_target: Character, 
 		res["message"] = cast_message + " " + str(strike_result.get("message", "The attack misses."))
 		cast.publish_true_strike_activity.call({"id": p_target.character_id, "name": p_target.character_name}, true_strike_profile, strike_result)
 	res = await SpellCastResults._settle_empowered_spell(cast, p_target, res, target_spell_decisions)
+	if res.has("damage_components"): cast.damage_receipts.append_array(res["damage_components"].duplicate(true))
 	if int(res.get("damage", 0)) > 0:
 		ClericRules.clear_turning_after_damage(p_target)
 	cast.damage_dealt += int(res.get("damage", 0)) + maxi(0, target_temp_hp_before - p_target.temp_hp)
@@ -332,6 +333,7 @@ static func _resolve_monster_target(cast: SpellCastContext, m_target: Dictionary
 		res["message"] = cast_message + " " + str(strike_result.get("message", "The attack misses."))
 		cast.publish_true_strike_activity.call(m_target, true_strike_profile, strike_result)
 	res = await SpellCastResults._settle_empowered_spell(cast, m_target, res, target_spell_decisions)
+	if res.has("damage_components"): cast.damage_receipts.append_array(res["damage_components"].duplicate(true))
 	if int(res.get("damage", 0)) > 0:
 		ClericRules.clear_turning_after_damage(m_target)
 	cast.damage_dealt += int(res.get("damage", 0)) + maxi(0, target_temp_hp_before - int(m_target.get("temp_hp", 0)))
@@ -490,13 +492,29 @@ static func _spell_decisions_for_target(cast: SpellCastContext, cast_decisions: 
 	return decisions
 
 
+## Optional source authorization precedes settlement. Eligibility, exclusions and
+## exact definition are checked again at the existing zero-HP boundary.
+static func choose_zero_hp_source(hud: Node, target, rules: Array) -> String:
+	if hud == null or rules.is_empty(): return ""
+	var options: Array[String] = [""]
+	var labels := {"": "Decline"}
+	for rule in rules:
+		var source := str(rule.source_instance_id)
+		options.append(source)
+		labels[source] = str(rule.get("name", source))
+	return await hud._request_popup_choice("Zero HP replacement", options, labels)
+
 static func _settle_empowered_spell(cast: SpellCastContext, target, result: Dictionary, decisions: Dictionary) -> Dictionary:
 	while result.has("damage_request"):
 		var req_target = target
 		var owner_actor = SpellDamageRolls.owner_target(result)
 		if owner_actor != null:
 			req_target = owner_actor
-		if cast.hud != null:
+		if bool(result["damage_request"].get("zero_hp", false)):
+			var validation := SpellDamageRolls.validate_damage_request(cast.caster, req_target, result)
+			if not validation.get("valid", false): return validation
+			decisions["zero_hp_source"] = await choose_zero_hp_source(cast.hud, req_target, validation.record.get("zero_hp_options", []))
+		elif cast.hud != null:
 			var max_dice := int(result["damage_request"].get("max_dice", -1))
 			decisions["metamagic:empowered_dice"] = await cast.hud.request_empowered_spell_dice(cast.caster, result["damage_request"]["details"], max_dice)
 		else:
@@ -505,6 +523,13 @@ static func _settle_empowered_spell(cast: SpellCastContext, target, result: Dict
 		if result.has("concentration_request"):
 			result = await SpellCastResults._settle_concentration_choice(cast, target, result, decisions)
 	result = SharedSpell.apply(cast.caster, target, cast.spell, result) if SharedSpell.uses(cast.spell) and not cast.spell.has("steps") else result
+	if not cast.spell.has("steps"):
+		for recipient in DamageLinkRules.recipient_settlements(target, result):
+			if recipient["actor"] is Character:
+				if bool(recipient.get("knocked_out", false)):
+					SpellEncounterLifecycle._end_concentration(cast, recipient["actor"])
+				else:
+					await SpellEncounterLifecycle._check_concentration_save(cast, recipient["actor"], int(recipient["resolved"]))
 	CastInterruptionRules.observe_host_result(cast, result)
 	return result
 
@@ -728,6 +753,11 @@ static func _resolve_stepped_spell_cast(cast: SpellCastContext) -> void:
 	var res := CombatAction.resolve_spell(cast.caster, target, cast.spell, false, target_spell_decisions, observers, cast.slot_level_used, distance_feet, cast)
 	res = await SpellCastResults._settle_ordered_choices(cast, target, res, target_spell_decisions)
 	cast.ordered_result = res
+	for step in res.get("step_results", []):
+		if not step is Dictionary: continue
+		for outcome in step.get("target_outcomes", []):
+			if outcome is Dictionary and outcome.get("damage_components") is Array:
+				cast.damage_receipts.append_array(outcome["damage_components"].duplicate(true))
 	CastInterruptionRules.observe_host_result(cast, res)
 	await SpellCastResults._settle_stepped_spell_actors(cast, res)
 

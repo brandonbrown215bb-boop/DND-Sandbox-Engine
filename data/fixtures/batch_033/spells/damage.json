@@ -1,0 +1,76 @@
+[
+  {
+    "id": "fixture:b033_fire",
+    "name": "033 fire",
+    "description": "Zero-HP production input.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "damage": "7",
+    "damage_type": "fire",
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "fixture:b033_radiant",
+    "name": "033 radiant",
+    "description": "Zero-HP production input.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "damage": "7",
+    "damage_type": "radiant",
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "fixture:b033_massive",
+    "name": "033 massive",
+    "description": "Zero-HP production input.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "damage": "110",
+    "damage_type": "fire",
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "fixture:b033_ordered",
+    "name": "033 ordered",
+    "description": "Replacement then subsequent damage.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "classes": [
+      "wizard"
+    ],
+    "steps": [
+      {
+        "id": "first",
+        "type": "damage",
+        "target": "target",
+        "damage": "7",
+        "damage_type": "fire"
+      },
+      {
+        "id": "next",
+        "type": "damage",
+        "target": "target",
+        "damage": "3",
+        "damage_type": "cold"
+      }
+    ]
+  }
+]

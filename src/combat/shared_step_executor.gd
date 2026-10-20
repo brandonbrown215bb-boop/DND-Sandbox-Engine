@@ -25,14 +25,15 @@ const PREDICATE_OPS := ["eq", "ne", "lt", "lte", "gt", "gte"]
 const EVENT_STEP_TYPES := ["save", "replace_hp"]
 const EVENT_STEP_FIELDS := [
 	"id", "type", "gate", "gate_step", "target",
-	"save", "save_ability", "dc_base", "dc_add_damage",
+	"save", "save_ability", "dc_base", "dc_add_damage", "dc_formula",
 	"replacement_hp"
 ]
 
 const ZERO_HP_RULE_FIELDS := [
 	"id", "name", "type", "trigger", "description",
 	"bypass_damage_types", "bypass_critical", "steps",
-	"save_ability", "save", "dc_base", "dc_add_damage", "replacement_hp"
+	"save_ability", "save", "dc_base", "dc_add_damage", "replacement_hp",
+	"source_instance_id", "required_condition", "bypass_outright_death", "optional", "history", "payment"
 ]
 
 
@@ -1285,8 +1286,10 @@ static func validate_step(step: Variant, step_index: int, step_ids: Dictionary, 
 				var ability_val = step.get("save", step.get("save_ability", ""))
 				if not ability_val is String or ability_val not in ABILITIES:
 					return "Shared save step requires a valid ability."
-				if step.has("dc_base") and not _integer(step["dc_base"], 0, 100):
-					return "Shared save step dc_base must be an integer between 0 and 100."
+				if step.has("dc_formula") and not zero_hp_formula_error(step["dc_formula"]).is_empty():
+					return "Invalid zero-HP DC formula."
+				if step.has("dc_base") and not _integer(step["dc_base"], 0, 1000000):
+					return "Shared save step dc_base must be a bounded nonnegative integer."
 				if step.has("dc_add_damage") and not step["dc_add_damage"] is bool:
 					return "Shared save step dc_add_damage must be a boolean."
 		"damage":
@@ -1299,7 +1302,7 @@ static func validate_step(step: Variant, step_index: int, step_ids: Dictionary, 
 				var err := SharedSpell._validate_single_effect(eff)
 				if not err.is_empty(): return err
 		"replace_hp":
-			if not step.has("replacement_hp") or not _integer(step["replacement_hp"], 1, 9999):
+			if not step.has("replacement_hp") or not zero_hp_formula_error(step["replacement_hp"]).is_empty():
 				return "Shared replace_hp step requires a positive integer replacement_hp."
 	return ""
 
@@ -1313,6 +1316,146 @@ static func validate_steps(steps: Variant, context: String = "") -> String:
 		if not err.is_empty():
 			return err
 		step_ids[str(steps[i]["id"])] = i
+	return ""
+
+
+## Event leaves are captured before the shared formula evaluator runs. No dice,
+## cast results or unavailable actor facts can silently become zero.
+static func zero_hp_formula_value(value: Variant, damage: int, attempts: int) -> Variant:
+	if value is Dictionary:
+		if value.size() == 1 and value.get("incoming_damage") == true: return damage
+		if value.size() == 1 and value.get("zero_hp_attempts") == true: return attempts
+		var out := {}
+		for key in value: out[key] = zero_hp_formula_value(value[key], damage, attempts)
+		return out
+	if value is Array: return value.map(func(v): return zero_hp_formula_value(v, damage, attempts))
+	return value
+
+static func zero_hp_formula_error(value: Variant) -> String:
+	if value is String: return "Zero-HP formulas cannot roll dice."
+	if value is Dictionary:
+		for key in value:
+			if key in ["incoming_damage", "zero_hp_attempts"] and (value.size() != 1 or not value[key] is bool or not value[key]): return "Invalid event leaf."
+			if key not in ["op", "left", "right", "caster_level", "caster_class_level", "caster_proficiency_bonus", "caster_ability_modifier", "incoming_damage", "zero_hp_attempts"]: return "Unavailable zero-HP formula input."
+			if key in ["left", "right"]:
+				var err := zero_hp_formula_error(value[key])
+				if not err.is_empty(): return err
+	return formula_content_error(zero_hp_formula_value(value, 1, 0))
+
+static func zero_hp_owned_rule_error(rule: Dictionary) -> String:
+	for key in ["bypass_outright_death", "optional"]:
+		if rule.has(key) and not rule[key] is bool: return key + " must be boolean."
+	for key in ["source_instance_id", "required_condition"]:
+		if rule.has(key) and (not rule[key] is String or str(rule[key]).strip_edges().is_empty()): return key + " must be nonempty."
+	if rule.has("history"):
+		var h: Variant = rule.history
+		if not h is Dictionary or h.size() != 2 or h.get("increment") not in ["attempted", "accepted", "success", "failure"] or not h.get("reset_on") is Array or h.reset_on.is_empty(): return "Invalid zero-HP history."
+		for event in h.reset_on:
+			if event not in ["short_rest_completed", "long_rest_completed"]: return "History requires a completed rest."
+	if rule.has("payment"):
+		var pay: Variant = rule.payment
+		if not pay is Dictionary or pay.size() != 3 or not pay.get("source_instance_id") is String or str(pay.source_instance_id).is_empty() or not _integer(pay.get("amount"), 1, 100) or pay.get("on") not in ["attempted", "success", "failure"]: return "Invalid zero-HP payment."
+	if (rule.has("history") or rule.has("payment") or bool(rule.get("optional", false))) and str(rule.get("source_instance_id", "")).is_empty(): return "Owned zero-HP rule needs exact source_instance_id."
+	return ""
+
+static func zero_hp_rules(target) -> Array:
+	var result: Array = []
+	var entries: Array = target.features if target is Character else target.get("special_abilities", [])
+	for rule in entries:
+		if rule is Dictionary and (rule.get("type") == "zero_hp_replacement" or rule.get("trigger") == "zero_hp") and validate_zero_hp_replacement_rule(rule).is_empty(): result.append(rule)
+	return result
+
+static func zero_hp_source_eligible(target, rule: Dictionary) -> bool:
+	var condition := str(rule.get("required_condition", ""))
+	if not condition.is_empty():
+		if target is Character:
+			if not target.has_condition(condition): return false
+		elif not target.get("conditions", {}).has(condition): return false
+	if rule.has("payment"):
+		if not target is Character: return false
+		if target.numeric_resource_pools.get(str(rule.payment.source_instance_id), {}).has("die_size"): return false
+		var available := ResourcePoolRules.availability(target, str(rule.payment.source_instance_id))
+		if int(available.get("spendable", 0)) < int(rule.payment.amount): return false
+	var source := str(rule.get("source_instance_id", ""))
+	var history: Dictionary = target.zero_hp_history if target is Character else target.get("zero_hp_history", {})
+	if history.has(source) and history[source].rule != rule: return false
+	return true
+
+static func zero_hp_options(target) -> Array:
+	if target is Character:
+		if target.current_hp <= 0 or target.is_dead(): return []
+	elif int(target.get("current_hp", 0)) <= 0 or not bool(target.get("is_alive", true)): return []
+	return zero_hp_rules(target).filter(func(rule): return bool(rule.get("optional", false)) and zero_hp_source_eligible(target, rule))
+
+static func reset_zero_hp_history(actor: Character, event: String) -> void:
+	for source in actor.zero_hp_history:
+		var entry: Dictionary = actor.zero_hp_history[source]
+		if event in entry.rule.get("history", {}).get("reset_on", []):
+			entry.attempts = 0
+			entry.resets = int(entry.resets) + 1
+			entry.last_reset = event
+
+static func saved_zero_hp_history_error(dto: Dictionary) -> String:
+	var active: Dictionary = {}
+	var features: Array = []
+	# Character load rebuilds base class features from authoritative loaded data.
+	var class_data := DataLoader.get_character_class(str(dto.get("class_id", "")))
+	var class_level := int(dto.get("class_levels", {}).get(str(dto.get("class_id", "")), dto.get("level", 1)))
+	for class_source in [class_data, DataLoader.get_subclass(str(dto.get("subclass_id", "")))]:
+		for level in class_source.get("features_by_level", {}):
+			if int(level) <= class_level: features.append_array(class_source.features_by_level[level])
+	for feature in features:
+		if feature is Dictionary and (feature.get("type") == "zero_hp_replacement" or feature.get("trigger") == "zero_hp"):
+			if not validate_zero_hp_replacement_rule(feature).is_empty(): return "Invalid saved zero-HP feature."
+			if feature.has("history"):
+				if not dto.has("zero_hp_history") or not dto.has("zero_hp_attempt_serial"): return "Missing zero-HP history."
+				var source := str(feature.source_instance_id)
+				if active.has(source): return "Duplicate zero-HP source."
+				active[source] = feature
+	var history: Variant = dto.get("zero_hp_history", {})
+	if not history is Dictionary: return "zero_hp_history must be an object."
+	if not _integer(dto.get("zero_hp_attempt_serial", 0), 0, 1000000): return "Invalid zero-HP attempt serial."
+	var total := 0
+	for source in history:
+		var entry: Variant = history[source]
+		if not source is String or source.is_empty() or not entry is Dictionary or entry.size() != 8: return "Invalid zero-HP source history."
+		if entry.get("owner_id") != dto.get("character_id") or entry.get("source_instance_id") != source: return "Wrong zero-HP history owner/source."
+		if not entry.get("rule") is Dictionary or not validate_zero_hp_replacement_rule(entry.rule).is_empty() or entry.rule.get("source_instance_id") != source or not entry.rule.has("history"): return "Invalid saved zero-HP policy."
+		if active.has(source) and active[source] != entry.rule: return "Changed zero-HP history policy."
+		if not _integer(entry.get("attempts"), 0, 1000000) or not _integer(entry.get("total_attempts"), 1, 1000000) or not _integer(entry.get("resets"), 0, 1000000) or int(entry.attempts) > int(entry.total_attempts): return "Invalid zero-HP counts."
+		total += int(entry.total_attempts)
+		if entry.get("last_reset") not in ["", "short_rest_completed", "long_rest_completed"] or (entry.last_reset != "" and entry.last_reset not in entry.rule.history.reset_on) or ((int(entry.resets) == 0) != (entry.last_reset == "")): return "Invalid zero-HP reset event."
+		var r: Variant = entry.get("last_receipt")
+		if not r is Dictionary or r.size() != 14 or r.get("owner_id") != entry.owner_id or r.get("source_instance_id") != source: return "Invalid zero-HP receipt."
+		for key in ["attempts_before", "attempts_after", "paid", "replacement_hp", "damage"]:
+			if not _integer(r.get(key), 0, 1000000): return "Invalid zero-HP receipt amount."
+		for key in ["saved", "replaced", "critical"]:
+			if not r.get(key) is bool: return "Invalid zero-HP receipt result."
+		var pay: Variant = r.get("payment")
+		if not pay is Dictionary: return "Invalid zero-HP payment receipt."
+		if entry.rule.has("payment"):
+			if pay.size() != 5 or pay.get("source_instance_id") != entry.rule.payment.source_instance_id or pay.get("policy") != entry.rule.payment.on: return "Invalid zero-HP payment source."
+			for key in ["before", "after", "amount"]:
+				if not _integer(pay.get(key), 0, 100): return "Invalid zero-HP payment quantity."
+			if int(pay.before) - int(pay.after) != int(pay.amount) or int(pay.amount) != int(r.paid): return "Inconsistent zero-HP payment receipt."
+		elif not pay.is_empty() or int(r.paid) != 0: return "Unexpected zero-HP payment receipt."
+		# The latest attempt is in the same reset generation, or a later rest
+		# reset the current count to zero. A count cannot invent its own reset.
+		if not _integer(r.get("reset_count"), 0, int(entry.resets)): return "Invalid zero-HP receipt reset count."
+		var increment := str(entry.rule.history.increment)
+		var successful: bool = r.saved or r.replaced
+		var incremented: bool = increment in ["attempted", "accepted"] or (increment == "success" and successful) or (increment == "failure" and not successful)
+		if int(r.attempts_after) != int(r.attempts_before) + (1 if incremented else 0) or int(r.attempts_before) >= int(entry.total_attempts): return "Inconsistent zero-HP receipt increment."
+		if int(r.reset_count) == int(entry.resets):
+			if int(entry.attempts) != int(r.attempts_after): return "Zero-HP attempts disagree with the latest receipt."
+		elif int(entry.attempts) != 0: return "Zero-HP attempts must be zero after the latest reset."
+		if int(r.reset_count) == 0:
+			if increment in ["attempted", "accepted"] and int(r.attempts_before) != int(entry.total_attempts) - 1: return "Zero-HP attempted history disagrees with lifetime attempts."
+		elif int(r.attempts_before) >= int(entry.total_attempts) - 1: return "Zero-HP receipt must follow a prior attempt before its reset."
+		if r.get("damage_type") not in DataLoader.VALID_DAMAGE_TYPES + ["untyped"] or not r.get("saves") is Array: return "Invalid zero-HP receipt save."
+		for save in r.saves:
+			if not save is Dictionary or save.size() != 4 or save.get("ability") not in ABILITIES or not _integer(save.get("dc"), 0, 1000000) or not _integer(save.get("total"), -1000000, 1000000) or not save.get("saved") is bool or save.saved != (int(save.total) >= int(save.dc)): return "Invalid zero-HP save receipt."
+	if total != int(dto.get("zero_hp_attempt_serial", 0)): return "Missing zero-HP source attempts."
 	return ""
 
 
@@ -1344,6 +1487,8 @@ static func validate_zero_hp_replacement_rule(rule: Variant) -> String:
 				return "Invalid bypass damage type '%s'." % str(dt)
 	if rule.has("bypass_critical") and not rule["bypass_critical"] is bool:
 		return "bypass_critical must be a boolean."
+	var owned_error := zero_hp_owned_rule_error(rule)
+	if not owned_error.is_empty(): return owned_error
 	if rule.has("steps"):
 		var steps_err := validate_steps(rule["steps"], "zero_hp_replacement")
 		if not steps_err.is_empty():
@@ -2001,6 +2146,15 @@ static func resume_spell_steps_occurrence(caster: Character, target, settled_res
 	for m in ordered_cont.get("messages", []): messages.append(str(m))
 
 	var current_outcome: Dictionary = ordered_cont.get("current_outcome_entry", {})
+	# A concentration reaction finishes only this recipient. Resume the remaining
+	# recipients before advancing the original step, without replaying its damage.
+	if current_outcome.has("linked_aftermath"):
+		var aftermath: Dictionary = current_outcome["linked_aftermath"]
+		pending_target = aftermath["original_target"]
+		if int(aftermath["index"]) < aftermath["recipients"].size():
+			aftermath["index"] = int(aftermath["index"]) + 1
+		var pending := SpellAdapter.new(cast).settle_target_occurrence(pending_target, step, settled_result, current_outcome, step_index, target_index, step_results, total_damage, step_damage, messages, bool(ordered_cont.get("first_attack_hit", false)), bool(ordered_cont.get("has_attack", false)), bool(ordered_cont.get("primary_save_saved", false)), bool(ordered_cont.get("has_save", false)), target_outcomes, ordered_cont.get("step_targets", []), bool(ordered_cont.get("is_first_attack", false)))
+		if pending.has("concentration_request") or pending.has("roll_choice_request"): return pending
 	if current_outcome.is_empty():
 		current_outcome = {
 			"target": pending_target,
@@ -2066,20 +2220,81 @@ static func resolve_zero_hp_replacement(target, hp_before: int, damage: int, dam
 	var current_hp: int = target.current_hp if target is Character else int(target.get("current_hp", 0))
 	if current_hp > 0:
 		return false
-	var rule := get_zero_hp_replacement_rule(target)
-	if rule.is_empty():
-		return false
-
-	if critical and bool(rule.get("bypass_critical", false)):
-		return false
-	var bypass_types: Array = rule.get("bypass_damage_types", [])
-	if damage_type.to_lower() in bypass_types:
-		return false
-
+	var candidates := zero_hp_rules(target)
+	if candidates.is_empty():
+		var legacy := get_zero_hp_replacement_rule(target)
+		if not legacy.is_empty(): candidates.append(legacy)
+	var eligible: Array = []
+	var choice: Dictionary = decisions.get("zero_hp_choice", {})
+	for candidate in candidates:
+		if choice.has("rule") and candidate != choice.rule: continue
+		if not zero_hp_source_eligible(target, candidate): continue
+		if critical and bool(candidate.get("bypass_critical", false)): continue
+		if damage_type.to_lower() in candidate.get("bypass_damage_types", []): continue
+		if bool(candidate.get("bypass_outright_death", false)) and bool(decisions.get("zero_hp_outright_death", false)): continue
+		if bool(candidate.get("optional", false)):
+			if bool(choice.get("used", false)) or choice.get("rule") != candidate or choice.get("target") != target or not is_same(choice.get("live_rule"), candidate): continue
+		eligible.append(candidate)
+	if eligible.size() != 1: return false
+	var rule: Dictionary = eligible[0]
+	var source := str(rule.get("source_instance_id", ""))
+	var history: Dictionary = target.zero_hp_history if target is Character else target.get("zero_hp_history", {})
+	var entry: Dictionary = history.get(source, {"owner_id": target.character_id if target is Character else str(target.get("id", "")), "source_instance_id": source, "rule": rule.duplicate(true), "attempts": 0, "total_attempts": 0, "resets": 0, "last_reset": "", "last_receipt": {}})
+	var attempts := int(entry.attempts)
 	var canon_rule := canonicalize_rule(rule)
+	# Preflight every formula, even gated replacements, before RNG or payment.
+	for step in canon_rule.steps:
+		for key in ["dc_formula", "replacement_hp"]:
+			if not step.has(key): continue
+			var formula: Variant = zero_hp_formula_value(step[key], damage, attempts)
+			var value := evaluate_formula(formula, {"actor": target if target is Character else null}, target, [])
+			if not value.get("success", false) or int(value.value) < 1 or int(value.value) > 1000000: return false
+			step["dc_base" if key == "dc_formula" else key] = int(value.value)
+			if key == "dc_formula": step.erase(key)
+	if not validate_steps(canon_rule.steps, "zero_hp_replacement").is_empty(): return false
+	var receipt := {"owner_id": entry.owner_id, "source_instance_id": source, "attempts_before": attempts, "attempts_after": attempts, "reset_count": int(entry.resets), "damage": damage, "damage_type": damage_type, "critical": critical, "paid": 0, "payment": {}, "saved": false, "replaced": false}
+	var pay: Dictionary = rule.get("payment", {})
+	var fuel_before := int(ResourcePoolRules.availability(target, str(pay.get("source_instance_id", ""))).get("current", 0)) if target is Character and not pay.is_empty() else 0
+	var reservation_id := ""
+	if not pay.is_empty():
+		if pay.on == "attempted":
+			if not ResourcePoolRules.spend(target, str(pay.source_instance_id), int(pay.amount)).get("success", false): return false
+			receipt.paid = int(pay.amount)
+		else:
+			var reserved := ResourcePoolRules.reserve_payment(target, str(pay.source_instance_id), int(pay.amount))
+			if not reserved.get("success", false): return false
+			reservation_id = str(reserved.reservation.reservation_id)
+	if bool(rule.get("optional", false)): choice["used"] = true
+	var increment := str(rule.get("history", {}).get("increment", ""))
+	if increment in ["attempted", "accepted"]: entry.attempts = attempts + 1
+	if rule.has("history"):
+		entry.total_attempts = int(entry.total_attempts) + 1
+		if target is Character: target.zero_hp_attempt_serial += 1
+		history[source] = entry
+		if target is Dictionary: target["zero_hp_history"] = history
 	var adapter := DamageEventAdapter.new(target, hp_before, damage, damage_type, critical, decisions)
-	var result := execute_steps(canon_rule["steps"], adapter)
-	return bool(result.get("replaced", false))
+	var result := execute_steps(canon_rule.steps, adapter)
+	var saved := bool(result.get("saved", false))
+	var replaced := bool(result.get("replaced", false))
+	var successful := saved or replaced
+	if not reservation_id.is_empty():
+		var charge: bool = (pay.on == "success" and successful) or (pay.on == "failure" and not successful)
+		var settled := ResourcePoolRules.settle_payment_reservation(reservation_id, charge)
+		if charge and settled.get("success", false): receipt.paid = int(pay.amount)
+	if not pay.is_empty():
+		receipt.payment = {"source_instance_id": str(pay.source_instance_id), "policy": str(pay.on), "before": fuel_before, "after": int(ResourcePoolRules.availability(target, str(pay.source_instance_id)).get("current", 0)), "amount": int(receipt.paid)}
+	if (increment == "success" and successful) or (increment == "failure" and not successful): entry.attempts = attempts + 1
+	receipt.attempts_after = int(entry.attempts)
+	receipt.saved = saved
+	receipt.replaced = replaced
+	receipt["replacement_hp"] = target.current_hp if target is Character else int(target.get("current_hp", 0))
+	receipt["saves"] = adapter.save_receipts.duplicate(true)
+	if rule.has("history"):
+		entry.last_receipt = receipt.duplicate(true)
+		history[source] = entry
+		if target is Dictionary: target["zero_hp_history"] = history
+	decisions["zero_hp_receipt"] = receipt
+	return replaced
 
 
 class DamageEventAdapter:
@@ -2089,6 +2304,7 @@ class DamageEventAdapter:
 	var damage_type: String
 	var critical: bool
 	var decisions: Dictionary = {}
+	var save_receipts: Array = []
 
 	func _init(p_target, p_hp_before: int, p_damage: int, p_damage_type: String, p_critical: bool, p_decisions: Dictionary = {}) -> void:
 		target = p_target
@@ -2123,10 +2339,14 @@ class DamageEventAdapter:
 		var ability: String = str(step.get("save", step.get("save_ability", "CON")))
 		var dc: int = int(step.get("dc_base", 5)) + (damage if bool(step.get("dc_add_damage", false)) else 0)
 		var saved := false
+		var total := 0
 		if t is Character:
-			saved = t.saving_throw_to_dc(ability, dc, false, false, decisions) >= dc
+			total = t.saving_throw_to_dc(ability, dc, false, false, decisions)
+			saved = total >= dc
 		elif t is Dictionary:
-			saved = BarbarianRules.roll_monster_save(t, ability, null, false, false, decisions) >= dc
+			total = BarbarianRules.roll_monster_save(t, ability, null, false, false, decisions)
+			saved = total >= dc
+		save_receipts.append({"ability": ability, "total": total, "dc": dc, "saved": saved})
 		return {
 			"success": true,
 			"saved": saved,
@@ -2194,8 +2414,27 @@ class SpellAdapter:
 		})
 
 	func settle_target_occurrence(s_target, step: Dictionary, res: Dictionary, outcome_entry: Dictionary = {}, i: int = 0, target_idx: int = 0, step_results: Array = [], total_damage: int = 0, step_damage: int = 0, messages: Array = [], first_attack_hit: bool = false, has_attack: bool = false, primary_save_saved: bool = false, has_save: bool = false, target_outcomes: Array = [], step_targets: Array = [], is_first_attack: bool = false) -> Dictionary:
-		var dmg_resolved: int = int(res.get("resolved", res.get("damage", 0)))
-		var hp_loss: int = int(res.get("damage", 0))
+		var aftermath: Dictionary = outcome_entry.get("linked_aftermath", {})
+		if aftermath.is_empty():
+			var recipients := DamageLinkRules.recipient_settlements(s_target, res, cast.decisions.get("monsters", []))
+			if not recipients.is_empty():
+				aftermath = {"original_target": s_target, "recipients": recipients, "index": 0}
+				outcome_entry["linked_aftermath"] = aftermath
+		if aftermath.is_empty():
+			return _settle_single_target_occurrence(s_target, step, res, outcome_entry, i, target_idx, step_results, total_damage, step_damage, messages, first_attack_hit, has_attack, primary_save_saved, has_save, target_outcomes, step_targets, is_first_attack)
+		while int(aftermath["index"]) < aftermath["recipients"].size():
+			var recipient: Dictionary = aftermath["recipients"][int(aftermath["index"])]
+			var pending := _settle_single_target_occurrence(recipient["actor"], step, res, outcome_entry, i, target_idx, step_results, total_damage, step_damage, messages, first_attack_hit, has_attack, primary_save_saved, has_save, target_outcomes, step_targets, is_first_attack, recipient)
+			if pending.has("concentration_request") or pending.has("roll_choice_request"):
+				outcome_entry.erase("occurrence_settled")
+				return pending
+			aftermath["index"] = int(aftermath["index"]) + 1
+		outcome_entry["occurrence_settled"] = true
+		return {}
+
+	func _settle_single_target_occurrence(s_target, step: Dictionary, res: Dictionary, outcome_entry: Dictionary = {}, i: int = 0, target_idx: int = 0, step_results: Array = [], total_damage: int = 0, step_damage: int = 0, messages: Array = [], first_attack_hit: bool = false, has_attack: bool = false, primary_save_saved: bool = false, has_save: bool = false, target_outcomes: Array = [], step_targets: Array = [], is_first_attack: bool = false, recipient: Dictionary = {}) -> Dictionary:
+		var dmg_resolved: int = int(recipient.get("resolved", res.get("resolved", res.get("damage", 0))))
+		var hp_loss: int = int(recipient.get("damage", res.get("damage", 0)))
 
 		if dmg_resolved > 0 or hp_loss > 0:
 			ClericRules.clear_turning_after_damage(s_target)
@@ -2214,11 +2453,11 @@ class SpellAdapter:
 			if tracker != null:
 				tracker.remove_combatant(str(s_target.get("id", "")))
 			if trigger_defeat != null and trigger_defeat.is_valid():
-				trigger_defeat.call(s_target, cast.caster)
+				trigger_defeat.call(s_target, recipient.get("source_actor", cast.caster))
 
 		# Concentration save per occurrence for concentrating Characters:
 		if s_target is Character and not s_target.concentrating_on.is_empty():
-			if not s_target.is_alive or s_target.current_hp <= 0 or s_target.has_condition("incapacitated") or s_target.has_condition("unconscious"):
+			if bool(recipient.get("knocked_out", false)) or not s_target.is_alive or s_target.current_hp <= 0 or s_target.has_condition("incapacitated") or s_target.has_condition("unconscious"):
 				SpellEncounterLifecycle._end_concentration(cast_ctx, s_target)
 				outcome_entry["occurrence_settled"] = true
 				return {}
@@ -2236,6 +2475,7 @@ class SpellAdapter:
 
 				var dc: int = mini(30, maxi(10, int(floor(float(dmg_resolved) / 2.0))))
 				var choice_key := "%d:%d:concentration" % [i, target_idx]
+				if not recipient.is_empty(): choice_key += ":%s:%d" % [s_target.character_id, int(recipient.get("occurrence", 0))]
 				if cast_ctx != null and cast_ctx.collect_roll_token_decision.is_valid() and not cast.decisions.get("ordered_roll_choices_answered", {}).has(choice_key):
 					return SpellDamageRolls.create_roll_choice_request(cast, s_target, s_target, "save", "CON concentration save", {
 						"settled": false, "phase": "concentration", "choice_key": choice_key,

@@ -37,7 +37,9 @@ generated inventory to choose the next implementation.
 | Code building blocks, checked subsets and remaining scope | [Vocabulary checklist](reviews/dnd-code-vocabulary-gap-checklist.md) |
 | Post-Batch-F progress, consolidation and workflow assessment | [Progress review](reviews/vocabulary-progress-after-batch-f-2026-10-15.md) |
 | Countable build/validation chunks, prerequisites and whole-scope denominator | [Vocabulary delivery slices](planning/vocabulary-slices.md) |
-| Proposed next batches after Q, numbered 018-030 | [Numbered batch outline](planning/vocabulary-batches-018-030.md) |
+| Accepted Batch 033 scope and production evidence | [Zero-HP acceptance](reviews/batch-033-acceptance.md) |
+| Completed 031–033 build prompts | [Luna handoffs](planning/vocabulary-batches-031-033.md) |
+| Completed numbered batches 018-030 and their acceptance boundaries | [Numbered batch outline](planning/vocabulary-batches-018-030.md) |
 | Foundry import guidance and source-backed subsystem opportunities | [Adoption plan](planning/foundry-adoption.md), [systems review](reviews/foundry-systems-adoption-review-2026-10-17.md) |
 | Completed A-I fresh-chat prompts and retained build/review workflow | [Historical next-26 prompt pack](archive/planning/vocabulary-next-26-prompts.md), [prompt workflow](planning/vocabulary-prompt-workflow.md) |
 | Dated runtime-gap research; reproduce relevant findings before treating them as current defects | [Wiring snapshot](reviews/dnd-runtime-wiring-map.md), [structural snapshot](reviews/dnd-data-runtime-gap-review.md), [description coverage](reviews/dnd-description-runtime-review.md) |

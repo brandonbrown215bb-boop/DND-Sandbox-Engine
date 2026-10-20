@@ -201,6 +201,7 @@ static func complete_short_rest(
 		notifications = GameManager.advance_campaign_time(SHORT_REST_SECONDS)
 	for character in living:
 		character.short_rest()
+		SharedStepExecutor.reset_zero_hp_history(character, "short_rest_completed")
 
 	_next_event_serial += 1
 	var event := {
@@ -335,6 +336,7 @@ static func complete_long_rest(participants: Array, context: Dictionary = {}) ->
 	var living: Array[Character] = eligibility["participants"]
 	for character in living:
 		character.long_rest()
+		SharedStepExecutor.reset_zero_hp_history(character, "long_rest_completed")
 	var notifications: Array[Dictionary] = []
 	if GameManager != null and not bool(context.get("skip_campaign_time", false)):
 		notifications = GameManager.advance_campaign_time(LONG_REST_SECONDS)

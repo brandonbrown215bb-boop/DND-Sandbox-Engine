@@ -699,6 +699,12 @@ func _sanitize_class_features(data: Dictionary, source: String) -> void:
 				continue
 			if feature.get("enabled", true) == false:
 				continue
+			if feature.get("type") == "zero_hp_replacement" or feature.get("trigger") == "zero_hp":
+				var zero_error := SharedStepExecutor.validate_zero_hp_replacement_rule(feature)
+				if not zero_error.is_empty():
+					_load_errors.append("Feature '%s' in %s: %s" % [feature.get("id", ""), source, zero_error])
+				else: kept.append(feature)
+				continue
 			if feature.has("executor") or feature.get("type", "") == "resource":
 				var common_error := _feature_content_error(feature) if feature.has("executor") else _resource_content_error(feature)
 				if not common_error.is_empty():
@@ -1845,6 +1851,9 @@ func _validate_feature_resources(data: Dictionary, base: Dictionary = {}) -> voi
 							ward_pools[ward_pool_id] = mini(int(ward_pools.get(ward_pool_id, 99)), int(level_key))
 	for id in owned:
 		var feature: Dictionary = owned[id]["record"]
+		if feature.get("type") == "zero_hp_replacement" or feature.get("trigger") == "zero_hp":
+			var zero_error := SharedStepExecutor.validate_zero_hp_replacement_rule(feature)
+			if not zero_error.is_empty(): _load_errors.append("Feature '%s': %s" % [id, zero_error])
 		if feature.has("resource_id"):
 			var pool := str(feature["resource_id"])
 			if not owned.has(pool) or owned[pool]["record"].get("type", "") != "resource" or int(owned[pool]["level"]) > int(owned[id]["level"]):

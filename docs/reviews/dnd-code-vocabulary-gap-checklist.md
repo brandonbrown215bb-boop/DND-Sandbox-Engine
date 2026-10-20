@@ -1276,6 +1276,40 @@ Bounded checks cover critical base-die cost separation, authored heal reroll
 selection/eligibility/keep/payment receipts, critical multiplier exclusion and
 actual Attack payment replacement. These do not complete broad V-023 or V-042.
 
+- [x] **VS-107 — Linked split settlement (`S-111`, bounded `V-017`).**
+  Declared post-reduction rounding conserves one occurrence across the fixed
+  target/caster pair; each recipient settles its own defenses and concentration.
+- [x] **VS-108 — Linked redirection (`S-112`, bounded `V-017`).**
+  Full/partial transfer, exact-source removal and stale/declined fallback preserve
+  original attacks, riders, costs and ordered continuation once.
+- [x] **VS-109 — Incoming replacement/healing (`S-113`, bounded `V-018`).**
+  Explicit incoming/resolved stages distinguish immunity, replacement, Ward,
+  Temporary HP, HP loss and actual capped healing.
+- [x] **VS-110 — Settled countereffects (`S-114`, bounded `V-018`).**
+  Captured measures drive derived damage/healing with exact actor/source/root
+  and depth limits, independent siblings and later roots, and recipient aftermath.
+
+Independent [031/032 acceptance](../../.artifacts/planning/vocabulary-reports/batch-031-032-acceptance-review.md) records the two acceptance repairs,
+production controls, recovery and both full-save refusal paths. Hosts are incoming
+monster weapons and player flat/ordered shared spells; other controllers and
+catalog conversion remain unverified. V-017/V-018 remain partial.
+
+- [x] **VS-111 — Authored zero-HP eligibility (`S-117`, bounded `V-020`).**
+  Shared Character/Dictionary replacement precedes defeat, with authored damage,
+  critical and represented massive-death exclusions, condition/source eligibility
+  and clamped HP formulas. Temporary HP and native precedence remain distinct.
+- [x] **VS-112 — Owned zero-HP save attempts (`S-118`, bounded `V-020`, `V-088`).**
+  Exact actor/source DC, attempted/accepted/result increments and numeric-pool
+  payment settle once. Completed rests reset detached histories; receipt/reset
+  generations and lifetime totals validate on both full-save DTO paths and recover.
+
+Owner-authorized [Batch 033 acceptance](batch-033-acceptance.md) follows independent
+review and repair re-review of primary poison-rider authorization and saved count
+consistency. Verified hosts are primary incoming monster weapons (including poison
+riders), player flat/ordered spells and automatic typed Dictionary rules. Optional
+linked/counter pickers, other controllers, general instant death/destruction,
+forms, revival and catalog conversion remain open. V-020/V-088 remain partial.
+
 Batch E accepts VS-39–41 after independent source/evidence review and bounded
 repairs. V-004, V-006 and V-057 remain partial. Completed independent Batch F
 review retains S-044/S-036 as VS-42/43 and accepts S-037 as VS-44 after live-only
@@ -1292,7 +1326,7 @@ S-062 as VS-62 after independent source/evidence review. Batch P accepts S-082
 as VS-63. Batch Q accepts S-083 first as VS-64, then S-097/S-101/S-102 as
 VS-65/66/67. Batch 018 accepts S-047 first as VS-68, then S-048 as VS-69 after
 creation-refusal and choice-contract repairs. Registry:
-**106/226 accepted, 120 remaining; P1 34/34, P2 33/50, P3 20/27, P4 7/25, P5–P9 12/90**.
+**112/226 accepted, 114 remaining; P1 34/34, P2 34/50, P3 19/27, P4 13/25, P5–P9 12/90**.
 Batch 019 accepts S-042/S-072/S-073 as VS-70/71/72 after repairing monster
 movement event publication. Batch 020 accepts S-074/S-075/S-080 as VS-73/74/75
 for directly owned Character combat aura sources. V-007/V-008/V-009/V-011/V-012/
@@ -1434,10 +1468,10 @@ automatic outcome are three different operations.
 | [ ] V-014 — Reevaluate a provisional result | Add/subtract a post-roll total or change AC for one triggering attack, then recalculate its result before consequences; expose that new result to a follow-up. | C-Paladin: Glorious Defense counterattack only if changed hit misses; C-War: Guided Strike; C-Soulknife: Homing Strikes. | Partial: VS-18 checks a fixed failed shared-spell save bonus; VS-21/22 add normal player Attack/Extra Attack and flat/ordered shared-spell attacks; VS-23 adds one captured d6/d8 through these checked combat choices; VS-25 adds fixed/die bonuses to failed loaded EventDialog ability checks. VS-32 accepts bounded defensive edits and VS-49 adds kept-result rerolls in the supported combat hosts. VS-64/65 add shared captured bonuses and fixed helping Character modifiers in normal weapon Attack/Extra Attack. Other rolls/hosts and broader reevaluation remain open. | V-010, V-011 |
 | [ ] V-015 — Save and miss consequence remapping | Independently select damage and riders on success/failure/miss; support evasion and chosen target exemptions without changing other targets' outcomes. | C-Evoker: Potent Cantrip damage after miss without rider; Sculpt Spells; C-Dance: share Evasion for same save. | Partial: VS-35 accepts bounded outcome damage/rider maps; VS-50 adds exact-context Character recipient maps and flat shared-spell chosen exemptions. Broader domains, auras and universal Evasion remain open. | V-011, V-013 |
 | [ ] V-016 — Damage stages and scoped bypass | Modify one incoming component or whole occurrence at a declared stage, retain overflow, and declare exactly which mitigation layers are bypassed. | C-Monk: reduce entire eligible attack; I: Sword of Answering ignores Resistance/Immunity; C-Evoker: Overchannel harm. | Partial: VS-52/53 accept fixed/formula component/occurrence reductions and scoped resistance/immunity/ward/narrow Sphere bypass in shared spells; other damage hosts, optional paid prevention and broader stages remain open (`CombatAction`, `WardRules`). | V-006, V-010 |
-| [ ] V-017 — Split or transfer damage to another actor | Split a specific incoming occurrence using declared rounding and eligibility; create the other recipient's linked settlement without replaying the original attack. | M: Animated Rug of Smothering linked victim damage; earlier wiring map: guardian partner damage. | Uncertain: likely typed damage settlement and actor-pair state. | V-002, V-006, V-016 |
-| [ ] V-018 — Damage absorption and feedback control | Bind a replacement/healing/counter-damage to the qualifying incoming or settled amount, and preserve causal identity so feedback follows its declared limits. | M: Iron Golem Fire absorption despite immunity; C-Great Old One: Thought Shield; I: absorption/prevention examples in prior map. | Partial: ordinary healing/damage; absorption and feedback policies uncertain (`CombatAction`). | V-006, V-010, V-016 |
+| [ ] V-017 — Split or transfer damage to another actor | Split a specific incoming occurrence using declared rounding and eligibility; create the other recipient's linked settlement without replaying the original attack. | M: Animated Rug of Smothering linked victim damage; earlier wiring map: guardian partner damage. | Partial: VS-107/108 accept fixed cast-target/caster links, declared rounding/fallback and independent recipient settlement on incoming monster weapon and player flat/ordered shared-spell hosts. Other controllers and dynamic recipient choices remain open. | V-002, V-006, V-016 |
+| [ ] V-018 — Damage absorption and feedback control | Bind a replacement/healing/counter-damage to the qualifying incoming or settled amount, and preserve causal identity so feedback follows its declared limits. | M: Iron Golem Fire absorption despite immunity; C-Great Old One: Thought Shield; I: absorption/prevention examples in prior map. | Partial: VS-109/110 accept explicit-stage replacement/healing and settled countereffects with source/root/depth limits on the documented hosts. Other controllers, optional paid responses, reflection and catalog conversion remain open. | V-006, V-010, V-016 |
 | [ ] V-019 — Cancel a cast or negate a recipient | Cancel all qualifying pending spell effects or exclude only a named recipient, with declared level/target/school predicates and already-spent costs retained. Reflection is separately V-097. | I: Ioun Stone Absorption; C-Arcane Trickster: Spell Thief negates only its own effect. | Partial: VS-88/90 add predicate-based whole-cast cancellation (S-115) and single-recipient incoming effect negation (S-116) in shared spell and stepped execution without reflection or retargeting; other negation hosts remain open. | V-010, V-011, V-014 |
-| [ ] V-020 — Replace a proposed zero-HP outcome | Intercept before unconsciousness/death, distinguish outright death and declared damage/critical exclusions, and allow a save with escalating DC or replacement HP formula. | R: Orc Relentless Endurance; C-Barbarian: Relentless Rage; C-Zealot: ally revival Reaction; typed Zombie rule. | Partial: shared `replace_hp` and zero-HP rule fields; actor/form-specific extensions uncertain. | V-007, V-010, V-011 |
+| [ ] V-020 — Replace a proposed zero-HP outcome | Intercept before unconsciousness/death, distinguish outright death and declared damage/critical exclusions, and allow a save with escalating DC or replacement HP formula. | R: Orc Relentless Endurance; C-Barbarian: Relentless Rage; C-Zealot: ally revival Reaction; typed Zombie rule. | Partial: VS-111/112 accept authored eligibility, HP/DC formulas and exact-source attempts at the shared pre-defeat boundary on bounded weapon/spell/typed-creature hosts. Other controllers, forms, revival and catalog conversion remain open. | V-007, V-010, V-011 |
 | [ ] V-021 — Destruction, death and aftermath | Apply instant destruction or death distinctly from ordinary HP loss; retain or destroy gear/remains, create a successor actor/hazard, and pass facts to revival eligibility. | I: Mace of Smiting destroys weak Construct; Sphere of Annihilation leaves gear; Eye/Hand combined creates slime. | Partial: `CorpseRules`, created-creature/object paths; generic aftermath uncertain. | V-005, V-011, V-020 |
 | [ ] V-022 — Outcome contingent on legal placement | Resolve required exit/arrival space before finalizing a result when no legal space changes that result; ordinary successful-save settlement cannot commit early. | M: Gelatinous Cube save can fail if no legal exit; I: Titan summoning wastes scroll on insufficient space. | Uncertain: likely spatial validation and pending step decisions. | V-005, V-011 |
 | [ ] V-023 — Dice-level edits and result multipliers | Remove damage dice before rolling, reroll/maximize selected dice, then apply declared critical or post-result multipliers to the correct component. | C-Rogue: Cunning Strike pays Sneak dice; C-Assassin: Death Strike doubles attack damage; C-Life: maximum healing dice. | Partial: VS-103/104/105 accept bounded shared removal/maximization, selected damage/healing rerolls, explicit critical exclusions and final multipliers. Other dice consumers, full rule combinations and broader hosts remain unverified. | V-006, V-007, V-010 |
@@ -1561,7 +1595,7 @@ state or execution requirements. They are grouped here to keep V-001–086 stabl
 | Open ID — capability | Boundary to implement and mark off | Description examples | Current support / likely hook | Depends on |
 |---|---|---|---|---|
 | [ ] V-087 — Steal temporary casting permission | On the qualifying failed enemy save, grant the thief preparation and forbid that enemy's casting of the exact spell for a deadline; remove only those restrictions/grants afterward. This does not store a cast. | C-Arcane Trickster: Spell Thief's eight-hour knowledge theft. | Uncertain: `ClassProgression`, casting eligibility and owned timed grants are likely hooks. | V-019, V-027, V-028, V-049, V-057 |
-| [ ] V-088 — Escalating DC or cumulative risk | Store the count/history used to calculate current DC/chance, reset only at the declared boundary, and choose when attempts increment it. | C-Barbarian: Relentless Rage DC rises; I: Wind Fan and Potion of Longevity cumulative failure chances. | Partial: native Relentless counter; generic authored risk uncertain. | V-007, V-038, V-044, V-057, V-080 |
+| [ ] V-088 — Escalating DC or cumulative risk | Store the count/history used to calculate current DC/chance, reset only at the declared boundary, and choose when attempts increment it. | C-Barbarian: Relentless Rage DC rises; I: Wind Fan and Potion of Longevity cumulative failure chances. | Partial: VS-96 accepts owned repeat-save DC history; VS-112 adds exact-source zero-HP attempts, declared increment/payment policies, completed-rest resets and validated recovery. Broader cumulative-risk hosts remain open. | V-007, V-038, V-044, V-057, V-080 |
 | [ ] V-089 — Reroll with declared kept-result policy | Reroll a qualifying natural die or entire test at the stated window; choose old/new only where allowed, apply declared bonuses/mode and settle once. | R: Halfling must use new result; C-Bard: Countercharm adds Advantage; C-Fighter: Indomitable adds level to reroll. | Partial: VS-26 checks owned mandatory-new natural/whole-test rerolls in loaded EventDialog event/choice checks, declared mode/bonus policy, floor stages, original/new receipts and one cost/settlement. VS-48/49 add declared old/new, captured mode/formula bonus and normal weapon/flat/ordered combat shared-spell attack/save hosts. Further hosts and cross-actor intervention remain open. | V-010, V-012, V-023 |
 | [ ] V-090 — Natural-result replacement tokens | Generate/capture distinct result tokens with owner, visibility and reset; replace before rolling or at a separately authorized post-roll window. Equal values remain different tokens; don't roll another d20 unless required. | C-Diviner: Portent; C-Rogue: Stroke of Luck sets failed roll to 20. | Partial: shared pre-roll `RollTokenRules`; post-roll natural replacement uncertain. | V-010, V-027, V-038, V-041, V-057 |
 | [ ] V-091 — Air supply and breathing eligibility | Model available air shared by actual breathing occupants, environment adaptation and suffocation progression; an exemption changes consumption as well as consequence. | I: Portable Hole/Haversack air budgets; Necklace of Adaptation; Potion of Water Breathing. | Uncertain: world/survival adapters are likely hooks; general breathing model not established. | V-005, V-045, V-065, V-078 |
