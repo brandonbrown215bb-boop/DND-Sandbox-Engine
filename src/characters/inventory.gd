@@ -685,6 +685,7 @@ func destroy_instance(instance_id: String) -> Dictionary:
 			copies.backpack.remove_at(index)
 			backpack.remove_at(index)
 	copies.records.erase(instance_id)
+	BondRules.on_copy_removed(owner_character_ref.get_ref() if owner_character_ref != null else null)
 	return record
 
 
@@ -706,6 +707,7 @@ func drop_equipped_instance(slot: Slot) -> Dictionary:
 	copies.records.erase(instance_id)
 	equipped.erase(slot)
 	_publish_equipment_change(str(record.get("definition_id", "")), "dropped", instance_id)
+	BondRules.on_copy_removed(owner_character_ref.get_ref() if owner_character_ref != null else null)
 	return record
 
 
@@ -731,6 +733,7 @@ func take_instance(id: String) -> Dictionary:
 	backpack.remove_at(index)
 	copies.backpack.remove_at(index)
 	copies.records.erase(id)
+	BondRules.on_copy_removed(owner_character_ref.get_ref() if owner_character_ref != null else null)
 	return record
 
 
