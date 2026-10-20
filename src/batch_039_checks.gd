@@ -37,6 +37,7 @@ static func run(check: Callable) -> void:
 	_created_saves(check)
 	_zero_limit(check)
 	_zero_saves(check)
+	review_stress(check)
 
 static func _validation(check: Callable) -> void:
 	check.call(CreatedActorRules.template_error(template()).is_empty(), "039 S-154 declared template validates")
@@ -169,3 +170,62 @@ static func _zero_saves(check: Callable) -> void:
 	MaxHpSourceRules.apply(legacy, Batch035Checks.drain_rule(), "x:b035:hollow", 4)
 	var ldto := legacy.to_dict()
 	check.call(MaxHpSourceRules.saved_error(ldto).is_empty() and not ldto.max_hp_sources["x:b035:hollow"].has("zero_limit"), "039 legacy max-HP sources without zero_limit still validate")
+
+## Runtime Reviewer stress (RX1-RX7).
+static func review_stress(check: Callable) -> void:
+	# RX1: a reload is a new owner object with the same id; the saved record, not a stale cache, decides HP.
+	var a := caster("b039_rx1")
+	conjure(a, 2)
+	var w: Character = CreatedActorRules.actors(a)[0]
+	w.take_damage(5)
+	var dto := a.to_dict()
+	var saved_hp := w.current_hp
+	w.take_damage(7)
+	var back := Character.new()
+	back.from_dict(dto)
+	var bw: Array = CreatedActorRules.actors(back)
+	check.call(bw.size() == 1 and bw[0] != w and bw[0].current_hp == saved_hp, "039 RX1 reload rebuilds the created actor from the saved record, not the pre-load cache (saved=%d got=%s)" % [saved_hp, str(bw.map(func(x): return x.current_hp))])
+	# RX2: a created actor killed after the save comes back alive on reload.
+	w.take_damage(999)
+	var back2 := Character.new()
+	back2.from_dict(dto)
+	var bw2: Array = CreatedActorRules.actors(back2)
+	check.call(bw2.size() == 1 and bw2[0].is_alive and bw2[0].current_hp == saved_hp, "039 RX2 reload restores a created actor that died after the save")
+	# RX3: the reloaded owner owns the rebuilt actor; the old owner object no longer drives it.
+	check.call(not bw2.is_empty() and CreatedActorRules.owner_of(bw2[0]) == a.character_id, "039 RX3 rebuilt actor stays linked to the owner id")
+	# RX4: the same owner object keeps its live actor (party dismiss/recruit keeps the object).
+	var c := caster("b039_rx4")
+	conjure(c, 2)
+	var cw: Character = CreatedActorRules.actors(c)[0]
+	cw.take_damage(3)
+	check.call(CreatedActorRules.actors(c)[0] == cw and cw.current_hp == cw.max_hp - 3, "039 RX4 same owner object keeps its live actor and HP")
+	# RX5: ending concentration through the real end path removes record and actors; a recast is fresh.
+	SpellEffects.end_concentration(c, [c])
+	check.call(CreatedActorRules.actors(c).is_empty() and c.concentrating_on.is_empty() and not c.spell_effects.values().any(func(r): return r.has("created_actors")), "039 RX5 real concentration end removes the record and its actors")
+	conjure(c, 3)
+	var fresh: Array = CreatedActorRules.actors(c)
+	check.call(fresh.size() == 2 and fresh.all(func(x): return x.current_hp == x.max_hp and x.max_hp == 30), "039 RX5 recast at a higher slot creates fresh full-HP actors (count 2, max 30)")
+	# RX6: S-131 on a created actor (a Character): zero maximum is death, not downed.
+	var z: Character = fresh[0]
+	var r := MaxHpSourceRules.apply(z, wither_rule(), "shade:b039:rx6", 30)
+	check.call(r.zero_limit_death and z.max_hp == 0 and not z.is_alive and not z.is_downed(), "039 RX6 zero-limit on a created actor kills it")
+	# RX7: S-131 with S-130 fixed re-derivation: increase + zero-limit, removed in either order, no drift.
+	for order in [0, 1]:
+		var d := Batch031Checks._character("b039_rx7_%d" % order, 20)
+		var inc := {"id": "b035:bolster", "kind": "increase", "amount": 5, "raise_current": true}
+		MaxHpSourceRules.apply(d, inc, "x:inc")
+		MaxHpSourceRules.apply(d, wither_rule(), "shade:b039:rx7", 10)
+		var mid := d.max_hp
+		var first := "x:inc" if order == 0 else "shade:b039:rx7"
+		var second := "shade:b039:rx7" if order == 0 else "x:inc"
+		MaxHpSourceRules.remove(d, first)
+		var after_first := d.max_hp
+		MaxHpSourceRules.remove(d, second)
+		check.call(mid == 15 and after_first == (10 if order == 0 else 25) and d.max_hp == 20 and d.is_alive, "039 RX7 increase plus zero-limit removal order %d returns to 20 without drift (mid=%d first=%d end=%d)" % [order, mid, after_first, d.max_hp])
+	# RX7b: floor-clamped ordinary drain then zero-limit; removing the drain lets the zero-limit apply in full.
+	var f := Batch031Checks._character("b039_rx7b", 20)
+	MaxHpSourceRules.apply(f, Batch035Checks.drain_rule(), "x:b035:hollow", 50)
+	MaxHpSourceRules.apply(f, wither_rule(), "shade:b039:rx7b", 4)
+	check.call(f.max_hp == 0 and not f.is_alive, "039 RX7b zero-limit after a floor-clamped drain reaches 0")
+	MaxHpSourceRules.remove(f, "x:b035:hollow")
+	check.call(f.max_hp == 16 and not f.is_alive, "039 RX7b removing the clamped drain re-derives to 20-4 and does not revive (max=%d)" % f.max_hp)
