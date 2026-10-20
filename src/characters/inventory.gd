@@ -455,7 +455,7 @@ func attune_instance(instance_id: String, character_id: String) -> Dictionary:
 	if not current_owner.is_empty():
 		return {"success": false, "message": "This copy is attuned to someone else."}
 	var attuned_count := 0
-	for owned_record in copies.records.values():
+	for owned_record in copies.records.values() + ContainerRules.contained_records(self):
 		if str(owned_record.get("state", {}).get("attuned_to", "")) == character_id:
 			attuned_count += 1
 			if str(owned_record.get("definition_id", "")) == str(record.get("definition_id", "")) and str(record.get("definition_id", "")) == "ring_of_protection":
@@ -691,6 +691,14 @@ func destroy_instance(instance_id: String) -> Dictionary:
 			copies.backpack.remove_at(index)
 			backpack.remove_at(index)
 	copies.records.erase(instance_id)
+	# Review 043 R3: an ordinary container's destruction spills its exact contents to the holder.
+	if record.get("state", {}).get("contents") is Dictionary:
+		var left := {}
+		for key in record.state.contents:
+			for child in record.state.contents[key]:
+				if not receive_instance(child): left[key] = left.get(key, []) + [child]
+		if left.is_empty(): record.state.erase("contents")
+		else: record.state["contents"] = left
 	CurseRules.on_removed(owner_character_ref.get_ref() if owner_character_ref != null else null, record)
 	BondRules.on_copy_removed(owner_character_ref.get_ref() if owner_character_ref != null else null)
 	return record

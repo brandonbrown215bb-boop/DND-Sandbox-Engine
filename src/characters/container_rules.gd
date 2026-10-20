@@ -78,7 +78,6 @@ static func put_error(inventory: Inventory, container_id: String, child_id: Stri
 	var child := inventory.get_instance(child_id)
 	var state: Dictionary = child.get("state", {})
 	if bool(state.get("cursed_attunement", false)): return "A cursed copy cannot leave its holder."
-	if state.has("attuned_to"): return "End attunement before stowing that copy."
 	if is_container(str(child.definition_id)): return "Nested containers are not supported."
 	if _bonded(inventory, child_id): return "A bonded copy stays in hand; stowing bonded copies is not supported."
 	return _fits(comps[compartment], contents(inventory, container_id, compartment), str(child.definition_id))
@@ -165,6 +164,7 @@ static func saved_error(dto: Dictionary) -> String:
 	var seen := {}
 	for id in copies.records: seen[str(id)] = true
 	var prefix := str(copies.get("inventory_id", "")) + ":"
+	var contained_attuned: Array = []
 	for record in copies.records.values():
 		if not record is Dictionary or not record.get("state") is Dictionary or not record.state.has("contents"): continue
 		var comps := compartments(str(record.get("definition_id", "")))
@@ -183,8 +183,30 @@ static func saved_error(dto: Dictionary) -> String:
 				seen[cid] = true
 				if cid.begins_with(prefix) and cid.get_slice(":", 1).to_int() >= int(copies.get("next_id", 0)): return "inventory serial would reuse an identity"
 				if child.state.has("contents") or is_container(str(child.definition_id)): return "saved contents nest a container"
-				if bool(child.state.get("cursed_attunement", false)) or child.state.has("attuned_to"): return "saved contained copy is attuned"
+				if bool(child.state.get("cursed_attunement", false)): return "saved contained copy is cursed"
+				var state_error := InventoryCopies.record_state_error(child)
+				if not state_error.is_empty(): return "saved contained copy: " + state_error
+				if child.state.has("attuned_to"): contained_attuned.append(child)
 				var error := _fits(comps[str(key)], placed, str(child.definition_id))
 				if not error.is_empty(): return "saved contents exceed their compartment"
 				placed.append(child)
+	# Review 043 R2: contained attuned copies still count toward the attunement limits.
+	var counts := {}
+	var rings := {}
+	for rec in copies.records.values() + contained_attuned:
+		if not rec is Dictionary or not rec.get("state") is Dictionary or not rec.state.has("attuned_to"): continue
+		if not bool(DataLoader.get_item(str(rec.get("definition_id", ""))).get("requires_attunement", false)): continue
+		var owner := str(rec.state.attuned_to)
+		counts[owner] = int(counts.get(owner, 0)) + 1
+		if counts[owner] > 3: return "character exceeds the three-item attunement limit"
+		if str(rec.get("definition_id", "")) == "ring_of_protection":
+			if rings.has(owner): return "character is attuned to duplicate copies of one limited item"
+			rings[owner] = true
 	return ""
+
+## Exact child records held in this inventory's containers.
+static func contained_records(inventory: Inventory) -> Array:
+	var out: Array = []
+	for host in inventory.owned_instances():
+		out.append_array(contents(inventory, str(host.instance_id)))
+	return out
