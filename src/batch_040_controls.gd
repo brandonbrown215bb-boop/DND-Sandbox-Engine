@@ -30,10 +30,12 @@ static func run(h: Node) -> void:
 	var enemy: Dictionary = combat.monster_entities[0]
 	enemy["hex_position"] = Vector2i(1, 0)
 	combat._update_grid_entities()
-	# S-163: an actual HUD cast with two declared forms and no selection is refused.
+	# S-163 (updated by 047 card 7e2c): the HUD now offers the two declared forms; canceling the chooser refuses.
 	b.spell_slots = {"2": 1}
 	var features_before := b.features.size()
-	await Batch036Controls.cast(h, combat, b, b, Batch040Checks.SHIFT)
+	await Batch047Controls.begin(h, combat, b, Batch040Checks.SHIFT)
+	await Batch027Controls.answer(h, combat, "Choose a form", "Cancel")
+	await Batch047Controls.settle(h, combat)
 	h._assert(not ActorProjectionRules.is_projected(b) and b.features.size() == features_before and int(b.spell_slots.get("2", 0)) == 1, "040 actual cast without a selected form leaves the actor unprojected and the slot unspent (slots=%s)" % str(b.spell_slots))
 	# The single-form projection through the same production cast.
 	b.spell_slots = {"3": 1}

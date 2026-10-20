@@ -5,6 +5,8 @@ extends RefCounted
 static func validate_and_choose(cast: SpellCastContext) -> bool:
 	if not SpellCastValidation.validate_host(cast):
 		return false
+	if not await SpellCastChoices.choose_projection_options(cast): # Card 7e2c: pick form/equipment before any cost.
+		return false
 	if not SpellCastValidation.validate_actor(cast):
 		return false
 	if not await SpellFormulaInputs.choose(cast):
