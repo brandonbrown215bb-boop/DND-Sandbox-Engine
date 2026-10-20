@@ -4,8 +4,9 @@
 class_name RuleUpgradeRules
 extends RefCounted
 
-const RULE_KEYS := ["id", "name", "type", "description", "rule", "changes", "source_instance_id"]
-const PARAMETERS := ["uses", "targets", "die", "end_on"]
+const RULE_KEYS := ["id", "name", "type", "description", "rule", "changes", "exclusive_group", "source_instance_id"]
+const PARAMETERS := ["uses", "targets", "die", "end_on", "modes", "switch_events"]
+const MIN_MODES := 2
 
 static func validate_rule(f: Variant, declared_ids: Dictionary = {}) -> String:
 	if not f is Dictionary: return "rule_upgrade must be an object"
@@ -27,7 +28,70 @@ static func validate_rule(f: Variant, declared_ids: Dictionary = {}) -> String:
 			"end_on":
 				var op := str(c.keys()[0])
 				if op not in ["add", "remove"] or not FeatureModeRules.end_on_error(c[op]).is_empty() or c[op].is_empty(): return "rule_upgrade end_on requires add or remove reasons"
+			"switch_events":
+				var op := str(c.keys()[0])
+				if op not in ["add", "remove"] or not FeatureModeRules.switch_events_error(c[op]).is_empty() or c[op].is_empty(): return "rule_upgrade switch_events requires add or remove events"
+			"modes":
+				var op := str(c.keys()[0])
+				if op == "add":
+					if not c.add is Array or c.add.is_empty() or c.add.size() > 4 or not FeatureModeRules.modes_list_error(c.add).is_empty(): return "rule_upgrade modes add requires one to four valid modes"
+				elif op == "remove":
+					if not c.remove is Array or c.remove.is_empty() or c.remove.size() > 4 or c.remove.any(func(m): return not m is String or str(m).is_empty()): return "rule_upgrade modes remove requires mode ids"
+				else: return "rule_upgrade modes requires add or remove"
+	if f.has("exclusive_group") and (not f.exclusive_group is String or str(f.exclusive_group).is_empty()): return "exclusive_group must be a nonempty string"
 	return ""
+
+static func _key(rule_id: String, group: String) -> String:
+	return rule_id + "|" + group
+
+## S-085: owned upgrades in one exclusive group are alternatives, never stacked.
+## Returns the applying upgrades plus {group: {chosen, options}}.
+static func _resolve(actor: Character, rule_id: String) -> Dictionary:
+	var applying: Array = []
+	var groups := {}
+	for upgrade in upgrades_for(actor, rule_id):
+		var group := str(upgrade.get("exclusive_group", ""))
+		if group.is_empty(): applying.append(upgrade)
+		else:
+			if not groups.has(group): groups[group] = []
+			groups[group].append(upgrade)
+	var alternatives := {}
+	for group in groups:
+		var options: Array = groups[group]
+		var chosen: Dictionary = options[0]
+		var wanted := str(actor.rule_alternatives.get(_key(rule_id, group), ""))
+		for option in options:
+			if str(option.id) == wanted: chosen = option
+		applying.append(chosen)
+		alternatives[group] = {"chosen": str(chosen.id), "options": options.map(func(o): return str(o.id))}
+	applying.sort_custom(func(x, y): return str(x.id) < str(y.id))
+	return {"applying": applying, "alternatives": alternatives}
+
+## Choose an owned alternative; refused while the upgraded activation is active.
+static func choose_alternative(actor: Character, rule_id: String, group: String, upgrade_id: String) -> bool:
+	var resolved := _resolve(actor, rule_id)
+	if not resolved.alternatives.has(group) or upgrade_id not in resolved.alternatives[group].options: return false
+	if bool(actor.feature_modes.get(rule_id, {}).get("active", false)): return false
+	actor.rule_alternatives[_key(rule_id, group)] = upgrade_id
+	return true
+
+static func saved_error(data: Dictionary) -> String:
+	var choices: Variant = data.get("rule_alternatives", {})
+	if not choices is Dictionary or choices.size() > 16: return "rule alternatives are invalid"
+	var class_data := DataLoader.get_character_class(str(data.get("class_id", "")))
+	for key in choices:
+		var parts := str(key).split("|")
+		var found := false
+		for lvl in class_data.get("features_by_level", {}):
+			if int(lvl) > int(data.get("level", 1)): continue
+			for feature in class_data.features_by_level[lvl]:
+				if parts.size() == 2 and feature.get("type", "") == "rule_upgrade" and feature.get("rule", "") == parts[0] and feature.get("exclusive_group", "") == parts[1] and feature.get("id", "") == choices[key]: found = true
+		if not found: return "rule alternative is not an owned option"
+	return ""
+
+static func restore(actor: Character, data: Dictionary) -> void:
+	var choices: Variant = data.get("rule_alternatives", {})
+	actor.rule_alternatives = choices.duplicate(true) if choices is Dictionary and saved_error(data).is_empty() else {}
 
 static func upgrades_for(actor: Character, rule_id: String) -> Array:
 	var by_id := {}
@@ -40,7 +104,8 @@ static func upgrades_for(actor: Character, rule_id: String) -> Array:
 
 static func effective(actor: Character, feature: Dictionary) -> Dictionary:
 	if actor == null or feature.is_empty(): return feature
-	var upgrades := upgrades_for(actor, str(feature.get("id", "")))
+	var resolved := _resolve(actor, str(feature.get("id", "")))
+	var upgrades: Array = resolved.applying
 	if upgrades.is_empty(): return feature
 	var out := feature.duplicate(true)
 	var applied: Array = []
@@ -56,6 +121,24 @@ static func effective(actor: Character, feature: Dictionary) -> Dictionary:
 			for reason in changes.end_on.get("remove", []):
 				reasons.erase(reason)
 			out["end_on"] = reasons
+		if changes.has("switch_events"):
+			var events: Array = out.get("switch_events", []).duplicate()
+			for e in changes.switch_events.get("add", []):
+				if e not in events: events.append(e)
+			for e in changes.switch_events.get("remove", []):
+				events.erase(e)
+			out["switch_events"] = events
+		if changes.has("modes"):
+			var modes: Array = out.get("modes", []).duplicate(true)
+			for mode in changes.modes.get("add", []):
+				if not modes.any(func(m): return m.id == mode.id): modes.append(mode.duplicate(true))
+			out["modes"] = modes
 		applied.append(str(upgrade.id))
+	# Removals run after every addition so upgrade order cannot matter.
+	for upgrade in upgrades:
+		for mode_id in upgrade.changes.get("modes", {}).get("remove", []):
+			var kept: Array = out.get("modes", []).filter(func(m): return m.id != mode_id)
+			if kept.size() >= MIN_MODES: out["modes"] = kept # Never fewer than two legal modes.
 	out["applied_upgrades"] = applied
+	if not resolved.alternatives.is_empty(): out["alternatives"] = resolved.alternatives
 	return out

@@ -8,8 +8,10 @@ const BOUNDARIES := ["rest", "activation"]
 const RESTS := ["short_rest", "long_rest"]
 const END_REASONS := ["short_rest", "long_rest", "zero_hp", "incapacitated"]
 const DICE := ["d4", "d6", "d8", "d10", "d12"]
-const RULE_KEYS := ["id", "name", "type", "description", "boundary", "rest", "modes", "uses", "uses_per", "duration_seconds", "die", "targets", "end_on", "allow_reselect", "source_instance_id"]
-const STATE_KEYS := ["mode", "open", "active", "remaining_seconds", "activation_serial", "rolled", "recipients"]
+## S-104: declared events that open a one-use window to switch the active mode.
+const SWITCH_EVENTS := ["hit", "turn_start"]
+const RULE_KEYS := ["id", "name", "type", "description", "boundary", "rest", "modes", "uses", "uses_per", "duration_seconds", "die", "targets", "end_on", "allow_reselect", "switch_events", "source_instance_id"]
+const STATE_KEYS := ["mode", "open", "active", "remaining_seconds", "activation_serial", "rolled", "recipients", "event_serial", "window"]
 
 static func _int(v: Variant, lo: int, hi: int) -> bool:
 	return (v is int or v is float) and is_finite(float(v)) and float(v) == floorf(float(v)) and int(v) >= lo and int(v) <= hi
@@ -21,17 +23,34 @@ static func validate_rule(f: Variant) -> String:
 	if str(f.get("boundary", "")) not in BOUNDARIES: return "mode_choice boundary must be rest or activation"
 	var modes: Variant = f.get("modes")
 	if not modes is Array or modes.size() < 2 or modes.size() > 6: return "mode_choice requires two to six modes"
+	var modes_error := modes_list_error(modes)
+	if not modes_error.is_empty(): return modes_error
+	if f.boundary == "rest":
+		if str(f.get("rest", "")) not in RESTS: return "rest mode_choice requires rest short_rest or long_rest"
+		for key in ["uses", "uses_per", "duration_seconds", "die", "targets", "end_on", "allow_reselect", "switch_events"]:
+			if f.has(key): return "rest mode_choice cannot declare activation field '%s'" % key
+		return ""
+	if f.has("switch_events") and not switch_events_error(f.switch_events).is_empty(): return switch_events_error(f.switch_events)
+	return _activation_error(f)
+
+static func switch_events_error(value: Variant) -> String:
+	if not value is Array or value.size() > SWITCH_EVENTS.size(): return "switch_events must be an array of hit or turn_start"
+	var seen := {}
+	for e in value:
+		if not e is String or e not in SWITCH_EVENTS or seen.has(e): return "switch_events contains an unknown or repeated event"
+		seen[e] = true
+	return ""
+
+static func modes_list_error(modes: Variant) -> String:
 	var seen := {}
 	for mode in modes:
 		if not mode is Dictionary or mode.size() != 2 or not mode.get("id", "") is String or str(mode.get("id", "")).is_empty() or seen.has(mode.id): return "mode_choice modes require unique ids and benefits"
 		var benefit_error := SourceBenefitRules.benefits_error(mode.get("benefits"))
 		if not benefit_error.is_empty(): return "mode '%s': %s" % [mode.id, benefit_error]
 		seen[mode.id] = true
-	if f.boundary == "rest":
-		if str(f.get("rest", "")) not in RESTS: return "rest mode_choice requires rest short_rest or long_rest"
-		for key in ["uses", "uses_per", "duration_seconds", "die", "targets", "end_on", "allow_reselect"]:
-			if f.has(key): return "rest mode_choice cannot declare activation field '%s'" % key
-		return ""
+	return ""
+
+static func _activation_error(f: Dictionary) -> String:
 	if f.has("rest"): return "activation mode_choice cannot declare rest"
 	if not _int(f.get("uses"), 1, 20) or str(f.get("uses_per", "")) not in RESTS: return "activation mode_choice requires uses 1-20 and uses_per short_rest or long_rest"
 	if not _int(f.get("duration_seconds"), 6, 86400): return "activation mode_choice requires duration_seconds 6-86400"
@@ -106,6 +125,37 @@ static func activate(actor: Character, feature_id: String, mode_id: String, reci
 	actor.feature_modes[feature_id] = {"mode": mode_id, "active": true, "remaining_seconds": int(r.duration_seconds), "activation_serial": serial, "rolled": rolled, "recipients": ids}
 	return _receipt(true, "activated", {"die": str(r.get("die", "")), "rolled": rolled, "recipients": ids.duplicate(), "activation_serial": serial})
 
+## S-104: an own declared event opens a one-switch window on matching active
+## activations; any later event closes older windows. Already settled results
+## (the hit that opened the window) are never recomputed.
+static func on_event(actor: Character, event: String) -> Array:
+	var opened: Array = []
+	if actor == null or event not in SWITCH_EVENTS: return opened
+	refresh(actor)
+	for feature_id in actor.feature_modes.keys():
+		var state: Dictionary = actor.feature_modes[feature_id]
+		state.erase("window")
+		if not bool(state.get("active", false)): continue
+		if event not in rule(actor, str(feature_id)).get("switch_events", []): continue
+		state["event_serial"] = int(state.get("event_serial", 0)) + 1
+		state["window"] = {"event": event, "serial": int(state.event_serial)}
+		opened.append(str(feature_id))
+	return opened
+
+static func switch(actor: Character, feature_id: String, mode_id: String, event: String) -> Dictionary:
+	var r := rule(actor, feature_id)
+	if r.is_empty() or r.boundary != "activation": return _receipt(false, "not_activation")
+	refresh(actor)
+	var state: Dictionary = actor.feature_modes.get(feature_id, {})
+	if not bool(state.get("active", false)): return _receipt(false, "not_active")
+	if state.get("window", {}).get("event", "") != event or event not in r.get("switch_events", []): return _receipt(false, "no_window")
+	if _mode(r, mode_id).is_empty(): return _receipt(false, "unknown_mode")
+	var previous := str(state.mode)
+	if previous == mode_id: return _receipt(false, "same_mode")
+	state["mode"] = mode_id # Uses, remaining time, serial and roll stay fixed.
+	state.erase("window")
+	return _receipt(true, "switched", {"replaced": previous, "event": event})
+
 static func end(actor: Character, feature_id: String, reason: String) -> Dictionary:
 	var state: Dictionary = actor.feature_modes.get(feature_id, {})
 	if not bool(state.get("active", false)): return {}
@@ -115,6 +165,7 @@ static func end(actor: Character, feature_id: String, reason: String) -> Diction
 	state["active"] = false
 	state["mode"] = ""
 	state["remaining_seconds"] = 0
+	state.erase("window")
 	return {"feature_id": feature_id, "mode": ended, "reason": reason, "activation_serial": int(state.activation_serial)}
 
 ## End predicates are read from the live (possibly upgraded) rule.
@@ -166,6 +217,17 @@ static func _declared(data: Dictionary, feature_id: String) -> Dictionary:
 			if feature.get("id", "") == feature_id and feature.get("type", "") == "mode_choice": return feature
 	return {}
 
+## Catalog modes plus modes any owned-level upgrade can add (S-085).
+static func _declared_modes(data: Dictionary, feature_id: String, f: Dictionary) -> Array:
+	var ids: Array = f.get("modes", []).map(func(m): return m.id)
+	var class_data := DataLoader.get_character_class(str(data.get("class_id", "")))
+	for lvl in class_data.get("features_by_level", {}):
+		if int(lvl) > int(data.get("level", 1)): continue
+		for feature in class_data.features_by_level[lvl]:
+			if feature.get("type", "") == "rule_upgrade" and feature.get("rule", "") == feature_id:
+				for m in feature.get("changes", {}).get("modes", {}).get("add", []): ids.append(m.id)
+	return ids
+
 static func saved_error(data: Dictionary) -> String:
 	var modes: Variant = data.get("feature_modes", {})
 	if not modes is Dictionary or modes.size() > 16: return "feature modes are invalid"
@@ -176,17 +238,22 @@ static func saved_error(data: Dictionary) -> String:
 		for key in s:
 			if str(key) not in STATE_KEYS: return "feature mode has unknown field"
 		var mode := str(s.get("mode", ""))
-		if not mode.is_empty() and _mode(f, mode).is_empty(): return "feature mode is not declared"
+		if not mode.is_empty() and mode not in _declared_modes(data, str(feature_id), f): return "feature mode is not declared"
 		if f.boundary == "rest":
 			if s.size() != 2 or not s.get("open") is bool or (mode.is_empty() and not s.open): return "rest feature mode is invalid"
 			continue
 		if not s.get("active") is bool or not _int(s.get("remaining_seconds"), 0, int(f.duration_seconds)) or not _int(s.get("activation_serial"), 1, 1000000) or not _int(s.get("rolled"), 0, 12) or not s.get("recipients") is Array or s.recipients.size() > 6:
 			return "activation feature mode is invalid"
+		if s.has("event_serial") and not _int(s.event_serial, 0, 1000000): return "activation feature mode is invalid"
+		if s.has("window"):
+			var w: Variant = s.window
+			if not w is Dictionary or w.size() != 2 or str(w.get("event", "")) not in SWITCH_EVENTS or not _int(w.get("serial"), 1, int(s.get("event_serial", 0))) or not s.active: return "feature mode switch window is invalid"
 		if s.active == mode.is_empty() or (s.active and int(s.remaining_seconds) < 1): return "activation feature mode is invalid"
 	return ""
 
 static func restore(actor: Character, data: Dictionary) -> void:
 	actor.feature_modes = data.get("feature_modes", {}).duplicate(true) if data.get("feature_modes", {}) is Dictionary and saved_error(data).is_empty() else {}
 	for state in actor.feature_modes.values():
-		for key in ["remaining_seconds", "activation_serial", "rolled"]:
+		for key in ["remaining_seconds", "activation_serial", "rolled", "event_serial"]:
 			if state.has(key): state[key] = int(state[key])
+		if state.has("window"): state.window.serial = int(state.window.serial)

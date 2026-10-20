@@ -305,6 +305,8 @@ var zero_hp_attempt_serial: int = 0
 var max_hp_sources: Dictionary = {}
 ## S-103 rest/activation mode selections, keyed by owning feature id.
 var feature_modes: Dictionary = {}
+## S-085 chosen exclusive upgrade alternatives, keyed "rule|group".
+var rule_alternatives: Dictionary = {}
 var barbarian_relentless_rage_enabled: bool = true
 ## Temporary Beast statistics plus the Druid statistics needed to revert safely.
 var wild_shape_state: Dictionary = {}
@@ -2532,6 +2534,7 @@ func to_dict() -> Dictionary:
 		"zero_hp_attempt_serial": zero_hp_attempt_serial,
 		"max_hp_sources": max_hp_sources.duplicate(true),
 		"feature_modes": feature_modes.duplicate(true),
+		"rule_alternatives": rule_alternatives.duplicate(true),
 		"barbarian_relentless_rage_enabled": barbarian_relentless_rage_enabled,
 		"level": level,
 		"xp": xp,
@@ -2861,6 +2864,7 @@ func from_dict(data: Dictionary) -> void:
 	zero_hp_history = data.get("zero_hp_history", {}).duplicate(true)
 	zero_hp_attempt_serial = int(data.get("zero_hp_attempt_serial", 0))
 	MaxHpSourceRules.restore(self, data)
+	RuleUpgradeRules.restore(self, data)
 	FeatureModeRules.restore(self, data)
 	barbarian_relentless_rage_enabled = bool(data.get("barbarian_relentless_rage_enabled", true))
 	for feature in features:
