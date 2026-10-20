@@ -503,6 +503,8 @@ func has_equipped_attuned_item(definition_id: String, character_id: String) -> b
 	copies.sync(self)
 	for instance_id in copies.equipped.values():
 		var record: Dictionary = copies.records.get(instance_id, {})
+		var holder = owner_character_ref.get_ref() if owner_character_ref != null else null
+		if holder != null and ActorProjectionRules.merged(holder, str(instance_id)): continue
 		if str(record.get("definition_id", "")) == definition_id and str(record.get("state", {}).get("attuned_to", "")) == character_id:
 			return true
 	return false
@@ -743,6 +745,8 @@ func transfer_instance(id: String, destination: Inventory) -> bool:
 func equip_instance(slot: Slot, id: String) -> bool:
 	copies.sync(self)
 	if id not in copies.backpack: return false
+	var wearer = owner_character_ref.get_ref() if owner_character_ref != null else null
+	if wearer != null and not ActorProjectionRules.equip_error(wearer).is_empty(): return false
 	var definition := str(copies.records[id]["definition_id"])
 	if not can_equip(slot, definition): return false
 	var previous := str(copies.equipped.get(slot, ""))

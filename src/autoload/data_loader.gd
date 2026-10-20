@@ -746,6 +746,12 @@ func _sanitize_class_features(data: Dictionary, source: String) -> void:
 					_load_errors.append("Feature '%s' in %s: %s" % [feature.get("id", ""), source, mode_error])
 				else: kept.append(feature)
 				continue
+			if feature.get("type") == "exclusive_bond":
+				var bond_error := BondRules.rule_error(feature)
+				if not bond_error.is_empty():
+					_load_errors.append("Feature '%s' in %s: %s" % [feature.get("id", ""), source, bond_error])
+				else: kept.append(feature)
+				continue
 			if feature.get("type") == "death_save_outcome":
 				var save_error := ZeroHpAftermathRules.validate_death_save_rule(feature)
 				if not save_error.is_empty():

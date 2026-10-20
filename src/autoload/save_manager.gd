@@ -337,6 +337,8 @@ func _validate_save_data(data: Dictionary) -> String:
 			if not zero_hp_error.is_empty(): return zero_hp_error
 			var max_hp_source_error := MaxHpSourceRules.saved_error(character_data)
 			if not max_hp_source_error.is_empty(): return max_hp_source_error
+			var bond_error := BondRules.saved_error(character_data)
+			if not bond_error.is_empty(): return bond_error
 			var feature_mode_error := FeatureModeRules.saved_error(character_data)
 			if not feature_mode_error.is_empty(): return feature_mode_error
 			var alternative_error := RuleUpgradeRules.saved_error(character_data)
@@ -509,6 +511,8 @@ func _validate_party_data(data: Dictionary, campaign_seconds: int = 0) -> String
 		if not zero_hp_error.is_empty(): return zero_hp_error
 		var max_hp_source_error := MaxHpSourceRules.saved_error(character_data)
 		if not max_hp_source_error.is_empty(): return max_hp_source_error
+		var bond_error := BondRules.saved_error(character_data)
+		if not bond_error.is_empty(): return bond_error
 		var feature_mode_error := FeatureModeRules.saved_error(character_data)
 		if not feature_mode_error.is_empty(): return feature_mode_error
 		var alternative_error := RuleUpgradeRules.saved_error(character_data)
