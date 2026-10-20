@@ -150,6 +150,8 @@ static func counters(target, origin, damage_type: String, settled: Dictionary, d
 			child.erase("_damage_link_child")
 			child.erase("damage_link_source_instance_id")
 			child.erase("damage_link_declined")
+			# A zero-HP aftermath belongs to the original source and its direct target.
+			child.erase("zero_hp_aftermath")
 			child["damage_is_critical"] = false
 			child["damage_source_actor_id"] = actor_id(target)
 			child["damage_source_instance_id"] = str(option.source)

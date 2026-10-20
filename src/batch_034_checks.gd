@@ -27,6 +27,7 @@ static func run(check: Callable) -> void:
 	_death_saves(check)
 	_aftermath(check)
 	_validation(check)
+	_child_damage(check)
 
 static func _death_saves(check: Callable) -> void:
 	var rolls := [0]
@@ -171,3 +172,36 @@ static func _validation(check: Callable) -> void:
 	var legacy := good.duplicate(true)
 	legacy.corpse_state.erase("cause_source")
 	check.call(CorpseRules.saved_error(legacy).is_empty(), "034 legacy corpse DTO without cause detail still validates")
+
+## R2: the aftermath policy must not leak into derived child damage.
+static func _child_damage(check: Callable) -> void:
+	if DataLoader.get_spell("fixture:b032_mirror").is_empty(): Batch032Checks.load_fixtures()
+	if DataLoader.get_spell("fixture:b031_split_link").is_empty(): Batch031Checks.load_fixtures()
+	var dust := policy("fixture:b034_dust")
+	# 1. A real counter-damage response drops the attacker to 0 HP.
+	var target := Batch031Checks._character("b034_r2_target", 20)
+	var caster := Batch031Checks._character("b034_r2_caster", 100)
+	PartyManager.characters[target.character_id] = target
+	PartyManager.characters[caster.character_id] = caster
+	Batch032Checks.grant(target, caster, "mirror")
+	caster.current_hp = 5
+	var r := CombatAction.resolve_damage(target, 30, "fire", {"zero_hp_aftermath": dust.duplicate(true), "damage_source_instance_id": "spell:b034:r2"}, false, false, caster)
+	var counters: Array = r.get("countereffect_receipts", [])
+	var counter: Dictionary = counters[0].get("damage_receipt", {}) if not counters.is_empty() else {}
+	check.call(not counters.is_empty() and caster.current_hp == 0 and caster.is_downed() and caster.corpse_state.is_empty() and counter.get("zero_hp_aftermath", {"x": 1}).is_empty(), "034 R2 real damage response dropping the attacker to 0 HP is ordinary unconsciousness with an empty aftermath receipt")
+	check.call(target.is_dead() and target.corpse_state.get("remains", "") == "dust" and r.zero_hp_aftermath.get("applied", false), "034 R2 the response case's original target still receives the aftermath")
+	# 2. A real damage-link transfer drops the linked actor to 0 HP.
+	var partner := Batch031Checks._character("b034_r2_partner", 10)
+	var protector := Batch031Checks._character("b034_r2_protector", 100)
+	var foe := Batch031Checks._character("b034_r2_foe", 100)
+	partner.willingness = "willing"
+	protector.willingness = "willing"
+	PartyManager.characters[partner.character_id] = partner
+	PartyManager.characters[protector.character_id] = protector
+	Batch031Checks._grant(partner, protector, "fixture:b031_split_link")
+	protector.current_hp = 5
+	r = CombatAction.resolve_damage(partner, 30, "fire", {"players": [protector, partner], "zero_hp_aftermath": dust.duplicate(true), "damage_source_instance_id": "spell:b034:r2link"}, false, false, foe, 0, [], 30)
+	var shares: Array = r.get("recipient_receipts", [])
+	var linked: Array = shares.filter(func(x): return str(x.get("role", "")) == "linked")
+	check.call(r.get("damage_link", {}).get("amount_transferred", 0) == 15 and protector.current_hp == 0 and protector.is_downed() and not protector.is_dead() and protector.corpse_state.is_empty() and not linked.is_empty() and linked[0].get("zero_hp_aftermath", {"x": 1}).is_empty(), "034 R2 real link transfer dropping the linked actor to 0 HP leaves it downed, not dead")
+	check.call(partner.is_dead() and partner.corpse_state.get("remains", "") == "dust" and partner.corpse_state.get("cause_source", {}).get("source_instance_id", "") == "spell:b034:r2link", "034 R2 the link case's original target still receives the aftermath")

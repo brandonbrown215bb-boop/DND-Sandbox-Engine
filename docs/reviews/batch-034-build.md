@@ -171,3 +171,14 @@ same box. Batch 034 did not introduce them, and they are not repaired here.
 Also changed: `src/test_runner.gd`, `src/viewport_harness.gd`, `run_tests.ps1`,
 and `docs/planning/runtime-editor-parallel-pipelines.md` (owner decision
 2026-10-20: the Runtime Builder and Runtime Reviewer bots replace Luna).
+
+## Review fix: zero_hp_aftermath leak into child damage (PR #1 comment)
+
+`zero_hp_aftermath` was copied into derived damage. Counter-damage from a damage response could therefore kill the attacker with the original source's aftermath, and so could a damage-link transfer to the linked actor.
+- `damage_response_rules.gd`: the child decisions for a non-heal response now erase `zero_hp_aftermath`.
+- `damage_link_rules.gd`: the primary (original) target keeps the policy. The linked actor's share gets a copy of the child decisions with `zero_hp_aftermath` removed.
+- `Batch034Checks._child_damage` adds 4 checks. They go through the real response and link paths using the b032 mirror and b031 split-link fixtures:
+  - The attacker is downed with no corpse_state and an empty aftermath receipt.
+  - The linked actor is downed, not dead.
+  - In both cases the original target still gets dust remains.
+- With the fix reverted, the two recipient checks fail. Logic: 4796 passed, 0 failed (4792 before + 4). Scenarios 031–034 unchanged.

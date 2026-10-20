@@ -77,7 +77,10 @@ static func settle(target, amount: int, damage_type: String, decisions: Dictiona
 		primary["role"] = "original"
 		receipts.append(primary)
 	if transferred > 0:
-		var linked := CombatAction.resolve_damage(linked_actor, transferred, damage_type, child_decisions, false, false, source_character, occurrence_id, bypass_layers, transferred, 0)
+		# The original target keeps its aftermath; a linked share is ordinary damage.
+		var linked_decisions := child_decisions.duplicate()
+		linked_decisions.erase("zero_hp_aftermath")
+		var linked := CombatAction.resolve_damage(linked_actor, transferred, damage_type, linked_decisions, false, false, source_character, occurrence_id, bypass_layers, transferred, 0)
 		linked["actor_id"] = _actor_id(linked_actor)
 		linked["role"] = "linked"
 		linked["link_source_instance_id"] = str(selected["source_id"])
