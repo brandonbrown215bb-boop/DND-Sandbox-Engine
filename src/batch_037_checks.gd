@@ -30,6 +30,7 @@ static func run(check: Callable) -> void:
 	_activation_modes(check)
 	_upgrades(check)
 	_saves(check)
+	review_stress(check)
 
 static func _validation(check: Callable) -> void:
 	var good: Dictionary = catalog("1", 0).duplicate(true)
@@ -149,3 +150,77 @@ static func _saves(check: Callable) -> void:
 	var old := Character.new()
 	old.from_dict(legacy)
 	check.call(FeatureModeRules.saved_error(legacy).is_empty() and old.feature_modes.is_empty() and old.get_feature_max_uses(STANCE) == 2, "037 legacy save without feature modes still loads")
+
+## Reviewer stress cases (Batch 037 review).
+static func review_stress(check: Callable) -> void:
+	load_fixtures()
+	# RV1 refusal before cost: dead recipient, too many targets, unknown mode, zero uses.
+	var a := actor("b037_rv_a")
+	var dead := actor("b037_rv_dead")
+	CorpseRules.mark_dead(dead, "test")
+	var uses := int(a.feature_uses[STANCE])
+	var refusals := [FeatureModeRules.activate(a, STANCE, "guard", [a, dead]), FeatureModeRules.activate(a, STANCE, "guard", [a, actor("b037_rv_x")]), FeatureModeRules.activate(a, STANCE, "bogus")]
+	check.call(refusals.all(func(r): return not r.success) and int(a.feature_uses[STANCE]) == uses and a.feature_modes.is_empty() and a.temp_hp == 0, "037 review RV1 invalid recipient/too many targets/unknown mode refuse before any use, roll or state")
+	a.feature_uses[STANCE] = 0
+	check.call(FeatureModeRules.activate(a, STANCE, "guard").reason == "no_uses" and a.feature_modes.is_empty(), "037 review RV1 zero uses refuses with no state")
+	a.feature_uses[STANCE] = uses
+	# RV2 downed actor cannot activate a zero_hp-ending mode (no cost).
+	a.current_hp = 0
+	check.call(FeatureModeRules.activate(a, STANCE, "guard").reason == "end_condition_met" and int(a.feature_uses[STANCE]) == uses, "037 review RV2 0-HP activation is refused before cost")
+	a.current_hp = 30
+	# RV3 active mode ends at 0 HP and its grant vanishes; reactivation spends a new use with a new serial.
+	var base_ac := a.get_ac()
+	var r := FeatureModeRules.activate(a, STANCE, "guard")
+	check.call(r.success and a.get_ac() == base_ac + 2, "037 review RV3 active guard grants +2 AC")
+	a.current_hp = 0
+	check.call(a.get_ac() == base_ac and not a.feature_modes[STANCE].active, "037 review RV3 dropping to 0 HP ends the mode and its grant")
+	a.current_hp = 30
+	var r2 := FeatureModeRules.activate(a, STANCE, "stride")
+	check.call(r2.success and int(r2.activation_serial) == int(r.activation_serial) + 1 and int(a.feature_uses[STANCE]) == uses - 2, "037 review RV3 reactivation is a new parent use and serial")
+	# RV4 the shared clock (GameManager.advance_campaign_time -> SpellEffects.advance_time) expires a 60 s mode.
+	SpellEffects.advance_time([a], 59)
+	var still := bool(a.feature_modes[STANCE].active)
+	SpellEffects.advance_time([a], 3600)
+	check.call(still and not bool(a.feature_modes[STANCE].active) and a.get_ac() == base_ac, "037 review RV4 59 s keeps the mode; an hour of shared time ends it and its grant")
+	# RV5 rest mode: one choice per boundary, survives reload closed, reopens only at its rest.
+	var b := actor("b037_rv_b")
+	check.call(FeatureModeRules.choose(b, ATTUNE, "warded").success and not FeatureModeRules.choose(b, ATTUNE, "swift").success, "037 review RV5 rest mode cannot be changed twice in one boundary")
+	var b2 := Character.new()
+	b2.from_dict(b.to_dict())
+	check.call(b2.feature_modes.get(ATTUNE, {}).get("mode", "") == "warded" and not FeatureModeRules.choose(b2, ATTUNE, "swift").success and b2.get_ac() == b.get_ac(), "037 review RV5 reload keeps the closed rest choice and its single grant")
+	b2.short_rest()
+	check.call(not FeatureModeRules.choose(b2, ATTUNE, "swift").success, "037 review RV5 a Short Rest does not reopen a Long Rest mode")
+	# RV6 activation reload mid-use: no refill, no second grant, same serial, reselect does not respend.
+	var c := actor("b037_rv_c")
+	FeatureModeRules.activate(c, STANCE, "guard")
+	var ac_live := c.get_ac()
+	var dto := c.to_dict()
+	check.call(FeatureModeRules.saved_error(dto).is_empty(), "037 review RV6 mid-activation DTO validates")
+	var c2 := Character.new()
+	c2.from_dict(dto)
+	check.call(c2.get_ac() == ac_live and int(c2.feature_uses[STANCE]) == int(c.feature_uses[STANCE]) and int(c2.feature_modes[STANCE].activation_serial) == int(c.feature_modes[STANCE].activation_serial) and c2.temp_hp == c.temp_hp, "037 review RV6 reload keeps one grant, spent uses, serial and Temporary HP")
+	check.call(FeatureModeRules.choose(c2, STANCE, "stride").success and int(c2.feature_uses[STANCE]) == int(c.feature_uses[STANCE]) and FeatureModeRules.activate(c2, STANCE, "guard").reason == "already_active", "037 review RV6 reloaded reselect does not respend; reactivation while active refuses")
+	# RV7 tampered DTOs refuse; legacy DTO without the field loads.
+	for defect in ["mode", "remaining", "inactive_mode", "unowned", "key"]:
+		var bad := dto.duplicate(true)
+		match defect:
+			"mode": bad.feature_modes[STANCE].mode = "bogus"
+			"remaining": bad.feature_modes[STANCE].remaining_seconds = 99999
+			"inactive_mode": bad.feature_modes[STANCE].active = false
+			"unowned": bad.feature_modes["fixture:not_owned"] = {"mode": "guard", "open": false}
+			"key": bad.feature_modes[STANCE]["uses"] = 9
+		check.call(not FeatureModeRules.saved_error(bad).is_empty(), "037 review RV7 tampered %s refuses" % defect)
+	var legacy := dto.duplicate(true)
+	legacy.erase("feature_modes")
+	var c3 := Character.new()
+	c3.from_dict(legacy)
+	check.call(FeatureModeRules.saved_error(legacy).is_empty() and c3.feature_modes.is_empty(), "037 review RV7 legacy DTO loads with no modes")
+	# RV8 upgrade: applies once even if the upgrade feature is duplicated; catalog unchanged; reload not duplicated.
+	var d := actor("b037_rv_d")
+	d.level_up()
+	d.features.append(catalog("2", 0).duplicate(true))
+	var eff := FeatureModeRules.rule(d, STANCE)
+	check.call(eff.die == "d10" and int(eff.targets) == 2 and "incapacitated" not in eff.end_on and eff.applied_upgrades.size() == 1 and catalog("1", 0).die == "d6" and int(catalog("1", 0).uses) == 2, "037 review RV8 duplicated upgrade applies once and catalog is unchanged")
+	var d2 := Character.new()
+	d2.from_dict(d.to_dict())
+	check.call(FeatureModeRules.rule(d2, STANCE).get("applied_upgrades", []).size() <= 1 and d2.get_feature_max_uses(STANCE) == d.get_feature_max_uses(STANCE), "037 review RV8 reload does not duplicate the upgrade (max uses %d vs %d)" % [d2.get_feature_max_uses(STANCE), d.get_feature_max_uses(STANCE)])
