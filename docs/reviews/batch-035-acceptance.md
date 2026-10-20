@@ -1,6 +1,6 @@
 # Batch 035 review: source-owned maximum HP (S-130) and scoped attack/cast profiles (S-126)
 
-Independent review by Runtime Reviewer on 2026-10-20. PR #2 (`batch-035-s130-s126`), head `7c559c8`, base `e3efcad`. Reviewed in an isolated worktree with reviewer commits `fea8d2e` (stress cases), `6a15b52` (R1) and `da24891` (R2).
+Independent review by Runtime Reviewer on 2026-10-20. PR #2 (`batch-035-s130-s126`), head `7c559c8`, base `e3efcad`. Reviewed in an isolated worktree with reviewer commits `d071dcf` (stress cases), `6a15b52` (R1) and `da24891` (R2).
 
 **Recommendation: ACCEPT after R1 and R2.** This is reviewer evidence. Counts change only on owner acceptance.
 
