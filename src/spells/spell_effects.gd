@@ -413,6 +413,8 @@ static func advance_time(targets: Array, elapsed_seconds: int) -> void:
 		resolve_elapsed_repeat_saves(targets, cursor)
 	GameManager.campaign_elapsed_seconds = final_seconds
 	reconcile(casters, targets)
+	for actor in casters:
+		FeatureModeRules.advance_time(actor, elapsed_seconds)
 
 static func resolve_elapsed_repeat_saves(targets: Array, now_seconds: int) -> void:
 	for target in targets:

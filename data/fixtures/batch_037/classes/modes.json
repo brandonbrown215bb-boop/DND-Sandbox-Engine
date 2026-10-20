@@ -1,0 +1,55 @@
+[
+  {
+    "id": "fixture:b037_class",
+    "name": "Batch 037 Neutral Class",
+    "hit_die": "d8",
+    "primary_ability": "WIS",
+    "saving_throw_proficiencies": ["WIS", "CHA"],
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:b037_stance",
+          "name": "Shifting Stance",
+          "type": "mode_choice",
+          "boundary": "activation",
+          "uses": 2,
+          "uses_per": "long_rest",
+          "duration_seconds": 60,
+          "die": "d6",
+          "targets": 1,
+          "end_on": ["long_rest", "zero_hp", "incapacitated"],
+          "allow_reselect": true,
+          "modes": [
+            {"id": "guard", "benefits": [{"stat": "AC", "amount": 2}]},
+            {"id": "stride", "benefits": [{"stat": "speed", "amount": 2}]}
+          ]
+        },
+        {
+          "id": "fixture:b037_attune",
+          "name": "Rest Attunement",
+          "type": "mode_choice",
+          "boundary": "rest",
+          "rest": "long_rest",
+          "modes": [
+            {"id": "warded", "benefits": [{"stat": "AC", "amount": 1}]},
+            {"id": "swift", "benefits": [{"stat": "speed", "amount": 1}]}
+          ]
+        }
+      ],
+      "2": [
+        {
+          "id": "fixture:b037_deepen",
+          "name": "Deepened Stance",
+          "type": "rule_upgrade",
+          "rule": "fixture:b037_stance",
+          "changes": {
+            "uses": {"add": 1},
+            "die": {"set": "d10"},
+            "targets": {"add": 1},
+            "end_on": {"remove": ["incapacitated"]}
+          }
+        }
+      ]
+    }
+  }
+]

@@ -38,6 +38,8 @@ static func query(actor: Character) -> Array[Dictionary]:
 					if effect.get("type", "") == "source_benefits":
 						var identity := "progression:" + JSON.stringify([actor.character_id, feature.id, option.id, index])
 						_append(result, actor, "progression", identity, str(option.id), effect.get("benefits"))
+	for carrier in FeatureModeRules.carriers(actor):
+		_append(result, actor, "mode", carrier.source_instance_id, carrier.definition_id, carrier.benefits)
 	for source in actor.spell_effects:
 		var record: Dictionary = actor.spell_effects[source]
 		if int(record.get("remaining_seconds", 0)) > 0 and record.get("caster_id", "") == actor.character_id:
