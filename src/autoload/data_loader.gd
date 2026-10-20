@@ -564,6 +564,13 @@ func _validate_semantics(data: Dictionary, content_type: String, source: String)
 			valid = false
 	if content_type == "monster" and data.get("attacks") is Array:
 		for attack in data["attacks"]:
+			if attack is Dictionary and attack.get("extra_effects") is Array:
+				for effect in attack["extra_effects"]:
+					if effect is Dictionary and str(effect.get("type", "")) == "max_hp_source":
+						var source_error := MaxHpSourceRules.validate_rule(effect.get("rule", null))
+						if not source_error.is_empty():
+							_load_errors.append("Attack '%s' %s in %s" % [attack.get("name", ""), source_error, source])
+							valid = false
 			if attack is Dictionary and attack.has("zero_hp_aftermath"):
 				var attack_error := ZeroHpAftermathRules.validate_policy(attack["zero_hp_aftermath"])
 				if not attack_error.is_empty():
@@ -715,6 +722,12 @@ func _sanitize_class_features(data: Dictionary, source: String) -> void:
 				var zero_error := SharedStepExecutor.validate_zero_hp_replacement_rule(feature)
 				if not zero_error.is_empty():
 					_load_errors.append("Feature '%s' in %s: %s" % [feature.get("id", ""), source, zero_error])
+				else: kept.append(feature)
+				continue
+			if feature.get("type") == "attack_profile":
+				var profile_error := AttackProfileRules.validate_rule(feature)
+				if not profile_error.is_empty():
+					_load_errors.append("Feature '%s' in %s: %s" % [feature.get("id", ""), source, profile_error])
 				else: kept.append(feature)
 				continue
 			if feature.get("type") == "death_save_outcome":

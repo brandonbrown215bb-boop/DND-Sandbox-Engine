@@ -205,6 +205,7 @@ static func selected_ability(spell: Dictionary, fallback: String) -> String:
 static func save_dc(caster: Character, spell: Dictionary) -> int:
 	var ability := selected_ability(spell, caster.get_spellcasting_ability())
 	var dc := caster.get_spell_save_dc() + caster.ability_scores.get_ability_modifier(ability) - caster.ability_scores.get_ability_modifier(caster.get_spellcasting_ability())
+	dc = AttackProfileRules.spell_dc(caster, spell, dc)
 	return int(spell.get("_save_dc_override", dc))
 
 

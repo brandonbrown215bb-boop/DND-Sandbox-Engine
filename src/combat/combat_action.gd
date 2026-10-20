@@ -24,6 +24,7 @@ static func advance_combat_turn(actor: Character = null, round_number: int = -1)
 		active_combat_round = round_number
 	active_turn_serial += 1
 	active_turn_actor_id = actor.get_instance_id() if actor != null else 0
+	if actor != null: MaxHpSourceRules.on_event(actor, "turn_started")
 
 
 static func reset_bounded_owner_turn_rider_locks() -> void:
@@ -1173,6 +1174,7 @@ static func resolve_weapon_attack(attacker: Character, target_entity, weapon_dat
 	if bool(weapon_data.get("_true_strike", false)) and not attacker.has_condition("shillelagh"):
 		var weapon_die := str(weapon_data.get("damage", "1d4")).split("+")[0].strip_edges()
 		weapon_data["damage"] = weapon_die + "+" + str(weapon_data.get("ability", attacker.get_spellcasting_ability()))
+	weapon_data = AttackProfileRules.apply_weapon(attacker, weapon_data, reaction_decisions)
 	# Ordinary catalog weapons carry dice, not the wielder's ability bonus.
 	# Add it only after all ability overrides, leaving stat-block profiles alone.
 	if weapon_data.get("type", "") == "weapon" and not weapon_data.has("wild_shape_attack") and not bool(weapon_data.get("fixed_damage", false)):
@@ -1860,6 +1862,12 @@ static func resolve_monster_attack_effects(monster: Dictionary, target: Characte
 			"corrode_armor":
 				target.add_modifier("stat", "AC", -1, int(effect.get("duration", 10)))
 				results.append({"type": effect_type, "success": true, "message": "%s's armor corrodes (-1 AC)." % target.character_name})
+			"max_hp_source":
+				var source_rule: Dictionary = effect.get("rule", {})
+				var amount := int(attack_result.get("damage", 0)) if str(source_rule.get("amount", "")) == "damage_dealt" else -1
+				var source_id := "%s:%s" % [str(monster.get("id", monster.get("name", "monster"))), str(source_rule.get("id", ""))]
+				var change := MaxHpSourceRules.apply(target, source_rule, source_id, amount)
+				results.append({"type": effect_type, "success": true, "receipt": change, "message": "%s's Hit Point maximum is now %d." % [target.character_name, target.max_hp]})
 			"reduce_max_hp":
 				var reduction := int(attack_result.get("damage", 0))
 				if str(effect.get("value", "")) != "damage_dealt":
