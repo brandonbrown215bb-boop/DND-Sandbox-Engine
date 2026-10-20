@@ -84,9 +84,11 @@ static func binding(victim, captors: Array) -> Array:
 	return result
 
 ## Escape one exact tether with the victim's best declared check; other restraints remain.
-static func escape(victim, captors: Array, roll: int = 0) -> Dictionary:
+## Review 045 R2: source names the exact tether attempted; empty picks the first binding one.
+static func escape(victim, captors: Array, roll: int = 0, source: String = "") -> Dictionary:
 	var bound := binding(victim, captors)
-	if bound.is_empty(): return {"attempted": false, "message": "Nothing tethers you."}
+	if not source.is_empty(): bound = bound.filter(func(b): return str(b.source) == source)
+	if bound.is_empty(): return {"attempted": false, "message": "Nothing tethers you." if source.is_empty() else "That tether does not bind you."}
 	var entry: Dictionary = bound[0]
 	var best := -100
 	var used := ""

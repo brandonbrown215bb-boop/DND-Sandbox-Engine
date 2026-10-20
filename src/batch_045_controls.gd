@@ -70,6 +70,25 @@ static func run(h: Node) -> void:
 	combat._tick_active_time_and_tethers()
 	h._assert(TetherRules.held(b).is_empty() and not TetherRules.has_source(enemy, source) and CombatAction.has_condition(enemy, "restrained"), "045 actual escape or range break ends only the tether; the other restraint stays")
 	h._assert(ActiveTimeRules.used(a.inventory.get_instance(ring)) == used_before + 6, "045 actual combat round spends 6 seconds of active time")
+	# Review 045 RT1: a captor moving out of range mid-turn breaks the tether at once (no round tick).
+	enemy["hex_position"] = Vector2i(2, 1)
+	CombatAction.remove_condition_source(enemy, "fixture:b045_other", ["restrained"])
+	var rebound := false
+	for i in 12:
+		seed(4590 + i)
+		b.spell_slots = {"1": 1}
+		h._p_focus(combat, b)
+		combat._reset_turn_action_economy()
+		await Batch036Controls.cast(h, combat, b, enemy, Batch045Checks.LASH)
+		if not TetherRules.held(b).is_empty():
+			rebound = true
+			break
+	var mid_source: String = TetherRules.held(b)[0] if rebound else ""
+	var tick_used := ActiveTimeRules.used(a.inventory.get_instance(ring))
+	for entry in combat.player_entities:
+		if entry.character == b: entry["hex_position"] = Vector2i(9, 0)
+	combat._update_grid_entities()
+	h._assert(rebound and TetherRules.held(b).is_empty() and not TetherRules.has_source(enemy, mid_source) and not CombatAction.has_condition(enemy, "restrained") and ActiveTimeRules.used(a.inventory.get_instance(ring)) == tick_used, "045 RT1 a mid-turn move beyond range ends the tether immediately, before any round tick")
 	# Checklist (a): spent fuel refuses activation with nothing changed.
 	var lamp := Batch045Checks.add(a, Batch045Checks.LAMP)
 	var lrec := a.inventory.get_instance(lamp)

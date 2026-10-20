@@ -40,6 +40,7 @@ static func run(check: Callable) -> void:
 	_tether_validation(check)
 	_tethers(check)
 	_tether_saves(check)
+	review_stress(check)
 
 static func _active_validation(check: Callable) -> void:
 	var p: Dictionary = DataLoader.get_item(WING).active_time.duplicate(true)
@@ -186,3 +187,52 @@ static func _tether_saves(check: Callable) -> void:
 		defects[label].call(bad)
 		if not TetherRules.saved_error(bad).is_empty(): refused += 1
 	check.call(refused == 5, "045 S-168 saved tethers refuse widened, foreign, self, orphaned and extended records (%d/5)" % refused)
+
+
+## Runtime Reviewer stress (RT2-RT6; RT1 is in the scenario).
+static func review_stress(check: Callable) -> void:
+	# RT2: two captors on one victim; escape names an exact tether and leaves the other.
+	var v := actor("b045_rt2_v")
+	var c1 := actor("b045_rt2_c1")
+	var c2 := actor("b045_rt2_c2")
+	var r1 := lash(c1, v)
+	var r2 := lash(c2, v)
+	var s1 := str(r1.get("tether", {}).get("source_id", ""))
+	var s2 := str(r2.get("tether", {}).get("source_id", ""))
+	var both := TetherRules.binding(v, [c1, c2]).size()
+	var esc := {}
+	for i in 40:
+		seed(45200 + i)
+		esc = TetherRules.escape(v, [c1, c2], 0, s2)
+		if esc.get("success", false): break
+	check.call(both == 2 and esc.get("success", false) and esc.source_id == s2 and c1.tethers.has(s1) and not c2.tethers.has(s2) and TetherRules.has_source(v, s1) and not TetherRules.has_source(v, s2) and CombatAction.has_condition(v, "restrained"), "045 RT2 escaping one of two tethers frees only that exact source (both=%d)" % both)
+	check.call(not TetherRules.escape(v, [c1, c2], 0, s2).attempted and c1.tethers.has(s1), "045 RT2 naming an already-escaped tether changes nothing")
+	# RT3: positions changed by teleport break the tether on the next range check regardless of turn.
+	var v3 := actor("b045_rt3_v")
+	var c3 := actor("b045_rt3_c")
+	var r3 := lash(c3, v3)
+	var kept := TetherRules.enforce_range([c3], {c3.character_id: Vector2i.ZERO, v3.character_id: Vector2i(3, 0)}, {v3.character_id: v3})
+	var gone := TetherRules.enforce_range([c3], {c3.character_id: Vector2i.ZERO, v3.character_id: Vector2i(4, 0)}, {v3.character_id: v3})
+	check.call(r3.get("tether", {}).get("bound", false) and kept.is_empty() and gone.size() == 1 and not CombatAction.has_condition(v3, "restrained") and c3.concentrating_on.is_empty(), "045 RT3 range is inclusive at 3 hexes and one hex beyond ends tether and its concentration")
+	# RT4: capacity refusal is pre-cost (cast_error) while held.
+	var v4 := actor("b045_rt4_v")
+	var c4 := actor("b045_rt4_c")
+	lash(c4, v4)
+	c4.spell_slots = {"1": 1}
+	var refused := SpellResolver.resolve(c4, v4, DataLoader.get_spell(LASH).duplicate(true), true, {}, [], 1)
+	check.call(not ActorProjectionRules.cast_error(c4, DataLoader.get_spell(LASH)).is_empty() and int(c4.spell_slots.get("1", 0)) == 1 and TetherRules.held(c4).size() == 1, "045 RT4 a full-capacity cast refuses before the slot is spent")
+	# RT5: tampered tether saves are refused.
+	var dto := c4.to_dict()
+	var bad_dc := dto.duplicate(true)
+	for s in bad_dc.tethers: bad_dc.tethers[s].dc = 99
+	var no_conc := dto.duplicate(true)
+	no_conc["spell_concentration"] = {}
+	no_conc["concentrating_on"] = {}
+	var self_bind := dto.duplicate(true)
+	for s in self_bind.tethers: self_bind.tethers[s].victim_id = c4.character_id
+	check.call(TetherRules.saved_error(dto).is_empty() and not TetherRules.saved_error(bad_dc).is_empty() and not TetherRules.saved_error(no_conc).is_empty() and not TetherRules.saved_error(self_bind).is_empty(), "045 RT5 tampered tether DC, missing concentration and self-binding saves are refused")
+	# RT6: legacy save without tethers or active time validates.
+	var l := actor("b045_rt6")
+	var ldto := l.to_dict()
+	ldto.erase("tethers")
+	check.call(TetherRules.saved_error(ldto).is_empty() and InventoryCopies.saved_error(ldto.inventory).is_empty(), "045 RT6 a legacy save without tethers validates")

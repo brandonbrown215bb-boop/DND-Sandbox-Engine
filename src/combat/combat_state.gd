@@ -189,6 +189,7 @@ func _update_grid_entities() -> void:
 	_refresh_fog_cloud_conditions()
 	_refresh_darkness_conditions()
 	_refresh_aura_of_life_protection()
+	_enforce_tether_range() # Review 045 R1: a tether beyond its range ends as soon as positions change, not at round end.
 	if hex_grid == null:
 		return
 	hex_grid.clear_entities()
@@ -4332,13 +4333,21 @@ func _end_active_turn() -> void:
 
 ## S-064 active time spends combat rounds; S-168 tethers beyond range break.
 func _tick_active_time_and_tethers() -> void:
+	for player in player_entities:
+		var character: Character = player.get("character")
+		if character == null: continue
+		ActiveTimeRules.settle(character, 6, int(GameManager.campaign_elapsed_seconds))
+	_enforce_tether_range()
+
+
+## Review 045 R1: S-168 range check against current positions (movement, teleport, forced moves).
+func _enforce_tether_range() -> void:
 	var captors: Array = []
 	var positions := {}
 	var victims := {}
 	for player in player_entities:
 		var character: Character = player.get("character")
 		if character == null: continue
-		ActiveTimeRules.settle(character, 6, int(GameManager.campaign_elapsed_seconds))
 		captors.append(character)
 		positions[character.character_id] = player.get("hex_position", Vector2i.ZERO)
 		victims[character.character_id] = character
