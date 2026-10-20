@@ -73,6 +73,9 @@ static func choose_alternative(actor: Character, rule_id: String, group: String,
 	if not resolved.alternatives.has(group) or upgrade_id not in resolved.alternatives[group].options: return false
 	if bool(actor.feature_modes.get(rule_id, {}).get("active", false)): return false
 	actor.rule_alternatives[_key(rule_id, group)] = upgrade_id
+	# Review R1: a lower new maximum clamps held uses now, exactly as a reload would.
+	var pool := str(actor.get_feature(rule_id).get("resource_id", rule_id))
+	if actor.feature_uses.has(pool): actor.feature_uses[pool] = clampi(int(actor.feature_uses[pool]), 0, maxi(0, actor.get_feature_max_uses(pool)))
 	return true
 
 static func saved_error(data: Dictionary) -> String:
