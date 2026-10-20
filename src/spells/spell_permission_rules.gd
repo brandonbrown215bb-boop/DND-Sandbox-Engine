@@ -114,7 +114,7 @@ static func for_spell(character: Character, spell: Dictionary) -> Array[Dictiona
 		permissions.append(ritual_permission)
 	character.inventory.copies.sync(character.inventory)
 	for copy_id in character.inventory.copies.equipped.values():
-		if ActorProjectionRules.merged(character, str(copy_id)): continue # Review 041 R2: merged copies grant nothing.
+		if ActorProjectionRules.merged(character, str(copy_id)) or not MagicPropertyRules.active(character, str(copy_id), "spell_permissions"): continue # Review 041 R2: merged copies grant nothing; S-203 suppressed permissions too.
 		var copy: Dictionary = character.inventory.copies.records.get(copy_id, {})
 		var item := DataLoader.get_item(str(copy.get("definition_id", "")))
 		if bool(item.get("requires_attunement", false)) and copy.get("state", {}).get("attuned_to", "") != character.character_id:
@@ -338,7 +338,7 @@ static func spell_ids(character: Character) -> Array[String]:
 					if id not in ids: ids.append(str(id))
 	character.inventory.copies.sync(character.inventory)
 	for copy_id in character.inventory.copies.equipped.values():
-		if ActorProjectionRules.merged(character, str(copy_id)): continue # Review 041 R2: merged copies grant nothing.
+		if ActorProjectionRules.merged(character, str(copy_id)) or not MagicPropertyRules.active(character, str(copy_id), "spell_permissions"): continue # Review 041 R2: merged copies grant nothing; S-203 suppressed permissions too.
 		var copy: Dictionary = character.inventory.copies.records.get(copy_id, {})
 		for policy in DataLoader.get_item(str(copy.get("definition_id", ""))).get("spell_permissions", []):
 			for id in policy.get("spells", []):

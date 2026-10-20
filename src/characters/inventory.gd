@@ -513,6 +513,7 @@ func has_equipped_attuned_item(definition_id: String, character_id: String) -> b
 		var record: Dictionary = copies.records.get(instance_id, {})
 		var holder = owner_character_ref.get_ref() if owner_character_ref != null else null
 		if holder != null and ActorProjectionRules.merged(holder, str(instance_id)): continue
+		if holder != null and not MagicPropertyRules.active(holder, str(instance_id), "item_effects"): continue # Review 044 R2.
 		if str(record.get("definition_id", "")) == definition_id and str(record.get("state", {}).get("attuned_to", "")) == character_id:
 			return true
 	return false

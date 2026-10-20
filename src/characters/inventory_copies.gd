@@ -133,6 +133,8 @@ static func saved_error(dto: Dictionary) -> String:
 static func record_state_error(record: Dictionary) -> String:
 	var item: Dictionary = DataLoader.get_item(str(record.get("definition_id", "")))
 	var state: Dictionary = record.get("state", {})
+	var magic_error := MagicPropertyRules.record_error(record) # Review 044 R3.
+	if not magic_error.is_empty(): return magic_error
 	if state.has("food_remaining_daily_fraction"):
 		var remaining_food: Variant = state["food_remaining_daily_fraction"]
 		if str(record["definition_id"]) != "rations" or (not remaining_food is int and not remaining_food is float) or not is_finite(float(remaining_food)) or float(remaining_food) <= 0.0 or float(remaining_food) >= 1.0:
@@ -158,7 +160,7 @@ static func ownership_error(save: Dictionary) -> String:
 	var seen: Dictionary = {}
 	var party_characters: Dictionary = save.get("party", {}).get("characters", {}) if save.get("party") is Dictionary else {}
 	for character in party_characters.values():
-		for id in character.get("inventory", {}).get("copies", {}).get("records", {}).keys() + ContainerRules.content_ids(character.get("inventory", {})):
+		for id in character.get("inventory", {}).get("copies", {}).get("records", {}).keys() + ContainerRules.content_ids(character.get("inventory", {})) + AttachmentRules.attached_ids(character.get("inventory", {})):
 			if seen.has(id): return "item copy has multiple character owners"
 			seen[id] = true
 	for player in save.get("players", []):
@@ -168,7 +170,7 @@ static func ownership_error(save: Dictionary) -> String:
 		if party_characters.has(owner):
 			if character.get("inventory", {}) != party_characters[owner].get("inventory", {}): return "player inventory differs from its party character"
 			continue
-		for id in character.get("inventory", {}).get("copies", {}).get("records", {}).keys() + ContainerRules.content_ids(character.get("inventory", {})):
+		for id in character.get("inventory", {}).get("copies", {}).get("records", {}).keys() + ContainerRules.content_ids(character.get("inventory", {})) + AttachmentRules.attached_ids(character.get("inventory", {})):
 			if seen.has(id): return "item copy has multiple character owners"
 			seen[id] = true
 	var dungeons: Dictionary = save.get("campaign_ledger", {}).get("dungeon_snapshots", {}).duplicate(true)

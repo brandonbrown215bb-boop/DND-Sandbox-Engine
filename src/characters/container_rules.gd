@@ -79,6 +79,7 @@ static func put_error(inventory: Inventory, container_id: String, child_id: Stri
 	var state: Dictionary = child.get("state", {})
 	if bool(state.get("cursed_attunement", false)): return "A cursed copy cannot leave its holder."
 	if is_container(str(child.definition_id)): return "Nested containers are not supported."
+	if state.has("attached"): return "Detach parts before stowing that copy." # S-210: keeps attached identities visible to ownership checks.
 	if _bonded(inventory, child_id): return "A bonded copy stays in hand; stowing bonded copies is not supported."
 	return _fits(comps[compartment], contents(inventory, container_id, compartment), str(child.definition_id))
 

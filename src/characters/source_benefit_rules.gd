@@ -24,8 +24,13 @@ static func query(actor: Character) -> Array[Dictionary]:
 		if ActorProjectionRules.merged(actor, str(copy_id)): continue # S-164 merged copies are suppressed.
 		var copy: Dictionary = actor.inventory.copies.records.get(copy_id, {})
 		var item := DataLoader.get_item(str(copy.get("definition_id", "")))
-		if item.has("source_benefits") and (not bool(item.get("requires_attunement", false)) or copy.get("state", {}).get("attuned_to", "") == actor.character_id):
+		var attuned_ok: bool = not bool(item.get("requires_attunement", false)) or copy.get("state", {}).get("attuned_to", "") == actor.character_id
+		if item.has("source_benefits") and attuned_ok and MagicPropertyRules.active(actor, str(copy_id), "source_benefits"):
 			_append(result, actor, "item", str(copy_id), str(item.id), item.source_benefits)
+		# S-210: completed attachment sets on this worn exact host copy.
+		if attuned_ok and MagicPropertyRules.active(actor, str(copy_id), "attachment_sets"):
+			for done in AttachmentRules.complete_sets(copy):
+				_append(result, actor, "item_set", "%s:%s" % [str(copy_id), str(done.set_id)], str(item.id), done.benefits)
 	for feature in actor.features:
 		for effect in actor._feature_effects(feature):
 			if effect.get("type", "") == "source_benefits":

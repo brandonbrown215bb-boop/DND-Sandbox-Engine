@@ -1,0 +1,12 @@
+[
+  {"id": "fixture:b044_circlet", "name": "Fixture Socket Ring", "description": "Neutral fixture host with two gem sockets and a band socket.", "type": "ring", "magical": true, "rarity": "uncommon", "value": 0,
+   "attachments": {
+     "sockets": [{"id": "gem_a", "accepts": ["fixture:b044_gem"]}, {"id": "gem_b", "accepts": ["fixture:b044_gem"]}, {"id": "band", "item_types": ["tool"]}],
+     "sets": [{"id": "paired_gems", "requires": ["gem_a", "gem_b"], "benefits": [{"stat": "AC", "amount": 1}]}, {"id": "banded", "requires": ["band"], "benefits": [{"stat": "speed", "amount": 1}]}]
+   }},
+  {"id": "fixture:b044_gem", "name": "Fixture Gem", "description": "Neutral fixture part.", "type": "tool", "value": 0},
+  {"id": "fixture:b044_band", "name": "Fixture Band", "description": "Neutral fixture part.", "type": "tool", "value": 0},
+  {"id": "fixture:b044_mantle_ring", "name": "Fixture Mantle Ring", "description": "Neutral fixture magic ring with a benefit and a spell permission.", "type": "ring", "magical": true, "rarity": "uncommon", "value": 0,
+   "source_benefits": [{"stat": "AC", "amount": 2}],
+   "spell_permissions": [{"spells": ["fixture:029_charge_stop"], "ability": "INT", "maximum_spell_level": 3, "allowed_components": ["V", "S"]}]}
+]
