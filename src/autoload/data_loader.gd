@@ -430,7 +430,7 @@ func _validate_content(data: Dictionary, content_type: String, source: String) -
 	if data.has("spell_permissions") and (content_type != "item" or not SpellPermissionRules.item_definition_error(data).is_empty()):
 		_load_errors.append("Invalid item spell permission in %s" % source)
 		return false
-	if data.has("source_benefits") and (content_type != "item" or data.get("type", "") not in ["weapon", "armor", "shield", "ring", "wand"] or not SourceBenefitRules.benefits_error(data["source_benefits"]).is_empty()):
+	if data.has("source_benefits") and (content_type != "item" or data.get("type", "") not in ["weapon", "armor", "shield", "ring", "wand", "staff", "rod", "wondrous"] or (data.get("type", "") == "wondrous" and not data.has("worn_slot")) or not SourceBenefitRules.benefits_error(data["source_benefits"]).is_empty()):
 		_load_errors.append("Invalid equipped item source benefits in " + source)
 		return false
 	if content_type == "spell" and data.has("execution"):
@@ -466,9 +466,14 @@ func _validate_content(data: Dictionary, content_type: String, source: String) -
 		if CombatChildActions.units(data) == 0 or data.get("type") != "consumable" or data.get("action_cost", "action") != "action":
 			_load_errors.append("Invalid item strike substitution: " + str(data.get("id", "")))
 			return false
-	if content_type == "item" and str(data.get("type", "")) not in ["weapon", "armor", "shield", "ring", "wand", "consumable", "tool", "currency", "spell_component"]:
+	if content_type == "item" and str(data.get("type", "")) not in ["weapon", "armor", "shield", "ring", "wand", "staff", "rod", "wondrous", "consumable", "tool", "currency", "spell_component"]:
 		_load_errors.append("Item has unsupported type '%s' in %s" % [data.get("type"), source])
 		return false
+	if content_type == "item":
+		var measure_error := ItemTypeRules.definition_error(data) # Batch 048: magic-item types and measurements.
+		if not measure_error.is_empty():
+			_load_errors.append("%s in %s" % [measure_error, source])
+			return false
 	if content_type == "item":
 		var context_effect_error := _check_context_item_effect_error(data)
 		if not context_effect_error.is_empty():

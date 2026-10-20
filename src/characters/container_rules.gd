@@ -18,7 +18,9 @@ static func policy_error(policy: Variant) -> String:
 		if id.is_empty() or ids.has(id): return "container compartment ids must be unique"
 		ids[id] = true
 		if c.has("item_types") and (not c.item_types is Array or c.item_types.is_empty() or c.item_types.any(func(t): return not t is String)): return "container item_types are invalid"
-		if not _positive(c.get("max_count"), true): return "container compartment needs a whole max_count"
+		# Batch 048: a source may state only a weight or volume limit; at least one limit is required.
+		if c.has("max_count") and not _positive(c.max_count, true): return "container compartment needs a whole max_count"
+		if not (c.has("max_count") or c.has("max_weight") or c.has("max_volume")): return "container compartment needs a count, weight or volume limit"
 		for k in ["max_weight", "max_volume"]:
 			if c.has(k) and not _positive(c[k], false): return "container %s is invalid" % k
 	return ""
@@ -59,7 +61,7 @@ static func _bonded(inventory: Inventory, id: String) -> bool:
 static func _fits(compartment: Dictionary, existing: Array, definition_id: String) -> String:
 	var item := DataLoader.get_item(definition_id)
 	if compartment.has("item_types") and str(item.get("type", "")) not in compartment.item_types: return "That compartment does not hold this kind of item."
-	if existing.size() + 1 > int(compartment.max_count): return "That compartment is full."
+	if compartment.has("max_count") and existing.size() + 1 > int(compartment.max_count): return "That compartment is full."
 	for pair in [["max_weight", "weight"], ["max_volume", "volume"]]:
 		if not compartment.has(pair[0]): continue
 		if not item.has(pair[1]): return "This item has no recorded %s, so it cannot be measured into that compartment." % pair[1]

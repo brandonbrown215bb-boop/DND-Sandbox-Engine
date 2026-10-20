@@ -200,6 +200,7 @@ if ($runIntegration) {
 	$scenarios += "batch_045_active_tether_flow"
 	$scenarios += "batch_046_work_rescue_flow"
 	$scenarios += "batch_047_form_equipment_chooser_flow"
+	$scenarios += "batch_048_item_types_measurements_flow"
 	$scenarios += "wave_three_foundations_flow", "owned_creature_lifecycle_flow", "batch_024_recovery_flow", "batch_024_spell_result_flow",
     "find_familiar_exploration_flow", "party_recovery_flow", "downed_area_damage_flow", "created_undead_flow"
     if ($Scenario.Count -gt 0) {

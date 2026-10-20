@@ -188,7 +188,7 @@ func available_spellcasting_hands() -> int:
 	if not str(equipped.get(Slot.OFFHAND, "")).is_empty():
 		occupied += 1
 	var hand_item := str(equipped.get(Slot.HANDS, ""))
-	if not hand_item.is_empty() and str(DataLoader.get_item(hand_item).get("type", "")) == "wand":
+	if not hand_item.is_empty() and str(DataLoader.get_item(hand_item).get("type", "")) in ItemTypeRules.HELD_TYPES:
 		occupied += 1
 	return maxi(0, 2 - occupied)
 
@@ -335,6 +335,8 @@ func can_equip(slot: Slot, item_id: String, allow_unowned: bool = false) -> bool
 		"helmet": valid_slot = Slot.HEAD
 		"ring": valid_slot = slot if slot in [Slot.RING_1, Slot.RING_2] else -1
 		"wand": valid_slot = Slot.HANDS
+		"staff", "rod": valid_slot = Slot.HANDS # Batch 048: held like a wand.
+		"wondrous": valid_slot = ItemTypeRules.worn_slot(item_data) # Batch 048: only a declared worn place.
 	if valid_slot != slot:
 		return false
 	var equipped_copy := str(copies.equipped.get(slot, ""))
