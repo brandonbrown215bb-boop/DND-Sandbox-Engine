@@ -339,6 +339,8 @@ func _validate_save_data(data: Dictionary) -> String:
 			if not max_hp_source_error.is_empty(): return max_hp_source_error
 			var feature_mode_error := FeatureModeRules.saved_error(character_data)
 			if not feature_mode_error.is_empty(): return feature_mode_error
+			var alternative_error := RuleUpgradeRules.saved_error(character_data)
+			if not alternative_error.is_empty(): return alternative_error
 			var numeric_pool_error := ResourcePoolRules.saved_state_error(character_data)
 			if not numeric_pool_error.is_empty(): return numeric_pool_error
 			var survival_error := SurvivalRules.saved_state_error(character_data)
@@ -509,6 +511,8 @@ func _validate_party_data(data: Dictionary, campaign_seconds: int = 0) -> String
 		if not max_hp_source_error.is_empty(): return max_hp_source_error
 		var feature_mode_error := FeatureModeRules.saved_error(character_data)
 		if not feature_mode_error.is_empty(): return feature_mode_error
+		var alternative_error := RuleUpgradeRules.saved_error(character_data)
+		if not alternative_error.is_empty(): return alternative_error
 		var numeric_pool_error := ResourcePoolRules.saved_state_error(character_data)
 		if not numeric_pool_error.is_empty(): return numeric_pool_error
 		var corpse_error := CorpseRules.saved_error(character_data)

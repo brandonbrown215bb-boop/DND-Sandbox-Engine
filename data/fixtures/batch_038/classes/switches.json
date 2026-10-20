@@ -1,0 +1,63 @@
+[
+  {
+    "id": "fixture:b038_class",
+    "name": "Batch 038 Neutral Class",
+    "hit_die": "d8",
+    "primary_ability": "WIS",
+    "saving_throw_proficiencies": ["WIS", "CHA"],
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:b038_stance",
+          "name": "Flowing Stance",
+          "type": "mode_choice",
+          "boundary": "activation",
+          "uses": 2,
+          "uses_per": "long_rest",
+          "duration_seconds": 60,
+          "targets": 1,
+          "end_on": ["long_rest", "zero_hp"],
+          "switch_events": ["turn_start"],
+          "modes": [
+            {"id": "guard", "benefits": [{"stat": "AC", "amount": 2}]},
+            {"id": "stride", "benefits": [{"stat": "speed", "amount": 2}]}
+          ]
+        }
+      ],
+      "2": [
+        {
+          "id": "fixture:b038_widen",
+          "name": "Widened Forms",
+          "type": "rule_upgrade",
+          "rule": "fixture:b038_stance",
+          "changes": {"modes": {"add": [{"id": "bulwark", "benefits": [{"stat": "AC", "amount": 3}]}]}}
+        },
+        {
+          "id": "fixture:b038_keen",
+          "name": "Keen Transitions",
+          "type": "rule_upgrade",
+          "rule": "fixture:b038_stance",
+          "changes": {"switch_events": {"add": ["hit"]}, "modes": {"remove": ["stride"]}}
+        }
+      ],
+      "3": [
+        {
+          "id": "fixture:b038_alt_a",
+          "name": "Shared Focus",
+          "type": "rule_upgrade",
+          "rule": "fixture:b038_stance",
+          "exclusive_group": "focus",
+          "changes": {"targets": {"add": 1}}
+        },
+        {
+          "id": "fixture:b038_alt_b",
+          "name": "Enduring Focus",
+          "type": "rule_upgrade",
+          "rule": "fixture:b038_stance",
+          "exclusive_group": "focus",
+          "changes": {"uses": {"add": 1}}
+        }
+      ]
+    }
+  }
+]

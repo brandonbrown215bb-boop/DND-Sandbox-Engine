@@ -25,6 +25,7 @@ static func advance_combat_turn(actor: Character = null, round_number: int = -1)
 	active_turn_serial += 1
 	active_turn_actor_id = actor.get_instance_id() if actor != null else 0
 	if actor != null: MaxHpSourceRules.on_event(actor, "turn_started")
+	if actor != null: FeatureModeRules.on_event(actor, "turn_start")
 
 
 static func reset_bounded_owner_turn_rider_locks() -> void:
@@ -1764,6 +1765,8 @@ static func _settle_weapon_attack_context(context: Dictionary) -> Dictionary:
 	var attack_event := {"type": "attack", "actor_id": SpellEffects.caster_id(attacker), "recipient_id": SpellEffects.caster_id(target_entity) if target_entity is Character else str(target_entity.get("id", "")) if target_entity is Dictionary else "", "action": "attack", "weapon_id": str(weapon_data.get("id", "")), "hit": bool(result.get("hit", false))}
 	SpellEffects.publish_event(attacker, attack_event)
 	SpellEffects.publish_event(target_entity, attack_event)
+	# S-104: a settled hit may open its owner's declared mode-switch window.
+	result["mode_switch_windows"] = FeatureModeRules.on_event(attacker, "hit")
 	return result
 
 
