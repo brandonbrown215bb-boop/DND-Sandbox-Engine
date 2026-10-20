@@ -193,6 +193,7 @@ if ($runIntegration) {
 	$scenarios += "batch_039_created_actor_flow"
 	$scenarios += "batch_040_successor_projection_flow"
 	$scenarios += "batch_041_bond_equipment_flow"
+	$scenarios += "batch_042_linked_projection_flow"
 	$scenarios += "wave_three_foundations_flow", "owned_creature_lifecycle_flow", "batch_024_recovery_flow", "batch_024_spell_result_flow",
     "find_familiar_exploration_flow", "party_recovery_flow", "downed_area_damage_flow", "created_undead_flow"
     if ($Scenario.Count -gt 0) {
