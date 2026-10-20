@@ -148,6 +148,13 @@ func start(room: Dictionary, party: Array, room_grid: HexGrid, room_hud: Dungeon
 	# S-064: start or pause the selected copy's cumulative active time.
 	activate_button = _add_button(item_action_row, "Activate", func(): _result(ActiveTimeRules.activate(actor(), _selected(items), int(GameManager.campaign_elapsed_seconds))))
 	pause_button = _add_button(item_action_row, "Pause", func(): _result(ActiveTimeRules.pause(actor(), _selected(items))))
+	# S-066: start, join or stop qualified work on the selected copy.
+	_add_button(item_action_row, "Start work", func(): _result(WorkRules.start(actor(), _selected(items))))
+	_add_button(item_action_row, "Join work", func(): _result(WorkRules.join(actor(), characters[recipients.selected], WorkRules.active_id(characters[recipients.selected]))))
+	_add_button(item_action_row, "Stop work", func(): _result(WorkRules.stop(actor(), _selected(items))))
+	# S-169: free the selected character from a tether by a check or by cutting it.
+	_add_button(item_action_row, "Rescue", func(): _result(TetherRules.rescue(actor(), characters[recipients.selected], characters, "check")))
+	_add_button(item_action_row, "Cut tether", func(): _result(TetherRules.rescue(actor(), characters[recipients.selected], characters, "strike")))
 	# S-168: escape an exact tether outside combat.
 	_add_button(item_action_row, "Escape tether", func(): _result(TetherRules.escape(actor(), characters)))
 	detach_button = _add_button(item_action_row, "Detach", func(): _result(AttachmentRules.detach_last(actor().inventory, _selected(items))))

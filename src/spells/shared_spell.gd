@@ -103,7 +103,7 @@ static func _validate_single_effect(effect: Variant) -> String:
 		var template_error := CreatedActorRules.template_error(effect.get("template"))
 		if not template_error.is_empty(): return template_error
 	elif kind == "bind_tether":
-		allowed.append_array(["condition", "range_hexes", "escape", "capacity"])
+		allowed.append_array(["condition", "range_hexes", "escape", "capacity", "rescue", "hp"]) # S-169 adds rescue and hp.
 		var tether_error := TetherRules.effect_error(effect)
 		if not tether_error.is_empty(): return tether_error
 	elif kind == "suppress_item_magic":

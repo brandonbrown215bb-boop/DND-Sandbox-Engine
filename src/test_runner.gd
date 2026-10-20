@@ -55,6 +55,7 @@ func _ready() -> void:
 	_run_group("combat", func(): Batch043Checks.run(_assert))
 	_run_group("combat", func(): Batch044Checks.run(_assert))
 	_run_group("combat", func(): Batch045Checks.run(_assert))
+	_run_group("combat", func(): Batch046Checks.run(_assert))
 	_run_group("combat", _test_player_commands)
 	_run_group("combat", _test_initiative)
 	_run_group("spells", _test_spellcasting)

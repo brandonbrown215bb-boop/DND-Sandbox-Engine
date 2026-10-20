@@ -813,6 +813,7 @@ func _roll_initiative_and_start() -> void:
 			dex
 		)
 
+	_interrupt_work_for_combat()
 	tracker.sort_initiative()
 	_start_combat_turn()
 
@@ -1177,7 +1178,7 @@ func _run_monster_ai() -> void:
 		await get_tree().create_timer(1.0).timeout
 		_end_active_turn()
 		return
-	if _try_monster_escape_tether(monster) or _try_monster_escape_restrained_zone(monster):
+	if _try_monster_escape_tether(monster) or _try_monster_rescue_tether(monster) or _try_monster_escape_restrained_zone(monster):
 		_update_grid_entities()
 		await get_tree().create_timer(1.0).timeout
 		_end_active_turn()
@@ -1323,6 +1324,40 @@ func _try_monster_escape_tether(monster: Dictionary) -> bool:
 	if TetherRules.binding(monster, captors).is_empty(): return false
 	var r := TetherRules.escape(monster, captors)
 	hud.add_log("[color=%s]%s[/color]" % ["green" if r.get("success", false) else "orange", str(r.get("message", ""))])
+	return true
+
+
+## S-169: a monster beside a tethered ally spends its turn freeing it: it cuts a tether
+## that has hp, otherwise pulls with a declared rescue check. Only that tether ends.
+func _try_monster_rescue_tether(monster: Dictionary) -> bool:
+	var captors: Array = player_entities.map(func(p): return p.get("character"))
+	var origin: Vector2i = monster.get("hex_position", Vector2i.ZERO)
+	for ally in monster_entities:
+		if ally == monster or not ally.get("is_alive", false) or HexUtils.get_distance(origin, ally.get("hex_position", Vector2i.ZERO)) > 1: continue
+		for mode in ["strike", "check"]:
+			if not TetherRules.rescue_error(monster, ally, captors, mode).is_empty(): continue
+			var r := TetherRules.rescue(monster, ally, captors, mode)
+			hud.add_log("[color=%s]%s[/color]" % ["green" if r.get("success", false) else "orange", str(r.get("message", ""))])
+			return true
+	return false
+
+
+## S-169: the active character spends its Action to free an adjacent tethered ally.
+func _try_rescue_tether(character: Character, coord: Vector2i, player_pos: Vector2i) -> bool:
+	if character == null or HexUtils.get_distance(coord, player_pos) != 1: return false
+	var ally: Character = null
+	for p in player_entities:
+		if p.get("hex_position", Vector2i(-99, -99)) == coord and p.get("character") is Character: ally = p.character
+	if ally == null: return false
+	var captors: Array = player_entities.map(func(p): return p.get("character"))
+	var mode := "strike" if TetherRules.rescue_error(character, ally, captors, "strike").is_empty() else "check"
+	# Checklist (a): refuse before the Action is spent.
+	if not TetherRules.rescue_error(character, ally, captors, mode).is_empty() or not _can_spend_action_cost("action"): return false
+	_spend_action_cost("action")
+	var r := TetherRules.rescue(character, ally, captors, mode)
+	hud.add_log("[color=%s]%s[/color]" % ["green" if r.get("success", false) else "orange", str(r.get("message", ""))])
+	hud.update_hud(active_character, tracker)
+	_highlight_reachable()
 	return true
 
 
@@ -3118,6 +3153,8 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 		return
 	if pending_action_type.is_empty() and coord == player_pos and (_try_escape_tether(active_character) or _try_escape_restrained_zone(active_character)):
 		return
+	if pending_action_type.is_empty() and _try_rescue_tether(active_character, coord, player_pos):
+		return
 	if pending_action_type.is_empty() and _try_shake_sleeping_creature(coord, player_pos):
 		return
 	if pending_action_type == "dancing_lights_move":
@@ -4338,6 +4375,14 @@ func _tick_active_time_and_tethers() -> void:
 		if character == null: continue
 		ActiveTimeRules.settle(character, 6, int(GameManager.campaign_elapsed_seconds))
 	_enforce_tether_range()
+
+
+## S-066: combat interrupts qualified work; progress follows each work's own policy.
+func _interrupt_work_for_combat() -> void:
+	for player in player_entities:
+		var character: Character = player.get("character")
+		for receipt in WorkRules.interrupt_all(character, "combat"):
+			hud.add_log("[color=orange]%s's work is interrupted by combat (%d seconds kept, %d lost).[/color]" % [character.character_name, int(receipt.kept_seconds), int(receipt.lost_seconds)])
 
 
 ## Review 045 R1: S-168 range check against current positions (movement, teleport, forced moves).

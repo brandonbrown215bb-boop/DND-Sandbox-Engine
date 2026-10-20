@@ -74,6 +74,7 @@ static func put_error(inventory: Inventory, container_id: String, child_id: Stri
 	if comps.is_empty(): return "That item is not a container."
 	if not comps.has(compartment): return "That container has no such compartment."
 	if child_id == container_id: return "A container cannot hold itself."
+	if WorkRules.is_active(inventory.get_instance(child_id)): return "Stop working on that copy before stowing it." # S-066.
 	if child_id not in inventory.backpack_instances().map(func(c): return str(c.instance_id)): return "Only an unequipped carried copy can be stowed."
 	var child := inventory.get_instance(child_id)
 	var state: Dictionary = child.get("state", {})

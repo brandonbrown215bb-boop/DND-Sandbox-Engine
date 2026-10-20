@@ -396,6 +396,7 @@ func advance_campaign_time(elapsed_seconds: int) -> Array[Dictionary]:
 		character.expire_campaign_modifiers(campaign_elapsed_seconds)
 		LightSourceRules.advance_inventory(character.inventory, elapsed_seconds)
 		ActiveTimeRules.settle(character, elapsed_seconds, campaign_elapsed_seconds)
+		WorkRules.settle(character, elapsed_seconds, campaign_elapsed_seconds)
 		BarbarianRules.advance_rage_time(character, elapsed_seconds)
 		BardicInspirationRules.advance_time(character, elapsed_seconds)
 		CorpseRules.advance_time(character, campaign_elapsed_seconds)

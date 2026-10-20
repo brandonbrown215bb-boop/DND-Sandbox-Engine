@@ -1,0 +1,6 @@
+[
+  {"id": "fixture:b046_study_tome", "name": "Fixture Study Tome", "description": "Neutral fixture study: progress accrues only while carried at hand, with full attention, up to a fixture daily allowance; stopping keeps progress.", "type": "tool", "weight": 1, "value": 0,
+   "work": {"required_seconds": 36000, "daily_seconds": 28800, "concentration": true, "on_interrupt": "keep"}},
+  {"id": "fixture:b046_ritual_frame", "name": "Fixture Ritual Frame", "description": "Neutral fixture group work: needs two participants; any interruption loses all progress.", "type": "tool", "weight": 1, "value": 0,
+   "work": {"required_seconds": 7200, "daily_seconds": 3600, "participants": 2, "on_interrupt": "reset"}}
+]
