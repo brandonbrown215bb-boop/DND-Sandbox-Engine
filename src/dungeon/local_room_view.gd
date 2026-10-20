@@ -34,6 +34,8 @@ var stow_button: Button
 var retrieve_button: Button
 var attach_button: Button
 var detach_button: Button
+var activate_button: Button
+var pause_button: Button
 var encounter_button: Button
 var pending_teleport_spell := ""
 var pending_water_area_mode := ""
@@ -143,6 +145,11 @@ func start(room: Dictionary, party: Array, room_grid: HexGrid, room_hud: Dungeon
 	retrieve_button = _add_button(item_action_row, "Take out", func(): _result(ContainerRules.retrieve_last(actor().inventory, _selected(items))))
 	# S-210: attach the selected part to a socket, or detach the selected host's last part.
 	attach_button = _add_button(item_action_row, "Attach", func(): _result(AttachmentRules.attach_any(actor().inventory, _selected(items))))
+	# S-064: start or pause the selected copy's cumulative active time.
+	activate_button = _add_button(item_action_row, "Activate", func(): _result(ActiveTimeRules.activate(actor(), _selected(items), int(GameManager.campaign_elapsed_seconds))))
+	pause_button = _add_button(item_action_row, "Pause", func(): _result(ActiveTimeRules.pause(actor(), _selected(items))))
+	# S-168: escape an exact tether outside combat.
+	_add_button(item_action_row, "Escape tether", func(): _result(TetherRules.escape(actor(), characters)))
 	detach_button = _add_button(item_action_row, "Detach", func(): _result(AttachmentRules.detach_last(actor().inventory, _selected(items))))
 	refresh()
 	hud.add_log("%s — select a character, then click a space to move or an object to interact. Each hex is five feet." % state.get("name", "Room"))

@@ -25,7 +25,7 @@ static func query(actor: Character) -> Array[Dictionary]:
 		var copy: Dictionary = actor.inventory.copies.records.get(copy_id, {})
 		var item := DataLoader.get_item(str(copy.get("definition_id", "")))
 		var attuned_ok: bool = not bool(item.get("requires_attunement", false)) or copy.get("state", {}).get("attuned_to", "") == actor.character_id
-		if item.has("source_benefits") and attuned_ok and MagicPropertyRules.active(actor, str(copy_id), "source_benefits"):
+		if item.has("source_benefits") and attuned_ok and ActiveTimeRules.benefits_on(copy) and MagicPropertyRules.active(actor, str(copy_id), "source_benefits"):
 			_append(result, actor, "item", str(copy_id), str(item.id), item.source_benefits)
 		# S-210: completed attachment sets on this worn exact host copy.
 		if attuned_ok and MagicPropertyRules.active(actor, str(copy_id), "attachment_sets"):
