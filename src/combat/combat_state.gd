@@ -78,6 +78,7 @@ var light_attack_weapon: Dictionary = {}
 ## Last completed input-driven shared spell's damage component receipts.
 var last_spell_damage_receipts: Array[Dictionary] = []
 ## Last completed incoming monster weapon result, including each settled component.
+var last_automatic_death_save: Dictionary = {}
 var last_monster_weapon_attack_result: Dictionary = {}
 
 # Guards against double-triggering battle end (victory/defeat).
@@ -901,7 +902,13 @@ func _start_combat_turn() -> void:
 		var rally := FighterRules.start_turn(active_character)
 		if rally > 0:
 			hud.add_log("Survivor restores %d HP." % rally)
-		if active_character.is_downed():
+		var automatic_death_save := ZeroHpAftermathRules.pending_death_save_rule(active_character) if active_character.is_downed() else {}
+		if not automatic_death_save.is_empty():
+			# A declared no-roll outcome offers no d20 bonus, reroll or token choice.
+			var automatic := active_character.make_death_save()
+			last_automatic_death_save = automatic.duplicate(true)
+			hud.add_log("Death save %s automatically (%d successes, %d failures)." % ["is canceled" if automatic.get("canceled", false) else "is a " + str(automatic.get("outcome", "")), int(automatic.get("successes", 0)), int(automatic.get("failures", 0))])
+		elif active_character.is_downed():
 			var use_bardic_inspiration := false
 			var use_stroke_of_luck := false
 			if active_character.has_feature("rogue_stroke_of_luck") and int(active_character.feature_uses.get("rogue_stroke_of_luck", 0)) > 0:

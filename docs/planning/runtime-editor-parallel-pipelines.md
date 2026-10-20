@@ -8,19 +8,24 @@ the [checkpoint](../operations/current.md), not copied into editor claims.
 
 ## Split and ownership
 
-Luna owns what the game can execute. Antigravity owns how content is imported,
+**Owner decision 2026-10-20:** the runtime builder/reviewer lane is now staffed
+by the **Runtime Builder** and **Runtime Reviewer** bots, replacing Luna. Runtime
+Builder implements and validates runtime batches; Runtime Reviewer performs the
+independent review. Below, "Runtime" names that lane (formerly Luna).
+
+Runtime owns what the game can execute. Antigravity owns how content is imported,
 edited and exported. They can work concurrently without editing the same files.
 They cannot eliminate the dependency between executable syntax and the editor:
 explicit file handoffs replace simultaneous edits and guessed interfaces.
 
 | Ground | Owner | Other pipeline |
 |---|---|---|
-| `src/`, `scenes/`, game configuration, game validation runners | Luna | Read only |
-| `data/core/`, `data/mods/`, `data/fixtures/`, central content manifest | Luna | Read only; no automatic promotion |
-| Existing engine/import scripts under `scripts/` and `src/` | Luna | Read only |
-| `docs/mechanics/`, `docs/json_schemas/`, engine architecture/decisions, checkpoint, slice counts and roadmap | Luna | Read only; report discrepancies in its own handoff |
-| Proposed `contracts/authoring/` snapshots, if needed for the first integration | Luna | Read only |
-| New `tools/content_editor/` including app, tests, examples, staged conversions and documentation | Antigravity | Luna reads candidate exports and reports only |
+| `src/`, `scenes/`, game configuration, game validation runners | Runtime | Read only |
+| `data/core/`, `data/mods/`, `data/fixtures/`, central content manifest | Runtime | Read only; no automatic promotion |
+| Existing engine/import scripts under `scripts/` and `src/` | Runtime | Read only |
+| `docs/mechanics/`, `docs/json_schemas/`, engine architecture/decisions, checkpoint, slice counts and roadmap | Runtime | Read only; report discrepancies in its own handoff |
+| Proposed `contracts/authoring/` snapshots, if needed for the first integration | Runtime | Read only |
+| New `tools/content_editor/` including app, tests, examples, staged conversions and documentation | Antigravity | Runtime reads candidate exports and reports only |
 | Existing source/reference material | Neither edits as routine editor work | Read selected records; honor generated-source boundaries |
 | Quest Board | Each edits only its own claimed card | Read other cards; no shared coordination-card edits |
 
@@ -33,7 +38,7 @@ authoritative; the editor gets a separate card. This owner-requested concurrency
 is the bounded exception to the usual single-ready-card working model.
 No package installation, publication, deletion or hard-to-undo action is authorized.
 
-## Luna brief: runtime, pack ingestion and production proof
+## Runtime brief: runtime, pack ingestion and production proof
 
 Work in the game repository and follow AGENTS.md. Read the current checkpoint,
 architecture, roadmap, relevant ADRs and your selected slice. Run the Quest Board
@@ -113,7 +118,7 @@ You own the authoring side of the full pipeline:
    revised-class source tasks with `reference/2024/README.md` and only the selected
    class view. SRD 5.2.1 remains the staged rules authority; reference metadata,
    imported prose and Foundry flags do not certify rule correctness.
-5. Export candidate packs for Luna's loader. Until that format exists, export
+5. Export candidate packs for Runtime's loader. Until that format exists, export
    an explicitly marked draft bundle of runtime-shaped records; do not invent
    a supposedly supported package API. Keep that export code small enough to
    adapt to the first real contract. Never edit the game's manifest to make your
@@ -125,7 +130,7 @@ losing untouched fields or references. Verify round trips containing unknown
 fields and nested arrays. Show precise unsupported/draft status. Record how to
 run it using available dependencies. This deliverable needs no new engine syntax.
 
-After Luna supplies the pack example and validation command, align your exporter
+After Runtime supplies the pack example and validation command, align your exporter
 and show diagnostics in the editor. Structural checks may run locally, but Godot
 owns executable gameplay validation. Keep editor checks distinct from engine
 acceptance; do not simulate a second rules engine or award support from an
@@ -141,15 +146,15 @@ instead of fixing the other pipeline's files. Do not upload/publish anything.
 
 Exchange files, not shared implementation edits:
 
-- Luna -> Anti: pinned supported syntax/example plus production validator command
+- Runtime -> Anti: pinned supported syntax/example plus production validator command
   and diagnostics. The initial minimum is the existing authoring documents and
   selected source/record snapshot; a new API is not a prerequisite to editor work.
-- Anti -> Luna: candidate pack and source/record references, intended changed
+- Anti -> Runtime: candidate pack and source/record references, intended changed
   behavior, structural checks, and precise unresolved clauses.
-- Luna -> Anti: validation results and exact unsupported combinations or defects.
+- Runtime -> Anti: validation results and exact unsupported combinations or defects.
   Each owner repairs its own files and records the next action on its own card.
 
-The editor may inspect copied records while Luna changes the game; do not mutate
+The editor may inspect copied records while Runtime changes the game; do not mutate
 files that the other lane is validating. Version candidate exports by revision
 and validate an unchanged candidate. Existing uncommitted work must be preserved;
 creating a worktree does not automatically include it. Separate checkouts are
@@ -157,7 +162,7 @@ optional once the needed snapshot is available, not a prerequisite or permission
 to reset/rewrite anything.
 
 Final integration belongs to these same lanes: Anti produces the edited pack;
-Luna proves installation, normal gameplay and permitted save/restart recovery;
+Runtime proves installation, normal gameplay and permitted save/restart recovery;
 Anti presents those results. Broad SRD/PHB coverage still requires complete
 relevant mechanics, converted records and source-backed gameplay checks. This
 split creates concurrency, not a claim that either half is already complete.

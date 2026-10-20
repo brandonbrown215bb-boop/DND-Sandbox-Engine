@@ -557,6 +557,18 @@ func _validate_semantics(data: Dictionary, content_type: String, source: String)
 	if data.has("range") and (not (data.get("range") is int or data.get("range") is float) or float(data.get("range")) < 0):
 		_load_errors.append("Range must be a non-negative number in %s" % source)
 		valid = false
+	if data.has("zero_hp_aftermath"):
+		var aftermath_error := ZeroHpAftermathRules.validate_policy(data["zero_hp_aftermath"])
+		if not aftermath_error.is_empty():
+			_load_errors.append("%s in %s" % [aftermath_error, source])
+			valid = false
+	if content_type == "monster" and data.get("attacks") is Array:
+		for attack in data["attacks"]:
+			if attack is Dictionary and attack.has("zero_hp_aftermath"):
+				var attack_error := ZeroHpAftermathRules.validate_policy(attack["zero_hp_aftermath"])
+				if not attack_error.is_empty():
+					_load_errors.append("Attack '%s' %s in %s" % [attack.get("name", ""), attack_error, source])
+					valid = false
 	valid = _validate_nested_values(data, source) and valid
 	return valid
 
@@ -703,6 +715,12 @@ func _sanitize_class_features(data: Dictionary, source: String) -> void:
 				var zero_error := SharedStepExecutor.validate_zero_hp_replacement_rule(feature)
 				if not zero_error.is_empty():
 					_load_errors.append("Feature '%s' in %s: %s" % [feature.get("id", ""), source, zero_error])
+				else: kept.append(feature)
+				continue
+			if feature.get("type") == "death_save_outcome":
+				var save_error := ZeroHpAftermathRules.validate_death_save_rule(feature)
+				if not save_error.is_empty():
+					_load_errors.append("Feature '%s' in %s: %s" % [feature.get("id", ""), source, save_error])
 				else: kept.append(feature)
 				continue
 			if feature.has("executor") or feature.get("type", "") == "resource":

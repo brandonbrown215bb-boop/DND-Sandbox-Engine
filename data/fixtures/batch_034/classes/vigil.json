@@ -1,0 +1,32 @@
+[
+  {
+    "id": "fixture:b034_class",
+    "name": "Batch 034 Neutral Class",
+    "hit_die": 8,
+    "primary_ability": "WIS",
+    "saving_throw_proficiencies": ["WIS", "CHA"],
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:b034_vigil",
+          "name": "Held Breath",
+          "type": "death_save_outcome",
+          "source_instance_id": "b034:vigil",
+          "required_condition": "blessed",
+          "outcome": "cancel",
+          "roll": false
+        },
+        {
+          "id": "fixture:b034_resolve",
+          "name": "Last Light",
+          "type": "death_save_outcome",
+          "source_instance_id": "b034:resolve",
+          "required_condition": "shielded",
+          "min_failures": 1,
+          "outcome": "success",
+          "roll": false
+        }
+      ]
+    }
+  }
+]

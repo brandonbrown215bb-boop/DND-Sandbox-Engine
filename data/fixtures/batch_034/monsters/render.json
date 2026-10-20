@@ -1,0 +1,30 @@
+[
+  {
+    "id": "fixture:b034_render",
+    "name": "Render",
+    "size": "Medium",
+    "type": "construct",
+    "armor_class": 10,
+    "hit_points": "3d8",
+    "speed": 30,
+    "ability_scores": {"STR": 10, "DEX": 10, "CON": 10, "INT": 10, "WIS": 10, "CHA": 10},
+    "attacks": [
+      {
+        "name": "Unmake",
+        "damage": "40",
+        "damage_type": "force",
+        "attack_bonus_override": 100,
+        "zero_hp_aftermath": {
+          "id": "b034:unmake",
+          "trigger": "reduced_to_zero",
+          "outcome": "death",
+          "remains": "intact",
+          "gear": "retained",
+          "cause": "unmade",
+          "excluded_creature_types": ["construct"]
+        }
+      }
+    ],
+    "ai_behavior": "melee"
+  }
+]

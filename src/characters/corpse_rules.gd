@@ -144,6 +144,8 @@ static func saved_error(data: Dictionary) -> String:
 			if not value is String or value.is_empty() or value.length() > 80 or value in seen or (key == "recovery_restrictions" and value not in RESTRICTIONS): return "corpse restrictions are invalid"
 			seen.append(value)
 	if bool(data.get("disintegrated", false)) and body["remains"] != "dust": return "disintegrated corpse has incompatible remains"
+	var cause_error := ZeroHpAftermathRules.saved_cause_error(body)
+	if not cause_error.is_empty(): return cause_error
 	return ""
 
 static func saved_clock_error(data: Dictionary, now: int) -> String:

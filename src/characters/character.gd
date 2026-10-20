@@ -1590,7 +1590,7 @@ func take_damage(amount: int, accepted_relentless_rage_inspiration: bool = false
 			is_alive = false
 			death_save_failures = 3
 			return hp_damage
-		if hp_damage < hp_before_damage + max_hp:
+		if hp_damage < hp_before_damage + max_hp and not ZeroHpAftermathRules.precedes_replacement(self, damage_decisions):
 			var relentless := BarbarianRules.attempt_relentless_rage(self, accepted_relentless_rage_inspiration, damage_decisions)
 			if relentless.get("success", false):
 				return hp_damage
@@ -2929,6 +2929,9 @@ func saving_throw_test_to_dc(ability: String, dc: int, advantage: bool = false, 
 func make_death_save(accepted_bardic_inspiration: bool = false, accepted_stroke_of_luck: bool = false, decisions: Dictionary = {}) -> Dictionary:
 	if current_hp > 0 or is_stable or is_dead() or death_save_successes >= 3:
 		return {"rolled": false}
+	var automatic_rule := ZeroHpAftermathRules.pending_death_save_rule(self)
+	if not automatic_rule.is_empty():
+		return ZeroHpAftermathRules.resolve_automatic_death_save(self, automatic_rule)
 	var has_death_save_advantage := has_feature("champion_survivor") or SpellEffects.has_spell(self, "beacon_of_hope")
 	var d20_details := RollTokenRules.resolve_d20_test(self, "death_save", has_death_save_advantage, false, decisions)
 	var natural := int(d20_details.get("total", 1))
