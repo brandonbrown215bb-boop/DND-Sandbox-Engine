@@ -58,10 +58,17 @@ static func run(h: Node) -> void:
 	# S-126 actual player weapon command: control, then scoped profile.
 	a.inventory.equip(Inventory.Slot.WEAPON, "longsword", true)
 	enemy["armor_class"] = -100
-	enemy["damage_immunities"] = ["slashing"]
+	# Review: positive control proves the same command lands and deals damage, so the
+	# immune control below cannot pass merely because no attack happened.
+	enemy["damage_immunities"] = []
 	enemy["current_hp"] = 500
 	enemy["max_hp"] = 500
 	enemy["is_alive"] = true
+	Batch031Controls._seed_hit()
+	await player_attack(h, combat, a, enemy)
+	h._assert(int(enemy.current_hp) < 500, "035 review positive control: the unprofiled longsword command lands and deals damage (hp=%d)" % int(enemy.current_hp))
+	enemy["damage_immunities"] = ["slashing"]
+	enemy["current_hp"] = 500
 	Batch031Controls._seed_hit()
 	await player_attack(h, combat, a, enemy)
 	h._assert(int(enemy.current_hp) == 500, "035 actual control longsword stays slashing and is fully immune")
@@ -69,6 +76,11 @@ static func run(h: Node) -> void:
 	Batch031Controls._seed_hit()
 	await player_attack(h, combat, a, enemy)
 	h._assert(int(enemy.current_hp) < 500, "035 actual scoped profile turns the same longsword attack into fire damage (hp=%d)" % int(enemy.current_hp))
+	enemy["damage_immunities"] = ["fire"]
+	enemy["current_hp"] = 500
+	Batch031Controls._seed_hit()
+	await player_attack(h, combat, a, enemy)
+	h._assert(int(enemy.current_hp) == 500, "035 review negative control: profiled attack is fully stopped by fire immunity, so its type is exactly fire (hp=%d)" % int(enemy.current_hp))
 	h._assert(DataLoader.get_item("longsword").damage_type == "slashing", "035 actual catalog weapon remains slashing after the profiled attack")
 	h._teardown_scene(combat)
 	a.features = prior_features
