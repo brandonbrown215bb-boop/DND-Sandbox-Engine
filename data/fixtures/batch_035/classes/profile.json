@@ -1,0 +1,39 @@
+[
+  {
+    "id": "fixture:b035_class",
+    "name": "Batch 035 Neutral Class",
+    "hit_die": 8,
+    "primary_ability": "WIS",
+    "saving_throw_proficiencies": ["WIS", "CHA"],
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:b035_channel",
+          "name": "Channeled Strike",
+          "type": "attack_profile",
+          "source_instance_id": "b035:channel",
+          "required_condition": "blessed",
+          "scope": {"kind": "weapon", "melee": true},
+          "replace": {"ability": "WIS", "damage_die": "1d10", "damage_type_choices": ["radiant", "force"]}
+        },
+        {
+          "id": "fixture:b035_edge",
+          "name": "Honed Edge",
+          "type": "attack_profile",
+          "source_instance_id": "b035:edge",
+          "scope": {"kind": "weapon", "ids": ["longsword"]},
+          "replace": {"damage_type": "fire"},
+          "add": {"attack_bonus": 1, "damage_bonus": 2}
+        },
+        {
+          "id": "fixture:b035_focus",
+          "name": "Focused Evocation",
+          "type": "attack_profile",
+          "source_instance_id": "b035:focus",
+          "scope": {"kind": "spell", "schools": ["evocation"]},
+          "add": {"save_dc": 2}
+        }
+      ]
+    }
+  }
+]
