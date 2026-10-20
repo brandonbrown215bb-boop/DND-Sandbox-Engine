@@ -9,7 +9,8 @@
 Rules authority: [SRD 5.2.1, pages 36–40](https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf).
 This audit covers base-class behavior through level 20. Subclasses, the full
 spell catalog and full feats/boons are separate scope. The remaining repairs
-in this audit are implemented; verification is recorded in the current checkpoint.
+in this audit are implemented; use the retained checks below and current source
+when assessing those dated results.
 
 ## Feature status
 

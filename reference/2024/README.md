@@ -16,7 +16,7 @@ they are all in the SRD or implemented by the game.
 |---|---|
 | Read Fighter or Wizard source | [Fighter](classes/fighter.json), [Wizard](classes/wizard.json); other classes have the same filename convention. |
 | Recover exact original coordinates | [source-index.json](source-index.json): each output array index maps to the same-position entry in `raw_indices`, identifying the original array index. Each input has its SHA-256. |
-| Check current game behavior | [Current checkpoint](../../docs/operations/current.md), relevant mechanics contract, runtime source and production evidence. These reference JSON files are not loaded by the game. |
+| Check current game behavior | [Authoring contracts](../../docs/mechanics/README.md), relevant mechanics contract, runtime source and production evidence. These reference JSON files are not loaded by the game. |
 | Locate unsupported or absent rules | Record the exact missing body/reference. Do not fill it from memory or treat current code as a rule source. |
 
 Select records by name/source/class identity; do not guess array positions.

@@ -7,11 +7,10 @@ neither the engine vocabulary nor the content catalog is complete.
 
 ## Start here
 
-Agents read [AGENTS.md](AGENTS.md) first, then the
-[roadmap](roadmap.md), [current checkpoint](docs/operations/current.md) and
-[architecture map](docs/architecture/README.md). The Quest Board records the
-selected task and ownership. Read the selected slice and relevant contract next;
-do not reconstruct the current plan from old reports.
+Agents read [AGENTS.md](AGENTS.md), then the owner's request, [roadmap](roadmap.md)
+and selected slice/technical reference. [Architecture](docs/architecture/README.md)
+locates current code. Quest Board is optional for concurrent coordination; solo
+work and routine reviews need no card. Completed process history lives in Git.
 
 For rule-source preparation, start with the selected class in
 [the 2024 reference view](reference/2024/README.md). Those files contain only
@@ -26,7 +25,6 @@ material, not official SRD verification or runtime definitions.
 | `reference/2024/` | Reproducible revised-only class references and original-source coordinates. |
 | `5etools raw/` | Original mixed-edition import inputs, retained unchanged. Use the revised view for ordinary source tasks. |
 | `docs/` | Current contracts, plans, architecture and documentation map. |
-| `docs/archive/` | Historical gates, reports, old checkpoints and completed prompts. Read only when a current task needs that evidence. |
 | `scripts/`, `run_tests.ps1` | Development tools and supported Windows verification entry point. |
 | `_staging/`, `.artifacts/`, `dogfood-output/`, `playtest-evidence/` | Staged content or retained work/evidence, not current instructions. |
 

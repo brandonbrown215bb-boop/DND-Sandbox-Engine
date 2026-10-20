@@ -1,79 +1,70 @@
+# AGENTS.md — Rook
+
+This is a hobby game: one shared, data-driven D&D 2024 rules engine in Godot.
+Talk plainly. Prefer the simple thing that works; don't invent work, layers,
+or hypothetical scale problems. Say what's broken and what we'll notice.
+
 ## Start here
 
-- Current work: `roadmap.md`, `docs/operations/current.md`, and the Quest Board.
-  Read the selected slice/contract next; do not scan old plans to choose work.
-- Current behavior: `src/`, loaded `data/core/` / `data/mods/`, and production
-  evidence named by the current checkpoint. Test fixtures are not catalog support.
-- Rule-source tasks: start with `reference/2024/README.md` and only the selected
-  class view. SRD 5.2.1 remains the staged milestone's rule authority; neither
-  reference metadata nor current game data establishes rules correctness.
-- `docs/archive/`, `_staging/`, raw mixed-edition imports and old reports are
-  historical/reference material. Open them only for a task that needs their
-  source or evidence. Never resume a completed prompt merely because it is present.
+- Follow the owner's request and [roadmap.md](roadmap.md). Read the selected
+  [slice](docs/planning/vocabulary-slices.md) and relevant technical reference;
+  don't reconstruct priorities from old reports or completed conversations.
+- [ADR-0018](docs/decisions/0018-shared-data-driven-rules-runtime.md) owns the
+  shared-runtime direction. JSON defines rules; GDScript supplies generic
+  operations and world hooks. New supported definitions must not require
+  branches or registration for their spell, class, feature, item or monster ID.
+- Delivery remains vocabulary-first: implement and verify the engine pieces,
+  prepare executable data, then replace the hardcoded paths. Production-path
+  fixtures can prove a slice; catalog conversion is separate. Keep native paths
+  until their replacements handle the content that still uses them.
+- SRD 5.2.1 is the staged core-12 rules authority; Artificer and Mystic remain
+  outside that milestone. Source tasks start at [reference/2024/](reference/2024/README.md)
+  and the selected class view. Existing data and reference metadata aren't proof
+  of rule correctness. Wish/illusion policy remains in ADR-0023.
 
-<!-- AGENT_GROUND_START -->
-## Repository Ground
+## Working rules
 
-- Read `docs/operations/current.md`, `docs/architecture/README.md`, and relevant ADRs before substantial changes. Historical `.agents/` role logs are not current instructions or live agent state.
-- Attempt Agent Ground status once when available. Missing tooling is nonblocking; inspect current source and tests instead.
-- If `.codegraph/` exists, try CodeGraph first. Check language coverage: an index without GDScript cannot locate game behavior. Fall back to `rg` and source; do not install or rebuild tools merely to start work.
-- Keep boundaries cohesive and testable. Split by responsibility, not ceremony.
-- Preserve unrelated work and generated/source boundaries.
-- Update documentation when shipped behavior changes. State limitations plainly.
-- Record durable project decisions in ADRs. Keep transient task state out of durable documentation.
-- Use `docs/README.md` for documentation authority. ADR-0018 governs the shared data-driven runtime direction; named native class/spell/monster helpers are migration code, not the default for new rules.
-- Dated gates/reviews and old wave sequences do not choose priorities or block current work. Proposed engine syntax is not executable; verify capability and support claims against source and production Godot checks.
-- Replace stale checkpoint sections instead of appending diaries. Supersede ADR policy explicitly while preserving still-binding identity, cost, source-ownership and save guarantees.
-<!-- AGENT_GROUND_END -->
+- Work solo by default. For shared combat rules or persistence changes, use one
+  focused independent reviewer with a concrete question and reproducible checks.
+  If reviewer tooling is unavailable, continue solo and state that limitation.
+- Quest Board is optional for actual concurrent work. Solo work, planning and
+  routine reviews need no card. When coordinating there, inspect current claims,
+  respect occupied scope, and leave the next action for work you hand off.
+- Runtime work owns game source, loaded data and runtime contracts. The editor
+  pipeline owns `tools/content_editor/`; exchange candidate exports and pinned
+  examples rather than editing each other's files. See [content pipeline](docs/content_pipeline.md).
+- Source and production Godot checks determine behavior. [Architecture](docs/architecture/README.md)
+  locates code; [mechanics](docs/mechanics/README.md) describes executable syntax
+  and limits. Read only what the task needs. If `.codegraph/` exists, try it first
+  when it indexes GDScript; otherwise use `rg`. Missing tools aren't a blocker.
+- Preserve unrelated work and generated/source boundaries. Preserve legacy saves;
+  new campaigns use the 2024 namespace, with no automatic migration. Existing
+  source identity, once-only costs and allowed-checkpoint guarantees still apply.
+- Ask before deleting files, installing tools, publishing, or making changes that
+  are hard to undo, unless the owner has already authorized that action. Keep
+  tokens and machine-local configuration out of tracked files.
 
-## Beckett: live Godot access
+## Checks and finishing
 
-- Beckett MCP is installed locally. Use it when a task benefits from live UI,
-  screenshots, node/property inspection, runtime errors, engine API discovery,
-  or editor scene authoring. Routine source edits and headless checks do not
-  require starting it.
-- Read [the connection recipe](docs/operations/development.md#beckett-live-godot-access)
-  when needed. Start the existing isolated editor with
-  `& .\.artifacts\beckett-editor\Start-Beckett.ps1`; MCP is at
-  `http://127.0.0.1:8770/mcp`, configured in ignored `.codex/config.toml`.
-- Prefer exposed Beckett tools. If absent from the chat, use the documented
-  authenticated Python fallback; missing native tools alone does not mean the
-  server is unavailable. Keep the token out of output and tracked files.
-- The editor copy is a **snapshot**. Check/refresh the relevant source before
-  claiming current behavior; preserve its local configuration and save profile.
-  Bring desired edits back deliberately. Keep Beckett disabled in the main project.
-- Lite supports observation and editor authoring, not runtime input automation.
-  Use visible paths from `ui_snapshot` rather than ambiguous text selectors.
-  Stop play sessions you started; keep existing gameplay/save checks as appropriate.
+- Use the supported Windows Godot runner for gameplay and save checks. Python
+  validates structure and inventory, not a second implementation of the rules.
+  See [testing](docs/testing.md) and [development](docs/operations/development.md).
+- Run checks relevant to the changed behavior. Add regression tests for actual
+  failures or likely breakage; don't chase counts or repeat green runs without
+  new evidence. Documentation-only work needs link and consistency checks.
+- Update the technical reference whose behavior changed. Slice status and its
+  verified boundary belong in the slice registry; broad requirements belong in
+  the vocabulary checklist. Don't duplicate receipts across guides.
+- Finish with a short conversation result or existing PR description: what works,
+  material limits, and relevant checks. No PR, separate build/acceptance report,
+  owner-decision record, or quest card is required for ordinary work. Raw logs
+  belong in ignored artifacts. Only durable design decisions need an ADR.
 
-<!-- QUEST_BOARD_START -->
-## Shared Quest Board
+## Beckett
 
-This repository uses `.questboard/` as its shared coordination surface.
-
-Before substantial work:
-
-1. Run `python .questboard/quest.py brief --repo "<absolute repository path>" --actor "<your name/tool>"`.
-2. Claim the quest before editing its scope. If none exists, add one.
-3. Treat an unexpired claim by someone else as occupied ground.
-
-Before pausing or handing work to another person or agent:
-
-1. Record what changed and the exact next action.
-2. Use `handoff`, `move ... blocked/review`, or `finish` so the status is honest.
-3. Include `.questboard/quests/` changes when the associated code is committed. Do not create a commit merely to update coordination.
-
-The quest board is volatile coordination, not architecture documentation. Source, tests,
-ADRs, and project documentation remain authoritative for durable technical facts.
-<!-- QUEST_BOARD_END -->
-
-## Small Product Working Model
-
-- One owner and one obvious ready card. Split work by observable behavior, not by arbitrary time limits.
-- Work solo by default. Use one independent reviewer for shared combat rules or persistence, with a specific question and reproducible checks. If team contracts are unavailable, continue solo and state the review limitation.
-- Do not use overlapping reviewers, mandatory victory ceremonies, or repeated green runs without new evidence to investigate.
-- Keep `roadmap.md` as priority authority, the Quest Board as ownership/next-action authority, and ADRs/architecture as durable design authority.
-- SRD 5.2.1 is the rules authority for the staged core-12 milestone. Artificer and Mystic are outside this milestone. Supported means production behavior is verified, not that a description or dictionary entry exists.
-- Python checks validate inventory and JSON structure. Godot checks own gameplay and save behavior. Do not interpret copied Python formulas as production proof.
-- Change combat boundaries only when the current feature needs it. A wholesale CombatState extraction is not a prerequisite for mechanics work.
-- Preserve legacy saves. New campaigns use the 2024 save namespace; no automatic migration or legacy rules engine.
+Use Beckett when live Godot observation or editor authoring helps. Routine source
+edits and headless checks don't need it. Follow [the connection recipe](docs/operations/development.md#beckett-live-godot-access),
+keep tokens private, and keep Beckett disabled in the main project. Its isolated
+editor is a snapshot: refresh relevant source before claiming current behavior,
+preserve local configuration/save profiles, and bring intended edits back
+explicitly. Lite doesn't automate runtime input. Stop play sessions you start.

@@ -115,5 +115,6 @@ Faith and Cone of Cold. Their definitions retain existing rules limitations.
 Tests load namespaced fixtures through the production loader; those examples
 are not installed in the normal catalog. The live `shared_spell_flow` checks
 learning/preparation, actual controls, costs, downed-target selection,
-concentration, repeat saves, disk reload and common clock expiry. See the
-current checkpoint for run evidence and verification limits.
+concentration, repeat saves, disk reload and common clock expiry. Verified
+limits and retained evidence pointers live in the slice registry and shared-spell
+authoring contract.

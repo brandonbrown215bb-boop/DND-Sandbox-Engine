@@ -3,8 +3,8 @@
 Accepted ADRs explain durable decisions. [ADR-0018](0018-shared-data-driven-rules-runtime.md)
 owns the shared data-driven runtime direction; it does not claim implementation.
 Read [current architecture](../architecture/README.md) for existing owners,
-[roadmap](../../roadmap.md) for priority and [checkpoint](../operations/current.md)
-for accepted evidence. Old implementation restrictions do not override later decisions.
+[roadmap](../../roadmap.md) for priority and
+[slice registry](../planning/vocabulary-slices.md) for verified boundaries. Old implementation restrictions do not override later decisions.
 
 | ADR | Status and scope |
 |---|---|

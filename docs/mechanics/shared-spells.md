@@ -776,7 +776,7 @@ remain unsupported. Result predicates compare component amounts; margin and
 grouped child-outcome predicates remain unsupported. A bounded production check now covers the single-target Fire
 component selectors, source-owner/wounded predicate, floor division, mitigation
 outcomes and one genuine damage-choice continuation; see the [current
-checkpoint](../operations/current.md). The later renamed/free-cast probe also
+checkpoint](README.md). The later renamed/free-cast probe also
 checks all five caster/cast leaf kinds and their pause/resume policy. Track
 those completed boundaries as VS-01–05 in the
 [vocabulary checklist](../reviews/dnd-code-vocabulary-gap-checklist.md#verified-subsets-to-mark-off);
@@ -1580,7 +1580,7 @@ or incomplete history before session replacement. Legacy saves without zero-HP
 history retain their existing empty default. Pending choices/live references remain transient and existing save
 boundaries remain. Dictionary creature histories are encounter-local; durable
 creature history uses the Character path. General revival, forms and destruction
-remain later slices. [Acceptance](../reviews/batch-033-acceptance.md) records
+remain later slices. [Acceptance](https://github.com/brandonbrown215bb-boop/DND-Sandbox-Engine/blob/d823423d979f7c566d7511801bd560f5dafb95ee/docs/reviews/batch-033-acceptance.md) records
 S-117/S-118 as VS-111/112 after independent repair re-review; broad V-020/V-088
 remain partial. Detailed local proof is in
 [the Batch 033 report](../../.artifacts/planning/vocabulary-reports/batch-033-build-validation.md)

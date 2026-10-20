@@ -57,4 +57,4 @@ records remain unavailable through the familiar path.
 
 Other created creatures and control expiry independent of existence are still
 open Wave 4 work. Bodies/forms and authored NPC/illusion foundations also remain
-open in [the acceptance checklist](wave4-acceptance.md).
+open in [the acceptance checklist](spell-foundations.md#wave-4--creatures-bodies-forms-and-social-interaction).

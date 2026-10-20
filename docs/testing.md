@@ -96,7 +96,7 @@ records. Update it when a slice ships. Safe refusal and correct descriptive
 metadata do not advance a spell into the recorded-playable count.
 
 The initial October 5 audit found Hold Monster type-inference errors. They are
-repaired; current batch results and limitations are in `operations/current.md`.
+repaired. The slice registry and relevant authoring contract retain verified limits.
 Startup/parse failure still stops before later tests. A suite total is neither a
 spell completion count nor proof of every tabletop clause.
 
@@ -207,7 +207,8 @@ lifetime, timeout, log, and result marker.
 `src/validate_and_test.py` checks JSON structure and copied reference formulas;
 it does not execute game logic. `src/generate_feature_matrix.py` inventories
 declarations and does not assign gameplay test evidence automatically. Current
-production results belong in `docs/operations/current.md`.
+production results belong in the conversation or existing PR; keep durable
+support limits in the relevant authoring contract and slice registry.
 
 ## Grimoire visual and input probe
 

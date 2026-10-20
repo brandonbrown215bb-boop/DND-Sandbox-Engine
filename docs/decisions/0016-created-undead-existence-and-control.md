@@ -50,4 +50,4 @@ effects on created actors. Those remain explicit limits; loading must not
 silently claim their persistence. No legacy conversion is introduced.
 
 See [Animate Dead clauses and limits](../mechanics/animate-dead-2024.md) and
-[Wave 4 acceptance](../mechanics/wave4-acceptance.md).
+[creature and body requirements](../mechanics/spell-foundations.md#wave-4--creatures-bodies-forms-and-social-interaction).

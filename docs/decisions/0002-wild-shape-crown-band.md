@@ -16,4 +16,4 @@ durable state. Preserve existing supported behavior while replacing it; this
 withdrawal neither disables code nor certifies current forms. Read the
 [Druid behavior snapshot](../mechanics/druid-2024.md) and current source for
 migration input. Curated reversible forms remain open work in the
-[checkpoint](../operations/current.md).
+[world foundations](../mechanics/spell-foundations.md#wave-4--creatures-bodies-forms-and-social-interaction).

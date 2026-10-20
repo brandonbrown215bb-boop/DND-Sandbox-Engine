@@ -1,6 +1,7 @@
 """Reproducible review coverage, not a rules interpreter or support oracle.
 
 Run from any directory against the saved first-pass registry inventory.
+Derived reports go to ignored .artifacts/rules-runtime-audit/, not docs/reviews/.
 Human adjudications are keyed to exact record content hashes;
 matching text alone never carries a support decision between different rules.
 Unadjudicated records stay pending. No keyword match establishes support.
@@ -200,7 +201,8 @@ def main():
     orphaned = set(annotations) - used
     if orphaned:
         raise ValueError(f"Adjudications no longer match source content: {sorted(orphaned)}")
-    ledger = REVIEWS / "dnd-description-runtime-coverage.csv"
+    WORK.mkdir(parents=True, exist_ok=True)
+    ledger = WORK / "dnd-description-runtime-coverage.csv"
     with ledger.open("w", newline="", encoding="utf-8") as output:
         writer = csv.DictWriter(output, fieldnames=list(rows[0]))
         writer.writeheader()
@@ -214,8 +216,7 @@ def main():
         "review_status_counts": dict(Counter(r["review_status"] for r in rows)),
         "domain_counts": {domain: dict(Counter(r["review_status"] for r in rows if r["domain"] == domain)) for domain in sorted({r["domain"] for r in rows})},
     }
-    (REVIEWS / "dnd-description-runtime-coverage.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
-    WORK.mkdir(parents=True, exist_ok=True)
+    (WORK / "dnd-description-runtime-coverage.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
     (WORK / "description-units.json").write_text(json.dumps(units, ensure_ascii=False), encoding="utf-8")
     if args.show:
         selected = [u for u in units if u["source"].startswith(args.show) and (u["text"] or not args.text_only) and (not args.pending_only or u["record_sha256"] not in annotations)]

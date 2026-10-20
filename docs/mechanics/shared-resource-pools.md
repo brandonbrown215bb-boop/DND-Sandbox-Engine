@@ -197,7 +197,7 @@ in allowed Character checkpoints.
 
 The neutral example is
 `data/fixtures/shared_next_melee_hit_grant.json`. Production and focused
-development checks are recorded in the [current checkpoint](../archive/checkpoints/checkpoint-through-batch-k-2026-10-16.md#accepted-slice--next-matching-melee-hit-grant-2026-10-12).
+development checks are recorded in the [historical checkpoint](https://github.com/brandonbrown215bb-boop/DND-Sandbox-Engine/blob/d823423d979f7c566d7511801bd560f5dafb95ee/docs/archive/checkpoints/checkpoint-through-batch-k-2026-10-16.md#accepted-slice--next-matching-melee-hit-grant-2026-10-12).
 Production acceptance also loaded a renamed +3 Cold variant, proved Fire
 resistance and immunity plus Cold resistance, actual attack/menu outcomes,
 source order/removal/expiry and fresh-process checkpoint recovery with malformed
@@ -235,8 +235,7 @@ Tagged timed grants and cooldown records must reference an owned saved source
 pool; a tagged grant without its deadline refuses loading. Definitions may
 contain at most one timed numeric grant and one next-hit grant per activation;
 duplicate same-kind operations refuse at loading rather than partially applying
-after payment. See the [current
-checkpoint](../archive/checkpoints/checkpoint-through-batch-k-2026-10-16.md#accepted-slice--optional-cooldown-after-timed-grant-end-2026-10-13),
+after payment. See the [historical checkpoint](https://github.com/brandonbrown215bb-boop/DND-Sandbox-Engine/blob/d823423d979f7c566d7511801bd560f5dafb95ee/docs/archive/checkpoints/checkpoint-through-batch-k-2026-10-16.md#accepted-slice--optional-cooldown-after-timed-grant-end-2026-10-13),
 [production scenario](../../.artifacts/tests/2b29a42808f848dcb577f74d69d88500/)
 and [fresh-process probe](../../.artifacts/tests/timed-numeric-cooldown-relaunch-1bd96120f7504b64a3e1933fbe653946/).
 
