@@ -66,6 +66,7 @@ static func run(check: Callable) -> void:
 	_equipment_validation(check)
 	_equipment(check)
 	_equipment_saves(check)
+	review_stress(check)
 
 static func _rule(index: int) -> Dictionary:
 	return DataLoader.get_character_class(CLASS_ID).features_by_level["1"][index].duplicate(true)
@@ -228,3 +229,75 @@ static func _equipment_saves(check: Callable) -> void:
 		defects[label].call(bad)
 		if not SpellEffectPersistence.saved_state_error(bad).is_empty(): refused += 1
 	check.call(refused == 4, "041 S-164 saved equipment refuses an illegal policy, contradicted merge, missing record and dropped copies still worn (%d/4)" % refused)
+
+## Runtime Reviewer stress (RZ1-RZ8).
+static func review_stress(check: Callable) -> void:
+	if DataLoader.get_item("fixture:b036_review_ring").is_empty(): DataLoader._load_json_file("res://data/fixtures/batch_036/items/review_ring.json", "item")
+	if DataLoader.get_item("fixture:029_negation_talisman").is_empty(): DataLoader._load_json_file("res://data/fixtures/batch_029/items/items.json", "item")
+	if DataLoader.get_spell("fixture:029_charge_stop").is_empty(): Batch029Checks.load_fixtures()
+	# RZ1: several equipment policies and no choice are refused before the slot is spent.
+	var a := wearer("b041_rz1")
+	a.spell_slots = {"2": 1}
+	var r := SpellResolver.resolve(a, a, DataLoader.get_spell(GUISE), true, {}, [], 2)
+	check.call(not ActorProjectionRules.is_projected(a) and int(a.spell_slots.get("2", 0)) == 1 and not r.get("success", true), "041 RZ1 no equipment choice is refused before cost (slots=%s)" % str(a.spell_slots))
+	# RZ2: an equipment choice on a projection that declares none is refused before cost.
+	var b := Batch040Checks.caster("b041_rz2")
+	b.spell_slots = {"3": 1}
+	var mantle := DataLoader.get_spell(Batch040Checks.MANTLE).duplicate(true)
+	mantle["_projection_equipment"] = "merged"
+	SpellResolver.resolve(b, b, mantle, true, {}, [], 3)
+	check.call(not ActorProjectionRules.is_projected(b) and int(b.spell_slots.get("3", 0)) == 1, "041 RZ2 an undeclared equipment choice is refused before cost (slots=%s)" % str(b.spell_slots))
+	# RZ3: a merged item's spell permissions are suppressed and return on reversion.
+	var c := Batch031Checks._character("b041_rz3", 40)
+	var ring := add_copy(c, "fixture:b036_review_ring")
+	c.inventory.equip_instance(Inventory.Slot.RING_1, ring)
+	var stop := DataLoader.get_spell("fixture:029_charge_stop")
+	var before := SpellPermissionRules.for_spell(c, stop).size()
+	guise(c, "merged")
+	var during := SpellPermissionRules.for_spell(c, stop).size()
+	SpellEffects.end_concentration(c, [c])
+	var after := SpellPermissionRules.for_spell(c, stop).size()
+	check.call(before > 0 and during == 0 and after == before, "041 RZ3 merged item spell permissions are suppressed during the form only (%d/%d/%d)" % [before, during, after])
+	# RZ4: a merged item's incoming-negation rule is suppressed; worn keeps it.
+	var d := Batch031Checks._character("b041_rz4", 40)
+	var tal := add_copy(d, "fixture:029_negation_talisman")
+	d.inventory.equip_instance(Inventory.Slot.RING_1, tal)
+	var cast := SpellResolutionContext.new()
+	cast.caster = Batch031Checks._character("b041_rz4_src", 40)
+	cast.target = d
+	cast.spell = {"id": "x", "level": 1, "school": "evocation"}
+	cast.slot_level = 1
+	var neg_before := CastInterruptionRules.is_recipient_negated(cast, d)
+	guise(d, "merged")
+	var neg_merged := CastInterruptionRules.is_recipient_negated(cast, d)
+	guise(d, "worn")
+	var neg_worn := CastInterruptionRules.is_recipient_negated(cast, d)
+	SpellEffects.end_concentration(d, [d])
+	check.call(neg_before and not neg_merged and neg_worn, "041 RZ4 merged negation item is suppressed; worn keeps it (%s/%s/%s)" % [neg_before, neg_merged, neg_worn])
+	# RZ5: legacy equip(slot, id) cannot don during a merged or dropped form.
+	var e := Batch031Checks._character("b041_rz5", 40)
+	e.inventory.add_item(CHARM)
+	guise(e, "dropped")
+	var donned := e.inventory.equip(Inventory.Slot.RING_1, CHARM)
+	var donned_unowned := e.inventory.equip(Inventory.Slot.RING_2, CHARM, true)
+	check.call(e.inventory.equipped_instance_id(Inventory.Slot.RING_1).is_empty() and e.inventory.equipped_instance_id(Inventory.Slot.RING_2).is_empty(), "041 RZ5 legacy equip is refused in a dropped form (owned and unowned)")
+	SpellEffects.end_concentration(e, [e])
+	# RZ6: a projection that suppresses features must not end bonds (bond lives on the target, not the live feature list).
+	var f := bonder("b041_rz6")
+	var dag := add_copy(f, "dagger")
+	var made := BondRules.bond(f, BLADE, dag)
+	Batch040Checks.shift(f, 2, "b040_hound")
+	var held := BondRules.bonded(f, BLADE)
+	var dto := f.to_dict()
+	SpellEffects.end_concentration(f, [f])
+	check.call(made.get("bonded", false) and held == [dag] and BondRules.bonded(f, BLADE) == [dag] and dto.get("exclusive_bonds", {}).get(BLADE, {}).get("targets", []).size() == 1, "041 RZ6 a feature-suppressing projection keeps the bond through query, save and reversion (during=%s after=%s)" % [str(held), str(BondRules.bonded(f, BLADE))])
+	# RZ7: bonded copy dropped by the dropped policy stays owned, so the bond stays.
+	var g := bonder("b041_rz7")
+	var w := add_copy(g, "dagger")
+	g.inventory.equip_instance(Inventory.Slot.WEAPON, w)
+	BondRules.bond(g, BLADE, w)
+	guise(g, "dropped")
+	check.call(g.inventory.equipped_instance_id(Inventory.Slot.WEAPON).is_empty() and BondRules.bonded(g, BLADE) == [w], "041 RZ7 dropped-policy copy is unequipped but still owned and bonded")
+	SpellEffects.end_concentration(g, [g])
+	# RZ8: reversion does not re-equip a dropped copy, and the charm's AC stays absent until re-donned.
+	check.call(g.inventory.equipped_instance_id(Inventory.Slot.WEAPON).is_empty() and g.inventory.equip_instance(Inventory.Slot.WEAPON, w), "041 RZ8 reversion leaves the dropped copy unequipped and it can be donned again")
