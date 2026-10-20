@@ -31,6 +31,7 @@ static func run(check: Callable) -> void:
 	_curse_validation(check)
 	_curses(check)
 	_curse_saves(check)
+	review_stress(check)
 
 static func _container_validation(check: Callable) -> void:
 	var policy: Dictionary = DataLoader.get_item(SATCHEL).container.duplicate(true)
@@ -186,3 +187,75 @@ static func _curse_saves(check: Callable) -> void:
 	var legacy := dto.duplicate(true)
 	legacy.erase("item_curses")
 	check.call(CurseRules.saved_error(legacy).is_empty(), "043 legacy saves without item curses still validate")
+
+const POUCH := "fixture:b043_review_pouch"
+
+static func _stowed_dto(id: String, child_state: Dictionary) -> Dictionary:
+	var c := carrier(id)
+	var bag := add(c, SATCHEL)
+	var flask := add(c, FLASK)
+	ContainerRules.put(c.inventory, bag, flask, "main")
+	var dto := c.to_dict()
+	var host: Dictionary = dto.inventory.copies.records[bag]
+	host.state.contents.main[0].state = child_state
+	return dto
+
+## Runtime Reviewer stress (RC1-RC8).
+static func review_stress(check: Callable) -> void:
+	if DataLoader.get_item(POUCH).is_empty(): DataLoader._load_json_file("res://data/fixtures/batch_043/items/review_pouch.json", "item")
+	# RC1/RC2: contained copies get the same per-copy state validation as carried ones.
+	var bad_food := _stowed_dto("b043_rc1", {"food_remaining_daily_fraction": 7.0})
+	var bad_charges := _stowed_dto("b043_rc2", {"charges": -5})
+	check.call(not ContainerRules.saved_error(bad_food).is_empty() and not ContainerRules.saved_error(bad_charges).is_empty(), "043 RC1 tampered contained copy state (ration fraction, negative charges) is refused (%s / %s)" % [ContainerRules.saved_error(bad_food), ContainerRules.saved_error(bad_charges)])
+	var c := carrier("b043_rc1b")
+	var bag := add(c, SATCHEL)
+	var flask := add(c, FLASK)
+	ContainerRules.put(c.inventory, bag, flask, "main")
+	check.call(ContainerRules.saved_error(c.to_dict()).is_empty(), "043 RC2 an untampered contained copy still validates")
+	# RC3: SRD 5.2.1 - stowing an attuned item does not end attunement; the copy keeps it and still counts.
+	var d := carrier("b043_rc3")
+	var pouch := add(d, POUCH)
+	var ring := add(d, WARD)
+	d.inventory.attune_instance(ring, d.character_id)
+	var put := ContainerRules.put(d.inventory, pouch, ring, "main")
+	var others: Array = []
+	for i in 3:
+		var r := add(d, WARD)
+		others.append(d.inventory.attune_instance(r, d.character_id).get("success", false))
+	check.call(put.get("success", false) and str(ContainerRules.contents(d.inventory, pouch)[0].state.get("attuned_to", "")) == d.character_id and others == [true, true, false], "043 RC3 an attuned copy can be stowed, stays attuned and counts toward the three-item limit (put=%s others=%s)" % [str(put.get("message", "")), str(others)])
+	var ddto := d.to_dict()
+	check.call(ContainerRules.saved_error(ddto).is_empty() and InventoryCopies.saved_error(ddto.inventory).is_empty(), "043 RC3 a save with a stowed attuned copy validates")
+	# RC4: a tampered save with four attunements (one hidden in a container) is refused.
+	var over := ddto.duplicate(true)
+	for id in over.inventory.copies.records:
+		var rec: Dictionary = over.inventory.copies.records[id]
+		if str(rec.definition_id) == WARD and not rec.state.has("attuned_to"): rec.state["attuned_to"] = d.character_id
+	check.call(not ContainerRules.saved_error(over).is_empty(), "043 RC4 a hidden contained attunement cannot exceed the three-item limit")
+	# RC5: destroying an ordinary container spills its exact contents to the holder instead of destroying them.
+	var e := carrier("b043_rc5")
+	var sat := add(e, SATCHEL)
+	var f1 := add(e, FLASK)
+	ContainerRules.put(e.inventory, sat, f1, "main")
+	e.inventory.destroy_instance(sat)
+	check.call(not owns(e, sat) and owns(e, f1), "043 RC5 destroying an ordinary container leaves its contents with the holder")
+	# RC6: cursed copies still cannot be stowed.
+	var f := carrier("b043_rc6")
+	var p2 := add(f, POUCH)
+	var hex := add(f, HEX)
+	f.inventory.attune_instance(hex, f.character_id)
+	check.call(not ContainerRules.put(f.inventory, p2, hex, "main").success and owns(f, hex), "043 RC6 a cursed copy is refused before it moves")
+	# RC7: SRD Remove Curse at 3rd level still breaks an undeclared cursed item's attunement (legacy route).
+	var g := carrier("b043_rc7")
+	var sv := add(g, "sword_of_vengeance")
+	g.inventory.attune_instance(sv, g.character_id)
+	var cursed_before := CurseRules.is_cursed(g.inventory.get_instance(sv))
+	var broken := g.inventory.break_cursed_item_attunements(g.character_id)
+	var declared := CurseRules.break_with(g, "remove_curse", 3)
+	check.call(cursed_before and broken == 1 and not CurseRules.is_cursed(g.inventory.get_instance(sv)) and declared.refused.is_empty(), "043 RC7 undeclared SRD cursed item breaks at slot 3 as before")
+	# RC8: an over-limit put changes nothing.
+	var h := carrier("b043_rc8")
+	var sat2 := add(h, SATCHEL)
+	var bricks: Array = [add(h, BRICK), add(h, BRICK)]
+	var first := ContainerRules.put(h.inventory, sat2, bricks[0], "main")
+	var second := ContainerRules.put(h.inventory, sat2, bricks[1], "main")
+	check.call(first.success and not second.success and owns(h, bricks[1]) and ContainerRules.contents(h.inventory, sat2).size() == 1, "043 RC8 a put over the weight limit refuses before the copy moves")

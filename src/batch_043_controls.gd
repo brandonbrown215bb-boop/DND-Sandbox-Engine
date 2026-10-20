@@ -93,6 +93,7 @@ static func run(h: Node) -> void:
 	var saved: bool = block.is_empty() and SaveManager.save_game(slot)
 	h._assert(saved, "043 actual real save with contents and curses (block='%s')" % block)
 	if saved:
+		h.get_tree().current_scene = null # Review: keep the harness alive; the real load swaps the current scene.
 		var loaded := SaveManager.load_game(slot)
 		var na: Character = PartyManager.characters.get(a.character_id, null)
 		var nb: Character = PartyManager.characters.get(b.character_id, null)
@@ -102,5 +103,29 @@ static func run(h: Node) -> void:
 		if na != null:
 			var out := ContainerRules.retrieve_last(na.inventory, bag)
 			h._assert(out.success and str(out.instance_id) == brick and Batch043Checks.owns(na, brick) and na.inventory.count_item(Batch043Checks.BRICK) == 1, "043 actual take-out after reload returns the exact last copy once")
+		# Review weak spot 4: the real post-load path (load -> overworld scene -> combat transition) must reach a player turn.
+		await _post_load_combat(h, na)
 		SaveManager.delete_save(slot)
 	h._exit_test()
+
+## Review: drive the production combat transition after a real load (no harness scene spawn).
+static func _post_load_combat(h: Node, loaded_a: Character) -> void:
+	var tree := h.get_tree()
+	for _frame in 300:
+		if tree.current_scene != null: break
+		await tree.process_frame
+	var overworld := tree.current_scene
+	print("[review043] after load current_scene=%s" % (overworld.name if overworld != null else "null"))
+	GameManager.change_state(GameManager.GameState.COMBAT, {"terrain": "plains", "monster_ids": ["goblin"]})
+	var reached := false
+	var scene_name := ""
+	for _frame in 900:
+		await tree.process_frame
+		var cur := tree.current_scene
+		if cur != null and cur != overworld and "active_combatant" in cur:
+			scene_name = cur.name
+			if cur.active_combatant.get("is_player", false):
+				reached = cur.player_entities.any(func(e): return e.character == loaded_a)
+				break
+	print("[review043] combat scene=%s reached=%s" % [scene_name, reached])
+	h._assert(reached, "043 review real post-load combat transition reaches a player turn with the loaded party (scene=%s)" % scene_name)

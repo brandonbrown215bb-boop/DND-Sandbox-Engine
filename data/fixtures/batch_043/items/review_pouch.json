@@ -1,0 +1,4 @@
+[
+  {"id": "fixture:b043_review_pouch", "name": "Fixture Review Pouch", "description": "Reviewer fixture container with one unrestricted compartment.", "type": "tool", "weight": 1, "value": 0,
+   "container": {"compartments": [{"id": "main", "max_count": 3}]}}
+]
