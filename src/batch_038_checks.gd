@@ -28,6 +28,7 @@ static func run(check: Callable) -> void:
 	check.call(DataLoader.get_load_errors().is_empty(), "038 neutral switch and option-upgrade class loads: %s" % str(DataLoader.get_load_errors()))
 	_validation(check)
 	_switches(check)
+	review_stress(check)
 	_options(check)
 	_exclusive(check)
 	_saves(check)
@@ -133,3 +134,89 @@ static func _saves(check: Callable) -> void:
 	var old := Character.new()
 	old.from_dict(legacy)
 	check.call(RuleUpgradeRules.saved_error(legacy).is_empty() and FeatureModeRules.saved_error(legacy).is_empty() and old.rule_alternatives.is_empty() and old.feature_modes[STANCE].mode == "bulwark", "038 legacy save without alternatives or switch windows still loads")
+
+## Reviewer stress cases (Batch 038 review).
+static func review_stress(check: Callable) -> void:
+	load_fixtures()
+	# RW1 window discipline: no window without an event; one switch per window; later events close it; parent fixed.
+	var a := actor("b038_rw_a", 1)
+	FeatureModeRules.activate(a, STANCE, "guard")
+	var before: Dictionary = a.feature_modes[STANCE].duplicate(true)
+	var uses := int(a.feature_uses[STANCE])
+	check.call(FeatureModeRules.switch(a, STANCE, "stride", "turn_start").reason == "no_window", "038 review RW1 switching with no open window refuses")
+	check.call(FeatureModeRules.on_event(a, "hit").is_empty() and FeatureModeRules.switch(a, STANCE, "stride", "hit").reason == "no_window", "038 review RW1 an undeclared event (hit at level 1) opens no window")
+	FeatureModeRules.on_event(a, "turn_start")
+	var s1 := FeatureModeRules.switch(a, STANCE, "stride", "turn_start")
+	var st: Dictionary = a.feature_modes[STANCE]
+	check.call(s1.success and int(a.feature_uses[STANCE]) == uses and int(st.remaining_seconds) == int(before.remaining_seconds) and int(st.activation_serial) == int(before.activation_serial) and int(st.rolled) == int(before.rolled), "038 review RW1 switch keeps uses, deadline, serial and roll")
+	check.call(not FeatureModeRules.switch(a, STANCE, "guard", "turn_start").success, "038 review RW1 one window allows one switch")
+	FeatureModeRules.on_event(a, "turn_start")
+	FeatureModeRules.on_event(a, "hit")
+	check.call(FeatureModeRules.switch(a, STANCE, "guard", "turn_start").reason == "no_window", "038 review RW1 a later event closes the older window")
+	# RW2 a miss never opens a hit window (level 2 declares hit).
+	var b := actor("b038_rw_b", 2)
+	FeatureModeRules.activate(b, STANCE, "guard")
+	var wall := {"id": "b038_wall", "name": "Wall", "armor_class": 1000, "current_hp": 50, "max_hp": 50, "is_alive": true, "conditions": {}}
+	var res := CombatAction.resolve_weapon_attack(b, wall, DataLoader.get_item("longsword").duplicate(true), false, false, {})
+	check.call(not res.get("hit", true) and not b.feature_modes[STANCE].has("window"), "038 review RW2 a missed attack opens no hit window")
+	var soft := {"id": "b038_soft", "name": "Soft", "armor_class": -100, "current_hp": 500, "max_hp": 500, "is_alive": true, "conditions": {}}
+	res = CombatAction.resolve_weapon_attack(b, soft, DataLoader.get_item("longsword").duplicate(true), false, false, {})
+	check.call(res.get("hit", false) and str(b.feature_modes[STANCE].get("window", {}).get("event", "")) == "hit" and FeatureModeRules.switch(b, STANCE, "bulwark", "hit").success, "038 review RW2 a settled hit opens one window usable for an added mode")
+	# RW3 removed mode cannot be switched to or activated; reload keeps state safe.
+	check.call(FeatureModeRules.on_event(b, "turn_start").size() == 1 and FeatureModeRules.switch(b, STANCE, "stride", "turn_start").reason == "unknown_mode", "038 review RW3 a mode removed by an upgrade is not a legal switch target")
+	var b2 := Character.new()
+	b2.from_dict(b.to_dict())
+	check.call(FeatureModeRules.saved_error(b.to_dict()).is_empty() and str(b2.feature_modes[STANCE].mode) == "bulwark" and b2.feature_modes[STANCE].has("window") == b.feature_modes[STANCE].has("window") and b2.get_ac() == b.get_ac(), "038 review RW3 reload keeps switched mode, window and one grant")
+	check.call(FeatureModeRules.switch(b2, STANCE, "guard", "turn_start").success and not FeatureModeRules.switch(b2, STANCE, "bulwark", "turn_start").success, "038 review RW3 a reloaded window is still single-use")
+	# RW4 tampered windows/events refuse; legacy (no window/event_serial, no rule_alternatives) loads.
+	var dto := b.to_dict()
+	dto.feature_modes[STANCE]["event_serial"] = 3
+	dto.feature_modes[STANCE]["window"] = {"event": "hit", "serial": 3}
+	check.call(FeatureModeRules.saved_error(dto).is_empty(), "038 review RW4 a consistent saved window validates")
+	for defect in ["future", "event", "inactive", "shape"]:
+		var bad := dto.duplicate(true)
+		match defect:
+			"future": bad.feature_modes[STANCE].window.serial = 9
+			"event": bad.feature_modes[STANCE].window.event = "crit"
+			"inactive":
+				bad.feature_modes[STANCE].active = false
+				bad.feature_modes[STANCE].mode = ""
+			"shape": bad.feature_modes[STANCE].window["extra"] = 1
+		check.call(not FeatureModeRules.saved_error(bad).is_empty(), "038 review RW4 tampered window %s refuses" % defect)
+	var legacy := dto.duplicate(true)
+	legacy.feature_modes[STANCE].erase("window")
+	legacy.feature_modes[STANCE].erase("event_serial")
+	legacy.erase("rule_alternatives")
+	check.call(FeatureModeRules.saved_error(legacy).is_empty() and RuleUpgradeRules.saved_error(legacy).is_empty(), "038 review RW4 legacy state without window/alternatives loads")
+	# RW5 exclusive alternatives: default, choice, no stacking, no free uses, clamp on switching away, refusal while active.
+	var c := actor("b038_rw_c", 3)
+	var eff := FeatureModeRules.rule(c, STANCE)
+	check.call(eff.alternatives.focus.chosen == "fixture:b038_alt_a" and int(eff.get("targets", 1)) == 2 and int(eff.uses) == 2, "038 review RW5 default alternative applies alone (targets+1, uses unchanged)")
+	check.call(RuleUpgradeRules.choose_alternative(c, STANCE, "focus", "fixture:b038_alt_b") and int(FeatureModeRules.rule(c, STANCE).uses) == 3 and int(FeatureModeRules.rule(c, STANCE).get("targets", 1)) == 1 and int(c.feature_uses[STANCE]) == 2, "038 review RW5 choosing the other alternative swaps (uses+1, targets back) without granting a use")
+	c.long_rest()
+	check.call(int(c.feature_uses[STANCE]) == 3, "038 review RW5 the new maximum fills at the next Long Rest")
+	RuleUpgradeRules.choose_alternative(c, STANCE, "focus", "fixture:b038_alt_a")
+	check.call(int(c.feature_uses[STANCE]) <= c.get_feature_max_uses(STANCE), "038 review RW5 switching away from the uses alternative cannot keep uses above the new maximum (%d > %d)" % [int(c.feature_uses[STANCE]), c.get_feature_max_uses(STANCE)])
+	FeatureModeRules.activate(c, STANCE, "guard")
+	check.call(not RuleUpgradeRules.choose_alternative(c, STANCE, "focus", "fixture:b038_alt_b") and not RuleUpgradeRules.choose_alternative(c, STANCE, "focus", "fixture:not_owned"), "038 review RW5 alternatives refuse while active and for unowned options")
+	# RW6 saved alternatives: owned choice loads; unowned/under-level/tampered refuse and restore safely.
+	var cd := c.to_dict()
+	check.call(RuleUpgradeRules.saved_error(cd).is_empty(), "038 review RW6 owned alternative DTO validates")
+	for defect in ["id", "level", "key"]:
+		var bad := cd.duplicate(true)
+		match defect:
+			"id": bad.rule_alternatives[STANCE + "|focus"] = "fixture:b038_widen"
+			"level": bad["level"] = 2
+			"key": bad.rule_alternatives = {"nonsense": "fixture:b038_alt_b"}
+		var r: Character = Character.new()
+		r.from_dict(bad)
+		check.call(not RuleUpgradeRules.saved_error(bad).is_empty() and r.rule_alternatives.is_empty(), "038 review RW6 tampered alternative %s refuses and restores nothing" % defect)
+	# RW7 F1 fails safe: a non-class (appended) rule's state refuses the save instead of being trusted.
+	var f1 := Batch037Checks.actor("b038_rw_f1")
+	f1.features.append(catalog("1", 0).duplicate(true))
+	f1.feature_uses[STANCE] = 2
+	FeatureModeRules.activate(f1, STANCE, "guard")
+	var fd := f1.to_dict()
+	var f2 := Character.new()
+	f2.from_dict(fd)
+	check.call(not FeatureModeRules.saved_error(fd).is_empty() and not f2.feature_modes.has(STANCE), "038 review RW7 F1 non-class mode state is refused, not restored half-trusted")
