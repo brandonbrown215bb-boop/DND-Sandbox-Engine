@@ -1,0 +1,45 @@
+[
+  {
+    "id": "fixture:b040_reap",
+    "name": "040 reap",
+    "description": "Reduced to 0 HP: dies outright to bones and a husk rises once where it fell, on the caster's side.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "damage": "30",
+    "damage_type": "necrotic",
+    "classes": ["wizard"],
+    "zero_hp_aftermath": {
+      "id": "b040:reap",
+      "trigger": "reduced_to_zero",
+      "outcome": "death",
+      "remains": "bones",
+      "gear": "retained",
+      "cause": "reaped",
+      "precedes_zero_hp_replacement": true,
+      "excluded_creature_types": ["construct"],
+      "successor": {
+        "template": {
+          "id": "b040_husk",
+          "name": "Husk",
+          "creature_type": "undead",
+          "size": "medium",
+          "speed": 5,
+          "ability_scores": {"STR": 13, "DEX": 8, "CON": 14, "INT": 3, "WIS": 6, "CHA": 5},
+          "ac": {"base": 11},
+          "max_hp": {"base": 15},
+          "count": {"base": 1},
+          "attack": {"name": "Claw", "damage": "1d6", "damage_type": "slashing", "range": 1},
+          "features": [
+            {"id": "b040_grave_sense", "name": "Grave Sense", "effects": [{"type": "immunity", "condition": "poisoned"}]},
+            {"id": "b040_no_spawn", "name": "Spawn", "effects": [{"type": "create_actor"}]}
+          ]
+        },
+        "attack_bonus": 3,
+        "side": "source"
+      }
+    }
+  }
+]

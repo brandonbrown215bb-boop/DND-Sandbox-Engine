@@ -1592,6 +1592,7 @@ static func _settle_weapon_attack_context(context: Dictionary) -> Dictionary:
 	weapon_damage_decisions["damage_is_critical"] = bool(attack_result["is_crit"])
 	if weapon_data.get("zero_hp_aftermath") is Dictionary:
 		weapon_damage_decisions["zero_hp_aftermath"] = weapon_data["zero_hp_aftermath"]
+		weapon_damage_decisions["zero_hp_aftermath_carrier"] = AftermathSuccessorRules.carrier_for_weapon(weapon_data)
 	var damage_occurrence_id := WardRules.next_damage_occurrence_id()
 	weapon_damage_decisions = DamageResponseRules.begin(weapon_damage_decisions, damage_occurrence_id, attacker)
 	var weapon_settlement := resolve_damage(target_entity, weapon_component_after_reactions, damage_type, weapon_damage_decisions, bypass_weapon_resistance, false, attacker, damage_occurrence_id)

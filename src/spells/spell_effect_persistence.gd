@@ -27,6 +27,8 @@ static func saved_state_error(dto: Dictionary) -> String:
 	var serial: Variant = dto.get("spell_cast_serial", 0)
 	if not (serial is int or serial is float) or not is_finite(float(serial)) or float(serial) != floor(float(serial)) or int(serial) < 0:
 		return "invalid saved spell cast serial"
+	var projection_state_error := ActorProjectionRules.saved_state_error(dto)
+	if not projection_state_error.is_empty(): return projection_state_error
 	var carrier_error := SourceBenefitRules.saved_cast_error(dto)
 	if not carrier_error.is_empty(): return carrier_error
 	for source in state:
@@ -105,12 +107,15 @@ static func saved_state_error(dto: Dictionary) -> String:
 		var response: Variant = record.get("damage_response", null)
 		var valid_response: bool = response is Dictionary and str(source).begins_with("spell:%s:" % str(record.get("caster_id", ""))) and str(record.get("recipient_id", "")) == str(dto.get("character_id", "")) and DamageResponseRules.policy_error(response).is_empty() and DamageResponseRules.definition_has_policy(DataLoader.get_spell(spell_id), response)
 		if record.has("damage_response") and not valid_response: return "invalid saved damage response"
+		if record.has("projection"):
+			var projection_error := ActorProjectionRules.saved_record_error(dto, record)
+			if not projection_error.is_empty(): return projection_error
 		if record.has("created_actors"):
 			var created_error := CreatedActorRules.saved_record_error(dto, record)
 			if not created_error.is_empty(): return created_error
 		for transient in ["_damage_cause", "countereffect_receipts", "replacement_receipts", "_response_depth"]:
 			if record.has(transient): return "transient damage response state cannot be saved"
-		if not (save_dc is int or save_dc is float) or not is_finite(float(save_dc)) or float(save_dc) != floor(float(save_dc)) or int(save_dc) < 0 or int(save_dc) > 100 or not record.get("concentration", null) is bool or (record["conditions"].is_empty() and not valid_aid_record and not valid_barkskin_record and not valid_goodberry_record and not valid_identify_record and not valid_area_marker_record and not record.has("source_benefits") and not record.has("created_actors") and not valid_damage_link and not valid_response):
+		if not (save_dc is int or save_dc is float) or not is_finite(float(save_dc)) or float(save_dc) != floor(float(save_dc)) or int(save_dc) < 0 or int(save_dc) > 100 or not record.get("concentration", null) is bool or (record["conditions"].is_empty() and not valid_aid_record and not valid_barkskin_record and not valid_goodberry_record and not valid_identify_record and not valid_area_marker_record and not record.has("source_benefits") and not record.has("created_actors") and not record.has("projection") and not valid_damage_link and not valid_response):
 			return "invalid saved spell effect rules"
 		if record.has("aid_hp_bonus") and (not valid_aid_record or str(record.get("spell_id", "")) != "aid"):
 			return "invalid saved Aid bonus"

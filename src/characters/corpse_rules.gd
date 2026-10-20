@@ -65,6 +65,7 @@ static func target_error(character: Character, spell_id: String, now: int) -> St
 	if character.corpse_state.is_empty(): return "This death has no recorded time; recent revival cannot be established."
 	var body := character.corpse_state
 	if str(body.get("remains", "destroyed")) == "destroyed": return "No remains are available to touch."
+	if AftermathSuccessorRules.any_alive(character): return "These remains have risen as a successor."
 	if spell_id == "gentle_repose": return ""
 	if spell_id != "revivify": return "This recovery spell is unsupported."
 	if not character.revival_willing: return "The spirit refuses this revival."
@@ -146,6 +147,8 @@ static func saved_error(data: Dictionary) -> String:
 	if bool(data.get("disintegrated", false)) and body["remains"] != "dust": return "disintegrated corpse has incompatible remains"
 	var cause_error := ZeroHpAftermathRules.saved_cause_error(body)
 	if not cause_error.is_empty(): return cause_error
+	var successor_error := AftermathSuccessorRules.saved_error(data, body)
+	if not successor_error.is_empty(): return successor_error
 	return ""
 
 static func saved_clock_error(data: Dictionary, now: int) -> String:

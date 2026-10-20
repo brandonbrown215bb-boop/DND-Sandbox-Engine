@@ -88,6 +88,9 @@ static func validate_policy(policy: Variant) -> String:
 	if str(policy.get("gear", "")) not in GEAR_POLICIES: return "zero_hp_aftermath gear must be one of %s" % str(GEAR_POLICIES)
 	if str(policy.get("cause", "")).is_empty() or str(policy.get("cause", "")).length() > 80: return "zero_hp_aftermath cause is invalid"
 	if policy.has("precedes_zero_hp_replacement") and not policy["precedes_zero_hp_replacement"] is bool: return "precedes_zero_hp_replacement must be boolean"
+	if policy.has("successor"):
+		var successor_error := AftermathSuccessorRules.policy_error(policy["successor"])
+		if not successor_error.is_empty(): return successor_error
 	if policy.has("excluded_creature_types") and (not policy["excluded_creature_types"] is Array or policy["excluded_creature_types"].any(func(v): return not v is String)): return "excluded_creature_types must be strings"
 	return ""
 
@@ -146,6 +149,8 @@ static func settle(target, hp_before: int, alive_before: bool, damage_type: Stri
 		target["is_alive"] = false
 		target["zero_hp_aftermath"] = {"outcome": str(policy.outcome), "remains": str(policy.remains), "cause": str(policy.cause), "cause_source": cause_source.duplicate(true)}
 		receipt["identity"] = str(target.get("id", ""))
+	var successor := AftermathSuccessorRules.settle(target, policy, decisions, cause_source.actor_id)
+	if not successor.is_empty(): receipt["successor"] = successor
 	return receipt
 
 ## Saved-corpse cause detail validation; absent keeps legacy saves loading.

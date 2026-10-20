@@ -885,6 +885,8 @@ func get_skill_check_modifier(skill: String, ability: String) -> int:
 func get_creature_type() -> String:
 	if class_id == "familiar": return str(feature_uses.get("creature_type", "fey"))
 	if DruidRules.is_shaped(self): return "beast"
+	var projected_type := ActorProjectionRules.creature_type(self)
+	if not projected_type.is_empty(): return projected_type
 	if not creature_type.is_empty() and creature_type != "humanoid": return creature_type
 	return str(DataLoader.get_race(race_id).get("creature_type", "humanoid"))
 
@@ -893,6 +895,8 @@ func get_creature_size() -> String:
 	if class_id == "created_creature": return str(feature_uses.get("creature_size", "medium"))
 	if class_id == "familiar": return str(feature_uses.get("creature_size", "large" if has_feature("find_steed_slam") else "tiny")).to_lower()
 	if DruidRules.is_shaped(self): return str(DruidRules.current_form(self).get("size", "medium")).to_lower()
+	var projected_size := ActorProjectionRules.size(self)
+	if not projected_size.is_empty(): return projected_size
 	return str(DataLoader.get_race(race_id).get("size", "medium")).to_lower()
 
 
@@ -1515,6 +1519,9 @@ func get_ac() -> int:
 		var form_ac := DruidRules.armor_class(self)
 		if form_ac >= 0:
 			return form_ac
+	var projected_ac := ActorProjectionRules.ac(self)
+	if projected_ac >= 0:
+		return SpellEffects.effective_ac(self, projected_ac) + SourceBenefitRules.total(self, "AC")
 	var ac := _equipment_base_ac() if not protection_grants.is_empty() else base_ac
 	var protection := ProtectionRules.ac(self,ac)
 	ac = int(protection.base)
@@ -2519,6 +2526,7 @@ func _get_active_feature_ids() -> Array[String]:
 func to_dict() -> Dictionary:
 	SpellEffects.prune(self)
 	CreatedActorRules.sync(self)
+	AftermathSuccessorRules.sync(self)
 	TemporaryHPRules.prune(self, int(GameManager.campaign_elapsed_seconds))
 	ProtectionRules.prune(self,int(GameManager.campaign_elapsed_seconds))
 	_prune_recent_damage_history(int(GameManager.campaign_elapsed_seconds))
@@ -2901,6 +2909,7 @@ func from_dict(data: Dictionary) -> void:
 		inventory.add_item("spellbook")
 	DruidRules.restore_saved_form(self, data.get("wild_shape_state", {}))
 	CorpseRules.restore(self, data)
+	ActorProjectionRules.restore(self)
 	expire_timed_temporary_hp_grants(int(GameManager.campaign_elapsed_seconds))
 
 

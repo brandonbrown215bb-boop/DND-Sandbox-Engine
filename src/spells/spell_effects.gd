@@ -215,8 +215,10 @@ static func remove(target, source: String, end_reason: String = "source_removed"
 	if aid_bonus > 0 and target is Character:
 		target.max_hp = maxi(1, target.max_hp - aid_bonus)
 		target.current_hp = mini(target.current_hp, target.max_hp)
+	var projection_receipt := ActorProjectionRules.revert(target, record) if record.has("projection") else {}
 	all_records.erase(source)
 	var event := {"source_id": source, "spell_id": str(record.get("spell_id", "")), "caster_id": str(record.get("caster_id", "")), "end_reason": end_reason, "cause": cause.duplicate(true), "record": record}
+	if not projection_receipt.is_empty(): event["projection"] = projection_receipt
 	if target is Dictionary:
 		target["spell_effects"] = all_records
 		if not has_spell(target, "animal_friendship"):
@@ -445,7 +447,7 @@ static func end_concentration(caster: Character, targets: Array) -> bool:
 static func prune(target) -> void:
 	for source in records(target).keys():
 		var record: Dictionary = records(target)[source]
-		if record.has("source_benefits") or record.has("damage_link") or record.has("damage_response") or record.has("created_actors"):
+		if record.has("source_benefits") or record.has("damage_link") or record.has("damage_response") or record.has("created_actors") or record.has("projection"):
 			continue # These exact source records own non-condition behavior.
 		if str(record.get("spell_id", "")) in ["beacon_of_hope", "divine_favor", "death_ward", "sanctuary", "heroism", "magic_weapon", "enhance_ability"]:
 			continue # This benefit is represented by the source record, not a condition.
