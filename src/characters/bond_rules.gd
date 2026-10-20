@@ -106,7 +106,9 @@ static func prune(actor: Character) -> Array:
 		for e in state.get("targets", []):
 			var id := str(e.target_id)
 			var live := false
-			if not rule.is_empty():
+			# Review 041 R3: a temporarily suppressed source feature (projection) does not end the bond.
+			if rule.is_empty(): live = true
+			else:
 				if str(rule.target) == "item": live = actor.inventory.owned_instances().any(func(c): return str(c.instance_id) == id)
 				else: live = CreatedActorRules.actors(actor).any(func(a): return a.character_id == id)
 			if live: kept.append(e)

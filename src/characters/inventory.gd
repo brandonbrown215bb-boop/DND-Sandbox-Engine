@@ -358,6 +358,8 @@ func can_equip(slot: Slot, item_id: String, allow_unowned: bool = false) -> bool
 ## empty string) and leaves state unchanged when validation fails.
 func equip(slot: Slot, item_id: String, allow_unowned: bool = false) -> String:
 	copies.sync(self)
+	var wearer = owner_character_ref.get_ref() if owner_character_ref != null else null
+	if wearer != null and not ActorProjectionRules.equip_error(wearer).is_empty(): return ""
 	if not can_equip(slot, item_id, allow_unowned):
 		return ""
 	var previous := str(equipped.get(slot, ""))

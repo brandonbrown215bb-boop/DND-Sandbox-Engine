@@ -94,6 +94,12 @@ static func cast_error(caster, spell: Dictionary) -> String:
 	if effect.is_empty() or not caster is Character: return ""
 	if is_projected(caster) or DruidRules.is_shaped(caster): return "You are already in another form."
 	if effect.get("forms", []).size() != 1 and _form(effect, str(spell.get("_projection_form_id", ""))).is_empty(): return "A declared form must be selected."
+	# Review 041 R1: equipment-policy refusals also come before cost.
+	var legal: Array = effect.get("equipment", [])
+	var policy := str(spell.get("_projection_equipment", ""))
+	if legal.is_empty() and not policy.is_empty(): return "This projection declares no equipment policy."
+	if legal.size() > 1 and policy not in legal: return "A legal equipment policy must be selected."
+	if legal.size() == 1 and not policy.is_empty() and policy not in legal: return "A legal equipment policy must be selected."
 	return ""
 
 ## Called by the shared actor_projection effect on the self-cast actor.

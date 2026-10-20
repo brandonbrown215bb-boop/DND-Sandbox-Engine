@@ -36,7 +36,7 @@ static func run(h: Node) -> void:
 	# S-164: the HUD cast offers no equipment choice, so three legal policies refuse.
 	b.spell_slots = {"2": 1}
 	await Batch036Controls.cast(h, combat, b, b, Batch041Checks.GUISE)
-	h._assert(not ActorProjectionRules.is_projected(b) and b.get_ac() == normal_ac and SourceBenefitRules.total(b, "AC") == 2, "041 actual cast without a chosen equipment policy leaves the actor and its copies unchanged")
+	h._assert(not ActorProjectionRules.is_projected(b) and b.get_ac() == normal_ac and SourceBenefitRules.total(b, "AC") == 2 and int(b.spell_slots.get("2", 0)) == 1, "041 actual cast without a chosen equipment policy leaves the actor, its copies and its slot unchanged (slots=%s)" % str(b.spell_slots))
 	# The same production resolver with the merged policy chosen.
 	var r := Batch041Checks.guise(b, "merged")
 	h._assert(r.get("projection", {}).get("projected", false) and b.inventory.equipped_instance_id(Inventory.Slot.RING_1) == charm and SourceBenefitRules.total(b, "AC") == 0, "041 actual merged projection keeps the charm worn with its effect suppressed")
@@ -70,6 +70,13 @@ static func run(h: Node) -> void:
 	GameManager.current_state = GameManager.GameState.OVERWORLD
 	GameManager.game_in_progress = true
 	GameManager.active_dungeon_state.clear()
+	# Review: a fixture-class companion holds a live bond through the real save/load.
+	var bc: Character = PartyManager.characters.get(str(PartyManager.companion_roster.get("b041_review", {}).get("character_id", "")), null)
+	if bc == null:
+		bc = PartyManager.create_companion("b041_review", "Bond Keeper", "human", Batch041Checks.CLASS_ID, {"STR": 12, "DEX": 14, "CON": 14, "INT": 12, "WIS": 12, "CHA": 16})
+		h._assert(bc != null and PartyManager.recruit_companion("b041_review"), "041 review fixture-class companion joins the party")
+	var bond_copy := Batch041Checks.add_copy(bc, "dagger") if bc != null else ""
+	var bond_made: Dictionary = BondRules.bond(bc, Batch041Checks.BLADE, bond_copy) if bc != null else {}
 	var slot := "batch_041_equipment"
 	var block := SaveManager.get_save_block_reason()
 	var saved: bool = block.is_empty() and SaveManager.save_game(slot)
@@ -78,6 +85,8 @@ static func run(h: Node) -> void:
 		var loaded := SaveManager.load_game(slot)
 		var nb: Character = PartyManager.characters.get(b.character_id, null)
 		h._assert(loaded and nb != null and nb != b and ActorProjectionRules.equipment_policy(nb) == "merged" and nb.get_ac() == 12 and SourceBenefitRules.total(nb, "AC") == 0 and nb.inventory.equipped_instance_id(Inventory.Slot.RING_1) == charm, "041 actual real load keeps the merged copy worn and suppressed (ac=%d proj=%s pol=%s total=%d ring=%s effects=%s)" % [nb.get_ac(), str(ActorProjectionRules.is_projected(nb)), ActorProjectionRules.equipment_policy(nb), SourceBenefitRules.total(nb, "AC"), nb.inventory.equipped_instance_id(Inventory.Slot.RING_1), str(nb.spell_effects.keys())])
+		var nbc: Character = PartyManager.characters.get(bc.character_id, null) if bc != null else null
+		h._assert(bond_made.get("bonded", false) and nbc != null and nbc != bc and BondRules.bonded(nbc, Batch041Checks.BLADE) == [bond_copy] and nbc.inventory.owned_instances().any(func(c): return str(c.instance_id) == bond_copy), "041 review real load keeps the companion's live bond on the same copy (bonds=%s)" % (str(nbc.exclusive_bonds) if nbc != null else "none"))
 		if nb != null:
 			SpellEffects.end_concentration(nb, [nb])
 			h._assert(not ActorProjectionRules.is_projected(nb) and nb.get_ac() == normal_ac and SourceBenefitRules.total(nb, "AC") == 2, "041 actual concentration end after reload restores the merged charm's effect")
