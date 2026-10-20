@@ -17,6 +17,7 @@ static func run(check: Callable) -> void:
 	check.call(DataLoader.get_load_errors().is_empty(), "035 neutral profile class and max-HP creature load: %s" % str(DataLoader.get_load_errors()))
 	_max_hp(check)
 	_profiles(check)
+	review_stress(check)
 
 static func _max_hp(check: Callable) -> void:
 	var rule := drain_rule()
@@ -129,3 +130,84 @@ static func _profiles(check: Callable) -> void:
 			"die": bad.replace.damage_die = "1d7"
 			"empty": bad.erase("replace")
 		check.call(not AttackProfileRules.validate_rule(bad).is_empty(), "035 S-126 malformed profile %s refuses" % defect)
+
+## Reviewer stress cases (Batch 035 review).
+static func review_stress(check: Callable) -> void:
+	load_fixtures()
+	var red := {"id": "rv:red", "kind": "reduction", "amount": 0}
+	var inc := {"id": "rv:inc", "kind": "increase", "amount": 0, "raise_current": true}
+	# ST1 two reductions under the floor: removing one restores the other's full request.
+	var a := Batch031Checks._character("rv_a", 10)
+	MaxHpSourceRules.apply(a, red, "x:a", 8)
+	MaxHpSourceRules.apply(a, red, "y:b", 5)
+	check.call(a.max_hp == 1, "035 review ST1 stacked reductions clamp at floor (max=%d)" % a.max_hp)
+	MaxHpSourceRules.remove(a, "x:a")
+	check.call(a.max_hp == 5, "035 review ST1 removing one clamped reduction re-honors the other's request (max=%d, want 5)" % a.max_hp)
+	MaxHpSourceRules.remove(a, "y:b")
+	check.call(a.max_hp == 10 and a.max_hp_sources.is_empty(), "035 review ST1 removing all reductions restores the natural maximum (max=%d)" % a.max_hp)
+	# ST2 increase then over-floor reduction, removed in either order, never drifts.
+	var b := Batch031Checks._character("rv_b", 10)
+	MaxHpSourceRules.apply(b, inc, "s:inc", 5)
+	MaxHpSourceRules.apply(b, red, "s:red", 20)
+	check.call(b.max_hp == 1, "035 review ST2 reduction past increase clamps to floor (max=%d)" % b.max_hp)
+	MaxHpSourceRules.remove(b, "s:inc")
+	check.call(b.max_hp == 1, "035 review ST2 removing the increase keeps floor (max=%d)" % b.max_hp)
+	MaxHpSourceRules.remove(b, "s:red")
+	check.call(b.max_hp == 10, "035 review ST2 no drift after both removals (max=%d, want 10)" % b.max_hp)
+	# ST3 increase with raise_current; removal clamps current; reduction never raises current.
+	var c := Batch031Checks._character("rv_c", 20)
+	MaxHpSourceRules.apply(c, inc, "c:inc", 5)
+	check.call(c.max_hp == 25 and c.current_hp == 25, "035 review ST3 raise_current increase raises current by the change")
+	MaxHpSourceRules.apply(c, inc, "c:inc", 3)
+	check.call(c.max_hp == 25, "035 review ST3 non-accumulating increase does not stack or shrink on smaller re-apply (max=%d)" % c.max_hp)
+	MaxHpSourceRules.remove(c, "c:inc")
+	check.call(c.max_hp == 20 and c.current_hp == 20, "035 review ST3 removing the increase clamps current HP")
+	# ST4 downed actor: increase with raise_current does not revive.
+	var d := Batch031Checks._character("rv_d", 20)
+	d.current_hp = 0
+	MaxHpSourceRules.apply(d, inc, "d:inc", 5)
+	check.call(d.current_hp == 0 and d.max_hp == 25, "035 review ST4 increase does not revive a 0-HP actor")
+	# ST5 refusal before cost: protected maximum creates no entry and changes nothing.
+	var e := Batch031Checks._character("rv_e", 20)
+	e.aura_of_life_sources.append("aura:x")
+	var r := MaxHpSourceRules.apply(e, red, "e:red", 6)
+	check.call(not r.applied and e.max_hp == 20 and e.max_hp_sources.is_empty(), "035 review ST5 protected reduction is refused before any change")
+	r = MaxHpSourceRules.apply(e, {"id": "bad", "kind": "reduction", "amount": -3}, "e:bad", -1)
+	check.call(not r.applied and e.max_hp_sources.is_empty(), "035 review ST5 malformed rule is refused before any change")
+	# ST6 legacy DTO without the field and garbage DTO.
+	var f := Batch031Checks._character("rv_f", 30)
+	var legacy := f.to_dict()
+	legacy.erase("max_hp_sources")
+	check.call(MaxHpSourceRules.saved_error(legacy).is_empty(), "035 review ST6 legacy DTO without max_hp_sources validates")
+	var g := Character.new()
+	g.from_dict(legacy)
+	check.call(g.max_hp == 30 and g.max_hp_sources.is_empty(), "035 review ST6 legacy DTO restores natural maximum with no sources")
+	var bad := legacy.duplicate(true)
+	bad["max_hp_sources"] = {"z": {"rule_id": "r", "kind": "increase", "requested": 3, "applied": 9, "accumulate": false, "floor": 1, "cure_on": [], "periodic": {}, "raise_current": false}}
+	check.call(not MaxHpSourceRules.saved_error(bad).is_empty(), "035 review ST6 contradictory increase DTO is refused")
+	# ST7 round trip with clamped sources keeps exact removal semantics.
+	var h := Batch031Checks._character("rv_h", 10)
+	MaxHpSourceRules.apply(h, red, "h:a", 8)
+	MaxHpSourceRules.apply(h, red, "h:b", 5)
+	var dto := h.to_dict()
+	check.call(MaxHpSourceRules.saved_error(dto).is_empty(), "035 review ST7 clamped DTO validates")
+	var h2 := Character.new()
+	h2.from_dict(dto)
+	MaxHpSourceRules.remove(h2, "h:a")
+	MaxHpSourceRules.remove(h2, "h:b")
+	check.call(h2.max_hp == 10, "035 review ST7 reloaded clamped sources revert to natural maximum (max=%d)" % h2.max_hp)
+	# ST8 periodic growth honors protection and floor; cure removes exactly.
+	var k := Batch031Checks._character("rv_k", 5)
+	var rule := drain_rule()
+	MaxHpSourceRules.apply(k, rule, "k:drain", 3)
+	for _i in 10: MaxHpSourceRules.on_event(k, "turn_started")
+	check.call(k.max_hp == 1, "035 review ST8 periodic growth stops at floor (max=%d)" % k.max_hp)
+	MaxHpSourceRules.on_event(k, "long_rest_completed")
+	check.call(k.max_hp == 5 and k.max_hp_sources.is_empty(), "035 review ST8 cure restores exact natural maximum (max=%d)" % k.max_hp)
+	# ST9 profile does not leak into an unrelated actor or the catalog after use.
+	var p := Batch031Checks._character("rv_p", 20)
+	p.features.append(feature(1))
+	var sword := DataLoader.get_item("longsword")
+	var prof := AttackProfileRules.apply_weapon(p, sword)
+	var q := Batch031Checks._character("rv_q", 20)
+	check.call(prof.get("damage_type") == "fire" and AttackProfileRules.apply_weapon(q, sword).get("damage_type") == "slashing" and sword.damage_type == "slashing", "035 review ST9 profile is scoped to its owner and never mutates the catalog")
