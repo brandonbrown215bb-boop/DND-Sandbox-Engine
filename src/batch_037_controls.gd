@@ -42,7 +42,52 @@ static func run(h: Node) -> void:
 	RestRules.complete_long_rest([a], {"allow_in_test": true, "skip_campaign_time": true})
 	h._assert(not a.feature_modes[stance].active and int(a.feature_uses[stance]) == 2 and a.get_ac() == base_ac + 1, "037 actual Long Rest ends the activation, restores uses and keeps the rest mode until replaced")
 	h._assert(FeatureModeRules.choose(a, Batch037Checks.ATTUNE, "swift").success and a.get_ac() == base_ac, "037 actual post-rest choice replaces the rest mode's grant")
+	await _review_reload(h, a)
 	a.features = prior_features
 	a.feature_uses = prior_uses
 	a.feature_modes.clear()
 	h._exit_test()
+
+## Review: a real SaveManager save/load mid-activation (the builder scenario never reloaded).
+## A recruited fixture-class companion owns the mode as a persistent class rule.
+static func _review_reload(h: Node, _a: Character) -> void:
+	var stance := Batch037Checks.STANCE
+	_a.feature_modes.clear() # The builder's fighter only carries appended (non-persistent) fixture rules.
+	GameManager.current_state = GameManager.GameState.OVERWORLD
+	GameManager.game_in_progress = true
+	GameManager.active_dungeon_state.clear()
+	var a: Character = PartyManager.characters.get(PartyManager.companion_roster.get("b037_review", {}).get("character_id", ""), null)
+	if a == null:
+		a = PartyManager.create_companion("b037_review", "Stance Keeper", "human", "fixture:b037_class", {"STR": 12, "DEX": 12, "CON": 14, "INT": 10, "WIS": 16, "CHA": 10})
+		var recruited := a != null and PartyManager.recruit_companion("b037_review")
+		h._assert(recruited, "037 review fixture-class companion joins the party")
+		if not recruited: return
+	a.feature_uses[stance] = a.get_feature_max_uses(stance)
+	var act := FeatureModeRules.activate(a, stance, "guard")
+	var live := {"uses": int(a.feature_uses.get(stance, -1)), "serial": int(a.feature_modes.get(stance, {}).get("activation_serial", 0)), "remaining": int(a.feature_modes.get(stance, {}).get("remaining_seconds", 0)), "temp": a.temp_hp}
+	var slot := "batch_037_review"
+	var block := SaveManager.get_save_block_reason()
+	var saved: bool = act.success and block.is_empty() and SaveManager.save_game(slot)
+	h._assert(saved, "037 review real save mid-activation (act=%s block='%s')" % [str(act.get("reason", "")), block])
+	if not saved: return
+	var bad: Dictionary = SaveManager._read_save(slot).duplicate(true)
+	var tampered := false
+	if bad.has("party") and bad.party.get("characters", {}).has(a.character_id):
+		bad.party.characters[a.character_id].feature_modes[stance].mode = "bogus"
+		tampered = true
+	var bad_file := FileAccess.open(SaveManager.SAVE_DIR + slot + "_bad.sav", FileAccess.WRITE)
+	bad_file.store_string(JSON.stringify(bad))
+	bad_file.close()
+	h._assert(tampered and not SaveManager.load_game(slot + "_bad") and PartyManager.characters.get(a.character_id) == a and str(a.feature_modes[stance].mode) == "guard", "037 review malformed saved mode refuses before replacing the live party")
+	FeatureModeRules.end(a, stance, "dismissed")
+	a.feature_uses[stance] = 0
+	a.temp_hp = 0
+	var loaded := SaveManager.load_game(slot)
+	var b: Character = PartyManager.characters.get(a.character_id, null)
+	var ok: bool = loaded and b != null and b != a and bool(b.feature_modes.get(stance, {}).get("active", false)) and str(b.feature_modes[stance].mode) == "guard" and int(b.feature_uses.get(stance, -1)) == live.uses and int(b.feature_modes[stance].activation_serial) == live.serial and int(b.feature_modes[stance].remaining_seconds) == live.remaining and b.temp_hp == live.temp
+	h._assert(ok, "037 review real load restores the active mode, spent use, serial, deadline and Temporary HP without refill (%s vs %s)" % [str(b.feature_modes.get(stance, {}) if b else {}), str(live)])
+	if b != null:
+		var ac_with := b.get_ac()
+		h._assert(FeatureModeRules.choose(b, stance, "stride").success and b.get_ac() == ac_with - 2 and int(b.feature_uses[stance]) == live.uses and FeatureModeRules.activate(b, stance, "guard").reason == "already_active", "037 review loaded actor reselects without respending and swaps exactly one grant")
+	SaveManager.delete_save(slot)
+	SaveManager.delete_save(slot + "_bad")
