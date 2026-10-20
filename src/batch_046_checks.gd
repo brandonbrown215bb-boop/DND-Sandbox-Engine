@@ -48,6 +48,7 @@ static func run(check: Callable) -> void:
 	_rescue_validation(check)
 	_rescue(check)
 	_rescue_saves(check)
+	review_stress(check)
 
 static func _work_validation(check: Callable) -> void:
 	var p: Dictionary = DataLoader.get_item(FRAME).work.duplicate(true)
@@ -234,3 +235,89 @@ static func _rescue_saves(check: Callable) -> void:
 	var missing := dto.duplicate(true)
 	missing.tethers[source].erase("hp")
 	check.call(not TetherRules.saved_error(over).is_empty() and not TetherRules.saved_error(missing).is_empty(), "046 S-169 saved tether hp above its spell or missing is refused")
+
+
+## Runtime Reviewer stress (RW1-RW9).
+static func review_stress(check: Callable) -> void:
+	# RW1: one worker cannot accrue the same hours on two works.
+	var w := actor("b046_rw1")
+	_party([w])
+	var t1 := add(w, TOME)
+	var t2 := add(w, TOME)
+	var s1 := WorkRules.start(w, t1)
+	var before := w.inventory.get_instance(t2)
+	var s2 := WorkRules.start(w, t2)
+	WorkRules.settle(w, 3600, 3600)
+	check.call(s1.success and not s2.success and w.inventory.get_instance(t2) == before and WorkRules.progress(w.inventory.get_instance(t1)) == 3600, "046 RW1 a second concurrent work refuses before anything changes; only the first accrues")
+	# RW2: a helper on one work cannot start or join another.
+	var h := actor("b046_rw2_h")
+	var w2 := actor("b046_rw2_w")
+	_party([h, w2])
+	var f1 := add(w, FRAME)
+	WorkRules.stop(w, t1)
+	WorkRules.start(w, f1)
+	var j1 := WorkRules.join(h, w, f1)
+	var f2 := add(w2, FRAME)
+	WorkRules.start(w2, f2)
+	var own := add(h, TOME)
+	var j2 := WorkRules.join(h, w2, f2)
+	var s3 := WorkRules.start(h, own)
+	check.call(j1.success and not j2.success and not s3.success and not WorkRules.is_active(h.inventory.get_instance(own)), "046 RW2 a helper already working cannot join or start another work")
+	# RW3: a save with one character in two active works is refused.
+	var a_dto := w.to_dict()
+	var b_dto := w2.to_dict()
+	for r in b_dto.inventory.copies.records.values():
+		if WorkRules.is_active(r): r.state.work_participants.append(h.character_id)
+	check.call(WorkRules.party_error([w.to_dict(), w2.to_dict()]).is_empty() and not WorkRules.party_error([a_dto, b_dto]).is_empty(), "046 RW3 a tampered save with a double-booked participant is refused")
+	# RW4: tampered progress and day ledger are refused.
+	var rec := w.inventory.get_instance(t1).duplicate(true)
+	var bad := [rec.duplicate(true), rec.duplicate(true), rec.duplicate(true)]
+	bad[0].state["work_progress_seconds"] = -1
+	bad[1].state["work_progress_seconds"] = 999999
+	bad[2].state["work_day"] = 0
+	bad[2].state["work_day_seconds"] = 90000
+	check.call(WorkRules.record_error(rec).is_empty() and bad.all(func(x): return not WorkRules.record_error(x).is_empty()), "046 RW4 negative, over-required and over-daily ledgers are refused")
+	# RW5: a span crossing midnight accrues into both days' allowances.
+	var p := actor("b046_rw5")
+	_party([p])
+	var tome := add(p, TOME)
+	WorkRules.start(p, tome)
+	var night := 86400 * 3 - 3600
+	WorkRules.settle(p, 10800, night + 10800)
+	var pr := p.inventory.get_instance(tome)
+	check.call(WorkRules.progress(pr) == 10800 and int(pr.state.work_day) == 3 and int(pr.state.work_day_seconds) == 7200, "046 RW5 a partial span across midnight splits into each day's ledger (%s)" % str(pr.state))
+	_leave([w, h, w2, p])
+	# RW6: a captor dropped to 0 HP by real damage frees the victim through concentration loss.
+	var c := actor("b046_rw6_c")
+	var v := actor("b046_rw6_v")
+	var r6 := snare(c, v)
+	c.take_damage(9999)
+	check.call(r6.get("tether", {}).get("bound", false) and TetherRules.binding(v, [c]).is_empty() and not CombatAction.has_condition(v, "restrained"), "046 RW6 a downed captor's tether and restraint end (conc=%s)" % str(c.concentrating_on))
+	# RW7: with two tethers, cutting a named source leaves the other (045 R2 interplay).
+	var vv := actor("b046_rw7_v")
+	var ca := actor("b046_rw7_a")
+	var cb := actor("b046_rw7_b")
+	var helper := actor("b046_rw7_h")
+	var sa := str(snare(ca, vv).get("tether", {}).get("source_id", ""))
+	var sb := str(snare(cb, vv).get("tether", {}).get("source_id", ""))
+	var cut := {}
+	for i in 10:
+		cut = TetherRules.rescue(helper, vv, [ca, cb], "strike", sb)
+		if cut.get("success", false) or not cut.get("attempted", false): break
+	check.call(cut.get("success", false) and cut.source_id == sb and ca.tethers.has(sa) and TetherRules.has_source(vv, sa) and CombatAction.has_condition(vv, "restrained"), "046 RW7 cutting the named second tether leaves the first tether and restraint")
+	# RW8: a downed rescuer is refused and spends nothing.
+	var down := actor("b046_rw8")
+	down.is_alive = false
+	var refused := TetherRules.rescue(down, vv, [ca], "check")
+	check.call(not refused.get("attempted", false) and not refused.has("seconds") and ca.tethers.has(sa), "046 RW8 an incapacitated rescuer is refused before cost")
+	# RW9: partial tether hp persists and tampering is refused.
+	var dto := cb.to_dict()
+	var hs := snare(cb, actor("b046_rw9_v"))
+	var cdto := cb.to_dict()
+	var src9 := str(hs.get("tether", {}).get("source_id", ""))
+	cdto.tethers[src9].hp = 3
+	var zero := cdto.duplicate(true)
+	zero.tethers[src9].hp = 0
+	var over := cdto.duplicate(true)
+	over.tethers[src9].hp = 6
+	check.call(TetherRules.saved_error(cdto).is_empty() and not TetherRules.saved_error(zero).is_empty() and not TetherRules.saved_error(over).is_empty(), "046 RW9 partial tether hp validates; zero and over-max hp are refused")

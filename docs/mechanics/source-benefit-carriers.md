@@ -102,7 +102,8 @@ checks, including both player and party checkpoint representations. Active
 storage cannot silently freeze an active budget. Work must also be stopped
 before attachment or projection. Losing a work copy, or a participant resting,
 applies its `work.on_interrupt` keep/reset policy immediately. Rest duration
-does not count as work. Work's existing item-only and party-membership limits
+does not count as work. Each participant can work on one job at a time; both
+party and player-only checkpoints enforce that limit. Work's existing item-only and party-membership limits
 remain; it does not check helpers' spatial co-location.
 
 Regressions live in `src/stack_repair_checks.gd`; these fixture-backed repairs do

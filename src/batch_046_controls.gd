@@ -42,17 +42,25 @@ static func run(h: Node) -> void:
 	var started := WorkRules.start(a, tome)
 	GameManager.advance_campaign_time(3600)
 	h._assert(started.success and WorkRules.progress(a.inventory.get_instance(tome)) == 3600, "046 actual started study accrues on the real campaign clock")
-	WorkRules.start(b, frame)
-	GameManager.advance_campaign_time(600)
-	var waited := WorkRules.progress(b.inventory.get_instance(frame))
-	var joined := WorkRules.join(a, b, WorkRules.active_id(b))
-	GameManager.advance_campaign_time(1200)
-	h._assert(waited == 0 and joined.success and WorkRules.progress(b.inventory.get_instance(frame)) == 1200, "046 actual group work waits for its second participant, then accrues")
 	# Checklist (a): stowing active work refuses with the copy and its progress unchanged.
 	var bag := Batch046Checks.add(a, Batch043Checks.SATCHEL)
 	var before := a.inventory.get_instance(tome)
 	var stow := ContainerRules.stow(a.inventory, tome)
 	h._assert(not stow.get("success", false) and a.inventory.get_instance(tome) == before and not bag.is_empty(), "046 actual refused stow leaves the active work and its progress untouched")
+	WorkRules.start(b, frame)
+	GameManager.advance_campaign_time(600)
+	var waited := WorkRules.progress(b.inventory.get_instance(frame))
+	# Review 046 R1: a studying character cannot also join; the same hours never accrue twice.
+	var busy := WorkRules.join(a, b, WorkRules.active_id(b))
+	WorkRules.stop(a, tome)
+	var joined := WorkRules.join(a, b, WorkRules.active_id(b))
+	GameManager.advance_campaign_time(1200)
+	h._assert(waited == 0 and not busy.success and joined.success and WorkRules.progress(b.inventory.get_instance(frame)) == 1200 and WorkRules.progress(a.inventory.get_instance(tome)) == 4200, "046 actual group work waits for its second participant, then accrues; a busy helper must stop first (review 046 R1)")
+	# Back to separate works before combat: the group work resets on leaving, the study resumes.
+	WorkRules.stop(b, frame)
+	WorkRules.start(a, tome)
+	WorkRules.start(b, frame)
+	GameManager.advance_campaign_time(1200)
 	# Combat interrupts both works through their own policies.
 	var prior := _prepare(b)
 	GameManager.transition_context = {"terrain": "plains", "monster_ids": ["goblin", "goblin"]}
@@ -64,7 +72,7 @@ static func run(h: Node) -> void:
 		await h.get_tree().process_frame
 	var tome_rec := a.inventory.get_instance(tome)
 	var frame_rec := b.inventory.get_instance(frame)
-	h._assert(not WorkRules.is_active(tome_rec) and WorkRules.progress(tome_rec) == 3600 + 1800 and not WorkRules.is_active(frame_rec) and WorkRules.progress(frame_rec) == 0, "046 actual combat interrupts work: keep keeps the study, reset loses the group work (tome=%d frame=%d)" % [WorkRules.progress(tome_rec), WorkRules.progress(frame_rec)])
+	h._assert(not WorkRules.is_active(tome_rec) and WorkRules.progress(tome_rec) == 4200 + 1200 and not WorkRules.is_active(frame_rec) and WorkRules.progress(frame_rec) == 0, "046 actual combat interrupts work: keep keeps the study, reset loses the group work (tome=%d frame=%d)" % [WorkRules.progress(tome_rec), WorkRules.progress(frame_rec)])
 	for entry in combat.player_entities:
 		entry["hex_position"] = Vector2i.ZERO if entry.character == a else Vector2i(0, 1)
 		entry["has_turn"] = true
@@ -109,23 +117,24 @@ static func run(h: Node) -> void:
 	GameManager.current_state = GameManager.GameState.OVERWORLD
 	GameManager.game_in_progress = true
 	GameManager.active_dungeon_state.clear()
-	WorkRules.start(a, tome)
 	WorkRules.start(b, frame)
 	WorkRules.join(a, b, frame)
+	var refused_second := WorkRules.start(a, tome)
+	h._assert(not refused_second.success and not WorkRules.is_active(a.inventory.get_instance(tome)), "046 RW10 a participant in group work cannot start a second work (review 046 R1)")
 	GameManager.advance_campaign_time(300)
 	var slot := "batch_046_work_rescue"
 	var block := SaveManager.get_save_block_reason()
 	var saved: bool = block.is_empty() and SaveManager.save_game(slot)
-	h._assert(saved, "046 actual real save with two active works (block='%s')" % block)
+	h._assert(saved, "046 actual real save with an active group work (block='%s')" % block)
 	if saved:
 		var loaded := SaveManager.load_game(slot)
 		var na: Character = PartyManager.characters.get(a.character_id, null)
 		var nb: Character = PartyManager.characters.get(b.character_id, null)
-		h._assert(loaded and na != null and nb != null and na != a and WorkRules.is_active(na.inventory.get_instance(tome)) and WorkRules.progress(na.inventory.get_instance(tome)) == 5700 and WorkRules.progress(nb.inventory.get_instance(frame)) == 300, "046 actual real load keeps exact progress and participants")
+		h._assert(loaded and na != null and nb != null and na != a and not WorkRules.is_active(na.inventory.get_instance(tome)) and WorkRules.progress(na.inventory.get_instance(tome)) == 5400 and WorkRules.progress(nb.inventory.get_instance(frame)) == 300 and nb.inventory.get_instance(frame).state.work_participants == [b.character_id, a.character_id], "046 actual real load keeps exact progress and participants")
 		if na != null and nb != null:
 			GameManager.advance_campaign_time(600)
-			h._assert(WorkRules.progress(na.inventory.get_instance(tome)) == 6300 and WorkRules.progress(nb.inventory.get_instance(frame)) == 900, "046 actual work resumes accruing after reload (tome=%d frame=%d)" % [WorkRules.progress(na.inventory.get_instance(tome)), WorkRules.progress(nb.inventory.get_instance(frame))])
+			h._assert(WorkRules.progress(na.inventory.get_instance(tome)) == 5400 and WorkRules.progress(nb.inventory.get_instance(frame)) == 900, "046 actual work resumes accruing after reload (tome=%d frame=%d)" % [WorkRules.progress(na.inventory.get_instance(tome)), WorkRules.progress(nb.inventory.get_instance(frame))])
 			var stop := WorkRules.stop(nb, frame)
-			h._assert(stop.success and WorkRules.progress(nb.inventory.get_instance(frame)) == 0 and WorkRules.progress(na.inventory.get_instance(tome)) == 6300, "046 actual leaving the group work resets only that work")
+			h._assert(stop.success and WorkRules.progress(nb.inventory.get_instance(frame)) == 0 and WorkRules.progress(na.inventory.get_instance(tome)) == 5400, "046 actual leaving the group work resets only that work")
 		SaveManager.delete_save(slot)
 	h._exit_test()

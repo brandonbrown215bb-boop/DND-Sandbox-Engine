@@ -59,9 +59,19 @@ static func eligibility_error(actor: Character, record: Dictionary) -> String:
 	if bool(p.get("concentration", false)) and not actor.concentrating_on.is_empty(): return "The work needs full attention; concentration on a spell breaks it."
 	return ""
 
+## Review 046 R1: a character works on one thing at a time; the same hours never accrue on two works.
+static func busy_on(character_id: String, holders: Array = []) -> String:
+	var people: Array = holders if not holders.is_empty() else PartyManager.characters.values()
+	for holder in people:
+		if not holder is Character: continue
+		for record in holder.inventory.owned_instances():
+			if is_active(record) and character_id in record.get("state", {}).get("work_participants", []): return str(record.instance_id)
+	return ""
+
 ## Refusal before anything changes.
 static func start_error(actor: Character, id: String) -> String:
 	if not _carried(actor, id): return "Carry that item to work on it."
+	if not busy_on(actor.character_id, [actor] + PartyManager.characters.values()).is_empty() and not is_active(actor.inventory.get_instance(id)): return "You are already working on something else."
 	var record := actor.inventory.get_instance(id)
 	var p := policy(str(record.get("definition_id", "")))
 	if p.is_empty(): return "That item has no work."
@@ -93,6 +103,7 @@ static func join_error(helper: Character, worker: Character, id: String) -> Stri
 	if not is_active(record): return "That work is not underway."
 	var people: Array = record.state.get("work_participants", [])
 	if helper.character_id in people: return "Already working on it."
+	if not busy_on(helper.character_id, [helper, worker] + PartyManager.characters.values()).is_empty(): return "You are already working on something else." # Review 046 R1.
 	if people.size() >= 6: return "No room for more participants."
 	return ""
 
@@ -215,6 +226,20 @@ static func record_error(record: Variant) -> String:
 		if progress(record) >= int(p.required_seconds): return "completed work cannot be active"
 	if state.has("work_day") != state.has("work_day_seconds"): return "work day ledger is incomplete"
 	if state.has("work_day") and (not _whole(state.work_day, 0, 100000000) or not _whole(state.work_day_seconds, 0, int(p.daily_seconds))): return "work day ledger is invalid"
+	return ""
+
+## Review 046 R1: across a saved party, nobody participates in two active works.
+static func party_error(character_dtos: Array) -> String:
+	var seen := {}
+	for dto in character_dtos:
+		if not dto is Dictionary: continue
+		var records: Variant = dto.get("inventory", {}).get("copies", {}).get("records", {})
+		if not records is Dictionary: continue
+		for record in records.values():
+			if not record is Dictionary or not record.get("state") is Dictionary or not bool(record.state.get("work_active", false)): continue
+			for id in record.state.get("work_participants", []):
+				if seen.has(str(id)): return "a character works on two things at once"
+				seen[str(id)] = true
 	return ""
 
 static func _unique(values: Array) -> int:

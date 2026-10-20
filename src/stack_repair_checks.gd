@@ -114,6 +114,13 @@ static func _work_interruptions(check: Callable) -> void:
 	WorkRules.start(a, frame)
 	WorkRules.join(helper, a, frame)
 	WorkRules.settle(a, 600, 600)
+	var other_work := Batch046Checks.add(helper, Batch046Checks.TOME)
+	var helper_dto := helper.to_dict()
+	helper_dto.inventory.copies.records[other_work].state["work_active"] = true
+	helper_dto.inventory.copies.records[other_work].state["work_participants"] = [helper.character_id]
+	check.call(not InventoryCopies.ownership_error({"players": [{"character": a.to_dict()}, {"character": helper_dto}]}).is_empty(), "Stack: player-only saves refuse double-booked work")
+	check.call(not InventoryCopies.ownership_error({"party": {"characters": {a.character_id: a.to_dict()}}, "players": [{"character": helper_dto}]}).is_empty(), "Stack: mixed party/player saves refuse double-booked work")
+	check.call(InventoryCopies.ownership_error({"party": {"characters": {a.character_id: a.to_dict(), helper.character_id: helper.to_dict()}}, "players": [{"character": a.to_dict()}]}).is_empty(), "Stack: a repeated canonical party member is not counted as a second work")
 	check.call(a.inventory.transfer_instance(frame, helper.inventory) and WorkRules.progress(helper.inventory.get_instance(frame)) == 0 and not WorkRules.is_active(helper.inventory.get_instance(frame)), "Stack: losing work resets immediately, even if the copy returns before time advances")
 	helper.inventory.transfer_instance(frame, a.inventory)
 	WorkRules.start(a, frame)

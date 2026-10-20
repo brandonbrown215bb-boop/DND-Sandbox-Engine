@@ -163,6 +163,17 @@ static func record_state_error(record: Dictionary) -> String:
 static func ownership_error(save: Dictionary) -> String:
 	var seen: Dictionary = {}
 	var party_characters: Dictionary = save.get("party", {}).get("characters", {}) if save.get("party") is Dictionary else {}
+	var work_characters: Array = party_characters.values()
+	var work_owners: Array = party_characters.keys()
+	for player in save.get("players", []):
+		var character: Variant = player.get("character")
+		if not character is Dictionary: continue
+		var owner := str(character.get("character_id", ""))
+		if owner not in work_owners:
+			work_characters.append(character)
+			work_owners.append(owner)
+	var work_error := WorkRules.party_error(work_characters)
+	if not work_error.is_empty(): return work_error
 	for character in party_characters.values():
 		for id in character.get("inventory", {}).get("copies", {}).get("records", {}).keys() + ContainerRules.content_ids(character.get("inventory", {})) + AttachmentRules.attached_ids(character.get("inventory", {})) + ItemProjectionRules.copy_ids(character):
 			if seen.has(id): return "item copy has multiple character owners"
