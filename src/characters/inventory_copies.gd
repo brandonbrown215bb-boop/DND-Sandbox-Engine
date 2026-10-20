@@ -135,6 +135,8 @@ static func record_state_error(record: Dictionary) -> String:
 	var state: Dictionary = record.get("state", {})
 	var magic_error := MagicPropertyRules.record_error(record) # Review 044 R3.
 	if not magic_error.is_empty(): return magic_error
+	var active_error := ActiveTimeRules.record_error(record) # S-064.
+	if not active_error.is_empty(): return active_error
 	if state.has("food_remaining_daily_fraction"):
 		var remaining_food: Variant = state["food_remaining_daily_fraction"]
 		if str(record["definition_id"]) != "rations" or (not remaining_food is int and not remaining_food is float) or not is_finite(float(remaining_food)) or float(remaining_food) <= 0.0 or float(remaining_food) >= 1.0:

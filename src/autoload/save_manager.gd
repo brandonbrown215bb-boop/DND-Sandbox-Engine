@@ -343,6 +343,8 @@ func _validate_save_data(data: Dictionary) -> String:
 			if not item_projection_error.is_empty(): return item_projection_error
 			var curse_error := CurseRules.saved_error(character_data)
 			if not curse_error.is_empty(): return curse_error
+			var tether_error := TetherRules.saved_error(character_data)
+			if not tether_error.is_empty(): return tether_error
 			var container_error := ContainerRules.saved_error(character_data)
 			if not container_error.is_empty(): return container_error
 			var attachment_error := AttachmentRules.saved_error(character_data)
@@ -527,6 +529,8 @@ func _validate_party_data(data: Dictionary, campaign_seconds: int = 0) -> String
 		if not item_projection_error.is_empty(): return item_projection_error
 		var curse_error := CurseRules.saved_error(character_data)
 		if not curse_error.is_empty(): return curse_error
+		var tether_error := TetherRules.saved_error(character_data)
+		if not tether_error.is_empty(): return tether_error
 		var container_error := ContainerRules.saved_error(character_data)
 		if not container_error.is_empty(): return container_error
 		var attachment_error := AttachmentRules.saved_error(character_data)

@@ -132,7 +132,7 @@ static func saved_state_error(dto: Dictionary) -> String:
 			var declares_condition := false
 			if SharedSpell.uses(definition):
 				for eff in definition.get("effects", []):
-					if eff is Dictionary and eff.get("type", "") == "grant_condition" and eff.get("condition", "") == condition:
+					if eff is Dictionary and eff.get("type", "") in ["grant_condition", "bind_tether"] and eff.get("condition", "") == condition: # S-168 tethers grant their declared condition.
 						declares_condition = true
 						break
 				if not declares_condition:

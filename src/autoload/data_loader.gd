@@ -568,6 +568,11 @@ func _validate_semantics(data: Dictionary, content_type: String, source: String)
 		if not container_error.is_empty():
 			_load_errors.append("%s in %s" % [container_error, source])
 			valid = false
+	if content_type == "item" and data.has("active_time"):
+		var active_error := ActiveTimeRules.policy_error(data["active_time"])
+		if not active_error.is_empty():
+			_load_errors.append("%s in %s" % [active_error, source])
+			valid = false
 	if content_type == "item" and data.has("attachments"):
 		var attachment_error := AttachmentRules.policy_error(data["attachments"])
 		if not attachment_error.is_empty():
