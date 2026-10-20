@@ -49,6 +49,8 @@ static func begin_cast(caster: Character, spell: Dictionary, cast_facts: Diction
 		if spell.has("repeat_save_dc_progression"): record["repeat_save_dc_progression"] = spell["repeat_save_dc_progression"].duplicate(true)
 	var rules: Variant = spell.get("source_end_rules", [])
 	if rules is Array and not rules.is_empty(): record["source_end_rules"] = rules.duplicate(true)
+	var aftermath: Variant = spell.get("end_aftermath", [])
+	if aftermath is Array and not aftermath.is_empty(): record["end_aftermath"] = aftermath.duplicate(true)
 	if not cast_facts.is_empty(): record["cast_facts"] = cast_facts.duplicate(true)
 	return record
 
@@ -215,12 +217,14 @@ static func remove(target, source: String, end_reason: String = "source_removed"
 		target.current_hp = mini(target.current_hp, target.max_hp)
 	all_records.erase(source)
 	var event := {"source_id": source, "spell_id": str(record.get("spell_id", "")), "caster_id": str(record.get("caster_id", "")), "end_reason": end_reason, "cause": cause.duplicate(true), "record": record}
-	_source_end_events.append(event.duplicate(true))
-	while _source_end_events.size() > 128: _source_end_events.pop_front()
 	if target is Dictionary:
 		target["spell_effects"] = all_records
 		if not has_spell(target, "animal_friendship"):
 			target.erase("animal_friendship_caster_ids")
+	# S-086: the one final end event fires only its reason-matched follow-ups.
+	event["aftermath"] = SourceEndAftermathRules.fire(target, record, event)
+	_source_end_events.append(event.duplicate(true))
+	while _source_end_events.size() > 128: _source_end_events.pop_front()
 	return event
 
 static func source_end_events() -> Array[Dictionary]:

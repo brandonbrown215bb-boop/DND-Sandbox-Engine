@@ -1,0 +1,26 @@
+[
+  {
+    "id": "fixture:b036_brittle_wand",
+    "name": "Brittle Wand",
+    "description": "If you expend its last charge, roll a d20; on a 1 it crumbles.",
+    "type": "wand",
+    "magical": true,
+    "rarity": "uncommon",
+    "maximum_charges": 3,
+    "charge_recovery": {"minimum": 1, "maximum": 3, "cadence": "dawn"},
+    "last_charge_aftermath": {"outcome": "destroy", "roll": {"die": 20, "trigger_on": [1]}},
+    "value": 0
+  },
+  {
+    "id": "fixture:b036_spent_rod",
+    "name": "Spent Rod",
+    "description": "Its last charge leaves a mundane rod that still sheds light.",
+    "type": "wand",
+    "magical": true,
+    "rarity": "uncommon",
+    "maximum_charges": 2,
+    "charge_recovery": {"minimum": 1, "maximum": 2, "cadence": "dawn"},
+    "last_charge_aftermath": {"outcome": "degrade", "keep_properties": ["light"]},
+    "value": 0
+  }
+]

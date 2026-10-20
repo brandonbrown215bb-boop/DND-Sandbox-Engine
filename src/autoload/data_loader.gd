@@ -557,6 +557,12 @@ func _validate_semantics(data: Dictionary, content_type: String, source: String)
 	if data.has("range") and (not (data.get("range") is int or data.get("range") is float) or float(data.get("range")) < 0):
 		_load_errors.append("Range must be a non-negative number in %s" % source)
 		valid = false
+	if data.has("last_charge_aftermath"):
+		var charge_error := LastChargeRules.validate(data["last_charge_aftermath"])
+		if charge_error.is_empty() and int(data.get("maximum_charges", 0)) <= 0: charge_error = "last_charge_aftermath requires maximum_charges"
+		if not charge_error.is_empty():
+			_load_errors.append("%s in %s" % [charge_error, source])
+			valid = false
 	if data.has("zero_hp_aftermath"):
 		var aftermath_error := ZeroHpAftermathRules.validate_policy(data["zero_hp_aftermath"])
 		if not aftermath_error.is_empty():
