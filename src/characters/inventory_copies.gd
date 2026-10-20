@@ -163,6 +163,8 @@ static func record_state_error(record: Dictionary) -> String:
 static func ownership_error(save: Dictionary) -> String:
 	var seen: Dictionary = {}
 	var party_characters: Dictionary = save.get("party", {}).get("characters", {}) if save.get("party") is Dictionary else {}
+	var work_error := WorkRules.party_error(party_characters.values()) # Review 046 R1.
+	if not work_error.is_empty(): return work_error
 	for character in party_characters.values():
 		for id in character.get("inventory", {}).get("copies", {}).get("records", {}).keys() + ContainerRules.content_ids(character.get("inventory", {})) + AttachmentRules.attached_ids(character.get("inventory", {})):
 			if seen.has(id): return "item copy has multiple character owners"
