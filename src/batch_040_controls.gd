@@ -34,7 +34,7 @@ static func run(h: Node) -> void:
 	b.spell_slots = {"2": 1}
 	var features_before := b.features.size()
 	await Batch036Controls.cast(h, combat, b, b, Batch040Checks.SHIFT)
-	h._assert(not ActorProjectionRules.is_projected(b) and b.features.size() == features_before, "040 actual cast without a selected form leaves the actor unprojected")
+	h._assert(not ActorProjectionRules.is_projected(b) and b.features.size() == features_before and int(b.spell_slots.get("2", 0)) == 1, "040 actual cast without a selected form leaves the actor unprojected and the slot unspent (slots=%s)" % str(b.spell_slots))
 	# The single-form projection through the same production cast.
 	b.spell_slots = {"3": 1}
 	var int_before := b.ability_scores.get_score("INT")

@@ -58,6 +58,8 @@ static func settle(target, policy: Dictionary, decisions: Dictionary, owner_id: 
 		record.actors.append({"actor_id": "%s:successor:%d" % [corpse_id, i + 1], "current_hp": maximum})
 	if target is Character: target.corpse_state["successor"] = record
 	else: target["zero_hp_aftermath"]["successor"] = record
+	# Review R2: a new death never reuses a cached actor (creature ids such as monster_0 repeat per encounter).
+	for entry in record.actors: _live.erase(str(entry.actor_id))
 	var made := actors(target)
 	return {"created": true, "carrier": carrier, "owner_id": owner_id, "actor_ids": made.map(func(a): return a.character_id), "max_hp": maximum, "ac": CreatedActorRules.value(template.ac, 0), "excluded_features": template.get("features", []).filter(func(f): return CreatedActorRules._forbidden(f)).map(func(f): return str(f.id))}
 

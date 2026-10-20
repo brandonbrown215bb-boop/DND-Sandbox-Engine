@@ -189,8 +189,9 @@ static func validate_actor(cast: SpellCastContext) -> bool:
 		cast.clear_pending(SpellCastContext.CLEAR_WISH)
 		cast.highlight_reachable.call()
 		return false
-	if not ActorProjectionRules.can_cast_spells(cast.caster):
-		cast.hud.add_log("You cannot cast spells in this form.")
+	var projection_error := ActorProjectionRules.cast_error(cast.caster, cast.spell) if ActorProjectionRules.can_cast_spells(cast.caster) else "You cannot cast spells in this form."
+	if not projection_error.is_empty():
+		cast.hud.add_log(projection_error)
 		cast.clear_pending(SpellCastContext.CLEAR_ACTION)
 		cast.clear_pending(SpellCastContext.CLEAR_SPELL)
 		cast.clear_pending(SpellCastContext.CLEAR_INTERVENTION)

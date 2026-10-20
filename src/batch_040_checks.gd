@@ -171,7 +171,7 @@ static func _projection(check: Callable) -> void:
 	shift(big, 2, "b040_bulwark")
 	var none := caster("b040_none")
 	var refused := shift(none, 2)
-	check.call(big.get_creature_size() == "large" and big.get_ac() == 17 and not refused.get("projection", {}).get("projected", true) and not ActorProjectionRules.is_projected(none), "040 S-163 the selected form applies; no selection among several forms is refused")
+	check.call(big.get_creature_size() == "large" and big.get_ac() == 17 and not refused.get("success", true) and int(none.spell_slots.get("2", 0)) == 1 and not ActorProjectionRules.is_projected(none), "040 S-163 the selected form applies; no selection among several forms is refused")
 	var m := caster("b040_mantled")
 	var mf := m.features.size()
 	var m_int := m.ability_scores.get_score("INT")
