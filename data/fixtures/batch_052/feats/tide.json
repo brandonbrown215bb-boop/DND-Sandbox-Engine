@@ -1,0 +1,40 @@
+[
+  {
+    "id": "fixture:b052_tide",
+    "name": "Batch 052 Tide (General)",
+    "description": "Neutral fixture General feat for HUD mode controls: an activation that may be reselected and switched at the start of your turn, plus a mode chosen at each Long Rest.",
+    "category": "general",
+    "prerequisite": {"level": 4},
+    "features": [
+      {
+        "id": "fixture:b052_tide_surge",
+        "name": "Tide Surge",
+        "description": "Fixture activation with two uses per Long Rest.",
+        "type": "mode_choice",
+        "boundary": "activation",
+        "uses": 2,
+        "uses_per": "long_rest",
+        "duration_seconds": 60,
+        "allow_reselect": true,
+        "switch_events": ["turn_start"],
+        "end_on": ["incapacitated"],
+        "modes": [
+          {"id": "ebb", "benefits": [{"stat": "AC", "amount": 1}]},
+          {"id": "flow", "benefits": [{"stat": "speed", "amount": 1}]}
+        ]
+      },
+      {
+        "id": "fixture:b052_tide_mood",
+        "name": "Tide Mood",
+        "description": "Fixture mode chosen at each Long Rest.",
+        "type": "mode_choice",
+        "boundary": "rest",
+        "rest": "long_rest",
+        "modes": [
+          {"id": "calm", "benefits": [{"stat": "AC", "amount": 1}]},
+          {"id": "storm", "benefits": [{"stat": "speed", "amount": 1}]}
+        ]
+      }
+    ]
+  }
+]

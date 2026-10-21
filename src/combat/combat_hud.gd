@@ -354,6 +354,7 @@ func set_mode(m: Mode) -> void:
 
 ## Draw/update the HUD.
 func update_hud(active_char: Character, tracker: InitiativeTracker) -> void:
+	if active_character != active_char: _mode_popup_serial += 1
 	active_character = active_char
 	if get_node_or_null("Root") is VttShell:
 		$Root.active_character = active_char
@@ -380,7 +381,7 @@ func update_hud(active_char: Character, tracker: InitiativeTracker) -> void:
 		# Disable features button if character has no active features
 		var has_active := not FamiliarRules.state(active_char).is_empty()
 		for f in active_char.features:
-			if f.get("type", "") in ["active", "triggered"]:
+			if f.get("type", "") in ["active", "triggered", "mode_choice"]:
 				has_active = true
 				break
 		if active_char.class_id == "familiar":
@@ -708,6 +709,18 @@ func _show_feature_selection() -> void:
 		if item.get("type") != "consumable" or CombatChildActions.units(item) == 0: continue
 		feature_list.add_item("Use %s [%s]" % [str(item.get("name", copy.definition_id)), str(copy.instance_id)])
 		features_registered.append({"id":"consume_copy", "item_id":copy.definition_id, "instance_id":copy.instance_id})
+	# Batch 052: owned mode_choice rules and their exclusive upgrade options.
+	for mode_row in ModeControls.rows(active_character):
+		var mode_actions: Array = mode_row.actions
+		if mode_actions.is_empty():
+			feature_list.add_item(ModeControls.label(mode_row))
+			feature_list.set_item_disabled(feature_list.item_count - 1, true)
+			features_registered.append({"id": "feature_mode_control", "feature_id": mode_row.feature_id, "kind": "", "token": mode_row.token})
+			continue
+		for kind in mode_actions:
+			feature_list.add_item("%s: %s" % [ModeControls.kind_label(kind), ModeControls.label(mode_row)])
+			feature_list.set_item_tooltip(feature_list.item_count - 1, str(active_character.get_feature(mode_row.feature_id).get("description", "")))
+			features_registered.append({"id": "feature_mode_control", "feature_id": mode_row.feature_id, "kind": kind, "token": mode_row.token})
 	var activation_features: Array[Dictionary] = []
 	for owned_feature in active_character.features:
 		if owned_feature.has("executor") and owned_feature.has("resource_pool"):
@@ -943,6 +956,9 @@ func _on_feature_selected(index: int) -> void:
 	var feature_owner := active_character
 	var feature := features_registered[index]
 	_hide_feature_selection()
+	if str(feature.get("id", "")) == "feature_mode_control":
+		if not str(feature.kind).is_empty(): request_mode_control(feature_owner, feature)
+		return
 	if str(feature.get("id", "")) == "consume_copy":
 		if active_character == feature_owner: action_selected.emit("use_item", {"item":{"id":feature.item_id, "instance_id":feature.instance_id}})
 		return
@@ -1612,6 +1628,40 @@ func request_rogue_cunning_strike(character: Character, target: Dictionary, snea
 		selected.append(choice)
 		remaining -= RogueRules.cunning_strike_dice_cost(choice)
 	return selected
+
+
+var _mode_popup_serial := 0
+
+## Batch 052: Cancel plus exactly the offered options. Cancel, closing the popup,
+## a newer mode popup, a changed turn or changed state (token) spend nothing.
+func request_mode_control(owner: Character, offer: Dictionary) -> Dictionary:
+	var feature_id := str(offer.feature_id)
+	var kind := str(offer.kind)
+	var row := ModeControls.row(owner, feature_id)
+	var choices: Array[String] = ["cancel"]
+	var labels := {"cancel": "Cancel"}
+	for option in ModeControls.options(row, kind):
+		choices.append(option)
+		labels[option] = option.replace("|", ": ")
+	_mode_popup_serial += 1
+	var serial := _mode_popup_serial
+	var picked := await _request_popup_choice("%s: %s" % [ModeControls.kind_label(kind), row.name], choices, labels)
+	var result := {"success": false, "reason": "canceled"}
+	if picked.is_empty() or picked == "cancel":
+		add_log("%s: canceled; nothing was spent." % row.name)
+		return result
+	if serial != _mode_popup_serial or active_character != owner:
+		add_log("That choice is no longer current; nothing was spent.")
+		return {"success": false, "reason": "stale"}
+	result = ModeControls.apply(owner, feature_id, kind, picked, str(offer.token))
+	if result.success:
+		add_log("%s: %s %s." % [row.name, ModeControls.kind_label(kind).to_lower(), picked.replace("|", ": ")])
+		_update_sidebar_stats()
+	elif result.reason == "stale":
+		add_log("That choice is no longer current; nothing was spent.")
+	else:
+		add_log("%s refused (%s); nothing was spent." % [row.name, result.reason])
+	return result
 
 
 func _request_popup_choice(prompt: String, options: Array[String], labels: Dictionary) -> String:

@@ -185,6 +185,8 @@ The current integration scenario manifest is:
 | `event_dialog` | Event dialog presentation and resolver wiring |
 | `crown_event_fairy_ring` | Production Fairy Ring chain, three legal Fairy Court choices, DEX success/failure branches, and UI follow-up |
 | `dungeon_reentry_round_trip` | Production Crown dungeon clear, plain Room DTO checkpoint, supported reload, cleared-room rebuild, and idempotent boss/reward revisit |
+| `batch_051_feat_acquisition_flow` | Production Origin/ASI feat pickers, once-only ownership, safe save/load and malformed saved ability prerequisite refusal before session replacement |
+| `batch_052_hud_mode_controls_flow` | Production combat mode/upgrade popup controls, cancel/superseded/previous-turn answers, exact-copy suppression and safe save/load |
 | `character_creation` | Character-creation scene boot and legal choices |
 | `normal_creation_matrix` | Production main-menu player-count controls and character creation for one through four local players, including stable seat ownership and empty companion slots |
 | `shop` | Shop scene, inventory, purchase, and sell wiring |
@@ -198,6 +200,12 @@ The current integration scenario manifest is:
 | `character_sheet` | Character sheet opens, renders sections, and closes |
 | `character_sheet_contexts` | The real Character Sheet button opens the correct character from overworld, dungeon, and combat HUDs |
 | `character_value_audit` | Representative race/class values survive initialization, level-up, save/load, runtime HP mutation, and Character Sheet rendering |
+
+The logic runner verifies its registered check scripts and requires the
+`CHECK SCRIPT GATE` marker. Both logic and viewport harnesses count runtime
+`SCRIPT ERROR`s and fail even if Godot would otherwise return zero after skipping
+assertions. The wrappers also reject missing success markers. A parse-gate failure
+stops both supported shell runners before launching an unparseable logic scene.
 
 The viewport harness also supports `--scenario=all` for local debugging. The
 repository runner accepts `-Scenario <name>` for a single integration case;

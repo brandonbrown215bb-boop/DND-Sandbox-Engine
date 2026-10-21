@@ -48,3 +48,10 @@ Blunt caveat first: **players will not see this feature.** `data/core` has zero 
 
 ## Count updates
 None proposed. This is player-path acquisition on top of the 049 vocabulary, not a new vocabulary slice. If Brandon counts F1 content later, that batch should carry it.
+
+## Rook's final acceptance correction
+
+The initial no-defects verdict missed saved ability prerequisites. Final acceptance
+rejects unmet/malformed permanent ability scores before replacing the live session,
+with a regression that failed before the fix. Current accepted limits belong in
+the slice registry and source-carrier contract; the earlier findings remain history.
