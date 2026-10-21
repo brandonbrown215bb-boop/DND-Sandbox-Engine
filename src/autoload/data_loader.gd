@@ -568,6 +568,11 @@ func _validate_semantics(data: Dictionary, content_type: String, source: String)
 		valid = _validate_enum(data, "casting_time", VALID_SPELL_CASTING_TIMES, content_type, source) and valid
 		valid = _validate_enum(data, "target", VALID_SPELL_TARGETS, content_type, source) and valid
 		valid = _validate_enum(data, "school", VALID_SPELL_SCHOOLS, content_type, source) and valid
+		# Batch 065: a data-declared reaction trigger (no engine default).
+		var trigger_error := ReactionTriggers.spell_trigger_error(data)
+		if not trigger_error.is_empty():
+			_load_errors.append("%s in %s" % [trigger_error, source])
+			valid = false
 		var level := int(data.get("level", 0))
 		if level < 0 or level > 9:
 			_load_errors.append("Spell level must be between 0 and 9 in %s" % source)

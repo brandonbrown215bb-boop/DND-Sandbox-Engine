@@ -1985,7 +1985,8 @@ static func resolve_hurl_through_hell(attacker: Character, target_entity) -> Dic
 static func validate_spell_target(caster: Character, target_entity, spell_data: Dictionary, distance_feet: int = -1) -> Dictionary:
 	if caster == null or spell_data.is_empty():
 		return {"success": false, "message": "Spell needs a valid caster and spell record."}
-	if str(spell_data.get("casting_time", "action")) == "reaction":
+	# Batch 065: a reaction spell already paid by ReactionTriggers.confirm is its boundary.
+	if str(spell_data.get("casting_time", "action")) == "reaction" and not bool(spell_data.get("_reaction_trigger_paid", false)):
 		return {"success": false, "message": "%s resolves only through its reaction boundary." % spell_data.get("name", "This spell")}
 	var recovery_spell_id := str(spell_data.get("id", ""))
 	if target_entity is Character and target_entity.is_dead() and recovery_spell_id not in ["revivify", "gentle_repose"]:

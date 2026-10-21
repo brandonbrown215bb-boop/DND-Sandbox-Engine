@@ -18,6 +18,7 @@ var action_history := CombatActionHistory.new()
 # Tactical entities state
 # Maps entity_id -> position (Vector2i)
 var player_entities: Array[Dictionary] = [] # Elements same as PlayerManager.players
+var last_reaction_trigger_receipts: Array[Dictionary] = [] # Batch 065: receipts of the last fired reaction trigger.
 var monster_entities: Array[Dictionary] = [] # Keys: name, monster_id, current_hp, max_hp, armor_class, speed, attacks, hex_position, color, is_alive
 var dropped_combat_items: Array[Dictionary] = []
 var dancing_light_sets: Dictionary = {}
@@ -1473,6 +1474,7 @@ func _execute_monster_attack(monster: Dictionary, target_player_name: String, at
 	if not monster.get("fighter_sap_sources", []).is_empty():
 		has_disadvantage = true
 		monster.erase("fighter_sap_sources")
+	await _fire_reaction_trigger(target_char, "on_attacked", monster, target_pos, monster_origin)
 	var reaction_decisions := await _collect_reaction_decisions(target_char)
 	var zero_live := SharedStepExecutor.zero_hp_options(target_char)
 	var zero_options := zero_live.duplicate(true)
@@ -1532,6 +1534,10 @@ func _execute_monster_attack(monster: Dictionary, target_player_name: String, at
 		await _offer_deflect_redirect(target_char, target_pos, attack_data, result)
 
 	hud.add_log(result.get("message", "Miss!"))
+	if result.get("hit", false):
+		await _fire_reaction_trigger(target_char, "on_hit_by_attack", monster, target_pos, monster.get("hex_position", monster_origin))
+	if int(result.get("damage", 0)) > 0:
+		await _fire_reaction_trigger(target_char, "on_damaged_by_creature", monster, target_pos, monster.get("hex_position", monster_origin))
 
 	# --- Feedback / juice ---
 	var m_dmg: int = int(result.get("damage", 0))
@@ -1746,6 +1752,52 @@ func _clear_monk_turn_effects(monk: Character) -> void:
 			monster.erase("stunning_strike_source")
 			monster.erase("stunning_strike_stun_sources")
 			monster.erase("stunning_strike_slow_sources")
+
+
+## Batch 065 (queue item 6): fire one data-declared reaction trigger. Only
+## spells and modes whose data declares a matching `reaction_trigger` are
+## offered (no engine default). Each prompt goes through the existing
+## request_reaction path; a declined prompt, a cancelled payment or a refusal
+## spends nothing. The first confirmed reaction spends the Reaction and closes
+## the event, so later offers for it are stale.
+func _fire_reaction_trigger(reactor: Character, kind: String, source: Variant, reactor_pos: Vector2i, source_pos: Vector2i) -> Array[Dictionary]:
+	var receipts: Array[Dictionary] = []
+	if reactor == null or not reactor.is_alive: return receipts
+	var distance := HexUtils.get_distance(reactor_pos, source_pos) * 5
+	var visible := CombatPerception.can_see_target(reactor, source, reactor_pos, source_pos, hex_grid)
+	var event := ReactionTriggers.make_event(kind, reactor, source, distance, visible)
+	var source_name: String = str(source.get("name", "the creature")) if source is Dictionary else (source.character_name if source is Character else "the creature")
+	for offer in ReactionTriggers.offers(reactor, event):
+		if not bool(event.open): break
+		var label := _owner_label_for_character(reactor)
+		var accepted := await hud.request_reaction(label, str(offer.id), "%s (%s). Use your Reaction?" % [str(offer.name), source_name], "Use %s?" % str(offer.name), "Use Reaction", "%s — %s" % [str(offer.name), label])
+		var choice: Variant = null
+		if accepted and offer.kind == "spell":
+			choice = await hud.request_spell_payment(reactor, str(offer.id))
+		elif accepted and offer.kind == "mode":
+			var options := ModeControls.options(ModeControls.row(reactor, str(offer.id)), "switch")
+			var labels := {}
+			for o in options: labels[o] = o.capitalize()
+			choice = "" if options.is_empty() else (options[0] if options.size() == 1 or GameManager.test_mode else await hud._request_popup_choice("%s: switch to" % str(offer.name), options, labels))
+		var receipt := ReactionTriggers.confirm(reactor, offer, event, accepted, choice)
+		receipt["offer"] = offer.duplicate()
+		receipts.append(receipt)
+		if not bool(receipt.get("success", false)): continue
+		for player_entity in player_entities:
+			if player_entity.get("character") == reactor: player_entity["reaction_available"] = false
+		if offer.kind == "spell":
+			var cast := CombatAction.resolve_spell(reactor, source, receipt.spell, false, {}, [], int(receipt.get("slot_level", 0)), distance)
+			receipt["cast_result"] = cast
+			hud.add_log("[color=cyan]%s uses %s in response.[/color] %s" % [reactor.character_name, str(offer.name), str(cast.get("message", ""))])
+			if source is Dictionary and int(source.get("current_hp", 1)) <= 0 and bool(source.get("is_alive", true)):
+				source["is_alive"] = false
+				tracker.remove_combatant(str(source.get("id", "")))
+				_trigger_enemy_defeat_features(source, reactor)
+		else:
+			hud.add_log("[color=cyan]%s spends a Reaction: %s switches to %s.[/color]" % [reactor.character_name, str(offer.name), str(choice)])
+	ReactionTriggers.close(event)
+	last_reaction_trigger_receipts = receipts
+	return receipts
 
 
 func _offer_stunning_strike(target: Dictionary, weapon: Dictionary, hit_result: Dictionary, caster: Character = null) -> void:
@@ -3615,6 +3667,8 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 				attack_reaction_decisions["stroke_of_luck"] = true
 				result = CombatAction.resolve_weapon_attack(active_character, clicked_monster, weapon, has_advantage, has_disadvantage, attack_reaction_decisions, attack_additional_damage)
 		DruidRules.apply_attack_effects(active_character, clicked_monster, weapon, result)
+		if result.get("hit", false):
+			await _fire_reaction_trigger(active_character, "on_hit_with_attack", clicked_monster, player_entities[current_player_idx]["hex_position"], clicked_monster.get("hex_position", Vector2i.ZERO))
 
 		var attack_results: Array[Dictionary] = [result]
 		await _offer_divine_smite(clicked_monster, weapon, result)
