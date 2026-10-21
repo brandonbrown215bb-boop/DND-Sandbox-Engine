@@ -229,6 +229,9 @@ static func recover_dawn(actor: Character) -> Array:
 				_refill_stamp(record, feature)
 				refilled.append(pool)
 		refilled.append_array(_recover_nested(record))
+	# Review 050F R1: an S-165 projected copy is still this actor's copy; dawn reaches it too.
+	for projection in actor.item_projections.values():
+		if projection is Dictionary and projection.get("copy") is Dictionary: refilled.append_array(recover_dawn_records([projection.copy]))
 	return refilled
 
 ## Brandon (Batch 050 fix): "regains at dawn" applies wherever the copy is -
