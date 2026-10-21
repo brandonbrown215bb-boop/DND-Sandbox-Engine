@@ -83,6 +83,11 @@ esac
 
 if [ "$TEST_SUITE" = "all" ] || [ "$TEST_SUITE" = "logic" ]; then
   run_case "logic" "res://scenes/test_runner.tscn" "ALL TESTS PASSED" "$LOGIC_TIMEOUT_SECONDS" || FAILED=1
+  # Card cafa: the runner must have checked every registered check script.
+  if ! grep -Eq 'CHECK SCRIPT GATE: [0-9]+ registered check scripts, 0 failed' "$LOG_DIR/logic.log"; then
+    echo ">> logic: FAILED (check script gate missing or red: a registered check file did not load/parse)"
+    FAILED=1
+  fi
 fi
 
 # Keep this list synchronized with _run_scenario in viewport_harness.gd.

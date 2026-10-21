@@ -29,6 +29,12 @@ func _ready() -> void:
 		get_tree().quit(1)
 		return
 	print("LOGIC GROUPS: %s" % (", ".join(_logic_groups) if not _logic_groups.is_empty() else "all"))
+	# Card cafa: a registered check file that fails to load or parse turns the run red.
+	var registered_scripts := CheckScriptGate.load_registered("res://src/test_runner.gd")
+	for failure in CheckScriptGate.failures(registered_scripts):
+		_assert(false, failure)
+	print("CHECK SCRIPT GATE: %d registered check scripts, %d failed" % [registered_scripts.size(), CheckScriptGate.failures(registered_scripts).size()])
+	_test_check_script_gate()
 	_run_group("data", _test_data_loader)
 	_run_group("classes", _test_character_creation)
 	_run_group("classes", _test_paladin_divine_sense_2024)
@@ -127,6 +133,17 @@ func _ready() -> void:
 	_report()
 	get_tree().quit(1 if _failed > 0 else 0)
 
+
+## Card cafa regression: simulated load and compile failures are reported
+## (no broken file is committed; an uncompiled GDScript stands in for a parse failure).
+func _test_check_script_gate() -> void:
+	var names := CheckScriptGate.registered("_run_group(\"x\", func(): Batch050Checks.run(_assert))\nFooChecks.load_fixtures()\nBatch050Checks.x()")
+	_assert(names == ["Batch050Checks", "FooChecks"], "cafa: the gate finds each registered check class once (%s)" % str(names))
+	var uncompiled := GDScript.new()
+	uncompiled.source_code = "extends RefCounted\nfunc run(:"
+	var fails := CheckScriptGate.failures({"MissingChecks": null, "BrokenChecks": uncompiled, "Batch050Checks": load("res://src/batch_050_checks.gd")})
+	_assert(fails.size() == 2 and "MissingChecks failed to load" in fails[0] + fails[1] and "BrokenChecks failed to parse" in fails[0] + fails[1], "cafa: a missing script and an uncompiled (unparseable) script both fail the gate; a good one passes: %s" % str(fails))
+	_assert(CheckScriptGate.load_registered("res://src/test_runner.gd").size() >= 20, "cafa: the live runner registers its check classes through the gate")
 
 func _run_group(group: String, check: Callable) -> void:
 	if _logic_groups.is_empty() or "all" in _logic_groups or group in _logic_groups:
