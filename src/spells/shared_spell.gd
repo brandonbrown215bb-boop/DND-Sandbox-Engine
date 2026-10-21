@@ -99,10 +99,12 @@ static func _validate_single_effect(effect: Variant) -> String:
 		if not error.is_empty(): return error
 	elif kind == "create_actor":
 		for key in effect:
-			if str(key) not in ["type", "template", "placement", "options", "count_choice", "mix"]: return "Created actor effects accept only type, template, options, count_choice, mix and placement."
-		allowed.append_array(["template", "placement", "options", "count_choice", "mix"])
+			if str(key) not in ["type", "template", "placement", "options", "count_choice", "mix", "material_targets"]: return "Created actor effects accept only type, template, options, count_choice, mix, material_targets and placement."
+		allowed.append_array(["template", "placement", "options", "count_choice", "mix", "material_targets"])
 		var options_error := CreatedActorRules.options_error(effect) # Batch 054: S-155.
 		if not options_error.is_empty(): return options_error
+		var material_error := MaterialTargetRules.error(effect) # Batch 059: S-155.
+		if not material_error.is_empty(): return material_error
 		var template_error := CreatedActorRules.template_error(effect.get("template"))
 		if not template_error.is_empty(): return template_error
 		if effect.has("placement"):
