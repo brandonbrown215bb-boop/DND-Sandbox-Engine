@@ -99,6 +99,9 @@ static func consume(cast: SpellCastContext, effect: Dictionary, factory: Diction
 	if mix.is_empty(): wanted.resize(int(factory.get("count", 0)))
 	for id in mix:
 		for _n in int(mix[id]): wanted.append(str(s.get("kinds", {}).get(id, "")))
+	# Review 059 R1: tagged kinds claim their remains before any-tag kinds, so an
+	# undeclared kind cannot take the only pile a declared kind needs.
+	wanted.sort_custom(func(a, b): return a != null and not str(a).is_empty() and (b == null or str(b).is_empty()))
 	var used := 0
 	for tag in wanted:
 		for f in found:

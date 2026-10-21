@@ -72,3 +72,17 @@ static func run(check: Callable) -> void:
 	check.call("transformed_undead" in dead.corpse_state.recovery_restrictions and MaterialTargetRules.cap(cast, effect).total == 0, "059 a used party corpse carries the saved transformed_undead restriction and no longer counts")
 	var dto: Dictionary = JSON.parse_string(JSON.stringify(dead.to_dict()))
 	check.call(CorpseRules.saved_error(dto).is_empty(), "059 checklist (b): the used corpse still passes the saved corpse check: %s" % CorpseRules.saved_error(dto))
+	# Review 059 R1: an undeclared kind listed first must not take the only bones a declared kind needs.
+	var e2: Dictionary = effect.duplicate(true)
+	e2.material_targets.kinds = {"b059_skeleton": "bones"}
+	var r1 := [_body("bones", Vector2i(1, 0)), _body("intact", Vector2i(2, 0))]
+	var r1cast := _cast(owner, r1)
+	var r1used := MaterialTargetRules.consume(r1cast, e2, {"mix": {"b059_zombie": 1, "b059_skeleton": 1}})
+	check.call(r1used == 2 and bool(r1[0].get("material_used", false)) and bool(r1[1].get("material_used", false)), "059 R1 declared kinds claim their remains before undeclared kinds (used=%d)" % r1used)
+	# Stress: consuming more than exists uses only what exists; a second consume finds nothing.
+	var r2 := [_body("bones", Vector2i(1, 0))]
+	var r2cast := _cast(owner, r2)
+	check.call(MaterialTargetRules.consume(r2cast, effect, {"count": 5}) == 1 and MaterialTargetRules.consume(r2cast, effect, {"count": 1}) == 0 and MaterialTargetRules.cap(r2cast, effect).total == 0, "059 stress: no double consumption; over-count uses only existing remains")
+	# Stress: range edge is inclusive and one hex beyond is excluded.
+	var rng := int(MaterialTargetRules.spec(effect).range)
+	check.call(MaterialTargetRules.cap(_cast(owner, [_body("bones", Vector2i(rng, 0)), _body("bones", Vector2i(rng + 1, 0))]), effect).total == 1, "059 stress: range edge inclusive, beyond excluded")
