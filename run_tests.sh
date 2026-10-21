@@ -73,7 +73,13 @@ run_case() {
   return 0
 }
 
-run_case "parse_gate" "res://scenes/parse_gate.tscn" "PARSE GATE PASSED" "$PARSE_TIMEOUT_SECONDS" || FAILED=1
+if ! run_case "parse_gate" "res://scenes/parse_gate.tscn" "PARSE GATE PASSED" "$PARSE_TIMEOUT_SECONDS"; then
+  # Review cafa R2: an unparseable runner or check file makes test_runner.tscn idle
+  # until LOGIC_TIMEOUT_SECONDS (300 s). Stop here, as run_tests.ps1 already does.
+  echo ">> Stopped: project parsing failed. Logs: $LOG_DIR"
+  echo ">> OVERALL: FAILED"
+  exit 1
+fi
 run_case "boot_gate" "res://scenes/boot_gate.tscn" "BOOT GATE PASSED" "$BOOT_TIMEOUT_SECONDS" || FAILED=1
 TEST_SUITE="${TEST_SUITE:-all}"
 case "$TEST_SUITE" in
@@ -83,6 +89,11 @@ esac
 
 if [ "$TEST_SUITE" = "all" ] || [ "$TEST_SUITE" = "logic" ]; then
   run_case "logic" "res://scenes/test_runner.tscn" "ALL TESTS PASSED" "$LOGIC_TIMEOUT_SECONDS" || FAILED=1
+  # Card cafa: the runner must have checked every registered check script.
+  if ! grep -Eq 'CHECK SCRIPT GATE: [0-9]+ registered check scripts, 0 failed' "$LOG_DIR/logic.log"; then
+    echo ">> logic: FAILED (check script gate missing or red: a registered check file did not load/parse)"
+    FAILED=1
+  fi
 fi
 
 # Keep this list synchronized with _run_scenario in viewport_harness.gd.
