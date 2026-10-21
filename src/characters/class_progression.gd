@@ -971,6 +971,9 @@ static func restore_legacy_choices(c: Character, dto: Dictionary) -> void:
 		c.feature_choices[ids[index]] = []
 
 static func saved_choices_error(dto: Dictionary) -> String:
+	var feat_error := FeatRules.saved_error(dto) # Batch 051: origin and level-up feats.
+	if not feat_error.is_empty():
+		return feat_error
 	var creation_error := saved_creation_error(dto)
 	if not creation_error.is_empty():
 		return creation_error
@@ -1246,6 +1249,8 @@ static func saved_choices_error(dto: Dictionary) -> String:
 			continue
 		if abilities.is_empty() and class_id == "fighter":
 			continue
+		if entitled.has(id) and abilities.size() == 1 and abilities[0] is String and str(abilities[0]).begins_with(FeatRules.PREFIX):
+			continue # Batch 051: this improvement was taken as a feat (checked by FeatRules.saved_error).
 		if abilities.size() != 2:
 			return "Ability improvement requires two ability choices"
 		for ability in abilities:

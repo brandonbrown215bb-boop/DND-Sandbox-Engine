@@ -460,6 +460,32 @@ func _instrument_names(ids: Array) -> Array[String]:
 	return names
 
 
+## Batch 051: Origin feat (SRD 5.2.1 p.83), offered when Origin feats are loaded.
+var selected_origin_feat := ""
+
+func _build_origin_feat_choice() -> void:
+	var probe := Character.new()
+	probe.level = 1
+	probe.race_id = selected_race_id
+	probe.ability_scores = selected_stats.duplicate_scores() if selected_stats != null else AbilityScores.new()
+	var options := FeatRules.options(probe, "origin")
+	if options.is_empty():
+		selected_origin_feat = ""
+		return
+	if selected_origin_feat not in options: selected_origin_feat = options[0]
+	var heading := Label.new()
+	heading.text = "Choose your Origin feat"
+	equip_list.add_child(heading)
+	var picker := OptionButton.new()
+	picker.name = "OriginFeatPicker"
+	for id in options:
+		picker.add_item(str(DataLoader.get_feat(id).get("name", id)))
+		picker.set_item_metadata(picker.item_count - 1, id)
+		if id == selected_origin_feat: picker.select(picker.item_count - 1)
+	picker.item_selected.connect(func(index: int): selected_origin_feat = str(picker.get_item_metadata(index)))
+	equip_list.add_child(picker)
+
+
 func _build_class_creation_choices() -> void:
 	var data := DataLoader.get_character_class(selected_class_id)
 	var status := Label.new()
@@ -553,6 +579,7 @@ func _build_equipment_ui() -> void:
 	var gear_list: Array = _starting_gear_ids()
 	if selected_class_id in ["bard", "cleric"]:
 		_build_class_creation_choices()
+	_build_origin_feat_choice()
 	if selected_class_id == "barbarian":
 		var choice := OptionButton.new()
 		choice.name = "BarbarianStartingEquipment"
@@ -675,6 +702,10 @@ func _confirm_and_save_character() -> void:
 	
 	if selected_class_id == "cleric":
 		ClassProgression.choose_feature_option(character, "cleric_divine_order", cleric_divine_order)
+	if not selected_origin_feat.is_empty() and not FeatRules.choose_origin(character, selected_origin_feat).success:
+		current_step = CreationStep.EQUIPMENT # Refused before the character joins the party.
+		_update_step_ui()
+		return
 	PlayerManager.set_player_character(current_player_idx, character)
 	PartyManager.register_player_character(current_player_idx, character)
 	print("[CharacterCreation] Saved character for player %d: %s (%s %s)" % [current_player_idx, selected_name, character.race_id, character.class_id])

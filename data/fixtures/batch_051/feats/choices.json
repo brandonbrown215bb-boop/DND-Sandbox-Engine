@@ -1,0 +1,64 @@
+[
+  {
+    "id": "fixture:b051_vigil",
+    "name": "Batch 051 Vigil (Origin)",
+    "description": "Neutral fixture Origin feat: one activation per long rest.",
+    "category": "origin",
+    "features": [
+      {
+        "id": "fixture:b051_vigil_watch",
+        "name": "Vigil Watch",
+        "type": "mode_choice",
+        "boundary": "activation",
+        "uses": 1,
+        "uses_per": "long_rest",
+        "duration_seconds": 600,
+        "end_on": ["long_rest", "incapacitated"],
+        "modes": [
+          {"id": "alert", "benefits": [{"stat": "AC", "amount": 1}]},
+          {"id": "swift", "benefits": [{"stat": "speed", "amount": 1}]}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "fixture:b051_grit",
+    "name": "Batch 051 Grit (General)",
+    "description": "Neutral fixture General feat; prerequisite shaped like SRD 5.2.1 p.87 Grappler (Level 4+, Strength or Dexterity 13+).",
+    "category": "general",
+    "prerequisite": {"level": 4, "abilities_any": {"STR": 13, "DEX": 13}},
+    "features": [
+      {
+        "id": "fixture:b051_grit_stance",
+        "name": "Grit Stance",
+        "type": "mode_choice",
+        "boundary": "activation",
+        "uses": 2,
+        "uses_per": "short_rest",
+        "duration_seconds": 60,
+        "end_on": ["zero_hp"],
+        "modes": [
+          {"id": "brace", "benefits": [{"stat": "AC", "amount": 2}]},
+          {"id": "lunge", "benefits": [{"stat": "speed", "amount": 2}]}
+        ]
+      },
+      {"id": "fixture:b051_grit_more", "name": "Grit Reserve", "type": "rule_upgrade", "rule": "fixture:b051_grit_stance", "changes": {"uses": {"add": 1}}}
+    ]
+  },
+  {
+    "id": "fixture:b051_brainy",
+    "name": "Batch 051 Brainy (General)",
+    "description": "Neutral fixture General feat needing Intelligence 18+ (for refusal checks).",
+    "category": "general",
+    "prerequisite": {"level": 4, "abilities_any": {"INT": 18}},
+    "features": []
+  },
+  {
+    "id": "fixture:b051_capstone",
+    "name": "Batch 051 Capstone (Epic Boon)",
+    "description": "Neutral fixture Epic Boon needing level 19.",
+    "category": "epic_boon",
+    "prerequisite": {"level": 19},
+    "features": []
+  }
+]

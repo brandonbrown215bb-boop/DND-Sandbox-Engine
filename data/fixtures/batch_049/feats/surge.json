@@ -12,10 +12,29 @@
         "uses": 1,
         "uses_per": "long_rest",
         "duration_seconds": 60,
-        "end_on": ["long_rest", "zero_hp"],
+        "end_on": [
+          "long_rest",
+          "zero_hp"
+        ],
         "modes": [
-          {"id": "brace", "benefits": [{"stat": "AC", "amount": 2}]},
-          {"id": "dash", "benefits": [{"stat": "speed", "amount": 2}]}
+          {
+            "id": "brace",
+            "benefits": [
+              {
+                "stat": "AC",
+                "amount": 2
+              }
+            ]
+          },
+          {
+            "id": "dash",
+            "benefits": [
+              {
+                "stat": "speed",
+                "amount": 2
+              }
+            ]
+          }
         ]
       },
       {
@@ -23,8 +42,13 @@
         "name": "Feat Endurance",
         "type": "rule_upgrade",
         "rule": "fixture:b049_feat_surge",
-        "changes": {"uses": {"add": 1}}
+        "changes": {
+          "uses": {
+            "add": 1
+          }
+        }
       }
-    ]
+    ],
+    "category": "origin"
   }
 ]

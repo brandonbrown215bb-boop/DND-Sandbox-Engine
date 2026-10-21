@@ -114,6 +114,35 @@ func configure(c: Character, refresh: Callable, ritual_message: String = "") -> 
 			status.text = "Choose abilities that will stay at 20 or below. Your improvement is still available."
 	)
 	row.add_child(button)
+	_build_level_feat_choice(c, status, refresh)
+
+
+## Batch 051: an Ability Score Improvement can be taken as a feat you qualify for
+## (SRD 5.2.1 class ASI features; prerequisites and categories per p.87).
+func _build_level_feat_choice(c: Character, status: Label, refresh: Callable) -> void:
+	var options := FeatRules.options(c, "")
+	if options.is_empty():
+		return
+	var row := HBoxContainer.new()
+	row.name = "LevelFeatRow"
+	add_child(row)
+	var picker := OptionButton.new()
+	picker.name = "LevelFeatPicker"
+	for id in options:
+		picker.add_item(str(DataLoader.get_feat(id).get("name", id)))
+		picker.set_item_metadata(picker.item_count - 1, id)
+	row.add_child(picker)
+	var take := Button.new()
+	take.name = "LevelFeatTake"
+	take.text = "Take feat instead"
+	take.pressed.connect(func():
+		var result := FeatRules.choose_level_feat(c, str(picker.get_item_metadata(picker.selected)))
+		if result.success:
+			refresh.call()
+		else:
+			status.text = "%s Your improvement is still available." % result.message
+	)
+	row.add_child(take)
 
 
 func _build_wild_shape_form_choices(c: Character, refresh: Callable) -> void:
