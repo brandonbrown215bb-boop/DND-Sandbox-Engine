@@ -90,3 +90,14 @@ static func run(check: Callable) -> void:
 	back.from_dict(dto)
 	var again := CreatedActorRules.actors(back)
 	check.call(again.size() == 2 and again[0].character_name == "Wolf 1" and again[1].character_name == "Wolf 2" and int(back.spell_effects.values()[0].created_actors.control_until) == int(data.control_until), "055 checklist (d): reload keeps both wolves and the control deadline")
+	# Review R1: an incapacitated created actor refuses commands before cost and takes no default Dodge.
+	var r1 := Stub.new()
+	var r1_owner := Batch031Checks._character("b055_r1_owner", 30)
+	var r1_wolves := pack(r1_owner)
+	r1.active_character = r1_owner
+	r1.player_entities = [{"character": r1_owner, "combat_id": r1_owner.character_id, "hex_position": Vector2i.ZERO}, {"character": r1_wolves[0], "combat_id": r1_wolves[0].character_id, "hex_position": Vector2i(1, 0)}, {"character": r1_wolves[1], "combat_id": r1_wolves[1].character_id, "hex_position": Vector2i(0, 1)}]
+	CombatAction.active_turn_serial += 1
+	r1_wolves[0].add_condition("stunned", 2)
+	var r1_refused := CreatedCommandRules.issue(r1, r1_owner, r1_wolves[0].character_id, "dodge")
+	var r1_defaults := CreatedCommandRules.apply_defaults(r1, r1_owner)
+	check.call(not r1_refused.success and r1.spent == 0 and r1.budget.bonus_action == 1 and not r1_wolves[0].has_condition("dodging") and r1_defaults == [r1_wolves[1].character_id], "055 review R1: a stunned wolf refuses commands without spending and takes no default Dodge (%s)" % str(r1_refused.message))

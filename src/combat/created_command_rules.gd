@@ -78,7 +78,7 @@ static func command_error(state, owner: Character, actor_id: String, order: Stri
 	for a in CreatedActorRules.actors(owner):
 		if a.character_id == actor_id: actor = a
 	if actor == null or CreatedActorRules.owner_of(actor) != owner.character_id: return "You don't own that creature."
-	if not actor.is_alive: return "That creature can't act."
+	if not actor.is_alive or CombatAction.is_incapacitated(actor): return "That creature can't act." # Review R1: incapacitated actors take no actions.
 	var entity := _entity(state, actor_id)
 	if entity.is_empty(): return "That creature is not on the battlefield."
 	if not controlled(owner, actor): return "Your control of %s has ended." % actor.character_name
@@ -127,6 +127,7 @@ static func apply_defaults(state, owner: Character) -> Array:
 	if owner == null: return out
 	for a in actors(state, owner):
 		if int(_commanded.get(a.character_id, -1)) == CombatAction.active_turn_serial: continue
+		if CombatAction.is_incapacitated(a): continue # Review R1: no default Dodge while incapacitated.
 		if policy(_template(owner, a)).default == "dodge":
 			a.add_condition("dodging", 2)
 			out.append(a.character_id)
