@@ -85,6 +85,9 @@ static func owned_rule(actor: Character, feature_id: String) -> Dictionary:
 
 const INCAPACITATING := ["incapacitated", "unconscious", "paralyzed", "petrified", "stunned"]
 
+static func incapacitated(actor: Character) -> bool:
+	return INCAPACITATING.any(func(c): return actor.has_condition(c))
+
 static func _mode(r: Dictionary, mode_id: String) -> Dictionary:
 	for mode in r.get("modes", []):
 		if mode.id == mode_id: return mode
@@ -128,6 +131,8 @@ static func activate(actor: Character, feature_id: String, mode_id: String, reci
 		ids.append(recipient.character_id)
 	if ids.size() > int(r.get("targets", 1)): return _receipt(false, "too_many_targets")
 	if "zero_hp" in r.get("end_on", []) and actor.current_hp <= 0: return _receipt(false, "end_condition_met")
+	# Review 052 R1: an Incapacitated creature can't act (SRD 5.2.1 Conditions); refuse before the use is spent.
+	if incapacitated(actor): return _receipt(false, "incapacitated")
 	if not actor.use_feature(feature_id): return _receipt(false, "no_uses")
 	var serial := int(actor.feature_modes.get(feature_id, {}).get("activation_serial", 0)) + 1
 	var rolled := 0
