@@ -85,6 +85,7 @@ static func offers(reactor: Character, event: Dictionary) -> Array[Dictionary]:
 		var spell := DataLoader.get_spell(spell_id)
 		if str(spell.get("casting_time", "")) != "reaction" or not spell.has("reaction_trigger"): continue
 		if not filter_reason(reactor, spell.reaction_trigger, event).is_empty(): continue
+		if not target_error(reactor, spell, event).is_empty(): continue
 		if SpellPermissionRules.payment_choices(reactor, spell_id).is_empty(): continue
 		out.append(_offer(reactor, event, "spell", spell_id, str(spell.get("name", spell_id)), ""))
 	var window := ""
@@ -111,6 +112,36 @@ static func token(reactor: Character, offer: Dictionary) -> String:
 static func _refuse(reason: String) -> Dictionary:
 	return {"success": false, "reason": reason, "reaction_spent": false}
 
+static func target(reactor: Character, spell: Dictionary, event: Dictionary) -> Variant:
+	return reactor if str(spell.get("target", "single")) == "self" else event.get("source")
+
+## Run the normal target restrictions before spending a slot or Reaction.
+## The paid marker permits this boundary's validation; this copy never resolves.
+static func target_error(reactor: Character, spell: Dictionary, event: Dictionary) -> String:
+	if reactor.has_condition("raging") or not DruidRules.can_cast_spell(reactor, spell): return "cannot_cast"
+	var damage_error := SharedSpell.damage_policy_availability_error(spell, reactor)
+	if not damage_error.is_empty(): return damage_error
+	if str(spell.get("target", "single")) not in ["self", "single", "ally"]: return "unsupported_target"
+	var recipient: Variant = target(reactor, spell, event)
+	if not recipient is Character and not recipient is Dictionary: return "invalid_target"
+	if (recipient is Character and recipient.is_dead()) or (recipient is Dictionary and not bool(recipient.get("is_alive", false))): return "invalid_target"
+	var probe := spell.duplicate(true)
+	probe["_reaction_trigger_paid"] = true
+	var distance := 0 if is_same(recipient, reactor) else int(event.get("distance_feet", -1))
+	var reach := CombatAction.spell_range_in_hexes(spell, reactor.level) * 5 + CombatAction.spell_range_bonus_feet(reactor, spell)
+	if distance < 0 or distance > reach: return "out_of_range"
+	if spell.has("physical_requirements"):
+		var facts := PhysicalFactsRules.evaluate_physical_eligibility(recipient, spell.physical_requirements)
+		if not facts.get("eligible", false): return str(facts.get("reason", "invalid_target"))
+	# This reaction boundary has no location chooser/formula prompt or creation
+	# host. Refuse those declarations rather than pay for a later host refusal.
+	if spell.has("spatial_requirements") or not spell.get("formula_inputs", {}).is_empty() or SharedSpell.has_effect(spell, "create_actor") or SharedSpell.has_effect(spell, "actor_projection"): return "unsupported_reaction_host"
+	if spell.has("steps"):
+		var spatial_error := SharedStepExecutor.validate_spatial_context_for_steps(spell.steps, {})
+		if not spatial_error.is_empty(): return spatial_error
+	var checked := CombatAction.validate_spell_target(reactor, recipient, probe, distance)
+	return "" if bool(checked.get("success", false)) else str(checked.get("message", "invalid_target"))
+
 ## Answer one offer. Every refusal spends nothing: cancelled prompt, stale
 ## trigger/offer, Reaction already used, Incapacitated, out of range, unseen.
 ## A spell pays its slot (and the Reaction) only here, on confirmation.
@@ -123,6 +154,8 @@ static func confirm(reactor: Character, offer: Dictionary, event: Dictionary, ac
 		var spell := DataLoader.get_spell(str(offer.id))
 		var why := filter_reason(reactor, spell.get("reaction_trigger", {}), event)
 		if not why.is_empty(): return _refuse(why)
+		var invalid_target := target_error(reactor, spell, event)
+		if not invalid_target.is_empty(): return _refuse(invalid_target)
 		if not choice is Dictionary or choice.is_empty(): return _refuse("canceled")
 		var paid := SpellPermissionRules.spend_reaction(reactor, str(offer.id), {SpellPermissionRules.reaction_key(reactor, str(offer.id)): choice})
 		if paid.is_empty(): return _refuse("unpaid")

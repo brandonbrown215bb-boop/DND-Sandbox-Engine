@@ -146,9 +146,9 @@ These are continuations: the verified slice count remains **138**. No playable
 feat catalog is included. Creation currently offers a free Origin choice because
 backgrounds are absent. Feat ability increases, class/feature prerequisites,
 Fighting Style grants and the level-19 alternative feat path remain open. Mode
-activation has no action cost in the supported fixtures; real content requiring
-one needs that generic cost support. Existing reselect/switch semantics remain.
-There is no overworld/sheet mode panel or end-early control. The
+activation originally had no action cost in these fixtures; PRs #25–37 add
+generic authored costs as recorded below. Existing reselect/switch semantics
+remain. There is no overworld/sheet mode panel or end-early control. The
 [source-carrier contract](../mechanics/source-benefit-carriers.md#modes-forms-and-exact-item-state)
 owns the syntax and these limits. SRD feat work should stage complete source-backed
 candidates and list missing operations before any promotion into loaded data.
@@ -161,12 +161,46 @@ counts and the final regression/injection results; raw logs stay ignored.
 
 ### Ready assignments using existing building blocks
 
+<a id="pr25-37-validation"></a>
+#### PRs #25–37: reviewed subset and work remaining
+
+The stack is reviewed together on `rook/review-pr25-37`; the PRs are still open.
+Acceptance of the bounded work does not require completing the remaining scope.
+The merged verified-slice totals above remain unchanged until integration.
+Use the [created-actor contract](../mechanics/created-actors-and-placement.md)
+and [mode contract](../mechanics/source-benefit-carriers.md#modes-forms-and-exact-item-state)
+for executable syntax instead of the historical build reports.
+
+| Area | Delivered subset | Still needs to be done; does not block this subset |
+|---|---|---|
+| S-121 / S-122 / S-155 | Combat creation chooses permitted templates/mixes/counts, reserves distinct single-cell destinations and rechecks before payment. Authored no-space refusal or spending creates no overlapping actor. Material-limited casts reserve distinct eligible remains and consume them once only for an actual created source. | S-121 exit-before-save/outcome settlement; exploration placement; normal item-projection controls, authored placement/failure policy and full-inventory returns; multi-cell bodies, mixed sizes and per-kind policies; broader template parameter choices such as Find Familiar's creature type. |
+| S-156 | Exact actor-ID command rows; authored per-order Action, Bonus Action, Magic action or free costs; range, ownership and affordability refusal; once-per-actor-per-owner-turn commands; Dodge/Attack and declared uncommanded defaults. | Additional orders, Reaction commands with their own trigger, real source-backed consumers. Mixed casts currently require one command policy. Legacy fallback costs/timing are compatibility behavior; new content must declare its own policy. |
+| S-157 / S-158 | Owner-turn, after-owner and independent initiative; separate own-turn budgets; owner state/control expiry overrides queued orders; living persistent sources survive loss of control. Saved sources re-enter encounters legally. | Other shared-count relationships, owner-turn actors acting after the owner leaves the tracker, linked summons entering with an already downed/dead owner who has no initiative anchor, and broader autonomous movement/hostile control conversion. Live mid-combat tracker persistence is outside the supported save checkpoints. |
+| Mode costs and controls | Declared activation/reselect/switch costs use the existing budget and preserve free undeclared fixtures. The local room panel uses the same state; authored activation time is exposed. | Catalog conversions, overworld/sheet panels, group-recipient choices and end-early controls. Campaign time passing for outside-combat activation remains partial; no clock advances. |
+| Reaction triggers | Declared spell triggers and on-hit mode switches; confirmation rechecks live location, sight, turn, casting and target eligibility before payment. | Hellish Rebuke's actual cast permission; spell attacks, additional swings, opportunity attacks, areas, other damage sources and creature/monster reactors. After-hit triggers cannot alter the triggering attack; Shield retains its existing path. Area/creation/formula/spatial reaction hosts remain unsupported. |
+
+Review regressions reproduce queued orders overriding expiry/death/incapacity,
+unticked owner-turn conditions, summons preventing party defeat, projected-item
+cleanup collisions, smaller material-capped records and invalid reaction payment.
+Repairs also cover initial initiative ordering, chosen-template clearance, plane
+context, stale remains and saved summon encounter entry. Windows logic and
+production-control scenarios supply the acceptance checks; raw logs stay ignored.
+Full Windows logic passed **5,672/0**, and all thirteen new 053–065 scenarios
+passed. Separate-process SaveManager recovery retained exact actor IDs, injured
+HP, control deadlines and a smaller material-capped mixed cast. Valid player-only
+and party checkpoints passed preflight; malformed control deadlines refused in
+both DTO paths. Existing owned-creature, created-undead and 052 mode-control
+flows also passed. The older familiar-delivery check needed a real owned spell
+grant/payment and slot-picker answer instead of a raw catalog command; unchanged
+main reproduced its four original failures. This fixture repair preserves the
+gameplay checks. No manual visual acceptance or catalog completion is implied.
+
 | Assignment | Owning slices | Concrete implementation and finish line |
 |---|---|---|
 | Form and equipment choices — delivered | S-163/S-164 | PRs #16/#19 complete the declared combat chooser. Do not reassign it. Actual ground drops remain the placement/world-copy continuation below. |
 | Exact target choices in existing controls | S-127/S-168/S-169/S-196/S-210 | Separate small UI changes: offer an authored weapon damage-type choice at its declared activation/hit window; choose an exact tether for escape/rescue; choose an exact compartment/content/attached part instead of first-fit/last-out. Reuse `AttackProfileRules`, `TetherRules`, `ContainerRules` and `AttachmentRules`. Demonstrate two eligible options and affect only the selected identity. Reach/mastery replacements still need the profile extension below. |
 | Remaining item measurements and roles | S-032/S-196, supporting S-165 | PR #17 delivers the types and weight subset above. Fix unknown-weight room placement (ac39); keep volume explicitly partial until 65fc has source-backed measurements. Staff weapon/focus roles and additional worn slots are separate source-backed consumers, not reasons to rebuild the type loader. Runtime owns game loader/data/schema changes; editor changes remain a separate handoff. |
-| Chosen feats and player mode/upgrade controls — bounded delivery | S-049/S-050/S-084/S-085/S-103/S-104 | PRs #21/#23 complete fixture-backed Origin/ASI feat acquisition and combat controls within the acceptance above. Next work is backgrounds/grants, missing feat prerequisites and ability benefits, action costs for real modes, and source-backed content staging. Reuse existing ownership, controls and pools; do not reassign the completed wiring or promote incomplete feat shells. |
+| Chosen feats and player mode/upgrade controls — bounded delivery | S-049/S-050/S-084/S-085/S-103/S-104 | PRs #21/#23 complete fixture-backed Origin/ASI feat acquisition and combat controls within the acceptance above. Next work is backgrounds/grants, missing feat prerequisites and ability benefits, and source-backed content staging. PRs #25–37 add the generic authored action costs; real mode content still needs conversion. Reuse existing ownership, controls and pools; do not reassign the completed wiring or promote incomplete feat shells. |
 | Upgrade consumers beyond modes | S-084/S-085, reusing S-039/S-021/S-146 | Extend source-owned upgrades to the actual Extra Attack count and base-AC alternatives using existing stat alternatives and attack-unit budgets. Define the supported data fields and consumers explicitly; do not claim that changing a mode parameter already changes those rules. Prove exclusive alternatives, removal/reversion, reload and that switching an option cannot supply a fresh parent action or undo spent attack units. Reach/mastery consumers belong with the invocation-profile branch below. |
 | Maximum-HP rules on monster records | S-130/S-131 | Extend `MaxHpSourceRules` and actual combat effect dispatch to Dictionary targets using the existing formula, clamp, periodic/cure and zero-maximum policies. Carry source ownership through removal and the encounter record's existing capture path where that record persists. Prove stacked changes/removal orders and zero-maximum remains on a real monster target; do not build a separate monster rules interpreter or general monster-save framework. |
 | Enforce item degradation and remaining properties | S-060/S-203 | `LastChargeRules` currently records `keep_properties` in a receipt; enforce the declaration in supported property consumers. Reuse per-copy `MagicPropertyRules` queries where appropriate, retaining declared mundane weapon/armor properties while ending lost magic. Audit actual item spell permissions, benefits, effects, attachment sets and recovery consumers. Spend the last charge through normal action/reaction casting, prove independent copies and reload, and preserve the native wand path until its deliberate conversion. Unsupported properties must be rejected explicitly. |
@@ -180,14 +214,14 @@ also needs legal creation placement below. Select by stable actor/copy ID, not
 display name; two identical projected items must remain separately targetable.
 Wire project, dismiss/revert, bond and release where the source permits them,
 revalidate before paying/moving a copy, and handle a full return inventory. A
-button that invokes the current blind placement offsets is not completion.
+button without prepayment placement/failure handling is not completion.
 
 ### Building blocks and where they fit
 
 | Building block | Existing slices and prerequisites | Smallest useful delivery and what it unlocks |
 |---|---|---|
-| Legal placement before final settlement | S-121 after S-033/S-043; S-122 adds S-135; S-155 adds S-154 | Reuse `PhysicalFactsRules.is_space_available`, actual room/combat occupancy, plane, clearance and supported body representation. Carry a legal placement choice through the pending operation, revalidate on confirmation, then commit the declared outcome/cost. No-space failure can preserve or spend cost only as authored. Reserve distinct destinations for a multi-actor creation. Replace hardcoded offsets in `CreatedActorRules.attach` and `ItemProjectionRules.attach`; prove occupied/blocked space, canceled/stale picks, multiple actors and each failure policy. This unlocks normal summon/projection placement, safe exits and returns. Multi-cell footprints remain explicit scope when required; the existing single-cell query is not proof of them. |
-| Created-actor commands, turns and control expiry | S-156 after S-154/S-026; S-157 then S-158 | Give actual owned actors source-declared command costs, range and uncommanded defaults through player/AI routes. Follow with declared independent/owner-linked initiative, separate actor budgets, and owner-incapacity/control-expiry behavior. Reuse `CreatedActorRules`, `CombatState`, tracker and `CombatTurnBudget`. Authority work can start alongside placement; integrated factory controls consume S-155. Prove two same-named actors, command refusal, owner interruption/death, and control ending without automatically deleting a persistent creature. Unlocks companions, controlled summons and later S-147/S-160; Animate Objects still needs its own complete conversion. |
+| Legal placement before final settlement | S-121 after S-033/S-043; S-122 adds S-135; S-155 adds S-154 | Combat arrivals and factory controls are delivered in the [PR25–37 boundary](#pr25-37-validation). Continue S-121 legal exit placement before final save/outcome settlement, exploration/item-projection controls and authored failure/payment policy, then safe returns and multi-cell footprints. Reuse `PlacementRules` and `PhysicalFactsRules`; do not rebuild the delivered combat picker. |
+| Created-actor commands, turns and control expiry | S-156 after S-154/S-026; S-157 then S-158 | Exact commands, costs, three timings and declared owner/control defaults are delivered in the [PR25–37 boundary](#pr25-37-validation). Continue shared-count variants, behavior after the owner leaves the tracker, additional orders/autonomous movement and source-backed consumers. Reuse the existing identities/budgets. Animate Objects remains a separate complete conversion. |
 | Located source-end continuation and world outcomes | S-086/S-087/S-120; reuse S-034/S-072/S-148/S-149; placement as needed | Capture source, recipient, final plane/location and exact reason before removal. Connect selected item/mode/actor end producers as well as the current shared-spell route. Invoke a supported heal, timer, room object or area child from that receipt; reuse `LocalRoomRules`, `CombatSpellZones` and existing saved room/area records instead of a new world framework. Add generic data dispatch for the chosen object/hazard kind; creation and source-end cleanup retain their own identities. Use S-184's entry/crossing/turn scopes when a selected hazard needs them. Prove delayed observation, child cancellation/resume, source removal, an actual object/hazard successor and checkpoint recovery without replay. Actor-successor control on either side also consumes command/initiative support. |
 | Ground equipment keeps its exact copies | S-164 continuation after placement; reuse S-049 and existing room-copy transactions | Route the selected form's dropped equipment to actual room/combat ground records at the actor's position, retaining contents, curse policy, attachments, charges and source links. Reuse `LocalRoomRules.place`/inventory transactions and encounter-to-room capture; extend that handoff only where missing. Prevalidate all transfers, then move each copy once. Prove full backpack, another actor picking up a dropped copy, reversion without duplication, and the next allowed checkpoint. Current backpack set-aside remains the accepted bounded behavior until this route replaces it. |
 | One source, several tether recipients; independent object anchors | S-144 plus S-168/S-169; object anchors consume the located-world-record work | Store distinct recipient relations under one original cast source rather than one concentration source per victim. Pay once; escape/rescue removes only the chosen relation, and concentration/source cleanup ends the declared group. Add stable anchor ID/location/HP using existing object records, so moving/destroying the anchor immediately updates affected restraints. Prove two victims, one escape while the other stays bound, anchor destruction and stale rescue. Multi-recipient Character anchors can be built before object anchors; do not wait for the full world branch. Until then, refuse capacity declarations the current host cannot execute. |
@@ -196,15 +230,15 @@ button that invokes the current blind placement offsets is not completion.
 
 ### Assignment boundaries and completion checks
 
-- The chooser, item types/measurements and modes/source ownership have already
-  been handed off. The next additional assignment is legal placement. Monster maximum HP,
+- The chooser, item types/measurements, modes/source ownership and the bounded
+  PR25–37 controls have been handed off. Continue the remaining placement hosts. Monster maximum HP,
   degradation and explicit death can also start without the world branches, but
   give overlapping Character/inventory/combat edits a single owner at a time.
   Coordinate further pickers with the existing chooser owner. Extra Attack/AC
   upgrade consumers are a separate assignment from source ownership, even where
   they share S-084/S-085; they must not be silently added to that existing job.
-- Created-actor authority can proceed alongside placement. Once those land,
-  complete factory/item-projection controls. Located source-end/world outcomes
+- Reuse delivered created-actor authority and combat factory controls; complete
+  the remaining placement/item-projection hosts. Located source-end/world outcomes
   then feed ground drops, object anchors and hazard successors; vessel work
   follows reversion and containment. These are dependency branches, not a demand
   to finish P2 through P8 in order.
@@ -405,8 +439,8 @@ the existing modules instead of rebuilding these bounded hosts.
 | S-118 — Escalating-save zero-HP replacement | Verified (VS-112; exact source-owned attempt/reset history) | V-020, V-088 | At the same boundary resolve a declared save/DC history and increment/reset policy; failure uses original proposed outcome and success applies once. | S-117, S-090 |
 | S-119 — Death/destruction distinct from ordinary HP loss | Verified (VS-114; source-declared zero-HP aftermath) | V-021 | Apply eligible instant death/destruction with declared gear/remains policy, preserving original identity and actual cause for later revival. | S-117, S-032 |
 | S-120 — Aftermath successor actor or hazard | Verified (VS-126; actor successors; objects/hazards remain open) | V-021 | Create the declared actor/object/hazard from final death/destruction once at its actual location, with exclusions and retained/disposed gear as specified. | S-119, S-154 |
-| S-121 — Required legal exit before outcome settlement | Planned | V-022 | Choose/validate legal exit placement before final save/outcome; no space changes outcome only as authored, without premature escape or failed-save effects. | S-033, S-043 |
-| S-122 — Creation/arrival placement and failure costs | Planned | V-022 | Validate required space before creation/arrival and apply the declared no-space cost/result; placement refusal never silently creates an overlapping actor. | S-121, S-135 |
+| S-121 — Required legal exit before outcome settlement | Planned (exit settlement still needed) | V-022 | Choose/validate legal exit placement before final save/outcome; no space changes outcome only as authored, without premature escape or failed-save effects. | S-033, S-043 |
+| S-122 — Creation/arrival placement and failure costs | Partial (combat arrival reviewed; other hosts remain) | V-022 | Validate required space before creation/arrival and apply the declared no-space cost/result; placement refusal never silently creates an overlapping actor. | S-121, S-135 |
 | S-123 — Damage/healing dice removal and maximizing | Verified (VS-103; critical base-die cost boundary) | V-023 | Remove a declared dice quantity before rolling or maximize eligible dice; separate noncritical cost dice from critical/result multiplication. | S-010, S-034 |
 | S-124 — Selected damage/healing dice rerolls | Verified (VS-104; authored healing policy and exact payment receipt) | V-023 | Reuse actual rolled-dice selection with declared eligibility/kept policy/count/cost; chosen dice reroll once and frozen siblings remain unchanged. | S-123 |
 | S-125 — Critical and final-result multipliers | Verified (VS-105; explicit critical exclusion) | V-023 | Multiply the declared dice/component/result at its stated stage with explicit rounding; fixed bonuses, typed components and critical exclusions remain distinct. | S-123, S-109 |
@@ -449,10 +483,10 @@ the existing modules instead of rebuilding these bounded hosts.
 | Slice | State | Capability coverage | Build and acceptance finish line | After |
 |---|---|---|---|---|
 | S-154 — Parameterized created actor | Verified (VS-123; source-linked actor templates) | V-058, V-057 | Create a source-linked actor with declared AC/current/max HP/attack/DC template values and retained owner identity; forbidden template creation features are excluded. | S-032, S-036, S-049 |
-| S-155 — Factory choices/count and creation refusal | Planned | V-058 | Select permitted template/options/count, validate actual space/exclusions before creation, and create only the declared actors with unique identities. | S-154, S-122 |
-| S-156 — Command cost/range/default authority | Planned | V-059 | Issue legal commands to actually owned eligible creatures through control/AI routes; charge the declared owner action/Bonus once and apply default when uncommanded. | S-154, S-026 |
-| S-157 — Owner-linked versus independent initiative | Planned | V-059 | Schedule independent/owner-turn/after-owner/shared-count created actors with their own budgets; actor death/removal cannot replay or skip the owner's interrupted work. | S-156 |
-| S-158 — Incapacity and control-expiry autonomy | Planned | V-059 | When owner is incapacitated or command/control expires, apply declared autonomous/default behavior without automatically destroying the existing actor. | S-157, S-072 |
+| S-155 — Factory choices/count and creation refusal | Partial (combat factory reviewed; broader choices remain) | V-058 | Select permitted template/options/count, validate actual space/exclusions before creation, and create only the declared actors with unique identities. | S-154, S-122 |
+| S-156 — Command cost/range/default authority | Reviewed bounded build (PRs #27/#32/#35; pending integration) | V-059 | Issue legal commands to actually owned eligible creatures through control/AI routes; charge the declared owner action/Bonus once and apply default when uncommanded. | S-154, S-026 |
+| S-157 — Owner-linked versus independent initiative | Partial (three timings reviewed; shared-count variants remain) | V-059 | Schedule independent/owner-turn/after-owner/shared-count created actors with their own budgets; actor death/removal cannot replay or skip the owner's interrupted work. | S-156 |
+| S-158 — Incapacity and control-expiry autonomy | Partial (declared defaults reviewed; owner-removal behavior remains) | V-059 | When owner is incapacitated or command/control expires, apply declared autonomous/default behavior without automatically destroying the existing actor. | S-157, S-072 |
 | S-159 — Inserted extra turn | Planned | V-060 | Insert a full actor turn at a declared initiative position while retaining interrupted work and per-round history; an extra Action does not create a turn. | S-157, S-030, S-056 |
 | S-160 — Off-turn and type-limited Reaction/action budgets | Planned | V-060 | Grant only declared extra Opportunity/legendary/child actions with their own reset/option locks; spending one cannot supply a general Reaction or own-turn Action. | S-156, S-057 |
 | S-161 — Exclusive exact-copy/actor bond | Verified (VS-127; exact-copy and owned-actor bonds) | V-061, V-057 | Bind actual item/actor to owner with declared uniqueness/capacity and legal replacement; refusal preserves the previous bond and all other sources. | S-049, S-026 |

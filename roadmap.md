@@ -23,18 +23,37 @@ acquisition and combat mode/upgrade controls. Their
 [accepted boundaries](docs/planning/vocabulary-slices.md#pr20-24-validation)
 retain fixture-only feat proof, missing backgrounds and feat mechanics, action
 costs for real mode content, and volume/item measurement/role work. Do not
-reassign completed chooser, ownership or control wiring. Legal placement is the
-next additional shared world assignment.
+reassign completed chooser, ownership or control wiring.
+
+PRs #25–37 supply bounded combat placement/factory choices, exact created-creature
+commands and turn policies, authored mode/command costs, room mode controls and
+reaction triggers. Their review repairs and remaining work are tracked in the
+[PR25–37 review boundary](docs/planning/vocabulary-slices.md#pr25-37-validation).
+The PRs remain open; repairs are on local branch `rook/review-pr25-37`.
+Unfinished scope below does not block acceptance of the reviewed subset.
+
+Still needs to be done from that queue: S-121 exit placement before final
+save/outcome settlement; S-122 normal item-projection placement controls and
+failure/payment policy; exploration creation placement; multi-cell bodies and
+mixed-size/per-kind summon policies; S-157 shared-count variants beyond the
+implemented timings; and S-158 owner-turn behavior after an owner leaves the
+tracker, plus linked summons entering an encounter with an already downed/dead
+owner who has no initiative entry. Real catalog conversions, Find Familiar's
+creature-type choice, overworld/sheet mode controls, group mode recipients and
+end-early controls also remain. Outside-combat activation time is displayed but does not advance the
+campaign clock. Reaction commands and reaction delivery through additional
+attack/damage routes remain unfinished; Hellish Rebuke still has no supported
+cast permission. Do not reassign delivered pickers, command identities or costs.
 
 The owner's instruction to review, fix and merge accepts the reviewed work when
 that workflow completes. Record acceptance and its bounded limits in the slice
 registry; do not add a separate owner sign-off after merging.
 
 Start the ready assignments in that queue without waiting for a new engine
-framework. The first shared world work is legal placement/outcome settlement
-(S-121/S-122), reused by creation choices (S-155), real equipment drops and
-item-form return (S-164/S-166). Created-actor command authority (S-156) can start
-independently, then initiative/default behavior follows (S-157/S-158).
+framework. Continue legal exit/outcome settlement (S-121), the remaining
+placement hosts (S-122), real equipment drops and item-form return (S-164/S-166).
+Reuse the delivered combat factory (S-155), command authority (S-156) and
+bounded turn/default policies (S-157/S-158) for their remaining consumers.
 
 Extend existing room objects, areas and source-end records for located aftermath
 (S-086/S-087/S-120), then object-anchored restraints (S-168/S-169). Multi-recipient

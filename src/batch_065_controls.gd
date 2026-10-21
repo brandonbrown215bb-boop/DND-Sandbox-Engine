@@ -10,6 +10,19 @@ static func _fire(combat: Node, c: Character, foe: Dictionary, out: Array) -> vo
 	var ppos: Vector2i = combat.player_entities[0]["hex_position"]
 	out.append(await combat._fire_reaction_trigger(c, "on_hit_with_attack", foe, ppos, foe.get("hex_position", ppos)))
 
+static func _spell_fire(combat: Node, c: Character, foe: Dictionary, out: Array) -> void:
+	var ppos: Vector2i = combat.player_entities[0]["hex_position"]
+	out.append(await combat._fire_reaction_trigger(c, "on_damaged_by_creature", foe, ppos, foe.hex_position))
+
+static func _answer_reaction(h: Node, combat: Node) -> bool:
+	for _frame in 240:
+		for child in combat.hud.get_children():
+			if child is ConfirmationDialog and not child.is_queued_for_deletion() and child.visible:
+				child.confirmed.emit()
+				return true
+		await h.get_tree().process_frame
+	return false
+
 static func run(h: Node) -> void:
 	h._enter_test("batch_065_reaction_triggers_flow")
 	h._setup_world()
@@ -65,5 +78,34 @@ static func run(h: Node) -> void:
 		var nc: Character = PartyManager.characters.get(c.character_id, null)
 		h._assert(loaded and nc != null and str(nc.feature_modes[Batch065Checks.MODE].mode) == "lunge" and ModeControls.cost(nc, Batch065Checks.MODE, "switch") == "reaction" and str(FeatureModeRules.rule(nc, Batch065Checks.MODE).get("reaction_trigger", {}).get("event", "")) == "on_hit_with_attack", "065 actual real load keeps the switched mode, the Reaction cost and the declared trigger")
 		SaveManager.delete_save(slot)
+	# Review: exercise the paid spell through the production reaction prompt too.
+	# A source moved out of range during the prompt must spend nothing.
+	var w := Batch065Checks.warlock("r065_live_warlock")
+	var ppos: Vector2i = combat.player_entities[0].hex_position
+	combat.player_entities.append({"name": w.character_name, "character": w, "combat_id": w.character_id, "hex_position": ppos})
+	var near: Vector2i = foe.hex_position
+	var slots_before := Batch065Checks.slots(w)
+	GameManager.test_mode = false
+	var stale_spell: Array = []
+	_spell_fire(combat, w, foe, stale_spell)
+	foe.hex_position = ppos + Vector2i(20, 0)
+	var stale_answered := await _answer_reaction(h, combat)
+	for _frame in 240:
+		if not stale_spell.is_empty(): break
+		await h.get_tree().process_frame
+	GameManager.test_mode = true
+	foe.hex_position = near
+	h._assert(stale_answered and not stale_spell.is_empty() and not stale_spell[0].is_empty() and not stale_spell[0][0].success and Batch065Checks.slots(w) == slots_before, "065 review moving the source beyond range while the reaction prompt is open spends nothing")
+	GameManager.test_mode = false
+	var paid_spell: Array = []
+	_spell_fire(combat, w, foe, paid_spell)
+	var spell_answered := await _answer_reaction(h, combat)
+	for _frame in 240:
+		if not paid_spell.is_empty(): break
+		await h.get_tree().process_frame
+	GameManager.test_mode = true
+	var spell_receipt: Dictionary = paid_spell[0][0] if not paid_spell.is_empty() and not paid_spell[0].is_empty() else {}
+	h._assert(spell_answered and spell_receipt.get("success", false) and spell_receipt.get("cast_result", {}).get("success", false) and not w.reaction_available and Batch065Checks.slots(w) != slots_before, "065 review a confirmed spell reaction resolves through the live host and pays once")
+	combat.player_entities.pop_back()
 	h._teardown_scene(combat)
 	h._exit_test()

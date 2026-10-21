@@ -46,6 +46,7 @@ behavior before reopening a finding or claiming broader support.
 | Generated per-spell availability and gaps | [Spell status](spell-status.md) |
 | World dependency gaps | [Foundations](spell-foundations.md), [Wave 4 checklist](spell-foundations.md#wave-4--creatures-bodies-forms-and-social-interaction) |
 | Familiar identity, casting and commands | [Find Familiar](find-familiar-2024.md) |
+| Shared creation placement, exact commands, turns and reaction triggers | [Created actors and placement](created-actors-and-placement.md) |
 | Party death, preservation and recovery | [Recovery](party-recovery-2024.md) |
 | Lasting Undead and expiring control | [Animate Dead](animate-dead-2024.md) |
 

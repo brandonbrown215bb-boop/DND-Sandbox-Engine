@@ -658,6 +658,11 @@ func _setup_combat_players() -> void:
 		if owner_character != null and not PaladinRules.find_steed_state(owner_character).is_empty():
 			_add_find_steed_entity(owner, Vector2i(9999, 9999), false)
 	CreatedCreatureCombat.attach(self)
+	# Rebuild durable created sources on encounter entry, including after load.
+	for entity in owners:
+		var owner: Character = entity.get("character")
+		if owner != null and not CreatedActorRules.actors(owner).is_empty():
+			CreatedActorRules.attach(self, owner, entity.get("hex_position", Vector2i.ZERO))
 
 
 func _setup_combat_monsters() -> void:
@@ -821,6 +826,9 @@ func _roll_initiative_and_start() -> void:
 		if p.get("is_created_actor", false):
 			var created_owner := CreatedCommandRules.owner_entity(self, p)
 			if created_owner != null: CreatedCommandRules.join_initiative(self, created_owner, p.character)
+	# Initial construction has no interrupted turn to preserve. Include a summon
+	# that rolled ahead of the original leader in the first round too.
+	tracker.active_index = 0
 	_start_combat_turn()
 
 
@@ -851,6 +859,7 @@ func _start_combat_turn() -> void:
 	if is_player:
 		# Player Turn
 		active_character = active_combatant["entity"]
+		CreatedCommandRules.start_owner_turn(self, active_character)
 		# This hit restriction ends when the target's next turn begins.
 		CombatAction.clear_shocking_grasp(active_character)
 		_clear_monk_turn_effects(active_character)
@@ -1475,6 +1484,9 @@ func _execute_monster_attack(monster: Dictionary, target_player_name: String, at
 		has_disadvantage = true
 		monster.erase("fighter_sap_sources")
 	await _fire_reaction_trigger(target_char, "on_attacked", monster, target_pos, monster_origin)
+	if not bool(monster.get("is_alive", false)) or int(monster.get("current_hp", 0)) <= 0:
+		_check_battle_end_conditions()
+		return
 	var reaction_decisions := await _collect_reaction_decisions(target_char)
 	var zero_live := SharedStepExecutor.zero_hp_options(target_char)
 	var zero_options := zero_live.duplicate(true)
@@ -1766,6 +1778,7 @@ func _fire_reaction_trigger(reactor: Character, kind: String, source: Variant, r
 	var distance := HexUtils.get_distance(reactor_pos, source_pos) * 5
 	var visible := CombatPerception.can_see_target(reactor, source, reactor_pos, source_pos, hex_grid)
 	var event := ReactionTriggers.make_event(kind, reactor, source, distance, visible)
+	var offered_turn := CombatAction.active_turn_serial
 	var source_name: String = str(source.get("name", "the creature")) if source is Dictionary else (source.character_name if source is Character else "the creature")
 	for offer in ReactionTriggers.offers(reactor, event):
 		if not bool(event.open): break
@@ -1779,6 +1792,24 @@ func _fire_reaction_trigger(reactor: Character, kind: String, source: Variant, r
 			var labels := {}
 			for o in options: labels[o] = o.capitalize()
 			choice = "" if options.is_empty() else (options[0] if options.size() == 1 or GameManager.test_mode else await hud._request_popup_choice("%s: switch to" % str(offer.name), options, labels))
+		# Prompts can outlive their turn or an effect that moved/removed the source.
+		if offered_turn != CombatAction.active_turn_serial or _battle_ending:
+			ReactionTriggers.close(event)
+		var live_reactor := CreatedCommandRules._entity(self, reactor.character_id)
+		if live_reactor.is_empty():
+			for entity in player_entities:
+				if entity.get("character") == reactor: live_reactor = entity
+		var live_source: Dictionary = source if source is Dictionary else {}
+		if source is Character:
+			for entity in player_entities:
+				if entity.get("character") == source: live_source = entity
+		if live_reactor.is_empty() or live_source.is_empty() or (source is Dictionary and not monster_entities.any(func(m): return is_same(m, source))):
+			ReactionTriggers.close(event)
+		else:
+			var here: Vector2i = live_reactor.get("hex_position", reactor_pos)
+			var there: Vector2i = live_source.get("hex_position", source_pos)
+			event.distance_feet = HexUtils.get_distance(here, there) * 5
+			event.source_visible = CombatPerception.can_see_target(reactor, source, here, there, hex_grid)
 		var receipt := ReactionTriggers.confirm(reactor, offer, event, accepted, choice)
 		receipt["offer"] = offer.duplicate()
 		receipts.append(receipt)
@@ -1786,7 +1817,8 @@ func _fire_reaction_trigger(reactor: Character, kind: String, source: Variant, r
 		for player_entity in player_entities:
 			if player_entity.get("character") == reactor: player_entity["reaction_available"] = false
 		if offer.kind == "spell":
-			var cast := CombatAction.resolve_spell(reactor, source, receipt.spell, false, {}, [], int(receipt.get("slot_level", 0)), distance)
+			var recipient: Variant = ReactionTriggers.target(reactor, receipt.spell, event)
+			var cast := CombatAction.resolve_spell(reactor, recipient, receipt.spell, false, {}, [], int(receipt.get("slot_level", 0)), 0 if is_same(recipient, reactor) else int(event.distance_feet))
 			receipt["cast_result"] = cast
 			hud.add_log("[color=cyan]%s uses %s in response.[/color] %s" % [reactor.character_name, str(offer.name), str(cast.get("message", ""))])
 			if source is Dictionary and int(source.get("current_hp", 1)) <= 0 and bool(source.get("is_alive", true)):
@@ -4581,7 +4613,7 @@ func _check_battle_end_conditions() -> bool:
 	# Check if all players dead (TPK / party wipe)
 	var players_alive := false
 	for p in player_entities:
-		if p.get("is_familiar", false) or p.get("is_steed", false) or p.get("is_created_creature", false):
+		if p.get("is_familiar", false) or p.get("is_steed", false) or p.get("is_created_creature", false) or p.get("is_created_actor", false):
 			continue
 		var c: Character = p.get("character")
 		if c != null and (c.is_alive or (not c.disintegrated and (c.has_feature("fighter_indomitable") or c.has_feature("champion_survivor")) and c.death_save_failures < 3 and c.death_save_successes < 3)):
