@@ -141,6 +141,7 @@ static func apply(actor: Character, feature_id: String, kind: String, option: St
 	var price := cost(actor, feature_id, kind)
 	var refused := cost_error(actor, feature_id, kind, budget)
 	if not refused.is_empty(): return {"success": false, "reason": refused}
+	var seconds := FeatureModeRules.activation_seconds(actor, feature_id, kind)
 	var done := {}
 	match kind:
 		"activate": done = FeatureModeRules.activate(actor, feature_id, option)
@@ -154,6 +155,10 @@ static func apply(actor: Character, feature_id: String, kind: String, option: St
 				budget._spend_action_cost(CombatTurnBudget.budget_kind(price)) # can_pay_mode_cost held just above; nothing ran in between.
 				done["cost"] = price
 			done["cost_kind"] = CombatTurnBudget.budget_kind(price) # Batch 063: kind tag (magic_action vs action).
+		if done.success and budget is OutsideCombat and seconds > 0:
+			# Batch 064: expose the data-declared time; no clock is advanced (PARTIAL).
+			done["activation_seconds"] = seconds
+			done["time_advanced"] = false
 		return done
 	match kind:
 		"alternative":
@@ -161,6 +166,18 @@ static func apply(actor: Character, feature_id: String, kind: String, option: St
 			var ok := RuleUpgradeRules.choose_alternative(actor, feature_id, parts[0], parts[1])
 			return {"success": ok, "reason": "chosen" if ok else "refused"}
 	return {"success": false, "reason": "invalid"}
+
+## Batch 064: "6 s", "1 min", "1 h 30 min" for the room label and log.
+static func duration_label(seconds: int) -> String:
+	if seconds < 60: return "%d s" % seconds
+	var h := seconds / 3600
+	var m := (seconds % 3600) / 60
+	var s := seconds % 60
+	var parts: Array[String] = []
+	if h > 0: parts.append("%d h" % h)
+	if m > 0: parts.append("%d min" % m)
+	if s > 0: parts.append("%d s" % s)
+	return " ".join(parts)
 
 static func kind_label(kind: String) -> String:
 	return {"activate": "Activate", "choose": "Choose mode", "reselect": "Change mode", "switch": "Switch mode", "alternative": "Choose upgrade"}.get(kind, kind)

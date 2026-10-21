@@ -308,6 +308,7 @@ func _run_scenario(scenario: String) -> void:
 		"batch_061_summon_timing_flow": await Batch061Controls.run(self)
 		"batch_062_mode_costs_outside_flow": await Batch062Controls.run(self)
 		"batch_063_magic_action_cost_flow": await Batch063Controls.run(self)
+		"batch_064_mode_duration_flow": await Batch064Controls.run(self)
 		"batch_027_protections_flow": await Batch027Controls.run(self)
 		"batch_021_spell_permissions_flow": await Batch021Controls.run(self)
 		"batch_022_slot_ritual_flow": await Batch022Controls.run(self)

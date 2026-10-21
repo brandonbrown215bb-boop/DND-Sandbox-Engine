@@ -10,7 +10,7 @@ const END_REASONS := ["short_rest", "long_rest", "zero_hp", "incapacitated"]
 const DICE := ["d4", "d6", "d8", "d10", "d12"]
 ## S-104: declared events that open a one-use window to switch the active mode.
 const SWITCH_EVENTS := ["hit", "turn_start"]
-const RULE_KEYS := ["id", "name", "type", "description", "boundary", "rest", "modes", "uses", "uses_per", "duration_seconds", "die", "targets", "end_on", "allow_reselect", "switch_events", "source_instance_id", "recharge_while", "costs"]
+const RULE_KEYS := ["id", "name", "type", "description", "boundary", "rest", "modes", "uses", "uses_per", "duration_seconds", "die", "targets", "end_on", "allow_reselect", "switch_events", "source_instance_id", "recharge_while", "costs", "activation_seconds"]
 const STATE_KEYS := ["mode", "open", "active", "remaining_seconds", "activation_serial", "rolled", "recipients", "event_serial", "window"]
 
 static func _int(v: Variant, lo: int, hi: int) -> bool:
@@ -28,7 +28,7 @@ static func validate_rule(f: Variant, allow_dawn: bool = false) -> String:
 	if not modes_error.is_empty(): return modes_error
 	if f.boundary == "rest":
 		if str(f.get("rest", "")) not in RESTS: return "rest mode_choice requires rest short_rest or long_rest"
-		for key in ["uses", "uses_per", "duration_seconds", "die", "targets", "end_on", "allow_reselect", "switch_events", "recharge_while", "costs"]:
+		for key in ["uses", "uses_per", "duration_seconds", "die", "targets", "end_on", "allow_reselect", "switch_events", "recharge_while", "costs", "activation_seconds"]:
 			if f.has(key): return "rest mode_choice cannot declare activation field '%s'" % key
 		return ""
 	if f.has("switch_events") and not switch_events_error(f.switch_events).is_empty(): return switch_events_error(f.switch_events)
@@ -65,6 +65,9 @@ static func _activation_error(f: Dictionary, allow_dawn: bool = false) -> String
 		if not cost_error.is_empty(): return cost_error
 		if f.costs.has("reselect") and not bool(f.get("allow_reselect", false)): return "costs.reselect requires allow_reselect"
 		if f.costs.has("switch") and not f.has("switch_events"): return "costs.switch requires switch_events"
+	if f.has("activation_seconds"):
+		var time_error := activation_seconds_error(f.activation_seconds)
+		if not time_error.is_empty(): return time_error
 	return end_on_error(f.get("end_on", []))
 
 ## Batch 057: authored combat-budget costs per activation-boundary act.
@@ -83,6 +86,28 @@ static func costs_error(value: Variant) -> String:
 static func cost(actor: Character, feature_id: String, act: String) -> String:
 	var c: Variant = rule(actor, feature_id).get("costs", {})
 	return str(c.get(act, "none")) if c is Dictionary else "none"
+
+## Batch 064 (Brandon: "Using a mode outside combat should take the time the
+## casting time in its data says."): optional authored activation time per act,
+## in whole seconds (1-86400, the same unit and range as a spell's
+## cast_time_seconds). An act without a declared time takes the time its
+## declared cost names: action, bonus_action and magic are one 6-second round
+## (SRD 5.2.1 "Combat": a round is about 6 seconds), none takes no time.
+const ROUND_SECONDS := 6
+
+static func activation_seconds_error(value: Variant) -> String:
+	if not value is Dictionary or value.is_empty(): return "activation_seconds must be an object of activate/reselect/switch seconds"
+	for act in value:
+		if str(act) not in COST_ACTS: return "activation_seconds has unknown act '%s'" % act
+		if not _int(value[act], 1, 86400): return "activation_seconds.%s must be whole seconds from 1 to 86400" % act
+	return ""
+
+## The data-declared time an act takes (0 when it declares none and is free).
+static func activation_seconds(actor: Character, feature_id: String, act: String) -> int:
+	if act not in COST_ACTS: return 0
+	var t: Variant = rule(actor, feature_id).get("activation_seconds", {})
+	if t is Dictionary and t.has(act): return int(t[act])
+	return 0 if cost(actor, feature_id, act) == "none" else ROUND_SECONDS
 
 static func end_on_error(value: Variant) -> String:
 	if not value is Array or value.size() > END_REASONS.size(): return "end_on must be an array of end reasons"

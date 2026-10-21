@@ -222,6 +222,7 @@ if ($runIntegration) {
 	$scenarios += "batch_061_summon_timing_flow"
 	$scenarios += "batch_062_mode_costs_outside_flow"
 	$scenarios += "batch_063_magic_action_cost_flow"
+	$scenarios += "batch_064_mode_duration_flow"
 	$scenarios += "wave_three_foundations_flow", "owned_creature_lifecycle_flow", "batch_024_recovery_flow", "batch_024_spell_result_flow",
     "find_familiar_exploration_flow", "party_recovery_flow", "downed_area_damage_flow", "created_undead_flow"
     if ($Scenario.Count -gt 0) {
