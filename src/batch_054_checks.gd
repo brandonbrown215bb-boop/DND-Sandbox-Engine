@@ -21,12 +21,12 @@ static func run(check: Callable) -> void:
 	for mutate in ["four", "dup", "broken", "count"]:
 		var e: Dictionary = effect.duplicate(true)
 		match mutate:
-			"four": e.options = [e.options[0], e.options[0], e.options[0], e.options[0]]
+			"four": e.options = {"not": "a list"} # Batch 058: a count no longer refuses; a non-list still does.
 			"dup": e.options[0].id = e.template.id
 			"broken": e.options[0].erase("attack")
 			"count": e.count_choice = "yes"
 		bad.append(SharedSpell.content_error({"id": "x", "level": 1, "execution": "shared", "target": "self", "effects": [e]}))
-	check.call(bad.all(func(x): return not str(x).is_empty()), "054 loader refuses too many options, duplicate ids, a broken option and a non-boolean count_choice (%s)" % str(bad))
+	check.call(bad.all(func(x): return not str(x).is_empty()), "054 loader refuses non-list options, duplicate ids, a broken option and a non-boolean count_choice (%s)" % str(bad))
 	var hound: Dictionary = effect.template
 	var owl: Dictionary = effect.options[0]
 	check.call(CreatedActorRules.counts(effect, hound, 0) == [1, 2] and CreatedActorRules.counts(effect, owl, 0) == [1] and CreatedActorRules.counts(DataLoader.get_spell(Batch053Checks.PAIR).effects[0], DataLoader.get_spell(Batch053Checks.PAIR).effects[0].template, 0) == [2], "054 counts: a declared count_choice offers 1..N, otherwise exactly the formula")

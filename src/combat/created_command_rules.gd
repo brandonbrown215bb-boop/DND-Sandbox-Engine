@@ -73,7 +73,10 @@ static func _record(owner: Character, actor: Character) -> Dictionary:
 
 static func _template(owner: Character, actor: Character) -> Dictionary:
 	var record := _record(owner, actor)
-	return CreatedActorRules._template(DataLoader.get_spell(str(record.get("spell_id", ""))), str(record.get("created_actors", {}).get("template_id", "")))
+	var spell := DataLoader.get_spell(str(record.get("spell_id", "")))
+	# Batch 058: the actor's own template (mixed casts); else the record's choice.
+	var kind := CreatedActorRules._template(spell, str(actor.get_meta("created_template_id", "")))
+	return kind if not kind.is_empty() else CreatedActorRules._template(spell, str(record.get("created_actors", {}).get("template_id", "")))
 
 ## Control lasts while the source lasts, or until control_until when declared.
 static func controlled(owner: Character, actor: Character, now: int = -1) -> bool:

@@ -417,6 +417,8 @@ static func choose_factory(cast: SpellCastContext) -> bool:
 	var options := CreatedActorRules.templates(effect)
 	var level := maxi(0, int(cast.spell.get("_selected_spell_slot_level", cast.spell.get("level", 0))) - int(cast.spell.get("level", 0)))
 	var factory := {"template_id": str(options[0].id)}
+	if CreatedActorRules.is_mixed(effect):
+		return await _choose_mix(cast, effect, options, level)
 	if options.size() > 1:
 		if cast.hud == null: return false
 		var ids: Array[String] = [""]
@@ -441,6 +443,36 @@ static func choose_factory(cast: SpellCastContext) -> bool:
 		factory.count = int(answer.value)
 	cast.spell["_factory"] = factory
 	return true
+
+## Batch 058 S-155: a mixed cast asks how many of each declared kind, within the shared total.
+static func _choose_mix(cast: SpellCastContext, effect: Dictionary, options: Array, level: int) -> bool:
+	if cast.hud == null: return false
+	var allowed := CreatedActorRules.counts(effect, {}, level)
+	var left := int(allowed[-1])
+	var mix := {}
+	for i in options.size():
+		var t: Dictionary = options[i]
+		var last := i == options.size() - 1
+		var lo := maxi(0, int(allowed[0]) - _mix_total(mix)) if last else 0
+		var ids: Array[String] = [""]
+		var labels := {"": "Cancel"}
+		for n in range(lo, left + 1):
+			ids.append(str(n))
+			labels[str(n)] = str(n)
+		var answer := await _ask_factory(cast, "How many %s? (up to %d)" % [t.name, left], ids, labels)
+		if not _factory_answer_ok(cast, answer): return false
+		mix[str(t.id)] = int(answer.value)
+		left -= int(answer.value)
+	if not CreatedActorRules.mix_choice_error(effect, mix, level).is_empty():
+		_cancel_placement(cast, "That combination is not permitted; nothing was spent.")
+		return false
+	cast.spell["_factory"] = {"template_id": str(options[0].id), "count": _mix_total(mix), "mix": mix}
+	return true
+
+static func _mix_total(mix: Dictionary) -> int:
+	var total := 0
+	for id in mix: total += int(mix[id])
+	return total
 
 static func _factory_answer_ok(cast: SpellCastContext, answer: Dictionary) -> bool:
 	if answer.has("stale"):
