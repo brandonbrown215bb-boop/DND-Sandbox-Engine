@@ -14,7 +14,7 @@ static func offers(actor: Character) -> Array[Dictionary]:
 			var price := ModeControls.cost(actor, r.feature_id, kind)
 			var block := ModeControls.cost_error(actor, r.feature_id, kind, context)
 			if not block.is_empty(): continue
-			var cost_text := "" if price == "none" else " (%s; no turn outside combat)" % price.replace("_", " ").capitalize()
+			var cost_text := "" if price == "none" else " (%s; no turn outside combat)" % CombatTurnBudget.cost_label(price)
 			out.append({"feature_id": r.feature_id, "kind": kind, "token": r.token, "owner_id": actor.character_id, "text": "%s: %s%s" % [ModeControls.kind_label(kind), ModeControls.label(r), cost_text]})
 	return out
 

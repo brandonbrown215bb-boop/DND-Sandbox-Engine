@@ -70,13 +70,13 @@ static func _activation_error(f: Dictionary, allow_dawn: bool = false) -> String
 ## Batch 057: authored combat-budget costs per activation-boundary act.
 ## Omitted acts (or no costs at all) stay free, as every fixture was before.
 const COST_ACTS := ["activate", "reselect", "switch"]
-const COST_TYPES := ["action", "bonus_action", "none"]
+const COST_TYPES := ["action", "bonus_action", "magic", "none"] # Batch 063: magic = the Magic action.
 
 static func costs_error(value: Variant) -> String:
 	if not value is Dictionary or value.is_empty(): return "costs must be an object of activate/reselect/switch"
 	for act in value:
 		if str(act) not in COST_ACTS: return "costs has unknown act '%s'" % act
-		if not value[act] is String or str(value[act]) not in COST_TYPES: return "costs.%s must be action, bonus_action or none" % act
+		if not value[act] is String or str(value[act]) not in COST_TYPES: return "costs.%s must be action, bonus_action, magic or none" % act
 	return ""
 
 ## The declared cost of one act on the live rule ("none" when undeclared).

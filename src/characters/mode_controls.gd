@@ -126,7 +126,7 @@ static func cost_error(actor: Character, feature_id: String, kind: String, budge
 		return ""
 	if budget.active_character != actor: return "wrong_turn"
 	if FeatureModeRules.incapacitated(actor) or not actor.is_alive: return "incapacitated"
-	if not budget.can_pay_mode_cost(c): return "unaffordable"
+	if not budget.can_pay_mode_cost(CombatTurnBudget.budget_kind(c)): return "unaffordable"
 	return ""
 
 ## The single entry point for HUD answers. Refusals spend nothing.
@@ -151,8 +151,9 @@ static func apply(actor: Character, feature_id: String, kind: String, option: St
 			if budget is OutsideCombat:
 				done["cost_outside_combat"] = price # Batch 062: no action economy outside initiative.
 			else:
-				budget._spend_action_cost(price) # can_pay_mode_cost held just above; nothing ran in between.
+				budget._spend_action_cost(CombatTurnBudget.budget_kind(price)) # can_pay_mode_cost held just above; nothing ran in between.
 				done["cost"] = price
+			done["cost_kind"] = CombatTurnBudget.budget_kind(price) # Batch 063: kind tag (magic_action vs action).
 		return done
 	match kind:
 		"alternative":

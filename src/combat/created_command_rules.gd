@@ -23,7 +23,8 @@ const CONCENTRATION_END := ["end"]
 ## Batch 060: the 057 mode cost vocabulary (action, bonus_action, none) plus
 ## "free" as an authored synonym for none. Reaction and Magic action costs wait
 ## for their own queue items (reaction triggers; Magic action as a cost option).
-const COSTS := ["action", "bonus_action", "none", "free"]
+## Batch 063: plus "magic" (the Magic action; spends the Action as magic_action).
+const COSTS := ["action", "bonus_action", "magic", "none", "free"]
 const ORDERS := ["attack", "dodge"]
 const DEFAULTS := ["dodge", "none"]
 ## Uncommanded and unauthored: Bonus Action, 12 hexes (60 ft), attack/Dodge, Dodge.
@@ -39,7 +40,7 @@ static func policy_error(p: Variant) -> String:
 	if not p is Dictionary: return "command must be an object"
 	for key in p:
 		if str(key) not in POLICY_KEYS: return "command has unknown field '%s'" % key
-	if p.has("cost") and (not p.cost is String or str(p.cost) not in COSTS): return "command cost must be action, bonus_action, none or free"
+	if p.has("cost") and (not p.cost is String or str(p.cost) not in COSTS): return "command cost must be action, bonus_action, magic, none or free"
 	if p.has("range_hexes") and not CreatedActorRules._int(p.range_hexes, 1, 24): return "command range_hexes must be 1-24"
 	if p.has("orders"):
 		if not p.orders is Array or p.orders.is_empty() or p.orders.size() > ORDERS.size(): return "command orders must be attack and/or dodge, once each"
@@ -51,7 +52,7 @@ static func policy_error(p: Variant) -> String:
 		if not p.order_costs is Dictionary or p.order_costs.is_empty(): return "command order_costs must be an object of order -> cost"
 		for o in p.order_costs:
 			if str(o) not in ORDERS: return "command order_costs has unknown order '%s'" % o
-			if not p.order_costs[o] is String or str(p.order_costs[o]) not in COSTS: return "command order_costs.%s must be action, bonus_action, none or free" % o
+			if not p.order_costs[o] is String or str(p.order_costs[o]) not in COSTS: return "command order_costs.%s must be action, bonus_action, magic, none or free" % o
 			if not str(o) in p.get("orders", DEFAULT.orders): return "command order_costs.%s names an order the creature can't be given" % o
 	if p.has("default") and str(p.default) not in DEFAULTS: return "command default must be dodge or none"
 	if p.has("control_seconds") and not CreatedActorRules._int(p.control_seconds, 6, 86400): return "command control_seconds must be 6-86400"
@@ -81,7 +82,7 @@ static func cost(p: Dictionary, order: String) -> String:
 
 ## HUD label for a declared cost.
 static func cost_label(c: String) -> String:
-	return {"none": "Free", "action": "Action", "bonus_action": "Bonus Action"}.get(c, c.capitalize())
+	return CombatTurnBudget.cost_label(c) # Batch 063: shared labels, incl. Magic action.
 
 static func policy(template: Dictionary) -> Dictionary:
 	var out := DEFAULT.duplicate(true)
@@ -152,7 +153,7 @@ static func command_error(state, owner: Character, actor_id: String, order: Stri
 	if HexUtils.get_distance(_owner_hex(state, owner), entity.hex_position) > int(p.range_hexes): return "%s is beyond command range (%d ft)." % [actor.character_name, int(p.range_hexes) * 5]
 	if int(_commanded.get(actor_id, -1)) == CombatAction.active_turn_serial: return "%s was already commanded this turn." % actor.character_name
 	var price := cost(p, order)
-	if price != "none" and not state._can_spend_action_cost(price): return "No %s is available to command." % price.replace("_", " ")
+	if price != "none" and not state._can_spend_action_cost(CombatTurnBudget.budget_kind(price)): return "No %s is available to command." % cost_label(price).to_lower()
 	if order == "attack":
 		var target := _target(state, target_id)
 		if target.is_empty(): return "Choose a living enemy."
@@ -174,7 +175,7 @@ static func issue(state, owner: Character, actor_id: String, order: String, targ
 		if a.character_id == actor_id: actor = a
 	var p := policy(_template(owner, actor))
 	var price := cost(p, order)
-	if price != "none" and not state._spend_action_cost(price): return {"success": false, "message": "The command could not be paid. Nothing was spent."}
+	if price != "none" and not state._spend_action_cost(CombatTurnBudget.budget_kind(price)): return {"success": false, "message": "The command could not be paid. Nothing was spent."}
 	_commanded[actor_id] = CombatAction.active_turn_serial
 	if initiative(owner, actor) != "owner_turn":
 		_orders[actor_id] = {"order": order, "target_id": target_id}
