@@ -11,6 +11,8 @@ static func load_fixtures() -> void:
 	Batch057Checks.load_fixtures()
 	if not DataLoader.get_feat(WARD).is_empty(): return
 	DataLoader._load_json_file("res://data/fixtures/batch_064/feats/ward.json", "feat")
+	Batch049Checks.load_fixtures()
+	DataLoader._load_json_file("res://data/fixtures/batch_064/items/slow_circlet.json", "item")
 
 static func kit(c: Character) -> Character:
 	while c.level < 4: c.level_up()
@@ -76,5 +78,38 @@ static func run(check: Callable) -> void:
 	var g := kit(Batch050Checks.actor("b064_gate"))
 	var feat_copy: Dictionary = g.get_feature(MODE)
 	check.call(str(feat_copy.get("source_instance_id", "")).is_empty() or ModeControls.row(g, MODE).available, "064 (e): the fixture is a feat (no item copy); the 057/062 merged/suppressed gate path is unchanged")
+	_review_item_gate(check, out)
 	check.call(ModeControls.duration_label(6) == "6 s" and ModeControls.duration_label(600) == "10 min" and ModeControls.duration_label(5400) == "1 h 30 min" and ModeControls.duration_label(3661) == "1 h 1 min 1 s", "064 duration labels")
 	GameManager.current_state = prior
+
+const SLOW := "fixture:b064_slow_circlet"
+
+## Review R1 (e): an item-copy mode with a declared time. A merged or
+## suppressed copy is refused before any time or use is reported; a live copy
+## reports its 60 s.
+static func _wear(id: String) -> Array:
+	var a := Batch049Checks.actor(id)
+	var cid := Batch041Checks.add_copy(a, SLOW)
+	a.inventory.equip_instance(Inventory.Slot.HEAD, cid)
+	a.inventory.attune_instance(cid, a.character_id)
+	return [a, Batch049Checks.focus(cid)]
+
+static func _review_item_gate(check: Callable, out: Variant) -> void:
+	var live: Array = _wear("b064_r_live")
+	var lc: Character = live[0]
+	var ok := ModeControls.apply(lc, live[1], "activate", "ward", ModeControls.row(lc, live[1]).token, out)
+	check.call(ok.success and int(ok.get("activation_seconds", 0)) == 60 and int(lc.feature_uses[live[1]]) == 1, "064 review (e): a live item-copy mode reports its declared 60 s (%s)" % str(ok))
+	var m: Array = _wear("b064_r_merged")
+	var mc: Character = m[0]
+	var tok := str(ModeControls.row(mc, m[1]).token)
+	Batch041Checks.guise(mc, "merged")
+	var mr := ModeControls.apply(mc, m[1], "activate", "ward", str(ModeControls.row(mc, m[1]).get("token", tok)), out)
+	var s: Array = _wear("b064_r_muted")
+	var sc: Character = s[0]
+	var stok := str(ModeControls.row(sc, s[1]).token)
+	MagicPropertyRules.apply(sc, {"source_id": "b064_r_mute", "caster_id": sc.character_id, "spell_id": "b064_r"}, {"type": "suppress_item_magic", "properties": ["features"]})
+	var sr := ModeControls.apply(sc, s[1], "activate", "ward", str(ModeControls.row(sc, s[1]).get("token", stok)), out)
+	check.call(not mr.success and not mr.has("activation_seconds") and int(mc.feature_uses[m[1]]) == 2 and not sr.success and not sr.has("activation_seconds") and int(sc.feature_uses[s[1]]) == 2 and _mine(mc, m[1]) == 0 and _mine(sc, s[1]) == 0, "064 review (e): merged and suppressed item copies are refused before any use or time is reported (%s / %s; uses %s %s; offers %d %d)" % [str(mr.get("reason", "")), str(sr.get("reason", "")), str(mc.feature_uses.get(m[1])), str(sc.feature_uses.get(s[1])), _mine(mc, m[1]), _mine(sc, s[1])])
+
+static func _mine(a: Character, fid: String) -> int:
+	return LocalRoomModes.offers(a).filter(func(o): return o.feature_id == fid).size()
