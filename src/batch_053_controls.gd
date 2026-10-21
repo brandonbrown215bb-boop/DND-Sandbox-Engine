@@ -142,6 +142,7 @@ static func run(h: Node) -> void:
 	await Batch047Controls.begin(h, combat, b, Batch053Checks.GAMBLE)
 	await Batch047Controls.settle(h, combat)
 	h._assert(_slots(b) == 3 and combat.player_entities.size() <= entities_before and not CreatedActorRules.actors(b).any(func(x): return str(x.get_meta("created_source_id", "")).contains(Batch053Checks.GAMBLE)), "053 actual walled in: the 'spend' summon pays exactly one slot and creates nothing")
+	h._assert(not DataLoader.get_spell(Batch053Checks.GAMBLE).has("_placement") and not DataLoader.get_spell(Batch053Checks.PAIR).has("_placement"), "053 review: transient picks never leak onto the catalog spell")
 	for tile in blocked: tile.custom_properties.erase("blocks_movement")
 	# 5. A projected item copy takes a legal adjacent cell, never an occupied one.
 	var fig := Batch042Checks.add(a, Batch042Checks.FIGURINE)
