@@ -125,8 +125,11 @@ does not count as work. Each participant can work on one job at a time; both
 party and player-only checkpoints enforce that limit. Work's existing item-only and party-membership limits
 remain; it does not check helpers' spatial co-location.
 
-Regressions live in `src/stack_repair_checks.gd`; these fixture-backed repairs do
-not convert catalog content or accept the full planned slices.
+Regressions live in `src/stack_repair_checks.gd`. The
+[slice registry](../planning/vocabulary-slices.md#accepted-bounded-batches)
+records acceptance of the reviewed, repaired and merged implementations and their
+remaining limits. These fixture-backed repairs do not convert catalog content or
+complete the remaining clauses.
 
 ## Limits
 

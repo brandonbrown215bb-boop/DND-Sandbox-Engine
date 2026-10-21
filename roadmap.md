@@ -11,8 +11,35 @@ retains vocabulary-first delivery, current save priorities, and Wish/illusion po
 
 Continue the engine backlog in the [slice registry](docs/planning/vocabulary-slices.md).
 It owns requirements, prerequisites, completion status, counts and verified limits.
-No next implementation batch is selected. Reuse completed pieces rather than
-repeating their proof because a broader requirement remains open.
+The selected work is the [merged-slice completion queue](docs/planning/vocabulary-slices.md#merged-slice-completion-queue):
+finish the missing controls and target/source wiring from Batches 034–046, and
+build the specific world capabilities those implementations still need. Reuse
+completed pieces rather than repeating their proof because a broader requirement
+remains open.
+
+The three initial Grokbot handoffs and their playtest repairs landed in PRs
+#16–19. Their [accepted boundaries](docs/planning/vocabulary-slices.md#pr16-18-validation)
+retain the unfinished feat acquisition, mode/upgrade controls, volume and item
+measurement/role work. Do not reassign completed chooser or ownership work.
+Legal placement is the next additional shared world assignment.
+
+The owner's instruction to review, fix and merge accepts the reviewed work when
+that workflow completes. Record acceptance and its bounded limits in the slice
+registry; do not add a separate owner sign-off after merging.
+
+Start the ready assignments in that queue without waiting for a new engine
+framework. The first shared world work is legal placement/outcome settlement
+(S-121/S-122), reused by creation choices (S-155), real equipment drops and
+item-form return (S-164/S-166). Created-actor command authority (S-156) can start
+independently, then initiative/default behavior follows (S-157/S-158).
+
+Extend existing room objects, areas and source-end records for located aftermath
+(S-086/S-087/S-120), then object-anchored restraints (S-168/S-169). Multi-recipient
+tethers first need one cast source retaining several recipients (S-144); they do
+not need a general object system. Containment/release (S-170–S-172) and vessel
+cargo/movement (S-167) follow placement and item reversion. Cast-local parameter
+changes (S-126/S-127/S-140/S-141) form an independent branch. The queue owns each
+assignment's narrower dependencies and checks; this is not a whole-phase gate.
 
 1. Discover any missing requirement needed by the selected capability.
 2. Build and verify that capability through production Godot paths. Neutral or
