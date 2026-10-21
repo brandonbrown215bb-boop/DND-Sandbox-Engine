@@ -1,5 +1,7 @@
 # Batch 053 build: S-121/S-122 legal placement
 
+**Status: S-121 partial: arrival only; S-122 build complete.** The exit-before-settle half of S-121 is filed as its own card.
+
 Card Q-20261021-040420-1903. Base origin/main 31db360 (PRs #20-#24 merged), not stacked.
 
 ## Finish line
