@@ -120,3 +120,16 @@ static func run(check: Callable) -> void:
 	check.call(ModeControls.cost(back, FOCUS, "activate") == "magic" and state(back) == state(c) and not JSON.stringify(dto).contains("magic_action") and FeatureModeRules.saved_error(dto).is_empty() and again.size() == 2 and CreatedCommandRules.cost(CreatedCommandRules.policy(CreatedCommandRules._template(oback, again[0])), "dodge") == "magic" and CreatedActorRules.saved_record_error(odto, odto.spell_effects.values()[0]).is_empty(), "063 checklist (b)/(d): no new saved field; reloads resolve the Magic-action cost from data")
 	# Legacy: 057 Rush and 060 defaults unchanged.
 	check.call(CreatedCommandRules.cost(CreatedCommandRules.policy({}), "attack") == "bonus_action" and FeatureModeRules.validate_rule(DataLoader.get_feat(Batch057Checks.RUSH).features[0]).is_empty(), "063 legacy: undeclared command costs stay Bonus Action and 057 costs still validate")
+	# Review stress (Runtime Reviewer): Action + surge both present.
+	var r := kit(Batch050Checks.actor("b063_rev"))
+	var rb := Real.new()
+	rb.active_character = r
+	rb.tb.grant_surge_action()
+	var m1 := ModeControls.apply(r, FOCUS, "activate", "guard", tok(r), rb)
+	var m_surge_left := rb.tb.surge_actions
+	var a_err := CreatedCommandRules.cost_label("magic")
+	var m2 := ModeControls.cost_error(r, FOCUS, "reselect", rb)
+	check.call(m1.success and m_surge_left == 1 and rb.spent == ["magic_action"] and rb.tb.can_spend("action") and not rb.tb.can_spend("magic_action") and m2 == "" and a_err == "Magic action", "063 review: a Magic-action cost with Action and a surge action left spends the Action, keeps the surge action for a plain Action (%s)" % str(rb.spent))
+	# Per-order: attack magic, dodge free; free order still works after the Magic action is spent.
+	var pol := CreatedCommandRules.policy({"command": {"order_costs": {"attack": "magic", "dodge": "free"}}})
+	check.call(CreatedCommandRules.cost(pol, "attack") == "magic" and CreatedCommandRules.cost(pol, "dodge") in ["none", "free"] and CreatedCommandRules.cost(pol, "attack") != CreatedCommandRules.cost(CreatedCommandRules.policy({}), "attack"), "063 review: per-order magic/free costs resolve independently (%s)" % str(pol))
