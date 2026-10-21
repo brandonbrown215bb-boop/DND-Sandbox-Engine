@@ -2138,6 +2138,7 @@ func add_condition(condition_name: String, duration: int, source: String = "") -
 		condition_sources[condition_name] = grants
 		conditions[condition_name] = int(grants.values().max())
 	if condition_name in ["incapacitated", "unconscious", "paralyzed", "petrified", "stunned"]:
+		FeatureModeRules.refresh(self) # Batch 050 bug 2: declared end conditions fire now, suppressed or not.
 		DruidRules.revert_for_incapacitation(self)
 		if has_condition("raging") and (not has_feature("barbarian_persistent_rage") or condition_name == "unconscious"):
 			end_rage()

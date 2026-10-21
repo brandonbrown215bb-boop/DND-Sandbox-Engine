@@ -16,7 +16,8 @@ const STATE_KEYS := ["mode", "open", "active", "remaining_seconds", "activation_
 static func _int(v: Variant, lo: int, hi: int) -> bool:
 	return (v is int or v is float) and is_finite(float(v)) and float(v) == floorf(float(v)) and int(v) >= lo and int(v) <= hi
 
-static func validate_rule(f: Variant) -> String:
+## allow_dawn: item copies may recover at dawn (SRD 5.2.1 p.206 "The Next Dawn").
+static func validate_rule(f: Variant, allow_dawn: bool = false) -> String:
 	if not f is Dictionary: return "mode_choice must be an object"
 	for key in f:
 		if str(key) not in RULE_KEYS: return "mode_choice has unknown field '%s'" % key
@@ -31,7 +32,7 @@ static func validate_rule(f: Variant) -> String:
 			if f.has(key): return "rest mode_choice cannot declare activation field '%s'" % key
 		return ""
 	if f.has("switch_events") and not switch_events_error(f.switch_events).is_empty(): return switch_events_error(f.switch_events)
-	return _activation_error(f)
+	return _activation_error(f, allow_dawn)
 
 static func switch_events_error(value: Variant) -> String:
 	if not value is Array or value.size() > SWITCH_EVENTS.size(): return "switch_events must be an array of hit or turn_start"
@@ -50,9 +51,9 @@ static func modes_list_error(modes: Variant) -> String:
 		seen[mode.id] = true
 	return ""
 
-static func _activation_error(f: Dictionary) -> String:
+static func _activation_error(f: Dictionary, allow_dawn: bool = false) -> String:
 	if f.has("rest"): return "activation mode_choice cannot declare rest"
-	if not _int(f.get("uses"), 1, 20) or str(f.get("uses_per", "")) not in RESTS: return "activation mode_choice requires uses 1-20 and uses_per short_rest or long_rest"
+	if not _int(f.get("uses"), 1, 20) or str(f.get("uses_per", "")) not in (RESTS + ["dawn"] if allow_dawn else RESTS): return "activation mode_choice requires uses 1-20 and uses_per short_rest or long_rest%s" % (" or dawn" if allow_dawn else "")
 	if not _int(f.get("duration_seconds"), 6, 86400): return "activation mode_choice requires duration_seconds 6-86400"
 	if f.has("die") and str(f.die) not in DICE: return "activation mode_choice die must be d4-d12"
 	if f.has("targets") and not _int(f.targets, 1, 6): return "activation mode_choice targets must be 1-6"
@@ -72,6 +73,15 @@ static func rule(actor: Character, feature_id: String) -> Dictionary:
 	if feature.get("type", "") != "mode_choice": return {}
 	if not OwnedFeatureSources.copy_active(actor, feature): return {} # Review 049 R1: merged/suppressed copies grant nothing.
 	return RuleUpgradeRules.effective(actor, feature)
+
+## Batch 050 bug 2: the owned rule even while its copy is suppressed or merged.
+## End predicates read this, so a suppressed power still ends on schedule.
+static func owned_rule(actor: Character, feature_id: String) -> Dictionary:
+	var feature := actor.get_feature(feature_id)
+	if feature.get("type", "") != "mode_choice": return {}
+	return RuleUpgradeRules.effective(actor, feature)
+
+const INCAPACITATING := ["incapacitated", "unconscious", "paralyzed", "petrified", "stunned"]
 
 static func _mode(r: Dictionary, mode_id: String) -> Dictionary:
 	for mode in r.get("modes", []):
@@ -160,7 +170,7 @@ static func switch(actor: Character, feature_id: String, mode_id: String, event:
 static func end(actor: Character, feature_id: String, reason: String) -> Dictionary:
 	var state: Dictionary = actor.feature_modes.get(feature_id, {})
 	if not bool(state.get("active", false)): return {}
-	var r := rule(actor, feature_id)
+	var r := owned_rule(actor, feature_id)
 	if reason not in ["duration", "dismissed"] and reason not in r.get("end_on", []): return {}
 	var ended := str(state.mode)
 	state["active"] = false
@@ -177,7 +187,7 @@ static func refresh(actor: Character) -> Array:
 		var e := {}
 		if actor.current_hp <= 0:
 			e = end(actor, feature_id, "zero_hp")
-		if e.is_empty() and actor.has_condition("incapacitated"):
+		if e.is_empty() and INCAPACITATING.any(func(c): return actor.has_condition(c)):
 			e = end(actor, feature_id, "incapacitated")
 		if not e.is_empty():
 			ended.append(e)
@@ -201,11 +211,21 @@ static func on_rest(actor: Character, rest_kind: String) -> void:
 static func carriers(actor: Character) -> Array[Dictionary]:
 	refresh(actor)
 	var out: Array[Dictionary] = []
-	for feature_id in actor.feature_modes:
+	var granted := {}
+	var ordered: Array = actor.feature_modes.keys()
+	ordered.sort()
+	for feature_id in ordered:
 		var state: Dictionary = actor.feature_modes[feature_id]
 		var r := rule(actor, str(feature_id))
 		var mode := _mode(r, str(state.get("mode", "")))
 		if mode.is_empty() or (r.boundary == "activation" and not bool(state.get("active", false))): continue
+		# Batch 050 bug 3: each identical copy keeps its own rule and uses, but
+		# the same item's same power grants its benefit once.
+		var copy := str(actor.get_feature(str(feature_id)).get("source_instance_id", ""))
+		if not copy.is_empty():
+			var stack_key := "%s|%s" % [actor.inventory.copies.records.get(copy, {}).get("definition_id", ""), str(feature_id).get_slice("@", 0)]
+			if granted.has(stack_key): continue
+			granted[stack_key] = true
 		var identity := "mode:" + JSON.stringify([actor.character_id, feature_id, mode.id, int(state.get("activation_serial", 0))])
 		out.append({"source_instance_id": identity, "definition_id": str(mode.id), "benefits": mode.benefits})
 	return out

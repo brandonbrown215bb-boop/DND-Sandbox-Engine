@@ -729,9 +729,10 @@ func drop_equipped_instance(slot: Slot) -> Dictionary:
 	var instance_id := str(copies.equipped.get(slot, ""))
 	if instance_id.is_empty():
 		return {}
-	var record: Dictionary = copies.records.get(instance_id, {}).duplicate(true)
-	if record.is_empty():
+	if copies.records.get(instance_id, {}).is_empty():
 		return {}
+	OwnedFeatureSources.stamp_copy(owner_character_ref.get_ref() if owner_character_ref != null else null, copies.records[instance_id]) # Batch 050 bug 1.
+	var record: Dictionary = copies.records.get(instance_id, {}).duplicate(true)
 	WorkRules.on_removed(record)
 	copies.equipped.erase(slot)
 	copies.records.erase(instance_id)

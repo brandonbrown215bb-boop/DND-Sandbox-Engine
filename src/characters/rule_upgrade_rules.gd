@@ -97,7 +97,7 @@ static func restore(actor: Character, data: Dictionary) -> void:
 static func upgrades_for(actor: Character, rule_id: String) -> Array:
 	var by_id := {}
 	for feature in actor.features:
-		if feature.get("type", "") == "rule_upgrade" and feature.get("rule", "") == rule_id:
+		if feature.get("type", "") == "rule_upgrade" and feature.get("rule", "") == rule_id and OwnedFeatureSources.copy_active(actor, feature): # Batch 050: suppressed "features" covers upgrades too.
 			by_id[str(feature.id)] = feature # One owned upgrade applies once.
 	var ids := by_id.keys()
 	ids.sort()

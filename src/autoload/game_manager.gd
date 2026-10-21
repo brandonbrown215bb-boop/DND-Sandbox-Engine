@@ -385,6 +385,7 @@ func advance_campaign_time(elapsed_seconds: int) -> Array[Dictionary]:
 	for day in range(prior_day, current_day):
 		for character in PartyManager.characters.values():
 			character.inventory.recover_daily_charges()
+			OwnedFeatureSources.recover_dawn(character) # Batch 050: SRD 5.2.1 p.206 item recharge at dawn.
 			SurvivalRules.settle_day(character, (day + 1) * 86400)
 	SpellEffects.advance_time(PartyManager.characters.values(), elapsed_seconds)
 	AnimatedObjectRules.reconcile()

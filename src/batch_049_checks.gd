@@ -108,7 +108,7 @@ static func _item_copy(check: Callable) -> void:
 	var dto := a.to_dict()
 	dto.inventory.copies.equipped["HANDS"] = other
 	var declared := OwnedFeatureSources.declared_in(dto).map(func(f): return str(f.id))
-	check.call(declared.count(focus(id)) + declared.count(focus(other)) == 1, "049 two equipped copies of one item never stack their features")
+	check.call(declared.count(focus(id)) == 1 and declared.count(focus(other)) == 1, "049 (050 bug 3) two equipped copies of one item each own their features once")
 	var record: Dictionary = a.inventory.get_instance(id)
 	check.call(InventoryCopies.record_state_error(record).is_empty(), "049 checklist (b): the attuned copy record still passes record_state_error (no new nested record)")
 

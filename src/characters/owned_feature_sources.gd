@@ -32,7 +32,7 @@ static func definition_error(data: Dictionary, content_type: String) -> String:
 		if id.is_empty() or "@" in id or ids.has(id): return "%s features need unique ids without '@'" % content_type.capitalize()
 		ids[id] = true
 	for feature in owned:
-		var error := FeatureModeRules.validate_rule(feature) if feature.type == "mode_choice" else RuleUpgradeRules.validate_rule(feature, ids if content_type == "item" else {})
+		var error := FeatureModeRules.validate_rule(feature, content_type == "item") if feature.type == "mode_choice" else RuleUpgradeRules.validate_rule(feature, ids if content_type == "item" else {})
 		if feature.has("source_instance_id"): error = "feature cannot declare source_instance_id"
 		if not error.is_empty(): return "Feature '%s': %s" % [feature.get("id", ""), error]
 	return ""
@@ -71,12 +71,10 @@ static func declared(race_id: String, character_id: String, records: Dictionary,
 		var record: Variant = records.get(id, {})
 		if seen.has(id) or not record is Dictionary: continue
 		var definition_id := str(record.get("definition_id", ""))
-		if seen.has("def:" + definition_id): continue # A second copy of one item never stacks its features.
-		var item := DataLoader.get_item(definition_id)
+		var item := DataLoader.get_item(definition_id) # Batch 050 bug 3: every copy owns its own rules; benefits dedupe in carriers.
 		var state: Variant = record.get("state", {})
 		if bool(item.get("requires_attunement", false)) and (not state is Dictionary or str(state.get("attuned_to", "")) != character_id): continue
 		seen[id] = true
-		if item.has("features"): seen["def:" + definition_id] = true
 		out.append_array(item_features(item, id))
 	return out
 
@@ -107,13 +105,7 @@ static func sync(actor: Character, restoring: bool = false) -> Array:
 		var fid := str(feature.get("id", ""))
 		var copy := str(feature.get("source_instance_id", ""))
 		if not actor.acquired_features.has(fid) or wanted_ids.has(fid) or copy.is_empty() or not records.get(copy) is Dictionary: continue
-		var pool := str(feature.get("resource_id", fid))
-		if feature.get("type", "") != "mode_choice" or not actor.feature_uses.has(pool): continue
-		var state: Dictionary = records[copy].get("state", {})
-		var held: Dictionary = state.get("feature_uses", {})
-		held[pool] = maxi(0, int(actor.feature_uses[pool]))
-		state["feature_uses"] = held
-		records[copy]["state"] = state
+		_stamp(actor, feature, records[copy])
 	var kept: Array[Dictionary] = []
 	var present := {}
 	for feature in actor.features:
@@ -135,6 +127,17 @@ static func sync(actor: Character, restoring: bool = false) -> Array:
 		if not present.has(str(id)): actor.feature_modes.erase(id)
 	for key in actor.rule_alternatives.keys():
 		if not present.has(str(key).get_slice("|", 0)): actor.rule_alternatives.erase(key)
+	# Batch 050 (Brandon): a copy remembers its chosen option; restore it before
+	# its pool is clamped so the maximum is the copy's own.
+	for id in acquired:
+		var copy_id := str(actor.get_feature(str(id)).get("source_instance_id", ""))
+		var rec: Variant = records.get(copy_id) if not copy_id.is_empty() else null
+		if not rec is Dictionary or not rec.get("state", {}).get("rule_alternatives") is Dictionary: continue
+		for key in rec.state.rule_alternatives.keys():
+			if str(key).get_slice("|", 0) == str(id):
+				actor.rule_alternatives[key] = rec.state.rule_alternatives[key]
+				rec.state.rule_alternatives.erase(key)
+		if rec.state.rule_alternatives.is_empty(): rec.state.erase("rule_alternatives")
 	for id in acquired:
 		var feature := actor.get_feature(str(id))
 		if feature.get("type", "") != "mode_choice" or feature.get("boundary", "") != "activation": continue
@@ -162,7 +165,11 @@ static func copy_active(actor: Character, feature: Dictionary) -> bool:
 ## modes and holds a whole number no larger than the item can ever grant.
 static func record_error(record: Dictionary) -> String:
 	var state: Variant = record.get("state", {})
-	if not state is Dictionary or not state.has("feature_uses"): return ""
+	if not state is Dictionary: return ""
+	if state.has("rule_alternatives"):
+		var alt_error := _alternatives_error(record, state.rule_alternatives)
+		if not alt_error.is_empty(): return alt_error
+	if not state.has("feature_uses"): return ""
 	var held: Variant = state.feature_uses
 	if not held is Dictionary or held.is_empty() or held.size() > MAX_FEATURES: return "item feature uses are malformed"
 	var item := DataLoader.get_item(str(record.get("definition_id", "")))
@@ -172,4 +179,64 @@ static func record_error(record: Dictionary) -> String:
 	for pool in held:
 		var n: Variant = held[pool]
 		if not pools.has(str(pool)) or not (n is int or n is float) or not is_finite(float(n)) or float(n) != floorf(float(n)) or int(n) < 0 or int(n) > 100: return "item feature uses name an unowned pool or an invalid count"
+	return ""
+
+## Write a leaving (or no longer owned) copy's pool and chosen alternative on
+## its record so they travel with that exact copy (Batch 050 bugs 1 and the
+## remembered-option decision).
+static func _stamp(actor: Character, feature: Dictionary, record: Dictionary) -> void:
+	var fid := str(feature.get("id", ""))
+	var state: Dictionary = record.get("state", {})
+	if feature.get("type", "") == "mode_choice":
+		var pool := str(feature.get("resource_id", fid))
+		if feature.get("boundary", "") == "activation" and actor.feature_uses.has(pool):
+			var held: Dictionary = state.get("feature_uses", {})
+			held[pool] = maxi(0, int(actor.feature_uses[pool]))
+			state["feature_uses"] = held
+		var chosen: Dictionary = state.get("rule_alternatives", {})
+		for key in actor.rule_alternatives:
+			if str(key).get_slice("|", 0) == fid: chosen[key] = actor.rule_alternatives[key]
+		if not chosen.is_empty(): state["rule_alternatives"] = chosen
+	record["state"] = state
+
+## Production hook for paths that remove an equipped copy's record before any
+## sync can see it (drop from hand): stamp first, so the record that leaves
+## carries the exact remaining uses and option.
+static func stamp_copy(actor, record: Dictionary) -> void:
+	if not actor is Character: return
+	var copy := str(record.get("instance_id", ""))
+	for feature in actor.features:
+		if actor.acquired_features.has(str(feature.get("id", ""))) and str(feature.get("source_instance_id", "")) == copy: _stamp(actor, feature, record)
+
+## SRD 5.2.1 p.206 "The Next Dawn": magic items recharge at the next dawn (or
+## another specified time) - an item rule, not a wearer rule. Item modes that
+## declare uses_per "dawn" refill on every carried copy at each campaign day
+## boundary, worn or not; rest-recovered item modes keep their rest rule.
+static func recover_dawn(actor: Character) -> Array:
+	var refilled: Array = []
+	if actor == null or actor.inventory == null: return refilled
+	for copy_id in actor.inventory.copies.records.keys():
+		var record: Dictionary = actor.inventory.copies.records[copy_id]
+		for feature in item_features(DataLoader.get_item(str(record.get("definition_id", ""))), str(copy_id)):
+			if feature.type != "mode_choice" or str(feature.get("uses_per", "")) != "dawn": continue
+			var pool := str(feature.get("resource_id", feature.id))
+			if actor.acquired_features.has(str(feature.id)):
+				actor.feature_uses[pool] = maxi(0, actor.get_feature_max_uses(pool))
+			else:
+				# Not owned right now: drop the spent stamp so the next acquisition starts full.
+				actor.feature_uses.erase(pool)
+				var held: Variant = record.get("state", {}).get("feature_uses")
+				if held is Dictionary:
+					held.erase(pool)
+					if held.is_empty(): record.state.erase("feature_uses")
+			refilled.append(pool)
+	return refilled
+
+static func _alternatives_error(record: Dictionary, chosen: Variant) -> String:
+	if not chosen is Dictionary or chosen.is_empty() or chosen.size() > MAX_FEATURES: return "item alternatives are malformed"
+	var options := {}
+	for feature in item_features(DataLoader.get_item(str(record.get("definition_id", ""))), str(record.get("instance_id", ""))):
+		if feature.type == "rule_upgrade" and feature.has("exclusive_group"): options["%s|%s" % [feature.rule, feature.exclusive_group] + "=" + str(feature.id)] = true
+	for key in chosen:
+		if not chosen[key] is String or not options.has(str(key) + "=" + str(chosen[key])): return "item alternative names an option this copy does not own"
 	return ""

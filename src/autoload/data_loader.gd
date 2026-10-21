@@ -12,6 +12,7 @@ var subclasses: Dictionary = {}
 var races: Dictionary = {}
 ## Batch 049: feats are a content type so species can grant them by id.
 var feats: Dictionary = {}
+var _loading_all := false
 var items: Dictionary = {}
 var spells: Dictionary = {}
 var monsters: Dictionary = {}
@@ -259,10 +260,17 @@ func load_all_data() -> void:
 		registry.clear()
 	_manifest = _read_manifest()
 
+	_loading_all = true
 	_load_directory(CORE_PATH)
 	_load_directory(MODS_PATH)
+	_loading_all = false
 	_populate_class_spell_access()
 	_validate_cross_references()
+	for race_id in races.keys(): # Batch 050 bug 4: every layer is loaded, so feat references can be checked.
+		var missing := missing_feat_error(races[race_id], str(races[race_id].get("_source_record", "")))
+		if not missing.is_empty():
+			_load_errors.append(missing)
+			races.erase(race_id)
 
 	if not _validation_warnings.is_empty():
 		push_warning("[DataLoader] Rejected %d unsupported effectless feature records; they remain unavailable until curated." % _validation_warnings.size())
@@ -475,6 +483,7 @@ func _validate_content(data: Dictionary, content_type: String, source: String) -
 		return false
 	if content_type in ["race", "feat", "item"]:
 		var owned_error := OwnedFeatureSources.definition_error(data, content_type) # Batch 049: card 209c.
+		if owned_error.is_empty() and content_type == "race" and not _loading_all: owned_error = missing_feat_error(data, source) # Batch 050 bug 4 (single-file loads).
 		if not owned_error.is_empty():
 			_load_errors.append("%s in %s" % [owned_error, source])
 			return false
@@ -1971,6 +1980,14 @@ func get_all_races() -> Array:
 
 func get_race(id: String) -> Dictionary:
 	return races.get(id, {})
+
+## Batch 050 bug 4: a species feat id that names no loaded feat is a load error
+## naming the species, its source record and the missing id - never a silent no-op.
+func missing_feat_error(race: Dictionary, source: String) -> String:
+	for feat_id in race.get("feats", []):
+		if not feats.has(str(feat_id)):
+			return "Species '%s' in %s references missing feat '%s'" % [race.get("id", ""), source, feat_id]
+	return ""
 
 func get_feat(id: String) -> Dictionary:
 	return feats.get(id, {})
