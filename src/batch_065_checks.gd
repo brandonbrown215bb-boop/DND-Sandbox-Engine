@@ -172,3 +172,35 @@ static func run(check: Callable) -> void:
 	# Legacy save shape: no new saved field.
 	var saved := f.to_dict()
 	check.call(not JSON.stringify(saved).contains("reaction_trigger") and FeatureModeRules.saved_error(saved).is_empty(), "065 saves gain no field; the saved feature modes stay valid")
+	review_checks(check)
+
+## Batch 065 review (runtime-reviewer): stress the paid-reaction boundary.
+static func review_checks(check: Callable) -> void:
+	load_fixtures()
+	var w := warlock("b065_rev_warlock")
+	var g := goblin()
+	var ev := ReactionTriggers.make_event("on_damaged_by_creature", w, g, 30, true)
+	var offer: Dictionary = ReactionTriggers.offers(w, ev)[0]
+	var paid := ReactionTriggers.confirm(w, offer, ev, true, SpellPermissionRules.payment_choices(w, REBUKE)[0])
+	var canon := DataLoader.get_spell(REBUKE)
+	w = warlock("b065_rev_fresh")
+	var row: Dictionary = SpellPermissionRules.payment_choices(w, REBUKE)[0]
+	var direct := CombatAction.validate_spell_target(w, g, row, 30)
+	check.call(paid.success and not canon.has("_reaction_trigger_paid") and not row.has("_reaction_trigger_paid") and not direct.success, "065 review: paying a triggered Rebuke leaves the catalog and fresh payment rows unflagged; an ordinary cast is still refused at the reaction boundary (%s)" % str(direct.get("message", "")))
+	# Data cannot pre-set the runtime flag to skip the boundary.
+	var forged := canon.duplicate(true)
+	forged["_reaction_trigger_paid"] = true
+	var original: Dictionary = DataLoader.spells[REBUKE]
+	DataLoader.spells[REBUKE] = forged
+	var frow: Array = SpellPermissionRules.payment_choices(w, REBUKE)
+	var forged_cast := CombatAction.validate_spell_target(w, g, frow[0] if not frow.is_empty() else forged, 30)
+	DataLoader.spells[REBUKE] = original
+	check.call(not forged_cast.success, "065 review: a spell record that declares _reaction_trigger_paid itself is still refused at the reaction boundary (%s)" % str(forged_cast.get("message", "")))
+	# A reactor knocked to 0 HP is offered nothing and cannot confirm.
+	var k := warlock("b065_rev_down")
+	var kev := ReactionTriggers.make_event("on_damaged_by_creature", k, g, 30, true)
+	var koffer: Dictionary = ReactionTriggers.offers(k, kev)[0]
+	var kb := slots(k)
+	k.is_alive = false
+	var kre := ReactionTriggers.confirm(k, koffer, kev, true, SpellPermissionRules.payment_choices(k, REBUKE)[0])
+	check.call(ReactionTriggers.offers(k, ReactionTriggers.make_event("on_damaged_by_creature", k, g, 30, true)).is_empty() and not kre.success and slots(k) == kb, "065 review: a reactor dropped mid-chain is offered nothing and a pending answer spends nothing (%s)" % str(kre.get("reason", "")))

@@ -569,6 +569,9 @@ func _validate_semantics(data: Dictionary, content_type: String, source: String)
 		valid = _validate_enum(data, "target", VALID_SPELL_TARGETS, content_type, source) and valid
 		valid = _validate_enum(data, "school", VALID_SPELL_SCHOOLS, content_type, source) and valid
 		# Batch 065: a data-declared reaction trigger (no engine default).
+		if data.has("_reaction_trigger_paid"): # Review 065: runtime-only marker set by ReactionTriggers.confirm.
+			_load_errors.append("_reaction_trigger_paid is runtime-only and cannot be declared in %s" % source)
+			valid = false
 		var trigger_error := ReactionTriggers.spell_trigger_error(data)
 		if not trigger_error.is_empty():
 			_load_errors.append("%s in %s" % [trigger_error, source])
