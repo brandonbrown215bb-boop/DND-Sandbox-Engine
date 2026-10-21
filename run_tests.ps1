@@ -212,6 +212,7 @@ if ($runIntegration) {
 	$scenarios += "batch_051_feat_acquisition_flow"
 	$scenarios += "batch_052_hud_mode_controls_flow"
 	$scenarios += "batch_053_legal_placement_flow"
+	$scenarios += "batch_054_factory_choices_flow"
 	$scenarios += "wave_three_foundations_flow", "owned_creature_lifecycle_flow", "batch_024_recovery_flow", "batch_024_spell_result_flow",
     "find_familiar_exploration_flow", "party_recovery_flow", "downed_area_damage_flow", "created_undead_flow"
     if ($Scenario.Count -gt 0) {
