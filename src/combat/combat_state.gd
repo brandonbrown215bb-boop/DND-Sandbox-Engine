@@ -4065,6 +4065,7 @@ func _spell_cast_context(target_coord: Vector2i = Vector2i.ZERO, additional_targ
 	cast.owner_label_for_character = _owner_label_for_character
 	cast.action_cost_for_command = _action_cost_for_command
 	cast.add_find_steed_entity = _add_find_steed_entity
+	cast.attach_created_actors = _attach_created_actors
 	cast.apply_find_steed_life_bond = _apply_find_steed_life_bond
 	cast.check_battle_end_conditions = _check_battle_end_conditions
 	cast.collect_attack_inspiration_decision = _collect_attack_inspiration_decision
@@ -6483,3 +6484,11 @@ func _execute_captured_grant_transfer(feature: Dictionary) -> void:
 		hud.add_log("Gift canceled or no longer available.")
 	hud.update_hud(active_character, tracker)
 	_highlight_reachable()
+
+
+## Batch 053 S-122: created actors enter at their confirmed legal destinations.
+func _attach_created_actors(owner: Character, picks: Array) -> Array:
+	var origin := Vector2i.ZERO
+	for entity in player_entities:
+		if entity.get("character") == owner: origin = entity.get("hex_position", Vector2i.ZERO)
+	return CreatedActorRules.attach(self, owner, origin, picks)

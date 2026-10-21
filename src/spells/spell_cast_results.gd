@@ -399,6 +399,9 @@ static func _finish_spell_cast(cast: SpellCastContext) -> void:
 		spell_cost = "action"
 	if cast.successful and not bool(cast.spell.get("_produce_flame_hurl", false)):
 		await cast.offer_potent_spellcasting_vitality.call(cast.spell, cast.damage_dealt)
+	if cast.successful and not cast.interrupted and cast.spell.has("_placement") and cast.attach_created_actors.is_valid():
+		var placed: Array = cast.attach_created_actors.call(cast.caster, PlacementRules.decode(cast.spell["_placement"]))
+		if not placed.is_empty() and cast.hud != null: cast.hud.add_log("%d created creature%s take%s their places." % [placed.size(), "" if placed.size() == 1 else "s", "s" if placed.size() == 1 else ""])
 	_publish_completed_cast(cast)
 	cast.spend_action_cost.call("bonus_action" if spell_cost == "bonus_action" else "magic_action")
 	cast.clear_pending(SpellCastContext.CLEAR_ACTION)

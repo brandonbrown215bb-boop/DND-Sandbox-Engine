@@ -98,10 +98,13 @@ static func _validate_single_effect(effect: Variant) -> String:
 		var error := SourceBenefitRules.benefits_error(effect.get("benefits"))
 		if not error.is_empty(): return error
 	elif kind == "create_actor":
-		if effect.size() != 2: return "Created actor effects accept only type and template."
-		allowed.append("template")
+		if effect.size() != (3 if effect.has("placement") else 2): return "Created actor effects accept only type, template and placement."
+		allowed.append_array(["template", "placement"])
 		var template_error := CreatedActorRules.template_error(effect.get("template"))
 		if not template_error.is_empty(): return template_error
+		if effect.has("placement"):
+			var placement_error := PlacementRules.policy_error(effect.placement) # Batch 053: S-122.
+			if not placement_error.is_empty(): return placement_error
 	elif kind == "bind_tether":
 		allowed.append_array(["condition", "range_hexes", "escape", "capacity", "rescue", "hp"]) # S-169 adds rescue and hp.
 		var tether_error := TetherRules.effect_error(effect)
@@ -693,6 +696,11 @@ static func apply_custom_effects(caster: Character, target, effects: Array, resu
 					messages.append("%s gains source-owned benefits." % target_name)
 			"create_actor":
 				if target is Character and target == caster:
+					if spell.has("_placement") and PlacementRules.decode(spell._placement).is_empty():
+						# Batch 053 S-122: authored "spend" policy with no legal space: the cost stays paid, nothing is created.
+						result["created_actors"] = {"created": false, "no_space": true}
+						messages.append("There is no legal space; %s creates nothing." % str(spell.get("name", "the spell")))
+						continue
 					var made := CreatedActorRules.create(target, result.get("effect_cast", {}), effect.template, slot_level, spell)
 					if made.get("created", false):
 						result["created_actors"] = made

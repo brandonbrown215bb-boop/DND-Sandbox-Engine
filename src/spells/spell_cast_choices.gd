@@ -325,3 +325,70 @@ static func choose_projection_options(cast: SpellCastContext) -> bool:
 			return false
 		cast.spell[picks[kind]] = str(answer.value)
 	return true
+
+
+## Batch 053 S-121/S-122: legal destinations for created actors, chosen and
+## rechecked before any cost. Cancel, stale answers, a destination that became
+## illegal before confirmation, or "refuse" with no legal space spend nothing.
+static var _placement_request_serial := 0
+
+static func _cancel_placement(cast: SpellCastContext, message: String) -> void:
+	cast.spell.erase("_placement")
+	cast.hud.add_log(message)
+	cast.clear_pending(SpellCastContext.CLEAR_ACTION)
+	cast.clear_pending(SpellCastContext.CLEAR_SPELL)
+	cast.clear_pending(SpellCastContext.CLEAR_INTERVENTION)
+	cast.clear_pending(SpellCastContext.CLEAR_WISH)
+	if cast.highlight_reachable.is_valid(): cast.highlight_reachable.call()
+
+static func choose_placement(cast: SpellCastContext) -> bool:
+	cast.spell.erase("_placement") # Every cast places afresh.
+	var effect := {}
+	for e in cast.spell.get("effects", []):
+		if e is Dictionary and e.get("type", "") == "create_actor": effect = e
+	if effect.is_empty() or cast.grid == null or cast.player_index < 0 or cast.player_index >= cast.players.size(): return true
+	var policy := PlacementRules.policy(effect)
+	var template: Dictionary = effect.template
+	var level := maxi(0, int(cast.spell.get("_selected_spell_slot_level", cast.spell.get("level", 0))) - int(cast.spell.get("level", 0)))
+	var count := CreatedActorRules.value(template.count, level)
+	var size := str(template.size)
+	var reach := int(policy.range_hexes)
+	var origin: Vector2i = cast.players[cast.player_index].get("hex_position", Vector2i.ZERO)
+	var available := PlacementRules.reserve(cast, origin, size, reach, count)
+	if available.is_empty():
+		if policy.no_space == "spend":
+			cast.spell["_placement"] = []
+			cast.hud.add_log("There is no legal space for %d %s; casting anyway spends the cost and creates nothing." % [count, template.name])
+			return true
+		_cancel_placement(cast, "There is no legal space for %d %s within %d hexes; nothing was spent." % [count, template.name, reach])
+		return false
+	if not bool(policy.choose) or cast.hud == null:
+		cast.spell["_placement"] = PlacementRules.encode(available)
+		return true
+	var picks: Array[Vector2i] = []
+	for i in count:
+		var options := PlacementRules.candidates(cast, origin, size, reach, picks)
+		var ids: Array[String] = [""]
+		var labels := {"": "Cancel"}
+		for hex in options:
+			var id := "%d,%d" % [hex.x, hex.y]
+			ids.append(id)
+			labels[id] = "Hex (%d, %d)" % [hex.x, hex.y]
+		_placement_request_serial += 1
+		var mine := _placement_request_serial
+		var picked: String = await cast.hud._request_popup_choice("Place %s %d of %d" % [template.name, i + 1, count], ids, labels)
+		if mine != _placement_request_serial or (cast.commit_guard.is_valid() and not cast.commit_guard.call()):
+			cast.spell.erase("_placement")
+			cast.hud.add_log("[color=orange]That choice is no longer current; nothing was spent.[/color]")
+			return false # A newer cast owns the pending controls; leave them alone.
+		if picked.is_empty() or picked not in ids:
+			_cancel_placement(cast, "Casting canceled; nothing was spent.")
+			return false
+		var parts := picked.split(",")
+		picks.append(Vector2i(int(parts[0]), int(parts[1])))
+	var recheck := PlacementRules.confirm_error(cast, origin, size, reach, picks)
+	if not recheck.is_empty():
+		_cancel_placement(cast, "That space is no longer available (%s); nothing was spent." % recheck)
+		return false
+	cast.spell["_placement"] = PlacementRules.encode(picks)
+	return true

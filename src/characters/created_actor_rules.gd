@@ -160,18 +160,35 @@ static func saved_record_error(dto: Dictionary, record: Dictionary) -> String:
 	return ""
 
 ## Combat host: owned living actors join the owner's side; ended ones leave.
-static func attach(state: Node, owner: Character, origin: Vector2i) -> Array:
+## Batch 053 S-122: each arrival takes a legal, distinct destination: the
+## confirmed pick when it is still legal, otherwise the nearest legal space in
+## the authored range. With no legal space the actor does not enter (never overlaps).
+static func attach(state: Node, owner: Character, origin: Vector2i, picks: Array = []) -> Array:
 	var joined: Array = []
 	var live := actors(owner)
 	for entity in state.player_entities.duplicate():
 		if entity.get("is_created_actor", false) and entity.get("created_owner_id", "") == owner.character_id and not live.has(entity.character):
 			state.player_entities.erase(entity)
 			state.tracker.remove_combatant(entity.character.character_id)
-	var offset := 1
+	var pending: Array = picks.duplicate()
 	for a in live:
 		if not a.is_alive or state.player_entities.any(func(e): return e.get("combat_id", "") == a.character_id): continue
-		state.player_entities.append({"name": a.character_name, "display_name": a.character_name, "character": a, "combat_id": a.character_id, "owner_player_index": -1, "hex_position": origin + Vector2i(0, offset), "is_created_actor": true, "created_owner_id": owner.character_id, "reaction_available": true, "color": Color(0.5, 0.7, 0.9)})
-		offset += 1
+		var record: Dictionary = owner.spell_effects.get(str(a.get_meta("created_source_id", "")), {})
+		var spell := DataLoader.get_spell(str(record.get("spell_id", "")))
+		var effect := {}
+		for e in spell.get("effects", []):
+			if e is Dictionary and e.get("type", "") == "create_actor": effect = e
+		var policy := PlacementRules.policy(effect)
+		var size := str(effect.get("template", {}).get("size", "medium"))
+		var hex := Vector2i(9999, 9999)
+		while not pending.is_empty() and hex == Vector2i(9999, 9999):
+			var pick: Vector2i = pending.pop_front()
+			if PlacementRules.legal_error(state, origin, pick, size, int(policy.range_hexes)).is_empty(): hex = pick
+		if hex == Vector2i(9999, 9999):
+			var nearest := PlacementRules.reserve(state, origin, size, int(policy.range_hexes), 1)
+			if nearest.is_empty(): continue
+			hex = nearest[0]
+		state.player_entities.append({"name": a.character_name, "display_name": a.character_name, "character": a, "combat_id": a.character_id, "owner_player_index": -1, "hex_position": hex, "is_created_actor": true, "created_owner_id": owner.character_id, "reaction_available": true, "color": Color(0.5, 0.7, 0.9)})
 		joined.append(a.character_id)
 	state._update_grid_entities()
 	return joined
