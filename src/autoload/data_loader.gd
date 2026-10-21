@@ -483,6 +483,7 @@ func _validate_content(data: Dictionary, content_type: String, source: String) -
 		return false
 	if content_type in ["race", "feat", "item"]:
 		var owned_error := OwnedFeatureSources.definition_error(data, content_type) # Batch 049: card 209c.
+		if owned_error.is_empty() and content_type == "feat": owned_error = FeatRules.definition_error(data) # Batch 051.
 		if owned_error.is_empty() and content_type == "race" and not _loading_all: owned_error = missing_feat_error(data, source) # Batch 050 bug 4 (single-file loads).
 		if not owned_error.is_empty():
 			_load_errors.append("%s in %s" % [owned_error, source])
