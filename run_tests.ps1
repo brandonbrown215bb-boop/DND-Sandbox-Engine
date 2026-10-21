@@ -218,6 +218,7 @@ if ($runIntegration) {
 	$scenarios += "batch_057_mode_costs_flow"
 	$scenarios += "batch_058_summon_lists_flow"
 	$scenarios += "batch_059_corpse_limit_flow"
+	$scenarios += "batch_060_command_cost_flow"
 	$scenarios += "wave_three_foundations_flow", "owned_creature_lifecycle_flow", "batch_024_recovery_flow", "batch_024_spell_result_flow",
     "find_familiar_exploration_flow", "party_recovery_flow", "downed_area_damage_flow", "created_undead_flow"
     if ($Scenario.Count -gt 0) {

@@ -717,7 +717,7 @@ func _show_feature_selection() -> void:
 			for order in cmd.orders:
 				var base_error := CreatedCommandRules.command_error(command_state, active_character, created.character_id, order, "*") if order == "attack" else CreatedCommandRules.command_error(command_state, active_character, created.character_id, order)
 				if order == "attack" and base_error.begins_with("Choose a living enemy"): base_error = ""
-				var cost_label := "Free" if cmd.cost == "none" else str(cmd.cost).replace("_", " ").capitalize()
+				var cost_label := CreatedCommandRules.cost_label(CreatedCommandRules.cost(cmd, order)) # Batch 060: per-order declared cost.
 				feature_list.add_item("Command %s [%s]: %s (%s)%s" % [created.character_name, created.character_id.get_slice(":", created.character_id.get_slice_count(":") - 1), order.capitalize(), cost_label, "" if base_error.is_empty() else " [%s]" % base_error])
 				feature_list.set_item_disabled(feature_list.item_count - 1, not base_error.is_empty())
 				features_registered.append({"id": "command_created_actor", "actor_id": created.character_id, "order": order})
