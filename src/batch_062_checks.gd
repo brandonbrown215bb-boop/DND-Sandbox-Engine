@@ -61,4 +61,17 @@ static func run(check: Callable) -> void:
 	Batch050Checks.mute(g.c, "b062_mute")
 	var gate := ModeControls.apply(g.c, g.ward, "activate", "protect", ModeControls.row(g.c, g.ward).token, out)
 	check.call(not gate.success and gate.reason == "unavailable", "062 merged/suppressed gate: a suppressed copy is refused outside combat")
+	# Review 062 stress: a dead owner is refused; hammering activate/reselect never over-charges.
+	var d := Batch057Checks.kit(Batch050Checks.actor("b062_dead"))
+	var d_before := Batch057Checks.state(d)
+	d.is_alive = false
+	var dead := ModeControls.apply(d, STANCE, "activate", "guard", _tok(d), out)
+	var dead_offers := LocalRoomModes.offers(d)
+	d.is_alive = true
+	check.call(not dead.success and dead_offers.is_empty() and Batch057Checks.state(d) == d_before, "062 review: a dead owner gets no offer and is refused outside combat with nothing spent (%s)" % str(dead.get("reason", "")))
+	var wins := 0
+	for i in 10:
+		var k := "activate" if i % 2 == 0 else "reselect"
+		if ModeControls.apply(d, STANCE, k, "guard" if i % 3 == 0 else "dash", _tok(d), out).get("success", false) and k == "activate": wins += 1
+	check.call(wins == 1 and int(d.feature_uses[STANCE]) == 1, "062 review: 10 mixed outside presses charge exactly one use (wins %d, uses %s)" % [wins, str(d.feature_uses[STANCE])])
 	GameManager.current_state = prior
