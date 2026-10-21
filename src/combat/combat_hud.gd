@@ -709,6 +709,18 @@ func _show_feature_selection() -> void:
 		if item.get("type") != "consumable" or CombatChildActions.units(item) == 0: continue
 		feature_list.add_item("Use %s [%s]" % [str(item.get("name", copy.definition_id)), str(copy.instance_id)])
 		features_registered.append({"id":"consume_copy", "item_id":copy.definition_id, "instance_id":copy.instance_id})
+	# Batch 055 S-156: command each exact owned created actor (one row per actor id).
+	var command_state := get_parent()
+	if command_state != null and "player_entities" in command_state:
+		for created in CreatedCommandRules.actors(command_state, active_character):
+			var cmd := CreatedCommandRules.policy(CreatedCommandRules._template(active_character, created))
+			for order in cmd.orders:
+				var base_error := CreatedCommandRules.command_error(command_state, active_character, created.character_id, order, "*") if order == "attack" else CreatedCommandRules.command_error(command_state, active_character, created.character_id, order)
+				if order == "attack" and base_error.begins_with("Choose a living enemy"): base_error = ""
+				var cost_label := "Free" if cmd.cost == "none" else str(cmd.cost).replace("_", " ").capitalize()
+				feature_list.add_item("Command %s [%s]: %s (%s)%s" % [created.character_name, created.character_id.get_slice(":", created.character_id.get_slice_count(":") - 1), order.capitalize(), cost_label, "" if base_error.is_empty() else " [%s]" % base_error])
+				feature_list.set_item_disabled(feature_list.item_count - 1, not base_error.is_empty())
+				features_registered.append({"id": "command_created_actor", "actor_id": created.character_id, "order": order})
 	# Batch 052: owned mode_choice rules and their exclusive upgrade options.
 	for mode_row in ModeControls.rows(active_character):
 		var mode_actions: Array = mode_row.actions
@@ -956,6 +968,9 @@ func _on_feature_selected(index: int) -> void:
 	var feature_owner := active_character
 	var feature := features_registered[index]
 	_hide_feature_selection()
+	if str(feature.get("id", "")) == "command_created_actor":
+		if active_character == feature_owner: request_created_command(feature_owner, feature)
+		return
 	if str(feature.get("id", "")) == "feature_mode_control":
 		if not str(feature.kind).is_empty(): request_mode_control(feature_owner, feature)
 		return
@@ -1628,6 +1643,34 @@ func request_rogue_cunning_strike(character: Character, target: Dictionary, snea
 		selected.append(choice)
 		remaining -= RogueRules.cunning_strike_dice_cost(choice)
 	return selected
+
+
+var _command_popup_serial := 0
+
+## Batch 055 S-156: an attack order asks for its target; Cancel or a stale
+## answer spends nothing. The combat state validates again before charging.
+func request_created_command(owner: Character, offer: Dictionary) -> void:
+	var data := {"actor_id": str(offer.actor_id), "order": str(offer.order)}
+	if data.order == "attack":
+		var state := get_parent()
+		var ids: Array[String] = ["cancel"]
+		var labels := {"cancel": "Cancel"}
+		for m in state.monster_entities:
+			if m.get("is_alive", false):
+				ids.append(str(m.id))
+				labels[str(m.id)] = str(m.get("name", m.id))
+		_command_popup_serial += 1
+		var serial := _command_popup_serial
+		var turn := CombatAction.active_turn_serial
+		var picked := await _request_popup_choice("Command target", ids, labels)
+		if picked.is_empty() or picked == "cancel":
+			add_log("Command canceled; nothing was spent.")
+			return
+		if serial != _command_popup_serial or turn != CombatAction.active_turn_serial or active_character != owner:
+			add_log("That choice is no longer current; nothing was spent.")
+			return
+		data["target_id"] = picked
+	action_selected.emit("command_created_actor", data)
 
 
 var _mode_popup_serial := 0

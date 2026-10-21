@@ -2266,6 +2266,12 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 		var quickened_spell := await SpellCastSelection.choose_quickened(_spell_cast_context(), extra_data.get("spell", {}).duplicate(true))
 		if not quickened_spell.is_empty():
 			extra_data["spell"] = quickened_spell
+	if action_type == "command_created_actor": # Batch 055 S-156: the command itself charges the declared cost once.
+		var commanded := CreatedCommandRules.issue(self, active_character, str(extra_data.get("actor_id", "")), str(extra_data.get("order", "")), str(extra_data.get("target_id", "")))
+		hud.add_log(str(commanded.message))
+		if commanded.success: _check_battle_end_conditions()
+		hud.update_hud(active_character, tracker)
+		return
 	var cost_type := _action_cost_for_command(action_type, extra_data)
 	if action_type == "cast_spell" and SorcererRules.quickened_spell_blocks_cast(active_character, extra_data.get("spell", {})):
 		hud.add_log("You can't cast another level 1+ spell this turn after using Quickened Spell.")
@@ -4307,6 +4313,9 @@ func _end_active_turn() -> void:
 	if _check_battle_end_conditions():
 		return
 
+	if active_combatant["is_player"] and active_character != null:
+		for actor_id in CreatedCommandRules.apply_defaults(self, active_character): # Batch 055 S-156: uncommanded default.
+			hud.add_log("%s was not commanded and takes the Dodge action." % str(_entity_name_for_created(actor_id)))
 	# Tick active conditions at turn end
 	if active_combatant["is_player"] and active_character != null:
 		await _resolve_delayed_spell_damage(active_character)
@@ -6492,3 +6501,9 @@ func _attach_created_actors(owner: Character, picks: Array) -> Array:
 	for entity in player_entities:
 		if entity.get("character") == owner: origin = entity.get("hex_position", Vector2i.ZERO)
 	return CreatedActorRules.attach(self, owner, origin, picks)
+
+
+func _entity_name_for_created(actor_id: String) -> String:
+	for e in player_entities:
+		if str(e.get("combat_id", "")) == actor_id: return str(e.get("name", actor_id))
+	return actor_id

@@ -6,14 +6,14 @@
 class_name CreatedActorRules
 extends RefCounted
 
-const TEMPLATE_KEYS := ["id", "name", "creature_type", "size", "speed", "ability_scores", "ac", "max_hp", "count", "attack", "features"]
+const TEMPLATE_KEYS := ["id", "name", "creature_type", "size", "speed", "ability_scores", "ac", "max_hp", "count", "attack", "features", "command"]
 const CREATURE_TYPES := ["aberration", "beast", "celestial", "construct", "dragon", "elemental", "fey", "fiend", "giant", "humanoid", "monstrosity", "ooze", "plant", "undead"]
 const SIZES := ["tiny", "small", "medium", "large", "huge", "gargantuan"]
 const DAMAGE_TYPES := ["acid", "bludgeoning", "cold", "fire", "force", "lightning", "necrotic", "piercing", "poison", "psychic", "radiant", "slashing", "thunder"]
 const ABILITIES := ["STR", "DEX", "CON", "INT", "WIS", "CHA"]
 ## A created actor never inherits the means to create, upgrade or cast.
 const FORBIDDEN_FEATURE_TYPES := ["create_actor", "mode_choice", "rule_upgrade", "resource", "zero_hp_replacement", "spellcasting"]
-const RECORD_KEYS := ["level", "actors", "template_id"]
+const RECORD_KEYS := ["level", "actors", "template_id", "control_until"]
 
 static var _live := {}
 
@@ -42,6 +42,9 @@ static func template_error(t: Variant) -> String:
 	var attack: Variant = t.get("attack")
 	if not attack is Dictionary or attack.size() != 4 or str(attack.get("name", "")).is_empty() or not RegEx.create_from_string("^[1-9]d(4|6|8|10|12)$").search(str(attack.get("damage", ""))) or str(attack.get("damage_type", "")) not in DAMAGE_TYPES or not _int(attack.get("range"), 1, 24):
 		return "create_actor template attack requires name, damage NdX, damage_type and range"
+	if t.has("command"):
+		var command_error := CreatedCommandRules.policy_error(t.command) # Batch 055: S-156.
+		if not command_error.is_empty(): return "create_actor template " + command_error
 	var features: Variant = t.get("features", [])
 	if not features is Array or features.size() > 8 or features.any(func(f): return not f is Dictionary or str(f.get("id", "")).is_empty()): return "create_actor template features must be up to eight records with ids"
 	return ""
@@ -107,6 +110,8 @@ static func create(owner: Character, cast: Dictionary, template: Dictionary, slo
 	var record := cast.duplicate(true)
 	record["created_actors"] = {"level": level, "actors": []}
 	if str(template.id) != str(_template(spell).id): record.created_actors["template_id"] = str(template.id)
+	var command := CreatedCommandRules.policy(template)
+	if command.has("control_seconds"): record.created_actors["control_until"] = int(GameManager.campaign_elapsed_seconds) + int(command.control_seconds)
 	for i in count:
 		record.created_actors.actors.append({"actor_id": "%s:actor:%d" % [source, i + 1], "current_hp": maximum})
 	owner.spell_effects[source] = record
@@ -191,6 +196,8 @@ static func saved_record_error(dto: Dictionary, record: Dictionary) -> String:
 	if not _int(data.get("level"), 0, 9) or not data.get("actors") is Array: return "invalid saved created actors"
 	var level := int(data.level)
 	if data.actors.size() not in counts(_effect(spell), template, level): return "saved created actor count differs from its template"
+	var control_error := CreatedCommandRules.saved_error(template, data)
+	if not control_error.is_empty(): return control_error
 	var maximum := value(template.max_hp, level)
 	for i in data.actors.size():
 		var e: Variant = data.actors[i]
