@@ -41,6 +41,12 @@ func _publish_equipment_change(definition_id: String, state: String, instance_id
 	var owner_character = owner_character_ref.get_ref() if owner_character_ref != null else null
 	if owner_character != null:
 		SpellEffects.publish_event(owner_character, {"type": "equipment", "actor_id": SpellEffects.caster_id(owner_character), "equipment": definition_id, "state": state, "instance_id": instance_id})
+		if owner_character is Character: OwnedFeatureSources.sync(owner_character) # Batch 049: exact equipped copies own their features.
+
+
+func _sync_owned_features() -> void:
+	var owner_character = owner_character_ref.get_ref() if owner_character_ref != null else null
+	if owner_character is Character: OwnedFeatureSources.sync(owner_character) # Batch 049: attuned copies own their features.
 
 
 ## Add an item to the backpack.
@@ -188,7 +194,7 @@ func available_spellcasting_hands() -> int:
 	if not str(equipped.get(Slot.OFFHAND, "")).is_empty():
 		occupied += 1
 	var hand_item := str(equipped.get(Slot.HANDS, ""))
-	if not hand_item.is_empty() and str(DataLoader.get_item(hand_item).get("type", "")) == "wand":
+	if not hand_item.is_empty() and str(DataLoader.get_item(hand_item).get("type", "")) in ItemTypeRules.HELD_TYPES:
 		occupied += 1
 	return maxi(0, 2 - occupied)
 
@@ -335,6 +341,8 @@ func can_equip(slot: Slot, item_id: String, allow_unowned: bool = false) -> bool
 		"helmet": valid_slot = Slot.HEAD
 		"ring": valid_slot = slot if slot in [Slot.RING_1, Slot.RING_2] else -1
 		"wand": valid_slot = Slot.HANDS
+		"staff", "rod": valid_slot = Slot.HANDS # Batch 048: held like a wand.
+		"wondrous": valid_slot = ItemTypeRules.worn_slot(item_data) # Batch 048: only a declared worn place.
 	if valid_slot != slot:
 		return false
 	var equipped_copy := str(copies.equipped.get(slot, ""))
@@ -395,6 +403,8 @@ func unequip(slot: Slot) -> String:
 		equipped.erase(slot)
 		backpack.append(item_id)
 		_publish_equipment_change(item_id, "unequipped", instance_id)
+		copies.sync(self) # Batch 049: this path moves only the slot arrays; settle the ledger, then the owned features.
+		_sync_owned_features()
 	return item_id
 
 
@@ -470,6 +480,7 @@ func attune_instance(instance_id: String, character_id: String) -> Dictionary:
 		state["cursed_attunement"] = true
 	record["state"] = state
 	copies.records[instance_id] = record
+	_sync_owned_features()
 	return {"success": true, "message": "Attunement takes 1 hour. %s is attuned." % item.get("name", "The item"), "seconds": 3600}
 
 
@@ -485,6 +496,7 @@ func unattune_instance(instance_id: String, character_id: String, break_curse: b
 	state.erase("cursed_attunement")
 	record["state"] = state
 	copies.records[instance_id] = record
+	_sync_owned_features()
 	return {"success": true, "message": "The item is no longer attuned."}
 
 
@@ -504,6 +516,7 @@ func break_cursed_item_attunements(character_id: String) -> int:
 		record["state"] = state
 		copies.records[instance_id] = record
 		broken += 1
+	if broken > 0: _sync_owned_features()
 	return broken
 
 
@@ -716,9 +729,10 @@ func drop_equipped_instance(slot: Slot) -> Dictionary:
 	var instance_id := str(copies.equipped.get(slot, ""))
 	if instance_id.is_empty():
 		return {}
-	var record: Dictionary = copies.records.get(instance_id, {}).duplicate(true)
-	if record.is_empty():
+	if copies.records.get(instance_id, {}).is_empty():
 		return {}
+	OwnedFeatureSources.stamp_copy(owner_character_ref.get_ref() if owner_character_ref != null else null, copies.records[instance_id]) # Batch 050 bug 1.
+	var record: Dictionary = copies.records.get(instance_id, {}).duplicate(true)
 	WorkRules.on_removed(record)
 	copies.equipped.erase(slot)
 	copies.records.erase(instance_id)

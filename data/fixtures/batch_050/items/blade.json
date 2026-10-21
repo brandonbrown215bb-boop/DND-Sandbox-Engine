@@ -1,0 +1,162 @@
+[
+  {
+    "id": "fixture:b050_blade",
+    "name": "Batch 050 Warding Blade",
+    "description": "Neutral fixture magic dagger. Its Ward power recharges at dawn like SRD 5.2.1 magic items (p.206 'The Next Dawn'); it ends if the wielder is Incapacitated. Fixture weight 1 lb (test value).",
+    "type": "weapon",
+    "weapon_type": "simple",
+    "damage": "1d4",
+    "damage_type": "piercing",
+    "properties": [
+      "finesse",
+      "light",
+      "thrown"
+    ],
+    "ability": "DEX",
+    "range": 1,
+    "thrown_range": 4,
+    "magical": true,
+    "rarity": "uncommon",
+    "value": 0,
+    "features": [
+      {
+        "id": "ward",
+        "name": "Blade Ward",
+        "type": "mode_choice",
+        "boundary": "activation",
+        "uses": 2,
+        "uses_per": "dawn",
+        "duration_seconds": 600,
+        "end_on": [
+          "incapacitated"
+        ],
+        "modes": [
+          {
+            "id": "protect",
+            "benefits": [
+              {
+                "stat": "AC",
+                "amount": 1
+              }
+            ]
+          },
+          {
+            "id": "hasten",
+            "benefits": [
+              {
+                "stat": "speed",
+                "amount": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "brisk",
+        "name": "Brisk Ward",
+        "type": "rule_upgrade",
+        "rule": "ward",
+        "exclusive_group": "edge",
+        "changes": {
+          "targets": {
+            "add": 1
+          }
+        }
+      },
+      {
+        "id": "deep",
+        "name": "Deep Ward",
+        "type": "rule_upgrade",
+        "rule": "ward",
+        "exclusive_group": "edge",
+        "changes": {
+          "uses": {
+            "add": 1
+          }
+        }
+      }
+    ],
+    "weight": 1
+  },
+  {
+    "id": "fixture:b050_bound_blade",
+    "name": "Batch 050 Bound Blade",
+    "description": "Neutral fixture magic dagger whose text says its Ward regains uses at dawn only while attuned. Fixture weight 1 lb (test value).",
+    "type": "weapon",
+    "weapon_type": "simple",
+    "damage": "1d4",
+    "damage_type": "piercing",
+    "properties": [
+      "finesse",
+      "light",
+      "thrown"
+    ],
+    "ability": "DEX",
+    "range": 1,
+    "thrown_range": 4,
+    "magical": true,
+    "rarity": "uncommon",
+    "value": 0,
+    "features": [
+      {
+        "id": "ward",
+        "name": "Blade Ward",
+        "type": "mode_choice",
+        "boundary": "activation",
+        "uses": 2,
+        "uses_per": "dawn",
+        "duration_seconds": 600,
+        "end_on": [
+          "incapacitated"
+        ],
+        "modes": [
+          {
+            "id": "protect",
+            "benefits": [
+              {
+                "stat": "AC",
+                "amount": 1
+              }
+            ]
+          },
+          {
+            "id": "hasten",
+            "benefits": [
+              {
+                "stat": "speed",
+                "amount": 1
+              }
+            ]
+          }
+        ],
+        "recharge_while": "attuned"
+      },
+      {
+        "id": "brisk",
+        "name": "Brisk Ward",
+        "type": "rule_upgrade",
+        "rule": "ward",
+        "exclusive_group": "edge",
+        "changes": {
+          "targets": {
+            "add": 1
+          }
+        }
+      },
+      {
+        "id": "deep",
+        "name": "Deep Ward",
+        "type": "rule_upgrade",
+        "rule": "ward",
+        "exclusive_group": "edge",
+        "changes": {
+          "uses": {
+            "add": 1
+          }
+        }
+      }
+    ],
+    "weight": 1,
+    "requires_attunement": true
+  }
+]
