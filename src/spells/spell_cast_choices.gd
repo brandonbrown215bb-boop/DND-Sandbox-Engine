@@ -392,3 +392,4 @@ static func choose_placement(cast: SpellCastContext) -> bool:
 		return false
 	cast.spell["_placement"] = PlacementRules.encode(picks)
 	return true
+

@@ -297,6 +297,7 @@ func _run_scenario(scenario: String) -> void:
 		"batch_050_playtest_fixes_flow": await Batch050Controls.run(self)
 		"batch_051_feat_acquisition_flow": await Batch051Controls.run(self)
 		"batch_052_hud_mode_controls_flow": await Batch052Controls.run(self)
+		"batch_053_legal_placement_flow": await Batch053Controls.run(self)
 		"batch_027_protections_flow": await Batch027Controls.run(self)
 		"batch_021_spell_permissions_flow": await Batch021Controls.run(self)
 		"batch_022_slot_ritual_flow": await Batch022Controls.run(self)
