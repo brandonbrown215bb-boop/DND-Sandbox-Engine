@@ -5201,6 +5201,12 @@ func _action_cost_for_command(action_type: String, extra_data: Dictionary) -> St
 	return "free"
 
 
+## Batch 057: a mode act's declared cost can be paid now from the plain turn budget
+## (not mid-cast or mid attack substitution, where _spend_action_cost means something else).
+func can_pay_mode_cost(cost_type: String) -> bool:
+	return child_actions.frame.is_empty() and attack_unit_substitution.is_empty() and not _cast_in_progress and _can_spend_action_cost(cost_type)
+
+
 func _can_spend_action_cost(cost_type: String) -> bool:
 	return turn_budget.can_spend(cost_type)
 

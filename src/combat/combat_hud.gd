@@ -730,7 +730,12 @@ func _show_feature_selection() -> void:
 			features_registered.append({"id": "feature_mode_control", "feature_id": mode_row.feature_id, "kind": "", "token": mode_row.token})
 			continue
 		for kind in mode_actions:
-			feature_list.add_item("%s: %s" % [ModeControls.kind_label(kind), ModeControls.label(mode_row)])
+			# Batch 057: a declared cost is shown, and an unpayable act is offered disabled.
+			var mode_cost := ModeControls.cost(active_character, mode_row.feature_id, kind)
+			var mode_block := ModeControls.cost_error(active_character, mode_row.feature_id, kind, _mode_budget())
+			var cost_text := "" if mode_cost == "none" else " (%s)" % mode_cost.replace("_", " ").capitalize()
+			feature_list.add_item("%s: %s%s%s" % [ModeControls.kind_label(kind), ModeControls.label(mode_row), cost_text, "" if mode_block.is_empty() else " [%s]" % mode_block.replace("_", " ")])
+			feature_list.set_item_disabled(feature_list.item_count - 1, not mode_block.is_empty())
 			feature_list.set_item_tooltip(feature_list.item_count - 1, str(active_character.get_feature(mode_row.feature_id).get("description", "")))
 			features_registered.append({"id": "feature_mode_control", "feature_id": mode_row.feature_id, "kind": kind, "token": mode_row.token})
 	var activation_features: Array[Dictionary] = []
@@ -1677,6 +1682,12 @@ var _mode_popup_serial := 0
 
 ## Batch 052: Cancel plus exactly the offered options. Cancel, closing the popup,
 ## a newer mode popup, a changed turn or changed state (token) spend nothing.
+## Batch 057: the combat state that pays declared mode costs (null outside combat).
+func _mode_budget() -> Object:
+	var state := get_parent()
+	return state if state != null and state.has_method("can_pay_mode_cost") else null
+
+
 func request_mode_control(owner: Character, offer: Dictionary) -> Dictionary:
 	var feature_id := str(offer.feature_id)
 	var kind := str(offer.kind)
@@ -1696,7 +1707,7 @@ func request_mode_control(owner: Character, offer: Dictionary) -> Dictionary:
 	if serial != _mode_popup_serial or active_character != owner:
 		add_log("That choice is no longer current; nothing was spent.")
 		return {"success": false, "reason": "stale"}
-	result = ModeControls.apply(owner, feature_id, kind, picked, str(offer.token))
+	result = ModeControls.apply(owner, feature_id, kind, picked, str(offer.token), _mode_budget())
 	if result.success:
 		add_log("%s: %s %s." % [row.name, ModeControls.kind_label(kind).to_lower(), picked.replace("|", ": ")])
 		_update_sidebar_stats()

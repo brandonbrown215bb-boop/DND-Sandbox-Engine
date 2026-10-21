@@ -99,18 +99,44 @@ static func options(r: Dictionary, kind: String) -> Array[String]:
 			if kind == "activate" or kind == "choose" or m != r.mode: out.append(m)
 	return out
 
+## Batch 057: the combat-budget cost of a kind ("none" for choose/alternative).
+static func cost(actor: Character, feature_id: String, kind: String) -> String:
+	return FeatureModeRules.cost(actor, feature_id, kind) if kind in FeatureModeRules.COST_ACTS else "none"
+
+## Why a costed act can't be paid now ("" when it can, or when it is free).
+## budget is the combat state (or null outside combat: no turn to pay from).
+static func cost_error(actor: Character, feature_id: String, kind: String, budget: Object) -> String:
+	var c := cost(actor, feature_id, kind)
+	if c == "none": return ""
+	if budget == null: return "not_in_combat"
+	if budget.active_character != actor: return "wrong_turn"
+	if FeatureModeRules.incapacitated(actor) or not actor.is_alive: return "incapacitated"
+	if not budget.can_pay_mode_cost(c): return "unaffordable"
+	return ""
+
 ## The single entry point for HUD answers. Refusals spend nothing.
-static func apply(actor: Character, feature_id: String, kind: String, option: String, offered_token: String) -> Dictionary:
+## Batch 057: a declared cost is checked before the act and paid once after it succeeds.
+static func apply(actor: Character, feature_id: String, kind: String, option: String, offered_token: String, budget: Object = null) -> Dictionary:
 	if actor == null or kind not in KINDS: return {"success": false, "reason": "invalid"}
 	if option.is_empty(): return {"success": false, "reason": "canceled"}
 	if token(actor, feature_id) != offered_token: return {"success": false, "reason": "stale"}
 	var r := row(actor, feature_id)
 	if kind not in r.actions: return {"success": false, "reason": "unavailable"}
 	if option not in options(r, kind): return {"success": false, "reason": "unknown_option"}
+	var price := cost(actor, feature_id, kind)
+	var refused := cost_error(actor, feature_id, kind, budget)
+	if not refused.is_empty(): return {"success": false, "reason": refused}
+	var done := {}
 	match kind:
-		"activate": return FeatureModeRules.activate(actor, feature_id, option)
-		"choose", "reselect": return FeatureModeRules.choose(actor, feature_id, option)
-		"switch": return FeatureModeRules.switch(actor, feature_id, option, str(r.window))
+		"activate": done = FeatureModeRules.activate(actor, feature_id, option)
+		"choose", "reselect": done = FeatureModeRules.choose(actor, feature_id, option)
+		"switch": done = FeatureModeRules.switch(actor, feature_id, option, str(r.window))
+	if not done.is_empty():
+		if done.success and price != "none":
+			budget._spend_action_cost(price) # can_pay_mode_cost held just above; nothing ran in between.
+			done["cost"] = price
+		return done
+	match kind:
 		"alternative":
 			var parts := option.split("|")
 			var ok := RuleUpgradeRules.choose_alternative(actor, feature_id, parts[0], parts[1])
