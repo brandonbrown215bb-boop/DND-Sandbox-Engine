@@ -263,3 +263,65 @@ static func choose_target_options(cast: SpellCastContext) -> bool:
 				break
 		cast.spell["_enhance_ability_choices"] = enhance_choices
 	return true
+
+
+## Card Q-20261020-173959-7e2c: shared chooser for a projection's declared form and
+## legal equipment policy, asked before any cost. Cancel or a stale answer spends nothing.
+static var _projection_request_serial := 0
+
+const EQUIPMENT_LABELS := {"merged": "Merged — gear melds into the form", "worn": "Worn — gear stays worn", "dropped": "Dropped — gear is set aside"}
+
+static func projection_options(spell: Dictionary) -> Dictionary:
+	var effect := ActorProjectionRules._effect(spell)
+	if effect.is_empty(): return {}
+	var forms: Array = []
+	for f in effect.get("forms", []):
+		forms.append({"id": str(f.id), "label": "%s (%s %s, speed %d)" % [str(f.name), str(f.size), str(f.creature_type), int(f.speed)]})
+	var equipment: Array = []
+	for policy in effect.get("equipment", []):
+		equipment.append({"id": str(policy), "label": str(EQUIPMENT_LABELS.get(str(policy), str(policy)))})
+	return {"forms": forms, "equipment": equipment}
+
+## One popup; returns {"value"} on a current answer, {"canceled"} or {"stale"} otherwise.
+static func _ask_projection(cast: SpellCastContext, title: String, options: Array) -> Dictionary:
+	_projection_request_serial += 1
+	var mine := _projection_request_serial
+	var ids: Array[String] = [""]
+	var labels := {"": "Cancel"}
+	for o in options:
+		ids.append(str(o.id))
+		labels[str(o.id)] = str(o.label)
+	var picked: String = await cast.hud._request_popup_choice(title, ids, labels)
+	if mine != _projection_request_serial or (cast.commit_guard.is_valid() and not cast.commit_guard.call()): return {"stale": true}
+	if picked.is_empty() or options.all(func(o): return str(o.id) != picked): return {"canceled": true}
+	return {"value": picked}
+
+static func choose_projection_options(cast: SpellCastContext) -> bool:
+	var options := projection_options(cast.spell)
+	if options.is_empty(): return true
+	# Normal refusals (already in another form) stay with validate_actor; nothing to choose then.
+	if ActorProjectionRules.is_projected(cast.caster) or DruidRules.is_shaped(cast.caster): return true
+	# Every cast chooses afresh: no pick carries over from an earlier popup.
+	cast.spell.erase("_projection_form_id")
+	cast.spell.erase("_projection_equipment")
+	var picks := {"forms": "_projection_form_id", "equipment": "_projection_equipment"}
+	var titles := {"forms": "Choose a form", "equipment": "Choose how equipment is handled"}
+	for kind in ["forms", "equipment"]:
+		if options[kind].size() < 2: continue
+		if cast.hud == null: return false
+		var answer := await _ask_projection(cast, titles[kind], options[kind])
+		if answer.has("stale"):
+			cast.spell.erase("_projection_form_id")
+			cast.spell.erase("_projection_equipment")
+			cast.hud.add_log("[color=orange]That choice is no longer current; nothing was spent.[/color]")
+			return false # A newer cast owns the pending controls; leave them alone.
+		if answer.has("canceled"):
+			cast.hud.add_log("Casting canceled; nothing was spent.")
+			cast.clear_pending(SpellCastContext.CLEAR_ACTION)
+			cast.clear_pending(SpellCastContext.CLEAR_SPELL)
+			cast.clear_pending(SpellCastContext.CLEAR_INTERVENTION)
+			cast.clear_pending(SpellCastContext.CLEAR_WISH)
+			cast.highlight_reachable.call()
+			return false
+		cast.spell[picks[kind]] = str(answer.value)
+	return true

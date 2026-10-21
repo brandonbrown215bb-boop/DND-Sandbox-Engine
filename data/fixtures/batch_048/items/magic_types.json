@@ -1,0 +1,7 @@
+[
+  {"id": "fixture:b048_boots", "name": "Fixture Striding Boots", "description": "Neutral fixture wondrous item worn on the feet; its speed benefit applies only while worn and attuned. Weight unknown.", "type": "wondrous", "worn_slot": "feet", "magical": true, "rarity": "uncommon", "requires_attunement": true, "value": 0, "source_benefits": [{"stat": "speed", "amount": 1}]},
+  {"id": "fixture:b048_circlet", "name": "Fixture Circlet", "description": "Neutral fixture wondrous item worn on the head. Weight unknown.", "type": "wondrous", "worn_slot": "head", "magical": true, "rarity": "uncommon", "value": 0},
+  {"id": "fixture:b048_charm", "name": "Fixture Pocket Charm", "description": "Neutral fixture wondrous item that is carried, not worn. Weight unknown.", "type": "wondrous", "magical": true, "rarity": "common", "value": 0},
+  {"id": "fixture:b048_staff", "name": "Fixture Warding Staff", "description": "Neutral fixture magic staff, held in a hand; AC benefit while held. Weight unknown.", "type": "staff", "magical": true, "rarity": "uncommon", "value": 0, "source_benefits": [{"stat": "AC", "amount": 1}]},
+  {"id": "fixture:b048_rod", "name": "Fixture Rod", "description": "Neutral fixture magic rod, held in a hand. Weight unknown.", "type": "rod", "magical": true, "rarity": "uncommon", "value": 0}
+]

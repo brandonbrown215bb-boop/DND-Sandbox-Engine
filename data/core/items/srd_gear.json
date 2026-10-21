@@ -1,17 +1,18 @@
 [
-  {"id": "backpack", "name": "Backpack", "description": "A sturdy pack for carrying supplies.", "type": "tool", "value": 2},
-  {"id": "bedroll", "name": "Bedroll", "description": "A portable bedroll for sleeping while traveling.", "type": "tool", "value": 1},
-  {"id": "rations", "name": "Rations (1 day)", "description": "One day's supply of food.", "type": "consumable", "action_cost": "action", "effects": [{"type": "nourish", "days": 1}], "value": 0.2},
-  {"id": "tinderbox", "name": "Tinderbox", "description": "A small container holding flint, fire steel, and tinder.", "type": "tool", "value": 0.5},
-  {"id": "waterskin", "name": "Waterskin", "description": "A leather container for water. Water quantity and consumption are not yet tracked.", "type": "tool", "value": 0.2},
+  {"id": "backpack", "name": "Backpack", "description": "A sturdy pack for carrying supplies.", "weight": 5, "type": "tool", "value": 2, "container": {"compartments": [{"id": "main", "max_weight": 30}]}},
+  {"id": "bedroll", "name": "Bedroll", "description": "A portable bedroll for sleeping while traveling.", "weight": 7, "type": "tool", "value": 1},
+  {"id": "rations", "name": "Rations (1 day)", "description": "One day's supply of food.", "weight": 2, "type": "consumable", "action_cost": "action", "effects": [{"type": "nourish", "days": 1}], "value": 0.2},
+  {"id": "tinderbox", "name": "Tinderbox", "description": "A small container holding flint, fire steel, and tinder.", "weight": 1, "type": "tool", "value": 0.5},
+  {"id": "waterskin", "name": "Waterskin", "description": "A leather container for water. Water quantity and consumption are not yet tracked.", "weight": 5, "type": "tool", "value": 0.2},
   {"id": "bell", "name": "Bell", "description": "A small hand bell.", "type": "tool", "value": 1},
-  {"id": "costume", "name": "Costume", "description": "A set of theatrical clothing.", "type": "tool", "value": 5},
-  {"id": "mirror", "name": "Mirror", "description": "A small polished mirror.", "type": "tool", "value": 5},
-  {"id": "lamp", "name": "Lamp", "description": "An oil lamp. Lighting and refueling interactions are not yet modeled.", "type": "tool", "value": 0.5},
-  {"id": "blanket", "name": "Blanket", "description": "A warm blanket for travel.", "type": "tool", "value": 0.5},
-  {"id": "robe", "name": "Robe", "description": "A simple travel robe.", "type": "tool", "value": 1},
+  {"id": "costume", "name": "Costume", "description": "A set of theatrical clothing.", "weight": 4, "type": "tool", "value": 5},
+  {"id": "mirror", "name": "Mirror", "description": "A small polished mirror.", "weight": 0.5, "type": "tool", "value": 5},
+  {"id": "lamp", "name": "Lamp", "description": "An oil lamp. Lighting and refueling interactions are not yet modeled.", "weight": 1, "type": "tool", "value": 0.5},
+  {"id": "blanket", "name": "Blanket", "description": "A warm blanket for travel.", "weight": 3, "type": "tool", "value": 0.5},
+  {"id": "robe", "name": "Robe", "description": "A simple travel robe.", "weight": 4, "type": "tool", "value": 1},
   {
     "id": "alchemists_fire",
+    "weight": 1,
     "name": "Alchemist's Fire (Flask)",
     "description": "A flask of sticky liquid that ignites on contact with air. Thrown: 1d4 fire damage and the target starts burning.",
     "type": "consumable",
@@ -21,6 +22,7 @@
   },
   {
     "id": "lantern_hooded",
+    "weight": 2,
     "name": "Hooded Lantern",
     "description": "A Hooded Lantern burns one flask of oil for 6 hours, casting Bright Light in a 30-foot radius and Dim Light for an additional 30 feet.",
     "type": "consumable",
@@ -31,6 +33,7 @@
   },
   {
     "id": "arcane_crystal",
+    "weight": 1,
     "name": "Crystal (Arcane Focus)",
     "description": "A crystal used to channel arcane spells. Can replace material components without a listed cost.",
     "type": "tool",
@@ -43,6 +46,7 @@
   },
   {
     "id": "arcane_orb",
+    "weight": 3,
     "name": "Orb (Arcane Focus)",
     "description": "A polished orb used to channel arcane spells. Can replace material components without a listed cost.",
     "type": "tool",
@@ -55,6 +59,7 @@
   },
   {
     "id": "arcane_rod",
+    "weight": 2,
     "name": "Rod (Arcane Focus)",
     "description": "A rod used to channel arcane spells. Can replace material components without a listed cost.",
     "type": "tool",
@@ -67,6 +72,7 @@
   },
   {
     "id": "arcane_staff",
+    "weight": 4,
     "name": "Staff (Arcane Focus)",
     "description": "A carved staff used to channel arcane spells. Can replace material components without a listed cost.",
     "type": "tool",
@@ -79,6 +85,7 @@
   },
   {
     "id": "arcane_wand",
+    "weight": 1,
     "name": "Wand (Arcane Focus)",
     "description": "A slender wand used to channel arcane spells. Can replace material components without a listed cost.",
     "type": "tool",
@@ -91,6 +98,7 @@
   },
   {
     "id": "healers_kit",
+    "weight": 3,
     "name": "Healer's Kit",
     "description": "A leather pouch of bandages, salves, and splints with ten uses. Used to stabilize a dying creature without a Medicine check.",
     "type": "tool",
@@ -99,6 +107,7 @@
   },
   {
     "id": "acid_vial",
+    "weight": 1,
     "name": "Acid (Vial)",
     "description": "A vial of corrosive acid. Thrown: 2d6 acid damage on a failed DEX save.",
     "type": "consumable",
@@ -126,6 +135,7 @@
   },
   {
     "id": "lantern_bullseye",
+    "weight": 2,
     "name": "Bullseye Lantern",
     "description": "A focused oil lantern casting a long beam. Provides light and +3 vision range for 10 turns.",
     "type": "consumable",
@@ -141,6 +151,7 @@
   },
   {
     "id": "climbers_kit",
+    "weight": 12,
     "name": "Climber's Kit",
     "description": "Pitons, boot tips, gloves, and a harness. Useful for climbing and certain event skill checks.",
     "type": "tool",
@@ -156,6 +167,7 @@
   },
   {
     "id": "crowbar",
+    "weight": 5,
     "name": "Crowbar",
     "description": "An iron bar that grants leverage when forcing doors, crates, and lids.",
     "type": "tool",
@@ -171,6 +183,7 @@
   },
   {
     "id": "lute",
+    "weight": 2,
     "name": "Lute",
     "description": "A musical instrument. Bards can use it as a spellcasting focus.",
     "type": "tool",
@@ -179,6 +192,7 @@
   },
   {
     "id": "wooden_staff",
+    "weight": 4,
     "name": "Wooden Staff (Druidic Focus)",
     "description": "A staff of living wood used to channel druidic spells.",
     "type": "tool",
@@ -191,6 +205,7 @@
   },
   {
     "id": "caltrops",
+    "weight": 2,
     "name": "Caltrops",
     "description": "A bag of spikes scattered to cover a 5-foot square; creatures entering it take 1 piercing damage and lose speed.",
     "type": "consumable",
@@ -200,6 +215,7 @@
   },
   {
     "id": "oil_flask",
+    "weight": 1,
     "name": "Oil (Flask)",
     "description": "A flask of lamp oil. Can be splashed and ignited for 5 fire damage, or used to refuel a lantern.",
     "type": "consumable",
@@ -268,6 +284,7 @@
   },
   {
     "id": "bagpipes",
+    "weight": 6,
     "name": "Bagpipes",
     "description": "A musical instrument. Bards can use it as a spellcasting focus.",
     "type": "tool",
@@ -276,6 +293,7 @@
   },
   {
     "id": "drum",
+    "weight": 3,
     "name": "Drum",
     "description": "A musical instrument. Bards can use it as a spellcasting focus.",
     "type": "tool",
@@ -284,6 +302,7 @@
   },
   {
     "id": "dulcimer",
+    "weight": 10,
     "name": "Dulcimer",
     "description": "A musical instrument. Bards can use it as a spellcasting focus.",
     "type": "tool",
@@ -292,6 +311,7 @@
   },
   {
     "id": "flute",
+    "weight": 1,
     "name": "Flute",
     "description": "A musical instrument. Bards can use it as a spellcasting focus.",
     "type": "tool",
@@ -300,6 +320,7 @@
   },
   {
     "id": "horn",
+    "weight": 2,
     "name": "Horn",
     "description": "A musical instrument. Bards can use it as a spellcasting focus.",
     "type": "tool",
@@ -308,6 +329,7 @@
   },
   {
     "id": "lyre",
+    "weight": 2,
     "name": "Lyre",
     "description": "A musical instrument. Bards can use it as a spellcasting focus.",
     "type": "tool",
@@ -316,6 +338,7 @@
   },
   {
     "id": "pan_flute",
+    "weight": 2,
     "name": "Pan Flute",
     "description": "A musical instrument. Bards can use it as a spellcasting focus.",
     "type": "tool",
@@ -324,6 +347,7 @@
   },
   {
     "id": "shawm",
+    "weight": 1,
     "name": "Shawm",
     "description": "A musical instrument. Bards can use it as a spellcasting focus.",
     "type": "tool",
@@ -332,6 +356,7 @@
   },
   {
     "id": "viol",
+    "weight": 1,
     "name": "Viol",
     "description": "A musical instrument. Bards can use it as a spellcasting focus.",
     "type": "tool",

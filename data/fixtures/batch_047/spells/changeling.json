@@ -1,0 +1,8 @@
+[
+  {"id": "fixture:b047_changeling", "name": "047 changeling", "description": "Fixture self projection with two declared forms and two legal equipment policies; the caster chooses both when casting.", "execution": "shared", "level": 1, "casting_time": "action", "range": 0, "target": "self", "concentration": true, "duration_seconds": 60, "classes": ["wizard"],
+   "effects": [{"type": "actor_projection", "retain": ["hp", "creature_type", "mental_scores", "features", "spellcasting"], "equipment": ["merged", "worn"],
+     "forms": [
+       {"id": "b047_hare", "name": "Hare", "creature_type": "beast", "size": "small", "speed": 10, "ability_scores": {"STR": 4, "DEX": 16, "CON": 10, "INT": 2, "WIS": 12, "CHA": 4}, "ac": {"base": 13}, "temp_hp": {"base": 4}, "attack": {"name": "Kick", "damage": "1d4", "damage_type": "bludgeoning", "range": 1, "bonus": 3}},
+       {"id": "b047_boar", "name": "Boar", "creature_type": "beast", "size": "medium", "speed": 8, "ability_scores": {"STR": 14, "DEX": 10, "CON": 14, "INT": 2, "WIS": 8, "CHA": 4}, "ac": {"base": 11}, "temp_hp": {"base": 8}, "attack": {"name": "Tusk", "damage": "1d6", "damage_type": "slashing", "range": 1, "bonus": 4}}
+     ]}]}
+]

@@ -33,9 +33,11 @@ static func run(h: Node) -> void:
 	enemy["hex_position"] = Vector2i(1, 0)
 	combat._update_grid_entities()
 	var normal_ac := b.get_ac()
-	# S-164: the HUD cast offers no equipment choice, so three legal policies refuse.
+	# S-164 (updated by 047 card 7e2c): the HUD now offers the three legal policies; canceling that chooser refuses.
 	b.spell_slots = {"2": 1}
-	await Batch036Controls.cast(h, combat, b, b, Batch041Checks.GUISE)
+	await Batch047Controls.begin(h, combat, b, Batch041Checks.GUISE)
+	await Batch027Controls.answer(h, combat, "Choose how equipment", "Cancel")
+	await Batch047Controls.settle(h, combat)
 	h._assert(not ActorProjectionRules.is_projected(b) and b.get_ac() == normal_ac and SourceBenefitRules.total(b, "AC") == 2 and int(b.spell_slots.get("2", 0)) == 1, "041 actual cast without a chosen equipment policy leaves the actor, its copies and its slot unchanged (slots=%s)" % str(b.spell_slots))
 	# The same production resolver with the merged policy chosen.
 	var r := Batch041Checks.guise(b, "merged")

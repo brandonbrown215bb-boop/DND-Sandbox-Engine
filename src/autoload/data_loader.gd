@@ -10,6 +10,9 @@ signal load_error(message: String)
 var classes: Dictionary = {}
 var subclasses: Dictionary = {}
 var races: Dictionary = {}
+## Batch 049: feats are a content type so species can grant them by id.
+var feats: Dictionary = {}
+var _loading_all := false
 var items: Dictionary = {}
 var spells: Dictionary = {}
 var monsters: Dictionary = {}
@@ -253,14 +256,21 @@ func load_all_data() -> void:
 	_load_errors.clear()
 	_validation_warnings.clear()
 	_registered_sources.clear()
-	for registry in [classes, subclasses, races, items, spells, monsters, events, campaigns]:
+	for registry in [classes, subclasses, races, feats, items, spells, monsters, events, campaigns]:
 		registry.clear()
 	_manifest = _read_manifest()
 
+	_loading_all = true
 	_load_directory(CORE_PATH)
 	_load_directory(MODS_PATH)
+	_loading_all = false
 	_populate_class_spell_access()
 	_validate_cross_references()
+	for race_id in races.keys(): # Batch 050 bug 4: every layer is loaded, so feat references can be checked.
+		var missing := missing_feat_error(races[race_id], str(races[race_id].get("_source_record", "")))
+		if not missing.is_empty():
+			_load_errors.append(missing)
+			races.erase(race_id)
 
 	if not _validation_warnings.is_empty():
 		push_warning("[DataLoader] Rejected %d unsupported effectless feature records; they remain unavailable until curated." % _validation_warnings.size())
@@ -343,6 +353,7 @@ func _load_directory(base_path: String) -> void:
 	_load_content_type(base_path + "classes/", "class")
 	_load_content_type(base_path + "subclasses/", "subclass")
 	_load_content_type(base_path + "races/", "race")
+	_load_content_type(base_path + "feats/", "feat")
 	_load_content_type(base_path + "items/", "item")
 	_load_content_type(base_path + "spells/", "spell")
 	_load_content_type(base_path + "monsters/", "monster")
@@ -430,7 +441,7 @@ func _validate_content(data: Dictionary, content_type: String, source: String) -
 	if data.has("spell_permissions") and (content_type != "item" or not SpellPermissionRules.item_definition_error(data).is_empty()):
 		_load_errors.append("Invalid item spell permission in %s" % source)
 		return false
-	if data.has("source_benefits") and (content_type != "item" or data.get("type", "") not in ["weapon", "armor", "shield", "ring", "wand"] or not SourceBenefitRules.benefits_error(data["source_benefits"]).is_empty()):
+	if data.has("source_benefits") and (content_type != "item" or data.get("type", "") not in ["weapon", "armor", "shield", "ring", "wand", "staff", "rod", "wondrous"] or (data.get("type", "") == "wondrous" and not data.has("worn_slot")) or not SourceBenefitRules.benefits_error(data["source_benefits"]).is_empty()):
 		_load_errors.append("Invalid equipped item source benefits in " + source)
 		return false
 	if content_type == "spell" and data.has("execution"):
@@ -448,6 +459,7 @@ func _validate_content(data: Dictionary, content_type: String, source: String) -
 		"class": required = ["id", "name", "hit_die", "primary_ability"]
 		"subclass": required = ["id", "name", "class_id", "features_by_level"]
 		"race": required = ["id", "name"]
+		"feat": required = ["id", "name", "features"]
 		"item": required = ["id", "name", "type"]
 		"spell": required = ["id", "name", "level"]
 		"monster": required = ["id", "name", "hit_points", "armor_class", "speed", "attacks", "ai_behavior"]
@@ -466,9 +478,20 @@ func _validate_content(data: Dictionary, content_type: String, source: String) -
 		if CombatChildActions.units(data) == 0 or data.get("type") != "consumable" or data.get("action_cost", "action") != "action":
 			_load_errors.append("Invalid item strike substitution: " + str(data.get("id", "")))
 			return false
-	if content_type == "item" and str(data.get("type", "")) not in ["weapon", "armor", "shield", "ring", "wand", "consumable", "tool", "currency", "spell_component"]:
+	if content_type == "item" and str(data.get("type", "")) not in ["weapon", "armor", "shield", "ring", "wand", "staff", "rod", "wondrous", "consumable", "tool", "currency", "spell_component"]:
 		_load_errors.append("Item has unsupported type '%s' in %s" % [data.get("type"), source])
 		return false
+	if content_type in ["race", "feat", "item"]:
+		var owned_error := OwnedFeatureSources.definition_error(data, content_type) # Batch 049: card 209c.
+		if owned_error.is_empty() and content_type == "race" and not _loading_all: owned_error = missing_feat_error(data, source) # Batch 050 bug 4 (single-file loads).
+		if not owned_error.is_empty():
+			_load_errors.append("%s in %s" % [owned_error, source])
+			return false
+	if content_type == "item":
+		var measure_error := ItemTypeRules.definition_error(data) # Batch 048: magic-item types and measurements.
+		if not measure_error.is_empty():
+			_load_errors.append("%s in %s" % [measure_error, source])
+			return false
 	if content_type == "item":
 		var context_effect_error := _check_context_item_effect_error(data)
 		if not context_effect_error.is_empty():
@@ -1621,6 +1644,7 @@ func _get_registry(content_type: String) -> Dictionary:
 		"class": return classes
 		"subclass": return subclasses
 		"race": return races
+		"feat": return feats
 		"item": return items
 		"spell": return spells
 		"monster": return monsters
@@ -1956,6 +1980,17 @@ func get_all_races() -> Array:
 
 func get_race(id: String) -> Dictionary:
 	return races.get(id, {})
+
+## Batch 050 bug 4: a species feat id that names no loaded feat is a load error
+## naming the species, its source record and the missing id - never a silent no-op.
+func missing_feat_error(race: Dictionary, source: String) -> String:
+	for feat_id in race.get("feats", []):
+		if not feats.has(str(feat_id)):
+			return "Species '%s' in %s references missing feat '%s'" % [race.get("id", ""), source, feat_id]
+	return ""
+
+func get_feat(id: String) -> Dictionary:
+	return feats.get(id, {})
 
 func get_all_items() -> Array:
 	return _sorted_values(items)

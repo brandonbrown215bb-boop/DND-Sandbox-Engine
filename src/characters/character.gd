@@ -401,6 +401,8 @@ var darkvision_feet: int = 0
 
 ## Unlocked class features (list of feature dictionaries from class JSON).
 var features: Array[Dictionary] = []
+## Batch 049: ids of features acquired from species, feats or exact item copies.
+var acquired_features: Dictionary = {}
 
 ## Spell slots: level -> remaining uses. (e.g., {1: 2, 2: 1})
 var spell_slots: Dictionary = {}
@@ -1185,6 +1187,7 @@ func initialize(p_name: String, p_race_id: String, p_class_id: String, scores: A
 		FighterRules.choose_skills(self, "Athletics", "Perception")
 	# Unlock level 1 features
 	_unlock_features_for_level(1)
+	OwnedFeatureSources.sync(self) # Batch 049: species and species-granted feat features.
 	weapon_masteries.clear()
 	if not managed and class_id == "fighter":
 		for mastery_id in fighter_training.get("masteries", []):
@@ -2055,7 +2058,12 @@ func _restore_features_for_cadences(cadences: Array[String]) -> void:
 	for feature in features:
 		var resets_on: String = feature.get("uses_per", "")
 		if resets_on in cadences:
-			feature_uses[feature["id"]] = get_feature_max_uses(str(feature["id"]), feature)
+			var id := str(feature["id"])
+			# An inactive item's own upgrades still define its stored capacity.
+			if feature.get("type", "") == "mode_choice" and acquired_features.has(id) and not str(feature.get("source_instance_id", "")).is_empty():
+				feature_uses[id] = int(RuleUpgradeRules.owned_view(func(): return get_feature_max_uses(id, feature)))
+			else:
+				feature_uses[id] = get_feature_max_uses(id, feature)
 
 
 func _restore_pact_magic_slots() -> void:
@@ -2135,6 +2143,7 @@ func add_condition(condition_name: String, duration: int, source: String = "") -
 		condition_sources[condition_name] = grants
 		conditions[condition_name] = int(grants.values().max())
 	if condition_name in ["incapacitated", "unconscious", "paralyzed", "petrified", "stunned"]:
+		FeatureModeRules.refresh(self) # Batch 050 bug 2: declared end conditions fire now, suppressed or not.
 		DruidRules.revert_for_incapacitation(self)
 		if has_condition("raging") and (not has_feature("barbarian_persistent_rage") or condition_name == "unconscious"):
 			end_rage()
@@ -2833,6 +2842,7 @@ func from_dict(data: Dictionary) -> void:
 	crit_range = 20
 	# Clear and rebuild features
 	features.clear()
+	acquired_features.clear()
 	extra_attacks = 0
 	for l in range(1, maxi(0, get_class_level()) + 1):
 		_unlock_features_for_level(l, false)
@@ -2932,6 +2942,7 @@ func from_dict(data: Dictionary) -> void:
 	inventory = Inventory.new()
 	inventory.owner_character_ref = weakref(self)
 	inventory.from_dict(data.get("inventory", {}))
+	OwnedFeatureSources.sync(self, true) # Batch 049: species/feat/item features from the restored sources.
 	if class_id == "wizard" and not inventory.has_item("spellbook"):
 		inventory.add_item("spellbook")
 	DruidRules.restore_saved_form(self, data.get("wild_shape_state", {}))

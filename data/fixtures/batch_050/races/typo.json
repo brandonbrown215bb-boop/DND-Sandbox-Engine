@@ -1,0 +1,1 @@
+[{"id": "fixture:b050_typo_kin", "name": "Batch 050 Typo Species", "description": "Probe: names a feat id that does not exist.", "feats": ["fixture:b049_faet"]}]
