@@ -136,7 +136,10 @@ func _teardown_scene(inst: Node) -> void:
 
 # --- test orchestration -----------------------------------------------------
 
+var _script_errors := ScriptErrorCounter.new()
+
 func _ready() -> void:
+	OS.add_logger(_script_errors)
 	print("==================================================")
 	print(" Rook's Headless Viewport Harness (per-beat)")
 	print("==================================================")
@@ -148,6 +151,11 @@ func _ready() -> void:
 	else:
 		await _run_scenario(scenario)
 
+	# Review 052 (card cafa follow-up): a runtime SCRIPT ERROR aborts the beat it hits and
+	# silently skips its later asserts, so any script error fails the scenario.
+	OS.remove_logger(_script_errors)
+	if _script_errors.count > 0:
+		_assert(false, "%d SCRIPT ERROR(s) during the scenario aborted harness code; first: %s" % [_script_errors.count, _script_errors.first])
 	_report()
 	if _fail == 0:
 		print("SCENARIO PASSED: %s" % scenario)
