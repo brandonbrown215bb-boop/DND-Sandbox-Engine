@@ -11,6 +11,8 @@ extends RefCounted
 const POLICY_KEYS := ["cost", "order_costs", "range_hexes", "orders", "default", "control_seconds", "initiative", "owner_incapacitated", "owner_dead", "control_expired", "concentration_end"]
 ## Batch 056 S-157: owner_turn (055 behaviour: orders resolve at once on the
 ## owner's turn), after_owner (own turn right after the owner), own (own d20+DEX).
+## Batch 061 S-157: this is the template's data-declared turn timing; absent
+## means owner_turn, and each kind of a mixed cast must declare the same one.
 const INITIATIVES := ["owner_turn", "after_owner", "own"]
 ## Batch 056 S-158: behaviour when the owner is incapacitated, dead, or control
 ## expired. Missing keys fall back to the declared uncommanded default.
@@ -86,6 +88,19 @@ static func policy(template: Dictionary) -> Dictionary:
 	var p: Variant = template.get("command", {})
 	if p is Dictionary and policy_error(p).is_empty(): out.merge(p, true)
 	return out
+
+## Batch 061: the policy as compared across the kinds of one mixed cast. The
+## authored synonym free reads as none, and an absent initiative reads as the
+## default owner_turn, so equivalent spellings count as one shared policy.
+static func shared_policy(template: Dictionary) -> Dictionary:
+	var p := policy(template)
+	p["cost"] = "none" if str(p.cost) == "free" else str(p.cost)
+	if p.has("order_costs"):
+		var oc := {}
+		for o in p.order_costs: oc[o] = "none" if str(p.order_costs[o]) == "free" else str(p.order_costs[o])
+		p["order_costs"] = oc
+	p["initiative"] = str(p.get("initiative", "owner_turn"))
+	return p
 
 static func _record(owner: Character, actor: Character) -> Dictionary:
 	return owner.spell_effects.get(str(actor.get_meta("created_source_id", "")), {})

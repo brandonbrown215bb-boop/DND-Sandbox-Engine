@@ -90,7 +90,7 @@ static func mix_error(effect: Dictionary) -> String:
 	for t in all:
 		# One reservation size and one command policy per cast keep placement and control shared.
 		if str(t.size) != str(all[0].size): return "create_actor mix templates must share one size"
-		if CreatedCommandRules.policy(t) != CreatedCommandRules.policy(all[0]): return "create_actor mix templates must share one command policy"
+		if CreatedCommandRules.shared_policy(t) != CreatedCommandRules.shared_policy(all[0]): return "create_actor mix templates must share one command policy" # Batch 061: free == none.
 	return ""
 
 static func is_mixed(effect: Dictionary) -> bool:
