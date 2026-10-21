@@ -7,6 +7,16 @@ extends RefCounted
 
 const KINDS := ["activate", "choose", "reselect", "switch", "alternative"]
 
+## Batch 062 (queue item 4, Brandon: "Yes."): the explicit outside-combat context.
+## Outside initiative there is no turn budget, so a declared action/bonus_action
+## cost has nothing to spend; uses are still charged once by the act itself.
+## A null budget still means "no context given" and keeps 057's not_in_combat refusal.
+class OutsideCombat:
+	extends RefCounted
+
+static func outside_combat() -> OutsideCombat:
+	return OutsideCombat.new()
+
 ## Owned mode_choice rules, once each, in feature order.
 static func rows(actor: Character) -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
@@ -109,6 +119,11 @@ static func cost_error(actor: Character, feature_id: String, kind: String, budge
 	var c := cost(actor, feature_id, kind)
 	if c == "none": return ""
 	if budget == null: return "not_in_combat"
+	if budget is OutsideCombat:
+		# Batch 062: no turn to pay from; refuse only while combat is running or the owner can't act.
+		if GameManager.current_state == GameManager.GameState.COMBAT: return "in_combat"
+		if FeatureModeRules.incapacitated(actor) or not actor.is_alive: return "incapacitated"
+		return ""
 	if budget.active_character != actor: return "wrong_turn"
 	if FeatureModeRules.incapacitated(actor) or not actor.is_alive: return "incapacitated"
 	if not budget.can_pay_mode_cost(c): return "unaffordable"
@@ -133,8 +148,11 @@ static func apply(actor: Character, feature_id: String, kind: String, option: St
 		"switch": done = FeatureModeRules.switch(actor, feature_id, option, str(r.window))
 	if not done.is_empty():
 		if done.success and price != "none":
-			budget._spend_action_cost(price) # can_pay_mode_cost held just above; nothing ran in between.
-			done["cost"] = price
+			if budget is OutsideCombat:
+				done["cost_outside_combat"] = price # Batch 062: no action economy outside initiative.
+			else:
+				budget._spend_action_cost(price) # can_pay_mode_cost held just above; nothing ran in between.
+				done["cost"] = price
 		return done
 	match kind:
 		"alternative":
