@@ -29,6 +29,8 @@ static func row(actor: Character, feature_id: String) -> Dictionary:
 	if live.is_empty():
 		reason = "merged" if not copy.is_empty() and ActorProjectionRules.merged(actor, copy) else "suppressed"
 	var r := owned if live.is_empty() else live
+	# Review 052 R1: an Incapacitated owner is offered nothing at the activation boundary.
+	if reason.is_empty() and str(r.get("boundary", "")) == "activation" and FeatureModeRules.incapacitated(actor): reason = "incapacitated"
 	var out := {
 		"feature_id": feature_id, "name": str(feature.get("name", feature_id)), "boundary": str(r.get("boundary", "")),
 		"available": reason.is_empty(), "reason": reason, "source_instance_id": copy,
