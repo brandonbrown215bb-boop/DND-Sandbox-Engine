@@ -98,8 +98,11 @@ static func _validate_single_effect(effect: Variant) -> String:
 		var error := SourceBenefitRules.benefits_error(effect.get("benefits"))
 		if not error.is_empty(): return error
 	elif kind == "create_actor":
-		if effect.size() != (3 if effect.has("placement") else 2): return "Created actor effects accept only type, template and placement."
-		allowed.append_array(["template", "placement"])
+		for key in effect:
+			if str(key) not in ["type", "template", "placement", "options", "count_choice"]: return "Created actor effects accept only type, template, options, count_choice and placement."
+		allowed.append_array(["template", "placement", "options", "count_choice"])
+		var options_error := CreatedActorRules.options_error(effect) # Batch 054: S-155.
+		if not options_error.is_empty(): return options_error
 		var template_error := CreatedActorRules.template_error(effect.get("template"))
 		if not template_error.is_empty(): return template_error
 		if effect.has("placement"):
@@ -701,10 +704,14 @@ static func apply_custom_effects(caster: Character, target, effects: Array, resu
 						result["created_actors"] = {"created": false, "no_space": true}
 						messages.append("There is no legal space; %s creates nothing." % str(spell.get("name", "the spell")))
 						continue
-					var made := CreatedActorRules.create(target, result.get("effect_cast", {}), effect.template, slot_level, spell)
+					# Batch 054 S-155: the cast's chosen template/count; refused choices create nothing.
+					var factory: Dictionary = spell.get("_factory", {}) if spell.get("_factory", {}) is Dictionary else {}
+					var chosen := CreatedActorRules._template(spell, str(factory.get("template_id", "")))
+					if chosen.is_empty(): chosen = effect.template
+					var made := CreatedActorRules.create(target, result.get("effect_cast", {}), chosen, slot_level, spell, int(factory.get("count", -1)))
 					if made.get("created", false):
 						result["created_actors"] = made
-						messages.append("%s creates %d %s." % [target_name, int(made.count), str(effect.template.name)])
+						messages.append("%s creates %d %s." % [target_name, int(made.count), str(chosen.name)])
 			"actor_projection":
 				if target is Character and target == caster:
 					var projected := ActorProjectionRules.apply(target, result.get("effect_cast", {}), effect, slot_level, spell, str(spell.get("_projection_form_id", "")), str(spell.get("_projection_equipment", "")))

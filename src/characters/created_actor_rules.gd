@@ -13,7 +13,7 @@ const DAMAGE_TYPES := ["acid", "bludgeoning", "cold", "fire", "force", "lightnin
 const ABILITIES := ["STR", "DEX", "CON", "INT", "WIS", "CHA"]
 ## A created actor never inherits the means to create, upgrade or cast.
 const FORBIDDEN_FEATURE_TYPES := ["create_actor", "mode_choice", "rule_upgrade", "resource", "zero_hp_replacement", "spellcasting"]
-const RECORD_KEYS := ["level", "actors"]
+const RECORD_KEYS := ["level", "actors", "template_id"]
 
 static var _live := {}
 
@@ -50,10 +50,41 @@ static func value(formula: Dictionary, level: int) -> int:
 	var v := int(formula.base) + int(formula.get("per_level", 0)) * maxi(0, level)
 	return mini(v, int(formula.max)) if formula.has("max") else v
 
-static func _template(spell: Dictionary) -> Dictionary:
+static func _effect(spell: Dictionary) -> Dictionary:
 	for effect in spell.get("effects", []):
-		if effect is Dictionary and effect.get("type", "") == "create_actor": return effect.get("template", {})
+		if effect is Dictionary and effect.get("type", "") == "create_actor": return effect
 	return {}
+
+## S-155 (Batch 054): the declared template plus up to three alternative options.
+static func templates(effect: Dictionary) -> Array:
+	var out: Array = [effect.get("template", {})]
+	out.append_array(effect.get("options", []))
+	return out
+
+static func options_error(effect: Dictionary) -> String:
+	var options: Variant = effect.get("options", [])
+	if not options is Array or options.size() > 3: return "create_actor options must be up to three templates"
+	var seen := {}
+	for t in templates(effect):
+		var e := template_error(t)
+		if not e.is_empty(): return e
+		if seen.has(str(t.id)): return "create_actor template ids must be unique"
+		seen[str(t.id)] = true
+	if effect.has("count_choice") and not effect.count_choice is bool: return "create_actor count_choice must be a boolean"
+	return ""
+
+## The template a cast chose (default: the declared template). {} when not permitted.
+static func _template(spell: Dictionary, template_id: String = "") -> Dictionary:
+	var effect := _effect(spell)
+	if effect.is_empty(): return {}
+	for t in templates(effect):
+		if template_id.is_empty() or str(t.get("id", "")) == template_id: return t
+	return {}
+
+## Permitted counts for this template and level: exactly the formula, or 1..formula when declared.
+static func counts(effect: Dictionary, template: Dictionary, level: int) -> Array:
+	var maximum := value(template.count, level)
+	return range(1, maximum + 1) if bool(effect.get("count_choice", false)) else [maximum]
 
 static func _forbidden(feature: Dictionary) -> bool:
 	if str(feature.get("type", "")) in FORBIDDEN_FEATURE_TYPES or feature.has("spellcasting"): return true
@@ -62,15 +93,20 @@ static func _forbidden(feature: Dictionary) -> bool:
 	return false
 
 ## Called by the shared create_actor effect on the self-cast owner.
-static func create(owner: Character, cast: Dictionary, template: Dictionary, slot_level: int, spell: Dictionary) -> Dictionary:
+static func create(owner: Character, cast: Dictionary, template: Dictionary, slot_level: int, spell: Dictionary, chosen_count: int = -1) -> Dictionary:
 	var source := str(cast.get("source_id", ""))
 	if owner == null or source.is_empty() or owner.spell_effects.has(source) or cast.get("caster_id", "") != owner.character_id or not template_error(template).is_empty(): return {"created": false}
 	if spell.is_empty(): spell = DataLoader.get_spell(str(cast.get("spell_id", "")))
+	# S-155: only a declared template or option may be created.
+	if _template(spell, str(template.get("id", ""))).is_empty(): return {"created": false, "reason": "not_permitted"}
 	var level := maxi(0, slot_level - int(spell.get("level", 0)))
-	var count := value(template.count, level)
+	var allowed := counts(_effect(spell), template, level)
+	var count: int = allowed[-1] if chosen_count < 0 else chosen_count
+	if count not in allowed: return {"created": false, "reason": "count_not_permitted"}
 	var maximum := value(template.max_hp, level)
 	var record := cast.duplicate(true)
 	record["created_actors"] = {"level": level, "actors": []}
+	if str(template.id) != str(_template(spell).id): record.created_actors["template_id"] = str(template.id)
 	for i in count:
 		record.created_actors.actors.append({"actor_id": "%s:actor:%d" % [source, i + 1], "current_hp": maximum})
 	owner.spell_effects[source] = record
@@ -85,7 +121,7 @@ static func actors(owner: Character) -> Array:
 		var record: Dictionary = owner.spell_effects[source]
 		if not record.has("created_actors"): continue
 		var spell := DataLoader.get_spell(str(record.get("spell_id", "")))
-		var template := _template(spell)
+		var template := _template(spell, str(record.created_actors.get("template_id", "")))
 		if template.is_empty(): continue
 		for entry in record.created_actors.actors:
 			var id := str(entry.actor_id)
@@ -102,6 +138,7 @@ static func _build(owner: Character, source: String, template: Dictionary, level
 	a.set_meta("created_owner_id", owner.character_id)
 	a.set_meta("created_source_id", source)
 	a.set_meta("created_spell_id", str(spell.get("id", "")))
+	a.set_meta("created_template_id", str(template.get("id", "")))
 	a.set_meta("created_owner_instance", owner.get_instance_id())
 	return a
 
@@ -129,7 +166,7 @@ static func owner_of(actor: Character) -> String:
 ## Owner-linked attack: bonus and DC are read live from the owner's casting.
 static func attack_profile(owner: Character, actor: Character) -> Dictionary:
 	var spell := DataLoader.get_spell(str(actor.get_meta("created_spell_id", "")))
-	var attack: Dictionary = _template(spell).get("attack", {})
+	var attack: Dictionary = _template(spell, str(actor.get_meta("created_template_id", ""))).get("attack", {})
 	var dc := SpellPermissionRules.save_dc(owner, spell)
 	return {"id": "created_actor_attack", "name": str(attack.get("name", "")), "type": "weapon", "weapon_type": "simple", "ability": "STR", "attack_bonus_override": dc - 8, "damage": str(attack.get("damage", "1d4")), "damage_type": str(attack.get("damage_type", "force")), "range": int(attack.get("range", 1)), "long_range": int(attack.get("range", 1)), "properties": [], "save_dc": dc}
 
@@ -144,15 +181,16 @@ static func sync(owner: Character) -> void:
 static func saved_record_error(dto: Dictionary, record: Dictionary) -> String:
 	var data: Variant = record.get("created_actors")
 	var spell := DataLoader.get_spell(str(record.get("spell_id", "")))
-	var template := _template(spell)
-	if not data is Dictionary or template.is_empty() or not template_error(template).is_empty(): return "invalid saved created actors"
+	if not data is Dictionary or (data.has("template_id") and (not data.template_id is String or str(data.template_id).is_empty())): return "invalid saved created actors"
+	var template := _template(spell, str(data.get("template_id", "")))
+	if template.is_empty() or not template_error(template).is_empty(): return "invalid saved created actors"
 	for key in data:
 		if str(key) not in RECORD_KEYS: return "invalid saved created actors"
 	var source := str(record.get("source_id", ""))
 	if record.get("caster_id", "") != dto.get("character_id", "") or not source.begins_with("spell:%s:" % str(dto.get("character_id", ""))) or record.get("concentration") != spell.get("concentration", false) or record.get("conditions", []) != []: return "invalid saved created actor source"
 	if not _int(data.get("level"), 0, 9) or not data.get("actors") is Array: return "invalid saved created actors"
 	var level := int(data.level)
-	if data.actors.size() != value(template.count, level): return "saved created actor count differs from its template"
+	if data.actors.size() not in counts(_effect(spell), template, level): return "saved created actor count differs from its template"
 	var maximum := value(template.max_hp, level)
 	for i in data.actors.size():
 		var e: Variant = data.actors[i]

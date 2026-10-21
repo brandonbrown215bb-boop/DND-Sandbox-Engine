@@ -348,9 +348,11 @@ static func choose_placement(cast: SpellCastContext) -> bool:
 		if e is Dictionary and e.get("type", "") == "create_actor": effect = e
 	if effect.is_empty() or cast.grid == null or cast.player_index < 0 or cast.player_index >= cast.players.size(): return true
 	var policy := PlacementRules.policy(effect)
-	var template: Dictionary = effect.template
+	var factory: Dictionary = cast.spell.get("_factory", {})
+	var template: Dictionary = CreatedActorRules._template(cast.spell, str(factory.get("template_id", "")))
+	if template.is_empty(): template = effect.template
 	var level := maxi(0, int(cast.spell.get("_selected_spell_slot_level", cast.spell.get("level", 0))) - int(cast.spell.get("level", 0)))
-	var count := CreatedActorRules.value(template.count, level)
+	var count := int(factory.get("count", CreatedActorRules.value(template.count, level)))
 	var size := str(template.size)
 	var reach := int(policy.range_hexes)
 	var origin: Vector2i = cast.players[cast.player_index].get("hex_position", Vector2i.ZERO)
@@ -393,3 +395,60 @@ static func choose_placement(cast: SpellCastContext) -> bool:
 	cast.spell["_placement"] = PlacementRules.encode(picks)
 	return true
 
+
+
+## Batch 054 S-155: choose a permitted template and count before placement and
+## before any cost. Cancel or a stale answer spends nothing; only declared
+## options and counts are offered.
+static var _factory_request_serial := 0
+
+static func _ask_factory(cast: SpellCastContext, title: String, ids: Array[String], labels: Dictionary) -> Dictionary:
+	_factory_request_serial += 1
+	var mine := _factory_request_serial
+	var picked: String = await cast.hud._request_popup_choice(title, ids, labels)
+	if mine != _factory_request_serial or (cast.commit_guard.is_valid() and not cast.commit_guard.call()): return {"stale": true}
+	if picked.is_empty() or picked not in ids: return {"canceled": true}
+	return {"value": picked}
+
+static func choose_factory(cast: SpellCastContext) -> bool:
+	cast.spell.erase("_factory") # Every cast chooses afresh.
+	var effect := CreatedActorRules._effect(cast.spell)
+	if effect.is_empty(): return true
+	var options := CreatedActorRules.templates(effect)
+	var level := maxi(0, int(cast.spell.get("_selected_spell_slot_level", cast.spell.get("level", 0))) - int(cast.spell.get("level", 0)))
+	var factory := {"template_id": str(options[0].id)}
+	if options.size() > 1:
+		if cast.hud == null: return false
+		var ids: Array[String] = [""]
+		var labels := {"": "Cancel"}
+		for t in options:
+			ids.append(str(t.id))
+			labels[str(t.id)] = "%s (%s %s, up to %d)" % [t.name, t.size, t.creature_type, CreatedActorRules.value(t.count, level)]
+		var answer := await _ask_factory(cast, "Choose a creature", ids, labels)
+		if not _factory_answer_ok(cast, answer): return false
+		factory.template_id = str(answer.value)
+	var allowed := CreatedActorRules.counts(effect, CreatedActorRules._template(cast.spell, factory.template_id), level)
+	factory["count"] = int(allowed[-1])
+	if allowed.size() > 1:
+		if cast.hud == null: return false
+		var ids: Array[String] = [""]
+		var labels := {"": "Cancel"}
+		for n in allowed:
+			ids.append(str(n))
+			labels[str(n)] = str(n)
+		var answer := await _ask_factory(cast, "How many to create?", ids, labels)
+		if not _factory_answer_ok(cast, answer): return false
+		factory.count = int(answer.value)
+	cast.spell["_factory"] = factory
+	return true
+
+static func _factory_answer_ok(cast: SpellCastContext, answer: Dictionary) -> bool:
+	if answer.has("stale"):
+		cast.spell.erase("_factory")
+		cast.hud.add_log("[color=orange]That choice is no longer current; nothing was spent.[/color]")
+		return false
+	if answer.has("canceled"):
+		cast.spell.erase("_factory")
+		_cancel_placement(cast, "Casting canceled; nothing was spent.")
+		return false
+	return true
