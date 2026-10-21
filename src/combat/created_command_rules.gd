@@ -217,7 +217,8 @@ static func join_initiative(state, owner: Character, actor: Character) -> void:
 	var at := -1
 	for i in tracker.combatants.size():
 		var c: Dictionary = tracker.combatants[i]
-		if c.entity is Character and (c.entity == owner or (CreatedActorRules.owner_of(c.entity) == owner.character_id and at >= 0)): at = i
+		if c.entity is Character and c.entity == owner: at = i
+		elif at >= 0 and i == at + 1 and c.entity is Character and CreatedActorRules.owner_of(c.entity) == owner.character_id and initiative(owner, c.entity) == "after_owner": at = i # Review R1: contiguous after_owner run only.
 	if at < 0: return
 	var anchor: Dictionary = tracker.combatants[at]
 	tracker.combatants.insert(at + 1, {"id": actor.character_id, "name": actor.character_name, "is_player": true, "entity": actor, "roll": anchor.roll, "dex": float(anchor.dex) - 0.01, "has_acted": false})

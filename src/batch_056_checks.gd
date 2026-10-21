@@ -116,3 +116,16 @@ static func run(check: Callable) -> void:
 	var back := Character.new()
 	back.from_dict(dto)
 	check.call(CreatedActorRules.saved_record_error(dto, rec).is_empty() and CreatedActorRules.actors(back).size() == 2 and not JSON.stringify(dto).contains("_orders"), "056 checklist (b)/(d): saved records validate and reload; pending orders are transient")
+	# Review R1: an after_owner actor joins directly behind its owner even when the
+	# same owner already has an 'own'-initiative actor further down the order.
+	var m_owner := Batch031Checks._character("b056_mixed_owner", 30)
+	var m_sprites := make(m_owner, SPRITE, "b056ms")
+	var ms := battle(m_owner, m_sprites)
+	for c in ms.tracker.combatants:
+		if str(c.name) == "Sprite 1": c.roll = 1
+	ms.tracker.sort_initiative()
+	var m_hounds := make(m_owner, HOUNDS, "b056mh")
+	for a in m_hounds:
+		ms.player_entities.append({"name": a.character_name, "character": a, "combat_id": a.character_id, "hex_position": Vector2i(1, 1), "is_created_actor": true, "created_owner_id": m_owner.character_id})
+		CreatedCommandRules.join_initiative(ms, m_owner, a)
+	check.call(order(ms) == ["b056_mixed_owner", "Hound 1", "Hound 2", "Goblin", "Sprite 1"], "056 review R1: after_owner hounds sit directly behind the owner, not behind the owner's later 'own' sprite (%s)" % str(order(ms)))
