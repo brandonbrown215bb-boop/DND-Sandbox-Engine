@@ -1,0 +1,14 @@
+{
+  "id": "fixture:b050_quell",
+  "name": "Batch 050 Quell",
+  "description": "Neutral regression fixture: suppress the caster's item features while concentrating.",
+  "execution": "shared",
+  "level": 1,
+  "casting_time": "action",
+  "range": 0,
+  "target": "self",
+  "concentration": true,
+  "duration_seconds": 60,
+  "classes": ["wizard"],
+  "effects": [{"type": "suppress_item_magic", "properties": ["features"]}]
+}
