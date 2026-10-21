@@ -117,7 +117,7 @@ static func issue(state, owner: Character, actor_id: String, order: String, targ
 	var result := CombatAction.resolve_weapon_attack(actor, target, profile, false, CombatAction.has_condition(target, "dodging"))
 	if int(target.get("current_hp", 0)) <= 0:
 		target["is_alive"] = false
-		state.tracker.remove_combatant(str(target.get("id", "")))
+		if state.tracker != null: state.tracker.remove_combatant(str(target.get("id", "")))
 	state._update_grid_entities()
 	return {"success": true, "message": str(result.get("message", "%s attacks." % actor.character_name))}
 
