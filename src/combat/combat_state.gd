@@ -738,6 +738,7 @@ func _roll_initiative_and_start() -> void:
 		var p := player_entities[i]
 		var char_data: Character = p.get("character")
 		if char_data == null or not char_data.is_alive: continue
+		if p.get("is_created_actor", false): continue # Batch 056 S-157: joins by its declared initiative below.
 		var initiative_recoveries := ClassProgression.apply_initiative_resource_recovery(char_data)
 		for recovered_resource in initiative_recoveries:
 			var recovery_count := int(initiative_recoveries[recovered_resource])
@@ -815,6 +816,10 @@ func _roll_initiative_and_start() -> void:
 
 	_interrupt_work_for_combat()
 	tracker.sort_initiative()
+	for p in player_entities: # Batch 056 S-157: declared initiative for created actors.
+		if p.get("is_created_actor", false):
+			var created_owner := CreatedCommandRules.owner_entity(self, p)
+			if created_owner != null: CreatedCommandRules.join_initiative(self, created_owner, p.character)
 	_start_combat_turn()
 
 
@@ -966,6 +971,12 @@ func _start_combat_turn() -> void:
 		active_movement_mode = "walk"
 		hud.set_movement_modes(active_character, active_movement_mode, _movement_speed_overrides(active_character))
 		_reset_turn_action_economy()
+		if player_entities[current_player_idx].get("is_created_actor", false): # Batch 056 S-157: its own turn and budget.
+			var created_line := CreatedCommandRules.take_turn(self, player_entities[current_player_idx])
+			if not created_line.is_empty(): hud.add_log(created_line)
+			await get_tree().process_frame
+			_end_active_turn()
+			return
 		if player_entities[current_player_idx].get("is_created_creature", false):
 			await CreatedCreatureCombat.take_turn(self, player_entities[current_player_idx])
 			_end_active_turn()
@@ -4315,7 +4326,7 @@ func _end_active_turn() -> void:
 
 	if active_combatant["is_player"] and active_character != null:
 		for actor_id in CreatedCommandRules.apply_defaults(self, active_character): # Batch 055 S-156: uncommanded default.
-			hud.add_log("%s was not commanded and takes the Dodge action." % str(_entity_name_for_created(actor_id)))
+			hud.add_log("%s was not commanded and acts on its declared behaviour." % str(_entity_name_for_created(actor_id)))
 	# Tick active conditions at turn end
 	if active_combatant["is_player"] and active_character != null:
 		await _resolve_delayed_spell_damage(active_character)
@@ -4365,6 +4376,8 @@ func _end_active_turn() -> void:
 			monster.erase("rogue_cunning_knock_out_dc")
 		monster.erase("fighter_stood_up")
 
+	for gone_id in CreatedCommandRules.reconcile(self): # Batch 056: ended sources leave before the order advances.
+		hud.add_log("%s leaves the battle; its source has ended." % gone_id)
 	var round_complete := tracker.next_turn()
 	if round_complete:
 		# Combat owns effect/light ticks; advance only the durable campaign clock here.

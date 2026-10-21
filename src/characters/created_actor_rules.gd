@@ -234,6 +234,7 @@ static func attach(state: Node, owner: Character, origin: Vector2i, picks: Array
 			if nearest.is_empty(): continue
 			hex = nearest[0]
 		state.player_entities.append({"name": a.character_name, "display_name": a.character_name, "character": a, "combat_id": a.character_id, "owner_player_index": -1, "hex_position": hex, "is_created_actor": true, "created_owner_id": owner.character_id, "reaction_available": true, "color": Color(0.5, 0.7, 0.9)})
+		CreatedCommandRules.join_initiative(state, owner, a) # Batch 056 S-157.
 		joined.append(a.character_id)
 	state._update_grid_entities()
 	return joined
