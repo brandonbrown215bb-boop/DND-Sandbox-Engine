@@ -60,3 +60,21 @@ static func run(check: Callable) -> void:
 	back.from_dict(dto)
 	var again := CreatedActorRules.actors(back)
 	check.call(again.size() == 2 and CreatedCommandRules.cost(CreatedCommandRules.policy(CreatedCommandRules._template(back, again[0])), "dodge") == "none" and CreatedActorRules.saved_record_error(dto, dto.spell_effects.values()[0]).is_empty(), "060 checklist (b)/(d): no new saved field; reloaded hounds still resolve their declared cost from data")
+	# Review 060 stress: free commands keep the once-per-actor-per-turn rule; mixed
+	# Action + Bonus Action spends land in the right buckets; case/whitespace refused.
+	var o2 := Batch031Checks._character("b060r_owner", 30)
+	var h2 := hounds(o2)
+	var s2 := _stub(o2, h2)
+	CombatAction.active_turn_serial += 1
+	var f1 := CreatedCommandRules.issue(s2, o2, h2[0].character_id, "dodge")
+	var f_again_err := CreatedCommandRules.command_error(s2, o2, h2[0].character_id, "dodge")
+	var f2 := CreatedCommandRules.issue(s2, o2, h2[1].character_id, "dodge")
+	check.call(f1.success and f2.success and not f_again_err.is_empty() and s2.spent == 0, "060 review: free Dodge still once per actor per turn; a second hound can take its own free order (%s)" % f_again_err)
+	CombatAction.active_turn_serial += 1
+	s2.budget = {"action": 1, "bonus_action": 1, "reaction": 1}
+	var a1 := CreatedCommandRules.issue(s2, o2, h2[0].character_id, "attack", "b060_goblin")
+	var a2_err := CreatedCommandRules.command_error(s2, o2, h2[1].character_id, "attack", "b060_goblin")
+	var d2 := CreatedCommandRules.issue(s2, o2, h2[1].character_id, "dodge")
+	check.call(a1.success and a2_err.begins_with("No action") and d2.success and s2.budget.action == 0 and s2.budget.bonus_action == 1 and s2.budget.reaction == 1, "060 review: Action spent by one hound blocks a second Action attack but not a free Dodge; Bonus Action and reaction untouched (%s)" % a2_err)
+	var odd := [{"cost": "FREE"}, {"cost": " free"}, {"order_costs": {"dodge": null}}, {"order_costs": {"attack": "action", "dodge": 0}}, {"cost": null}]
+	check.call(odd.all(func(p): return not CreatedCommandRules.policy_error(p).is_empty()) and CreatedCommandRules.cost(CreatedCommandRules.policy({"command": {"cost": "reaction"}}), "dodge") == "bonus_action", "060 review: malformed costs are refused at load; an invalid policy at runtime falls back to the Bonus Action default")
