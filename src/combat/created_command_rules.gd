@@ -260,7 +260,7 @@ static func join_initiative(state, owner: Character, actor: Character) -> void:
 		elif at >= 0 and i == at + 1 and c.entity is Character and CreatedActorRules.owner_of(c.entity) == owner.character_id and initiative(owner, c.entity) == "after_owner": at = i # Review R1: contiguous after_owner run only.
 	if at < 0: return
 	var anchor: Dictionary = tracker.combatants[at]
-	tracker.combatants.insert(at + 1, {"id": actor.character_id, "name": actor.character_name, "is_player": true, "entity": actor, "roll": anchor.roll, "dex": float(anchor.dex) - 0.01, "has_acted": false})
+	tracker.combatants.insert(at + 1, {"id": actor.character_id, "name": actor.character_name, "is_player": true, "entity": actor, "roll": anchor.roll, "dex": float(anchor.dex) - 0.01, "has_acted": false, "follows": owner.character_id})
 	if at + 1 <= tracker.active_index: tracker.active_index += 1
 
 ## Batch 056: drop battlefield entries whose source has ended (concentration end

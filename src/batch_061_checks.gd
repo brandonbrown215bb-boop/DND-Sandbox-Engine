@@ -62,3 +62,27 @@ static func run(check: Callable) -> void:
 	var bl := CreatedActorRules.actors(back)
 	var bs := Batch056Checks.battle(back, bl)
 	check.call(CreatedActorRules.saved_record_error(dto, rec).is_empty() and not JSON.stringify(rec).contains("initiative") and bl.size() == 2 and Batch056Checks.order(bs) == Batch056Checks.order(s), "061 checklist (b)/(d): the saved record validates unchanged, carries no timing field, and a reloaded owner rebuilds the same turn order (%s)" % str(Batch056Checks.order(bs)))
+
+	# Review R1 stress: a goblin tying the owner on roll and DEX (id sorting after
+	# the owner) must not split the owner from its after_owner summons when a
+	# later own-initiative join re-sorts the tracker; a second owner's summons too.
+	var t_owner := Batch031Checks._character("b061_a_owner", 30)
+	make(t_owner, 7)
+	var tl := CreatedActorRules.actors(t_owner)
+	var ts := Batch056Checks.battle(t_owner, [])
+	var tie := {"id": "zz_b061_tie", "name": "TieGoblin", "is_alive": true, "current_hp": 9, "max_hp": 9, "ac": 1}
+	ts.tracker.add_combatant("zz_b061_tie", "TieGoblin", false, tie, 15, 14)
+	ts.tracker.sort_initiative()
+	for a in tl: CreatedCommandRules.join_initiative(ts, t_owner, a)
+	var o2 := Batch031Checks._character("b061_b_owner", 30)
+	make(o2, 8)
+	var tl2 := CreatedActorRules.actors(o2)
+	ts.tracker.add_combatant(o2.character_id, o2.character_name, true, o2, 15, 14)
+	ts.tracker.sort_initiative_preserving_active()
+	for a in tl2: CreatedCommandRules.join_initiative(ts, o2, a)
+	ts.tracker.sort_initiative_preserving_active()
+	var ids: Array = ts.tracker.combatants.map(func(c): return str(c.id))
+	var ia := ids.find(t_owner.character_id)
+	var ib := ids.find(o2.character_id)
+	var ok := ia >= 0 and ib >= 0 and tl.all(func(a): return ids.find(a.character_id) in [ia + 1, ia + 2]) and tl2.all(func(a): return ids.find(a.character_id) in [ib + 1, ib + 2]) and ids.size() == 8
+	check.call(ok, "061 review R1: after_owner summons stay right behind their own owner after re-sorts, with a roll/DEX tie and two owners (%s)" % str(ts.tracker.combatants.map(func(c): return str(c.name))))
