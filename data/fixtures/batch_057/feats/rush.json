@@ -1,0 +1,29 @@
+[
+  {
+    "id": "fixture:b057_rush",
+    "name": "Batch 057 Rush (General)",
+    "description": "Neutral fixture General feat: a mode activation with authored combat costs (Batch 057).",
+    "category": "general",
+    "prerequisite": {"level": 4},
+    "features": [
+      {
+        "id": "fixture:b057_rush_stance",
+        "name": "Rush Stance",
+        "description": "Fixture activation: a Bonus Action to start, an Action to reselect, a Bonus Action to switch at turn start.",
+        "type": "mode_choice",
+        "boundary": "activation",
+        "uses": 2,
+        "uses_per": "long_rest",
+        "duration_seconds": 60,
+        "allow_reselect": true,
+        "switch_events": ["turn_start"],
+        "end_on": ["incapacitated"],
+        "costs": {"activate": "bonus_action", "reselect": "action", "switch": "bonus_action"},
+        "modes": [
+          {"id": "guard", "benefits": [{"stat": "AC", "amount": 1}]},
+          {"id": "dash", "benefits": [{"stat": "speed", "amount": 1}]}
+        ]
+      }
+    ]
+  }
+]
