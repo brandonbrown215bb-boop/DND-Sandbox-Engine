@@ -39,7 +39,7 @@ Validated on a scratch merge of this branch + the harness branch: full run_tests
 15 listed scenarios), and batch scenarios 031-052 all PASSED with 0 SCRIPT ERROR. No false failures.
 
 ## Counts (N1)
-- Builder head 320e70c, imported twice: logic 5477/0, CHECK SCRIPT GATE 49→48 scripts 0 failed, 0 SCRIPT ERROR; scenarios 031-052 all PASSED, 0 SCRIPT ERROR (052: 9 ok).
+- Builder head 320e70c, imported twice: logic 5477/0, CHECK SCRIPT GATE 48 scripts 0 failed, 0 SCRIPT ERROR; scenarios 031-052 all PASSED, 0 SCRIPT ERROR (052: 9 ok).
 - After R1: 5483/0 (+6 = T1-T6), 49 check scripts, 0 SCRIPT ERROR. T1 and T3 (setup) went red first; T1 red is the defect.
 - Scratch merge with the harness PR: 5484/0 (+1 is the cafa probe already on #20).
 
