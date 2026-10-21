@@ -26,7 +26,7 @@ Card Q-20261021-143345-aee2. Stacked on #31 (batch-059-corpse-limit @ a280d47, a
 ## Counts
 - Baseline a280d47 (fresh worktree, imported twice): logic 5576/0.
 - Branch (imported twice): logic 5585 passed, 0 failed (+9, all 060).
-- Scenarios 031-060, one at a time: 30/30 SCENARIO PASSED (new: `batch_060_command_cost_flow`, 16 assertions).
+- Scenarios 031-060, one at a time: 30/30 SCENARIO PASSED (new: `batch_060_command_cost_flow`, 13 assertions).
 - 0 SCRIPT/Parse/Compile errors in all logs.
 
 ## Limits
