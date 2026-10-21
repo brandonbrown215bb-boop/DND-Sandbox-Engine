@@ -10,7 +10,7 @@ const END_REASONS := ["short_rest", "long_rest", "zero_hp", "incapacitated"]
 const DICE := ["d4", "d6", "d8", "d10", "d12"]
 ## S-104: declared events that open a one-use window to switch the active mode.
 const SWITCH_EVENTS := ["hit", "turn_start"]
-const RULE_KEYS := ["id", "name", "type", "description", "boundary", "rest", "modes", "uses", "uses_per", "duration_seconds", "die", "targets", "end_on", "allow_reselect", "switch_events", "source_instance_id"]
+const RULE_KEYS := ["id", "name", "type", "description", "boundary", "rest", "modes", "uses", "uses_per", "duration_seconds", "die", "targets", "end_on", "allow_reselect", "switch_events", "source_instance_id", "recharge_while"]
 const STATE_KEYS := ["mode", "open", "active", "remaining_seconds", "activation_serial", "rolled", "recipients", "event_serial", "window"]
 
 static func _int(v: Variant, lo: int, hi: int) -> bool:
@@ -54,6 +54,8 @@ static func modes_list_error(modes: Variant) -> String:
 static func _activation_error(f: Dictionary, allow_dawn: bool = false) -> String:
 	if f.has("rest"): return "activation mode_choice cannot declare rest"
 	if not _int(f.get("uses"), 1, 20) or str(f.get("uses_per", "")) not in (RESTS + ["dawn"] if allow_dawn else RESTS): return "activation mode_choice requires uses 1-20 and uses_per short_rest or long_rest%s" % (" or dawn" if allow_dawn else "")
+	# Batch 050 fix: an item's text may make dawn recharge depend on being worn or attuned.
+	if f.has("recharge_while") and (not allow_dawn or str(f.get("uses_per", "")) != "dawn" or str(f.recharge_while) not in ["equipped", "attuned"]): return "recharge_while must be equipped or attuned on a dawn item power"
 	if not _int(f.get("duration_seconds"), 6, 86400): return "activation mode_choice requires duration_seconds 6-86400"
 	if f.has("die") and str(f.die) not in DICE: return "activation mode_choice die must be d4-d12"
 	if f.has("targets") and not _int(f.targets, 1, 6): return "activation mode_choice targets must be 1-6"

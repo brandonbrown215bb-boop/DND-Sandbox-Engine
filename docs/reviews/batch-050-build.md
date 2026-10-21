@@ -52,7 +52,13 @@
 
 ## Limits and follow-ups
 - Dawn is the campaign day boundary, as for existing daily item recharge. There is no separate sunrise clock.
-- Copies lying in rooms or nested in containers don't recharge until carried.
 - The scenario drives drop/pick-up through `drop_equipped_instance` (the combat "drop" command) and `receive_instance` (the room "take" path), not the room UI.
 - No SRD spell content lists `features` yet (fixture suppression only).
 - Follow-ups filed (ready, unclaimed): 051 feat acquisition **Q-20261021-004820-aaf1**, 052 HUD mode/upgrade controls **Q-20261021-004820-732c**, container volume **Q-20261021-004820-65fc**. Earlier: Q-20261020-230919-ac39 (unknown dropped room weight). The 047 chooser-before-validate_actor note is still open.
+
+## Fix commit after acceptance (Brandon's decisions, parent steering 8:00 PM CT)
+- (a) Identical copies keep separate pools: already true at d2636c4 (bug 3 checks).
+- (b) "Regains at dawn" now applies wherever the copy is: held, stowed in a container (nested `state.contents`, any depth) or lying in a saved local room (`GameManager.saved_local_room_states()` objects). Unheld copies are refilled on their own record stamp at the copy's own maximum (`OwnedFeatureSources.copy_max`, honouring the remembered option), and the stamp wins on the next acquisition.
+- An item power may declare `"recharge_while": "equipped" | "attuned"` (dawn powers only, loader-validated); then dawn recharge happens only while that holds. Fixture `fixture:b050_bound_blade` uses `attuned`.
+- Logic: fresh d2636c4 baseline 5431/0 -> 5437/0 (+6 checks in `_dawn_anywhere`). Scenarios 031-050 and shared_spell_flow pass with the same ok counts.
+- Remaining limit: items dropped mid-combat (`dropped_combat_items`) are not visited until they return to a room or inventory.

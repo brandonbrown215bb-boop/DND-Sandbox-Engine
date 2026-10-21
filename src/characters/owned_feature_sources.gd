@@ -217,20 +217,86 @@ static func recover_dawn(actor: Character) -> Array:
 	if actor == null or actor.inventory == null: return refilled
 	for copy_id in actor.inventory.copies.records.keys():
 		var record: Dictionary = actor.inventory.copies.records[copy_id]
-		for feature in item_features(DataLoader.get_item(str(record.get("definition_id", ""))), str(copy_id)):
-			if feature.type != "mode_choice" or str(feature.get("uses_per", "")) != "dawn": continue
+		for feature in _dawn_features(record):
 			var pool := str(feature.get("resource_id", feature.id))
 			if actor.acquired_features.has(str(feature.id)):
+				if not _recharge_allowed(record, feature, true): continue
 				actor.feature_uses[pool] = maxi(0, int(RuleUpgradeRules.owned_view(func(): return actor.get_feature_max_uses(pool)))) # Review 050 R1: owned max, even suppressed/merged.
-			else:
-				# Not owned right now: drop the spent stamp so the next acquisition starts full.
-				actor.feature_uses.erase(pool)
-				var held: Variant = record.get("state", {}).get("feature_uses")
-				if held is Dictionary:
-					held.erase(pool)
-					if held.is_empty(): record.state.erase("feature_uses")
-			refilled.append(pool)
+				refilled.append(pool)
+			elif _recharge_allowed(record, feature, false):
+				_refill_stamp(record, feature)
+				refilled.append(pool)
+		refilled.append_array(_recover_nested(record))
 	return refilled
+
+## Brandon (Batch 050 fix): "regains at dawn" applies wherever the copy is -
+## held, stowed in a container, or lying in a room - unless the item's JSON
+## declares recharge_while equipped/attuned. Unheld copies are refilled on
+## their own record stamp, which always wins on the next acquisition.
+static func recover_dawn_records(records: Array) -> Array:
+	var refilled: Array = []
+	for record in records:
+		if not record is Dictionary: continue
+		for feature in _dawn_features(record):
+			if _recharge_allowed(record, feature, false):
+				_refill_stamp(record, feature)
+				refilled.append(str(feature.get("resource_id", feature.id)))
+		refilled.append_array(_recover_nested(record))
+	return refilled
+
+## Every copy lying in a saved local room (loose objects and room containers).
+static func recover_dawn_rooms(room_states: Array) -> Array:
+	var refilled: Array = []
+	for room in room_states:
+		if not room is Dictionary: continue
+		for object in room.get("objects", []):
+			if object is Dictionary and object.get("contents") is Array: refilled.append_array(recover_dawn_records(object.contents))
+	return refilled
+
+static func _recover_nested(record: Dictionary) -> Array:
+	var out: Array = []
+	var contents: Variant = record.get("state", {}).get("contents", {})
+	if contents is Dictionary:
+		for key in contents:
+			if contents[key] is Array: out.append_array(recover_dawn_records(contents[key]))
+	return out
+
+static func _dawn_features(record: Dictionary) -> Array:
+	return item_features(DataLoader.get_item(str(record.get("definition_id", ""))), str(record.get("instance_id", ""))).filter(func(f): return f.type == "mode_choice" and str(f.get("uses_per", "")) == "dawn")
+
+## held_and_acquired: the copy is equipped (and attuned if required) by its holder.
+static func _recharge_allowed(record: Dictionary, feature: Dictionary, held_and_acquired: bool) -> bool:
+	match str(feature.get("recharge_while", "")):
+		"equipped": return held_and_acquired
+		"attuned": return not str(record.get("state", {}).get("attuned_to", "")).is_empty()
+	return true
+
+## The copy's own maximum: base uses plus its applying upgrades, using the
+## option remembered on the record (default: first id, as RuleUpgradeRules).
+static func copy_max(record: Dictionary, feature: Dictionary) -> int:
+	var uses := int(feature.get("uses", 1))
+	var groups := {}
+	for upgrade in item_features(DataLoader.get_item(str(record.get("definition_id", ""))), str(record.get("instance_id", ""))):
+		if upgrade.type != "rule_upgrade" or str(upgrade.rule) != str(feature.id): continue
+		var add := int(upgrade.changes.get("uses", {}).get("add", 0))
+		var group := str(upgrade.get("exclusive_group", ""))
+		if group.is_empty(): uses += add
+		else:
+			if not groups.has(group): groups[group] = {}
+			groups[group][str(upgrade.id)] = add
+	var chosen: Dictionary = record.get("state", {}).get("rule_alternatives", {}) if record.get("state", {}).get("rule_alternatives") is Dictionary else {}
+	for group in groups:
+		var ids: Array = groups[group].keys()
+		ids.sort()
+		var pick := str(chosen.get("%s|%s" % [feature.id, group], ids[0]))
+		uses += int(groups[group].get(pick, groups[group][ids[0]]))
+	return uses
+
+static func _refill_stamp(record: Dictionary, feature: Dictionary) -> void:
+	if not record.get("state") is Dictionary: record["state"] = {}
+	var held: Dictionary = record.state.get("feature_uses", {})
+	held[str(feature.get("resource_id", feature.id))] = copy_max(record, feature)
+	record.state["feature_uses"] = held
 
 static func _alternatives_error(record: Dictionary, chosen: Variant) -> String:
 	if not chosen is Dictionary or chosen.is_empty() or chosen.size() > MAX_FEATURES: return "item alternatives are malformed"

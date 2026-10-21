@@ -36,6 +36,7 @@ static func run(check: Callable) -> void:
 	_bug4_missing_feat(check)
 	_dawn(check)
 	_suppression_scope(check)
+	_dawn_anywhere(check)
 
 ## Bug 1: dropping an equipped copy must not recharge it for the next holder.
 static func _bug1_drop(check: Callable) -> void:
@@ -133,3 +134,46 @@ static func _suppression_scope(check: Callable) -> void:
 	var other := MagicPropertyRules.apply(a, {"source_id": "b050_benefits_only", "caster_id": a.character_id, "spell_id": "x"}, {"type": "suppress_item_magic", "properties": ["source_benefits"]})
 	var still := FeatureModeRules.activate(a, ward(id), "protect")
 	check.call(before == 3 and muted_upgrades == 0 and not refused.success and int(a.feature_uses[ward(id)]) == 1 and not other.get("applied", false) and still.success, "050 checklist: a 'features' suppression mutes the copy's modes and upgrades and refuses before cost; a suppression not naming 'features' leaves them alone")
+
+static func _spent(a: Character, definition: String) -> String:
+	var id := Batch041Checks.add_copy(a, definition)
+	a.inventory.equip_instance(Inventory.Slot.WEAPON, id)
+	if DataLoader.get_item(definition).get("requires_attunement", false): a.inventory.attune_instance(id, a.character_id)
+	FeatureModeRules.activate(a, ward(id), "protect")
+	FeatureModeRules.end(a, ward(id), "dismissed")
+	a.inventory.unequip(Inventory.Slot.WEAPON)
+	return id
+
+## Brandon: identical copies keep separate pools; "regains at dawn" applies held,
+## stowed or lying in a room, unless the item's JSON requires being worn/attuned.
+static func _dawn_anywhere(check: Callable) -> void:
+	var a := actor("b050_dawn_any")
+	var pack := Batch048Checks.add(a, "backpack")
+	var stowed := _spent(a, BLADE)
+	var put := ContainerRules.stow(a.inventory, stowed)
+	var lying := _spent(a, BLADE)
+	var floor_record := a.inventory.take_instance(lying)
+	var room := {"objects": [{"id": "loose:1", "kind": "loose", "contents": [floor_record]}]}
+	var bound := _spent(a, "fixture:b050_bound_blade")
+	a.inventory.unattune_instance(bound, a.character_id)
+	var bound_record := a.inventory.take_instance(bound)
+	var bound_room := {"objects": [{"id": "loose:2", "kind": "loose", "contents": [bound_record]}]}
+	var nested: Dictionary = ContainerRules.contents(a.inventory, pack)[0]
+	check.call(put.get("success", false) and int(nested.state.feature_uses[ward(stowed)]) == 1 and int(floor_record.state.feature_uses[ward(lying)]) == 1, "050 fix: spent copies are stowed in a backpack and lying in a room with 1 use each")
+	OwnedFeatureSources.recover_dawn(a)
+	OwnedFeatureSources.recover_dawn_rooms([room, bound_room])
+	nested = ContainerRules.contents(a.inventory, pack)[0]
+	check.call(int(nested.state.feature_uses[ward(stowed)]) == 2 and int(room.objects[0].contents[0].state.feature_uses[ward(lying)]) == 2, "050 fix: dawn recharges a copy inside a container and a copy lying in a room")
+	check.call(int(bound_room.objects[0].contents[0].state.feature_uses[ward(bound)]) == 1, "050 fix: a copy whose JSON says recharge_while attuned does not recharge unattuned")
+	var b := actor("b050_dawn_finder")
+	b.inventory.receive_instance(room.objects[0].contents[0])
+	b.inventory.equip_instance(Inventory.Slot.WEAPON, lying)
+	check.call(int(b.feature_uses[ward(lying)]) == 2 and InventoryCopies.record_state_error(nested).is_empty(), "050 fix: the room copy picked up after dawn starts recharged; the stowed record passes record_state_error")
+	var held := actor("b050_dawn_bound_held")
+	var hb := _spent(held, "fixture:b050_bound_blade")
+	OwnedFeatureSources.recover_dawn(held)
+	check.call(int(held.inventory.get_instance(hb).state.feature_uses[ward(hb)]) == 2, "050 fix: the attuned bound copy recharges at dawn even unworn")
+	var item := DataLoader.get_item(BLADE).duplicate(true)
+	for key in ["_source", "_source_record"]: item.erase(key)
+	item.features[0]["recharge_while"] = "sleeping"
+	check.call(not Batch048Checks._loads(item), "050 fix: an unknown recharge_while requirement is refused at load")
