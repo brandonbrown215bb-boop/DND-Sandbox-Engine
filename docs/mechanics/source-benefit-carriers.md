@@ -83,9 +83,28 @@ quantities and malformed-load refusal; helper-only reconstruction is insufficien
 `mode_choice` and `rule_upgrade` reconstruct ownership from the saved class and
 subclass at the character's class level. Rest/activation choices, added modes,
 exclusive alternatives and event windows retain their existing identities on
-reload. Species, feat and item acquisition of these feature types remains
-outside the current reconstruction host; the broader owned-features follow-up
-is still open.
+reload. Species, species-granted feats and exact equipped item copies also
+acquire these feature types through `OwnedFeatureSources`. Items requiring
+attunement grant them only to their attuned owner. Chosen/background/level-up
+feat acquisition and ordinary HUD controls for these modes remain follow-ups.
+
+Item pools and upgrade options belong to the exact copy. Unequipping or
+transferring it stamps its remaining uses and remembered option on its record;
+reacquisition and reload restore those values without replaying acquisition.
+Suppression and form merging disable benefits and activation, while expiry,
+end conditions and stored capacity still use the owned upgraded rule. Two
+identical copies have separate pools; the same definition's same power grants
+its benefits once, with copies considered in sorted identity order.
+
+Item activation modes may declare `uses_per: "dawn"`. Campaign day boundaries
+refill carried copies, container contents, attached children and copies in saved
+rooms. Optional `recharge_while: "equipped"` or `"attuned"` checks that specific
+condition: equipped does not imply attuned. Suppression/merging alone does not
+block recharge. Equipped item powers recovering on a rest also use their owned
+upgraded capacity. Unheld copies refill their record stamp using their remembered
+upgrade option. Rest choices cannot declare `recharge_while`. Mid-combat dropped
+copies are not visited until returned to a room or inventory; there is no
+separate sunrise clock.
 
 An `actor_projection` with `equipment: ["dropped"]` sets removable equipped
 copies aside in the backpack. It refuses before casting costs or form changes

@@ -4,9 +4,11 @@ extends RefCounted
 ## remembered-option, dawn-recovery and explicit-suppression decisions.
 
 const BLADE := "fixture:b050_blade"
+const QUELL := "fixture:b050_quell"
 
 static func load_fixtures() -> void:
 	Batch049Checks.load_fixtures()
+	if DataLoader.get_spell(QUELL).is_empty(): DataLoader._load_json_file("res://data/fixtures/batch_050/spells/quell.json", "spell")
 	if not DataLoader.get_item(BLADE).is_empty(): return
 	DataLoader._load_json_file("res://data/fixtures/batch_050/items/blade.json", "item")
 

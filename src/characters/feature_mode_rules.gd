@@ -28,7 +28,7 @@ static func validate_rule(f: Variant, allow_dawn: bool = false) -> String:
 	if not modes_error.is_empty(): return modes_error
 	if f.boundary == "rest":
 		if str(f.get("rest", "")) not in RESTS: return "rest mode_choice requires rest short_rest or long_rest"
-		for key in ["uses", "uses_per", "duration_seconds", "die", "targets", "end_on", "allow_reselect", "switch_events"]:
+		for key in ["uses", "uses_per", "duration_seconds", "die", "targets", "end_on", "allow_reselect", "switch_events", "recharge_while"]:
 			if f.has(key): return "rest mode_choice cannot declare activation field '%s'" % key
 		return ""
 	if f.has("switch_events") and not switch_events_error(f.switch_events).is_empty(): return switch_events_error(f.switch_events)

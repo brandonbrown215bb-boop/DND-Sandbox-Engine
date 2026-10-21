@@ -142,7 +142,8 @@ static func sync(actor: Character, restoring: bool = false) -> Array:
 		var feature := actor.get_feature(str(id))
 		if feature.get("type", "") != "mode_choice" or feature.get("boundary", "") != "activation": continue
 		var pool := str(feature.get("resource_id", id))
-		var maximum := maxi(0, actor.get_feature_max_uses(pool))
+		# Suppression/merging disables benefits, not the copy's stored capacity.
+		var maximum := maxi(0, int(RuleUpgradeRules.owned_view(func(): return actor.get_feature_max_uses(pool))))
 		var copy := str(feature.get("source_instance_id", ""))
 		var record: Variant = records.get(copy) if not copy.is_empty() else null
 		if record is Dictionary and record.get("state", {}).get("feature_uses", {}).has(pool):
@@ -217,13 +218,14 @@ static func recover_dawn(actor: Character) -> Array:
 	if actor == null or actor.inventory == null: return refilled
 	for copy_id in actor.inventory.copies.records.keys():
 		var record: Dictionary = actor.inventory.copies.records[copy_id]
+		var equipped := actor.inventory.copies.equipped.values().has(copy_id)
 		for feature in _dawn_features(record):
 			var pool := str(feature.get("resource_id", feature.id))
 			if actor.acquired_features.has(str(feature.id)):
-				if not _recharge_allowed(record, feature, true): continue
+				if not _recharge_allowed(record, feature, equipped): continue
 				actor.feature_uses[pool] = maxi(0, int(RuleUpgradeRules.owned_view(func(): return actor.get_feature_max_uses(pool)))) # Review 050 R1: owned max, even suppressed/merged.
 				refilled.append(pool)
-			elif _recharge_allowed(record, feature, false):
+			elif _recharge_allowed(record, feature, equipped):
 				_refill_stamp(record, feature)
 				refilled.append(pool)
 		refilled.append_array(_recover_nested(record))
@@ -259,15 +261,18 @@ static func _recover_nested(record: Dictionary) -> Array:
 	if contents is Dictionary:
 		for key in contents:
 			if contents[key] is Array: out.append_array(recover_dawn_records(contents[key]))
+	var attached: Variant = record.get("state", {}).get("attached", {})
+	if attached is Dictionary: out.append_array(recover_dawn_records(attached.values()))
 	return out
 
 static func _dawn_features(record: Dictionary) -> Array:
 	return item_features(DataLoader.get_item(str(record.get("definition_id", ""))), str(record.get("instance_id", ""))).filter(func(f): return f.type == "mode_choice" and str(f.get("uses_per", "")) == "dawn")
 
-## held_and_acquired: the copy is equipped (and attuned if required) by its holder.
-static func _recharge_allowed(record: Dictionary, feature: Dictionary, held_and_acquired: bool) -> bool:
+## Equipped and attuned are separate requirements; an inactive equipped copy
+## can still recharge if its text requires only being equipped.
+static func _recharge_allowed(record: Dictionary, feature: Dictionary, equipped: bool) -> bool:
 	match str(feature.get("recharge_while", "")):
-		"equipped": return held_and_acquired
+		"equipped": return equipped
 		"attuned": return not str(record.get("state", {}).get("attuned_to", "")).is_empty()
 	return true
 

@@ -42,7 +42,12 @@ The old "two copies never stack" check now asserts that each copy owns its featu
 ## Count updates
 None. This is a fix batch with no new vocabulary slices; counts stay as proposed in 047-049.
 
-## Decisions for Brandon
-1. Identical copies keep separate pools (2 blades = 4 uses of a power whose bonus applies once). This is accepted as built; confirm.
-2. Copies in rooms or nested in containers don't recharge at dawn until carried. The SRD's dawn recharge is item-side, so this is a known limit; consider a card.
-3. The 047 chooser-before-validate_actor note is still open.
+## Current boundary after the final review
+
+The owner already chose separate pools and item-side dawn recovery. There is
+no additional owner confirmation after successful review, repair and merge.
+The later fix reaches rooms, containers and attached children; equipped and
+attuned conditions are separate. The final Rook review repairs and checks are
+recorded in [the existing build note](batch-050-build.md#rooks-final-review-corrections).
+The 047 chooser-before-validate_actor note and mid-combat dropped-item dawn
+limit remain open, alongside the separately tracked feat, HUD and volume work.

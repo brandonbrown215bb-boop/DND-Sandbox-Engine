@@ -62,3 +62,29 @@
 - An item power may declare `"recharge_while": "equipped" | "attuned"` (dawn powers only, loader-validated); then dawn recharge happens only while that holds. Fixture `fixture:b050_bound_blade` uses `attuned`.
 - Logic: fresh d2636c4 baseline 5431/0 -> 5437/0 (+6 checks in `_dawn_anywhere`). Scenarios 031-050 and shared_spell_flow pass with the same ok counts.
 - Remaining limit: items dropped mid-combat (`dropped_combat_items`) are not visited until they return to a room or inventory.
+
+## Rook's final review corrections
+
+Three additional Godot probes failed at `a5d56c6`: acquisition refresh or JSON
+restore while suppressed/merged reduced an upgraded pool from 3 to 2; attached
+copies missed dawn; and an equipped but unattuned copy incorrectly failed a
+`recharge_while: "equipped"` condition. The fixes use owned capacity in `sync`,
+traverse attached children, and check the equipped ledger separately from
+feature acquisition. The same capacity bug also affected rest recovery; acquired
+item modes now refill to their owned maximum on either rest. Rest choices also
+refuse the dawn-only recharge field.
+
+`Review050Checks` S5-S8 cover these failures, including actual short and long
+rests. The 050 integration now
+casts a valid suppression spell, equips an unrelated item, saves while the
+suppression remains active, reloads, and lifts it without losing the upgraded
+pool or remembered option. An independent source reviewer found no remaining
+blockers in these bounded fixes. Full Windows Godot logic: **5449 passed, 0
+failed** (original head: 5437/0). The source contract is recorded in
+[source carriers](../mechanics/source-benefit-carriers.md#modes-forms-and-exact-item-state).
+
+Ten selected integration scenarios passed: 031, 037, 038, 041, 044, 047, 048,
+049, 050 and `shared_spell_flow`. After the final rest-capacity correction,
+full logic and 049/050 passed again (050: 12 assertions). All runs used the
+supported Windows runner with bootstrap, parse and boot gates; no concurrent
+Godot processes or bypassed checkpoint guards.

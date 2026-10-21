@@ -2058,7 +2058,12 @@ func _restore_features_for_cadences(cadences: Array[String]) -> void:
 	for feature in features:
 		var resets_on: String = feature.get("uses_per", "")
 		if resets_on in cadences:
-			feature_uses[feature["id"]] = get_feature_max_uses(str(feature["id"]), feature)
+			var id := str(feature["id"])
+			# An inactive item's own upgrades still define its stored capacity.
+			if feature.get("type", "") == "mode_choice" and acquired_features.has(id) and not str(feature.get("source_instance_id", "")).is_empty():
+				feature_uses[id] = int(RuleUpgradeRules.owned_view(func(): return get_feature_max_uses(id, feature)))
+			else:
+				feature_uses[id] = get_feature_max_uses(id, feature)
 
 
 func _restore_pact_magic_slots() -> void:
