@@ -17,11 +17,14 @@ build the specific world capabilities those implementations still need. Reuse
 completed pieces rather than repeating their proof because a broader requirement
 remains open.
 
-The three initial Grokbot handoffs and their playtest repairs landed in PRs
-#16–19. Their [accepted boundaries](docs/planning/vocabulary-slices.md#pr16-18-validation)
-retain the unfinished feat acquisition, mode/upgrade controls, volume and item
-measurement/role work. Do not reassign completed chooser or ownership work.
-Legal placement is the next additional shared world assignment.
+The initial Grokbot handoffs and playtest repairs landed in PRs #16–19.
+PRs #20/#24 close the test-harness false-pass gaps; #21/#23 add bounded chosen-feat
+acquisition and combat mode/upgrade controls. Their
+[accepted boundaries](docs/planning/vocabulary-slices.md#pr20-24-validation)
+retain fixture-only feat proof, missing backgrounds and feat mechanics, action
+costs for real mode content, and volume/item measurement/role work. Do not
+reassign completed chooser, ownership or control wiring. Legal placement is the
+next additional shared world assignment.
 
 The owner's instruction to review, fix and merge accepts the reviewed work when
 that workflow completes. Record acceptance and its bounded limits in the slice

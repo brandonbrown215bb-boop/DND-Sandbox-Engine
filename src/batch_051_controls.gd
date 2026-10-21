@@ -70,5 +70,16 @@ static func run(h: Node) -> void:
 		var loaded := SaveManager.load_game(slot)
 		var nc: Character = PartyManager.characters.get(c.character_id, null)
 		h._assert(loaded and nc != null and nc != c and nc.origin_feat == Batch051Checks.VIGIL and nc.feature_modes == modes and int(nc.feature_uses[Batch051Checks.STANCE]) == 2 and nc.features.filter(func(f): return str(f.id) == Batch051Checks.STANCE).size() == 1, "051 actual real load keeps both feats, the active stance and its uses exactly once")
+		var malformed: Dictionary = SaveManager._read_save(slot).duplicate(true)
+		var bad_slot := slot + "_bad_ability"
+		var bad_character: Dictionary = malformed.get("party", {}).get("characters", {}).get(c.character_id, {})
+		bad_character.ability_scores["STR"] = 10
+		bad_character.ability_scores["DEX"] = 10
+		var bad_file := FileAccess.open(SaveManager.SAVE_DIR + bad_slot + ".sav", FileAccess.WRITE)
+		if bad_file != null:
+			bad_file.store_string(JSON.stringify(malformed))
+			bad_file.close()
+		h._assert(bad_file != null and not SaveManager.load_game(bad_slot) and PartyManager.characters.get(c.character_id) == nc and PlayerManager.get_player(0).get("character") == nc and nc.feature_modes == modes and int(nc.feature_uses[Batch051Checks.STANCE]) == 2, "051 actual unmet saved feat ability prerequisite refuses before replacing the live character, modes or uses")
+		SaveManager.delete_save(bad_slot)
 		SaveManager.delete_save(slot)
 	h._exit_test()

@@ -354,6 +354,7 @@ func set_mode(m: Mode) -> void:
 
 ## Draw/update the HUD.
 func update_hud(active_char: Character, tracker: InitiativeTracker) -> void:
+	if active_character != active_char: _mode_popup_serial += 1
 	active_character = active_char
 	if get_node_or_null("Root") is VttShell:
 		$Root.active_character = active_char
@@ -380,7 +381,7 @@ func update_hud(active_char: Character, tracker: InitiativeTracker) -> void:
 		# Disable features button if character has no active features
 		var has_active := not FamiliarRules.state(active_char).is_empty()
 		for f in active_char.features:
-			if f.get("type", "") in ["active", "triggered"]:
+			if f.get("type", "") in ["active", "triggered", "mode_choice"]:
 				has_active = true
 				break
 		if active_char.class_id == "familiar":

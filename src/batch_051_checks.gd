@@ -110,6 +110,18 @@ static func _tamper(check: Callable) -> void:
 		if dto.feature_choices[id] == ["feat:" + GRIT]: asi = id
 	var epic := dto.duplicate(true)
 	epic.feature_choices[asi] = ["feat:" + CAPSTONE]
+	var unmet_ability := dto.duplicate(true)
+	unmet_ability.feature_choices[asi] = ["feat:" + BRAINY]
+	var dex_only := dto.duplicate(true)
+	dex_only.ability_scores["STR"] = 10
+	dex_only.ability_scores["DEX"] = 13
+	check.call(not ClassProgression.saved_choices_error(unmet_ability).is_empty() and ClassProgression.saved_choices_error(dex_only).is_empty(), "051 saves enforce the feat's permanent ability prerequisite and accept either qualifying ability")
+	var malformed_refused := true
+	for invalid in [null, "18", [], {}, 13.5]:
+		var malformed := dto.duplicate(true)
+		malformed.ability_scores["STR"] = invalid
+		malformed_refused = malformed_refused and not ClassProgression.saved_choices_error(malformed).is_empty()
+	check.call(malformed_refused, "051 malformed saved feat ability score types refuse without conversion errors")
 	var wrong_origin := dto.duplicate(true)
 	wrong_origin.origin_feat = GRIT
 	var dup := dto.duplicate(true)

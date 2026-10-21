@@ -99,7 +99,19 @@ static func saved_error(dto: Dictionary) -> String:
 	for feat_id in picks:
 		var feat := DataLoader.get_feat(feat_id)
 		if feat.is_empty(): return "Chosen feat '%s' is unknown" % feat_id
-		if level < int(feat.get("prerequisite", {}).get("level", 1)): return "Chosen feat '%s' needs a higher level" % feat_id
+		var pre: Dictionary = feat.get("prerequisite", {})
+		if level < int(pre.get("level", 1)): return "Chosen feat '%s' needs a higher level" % feat_id
+		if pre.has("abilities_any"):
+			var saved_scores: Variant = dto.get("ability_scores", {})
+			if not saved_scores is Dictionary: return "Chosen feat ability scores are invalid"
+			for value in saved_scores.values():
+				if not (value is int or value is float) or not is_finite(float(value)) or float(value) != floorf(float(value)): return "Chosen feat ability scores are invalid"
+			var scores := AbilityScores.new()
+			scores.from_dict(saved_scores) # The saved permanent scores, without projected/item bonuses.
+			var met := false
+			for ability in pre.abilities_any:
+				if scores.get_permanent_score(str(ability)) >= int(pre.abilities_any[ability]): met = true
+			if not met: return "Chosen feat '%s' ability prerequisite is not met" % feat_id
 		if seen.has(feat_id) and not bool(feat.get("repeatable", false)): return "Feat '%s' is taken more than once" % feat_id
 		seen[feat_id] = true
 	return ""

@@ -112,7 +112,7 @@ records the verified repairs.
 |---|---|
 | Form/equipment chooser — #16 | Accepted combat-HUD chooser, including cancellation, stale answers and chosen-form save/load. Native Wild Shape conversion, ground drops and item-to-actor placement remain separate follow-ups. The chooser-before-actor-validation note remains open. |
 | Item types/measurements — #17 | Accepted type support, 35 source-backed catalog weights and real backpack weight limits. Containers remain explicitly partial: volume is not enforced. Worn wondrous slots cover head/feet; staffs do not yet act as Quarterstaffs or generic focuses. Existing real staff/focus/figurine conversions remain separate. The pre-existing room-placement path still turns unknown weight into 1 lb. (Q-20261020-230919-ac39); the broader unknown-measurement guarantee remains unfinished there. |
-| Species/feat/item modes/upgrades — #18 plus #19 | Accepted species/species-granted-feat acquisition and exact equipped/attuned item ownership. Equipped drops preserve spent uses; suppression/merging preserve owned capacity and still process ending conditions; identical copies keep separate pools; missing species feat references fail loading. Chosen/background/level-up feat acquisition (Q-20261021-004820-aaf1) and player mode/alternative controls (Q-20261021-004820-732c) remain unfinished. |
+| Species/feat/item modes/upgrades — #18 plus #19 | Accepted species/species-granted-feat acquisition and exact equipped/attuned item ownership. Equipped drops preserve spent uses; suppression/merging preserve owned capacity and still process ending conditions; identical copies keep separate pools; missing species feat references fail loading. PRs #21/#23 supply chosen Origin/ASI feat acquisition and combat mode/alternative controls within the bounded follow-up below; backgrounds, real feat content and missing feat mechanics remain unfinished. |
 
 The copy remembers its chosen option across unequip, transfer and reload. Dawn
 recovery reaches carried, contained, attached and saved-room copies, with separate
@@ -124,6 +124,41 @@ Suppression must explicitly list `features` to mute item modes/upgrades; no SRD
 spell conversion is claimed. The owner chose partial weight-only containers;
 volume work remains Q-20261021-004820-65fc. These choices require no new sign-off.
 
+<a id="pr20-24-validation"></a>
+
+### Accepted harness and control follow-ups: PRs #20/#21/#23/#24
+
+PRs #20/#24 make registered check load/compile failures and runtime script errors
+fail the logic runner and viewport scenarios. The Windows wrappers still reject
+missing success/gate markers. Injected runtime failures in each harness return
+exit 1; valid scenarios retain their normal result.
+
+PR #21 accepts fixture-backed Origin selection in creation and an eligible feat
+instead of a pending ASI on the sheet. Ownership, modes and pools reconstruct
+once. Final acceptance repairs saved ability prerequisites: malformed/unmet
+permanent scores refuse before live session replacement. PR #23 accepts the
+combat HUD mode/upgrade controls, exact-copy gates, cancellation and stale
+answers. Final acceptance invalidates old popups when the owner leaves and later
+regains the active turn. Fresh-process safe-save recovery retains chosen feats,
+active mode/time, spent uses, exact copies and upgrade choices without replay.
+
+These are continuations: the verified slice count remains **138**. No playable
+feat catalog is included. Creation currently offers a free Origin choice because
+backgrounds are absent. Feat ability increases, class/feature prerequisites,
+Fighting Style grants and the level-19 alternative feat path remain open. Mode
+activation has no action cost in the supported fixtures; real content requiring
+one needs that generic cost support. Existing reselect/switch semantics remain.
+There is no overworld/sheet mode panel or end-early control. The
+[source-carrier contract](../mechanics/source-benefit-carriers.md#modes-forms-and-exact-item-state)
+owns the syntax and these limits. SRD feat work should stage complete source-backed
+candidates and list missing operations before any promotion into loaded data.
+
+Windows acceptance passed full logic and the selected 049/050/051/052, creation,
+sheet-context and action-resource flows. The normal-creation matrix still has the
+same 16 failures on unchanged main (outdated equipment/style/Artificer expectations);
+it is not certified by this acceptance. Existing PR discussions retain exact
+counts and the final regression/injection results; raw logs stay ignored.
+
 ### Ready assignments using existing building blocks
 
 | Assignment | Owning slices | Concrete implementation and finish line |
@@ -131,7 +166,7 @@ volume work remains Q-20261021-004820-65fc. These choices require no new sign-of
 | Form and equipment choices — delivered | S-163/S-164 | PRs #16/#19 complete the declared combat chooser. Do not reassign it. Actual ground drops remain the placement/world-copy continuation below. |
 | Exact target choices in existing controls | S-127/S-168/S-169/S-196/S-210 | Separate small UI changes: offer an authored weapon damage-type choice at its declared activation/hit window; choose an exact tether for escape/rescue; choose an exact compartment/content/attached part instead of first-fit/last-out. Reuse `AttackProfileRules`, `TetherRules`, `ContainerRules` and `AttachmentRules`. Demonstrate two eligible options and affect only the selected identity. Reach/mastery replacements still need the profile extension below. |
 | Remaining item measurements and roles | S-032/S-196, supporting S-165 | PR #17 delivers the types and weight subset above. Fix unknown-weight room placement (ac39); keep volume explicitly partial until 65fc has source-backed measurements. Staff weapon/focus roles and additional worn slots are separate source-backed consumers, not reasons to rebuild the type loader. Runtime owns game loader/data/schema changes; editor changes remain a separate handoff. |
-| Chosen feats and player mode/upgrade controls | S-049/S-050/S-084/S-085/S-103/S-104 | PRs #18/#19 deliver species, species-granted feats and exact-item reconstruction. Continue with ordinary chosen/background/level-up feat acquisition (aaf1) and HUD mode/alternative controls (732c). Reuse the repaired ownership and pools; prove choices, cancellation, source removal and reload without granting fresh uses. Do not repeat the class/subclass or item ownership repair. |
+| Chosen feats and player mode/upgrade controls — bounded delivery | S-049/S-050/S-084/S-085/S-103/S-104 | PRs #21/#23 complete fixture-backed Origin/ASI feat acquisition and combat controls within the acceptance above. Next work is backgrounds/grants, missing feat prerequisites and ability benefits, action costs for real modes, and source-backed content staging. Reuse existing ownership, controls and pools; do not reassign the completed wiring or promote incomplete feat shells. |
 | Upgrade consumers beyond modes | S-084/S-085, reusing S-039/S-021/S-146 | Extend source-owned upgrades to the actual Extra Attack count and base-AC alternatives using existing stat alternatives and attack-unit budgets. Define the supported data fields and consumers explicitly; do not claim that changing a mode parameter already changes those rules. Prove exclusive alternatives, removal/reversion, reload and that switching an option cannot supply a fresh parent action or undo spent attack units. Reach/mastery consumers belong with the invocation-profile branch below. |
 | Maximum-HP rules on monster records | S-130/S-131 | Extend `MaxHpSourceRules` and actual combat effect dispatch to Dictionary targets using the existing formula, clamp, periodic/cure and zero-maximum policies. Carry source ownership through removal and the encounter record's existing capture path where that record persists. Prove stacked changes/removal orders and zero-maximum remains on a real monster target; do not build a separate monster rules interpreter or general monster-save framework. |
 | Enforce item degradation and remaining properties | S-060/S-203 | `LastChargeRules` currently records `keep_properties` in a receipt; enforce the declaration in supported property consumers. Reuse per-copy `MagicPropertyRules` queries where appropriate, retaining declared mundane weapon/armor properties while ending lost magic. Audit actual item spell permissions, benefits, effects, attachment sets and recovery consumers. Spend the last charge through normal action/reaction casting, prove independent copies and reload, and preserve the native wand path until its deliberate conversion. Unsupported properties must be rejected explicitly. |

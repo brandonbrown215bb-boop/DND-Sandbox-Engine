@@ -3,7 +3,7 @@ extends RefCounted
 ## Batch 052 scenario: the real combat HUD feature list and its mode popups.
 
 static func _index(combat: Node, prefix: String) -> int:
-	combat.hud._show_feature_selection()
+	combat.hud.btn_features.pressed.emit()
 	for i in combat.hud.features_registered.size():
 		if combat.hud.feature_list.get_item_text(i).begins_with(prefix): return i
 	return -1
@@ -43,6 +43,12 @@ static func run(h: Node) -> void:
 		await h.get_tree().process_frame
 	h._p_focus(combat, c)
 	var hud: Node = combat.hud
+	var saved_features := c.features.duplicate(true)
+	c.features.assign(c.features.filter(func(f): return str(f.get("type", "")) in ["mode_choice", "rule_upgrade"]))
+	hud.update_hud(c, combat.tracker)
+	h._assert(not hud.btn_features.disabled, "052 actual the Features button is enabled for an actor with only modes and upgrades")
+	c.features.assign(saved_features)
+	hud.update_hud(c, combat.tracker)
 	var listed := _index(combat, "Activate: Mode: Tide Surge (2/2 uses)") >= 0 and _index(combat, "Choose upgrade: Mode: Blade Ward") >= 0 and _index(combat, "Choose mode: Mode: Tide Mood") >= 0
 	h._assert(listed, "052 actual the combat HUD lists owned modes with uses and an upgrade picker")
 	var before := Batch052Checks.snapshot(c)
@@ -50,6 +56,12 @@ static func run(h: Node) -> void:
 	h._assert(menu != null and menu.get_item_text(0) == "Cancel" and menu.item_count == 3, "052 actual the popup offers Cancel plus exactly the declared modes")
 	await _press(h, menu, "Cancel")
 	h._assert(Batch052Checks.snapshot(c) == before and int(c.feature_uses[Batch052Checks.SURGE]) == 2, "052 actual Cancel spends nothing (uses unchanged 2/2)")
+	var prior_turn := await _open(h, combat, "Activate: Mode: Tide Surge", "Activate: Tide Surge")
+	hud.update_hud(null, combat.tracker)
+	hud.update_hud(c, combat.tracker)
+	var prior_open := prior_turn != null
+	await _press(h, prior_turn, "flow")
+	h._assert(prior_open and Batch052Checks.snapshot(c) == before and int(c.feature_uses[Batch052Checks.SURGE]) == 2, "052 actual a popup from before the owner left and regained the active turn spends nothing")
 	var old := await _open(h, combat, "Activate: Mode: Tide Surge", "Activate: Tide Surge")
 	var newer := await _open(h, combat, "Activate: Mode: Tide Surge", "Activate: Tide Surge", old)
 	var both_open := old != null and newer != null

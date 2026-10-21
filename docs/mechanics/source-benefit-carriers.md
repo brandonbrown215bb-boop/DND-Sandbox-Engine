@@ -85,8 +85,34 @@ subclass at the character's class level. Rest/activation choices, added modes,
 exclusive alternatives and event windows retain their existing identities on
 reload. Species, species-granted feats and exact equipped item copies also
 acquire these feature types through `OwnedFeatureSources`. Items requiring
-attunement grant them only to their attuned owner. Chosen/background/level-up
-feat acquisition and ordinary HUD controls for these modes remain follow-ups.
+attunement grant them only to their attuned owner. Chosen Origin feats and feats
+taken instead of an earned Ability Score Improvement also supply these features.
+`FeatRules` accepts `category` (`origin`, `general`, `fighting_style`, `epic_boon`),
+boolean `repeatable`, and `prerequisite` with `level` and/or `abilities_any`.
+Unsupported prerequisites fail loading; repeatable feats cannot own mode/upgrade
+features because their feature IDs would collide. Live choices require permanent
+ability scores, a qualifying category and an unused entitlement. Saves validate
+known choices, entitlement, level, permanent ability prerequisites and duplicate
+policy before replacing the session. Legacy saves may omit `origin_feat`.
+
+The creation Equipment step offers an Origin picker when qualifying content is
+loaded; the sheet offers Take feat instead for a pending improvement. This is a
+free Origin choice pending backgrounds, not background-rule certification. No
+playable feat catalog ships: fixture feats prove the paths. Feat ability gains,
+class/feature prerequisites, Fighting Style grants and the level-19 alternative
+feat path remain unfinished. Stage SRD candidates separately until their complete
+rules and grant routes work; do not load empty feat shells into the game.
+
+The combat HUD feature list offers Activate, Choose/Change/Switch mode and Choose
+upgrade when legal, including modes from class, species, feats and exact copies.
+It shows uses/time and disabled merged/suppressed copies. Popup cancellation,
+supersession, an owner change (including away and back), and changed offer state
+refuse before expenditure. Activation refuses Incapacitated and implied conditions
+before spending uses. Already-active reselect/switch retains the existing rule
+semantics. Upgrade alternatives require the parent power to be inactive. Current
+mode definitions declare no action cost; these controls spend a use only. Real
+content requiring an Action/Bonus Action needs that generic cost support first.
+Overworld/sheet mode panels and an end-early control remain outside this host.
 
 Item pools and upgrade options belong to the exact copy. Unequipping or
 transferring it stamps its remaining uses and remembered option on its record;

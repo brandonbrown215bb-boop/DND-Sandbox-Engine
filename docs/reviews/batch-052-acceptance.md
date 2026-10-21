@@ -47,3 +47,11 @@ Validated on a scratch merge of this branch + the harness branch: full run_tests
 1. Activation economy: mode activations spend no action/Bonus Action (builder limit). SRD features of this shape usually cost a Bonus Action. Needs a card once real SRD mode content lands.
 2. R1 refuses activation while Incapacitated for every activation rule, not only those with `end_on: incapacitated`. Reselect/switch of an already-active mode are not gated (they spend nothing). Confirm.
 3. Merge order: #20 (+ harness PR) → #21 → #23.
+
+## Rook's final acceptance corrections
+
+Final acceptance also repairs stale popups after the owner leaves and regains the
+active turn, and enables the Features button for mode-only actors. Both defects
+were reproduced; production regressions now use the button signal and cover the
+previous-turn answer. Current limits belong in the slice registry and source-carrier
+contract. The original review above predates these repairs.
