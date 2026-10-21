@@ -79,7 +79,7 @@ static func rule(actor: Character, feature_id: String) -> Dictionary:
 static func owned_rule(actor: Character, feature_id: String) -> Dictionary:
 	var feature := actor.get_feature(feature_id)
 	if feature.get("type", "") != "mode_choice": return {}
-	return RuleUpgradeRules.effective(actor, feature)
+	return RuleUpgradeRules.owned_view(func(): return RuleUpgradeRules.effective(actor, feature)) # Review 050 R1.
 
 const INCAPACITATING := ["incapacitated", "unconscious", "paralyzed", "petrified", "stunned"]
 

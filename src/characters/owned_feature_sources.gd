@@ -221,7 +221,7 @@ static func recover_dawn(actor: Character) -> Array:
 			if feature.type != "mode_choice" or str(feature.get("uses_per", "")) != "dawn": continue
 			var pool := str(feature.get("resource_id", feature.id))
 			if actor.acquired_features.has(str(feature.id)):
-				actor.feature_uses[pool] = maxi(0, actor.get_feature_max_uses(pool))
+				actor.feature_uses[pool] = maxi(0, int(RuleUpgradeRules.owned_view(func(): return actor.get_feature_max_uses(pool)))) # Review 050 R1: owned max, even suppressed/merged.
 			else:
 				# Not owned right now: drop the spent stamp so the next acquisition starts full.
 				actor.feature_uses.erase(pool)
