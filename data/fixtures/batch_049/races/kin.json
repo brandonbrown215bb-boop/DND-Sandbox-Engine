@@ -1,0 +1,23 @@
+[
+  {
+    "id": "fixture:b049_kin",
+    "name": "Batch 049 Neutral Species",
+    "description": "Neutral fixture species: a rest-boundary attunement mode and one species-granted feat.",
+    "speed": 6,
+    "size": "medium",
+    "feats": ["fixture:b049_feat"],
+    "features": [
+      {
+        "id": "fixture:b049_kin_aspect",
+        "name": "Kin Aspect",
+        "type": "mode_choice",
+        "boundary": "rest",
+        "rest": "long_rest",
+        "modes": [
+          {"id": "stone", "benefits": [{"stat": "AC", "amount": 1}]},
+          {"id": "wind", "benefits": [{"stat": "speed", "amount": 1}]}
+        ]
+      }
+    ]
+  }
+]

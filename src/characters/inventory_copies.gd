@@ -150,6 +150,8 @@ static func record_state_error(record: Dictionary) -> String:
 			return "magic item charges are invalid"
 	elif int(item.get("maximum_charges", 0)) > 0:
 		return "charged magic item is missing its charge state"
+	var pool_error := OwnedFeatureSources.record_error(record) # Review 049 R2.
+	if not pool_error.is_empty(): return pool_error
 	var degraded_error := LastChargeRules.saved_state_error(str(record["definition_id"]), state)
 	if not degraded_error.is_empty(): return degraded_error
 	if state.has("attuned_to") and (not state["attuned_to"] is String or str(state["attuned_to"]).is_empty()):

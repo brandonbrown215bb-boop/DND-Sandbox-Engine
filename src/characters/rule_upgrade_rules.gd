@@ -94,10 +94,21 @@ static func restore(actor: Character, data: Dictionary) -> void:
 	var choices: Variant = data.get("rule_alternatives", {})
 	actor.rule_alternatives = choices.duplicate(true) if choices is Dictionary and saved_error(data).is_empty() else {}
 
+## Review 050 R1: the owned view counts a suppressed or merged copy's upgrades.
+## Activation and benefits stay gated; only end predicates and dawn maxima use it.
+static var _owned_view := false
+
+static func owned_view(fn: Callable) -> Variant:
+	var prior := _owned_view
+	_owned_view = true
+	var out: Variant = fn.call()
+	_owned_view = prior
+	return out
+
 static func upgrades_for(actor: Character, rule_id: String) -> Array:
 	var by_id := {}
 	for feature in actor.features:
-		if feature.get("type", "") == "rule_upgrade" and feature.get("rule", "") == rule_id:
+		if feature.get("type", "") == "rule_upgrade" and feature.get("rule", "") == rule_id and (_owned_view or OwnedFeatureSources.copy_active(actor, feature)): # Batch 050: suppressed "features" covers upgrades too.
 			by_id[str(feature.id)] = feature # One owned upgrade applies once.
 	var ids := by_id.keys()
 	ids.sort()

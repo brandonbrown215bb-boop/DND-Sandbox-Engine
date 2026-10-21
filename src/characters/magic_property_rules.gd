@@ -6,8 +6,9 @@ extends RefCounted
 ## charges and identity are untouched). Destruction is permanent and names its
 ## cause. Unlisted properties, and every mundane field, stay as they were.
 
+## Review 049 R1: "features" names an item copy's owned mode/upgrade rules.
 ## Review 044 R2: "item_effects" names a magic item's authored effects list (Ring of Protection's AC and save bonus).
-const PROPERTIES := ["source_benefits", "spell_permissions", "incoming_negation_rule", "attachment_sets", "item_effects"]
+const PROPERTIES := ["source_benefits", "spell_permissions", "incoming_negation_rule", "attachment_sets", "item_effects", "features"]
 
 static func effect_error(effect: Dictionary) -> String:
 	if effect.keys().any(func(k): return str(k) not in ["type", "properties", "mode"]): return "Magic suppression accepts only type, properties and mode."
