@@ -73,7 +73,13 @@ run_case() {
   return 0
 }
 
-run_case "parse_gate" "res://scenes/parse_gate.tscn" "PARSE GATE PASSED" "$PARSE_TIMEOUT_SECONDS" || FAILED=1
+if ! run_case "parse_gate" "res://scenes/parse_gate.tscn" "PARSE GATE PASSED" "$PARSE_TIMEOUT_SECONDS"; then
+  # Review cafa R2: an unparseable runner or check file makes test_runner.tscn idle
+  # until LOGIC_TIMEOUT_SECONDS (300 s). Stop here, as run_tests.ps1 already does.
+  echo ">> Stopped: project parsing failed. Logs: $LOG_DIR"
+  echo ">> OVERALL: FAILED"
+  exit 1
+fi
 run_case "boot_gate" "res://scenes/boot_gate.tscn" "BOOT GATE PASSED" "$BOOT_TIMEOUT_SECONDS" || FAILED=1
 TEST_SUITE="${TEST_SUITE:-all}"
 case "$TEST_SUITE" in

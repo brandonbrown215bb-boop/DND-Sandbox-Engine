@@ -9,11 +9,13 @@ var _passed := 0
 var _failed := 0
 var _failures: Array[String] = []
 var _logic_groups: Array[String] = []
+var _script_errors := ScriptErrorCounter.new()
 
 func _ready() -> void:
 	print("==================================================")
 	print(" Rook's In-Engine Test Harness (scene runner)")
 	print("==================================================")
+	OS.add_logger(_script_errors) # Review cafa R1.
 	for argument in OS.get_cmdline_args() + OS.get_cmdline_user_args():
 		if argument.begins_with("--logic-groups="):
 			for group in argument.trim_prefix("--logic-groups=").split(",", false):
@@ -144,6 +146,10 @@ func _test_check_script_gate() -> void:
 	var fails := CheckScriptGate.failures({"MissingChecks": null, "BrokenChecks": uncompiled, "Batch050Checks": load("res://src/batch_050_checks.gd")})
 	_assert(fails.size() == 2 and "MissingChecks failed to load" in fails[0] + fails[1] and "BrokenChecks failed to parse" in fails[0] + fails[1], "cafa: a missing script and an uncompiled (unparseable) script both fail the gate; a good one passes: %s" % str(fails))
 	_assert(CheckScriptGate.load_registered("res://src/test_runner.gd").size() >= 20, "cafa: the live runner registers its check classes through the gate")
+	var probe := ScriptErrorCounter.new()
+	probe._log_error("f", "res://x.gd", 1, "", "engine noise", false, Logger.ERROR_TYPE_ERROR, [])
+	probe._log_error("run", "res://y.gd", 7, "", "Invalid call", false, Logger.ERROR_TYPE_SCRIPT, [])
+	_assert(probe.count == 1 and "res://y.gd:7" in probe.first, "Review cafa R1: the runner's logger counts script errors only (%d, %s)" % [probe.count, probe.first])
 
 func _run_group(group: String, check: Callable) -> void:
 	if _logic_groups.is_empty() or "all" in _logic_groups or group in _logic_groups:
@@ -158,6 +164,9 @@ func _assert(cond: bool, msg: String) -> void:
 		print("[FAIL] %s" % msg)
 
 func _report() -> void:
+	# Review cafa R1: a check that died on a SCRIPT ERROR skipped its remaining asserts.
+	if _script_errors.count > 0:
+		_assert(false, "%d SCRIPT ERROR(s) during the logic run aborted check code; first: %s" % [_script_errors.count, _script_errors.first])
 	print("--------------------------------------------------")
 	print(" RESULTS: %d passed, %d failed" % [_passed, _failed])
 	if _failed > 0:
