@@ -10,7 +10,7 @@ const END_REASONS := ["short_rest", "long_rest", "zero_hp", "incapacitated"]
 const DICE := ["d4", "d6", "d8", "d10", "d12"]
 ## S-104: declared events that open a one-use window to switch the active mode.
 const SWITCH_EVENTS := ["hit", "turn_start"]
-const RULE_KEYS := ["id", "name", "type", "description", "boundary", "rest", "modes", "uses", "uses_per", "duration_seconds", "die", "targets", "end_on", "allow_reselect", "switch_events", "source_instance_id", "recharge_while"]
+const RULE_KEYS := ["id", "name", "type", "description", "boundary", "rest", "modes", "uses", "uses_per", "duration_seconds", "die", "targets", "end_on", "allow_reselect", "switch_events", "source_instance_id", "recharge_while", "costs", "activation_seconds", "reaction_trigger"]
 const STATE_KEYS := ["mode", "open", "active", "remaining_seconds", "activation_serial", "rolled", "recipients", "event_serial", "window"]
 
 static func _int(v: Variant, lo: int, hi: int) -> bool:
@@ -28,7 +28,7 @@ static func validate_rule(f: Variant, allow_dawn: bool = false) -> String:
 	if not modes_error.is_empty(): return modes_error
 	if f.boundary == "rest":
 		if str(f.get("rest", "")) not in RESTS: return "rest mode_choice requires rest short_rest or long_rest"
-		for key in ["uses", "uses_per", "duration_seconds", "die", "targets", "end_on", "allow_reselect", "switch_events", "recharge_while"]:
+		for key in ["uses", "uses_per", "duration_seconds", "die", "targets", "end_on", "allow_reselect", "switch_events", "recharge_while", "costs", "activation_seconds", "reaction_trigger"]:
 			if f.has(key): return "rest mode_choice cannot declare activation field '%s'" % key
 		return ""
 	if f.has("switch_events") and not switch_events_error(f.switch_events).is_empty(): return switch_events_error(f.switch_events)
@@ -60,7 +60,57 @@ static func _activation_error(f: Dictionary, allow_dawn: bool = false) -> String
 	if f.has("die") and str(f.die) not in DICE: return "activation mode_choice die must be d4-d12"
 	if f.has("targets") and not _int(f.targets, 1, 6): return "activation mode_choice targets must be 1-6"
 	if f.has("allow_reselect") and not f.allow_reselect is bool: return "allow_reselect must be a boolean"
+	if f.has("costs"):
+		var cost_error := costs_error(f.costs)
+		if not cost_error.is_empty(): return cost_error
+		if f.costs.has("reselect") and not bool(f.get("allow_reselect", false)): return "costs.reselect requires allow_reselect"
+		if f.costs.has("switch") and not f.has("switch_events"): return "costs.switch requires switch_events"
+	# Batch 065: a reaction switch cost needs its own declared trigger (no default).
+	var trigger_error := ReactionTriggers.mode_trigger_error(f)
+	if not trigger_error.is_empty(): return trigger_error
+	if f.has("activation_seconds"):
+		var time_error := activation_seconds_error(f.activation_seconds)
+		if not time_error.is_empty(): return time_error
 	return end_on_error(f.get("end_on", []))
+
+## Batch 057: authored combat-budget costs per activation-boundary act.
+## Omitted acts (or no costs at all) stay free, as every fixture was before.
+const COST_ACTS := ["activate", "reselect", "switch"]
+const COST_TYPES := ["action", "bonus_action", "magic", "reaction", "none"] # Batch 063: magic = the Magic action. Batch 065: reaction (switch only, paid via a declared reaction_trigger).
+
+static func costs_error(value: Variant) -> String:
+	if not value is Dictionary or value.is_empty(): return "costs must be an object of activate/reselect/switch"
+	for act in value:
+		if str(act) not in COST_ACTS: return "costs has unknown act '%s'" % act
+		if not value[act] is String or str(value[act]) not in COST_TYPES: return "costs.%s must be action, bonus_action, magic, reaction or none" % act
+	return ""
+
+## The declared cost of one act on the live rule ("none" when undeclared).
+static func cost(actor: Character, feature_id: String, act: String) -> String:
+	var c: Variant = rule(actor, feature_id).get("costs", {})
+	return str(c.get(act, "none")) if c is Dictionary else "none"
+
+## Batch 064 (Brandon: "Using a mode outside combat should take the time the
+## casting time in its data says."): optional authored activation time per act,
+## in whole seconds (1-86400, the same unit and range as a spell's
+## cast_time_seconds). An act without a declared time takes the time its
+## declared cost names: action, bonus_action and magic are one 6-second round
+## (SRD 5.2.1 "Combat": a round is about 6 seconds), none takes no time.
+const ROUND_SECONDS := 6
+
+static func activation_seconds_error(value: Variant) -> String:
+	if not value is Dictionary or value.is_empty(): return "activation_seconds must be an object of activate/reselect/switch seconds"
+	for act in value:
+		if str(act) not in COST_ACTS: return "activation_seconds has unknown act '%s'" % act
+		if not _int(value[act], 1, 86400): return "activation_seconds.%s must be whole seconds from 1 to 86400" % act
+	return ""
+
+## The data-declared time an act takes (0 when it declares none and is free).
+static func activation_seconds(actor: Character, feature_id: String, act: String) -> int:
+	if act not in COST_ACTS: return 0
+	var t: Variant = rule(actor, feature_id).get("activation_seconds", {})
+	if t is Dictionary and t.has(act): return int(t[act])
+	return 0 if cost(actor, feature_id, act) in ["none", "reaction"] else ROUND_SECONDS # Batch 065: a reaction is instantaneous.
 
 static func end_on_error(value: Variant) -> String:
 	if not value is Array or value.size() > END_REASONS.size(): return "end_on must be an array of end reasons"
@@ -84,6 +134,9 @@ static func owned_rule(actor: Character, feature_id: String) -> Dictionary:
 	return RuleUpgradeRules.owned_view(func(): return RuleUpgradeRules.effective(actor, feature)) # Review 050 R1.
 
 const INCAPACITATING := ["incapacitated", "unconscious", "paralyzed", "petrified", "stunned"]
+
+static func incapacitated(actor: Character) -> bool:
+	return INCAPACITATING.any(func(c): return actor.has_condition(c))
 
 static func _mode(r: Dictionary, mode_id: String) -> Dictionary:
 	for mode in r.get("modes", []):
@@ -128,6 +181,8 @@ static func activate(actor: Character, feature_id: String, mode_id: String, reci
 		ids.append(recipient.character_id)
 	if ids.size() > int(r.get("targets", 1)): return _receipt(false, "too_many_targets")
 	if "zero_hp" in r.get("end_on", []) and actor.current_hp <= 0: return _receipt(false, "end_condition_met")
+	# Review 052 R1: an Incapacitated creature can't act (SRD 5.2.1 Conditions); refuse before the use is spent.
+	if incapacitated(actor): return _receipt(false, "incapacitated")
 	if not actor.use_feature(feature_id): return _receipt(false, "no_uses")
 	var serial := int(actor.feature_modes.get(feature_id, {}).get("activation_serial", 0)) + 1
 	var rolled := 0

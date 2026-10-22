@@ -8,8 +8,10 @@ certify converted catalog content.
 
 ## Count and scope
 
-**226 defined slices: 112 verified, 114 not yet accepted.** Counts measure known
-scope, not time or effort. These totals retain verification through 2026-10-19.
+**226 defined slices: 143 verified, 83 not yet accepted.** Counts measure accepted
+bounded implementations, not time, effort or completion of every clause in a row.
+These totals include reviewed, repaired and merged Batches 034–065 through
+2026-10-21; their remaining limits are recorded below.
 
 SRD 5.2.1 governs the staged core-12 target. Artificer, Mystic and later
 supplements remain outside it. Missing rule bodies stay in source follow-up;
@@ -21,15 +23,15 @@ catalog content as part of every slice.
 | Phase | Defined | Verified | Not yet accepted |
 |---|---:|---:|---:|
 | P1 — Facts, results and grants | 34 | 34 | 0 |
-| P2 — Pools, time and effect state | 50 | 34 | 16 |
-| P3 — Rolls and decisions | 27 | 19 | 8 |
-| P4 — Damage and consequences | 25 | 13 | 12 |
+| P2 — Pools, time and effect state | 50 | 40 | 10 |
+| P3 — Rolls and decisions | 27 | 22 | 5 |
+| P4 — Damage and consequences | 25 | 19 | 6 |
 | P5 — Casting and action composition | 20 | 11 | 9 |
-| P6 — Actors and forms | 23 | 0 | 23 |
+| P6 — Actors and forms | 23 | 12 | 11 |
 | P7 — Space, perception and illusions | 19 | 1 | 18 |
-| P8 — Physical items and bodies | 18 | 0 | 18 |
+| P8 — Physical items and bodies | 18 | 4 | 14 |
 | P9 — Procedures and campaign outcomes | 10 | 0 | 10 |
-| **Total** | **226** | **112** | **114** |
+| **Total** | **226** | **143** | **83** |
 
 ## How to use a row
 
@@ -59,36 +61,232 @@ catalog content as part of every slice.
 - Check the selected implementation and its production evidence together. Fix
   reproduced defects before dependent work; batch size follows behavior. A
   separate acceptance report or owner-decision record isn't required.
+- When the owner directs review, repair and merge, completing that workflow
+  accepts the reviewed implementation; no second owner sign-off is required.
+  Record its verified boundary and remaining work here. Acceptance does not
+  implement missing clauses or close the broader V-series requirement.
 
 ## Current and next queue
 
-No further implementation batch is selected. Follow the owner's request and
-roadmap, reuse completed slices, and select missing work by actual prerequisites.
+The owner selected a completion plan for the missing behavior in merged Batches
+034–046. Use the assignments below and their actual prerequisites. These are
+continuations of existing slice scope, not new S-IDs or new acceptance claims.
 The old numbered prompts and gate chains aren't queues to resume.
 
-## Bounded implementations awaiting acceptance
+<a id="merged-slice-completion-queue"></a>
 
-Batches 034-046 add bounded implementations and production fixtures for 26 of
-the open slices below. `Built; acceptance open` means reuse that code and
-check the remaining finish line; it does not mean the full slice or catalog
-content is accepted. The verified totals above therefore remain unchanged.
-Fixture numbers do not establish SRD rule correctness.
+## Merged-slice completion queue — 2026-10-20
 
-| Slices | Implemented boundary and remaining limit |
+This queue scopes work that can start now and the engine pieces needed by its
+dependent behavior. It is not a claim that all assignments fit into one day.
+The accepted implementations and remaining limits are recorded in the next
+section. Retain their proof; implement and verify the missing part only.
+
+**Initial Grokbot handoffs have landed:** form/equipment chooser, proper
+magic-item types/weight support, and species/species-feat/exact-item ownership.
+The accepted boundaries and unfinished clauses are recorded below. Do not
+reassign completed work or treat the larger queue as additional scope for those
+jobs; continue the named follow-ups using the existing building blocks.
+
+<a id="pr16-18-validation"></a>
+
+### Accepted handoffs and playtest repairs: PRs #16–19
+
+[PR #16](https://github.com/brandonbrown215bb-boop/DND-Sandbox-Engine/pull/16),
+[PR #17](https://github.com/brandonbrown215bb-boop/DND-Sandbox-Engine/pull/17),
+[PR #18](https://github.com/brandonbrown215bb-boop/DND-Sandbox-Engine/pull/18)
+and [PR #19](https://github.com/brandonbrown215bb-boop/DND-Sandbox-Engine/pull/19)
+are merged and accepted within the boundaries below. The final repaired head
+`a495177` and merged main `ab99926` have the same tree. Fixes and continuations
+do not add vocabulary slices: the accepted count remains 138.
+
+The supported Windows Godot runner passed 5,449 logic checks with zero failures.
+Ten selected integrations passed; after the final rest-capacity fix, full logic
+and the affected 049/050 save flows passed again. A focused independent reviewer
+accepted the ownership, recovery and rest fixes. Raw logs and isolated probes
+remain under ignored `.artifacts/reviews/`; the existing
+[build note](../reviews/batch-050-build.md#rooks-final-review-corrections)
+records the verified repairs.
+
+| Assignment | Review boundary and remaining work |
 |---|---|
-| S-093 / S-119 | No-roll Death Saves and source-declared zero-HP damage aftermath. Threshold death without damage, already-zero targets and native Disintegrate conversion remain outside this host. |
-| S-130 / S-126 | Character-owned maximum-HP deltas, periodic/rest boundaries and monster riders; scoped weapon profiles and spell save DCs. Dictionary creatures, spell attack/range changes and a damage-type picker remain outside this host. |
-| S-086 / S-060 | Shared-spell source-end damage/condition follow-ups and exact-copy last-charge payment through the item-charge cast path. Other source kinds, located areas and fully enforced degraded-property retention remain open. |
-| S-103 / S-084 | Rest/activation mode grants and data-only parameter upgrades, with class/subclass saved ownership. Species, feat and item feature acquisition/reconstruction remains open. |
-| S-104 / S-085 | Declared hit/turn-start switch windows, mode additions/removals and exclusive upgrades. This is the mode-choice host, not general Extra Attack, AC or mastery replacement. |
-| S-154 / S-131 | Source-linked bounded actor templates and declared death when a Character's source-owned maximum HP reaches zero. Generic dictionary-creature persistence and broader creation clauses remain open. |
-| S-120 / S-163 | A declared successor actor tied to final death, plus reversible self projections retaining selected statistics and resources. Successor hazards/objects and native Wild Shape conversion remain open. |
-| S-161 / S-164 | Exact-copy/owned-actor bonds and merged, worn or backpack-set-aside equipment policies. Full backpacks refuse before casting; this does not place dropped gear into the world. |
-| S-162 / S-165 | Declared linked-copy loss/replacement and one exact item copy projected into a combat actor. Identity, state and allowed checkpoints persist; fuller zero-HP overflow/reset policies belong to S-166. |
-| S-196 / S-202 | Exact non-nested compartment contents and declared curse removal/lingering policies. These do not establish arbitrary container nesting or every curse's source rules. |
-| S-210 / S-203 | Declared attached parts/required sets and listed magical-property suppression/destruction. Broader equipment properties need their own supported consumers. |
-| S-064 / S-168 | Carried-item active-time budgets and source-owned restraint tethers to a Character caster. Active storage refuses; multi-target tether capacity and independent object anchors remain open. |
-| S-066 / S-169 | One qualified item job per participant, daily progress and immediate loss/rest interruption; declared tether rescue checks/damage. Helpers are party members without a spatial co-location check; independent object anchors remain open. |
+| Form/equipment chooser — #16 | Accepted combat-HUD chooser, including cancellation, stale answers and chosen-form save/load. Native Wild Shape conversion, ground drops and item-to-actor placement remain separate follow-ups. The chooser-before-actor-validation note remains open. |
+| Item types/measurements — #17 | Accepted type support, 35 source-backed catalog weights and real backpack weight limits. Containers remain explicitly partial: volume is not enforced. Worn wondrous slots cover head/feet; staffs do not yet act as Quarterstaffs or generic focuses. Existing real staff/focus/figurine conversions remain separate. The pre-existing room-placement path still turns unknown weight into 1 lb. (Q-20261020-230919-ac39); the broader unknown-measurement guarantee remains unfinished there. |
+| Species/feat/item modes/upgrades — #18 plus #19 | Accepted species/species-granted-feat acquisition and exact equipped/attuned item ownership. Equipped drops preserve spent uses; suppression/merging preserve owned capacity and still process ending conditions; identical copies keep separate pools; missing species feat references fail loading. PRs #21/#23 supply chosen Origin/ASI feat acquisition and combat mode/alternative controls within the bounded follow-up below; backgrounds, real feat content and missing feat mechanics remain unfinished. |
+
+The copy remembers its chosen option across unequip, transfer and reload. Dawn
+recovery reaches carried, contained, attached and saved-room copies, with separate
+equipped/attuned requirements when declared. Acquired item powers recovering on
+a rest retain their owned upgraded capacity while suppressed or merged. Copies
+dropped mid-combat still miss dawn until returned to a room or inventory.
+Identical copies retain separate pools even when their benefits must not stack.
+Suppression must explicitly list `features` to mute item modes/upgrades; no SRD
+spell conversion is claimed. The owner chose partial weight-only containers;
+volume work remains Q-20261021-004820-65fc. These choices require no new sign-off.
+
+<a id="pr20-24-validation"></a>
+
+### Accepted harness and control follow-ups: PRs #20/#21/#23/#24
+
+PRs #20/#24 make registered check load/compile failures and runtime script errors
+fail the logic runner and viewport scenarios. The Windows wrappers still reject
+missing success/gate markers. Injected runtime failures in each harness return
+exit 1; valid scenarios retain their normal result.
+
+PR #21 accepts fixture-backed Origin selection in creation and an eligible feat
+instead of a pending ASI on the sheet. Ownership, modes and pools reconstruct
+once. Final acceptance repairs saved ability prerequisites: malformed/unmet
+permanent scores refuse before live session replacement. PR #23 accepts the
+combat HUD mode/upgrade controls, exact-copy gates, cancellation and stale
+answers. Final acceptance invalidates old popups when the owner leaves and later
+regains the active turn. Fresh-process safe-save recovery retains chosen feats,
+active mode/time, spent uses, exact copies and upgrade choices without replay.
+
+These are continuations: the verified slice count remains **138**. No playable
+feat catalog is included. Creation currently offers a free Origin choice because
+backgrounds are absent. Feat ability increases, class/feature prerequisites,
+Fighting Style grants and the level-19 alternative feat path remain open. Mode
+activation originally had no action cost in these fixtures; PRs #25–37 add
+generic authored costs as recorded below. Existing reselect/switch semantics
+remain. There is no overworld/sheet mode panel or end-early control. The
+[source-carrier contract](../mechanics/source-benefit-carriers.md#modes-forms-and-exact-item-state)
+owns the syntax and these limits. SRD feat work should stage complete source-backed
+candidates and list missing operations before any promotion into loaded data.
+
+Windows acceptance passed full logic and the selected 049/050/051/052, creation,
+sheet-context and action-resource flows. The normal-creation matrix still has the
+same 16 failures on unchanged main (outdated equipment/style/Artificer expectations);
+it is not certified by this acceptance. Existing PR discussions retain exact
+counts and the final regression/injection results; raw logs stay ignored.
+
+### Ready assignments using existing building blocks
+
+<a id="pr25-37-validation"></a>
+#### PRs #25–37: reviewed subset and work remaining
+
+PRs #25–37 are merged with the review repairs and accepted within the boundary
+below. Acceptance of the bounded work does not require completing the remaining
+scope. S-122 and S-155–S-158 add five accepted bounded implementations
+(VS-139–VS-143); mode and reaction work continues existing slices. S-121 remains
+uncompleted. The original requirements and all listed follow-ups remain open.
+Use the [created-actor contract](../mechanics/created-actors-and-placement.md)
+and [mode contract](../mechanics/source-benefit-carriers.md#modes-forms-and-exact-item-state)
+for executable syntax instead of the historical build reports.
+
+| Area | Delivered subset | Still needs to be done; does not block this subset |
+|---|---|---|
+| <a id="vs-139"></a><a id="vs-140"></a>S-121 / S-122 / S-155 | S-122 (VS-139) and S-155 (VS-140): combat creation chooses permitted templates/mixes/counts, reserves distinct single-cell destinations and rechecks before payment. Authored no-space refusal or spending creates no overlapping actor. Material-limited casts reserve distinct eligible remains and consume them once only for an actual created source. | S-121 exit-before-save/outcome settlement; exploration placement; normal item-projection controls, authored placement/failure policy and full-inventory returns; multi-cell bodies, mixed sizes and per-kind policies; broader template parameter choices such as Find Familiar's creature type. |
+| <a id="vs-141"></a>S-156 (VS-141) | Exact actor-ID command rows; authored per-order Action, Bonus Action, Magic action or free costs; range, ownership and affordability refusal; once-per-actor-per-owner-turn commands; Dodge/Attack and declared uncommanded defaults. | Additional orders, Reaction commands with their own trigger, real source-backed consumers. Mixed casts currently require one command policy. Legacy fallback costs/timing are compatibility behavior; new content must declare its own policy. |
+| <a id="vs-142"></a><a id="vs-143"></a>S-157 / S-158 (VS-142/143) | Owner-turn, after-owner and independent initiative; separate own-turn budgets; owner state/control expiry overrides queued orders; living persistent sources survive loss of control. Saved sources re-enter encounters legally. | Other shared-count relationships, owner-turn actors acting after the owner leaves the tracker, linked summons entering with an already downed/dead owner who has no initiative anchor, and broader autonomous movement/hostile control conversion. Live mid-combat tracker persistence is outside the supported save checkpoints. |
+| Mode costs and controls | Declared activation/reselect/switch costs use the existing budget and preserve free undeclared fixtures. The local room panel uses the same state; authored activation time is exposed. | Catalog conversions, overworld/sheet panels, group-recipient choices and end-early controls. Campaign time passing for outside-combat activation remains partial; no clock advances. |
+| Reaction triggers | Declared spell triggers and on-hit mode switches; confirmation rechecks live location, sight, turn, casting and target eligibility before payment. | Hellish Rebuke's actual cast permission; spell attacks, additional swings, opportunity attacks, areas, other damage sources and creature/monster reactors. After-hit triggers cannot alter the triggering attack; Shield retains its existing path. Area/creation/formula/spatial reaction hosts remain unsupported. |
+
+Review regressions reproduce queued orders overriding expiry/death/incapacity,
+unticked owner-turn conditions, summons preventing party defeat, projected-item
+cleanup collisions, smaller material-capped records and invalid reaction payment.
+Repairs also cover initial initiative ordering, chosen-template clearance, plane
+context, stale remains and saved summon encounter entry. Windows logic and
+production-control scenarios supply the acceptance checks; raw logs stay ignored.
+Full Windows logic passed **5,672/0**, and all thirteen new 053–065 scenarios
+passed. Separate-process SaveManager recovery retained exact actor IDs, injured
+HP, control deadlines and a smaller material-capped mixed cast. Valid player-only
+and party checkpoints passed preflight; malformed control deadlines refused in
+both DTO paths. Existing owned-creature, created-undead and 052 mode-control
+flows also passed. The older familiar-delivery check needed a real owned spell
+grant/payment and slot-picker answer instead of a raw catalog command; unchanged
+main reproduced its four original failures. This fixture repair preserves the
+gameplay checks. No manual visual acceptance or catalog completion is implied.
+
+| Assignment | Owning slices | Concrete implementation and finish line |
+|---|---|---|
+| Form and equipment choices — delivered | S-163/S-164 | PRs #16/#19 complete the declared combat chooser. Do not reassign it. Actual ground drops remain the placement/world-copy continuation below. |
+| Exact target choices in existing controls | S-127/S-168/S-169/S-196/S-210 | Separate small UI changes: offer an authored weapon damage-type choice at its declared activation/hit window; choose an exact tether for escape/rescue; choose an exact compartment/content/attached part instead of first-fit/last-out. Reuse `AttackProfileRules`, `TetherRules`, `ContainerRules` and `AttachmentRules`. Demonstrate two eligible options and affect only the selected identity. Reach/mastery replacements still need the profile extension below. |
+| Remaining item measurements and roles | S-032/S-196, supporting S-165 | PR #17 delivers the types and weight subset above. Fix unknown-weight room placement (ac39); keep volume explicitly partial until 65fc has source-backed measurements. Staff weapon/focus roles and additional worn slots are separate source-backed consumers, not reasons to rebuild the type loader. Runtime owns game loader/data/schema changes; editor changes remain a separate handoff. |
+| Chosen feats and player mode/upgrade controls — bounded delivery | S-049/S-050/S-084/S-085/S-103/S-104 | PRs #21/#23 complete fixture-backed Origin/ASI feat acquisition and combat controls within the acceptance above. Next work is backgrounds/grants, missing feat prerequisites and ability benefits, and source-backed content staging. PRs #25–37 add the generic authored action costs; real mode content still needs conversion. Reuse existing ownership, controls and pools; do not reassign the completed wiring or promote incomplete feat shells. |
+| Upgrade consumers beyond modes | S-084/S-085, reusing S-039/S-021/S-146 | Extend source-owned upgrades to the actual Extra Attack count and base-AC alternatives using existing stat alternatives and attack-unit budgets. Define the supported data fields and consumers explicitly; do not claim that changing a mode parameter already changes those rules. Prove exclusive alternatives, removal/reversion, reload and that switching an option cannot supply a fresh parent action or undo spent attack units. Reach/mastery consumers belong with the invocation-profile branch below. |
+| Maximum-HP rules on monster records | S-130/S-131 | Extend `MaxHpSourceRules` and actual combat effect dispatch to Dictionary targets using the existing formula, clamp, periodic/cure and zero-maximum policies. Carry source ownership through removal and the encounter record's existing capture path where that record persists. Prove stacked changes/removal orders and zero-maximum remains on a real monster target; do not build a separate monster rules interpreter or general monster-save framework. |
+| Enforce item degradation and remaining properties | S-060/S-203 | `LastChargeRules` currently records `keep_properties` in a receipt; enforce the declaration in supported property consumers. Reuse per-copy `MagicPropertyRules` queries where appropriate, retaining declared mundane weapon/armor properties while ending lost magic. Audit actual item spell permissions, benefits, effects, attachment sets and recovery consumers. Spend the last charge through normal action/reaction casting, prove independent copies and reload, and preserve the native wand path until its deliberate conversion. Unsupported properties must be rejected explicitly. |
+| Explicit death/destruction without damage | S-119, consuming S-043/S-117 | Expose authored death/destruction settlement independent of a positive-to-zero damage transition. Reuse the existing corpse identity, cause, gear/remains and replacement precedence; do not simulate instant death with a large damage number. Prove a qualifying living target above zero, an already-zero living target, an ineligible target and repeated settlement through a loaded control path. Native Disintegrate conversion is a later source-backed consumer, not proof of the operation. |
+| Work eligibility at an actual location | S-066 | Pass represented room/location and work-site context to `WorkRules`; validate helpers' declared proximity when joining and when accruing time. Unknown location cannot satisfy a proximity requirement. Movement, participant loss and incompatible activity must apply the declared keep/reset policy at the actual interruption boundary. Prove one helper moving away and a long clock jump; retain existing single-job, rest interruption and helper-concentration checks instead of rebuilding them. |
+| Linked-copy loss reasons | S-162 | Pass the actual removal cause through exact-copy transfer/destruction boundaries rather than treating every `take_instance` alike. Let source data declare which causes dispose linked mates; retain the existing authored loss behavior for definitions using it. Do not invent a universal D&D transfer rule. Prove give, stow, drop, sale, destruction and projection independently, including safe refusal and no disposal of unrelated copies. Real content must pin its intended trigger clauses before conversion. |
+
+Item projection/bond player controls can be authored now against existing
+`BondRules`/`ItemProjectionRules` APIs, but their end-to-end projection acceptance
+also needs legal creation placement below. Select by stable actor/copy ID, not
+display name; two identical projected items must remain separately targetable.
+Wire project, dismiss/revert, bond and release where the source permits them,
+revalidate before paying/moving a copy, and handle a full return inventory. A
+button without prepayment placement/failure handling is not completion.
+
+### Building blocks and where they fit
+
+| Building block | Existing slices and prerequisites | Smallest useful delivery and what it unlocks |
+|---|---|---|
+| Legal placement before final settlement | S-121 after S-033/S-043; S-122 adds S-135; S-155 adds S-154 | Combat arrivals and factory controls are delivered in the [PR25–37 boundary](#pr25-37-validation). Continue S-121 legal exit placement before final save/outcome settlement, exploration/item-projection controls and authored failure/payment policy, then safe returns and multi-cell footprints. Reuse `PlacementRules` and `PhysicalFactsRules`; do not rebuild the delivered combat picker. |
+| Created-actor commands, turns and control expiry | S-156 after S-154/S-026; S-157 then S-158 | Exact commands, costs, three timings and declared owner/control defaults are delivered in the [PR25–37 boundary](#pr25-37-validation). Continue shared-count variants, behavior after the owner leaves the tracker, additional orders/autonomous movement and source-backed consumers. Reuse the existing identities/budgets. Animate Objects remains a separate complete conversion. |
+| Located source-end continuation and world outcomes | S-086/S-087/S-120; reuse S-034/S-072/S-148/S-149; placement as needed | Capture source, recipient, final plane/location and exact reason before removal. Connect selected item/mode/actor end producers as well as the current shared-spell route. Invoke a supported heal, timer, room object or area child from that receipt; reuse `LocalRoomRules`, `CombatSpellZones` and existing saved room/area records instead of a new world framework. Add generic data dispatch for the chosen object/hazard kind; creation and source-end cleanup retain their own identities. Use S-184's entry/crossing/turn scopes when a selected hazard needs them. Prove delayed observation, child cancellation/resume, source removal, an actual object/hazard successor and checkpoint recovery without replay. Actor-successor control on either side also consumes command/initiative support. |
+| Ground equipment keeps its exact copies | S-164 continuation after placement; reuse S-049 and existing room-copy transactions | Route the selected form's dropped equipment to actual room/combat ground records at the actor's position, retaining contents, curse policy, attachments, charges and source links. Reuse `LocalRoomRules.place`/inventory transactions and encounter-to-room capture; extend that handoff only where missing. Prevalidate all transfers, then move each copy once. Prove full backpack, another actor picking up a dropped copy, reversion without duplication, and the next allowed checkpoint. Current backpack set-aside remains the accepted bounded behavior until this route replaces it. |
+| One source, several tether recipients; independent object anchors | S-144 plus S-168/S-169; object anchors consume the located-world-record work | Store distinct recipient relations under one original cast source rather than one concentration source per victim. Pay once; escape/rescue removes only the chosen relation, and concentration/source cleanup ends the declared group. Add stable anchor ID/location/HP using existing object records, so moving/destroying the anchor immediately updates affected restraints. Prove two victims, one escape while the other stays bound, anchor destruction and stale rescue. Multi-recipient Character anchors can be built before object anchors; do not wait for the full world branch. Until then, refuse capacity declarations the current host cannot execute. |
+| Item-form return, containment and vessels | S-166 after S-165/S-121/S-109; S-170 after S-168/S-033/S-196; S-171 then S-172; S-167 after S-166/S-196/S-170 | First declare and settle item-form HP reset, overflow and legal return location, including a full backpack. Separately represent actual container occupants with capacity, internal/external location and internal targeting/escape; add legal release before declaring moving containment complete. Then implement a projected vessel whose exact cargo/passengers follow actual movement and declared reversion policy. Reuse exact contents and world movement; do not treat an inventory compartment as creature containment. Prove lethal damage, overflow, blocked return/release, moving cargo, source ending and checkpoints. This completes the missing vessel branch of S-165 rather than narrowing it away. |
+| Invocation-local profile and casting changes | S-126/S-127; S-140 after S-134/S-126; S-141 adds S-154 | Extend the captured attack/cast profile for supported spell attack bonuses and range, weapon reach/mastery, then school/components/timing and duration/concentration/created-actor parameters. Apply transformations at the proper selection/roll/lifetime stage to one invocation, not the catalog definition. Duration/concentration changes must reach source creation and cleanup; creature changes use S-154's template. Prove qualifying and unrelated casts side by side, compatible sources, later choices and no catalog mutation. This branch does not wait for placement unless its chosen consumer creates or moves something. |
+
+### Assignment boundaries and completion checks
+
+- The chooser, item types/measurements, modes/source ownership and the bounded
+  PR25–37 controls have been handed off. Continue the remaining placement hosts. Monster maximum HP,
+  degradation and explicit death can also start without the world branches, but
+  give overlapping Character/inventory/combat edits a single owner at a time.
+  Coordinate further pickers with the existing chooser owner. Extra Attack/AC
+  upgrade consumers are a separate assignment from source ownership, even where
+  they share S-084/S-085; they must not be silently added to that existing job.
+- Reuse delivered created-actor authority and combat factory controls; complete
+  the remaining placement/item-projection hosts. Located source-end/world outcomes
+  then feed ground drops, object anchors and hazard successors; vessel work
+  follows reversion and containment. These are dependency branches, not a demand
+  to finish P2 through P8 in order.
+- Source-declared behavior stays in JSON with no content-ID registration. Use
+  neutral/renamed fixtures for engine proof; pin SRD 5.2.1 clauses separately for
+  real content. No new universal GM system, creature interpreter, pack service or
+  save migration is a prerequisite. Native Wild Shape and catalog-wide conversion
+  remain separate consumers after their replacements cover the actual rules.
+- An assignment finishes with the real supported input/choice path, once-only
+  costs/effects, cancel/stale/refusal/cleanup checks and an independent focused
+  review for shared combat or persistence changes. Add both save DTO checks and
+  fresh-process recovery when durable state changes; retain existing checkpoint
+  limits. Run the supported Windows runner serially, using the affected logic
+  groups/scenarios in [testing](../testing.md). Structural Python checks cannot
+  certify gameplay. Update the owning mechanics contract and this registry's
+  accepted boundary; do not increase the slice count for these continuations.
+
+<a id="accepted-bounded-batches"></a>
+
+## Accepted bounded implementations — Batches 034–046
+
+Batches 034–046 add 26 accepted bounded implementations and production fixtures.
+The owner's review, repair and merge instruction was acceptance of that work;
+the former `Built; acceptance open` labels incorrectly required another sign-off.
+The linked reviews retain their original findings and evidence; later ownership
+and interruption repairs are reflected in the boundaries below. Original row
+requirements remain intact: object/hazard successors in S-120, vessels and
+ordinary item-projection controls in S-165, and other listed gaps remain follow-up
+work. Acceptance neither silently narrows those requirements nor certifies catalog
+content. Fixture numbers do not establish SRD rule correctness.
+
+| Slices | Accepted evidence | Implemented boundary and remaining limit |
+|---|---|---|
+| <a id="vs-113"></a><a id="vs-114"></a>S-093 / S-119 | [VS-113/114: Batch 034 review](../reviews/batch-034-acceptance.md) | No-roll Death Saves and source-declared zero-HP damage aftermath. Threshold death without damage, already-zero targets and native Disintegrate conversion remain outside this host. |
+| <a id="vs-115"></a><a id="vs-116"></a>S-130 / S-126 | [VS-115/116: Batch 035 review](../reviews/batch-035-acceptance.md) | Character-owned maximum-HP deltas, periodic/rest boundaries and monster riders; scoped weapon profiles and spell save DCs. Dictionary creatures, spell attack/range changes and a damage-type picker remain outside this host. |
+| <a id="vs-117"></a><a id="vs-118"></a>S-086 / S-060 | [VS-117/118: Batch 036 review](../reviews/batch-036-acceptance.md) | Shared-spell source-end damage/condition follow-ups and exact-copy last-charge payment through the item-charge cast path. Other source kinds, located areas and fully enforced degraded-property retention remain open. |
+| <a id="vs-119"></a><a id="vs-120"></a>S-103 / S-084 | [VS-119/120: Batch 037 review](../reviews/batch-037-acceptance.md) | Rest/activation mode grants and data-only parameter upgrades, with class/subclass saved ownership. Species, feat and item feature acquisition/reconstruction remains open. |
+| <a id="vs-121"></a><a id="vs-122"></a>S-104 / S-085 | [VS-121/122: Batch 038 review](../reviews/batch-038-acceptance.md) | Declared hit/turn-start switch windows, mode additions/removals and exclusive upgrades. This is the mode-choice host, not general Extra Attack, AC or mastery replacement. |
+| <a id="vs-123"></a><a id="vs-124"></a>S-154 / S-131 | [VS-123/124: Batch 039 review](../reviews/batch-039-acceptance.md) | Source-linked bounded actor templates and declared death when a Character's source-owned maximum HP reaches zero. Generic dictionary-creature persistence and broader creation clauses remain open. |
+| <a id="vs-126"></a><a id="vs-125"></a>S-120 / S-163 | [VS-126/125: Batch 040 review](../reviews/batch-040-acceptance.md) | A declared successor actor tied to final death, plus reversible self projections retaining selected statistics and resources. Successor hazards/objects and native Wild Shape conversion remain open. |
+| <a id="vs-127"></a><a id="vs-128"></a>S-161 / S-164 | [VS-127/128: Batch 041 review](../reviews/batch-041-acceptance.md) | Exact-copy/owned-actor bonds and merged, worn or backpack-set-aside equipment policies. Full backpacks refuse before casting; this does not place dropped gear into the world. |
+| <a id="vs-129"></a><a id="vs-130"></a>S-162 / S-165 | [VS-129/130: Batch 042 review](../reviews/batch-042-acceptance.md) | Declared linked-copy loss/replacement and one exact item copy projected into a combat actor. Identity, state and allowed checkpoints persist; fuller zero-HP overflow/reset policies belong to S-166. |
+| <a id="vs-131"></a><a id="vs-132"></a>S-196 / S-202 | [VS-131/132: Batch 043 review](../reviews/batch-043-acceptance.md) | Exact non-nested compartment contents and declared curse removal/lingering policies. These do not establish arbitrary container nesting or every curse's source rules. |
+| <a id="vs-133"></a><a id="vs-134"></a>S-210 / S-203 | [VS-133/134: Batch 044 review](../reviews/batch-044-acceptance.md) | Declared attached parts/required sets and listed magical-property suppression/destruction. Broader equipment properties need their own supported consumers. |
+| <a id="vs-135"></a><a id="vs-136"></a>S-064 / S-168 | [VS-135/136: Batch 045 review](../reviews/batch-045-acceptance.md) | Carried-item active-time budgets and source-owned restraint tethers to a Character caster. Active storage refuses; multi-target tether capacity and independent object anchors remain open. |
+| <a id="vs-137"></a><a id="vs-138"></a>S-066 / S-169 | [VS-137/138: Batch 046 review](../reviews/batch-046-acceptance.md) | One qualified item job per participant, daily progress and immediate loss/rest interruption; declared tether rescue checks/damage. Helpers are party members without a spatial co-location check; independent object anchors remain open. |
 
 The [mode/form/item state contract](../mechanics/source-benefit-carriers.md#modes-forms-and-exact-item-state)
 records the repaired ownership and interruption rules. New fixtures should use
@@ -171,13 +369,13 @@ the existing modules instead of rebuilding these bounded hosts.
 | S-057 — Per-roll and per-active-instance limits | Verified (VS-55) | V-041 | Lock an option to one actual result/effect instance; an unrelated roll, duplicate source or new activation has its own identity. | S-056, S-041 |
 | S-058 — Conditional payment waiver | Verified (VS-56) | V-042 | Waive only the declared cost for a qualifying parent action/source; other budgets and option locks still apply, with refusal before side effects. | S-023, S-056 |
 | S-059 — Payment replacement and free die use | Verified (VS-106; bounded captured-die rider replacement) | V-042, V-023 | Substitute a declared payment or allowed free die without consuming the original pool; don't waive a sibling feature's cost or duplicate its roll. | S-058, S-051, S-123 |
-| S-060 — Last-charge aftermath on exact copies | Built; acceptance open | V-043, V-079 | After a real spend, trigger declared depletion roll/destruction/degradation on that exact copy once; preserve the declared surviving mundane properties. | S-049, S-042 |
+| S-060 — Last-charge aftermath on exact copies | Verified (VS-118; exact-copy item-charge payments) | V-043, V-079 | After a real spend, trigger declared depletion roll/destruction/degradation on that exact copy once; preserve the declared surviving mundane properties. | S-049, S-042 |
 | S-061 — Current versus lifetime capacity/overflow | Planned | V-043 | Keep cumulative received energy and current spendable energy separate; validate capacity, overflow outcome and any gain/spend aftermath once. | S-060, S-006 |
 | S-062 — Turn-start/Initiative floor recovery | Verified (VS-62) | V-044, V-041 | Recover one/fill/up-to-floor at the declared actual event, with mutually exclusive choices and exact-source quantities; no refill from location changes. | S-007, S-056 |
 | S-063 — Dawn/dusk/cooldown random recovery | Verified (VS-93; dawn/dusk/cooldown occurrences) | V-044, V-045 | Apply declared fixed or rolled recovery at campaign-time events; late observation/time jumps don't repeatedly roll or extend a captured cooldown. | S-062, S-014 |
-| S-064 — Pause/resume cumulative active time | Built; acceptance open | V-045, V-057 | Accumulate qualified on-time across interruptions without restarting fuel/flight allowance; persisted source deadlines and cooldown start remain separate. | S-014, S-049 |
+| S-064 — Pause/resume cumulative active time | Verified (VS-135; carried-item cumulative active time) | V-045, V-057 | Accumulate qualified on-time across interruptions without restarting fuel/flight allowance; persisted source deadlines and cooldown start remain separate. | S-014, S-049 |
 | S-065 — Cumulative distance allowance | Planned | V-045 | Spend actual eligible travel distance across pause/resume and mode changes; no charge for failed movement or fresh allowance on reactivation. | S-064, S-179 |
-| S-066 — Qualified work/study progress | Built; acceptance open | V-046, V-057 | Accumulate actual eligible work with proximity/concentration/participants and daily rest; leaving/interruption follows authored keep/reset policy. | S-064, S-032 |
+| S-066 — Qualified work/study progress | Verified (VS-137; one qualified item job per participant) | V-046, V-057 | Accumulate actual eligible work with proximity/concentration/participants and daily rest; leaving/interruption follows authored keep/reset policy. | S-064, S-032 |
 | S-067 — Work deadline and paid-material interruption | Planned | V-046 | Enforce time window and qualified hours independently; expiry/interruption loses only specified progress/material and completion fires once. | S-066 |
 | S-068 — Scheduled repeat saves | Verified (VS-94; turn/elapsed repeat saves) | V-047 | Declare target-turn or elapsed-time repetition and eligibility; each due attempt resolves once with its source/recipient and original purpose. | S-029, S-041 |
 | S-069 — Counted saves and staged conditions | Verified (VS-95; counted staged conditions) | V-047, V-057 | Count qualifying successes/margins and transition/end linked conditions by explicit routes; other cures or source removal cannot erase unrelated stages. | S-068, S-043 |
@@ -195,9 +393,9 @@ the existing modules instead of rebuilding these bounded hosts.
 | S-081 — Chosen aura and lingering entry benefits | Verified (VS-86; chosen aura and timed entry receipts) | V-053 | Choose overlapping aura protection and retain explicitly timed entry benefits after exit; entering twice cannot restart a use beyond its declared policy. | S-080, S-040 |
 | S-082 — Captured die/token/permission transfer | Verified (VS-63) | V-054, V-057 | Give an exact recipient a source-linked captured grant; generation level/die/permission and expiry don't change when giver later levels or removes another grant. | S-051, S-049 |
 | S-083 — Recipient use budgets and shared rolled value | Verified (VS-64; shared weapon-attack bonus) | V-054 | Recipient spends its own declared Reaction/action; a shared one-time rolled bonus is captured once and not independently rerolled for every beneficiary. | S-082, S-041 |
-| S-084 — Rule parameter upgrades | Built; acceptance open | V-055 | Change count/die/targets/end predicates of an existing owned rule through data once; don't mutate catalog data or duplicate the base benefit on reload. | S-036, S-049 |
-| S-085 — Rule options and exclusive replacements | Built; acceptance open | V-055, V-037 | Add/remove legal modes/permissions/masteries through source-owned upgrades; mutually exclusive Extra Attack/AC policies remain alternatives. | S-084, S-103 |
-| S-086 — Source-end reason and located aftermath | Built; acceptance open | V-056 | Emit one final owned state/origin for expiry/dismissal/destruction/death; declared follow-up effects fire once and don't conflate end reasons. | S-014, S-072 |
+| S-084 — Rule parameter upgrades | Verified (VS-120; owned mode parameter upgrades) | V-055 | Change count/die/targets/end predicates of an existing owned rule through data once; don't mutate catalog data or duplicate the base benefit on reload. | S-036, S-049 |
+| S-085 — Rule options and exclusive replacements | Verified (VS-122; mode options and parameter alternatives) | V-055, V-037 | Add/remove legal modes/permissions/masteries through source-owned upgrades; mutually exclusive Extra Attack/AC policies remain alternatives. | S-084, S-103 |
+| S-086 — Source-end reason and located aftermath | Verified (VS-117; shared-spell source-end follow-ups) | V-056 | Emit one final owned state/origin for expiry/dismissal/destruction/death; declared follow-up effects fire once and don't conflate end reasons. | S-014, S-072 |
 | S-087 — Source-end child effect/timer continuation | Planned | V-056 | Run a declared heal/hazard/timer from the captured end event, preserving final location and costs across any child choice; delayed end observation doesn't relocate it. | S-086, S-034 |
 | S-088 — Ordered procedure position | Planned | V-081, V-057 | Retain exact next procedure step and choice/deadline across interruption, allowed reload and reset; sequence position isn't a use pool. | S-214, S-064 |
 | S-089 — Remaining faces/cards and replacement | Planned | V-081 | Track exact remaining membership; equal faces/copies stay separate, with declared discard/replace/reset and no redraw on replay. | S-088, S-051 |
@@ -209,7 +407,7 @@ the existing modules instead of rebuilding these bounded hosts.
 |---|---|---|---|---|
 | S-091 — Declared Advantage/Disadvantage policy | Verified (VS-29) | V-012 | Add/cancel/forbid eligible modes with source exemptions before the roll; replacing a natural result does not count as changing its mode. | S-024, S-041 |
 | S-092 — Explicit attack/save success and failure | Verified (VS-30) | V-013 | Force the declared hit/miss/save outcome at its authorized window while preserving numeric roll fields; no invented natural 20 or premature consequence. | S-020, S-041 |
-| S-093 — No-roll outcome and Death Save cancellation | Built; acceptance open | V-013 | Declare eligible automatic outcome/canceled upcoming Death Save before consequences; no d20 is rolled or numeric bonus offered when the rule says no roll. | S-092, S-117 |
+| S-093 — No-roll outcome and Death Save cancellation | Verified (VS-113; Character no-roll Death Saves) | V-013 | Declare eligible automatic outcome/canceled upcoming Death Save before consequences; no d20 is rolled or numeric bonus offered when the rule says no roll. | S-092, S-117 |
 | S-095 — Subtract total or change defending AC | Verified (VS-32) | V-014 | Offer a qualifying downward total/defensive AC change after a provisional hit; final miss prevents damage-side spending and exposes its new result. | S-023, S-041 |
 | S-096 — Off-turn and creature-owned attack choices | Planned | V-014 | Extend the same operation to Opportunity/reaction attacks and data-owned creature sources through their actual control/AI routes; exact roll and budget ownership remain. | S-023, S-057, S-156 |
 | S-097 — Another actor's optional roll intervention | Verified (VS-65; fixed helping weapon-attack modifier only) | V-014, V-013, V-035, V-089, V-090 | Select the legitimate helping/defending source and its budget for an already-supported modifier/outcome/reroll/token operation at its authorized window; wrong owners cannot settle, and follow-up actions share the same occurrence. | S-095, S-083 |
@@ -218,8 +416,8 @@ the existing modules instead of rebuilding these bounded hosts.
 | S-100 — Other declared result-payment predicates | Verified (VS-51) | V-035 | Commit/refund/reserve only the chosen resource when its explicit success/failure predicate matches; preserve required upfront funds and one final outcome across suspension. | S-019, S-094, S-043 |
 | S-101 — One integer budget across recipients | Verified (VS-66; HP/Temporary HP) | V-036 | Choose eligible recipients and integer amounts under total/count/per-target caps; finalize once, with declared unspent/cancel policy and no partial payment on refusal. | S-023, S-026, S-036 |
 | S-102 — Roll-derived and dice-count allocations | Verified (VS-67; HP/Temporary HP) | V-036, V-038 | Allocate one captured rolled total or selected owned dice among recipients; don't reroll per recipient or double-spend the original quantity. | S-101, S-051 |
-| S-103 — Rest/per-activation mode choices | Built; acceptance open | V-037, V-025 | Select a declared mode at rest or activation and replace its owned grants; permanent progression choices remain different and parent use/lifetime doesn't restart. | S-045, S-049 |
-| S-104 — Per-hit/turn-start mode switches | Built; acceptance open | V-037 | Change only legal mode parameters at the declared hit/turn event; earlier settled outcomes and parent activation cost/deadline stay fixed. | S-103, S-056 |
+| S-103 — Rest/per-activation mode choices | Verified (VS-119; class/subclass rest and activation modes) | V-037, V-025 | Select a declared mode at rest or activation and replace its owned grants; permanent progression choices remain different and parent use/lifetime doesn't restart. | S-045, S-049 |
+| S-104 — Per-hit/turn-start mode switches | Verified (VS-121; declared hit and turn-start mode windows) | V-037 | Change only legal mode parameters at the declared hit/turn event; earlier settled outcomes and parent activation cost/deadline stay fixed. | S-103, S-056 |
 | S-106 — Chosen old/new reroll with mode/bonus | Verified (VS-48) | V-089, V-012 | Offer old versus new only where declared; apply specified Advantage or level bonus to the new test without replaying spent tokens or effects. | S-105, S-091, S-037 |
 | S-107 — Authored replacement-token generation/reset | Planned | V-090, V-013, V-057 | Generate/capture distinct visible/hidden owner tokens with declared reset and equal-face identities; reuse accepted pre-roll consumer, and reload cannot generate fresh values. | S-051, S-063 |
 | S-108 — Post-roll natural-result token replacement | Planned | V-090, V-013 | Replace the natural result at a separately authorized failed/successful window using one exact token or fixed value; recompute totals/outcome without another d20. | S-107, S-041 |
@@ -241,19 +439,19 @@ the existing modules instead of rebuilding these bounded hosts.
 | S-116 — One recipient's incoming effect negation | Verified (VS-90) | V-019 | Exclude only the qualifying recipient/step from an original cast, leaving other targets intact; reflection/retargeting remains a separate operation. | S-115, S-098 |
 | S-117 — Authored zero-HP replacement eligibility | Verified (VS-111; bounded pre-defeat damage hosts) | V-020 | Reuse the existing zero-HP boundary with declared damage/critical/outright-death exclusions and replacement HP formula; intercept before unconsciousness/death. | S-004, S-109 |
 | S-118 — Escalating-save zero-HP replacement | Verified (VS-112; exact source-owned attempt/reset history) | V-020, V-088 | At the same boundary resolve a declared save/DC history and increment/reset policy; failure uses original proposed outcome and success applies once. | S-117, S-090 |
-| S-119 — Death/destruction distinct from ordinary HP loss | Built; acceptance open | V-021 | Apply eligible instant death/destruction with declared gear/remains policy, preserving original identity and actual cause for later revival. | S-117, S-032 |
-| S-120 — Aftermath successor actor or hazard | Built; acceptance open | V-021 | Create the declared actor/object/hazard from final death/destruction once at its actual location, with exclusions and retained/disposed gear as specified. | S-119, S-154 |
-| S-121 — Required legal exit before outcome settlement | Planned | V-022 | Choose/validate legal exit placement before final save/outcome; no space changes outcome only as authored, without premature escape or failed-save effects. | S-033, S-043 |
-| S-122 — Creation/arrival placement and failure costs | Planned | V-022 | Validate required space before creation/arrival and apply the declared no-space cost/result; placement refusal never silently creates an overlapping actor. | S-121, S-135 |
+| S-119 — Death/destruction distinct from ordinary HP loss | Verified (VS-114; source-declared zero-HP aftermath) | V-021 | Apply eligible instant death/destruction with declared gear/remains policy, preserving original identity and actual cause for later revival. | S-117, S-032 |
+| S-120 — Aftermath successor actor or hazard | Verified (VS-126; actor successors; objects/hazards remain open) | V-021 | Create the declared actor/object/hazard from final death/destruction once at its actual location, with exclusions and retained/disposed gear as specified. | S-119, S-154 |
+| S-121 — Required legal exit before outcome settlement | Planned (exit settlement still needed) | V-022 | Choose/validate legal exit placement before final save/outcome; no space changes outcome only as authored, without premature escape or failed-save effects. | S-033, S-043 |
+| S-122 — Creation/arrival placement and failure costs | Verified (VS-139; combat arrival; other hosts remain) | V-022 | Validate required space before creation/arrival and apply the declared no-space cost/result; placement refusal never silently creates an overlapping actor. | S-121, S-135 |
 | S-123 — Damage/healing dice removal and maximizing | Verified (VS-103; critical base-die cost boundary) | V-023 | Remove a declared dice quantity before rolling or maximize eligible dice; separate noncritical cost dice from critical/result multiplication. | S-010, S-034 |
 | S-124 — Selected damage/healing dice rerolls | Verified (VS-104; authored healing policy and exact payment receipt) | V-023 | Reuse actual rolled-dice selection with declared eligibility/kept policy/count/cost; chosen dice reroll once and frozen siblings remain unchanged. | S-123 |
 | S-125 — Critical and final-result multipliers | Verified (VS-105; explicit critical exclusion) | V-023 | Multiply the declared dice/component/result at its stated stage with explicit rounding; fixed bonuses, typed components and critical exclusions remain distinct. | S-123, S-109 |
-| S-126 — Qualifying ability/die/type/attack/DC replacement | Built; acceptance open | V-024 | Build a scoped actual attack/cast profile with replaced/additive/inherited fields; chosen damage type or fixed attack/DC cannot mutate catalog or unrelated actions. | S-036, S-024 |
+| S-126 — Qualifying ability/die/type/attack/DC replacement | Verified (VS-116; weapon profiles and spell save DC) | V-024 | Build a scoped actual attack/cast profile with replaced/additive/inherited fields; chosen damage type or fixed attack/DC cannot mutate catalog or unrelated actions. | S-036, S-024 |
 | S-127 — Reach/mastery and damage-type choice | Planned | V-024 | Offer legal per-hit/activation reach/mastery/type options for the qualifying profile; property source and selection timing remain explicit. | S-126, S-103 |
 | S-128 — Source-specific unrecoverable injury | Planned | V-085, V-057 | Record exact unhealable damage separately from other missing HP; ordinary heal/rest honors its amount, source cure removes only that restriction. | S-034, S-071, S-072 |
 | S-129 — Unhealable damage through revival/recovery | Planned | V-085, V-067 | Apply declared injury policy to revival/allowed checkpoints while preserving healable deficits; source removal/cure restores eligibility without manufacturing healed HP. | S-128, S-176 |
-| S-130 — Source-owned maximum-HP changes | Built; acceptance open | V-095, V-057 | Apply/remove source deltas or periodic reduction with current/max-HP clamps, floor and cure boundaries; equivalent sources cannot revoke one another. | S-048, S-109 |
-| S-131 — Maximum-HP zero death/remains policy | Built; acceptance open | V-095, V-021 | Use source-specific zero-limit death/remains behavior and recovery restrictions, distinct from current-HP zero and injury-specific healing blocks. | S-130, S-119 |
+| S-130 — Source-owned maximum-HP changes | Verified (VS-115; Character maximum-HP sources) | V-095, V-057 | Apply/remove source deltas or periodic reduction with current/max-HP clamps, floor and cure boundaries; equivalent sources cannot revoke one another. | S-048, S-109 |
+| S-131 — Maximum-HP zero death/remains policy | Verified (VS-124; Character zero-maximum death) | V-095, V-021 | Use source-specific zero-limit death/remains behavior and recovery restrictions, distinct from current-HP zero and injury-specific healing blocks. | S-130, S-119 |
 | S-132 — Redirect original incoming spell target | Planned | V-097 | Propose a legal alternate recipient for only the permitted original spell/step; retain original slot/parameters and settled earlier recipients, with no recast. | S-116, S-144 |
 | S-133 — Reflection with declared caster policy | Planned | V-097 | Reflect using stated original-versus-reflector attack/DC/ownership, preserving causal identity and limits; redirected origin/recipient alone cannot choose new stats. | S-132, S-114 |
 
@@ -286,22 +484,22 @@ the existing modules instead of rebuilding these bounded hosts.
 
 | Slice | State | Capability coverage | Build and acceptance finish line | After |
 |---|---|---|---|---|
-| S-154 — Parameterized created actor | Built; acceptance open | V-058, V-057 | Create a source-linked actor with declared AC/current/max HP/attack/DC template values and retained owner identity; forbidden template creation features are excluded. | S-032, S-036, S-049 |
-| S-155 — Factory choices/count and creation refusal | Planned | V-058 | Select permitted template/options/count, validate actual space/exclusions before creation, and create only the declared actors with unique identities. | S-154, S-122 |
-| S-156 — Command cost/range/default authority | Planned | V-059 | Issue legal commands to actually owned eligible creatures through control/AI routes; charge the declared owner action/Bonus once and apply default when uncommanded. | S-154, S-026 |
-| S-157 — Owner-linked versus independent initiative | Planned | V-059 | Schedule independent/owner-turn/after-owner/shared-count created actors with their own budgets; actor death/removal cannot replay or skip the owner's interrupted work. | S-156 |
-| S-158 — Incapacity and control-expiry autonomy | Planned | V-059 | When owner is incapacitated or command/control expires, apply declared autonomous/default behavior without automatically destroying the existing actor. | S-157, S-072 |
+| S-154 — Parameterized created actor | Verified (VS-123; source-linked actor templates) | V-058, V-057 | Create a source-linked actor with declared AC/current/max HP/attack/DC template values and retained owner identity; forbidden template creation features are excluded. | S-032, S-036, S-049 |
+| S-155 — Factory choices/count and creation refusal | Verified (VS-140; combat factory; broader choices remain) | V-058 | Select permitted template/options/count, validate actual space/exclusions before creation, and create only the declared actors with unique identities. | S-154, S-122 |
+| S-156 — Command cost/range/default authority | Verified (VS-141; exact commands, costs and defaults) | V-059 | Issue legal commands to actually owned eligible creatures through control/AI routes; charge the declared owner action/Bonus once and apply default when uncommanded. | S-154, S-026 |
+| S-157 — Owner-linked versus independent initiative | Verified (VS-142; three timings; shared-count variants remain) | V-059 | Schedule independent/owner-turn/after-owner/shared-count created actors with their own budgets; actor death/removal cannot replay or skip the owner's interrupted work. | S-156 |
+| S-158 — Incapacity and control-expiry autonomy | Verified (VS-143; declared defaults; owner-removal behavior remains) | V-059 | When owner is incapacitated or command/control expires, apply declared autonomous/default behavior without automatically destroying the existing actor. | S-157, S-072 |
 | S-159 — Inserted extra turn | Planned | V-060 | Insert a full actor turn at a declared initiative position while retaining interrupted work and per-round history; an extra Action does not create a turn. | S-157, S-030, S-056 |
 | S-160 — Off-turn and type-limited Reaction/action budgets | Planned | V-060 | Grant only declared extra Opportunity/legendary/child actions with their own reset/option locks; spending one cannot supply a general Reaction or own-turn Action. | S-156, S-057 |
-| S-161 — Exclusive exact-copy/actor bond | Built; acceptance open | V-061, V-057 | Bind actual item/actor to owner with declared uniqueness/capacity and legal replacement; refusal preserves the previous bond and all other sources. | S-049, S-026 |
-| S-162 — Linked-copy/group replacement lifecycle | Built; acceptance open | V-061 | Replace/dispose specified old bonded copies or related group deliberately; removal/destruction affects only the linked identities and specified survivors. | S-161, S-119 |
-| S-163 — Reversible retained-stat actor projection | Built; acceptance open | V-062, V-057 | Apply selected form stats while retaining declared original HP/resources/type/mental/features; reversion restores the same actor without reacquiring or refilling sources. | S-154, S-039, S-084 |
-| S-164 — Dropped/merged/worn equipment in forms | Built; acceptance open | V-062 | Choose legal equipment policy, suppress only merged exact-copy effects and route worn/dropped state correctly; reversion/unequip restores only remaining owned properties. | S-163, S-049 |
-| S-165 — Exact item copy projects into actor/object | Built; acceptance open | V-063, V-057 | Project one owned copy into declared temporary actor/vessel retaining original copy identity and contents; the temporary form cannot duplicate the item. | S-163, S-161 |
+| S-161 — Exclusive exact-copy/actor bond | Verified (VS-127; exact-copy and owned-actor bonds) | V-061, V-057 | Bind actual item/actor to owner with declared uniqueness/capacity and legal replacement; refusal preserves the previous bond and all other sources. | S-049, S-026 |
+| S-162 — Linked-copy/group replacement lifecycle | Verified (VS-129; declared linked-copy loss and replacement) | V-061 | Replace/dispose specified old bonded copies or related group deliberately; removal/destruction affects only the linked identities and specified survivors. | S-161, S-119 |
+| S-163 — Reversible retained-stat actor projection | Verified (VS-125; reversible self projections) | V-062, V-057 | Apply selected form stats while retaining declared original HP/resources/type/mental/features; reversion restores the same actor without reacquiring or refilling sources. | S-154, S-039, S-084 |
+| S-164 — Dropped/merged/worn equipment in forms | Verified (VS-128; merged/worn/backpack equipment policies) | V-062 | Choose legal equipment policy, suppress only merged exact-copy effects and route worn/dropped state correctly; reversion/unequip restores only remaining owned properties. | S-163, S-049 |
+| S-165 — Exact item copy projects into actor/object | Verified (VS-130; item-to-actor projection; vessels/controls remain open) | V-063, V-057 | Project one owned copy into declared temporary actor/vessel retaining original copy identity and contents; the temporary form cannot duplicate the item. | S-163, S-161 |
 | S-166 — Item-form reversion HP/overflow/location | Planned | V-063 | Apply declared reset/overflow and legal return location on ending/damage; destroy original only when specified, preserving unrelated linked copies. | S-165, S-121, S-109 |
 | S-167 — Projected vessel contents and movement | Planned | V-063, V-076 | Cargo/occupants stay attached to the actual projected vessel across movement/reversion; release/retain contents follows declared space and container policy. | S-166, S-196, S-170 |
-| S-168 — Actor/object grapple and restraint relation | Built; acceptance open | V-064, V-057 | Bind actual captor, victim and anchor with range/restrictions; escape checks/actions refer to that tether and don't end another source's restraint. | S-026, S-028, S-072 |
-| S-169 — Escape/rescue and destroyed-anchor cleanup | Built; acceptance open | V-064 | Route eligible rescue/damage/escape to the tether or object; destroying/moving its anchor releases only affected relations through their actual consequence route. | S-168, S-119 |
+| S-168 — Actor/object grapple and restraint relation | Verified (VS-136; Character-caster restraint tethers) | V-064, V-057 | Bind actual captor, victim and anchor with range/restrictions; escape checks/actions refer to that tether and don't end another source's restraint. | S-026, S-028, S-072 |
+| S-169 — Escape/rescue and destroyed-anchor cleanup | Verified (VS-138; declared tether rescue and damage) | V-064 | Route eligible rescue/damage/escape to the tether or object; destroying/moving its anchor releases only affected relations through their actual consequence route. | S-168, S-119 |
 | S-170 — Containment occupancy and capacity | Planned | V-065, V-057 | Put eligible actual occupants/gear into declared creature/object/space capacity, distinguish internal from external location and retain exact occupants across reload. | S-168, S-033, S-196 |
 | S-171 — Internal harm/targeting and escape/rescue | Planned | V-065 | Apply source-declared internal damage, target eligibility and escape/rescue to contained occupants; internal position doesn't make every external effect legal. | S-170, S-109, S-169 |
 | S-172 — Moving container and legal occupant release | Planned | V-065 | Owner/container movement carries actual occupants; expiry/destruction/escape releases them using declared legal placement/fallback rather than overlapping or deleting them. | S-171, S-121 |
@@ -338,21 +536,21 @@ the existing modules instead of rebuilding these bounded hosts.
 
 | Slice | State | Capability coverage | Build and acceptance finish line | After |
 |---|---|---|---|---|
-| S-196 — Exact contents and mass/volume compartments | Built; acceptance open | V-076, V-057 | Track actual copy contents with category/compartment/mass/volume limits; insertion/removal validates before moving anything and preserves identities on reload. | S-032, S-049 |
+| S-196 — Exact contents and mass/volume compartments | Verified (VS-131; non-nested exact compartment contents) | V-076, V-057 | Track actual copy contents with category/compartment/mass/volume limits; insertion/removal validates before moving anything and preserves identities on reload. | S-032, S-049 |
 | S-197 — Liquid/portion/fuel quantities and overflow | Planned | V-076 | Consume/transfer actual quantities with declared portion/container constraints and overflow; cumulative active fuel time reuses its own budget rather than item count. | S-196, S-064 |
 | S-198 — Recipe materials/time to exact output | Planned | V-077 | Validate required actual recipe/tools/materials and qualified completed work before creating output copies; interruption follows stated paid-material policy. | S-067, S-028, S-196 |
 | S-199 — Completed work creates a real world change | Planned | V-077 | Run declared repair/door/pit/object change at the actual eligible location after work completes; recipe narration is not geometry or automatic item duplication. | S-198, S-212, S-033 |
 | S-200 — Food/water/travel/environment exposure | Planned | V-078, V-057 | Track actual eligible cause-specific exposure and elapsed budget by actor; checkpoint recovery can't restart deprivation or count combat Exhaustion as travel exposure. | S-064, S-032 |
 | S-201 — Exempt only declared survival consequence | Planned | V-078 | Apply food/water/travel/temperature exemptions to their exact cause and consumption policy; preserve other Exhaustion/hazard consequences. | S-200, S-029 |
-| S-202 — Persistent curse and attunement restrictions | Built; acceptance open | V-079 | Keep source-linked curse where declared after unequip, enforce legal voluntary unattunement/cure and exact breaking requirements; other item copies remain independent. | S-161, S-072 |
-| S-203 — Magic-property suppression/restoration/destruction | Built; acceptance open | V-079 | Suppress or destroy only specified magical properties with source/cause and retained mundane residuals; unsuppression restores still-owned eligible effects without reacquisition. | S-202, S-074, S-060 |
+| S-202 — Persistent curse and attunement restrictions | Verified (VS-132; declared persistent curse policies) | V-079 | Keep source-linked curse where declared after unequip, enforce legal voluntary unattunement/cure and exact breaking requirements; other item copies remain independent. | S-161, S-072 |
+| S-203 — Magic-property suppression/restoration/destruction | Verified (VS-134; listed magical-property suppression/destruction) | V-079 | Suppress or destroy only specified magical properties with source/cause and retained mundane residuals; unsuppression restores still-owned eligible effects without reacquisition. | S-202, S-074, S-060 |
 | S-204 — Shared occupant air supply | Planned | V-091, V-065, V-057 | Track available air and consumption by actual breathing occupants in container/environment; moving or reopening changes supply only as declared. | S-170, S-200 |
 | S-205 — Breathing adaptations and suffocation | Planned | V-091 | Apply environment breathing/exemption to consumption and consequences, then declared suffocation progression per eligible actor; immunity to one hazard isn't universal. | S-204, S-201 |
 | S-206 — Lost/attached body parts and functional effects | Planned | V-092, V-057 | Store actual missing/attached parts on the original actor and apply only declared functional restrictions; dropped parts retain identity for later repair/revival. | S-119, S-049 |
 | S-207 — Conditional interrupted regrowth/restoration | Planned | V-092 | Restore eligible actual parts over declared qualified living-HP time; interruption resets/pauses as stated, and prosthetic attachment isn't biological regrowth. | S-206, S-066, S-176 |
 | S-208 — Biological age versus campaign elapsed time | Planned | V-093, V-057 | Store actor biological age separately and apply declared age decrease/floor/rate or immunity to the actual event; campaign clock never rewinds. | S-064, S-037 |
 | S-209 — Age-use cumulative chance/history | Planned | V-093, V-088 | Retain repeated-use history for age changes and calculate/apply declared chance once; restored source/checkpoint doesn't reset risk or reroll past outcome. | S-208, S-090, S-214 |
-| S-210 — Attached parts and required sets | Built; acceptance open | V-094, V-057 | Bind actual gems/beads/shoes/weapons/adhesive with distinct copy identity and required set rules; partial removal disables only the declared dependent property. | S-161, S-196 |
+| S-210 — Attached parts and required sets | Verified (VS-133; exact attached parts and required sets) | V-094, V-057 | Bind actual gems/beads/shoes/weapons/adhesive with distinct copy identity and required set rules; partial removal disables only the declared dependent property. | S-161, S-196 |
 | S-211 — Child-copy charges/removal/damage | Planned | V-094 | Each attached child retains its own charge/reset/damage state; casting destroys selected gem/bead only where declared and full group doesn't share one fake pool. | S-210, S-060, S-063 |
 | S-212 — Repair an existing exact damaged object | Planned | V-096 | Restore eligible actual object HP/function with material/piece/location restrictions; no fresh-copy replacement, invented missing pieces or duplicated attachments. | S-032, S-049 |
 | S-213 — Join retained pieces and preserve lost sections | Planned | V-096, V-094 | Join eligible existing pieces/rope sections while retaining missing length/parts and original identity; actual repaired geometry/properties reflect what remains. | S-212, S-210 |

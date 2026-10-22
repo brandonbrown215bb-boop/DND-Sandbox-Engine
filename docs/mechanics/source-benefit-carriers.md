@@ -85,8 +85,48 @@ subclass at the character's class level. Rest/activation choices, added modes,
 exclusive alternatives and event windows retain their existing identities on
 reload. Species, species-granted feats and exact equipped item copies also
 acquire these feature types through `OwnedFeatureSources`. Items requiring
-attunement grant them only to their attuned owner. Chosen/background/level-up
-feat acquisition and ordinary HUD controls for these modes remain follow-ups.
+attunement grant them only to their attuned owner. Chosen Origin feats and feats
+taken instead of an earned Ability Score Improvement also supply these features.
+`FeatRules` accepts `category` (`origin`, `general`, `fighting_style`, `epic_boon`),
+boolean `repeatable`, and `prerequisite` with `level` and/or `abilities_any`.
+Unsupported prerequisites fail loading; repeatable feats cannot own mode/upgrade
+features because their feature IDs would collide. Live choices require permanent
+ability scores, a qualifying category and an unused entitlement. Saves validate
+known choices, entitlement, level, permanent ability prerequisites and duplicate
+policy before replacing the session. Legacy saves may omit `origin_feat`.
+
+The creation Equipment step offers an Origin picker when qualifying content is
+loaded; the sheet offers Take feat instead for a pending improvement. This is a
+free Origin choice pending backgrounds, not background-rule certification. No
+playable feat catalog ships: fixture feats prove the paths. Feat ability gains,
+class/feature prerequisites, Fighting Style grants and the level-19 alternative
+feat path remain unfinished. Stage SRD candidates separately until their complete
+rules and grant routes work; do not load empty feat shells into the game.
+
+The combat HUD feature list offers Activate, Choose/Change/Switch mode and Choose
+upgrade when legal, including modes from class, species, feats and exact copies.
+It shows uses/time and disabled merged/suppressed copies. Popup cancellation,
+supersession, an owner change (including away and back), and changed offer state
+refuse before expenditure. Activation refuses Incapacitated and implied conditions
+before spending uses. Already-active reselect/switch retains the existing rule
+semantics. Upgrade alternatives require the parent power to be inactive. Current
+activation modes may declare `costs: {activate?, reselect?, switch?}`. Each cost
+is `action`, `bonus_action`, `magic` or `none`; an omitted act stays free.
+`reaction` is allowed for a switch only through its declared
+[reaction trigger](created-actors-and-placement.md#declared-reaction-triggers).
+Reselect needs `allow_reselect`, switch needs `switch_events`, and rest modes
+cannot declare costs. Combat pays from the existing owner budget only after
+the act succeeds, once; cancelled, stale, wrong-turn, incapacitated and
+unaffordable attempts spend neither action nor use. Reselect/switch retain the
+parent use and deadline. Magic costs cannot use Action Surge's extra action.
+
+The local room panel offers the same mode controls outside combat. It spends
+uses once without a combat action budget. Optional
+`activation_seconds: {activate?, reselect?, switch?}` declares whole seconds
+(1–86400); otherwise a costed act reports six seconds, a free act zero.
+The panel and receipt expose this time with `time_advanced: false`; campaign
+time does not advance yet. Overworld/sheet panels, group recipient selection
+and end-early controls remain unfinished.
 
 Item pools and upgrade options belong to the exact copy. Unequipping or
 transferring it stamps its remaining uses and remembered option on its record;
@@ -125,8 +165,11 @@ does not count as work. Each participant can work on one job at a time; both
 party and player-only checkpoints enforce that limit. Work's existing item-only and party-membership limits
 remain; it does not check helpers' spatial co-location.
 
-Regressions live in `src/stack_repair_checks.gd`; these fixture-backed repairs do
-not convert catalog content or accept the full planned slices.
+Regressions live in `src/stack_repair_checks.gd`. The
+[slice registry](../planning/vocabulary-slices.md#accepted-bounded-batches)
+records acceptance of the reviewed, repaired and merged implementations and their
+remaining limits. These fixture-backed repairs do not convert catalog content or
+complete the remaining clauses.
 
 ## Limits
 

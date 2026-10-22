@@ -59,10 +59,13 @@ static func item_features(item: Dictionary, instance_id: String) -> Array:
 
 ## Features owned by species, species-granted feats and the given equipped
 ## copies. records/equipped_ids come from a live inventory or a save DTO.
-static func declared(race_id: String, character_id: String, records: Dictionary, equipped_ids: Array) -> Array:
+static func declared(race_id: String, character_id: String, records: Dictionary, equipped_ids: Array, chosen_feats: Array = []) -> Array:
 	var race := DataLoader.get_race(race_id)
 	var out := _typed(race.get("features", []))
-	for feat_id in race.get("feats", []):
+	var feat_ids: Array = race.get("feats", []).duplicate()
+	for feat_id in chosen_feats: # Batch 051: origin and level-up feats.
+		if feat_id not in feat_ids: feat_ids.append(feat_id)
+	for feat_id in feat_ids:
 		out.append_array(_typed(DataLoader.get_feat(str(feat_id)).get("features", [])))
 	var ids: Array = equipped_ids.map(func(id): return str(id))
 	ids.sort()
@@ -85,7 +88,7 @@ static func declared_in(data: Dictionary) -> Array:
 	if not copies is Dictionary: copies = {}
 	var records: Variant = copies.get("records", {})
 	var equipped: Variant = copies.get("equipped", {})
-	return declared(str(data.get("race_id", "")), str(data.get("character_id", "")), records if records is Dictionary else {}, equipped.values() if equipped is Dictionary else [])
+	return declared(str(data.get("race_id", "")), str(data.get("character_id", "")), records if records is Dictionary else {}, equipped.values() if equipped is Dictionary else [], FeatRules.chosen(str(data.get("origin_feat", "")) if data.get("origin_feat", "") is String else "", data.get("feature_choices", {})))
 
 ## Rebuild the acquired features on a live actor. Called after restore and on
 ## every equip/attune change. Features whose source left end their saved mode
@@ -95,7 +98,7 @@ static func sync(actor: Character, restoring: bool = false) -> Array:
 	if actor == null or actor.inventory == null: return []
 	var records: Dictionary = actor.inventory.copies.records
 	# Read the copy ledger as-is: re-syncing mid-drop/destroy would resurrect the copy.
-	var wanted := declared(actor.race_id, actor.character_id, actor.inventory.copies.records, actor.inventory.copies.equipped.values())
+	var wanted := declared(actor.race_id, actor.character_id, actor.inventory.copies.records, actor.inventory.copies.equipped.values(), FeatRules.chosen(actor.origin_feat, actor.feature_choices))
 	# Review 049 R2: an item's spent uses belong to the copy, not the wearer.
 	# A copy leaving this actor stamps its pool on the record, so a give, sell
 	# or trade cannot hand over a refilled item.

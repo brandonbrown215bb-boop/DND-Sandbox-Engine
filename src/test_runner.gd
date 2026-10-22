@@ -9,11 +9,13 @@ var _passed := 0
 var _failed := 0
 var _failures: Array[String] = []
 var _logic_groups: Array[String] = []
+var _script_errors := ScriptErrorCounter.new()
 
 func _ready() -> void:
 	print("==================================================")
 	print(" Rook's In-Engine Test Harness (scene runner)")
 	print("==================================================")
+	OS.add_logger(_script_errors) # Review cafa R1.
 	for argument in OS.get_cmdline_args() + OS.get_cmdline_user_args():
 		if argument.begins_with("--logic-groups="):
 			for group in argument.trim_prefix("--logic-groups=").split(",", false):
@@ -29,6 +31,12 @@ func _ready() -> void:
 		get_tree().quit(1)
 		return
 	print("LOGIC GROUPS: %s" % (", ".join(_logic_groups) if not _logic_groups.is_empty() else "all"))
+	# Card cafa: a registered check file that fails to load or parse turns the run red.
+	var registered_scripts := CheckScriptGate.load_registered("res://src/test_runner.gd")
+	for failure in CheckScriptGate.failures(registered_scripts):
+		_assert(false, failure)
+	print("CHECK SCRIPT GATE: %d registered check scripts, %d failed" % [registered_scripts.size(), CheckScriptGate.failures(registered_scripts).size()])
+	_test_check_script_gate()
 	_run_group("data", _test_data_loader)
 	_run_group("classes", _test_character_creation)
 	_run_group("classes", _test_paladin_divine_sense_2024)
@@ -60,6 +68,24 @@ func _ready() -> void:
 	_run_group("combat", func(): Batch048Checks.run(_assert))
 	_run_group("combat", func(): Batch049Checks.run(_assert))
 	_run_group("combat", func(): Batch050Checks.run(_assert))
+	_run_group("combat", func(): Batch051Checks.run(_assert))
+	_run_group("combat", func(): Batch052Checks.run(_assert))
+	_run_group("combat", func(): Batch053Checks.run(_assert))
+	_run_group("combat", func(): Batch054Checks.run(_assert))
+	_run_group("combat", func(): Batch058Checks.run(_assert))
+	_run_group("combat", func(): Batch059Checks.run(_assert))
+	_run_group("combat", func(): Batch060Checks.run(_assert))
+	_run_group("combat", func(): Batch061Checks.run(_assert))
+	_run_group("combat", func(): Batch062Checks.run(_assert))
+	_run_group("combat", func(): Batch063Checks.run(_assert))
+	_run_group("combat", func(): Batch064Checks.run(_assert))
+	_run_group("combat", func(): Batch065Checks.run(_assert))
+	_run_group("combat", func(): Batch055Checks.run(_assert))
+	_run_group("combat", func(): Batch056Checks.run(_assert))
+	_run_group("combat", func(): Batch057Checks.run(_assert))
+	_run_group("combat", func(): Review053065Checks.run(_assert))
+	_run_group("combat", func(): Review052Checks.run(_assert))
+	_run_group("combat", func(): Review051Checks.run(_assert))
 	_run_group("combat", func(): Review050Checks.run(_assert))
 	_run_group("combat", func(): Review050FChecks.run(_assert))
 	_run_group("combat", func(): StackRepairChecks.run(_assert))
@@ -129,6 +155,21 @@ func _ready() -> void:
 	get_tree().quit(1 if _failed > 0 else 0)
 
 
+## Card cafa regression: simulated load and compile failures are reported
+## (no broken file is committed; an uncompiled GDScript stands in for a parse failure).
+func _test_check_script_gate() -> void:
+	var names := CheckScriptGate.registered("_run_group(\"x\", func(): Batch050Checks.run(_assert))\nFooChecks.load_fixtures()\nBatch050Checks.x()")
+	_assert(names == ["Batch050Checks", "FooChecks"], "cafa: the gate finds each registered check class once (%s)" % str(names))
+	var uncompiled := GDScript.new()
+	uncompiled.source_code = "extends RefCounted\nfunc run(:"
+	var fails := CheckScriptGate.failures({"MissingChecks": null, "BrokenChecks": uncompiled, "Batch050Checks": load("res://src/batch_050_checks.gd")})
+	_assert(fails.size() == 2 and "MissingChecks failed to load" in fails[0] + fails[1] and "BrokenChecks failed to parse" in fails[0] + fails[1], "cafa: a missing script and an uncompiled (unparseable) script both fail the gate; a good one passes: %s" % str(fails))
+	_assert(CheckScriptGate.load_registered("res://src/test_runner.gd").size() >= 20, "cafa: the live runner registers its check classes through the gate")
+	var probe := ScriptErrorCounter.new()
+	probe._log_error("f", "res://x.gd", 1, "", "engine noise", false, Logger.ERROR_TYPE_ERROR, [])
+	probe._log_error("run", "res://y.gd", 7, "", "Invalid call", false, Logger.ERROR_TYPE_SCRIPT, [])
+	_assert(probe.count == 1 and "res://y.gd:7" in probe.first, "Review cafa R1: the runner's logger counts script errors only (%d, %s)" % [probe.count, probe.first])
+
 func _run_group(group: String, check: Callable) -> void:
 	if _logic_groups.is_empty() or "all" in _logic_groups or group in _logic_groups:
 		check.call()
@@ -142,6 +183,9 @@ func _assert(cond: bool, msg: String) -> void:
 		print("[FAIL] %s" % msg)
 
 func _report() -> void:
+	# Review cafa R1: a check that died on a SCRIPT ERROR skipped its remaining asserts.
+	if _script_errors.count > 0:
+		_assert(false, "%d SCRIPT ERROR(s) during the logic run aborted check code; first: %s" % [_script_errors.count, _script_errors.first])
 	print("--------------------------------------------------")
 	print(" RESULTS: %d passed, %d failed" % [_passed, _failed])
 	if _failed > 0:

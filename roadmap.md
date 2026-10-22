@@ -11,8 +11,57 @@ retains vocabulary-first delivery, current save priorities, and Wish/illusion po
 
 Continue the engine backlog in the [slice registry](docs/planning/vocabulary-slices.md).
 It owns requirements, prerequisites, completion status, counts and verified limits.
-No next implementation batch is selected. Reuse completed pieces rather than
-repeating their proof because a broader requirement remains open.
+The selected work is the [merged-slice completion queue](docs/planning/vocabulary-slices.md#merged-slice-completion-queue):
+finish the missing controls and target/source wiring from Batches 034–046, and
+build the specific world capabilities those implementations still need. Reuse
+completed pieces rather than repeating their proof because a broader requirement
+remains open.
+
+The initial Grokbot handoffs and playtest repairs landed in PRs #16–19.
+PRs #20/#24 close the test-harness false-pass gaps; #21/#23 add bounded chosen-feat
+acquisition and combat mode/upgrade controls. Their
+[accepted boundaries](docs/planning/vocabulary-slices.md#pr20-24-validation)
+retain fixture-only feat proof, missing backgrounds and feat mechanics, action
+costs for real mode content, and volume/item measurement/role work. Do not
+reassign completed chooser, ownership or control wiring.
+
+PRs #25–37 supply bounded combat placement/factory choices, exact created-creature
+commands and turn policies, authored mode/command costs, room mode controls and
+reaction triggers. Their review repairs and remaining work are tracked in the
+[PR25–37 review boundary](docs/planning/vocabulary-slices.md#pr25-37-validation).
+PRs #25–37 are merged with the review repairs and accepted within that boundary.
+Unfinished scope below does not block acceptance of the delivered subset.
+
+Still needs to be done from that queue: S-121 exit placement before final
+save/outcome settlement; S-122 normal item-projection placement controls and
+failure/payment policy; exploration creation placement; multi-cell bodies and
+mixed-size/per-kind summon policies; S-157 shared-count variants beyond the
+implemented timings; and S-158 owner-turn behavior after an owner leaves the
+tracker, plus linked summons entering an encounter with an already downed/dead
+owner who has no initiative entry. Real catalog conversions, Find Familiar's
+creature-type choice, overworld/sheet mode controls, group mode recipients and
+end-early controls also remain. Outside-combat activation time is displayed but does not advance the
+campaign clock. Reaction commands and reaction delivery through additional
+attack/damage routes remain unfinished; Hellish Rebuke still has no supported
+cast permission. Do not reassign delivered pickers, command identities or costs.
+
+The owner's instruction to review, fix and merge accepts the reviewed work when
+that workflow completes. Record acceptance and its bounded limits in the slice
+registry; do not add a separate owner sign-off after merging.
+
+Start the ready assignments in that queue without waiting for a new engine
+framework. Continue legal exit/outcome settlement (S-121), the remaining
+placement hosts (S-122), real equipment drops and item-form return (S-164/S-166).
+Reuse the delivered combat factory (S-155), command authority (S-156) and
+bounded turn/default policies (S-157/S-158) for their remaining consumers.
+
+Extend existing room objects, areas and source-end records for located aftermath
+(S-086/S-087/S-120), then object-anchored restraints (S-168/S-169). Multi-recipient
+tethers first need one cast source retaining several recipients (S-144); they do
+not need a general object system. Containment/release (S-170–S-172) and vessel
+cargo/movement (S-167) follow placement and item reversion. Cast-local parameter
+changes (S-126/S-127/S-140/S-141) form an independent branch. The queue owns each
+assignment's narrower dependencies and checks; this is not a whole-phase gate.
 
 1. Discover any missing requirement needed by the selected capability.
 2. Build and verify that capability through production Godot paths. Neutral or

@@ -28,6 +28,22 @@ func reset(active_character: Character = null, player_entities: Array = []) -> v
 			break
 
 
+## Batch 063 (queue item 5, Brandon: "Yes."): the shared authored cost
+## vocabulary used by mode costs (057/062) and command costs (060), mapped to
+## the budget kind it spends. "magic" is the Magic action (SRD 5.2.1 p.185,
+## Rules Glossary; p.10 Actions table): it spends the Action, but as the
+## distinct magic_action kind, because Action Surge's extra action is "one
+## additional action, except the Magic action" (SRD 5.2.1 p.48).
+const AUTHORED_COSTS := {"action": "action", "bonus_action": "bonus_action", "magic": "magic_action"}
+
+static func budget_kind(authored: String) -> String:
+	return str(AUTHORED_COSTS.get(authored, authored))
+
+## HUD label for an authored cost ("free"/"none" read as Free).
+static func cost_label(authored: String) -> String:
+	return {"none": "Free", "free": "Free", "action": "Action", "bonus_action": "Bonus Action", "magic": "Magic action", "reaction": "Reaction"}.get(authored, authored.replace("_", " ").capitalize())
+
+
 func can_use_turn_feature(character: Character, pool_id: String) -> bool:
 	var pool := RollTokenRules.pool_definition(character, pool_id)
 	return RollTokenRules.can_use_pool_this_turn(character, pool)

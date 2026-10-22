@@ -1,0 +1,167 @@
+[
+  {
+    "id": "fixture:b056_hounds",
+    "name": "056 hound pair",
+    "description": "Neutral fixture: two same-named hounds (no concentration) that act right after their owner (Batch 056, S-157/S-158).",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 0,
+    "target": "self",
+    "concentration": false,
+    "duration_seconds": 60,
+    "classes": [
+      "wizard"
+    ],
+    "effects": [
+      {
+        "type": "create_actor",
+        "template": {
+          "id": "b056_hound",
+          "name": "Hound",
+          "creature_type": "beast",
+          "size": "medium",
+          "speed": 6,
+          "ability_scores": {
+            "STR": 14,
+            "DEX": 12,
+            "CON": 14,
+            "INT": 6,
+            "WIS": 10,
+            "CHA": 4
+          },
+          "ac": {
+            "base": 13,
+            "per_level": 1
+          },
+          "max_hp": {
+            "base": 20,
+            "per_level": 10
+          },
+          "count": {
+            "base": 2,
+            "per_level": 0
+          },
+          "attack": {
+            "name": "Ward Strike",
+            "damage": "1d8",
+            "damage_type": "force",
+            "range": 1
+          },
+          "features": [
+            {
+              "id": "b039_sturdy",
+              "name": "Sturdy",
+              "effects": [
+                {
+                  "type": "immunity",
+                  "condition": "poisoned"
+                }
+              ]
+            }
+          ],
+          "command": {
+            "cost": "bonus_action",
+            "range_hexes": 6,
+            "orders": [
+              "attack",
+              "dodge"
+            ],
+            "default": "dodge",
+            "control_seconds": 60,
+            "initiative": "after_owner",
+            "owner_incapacitated": "attack_nearest",
+            "owner_dead": "none",
+            "control_expired": "dodge",
+            "concentration_end": "end"
+          }
+        },
+        "placement": {
+          "range_hexes": 2,
+          "no_space": "refuse"
+        }
+      }
+    ]
+  },
+  {
+    "id": "fixture:b056_sprite",
+    "name": "056 sprite",
+    "description": "Neutral fixture: one concentration creature that rolls its own initiative (Batch 056, S-157).",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 0,
+    "target": "self",
+    "concentration": true,
+    "duration_seconds": 60,
+    "classes": [
+      "wizard"
+    ],
+    "effects": [
+      {
+        "type": "create_actor",
+        "template": {
+          "id": "b056_sprite",
+          "name": "Sprite",
+          "creature_type": "beast",
+          "size": "medium",
+          "speed": 6,
+          "ability_scores": {
+            "STR": 14,
+            "DEX": 12,
+            "CON": 14,
+            "INT": 6,
+            "WIS": 10,
+            "CHA": 4
+          },
+          "ac": {
+            "base": 13,
+            "per_level": 1
+          },
+          "max_hp": {
+            "base": 20,
+            "per_level": 10
+          },
+          "count": {
+            "base": 1,
+            "per_level": 0
+          },
+          "attack": {
+            "name": "Ward Strike",
+            "damage": "1d8",
+            "damage_type": "force",
+            "range": 1
+          },
+          "features": [
+            {
+              "id": "b039_sturdy",
+              "name": "Sturdy",
+              "effects": [
+                {
+                  "type": "immunity",
+                  "condition": "poisoned"
+                }
+              ]
+            }
+          ],
+          "command": {
+            "cost": "action",
+            "range_hexes": 6,
+            "orders": [
+              "dodge"
+            ],
+            "default": "none",
+            "initiative": "own",
+            "owner_incapacitated": "dodge",
+            "owner_dead": "dodge",
+            "concentration_end": "end"
+          }
+        },
+        "placement": {
+          "range_hexes": 2,
+          "no_space": "refuse"
+        }
+      }
+    ]
+  }
+]

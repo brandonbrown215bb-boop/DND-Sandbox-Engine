@@ -1,0 +1,119 @@
+[
+  {
+    "id": "fixture:b054_menagerie",
+    "name": "054 menagerie",
+    "description": "Neutral fixture self-cast: choose one declared creature template and how many to create (Batch 054, S-155).",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 0,
+    "target": "self",
+    "concentration": true,
+    "duration_seconds": 60,
+    "classes": [
+      "wizard"
+    ],
+    "effects": [
+      {
+        "type": "create_actor",
+        "template": {
+          "id": "b054_hound",
+          "name": "Hound",
+          "creature_type": "construct",
+          "size": "medium",
+          "speed": 6,
+          "ability_scores": {
+            "STR": 14,
+            "DEX": 12,
+            "CON": 14,
+            "INT": 6,
+            "WIS": 10,
+            "CHA": 4
+          },
+          "ac": {
+            "base": 13,
+            "per_level": 1
+          },
+          "max_hp": {
+            "base": 20,
+            "per_level": 10
+          },
+          "count": {
+            "base": 2,
+            "per_level": 0
+          },
+          "attack": {
+            "name": "Ward Strike",
+            "damage": "1d8",
+            "damage_type": "force",
+            "range": 1
+          },
+          "features": [
+            {
+              "id": "b039_sturdy",
+              "name": "Sturdy",
+              "effects": [
+                {
+                  "type": "immunity",
+                  "condition": "poisoned"
+                }
+              ]
+            }
+          ]
+        },
+        "placement": {
+          "range_hexes": 1,
+          "no_space": "refuse"
+        },
+        "options": [
+          {
+            "id": "b054_owl",
+            "name": "Owl",
+            "creature_type": "beast",
+            "size": "tiny",
+            "speed": 6,
+            "ability_scores": {
+              "STR": 14,
+              "DEX": 12,
+              "CON": 14,
+              "INT": 6,
+              "WIS": 10,
+              "CHA": 4
+            },
+            "ac": {
+              "base": 11,
+              "per_level": 0
+            },
+            "max_hp": {
+              "base": 5,
+              "per_level": 0
+            },
+            "count": {
+              "base": 1,
+              "per_level": 0
+            },
+            "attack": {
+              "name": "Ward Strike",
+              "damage": "1d8",
+              "damage_type": "force",
+              "range": 1
+            },
+            "features": [
+              {
+                "id": "b039_sturdy",
+                "name": "Sturdy",
+                "effects": [
+                  {
+                    "type": "immunity",
+                    "condition": "poisoned"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "count_choice": true
+      }
+    ]
+  }
+]

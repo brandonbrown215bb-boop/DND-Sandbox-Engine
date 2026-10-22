@@ -36,7 +36,8 @@ static func run(h: Node) -> void:
 	h._assert(not source.is_empty() and live.size() == 1 and int(b.spell_slots["2"]) == 2 and CreatedActorRules.owner_of(live[0]) == b.character_id, "039 actual cast creates one owner-linked warden and pays one slot (source=%s)" % source)
 	var joined := CreatedActorRules.attach(combat, b, Vector2i(0, 1))
 	var warden: Character = live[0]
-	h._assert(joined.size() == 1 and combat.player_entities.any(func(e): return e.get("combat_id", "") == warden.character_id), "039 actual warden joins the owner's side of the encounter")
+	# Batch 053: the cast itself now places the warden at a legal cell, so a later attach adds nobody twice.
+	h._assert(joined.is_empty() and combat.player_entities.filter(func(e): return e.get("combat_id", "") == warden.character_id).size() == 1, "039 actual warden joins the owner's side of the encounter once, placed by the cast")
 	Batch031Controls._seed_hit()
 	await combat._execute_monster_attack(enemy, warden.character_name, 0)
 	h._assert(int(combat.last_monster_weapon_attack_result.get("target_ac", -1)) == 13 and warden.max_hp == 20, "039 actual monster attack reads the template AC (%d)" % int(combat.last_monster_weapon_attack_result.get("target_ac", -1)))

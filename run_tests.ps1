@@ -174,6 +174,12 @@ $runIntegration = $Suite -in @("all", "integration")
 if ($runLogic) {
     $logicMarker = if ($LogicGroup -contains "all") { "ALL TESTS PASSED" } else { "SELECTED LOGIC TESTS PASSED" }
     if (-not (Invoke-GodotCase "logic" "res://scenes/test_runner.tscn" $logicMarker $logicTimeout @("--logic-groups=$($LogicGroup -join ',')"))) { $failed = $true }
+    # Card cafa: the runner must have checked every registered check script.
+    $logicLog = Join-Path $logDirectory "logic.stdout.log"
+    if (-not (Test-Path $logicLog) -or -not (Select-String -Path $logicLog -Pattern 'CHECK SCRIPT GATE: \d+ registered check scripts, 0 failed' -Quiet)) {
+        Write-Host ">> logic: FAILED (check script gate missing or red: a registered check file did not load/parse)"
+        $failed = $true
+    }
 }
 if ($runIntegration) {
 	$scenarios = @("playtest_fixes", "combat", "party_combat", "crown_smoke", "crown_balance_fixture", "combat_ai_loop", "combat_victory", "combat_defeat", "final_encounter_round_trip", "mixed_mechanics_encounter", "spell_effect_lifetime", "jump_spell_movement", "ranger_action_flow", "ranger_natures_veil_blindsight", "wizard_capstone_cast_modes", "monk_action_flow", "fighter_second_wind", "fighter_progression", "class_building_blocks", "barbarian_action_flow", "barbarian_choice_flow", "bard_action_flow", "bard_creation_flow", "cleric_creation_flow", "cleric_action_flow", "cleric_strike_flow", "core12_shared_rules", "core12_audit_repairs", "rogue_devious_strikes", "sorcerer_subtle_spell", "sleep_spell_flow", "blindness_deafness_spell_flow", "grease_spell_flow", "spike_growth_spell_flow", "entangle_spell_flow", "black_tentacles_spell_flow", "wall_of_fire_spell_flow", "sleet_storm_spell_flow", "cloud_of_daggers_spell_flow", "cloudkill_spell_flow", "conjure_animals_spell_flow", "conjure_celestial_spell_flow", "conjure_elemental_spell_flow", "conjure_fey_spell_flow", "conjure_minor_elementals_spell_flow", "conjure_woodland_beings_spell_flow", "spirit_guardians_spell_flow", "aura_of_life_spell_flow", "beacon_of_hope_spell_flow", "divine_favor_spell_flow", "death_ward_spell_flow", "sanctuary_spell_flow", "heroism_spell_flow", "magic_weapon_spell_flow", "enhance_ability_spell_flow", "charm_person_spell_flow", "charm_monster_spell_flow", "faerie_fire_spell_flow", "fog_cloud_spell_flow", "darkness_spell_flow", "antilife_shell_spell_flow", "freedom_of_movement_spell_flow", "darkvision_spell_flow", "see_invisibility_spell_flow", "detect_magic_spell_flow", "blur_spell_flow", "detect_evil_and_good_spell_flow", "detect_poison_and_disease_spell_flow", "identify_spell_flow", "goodberry_spell_flow", "true_seeing_spell_flow", "invisibility_spell_flow", "moonbeam_spell_flow", "plant_growth_spell_flow", "barkskin_spell_flow", "mage_armor_spell_flow", "true_strike_spell_flow", "mass_cure_wounds_flow", "mass_healing_word_flow", "sorcerer_twinned_spell", "wand_magic_missiles_flow", "wand_last_charge_destruction_flow", "portable_light_source_combat_flow", "chain_lightning_target_identity_flow", "chain_lightning_mixed_targets_flow", "meteor_swarm_object_area_flow", "fire_area_object_ignition_flow", "sunburst_spell_flow", "overworld", "companion_lifecycle", "crown_composition_solo_two", "crown_composition_three_four", "main_menu_load", "dungeon", "event_dialog", "crown_event_fairy_ring", "dungeon_reentry_round_trip", "character_creation", "normal_creation_matrix", "shop", "save_load", "action_resource_round_trip", "combat_resolution", "event_choice_resolution", "event_dialog_choice_click", "character_sheet", "character_sheet_contexts", "character_value_audit")
@@ -203,6 +209,21 @@ if ($runIntegration) {
 	$scenarios += "batch_048_item_types_measurements_flow"
 	$scenarios += "batch_049_owned_feature_sources_flow"
 	$scenarios += "batch_050_playtest_fixes_flow"
+	$scenarios += "batch_051_feat_acquisition_flow"
+	$scenarios += "batch_052_hud_mode_controls_flow"
+	$scenarios += "batch_053_legal_placement_flow"
+	$scenarios += "batch_054_factory_choices_flow"
+	$scenarios += "batch_055_created_commands_flow"
+	$scenarios += "batch_056_created_initiative_flow"
+	$scenarios += "batch_057_mode_costs_flow"
+	$scenarios += "batch_058_summon_lists_flow"
+	$scenarios += "batch_059_corpse_limit_flow"
+	$scenarios += "batch_060_command_cost_flow"
+	$scenarios += "batch_061_summon_timing_flow"
+	$scenarios += "batch_062_mode_costs_outside_flow"
+	$scenarios += "batch_063_magic_action_cost_flow"
+	$scenarios += "batch_064_mode_duration_flow"
+	$scenarios += "batch_065_reaction_triggers_flow"
 	$scenarios += "wave_three_foundations_flow", "owned_creature_lifecycle_flow", "batch_024_recovery_flow", "batch_024_spell_result_flow",
     "find_familiar_exploration_flow", "party_recovery_flow", "downed_area_damage_flow", "created_undead_flow"
     if ($Scenario.Count -gt 0) {

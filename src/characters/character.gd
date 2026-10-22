@@ -389,6 +389,8 @@ var saving_throw_proficiencies: Array[String] = []
 var skill_proficiencies: Array[String] = []
 var tool_proficiencies: Array[String] = []
 var creation_choices: Dictionary = {}
+## Batch 051: the Origin feat chosen at creation (SRD 5.2.1 p.83).
+var origin_feat: String = ""
 ## Ordered acquired classes, pending milestone levels and once-only permanent receipts.
 var permanent_progression: Dictionary = {}
 var weapon_proficiencies: Array[String] = []
@@ -901,7 +903,7 @@ func get_creature_type() -> String:
 
 
 func get_creature_size() -> String:
-	if class_id == "created_creature": return str(feature_uses.get("creature_size", "medium"))
+	if class_id in ["created_creature", "created_actor"]: return str(feature_uses.get("creature_size", "medium"))
 	if class_id == "familiar": return str(feature_uses.get("creature_size", "large" if has_feature("find_steed_slam") else "tiny")).to_lower()
 	if DruidRules.is_shaped(self): return str(DruidRules.current_form(self).get("size", "medium")).to_lower()
 	var projected_size := ActorProjectionRules.size(self)
@@ -2601,6 +2603,7 @@ func to_dict() -> Dictionary:
 		"skill_proficiencies": skill_proficiencies,
 		"tool_proficiencies": tool_proficiencies.duplicate(),
 		"creation_choices": creation_choices.duplicate(true),
+		"origin_feat": origin_feat,
 		"weapon_proficiencies": weapon_proficiencies,
 		"armor_proficiencies": armor_proficiencies,
 		"traits": traits.duplicate(true),
@@ -2734,6 +2737,7 @@ func from_dict(data: Dictionary) -> void:
 	skill_proficiencies.clear()
 	tool_proficiencies.assign(data.get("tool_proficiencies", []))
 	creation_choices = data.get("creation_choices", {}).duplicate(true)
+	origin_feat = str(data.get("origin_feat", "")) if data.get("origin_feat", "") is String and FeatRules.saved_error(data).is_empty() else ""
 	for val in data.get("skill_proficiencies", []):
 		skill_proficiencies.append(str(val))
 
