@@ -27,3 +27,17 @@ Scope note: a5d56c6 itself only edits the quest card. The code is 9453530 (dawn 
 - **Room records are not validated at save load.** Only duplicate ownership is checked (`InventoryCopies`, rooms loop); this predates 050. A forged stamp is clamped to the copy maximum on pickup by `sync`, so it is bounded.
 - **Only `PartyManager.characters` get dawn.** Actors outside the party roster (if any ever hold copies) are not walked.
 - `copy_max` counts only the item's own upgrades. That is correct for an unheld copy.
+
+## Windows integration with current main — 2026-10-21
+
+Integrated after PRs #25–37 without changing the production fix. A focused
+independent review found no breaking issue. Full Windows logic passed **5,685/0**;
+the 042 projected-item, 049 owned-source and 050 playtest scenarios passed.
+The strengthened 042 check advances the real campaign clock, saves through
+SaveManager and reloads an injured projected actor with the same exact ID, 7 HP,
+three recharged uses and its remembered Deep option. Reversion and re-equipping
+preserve those uses and return exactly one copy. The first added assertion used
+a backpack-only count after equipping; correcting it to count owned copies and
+check the equipped ID passed. This was a test correction, not a runtime repair.
+Raw logs remain in ignored `.artifacts/`; no catalog conversion or broader
+projection controls are claimed.

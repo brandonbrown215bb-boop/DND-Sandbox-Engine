@@ -142,6 +142,12 @@ answers. Final acceptance invalidates old popups when the owner leaves and later
 regains the active turn. Fresh-process safe-save recovery retains chosen feats,
 active mode/time, spent uses, exact copies and upgrade choices without replay.
 
+PR #22 continues the existing item-source and projection slices: campaign dawn
+also reaches the exact copy stored in an item-projection record. Its remembered
+capacity, injured actor identity and recharged uses survive a real SaveManager
+checkpoint, reversion and re-equipping. Projected copies remain unequipped for
+`recharge_while` policy. This adds no slice or broader item-projection controls.
+
 These are continuations: the verified slice count remains **138**. No playable
 feat catalog is included. Creation currently offers a free Origin choice because
 backgrounds are absent. Feat ability increases, class/feature prerequisites,

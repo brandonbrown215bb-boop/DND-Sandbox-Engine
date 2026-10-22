@@ -56,10 +56,20 @@ static func run(check: Callable) -> void:
 	DataLoader.items[vessel.id] = vessel
 	var p := Batch050Checks.actor("r050f_projector")
 	var pid := Batch050Checks._spent(p, vessel.id)
+	p.inventory.equip_instance(Inventory.Slot.WEAPON, pid)
+	var chose := RuleUpgradeRules.choose_alternative(p, W + pid, "edge", "deep@" + pid)
+	p.inventory.unequip(Inventory.Slot.WEAPON)
 	var projected := ItemProjectionRules.project(p, pid)
-	OwnedFeatureSources.recover_dawn(p)
+	PartyManager.characters = {p.character_id: p}
+	GameManager.advance_campaign_time(86400)
+	PartyManager.characters = {a.character_id: a}
 	var proj_copy: Dictionary = p.item_projections.get(pid, {}).get("copy", {})
-	check.call(projected.get("projected", false) and _stamp(proj_copy, pid) == 2, "R050F F3 a dawn while the copy is projected into an actor recharges it (got %d, projected=%s)" % [_stamp(proj_copy, pid), str(projected)])
+	check.call(chose and projected.get("projected", false) and _stamp(proj_copy, pid) == 3, "R050F F3 the campaign dawn refills the projected copy to its remembered Deep capacity (got %d, projected=%s)" % [_stamp(proj_copy, pid), str(projected)])
+	var restored := Character.new()
+	restored.from_dict(JSON.parse_string(JSON.stringify(p.to_dict())))
+	var returned := ItemProjectionRules.revert(restored, pid)
+	restored.inventory.equip_instance(Inventory.Slot.WEAPON, pid)
+	check.call(returned.get("reverted", false) and int(restored.feature_uses.get(W + pid, -1)) == 3 and restored.rule_alternatives.get(W + pid + "|edge", "") == "deep@" + pid and not restored.item_projections.has(pid), "R050F F3 the same recharged copy keeps Deep and three uses after restore, return and re-equip")
 	# F4 loader: malformed recharge_while values.
 	for bad in [["equipped"], 1, "", "Equipped"]:
 		var item := DataLoader.get_item(B).duplicate(true)
