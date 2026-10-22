@@ -25,6 +25,9 @@ retain fixture-only feat proof, missing backgrounds and feat mechanics, action
 costs for real mode content, and volume/item measurement/role work. Do not
 reassign completed chooser, ownership or control wiring.
 
+PR #22 also repairs dawn recovery for exact projected item copies, preserving
+their remembered capacity through save/load, reversion and re-equipping.
+
 PRs #25–37 supply bounded combat placement/factory choices, exact created-creature
 commands and turn policies, authored mode/command costs, room mode controls and
 reaction triggers. Their review repairs and remaining work are tracked in the

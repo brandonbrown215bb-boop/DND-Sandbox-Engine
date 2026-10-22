@@ -137,8 +137,10 @@ identical copies have separate pools; the same definition's same power grants
 its benefits once, with copies considered in sorted identity order.
 
 Item activation modes may declare `uses_per: "dawn"`. Campaign day boundaries
-refill carried copies, container contents, attached children and copies in saved
-rooms. Optional `recharge_while: "equipped"` or `"attuned"` checks that specific
+refill carried copies, container contents, attached children, copies in saved
+rooms and exact copies stored in item-projection records. A projected copy uses
+its remembered upgrade capacity and keeps the refill through save/load and return;
+it does not count as equipped. Optional `recharge_while: "equipped"` or `"attuned"` checks that specific
 condition: equipped does not imply attuned. Suppression/merging alone does not
 block recharge. Equipped item powers recovering on a rest also use their owned
 upgraded capacity. Unheld copies refill their record stamp using their remembered

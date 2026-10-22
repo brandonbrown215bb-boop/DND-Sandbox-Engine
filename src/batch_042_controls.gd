@@ -67,6 +67,22 @@ static func run(h: Node) -> void:
 	GameManager.current_state = GameManager.GameState.OVERWORLD
 	GameManager.game_in_progress = true
 	GameManager.active_dungeon_state.clear()
+	# PR22: an exact projected copy recharges through the real campaign clock,
+	# then keeps its stamp and remembered capacity through a disk checkpoint.
+	Batch050Checks.load_fixtures()
+	var dawn_item := DataLoader.get_item(Batch050Checks.BLADE).duplicate(true)
+	dawn_item.id = "fixture:r050f_saved_projection"
+	dawn_item["actor_projection"] = DataLoader.get_item(Batch042Checks.FIGURINE).actor_projection.duplicate(true)
+	DataLoader.items[dawn_item.id] = dawn_item
+	var dawn_id := Batch050Checks._spent(a, dawn_item.id)
+	a.inventory.equip_instance(Inventory.Slot.WEAPON, dawn_id)
+	var dawn_choice := RuleUpgradeRules.choose_alternative(a, Batch050Checks.ward(dawn_id), "edge", "deep@" + dawn_id)
+	a.inventory.unequip(Inventory.Slot.WEAPON)
+	var dawn_projection := ItemProjectionRules.project(a, dawn_id)
+	var dawn_actor := ItemProjectionRules.actor(a, dawn_id)
+	if dawn_actor != null: dawn_actor.current_hp = 7
+	GameManager.advance_campaign_time(86400)
+	h._assert(dawn_choice and dawn_projection.get("projected", false) and Review050FChecks._stamp(a.item_projections.get(dawn_id, {}).get("copy", {}), dawn_id) == 3, "022 real campaign dawn refills a projected copy to its remembered Deep capacity")
 	# Review: a fixture-class companion holds a live linked bond through the real save/load.
 	var lc: Character = PartyManager.characters.get(str(PartyManager.companion_roster.get("b042_review", {}).get("character_id", "")), null)
 	if lc == null:
@@ -89,6 +105,14 @@ static func run(h: Node) -> void:
 		var back := ItemProjectionRules.actor(na, fig) if na != null else null
 		h._assert(loaded and na != null and na != a and back != null and back != hound and back.current_hp == damaged and not na.inventory.has_item(Batch042Checks.FIGURINE), "042 actual real load rebuilds the same hound with its damage and keeps the copy out of the inventory")
 		if na != null:
+			var dawn_back := ItemProjectionRules.actor(na, dawn_id)
+			var dawn_kept: bool = dawn_back != null and dawn_back.current_hp == 7 and dawn_back.character_id == ItemProjectionRules.actor_id(dawn_id) and Review050FChecks._stamp(na.item_projections.get(dawn_id, {}).get("copy", {}), dawn_id) == 3
+			var dawn_returned := ItemProjectionRules.revert(na, dawn_id)
+			na.inventory.equip_instance(Inventory.Slot.WEAPON, dawn_id)
+			var dawn_copies := na.inventory.owned_instances().filter(func(copy): return str(copy.definition_id) == str(dawn_item.id)).size()
+			h._assert(dawn_kept and dawn_returned.get("reverted", false) and int(na.feature_uses.get(Batch050Checks.ward(dawn_id), -1)) == 3 and na.rule_alternatives.get(Batch050Checks.ward(dawn_id) + "|edge", "") == "deep@" + dawn_id and na.inventory.equipped_instance_id(Inventory.Slot.WEAPON) == dawn_id and dawn_copies == 1, "022 real save/load and reversion preserve the exact injured actor, recharged copy and Deep option without duplication (kept=%s returned=%s copies=%d)" % [str(dawn_kept), str(dawn_returned.get("reverted", false)), dawn_copies])
+			na.inventory.unequip(Inventory.Slot.WEAPON)
+			na.inventory.destroy_instance(dawn_id)
 			var rev := ItemProjectionRules.revert(na, fig)
 			h._assert(rev.get("reverted", false) and Batch042Checks.owns(na, fig) and na.inventory.count_item(Batch042Checks.FIGURINE) == 1 and ItemProjectionRules.actor(na, fig) == null, "042 actual reversion after reload returns the exact copy once")
 			na.inventory.destroy_instance(fig)
