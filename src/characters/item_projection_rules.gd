@@ -132,7 +132,6 @@ static func copy_ids(dto: Dictionary) -> Array:
 ## Combat host: living projected actors join their owner's side.
 static func attach(state: Node, owner: Character, origin: Vector2i) -> Array:
 	var joined: Array = []
-	var offset := 1
 	settle(owner) # Review 042 R1: destroyed projected actors revert before placement.
 	for entity in state.player_entities.duplicate():
 		var c = entity.get("character", null)
@@ -142,8 +141,11 @@ static func attach(state: Node, owner: Character, origin: Vector2i) -> Array:
 	for id in owner.item_projections:
 		var a := actor(owner, str(id))
 		if a == null or not a.is_alive or state.player_entities.any(func(e): return e.get("combat_id", "") == a.character_id): continue
-		state.player_entities.append({"name": a.character_name, "display_name": a.character_name, "character": a, "combat_id": a.character_id, "owner_player_index": -1, "hex_position": origin + Vector2i(offset, 0), "is_created_actor": true, "created_owner_id": owner.character_id, "reaction_available": true, "color": Color(0.7, 0.6, 0.4)})
-		offset += 1
+		# Batch 053 S-122: the nearest legal adjacent space; none means it stays off the grid (never overlaps).
+		var policy := _policy(str(owner.item_projections[id].copy.get("definition_id", "")))
+		var hexes := PlacementRules.reserve(state, origin, str(policy.get("template", {}).get("size", "medium")), 1, 1)
+		if hexes.is_empty(): continue
+		state.player_entities.append({"name": a.character_name, "display_name": a.character_name, "character": a, "combat_id": a.character_id, "owner_player_index": -1, "hex_position": hexes[0], "is_created_actor": true, "created_owner_id": owner.character_id, "reaction_available": true, "color": Color(0.7, 0.6, 0.4)})
 		joined.append(a.character_id)
 	state._update_grid_entities()
 	return joined

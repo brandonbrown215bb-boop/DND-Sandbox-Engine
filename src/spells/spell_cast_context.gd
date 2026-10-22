@@ -16,6 +16,7 @@ var action_id := ""
 var action_invocation_id := ""
 var parent_source_id := ""
 var component_copy_validated := false
+var material_targets: Array = [] # Exact transient remains reserved before payment.
 ## Exploration ritual completion; elapsed before creating the new effect.
 var ritual_seconds := 0
 var spell: Dictionary = {}
@@ -51,6 +52,7 @@ var set_resolving: Callable
 var owner_label_for_character: Callable
 var action_cost_for_command: Callable
 var add_find_steed_entity: Callable
+var attach_created_actors: Callable # Batch 053: place created actors at their confirmed destinations.
 var apply_find_steed_life_bond: Callable
 var check_battle_end_conditions: Callable
 var collect_attack_inspiration_decision: Callable

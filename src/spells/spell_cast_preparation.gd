@@ -33,6 +33,10 @@ static func validate_and_choose(cast: SpellCastContext) -> bool:
 		return false
 	if not await SpellCastChoices.choose_orders_and_types(cast):
 		return false
+	if not await SpellCastChoices.choose_factory(cast): # Batch 054 S-155: permitted template/count before placement and cost.
+		return false
+	if not await SpellCastChoices.choose_placement(cast): # Batch 053: legal destinations before any cost.
+		return false
 	return true
 
 
