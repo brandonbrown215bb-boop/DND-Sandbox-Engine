@@ -34,6 +34,10 @@ static func _context(state) -> Dictionary:
 	elif "players" in state: ctx["players"] = state.players
 	if "monster_entities" in state: ctx["monsters"] = state.monster_entities
 	elif "monsters" in state: ctx["monsters"] = state.monsters
+	ctx["room"] = state.room if "room" in state and state.room is Dictionary else LocalRoomCombat.room()
+	ctx["plane"] = PhysicalFactsRules.get_plane(ctx.room, GameManager.transition_context)
+	if "plane" in state: ctx["plane"] = str(state.plane)
+	if "objects" in state: ctx["objects"] = state.objects
 	return ctx
 
 static func _grid(state) -> HexGrid:
@@ -46,7 +50,16 @@ static func _grid(state) -> HexGrid:
 static func legal_error(state, origin: Vector2i, hex: Vector2i, size: String, range_hexes: int, reserved: Array = []) -> String:
 	if hex in reserved: return "Position %s is already reserved for another arrival." % str(hex)
 	if HexUtils.get_distance(origin, hex) > range_hexes or hex == origin: return "Position %s is out of placement range." % str(hex)
-	var space := PhysicalFactsRules.is_space_available(_grid(state), hex, size, PhysicalFactsRules.DEFAULT_PLANE, _context(state))
+	var ctx := _context(state)
+	var plane := str(ctx.get("plane", PhysicalFactsRules.DEFAULT_PLANE))
+	if state != null and "caster" in state and state.caster is Character:
+		plane = PhysicalFactsRules.get_plane(state.caster, ctx)
+	else:
+		for entity in ctx.get("players", []):
+			if entity.get("hex_position") == origin:
+				plane = PhysicalFactsRules.get_plane(entity.get("character"), ctx)
+				break
+	var space := PhysicalFactsRules.is_space_available(_grid(state), hex, size, plane, ctx)
 	return "" if bool(space.get("available", false)) else str(space.get("reason", "No space."))
 
 ## Legal destinations nearest first (ties by coordinate), excluding reserved ones.

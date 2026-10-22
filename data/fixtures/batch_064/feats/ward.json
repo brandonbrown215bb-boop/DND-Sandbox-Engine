@@ -1,0 +1,28 @@
+[
+  {
+    "id": "fixture:b064_slow_ward",
+    "name": "Batch 064 Slow Ward (General)",
+    "description": "Neutral fixture General feat: an Action-cost mode whose activation declares a 10-minute time (Batch 064).",
+    "category": "general",
+    "prerequisite": {"level": 4},
+    "features": [
+      {
+        "id": "fixture:b064_slow_ward_mode",
+        "name": "Slow Ward",
+        "description": "Fixture activation: an Action that takes 10 minutes to start; reselecting takes one Bonus Action round.",
+        "type": "mode_choice",
+        "boundary": "activation",
+        "uses": 2,
+        "uses_per": "long_rest",
+        "duration_seconds": 3600,
+        "allow_reselect": true,
+        "costs": {"activate": "action", "reselect": "bonus_action"},
+        "activation_seconds": {"activate": 600},
+        "modes": [
+          {"id": "warded", "benefits": [{"stat": "AC", "amount": 1}]},
+          {"id": "swift", "benefits": [{"stat": "speed", "amount": 1}]}
+        ]
+      }
+    ]
+  }
+]
