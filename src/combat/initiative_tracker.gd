@@ -46,6 +46,7 @@ func sort_initiative() -> void:
 			return a["dex"] > b["dex"]
 		return str(a["id"]) < str(b["id"])
 	)
+	regroup_followers()
 	active_index = 0
 	current_round = 1
 
@@ -59,6 +60,7 @@ func sort_initiative_preserving_active() -> void:
 			return a["dex"] > b["dex"]
 		return str(a["id"]) < str(b["id"])
 	)
+	regroup_followers()
 	for index in combatants.size():
 		if str(combatants[index].get("id", "")) == active_id:
 			active_index = index
@@ -113,3 +115,18 @@ func remove_combatant(id: String) -> void:
 			# Active combatant was removed. The next combatant is now at active_index.
 			# Decrement by 1 so that next_turn() increments back to active_index.
 			active_index -= 1
+
+
+## Batch 061 review R1: an entry with "follows" (an after_owner created actor)
+## must stay directly behind its anchor (and earlier followers) after any re-sort,
+## even when another combatant ties the anchor on roll and DEX.
+func regroup_followers() -> void:
+	var followers := combatants.filter(func(c): return not str(c.get("follows", "")).is_empty() and combatants.any(func(o): return str(o.id) == str(c.follows)))
+	if followers.is_empty(): return
+	var rest := combatants.filter(func(c): return not followers.has(c))
+	var out: Array = []
+	for c in rest:
+		out.append(c)
+		for f in followers:
+			if str(f.follows) == str(c.id): out.append(f)
+	combatants.assign(out)
