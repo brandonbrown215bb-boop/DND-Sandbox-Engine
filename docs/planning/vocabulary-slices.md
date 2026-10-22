@@ -8,10 +8,10 @@ certify converted catalog content.
 
 ## Count and scope
 
-**226 defined slices: 138 verified, 88 not yet accepted.** Counts measure accepted
+**226 defined slices: 143 verified, 83 not yet accepted.** Counts measure accepted
 bounded implementations, not time, effort or completion of every clause in a row.
-These totals include reviewed, repaired and merged Batches 034–046 through
-2026-10-20; their remaining limits are recorded below.
+These totals include reviewed, repaired and merged Batches 034–065 through
+2026-10-21; their remaining limits are recorded below.
 
 SRD 5.2.1 governs the staged core-12 target. Artificer, Mystic and later
 supplements remain outside it. Missing rule bodies stay in source follow-up;
@@ -25,13 +25,13 @@ catalog content as part of every slice.
 | P1 — Facts, results and grants | 34 | 34 | 0 |
 | P2 — Pools, time and effect state | 50 | 40 | 10 |
 | P3 — Rolls and decisions | 27 | 22 | 5 |
-| P4 — Damage and consequences | 25 | 18 | 7 |
+| P4 — Damage and consequences | 25 | 19 | 6 |
 | P5 — Casting and action composition | 20 | 11 | 9 |
-| P6 — Actors and forms | 23 | 8 | 15 |
+| P6 — Actors and forms | 23 | 12 | 11 |
 | P7 — Space, perception and illusions | 19 | 1 | 18 |
 | P8 — Physical items and bodies | 18 | 4 | 14 |
 | P9 — Procedures and campaign outcomes | 10 | 0 | 10 |
-| **Total** | **226** | **138** | **88** |
+| **Total** | **226** | **143** | **83** |
 
 ## How to use a row
 
@@ -164,18 +164,20 @@ counts and the final regression/injection results; raw logs stay ignored.
 <a id="pr25-37-validation"></a>
 #### PRs #25–37: reviewed subset and work remaining
 
-The stack is reviewed together on `rook/review-pr25-37`; the PRs are still open.
-Acceptance of the bounded work does not require completing the remaining scope.
-The merged verified-slice totals above remain unchanged until integration.
+PRs #25–37 are merged with the review repairs and accepted within the boundary
+below. Acceptance of the bounded work does not require completing the remaining
+scope. S-122 and S-155–S-158 add five accepted bounded implementations
+(VS-139–VS-143); mode and reaction work continues existing slices. S-121 remains
+uncompleted. The original requirements and all listed follow-ups remain open.
 Use the [created-actor contract](../mechanics/created-actors-and-placement.md)
 and [mode contract](../mechanics/source-benefit-carriers.md#modes-forms-and-exact-item-state)
 for executable syntax instead of the historical build reports.
 
 | Area | Delivered subset | Still needs to be done; does not block this subset |
 |---|---|---|
-| S-121 / S-122 / S-155 | Combat creation chooses permitted templates/mixes/counts, reserves distinct single-cell destinations and rechecks before payment. Authored no-space refusal or spending creates no overlapping actor. Material-limited casts reserve distinct eligible remains and consume them once only for an actual created source. | S-121 exit-before-save/outcome settlement; exploration placement; normal item-projection controls, authored placement/failure policy and full-inventory returns; multi-cell bodies, mixed sizes and per-kind policies; broader template parameter choices such as Find Familiar's creature type. |
-| S-156 | Exact actor-ID command rows; authored per-order Action, Bonus Action, Magic action or free costs; range, ownership and affordability refusal; once-per-actor-per-owner-turn commands; Dodge/Attack and declared uncommanded defaults. | Additional orders, Reaction commands with their own trigger, real source-backed consumers. Mixed casts currently require one command policy. Legacy fallback costs/timing are compatibility behavior; new content must declare its own policy. |
-| S-157 / S-158 | Owner-turn, after-owner and independent initiative; separate own-turn budgets; owner state/control expiry overrides queued orders; living persistent sources survive loss of control. Saved sources re-enter encounters legally. | Other shared-count relationships, owner-turn actors acting after the owner leaves the tracker, linked summons entering with an already downed/dead owner who has no initiative anchor, and broader autonomous movement/hostile control conversion. Live mid-combat tracker persistence is outside the supported save checkpoints. |
+| <a id="vs-139"></a><a id="vs-140"></a>S-121 / S-122 / S-155 | S-122 (VS-139) and S-155 (VS-140): combat creation chooses permitted templates/mixes/counts, reserves distinct single-cell destinations and rechecks before payment. Authored no-space refusal or spending creates no overlapping actor. Material-limited casts reserve distinct eligible remains and consume them once only for an actual created source. | S-121 exit-before-save/outcome settlement; exploration placement; normal item-projection controls, authored placement/failure policy and full-inventory returns; multi-cell bodies, mixed sizes and per-kind policies; broader template parameter choices such as Find Familiar's creature type. |
+| <a id="vs-141"></a>S-156 (VS-141) | Exact actor-ID command rows; authored per-order Action, Bonus Action, Magic action or free costs; range, ownership and affordability refusal; once-per-actor-per-owner-turn commands; Dodge/Attack and declared uncommanded defaults. | Additional orders, Reaction commands with their own trigger, real source-backed consumers. Mixed casts currently require one command policy. Legacy fallback costs/timing are compatibility behavior; new content must declare its own policy. |
+| <a id="vs-142"></a><a id="vs-143"></a>S-157 / S-158 (VS-142/143) | Owner-turn, after-owner and independent initiative; separate own-turn budgets; owner state/control expiry overrides queued orders; living persistent sources survive loss of control. Saved sources re-enter encounters legally. | Other shared-count relationships, owner-turn actors acting after the owner leaves the tracker, linked summons entering with an already downed/dead owner who has no initiative anchor, and broader autonomous movement/hostile control conversion. Live mid-combat tracker persistence is outside the supported save checkpoints. |
 | Mode costs and controls | Declared activation/reselect/switch costs use the existing budget and preserve free undeclared fixtures. The local room panel uses the same state; authored activation time is exposed. | Catalog conversions, overworld/sheet panels, group-recipient choices and end-early controls. Campaign time passing for outside-combat activation remains partial; no clock advances. |
 | Reaction triggers | Declared spell triggers and on-hit mode switches; confirmation rechecks live location, sight, turn, casting and target eligibility before payment. | Hellish Rebuke's actual cast permission; spell attacks, additional swings, opportunity attacks, areas, other damage sources and creature/monster reactors. After-hit triggers cannot alter the triggering attack; Shield retains its existing path. Area/creation/formula/spatial reaction hosts remain unsupported. |
 
@@ -440,7 +442,7 @@ the existing modules instead of rebuilding these bounded hosts.
 | S-119 — Death/destruction distinct from ordinary HP loss | Verified (VS-114; source-declared zero-HP aftermath) | V-021 | Apply eligible instant death/destruction with declared gear/remains policy, preserving original identity and actual cause for later revival. | S-117, S-032 |
 | S-120 — Aftermath successor actor or hazard | Verified (VS-126; actor successors; objects/hazards remain open) | V-021 | Create the declared actor/object/hazard from final death/destruction once at its actual location, with exclusions and retained/disposed gear as specified. | S-119, S-154 |
 | S-121 — Required legal exit before outcome settlement | Planned (exit settlement still needed) | V-022 | Choose/validate legal exit placement before final save/outcome; no space changes outcome only as authored, without premature escape or failed-save effects. | S-033, S-043 |
-| S-122 — Creation/arrival placement and failure costs | Partial (combat arrival reviewed; other hosts remain) | V-022 | Validate required space before creation/arrival and apply the declared no-space cost/result; placement refusal never silently creates an overlapping actor. | S-121, S-135 |
+| S-122 — Creation/arrival placement and failure costs | Verified (VS-139; combat arrival; other hosts remain) | V-022 | Validate required space before creation/arrival and apply the declared no-space cost/result; placement refusal never silently creates an overlapping actor. | S-121, S-135 |
 | S-123 — Damage/healing dice removal and maximizing | Verified (VS-103; critical base-die cost boundary) | V-023 | Remove a declared dice quantity before rolling or maximize eligible dice; separate noncritical cost dice from critical/result multiplication. | S-010, S-034 |
 | S-124 — Selected damage/healing dice rerolls | Verified (VS-104; authored healing policy and exact payment receipt) | V-023 | Reuse actual rolled-dice selection with declared eligibility/kept policy/count/cost; chosen dice reroll once and frozen siblings remain unchanged. | S-123 |
 | S-125 — Critical and final-result multipliers | Verified (VS-105; explicit critical exclusion) | V-023 | Multiply the declared dice/component/result at its stated stage with explicit rounding; fixed bonuses, typed components and critical exclusions remain distinct. | S-123, S-109 |
@@ -483,10 +485,10 @@ the existing modules instead of rebuilding these bounded hosts.
 | Slice | State | Capability coverage | Build and acceptance finish line | After |
 |---|---|---|---|---|
 | S-154 — Parameterized created actor | Verified (VS-123; source-linked actor templates) | V-058, V-057 | Create a source-linked actor with declared AC/current/max HP/attack/DC template values and retained owner identity; forbidden template creation features are excluded. | S-032, S-036, S-049 |
-| S-155 — Factory choices/count and creation refusal | Partial (combat factory reviewed; broader choices remain) | V-058 | Select permitted template/options/count, validate actual space/exclusions before creation, and create only the declared actors with unique identities. | S-154, S-122 |
-| S-156 — Command cost/range/default authority | Reviewed bounded build (PRs #27/#32/#35; pending integration) | V-059 | Issue legal commands to actually owned eligible creatures through control/AI routes; charge the declared owner action/Bonus once and apply default when uncommanded. | S-154, S-026 |
-| S-157 — Owner-linked versus independent initiative | Partial (three timings reviewed; shared-count variants remain) | V-059 | Schedule independent/owner-turn/after-owner/shared-count created actors with their own budgets; actor death/removal cannot replay or skip the owner's interrupted work. | S-156 |
-| S-158 — Incapacity and control-expiry autonomy | Partial (declared defaults reviewed; owner-removal behavior remains) | V-059 | When owner is incapacitated or command/control expires, apply declared autonomous/default behavior without automatically destroying the existing actor. | S-157, S-072 |
+| S-155 — Factory choices/count and creation refusal | Verified (VS-140; combat factory; broader choices remain) | V-058 | Select permitted template/options/count, validate actual space/exclusions before creation, and create only the declared actors with unique identities. | S-154, S-122 |
+| S-156 — Command cost/range/default authority | Verified (VS-141; exact commands, costs and defaults) | V-059 | Issue legal commands to actually owned eligible creatures through control/AI routes; charge the declared owner action/Bonus once and apply default when uncommanded. | S-154, S-026 |
+| S-157 — Owner-linked versus independent initiative | Verified (VS-142; three timings; shared-count variants remain) | V-059 | Schedule independent/owner-turn/after-owner/shared-count created actors with their own budgets; actor death/removal cannot replay or skip the owner's interrupted work. | S-156 |
+| S-158 — Incapacity and control-expiry autonomy | Verified (VS-143; declared defaults; owner-removal behavior remains) | V-059 | When owner is incapacitated or command/control expires, apply declared autonomous/default behavior without automatically destroying the existing actor. | S-157, S-072 |
 | S-159 — Inserted extra turn | Planned | V-060 | Insert a full actor turn at a declared initiative position while retaining interrupted work and per-round history; an extra Action does not create a turn. | S-157, S-030, S-056 |
 | S-160 — Off-turn and type-limited Reaction/action budgets | Planned | V-060 | Grant only declared extra Opportunity/legendary/child actions with their own reset/option locks; spending one cannot supply a general Reaction or own-turn Action. | S-156, S-057 |
 | S-161 — Exclusive exact-copy/actor bond | Verified (VS-127; exact-copy and owned-actor bonds) | V-061, V-057 | Bind actual item/actor to owner with declared uniqueness/capacity and legal replacement; refusal preserves the previous bond and all other sources. | S-049, S-026 |

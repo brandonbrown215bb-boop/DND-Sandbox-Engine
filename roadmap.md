@@ -29,8 +29,8 @@ PRs #25–37 supply bounded combat placement/factory choices, exact created-crea
 commands and turn policies, authored mode/command costs, room mode controls and
 reaction triggers. Their review repairs and remaining work are tracked in the
 [PR25–37 review boundary](docs/planning/vocabulary-slices.md#pr25-37-validation).
-The PRs remain open; repairs are on local branch `rook/review-pr25-37`.
-Unfinished scope below does not block acceptance of the reviewed subset.
+PRs #25–37 are merged with the review repairs and accepted within that boundary.
+Unfinished scope below does not block acceptance of the delivered subset.
 
 Still needs to be done from that queue: S-121 exit placement before final
 save/outcome settlement; S-122 normal item-projection placement controls and
