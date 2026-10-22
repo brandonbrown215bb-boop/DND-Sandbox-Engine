@@ -19,11 +19,14 @@ static func _owner_round(h: Node, combat: Node, owner: Character) -> Array:
 	combat.resolving_player_action = false
 	var seen: Array = []
 	combat._end_active_turn()
-	for _t in 400:
+	# Review 062: sample every frame (was a 20 ms timer, which can span many
+	# headless frames and miss a declared-'none' hound turn that ends quickly).
+	var start := Time.get_ticks_msec()
+	while Time.get_ticks_msec() - start < 8000:
 		var e: Variant = combat.active_combatant.get("entity")
 		if _is_hound(e) and not seen.has(e.character_name): seen.append(e.character_name)
 		if not (e is Character and e == owner) and not _is_hound(e): break
-		await h.get_tree().create_timer(0.02).timeout
+		await h.get_tree().process_frame
 	return seen
 
 static func run(h: Node) -> void:

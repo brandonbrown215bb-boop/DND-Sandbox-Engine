@@ -11,6 +11,8 @@ extends RefCounted
 const POLICY_KEYS := ["cost", "order_costs", "range_hexes", "orders", "default", "control_seconds", "initiative", "owner_incapacitated", "owner_dead", "control_expired", "concentration_end"]
 ## Batch 056 S-157: owner_turn (055 behaviour: orders resolve at once on the
 ## owner's turn), after_owner (own turn right after the owner), own (own d20+DEX).
+## Batch 061 S-157: this is the template's data-declared turn timing; absent
+## means owner_turn, and each kind of a mixed cast must declare the same one.
 const INITIATIVES := ["owner_turn", "after_owner", "own"]
 ## Batch 056 S-158: behaviour when the owner is incapacitated, dead, or control
 ## expired. Missing keys fall back to the declared uncommanded default.
@@ -21,7 +23,8 @@ const CONCENTRATION_END := ["end"]
 ## Batch 060: the 057 mode cost vocabulary (action, bonus_action, none) plus
 ## "free" as an authored synonym for none. Reaction and Magic action costs wait
 ## for their own queue items (reaction triggers; Magic action as a cost option).
-const COSTS := ["action", "bonus_action", "none", "free"]
+## Batch 063: plus "magic" (the Magic action; spends the Action as magic_action).
+const COSTS := ["action", "bonus_action", "magic", "none", "free"]
 const ORDERS := ["attack", "dodge"]
 const DEFAULTS := ["dodge", "none"]
 ## Uncommanded and unauthored: Bonus Action, 12 hexes (60 ft), attack/Dodge, Dodge.
@@ -37,7 +40,7 @@ static func policy_error(p: Variant) -> String:
 	if not p is Dictionary: return "command must be an object"
 	for key in p:
 		if str(key) not in POLICY_KEYS: return "command has unknown field '%s'" % key
-	if p.has("cost") and (not p.cost is String or str(p.cost) not in COSTS): return "command cost must be action, bonus_action, none or free"
+	if p.has("cost") and (not p.cost is String or str(p.cost) not in COSTS): return "command cost must be action, bonus_action, magic, none or free"
 	if p.has("range_hexes") and not CreatedActorRules._int(p.range_hexes, 1, 24): return "command range_hexes must be 1-24"
 	if p.has("orders"):
 		if not p.orders is Array or p.orders.is_empty() or p.orders.size() > ORDERS.size(): return "command orders must be attack and/or dodge, once each"
@@ -49,7 +52,7 @@ static func policy_error(p: Variant) -> String:
 		if not p.order_costs is Dictionary or p.order_costs.is_empty(): return "command order_costs must be an object of order -> cost"
 		for o in p.order_costs:
 			if str(o) not in ORDERS: return "command order_costs has unknown order '%s'" % o
-			if not p.order_costs[o] is String or str(p.order_costs[o]) not in COSTS: return "command order_costs.%s must be action, bonus_action, none or free" % o
+			if not p.order_costs[o] is String or str(p.order_costs[o]) not in COSTS: return "command order_costs.%s must be action, bonus_action, magic, none or free" % o
 			if not str(o) in p.get("orders", DEFAULT.orders): return "command order_costs.%s names an order the creature can't be given" % o
 	if p.has("default") and str(p.default) not in DEFAULTS: return "command default must be dodge or none"
 	if p.has("control_seconds") and not CreatedActorRules._int(p.control_seconds, 6, 86400): return "command control_seconds must be 6-86400"
@@ -79,13 +82,26 @@ static func cost(p: Dictionary, order: String) -> String:
 
 ## HUD label for a declared cost.
 static func cost_label(c: String) -> String:
-	return {"none": "Free", "action": "Action", "bonus_action": "Bonus Action"}.get(c, c.capitalize())
+	return CombatTurnBudget.cost_label(c) # Batch 063: shared labels, incl. Magic action.
 
 static func policy(template: Dictionary) -> Dictionary:
 	var out := DEFAULT.duplicate(true)
 	var p: Variant = template.get("command", {})
 	if p is Dictionary and policy_error(p).is_empty(): out.merge(p, true)
 	return out
+
+## Batch 061: the policy as compared across the kinds of one mixed cast. The
+## authored synonym free reads as none, and an absent initiative reads as the
+## default owner_turn, so equivalent spellings count as one shared policy.
+static func shared_policy(template: Dictionary) -> Dictionary:
+	var p := policy(template)
+	p["cost"] = "none" if str(p.cost) == "free" else str(p.cost)
+	if p.has("order_costs"):
+		var oc := {}
+		for o in p.order_costs: oc[o] = "none" if str(p.order_costs[o]) == "free" else str(p.order_costs[o])
+		p["order_costs"] = oc
+	p["initiative"] = str(p.get("initiative", "owner_turn"))
+	return p
 
 static func _record(owner: Character, actor: Character) -> Dictionary:
 	return owner.spell_effects.get(str(actor.get_meta("created_source_id", "")), {})
@@ -137,7 +153,7 @@ static func command_error(state, owner: Character, actor_id: String, order: Stri
 	if HexUtils.get_distance(_owner_hex(state, owner), entity.hex_position) > int(p.range_hexes): return "%s is beyond command range (%d ft)." % [actor.character_name, int(p.range_hexes) * 5]
 	if int(_commanded.get(actor_id, -1)) == CombatAction.active_turn_serial: return "%s was already commanded this turn." % actor.character_name
 	var price := cost(p, order)
-	if price != "none" and not state._can_spend_action_cost(price): return "No %s is available to command." % price.replace("_", " ")
+	if price != "none" and not state._can_spend_action_cost(CombatTurnBudget.budget_kind(price)): return "No %s is available to command." % cost_label(price).to_lower()
 	if order == "attack":
 		var target := _target(state, target_id)
 		if target.is_empty(): return "Choose a living enemy."
@@ -159,7 +175,7 @@ static func issue(state, owner: Character, actor_id: String, order: String, targ
 		if a.character_id == actor_id: actor = a
 	var p := policy(_template(owner, actor))
 	var price := cost(p, order)
-	if price != "none" and not state._spend_action_cost(price): return {"success": false, "message": "The command could not be paid. Nothing was spent."}
+	if price != "none" and not state._spend_action_cost(CombatTurnBudget.budget_kind(price)): return {"success": false, "message": "The command could not be paid. Nothing was spent."}
 	_commanded[actor_id] = CombatAction.active_turn_serial
 	if initiative(owner, actor) != "owner_turn":
 		_orders[actor_id] = {"order": order, "target_id": target_id}
@@ -215,8 +231,10 @@ static func take_turn(state, entity: Dictionary) -> String:
 	_orders.erase(actor.character_id)
 	if owner == null or not CreatedActorRules.actors(owner).has(actor): return "%s's source has ended." % actor.character_name
 	if not actor.is_alive or CombatAction.is_incapacitated(actor): return "%s can't act." % actor.character_name
+	actor.remove_condition("dodging")
 	if not state._spend_action_cost("action"): return ""
-	if not order.is_empty():
+	# Authority can end between the owner's paid order and the creature's turn.
+	if not order.is_empty() and owner.is_alive and not CombatAction.is_incapacitated(owner) and controlled(owner, actor):
 		if order.order == "dodge":
 			actor.add_condition("dodging", 2)
 			return "%s takes the ordered Dodge action." % actor.character_name
@@ -239,13 +257,16 @@ static func join_initiative(state, owner: Character, actor: Character) -> void:
 		tracker.sort_initiative_preserving_active()
 		return
 	var at := -1
+	var owner_combat_id := ""
 	for i in tracker.combatants.size():
 		var c: Dictionary = tracker.combatants[i]
-		if c.entity is Character and c.entity == owner: at = i
+		if c.entity is Character and c.entity == owner:
+			at = i
+			owner_combat_id = str(c.id)
 		elif at >= 0 and i == at + 1 and c.entity is Character and CreatedActorRules.owner_of(c.entity) == owner.character_id and initiative(owner, c.entity) == "after_owner": at = i # Review R1: contiguous after_owner run only.
 	if at < 0: return
 	var anchor: Dictionary = tracker.combatants[at]
-	tracker.combatants.insert(at + 1, {"id": actor.character_id, "name": actor.character_name, "is_player": true, "entity": actor, "roll": anchor.roll, "dex": float(anchor.dex) - 0.01, "has_acted": false})
+	tracker.combatants.insert(at + 1, {"id": actor.character_id, "name": actor.character_name, "is_player": true, "entity": actor, "roll": anchor.roll, "dex": float(anchor.dex) - 0.01, "has_acted": false, "follows": owner_combat_id})
 	if at + 1 <= tracker.active_index: tracker.active_index += 1
 
 ## Batch 056: drop battlefield entries whose source has ended (concentration end
@@ -255,6 +276,7 @@ static func reconcile(state) -> Array:
 	var gone: Array = []
 	for e in state.player_entities.duplicate():
 		if not e.get("is_created_actor", false): continue
+		if e.get("character") is Character and e.character.has_meta("projected_item_id"): continue
 		var owner := owner_entity(state, e)
 		if owner != null and CreatedActorRules.actors(owner).has(e.character): continue
 		state.player_entities.erase(e)
@@ -264,15 +286,21 @@ static func reconcile(state) -> Array:
 	if not gone.is_empty(): state._update_grid_entities()
 	return gone
 
-## End of the owner's turn: each uncommanded actor takes its declared default.
+## Owner-turn creatures lose last turn's Dodge before their next action.
+static func start_owner_turn(state, owner: Character) -> void:
+	for a in actors(state, owner):
+		if initiative(owner, a) == "owner_turn": a.remove_condition("dodging")
+
+## End of the owner's turn: uncommanded defaults and one tick per creature.
 static func apply_defaults(state, owner: Character) -> Array:
 	var out: Array = []
 	if owner == null: return out
 	for a in actors(state, owner):
-		if int(_commanded.get(a.character_id, -1)) == CombatAction.active_turn_serial: continue
-		if CombatAction.is_incapacitated(a): continue # Review R1: no default Dodge while incapacitated.
 		if initiative(owner, a) != "owner_turn": continue # Batch 056: acts on its own turn.
-		if not act(state, owner, a, behaviour(owner, a)).is_empty(): out.append(a.character_id)
+		if int(_commanded.get(a.character_id, -1)) != CombatAction.active_turn_serial and not CombatAction.is_incapacitated(a):
+			if not act(state, owner, a, behaviour(owner, a)).is_empty(): out.append(a.character_id)
+		# These creatures have no tracker entry, but still get one condition tick.
+		a.tick_conditions()
 	return out
 
 ## Saved control_until: present only when the template declares control_seconds.

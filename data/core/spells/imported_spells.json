@@ -2334,6 +2334,7 @@
     "level": 1,
     "school": "evocation",
     "casting_time": "reaction",
+    "reaction_trigger": {"event": "on_damaged_by_creature", "range_feet": 60, "requires_sight": true},
     "range": 12,
     "target": "single",
     "attack_type": "none",

@@ -334,12 +334,36 @@ static var _placement_request_serial := 0
 
 static func _cancel_placement(cast: SpellCastContext, message: String) -> void:
 	cast.spell.erase("_placement")
-	cast.hud.add_log(message)
+	if cast.hud != null: cast.hud.add_log(message)
 	cast.clear_pending(SpellCastContext.CLEAR_ACTION)
 	cast.clear_pending(SpellCastContext.CLEAR_SPELL)
 	cast.clear_pending(SpellCastContext.CLEAR_INTERVENTION)
 	cast.clear_pending(SpellCastContext.CLEAR_WISH)
 	if cast.highlight_reachable.is_valid(): cast.highlight_reachable.call()
+
+## The last payment boundary rechecks the actual destinations and material
+## allocation, including two kinds competing for the same remains.
+static func revalidate_creation(cast: SpellCastContext) -> bool:
+	var effect := CreatedActorRules._effect(cast.spell)
+	if effect.is_empty(): return true
+	var factory: Dictionary = cast.spell.get("_factory", {})
+	cast.material_targets.clear()
+	if cast.spell.has("_placement"):
+		var picks := PlacementRules.decode(cast.spell._placement)
+		if picks.is_empty(): return true # Authored paid no-space outcome creates nothing.
+		var template := CreatedActorRules._template(cast.spell, str(factory.get("template_id", "")))
+		var origin: Vector2i = cast.players[cast.player_index].get("hex_position", Vector2i.ZERO)
+		var why := PlacementRules.confirm_error(cast, origin, str(template.size), int(PlacementRules.policy(effect).range_hexes), picks)
+		if not why.is_empty():
+			_cancel_placement(cast, "That space is no longer available (%s); nothing was spent." % why)
+			return false
+	if not MaterialTargetRules.spec(effect).is_empty():
+		var picks := MaterialTargetRules.reservation(cast, effect, factory)
+		if picks.size() != int(factory.get("count", 0)) or picks.is_empty():
+			_cancel_placement(cast, "There are not enough eligible remains for that combination; nothing was spent.")
+			return false
+		cast.material_targets = picks
+	return true
 
 static func choose_placement(cast: SpellCastContext) -> bool:
 	cast.spell.erase("_placement") # Every cast places afresh.

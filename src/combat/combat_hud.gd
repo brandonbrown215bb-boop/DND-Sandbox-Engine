@@ -733,7 +733,7 @@ func _show_feature_selection() -> void:
 			# Batch 057: a declared cost is shown, and an unpayable act is offered disabled.
 			var mode_cost := ModeControls.cost(active_character, mode_row.feature_id, kind)
 			var mode_block := ModeControls.cost_error(active_character, mode_row.feature_id, kind, _mode_budget())
-			var cost_text := "" if mode_cost == "none" else " (%s)" % mode_cost.replace("_", " ").capitalize()
+			var cost_text := "" if mode_cost == "none" else " (%s)" % CombatTurnBudget.cost_label(mode_cost)
 			feature_list.add_item("%s: %s%s%s" % [ModeControls.kind_label(kind), ModeControls.label(mode_row), cost_text, "" if mode_block.is_empty() else " [%s]" % mode_block.replace("_", " ")])
 			feature_list.set_item_disabled(feature_list.item_count - 1, not mode_block.is_empty())
 			feature_list.set_item_tooltip(feature_list.item_count - 1, str(active_character.get_feature(mode_row.feature_id).get("description", "")))
