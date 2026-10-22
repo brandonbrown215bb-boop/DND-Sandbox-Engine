@@ -104,6 +104,12 @@ S-179 governs mode selection, surface traversal requirements, terrain multiplier
 
 ## Verified host and limits
 
+Shared creation/arrival now consumes these queries through
+[placement and factory controls](created-actors-and-placement.md#factory-and-legal-arrival).
+It reserves distinct single-cell destinations and rechecks occupancy, walls,
+plane and the chosen template's clearance before payment. Legal exit placement
+before a final save/outcome remains unfinished (S-121).
+
 The review checks actual combat movement and loaded physical/spatial spell
 selection, plus pure actor/object/copy queries. Placement uses the existing
 single-cell token representation with vertical body clearance; it does not

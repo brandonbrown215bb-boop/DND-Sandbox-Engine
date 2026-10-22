@@ -18,6 +18,7 @@ var action_history := CombatActionHistory.new()
 # Tactical entities state
 # Maps entity_id -> position (Vector2i)
 var player_entities: Array[Dictionary] = [] # Elements same as PlayerManager.players
+var last_reaction_trigger_receipts: Array[Dictionary] = [] # Batch 065: receipts of the last fired reaction trigger.
 var monster_entities: Array[Dictionary] = [] # Keys: name, monster_id, current_hp, max_hp, armor_class, speed, attacks, hex_position, color, is_alive
 var dropped_combat_items: Array[Dictionary] = []
 var dancing_light_sets: Dictionary = {}
@@ -657,6 +658,11 @@ func _setup_combat_players() -> void:
 		if owner_character != null and not PaladinRules.find_steed_state(owner_character).is_empty():
 			_add_find_steed_entity(owner, Vector2i(9999, 9999), false)
 	CreatedCreatureCombat.attach(self)
+	# Rebuild durable created sources on encounter entry, including after load.
+	for entity in owners:
+		var owner: Character = entity.get("character")
+		if owner != null and not CreatedActorRules.actors(owner).is_empty():
+			CreatedActorRules.attach(self, owner, entity.get("hex_position", Vector2i.ZERO))
 
 
 func _setup_combat_monsters() -> void:
@@ -738,6 +744,7 @@ func _roll_initiative_and_start() -> void:
 		var p := player_entities[i]
 		var char_data: Character = p.get("character")
 		if char_data == null or not char_data.is_alive: continue
+		if p.get("is_created_actor", false): continue # Batch 056 S-157: joins by its declared initiative below.
 		var initiative_recoveries := ClassProgression.apply_initiative_resource_recovery(char_data)
 		for recovered_resource in initiative_recoveries:
 			var recovery_count := int(initiative_recoveries[recovered_resource])
@@ -815,6 +822,13 @@ func _roll_initiative_and_start() -> void:
 
 	_interrupt_work_for_combat()
 	tracker.sort_initiative()
+	for p in player_entities: # Batch 056 S-157: declared initiative for created actors.
+		if p.get("is_created_actor", false):
+			var created_owner := CreatedCommandRules.owner_entity(self, p)
+			if created_owner != null: CreatedCommandRules.join_initiative(self, created_owner, p.character)
+	# Initial construction has no interrupted turn to preserve. Include a summon
+	# that rolled ahead of the original leader in the first round too.
+	tracker.active_index = 0
 	_start_combat_turn()
 
 
@@ -845,6 +859,7 @@ func _start_combat_turn() -> void:
 	if is_player:
 		# Player Turn
 		active_character = active_combatant["entity"]
+		CreatedCommandRules.start_owner_turn(self, active_character)
 		# This hit restriction ends when the target's next turn begins.
 		CombatAction.clear_shocking_grasp(active_character)
 		_clear_monk_turn_effects(active_character)
@@ -966,6 +981,12 @@ func _start_combat_turn() -> void:
 		active_movement_mode = "walk"
 		hud.set_movement_modes(active_character, active_movement_mode, _movement_speed_overrides(active_character))
 		_reset_turn_action_economy()
+		if player_entities[current_player_idx].get("is_created_actor", false): # Batch 056 S-157: its own turn and budget.
+			var created_line := CreatedCommandRules.take_turn(self, player_entities[current_player_idx])
+			if not created_line.is_empty(): hud.add_log(created_line)
+			await get_tree().process_frame
+			_end_active_turn()
+			return
 		if player_entities[current_player_idx].get("is_created_creature", false):
 			await CreatedCreatureCombat.take_turn(self, player_entities[current_player_idx])
 			_end_active_turn()
@@ -1462,6 +1483,10 @@ func _execute_monster_attack(monster: Dictionary, target_player_name: String, at
 	if not monster.get("fighter_sap_sources", []).is_empty():
 		has_disadvantage = true
 		monster.erase("fighter_sap_sources")
+	await _fire_reaction_trigger(target_char, "on_attacked", monster, target_pos, monster_origin)
+	if not bool(monster.get("is_alive", false)) or int(monster.get("current_hp", 0)) <= 0:
+		_check_battle_end_conditions()
+		return
 	var reaction_decisions := await _collect_reaction_decisions(target_char)
 	var zero_live := SharedStepExecutor.zero_hp_options(target_char)
 	var zero_options := zero_live.duplicate(true)
@@ -1521,6 +1546,10 @@ func _execute_monster_attack(monster: Dictionary, target_player_name: String, at
 		await _offer_deflect_redirect(target_char, target_pos, attack_data, result)
 
 	hud.add_log(result.get("message", "Miss!"))
+	if result.get("hit", false):
+		await _fire_reaction_trigger(target_char, "on_hit_by_attack", monster, target_pos, monster.get("hex_position", monster_origin))
+	if int(result.get("damage", 0)) > 0:
+		await _fire_reaction_trigger(target_char, "on_damaged_by_creature", monster, target_pos, monster.get("hex_position", monster_origin))
 
 	# --- Feedback / juice ---
 	var m_dmg: int = int(result.get("damage", 0))
@@ -1735,6 +1764,72 @@ func _clear_monk_turn_effects(monk: Character) -> void:
 			monster.erase("stunning_strike_source")
 			monster.erase("stunning_strike_stun_sources")
 			monster.erase("stunning_strike_slow_sources")
+
+
+## Batch 065 (queue item 6): fire one data-declared reaction trigger. Only
+## spells and modes whose data declares a matching `reaction_trigger` are
+## offered (no engine default). Each prompt goes through the existing
+## request_reaction path; a declined prompt, a cancelled payment or a refusal
+## spends nothing. The first confirmed reaction spends the Reaction and closes
+## the event, so later offers for it are stale.
+func _fire_reaction_trigger(reactor: Character, kind: String, source: Variant, reactor_pos: Vector2i, source_pos: Vector2i) -> Array[Dictionary]:
+	var receipts: Array[Dictionary] = []
+	if reactor == null or not reactor.is_alive: return receipts
+	var distance := HexUtils.get_distance(reactor_pos, source_pos) * 5
+	var visible := CombatPerception.can_see_target(reactor, source, reactor_pos, source_pos, hex_grid)
+	var event := ReactionTriggers.make_event(kind, reactor, source, distance, visible)
+	var offered_turn := CombatAction.active_turn_serial
+	var source_name: String = str(source.get("name", "the creature")) if source is Dictionary else (source.character_name if source is Character else "the creature")
+	for offer in ReactionTriggers.offers(reactor, event):
+		if not bool(event.open): break
+		var label := _owner_label_for_character(reactor)
+		var accepted := await hud.request_reaction(label, str(offer.id), "%s (%s). Use your Reaction?" % [str(offer.name), source_name], "Use %s?" % str(offer.name), "Use Reaction", "%s — %s" % [str(offer.name), label])
+		var choice: Variant = null
+		if accepted and offer.kind == "spell":
+			choice = await hud.request_spell_payment(reactor, str(offer.id))
+		elif accepted and offer.kind == "mode":
+			var options := ModeControls.options(ModeControls.row(reactor, str(offer.id)), "switch")
+			var labels := {}
+			for o in options: labels[o] = o.capitalize()
+			choice = "" if options.is_empty() else (options[0] if options.size() == 1 or GameManager.test_mode else await hud._request_popup_choice("%s: switch to" % str(offer.name), options, labels))
+		# Prompts can outlive their turn or an effect that moved/removed the source.
+		if offered_turn != CombatAction.active_turn_serial or _battle_ending:
+			ReactionTriggers.close(event)
+		var live_reactor := CreatedCommandRules._entity(self, reactor.character_id)
+		if live_reactor.is_empty():
+			for entity in player_entities:
+				if entity.get("character") == reactor: live_reactor = entity
+		var live_source: Dictionary = source if source is Dictionary else {}
+		if source is Character:
+			for entity in player_entities:
+				if entity.get("character") == source: live_source = entity
+		if live_reactor.is_empty() or live_source.is_empty() or (source is Dictionary and not monster_entities.any(func(m): return is_same(m, source))):
+			ReactionTriggers.close(event)
+		else:
+			var here: Vector2i = live_reactor.get("hex_position", reactor_pos)
+			var there: Vector2i = live_source.get("hex_position", source_pos)
+			event.distance_feet = HexUtils.get_distance(here, there) * 5
+			event.source_visible = CombatPerception.can_see_target(reactor, source, here, there, hex_grid)
+		var receipt := ReactionTriggers.confirm(reactor, offer, event, accepted, choice)
+		receipt["offer"] = offer.duplicate()
+		receipts.append(receipt)
+		if not bool(receipt.get("success", false)): continue
+		for player_entity in player_entities:
+			if player_entity.get("character") == reactor: player_entity["reaction_available"] = false
+		if offer.kind == "spell":
+			var recipient: Variant = ReactionTriggers.target(reactor, receipt.spell, event)
+			var cast := CombatAction.resolve_spell(reactor, recipient, receipt.spell, false, {}, [], int(receipt.get("slot_level", 0)), 0 if is_same(recipient, reactor) else int(event.distance_feet))
+			receipt["cast_result"] = cast
+			hud.add_log("[color=cyan]%s uses %s in response.[/color] %s" % [reactor.character_name, str(offer.name), str(cast.get("message", ""))])
+			if source is Dictionary and int(source.get("current_hp", 1)) <= 0 and bool(source.get("is_alive", true)):
+				source["is_alive"] = false
+				tracker.remove_combatant(str(source.get("id", "")))
+				_trigger_enemy_defeat_features(source, reactor)
+		else:
+			hud.add_log("[color=cyan]%s spends a Reaction: %s switches to %s.[/color]" % [reactor.character_name, str(offer.name), str(choice)])
+	ReactionTriggers.close(event)
+	last_reaction_trigger_receipts = receipts
+	return receipts
 
 
 func _offer_stunning_strike(target: Dictionary, weapon: Dictionary, hit_result: Dictionary, caster: Character = null) -> void:
@@ -2266,6 +2361,12 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 		var quickened_spell := await SpellCastSelection.choose_quickened(_spell_cast_context(), extra_data.get("spell", {}).duplicate(true))
 		if not quickened_spell.is_empty():
 			extra_data["spell"] = quickened_spell
+	if action_type == "command_created_actor": # Batch 055 S-156: the command itself charges the declared cost once.
+		var commanded := CreatedCommandRules.issue(self, active_character, str(extra_data.get("actor_id", "")), str(extra_data.get("order", "")), str(extra_data.get("target_id", "")))
+		hud.add_log(str(commanded.message))
+		if commanded.success: _check_battle_end_conditions()
+		hud.update_hud(active_character, tracker)
+		return
 	var cost_type := _action_cost_for_command(action_type, extra_data)
 	if action_type == "cast_spell" and SorcererRules.quickened_spell_blocks_cast(active_character, extra_data.get("spell", {})):
 		hud.add_log("You can't cast another level 1+ spell this turn after using Quickened Spell.")
@@ -3598,6 +3699,8 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 				attack_reaction_decisions["stroke_of_luck"] = true
 				result = CombatAction.resolve_weapon_attack(active_character, clicked_monster, weapon, has_advantage, has_disadvantage, attack_reaction_decisions, attack_additional_damage)
 		DruidRules.apply_attack_effects(active_character, clicked_monster, weapon, result)
+		if result.get("hit", false):
+			await _fire_reaction_trigger(active_character, "on_hit_with_attack", clicked_monster, player_entities[current_player_idx]["hex_position"], clicked_monster.get("hex_position", Vector2i.ZERO))
 
 		var attack_results: Array[Dictionary] = [result]
 		await _offer_divine_smite(clicked_monster, weapon, result)
@@ -4307,6 +4410,9 @@ func _end_active_turn() -> void:
 	if _check_battle_end_conditions():
 		return
 
+	if active_combatant["is_player"] and active_character != null:
+		for actor_id in CreatedCommandRules.apply_defaults(self, active_character): # Batch 055 S-156: uncommanded default.
+			hud.add_log("%s was not commanded and acts on its declared behaviour." % str(_entity_name_for_created(actor_id)))
 	# Tick active conditions at turn end
 	if active_combatant["is_player"] and active_character != null:
 		await _resolve_delayed_spell_damage(active_character)
@@ -4356,6 +4462,8 @@ func _end_active_turn() -> void:
 			monster.erase("rogue_cunning_knock_out_dc")
 		monster.erase("fighter_stood_up")
 
+	for gone_id in CreatedCommandRules.reconcile(self): # Batch 056: ended sources leave before the order advances.
+		hud.add_log("%s leaves the battle; its source has ended." % gone_id)
 	var round_complete := tracker.next_turn()
 	if round_complete:
 		# Combat owns effect/light ticks; advance only the durable campaign clock here.
@@ -4505,7 +4613,7 @@ func _check_battle_end_conditions() -> bool:
 	# Check if all players dead (TPK / party wipe)
 	var players_alive := false
 	for p in player_entities:
-		if p.get("is_familiar", false) or p.get("is_steed", false) or p.get("is_created_creature", false):
+		if p.get("is_familiar", false) or p.get("is_steed", false) or p.get("is_created_creature", false) or p.get("is_created_actor", false):
 			continue
 		var c: Character = p.get("character")
 		if c != null and (c.is_alive or (not c.disintegrated and (c.has_feature("fighter_indomitable") or c.has_feature("champion_survivor")) and c.death_save_failures < 3 and c.death_save_successes < 3)):
@@ -5177,6 +5285,12 @@ func _action_cost_for_command(action_type: String, extra_data: Dictionary) -> St
 	if action_type in ["attack", "dodge"]:
 		return "action"
 	return "free"
+
+
+## Batch 057: a mode act's declared cost can be paid now from the plain turn budget
+## (not mid-cast or mid attack substitution, where _spend_action_cost means something else).
+func can_pay_mode_cost(cost_type: String) -> bool:
+	return child_actions.frame.is_empty() and attack_unit_substitution.is_empty() and not _cast_in_progress and _can_spend_action_cost(cost_type)
 
 
 func _can_spend_action_cost(cost_type: String) -> bool:
@@ -6492,3 +6606,9 @@ func _attach_created_actors(owner: Character, picks: Array) -> Array:
 	for entity in player_entities:
 		if entity.get("character") == owner: origin = entity.get("hex_position", Vector2i.ZERO)
 	return CreatedActorRules.attach(self, owner, origin, picks)
+
+
+func _entity_name_for_created(actor_id: String) -> String:
+	for e in player_entities:
+		if str(e.get("combat_id", "")) == actor_id: return str(e.get("name", actor_id))
+	return actor_id

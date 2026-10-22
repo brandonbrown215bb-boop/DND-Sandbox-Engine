@@ -4,7 +4,7 @@
 class_name CombatCommand
 extends RefCounted
 
-const TYPES := ["choose_aura_protection", "use_captured_grant", "dismiss_source_benefit", "attack", "cast_spell", "activate_magic_item", "use_feature", "use_item", "eat_goodberry", "font_of_magic_convert", "font_of_magic_create", "toggle_find_steed_mount", "move_dancing_lights", "move_moonbeam", "move_cloud_of_daggers", "move_conjure_animals", "move_conjure_celestial", "move_conjure_fey", "conjure_woodland_beings_disengage", "dismiss_light", "dismiss_timed_numeric_modifier", "choose_protection", "detect_magic_inspect", "control_mage_hand", "dismiss_mage_hand", "dodge", "end_turn", "cancel", "move"]
+const TYPES := ["command_created_actor", "choose_aura_protection", "use_captured_grant", "dismiss_source_benefit", "attack", "cast_spell", "activate_magic_item", "use_feature", "use_item", "eat_goodberry", "font_of_magic_convert", "font_of_magic_create", "toggle_find_steed_mount", "move_dancing_lights", "move_moonbeam", "move_cloud_of_daggers", "move_conjure_animals", "move_conjure_celestial", "move_conjure_fey", "conjure_woodland_beings_disengage", "dismiss_light", "dismiss_timed_numeric_modifier", "choose_protection", "detect_magic_inspect", "control_mage_hand", "dismiss_mage_hand", "dodge", "end_turn", "cancel", "move"]
 
 var action_type: String
 var payload: Dictionary
@@ -141,6 +141,13 @@ static func from_hud_for_character(kind: String, data: Dictionary, character: Ch
 			var group := str(command.payload.get("group",""))
 			if not ProtectionRules.owned(character).any(func(g): return g.effect.group==group and g.effect.stacking=="exclusive"): return null
 			command.payload={"group":group}
+		"command_created_actor": # Batch 055 S-156: only an exact actor id, a declared order and an optional target id travel.
+			var created_id: String = str(command.payload.get("actor_id", ""))
+			var created_order: String = str(command.payload.get("order", ""))
+			if created_id.is_empty() or created_order not in CreatedCommandRules.ORDERS: return null
+			var created_data: Dictionary = {"actor_id": created_id, "order": created_order}
+			if command.payload.has("target_id"): created_data["target_id"] = str(command.payload.get("target_id", ""))
+			command.payload = created_data
 		"dismiss_source_benefit":
 			var source := str(command.payload.get("source_instance_id", ""))
 			if not SourceBenefitRules.can_dismiss(character, source): return null
@@ -214,6 +221,8 @@ func is_valid() -> bool:
 			return payload.get("feature", {}) is Dictionary and not payload.get("feature", {}).is_empty()
 		"choose_protection", "choose_aura_protection":
 			return payload.size()==1 and payload.get("group") is String and str(payload.group).is_valid_identifier()
+		"command_created_actor":
+			return not str(payload.get("actor_id", "")).is_empty() and str(payload.get("order", "")) in CreatedCommandRules.ORDERS
 		"dismiss_source_benefit":
 			return payload.size() == 1 and not str(payload.get("source_instance_id", "")).is_empty()
 		"dismiss_timed_numeric_modifier":

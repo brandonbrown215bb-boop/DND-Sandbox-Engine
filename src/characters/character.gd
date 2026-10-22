@@ -903,7 +903,7 @@ func get_creature_type() -> String:
 
 
 func get_creature_size() -> String:
-	if class_id == "created_creature": return str(feature_uses.get("creature_size", "medium"))
+	if class_id in ["created_creature", "created_actor"]: return str(feature_uses.get("creature_size", "medium"))
 	if class_id == "familiar": return str(feature_uses.get("creature_size", "large" if has_feature("find_steed_slam") else "tiny")).to_lower()
 	if DruidRules.is_shaped(self): return str(DruidRules.current_form(self).get("size", "medium")).to_lower()
 	var projected_size := ActorProjectionRules.size(self)
