@@ -9,7 +9,7 @@ const EFFECTS := ["heal", "temporary_hp", "grant_condition", "remove_condition",
 const STEP_FIELDS := ["id", "type", "gate", "gate_step", "target", "shape", "radius", "size", "attack_type", "damage", "damage_type", "damage_components", "component_id", "scaling", "upcast", "save", "half_on_save", "save_context", "damage_scale_by_outcome", "damage_dice_policy", "damage_result_multiplier", "damage_reductions", "damage_bypasses", "recipient_exemption_choice", "effects", "incoming_negation", "incoming_negation_rule", "physical_requirements", "spatial_requirements"]
 const STEP_TYPES := ["attack", "save", "damage", "effect"]
 const STEP_GATES := ["always", "hit", "miss", "failed_save", "successful_save"]
-const FIELDS := ["id", "name", "description", "execution", "level", "casting_time", "range", "range_kind", "range_by_character_level_feet", "target", "base_targets", "attack_type", "damage", "damage_type", "component_id", "scaling", "upcast", "save", "half_on_save", "save_context", "damage_scale_by_outcome", "damage_dice_policy", "damage_result_multiplier", "damage_reductions", "damage_bypasses", "recipient_exemption_choice", "attack_unit_substitution", "requires_target_sight", "target_creature_types", "target_creature_type_exclusions", "target_sizes", "ignore_cover_on_save", "effects", "concentration", "duration", "duration_seconds", "repeat_save", "repeat_save_schedule", "repeat_save_interval_seconds", "repeat_save_stages", "repeat_save_dc_progression", "targets_objects", "ignites_objects", "area_radius", "cone_size", "end_on_target_damage", "end_on_any_damage", "end_on_party_damage", "source_end_rules", "components", "material", "material_component_item_id", "material_component_cost", "material_component_consumed", "consumed_material_item_id", "ritual", "rules_source", "rules_status", "school", "classes", "source", "trigger", "steps", "formula_inputs", "interruption_policy", "failure_policy", "empty_effect_policy", "cast_settlement", "cancellation_rule", "stopping_cost_policy", "incoming_negation_rule", "physical_requirements", "spatial_requirements", "zero_hp_aftermath", "end_aftermath"]
+const FIELDS := ["id", "name", "description", "execution", "level", "casting_time", "range", "range_kind", "range_by_character_level_feet", "target", "base_targets", "attack_type", "damage", "damage_type", "component_id", "scaling", "upcast", "save", "half_on_save", "save_context", "damage_scale_by_outcome", "damage_dice_policy", "damage_result_multiplier", "damage_reductions", "damage_bypasses", "recipient_exemption_choice", "attack_unit_substitution", "requires_target_sight", "target_creature_types", "target_creature_type_exclusions", "target_sizes", "ignore_cover_on_save", "effects", "concentration", "duration", "duration_seconds", "repeat_save", "repeat_save_schedule", "repeat_save_interval_seconds", "repeat_save_stages", "repeat_save_dc_progression", "targets_objects", "ignites_objects", "area_radius", "cone_size", "end_on_target_damage", "end_on_any_damage", "end_on_party_damage", "source_end_rules", "components", "material", "material_component_item_id", "material_component_cost", "material_component_consumed", "consumed_material_item_id", "ritual", "rules_source", "rules_status", "school", "classes", "source", "trigger", "steps", "formula_inputs", "interruption_policy", "failure_policy", "empty_effect_policy", "cast_settlement", "cancellation_rule", "stopping_cost_policy", "incoming_negation_rule", "physical_requirements", "spatial_requirements", "zero_hp_aftermath", "end_aftermath", "reaction_trigger"] # Batch 065: reaction_trigger is validated by ReactionTriggers.spell_trigger_error.
 
 static func damage_dice_policy_error(value: Variant) -> String:
 	if not value is Dictionary or value.is_empty():
@@ -99,10 +99,12 @@ static func _validate_single_effect(effect: Variant) -> String:
 		if not error.is_empty(): return error
 	elif kind == "create_actor":
 		for key in effect:
-			if str(key) not in ["type", "template", "placement", "options", "count_choice", "mix"]: return "Created actor effects accept only type, template, options, count_choice, mix and placement."
-		allowed.append_array(["template", "placement", "options", "count_choice", "mix"])
+			if str(key) not in ["type", "template", "placement", "options", "count_choice", "mix", "material_targets"]: return "Created actor effects accept only type, template, options, count_choice, mix, material_targets and placement."
+		allowed.append_array(["template", "placement", "options", "count_choice", "mix", "material_targets"])
 		var options_error := CreatedActorRules.options_error(effect) # Batch 054: S-155.
 		if not options_error.is_empty(): return options_error
+		var material_error := MaterialTargetRules.error(effect) # Batch 059: S-155.
+		if not material_error.is_empty(): return material_error
 		var template_error := CreatedActorRules.template_error(effect.get("template"))
 		if not template_error.is_empty(): return template_error
 		if effect.has("placement"):
@@ -264,8 +266,8 @@ static func content_error(spell: Dictionary) -> String:
 		var multiplier_error := damage_multiplier_error(spell["damage_result_multiplier"])
 	if spell.get("casting_time", "action") not in ["action", "bonus_action", "reaction"] or not str(spell.get("trigger", "")).is_empty():
 		return "Shared spells support ordinary Action, Bonus Action or Reaction casts."
-	if spell.get("casting_time", "action") == "reaction" and not spell.has("cancellation_rule") and not spell.has("stopping_cost_policy"):
-		return "Shared reaction spells require a cancellation_rule or stopping_cost_policy."
+	if spell.get("casting_time", "action") == "reaction" and not spell.has("cancellation_rule") and not spell.has("stopping_cost_policy") and not spell.has("reaction_trigger"):
+		return "Shared reaction spells require a cancellation_rule, stopping_cost_policy or reaction_trigger." # Batch 065: or a data-declared trigger.
 	if spell.has("interruption_policy"):
 		if not spell["interruption_policy"] is String: return "interruption_policy must be commit or refund."
 		var p_err := CastInterruptionRules.settlement_policy_error(spell["interruption_policy"])

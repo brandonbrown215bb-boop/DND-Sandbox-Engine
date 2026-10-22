@@ -399,7 +399,10 @@ static func _finish_spell_cast(cast: SpellCastContext) -> void:
 		spell_cost = "action"
 	if cast.successful and not bool(cast.spell.get("_produce_flame_hurl", false)):
 		await cast.offer_potent_spellcasting_vitality.call(cast.spell, cast.damage_dealt)
-	if cast.successful and not cast.interrupted and cast.spell.has("_placement") and cast.attach_created_actors.is_valid():
+	if cast.successful and not cast.interrupted and cast.spell.get("_factory") is Dictionary:
+		var used := MaterialTargetRules.consume_created(cast)
+		if used > 0 and cast.hud != null: cast.hud.add_log("%d set%s of remains rise%s." % [used, "" if used == 1 else "s", "s" if used == 1 else ""])
+	if cast.successful and not cast.interrupted and not PlacementRules.decode(cast.spell.get("_placement", [])).is_empty() and cast.attach_created_actors.is_valid():
 		var placed: Array = cast.attach_created_actors.call(cast.caster, PlacementRules.decode(cast.spell["_placement"]))
 		if not placed.is_empty() and cast.hud != null: cast.hud.add_log("%d created creature%s take%s their places." % [placed.size(), "" if placed.size() == 1 else "s", "s" if placed.size() == 1 else ""])
 	_publish_completed_cast(cast)

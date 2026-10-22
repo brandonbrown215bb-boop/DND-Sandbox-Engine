@@ -1,0 +1,57 @@
+[
+  {
+    "id": "fixture:b064_slow_circlet",
+    "name": "Batch 064 Slow Circlet",
+    "description": "Neutral fixture item copy whose mode declares a 60 s activation (Batch 064 review gate (e)).",
+    "type": "wondrous",
+    "worn_slot": "head",
+    "magical": true,
+    "rarity": "rare",
+    "requires_attunement": true,
+    "value": 0,
+    "features": [
+      {
+        "id": "focus",
+        "name": "Circlet Focus",
+        "type": "mode_choice",
+        "boundary": "activation",
+        "uses": 2,
+        "uses_per": "long_rest",
+        "duration_seconds": 600,
+        "end_on": [
+          "long_rest",
+          "incapacitated"
+        ],
+        "switch_events": [
+          "turn_start"
+        ],
+        "modes": [
+          {
+            "id": "ward",
+            "benefits": [
+              {
+                "stat": "AC",
+                "amount": 1
+              }
+            ]
+          },
+          {
+            "id": "haste",
+            "benefits": [
+              {
+                "stat": "speed",
+                "amount": 1
+              }
+            ]
+          }
+        ],
+        "costs": {
+          "activate": "action"
+        },
+        "activation_seconds": {
+          "activate": 60
+        }
+      }
+    ]
+  }
+]

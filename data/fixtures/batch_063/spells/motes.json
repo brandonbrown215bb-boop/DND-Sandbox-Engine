@@ -1,0 +1,80 @@
+[
+  {
+    "id": "fixture:b063_motes",
+    "name": "063 mote pair",
+    "description": "Neutral fixture self-cast: two motes commanded with a Magic action (Batch 063).",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 0,
+    "target": "self",
+    "concentration": true,
+    "duration_seconds": 60,
+    "classes": [
+      "wizard"
+    ],
+    "effects": [
+      {
+        "type": "create_actor",
+        "template": {
+          "id": "b063_mote",
+          "name": "Mote",
+          "creature_type": "beast",
+          "size": "medium",
+          "speed": 6,
+          "ability_scores": {
+            "STR": 14,
+            "DEX": 12,
+            "CON": 14,
+            "INT": 6,
+            "WIS": 10,
+            "CHA": 4
+          },
+          "ac": {
+            "base": 13,
+            "per_level": 1
+          },
+          "max_hp": {
+            "base": 20,
+            "per_level": 10
+          },
+          "count": {
+            "base": 2,
+            "per_level": 0
+          },
+          "attack": {
+            "name": "Ward Strike",
+            "damage": "1d8",
+            "damage_type": "force",
+            "range": 1
+          },
+          "features": [
+            {
+              "id": "b039_sturdy",
+              "name": "Sturdy",
+              "effects": [
+                {
+                  "type": "immunity",
+                  "condition": "poisoned"
+                }
+              ]
+            }
+          ],
+          "command": {
+            "cost": "magic",
+            "range_hexes": 6,
+            "orders": [
+              "attack",
+              "dodge"
+            ],
+            "default": "dodge"
+          }
+        },
+        "placement": {
+          "range_hexes": 1,
+          "no_space": "refuse"
+        }
+      }
+    ]
+  }
+]

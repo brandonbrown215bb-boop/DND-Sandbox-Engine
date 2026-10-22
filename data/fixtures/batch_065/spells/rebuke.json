@@ -1,0 +1,19 @@
+[
+  {
+    "id": "fixture:b065_rebuke",
+    "name": "Batch 065 Rebuke",
+    "description": "Neutral fixture reaction spell shaped like SRD 5.2.1 Hellish Rebuke: cast in response to taking damage from a creature you can see within 60 feet; Dexterity save, 2d10 Fire, half on a success.",
+    "execution": "shared",
+    "level": 1,
+    "school": "evocation",
+    "casting_time": "reaction",
+    "reaction_trigger": {"event": "on_damaged_by_creature", "range_feet": 60, "requires_sight": true},
+    "range": 12,
+    "target": "single",
+    "save": "DEX",
+    "damage": "2d10",
+    "damage_type": "fire",
+    "half_on_save": true,
+    "classes": ["warlock"]
+  }
+]
