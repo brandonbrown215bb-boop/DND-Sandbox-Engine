@@ -58,7 +58,7 @@ static func _effect(spell: Dictionary) -> Dictionary:
 		if effect is Dictionary and effect.get("type", "") == "create_actor": return effect
 	return {}
 
-## S-155 (Batch 054): the declared template plus up to three alternative options.
+## S-155 (Batch 054/058): the declared template plus any number of authored options.
 static func templates(effect: Dictionary) -> Array:
 	var out: Array = [effect.get("template", {})]
 	out.append_array(effect.get("options", []))
@@ -66,7 +66,8 @@ static func templates(effect: Dictionary) -> Array:
 
 static func options_error(effect: Dictionary) -> String:
 	var options: Variant = effect.get("options", [])
-	if not options is Array or options.size() > 3: return "create_actor options must be up to three templates"
+	# Batch 058: no inherent cap; the data lists every creature the effect can create.
+	if not options is Array: return "create_actor options must be an array of templates"
 	var seen := {}
 	for t in templates(effect):
 		var e := template_error(t)
@@ -74,7 +75,36 @@ static func options_error(effect: Dictionary) -> String:
 		if seen.has(str(t.id)): return "create_actor template ids must be unique"
 		seen[str(t.id)] = true
 	if effect.has("count_choice") and not effect.count_choice is bool: return "create_actor count_choice must be a boolean"
+	return mix_error(effect)
+
+## Batch 058 S-155: `mix` lets one cast create any combination of the declared
+## templates (e.g. Animate Dead skeletons and/or zombies) up to a shared total.
+static func mix_error(effect: Dictionary) -> String:
+	if not effect.has("mix"): return ""
+	var mix: Variant = effect.mix
+	if not mix is Dictionary or mix.size() != 1 or not mix.has("count"): return "create_actor mix accepts only count"
+	var e := _formula_error(mix.count, 1, 4, 2, "mix count")
+	if not e.is_empty(): return "create_actor " + e
+	var all := templates(effect)
+	if all.size() < 2: return "create_actor mix requires at least two templates"
+	for t in all:
+		# One reservation size and one command policy per cast keep placement and control shared.
+		if str(t.size) != str(all[0].size): return "create_actor mix templates must share one size"
+		if CreatedCommandRules.shared_policy(t) != CreatedCommandRules.shared_policy(all[0]): return "create_actor mix templates must share one command policy" # Batch 061: free == none.
 	return ""
+
+static func is_mixed(effect: Dictionary) -> bool:
+	return effect.get("mix") is Dictionary
+
+## Refusal reason for a chosen mix ({template_id: n}); "" when permitted.
+static func mix_choice_error(effect: Dictionary, mix: Variant, level: int) -> String:
+	if not mix is Dictionary or mix.is_empty(): return "mix_not_permitted"
+	var ids := templates(effect).map(func(t): return str(t.id))
+	var total := 0
+	for id in mix:
+		if str(id) not in ids or not _int(mix[id], 0, 64): return "mix_not_permitted"
+		total += int(mix[id])
+	return "" if total in creation_counts(effect, {}, level) else "count_not_permitted"
 
 ## The template a cast chose (default: the declared template). {} when not permitted.
 static func _template(spell: Dictionary, template_id: String = "") -> Dictionary:
@@ -86,8 +116,14 @@ static func _template(spell: Dictionary, template_id: String = "") -> Dictionary
 
 ## Permitted counts for this template and level: exactly the formula, or 1..formula when declared.
 static func counts(effect: Dictionary, template: Dictionary, level: int) -> Array:
-	var maximum := value(template.count, level)
+	var maximum := value(effect.mix.count if is_mixed(effect) else template.count, level)
 	return range(1, maximum + 1) if bool(effect.get("count_choice", false)) else [maximum]
+
+## Material-limited casts may produce fewer than the fixed maximum. Saves
+## retain that actual count, without needing the now-consumed bodies.
+static func creation_counts(effect: Dictionary, template: Dictionary, level: int) -> Array:
+	var permitted := counts(effect, template, level)
+	return range(1, int(permitted[-1]) + 1) if not MaterialTargetRules.spec(effect).is_empty() else permitted
 
 static func _forbidden(feature: Dictionary) -> bool:
 	if str(feature.get("type", "")) in FORBIDDEN_FEATURE_TYPES or feature.has("spellcasting"): return true
@@ -96,14 +132,15 @@ static func _forbidden(feature: Dictionary) -> bool:
 	return false
 
 ## Called by the shared create_actor effect on the self-cast owner.
-static func create(owner: Character, cast: Dictionary, template: Dictionary, slot_level: int, spell: Dictionary, chosen_count: int = -1) -> Dictionary:
+static func create(owner: Character, cast: Dictionary, template: Dictionary, slot_level: int, spell: Dictionary, chosen_count: int = -1, chosen_mix: Dictionary = {}) -> Dictionary:
 	var source := str(cast.get("source_id", ""))
 	if owner == null or source.is_empty() or owner.spell_effects.has(source) or cast.get("caster_id", "") != owner.character_id or not template_error(template).is_empty(): return {"created": false}
 	if spell.is_empty(): spell = DataLoader.get_spell(str(cast.get("spell_id", "")))
 	# S-155: only a declared template or option may be created.
 	if _template(spell, str(template.get("id", ""))).is_empty(): return {"created": false, "reason": "not_permitted"}
 	var level := maxi(0, slot_level - int(spell.get("level", 0)))
-	var allowed := counts(_effect(spell), template, level)
+	if is_mixed(_effect(spell)): return _create_mixed(owner, cast, slot_level, spell, level, chosen_mix, source)
+	var allowed := creation_counts(_effect(spell), template, level)
 	var count: int = allowed[-1] if chosen_count < 0 else chosen_count
 	if count not in allowed: return {"created": false, "reason": "count_not_permitted"}
 	var maximum := value(template.max_hp, level)
@@ -118,6 +155,26 @@ static func create(owner: Character, cast: Dictionary, template: Dictionary, slo
 	var made := actors(owner).filter(func(a): return a.get_meta("created_source_id", "") == source)
 	return {"created": true, "source_id": source, "level": level, "count": count, "max_hp": maximum, "ac": value(template.ac, level), "actor_ids": made.map(func(a): return a.character_id), "excluded_features": template.get("features", []).filter(func(f): return _forbidden(f)).map(func(f): return str(f.id))}
 
+## Batch 058: one cast, several declared kinds. Each actor entry names its template.
+static func _create_mixed(owner: Character, cast: Dictionary, _slot_level: int, spell: Dictionary, level: int, mix: Dictionary, source: String) -> Dictionary:
+	var effect := _effect(spell)
+	var reason := mix_choice_error(effect, mix, level)
+	if not reason.is_empty(): return {"created": false, "reason": reason}
+	var record := cast.duplicate(true)
+	record["created_actors"] = {"level": level, "actors": []}
+	var first := templates(effect)[0] as Dictionary
+	var command := CreatedCommandRules.policy(first)
+	if command.has("control_seconds"): record.created_actors["control_until"] = int(GameManager.campaign_elapsed_seconds) + int(command.control_seconds)
+	var made_kinds := {}
+	for t in templates(effect):
+		for _n in int(mix.get(str(t.id), 0)):
+			var i: int = record.created_actors.actors.size()
+			record.created_actors.actors.append({"actor_id": "%s:actor:%d" % [source, i + 1], "current_hp": value(t.max_hp, level), "template_id": str(t.id)})
+		if int(mix.get(str(t.id), 0)) > 0: made_kinds[str(t.id)] = int(mix[str(t.id)])
+	owner.spell_effects[source] = record
+	var made := actors(owner).filter(func(a): return a.get_meta("created_source_id", "") == source)
+	return {"created": true, "source_id": source, "level": level, "count": made.size(), "mix": made_kinds, "actor_ids": made.map(func(a): return a.character_id)}
+
 ## Live actors whose source still exists; ended sources take their actors away.
 static func actors(owner: Character) -> Array:
 	var out: Array = []
@@ -130,8 +187,10 @@ static func actors(owner: Character) -> Array:
 		if template.is_empty(): continue
 		for entry in record.created_actors.actors:
 			var id := str(entry.actor_id)
+			var kind := _template(spell, str(entry.template_id)) if entry.has("template_id") else template # Batch 058 mixed casts.
+			if kind.is_empty(): continue
 			# Review R1: a reloaded owner is a new object; rebuild from its saved record, never a stale cache.
-			if not _live.has(id) or _live[id].get_meta("created_owner_instance", 0) != owner.get_instance_id(): _live[id] = _build(owner, str(source), template, int(record.created_actors.level), entry, spell)
+			if not _live.has(id) or _live[id].get_meta("created_owner_instance", 0) != owner.get_instance_id(): _live[id] = _build(owner, str(source), kind, int(record.created_actors.level), entry, spell)
 			out.append(_live[id])
 	for id in _live.keys():
 		var a: Character = _live[id]
@@ -195,13 +254,19 @@ static func saved_record_error(dto: Dictionary, record: Dictionary) -> String:
 	if record.get("caster_id", "") != dto.get("character_id", "") or not source.begins_with("spell:%s:" % str(dto.get("character_id", ""))) or record.get("concentration") != spell.get("concentration", false) or record.get("conditions", []) != []: return "invalid saved created actor source"
 	if not _int(data.get("level"), 0, 9) or not data.get("actors") is Array: return "invalid saved created actors"
 	var level := int(data.level)
-	if data.actors.size() not in counts(_effect(spell), template, level): return "saved created actor count differs from its template"
+	var mixed := is_mixed(_effect(spell))
+	if mixed and data.has("template_id"): return "invalid saved created actors"
+	if data.actors.size() not in creation_counts(_effect(spell), template, level): return "saved created actor count differs from its template"
 	var control_error := CreatedCommandRules.saved_error(template, data)
 	if not control_error.is_empty(): return control_error
 	var maximum := value(template.max_hp, level)
 	for i in data.actors.size():
 		var e: Variant = data.actors[i]
-		if not e is Dictionary or e.size() != 2 or str(e.get("actor_id", "")) != "%s:actor:%d" % [source, i + 1] or not _int(e.get("current_hp"), 0, maximum): return "invalid saved created actor"
+		# Batch 058: entries of a mixed cast name their declared template; others never do (legacy shape).
+		if not e is Dictionary or e.size() != (3 if mixed else 2) or (mixed and not e.get("template_id") is String): return "invalid saved created actor"
+		var kind := _template(spell, str(e.template_id)) if mixed else template
+		if kind.is_empty() or (mixed and str(e.template_id).is_empty()): return "invalid saved created actor"
+		if str(e.get("actor_id", "")) != "%s:actor:%d" % [source, i + 1] or not _int(e.get("current_hp"), 0, value(kind.max_hp, level)): return "invalid saved created actor"
 	return ""
 
 ## Combat host: owned living actors join the owner's side; ended ones leave.
@@ -212,6 +277,7 @@ static func attach(state: Node, owner: Character, origin: Vector2i, picks: Array
 	var joined: Array = []
 	var live := actors(owner)
 	for entity in state.player_entities.duplicate():
+		if entity.get("character") is Character and entity.character.has_meta("projected_item_id"): continue
 		if entity.get("is_created_actor", false) and entity.get("created_owner_id", "") == owner.character_id and not live.has(entity.character):
 			state.player_entities.erase(entity)
 			state.tracker.remove_combatant(entity.character.character_id)
@@ -224,7 +290,7 @@ static func attach(state: Node, owner: Character, origin: Vector2i, picks: Array
 		for e in spell.get("effects", []):
 			if e is Dictionary and e.get("type", "") == "create_actor": effect = e
 		var policy := PlacementRules.policy(effect)
-		var size := str(effect.get("template", {}).get("size", "medium"))
+		var size := PhysicalFactsRules.get_size(a)
 		var hex := Vector2i(9999, 9999)
 		while not pending.is_empty() and hex == Vector2i(9999, 9999):
 			var pick: Vector2i = pending.pop_front()
@@ -234,6 +300,7 @@ static func attach(state: Node, owner: Character, origin: Vector2i, picks: Array
 			if nearest.is_empty(): continue
 			hex = nearest[0]
 		state.player_entities.append({"name": a.character_name, "display_name": a.character_name, "character": a, "combat_id": a.character_id, "owner_player_index": -1, "hex_position": hex, "is_created_actor": true, "created_owner_id": owner.character_id, "reaction_available": true, "color": Color(0.5, 0.7, 0.9)})
+		CreatedCommandRules.join_initiative(state, owner, a) # Batch 056 S-157.
 		joined.append(a.character_id)
 	state._update_grid_entities()
 	return joined

@@ -214,6 +214,16 @@ if ($runIntegration) {
 	$scenarios += "batch_053_legal_placement_flow"
 	$scenarios += "batch_054_factory_choices_flow"
 	$scenarios += "batch_055_created_commands_flow"
+	$scenarios += "batch_056_created_initiative_flow"
+	$scenarios += "batch_057_mode_costs_flow"
+	$scenarios += "batch_058_summon_lists_flow"
+	$scenarios += "batch_059_corpse_limit_flow"
+	$scenarios += "batch_060_command_cost_flow"
+	$scenarios += "batch_061_summon_timing_flow"
+	$scenarios += "batch_062_mode_costs_outside_flow"
+	$scenarios += "batch_063_magic_action_cost_flow"
+	$scenarios += "batch_064_mode_duration_flow"
+	$scenarios += "batch_065_reaction_triggers_flow"
 	$scenarios += "wave_three_foundations_flow", "owned_creature_lifecycle_flow", "batch_024_recovery_flow", "batch_024_spell_result_flow",
     "find_familiar_exploration_flow", "party_recovery_flow", "downed_area_damage_flow", "created_undead_flow"
     if ($Scenario.Count -gt 0) {

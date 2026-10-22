@@ -7,6 +7,7 @@ static func revalidate_selection(cast: SpellCastContext) -> bool:
 		cast.hud.add_log("The parent action or its remaining units are no longer available.")
 		cast.clear_pending(SpellCastContext.CLEAR_ACTION | SpellCastContext.CLEAR_SPELL)
 		return false
+	if not SpellCastChoices.revalidate_creation(cast): return false
 	# Special legacy casts retain their existing authority; ordinary commands carry an ID.
 	if not cast.spell.has("_source_permission_id"): return true
 	if SpellPermissionRules.selection_valid(cast.caster, cast.spell): return true
