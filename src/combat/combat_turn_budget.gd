@@ -41,7 +41,7 @@ static func budget_kind(authored: String) -> String:
 
 ## HUD label for an authored cost ("free"/"none" read as Free).
 static func cost_label(authored: String) -> String:
-	return {"none": "Free", "free": "Free", "action": "Action", "bonus_action": "Bonus Action", "magic": "Magic action"}.get(authored, authored.replace("_", " ").capitalize())
+	return {"none": "Free", "free": "Free", "action": "Action", "bonus_action": "Bonus Action", "magic": "Magic action", "reaction": "Reaction"}.get(authored, authored.replace("_", " ").capitalize())
 
 
 func can_use_turn_feature(character: Character, pool_id: String) -> bool:

@@ -1,0 +1,28 @@
+[
+  {
+    "id": "fixture:b065_riposte",
+    "name": "Batch 065 Riposte (General)",
+    "description": "Neutral fixture General feat: an on-hit mode switch that costs a Reaction and fires only on its data-declared trigger (Batch 065).",
+    "category": "general",
+    "prerequisite": {"level": 4},
+    "features": [
+      {
+        "id": "fixture:b065_riposte_stance",
+        "name": "Riposte Stance",
+        "description": "Fixture activation: free to start; when your attack hits a creature you can see within 30 feet you may spend your Reaction to switch stance.",
+        "type": "mode_choice",
+        "boundary": "activation",
+        "uses": 2,
+        "uses_per": "long_rest",
+        "duration_seconds": 60,
+        "switch_events": ["hit"],
+        "costs": {"switch": "reaction"},
+        "reaction_trigger": {"event": "on_hit_with_attack", "range_feet": 30, "requires_sight": true},
+        "modes": [
+          {"id": "guard", "benefits": [{"stat": "AC", "amount": 1}]},
+          {"id": "lunge", "benefits": [{"stat": "speed", "amount": 1}]}
+        ]
+      }
+    ]
+  }
+]

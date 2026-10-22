@@ -231,8 +231,10 @@ static func take_turn(state, entity: Dictionary) -> String:
 	_orders.erase(actor.character_id)
 	if owner == null or not CreatedActorRules.actors(owner).has(actor): return "%s's source has ended." % actor.character_name
 	if not actor.is_alive or CombatAction.is_incapacitated(actor): return "%s can't act." % actor.character_name
+	actor.remove_condition("dodging")
 	if not state._spend_action_cost("action"): return ""
-	if not order.is_empty():
+	# Authority can end between the owner's paid order and the creature's turn.
+	if not order.is_empty() and owner.is_alive and not CombatAction.is_incapacitated(owner) and controlled(owner, actor):
 		if order.order == "dodge":
 			actor.add_condition("dodging", 2)
 			return "%s takes the ordered Dodge action." % actor.character_name
@@ -255,13 +257,16 @@ static func join_initiative(state, owner: Character, actor: Character) -> void:
 		tracker.sort_initiative_preserving_active()
 		return
 	var at := -1
+	var owner_combat_id := ""
 	for i in tracker.combatants.size():
 		var c: Dictionary = tracker.combatants[i]
-		if c.entity is Character and c.entity == owner: at = i
+		if c.entity is Character and c.entity == owner:
+			at = i
+			owner_combat_id = str(c.id)
 		elif at >= 0 and i == at + 1 and c.entity is Character and CreatedActorRules.owner_of(c.entity) == owner.character_id and initiative(owner, c.entity) == "after_owner": at = i # Review R1: contiguous after_owner run only.
 	if at < 0: return
 	var anchor: Dictionary = tracker.combatants[at]
-	tracker.combatants.insert(at + 1, {"id": actor.character_id, "name": actor.character_name, "is_player": true, "entity": actor, "roll": anchor.roll, "dex": float(anchor.dex) - 0.01, "has_acted": false, "follows": owner.character_id})
+	tracker.combatants.insert(at + 1, {"id": actor.character_id, "name": actor.character_name, "is_player": true, "entity": actor, "roll": anchor.roll, "dex": float(anchor.dex) - 0.01, "has_acted": false, "follows": owner_combat_id})
 	if at + 1 <= tracker.active_index: tracker.active_index += 1
 
 ## Batch 056: drop battlefield entries whose source has ended (concentration end
@@ -271,6 +276,7 @@ static func reconcile(state) -> Array:
 	var gone: Array = []
 	for e in state.player_entities.duplicate():
 		if not e.get("is_created_actor", false): continue
+		if e.get("character") is Character and e.character.has_meta("projected_item_id"): continue
 		var owner := owner_entity(state, e)
 		if owner != null and CreatedActorRules.actors(owner).has(e.character): continue
 		state.player_entities.erase(e)
@@ -280,15 +286,21 @@ static func reconcile(state) -> Array:
 	if not gone.is_empty(): state._update_grid_entities()
 	return gone
 
-## End of the owner's turn: each uncommanded actor takes its declared default.
+## Owner-turn creatures lose last turn's Dodge before their next action.
+static func start_owner_turn(state, owner: Character) -> void:
+	for a in actors(state, owner):
+		if initiative(owner, a) == "owner_turn": a.remove_condition("dodging")
+
+## End of the owner's turn: uncommanded defaults and one tick per creature.
 static func apply_defaults(state, owner: Character) -> Array:
 	var out: Array = []
 	if owner == null: return out
 	for a in actors(state, owner):
-		if int(_commanded.get(a.character_id, -1)) == CombatAction.active_turn_serial: continue
-		if CombatAction.is_incapacitated(a): continue # Review R1: no default Dodge while incapacitated.
 		if initiative(owner, a) != "owner_turn": continue # Batch 056: acts on its own turn.
-		if not act(state, owner, a, behaviour(owner, a)).is_empty(): out.append(a.character_id)
+		if int(_commanded.get(a.character_id, -1)) != CombatAction.active_turn_serial and not CombatAction.is_incapacitated(a):
+			if not act(state, owner, a, behaviour(owner, a)).is_empty(): out.append(a.character_id)
+		# These creatures have no tracker entry, but still get one condition tick.
+		a.tick_conditions()
 	return out
 
 ## Saved control_until: present only when the template declares control_seconds.
