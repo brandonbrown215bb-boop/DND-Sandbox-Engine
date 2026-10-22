@@ -717,7 +717,7 @@ func _show_feature_selection() -> void:
 			for order in cmd.orders:
 				var base_error := CreatedCommandRules.command_error(command_state, active_character, created.character_id, order, "*") if order == "attack" else CreatedCommandRules.command_error(command_state, active_character, created.character_id, order)
 				if order == "attack" and base_error.begins_with("Choose a living enemy"): base_error = ""
-				var cost_label := "Free" if cmd.cost == "none" else str(cmd.cost).replace("_", " ").capitalize()
+				var cost_label := CreatedCommandRules.cost_label(CreatedCommandRules.cost(cmd, order)) # Batch 060: per-order declared cost.
 				feature_list.add_item("Command %s [%s]: %s (%s)%s" % [created.character_name, created.character_id.get_slice(":", created.character_id.get_slice_count(":") - 1), order.capitalize(), cost_label, "" if base_error.is_empty() else " [%s]" % base_error])
 				feature_list.set_item_disabled(feature_list.item_count - 1, not base_error.is_empty())
 				features_registered.append({"id": "command_created_actor", "actor_id": created.character_id, "order": order})
@@ -733,7 +733,7 @@ func _show_feature_selection() -> void:
 			# Batch 057: a declared cost is shown, and an unpayable act is offered disabled.
 			var mode_cost := ModeControls.cost(active_character, mode_row.feature_id, kind)
 			var mode_block := ModeControls.cost_error(active_character, mode_row.feature_id, kind, _mode_budget())
-			var cost_text := "" if mode_cost == "none" else " (%s)" % mode_cost.replace("_", " ").capitalize()
+			var cost_text := "" if mode_cost == "none" else " (%s)" % CombatTurnBudget.cost_label(mode_cost)
 			feature_list.add_item("%s: %s%s%s" % [ModeControls.kind_label(kind), ModeControls.label(mode_row), cost_text, "" if mode_block.is_empty() else " [%s]" % mode_block.replace("_", " ")])
 			feature_list.set_item_disabled(feature_list.item_count - 1, not mode_block.is_empty())
 			feature_list.set_item_tooltip(feature_list.item_count - 1, str(active_character.get_feature(mode_row.feature_id).get("description", "")))

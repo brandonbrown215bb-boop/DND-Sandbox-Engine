@@ -1,0 +1,115 @@
+[
+  {
+    "id": "fixture:b061_insects",
+    "name": "061 insects",
+    "description": "Fixture for Batch 061 (S-157 summon turn timing). Timing follows SRD 5.2.1 Giant Insect: \"In combat, the creature shares your Initiative count, but it takes its turn immediately after yours. It obeys your verbal commands (no action required by you). If you don't issue any, it takes the Dodge action\" -> command.initiative after_owner, cost free/none, default dodge. One cast mixes two kinds to exercise the shared-policy rule; the two kinds spell the no-cost command as free and none.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 0,
+    "target": "self",
+    "concentration": true,
+    "duration_seconds": 600,
+    "classes": [
+      "wizard"
+    ],
+    "effects": [
+      {
+        "type": "create_actor",
+        "mix": {
+          "count": {
+            "base": 2,
+            "per_level": 0
+          }
+        },
+        "count_choice": true,
+        "template": {
+          "id": "b061_spider",
+          "name": "Spider",
+          "creature_type": "beast",
+          "size": "medium",
+          "speed": 6,
+          "ability_scores": {
+            "STR": 10,
+            "DEX": 16,
+            "CON": 15,
+            "INT": 6,
+            "WIS": 8,
+            "CHA": 5
+          },
+          "ac": {
+            "base": 14,
+            "per_level": 0
+          },
+          "max_hp": {
+            "base": 13,
+            "per_level": 0
+          },
+          "count": {
+            "base": 1,
+            "per_level": 0
+          },
+          "attack": {
+            "name": "Shortsword",
+            "damage": "1d6",
+            "damage_type": "piercing",
+            "range": 1
+          },
+          "command": {
+            "cost": "free",
+            "orders": [
+              "attack",
+              "dodge"
+            ],
+            "default": "dodge",
+            "initiative": "after_owner"
+          }
+        },
+        "options": [
+          {
+            "id": "b061_wasp",
+            "name": "Wasp",
+            "creature_type": "beast",
+            "size": "medium",
+            "speed": 4,
+            "ability_scores": {
+              "STR": 13,
+              "DEX": 6,
+              "CON": 16,
+              "INT": 3,
+              "WIS": 6,
+              "CHA": 5
+            },
+            "ac": {
+              "base": 8,
+              "per_level": 0
+            },
+            "max_hp": {
+              "base": 15,
+              "per_level": 0
+            },
+            "count": {
+              "base": 1,
+              "per_level": 0
+            },
+            "attack": {
+              "name": "Slam",
+              "damage": "1d8",
+              "damage_type": "bludgeoning",
+              "range": 1
+            },
+            "command": {
+              "cost": "none",
+              "orders": [
+                "attack",
+                "dodge"
+              ],
+              "default": "dodge",
+              "initiative": "after_owner"
+            }
+          }
+        ]
+      }
+    ]
+  }
+]

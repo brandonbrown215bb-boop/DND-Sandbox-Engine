@@ -24,6 +24,9 @@ var body_row: HFlowContainer
 var body_targets: OptionButton
 var created_row: HFlowContainer
 var created_targets: OptionButton
+var mode_row: HFlowContainer # Batch 062
+var mode_offers: OptionButton
+var mode_popup_serial := 0
 var expand_pack_button: Button
 var ration_quarter_button: Button
 var ration_half_button: Button
@@ -92,6 +95,9 @@ func start(room: Dictionary, party: Array, room_grid: HexGrid, room_hud: Dungeon
 	panel.add_child(body_row)
 	created_row = HFlowContainer.new()
 	panel.add_child(created_row)
+	mode_row = HFlowContainer.new()
+	mode_row.name = "RoomModeRow"
+	panel.add_child(mode_row)
 	var item_row := HBoxContainer.new()
 	panel.add_child(item_row)
 	var item_action_row := HBoxContainer.new()
@@ -251,6 +257,7 @@ func _object_id(index: int) -> String:
 
 func refresh() -> void:
 	LocalRoomCreated.refresh(self)
+	LocalRoomModes.refresh(self) # Batch 062: owned modes outside combat.
 	if movement_modes != null:
 		var selected_mode := "walk"
 		if movement_modes.item_count > 0 and movement_modes.selected >= 0: selected_mode = str(movement_modes.get_item_metadata(movement_modes.selected))

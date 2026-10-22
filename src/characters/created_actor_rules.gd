@@ -90,7 +90,7 @@ static func mix_error(effect: Dictionary) -> String:
 	for t in all:
 		# One reservation size and one command policy per cast keep placement and control shared.
 		if str(t.size) != str(all[0].size): return "create_actor mix templates must share one size"
-		if CreatedCommandRules.policy(t) != CreatedCommandRules.policy(all[0]): return "create_actor mix templates must share one command policy"
+		if CreatedCommandRules.shared_policy(t) != CreatedCommandRules.shared_policy(all[0]): return "create_actor mix templates must share one command policy" # Batch 061: free == none.
 	return ""
 
 static func is_mixed(effect: Dictionary) -> bool:
@@ -104,7 +104,7 @@ static func mix_choice_error(effect: Dictionary, mix: Variant, level: int) -> St
 	for id in mix:
 		if str(id) not in ids or not _int(mix[id], 0, 64): return "mix_not_permitted"
 		total += int(mix[id])
-	return "" if total in counts(effect, {}, level) else "count_not_permitted"
+	return "" if total in creation_counts(effect, {}, level) else "count_not_permitted"
 
 ## The template a cast chose (default: the declared template). {} when not permitted.
 static func _template(spell: Dictionary, template_id: String = "") -> Dictionary:
@@ -118,6 +118,12 @@ static func _template(spell: Dictionary, template_id: String = "") -> Dictionary
 static func counts(effect: Dictionary, template: Dictionary, level: int) -> Array:
 	var maximum := value(effect.mix.count if is_mixed(effect) else template.count, level)
 	return range(1, maximum + 1) if bool(effect.get("count_choice", false)) else [maximum]
+
+## Material-limited casts may produce fewer than the fixed maximum. Saves
+## retain that actual count, without needing the now-consumed bodies.
+static func creation_counts(effect: Dictionary, template: Dictionary, level: int) -> Array:
+	var permitted := counts(effect, template, level)
+	return range(1, int(permitted[-1]) + 1) if not MaterialTargetRules.spec(effect).is_empty() else permitted
 
 static func _forbidden(feature: Dictionary) -> bool:
 	if str(feature.get("type", "")) in FORBIDDEN_FEATURE_TYPES or feature.has("spellcasting"): return true
@@ -134,7 +140,7 @@ static func create(owner: Character, cast: Dictionary, template: Dictionary, slo
 	if _template(spell, str(template.get("id", ""))).is_empty(): return {"created": false, "reason": "not_permitted"}
 	var level := maxi(0, slot_level - int(spell.get("level", 0)))
 	if is_mixed(_effect(spell)): return _create_mixed(owner, cast, slot_level, spell, level, chosen_mix, source)
-	var allowed := counts(_effect(spell), template, level)
+	var allowed := creation_counts(_effect(spell), template, level)
 	var count: int = allowed[-1] if chosen_count < 0 else chosen_count
 	if count not in allowed: return {"created": false, "reason": "count_not_permitted"}
 	var maximum := value(template.max_hp, level)
@@ -250,7 +256,7 @@ static func saved_record_error(dto: Dictionary, record: Dictionary) -> String:
 	var level := int(data.level)
 	var mixed := is_mixed(_effect(spell))
 	if mixed and data.has("template_id"): return "invalid saved created actors"
-	if data.actors.size() not in counts(_effect(spell), template, level): return "saved created actor count differs from its template"
+	if data.actors.size() not in creation_counts(_effect(spell), template, level): return "saved created actor count differs from its template"
 	var control_error := CreatedCommandRules.saved_error(template, data)
 	if not control_error.is_empty(): return control_error
 	var maximum := value(template.max_hp, level)
@@ -271,6 +277,7 @@ static func attach(state: Node, owner: Character, origin: Vector2i, picks: Array
 	var joined: Array = []
 	var live := actors(owner)
 	for entity in state.player_entities.duplicate():
+		if entity.get("character") is Character and entity.character.has_meta("projected_item_id"): continue
 		if entity.get("is_created_actor", false) and entity.get("created_owner_id", "") == owner.character_id and not live.has(entity.character):
 			state.player_entities.erase(entity)
 			state.tracker.remove_combatant(entity.character.character_id)
@@ -283,7 +290,7 @@ static func attach(state: Node, owner: Character, origin: Vector2i, picks: Array
 		for e in spell.get("effects", []):
 			if e is Dictionary and e.get("type", "") == "create_actor": effect = e
 		var policy := PlacementRules.policy(effect)
-		var size := str(effect.get("template", {}).get("size", "medium"))
+		var size := PhysicalFactsRules.get_size(a)
 		var hex := Vector2i(9999, 9999)
 		while not pending.is_empty() and hex == Vector2i(9999, 9999):
 			var pick: Vector2i = pending.pop_front()
