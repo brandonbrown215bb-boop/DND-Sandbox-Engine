@@ -334,12 +334,36 @@ static var _placement_request_serial := 0
 
 static func _cancel_placement(cast: SpellCastContext, message: String) -> void:
 	cast.spell.erase("_placement")
-	cast.hud.add_log(message)
+	if cast.hud != null: cast.hud.add_log(message)
 	cast.clear_pending(SpellCastContext.CLEAR_ACTION)
 	cast.clear_pending(SpellCastContext.CLEAR_SPELL)
 	cast.clear_pending(SpellCastContext.CLEAR_INTERVENTION)
 	cast.clear_pending(SpellCastContext.CLEAR_WISH)
 	if cast.highlight_reachable.is_valid(): cast.highlight_reachable.call()
+
+## The last payment boundary rechecks the actual destinations and material
+## allocation, including two kinds competing for the same remains.
+static func revalidate_creation(cast: SpellCastContext) -> bool:
+	var effect := CreatedActorRules._effect(cast.spell)
+	if effect.is_empty(): return true
+	var factory: Dictionary = cast.spell.get("_factory", {})
+	cast.material_targets.clear()
+	if cast.spell.has("_placement"):
+		var picks := PlacementRules.decode(cast.spell._placement)
+		if picks.is_empty(): return true # Authored paid no-space outcome creates nothing.
+		var template := CreatedActorRules._template(cast.spell, str(factory.get("template_id", "")))
+		var origin: Vector2i = cast.players[cast.player_index].get("hex_position", Vector2i.ZERO)
+		var why := PlacementRules.confirm_error(cast, origin, str(template.size), int(PlacementRules.policy(effect).range_hexes), picks)
+		if not why.is_empty():
+			_cancel_placement(cast, "That space is no longer available (%s); nothing was spent." % why)
+			return false
+	if not MaterialTargetRules.spec(effect).is_empty():
+		var picks := MaterialTargetRules.reservation(cast, effect, factory)
+		if picks.size() != int(factory.get("count", 0)) or picks.is_empty():
+			_cancel_placement(cast, "There are not enough eligible remains for that combination; nothing was spent.")
+			return false
+		cast.material_targets = picks
+	return true
 
 static func choose_placement(cast: SpellCastContext) -> bool:
 	cast.spell.erase("_placement") # Every cast places afresh.
@@ -417,6 +441,13 @@ static func choose_factory(cast: SpellCastContext) -> bool:
 	var options := CreatedActorRules.templates(effect)
 	var level := maxi(0, int(cast.spell.get("_selected_spell_slot_level", cast.spell.get("level", 0))) - int(cast.spell.get("level", 0)))
 	var factory := {"template_id": str(options[0].id)}
+	# Batch 059 S-155: declared material targets (corpses/bones) cap the count; none means no legal target.
+	var material := MaterialTargetRules.cap(cast, effect)
+	if not material.is_empty() and int(material.total) <= 0:
+		_cancel_placement(cast, "There are no eligible remains within range; nothing was spent.")
+		return false
+	if CreatedActorRules.is_mixed(effect):
+		return await _choose_mix(cast, effect, options, level, material)
 	if options.size() > 1:
 		if cast.hud == null: return false
 		var ids: Array[String] = [""]
@@ -427,7 +458,7 @@ static func choose_factory(cast: SpellCastContext) -> bool:
 		var answer := await _ask_factory(cast, "Choose a creature", ids, labels)
 		if not _factory_answer_ok(cast, answer): return false
 		factory.template_id = str(answer.value)
-	var allowed := CreatedActorRules.counts(effect, CreatedActorRules._template(cast.spell, factory.template_id), level)
+	var allowed := _capped(CreatedActorRules.counts(effect, CreatedActorRules._template(cast.spell, factory.template_id), level), material)
 	factory["count"] = int(allowed[-1])
 	if allowed.size() > 1:
 		if cast.hud == null: return false
@@ -441,6 +472,47 @@ static func choose_factory(cast: SpellCastContext) -> bool:
 		factory.count = int(answer.value)
 	cast.spell["_factory"] = factory
 	return true
+
+## Batch 058 S-155: a mixed cast asks how many of each declared kind, within the shared total.
+static func _choose_mix(cast: SpellCastContext, effect: Dictionary, options: Array, level: int, material: Dictionary = {}) -> bool:
+	if cast.hud == null: return false
+	var allowed := _capped(CreatedActorRules.counts(effect, {}, level), material)
+	var left := int(allowed[-1])
+	var mix := {}
+	for i in options.size():
+		var t: Dictionary = options[i]
+		var last := i == options.size() - 1
+		var lo := maxi(0, int(allowed[0]) - _mix_total(mix)) if last else 0
+		var hi := mini(left, int(material.kinds[str(t.id)])) if not material.is_empty() and material.kinds.has(str(t.id)) else left
+		if lo > hi:
+			_cancel_placement(cast, "There are not enough eligible remains for that combination; nothing was spent.")
+			return false
+		var ids: Array[String] = [""]
+		var labels := {"": "Cancel"}
+		for n in range(lo, hi + 1):
+			ids.append(str(n))
+			labels[str(n)] = str(n)
+		var answer := await _ask_factory(cast, "How many %s? (up to %d)" % [t.name, hi], ids, labels)
+		if not _factory_answer_ok(cast, answer): return false
+		mix[str(t.id)] = int(answer.value)
+		left -= int(answer.value)
+	if not CreatedActorRules.mix_choice_error(effect, mix, level).is_empty() or not MaterialTargetRules.mix_cap_error(mix, material).is_empty():
+		_cancel_placement(cast, "That combination is not permitted; nothing was spent.")
+		return false
+	cast.spell["_factory"] = {"template_id": str(options[0].id), "count": _mix_total(mix), "mix": mix}
+	return true
+
+## Batch 059: permitted counts no larger than the available material targets.
+## A fixed count above the cap becomes the cap (the cast creates as many as it can).
+static func _capped(allowed: Array, material: Dictionary) -> Array:
+	if material.is_empty(): return allowed
+	var out := allowed.filter(func(n): return int(n) <= int(material.total))
+	return out if not out.is_empty() else [int(material.total)]
+
+static func _mix_total(mix: Dictionary) -> int:
+	var total := 0
+	for id in mix: total += int(mix[id])
+	return total
 
 static func _factory_answer_ok(cast: SpellCastContext, answer: Dictionary) -> bool:
 	if answer.has("stale"):

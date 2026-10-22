@@ -1,0 +1,115 @@
+[
+  {
+    "id": "fixture:b059_animate_remains",
+    "name": "059 animate remains",
+    "description": "Fixture shaped like Animate Dead (SRD 5.2.1): choose a pile of bones or a corpse of a Medium or Small Humanoid within range (10 feet); bones become a Skeleton, a corpse a Zombie; one creature at 3rd level plus two per slot level above 3rd, each from a different corpse or pile of bones (Batch 059, S-155). With fewer eligible remains nearby the cast creates as many as it can.",
+    "execution": "shared",
+    "level": 3,
+    "casting_time": "action",
+    "range": 0,
+    "target": "self",
+    "concentration": false,
+    "duration_seconds": 86400,
+    "classes": [
+      "wizard"
+    ],
+    "effects": [
+      {
+        "type": "create_actor",
+        "mix": {
+          "count": {
+            "base": 1,
+            "per_level": 2
+          }
+        },
+        "count_choice": true,
+        "template": {
+          "id": "b059_skeleton",
+          "name": "Skeleton",
+          "creature_type": "undead",
+          "size": "medium",
+          "speed": 6,
+          "ability_scores": {
+            "STR": 10,
+            "DEX": 16,
+            "CON": 15,
+            "INT": 6,
+            "WIS": 8,
+            "CHA": 5
+          },
+          "ac": {
+            "base": 14,
+            "per_level": 0
+          },
+          "max_hp": {
+            "base": 13,
+            "per_level": 0
+          },
+          "count": {
+            "base": 1,
+            "per_level": 0
+          },
+          "attack": {
+            "name": "Shortsword",
+            "damage": "1d6",
+            "damage_type": "piercing",
+            "range": 1
+          }
+        },
+        "options": [
+          {
+            "id": "b059_zombie",
+            "name": "Zombie",
+            "creature_type": "undead",
+            "size": "medium",
+            "speed": 4,
+            "ability_scores": {
+              "STR": 13,
+              "DEX": 6,
+              "CON": 16,
+              "INT": 3,
+              "WIS": 6,
+              "CHA": 5
+            },
+            "ac": {
+              "base": 8,
+              "per_level": 0
+            },
+            "max_hp": {
+              "base": 15,
+              "per_level": 0
+            },
+            "count": {
+              "base": 1,
+              "per_level": 0
+            },
+            "attack": {
+              "name": "Slam",
+              "damage": "1d8",
+              "damage_type": "bludgeoning",
+              "range": 1
+            }
+          }
+        ],
+        "material_targets": {
+          "tags": [
+            "bones",
+            "corpse"
+          ],
+          "range": 2,
+          "creature_types": [
+            "humanoid"
+          ],
+          "sizes": [
+            "small",
+            "medium"
+          ],
+          "kinds": {
+            "b059_skeleton": "bones",
+            "b059_zombie": "corpse"
+          }
+        }
+      }
+    ]
+  }
+]

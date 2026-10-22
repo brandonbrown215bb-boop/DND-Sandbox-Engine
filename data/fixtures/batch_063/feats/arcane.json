@@ -1,0 +1,51 @@
+[
+  {
+    "id": "fixture:b063_arcane",
+    "name": "Batch 063 Arcane Focus (General)",
+    "description": "Neutral fixture General feat: a mode activation that costs the Magic action (Batch 063).",
+    "category": "general",
+    "prerequisite": {
+      "level": 4
+    },
+    "features": [
+      {
+        "id": "fixture:b063_arcane_focus",
+        "name": "Arcane Focus",
+        "description": "Fixture activation: a Magic action to start, a Bonus Action to reselect.",
+        "type": "mode_choice",
+        "boundary": "activation",
+        "uses": 2,
+        "uses_per": "long_rest",
+        "duration_seconds": 60,
+        "allow_reselect": true,
+        "end_on": [
+          "incapacitated"
+        ],
+        "costs": {
+          "activate": "magic",
+          "reselect": "bonus_action"
+        },
+        "modes": [
+          {
+            "id": "guard",
+            "benefits": [
+              {
+                "stat": "AC",
+                "amount": 1
+              }
+            ]
+          },
+          {
+            "id": "dash",
+            "benefits": [
+              {
+                "stat": "speed",
+                "amount": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
