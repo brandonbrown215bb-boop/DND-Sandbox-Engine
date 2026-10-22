@@ -110,9 +110,23 @@ supersession, an owner change (including away and back), and changed offer state
 refuse before expenditure. Activation refuses Incapacitated and implied conditions
 before spending uses. Already-active reselect/switch retains the existing rule
 semantics. Upgrade alternatives require the parent power to be inactive. Current
-mode definitions declare no action cost; these controls spend a use only. Real
-content requiring an Action/Bonus Action needs that generic cost support first.
-Overworld/sheet mode panels and an end-early control remain outside this host.
+activation modes may declare `costs: {activate?, reselect?, switch?}`. Each cost
+is `action`, `bonus_action`, `magic` or `none`; an omitted act stays free.
+`reaction` is allowed for a switch only through its declared
+[reaction trigger](created-actors-and-placement.md#declared-reaction-triggers).
+Reselect needs `allow_reselect`, switch needs `switch_events`, and rest modes
+cannot declare costs. Combat pays from the existing owner budget only after
+the act succeeds, once; cancelled, stale, wrong-turn, incapacitated and
+unaffordable attempts spend neither action nor use. Reselect/switch retain the
+parent use and deadline. Magic costs cannot use Action Surge's extra action.
+
+The local room panel offers the same mode controls outside combat. It spends
+uses once without a combat action budget. Optional
+`activation_seconds: {activate?, reselect?, switch?}` declares whole seconds
+(1–86400); otherwise a costed act reports six seconds, a free act zero.
+The panel and receipt expose this time with `time_advanced: false`; campaign
+time does not advance yet. Overworld/sheet panels, group recipient selection
+and end-early controls remain unfinished.
 
 Item pools and upgrade options belong to the exact copy. Unequipping or
 transferring it stamps its remaining uses and remembered option on its record;

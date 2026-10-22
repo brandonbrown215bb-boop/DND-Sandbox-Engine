@@ -17,6 +17,15 @@ class OutsideCombat:
 static func outside_combat() -> OutsideCombat:
 	return OutsideCombat.new()
 
+## Batch 065: the payer for a reaction-cost act. Only ReactionTriggers.confirm
+## passes it, after the act's declared trigger fired; a HUD/room press of a
+## reaction-cost act is refused (the data trigger is the only way in).
+class ReactionPayer:
+	extends RefCounted
+
+static func reaction_payer() -> ReactionPayer:
+	return ReactionPayer.new()
+
 ## Owned mode_choice rules, once each, in feature order.
 static func rows(actor: Character) -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
@@ -118,6 +127,11 @@ static func cost(actor: Character, feature_id: String, kind: String) -> String:
 static func cost_error(actor: Character, feature_id: String, kind: String, budget: Object) -> String:
 	var c := cost(actor, feature_id, kind)
 	if c == "none": return ""
+	if c == "reaction" or budget is ReactionPayer:
+		if c != "reaction" or not budget is ReactionPayer: return "reaction_trigger_only"
+		if FeatureModeRules.incapacitated(actor) or not actor.is_alive: return "incapacitated"
+		if not actor.reaction_available: return "reaction_used"
+		return ""
 	if budget == null: return "not_in_combat"
 	if budget is OutsideCombat:
 		# Batch 062: no turn to pay from; refuse only while combat is running or the owner can't act.
@@ -141,6 +155,7 @@ static func apply(actor: Character, feature_id: String, kind: String, option: St
 	var price := cost(actor, feature_id, kind)
 	var refused := cost_error(actor, feature_id, kind, budget)
 	if not refused.is_empty(): return {"success": false, "reason": refused}
+	var seconds := FeatureModeRules.activation_seconds(actor, feature_id, kind)
 	var done := {}
 	match kind:
 		"activate": done = FeatureModeRules.activate(actor, feature_id, option)
@@ -148,12 +163,19 @@ static func apply(actor: Character, feature_id: String, kind: String, option: St
 		"switch": done = FeatureModeRules.switch(actor, feature_id, option, str(r.window))
 	if not done.is_empty():
 		if done.success and price != "none":
-			if budget is OutsideCombat:
+			if budget is ReactionPayer:
+				actor.reaction_available = false # Batch 065: cost_error held just above.
+				done["cost"] = price
+			elif budget is OutsideCombat:
 				done["cost_outside_combat"] = price # Batch 062: no action economy outside initiative.
 			else:
 				budget._spend_action_cost(CombatTurnBudget.budget_kind(price)) # can_pay_mode_cost held just above; nothing ran in between.
 				done["cost"] = price
-			done["cost_kind"] = CombatTurnBudget.budget_kind(price) # Batch 063: kind tag (magic_action vs action).
+			done["cost_kind"] = CombatTurnBudget.budget_kind(price) # "reaction" stays "reaction". # Batch 063: kind tag (magic_action vs action).
+		if done.success and budget is OutsideCombat and seconds > 0:
+			# Batch 064: expose the data-declared time; no clock is advanced (PARTIAL).
+			done["activation_seconds"] = seconds
+			done["time_advanced"] = false
 		return done
 	match kind:
 		"alternative":
@@ -161,6 +183,18 @@ static func apply(actor: Character, feature_id: String, kind: String, option: St
 			var ok := RuleUpgradeRules.choose_alternative(actor, feature_id, parts[0], parts[1])
 			return {"success": ok, "reason": "chosen" if ok else "refused"}
 	return {"success": false, "reason": "invalid"}
+
+## Batch 064: "6 s", "1 min", "1 h 30 min" for the room label and log.
+static func duration_label(seconds: int) -> String:
+	if seconds < 60: return "%d s" % seconds
+	var h := seconds / 3600
+	var m := (seconds % 3600) / 60
+	var s := seconds % 60
+	var parts: Array[String] = []
+	if h > 0: parts.append("%d h" % h)
+	if m > 0: parts.append("%d min" % m)
+	if s > 0: parts.append("%d s" % s)
+	return " ".join(parts)
 
 static func kind_label(kind: String) -> String:
 	return {"activate": "Activate", "choose": "Choose mode", "reselect": "Change mode", "switch": "Switch mode", "alternative": "Choose upgrade"}.get(kind, kind)

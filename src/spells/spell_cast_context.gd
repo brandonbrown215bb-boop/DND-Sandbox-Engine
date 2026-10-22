@@ -16,6 +16,7 @@ var action_id := ""
 var action_invocation_id := ""
 var parent_source_id := ""
 var component_copy_validated := false
+var material_targets: Array = [] # Exact transient remains reserved before payment.
 ## Exploration ritual completion; elapsed before creating the new effect.
 var ritual_seconds := 0
 var spell: Dictionary = {}
