@@ -90,26 +90,50 @@ static func mix_cap_error(mix: Dictionary, c: Dictionary) -> String:
 	return "" if total <= int(c.total) else "not_enough_material"
 
 ## After a successful cast: each created creature uses one nearby target (kind's tag first).
-static func consume(cast: SpellCastContext, effect: Dictionary, factory: Dictionary) -> int:
+static func reservation(cast: SpellCastContext, effect: Dictionary, factory: Dictionary) -> Array:
 	var s := spec(effect)
-	if s.is_empty(): return 0
+	if s.is_empty(): return []
 	var found := eligible(cast, s)
 	var mix: Dictionary = factory.get("mix", {}) if factory.get("mix", {}) is Dictionary else {}
 	var wanted: Array = []
-	if mix.is_empty(): wanted.resize(int(factory.get("count", 0)))
+	if mix.is_empty():
+		var kind := str(factory.get("template_id", effect.get("template", {}).get("id", "")))
+		for _n in int(factory.get("count", 0)): wanted.append(str(s.get("kinds", {}).get(kind, "")))
 	for id in mix:
 		for _n in int(mix[id]): wanted.append(str(s.get("kinds", {}).get(id, "")))
 	# Review 059 R1: tagged kinds claim their remains before any-tag kinds, so an
 	# undeclared kind cannot take the only pile a declared kind needs.
 	wanted.sort_custom(func(a, b): return a != null and not str(a).is_empty() and (b == null or str(b).is_empty()))
-	var used := 0
+	var picks: Array = []
 	for tag in wanted:
 		for f in found:
 			if f.has("used") or (tag != null and not str(tag).is_empty() and f.tag != tag): continue
 			f["used"] = true
-			var c: Variant = f.ref.get("character")
-			if c is Character: c.corpse_state["recovery_restrictions"].append(USED)
-			else: f.ref["material_used"] = true
-			used += 1
+			picks.append(f.ref)
 			break
+	return picks
+
+static func _consume_refs(picks: Array) -> int:
+	var used := 0
+	for entry in picks:
+		var c: Variant = entry.get("character")
+		if c is Character:
+			if USED in c.corpse_state.get("recovery_restrictions", []): continue
+			c.corpse_state["recovery_restrictions"].append(USED)
+		else:
+			if bool(entry.get("material_used", false)): continue
+			entry["material_used"] = true
+		used += 1
 	return used
+
+static func consume(cast: SpellCastContext, effect: Dictionary, factory: Dictionary) -> int:
+	return _consume_refs(reservation(cast, effect, factory))
+
+## Only an actual created source consumes its reserved remains. A paid no-space
+## result or a refused creation has no source, so it cannot destroy any bodies.
+static func consume_created(cast: SpellCastContext) -> int:
+	var source := str(cast.spell.get("_effect_cast", {}).get("source_id", ""))
+	var record: Dictionary = cast.caster.spell_effects.get(source, {})
+	var made: Dictionary = record.get("created_actors", {})
+	if made.is_empty() or cast.material_targets.size() != made.get("actors", []).size(): return 0
+	return _consume_refs(cast.material_targets)

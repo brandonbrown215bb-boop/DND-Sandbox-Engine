@@ -307,6 +307,9 @@ func _run_scenario(scenario: String) -> void:
 		"batch_060_command_cost_flow": await Batch060Controls.run(self)
 		"batch_061_summon_timing_flow": await Batch061Controls.run(self)
 		"batch_062_mode_costs_outside_flow": await Batch062Controls.run(self)
+		"batch_063_magic_action_cost_flow": await Batch063Controls.run(self)
+		"batch_064_mode_duration_flow": await Batch064Controls.run(self)
+		"batch_065_reaction_triggers_flow": await Batch065Controls.run(self)
 		"batch_027_protections_flow": await Batch027Controls.run(self)
 		"batch_021_spell_permissions_flow": await Batch021Controls.run(self)
 		"batch_022_slot_ritual_flow": await Batch022Controls.run(self)
@@ -16256,11 +16259,19 @@ func _report() -> void:
 
 ## First Wave 4 slice: Crown room controls, encounter projection and checkpoint.
 func _accept_familiar_delivery_prompt(hud: CombatHUD) -> void:
-	await get_tree().process_frame
-	for child in hud.get_children():
-		if child is ConfirmationDialog and child.title == "Touch delivery":
-			child.confirmed.emit()
-			return
+	for _frame in 240:
+		await get_tree().process_frame
+		for child in hud.get_children():
+			if child.is_queued_for_deletion(): continue
+			# Validated slot-payment commands first ask for the actual slot.
+			if child is PopupMenu and child.visible:
+				for i in child.item_count:
+					if child.get_item_text(i).begins_with("Level 1 "):
+						child.id_pressed.emit(child.get_item_id(i))
+						break
+			if child is ConfirmationDialog and child.title == "Touch delivery" and child.visible:
+				child.confirmed.emit()
+				return
 	_assert(false, "Touch spell offers the real familiar delivery choice")
 
 
@@ -16306,7 +16317,10 @@ func _verify_familiar_senses_and_delivery(combat: CombatState, owner: Character,
 	combat.turn_budget.reset(owner, combat.player_entities)
 	var prior_spells := owner.known_spells.duplicate()
 	var prior_slots := owner.spell_slots.duplicate()
-	if "cure_wounds" not in owner.known_spells: owner.known_spells.append("cure_wounds")
+	var prior_delivery_features := owner.features.duplicate(true)
+	# This helper tests delivery for several classes. A known-spell edit alone
+	# is no longer a cast permission; give the fixture an actual owned grant.
+	owner.features.append({"id": "fixture:familiar_touch_permission", "effects": [{"type": "always_prepared_spells", "spells": ["cure_wounds"], "ability": "WIS", "maximum_spell_level": 1}]})
 	owner.spell_slots["1"] = 2
 	var ally_hp_before := ally.current_hp
 	ally.current_hp = maxi(1, ally.max_hp - 8)
@@ -16314,7 +16328,9 @@ func _verify_familiar_senses_and_delivery(combat: CombatState, owner: Character,
 	familiar.reaction_available = true
 	GameManager.test_mode = false
 	_accept_familiar_delivery_prompt(combat.hud)
-	await combat._on_hud_action("cast_spell", {"spell": DataLoader.get_spell("cure_wounds")})
+	var delivery_payments := SpellPermissionRules.payment_choices(owner, "cure_wounds")
+	_assert(not delivery_payments.is_empty(), "Touch-delivery fixture owns an affordable spell permission")
+	await combat._on_hud_action("cast_spell", {"spell": {} if delivery_payments.is_empty() else delivery_payments[0]})
 	GameManager.test_mode = true
 	_assert(combat.pending_spell_data.get("_familiar_delivery", false) and combat._pending_spell_origin() == relay_position, "Accepting the real prompt moves Touch targeting to the familiar")
 	# Lost Reaction is detected again before the caster commits anything.
@@ -16327,6 +16343,7 @@ func _verify_familiar_senses_and_delivery(combat: CombatState, owner: Character,
 	await combat._on_hex_clicked(target_position)
 	_assert(ally.current_hp > wounded_hp and owner.spell_slots["1"] == 1 and not familiar.reaction_available and not combat.turn_budget.can_spend("magic_action"), "Real Cure Wounds heals beyond the owner's reach and spends only the owner's slot/action and familiar's Reaction")
 	_assert(owner_entity["hex_position"] != relay_position and FamiliarRules.state(owner).get("creature_id") == familiar.character_id, "Delivery never moves the caster or replaces its familiar")
+	owner.features = prior_delivery_features
 	owner.known_spells.assign(prior_spells)
 	owner.spell_slots = prior_slots
 	ally.current_hp = ally_hp_before

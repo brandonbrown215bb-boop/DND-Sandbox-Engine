@@ -67,10 +67,23 @@ static func run(h: Node) -> void:
 	var saved: bool = block.is_empty() and SaveManager.save_game(slot)
 	h._assert(saved, "061 actual real save (block='%s')" % block)
 	if saved:
+		GameManager.test_mode = true # Keep the harness alive for the next encounter.
 		var loaded := SaveManager.load_game(slot)
 		var nb: Character = PartyManager.characters.get(b.character_id, null)
 		var back: Array = [] if nb == null else CreatedActorRules.actors(nb)
 		var after: Array = [] if nb == null else Batch056Checks.order(Batch056Checks.battle(nb, back))
 		h._assert(loaded and back.size() == 2 and back.all(func(x): return CreatedCommandRules.initiative(nb, x) == "after_owner") and after == [nb.character_name] + names + ["Goblin"], "061 actual real load keeps both kinds' after_owner timing; the reloaded actors rejoin initiative right after the owner (%s)" % str(after))
 		SaveManager.delete_save(slot)
+		if loaded and nb != null:
+			GameManager.test_mode = true
+			GameManager.transition_context = {"terrain": "plains", "monster_ids": ["goblin"]}
+			GameManager.current_state = GameManager.GameState.COMBAT
+			var resumed: Node = await h._spawn_scene("res://scenes/combat.tscn", 0.8)
+			var arrivals: Array = resumed.player_entities.filter(func(e): return e.get("created_owner_id", "") == nb.character_id)
+			var ids: Array = resumed.tracker.combatants.map(func(e): return str(e.id))
+			var owner_entry: Array = resumed.tracker.combatants.filter(func(e): return is_same(e.get("entity"), nb))
+			var owner_at := -1 if owner_entry.is_empty() else ids.find(str(owner_entry[0].id))
+			var places: Array = resumed.player_entities.map(func(e): return e.hex_position)
+			h._assert(arrivals.size() == 2 and owner_at >= 0 and ids.slice(owner_at + 1, owner_at + 3) == back.map(func(c): return c.character_id) and arrivals.all(func(e): return places.count(e.hex_position) == 1), "061 review saved summons enter the next real encounter in separate legal spaces and rejoin after their owner (owner=%s, arrivals=%s, order=%s, places=%s)" % [nb.character_id, str(arrivals.map(func(e): return e.combat_id)), str(ids), str(places)])
+			h._teardown_scene(resumed)
 	h._exit_test()

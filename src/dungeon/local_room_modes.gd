@@ -14,8 +14,11 @@ static func offers(actor: Character) -> Array[Dictionary]:
 			var price := ModeControls.cost(actor, r.feature_id, kind)
 			var block := ModeControls.cost_error(actor, r.feature_id, kind, context)
 			if not block.is_empty(): continue
-			var cost_text := "" if price == "none" else " (%s; no turn outside combat)" % price.replace("_", " ").capitalize()
-			out.append({"feature_id": r.feature_id, "kind": kind, "token": r.token, "owner_id": actor.character_id, "text": "%s: %s%s" % [ModeControls.kind_label(kind), ModeControls.label(r), cost_text]})
+			var cost_text := "" if price == "none" else " (%s; no turn outside combat)" % CombatTurnBudget.cost_label(price)
+			var seconds := FeatureModeRules.activation_seconds(actor, r.feature_id, kind)
+			# Batch 064: the data-declared time is shown; the room clock is not advanced (PARTIAL).
+			var time_text := "" if seconds <= 0 else " [takes %s; time not advanced]" % ModeControls.duration_label(seconds)
+			out.append({"feature_id": r.feature_id, "kind": kind, "token": r.token, "owner_id": actor.character_id, "activation_seconds": seconds, "text": "%s: %s%s%s" % [ModeControls.kind_label(kind), ModeControls.label(r), cost_text, time_text]})
 	return out
 
 static func refresh(view: LocalRoomView) -> void:
@@ -69,5 +72,7 @@ static func answer(view: LocalRoomView, owner: Character, offer: Dictionary, pic
 	var result := ModeControls.apply(owner, str(offer.feature_id), str(offer.kind), picked, str(offer.token), ModeControls.outside_combat())
 	var ok := bool(result.get("success", false))
 	var message := "%s: %s %s." % [name, ModeControls.kind_label(str(offer.kind)).to_lower(), picked.replace("|", ": ")] if ok else "%s: refused (%s); nothing was spent." % [name, str(result.get("reason", "")).replace("_", " ")]
-	view._result({"success": ok, "seconds": 0, "message": message})
+	if ok and int(result.get("activation_seconds", 0)) > 0:
+		message += " (takes %s; time not advanced)" % ModeControls.duration_label(int(result.activation_seconds))
+	view._result({"success": ok, "seconds": 0, "message": message}) # Batch 064: seconds stay 0, no clock is advanced.
 	return result
