@@ -375,6 +375,13 @@ static func validate_creatures_and_components(cast: SpellCastContext) -> bool:
 			cast.hud.add_log("[color=orange]%s: %s[/color]" % [cast.spell.get("name", "This spell"), max_hp_error])
 			cast.highlight_reachable.call()
 			return false
+	if SharedSpell.has_effect(cast.spell, "settle_death"):
+		# Batch 073 (S-119): ineligible, already-dead or refused-at-zero targets refuse before any cost.
+		var death_error := ZeroHpAftermathRules.explicit_cast_error(_death_target(cast), cast.spell)
+		if not death_error.is_empty():
+			cast.hud.add_log("[color=orange]%s: %s[/color]" % [cast.spell.get("name", "This spell"), death_error])
+			cast.highlight_reachable.call()
+			return false
 	if cast.spell.has("spatial_requirements"):
 		var req_space: Dictionary = cast.spell["spatial_requirements"]
 		var room := LocalRoomCombat.room()
@@ -484,6 +491,19 @@ static func validate_area(cast: SpellCastContext) -> bool:
 
 
 
+
+## Batch 073: the creature at the target hex for explicit death, including a
+## downed (0 HP, not dead) party member and a defeated monster record, so the
+## refusal names the real reason instead of treating it as empty ground.
+static func _death_target(cast: SpellCastContext):
+	var selected_id := cast.chain_target_ids[0] if not cast.chain_target_ids.is_empty() else ""
+	if not selected_id.begins_with("object:"):
+		for player in cast.players:
+			var actor: Character = player.get("character")
+			if actor != null and player.get("hex_position") == cast.target_coord and (selected_id.is_empty() or selected_id == "player:" + actor.character_id): return actor
+		for monster in cast.monsters:
+			if monster.get("hex_position") == cast.target_coord and (selected_id.is_empty() or selected_id == "monster:" + str(monster.get("id", ""))): return monster
+	return _physical_target(cast, cast.target_coord, 0)
 
 static func _physical_target(cast: SpellCastContext, coord: Vector2i, index: int):
 	var selected_id := cast.chain_target_ids[index] if index < cast.chain_target_ids.size() else ""
