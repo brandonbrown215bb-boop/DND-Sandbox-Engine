@@ -32,6 +32,7 @@ static func run(check: Callable) -> void:
 	_already_zero(check)
 	_ineligible(check)
 	_saves(check)
+	_review_stress(check)
 
 static func _validation(check: Callable) -> void:
 	var good: Dictionary = DataLoader.get_spell(ENDING).duplicate(true)
@@ -118,3 +119,22 @@ static func _saves(check: Callable) -> void:
 	var legacy: Dictionary = dto.duplicate(true)
 	legacy.corpse_state.erase("cause_source")
 	check.call(CorpseRules.saved_error(legacy).is_empty(), "073 a legacy corpse without cause detail still loads")
+
+## Review (Batch 073): temporary HP never counts toward the HP limit and never
+## survives death; a character target's concentration ends once.
+static func _review_stress(check: Callable) -> void:
+	var a := Batch071Checks.caster("b073_rv_a")
+	var limit := int(policy(ENDING).get("eligibility", {}).get("max_current_hp", 0))
+	var m := Batch071Checks.monster("b073_rv_m", limit)
+	m["temp_hp"] = 50
+	var r := cast(a, m, ENDING)
+	check.call(bool(r.get("settle_death", {}).get("applied", false)) and not bool(m.is_alive) and int(m.get("temp_hp", -1)) == 0, "073 review: temp HP ignored by the HP limit and cleared on monster death")
+	var c := Batch031Checks._character("b073_rv_c", limit)
+	c.temp_hp = 40
+	c.concentrating_on = {"spell_id": "bless", "targets": []}
+	cast(a, c, ENDING)
+	check.call(c.is_dead() and c.temp_hp == 0 and c.concentrating_on.is_empty() and c.body_death_serial == 1 and c.death_save_failures == 3, "073 review: character dies via dead-PC path (no death saves), temp HP 0, concentration ended once")
+	var over := Batch071Checks.monster("b073_rv_over", limit + 1)
+	var slots := int(a.spell_slots["1"])
+	var refusal := ZeroHpAftermathRules.explicit_cast_error(over, DataLoader.get_spell(ENDING))
+	check.call(not refusal.is_empty() and bool(over.is_alive) and int(a.spell_slots["1"]) == slots, "073 review: limit+1 HP refused before cost, slot untouched")

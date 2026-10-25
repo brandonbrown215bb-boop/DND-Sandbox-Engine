@@ -152,6 +152,7 @@ static func _apply(target, policy: Dictionary, cause_source: Dictionary, decisio
 			else: receipt.retained_gear.append(id)
 	else:
 		target["current_hp"] = 0
+		target["temp_hp"] = 0 # Batch 073 review: a dead record keeps no temporary HP (matches 071 zero-limit death).
 		target["is_alive"] = false
 		target["zero_hp_aftermath"] = {"outcome": str(policy.outcome), "remains": str(policy.remains), "cause": str(policy.cause), "cause_source": cause_source.duplicate(true)}
 		receipt["identity"] = str(target.get("id", ""))
