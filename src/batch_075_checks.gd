@@ -32,8 +32,13 @@ static func _rule(index: int) -> Dictionary:
 
 ## Author exactly `causes` on both pairs of `actor`.
 static func author(actor: Character, causes: Array) -> void:
-	for f in actor.features:
-		if f is Dictionary and str(f.get("bond_id", "")) in [PAIR_A, PAIR_B]: f["loss_causes"] = causes.duplicate()
+	# Features share the loaded class records; author a private copy so the fixture stays pristine.
+	for i in actor.features.size():
+		var f: Variant = actor.features[i]
+		if f is Dictionary and str(f.get("bond_id", "")) in [PAIR_A, PAIR_B]:
+			var own: Dictionary = f.duplicate(true)
+			own["loss_causes"] = causes.duplicate()
+			actor.features[i] = own
 
 ## Two linked pairs plus one unlinked copy of the same definition.
 static func pairs(actor: Character, definition := "dagger") -> Dictionary:
@@ -141,8 +146,5 @@ static func _saves(check: Callable) -> void:
 		var friend := linker("b075_save_friend_" + form)
 		back.inventory.transfer_instance(p.a1, friend.inventory)
 		var kept: bool = owns(back, p.a2) and BondRules.bonded(back, PAIR_A) == [p.a2]
-		var dbg := "err=%s kept=%s a2=%s pairA=%s rules=%s " % [BondRules.saved_error(dto), kept, owns(back, p.a2), BondRules.bonded(back, PAIR_A), BondRules.rules(back).keys()]
 		back.inventory.destroy_instance(p.b1)
-		dbg += "b2=%s loose=%s disp=%s" % [owns(back, p.b2), owns(back, p.loose), BondRules.last_disposal]
-		print("DBG075 ", form, " ", dbg)
 		check.call(BondRules.saved_error(dto).is_empty() and kept and not owns(back, p.b2) and owns(back, p.loose), "075 %s reload: an unauthored give keeps the mate, an authored destruction disposes exactly the other pair's mate" % form)

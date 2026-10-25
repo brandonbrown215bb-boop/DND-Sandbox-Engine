@@ -74,7 +74,8 @@ static func run(h: Node) -> void:
 	h._local_room_press(view, "Put")
 	var chest := LocalRoomRules.get_object(view.state, "b075_chest")
 	h._assert(chest.get("contents", []).any(func(r): return str(r.instance_id) == p.a2) and Batch075Checks.owns(c, p.b2) and Batch075Checks.owns(c, p.loose), "075 actual Put stows only the exact copy; nothing linked or unlinked is disposed")
-	# Fresh linked pairs for the sale and the reload.
+	# Fresh linked pairs for the save/load and the reload (each bond holds two copies).
+	c.exclusive_bonds.clear()
 	var q := Batch075Checks.pairs(c)
 	FileAccess.open(IDS, FileAccess.WRITE).store_string(JSON.stringify({"c": c.character_id, "q": q}))
 	h._teardown_scene(dungeon)
