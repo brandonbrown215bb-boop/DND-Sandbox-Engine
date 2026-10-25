@@ -3051,6 +3051,25 @@ func _offer_weapon_damage_riders(actor: Character, target: Dictionary, weapon: D
 
 
 func _resolve_player_weapon_attack(attacker: Character, target, weapon: Dictionary, advantage: bool, disadvantage: bool, decisions: Dictionary, additional_damage: Dictionary) -> Dictionary:
+	return await _settle_attack_profile_hit_choice(await _resolve_player_weapon_attack_roll(attacker, target, weapon, advantage, disadvantage, decisions, additional_damage))
+
+
+## S-127: a captured hit asks its authored damage-type choice before damage.
+## Dismissing the menu keeps the inherited type; the choice itself costs nothing.
+func _settle_attack_profile_hit_choice(result: Dictionary) -> Dictionary:
+	if not result.has("attack_profile_choice_request"):
+		return result
+	var request: Dictionary = result["attack_profile_choice_request"]
+	var chosen := await hud.request_damage_type_choice(request.get("options", []), str(request.get("name", "Damage type")))
+	var settled := AttackProfileRules.resume_hit_choice(result, chosen)
+	if bool(settled.get("attack_profile_choice_stale", false)):
+		hud.add_log("[color=yellow]%s is no longer an eligible damage type; the weapon's own type is used.[/color]" % chosen.capitalize())
+	if result.get("weapon_attack_bonus_settled", false):
+		settled["weapon_attack_bonus_settled"] = true
+	return settled
+
+
+func _resolve_player_weapon_attack_roll(attacker: Character, target, weapon: Dictionary, advantage: bool, disadvantage: bool, decisions: Dictionary, additional_damage: Dictionary) -> Dictionary:
 	var attack_decisions := decisions.duplicate(true)
 	attack_decisions["combat_history"] = action_history
 	if child_actions.current("strike"):
@@ -3656,6 +3675,27 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 		if not parent_strike and remaining_attack_swings <= 0 and not turn_budget.can_spend("action"):
 			hud.add_log("No action remains for this attack.")
 			return
+		# S-127: an authored activation-window damage-type choice is asked before
+		# anything is committed. Cancelling or a stale choice spends nothing.
+		var profile_choice := AttackProfileRules.damage_type_choice(active_character, weapon)
+		var activation_damage_type := ""
+		if str(profile_choice.get("window", "")) == "activation":
+			pending_action_type = ""
+			resolving_player_action = true
+			activation_damage_type = await hud.request_damage_type_choice(profile_choice.options, str(profile_choice.name))
+			resolving_player_action = false
+			pending_action_type = "attack"
+			if activation_damage_type.is_empty():
+				hud.add_log("%s: damage-type choice cancelled; nothing was spent." % str(profile_choice.name))
+				return
+			var stale_choice := AttackProfileRules.activation_choice_error(active_character, weapon, profile_choice, activation_damage_type)
+			if stale_choice.is_empty() and (not bool(clicked_monster.get("is_alive", false)) or clicked_monster.get("hex_position", Vector2i.ZERO) != coord or clicked_monster not in monster_entities):
+				stale_choice = "The target is no longer there; nothing was spent."
+			if stale_choice.is_empty() and ((parent_strike and not child_actions.valid(self)) or (not parent_strike and remaining_attack_swings <= 0 and not turn_budget.can_spend("action"))):
+				stale_choice = "No action remains for this attack; nothing was spent."
+			if not stale_choice.is_empty():
+				hud.add_log("[color=yellow]%s[/color]" % stale_choice)
+				return
 		weapon["attack_distance"] = atk_dist
 		pending_action_type = ""
 		resolving_player_action = true
@@ -3683,7 +3723,9 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 			has_disadvantage = true
 		if CombatAction.is_invisible(active_character) and not target_perceives_invisible:
 			has_advantage = true
-		var attack_reaction_decisions: Dictionary = {}
+		var attack_reaction_decisions: Dictionary = {AttackProfileRules.ALLOW_KEY: true}
+		if not activation_damage_type.is_empty():
+			attack_reaction_decisions[AttackProfileRules.DECISION_KEY] = activation_damage_type
 		
 		# Attacker conditions
 		if active_character.has_condition("blinded") or active_character.has_condition("poisoned"):
@@ -3744,7 +3786,7 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 			var stroke_accepted := await hud.request_reaction(_owner_label_for_character(active_character), "stroke_of_luck", "This attack failed (%d vs AC %d). Turn the d20 into a 20?" % [int(result.get("attack_roll", 0)), int(result.get("target_ac", 0))], "Use Stroke of Luck?", "Stroke of Luck", "Stroke of Luck — %s" % _owner_label_for_character(active_character))
 			if stroke_accepted:
 				attack_reaction_decisions["stroke_of_luck"] = true
-				result = CombatAction.resolve_weapon_attack(active_character, clicked_monster, weapon, has_advantage, has_disadvantage, attack_reaction_decisions, attack_additional_damage)
+				result = await _settle_attack_profile_hit_choice(CombatAction.resolve_weapon_attack(active_character, clicked_monster, weapon, has_advantage, has_disadvantage, attack_reaction_decisions, attack_additional_damage))
 		DruidRules.apply_attack_effects(active_character, clicked_monster, weapon, result)
 		if result.get("hit", false):
 			await _fire_reaction_trigger(active_character, "on_hit_with_attack", clicked_monster, player_entities[current_player_idx]["hex_position"], clicked_monster.get("hex_position", Vector2i.ZERO))
@@ -3789,6 +3831,7 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 			remaining_attack_swings -= 1
 			weapon["attack_distance"] = HexUtils.get_distance(live_origin, clicked_monster["hex_position"])
 			var extra_decisions := await _collect_attack_inspiration_decision(active_character)
+			extra_decisions[AttackProfileRules.ALLOW_KEY] = true
 			extra_decisions.merge(await _collect_roll_token_decision(active_character, "attack", "%s Extra Attack roll against %s" % [active_character.character_name, str(clicked_monster.get("name", "target"))], extra_decisions), true)
 			var extra_brutal := await _request_brutal_strike(active_character, weapon, has_disadvantage)
 			if not extra_brutal.is_empty():

@@ -1,0 +1,21 @@
+[
+  {
+    "id": "fixture:b067_bad_class",
+    "name": "Batch 067 Undeclared Window",
+    "hit_die": "d8",
+    "primary_ability": "STR",
+    "saving_throw_proficiencies": ["STR", "CON"],
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:b067_no_window",
+          "name": "Undeclared Window",
+          "type": "attack_profile",
+          "source_instance_id": "b067:no_window",
+          "scope": {"kind": "weapon", "ids": ["longsword"]},
+          "replace": {"damage_type_choices": ["radiant", "force"]}
+        }
+      ]
+    }
+  }
+]

@@ -14,6 +14,7 @@
           "source_instance_id": "b035:channel",
           "required_condition": "blessed",
           "scope": {"kind": "weapon", "melee": true},
+          "choice_window": "activation",
           "replace": {"ability": "WIS", "damage_die": "1d10", "damage_type_choices": ["radiant", "force"]}
         },
         {
