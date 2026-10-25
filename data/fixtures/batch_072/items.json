@@ -13,5 +13,9 @@
    "maximum_charges": 1, "charge_recovery": {"minimum": 1, "maximum": 1, "cadence": "dawn"},
    "source_benefits": [{"stat": "AC", "amount": 1}],
    "spell_permissions": [{"spells": ["fixture:b072_mend"], "ability": "INT", "charges": 0, "maximum_spell_level": 1, "allowed_components": []}],
-   "last_charge_aftermath": {"outcome": "degrade", "keep_properties": ["source_benefits", "spell_permissions"]}}
+   "last_charge_aftermath": {"outcome": "degrade", "keep_properties": ["source_benefits", "spell_permissions"]}},
+  {"id": "fixture:b072_bound_husk", "name": "Fixture Bound Husk", "description": "Review fixture: attunement ring whose last charge ends all its magic.", "type": "ring", "magical": true, "rarity": "uncommon", "value": 0, "requires_attunement": true,
+   "maximum_charges": 1, "charge_recovery": {"minimum": 1, "maximum": 1, "cadence": "dawn"},
+   "source_benefits": [{"stat": "AC", "amount": 1}],
+   "last_charge_aftermath": {"outcome": "degrade", "keep_properties": []}}
 ]

@@ -459,6 +459,8 @@ func attune_instance(instance_id: String, character_id: String) -> Dictionary:
 	if not bool(item.get("requires_attunement", false)):
 		return {"success": false, "message": "This item does not require attunement."}
 	var state: Dictionary = record.get("state", {})
+	if bool(state.get("degraded", false)) and state.get("magical", null) == false: # Review 072: a copy whose last charge ended all its magic is no longer a magic item.
+		return {"success": false, "message": "That copy has lost its magic."}
 	var current_owner := str(state.get("attuned_to", ""))
 	if current_owner == character_id:
 		return {"success": false, "message": "This copy is already attuned to this character."}

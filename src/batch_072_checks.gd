@@ -92,6 +92,14 @@ static func _husk_and_keeper(check: Callable) -> void:
 	var kc: Character = k[0]; var ka := str(k[1])
 	kc.inventory.spend_instance_charges(ka, 1)
 	check.call(bool(kc.inventory.get_instance(ka).state.degraded) and offers(kc, ka) and SourceBenefitRules.total(kc, "AC") == 1, "072 keeper ring keeps both declared properties after its last charge")
+	# Review 072 stress: a fully degraded copy cannot be attuned; a sibling copy still can; second spend never re-settles.
+	var bh := wearer("b072_bound", "fixture:b072_bound_husk", 2)
+	var bc: Character = bh[0]; var ba := str(bh[1]); var bb := str(bh[2])
+	bc.inventory.spend_instance_charges(ba, 1)
+	var first_receipt: Dictionary = bc.inventory.last_charge_receipt
+	check.call(not bool(bc.inventory.attune_instance(ba, bc.character_id).get("success", true)), "072R a copy whose last charge ended all magic cannot be attuned")
+	check.call(not bc.inventory.spend_instance_charges(ba, 1) and bc.inventory.last_charge_receipt == first_receipt and not bool(first_receipt.get("rolled", false)), "072R a refused spend on the empty copy never rolls or re-settles")
+	check.call(bool(bc.inventory.attune_instance(str(bb), bc.character_id).get("success", false)) and not bc.inventory.get_instance(str(bb)).state.has("degraded"), "072R the sibling copy of the same id is unaffected and still attunes")
 
 static func _saves(check: Callable) -> void:
 	var w := wearer("b072_save", EMBER)
