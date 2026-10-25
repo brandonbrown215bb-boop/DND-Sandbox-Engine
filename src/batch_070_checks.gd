@@ -44,6 +44,7 @@ static func run(check: Callable) -> void:
 	_gates(check)
 	_reload(check)
 	_swings(check)
+	_review_stacking(check)
 
 static func _validation(check: Callable) -> void:
 	check.call(RuleUpgradeRules.validate_rule(_upgrade({"attack_count": {"set": 2}})).is_empty(), "070 an attack_count set in an exclusive group validates")
@@ -140,3 +141,17 @@ static func _swings(check: Callable) -> void:
 	combat.reclamp_attack_units()
 	check.call(combat.remaining_attack_swings == 1, "070 removal with 1 spent of 2 base swings keeps the 1 remaining")
 	combat.free()
+
+## Review 070: two Extra Attack rules never stack, upgraded or not.
+static func _review_stacking(check: Callable) -> void:
+	var a := actor("b070_stack")
+	var id := wear(a)
+	a.features.append({"id": "b070_review_other_ea", "name": "Other Extra Attack", "type": "passive", "effects": [{"type": "extra_attack", "count": 2}]})
+	a.extra_attacks = 2
+	check.call(RuleUpgradeRules.extra_attacks(a) == 2, "R070 an upgraded set 2 beside another rule's count 2 gives 2, not 3 (%d)" % RuleUpgradeRules.extra_attacks(a))
+	RuleUpgradeRules.choose_alternative(a, EXTRA, "drill", "drill_b@" + id)
+	check.call(RuleUpgradeRules.extra_attacks(a) == 2, "R070 lowering one rule's count never lowers below another source (%d)" % RuleUpgradeRules.extra_attacks(a))
+	a.features.pop_back()
+	a.extra_attacks = 1
+	RuleUpgradeRules.choose_alternative(a, EXTRA, "drill", "drill_a@" + id)
+	check.call(RuleUpgradeRules.extra_attacks(a) == 2, "R070 single rule upgraded to set 2 still gives 2 (%d)" % RuleUpgradeRules.extra_attacks(a))

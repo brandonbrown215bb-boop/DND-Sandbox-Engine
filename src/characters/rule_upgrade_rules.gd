@@ -83,16 +83,30 @@ static func _effect_of(actor: Character, feature: Dictionary, effect_type: Strin
 ## difference. Merged/suppressed copies apply nothing (upgrades_for gate).
 static func extra_attacks(actor: Character) -> int:
 	if actor == null: return 0
-	var total := actor.extra_attacks
+	# Review 070 R1: Extra Attack sources never stack (SRD 5.2.1). Each rule
+	# supplies its own count (or its chosen upgrade's set); the result is the
+	# highest one, never base + per-rule differences.
+	var feature_max := 0
+	var best := 0
+	var upgraded := false
 	var seen := {}
 	for feature in actor.features:
 		var id := str(feature.get("id", ""))
 		var effect := _effect_of(actor, feature, "extra_attack")
-		if effect.is_empty() or seen.has(id) or not OwnedFeatureSources.copy_active(actor, feature): continue
+		if effect.is_empty() or seen.has(id): continue
 		seen[id] = true
-		for upgrade in _resolve(actor, id).applying:
-			if upgrade.changes.has("attack_count"): total += int(upgrade.changes.attack_count.set) - int(effect.get("count", 1))
-	return maxi(0, total)
+		var count := int(effect.get("count", 1))
+		feature_max = maxi(feature_max, count)
+		if OwnedFeatureSources.copy_active(actor, feature):
+			for upgrade in _resolve(actor, id).applying:
+				if upgrade.changes.has("attack_count"):
+					count = int(upgrade.changes.attack_count.set)
+					upgraded = true
+		best = maxi(best, count)
+	if not upgraded: return maxi(0, actor.extra_attacks)
+	# A count folded into the stat by a non-feature source still competes.
+	if actor.extra_attacks > feature_max: best = maxi(best, actor.extra_attacks)
+	return maxi(0, best)
 
 ## Batch 070 (S-085): the chosen base AC alternative for an unarmored_defense
 ## rule, or {} when none applies. Returns {base, abilities, allows_shield, upgrade}.
