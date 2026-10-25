@@ -1138,6 +1138,10 @@ static func resolve_weapon_attack(attacker: Character, target_entity, weapon_dat
 	var magic_weapon_bonus := SpellEffects.magic_weapon_bonus(attacker, str(weapon_data.get("id", "")))
 	if magic_weapon_bonus > 0:
 		weapon_data["magical"] = true
+	var item_bonus := MagicPropertyRules.weapon_copy_bonus(attacker, str(weapon_data.get("id", ""))) # Batch 080: exact copy's authored +N.
+	if not item_bonus.is_empty():
+		weapon_data["_item_weapon_bonus"] = item_bonus
+		if not bool(item_bonus.magical) and magic_weapon_bonus <= 0: weapon_data["magical"] = false
 	if SpellEffects.has_spell(target_entity, "sanctuary"):
 		var sanctuary_dc := _spell_effect_save_dc(target_entity, "sanctuary", attacker.get_spell_save_dc())
 		var sanctuary_save := int(attacker.saving_throw_test_to_dc("WIS", sanctuary_dc, false, false, reaction_decisions).get("total", 0))
@@ -1252,6 +1256,10 @@ static func resolve_weapon_attack(attacker: Character, target_entity, weapon_dat
 	if magic_weapon_bonus > 0:
 		attack_result["total"] = int(attack_result.get("total", 0)) + magic_weapon_bonus
 		attack_result["activity_modifiers"].append({"label": "Magic Weapon", "value": magic_weapon_bonus})
+	var item_attack := int(weapon_data.get("_item_weapon_bonus", {}).get("attack", 0))
+	if item_attack > 0:
+		attack_result["total"] = int(attack_result.get("total", 0)) + item_attack
+		attack_result["activity_modifiers"].append({"label": "Weapon bonus", "value": item_attack})
 	apply_blade_ward_attack_penalty(target_entity, attacker, attack_result)
 	var stroke_result := RogueRules.apply_stroke_of_luck_to_attack(attacker, attack_result, bool(reaction_decisions.get("stroke_of_luck", false)))
 	attack_result = stroke_result.get("result", attack_result)
@@ -1586,6 +1594,10 @@ static func _settle_weapon_attack_hit(stage: Dictionary) -> Dictionary:
 	if magic_weapon_bonus > 0:
 		damage_roll += magic_weapon_bonus
 		damage_detail["modifiers"].append({"label": "Magic Weapon", "value": magic_weapon_bonus})
+	var item_damage := int(weapon_data.get("_item_weapon_bonus", {}).get("damage", 0))
+	if item_damage > 0:
+		damage_roll += item_damage
+		damage_detail["modifiers"].append({"label": "Weapon bonus", "value": item_damage})
 	var brutal_damage := 0
 	var brutal_dice := ""
 	if not brutal_effects.is_empty():

@@ -1,0 +1,5 @@
+[
+  {"id": "fixture:b080_spent_blade", "name": "Fixture 080 Spent Blade", "description": "Neutral fixture: a charged magic weapon with no last-charge aftermath; zero charges keep its bonus.", "type": "weapon", "weapon_type": "simple", "damage": "1d6", "damage_type": "bludgeoning", "ability": "STR", "range": 1, "magical": true, "rarity": "uncommon", "value": 0,
+   "maximum_charges": 1, "charge_recovery": {"minimum": 1, "maximum": 1, "cadence": "dawn"},
+   "weapon_bonus": {"attack": 1, "damage": 1}}
+]

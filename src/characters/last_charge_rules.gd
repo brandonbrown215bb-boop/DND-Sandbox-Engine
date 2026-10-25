@@ -10,14 +10,29 @@
 ## consumers obey it). The copy stays magical only if it keeps one. It no longer
 ## recovers charges. Loss is derived from the definition, so no extra state is
 ## saved and legacy degraded records keep loading.
+## Batch 080 (#44 follow-up). Brandon: "follow each item's text; there's no
+## universal keep/lose rule. Staff of Power keeps its +2 weapon bonus after its
+## last-charge failure; Staff of Striking can become nonmagical (SRD p.246).
+## Reaching zero charges doesn't universally erase bonuses. Keep unsupported item
+## conversions blocked until those distinctions work."
+## - `degrade` must state `keep_properties` (no default survivor list).
+## - `nonmagical` ends every magical property and the copy's magic; it keeps the
+##   same copy and mundane definition (no conversion into another item ID).
+## - Zero charges alone change nothing: only a settled aftermath marks loss.
+## - Any other outcome, or a conversion key (`becomes`, `convert_to`), is refused.
 class_name LastChargeRules
 extends RefCounted
 
-const OUTCOMES := ["destroy", "degrade"]
+const OUTCOMES := ["destroy", "degrade", "nonmagical"]
+const CONVERSION_KEYS := ["becomes", "convert_to", "becomes_item", "transform"]
 
 static func validate(policy: Variant) -> String:
 	if not policy is Dictionary: return "last_charge_aftermath must be an object"
-	if str(policy.get("outcome", "")) not in OUTCOMES: return "last_charge_aftermath outcome must be destroy or degrade"
+	for key in CONVERSION_KEYS:
+		if policy.has(key): return "last_charge_aftermath conversion into another item ('%s') is unsupported; declare destroy, degrade with keep_properties, or nonmagical" % key
+	if str(policy.get("outcome", "")) not in OUTCOMES: return "last_charge_aftermath outcome '%s' is unsupported; declare destroy, degrade or nonmagical" % str(policy.get("outcome", ""))
+	if policy.keys().any(func(k): return str(k) not in ["outcome", "roll", "keep_properties"]): return "last_charge_aftermath accepts only outcome, roll and keep_properties"
+	if str(policy.outcome) == "degrade" and not policy.has("keep_properties"): return "last_charge_aftermath degrade must state keep_properties (no default)"
 	if policy.has("roll"):
 		var roll: Variant = policy["roll"]
 		if not roll is Dictionary or int(roll.get("die", 0)) not in [4, 6, 8, 10, 12, 20, 100] or not roll.get("trigger_on", null) is Array or roll.trigger_on.is_empty(): return "last_charge_aftermath roll is invalid"
@@ -32,6 +47,7 @@ static func definition_error(item: Dictionary) -> String:
 	var policy: Variant = item.get("last_charge_aftermath", {})
 	if not policy is Dictionary: return ""
 	if str(policy.get("outcome", "")) != "degrade" and policy.has("keep_properties"): return "last_charge_aftermath keep_properties applies only to degrade"
+	if str(policy.get("outcome", "")) == "nonmagical" and not (bool(item.get("magical", false)) or item.has("rarity")): return "last_charge_aftermath nonmagical needs a magic item"
 	for name in policy.get("keep_properties", []):
 		if str(name) not in MagicPropertyRules.PROPERTIES: return "last_charge_aftermath keep_properties names unsupported property '%s'" % str(name)
 		if not MagicPropertyRules.definition_has(item, str(name)): return "last_charge_aftermath keeps property '%s' the item lacks" % str(name)
@@ -39,18 +55,20 @@ static func definition_error(item: Dictionary) -> String:
 
 ## Magical properties the definition has that degradation keeps / loses.
 static func kept_properties(definition_id: String) -> Array:
+	if str(policy_for(definition_id).get("outcome", "")) == "nonmagical": return []
 	var keep: Array = policy_for(definition_id).get("keep_properties", [])
 	return MagicPropertyRules.PROPERTIES.filter(func(p): return p in keep and MagicPropertyRules.has_property(definition_id, p))
 
 static func lost_properties(definition_id: String) -> Array:
-	var keep: Array = policy_for(definition_id).get("keep_properties", [])
+	var keep: Array = [] if str(policy_for(definition_id).get("outcome", "")) == "nonmagical" else policy_for(definition_id).get("keep_properties", [])
 	return MagicPropertyRules.PROPERTIES.filter(func(p): return p not in keep and MagicPropertyRules.has_property(definition_id, p))
 
 ## Production query (MagicPropertyRules.active / _affected): this exact copy lost the property.
 static func lost(record: Dictionary, property: String) -> bool:
 	if not bool(record.get("state", {}).get("degraded", false)): return false
 	var policy := policy_for(str(record.get("definition_id", "")))
-	if policy.is_empty() or str(policy.outcome) != "degrade": return false
+	if policy.is_empty() or str(policy.outcome) == "destroy": return false
+	if str(policy.outcome) == "nonmagical": return true
 	return property not in policy.get("keep_properties", [])
 
 static func policy_for(definition_id: String) -> Dictionary:
@@ -74,7 +92,7 @@ static func settle(inventory: RefCounted, instance_id: String, charges_before: i
 	if not receipt.triggered: return receipt
 	if str(policy.outcome) == "destroy":
 		receipt["destroyed"] = not inventory.destroy_instance(instance_id).is_empty()
-	else:
+	else: # degrade or nonmagical: same copy, mundane definition untouched.
 		var state: Dictionary = record.get("state", {}).duplicate(true)
 		state["degraded"] = true
 		var kept := kept_properties(definition_id)
@@ -82,6 +100,7 @@ static func settle(inventory: RefCounted, instance_id: String, charges_before: i
 		record["state"] = state
 		inventory.copies.records[instance_id] = record
 		receipt["degraded"] = true
+		receipt["nonmagical"] = not bool(state.magical)
 		receipt["kept_properties"] = kept
 		receipt["lost_properties"] = lost_properties(definition_id)
 		if inventory.has_method("_sync_owned_features"): inventory._sync_owned_features() # lost "features" stop granting now.
@@ -91,6 +110,6 @@ static func settle(inventory: RefCounted, instance_id: String, charges_before: i
 static func saved_state_error(definition_id: String, state: Dictionary) -> String:
 	if not state.has("degraded") and not state.has("magical"): return ""
 	var policy := policy_for(definition_id)
-	if policy.is_empty() or str(policy.outcome) != "degrade": return "item degradation state is invalid"
+	if policy.is_empty() or str(policy.outcome) == "destroy": return "item degradation state is invalid"
 	if state.get("degraded", null) != true or state.get("magical", null) != (not kept_properties(definition_id).is_empty()) or int(state.get("charges", 0)) != 0: return "item degradation state is invalid"
 	return ""
