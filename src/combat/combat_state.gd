@@ -5196,7 +5196,10 @@ func _push_combat_target(target, origin: Vector2i, distance: int = 2, size_limit
 		# size-based footprint is not a legal space (PlacementRules).
 		var pushed_actor = target if target is Character else entity
 		var pushed_size := PhysicalFactsRules.get_size(target) if target is Character else str(entity.get("size", "medium")).to_lower()
-		if not PlacementRules.legal_error(self, to_hex, to_hex, pushed_size, -1, [], {"ignore_entity": pushed_actor}).is_empty():
+		# A body that already overlaps something at its start (legacy placement)
+		# is not trapped by that pre-existing overlap; only a legal start is held to it.
+		var step_ctx := {"ignore_entity": pushed_actor}
+		if not PlacementRules.legal_error(self, to_hex, to_hex, pushed_size, -1, [], step_ctx).is_empty() and PlacementRules.legal_error(self, from_hex, from_hex, pushed_size, -1, [], step_ctx).is_empty():
 			break
 		entity["hex_position"] = to_hex
 		if target is Character:
