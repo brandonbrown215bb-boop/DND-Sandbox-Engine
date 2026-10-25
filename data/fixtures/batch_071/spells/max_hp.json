@@ -1,0 +1,47 @@
+[
+  {
+    "id": "fixture:b071_wither",
+    "name": "071 Withering Mark",
+    "description": "Neutral fixture: the cast owns a zero-limit maximum-HP reduction on one creature. Recasts of this spell do not combine; the highest applies.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "concentration": true,
+    "duration": "1 minute",
+    "duration_seconds": 60,
+    "classes": ["wizard"],
+    "effects": [{"type": "max_hp_source", "rule": {"id": "b071:wither", "kind": "reduction", "amount": 6, "combine": "highest", "zero_limit": {"cause": "withered", "remains": "dust"}}}]
+  },
+  {
+    "id": "fixture:b071_sap",
+    "name": "071 Sapping Mark",
+    "description": "Neutral fixture: a differently named floor-1 maximum-HP reduction that adds to other spells.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "concentration": true,
+    "duration": "1 minute",
+    "duration_seconds": 60,
+    "classes": ["wizard"],
+    "effects": [{"type": "max_hp_source", "rule": {"id": "b071:sap", "kind": "reduction", "amount": 4, "combine": "highest"}}]
+  },
+  {
+    "id": "fixture:b071_vigor",
+    "name": "071 Vigor Mark",
+    "description": "Neutral fixture: a timed maximum-HP increase that also raises current Hit Points.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "concentration": false,
+    "duration": "8 hours",
+    "duration_seconds": 28800,
+    "classes": ["wizard"],
+    "effects": [{"type": "max_hp_source", "rule": {"id": "b071:vigor", "kind": "increase", "amount": 5, "combine": "highest", "raise_current": true}}]
+  }
+]

@@ -218,6 +218,7 @@ static func remove(target, source: String, end_reason: String = "source_removed"
 	if target is Character and record.has("created_actors"):
 		CreatedActorRules.end_source(target, record, end_reason, cause)
 	CombatAction.remove_condition_source(target, source, record.get("conditions", []))
+	if record.has("max_hp_source"): event["max_hp_source"] = MaxHpSourceRules.remove(target, source, end_reason)
 	var aid_bonus := maxi(0, int(record.get("aid_hp_bonus", 0)))
 	if aid_bonus > 0 and target is Character:
 		target.max_hp = maxi(1, target.max_hp - aid_bonus)
@@ -468,7 +469,7 @@ static func end_concentration(caster: Character, targets: Array) -> bool:
 static func prune(target) -> void:
 	for source in records(target).keys():
 		var record: Dictionary = records(target)[source]
-		if record.has("source_benefits") or record.has("damage_link") or record.has("damage_response") or record.has("created_actors") or record.has("projection") or record.has("magic_suppression"):
+		if record.has("source_benefits") or record.has("damage_link") or record.has("damage_response") or record.has("created_actors") or record.has("projection") or record.has("magic_suppression") or record.has("max_hp_source"):
 			continue # These exact source records own non-condition behavior.
 		if str(record.get("spell_id", "")) in ["beacon_of_hope", "divine_favor", "death_ward", "sanctuary", "heroism", "magic_weapon", "enhance_ability"]:
 			continue # This benefit is represented by the source record, not a condition.

@@ -325,6 +325,8 @@ func _run_scenario(scenario: String) -> void:
 		"batch_069_unknown_weight_reload": await Batch069Controls.reload(self)
 		"batch_070_attack_ac_upgrades_flow": await Batch070Controls.run(self)
 		"batch_070_attack_ac_upgrades_reload": await Batch070Controls.reload(self)
+		"batch_071_monster_max_hp_flow": await Batch071Controls.run(self)
+		"batch_071_monster_max_hp_reload": await Batch071Controls.reload(self)
 		"located_source_end_flow": await LocatedSourceEndControls.run(self)
 		"tether_group_flow": await TetherGroupFlow.run(self)
 		"containment_flow": await ContainmentFlow.run(self)
