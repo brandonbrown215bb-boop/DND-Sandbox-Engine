@@ -107,6 +107,45 @@ static func run(check: Callable) -> void:
 	check.call(not unhosted.has("attack_profile_choice_request") and _dtype(unhosted) == "slashing", "067 a caller that does not host the choice settles with the inherited type")
 	var miss := CombatAction.resolve_weapon_attack(a, {"id": "b067_wall", "name": "Wall", "armor_class": 1000, "current_hp": 10, "max_hp": 10, "is_alive": true, "conditions": {}}, axe, false, false, {AttackProfileRules.ALLOW_KEY: true})
 	check.call(not miss.has("attack_profile_choice_request") and not miss.get("hit", true), "067 a miss offers no hit-window choice")
+	_review_stress(check)
+
+## Review stress (Runtime Reviewer): misses never ask, a request settles once,
+## a crit keeps doubled dice under the chosen type, swings ask independently.
+static func _review_stress(check: Callable) -> void:
+	var r := _actor("b067_rev")
+	var axe := DataLoader.get_item("handaxe")
+	var wall := {"id": "b067_rev_wall", "name": "Wall", "armor_class": 1000, "current_hp": 10, "max_hp": 10, "is_alive": true, "conditions": {}}
+	var asked_on_miss := false
+	r.crit_range = 21
+	for _i in 60:
+		var m := CombatAction.resolve_weapon_attack(r, wall.duplicate(true), axe, false, false, {AttackProfileRules.ALLOW_KEY: true})
+		asked_on_miss = asked_on_miss or m.has("attack_profile_choice_request") or bool(m.get("hit", false))
+	check.call(not asked_on_miss, "067 review: 60 attacks that miss never open the hit-window choice")
+	r.crit_range = 2
+	var t := _target("b067_rev_t")
+	var p := {}
+	for _i in 20:
+		p = CombatAction.resolve_weapon_attack(r, t, axe, false, false, {AttackProfileRules.ALLOW_KEY: true})
+		if p.has("attack_profile_choice_request"): break
+	var hp_before := int(t.current_hp)
+	var first := AttackProfileRules.resume_hit_choice(p, "cold")
+	var hp_mid := int(t.current_hp)
+	var second := AttackProfileRules.resume_hit_choice(p, "lightning")
+	check.call(_dtype(first) == "cold" and bool(second.get("refused", false)) and int(t.current_hp) == hp_mid and hp_mid < hp_before, "067 review: a hit request settles once; a second answer is refused and deals nothing")
+	var crit_dmg := hp_before - hp_mid
+	var mod := 5
+	check.call(p.has("attack_profile_choice_request") and crit_dmg >= 2 + mod and crit_dmg <= 12 + mod + 0, "067 review: a crit after a hit-window choice rolls 2d6 (doubled weapon dice) as cold, got %d" % crit_dmg)
+	r.crit_range = 20
+	var a1 := {}
+	var a2 := {}
+	for _i in 20:
+		a1 = CombatAction.resolve_weapon_attack(r, _target("b067_rev_s1"), axe, false, false, {AttackProfileRules.ALLOW_KEY: true})
+		if a1.has("attack_profile_choice_request"): break
+	var s1 := AttackProfileRules.resume_hit_choice(a1, "cold")
+	for _i in 20:
+		a2 = CombatAction.resolve_weapon_attack(r, _target("b067_rev_s2"), axe, false, false, {AttackProfileRules.ALLOW_KEY: true})
+		if a2.has("attack_profile_choice_request"): break
+	check.call(_dtype(s1) == "cold" and a2.has("attack_profile_choice_request") and str(a2.attack_profile_choice_request.request_id) != str(a1.attack_profile_choice_request.request_id), "067 review: a second swing asks afresh instead of reusing the first swing's type")
 
 static func _dtype(r: Dictionary) -> String:
 	return str(r.get("activity_damage", {}).get("type", r.get("damage_type", "")))
