@@ -527,6 +527,10 @@ static func is_space_available(grid: HexGrid, position: Vector2i, size: String =
 	# must not turn an occupied cell into available space.
 	# Batch 076: a terrain-only query (PlacementRules.footprint_terrain_error)
 	# leaves creature occupancy out; every other check below still applies.
+	# Review 076 nit: despite its name, "ignore_occupants" only skips this
+	# grid.entities scan. Explicit context "players"/"monsters" lists above are
+	# still honoured, so a caller wanting no occupancy must also pass them empty
+	# (footprint_terrain_error does both). Name kept for compatibility.
 	for entity in ([] if bool(context.get("ignore_occupants", false)) else grid.entities):
 		if entity.get("hex_position") != position: continue
 		var occupant = entity.get("character", entity.get("monster", null))

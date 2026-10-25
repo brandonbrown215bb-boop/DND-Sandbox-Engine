@@ -1,0 +1,44 @@
+[
+  {
+    "id": "fixture:b077_class",
+    "name": "Batch 077 Neutral Class",
+    "hit_die": "d10",
+    "primary_ability": "STR",
+    "saving_throw_proficiencies": ["STR", "CON"],
+    "weapon_proficiencies": ["simple", "martial"],
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:b077_each_swing",
+          "name": "Each-Swing Edge",
+          "type": "attack_profile",
+          "source_instance_id": "b077:each_swing",
+          "scope": {"kind": "weapon", "ids": ["longsword"]},
+          "choice_window": "activation",
+          "choice_duration": "attack",
+          "replace": {"damage_type_choices": ["radiant", "force"]}
+        },
+        {
+          "id": "fixture:b077_whole_action",
+          "name": "Whole-Action Edge",
+          "type": "attack_profile",
+          "source_instance_id": "b077:whole_action",
+          "scope": {"kind": "weapon", "ids": ["shortsword"]},
+          "choice_window": "activation",
+          "choice_duration": "attack_action",
+          "replace": {"damage_type_choices": ["radiant", "force"]}
+        },
+        {
+          "id": "fixture:b077_whole_action_hit",
+          "name": "Whole-Action Strike",
+          "type": "attack_profile",
+          "source_instance_id": "b077:whole_action_hit",
+          "scope": {"kind": "weapon", "ids": ["mace"]},
+          "choice_window": "hit",
+          "choice_duration": "attack_action",
+          "replace": {"damage_type_choices": ["cold", "lightning"]}
+        }
+      ]
+    }
+  }
+]
