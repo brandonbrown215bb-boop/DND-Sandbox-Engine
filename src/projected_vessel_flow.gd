@@ -143,7 +143,9 @@ static func run(h: Node) -> void:
 		if cargo_items.get_item_metadata(i) == loaded: cargo_items.select(i)
 	TetherGroupFlow.press(view, "Stow cargo")
 	h._assert(owner.inventory.get_instance(loaded).is_empty() and ContainerRules.contents(owner.inventory, first).size() == 2, "S-167 clicked load transfers the actual copy into the projected hold")
+	view.exact_choice_menu = null
 	offer(view, first); TetherGroupFlow.press(view, "Take out cargo")
+	h._assert(view.exact_choice_menu != null and view.exact_choice_menu.item_count == 2, "S-167/068 Take out cargo with two held copies opens the exact cargo menu")
 	# Batch 068: two cargo copies are held, so the exact menu opens; pick the loaded copy.
 	var unload_options := ContainerRules.content_options(owner.inventory, first)
 	if view.exact_choice_menu != null:

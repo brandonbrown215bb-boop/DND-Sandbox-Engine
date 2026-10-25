@@ -25,6 +25,7 @@ static func run(check: Callable) -> void:
 	load_fixtures()
 	_containers(check)
 	_parts(check)
+	_review_stress(check)
 
 static func _containers(check: Callable) -> void:
 	var a := Batch043Checks.carrier("b068_carrier")
@@ -129,3 +130,43 @@ static func _parts(check: Callable) -> void:
 	var back := Character.new()
 	back.from_dict(dto)
 	check.call(str(AttachmentRules.attached(back.inventory, h2).get("gem_a", {}).get("instance_id", "")) == g1 and AttachmentRules.attached(back.inventory, h1).is_empty(), "068 S-210 reload keeps the chosen part on the chosen host socket")
+
+## Review 068 stress: state-twin copies, capacity before move, single option.
+static func _review_stress(check: Callable) -> void:
+	var a := Batch043Checks.carrier("b068_review")
+	var s1 := Batch043Checks.add(a, SAT)
+	var f1 := Batch043Checks.add(a, FLASK)
+	var f2 := Batch043Checks.add(a, FLASK)
+	var r1 := a.inventory.get_instance(f1)
+	r1.state["charges"] = 3
+	r1.state["upgrades"] = ["keen"]
+	a.inventory.update_instance(r1)
+	var r2 := a.inventory.get_instance(f2)
+	r2.state["charges"] = 1
+	a.inventory.update_instance(r2)
+	ContainerRules.put(a.inventory, s1, f1, "main")
+	ContainerRules.put(a.inventory, s1, f2, "main")
+	var held := ContainerRules.content_options(a.inventory, s1)
+	var pick := _opt(held, f1, "main", "instance_id", "compartment")
+	var out := ContainerRules.take_out(a.inventory, pick)
+	var back := a.inventory.get_instance(f1)
+	check.call(out.success and int(back.state.get("charges", 0)) == 3 and back.state.get("upgrades", []) == ["keen"] and _ids(ContainerRules.contents(a.inventory, s1)) == [f2] and int(ContainerRules.contents(a.inventory, s1)[0].state.get("charges", 0)) == 1, "068 review state-twin copies: the picked copy leaves with its own charges/upgrades; the twin stays untouched")
+	# Capacity: a brick that would exceed main's weight is never offered, and a forced stale pick refuses before moving.
+	var b1 := Batch043Checks.add(a, Batch043Checks.BRICK)
+	var b2 := Batch043Checks.add(a, Batch043Checks.BRICK)
+	ContainerRules.put(a.inventory, s1, b1, "main")
+	var offers := ContainerRules.stow_options(a.inventory, b2)
+	var before := a.inventory.to_dict()
+	var forced := ContainerRules.stow_into(a.inventory, b2, {"container_id": s1, "compartment": "main"})
+	check.call(_opt(offers, s1, "main", "container_id", "compartment").is_empty() and not forced.success and a.inventory.to_dict() == before and Batch043Checks.owns(a, b2), "068 review over-capacity compartments are not offered and a forged pick refuses with nothing moved")
+	# Single eligible option: only one compartment accepts, so the HUD applies it directly.
+	var c := Batch043Checks.carrier("b068_review_single")
+	var s := Batch043Checks.add(c, SAT)
+	var fa := Batch043Checks.add(c, FLASK)
+	var fb := Batch043Checks.add(c, FLASK)
+	ContainerRules.put(c.inventory, s, fa, "sleeve")
+	var one := ContainerRules.stow_options(c.inventory, fb)
+	check.call(one.size() == 1 and str(one[0].compartment) == "main" and ContainerRules.content_options(c.inventory, s).size() == 1, "068 review a single eligible compartment/content yields one option (menu skipped)")
+	# Options never offer a container whose owner is someone else.
+	var other := Batch043Checks.carrier("b068_review_other")
+	check.call(ContainerRules.content_options(other.inventory, s).is_empty() and not ContainerRules.take_out(other.inventory, {"container_id": s, "compartment": "sleeve", "instance_id": fa}).success, "068 review another holder cannot list or take out of a container it does not carry")
