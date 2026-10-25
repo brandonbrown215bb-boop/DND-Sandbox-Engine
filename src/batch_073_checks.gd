@@ -94,8 +94,10 @@ static func _ineligible(check: Callable) -> void:
 	var big := Batch071Checks.monster("b073_big", 40)
 	var undead := Batch071Checks.monster("b073_undead", 5)
 	undead["creature_type"] = "undead"
+	var beast := Batch071Checks.monster("b073_gob", 5)
+	beast["creature_type"] = "beast"
 	var object := {"id": "dropped:x", "is_object": true, "current_hp": 3, "name": "Crate"}
-	var errors := [ZeroHpAftermathRules.explicit_cast_error(big, spell), ZeroHpAftermathRules.explicit_cast_error(undead, spell), ZeroHpAftermathRules.explicit_cast_error(object, spell), ZeroHpAftermathRules.explicit_cast_error(null, spell), ZeroHpAftermathRules.explicit_cast_error(Batch071Checks.monster("b073_gob", 5), DataLoader.get_spell(UNMAKING))]
+	var errors := [ZeroHpAftermathRules.explicit_cast_error(big, spell), ZeroHpAftermathRules.explicit_cast_error(undead, spell), ZeroHpAftermathRules.explicit_cast_error(object, spell), ZeroHpAftermathRules.explicit_cast_error(null, spell), ZeroHpAftermathRules.explicit_cast_error(beast, DataLoader.get_spell(UNMAKING))]
 	check.call(errors.all(func(e): return not str(e).is_empty()), "073 above-threshold, excluded type, object, empty ground and not-listed type are refused: %s" % str(errors))
 	check.call(bool(big.is_alive) and int(big.current_hp) == 40 and not big.has("zero_hp_aftermath"), "073 an ineligible creature is unchanged")
 	var edge := Batch071Checks.monster("b073_edge", 30)

@@ -199,7 +199,7 @@ static func _creature_type(target) -> String:
 static func explicit_target_error(target, policy: Dictionary) -> String:
 	if not (target is Character or target is Dictionary): return "Only a creature can be killed this way."
 	if target is Dictionary and (bool(target.get("is_object", false)) or str(target.get("kind", "")) == "object" or target.has("object_id")): return "Only a creature can be killed this way."
-	var who := str(target.get("name", "That creature")) if target is Dictionary else target.character_name
+	var who: String = str(target.get("name", "That creature")) if target is Dictionary else target.character_name
 	var hp: int = int(target.get("current_hp", 0)) if target is Dictionary else target.current_hp
 	var dead: bool = (not bool(target.get("is_alive", true)) or target.has("zero_hp_aftermath")) if target is Dictionary else (CorpseRules.is_dead(target) or not target.corpse_state.is_empty())
 	if dead: return "%s is already dead." % who

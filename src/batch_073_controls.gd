@@ -21,7 +21,9 @@ static func run(h: Node) -> void:
 	Batch073Checks.load_fixtures()
 	var alice: Character = PlayerManager.get_player(0).get("character")
 	var bob: Character = PlayerManager.get_player(1).get("character")
+	var prior := {}
 	for c in [alice, bob]:
+		prior[c] = [c.known_spells.duplicate(), c.wizard_spellbook.duplicate(), c.feature_choices.duplicate(true), c.features.duplicate(true)]
 		c.known_spells.assign(SPELLS)
 		c.wizard_spellbook.assign(SPELLS)
 		c.feature_choices[c.get_spellcasting_feature_id()] = SPELLS.duplicate()
@@ -80,6 +82,8 @@ static func run(h: Node) -> void:
 	h._assert(alice.body_death_serial == serial + 1 and int(bob.spell_slots["1"]) == 3 and combat.turn_budget.action_available, "073 live a cast at the ally's corpse is refused before paying; no second death")
 	GameManager.test_mode = true
 	h._teardown_scene(combat)
+	for c in prior: # fixture spells are not a legal spellbook; restore before the real save
+		c.known_spells.assign(prior[c][0]); c.wizard_spellbook.assign(prior[c][1]); c.feature_choices = prior[c][2]; c.features = prior[c][3]
 	var dto := alice.to_dict()
 	var json_back := Character.new()
 	json_back.from_dict(JSON.parse_string(JSON.stringify(dto)))
