@@ -66,3 +66,5 @@ modifiers and HP/Temporary HP allocations. See [party rules](party-intervention-
 Broader intervention operations, roll hosts and casting consumers remain open.
 
 Weapon attack profiles and S-127 authored damage-type choices (activation or hit window; PARTIAL) are described in [attack profiles](attack-profiles.md).
+
+Extra Attack count and unarmored base-AC upgrade consumers (S-084/S-085; PARTIAL) are described in [attack and AC upgrades](attack-and-ac-upgrades.md).

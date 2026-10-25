@@ -70,6 +70,8 @@ var fighter_move_waiting := false
 var fighter_move_done := false
 var fighter_move_entity: Dictionary = {}
 var remaining_attack_swings := 0
+## Batch 070: swings this Attack action granted in total (spent = total - remaining).
+var attack_action_total := 0
 var attack_unit_substitution: Dictionary = {}
 var child_actions := CombatChildActions.new()
 var remaining_flurry_swings := 0
@@ -871,6 +873,7 @@ func _start_combat_turn() -> void:
 		CombatAction.clear_shocking_grasp(active_character)
 		_clear_monk_turn_effects(active_character)
 		remaining_attack_swings = 0
+		attack_action_total = 0
 		light_attack_weapon = {}
 		active_character.familiar_senses = null
 		active_character.feature_uses.erase("stunning_strike_used")
@@ -3672,6 +3675,7 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 		# concurrent attack while an optional feature decision is open.
 		var parent_strike := child_actions.current("strike")
 		if parent_strike and not child_actions.valid(self): return
+		reclamp_attack_units()
 		if not parent_strike and remaining_attack_swings <= 0 and not turn_budget.can_spend("action"):
 			hud.add_log("No action remains for this attack.")
 			return
@@ -3705,7 +3709,8 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 				return
 		elif remaining_attack_swings <= 0:
 			_spend_action_cost("action")
-			remaining_attack_swings = 1 if "loading" in weapon.get("properties", []) else 1 + active_character.extra_attacks
+			remaining_attack_swings = 1 if "loading" in weapon.get("properties", []) else 1 + RuleUpgradeRules.extra_attacks(active_character)
+			attack_action_total = remaining_attack_swings
 		if not parent_strike: remaining_attack_swings -= 1
 		if "light" in weapon.get("properties", []):
 			light_attack_weapon = weapon
@@ -5467,6 +5472,16 @@ func _spend_action_cost(cost_type: String, invocation_id: String = "") -> bool:
 func _attack_unit_substitution_units(spell: Dictionary) -> int:
 	var authoritative := DataLoader.get_spell(str(spell.get("id", "")))
 	return CombatChildActions.units(authoritative) if authoritative.get("execution") == "shared" and authoritative.get("casting_time", "action") == "action" else 0
+
+## Batch 070 (S-084/S-085): after an attack_count alternative switches or its
+## source leaves mid-action, spent swings stay spent and no swing is refunded or
+## added: remaining = min(remaining, new total - spent).
+func reclamp_attack_units() -> void:
+	if remaining_attack_swings <= 0 or attack_action_total <= 0 or active_character == null: return
+	var spent := attack_action_total - remaining_attack_swings
+	var total := 1 + RuleUpgradeRules.extra_attacks(active_character) if attack_action_total > 1 else 1
+	remaining_attack_swings = mini(remaining_attack_swings, maxi(0, total - spent))
+	attack_action_total = spent + remaining_attack_swings
 
 func _remaining_strike_units() -> int:
 	return remaining_flurry_swings if strike_unit_parent == "flurry" else remaining_attack_swings

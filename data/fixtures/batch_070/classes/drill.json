@@ -1,0 +1,28 @@
+[
+  {
+    "id": "fixture:b070_class",
+    "name": "Batch 070 Neutral Class",
+    "hit_die": "d10",
+    "primary_ability": "STR",
+    "saving_throw_proficiencies": ["STR", "CON"],
+    "weapon_proficiencies": ["simple", "martial"],
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:b070_extra_attack",
+          "name": "Drilled Strikes",
+          "description": "Neutral fixture: two attacks per Attack action.",
+          "type": "passive",
+          "effects": [{"type": "extra_attack", "count": 1}]
+        },
+        {
+          "id": "fixture:b070_unarmored",
+          "name": "Unarmored Guard",
+          "description": "Neutral fixture: unarmored and unshielded, AC equals 10 + DEX + WIS.",
+          "type": "passive",
+          "effects": [{"type": "unarmored_defense", "ability": "WIS"}]
+        }
+      ]
+    }
+  }
+]
