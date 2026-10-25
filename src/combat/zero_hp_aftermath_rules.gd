@@ -207,7 +207,7 @@ static func fallback_error(policy: Dictionary) -> String:
 		if str(key) not in FALLBACK_KEYS: return "settle_death fallback has unknown field '%s'" % str(key)
 	if str(fb.get("when", "")) not in FALLBACK_WHEN: return "settle_death fallback when must be one of %s" % str(FALLBACK_WHEN)
 	if not policy.get("eligibility", {}).has("max_current_hp"): return "settle_death fallback above_max_current_hp needs eligibility.max_current_hp"
-	if not SharedStepExecutor._formula(fb.get("damage")) or fb.get("damage") is int or fb.get("damage") is float: return "settle_death fallback damage must be a dice formula"
+	if not SharedStepExecutor._formula(fb.get("damage")) or fb.get("damage") is int or fb.get("damage") is float or not str(fb.get("damage")).to_lower().contains("d"): return "settle_death fallback damage must be a dice formula"
 	if not fb.get("damage_type") is String or str(fb.damage_type) not in DataLoader.VALID_DAMAGE_TYPES: return "settle_death fallback damage_type is invalid"
 	return ""
 
