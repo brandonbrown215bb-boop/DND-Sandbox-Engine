@@ -5,6 +5,26 @@ executable through `GODOT_BIN` or pass its path to the PowerShell runner.
 
 ## Proportionate spell validation
 
+`projected_vessel_flow` exercises exact loaded vessel copies through real room
+projection, containment admission, cargo, movement and ending controls. It
+checks separate retain/release policies, legal full-backpack return, blocked
+destruction, actual physical footprints, stale/remote controls and malformed
+checkpoint refusal. The runner follows it with a fresh-process probe that
+restores and completes active/pending endings from both full-party and
+player-only saves. Its verified host and limits live in
+[VS-151](planning/vocabulary-slices.md#projected-vessel-contents).
+
+The conversion batch scenarios also run their existing recovery modes in fresh
+processes against the same isolated profile. Batch 001 checks its concentration
+checkpoint; Batch 002 checks both full-party and player-only checkpoints.
+
+`tether_group_flow` exercises ordinary two-recipient tether targeting, once-paid
+casting, exact combat and room selection, Character and object anchors, object
+movement/destruction, stale rescue selection, and the existing full/partial
+checkpoint. The runner follows it with the Character and object recovery probes
+in separate processes. Its verified boundary lives in the
+[slice registry](planning/vocabulary-slices.md#character-tether-groups).
+
 Do not run the entire logic suite after every spell record or small correction.
 Choose checks for the behavior changed, then run broader coverage once at a
 meaningful batch boundary. A passing assertion count is not spell completion.
@@ -154,8 +174,12 @@ The current integration scenario manifest is:
 | `combat_ai_loop` | Live monster AI intent and action through the combat loop |
 | `combat_victory` | Live player actions reach victory and register defeated monsters |
 | `combat_defeat` | Live combat detects a party wipe and the defeat screen exposes safe-save recovery and menu exit |
+| `created_actor_scheduling_flow` | Removed-owner defaults and after-owner turns, several actors sharing one owner, downed/dead encounter entry, healing/revival/re-entry, control expiry, concentration and timed-source ending, defeat with persistent summons, combat save refusal and allowed checkpoint recovery |
+| `shared_initiative_flow` | Loaded renamed exact-source groups sharing the owner count or one group roll; separate member budgets/condition boundaries, deterministic tied groups, death/source removal, late sibling/new-group arrivals, active/empty-group rebuild without settled attack replay, owner disconnect/resume and retained owner-removal anchor |
 | `final_encounter_round_trip` | Production Lich King defeat, pre-finale safe reload, victory, idempotent reward claim, and completion screen |
 | `mixed_mechanics_encounter` | Bounded production-data encounter composes martial attack, bonus action, owned reaction, concentration, healing, save spell, and area selection |
+| `s121_exit_placement_flow` | Combat and local-room required exits retain the captured save through real choice/cancel controls, refuse stale or occupied destinations, settle damage/payment once, and recover represented overworld travel through its allowed checkpoint |
+| `batch_053_legal_placement_flow` | Real creation controls cover distinct legal cells, cancel/stale answers, changed occupancy, refuse/spend no-space policies, once-only slot payment, and SaveManager recovery |
 | `true_strike_spell_flow` | Live True Strike casting, weapon range/proficiency/material validation, damage-type choice, mixed damage settlement, Magic-action cost and activity history |
 | `blindness_deafness_spell_flow` | Live upcast target scaling, Blinded/Deafened choice, source-owned repeat saves, and slot/Magic-action costs |
 | `grease_spell_flow` | Live area saves, movement entry trigger, end-turn save, difficult-terrain movement cost, expiry and cleanup |
@@ -185,7 +209,14 @@ The current integration scenario manifest is:
 | `event_dialog` | Event dialog presentation and resolver wiring |
 | `crown_event_fairy_ring` | Production Fairy Ring chain, three legal Fairy Court choices, DEX success/failure branches, and UI follow-up |
 | `dungeon_reentry_round_trip` | Production Crown dungeon clear, plain Room DTO checkpoint, supported reload, cleared-room rebuild, and idempotent boss/reward revisit |
+| `located_source_end_flow` | Actual room mode activation/expiry, movement before delayed observation, clicked child cancellation/acceptance, actual object and entry-damage successors, shared spell destruction, identical item-copy and created-actor endings, entrance checkpoint, and fresh-process recovery of exact producer children without replaying costs or callbacks |
 | `batch_051_feat_acquisition_flow` | Production Origin/ASI feat pickers, once-only ownership, safe save/load and malformed saved ability prerequisite refusal before session replacement |
+| `form_equipment_ground_flow` | Actual combat equipment chooser with a full backpack and multiple drops, exact nested/cursed/charged copy pickup by another actor, destruction, battle-to-room capture, entrance checkpoint and fresh-process reversion without duplication |
+| `item_form_return_flow` | Exact item voluntary ending, actual lethal monster hit and overflow, full-backpack legal ground return, blocked return retries, independent identical injured copy, dormant-room save-time settlement and fresh-process recovery of pending/completed returns |
+| `containment_release_flow` | Several/nested occupants, creature/object movement and represented room travel, exact gear, reserved/rechecked release destinations, blocked/fallback/refuse policies, stale/cancelled choices, repeated expiry/destruction and actual release after full-party/player-only checkpoint recovery in a fresh process |
+| `containment_harm_flow` | Authored internal/external effects, exact two-occupant spell/check selection, stale/cancelled/repeated choices, internal/object damage, creature/object container destruction, deferred release, active/pending party and player-only checkpoint recovery in a fresh process |
+| `containment_flow` | Real room admission/inspection, multiple occupants, changed capacity, stale/cancelled choices, independent creature/object containers, exact gear ownership, internal locations, entrance checkpoint and both DTO paths through fresh-process recovery |
+| `item_lifecycle_controls_flow` | Actual room/combat exact-copy Bond/Release and Project/Dismiss controls, identical names, cancellation, stale ownership/attunement/form, occupied space, authored actions/charges/no-space policy, full-inventory return with nested contents and fresh-process checkpoint recovery |
 | `batch_052_hud_mode_controls_flow` | Production combat mode/upgrade popup controls, cancel/superseded/previous-turn answers, exact-copy suppression and safe save/load |
 | `character_creation` | Character-creation scene boot and legal choices |
 | `normal_creation_matrix` | Production main-menu player-count controls and character creation for one through four local players, including stable seat ownership and empty companion slots |

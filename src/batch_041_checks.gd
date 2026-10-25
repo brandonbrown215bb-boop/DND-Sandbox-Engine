@@ -38,12 +38,19 @@ static func add_copy(actor: Character, definition: String) -> String:
 	return ""
 
 ## Resolve the real self-cast with a chosen equipment policy; concentration is mirrored.
-static func guise(actor: Character, policy: String = "") -> Dictionary:
+static func guise(actor: Character, policy: String = "", host: SpellCastContext = null) -> Dictionary:
 	actor.spell_slots = {"2": 1}
 	if not actor.concentrating_on.is_empty(): SpellEffects.end_concentration(actor, [actor])
 	var spell := DataLoader.get_spell(GUISE).duplicate(true)
 	if not policy.is_empty(): spell["_projection_equipment"] = policy
-	var r := SpellResolver.resolve(actor, actor, spell, true, {}, [], 2)
+	if policy == "dropped" and host == null:
+		host = SpellCastContext.new()
+		host.ground_room = LocalRoomRules.create({"id": "b041_ground", "name": "Equipment ground", "cells": [[0, 0]], "party_spawns": [[0, 0]], "objects": [], "walls": [], "exits": [], "monster_spawns": [], "encounter_monsters": []}, [actor])
+	if host != null:
+		host.caster = actor
+		host.spell = spell
+	var r := SpellResolver.resolve(actor, actor, spell, true, {}, [], 2, -1, host)
+	if host != null: r["ground_room"] = host.ground_room
 	if r.get("projection", {}).get("projected", false): actor.concentrating_on = {"spell_id": GUISE, "effect_source": str(r.effect_cast.source_id), "targets": []}
 	return r
 
@@ -192,9 +199,9 @@ static func _equipment(check: Callable) -> void:
 	var d := wearer("b041_dropped")
 	var d_charm := d.inventory.equipped_instance_id(Inventory.Slot.RING_1)
 	r = guise(d, "dropped")
-	check.call(d_charm in r.projection.equipment.dropped and d.inventory.copies.equipped.is_empty() and d.inventory.equipped_instance_id(Inventory.Slot.RING_1) == "" and d_charm in d.inventory.backpack_instances().map(func(c): return str(c.instance_id)) and d.get_ac() == 12, "041 S-164 dropped copies leave their slots and stay owned")
+	check.call(d_charm in r.projection.equipment.dropped and d.inventory.copies.equipped.is_empty() and d.inventory.equipped_instance_id(Inventory.Slot.RING_1) == "" and d.inventory.get_instance(d_charm).is_empty() and r.ground_room.objects.size() == r.projection.equipment.dropped.size() and d.get_ac() == 12, "041 S-164 dropped copies leave ownership and occupy the real ground")
 	SpellEffects.end_concentration(d, [d])
-	check.call(d.inventory.equipped_instance_id(Inventory.Slot.RING_1) == "" and SourceBenefitRules.total(d, "AC") == 0 and d_charm in d.inventory.owned_instances().map(func(c): return str(c.instance_id)), "041 S-164 reversion does not re-equip dropped copies")
+	check.call(d.inventory.equipped_instance_id(Inventory.Slot.RING_1) == "" and SourceBenefitRules.total(d, "AC") == 0 and d.inventory.get_instance(d_charm).is_empty(), "041 S-164 reversion does not reclaim dropped copies")
 	var legacy := Batch040Checks.caster("b041_legacy_form")
 	var lr := Batch040Checks.shift(legacy, 2, "b040_hound")
 	var bad_spell := DataLoader.get_spell(Batch040Checks.SHIFT).duplicate(true)
@@ -291,13 +298,14 @@ static func review_stress(check: Callable) -> void:
 	var dto := f.to_dict()
 	SpellEffects.end_concentration(f, [f])
 	check.call(made.get("bonded", false) and held == [dag] and BondRules.bonded(f, BLADE) == [dag] and dto.get("exclusive_bonds", {}).get(BLADE, {}).get("targets", []).size() == 1, "041 RZ6 a feature-suppressing projection keeps the bond through query, save and reversion (during=%s after=%s)" % [str(held), str(BondRules.bonded(f, BLADE))])
-	# RZ7: bonded copy dropped by the dropped policy stays owned, so the bond stays.
+	# RZ7: actual ground loss ends the owned-copy bond through the normal transaction.
 	var g := bonder("b041_rz7")
 	var w := add_copy(g, "dagger")
 	g.inventory.equip_instance(Inventory.Slot.WEAPON, w)
 	BondRules.bond(g, BLADE, w)
-	guise(g, "dropped")
-	check.call(g.inventory.equipped_instance_id(Inventory.Slot.WEAPON).is_empty() and BondRules.bonded(g, BLADE) == [w], "041 RZ7 dropped-policy copy is unequipped but still owned and bonded")
+	var ground: Dictionary = guise(g, "dropped").ground_room
+	check.call(g.inventory.equipped_instance_id(Inventory.Slot.WEAPON).is_empty() and BondRules.bonded(g, BLADE).is_empty(), "041 RZ7 ground drop removes ownership and ends the exact-copy bond")
 	SpellEffects.end_concentration(g, [g])
+	LocalRoomRules.interact(ground, str(ground.objects[0].id), "take", g, w)
 	# RZ8: reversion does not re-equip a dropped copy, and the charm's AC stays absent until re-donned.
 	check.call(g.inventory.equipped_instance_id(Inventory.Slot.WEAPON).is_empty() and g.inventory.equip_instance(Inventory.Slot.WEAPON, w), "041 RZ8 reversion leaves the dropped copy unequipped and it can be donned again")

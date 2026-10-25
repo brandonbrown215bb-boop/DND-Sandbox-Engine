@@ -1,0 +1,94 @@
+[
+  {
+    "id": "fixture:harm_chamber",
+    "name": "Neutral living chamber",
+    "size": "medium",
+    "speed": 6,
+    "creature_type": "beast",
+    "ability_bonuses": {},
+    "containment": {
+      "capacity": 2,
+      "occupant_kinds": [
+        "character",
+        "object"
+      ],
+      "sizes": [
+        "tiny",
+        "small",
+        "medium",
+        "large"
+      ],
+      "creature_types": [
+        "humanoid",
+        "beast"
+      ],
+      "targeting": [
+        "same_interior",
+        "occupant_to_container",
+        "external_to_occupant",
+        "occupant_to_external"
+      ],
+      "internal_damage": {
+        "damage": "2",
+        "damage_type": "acid",
+        "interval_seconds": 6
+      },
+      "escape": {
+        "ability": "DEX",
+        "dc": 1,
+        "seconds": 6
+      },
+      "rescue": {
+        "ability": "STR",
+        "dc": 1,
+        "seconds": 6
+      }
+    }
+  },
+  {
+    "id": "fixture:renamed_harm_chamber",
+    "name": "Neutral living chamber",
+    "size": "medium",
+    "speed": 6,
+    "creature_type": "beast",
+    "ability_bonuses": {},
+    "containment": {
+      "capacity": 2,
+      "occupant_kinds": [
+        "character",
+        "object"
+      ],
+      "sizes": [
+        "tiny",
+        "small",
+        "medium",
+        "large"
+      ],
+      "creature_types": [
+        "humanoid",
+        "beast"
+      ],
+      "targeting": [
+        "same_interior",
+        "occupant_to_container",
+        "external_to_occupant",
+        "occupant_to_external"
+      ],
+      "internal_damage": {
+        "damage": "2",
+        "damage_type": "acid",
+        "interval_seconds": 6
+      },
+      "escape": {
+        "ability": "DEX",
+        "dc": 1,
+        "seconds": 6
+      },
+      "rescue": {
+        "ability": "STR",
+        "dc": 1,
+        "seconds": 6
+      }
+    }
+  }
+]

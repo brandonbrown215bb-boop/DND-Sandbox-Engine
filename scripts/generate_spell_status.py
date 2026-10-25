@@ -228,6 +228,9 @@ def reconcile_target(path: Path, spells: dict, class_lists: dict) -> dict:
     return {"input": path.relative_to(ROOT).as_posix() if path.is_relative_to(ROOT) else str(path), "membership_rows": sum(map(len, target.values())), "unique_resolved_ids": len(memberships), "unresolved_names": unresolved, "missing_class_memberships": missing_access, "memberships": {sid: sorted(classes) for sid, classes in memberships.items()}}
 
 def generate(runtime_path: Path, target_path: Path) -> dict:
+    # A later, explicitly scoped review must survive regeneration without
+    # pretending the untouched historical catalog was audited again.
+    scoped_reviews = json.loads(REGISTER.read_text(encoding="utf-8")).get("scoped_reviews", []) if REGISTER.exists() else []
     runtime = json.loads(runtime_path.read_text(encoding="utf-8"))
     spells = {s["id"]: s for s in runtime["spells"]}
     raw_ids = {s["id"] for p in (ROOT / "data/core/spells").glob("*.json") for s in json.loads(p.read_text(encoding="utf-8"))}
@@ -728,16 +731,36 @@ def generate(runtime_path: Path, target_path: Path) -> dict:
     validate_dependencies(rows)
     register["capabilities"] = {key: {"wave": value[0], "name": value[1], "status": value[2]} for key, value in CAPABILITIES.items()}
     register["dependency_roadmap"] = "docs/mechanics/spell-foundations.md"
+    register["scoped_reviews"] = scoped_reviews
+    apply_scoped_reviews(register)
     REGISTER.write_text(json.dumps(register, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     write_report(register)
     return register
 
+def apply_scoped_reviews(register: dict) -> None:
+    rows = {row["id"]: row for row in register["spells"]}
+    for review in register.get("scoped_reviews", []):
+        for spell_id, update in review["spells"].items():
+            # Availability/classes come from the inventory, independently of
+            # dated acceptance evidence. Never overlay those runtime facts.
+            allowed = {"delivery_status", "known_limit", "evidence", "data_rules_status"}
+            if spell_id not in rows or set(update) - allowed:
+                raise ValueError("Invalid scoped spell review: " + spell_id)
+            rows[spell_id].update(update)
+            rows[spell_id]["conversion_reviewed_on"] = review["reviewed_on"]
+
+
 def write_report(register: dict) -> None:
     rows = register["spells"]
     counts = Counter(r["delivery_status"] for r in rows)
-    lines = ["# Spell delivery status and shared behavior backlog", "", "Reviewed 2026-10-06. The single status register is [spell_status.json](spell_status.json); this report and the spell section of the feature matrix are generated views of it.", "", register["scope"], "", "**No spell is certified fully rules-complete by this reconciliation.** A recorded gameplay slice is useful progress, not a completed SRD audit. The 809-row repair snapshot is a historical missing-membership list, not the current spell denominator. The older canonical artifact has 338 distinct IDs; the loaded registry has 362. Current production class lists contain 898 memberships. Those sets must not be mixed into one completion percentage.", "", "## Current verification boundary", "", register["verification_boundary"], "", f"Production casting currently enables {sum(r['cast_available'] for r in rows)} explicit gameplay slices and refuses {sum(not r['cast_available'] for r in rows)} spell IDs before costs. Availability is not full rules certification. Raw class memberships and existing saves retain the full catalog.", "", "## Status totals", "", "| Delivery status | Unique spells | Meaning |", "|---|---:|---|"]
+    lines = ["# Spell delivery status and shared behavior backlog", "", "Reviewed 2026-10-06. The single status register is [spell_status.json](spell_status.json); this report and the spell section of the feature matrix are generated views of it.", "", register["scope"], "", "**No spell is certified fully rules-complete by this reconciliation.** A recorded gameplay slice is useful progress, not a completed SRD audit. The 809-row repair snapshot is a historical missing-membership list, not the current spell denominator. The older canonical artifact has 338 distinct IDs; the loaded registry has 362. Current production class lists contain 898 memberships. Those sets must not be mixed into one completion percentage.", "", "## Current verification boundary", "", register["verification_boundary"], "", f"The register's availability flags record {sum(r['cast_available'] for r in rows)} enabled gameplay slices and {sum(not r['cast_available'] for r in rows)} refused spell IDs at its historical inventory boundary. Later scoped reviews report their own fresh inventories below. Availability is not full rules certification. Raw class memberships and existing saves retain the full catalog.", "", "## Status totals", "", "| Delivery status | Unique spells | Meaning |", "|---|---:|---|"]
     for status, meaning in register["status_definitions"].items():
         lines.append(f"| {status} | {counts[status]} | {meaning} |")
+    for review in register.get("scoped_reviews", []):
+        inventory = review["inventory"]
+        lines += ["", f"## Scoped conversion review — {review['reviewed_on']}", "",
+                  f"Reviewed only {', '.join(review['spells'])}. The ten-candidate results and remaining clauses are in the [slice registry](../planning/vocabulary-slices.md#conversion-batch-001). Untouched delivery evidence retains its historical boundary.", "",
+                  f"Its production inventory contains {inventory['total']} spells, {inventory['available']} enabled and {inventory['shared']} using shared execution. These are inventory counts, not a new whole-catalog rule audit."]
     lines += ["", "## Dependency waves", "", "The [current roadmap](../../roadmap.md) controls delivery. The historical [foundation plan](spell-foundations.md) retains capability gaps and wave groupings, not a live execution order. Catalog `dependency_plan` entries retain minimum requirements and exclusions; they do not select implementation work or certify a spell. Foundation status, availability and production evidence remain separate.", "", "| Capability | Wave | Foundation status |", "|---|---:|---|"]
     for capability in register["capabilities"].values():
         lines.append(f"| {capability['name']} | {capability['wave']} | {capability['status']} |")

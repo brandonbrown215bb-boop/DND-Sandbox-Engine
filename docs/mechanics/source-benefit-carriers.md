@@ -148,9 +148,27 @@ upgrade option. Rest choices cannot declare `recharge_while`. Mid-combat dropped
 copies are not visited until returned to a room or inventory; there is no
 separate sunrise clock.
 
-An `actor_projection` with `equipment: ["dropped"]` sets removable equipped
-copies aside in the backpack. It refuses before casting costs or form changes
-when the backpack cannot hold them. Cursed copies retain their removal policy.
+An `actor_projection` with `equipment: ["dropped"]` moves removable equipped
+copies to ground records at the actor's actual room/combat position. It does not
+need backpack space. All selected copies and their destinations validate before
+casting costs, removal or form changes. Exact identity, nested contents,
+attachments, charges, attunement/curse state and source stamps travel with each
+copy. Blocked cursed copies stay worn; allowed removal uses normal lingering
+curse and linked-copy loss hooks. The selected batch leaves inventory together
+before those hooks run, so one departure cannot destroy another selected copy.
+
+Room drops use the same placement payload as `LocalRoomRules.place`; several
+copies can share the actor's cell. Combat uses its live ground ledger and captures
+surviving copies into the encounter's room before the next allowed checkpoint.
+Encounters without a persistent room refuse a nonempty equipment drop before
+payment. Reversion never creates, equips or reclaims dropped copies, including
+copies picked up by someone else or destroyed while the form was active.
+Destroying a dropped host spills its exact cargo and attached parts in place;
+the destroyed host itself cannot be picked up or recreated. Ground checkpoints
+validate nested cargo/attachments and count their IDs across world and inventory
+owners. Weight-limited container spills retain all copies, including more than
+100 children.
+Merged and worn policies keep their existing behavior.
 The projection records whether it actually supplied the current Temporary HP;
 damage preserves that ownership, while an accepted replacement (including an
 equal amount) transfers it. Reversion removes only the projection's own HP.

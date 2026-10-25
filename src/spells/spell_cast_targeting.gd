@@ -4,7 +4,7 @@ extends RefCounted
 
 static func can_target_downed(character: Character, spell: Dictionary) -> bool:
 	if character == null or not character.is_downed(): return false
-	if SharedSpell.has_effect(spell, "heal"):
+	if SharedSpell.uses(spell):
 		return not character.is_dead()
 	if str(spell.get("target", "")) in ["area", "cone"] and spell.has("damage"): return true
 	return str(spell.get("id", "")) in ["cure_wounds", "healing_word", "heal", "regenerate", "power_word_heal", "spare_the_dying", "mass_cure_wounds", "mass_healing_word", "conjure_celestial", "beacon_of_hope"]
@@ -193,7 +193,7 @@ static func _spell_upcast_maximum_targets(cast: SpellCastContext, spell_data: Di
 	var extra_per_level := int(upcast.get("additional_targets_per_level", 0))
 	var base_level := int(spell_data.get("level", 1))
 	var slot_level := int(spell_data.get("_selected_spell_slot_level", base_level))
-	return maxi(1, int(spell_data.get("base_targets", 1))) + maxi(0, slot_level - base_level) * maxi(0, extra_per_level)
+	return TetherRules.maximum_targets(spell_data, maxi(1, int(spell_data.get("base_targets", 1))) + maxi(0, slot_level - base_level) * maxi(0, extra_per_level))
 
 
 static func _magic_missile_dart_total(cast: SpellCastContext, spell_data: Dictionary) -> int:
@@ -252,7 +252,7 @@ static func _creature_at_coord_matches_types(cast: SpellCastContext, coord: Vect
 		return true
 	for player in cast.players:
 		var character: Character = player.get("character")
-		if player.get("hex_position", Vector2i.ZERO) == coord and character != null and character.is_alive:
+		if player.get("hex_position", Vector2i.ZERO) == coord and character != null and (character.is_alive or character.is_downed()):
 			var creature_type := character.get_creature_type()
 			return creature_type in required_types
 	for monster in cast.monsters:
@@ -270,7 +270,7 @@ static func _spell_target_visible_to_active_character(cast: SpellCastContext, co
 	var distance_feet := HexUtils.get_distance(origin, coord) * 5
 	for player in cast.players:
 		var character: Character = player.get("character")
-		if player.get("hex_position", Vector2i.ZERO) == coord and character != null and (character.is_alive or str(spell_data.get("id", "")) == "power_word_heal"):
+		if player.get("hex_position", Vector2i.ZERO) == coord and character != null and (character.is_alive or can_target_downed(character, spell_data)):
 			return CombatPerception.can_see_target(cast.caster, character, origin, coord, cast.grid) and CombatAction.spell_target_is_visible_to(cast.caster, character, spell_data, distance_feet)
 	for monster in cast.monsters:
 		if monster.get("hex_position", Vector2i.ZERO) == coord and monster.get("is_alive", false):
@@ -284,11 +284,10 @@ static func _has_spell_creature_at(cast: SpellCastContext, coord: Vector2i, spel
 			var body_target: Character = player.get("character")
 			if player.get("hex_position", Vector2i.ZERO) == coord and body_target != null and body_target.is_dead(): return true
 		return false
-	if SharedSpell.has_effect(spell, "heal") or str(spell.get("id", "")) in ["cure_wounds", "healing_word", "heal", "regenerate", "power_word_heal", "spare_the_dying", "mass_cure_wounds", "mass_healing_word"]:
-		for player in cast.players:
-			var target: Character = player.get("character")
-			if player.get("hex_position", Vector2i.ZERO) == coord and target != null and target.current_hp == 0 and CombatAction.can_receive_power_word_heal(target):
-				return true
+	for player in cast.players:
+		var target: Character = player.get("character")
+		if player.get("hex_position", Vector2i.ZERO) == coord and can_target_downed(target, spell):
+			return true
 	return cast.areas._has_creature_at(coord)
 
 

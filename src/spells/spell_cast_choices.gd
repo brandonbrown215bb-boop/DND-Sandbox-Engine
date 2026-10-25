@@ -351,9 +351,9 @@ static func revalidate_creation(cast: SpellCastContext) -> bool:
 	if cast.spell.has("_placement"):
 		var picks := PlacementRules.decode(cast.spell._placement)
 		if picks.is_empty(): return true # Authored paid no-space outcome creates nothing.
-		var template := CreatedActorRules._template(cast.spell, str(factory.get("template_id", "")))
+		var sizes := CreatedActorRules.placement_sizes(cast.spell, factory)
 		var origin: Vector2i = cast.players[cast.player_index].get("hex_position", Vector2i.ZERO)
-		var why := PlacementRules.confirm_error(cast, origin, str(template.size), int(PlacementRules.policy(effect).range_hexes), picks)
+		var why := PlacementRules.confirm_error(cast, origin, sizes, int(PlacementRules.policy(effect).range_hexes), picks)
 		if not why.is_empty():
 			_cancel_placement(cast, "That space is no longer available (%s); nothing was spent." % why)
 			return false
@@ -377,10 +377,10 @@ static func choose_placement(cast: SpellCastContext) -> bool:
 	if template.is_empty(): template = effect.template
 	var level := maxi(0, int(cast.spell.get("_selected_spell_slot_level", cast.spell.get("level", 0))) - int(cast.spell.get("level", 0)))
 	var count := int(factory.get("count", CreatedActorRules.value(template.count, level)))
-	var size := str(template.size)
+	var sizes := CreatedActorRules.placement_sizes(cast.spell, factory)
 	var reach := int(policy.range_hexes)
 	var origin: Vector2i = cast.players[cast.player_index].get("hex_position", Vector2i.ZERO)
-	var available := PlacementRules.reserve(cast, origin, size, reach, count)
+	var available := PlacementRules.reserve(cast, origin, sizes, reach, count)
 	if available.is_empty():
 		if policy.no_space == "spend":
 			cast.spell["_placement"] = []
@@ -393,7 +393,8 @@ static func choose_placement(cast: SpellCastContext) -> bool:
 		return true
 	var picks: Array[Vector2i] = []
 	for i in count:
-		var options := PlacementRules.candidates(cast, origin, size, reach, picks)
+		var size := str(sizes[i]) if i < sizes.size() else str(template.size)
+		var options := PlacementRules.candidates(cast, origin, size, reach, picks.map(func(hex): return {"hex": hex, "size": sizes[picks.find(hex)]}))
 		var ids: Array[String] = [""]
 		var labels := {"": "Cancel"}
 		for hex in options:
@@ -412,7 +413,7 @@ static func choose_placement(cast: SpellCastContext) -> bool:
 			return false
 		var parts := picked.split(",")
 		picks.append(Vector2i(int(parts[0]), int(parts[1])))
-	var recheck := PlacementRules.confirm_error(cast, origin, size, reach, picks)
+	var recheck := PlacementRules.confirm_error(cast, origin, sizes, reach, picks)
 	if not recheck.is_empty():
 		_cancel_placement(cast, "That space is no longer available (%s); nothing was spent." % recheck)
 		return false

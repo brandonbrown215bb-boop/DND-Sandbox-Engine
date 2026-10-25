@@ -121,6 +121,16 @@ static func local_error(state: Variant) -> String:
 		if not id is String or str(id).is_empty(): return "local character identity is invalid"
 		var position: Variant = state["party_positions"][id]
 		if not coordinate(position) or not cells.has(LocalRoomRules.coord(position)): return "party position lies outside the room"
+	if state.has("created_actor_positions"):
+		var created_positions: Variant = state["created_actor_positions"]
+		if not created_positions is Dictionary or created_positions.size() > 300: return "local created actor positions are malformed"
+		var occupied_created_cells: Dictionary = {}
+		for id in created_positions:
+			var position: Variant = created_positions[id]
+			if not id is String or not (str(id).begins_with("spell:") or (str(id).length() > 10 and str(id).ends_with(":projected"))) or not coordinate(position): return "local created actor position is invalid"
+			var hex := LocalRoomRules.coord(position)
+			if not cells.has(hex) or occupied_created_cells.has(hex): return "local created actor position is outside the room or duplicated"
+			occupied_created_cells[hex] = true
 	if state.has("party_altitudes"):
 		var altitudes: Variant = state["party_altitudes"]
 		if not altitudes is Dictionary or altitudes.size() > state["party_positions"].size(): return "local party altitudes are malformed"
@@ -269,8 +279,10 @@ static func local_error(state: Variant) -> String:
 	if not state.get("objects") is Array or state["objects"].size() > 200: return "local objects are malformed"
 	var objects: Dictionary = {}
 	var instances: Dictionary = {}
+	var item_records := {}
 	for object in state["objects"]:
 		if not object is Dictionary or not object.get("id") is String or str(object["id"]).is_empty() or objects.has(object["id"]) or not object.get("name") is String: return "object identity is invalid"
+		if object.has("tethers") and (not object["tethers"] is Dictionary or object["tethers"].size() > 32): return "object tethers are malformed"
 		objects[object["id"]] = true
 		if str(object.get("kind", "")) not in ["door", "container", "loose", "barrier", "remains"] or not coordinate(object.get("position")) or not cells.has(LocalRoomRules.coord(object["position"])): return "object location or kind is invalid"
 		if str(object.get("kind", "")) == "remains":
@@ -320,7 +332,7 @@ static func local_error(state: Variant) -> String:
 				if not object[field] is int and not object[field] is float: return "food or water quantity is invalid"
 				var quantity := float(object[field])
 				if not is_finite(quantity) or quantity < 0.0 or not is_equal_approx(quantity * 16.0, roundf(quantity * 16.0)): return "food or water quantity is invalid"
-		if not object.get("contents") is Array or object["contents"].size() > 100: return "container items are malformed"
+		if not object.get("contents") is Array: return "container items are malformed"
 		if int(object.get("hp", 1)) > int(object.get("max_hp", 1)): return "object health exceeds its maximum"
 		if float(object.get("water_gallons", 0.0)) > float(object.get("capacity_gallons", 0.0)): return "stored water exceeds its container capacity"
 		if object.has("food_servings") and not bool(object.get("food_or_drink", false)): return "food servings are attached to a non-food object"
@@ -328,7 +340,12 @@ static func local_error(state: Variant) -> String:
 		for item in object["contents"]:
 			if not item is Dictionary or not item.get("instance_id") is String or str(item["instance_id"]).is_empty() or instances.has(item["instance_id"]) or not item.get("state") is Dictionary or DataLoader.get_item(str(item.get("definition_id", ""))).is_empty(): return "world item identity is invalid"
 			instances[item["instance_id"]] = true
+			item_records[str(item.instance_id)] = item
+	var item_error := InventoryCopies.world_records_error(item_records)
+	if not item_error.is_empty(): return "world item: " + item_error
 	for warded_object_id in alarm_warded_object_ids:
 		var warded_object := LocalRoomRules.get_object(state, str(warded_object_id))
 		if warded_object.is_empty() or str(warded_object.get("kind", "")) != "door": return "saved Alarm references a missing or ineligible door"
-	return ""
+	var containment_error := ContainmentRules.room_error(state)
+	if not containment_error.is_empty(): return containment_error
+	return LocatedSourceEndRules.saved_error(state)

@@ -154,6 +154,9 @@ func on_character_creation_complete() -> void:
 
 ## Enter combat from the overworld or a dungeon.
 func enter_combat(monster_ids: Array, surprise: bool = false, return_state: GameState = GameState.OVERWORLD, terrain: String = "plains", local_room: Dictionary = {}, ambient_light: String = "") -> void:
+	if ContainmentRules.active(local_room):
+		push_warning("Contained bodies cannot enter an encounter yet.")
+		return
 	var context := {
 		"monster_ids": monster_ids,
 		"surprise": surprise,
@@ -180,6 +183,10 @@ func enter_dungeon(dungeon_id: String) -> void:
 
 ## Exit a dungeon and return to the overworld.
 func exit_dungeon() -> void:
+	for room in active_dungeon_state.get("local_rooms", {}).values():
+		if room.get("containment_occupants", []).any(func(r): return r.container_kind == "character" or r.occupant_kind == "character"):
+			push_warning("Release contained party bodies before leaving the dungeon.")
+			return
 	remember_dungeon()
 	active_dungeon_state.clear()
 	change_state(GameState.OVERWORLD, {"returning_from_dungeon": true})
@@ -389,6 +396,11 @@ func advance_campaign_time(elapsed_seconds: int) -> Array[Dictionary]:
 			SurvivalRules.settle_day(character, (day + 1) * 86400)
 		OwnedFeatureSources.recover_dawn_rooms(saved_local_room_states()) # Brandon: dawn items recharge lying in rooms too.
 	SpellEffects.advance_time(PartyManager.characters.values(), elapsed_seconds)
+	var containment_receipts: Array[Dictionary] = []
+	for room_state in saved_local_room_states():
+		containment_receipts.append_array(ContainmentRules.advance_internal_damage(room_state, PartyManager.characters.values(), campaign_elapsed_seconds))
+		LocatedSourceEndRules.observe(room_state, PartyManager.characters.values())
+	remember_dungeon() # Commit consumed children to the dormant snapshot too.
 	AnimatedObjectRules.reconcile()
 	for room_state in saved_local_room_states():
 		LocalRoomAreas.expire(room_state, campaign_elapsed_seconds)
@@ -405,6 +417,7 @@ func advance_campaign_time(elapsed_seconds: int) -> Array[Dictionary]:
 	var result := AnimalMessengerRulesRef.advance_deliveries(animal_messenger_deliveries, elapsed_seconds)
 	animal_messenger_deliveries.assign(result.get("deliveries", []))
 	var notifications: Array[Dictionary] = result.get("notifications", [])
+	notifications.append_array(containment_receipts)
 	for receipt in recovery_receipts:
 		notifications.append({"type":"resource_pool_recovered", "receipt":receipt})
 	return notifications
@@ -436,12 +449,24 @@ func remember_dungeon() -> void:
 ## campaign's current state; no scenes or new room generation are involved.
 func saved_local_room_states() -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
+	var active_id := str(active_dungeon_state.get("dungeon_id", ""))
 	for dungeon in [active_dungeon_state] + dungeon_snapshots.values():
 		if dungeon is Dictionary:
+			# A dormant copy of the active dungeon is not another world. Ticking
+			# both copies would replay source-end healing and other once-only work.
+			if not is_same(dungeon, active_dungeon_state) and not active_id.is_empty() and str(dungeon.get("dungeon_id", "")) == active_id: continue
 			for room_state in dungeon.get("local_rooms", {}).values():
 				if room_state is Dictionary: result.append(room_state)
 	var transition_room: Variant = transition_context.get("local_room", null)
-	if transition_room is Dictionary and not transition_room.is_empty(): result.append(transition_room)
+	if transition_room is Dictionary and not transition_room.is_empty():
+		var found := false
+		for index in result.size():
+			if is_same(result[index], transition_room): found = true; break
+			if active_dungeon_state.get("local_rooms", {}).values().any(func(room): return is_same(room, result[index])) and str(result[index].get("id", "")) == str(transition_room.get("id", "")):
+				result[index] = transition_room
+				found = true
+				break
+		if not found: result.append(transition_room)
 	return result
 
 

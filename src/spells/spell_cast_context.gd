@@ -28,6 +28,8 @@ var player_index := -1
 var detected_creatures: Dictionary = {}
 var detected_hazards: Dictionary = {}
 var effect_boundary_rounds: Dictionary = {}
+var ground_items: Array[Dictionary] = [] # Live encounter ground ledger, shared with CombatState.
+var ground_room: Dictionary = {} # Explicit exploration room host.
 var grid: HexGrid
 var hud: CombatHUD
 var tracker: InitiativeTracker
@@ -42,6 +44,9 @@ var owner_label := ""
 var target_coord := Vector2i.ZERO
 var additional_target_coord := Vector2i(9999, 9999)
 var extra_target_coords: Array[Vector2i] = []
+## S-121 continuation receipts and optional production choice hook.
+var save_exit_settled_request_ids: Dictionary = {}
+var choose_save_exit: Callable
 
 var commit_guard: Callable
 var can_spend: Callable

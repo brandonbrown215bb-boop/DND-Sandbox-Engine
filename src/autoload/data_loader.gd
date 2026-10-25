@@ -488,6 +488,11 @@ func _validate_content(data: Dictionary, content_type: String, source: String) -
 		if not owned_error.is_empty():
 			_load_errors.append("%s in %s" % [owned_error, source])
 			return false
+	if content_type == "race":
+		var containment_error := ContainmentRules.policy_error(data.get("containment", {}))
+		if not containment_error.is_empty():
+			_load_errors.append("%s in %s" % [containment_error, source])
+			return false
 	if content_type == "item":
 		var measure_error := ItemTypeRules.definition_error(data) # Batch 048: magic-item types and measurements.
 		if not measure_error.is_empty():

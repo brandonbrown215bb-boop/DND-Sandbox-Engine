@@ -244,19 +244,13 @@ func _trigger_event_ui(event_data: Dictionary) -> void:
 		
 		# Check if event teleported player
 		if result.get("teleported", false):
-			# Choose random passable hex and place player there
-			var all_hexes := hex_grid.tiles.keys()
-			var passable_hexes: Array[Vector2i] = []
-			for hex in all_hexes:
-				var tile: HexTile = hex_grid.get_tile(hex)
-				if tile != null and tile.is_passable():
-					passable_hexes.append(hex)
-			
-			if not passable_hexes.is_empty():
-				var rand_hex: Vector2i = passable_hexes.pick_random()
-				PartyManager.move_exploration_party(rand_hex)
+			var destination: Variant = _represented_travel_destination(result)
+			if destination is Vector2i:
+				PartyManager.move_exploration_party(destination)
 				FogOfWar.update_visibility(hex_grid)
-				hud.add_log("Teleported to hex %s!" % str(rand_hex))
+				hud.add_log("Teleported to represented hex %s!" % str(destination))
+			else:
+				hud.add_log("The teleport has no legal represented destination; the party stays where it is.")
 
 		# Check milestone check triggers if any
 		var milestone_trigger: String = result.get("milestone", "")
@@ -271,6 +265,47 @@ func _trigger_event_ui(event_data: Dictionary) -> void:
 		hud.update_hud()
 		_recalculate_reachable()
 	)
+
+
+## Resolve travel only onto an actual tile on the current map. Explicit event
+## coordinates are honored only when legal; random-location events choose from
+## the same live, plane-aware legal candidates. Never synthesize a coordinate.
+func _represented_travel_destination(result: Dictionary) -> Variant:
+	if hex_grid == null or hex_grid.tiles.is_empty(): return null
+	var origin := PartyManager.get_exploration_position()
+	var state := _represented_travel_placement_state()
+	var plane := str(state.get("plane", PhysicalFactsRules.DEFAULT_PLANE))
+	var max_range := 0
+	for cell in hex_grid.tiles:
+		max_range = maxi(max_range, HexUtils.get_distance(origin, cell))
+	var explicit: Variant = result.get("destination", result.get("destination_coord", null))
+	if result.has("destination") or result.has("destination_coord"):
+		if not explicit is Array or explicit.size() != 2 or not explicit.all(func(value): return CreatedActorRules._int(value, -2147483648, 2147483647)): return null
+		var destination := Vector2i(int(explicit[0]), int(explicit[1]))
+		return destination if _travel_tile_plane(destination) == plane and PlacementRules.legal_error(state, origin, destination, "medium", max_range).is_empty() else null
+	var candidates := PlacementRules.candidates(state, origin, "medium", max_range).filter(func(cell: Vector2i) -> bool: return _travel_tile_plane(cell) == plane)
+	if candidates.is_empty(): return null
+	return candidates.pick_random()
+
+
+func _represented_travel_placement_state() -> Dictionary:
+	var origin := PartyManager.get_exploration_position()
+	var players: Array = []
+	for index in PlayerManager.get_player_count():
+		var data: Dictionary = PlayerManager.get_player(index)
+		var character: Character = data.get("character")
+		if character != null:
+			players.append({"character": character, "hex_position": data.get("hex_position", origin), "is_alive": character.is_alive})
+	var plane := PhysicalFactsRules.get_plane(players[0].get("character") if not players.is_empty() else null, GameManager.transition_context)
+	if players.is_empty() or players.any(func(entry: Dictionary) -> bool: return PhysicalFactsRules.get_plane(entry.get("character"), GameManager.transition_context) != plane):
+		return {"_placement_grid": hex_grid, "_placement_players": players, "plane": "", "room": {}}
+	return {"_placement_grid": hex_grid, "_placement_players": players, "plane": plane, "room": {}}
+
+
+func _travel_tile_plane(coord: Vector2i) -> String:
+	var tile: HexTile = hex_grid.get_tile(coord) if hex_grid != null else null
+	if tile == null: return ""
+	return str(tile.custom_properties.get("plane", GameManager.transition_context.get("plane", PhysicalFactsRules.DEFAULT_PLANE))).to_lower().strip_edges()
 
 
 func _trigger_shop_ui(town_name: String) -> void:

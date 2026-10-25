@@ -364,7 +364,7 @@ func update_hud(active_char: Character, tracker: InitiativeTracker) -> void:
 	show_hint("Click a highlighted hex to move, or choose Attack or Spell. End Turn when finished." if active_char != null else "Enemy turn — waiting for the next player.")
 	_update_initiative_list(tracker)
 	if active_char == null:
-		mode_banner.text = "Enemy turn · " + str(tracker.get_active().get("name", "Resolving"))
+		mode_banner.text = "Created creatures" if tracker.get_active().get("scheduling_only", false) else "Enemy turn · " + str(tracker.get_active().get("name", "Resolving"))
 	_update_sidebar_stats()
 	_update_weapon_info(active_char)
 	
@@ -402,6 +402,7 @@ func _update_initiative_list(tracker: InitiativeTracker) -> void:
 	var chips: Array[String] = []
 	for i in tracker.combatants.size():
 		var c := tracker.combatants[i]
+		if c.get("scheduling_only", false): continue
 		var lead := "➔ " if i == tracker.active_index else ""
 		var color := UiThemeProfile.current().color("accent/primary" if c["is_player"] else "state/danger").to_html()
 		chips.append("%s[color=%s]%s[/color]" % [lead, color, c["name"]])
@@ -709,6 +710,11 @@ func _show_feature_selection() -> void:
 		if item.get("type") != "consumable" or CombatChildActions.units(item) == 0: continue
 		feature_list.add_item("Use %s [%s]" % [str(item.get("name", copy.definition_id)), str(copy.instance_id)])
 		features_registered.append({"id":"consume_copy", "item_id":copy.definition_id, "instance_id":copy.instance_id})
+	for offer in ItemLifecycleControls.offers(active_character):
+		var blocked := ItemLifecycleControls.error(active_character, offer, _mode_budget())
+		feature_list.add_item(str(offer.text) + (" [%s]" % blocked if not blocked.is_empty() else ""))
+		feature_list.set_item_disabled(feature_list.item_count - 1, not blocked.is_empty())
+		features_registered.append({"id": "item_lifecycle_control", "offer": offer})
 	# Batch 055 S-156: command each exact owned created actor (one row per actor id).
 	var command_state := get_parent()
 	if command_state != null and "player_entities" in command_state:
@@ -973,6 +979,9 @@ func _on_feature_selected(index: int) -> void:
 	var feature_owner := active_character
 	var feature := features_registered[index]
 	_hide_feature_selection()
+	if str(feature.get("id", "")) == "item_lifecycle_control":
+		request_item_lifecycle(feature_owner, feature.offer)
+		return
 	if str(feature.get("id", "")) == "command_created_actor":
 		if active_character == feature_owner: request_created_command(feature_owner, feature)
 		return
@@ -1679,6 +1688,13 @@ func request_created_command(owner: Character, offer: Dictionary) -> void:
 
 
 var _mode_popup_serial := 0
+var item_lifecycle_serial := 0
+
+func request_item_lifecycle(owner: Character, offer: Dictionary) -> void:
+	item_lifecycle_serial += 1
+	var result := await ItemLifecycleUI.request(self, owner, offer, item_lifecycle_serial)
+	add_log(str(result.message))
+	if active_character != null: update_hud(active_character, get_parent().tracker)
 
 ## Batch 052: Cancel plus exactly the offered options. Cancel, closing the popup,
 ## a newer mode popup, a changed turn or changed state (token) spend nothing.

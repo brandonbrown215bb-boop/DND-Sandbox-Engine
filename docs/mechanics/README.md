@@ -25,6 +25,9 @@ behavior before reopening a finding or claiming broader support.
 
 | Shared/world behavior | Contract |
 |---|---|
+| Creature/object occupancy, internal interactions, moving containers and legal release | [Containment](containment.md) |
+| Exact projected vessel cargo, passengers, movement and endings | [Projected vessels](projected-vessels.md) |
+| Character-anchored tether groups, exact escape/rescue and source cleanup | [Tethers](tethers.md) |
 | Recipient Temporary HP and chosen/lingering protections (VS-84/85/86 accepted) | [Temporary HP and entry protections](temporary-hp-and-entry-protections.md) |
 | Source-owned condition suppression and moving combat auras (VS-73/74/75 accepted) | [Condition suppression and auras](condition-suppression-and-auras.md) |
 | Purpose-aware event skill-check context and owned tools | [Check context](purpose-aware-check-context.md) |

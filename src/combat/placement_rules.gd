@@ -2,7 +2,8 @@
 ## A destination is legal when PhysicalFactsRules.is_space_available accepts it
 ## (grid tile, passable, no room wall, plane, clearance, no living occupant, no
 ## blocking object), it lies within the authored range of the origin, and no
-## other actor of the same operation has reserved it. Single-cell bodies only.
+## other actor of the same operation has reserved it. Bodies use a supported
+## axial hex disk derived from their authored size: radius 0/0/0/1/2/3.
 class_name PlacementRules
 extends RefCounted
 
@@ -30,7 +31,8 @@ static func policy(effect: Dictionary) -> Dictionary:
 static func _context(state) -> Dictionary:
 	var ctx := {}
 	if state == null: return ctx
-	if "player_entities" in state: ctx["players"] = state.player_entities
+	if state is Dictionary and state.get("_placement_players") is Array: ctx["players"] = state["_placement_players"]
+	elif "player_entities" in state: ctx["players"] = state.player_entities
 	elif "players" in state: ctx["players"] = state.players
 	if "monster_entities" in state: ctx["monsters"] = state.monster_entities
 	elif "monsters" in state: ctx["monsters"] = state.monsters
@@ -42,25 +44,66 @@ static func _context(state) -> Dictionary:
 
 static func _grid(state) -> HexGrid:
 	if state == null: return null
+	if state is Dictionary and state.get("_placement_grid") is HexGrid: return state["_placement_grid"]
 	if "hex_grid" in state: return state.hex_grid
 	if "grid" in state: return state.grid
 	return null
 
+## Explicit supported footprint policy in axial coordinates. Large, Huge and
+## Gargantuan bodies occupy complete radius-1, radius-2 and radius-3 disks.
+static func footprint(size: String) -> Array[Vector2i]:
+	var radius: int = {"tiny": 0, "small": 0, "medium": 0, "large": 1, "huge": 2, "gargantuan": 3}.get(size.to_lower(), -1)
+	var cells: Array[Vector2i] = []
+	if int(radius) < 0: return cells
+	for q in range(-int(radius), int(radius) + 1):
+		for r in range(maxi(-int(radius), -q - int(radius)), mini(int(radius), -q + int(radius)) + 1): cells.append(Vector2i(q, r))
+	return cells
+
+static func _size_at(size: Variant, index: int) -> String:
+	return str(size[mini(index, size.size() - 1)]) if size is Array and not size.is_empty() else str(size)
+
+static func _reserved_cells(reserved: Array, default_size: String) -> Array:
+	var cells: Array = []
+	for entry in reserved:
+		var anchor: Vector2i = entry.get("hex", Vector2i.ZERO) if entry is Dictionary else entry
+		var body_size := str(entry.get("size", default_size)) if entry is Dictionary else default_size
+		for offset in footprint(body_size): cells.append(anchor + offset)
+	return cells
+
 ## "" when this hex is a legal destination, otherwise the reason.
-static func legal_error(state, origin: Vector2i, hex: Vector2i, size: String, range_hexes: int, reserved: Array = []) -> String:
-	if hex in reserved: return "Position %s is already reserved for another arrival." % str(hex)
-	if HexUtils.get_distance(origin, hex) > range_hexes or hex == origin: return "Position %s is out of placement range." % str(hex)
+static func legal_error(state, origin: Vector2i, hex: Vector2i, size: String, range_hexes: int, reserved: Array = [], context_overrides: Dictionary = {}) -> String:
+	if footprint(size).is_empty(): return "Body size is unknown."
+	var prior_cells := _reserved_cells(reserved, size)
+	if range_hexes >= 0 and (HexUtils.get_distance(origin, hex) > range_hexes or hex == origin): return "Position %s is out of placement range." % str(hex)
 	var ctx := _context(state)
+	ctx.merge(context_overrides, true)
 	var plane := str(ctx.get("plane", PhysicalFactsRules.DEFAULT_PLANE))
-	if state != null and "caster" in state and state.caster is Character:
+	if state != null and "placement_plane" in state:
+		plane = str(state.placement_plane)
+	elif state != null and "caster" in state and state.caster is Character:
 		plane = PhysicalFactsRules.get_plane(state.caster, ctx)
 	else:
 		for entity in ctx.get("players", []):
 			if entity.get("hex_position") == origin:
 				plane = PhysicalFactsRules.get_plane(entity.get("character"), ctx)
 				break
-	var space := PhysicalFactsRules.is_space_available(_grid(state), hex, size, plane, ctx)
-	return "" if bool(space.get("available", false)) else str(space.get("reason", "No space."))
+	for cell in footprint(size):
+		var destination := hex + cell
+		if prior_cells.has(destination): return "Position %s overlaps another reserved footprint." % str(destination)
+		for entity in ctx.get("players", []) + ctx.get("monsters", []):
+			var actor: Variant = entity.get("character", entity)
+			if is_same(actor, ctx.get("ignore_entity", null)): continue
+			var alive: bool = actor.is_alive if actor is Character else bool(entity.get("is_alive", false))
+			if not alive: continue
+			var entity_hex: Vector2i = entity.get("hex_position", Vector2i(99999, 99999))
+			var entity_size := PhysicalFactsRules.get_size(actor) if actor is Character else str(entity.get("size", "medium"))
+			var occupied: Array = []
+			for offset in footprint(entity_size): occupied.append(entity_hex + offset)
+			if entity_hex != Vector2i(99999, 99999) and destination in occupied:
+				return "Position %s is occupied by another creature's footprint." % str(destination)
+		var space := PhysicalFactsRules.is_space_available(_grid(state), destination, size, plane, ctx)
+		if not bool(space.get("available", false)): return str(space.get("reason", "No space."))
+	return ""
 
 ## Legal destinations nearest first (ties by coordinate), excluding reserved ones.
 static func candidates(state, origin: Vector2i, size: String, range_hexes: int, reserved: Array = []) -> Array[Vector2i]:
@@ -71,23 +114,26 @@ static func candidates(state, origin: Vector2i, size: String, range_hexes: int, 
 	return out
 
 ## Distinct destinations for count arrivals, or [] when there are not enough.
-static func reserve(state, origin: Vector2i, size: String, range_hexes: int, count: int, reserved: Array = []) -> Array[Vector2i]:
+static func reserve(state, origin: Vector2i, size: Variant, range_hexes: int, count: int, reserved: Array = []) -> Array[Vector2i]:
 	var taken: Array = reserved.duplicate()
 	var out: Array[Vector2i] = []
 	for i in count:
-		var options := candidates(state, origin, size, range_hexes, taken)
+		var body_size := _size_at(size, i)
+		var options := candidates(state, origin, body_size, range_hexes, taken)
 		if options.is_empty(): return [] as Array[Vector2i]
 		out.append(options[0])
-		taken.append(options[0])
+		taken.append({"hex": options[0], "size": body_size})
 	return out
 
 ## Recheck chosen destinations at confirmation: each still legal and distinct.
-static func confirm_error(state, origin: Vector2i, size: String, range_hexes: int, picks: Array) -> String:
+static func confirm_error(state, origin: Vector2i, size: Variant, range_hexes: int, picks: Array) -> String:
 	var seen: Array = []
-	for hex in picks:
-		var e := legal_error(state, origin, hex, size, range_hexes, seen)
+	for i in picks.size():
+		var hex: Vector2i = picks[i]
+		var body_size := _size_at(size, i)
+		var e := legal_error(state, origin, hex, body_size, range_hexes, seen)
 		if not e.is_empty(): return e
-		seen.append(hex)
+		seen.append({"hex": hex, "size": body_size})
 	return ""
 
 static func encode(picks: Array) -> Array:

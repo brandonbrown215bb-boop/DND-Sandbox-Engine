@@ -1,0 +1,52 @@
+[
+  {
+    "id": "fixture:living_chamber",
+    "name": "Neutral living chamber",
+    "size": "medium",
+    "speed": 6,
+    "creature_type": "beast",
+    "ability_bonuses": {},
+    "containment": {
+      "capacity": 2,
+      "occupant_kinds": [
+        "character",
+        "object"
+      ],
+      "sizes": [
+        "tiny",
+        "small",
+        "medium",
+        "large"
+      ],
+      "creature_types": [
+        "humanoid",
+        "beast"
+      ]
+    }
+  },
+  {
+    "id": "fixture:renamed_chamber",
+    "name": "Neutral living chamber",
+    "size": "medium",
+    "speed": 6,
+    "creature_type": "beast",
+    "ability_bonuses": {},
+    "containment": {
+      "capacity": 2,
+      "occupant_kinds": [
+        "character",
+        "object"
+      ],
+      "sizes": [
+        "tiny",
+        "small",
+        "medium",
+        "large"
+      ],
+      "creature_types": [
+        "humanoid",
+        "beast"
+      ]
+    }
+  }
+]

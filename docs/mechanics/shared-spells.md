@@ -2,12 +2,41 @@
 
 Batch L adds a bounded `grant_source_benefits` self-cast host for fixed AC and walking-speed additions; see [source carriers](source-benefit-carriers.md) for syntax, independent-review status and limits.
 
+`bind_tether` supports several Character-anchored recipients under one cast;
+see [tethers](tethers.md) for capacity, exact relation selection and cleanup.
+
 Declare `"execution": "shared"` to use the ordinary spell pipeline without
 adding an ID to a code list. Use a unique namespaced ID and put the JSON file
 directly in `data/mods/spells/`. Add its ID to the intended class's
 `spell_list_ids` using an approved class override as described in the
 [modding guide](../modding_guide.md). Class membership and learning/preparation
 still control who can cast it; shared execution does not grant ownership.
+
+## First catalog conversion batch
+
+Bless, Bane and Mass Healing Word use shared definitions in
+`data/core/spells/conversion_batch_001.json`, with manifest-approved precedence.
+The [ten-candidate boundary](../planning/vocabulary-slices.md#conversion-batch-001)
+owns acceptance and the content still blocked; this does not convert the rest
+of their native spell families.
+
+Shared creature targeting admits downed Characters through the existing target
+eligibility query, while dead creatures remain outside ordinary spell targets.
+Creature-type filters still apply. Sight-required casts inspect the actual
+downed recipient, including its invisibility, rather than an empty space.
+Multi-recipient healing rechecks distinct recipients, range and the slot's
+target cap before paying. Selecting an already selected target finishes a
+smaller selection; Cancel spends nothing.
+
+Bless/Bane retain the existing source-owned `blessed`/`baned` conditions and
+concentration lifetime. Overlapping copies retain independent sources without
+adding extra bonus/penalty dice. Bless's existing saving-throw bonus also reaches
+rolled Death Saves; natural-result consequences remain authoritative. Indomitable
+checks the modified failure and applies only the final roll's modifier dice.
+Automatic Death Save outcomes and broader roll-choice support are unchanged.
+Existing saved condition/source records need no conversion.
+
+## Ordinary authoring example
 
 ```json
 {
@@ -227,6 +256,15 @@ Effects can be combined in their listed order. Use `on_spell_hit: true` for a
 payload that requires a hit, or `on_failed_save: true` for a failed-save
 payload. Ungated effects apply after a successful resolution, including a
 successful saving throw. Unknown operations and effect fields are errors.
+
+An eligible flat, single-target numeric save may declare
+`save_exit_placement` to require a legal exit before save consequences settle.
+Combat uses its live encounter entities; local-room casting binds the current
+party positions, room plane and room grid, then asks for a highlighted room-map
+cell or cancellation. Both hosts resume the captured roll/total/DC through the
+same resolver continuation and recheck live occupancy before applying damage or
+failed-save effects. The local-room host rejects room/actor plane mismatches.
+Other save shapes remain outside this placement policy.
 
 ## Ordered steps: executable mixed checks and gating (ADR-0019)
 
@@ -1585,3 +1623,37 @@ S-117/S-118 as VS-111/112 after independent repair re-review; broad V-020/V-088
 remain partial. Detailed local proof is in
 [the Batch 033 report](../../.artifacts/planning/vocabulary-reports/batch-033-build-validation.md)
 and [post-review repair evidence](../../.artifacts/planning/vocabulary-reports/batch-033-repair-validation.md).
+
+## Conversion Batch 002 spell boundary
+
+`data/core/spells/conversion_batch_002.json` promotes Hold Monster and Circle of
+Death through the existing shared cast pipeline. Their names and IDs only live
+in data: renamed copies passed the production loader and generic resolution.
+Hold Monster reuses failed-save condition grants, Concentration, selected
+upcast recipients and end-of-turn repeat saves. Each Paralyzed condition keeps
+the exact spell source; repeat-save success and concentration cleanup remove
+only that source. The saved source, cast serial and concentration target survive
+both full-party and player-only campaign DTO recovery. It adds no save migration.
+
+Circle of Death reuses Sphere selection, CON save damage with half damage on a
+success, upcast dice and carried reusable component checks. Its 500 GP
+black-pearl powder remains owned after casting. The live control check covers
+cancellation, a stale center after cancellation, an invalid center, mixed saves
+and one slot/action payment. Its 60-foot radius is mapped to the current hex
+grid; object damage and terrain occlusion remain unsupported.
+
+Cure Wounds and Healing Word remain shared records. Batch 002 removes their
+imported Construct/Undead exclusions; ordinary live healing and downed-target
+behavior passed. Constructs and Undead are eligible, while dead targets remain
+ineligible. Healing suppression and class-specific healing benefits were not
+re-audited in this batch. All four records remain gameplay-partial; see the
+[Conversion Batch 002 boundary](../planning/vocabulary-slices.md#conversion-batch-002)
+and the [four reviewed spell-status rows](spell_status.json).
+
+### Containment eligibility
+
+`containment_targeting` declares individual internal/external target routes.
+Both effect and container must permit the route before resources or a source
+are spent; outside area recipients exclude internal bodies. See
+[containment](containment.md#authored-internal-harm-targeting-and-checks-s-171)
+for syntax and the current flat-target/deferred-release boundary.

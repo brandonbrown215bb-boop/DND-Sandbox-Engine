@@ -167,16 +167,20 @@ static func _definition_has_damage_link(definition: Dictionary, expected: Dictio
 	return false
 
 
-static func saved_party_error(characters: Dictionary) -> String:
+static func saved_party_error(characters: Dictionary, save_data: Dictionary = {}) -> String:
+	var tether_error := TetherRules.saved_party_error(characters, save_data)
+	if not tether_error.is_empty(): return tether_error
 	for dto in characters.values():
 		for source in dto.get("spell_effects", {}):
 			var record: Dictionary = dto["spell_effects"][source]
 			var owner := str(record["caster_id"])
-			if not characters.has(owner) or not str(source).begins_with("spell:%s:" % owner):
+			var object_tether := str(source).begins_with("object_tether:%s:" % owner)
+			if not characters.has(owner) or (not str(source).begins_with("spell:%s:" % owner) and not object_tether):
 				return "saved spell effect references a missing caster"
-			var serial := str(source).get_slice(":", str(source).get_slice_count(":") - 1)
+			var serial := str(source).get_slice(":", 2) if object_tether else str(source).get_slice(":", str(source).get_slice_count(":") - 1)
 			if not serial.is_valid_int() or int(serial) <= 0 or int(serial) > int(characters[owner].get("spell_cast_serial", 0)):
 				return "saved spell effect has an invalid cast identity"
+			if object_tether and save_data.is_empty(): return "saved object tether lacks its room record"
 	return ""
 
 

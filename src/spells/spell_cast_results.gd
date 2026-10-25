@@ -2,6 +2,114 @@
 class_name SpellCastResults
 extends RefCounted
 
+static var _save_exit_request_serial := 0
+
+static func _refund_pending_save_exit_payment(request: Dictionary) -> void:
+	var save_test: Dictionary = request.get("save_test", {})
+	var reservation_id := str(save_test.get("save_pending_payment_reservation_id", ""))
+	if not reservation_id.is_empty():
+		ResourcePoolRules.settle_payment_reservation(reservation_id, false)
+
+static func _settle_save_exit(cast: SpellCastContext, target, spell_data: Dictionary, decisions: Dictionary, _observers: Array, _slot_level: int, _distance_feet: int, result: Dictionary) -> Dictionary:
+	if not result.has("save_exit_request"): return result
+	var request: Dictionary = result.save_exit_request
+	var request_id := str(request.get("request_id", ""))
+	if request_id.is_empty() or cast.save_exit_settled_request_ids.has(request_id):
+		return {"success": false, "refused": true, "message": "That exit request is stale or has already settled."}
+	var continuation: SpellResolutionContext = request.get("cast")
+	if continuation == null or continuation.spatial_host != cast or continuation.caster != cast.caster or not is_same(continuation.target, target) or continuation.invocation_id != cast.invocation_id:
+		_refund_pending_save_exit_payment(request)
+		return {"success": false, "refused": true, "message": "The captured saving-throw continuation is no longer available."}
+	var policy: Dictionary = spell_data.get("save_exit_placement", {})
+	var origin_value: Variant = SaveExitPlacementRules.actor_position(cast, target)
+	var size := PhysicalFactsRules.get_size(target)
+	var plane := PhysicalFactsRules.get_plane(target)
+	if origin_value == null or size.is_empty() or plane.is_empty():
+		_refund_pending_save_exit_payment(request)
+		return {"success": false, "refused": true, "message": "Required exit placement cannot verify the target's own size, plane and location."}
+	var origin: Vector2i = origin_value
+	var options := SaveExitPlacementRules.candidates(cast, target, origin, size, plane, policy)
+	var final_saved := bool(request.get("saved", true))
+	var destination: Variant = null
+	if options.is_empty():
+		final_saved = str(policy.get("no_space_outcome", "preserve")) != "failure"
+	else:
+		if bool(policy.get("choose", false)) and cast.hud == null and not cast.choose_save_exit.is_valid():
+			_refund_pending_save_exit_payment(request)
+			return {"success": false, "refused": true, "message": "This required exit placement has no supported choice control."}
+		if bool(policy.get("choose", false)):
+			var ids: Array[String] = [""]
+			var labels := {"": "Cancel"}
+			for hex in options:
+				var id := "%d,%d" % [hex.x, hex.y]
+				ids.append(id)
+				labels[id] = "Hex (%d, %d)" % [hex.x, hex.y]
+			_save_exit_request_serial += 1
+			var mine := _save_exit_request_serial
+			var picked: String = ""
+			if cast.choose_save_exit.is_valid():
+				picked = str(await cast.choose_save_exit.call(options.duplicate(), ids.duplicate()))
+			else:
+				picked = await cast.hud._request_popup_choice("Choose the required exit space", ids, labels)
+			if mine != _save_exit_request_serial or (cast.commit_guard.is_valid() and not cast.commit_guard.call()):
+				_refund_pending_save_exit_payment(request)
+				return {"success": false, "refused": true, "message": "That exit choice is stale; no save effects were applied."}
+			if picked.is_empty() or picked not in ids:
+				_refund_pending_save_exit_payment(request)
+				return {"success": false, "refused": true, "canceled": true, "message": "Exit placement canceled; no save effects were applied."}
+			var parts := picked.split(",")
+			destination = Vector2i(int(parts[0]), int(parts[1]))
+		else:
+			destination = options[0]
+		# A destination may become occupied or blocked while the popup is open.
+		var current_origin: Variant = SaveExitPlacementRules.actor_position(cast, target)
+		var current_size := PhysicalFactsRules.get_size(target)
+		var current_plane := PhysicalFactsRules.get_plane(target)
+		if current_origin != origin or current_size != size or current_plane != plane:
+			_refund_pending_save_exit_payment(request)
+			return {"success": false, "refused": true, "message": "The exiting actor changed location, size or plane while the choice was open; no save effects were applied."}
+		var stale_reason := SaveExitPlacementRules.chosen_error(cast, target, origin, destination, size, plane, policy)
+		if not stale_reason.is_empty():
+			_refund_pending_save_exit_payment(request)
+			return {"success": false, "refused": true, "message": "That exit space is no longer legal (%s); no save effects were applied." % stale_reason}
+	if destination != null:
+		var moved := false
+		for player in cast.players:
+			if target is Character and player.get("character") is Character and player.get("character") == target:
+				player["hex_position"] = destination
+				moved = true
+				break
+		if not moved:
+			for monster in cast.monsters:
+				if target is Dictionary and is_same(monster, target):
+					monster["hex_position"] = destination
+					moved = true
+					break
+		if not moved:
+			if target is Character and not cast.ground_room.is_empty():
+				var room_positions: Dictionary = cast.ground_room.get("party_positions", {})
+				if room_positions.has(target.character_id):
+					room_positions[target.character_id] = [destination.x, destination.y]
+					cast.ground_room["party_positions"] = room_positions
+					moved = true
+		if not moved:
+			_refund_pending_save_exit_payment(request)
+			return {"success": false, "refused": true, "message": "The exiting actor left the represented location before placement settled."}
+		if target is Character and not cast.ground_room.is_empty():
+			var room_positions: Dictionary = cast.ground_room.get("party_positions", {})
+			if room_positions.has(target.character_id):
+				room_positions[target.character_id] = [destination.x, destination.y]
+				cast.ground_room["party_positions"] = room_positions
+		if cast.redraw_entities.is_valid(): cast.redraw_entities.call()
+	cast.save_exit_settled_request_ids[request_id] = true
+	decisions["save_exit_captured_test"] = {"request_id": request_id, "test": request.get("save_test", {}).duplicate(true)}
+	decisions["save_exit_settlement"] = {"request_id": request_id, "final_saved": final_saved, "destination": [destination.x, destination.y] if destination is Vector2i else [], "moved": destination is Vector2i}
+	continuation.decisions["save_exit_captured_test"] = decisions["save_exit_captured_test"]
+	continuation.decisions["save_exit_settlement"] = decisions["save_exit_settlement"]
+	# Continue below the one-time cast checks (Sanctuary, cancellation and costs).
+	# The original context also retains its exact source and slot receipts.
+	return SharedSpell.resolve(continuation)
+
 static func _resolve_spell_cast_targets(cast: SpellCastContext) -> void:
 	if cast.spell.has("steps"):
 		await _resolve_stepped_spell_cast(cast)
@@ -176,7 +284,15 @@ static func _resolve_player_target(cast: SpellCastContext, p_target: Character, 
 	if str(target_spell_data.get("attack_type", "none")) != "none":
 		target_spell_data["_conjure_minor_elementals_bonus_packets"] = await SpellZoneConjurations._conjure_minor_elementals_spell_attack_choices(cast.areas, cast.caster, p_target, target_spell_data)
 	var res := CombatAction.resolve_spell(cast.caster, p_target, target_spell_data, false, target_spell_decisions, target_observers, cast.slot_level_used, spell_target_distance, cast)
+	res = await _settle_save_exit(cast, p_target, target_spell_data, target_spell_decisions, target_observers, cast.slot_level_used, spell_target_distance, res)
+	if bool(res.get("refused", false)):
+		cast.hud.add_log(str(res.get("message", "Required exit placement could not settle.")))
+		return
 	res = await _settle_failed_save_numeric_bonus(cast, p_target, res)
+	res = await _settle_save_exit(cast, p_target, target_spell_data, target_spell_decisions, target_observers, cast.slot_level_used, spell_target_distance, res)
+	if bool(res.get("refused", false)):
+		cast.hud.add_log(str(res.get("message", "Required exit placement could not settle.")))
+		return
 	res = await _settle_shared_spell_attack_bonus(cast, p_target, res)
 	if bool(res.get("recipient_negated", false)):
 		CastInterruptionRules.observe_host_result(cast, res)
@@ -286,6 +402,10 @@ static func _resolve_monster_target(cast: SpellCastContext, m_target: Dictionary
 	if str(target_spell_data.get("attack_type", "none")) != "none":
 		target_spell_data["_conjure_minor_elementals_bonus_packets"] = await SpellZoneConjurations._conjure_minor_elementals_spell_attack_choices(cast.areas, cast.caster, m_target, target_spell_data)
 	var res := CombatAction.resolve_spell(cast.caster, m_target, target_spell_data, false, target_spell_decisions, cast.counterspell_observers if cast.counterspell_pending else [], cast.slot_level_used, spell_target_distance, cast)
+	res = await _settle_save_exit(cast, m_target, target_spell_data, target_spell_decisions, cast.counterspell_observers if cast.counterspell_pending else [], cast.slot_level_used, spell_target_distance, res)
+	if bool(res.get("refused", false)):
+		cast.hud.add_log(str(res.get("message", "Required exit placement could not settle.")))
+		return
 	res = await _settle_shared_spell_attack_bonus(cast, m_target, res)
 	if bool(res.get("recipient_negated", false)):
 		CastInterruptionRules.observe_host_result(cast, res)
@@ -528,7 +648,7 @@ static func _settle_empowered_spell(cast: SpellCastContext, target, result: Dict
 		result = CombatAction.finish_pending_spell_damage(cast.caster, req_target, result, decisions)
 		if result.has("concentration_request"):
 			result = await SpellCastResults._settle_concentration_choice(cast, target, result, decisions)
-	result = SharedSpell.apply(cast.caster, target, cast.spell, result) if SharedSpell.uses(cast.spell) and not cast.spell.has("steps") else result
+	result = SharedSpell.apply(cast.caster, target, cast.spell, result, cast) if SharedSpell.uses(cast.spell) and not cast.spell.has("steps") else result
 	if not cast.spell.has("steps"):
 		for recipient in DamageLinkRules.recipient_settlements(target, result):
 			if recipient["actor"] is Character:

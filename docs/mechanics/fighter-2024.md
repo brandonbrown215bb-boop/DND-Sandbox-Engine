@@ -99,7 +99,10 @@ than a blocking popup for each die. Opportunity Attacks use the same mastery and
 Champion critical-movement paths, retain the reacting owner's identity, and
 resolve before leaving reach. Push interrupts the proposed movement rather than
 being overwritten by it. Cleave is limited per creature's turn. Indomitable also
-rerolls failed death saves before successes/failures are recorded.
+rerolls failed death saves before successes/failures are recorded. It checks
+the modified total, including Bless/Bane, so a Bless-converted success does not
+spend a use. Natural 1/20 and Survivor's revival outcomes retain their existing
+precedence; a reroll uses only its final modifier dice and Fighter-level bonus.
 
 ## Verification
 

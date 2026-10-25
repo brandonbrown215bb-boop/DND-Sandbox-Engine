@@ -1,0 +1,116 @@
+[
+  {
+    "id": "fixture:interior_pulse",
+    "name": "Interior Pulse",
+    "execution": "shared",
+    "level": 1,
+    "range": 6,
+    "target": "single",
+    "damage": "3",
+    "damage_type": "force",
+    "attack_type": "none",
+    "targets_objects": true,
+    "effects": [],
+    "classes": [
+      "wizard"
+    ],
+    "containment_targeting": [
+      "same_interior",
+      "occupant_to_container"
+    ]
+  },
+  {
+    "id": "fixture:renamed_pulse",
+    "name": "Renamed Pulse",
+    "execution": "shared",
+    "level": 1,
+    "range": 6,
+    "target": "single",
+    "damage": "3",
+    "damage_type": "force",
+    "attack_type": "none",
+    "targets_objects": true,
+    "effects": [],
+    "classes": [
+      "wizard"
+    ],
+    "containment_targeting": [
+      "same_interior",
+      "occupant_to_container"
+    ]
+  },
+  {
+    "id": "fixture:outside_probe",
+    "name": "Outside Probe",
+    "execution": "shared",
+    "level": 1,
+    "range": 6,
+    "target": "single",
+    "damage": "3",
+    "damage_type": "force",
+    "attack_type": "none",
+    "targets_objects": true,
+    "effects": [],
+    "classes": [
+      "wizard"
+    ],
+    "containment_targeting": [
+      "external_to_occupant"
+    ]
+  },
+  {
+    "id": "fixture:outgoing_probe",
+    "name": "Outgoing Probe",
+    "execution": "shared",
+    "level": 1,
+    "range": 6,
+    "target": "single",
+    "damage": "3",
+    "damage_type": "force",
+    "attack_type": "none",
+    "targets_objects": true,
+    "effects": [],
+    "classes": [
+      "wizard"
+    ],
+    "containment_targeting": [
+      "occupant_to_external"
+    ]
+  },
+  {
+    "id": "fixture:ordinary_probe",
+    "name": "Ordinary Probe",
+    "execution": "shared",
+    "level": 1,
+    "range": 6,
+    "target": "single",
+    "damage": "3",
+    "damage_type": "force",
+    "attack_type": "none",
+    "targets_objects": true,
+    "effects": [],
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "fixture:exterior_wave",
+    "name": "Exterior wave",
+    "execution": "shared",
+    "level": 1,
+    "range": 6,
+    "target": "single",
+    "steps": [
+      {
+        "id": "wave",
+        "type": "damage",
+        "target": "area",
+        "shape": "sphere",
+        "radius": 2,
+        "damage": "1",
+        "damage_type": "cold"
+      }
+    ],
+    "effects": []
+  }
+]

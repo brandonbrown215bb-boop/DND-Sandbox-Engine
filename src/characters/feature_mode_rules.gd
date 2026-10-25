@@ -10,7 +10,7 @@ const END_REASONS := ["short_rest", "long_rest", "zero_hp", "incapacitated"]
 const DICE := ["d4", "d6", "d8", "d10", "d12"]
 ## S-104: declared events that open a one-use window to switch the active mode.
 const SWITCH_EVENTS := ["hit", "turn_start"]
-const RULE_KEYS := ["id", "name", "type", "description", "boundary", "rest", "modes", "uses", "uses_per", "duration_seconds", "die", "targets", "end_on", "allow_reselect", "switch_events", "source_instance_id", "recharge_while", "costs", "activation_seconds", "reaction_trigger"]
+const RULE_KEYS := ["id", "name", "type", "description", "boundary", "rest", "modes", "uses", "uses_per", "duration_seconds", "die", "targets", "end_on", "allow_reselect", "switch_events", "source_instance_id", "recharge_while", "costs", "activation_seconds", "reaction_trigger", "end_aftermath"]
 const STATE_KEYS := ["mode", "open", "active", "remaining_seconds", "activation_serial", "rolled", "recipients", "event_serial", "window"]
 
 static func _int(v: Variant, lo: int, hi: int) -> bool:
@@ -27,6 +27,7 @@ static func validate_rule(f: Variant, allow_dawn: bool = false) -> String:
 	var modes_error := modes_list_error(modes)
 	if not modes_error.is_empty(): return modes_error
 	if f.boundary == "rest":
+		if f.has("end_aftermath"): return "Only self activation modes support end_aftermath"
 		if str(f.get("rest", "")) not in RESTS: return "rest mode_choice requires rest short_rest or long_rest"
 		for key in ["uses", "uses_per", "duration_seconds", "die", "targets", "end_on", "allow_reselect", "switch_events", "recharge_while", "costs", "activation_seconds", "reaction_trigger"]:
 			if f.has(key): return "rest mode_choice cannot declare activation field '%s'" % key
@@ -52,6 +53,11 @@ static func modes_list_error(modes: Variant) -> String:
 	return ""
 
 static func _activation_error(f: Dictionary, allow_dawn: bool = false) -> String:
+	if f.has("end_aftermath"):
+		if allow_dawn: return "Item-owned mode end producers are unsupported"
+		if int(f.get("targets", 1)) != 1: return "Group mode end_aftermath is unsupported"
+		var error := SourceEndAftermathRules.validate(f.end_aftermath)
+		if not error.is_empty(): return error
 	if f.has("rest"): return "activation mode_choice cannot declare rest"
 	if not _int(f.get("uses"), 1, 20) or str(f.get("uses_per", "")) not in (RESTS + ["dawn"] if allow_dawn else RESTS): return "activation mode_choice requires uses 1-20 and uses_per short_rest or long_rest%s" % (" or dawn" if allow_dawn else "")
 	# Batch 050 fix: an item's text may make dawn recharge depend on being worn or attuned.
@@ -175,6 +181,11 @@ static func activate(actor: Character, feature_id: String, mode_id: String, reci
 	refresh(actor)
 	if bool(actor.feature_modes.get(feature_id, {}).get("active", false)): return _receipt(false, "already_active")
 	if recipients.is_empty(): recipients = [actor]
+	if r.has("end_aftermath"):
+		if aftermath_producer(feature_id, r).is_empty(): return _receipt(false, "unsupported_mode_producer")
+		if recipients.size() != 1 or recipients[0] != actor: return _receipt(false, "unsupported_aftermath_recipient")
+		var error := LocatedSourceEndRules.host_error(actor, r.end_aftermath)
+		if not error.is_empty(): return _receipt(false, error)
 	var ids: Array = []
 	for recipient in recipients:
 		if not recipient is Character or recipient.character_id in ids or recipient.is_dead(): return _receipt(false, "invalid_recipient")
@@ -185,6 +196,7 @@ static func activate(actor: Character, feature_id: String, mode_id: String, reci
 	if incapacitated(actor): return _receipt(false, "incapacitated")
 	if not actor.use_feature(feature_id): return _receipt(false, "no_uses")
 	var serial := int(actor.feature_modes.get(feature_id, {}).get("activation_serial", 0)) + 1
+	if r.has("end_aftermath"): serial = LocatedSourceEndRules.next_mode_serial(actor.character_id, feature_id, serial)
 	var rolled := 0
 	if r.has("die"):
 		rolled = Dice.roll(int(str(r.die).trim_prefix("d")))
@@ -230,11 +242,18 @@ static func end(actor: Character, feature_id: String, reason: String) -> Diction
 	var r := owned_rule(actor, feature_id)
 	if reason not in ["duration", "dismissed"] and reason not in r.get("end_on", []): return {}
 	var ended := str(state.mode)
+	var event := {}
+	if r.has("end_aftermath"):
+		var source := "mode:" + JSON.stringify([actor.character_id, feature_id, ended, int(state.activation_serial)])
+		var record := {"source_id": source, "source_kind": "mode", "definition_id": feature_id, "caster_id": actor.character_id, "end_aftermath": r.end_aftermath.duplicate(true), "end_on": r.get("end_on", []).duplicate(), "mode_state": state.duplicate(true), "producer": aftermath_producer(feature_id, r)}
+		event = LocatedSourceEndRules.capture(actor, record, reason)
 	state["active"] = false
 	state["mode"] = ""
 	state["remaining_seconds"] = 0
 	state.erase("window")
-	return {"feature_id": feature_id, "mode": ended, "reason": reason, "activation_serial": int(state.activation_serial)}
+	if not event.is_empty():
+		SpellEffects.finish_source_end(actor, event)
+	return {"feature_id": feature_id, "mode": ended, "reason": reason, "activation_serial": int(state.activation_serial), "source_end": event}
 
 ## End predicates are read from the live (possibly upgraded) rule.
 static func refresh(actor: Character) -> Array:
@@ -255,7 +274,7 @@ static func advance_time(actor: Character, seconds: int) -> void:
 	for feature_id in actor.feature_modes.keys():
 		var state: Dictionary = actor.feature_modes[feature_id]
 		if not bool(state.get("active", false)): continue
-		state.remaining_seconds = int(state.remaining_seconds) - seconds
+		state.remaining_seconds = maxi(0, int(state.remaining_seconds) - seconds)
 		if int(state.remaining_seconds) <= 0: end(actor, feature_id, "duration")
 
 static func on_rest(actor: Character, rest_kind: String) -> void:
@@ -343,3 +362,18 @@ static func restore(actor: Character, data: Dictionary) -> void:
 		for key in ["remaining_seconds", "activation_serial", "rolled", "event_serial"]:
 			if state.has(key): state[key] = int(state[key])
 		if state.has("window"): state.window.serial = int(state.window.serial)
+
+## Historical aftermath keeps a catalog identity even after its owner changes
+## feats. Exact item-copy cleanup is a separate, unsupported producer.
+static func aftermath_producer(feature_id: String, rule_data: Dictionary) -> Dictionary:
+	for kind in ["class", "subclass", "race", "feat"]:
+		var catalog: Dictionary = {"class": DataLoader.classes, "subclass": DataLoader.subclasses, "race": DataLoader.races, "feat": DataLoader.feats}[kind]
+		for id in catalog:
+			for feature in aftermath_features(catalog[id]):
+				if feature.get("id") == feature_id and feature.get("end_aftermath") == rule_data.get("end_aftermath"): return {"kind": kind, "id": str(id)}
+	return {}
+
+static func aftermath_features(definition: Dictionary) -> Array:
+	var out: Array = definition.get("features", []).duplicate()
+	for features in definition.get("features_by_level", {}).values(): out.append_array(features)
+	return out

@@ -84,6 +84,12 @@ Parent state is encounter-local and never saved. Existing allowed-checkpoint,
 legacy-save and source-ownership boundaries remain. Recursive parents, targeted
 non-spell healing, monster parents and off-turn trigger authoring are unverified.
 
+The child selection/completion/cancellation helpers also serve the bounded
+[located source-end continuation](source-end-rules.md#located-end-continuations).
+Its room-owned ordered heal/object/entry-hazard children have their own durable
+receipts and room controls; this does not make combat parents saveable or add
+those child kinds to `child_actions` declarations above.
+
 [Current production evidence](../../.artifacts/planning/vocabulary-reports/batch-028-build-validation.md)
 and [independent review](../../.artifacts/planning/vocabulary-reports/batch-028-completion-review.md)
 own validation and acceptance.

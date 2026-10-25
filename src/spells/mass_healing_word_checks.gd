@@ -12,7 +12,7 @@ static func _character(name: String, klass: String, spellcasting_score: int) -> 
 static func run(check: Callable) -> void:
 	var spell := DataLoader.get_spell("mass_healing_word")
 	var effect: Dictionary = spell.get("effects", []).filter(func(item): return str(item.get("type", "")) == "heal")[0]
-	check.call(SpellSupport.is_available(spell) and spell.get("rules_source", "") == "SRD5.2.1" and spell.get("school", "") == "abjuration" and spell.get("casting_time", "") == "bonus_action" and spell.get("components", []) == ["V"], "Mass Healing Word loads the current SRD record and bonus-action cost")
+	check.call(SharedSpell.uses(spell) and SpellSupport.is_available(spell) and spell.get("rules_source", "") == "dnd-2024-srd-5.2.1" and spell.get("school", "") == "abjuration" and spell.get("casting_time", "") == "bonus_action" and spell.get("components", []) == ["V"], "Mass Healing Word loads the shared SRD record and bonus-action cost")
 	check.call(int(spell.get("base_targets", 0)) == 6 and int(spell.get("range", 0)) == 12 and effect.get("value", "") == "2d4" and bool(effect.get("ability_bonus_from_caster", false)) and CombatAction.spell_effects_for_slot_level(spell, 5)[0].get("value", "") == "2d4 + 2d4", "Mass Healing Word can heal six visible creatures within 60 feet and adds 1d4 per upcast slot")
 	var bard := _character("Healing Bard", "bard", 18)
 	var downed := _character("Downed Ally", "fighter", 10)

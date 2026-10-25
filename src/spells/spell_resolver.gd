@@ -25,9 +25,17 @@ static func resolve(caster: Character, target_entity, spell_data: Dictionary, de
 		cast.item_copy_validated = bool(invocation_host.component_copy_validated)
 		if invocation_host.action_history != null:
 			cast.decisions["combat_history"] = invocation_host.action_history
+	# Exploration supplies a spatial host but still settles its own synchronous cast here.
+	var caller_owns_settlement := owned_host_valid and invocation_host.ground_room.is_empty()
 	var support := SpellSupport.availability(cast.spell)
 	if not support["available"]:
 		return {"success": false, "unavailable": true, "message": support["reason"]}
+	var aftermath_host_error := LocatedSourceEndRules.host_error(target_entity, cast.spell.get("end_aftermath", []))
+	if not aftermath_host_error.is_empty(): return {"success": false, "refused": true, "message": aftermath_host_error}
+	for effect in cast.spell.get("effects", []):
+		if effect is Dictionary and effect.get("type") == "create_actor" and effect.get("end_aftermath", []) is Array:
+			aftermath_host_error = LocatedSourceEndRules.host_error(target_entity, effect.get("end_aftermath", []))
+			if not aftermath_host_error.is_empty(): return {"success": false, "refused": true, "message": aftermath_host_error}
 	if SharedSpell.has_effect(cast.spell, "grant_source_benefits") and (caster == null or caster.character_id.is_empty()):
 		return {"success": false, "refused": true, "message": "Source benefits require an identified caster."}
 	var damage_policy_error := SharedSpell.damage_policy_availability_error(cast.spell, caster)
@@ -67,7 +75,7 @@ static func resolve(caster: Character, target_entity, spell_data: Dictionary, de
 			var spatial := adapter.spatial_eligibility(cast.target, {})
 			if not spatial.get("eligible", false): return {"success":false,"refused":true,"message":spatial.get("reason", "Spatial requirements are not met.")}
 
-	var projection_error := ActorProjectionRules.cast_error(caster, cast.spell)
+	var projection_error := ActorProjectionRules.cast_error(caster, cast.spell, cast.spatial_host)
 	if not projection_error.is_empty(): return {"success":false,"refused":true,"message":projection_error}
 	# A validated exploration ritual finishes before its new effect begins.
 	if owned_host_valid and invocation_host.ritual_seconds > 0:
@@ -135,9 +143,9 @@ static func resolve(caster: Character, target_entity, spell_data: Dictionary, de
 		return interruption
 	var flat_step := {"type":"save" if cast.spell.has("save") else "attack" if cast.spell.get("attack_type", "none") != "none" else "damage" if cast.spell.has("damage") else "effect"}
 	if not cast.spell.has("steps") and cast.target != null and CastInterruptionRules.is_recipient_negated(cast, cast.target, flat_step):
-		if not owned_host_valid: CastInterruptionRules.settle_cast_outcome(cast, "negated")
+		if not caller_owns_settlement: CastInterruptionRules.settle_cast_outcome(cast, "negated")
 		return CastInterruptionRules.create_negated_result(cast, cast.target)
-	if cast.incoming_slot_spent and cast.slot_level >= 1 and not owned_host_valid:
+	if cast.incoming_slot_spent and cast.slot_level >= 1 and not caller_owns_settlement:
 		WardRules.on_slot_spell_cast(cast.caster, cast.spell, cast.slot_level)
 
 	if str(cast.spell.get("id", "")) == "disintegrate":
@@ -182,7 +190,7 @@ static func resolve(caster: Character, target_entity, spell_data: Dictionary, de
 			return {"success": true, "hit": false, "damage": 0, "sanctuary_blocked": true, "saved": true, "sanctuary_save_total": sanctuary_save, "sanctuary_save_dc": sanctuary_dc, "slot_level": cast.slot_level, "effect_cast": cast.effect_cast, "message": "%s fails the Wisdom save against Sanctuary; the spell has no effect on that creature." % cast.caster.character_name}
 	if SharedSpell.uses(cast.spell):
 		var result := SharedSpell.resolve(cast)
-		if not owned_host_valid and not result.has("damage_request") and not result.has("save_bonus_request") and not result.has("weapon_attack_bonus_request") and not result.has("concentration_request"):
+		if not caller_owns_settlement and not result.has("damage_request") and not result.has("save_bonus_request") and not result.has("weapon_attack_bonus_request") and not result.has("concentration_request") and not result.has("save_exit_request"):
 			result["cast_settlement"] = CastInterruptionRules.settle_cast_outcome(cast, CastInterruptionRules.result_outcome(cast.spell, result))
 		return result
 	if str(cast.spell.get("id", "")) in ["power_word_heal", "power_word_kill"]:

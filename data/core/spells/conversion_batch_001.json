@@ -1,0 +1,119 @@
+[
+  {
+    "attack_type": "none",
+    "base_targets": 3.0,
+    "casting_time": "action",
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "concentration": true,
+    "description": "Choose up to three creatures within 30 feet. While you concentrate, for up to 1 minute, each target adds 1d4 to attack rolls and saving throws. Each slot level above 1 allows one additional target. Requires a Holy Symbol worth at least 5 GP.",
+    "duration_seconds": 60.0,
+    "effects": [
+      {
+        "condition": "blessed",
+        "type": "grant_condition"
+      }
+    ],
+    "id": "bless",
+    "level": 1.0,
+    "material": "a Holy Symbol worth at least 5 GP",
+    "material_component_cost": 5.0,
+    "material_component_item_id": "holy_symbol",
+    "name": "Bless",
+    "range": 6.0,
+    "rules_source": "dnd-2024-srd-5.2.1",
+    "rules_status": "2024-gameplay-partial",
+    "school": "enchantment",
+    "target": "multi",
+    "upcast": {
+      "additional_targets_per_level": 1.0,
+      "starting_level": 1.0
+    },
+    "execution": "shared",
+    "classes": [
+      "cleric",
+      "paladin"
+    ]
+  },
+  {
+    "attack_type": "none",
+    "base_targets": 3.0,
+    "casting_time": "action",
+    "classes": [
+      "bard",
+      "cleric",
+      "warlock"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "concentration": true,
+    "description": "Choose up to three creatures you can see within 30 feet. Each makes a Charisma save; on failure it subtracts 1d4 from attack rolls and saving throws while you concentrate, up to 1 minute. Each slot level above 1 allows one additional target.",
+    "duration": "Concentration, up to 1 minute",
+    "duration_seconds": 60.0,
+    "effects": [
+      {
+        "condition": "baned",
+        "on_failed_save": true,
+        "type": "grant_condition"
+      }
+    ],
+    "id": "bane",
+    "level": 1.0,
+    "material": "a drop of blood",
+    "name": "Bane",
+    "range": 6.0,
+    "requires_target_sight": true,
+    "rules_source": "dnd-2024-srd-5.2.1",
+    "rules_status": "2024-gameplay-partial",
+    "save": "CHA",
+    "school": "enchantment",
+    "target": "multi",
+    "upcast": {
+      "additional_targets_per_level": 1.0,
+      "starting_level": 1.0
+    },
+    "execution": "shared"
+  },
+  {
+    "attack_type": "none",
+    "base_targets": 6.0,
+    "casting_time": "bonus_action",
+    "classes": [
+      "bard",
+      "cleric"
+    ],
+    "components": [
+      "V"
+    ],
+    "concentration": false,
+    "description": "As a Bonus Action, choose up to six creatures you can see within 60 feet. Each regains 2d4 plus your spellcasting ability modifier Hit Points. Each slot level above 3 adds 1d4 healing.",
+    "duration": "Instantaneous",
+    "effects": [
+      {
+        "ability_bonus_from_caster": true,
+        "type": "heal",
+        "value": "2d4"
+      }
+    ],
+    "id": "mass_healing_word",
+    "level": 3.0,
+    "name": "Mass Healing Word",
+    "range": 12.0,
+    "rules_source": "dnd-2024-srd-5.2.1",
+    "rules_status": "2024-gameplay-partial",
+    "school": "abjuration",
+    "target": "multi",
+    "upcast": {
+      "healing_dice_per_level": "1d4",
+      "starting_level": 3.0
+    },
+    "execution": "shared",
+    "requires_target_sight": true
+  }
+]

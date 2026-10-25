@@ -1,0 +1,166 @@
+[
+  {
+    "id": "cure_wounds",
+    "name": "Cure Wounds",
+    "description": "A creature you touch regains hit points equal to 2d8 plus your spellcasting ability modifier.",
+    "level": 1,
+    "school": "abjuration",
+    "casting_time": "action",
+    "range": 1,
+    "target": "single",
+    "attack_type": "none",
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "instantaneous",
+    "effects": [
+      {
+        "type": "heal",
+        "value": "2d8",
+        "ability_bonus_from_caster": true
+      }
+    ],
+    "upcast": {
+      "starting_level": 1,
+      "healing_dice_per_level": "2d8"
+    },
+    "classes": [
+      "bard",
+      "cleric",
+      "druid",
+      "paladin",
+      "ranger"
+    ],
+    "concentration": false,
+    "range_kind": "touch",
+    "execution": "shared",
+    "rules_source": "SRD5.2.1",
+    "rules_status": "2024-gameplay-partial"
+  },
+  {
+    "id": "healing_word",
+    "name": "Healing Word",
+    "requires_target_sight": true,
+    "description": "A creature of your choice that you can see within range regains hit points equal to 2d4 plus your spellcasting ability modifier.",
+    "level": 1,
+    "school": "abjuration",
+    "casting_time": "bonus_action",
+    "range": 12,
+    "target": "single",
+    "attack_type": "none",
+    "components": [
+      "V"
+    ],
+    "duration": "instantaneous",
+    "effects": [
+      {
+        "type": "heal",
+        "value": "2d4",
+        "ability_bonus_from_caster": true
+      }
+    ],
+    "upcast": {
+      "starting_level": 1,
+      "healing_dice_per_level": "2d4"
+    },
+    "classes": [
+      "bard",
+      "cleric",
+      "druid"
+    ],
+    "concentration": false,
+    "execution": "shared",
+    "rules_source": "SRD5.2.1",
+    "rules_status": "2024-gameplay-partial"
+  },
+  {
+    "id": "hold_monster",
+    "name": "Hold Monster",
+    "description": "Choose a creature that you can see within range. The target must succeed on a Wisdom saving throw or have the Paralyzed condition for the duration. At the end of each of its turns, the target repeats the save, ending the spell on itself on a success.",
+    "level": 5,
+    "school": "enchantment",
+    "casting_time": "action",
+    "range": 18,
+    "target": "single",
+    "attack_type": "none",
+    "save": "WIS",
+    "classes": [
+      "bard",
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a straight piece of iron",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "duration_seconds": 60,
+    "requires_target_sight": true,
+    "half_on_save": false,
+    "rules_source": "SRD5.2.1",
+    "rules_status": "2024-gameplay-partial",
+    "effects": [
+      {
+        "type": "grant_condition",
+        "condition": "paralyzed",
+        "on_failed_save": true
+      }
+    ],
+    "upcast": {
+      "additional_targets_per_level": 1,
+      "starting_level": 5
+    },
+    "repeat_save": "WIS",
+    "execution": "shared"
+  },
+  {
+    "id": "circle_of_death",
+    "name": "Circle of Death",
+    "description": "Negative energy ripples out in a 60-foot-radius Sphere from a point you choose within range. Each creature in that area makes a Constitution saving throw, taking 8d8 Necrotic damage on a failed save or half as much damage on a successful one.",
+    "level": 6,
+    "school": "necromancy",
+    "casting_time": "action",
+    "range": 30,
+    "duration": "Instantaneous",
+    "concentration": false,
+    "rules_source": "SRD5.2.1",
+    "rules_status": "2024-gameplay-partial",
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "target": "area",
+    "area_radius": 12,
+    "attack_type": "none",
+    "classes": [
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ],
+    "material": "the powder of a crushed black pearl worth 500+ GP",
+    "material_component_cost": 500,
+    "material_component_item_id": "black_pearl_powder_500gp",
+    "damage": "8d8",
+    "damage_type": "necrotic",
+    "save": "CON",
+    "half_on_save": true,
+    "upcast": {
+      "starting_level": 6,
+      "damage_per_level": "2d8"
+    },
+    "execution": "shared",
+    "effects": [
+      {
+        "type": "area_selection",
+        "shape": "sphere",
+        "radius": 12
+      }
+    ]
+  }
+]

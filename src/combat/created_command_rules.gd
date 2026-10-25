@@ -8,12 +8,12 @@
 class_name CreatedCommandRules
 extends RefCounted
 
-const POLICY_KEYS := ["cost", "order_costs", "range_hexes", "orders", "default", "control_seconds", "initiative", "owner_incapacitated", "owner_dead", "control_expired", "concentration_end"]
+const POLICY_KEYS := ["cost", "order_costs", "range_hexes", "orders", "default", "control_seconds", "initiative", "initiative_group", "owner_incapacitated", "owner_dead", "control_expired", "concentration_end"]
 ## Batch 056 S-157: owner_turn (055 behaviour: orders resolve at once on the
 ## owner's turn), after_owner (own turn right after the owner), own (own d20+DEX).
 ## Batch 061 S-157: this is the template's data-declared turn timing; absent
-## means owner_turn, and each kind of a mixed cast must declare the same one.
-const INITIATIVES := ["owner_turn", "after_owner", "own"]
+## means owner_turn. Mixed kinds read their own template's timing.
+const INITIATIVES := ["owner_turn", "after_owner", "own", "shared_count"]
 ## Batch 056 S-158: behaviour when the owner is incapacitated, dead, or control
 ## expired. Missing keys fall back to the declared uncommanded default.
 const AUTONOMY := ["dodge", "none", "attack_nearest"]
@@ -56,7 +56,10 @@ static func policy_error(p: Variant) -> String:
 			if not str(o) in p.get("orders", DEFAULT.orders): return "command order_costs.%s names an order the creature can't be given" % o
 	if p.has("default") and str(p.default) not in DEFAULTS: return "command default must be dodge or none"
 	if p.has("control_seconds") and not CreatedActorRules._int(p.control_seconds, 6, 86400): return "command control_seconds must be 6-86400"
-	if p.has("initiative") and str(p.initiative) not in INITIATIVES: return "command initiative must be owner_turn, after_owner or own"
+	if p.has("initiative") and str(p.initiative) not in INITIATIVES: return "command initiative must be owner_turn, after_owner, own or shared_count"
+	if p.get("initiative", "owner_turn") == "shared_count":
+		if p.get("initiative_group") not in ["owner", "roll"]: return "shared_count requires initiative_group owner or roll"
+	elif p.has("initiative_group"): return "initiative_group requires shared_count initiative"
 	for key in ["owner_incapacitated", "owner_dead", "control_expired"]:
 		if p.has(key) and str(p[key]) not in AUTONOMY: return "command %s must be dodge, none or attack_nearest" % key
 	if p.has("concentration_end") and str(p.concentration_end) not in CONCENTRATION_END: return "command concentration_end must be end"
@@ -65,6 +68,12 @@ static func policy_error(p: Variant) -> String:
 ## Batch 056: declared initiative policy for this actor (default owner_turn).
 static func initiative(owner: Character, actor: Character) -> String:
 	return str(policy(_template(owner, actor)).get("initiative", "owner_turn"))
+
+static func needs_owner_anchor(owner: Character, actor: Character) -> bool:
+	var p := policy(_template(owner, actor))
+	# Independent initiative still needs the caster's boundary to age a timed
+	# source after its owner leaves. This does not make the actor follow it.
+	return p.get("initiative", "owner_turn") in ["owner_turn", "after_owner"] or p.get("initiative_group", "") == "owner" or int(_record(owner, actor).get("remaining_seconds", -1)) >= 0
 
 ## Batch 056 S-158: what this actor does without a command, given its owner's state.
 static func behaviour(owner: Character, actor: Character) -> String:
@@ -90,9 +99,8 @@ static func policy(template: Dictionary) -> Dictionary:
 	if p is Dictionary and policy_error(p).is_empty(): out.merge(p, true)
 	return out
 
-## Batch 061: the policy as compared across the kinds of one mixed cast. The
-## authored synonym free reads as none, and an absent initiative reads as the
-## default owner_turn, so equivalent spellings count as one shared policy.
+## Batch 061 compatibility helper: normalize cost/timing spellings when a
+## caller needs comparison. Mixed creation no longer requires equality.
 static func shared_policy(template: Dictionary) -> Dictionary:
 	var p := policy(template)
 	p["cost"] = "none" if str(p.cost) == "free" else str(p.cost)
@@ -116,9 +124,14 @@ static func _template(owner: Character, actor: Character) -> Dictionary:
 ## Control lasts while the source lasts, or until control_until when declared.
 static func controlled(owner: Character, actor: Character, now: int = -1) -> bool:
 	var data: Dictionary = _record(owner, actor).get("created_actors", {})
-	if not data.has("control_until"): return true
+	var deadline := int(data.get("control_until", -1))
+	for entry in data.get("actors", []):
+		if str(entry.get("actor_id", "")) == actor.character_id and entry.has("control_until"):
+			deadline = int(entry.control_until)
+			break
+	if deadline < 0: return true
 	if now < 0: now = int(GameManager.campaign_elapsed_seconds)
-	return int(data.control_until) > now
+	return deadline > now
 
 static func _entity(state, actor_id: String) -> Dictionary:
 	for e in state.player_entities:
@@ -140,6 +153,7 @@ static func actors(state, owner: Character) -> Array:
 static func command_error(state, owner: Character, actor_id: String, order: String, target_id: String = "") -> String:
 	if owner == null or not owner.is_alive or CombatAction.is_incapacitated(owner): return "A conscious owner is required."
 	if state.active_character != owner: return "Only the owner can command on the owner's turn."
+	if state.get("tracker") != null and state.tracker.combatants.any(func(c): return c.entity is Character and c.entity == owner and c.get("scheduling_only", false)): return "The owner has left initiative."
 	var actor: Character = null
 	for a in CreatedActorRules.actors(owner):
 		if a.character_id == actor_id: actor = a
@@ -249,8 +263,26 @@ static func join_initiative(state, owner: Character, actor: Character) -> void:
 	if tracker == null or tracker.combatants.is_empty(): return
 	if tracker.combatants.any(func(c): return str(c.id) == actor.character_id): return
 	var mode := initiative(owner, actor)
+	if needs_owner_anchor(owner, actor):
+		var anchor := _ensure_owner_anchor(state, owner)
+		var dependents: Array = anchor.get("created_actor_dependents", [])
+		if not dependents.has(actor.character_id): dependents.append(actor.character_id)
+		anchor["created_actor_dependents"] = dependents
 	if mode == "owner_turn": return
 	var dex := actor.ability_scores.get_score("DEX")
+	if mode == "shared_count":
+		var count_policy := str(policy(_template(owner, actor)).initiative_group)
+		var anchor := _ensure_owner_anchor(state, owner) if count_policy == "owner" else {}
+		var source := str(actor.get_meta("created_source_id", ""))
+		# The first authored member determines a rolled group's DEX, regardless
+		# of placement/join order or whether that member is still alive.
+		var record := _record(owner, actor)
+		var spell := DataLoader.get_spell(str(record.get("spell_id", "")))
+		var first: Dictionary = record.created_actors.actors[0]
+		var template := CreatedActorRules._template(spell, str(first.get("template_id", record.created_actors.get("template_id", ""))))
+		dex = int(template.ability_scores.DEX)
+		tracker.add_shared_combatant(actor.character_id, actor.character_name, actor, source, count_policy, anchor, dex)
+		return
 	if mode == "own":
 		var roll := Dice.roll(20) + AbilityScores.get_modifier(dex)
 		tracker.add_combatant(actor.character_id, actor.character_name, true, actor, roll, dex)
@@ -269,6 +301,33 @@ static func join_initiative(state, owner: Character, actor: Character) -> void:
 	tracker.combatants.insert(at + 1, {"id": actor.character_id, "name": actor.character_name, "is_player": true, "entity": actor, "roll": anchor.roll, "dex": float(anchor.dex) - 0.01, "has_acted": false, "follows": owner_combat_id})
 	if at + 1 <= tracker.active_index: tracker.active_index += 1
 
+## With no owner initiative at encounter entry, use one shared end-of-round
+## clock. It has the owner's existing combat identity but runs no owner work.
+static func _ensure_owner_anchor(state, owner: Character) -> Dictionary:
+	var tracker = state.tracker
+	for c in tracker.combatants:
+		if c.entity is Character and c.entity == owner: return c
+	var id := owner.character_id
+	for i in state.player_entities.size():
+		var e: Dictionary = state.player_entities[i]
+		if e.get("character") == owner: id = str(e.get("combat_id", "player_%d" % i))
+	tracker.add_combatant(id, owner.character_name, true, owner, -1000000, owner.ability_scores.get_score("DEX"))
+	var anchor: Dictionary = tracker.combatants[-1]
+	anchor["scheduling_only"] = true
+	anchor["resume_when_available"] = not owner.is_alive
+	return anchor
+
+## The creatures' source clocks still age when the owner cannot take turns.
+## Share the normal boundary guard so interruption/re-entry cannot age twice.
+static func tick_sources(state, owner: Character, phase: String) -> void:
+	var key := "%s:%s" % [SpellEffects.caster_id(owner), phase]
+	if int(state._spell_boundary_rounds.get(key, -1)) == state.tracker.current_round: return
+	state._spell_boundary_rounds[key] = state.tracker.current_round
+	for source in owner.spell_effects.keys():
+		var record: Dictionary = owner.spell_effects.get(source, {})
+		if record.has("created_actors") and record.has("remaining_seconds") and str(record.get("expiry_phase", "start")) == phase:
+			SpellEffects._advance(owner, str(source), 6)
+
 ## Batch 056: drop battlefield entries whose source has ended (concentration end
 ## uses the existing cleanup). Call before the tracker advances so removal never
 ## replays or skips anyone's turn.
@@ -277,12 +336,28 @@ static func reconcile(state) -> Array:
 	for e in state.player_entities.duplicate():
 		if not e.get("is_created_actor", false): continue
 		if e.get("character") is Character and e.character.has_meta("projected_item_id"): continue
+		if not e.character.is_alive and state.get("tracker") != null:
+			state.tracker.remove_combatant(str(e.combat_id))
+			_orders.erase(e.combat_id)
 		var owner := owner_entity(state, e)
 		if owner != null and CreatedActorRules.actors(owner).has(e.character): continue
 		state.player_entities.erase(e)
 		_orders.erase(e.combat_id)
 		if state.get("tracker") != null: state.tracker.remove_combatant(str(e.combat_id))
 		gone.append(str(e.get("name", e.combat_id)))
+	# Refresh dependencies before releasing an empty clock. Other casts sharing
+	# the owner keep it alive, including independent actors with timed sources.
+	if state.get("tracker") != null:
+		for c in state.tracker.combatants.duplicate():
+			if not c.has("created_actor_dependents"): continue
+			var owner: Character = c.entity
+			c.created_actor_dependents = actors(state, owner).filter(func(a): return needs_owner_anchor(owner, a)).map(func(a): return a.character_id)
+			if c.get("scheduling_only", false):
+				if c.created_actor_dependents.is_empty(): state.tracker.remove_combatant(str(c.id))
+				elif c.get("resume_when_available", false) and owner.is_alive:
+					# Healing restores the same slot. No sorting or budget reset here.
+					c.erase("scheduling_only")
+					c.erase("resume_when_available")
 	if not gone.is_empty(): state._update_grid_entities()
 	return gone
 
@@ -308,4 +383,15 @@ static func saved_error(template: Dictionary, data: Dictionary) -> String:
 	var declared := policy(template).has("control_seconds")
 	if not data.has("control_until"): return "saved created actors lack their control deadline" if declared else ""
 	if not declared or not CreatedActorRules._int(data.control_until, 0, 2147483647): return "invalid saved control deadline"
+	return ""
+
+## Mixed factories keep control deadlines with the exact actor kind that authored them.
+static func saved_actor_error(template: Dictionary, entry: Dictionary, source_data: Dictionary = {}) -> String:
+	var declared := policy(template).has("control_seconds")
+	if not entry.has("control_until"):
+		# Earlier mixed records used one source deadline when every kind shared
+		# a policy. Keep those saves readable while new records store per actor.
+		if source_data.has("control_until") and declared: return ""
+		return "saved created actor lacks its control deadline" if declared else ""
+	if not declared or not CreatedActorRules._int(entry.control_until, 0, 2147483647): return "invalid saved created actor control deadline"
 	return ""

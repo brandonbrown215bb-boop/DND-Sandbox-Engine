@@ -9,7 +9,7 @@ const EFFECTS := ["heal", "temporary_hp", "grant_condition", "remove_condition",
 const STEP_FIELDS := ["id", "type", "gate", "gate_step", "target", "shape", "radius", "size", "attack_type", "damage", "damage_type", "damage_components", "component_id", "scaling", "upcast", "save", "half_on_save", "save_context", "damage_scale_by_outcome", "damage_dice_policy", "damage_result_multiplier", "damage_reductions", "damage_bypasses", "recipient_exemption_choice", "effects", "incoming_negation", "incoming_negation_rule", "physical_requirements", "spatial_requirements"]
 const STEP_TYPES := ["attack", "save", "damage", "effect"]
 const STEP_GATES := ["always", "hit", "miss", "failed_save", "successful_save"]
-const FIELDS := ["id", "name", "description", "execution", "level", "casting_time", "range", "range_kind", "range_by_character_level_feet", "target", "base_targets", "attack_type", "damage", "damage_type", "component_id", "scaling", "upcast", "save", "half_on_save", "save_context", "damage_scale_by_outcome", "damage_dice_policy", "damage_result_multiplier", "damage_reductions", "damage_bypasses", "recipient_exemption_choice", "attack_unit_substitution", "requires_target_sight", "target_creature_types", "target_creature_type_exclusions", "target_sizes", "ignore_cover_on_save", "effects", "concentration", "duration", "duration_seconds", "repeat_save", "repeat_save_schedule", "repeat_save_interval_seconds", "repeat_save_stages", "repeat_save_dc_progression", "targets_objects", "ignites_objects", "area_radius", "cone_size", "end_on_target_damage", "end_on_any_damage", "end_on_party_damage", "source_end_rules", "components", "material", "material_component_item_id", "material_component_cost", "material_component_consumed", "consumed_material_item_id", "ritual", "rules_source", "rules_status", "school", "classes", "source", "trigger", "steps", "formula_inputs", "interruption_policy", "failure_policy", "empty_effect_policy", "cast_settlement", "cancellation_rule", "stopping_cost_policy", "incoming_negation_rule", "physical_requirements", "spatial_requirements", "zero_hp_aftermath", "end_aftermath", "reaction_trigger"] # Batch 065: reaction_trigger is validated by ReactionTriggers.spell_trigger_error.
+const FIELDS := ["containment_targeting", "id", "name", "description", "execution", "level", "casting_time", "range", "range_kind", "range_by_character_level_feet", "target", "base_targets", "attack_type", "damage", "damage_type", "component_id", "scaling", "upcast", "save", "half_on_save", "save_exit_placement", "save_context", "damage_scale_by_outcome", "damage_dice_policy", "damage_result_multiplier", "damage_reductions", "damage_bypasses", "recipient_exemption_choice", "attack_unit_substitution", "requires_target_sight", "target_creature_types", "target_creature_type_exclusions", "target_sizes", "ignore_cover_on_save", "effects", "concentration", "duration", "duration_seconds", "repeat_save", "repeat_save_schedule", "repeat_save_interval_seconds", "repeat_save_stages", "repeat_save_dc_progression", "targets_objects", "ignites_objects", "area_radius", "cone_size", "end_on_target_damage", "end_on_any_damage", "end_on_party_damage", "source_end_rules", "components", "material", "material_component_item_id", "material_component_cost", "material_component_consumed", "consumed_material_item_id", "ritual", "rules_source", "rules_status", "school", "classes", "source", "trigger", "steps", "formula_inputs", "interruption_policy", "failure_policy", "empty_effect_policy", "cast_settlement", "cancellation_rule", "stopping_cost_policy", "incoming_negation_rule", "physical_requirements", "spatial_requirements", "zero_hp_aftermath", "end_aftermath", "reaction_trigger"] # Batch 065: reaction_trigger is validated by ReactionTriggers.spell_trigger_error.
 
 static func damage_dice_policy_error(value: Variant) -> String:
 	if not value is Dictionary or value.is_empty():
@@ -99,8 +99,11 @@ static func _validate_single_effect(effect: Variant) -> String:
 		if not error.is_empty(): return error
 	elif kind == "create_actor":
 		for key in effect:
-			if str(key) not in ["type", "template", "placement", "options", "count_choice", "mix", "material_targets"]: return "Created actor effects accept only type, template, options, count_choice, mix, material_targets and placement."
-		allowed.append_array(["template", "placement", "options", "count_choice", "mix", "material_targets"])
+			if str(key) not in ["type", "template", "placement", "options", "count_choice", "mix", "material_targets", "end_aftermath"]: return "Created actor effects accept only type, template, options, count_choice, mix, material_targets, end_aftermath and placement."
+		allowed.append_array(["template", "placement", "options", "count_choice", "mix", "material_targets", "end_aftermath"])
+		if effect.has("end_aftermath"):
+			var aftermath_error := SourceEndAftermathRules.validate(effect.end_aftermath)
+			if not aftermath_error.is_empty(): return aftermath_error
 		var options_error := CreatedActorRules.options_error(effect) # Batch 054: S-155.
 		if not options_error.is_empty(): return options_error
 		var material_error := MaterialTargetRules.error(effect) # Batch 059: S-155.
@@ -111,7 +114,7 @@ static func _validate_single_effect(effect: Variant) -> String:
 			var placement_error := PlacementRules.policy_error(effect.placement) # Batch 053: S-122.
 			if not placement_error.is_empty(): return placement_error
 	elif kind == "bind_tether":
-		allowed.append_array(["condition", "range_hexes", "escape", "capacity", "rescue", "hp"]) # S-169 adds rescue and hp.
+		allowed.append_array(["condition", "range_hexes", "escape", "capacity", "rescue", "hp", "anchor"]) # S-168/169 object anchors reuse existing room records.
 		var tether_error := TetherRules.effect_error(effect)
 		if not tether_error.is_empty(): return tether_error
 	elif kind == "suppress_item_magic":
@@ -236,6 +239,9 @@ static func _steps_error(spell: Dictionary) -> String:
 	return ""
 
 static func content_error(spell: Dictionary) -> String:
+	if spell.has("containment_targeting"):
+		var containment_error := ContainmentRules.targeting_error(spell.containment_targeting)
+		if not containment_error.is_empty(): return containment_error
 	if has_effect(spell, "grant_source_benefits") or has_effect(spell, "create_actor") or has_effect(spell, "actor_projection") or has_effect(spell, "suppress_item_magic"):
 		if spell.has("steps") or spell.has("repeat_save") or spell.get("target", "") != "self" or spell.has("save") or spell.get("attack_type", "none") != "none" or spell.has("damage") or spell.get("effects", []).size() != 1:
 			return "Source carriers require a flat automatic self-cast with one grant effect."
@@ -298,6 +304,11 @@ static func content_error(spell: Dictionary) -> String:
 	if spell.has("spatial_requirements"):
 		var space_err := PhysicalFactsRules.spatial_requirements_error(spell["spatial_requirements"])
 		if not space_err.is_empty(): return space_err
+	if spell.has("save_exit_placement"):
+		var exit_error := SaveExitPlacementRules.policy_error(spell["save_exit_placement"])
+		if not exit_error.is_empty(): return exit_error
+		if spell.has("steps") or spell.get("target", "single") != "single" or not spell.has("save") or spell.get("attack_type", "none") != "none" or spell.has("targets_objects") or spell.has("repeat_save") or spell.has("repeat_save_schedule") or spell.has("repeat_save_stages") or spell.has("recipient_exemption_choice"):
+			return "save_exit_placement currently supports only a flat single-target saving throw without repeat saves or recipient exemptions."
 	if spell.has("attack_unit_substitution"):
 		var substitution: Variant = spell["attack_unit_substitution"]
 		if spell.get("casting_time", "action") != "action" or not substitution is Dictionary or substitution.size() != 1 or not _integer(substitution.get("units", null), 1, 2):
@@ -441,6 +452,9 @@ static func content_error(spell: Dictionary) -> String:
 			var rider_error := validate_outcome_map(effect["rider_by_outcome"], domain, "rider_by_outcome", true)
 			if not rider_error.is_empty(): return rider_error
 		var kind := str(effect.get("type", ""))
+		if kind == "bind_tether":
+			if (str(effect.get("anchor", "character")) != "object" and not bool(spell.get("concentration", false))) or spell.get("target", "single") not in ["single", "single_enemy", "single_ally"]: return "Character tethers require concentration; object tethers need an individual creature target."
+			if int(spell.get("base_targets", 1)) > int(effect.get("capacity", 1)): return "Tether base_targets exceeds its capacity."
 		if kind in ["grant_condition", "grant_source_benefits", "grant_damage_link", "grant_damage_response", "create_actor", "actor_projection", "suppress_item_magic", "bind_tether"]: timed = true
 		elif kind == "area_selection": areas += 1
 		has_payload = has_payload or kind != "area_selection"
@@ -623,12 +637,14 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 		result = {"success": true, "hit": true, "damage": 0, "effect_cast": cast.effect_cast, "message": str(cast.spell["name"]) + " resolves."}
 	result["slot_level"] = cast.slot_level
 	result["effect_cast"] = cast.effect_cast
-	return apply(cast.caster, cast.target, cast.spell, result)
+	return apply(cast.caster, cast.target, cast.spell, result, cast.spatial_host)
 
-static func apply_custom_effects(caster: Character, target, effects: Array, result: Dictionary, slot_level: int, step_results: Array = [], adapter: Object = null, spell: Dictionary = {}) -> Dictionary:
-	if spell.is_empty() and adapter != null:
+static func apply_custom_effects(caster: Character, target, effects: Array, result: Dictionary, slot_level: int, step_results: Array = [], adapter: Object = null, spell: Dictionary = {}, host: SpellCastContext = null) -> Dictionary:
+	if adapter != null:
 		var context = adapter.get("cast")
-		if context != null: spell = context.spell
+		if context != null:
+			if spell.is_empty(): spell = context.spell
+			if host == null: host = context.spatial_host
 	var messages: Array[String] = []
 	var target_name: String = target.character_name if target is Character else str(target.get("name", "Target"))
 	var outcome := ("hit" if bool(result.get("hit", false)) else "miss") if result.has("hit") else (("success" if bool(result.get("saved", false)) else "failure") if result.has("saved") else "")
@@ -716,7 +732,7 @@ static func apply_custom_effects(caster: Character, target, effects: Array, resu
 						messages.append("%s creates %d %s." % [target_name, int(made.count), "creatures" if made.has("mix") else str(chosen.name)])
 			"actor_projection":
 				if target is Character and target == caster:
-					var projected := ActorProjectionRules.apply(target, result.get("effect_cast", {}), effect, slot_level, spell, str(spell.get("_projection_form_id", "")), str(spell.get("_projection_equipment", "")))
+					var projected := ActorProjectionRules.apply(target, result.get("effect_cast", {}), effect, slot_level, spell, str(spell.get("_projection_form_id", "")), str(spell.get("_projection_equipment", "")), host)
 					result["projection"] = projected
 					if projected.get("projected", false): messages.append("%s takes the %s form." % [target_name, str(projected.form_id)])
 					else: messages.append("%s cannot take that form: %s." % [target_name, str(projected.get("reason", ""))])
@@ -751,9 +767,9 @@ static func apply_custom_effects(caster: Character, target, effects: Array, resu
 	return result
 
 ## Applied once after attack/save and any awaited Empowered damage settlement.
-static func apply(caster: Character, target, spell: Dictionary, result: Dictionary) -> Dictionary:
-	if result.get("recipient_negated", false) or result.get("shared_effects_applied", false) or not result.get("success", false) or result.get("sanctuary_blocked", false) or result.has("damage_request") or result.has("save_bonus_request") or result.has("weapon_attack_bonus_request"):
+static func apply(caster: Character, target, spell: Dictionary, result: Dictionary, host: SpellCastContext = null) -> Dictionary:
+	if result.get("recipient_negated", false) or result.get("shared_effects_applied", false) or not result.get("success", false) or result.get("sanctuary_blocked", false) or result.has("damage_request") or result.has("save_bonus_request") or result.has("weapon_attack_bonus_request") or result.has("save_exit_request"):
 		return result
 	result["shared_effects_applied"] = true
 	var effects := SpellDamageRolls.spell_effects_for_slot_level(spell, int(result.get("slot_level", spell.get("level", 0))))
-	return apply_custom_effects(caster, target, effects, result, int(result.get("slot_level", spell.get("level", 0))), [], null, spell)
+	return apply_custom_effects(caster, target, effects, result, int(result.get("slot_level", spell.get("level", 0))), [], null, spell, host)

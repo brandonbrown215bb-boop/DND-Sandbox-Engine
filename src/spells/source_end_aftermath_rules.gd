@@ -14,10 +14,16 @@ static func validate(value: Variant) -> String:
 	if not value is Array or value.is_empty() or value.size() > 8: return "end_aftermath must be an array of 1-8 entries"
 	var ids := {}
 	for entry in value:
-		if not entry is Dictionary or str(entry.get("id", "")).is_empty() or ids.has(str(entry.id)): return "end_aftermath entries need unique ids"
+		if not entry is Dictionary or not entry.get("id") is String or str(entry.id).is_empty() or ids.has(str(entry.id)): return "end_aftermath entries need unique string ids"
 		ids[str(entry.id)] = true
 		var reasons: Variant = entry.get("reasons", null)
 		if not reasons is Array or reasons.is_empty() or reasons.any(func(r): return not r is String or str(r).is_empty() or str(r).length() > 40): return "end_aftermath reasons are invalid"
+		if entry.has("children"):
+			var child_error := LocatedSourceEndRules.children_error(entry)
+			if not child_error.is_empty(): return child_error
+			continue
+		for key in entry:
+			if key not in ["id", "reasons", "effects"]: return "Unsupported immediate aftermath field"
 		var effects: Variant = entry.get("effects", null)
 		if not effects is Array or effects.is_empty() or effects.size() > 4: return "end_aftermath effects are invalid"
 		for effect in effects:
@@ -34,7 +40,10 @@ static func fire(target, record: Dictionary, event: Dictionary) -> Array:
 	var reason := str(event.get("end_reason", ""))
 	for entry in entries:
 		if reason not in entry.reasons: continue
-		var receipt := {"aftermath_id": str(entry.id), "source_id": str(event.get("source_id", "")), "end_reason": reason, "origin_id": _id(target), "location": target.get("hex_position", null) if target is Dictionary else null, "effects": []}
+		if entry.has("children"): continue
+		var final_location: Dictionary = event.get("final_location", {})
+		var position: Variant = final_location.get("position")
+		var receipt := {"aftermath_id": str(entry.id), "source_id": str(event.get("source_id", "")), "end_reason": reason, "origin_id": str(event.get("recipient_id", _id(target))), "location": LocalRoomRules.coord(position) if position is Array else null, "final_location": final_location.duplicate(true), "effects": []}
 		for effect in entry.effects:
 			match str(effect.type):
 				"damage":
@@ -57,4 +66,4 @@ static func _id(target) -> String:
 	return target.character_id if target is Character else str(target.get("id", "")) if target is Dictionary else ""
 
 static func _int(v: Variant, lo: int, hi: int) -> bool:
-	return (v is int or v is float) and float(v) == floor(float(v)) and int(v) >= lo and int(v) <= hi
+	return (v is int or v is float) and is_finite(float(v)) and float(v) == floor(float(v)) and int(v) >= lo and int(v) <= hi

@@ -184,6 +184,7 @@ func _on_sheet_pressed() -> void:
 
 func _update_grid_entities() -> void:
 	LocalRoomCombat.bind_grid(hex_grid)
+	ItemProjectionRules.refresh(self)
 	ClericRules.reconcile_turning(monster_entities, player_entities)
 	SpellEffects.reconcile(_spell_casters(), _spell_effect_targets())
 	_validate_identify_contacts()
@@ -663,6 +664,8 @@ func _setup_combat_players() -> void:
 		var owner: Character = entity.get("character")
 		if owner != null and not CreatedActorRules.actors(owner).is_empty():
 			CreatedActorRules.attach(self, owner, entity.get("hex_position", Vector2i.ZERO))
+		if owner != null and not owner.item_projections.is_empty():
+			ItemProjectionRules.attach(self, owner, entity.get("hex_position", Vector2i.ZERO))
 
 
 func _setup_combat_monsters() -> void:
@@ -835,6 +838,10 @@ func _roll_initiative_and_start() -> void:
 func _start_combat_turn() -> void:
 	if _pool_recovery_pending: return
 	CreatedCreatureCombat.reconcile(self)
+	tracker.mark_turn_started()
+	if tracker.get_active().get("scheduling_only", false):
+		_start_created_actor_interval()
+		return
 	var next_entity: Variant = tracker.get_active().get("entity")
 	action_history.begin_turn(next_entity, tracker.current_round)
 	CombatAction.advance_combat_turn(next_entity if next_entity is Character else null, tracker.current_round)
@@ -1342,8 +1349,9 @@ func _resolve_monster_command(monster: Dictionary, command: Dictionary) -> void:
 ## S-168: a tethered monster uses its Action to escape that exact tether.
 func _try_monster_escape_tether(monster: Dictionary) -> bool:
 	var captors: Array = player_entities.map(func(p): return p.get("character"))
-	if TetherRules.binding(monster, captors).is_empty(): return false
-	var r := TetherRules.escape(monster, captors)
+	var bindings := TetherRules.binding(monster, captors)
+	if bindings.is_empty(): return false
+	var r := TetherRules.escape(monster, captors, 0, str(bindings[0].relation))
 	hud.add_log("[color=%s]%s[/color]" % ["green" if r.get("success", false) else "orange", str(r.get("message", ""))])
 	return true
 
@@ -1356,10 +1364,12 @@ func _try_monster_rescue_tether(monster: Dictionary) -> bool:
 	for ally in monster_entities:
 		if ally == monster or not ally.get("is_alive", false) or HexUtils.get_distance(origin, ally.get("hex_position", Vector2i.ZERO)) > 1: continue
 		for mode in ["strike", "check"]:
-			if not TetherRules.rescue_error(monster, ally, captors, mode).is_empty(): continue
-			var r := TetherRules.rescue(monster, ally, captors, mode)
-			hud.add_log("[color=%s]%s[/color]" % ["green" if r.get("success", false) else "orange", str(r.get("message", ""))])
-			return true
+			for binding in TetherRules.binding(ally, captors):
+				var relation := str(binding.relation)
+				if not TetherRules.rescue_error(monster, ally, captors, mode, relation).is_empty(): continue
+				var r := TetherRules.rescue(monster, ally, captors, mode, relation)
+				hud.add_log("[color=%s]%s[/color]" % ["green" if r.get("success", false) else "orange", str(r.get("message", ""))])
+				return true
 	return false
 
 
@@ -1371,24 +1381,61 @@ func _try_rescue_tether(character: Character, coord: Vector2i, player_pos: Vecto
 		if p.get("hex_position", Vector2i(-99, -99)) == coord and p.get("character") is Character: ally = p.character
 	if ally == null: return false
 	var captors: Array = player_entities.map(func(p): return p.get("character"))
-	var mode := "strike" if TetherRules.rescue_error(character, ally, captors, "strike").is_empty() else "check"
+	var options: Array[String] = []
+	var labels: Dictionary = {}
+	for binding in TetherRules.binding(ally, captors):
+		for mode in ["strike", "check"]:
+			if not TetherRules.rescue_error(character, ally, captors, mode, str(binding.relation)).is_empty(): continue
+			options.append("%s|%s" % [mode, binding.relation])
+			labels[options.back()] = "%s: %s (%s) · %s" % ["Cut" if mode == "strike" else "Pull free", binding.captor.character_name, DataLoader.get_spell(str(binding.tether.spell_id)).get("name", "Tether"), binding.relation]
+	if options.is_empty() or not _can_spend_action_cost("action"): return false
+	var selection := options[0]
+	if options.size() > 1:
+		resolving_player_action = true
+		selection = await hud._request_popup_choice("Choose tether rescue", options, labels)
+		resolving_player_action = false
+	if selection not in options: return true
+	var mode := selection.get_slice("|", 0)
+	var relation := selection.substr(mode.length() + 1)
 	# Checklist (a): refuse before the Action is spent.
-	if not TetherRules.rescue_error(character, ally, captors, mode).is_empty() or not _can_spend_action_cost("action"): return false
+	if character != active_character or not TetherRules.rescue_error(character, ally, captors, mode, relation).is_empty() or not _can_spend_action_cost("action") or not _tether_rescue_adjacent(character, ally): return true
 	_spend_action_cost("action")
-	var r := TetherRules.rescue(character, ally, captors, mode)
+	var r := TetherRules.rescue(character, ally, captors, mode, relation)
 	hud.add_log("[color=%s]%s[/color]" % ["green" if r.get("success", false) else "orange", str(r.get("message", ""))])
 	hud.update_hud(active_character, tracker)
 	_highlight_reachable()
 	return true
 
 
+func _tether_rescue_adjacent(rescuer: Character, victim: Character) -> bool:
+	var a: Dictionary = {}
+	var b: Dictionary = {}
+	for player in player_entities:
+		if player.get("character") == rescuer: a = player
+		if player.get("character") == victim: b = player
+	return not a.is_empty() and not b.is_empty() and HexUtils.get_distance(a.hex_position, b.hex_position) == 1
+
+
 ## S-168: the active character spends its Action to escape an exact tether.
 func _try_escape_tether(character: Character) -> bool:
 	if character == null or not _can_spend_action_cost("action"): return false
 	var captors: Array = player_entities.map(func(p): return p.get("character"))
-	if TetherRules.binding(character, captors).is_empty(): return false
+	var bindings := TetherRules.binding(character, captors)
+	if bindings.is_empty(): return false
+	var options: Array[String] = []
+	var labels: Dictionary = {}
+	for binding in bindings:
+		options.append(str(binding.relation))
+		labels[str(binding.relation)] = "%s (%s) · %s" % [binding.captor.character_name, DataLoader.get_spell(str(binding.tether.spell_id)).get("name", "Tether"), binding.relation]
+	var relation := options[0]
+	if options.size() > 1:
+		resolving_player_action = true
+		relation = await hud._request_popup_choice("Choose tether to escape", options, labels)
+		resolving_player_action = false
+	if relation not in options: return true
+	if character != active_character or not _can_spend_action_cost("action") or not TetherRules.binding(character, captors).any(func(b): return str(b.relation) == relation): return true
 	_spend_action_cost("action")
-	var r := TetherRules.escape(character, captors)
+	var r := TetherRules.escape(character, captors, 0, relation)
 	hud.add_log("[color=%s]%s[/color]" % ["green" if r.get("success", false) else "orange", str(r.get("message", ""))])
 	hud.update_hud(active_character, tracker)
 	_highlight_reachable()
@@ -3252,9 +3299,9 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 		return
 	if pending_action_type.is_empty() and coord == player_pos and _try_freedom_of_movement_escape(active_character):
 		return
-	if pending_action_type.is_empty() and coord == player_pos and (_try_escape_tether(active_character) or _try_escape_restrained_zone(active_character)):
+	if pending_action_type.is_empty() and coord == player_pos and (await _try_escape_tether(active_character) or _try_escape_restrained_zone(active_character)):
 		return
-	if pending_action_type.is_empty() and _try_rescue_tether(active_character, coord, player_pos):
+	if pending_action_type.is_empty() and await _try_rescue_tether(active_character, coord, player_pos):
 		return
 	if pending_action_type.is_empty() and _try_shake_sleeping_creature(coord, player_pos):
 		return
@@ -3914,7 +3961,7 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 				if pending_command_target_coords.is_empty():
 					var exclusions: Array = pending_spell_data.get("target_creature_type_exclusions", [])
 					var excluded := not exclusions.is_empty() and _creature_at_coord_matches_types(coord, exclusions)
-					var valid_first_target := _has_spell_target_at(coord, pending_spell_data) if is_chain_lightning else _has_creature_at(coord)
+					var valid_first_target := _has_spell_target_at(coord, pending_spell_data) if is_chain_lightning else _has_spell_creature_at(coord, pending_spell_data)
 					if not valid_first_target or (excluded and not is_chain_lightning):
 						return
 					if is_chain_lightning:
@@ -4144,6 +4191,7 @@ func _spell_cast_context(target_coord: Vector2i = Vector2i.ZERO, additional_targ
 	cast.additional_target_coord = additional_target_coord
 	cast.extra_target_coords = extra_target_coords
 	cast.chain_target_ids = chain_target_ids
+	cast.ground_items = dropped_combat_items
 	cast.players = player_entities
 	cast.monsters = monster_entities
 	cast.player_index = current_player_idx
@@ -4462,7 +4510,11 @@ func _end_active_turn() -> void:
 			monster.erase("rogue_cunning_knock_out_dc")
 		monster.erase("fighter_stood_up")
 
-	for gone_id in CreatedCommandRules.reconcile(self): # Batch 056: ended sources leave before the order advances.
+	_advance_combat_turn()
+
+
+func _advance_combat_turn() -> void:
+	for gone_id in CreatedCommandRules.reconcile(self): # Ended sources leave before the order advances.
 		hud.add_log("%s leaves the battle; its source has ended." % gone_id)
 	var round_complete := tracker.next_turn()
 	if round_complete:
@@ -4475,6 +4527,31 @@ func _end_active_turn() -> void:
 		_tick_active_time_and_tethers()
 		_tick_spell_zones()
 	_start_combat_turn()
+
+
+## A removed owner supplies only a clock for its creatures. Never run the
+## owner's action, recovery, conditions or turn budgets here.
+func _start_created_actor_interval() -> void:
+	if _check_battle_end_conditions(): return
+	active_combatant = tracker.get_active()
+	active_character = null
+	current_player_idx = -1
+	pending_action_type = ""
+	hex_grid.clear_highlights()
+	hud.update_hud(null, tracker)
+	action_history.begin_scheduled_interval(tracker.current_round)
+	CombatAction.advance_combat_turn(null, tracker.current_round)
+	var owner: Character = active_combatant.entity
+	CreatedCommandRules.tick_sources(self, owner, "start")
+	SpellEffects.reconcile(_spell_casters(), _spell_effect_targets())
+	CreatedCommandRules.start_owner_turn(self, owner)
+	for actor_id in CreatedCommandRules.apply_defaults(self, owner):
+		hud.add_log("%s acts on its declared behaviour." % _entity_name_for_created(actor_id))
+	CreatedCommandRules.tick_sources(self, owner, "end")
+	SpellEffects.reconcile(_spell_casters(), _spell_effect_targets())
+	if _check_battle_end_conditions(): return
+	await get_tree().process_frame
+	_advance_combat_turn()
 
 
 ## S-064 active time spends combat rounds; S-168 tethers beyond range break.
@@ -4634,7 +4711,7 @@ func _end_battle(result: String) -> void:
 	_cleanup_dead_familiars()
 	_sync_find_steeds()
 	LocalRoomCombat.capture_spell_zones(player_entities, active_spell_zones)
-	LocalRoomCombat.capture(player_entities)
+	LocalRoomCombat.capture(player_entities, dropped_combat_items)
 	CombatAction.active_turn_actor_id = 0
 	CombatAction.reset_bounded_owner_turn_rider_locks()
 	for source_id_value in active_spell_zones.keys().duplicate():

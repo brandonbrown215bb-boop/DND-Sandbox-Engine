@@ -189,7 +189,7 @@ static func validate_actor(cast: SpellCastContext) -> bool:
 		cast.clear_pending(SpellCastContext.CLEAR_WISH)
 		cast.highlight_reachable.call()
 		return false
-	var projection_error := ActorProjectionRules.cast_error(cast.caster, cast.spell) if ActorProjectionRules.can_cast_spells(cast.caster) else "You cannot cast spells in this form."
+	var projection_error := ActorProjectionRules.cast_error(cast.caster, cast.spell, cast) if ActorProjectionRules.can_cast_spells(cast.caster) else "You cannot cast spells in this form."
 	if not projection_error.is_empty():
 		cast.hud.add_log(projection_error)
 		cast.clear_pending(SpellCastContext.CLEAR_ACTION)
@@ -311,7 +311,7 @@ static func validate_creatures_and_components(cast: SpellCastContext) -> bool:
 				cast.highlight_reachable.call()
 				return false
 	var required_creature_types: Array = cast.spell.get("target_creature_types", [])
-	if SpellEffects.manages(cast.spell):
+	if SpellEffects.manages(cast.spell) or (SharedSpell.uses(cast.spell) and SpellCastTargeting._spell_upcast_maximum_targets(cast, cast.spell) > 1):
 		var selected: Array[Vector2i] = cast.command_selection.duplicate()
 		if cast.target_coord not in selected:
 			selected.append(cast.target_coord)
@@ -322,7 +322,10 @@ static func validate_creatures_and_components(cast: SpellCastContext) -> bool:
 			selected.append(cast.additional_target_coord)
 		var seen: Array[Vector2i] = []
 		for coord in selected:
-			if coord in seen or not Targeting.is_in_range(cast.spell_origin, coord, SpellCastTargeting._spell_target_range(cast, cast.spell)) or not SpellCastTargeting._creature_at_coord_matches_types(cast, coord, ["humanoid", "beast", "aberration", "celestial", "construct", "dragon", "elemental", "fey", "fiend", "giant", "monstrosity", "ooze", "plant", "undead"]):
+			var eligible_creature := SpellCastTargeting._creature_at_coord_matches_types(cast, coord, ["humanoid", "beast", "aberration", "celestial", "construct", "dragon", "elemental", "fey", "fiend", "giant", "monstrosity", "ooze", "plant", "undead"])
+			if SharedSpell.has_effect(cast.spell, "heal"):
+				eligible_creature = eligible_creature or SpellCastTargeting._has_spell_creature_at(cast, coord, cast.spell)
+			if coord in seen or not Targeting.is_in_range(cast.spell_origin, coord, SpellCastTargeting._spell_target_range(cast, cast.spell)) or not eligible_creature:
 				cast.hud.add_log("Choose distinct living creatures within this spell's range.")
 				return false
 			if cast.target_type == "single_ally":

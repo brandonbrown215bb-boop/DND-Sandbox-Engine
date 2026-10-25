@@ -284,9 +284,14 @@ func _run_scenario(scenario: String) -> void:
 		"batch_037_mode_upgrade_flow": await Batch037Controls.run(self)
 		"batch_038_switch_option_flow": await Batch038Controls.run(self)
 		"batch_039_created_actor_flow": await Batch039Controls.run(self)
+		"created_actor_scheduling_flow": await CreatedActorSchedulingFlow.run(self)
+		"shared_initiative_flow": await SharedInitiativeFlow.run(self)
 		"batch_040_successor_projection_flow": await Batch040Controls.run(self)
 		"batch_041_bond_equipment_flow": await Batch041Controls.run(self)
+		"form_equipment_ground_flow": await FormEquipmentGroundControls.run(self)
 		"batch_042_linked_projection_flow": await Batch042Controls.run(self)
+		"item_form_return_flow": await ItemFormReturnControls.run(self)
+		"item_lifecycle_controls_flow": await ItemLifecycleControlsFlow.run(self)
 		"batch_043_container_curse_flow": await Batch043Controls.run(self)
 		"batch_044_parts_magic_flow": await Batch044Controls.run(self)
 		"batch_045_active_tether_flow": await Batch045Controls.run(self)
@@ -310,6 +315,13 @@ func _run_scenario(scenario: String) -> void:
 		"batch_063_magic_action_cost_flow": await Batch063Controls.run(self)
 		"batch_064_mode_duration_flow": await Batch064Controls.run(self)
 		"batch_065_reaction_triggers_flow": await Batch065Controls.run(self)
+		"s121_exit_placement_flow": await Batch066Controls.run(self)
+		"located_source_end_flow": await LocatedSourceEndControls.run(self)
+		"tether_group_flow": await TetherGroupFlow.run(self)
+		"containment_flow": await ContainmentFlow.run(self)
+		"containment_harm_flow": await ContainmentHarmFlow.run(self)
+		"containment_release_flow": await ContainmentReleaseFlow.run(self)
+		"projected_vessel_flow": await ProjectedVesselFlow.run(self)
 		"batch_027_protections_flow": await Batch027Controls.run(self)
 		"batch_021_spell_permissions_flow": await Batch021Controls.run(self)
 		"batch_022_slot_ritual_flow": await Batch022Controls.run(self)
@@ -420,6 +432,8 @@ func _run_scenario(scenario: String) -> void:
 		"true_strike_spell_flow": await test_true_strike_spell_flow()
 		"mass_cure_wounds_flow": await test_mass_cure_wounds_flow()
 		"mass_healing_word_flow": await test_mass_healing_word_flow()
+		"conversion_batch_001_flow": await ConversionBatch001Flow.run(self)
+		"conversion_batch_002_flow": await ConversionBatch002Flow.run(self)
 		"sorcerer_twinned_spell": await test_sorcerer_twinned_spell()
 		"overworld": await test_overworld()
 		"companion_lifecycle": await test_companion_lifecycle()
@@ -443,6 +457,7 @@ func _run_scenario(scenario: String) -> void:
 		"party_recovery_flow": await test_party_recovery_flow()
 		"downed_area_damage_flow": await test_downed_area_damage_flow()
 		"created_undead_flow": await test_created_undead_flow()
+		"room_created_actor_flow": await test_room_created_actor_flow()
 		"character_creation": await test_character_creation()
 		"shop": await test_shop()
 		"save_load": await test_save_load()
@@ -659,6 +674,7 @@ func test_class_building_blocks() -> void:
 func test_barbarian_action_flow() -> void:
 	_enter_test("barbarian_action_flow")
 	_setup_world()
+	GameManager.transition_context["monster_ids"] = ["goblin", "goblin"] # This scenario positions two enemies.
 	var actor := BarbarianChecks._character(5)
 	PlayerManager.set_player_character(0, actor)
 	PartyManager.reset()
@@ -5493,7 +5509,7 @@ func test_mass_healing_word_flow() -> void:
 	var bard := _fresh_char("Mass Healing Bard", "human", "bard", {"STR": 10, "DEX": 14, "CON": 14, "INT": 10, "WIS": 10, "CHA": 18})
 	for _level in 4:
 		bard.level_up()
-	bard.known_spells.assign(["mass_healing_word"])
+	_assert(ConversionBatch001Flow._prepare(bard, ["mass_healing_word"]), "Mass Healing Word is prepared through the ordinary class selection")
 	var injured_ally: Character = PlayerManager.get_player(1).get("character")
 	injured_ally.current_hp = 1
 	injured_ally.is_alive = true
@@ -5516,7 +5532,7 @@ func test_mass_healing_word_flow() -> void:
 	var slot_before := int(bard.spell_slots.get("3", 0))
 	_assert(slot_before > 0, "Level 5 Bard has a third-level slot for Mass Healing Word")
 	GameManager.test_mode = false
-	combat._on_hud_action("cast_spell", {"spell": DataLoader.get_spell("mass_healing_word")})
+	ConversionBatch001Flow._select(self, combat, bard, "mass_healing_word", 3)
 	for _frame in 30:
 		if str(combat.pending_spell_data.get("id", "")) == "mass_healing_word" and combat.pending_action_type == "spell":
 			break
@@ -15155,6 +15171,19 @@ func test_shared_spell_normal_controls_flow() -> void:
 func test_spell_effect_lifetime() -> void:
 	_enter_test("spell_effect_lifetime")
 	_setup_mixed_world()
+	# The old fixture supplied raw known-spell lists/slots without acquiring
+	# their permissions. Use actual class preparation, including its Heal probe.
+	var prepared_cleric: Character = PartyManager.get_active_characters()[3]
+	while prepared_cleric.level < 11: prepared_cleric.level_up()
+	_assert(ConversionBatch001Flow._prepare(prepared_cleric, ["bless", "bane", "shield_of_faith", "aid", "heal"]), "Effect lifetime fixture acquires its real Cleric spell permissions")
+	var prepared_wizard: Character = PartyManager.get_active_characters()[2]
+	while prepared_wizard.level < 9: prepared_wizard.level_up()
+	var book: Array[String] = []
+	for id in ["hold_person", "hold_monster", "alter_self"]:
+		if id not in prepared_wizard.wizard_spellbook: book.append(id)
+	_assert(book.is_empty() or ClassProgression.choose_wizard_spellbook(prepared_wizard, book), "Effect lifetime fixture learns its actual Wizard book spells")
+	prepared_wizard.long_rest()
+	_assert(ConversionBatch001Flow._prepare(prepared_wizard, ["hold_person", "hold_monster", "alter_self"]), "Effect lifetime fixture prepares its Wizard spell permissions")
 	PartyManager.get_active_characters()[3].inventory.add_item("component_pouch")
 	PartyManager.get_active_characters()[3].inventory.add_item("holy_symbol")
 	PartyManager.get_active_characters()[3].inventory.unequip(Inventory.Slot.WEAPON)
@@ -15185,27 +15214,33 @@ func test_spell_effect_lifetime() -> void:
 	var unsupported_index := -1
 	for index in combat.hud.spells_registered.size():
 		match str(combat.hud.spells_registered[index].get("id", "")):
-			"bless": bless_index = index
+			"bless":
+				if str(combat.hud.spells_registered[index].get("_spell_payment_kind", "")) == "slot": bless_index = index
 			"heal": heal_index = index
 			"contact_other_plane": unsupported_index = index
 	_assert(heal_index >= 0 and not combat.hud.spell_list.is_item_disabled(heal_index), "Ordinary level-six Heal is enabled with a normal slot")
-	_assert(unsupported_index >= 0 and combat.hud.spell_list.is_item_disabled(unsupported_index), "Contact Other Plane remains visibly disabled pending its Wave 5 outcomes")
+	_assert(not SpellSupport.is_available(DataLoader.get_spell("contact_other_plane")), "Contact Other Plane remains unavailable pending its Wave 5 outcomes")
 	combat.hud._on_spell_selected(bless_index)
+	combat.pending_spell_data["_selected_spell_slot_level"] = 1
 	await combat._on_hex_clicked(positions[0])
 	combat._cancel_pending_action()
 	_assert(int(cleric.spell_slots["1"]) == 4 and combat.turn_budget.action_available and not fighter.has_condition("blessed"), "Cancelling target selection spends neither slot nor action")
 	combat.hud._show_spell_selection()
 	combat.hud._on_spell_selected(bless_index)
+	combat.pending_spell_data["_selected_spell_slot_level"] = 1
 	await combat._on_hex_clicked(positions[0])
 	await combat._on_hex_clicked(positions[1])
 	await combat._on_hex_clicked(positions[3])
 	_assert(fighter.has_condition("blessed") and combat.player_entities[1]["character"].has_condition("blessed") and cleric.has_condition("blessed") and not wizard.has_condition("blessed"), "HUD Bless affects only the three selected creatures")
-	_assert(int(cleric.spell_slots["1"]) == 3 and not combat.turn_budget.action_available and cleric.concentrating_on.get("targets", []).size() == 3, "A multi-target cast spends one slot and one action")
+	var bless_source := str(cleric.concentrating_on.get("effect_source", ""))
+	var bless_recipients: Array = cleric.concentrating_on.get("targets", [])
+	_assert(int(cleric.spell_slots["1"]) == 3 and not combat.turn_budget.action_available, "A multi-target cast spends one slot and one action")
+	_assert(bless_recipients.size() == 2 and fighter in bless_recipients and combat.player_entities[1]["character"] in bless_recipients and cleric.spell_effects.has(bless_source), "Concentration retains both other recipients and the caster's own source without a self-reference")
 	combat.turn_budget.reset(cleric, combat.player_entities)
 	combat.pending_spell_data = DataLoader.get_spell("shield_of_faith").duplicate(true)
 	combat.pending_action_type = "spell"
 	await combat._on_hex_clicked(foe["hex_position"])
-	_assert(not fighter.has_condition("blessed") and CombatAction.has_condition(foe, "shield_of_faith") and not combat.turn_budget.bonus_action_available, "Replacing concentration releases Bless and Shield of Faith can protect a monster")
+	_assert(not fighter.has_condition("blessed") and not cleric.has_condition("blessed") and CombatAction.has_condition(foe, "shield_of_faith") and not combat.turn_budget.bonus_action_available, "Replacing concentration releases Bless including the caster and Shield of Faith can protect a monster")
 	var ward_attack := CombatAction.resolve_weapon_attack(fighter, foe, DataLoader.get_item("club"))
 	_assert(int(ward_attack.get("target_ac", -1)) == int(foe.get("armor_class", 10)) + 2, "Shield of Faith adds two AC on the production monster attack path")
 	var faith_source := str(cleric.concentrating_on.get("effect_source", ""))
@@ -17040,6 +17075,320 @@ func test_created_undead_flow() -> void:
 	_teardown_scene(combat)
 	SaveManager.delete_save(save_slot)
 	_exit_test()
+
+
+func test_room_created_actor_flow() -> void:
+	_enter_test("room_created_actor_flow")
+	_setup_world()
+	Batch053Checks.load_fixtures()
+	Batch059Checks.load_fixtures()
+	DataLoader.spells[Batch053Checks.PAIR]["duration_seconds"] = 86400
+	for fixture_spell_id in ["fixture:b053_pair", Batch053Checks.GAMBLE, Batch058Checks.BONES, Batch059Checks.REMAINS]:
+		if fixture_spell_id not in DataLoader.classes["sorcerer"].get("spell_list_ids", []):
+			DataLoader.classes["sorcerer"].spell_list_ids.append(fixture_spell_id)
+	DataLoader.spells[Batch059Checks.REMAINS]["effects"][0]["placement"] = {"range_hexes": 1, "choose": true}
+	var wizard := _fresh_char("Room factory sorcerer", "human", "sorcerer", {"STR": 8, "DEX": 14, "CON": 14, "INT": 12, "WIS": 12, "CHA": 16})
+	wizard.known_spells.append("fixture:b053_pair")
+	wizard.known_spells.append(Batch053Checks.GAMBLE)
+	wizard.known_spells.append(Batch058Checks.BONES)
+	wizard.known_spells.append(Batch059Checks.REMAINS)
+	wizard.features.append({"id": "fixture:b053_room_permission", "effects": [{"type": "always_prepared_spells", "spells": ["fixture:b053_pair", Batch053Checks.GAMBLE, Batch058Checks.BONES, Batch059Checks.REMAINS], "ability": "INT", "maximum_spell_level": 3}]})
+	wizard.spell_slots["1"] = 2
+	wizard.spell_slots["3"] = 1
+	PlayerManager.reset()
+	PartyManager.reset()
+	PlayerManager.add_player("Factory owner")
+	PlayerManager.set_player_character(0, wizard)
+	PartyManager.register_player_character(0, wizard)
+	GameManager._reset_campaign_ledgers()
+	GameManager.completed_milestones.append("enter_dungeon_1")
+	GameManager.game_in_progress = true
+	GameManager.current_state = GameManager.GameState.DUNGEON
+	GameManager.transition_context = {"dungeon_id": "ruins_of_ashvale"}
+	var dungeon: DungeonState = await _spawn_scene("res://scenes/dungeon.tscn", 0.2)
+	var entrance: Room
+	for candidate in dungeon.rooms.values():
+		if candidate.id == 1: entrance = candidate
+	var local_room_key := str(entrance.id)
+	dungeon.hex_grid.hex_clicked.emit(entrance.coord)
+	await get_tree().process_frame
+	var view: LocalRoomView = dungeon.local_view
+	var baseline_room_objects: Array = view.state.objects.duplicate(true)
+	view.state.objects = view.state.objects.filter(func(object): return str(object.get("kind", "")) != "remains")
+	view.refresh()
+	_room_creation_review_regressions(view, wizard)
+	var cast_spell := func():
+		for row in view.action_row.get_children():
+			for control in row.get_children():
+				if control is OptionButton:
+					for index in control.item_count:
+						if str(control.get_item_metadata(index)) == "fixture:b053_pair": control.select(index)
+		_local_room_press(view, "Cast")
+	cast_spell.call()
+	_assert(not view.pending_room_creation.is_empty(), "Actual room spell control opens factory and destination controls even when the room has no eligible remains")
+	if view.pending_room_creation.is_empty():
+		_teardown_scene(dungeon)
+		_exit_test()
+		return
+	var count_pick: OptionButton = view.created_row.get_node_or_null("RoomCreate_Count")
+	if count_pick is OptionButton:
+		var single_index := -1
+		var pair_index := -1
+		for index in count_pick.item_count:
+			var value := int(count_pick.get_item_metadata(index))
+			if value == 1: single_index = index
+			if value == 2: pair_index = index
+		if single_index >= 0 and pair_index >= 0:
+			count_pick.select(single_index)
+			count_pick.item_selected.emit(single_index)
+			count_pick = view.created_row.get_node_or_null("RoomCreate_Count")
+			count_pick.select(pair_index)
+			count_pick.item_selected.emit(pair_index)
+	_assert(int(view.pending_room_creation.get("count", 0)) == 2 and view.created_row.get_node_or_null("RoomCreate_Confirm") is Button, "Changing the factory count rebuilds confirmation with the current arrival count")
+	var factory_confirm := view.created_row.get_node_or_null("RoomCreate_Confirm")
+	if factory_confirm is Button: factory_confirm.pressed.emit()
+	var template := CreatedActorRules._template(DataLoader.get_spell("fixture:b053_pair"), str(view.pending_room_creation.template_id))
+	var origin := LocalRoomRules.coord(view.state.party_positions[wizard.character_id])
+	var candidates := LocalRoomCreated._room_candidates(view, template, 1, [])
+	_assert(candidates.size() >= 2, "The actual room supplies two distinct legal arrivals from the acting character's location")
+	if candidates.size() < 2:
+		view.pending_room_creation.clear()
+		_teardown_scene(dungeon)
+		_exit_test()
+		return
+	var first: Vector2i = candidates[0]
+	var blocked: Vector2i = candidates[1]
+	view.click(first)
+	view.state.objects.append({"id": "test_factory_blocker", "kind": "barrier", "name": "New blocker", "position": [blocked.x, blocked.y], "contents": [], "fixed": true, "blocks_movement": true, "hp": 10})
+	view.click(blocked)
+	_assert(not view.pending_room_creation.is_empty() and int(wizard.spell_slots["1"]) == 2 and wizard.concentrating_on.is_empty() and CreatedActorRules.actors(wizard).is_empty(), "A blocker appearing during placement refuses that answer without spending or creating anything")
+	var cancel := view.created_row.get_node_or_null("RoomCreate_Cancel")
+	if cancel is Button: cancel.pressed.emit()
+	_assert(view.pending_room_creation.is_empty() and int(wizard.spell_slots["1"]) == 2 and CreatedActorRules.actors(wizard).is_empty(), "Canceling room placement preserves the slot and creates no actors")
+	view.state.objects.erase(view.state.objects.back())
+	view.state.objects = baseline_room_objects.duplicate(true)
+	view.refresh()
+	# No space for two arrivals: walls and occupied room geometry leave the cast unpaid.
+	for cell in HexUtils.get_hexes_in_range(origin, 1):
+		if cell != origin: view.state.walls.append([cell.x, cell.y])
+	view.refresh()
+	cast_spell.call()
+	var no_space := view.pending_room_creation.is_empty() or PlacementRules.reserve(LocalRoomCreated._placement_state(view), origin, str(template.size), 1, 2).is_empty()
+	_assert(no_space and int(wizard.spell_slots["1"]) == 2 and CreatedActorRules.actors(wizard).is_empty(), "Insufficient legal room space leaves the authored refusal unpaid")
+	for row in view.action_row.get_children():
+		for control in row.get_children():
+			if control is OptionButton:
+				for index in control.item_count:
+					if str(control.get_item_metadata(index)) == Batch053Checks.GAMBLE: control.select(index)
+	_local_room_press(view, "Cast")
+	var spend_without_space := view.created_row.get_node_or_null("RoomCreate_Spend")
+	if spend_without_space is Button: spend_without_space.pressed.emit()
+	_assert(spend_without_space is Button and int(wizard.spell_slots["1"]) == 1 and CreatedActorRules.actors(wizard).is_empty(), "Authored no-space spending pays one slot once and creates no actor")
+	view.state.walls.clear()
+	view.refresh()
+	# Another pending material-limited creation loses the same eligible remains
+	# before confirmation. Its final reservation must fail without a second cost.
+	var remains := {"id": "room_factory_bones", "kind": "remains", "name": "Humanoid bones", "position": [origin.x, origin.y], "remains": "bones", "body_creature_type": "humanoid", "creature_type": "humanoid", "size": "medium", "hp": 10, "max_hp": 10, "preserved_until": int(GameManager.campaign_elapsed_seconds), "contents": [], "removed": false}
+	view.state.objects.append(remains)
+	view.refresh()
+	for row in view.action_row.get_children():
+		for control in row.get_children():
+			if control is OptionButton:
+				for index in control.item_count:
+					if str(control.get_item_metadata(index)) == Batch059Checks.REMAINS: control.select(index)
+	_local_room_press(view, "Cast")
+	_assert(not view.pending_room_creation.is_empty(), "The room offers a data-declared creation that reserves nearby eligible remains")
+	if not view.pending_room_creation.is_empty():
+		var remains_confirm := view.created_row.get_node_or_null("RoomCreate_Confirm")
+		if remains_confirm is Button: remains_confirm.pressed.emit()
+		var remains_spell := DataLoader.get_spell(Batch059Checks.REMAINS)
+		var remains_cast := LocalRoomCreated._material_cast(view, remains_spell, CreatedActorRules._effect(remains_spell))
+		var competing := MaterialTargetRules.reservation(remains_cast, CreatedActorRules._effect(remains_spell), {"template_id": "b059_skeleton", "count": 1})
+		MaterialTargetRules._consume_refs(competing)
+		var remains_destination := LocalRoomCreated._room_candidates(view, CreatedActorRules._template(remains_spell, "b059_skeleton"), 1, [])
+		if not remains_destination.is_empty(): view.click(remains_destination[0])
+		_assert(bool(remains.removed) and int(wizard.spell_slots["3"]) == 1 and CreatedActorRules.actors(wizard).is_empty(), "A competing material reservation makes the pending cast refuse without spending again or creating an actor")
+		view.pending_room_creation.clear()
+		view.refresh()
+	# Restore the original fixture selection before creating the pair.
+	cast_spell.call()
+	factory_confirm = view.created_row.get_node_or_null("RoomCreate_Confirm")
+	if factory_confirm is Button: factory_confirm.pressed.emit()
+	var legal := LocalRoomCreated._room_candidates(view, template, 1, [])
+	if legal.size() >= 2:
+		view.click(legal[0])
+		view.click(legal[1])
+	var actors := CreatedActorRules.actors(wizard)
+	var positions: Dictionary = view.state.get("created_actor_positions", {})
+	_assert(actors.size() == 2 and positions.size() == 2 and positions[actors[0].character_id] != positions[actors[1].character_id] and int(wizard.spell_slots["1"]) == 0 and DungeonPersistence.local_error(view.state).is_empty(), "Room confirmation creates two distinct positioned actors and spends one slot after validating the room DTO")
+	var occupied_actor_cell := LocalRoomRules.coord(positions[actors[0].character_id])
+	var blocked_move := LocalRoomRules.move(view.state, wizard, occupied_actor_cell, view.grid, "walk", [wizard])
+	_assert(not blocked_move.get("success", false) and LocalRoomRules.coord(view.state.party_positions[wizard.character_id]) == origin, "Created actor room cells stay occupied for later party movement")
+	var actor_snapshot: Dictionary = JSON.parse_string(JSON.stringify(wizard.to_dict()))
+	var room_snapshot: Dictionary = JSON.parse_string(JSON.stringify(view.state))
+	var restored_owner := Character.new()
+	restored_owner.from_dict(actor_snapshot)
+	var restored_actors := CreatedActorRules.actors(restored_owner)
+	_assert(SpellEffects.saved_state_error(actor_snapshot).is_empty() and DungeonPersistence.local_error(room_snapshot).is_empty() and restored_actors.map(func(a): return a.character_id) == actors.map(func(a): return a.character_id) and int(restored_owner.spell_slots["1"]) == 0, "Character and room JSON DTO recovery retains source identities, positions and the once-spent slot without another creation")
+	var exit_position := LocalRoomRules.coord(view.state["exits"][0])
+	view.state["party_positions"][wizard.character_id] = [exit_position.x, exit_position.y]
+	view.refresh()
+	view.leave_requested.emit()
+	await get_tree().process_frame
+	if dungeon.local_view == null and dungeon.party_position != Vector2i.ZERO:
+		dungeon.hex_grid.hex_clicked.emit(Vector2i.ZERO)
+		await get_tree().process_frame
+	var checkpoint_saved := SaveManager.get_save_block_reason().is_empty() and SaveManager.save_game("room_created_actor_checkpoint")
+	var checkpoint_loaded := checkpoint_saved and SaveManager.load_game("room_created_actor_checkpoint")
+	var recovered_owner: Character = PartyManager.characters.get(wizard.character_id)
+	var recovered_room: Dictionary = GameManager.active_dungeon_state.get("local_rooms", {}).get(local_room_key, {})
+	var recovered_ids: Array = CreatedActorRules.actors(recovered_owner).map(func(created): return created.character_id) if recovered_owner != null else []
+	var expected_ids: Array = actors.map(func(created): return created.character_id)
+	var recovered_positions: Dictionary = recovered_room.get("created_actor_positions", {})
+	var positions_match := recovered_positions.size() == positions.size()
+	for actor_id in positions:
+		if not recovered_positions.has(actor_id) or LocalRoomRules.coord(recovered_positions[actor_id]) != LocalRoomRules.coord(positions[actor_id]): positions_match = false
+	var recovered_remains: Dictionary = {}
+	for object in recovered_room.get("objects", []):
+		if str(object.get("id", "")) == str(remains.id): recovered_remains = object
+	_assert(checkpoint_saved and checkpoint_loaded and recovered_owner != null and recovered_ids == expected_ids and positions_match and int(recovered_owner.spell_slots["1"]) == 0 and int(recovered_owner.spell_slots["3"]) == 1 and bool(recovered_remains.get("removed", false)), "Allowed dungeon checkpoint reload restores actor sources, room positions, the spent slot and remains consumed by the competing reservation")
+	var manifest := {"pid": OS.get_process_id(), "owner_id": wizard.character_id, "actor_ids": expected_ids, "positions": positions, "room_id": local_room_key, "remains_id": str(remains.id)}
+	var manifest_file := FileAccess.open("user://room_created_actor_manifest.json", FileAccess.WRITE)
+	if manifest_file != null:
+		manifest_file.store_string(JSON.stringify(manifest))
+		manifest_file.close()
+	var saved_room: Dictionary = recovered_room
+	GameManager.current_state = GameManager.GameState.COMBAT
+	GameManager.transition_context = {"terrain": "plains", "monster_ids": ["goblin"], "local_room": saved_room}
+	var combat: CombatState = await _spawn_scene("res://scenes/combat.tscn", 0.2)
+	var joined: Array = combat.player_entities.filter(func(entity): return entity.get("is_created_actor", false))
+	_assert(joined.size() == 2 and joined.all(func(entity): return positions.get(entity.character.character_id, []) == [entity.hex_position.x, entity.hex_position.y]), "Entering an encounter after checkpoint recovery brings both room-created actors into combat at their saved legal cells")
+	# A third persistent summon is created only in combat. Encounter exit must
+	# give it a room coordinate so exploration and the next encounter can restore it.
+	var owner_entity: Dictionary = combat.player_entities.filter(func(entity): return entity.get("character") == recovered_owner)[0]
+	var combat_persistent_spell := DataLoader.get_spell(Batch053Checks.COMBAT_PERSIST)
+	var combat_persistent_template := CreatedActorRules._template(combat_persistent_spell)
+	var combat_only_cast := SpellEffects.begin_cast(recovered_owner, combat_persistent_spell)
+	var combat_only_source := str(combat_only_cast.source_id)
+	var combat_only_created := CreatedActorRules.create(recovered_owner, combat_only_cast, combat_persistent_template, 1, combat_persistent_spell, 2)
+	var combat_only_destinations := PlacementRules.reserve(combat, owner_entity.hex_position, "medium", 1, 2)
+	var combat_only_actors := CreatedActorRules.attach(combat, recovered_owner, owner_entity.hex_position, combat_only_destinations)
+	_assert(combat_only_created.created and combat_only_actors.size() == 2, "A persistent summon factory can create new exact actor identities during combat")
+	LocalRoomCombat.capture(combat.player_entities)
+	var exit_positions: Dictionary = saved_room.get("created_actor_positions", {})
+	var combat_only_positioned := combat_only_actors.all(func(actor_id): return exit_positions.has(str(actor_id)))
+	_assert(combat_only_positioned and DungeonPersistence.local_error(saved_room).is_empty(), "Encounter exit captures positions for summons created in combat into the persistent room DTO")
+	var exit_actor_ids: Array = CreatedActorRules.actors(recovered_owner).map(func(actor): return actor.character_id)
+	_teardown_scene(combat)
+	GameManager.current_state = GameManager.GameState.DUNGEON
+	var exit_saved := SaveManager.get_save_block_reason().is_empty() and SaveManager.save_game("room_created_actor_checkpoint")
+	var exit_manifest := {"pid": OS.get_process_id(), "owner_id": recovered_owner.character_id, "actor_ids": exit_actor_ids, "positions": exit_positions, "room_id": local_room_key, "remains_id": str(remains.id)}
+	manifest_file = FileAccess.open("user://room_created_actor_manifest.json", FileAccess.WRITE)
+	if manifest_file != null:
+		manifest_file.store_string(JSON.stringify(exit_manifest))
+		manifest_file.close()
+	_assert(exit_saved, "Checkpoint after combat exit includes newly created summon positions and sources")
+	GameManager.current_state = GameManager.GameState.COMBAT
+	GameManager.transition_context = {"terrain": "plains", "monster_ids": ["goblin"], "local_room": saved_room}
+	var later_combat: CombatState = await _spawn_scene("res://scenes/combat.tscn", 0.2)
+	var later_joined: Array = later_combat.player_entities.filter(func(entity): return entity.get("is_created_actor", false))
+	_assert(later_joined.size() == exit_actor_ids.size() and later_joined.all(func(entity): return exit_positions.get(entity.character.character_id, []) == [entity.hex_position.x, entity.hex_position.y]), "Next encounter restores every persistent summon, including those created in the earlier fight, to its captured room cell")
+	_teardown_scene(later_combat)
+	GameManager.current_state = GameManager.GameState.DUNGEON
+	_teardown_scene(dungeon)
+	_exit_test()
+
+
+func _room_creation_review_regressions(view: LocalRoomView, owner: Character) -> void:
+	var origin := LocalRoomRules.coord(view.state.party_positions[owner.character_id])
+	# Map input cannot confirm the factory or move an unpaid cast to another actor.
+	LocalRoomCreated.begin_creation(view, Batch053Checks.PAIR)
+	var early_template := CreatedActorRules._template(DataLoader.get_spell(Batch053Checks.PAIR))
+	var early_cells := LocalRoomCreated._room_candidates(view, early_template, 1, [])
+	var slots_before: Dictionary = owner.spell_slots.duplicate()
+	if not early_cells.is_empty(): view.click(early_cells[0])
+	_assert(not early_cells.is_empty() and view.pending_room_creation.get("selected", []).is_empty() and bool(view.pending_room_creation.get("choosing_factory", false)) and owner.spell_slots == slots_before and CreatedActorRules.actors(owner).is_empty(), "Room map clicks before factory confirmation cannot reserve cells, cast or pay")
+	var other := _fresh_char("Other factory caster", "human", "sorcerer", {"STR": 8, "DEX": 14, "CON": 14, "INT": 12, "WIS": 12, "CHA": 16})
+	view.characters.append(other)
+	view.actors.add_item(other.character_name)
+	view.state.party_positions[other.character_id] = view.state.party_positions[owner.character_id].duplicate()
+	view.actors.select(view.actors.item_count - 1)
+	view.actors.item_selected.emit(view.actors.selected)
+	_assert(view.actor() == other and view.pending_room_creation.is_empty() and owner.spell_slots == slots_before and CreatedActorRules.actors(other).is_empty(), "Switching room actors cancels the pending factory without charging either caster")
+	view.actors.select(0)
+	view.actors.item_selected.emit(0)
+	view.actors.remove_item(view.actors.item_count - 1)
+	view.characters.erase(other)
+	view.state.party_positions.erase(other.character_id)
+	# Confirming a mixed-capable spell must create the selected kind, once.
+	LocalRoomCreated.begin_creation(view, Batch058Checks.BONES)
+	var picker: OptionButton = view.created_row.get_node_or_null("RoomCreate_Template")
+	if picker != null:
+		picker.select(1)
+		picker.item_selected.emit(1)
+	var confirm := view.created_row.get_node_or_null("RoomCreate_Confirm")
+	if confirm is Button: confirm.pressed.emit()
+	var made := CreatedActorRules.actors(owner)
+	_assert(made.size() == 1 and str(made[0].get_meta("created_template_id", "")) == "b058_zombie" and int(owner.spell_slots["3"]) == 0 and view.state.created_actor_positions.size() == 1, "Room mixed-capable factory creates the selected Zombie with a positioned source and one slot payment")
+	if confirm is Button: confirm.pressed.emit()
+	_assert(CreatedActorRules.actors(owner).size() == 1 and int(owner.spell_slots["3"]) == 0, "A repeated room factory confirmation cannot create or charge twice")
+	for actor in made: SpellEffects.remove(owner, str(actor.get_meta("created_source_id", "")))
+	owner.spell_slots["3"] = 1
+	view.refresh()
+	# A room's live geometry must win even before its grid is rebuilt.
+	LocalRoomCreated.begin_creation(view, Batch053Checks.PAIR)
+	confirm = view.created_row.get_node_or_null("RoomCreate_Confirm")
+	if confirm is Button: confirm.pressed.emit()
+	var template := CreatedActorRules._template(DataLoader.get_spell(Batch053Checks.PAIR))
+	var legal := LocalRoomCreated._room_candidates(view, template, 1, [])
+	var ceilings: Array = view.state.cell_ceilings.duplicate(true)
+	if legal.size() >= 2:
+		view.click(legal[0])
+		view.state.cell_ceilings.append({"position": [legal[1].x, legal[1].y], "feet": 1})
+		view.click(legal[1])
+		_assert(view.pending_room_creation.get("selected", []).size() == 1 and int(owner.spell_slots["1"]) == 2 and CreatedActorRules.actors(owner).is_empty(), "Room placement rechecks a newly lowered ceiling before accepting the next destination or payment")
+		view.state.cell_ceilings = ceilings.duplicate(true)
+		view.state.cell_ceilings.append({"position": [legal[0].x, legal[0].y], "feet": 1})
+		view.click(legal[1])
+		_assert(view.pending_room_creation.is_empty() and int(owner.spell_slots["1"]) == 2 and CreatedActorRules.actors(owner).is_empty(), "Final room confirmation also rechecks the clearance of previously reserved cells before payment")
+	else:
+		_assert(false, "Room clearance regression requires two legal cells")
+	view.state.cell_ceilings = ceilings
+	view.pending_room_creation.clear()
+	# Live protection excludes a room body both before and during a choice.
+	var body := {"id": "review_protected_bones", "kind": "remains", "name": "Protected bones", "position": [origin.x, origin.y], "remains": "bones", "creature_type": "humanoid", "size": "medium", "hp": 10, "max_hp": 10, "preserved_until": int(GameManager.campaign_elapsed_seconds) + 86400, "contents": [], "removed": false}
+	view.state.objects.append(body)
+	view.refresh()
+	LocalRoomCreated.begin_creation(view, Batch059Checks.REMAINS)
+	_assert(view.created_row.get_node_or_null("RoomCreate_Confirm") == null and int(owner.spell_slots["3"]) == 1 and not bool(body.removed), "Gentle Repose protected room remains offer no payable creation")
+	view.pending_room_creation.clear()
+	body.preserved_until = int(GameManager.campaign_elapsed_seconds)
+	LocalRoomCreated.begin_creation(view, Batch059Checks.REMAINS)
+	confirm = view.created_row.get_node_or_null("RoomCreate_Confirm")
+	if confirm is Button: confirm.pressed.emit()
+	var spell := DataLoader.get_spell(Batch059Checks.REMAINS)
+	var effect := CreatedActorRules._effect(spell)
+	var material_cast := LocalRoomCreated._material_cast(view, spell, effect)
+	var reservation := MaterialTargetRules.reservation(material_cast, effect, {"template_id": "b059_skeleton", "count": 1})
+	body.preserved_until = int(GameManager.campaign_elapsed_seconds) + 86400
+	_assert(reservation.size() == 1 and MaterialTargetRules._consume_refs(reservation) == 0 and not bool(body.removed), "A room body protected after reservation is never consumed through its stale material reference")
+	legal = LocalRoomCreated._room_candidates(view, CreatedActorRules._template(spell), 1, [])
+	if not legal.is_empty(): view.click(legal[0])
+	_assert(view.pending_room_creation.is_empty() and int(owner.spell_slots["3"]) == 1 and not bool(body.removed) and CreatedActorRules.actors(owner).is_empty(), "Protection applied during room placement refuses before slot payment, creation or body consumption")
+	# Expiry makes the body usable again; creation consumes it exactly once.
+	body.preserved_until = int(GameManager.campaign_elapsed_seconds)
+	LocalRoomCreated.begin_creation(view, Batch059Checks.REMAINS)
+	confirm = view.created_row.get_node_or_null("RoomCreate_Confirm")
+	if confirm is Button: confirm.pressed.emit()
+	legal = LocalRoomCreated._room_candidates(view, CreatedActorRules._template(spell), 1, [])
+	if not legal.is_empty(): view.click(legal[0])
+	made = CreatedActorRules.actors(owner)
+	_assert(made.size() == 1 and int(owner.spell_slots["3"]) == 0 and bool(body.removed), "After protection expires the room factory creates one Skeleton, consumes its remains and pays once")
+	for actor in made: SpellEffects.remove(owner, str(actor.get_meta("created_source_id", "")))
+	owner.spell_slots["3"] = 1
+	view.state.objects.erase(body)
+	view.pending_room_creation.clear()
+	view.refresh()
 
 
 func _find_open_roll_token_dialog(hud: Node) -> Node:

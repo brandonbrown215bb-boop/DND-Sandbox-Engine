@@ -41,7 +41,7 @@ static func is_container(definition_id: String) -> bool:
 
 ## Exact child records, optionally limited to one compartment.
 static func contents(inventory: Inventory, container_id: String, compartment: String = "") -> Array:
-	var all: Variant = inventory.get_instance(container_id).get("state", {}).get("contents", {})
+	var all: Variant = _record(inventory, container_id).get("state", {}).get("contents", {})
 	var result: Array = []
 	if not all is Dictionary: return result
 	for key in all:
@@ -49,7 +49,29 @@ static func contents(inventory: Inventory, container_id: String, compartment: St
 	return result
 
 static func _owned(inventory: Inventory, id: String) -> bool:
-	return inventory.owned_instances().any(func(c): return str(c.instance_id) == id)
+	if inventory.owned_instances().any(func(c): return str(c.instance_id) == id): return true
+	var owner = inventory.owner_character_ref.get_ref() if inventory.owner_character_ref != null else null
+	if not owner is Character or not owner.item_projections.has(id): return false
+	var body := ItemProjectionRules.actor(owner, id)
+	var room := VesselProjectionRules.room_for(body.character_id)
+	if room.is_empty() or not VesselProjectionRules.current_room(room) or not body.is_alive or owner.item_projections[id].has("ending") or not ItemProjectionRules._policy(str(owner.item_projections[id].copy.definition_id)).has("vessel"): return false
+	var at := ContainmentRules.location(room, "character", owner.character_id, [owner])
+	var vessel := ContainmentRules.location(room, "character", body.character_id, [owner])
+	return at.get("kind") == "external" and vessel.get("kind") == "external" and at.plane == vessel.plane and abs(int(at.altitude) - int(vessel.altitude)) <= 5 and HexUtils.get_distance(LocalRoomRules.coord(at.position), LocalRoomRules.coord(vessel.position)) <= 1
+
+static func _record(inventory: Inventory, id: String) -> Dictionary:
+	var held := inventory.get_instance(id)
+	if not held.is_empty(): return held
+	var owner = inventory.owner_character_ref.get_ref() if inventory.owner_character_ref != null else null
+	return owner.item_projections[id].copy if owner is Character and owner.item_projections.has(id) else {}
+
+static func _update(inventory: Inventory, record: Dictionary) -> bool:
+	var id := str(record.instance_id)
+	var owner = inventory.owner_character_ref.get_ref() if inventory.owner_character_ref != null else null
+	if owner is Character and owner.item_projections.has(id) and _owned(inventory, id):
+		owner.item_projections[id].copy = record
+		return true
+	return inventory.update_instance(record)
 
 static func _bonded(inventory: Inventory, id: String) -> bool:
 	var actor = inventory.owner_character_ref.get_ref() if inventory.owner_character_ref != null else null
@@ -72,7 +94,7 @@ static func _fits(compartment: Dictionary, existing: Array, definition_id: Strin
 
 static func put_error(inventory: Inventory, container_id: String, child_id: String, compartment: String) -> String:
 	if inventory == null or not _owned(inventory, container_id): return "Carry that container to use it."
-	var comps := compartments(str(inventory.get_instance(container_id).get("definition_id", "")))
+	var comps := compartments(str(_record(inventory, container_id).get("definition_id", "")))
 	if comps.is_empty(): return "That item is not a container."
 	if not comps.has(compartment): return "That container has no such compartment."
 	if child_id == container_id: return "A container cannot hold itself."
@@ -93,13 +115,13 @@ static func put(inventory: Inventory, container_id: String, child_id: String, co
 	if not error.is_empty(): return {"success": false, "message": error}
 	var record := inventory.take_instance(child_id)
 	if record.is_empty(): return {"success": false, "message": "That copy cannot be stowed."}
-	var host := inventory.get_instance(container_id)
+	var host := _record(inventory, container_id)
 	var all: Dictionary = host.state.get("contents", {})
 	var list: Array = all.get(compartment, [])
 	list.append(record)
 	all[compartment] = list
 	host.state["contents"] = all
-	if not inventory.update_instance(host):
+	if not _update(inventory, host):
 		inventory.receive_instance(record)
 		return {"success": false, "message": "That container could not be updated."}
 	return {"success": true, "instance_id": child_id, "container_id": container_id, "compartment": compartment, "seconds": 6, "message": "%s stowed in %s." % [DataLoader.get_item(str(record.definition_id)).get("name", "Item"), DataLoader.get_item(str(host.definition_id)).get("name", "the container")]}
@@ -107,7 +129,7 @@ static func put(inventory: Inventory, container_id: String, child_id: String, co
 ## Return the exact contained copy to the backpack.
 static func remove(inventory: Inventory, container_id: String, child_id: String) -> Dictionary:
 	if inventory == null or not _owned(inventory, container_id): return {"success": false, "message": "Carry that container to use it."}
-	var host := inventory.get_instance(container_id)
+	var host := _record(inventory, container_id)
 	var all: Dictionary = host.state.get("contents", {})
 	for key in all:
 		var list: Array = all[key]
@@ -120,15 +142,15 @@ static func remove(inventory: Inventory, container_id: String, child_id: String)
 			else: all[key] = list
 			if all.is_empty(): host.state.erase("contents")
 			else: host.state["contents"] = all
-			if not inventory.update_instance(host): return {"success": false, "message": "That container could not be updated."}
+			if not _update(inventory, host): return {"success": false, "message": "That container could not be updated."}
 			if not inventory.receive_instance(record):
-				var restored := inventory.get_instance(container_id)
+				var restored := _record(inventory, container_id)
 				var back: Dictionary = restored.state.get("contents", {})
 				var again: Array = back.get(key, [])
 				again.insert(i, record)
 				back[key] = again
 				restored.state["contents"] = back
-				inventory.update_instance(restored)
+				_update(inventory, restored)
 				return {"success": false, "message": "That copy cannot return to the backpack."}
 			return {"success": true, "instance_id": child_id, "seconds": 6, "message": "%s taken out." % DataLoader.get_item(str(record.definition_id)).get("name", "Item")}
 	return {"success": false, "message": "That container does not hold that copy."}

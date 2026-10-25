@@ -37,7 +37,11 @@ static func make_dropped_item(record: Dictionary, position: Vector2i, source_id:
 	var item := DataLoader.get_item(definition_id)
 	if instance_id.is_empty() or item.is_empty():
 		return {}
-	return _make_item_object(record, source_id, false, false, position)
+	var object := _make_item_object(record, source_id, false, false, position)
+	# Keep the whole copy, including nested cargo/attachments and source stamps.
+	object["contents"] = [record.duplicate(true)]
+	object["copy_state"] = object.contents[0].state
+	return object
 
 
 static func make_owned_item(record: Dictionary, source_id: String, worn: bool, position: Vector2i) -> Dictionary:
@@ -51,7 +55,8 @@ static func _make_item_object(record: Dictionary, source_id: String, carried: bo
 	if instance_id.is_empty() or item.is_empty():
 		return {}
 	var item_state: Dictionary = record.get("state", {})
-	var item_hp := int(item_state.get("combat_object_hp", item.get("object_hp", 1)))
+	var physical: Dictionary = item_state.get("physical", {})
+	var item_hp := int(item_state.get("combat_object_hp", physical.get("hp", item.get("object_hp", 1))))
 	var object := {
 		"id": ("carried:" if carried else "dropped:") + instance_id,
 		"instance_id": instance_id,
@@ -62,7 +67,7 @@ static func _make_item_object(record: Dictionary, source_id: String, carried: bo
 		"copy_state": record.get("state", {}).duplicate(true),
 		"fixed": bool(item.get("fixed", false)),
 		"hp": item_hp,
-		"max_hp": maxi(item_hp, int(item.get("object_hp", 1))),
+		"max_hp": maxi(item_hp, int(physical.get("max_hp", item.get("object_hp", 1)))),
 		"magical": bool(item.get("magical", false)) or item.has("rarity"),
 		"carried": carried,
 		"worn": worn,
@@ -76,6 +81,8 @@ static func _make_item_object(record: Dictionary, source_id: String, carried: bo
 	for field in ["material", "size", "thickness_inches"]:
 		if item.has(field): object[field] = item[field]
 	if item.has("weight"): object["weight_lb"] = item.weight
+	for field in ["material", "size", "weight_lb", "fixed"]:
+		if physical.has(field): object[field] = physical[field]
 	return object
 
 
@@ -105,11 +112,13 @@ static func sync_owned_item_object(character: Character, instance_id: String, ob
 
 
 static func can_target(object: Dictionary) -> bool:
+	if not ContainmentRules.internal_location(object).is_empty(): return false
 	return not object.is_empty() and not bool(object.get("removed", false)) and int(object.get("hp", 1)) > 0
 
 
-static func can_take_spell_damage(object: Dictionary) -> bool:
-	return can_target(object) and not is_magical(object) and not bool(object.get("worn", false)) and not bool(object.get("carried", false)) and str(object.get("worn_by", "")).is_empty() and str(object.get("carried_by", "")).is_empty()
+static func can_take_spell_damage(object: Dictionary, internal_authorized: bool = false) -> bool:
+	var present := not object.is_empty() and not bool(object.get("removed", false)) and int(object.get("hp", 1)) > 0
+	return present and (internal_authorized or can_target(object)) and not is_magical(object) and not bool(object.get("worn", false)) and not bool(object.get("carried", false)) and str(object.get("worn_by", "")).is_empty() and str(object.get("carried_by", "")).is_empty()
 
 
 static func is_magical(object: Dictionary) -> bool:
@@ -126,6 +135,7 @@ static func is_magical(object: Dictionary) -> bool:
 
 static func make_resolution_target(object: Dictionary) -> Dictionary:
 	var target := object.duplicate(true)
+	target["world_object"] = object
 	target["is_object"] = true
 	target["current_hp"] = int(object.get("hp", 1))
 	target["max_hp"] = int(object.get("max_hp", object.get("hp", 1)))
@@ -137,11 +147,13 @@ static func make_resolution_target(object: Dictionary) -> Dictionary:
 
 
 static func sync_resolution_target(object: Dictionary, target: Dictionary) -> void:
+	if not ContainmentRules.internal_location(object).is_empty(): return
 	object["hp"] = maxi(0, int(target.get("current_hp", object.get("hp", 1))))
+	settle_destruction(object)
 
 
-static func apply_damage(object: Dictionary, amount: int, damage_type: String) -> int:
-	if not can_take_spell_damage(object) or amount <= 0:
+static func apply_damage(object: Dictionary, amount: int, damage_type: String, internal_authorized: bool = false) -> int:
+	if not can_take_spell_damage(object, internal_authorized) or amount <= 0:
 		return 0
 	var resolved := amount
 	if damage_type in object.get("damage_immunities", []):
@@ -155,13 +167,33 @@ static func apply_damage(object: Dictionary, amount: int, damage_type: String) -
 		resolved = 0
 	var damage := mini(resolved, int(object.get("hp", 1)))
 	object["hp"] = maxi(0, int(object.get("hp", 1)) - damage)
-	if int(object["hp"]) == 0:
-		object["burning"] = false
-		object.erase("burning_next_tick_seconds")
-		if str(object.get("kind", "")) in ["door", "container"]:
-			object["open"] = true
-			object["locked"] = false
+	settle_destruction(object)
+	if object.has("tethers"):
+		TetherRules.reconcile_object_anchor(object)
 	return damage
+
+
+## A destroyed exact copy cannot remain takeable; its cargo/parts spill in place.
+static func settle_destruction(object: Dictionary) -> void:
+	if int(object.get("hp", 1)) > 0: return
+	object["burning"] = false
+	object.erase("burning_next_tick_seconds")
+	if str(object.get("kind", "")) == "loose" and not object.get("contents", []).is_empty():
+		var spilled: Array = []
+		for record in object.contents:
+			for compartment in record.get("state", {}).get("contents", {}).values(): spilled.append_array(compartment)
+			spilled.append_array(record.get("state", {}).get("attached", {}).values())
+		object["copy_destroyed"] = true
+		object["contents"] = spilled
+		object["removed"] = spilled.is_empty()
+		if not spilled.is_empty(): object["kind"] = "container"
+	if str(object.get("kind", "")) in ["door", "container"]:
+		object["open"] = true
+		object["locked"] = false
+	ContainmentRules.settle_object_destruction(object)
+	if object.has("tethers"):
+		TetherRules.reconcile_object_anchor(object)
+
 
 
 static func resolve_meteor_swarm(caster: Character, object: Dictionary, spell_data: Dictionary, slot_level: int) -> Dictionary:

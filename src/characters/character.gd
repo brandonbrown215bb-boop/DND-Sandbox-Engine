@@ -309,8 +309,10 @@ var exclusive_bonds: Dictionary = {}
 var item_projections: Dictionary = {}
 ## S-202 lingering source-linked curses: lost copy instance_id -> {definition_id, blocks_attunement}.
 var item_curses: Dictionary = {}
-## S-168 tethers this actor holds as captor: source_id -> relation.
+## S-168 tethers this actor holds as captor: relation_id -> relation (with parent source_id for groups).
 var tethers: Dictionary = {}
+## Actual body capacity; separate from carried inventory compartments.
+var containment: Dictionary = {}
 ## S-103 rest/activation mode selections, keyed by owning feature id.
 var feature_modes: Dictionary = {}
 ## S-085 chosen exclusive upgrade alternatives, keyed "rule|group".
@@ -1105,6 +1107,7 @@ func initialize(p_name: String, p_race_id: String, p_class_id: String, scores: A
 	level = 1
 
 	var race_data := DataLoader.get_race(race_id)
+	containment = race_data.get("containment", {}).duplicate(true)
 	var class_data := DataLoader.get_character_class(class_id)
 	weapon_proficiencies.assign([] if managed else class_data.get("weapon_proficiencies", []))
 	armor_proficiencies.assign([] if managed else class_data.get("armor_proficiencies", []))
@@ -1587,10 +1590,12 @@ func take_damage(amount: int, accepted_relentless_rage_inspiration: bool = false
 		death_save_successes = 0
 		if incoming_damage >= max_hp:
 			CorpseRules.mark_dead(self, "massive_damage")
+			if has_meta("created_source_id"): CreatedActorRules.end_actor(self, "death", damage_facts.get("decisions", {}).get("_damage_cause", {}) if damage_facts.get("decisions", {}) is Dictionary else {})
 			return hp_damage
 		death_save_failures = mini(3, death_save_failures + (2 if critical_hit else 1))
 		if death_save_failures >= 3:
 			CorpseRules.mark_dead(self, "death_saves")
+			if has_meta("created_source_id"): CreatedActorRules.end_actor(self, "death", damage_facts.get("decisions", {}).get("_damage_cause", {}) if damage_facts.get("decisions", {}) is Dictionary else {})
 		return hp_damage
 
 	# Living actor (current_hp > 0):
@@ -1611,6 +1616,11 @@ func take_damage(amount: int, accepted_relentless_rage_inspiration: bool = false
 			damage_facts["zero_hp_replacement_saved"] = true
 			damage_facts["replacement_hp"] = current_hp
 			return hp_damage
+		if has_meta("projected_item_id"):
+			is_alive = false
+			death_save_failures = 3
+			ItemProjectionRules.damaged(self, hp_before_damage, hp_damage, damage_facts.get("decisions", {}).get("_damage_cause", {}) if damage_facts.get("decisions", {}) is Dictionary else {})
+			return hp_damage
 		if class_id == "created_creature":
 			is_alive = false
 			death_save_failures = 3
@@ -1624,6 +1634,8 @@ func take_damage(amount: int, accepted_relentless_rage_inspiration: bool = false
 		DruidRules.revert_for_incapacitation(self)
 		if hp_damage >= hp_before_damage + max_hp or death_save_failures >= 3:
 			CorpseRules.mark_dead(self, "massive_damage" if hp_damage >= hp_before_damage + max_hp else "death_saves")
+	if current_hp <= 0 and not is_alive and has_meta("created_source_id"):
+		CreatedActorRules.end_actor(self, "death", damage_facts.get("decisions", {}).get("_damage_cause", {}) if damage_facts.get("decisions", {}) is Dictionary else {})
 
 	return hp_damage
 
@@ -2576,6 +2588,7 @@ func to_dict() -> Dictionary:
 		"item_projections": item_projections.duplicate(true),
 		"item_curses": item_curses.duplicate(true),
 		"tethers": tethers.duplicate(true),
+		"containment": containment.duplicate(true),
 		"feature_modes": feature_modes.duplicate(true),
 		"rule_alternatives": rule_alternatives.duplicate(true),
 		"barbarian_relentless_rage_enabled": barbarian_relentless_rage_enabled,
@@ -2691,6 +2704,7 @@ func from_dict(data: Dictionary) -> void:
 	pending_protection_choice.clear()
 	protection_choice_generation+=1
 	character_id = str(data.get("character_id", ""))
+	containment = data.get("containment", {}).duplicate(true)
 	recent_damage_history.clear()
 	for damage_entry in data.get("recent_damage_history", []):
 		if damage_entry is Dictionary:
@@ -3003,11 +3017,13 @@ func make_death_save(accepted_bardic_inspiration: bool = false, accepted_stroke_
 	var d20_details := RollTokenRules.resolve_d20_test(self, "death_save", has_death_save_advantage, false, decisions)
 	var natural := int(d20_details.get("total", 1))
 	var bane_penalty := Dice.roll(4, self) if has_condition("baned") else 0
-	var total := natural - bane_penalty - exhaustion_level * 2
-	if natural < 10 and has_feature("fighter_indomitable") and fighter_training.get("auto_indomitable", true) and use_feature("fighter_indomitable"):
+	var bless_bonus := Dice.roll(4, self) if has_condition("blessed") else 0
+	var total := natural + bless_bonus - bane_penalty - exhaustion_level * 2
+	if natural < (18 if has_feature("champion_survivor") else 20) and total < 10 and has_feature("fighter_indomitable") and fighter_training.get("auto_indomitable", true) and use_feature("fighter_indomitable"):
 		natural = Dice.roll_with_advantage(20, self) if has_death_save_advantage else Dice.roll(20, self)
 		bane_penalty = Dice.roll(4, self) if has_condition("baned") else 0
-		total = natural + level - bane_penalty - exhaustion_level * 2
+		bless_bonus = Dice.roll(4, self) if has_condition("blessed") else 0
+		total = natural + level + bless_bonus - bane_penalty - exhaustion_level * 2
 	var stroke_used := false
 	if total < 10 and accepted_stroke_of_luck:
 		var stroke := RogueRules.apply_stroke_of_luck(self, {"natural_roll": natural, "modifier": total - natural, "total": total, "dc": 10, "success": false}, true)
@@ -3035,7 +3051,7 @@ func make_death_save(accepted_bardic_inspiration: bool = false, accepted_stroke_
 		if death_save_successes >= 3:
 			stabilize()
 	if death_save_failures >= 3: CorpseRules.mark_dead(self, "death_saves")
-	var out := {"rolled": true, "natural": natural, "rolls": d20_details.get("rolls", [natural]), "kept": d20_details.get("kept", [true]), "total": total, "bane_penalty": bane_penalty, "stroke_of_luck_used": stroke_used, "bardic_inspiration_used": inspiration_used, "bardic_inspiration_bonus": inspiration_bonus, "revived": current_hp > 0, "successes": death_save_successes, "failures": death_save_failures, "roll_token_replaced": bool(d20_details.get("replaced", false)), "replaced_by_roll_token": bool(d20_details.get("replaced", false))}
+	var out := {"rolled": true, "natural": natural, "rolls": d20_details.get("rolls", [natural]), "kept": d20_details.get("kept", [true]), "total": total, "bless_bonus": bless_bonus, "bane_penalty": bane_penalty, "stroke_of_luck_used": stroke_used, "bardic_inspiration_used": inspiration_used, "bardic_inspiration_bonus": inspiration_bonus, "revived": current_hp > 0, "successes": death_save_successes, "failures": death_save_failures, "roll_token_replaced": bool(d20_details.get("replaced", false)), "replaced_by_roll_token": bool(d20_details.get("replaced", false))}
 	if bool(d20_details.get("replaced", false)):
 		out["roll_token_id"] = str(d20_details.get("roll_token_id", ""))
 		out["roll_token_value"] = int(d20_details.get("roll_token_value", natural))

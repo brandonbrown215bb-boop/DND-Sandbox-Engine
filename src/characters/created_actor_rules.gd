@@ -13,7 +13,7 @@ const DAMAGE_TYPES := ["acid", "bludgeoning", "cold", "fire", "force", "lightnin
 const ABILITIES := ["STR", "DEX", "CON", "INT", "WIS", "CHA"]
 ## A created actor never inherits the means to create, upgrade or cast.
 const FORBIDDEN_FEATURE_TYPES := ["create_actor", "mode_choice", "rule_upgrade", "resource", "zero_hp_replacement", "spellcasting"]
-const RECORD_KEYS := ["level", "actors", "template_id", "control_until"]
+const RECORD_KEYS := ["level", "actors", "template_id", "control_until", "ended_actor_ids"]
 
 static var _live := {}
 
@@ -87,11 +87,21 @@ static func mix_error(effect: Dictionary) -> String:
 	if not e.is_empty(): return "create_actor " + e
 	var all := templates(effect)
 	if all.size() < 2: return "create_actor mix requires at least two templates"
-	for t in all:
-		# One reservation size and one command policy per cast keep placement and control shared.
-		if str(t.size) != str(all[0].size): return "create_actor mix templates must share one size"
-		if CreatedCommandRules.shared_policy(t) != CreatedCommandRules.shared_policy(all[0]): return "create_actor mix templates must share one command policy" # Batch 061: free == none.
 	return ""
+
+## Physical placement order matches _create_mixed: each template in authored
+## order, then its requested copies. This keeps the picker and exact actor IDs aligned.
+static func placement_sizes(spell: Dictionary, factory: Dictionary) -> Array[String]:
+	var out: Array[String] = []
+	var effect := _effect(spell)
+	if is_mixed(effect):
+		var mix: Dictionary = factory.get("mix", {})
+		for t in templates(effect):
+			for _i in int(mix.get(str(t.id), 0)): out.append(str(t.size))
+	else:
+		var template := _template(spell, str(factory.get("template_id", "")))
+		for _i in int(factory.get("count", 0)): out.append(str(template.get("size", "medium")))
+	return out
 
 static func is_mixed(effect: Dictionary) -> bool:
 	return effect.get("mix") is Dictionary
@@ -162,14 +172,14 @@ static func _create_mixed(owner: Character, cast: Dictionary, _slot_level: int, 
 	if not reason.is_empty(): return {"created": false, "reason": reason}
 	var record := cast.duplicate(true)
 	record["created_actors"] = {"level": level, "actors": []}
-	var first := templates(effect)[0] as Dictionary
-	var command := CreatedCommandRules.policy(first)
-	if command.has("control_seconds"): record.created_actors["control_until"] = int(GameManager.campaign_elapsed_seconds) + int(command.control_seconds)
 	var made_kinds := {}
 	for t in templates(effect):
 		for _n in int(mix.get(str(t.id), 0)):
 			var i: int = record.created_actors.actors.size()
-			record.created_actors.actors.append({"actor_id": "%s:actor:%d" % [source, i + 1], "current_hp": value(t.max_hp, level), "template_id": str(t.id)})
+			var entry := {"actor_id": "%s:actor:%d" % [source, i + 1], "current_hp": value(t.max_hp, level), "template_id": str(t.id)}
+			var command := CreatedCommandRules.policy(t)
+			if command.has("control_seconds"): entry["control_until"] = int(GameManager.campaign_elapsed_seconds) + int(command.control_seconds)
+			record.created_actors.actors.append(entry)
 		if int(mix.get(str(t.id), 0)) > 0: made_kinds[str(t.id)] = int(mix[str(t.id)])
 	owner.spell_effects[source] = record
 	var made := actors(owner).filter(func(a): return a.get_meta("created_source_id", "") == source)
@@ -200,6 +210,7 @@ static func actors(owner: Character) -> Array:
 static func _build(owner: Character, source: String, template: Dictionary, level: int, entry: Dictionary, spell: Dictionary) -> Character:
 	var a := instance(template, level, entry)
 	a.set_meta("created_owner_id", owner.character_id)
+	a.set_meta("created_owner_ref", weakref(owner))
 	a.set_meta("created_source_id", source)
 	a.set_meta("created_spell_id", str(spell.get("id", "")))
 	a.set_meta("created_template_id", str(template.get("id", "")))
@@ -227,6 +238,47 @@ static func instance(template: Dictionary, level: int, entry: Dictionary) -> Cha
 static func owner_of(actor: Character) -> String:
 	return str(actor.get_meta("created_owner_id", "")) if actor != null else ""
 
+## Publish the exact actor's end before its encounter position or live instance is removed.
+static func end_actor(actor: Character, reason: String, cause: Dictionary = {}) -> Dictionary:
+	if actor == null or not actor.has_meta("created_source_id"): return {}
+	var owner_id := str(actor.get_meta("created_owner_id", ""))
+	var owner: Character = PartyManager.characters.get(owner_id)
+	if owner == null:
+		var owner_ref: WeakRef = actor.get_meta("created_owner_ref", null)
+		owner = owner_ref.get_ref() if owner_ref != null else null
+	if owner == null: return {}
+	var source := str(actor.get_meta("created_source_id", ""))
+	var parent: Dictionary = owner.spell_effects.get(source, {})
+	if not parent.has("created_actors") or not parent.created_actors.get("actors", []).any(func(entry): return str(entry.get("actor_id", "")) == actor.character_id): return {}
+	var ended_ids: Array = parent.get("created_actors", {}).get("ended_actor_ids", [])
+	if actor.character_id in ended_ids: return {}
+	var spell := DataLoader.get_spell(str(actor.get_meta("created_spell_id", parent.get("spell_id", ""))))
+	var effect := _effect(spell)
+	var aftermath: Array = effect.get("end_aftermath", [])
+	if aftermath.is_empty(): return {}
+	var actor_id := actor.character_id
+	var template_id := str(actor.get_meta("created_template_id", ""))
+	var record := {"source_id": actor_id, "source_kind": "created_actor", "definition_id": str(spell.get("id", "")), "spell_id": str(spell.get("id", "")), "caster_id": owner_id, "recipient_id": owner_id, "template_id": template_id, "parent_source_id": source, "end_aftermath": aftermath.duplicate(true), "producer": {"kind": "created_actor", "spell_id": str(spell.get("id", "")), "template_id": template_id, "actor_id": actor_id, "parent_source_id": source}}
+	var location: Dictionary = LocatedSourceEndRules.capture(actor, {"source_id": actor_id, "caster_id": owner_id}, reason, cause).final_location
+	var event := LocatedSourceEndRules.capture(owner, record, reason, cause, location)
+	if parent.has("created_actors"):
+		ended_ids.append(actor.character_id)
+		parent.created_actors["ended_actor_ids"] = ended_ids
+	SpellEffects.finish_source_end(owner, event)
+	return event
+
+## Source expiry/dismissal ends every created actor independently, each at its last location.
+static func end_source(owner: Character, source_record: Dictionary, reason: String, cause: Dictionary = {}) -> Array[Dictionary]:
+	var ended: Array[Dictionary] = []
+	if owner == null or not source_record.has("created_actors"): return ended
+	for actor in actors(owner):
+		if str(actor.get_meta("created_source_id", "")) == str(source_record.get("source_id", "")):
+			var event := end_actor(actor, reason, cause)
+			if not event.is_empty(): ended.append(event)
+			for room in GameManager.saved_local_room_states() + [LocatedSourceEndRules.current_room()]: room.get("created_actor_positions", {}).erase(actor.character_id)
+			_live.erase(actor.character_id)
+	return ended
+
 ## Owner-linked attack: bonus and DC are read live from the owner's casting.
 static func attack_profile(owner: Character, actor: Character) -> Dictionary:
 	var spell := DataLoader.get_spell(str(actor.get_meta("created_spell_id", "")))
@@ -253,19 +305,34 @@ static func saved_record_error(dto: Dictionary, record: Dictionary) -> String:
 	var source := str(record.get("source_id", ""))
 	if record.get("caster_id", "") != dto.get("character_id", "") or not source.begins_with("spell:%s:" % str(dto.get("character_id", ""))) or record.get("concentration") != spell.get("concentration", false) or record.get("conditions", []) != []: return "invalid saved created actor source"
 	if not _int(data.get("level"), 0, 9) or not data.get("actors") is Array: return "invalid saved created actors"
+	var ended_ids: Variant = data.get("ended_actor_ids", [])
+	if not ended_ids is Array: return "invalid ended created actor identities"
+	var ended_seen := {}
+	for ended_id in ended_ids:
+		if not ended_id is String or ended_seen.has(ended_id) or not data.actors.any(func(entry): return entry is Dictionary and str(entry.get("actor_id", "")) == str(ended_id)): return "invalid ended created actor identities"
+		ended_seen[ended_id] = true
 	var level := int(data.level)
 	var mixed := is_mixed(_effect(spell))
 	if mixed and data.has("template_id"): return "invalid saved created actors"
 	if data.actors.size() not in creation_counts(_effect(spell), template, level): return "saved created actor count differs from its template"
-	var control_error := CreatedCommandRules.saved_error(template, data)
-	if not control_error.is_empty(): return control_error
+	if mixed:
+		if data.has("control_until") and (not _int(data.control_until, 0, 2147483647) or not templates(_effect(spell)).any(func(kind): return CreatedCommandRules.policy(kind).has("control_seconds"))): return "invalid saved created actor control deadline"
+		for entry in data.actors:
+			var kind := _template(spell, str(entry.get("template_id", ""))) if entry is Dictionary else {}
+			if kind.is_empty() or not CreatedCommandRules.saved_actor_error(kind, entry, data).is_empty(): return "invalid saved created actor control"
+	else:
+		var control_error := CreatedCommandRules.saved_error(template, data)
+		if not control_error.is_empty(): return control_error
 	var maximum := value(template.max_hp, level)
 	for i in data.actors.size():
 		var e: Variant = data.actors[i]
 		# Batch 058: entries of a mixed cast name their declared template; others never do (legacy shape).
-		if not e is Dictionary or e.size() != (3 if mixed else 2) or (mixed and not e.get("template_id") is String): return "invalid saved created actor"
+		if not e is Dictionary or (mixed and not e.get("template_id") is String): return "invalid saved created actor"
 		var kind := _template(spell, str(e.template_id)) if mixed else template
 		if kind.is_empty() or (mixed and str(e.template_id).is_empty()): return "invalid saved created actor"
+		var expected_keys := ["actor_id", "current_hp", "template_id"] if mixed else ["actor_id", "current_hp"]
+		if mixed and CreatedCommandRules.policy(kind).has("control_seconds"): expected_keys.append("control_until")
+		if e.size() != expected_keys.size() or e.keys().any(func(key): return str(key) not in expected_keys): return "invalid saved created actor"
 		if str(e.get("actor_id", "")) != "%s:actor:%d" % [source, i + 1] or not _int(e.get("current_hp"), 0, value(kind.max_hp, level)): return "invalid saved created actor"
 	return ""
 
@@ -292,6 +359,13 @@ static func attach(state: Node, owner: Character, origin: Vector2i, picks: Array
 		var policy := PlacementRules.policy(effect)
 		var size := PhysicalFactsRules.get_size(a)
 		var hex := Vector2i(9999, 9999)
+		# A locally created actor keeps its confirmed room destination when the
+		# room opens an encounter. The normal combat placement rules recheck it.
+		var local_room := LocalRoomCombat.room()
+		var room_pick: Variant = local_room.get("created_actor_positions", {}).get(a.character_id, null)
+		if room_pick is Array and room_pick.size() == 2:
+			var saved_hex := LocalRoomRules.coord(room_pick)
+			if PlacementRules.legal_error(state, origin, saved_hex, size, -1).is_empty(): hex = saved_hex
 		while not pending.is_empty() and hex == Vector2i(9999, 9999):
 			var pick: Vector2i = pending.pop_front()
 			if PlacementRules.legal_error(state, origin, pick, size, int(policy.range_hexes)).is_empty(): hex = pick

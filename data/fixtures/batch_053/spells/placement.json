@@ -137,5 +137,78 @@
         }
       }
     ]
+  },
+  {
+    "id": "fixture:b053_combat_persistent",
+    "name": "053 persistent combat mote",
+    "description": "Neutral non-concentration creation fixture for encounter-to-room position recovery.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 0,
+    "target": "self",
+    "concentration": false,
+    "duration_seconds": 86400,
+    "classes": ["wizard"],
+    "effects": [{
+      "type": "create_actor",
+      "template": {
+        "id": "b053_combat_mote",
+        "name": "Persistent Mote",
+        "creature_type": "fey",
+        "size": "medium",
+        "speed": 6,
+        "ability_scores": {"STR": 10, "DEX": 14, "CON": 12, "INT": 8, "WIS": 10, "CHA": 10},
+        "ac": {"base": 12, "per_level": 0},
+        "max_hp": {"base": 8, "per_level": 0},
+        "count": {"base": 2, "per_level": 0},
+        "attack": {"name": "Mote Tap", "damage": "1d4", "damage_type": "force", "range": 1}
+      },
+      "placement": {"range_hexes": 1, "no_space": "refuse"}
+    }]
+  },
+  {
+    "id": "fixture:b053_mixed_size_factory",
+    "name": "053 mixed-size factory",
+    "description": "Neutral authored factory fixture with three actors across two sizes and separate command/initiative policies.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 0,
+    "target": "self",
+    "concentration": false,
+    "duration_seconds": 3600,
+    "classes": ["wizard"],
+    "effects": [{
+      "type": "create_actor",
+      "mix": {"count": {"base": 3, "per_level": 0}},
+      "template": {
+        "id": "b053_medium_kind",
+        "name": "Medium Kind",
+        "creature_type": "fey",
+        "size": "medium",
+        "speed": 6,
+        "ability_scores": {"STR": 10, "DEX": 14, "CON": 12, "INT": 8, "WIS": 10, "CHA": 10},
+        "ac": {"base": 12, "per_level": 0},
+        "max_hp": {"base": 8, "per_level": 0},
+        "count": {"base": 1, "per_level": 0},
+        "attack": {"name": "Kind Tap", "damage": "1d4", "damage_type": "force", "range": 1},
+        "command": {"initiative": "owner_turn", "cost": "bonus_action", "default": "dodge", "control_seconds": 120}
+      },
+      "options": [{
+        "id": "b053_large_kind",
+        "name": "Large Kind",
+        "creature_type": "fey",
+        "size": "large",
+        "speed": 4,
+        "ability_scores": {"STR": 14, "DEX": 10, "CON": 14, "INT": 8, "WIS": 10, "CHA": 10},
+        "ac": {"base": 13, "per_level": 0},
+        "max_hp": {"base": 15, "per_level": 0},
+        "count": {"base": 1, "per_level": 0},
+        "attack": {"name": "Large Kind Tap", "damage": "1d6", "damage_type": "force", "range": 1},
+        "command": {"initiative": "own", "cost": "none", "default": "none", "control_seconds": 60}
+      }],
+      "placement": {"range_hexes": 3, "no_space": "refuse"}
+    }]
   }
 ]

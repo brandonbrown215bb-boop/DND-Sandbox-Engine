@@ -1401,11 +1401,21 @@ static func settle_failed_save_numeric_bonus(caster: Character, target: Characte
 		var final_success := bool(test.get("success", false))
 		if resolution_kind == "outcome_override":
 			final_success = str(selected.get("outcome", "success")) == "success"
-		var payment := finish_selected_payment(target, selected, final_success, str(payment_reservation.get("reservation_id", "")))
-		if not bool(payment.get("success", false)):
-			return {"success": false, "refused": true, "message": str(payment.get("message", "The source cannot pay for this bonus."))}
-		payment_receipt = payment
-		should_pay = str(payment.get("state", "")) == "committed"
+		var captured_cast: SpellResolutionContext = record.get("cast")
+		var defer_until_exit := captured_cast != null and captured_cast.spell.has("save_exit_placement") and payment_policy in ["pay_on_converted_success", "pay_on_final_success", "pay_on_final_failure"]
+		if defer_until_exit:
+			test["save_pending_payment_reservation_id"] = str(payment_reservation.get("reservation_id", ""))
+			test["save_pending_payment_policy"] = payment_policy
+			test["save_pending_payment_source_id"] = str(selected.get("source_instance_id", ""))
+			test["save_pending_payment_cost"] = int(selected.get("cost", 0))
+			payment_receipt = payment_reservation.get("reservation", {}).duplicate(true)
+			should_pay = false
+		else:
+			var payment := finish_selected_payment(target, selected, final_success, str(payment_reservation.get("reservation_id", "")))
+			if not bool(payment.get("success", false)):
+				return {"success": false, "refused": true, "message": str(payment.get("message", "The source cannot pay for this bonus."))}
+			payment_receipt = payment
+			should_pay = str(payment.get("state", "")) == "committed"
 	if resolution_kind in ["numeric_bonus", "die_bonus"]:
 		test["save_payment_policy"] = payment_policy
 		test["save_cost_paid"] = should_pay
@@ -1492,7 +1502,7 @@ static func clear_pending_requests() -> void:
 
 static func begin_selected_payment(owner: Character, selected: Dictionary) -> Dictionary:
 	var policy := str(selected.get("payment_policy", "pay_on_choice"))
-	if policy not in ["pay_on_final_success", "pay_on_final_failure"]:
+	if policy not in ["pay_on_final_success", "pay_on_final_failure", "pay_on_converted_success"]:
 		return {"success": true, "reservation_id": "", "policy": policy}
 	var reservation := ResourcePoolRules.reserve_payment(owner, str(selected.get("source_instance_id", "")), int(selected.get("cost", 0)))
 	if not bool(reservation.get("success", false)):
@@ -1505,7 +1515,7 @@ static func finish_selected_payment(owner: Character, selected: Dictionary, fina
 	if selected.get("resolution") == "party_bonus": return PartyInterventionRules.pay(selected)
 	var policy := str(selected.get("payment_policy", "pay_on_choice"))
 	var should_pay := policy == "pay_on_choice" or (policy == "pay_on_converted_success" and final_success) or (policy == "pay_on_final_success" and final_success) or (policy == "pay_on_final_failure" and not final_success)
-	if policy in ["pay_on_final_success", "pay_on_final_failure"]:
+	if policy in ["pay_on_final_success", "pay_on_final_failure", "pay_on_converted_success"]:
 		var settled := ResourcePoolRules.settle_payment_reservation(reservation_id, should_pay)
 		if not bool(settled.get("success", false)):
 			return settled

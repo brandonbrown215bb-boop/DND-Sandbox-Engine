@@ -1,0 +1,20 @@
+[
+  {
+    "id": "fixture:paired_cords", "name": "Paired cords", "execution": "shared",
+    "level": 1, "casting_time": "action", "range": 6, "target": "single", "base_targets": 2,
+    "save": "STR", "concentration": true, "duration_seconds": 60, "classes": ["wizard"],
+    "effects": [{"type": "bind_tether", "condition": "restrained", "range_hexes": 3, "escape": ["STR", "DEX"], "capacity": 2, "on_failed_save": true, "rescue": ["STR"], "hp": 5}]
+  },
+  {
+    "id": "fixture:renamed_cords", "name": "Renamed cords", "execution": "shared",
+    "level": 1, "casting_time": "action", "range": 6, "target": "single", "base_targets": 2,
+    "save": "STR", "concentration": true, "duration_seconds": 60, "classes": ["wizard"],
+    "effects": [{"type": "bind_tether", "condition": "restrained", "range_hexes": 3, "escape": ["STR", "DEX"], "capacity": 2, "on_failed_save": true, "rescue": ["STR"], "hp": 5}]
+  },
+  {
+    "id": "fixture:object_cords", "name": "Anchor cords", "execution": "shared",
+    "level": 1, "casting_time": "action", "range": 6, "target": "single", "base_targets": 3,
+    "save": "STR", "duration_seconds": 60, "classes": ["wizard"],
+    "effects": [{"type": "bind_tether", "condition": "restrained", "range_hexes": 2, "escape": ["STR", "DEX"], "capacity": 3, "on_failed_save": true, "rescue": ["STR"], "hp": 5, "anchor": "object"}]
+  }
+]

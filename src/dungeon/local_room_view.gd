@@ -4,6 +4,7 @@ extends RefCounted
 
 signal leave_requested
 signal encounter_requested
+signal save_exit_choice_completed(choice: String)
 var state: Dictionary
 var characters: Array
 var grid: HexGrid
@@ -27,6 +28,14 @@ var created_targets: OptionButton
 var mode_row: HFlowContainer # Batch 062
 var mode_offers: OptionButton
 var mode_popup_serial := 0
+var tether_popup_serial := 0
+var containment_serial := 0
+var containment_row: HFlowContainer
+var containment_item_rows: Array = []
+var item_lifecycle_row: HFlowContainer
+var item_lifecycle_offers: OptionButton
+var item_lifecycle_serial := 0
+var aftermath_row: HFlowContainer
 var expand_pack_button: Button
 var ration_quarter_button: Button
 var ration_half_button: Button
@@ -42,6 +51,12 @@ var pause_button: Button
 var encounter_button: Button
 var pending_teleport_spell := ""
 var pending_water_area_mode := ""
+var pending_anchor_move_choice: Dictionary = {}
+var pending_anchor_move_id := ""
+var pending_room_creation: Dictionary = {}
+var pending_save_exit: Dictionary = {}
+var save_exit_serial := 0
+var save_exit_cancel_button: Button
 
 func start(room: Dictionary, party: Array, room_grid: HexGrid, room_hud: DungeonHUD, save_callback: Callable) -> void:
 	state = room
@@ -72,19 +87,31 @@ func start(room: Dictionary, party: Array, room_grid: HexGrid, room_hud: Dungeon
 	actors.custom_minimum_size.x = 100
 	for character in characters: actors.add_item(character.character_name)
 	party_row.add_child(actors)
-	actors.item_selected.connect(func(_index): refresh())
+	actors.item_selected.connect(func(_index):
+		pending_room_creation.clear()
+		if not pending_save_exit.is_empty():
+			save_exit_serial += 1
+			_finish_save_exit_choice("")
+		refresh())
 	movement_modes = OptionButton.new()
 	movement_modes.custom_minimum_size.x = 100
 	party_row.add_child(movement_modes)
 	movement_modes.item_selected.connect(func(_index): refresh())
-	_add_button(party_row, "Room map", func(): leave_requested.emit())
-	encounter_button = _add_button(party_row, "Face the guardian", func(): encounter_requested.emit())
+	_add_button(party_row, "Room map", func():
+		if not ContainmentRules.relation(state, "character", actor().character_id).is_empty(): hud.add_log("An internal occupant cannot use the room exit.")
+		else: leave_requested.emit())
+	encounter_button = _add_button(party_row, "Face the guardian", func():
+		if ContainmentRules.active(state): hud.add_log("Contained bodies cannot enter an encounter yet.")
+		else: encounter_requested.emit())
 	objects = OptionButton.new()
 	objects.fit_to_longest_item = false
 	objects.clip_text = true
 	objects.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	party_row.add_child(objects)
 	objects.item_selected.connect(func(_index): refresh())
+	containment_row = HFlowContainer.new()
+	containment_row.name = "RoomContainment"
+	panel.add_child(containment_row)
 	action_row = HBoxContainer.new()
 	panel.add_child(action_row)
 	familiar_summon_row = HFlowContainer.new()
@@ -98,9 +125,16 @@ func start(room: Dictionary, party: Array, room_grid: HexGrid, room_hud: Dungeon
 	mode_row = HFlowContainer.new()
 	mode_row.name = "RoomModeRow"
 	panel.add_child(mode_row)
+	item_lifecycle_row = HFlowContainer.new()
+	item_lifecycle_row.name = "RoomItemLifecycle"
+	panel.add_child(item_lifecycle_row)
+	aftermath_row = HFlowContainer.new()
+	aftermath_row.name = "RoomSourceEndChildren"
+	panel.add_child(aftermath_row)
 	var item_row := HBoxContainer.new()
 	panel.add_child(item_row)
 	var item_action_row := HBoxContainer.new()
+	containment_item_rows = [item_row, item_action_row]
 	panel.add_child(item_action_row)
 	items = OptionButton.new()
 	items.fit_to_longest_item = false
@@ -159,16 +193,46 @@ func start(room: Dictionary, party: Array, room_grid: HexGrid, room_hud: Dungeon
 	_add_button(item_action_row, "Join work", func(): _result(WorkRules.join(actor(), characters[recipients.selected], WorkRules.active_id(characters[recipients.selected]))))
 	_add_button(item_action_row, "Stop work", func(): _result(WorkRules.stop(actor(), _selected(items))))
 	# S-169: free the selected character from a tether by a check or by cutting it.
-	_add_button(item_action_row, "Rescue", func(): _result(TetherRules.rescue(actor(), characters[recipients.selected], characters, "check")))
-	_add_button(item_action_row, "Cut tether", func(): _result(TetherRules.rescue(actor(), characters[recipients.selected], characters, "strike")))
+	_add_button(item_action_row, "Rescue", func(): _tether_action("check"))
+	_add_button(item_action_row, "Cut tether", func(): _tether_action("strike"))
 	# S-168: escape an exact tether outside combat.
-	_add_button(item_action_row, "Escape tether", func(): _result(TetherRules.escape(actor(), characters)))
+	_add_button(item_action_row, "Escape tether", func(): _tether_action("escape"))
 	detach_button = _add_button(item_action_row, "Detach", func(): _result(AttachmentRules.detach_last(actor().inventory, _selected(items))))
 	refresh()
 	hud.add_log("%s — select a character, then click a space to move or an object to interact. Each hex is five feet." % state.get("name", "Room"))
 
 func actor() -> Character:
 	return characters[actors.selected]
+
+func _tether_action(mode: String) -> void:
+	tether_popup_serial += 1
+	var serial := tether_popup_serial
+	var rescuer := actor()
+	var victim: Character = rescuer if mode == "escape" else characters[recipients.selected]
+	var bindings := TetherRules.binding(victim, characters)
+	if mode != "escape": bindings = bindings.filter(func(b): return TetherRules.rescue_error(rescuer, victim, characters, mode, str(b.relation)).is_empty())
+	if bindings.is_empty():
+		_result({"success": false, "message": "No eligible tether is selected."})
+		return
+	if bindings.size() == 1:
+		_tether_selected(rescuer, victim, mode, str(bindings[0].relation))
+		return
+	var menu := PopupMenu.new()
+	menu.title = "Choose tether to escape" if mode == "escape" else "Choose tether to rescue"
+	for binding in bindings:
+		menu.add_item("%s (%s) · %s" % [binding.captor.character_name, DataLoader.get_spell(str(binding.tether.spell_id)).get("name", "Tether"), binding.relation])
+	panel.add_child(menu)
+	menu.id_pressed.connect(func(index):
+		if serial == tether_popup_serial and index >= 0 and index < bindings.size():
+			tether_popup_serial += 1
+			_tether_selected(rescuer, victim, mode, str(bindings[index].relation))
+		menu.queue_free())
+	menu.popup_hide.connect(func(): menu.queue_free())
+	menu.popup_centered(Vector2i(480, 180))
+
+func _tether_selected(rescuer: Character, victim: Character, mode: String, relation: String) -> void:
+	if actor() != rescuer or (mode != "escape" and characters[recipients.selected] != victim): return
+	_result(TetherRules.escape(victim, characters, 0, relation) if mode == "escape" else TetherRules.rescue(rescuer, victim, characters, mode, relation))
 
 func _selected(selector: OptionButton) -> String:
 	return str(selector.get_item_metadata(selector.selected)) if selector.selected >= 0 else ""
@@ -235,6 +299,41 @@ func _refresh_item_actions() -> void:
 	if retrieve_button != null: retrieve_button.disabled = ContainerRules.contents(actor().inventory, str(record.get("instance_id", ""))).is_empty()
 
 func click(position: Vector2i) -> void:
+	if not pending_anchor_move_id.is_empty():
+		if pending_anchor_move_choice.has("vessel"):
+			var choice := pending_anchor_move_choice
+			pending_anchor_move_id = ""
+			pending_anchor_move_choice = {}
+			if not is_same(choice.room, state) or not is_same(choice.actor, actor()) or choice.serial != containment_serial or choice.position != ContainmentRules.location(state, "character", choice.vessel.character_id, characters) or choice.rows != state.get("containment_occupants", []):
+				_result(LocalRoomRules.failure("That vessel movement choice changed."))
+				return
+			_result(VesselProjectionRules.move(state, actor(), choice.vessel, position, grid, characters))
+			return
+		var anchor := LocalRoomRules.get_object(state, pending_anchor_move_id)
+		pending_anchor_move_id = ""
+		var choice := pending_anchor_move_choice
+		pending_anchor_move_choice = {}
+		if not choice.is_empty() and (not is_same(choice.body, anchor) or not is_same(choice.room, state) or not is_same(choice.actor, actor()) or choice.serial != containment_serial or choice.position != anchor.get("position") or choice.policy != ContainmentRules.policy(anchor) or choice.rows != state.get("containment_occupants", [])):
+			_result(LocalRoomRules.failure("That container movement choice changed. Choose again."))
+			return
+		_result(TetherRules.move_object_anchor(anchor, state, position, characters))
+		refresh()
+		return
+	if ContainmentRules.active(state):
+		_result(LocalRoomRules.move(state, actor(), position, grid, "walk", characters))
+		return
+	if not pending_save_exit.is_empty():
+		var options: Array = pending_save_exit.get("options", [])
+		var ids: Array = pending_save_exit.get("ids", [])
+		var index := options.find(position)
+		if index < 0 or index + 1 >= ids.size():
+			hud.add_log("That exit is no longer offered. Choose a highlighted room hex or cancel.")
+			return
+		_finish_save_exit_choice(str(ids[index + 1]))
+		return
+	if not pending_room_creation.is_empty():
+		LocalRoomCreated.choose_destination(self, position)
+		return
 	if not pending_water_area_mode.is_empty():
 		var mode := pending_water_area_mode
 		pending_water_area_mode = ""
@@ -252,12 +351,47 @@ func click(position: Vector2i) -> void:
 	var mode := str(movement_modes.get_item_metadata(movement_modes.selected)) if movement_modes != null and movement_modes.item_count > 0 else "walk"
 	_result(LocalRoomRules.move(state, actor(), position, grid, mode, characters))
 
+
+func choose_save_exit(options: Array, ids: Array) -> String:
+	if options.is_empty() or ids.size() != options.size() + 1: return ""
+	save_exit_serial += 1
+	var mine := save_exit_serial
+	pending_save_exit = {"options": options.duplicate(), "ids": ids.duplicate(), "actor_id": actor().character_id}
+	var highlights: Dictionary = {}
+	for option in options: highlights[option] = HexHighlight.HIGHLIGHT_COLORS[HexHighlight.HighlightType.SPELL]
+	grid.set_highlights(highlights)
+	var paused_controls: Array = []
+	for control in panel.find_children("*", "BaseButton", true, false):
+		paused_controls.append({"control": control, "disabled": control.disabled})
+		control.disabled = true
+	save_exit_cancel_button = _add_button(action_row, "Cancel exit", func(): _finish_save_exit_choice(""))
+	hud.add_log("Choose a highlighted legal room hex for the required exit, or cancel.")
+	var answer: String = await save_exit_choice_completed
+	for paused in paused_controls:
+		if is_instance_valid(paused.control): paused.control.disabled = paused.disabled
+	if mine != save_exit_serial: return ""
+	save_exit_serial += 1
+	return answer
+
+
+func _finish_save_exit_choice(answer: String) -> void:
+	if pending_save_exit.is_empty(): return
+	pending_save_exit.clear()
+	grid.clear_highlights()
+	if save_exit_cancel_button != null:
+		save_exit_cancel_button.queue_free()
+		save_exit_cancel_button = null
+	save_exit_choice_completed.emit(answer)
+
 func _object_id(index: int) -> String:
 	return str(objects.get_item_metadata(index))
 
 func refresh() -> void:
+	ContainmentUI.refresh(self)
+	_refresh_source_end_children()
 	LocalRoomCreated.refresh(self)
 	LocalRoomModes.refresh(self) # Batch 062: owned modes outside combat.
+	ItemLifecycleUI.refresh_room(self)
 	if movement_modes != null:
 		var selected_mode := "walk"
 		if movement_modes.item_count > 0 and movement_modes.selected >= 0: selected_mode = str(movement_modes.get_item_metadata(movement_modes.selected))
@@ -287,6 +421,7 @@ func refresh() -> void:
 			tile.custom_properties["wall_material"] = LocalRoomRules.wall_material(state, tile.coord)
 		grid.add_tile(tile)
 	for character in characters:
+		if not ContainmentRules.relation(state, "character", character.character_id).is_empty(): continue
 		grid.add_entity({"hex_position": LocalRoomRules.coord(state["party_positions"][character.character_id]), "character": character, "is_player": true, "color": Color(0.6, 0.8, 1.0)})
 	for character in characters:
 		if PaladinRules.find_steed_state(character).is_empty(): continue
@@ -297,9 +432,19 @@ func refresh() -> void:
 		var familiar_position := LocalRoomFamiliars.ensure_position(state, character, characters)
 		if familiar_position != FamiliarRules.ABSENT:
 			grid.add_entity({"hex_position": familiar_position, "character": FamiliarRules.character(character), "is_player": true, "is_familiar": true, "color": Color(0.55, 0.9, 0.65)})
+	for owner in characters:
+		for id in owner.item_projections:
+			var projected := ItemProjectionRules.actor(owner, str(id))
+			var position: Variant = state.get("created_actor_positions", {}).get(ItemProjectionRules.actor_id(str(id)), null)
+			if projected != null and projected.is_alive and position is Array:
+				grid.add_entity({"hex_position": LocalRoomRules.coord(position), "character": projected, "name": projected.character_name, "is_player": true, "is_created_actor": true, "color": Color(0.7, 0.6, 0.4)})
+		for created in CreatedActorRules.actors(owner):
+			var created_position: Variant = state.get("created_actor_positions", {}).get(created.character_id, null)
+			if created_position is Array and created_position.size() == 2:
+				grid.add_entity({"hex_position": LocalRoomRules.coord(created_position), "character": created, "name": created.character_name, "is_player": true, "is_created_actor": true, "color": Color(0.4, 0.8, 0.55)})
 	for record in CreatedCreatureRules.room_records(state):
 		grid.add_entity({"hex_position": LocalRoomRules.coord(record["position"]), "character": CreatedCreatureRules.character(record), "name": "%s %s" % [record["form_id"], record["serial"]], "is_player": CreatedCreatureRules.controlled(record), "color": Color(0.4, 0.8, 0.55) if CreatedCreatureRules.controlled(record) else Color.RED})
-	grid.add_highlight(LocalRoomRules.coord(state["party_positions"][actor().character_id]), HexHighlight.HIGHLIGHT_COLORS[HexHighlight.HighlightType.SELECTED])
+	if ContainmentRules.relation(state, "character", actor().character_id).is_empty(): grid.add_highlight(LocalRoomRules.coord(state["party_positions"][actor().character_id]), HexHighlight.HIGHLIGHT_COLORS[HexHighlight.HighlightType.SELECTED])
 	for exit in state["exits"]:
 		grid.add_highlight(LocalRoomRules.coord(exit), HexHighlight.HIGHLIGHT_COLORS[HexHighlight.HighlightType.MOVEMENT])
 	if not bool(state.get("encounter_cleared", false)):
@@ -310,7 +455,7 @@ func refresh() -> void:
 	var selected := _selected(objects)
 	objects.clear()
 	for object in state["objects"]:
-		if bool(object.get("removed", false)): continue
+		if bool(object.get("removed", false)) or not ContainmentRules.relation(state, "object", str(object.id)).is_empty(): continue
 		objects.add_item("%s%s" % [object["name"], " [locked]" if object.get("locked", false) else ""])
 		objects.set_item_metadata(objects.item_count - 1, object["id"])
 		if selected == str(object["id"]): objects.select(objects.item_count - 1)
@@ -320,7 +465,15 @@ func refresh() -> void:
 	for child in action_row.get_children():
 		action_row.remove_child(child)
 		child.queue_free()
+	# Shared spells revalidate containment crossings; encounter transfer still needs S-172.
+	var occupied := ContainmentRules.active(state)
+	for row in [familiar_summon_row, familiar_presence_row, body_row, created_row, mode_row, item_lifecycle_row, aftermath_row] + containment_item_rows: row.visible = not occupied
+	if occupied and ContainmentRules.relation(state, "character", actor().character_id).is_empty() and not VesselProjectionRules.actors([actor()]).is_empty(): item_lifecycle_row.show()
 	_refresh_shared_spells()
+	if occupied:
+		encounter_button.disabled = true
+		grid.queue_redraw()
+		return
 	for movement_spell in ["fly", "levitate", "spider_climb", "freedom_of_movement", "water_walk"]:
 		if movement_spell in actor().known_spells and SpellSupport.is_available(DataLoader.get_spell(movement_spell)):
 			var selected_movement_spell: String = movement_spell
@@ -424,6 +577,11 @@ func refresh() -> void:
 	var object := LocalRoomRules.get_object(state, _selected(objects))
 	if not object.is_empty():
 		_add_button(action_row, "Inspect", func(): _interact("inspect"))
+		if not object.get("tethers", {}).is_empty() and not bool(object.get("fixed", false)):
+			_add_button(action_row, "Move tether anchor", func():
+				pending_anchor_move_id = str(object.get("id", ""))
+				pending_anchor_move_choice = ContainmentUI.movement_choice(self, object)
+				hud.add_log("Choose a room hex for %s." % str(object.get("name", "the anchor"))))
 		if str(object.get("kind", "")) == "barrier" and int(object.get("hp", 0)) > 0:
 			_add_button(action_row, "Strike barrier", func(): _interact("strike"))
 		if CombatObjectRules.can_take_spell_damage(object):
@@ -517,7 +675,14 @@ func _interact(action: String, instance_id: String = "") -> void:
 	_result(LocalRoomRules.interact(state, _selected(objects), action, actor(), instance_id))
 
 func _refresh_shared_spells() -> void:
+	var selected_serial := containment_serial
+	var selected_caster := actor()
+	var selected_room := state
+	var selected_relations: Array = state.get("containment_occupants", []).duplicate()
+	var selected_containers: Array = selected_relations.map(func(r): return ContainmentRules.entity(state, characters, r.container_kind, r.container_id))
+	var target_bodies := {}
 	var spells := OptionButton.new()
+	spells.name = "RoomSharedSpells"
 	for spell_id in actor().known_spells:
 		var spell := DataLoader.get_spell(str(spell_id))
 		if not LocalRoomSharedSpells.party_spell(spell) and not LocalRoomSharedSpells.object_spell(spell): continue
@@ -532,79 +697,105 @@ func _refresh_shared_spells() -> void:
 	row.add_child(label)
 	row.add_child(spells)
 	var targets := OptionButton.new()
+	targets.name = "RoomSharedSpellTargets"
 	row.add_child(targets)
 	var refresh_targets := func():
 		targets.clear()
+		target_bodies.clear()
 		var spell := DataLoader.get_spell(str(spells.get_item_metadata(spells.selected)))
 		if LocalRoomSharedSpells.party_spell(spell):
 			for character: Character in characters:
 				if character.is_dead() or (spell.get("target", "single") == "self" and character != actor()): continue
-				targets.add_item(character.character_name)
+				if not ContainmentRules.target_error(actor(), character, spell, state, characters).is_empty(): continue
+				targets.add_item(character.character_name + " · " + character.character_id)
 				targets.set_item_metadata(targets.item_count - 1, "party:" + character.character_id)
-		else:
+				target_bodies["party:" + character.character_id] = character
+		if LocalRoomSharedSpells.object_spell(spell):
 			for object in state["objects"]:
-				if not CombatObjectRules.can_take_spell_damage(object): continue
-				targets.add_item(str(object["name"]))
+				if not CombatObjectRules.can_take_spell_damage(object, true) or not ContainmentRules.target_error(actor(), object, spell, state, characters).is_empty(): continue
+				targets.add_item(str(object["name"]) + " · " + str(object.id))
 				targets.set_item_metadata(targets.item_count - 1, "object:" + str(object["id"]))
+				target_bodies["object:" + str(object["id"])] = object
 	spells.item_selected.connect(func(_index): refresh_targets.call())
 	refresh_targets.call()
 	_add_button(row, "Cast", func():
+		if not pending_save_exit.is_empty(): return
 		if targets.selected < 0: return
+		if selected_serial != containment_serial or actor() != selected_caster or not is_same(state, selected_room): return
+		var current_relations: Array = state.get("containment_occupants", [])
+		var relations_current := current_relations.size() == selected_relations.size()
+		for i in mini(current_relations.size(), selected_relations.size()):
+			var r: Dictionary = selected_relations[i]
+			if not is_same(current_relations[i], r) or not is_same(ContainmentRules.entity(state, characters, r.container_kind, r.container_id), selected_containers[i]): relations_current = false
+		var selected_id := str(targets.get_item_metadata(targets.selected))
+		var selected_kind := "character" if selected_id.begins_with("party:") else "object"
+		if not relations_current or not is_same(target_bodies.get(selected_id), ContainmentRules.entity(state, characters, selected_kind, selected_id.substr(selected_id.find(":") + 1))):
+			_result(LocalRoomRules.failure("That exact spell target or containment source changed. Choose again."))
+			return
 		var spell_id := str(spells.get_item_metadata(spells.selected))
+		var selected_spell := DataLoader.get_spell(spell_id)
+		if not CreatedActorRules._effect(selected_spell).is_empty():
+			LocalRoomCreated.begin_creation(self, spell_id)
+			return
 		var target_id := str(targets.get_item_metadata(targets.selected))
 		if target_id.begins_with("object:"):
 			_result(LocalRoomSharedSpells.cast_object(state, actor(), spell_id, target_id.trim_prefix("object:"), characters, grid))
 		else:
 			for character: Character in characters:
 				if character.character_id == target_id.trim_prefix("party:"):
-					_result(LocalRoomSharedSpells.cast(state, actor(), spell_id, character, characters, grid))
+					if selected_spell.has("save_exit_placement"):
+						_result(await LocalRoomSharedSpells.cast_with_save_exit(state, actor(), spell_id, character, characters, grid, Callable(self, "choose_save_exit")))
+					else:
+						_result(LocalRoomSharedSpells.cast(state, actor(), spell_id, character, characters, grid))
 					break)
 	action_row.add_child(row)
 
 
 func _result(result: Dictionary) -> void:
+	var acting_body: Character = result.get("acting_body", actor())
 	for outcome in result.get("heat_outcomes", []):
-		hud.add_log("%s takes %d Fire damage from the hot surface (%s)." % [actor().character_name, int(outcome.get("damage", 0)), str(outcome.get("damage_formula", ""))])
+		hud.add_log("%s takes %d Fire damage from the hot surface (%s)." % [acting_body.character_name, int(outcome.get("damage", 0)), str(outcome.get("damage_formula", ""))])
 	for outcome in result.get("spike_growth_outcomes", []):
-		hud.add_log("%s takes %d Piercing damage from Spike Growth (%s)." % [actor().character_name, int(outcome.get("damage", 0)), str(outcome.get("damage_formula", "2d4"))])
+		hud.add_log("%s takes %d Piercing damage from Spike Growth (%s)." % [acting_body.character_name, int(outcome.get("damage", 0)), str(outcome.get("damage_formula", "2d4"))])
 	for outcome in result.get("end_turn_outcomes", []):
 		if str(outcome.get("spell_id", "")) == "surface_heat":
-			hud.add_log("%s takes %d Fire damage from the hot surface (%s)." % [actor().character_name, int(outcome.get("damage", 0)), str(outcome.get("damage_formula", ""))])
+			hud.add_log("%s takes %d Fire damage from the hot surface (%s)." % [acting_body.character_name, int(outcome.get("damage", 0)), str(outcome.get("damage_formula", ""))])
 		elif str(outcome.get("spell_id", "")) == "wall_of_fire":
-			hud.add_log("%s takes %d Fire damage from Wall of Fire (%s)." % [actor().character_name, int(outcome.get("damage", 0)), str(outcome.get("damage_formula", "5d8"))])
+			hud.add_log("%s takes %d Fire damage from Wall of Fire (%s)." % [acting_body.character_name, int(outcome.get("damage", 0)), str(outcome.get("damage_formula", "5d8"))])
 		elif str(outcome.get("spell_id", "")) == "cloud_of_daggers":
-			hud.add_log("%s takes %d Slashing damage from Cloud of Daggers (%s)." % [actor().character_name, int(outcome.get("damage", 0)), str(outcome.get("damage_formula", "4d4"))])
+			hud.add_log("%s takes %d Slashing damage from Cloud of Daggers (%s)." % [acting_body.character_name, int(outcome.get("damage", 0)), str(outcome.get("damage_formula", "4d4"))])
 		elif str(outcome.get("spell_id", "")) == "grease":
 			var grease_turn_text := "succeeds" if bool(outcome.get("saved", false)) else "fails and falls Prone"
-			hud.add_log("%s %s the Grease end-of-turn Dexterity save (%d vs DC %d)." % [actor().character_name, grease_turn_text, int(outcome.get("save_total", 0)), int(outcome.get("save_dc", 0))])
+			hud.add_log("%s %s the Grease end-of-turn Dexterity save (%d vs DC %d)." % [acting_body.character_name, grease_turn_text, int(outcome.get("save_total", 0)), int(outcome.get("save_dc", 0))])
 		elif str(outcome.get("spell_id", "")) == "sleet_storm":
 			var storm_turn_text := "succeeds" if bool(outcome.get("saved", false)) else "fails and falls Prone"
-			hud.add_log("%s %s the Sleet Storm end-of-turn Dexterity save (%d vs DC %d)." % [actor().character_name, storm_turn_text, int(outcome.get("save_total", 0)), int(outcome.get("save_dc", 0))])
+			hud.add_log("%s %s the Sleet Storm end-of-turn Dexterity save (%d vs DC %d)." % [acting_body.character_name, storm_turn_text, int(outcome.get("save_total", 0)), int(outcome.get("save_dc", 0))])
 		elif str(outcome.get("spell_id", "")) == "moonbeam":
 			var moonbeam_turn_text := "succeeds" if bool(outcome.get("saved", false)) else "fails"
-			hud.add_log("%s %s the Moonbeam Constitution save (%d vs DC %d) and takes %d Radiant damage (%s)." % [actor().character_name, moonbeam_turn_text, int(outcome.get("save_total", 0)), int(outcome.get("save_dc", 0)), int(outcome.get("damage", 0)), str(outcome.get("damage_formula", "2d10"))])
+			hud.add_log("%s %s the Moonbeam Constitution save (%d vs DC %d) and takes %d Radiant damage (%s)." % [acting_body.character_name, moonbeam_turn_text, int(outcome.get("save_total", 0)), int(outcome.get("save_dc", 0)), int(outcome.get("damage", 0)), str(outcome.get("damage_formula", "2d10"))])
 		else:
 			var turn_save_text := "succeeds" if bool(outcome.get("saved", false)) else "fails, takes %d Bludgeoning damage, and is Restrained" % int(outcome.get("damage", 0))
-			hud.add_log("%s %s the Black Tentacles end-of-turn Strength save (%d vs DC %d)." % [actor().character_name, turn_save_text, int(outcome.get("save_total", 0)), int(outcome.get("save_dc", 0))])
-	for outcome in LocalRoomRules.resolve_area_entries(result.get("entered_areas", []), actor()):
+			hud.add_log("%s %s the Black Tentacles end-of-turn Strength save (%d vs DC %d)." % [acting_body.character_name, turn_save_text, int(outcome.get("save_total", 0)), int(outcome.get("save_dc", 0))])
+	for outcome in LocalRoomRules.resolve_area_entries(result.get("entered_areas", []), acting_body):
 		if str(outcome.get("spell_id", "")) == "wall_of_fire":
-			hud.add_log("%s takes %d Fire damage from Wall of Fire (%s)." % [actor().character_name, int(outcome.get("damage", 0)), str(outcome.get("damage_formula", "5d8"))])
+			hud.add_log("%s takes %d Fire damage from Wall of Fire (%s)." % [acting_body.character_name, int(outcome.get("damage", 0)), str(outcome.get("damage_formula", "5d8"))])
 		elif str(outcome.get("spell_id", "")) == "cloud_of_daggers":
-			hud.add_log("%s takes %d Slashing damage from Cloud of Daggers (%s)." % [actor().character_name, int(outcome.get("damage", 0)), str(outcome.get("damage_formula", "4d4"))])
+			hud.add_log("%s takes %d Slashing damage from Cloud of Daggers (%s)." % [acting_body.character_name, int(outcome.get("damage", 0)), str(outcome.get("damage_formula", "4d4"))])
 		elif str(outcome.get("spell_id", "")) == "grease":
 			var grease_text := "succeeds" if bool(outcome.get("saved", false)) else "fails and falls Prone"
-			hud.add_log("%s %s the Grease Dexterity save (%d vs DC %d)." % [actor().character_name, grease_text, int(outcome.get("save_total", 0)), int(outcome.get("save_dc", 0))])
+			hud.add_log("%s %s the Grease Dexterity save (%d vs DC %d)." % [acting_body.character_name, grease_text, int(outcome.get("save_total", 0)), int(outcome.get("save_dc", 0))])
 		elif str(outcome.get("spell_id", "")) == "sleet_storm":
 			var storm_text := "succeeds" if bool(outcome.get("saved", false)) else "fails and falls Prone"
-			hud.add_log("%s %s the Sleet Storm Dexterity save (%d vs DC %d)." % [actor().character_name, storm_text, int(outcome.get("save_total", 0)), int(outcome.get("save_dc", 0))])
+			hud.add_log("%s %s the Sleet Storm Dexterity save (%d vs DC %d)." % [acting_body.character_name, storm_text, int(outcome.get("save_total", 0)), int(outcome.get("save_dc", 0))])
 		elif str(outcome.get("spell_id", "")) == "moonbeam":
 			var moonbeam_text := "succeeds" if bool(outcome.get("saved", false)) else "fails"
 			var reverted_text := "; reverts from Wild Shape and cannot shape-shift until leaving" if bool(outcome.get("shape_reverted", false)) else ""
-			hud.add_log("%s %s the Moonbeam Constitution save (%d vs DC %d), takes %d Radiant damage (%s)%s." % [actor().character_name, moonbeam_text, int(outcome.get("save_total", 0)), int(outcome.get("save_dc", 0)), int(outcome.get("damage", 0)), str(outcome.get("damage_formula", "2d10")), reverted_text])
+			hud.add_log("%s %s the Moonbeam Constitution save (%d vs DC %d), takes %d Radiant damage (%s)%s." % [acting_body.character_name, moonbeam_text, int(outcome.get("save_total", 0)), int(outcome.get("save_dc", 0)), int(outcome.get("damage", 0)), str(outcome.get("damage_formula", "2d10")), reverted_text])
 		elif str(outcome.get("spell_id", "")) == "black_tentacles":
 			var tentacle_text := "succeeds" if bool(outcome.get("saved", false)) else "fails, takes %d Bludgeoning damage, and is Restrained" % int(outcome.get("damage", 0))
-			hud.add_log("%s %s the Black Tentacles Strength save (%d vs DC %d)." % [actor().character_name, tentacle_text, int(outcome.get("save_total", 0)), int(outcome.get("save_dc", 0))])
-	GameManager.advance_campaign_time(int(result.get("seconds", 0)))
+			hud.add_log("%s %s the Black Tentacles Strength save (%d vs DC %d)." % [acting_body.character_name, tentacle_text, int(outcome.get("save_total", 0)), int(outcome.get("save_dc", 0))])
+	for notification in GameManager.advance_campaign_time(int(result.get("seconds", 0))):
+		if notification.has("message"): hud.add_log(str(notification.message))
 	for fire_message in LocalRoomRules.advance_burning_objects(state, int(GameManager.campaign_elapsed_seconds)):
 		hud.add_log(fire_message)
 	for fall_message in LocalRoomRules.reconcile_flight_altitudes(state, characters):
@@ -613,7 +804,28 @@ func _result(result: Dictionary) -> void:
 	flush.call()
 	refresh()
 
+func _refresh_source_end_children() -> void:
+	if aftermath_row == null: return
+	for widget in aftermath_row.get_children():
+		aftermath_row.remove_child(widget)
+		widget.queue_free()
+	var requests := LocatedSourceEndRules.observe(state, characters)
+	for request in requests:
+		var invocation := str(request.invocation)
+		var child_id := str(request.child_id)
+		_add_button(aftermath_row, "Continue: " + child_id, func():
+			var result := LocatedSourceEndRules.answer(state, invocation, child_id, true, characters)
+			_result({"success": result.get("success", false), "message": "Source-end child: " + child_id}))
+		_add_button(aftermath_row, "Cancel: " + child_id, func():
+			var result := LocatedSourceEndRules.answer(state, invocation, child_id, false, characters)
+			_result({"success": result.get("success", false), "message": "Source-end child canceled: " + child_id}))
+	aftermath_row.visible = not requests.is_empty()
+
 func stop() -> void:
+	containment_serial += 1
+	save_exit_serial += 1
+	_finish_save_exit_choice("")
+	item_lifecycle_serial += 1
 	hud.btn_rest.disabled = false
 	if is_instance_valid(panel):
 		panel.get_child(0).reparent(panel.get_parent())

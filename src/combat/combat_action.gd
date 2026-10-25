@@ -686,6 +686,7 @@ static func resolve_damage(target, amount: int, damage_type: String, reaction_de
 				if int(target["current_hp"]) <= 0:
 					target["is_alive"] = false
 	var aftermath_receipt := ZeroHpAftermathRules.settle(target, created_hp_before, is_alive_before, damage_type, reaction_decisions, source_character)
+	if target is Character: ContainmentRules.settle_character_loss(target)
 	if target is Character and target.feature_uses.get("created_form_id", "") == "animated_object": AnimatedObjectRules.damage(target, created_hp_before, maxi(0, resolved - created_temp_hp_before))
 	if resolved > 0:
 		_end_damage_broken_spell_effects(target, source_character != null and not source_character.character_id.is_empty(), {"actor_id": source_character.character_id if source_character != null else "", "source_instance_id": str(reaction_decisions.get("damage_source_instance_id", source_character.character_id if source_character != null else "")), "resolved": resolved})
@@ -770,15 +771,16 @@ static func damage_source_penalty(amount: int, source: Character) -> int:
 
 
 static func _record_settled_damage_history(target, source: Character, receipt: Dictionary, decisions: Dictionary) -> void:
-	if not target is Character or source == null or source.character_id.is_empty():
-		return
+	if not target is Character: return
+	var source_actor_id := source.character_id if source != null else str(decisions.get("damage_source_actor_id", ""))
+	if source_actor_id.is_empty(): return
 	var at_seconds := int(GameManager.campaign_elapsed_seconds)
-	var source_instance_id := str(decisions.get("damage_source_instance_id", source.character_id))
+	var source_instance_id := str(decisions.get("damage_source_instance_id", source_actor_id))
 	if source_instance_id.is_empty():
-		source_instance_id = source.character_id
-	target.record_recent_damage(source.character_id, source_instance_id, int(receipt.get("raw", 0)), int(receipt.get("prevented", 0)), int(receipt.get("absorbed", 0)), int(receipt.get("resolved", 0)), int(receipt.get("hp_loss", 0)), at_seconds)
+		source_instance_id = source_actor_id
+	target.record_recent_damage(source_actor_id, source_instance_id, int(receipt.get("raw", 0)), int(receipt.get("prevented", 0)), int(receipt.get("absorbed", 0)), int(receipt.get("resolved", 0)), int(receipt.get("hp_loss", 0)), at_seconds)
 	var history: Variant = decisions.get("combat_history", null)
-	if history is CombatActionHistory:
+	if history is CombatActionHistory and source != null:
 		history.record_damage(target, source, source_instance_id, receipt)
 
 
@@ -1128,6 +1130,8 @@ static func true_strike_bonus_damage(character_level: int) -> String:
 
 
 static func resolve_weapon_attack(attacker: Character, target_entity, weapon_data: Dictionary, advantage: bool = false, disadvantage: bool = false, reaction_decisions: Dictionary = {}, additional_damage: Dictionary = {}) -> Dictionary:
+	var containment_error := ContainmentRules.target_error(attacker, target_entity, weapon_data)
+	if not containment_error.is_empty(): return {"success": false, "hit": false, "damage": 0, "message": containment_error}
 	weapon_data = weapon_data.duplicate(true)
 	if has_condition(attacker, "resilient_sphere") or has_condition(target_entity, "resilient_sphere"):
 		return {"hit": false, "damage": 0, "blocked_by_resilient_sphere": true, "message": "The attack cannot pass through Resilient Sphere."}
@@ -1985,6 +1989,8 @@ static func resolve_hurl_through_hell(attacker: Character, target_entity) -> Dic
 static func validate_spell_target(caster: Character, target_entity, spell_data: Dictionary, distance_feet: int = -1) -> Dictionary:
 	if caster == null or spell_data.is_empty():
 		return {"success": false, "message": "Spell needs a valid caster and spell record."}
+	var containment_error := ContainmentRules.target_error(caster, target_entity, spell_data)
+	if not containment_error.is_empty(): return {"success": false, "message": containment_error}
 	# Batch 065: a reaction spell already paid by ReactionTriggers.confirm is its boundary.
 	# Review 065: the flag is runtime-only; a catalog record that declares it never counts as paid.
 	var trigger_paid := bool(spell_data.get("_reaction_trigger_paid", false)) and not DataLoader.get_spell(str(spell_data.get("id", ""))).has("_reaction_trigger_paid")

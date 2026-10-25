@@ -725,22 +725,37 @@ func equipped_instance_id(slot: Slot) -> String:
 
 ## Remove an equipped copy from this inventory while preserving its saved state.
 func drop_equipped_instance(slot: Slot) -> Dictionary:
+	var removed := drop_equipped_instances([slot])
+	return removed[0] if not removed.is_empty() else {}
+
+
+## Validate and detach the whole batch before removal hooks can destroy linked gear.
+func drop_equipped_instances(slots: Array) -> Array[Dictionary]:
 	copies.sync(self)
-	var instance_id := str(copies.equipped.get(slot, ""))
-	if instance_id.is_empty():
-		return {}
-	if copies.records.get(instance_id, {}).is_empty():
-		return {}
-	OwnedFeatureSources.stamp_copy(owner_character_ref.get_ref() if owner_character_ref != null else null, copies.records[instance_id]) # Batch 050 bug 1.
-	var record: Dictionary = copies.records.get(instance_id, {}).duplicate(true)
-	WorkRules.on_removed(record)
-	copies.equipped.erase(slot)
-	copies.records.erase(instance_id)
-	equipped.erase(slot)
-	_publish_equipment_change(str(record.get("definition_id", "")), "dropped", instance_id)
-	CurseRules.on_removed(owner_character_ref.get_ref() if owner_character_ref != null else null, record)
-	BondRules.on_copy_removed(owner_character_ref.get_ref() if owner_character_ref != null else null)
-	return record
+	var removed: Array[Dictionary] = []
+	if slots.is_empty(): return removed
+	var selected := {}
+	var owner = owner_character_ref.get_ref() if owner_character_ref != null else null
+	for slot in slots:
+		var id := str(copies.equipped.get(slot, ""))
+		var record: Dictionary = copies.records.get(id, {})
+		if record.is_empty() or selected.has(id): return []
+		selected[id] = true
+	for slot in slots:
+		var id := str(copies.equipped[slot])
+		OwnedFeatureSources.stamp_copy(owner, copies.records[id])
+		var record: Dictionary = copies.records[id].duplicate(true)
+		WorkRules.on_removed(record)
+		removed.append(record)
+	for slot in slots:
+		copies.records.erase(str(copies.equipped[slot]))
+		copies.equipped.erase(slot)
+		equipped.erase(slot)
+	for record in removed:
+		_publish_equipment_change(str(record.definition_id), "dropped", str(record.instance_id))
+		CurseRules.on_removed(owner, record)
+	BondRules.on_copy_removed(owner)
+	return removed
 
 
 func receive_instance(record: Dictionary) -> bool:

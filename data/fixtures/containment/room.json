@@ -1,0 +1,177 @@
+{
+  "id": "fixture:chamber_room",
+  "name": "Containment chamber",
+  "cells": [
+    [
+      -2,
+      0
+    ],
+    [
+      -2,
+      1
+    ],
+    [
+      -2,
+      2
+    ],
+    [
+      -1,
+      -1
+    ],
+    [
+      -1,
+      0
+    ],
+    [
+      -1,
+      1
+    ],
+    [
+      -1,
+      2
+    ],
+    [
+      0,
+      -2
+    ],
+    [
+      0,
+      -1
+    ],
+    [
+      0,
+      0
+    ],
+    [
+      0,
+      1
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      1,
+      -2
+    ],
+    [
+      1,
+      -1
+    ],
+    [
+      1,
+      0
+    ],
+    [
+      1,
+      1
+    ],
+    [
+      2,
+      -2
+    ],
+    [
+      2,
+      -1
+    ],
+    [
+      2,
+      0
+    ]
+  ],
+  "walls": [],
+  "exits": [
+    [
+      0,
+      0
+    ]
+  ],
+  "party_spawns": [
+    [
+      0,
+      0
+    ],
+    [
+      -1,
+      1
+    ],
+    [
+      -2,
+      1
+    ],
+    [
+      0,
+      -1
+    ]
+  ],
+  "monster_spawns": [],
+  "encounter_monsters": [],
+  "objects": [
+    {
+      "id": "chamber_a",
+      "name": "Same chamber",
+      "kind": "container",
+      "size": "large",
+      "position": [
+        -1,
+        0
+      ],
+      "plane": "material",
+      "hp": 20,
+      "max_hp": 20,
+      "contents": [],
+      "open": true,
+      "fixed": true,
+      "containment": {
+        "capacity": 2,
+        "occupant_kinds": [
+          "character",
+          "object"
+        ],
+        "sizes": [
+          "tiny",
+          "small",
+          "medium",
+          "large"
+        ],
+        "creature_types": [
+          "humanoid",
+          "beast"
+        ]
+      }
+    },
+    {
+      "id": "chamber_b",
+      "name": "Same chamber",
+      "kind": "container",
+      "size": "large",
+      "position": [
+        1,
+        0
+      ],
+      "plane": "material",
+      "hp": 20,
+      "max_hp": 20,
+      "contents": [],
+      "open": true,
+      "fixed": true,
+      "containment": {
+        "capacity": 1,
+        "occupant_kinds": [
+          "character",
+          "object"
+        ],
+        "sizes": [
+          "tiny",
+          "small",
+          "medium",
+          "large"
+        ],
+        "creature_types": [
+          "humanoid",
+          "beast"
+        ]
+      }
+    }
+  ]
+}

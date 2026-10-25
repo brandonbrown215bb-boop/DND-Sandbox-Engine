@@ -1,0 +1,72 @@
+[
+  {
+    "id": "fixture:moving_chamber",
+    "name": "Moving chamber",
+    "size": "medium",
+    "speed": 6,
+    "creature_type": "beast",
+    "ability_bonuses": {},
+    "containment": {
+      "capacity": 3,
+      "occupant_kinds": [
+        "character",
+        "object"
+      ],
+      "sizes": [
+        "tiny",
+        "small",
+        "medium"
+      ],
+      "escape": {
+        "ability": "DEX",
+        "dc": 1,
+        "seconds": 6
+      },
+      "rescue": {
+        "ability": "STR",
+        "dc": 1,
+        "seconds": 6
+      },
+      "release": {
+        "range_hexes": 1,
+        "fallback_range_hexes": 2,
+        "no_space": "defer"
+      }
+    }
+  },
+  {
+    "id": "fixture:renamed_moving_chamber",
+    "name": "Renamed moving chamber",
+    "size": "medium",
+    "speed": 6,
+    "creature_type": "beast",
+    "ability_bonuses": {},
+    "containment": {
+      "capacity": 3,
+      "occupant_kinds": [
+        "character",
+        "object"
+      ],
+      "sizes": [
+        "tiny",
+        "small",
+        "medium"
+      ],
+      "escape": {
+        "ability": "DEX",
+        "dc": 1,
+        "seconds": 6
+      },
+      "rescue": {
+        "ability": "STR",
+        "dc": 1,
+        "seconds": 6
+      },
+      "release": {
+        "range_hexes": 1,
+        "fallback_range_hexes": 2,
+        "no_space": "defer"
+      }
+    }
+  }
+]

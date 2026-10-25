@@ -1,0 +1,415 @@
+[
+  {
+    "id": "fixture:item_form_return",
+    "name": "Item form return",
+    "type": "tool",
+    "magical": true,
+    "actor_projection": {
+      "template": {
+        "id": "b042_hound",
+        "name": "Bronze Hound",
+        "creature_type": "construct",
+        "size": "medium",
+        "speed": 8,
+        "ability_scores": {
+          "STR": 15,
+          "DEX": 14,
+          "CON": 14,
+          "INT": 3,
+          "WIS": 12,
+          "CHA": 6
+        },
+        "ac": {
+          "base": 14
+        },
+        "max_hp": {
+          "base": 22
+        },
+        "count": {
+          "base": 1
+        },
+        "attack": {
+          "name": "Bite",
+          "damage": "1d8",
+          "damage_type": "piercing",
+          "range": 1
+        },
+        "features": [
+          {
+            "id": "b042_keen",
+            "name": "Keen Nose",
+            "effects": [
+              {
+                "type": "immunity",
+                "condition": "blinded"
+              }
+            ]
+          },
+          {
+            "id": "b042_no_cast",
+            "name": "Casting",
+            "type": "spellcasting"
+          }
+        ]
+      },
+      "reversion": {
+        "hp_reset": "full",
+        "overflow": "original",
+        "original_hp": 12,
+        "on_end": "return",
+        "on_zero_hp": "return",
+        "destination": "backpack_or_ground",
+        "no_space": "defer",
+        "range_hexes": 1,
+        "size": "tiny"
+      }
+    },
+    "object_hp": 12,
+    "size": "tiny",
+    "material": "bronze"
+  },
+  {
+    "id": "fixture:item_form_renamed",
+    "name": "Item form renamed",
+    "type": "tool",
+    "magical": true,
+    "actor_projection": {
+      "template": {
+        "id": "b042_hound",
+        "name": "Bronze Hound",
+        "creature_type": "construct",
+        "size": "medium",
+        "speed": 8,
+        "ability_scores": {
+          "STR": 15,
+          "DEX": 14,
+          "CON": 14,
+          "INT": 3,
+          "WIS": 12,
+          "CHA": 6
+        },
+        "ac": {
+          "base": 14
+        },
+        "max_hp": {
+          "base": 22
+        },
+        "count": {
+          "base": 1
+        },
+        "attack": {
+          "name": "Bite",
+          "damage": "1d8",
+          "damage_type": "piercing",
+          "range": 1
+        },
+        "features": [
+          {
+            "id": "b042_keen",
+            "name": "Keen Nose",
+            "effects": [
+              {
+                "type": "immunity",
+                "condition": "blinded"
+              }
+            ]
+          },
+          {
+            "id": "b042_no_cast",
+            "name": "Casting",
+            "type": "spellcasting"
+          }
+        ]
+      },
+      "reversion": {
+        "hp_reset": "full",
+        "overflow": "original",
+        "original_hp": 12,
+        "on_end": "return",
+        "on_zero_hp": "return",
+        "destination": "backpack_or_ground",
+        "no_space": "defer",
+        "range_hexes": 1,
+        "size": "tiny"
+      }
+    },
+    "object_hp": 12,
+    "size": "tiny",
+    "material": "bronze"
+  },
+  {
+    "id": "fixture:item_form_preserve",
+    "name": "Item form preserve",
+    "type": "tool",
+    "magical": true,
+    "actor_projection": {
+      "template": {
+        "id": "b042_hound",
+        "name": "Bronze Hound",
+        "creature_type": "construct",
+        "size": "medium",
+        "speed": 8,
+        "ability_scores": {
+          "STR": 15,
+          "DEX": 14,
+          "CON": 14,
+          "INT": 3,
+          "WIS": 12,
+          "CHA": 6
+        },
+        "ac": {
+          "base": 14
+        },
+        "max_hp": {
+          "base": 22
+        },
+        "count": {
+          "base": 1
+        },
+        "attack": {
+          "name": "Bite",
+          "damage": "1d8",
+          "damage_type": "piercing",
+          "range": 1
+        },
+        "features": [
+          {
+            "id": "b042_keen",
+            "name": "Keen Nose",
+            "effects": [
+              {
+                "type": "immunity",
+                "condition": "blinded"
+              }
+            ]
+          },
+          {
+            "id": "b042_no_cast",
+            "name": "Casting",
+            "type": "spellcasting"
+          }
+        ]
+      },
+      "reversion": {
+        "hp_reset": "preserve",
+        "overflow": "original",
+        "original_hp": 12,
+        "on_end": "return",
+        "on_zero_hp": "return",
+        "destination": "backpack_or_ground",
+        "no_space": "defer",
+        "range_hexes": 1,
+        "size": "tiny"
+      }
+    },
+    "object_hp": 12,
+    "size": "tiny",
+    "material": "bronze"
+  },
+  {
+    "id": "fixture:item_form_fragile",
+    "name": "Item form fragile",
+    "type": "tool",
+    "magical": true,
+    "actor_projection": {
+      "template": {
+        "id": "b042_hound",
+        "name": "Bronze Hound",
+        "creature_type": "construct",
+        "size": "medium",
+        "speed": 8,
+        "ability_scores": {
+          "STR": 15,
+          "DEX": 14,
+          "CON": 14,
+          "INT": 3,
+          "WIS": 12,
+          "CHA": 6
+        },
+        "ac": {
+          "base": 14
+        },
+        "max_hp": {
+          "base": 22
+        },
+        "count": {
+          "base": 1
+        },
+        "attack": {
+          "name": "Bite",
+          "damage": "1d8",
+          "damage_type": "piercing",
+          "range": 1
+        },
+        "features": [
+          {
+            "id": "b042_keen",
+            "name": "Keen Nose",
+            "effects": [
+              {
+                "type": "immunity",
+                "condition": "blinded"
+              }
+            ]
+          },
+          {
+            "id": "b042_no_cast",
+            "name": "Casting",
+            "type": "spellcasting"
+          }
+        ]
+      },
+      "reversion": {
+        "hp_reset": "full",
+        "overflow": "original",
+        "original_hp": 12,
+        "on_end": "return",
+        "on_zero_hp": "destroy",
+        "destination": "backpack_or_ground",
+        "no_space": "defer",
+        "range_hexes": 1,
+        "size": "tiny"
+      }
+    },
+    "object_hp": 12,
+    "size": "tiny",
+    "material": "bronze"
+  },
+  {
+    "id": "fixture:item_form_spent",
+    "name": "Item form spent",
+    "type": "tool",
+    "magical": true,
+    "actor_projection": {
+      "template": {
+        "id": "b042_hound",
+        "name": "Bronze Hound",
+        "creature_type": "construct",
+        "size": "medium",
+        "speed": 8,
+        "ability_scores": {
+          "STR": 15,
+          "DEX": 14,
+          "CON": 14,
+          "INT": 3,
+          "WIS": 12,
+          "CHA": 6
+        },
+        "ac": {
+          "base": 14
+        },
+        "max_hp": {
+          "base": 22
+        },
+        "count": {
+          "base": 1
+        },
+        "attack": {
+          "name": "Bite",
+          "damage": "1d8",
+          "damage_type": "piercing",
+          "range": 1
+        },
+        "features": [
+          {
+            "id": "b042_keen",
+            "name": "Keen Nose",
+            "effects": [
+              {
+                "type": "immunity",
+                "condition": "blinded"
+              }
+            ]
+          },
+          {
+            "id": "b042_no_cast",
+            "name": "Casting",
+            "type": "spellcasting"
+          }
+        ]
+      },
+      "reversion": {
+        "hp_reset": "full",
+        "overflow": "original",
+        "original_hp": 12,
+        "on_end": "destroy",
+        "on_zero_hp": "return",
+        "destination": "backpack_or_ground",
+        "no_space": "defer",
+        "range_hexes": 1,
+        "size": "tiny"
+      }
+    },
+    "object_hp": 12,
+    "size": "tiny",
+    "material": "bronze"
+  },
+  {
+    "id": "fixture:item_form_discard",
+    "name": "Item form discard",
+    "type": "tool",
+    "magical": true,
+    "actor_projection": {
+      "template": {
+        "id": "b042_hound",
+        "name": "Bronze Hound",
+        "creature_type": "construct",
+        "size": "medium",
+        "speed": 8,
+        "ability_scores": {
+          "STR": 15,
+          "DEX": 14,
+          "CON": 14,
+          "INT": 3,
+          "WIS": 12,
+          "CHA": 6
+        },
+        "ac": {
+          "base": 14
+        },
+        "max_hp": {
+          "base": 22
+        },
+        "count": {
+          "base": 1
+        },
+        "attack": {
+          "name": "Bite",
+          "damage": "1d8",
+          "damage_type": "piercing",
+          "range": 1
+        },
+        "features": [
+          {
+            "id": "b042_keen",
+            "name": "Keen Nose",
+            "effects": [
+              {
+                "type": "immunity",
+                "condition": "blinded"
+              }
+            ]
+          },
+          {
+            "id": "b042_no_cast",
+            "name": "Casting",
+            "type": "spellcasting"
+          }
+        ]
+      },
+      "reversion": {
+        "hp_reset": "full",
+        "overflow": "discard",
+        "on_end": "return",
+        "on_zero_hp": "return",
+        "destination": "backpack_or_ground",
+        "no_space": "defer",
+        "range_hexes": 1,
+        "size": "tiny"
+      }
+    },
+    "object_hp": 12,
+    "size": "tiny",
+    "material": "bronze"
+  }
+]

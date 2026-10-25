@@ -1,0 +1,51 @@
+[
+  {
+    "id": "fixture:located_copy",
+    "name": "Located Copy",
+    "type": "tool",
+    "magical": true,
+    "actor_projection": {
+      "template": {
+        "id": "fixture_copy_form",
+        "name": "Copy Form",
+        "creature_type": "construct",
+        "size": "small",
+        "speed": 6,
+        "ability_scores": {"STR": 10, "DEX": 12, "CON": 10, "INT": 3, "WIS": 10, "CHA": 5},
+        "ac": {"base": 12},
+        "max_hp": {"base": 8},
+        "count": {"base": 1},
+        "attack": {"name": "Tap", "damage": "1d4", "damage_type": "force", "range": 1}
+      },
+      "reversion": {"hp_reset": "full", "overflow": "discard", "on_end": "return", "on_zero_hp": "return", "destination": "backpack_or_ground", "no_space": "defer", "range_hexes": 1, "size": "tiny"},
+      "end_aftermath": [
+        {"id": "dismiss-child", "reasons": ["dismissed"], "delay_seconds": 600, "cancel_policy": "skip", "children": [{"id": "remnant", "type": "room_object", "kind": "loose", "name": "Copy spark", "hp": 2}]},
+        {"id": "death-child", "reasons": ["death"], "delay_seconds": 600, "cancel_policy": "skip", "children": [{"id": "remnant", "type": "room_object", "kind": "loose", "name": "Dead copy spark", "hp": 3}]},
+        {"id": "expiry-child", "reasons": ["expired"], "delay_seconds": 600, "cancel_policy": "skip", "children": [{"id": "remnant", "type": "room_object", "kind": "loose", "name": "Expired copy spark", "hp": 4}]},
+        {"id": "destroy-child", "reasons": ["destroyed"], "delay_seconds": 600, "cancel_policy": "skip", "children": [{"id": "remnant", "type": "room_object", "kind": "loose", "name": "Destroyed copy spark", "hp": 5}]}
+      ]
+    }
+  },
+  {
+    "id": "fixture:located_copy_renamed",
+    "name": "Located Copy Renamed",
+    "type": "tool",
+    "magical": true,
+    "actor_projection": {
+      "template": {
+        "id": "fixture_copy_form_renamed",
+        "name": "Renamed Copy Form",
+        "creature_type": "construct",
+        "size": "small",
+        "speed": 6,
+        "ability_scores": {"STR": 10, "DEX": 12, "CON": 10, "INT": 3, "WIS": 10, "CHA": 5},
+        "ac": {"base": 12},
+        "max_hp": {"base": 8},
+        "count": {"base": 1},
+        "attack": {"name": "Tap", "damage": "1d4", "damage_type": "force", "range": 1}
+      },
+      "reversion": {"hp_reset": "full", "overflow": "discard", "on_end": "destroy", "on_zero_hp": "return", "destination": "backpack_or_ground", "no_space": "defer", "range_hexes": 1, "size": "tiny"},
+      "end_aftermath": [{"id": "renamed", "reasons": ["dismissed", "death", "expired", "destroyed"], "cancel_policy": "skip", "children": [{"id": "remnant", "type": "room_object", "kind": "loose", "name": "Renamed copy spark", "hp": 6}]}]
+    }
+  }
+]

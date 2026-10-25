@@ -35,13 +35,22 @@ reaction triggers. Their review repairs and remaining work are tracked in the
 PRs #25–37 are merged with the review repairs and accepted within that boundary.
 Unfinished scope below does not block acceptance of the delivered subset.
 
-Still needs to be done from that queue: S-121 exit placement before final
-save/outcome settlement; S-122 normal item-projection placement controls and
-failure/payment policy; exploration creation placement; multi-cell bodies and
-mixed-size/per-kind summon policies; S-157 shared-count variants beyond the
-implemented timings; and S-158 owner-turn behavior after an owner leaves the
-tracker, plus linked summons entering an encounter with an already downed/dead
-owner who has no initiative entry. Real catalog conversions, Find Familiar's
+The [first Crown conversion batch](docs/planning/vocabulary-slices.md#conversion-batch-001)
+resolves ten candidates: three shared spell conversions, one already generic
+class feature and six blocked candidates. It enables no additional spells and
+adds no engine-slice completions. S-121's combat save-exit host is now verified;
+continue with the remaining S-121/S-122 travel hosts.
+
+S-121 now settles numeric save exits in combat and local-room exploration;
+S-122 now validates represented overworld travel arrivals against live map
+space and plane, and combat/room creation checks full size-based footprints,
+mixed-size policies and combat-created summon room positions. Still needs to be
+done from that queue: broader general-travel arrival consumers.
+S-157 now supports exact-source groups on
+the owner's count or one group roll, retaining separate member turns and budgets
+without replay on late arrival or rebuild. S-157/S-158 retain linked-actor scheduling after owner
+removal and on encounter entry with a downed/dead owner who has no initiative
+entry. Real catalog conversions, Find Familiar's
 creature-type choice, overworld/sheet mode controls, group mode recipients and
 end-early controls also remain. Outside-combat activation time is displayed but does not advance the
 campaign clock. Reaction commands and reaction delivery through additional
@@ -53,16 +62,31 @@ that workflow completes. Record acceptance and its bounded limits in the slice
 registry; do not add a separate owner sign-off after merging.
 
 Start the ready assignments in that queue without waiting for a new engine
-framework. Continue legal exit/outcome settlement (S-121), the remaining
-placement hosts (S-122), real equipment drops and item-form return (S-164/S-166).
+framework. The [item-control continuation](docs/planning/vocabulary-slices.md#item-projection-controls)
+exposes exact-copy Bond/Release and Project/Dismiss in combat and persistent
+rooms, including authored costs, placement failures and checkpoint recovery.
+Continue the remaining general-travel placement hosts (S-121/S-122). S-166 now
+settles declared exact item-form HP/overflow/destruction and legal bag/nearby
+room-ground return, including blocked/full-backpack recovery; its
+[verified boundary](docs/planning/vocabulary-slices.md#exact-item-form-return)
+keeps containment, passengers and vessel movement separate. The S-164 ground continuation now covers persistent
+rooms and their encounters; encounters without a captured room refuse nonempty
+drops before payment.
 Reuse the delivered combat factory (S-155), command authority (S-156) and
 bounded turn/default policies (S-157/S-158) for their remaining consumers.
 
-Extend existing room objects, areas and source-end records for located aftermath
-(S-086/S-087/S-120), then object-anchored restraints (S-168/S-169). Multi-recipient
-tethers first need one cast source retaining several recipients (S-144); they do
-not need a general object system. Containment/release (S-170–S-172) and vessel
-cargo/movement (S-167) follow placement and item reversion. Cast-local parameter
+Located aftermath now uses existing room objects, areas and source-end records
+for shared spells, self activation modes, exact item copies and created actors:
+delayed children retain their final origin and recover without replay
+([VS-145 boundary](docs/planning/vocabulary-slices.md#located-source-end-continuation)).
+Other hazard scopes remain separate work.
+Character and independent object tether anchors are verified in
+[VS-147](docs/planning/vocabulary-slices.md#character-tether-groups): group
+recipients retain exact escape/rescue/damage selection, object movement and
+destruction update only affected relations, and supported checkpoint recovery
+preserves both anchor kinds (S-144/S-168/S-169). S-170 now supplies [actual containment occupancy/capacity](docs/planning/vocabulary-slices.md#containment-occupancy),
+including room admission/inspection and exact checkpoint relationships. S-171 now supplies [internal harm/targeting and escape/rescue](docs/planning/vocabulary-slices.md#containment-internal-interactions)
+with exact selection and explicit deferred release. S-172 now supplies [moving containers and legal release](docs/planning/vocabulary-slices.md#containment-movement-release), including represented room travel and blocked-release recovery. S-167 now supplies [projected vessel cargo/passengers](docs/planning/vocabulary-slices.md#projected-vessel-contents), persistent-room ground movement, separately declared endings and blocked-release recovery. Waterborne/general travel and source-backed catalog conversion remain separate. Cast-local parameter
 changes (S-126/S-127/S-140/S-141) form an independent branch. The queue owns each
 assignment's narrower dependencies and checks; this is not a whole-phase gate.
 

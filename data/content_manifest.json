@@ -1244,8 +1244,9 @@
     {
       "type": "spell",
       "id": "bless",
-      "winner": "res://data/core/spells/core_spells.json#14",
+      "winner": "res://data/core/spells/conversion_batch_001.json#1",
       "replaces": [
+        "res://data/core/spells/core_spells.json#14",
         "res://data/core/spells/imported_spells.json#19"
       ]
     },
@@ -3020,9 +3021,10 @@
     {
       "type": "spell",
       "id": "mass_healing_word",
-      "winner": "res://data/core/spells/srd_additional_spells.json#95",
+      "winner": "res://data/core/spells/conversion_batch_001.json#3",
       "replaces": [
-        "res://data/core/spells/imported_spells.json#124"
+        "res://data/core/spells/imported_spells.json#124",
+        "res://data/core/spells/srd_additional_spells.json#95"
       ]
     },
     {
@@ -3307,6 +3309,46 @@
       "winner": "res://data/core/monsters/familiar_forms.json#4",
       "replaces": [
         "res://data/core/monsters/imported_monsters.json#366"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "bane",
+      "winner": "res://data/core/spells/conversion_batch_001.json#2",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#13"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "cure_wounds",
+      "winner": "res://data/core/spells/conversion_batch_002.json#1",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#46"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "healing_word",
+      "winner": "res://data/core/spells/conversion_batch_002.json#2",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#93"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "hold_monster",
+      "winner": "res://data/core/spells/conversion_batch_002.json#3",
+      "replaces": [
+        "res://data/core/spells/srd_additional_spells.json#82"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "circle_of_death",
+      "winner": "res://data/core/spells/conversion_batch_002.json#4",
+      "replaces": [
+        "res://data/core/spells/srd_additional_spells.json#24"
       ]
     }
   ]

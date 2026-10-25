@@ -1,0 +1,21 @@
+{
+  "id": "fixture:renamed_exit_placement",
+  "name": "Renamed Exit Test",
+  "execution": "shared",
+  "level": 1,
+  "casting_time": "action",
+  "range": 6,
+  "target": "single",
+  "save": "DEX",
+  "damage": "1d4",
+  "damage_type": "force",
+  "duration_seconds": 6,
+  "save_exit_placement": {
+    "range_hexes": 1,
+    "choose": true,
+    "no_space_outcome": "failure"
+  },
+  "effects": [
+    { "type": "grant_condition", "condition": "frightened", "on_failed_save": true }
+  ]
+}

@@ -2,6 +2,19 @@
 class_name LocalRoomAreas
 extends RefCounted
 
+static func add_aftermath_area(state: Dictionary, id: String, child: Dictionary, event: Dictionary) -> Dictionary:
+	for area in state.get("areas", []):
+		if area.get("id") == id: return {"success": true, "successor_id": id}
+	if state.get("areas", []).size() >= 500: return {"success": false, "reason": "area_capacity"}
+	var result := add(state, str(event.definition_id), str(event.caster_id), LocalRoomRules.coord(event.final_location.position), int(child.radius_hexes), int(child.duration_seconds), int(child.trigger_limit), {"id": id, "hazard_kind": str(child.kind), "trigger_scope": str(child.trigger_scope), "amount": int(child.amount), "damage_type": str(child.damage_type), "plane": str(event.final_location.plane), "parent_source_id": str(event.source_id)})
+	if result.get("success", false): return {"success": true, "successor_id": id}
+	return result
+
+static func resolve_aftermath_entry(area: Dictionary, target) -> Dictionary:
+	if area.get("hazard_kind", "") != "entry_damage" or str(area.get("plane", "")) != PhysicalFactsRules.get_plane(target, {"plane": str(area.get("plane", ""))}): return {}
+	var damage := CombatAction.resolve_damage(target, int(area.amount), str(area.damage_type), {"damage_source_instance_id": str(area.id), "damage_source_actor_id": str(area.caster_id)})
+	return {"spell_id": str(area.spell_id), "hazard_kind": "entry_damage", "source_id": str(area.id), "damage": int(damage.get("hp_loss", 0)), "damage_type": str(area.damage_type)}
+
 static func add(state: Dictionary, spell_id: String, caster_id: String, center: Vector2i, radius_hexes: int, duration_seconds: int, trigger_limit: int = 1, details: Dictionary = {}) -> Dictionary:
 	if spell_id.is_empty() or caster_id.is_empty() or radius_hexes < 0 or radius_hexes > 20 or duration_seconds <= 0 or trigger_limit <= 0:
 		return {"success": false, "message": "Area details are invalid."}
@@ -96,12 +109,13 @@ static func leave(state: Dictionary, character: Character, from: Vector2i, to: V
 			CombatAction.remove_condition_source(character, "%s:shape_lock" % source_id, ["moonbeam_shape_lock"])
 
 
-static func enter(state: Dictionary, character_id: String, from: Vector2i, to: Vector2i, now_seconds: int) -> Array[Dictionary]:
+static func enter(state: Dictionary, character_id: String, from: Vector2i, to: Vector2i, now_seconds: int, plane: String = "") -> Array[Dictionary]:
 	expire(state, now_seconds)
 	var entered: Array[Dictionary] = []
 	if character_id.is_empty() or from == to: return entered
 	for area in state.get("areas", []):
 		if not area is Dictionary: continue
+		if area.has("hazard_kind") and str(area.get("plane", "")) != (plane if not plane.is_empty() else PhysicalFactsRules.get_plane(state)): continue
 		if character_id in area.get("ignored_character_ids", []): continue
 		if contains(area, from, true) or not contains(area, to, true): continue
 		if str(area.get("spell_id", "")) in ["black_tentacles", "grease", "cloud_of_daggers", "sleet_storm", "moonbeam", "wall_of_fire"]:

@@ -1,0 +1,181 @@
+[
+  {
+    "id": "fixture:item_lifecycle",
+    "name": "Bronze token",
+    "type": "tool",
+    "magical": true,
+    "actor_projection": {
+      "template": {
+        "id": "b042_hound",
+        "name": "Bronze Hound",
+        "creature_type": "construct",
+        "size": "medium",
+        "speed": 8,
+        "ability_scores": {
+          "STR": 15,
+          "DEX": 14,
+          "CON": 14,
+          "INT": 3,
+          "WIS": 12,
+          "CHA": 6
+        },
+        "ac": {
+          "base": 14
+        },
+        "max_hp": {
+          "base": 22
+        },
+        "count": {
+          "base": 1
+        },
+        "attack": {
+          "name": "Bite",
+          "damage": "1d8",
+          "damage_type": "piercing",
+          "range": 1
+        },
+        "features": [
+          {
+            "id": "b042_keen",
+            "name": "Keen Nose",
+            "effects": [
+              {
+                "type": "immunity",
+                "condition": "blinded"
+              }
+            ]
+          },
+          {
+            "id": "b042_no_cast",
+            "name": "Casting",
+            "type": "spellcasting"
+          }
+        ]
+      },
+      "reversion": {
+        "hp_reset": "full",
+        "overflow": "original",
+        "original_hp": 12,
+        "on_end": "return",
+        "on_zero_hp": "return",
+        "destination": "backpack_or_ground",
+        "no_space": "defer",
+        "range_hexes": 1,
+        "size": "tiny"
+      },
+      "activation": {
+        "action_cost": "magic",
+        "charges": 1,
+        "bond_id": "b042:totem"
+      },
+      "dismiss_cost": "bonus_action",
+      "placement": {
+        "range_hexes": 2,
+        "choose": true,
+        "no_space": "refuse"
+      }
+    },
+    "object_hp": 12,
+    "size": "tiny",
+    "material": "bronze",
+    "maximum_charges": 5,
+    "requires_attunement": true,
+    "container": {
+      "compartments": [
+        {
+          "id": "pocket",
+          "max_count": 2
+        }
+      ]
+    }
+  },
+  {
+    "id": "fixture:item_lifecycle_renamed",
+    "name": "Bronze token",
+    "type": "tool",
+    "magical": true,
+    "actor_projection": {
+      "template": {
+        "id": "b042_hound",
+        "name": "Bronze Hound",
+        "creature_type": "construct",
+        "size": "medium",
+        "speed": 8,
+        "ability_scores": {
+          "STR": 15,
+          "DEX": 14,
+          "CON": 14,
+          "INT": 3,
+          "WIS": 12,
+          "CHA": 6
+        },
+        "ac": {
+          "base": 14
+        },
+        "max_hp": {
+          "base": 22
+        },
+        "count": {
+          "base": 1
+        },
+        "attack": {
+          "name": "Bite",
+          "damage": "1d8",
+          "damage_type": "piercing",
+          "range": 1
+        },
+        "features": [
+          {
+            "id": "b042_keen",
+            "name": "Keen Nose",
+            "effects": [
+              {
+                "type": "immunity",
+                "condition": "blinded"
+              }
+            ]
+          },
+          {
+            "id": "b042_no_cast",
+            "name": "Casting",
+            "type": "spellcasting"
+          }
+        ]
+      },
+      "reversion": {
+        "hp_reset": "full",
+        "overflow": "original",
+        "original_hp": 12,
+        "on_end": "return",
+        "on_zero_hp": "return",
+        "destination": "backpack_or_ground",
+        "no_space": "defer",
+        "range_hexes": 1,
+        "size": "tiny"
+      },
+      "activation": {
+        "action_cost": "magic",
+        "charges": 1
+      },
+      "dismiss_cost": "bonus_action",
+      "placement": {
+        "range_hexes": 2,
+        "choose": false,
+        "no_space": "spend"
+      }
+    },
+    "object_hp": 12,
+    "size": "tiny",
+    "material": "bronze",
+    "maximum_charges": 5,
+    "requires_attunement": true,
+    "container": {
+      "compartments": [
+        {
+          "id": "pocket",
+          "max_count": 2
+        }
+      ]
+    }
+  }
+]

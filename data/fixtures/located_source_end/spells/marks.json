@@ -1,0 +1,88 @@
+[
+  {
+    "id": "fixture:located_mark",
+    "name": "Located Mark",
+    "description": "Neutral shared spell source-end fixture.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "duration_seconds": 6,
+    "classes": [
+      "wizard"
+    ],
+    "effects": [
+      {
+        "type": "grant_condition",
+        "condition": "blessed"
+      }
+    ],
+    "end_aftermath": [
+      {
+        "id": "lapse",
+        "reasons": [
+          "expired"
+        ],
+        "delay_seconds": 12,
+        "cancel_policy": "skip",
+        "children": [
+          {
+            "id": "mend",
+            "type": "heal",
+            "amount": 4,
+            "choose": true
+          },
+          {
+            "id": "remnant",
+            "type": "room_object",
+            "kind": "loose",
+            "name": "Cooling remnant",
+            "hp": 7
+          },
+          {
+            "id": "embers",
+            "type": "room_area",
+            "kind": "entry_damage",
+            "trigger_scope": "entry",
+            "amount": 3,
+            "damage_type": "fire",
+            "radius_hexes": 0,
+            "duration_seconds": 120,
+            "trigger_limit": 1
+          }
+        ]
+      },
+      {
+        "id": "dismiss",
+        "reasons": [
+          "dismissed"
+        ],
+        "cancel_policy": "stop",
+        "children": [
+          {
+            "id": "relief",
+            "type": "heal",
+            "amount": 2
+          }
+        ]
+      },
+      {
+        "id": "break",
+        "reasons": [
+          "destroyed"
+        ],
+        "cancel_policy": "stop",
+        "children": [
+          {
+            "id": "shards",
+            "type": "room_object",
+            "kind": "loose",
+            "name": "Broken remnant",
+            "hp": 2
+          }
+        ]
+      }
+    ]
+  }
+]

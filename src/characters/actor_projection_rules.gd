@@ -89,7 +89,7 @@ static func retains(actor, what: String) -> bool:
 	return a.is_empty() or what in a.effect.get("retain", [])
 
 ## Review R1: the same refusals apply() makes, checked before any cost is paid.
-static func cast_error(caster, spell: Dictionary) -> String:
+static func cast_error(caster, spell: Dictionary, host: SpellCastContext = null) -> String:
 	var magic_error := MagicPropertyRules.cast_error(caster, spell) # Review 044 R1: refuse before the slot is spent.
 	if not magic_error.is_empty(): return magic_error
 	var tether_error := TetherRules.cast_error(caster, spell) # S-168: refuse before the slot is spent.
@@ -105,19 +105,11 @@ static func cast_error(caster, spell: Dictionary) -> String:
 	if legal.size() > 1 and policy not in legal: return "A legal equipment policy must be selected."
 	if legal.size() == 1 and not policy.is_empty() and policy not in legal: return "A legal equipment policy must be selected."
 	if policy.is_empty() and legal.size() == 1: policy = str(legal[0])
-	if policy == "dropped": return _drop_error(caster)
+	if policy == "dropped": return FormEquipmentGroundRules.plan(caster, host).get("error", "")
 	return ""
 
-static func _drop_error(actor: Character) -> String:
-	var needed := 0
-	for copy in actor.inventory.owned_instances():
-		if str(copy.instance_id) not in actor.inventory.copies.equipped.values(): continue
-		if bool(copy.state.get("cursed_attunement", false)) and not CurseRules.removal_allowed(copy): continue
-		needed += 1
-	return "There is no room to set aside this form's equipment." if actor.inventory.backpack.size() + needed > Inventory.MAX_BACKPACK_SIZE else ""
-
 ## Called by the shared actor_projection effect on the self-cast actor.
-static func apply(actor: Character, cast: Dictionary, effect: Dictionary, slot_level: int, spell: Dictionary, form_id: String, equipment_policy: String = "") -> Dictionary:
+static func apply(actor: Character, cast: Dictionary, effect: Dictionary, slot_level: int, spell: Dictionary, form_id: String, equipment_policy: String = "", host: SpellCastContext = null) -> Dictionary:
 	var source := str(cast.get("source_id", ""))
 	if actor == null or source.is_empty() or actor.spell_effects.has(source) or not effect_error(effect).is_empty(): return {"projected": false, "reason": "invalid projection"}
 	if is_projected(actor) or DruidRules.is_shaped(actor): return {"projected": false, "reason": "already in another form"}
@@ -128,7 +120,8 @@ static func apply(actor: Character, cast: Dictionary, effect: Dictionary, slot_l
 	if equipment_policy.is_empty() and legal.size() == 1: equipment_policy = str(legal[0])
 	if not legal.is_empty() and equipment_policy not in legal: return {"projected": false, "reason": "a legal equipment policy must be selected"}
 	if legal.is_empty() and not equipment_policy.is_empty(): return {"projected": false, "reason": "this projection declares no equipment policy"}
-	if equipment_policy == "dropped" and not _drop_error(actor).is_empty(): return {"projected": false, "reason": _drop_error(actor)}
+	var ground_plan := FormEquipmentGroundRules.plan(actor, host) if equipment_policy == "dropped" else {}
+	if ground_plan.has("error"): return {"projected": false, "reason": ground_plan.error}
 	if spell.is_empty(): spell = DataLoader.get_spell(str(cast.get("spell_id", "")))
 	var level := maxi(0, slot_level - int(spell.get("level", 0)))
 	var granted := CreatedActorRules.value(form.temp_hp, level)
@@ -139,29 +132,31 @@ static func apply(actor: Character, cast: Dictionary, effect: Dictionary, slot_l
 	scores.from_dict(form.ability_scores)
 	if "mental_scores" in effect.retain:
 		for ability in MENTAL: scores.set_score(ability, actor.ability_scores.get_score(ability))
+	var equipment_receipt := {}
+	if not legal.is_empty():
+		record.projection["equipment"] = _route_equipment(actor, equipment_policy, ground_plan)
+		equipment_receipt = record.projection.equipment.duplicate(true)
 	actor.ability_scores = scores
 	actor.speed = int(form.speed)
 	actor.temp_hp = maxi(actor.temp_hp, granted)
 	if "features" not in effect.retain:
 		record.projection.suppressed_features = actor.features.duplicate(true)
 		actor.features.clear()
-	var equipment_receipt := {}
-	if not legal.is_empty():
-		record.projection["equipment"] = _route_equipment(actor, equipment_policy)
-		equipment_receipt = record.projection.equipment.duplicate(true)
 	actor.spell_effects[source] = record
 	return {"equipment": equipment_receipt, "projected": true, "source_id": source, "form_id": form_id, "level": level, "temp_hp": granted, "ac": ac(actor), "suppressed_features": record.projection.suppressed_features.size()}
 
 ## S-164: merged copies keep their slot with effects suppressed; dropped
-## copies leave their slots (cursed copies cannot) and stay unequipped; worn
+## copies move to the actual ground (blocked cursed copies stay worn); worn
 ## copies keep working.
-static func _route_equipment(actor: Character, policy: String) -> Dictionary:
+static func _route_equipment(actor: Character, policy: String, ground_plan: Dictionary = {}) -> Dictionary:
 	var out := {"policy": policy, "merged": [], "dropped": []}
+	if policy == "dropped":
+		out.dropped = FormEquipmentGroundRules.commit(actor, ground_plan)
+		return out
 	actor.inventory.copies.sync(actor.inventory)
 	for slot in actor.inventory.copies.equipped.keys():
 		var id := str(actor.inventory.copies.equipped[slot])
 		if policy == "merged": out.merged.append(id)
-		elif policy == "dropped" and not actor.inventory.unequip(slot).is_empty(): out.dropped.append(id)
 	actor.inventory.copies.sync(actor.inventory)
 	return out
 

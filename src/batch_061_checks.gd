@@ -2,7 +2,7 @@ class_name Batch061Checks
 extends RefCounted
 ## Batch 061 (S-157 summon turn timing): when a created actor acts in initiative
 ## is declared in data (command.initiative: owner_turn, after_owner, own), per
-## kind; mixed casts share one timing; free and none are one command policy.
+## kind; mixed casts keep each kind's authored command and initiative policy.
 
 const INSECTS := "fixture:b061_insects"
 
@@ -34,10 +34,10 @@ static func run(check: Callable) -> void:
 	var bad := [{"initiative": "first"}, {"initiative": "shares_owner_turn"}, {"initiative": ""}, {"initiative": 1}, {"initiative": "AFTER_OWNER"}]
 	var good := [{"initiative": "owner_turn"}, {"initiative": "after_owner"}, {"initiative": "own"}, {}]
 	check.call(bad.all(func(p): return not CreatedCommandRules.policy_error(p).is_empty()) and good.all(func(p): return CreatedCommandRules.policy_error(p).is_empty()), "061 loader accepts owner_turn/after_owner/own (or absent) turn timing and refuses unknown values")
-	# Shared-policy rule for mixed casts.
+	# Mixed kinds retain independent authored policies; free and none remain equivalent costs.
 	var same := [_mix({"cost": "free"}, {"cost": "none"}), _mix({"cost": "none", "order_costs": {"attack": "free"}}, {"cost": "free", "order_costs": {"attack": "none"}}), _mix({}, {"initiative": "owner_turn"}), _mix({"initiative": "after_owner", "cost": "free"}, {"initiative": "after_owner", "cost": "none"})]
 	var differ := [_mix({"initiative": "after_owner"}, {"initiative": "own"}), _mix({}, {"initiative": "after_owner"}), _mix({"cost": "free"}, {"cost": "bonus_action"}), _mix({"cost": "none"}, {"cost": "action"})]
-	check.call(same.all(func(e): return CreatedActorRules.mix_error(e).is_empty()) and differ.all(func(e): return CreatedActorRules.mix_error(e) == "create_actor mix templates must share one command policy"), "061 mixed casts: free and none (and absent vs owner_turn timing) are one shared policy; different timings or real cost differences are still refused")
+	check.call(same.all(func(e): return CreatedActorRules.mix_error(e).is_empty()) and differ.all(func(e): return CreatedActorRules.mix_error(e).is_empty()), "061 mixed casts accept per-kind timing/cost policies while free and none remain equivalent")
 	var fp := CreatedCommandRules.policy({"command": {"cost": "free"}})
 	check.call(str(fp.get("cost", "")) == "free" and CreatedCommandRules.cost(fp, "dodge") == "none", "061 normalization is comparison-only: the stored policy keeps the authored spelling and still pays nothing (%s -> %s)" % [str(fp), CreatedCommandRules.cost(fp, "dodge")])
 	# Declared timing drives the real join_initiative on each kind.

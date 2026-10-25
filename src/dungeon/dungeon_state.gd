@@ -195,14 +195,30 @@ func _on_room_clicked(coord: Vector2i) -> void:
 	if local_view != null:
 		local_view.click(coord)
 		return
-	if coord == party_position: return
-	
+	if coord == party_position:
+		var current: Room = rooms.get(coord)
+		if current != null and dungeon_data.get("tactical_rooms", {}).has(str(current.id)): _enter_local_room(str(current.id))
+		return
+
 	# Must be neighbor room
 	var dist := HexUtils.get_distance(party_position, coord)
 	if dist > 1 or coord not in rooms:
 		return
 
-	GameManager.advance_campaign_time(60)
+	var departing: Room = rooms[party_position]
+	var source: Dictionary = local_rooms.get(str(departing.id), {})
+	if source.get("containment_occupants", []).any(func(r): return r.container_kind == "character" or r.occupant_kind == "character"):
+		var arriving: Room = rooms[coord]
+		var target_id := str(arriving.id)
+		var definition: Dictionary = dungeon_data.get("tactical_rooms", {}).get(target_id, {})
+		if definition.is_empty():
+			hud.add_log("Contained groups need a represented destination room.")
+			return
+		var destination: Dictionary = local_rooms.get(target_id, {})
+		if destination.is_empty(): destination = LocalRoomRules.create(definition, PartyManager.get_active_characters())
+		var transfer := ContainmentRules.transfer_party(source, destination, PartyManager.get_active_characters())
+		if not transfer.success: hud.add_log(transfer.message); return
+		local_rooms[target_id] = destination
 	# Move party position
 	party_position = coord
 	var room: Room = rooms[coord]
@@ -213,6 +229,7 @@ func _on_room_clicked(coord: Vector2i) -> void:
 	# Update highlights
 	_highlight_accessible_rooms()
 
+	GameManager.advance_campaign_time(60)
 	# Resolve Room encounter
 	_resolve_room_encounter(room)
 
@@ -526,6 +543,9 @@ func _enter_local_room(id: String) -> void:
 
 
 func _leave_local_room() -> void:
+	if not ContainmentRules.relation(local_view.state, "character", local_view.actor().character_id).is_empty():
+		hud.add_log("An internal occupant cannot use the room exit.")
+		return
 	var position := LocalRoomRules.coord(local_view.state["party_positions"][local_view.actor().character_id])
 	var at_exit := false
 	for exit_position in local_view.state["exits"]:
@@ -543,6 +563,12 @@ func _leave_local_room() -> void:
 
 
 func _local_encounter() -> void:
+	if VesselProjectionRules.actors(local_view.characters).any(func(a): return local_view.state.get("created_actor_positions", {}).has(a.character_id)):
+		hud.add_log("Return projected vessels before entering an encounter.")
+		return
+	if ContainmentRules.active(local_view.state):
+		hud.add_log("Contained bodies cannot enter an encounter yet.")
+		return
 	var state: Dictionary = local_view.state
 	var hostile_created := CreatedCreatureRules.hostile_in_room(state)
 	if bool(state.get("encounter_cleared", false)) and not hostile_created: return

@@ -73,12 +73,17 @@ function Invoke-GodotCase {
         [string]$Marker,
         [int]$TimeoutSeconds,
         [string[]]$ExtraArguments = @(),
-        [ValidateSet("Scene", "EditorBootstrap")][string]$Mode = "Scene"
+        [ValidateSet("Scene", "EditorBootstrap")][string]$Mode = "Scene",
+        [string]$UserDataDirectory = ""
     )
     $stdoutPath = Join-Path $logDirectory ("{0}.stdout.log" -f $Name)
     $stderrPath = Join-Path $logDirectory ("{0}.stderr.log" -f $Name)
     $godotLogPath = Join-Path $logDirectory ("{0}.godot.log" -f $Name)
-    $userDataDirectory = Join-Path $logDirectory ("{0}.user-data" -f $Name)
+    if ([string]::IsNullOrWhiteSpace($UserDataDirectory)) {
+        $userDataDirectory = Join-Path $logDirectory ("{0}.user-data" -f $Name)
+    } else {
+        $userDataDirectory = $UserDataDirectory
+    }
     New-Item -ItemType Directory -Force -Path $userDataDirectory | Out-Null
     $helperPath = Join-Path $Project "scripts\invoke_godot_case.ps1"
     $extraArgumentsEncoded = [Convert]::ToBase64String(
@@ -194,6 +199,8 @@ if ($runIntegration) {
 	$scenarios += "batch_033_zero_hp_flow"
 	$scenarios += "batch_034_aftermath_flow"
 	$scenarios += "batch_035_profile_max_hp_flow"
+	$scenarios += "conversion_batch_001_flow"
+	$scenarios += "conversion_batch_002_flow"
 	$scenarios += "batch_036_end_and_charge_flow"
 	$scenarios += "batch_037_mode_upgrade_flow"
 	$scenarios += "batch_038_switch_option_flow"
@@ -215,6 +222,8 @@ if ($runIntegration) {
 	$scenarios += "batch_054_factory_choices_flow"
 	$scenarios += "batch_055_created_commands_flow"
 	$scenarios += "batch_056_created_initiative_flow"
+	$scenarios += "created_actor_scheduling_flow"
+	$scenarios += "shared_initiative_flow"
 	$scenarios += "batch_057_mode_costs_flow"
 	$scenarios += "batch_058_summon_lists_flow"
 	$scenarios += "batch_059_corpse_limit_flow"
@@ -224,8 +233,17 @@ if ($runIntegration) {
 	$scenarios += "batch_063_magic_action_cost_flow"
 	$scenarios += "batch_064_mode_duration_flow"
 	$scenarios += "batch_065_reaction_triggers_flow"
+	$scenarios += "s121_exit_placement_flow"
+	$scenarios += "located_source_end_flow"
+	$scenarios += "tether_group_flow"
+	$scenarios += "containment_flow"
+	$scenarios += "containment_harm_flow", "containment_release_flow"
+	$scenarios += "projected_vessel_flow"
+	$scenarios += "form_equipment_ground_flow"
+	$scenarios += "item_form_return_flow"
+	$scenarios += "item_lifecycle_controls_flow"
 	$scenarios += "wave_three_foundations_flow", "owned_creature_lifecycle_flow", "batch_024_recovery_flow", "batch_024_spell_result_flow",
-    "find_familiar_exploration_flow", "party_recovery_flow", "downed_area_damage_flow", "created_undead_flow"
+    "find_familiar_exploration_flow", "party_recovery_flow", "downed_area_damage_flow", "created_undead_flow", "room_created_actor_flow"
     if ($Scenario.Count -gt 0) {
         foreach ($selectedScenario in $Scenario) {
             if ($scenarios -notcontains $selectedScenario) { Write-Error "Unknown integration scenario: $selectedScenario" }
@@ -243,7 +261,58 @@ if ($runIntegration) {
             }
         } else {
             $marker = "SCENARIO PASSED: $scenario"
-            if (-not (Invoke-GodotCase $scenario "res://scenes/viewport_harness.tscn" $marker $scenarioTimeout @("--scenario=$scenario"))) { $failed = $true }
+            if (-not (Invoke-GodotCase $scenario "res://scenes/viewport_harness.tscn" $marker $scenarioTimeout @("--scenario=$scenario"))) {
+                $failed = $true
+            } elseif ($scenario -eq "conversion_batch_001_flow") {
+                $profile = Join-Path $logDirectory "$scenario.user-data"
+                $previousRecovery = $env:CONVERSION_BATCH_001_RECOVER
+                try {
+                    $env:CONVERSION_BATCH_001_RECOVER = "1"
+                    if (-not (Invoke-GodotCase -Name "${scenario}_fresh_process" -Scene "res://scenes/viewport_harness.tscn" -Marker "SCENARIO PASSED: $scenario" -TimeoutSeconds $scenarioTimeout -ExtraArguments @("--scenario=$scenario") -UserDataDirectory $profile)) { $failed = $true }
+                } finally { $env:CONVERSION_BATCH_001_RECOVER = $previousRecovery }
+            } elseif ($scenario -eq "conversion_batch_002_flow") {
+                $profile = Join-Path $logDirectory "$scenario.user-data"
+                $previousRecovery = $env:CONVERSION_BATCH_002_RECOVER
+                try {
+                    foreach ($recoveryMode in @("party", "player_only")) {
+                        $env:CONVERSION_BATCH_002_RECOVER = $recoveryMode
+                        $recoveryMarker = "CONVERSION_BATCH_002_FRESH_PROCESS_$($recoveryMode.ToUpper())_PASSED"
+                        if (-not (Invoke-GodotCase -Name "${scenario}_fresh_${recoveryMode}" -Scene "res://scenes/viewport_harness.tscn" -Marker $recoveryMarker -TimeoutSeconds $scenarioTimeout -ExtraArguments @("--scenario=$scenario") -UserDataDirectory $profile)) { $failed = $true }
+                    }
+                } finally { $env:CONVERSION_BATCH_002_RECOVER = $previousRecovery }
+            } elseif ($scenario -eq "containment_release_flow") {
+                $profile = Join-Path $logDirectory "$scenario.user-data"
+                if (-not (Invoke-GodotCase -Name "${scenario}_fresh_process" -Scene "res://scenes/containment_release_recovery_probe.tscn" -Marker "CONTAINMENT RELEASE FRESH-PROCESS RECOVERY PASSED" -TimeoutSeconds $scenarioTimeout -UserDataDirectory $profile)) { $failed = $true }
+            } elseif ($scenario -eq "containment_harm_flow") {
+                $containmentHarmProfile = Join-Path $logDirectory "$scenario.user-data"
+                if (-not (Invoke-GodotCase -Name "${scenario}_fresh_process" -Scene "res://scenes/containment_harm_recovery_probe.tscn" -Marker "CONTAINMENT HARM FRESH-PROCESS RECOVERY PASSED" -TimeoutSeconds $scenarioTimeout -UserDataDirectory $containmentHarmProfile)) { $failed = $true }
+            } elseif ($scenario -eq "containment_flow") {
+                $profile = Join-Path $logDirectory "$scenario.user-data"
+                if (-not (Invoke-GodotCase -Name "${scenario}_fresh_process" -Scene "res://scenes/containment_recovery_probe.tscn" -Marker "CONTAINMENT FRESH-PROCESS RECOVERY PASSED" -TimeoutSeconds $scenarioTimeout -UserDataDirectory $profile)) { $failed = $true }
+            } elseif ($scenario -eq "item_lifecycle_controls_flow") {
+                $profile = Join-Path $logDirectory "$scenario.user-data"
+                if (-not (Invoke-GodotCase -Name "${scenario}_fresh_process" -Scene "res://scenes/item_lifecycle_recovery_probe.tscn" -Marker "ITEM LIFECYCLE FRESH-PROCESS RECOVERY PASSED" -TimeoutSeconds $scenarioTimeout -UserDataDirectory $profile)) { $failed = $true }
+            } elseif ($scenario -eq "projected_vessel_flow") {
+                $profile = Join-Path $logDirectory "$scenario.user-data"
+                if (-not (Invoke-GodotCase -Name "${scenario}_fresh_process" -Scene "res://scenes/projected_vessel_recovery_probe.tscn" -Marker "PROJECTED VESSEL FRESH-PROCESS RECOVERY PASSED" -TimeoutSeconds $scenarioTimeout -UserDataDirectory $profile)) { $failed = $true }
+            } elseif ($scenario -eq "item_form_return_flow") {
+                $profile = Join-Path $logDirectory "$scenario.user-data"
+                if (-not (Invoke-GodotCase -Name "${scenario}_fresh_process" -Scene "res://scenes/item_form_return_recovery_probe.tscn" -Marker "ITEM FORM RETURN FRESH-PROCESS RECOVERY PASSED" -TimeoutSeconds $scenarioTimeout -UserDataDirectory $profile)) { $failed = $true }
+            } elseif ($scenario -eq "form_equipment_ground_flow") {
+                $profile = Join-Path $logDirectory "$scenario.user-data"
+                if (-not (Invoke-GodotCase -Name "${scenario}_fresh_process" -Scene "res://scenes/form_equipment_ground_recovery_probe.tscn" -Marker "FORM EQUIPMENT GROUND FRESH-PROCESS RECOVERY PASSED" -TimeoutSeconds $scenarioTimeout -UserDataDirectory $profile)) { $failed = $true }
+            } elseif ($scenario -eq "tether_group_flow") {
+                $profile = Join-Path $logDirectory "$scenario.user-data"
+                if (-not (Invoke-GodotCase -Name "${scenario}_fresh_process" -Scene "res://scenes/tether_group_recovery_probe.tscn" -Marker "TETHER GROUP FRESH-PROCESS RECOVERY PASSED" -TimeoutSeconds $scenarioTimeout -UserDataDirectory $profile)) { $failed = $true }
+                if (-not (Invoke-GodotCase -Name "${scenario}_object_anchor_fresh_process" -Scene "res://scenes/tether_object_anchor_recovery_probe.tscn" -Marker "TETHER OBJECT ANCHOR FRESH-PROCESS RECOVERY PASSED" -TimeoutSeconds $scenarioTimeout -UserDataDirectory $profile)) { $failed = $true }
+            } elseif ($scenario -eq "located_source_end_flow") {
+                $profile = Join-Path $logDirectory "$scenario.user-data"
+                if (-not (Invoke-GodotCase -Name "${scenario}_fresh_process" -Scene "res://scenes/located_source_end_recovery_probe.tscn" -Marker "LOCATED SOURCE END FRESH-PROCESS RECOVERY PASSED" -TimeoutSeconds $scenarioTimeout -UserDataDirectory $profile)) { $failed = $true }
+            } elseif ($scenario -eq "room_created_actor_flow") {
+                $profile = Join-Path $logDirectory "$scenario.user-data"
+                $recoveryMarker = "ROOM CREATED ACTOR FRESH-PROCESS RECOVERY PASSED"
+                if (-not (Invoke-GodotCase -Name "${scenario}_fresh_process" -Scene "res://scenes/room_created_actor_recovery_probe.tscn" -Marker $recoveryMarker -TimeoutSeconds $scenarioTimeout -UserDataDirectory $profile)) { $failed = $true }
+            }
         }
     }
 }

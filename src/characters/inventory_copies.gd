@@ -139,6 +139,8 @@ static func record_state_error(record: Dictionary) -> String:
 	if not active_error.is_empty(): return active_error
 	var work_error := WorkRules.record_error(record) # S-066.
 	if not work_error.is_empty(): return work_error
+	var form_error := ItemProjectionRules.copy_error(record) # S-166 exact form HP.
+	if not form_error.is_empty(): return form_error
 	if state.has("food_remaining_daily_fraction"):
 		var remaining_food: Variant = state["food_remaining_daily_fraction"]
 		if str(record["definition_id"]) != "rations" or (not remaining_food is int and not remaining_food is float) or not is_finite(float(remaining_food)) or float(remaining_food) <= 0.0 or float(remaining_food) >= 1.0:
@@ -197,7 +199,25 @@ static func ownership_error(save: Dictionary) -> String:
 	for dungeon in dungeons.values():
 		for room in dungeon.get("local_rooms", {}).values():
 			for object in room["objects"]:
-				for item in object["contents"]:
-					if seen.has(item["instance_id"]): return "item copy has multiple world or inventory owners"
-					seen[item["instance_id"]] = true
+				var records := {}
+				for item in object["contents"]: records[str(item.instance_id)] = item
+				var inventory := {"copies": {"records": records}}
+				for id in records.keys() + ContainerRules.content_ids(inventory) + AttachmentRules.attached_ids(inventory):
+					if seen.has(id): return "item copy has multiple world or inventory owners"
+					seen[id] = true
+	return ""
+
+
+## Ground cargo and attachments use inventory contracts, with one shared identity set.
+static func world_records_error(records: Dictionary) -> String:
+	var seen := {}
+	for id in records: seen[str(id)] = true
+	for record in records.values():
+		var inventory := {"copies": {"records": {str(record.instance_id): record}, "inventory_id": "world-validation", "next_id": 2147483647}}
+		var dto := {"inventory": inventory}
+		for error in [ContainerRules.saved_error(dto), AttachmentRules.saved_error(dto)]:
+			if not error.is_empty(): return error
+		for id in ContainerRules.content_ids(inventory) + AttachmentRules.attached_ids(inventory):
+			if seen.has(id): return "world cargo or attachment duplicates an identity"
+			seen[id] = true
 	return ""

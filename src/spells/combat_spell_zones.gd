@@ -26,6 +26,7 @@ var refresh_grid: Callable
 var highlight_reachable: Callable
 
 func bind_encounter(grid: HexGrid, combat_hud: CombatHUD, initiative: InitiativeTracker, players: Array[Dictionary], monsters: Array[Dictionary]) -> void:
+	LocatedSourceEndRules.combat_areas = weakref(self)
 	hex_grid = grid
 	hud = combat_hud
 	tracker = initiative
@@ -525,6 +526,18 @@ func _resolve_spell_zone_entries(target, from_hex: Vector2i, to_hex: Vector2i) -
 	var heat := await _resolve_room_surface_heat(target, to_hex)
 	if not heat.is_empty(): results.append(heat)
 	var room_areas := LocalRoomCombat.enter_room_areas(target, from_hex, to_hex)
+	for area in room_areas:
+		var aftermath := LocalRoomAreas.resolve_aftermath_entry(area, target)
+		if aftermath.is_empty(): continue
+		results.append(aftermath)
+		var damage := int(aftermath.get("damage", 0))
+		hud.add_log("%s takes %d %s damage entering %s." % [target.character_name if target is Character else str(target.get("name", "The creature")), damage, str(aftermath.damage_type).capitalize(), str(area.hazard_kind)])
+		if target is Character:
+			if damage > 0: await check_concentration.call(target, damage)
+			if not target.is_alive: end_concentration.call(target)
+		elif int(target.get("current_hp", 0)) <= 0:
+			tracker.remove_combatant(str(target.get("id", "")))
+			enemy_defeated.call(target, null)
 	var room_alert := LocalRoomRules._alarm_alert_text(room_areas)
 	if not room_alert.is_empty():
 		hud.add_log("[color=yellow]%s[/color]" % room_alert.strip_edges())

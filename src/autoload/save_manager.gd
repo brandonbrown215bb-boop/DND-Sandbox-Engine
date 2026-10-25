@@ -27,6 +27,15 @@ func save_game(slot_name: String) -> bool:
 		push_warning("[SaveManager] Save rejected: %s" % reason)
 		return false
 	SpellEffects.reconcile(PartyManager.characters.values(), PartyManager.characters.values())
+	# S-166: a pending return may write into a dormant room. Finish placement
+	# before snapshotting any world ledger or duplicate character DTO.
+	var owners: Array = PartyManager.characters.values()
+	for player in PlayerManager.players:
+		var character = player.get("character")
+		if character is Character and character not in owners: owners.append(character)
+	for character in owners:
+		ItemProjectionRules.sync(character)
+		ItemProjectionRules.settle(character)
 
 	var save_data := {
 		"schema_version": SAVE_SCHEMA_VERSION,
@@ -108,6 +117,8 @@ func get_save_block_reason() -> String:
 		return "no campaign is active"
 	if GameManager.is_loading_save:
 		return "a save is currently loading"
+	for room in GameManager.saved_local_room_states():
+		if LocatedSourceEndRules.pending_choice(room): return "finish the source-end child decision before saving"
 	match GameManager.current_state:
 		GameManager.GameState.OVERWORLD:
 			return ""
@@ -343,6 +354,8 @@ func _validate_save_data(data: Dictionary) -> String:
 			if not item_projection_error.is_empty(): return item_projection_error
 			var curse_error := CurseRules.saved_error(character_data)
 			if not curse_error.is_empty(): return curse_error
+			var containment_error := ContainmentRules.policy_error(character_data.get("containment", {}))
+			if not containment_error.is_empty(): return containment_error
 			var tether_error := TetherRules.saved_error(character_data)
 			if not tether_error.is_empty(): return tether_error
 			var container_error := ContainerRules.saved_error(character_data)
@@ -414,8 +427,16 @@ func _validate_save_data(data: Dictionary) -> String:
 	if not world_error.is_empty(): return world_error
 	world_error = DungeonPersistence.saved_error(data.get("active_dungeon_state", {}))
 	if not world_error.is_empty(): return world_error
+	# Object relations need the world ledger, not just the party DTO. Validate
+	# after room structure so malformed rows cannot reach the relation reader.
+	var effect_party_error := SpellEffects.saved_party_error(data.get("party", {}).get("characters", {}), data)
+	if not effect_party_error.is_empty(): return effect_party_error
 	creature_error = CreatedCreatureRules.saved_locations_error(campaign_ledger.get("created_creatures", []), DataLoader.get_campaign(str(data["campaign_id"])), campaign_ledger.get("dungeon_snapshots", {}), data.get("active_dungeon_state", {}))
 	if not creature_error.is_empty(): return creature_error
+	var containment_links_error := ContainmentRules.saved_error(data)
+	if not containment_links_error.is_empty(): return containment_links_error
+	var vessel_links_error := VesselProjectionRules.saved_error(data)
+	if not vessel_links_error.is_empty(): return vessel_links_error
 	var temporary_hp_links_error := TemporaryHPRules.saved_links_error(data)
 	if not temporary_hp_links_error.is_empty(): return temporary_hp_links_error
 	var aura_links_error := AuraProtectionRules.saved_links_error(data)
@@ -441,6 +462,8 @@ func _validate_save_data(data: Dictionary) -> String:
 	for player in data.get("players", []):
 		if player.get("character") is Dictionary: clock_characters.append(player["character"])
 	if party_data is Dictionary: clock_characters.append_array(party_data.get("characters", {}).values())
+	var source_end_error := LocatedSourceEndRules.saved_producers_error(animated_rooms)
+	if not source_end_error.is_empty(): return source_end_error
 	for member_data in clock_characters:
 		var corpse_clock_error := CorpseRules.saved_clock_error(member_data, int(campaign_ledger.get("campaign_elapsed_seconds", 0)))
 		if not corpse_clock_error.is_empty(): return corpse_clock_error
@@ -529,6 +552,8 @@ func _validate_party_data(data: Dictionary, campaign_seconds: int = 0) -> String
 		if not item_projection_error.is_empty(): return item_projection_error
 		var curse_error := CurseRules.saved_error(character_data)
 		if not curse_error.is_empty(): return curse_error
+		var containment_error := ContainmentRules.policy_error(character_data.get("containment", {}))
+		if not containment_error.is_empty(): return containment_error
 		var tether_error := TetherRules.saved_error(character_data)
 		if not tether_error.is_empty(): return tether_error
 		var container_error := ContainerRules.saved_error(character_data)
@@ -581,9 +606,6 @@ func _validate_party_data(data: Dictionary, campaign_seconds: int = 0) -> String
 		if not damage_history_error.is_empty():
 			return damage_history_error
 	var leader_slot_id := str(data.get("leader_slot_id", "slot_0"))
-	var effect_party_error := SpellEffects.saved_party_error(characters)
-	if not effect_party_error.is_empty():
-		return effect_party_error
 	if leader_slot_id not in known_slots:
 		return "party leader references an unknown slot"
 	for companion_id in roster:

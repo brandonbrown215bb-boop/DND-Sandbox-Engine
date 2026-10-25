@@ -50,7 +50,7 @@ static func _form_equipment_and_hp(check: Callable) -> void:
 	var spell := DataLoader.get_spell(Batch041Checks.GUISE).duplicate(true)
 	spell["_projection_equipment"] = "dropped"
 	var refused := SpellResolver.resolve(full, full, spell, true, {}, [], 2)
-	check.call(refused.get("refused", false) and full.spell_slots["2"] == 1 and full.inventory.to_dict() == before and not ActorProjectionRules.is_projected(full), "Stack: full-bag dropped equipment refuses before slot, stats or copies change")
+	check.call(refused.get("refused", false) and full.spell_slots["2"] == 1 and full.inventory.to_dict() == before and not ActorProjectionRules.is_projected(full), "Stack: equipment drop without a world host refuses before slot, stats or copies change")
 	var a := Batch040Checks.caster("repair_hp")
 	a.temp_hp = 20
 	Batch040Checks.shift(a, 2, "b040_hound")

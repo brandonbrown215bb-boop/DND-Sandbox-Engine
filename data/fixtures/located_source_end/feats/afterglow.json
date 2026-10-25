@@ -1,0 +1,163 @@
+[
+  {
+    "id": "fixture:located_mode_feat",
+    "name": "Located Afterglow",
+    "description": "Neutral mode source-end fixture.",
+    "category": "general",
+    "prerequisite": {
+      "level": 4
+    },
+    "features": [
+      {
+        "id": "fixture:located_mode",
+        "name": "Afterglow",
+        "description": "A self activation mode with located aftermath.",
+        "type": "mode_choice",
+        "boundary": "activation",
+        "uses": 4,
+        "uses_per": "long_rest",
+        "duration_seconds": 6,
+        "end_on": [],
+        "costs": {
+          "activate": "bonus_action"
+        },
+        "modes": [
+          {
+            "id": "guard",
+            "benefits": [
+              {
+                "stat": "AC",
+                "amount": 1
+              }
+            ]
+          },
+          {
+            "id": "stride",
+            "benefits": [
+              {
+                "stat": "speed",
+                "amount": 1
+              }
+            ]
+          }
+        ],
+        "end_aftermath": [
+          {
+            "id": "lapse",
+            "reasons": [
+              "duration"
+            ],
+            "delay_seconds": 12,
+            "cancel_policy": "skip",
+            "children": [
+              {
+                "id": "mend",
+                "type": "heal",
+                "amount": 4,
+                "choose": true
+              },
+              {
+                "id": "remnant",
+                "type": "room_object",
+                "kind": "loose",
+                "name": "Cooling remnant",
+                "hp": 7
+              },
+              {
+                "id": "embers",
+                "type": "room_area",
+                "kind": "entry_damage",
+                "trigger_scope": "entry",
+                "amount": 3,
+                "damage_type": "fire",
+                "radius_hexes": 0,
+                "duration_seconds": 120,
+                "trigger_limit": 1
+              }
+            ]
+          },
+          {
+            "id": "dismiss",
+            "reasons": [
+              "dismissed"
+            ],
+            "delay_seconds": 120,
+            "cancel_policy": "skip",
+            "children": [
+              {
+                "id": "mend",
+                "type": "heal",
+                "amount": 4,
+                "choose": true
+              },
+              {
+                "id": "remnant",
+                "type": "room_object",
+                "kind": "loose",
+                "name": "Cooling remnant",
+                "hp": 7
+              },
+              {
+                "id": "embers",
+                "type": "room_area",
+                "kind": "entry_damage",
+                "trigger_scope": "entry",
+                "amount": 3,
+                "damage_type": "fire",
+                "radius_hexes": 0,
+                "duration_seconds": 120,
+                "trigger_limit": 1
+              }
+            ]
+          },
+          {
+            "id": "stop",
+            "reasons": [
+              "zero_hp"
+            ],
+            "cancel_policy": "stop",
+            "children": [
+              {
+                "id": "mend",
+                "type": "heal",
+                "amount": 4,
+                "choose": true
+              },
+              {
+                "id": "remnant",
+                "type": "room_object",
+                "kind": "loose",
+                "name": "Cooling remnant",
+                "hp": 7
+              },
+              {
+                "id": "embers",
+                "type": "room_area",
+                "kind": "entry_damage",
+                "trigger_scope": "entry",
+                "amount": 3,
+                "damage_type": "fire",
+                "radius_hexes": 0,
+                "duration_seconds": 120,
+                "trigger_limit": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "fixture:located_end_upgrade",
+        "name": "Located end upgrade",
+        "type": "rule_upgrade",
+        "rule": "fixture:located_mode",
+        "changes": {
+          "end_on": {
+            "add": [
+              "zero_hp"
+            ]
+          }
+        }
+      }
+    ]
+  }
+]

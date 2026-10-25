@@ -1,0 +1,105 @@
+[
+  {
+    "id": "fixture:ground_rosette",
+    "name": "Fixture Ground Rosette",
+    "description": "Neutral fixture host with two gem sockets and a band socket.",
+    "type": "ring",
+    "magical": true,
+    "rarity": "uncommon",
+    "value": 0,
+    "attachments": {
+      "sockets": [
+        {
+          "id": "gem_a",
+          "accepts": [
+            "fixture:b044_gem"
+          ]
+        },
+        {
+          "id": "gem_b",
+          "accepts": [
+            "fixture:b044_gem"
+          ]
+        },
+        {
+          "id": "band",
+          "item_types": [
+            "tool"
+          ]
+        }
+      ],
+      "sets": [
+        {
+          "id": "paired_gems",
+          "requires": [
+            "gem_a",
+            "gem_b"
+          ],
+          "benefits": [
+            {
+              "stat": "AC",
+              "amount": 1
+            }
+          ]
+        },
+        {
+          "id": "banded",
+          "requires": [
+            "band"
+          ],
+          "benefits": [
+            {
+              "stat": "speed",
+              "amount": 1
+            }
+          ]
+        }
+      ]
+    },
+    "maximum_charges": 5,
+    "requires_attunement": true,
+    "cursed": true,
+    "curse": {
+      "removal": "allowed",
+      "break": {
+        "spells": [
+          "remove_curse"
+        ],
+        "min_slot_level": 0
+      }
+    },
+    "container": {
+      "compartments": [
+        {
+          "id": "main",
+          "item_types": [
+            "tool"
+          ],
+          "max_count": 2,
+          "max_weight": 6
+        }
+      ]
+    }
+  },
+  {
+    "id": "fixture:ground_clasp",
+    "name": "Fixture Bound Clasp",
+    "description": "Fixture blocked-removal curse.",
+    "type": "ring",
+    "magical": true,
+    "rarity": "uncommon",
+    "requires_attunement": true,
+    "cursed": true,
+    "curse": {
+      "removal": "blocked",
+      "break": {
+        "spells": [
+          "remove_curse"
+        ],
+        "min_slot_level": 0
+      }
+    },
+    "effects": [],
+    "value": 0
+  }
+]

@@ -34,15 +34,19 @@ static func enter_room_areas(target, from_hex: Vector2i, to_hex: Vector2i) -> Ar
 		creature_id = target.character_id
 	elif target is Dictionary:
 		creature_id = str(target.get("id", ""))
-	return LocalRoomAreas.enter(state, creature_id, from_hex, to_hex, int(GameManager.campaign_elapsed_seconds))
+	return LocalRoomAreas.enter(state, creature_id, from_hex, to_hex, int(GameManager.campaign_elapsed_seconds), PhysicalFactsRules.get_plane(target, {"plane": PhysicalFactsRules.get_plane(state)}))
 
-static func capture(players: Array) -> void:
+static func capture(players: Array, ground_items: Array = []) -> void:
 	var state := room()
 	if state.is_empty(): return
 	var altitudes: Dictionary = state.get("party_altitudes", {}).duplicate(true)
 	var altitude_modes: Dictionary = state.get("party_altitude_modes", {}).duplicate(true)
+	var created_positions: Dictionary = state.get("created_actor_positions", {}).duplicate(true)
 	for player in players:
 		var character: Character = player.get("character")
+		if character != null and bool(player.get("is_created_actor", false)):
+			var created_position: Vector2i = player.get("hex_position", Vector2i.ZERO)
+			created_positions[character.character_id] = [created_position.x, created_position.y]
 		if character != null and state["party_positions"].has(character.character_id):
 			var position: Vector2i = player.get("hex_position", Vector2i.ZERO)
 			state["party_positions"][character.character_id] = [position.x, position.y]
@@ -50,8 +54,10 @@ static func capture(players: Array) -> void:
 			var steed_state := PaladinRules.find_steed_state(character)
 			if bool(steed_state.get("mounted", false)) and int(steed_state.get("fly_speed_feet", 0)) > 0:
 				altitude_modes[character.character_id] = "fly"
+	capture_ground_items(state, ground_items)
 	state["party_altitudes"] = altitudes
 	state["party_altitude_modes"] = altitude_modes
+	state["created_actor_positions"] = created_positions
 	GameManager.remember_dungeon()
 
 
@@ -294,3 +300,31 @@ static func _character_by_id(players: Array, character_id: String) -> Character:
 		if character != null and character.character_id == character_id:
 			return character
 	return null
+
+
+## Settle encounter ground copies before the room checkpoint. Tombstones carry no items.
+static func capture_ground_items(state: Dictionary, ground_items: Array) -> void:
+	for ground in ground_items:
+		var id := str(ground.get("instance_id", ""))
+		if id.is_empty(): continue
+		var record := {"instance_id": id, "definition_id": str(ground.get("definition_id", "")), "state": ground.get("copy_state", {}).duplicate(true)}
+		if not bool(ground.get("copy_destroyed", false)) and not ground.get("contents", []).is_empty():
+			record = ground.contents[0].duplicate(true)
+			record.state = ground.get("copy_state", record.state).duplicate(true)
+		record.state["combat_object_hp"] = int(ground.get("hp", 1))
+		var object := LocalRoomRules.placed_item(state, record, LocalRoomRules.coord(ground.position))
+		object.hp = int(ground.get("hp", 1))
+		object.max_hp = int(ground.get("max_hp", 1))
+		if bool(ground.get("copy_destroyed", false)) and not ground.get("contents", []).is_empty():
+			object.contents = ground.contents.duplicate(true)
+			object.kind = "container"
+			object.open = true
+			object.locked = false
+		elif bool(ground.get("removed", false)) or object.hp <= 0:
+			object.contents = []
+			object.removed = true
+		var previous := LocalRoomRules.get_object(state, str(object.id))
+		if previous.is_empty(): state.objects.append(object)
+		else:
+			previous.clear()
+			previous.merge(object)

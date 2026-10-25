@@ -6,6 +6,34 @@ var frame: Dictionary = {}
 var receipts: Array[Dictionary] = []
 var serial := 0
 
+## Plain continuation state shared with room source-end children. Execution stays
+## with each host; selecting/completing a child never restarts its parent.
+static func continuation(invocation: String, children: Array, cancel_policy: String) -> Dictionary:
+	return {"invocation": invocation, "remaining": children.duplicate(true), "current": {}, "settled": false, "cancel_policy": cancel_policy, "receipts": []}
+
+static func select_child(pending: Dictionary, id: String) -> bool:
+	if not pending.get("current", {}).is_empty(): return false
+	for child in pending.get("remaining", []):
+		if str(child.id) == id:
+			pending.current = child.duplicate(true)
+			pending.settled = false
+			return true
+	return false
+
+static func finish_child(pending: Dictionary) -> void:
+	var id := str(pending.get("current", {}).get("id", ""))
+	if id.is_empty() or not bool(pending.get("settled", false)): return
+	pending.remaining = pending.remaining.filter(func(child): return str(child.id) != id)
+	pending.current = {}
+
+static func cancel_continuation(pending: Dictionary, policy: String) -> void:
+	if policy == "stop":
+		pending.remaining = []
+		pending.current = {}
+	else:
+		pending.settled = true
+		finish_child(pending)
+
 static func units(definition: Dictionary) -> int:
 	var rule: Variant = definition.get("attack_unit_substitution", {})
 	if not rule is Dictionary or rule.size() != 1: return 0
@@ -142,9 +170,7 @@ func settle(host: Node) -> bool:
 
 func complete(host: Node) -> void:
 	if frame.is_empty() or not frame.settled: return
-	var id := str(frame.current.id)
-	frame.remaining = frame.remaining.filter(func(child): return str(child.id) != id)
-	frame.current = {}
+	finish_child(frame)
 	host.pending_action_type = ""
 	host.pending_spell_data = {}
 	await choose(host)
@@ -154,8 +180,10 @@ func cancel(host: Node) -> void:
 	if not valid(host) or frame.feature.child_actions.cancel_policy == "stop":
 		clear()
 	else:
-		frame.settled = true # Skip only the selected child; no effect/payment receipt.
-		await complete(host)
+		cancel_continuation(frame, "skip")
+		host.pending_action_type = ""
+		host.pending_spell_data = {}
+		await choose(host)
 
 func clear() -> void:
 	frame.clear()

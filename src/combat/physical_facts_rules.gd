@@ -353,6 +353,9 @@ static func get_plane(entity_or_context, fallback_context: Dictionary = {}) -> S
 
 
 static func get_location(entity, context: Dictionary = {}) -> Dictionary:
+	var internal := ContainmentRules.internal_location(entity, context.get("room", {}))
+	if not internal.is_empty():
+		return {"plane": get_plane(entity, context), "position": null, "location_known": false, "location_kind": "internal", "room_id": internal.room_id, "container_kind": internal.container_kind, "container_id": internal.container_id, "external_location": internal.external_location, "elevation_feet": 0, "altitude_feet": 0}
 	var plane := get_plane(entity, context)
 	var pos: Variant = null
 	var elevation := 0
@@ -506,6 +509,8 @@ static func is_space_available(grid: HexGrid, position: Vector2i, size: String =
 	var occupants: Array = []
 	if context.has("players"):
 		for p in context["players"]:
+			var body = p.get("character")
+			if body is Character and not ContainmentRules.relation(room, "character", body.character_id).is_empty(): continue
 			if p.get("hex_position", Vector2i.ZERO) == position:
 				var ch = p.get("character")
 				if ch != null and ch.is_alive:
@@ -524,6 +529,7 @@ static func is_space_available(grid: HexGrid, position: Vector2i, size: String =
 		if entity.get("hex_position") != position: continue
 		var occupant = entity.get("character", entity.get("monster", null))
 		if occupant == null or is_same(occupant, ignore_entity): continue
+		if occupant is Character and not ContainmentRules.relation(room, "character", occupant.character_id).is_empty(): continue
 		if (occupant is Character and occupant.is_alive) or (occupant is Dictionary and occupant.get("is_alive", false)):
 			occupants.append(occupant)
 
@@ -552,6 +558,7 @@ static func is_space_available(grid: HexGrid, position: Vector2i, size: String =
 			if obj_pos == position:
 				objects.append(obj)
 	for obj in objects:
+		if not ContainmentRules.relation(room, "object", str(obj.get("id", ""))).is_empty(): continue
 		if bool(obj.get("fixed", false)) or bool(obj.get("blocks_movement", false)) or str(obj.get("kind", "")) == "barrier":
 			if not bool(obj.get("removed", false)) and int(obj.get("hp", 1)) > 0:
 				var obj_name := str(obj.get("name", "Fixed Object"))

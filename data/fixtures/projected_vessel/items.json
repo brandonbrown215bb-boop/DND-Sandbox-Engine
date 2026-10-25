@@ -1,0 +1,394 @@
+[
+  {
+    "id": "fixture:projected_vessel",
+    "name": "Cargo vessel",
+    "type": "tool",
+    "magical": true,
+    "actor_projection": {
+      "template": {
+        "id": "neutral_vessel",
+        "name": "Cargo vessel",
+        "creature_type": "construct",
+        "size": "medium",
+        "speed": 6,
+        "ability_scores": {
+          "STR": 15,
+          "DEX": 14,
+          "CON": 14,
+          "INT": 3,
+          "WIS": 12,
+          "CHA": 6
+        },
+        "ac": {
+          "base": 14
+        },
+        "max_hp": {
+          "base": 22
+        },
+        "count": {
+          "base": 1
+        },
+        "attack": {
+          "name": "Bite",
+          "damage": "1d8",
+          "damage_type": "piercing",
+          "range": 1
+        },
+        "features": []
+      },
+      "reversion": {
+        "hp_reset": "full",
+        "overflow": "discard",
+        "on_end": "return",
+        "on_zero_hp": "return",
+        "destination": "backpack_or_ground",
+        "no_space": "defer",
+        "range_hexes": 1,
+        "size": "tiny"
+      },
+      "placement": {
+        "range_hexes": 3,
+        "no_space": "refuse",
+        "choose": true
+      },
+      "vessel": {
+        "containment": {
+          "capacity": 3,
+          "occupant_kinds": [
+            "character",
+            "object"
+          ],
+          "sizes": [
+            "tiny",
+            "small",
+            "medium"
+          ],
+          "release": {
+            "range_hexes": 2,
+            "fallback_range_hexes": 3,
+            "no_space": "defer"
+          }
+        },
+        "on_reversion": {
+          "cargo": "retain",
+          "passengers": "release"
+        },
+        "on_dismissal": {
+          "cargo": "release",
+          "passengers": "release"
+        },
+        "on_destruction": {
+          "cargo": "release",
+          "passengers": "release"
+        }
+      }
+    },
+    "object_hp": 12,
+    "size": "tiny",
+    "material": "bronze",
+    "container": {
+      "compartments": [
+        {
+          "id": "hold",
+          "max_count": 4
+        }
+      ]
+    }
+  },
+  {
+    "id": "fixture:renamed_vessel",
+    "name": "Other vessel",
+    "type": "tool",
+    "magical": true,
+    "actor_projection": {
+      "template": {
+        "id": "renamed_hull",
+        "name": "Cargo vessel",
+        "creature_type": "construct",
+        "size": "medium",
+        "speed": 6,
+        "ability_scores": {
+          "STR": 15,
+          "DEX": 14,
+          "CON": 14,
+          "INT": 3,
+          "WIS": 12,
+          "CHA": 6
+        },
+        "ac": {
+          "base": 14
+        },
+        "max_hp": {
+          "base": 22
+        },
+        "count": {
+          "base": 1
+        },
+        "attack": {
+          "name": "Bite",
+          "damage": "1d8",
+          "damage_type": "piercing",
+          "range": 1
+        },
+        "features": []
+      },
+      "reversion": {
+        "hp_reset": "full",
+        "overflow": "discard",
+        "on_end": "return",
+        "on_zero_hp": "return",
+        "destination": "backpack_or_ground",
+        "no_space": "defer",
+        "range_hexes": 1,
+        "size": "tiny"
+      },
+      "placement": {
+        "range_hexes": 3,
+        "no_space": "refuse",
+        "choose": true
+      },
+      "vessel": {
+        "containment": {
+          "capacity": 3,
+          "occupant_kinds": [
+            "character",
+            "object"
+          ],
+          "sizes": [
+            "tiny",
+            "small",
+            "medium"
+          ],
+          "release": {
+            "range_hexes": 2,
+            "fallback_range_hexes": 3,
+            "no_space": "defer"
+          }
+        },
+        "on_reversion": {
+          "cargo": "retain",
+          "passengers": "release"
+        },
+        "on_dismissal": {
+          "cargo": "release",
+          "passengers": "release"
+        },
+        "on_destruction": {
+          "cargo": "release",
+          "passengers": "release"
+        }
+      }
+    },
+    "object_hp": 12,
+    "size": "tiny",
+    "material": "bronze",
+    "container": {
+      "compartments": [
+        {
+          "id": "hold",
+          "max_count": 4
+        }
+      ]
+    }
+  },
+  {
+    "id": "fixture:destroyed_vessel",
+    "name": "Fragile vessel",
+    "type": "tool",
+    "magical": true,
+    "actor_projection": {
+      "template": {
+        "id": "neutral_vessel",
+        "name": "Cargo vessel",
+        "creature_type": "construct",
+        "size": "medium",
+        "speed": 6,
+        "ability_scores": {
+          "STR": 15,
+          "DEX": 14,
+          "CON": 14,
+          "INT": 3,
+          "WIS": 12,
+          "CHA": 6
+        },
+        "ac": {
+          "base": 14
+        },
+        "max_hp": {
+          "base": 22
+        },
+        "count": {
+          "base": 1
+        },
+        "attack": {
+          "name": "Bite",
+          "damage": "1d8",
+          "damage_type": "piercing",
+          "range": 1
+        },
+        "features": []
+      },
+      "reversion": {
+        "hp_reset": "full",
+        "overflow": "discard",
+        "on_end": "return",
+        "on_zero_hp": "destroy",
+        "destination": "backpack_or_ground",
+        "no_space": "defer",
+        "range_hexes": 1,
+        "size": "tiny"
+      },
+      "placement": {
+        "range_hexes": 3,
+        "no_space": "refuse",
+        "choose": true
+      },
+      "vessel": {
+        "containment": {
+          "capacity": 3,
+          "occupant_kinds": [
+            "character",
+            "object"
+          ],
+          "sizes": [
+            "tiny",
+            "small",
+            "medium"
+          ],
+          "release": {
+            "range_hexes": 2,
+            "fallback_range_hexes": 3,
+            "no_space": "defer"
+          }
+        },
+        "on_reversion": {
+          "cargo": "retain",
+          "passengers": "release"
+        },
+        "on_dismissal": {
+          "cargo": "release",
+          "passengers": "release"
+        },
+        "on_destruction": {
+          "cargo": "release",
+          "passengers": "release"
+        }
+      }
+    },
+    "object_hp": 12,
+    "size": "tiny",
+    "material": "bronze",
+    "container": {
+      "compartments": [
+        {
+          "id": "hold",
+          "max_count": 4
+        }
+      ]
+    }
+  },
+  {
+    "id": "fixture:retaining_vessel",
+    "name": "Ground retaining vessel",
+    "type": "tool",
+    "magical": true,
+    "actor_projection": {
+      "template": {
+        "id": "neutral_vessel",
+        "name": "Cargo vessel",
+        "creature_type": "construct",
+        "size": "medium",
+        "speed": 6,
+        "ability_scores": {
+          "STR": 15,
+          "DEX": 14,
+          "CON": 14,
+          "INT": 3,
+          "WIS": 12,
+          "CHA": 6
+        },
+        "ac": {
+          "base": 14
+        },
+        "max_hp": {
+          "base": 22
+        },
+        "count": {
+          "base": 1
+        },
+        "attack": {
+          "name": "Bite",
+          "damage": "1d8",
+          "damage_type": "piercing",
+          "range": 1
+        },
+        "features": []
+      },
+      "reversion": {
+        "hp_reset": "full",
+        "overflow": "discard",
+        "on_end": "return",
+        "on_zero_hp": "return",
+        "destination": "ground",
+        "no_space": "defer",
+        "range_hexes": 1,
+        "size": "tiny"
+      },
+      "placement": {
+        "range_hexes": 3,
+        "no_space": "refuse",
+        "choose": true
+      },
+      "vessel": {
+        "containment": {
+          "capacity": 3,
+          "occupant_kinds": [
+            "character",
+            "object"
+          ],
+          "sizes": [
+            "tiny",
+            "small",
+            "medium"
+          ],
+          "release": {
+            "range_hexes": 2,
+            "fallback_range_hexes": 3,
+            "no_space": "defer"
+          }
+        },
+        "on_reversion": {
+          "cargo": "retain",
+          "passengers": "retain"
+        },
+        "on_dismissal": {
+          "cargo": "release",
+          "passengers": "release"
+        },
+        "on_destruction": {
+          "cargo": "release",
+          "passengers": "release"
+        }
+      }
+    },
+    "object_hp": 12,
+    "size": "tiny",
+    "material": "bronze",
+    "container": {
+      "compartments": [
+        {
+          "id": "hold",
+          "max_count": 4
+        }
+      ]
+    }
+  },
+  {
+    "id": "fixture:vessel_cargo",
+    "name": "Marked cargo",
+    "type": "tool",
+    "size": "tiny",
+    "weight": 1,
+    "material": "wood"
+  }
+]

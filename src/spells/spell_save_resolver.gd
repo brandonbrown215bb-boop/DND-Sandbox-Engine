@@ -2,6 +2,9 @@
 class_name SpellSaveResolver
 extends RefCounted
 
+static func has_numeric_save(test: Dictionary) -> bool:
+	return test.has("natural_roll") or test.has("natural")
+
 ## Components consume one occurrence's edit budget in authored order. Read the
 ## roll receipt as well when area damage reuses an already captured primary roll.
 static func _consume_dice_policy(remaining: Dictionary, details: Dictionary) -> void:
@@ -21,7 +24,14 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 	var save_roll := 0
 	var bonus_cache: Dictionary = cast.decisions.get("failed_save_numeric_bonus_tests", {})
 	var result_key := str(cast.spell.get("_save_bonus_result_key", "direct:%s:%s:%s" % [str(cast.target.get_instance_id()) if cast.target is Object else str(cast.target.get("id", "target")), str(cast.spell.get("id", "")), save_ability]))
+	var had_bonus_cache := bonus_cache.has(result_key)
+	var exit_request_id := "%s|%s|%s" % [cast.invocation_id, str(cast.target.get_instance_id()) if cast.target is Object else str(cast.target.get("id", "target")), str(cast.spell.get("id", ""))]
 	var cached_save_test: Dictionary = bonus_cache.get(result_key, {})
+	var exit_capture: Dictionary = cast.decisions.get("save_exit_captured_test", {})
+	var exit_capture_matches := not exit_capture.is_empty() and str(exit_capture.get("request_id", "")) == exit_request_id
+	if cached_save_test.is_empty() and exit_capture_matches:
+		cached_save_test = exit_capture.get("test", {}).duplicate(true)
+	var had_captured_bonus_test := had_bonus_cache or exit_capture_matches
 	if not cached_save_test.is_empty():
 		# The pending choice owns the exact check. A caster's live DC changes
 		# while that choice is open must not rewrite the captured save.
@@ -75,6 +85,10 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 		save_roll = int(save_test.get("total", 0))
 		if save_ability in ["STR", "DEX"] and cast.target.get("conditions", {}).has("stunned"):
 			save_roll = -1000
+	# Monster saves do not always include their DC in the roll receipt. Capture it
+	# here so any suspended exit choice resumes with the exact original check.
+	if has_numeric_save(save_test):
+		save_test["dc"] = save_dc
 	var save_context_receipt := SpellDamageRolls.save_context_receipt(cast)
 	if save_context_receipt.is_empty():
 		save_test.erase("save_context")
@@ -126,9 +140,33 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 			save_test["bardic_inspiration_bonus"] = int(inspiration_test.get("bonus", 0))
 			save_test["bardic_inspiration_die"] = str(inspiration_test.get("die", ""))
 			bardic_inspiration_used = true
+	var exit_policy: Dictionary = cast.spell.get("save_exit_placement", {})
+	var exit_settlement: Dictionary = cast.decisions.get("save_exit_settlement", {})
+	if not exit_policy.is_empty() and str(exit_settlement.get("request_id", "")) == exit_request_id:
+		saved = bool(exit_settlement.get("final_saved", saved))
+		save_test["success"] = saved
+	elif not exit_policy.is_empty() and saved and has_numeric_save(save_test):
+		if cast.spatial_host == null or (not cast.target is Character and not cast.target is Dictionary):
+			return {"success": false, "refused": true, "message": "This required exit placement has no supported combat location host."}
+		save_test["_post_roll_flags"] = {"heightened": heightened, "stroke_of_luck_used": stroke_of_luck_used, "bardic_inspiration_used": bardic_inspiration_used, "countercharm_used": countercharm_used}
+		return {"success": true, "save_exit_request": {"request_id": exit_request_id, "cast": cast, "result_key": result_key, "saved": saved, "save_test": save_test.duplicate(true), "save_dc": save_dc}, "saved": saved}
+	var pending_reservation_id := str(save_test.get("save_pending_payment_reservation_id", ""))
+	if not pending_reservation_id.is_empty() and (not saved or str(exit_settlement.get("request_id", "")) == exit_request_id):
+		var pending_selected := {
+			"resolution": "numeric_bonus", "source_instance_id": str(save_test.get("save_pending_payment_source_id", "")),
+			"cost": int(save_test.get("save_pending_payment_cost", 0)), "payment_policy": str(save_test.get("save_pending_payment_policy", "")),
+		}
+		var payment := SpellDamageRolls.finish_selected_payment(cast.target, pending_selected, saved, pending_reservation_id)
+		if not bool(payment.get("success", false)):
+			return {"success": false, "refused": true, "message": str(payment.get("message", "The save bonus payment could not settle."))}
+		save_test["save_cost_paid"] = str(payment.get("state", "")) == "committed"
+		save_test["save_payment_policy"] = pending_selected["payment_policy"]
+		save_test["save_payment_receipt"] = payment.duplicate(true)
+		for field in ["save_pending_payment_reservation_id", "save_pending_payment_policy", "save_pending_payment_source_id", "save_pending_payment_cost"]:
+			save_test.erase(field)
 	var shared_spell := SharedSpell.uses(cast.spell) or bool(cast.spell.get("_shared_spell_step", false))
 	var has_rolled_save := save_test.has("natural_roll") or save_test.has("natural")
-	if shared_spell and SpellDamageRolls.has_failed_save_choice_host(cast.decisions) and not automatically_fails and not willing_target_no_save and not careful_saved and not contact_patron_saved and cast.target is Character and cached_save_test.is_empty() and has_rolled_save:
+	if shared_spell and SpellDamageRolls.has_failed_save_choice_host(cast.decisions) and not automatically_fails and not willing_target_no_save and not careful_saved and not contact_patron_saved and cast.target is Character and not had_captured_bonus_test and has_rolled_save:
 		var bonus_options := SpellDamageRolls.failed_save_choice_options(cast.target, save_ability, saved, cast, save_test)
 		if not bonus_options.is_empty():
 			save_test["_post_roll_flags"] = {"heightened": heightened, "stroke_of_luck_used": stroke_of_luck_used, "bardic_inspiration_used": bardic_inspiration_used, "countercharm_used": countercharm_used}

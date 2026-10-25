@@ -4,6 +4,7 @@ extends RefCounted
 
 static func run(check: Callable) -> void:
 	DataLoader._load_content_type("res://data/fixtures/shared_spells/spells/", "spell")
+	_save_exit_policy_checks(check)
 	_save_context_eligibility_checks(check)
 	check.call(DataLoader.get_load_errors().is_empty(), "Shared JSON fixtures load through the production loader")
 	_outcome_mapping_checks(check)
@@ -1824,6 +1825,20 @@ static func run(check: Callable) -> void:
 	DataLoader.load_all_data()
 	print("SHARED_SPELL_CHECKS_COMPLETE")
 
+static func _save_exit_policy_checks(check: Callable) -> void:
+	var renamed: Dictionary = DataLoader.get_spell("fixture:renamed_exit_placement")
+	check.call(not renamed.is_empty() and SharedSpell.content_error(renamed).is_empty(), "S-121 renamed authored save exit loads through shared spell validation")
+	if not renamed.is_empty():
+		var incomplete := renamed.duplicate(true)
+		incomplete["save_exit_placement"].erase("no_space_outcome")
+		check.call(not SharedSpell.content_error(incomplete).is_empty(), "S-121 exit settlement rejects an undeclared no-space outcome")
+		var unsupported := renamed.duplicate(true)
+		unsupported["steps"] = []
+		check.call(not SharedSpell.content_error(unsupported).is_empty(), "S-121 explicitly rejects stepped save-exit combinations")
+		var object_targeted := renamed.duplicate(true)
+		object_targeted["targets_objects"] = true
+		check.call(not SharedSpell.content_error(object_targeted).is_empty(), "S-121 explicitly rejects object-targeted saves without an exit settlement host")
+
 
 static func _damage_stage_policy_checks(check: Callable) -> void:
 	DataLoader._load_content_type("res://data/fixtures/failed_save_bonus/classes/", "class")
@@ -2896,6 +2911,32 @@ static func _failed_save_numeric_bonus_checks(check: Callable) -> void:
 	conditional_target.numeric_resource_pools[success_source]["current"] = 1
 	var converted := SpellDamageRolls.settle_failed_save_numeric_bonus(caster, conditional_target, insufficient_pending, success_source)
 	check.call(bool(converted.get("success", false)) and bool(converted.get("saved", false)) and int(converted.get("save_natural_roll", 0)) == 8 and int(converted.get("save_total", 0)) == 20 and bool(converted.get("save_cost_paid", false)) and conditional_target.current_hp == before_stale_commit_hp - 2 and int(ResourcePoolRules.availability(conditional_target, success_source).get("current", -1)) == 0, "After funds are restored, converted success pays once and applies half damage using the final save")
+	var exit_payment_feature: Dictionary = pay_success_feature.duplicate(true)
+	exit_payment_feature["id"] = "fixture:exit_payment_feature"
+	exit_payment_feature["resource_pool"]["id"] = "fixture:exit_payment_pool"
+	exit_payment_feature["passive_effects"][0]["ability"] = "DEX"
+	var exit_payment_source := str(exit_payment_feature["id"])
+	conditional_target.features.append(exit_payment_feature)
+	ResourcePoolRules.acquire(conditional_target, exit_payment_feature, exit_payment_source)
+	var exit_payment_spell: Dictionary = DataLoader.get_spell("sandbox:steady_save_burst").duplicate(true)
+	exit_payment_spell["id"] = "fixture:renamed_exit_payment_probe"
+	exit_payment_spell["_save_dc_override"] = 10
+	exit_payment_spell["save_exit_placement"] = {"range_hexes": 1, "choose": false, "no_space_outcome": "failure"}
+	var exit_payment_host := SpellCastContext.new()
+	exit_payment_host.caster = caster
+	exit_payment_host.spell = exit_payment_spell
+	exit_payment_host.hud = test_hud
+	exit_payment_host.owner_label_for_character = func(_owner): return "Owner"
+	exit_payment_host.players = [{"character": conditional_target, "hex_position": Vector2i.ZERO}]
+	exit_payment_host.monsters = []
+	var exit_payment_hp := conditional_target.current_hp
+	var exit_payment_pool_before := int(ResourcePoolRules.availability(conditional_target, exit_payment_source).get("current", -1))
+	FighterChecks._seed_die(20, 8)
+	var exit_payment_pending := CombatAction.resolve_spell(caster, conditional_target, exit_payment_spell, false, {"cast_context": exit_payment_host}, [], 0, 5, exit_payment_host)
+	var exit_payment_bonus := SpellDamageRolls.settle_failed_save_numeric_bonus(caster, conditional_target, exit_payment_pending, exit_payment_source)
+	var exit_payment_final: Dictionary = await SpellCastResults._settle_save_exit(exit_payment_host, conditional_target, exit_payment_spell, {"cast_context": exit_payment_host}, [], 0, 5, exit_payment_bonus)
+	var exit_payment_save_test: Dictionary = exit_payment_bonus.get("save_exit_request", {}).get("save_test", {})
+	check.call(exit_payment_pending.has("save_bonus_request") and exit_payment_bonus.has("save_exit_request") and not bool(exit_payment_final.get("saved", true)) and int(exit_payment_final.get("save_natural_roll", -1)) == int(exit_payment_save_test.get("natural_roll", exit_payment_save_test.get("natural", -2))) and int(exit_payment_final.get("save_total", 0)) == int(exit_payment_save_test.get("total", -1)) and int(exit_payment_final.get("save_dc", -1)) == int(exit_payment_save_test.get("dc", -2)) and conditional_target.current_hp == exit_payment_hp - 4 and int(ResourcePoolRules.availability(conditional_target, exit_payment_source).get("current", -1)) == exit_payment_pool_before, "S-121 authored no-space failure preserves the captured numeric save, applies failure damage once and refunds pay-on-converted-success")
 	var empty_pool_hp := conditional_target.current_hp
 	FighterChecks._seed_die(20, 1)
 	var empty_source_result := CombatAction.resolve_spell(caster, conditional_target, con_spell, false, {"cast_context": host})

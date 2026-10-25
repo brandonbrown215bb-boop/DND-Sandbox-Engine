@@ -34,16 +34,18 @@ static func run(check: Callable) -> void:
 	var many_error := SharedSpell.content_error(_spell(Batch054Checks.MENAGERIE, menagerie))
 	check.call(many_error.is_empty() and CreatedActorRules.templates(menagerie).size() == 11, "058 a create_actor effect may list eleven creatures; no building-block cap (%s)" % many_error)
 	var bad := []
-	for mutate in ["shape", "formula", "single", "size", "command"]:
+	for mutate in ["shape", "formula", "single", "command"]:
 		var e: Dictionary = effect.duplicate(true)
 		match mutate:
 			"shape": e.mix = {"count": e.mix.count, "extra": 1}
 			"formula": e.mix = {"count": {"base": 0}}
 			"single": e.erase("options")
-			"size": e.options[0].size = "large"
 			"command": e.options[0].command = {"default": "act_freely"}
 		bad.append(SharedSpell.content_error(_spell(BONES, e)))
-	check.call(bad.all(func(x): return not str(x).is_empty()), "058 loader refuses a malformed mix, a bad total, a single kind, mixed sizes and mixed command policies (%s)" % str(bad))
+	check.call(bad.all(func(x): return not str(x).is_empty()), "058 loader refuses a malformed mix, a bad total, a single kind and an invalid per-kind command policy (%s)" % str(bad))
+	var per_kind_spell := DataLoader.get_spell(Batch053Checks.MIXED)
+	var per_kind_effect := CreatedActorRules._effect(per_kind_spell)
+	check.call(SharedSpell.content_error(per_kind_spell).is_empty(), "058 loader accepts the authored per-kind size, command, initiative and control policies")
 	check.call(CreatedActorRules.counts(effect, {}, 0) == [1] and CreatedActorRules.counts(effect, {}, 1) == [1, 2, 3], "058 the shared total follows SRD Animate Dead: 1 at 3rd level, +2 per slot level above")
 	var c := Batch031Checks._character("b058_owner", 20)
 	var refused := [CreatedActorRules.create(c, cast(c, 1), effect.template, 4, spell, -1, {"b058_skeleton": 2, "b058_zombie": 2}), CreatedActorRules.create(c, cast(c, 2), effect.template, 4, spell, -1, {"b054_owl": 1}), CreatedActorRules.create(c, cast(c, 3), effect.template, 4, spell, -1, {}), CreatedActorRules.create(c, cast(c, 4), effect.template, 4, spell, -1, {"b058_skeleton": 0})]
@@ -79,3 +81,9 @@ static func run(check: Callable) -> void:
 	back.from_dict(dto)
 	var again: Array = CreatedActorRules.actors(back).map(func(a): return "%s:%d" % [a.character_name, a.current_hp])
 	check.call(again == ["Skeleton 1:13", "Zombie 2:6", "Zombie 3:15"], "058 checklist (d): reload rebuilds each actor from its own kind and HP (%s)" % str(again))
+	var per_kind_cast := SpellEffects.begin_cast(c, per_kind_spell)
+	var per_kind_made := CreatedActorRules.create(c, per_kind_cast, per_kind_effect.template, 1, per_kind_spell, -1, {"b053_medium_kind": 1, "b053_large_kind": 2})
+	var per_kind_actors := CreatedActorRules.actors(c).filter(func(a): return str(a.get_meta("created_source_id", "")) == str(per_kind_cast.source_id))
+	var per_kind_record: Dictionary = c.spell_effects.get(str(per_kind_cast.source_id), {})
+	var per_kind_dto: Dictionary = JSON.parse_string(JSON.stringify(c.to_dict()))
+	check.call(per_kind_made.created and per_kind_actors.size() == 3 and per_kind_actors[0].character_id != per_kind_actors[1].character_id and per_kind_actors[1].character_id != per_kind_actors[2].character_id and per_kind_actors[0].character_id != per_kind_actors[2].character_id and PlacementRules.footprint(PhysicalFactsRules.get_size(per_kind_actors[0])).size() != PlacementRules.footprint(PhysicalFactsRules.get_size(per_kind_actors[1])).size() and CreatedCommandRules.initiative(c, per_kind_actors[0]) == "owner_turn" and per_kind_actors.slice(1).all(func(a): return CreatedCommandRules.initiative(c, a) == "own") and per_kind_record.created_actors.actors[0].control_until > per_kind_record.created_actors.actors[1].control_until and CreatedActorRules.saved_record_error(per_kind_dto, per_kind_dto.spell_effects[str(per_kind_cast.source_id)]).is_empty(), "058 three mixed actors preserve exact identities, different footprints, per-kind initiative and saved control deadlines")

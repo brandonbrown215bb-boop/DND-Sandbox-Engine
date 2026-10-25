@@ -5,7 +5,7 @@ extends RefCounted
 static func apply(cast: SpellCastContext, p_target: Character = null, m_target: Dictionary = {}, spell_data: Dictionary = {}, origin: Vector2i = Vector2i.ZERO, target_coord: Vector2i = Vector2i.ZERO, resolution: Dictionary = {}) -> void:
 	if bool(resolution.get("recipient_negated", false)): return
 	if SharedSpell.uses(spell_data):
-		SharedSpell.apply(cast.caster, p_target if p_target != null else m_target, spell_data, resolution)
+		SharedSpell.apply(cast.caster, p_target if p_target != null else m_target, spell_data, resolution, cast)
 		await _apply_repelling_blast(cast, m_target, spell_data, origin, resolution)
 		return
 	_apply_spell_specific(cast, p_target, m_target, spell_data, origin, resolution)

@@ -8,6 +8,7 @@ static func coord(value: Array) -> Vector2i:
 static func create(definition: Dictionary, characters: Array) -> Dictionary:
 	var state := definition.duplicate(true)
 	state["party_positions"] = {}
+	state["created_actor_positions"] = state.get("created_actor_positions", {}).duplicate(true)
 	state["encounter_cleared"] = false
 	state["areas"] = []
 	state["area_serial"] = 0
@@ -38,9 +39,18 @@ static func get_object(state: Dictionary, id: String) -> Dictionary:
 		if str(object.get("id", "")) == id: return object
 	return {}
 
+## Successor owns a new identity; ending the parent again cannot remove it.
+static func add_aftermath_object(state: Dictionary, id: String, child: Dictionary, event: Dictionary) -> Dictionary:
+	var location: Dictionary = event.final_location
+	if not state.get("cells", []).any(func(cell): return coord(cell) == coord(location.position)): return failure("Aftermath origin is outside this room.")
+	if state.get("objects", []).size() >= 200: return failure("This room has no object capacity.")
+	if not get_object(state, id).is_empty(): return {"success": true, "successor_id": id}
+	state.objects.append({"id": id, "kind": str(child.kind), "name": str(child.name), "position": location.position.duplicate(), "plane": str(location.plane), "hp": int(child.hp), "max_hp": int(child.hp), "contents": [], "parent_source_id": str(event.source_id)})
+	return {"success": true, "successor_id": id}
+
 static func object_at(state: Dictionary, position: Vector2i) -> Dictionary:
 	for object in state.get("objects", []):
-		if not bool(object.get("removed", false)) and coord(object["position"]) == position: return object
+		if not bool(object.get("removed", false)) and ContainmentRules.relation(state, "object", str(object.id)).is_empty() and coord(object["position"]) == position: return object
 	return {}
 
 static func passable(state: Dictionary, position: Vector2i) -> bool:
@@ -160,6 +170,7 @@ static func find_steed_position(state: Dictionary, character: Character, party: 
 
 
 static func toggle_find_steed_mount(state: Dictionary, character: Character, party: Array) -> Dictionary:
+	if character != null and ContainmentRules.involved(state, "character", character.character_id): return failure("Internal occupants and occupied containers require release before changing location.")
 	if character == null or CombatAction.is_incapacitated(character):
 		return failure("You cannot mount or dismount right now.")
 	var steed_state := PaladinRules.find_steed_state(character)
@@ -196,7 +207,7 @@ static func toggle_find_steed_mount(state: Dictionary, character: Character, par
 static func _room_space_occupied(state: Dictionary, position: Vector2i, except_owner: Character, party: Array) -> bool:
 	if CreatedCreatureRules.occupied(state, position): return true
 	for member in party:
-		if member == null:
+		if member == null or not ContainmentRules.relation(state, "character", member.character_id).is_empty():
 			continue
 		var member_position := coord(state.get("party_positions", {}).get(member.character_id, [9999, 9999]))
 		if member_position == position and member != except_owner:
@@ -209,6 +220,7 @@ static func _room_space_occupied(state: Dictionary, position: Vector2i, except_o
 
 
 static func change_flight_altitude(state: Dictionary, character: Character, delta_feet: int) -> Dictionary:
+	if character != null and ContainmentRules.involved(state, "character", character.character_id): return failure("Internal occupants and occupied containers require release before changing location.")
 	if character == null or not character.is_alive or CombatAction.is_incapacitated(character):
 		return failure("That character cannot change altitude.")
 	if character.movement_speed_feet("fly") <= 0:
@@ -230,6 +242,7 @@ static func change_flight_altitude(state: Dictionary, character: Character, delt
 
 
 static func change_levitation_altitude(state: Dictionary, character: Character, delta_feet: int) -> Dictionary:
+	if character != null and ContainmentRules.involved(state, "character", character.character_id): return failure("Internal occupants and occupied containers require release before changing location.")
 	if character == null or not character.is_alive or CombatAction.is_incapacitated(character) or not SpellEffects.has_spell(character, "levitate"):
 		return failure("Levitate is not active on this character.")
 	if delta_feet == 0 or abs(delta_feet) > 20 or delta_feet % 5 != 0:
@@ -296,16 +309,23 @@ static func requires_surface_traversal(surface: String) -> bool:
 	return surface in ["water", "acid", "mud", "snow", "quicksand", "lava"]
 
 static func move(state: Dictionary, character: Character, destination: Vector2i, grid: HexGrid, mode: String = "walk", party: Array = []) -> Dictionary:
+	if character != null and not ContainmentRules.relation(state, "character", character.character_id).is_empty(): return failure("Internal occupants cannot move independently.")
 	if character == null or not character.is_alive or CombatAction.is_incapacitated(character): return failure("That character cannot move.")
+	var projected := character.has_meta("projected_item_id")
+	if projected and mode != "walk": return failure("Projected vessels currently use ground movement.")
+	var positions: Dictionary = state.get("created_actor_positions", {}) if projected else state["party_positions"]
+	if not positions.has(character.character_id): return failure("That body has no represented position.")
+	var altitudes: Dictionary = {} if projected else state.get_or_add("party_altitudes", {})
+	var altitude_modes: Dictionary = {} if projected else state.get_or_add("party_altitude_modes", {})
 	var available_speed := movement_speed_feet(character, mode)
 	if mode not in ["walk", "climb", "swim", "fly", "levitate"] or available_speed <= 0: return failure("That movement mode is unavailable.")
 	_ensure_party_altitudes(state)
 	LocalRoomAreas.expire(state, int(GameManager.campaign_elapsed_seconds))
-	var origin := coord(state["party_positions"][character.character_id])
-	var altitude := altitude_feet(state, character.character_id)
+	var origin := coord(positions[character.character_id])
+	var altitude := elevation_feet(state, origin) if projected else altitude_feet(state, character.character_id)
 	if mode != "fly" and altitude <= elevation_feet(state, origin):
 		altitude = elevation_feet(state, origin)
-		state["party_altitudes"][character.character_id] = altitude
+		altitudes[character.character_id] = altitude
 	if mode == "levitate":
 		if altitude <= elevation_feet(state, origin) or not levitation_surface_in_reach(state, origin, altitude):
 			return failure("Push or pull against a wall, fixed object, or ceiling within reach before moving while levitating.")
@@ -313,7 +333,7 @@ static func move(state: Dictionary, character: Character, destination: Vector2i,
 		return failure("Descend to the floor before moving with this mode.")
 	if not passable(state, destination) and not (mode == "fly" and has_wall(state, destination)): return failure("The way is blocked.")
 	for id in state["party_positions"]:
-		if id != character.character_id and coord(state["party_positions"][id]) == destination: return failure("That space is occupied.")
+		if id != character.character_id and ContainmentRules.relation(state, "character", str(id)).is_empty() and coord(state["party_positions"][id]) == destination: return failure("That space is occupied.")
 	for member in party:
 		if member != null and not PaladinRules.find_steed_state(member).is_empty() and not PaladinRules.find_steed_is_mounted(member) and find_steed_position(state, member, party) == destination:
 			return failure("That space is occupied by a bonded steed.")
@@ -322,6 +342,14 @@ static func move(state: Dictionary, character: Character, destination: Vector2i,
 			return failure("That space is occupied by a familiar.")
 	var can_enter := func(position: Vector2i) -> bool:
 		if not grid.has_tile(position): return false
+		for created_id in state.get("created_actor_positions", {}):
+			if created_id != character.character_id and coord(state.created_actor_positions[created_id]) == position: return false
+		if projected:
+			var placement := ContainmentRules.placement_state(state, party)
+			var reserved: Array = placement.reserved.filter(func(r): return r.hex != origin)
+			var error := PlacementRules.legal_error(placement, origin, position, PhysicalFactsRules.get_size(character), -1, reserved, {"ignore_entity": character})
+			placement._placement_grid.free()
+			if not error.is_empty(): return false
 		if mode == "levitate":
 			return altitude >= elevation_feet(state, position) and altitude + 5 <= ceiling_feet(state, position) and not has_wall(state, position) and levitation_surface_in_reach(state, position, altitude) and (not requires_surface_traversal(surface_at(state, position)) or altitude > elevation_feet(state, position)) and grid.is_hex_passable(position)
 		if has_wall(state, position):
@@ -355,11 +383,11 @@ static func move(state: Dictionary, character: Character, destination: Vector2i,
 	if movement_cost_feet > available_speed: return failure("That route exceeds this movement mode's Speed.")
 	var fall_damage := 0
 	if mode == "levitate":
-		state["party_altitudes"][character.character_id] = altitude
-		state["party_altitude_modes"][character.character_id] = "levitate"
+		altitudes[character.character_id] = altitude
+		altitude_modes[character.character_id] = "levitate"
 	elif mode != "fly":
-		state["party_altitudes"][character.character_id] = elevation_feet(state, destination)
-		state["party_altitude_modes"][character.character_id] = "ground"
+		altitudes[character.character_id] = elevation_feet(state, destination)
+		altitude_modes[character.character_id] = "ground"
 	var entered: Array[Dictionary] = []
 	var spike_growth_outcomes: Array[Dictionary] = []
 	var heat_outcomes: Array[Dictionary] = []
@@ -371,8 +399,8 @@ static func move(state: Dictionary, character: Character, destination: Vector2i,
 		actual_cost_feet += int(ceil(float(movement_cost.call(step_position)) * 5.0))
 		if mode == "walk" and height_change > 0: actual_cost_feet += height_change
 		if mode == "climb" and has_wall(state, step_position): actual_cost_feet += wall_height_feet(state, step_position)
-		state["party_positions"][character.character_id] = [step_position.x, step_position.y]
-		state["party_altitudes"][character.character_id] = step_altitude
+		positions[character.character_id] = [step_position.x, step_position.y]
+		altitudes[character.character_id] = step_altitude
 		if PaladinRules.find_steed_is_mounted(character):
 			PaladinRules.set_find_steed_room_position(character, str(state.get("id", "")), step_position)
 		if mode not in ["fly", "levitate"] and height_change <= -10:
@@ -385,7 +413,7 @@ static func move(state: Dictionary, character: Character, destination: Vector2i,
 		if not heat.is_empty(): heat_outcomes.append(heat)
 		if not character.is_alive: break
 		LocalRoomAreas.leave(state, character, path[step - 1], step_position)
-		entered.append_array(LocalRoomAreas.enter(state, character.character_id, path[step - 1], step_position, int(GameManager.campaign_elapsed_seconds)))
+		entered.append_array(LocalRoomAreas.enter(state, character.character_id, path[step - 1], step_position, int(GameManager.campaign_elapsed_seconds), PhysicalFactsRules.get_plane(character, {"plane": PhysicalFactsRules.get_plane(state)})))
 		for area in state.get("areas", []):
 			if not area is Dictionary or str(area.get("spell_id", "")) != "spike_growth" or not LocalRoomAreas.contains(area, step_position):
 				continue
@@ -446,7 +474,10 @@ static func resolve_area_entries(areas: Array, character: Character) -> Array[Di
 			continue
 		var spell_id := str(area.get("spell_id", ""))
 		var area_id := str(area.get("id", ""))
-		if spell_id == "grease":
+		if area.get("hazard_kind", "") == "entry_damage":
+			var hazard := LocalRoomAreas.resolve_aftermath_entry(area, character)
+			if not hazard.is_empty(): results.append(hazard)
+		elif spell_id == "grease":
 			if resolved_tentacle_area_ids.has(area_id):
 				continue
 			resolved_tentacle_area_ids[area_id] = true
@@ -481,6 +512,7 @@ static func resolve_area_entries(areas: Array, character: Character) -> Array[Di
 
 
 static func end_local_turn(state: Dictionary, character: Character) -> Dictionary:
+	if character != null and ContainmentRules.involved(state, "character", character.character_id): return failure("Internal occupants and occupied containers require release before changing location.")
 	if character == null or not character.is_alive or CombatAction.is_incapacitated(character):
 		return failure("That character cannot end a turn here.")
 	var outcomes := end_turn_area_saves(state, character)
@@ -675,6 +707,7 @@ static func _resolve_black_tentacles_save(area: Dictionary, character: Character
 
 
 static func interact(state: Dictionary, id: String, action: String, character: Character, instance_id: String = "") -> Dictionary:
+	if ContainmentRules.involved(state, "object", id) or (character != null and not ContainmentRules.relation(state, "character", character.character_id).is_empty()): return failure("Internal interaction and occupied container changes require release support.")
 	var object := get_object(state, id)
 	if object.is_empty() or bool(object.get("removed", false)): return failure("Object is no longer here.")
 	if character == null or not character.is_alive or CombatAction.is_incapacitated(character): return failure("That character cannot interact.")
@@ -735,6 +768,7 @@ static func interact(state: Dictionary, id: String, action: String, character: C
 			if selected < 0: return failure("Select an item that is still here.")
 			var record: Dictionary = contents[selected].duplicate(true)
 			if str(object.get("kind", "")) == "loose":
+				record["state"]["combat_object_hp"] = int(object.get("hp", 1))
 				record["state"]["physical"] = {"room_id": state["id"], "object_id": object["id"]}
 				for field in ["material", "size", "weight_lb", "fixed", "hp", "max_hp"]:
 					if object.has(field): record["state"]["physical"][field] = object[field]
@@ -755,6 +789,7 @@ static func interact(state: Dictionary, id: String, action: String, character: C
 
 
 static func fire_bolt_object(state: Dictionary, id: String, character: Character, grid: HexGrid) -> Dictionary:
+	if ContainmentRules.involved(state, "object", id) or (character != null and not ContainmentRules.relation(state, "character", character.character_id).is_empty()): return failure("Internal targeting and occupied-container damage are unavailable.")
 	var spell := DataLoader.get_spell("fire_bolt")
 	var caster_error := _room_spell_caster_error(character, spell)
 	if not caster_error.is_empty(): return failure(caster_error)
@@ -1144,6 +1179,7 @@ static func cast_movement_spell(state: Dictionary, spell_id: String, character: 
 
 
 static func cast_teleport(state: Dictionary, spell_id: String, character: Character, destination: Vector2i, grid: HexGrid) -> Dictionary:
+	if character != null and ContainmentRules.involved(state, "character", character.character_id): return failure("Internal occupants and occupied containers require release before changing location.")
 	if spell_id != "misty_step": return failure("That teleport spell is not supported in local rooms.")
 	var spell := DataLoader.get_spell(spell_id)
 	var caster_error := _room_spell_caster_error(character, spell)
@@ -1208,24 +1244,35 @@ static func _alarm_alert_text(areas: Array) -> String:
 	return (" " + " ".join(alerts)) if not alerts.is_empty() else ""
 
 static func place(state: Dictionary, character: Character, instance_id: String) -> Dictionary:
+	if character != null and ContainmentRules.involved(state, "character", character.character_id): return failure("Internal occupants and occupied containers require release before changing location.")
 	if character == null or not character.is_alive or CombatAction.is_incapacitated(character): return failure("That character cannot place an item.")
 	var position: Array = state["party_positions"][character.character_id]
 	if not object_at(state, coord(position)).is_empty(): return failure("There is already an object here.")
 	var record := character.inventory.take_instance(instance_id)
 	if record.is_empty(): return failure("Select an item from your backpack.")
-	var item := DataLoader.get_item(str(record["definition_id"]))
-	var physical: Dictionary = record["state"].get("physical", {})
-	var object_id := str(physical["object_id"]) if physical.get("room_id", "") == state["id"] else "placed:%s" % record["instance_id"]
-	var object := get_object(state, object_id)
-	if object.is_empty():
-		object = {"id": object_id, "kind": "loose", "name": item.get("name", record["definition_id"]), "material": "mixed", "size": "Tiny", "weight_lb": item.get("weight", 1), "fixed": false, "hp": 1, "max_hp": 1}
-		state["objects"].append(object)
+	var placed := placed_item(state, record, coord(position))
+	var object := get_object(state, str(placed.id))
+	if object.is_empty(): state.objects.append(placed)
+	else:
+		object.clear()
+		object.merge(placed)
+	return {"success": true, "seconds": 6, "message": "%s placed." % placed.name}
+
+## Shared exact-copy placement payload; callers own the inventory transaction.
+static func placed_item(state: Dictionary, record: Dictionary, position: Vector2i) -> Dictionary:
+	var item := DataLoader.get_item(str(record.definition_id))
+	var physical: Dictionary = record.state.get("physical", {})
+	var object_id := str(physical["object_id"]) if physical.get("room_id", "") == state.get("id", "") and physical.has("object_id") else "placed:%s" % record.instance_id
+	var object := {"id": object_id, "kind": "loose", "name": item.get("name", record.definition_id), "fixed": false, "hp": 1, "max_hp": 1, "position": [position.x, position.y], "contents": [record], "removed": false}
+	for field in ["material", "size"]:
+		if item.has(field): object[field] = item[field]
+	if item.has("weight"): object["weight_lb"] = item.weight
 	for field in ["material", "size", "weight_lb", "fixed", "hp", "max_hp"]:
 		if physical.has(field): object[field] = physical[field]
-	object["position"] = position.duplicate()
-	object["contents"] = [record]
-	object["removed"] = false
-	return {"success": true, "seconds": 6, "message": "%s placed." % item.get("name", record["definition_id"])}
+	if record.state.has("combat_object_hp"):
+		object.hp = int(record.state.combat_object_hp)
+		object.max_hp = maxi(int(object.max_hp), int(object.hp))
+	return object
 
 static func failure(message: String) -> Dictionary:
 	return {"success": false, "seconds": 0, "message": message}
@@ -1237,6 +1284,7 @@ static func _quantity_text(amount: float) -> String:
 	return str(snappedf(amount, 0.01))
 
 static func transfer(state: Dictionary, character: Character, recipient: Character, instance_id: String) -> Dictionary:
+	if not ContainmentRules.relation(state, "character", character.character_id).is_empty() or not ContainmentRules.relation(state, "character", recipient.character_id).is_empty(): return failure("Internal gear transfer is unavailable.")
 	if character == recipient or not character.is_alive or not recipient.is_alive or CombatAction.is_incapacitated(character): return failure("Those characters cannot transfer an item.")
 	var origin := coord(state["party_positions"][character.character_id])
 	var destination := coord(state["party_positions"][recipient.character_id])

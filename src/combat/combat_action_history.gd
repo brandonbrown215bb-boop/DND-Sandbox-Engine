@@ -61,6 +61,16 @@ func record_action(actor) -> void:
 	_last_action_events[actor_id] = _event_serial
 
 
+## A creature scheduling interval advances combat facts without starting a
+## removed owner's turn or resetting that owner's history.
+func begin_scheduled_interval(round_number: int) -> void:
+	current_actor_id = ""
+	current_round = maxi(1, round_number)
+	_turn_serial += 1
+	_turn_start_event_serial = _event_serial
+	_combat_turn_damage_start = _copy_damage_totals()
+
+
 func record_attack(attacker, target) -> void:
 	var target_id := _actor_id(target)
 	if target_id.is_empty() or _actor_id(attacker).is_empty():
@@ -91,7 +101,7 @@ func damage_measure(target, source, source_instance_id: String, measure: String,
 	var baseline: Dictionary
 	match boundary:
 		"combat_turn":
-			if current_actor_id.is_empty(): return {"available": false}
+			if _turn_serial == 0: return {"available": false}
 			baseline = _combat_turn_damage_start
 		"owner_turn":
 			if not _owner_turn_damage_starts.has(target_id): return {"available": false}
@@ -126,11 +136,11 @@ func fact(actor, name: String, source = null, source_instance_id: String = "") -
 		"target.first_own_turn":
 			return {"available": _turn_starts_by_actor.has(actor_id), "value": current_actor_id == actor_id and int(_turn_starts_by_actor.get(actor_id, 0)) == 1}
 		"target.acted_since_combat_turn":
-			return {"available": current_actor_id != "", "value": int(_last_action_events.get(actor_id, 0)) > _turn_start_event_serial}
+			return {"available": _turn_serial > 0, "value": int(_last_action_events.get(actor_id, 0)) > _turn_start_event_serial}
 		"target.acted_since_owner_turn":
 			return {"available": _owner_turn_start_events.has(actor_id), "value": int(_last_action_events.get(actor_id, 0)) > int(_owner_turn_start_events.get(actor_id, 0))}
 		"target.attacked_since_combat_turn":
-			return {"available": current_actor_id != "", "value": int(_last_attack_events.get(actor_id, 0)) > _turn_start_event_serial}
+			return {"available": _turn_serial > 0, "value": int(_last_attack_events.get(actor_id, 0)) > _turn_start_event_serial}
 		"target.attacked_since_owner_turn":
 			return {"available": _owner_turn_start_events.has(actor_id), "value": int(_last_attack_events.get(actor_id, 0)) > int(_owner_turn_start_events.get(actor_id, 0))}
 		"target.damage_raw_since_combat_turn", "target.damage_prevented_since_combat_turn", "target.damage_absorbed_since_combat_turn", "target.damage_resolved_since_combat_turn", "target.damage_hp_loss_since_combat_turn":

@@ -1,0 +1,63 @@
+[
+  {
+    "id": "fixture:located_actor",
+    "name": "Located Actor",
+    "description": "Neutral created actor end fixture.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 0,
+    "target": "self",
+    "duration_seconds": 60,
+    "classes": ["wizard"],
+    "effects": [{
+      "type": "create_actor",
+      "template": {
+        "id": "fixture_locator",
+        "name": "Locator",
+        "creature_type": "construct",
+        "size": "small",
+        "speed": 6,
+        "ability_scores": {"STR": 10, "DEX": 12, "CON": 10, "INT": 3, "WIS": 10, "CHA": 5},
+        "ac": {"base": 12},
+        "max_hp": {"base": 8},
+        "count": {"base": 2},
+        "attack": {"name": "Tap", "damage": "1d4", "damage_type": "force", "range": 1}
+      },
+      "end_aftermath": [
+        {"id": "death", "reasons": ["death"], "delay_seconds": 600, "cancel_policy": "skip", "children": [{"id": "remnant", "type": "room_object", "kind": "loose", "name": "Actor spark", "hp": 3}]},
+        {"id": "expiry", "reasons": ["expired"], "delay_seconds": 600, "cancel_policy": "skip", "children": [{"id": "remnant", "type": "room_object", "kind": "loose", "name": "Expired actor spark", "hp": 4}]},
+        {"id": "dismiss", "reasons": ["dismissed"], "delay_seconds": 600, "cancel_policy": "skip", "children": [{"id": "remnant", "type": "room_object", "kind": "loose", "name": "Dismissed actor spark", "hp": 5}]},
+        {"id": "destroy", "reasons": ["destroyed"], "delay_seconds": 600, "cancel_policy": "skip", "children": [{"id": "remnant", "type": "room_object", "kind": "loose", "name": "Destroyed actor spark", "hp": 6}]}
+      ]
+    }]
+  },
+  {
+    "id": "fixture:located_actor_renamed",
+    "name": "Located Actor Renamed",
+    "description": "Renamed neutral created actor end fixture.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 0,
+    "target": "self",
+    "duration_seconds": 60,
+    "classes": ["wizard"],
+    "effects": [{
+      "type": "create_actor",
+      "template": {
+        "id": "fixture_locator_named",
+        "name": "Named Locator",
+        "creature_type": "construct",
+        "size": "small",
+        "speed": 6,
+        "ability_scores": {"STR": 10, "DEX": 12, "CON": 10, "INT": 3, "WIS": 10, "CHA": 5},
+        "ac": {"base": 12},
+        "max_hp": {"base": 8},
+        "count": {"base": 2},
+        "attack": {"name": "Tap", "damage": "1d4", "damage_type": "force", "range": 1}
+      },
+      "end_aftermath": [{"id": "renamed", "reasons": ["death", "expired", "dismissed", "destroyed"], "cancel_policy": "skip", "children": [{"id": "remnant", "type": "room_object", "kind": "loose", "name": "Renamed actor spark", "hp": 7}]}]
+    }]
+  }
+]

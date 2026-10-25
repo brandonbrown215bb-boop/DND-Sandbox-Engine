@@ -206,10 +206,17 @@ static func has_grant(target, source: String, condition: String) -> bool:
 	return sources.get(condition, {}).has(source)
 
 static func remove(target, source: String, end_reason: String = "source_removed", cause: Dictionary = {}) -> Dictionary:
+	if target is Character:
+		TetherRules.end_source(target, source, end_reason, cause)
+		TetherRules.end_victim_source(target, source)
 	var all_records := records(target)
 	if not all_records.has(source):
 		return {}
 	var record: Dictionary = all_records[source].duplicate(true)
+	record["source_id"] = source
+	var event := LocatedSourceEndRules.capture(target, record, end_reason, cause)
+	if target is Character and record.has("created_actors"):
+		CreatedActorRules.end_source(target, record, end_reason, cause)
 	CombatAction.remove_condition_source(target, source, record.get("conditions", []))
 	var aid_bonus := maxi(0, int(record.get("aid_hp_bonus", 0)))
 	if aid_bonus > 0 and target is Character:
@@ -217,17 +224,21 @@ static func remove(target, source: String, end_reason: String = "source_removed"
 		target.current_hp = mini(target.current_hp, target.max_hp)
 	var projection_receipt := ActorProjectionRules.revert(target, record) if record.has("projection") else {}
 	all_records.erase(source)
-	var event := {"source_id": source, "spell_id": str(record.get("spell_id", "")), "caster_id": str(record.get("caster_id", "")), "end_reason": end_reason, "cause": cause.duplicate(true), "record": record}
 	if not projection_receipt.is_empty(): event["projection"] = projection_receipt
 	if target is Dictionary:
 		target["spell_effects"] = all_records
 		if not has_spell(target, "animal_friendship"):
 			target.erase("animal_friendship_caster_ids")
 	# S-086: the one final end event fires only its reason-matched follow-ups.
-	event["aftermath"] = SourceEndAftermathRules.fire(target, record, event)
+	finish_source_end(target, event)
+	return event
+
+## Shared final-event publication for spell removal and supported mode endings.
+static func finish_source_end(target, event: Dictionary) -> void:
+	event["aftermath"] = SourceEndAftermathRules.fire(target, event.record, event)
+	LocatedSourceEndRules.enqueue(event)
 	_source_end_events.append(event.duplicate(true))
 	while _source_end_events.size() > 128: _source_end_events.pop_front()
-	return event
 
 static func source_end_events() -> Array[Dictionary]:
 	return _source_end_events.duplicate(true)
@@ -295,7 +306,9 @@ static func _advance(target, source: String, seconds: int) -> void:
 		return # Repeat-save spells can persist until their own rules end the grant.
 	var remaining := int(record["remaining_seconds"]) - seconds
 	if remaining <= 0:
-		remove(target, source, "expired", {"remaining_before": int(record["remaining_seconds"]), "elapsed_seconds": seconds})
+		var before := int(record["remaining_seconds"])
+		record["remaining_seconds"] = 0
+		remove(target, source, "expired", {"remaining_before": before, "elapsed_seconds": seconds})
 		return
 	record["remaining_seconds"] = remaining
 	var sources: Dictionary = target.condition_sources if target is Character else target.get("condition_sources", {})
@@ -396,6 +409,10 @@ static func advance_time(targets: Array, elapsed_seconds: int) -> void:
 	resolve_elapsed_repeat_saves(targets, cursor)
 	while cursor < final_seconds:
 		var boundary := final_seconds
+		for actor in casters:
+			for mode in actor.feature_modes.values():
+				if bool(mode.get("active", false)) and int(mode.get("remaining_seconds", 0)) > 0:
+					boundary = mini(boundary, cursor + int(mode.remaining_seconds))
 		for target in targets:
 			for source in records(target):
 				var record: Dictionary = records(target)[source]
@@ -405,6 +422,7 @@ static func advance_time(targets: Array, elapsed_seconds: int) -> void:
 					var next_at := int(record.get("repeat_save_next_at_seconds", final_seconds))
 					if next_at > cursor: boundary = mini(boundary, next_at)
 		GameManager.campaign_elapsed_seconds = boundary
+		for actor in casters: FeatureModeRules.advance_time(actor, boundary - cursor)
 		for target in targets:
 			for source in records(target).keys():
 				if records(target).has(source): _advance(target, str(source), boundary - cursor)
@@ -415,8 +433,6 @@ static func advance_time(targets: Array, elapsed_seconds: int) -> void:
 		resolve_elapsed_repeat_saves(targets, cursor)
 	GameManager.campaign_elapsed_seconds = final_seconds
 	reconcile(casters, targets)
-	for actor in casters:
-		FeatureModeRules.advance_time(actor, elapsed_seconds)
 
 static func resolve_elapsed_repeat_saves(targets: Array, now_seconds: int) -> void:
 	for target in targets:
@@ -438,9 +454,12 @@ static func end_concentration(caster: Character, targets: Array) -> bool:
 	var source := str(caster.concentrating_on.get("effect_source", ""))
 	if source.is_empty():
 		return false
+	var recipients := targets.duplicate()
+	for target in caster.concentrating_on.get("targets", []):
+		if target not in recipients: recipients.append(target)
 	# The caster's own source never needs a strong self-reference in targets.
 	remove(caster, source, "concentration_ended", {"caster_id": caster_id(caster)})
-	for target in targets:
+	for target in recipients:
 		if not target is Character or target != caster: remove(target, source, "concentration_ended", {"caster_id": caster_id(caster)})
 	caster.concentrating_on.clear()
 	return true
@@ -477,6 +496,7 @@ static func reconcile(casters: Array, targets: Array) -> void:
 			if bool(record["concentration"]) and (owner == null or str(owner.concentrating_on.get("effect_source", "")) != source):
 				remove(target, str(source))
 	for caster: Character in casters:
+		TetherRules.prune(caster)
 		var source := str(caster.concentrating_on.get("effect_source", ""))
 		if source.is_empty():
 			continue
@@ -498,6 +518,7 @@ static func reconcile(casters: Array, targets: Array) -> void:
 			end_concentration(caster, targets)
 		else:
 			caster.concentrating_on["targets"] = held
+		TetherRules.reconcile(caster, targets)
 
 ## Monsters have no persistent campaign identity. Their effects end with the
 ## encounter; surviving party effects keep their seconds and stable caster ID.
@@ -506,6 +527,8 @@ static func finish_encounter(casters: Array, targets: Array) -> void:
 		if target is Dictionary:
 			for source in records(target).keys():
 				remove(target, str(source))
+	for caster in casters:
+		if caster is Character: TetherRules.reconcile(caster, targets)
 	var party_targets: Array = targets.filter(func(target): return target is Character)
 	reconcile(casters, party_targets)
 
@@ -519,7 +542,7 @@ static func saved_state_error(dto: Dictionary) -> String:
 
 
 
-static func saved_party_error(characters: Dictionary) -> String:
-	return SpellEffectPersistence.saved_party_error(characters)
+static func saved_party_error(characters: Dictionary, save_data: Dictionary = {}) -> String:
+	return SpellEffectPersistence.saved_party_error(characters, save_data)
 
 

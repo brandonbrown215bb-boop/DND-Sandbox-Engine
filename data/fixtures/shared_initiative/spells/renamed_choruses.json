@@ -1,0 +1,172 @@
+[
+  {
+    "id": "fixture:renamed_owner_chorus",
+    "name": "Renamed owner chorus",
+    "description": "Neutral shared-count fixture with separate member turns.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 0,
+    "target": "self",
+    "concentration": false,
+    "duration_seconds": 600,
+    "classes": [
+      "wizard"
+    ],
+    "effects": [
+      {
+        "type": "create_actor",
+        "template": {
+          "id": "renamed_owner_member",
+          "name": "Chorus",
+          "creature_type": "beast",
+          "size": "medium",
+          "speed": 6,
+          "ability_scores": {
+            "STR": 14,
+            "DEX": 12,
+            "CON": 14,
+            "INT": 6,
+            "WIS": 10,
+            "CHA": 4
+          },
+          "ac": {
+            "base": 13,
+            "per_level": 1
+          },
+          "max_hp": {
+            "base": 20,
+            "per_level": 10
+          },
+          "count": {
+            "base": 3,
+            "per_level": 0
+          },
+          "attack": {
+            "name": "Ward Strike",
+            "damage": "1d8",
+            "damage_type": "force",
+            "range": 24
+          },
+          "features": [
+            {
+              "id": "b039_sturdy",
+              "name": "Sturdy",
+              "effects": [
+                {
+                  "type": "immunity",
+                  "condition": "poisoned"
+                }
+              ]
+            }
+          ],
+          "command": {
+            "cost": "bonus_action",
+            "range_hexes": 6,
+            "orders": [
+              "attack",
+              "dodge"
+            ],
+            "default": "dodge",
+            "control_seconds": 600,
+            "initiative": "shared_count",
+            "owner_incapacitated": "attack_nearest",
+            "owner_dead": "none",
+            "control_expired": "dodge",
+            "concentration_end": "end",
+            "initiative_group": "owner"
+          }
+        },
+        "placement": {
+          "range_hexes": 6,
+          "no_space": "refuse"
+        }
+      }
+    ]
+  },
+  {
+    "id": "fixture:renamed_roll_chorus",
+    "name": "Renamed roll chorus",
+    "description": "Neutral shared-count fixture with separate member turns.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 0,
+    "target": "self",
+    "concentration": false,
+    "duration_seconds": 600,
+    "classes": [
+      "wizard"
+    ],
+    "effects": [
+      {
+        "type": "create_actor",
+        "template": {
+          "id": "renamed_roll_member",
+          "name": "Chorus",
+          "creature_type": "beast",
+          "size": "medium",
+          "speed": 6,
+          "ability_scores": {
+            "STR": 14,
+            "DEX": 12,
+            "CON": 14,
+            "INT": 6,
+            "WIS": 10,
+            "CHA": 4
+          },
+          "ac": {
+            "base": 13,
+            "per_level": 1
+          },
+          "max_hp": {
+            "base": 20,
+            "per_level": 10
+          },
+          "count": {
+            "base": 3,
+            "per_level": 0
+          },
+          "attack": {
+            "name": "Ward Strike",
+            "damage": "1d8",
+            "damage_type": "force",
+            "range": 24
+          },
+          "features": [
+            {
+              "id": "b039_sturdy",
+              "name": "Sturdy",
+              "effects": [
+                {
+                  "type": "immunity",
+                  "condition": "poisoned"
+                }
+              ]
+            }
+          ],
+          "command": {
+            "cost": "bonus_action",
+            "range_hexes": 6,
+            "orders": [
+              "attack",
+              "dodge"
+            ],
+            "default": "dodge",
+            "control_seconds": 600,
+            "initiative": "shared_count",
+            "owner_incapacitated": "attack_nearest",
+            "owner_dead": "none",
+            "control_expired": "dodge",
+            "concentration_end": "end",
+            "initiative_group": "roll"
+          }
+        },
+        "placement": {
+          "range_hexes": 6,
+          "no_space": "refuse"
+        }
+      }
+    ]
+  }
+]

@@ -106,14 +106,36 @@ S-179 governs mode selection, surface traversal requirements, terrain multiplier
 
 Shared creation/arrival now consumes these queries through
 [placement and factory controls](created-actors-and-placement.md#factory-and-legal-arrival).
-It reserves distinct single-cell destinations and rechecks occupancy, walls,
-plane and the chosen template's clearance before payment. Legal exit placement
-before a final save/outcome remains unfinished (S-121).
+It reserves distinct size-based footprints and rechecks occupancy, walls,
+plane and the chosen template's clearance before payment. S-121 now uses the
+same query for a successful numeric save's required exit: it captures the
+original roll/total/DC, suspends before damage or failed-save effects, offers
+only legal destination cells, and rechecks the actor's location, size, plane,
+the complete footprint, occupancy, walls and declared clearance after the choice. The actor moves once
+only after that check. If no exit is legal, the authored `no_space_outcome`
+either changes the save to failure or preserves its captured outcome. Save-bonus
+costs whose policy depends on the final outcome stay reserved until exit
+settlement, then commit or refund against that outcome.
+Settlement resumes the original saving-throw context, retaining its source and
+slot receipts without repeating Sanctuary, interruption checks or cast costs.
+
+The verified S-121 host is a flat, single-target numeric saving throw in combat
+and local-room exploration. The room host binds the saved party coordinates,
+room plane and live grid, and the actual room-map choice/cancel control resumes
+the captured continuation. Stepped, multi-target, attack, repeat-save, missing-
+save and recipient-exemption combinations are rejected. Cancellation,
+stale/duplicate answers and destinations that become occupied, blocked or too
+small for declared clearance refuse without movement or premature consequences.
+While the room map choice is open, competing room controls are disabled;
+closing the room cancels the captured continuation. Ordinary room healing and
+buff casts retain their existing Cast route.
+Containment and swallowing remain outside this slice.
 
 The review checks actual combat movement and loaded physical/spatial spell
-selection, plus pure actor/object/copy queries. Placement uses the existing
-single-cell token representation with vertical body clearance; it does not
-reserve a multi-cell footprint for Large or larger bodies. No catalog conversion,
+selection, plus pure actor/object/copy queries. Ordinary movement uses the existing
+single-cell token representation. Creation and required save exits use the
+[explicit size-based footprint policy](created-actors-and-placement.md#factory-and-legal-arrival);
+ordinary movement does not yet enforce those footprints. No catalog conversion,
 monster movement-mode AI, broad exploration-mode integration, phasing or
 passenger movement is certified. Accepted paths still reserve their whole route
 before opportunity/zone interruptions; this slice's zero-spend guarantee covers
@@ -121,3 +143,8 @@ initially refused movement, not refunds for an interrupted accepted route.
 
 Current review evidence and slice disposition:
 [Batches 029/030 review](../../.artifacts/planning/vocabulary-reports/batch-029-030-review.md).
+
+Containment admission uses the same size/plane facts. Internal bodies report no
+external position through `PhysicalFactsRules.get_location`; their container
+identity and separately queried external origin are retained. Internal bodies
+do not reserve their remembered entry cell. See [containment](containment.md).

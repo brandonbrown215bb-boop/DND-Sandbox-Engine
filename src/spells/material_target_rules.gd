@@ -61,7 +61,9 @@ static func _tag(entry: Dictionary, s: Dictionary) -> String:
 		kind = str(c.creature_type)
 		size = str(c.get_creature_size())
 	else:
-		if entry.get("is_alive", true) or bool(entry.get("material_used", false)): return ""
+		var body: Dictionary = entry.get("_local_room_object", entry)
+		if entry.get("is_alive", true) or bool(body.get("removed", false)) or bool(body.get("material_used", false)): return ""
+		if int(body.get("preserved_until", 0)) > int(GameManager.campaign_elapsed_seconds): return ""
 		remains = str(entry.get("remains", "intact"))
 		kind = str(entry.get("creature_type", ""))
 		size = str(entry.get("size", "medium"))
@@ -116,6 +118,13 @@ static func reservation(cast: SpellCastContext, effect: Dictionary, factory: Dic
 static func _consume_refs(picks: Array) -> int:
 	var used := 0
 	for entry in picks:
+		if entry.has("_local_room_object") and entry["_local_room_object"] is Dictionary:
+			var room_object: Dictionary = entry["_local_room_object"]
+			if bool(room_object.get("removed", false)) or bool(room_object.get("material_used", false)): continue
+			if int(room_object.get("preserved_until", 0)) > int(GameManager.campaign_elapsed_seconds): continue
+			room_object["removed"] = true
+			used += 1
+			continue
 		var c: Variant = entry.get("character")
 		if c is Character:
 			if USED in c.corpse_state.get("recovery_restrictions", []): continue
