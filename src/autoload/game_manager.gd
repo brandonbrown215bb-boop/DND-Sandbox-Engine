@@ -385,6 +385,7 @@ func advance_campaign_time(elapsed_seconds: int) -> Array[Dictionary]:
 	var prior_day := floori(float(campaign_elapsed_seconds) / 86400.0)
 	campaign_elapsed_seconds += elapsed_seconds
 	var recovery_receipts: Array[Dictionary] = []
+	var work_receipts: Array = []
 	for character in PartyManager.characters.values():
 		if character is Character:
 			recovery_receipts.append_array(ResourcePoolRules.advance_campaign_recovery(character, prior_seconds, campaign_elapsed_seconds))
@@ -410,7 +411,7 @@ func advance_campaign_time(elapsed_seconds: int) -> Array[Dictionary]:
 		character.expire_campaign_modifiers(campaign_elapsed_seconds)
 		LightSourceRules.advance_inventory(character.inventory, elapsed_seconds)
 		ActiveTimeRules.settle(character, elapsed_seconds, campaign_elapsed_seconds)
-		WorkRules.settle(character, elapsed_seconds, campaign_elapsed_seconds)
+		work_receipts.append_array(WorkRules.settle(character, elapsed_seconds, campaign_elapsed_seconds)) # Batch 074: site pauses/interruptions reach the log.
 		BarbarianRules.advance_rage_time(character, elapsed_seconds)
 		BardicInspirationRules.advance_time(character, elapsed_seconds)
 		CorpseRules.advance_time(character, campaign_elapsed_seconds)
@@ -418,6 +419,8 @@ func advance_campaign_time(elapsed_seconds: int) -> Array[Dictionary]:
 	animal_messenger_deliveries.assign(result.get("deliveries", []))
 	var notifications: Array[Dictionary] = result.get("notifications", [])
 	notifications.append_array(containment_receipts)
+	for receipt in work_receipts:
+		if receipt is Dictionary and receipt.has("message"): notifications.append(receipt)
 	for receipt in recovery_receipts:
 		notifications.append({"type":"resource_pool_recovered", "receipt":receipt})
 	return notifications
