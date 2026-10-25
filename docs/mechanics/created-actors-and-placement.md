@@ -188,7 +188,8 @@ the same invocation twice. The local-room host (`LocalRoomRules.cast_teleport`)
 uses the same rules against `ContainmentRules.placement_state` (party, familiars,
 steeds, created creatures and actors, objects) before `spend_spell_slot`.
 Forced movement (spell push, Push mastery, barbarian push) stops before a step
-whose full footprint is not legal. Find Steed arrival still checks only its
+whose full footprint is not legal; a body that already overlaps something at its
+start is not trapped by that pre-existing overlap. Find Steed arrival still checks only its
 center cell (PARTIAL).
 
 Exit-before-settle (S-121, card Q-20261021-043117-1c72) is verified only for
