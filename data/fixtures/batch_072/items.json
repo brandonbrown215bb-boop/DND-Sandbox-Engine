@@ -1,0 +1,17 @@
+[
+  {"id": "fixture:b072_ember_ring", "name": "Fixture Ember Ring", "description": "Neutral fixture: its last charge ends its spell permission but its AC benefit stays.", "type": "ring", "magical": true, "rarity": "uncommon", "value": 0,
+   "maximum_charges": 2, "charge_recovery": {"minimum": 1, "maximum": 2, "cadence": "dawn"},
+   "source_benefits": [{"stat": "AC", "amount": 1}],
+   "spell_permissions": [{"spells": ["fixture:b072_mend"], "ability": "INT", "charges": 1, "maximum_spell_level": 1, "allowed_components": []}],
+   "last_charge_aftermath": {"outcome": "degrade", "keep_properties": ["source_benefits"]}},
+  {"id": "fixture:b072_husk_ring", "name": "Fixture Husk Ring", "description": "Neutral fixture: its last charge ends every magical property.", "type": "ring", "magical": true, "rarity": "uncommon", "value": 0,
+   "maximum_charges": 1, "charge_recovery": {"minimum": 1, "maximum": 1, "cadence": "dawn"},
+   "source_benefits": [{"stat": "AC", "amount": 1}],
+   "spell_permissions": [{"spells": ["fixture:b072_mend"], "ability": "INT", "charges": 1, "maximum_spell_level": 1, "allowed_components": []}],
+   "last_charge_aftermath": {"outcome": "degrade", "keep_properties": []}},
+  {"id": "fixture:b072_keeper_ring", "name": "Fixture Keeper Ring", "description": "Neutral fixture: its last charge keeps both properties.", "type": "ring", "magical": true, "rarity": "uncommon", "value": 0,
+   "maximum_charges": 1, "charge_recovery": {"minimum": 1, "maximum": 1, "cadence": "dawn"},
+   "source_benefits": [{"stat": "AC", "amount": 1}],
+   "spell_permissions": [{"spells": ["fixture:b072_mend"], "ability": "INT", "charges": 0, "maximum_spell_level": 1, "allowed_components": []}],
+   "last_charge_aftermath": {"outcome": "degrade", "keep_properties": ["source_benefits", "spell_permissions"]}}
+]

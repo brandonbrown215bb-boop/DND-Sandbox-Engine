@@ -23,7 +23,10 @@ static func effect_error(effect: Dictionary) -> String:
 
 ## Whether the item definition actually has this magical property.
 static func has_property(definition_id: String, property: String) -> bool:
-	var item := DataLoader.get_item(definition_id)
+	return definition_has(DataLoader.get_item(definition_id), property)
+
+## Same query on a definition dictionary (also used at load time by LastChargeRules).
+static func definition_has(item: Dictionary, property: String) -> bool:
 	if not (bool(item.get("magical", false)) or item.has("rarity")): return false
 	if property == "attachment_sets": return not item.get("attachments", {}).get("sets", []).is_empty()
 	if property == "item_effects": return not item.get("effects", []).is_empty()
@@ -35,7 +38,7 @@ static func _affected(actor: Character, effect: Dictionary) -> Dictionary:
 	var affected := {}
 	for copy_id in inv.copies.equipped.values():
 		var definition := str(inv.copies.records.get(copy_id, {}).get("definition_id", ""))
-		var props: Array = effect.properties.filter(func(p): return has_property(definition, str(p)) and not destroyed(inv.copies.records.get(copy_id, {}), str(p)))
+		var props: Array = effect.properties.filter(func(p): return has_property(definition, str(p)) and not destroyed(inv.copies.records.get(copy_id, {}), str(p)) and not LastChargeRules.lost(inv.copies.records.get(copy_id, {}), str(p)))
 		if not props.is_empty(): affected[str(copy_id)] = props
 	return affected
 
@@ -75,6 +78,7 @@ static func destroyed(record: Dictionary, property: String) -> bool:
 static func active(actor, copy_id: String, property: String) -> bool:
 	if not actor is Character: return true
 	if destroyed(actor.inventory.copies.records.get(copy_id, {}), property): return false
+	if LastChargeRules.lost(actor.inventory.copies.records.get(copy_id, {}), property): return false # S-060/S-203: last charge spent; keep_properties decides.
 	for record in actor.spell_effects.values():
 		var s: Variant = record.get("magic_suppression") if record is Dictionary else null
 		if s is Dictionary and str(s.get("mode", "")) == "suppress" and property in s.get("copies", {}).get(copy_id, []): return false

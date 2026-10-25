@@ -1,0 +1,3 @@
+[
+  {"id": "fixture:b072_mend", "name": "072 mend", "description": "Neutral fixture self-heal cast through an item charge.", "execution": "shared", "level": 1, "school": "evocation", "casting_time": "action", "range": 0, "target": "self", "attack_type": "none", "components": [], "classes": ["wizard"], "effects": [{"type": "heal", "value": 2}]}
+]
