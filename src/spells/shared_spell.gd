@@ -5,7 +5,7 @@ extends RefCounted
 
 const CONDITIONS := ["blinded", "deafened", "frightened", "poisoned", "prone", "restrained", "stunned", "paralyzed", "incapacitated", "blessed", "baned", "shield_of_faith"]
 const ABILITIES := ["STR", "DEX", "CON", "INT", "WIS", "CHA"]
-const EFFECTS := ["heal", "temporary_hp", "grant_condition", "remove_condition", "area_selection", "grant_source_benefits", "grant_damage_link", "grant_damage_response", "create_actor", "actor_projection", "suppress_item_magic", "bind_tether", "max_hp_source", "settle_death"]
+const EFFECTS := ["heal", "temporary_hp", "grant_condition", "remove_condition", "area_selection", "grant_source_benefits", "grant_damage_link", "grant_damage_response", "create_actor", "actor_projection", "suppress_item_magic", "bind_tether", "max_hp_source", "settle_death", "destroy_object"]
 const STEP_FIELDS := ["id", "type", "gate", "gate_step", "target", "shape", "radius", "size", "attack_type", "damage", "damage_type", "damage_components", "component_id", "scaling", "upcast", "save", "half_on_save", "save_context", "damage_scale_by_outcome", "damage_dice_policy", "damage_result_multiplier", "damage_reductions", "damage_bypasses", "recipient_exemption_choice", "effects", "incoming_negation", "incoming_negation_rule", "physical_requirements", "spatial_requirements"]
 const STEP_TYPES := ["attack", "save", "damage", "effect"]
 const STEP_GATES := ["always", "hit", "miss", "failed_save", "successful_save"]
@@ -138,6 +138,12 @@ static func _validate_single_effect(effect: Variant) -> String:
 		allowed.append("policy")
 		var death_error := ZeroHpAftermathRules.explicit_policy_error(effect.get("policy"))
 		if not death_error.is_empty(): return death_error
+	elif kind == "destroy_object":
+		# Batch 081 (#45 follow-up): explicit object destruction, separate from creature death.
+		if effect.size() != 2 or not effect.has("policy"): return "Object destruction effects accept only type and policy."
+		allowed.append("policy")
+		var object_error := ObjectDestructionRules.policy_error(effect.get("policy"))
+		if not object_error.is_empty(): return object_error
 	elif kind == "grant_damage_link":
 		if effect.size() != 2: return "Damage link grants accept only type and policy."
 		allowed.append("policy")
@@ -770,8 +776,20 @@ static func apply_custom_effects(caster: Character, target, effects: Array, resu
 			"settle_death":
 				var settled := ZeroHpAftermathRules.settle_explicit(target, effect.policy, str(result.get("effect_cast", {}).get("source_id", "")), caster)
 				result["settle_death"] = settled
-				if settled.get("applied", false): messages.append("%s %s outright (%s)." % [target_name, "is destroyed" if str(settled.outcome) == "destruction" else "dies", str(settled.remains)])
+				if settled.get("applied", false):
+					result["killed"] = true
+					messages.append("%s %s outright (%s)." % [target_name, "is destroyed" if str(settled.outcome) == "destruction" else "dies", str(settled.remains)])
+				elif settled.get("fallback", false):
+					# Batch 081: the policy's declared fallback damage replaced death.
+					result["damage"] = int(result.get("damage", 0)) + int(settled.damage)
+					result["killed"] = (int(target.get("current_hp", 0)) if target is Dictionary else target.current_hp) <= 0
+					messages.append("%s takes %d %s damage instead of dying." % [target_name, int(settled.damage), str(settled.damage_type)])
 				else: messages.append("%s: %s" % [target_name, str(settled.get("reason", "no effect"))])
+			"destroy_object":
+				var wrecked := ObjectDestructionRules.destroy(target, effect.policy, str(result.get("effect_cast", {}).get("source_id", "")))
+				result["destroy_object"] = wrecked
+				if wrecked.get("applied", false): messages.append("%s is destroyed." % target_name)
+				else: messages.append("%s: %s" % [target_name, str(wrecked.get("reason", "no effect"))])
 			"grant_damage_link":
 				if DamageLinkRules.grant(target, result.get("effect_cast", {}), effect.policy):
 					messages.append("%s gains a source-owned damage link." % target_name)

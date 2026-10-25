@@ -195,7 +195,7 @@ static func resolve(caster: Character, target_entity, spell_data: Dictionary, de
 		if not caller_owns_settlement and not result.has("damage_request") and not result.has("save_bonus_request") and not result.has("weapon_attack_bonus_request") and not result.has("concentration_request") and not result.has("save_exit_request"):
 			result["cast_settlement"] = CastInterruptionRules.settle_cast_outcome(cast, CastInterruptionRules.result_outcome(cast.spell, result))
 		return result
-	if str(cast.spell.get("id", "")) in ["power_word_heal", "power_word_kill"]:
+	if str(cast.spell.get("id", "")) == "power_word_heal": # Batch 081: Power Word Kill is data (settle_death + declared fallback).
 		return SpellHealingResolver._resolve_words_power_spell(cast.caster, cast.target, cast.spell, cast.decisions)
 
 	if cast.spell.has("damage_per_dart"):

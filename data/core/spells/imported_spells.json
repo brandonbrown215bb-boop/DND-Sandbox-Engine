@@ -5133,6 +5133,7 @@
   {
     "id": "power_word_kill",
     "name": "Power Word Kill",
+    "execution": "shared",
     "description": "Compel one creature you can see within range to die if it has 100 Hit Points or fewer. Otherwise, it takes 12d12 Psychic damage.",
     "level": 9,
     "school": "enchantment",
@@ -5142,10 +5143,23 @@
     "attack_type": "none",
     "effects": [
       {
-        "type": "power_word_kill",
-        "threshold_hp": 100,
-        "damage": "12d12",
-        "damage_type": "psychic"
+        "type": "settle_death",
+        "policy": {
+          "id": "power_word_kill",
+          "outcome": "death",
+          "remains": "intact",
+          "gear": "retained",
+          "cause": "power_word_kill",
+          "at_zero": "settle",
+          "eligibility": {
+            "max_current_hp": 100
+          },
+          "fallback": {
+            "when": "above_max_current_hp",
+            "damage": "12d12",
+            "damage_type": "psychic"
+          }
+        }
       }
     ],
     "classes": [

@@ -382,6 +382,16 @@ static func validate_creatures_and_components(cast: SpellCastContext) -> bool:
 			cast.hud.add_log("[color=orange]%s: %s[/color]" % [cast.spell.get("name", "This spell"), death_error])
 			cast.highlight_reachable.call()
 			return false
+	if SharedSpell.has_effect(cast.spell, "destroy_object"):
+		# Batch 081: creatures, destroyed and magic objects refuse before any cost.
+		var wreck_target = _death_target(cast)
+		if wreck_target is Dictionary and wreck_target.is_empty(): wreck_target = null
+		elif wreck_target is Dictionary and wreck_target not in cast.monsters: wreck_target = CombatObjectRules.make_resolution_target(wreck_target)
+		var wreck_error := ObjectDestructionRules.cast_error(wreck_target, cast.spell)
+		if not wreck_error.is_empty():
+			cast.hud.add_log("[color=orange]%s: %s[/color]" % [cast.spell.get("name", "This spell"), wreck_error])
+			cast.highlight_reachable.call()
+			return false
 	if cast.spell.has("spatial_requirements"):
 		var req_space: Dictionary = cast.spell["spatial_requirements"]
 		var room := LocalRoomCombat.room()

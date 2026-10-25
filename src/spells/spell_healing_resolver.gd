@@ -1,4 +1,5 @@
-## Direct healing, stabilization and power-word results.
+## Direct healing, stabilization and Power Word Heal results.
+## Batch 081: Power Word Kill moved to data (settle_death with a declared fallback).
 class_name SpellHealingResolver
 extends RefCounted
 
@@ -26,26 +27,6 @@ static func _resolve_words_power_spell(caster: Character, target_entity, spell_d
 				conditions.erase(condition)
 			target_entity["conditions"] = conditions
 		return {"success": true, "hit": true, "damage": 0, "healing": healed, "message": "%s regains all Hit Points from Power Word Heal." % target_name}
-	if target_entity is Character:
-		var name: String = target_entity.character_name
-		if target_entity.current_hp <= 100:
-			CorpseRules.mark_dead(target_entity, "power_word_kill")
-			SpellEffects.end_concentration(target_entity, target_entity.concentrating_on.get("targets", []))
-			target_entity.concentrating_on.clear()
-			return {"success": true, "hit": true, "damage": 0, "killed": true, "message": "%s dies from Power Word Kill." % name}
-		var rolled := Dice.parse_dice_string("12d12")
-		var actual := int(CombatAction.resolve_damage(target_entity, rolled, "psychic", reaction_decisions, false, false, caster)["damage"])
-		return {"success": true, "hit": true, "damage": actual, "killed": target_entity.is_dead(), "message": "%s takes %d psychic damage from Power Word Kill." % [name, actual]}
-	if target_entity is Dictionary:
-		var name := str(target_entity.get("name", "Target"))
-		var hp := int(target_entity.get("current_hp", 0))
-		if hp <= 100:
-			target_entity["current_hp"] = 0
-			target_entity["is_alive"] = false
-			return {"success": true, "hit": true, "damage": 0, "killed": true, "message": "%s dies from Power Word Kill." % name}
-		var rolled := Dice.parse_dice_string("12d12")
-		var actual := int(CombatAction.resolve_damage(target_entity, rolled, "psychic", reaction_decisions, false, false, caster)["damage"])
-		return {"success": true, "hit": true, "damage": actual, "killed": int(target_entity["current_hp"]) <= 0, "message": "%s takes %d psychic damage from Power Word Kill." % [name, actual]}
 	return {"success": false, "message": "Power Word has no valid creature target."}
 
 
