@@ -79,10 +79,10 @@ static func sources(actor) -> Dictionary:
 	if not actor.get("max_hp_sources", null) is Dictionary: actor["max_hp_sources"] = {}
 	return actor["max_hp_sources"]
 
-static func _aura(actor) -> Dictionary:
+static func _aura(actor) -> Array:
 	if actor is Character: return actor.aura_of_life_sources
-	var aura: Variant = actor.get("aura_of_life_sources", {})
-	return aura if aura is Dictionary else {}
+	var aura: Variant = actor.get("aura_of_life_sources", [])
+	return aura if aura is Array else []
 
 static func _max(actor) -> int:
 	return actor.max_hp if actor is Character else int(actor.get("max_hp", 0))
@@ -202,8 +202,10 @@ static func grant_from_cast(target, cast: Dictionary, rule: Dictionary) -> Dicti
 	# restores the maximum of a body that died from it.
 	if not bool(receipt.get("zero_limit_death", false)):
 		record["max_hp_source"] = str(rule.id)
-		SpellEffects.records(target)[source] = record
-		if target is Dictionary: target["spell_effects"] = SpellEffects.records(target)
+		record["recipient_id"] = SpellEffects.caster_id(target) if target is Character else str(target.get("id", ""))
+		var all_records := SpellEffects.records(target)
+		all_records[source] = record
+		if target is Dictionary: target["spell_effects"] = all_records
 	return receipt
 
 ## Saved spell-record link: the recipient DTO must own the source and the
@@ -279,3 +281,14 @@ static func restore(actor: Character, data: Dictionary) -> void:
 
 static func _int(v: Variant, lo: int, hi: int) -> bool:
 	return (v is int or v is float) and is_finite(float(v)) and float(v) == floor(float(v)) and int(v) >= lo and int(v) <= hi
+
+## Pre-cost refusal for a cast whose shared effects include max_hp_source:
+## a dead/settled body or a protected maximum refuses before any slot is paid.
+static func cast_error(target, spell: Dictionary) -> String:
+	if not (target is Character or target is Dictionary): return ""
+	for effect in spell.get("effects", []):
+		if not (effect is Dictionary and str(effect.get("type", "")) == "max_hp_source"): continue
+		var alive: bool = target.is_alive if target is Character else bool(target.get("is_alive", true)) and not target.has("zero_hp_aftermath")
+		if not alive or _max(target) <= 0: return "%s is dead; its Hit Point maximum cannot change." % str(target.get("name") if target is Dictionary else target.character_name)
+		if str(effect.get("rule", {}).get("kind", "")) == "reduction" and not _aura(target).is_empty(): return "That creature's Hit Point maximum is protected."
+	return ""

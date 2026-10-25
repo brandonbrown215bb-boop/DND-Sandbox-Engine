@@ -9,13 +9,22 @@ extends RefCounted
 const SLOT := "batch_071_monster_max_hp"
 const SPELLS := [Batch071Checks.WITHER, Batch071Checks.SAP, Batch071Checks.VIGOR]
 
+static var _prior := {}
+
 static func _arm(c: Character) -> void:
+	_prior[c] = [c.known_spells.duplicate(), c.wizard_spellbook.duplicate(), c.feature_choices.duplicate(true), c.features.duplicate(true), c.spell_slots.duplicate(true)]
 	c.known_spells.assign(SPELLS)
 	c.wizard_spellbook.assign(SPELLS)
 	c.feature_choices[c.get_spellcasting_feature_id()] = SPELLS.duplicate()
 	c.features.append({"id": "fixture:b071_prepared_permission", "effects": [{"type": "always_prepared_spells", "spells": SPELLS.duplicate(), "ability": "INT", "maximum_spell_level": 1}]})
 	c.spell_slots["1"] = 4
 	c.willingness = "willing"
+
+static func _disarm(c: Character) -> void:
+	var p: Array = _prior.get(c, [])
+	if p.is_empty(): return
+	c.known_spells.assign(p[0]); c.wizard_spellbook.assign(p[1]); c.feature_choices = p[2]; c.features = p[3]; c.spell_slots = p[4]
+	_prior.erase(c)
 
 static func _turn(combat: Node, c: Character) -> void:
 	for i in combat.player_entities.size():
@@ -76,7 +85,7 @@ static func run(h: Node) -> void:
 	ok = await Batch031Controls._cast_to(h, combat, bob, Batch071Checks.SAP, Vector2i(2, 0))
 	h._assert(ok and int(gob.max_hp) == 10 and int(gob.current_hp) == 10, "071 live switching concentration to a different spell: bob's wither ends, alice's holds, sap adds (max 10)")
 	SpellEffects.end_concentration(alice, [gob])
-	h._assert(int(gob.max_hp) == 16 and int(gob.current_hp) == 10, "071 live ending alice's concentration restores 6; current is not raised (16/10)")
+	h._assert(int(gob.max_hp) == 16 and int(gob.current_hp) == 10, "071 live ending alice's concentration restores 6; current is not raised (16/10: %d/%d, conc=%s, sources=%s)" % [int(gob.max_hp), int(gob.current_hp), str(alice.concentrating_on.keys()), str(MaxHpSourceRules.sources(gob))])
 	_turn(combat, alice)
 	ok = await Batch031Controls._cast_to(h, combat, alice, Batch071Checks.WITHER, Vector2i(3, 0))
 	var after: Dictionary = husk.get("zero_hp_aftermath", {})
@@ -94,6 +103,8 @@ static func run(h: Node) -> void:
 	h._assert(ok and alice.max_hp == base + 5, "071 live vigor on alice raises her maximum by 5")
 	GameManager.test_mode = true
 	h._teardown_scene(combat)
+	_disarm(alice)
+	_disarm(bob)
 	var dto := alice.to_dict()
 	var json_back := Character.new()
 	json_back.from_dict(JSON.parse_string(JSON.stringify(dto)))

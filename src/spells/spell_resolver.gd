@@ -77,6 +77,8 @@ static func resolve(caster: Character, target_entity, spell_data: Dictionary, de
 
 	var projection_error := ActorProjectionRules.cast_error(caster, cast.spell, cast.spatial_host)
 	if not projection_error.is_empty(): return {"success":false,"refused":true,"message":projection_error}
+	var max_hp_error := MaxHpSourceRules.cast_error(cast.target, cast.spell)
+	if not max_hp_error.is_empty(): return {"success":false,"refused":true,"message":max_hp_error}
 	# A validated exploration ritual finishes before its new effect begins.
 	if owned_host_valid and invocation_host.ritual_seconds > 0:
 		var party: Array = PartyManager.characters.values()

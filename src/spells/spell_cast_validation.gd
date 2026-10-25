@@ -369,6 +369,12 @@ static func validate_creatures_and_components(cast: SpellCastContext) -> bool:
 				cast.hud.add_log("[color=orange]%s: Target is ineligible (%s).[/color]" % [cast.spell.get("name", "This spell"), phys_eval.reason])
 				cast.highlight_reachable.call()
 				return false
+	if SharedSpell.has_effect(cast.spell, "max_hp_source"):
+		var max_hp_error := MaxHpSourceRules.cast_error(_physical_target(cast, cast.target_coord, 0), cast.spell)
+		if not max_hp_error.is_empty():
+			cast.hud.add_log("[color=orange]%s: %s[/color]" % [cast.spell.get("name", "This spell"), max_hp_error])
+			cast.highlight_reachable.call()
+			return false
 	if cast.spell.has("spatial_requirements"):
 		var req_space: Dictionary = cast.spell["spatial_requirements"]
 		var room := LocalRoomCombat.room()

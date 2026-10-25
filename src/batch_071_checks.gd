@@ -81,6 +81,13 @@ static func _overlap(check: Callable) -> void:
 	var mid2 := int(m2.max_hp)
 	SpellEffects.end_concentration(a, [m2])
 	check.call(mid == 14 and mid2 == 14 and int(m2.max_hp) == 20, "071 reverse removal order: 14, 14, 20 (%d/%d/%d)" % [mid, mid2, int(m2.max_hp)])
+	# A real encounter record may carry no spell_effects key yet.
+	var bare := monster("b071_bare", 20)
+	bare.erase("spell_effects")
+	var rbare := cast(c, bare, SAP)
+	var linked: bool = SpellEffects.records(bare).get(rbare._source, {}).get("max_hp_source", "") == "b071:sap"
+	SpellEffects.end_concentration(c, [bare])
+	check.call(linked and int(bare.max_hp) == 20, "071 a record with no spell_effects key still gets the link, and concentration end restores it")
 	# Encounter end removes every monster source.
 	var m3 := monster("b071_m3", 20)
 	cast(a, m3, SAP)
@@ -88,7 +95,7 @@ static func _overlap(check: Callable) -> void:
 	check.call(int(m3.max_hp) == 20 and MaxHpSourceRules.sources(m3).is_empty(), "071 encounter end removes the monster's cast-owned source")
 	# Aura-protected record refuses a reduction without changing anything.
 	var m4 := monster("b071_m4", 20)
-	m4["aura_of_life_sources"] = {"aura": true}
+	m4["aura_of_life_sources"] = ["aura"]
 	var r4 := MaxHpSourceRules.apply(m4, DataLoader.get_spell(SAP).effects[0].rule, "x")
 	check.call(not r4.applied and r4.reason == "maximum_protected" and int(m4.max_hp) == 20, "071 a protected record refuses the reduction")
 
@@ -115,7 +122,7 @@ static func _zero(check: Callable) -> void:
 	dead.is_alive = false
 	var slots := int(a.spell_slots["1"])
 	var rd := cast(a, dead, WITHER)
-	check.call(not dead.has("zero_hp_aftermath") and int(dead.max_hp) == 10, "071 an already-dead monster gains no maximum-HP source or remains (cast success=%s, slots %d->%d)" % [str(rd.get("success", false)), slots, int(a.spell_slots["1"])])
+	check.call(rd.get("refused", false) and int(a.spell_slots["1"]) == slots and not dead.has("zero_hp_aftermath") and int(dead.max_hp) == 10, "071 a cast at an already-dead monster is refused before paying: no slot, source or remains (slots %d->%d)" % [slots, int(a.spell_slots["1"])])
 	# Direct single source to zero.
 	var m5 := monster("b071_z3", 6)
 	var r5 := cast(a, m5, WITHER)
