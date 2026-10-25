@@ -253,7 +253,7 @@ native paths stay in place. The source/operation map and drafts are ignored arti
 The batch adds three shared spell definitions and no newly enabled spells.
 Source ownership, costs and saved-record shapes stay on their existing paths;
 native handlers remain for consumers not replaced here. No S-ID or verified-slice
-count is added. S-121's combat save-exit host is now verified; S-122's item-projection controls are delivered in the [control continuation](#item-projection-controls); Batch 066 extends arrival placement to combat and local-room teleport (Misty Step, data-authored distance and sight) and forced-movement steps; Find Steed arrival, multi-target and planar teleports remain PARTIAL in that branch.
+count is added. S-121's combat save-exit host is now verified; S-122's item-projection controls are delivered in the [control continuation](#item-projection-controls); Batch 066 extends arrival placement to combat and local-room teleport (Misty Step, data-authored distance and sight) and forced-movement steps; Find Steed arrival, multi-target and planar teleports, and engulf/swallow escape exits (card 1c72; no host exists yet) remain PARTIAL in that branch.
 
 Acceptance checks: `ConversionBatch001Checks` and
 `conversion_batch_001_flow`, the existing Mass Healing Word/effect-lifetime

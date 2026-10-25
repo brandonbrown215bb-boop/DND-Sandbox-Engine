@@ -191,6 +191,11 @@ Forced movement (spell push, Push mastery, barbarian push) stops before a step
 whose full footprint is not legal. Find Steed arrival still checks only its
 center cell (PARTIAL).
 
+Exit-before-settle (S-121, card Q-20261021-043117-1c72) is verified only for
+the combat save-exit host (`s121_exit_placement_flow`). Engulf/swallow escape
+exits are PARTIAL: no engulf or swallow host exists in the runtime yet, so no
+required escape space is resolved before such an outcome settles.
+
 Optional `material_targets` declares `tags` (`corpse`, `bones`), `range` in
 hexes, optional `creature_types`/`sizes`, and optional `kinds` mapping template
 IDs to required tags. Actual nearby dead Characters and combat monster bodies
