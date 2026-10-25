@@ -16,3 +16,12 @@ static func run(check: Callable) -> void:
 		var r := Dice.parse_dice_string("12 d12")
 		ok = ok and r >= 12 and r <= 144
 	check.call(ok, "083 rolling '12 d12' stays within 12..144")
+	# Review 083: assert the actual dice terms rolled, not just a range a flat 12 would also satisfy.
+	var a := Dice.parse_dice_details("12 d12")
+	var at: Array = a.get("dice_terms", [])
+	check.call(at.size() == 1 and int(at[0]["count"]) == 12 and int(at[0]["sides"]) == 12, "083 review: rolling '12 d12' rolls twelve d12s")
+	var b := Dice.parse_dice_details("2 d8 + 4")
+	var bt: Array = b.get("dice_terms", [])
+	var bsum := 0
+	for v in (bt[0]["results"] if bt.size() == 1 else []): bsum += int(v)
+	check.call(bt.size() == 1 and int(bt[0]["count"]) == 2 and int(bt[0]["sides"]) == 8 and int(b["final_total"]) == bsum + 4, "083 review: rolling '2 d8 + 4' rolls 2d8 and adds 4")
