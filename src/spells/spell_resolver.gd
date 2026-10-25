@@ -96,7 +96,7 @@ static func resolve(caster: Character, target_entity, spell_data: Dictionary, de
 			return {"success":false,"interrupted":true,"ritual_seconds":invocation_host.ritual_seconds,"message":"The ritual was interrupted during its casting time; no spell effect or Material consumption completed."}
 		invocation_host.component_instance_id = caster.inventory.required_spell_component_instance(cast.spell)
 		if bool(cast.spell.get("material_component_consumed", false)) and not invocation_host.component_instance_id.is_empty():
-			caster.inventory.take_instance(invocation_host.component_instance_id)
+			caster.inventory.take_instance(invocation_host.component_instance_id, "destruction")
 	# Deduct spell slot if leveled spell
 	if deduct_slot and spell_level > 0:
 		var slot_result := CombatAction.spend_spell_slot(cast.caster, cast.spell)

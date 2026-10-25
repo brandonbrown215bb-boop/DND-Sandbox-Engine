@@ -58,6 +58,7 @@ static func run(check: Callable) -> void:
 	_unspecified(check)
 	_refusals(check)
 	_saves(check)
+	_consumption(check)
 
 static func _validation(check: Callable) -> void:
 	check.call(BondRules.rule_error(_rule(0)).is_empty() and BondRules.rule_error(DataLoader.get_character_class(Batch042Checks.CLASS_ID).features_by_level["1"][0]).is_empty(), "075 authored loss_causes validate and 042 rules without them still validate")
@@ -148,3 +149,22 @@ static func _saves(check: Callable) -> void:
 		var kept: bool = owns(back, p.a2) and BondRules.bonded(back, PAIR_A) == [p.a2]
 		back.inventory.destroy_instance(p.b1)
 		check.call(BondRules.saved_error(dto).is_empty() and kept and not owns(back, p.b2) and owns(back, p.loose), "075 %s reload: an unauthored give keeps the mate, an authored destruction disposes exactly the other pair's mate" % form)
+
+
+## Review: consuming a bonded copy (use, fuel, component, pool payment) is destruction,
+## so a rule authoring "destruction" disposes the mate; without it the mate survives intact.
+static func _consumption(check: Callable) -> void:
+	for causes in [["destruction"], ["sale"]]:
+		var c := linker("b075_consume_%s" % causes[0])
+		author(c, causes)
+		for i in c.features.size():
+			if c.features[i] is Dictionary and str(c.features[i].get("bond_id", "")) == PAIR_A: c.features[i]["item_types"] = ["consumable"]
+		var p1 := Batch042Checks.add(c, "potion_healing")
+		var p2 := Batch042Checks.add(c, "potion_healing")
+		BondRules.bond(c, PAIR_A, p1)
+		BondRules.bond(c, PAIR_A, p2)
+		c.current_hp = 5
+		var used: Dictionary = c.inventory.consume_instance(p1, c)
+		var disposes: bool = causes[0] == "destruction"
+		check.call(used.get("success", false) and not owns(c, p1), "075 review: drinking a bonded potion consumes it (%s)" % str(causes))
+		check.call(owns(c, p2) != disposes, "075 review: consuming a bonded copy disposes its mate only when loss_causes lists destruction (%s)" % str(causes))

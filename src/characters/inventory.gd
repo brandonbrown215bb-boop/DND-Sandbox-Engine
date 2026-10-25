@@ -784,7 +784,7 @@ func receive_instance(record: Dictionary) -> bool:
 	return true
 
 
-## `cause` is empty for internal consumption (components, fuel); S-162 callers use remove_exact.
+## `cause` is empty only for moves that keep the copy (attach); consumption passes "destruction" (S-162 review).
 func take_instance(id: String, cause := "") -> Dictionary:
 	copies.sync(self)
 	var index := copies.backpack.find(id)
@@ -856,7 +856,7 @@ func consume_instance(id: String, target: Character) -> Dictionary:
 					break
 			if fuel_instance_id.is_empty():
 				return {"success": false, "message": "%s needs one %s to light." % [item.get("name", definition), DataLoader.get_item(fuel_item_id).get("name", fuel_item_id)]}
-			take_instance(fuel_instance_id)
+			take_instance(fuel_instance_id, "destruction")
 		state["light_source_lit"] = true
 		state["light_source_remaining_seconds"] = maxi(1, int(light_source.get("duration_seconds", 0)))
 		record["state"] = state
@@ -870,7 +870,7 @@ func consume_instance(id: String, target: Character) -> Dictionary:
 			return {"success": false, "message": "This item has an unsupported effect."}
 	var results := EventResolver.apply_effects(target, effects)
 	if results.is_empty(): return {"success": false, "message": "Item had no effect."}
-	take_instance(id)
+	take_instance(id, "destruction")
 	return {"success": true, "results": results, "message": "%s used." % item.get("name", definition)}
 
 
@@ -897,7 +897,7 @@ func consume_ration_portion(id: String, target: Character, daily_fraction: float
 	item_state["food_remaining_daily_fraction"] = maxf(0.0, remaining_fraction - consumed_fraction)
 	record["state"] = item_state
 	if item_state["food_remaining_daily_fraction"] <= 0.0001:
-		take_instance(id)
+		take_instance(id, "destruction")
 	else:
 		update_instance(record)
 	target.record_food_intake(consumed_pounds)

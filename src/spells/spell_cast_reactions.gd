@@ -126,7 +126,7 @@ static func _prepare_spell_cast_effects(cast: SpellCastContext) -> void:
 
 	if not bool(cast.spell.get("_ignore_material_components", false)) and bool(cast.spell.get("material_component_consumed", false)) and not cast.component_item_id.is_empty():
 		if not cast.component_instance_id.is_empty():
-			cast.caster.inventory.take_instance(cast.component_instance_id)
+			cast.caster.inventory.take_instance(cast.component_instance_id, "destruction")
 		else:
 			cast.caster.inventory.remove_item(cast.component_item_id)
 		cast.hud.add_log("%s consumes %s." % [cast.spell.get("name", "The spell"), DataLoader.get_item(cast.component_item_id).get("name", cast.component_item_id)])
