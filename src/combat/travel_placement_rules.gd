@@ -47,13 +47,14 @@ static func destination_error(state, traveler, origin: Vector2i, destination: Ve
 	var error := PlacementRules.legal_error(state, origin, destination, size, reach, reserved, {"ignore_entity": traveler})
 	return "" if error.is_empty() else "That teleport destination is not available: %s" % error
 
-## Review 066 R1: forced-movement step legality. A legal start is held to full
-## footprint legality. A start that is already illegal (legacy overlap) may keep
-## moving through creature overlap, but its center never enters a wall, an
-## impassable or off-map cell. (Edge cells of a large footprint stay lenient, as before 066.)
+## Review 066 R1 / Batch 076: forced-movement step legality. A legal start is
+## held to full footprint legality. A start that is already illegal (legacy
+## overlap) gets a narrow escape allowance: it may keep moving through creature
+## overlap only. Terrain is never waived: every cell of its footprint must be on
+## the map and enterable (PlacementRules.footprint_terrain_error), so a Huge
+## body cannot pass through or land in a wall because its center fits.
 static func forced_step_blocked(state, from_hex: Vector2i, to_hex: Vector2i, size: String, mover) -> bool:
 	var ctx := {"ignore_entity": mover}
 	if PlacementRules.legal_error(state, to_hex, to_hex, size, -1, [], ctx).is_empty(): return false
 	if PlacementRules.legal_error(state, from_hex, from_hex, size, -1, [], ctx).is_empty(): return true
-	var center := PlacementRules.legal_error(state, to_hex, to_hex, "medium", -1, [], {"ignore_entity": mover, "players": [], "monsters": []})
-	return not center.is_empty() and not "occupied" in center
+	return not PlacementRules.footprint_terrain_error(state, to_hex, size, ctx).is_empty()

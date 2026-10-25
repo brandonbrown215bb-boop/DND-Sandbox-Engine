@@ -317,6 +317,7 @@ func _run_scenario(scenario: String) -> void:
 		"batch_065_reaction_triggers_flow": await Batch065Controls.run(self)
 		"s121_exit_placement_flow": await Batch066Controls.run(self)
 		"batch_066_travel_placement_flow": await Batch066TravelControls.run(self)
+		"batch_076_footprint_terrain_flow": await Batch076FootprintControls.run(self)
 		"batch_067_weapon_damage_choice_flow": await Batch067Controls.run(self)
 		"batch_067_weapon_damage_choice_reload": await Batch067Controls.reload(self)
 		"batch_068_exact_contents_flow": await Batch068Controls.run(self)
@@ -712,11 +713,14 @@ func test_barbarian_action_flow() -> void:
 	target["max_hp"] = 10000
 	target["armor_class"] = -100
 	combat.monster_entities[1]["hex_position"] = Vector2i(5, -3)
-	# A known clear corridor tests the push, rather than random encounter terrain.
-	for x in range(5):
-		var tile := HexTile.new()
-		tile.coord = Vector2i(x, 0)
-		combat.hex_grid.add_tile(tile)
+	# A known clear area tests the push, rather than random encounter terrain.
+	# Batch 076 (#38): the Huge target's whole footprint (radius 2) must be on
+	# the map along its path, so the area covers every cell it occupies.
+	for cx in range(-1, 7):
+		for cy in range(-3, 4):
+			var tile := HexTile.new()
+			tile.coord = Vector2i(cx, cy)
+			combat.hex_grid.add_tile(tile)
 	combat.turn_budget.reset(actor, combat.player_entities)
 	combat.hud.update_hud(actor, combat.tracker)
 	combat._update_grid_entities()
@@ -789,6 +793,7 @@ func test_barbarian_action_flow() -> void:
 func test_barbarian_choice_flow() -> void:
 	_enter_test("barbarian_choice_flow")
 	_setup_world()
+	GameManager.transition_context["monster_ids"] = ["goblin", "goblin"] # This scenario positions two enemies (monster_entities[1]).
 	var actor := BarbarianChecks._character(11)
 	PlayerManager.set_player_character(0, actor)
 	PartyManager.reset()
