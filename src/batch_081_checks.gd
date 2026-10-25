@@ -48,6 +48,7 @@ static func run(check: Callable) -> void:
 	_no_fallback(check)
 	_objects(check)
 	_saves(check)
+	_review(check)
 
 static func _validation(check: Callable) -> void:
 	var good: Dictionary = DataLoader.get_spell(PWK).duplicate(true)
@@ -147,3 +148,29 @@ static func _saves(check: Callable) -> void:
 	var legacy: Dictionary = JSON.parse_string(JSON.stringify(c.to_dict()))
 	legacy.corpse_state.erase("cause_source")
 	check.call(CorpseRules.saved_error(legacy).is_empty(), "081 a legacy Power Word Kill corpse (no cause detail) still loads")
+
+## Reviewer stress (batch 081 acceptance).
+static func _review(check: Callable) -> void:
+	var good: Dictionary = DataLoader.get_spell(PWK).duplicate(true)
+	var bad := ["0d12", "-1d12", "12d13", "", "12d12x"]
+	var refused := 0
+	for dice in bad:
+		var s := good.duplicate(true)
+		s.effects[0].policy.fallback.damage = dice
+		if not SharedSpell.content_error(s).is_empty(): refused += 1
+	var s2 := good.duplicate(true)
+	s2.effects[0].policy.fallback.erase("damage_type")
+	if not SharedSpell.content_error(s2).is_empty(): refused += 1
+	var s3 := good.duplicate(true)
+	s3.effects[0].policy.fallback.erase("damage")
+	if not SharedSpell.content_error(s3).is_empty(): refused += 1
+	check.call(refused == bad.size() + 2, "081 review: zero/negative/bad dice and a missing damage or damage_type are refused (%d/%d)" % [refused, bad.size() + 2])
+	var a := caster("b081_rv")
+	var m := Batch071Checks.monster("b081_rv_temp", 100)
+	m["temp_hp"] = 50
+	var r := cast(a, m, PWK)
+	check.call(r.get("killed", false) and not bool(m.is_alive) and int(m.temp_hp) == 0 and not bool(r.get("settle_death", {}).get("fallback", false)) and int(r.get("damage", -1)) == 0, "081 review: 100 HP + 50 temp HP still dies (temp HP ignored for the limit, cleared on death)")
+	var big := Batch071Checks.monster("b081_rv_big", 101)
+	big["temp_hp"] = 200
+	r = cast(a, big, PWK)
+	check.call(int(big.current_hp) == 101 and int(big.temp_hp) == 200 - int(r.settle_death.rolled) and int(r.get("damage", 0)) == int(r.settle_death.damage) and bool(big.is_alive), "081 review: fallback damage hits temp HP first and is counted once")

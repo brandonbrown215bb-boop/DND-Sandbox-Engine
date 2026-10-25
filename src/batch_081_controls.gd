@@ -87,8 +87,17 @@ static func run(h: Node) -> void:
 	h._assert(int(giant.current_hp) == 150 - dealt and int(bob.spell_slots["1"]) == 4 and combat.turn_budget.action_available, "081 live a death effect with no declared fallback is refused above its limit; no damage, no slot")
 	await _cast(h, combat, bob, Batch081Checks.UNMAKE, Vector2i(3, 0), "Level 1")
 	h._assert(bool(giant.is_alive) and int(giant.current_hp) == 150 - dealt and int(bob.spell_slots["1"]) == 4 and combat.turn_budget.action_available, "081 live the object spell at a creature is refused before any slot or Action")
+	var ring := Batch081Checks.loose_object("b081_live_ring", 5, true)
+	ring["position"] = [4, 2]
+	combat.dropped_combat_items.append(ring)
+	combat._update_grid_entities()
+	await _cast(h, combat, bob, Batch081Checks.UNMAKE, Vector2i(4, 2), "Level 1")
+	h._assert(int(ring.hp) == 5 and not bool(ring.get("removed", false)) and int(bob.spell_slots["1"]) == 4 and combat.turn_budget.action_available, "081 review live: a magical object is refused before any slot or Action")
 	ok = await _cast(h, combat, bob, Batch081Checks.UNMAKE, Vector2i(2, 2), "Level 1")
 	h._assert(ok and int(item.hp) == 0 and bool(item.get("copy_destroyed", false)) and bool(item.get("removed", false)) and str(item.get("destroyed_cause", "")) == "unmade_object" and int(bob.spell_slots["1"]) == 3 and CombatObjectRules.at(combat.hex_grid, Vector2i(2, 2)).is_empty(), "081 live the dropped dagger is destroyed through the existing destruction handling; one slot paid")
+	Batch071Controls._turn(combat, bob)
+	await _cast(h, combat, bob, Batch081Checks.UNMAKE, Vector2i(2, 2), "Level 1")
+	h._assert(int(bob.spell_slots["1"]) == 3 and combat.turn_budget.action_available, "081 review live: the destroyed dagger's square refuses a second cast before any slot or Action")
 	# Character target for the save: Bob has more than 100 HP, then Alice falls to it.
 	Batch071Controls._turn(combat, alice)
 	bob.max_hp = 200
