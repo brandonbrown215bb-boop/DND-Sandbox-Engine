@@ -73,3 +73,21 @@ static func run(check: Callable) -> void:
 	var bad_size := legacy_record("b069:s", "bell")
 	bad_size.state.physical.size = ""
 	check.call(not InventoryCopies.record_state_error(bad_size).is_empty(), "069 an empty saved size is refused (absent means unknown)")
+
+## Review 069 stress: migration never erases a real measurement and is idempotent.
+static func review_stress(check: Callable) -> void:
+	var dungeon := {"local_rooms": {ROOM: {"objects": [legacy_object("r1", "tinderbox", Vector2i(0, 0)), legacy_object("r2", "fixture:030_iron_pebble", Vector2i(1, 0)), legacy_object("r3", "bell", Vector2i(2, 0))]}}}
+	var authored := {"id": "crate", "kind": "loose", "material": "mixed", "size": "Tiny", "weight_lb": 1.0, "contents": [{"instance_id": "r4", "definition_id": "bell", "state": {}}]}
+	dungeon.local_rooms[ROOM].objects.append(authored)
+	var first := RoomMeasurements.migrate_dungeon(dungeon)
+	var objs: Array = dungeon.local_rooms[ROOM].objects
+	check.call(objs[0].get("weight_lb") == 1, "R069 a data weight equal to the old 1 lb default survives migration")
+	check.call(not objs[0].has("material") and not objs[0].has("size"), "R069 invented material/size on a weighted item become unknown")
+	check.call(objs[1].get("weight_lb") == 1.0 and objs[1].get("material") == "mixed" and objs[1].get("size") == "Tiny", "R069 an item whose data matches the stamp keeps every recorded fact")
+	check.call(not objs[2].has("weight_lb"), "R069 an unweighted item's 1 lb stamp becomes unknown")
+	check.call(authored.get("weight_lb") == 1.0 and authored.get("size") == "Tiny", "R069 an authored (non-placed) object is never touched")
+	check.call(first == 5 and RoomMeasurements.migrate_dungeon(dungeon) == 0, "R069 migration counts each fact once and is idempotent (%d)" % first)
+	var changed := legacy_object("r5", "tinderbox", Vector2i(3, 0))
+	changed.weight_lb = 2
+	check.call(RoomMeasurements.legacy_invented(changed, "tinderbox").is_empty(), "R069 a weight that no longer matches current data is kept, not guessed away")
+	check.call(RoomMeasurements.describe_object(objs[2]).contains("unknown weight") and not RoomMeasurements.describe_object(objs[2]).contains("0 lb"), "R069 unknown weight never reads as 0 lb")
