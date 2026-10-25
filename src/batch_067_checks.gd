@@ -105,7 +105,12 @@ static func run(check: Callable) -> void:
 	var t5 := _target("b067_t5")
 	var unhosted := _hit(a, t5, axe, {})
 	check.call(not unhosted.has("attack_profile_choice_request") and _dtype(unhosted) == "slashing", "067 a caller that does not host the choice settles with the inherited type")
+	# Force the miss: crit_range 21 means no natural roll is a critical (auto) hit,
+	# so every roll misses AC 1000 deterministically.
+	var saved_crit_range := a.crit_range
+	a.crit_range = 21
 	var miss := CombatAction.resolve_weapon_attack(a, {"id": "b067_wall", "name": "Wall", "armor_class": 1000, "current_hp": 10, "max_hp": 10, "is_alive": true, "conditions": {}}, axe, false, false, {AttackProfileRules.ALLOW_KEY: true})
+	a.crit_range = saved_crit_range
 	check.call(not miss.has("attack_profile_choice_request") and not miss.get("hit", true), "067 a miss offers no hit-window choice")
 	_review_stress(check)
 
