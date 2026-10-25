@@ -259,7 +259,8 @@
     "effects": [
       {
         "type": "teleport",
-        "distance": 6
+        "distance": 6,
+        "requires_sight": true
       }
     ]
   },

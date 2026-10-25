@@ -30,10 +30,11 @@ static func _resolve_spell_cast_movement(cast: SpellCastContext) -> bool:
 	for effect in cast.spell.get("effects", []):
 		if str(effect.get("type", "")) != "teleport":
 			continue
+		if cast.teleport_settled: # Batch 066: never move or charge twice.
+			return true
 		var origin: Vector2i = cast.players[cast.player_index].get("hex_position", Vector2i.ZERO)
-		if not cast.grid.has_tile(cast.target_coord) or not cast.grid.is_hex_passable(cast.target_coord) or cast.areas._is_occupied_hex(cast.caster, cast.target_coord):
-			cast.hud.add_log("[color=orange]That teleport destination is not available.[/color]")
-			cast.highlight_reachable.call()
+		# Batch 066: rechecked before commit_spell_resource; this guard never pays twice.
+		if SpellCastMovement.refuse_teleport_destination(cast):
 			return true
 		cast.players[cast.player_index]["hex_position"] = cast.target_coord
 		cast.successful = true
@@ -43,6 +44,7 @@ static func _resolve_spell_cast_movement(cast: SpellCastContext) -> bool:
 		cast.hud.add_log("[color=cyan]%s teleports from %s to %s.[/color]" % [cast.caster.character_name, origin, cast.target_coord])
 		var teleport_cost := str(cast.spell.get("casting_time", "action"))
 		cast.spend_action_cost.call("bonus_action" if teleport_cost == "bonus_action" else "magic_action")
+		cast.teleport_settled = true # Batch 066: one arrival per cast invocation.
 		cast.clear_pending(SpellCastContext.CLEAR_ACTION)
 		cast.clear_pending(SpellCastContext.CLEAR_INTERVENTION)
 		cast.clear_pending(SpellCastContext.CLEAR_WISH)
@@ -53,3 +55,17 @@ static func _resolve_spell_cast_movement(cast: SpellCastContext) -> bool:
 	return false
 
 
+
+## Batch 066 (S-121/S-122): refuse an illegal teleport arrival, logging the reason.
+## Called before any payment (validation and the pre-commit recheck).
+static func refuse_teleport_destination(cast: SpellCastContext) -> bool:
+	var why := refuse_teleport_destination_reason(cast)
+	if why.is_empty(): return false
+	if cast.hud != null: cast.hud.add_log("[color=orange]%s[/color]" % why)
+	if cast.highlight_reachable.is_valid(): cast.highlight_reachable.call()
+	return true
+
+static func refuse_teleport_destination_reason(cast: SpellCastContext) -> String:
+	if TravelPlacementRules.teleport_effects(cast.spell).is_empty(): return ""
+	var origin: Vector2i = cast.players[cast.player_index].get("hex_position", Vector2i.ZERO)
+	return TravelPlacementRules.destination_error(cast, cast.caster, origin, cast.target_coord, cast.spell, cast.grid)

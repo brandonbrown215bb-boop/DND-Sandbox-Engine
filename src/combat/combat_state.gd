@@ -4120,6 +4120,9 @@ func _execute_selected_spell(cast: SpellCastContext) -> void:
 		return
 	if not await SpellCastPreparation.choose_target_options(cast):
 		return
+	# Batch 066: recheck the arrival after any option popups, still before payment.
+	if SpellCastMovement.refuse_teleport_destination(cast):
+		return
 	if not SpellCastResources.commit_metamagic(cast):
 		return
 	if not SpellCastResources.commit_spell_resource(cast):
@@ -5188,6 +5191,12 @@ func _push_combat_target(target, origin: Vector2i, distance: int = 2, size_limit
 		var to_hex: Vector2i = path[step]
 		if _spell_zones()._antilife_shell_blocks_crossing(target, from_hex, to_hex):
 			hud.add_log("Antilife Shell prevents crossing its barrier.")
+			break
+		# Batch 066 (S-121/S-122): forced movement stops before a step whose full
+		# size-based footprint is not a legal space (PlacementRules).
+		var pushed_actor = target if target is Character else entity
+		var pushed_size := PhysicalFactsRules.get_size(target) if target is Character else str(entity.get("size", "medium")).to_lower()
+		if not PlacementRules.legal_error(self, to_hex, to_hex, pushed_size, -1, [], {"ignore_entity": pushed_actor}).is_empty():
 			break
 		entity["hex_position"] = to_hex
 		if target is Character:

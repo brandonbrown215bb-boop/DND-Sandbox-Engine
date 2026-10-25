@@ -1178,21 +1178,18 @@ static func cast_movement_spell(state: Dictionary, spell_id: String, character: 
 	return {"success": true, "seconds": 6, "message": "%s gains %s for the spell's duration." % [character.character_name, movement_benefit]}
 
 
-static func cast_teleport(state: Dictionary, spell_id: String, character: Character, destination: Vector2i, grid: HexGrid) -> Dictionary:
+static func cast_teleport(state: Dictionary, spell_id: String, character: Character, destination: Vector2i, grid: HexGrid, party: Array = []) -> Dictionary:
 	if character != null and ContainmentRules.involved(state, "character", character.character_id): return failure("Internal occupants and occupied containers require release before changing location.")
 	if spell_id != "misty_step": return failure("That teleport spell is not supported in local rooms.")
 	var spell := DataLoader.get_spell(spell_id)
 	var caster_error := _room_spell_caster_error(character, spell)
 	if not caster_error.is_empty(): return failure(caster_error)
 	var origin := coord(state.get("party_positions", {}).get(character.character_id, [-999, -999]))
-	var teleport_range_hexes := int(ceil(float(spell.get("teleport_distance_feet", 0)) / 5.0))
-	for effect in spell.get("effects", []):
-		if str(effect.get("type", "")) == "teleport": teleport_range_hexes = maxi(teleport_range_hexes, int(effect.get("distance", 0)))
-	if not grid.has_tile(destination) or HexUtils.get_distance(origin, destination) > teleport_range_hexes: return failure("Choose a visible space within Misty Step's range.")
-	if not passable(state, destination) or not object_at(state, destination).is_empty() or (requires_surface_traversal(surface_at(state, destination)) and not SpellEffects.has_spell(character, "water_walk")): return failure("That destination is blocked or occupied.")
-	if not Targeting.has_line_of_sight(origin, destination, grid): return failure("That destination is not visible.")
-	for character_id in state.get("party_positions", {}):
-		if character_id != character.character_id and coord(state["party_positions"][character_id]) == destination: return failure("That destination is occupied.")
+	# Batch 066 (S-121/S-122): the room host uses the same PlacementRules legality
+	# as room creation and containment release, before the slot is spent.
+	var why := travel_destination_error(state, character, origin, destination, spell, grid, party)
+	if not why.is_empty(): return failure(why)
+	if requires_surface_traversal(surface_at(state, destination)) and not SpellEffects.has_spell(character, "water_walk"): return failure("That destination is blocked or occupied.")
 	var spent := CombatAction.spend_spell_slot(character, spell)
 	if not spent.get("success", false): return failure(str(spent.get("message", "No spell slot remains.")))
 	LocalRoomAreas.leave(state, character, origin, destination)
@@ -1201,6 +1198,22 @@ static func cast_teleport(state: Dictionary, spell_id: String, character: Charac
 	state["party_altitudes"][character.character_id] = elevation_feet(state, destination)
 	state["party_altitude_modes"][character.character_id] = "ground"
 	return {"success": true, "seconds": 6, "message": "%s teleports to the chosen space." % character.character_name}
+
+
+## Batch 066: room arrival legality for teleport travel (no slot is spent here).
+static func travel_destination_error(state: Dictionary, character: Character, origin: Vector2i, destination: Vector2i, spell: Dictionary, grid: HexGrid, party: Array = []) -> String:
+	var members: Array = party.duplicate()
+	if character not in members: members.append(character)
+	var placement := ContainmentRules.placement_state(state, members)
+	var reserved: Array = placement.reserved.filter(func(r): return r.hex != origin)
+	var why := TravelPlacementRules.destination_error(placement, character, origin, destination, spell, grid, reserved)
+	placement._placement_grid.free()
+	if not why.is_empty(): return why
+	for character_id in state.get("party_positions", {}):
+		if character_id != character.character_id and coord(state["party_positions"][character_id]) == destination: return "That teleport destination is not available: occupied."
+	for created_id in state.get("created_actor_positions", {}):
+		if coord(state.created_actor_positions[created_id]) == destination: return "That teleport destination is not available: occupied."
+	return ""
 
 
 static func _room_spell_caster_error(character: Character, spell: Dictionary) -> String:

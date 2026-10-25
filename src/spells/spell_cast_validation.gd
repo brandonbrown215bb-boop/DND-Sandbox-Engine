@@ -472,11 +472,8 @@ static func validate_area(cast: SpellCastContext) -> bool:
 		cast.highlight_reachable.call()
 		return false
 	# Validate self-targeted teleport destinations before spending a spell slot.
-	for effect in cast.spell.get("effects", []):
-		if str(effect.get("type", "")) == "teleport" and (not cast.grid.has_tile(cast.target_coord) or not cast.grid.is_hex_passable(cast.target_coord) or cast.areas._is_occupied_hex(cast.caster, cast.target_coord)):
-			cast.hud.add_log("[color=orange]That teleport destination is not available.[/color]")
-			cast.highlight_reachable.call()
-			return false
+	# Batch 066 (S-121/S-122): the same PlacementRules legality as creation and exits.
+	if SpellCastMovement.refuse_teleport_destination(cast): return false
 	return true
 
 

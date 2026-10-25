@@ -316,6 +316,7 @@ func _run_scenario(scenario: String) -> void:
 		"batch_064_mode_duration_flow": await Batch064Controls.run(self)
 		"batch_065_reaction_triggers_flow": await Batch065Controls.run(self)
 		"s121_exit_placement_flow": await Batch066Controls.run(self)
+		"batch_066_travel_placement_flow": await Batch066TravelControls.run(self)
 		"located_source_end_flow": await LocatedSourceEndControls.run(self)
 		"tether_group_flow": await TetherGroupFlow.run(self)
 		"containment_flow": await ContainmentFlow.run(self)

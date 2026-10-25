@@ -168,6 +168,29 @@ event's random-arrival behavior. The settled party coordinate
 survives the supported overworld SaveManager checkpoint. This does not create
 an overworld creature-following or general spell-arrival system.
 
+### Teleport arrival (Batch 066)
+
+A `teleport` spell effect declares its own reach and sight requirement:
+`{"type": "teleport", "distance": <hexes 1-200>, "requires_sight": <bool>?}`.
+There is no engine default distance: the loader refuses a teleport effect
+without `distance`, with unknown fields or with a non-boolean `requires_sight`,
+and the cast refuses it before any cost. `TravelPlacementRules.destination_error`
+refuses, in order: no authored reach, the same space, off-map, beyond the
+authored distance, not visible when `requires_sight` is true (line of sight
+only; PARTIAL: lighting, Blinded and invisibility are not consulted), then
+`PlacementRules.legal_error` for the traveler's complete size-based footprint
+(tile, walls, plane, clearance, living occupants and their footprints, blocking
+objects), ignoring the traveler's own body. Combat checks this at target
+validation and again immediately before the slot is committed, so a stale
+destination refuses with the slot and Bonus Action unspent; the arrival is
+marked settled on its `SpellCastContext`, so the resolver never moves or charges
+the same invocation twice. The local-room host (`LocalRoomRules.cast_teleport`)
+uses the same rules against `ContainmentRules.placement_state` (party, familiars,
+steeds, created creatures and actors, objects) before `spend_spell_slot`.
+Forced movement (spell push, Push mastery, barbarian push) stops before a step
+whose full footprint is not legal. Find Steed arrival still checks only its
+center cell (PARTIAL).
+
 Optional `material_targets` declares `tags` (`corpse`, `bones`), `range` in
 hexes, optional `creature_types`/`sizes`, and optional `kinds` mapping template
 IDs to required tags. Actual nearby dead Characters and combat monster bodies

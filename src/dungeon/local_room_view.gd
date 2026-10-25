@@ -342,7 +342,7 @@ func click(position: Vector2i) -> void:
 	if not pending_teleport_spell.is_empty():
 		var spell_id := pending_teleport_spell
 		pending_teleport_spell = ""
-		_result(LocalRoomRules.cast_teleport(state, spell_id, actor(), position, grid))
+		_result(LocalRoomRules.cast_teleport(state, spell_id, actor(), position, grid, characters))
 		return
 	var object := LocalRoomRules.object_at(state, position)
 	if not object.is_empty():

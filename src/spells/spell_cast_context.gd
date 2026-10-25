@@ -20,6 +20,7 @@ var material_targets: Array = [] # Exact transient remains reserved before payme
 ## Exploration ritual completion; elapsed before creating the new effect.
 var ritual_seconds := 0
 var spell: Dictionary = {}
+var teleport_settled := false # Batch 066: a teleport arrival settles once per invocation.
 var formula_inputs: Dictionary = {}
 var ordered_result: Dictionary = {}
 var players: Array[Dictionary] = []
