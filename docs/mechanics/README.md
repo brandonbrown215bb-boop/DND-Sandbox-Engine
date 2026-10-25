@@ -72,3 +72,4 @@ Maximum-HP sources and zero-maximum death on monster records (S-130/S-131; PARTI
 Last-charge property loss controlled by `keep_properties` (S-060/S-203; PARTIAL) is described in [last-charge property loss](last-charge-property-loss.md).
 Explicit death or destruction without damage (S-119; PARTIAL) is described in [explicit death](explicit-death.md).
 Work-site location and helper proximity (S-066; PARTIAL) is described in [work sites](work-sites.md).
+Linked-item removal causes (S-162; PARTIAL) are described in [linked removal causes](linked-removal-causes.md).

@@ -1,0 +1,39 @@
+[
+  {
+    "id": "fixture:b075_class",
+    "name": "Batch 075 Neutral Class",
+    "hit_die": "d8",
+    "primary_ability": "CHA",
+    "saving_throw_proficiencies": ["WIS", "CHA"],
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:b075_pair_a",
+          "name": "Linked Pair A",
+          "type": "exclusive_bond",
+          "bond_id": "b075:pair_a",
+          "target": "item",
+          "capacity": 2,
+          "replacement": "refuse",
+          "on_loss": "dispose_group",
+          "loss_causes": ["sale", "destruction", "projection"],
+          "item_types": ["weapon", "tool"],
+          "unique": true
+        },
+        {
+          "id": "fixture:b075_pair_b",
+          "name": "Linked Pair B",
+          "type": "exclusive_bond",
+          "bond_id": "b075:pair_b",
+          "target": "item",
+          "capacity": 2,
+          "replacement": "refuse",
+          "on_loss": "dispose_group",
+          "loss_causes": ["sale", "destruction", "projection"],
+          "item_types": ["weapon", "tool"],
+          "unique": true
+        }
+      ]
+    }
+  }
+]

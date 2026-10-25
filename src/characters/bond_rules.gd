@@ -6,7 +6,7 @@
 class_name BondRules
 extends RefCounted
 
-const FEATURE_KEYS := ["id", "name", "type", "bond_id", "target", "capacity", "replacement", "item_types", "creature_types", "unique", "description", "on_replace", "on_loss"]
+const FEATURE_KEYS := ["id", "name", "type", "bond_id", "target", "capacity", "replacement", "item_types", "creature_types", "unique", "description", "on_replace", "on_loss", "loss_causes"]
 ## S-162 deliberate disposal of linked copies.
 const ON_REPLACE := ["release", "destroy"]
 const ON_LOSS := ["keep_survivors", "dispose_group"]
@@ -34,6 +34,13 @@ static func rule_error(feature: Variant) -> String:
 	if str(feature.get("on_replace", "release")) not in ON_REPLACE or str(feature.get("on_loss", "keep_survivors")) not in ON_LOSS: return "exclusive_bond on_replace/on_loss are invalid"
 	if target == "actor" and (str(feature.get("on_replace", "release")) != "release" or str(feature.get("on_loss", "keep_survivors")) != "keep_survivors"): return "exclusive_bond actor targets cannot dispose linked identities"
 	if str(feature.get("on_replace", "release")) == "destroy" and str(feature.replacement) != "release_oldest": return "exclusive_bond on_replace destroy requires release_oldest"
+	if feature.has("loss_causes"):
+		# S-162: data names the exact removal causes that dispose linked mates.
+		var causes: Variant = feature.loss_causes
+		if str(feature.get("on_loss", "keep_survivors")) != "dispose_group": return "exclusive_bond loss_causes requires on_loss dispose_group"
+		if not causes is Array or causes.is_empty() or causes.any(func(c): return not c is String or c not in Inventory.REMOVAL_CAUSES): return "exclusive_bond loss_causes must list %s" % str(Inventory.REMOVAL_CAUSES)
+		for i in causes.size():
+			if causes.find(causes[i]) != i: return "exclusive_bond loss_causes repeats '%s'" % causes[i]
 	return ""
 
 ## An exact copy is held when carried, worn, or projected into its temporary form (S-165).
@@ -133,7 +140,8 @@ static func prune(actor: Character) -> Array:
 			if live: kept.append(e)
 			else: released.append(id)
 		var lost: Array = released.filter(func(x): return state.get("targets", []).any(func(e): return str(e.target_id) == x))
-		if not lost.is_empty() and str(rule.get("on_loss", "keep_survivors")) == "dispose_group" and not _settling:
+		# Legacy dispose_group without loss_causes keeps its authored any-loss fate; with loss_causes only _settle_cause disposes.
+		if not lost.is_empty() and str(rule.get("on_loss", "keep_survivors")) == "dispose_group" and not rule.has("loss_causes") and not _settling:
 			# S-162: losing one linked copy disposes exactly the other linked copies.
 			var disposed: Array = []
 			_settling = true
@@ -147,9 +155,32 @@ static func prune(actor: Character) -> Array:
 		state.targets = kept
 	return released
 
-## Inventory hook: an exact copy left its holder; settle linked-copy fates now.
-static func on_copy_removed(actor) -> void:
-	if actor is Character and not _settling and not actor.exclusive_bonds.is_empty(): prune(actor)
+## Inventory hook: exact copies left their holder by `cause`; settle linked-copy fates now.
+static func on_copy_removed(actor, ids: Array = [], cause := "") -> void:
+	if not actor is Character or _settling or actor.exclusive_bonds.is_empty(): return
+	_settle_cause(actor, ids, cause)
+	prune(actor)
+
+## S-162: dispose the linked mates of the removed exact copies only for causes the rule authors.
+static func _settle_cause(actor: Character, ids: Array, cause: String) -> void:
+	if cause.is_empty() or ids.is_empty(): return
+	var declared := rules(actor)
+	for bond_id in actor.exclusive_bonds.keys():
+		var rule: Dictionary = declared.get(bond_id, {})
+		if rule.is_empty() or not rule.has("loss_causes") or cause not in rule.loss_causes: continue
+		var state: Dictionary = actor.exclusive_bonds[bond_id]
+		var targets: Array = state.get("targets", [])
+		var lost: Array = targets.map(func(e): return str(e.target_id)).filter(func(x): return x in ids)
+		if lost.is_empty(): continue
+		var disposed: Array = []
+		_settling = true
+		for e in targets:
+			var sid := str(e.target_id)
+			if sid in lost or ItemProjectionRules.is_projected(actor, sid): continue
+			if not actor.inventory.destroy_instance(sid).is_empty(): disposed.append(sid)
+		_settling = false
+		state.targets = targets.filter(func(e): return str(e.target_id) not in disposed)
+		last_disposal = {"bond_id": str(bond_id), "cause": cause, "lost": lost, "disposed": disposed, "kept": state.targets.map(func(e): return str(e.target_id)).filter(func(x): return x not in lost)}
 
 static func restore(actor: Character, data: Dictionary) -> void:
 	actor.exclusive_bonds = data.get("exclusive_bonds", {}).duplicate(true) if data.get("exclusive_bonds", {}) is Dictionary else {}

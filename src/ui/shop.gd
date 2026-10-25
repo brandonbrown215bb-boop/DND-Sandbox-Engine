@@ -267,7 +267,7 @@ func _on_sell_pressed() -> void:
 	if record.is_empty(): return
 	var item := DataLoader.get_item(str(record["definition_id"]))
 	if not _is_buyable_item(item) or item.get("quest_item", false): return
-	if active_character.inventory.take_instance(id).is_empty(): return
+	if active_character.inventory.remove_exact(id, "sale").is_empty(): return
 	active_character.inventory.gold += int(item["value"]) / 2
 	_update_player_data()
 
