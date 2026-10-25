@@ -61,6 +61,19 @@ static func run(check: Callable) -> void:
 	check.call(SpellCastMovement.refuse_teleport_destination_reason(cast) != "" and players[0].hex_position == Vector2i.ZERO, "066 the pre-payment recheck refuses an occupied destination and nothing moves")
 	cast.target_coord = Vector2i(2, 0)
 	check.call(SpellCastMovement.refuse_teleport_destination_reason(cast) == "", "066 the pre-payment recheck accepts the legal destination")
+	# Review 066 R1: forced steps from an illegal (overlapping) start.
+	var huge: Dictionary = {"id": "b066_huge", "name": "Giant", "size": "huge", "hex_position": Vector2i(-4, 0), "is_alive": true, "current_hp": 10}
+	cast.monsters = [huge, big] as Array[Dictionary]
+	players[0].hex_position = Vector2i(-3, 0) # wizard inside the Huge footprint (legacy overlap)
+	check.call(not TravelPlacementRules.forced_step_blocked(cast, Vector2i(-4, 0), Vector2i(-4, 1), "huge", huge), "R1 066 an overlapping Huge start may still be pushed through creature overlap (03e2aad case)")
+	grid.get_tile(Vector2i(-4, 1)).custom_properties["blocks_movement"] = true
+	check.call(TravelPlacementRules.forced_step_blocked(cast, Vector2i(-4, 0), Vector2i(-4, 1), "huge", huge), "R1 066 an overlapping Huge start is never pushed with its center into a wall")
+	grid.get_tile(Vector2i(-4, 1)).custom_properties["blocks_movement"] = false
+	huge.hex_position = Vector2i(-7, 0)
+	players[0].hex_position = Vector2i(-6, 0)
+	check.call(TravelPlacementRules.forced_step_blocked(cast, Vector2i(-7, 0), Vector2i(-9, 0), "huge", huge), "R1 066 an overlapping Huge start is never pushed with its center off the map")
+	players[0].hex_position = Vector2i(-1, 0)
+	check.call(not TravelPlacementRules.forced_step_blocked(cast, Vector2i(1, 0), Vector2i(2, 0), "medium", wizard) and TravelPlacementRules.forced_step_blocked(cast, Vector2i(1, 0), Vector2i(3, 0), "medium", wizard), "R1 066 a legal start stops before a Large occupant's footprint")
 	grid.free()
 	# Room host: LocalRoomRules.cast_teleport uses the same rules before the slot.
 	var definition: Dictionary = DataLoader.get_campaign("the_lost_crown")["dungeons"]["ruins_of_ashvale"]["tactical_rooms"]["1"]
