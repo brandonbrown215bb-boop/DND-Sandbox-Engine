@@ -12,7 +12,7 @@
     "duration": "1 minute",
     "duration_seconds": 60,
     "classes": ["wizard"],
-    "effects": [{"type": "max_hp_source", "rule": {"id": "b071:wither", "kind": "reduction", "amount": 6, "combine": "highest", "zero_limit": {"cause": "withered", "remains": "dust"}}}]
+    "effects": [{"type": "max_hp_source", "rule": {"id": "b071:wither", "kind": "reduction", "amount": 6, "accumulate": false, "combine": "highest", "zero_limit": {"cause": "withered", "remains": "dust"}}}]
   },
   {
     "id": "fixture:b071_sap",
@@ -27,7 +27,7 @@
     "duration": "1 minute",
     "duration_seconds": 60,
     "classes": ["wizard"],
-    "effects": [{"type": "max_hp_source", "rule": {"id": "b071:sap", "kind": "reduction", "amount": 4, "combine": "highest"}}]
+    "effects": [{"type": "max_hp_source", "rule": {"id": "b071:sap", "kind": "reduction", "amount": 4, "accumulate": false, "combine": "highest"}}]
   },
   {
     "id": "fixture:b071_vigor",

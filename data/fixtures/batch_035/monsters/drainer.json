@@ -22,6 +22,7 @@
               "kind": "reduction",
               "amount": "damage_dealt",
               "accumulate": true,
+              "combine": "sum",
               "cure_on": ["long_rest_completed"],
               "periodic": {"event": "turn_started", "amount": 1}
             }

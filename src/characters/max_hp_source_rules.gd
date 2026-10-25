@@ -10,7 +10,7 @@ extends RefCounted
 
 const KINDS := ["increase", "reduction"]
 const EVENTS := ["short_rest_completed", "long_rest_completed", "turn_started"]
-const ENTRY_KEYS := ["rule_id", "kind", "requested", "applied", "accumulate", "floor", "cure_on", "periodic", "raise_current", "zero_limit", "combine"]
+const ENTRY_KEYS := ["rule_id", "kind", "requested", "applied", "accumulate", "floor", "cure_on", "periodic", "raise_current", "zero_limit", "combine", "applied_seq"]
 ## Batch 071 (S-130): how equivalent sources (same rule id, different exact
 ## instances) combine. Content declares it; absent keeps the legacy "sum".
 const COMBINE := ["sum", "highest"]
@@ -18,8 +18,17 @@ const COMBINE := ["sum", "highest"]
 const ZERO_LIMIT_KEYS := ["cause", "remains"]
 const ZERO_LIMIT_REMAINS := ["intact", "dust", "bones"]
 
-static func validate_rule(rule: Variant) -> String:
+## Batch 079 (#43): content validation requires an explicit stacking policy.
+## New definitions must declare `combine` (how castings/instances of the same
+## rule id combine), and reductions must also state `accumulate` (whether a
+## repeated hit from one instance adds to its own request). `legacy` is the
+## documented compatibility path for runtime apply of rules already accepted by
+## older content/saves: an absent `combine` there means the historical "sum".
+## Identity is the declared rule id, never a display name.
+static func validate_rule(rule: Variant, legacy: bool = false) -> String:
 	if not rule is Dictionary: return "max_hp_source rule must be an object"
+	if not legacy and not rule.has("combine"): return "max_hp_source needs an explicit combine policy (sum or highest)"
+	if not legacy and str(rule.get("kind", "")) == "reduction" and not rule.has("accumulate"): return "max_hp_source reductions must state accumulate (true or false)"
 	if str(rule.get("id", "")).is_empty(): return "max_hp_source needs id"
 	if str(rule.get("kind", "")) not in KINDS: return "max_hp_source kind must be increase or reduction"
 	var amount: Variant = rule.get("amount", null)
@@ -44,7 +53,7 @@ static func validate_rule(rule: Variant) -> String:
 ## Apply (or re-apply) one exact source. Returns a receipt.
 ## Batch 071: `actor` is a Character or a monster combatant Dictionary.
 static func apply(actor, rule: Dictionary, source_instance_id: String, amount: int = -1) -> Dictionary:
-	if not (actor is Character or actor is Dictionary) or source_instance_id.is_empty() or not validate_rule(rule).is_empty(): return {"applied": false, "reason": "invalid"}
+	if not (actor is Character or actor is Dictionary) or source_instance_id.is_empty() or not validate_rule(rule, true).is_empty(): return {"applied": false, "reason": "invalid"}
 	if actor is Dictionary and not bool(actor.get("is_alive", true)): return {"applied": false, "reason": "target_dead", "source_instance_id": source_instance_id}
 	var requested := amount if amount >= 0 else (int(rule.amount) if not rule.amount is String else 0)
 	if str(rule.kind) == "reduction" and not _aura(actor).is_empty():
@@ -58,6 +67,10 @@ static func apply(actor, rule: Dictionary, source_instance_id: String, amount: i
 		if rule.has("periodic"): entry.periodic = {"event": str(rule.periodic.event), "amount": int(rule.periodic.amount)}
 		if rule.has("zero_limit"): entry["zero_limit"] = rule.zero_limit.duplicate(true)
 		if rule.has("combine"): entry["combine"] = str(rule.combine)
+	# Batch 079: application order for "newest wins equal-strength ties" (SRD p.106).
+	var seq := 0
+	for other in sources(actor): seq = maxi(seq, int(sources(actor)[other].get("applied_seq", 0)))
+	entry["applied_seq"] = seq + 1
 	return _settle(actor, source_instance_id, entry, total)
 
 static func _settle(actor, id: String, entry: Dictionary, total: int) -> Dictionary:
@@ -69,7 +82,11 @@ static func _settle(actor, id: String, entry: Dictionary, total: int) -> Diction
 	_recompute(actor, base)
 	var applied := int(entry.applied)
 	var change := applied - old_applied
-	if change > 0 and bool(entry.raise_current) and _cur(actor) > 0: _set_cur(actor, mini(_cur(actor) + change, _max(actor)))
+	# Batch 079 (#43): resolve against the source. When a stronger casting replaces
+	# a weaker one, the maximum only grows by the net difference, so current HP
+	# rises by that net amount, never by the full new request.
+	var net_growth := _max(actor) - before_max
+	if change > 0 and net_growth > 0 and bool(entry.raise_current) and _cur(actor) > 0: _set_cur(actor, mini(_cur(actor) + mini(change, net_growth), _max(actor)))
 	var death := _zero_limit_death(actor, id)
 	return {"zero_limit_death": death, "applied": true, "source_instance_id": id, "requested": total, "delta": applied, "clamped": absi(applied) < total, "max_hp_before": before_max, "max_hp_after": _max(actor), "current_hp": _cur(actor)}
 
@@ -98,27 +115,32 @@ static func _set_cur(actor, value: int) -> void:
 	if actor is Character: actor.current_hp = value
 	else: actor["current_hp"] = value
 
-## Equivalent "highest" sources: only the largest request per rule id applies
-## (SRD: effects of the same name don't combine); the first instance wins ties.
-static func _suppressed(actor, id: String) -> bool:
-	var all := sources(actor)
-	var e: Dictionary = all[id]
-	if str(e.get("combine", "sum")) != "highest": return false
-	for other in all:
-		if other == id: return false
-		var o: Dictionary = all[other]
-		if str(o.get("combine", "sum")) == "highest" and o.rule_id == e.rule_id and o.kind == e.kind and int(o.requested) >= int(e.requested): return true
-	return false
+## Equivalent "highest" sources (same declared rule id and kind): only the
+## strongest request applies; on equal strength the newest application wins
+## (SRD 5.2.1 p.106, Combining Magical Effects). Legacy entries without
+## applied_seq rank by their stored order.
+static func _beats(all: Dictionary, a: String, b: String) -> bool:
+	var ea: Dictionary = all[a]
+	var eb: Dictionary = all[b]
+	if int(ea.requested) != int(eb.requested): return int(ea.requested) > int(eb.requested)
+	var sa := int(ea.get("applied_seq", 0))
+	var sb := int(eb.get("applied_seq", 0))
+	if sa != sb: return sa > sb
+	var keys := all.keys()
+	return keys.find(a) > keys.find(b)
 
-static func _outranked(actor, id: String) -> bool:
+static func _suppressed(actor, id: String) -> bool:
 	var all := sources(actor)
 	var e: Dictionary = all[id]
 	if str(e.get("combine", "sum")) != "highest": return false
 	for other in all:
 		if other == id: continue
 		var o: Dictionary = all[other]
-		if str(o.get("combine", "sum")) == "highest" and o.rule_id == e.rule_id and o.kind == e.kind and int(o.requested) > int(e.requested): return true
+		if str(o.get("combine", "sum")) == "highest" and o.rule_id == e.rule_id and o.kind == e.kind and _beats(all, other, id): return true
 	return false
+
+static func _outranked(actor, id: String) -> bool:
+	return _suppressed(actor, id)
 
 static func _inactive(actor, id: String) -> bool:
 	return _suppressed(actor, id) or _outranked(actor, id)
@@ -254,6 +276,7 @@ static func saved_error(data: Dictionary) -> String:
 			if str(key) not in ENTRY_KEYS: return "max HP source has unknown field"
 		if str(e.get("kind", "")) not in KINDS or str(e.get("rule_id", "")).is_empty(): return "max HP source kind is invalid"
 		if e.has("combine") and str(e.combine) not in COMBINE: return "max HP source combine is invalid"
+		if e.has("applied_seq") and not _int(e.applied_seq, 1, 1000000000): return "max HP source order is invalid"
 		var zero: Variant = e.get("zero_limit", null)
 		if e.has("zero_limit") and (e.kind != "reduction" or not zero is Dictionary or zero.size() != 2 or str(zero.get("remains", "")) not in ZERO_LIMIT_REMAINS or str(zero.get("cause", "")).is_empty() or int(e.get("floor", -1)) != 0): return "max HP source zero limit is invalid"
 		if not _int(e.get("requested", null), 0, 100000) or not _int(e.get("floor", null), 0 if e.has("zero_limit") else 1, 1000): return "max HP source amounts are invalid"
@@ -277,6 +300,7 @@ static func restore(actor: Character, data: Dictionary) -> void:
 	for id in actor.max_hp_sources:
 		for key in ["requested", "applied", "floor"]:
 			actor.max_hp_sources[id][key] = int(actor.max_hp_sources[id][key])
+		if actor.max_hp_sources[id].has("applied_seq"): actor.max_hp_sources[id].applied_seq = int(actor.max_hp_sources[id].applied_seq)
 		if not actor.max_hp_sources[id].periodic.is_empty(): actor.max_hp_sources[id].periodic.amount = int(actor.max_hp_sources[id].periodic.amount)
 
 static func _int(v: Variant, lo: int, hi: int) -> bool:

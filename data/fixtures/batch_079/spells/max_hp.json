@@ -1,0 +1,86 @@
+[
+  {
+    "id": "fixture:b079_vigor_low",
+    "name": "079 Vigor Mark",
+    "description": "Neutral fixture: a lower-strength casting of the b079:vigor maximum-HP increase.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "concentration": false,
+    "duration": "8 hours",
+    "duration_seconds": 28800,
+    "classes": [
+      "wizard"
+    ],
+    "effects": [
+      {
+        "type": "max_hp_source",
+        "rule": {
+          "id": "b079:vigor",
+          "kind": "increase",
+          "amount": 3,
+          "combine": "highest",
+          "raise_current": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "fixture:b079_vigor_high",
+    "name": "079 Vigor Mark",
+    "description": "Neutral fixture: a higher-strength casting of the same b079:vigor source; the strongest applies.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "concentration": false,
+    "duration": "8 hours",
+    "duration_seconds": 28800,
+    "classes": [
+      "wizard"
+    ],
+    "effects": [
+      {
+        "type": "max_hp_source",
+        "rule": {
+          "id": "b079:vigor",
+          "kind": "increase",
+          "amount": 7,
+          "combine": "highest",
+          "raise_current": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "fixture:b079_vigor_other",
+    "name": "079 Vigor Mark",
+    "description": "Neutral fixture: same display name, different declared source id; it is not merged with b079:vigor.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "concentration": false,
+    "duration": "8 hours",
+    "duration_seconds": 28800,
+    "classes": [
+      "wizard"
+    ],
+    "effects": [
+      {
+        "type": "max_hp_source",
+        "rule": {
+          "id": "b079:other_vigor",
+          "kind": "increase",
+          "amount": 2,
+          "combine": "highest",
+          "raise_current": true
+        }
+      }
+    ]
+  }
+]
