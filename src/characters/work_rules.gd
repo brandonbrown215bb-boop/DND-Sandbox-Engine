@@ -165,7 +165,7 @@ static func join_error(helper: Character, worker: Character, id: String) -> Stri
 	if helper.character_id in people: return "Already working on it."
 	if not busy_on(helper.character_id, [helper, worker] + PartyManager.characters.values()).is_empty(): return "You are already working on something else." # Review 046 R1.
 	if people.size() >= 6: return "No room for more participants."
-	if helper.current_hp <= 0 or helper.has_condition("incapacitated"): return "An incapacitated character cannot work."
+	if helper.current_hp <= 0 or ["incapacitated", "unconscious", "paralyzed", "petrified", "stunned"].any(func(c): return helper.has_condition(c)): return "An incapacitated character cannot work." # Review 074 R1: implied Incapacitated counts.
 	return site_error(record, helper.character_id) # Batch 074: checked at the join, before anything changes.
 
 static func join(helper: Character, worker: Character, id: String) -> Dictionary:

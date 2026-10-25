@@ -62,6 +62,13 @@ static func _join(check: Callable) -> void:
 	var far := WorkRules.join(h, a, loom)
 	check.call(not far.success and str(far.message).contains("15 feet") and a.inventory.get_instance(loom) == before, "074 S-066 a helper 15 feet away is refused at the join with nothing changed (%s)" % far.message)
 	_place(h.character_id, [2, 0])
+	var implied := 0
+	for cond in ["stunned", "paralyzed", "unconscious", "petrified"]:
+		h.add_condition(cond, -1)
+		var r := WorkRules.join(h, a, loom)
+		if not r.success and str(r.message).contains("incapacitated") and a.inventory.get_instance(loom) == before: implied += 1
+		h.remove_condition(cond)
+	check.call(implied == 4, "Review 074 R1: a Stunned/Paralyzed/Unconscious/Petrified helper in range is refused as incapacitated (%d/4)" % implied)
 	var near := WorkRules.join(h, a, loom)
 	check.call(near.success and a.inventory.get_instance(loom).state.work_participants == [a.character_id, h.character_id], "074 S-066 a helper exactly 10 feet from the site joins")
 	var h2 := Batch046Checks.actor("b074_elsewhere")
