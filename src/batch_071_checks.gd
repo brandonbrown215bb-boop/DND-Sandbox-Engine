@@ -37,6 +37,7 @@ static func run(check: Callable) -> void:
 	_zero(check)
 	_character_saves(check)
 	_legacy(check)
+	_review_stress(check)
 
 static func _validation(check: Callable) -> void:
 	var good: Dictionary = DataLoader.get_spell(WITHER).duplicate(true)
@@ -160,3 +161,33 @@ static func _legacy(check: Callable) -> void:
 	MaxHpSourceRules.apply(c, rule, "one")
 	MaxHpSourceRules.apply(c, rule, "two")
 	check.call(c.max_hp == 14 and MaxHpSourceRules.saved_error(c.to_dict()).is_empty(), "071 legacy rules without combine still sum (20 -> 14) and save")
+
+## Review 071 stress: highest-wins order, weaker resumes, ties, zero-max death once, legacy sum.
+static func _review_stress(check: Callable) -> void:
+	var m := monster("rs", 20)
+	m.temp_hp = 5
+	var weak := {"id": "rv:sap", "kind": "reduction", "amount": 4, "combine": "highest"}
+	var strong := {"id": "rv:sap", "kind": "reduction", "amount": 9, "combine": "highest"}
+	MaxHpSourceRules.apply(m, weak, "a")
+	MaxHpSourceRules.apply(m, strong, "b")
+	check.call(m.max_hp == 11, "R071 weaker-then-stronger same-name: strongest applies (%d)" % m.max_hp)
+	MaxHpSourceRules.remove(m, "b")
+	check.call(m.max_hp == 16 and m.current_hp == 11, "R071 stronger ends: weaker resumes, HP not raised (%d/%d)" % [m.current_hp, m.max_hp])
+	MaxHpSourceRules.remove(m, "a")
+	check.call(m.max_hp == 20 and m.current_hp == 11 and MaxHpSourceRules.saved_error(m).is_empty(), "R071 all end: natural max, current unchanged")
+	var t := monster("rt", 10)
+	MaxHpSourceRules.apply(t, {"id": "rv:h", "kind": "reduction", "amount": 5, "combine": "highest"}, "1")
+	MaxHpSourceRules.apply(t, {"id": "rv:h", "kind": "reduction", "amount": 5, "combine": "highest"}, "2")
+	check.call(t.max_hp == 5, "R071 tie does not stack (%d)" % t.max_hp)
+	MaxHpSourceRules.remove(t, "1")
+	check.call(t.max_hp == 5 and MaxHpSourceRules.saved_error(t).is_empty(), "R071 tie: first removed, second takes over (%d)" % t.max_hp)
+	var n := monster("rn", 10)
+	MaxHpSourceRules.apply(n, {"id": "rv:sum", "kind": "reduction", "amount": 3}, "1")
+	MaxHpSourceRules.apply(n, {"id": "rv:sum", "kind": "reduction", "amount": 3}, "2")
+	check.call(n.max_hp == 4, "R071 absent combine stays legacy sum (%d)" % n.max_hp)
+	var z := {"id": "rv:w", "kind": "reduction", "amount": 30, "combine": "highest", "zero_limit": {"cause": "withered", "remains": "dust"}}
+	var d := monster("rz", 20)
+	d.temp_hp = 7
+	var r1 := MaxHpSourceRules.apply(d, z, "c")
+	var r2 := MaxHpSourceRules.apply(d, z, "d")
+	check.call(bool(r1.zero_limit_death) and d.max_hp == 0 and not d.is_alive and d.temp_hp == 0 and d.zero_hp_aftermath.remains == "dust" and str(r2.get("reason", "")) == "target_dead", "R071 zero max with temp HP kills once, dust, second refused")
