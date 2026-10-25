@@ -144,6 +144,11 @@ static func run(h: Node) -> void:
 	TetherGroupFlow.press(view, "Stow cargo")
 	h._assert(owner.inventory.get_instance(loaded).is_empty() and ContainerRules.contents(owner.inventory, first).size() == 2, "S-167 clicked load transfers the actual copy into the projected hold")
 	offer(view, first); TetherGroupFlow.press(view, "Take out cargo")
+	# Batch 068: two cargo copies are held, so the exact menu opens; pick the loaded copy.
+	var unload_options := ContainerRules.content_options(owner.inventory, first)
+	if view.exact_choice_menu != null:
+		for i in unload_options.size():
+			if str(unload_options[i].instance_id) == loaded: view.exact_choice_menu.id_pressed.emit(i)
 	h._assert(not owner.inventory.get_instance(loaded).is_empty() and ContainerRules.contents(owner.inventory, first)[0].instance_id == child, "S-167 clicked unload returns the selected vessel's exact cargo")
 	# Stale move callback, then a real loaded movement through the shared path owner.
 	view.refresh(); ContainmentFlow.select(view, "ContainmentContainers", "character", form.character_id)
