@@ -37,11 +37,16 @@ static func refresh_room(view: LocalRoomView) -> void:
 		var record := ItemLifecycleControls.copy_for(view.actor(), str(offer.instance_id))
 		var compartments := ContainerRules.compartments(str(record.get("definition_id", "")))
 		if compartments.is_empty(): view._result(LocalRoomRules.failure("That copy has no cargo compartment.")); return
-		view._result(ContainerRules.put(view.actor().inventory, str(offer.instance_id), view._selected(cargo_items), str(compartments.keys()[0]))))
+		# Batch 068: choose the exact compartment of this vessel copy.
+		var cargo := view._selected(cargo_items)
+		var vessel := str(offer.instance_id)
+		var options: Array = ContainerRules.compartment_options(view.actor().inventory, vessel, cargo)
+		view.choose_exact("Stow cargo in which compartment?", options, func(o): return ContainerRules.stow_into(view.actor().inventory, cargo, o), func(): return ContainerRules.put(view.actor().inventory, vessel, cargo, str(compartments.keys()[0]))))
 	view._add_button(view.item_lifecycle_row, "Take out cargo", func():
 		if view.item_lifecycle_offers.selected < 0: return
 		var offer: Dictionary = view.item_lifecycle_offers.get_item_metadata(view.item_lifecycle_offers.selected)
-		view._result(ContainerRules.retrieve_last(view.actor().inventory, str(offer.instance_id))))
+		var vessel := str(offer.instance_id)
+		view.choose_exact("Take out which cargo?", ContainerRules.content_options(view.actor().inventory, vessel), func(o): return ContainerRules.take_out(view.actor().inventory, o), func(): return ContainerRules.retrieve_last(view.actor().inventory, vessel)))
 
 static func open_room(view: LocalRoomView) -> void:
 	if view.item_lifecycle_offers.selected < 0: return
