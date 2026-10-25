@@ -17,7 +17,7 @@ See [unknown measurements](../mechanics/unknown-measurements.md).
 - Durability: no new saved fields; `state.physical` is now validated through `InventoryCopies.record_state_error` (absent = unknown). No item effects change, so the merged/suppressed gate is not involved. Covered formats: active dungeon state and dungeon snapshot migration (logic), real save/load and fresh-process reload (scenarios).
 
 ## Validation (Godot 4.7.2, import twice)
-- Logic: **6033 passed, 0 failed** (base ~6012; new checks in `Batch069Checks`). No SCRIPT/Parse/Compile errors.
+- Logic: **6033 passed, 0 failed** (068 build reported 6008 before its review stress checks; new checks in `Batch069Checks`). No SCRIPT/Parse/Compile errors.
 - Scenarios: `batch_069_unknown_weight_flow` PASSED, `batch_069_unknown_weight_reload` (fresh process) PASSED. Related: `batch_043_container_curse_flow`, `batch_044_parts_magic_flow`, `batch_048_item_types_measurements_flow`, `batch_068_exact_contents_flow`, `batch_068_exact_contents_reload`, `projected_vessel_flow`: all PASSED.
 
 ## PARTIAL
