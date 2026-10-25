@@ -732,7 +732,7 @@ static func interact(state: Dictionary, id: String, action: String, character: C
 	var alarm_suffix := _alarm_alert_text(alarm_areas)
 	if action == "inspect":
 		var environment := _environment_description(object)
-		return {"success": true, "seconds": 0, "message": "%s — %s, %s; %d/%d HP; %s, %s%s%s. %s" % [object["name"], object.get("material", "wood"), object.get("size", "Small"), object.get("hp", 1), object.get("max_hp", 1), "open" if object.get("open", false) else "closed", "locked" if object.get("locked", false) else "unlocked", "; burning" if object.get("burning", false) else "", "; " + environment if not environment.is_empty() else "", object.get("description", "")]}
+		return {"success": true, "seconds": 0, "message": "%s — %s; %d/%d HP; %s, %s%s%s. %s" % [object["name"], RoomMeasurements.describe_object(object), object.get("hp", 1), object.get("max_hp", 1), "open" if object.get("open", false) else "closed", "locked" if object.get("locked", false) else "unlocked", "; burning" if object.get("burning", false) else "", "; " + environment if not environment.is_empty() else "", object.get("description", "")]}
 	match action:
 		"extinguish":
 			if not CombatObjectRules.extinguish(object): return failure("This object is not burning.")
@@ -772,6 +772,7 @@ static func interact(state: Dictionary, id: String, action: String, character: C
 				record["state"]["physical"] = {"room_id": state["id"], "object_id": object["id"]}
 				for field in ["material", "size", "weight_lb", "fixed", "hp", "max_hp"]:
 					if object.has(field): record["state"]["physical"][field] = object[field]
+				record["state"]["physical"] = RoomMeasurements.known_fields(record["state"]["physical"], str(record.get("definition_id", ""))) # S-032
 			if not character.inventory.receive_instance(record): return failure("Your backpack is full or that item cannot be received.")
 			contents.remove_at(selected)
 			if str(object.get("kind", "")) == "loose" and contents.is_empty(): object["removed"] = true
@@ -1274,7 +1275,7 @@ static func place(state: Dictionary, character: Character, instance_id: String) 
 ## Shared exact-copy placement payload; callers own the inventory transaction.
 static func placed_item(state: Dictionary, record: Dictionary, position: Vector2i) -> Dictionary:
 	var item := DataLoader.get_item(str(record.definition_id))
-	var physical: Dictionary = record.state.get("physical", {})
+	var physical := RoomMeasurements.known_fields(record.state.get("physical", {}), str(record.definition_id)) # S-032: legacy 1 lb stamps stay unknown.
 	var object_id := str(physical["object_id"]) if physical.get("room_id", "") == state.get("id", "") and physical.has("object_id") else "placed:%s" % record.instance_id
 	var object := {"id": object_id, "kind": "loose", "name": item.get("name", record.definition_id), "fixed": false, "hp": 1, "max_hp": 1, "position": [position.x, position.y], "contents": [record], "removed": false}
 	for field in ["material", "size"]:

@@ -643,6 +643,7 @@ func _apply_campaign_ledger(data: Dictionary) -> void:
 	GameManager.created_creatures.assign(_dictionary_array(data.get("created_creatures", [])))
 	GameManager.next_created_creature_id = int(data.get("next_created_creature_id", 1))
 	GameManager.dungeon_snapshots = data.get("dungeon_snapshots", {}).duplicate(true)
+	for snapshot in GameManager.dungeon_snapshots.values(): RoomMeasurements.migrate_dungeon(snapshot) # S-032.
 	GameManager.completed_milestones.assign(_string_array(data.get("completed_milestones", [])))
 	GameManager.cleared_dungeons.assign(_string_array(data.get("cleared_dungeons", [])))
 	GameManager.claimed_rewards.assign(_string_array(data.get("claimed_rewards", [])))
@@ -700,4 +701,6 @@ func _serialize_dungeon_state(state: Dictionary) -> Dictionary:
 func _deserialize_dungeon_state(state) -> Dictionary:
 	if not state is Dictionary:
 		return {}
-	return state.duplicate(true)
+	var result: Dictionary = state.duplicate(true)
+	RoomMeasurements.migrate_dungeon(result) # S-032: legacy 1 lb stamps become unknown.
+	return result

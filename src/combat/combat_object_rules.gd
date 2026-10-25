@@ -55,7 +55,7 @@ static func _make_item_object(record: Dictionary, source_id: String, carried: bo
 	if instance_id.is_empty() or item.is_empty():
 		return {}
 	var item_state: Dictionary = record.get("state", {})
-	var physical: Dictionary = item_state.get("physical", {})
+	var physical := RoomMeasurements.known_fields(item_state.get("physical", {}), definition_id) # S-032: legacy stamps stay unknown.
 	var item_hp := int(item_state.get("combat_object_hp", physical.get("hp", item.get("object_hp", 1))))
 	var object := {
 		"id": ("carried:" if carried else "dropped:") + instance_id,

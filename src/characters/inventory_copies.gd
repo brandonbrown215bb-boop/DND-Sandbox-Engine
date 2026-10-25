@@ -139,6 +139,8 @@ static func record_state_error(record: Dictionary) -> String:
 	if not active_error.is_empty(): return active_error
 	var work_error := WorkRules.record_error(record) # S-066.
 	if not work_error.is_empty(): return work_error
+	var physical_error := RoomMeasurements.physical_error(record) # S-032 Batch 069.
+	if not physical_error.is_empty(): return physical_error
 	var form_error := ItemProjectionRules.copy_error(record) # S-166 exact form HP.
 	if not form_error.is_empty(): return form_error
 	if state.has("food_remaining_daily_fraction"):
