@@ -1,6 +1,7 @@
 [
   {
 	"id": "leather_armor",
+	"weight": 10,
 	"name": "Leather Armor",
 	"description": "Light armor made from cured leather.",
 	"type": "armor",
@@ -10,6 +11,7 @@
   },
   {
 	"id": "chain_mail",
+	"weight": 55,
 	"name": "Chain Mail",
 	"description": "Heavy armor of interlocking metal rings.",
 	"type": "armor",
@@ -20,6 +22,7 @@
   },
   {
 	"id": "scale_mail",
+	"weight": 45,
 	"name": "Scale Mail",
 	"description": "Medium armor of overlapping metal scales.",
 	"type": "armor",
@@ -30,6 +33,7 @@
   },
   {
 	"id": "shield",
+	"weight": 6,
 	"name": "Shield",
 	"description": "A wooden or metal shield carried in one hand.",
 	"type": "shield",

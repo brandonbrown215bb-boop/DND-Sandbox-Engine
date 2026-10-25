@@ -732,7 +732,7 @@ static func interact(state: Dictionary, id: String, action: String, character: C
 	var alarm_suffix := _alarm_alert_text(alarm_areas)
 	if action == "inspect":
 		var environment := _environment_description(object)
-		return {"success": true, "seconds": 0, "message": "%s — %s; %d/%d HP; %s, %s%s%s. %s" % [object["name"], RoomMeasurements.describe_object(object), object.get("hp", 1), object.get("max_hp", 1), "open" if object.get("open", false) else "closed", "locked" if object.get("locked", false) else "unlocked", "; burning" if object.get("burning", false) else "", "; " + environment if not environment.is_empty() else "", object.get("description", "")]}
+		return {"success": true, "seconds": 0, "message": "%s — %s; %d/%d HP; %s, %s%s%s. %s" % [object["name"], RoomMeasurements.describe_object(object) + ("; " + RoomMeasurements.capacity_text(object) if str(object.get("kind", "")) == "container" else ""), object.get("hp", 1), object.get("max_hp", 1), "open" if object.get("open", false) else "closed", "locked" if object.get("locked", false) else "unlocked", "; burning" if object.get("burning", false) else "", "; " + environment if not environment.is_empty() else "", object.get("description", "")]}
 	match action:
 		"extinguish":
 			if not CombatObjectRules.extinguish(object): return failure("This object is not burning.")
@@ -778,7 +778,8 @@ static func interact(state: Dictionary, id: String, action: String, character: C
 			if str(object.get("kind", "")) == "loose" and contents.is_empty(): object["removed"] = true
 		"put":
 			if str(object.get("kind", "")) != "container" or not bool(object.get("open", false)): return failure("Choose an open container.")
-			if object["contents"].size() >= int(object.get("capacity", 20)): return failure("The container is full.")
+			var capacity_error := RoomMeasurements.put_error(object) # S-032/S-196 Batch 078
+			if not capacity_error.is_empty(): return failure(capacity_error)
 			var record := character.inventory.remove_exact(instance_id, "stow")
 			if record.is_empty(): return failure("Select an item from your backpack.")
 			object["contents"].append(record)

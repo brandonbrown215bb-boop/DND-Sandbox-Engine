@@ -1,6 +1,7 @@
 [
   {
     "id": "potion_healing",
+    "weight": 0.5,
     "name": "Potion of Healing",
     "description": "A vial of glowing red liquid. Heals 2d4 + 2 hit points.",
     "type": "consumable",
@@ -28,6 +29,7 @@
   },
   {
     "id": "torch",
+    "weight": 1,
     "name": "Torch",
     "description": "A Torch burns for 1 hour, casting Bright Light in a 20-foot radius and Dim Light for an additional 20 feet.",
     "type": "consumable",
@@ -38,6 +40,7 @@
   },
   {
     "id": "rope",
+    "weight": 5,
     "name": "Rope (50 ft)",
     "description": "Hempen rope. Useful for climbing and certain event skill checks.",
     "type": "tool",
@@ -54,6 +57,7 @@
   },
   {
     "id": "component_pouch",
+    "weight": 2,
     "name": "Component Pouch",
     "description": "A pouch containing material components for spellcasting.",
     "type": "tool",
@@ -62,6 +66,7 @@
   },
   {
     "id": "holy_water",
+    "weight": 1,
     "name": "Holy Water (Flask, 25 GP)",
     "description": "A flask of Holy Water worth 25 GP. Consumed when casting Protection from Evil and Good.",
     "type": "consumable",
