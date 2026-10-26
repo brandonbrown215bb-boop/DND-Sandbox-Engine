@@ -163,7 +163,7 @@ Shared clauses that every spell below uses, so they aren't repeated per row:
 - **Affected:** Sacred Flame directly. Every Dex-save area and attack spell whose register limit says "cover … remain open": fireball, burning_hands, cone_of_cold, circle_of_death, chain_lightning, sunburst.
 - **Reuse:** QRY-05 geometry; S-190 obstruction (planned); S-091 roll policy; S-095 AC change.
 - **Depends on:** S-190.
-- **Finish line:** in a represented combat map, an obstruction between origin and target yields Half/Three-Quarters/Total cover. Attack AC and Dex save totals change by the declared amounts. Total cover refuses targeting before costs. A spell declaring the exemption ignores Half and Three-Quarters but not Total. This is proved through a real cast input path with a saved encounter reload.
+- **Finish line:** in a represented combat map, an obstruction between origin and target yields Half/Three-Quarters/Total cover. Attack AC and Dex save totals change by the declared amounts. Total cover refuses targeting before costs. A source declaring the exemption ignores Half cover only (e.g. Wand of the War Mage) or Half and Three-Quarters (e.g. Sacred Flame); Total cover is never ignored. This is proved through a real cast input path with a saved encounter reload.
 
 ### S-267 (spells-2): Result-triggered retarget chain (leap)
 - **Source clause:** Chromatic Orb: "If you roll the same number on two or more of the d8s, the orb leaps to a different target … within 30 feet … can leap a maximum number of times equal to the level of the slot expended, and a creature can be targeted only once by each casting".

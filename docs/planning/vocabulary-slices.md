@@ -1046,7 +1046,7 @@ the existing modules instead of rebuilding these bounded hosts.
 | S-193 — Remote borrowed senses and delivery limits | Planned | V-074 | Let eligible observers borrow a linked sensor's specified senses/communication or touch-delivery route; exit/range/source loss restores normal restrictions. | S-192, S-026 |
 | S-194 — Direction/location/identity-only disclosure | Planned | V-075 | Return only declared detection facts/nearest source/direction to the permitted observer; don't reveal the full actor sheet or concealed identity. | S-190, S-025 |
 | S-195 — Masked thought/type/material detection rules | Planned | V-075 | Honor source-specific masks, thought permission and actual material/thickness limits; unavailable knowledge remains an explicit unknown. | S-194, S-032, S-219 |
-| S-238 — Cover from actual obstruction | Planned | V-005, V-073 | Compute Half/Three-Quarters/Total cover from actual obstruction and apply it to AC, DEX saves and targeting. A spell or item source can declare that it ignores Half and Three-Quarters cover but not Total cover (wave 2 folds: core-4, spells-1, items B4-0 row 7 Wand of the War Mage; `ignore_cover_on_save` is a declared but unread field today). | S-032, S-190 |
+| S-238 — Cover from actual obstruction | Planned | V-005, V-073 | Compute Half/Three-Quarters/Total cover from actual obstruction and apply it to AC, DEX saves and targeting. A spell or item source can declare which cover it ignores: Half only (e.g. Wand of the War Mage) or Half and Three-Quarters (e.g. Sacred Flame). Total cover is never ignored (wave 2 folds: core-4, spells-1, items B4-0 row 7 Wand of the War Mage; `ignore_cover_on_save` is a declared but unread field today). | S-032, S-190 |
 | S-239 — Fallback climb/swim, crawl, stand-up and jumping | Planned | V-069 | Double-cost climb/swim without a speed, crawl, half-Speed stand-up and STR-based Long/High Jump on the production movement path. An item can grant a fixed jump instead (Boots of Striding and Springing: up to 30 ft for 10 ft of movement, refused with less remaining, lost when removed; wave 2 fold of items-18). | S-179, S-235 |
 
 ## P8 — Physical items and bodies
@@ -2903,7 +2903,7 @@ The wave 2 integration (`audit/wave-2`, stacked on `audit/wave-1`) added these r
 
 **Folds (no new ID):**
 - core-1..5 → S-235–S-239. These were already published from `audit/core-rules` c20c4d7. That branch itself is not merged.
-- Cover → **S-238**. This merges core-4, spells-1 and the item finding B4-0 row 7 (Wand of the War Mage ignores Half Cover). Its finish line now includes a source that ignores Half and Three-Quarters cover but not Total cover.
+- Cover → **S-238**. This merges core-4, spells-1 and the item finding B4-0 row 7 (Wand of the War Mage ignores Half Cover). Its finish line now includes a source that ignores Half cover only, or Half and Three-Quarters cover; Total cover is never ignored.
 - items-18 → **S-239**. This is the item-granted fixed jump (Boots of Striding and Springing).
 - items-6, items-10 and items-14 → **S-254**. These are one item-casting host.
 - features-1 → **S-241** and features-2 → **S-240**, both from the provisional labels in `audit/features`.
