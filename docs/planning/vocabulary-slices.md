@@ -8,7 +8,7 @@ certify converted catalog content.
 
 ## Count and scope
 
-**238 defined slices: 151 verified, 87 not yet accepted.** Counts measure accepted
+**243 defined slices: 151 verified, 92 not yet accepted.** (S-235–S-239 added by the 2026-10-26 [core rules/conditions audit](../mechanics/core-rules-status.md).) Counts measure accepted
 bounded implementations, not time, effort or completion of every clause in a row.
 These totals include reviewed, repaired and merged Batches 034–065 through
 2026-10-21, plus combat save-exit placement (VS-144), the bounded located source-end continuation (VS-145) and
@@ -30,13 +30,13 @@ catalog content as part of every slice.
 | P1 — Facts, results and grants | 42 | 34 | 8 |
 | P2 — Pools, time and effect state | 50 | 41 | 9 |
 | P3 — Rolls and decisions | 27 | 22 | 5 |
-| P4 — Damage and consequences | 25 | 20 | 5 |
-| P5 — Casting and action composition | 20 | 12 | 8 |
+| P4 — Damage and consequences | 27 | 20 | 7 |
+| P5 — Casting and action composition | 21 | 12 | 9 |
 | P6 — Actors and forms | 23 | 17 | 6 |
-| P7 — Space, perception and illusions | 19 | 1 | 18 |
+| P7 — Space, perception and illusions | 21 | 1 | 20 |
 | P8 — Physical items and bodies | 18 | 4 | 14 |
 | P9 — Procedures and campaign outcomes | 14 | 0 | 14 |
-| **Total** | **238** | **151** | **87** |
+| **Total** | **243** | **151** | **92** |
 
 ## How to use a row
 
@@ -966,6 +966,8 @@ the existing modules instead of rebuilding these bounded hosts.
 | S-131 — Maximum-HP zero death/remains policy | Verified (VS-124; Character zero-maximum death) | V-095, V-021 | Use source-specific zero-limit death/remains behavior and recovery restrictions, distinct from current-HP zero and injury-specific healing blocks. | S-130, S-119 |
 | S-132 — Redirect original incoming spell target | Planned | V-097 | Propose a legal alternate recipient for only the permitted original spell/step; retain original slot/parameters and settled earlier recipients, with no recast. | S-116, S-144 |
 | S-133 — Reflection with declared caster policy | Planned | V-097 | Reflect using stated original-versus-reflector attack/DC/ownership, preserving causal identity and limits; redirected origin/recipient alone cannot choose new stats. | S-132, S-114 |
+| S-235 — SRD condition consequence table | Planned | V-100, V-012, V-013 | One shared table drives each SRD 5.2.1 condition's attack/save/check/speed/turn/concentration consequences for Characters and monsters on the same production path; audit deviations (Poisoned turn damage, missing auto-fails, Prone/Unconscious) resolved explicitly. See [core-rules status](../mechanics/core-rules-status.md). | S-072, S-074 |
+| S-236 — Grappled condition and Grapple/Shove | Planned | V-064 | Apply source-bound Grappled (Speed 0, Disadvantage vs others, drag cost, escape, ends on Incapacitated/out of reach) and Unarmed Strike Grapple/Shove; reuse S-168 tethers without duplicating them. | S-168, S-235 |
 
 ## P5 — Casting and action composition
 
@@ -991,6 +993,7 @@ the existing modules instead of rebuilding these bounded hosts.
 | S-151 — Release stored spell once | Planned | V-084 | New holder chooses actual legal targets using stored numbers and declared ownership; release consumes only the selected stored entry and does not repay its original slot. | S-150, S-144 |
 | S-152 — Temporary preparation theft and enemy prohibition | Planned | V-087, V-057 | A qualifying failed save grants exact spell permission and denies that enemy's matching spell for the captured deadline, without storing a cast or removing others' knowledge. | S-116, S-137, S-049 |
 | S-153 — Theft expiry/source removal lifecycle | Planned | V-087 | Remove only the stolen permission/prohibition when its declared boundary ends; reload and repeated callbacks neither extend time nor revive old grants. | S-152, S-072 |
+| S-237 — SRD generic action menu | Planned | V-101, V-060 | Dash/Disengage/Dodge/Help/Hide/Influence/Ready/Search/Study/Utilize reachable as ordinary Actions with SRD effects; feature versions reuse them at their own cost; Hide uses DC 15 and location preconditions and yields Invisible. | S-160, S-191 |
 
 ## P6 — Actors and forms
 
@@ -1043,6 +1046,8 @@ the existing modules instead of rebuilding these bounded hosts.
 | S-193 — Remote borrowed senses and delivery limits | Planned | V-074 | Let eligible observers borrow a linked sensor's specified senses/communication or touch-delivery route; exit/range/source loss restores normal restrictions. | S-192, S-026 |
 | S-194 — Direction/location/identity-only disclosure | Planned | V-075 | Return only declared detection facts/nearest source/direction to the permitted observer; don't reveal the full actor sheet or concealed identity. | S-190, S-025 |
 | S-195 — Masked thought/type/material detection rules | Planned | V-075 | Honor source-specific masks, thought permission and actual material/thickness limits; unavailable knowledge remains an explicit unknown. | S-194, S-032, S-219 |
+| S-238 — Cover from actual obstruction | Planned | V-005, V-073 | Compute Half/Three-Quarters/Total cover from actual obstruction and apply it to AC, DEX saves and targeting. | S-032, S-190 |
+| S-239 — Fallback climb/swim, crawl, stand-up and jumping | Planned | V-069 | Double-cost climb/swim without a speed, crawl, half-Speed stand-up and STR-based Long/High Jump on the production movement path. | S-179, S-235 |
 
 ## P8 — Physical items and bodies
 
@@ -1086,7 +1091,7 @@ the existing modules instead of rebuilding these bounded hosts.
 | S-229 — Location-scoped search and hidden-object discovery | Planned | V-099, V-073 | Search reveals a declared hidden object/trap only to an eligible searcher in its vicinity, per observer, once discovered persists; searching elsewhere never reveals. Source: srd.txt 712–722, 11989. | S-190, S-188 |
 | S-230 — Trap trigger/disarm and lock procedures | Planned | V-099, V-096 | Declared trap trigger/detection/disarm/effect/reset and lock key/tool-check/break routes act on the actual room object; failure costs settle once and the object state survives checkpoints. Source: srd.txt 5900–5945, 12727–12928. | S-229, S-212, S-119 |
 
-## Coverage crosswalk for all 99 parents
+## Coverage crosswalk for all 101 parents
 
 A slice can support several parents; count its S-ID once. A row here means
 the requirement has an explicit destination, not that its broad capability
@@ -1101,7 +1106,7 @@ row; its mapping below names explicit checkpoint-bearing slices.
 | V-002 — Actor/source relationships | S-002, S-026, S-027 |
 | V-003 — Check purpose and required sense | S-028, S-029, S-188 |
 | V-004 — Scoped action and damage history | S-008, S-030, S-031, S-056 |
-| V-005 — Physical eligibility facts | S-032, S-033 |
+| V-005 — Physical eligibility facts | S-032, S-033, S-238 |
 | V-006 — Numeric references to prior results | S-003, S-017, S-031, S-034, S-035 |
 | V-007 — Runtime formulas and tables | S-004, S-016, S-036, S-037, S-048, S-051 |
 | V-008 — Natural-roll versus final-total floors | S-038 |
@@ -1160,16 +1165,16 @@ row; its mapping below names explicit checkpoint-bearing slices.
 | V-061 — Exclusive bonds and linked replacements | S-161, S-162 |
 | V-062 — Reversible actor statistics and equipment policy | S-163, S-164 |
 | V-063 — Item-to-actor/object form lifecycle | S-165, S-166, S-167 |
-| V-064 — Grapple, restraint and physical anchor relation | S-168, S-169 |
+| V-064 — Grapple, restraint and physical anchor relation | S-168, S-169, S-236 |
 | V-065 — Containment, capacity and occupant movement | S-170, S-171, S-172, S-204 |
 | V-066 — Possession and controller/host routing | S-173, S-174 |
 | V-067 — Corpse eligibility and distinct revival policies | S-129, S-175, S-176 |
 | V-068 — Destinations, planes and return-space policy | S-177, S-178 |
-| V-069 — Movement modes, surfaces and end placement | S-179, S-180, S-181 |
+| V-069 — Movement modes, surfaces and end placement | S-179, S-180, S-181, S-239 |
 | V-070 — Linked passenger and Reaction movement | S-182, S-183 |
 | V-071 — Spatial triggers and selective barriers | S-184, S-185, S-186 |
 | V-072 — Nonoccupying illusions and constrained realization | S-187, S-188, S-189 |
-| V-073 — Observer-relative senses and concealment | S-190, S-191 |
+| V-073 — Observer-relative senses and concealment | S-190, S-191, S-238 |
 | V-074 — Separate perception, cast and effect origins | S-145, S-192, S-193 |
 | V-075 — Filtered detection and information permissions | S-194, S-195 |
 | V-076 — Container quantities and capacity | S-167, S-189, S-196, S-197 |
@@ -1196,6 +1201,8 @@ row; its mapping below names explicit checkpoint-bearing slices.
 | V-097 — Redirect or reflect the original spell | S-132, S-133 |
 | V-098 — Overland travel pace and terrain procedures | S-227, S-228 |
 | V-099 — Location-scoped search, traps and locks | S-229, S-230 |
+| V-100 — SRD condition consequence table | S-235 |
+| V-101 — SRD generic actions | S-237 |
 
 ## Source follow-up outside the capability denominator
 
@@ -1279,7 +1286,7 @@ Record discovered additions/splits and refresh the phase/count/coverage tables.
 Keep live quest/session details on the Quest Board and orchestration queue,
 rather than turning this baseline into an execution diary.
 
-Planning reconciliation checked all 99 V-IDs, all 238 unique S-IDs, every named
+Planning reconciliation checked all 101 V-IDs, all 243 unique S-IDs, every named
 slice prerequisite, and absence of prerequisite cycles. This is document
 consistency only; it is not runtime or rules-fidelity validation.
 

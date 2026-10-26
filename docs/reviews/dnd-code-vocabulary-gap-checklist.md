@@ -85,12 +85,12 @@ an entire V-series requirement or certify its catalog consumers.
 
 ## Concrete vocabulary checklist
 
-These are building blocks, not 99 new modules or a demand to implement every
+These are building blocks, not 101 new modules or a demand to implement every
 example. Each box covers the boundary stated in its row. Different damage types,
 die sizes, distances and reset counts are parameters unless they change execution
 semantics. Examples identify local source descriptions, not certified gameplay.
 
-All 99 parent boxes remain open where their full boundary is unfinished. The
+All 101 parent boxes remain open where their full boundary is unfinished. The
 checked VS items above record accepted smaller boundaries from retained logs.
 **Partial** includes those proved subsets as well as older paths established only
 by source inspection; only the cited subset is verified. **Uncertain** means a suitable generic path
@@ -269,6 +269,8 @@ state or execution requirements. They are grouped here to keep V-001–086 stabl
 | [ ] V-097 — Redirect or reflect the original spell | Propose a new target for only the permitted incoming spell/step, retain original parameters or declared reflected-caster policy, and avoid new slot payment/recasting. | I: Ring of Spell Turning versus Staff of Charming; M: Tarrasque reflection. | Partial: native cast pipeline; generic causal target replacement uncertain (`SpellCast*`, `SharedStepExecutor`). | V-002, V-010, V-019, V-028, V-032 |
 | [ ] V-098 — Overland travel pace and terrain procedures | Choose a group pace per stage from the terrain maximum (road/slow-member/special-movement adjustments), convert to distance/time, apply pace check modifiers, and run per-terrain encounter-distance, foraging, navigation and search procedures with marching order. | SRD 5.2.1 Travel Pace/Travel Terrain (srd.txt 712–760, 12315–12370). | Missing: overworld uses movement points only; no pace, travel clock or terrain DCs (`OverworldState`). | V-045, V-057, V-069, V-078 |
 | [ ] V-099 — Location-scoped search, traps and locks | Search reveals a hidden object/trap only to a searcher in its vicinity; traps declare trigger, detection, disarm and effect; locks accept key, tool check or breaking. | SRD 5.2.1 Finding Hidden Objects, Traps, Thieves' Tools/Lock (srd.txt 712–722, 12727–12928, 5900–5945). | Missing: dungeon trap rooms are authored events; no lock DC or vicinity search. | V-005, V-073, V-083, V-096 |
+| [ ] V-100 — SRD condition consequence table | Each SRD 5.2.1 condition's attack/save/check/speed/turn/concentration consequences come from one table applied to Characters and monsters alike; no extra, unsourced riders. | Core rules audit 2026-10-26: Petrified/Stunned/Unconscious auto-fail missing, Poisoned turn damage, Prone and Character-target Advantage gaps. | Partial native checks in `character.gd`, `combat_action.gd`, `spell_save_resolver.gd`; [core-rules status](../mechanics/core-rules-status.md) | V-012, V-013, V-050 |
+| [ ] V-101 — SRD generic actions | Dash/Disengage/Dodge/Help/Hide/Influence/Ready/Search/Study/Utilize exist as ordinary Actions with their SRD effects and end conditions; features grant cheaper access to the same action. | Core rules audit: only feature-granted Dash/Disengage/Hide (DC 12), partial Dodge, no Ready/Search/Study/Influence. | `CombatTurnBudget`, Cunning Action branches in `combat_state.gd` | V-060, V-073 |
 
 ## Proposed implementation order
 
@@ -356,9 +358,9 @@ the complete intended rules vocabulary has been exhausted.
 ## Discovery findings and inspected domains
 
 The earlier document had 31 broad families. It now retains those IDs and adds
-**99 concrete V-series entries** (V-098/V-099 from the 2026-10-26 exploration audit) with examples, static support, likely hooks and
-dependencies. Most entries refine an existing family; 99 does not mean 99 wholly
-absent functions or 99 rules newly discovered in the repository. Several had
+**101 concrete V-series entries** (V-098/V-099 from the 2026-10-26 exploration audit; V-100/V-101 added by the 2026-10-26 [core rules audit](../mechanics/core-rules-status.md)) with examples, static support, likely hooks and
+dependencies. Most entries refine an existing family; 101 does not mean 101 wholly
+absent functions or 101 rules newly discovered in the repository. Several had
 already appeared in the wiring map/design and now become explicit checkboxes.
 
 Requirements made explicit by fresh description reads include:
