@@ -368,7 +368,7 @@ static func exchange(character: Character, payment_source_id: String, restoratio
 			# All copies and the full destination were checked above. No await or
 			# callbacks occur between validation and these ordinary backpack removals.
 			for instance_id in inventory_payment:
-				character.inventory.take_instance(instance_id)
+				character.inventory.take_instance(instance_id, "destruction")
 		else:
 			if payment.has("captured_dice"):
 				payment_after["captured_dice"] = payment.captured_dice.slice(payment_amount).duplicate(true)

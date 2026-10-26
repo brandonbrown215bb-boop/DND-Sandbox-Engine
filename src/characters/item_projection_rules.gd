@@ -115,7 +115,7 @@ static func project(owner: Character, instance_id: String) -> Dictionary:
 	# Only new declarations add a serial; legacy copy payloads remain unchanged.
 	if policy.has("reversion") or policy.has("end_aftermath"): copy.state["item_form_serial"] = int(copy.state.get("item_form_serial", 0)) + 1
 	owner.item_projections[instance_id] = {"copy": copy, "actor": {"actor_id": actor_id(instance_id), "current_hp": hp}}
-	if owner.inventory.take_instance(instance_id).is_empty():
+	if owner.inventory.remove_exact(instance_id, "projection").is_empty():
 		owner.item_projections.erase(instance_id)
 		return {"projected": false, "reason": "That copy cannot be released."}
 	var a := actor(owner, instance_id)

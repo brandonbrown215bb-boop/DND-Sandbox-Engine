@@ -117,7 +117,7 @@ static func put_error(inventory: Inventory, container_id: String, child_id: Stri
 static func put(inventory: Inventory, container_id: String, child_id: String, compartment: String) -> Dictionary:
 	var error := put_error(inventory, container_id, child_id, compartment)
 	if not error.is_empty(): return {"success": false, "message": error}
-	var record := inventory.take_instance(child_id)
+	var record := inventory.remove_exact(child_id, "stow")
 	if record.is_empty(): return {"success": false, "message": "That copy cannot be stowed."}
 	var host := _record(inventory, container_id)
 	var all: Dictionary = host.state.get("contents", {})

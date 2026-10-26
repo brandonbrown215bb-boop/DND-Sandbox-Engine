@@ -111,7 +111,7 @@ static func _cast(state: Dictionary, caster: Character, spell: Dictionary, targe
 
 
 static func _finish_room_cast(state: Dictionary, caster: Character, spell: Dictionary, target, party: Array, component: String, previous_spell: String, previous_source: String, result: Dictionary) -> void:
-	if bool(spell.get("material_component_consumed", false)) and not component.is_empty(): caster.inventory.take_instance(component)
+	if bool(spell.get("material_component_consumed", false)) and not component.is_empty(): caster.inventory.take_instance(component, "destruction")
 	if bool(spell.get("concentration", false)):
 		LocalRoomAreas.remove_concentration(state, caster.character_id, previous_spell, previous_source)
 		SpellEffects.end_concentration(caster, party)

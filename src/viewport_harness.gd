@@ -333,6 +333,8 @@ func _run_scenario(scenario: String) -> void:
 		"batch_073_explicit_death_reload": await Batch073Controls.reload(self)
 		"batch_074_work_site_flow": await Batch074Controls.run(self)
 		"batch_074_work_site_reload": await Batch074Controls.reload(self)
+		"batch_075_linked_removal_flow": await Batch075Controls.run(self)
+		"batch_075_linked_removal_reload": await Batch075Controls.reload(self)
 		"located_source_end_flow": await LocatedSourceEndControls.run(self)
 		"tether_group_flow": await TetherGroupFlow.run(self)
 		"containment_flow": await ContainmentFlow.run(self)

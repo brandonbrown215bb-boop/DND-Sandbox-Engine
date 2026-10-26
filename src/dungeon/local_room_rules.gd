@@ -779,7 +779,7 @@ static func interact(state: Dictionary, id: String, action: String, character: C
 		"put":
 			if str(object.get("kind", "")) != "container" or not bool(object.get("open", false)): return failure("Choose an open container.")
 			if object["contents"].size() >= int(object.get("capacity", 20)): return failure("The container is full.")
-			var record := character.inventory.take_instance(instance_id)
+			var record := character.inventory.remove_exact(instance_id, "stow")
 			if record.is_empty(): return failure("Select an item from your backpack.")
 			object["contents"].append(record)
 		_:
@@ -1262,7 +1262,7 @@ static func place(state: Dictionary, character: Character, instance_id: String) 
 	if character == null or not character.is_alive or CombatAction.is_incapacitated(character): return failure("That character cannot place an item.")
 	var position: Array = state["party_positions"][character.character_id]
 	if not object_at(state, coord(position)).is_empty(): return failure("There is already an object here.")
-	var record := character.inventory.take_instance(instance_id)
+	var record := character.inventory.remove_exact(instance_id, "drop")
 	if record.is_empty(): return failure("Select an item from your backpack.")
 	var placed := placed_item(state, record, coord(position))
 	var object := get_object(state, str(placed.id))

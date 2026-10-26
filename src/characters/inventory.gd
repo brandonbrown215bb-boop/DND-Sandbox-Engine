@@ -686,6 +686,18 @@ func spend_instance_charges(instance_id: String, amount: int) -> bool:
 	return true
 
 
+## S-162: the removal causes an exact copy can leave its holder by. Source data
+## (exclusive_bond loss_causes) decides which of them dispose linked mates.
+const REMOVAL_CAUSES := ["give", "stow", "drop", "sale", "destruction", "projection"]
+
+## S-162: the one shared exact-copy removal. Every give, stow, drop, sale,
+## destruction and projection path passes its cause here; an unknown cause or
+## a copy that is not removable refuses with {} and changes nothing.
+func remove_exact(instance_id: String, cause: String) -> Dictionary:
+	if cause not in REMOVAL_CAUSES: return {}
+	if cause == "destruction": return destroy_instance(instance_id)
+	return take_instance(instance_id, cause)
+
 ## Destroy one exact item copy, whether it is carried or equipped.
 func destroy_instance(instance_id: String) -> Dictionary:
 	copies.sync(self)
@@ -716,7 +728,7 @@ func destroy_instance(instance_id: String) -> Dictionary:
 		if left.is_empty(): record.state.erase("contents")
 		else: record.state["contents"] = left
 	CurseRules.on_removed(owner_character_ref.get_ref() if owner_character_ref != null else null, record)
-	BondRules.on_copy_removed(owner_character_ref.get_ref() if owner_character_ref != null else null)
+	BondRules.on_copy_removed(owner_character_ref.get_ref() if owner_character_ref != null else null, [instance_id], "destruction")
 	return record
 
 
@@ -756,7 +768,7 @@ func drop_equipped_instances(slots: Array) -> Array[Dictionary]:
 	for record in removed:
 		_publish_equipment_change(str(record.definition_id), "dropped", str(record.instance_id))
 		CurseRules.on_removed(owner, record)
-	BondRules.on_copy_removed(owner)
+	BondRules.on_copy_removed(owner, removed.map(func(r): return str(r.instance_id)), "drop")
 	return removed
 
 
@@ -772,7 +784,8 @@ func receive_instance(record: Dictionary) -> bool:
 	return true
 
 
-func take_instance(id: String) -> Dictionary:
+## `cause` is empty only for moves that keep the copy (attach); consumption passes "destruction" (S-162 review).
+func take_instance(id: String, cause := "") -> Dictionary:
 	copies.sync(self)
 	var index := copies.backpack.find(id)
 	if index < 0: return {}
@@ -783,7 +796,7 @@ func take_instance(id: String) -> Dictionary:
 	backpack.remove_at(index)
 	copies.backpack.remove_at(index)
 	copies.records.erase(id)
-	BondRules.on_copy_removed(owner_character_ref.get_ref() if owner_character_ref != null else null)
+	BondRules.on_copy_removed(owner_character_ref.get_ref() if owner_character_ref != null else null, [id], cause)
 	return record
 
 
@@ -796,7 +809,7 @@ func transfer_instance(id: String, destination: Inventory) -> bool:
 	var record: Dictionary = copies.records[id].duplicate(true)
 	WorkRules.on_removed(record)
 	if not destination.receive_instance(record): return false
-	take_instance(id)
+	remove_exact(id, "give")
 	return true
 
 
@@ -843,7 +856,7 @@ func consume_instance(id: String, target: Character) -> Dictionary:
 					break
 			if fuel_instance_id.is_empty():
 				return {"success": false, "message": "%s needs one %s to light." % [item.get("name", definition), DataLoader.get_item(fuel_item_id).get("name", fuel_item_id)]}
-			take_instance(fuel_instance_id)
+			take_instance(fuel_instance_id, "destruction")
 		state["light_source_lit"] = true
 		state["light_source_remaining_seconds"] = maxi(1, int(light_source.get("duration_seconds", 0)))
 		record["state"] = state
@@ -857,7 +870,7 @@ func consume_instance(id: String, target: Character) -> Dictionary:
 			return {"success": false, "message": "This item has an unsupported effect."}
 	var results := EventResolver.apply_effects(target, effects)
 	if results.is_empty(): return {"success": false, "message": "Item had no effect."}
-	take_instance(id)
+	take_instance(id, "destruction")
 	return {"success": true, "results": results, "message": "%s used." % item.get("name", definition)}
 
 
@@ -884,7 +897,7 @@ func consume_ration_portion(id: String, target: Character, daily_fraction: float
 	item_state["food_remaining_daily_fraction"] = maxf(0.0, remaining_fraction - consumed_fraction)
 	record["state"] = item_state
 	if item_state["food_remaining_daily_fraction"] <= 0.0001:
-		take_instance(id)
+		take_instance(id, "destruction")
 	else:
 		update_instance(record)
 	target.record_food_intake(consumed_pounds)
