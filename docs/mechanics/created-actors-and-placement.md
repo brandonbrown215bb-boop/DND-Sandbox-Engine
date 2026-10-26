@@ -198,8 +198,11 @@ context flag of `PhysicalFactsRules.is_space_available`), so a Huge creature
 cannot pass through or land in a wall because its center fits.
 
 Find Steed arrival (Batch 086) reads `summoned_creature.size` and
-`summoned_creature.placement` (`range_hexes`, `no_space`, `choose`) from the spell
-record; `SummonArrivalRules.destination_error` runs `PlacementRules.legal_error`
+`summoned_creature.placement` from the spell record. This arrival host supports
+chosen placement with `no_space: refuse`; paid failure and automatic placement
+are rejected at load for sized summoned arrivals. The invocation's target range
+controls casting, and `range_hexes` bounds nearest-space recovery.
+`SummonArrivalRules.destination_error` runs `PlacementRules.legal_error`
 over the whole Large footprint (terrain, map bounds, every other creature's
 footprint, including the caster), ignoring only the owner's previous steed body.
 Cost rule: a refused space is refused at target validation and again just before
@@ -208,7 +211,10 @@ pending for another pick; Cancel spends nothing; a space that became blocked aft
 the spell was chosen is refused at confirmation. When a saved steed returns at
 combat start, a saved room position whose footprint no longer fits is discarded
 and `SummonArrivalRules.recovery_candidates` picks the nearest full-footprint
-space (`PlacementRules.candidates` with `ignore_entity`). PARTIAL: exploration-mode
+space (`PlacementRules.candidates` with `ignore_entity`). Mounted recovery uses
+the rider's position and checks the full body too, allowing only its rider and
+previous body to overlap. Blocked recovery retains the persistent steed for a
+later attempt. PARTIAL: exploration-mode
 steed occupancy (`LocalRoomRules.find_steed_position`) is still center-based;
 if placement failed after payment (only possible if the grid changed between the
 pre-payment recheck and creation, which no current host does) the slot stays

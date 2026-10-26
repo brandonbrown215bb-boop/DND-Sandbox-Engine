@@ -43,6 +43,13 @@ and the unfinished hosts/content. The scenario triage also leaves existing
 fixture repairs and unresolved gameplay failures; this stack is not an all-green
 scenario certification. Reuse the delivered pieces instead of assigning them again.
 
+PRs #57–60 cover the four follow-ups: stale scenario fixtures, bounded player-HUD
+cast transformations, combat Find Steed arrival/recovery and additional weapon
+damage-choice routes. The [reviewed boundary and original queue's open work](docs/planning/vocabulary-slices.md#pr57-60-validation)
+own their remaining scope. Continue the unresolved gameplay investigations or
+S-141 duration/concentration; do not reassign the delivered subsets. Counts stay
+151 accepted of 226 defined engine slices.
+
 The [first Crown conversion batch](docs/planning/vocabulary-slices.md#conversion-batch-001)
 resolves ten candidates: three shared spell conversions, one already generic
 class feature and six blocked candidates. It enables no additional spells and

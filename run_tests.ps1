@@ -260,9 +260,11 @@ if ($runIntegration) {
         batch_080_last_charge_text_flow = "batch_080_last_charge_text_reload"
         batch_081_declared_fallback_flow = "batch_081_declared_fallback_reload"
         batch_082_interruption_boundary_flow = "batch_082_interruption_boundary_reload"
+        batch_086_find_steed_arrival_flow = "batch_086_find_steed_arrival_reload"
     }
     $scenarios += @($scenarioReloads.Keys)
     $scenarios += "batch_066_travel_placement_flow", "batch_076_footprint_terrain_flow", "batch_077_per_swing_choice_flow", "batch_078_declared_capacity_flow"
+    $scenarios += "batch_085_cast_transform_flow", "batch_087_choice_routes_flow"
     if ($Scenario.Count -gt 0) {
         # Selecting a reload explicitly still prepares its own checkpoint.
         $Scenario = @($Scenario | ForEach-Object {

@@ -385,6 +385,7 @@ func _run_scenario(scenario: String) -> void:
 		"batch_066_travel_placement_flow": await Batch066TravelControls.run(self)
 		"batch_076_footprint_terrain_flow": await Batch076FootprintControls.run(self)
 		"batch_077_per_swing_choice_flow": await Batch077Controls.run(self)
+		"batch_087_choice_routes_flow": await Batch087Controls.run(self)
 		"batch_078_declared_capacity_flow": await Batch078Controls.run(self)
 		"batch_079_max_hp_stacking_flow": await Batch079Controls.run(self)
 		"batch_079_max_hp_stacking_reload": await Batch079Controls.reload(self)

@@ -20,7 +20,13 @@ static func data_error(spell: Dictionary) -> String:
 	var summon: Variant = spell.get("summoned_creature", {})
 	if not summon is Dictionary: return ""
 	if summon.has("size") and PlacementRules.footprint(str(summon.size)).is_empty(): return "summoned_creature size '%s' is not a supported body size" % str(summon.size)
-	if summon.has("placement"): return PlacementRules.policy_error(summon.placement)
+	if summon.has("placement"):
+		var error := PlacementRules.policy_error(summon.placement)
+		if not error.is_empty(): return error
+	if summon.has("size"):
+		var policy := PlacementRules.policy(summon)
+		if str(policy.no_space) != "refuse" or not bool(policy.choose):
+			return "summoned arrivals support only chosen placement with no_space refuse"
 	return ""
 
 ## The living body this owner already has from the steed host, or null.

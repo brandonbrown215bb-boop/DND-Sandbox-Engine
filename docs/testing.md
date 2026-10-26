@@ -73,11 +73,18 @@ every previous check in its original order. Startup/parse/boot prerequisites
 remain, and the runner now stops immediately when one fails. Do not skip a
 compile failure to manufacture a green focused result.
 
-Batch 066–082 scenarios are registered in the Windows runner. For flows that
+Batch 066–087 scenarios are registered in the Windows runner. For flows that
 write checkpoints, it automatically launches the matching `*_reload` scenario
 in a fresh process using the flow's isolated profile. Selecting a reload name
 first runs its parent flow; each pair gets its own profile. Running those reloads
 alone against a fresh or deleted profile is not a save-recovery test.
+
+`batch_085_cast_transform_flow` checks qualifying/unrelated casts, both timing
+directions after the original budget is spent, refusal and catalog isolation.
+`batch_086_find_steed_arrival_flow` checks blocked/cancelled/stale arrivals,
+unmounted and mounted footprint recovery; its paired reload runs in a fresh
+process. `batch_087_choice_routes_flow` checks Light/Nick/Cleave/Opportunity and
+created-creature menus, actual budgets and stale creature action/actor refusal.
 
 The `effects` group is the small development loop for source-owned conditions,
 repeat saves, caster expiry and saved effect records. The `spells` group covers

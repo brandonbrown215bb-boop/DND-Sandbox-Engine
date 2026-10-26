@@ -113,8 +113,32 @@ static func take_turn(state: CombatState, entity: Dictionary) -> void:
 			for enemy in state.monster_entities:
 				if enemy.get("is_alive", false) and HexUtils.get_distance(origin, enemy["hex_position"]) <= 1: disadvantage = true
 		var advantage := not CombatPerception.can_see_target(target, creature, destination, origin, state.hex_grid)
-		var result := CombatAction.resolve_weapon_attack(creature, target, profile, advantage, disadvantage)
-		state._spend_action_cost("attack_action")
+		# Batch 087: a created creature's own authored damage-type choice (data:
+		# an attack_profile among its monster special_abilities) is asked of its
+		# controller before the creature's action is spent. Never carries from
+		# the owner's Attack action. A dismissed or stale answer holds the attack.
+		var attack_origin := origin
+		var attack_turn := CombatAction.active_turn_serial
+		var attack_owner := str(record.get("owner_id", ""))
+		var created_choice: Dictionary = await state._route_damage_choice(creature, profile, "%s attack" % creature.character_name, false, func() -> String:
+			if creature != state.active_character or attack_turn != CombatAction.active_turn_serial or entity not in state.player_entities or not creature.is_alive or CombatAction.is_incapacitated(creature) or state._battle_ending:
+				return "The creature can no longer attack."
+			if not state.turn_budget.can_spend("action"):
+				return "The creature's Action is no longer available."
+			var live_record := CreatedCreatureRules.get_record(creature.character_id)
+			if live_record.is_empty() or not CreatedCreatureRules.controlled(live_record) or str(live_record.get("owner_id", "")) != attack_owner or str(live_record.get("order", "")) != "attack" or str(live_record.get("order_target", "")) != str(target.get("id", "")):
+				return "The creature's attack order is no longer available."
+			if not target.get("is_alive", false) or target not in state.monster_entities or entity["hex_position"] != attack_origin or HexUtils.get_distance(attack_origin, target["hex_position"]) > reach:
+				return "The target is no longer within reach."
+			if not Targeting.has_line_of_sight(attack_origin, target["hex_position"], state.hex_grid) or state._spell_zones()._antilife_shell_blocks_melee(creature, attack_origin, target["hex_position"], profile):
+				return "The target is no longer reachable."
+			return "")
+		if bool(created_choice.get("held", false)):
+			CreatedCreatureRules.settle(state.player_entities, state.monster_entities)
+			state._update_grid_entities()
+			return
+		if not state._spend_action_cost("action"): return
+		var result: Dictionary = await state._settle_attack_profile_hit_choice(CombatAction.resolve_weapon_attack(creature, target, profile, advantage, disadvantage, created_choice.decisions))
 		state.hud.add_log(str(result.get("message", "%s attacks." % creature.character_name)))
 		if int(target.get("current_hp", 0)) <= 0:
 			target["is_alive"] = false
