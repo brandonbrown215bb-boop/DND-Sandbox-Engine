@@ -10811,12 +10811,9 @@ func test_local_room_object_flow() -> void:
 		mount_owner.level = 5
 		mount_owner.features.append({"id": "paladin_faithful_steed", "type": "passive"})
 		var mount_state_result := PaladinRules.create_find_steed_state(mount_owner, DataLoader.get_spell("find_steed"), 4, "celestial", "horse")
-		var mount_spawn := Vector2i(2, 0)
-		if mount_spawn == mount_owner_position or not combat.hex_grid.has_tile(mount_spawn) or not combat.hex_grid.is_hex_passable(mount_spawn):
-			for candidate in HexUtils.get_hexes_in_range(mount_owner_position, 1):
-				if candidate != mount_owner_position and combat.hex_grid.has_tile(candidate) and combat.hex_grid.is_hex_passable(candidate) and not combat._is_occupied_hex(candidate):
-					mount_spawn = candidate
-					break
+		# Batch 086: a Large steed needs its whole footprint clear, so take the factory's own nearest legal space.
+		var mount_spawn_options := SummonArrivalRules.recovery_candidates(combat, combat.player_entities, mount_owner, mount_owner_position, DataLoader.get_spell("find_steed"))
+		var mount_spawn: Vector2i = mount_spawn_options[0] if not mount_spawn_options.is_empty() else FamiliarRules.ABSENT
 		var summon_result := combat._add_find_steed_entity(combat.player_entities[0], mount_spawn, false) if mount_state_result.get("success", false) else {}
 		mounted_steed_entity = summon_result.get("entity", {})
 		combat.current_player_idx = 0

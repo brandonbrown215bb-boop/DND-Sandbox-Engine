@@ -444,6 +444,11 @@ func _validate_content(data: Dictionary, content_type: String, source: String) -
 	if data.has("source_benefits") and (content_type != "item" or data.get("type", "") not in ["weapon", "armor", "shield", "ring", "wand", "staff", "rod", "wondrous"] or (data.get("type", "") == "wondrous" and not data.has("worn_slot")) or not SourceBenefitRules.benefits_error(data["source_benefits"]).is_empty()):
 		_load_errors.append("Invalid equipped item source benefits in " + source)
 		return false
+	if content_type == "spell" and data.has("summoned_creature"):
+		var arrival_error := SummonArrivalRules.data_error(data)
+		if not arrival_error.is_empty():
+			_load_errors.append("Spell in %s: %s" % [source, arrival_error])
+			return false
 	if content_type == "spell" and data.has("execution"):
 		var execution_error := SharedSpell.content_error(data)
 		if not execution_error.is_empty():

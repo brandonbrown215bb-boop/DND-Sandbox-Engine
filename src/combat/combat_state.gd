@@ -447,26 +447,32 @@ func _add_find_steed_entity(owner: Dictionary, requested_position: Vector2i = Ve
 	steed.is_alive = true
 	steed.feature_uses["creature_type"] = str(state.get("creature_type", "fey"))
 	steed.creature_type = str(state.get("creature_type", "fey"))
-	steed.feature_uses["creature_size"] = "large"
+	steed.feature_uses["creature_size"] = str(SummonArrivalRules.spec(DataLoader.get_spell("find_steed")).get("size", "large"))
 	for steed_feature in PaladinRules.find_steed_features(state):
 		steed.features.append(steed_feature)
 		steed.feature_uses[str(steed_feature.get("id", ""))] = 0 if (str(steed_feature.get("uses_per", "")) == "long_rest" and bool(state.get("long_rest_ability_used", false))) else int(steed_feature.get("uses", 0))
 	var owner_position: Vector2i = owner.get("hex_position", Vector2i.ZERO)
+	var steed_spell := DataLoader.get_spell("find_steed")
+	var begins_mounted := bool(state.get("mounted", false))
+	# Batch 086: every placement (cast arrival, saved room position, recovery)
+	# uses the declared body's whole footprint through PlacementRules.
 	var steed_position := requested_position
+	if steed_position != FamiliarRules.ABSENT and not begins_mounted:
+		var requested_error := SummonArrivalRules.destination_error(self, player_entities, owner_character, owner_position, steed_position, steed_spell, -1)
+		if not requested_error.is_empty():
+			return {"success": false, "message": "The steed cannot arrive there: %s" % requested_error}
 	if steed_position == FamiliarRules.ABSENT and not LocalRoomCombat.room().is_empty():
 		steed_position = PaladinRules.find_steed_room_position(owner_character, str(LocalRoomCombat.room()["id"]))
-		if steed_position != FamiliarRules.ABSENT and (not hex_grid.has_tile(steed_position) or not hex_grid.is_hex_passable(steed_position) or _is_occupied_hex(steed_position)):
+		if steed_position != FamiliarRules.ABSENT and not begins_mounted and not SummonArrivalRules.destination_error(self, player_entities, owner_character, owner_position, steed_position, steed_spell, -1).is_empty():
 			steed_position = FamiliarRules.ABSENT
-	var begins_mounted := bool(state.get("mounted", false))
-	if steed_position == Vector2i(9999, 9999):
+	if steed_position == FamiliarRules.ABSENT:
 		if begins_mounted:
 			steed_position = owner_position
 		else:
-			steed_position = owner_position
-			for candidate in HexUtils.get_hexes_in_range(owner_position, 1):
-				if candidate != owner_position and hex_grid.has_tile(candidate) and hex_grid.is_hex_passable(candidate) and not _is_occupied_hex(candidate):
-					steed_position = candidate
-					break
+			var options := SummonArrivalRules.recovery_candidates(self, player_entities, owner_character, owner_position, steed_spell)
+			if options.is_empty():
+				return {"success": false, "message": "No unoccupied space is available for the steed."}
+			steed_position = options[0]
 	if (steed_position == owner_position and not begins_mounted) or not hex_grid.has_tile(steed_position) or not hex_grid.is_hex_passable(steed_position):
 		return {"success": false, "message": "No unoccupied space is available for the steed."}
 	for existing in player_entities.duplicate():
@@ -4270,6 +4276,9 @@ func _execute_selected_spell(cast: SpellCastContext) -> void:
 		return
 	# Batch 066: recheck the arrival after any option popups, still before payment.
 	if SpellCastMovement.refuse_teleport_destination(cast):
+		return
+	# Batch 086: recheck a summoned arrival's whole footprint, still before payment.
+	if SpellCastMovement.refuse_arrival_destination(cast):
 		return
 	if not SpellCastResources.commit_metamagic(cast):
 		return

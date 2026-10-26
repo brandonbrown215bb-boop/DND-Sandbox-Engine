@@ -58,6 +58,23 @@ static func _resolve_spell_cast_movement(cast: SpellCastContext) -> bool:
 
 ## Batch 066 (S-121/S-122): refuse an illegal teleport arrival, logging the reason.
 ## Called before any payment (validation and the pre-commit recheck).
+## Batch 086 (S-121/S-122): the summoned arrival host. Refuses (and logs) when
+## the chosen space cannot hold the declared body's whole footprint within the
+## invocation's range. Called at target validation and again just before
+## payment, so a selection gone stale after option popups spends nothing.
+static func refuse_arrival_destination(cast: SpellCastContext) -> bool:
+	var why := arrival_destination_reason(cast)
+	if why.is_empty(): return false
+	if cast.hud != null: cast.hud.add_log("[color=orange]%s cannot arrive there: %s[/color]" % [str(cast.spell.get("name", "The creature")), why])
+	if cast.highlight_reachable.is_valid(): cast.highlight_reachable.call()
+	return true
+
+static func arrival_destination_reason(cast: SpellCastContext) -> String:
+	if SummonArrivalRules.spec(cast.spell).is_empty(): return ""
+	var origin: Vector2i = cast.players[cast.player_index].get("hex_position", Vector2i.ZERO)
+	var range_hexes := SpellCastTargeting._spell_target_range(cast, cast.spell)
+	return SummonArrivalRules.destination_error(cast, cast.players, cast.caster, origin, cast.target_coord, cast.spell, range_hexes)
+
 static func refuse_teleport_destination(cast: SpellCastContext) -> bool:
 	var why := refuse_teleport_destination_reason(cast)
 	if why.is_empty(): return false

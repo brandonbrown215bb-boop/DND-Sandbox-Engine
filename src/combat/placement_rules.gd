@@ -118,10 +118,10 @@ static func footprint_terrain_error(state, hex: Vector2i, size: String, context_
 	return legal_error(state, hex, hex, size, -1, [], ctx)
 
 ## Legal destinations nearest first (ties by coordinate), excluding reserved ones.
-static func candidates(state, origin: Vector2i, size: String, range_hexes: int, reserved: Array = []) -> Array[Vector2i]:
+static func candidates(state, origin: Vector2i, size: String, range_hexes: int, reserved: Array = [], context_overrides: Dictionary = {}) -> Array[Vector2i]:
 	var out: Array[Vector2i] = []
 	for hex in HexUtils.get_hexes_in_range(origin, range_hexes):
-		if legal_error(state, origin, hex, size, range_hexes, reserved).is_empty(): out.append(hex)
+		if legal_error(state, origin, hex, size, range_hexes, reserved, context_overrides).is_empty(): out.append(hex)
 	out.sort_custom(func(x, y): return [HexUtils.get_distance(origin, x), x.x, x.y] < [HexUtils.get_distance(origin, y), y.x, y.y])
 	return out
 
