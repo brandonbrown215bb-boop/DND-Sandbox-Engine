@@ -1,6 +1,7 @@
 [
   {
     "id": "ball_bearings",
+    "weight": 2,
     "name": "Ball Bearings",
     "description": "A pouch of small metal spheres created by Tinker's Magic.",
     "type": "tool",

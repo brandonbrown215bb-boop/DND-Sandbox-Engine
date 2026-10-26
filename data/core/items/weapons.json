@@ -1,6 +1,7 @@
 [
   {
     "id": "longsword",
+    "weight": 3,
     "name": "Longsword",
     "description": "A versatile blade favored by knights and warriors.",
     "type": "weapon",
@@ -17,6 +18,7 @@
   },
   {
     "id": "rapier",
+    "weight": 2,
     "name": "Rapier",
     "description": "A thin, sharp blade designed for thrusting attacks.",
     "type": "weapon",
@@ -32,6 +34,7 @@
   },
   {
     "id": "dagger",
+    "weight": 1,
     "name": "Dagger",
     "description": "A small, concealable blade. Can be thrown.",
     "type": "weapon",
@@ -50,6 +53,7 @@
   },
   {
     "id": "handaxe",
+    "weight": 2,
     "name": "Handaxe",
     "description": "A small axe designed for one-handed use. Can be thrown.",
     "type": "weapon",
@@ -67,6 +71,7 @@
   },
   {
     "id": "quarterstaff",
+    "weight": 4,
     "name": "Quarterstaff",
     "description": "A sturdy wooden pole, favored by mages and monks.",
     "type": "weapon",
@@ -83,6 +88,7 @@
   },
   {
     "id": "shortbow",
+    "weight": 2,
     "name": "Shortbow",
     "description": "A compact bow for ranged attacks.",
     "type": "weapon",
@@ -99,6 +105,7 @@
   },
   {
     "id": "longbow",
+    "weight": 2,
     "name": "Longbow",
     "description": "A tall bow with impressive range.",
     "type": "weapon",
@@ -116,6 +123,7 @@
   },
   {
     "id": "club",
+    "weight": 2,
     "name": "Club",
     "description": "A simple wooden cudgel.",
     "type": "weapon",
@@ -131,6 +139,7 @@
   },
   {
     "id": "greatclub",
+    "weight": 10,
     "name": "Greatclub",
     "description": "A heavy two-handed wooden club.",
     "type": "weapon",
@@ -146,6 +155,7 @@
   },
   {
     "id": "javelin",
+    "weight": 2,
     "name": "Javelin",
     "description": "A light throwing spear.",
     "type": "weapon",
@@ -162,6 +172,7 @@
   },
   {
     "id": "light_hammer",
+    "weight": 2,
     "name": "Light Hammer",
     "description": "A small hammer balanced for throwing.",
     "type": "weapon",
@@ -179,6 +190,7 @@
   },
   {
     "id": "mace",
+    "weight": 4,
     "name": "Mace",
     "description": "A flanged metal head on a sturdy haft.",
     "type": "weapon",
@@ -192,6 +204,7 @@
   },
   {
     "id": "sickle",
+    "weight": 2,
     "name": "Sickle",
     "description": "A curved farming blade pressed into service as a weapon.",
     "type": "weapon",
@@ -207,6 +220,7 @@
   },
   {
     "id": "spear",
+    "weight": 3,
     "name": "Spear",
     "description": "A simple pole tipped with a point. Can be thrown.",
     "type": "weapon",
@@ -225,6 +239,7 @@
   },
   {
     "id": "dart",
+    "weight": 0.25,
     "name": "Dart",
     "description": "A small weighted throwing dart.",
     "type": "weapon",
@@ -242,6 +257,7 @@
   },
   {
     "id": "light_crossbow",
+    "weight": 5,
     "name": "Light Crossbow",
     "description": "A compact crossbow that must be reloaded after each shot.",
     "type": "weapon",
@@ -274,6 +290,7 @@
   },
   {
     "id": "battleaxe",
+    "weight": 4,
     "name": "Battleaxe",
     "description": "A broad axe usable in one or two hands.",
     "type": "weapon",
@@ -290,6 +307,7 @@
   },
   {
     "id": "flail",
+    "weight": 2,
     "name": "Flail",
     "description": "A spiked ball on a chain attached to a handle.",
     "type": "weapon",
@@ -303,6 +321,7 @@
   },
   {
     "id": "glaive",
+    "weight": 6,
     "name": "Glaive",
     "description": "A blade mounted on a long pole, granting reach.",
     "type": "weapon",
@@ -320,6 +339,7 @@
   },
   {
     "id": "greataxe",
+    "weight": 7,
     "name": "Greataxe",
     "description": "A massive two-handed axe.",
     "type": "weapon",
@@ -336,6 +356,7 @@
   },
   {
     "id": "greatsword",
+    "weight": 6,
     "name": "Greatsword",
     "description": "A huge two-handed blade.",
     "type": "weapon",
@@ -352,6 +373,7 @@
   },
   {
     "id": "halberd",
+    "weight": 6,
     "name": "Halberd",
     "description": "An axe blade topped with a spike on a long pole.",
     "type": "weapon",
@@ -369,6 +391,7 @@
   },
   {
     "id": "lance",
+    "weight": 6,
     "name": "Lance",
     "description": "A long cavalry spear with reach.",
     "type": "weapon",
@@ -386,6 +409,7 @@
   },
   {
     "id": "maul",
+    "weight": 10,
     "name": "Maul",
     "description": "A massive two-handed hammer.",
     "type": "weapon",
@@ -402,6 +426,7 @@
   },
   {
     "id": "morningstar",
+    "weight": 4,
     "name": "Morningstar",
     "description": "A spiked mace head on a haft.",
     "type": "weapon",
@@ -415,6 +440,7 @@
   },
   {
     "id": "pike",
+    "weight": 18,
     "name": "Pike",
     "description": "A very long thrusting spear with reach.",
     "type": "weapon",
@@ -432,6 +458,7 @@
   },
   {
     "id": "scimitar",
+    "weight": 3,
     "name": "Scimitar",
     "description": "A curved, light slashing blade.",
     "type": "weapon",
@@ -448,6 +475,7 @@
   },
   {
     "id": "shortsword",
+    "weight": 2,
     "name": "Shortsword",
     "description": "A short, quick thrusting blade.",
     "type": "weapon",
@@ -464,6 +492,7 @@
   },
   {
     "id": "trident",
+    "weight": 4,
     "name": "Trident",
     "description": "A three-pronged spear. Can be thrown.",
     "type": "weapon",
@@ -482,6 +511,7 @@
   },
   {
     "id": "war_pick",
+    "weight": 2,
     "name": "War Pick",
     "description": "A pointed hammer designed to pierce armor.",
     "type": "weapon",
@@ -498,6 +528,7 @@
   },
   {
     "id": "warhammer",
+    "weight": 5,
     "name": "Warhammer",
     "description": "A heavy hammer usable in one or two hands.",
     "type": "weapon",
@@ -514,6 +545,7 @@
   },
   {
     "id": "whip",
+    "weight": 3,
     "name": "Whip",
     "description": "A long leather lash with reach.",
     "type": "weapon",
@@ -530,6 +562,7 @@
   },
   {
     "id": "blowgun",
+    "weight": 1,
     "name": "Blowgun",
     "description": "A tube for firing small needles. Must be reloaded after each shot.",
     "type": "weapon",
@@ -546,6 +579,7 @@
   },
   {
     "id": "hand_crossbow",
+    "weight": 3,
     "name": "Hand Crossbow",
     "description": "A one-handed crossbow. Must be reloaded after each shot.",
     "type": "weapon",
@@ -563,6 +597,7 @@
   },
   {
     "id": "heavy_crossbow",
+    "weight": 18,
     "name": "Heavy Crossbow",
     "description": "A powerful crossbow with long range. Must be reloaded after each shot.",
     "type": "weapon",
@@ -581,6 +616,7 @@
   },
   {
     "id": "musket",
+    "weight": 10,
     "name": "Musket",
     "description": "A long black-powder firearm. Must be reloaded after each shot.",
     "type": "weapon",
@@ -598,6 +634,7 @@
   },
   {
     "id": "pistol",
+    "weight": 3,
     "name": "Pistol",
     "description": "A one-handed black-powder firearm. Must be reloaded after each shot.",
     "type": "weapon",

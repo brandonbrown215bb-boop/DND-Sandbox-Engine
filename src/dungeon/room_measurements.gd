@@ -72,6 +72,31 @@ static func describe_object(object: Dictionary) -> String:
 	var size := str(object.get("size", ""))
 	return "%s, %s, %s" % [material if not material.is_empty() else "unknown material", size if not size.is_empty() else "unknown size", _weight_text(object.get("weight_lb", null))]
 
+## S-032/S-196 (Batch 078): a room container's item-count capacity is a data fact
+## (`capacity`). Absent means undeclared; the engine never presents a number as
+## the container's capacity. TECHNICAL_CONTENTS_LIMIT is a separate engine bound
+## on stored records (save size), labeled as such wherever it is shown.
+const TECHNICAL_CONTENTS_LIMIT := 20
+
+static func declared_capacity(object: Dictionary) -> Variant:
+	var value: Variant = object.get("capacity", null)
+	if (value is int or value is float) and is_finite(float(value)) and float(value) >= 0.0: return int(value)
+	return null
+
+static func capacity_text(object: Dictionary) -> String:
+	var declared: Variant = declared_capacity(object)
+	if declared != null: return "capacity %d items (declared)" % int(declared)
+	return "capacity undeclared; engine technical limit %d items (not a game rule)" % TECHNICAL_CONTENTS_LIMIT
+
+## Empty when one more item may be stowed. Declared capacity is enforced; an
+## undeclared container is bounded only by the labeled technical limit.
+static func put_error(object: Dictionary) -> String:
+	var count: int = object.get("contents", []).size()
+	var declared: Variant = declared_capacity(object)
+	if declared != null and count >= int(declared): return "The container is full (declared capacity %d items)." % int(declared)
+	if count >= TECHNICAL_CONTENTS_LIMIT: return "Engine technical limit reached (%d items; not a game rule). This container's capacity is undeclared." % TECHNICAL_CONTENTS_LIMIT
+	return ""
+
 ## Player-facing measurement text for a carried copy's item data.
 static func describe_item(definition_id: String) -> String:
 	var item := DataLoader.get_item(definition_id)

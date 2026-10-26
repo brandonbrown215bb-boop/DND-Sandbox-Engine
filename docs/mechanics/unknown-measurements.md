@@ -21,6 +21,15 @@ Authored room objects (no `placed:` identity) and placed copies whose values dif
 
 ## PARTIAL
 - Volume: no SRD item volumes are loaded (card 65fc); volume-limited compartments refuse every unmeasured item.
-- Room container `put` still uses an authored `capacity` count with a pre-existing default of 20 when absent; it does not weigh contents.
+- Room container `put` does not weigh contents; it counts items only.
 - Characters have no carry/encumbrance total, so no carry check consumes weight.
 - The legacy signature cannot distinguish a deliberately saved mixed/Tiny/stamp-equal value on a `placed:` copy (none is authored by any current code path).
+
+## Declared container capacity (Batch 078)
+Brandon (#41): "stop presenting the default 20 as a real container capacity. Use declared capacities, and keep any temporary technical limit separate and labeled."
+- A room container's `capacity` (item count) is a data fact. `RoomMeasurements.declared_capacity` returns it, or `null` when undeclared. The engine no longer substitutes 20.
+- `RoomMeasurements.put_error` (production caller: `LocalRoomRules.interact` `put`, the room **Put** button) refuses at the declared capacity: "The container is full (declared capacity N items)."
+- `RoomMeasurements.TECHNICAL_CONTENTS_LIMIT` (20) is a separate engine bound on stored records. It applies to every container, declared or not, and is always reported as "Engine technical limit reached (20 items; not a game rule)". It is never shown as a capacity.
+- **Inspect** on a container appends `capacity N items (declared)` or `capacity undeclared; engine technical limit 20 items (not a game rule)`.
+- Legacy saves: containers saved without `capacity` load unchanged and read as undeclared. Nothing is stamped on load.
+- SRD weights filled in this batch, with pages: [srd-item-weights.md](srd-item-weights.md). The Bell stays unknown (SRD p.95 `—`).
