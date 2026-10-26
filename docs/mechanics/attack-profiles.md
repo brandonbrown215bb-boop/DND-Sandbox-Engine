@@ -51,11 +51,46 @@ A weapon-scoped rule may offer types instead of fixing one:
 - The chosen type applies to that attack only (unless carried as above). Nothing new is saved; the pending
   request lives in memory only, and class-owned rules are rebuilt on load.
 
+### Other attack routes (batch 087)
+
+`CombatState._route_damage_choice(actor, weapon, label, carry, still_error)` is
+the one shared host for attacks made outside the Attack action's own swings.
+It is data-driven: it reads only `AttackProfileRules.damage_type_choice` and
+has no per-ID branches.
+
+| Route | Budget kept | When asked | Carry from Attack action |
+|---|---|---|---|
+| Opportunity Attack | Reaction | after the player accepts the reaction prompt, before `reaction_available` is cleared | never |
+| Light extra attack (Bonus Action) | Bonus Action + once-per-turn Light use | after the optional-attack prompt, before either is spent | never |
+| Light extra attack with Nick | once-per-turn Light use (no Bonus Action, SRD Nick: part of the Attack action) | same | yes, an `attack_action` pick |
+| Cleave | once-per-turn Cleave use | after the optional-attack prompt, before the use is spent | never (SRD: a separate extra attack) |
+| Created creature's turn attack | the creature's own action | before the attack is resolved or the action spent | never |
+
+- **Carry rule:** a pick made during the Attack action is reused only by attacks
+  that are *part of that Attack action* and only when the rule says
+  `choice_duration: attack_action`. Of these routes that is only Nick. Every
+  other route is its own attack and asks its own menu, whatever the duration.
+- **Activation window:** the menu is asked before the route's budget is spent.
+  Afterwards the host rechecks the rule (`activation_choice_error`) and the
+  route's own validity: budget still unused, actor still able, target alive and
+  still within reach (for OA, the mover's left hex; for created creatures, the
+  creature has not moved). A dismissal or stale answer makes no attack, spends
+  nothing, and logs `<route> is not made and nothing was spent`. It never falls
+  back to the weapon's type.
+- **Hit window:** the budget is spent when the attack is made, as before. The
+  menu follows the hit through `_settle_attack_profile_hit_choice`; a dismissal
+  uses the weapon's own type and logs it (the existing hit-window rule).
+- No durable state is added; the choice lives in memory for one attack.
+  Legacy saves are unaffected.
+
 ### PARTIAL
 - Batch 077 closes the old first-swing-only gap: every Extra Attack swing hosts
   its own activation or hit choice per `choice_duration`.
-- Opportunity, Light (off-hand), Cleave and created-creature attacks don't host
-  the choice. They settle with the inherited type.
+- Batch 087 closes the route gap for Opportunity Attacks, Light (off-hand,
+  including Nick), Cleave and created-creature turn attacks (see "Other attack
+  routes" below). Still not hosted: S-156 commanded created actors
+  (`CreatedCommandRules`, synchronous), Conjure-style summon attacks and monster
+  attacks; they settle with the inherited type.
 - Item-granted attack profiles aren't supported, because items grant only
   `mode_choice`/`rule_upgrade` features. Reach and mastery choices aren't built.
 
