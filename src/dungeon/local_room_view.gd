@@ -199,7 +199,12 @@ func start(room: Dictionary, party: Array, room_grid: HexGrid, room_hud: Dungeon
 	pause_button = _add_button(item_action_row, "Pause", func(): _result(ActiveTimeRules.pause(actor(), _selected(items))))
 	# S-066: start, join or stop qualified work on the selected copy.
 	_add_button(item_action_row, "Start work", func(): _result(WorkRules.start(actor(), _selected(items))))
-	_add_button(item_action_row, "Join work", func(): _result(WorkRules.join(actor(), characters[recipients.selected], WorkRules.active_id(characters[recipients.selected]))))
+	# Batch 074: offer every other member's active work; the pick is rechecked (site proximity included) when confirmed.
+	_add_button(item_action_row, "Join work", func():
+		var helper := actor()
+		choose_exact("Join whose work?", WorkRules.join_options(helper, characters), func(o): return WorkRules.join(helper, o.worker, str(o.instance_id)), func(): return {"success": false, "message": "Nobody nearby has work underway to join."}, true))
+	# Batch 074: wait in place; the campaign clock (work, recovery, durations) advances 8 hours.
+	_add_button(item_action_row, "Wait 8 hours", func(): _result({"success": true, "seconds": 28800, "message": "%s waits 8 hours." % actor().character_name}))
 	_add_button(item_action_row, "Stop work", func(): _result(WorkRules.stop(actor(), _selected(items))))
 	# S-169: free the selected character from a tether by a check or by cutting it.
 	_add_button(item_action_row, "Rescue", func(): _tether_action("check"))
@@ -219,13 +224,13 @@ func actor() -> Character:
 ## `none` (which only reports the refusal); one option applies directly; two or
 ## more open a PopupMenu. Dismissing spends nothing; the pick is revalidated by
 ## `apply`, and a replayed or superseded pick (serial) is ignored.
-func choose_exact(title: String, options: Array, apply: Callable, none: Callable) -> void:
+func choose_exact(title: String, options: Array, apply: Callable, none: Callable, always_menu := false) -> void:
 	exact_choice_serial += 1
 	var serial := exact_choice_serial
 	if options.is_empty():
 		_result(none.call())
 		return
-	if options.size() == 1:
+	if options.size() == 1 and not always_menu: # Batch 074: a join is always offered, then confirmed.
 		_result(apply.call(options[0]))
 		return
 	var chooser := actor()

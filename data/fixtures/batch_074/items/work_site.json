@@ -1,0 +1,6 @@
+[
+  {"id": "fixture:b074_site_loom", "name": "Fixture Site Loom", "description": "Neutral fixture group work tied to the cell where it starts: two participants within 10 feet; anyone away pauses the work, and an absence past 1 hour loses all progress.", "type": "tool", "weight": 1, "value": 0,
+   "work": {"required_seconds": 172800, "daily_seconds": 86400, "participants": 2, "on_interrupt": "reset", "site": {"within_feet": 10, "on_away": "pause", "away_limit_seconds": 3600}}},
+  {"id": "fixture:b074_site_kiln", "name": "Fixture Site Kiln", "description": "Neutral fixture solo work on its exact start cell; stepping off it interrupts the work at once, keeping progress.", "type": "tool", "weight": 1, "value": 0,
+   "work": {"required_seconds": 86400, "daily_seconds": 28800, "on_interrupt": "keep", "site": {"within_feet": 0, "on_away": "interrupt"}}}
+]
