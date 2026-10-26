@@ -438,28 +438,305 @@ Same base commit `ede0a3c`, since origin/main had not moved. The registry hash i
 - **Rod (7):** Immovable Rod; Rod of Absorption; Rod of Alertness; Rod of Lordly Might; Rod of Resurrection; Rod of Rulership; Rod of Security
 - **Scroll (1):** Spell Scroll
 
-## Coverage (after batch 3)
+> **Batch 4 correction:** B4-0 supersedes the B3-2 rows marked "S-134 conv" for fixed-DC, self-only, charge-scaled and option-restricted items. B3-3 below is the pre-batch-4 list, kept for history. See B4-3 for what is still unreviewed.
+
+## Batch 4 — sub-item resolution and the remaining 145 magic items
+
+Source text: srd_magic_text.json (the 145 entries in B3-3). The registry hash is unchanged (70a83cc7…845e). origin/main is ede0a3c and is already an ancestor of audit/items, so no rebase was needed. Only production `src/` was read; probes and checks were not counted as hosts.
+
+### B4-0: The 11 open B3 sub-items, resolved against code
+
+| # | Sub-item | Finding (file:line) | Resolution |
+|---|---|---|---|
+| 1 | Self-only item casting | S-134 `spell_permissions` (spell_permission_rules.gd:6–30) has ability, spells, charges, slot_payment_allowed, maximum_spell_level, allowed_components and spell_lists. There is no target restriction field. | **Gap → PROPOSED-items-14.** Batch 3's "S-134 conv" is wrong for Boots of Levitation, Ring of Water Walking, Mind Shielding (self) and similar items. |
+| 2 | Reaction budget | `reaction_available` and the "reaction" cost exist (combat_turn_budget.gd). ReactionTriggers.EVENTS = on_attacked, on_hit_by_attack, on_damaged_by_creature, on_hit_with_attack (reaction_triggers.gd:18). There is no event for "you fail a save". | The budget is hosted. Attack-event reactions are conv (Gloves of Missile Snaring). The failed-save reaction (Ring of Evasion, Scarab-like) → **PROPOSED-items-17**. S-160 isn't needed, because these spend the ordinary Reaction. |
+| 3 | Command option restriction | The options are hard-coded in combat_hud.gd:1878 `["approach","drop","flee","grovel","halt"]` and chosen through spell_cast_choices.gd:203. There is no data field to restrict them. S-085 does not apply. | **Gap → PROPOSED-items-14** (allowed-option subset). Affects Wand of Fear. |
+| 4 | Charge-scaled upcast | The only charge→level route is hard-coded to `wand_of_magic_missiles` (combat_command.gd:35–52; spell_cast_resources.gd:124–135; it sets `_selected_spell_slot_level = charges`). S-134's `charges` is a fixed cost per policy, not tied to level. | **Gap → PROPOSED-items-14.** The Wand of Magic Missiles route is the model to generalize. Affects Wand of Fireballs, Lightning Bolts, Necklace of Fireballs and Robe of Stars. |
+| 5 | Jump | The only host is the Jump spell's `jumping` condition: combat_state.gd:2404 `_can_use_spell_jump`, once per turn, needs remaining_speed ≥ 2, and sets `jump_spell_used_this_turn`. There are no general jump-distance rules. | Ring of Jumping = conv (S-134 casts Jump on self, but self-only → items-14). Boots of Striding and Springing's fixed jump → **PROPOSED-items-18**. |
+| 6 | Forced push | The spell effect `{"type":"push","distance","on_failed_save"}` (spell_effect_application.gd:174–180) uses `push_combat_target`. | **Hosted** for spell-shaped payloads. Ring of the Ram and Horn of Blasting push → items-10 inline payload (see the items-10 amendment). |
+| 7 | Cover | There is no cover computation anywhere in `src/`. `ignore_cover_on_save` is declared in shared_spell.gd but nothing reads it. | **Unhosted, out of the items domain** (a combat-rules gap). "Ignore Half Cover" on Wand of the War Mage has nothing to apply to until cover exists. It is not counted against items. |
+| 8 | Ring of Shooting Stars spheres | There is no host for a moving, discharging light sphere. | **Gap → items-10 inline payload** for the lightning burst, plus S-154 (planned) for the controllable sphere actor. |
+| 9 | Item area-save activations (non-spell) | Route (a) is Magic Missile only. Route (b) casts named spells. There is no host for an item-authored save effect with no named spell. | **Gap → items-10 amendment** (inline spell-shaped payload, not cast). |
+| 10 | Soul-in-item | Only corpse_rules has the "soul_unavailable" restriction. Nothing stores a soul or creature inside an item. | **Unhosted.** Mirror of Life Trapping and Iron Flask capture are narrative, or wait on S-156/S-157 (planned). |
+| 11 | Fixed item save DC / attack bonus | Spell DC = the caster's `save_dc`, replaceable only by an S-126 `attack_profile` spell scope (attack_profile_rules.gd:15–16, 234–246, scope `permission_sources`). Item features reach actor features through OwnedFeatureSources.item_features (owned_feature_sources.gd:49–58), but that function rewrites only `id` and `rule`, not `scope.permission_sources`. So an item can't name its own copy as the source. SPELL_ADD_KEYS has no spell attack key. | **Partial.** An actor-wide +N DC is conv (Robe of the Archmagi). A fixed DC scoped to the item's own spells, and any spell attack bonus, → **PROPOSED-items-14** (self-copy scope) and items-12 (spell attack +N). |
+
+**Corrections to the B3-2 rows:**
+- Boots of Levitation, Ring of Mind Shielding (self part), Ring of Water Walking, Ring of Jumping: S-134 conv → **S-134 + items-14 (self-only)**.
+- Wand of Fear: S-134 conv → **S-134 + items-14 (Command subset, fixed DC 15)**.
+- Wand of Fireballs and Lightning Bolts: S-134 conv → **S-134 + items-14 (charge→level, fixed DC 15)**.
+- Wand of Paralysis: S-134 conv → **items-10 inline payload + items-14 fixed DC 15** (Paralysis is not a named spell).
+- Ring of Evasion: check → **S-092 + PROPOSED-items-17**.
+- Ring of the Ram: check → **items-10 inline payload (push) + items-14 (charge-scaled dice)**.
+- Ring of Shooting Stars: check → per #8.
+- Boots of Striding and Springing: check → **S-049 speed floor (items-12) + PROPOSED-items-18**.
+- Wand of the War Mage: check → **items-12 spell attack +N**. The cover clause is unhosted (#7).
+
+### B4-1: Host facts (new this batch)
+
+- **`weapon_bonus`** (magic_property_rules.gd:37–50): an integer `{attack, damage}` 0..3 on magic weapons. It is consumed for the exact equipped copy at combat_action.gd:1141 and gated by active(). This is the verified host for every +N weapon clause. MagicPropertyRules.PROPERTIES = source_benefits, spell_permissions, incoming_negation_rule, attachment_sets, item_effects, features, weapon_bonus.
+- **S-126 weapon profile** (attack_profile_rules.gd:12–13): replace ability, damage_die, damage_type(+choices), attack_bonus, save_dc, range; add attack_bonus, damage_bonus, save_dc, range. A hit-window damage-type choice exists (S-127). There is **no extra-dice-on-hit field, no creature-type condition, and no natural-20 trigger**.
+- **SourceBenefitRules** (S-049) carries only AC and walking speed. Score setting (S-039, VS-46) exists, but no item carries it, so it goes under items-12.
+- **`evasion`** exists only as a feature effect for spell DEX half-on-save (spell_save_resolver.gd:208).
+- **Not found:** a critical-hit-to-normal rule, a generic on-hit extra damage rider, vehicles, item-stored creatures, cover, and general jump.
+
+### B4-2: Clause classification
+
+Key:
+- **conv** = the host exists; data only.
+- **items-N** = a PROPOSED-items slice.
+- **S-xxx (planned)** = a shared slice not yet built.
+- **narr** = narrative or out of the combat sandbox; not engine work.
+- Every row was reviewed clause by clause against the srd_magic_text.json text unless it is marked *partial-review*.
+
+#### Wondrous items (112)
+
+| # | Item | Clauses → host |
+|---|---|---|
+| 1 | Amulet of Health | CON = 19 → items-12 (S-039 score setting) + items-5 attunement |
+| 2 | Amulet of Proof against Detection | hidden from divination → S-187–S-195 (planned) |
+| 3 | Amulet of the Planes | Plane Shift + DC 15 Int check + random plane → S-221/S-177 (planned); narr |
+| 4 | Apparatus of the Crab | vehicle, levers, claws → narr / vehicle unhosted |
+| 5 | Bag of Beans | dump → items-10 inline (fire 5d4, DC 15 DEX); planted-bean table → S-016 + narr |
+| 6 | Bag of Devouring | creature-in-bag devour → unhosted (#10); container → S-196 |
+| 7 | Bag of Holding | compartment 500 lb/64 ft³ → S-196 (volume not enforced); rupture/planar gate → S-177 (planned) |
+| 8 | Bag of Tricks | 3/dawn creature table → S-154–S-158 (planned) + S-016 + S-014 |
+| 9 | Bead of Force | 10-ft sphere 5d4 Force, DEX DC 15, globe trap → items-10 inline + items-11 |
+| 10 | Bead of Nourishment | replaces a day of food → S-200 (planned) |
+| 11 | Belt of Dwarvenkind | CON +2 max 20, darkvision, Poison resistance, poison-save Advantage, Dwarvish → items-12 |
+| 12 | Belt of Giant Strength | STR = 21/23/25/27/29 → items-12 (S-039) |
+| 13 | Bowl of Commanding Water Elementals | summon 1/day → S-154–S-158 + S-014 |
+| 14 | Bracers of Archery | bow proficiency + damage +2 for bows → items-12 (proficiency) + S-126 add damage_bonus (conv, scope properties) |
+| 15 | Bracers of Defense | +2 AC if no armor or shield → S-049 + items-3 predicate |
+| 16 | Brazier of Commanding Fire Elementals | as 13 |
+| 17 | Brooch of Shielding | Force resistance; Magic Missile immunity → items-12 + S-116 (conv, incoming_negation_rule) |
+| 18 | Broom of Flying | Fly 50 (30 if over 200 lb), command word → S-179 + items-12 |
+| 19 | Candle of Invocation | alignment-scoped Advantage, Gate → items-12 + narr |
+| 20 | Cape of the Mountebank | Dimension Door 1/day + smoke → S-134 + items-14 self-only + S-187 (planned) |
+| 21 | Carpet of Flying | as 18 (vehicle-like capacity) |
+| 22 | Censer of Controlling Air Elementals | as 13 |
+| 23 | Chime of Opening | open lock, 10 charges → narr (no lock model) |
+| 24 | Circlet of Blasting | Scorching Ray +5 attack 1/dawn → S-134 + items-14 fixed attack |
+| 25 | Crystal Ball | Scrying DC 17 → S-134 + items-14 fixed DC; narr |
+| 26 | Crystal Ball of Mind Reading | + Detect Thoughts DC 17 → as 25 |
+| 27 | Crystal Ball of Telepathy | + Suggestion DC 17 → as 25 |
+| 28 | Crystal Ball of True Seeing | + truesight 120 → as 25 + items-12 sense |
+| 29 | Cube of Force | 36 charges, face table → items-11 barrier + items-14 charge cost; *partial-review*: face-specific blocking is unhosted |
+| 30 | Cubic Gate | Plane Shift / Gate → narr / S-221 |
+| 31 | Decanter of Endless Water | geyser 30 ft, STR DC 13 or Prone → items-10 inline |
+| 32 | Deck of Illusions | illusion card → S-187 (planned) |
+| 33 | Dimensional Shackles | Restrained + teleport block, escape DC 30 → S-168 + narr |
+| 34 | Dragon Orb | spells at DC 18, dragon call → items-14 + narr |
+| 35 | Dust of Disappearance | invisible 2d4 min, area → grant_condition + items-10 |
+| 36 | Dust of Dryness | absorb water / water elemental 10d6 CON DC 13 → items-10 inline |
+| 37 | Dust of Sneezing and Choking | 30-ft CON DC 15 incapacitated, repeat saves → items-10 inline |
+| 38 | Efficient Quiver | three compartments → S-196 (conv-check) |
+| 39 | Efreeti Bottle | d100 table, efreeti ally → S-016 + S-154 |
+| 40 | Elemental Gem | summon elemental → S-154 |
+| 41 | Eversmoking Bottle | heavily obscured cloud → items-11 + S-187 |
+| 42 | Eyes of Charming | Charm Person DC 13, 3 charges → S-134 + items-14 fixed DC |
+| 43 | Eyes of Minute Seeing | Investigation Advantage close → items-12 |
+| 44 | Eyes of the Eagle | Perception Advantage (sight) → items-12 |
+| 45 | Feather Token | anchor/bird/fan/swan/tree/whip variants → per-variant: S-154 (bird, swan, whip), narr |
+| 46 | Figurine of Wondrous Power | creature form per figurine, N-day cooldown → S-154 + S-014 (day cooldown check) |
+| 47 | Folding Boat | vehicle → narr |
+| 48 | Gauntlets of Ogre Power | STR = 19 → items-12 |
+| 49 | Gem of Brightness | 50 charges: light / blind ray CON DC 15 / cone → items-10 inline + items-14 charges |
+| 50 | Gem of Seeing | truesight 120 ft 10 min, 3 charges → S-012 timed + items-12 sense |
+| 51 | Gloves of Missile Snaring | Reaction on hit, reduce 1d10 + Dex → ReactionTriggers on_hit_by_attack (conv) + S-109 reduction |
+| 52 | Gloves of Swimming and Climbing | climb/swim speed = speed, +5 Athletics → items-12 + S-179 |
+| 53 | Gloves of Thievery | +5 Sleight of Hand, lock picking → items-12 |
+| 54 | Goggles of Night | darkvision 60 → items-12 |
+| 55 | Handy Haversack | compartments → S-196 |
+| 56 | Hat of Disguise | Disguise Self → S-134 + items-14 self-only |
+| 57 | Headband of Intellect | INT = 19 → items-12 |
+| 58 | Helm of Brilliance | gems cast spells DC 18; Fire aura +1d6; Fire resistance; undead aura → items-14 + items-12 + items-13 |
+| 59 | Helm of Comprehending Languages | Comprehend Languages at will → S-134 |
+| 60 | Helm of Telepathy | Detect Thoughts / Suggestion DC 13 → S-134 + items-14 |
+| 61 | Helm of Teleportation | Teleport, 3 charges → S-134 (conv, charges) |
+| 62 | Horn of Blasting | 30-ft cone 5d6 Thunder, CON DC 15, deafened, 20% explode → items-10 inline + S-016 |
+| 63 | Horn of Valhalla | spirit warriors 7-day cooldown → S-154 + S-014 |
+| 64 | Horseshoes of a Zephyr | no ground trace, travel → narr |
+| 65 | Horseshoes of Speed | +30 walking speed (mount) → S-049 (conv on mount) |
+| 66 | Instant Fortress | structure → narr |
+| 67 | Ioun Stone | per type: stat +2 max 20, AC +1, saves +1, PB +1, regeneration → items-12/items-13; Absorption → S-116 + S-006 budget; Sustenance → S-200 |
+| 68 | Iron Bands | ranged attack, Restrained, DC 20 escape → items-10 inline + S-168 |
+| 69 | Iron Flask | trap creature → unhosted (#10) |
+| 70 | Lantern of Revealing | reveal invisible 30 ft → S-187 (planned) |
+| 71 | Mantle of Spell Resistance | Advantage on saves vs spells → items-12 |
+| 72 | Manual of Bodily Health | CON +2 max 30 after 48 h over 6 days → **PROPOSED-items-16** |
+| 73 | Manual of Gainful Exercise | STR → items-16 |
+| 74 | Manual of Golems | golem crafting → S-198 (planned) / narr |
+| 75 | Manual of Quickness of Action | DEX → items-16 |
+| 76 | Marvelous Pigments | create objects → narr |
+| 77 | Medallion of Thoughts | Detect Thoughts DC 13 → as 60 |
+| 78 | Mirror of Life Trapping | trap → unhosted (#10) |
+| 79 | Mysterious Deck | card table, Wish-level effects → S-016 + narr |
+| 80 | Necklace of Adaptation | breathe anywhere, gas/inhaled save Advantage → S-205 + items-12 |
+| 81 | Necklace of Fireballs | bead = Fireball, + per extra bead 1d6, DC 15 → items-14 (count-scaled) |
+| 82 | Necklace of Prayer Beads | bead spells, Bonus Action, own DC → S-134 + S-140 casting_time (conv) |
+| 83 | Pearl of Power | regain a slot ≤3, 1/dawn → restore_resource (conv-check) |
+| 84 | Periapt of Health | heal 2d4+2 1/dawn → self heal effect (conv) |
+| 85 | Periapt of Proof against Poison | Poison immunity → items-12 |
+| 86 | Periapt of Wound Closure | stabilize at start of turn; double HD healing → items-12 (death-save hook check) |
+| 87 | Pipes of Haunting | 30-ft WIS DC 15 Frightened → items-10 inline + items-14 charges |
+| 88 | Pipes of the Sewers | rat swarms → S-154 |
+| 89 | Portable Hole | compartment, suffocation, planar → S-196 + S-177 |
+| 90 | Robe of Eyes | darkvision 120, see invisible/ethereal, Perception Advantage → items-12 |
+| 91 | Robe of Scintillating Colors | 20 ft WIS DC 15 Stunned, attack Disadvantage → items-10 inline + items-14 charges |
+| 92 | Robe of Stars | saves +1; Magic Missile at level 5 (stars) → items-12 + items-14 fixed level |
+| 93 | Robe of the Archmagi | AC 15+Dex, spell-save Advantage, DC/attack +2 → items-12 (S-039 base AC) + S-126 add save_dc (conv) + items-12 spell attack |
+| 94 | Robe of Useful Items | patch → object table → narr / S-016 |
+| 95 | Rope of Climbing | animated rope → narr |
+| 96 | Rope of Entanglement | Restrained, escape DC 15 → items-10 inline + S-168 |
+| 97 | Scarab of Protection | spell-save Advantage; turn death-effect save success, 12 charges → items-12 + items-17 (S-092) |
+| 98 | Sending Stones | Sending → S-134 (conv) |
+| 99 | Sovereign Glue | object adhesion → narr |
+| 100 | Sphere of Annihilation | move sphere, 4d10 Force / destroy → unhosted; narr |
+| 101 | Stone of Controlling Earth Elementals | as 13 |
+| 102 | Luckstone | +1 ability checks and saves → items-12 |
+| 103 | Talisman of Pure Good | fissure DEX DC 20; touch damage; +2 spell attack → items-10 inline + items-13 + items-12 |
+| 104 | Talisman of the Sphere | double Arcana check to control Sphere → items-12; sphere unhosted |
+| 105 | Talisman of Ultimate Evil | as 103 |
+| 106 | Tome of Clear Thought | INT → items-16 |
+| 107 | Tome of Leadership and Influence | CHA → items-16 |
+| 108 | Tome of Understanding | WIS → items-16 |
+| 109 | Universal Solvent | dissolve glue → narr |
+| 110 | Well of Many Worlds | portal → narr |
+| 111 | Wind Fan | Gust of Wind DC 13, failure chance → S-134 + items-14 + S-016 |
+| 112 | Wings of Flying | Fly 60 for 1 h, 1d12 h recharge → S-179 + S-012 + S-014 |
+
+#### Rods (7)
+
+| # | Item | Clauses → host |
+|---|---|---|
+| 113 | Immovable Rod | fixed in place, 8000 lb → narr |
+| 114 | Rod of Absorption | Reaction absorb a targeting spell; levels pool → S-116 + S-006 + ReactionTriggers spell event (missing → items-17 extension) |
+| 115 | Rod of Alertness | initiative Advantage; truesight timed; Bless-like aura; spells → items-12 + S-134 |
+| 116 | Rod of Lordly Might | +3 mace (weapon_bonus conv) + form switching (S-164) + on-hit paralyze/drain/terrify → items-15 |
+| 117 | Rod of Resurrection | Heal / Resurrection charges → S-134 (conv) |
+| 118 | Rod of Rulership | 120-ft WIS DC 15 charm → items-10 inline |
+| 119 | Rod of Security | demiplane → S-177 / narr |
+
+#### Weapons (20)
+
+| # | Item | Clauses → host |
+|---|---|---|
+| 120 | Ammunition, +1/+2/+3 | weapon_bonus on ammunition → items-1 + items-7 |
+| 121 | Ammunition of Slaying | creature-type CON DC 17, 6d10 → items-15 + items-1 |
+| 122 | Berserker Axe | weapon_bonus (conv) + HP max +1/level (items-12) + curse (S-202 planned) |
+| 123 | Dancing Sword | hovers and attacks → S-154 (partial) |
+| 124 | Defender | weapon_bonus +3, shift to AC per turn → items-15 |
+| 125 | Dragon Slayer | +1 (conv); +3d6 vs Dragons → items-15 |
+| 126 | Energy Bow | +1 (conv); energy arrow damage type → S-127 choice (conv); ladder/shot extras → narr |
+| 127 | Flame Tongue | toggle +2d6 Fire, light → items-15 |
+| 128 | Frost Brand | +1d6 Cold, Fire resistance, extinguish → items-15 + items-12 |
+| 129 | Giant Slayer | +1 (conv); +2d6 vs Giants and prone STR DC 15 → items-15 |
+| 130 | Holy Avenger | +3 (conv); +2d10 Radiant vs Fiend/Undead; aura save Advantage → items-15 + items-12 |
+| 131 | Luck Blade | +1 (conv); saves +1 → items-12; luck reroll → S-226 (planned); Wish → narr |
+| 132 | Nine Lives Stealer | +2 (conv); nat-20 kill ≤100 HP CON DC 15, charges → items-15 |
+| 133 | Sword of Life Stealing | nat-20 +10 Necrotic + temp HP → items-15 |
+| 134 | Sword of Sharpness | max damage vs objects; nat-20 +14 Slashing / limb → items-15 |
+| 135 | Sword of Wounding | 1d4 Necrotic per hit stacking, no regain, repeat save → items-15 + items-13 |
+| 136 | Vicious Weapon | nat-20 +2d6 → items-15 |
+| 137 | Vorpal Sword | +3 (conv), ignore Slashing resistance (S-110 conv-check), nat-20 decapitate → items-15 |
+| 138 | Weapon, +1/+2/+3 | weapon_bonus (conv) + items-7 template |
+| 139 | Weapon of Warning | initiative Advantage aura, wake allies → items-12 |
+
+#### Armor (5)
+
+| # | Item | Clauses → host |
+|---|---|---|
+| 140 | Adamantine Armor | critical → normal hit → items-12 (incoming crit negation) + items-7 |
+| 141 | Armor, +1/+2/+3 | S-049 AC + items-7 (conv) |
+| 142 | Armor of Resistance | one damage resistance → items-12 + items-7 |
+| 143 | Mithral Armor | no Stealth Disadvantage / STR requirement → items-3 + items-7 |
+| 144 | Shield, +1/+2/+3 | S-049 AC (conv) |
+
+#### Scroll (1)
+
+| # | Item | Clauses → host |
+|---|---|---|
+| 145 | Spell Scroll | PROPOSED-items-6 (already proposed; fixed DC table → also items-14) |
+
+### B4-3: Amendments to existing proposals
+
+- **items-10 amendment (inline payload):** besides named-spell effects, items-10 accepts an inline spell-shaped payload authored on the item (area, save ability, fixed DC, damage, conditions, push). It is resolved through the shared spell runtime as "not cast". **Additional done-when:** a check shows Horn of Blasting makes a 30-ft cone with a CON DC 15 save. A creature that fails takes 5d6 Thunder and is Deafened; one that succeeds takes half and is not Deafened. No slot is spent, no Counterspell is offered, and Ring of the Ram pushes a failed target 5 ft per charge using the existing push effect.
+- **items-12 scope additions:** ability-score setting (S-039), capped increases (max 20), save, check and spell-save Advantage, senses, resistances and immunities, skill and initiative modifiers, spell attack +N, incoming crit → normal, HP max per level, and weapon proficiency. **Additional done-when:** a check shows Gauntlets of Ogre Power set STR 8 → 19 but leave STR 20 unchanged. Adamantine Armor turns a critical hit into a normal hit. Both stop applying when the item is unequipped.
+
+### B4-4: New proposed slices
+
+**PROPOSED-items-14 — Generic item-activated spell casting with item overrides.**
+- **Source:** Wands of Fireballs, Lightning Bolts and Fear; Necklace of Fireballs; Circlet of Blasting; Crystal Balls; Eyes of Charming; Helm of Telepathy; Medallion; Dragon Orb; Robe of Stars; Wind Fan; Hat of Disguise; Cape of the Mountebank; Boots of Levitation; Ring of Water Walking and Jumping.
+- **Affects:** about 25 items.
+- **Reuses:** the wand_of_magic_missiles charge→level route (combat_command.gd:35–52; spell_cast_resources.gd:124–135), generalized from its hard-coded ID. Also S-134 permissions, S-126 save_dc replace (with a self-copy `permission_sources` rewrite in OwnedFeatureSources.item_features), S-139, S-006 charges and S-060.
+- **Adds:** per-permission `target: self`, `charges_to_level` / per-extra-charge dice, fixed `save_dc` / `spell_attack`, and `allowed_options` (Command).
+- **Depends on:** none.
+- **Done when:** a check shows Wand of Fireballs spending 3 charges casts Fireball at level 5 with DC 15 regardless of the wielder's own DC, and refuses 4 charges when only 3 remain. Wand of Fear's Command offers only flee and grovel. Boots of Levitation refuse any target but the wearer. Circlet of Blasting's Scorching Ray uses +5 to hit. Wand of Magic Missiles still behaves exactly as before.
+
+**PROPOSED-items-15 — Weapon-copy hit and crit riders.**
+- **Source:** Flame Tongue, Frost Brand, Dragon Slayer, Giant Slayer, Holy Avenger, Vicious, Life Stealing, Sharpness, Vorpal, Nine Lives Stealer, Sword of Wounding, Defender, Ammunition of Slaying and Rod of Lordly Might.
+- **Affects:** 14 entries.
+- **Reuses:** weapon_bonus (combat_action.gd:1141), the S-126 profile (scope/kind), S-127 hit window, S-068 creature types, S-016 and S-006 charges.
+- **Adds:** extra dice on hit, creature-type conditions, natural-20 triggers, an on-hit save rider, and a Defender bonus transfer to AC per turn.
+- **Depends on:** items-7.
+- **Done when:** a check shows a +1 Dragon Slayer hit on a Dragon adds +1 and 3d6 of the weapon's type, while the same hit on a Humanoid adds +1 only. A Vicious Weapon adds 2d6 only on a natural 20. Defender with 2 bonus moved to AC gives +1/+1 attack and damage and +2 AC until the start of the next turn. Flame Tongue adds 2d6 Fire only while it is ignited. Everything is tied to the exact copy and stops when the copy is unequipped.
+
+**PROPOSED-items-16 — Study items with permanent score increases.**
+- **Source:** Manuals of Bodily Health, Gainful Exercise and Quickness of Action; Tomes of Clear Thought, Leadership and Influence, and Understanding.
+- **Affects:** 6 entries.
+- **Reuses:** S-039 score caps (raised to a maximum of 30), campaign time (S-064), and S-014 (the item loses its magic for 100 years).
+- **Depends on:** S-198/S-199 downtime (planned) for the 48-hours-over-6-days activity.
+- **Done when:** a check shows that completing 48 hours of study within 6 days with the Manual of Gainful Exercise raises STR 18 → 20 and the cap to 30. Interrupted study grants nothing. Afterwards the manual grants nothing to a second reader. The increase survives save/load, and unequipping or dropping the manual doesn't remove it.
+
+**PROPOSED-items-17 — Item reactions on the wielder's own save.**
+- **Source:** Ring of Evasion, Scarab of Protection and Rod of Absorption.
+- **Affects:** 3 entries.
+- **Reuses:** reaction_available, ReactionTriggers (reaction_triggers.gd:18), S-092 outcome forcing, S-116 negation and S-006 charges.
+- **Adds:** an `on_failed_save` event (with ability filter) and an `on_targeted_by_spell` event.
+- **Depends on:** none.
+- **Done when:** a check shows a wearer who fails a DEX save against Fireball can spend the Reaction and 1 charge to succeed instead, taking half damage. A second failed save in the same round is not offered (no Reaction). A CON save is not offered. With 0 charges, nothing is offered.
+
+**PROPOSED-items-18 — Item-granted fixed jumps.**
+- **Source:** Boots of Striding and Springing.
+- **Affects:** 1 entry; general jump rules are out of the items domain.
+- **Reuses:** the `jumping` movement path (combat_state.gd:2404–2409).
+- **Depends on:** none.
+- **Done when:** a check shows the wearer jumps up to 30 ft for 10 ft of movement, is refused with less than 10 ft remaining, and loses the ability when the boots are removed.
+
+**Planned vs new:** the batch 3 plan named items-14 (item casting), 15 (non-spell area activations) and 16 (weapon riders), and possibly 17 (crit negation and Missile Snaring).
+- Non-spell area activations folded into the **items-10 amendment** instead of a new 15.
+- Weapon riders became **items-15**.
+- Crit negation folded into **items-12**.
+- Missile Snaring turned out to be conv (on_hit_by_attack + S-109).
+- New, unplanned: **items-16** (study), **items-17** (own-save reactions) and **items-18** (jumps).
+
+### B4-5: Still unreviewed or partial inside these 145
+
+- *partial-review:* Cube of Force face blocking (29), and Dancing Sword actor behaviour (123).
+- *conv-check* (host named, data not tried): Efficient Quiver S-196, Figurine day-scale S-014, Pearl of Power restore_resource, Vorpal S-110 bypass, Periapt of Wound Closure death-save hook, and Robe of the Archmagi S-126 add save_dc through an item feature.
+- **narr** entries (about 20) were classified but get no engine work.
+
+## Coverage (after batch 4)
 
 **Reviewed at clause level:**
-- Batches 1–2 as listed before: weapons, armor, general magic rules, the 46 refused consumables, and SRD gear and tools. Iron Spikes and Chest are not reviewed, and Block and Tackle is not classified.
-- **47 of the 192 missing magic items**: every Ring (21), Wand (12) and Boots/Cloak/Slippers entry (14), in B3-2. Clauses marked **check** or **unreviewed** in B3-2 are the open sub-items: self-only casting, Reaction budget, Command option restriction, charge-scaled upcast, jump, forced push, cover, sphere and cube activation hosts, and soul-in-item.
-
-**Traced:** shell exposure (B2-3).
+- Batches 1–2: weapons, armor, general magic rules, the 46 refused consumables, and SRD gear and tools. Iron Spikes and Chest are still not reviewed, and Block and Tackle is not classified.
+- **All 192 missing SRD magic items:** 47 in B3-2 (amended by B4-0) and 145 in B4-2. The 11 B3 sub-items are resolved (B4-0). Partial or check clauses are listed in B4-5.
 
 **Field level only:** the 94 loaded SRD magic records.
 
 **Not reviewed:**
-- **The 145 missing magic items in B3-3:** 112 Wondrous, 20 Weapon, 7 Rod, 5 Armor and 1 Scroll. Wondrous here excludes boots and cloaks.
-- **The 49 equippable shells,** clause by clause.
-- **Other SRD sections:** Ammunition, mounts and vehicles, improvised weapons, selling, lifestyle, trade goods, and sentient items and artifacts.
-- **The 67 non-SRD items.**
-- **Carrying capacity.**
-- **Whether each named spell works in the runtime** (the spell audit's domain).
+- the 49 equippable shells, clause by clause;
+- Ammunition, mounts and vehicles, improvised weapons, selling, lifestyle, trade goods, and sentient items and artifacts;
+- the 67 non-SRD items;
+- carrying capacity;
+- whether each named spell works in the runtime (the spell audit's domain).
+
+**Proposals:** PROPOSED-items-1…18 (5 new in batch 4: 14–18), plus amendments to items-10 and items-12.
 
 ## Next queue
 
-1. **Batch 4:** continue B3-3 with the Wondrous items (bags, amulets, belts, bracers, gloves, helms, figurines, and the rest), then Rods, Weapons and Armor. Apply PROPOSED-items-12/13 where they fit before adding anything new.
-2. **Resolve the B3-2 "check" and "unreviewed" sub-items** against S-134, S-139 and S-085 code, and locate the jump, push and cover hosts.
-3. **The 49 equippable shells,** clause by clause.
-4. **Recover the Iron Spikes and Chest text,** and classify Block and Tackle once carrying capacity is located.
+1. **Batch 5:** the 94 loaded SRD magic records clause by clause (field level today). Check that loaded data matches the B4 hosts, especially `weapon_bonus`, spell_permissions charges and the wand activation.
+2. **The 49 equippable shells,** clause by clause.
+3. **Try the B4-5 conv-check items** against a data-only spike (read-only, nothing committed to content).
+4. **Recover the Iron Spikes and Chest text;** classify Block and Tackle once carrying capacity is located.
 5. **Mounts, vehicles and Ammunition;** compare the Windows-runner registry hash.
