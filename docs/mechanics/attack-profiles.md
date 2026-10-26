@@ -58,3 +58,57 @@ A weapon-scoped rule may offer types instead of fixing one:
   the choice. They settle with the inherited type.
 - Item-granted attack profiles aren't supported, because items grant only
   `mode_choice`/`rule_upgrade` features. Reach and mastery choices aren't built.
+
+## Cast-local transformations (S-140, batch 085)
+
+A spell-scoped `attack_profile` may change one permissioned invocation's
+range, components, school or timing. `AttackProfileRules.apply_cast(caster, spell)`
+returns a transformed copy. `SpellCastSelection.choose` calls it on the player
+HUD cast path after the menu row is chosen and before targeting or payment.
+
+- **Fields:** `replace.range_feet` (positive multiple of 5, max 5280; sets the
+  hex range and drops any level-based range table), `add.range_feet` (sums;
+  also lifts each level-table entry), `replace.school` (one of the valid schools),
+  `replace.casting_time` (`action` or `bonus_action`), and
+  `remove.components` (`V` and/or `S`). Anything else on a spell profile,
+  spell fields on a weapon profile, `remove` on a weapon profile, and
+  `scope.permission_sources` on a weapon profile are refused at load.
+- **Scope:** `ids`, `schools` and `permission_sources` (the `source_id` of the
+  permission the cast is made through). Scope is judged on the invocation's
+  **inherited** fields, so one source's school change never makes another source
+  qualify, and it doesn't change which save-DC profiles apply.
+- **Compatibility:** the first qualifying `replace` of each field wins. Later
+  conflicting replacements go into `_cast_profile.ignored` as `{source, field}`.
+  Range additions sum and removed components union. All qualifying sources
+  apply together, once: a copy that already has `_cast_profile` comes back
+  unchanged.
+- **Record:** `_cast_profile = {sources, ignored, inherited{range, school,
+  casting_time, components}, removed_components}` lives only on the invocation
+  copy. The catalog record is never mutated, and casts that no source qualifies
+  for get no profile.
+- **Cost:** the transformation costs nothing. The invocation pays its own slot
+  and action exactly once, using the transformed timing. Budget validation
+  refuses before payment, so a Bonus Action cast with no Bonus Action left keeps
+  its slot and Action. A target outside the transformed range is refused before
+  payment as well.
+- **Not applicable:** range is never changed for Touch or range-0/self spells.
+  Timing is never changed for reaction or longer casting times. Removing a
+  component the spell doesn't have does nothing.
+- **Durable state:** none. Rules are features owned by their source, the profile
+  is memory-only, and nothing new is saved.
+- **Related fix:** a Wand of Magic Missiles activation used to write its
+  activation markers into the catalog Magic Missile record. Every later Magic
+  Missile cast was then treated as a wand activation. It now uses a copy.
+
+### PARTIAL (batch 085 bound)
+- Only player HUD casts through `SpellCastSelection.choose` are transformed.
+  Reaction casts, AI or monster casts, exploration or local-room casts, and
+  magic-item activations get the catalog values.
+- Material components can't be removed, so costly and consumed materials and
+  focus rules don't change.
+- Timing changes only between Action and Bonus Action.
+- There are no costed transformations (resource-paid profiles). Native
+  Metamagic (Quickened, Subtle, Distant) still uses its own host and isn't
+  migrated yet.
+- Duration, concentration and created-actor parameters are S-141, which follows
+  after this batch.
