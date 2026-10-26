@@ -1,6 +1,6 @@
 # Spell inventory and rules-vocabulary audit (Batch 088)
 
-**Status: PARTIAL AUDIT. Inventory is complete. Clause decomposition covers 183 of 362 unique loaded spell IDs (50.6%): 169 decomposed, 14 out-of-milestone IDs identified only. Families covered so far: direct_resolution (52), control (41), timed_effects (45) and persistent_areas (45). The other 179 are UNREVIEWED.** This is not a complete audit. Nothing here enables, converts or certifies a spell. Accepted slice counts and checkpoint acceptance are unchanged.
+**Status: PARTIAL AUDIT. Inventory is complete. Clause decomposition covers 241 of 362 unique loaded spell IDs (66.6%): 226 decomposed, 15 out-of-milestone IDs identified only. Families covered so far: direct_resolution (52), control (41), timed_effects (45), persistent_areas (45), movement_travel (31) and visibility (27). The other 121 are UNREVIEWED.** This is not a complete audit. Nothing here enables, converts or certifies a spell. Accepted slice counts and checkpoint acceptance are unchanged.
 
 ## Evidence boundary
 
@@ -379,13 +379,30 @@ Scope: every ID with `primary_behavior == timed_effects` (45). 41 are in SRD 5.2
   - Mind Blank "control its mind" scope.
   - Warding Bond per-target ring material.
 
-## Open ADR-0023 questions (PENDING BRANDON)
+## Parked ADR-0023 judgment items
 
-The SRD can't settle these. They stay open until Brandon decides. No slice or data change depends on them in this audit.
+The SRD can't settle these. Each is parked for an ADR-0023 decision; no slice or data change in this audit depends on them. Every future judgment item is parked here the same way: the exact SRD 5.2.1 clause, verbatim, with its page. Quotes are from the column-split extract, checked against `pdftotext` page text; line-break hyphens are removed.
 
-1. **Telekinesis fine control:** what "exert fine control … such as manipulating a simple tool," permits. The SRD 5.2.1 sentence is truncated at the source (p.168, D-24).
-2. **Mind Blank scope:** whether "no spell … can … control its mind" blocks all compulsion (Command, Suggestion-like effects) or only Charmed-based control.
-3. **Warding Bond rings:** how to model the paired 50+ GP rings both creatures must wear for the duration (per-target worn material).
+| # | Batch | Spell | SRD 5.2.1 clause (verbatim) | Page | Open question |
+|---|---|---|---|---|---|
+| J-01 | 088-4 | Telekinesis | "You can exert fine control on objects with your telekinetic grip, such as manipulating a simple tool," | 168 | What fine control allows. The published sentence stops at the comma (D-24). |
+| J-02 | 088-4 | Mind Blank | "no spell—not even Wish—can gather information about the target, observe it remotely, or control its mind." | 149 | Whether "control its mind" blocks all compulsion (Command, Suggestion) or only Charmed-based control. |
+| J-03 | 088-4 | Warding Bond | "M (a pair of platinum rings worth 50+ GP each, which you and the target must wear for the duration)" | 173 | How to model per-target worn material for both creatures. |
+| J-04 | 088-5 | Glyph of Warding; Symbol | "You decide what triggers the glyph when you cast the spell." | 136 (Glyph); 167 (Symbol) | How far a free-form authored trigger may go (type filters, passwords, "seeing the glyph"). |
+| J-05 | 088-5 | Call Lightning | "If you’re outdoors in a storm when you cast this spell, the spell gives you control over that storm instead of creating a new one. Under such conditions, the spell’s damage increases by 1d10." | 114 | No weather fact exists; who declares "outdoors in a storm". |
+| J-06 | 088-5 | Guards and Wards | "at each intersection or branching passage offering a choice of direction, there is a 50 percent chance that a creature other than you believes it is going in the opposite direction from the one it chooses." | 138 | Needs map intersection facts and a belief-vs-actual direction model. |
+| J-07 | 088-5 | Wall of Stone | "It must, however, merge with and be solidly supported by existing stone." | 173 | Needs a map material/support fact. |
+| J-08 | 088-5 | Control Water | "Redirect Flow. You cause flowing water in the area to move in a direction you choose, even if the water has to flow over obstacles, up walls, or in other unlikely directions." Also: "Any Huge or smaller vehicles struck by the wave have a 25 percent chance of capsizing." | 120 | No water-flow or vehicle host; what each produces mechanically. |
+| J-09 | 088-5 | Spirit Guardians | "On a failed save, the creature takes 3d8 Radiant damage (if you are good or neutral) or 3d8 Necrotic damage (if you are evil)." | 165 | Alignment isn't tracked; whether the caster chooses or a character fact decides. |
+| J-10 | 088-6 | Teleport | "Your familiarity with the destination determines whether you arrive there successfully. The GM rolls 1d100 and consults the Teleportation Outcome table" | 168 | Who assigns the familiarity category (Very familiar, Seen casually, etc.) to a destination. |
+| J-11 | 088-6 | Plane Shift | "you appear in or near that destination, as determined by the GM." | 153 | How "in or near" is chosen without a GM. |
+| J-12 | 088-6 | Banishment | "The target is instead transported to a random location on a plane (GM’s choice) associated with its creature type." | 112 | Destination for permanently banished creatures. |
+| J-13 | 088-6 | Gate | "You gain no special power over the creature, and it is free to act as the GM deems appropriate." | 135 | Behavior of a named, summoned creature. |
+| J-14 | 088-6 | Dimension Door | "It can be a place you can see, one you can visualize, or one you can describe by stating distance and direction" | 123 | Whether unseen described destinations are allowed and how they resolve against map knowledge. |
+| J-15 | 088-6 | Clairvoyance | "in a location familiar to you (a place you have visited or seen before) or in an obvious location that is unfamiliar to you (such as behind a door, around a corner, or in a grove of trees)." | 115 | What counts as an "obvious" unfamiliar location. |
+| J-16 | 088-6 | Find Traps | "A trap, for the purpose of this spell, includes any object or mechanism that was created to cause damage or other danger." | 131 | Which authored hazards are tagged as traps. |
+| J-17 | 088-6 | Meld into Stone | "Minor physical damage to the stone doesn’t harm you, but its partial destruction or a change in its shape (to the extent that you no longer fit within it) expels you" | 148 | Threshold between "minor" damage and "partial destruction". |
+| J-18 | 088-6 | Magnificent Mansion | "Each servant can perform tasks that a human could perform, but they can’t attack or take any action that would directly harm another creature." | 147 | Which servant tasks produce mechanical results. |
 
 ## Batch 088-5: persistent areas (45 spells reviewed)
 
@@ -477,6 +494,97 @@ Scope: every ID with `primary_behavior == persistent_areas` (45). 41 are in SRD 
 - **Need:** a wall is made of independently targetable sections or layers with their own AC, HP, immunities/vulnerabilities or destruction condition; destroying one opens that section only, and may leave a residual area.
 - **Spells:** Wall of Ice (AC 12, 30 HP per 10-ft section, Fire vulnerability, frigid-air residue), Wall of Stone (AC 15, 30 HP per inch per panel), Prismatic Wall (ordered layers destroyed by specific damage thresholds or spells).
 - **Finish line:** each section/layer is an addressable object with AC/HP/damage modifiers or a declared destruction trigger; damage to one section never spills to another; a destroyed section stops blocking and, if declared, spawns its residue area (Wall of Ice frigid air with first-pass Con 5d6); Prismatic layers can only be destroyed in order; save/load preserves section state; tests cover each of the three spells. Owner: new slice beside S-185/S-186.
+
+## Batch 088-6: movement/travel and visibility (58 spells reviewed)
+
+Scope: every ID with `primary_behavior` of movement_travel (31) or visibility (27). 57 are in SRD 5.2.1 and decomposed; beast_sense is out of milestone. Judgment items are parked as J-10 to J-18 above.
+
+| ID | Avail | Winner | Clauses → classification (owner) |
+|---|---|---|---|
+| arcane_eye | no | srd_add | Invisible invulnerable eye, sees all directions, Darkvision 30: P (S-187 + S-193). Bonus Action move 30 ft, 1-inch gaps: P (S-180). |
+| astral_projection | no | srd_add | Up to 9 to the Astral Plane; bodies Unconscious, no food/air/aging: P (S-178) + E. Silver cord death: H (cut only by named effect). Return on leaving plane; separate damage; 0 HP ends per target; Magic action dismiss: P (S-177/S-178) + E. Data casting time (D-54). |
+| banishment | no | srd_add | Cha save, demiplane, Incapacitated, return to space or nearest: P (S-178). Extraplanar types don't return after full minute: P (S-177) + J-12. Upcast targets: E. |
+| blink | no | imported | d6 end of turn, 4–6 to Ethereal: E (roll) + P (S-178). Ethereal-only interaction, 60-ft gray sight: P (S-190/S-191). Return start of next turn within 10 ft: P (S-181 shunt). |
+| clairvoyance | no | imported | Sensor at familiar/obvious location: P (S-193) + J-15. Seeing or hearing, Bonus Action switch: P (S-193). Visible as orb to See Invisibility/Truesight: P (S-191). 100 GP focus, 10-min cast: E + P (S-216). Data range (D-55). |
+| continual_flame | no | imported | Bright 20/Dim 20, no heat, can't be quenched, can be covered: P (S-190) + H (S-070 until dispelled). |
+| dancing_lights | yes | imported | Four lights or one Medium form, Dim 10 each: P (S-190). Bonus Action move 60 ft, 20-ft spacing, vanish beyond range: H. |
+| darkness | yes | imported | 15-ft Sphere or object Emanation magical Darkness; Darkvision blocked: P (S-190). Covering blocks: H. **Dispels overlapping level ≤2 light:** G (PROPOSED-spells-9). |
+| darkvision | yes | imported | Darkvision 150 ft, 8 h: E + H (S-070). |
+| daylight | no | imported | 60-ft sunlight Sphere/Emanation: P (S-190). **Dispels overlapping level ≤3 Darkness:** G (PROPOSED-spells-9). |
+| demiplane | no | srd_add | Door to 30-ft room; reconnect previous/other's demiplane: P (S-170 containment) + H (persistent created space). End: objects remain, creatures shunted Prone: P (S-181). |
+| detect_evil_and_good | yes | imported | Sense listed types and Hallow within 30 ft: P (S-194). Blocked by stone/metal/lead: H (material blocking fact). |
+| detect_magic | yes | imported | Sense magic within 30 ft; Magic action to see aura and learn school: P (S-194). Blocking: H. Ritual: E. |
+| detect_poison_and_disease | yes | imported | Sense poisons, venomous creatures, contagions and kind: P (S-194/S-195). Blocking: H. |
+| dimension_door | no | srd_add | Teleport up to 500 ft to seen/visualized/described point: P (S-177) + J-14. One willing creature within 5 ft: P (S-182). Occupied arrival → 4d6 Force each, fails: H. |
+| etherealness | no | srd_add | Border Ethereal, vertical cost ×2: P (S-178) + E (S-179). Ethereal-only interaction, 60-ft gray sight: P (S-190/S-191). Return; occupied → shunt and 2 Force per foot: P (S-181) + H. Upcast 3 targets per level within 10 ft: E. Data duration "Up to 8 hours" (D-56). |
+| faerie_fire | yes | imported | 20-ft Cube, Dex save; Dim 10; no Invisible benefit; Advantage if attacker sees: E + P (S-191). |
+| feather_fall | no | imported | Reaction on fall; up to 5 creatures; 60 ft/round, no fall damage: P (S-160 + S-181). Data target single (D-57). |
+| find_traps | no | imported | Sense presence (not location) and nature of traps in sight: P (S-194) + J-16. |
+| fly | yes | imported | Fly 60, hover: E (S-179). Fall when spell ends: P (S-181). Upcast targets: E. |
+| fog_cloud | yes | imported | Heavily Obscured Sphere: P (S-190). Strong-wind dispersal: H. Upcast radius: E. |
+| freedom_of_movement | yes | srd_add | Ignore Difficult Terrain; magic can't reduce Speed or cause Paralyzed/Restrained: E (S-075). Swim Speed: E. 5 ft to escape nonmagical restraint: E (S-169). Upcast: E. |
+| gaseous_form | no | imported | Fly 10 hover, enter others' spaces, narrow openings: P (S-180). BPS Resistance, Prone immunity, Adv Str/Dex/Con saves: E. No talking, objects, attacks or spells: E. Ends at 0 HP or Magic action: E. Data save CON spurious (D-58). |
+| gate | no | srd_add | Portal 5–20 ft to a precise plane location; front-only travel: P (S-177). Named-creature summoning: P (S-177) + J-13. Deity prevention: J (covered by J-13 scope). |
+| greater_invisibility | no | srd_add | Invisible for duration, not ended by attacking: P (S-191). |
+| invisibility | yes | imported | Invisible; ends after attack, damage or spell; upcast: E + P (S-191). |
+| jump | yes | imported | Once per turn jump 30 ft for 10 ft movement; upcast: E. |
+| leomunds_tiny_hut (Tiny Hut) | no | imported | 10-ft stationary Emanation; fails if too small: H. Present-at-cast pass freely; others barred: P (S-185). Spells ≤3 blocked: P (S-185). Interior light, opaque out / clear in: P (S-190). Ends if caster leaves or recasts: E. Ritual, 8 h: E + H (S-070). |
+| levitate | yes | imported | Rise 20 ft; 500-lb object; Con save if unwilling: E + H (object target). Climb-like movement only: E (S-179). Altitude change, Magic action if not self: H (S-148). Float down at end: P (S-181). |
+| light | yes | core | Object sheds Bright 20/Dim 20; covering blocks; ends on recast: P (S-190) + E. |
+| locate_animals_or_plants | no | imported | Direction and distance to closest kind within 5 miles: P (S-194). |
+| locate_creature | no | srd_add | Direction within 1,000 ft; movement direction; known/kind rule; not in other form; lead blocks: P (S-194) + H. |
+| locate_object | no | imported | As Locate Creature for objects: P (S-194) + H. |
+| magnificent_mansion | no | srd_add | Door, designated entrants, imperceptible when closed: P (S-185) + H. Dwelling up to 50 Cubes; food; 100 servants: H (created space) + J-18. Expel on end: P (S-181). Data range 60 = 300 ft ✓. |
+| maze | no | srd_add | Banish to labyrinth; Study action DC 20 Investigation escape; return to space: P (S-178) + E. |
+| meld_into_stone | no | imported | Merge with stone; undetectable nonmagically; no sight out, Disadv to hear: P (S-180/S-190). Leave for 5 ft movement: E. Partial destruction 6d6 / full 50 Force, expelled Prone: H (host stone object) + J-17. Data puts 6d6 as primary damage (D-59). |
+| mislead | no | srd_add | Invisible, ends on attack/damage/spell: E. Illusory double, Magic action move 2× Speed, see/hear through it: P (S-187 + S-193). |
+| misty_step | yes | core | Bonus Action teleport 30 ft to seen space: E. |
+| nondetection | no | imported | Creature, place or object can't be targeted by Divination or seen by sensors: P (S-195) + H (S-070). 25 GP consumed: E. |
+| pass_without_trace | no | imported | 30-ft Emanation, chosen creatures +10 Stealth, no tracks: E (S-080) + H (tracking fact). |
+| plane_shift | no | srd_add | Up to 9 who link hands to another plane; general destination: P (S-177 + S-182) + J-11. Teleportation circle sigil: P (S-177). |
+| private_sanctum | no | srd_add | 5–100 ft Cube; chosen properties (sound, vision, sensors, Divination targeting, teleport, planar): P (S-185 + S-190 + S-195 + S-218). 365-day permanence: H (S-070). Upcast size: E. |
+| produce_flame | yes | imported | Bright 20/Dim 20 in hand: P (S-190). Magic action ranged spell attack 1d8 Fire; cantrip upgrade: E. |
+| reverse_gravity | no | srd_add | 50-ft Cylinder; unanchored fall upward; Dex save to grab; strike ceilings; hover; fall at end: P (S-181) + H (upward-fall direction). Data target single (D-60). |
+| rope_trick | no | imported | Rope rises; invisible portal to space for 8 Medium; nothing passes except sight out; drop out at end: P (S-170 + S-185 + S-181). |
+| scrying | no | srd_add | Wis save modified by knowledge/connection tables: E (S-038 save modifiers). Success: no reuse for 24 h: E (S-014). Sensor follows target or sits at location: P (S-193). 1,000 GP focus, 10-min cast: E + P (S-216). |
+| see_invisibility | yes | imported | See Invisible as visible and into the Ethereal: P (S-191). |
+| spider_climb | yes | imported | Walls/ceilings, hands free, Climb Speed: E (S-179). Upcast: E. |
+| teleport | no | srd_add | Up to 9 creatures or one object to known destination: P (S-177 + S-182). Familiarity × d100 table → Mishap / Similar Area / Off Target / On Target: P (S-214) + J-10. Mishap 3d10 Force and reroll: P (S-214). Off Target 2d12 miles random direction: P (S-177). |
+| teleportation_circle | no | srd_add | Portal to known permanent circle until end of next turn: P (S-177). Two known sigils; learn in 1 min; 365-day permanence: H (S-070) + P (S-219). |
+| transport_via_plants | no | srd_add | Link to a seen/touched plant at any distance; 5 ft movement step-through: P (S-177) + H (plant fact). Data duration 10 minutes (D-61). |
+| tree_stride | no | srd_add | Enter tree, know same-kind trees within 500 ft, exit within 5 ft, once per turn, end outside: P (S-180) + H (tree fact). |
+| true_seeing | yes | srd_add | Truesight 120 ft, 25 GP consumed: E + P (S-191). |
+| water_breathing | no | imported | Up to 10 willing breathe underwater, 24 h: P (S-205) + H (S-070). Data target single (D-62). |
+| water_walk | yes | imported | Up to 10 move across liquid as solid ground; lava heat still applies; Bonus Action to pass through: E (S-179) + H. Data target single (D-62). |
+| wind_walk | no | srd_add | Up to 11 cloud forms: Fly 300 hover, Prone immunity, BPS Resistance: E (S-163). Only Dash or Magic action to revert; revert takes 1 min Stunned: H (timed transformation). End aloft: descend 60 ft/round 1 min then fall: P (S-181). |
+| word_of_recall | no | srd_add | Up to 6 within 5 ft teleport to prepared sanctuary; no sanctuary → no effect: P (S-177 + S-182). |
+| beast_sense | no | imported | Not in SRD 5.2.1: out of milestone, not decomposed. |
+
+### 088-6 classification summary
+
+- **E:** Speed modes and terrain cost (S-179), Invisible-ending triggers, ritual casting, Resistance/immunity/save Advantage on form changes.
+- **P:** this family leans hardest on planned slices.
+  - S-177/S-178 destinations, planes and temporary removal (13 spells).
+  - S-181 shunts, falls and descents; S-182 group travel; S-180 phasing.
+  - S-190/S-191 light, obscurement, Invisible and Truesight (21 spells).
+  - S-193 remote sensors; S-194 location-only detection; S-195 masked detection.
+  - S-214 Teleport outcome table; S-185 sanctum/hut barriers; S-170 extradimensional containment.
+- **H:**
+  - Long and permanent durations (S-070).
+  - Persistent created spaces (Demiplane, Magnificent Mansion).
+  - Material blocking of detection (stone, metal, lead).
+  - Covering a light/Darkness source.
+  - Object and map-feature hosts (Levitate objects, Meld into Stone, plants and trees).
+  - Occupied-arrival damage (Dimension Door, Etherealness).
+  - Timed reversion while Stunned (Wind Walk); upward fall direction (Reverse Gravity).
+- **G:** one new placeholder, below.
+- **J:** parked as J-10 to J-18.
+
+### PROPOSED-spells-9: Level-gated light/Darkness overlap dispel
+
+- **Need:** when a light or Darkness area is created, any overlapping area of the opposite kind created by a spell of a stated level or lower is dispelled.
+- **Spells:** Darkness (dispels light from spells of level 2 or lower), Daylight (dispels Darkness from spells of level 3 or lower). Hallow's Darkness/Daylight options use a related "lower than this spell" rule.
+- **Finish line:** each light/Darkness area records its kind and source spell level (cast slot, per ADR choice); creating an area checks every overlapping opposite-kind area and ends those at or below the threshold through the normal source-end path (Concentration released, aftermath runs); higher-level areas are untouched; nonmagical light is never dispelled, only suppressed inside magical Darkness; tests cover equal level, one above, partial overlap and object-anchored Emanations. Owner: new slice beside S-190.
 
 ## Duplicate-definition accuracy: imported_spells.json vs srd_additional_spells.json
 
@@ -576,10 +684,19 @@ Cumulative across batches. Batch tag = where the defect was recorded. For the 08
 | D-51 | 088-5 | wall_of_thorns | upcast | none | +1d8 both damage types per level above 6 |
 | D-52 | 088-5 | wind_wall | damage | 3d8 Force | 4d8 Bludgeoning |
 | D-53 | 088-5 | cloud_of_daggers | cast_available | true | not in SRD 5.2.1 (out of milestone yet castable) |
+| D-54 | 088-6 | astral_projection | casting_time / target | action / single | 1 hour / caster + up to eight |
+| D-55 | 088-6 | clairvoyance | range | 1 (5 ft) | 1 mile |
+| D-56 | 088-6 | etherealness | duration | 8 hours | Up to 8 hours |
+| D-57 | 088-6 | feather_fall | target | single | up to five falling creatures |
+| D-58 | 088-6 | gaseous_form | save | CON | no save (willing) |
+| D-59 | 088-6 | meld_into_stone | damage | 6d6 Force as primary | 6d6 only on partial destruction; 50 on complete |
+| D-60 | 088-6 | reverse_gravity | target | single | 50-ft-radius, 100-ft Cylinder |
+| D-61 | 088-6 | transport_via_plants | duration | 10 minutes | 1 minute |
+| D-62 | 088-6 | water_breathing / water_walk / teleport / plane_shift / word_of_recall | target | single | groups (10 / 10 / 9 / 9 / 6) |
 
 ## Known limits of this pass
 
-- 179 of 362 IDs are unreviewed for clauses. Families in spell-status.md remain the planning grouping.
+- 121 of 362 IDs are unreviewed for clauses. Families in spell-status.md remain the planning grouping.
 - All 339 headers parsed from column-split text (088-2). Prismatic Spray row 8 and the Divine Word table were re-read on rendered pages in 088-3; both are complete. The Telekinesis tail was re-read on rendered p.168 in 088-4: the SRD sentence itself stops at "simple tool," (source truncation, D-24).
 - `get_registry_hash()` isn't a hash. I recorded a SHA-256 of it. Changing it is runtime work and out of scope.
 - No Windows supported-runner export was possible from the box.
@@ -587,6 +704,6 @@ Cumulative across batches. Batch tag = where the defect was recorded. For the 08
 ## Recommended next queue
 
 1. Windows export: optional confirmation (not blocking these batches).
-2. Data-correction job (content lane) for the running defect table D-01 to D-53, field by field toward the SRD text.
-3. 088-6: movement_travel (31) + visibility (27) = 58.
-4. 088-7+: movement, visibility, objects, summons and utility families, where real gaps (`PROPOSED-spells-N`) are likeliest.
+2. Data-correction job (content lane) for the running defect table D-01 to D-62, field by field toward the SRD text.
+3. 088-7: objects (26) + social_illusions (18) + summons (17) = 61, or split to stay in 40–60.
+4. 088-8+: movement, visibility, objects, summons and utility families, where real gaps (`PROPOSED-spells-N`) are likeliest.
