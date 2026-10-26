@@ -272,6 +272,16 @@ state or execution requirements. They are grouped here to keep V-001–086 stabl
 | [ ] V-100 — SRD condition consequence table | Each SRD 5.2.1 condition's attack/save/check/speed/turn/concentration consequences come from one table applied to Characters and monsters alike; no extra, unsourced riders. | Core rules audit 2026-10-26: Petrified/Stunned/Unconscious auto-fail missing, Poisoned turn damage, Prone and Character-target Advantage gaps. | Partial native checks in `character.gd`, `combat_action.gd`, `spell_save_resolver.gd`; [core-rules status](../mechanics/core-rules-status.md) | V-012, V-013, V-050 |
 | [ ] V-101 — SRD generic actions | Dash/Disengage/Dodge/Help/Hide/Influence/Ready/Search/Study/Utilize exist as ordinary Actions with their SRD effects and end conditions; features grant cheaper access to the same action. | Core rules audit: only feature-granted Dash/Disengage/Hide (DC 12), partial Dodge, no Ready/Search/Study/Influence. | `CombatTurnBudget`, Cunning Action branches in `combat_state.gd` | V-060, V-073 |
 
+<a id="src-01-batch-2-proposed"></a>
+### Proposed additions from SRC-01 batch 2 (not yet counted)
+
+These requirements came out of the SRD clause decomposition in [SRC-01 batch 2](../planning/vocabulary-slices.md#src-01-batch-2). No checklist row or slice covers them. They stay **outside the 97-entry count** until the denominator owner accepts them; the IDs are reserved, not counted.
+
+| Open ID — capability | Boundary to implement and mark off | Description examples (SRD 5.2.1) | Current support / likely hook | Depends on |
+|---|---|---|---|---|
+| [ ] V-098 — Granted and forced movement with opportunity suppression | Two movements. (1) A feature-granted move of up to a declared fraction of Speed, optionally constrained (straight toward a target). (2) A forced push of a declared distance straight away from the source, with size eligibility. Both declare whether they provoke Opportunity Attacks. The granted move's relation to the normal movement budget is an explicit, source-backed policy, not assumed. Blocked paths stop at the last legal space; nothing is spent on refusal. | C-Barbarian: Instinctive Pounce p.29, Brutal Strike Forceful Blow p.29; C-Fighter: Tactical Shift p.48, Tactical Master Push p.48; C-Champion: Remarkable Athlete p.49. | Partial: native `barbarian_rules`/`fighter_rules` grid paths (class-doc checks); WRL-04 family names forced movement; S-179 (VS-102) speed host has no granted/forced path. | V-069, V-010, V-041 |
+| [ ] V-099 — Natural-roll outcome thresholds | Widen the natural-d20 range that counts as a declared outcome (Critical Hit on 19–20 / 18–20 for declared attack kinds; Death Save 18–20 treated as 20). Keep the natural value, and apply this before success/critical consequences. It is distinct from floors (V-008) and from forced outcomes (V-013). | C-Champion: Improved Critical p.49, Superior Critical p.49, Survivor Defy Death p.49. | Partial: `modify_crit_range` data on native `fighter_rules`; no shared threshold slice; death-save precedence is native. | V-008, V-013, V-010 |
+
 ## Proposed implementation order
 
 The [roadmap](../../roadmap.md) chooses work. Use the

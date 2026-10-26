@@ -147,3 +147,54 @@ SRD subclass: **Champion** — present as `champion`.
 | subclass | 10 | Heroic Warrior | p.49 | `champion_heroic_warrior` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
 | subclass | 15 | Superior Critical | p.49 | `champion_superior_critical` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
 | subclass | 18 | Survivor | p.49 | `champion_survivor` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+
+<a id="srd-clause-decomposition-batch-2"></a>
+## SRD clause decomposition — batch 2 (2026-10-26)
+
+**Status: partial.** Static source review for planning. It does not change runtime code, content or availability. Clauses come only from `SRD_CC_v5.2.1.pdf` (PDF page = printed page). Loaded records come from the production DataLoader export: Linux headless Godot 4.7.2, `res://scenes/feature_inventory_export.tscn`, commit `0196f328f1de` (docs-only over `ede0a3c`), registry SHA-256 `70a83cc74e530743e90f8fadc992bd0651f56b51cb84b06cd73fcaf22187845e`, 0 validation failures. The supported Windows runner was not reachable from this environment, so the export is not Windows evidence. Execution is taken from the loaded record: `native` = `resolver`, `executor` = `executor: class_feature`, `effects` = data effects. Slices and limits are quoted from the [slice registry](../planning/vocabulary-slices.md); a citation does **not** prove that this clause is covered. Coverage is proven only by that slice's acceptance evidence for this feature.
+
+Classification: **ES** existing supported (class-doc production checks; shared-slice coverage unproven unless stated) · **PL** planned under an existing slice · **HC** missing host/control, or continuation of an accepted bounded slice · **GAP** genuinely unaccounted reusable capability (new planned row) · **SRC** source gap, deferral or ADR-0023 judgment · **ACQ** acquisition/advancement: grant logged by Subclass Stager (not classified here).
+
+### Fighter (pp.47–48): 19 loaded records reviewed against SRD
+
+Loaded: 10 `native` (`fighter_rules`), 1 `executor` (Second Wind), 8 `effects`.
+
+| Feature (lvl, record, exec) | SRD clause | Class. | Slice / limit or gap |
+|---|---|---|---|
+| Fighting Style (1, native) | Fighting Style feat choice; replace one on Fighter level-up | ACQ | grant logged by Subclass Stager. Style bodies are SRD feats (pp.87–88) and are absent from `data/core` (SRC-01) |
+| Second Wind (1, executor) | Bonus Action: regain 1d10 + Fighter level HP | ES / SRC | Conversion Batch 001: blocked by native Tactical Mind/Shift hooks (S-006/S-094/S-126/S-146/S-179) |
+| | 2/3/4 uses by table; regain 1 on Short Rest, all on Long Rest | ES / PL | S-007 (VS-07 fixed Short / fill Long); table scaling S-048/V-007 |
+| Weapon Mastery (1, effects) | Three kinds; change one on Long Rest; more by table | ACQ / PL | Choice: Subclass Stager. Use: S-085 (VS-122), S-127 (Planned) |
+| Action Surge (2, native) | On your turn, one additional action except Magic | ES / PL | Native checks; shared S-160 (Planned extra action budgets) |
+| | Once per Short/Long Rest; at 17, twice per rest but once per turn | ES | S-007 (VS-07); S-056 (VS-54 own-turn limits) |
+| Tactical Mind (2, native) | On a failed ability check, spend Second Wind to add 1d10 | ES | Native checks; S-100 (VS-51 result-payment predicates) |
+| | Use not expended if the check still fails | ES | S-100 (VS-51) |
+| Fighter Subclass (3) | Subclass choice | ACQ | grant logged by Subclass Stager |
+| ASI (4/6/8/12/14/16, effects) | Feat / ASI | ACQ | grant logged by Subclass Stager |
+| Extra / Two / Three Extra Attacks (5/11/20, native) | 2/3/4 attacks per Attack action on your turn | ES | S-084 (VS-120); S-146 (VS-97) |
+| Tactical Shift (5, native) | On Bonus Action Second Wind, move half Speed without provoking OAs | ES / **GAP** | Native popup/movement checks. Shared: **S-227 / V-098** |
+| Indomitable (9, native) | Failed save: reroll + Fighter level; must use the new roll | ES | S-105 (VS-26 mandatory-new reroll; event/choice-check host). A combat-save host is HC |
+| | 1/2/3 uses per Long Rest (levels 9/13/17) | ES | S-007 (VS-07) |
+| Tactical Master (9, native) | Replace the mastery property with Push, Sap or Slow for one attack | ES / PL | S-085 (VS-122 options); S-127 (Planned). Push displacement: **S-227 / V-098** |
+| Studied Attacks (13, native) | After a miss, Advantage on next attack vs that creature before end of your next turn | ES / PL | S-076 (Planned next selected attack grant); V-051 cites C-Fighter; S-030 (VS-39) |
+| Epic Boon (19, effects) | Feat choice | ACQ | grant logged by Subclass Stager. Repo Combat Prowess: SRD Boon of Combat Prowess p.88 (Peerless Aim: miss becomes hit, once per your turn): S-092 (VS-30) + S-056 (VS-54) |
+
+**Source note (SRC, ADR-0023):** fighter-2024.md describes Heroic Inspiration that can be "armed for the next owned die at or below half its maximum". The SRD rule (p.8, Heroic Inspiration) is: expend it "to reroll any die immediately after rolling it, and you must use the new roll"; you have at most one. The pre-armed threshold is a UI policy, not SRD text. Record it as an ADR-0023 judgment. No change is made here.
+
+### Champion (p.49): 6 loaded records reviewed against SRD
+
+All 6 are `native` (`fighter_rules`). Improved and Superior Critical carry `modify_crit_range` data.
+
+| Feature (lvl) | SRD clause | Class. | Slice / limit or gap |
+|---|---|---|---|
+| Improved Critical (3) | Weapon and Unarmed Strike attacks crit on 19–20 | ES / **GAP** | Native checks (weapons only). Shared natural-roll outcome threshold: **S-228 / V-099**. Repo note "applies only to weapons" vs SRD "weapons and Unarmed Strikes": SRC/ADR-0023 check needed |
+| Remarkable Athlete (3) | Advantage on Initiative and Str (Athletics) checks | ES | S-091 (VS-29) |
+| | Right after a Critical Hit, move half Speed without provoking OAs | ES / **GAP** | Native checks (including off-turn). **S-227 / V-098** |
+| Additional Fighting Style (7) | Another Fighting Style feat | ACQ | grant logged by Subclass Stager |
+| Heroic Warrior (10) | In combat, give yourself Heroic Inspiration at turn start if you lack it | ES / HC | Native; continuation of S-062 (VS-62 turn-start floor recovery) for a single-instance token host |
+| Superior Critical (15) | Crit on 18–20 | ES / **GAP** | **S-228 / V-099** (same Unarmed Strike note) |
+| Survivor (18) | Defy Death: Advantage on Death Saves | ES | S-091 (VS-29) |
+| | Death Save 18–20 counts as a 20 | ES / **GAP** | **S-228 / V-099**; S-226 (Planned Death Save roll choices) is adjacent |
+| | Heroic Rally: at turn start, if Bloodied and ≥ 1 HP, regain 5 + Con mod | ES / HC | Native; continuation of the S-062 turn-start window plus S-024 (VS-27) predicates for a healing payload |
+
+Fighter totals: 19/19 loaded class records and 6/6 Champion records decomposed. New gaps: V-098, V-099.

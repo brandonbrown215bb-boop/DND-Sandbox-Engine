@@ -145,3 +145,8 @@ SRD subclass: **Evoker** — absent from repo data.
 | subclass | 6 | Sculpt Spells | p.82 | — | absent | — | unassigned | Unreviewed (absent) |
 | subclass | 10 | Empowered Evocation | p.82 | — | absent | — | unassigned | Unreviewed (absent) |
 | subclass | 14 | Overchannel | p.82 | — | absent | V-016 | unassigned | Unreviewed (absent) |
+
+<a id="out-of-milestone-subclasses"></a>
+## Out-of-milestone subclasses — 2026-10-26
+
+**Abjurer** (`data/core/subclasses/abjurer.json`: Arcane Ward L3, Projected Ward L6) and **Diviner** (`data/core/subclasses/diviner.json`: Portent L3, Greater Portent L14) are **out-of-milestone**. They are not SRD 5.2.1 subclasses; the SRD Wizard subclass is Evoker (p.82), and it is absent. Both still load in the production DataLoader export (batch 2, registry SHA-256 `70a83cc7…187845e`) as 2 `effects` records each. This audit keeps them identifiable and does **not** remove them or change their availability. They are excluded from SRD reviewed/unreviewed counts.

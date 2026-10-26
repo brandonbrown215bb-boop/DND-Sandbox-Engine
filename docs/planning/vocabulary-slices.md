@@ -1257,7 +1257,7 @@ Flurry/Patient Defense/Step of the Wind, Cleric Divine Spark/Turn Undead, Mystic
 Arcanum by level). Source gaps with no SRD heading found: `druid_wild_shape_uses`,
 `paladin_channel_divinity_divine_sense`, `sorcerer_metamagic_improvement_10/17`,
 `fiend_spells_3/5/7/9` (SRD has one Fiend Spells heading, p.76). Abjurer and
-Diviner subclasses (10 records) are not SRD 5.2.1 subclasses and are outside
+Diviner subclasses (10 records) are **out-of-milestone**: not SRD 5.2.1 subclasses, kept identifiable with availability unchanged, and outside
 this authority; Bard has no `subclass_level`.
 
 Missing SRD subclasses: Berserker p.30, Lore p.35, Life p.40, Land p.46,
@@ -1275,6 +1275,58 @@ consumer (S-084 Extra Attack, S-085 Unarmored Defense, S-049/S-050/S-084/S-085/S
 feat acquisition, Batch 001 Second Wind blockers, S-122 Faithful Steed arrival);
 all other rows are `unassigned`. Next step: SRD clause review per class, then
 stage the missing subclasses and the 17 feat bodies as source-backed data.
+
+<a id="src-01-batch-2"></a>
+
+### SRC-01 batch 2: DataLoader export and first clause decomposition (2026-10-26)
+
+**Partial.** Planning only. No slice state, count, content or availability changes.
+
+**Export receipt.** `res://scenes/feature_inventory_export.tscn` (`scripts/export_feature_inventory_node.gd`, a sibling of the spell inventory export) ran on Linux headless Godot 4.7.2 from the initialized production DataLoader at commit `0196f328f1de` (PR #61 head; docs-only over `ede0a3c`). Registry SHA-256 is `70a83cc74e530743e90f8fadc992bd0651f56b51cb84b06cd73fcaf22187845e`. Layers: core_imported, core_curated, mods (core + crown), 414 approved overrides, 0 validation failures. Output: `.artifacts/feature-status/runtime.json`, log `.artifacts/feature-status/export.log` (gitignored). **The supported Windows runner was not reachable**, so this is not Windows evidence.
+
+| Loaded surface | Records | Execution split | Refused by DataLoader |
+|---|---:|---|---|
+| Core-12 class features | 212 | effects 154, native 52, executor 6 | 4: `barbarian_primal_path`, `barbarian_barbarian_subclass`, `cleric_cleric_subclass`, `warlock_eldritch_master` (effectless) |
+| SRD subclasses loaded (Champion, Open Hand, Fiend) | 16 | native 11, effects 4, executor 1 | — |
+| Out-of-milestone subclasses (Abjurer, Diviner; [kept identifiable](../mechanics/wizard-2024.md#out-of-milestone-subclasses), availability unchanged) | 4 | effects 4 | — |
+| Out-of-milestone classes (Artificer 1, Mystic 0) | 1 | effects 1 | 21 (Artificer 12, Mystic 9) |
+| Feats | 0 | — | none in `data/core` |
+
+`warlock_eldritch_master` is an SRD class feature (Warlock L20) that the loader refuses. Record it as an availability observation for Warlock review; do not fix it here.
+
+**Reviewed vs unreviewed (SRD headings).** Batch 2 decomposed [Barbarian](../mechanics/barbarian-2024.md#srd-clause-decomposition-batch-2) and [Fighter and Champion](../mechanics/fighter-2024.md#srd-clause-decomposition-batch-2). [Monk](../mechanics/monk-2024.md#srd-clause-decomposition-batch-2) and [Rogue](../mechanics/rogue-2024.md#srd-clause-decomposition-batch-2) are queued and remain unreviewed.
+
+| Surface | SRD headings | Reviewed | Unreviewed |
+|---|---:|---:|---:|
+| Class features | 174 | 35 (Barbarian 20, Fighter 15; includes the 2 from Batch 001) | 139 |
+| Subclass features | 58 | 6 (Champion) | 52 (43 absent from repo) |
+| Feats | 17 | 0 | 17 |
+
+Acquisition and advancement clauses (feat/ASI/Fighting Style/subclass/skill/mastery choices) are marked **ACQ: grant logged by Subclass Stager**; they are not classified here.
+
+**Gap classification (47 decomposed records: Barbarian 22, Fighter 19, Champion 6).**
+- Already planned under existing slices: S-076 (Studied Attacks, Staggering/Sundering next-roll matchers), S-127 (mastery use), S-141 (Rage duration), S-160 (Action Surge budget), S-226 (adjacent to Survivor).
+- Host or continuation of accepted bounded slices (HC):
+  - Rage resistance self-grant (S-012 is AC-only)
+  - Primal Knowledge check-ability swap (S-126 is weapon/spell-DC only)
+  - Brutal Strike forgo-Advantage option and per-hit typed damage (S-091/S-085, S-013)
+  - Staggering Blow OA prohibition
+  - Indomitable on a combat-save host (S-105 is event/choice checks)
+  - Heroic Warrior token and Heroic Rally healing at turn start (S-062)
+- Source/ADR-0023:
+  - Heroic Inspiration "armed" threshold vs SRD p.8 reroll-after-rolling
+  - Champion critical range "weapons only" vs SRD "weapons and Unarmed Strikes"
+  - Berserker absent
+- **New, genuinely unaccounted (proposed, not counted):**
+
+| Proposed slice | State | Capability | Build and acceptance finish line | After |
+|---|---|---|---|---|
+| S-227 — Granted/forced movement with OA suppression | Proposed (not counted) | [V-098](../reviews/dnd-code-vocabulary-gap-checklist.md#src-01-batch-2-proposed) | Through the production combat grid, a fixture source grants a half-Speed move (optionally straight toward a target) and a 15-ft straight push with size eligibility. Each declares OA provocation and its budget policy. A blocked path stops at the last legal space, refusal spends nothing, and the reload state matches. Affects Instinctive Pounce, Forceful Blow, Tactical Shift, Tactical Master Push and Remarkable Athlete. | S-179, S-041, S-057 |
+| S-228 — Natural-roll outcome thresholds | Proposed (not counted) | [V-099](../reviews/dnd-code-vocabulary-gap-checklist.md#src-01-batch-2-proposed) | A fixture source widens the critical threshold to 19–20 / 18–20 for declared attack kinds (weapons + Unarmed Strikes) and treats Death Save 18–20 as 20. The natural value stays visible, and consequences fire once in correct precedence with Advantage/rerolls. Affects Improved/Superior Critical and Survivor. | S-038, S-092, S-093 |
+
+The registry stays at **226 defined, 151 verified, 75 not yet accepted**. S-227/S-228 and V-098/V-099 are reserved IDs that wait on the denominator owner. When accepted, move them into P7/P3 and refresh the count tables.
+
+**Next queue.** (1) Monk + Open Hand, (2) Rogue (Thief absent), (3) Warlock `eldritch_master` refusal plus the Fiend clauses, (4) remaining classes, (5) the 17 SRD feat bodies (needs source-backed data; acquisition with Subclass Stager).
 
 ## Updating the denominator
 
