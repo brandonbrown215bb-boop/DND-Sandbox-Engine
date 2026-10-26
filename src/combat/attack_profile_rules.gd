@@ -9,8 +9,18 @@ class_name AttackProfileRules
 extends RefCounted
 
 const ABILITIES := ["STR", "DEX", "CON", "INT", "WIS", "CHA"]
-const REPLACE_KEYS := ["ability", "damage_die", "damage_type", "damage_type_choices", "attack_bonus", "save_dc"]
-const ADD_KEYS := ["attack_bonus", "damage_bonus", "save_dc"]
+const REPLACE_KEYS := ["ability", "damage_die", "damage_type", "damage_type_choices", "attack_bonus", "save_dc", "range_feet", "school", "casting_time"]
+const ADD_KEYS := ["attack_bonus", "damage_bonus", "save_dc", "range_feet"]
+## S-140 (Batch 085): fields a spell-scoped profile may change on one invocation.
+const SPELL_REPLACE_KEYS := ["save_dc", "range_feet", "school", "casting_time"]
+const SPELL_ADD_KEYS := ["save_dc", "range_feet"]
+## Batch 085 bound: only Verbal and Somatic may be removed; Material stays
+## (costly/consumed materials and focus rules are not transformed here).
+const REMOVABLE_COMPONENTS := ["V", "S"]
+## Batch 085 bound: timing may become an Action or Bonus Action; reaction or
+## long casting times are not produced or transformed.
+const CAST_TIMINGS := ["action", "bonus_action"]
+const CAST_PROFILE_KEY := "_cast_profile"
 ## S-127: a damage-type choice names the window where it is offered. There is
 ## no default: data must say "activation" (before the attack is committed) or
 ## "hit" (after a final hit, before damage is rolled).
@@ -31,17 +41,27 @@ static func validate_rule(rule: Dictionary) -> String:
 	if str(rule.get("source_instance_id", "")).is_empty(): return "attack_profile needs source_instance_id"
 	var scope: Variant = rule.get("scope", null)
 	if not scope is Dictionary or str(scope.get("kind", "")) not in ["weapon", "spell"]: return "attack_profile scope.kind must be weapon or spell"
-	for key in ["ids", "properties_all", "schools"]:
+	for key in ["ids", "properties_all", "schools", "permission_sources"]:
 		if scope.has(key) and (not scope[key] is Array or scope[key].any(func(v): return not v is String)): return "attack_profile scope.%s must be strings" % key
 	if scope.has("melee") and not scope["melee"] is bool: return "attack_profile scope.melee must be boolean"
 	if rule.has("required_condition") and (not rule["required_condition"] is String or str(rule["required_condition"]).is_empty()): return "attack_profile required_condition is invalid"
 	var replace: Variant = rule.get("replace", {})
 	var add: Variant = rule.get("add", {})
-	if not replace is Dictionary or not add is Dictionary or (replace.is_empty() and add.is_empty()): return "attack_profile needs replace or add fields"
+	var remove: Variant = rule.get("remove", {})
+	if not replace is Dictionary or not add is Dictionary or not remove is Dictionary or (replace.is_empty() and add.is_empty() and remove.is_empty()): return "attack_profile needs replace, add or remove fields"
+	if not remove.is_empty():
+		if str(scope.kind) != "spell": return "attack_profile remove is only for spell profiles"
+		if remove.keys().any(func(k): return str(k) != "components"): return "attack_profile remove supports only components"
+		if not remove.components is Array or remove.components.is_empty() or remove.components.any(func(c): return str(c) not in REMOVABLE_COMPONENTS): return "attack_profile remove.components must list V or S"
+	if scope.has("permission_sources") and str(scope.kind) != "spell": return "attack_profile permission_sources is only for spell profiles"
+	if replace.has("range_feet") and not _range(replace.range_feet): return "attack_profile replace.range_feet must be a positive multiple of 5"
+	if add.has("range_feet") and not (_range(add.range_feet) and int(add.range_feet) > 0): return "attack_profile add.range_feet must be a positive multiple of 5"
+	if replace.has("school") and str(replace.school) not in DataLoader.VALID_SPELL_SCHOOLS: return "attack_profile school is invalid"
+	if replace.has("casting_time") and str(replace.casting_time) not in CAST_TIMINGS: return "attack_profile casting_time must be action or bonus_action"
 	for key in replace:
 		if str(key) not in REPLACE_KEYS: return "attack_profile cannot replace %s" % str(key)
 	for key in add:
-		if str(key) not in ADD_KEYS or not _int(add[key]): return "attack_profile add.%s must be a supported integer" % str(key)
+		if str(key) not in ADD_KEYS or not (_int(add[key]) or (str(key) == "range_feet" and _range(add[key]))): return "attack_profile add.%s must be a supported integer" % str(key)
 	if replace.has("ability") and str(replace.ability) not in ABILITIES: return "attack_profile ability is invalid"
 	if replace.has("damage_die") and not RegEx.create_from_string("^[1-9][0-9]?d(4|6|8|10|12)$").search(str(replace.damage_die)): return "attack_profile damage_die is invalid"
 	if replace.has("damage_type") and str(replace.damage_type) not in DataLoader.VALID_DAMAGE_TYPES: return "attack_profile damage_type is invalid"
@@ -53,8 +73,8 @@ static func validate_rule(rule: Dictionary) -> String:
 	if replace.has("damage_type_choices") and replace.has("damage_type"): return "attack_profile cannot replace both damage_type and damage_type_choices"
 	for key in ["attack_bonus", "save_dc"]:
 		if replace.has(key) and not _int(replace[key]): return "attack_profile replace.%s must be an integer" % key
-	if str(scope.kind) == "spell" and (replace.keys().any(func(k): return k != "save_dc") or add.keys().any(func(k): return k != "save_dc")): return "spell attack_profile supports only save_dc"
-	if str(scope.kind) == "weapon" and (replace.has("save_dc") or add.has("save_dc")): return "weapon attack_profile cannot change save_dc"
+	if str(scope.kind) == "spell" and (replace.keys().any(func(k): return str(k) not in SPELL_REPLACE_KEYS) or add.keys().any(func(k): return str(k) not in SPELL_ADD_KEYS)): return "spell attack_profile supports only save_dc, range_feet, school and casting_time"
+	if str(scope.kind) == "weapon" and (replace.keys().any(func(k): return str(k) in ["save_dc", "range_feet", "school", "casting_time"]) or add.has("save_dc") or add.has("range_feet")): return "weapon attack_profile cannot change spell fields"
 	return ""
 
 static func rules(actor: Character, kind: String) -> Array:
@@ -194,14 +214,82 @@ static func spell_dc(caster: Character, spell: Dictionary, dc: int) -> int:
 	var replaced := false
 	var add := 0
 	for rule in rules(caster, "spell"):
-		var scope: Dictionary = rule.scope
-		if scope.has("ids") and str(spell.get("id", "")) not in scope.ids: continue
-		if scope.has("schools") and str(spell.get("school", "")) not in scope.schools: continue
+		if not _spell_qualifies(rule, spell): continue
 		if rule.get("replace", {}).has("save_dc") and not replaced:
 			dc = int(rule.replace.save_dc)
 			replaced = true
 		add += int(rule.get("add", {}).get("save_dc", 0))
 	return dc + add
+
+## Scope is judged on the invocation's inherited (pre-transformation) fields,
+## so one source's school change never makes another source qualify.
+static func _spell_qualifies(rule: Dictionary, spell: Dictionary) -> bool:
+	var scope: Dictionary = rule.scope
+	var inherited: Dictionary = spell.get(CAST_PROFILE_KEY, {}).get("inherited", {})
+	var school := str(inherited.get("school", spell.get("school", "")))
+	if scope.has("ids") and str(spell.get("id", "")) not in scope.ids: return false
+	if scope.has("schools") and school not in scope.schools: return false
+	if scope.has("permission_sources"):
+		var source := ""
+		for permission in spell.get("_source_permissions", []):
+			if permission is Dictionary and str(permission.get("id", "")) == str(spell.get("_source_permission_id", "")):
+				source = str(permission.get("source_id", ""))
+		if source.is_empty() or source not in scope.permission_sources: return false
+	return true
+
+## S-140 (Batch 085): transform one permissioned invocation's range, components,
+## school or casting time. Returns a new copy; the input and the catalog record
+## are not changed. Applied once: a copy that already carries `_cast_profile`
+## is returned unchanged. The first qualifying source's `replace` of a field
+## wins (later conflicting replacements are recorded as ignored); additive
+## range sums; removed components union. The transformation itself costs
+## nothing, so the invocation's own payment is charged exactly once.
+static func apply_cast(caster: Character, spell: Dictionary) -> Dictionary:
+	var out := spell.duplicate(true)
+	if caster == null or out.has(CAST_PROFILE_KEY) or str(out.get("_source_permission_id", "")).is_empty() or bool(out.get("_magic_item_activation", false)): return out
+	var catalog_time := str(out.get("casting_time", "action"))
+	var ranged := int(out.get("range", 0)) >= 1 and str(out.get("range_kind", "")) != "touch"
+	var profile := {"sources": [], "ignored": [], "inherited": {"range": out.get("range", null), "school": str(out.get("school", "")), "casting_time": catalog_time, "components": out.get("components", []).duplicate()}}
+	var replaced := {}
+	var add_feet := 0
+	var removed: Array = []
+	for rule in rules(caster, "spell"):
+		if not _spell_qualifies(rule, out): continue
+		var replace: Dictionary = rule.get("replace", {})
+		var used := false
+		for field in ["range_feet", "school", "casting_time"]:
+			if not replace.has(field): continue
+			if (field == "range_feet" and not ranged) or (field == "casting_time" and catalog_time not in CAST_TIMINGS): continue
+			if replaced.has(field):
+				profile.ignored.append({"source": str(rule.source_instance_id), "field": field})
+				continue
+			replaced[field] = replace[field]
+			used = true
+		if ranged and rule.get("add", {}).has("range_feet"):
+			add_feet += int(rule.add.range_feet)
+			used = true
+		for component in rule.get("remove", {}).get("components", []):
+			if str(component) in out.get("components", []):
+				used = true
+				if str(component) not in removed: removed.append(str(component))
+		if used: profile.sources.append(str(rule.source_instance_id))
+	if profile.sources.is_empty(): return out
+	if replaced.has("range_feet"):
+		out["range"] = int(replaced.range_feet) / 5
+		out.erase("range_by_character_level_feet")
+	if add_feet > 0:
+		out["range"] = int(out.get("range", 0)) + add_feet / 5
+		var table: Dictionary = out.get("range_by_character_level_feet", {})
+		for key in table: table[key] = int(table[key]) + add_feet
+	if replaced.has("school"): out["school"] = str(replaced.school)
+	if replaced.has("casting_time"): out["casting_time"] = str(replaced.casting_time)
+	if not removed.is_empty(): out["components"] = out.get("components", []).filter(func(c): return str(c) not in removed)
+	profile["removed_components"] = removed
+	out[CAST_PROFILE_KEY] = profile
+	return out
+
+static func _range(v: Variant) -> bool:
+	return (v is int or v is float) and is_finite(float(v)) and float(v) == floor(float(v)) and int(v) > 0 and int(v) <= 5280 and int(v) % 5 == 0
 
 static func _int(v: Variant) -> bool:
 	return (v is int or v is float) and is_finite(float(v)) and float(v) == floor(float(v)) and absf(float(v)) <= 100

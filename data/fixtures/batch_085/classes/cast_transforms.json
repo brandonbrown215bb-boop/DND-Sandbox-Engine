@@ -1,0 +1,23 @@
+[
+  {
+    "id": "fixture:b085_class",
+    "name": "Batch 085 Cast Transform Fixture",
+    "hit_die": "d6",
+    "primary_ability": "INT",
+    "saving_throw_proficiencies": ["INT", "WIS"],
+    "features_by_level": {
+      "1": [
+        {"id": "fixture:b085_reach", "name": "Long Reach", "type": "attack_profile", "source_instance_id": "b085:reach",
+         "scope": {"kind": "spell", "ids": ["magic_missile"]}, "add": {"range_feet": 60}, "remove": {"components": ["V"]}},
+        {"id": "fixture:b085_swift", "name": "Swift Weave", "type": "attack_profile", "source_instance_id": "b085:swift",
+         "scope": {"kind": "spell", "ids": ["magic_missile"]}, "replace": {"casting_time": "bonus_action", "school": "abjuration"}},
+        {"id": "fixture:b085_rival", "name": "Rival Weave", "type": "attack_profile", "source_instance_id": "b085:rival",
+         "scope": {"kind": "spell", "ids": ["magic_missile"]}, "replace": {"school": "illusion"}},
+        {"id": "fixture:b085_ward", "name": "Abjurer's Edge", "type": "attack_profile", "source_instance_id": "b085:ward",
+         "scope": {"kind": "spell", "schools": ["abjuration"]}, "add": {"save_dc": 5}},
+        {"id": "fixture:b085_short", "name": "Short Frost", "type": "attack_profile", "source_instance_id": "b085:short",
+         "scope": {"kind": "spell", "ids": ["ray_of_frost"]}, "replace": {"range_feet": 10}}
+      ]
+    }
+  }
+]
