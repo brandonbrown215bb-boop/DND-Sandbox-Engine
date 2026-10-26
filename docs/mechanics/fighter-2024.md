@@ -115,3 +115,35 @@ feature menu, restricted Surge actions, four settled attacks, stale targeting,
 Tactical Shift's actual popup/movement, out-of-turn Push/Cleave/critical movement,
 chained prompts and level-20 SaveManager round-trips.
 See the [slice registry](../planning/vocabulary-slices.md) for verified shared-host boundaries.
+
+<a id="srd-feature-inventory"></a>
+
+## SRD 5.2.1 feature inventory — 2026-10-26
+
+Static source/inventory pass, not a rules audit or gameplay proof. SRD headings were read from `SRD_CC_v5.2.1.pdf` (pages are PDF page numbers) and matched by name/level to `data/core/classes/fighter.json` and `data/core/subclasses/champion.json`. Repo status is the [feature matrix](../feature_matrix.md) exposure label / record `rules_status`. Registry slice is shown only where the slice registry names this feature or its generic consumer; `unassigned` means no documented owning slice. V-IDs are the [checklist](../reviews/dnd-code-vocabulary-gap-checklist.md) rows citing this feature as an example; they are open requirements, not owning slices. **Reviewed** means an SRD clause review recorded in the [slice registry](../planning/vocabulary-slices.md); every other row is unreviewed, whatever its `rules_status` says. Rows absent from repo data are not filled from memory.
+
+SRD subclass: **Champion** — present as `champion`.
+
+| Kind | Lvl | SRD feature / repo record | SRD | Repo ID | Repo status | V-IDs | Registry slice (documented limit) | Review |
+|---|---:|---|---|---|---|---|---|---|
+| class | 1 | Fighting Style | p.47 | `fighter_fighting_style` | mechanics-backed / 2024-supported | — | S-049/S-050/S-084/S-085/S-103/S-104 (fixture-only Origin/ASI feat acquisition; feat content, prerequisites, ability benefits, Fighting Style grants, level-19 feat path open) | Unreviewed |
+| class | 1 | Second Wind | p.48 | `fighter_second_wind` | mechanics-backed / 2024-supported | — | S-006/S-094/S-126/S-146/S-179 (Conversion Batch 001 blocker) | Reviewed 2026-10-21 Conversion Batch 001: Blocked (S-006/S-094/S-126/S-146/S-179) |
+| class | 1 | Weapon Mastery | p.48 | `fighter_weapon_mastery` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| class | 2 | Action Surge | p.48 | `fighter_action_surge` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| class | 2 | Tactical Mind | p.48 | `fighter_tactical_mind` | mechanics-backed / 2024-supported | V-035 | unassigned | Unreviewed |
+| class | 3 | Fighter Subclass | p.48 | (subclass choice) | repo uses `subclass_level` = 3 | — | unassigned | Unreviewed |
+| class | 4 | Ability Score Improvement | p.48 | `fighter_ability_score_improvement_4`, `fighter_ability_score_improvement_6`, `fighter_ability_score_improvement_8`, `fighter_ability_score_improvement_12`, `fighter_ability_score_improvement_14`, `fighter_ability_score_improvement_16` | mechanics-backed / 2024-supported | — | S-049/S-050/S-084/S-085/S-103/S-104 (fixture-only Origin/ASI feat acquisition; feat content, prerequisites, ability benefits, Fighting Style grants, level-19 feat path open) | Unreviewed |
+| class | 5 | Extra Attack | p.48 | `fighter_extra_attack` | mechanics-backed / 2024-supported | — | S-084 (PARTIAL: exclusive Extra Attack count consumer accepted; source-backed class conversion open) | Unreviewed |
+| class | 5 | Tactical Shift | p.48 | `fighter_tactical_shift` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| class | 9 | Indomitable | p.48 | `fighter_indomitable` | mechanics-backed / 2024-supported | V-089 | unassigned | Unreviewed |
+| class | 9 | Tactical Master | p.48 | `fighter_tactical_master` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| class | 11 | Two Extra Attacks | p.48 | `fighter_two_extra_attacks` | mechanics-backed / 2024-supported | — | S-084 (PARTIAL: exclusive Extra Attack count consumer accepted; source-backed class conversion open) | Unreviewed |
+| class | 13 | Studied Attacks | p.48 | `fighter_studied_attacks` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| class | 19 | Epic Boon | p.48 | `fighter_epic_boon` | mechanics-backed / 2024-supported | — | S-049/S-050/S-084/S-085/S-103/S-104 (fixture-only Origin/ASI feat acquisition; feat content, prerequisites, ability benefits, Fighting Style grants, level-19 feat path open) | Unreviewed |
+| class | 20 | Three Extra Attacks | p.48 | `fighter_three_extra_attacks` | mechanics-backed / 2024-supported | — | S-084 (PARTIAL: exclusive Extra Attack count consumer accepted; source-backed class conversion open) | Unreviewed |
+| subclass | 3 | Improved Critical | p.49 | `champion_improved_critical` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| subclass | 3 | Remarkable Athlete | p.49 | `champion_remarkable_athlete` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| subclass | 7 | Additional Fighting Style | p.49 | `champion_additional_fighting_style` | mechanics-backed / 2024-supported | — | S-049/S-050/S-084/S-085/S-103/S-104 (fixture-only Origin/ASI feat acquisition; feat content, prerequisites, ability benefits, Fighting Style grants, level-19 feat path open) | Unreviewed |
+| subclass | 10 | Heroic Warrior | p.49 | `champion_heroic_warrior` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| subclass | 15 | Superior Critical | p.49 | `champion_superior_critical` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| subclass | 18 | Survivor | p.49 | `champion_survivor` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
