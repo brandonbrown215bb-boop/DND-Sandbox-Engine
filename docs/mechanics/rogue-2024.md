@@ -81,6 +81,7 @@ SRD subclass: **Thief** — absent from repo data.
 | subclass | 13 | Use Magic Device | p.64 | — | absent | — | unassigned | Unreviewed (absent) |
 | subclass | 17 | Thief’s Reflexes | p.64 | — | absent | — | unassigned | Unreviewed (absent) |
 
+<a id="srd-clause-decomposition-batch-2"></a>
 <a id="srd-clause-decomposition-features"></a>
 ## SRD clause decomposition — features audit (2026-10-26)
 

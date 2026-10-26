@@ -76,7 +76,7 @@ Batch result: 0 genuine gaps (G). Line of sight is already planned (S-190/S-191)
 
 ## Genuine vocabulary gaps
 
-Batch 088-1 found none. See PROPOSED-spells-1 to 3 under batch 088-2.
+Batch 088-1 found none. See S-238 (spells-1 folded) to 3 under batch 088-2.
 
 ## Batch 088-2: immediate attacks, saves and healing (48 spells reviewed)
 
@@ -94,7 +94,7 @@ Shared clauses that every spell below uses, so they aren't repeated per row:
 | blight | yes | Con save 8d8 necrotic, half: E. Plant creature auto-fails: E (S-092 explicit failure plus S-001 type fact). Nonmagical plant object withers, no save: H (object target host; register limit "plant objects absent"). | — |
 | burning_hands | yes | 15-ft Cone from self: E. Flammable unworn objects start burning: H (Meteor Swarm's saved `burning` flag on authored room objects is the existing piece; it isn't reached from Cone hosts). | — |
 | chain_lightning | yes | First target seen ≤150 ft, up to 3 more ≤30 ft of it, creature or object, one bolt each: E (register limit). +1 bolt per slot: E. | — |
-| chromatic_orb | **no** | Choose 1 of 6 damage types: E (S-127 Planned covers choice routes; S-036 source choice). Ranged spell attack 3d8: E. **Leap on matching d8 faces to a new target within 30 ft, new attack and damage, leaps ≤ slot level, each creature once**: G → PROPOSED-spells-2. 50 GP diamond (not consumed): E (S-136). | `target: area` should be a single target |
+| chromatic_orb | **no** | Choose 1 of 6 damage types: E (S-127 Planned covers choice routes; S-036 source choice). Ranged spell attack 3d8: E. **Leap on matching d8 faces to a new target within 30 ft, new attack and damage, leaps ≤ slot level, each creature once**: G → S-267 (spells-2). 50 GP diamond (not consumed): E (S-136). | `target: area` should be a single target |
 | circle_of_death | yes | 60-ft Sphere at a point ≤150 ft, Con save: E. 500 GP black-pearl powder, not consumed: E. | — |
 | cone_of_cold | yes | 60-ft Cone: E. Creature killed becomes a frozen statue until it thaws: J (remains presentation; S-119 remains policy could carry it; "thaws" has no source duration). | — |
 | cure_wounds | yes | Touch, 2d8 + modifier, +2d8 per slot: E (shared). | — |
@@ -106,7 +106,7 @@ Shared clauses that every spell below uses, so they aren't repeated per row:
 | fire_storm | **no** | Up to ten 10-ft Cubes, each contiguous with another, arranged by caster: H (Meteor Swarm's verified multi-center selection with overlap dedupe; needs cube members and a contiguity check). Dex 7d10 fire: E. Ignition: H. | `area_radius` missing; no area effect |
 | fireball | yes | 20-ft Sphere at a point ≤150 ft: E. Ignition: H. | — |
 | flame_strike | **no** | 10-ft-radius × 40-ft Cylinder: E (cylinder flattened, as Moonbeam). **5d6 Fire + 5d6 Radiant** packets: E (S-111/two-packet settlement in Meteor Swarm). | **damage `10d6` fire should be 5d6 fire + 5d6 radiant** |
-| freezing_sphere | **no** | 60-ft Sphere, Con 10d6 cold: E. Water struck freezes 6 in deep over 30-ft square for 1 min; swimmers Restrained; action Athletics vs DC to escape: G → PROPOSED-spells-3. Withheld globe item, thrown 40 ft or slung, explodes after 1 min: P (S-150/S-151 store/release an exact spell; S-087 timer). | — |
+| freezing_sphere | **no** | 60-ft Sphere, Con 10d6 cold: E. Water struck freezes 6 in deep over 30-ft square for 1 min; swimmers Restrained; action Athletics vs DC to escape: G → S-268 (spells-3). Withheld globe item, thrown 40 ft or slung, explodes after 1 min: P (S-150/S-151 store/release an exact spell; S-087 timer). | — |
 | guiding_bolt | yes | Next attack roll against target before end of caster's next turn has Advantage: E (`grant_condition`; S-076 Planned generalises "next selected attack"). | — |
 | harm | **no** | Con save 14d6 necrotic; failed save reduces HP max by necrotic taken, not below 1: H (S-130 verified for Characters only + S-017 earlier-step damage sum; monster targets not hosted). | — |
 | heal | yes | 70 HP, +10 per slot; ends Blinded/Deafened/Poisoned: E. | — |
@@ -127,7 +127,7 @@ Shared clauses that every spell below uses, so they aren't repeated per row:
 | power_word_kill | yes | ≤100 HP dies, else 12d12 psychic: E (shared settle_death). | — |
 | prayer_of_healing | **no** | 10-minute cast; up to five creatures who stay in range the whole cast: H (S-066/S-067 work participants; S-142 interruption). Short Rest benefits + 2d8: P (S-071 benefit-only recovery and Hit Dice). Can't be affected again until a Long Rest: H (S-014 cooldown after expiry; rest-scoped recipient lockout via S-070 Planned). | `casting_time: minute` should be 10 minutes; `target: single` should be up to five |
 | prismatic_spray | **no** | 60-ft Cone, Dex: E. Per-target 1d8 ray table: P (S-214 weighted table). Damage rows: E. Indigo: Restrained, end-of-turn Con saves, three successes end / three failures Petrified: E (S-069 counted saves, verified). Violet: Blinded, Wis save at start of caster's next turn; on failure, teleport to another plane (GM's choice): P (S-177/S-178) + J (GM choice; ADR-0023). Row 8 of the table: **source text not captured cleanly in this extract. Re-read PDF p.154 before conversion; not filled from memory.** | single `12d6 fire` value |
-| sacred_flame | yes | Dex save 1d8 radiant; **no benefit from Half or Three-Quarters Cover**: G → PROPOSED-spells-1 (no cover model exists). | — |
+| sacred_flame | yes | Dex save 1d8 radiant; **no benefit from Half or Three-Quarters Cover**: G → S-238 (spells-1 folded) (no cover model exists). | — |
 | scorching_ray | yes | Rays assigned to targets, separate attacks, 2d6 each: E. | — |
 | shatter | yes | 10-ft Sphere, Con: E. Construct has Disadvantage: E (S-091). Nonmagical unattended objects take the damage: H (object damage host exists for Chain Lightning/Meteor Swarm; not Shatter). | — |
 | shocking_grasp | yes | Melee spell attack; target can't make Opportunity Attacks until start of its next turn: E. | — |
@@ -158,23 +158,26 @@ Shared clauses that every spell below uses, so they aren't repeated per row:
 
 ## Proposed vocabulary (placeholders, not slice numbers)
 
-### PROPOSED-spells-1: Cover degree and source-declared cover exemption
+### S-238 (spells-1 folded): Cover degree and source-declared cover exemption
 - **Source clause:** Sacred Flame: "The target gains no benefit from Half Cover or Three-Quarters Cover for this save". The general Cover rules give +2/+5 to AC and Dex saves, and Total Cover prevents targeting.
 - **Affected:** Sacred Flame directly. Every Dex-save area and attack spell whose register limit says "cover … remain open": fireball, burning_hands, cone_of_cold, circle_of_death, chain_lightning, sunburst.
 - **Reuse:** QRY-05 geometry; S-190 obstruction (planned); S-091 roll policy; S-095 AC change.
 - **Depends on:** S-190.
 - **Finish line:** in a represented combat map, an obstruction between origin and target yields Half/Three-Quarters/Total cover. Attack AC and Dex save totals change by the declared amounts. Total cover refuses targeting before costs. A spell declaring the exemption ignores Half and Three-Quarters but not Total. This is proved through a real cast input path with a saved encounter reload.
 
-### PROPOSED-spells-2: Result-triggered retarget chain (leap)
+### S-267 (spells-2): Result-triggered retarget chain (leap)
 - **Source clause:** Chromatic Orb: "If you roll the same number on two or more of the d8s, the orb leaps to a different target … within 30 feet … can leap a maximum number of times equal to the level of the slot expended, and a creature can be targeted only once by each casting".
 - **Affected:** Chromatic Orb. No other milestone spell in batches 1–2. Re-check the remaining families before building.
 - **Reuse:** S-051 captured faces; S-034 prior-result identity; S-027 distance to another actor; Chain Lightning's distinct-secondary-target selection.
 - **Depends on:** S-127 (damage-type choice) for the type carried into each leap.
 - **Finish line:** a captured damage roll with a matching face offers the caster a new legal target within 30 ft of the previous one. A fresh attack and damage roll follows. The leap count is capped by slot level and repeat creatures are refused. No match ends the chain. A refusal spends nothing extra.
 
-### PROPOSED-spells-3: Surface state change with trapped occupants
+### S-268 (spells-3): Surface state change with trapped occupants
 - **Source clause:** Freezing Sphere: water "freezes … to a depth of 6 inches over an area 30 feet square. This ice lasts for 1 minute. Creatures that were swimming on the surface … are trapped … Restrained … action … Strength (Athletics) check against your spell save DC to break free".
 - **Affected:** Freezing Sphere. Later families may share it (Control Water, Wall of Ice, Sleet Storm); they're unreviewed.
+
+> **Historical (088-2/088-3):** this affected list predates the later batches; all families were reviewed by 088-8. See [Final reconciliation](#final-reconciliation-batch-088).
+
 - **Reuse:** S-179 surface/terrain costs; S-168/S-169 restraint relation and escape; S-087 timed child.
 - **Depends on:** a represented "water surface" terrain fact (S-032 material facts).
 - **Finish line:** a declared terrain cell of water becomes ice for a timed duration. Creatures swimming at its surface gain a source-owned Restrained that an Athletics action check can end. Expiry restores water and releases the trapped creatures. Both states survive a fresh-process reload.
@@ -211,22 +214,22 @@ Scope: register `primary_behavior: control` (41 IDs). 37 are in SRD 5.2.1 and de
 | Spell | Avail | Winner | Clause decomposition → classification (owner) |
 |---|---|---|---|
 | animal_friendship | yes | imported | Beast seen, Wis or Charmed 24 h: E. Ends if caster or allies deal damage: E. 24-hour world persistence beyond the encounter: H (register limit; S-070 actor-specific duration). |
-| antipathy_sympathy | no | srd_add | 1-hour cast: E. Creature or Huge-or-smaller object target; chosen creature kind: E (S-025 fact bindings). Wis save on coming within 120 ft: P (S-184 first-approach trigger). Frightened and must move away / Charmed and must move closer, by the safest route: **G → PROPOSED-spells-4**. Can't willingly leave 5 ft: H (S-179). Damaged by the target → save: H (S-031). Save when ending turn >120 ft away: E (S-068 + S-027). Immune 1 minute after a success: H (S-014 cooldown per recipient). 10-day duration: H (S-070). |
+| antipathy_sympathy | no | srd_add | 1-hour cast: E. Creature or Huge-or-smaller object target; chosen creature kind: E (S-025 fact bindings). Wis save on coming within 120 ft: P (S-184 first-approach trigger). Frightened and must move away / Charmed and must move closer, by the safest route: **G → S-269 (spells-4)**. Can't willingly leave 5 ft: H (S-179). Damaged by the target → save: H (S-031). Save when ending turn >120 ft away: E (S-068 + S-027). Immune 1 minute after a success: H (S-014 cooldown per recipient). 10-day duration: H (S-070). |
 | bestow_curse | no | imported | Touch, Wis save. Option 1, Disadvantage on one ability's checks and saves: E (S-091 + S-036). Option 2, Disadvantage on attacks against the caster: E (S-040). Option 3, start-of-turn Wis save or forced Dodge: H (S-068 + forced-action host; S-148 child actions). Option 4, extra 1d8 Necrotic on caster's attack/spell damage: E (S-041 window + S-109). Slot-based duration/no-Concentration: P (S-141). |
 | blindness/deafness | yes | imported | E (register slice). |
 | calm_emotions | no | imported | Humanoids in a 20-ft Sphere, Cha save, choice per creature: E (S-036). Option 1, Charmed/Frightened immunity plus suppression of existing conditions: E (S-074/S-075). Option 2, Indifferent toward chosen creatures, ends on damage to it or allies it witnesses: P (S-219 attitude; S-190 witness). |
 | charm_monster, charm_person | yes | srd_add / imported | E (register). Friendly attitude: P (S-219). Target knows afterwards: J (narrative, ADR-0023). |
 | color_spray | yes | imported | 15-ft Cone, Con, Blinded until end of caster's next turn: E. |
-| command | yes | imported | 5 options (Approach, Drop, Flee, Grovel, Halt): E (native; register limit, no pickup flow: H S-164). Approach/Flee forced movement is native per-ID: see PROPOSED-spells-4. |
-| compulsion | no | srd_add | Each chosen seen creature, Wis or Charmed: E. Bonus Action each turn to name a horizontal direction: H (S-148 child action). Target must move that way by the safest route: **G → PROPOSED-spells-4**. Repeat save after moving: H (S-077 post-movement event, Planned → P). |
-| confusion | no | srd_add | 10-ft Sphere, Wis: E. No Bonus Actions/Reactions: P (S-160). Start-of-turn 1d10 behavior table: P (S-214). Row 1: random 1d4 compass direction with all movement: G → PROPOSED-spells-4. Row 7–8: melee attack on a random creature in reach: H (S-096 creature-owned attack choice). Repeat save at end of turn: E. Radius +5 ft per slot: E (area upcast). |
-| contagion | no | srd_add | Touch, Con save 11d8 Necrotic + Poisoned: E. Chosen ability has Disadvantage on saves while Poisoned: E (S-091). Three successes/failures, failure lasts 7 days: E (S-069) + H (S-070 long duration). Effects that would end Poisoned require a Con save: **G → PROPOSED-spells-5**. |
-| dissonant_whispers | no | imported | Wis 3d6 Psychic, half: E. On failure, must immediately use Reaction to move away by the safest route: P (S-183 Reaction movement) + PROPOSED-spells-4. |
+| command | yes | imported | 5 options (Approach, Drop, Flee, Grovel, Halt): E (native; register limit, no pickup flow: H S-164). Approach/Flee forced movement is native per-ID: see S-269 (spells-4). |
+| compulsion | no | srd_add | Each chosen seen creature, Wis or Charmed: E. Bonus Action each turn to name a horizontal direction: H (S-148 child action). Target must move that way by the safest route: **G → S-269 (spells-4)**. Repeat save after moving: H (S-077 post-movement event, Planned → P). |
+| confusion | no | srd_add | 10-ft Sphere, Wis: E. No Bonus Actions/Reactions: P (S-160). Start-of-turn 1d10 behavior table: P (S-214). Row 1: random 1d4 compass direction with all movement: G → S-269 (spells-4). Row 7–8: melee attack on a random creature in reach: H (S-096 creature-owned attack choice). Repeat save at end of turn: E. Radius +5 ft per slot: E (area upcast). |
+| contagion | no | srd_add | Touch, Con save 11d8 Necrotic + Poisoned: E. Chosen ability has Disadvantage on saves while Poisoned: E (S-091). Three successes/failures, failure lasts 7 days: E (S-069) + H (S-070 long duration). Effects that would end Poisoned require a Con save: **G → S-270 (spells-5)**. |
+| dissonant_whispers | no | imported | Wis 3d6 Psychic, half: E. On failure, must immediately use Reaction to move away by the safest route: P (S-183 Reaction movement) + S-269 (spells-4). |
 | dominate_beast / person / monster | no | srd_add / srd_add / imported | Type gate, Wis or Charmed, Advantage if fighting: E. Repeat save whenever it takes damage: H (S-031 + S-068 damage-triggered). Telepathic link on the same plane: P (S-218, S-033). Free-action commands on caster's turn: H (S-156 command authority, verified for created actors, not charmed creatures). Reaction command costs the caster's Reaction: P (S-160). Upcast Concentration duration: P (S-141). |
 | entangle | yes | imported | E (register). |
 | enthrall | no | imported | Chosen seen creatures, Wis; auto-success if fighting: E (S-092). −10 to Wisdom (Perception) and Passive Perception: E (S-028 purpose-aware checks). |
-| eyebite | no | imported | Self, one seen creature within 60 ft, choice of 3 effects: E. Magic action each turn to target another, never a creature that already succeeded against this casting: H (S-034 prior-result identity + S-148). Asleep (Unconscious, wakes on damage/shake): E (Sleep pattern). Panicked: Frightened, must Dash away; ends at ≥60 ft and out of sight: PROPOSED-spells-4 + P (S-190). Sickened: Poisoned: E. |
-| fear | no | imported | 30-ft Cone, Wis: E. Drop held items: E (Command Drop) + H (no pickup flow). Frightened, Dash away by the safest route: PROPOSED-spells-4. End-of-turn save only when out of line of sight: P (S-190). |
+| eyebite | no | imported | Self, one seen creature within 60 ft, choice of 3 effects: E. Magic action each turn to target another, never a creature that already succeeded against this casting: H (S-034 prior-result identity + S-148). Asleep (Unconscious, wakes on damage/shake): E (Sleep pattern). Panicked: Frightened, must Dash away; ends at ≥60 ft and out of sight: S-269 (spells-4) + P (S-190). Sickened: Poisoned: E. |
+| fear | no | imported | 30-ft Cone, Wis: E. Drop held items: E (Command Drop) + H (no pickup flow). Frightened, Dash away by the safest route: S-269 (spells-4). End-of-turn save only when out of line of sight: P (S-190). |
 | flesh_to_stone | no | srd_add | Con save; failure Restrained, success Speed 0 until caster's next turn: E. Constructs auto-succeed: E (S-092). Three-of-a-kind repeat saves to Petrified: E (S-069). Petrified becomes permanent if Concentration lasts the full duration (expiry vs broken): E (S-086 source-end reason) + H (durable condition after source end). |
 | geas | no | srd_add | 1-minute cast; auto-success if it can't understand: P (S-218). Charmed 30 days: H (S-070). 5d10 Psychic when acting directly counter to the command, at most once a day: J (S-220 campaign-authored outcome; "directly counter" is a GM judgment, ADR-0023). Suicidal command ends the spell: J. Ended by Remove Curse/Greater Restoration/Wish: H (named ending sources). Upcast durations: P (S-141). |
 | grease | yes | imported | E (register). |
@@ -275,7 +278,7 @@ Scope: register `primary_behavior: control` (41 IDs). 37 are in SRD 5.2.1 and de
   - Charm awareness.
 - **G:** 2 (below).
 
-### PROPOSED-spells-4: Compelled movement directive
+### S-269 (spells-4): Compelled movement directive
 - **Source clauses:**
   - Fear: "takes the Dash action and moves away from you by the safest route … unless there is nowhere to move".
   - Antipathy/Sympathy: "must use its movement … to get as far away as possible / as close as possible … by the safest route".
@@ -289,9 +292,12 @@ Scope: register `primary_behavior: control` (41 IDs). 37 are in SRD 5.2.1 and de
 - **Depends on:** S-183 for the Reaction variant; S-190 for the line-of-sight end checks.
 - **Finish line:** a source-owned directive on an actor declares the anchor (source actor, point or compass direction), the sense (away, toward or fixed direction), the movement amount (all movement, Dash, or Reaction movement) and the route policy (safest/shortest, no willing provocation). Both player-controlled and AI turns obey it. "Nowhere to move" ends movement without refusal. The directive ends exactly when its source effect ends. Command Approach/Flee rebuilt on it gives identical results to the native path. All of this survives a combat save and reload.
 
-### PROPOSED-spells-5: Guarded condition removal
+### S-270 (spells-5): Guarded condition removal
 - **Source clause:** Contagion: "Whenever the Poisoned target receives an effect that would end the Poisoned condition, the target must succeed on a Constitution saving throw, or the Poisoned condition doesn't end on it."
 - **Affected:** Contagion. Re-check the unreviewed families (curses, diseases) before building.
+
+> **Historical (088-2/088-3):** this affected list predates the later batches; all families were reviewed by 088-8. See [Final reconciliation](#final-reconciliation-batch-088).
+
 - **Reuse:** S-074/S-075 suppression; S-116 one recipient's incoming effect negation; S-092 explicit save outcomes.
 - **Depends on:** none beyond verified slices.
 - **Finish line:** a source-owned condition marks its removal as guarded by a declared save. Any removal attempt (Lesser Restoration, a Paladin's Lay On Hands cure, a Heal-style end) triggers that save. Failure leaves that source's condition in place and reports it; the remover's own cost is still spent. Success removes it. Other sources of the same condition are unaffected.
@@ -300,7 +306,7 @@ Scope: register `primary_behavior: control` (41 IDs). 37 are in SRD 5.2.1 and de
 
 - **Command, Undead exclusion:** the loaded Undead exclusion is an SRD defect (confirms D-11). SRD 5.2.1 Command has no creature-type exclusion.
 - **Duplicates:** fix field by field toward the SRD text in a later correction job. Do not pick one file wholesale. See the duplicate table and D-23.
-- **PROPOSED-spells-4 vs native Command code:** whether the slice replaces Command's native code is an implementation choice for that slice. This audit takes no position.
+- **S-269 (spells-4) vs native Command code:** whether the slice replaces Command's native code is an implementation choice for that slice. This audit takes no position.
 
 ## Batch 088-4: timed effects (45 spells reviewed)
 
@@ -373,7 +379,7 @@ Scope: every ID with `primary_behavior == timed_effects` (45). 41 are in SRD 5.2
   - Damage copy to caster (Warding Bond).
   - Source-aware save Advantage (Protection from Evil and Good).
   - Level-scaled die override (Shillelagh).
-- **G:** none. No `PROPOSED-spells-N` was added in 088-4. The closest candidate is live size change, held as H because S-163's reversible projection may carry it; the owning slice should decide.
+- **G:** none. No `spells-N` was added in 088-4. The closest candidate is live size change, held as H because S-163's reversible projection may carry it; the owning slice should decide.
 - **J:**
   - Telekinesis source truncation (D-24).
   - Mind Blank "control its mind" scope.
@@ -438,7 +444,7 @@ Scope: every ID with `primary_behavior == persistent_areas` (45). 41 are in SRD 
 | antilife_shell | yes | srd_add | 10-ft Emanation blocks non-Construct/Undead passing or reaching: P (S-185). Spells and ranged/reach attacks through it: P (S-185). Ends if caster forces a creature through: H (barrier-push end check). |
 | antimagic_field | no | srd_add | No spells, Magic actions or magical effects inside: E (S-074/S-075 suppression) + H (cast refusal by location). Item properties off: E (S-203). AoEs can't extend in; no teleport/planar: H + P (S-177/S-178). Suppressed time counts against duration: E (S-074). Immune to Dispel; fields don't cancel: E. |
 | black_tentacles | yes | srd_add | 20-ft square Difficult Terrain: E (S-179). Str save 3d6 + Restrained, entry/end-turn once per turn: P (S-184) + E. Athletics escape action: E (S-169). |
-| blade_barrier | no | srd_add | Straight or ring wall: E (`line`) + H (ring shape). Three-Quarters Cover: P (PROPOSED-spells-1). Difficult Terrain: E. Dex 6d10 Force on cast, entry, end of turn, once per turn: P (S-184) + E. |
+| blade_barrier | no | srd_add | Straight or ring wall: E (`line`) + H (ring shape). Three-Quarters Cover: P (S-238 (spells-1 folded)). Difficult Terrain: E. Dex 6d10 Force on cast, entry, end of turn, once per turn: P (S-184) + E. |
 | call_lightning | no | imported | 60-ft-radius cloud; 5-ft burst Dex 3d10: E. Magic action to repeat: H (S-148 recast-from-effect). Existing storm +1d10: J (weather fact). Upcast: E (data lacks upcast, D-37). |
 | cloudkill | yes | srd_add | 20-ft Sphere, Heavily Obscured: P (S-190). Con 5d8 on cast, area moving onto, entry, end of turn; once per turn: E (native moving area) + P (S-184). Moves 10 ft away each turn: E. Dispersed by strong wind: H. Upcast: E. |
 | conjure_animals | yes | imported | Pack, Str-save Adv within 5 ft: E. Move pack 30 ft with your move: E (native). Dex 3d10 within 10 ft, once per turn: E + P (S-184). Data target/damage missing (D-38). |
@@ -448,12 +454,12 @@ Scope: every ID with `primary_behavior == persistent_areas` (45). 41 are in SRD 
 | conjure_minor_elementals | yes | srd_add | 15-ft Emanation rider 2d8 chosen type: E (S-080). Enemy Difficult Terrain: E. |
 | conjure_woodland_beings | yes | srd_add | 10-ft Emanation Wis 5d8 Force: E. Bonus Action Disengage: E. |
 | control_water | no | srd_add | 100-ft Cube; Magic action to switch modes: H (S-148). Flood/wave/vehicles 25% capsize: H (vehicle host) + J. Part Water trench and refill over a round: H (terrain mutation + S-087). Redirect Flow: J. Whirlpool pull 10 ft, Str 2d8, Athletics escape: E + H (water-depth precondition). |
-| delayed_blast_fireball | no | srd_add | Bead at point; on spell end 20-ft Sphere Dex save for accumulated damage: E (S-086 aftermath). **+1d6 each time your turn ends:** G (PROPOSED-spells-6). Touch → Dex save, explode or throw 40 ft: H (object interaction). Flammables ignite: E. Data shape `line`, 2 points (D-39). |
+| delayed_blast_fireball | no | srd_add | Bead at point; on spell end 20-ft Sphere Dex save for accumulated damage: E (S-086 aftermath). **+1d6 each time your turn ends:** G (S-271 (spells-6)). Touch → Dex save, explode or throw 40 ft: H (object interaction). Flammables ignite: E. Data shape `line`, 2 points (D-39). |
 | earthquake | no | srd_add | 100-ft circle Difficult Terrain: E. Cast and end-of-turn Dex save → Prone + Concentration broken: E. 1d6 fissures 1d10×10 ft deep, fall-in save: H (terrain creation) + P (S-181). Structures take 50: H (structure HP host). Collapse within half height → Dex 12d6, Prone, buried DC 20 escape: H + E (S-169). Data puts 12d6 on the main save (D-40). |
 | flaming_sphere | no | imported | End-turn within 5 ft Dex 2d6: P (S-184). Bonus Action move 30 ft, ram into space then stop: E (moving area). Over 5-ft barriers/10-ft pits: J (map fact). Ignites flammables; light 20/20: E + P (S-190). |
 | forbiddance | no | srd_add | 40,000 sq ft ward, 1 day: H (S-070). No teleport/portals/planar entry: P (S-177/S-178) + S-185. Chosen types take 5d10 Radiant/Necrotic on entry/end turn: P (S-184). Password: P (S-218). No overlap: H. 30-day permanence: H (S-070). Data casting/target/damage (D-41). |
 | glyph_of_warding | no | imported | Hidden glyph, Perception DC to notice: P (S-188). Authored trigger with type and password filters: P (S-184) + J (free-form trigger). Explosive rune 20-ft Dex 5d8 chosen type: E. Spell glyph stores a spell: P (S-150/S-151). Broken if moved >10 ft: H. Upcast: E. Data damage type fire only (D-42). |
-| guardian_of_faith | no | srd_add | Large invulnerable occupant: H (non-actor occupant). Enemy first move within 10 ft / start turn: Dex 20 Radiant half: P (S-184). Vanishes after 60 total damage: G (PROPOSED-spells-7). 8 h: H (S-070). |
+| guardian_of_faith | no | srd_add | Large invulnerable occupant: H (non-actor occupant). Enemy first move within 10 ft / start turn: Dex 20 Radiant half: P (S-184). Vanishes after 60 total damage: G (S-272 (spells-7)). 8 h: H (S-070). |
 | guards_and_wards | no | srd_add | 2,500 sq ft shaped ward, exemptions, password: H + P (S-218). Corridors fog + 50% direction reversal: P (S-190) + J. Doors Arcane Lock + illusory walls: H (object host) + P (S-189). Stairs Web regrowing in 10 min: H (S-087). Other effects (Dancing Lights, Magic Mouth, Stinking Cloud, Gust, Suggestion): H (spawn other spells' effects). Effects dispelled separately; all four → ends; 365-day permanence: H (S-070). Data casting time (D-43). |
 | gust_of_wind | no | imported | 60×10 Line from self: E (`line`). Str save push 15 ft; end-of-turn repeat: E + P (S-184). Double cost moving closer: H (directional terrain cost). Disperses gas, douses flames: H (cross-spell dispersal). Bonus Action re-aim: H (S-148). Data range/target (D-44). |
 | hallow | no | srd_add | 60-ft radius; no overlap: H. Types can't willingly enter: P (S-185). Charm/Fright/possession suspended inside: E (S-075) + P (S-173). One Extra Effect from 10 options (Courage, Darkness, Daylight, Peaceful Rest, Extradimensional Interference, Fear, Resistance, Silence, Tongues, Vulnerability): E for Courage/Fear/Resistance/Vulnerability; P (S-190) Darkness/Daylight; P (S-218) Silence/Tongues; P (S-175) Peaceful Rest; P (S-177) Extradimensional. Until dispelled: H (S-070). Data casting time (D-45). |
@@ -462,18 +468,18 @@ Scope: every ID with `primary_behavior == persistent_areas` (45). 41 are in SRD 
 | magic_circle | no | imported | 10-ft Cylinder, chosen types can't willingly enter nonmagically: P (S-185). Teleport/planar entry needs Cha save: H. Disadv on attacks into it; no possession/Charm/Fright: E + P (S-173). Reverse mode: P (S-185). Upcast duration +1 h: P (S-141). |
 | moonbeam | yes | imported | 5-ft Cylinder Dim Light: P (S-190). Magic action move 60 ft: E. Con 2d10 on appear, move-into, entry, end turn: E. Shape-shifted reverts and can't shift while inside: H (S-163 forced reversion). Upcast: E. |
 | plant_growth | yes | imported | Overgrowth 100-ft Sphere, 4× movement, exclusions: E (S-179). Enrichment 8 h cast, half-mile, 365 days, double yield: P (S-199) + J. |
-| prismatic_wall | no | srd_add | Opaque wall or globe; ends if placed on a creature: P (S-186). Light 100/100: P (S-190). Designated pass-through: P (S-185). Seeing creature within 20 ft Con save or Blinded 1 min: P (S-184) + E. Seven layers, one Dex save each in order: P (S-088). Red–Blue damage: E. Indigo three-of-a-kind Con saves → Petrified: E (S-069). Violet Blinded then Wis or plane shift: P (S-177). Layer destruction by specific damage/spell, AC 10: G (PROPOSED-spells-8). Antimagic doesn't affect it; Dispel only violet: E. Data save CON on 12d6 (D-46). |
+| prismatic_wall | no | srd_add | Opaque wall or globe; ends if placed on a creature: P (S-186). Light 100/100: P (S-190). Designated pass-through: P (S-185). Seeing creature within 20 ft Con save or Blinded 1 min: P (S-184) + E. Seven layers, one Dex save each in order: P (S-088). Red–Blue damage: E. Indigo three-of-a-kind Con saves → Petrified: E (S-069). Violet Blinded then Wis or plane shift: P (S-177). Layer destruction by specific damage/spell, AC 10: G (S-273 (spells-8)). Antimagic doesn't affect it; Dispel only violet: E. Data save CON on 12d6 (D-46). |
 | sleet_storm | yes | imported | Heavily Obscured: P (S-190). Flames doused: H. Difficult Terrain: E. First entry/start turn Dex → Prone + lose Concentration: P (S-184) + E. |
 | spike_growth | yes | imported | 20-ft Sphere Difficult Terrain; 2d4 per 5 ft moved: E (S-179 native). Camouflage: Search + Perception/Survival to recognize: P (S-188). Data damage type force (D-47). |
 | spirit_guardians | yes | imported | 15-ft Emanation, designated exemptions: E (S-080). Speed halved: E. Wis 3d8 Radiant/Necrotic by alignment on emanation-moves-in, entry, end turn: E + J (alignment fact). Upcast: E. |
 | storm_of_vengeance | no | srd_add | 300-ft cloud; Con save 2d6 Thunder + Deafened on appear: E. Turn-indexed schedule (acid, six bolts, hail, 5–10 cold): P (S-088). Difficult Terrain, Heavily Obscured, no ranged weapon attacks, strong wind: E + P (S-190) + H. Data half_on_save true (D-48). |
 | sunbeam | no | srd_add | Line Con 6d8 + Blinded: E. Magic action new Line: H (S-148). Sunlight 30/30: P (S-190) + H (sunlight tag). |
-| symbol | no | srd_add | Hidden glyph, trigger, broken if moved: as Glyph (P S-184/S-188, H). Activation: 60-ft Dim Light for 10 min, targets on activation/entry/end turn: P (S-184). Death/Discord/Fear/Pain/Sleep/Stunning: E (Fear's forced 30-ft move: P PROPOSED-spells-4). Data encodes Death only (D-49). |
+| symbol | no | srd_add | Hidden glyph, trigger, broken if moved: as Glyph (P S-184/S-188, H). Activation: 60-ft Dim Light for 10 min, targets on activation/entry/end turn: P (S-184). Death/Discord/Fear/Pain/Sleep/Stunning: E (Fear's forced 30-ft move: P S-269 (spells-4)). Data encodes Death only (D-49). |
 | tsunami | no | srd_add | 300×300×50 wall, Str 6d10: E. Moves 50 ft carrying creatures: H (S-172 moving container analogue). Height −50 ft and −1d10 per round, ends at 0: G-adjacent, held H (S-090 escalation shape). Swim only with Athletics; leaving falls: E + P (S-181). |
 | wall_of_fire | yes | srd_add | Line or ring; opaque: E + H (ring) + P (S-190). Dex 5d8 on appear; one damaging side within 10 ft end turn / entry: E (verified bounded slice). Upcast: E. |
 | wall_of_force | no | srd_add | Invisible panels/dome/globe: P (S-185) + H (shape). Pushes occupants aside: P (S-186). Nothing passes; immune to damage and Dispel; Disintegrate destroys; blocks Ethereal: P (S-185) + H. Data target single (D-50). |
-| wall_of_ice | no | srd_add | Panels/dome/globe; push aside + Dex 10d6: P (S-186) + E. AC 12, 30 HP per 10-ft section, immunities/vulnerability: G (PROPOSED-spells-8). Destroyed section → frigid air, first pass Con 5d6: G (PROPOSED-spells-8) + P (S-184). Upcast both: E. |
-| wall_of_stone | no | srd_add | Panels, push aside, enclosed creature Dex save + Reaction move: P (S-186) + P (S-183). Bridges/ramps, support rule: J (map). Panel AC 15, 30 HP per inch: G (PROPOSED-spells-8). Permanent after full-duration Concentration: H (S-086 aftermath on completed duration). |
+| wall_of_ice | no | srd_add | Panels/dome/globe; push aside + Dex 10d6: P (S-186) + E. AC 12, 30 HP per 10-ft section, immunities/vulnerability: G (S-273 (spells-8)). Destroyed section → frigid air, first pass Con 5d6: G (S-273 (spells-8)) + P (S-184). Upcast both: E. |
+| wall_of_stone | no | srd_add | Panels, push aside, enclosed creature Dex save + Reaction move: P (S-186) + P (S-183). Bridges/ramps, support rule: J (map). Panel AC 15, 30 HP per inch: G (S-273 (spells-8)). Permanent after full-duration Concentration: H (S-086 aftermath on completed duration). |
 | wall_of_thorns | no | srd_add | Wall or circle; blocks sight: P (S-190). Dex 7d8 Piercing on appear: E. 4× movement through: E (S-179). First entry/end turn Dex 7d8 Slashing: P (S-184). Upcast: E (data lacks upcast, D-51). |
 | wind_wall | no | imported | 50-ft path wall, Str 4d8 Bludgeoning on appear: E + H (path shape). Gases kept back: H. Small fliers/gaseous can't pass: P (S-185). Ordinary projectiles miss: P (S-185). Data 3d8 Force (D-52). |
 | aura_of_vitality, cloud_of_daggers, cordon_of_arrows, hunger_of_hadar | cloud_of_daggers yes, rest no | imported | Not in SRD 5.2.1: out of milestone, not decomposed. cloud_of_daggers castable (D-53). |
@@ -502,19 +508,19 @@ Scope: every ID with `primary_behavior == persistent_areas` (45). 41 are in SRD 
 - **G:** three new placeholders, below.
 - **J:** Call Lightning "outdoors in a storm"; Control Water vehicles and flow; Flaming Sphere jump limits; Glyph free-form triggers; Guards and Wards direction confusion; Wall of Stone support; Spirit Guardians alignment.
 
-### PROPOSED-spells-6: Accumulating payload released at source end
+### S-271 (spells-6): Accumulating payload released at source end
 
 - **Need:** an effect owns a damage pool that grows by a fixed die at each end of the caster's turn and is released as one area save when the source ends, whether by Concentration loss, duration, touch failure or impact.
 - **Spells:** Delayed Blast Fireball.
 - **Finish line:** the pool starts at the slot-scaled base (12d6 + 1d6 per level above 7); each caster turn end while active adds 1d6; any end reason (Concentration break, 1-minute expiry, failed touch save, thrown bead hitting a creature or object) detonates once at the bead's current location with a 20-ft Sphere Dex save for full/half of the accumulated total; flammables ignite; a test covers each end reason and proves no double detonation. Owner: new slice beside S-086/S-087.
 
-### PROPOSED-spells-7: Damage-dealt budget that ends the source
+### S-272 (spells-7): Damage-dealt budget that ends the source
 
 - **Need:** an effect tracks total damage it has dealt (after saves and mitigation) and ends when a cap is reached.
 - **Spells:** Guardian of Faith (60 total).
 - **Finish line:** each resolved hit adds its final damage to the budget; the effect ends immediately once total ≥ 60 (the last hit is not trimmed); budget survives save/load; a test proves half-damage saves and Resistance count only the damage actually dealt. Owner: new slice beside S-031 damage history.
 
-### PROPOSED-spells-8: Damageable barrier segments with breach residue
+### S-273 (spells-8): Damageable barrier segments with breach residue
 
 - **Need:** a wall is made of independently targetable sections or layers with their own AC, HP, immunities/vulnerabilities or destruction condition; destroying one opens that section only, and may leave a residual area.
 - **Spells:** Wall of Ice (AC 12, 30 HP per 10-ft section, Fire vulnerability, frigid-air residue), Wall of Stone (AC 15, 30 HP per inch per panel), Prismatic Wall (ordered layers destroyed by specific damage thresholds or spells).
@@ -533,9 +539,9 @@ Scope: every ID with `primary_behavior` of movement_travel (31) or visibility (2
 | clairvoyance | no | imported | Sensor at familiar/obvious location: P (S-193) + J-15. Seeing or hearing, Bonus Action switch: P (S-193). Visible as orb to See Invisibility/Truesight: P (S-191). 100 GP focus, 10-min cast: E + P (S-216). Data range (D-55). |
 | continual_flame | no | imported | Bright 20/Dim 20, no heat, can't be quenched, can be covered: P (S-190) + H (S-070 until dispelled). |
 | dancing_lights | yes | imported | Four lights or one Medium form, Dim 10 each: P (S-190). Bonus Action move 60 ft, 20-ft spacing, vanish beyond range: H. |
-| darkness | yes | imported | 15-ft Sphere or object Emanation magical Darkness; Darkvision blocked: P (S-190). Covering blocks: H. **Dispels overlapping level ≤2 light:** G (PROPOSED-spells-9). |
+| darkness | yes | imported | 15-ft Sphere or object Emanation magical Darkness; Darkvision blocked: P (S-190). Covering blocks: H. **Dispels overlapping level ≤2 light:** G (S-274 (spells-9)). |
 | darkvision | yes | imported | Darkvision 150 ft, 8 h: E + H (S-070). |
-| daylight | no | imported | 60-ft sunlight Sphere/Emanation: P (S-190). **Dispels overlapping level ≤3 Darkness:** G (PROPOSED-spells-9). |
+| daylight | no | imported | 60-ft sunlight Sphere/Emanation: P (S-190). **Dispels overlapping level ≤3 Darkness:** G (S-274 (spells-9)). |
 | demiplane | no | srd_add | Door to 30-ft room; reconnect previous/other's demiplane: P (S-170 containment) + H (persistent created space). End: objects remain, creatures shunted Prone: P (S-181). |
 | detect_evil_and_good | yes | imported | Sense listed types and Hallow within 30 ft: P (S-194). Blocked by stone/metal/lead: H (material blocking fact). |
 | detect_magic | yes | imported | Sense magic within 30 ft; Magic action to see aura and learn school: P (S-194). Blocking: H. Ritual: E. |
@@ -605,7 +611,9 @@ Scope: every ID with `primary_behavior` of movement_travel (31) or visibility (2
 - **G:** one new placeholder, below.
 - **J:** parked as J-10 to J-18.
 
-### PROPOSED-spells-9: Level-gated light/Darkness overlap dispel
+### S-274 (spells-9): Level-gated light/Darkness overlap dispel
+
+> **Wave 2 integration:** S-274 is narrowed to light/Darkness area kind, recorded source level and overlap detection. Ending the overlapped area at or below the threshold routes through the S-276 (spells-11) level-gated ending path.
 
 - **Need:** when a light or Darkness area is created, any overlapping area of the opposite kind created by a spell of a stated level or lower is dispelled.
 - **Spells:** Darkness (dispels light from spells of level 2 or lower), Daylight (dispels Darkness from spells of level 3 or lower). Hallow's Darkness/Daylight options use a related "lower than this spell" rule.
@@ -622,7 +630,7 @@ Scope: every ID with `primary_behavior` of objects (26) or social_illusions (18)
 | create_food_and_water | no | 45 lb food, 30 gal water; food spoils 24 h: P (S-197 + S-200). |
 | create_or_destroy_water | yes | 10 gal create/destroy or rain/fog Cube; rain extinguishes exposed flames; fog removal: P (S-197 + S-190). Upcast gallons/Cube: E. |
 | creation | no | Shadow object ≤5-ft Cube, seen form/material: P (S-198/S-199). Material-duration table, shortest wins: P (S-214-like lookup) + H (S-070). Using it as a Material component fails the other spell: H. Upcast Cube: E. |
-| druidcraft | no | Weather sensor: G (PROPOSED-spells-10). Bloom, sensory effect: P (S-187). Light/snuff flames: P (S-190). |
+| druidcraft | no | Weather sensor: G (S-275 (spells-10)). Bloom, sensory effect: P (S-187). Light/snuff flames: P (S-190). |
 | elementalism | no | Air closes unheld doors: H (door state). Earth dust or one written word: P (S-187). Fire embers light candles; Water mist or 1 cup water: P (S-190 + S-197). |
 | fabricate | no | Raw materials → product, Large (Medium for mineral); no creatures/magic items; tool proficiency for skilled items: P (S-198/S-199) + J-23. |
 | goodberry | yes | Ten berries 24 h; Bonus Action eat: 1 HP and a day's nourishment: P (S-196 + S-200) + E. Uneaten vanish: P (S-086). |
@@ -674,7 +682,7 @@ Scope: every ID with `primary_behavior` of objects (26) or social_illusions (18)
 - **G:** one new placeholder, below.
 - **J:** parked as J-21 to J-27.
 
-### PROPOSED-spells-10: Staged weather state
+### S-275 (spells-10): Staged weather state
 
 - **Need:** a located weather fact with ordered stages for precipitation, temperature and wind (with direction), readable by spells and changeable one stage at a time after a delay.
 - **Spells:** Control Weather (change one stage per change, 1d4 × 10 min delay, gradual return), Druidcraft Weather Sensor (24-hour forecast display), Call Lightning (storm present, J-05).
@@ -688,7 +696,7 @@ Scope: summons (17), body_death (16), campaign_information (14), weapon_riders (
 |---|---|---|
 | animate_dead | yes | Bones/corpse → Skeleton/Zombie: E (S-154). Bonus Action command within 60 ft, same command to all, Dodge default: E (S-156/S-158) + J-41. 24-h control, recast reasserts up to four: H (S-070 + reassert target). Upcast +2 creatures: E (S-155). |
 | animate_objects | yes | Objects up to ability modifier (size-weighted) → Animated Object stat block: E (S-154/S-155/S-165). Shares Initiative after yours; Bonus Action command within 500 ft: E (S-156/S-157). 0 HP reverts with carry-over: E (S-166). Upcast Slam: E. |
-| arcane_hand | no | Large hand object AC 20, HP = your max, doesn't occupy: P (S-187) + E. Bonus Action move 60 then Clenched Fist 5d8 / Forceful push / Grasping grapple + 4d6 crush / Interposing Half Cover + Difficult Terrain: E (S-168) + P (S-160) + H (cover degree, PROPOSED-spells-1). Upcast: E. |
+| arcane_hand | no | Large hand object AC 20, HP = your max, doesn't occupy: P (S-187) + E. Bonus Action move 60 then Clenched Fist 5d8 / Forceful push / Grasping grapple + 4d6 crush / Interposing Half Cover + Difficult Terrain: E (S-168) + P (S-160) + H (cover degree, S-238 (spells-1 folded)). Upcast: E. |
 | arcane_sword | no | Sword; melee spell attack 4d12 + mod; Bonus Action move 30 and repeat: E (S-148). |
 | awaken | no | 8-h cast; Beast/Plant Int ≤3 or plant → Int 10 + language: P (S-154) + J-35. Charmed 30 days or until damaged, then chooses attitude: P (S-219) + H (S-070). |
 | create_undead | no | Night only: H (time-of-day fact). Up to three Ghouls: E (S-154). Bonus Action command within 120 ft: E (S-156) + J-41 analogue. 24-h reassert; upcast Ghasts/Wights/Mummies: H (S-070) + E (S-155). |
@@ -708,7 +716,7 @@ Scope: summons (17), body_death (16), campaign_information (14), weapon_riders (
 | clone | no | 1-h cast; inert clone grows 120 days, chosen age: P (S-208) + H (S-070). Soul transfers on death if free and willing: P (S-175). Original remains can't be revived: P (S-175). |
 | feign_death | no | Not in SRD 5.2.1: out of milestone, not decomposed. |
 | gentle_repose | yes | Corpse protected from decay and Undead; days don't count toward revival limits: P (S-175 + S-064 paused time). 10 days, ritual: H (S-070) + E. |
-| imprisonment | no | Wis save, 24-h immunity on success: E (S-014). Imprisoned needs no air/food, untargetable by Divination, no teleport: P (S-195) + E. Burial / Chaining / Hedged Prison / Minimus Containment / Slumber options: P (S-170/S-178/S-185) + E. Authored end trigger: J-43. Dispel only at level 9 on prison or component: G (PROPOSED-spells-11 threshold). |
+| imprisonment | no | Wis save, 24-h immunity on success: E (S-014). Imprisoned needs no air/food, untargetable by Divination, no teleport: P (S-195) + E. Burial / Chaining / Hedged Prison / Minimus Containment / Slumber options: P (S-170/S-178/S-185) + E. Authored end trigger: J-43. Dispel only at level 9 on prison or component: G (S-276 (spells-11) threshold). |
 | magic_jar | no | Soul in container; project 100 ft to return or possess Humanoid (Cha save, 24-h lockout; warded creatures immune): P (S-173/S-174) + E (S-014). Host stats swap (HP, physical scores, Speed, senses): P (S-173). Host death Cha save to return or die; container destroyed: P (S-174 + S-086). |
 | polymorph | no | Wis save; Beast CR ≤ target's CR or level; retain alignment/personality/type/HP: E (S-163). Temp HP = form HP; ends when Temp HP gone: E (S-163). Gear melds: E (S-164). |
 | raise_dead | no | 1-h cast; dead ≤10 days, not Undead: P (S-175). 1 HP, neutralize poisons, close wounds, no missing parts: P (S-176 + S-206). −4 D20 Tests, −1 per Long Rest: P (S-176). |
@@ -735,8 +743,8 @@ Scope: summons (17), body_death (16), campaign_information (14), weapon_riders (
 | tongues | no | Understand any language; be understood by any language-user: P (S-218). |
 | befuddlement | no | Int save; 10d12 Psychic, can't cast or take Magic action; half on success: E. Repeat save every 30 days: P (S-068) + H (S-070). Ended by Greater Restoration, Heal, Wish: P (S-202-like removal list). |
 | contingency | no | Store a level ≤5 action-cast self-targeting spell with both slots spent: P (S-150/S-151). Authored trigger fires once, self only: P (S-184) + J-39. One at a time; ends if statuette not on person: E (S-162) + H (carried-component check). |
-| control_weather | no | Outdoors only, 5 miles; stage changes after 1d4 × 10 min; gradual return: G (PROPOSED-spells-10) + J-38. |
-| forcecage | no | Invisible cage (20 ft bars) or box (10 ft solid, blocks spells): P (S-185/S-186). Partial occupants pushed out: P (S-186). Teleport/planar exit needs Cha save, wastes on failure: P (S-185). Extends to Ethereal; can't be dispelled by Dispel Magic: P (S-185) + G (PROPOSED-spells-11 exemption). |
+| control_weather | no | Outdoors only, 5 miles; stage changes after 1d4 × 10 min; gradual return: G (S-275 (spells-10)) + J-38. |
+| forcecage | no | Invisible cage (20 ft bars) or box (10 ft solid, blocks spells): P (S-185/S-186). Partial occupants pushed out: P (S-186). Teleport/planar exit needs Cha save, wastes on failure: P (S-185). Extends to Ethereal; can't be dispelled by Dispel Magic: P (S-185) + G (S-276 (spells-11) exemption). |
 | time_stop | no | 1d4 + 1 consecutive turns: P (S-159). Ends if you affect another creature or their gear, or move >1,000 ft: H (affect-other detection). |
 | wish | no | Duplicate any level ≤8 spell without requirements: P (S-221 + S-222). Listed effects (Object Creation, Instant Health, Resistance, Spell Immunity, Sudden Learning, Roll Redo): P (S-221) + P (S-215 Roll Redo). Reshape Reality: J-42. Stress: 1d10 Necrotic per spell level until Long Rest, Str 3 for 2d4 days, 33% lose Wish: P (S-221). |
 | blinding_smite | no | Not in SRD 5.2.1: out of milestone, not decomposed. |
@@ -756,8 +764,8 @@ Scope: summons (17), body_death (16), campaign_information (14), weapon_riders (
 | wrathful_smite | no | Not in SRD 5.2.1: out of milestone, not decomposed. |
 | counterspell | yes | Reaction on seeing V/S/M casting within 60 ft: P (S-160). Con save or spell dissipates; action wasted; slot not expended: E (S-142). |
 | dispel_evil_and_good | no | Disadv on attacks from five creature types: E. Break Enchantment (possession, Charmed, Frightened from those types): P (S-174) + E. Dismissal Cha save → home plane, Shadowfell or Feywild: P (S-177/S-178). |
-| dispel_magic | no | End ongoing spells of level ≤3 on a creature, object or effect; check DC 10 + level for higher; upcast raises auto threshold: G (PROPOSED-spells-11). |
-| globe_of_invulnerability | no | 10-ft immobile Emanation; spells of level ≤5 from outside have no effect inside and areas exclude it: P (S-185) + G (PROPOSED-spells-11 level threshold). Upcast threshold: E. |
+| dispel_magic | no | End ongoing spells of level ≤3 on a creature, object or effect; check DC 10 + level for higher; upcast raises auto threshold: G (S-276 (spells-11)). |
+| globe_of_invulnerability | no | 10-ft immobile Emanation; spells of level ≤5 from outside have no effect inside and areas exclude it: P (S-185) + G (S-276 (spells-11) level threshold). Upcast threshold: E. |
 | greater_restoration | no | Remove one: 1 Exhaustion level, Charmed or Petrified, a curse including attunement, ability score reduction, HP maximum reduction: P (S-202) + E (S-129-like reduction removal). 100 GP consumed: E. |
 | lesser_restoration | no | Bonus Action touch: end Blinded, Deafened, Paralyzed or Poisoned: E. |
 | remove_curse | yes | End all curses on a creature or object; cursed item keeps curse but attunement breaks: P (S-202). |
@@ -769,14 +777,14 @@ Scope: summons (17), body_death (16), campaign_information (14), weapon_riders (
 - **E:** created actors, commands and Dodge defaults (S-154–S-158); forms (S-163–S-166); interruption with slot refund (S-142, Counterspell); repeat saves (S-068); condition removal (Lesser and Greater Restoration).
 - **P:** revival (S-175/S-176) and age (S-208, Clone); possession (S-173/S-174, Magic Jar); copies (S-161, Simulacrum); inserted turns (S-159, Time Stop); stored spells (S-150/S-151, Contingency); Reaction budget (S-160) for smites and Counterspell; weapon post-roll riders (S-021); barriers (S-185/S-186, Forcecage, Globe, Resilient Sphere); communication and knowledge (S-218/S-219/S-220); curses (S-202); Wish (S-221).
 - **H:** time-of-day facts (Create Undead); overland travel pace (Animal Messenger, Phantom Steed); mounted combat (Find Steed); material blocking for thought and message (Detect Thoughts, Message); species swap (Reincarnate); until-rest conditions (Contact Other Plane); paid repair (Simulacrum); payment negotiation (Planar Ally); affect-other detection (Time Stop).
-- **G:** PROPOSED-spells-11 below. Control Weather uses PROPOSED-spells-10 from 088-7.
+- **G:** S-276 (spells-11) below. Control Weather uses S-275 (spells-10) from 088-7.
 - **J:** parked as J-28 to J-43.
 
-### PROPOSED-spells-11: Level-gated spell ending and spell-level thresholds
+### S-276 (spells-11): Level-gated spell ending and spell-level thresholds
 
 - **Need:** a shared rule that reads the level of an ongoing spell effect and either ends it automatically (at or below a threshold) or asks for an ability check against DC 10 + that level; the same level reading also powers exemptions and thresholds.
-- **Spells:** Dispel Magic (level ≤3 auto, check above, upcast raises threshold), Globe of Invulnerability (level ≤5 from outside has no effect, upcast), Imprisonment (only a level 9 Dispel Magic on prison or component), Forcecage (can't be dispelled by Dispel Magic), and the level-limited light/Darkness overlap of PROPOSED-spells-9.
-- **Finish line:** every ongoing spell effect records its cast level; a dispel request on a creature, object or magical effect lists its effects, ends each at or below the slot-scaled threshold, and rolls the caster's spellcasting-ability check vs DC 10 + level for each one above it; effects can declare "not dispellable" or "dispellable only at level N and on target X"; Globe filters incoming spells by level and source position; tests cover threshold edges (3/4, upcast 5), each declared exemption, partial success across several effects, and the PROPOSED-spells-9 overlap. Owner: new slice; S-203 covers suppression only.
+- **Spells:** Dispel Magic (level ≤3 auto, check above, upcast raises threshold), Globe of Invulnerability (level ≤5 from outside has no effect, upcast), Imprisonment (only a level 9 Dispel Magic on prison or component), Forcecage (can't be dispelled by Dispel Magic), and the level-limited light/Darkness overlap of S-274 (spells-9).
+- **Finish line:** every ongoing spell effect records its cast level; a dispel request on a creature, object or magical effect lists its effects, ends each at or below the slot-scaled threshold, and rolls the caster's spellcasting-ability check vs DC 10 + level for each one above it; effects can declare "not dispellable" or "dispellable only at level N and on target X"; Globe filters incoming spells by level and source position; tests cover threshold edges (3/4, upcast 5), each declared exemption, partial success across several effects, and the S-274 (spells-9) overlap. Owner: new slice; S-203 covers suppression only.
 
 ## Final reconciliation (Batch 088)
 
@@ -794,7 +802,7 @@ Scope: summons (17), body_death (16), campaign_information (14), weapon_riders (
 **New gaps vs planned slices**
 
 - Planned slices cover most clauses: S-142, S-154–S-166 and S-202 are already verified; S-021, S-150/S-151, S-159–S-162, S-173–S-176, S-185–S-190, S-197–S-200, S-208, S-212, S-218–S-221 are planned owners.
-- 11 new gaps, none owned by a planned slice: PROPOSED-spells-1 to PROPOSED-spells-11. In 088-7 and 088-8: PROPOSED-spells-10 (staged weather state) and PROPOSED-spells-11 (level-gated spell ending and thresholds, which also absorbs the dispel side of PROPOSED-spells-9).
+- 11 new gaps (spells-1..11), none owned by a planned slice: spells-1 folded into S-238 (cover); spells-2..11 became S-267–S-276. In 088-7 and 088-8: S-275 (spells-10) (staged weather state) and S-276 (spells-11) (level-gated spell ending and thresholds, which also absorbs the dispel side of S-274 (spells-9)).
 - Host facts still missing (H) and repeated across batches: door/lock states, sleep and rest-blocking, long durations (S-070), map material and elevation, overland travel, mounted combat, species swap.
 
 **Defects recorded:** D-01 to D-80 (data vs SRD; recorded, not corrected). Most common in 088-8: long casting times stored as `action` (D-67 to D-73).
@@ -805,7 +813,7 @@ Scope: summons (17), body_death (16), campaign_information (14), weapon_riders (
 
 1. Data-correction job for D-01 to D-80 (separate owner and review; then regenerate spell_status.json through its normal path).
 2. ADR-0023 decision pass on J-01 to J-43, grouping by theme: GM-authored triggers (J-21, J-22, J-39, J-40, J-43), divination answers (J-28 to J-33), summoned-creature attitude and bargaining (J-35 to J-37, J-41), illusion and terrain judgment.
-3. Import Gate integration of PROPOSED-spells-1 to PROPOSED-spells-11 into the vocabulary slice plan (by the plan's owner; this audit did not edit shared files).
+3. Import Gate integration of S-238 (spells-1 folded) to S-276 (spells-11) into the vocabulary slice plan (by the plan's owner; this audit did not edit shared files).
 4. Host-fact slices for door/lock, sleep/rest and long durations (S-070), which unblock the most H clauses.
 5. Re-audit affected spells as each planned slice lands, starting with S-187–S-189 and S-218/S-219.
 
@@ -947,4 +955,4 @@ Cumulative across batches. Batch tag = where the defect was recorded. For the 08
 1. Windows export: optional confirmation (not blocking these batches).
 2. Data-correction job (content lane) for the running defect table D-01 to D-80, field by field toward the SRD text.
 3. Batch 088 is done; see Final reconciliation for the next queue.
-4. Later: movement, visibility, objects, summons and utility families, where real gaps (`PROPOSED-spells-N`) are likeliest.
+4. Later: movement, visibility, objects, summons and utility families, where real gaps (`spells-N`) are likeliest.
