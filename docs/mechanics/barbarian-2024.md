@@ -117,7 +117,7 @@ Loaded: 1 `executor`, 15 `effects`, 6 `native` (`barbarian_rules`). Refused by D
 | Feature (lvl, record, exec) | SRD clause | Class. | Slice / limit or gap |
 |---|---|---|---|
 | Rage (1, `barbarian_rage`, executor) | Bonus Action entry; not while wearing Heavy armor | ES | Class-doc production checks; shared action-cost host via executor |
-| | Uses per table; regain 1 on Short Rest, all on Long Rest | ES / PL | S-007 (VS-07: fixed Short Rest / fill Long Rest). Short Rest "one" amount: the S-007 limit is "fixed", so a one-use regain is covered only if VS-07 fixtures include amount 1 (unproven) |
+| | Uses per table; regain 1 on Short Rest, all on Long Rest | ES | S-007 (VS-07: fixed Short Rest / fill Long Rest). SRD text confirmed at `srd.txt` 1749–1751 ("You regain one expended use when you finish a Short Rest, and you regain all expended uses when you finish a Long Rest"); data `short_rest_recovery: 1` (`data/core/classes/barbarian.json`) with the `src/test_runner.gd` Rage use assertion |
 | | Resistance to Bludgeoning/Piercing/Slashing | ES | Native checks; shared timed self-grant S-012 is AC-only (VS-12), so a shared resistance grant is HC |
 | | Rage damage bonus on Strength attacks, scaled by table | ES / HC | Native checks; table scaling: S-048/V-007 (VS-69 level deltas) |
 | | Advantage on Strength checks/saves | ES | S-091 (VS-29 declared Advantage policy) |
