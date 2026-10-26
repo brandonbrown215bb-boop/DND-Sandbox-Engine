@@ -1109,12 +1109,12 @@ row; its mapping below names explicit checkpoint-bearing slices.
 | V-005 — Physical eligibility facts | S-032, S-033, S-238 |
 | V-006 — Numeric references to prior results | S-003, S-017, S-031, S-034, S-035 |
 | V-007 — Runtime formulas and tables | S-004, S-016, S-036, S-037, S-048, S-051 |
-| V-008 — Natural-roll versus final-total floors | S-038 |
+| V-008 — Natural-roll versus final-total floors | S-038, S-240 |
 | V-009 — Modifier and base-stat combination | S-039, S-040, S-078 |
 | V-010 — Resolution event facts and windows | S-013, S-018, S-021, S-022, S-041, S-042 |
 | V-011 — Result predicates and cross-step gates | S-005, S-017, S-043, S-044 |
-| V-012 — Pre-roll Advantage/Disadvantage policy | S-091, S-106, S-225 |
-| V-013 — Natural result or automatic outcome replacement | S-020, S-092, S-093, S-097, S-107, S-108, S-224, S-226 |
+| V-012 — Pre-roll Advantage/Disadvantage policy | S-091, S-106, S-225, S-235 |
+| V-013 — Natural result or automatic outcome replacement | S-020, S-092, S-093, S-097, S-107, S-108, S-224, S-226, S-235, S-240 |
 | V-014 — Reevaluate a provisional result | S-018, S-021, S-022, S-023, S-076, S-094, S-095, S-096, S-097, S-224, S-225, S-226 |
 | V-015 — Save and miss consequence remapping | S-098, S-099 |
 | V-016 — Damage stages and scoped bypass | S-109, S-110 |
@@ -1146,7 +1146,7 @@ row; its mapping below names explicit checkpoint-bearing slices.
 | V-042 — Conditional free uses and cost replacement | S-058, S-059 |
 | V-043 — Depletion and overflow consequences | S-060, S-061 |
 | V-044 — Recovery event and amount policy | S-007, S-062, S-063 |
-| V-045 — Active-use budget versus wall-clock duration | S-014, S-063, S-064, S-065 |
+| V-045 — Active-use budget versus wall-clock duration | S-014, S-063, S-064, S-065, S-227 |
 | V-046 — Work progress with deadlines and interruption | S-066, S-067 |
 | V-047 — Repeat saves, counts and staged outcomes | S-068, S-069 |
 | V-048 — Rest start, completion and benefit-only recovery | S-007, S-070, S-071 |
@@ -1158,28 +1158,28 @@ row; its mapping below names explicit checkpoint-bearing slices.
 | V-054 — Transfer a captured grant to another actor | S-079, S-082, S-083 |
 | V-055 — Modify another rule's parameters or options | S-084, S-085 |
 | V-056 — Aftermath on source end | S-014, S-086, S-087 |
-| V-057 — Durable rule state at allowed checkpoints | S-009, S-012, S-013, S-014, S-015, S-031, S-048, S-049, S-051, S-064, S-066, S-069, S-074, S-079, S-082, S-088, S-090, S-107, S-128, S-130, S-137, S-150, S-152, S-154, S-161, S-163, S-165, S-168, S-170, S-173, S-175, S-177, S-187, S-188, S-196, S-200, S-204, S-206, S-208, S-210, S-216, S-219, S-242, S-243 |
+| V-057 — Durable rule state at allowed checkpoints | S-009, S-012, S-013, S-014, S-015, S-031, S-048, S-049, S-051, S-064, S-066, S-069, S-074, S-079, S-082, S-088, S-090, S-107, S-128, S-130, S-137, S-150, S-152, S-154, S-161, S-163, S-165, S-168, S-170, S-173, S-175, S-177, S-187, S-188, S-196, S-200, S-204, S-206, S-208, S-210, S-216, S-219, S-227, S-242, S-243 |
 | V-058 — Parameterized actor factory | S-154, S-155 |
 | V-059 — Command authority and initiative relationship | S-147, S-156, S-157, S-158 |
-| V-060 — Extra turns and off-turn action budgets | S-159, S-160 |
+| V-060 — Extra turns and off-turn action budgets | S-159, S-160, S-237 |
 | V-061 — Exclusive bonds and linked replacements | S-161, S-162 |
 | V-062 — Reversible actor statistics and equipment policy | S-163, S-164 |
 | V-063 — Item-to-actor/object form lifecycle | S-165, S-166, S-167 |
-| V-064 — Grapple, restraint and physical anchor relation | S-168, S-169, S-236 |
+| V-064 — Grapple, restraint and physical anchor relation | S-168, S-169, S-236, S-241 |
 | V-065 — Containment, capacity and occupant movement | S-170, S-171, S-172, S-204 |
 | V-066 — Possession and controller/host routing | S-173, S-174 |
 | V-067 — Corpse eligibility and distinct revival policies | S-129, S-175, S-176 |
 | V-068 — Destinations, planes and return-space policy | S-177, S-178 |
-| V-069 — Movement modes, surfaces and end placement | S-179, S-180, S-181, S-239 |
+| V-069 — Movement modes, surfaces and end placement | S-179, S-180, S-181, S-239, S-241 |
 | V-070 — Linked passenger and Reaction movement | S-182, S-183 |
 | V-071 — Spatial triggers and selective barriers | S-184, S-185, S-186 |
 | V-072 — Nonoccupying illusions and constrained realization | S-187, S-188, S-189 |
-| V-073 — Observer-relative senses and concealment | S-190, S-191, S-238 |
+| V-073 — Observer-relative senses and concealment | S-190, S-191, S-229, S-238 |
 | V-074 — Separate perception, cast and effect origins | S-145, S-192, S-193 |
 | V-075 — Filtered detection and information permissions | S-194, S-195 |
 | V-076 — Container quantities and capacity | S-167, S-189, S-196, S-197 |
 | V-077 — Crafting and work completion transaction | S-198, S-199 |
-| V-078 — Cause-specific survival exemptions | S-200, S-201 |
+| V-078 — Cause-specific survival exemptions | S-200, S-201, S-228 |
 | V-079 — Curses, attunement and magic-property lifecycle | S-060, S-202, S-203 |
 | V-080 — Weighted/random procedures and controlled selection | S-214, S-215 |
 | V-081 — Sequence position and remaining membership | S-088, S-089 |
@@ -1197,7 +1197,7 @@ row; its mapping below names explicit checkpoint-bearing slices.
 | V-093 — Physical age and age-rate changes | S-208, S-209 |
 | V-094 — Attached parts and child-copy identities | S-210, S-211, S-213 |
 | V-095 — Owned maximum-HP changes | S-130, S-131 |
-| V-096 — Repair actual object state | S-212, S-213 |
+| V-096 — Repair actual object state | S-212, S-213, S-230 |
 | V-097 — Redirect or reflect the original spell | S-132, S-133 |
 | V-098 — Overland travel pace and terrain procedures | S-227, S-228 |
 | V-099 — Location-scoped search, traps and locks | S-229, S-230 |
