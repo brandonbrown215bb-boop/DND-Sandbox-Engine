@@ -57,8 +57,8 @@ The [SRC-01 feature inventory](docs/planning/vocabulary-slices.md#src-01-feature
 (batch 1) and its [batch-2 DataLoader export and clause decomposition](docs/planning/vocabulary-slices.md#src-01-batch-2)
 are partial planning audits. Reviewed so far: 35 of 174 SRD class features, 6 of 58
 subclass features, 0 of 17 feats. They propose two uncounted requirements:
-[V-098/V-099](docs/reviews/dnd-code-vocabulary-gap-checklist.md#src-01-batch-2-proposed)
-(S-227 granted/forced movement, S-228 natural-roll outcome thresholds). Counts are
+[FEAT-B2-MOVE and FEAT-B2-CRIT](docs/reviews/dnd-code-vocabulary-gap-checklist.md#src-01-batch-2-proposed)
+(granted/forced movement; natural-roll outcome thresholds; IDs assigned on acceptance). Counts are
 unchanged until those are accepted.
 
 The [first Crown conversion batch](docs/planning/vocabulary-slices.md#conversion-batch-001)
