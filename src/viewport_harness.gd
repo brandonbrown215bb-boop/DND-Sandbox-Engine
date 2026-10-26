@@ -390,6 +390,7 @@ func _run_scenario(scenario: String) -> void:
 		"batch_079_max_hp_stacking_reload": await Batch079Controls.reload(self)
 		"batch_080_last_charge_text_flow": await Batch080Controls.run(self)
 		"batch_080_last_charge_text_reload": await Batch080Controls.reload(self)
+		"batch_085_cast_transform_flow": await Batch085Controls.run(self)
 		"batch_081_declared_fallback_flow": await Batch081Controls.run(self)
 		"batch_081_declared_fallback_reload": await Batch081Controls.reload(self)
 		"batch_082_interruption_boundary_flow": await Batch082Controls.run(self)
