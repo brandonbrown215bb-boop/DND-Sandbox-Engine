@@ -81,7 +81,35 @@ SRD subclass: **Thief** — absent from repo data.
 | subclass | 13 | Use Magic Device | p.64 | — | absent | — | unassigned | Unreviewed (absent) |
 | subclass | 17 | Thief’s Reflexes | p.64 | — | absent | — | unassigned | Unreviewed (absent) |
 
-<a id="srd-clause-decomposition-batch-2"></a>
-## SRD clause decomposition — batch 2 (2026-10-26)
+<a id="srd-clause-decomposition-features"></a>
+## SRD clause decomposition — features audit (2026-10-26)
 
-**Unreviewed.** Batch 2 decomposed Barbarian and Fighter/Champion only. Rogue (21 loaded class records, all `effects`; Thief subclass absent) is queued next. Its loaded records are in the DataLoader export (commit `0196f328f1de`, registry SHA-256 `70a83cc7…187845e`; see the [batch-2 receipt](../planning/vocabulary-slices.md#src-01-batch-2)). Every row in the inventory above remains unreviewed.
+**Status: partial.** Static source review for planning. It does not change runtime code, content or availability. Clauses come only from `SRD_CC_v5.2.1.pdf` (PDF page = printed page). Loaded records come from the production DataLoader export: Linux headless Godot 4.7.2, `res://.artifacts/feature-status/tools/feature_inventory_export.tscn (untracked)`, commit `0196f328f1de` (docs-only over `ede0a3c`), registry SHA-256 `70a83cc74e530743e90f8fadc992bd0651f56b51cb84b06cd73fcaf22187845e`, 0 validation failures. The supported Windows runner was not reachable from this environment, so the export is not Windows evidence. Execution is taken from the loaded record: `native` = `resolver`, `executor` = `executor: class_feature`, `effects` = data effects. Slices and limits are quoted from the [slice registry](../planning/vocabulary-slices.md); a citation does **not** prove that this clause is covered. Coverage is proven only by that slice's acceptance evidence for this feature.
+
+Classification: **ES** existing supported (class-doc production checks; shared-slice coverage unproven unless stated) · **PL** planned under an existing slice · **HC** missing host/control, or continuation of an accepted bounded slice · **GAP** genuinely unaccounted reusable capability (new planned row) · **SRC** source gap, deferral or ADR-0023 judgment · **ACQ** acquisition/advancement: grant logged by Subclass Stager (not classified here).
+
+Imported from the Feature Auditor's `audit/features` (23ac806) in wave 2; that branch's `features.md` totals and provisional slice labels were superseded by [SRC-01 batch 2](../planning/vocabulary-slices.md#src-01-batch-2) and are not carried. Granted/forced movement is **S-241** (V-103); natural-roll thresholds are **S-240** (V-102).
+
+### Rogue (PDF pp.61–63; PDF page = printed page): SRD headings reviewed, 21 loaded records
+
+Loaded: 21 records, all `effects`. Thieves' Cant has no record (ACQ: language grant logged by Subclass Stager). Thief subclass (PDF p.63) has no loaded record, so its clauses are **unreviewed**.
+
+| Feature (lvl) | SRD clause | Class. | Slice / limit or gap |
+|---|---|---|---|
+| Expertise (1, 6) | Expertise in chosen skills | ACQ | grant logged by Subclass Stager |
+| Sneak Attack (1) | Once per turn extra dice with Advantage or ally adjacent, Finesse/Ranged weapon | ES | effects `sneak_attack` |
+| Thieves' Cant (1) | Language + one more | ACQ / absent | grant logged by Subclass Stager |
+| Weapon Mastery (1) | Two Mastery properties | ES | effects `weapon_mastery` |
+| Cunning Action (2) | Dash/Disengage/Hide as Bonus Action | ES | S-148 (VS-98) |
+| Rogue Subclass (3) / ASI | Subclass choice; ASI feat | ACQ | grant logged by Subclass Stager |
+| Steady Aim (3) | Bonus Action Advantage on next attack; requires not moved; Speed 0 until end of turn | ES / PL | effects `rogue_steady_aim`; S-076 next-attack grant |
+| Cunning Strike (5) | Forgo Sneak dice: Poison (Con save, Poisoned 1 min), Trip (Dex save, Prone), Withdraw (move half Speed without OAs) | ES / PL / S-241 | Payment S-059 (VS-106); Poison repeat saves S-068 (VS-94); **Withdraw → S-241** (granted movement with OA suppression) |
+| Uncanny Dodge (5) | Reaction halve one attack's damage | ES / HC | effects `reaction`; no shared damage-reduction reaction host found (HC) |
+| Evasion (7) | Dex save half → none / fail → half | ES | S-099 (VS-50) |
+| Reliable Talent (7) | Treat d20 of 9 or lower as 10 on proficient checks | ES | effects `ability_check_floor`; S-038 (VS-45) |
+| Improved Cunning Strike (11) | Two effects per Sneak Attack | ES | effects `cunning_strike` |
+| Devious Strikes (14) | Daze, Knock Out, Obscure | ES / PL | S-092 save outcomes; S-068 repeat saves |
+| Slippery Mind (15) | Wis and Cha save proficiency | ES | effects `saving_throw_proficiency` |
+| Elusive (18) | No attack roll has Advantage against you unless Incapacitated | ES | S-091 (VS-29 forbid Advantage) |
+| Epic Boon (19) | Feat choice | ACQ | grant logged by Subclass Stager |
+| Stroke of Luck (20) | Failed d20 Test → treat as 20; once per Short/Long Rest | ES / PL | effects `stroke_of_luck`; S-107/S-108 (Planned) natural-result tokens |
