@@ -170,3 +170,109 @@ audit PRs don't conflict. Refresh them after the last of them merges.
 3. S-231 backgrounds (4 SRD), which unlock Origin feat sourcing and move ability increases off species.
 4. S-232 species choices, then the SRD species set (add Goliath and Orc; retire half-elf, half-orc and species `ability_bonuses`).
 5. S-233 feat prerequisites, then production feats (17 SRD) through the existing fixture-proven routes.
+
+## SRD design calls (follow-up, 2026-10-26)
+
+The four rows previously marked "Judgment" (2, 20, 22, 34) are resolved here
+from the SRD 5.2.1 text. Page numbers are printed pages of
+`SRD_CC_v5.2.1.pdf`, which equal PDF pages. Each item records the SRD rule as
+the requirement. Only the clause the SRD explicitly leaves to the GM is kept as
+an ADR-0023 judgment item, quoted exactly.
+
+New requirements use `PROPOSED-chargen-N` placeholders. They aren't S-IDs yet:
+numbering and the shared registers (slices, checklist, roadmap, counts) are
+deferred to the owner's merge pass.
+
+### Row 2: ability score generation (p.21)
+
+**Requirement.** "Determine your ability scores by using one of the following three methods."
+- **Standard Array:** 15, 14, 13, 12, 10, 8.
+- **Random Generation:** "Roll four d6s and record the total of the highest three dice", repeated for six numbers.
+- **Point Cost:** 27 points, using the Ability Score Point Costs table.
+
+The Standard Array by Class table is a placement suggestion, not a rule.
+
+**Runtime:**
+- `character_creation.gd` offers point-buy only (`AbilityScores.POINT_BUY_TOTAL`, `is_valid_point_buy`).
+- Standard Array and Random Generation are missing.
+
+**Classification:**
+- Point Cost: Covered.
+- Standard Array and Random Generation: **new gap → PROPOSED-chargen-1** (creation ability-generation methods: method choice, array assignment, seeded 4d6-drop-lowest ×6 with the result recorded and saved). Parents V-025 and V-057.
+
+**Judgment residue (ADR-0023):** "Your GM might prefer you to use a particular one." In this game that becomes a campaign setting that may restrict which methods are offered. It needs an owner default, not a rules interpretation.
+
+### Row 22: XP advancement (p.23, p.25)
+
+**Requirement.** "A character who reaches a specified Experience Point total advances in capability. … When your XP total equals or exceeds a number in the Experience Points column, you reach the corresponding level."
+- The Character Advancement table runs from 0 XP at level 1 to 355,000 XP at level 20 (p.23).
+- Multiclass characters advance by **total** XP and total level (p.25).
+- The SRD text contains no milestone rule; a search of `srd.txt` for "milestone" returns nothing.
+
+**Runtime:**
+- `Character.xp` is saved and loaded (character.gd:329, 2614, 2739).
+- Level gain is not driven by thresholds; no XP award-to-level route was found.
+
+**Classification:** **new gap → PROPOSED-chargen-2** (XP award and threshold advancement: award XP and raise level eligibility at table thresholds by total level, feeding the existing level-up and `pending_levels` routes, which are Covered under S-048/VS-69). Parents V-026 and V-057.
+
+**Judgment:** none. The SRD gives no GM option here. Milestone leveling is not an SRD rule, so it is not a requirement. Any non-SRD milestone mode would be an owner extension, outside this audit.
+
+### Row 20: starting at higher levels (p.24, p.19)
+
+**Requirement:**
+- Creation "uses the same character-creation steps outlined in this chapter and the rules for advancing beyond level 1".
+- "You begin with the minimum amount of XP required to reach your starting level" (example: level 10 starts with 64,000 XP).
+- Level 3+ starts record a subclass (p.19).
+- Starting equipment comes from the Starting Equipment at Higher Levels table (p.24), by tier: 2–4, 5–10, 11–16 and 17–20 each set GP plus magic items by rarity.
+
+**Runtime:** creation produces level 1 only.
+
+**Classification:** **new gap → PROPOSED-chargen-3** (higher-level creation: repeat the level-up steps through the target level, including subclass, HP, the S-231 background and ASI/feat choices; set the minimum XP; apply the tier equipment and money). It depends on PROPOSED-chargen-2, S-045, S-048 and S-231.
+
+**Judgment residue (ADR-0023):**
+- "Your GM might start your group's characters at a level higher than 1." This is the campaign's start level (Crown currently starts at level 1).
+- "The GM decides whether your character starts with more than the standard equipment for a level 1 character, possibly even one or more magic items. The Starting Equipment at Higher Levels table is a guide for the GM."
+  - The table is explicitly a guide, so the actual equipment grant is a campaign setting with the table as the default.
+  - The specific magic items are GM-chosen. The SRD gives only the rarity counts.
+
+### Row 34: past level 20 and Epic Boons (p.24, p.88)
+
+**Requirement:**
+- Epic Boon at level 19 is a class feature. It is acquired through the Epic Boon feat category, with prerequisite Level 19+ (p.88).
+- This part is already Covered: VS-59/VS-60 and `pending_epic_boon_choices`.
+- Level 20 is the maximum level: the Character Advancement table ends at 20.
+
+**Classification:**
+- Level 19 Epic Boon: Covered.
+- Post-20 bonus feats: **new gap, conditional → PROPOSED-chargen-4** (one feat per 30,000 XP above 355,000; any feat the level 20 character qualifies for, Epic Boons included). Active only when the campaign enables it. Depends on PROPOSED-chargen-2 and S-233.
+
+**Judgment residue (ADR-0023):** "A GM can use feats as a form of advancement after characters reach level 20 … With this approach, each character gains one feat of their choice for every 30,000 XP the character earns above 355,000 XP. Epic Boon feats are especially appropriate for these bonus feats, but a player can choose any feat for which their level 20 character qualifies." (p.24) Whether the rule is enabled is the GM's call; its mechanics are fixed by the text.
+
+### Revised coverage
+
+| Status | Rows (36 bucket entries across 35 rows) |
+|---|---|
+| Covered | 17 (adds row 2 Point Cost, row 34 level 19 Epic Boon) |
+| Covered-cap | 6 |
+| New | 15 (11 → S-231–S-234; 4 → PROPOSED-chargen-1…4 from rows 2, 20, 22, 34) |
+| Judgment | 0 whole rows; 3 quoted GM residues (method preference, start level/equipment, post-20 feats) |
+
+### Slice ID collision check (2026-10-26 08:2x CDT)
+
+What I checked:
+- Every open PR (#61–#65) and every `origin` branch, diffed against main.
+- Local worktrees `monster-audit`, `rules-audit`, `items-audit` and `gear-stager`.
+
+Findings:
+- #62 defines S-227–S-230.
+- #64 (`audit/core-rules-conditions`) defines S-235–S-239 and V-100/V-101.
+- #65 only mentions S-231 as a reference.
+- The local `monster-audit` worktree (`docs/monster-statblock-audit`, unpushed) holds S-230/S-231 and V-100. The parent reports that Creature Stager will renumber.
+
+Result: S-231–S-234 stay as published in #63. No new S- or V-IDs are added here; new requirements use PROPOSED-chargen-1…4.
+
+Updated next queue, inserted after step 3:
+- PROPOSED-chargen-2 (XP)
+- PROPOSED-chargen-1 (generation methods)
+- PROPOSED-chargen-3 (higher-level start)
+- PROPOSED-chargen-4 (post-20 feats)
