@@ -7,7 +7,7 @@ Reviewer: Runtime Reviewer. Head reviewed: 6e3a0af, stacked on #67 at bbe3a91. V
 |---|---|---|
 | D-3: Potion of Healing is a Bonus Action to drink or administer | 6005-6008 | PASS. The "administer" half is honestly marked BLOCKED. |
 | D-3: greater, superior and supreme healing | 15170-15183 (table) | PASS: these are potions of the same family. |
-| D-2: Potion of Poison does 4d6 Poison, DC 13 CON, Poisoned for 1 hour | 15177-15187 | PASS for the damage. The duration of 600 turns is right because event_resolver.gd:489 counts in turns. The save gate is honestly marked BLOCKED. |
+| D-2: Potion of Poison does 4d6 Poison, DC 13 CON, Poisoned for 1 hour | 15177-15187 | PASS for the upfront damage only. Review correction: retain the existing 10-turn condition approximation. Extending it to 600 turns amplifies the shared Poisoned turn-damage bug, and campaign time does not expire a bare condition. The correct condition consequences, one-hour lifetime and save gate remain BLOCKED (S-235/S-257). |
 | D-1: Poison Resistance no longer applies Poisoned | Potion of Resistance, 15188 | PASS. It now matches the other Resistance stubs. |
 | D-4, D-5, D-6, D-7, D-8 | n/a | These are audit-correction or BLOCKED rows. Their reasons check out, including the D-8 double-roll risk. |
 
