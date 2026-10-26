@@ -16,14 +16,14 @@ Status: **partial**. Batch 2 (below, after batch 1) adds the 46 refused consumab
 To rerun (artifacts are git-ignored under `.artifacts/items-audit/`):
 
 ```
-godot --headless --path . res://scenes/item_inventory_export.tscn      # writes runtime.json
+godot --headless --path . res://tools/item_audit/item_inventory_export.tscn      # writes runtime.json
 pdftotext -layout -f 89 -l 106 SRD_CC_v5.2.1.pdf .artifacts/items-audit/eq.txt
 pdftohtml -xml -i -f 89 -l 106 SRD_CC_v5.2.1.pdf .artifacts/items-audit/eq
 pdftohtml -xml -i -f 209 -l 253 SRD_CC_v5.2.1.pdf .artifacts/items-audit/mi
-python3 scripts/reconcile_item_inventory.py                          # writes reconciliation.json
+python3 tools/item_audit/reconcile_item_inventory.py                          # writes reconciliation.json
 ```
 
-`scripts/export_item_inventory_node.gd` reports how each item can be used by copying the production `Inventory.consume()` gate: the item must be a consumable, it must have effects, and every effect must pass `EventResolver.is_effect_supported`. Light sources have their own path. The script adds no rules of its own.
+`tools/item_audit/export_item_inventory.gd` reports how each item can be used by copying the production `Inventory.consume()` gate: the item must be a consumable, it must have effects, and every effect must pass `EventResolver.is_effect_supported`. Light sources have their own path. The script adds no rules of its own.
 
 ## Totals
 

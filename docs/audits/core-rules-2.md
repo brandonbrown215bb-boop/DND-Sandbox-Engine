@@ -3,7 +3,7 @@
 - **Commit audited:** `ede0a3cdfa66f21b0b3415f498c2e186e56a0db4` (origin/main, "Merge pull request #60")
 - **Registry hash:** sha256(`str(DataLoader.get_registry_hash())`) = `70a83cc74e530743e90f8fadc992bd0651f56b51cb84b06cd73fcaf22187845e`
 - **Loader:** 14 classes, 9 races, 289 items, 362 spells, 481 monsters, 0 validation failures
-- **Probe:** `res://scenes/core_rules_2_probe.tscn` (`scripts/export_core_rules_2_probe_node.gd`), Godot 4.7.2 headless on Linux. Output is in `.artifacts/core-rules-2/runtime.json` (git-ignored). Rates come from 400 trials each.
+- **Probe:** `res://tools/core_rules_2_audit/core_rules_2_probe.tscn` (`tools/core_rules_2_audit/export_core_rules_2_probe.gd`), Godot 4.7.2 headless on Linux. Output is in `.artifacts/core-rules-2/runtime.json` (git-ignored). Rates come from 400 trials each.
 - **Not run:** the Windows runner was unreachable. These are Linux headless results only.
 - **Scope:** (a) how SRD conditions drive monster AI and monster turns beyond the attack-mode block at `combat_state.gd` 1538–1570, which batch 1 covered; (b) every d20 check, contest or save host outside `EventResolver`. Condition effects that come from a specific spell or feature (Dazed, Abjure Foes, Turn Undead, Charm Person tracking, Resilient Sphere and so on) are skipped. Spell and feature callers appear below only as consumers of a generic host.
 - **Placeholders:** new gaps use PROPOSED-core-6..9. Batch 1's PROPOSED-core-1..5 (branch `audit/core-rules`, `docs/audits/core-rules.md`) are referenced, not repeated. No shared registers were edited.

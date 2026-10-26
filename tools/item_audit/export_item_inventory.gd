@@ -1,5 +1,5 @@
 ## Export the item registry after the project's autoloads have initialized.
-## Run: Godot --headless --path . res://scenes/item_inventory_export.tscn
+## Run: Godot --headless --path . res://tools/item_audit/item_inventory_export.tscn
 extends Node
 
 func _ready() -> void:

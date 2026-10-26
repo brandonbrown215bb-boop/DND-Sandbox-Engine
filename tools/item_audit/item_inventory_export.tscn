@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scripts/export_item_inventory_node.gd" id="1_export"]
+[ext_resource type="Script" path="res://tools/item_audit/export_item_inventory.gd" id="1_export"]
 
 [node name="ItemInventoryExport" type="Node"]
 script = ExtResource("1_export")

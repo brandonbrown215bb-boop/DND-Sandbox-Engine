@@ -1,12 +1,12 @@
 """Reconcile the exported production item registry against SRD 5.2.1 entry lists.
 
-Inputs: .artifacts/items-audit/runtime.json (scenes/item_inventory_export.tscn),
+Inputs: .artifacts/items-audit/runtime.json (tools/item_audit/item_inventory_export.tscn),
 .artifacts/items-audit/{mi,eq}.xml (pdftohtml -xml of SRD_CC_v5.2.1.pdf pages 209-253, 89-106).
 Writes .artifacts/items-audit/reconciliation.json. No content is changed.
 """
 import html, json, re, sys
 from pathlib import Path
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 A = ROOT / ".artifacts/items-audit"
 
 def texts(name):

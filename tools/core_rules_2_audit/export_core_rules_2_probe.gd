@@ -1,7 +1,7 @@
 ## Core rules batch 2 runtime probe (audit tooling only; changes no gameplay).
 ## Monster-AI condition handling and non-EventResolver check/save hosts.
 ## Output: .artifacts/core-rules-2/runtime.json
-## Run: godot --headless --path . res://scenes/core_rules_2_probe.tscn
+## Run: godot --headless --path . res://tools/core_rules_2_audit/core_rules_2_probe.tscn
 extends Node
 
 const SCORES := {"STR": 14, "DEX": 14, "CON": 14, "INT": 10, "WIS": 10, "CHA": 10}
