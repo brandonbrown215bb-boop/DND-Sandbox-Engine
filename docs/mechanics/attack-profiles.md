@@ -124,7 +124,7 @@ captured copy without applying the transformation again.
   apply together, once: a copy that already has `_cast_profile` comes back
   unchanged.
 - **Record:** `_cast_profile = {sources, ignored, inherited{range, school,
-  casting_time, components}, removed_components}` lives only on the invocation
+  casting_time, components, duration_seconds, concentration}, removed_components}` lives only on the invocation
   copy. The catalog record is never mutated, and casts that no source qualifies
   for get no profile.
 - **Cost:** the transformation costs nothing. The invocation pays its own slot
@@ -153,5 +153,51 @@ captured copy without applying the transformation again.
 - There are no costed transformations (resource-paid profiles). Native
   Metamagic (Quickened, Subtle, Distant) still uses its own host and isn't
   migrated yet.
-- Duration, concentration and created-actor parameters are S-141, which follows
-  after this batch.
+- The S-141 continuation below supplies duration/concentration for flat shared
+  condition grants. Other lifetime owners and created-actor parameters remain open.
+
+## Cast-local condition lifetimes (S-141 continuation)
+
+A spell profile can replace `duration_seconds` (an integer from 1 through
+86400) and/or `concentration` (a Boolean) on one permissioned player HUD cast:
+
+```json
+{"type": "attack_profile", "source_instance_id": "feature:unbound_weave",
+ "scope": {"kind": "spell", "ids": ["example:timed_condition"]},
+ "replace": {"duration_seconds": 120, "concentration": false}}
+```
+
+This first host accepts **flat shared spells with an existing positive duration
+and only `grant_condition` effects**. Instantaneous, native, ordered, persistent-area,
+source-benefit, tether, projection and created-actor lifetime owners refuse
+these changes before payment. Source-benefit carriers retain their stricter
+catalog-bound saved lifetime contract; accepting a profile is not permission
+to bypass that contract. Weapon profiles cannot contain either lifetime field.
+
+Lifetime fields use the same inherited scope and first-replacement precedence
+as other cast fields. Compatible changes combine once; later conflicting values
+are recorded as ignored. The invocation's displayed duration is updated too.
+Selections with lifetime changes capture their qualifying rules; before
+Metamagic or spell payment the host rechecks that set. A removed, changed or
+additional qualifying lifetime source refuses that pending cast, preserving its slot, action and existing
+concentration. Cancellation and stale target clicks likewise create no source.
+
+`SpellEffects.begin_cast` captures the invocation's final duration and
+concentration flag. Adding concentration uses ordinary replacement/cleanup;
+removing that requirement leaves an older concentration source alone. Each
+recipient ages/removes only its own exact source. Combat boundaries use the
+existing six-second ticks; exploration uses campaign seconds. Later changes
+to the modifying feature do not rewrite effects already cast.
+
+The existing source `remaining_seconds` and `concentration` fields survive
+full-party and player-only checkpoints; no new save schema or migration is
+introduced. The transient `_cast_profile` and pending selection are not saved.
+`cast_lifetime_flow` and its automatic fresh-process `cast_lifetime_reload`
+exercise the real HUD, cancellation/staleness, payments, concentration
+replacement, captured expiry and recovery. `CastLifetimeChecks` covers
+composition, validation and the existing Extended Spell duration calculation;
+this does not migrate native Metamagic or certify its complete player flow.
+
+S-141 remains partial: source-benefit carriers and other lifetime owners,
+created-actor parameters, resource-paid profiles and additional casting hosts
+are separate continuations. No catalog spell or feature conversion is claimed.

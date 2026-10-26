@@ -1,0 +1,9 @@
+[
+  {"id":"fixture:lifetime_profiles","name":"Cast Lifetime Profiles","hit_die":"d6","primary_ability":"INT","saving_throw_proficiencies":["INT","WIS"],"features_by_level":{"1":[
+    {"id":"fixture:lifetime_permission","name":"Gleam Spells","type":"passive","effects":[{"type":"always_prepared_spells","spells":["fixture:lifetime_free","fixture:lifetime_focus","fixture:lifetime_plain"],"ability":"INT","maximum_spell_level":1}]},
+    {"id":"fixture:lifetime_unbound","name":"Unbound Weave","type":"attack_profile","source_instance_id":"lifetime:unbound","scope":{"kind":"spell","ids":["fixture:lifetime_free"]},"replace":{"duration_seconds":120,"concentration":false}},
+    {"id":"fixture:lifetime_held","name":"Held Weave","type":"attack_profile","source_instance_id":"lifetime:held","scope":{"kind":"spell","ids":["fixture:lifetime_focus"]},"replace":{"duration_seconds":18,"concentration":true}},
+    {"id":"fixture:lifetime_school","name":"Gleam School","type":"attack_profile","source_instance_id":"lifetime:school","scope":{"kind":"spell","ids":["fixture:lifetime_focus"]},"replace":{"school":"abjuration"}},
+    {"id":"fixture:lifetime_rival","name":"Rival Weave","type":"attack_profile","source_instance_id":"lifetime:rival","scope":{"kind":"spell","ids":["fixture:lifetime_focus"]},"replace":{"duration_seconds":90,"concentration":false}}
+  ]}}
+]

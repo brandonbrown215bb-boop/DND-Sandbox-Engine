@@ -306,6 +306,8 @@ func _run_all_scenarios() -> void:
 
 func _run_scenario(scenario: String) -> void:
 	match scenario:
+		"cast_lifetime_flow": await CastLifetimeFlow.run(self)
+		"cast_lifetime_reload": CastLifetimeFlow.run_reload(self)
 		"combat": await test_combat()
 		"party_combat": await test_party_combat()
 		"crown_smoke": await test_crown_smoke()
@@ -4212,7 +4214,10 @@ func test_heroism_spell_flow() -> void:
 		if combat.pending_action_type.is_empty() and not combat.resolving_player_action:
 			break
 		await get_tree().process_frame
-	_assert(SpellEffects.has_spell(ally, "heroism") and SpellEffects.has_spell(bard, "heroism") and bard.concentrating_on.get("targets", []).size() == 2 and int(bard.spell_slots["2"]) == 0 and not combat._can_spend_action_cost("magic_action"), "Upcast Heroism spends its second-level slot and Magic Action to establish Concentration on two allies")
+	SpellEffects.reconcile([bard, ally], [bard, ally])
+	var heroism_source := str(bard.concentrating_on.get("effect_source", ""))
+	_assert(not heroism_source.is_empty() and bard.spell_effects.has(heroism_source) and ally.spell_effects.has(heroism_source) and bard.concentrating_on.get("targets", []) == [ally], "Upcast Heroism keeps one exact Concentration source on caster and ally without a caster self-reference")
+	_assert(int(bard.spell_slots["2"]) == 0 and not combat._can_spend_action_cost("magic_action"), "Upcast Heroism spends its second-level slot and Magic Action once")
 	_assert(ally.temp_hp == 0 and bard.temp_hp == 0, "Heroism does not grant its next-turn Temporary Hit Points immediately")
 	SpellEffects.apply_turn_start(ally)
 	SpellEffects.apply_turn_start(bard)
@@ -4221,7 +4226,7 @@ func test_heroism_spell_flow() -> void:
 	_assert(not ally.has_condition("frightened"), "Heroism prevents the Frightened condition")
 	combat._end_concentration(bard)
 	ally.add_condition("frightened", 20)
-	_assert(not SpellEffects.has_spell(ally, "heroism") and not SpellEffects.has_spell(bard, "heroism") and ally.has_condition("frightened") and ally.temp_hp == 4, "Ending Concentration removes Heroism immunity without stripping gained Temporary Hit Points")
+	_assert(bard.concentrating_on.is_empty() and not ally.spell_effects.has(heroism_source) and not bard.spell_effects.has(heroism_source) and not SpellEffects.has_spell(ally, "heroism") and not SpellEffects.has_spell(bard, "heroism") and ally.has_condition("frightened") and ally.temp_hp == 4, "Ending Concentration removes Heroism from both recipients without stripping gained Temporary Hit Points")
 	print("HEROISM_LIVE_FLOW_CHECKS_COMPLETE")
 	GameManager.test_mode = true
 	_teardown_scene(combat)
@@ -4311,14 +4316,17 @@ func test_enhance_ability_spell_flow() -> void:
 			break
 		await get_tree().process_frame
 	_assert(bard.has_ability_check_advantage("CHA") and ally.has_ability_check_advantage("DEX") and not ally.has_ability_check_advantage("STR"), "A third-level Enhance Ability gives each selected ally its chosen ability-check Advantage")
-	_assert(bard.concentrating_on.get("targets", []).size() == 2 and int(bard.spell_slots["3"]) == 0 and not combat._can_spend_action_cost("magic_action"), "Upcast Enhance Ability spends its slot and Magic Action and tracks both Concentration targets")
+	SpellEffects.reconcile([bard, ally], [bard, ally])
+	var enhance_source := str(bard.concentrating_on.get("effect_source", ""))
+	_assert(not enhance_source.is_empty() and bard.spell_effects.has(enhance_source) and ally.spell_effects.has(enhance_source) and bard.concentrating_on.get("targets", []) == [ally], "Upcast Enhance Ability keeps both recipients under one exact source without a caster self-reference")
+	_assert(int(bard.spell_slots["3"]) == 0 and not combat._can_spend_action_cost("magic_action"), "Upcast Enhance Ability spends its slot and Magic Action once")
 	seed(7123)
 	var expected_advantage_roll := Dice.roll_with_advantage(20, ally)
 	seed(7123)
 	var ability_check := EventResolver.resolve_skill_check(ally, {"skill": "Acrobatics", "ability": "DEX", "dc": 10})
 	_assert(int(ability_check.get("natural_roll", 0)) == expected_advantage_roll, "The shared event skill-check resolver uses the selected ability's Advantage")
 	combat._end_concentration(bard)
-	_assert(not bard.has_ability_check_advantage("CHA") and not ally.has_ability_check_advantage("DEX"), "Ending Concentration removes Enhance Ability from every chosen target")
+	_assert(bard.concentrating_on.is_empty() and not bard.spell_effects.has(enhance_source) and not ally.spell_effects.has(enhance_source) and not bard.has_ability_check_advantage("CHA") and not ally.has_ability_check_advantage("DEX"), "Ending Concentration removes the exact Enhance Ability source from every chosen target")
 	print("ENHANCE_ABILITY_LIVE_FLOW_CHECKS_COMPLETE")
 	GameManager.test_mode = true
 	_teardown_scene(combat)

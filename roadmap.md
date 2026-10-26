@@ -47,7 +47,12 @@ PRs #57–60 cover the four follow-ups: stale scenario fixtures, bounded player-
 cast transformations, combat Find Steed arrival/recovery and additional weapon
 damage-choice routes. The [reviewed boundary and original queue's open work](docs/planning/vocabulary-slices.md#pr57-60-validation)
 own their remaining scope. Continue the unresolved gameplay investigations or
-S-141 duration/concentration; do not reassign the delivered subsets. Counts stay
+the remaining S-141 hosts; do not reassign the delivered subsets. The
+[condition lifetime continuation](docs/planning/vocabulary-slices.md#cast-lifetime-continuation)
+supplies captured duration/concentration for flat shared condition HUD casts;
+source-benefit/other lifetime owners and created-actor parameters remain open.
+The Heroism/Enhance Ability investigation repaired stale source-count assertions;
+their concentration benefits and cleanup work. Counts stay
 151 accepted of 226 defined engine slices.
 
 The [first Crown conversion batch](docs/planning/vocabulary-slices.md#conversion-batch-001)

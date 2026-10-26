@@ -1,0 +1,5 @@
+[
+  {"id":"fixture:lifetime_free","name":"Unbound Gleam","execution":"shared","level":1,"school":"enchantment","casting_time":"action","range":6,"target":"single","attack_type":"none","components":["V"],"concentration":true,"duration_seconds":60,"effects":[{"type":"grant_condition","condition":"blessed"}]},
+  {"id":"fixture:lifetime_focus","name":"Held Gleam","execution":"shared","level":1,"school":"enchantment","casting_time":"action","range":6,"target":"single","attack_type":"none","components":["V"],"concentration":false,"duration_seconds":60,"effects":[{"type":"grant_condition","condition":"blessed"}]},
+  {"id":"fixture:lifetime_plain","name":"Ordinary Gleam","execution":"shared","level":1,"school":"enchantment","casting_time":"action","range":6,"target":"single","attack_type":"none","components":["V"],"concentration":false,"duration_seconds":60,"effects":[{"type":"grant_condition","condition":"blessed"}]}
+]

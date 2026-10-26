@@ -9,11 +9,12 @@ class_name AttackProfileRules
 extends RefCounted
 
 const ABILITIES := ["STR", "DEX", "CON", "INT", "WIS", "CHA"]
-const REPLACE_KEYS := ["ability", "damage_die", "damage_type", "damage_type_choices", "attack_bonus", "save_dc", "range_feet", "school", "casting_time"]
+const REPLACE_KEYS := ["ability", "damage_die", "damage_type", "damage_type_choices", "attack_bonus", "save_dc", "range_feet", "school", "casting_time", "duration_seconds", "concentration"]
 const ADD_KEYS := ["attack_bonus", "damage_bonus", "save_dc", "range_feet"]
 ## S-140 (Batch 085): fields a spell-scoped profile may change on one invocation.
-const SPELL_REPLACE_KEYS := ["save_dc", "range_feet", "school", "casting_time"]
+const SPELL_REPLACE_KEYS := ["save_dc", "range_feet", "school", "casting_time", "duration_seconds", "concentration"]
 const SPELL_ADD_KEYS := ["save_dc", "range_feet"]
+const LIFETIME_FIELDS := ["duration_seconds", "concentration"]
 ## Batch 085 bound: only Verbal and Somatic may be removed; Material stays
 ## (costly/consumed materials and focus rules are not transformed here).
 const REMOVABLE_COMPONENTS := ["V", "S"]
@@ -81,8 +82,10 @@ static func validate_rule(rule: Dictionary) -> String:
 	if replace.has("damage_type_choices") and replace.has("damage_type"): return "attack_profile cannot replace both damage_type and damage_type_choices"
 	for key in ["attack_bonus", "save_dc"]:
 		if replace.has(key) and not _int(replace[key]): return "attack_profile replace.%s must be an integer" % key
-	if str(scope.kind) == "spell" and (replace.keys().any(func(k): return str(k) not in SPELL_REPLACE_KEYS) or add.keys().any(func(k): return str(k) not in SPELL_ADD_KEYS)): return "spell attack_profile supports only save_dc, range_feet, school and casting_time"
-	if str(scope.kind) == "weapon" and (replace.keys().any(func(k): return str(k) in ["save_dc", "range_feet", "school", "casting_time"]) or add.has("save_dc") or add.has("range_feet")): return "weapon attack_profile cannot change spell fields"
+	if replace.has("duration_seconds") and not SharedSpell._integer(replace.duration_seconds, 1, 86400): return "attack_profile duration_seconds must be an integer from 1 through 86400"
+	if replace.has("concentration") and not replace.concentration is bool: return "attack_profile concentration must be Boolean"
+	if str(scope.kind) == "spell" and (replace.keys().any(func(k): return str(k) not in SPELL_REPLACE_KEYS) or add.keys().any(func(k): return str(k) not in SPELL_ADD_KEYS)): return "spell attack_profile contains unsupported cast fields"
+	if str(scope.kind) == "weapon" and (replace.keys().any(func(k): return str(k) in SPELL_REPLACE_KEYS) or add.has("save_dc") or add.has("range_feet")): return "weapon attack_profile cannot change spell fields"
 	return ""
 
 static func rules(actor: Character, kind: String) -> Array:
@@ -257,15 +260,17 @@ static func apply_cast(caster: Character, spell: Dictionary) -> Dictionary:
 	if caster == null or out.has(CAST_PROFILE_KEY) or str(out.get("_source_permission_id", "")).is_empty() or bool(out.get("_magic_item_activation", false)): return out
 	var catalog_time := str(out.get("casting_time", "action"))
 	var ranged := int(out.get("range", 0)) >= 1 and str(out.get("range_kind", "")) != "touch"
-	var profile := {"sources": [], "ignored": [], "inherited": {"range": out.get("range", null), "school": str(out.get("school", "")), "casting_time": catalog_time, "components": out.get("components", []).duplicate()}}
+	var profile := {"sources": [], "ignored": [], "inherited": {"range": out.get("range", null), "school": str(out.get("school", "")), "casting_time": catalog_time, "components": out.get("components", []).duplicate(), "duration_seconds": out.get("duration_seconds", null), "concentration": bool(out.get("concentration", false))}}
 	var replaced := {}
 	var add_feet := 0
 	var removed: Array = []
+	var lifetime_rules: Array = []
 	for rule in rules(caster, "spell"):
 		if not _spell_qualifies(rule, out): continue
 		var replace: Dictionary = rule.get("replace", {})
+		if LIFETIME_FIELDS.any(func(field): return replace.has(field)): lifetime_rules.append(rule.duplicate(true))
 		var used := false
-		for field in ["range_feet", "school", "casting_time"]:
+		for field in ["range_feet", "school", "casting_time", "duration_seconds", "concentration"]:
 			if not replace.has(field): continue
 			if (field == "range_feet" and not ranged) or (field == "casting_time" and catalog_time not in CAST_TIMINGS): continue
 			if replaced.has(field):
@@ -291,10 +296,33 @@ static func apply_cast(caster: Character, spell: Dictionary) -> Dictionary:
 		for key in table: table[key] = int(table[key]) + add_feet
 	if replaced.has("school"): out["school"] = str(replaced.school)
 	if replaced.has("casting_time"): out["casting_time"] = str(replaced.casting_time)
+	if not lifetime_rules.is_empty():
+		profile["lifetime_rules"] = lifetime_rules
+		# Other lifetime owners (native spells, areas, summons and projections)
+		# retain their own paths until their actual consumers are connected.
+		if not SharedSpell.uses(spell) or spell.has("steps") or not SharedSpell._integer(spell.get("duration_seconds"), 1, 86400) or spell.get("effects", []).is_empty() or spell.get("effects", []).any(func(effect): return not effect is Dictionary or str(effect.get("type", "")) != "grant_condition"):
+			profile["error"] = "Lifetime changes require a timed shared condition spell; nothing was spent."
+		else:
+			for field in LIFETIME_FIELDS:
+				if replaced.has(field): out[field] = replaced[field]
+			out["duration"] = ("Concentration, up to " if bool(out.get("concentration", false)) else "") + "%d seconds" % int(out.duration_seconds)
 	if not removed.is_empty(): out["components"] = out.get("components", []).filter(func(c): return str(c) not in removed)
 	profile["removed_components"] = removed
 	out[CAST_PROFILE_KEY] = profile
 	return out
+
+## Recheck lifetime ownership after targeting or a suspended choice, before
+## any resource or concentration change. Captured effects keep their lifetime
+## after the cast completes, even if the modifying feature later goes away.
+static func cast_error(caster: Character, spell: Dictionary) -> String:
+	var profile: Dictionary = spell.get(CAST_PROFILE_KEY, {})
+	if profile.has("error"): return str(profile.error)
+	if not profile.has("lifetime_rules"): return ""
+	var live: Array = []
+	for rule in rules(caster, "spell"):
+		if _spell_qualifies(rule, spell) and LIFETIME_FIELDS.any(func(field): return rule.get("replace", {}).has(field)): live.append(rule)
+	if live != profile.lifetime_rules: return "The cast's lifetime-changing source is no longer the selected one; nothing was spent."
+	return ""
 
 static func _range(v: Variant) -> bool:
 	return (v is int or v is float) and is_finite(float(v)) and float(v) == floor(float(v)) and int(v) > 0 and int(v) <= 5280 and int(v) % 5 == 0

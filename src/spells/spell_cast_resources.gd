@@ -3,6 +3,11 @@ class_name SpellCastResources
 extends RefCounted
 
 static func revalidate_selection(cast: SpellCastContext) -> bool:
+	var profile_error := AttackProfileRules.cast_error(cast.caster, cast.spell)
+	if not profile_error.is_empty():
+		cast.hud.add_log(profile_error)
+		cast.clear_pending(SpellCastContext.CLEAR_ACTION | SpellCastContext.CLEAR_SPELL)
+		return false
 	if cast.commit_guard.is_valid() and not cast.commit_guard.call():
 		cast.hud.add_log("The parent action or its remaining units are no longer available.")
 		cast.clear_pending(SpellCastContext.CLEAR_ACTION | SpellCastContext.CLEAR_SPELL)

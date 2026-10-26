@@ -247,6 +247,7 @@ if ($runIntegration) {
     # These reload probes consume the preceding flow's saved checkpoint. Keep
     # one isolated profile per pair and launch the probe in a fresh process.
     $scenarioReloads = [ordered]@{
+        cast_lifetime_flow = "cast_lifetime_reload"
         batch_067_weapon_damage_choice_flow = "batch_067_weapon_damage_choice_reload"
         batch_068_exact_contents_flow = "batch_068_exact_contents_reload"
         batch_069_unknown_weight_flow = "batch_069_unknown_weight_reload"

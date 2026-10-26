@@ -5,6 +5,12 @@ executable through `GODOT_BIN` or pass its path to the PowerShell runner.
 
 ## Proportionate spell validation
 
+`cast_lifetime_flow` exercises cast-local duration/concentration changes on
+permissioned HUD casts of renamed shared condition spells. The runner follows
+it with `cast_lifetime_reload` in a fresh process against the same isolated
+profile, covering full-party and player-only checkpoints, captured expiry and
+exact-source cleanup. See the [S-141 boundary](planning/vocabulary-slices.md#cast-lifetime-continuation).
+
 `projected_vessel_flow` exercises exact loaded vessel copies through real room
 projection, containment admission, cargo, movement and ending controls. It
 checks separate retain/release policies, legal full-backpack return, blocked

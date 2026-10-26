@@ -347,8 +347,8 @@ inventory, not a current all-green claim. Its remaining work is:
   [PR57–60 boundary](#pr57-60-validation). Production component and permission
   validation stays enforced. Barkskin's repaired fixture passes; this does not
   establish the old sweep's suspected duplicate-record diagnosis.
-- Resolve R9: multi-target Heroism/Enhance Ability concentration cleanup, Bard
-  decline-standing prompt, aura suppression exit, Identify's magic-item target,
+- R9's multi-target Heroism/Enhance Ability investigation is resolved by the
+  fixture repairs below. Continue Bard's decline-standing prompt, aura suppression exit, Identify's magic-item target,
   local-room movement modes/uphill cost, next-melee typed-grant consumption,
   the P1 repeated damage-request settlement and wizard free-cast context.
 - R4–R6's round-field typo and stale asynchronous combat callbacks receive narrow
@@ -374,13 +374,18 @@ or convert additional catalog content.
 | 3. Find Steed arrival, S-121/S-122 (#59) | Chosen combat arrival checks the whole Large footprint before payment. Blocked/stale destinations and cancellation spend nothing; success pays once. Unmounted recovery chooses a legal footprint; mounted recovery permits its rider while refusing terrain/other bodies. Allowed save/load and paired fresh-process recovery retain the steed. See [placement](../mechanics/created-actors-and-placement.md). | Exploration steed occupancy remains center-based; room-stored-position fallback lacks a direct scenario; broader travel, multi-target and planar arrivals remain. Sized summoned arrivals reject automatic placement and paid no-space policies at load. A hypothetical failure after payment still retains the spent slot. |
 | 4. Additional damage-choice routes, S-127 (#60) | Activation/hit choices reach Opportunity, Light/off-hand, Nick, Cleave and legacy created-creature turn attacks. Only Nick carries an Attack-action pick. Routes retain their own budgets; stale creature actions/turns/orders refuse before damage, and successful creature attacks spend their Action before hit settlement. See [attack profiles](../mechanics/attack-profiles.md). | S-156 commanded actors, other summon/monster attacks, item-granted profiles and reach/mastery choices. Dismissing the legacy creature menu ends that automatic turn with no attack; its Action remains unspent, with no retry or automatic Dodge added. |
 
-The next fixture/gameplay investigation remains concentration cleanup for
-multi-target Heroism/Enhance Ability, Bard's decline-standing prompt, aura exit,
+The multi-target Heroism/Enhance Ability investigation found stale fixture
+counts: both recipients retain one exact source, while the caster is deliberately
+excluded from its own live target-reference list. Supported Windows scenarios
+verify both benefits, once-only payment and exact cleanup after repairing those
+assertions; no runtime concentration repair was needed.
+
+The next fixture/gameplay investigation remains Bard's decline-standing prompt, aura exit,
 Identify targeting, local-room movement modes/uphill costs, typed next-melee-hit
 grant consumption, repeated P1 damage-request settlement and Wizard free-cast
 context. These are separate from the repaired assignments; causes and current
 pass/fail status require focused supported-runner reproduction. For new engine
-work, continue S-141 or another explicit remaining host above rather than
+work, continue the remaining [S-141 hosts](#cast-lifetime-continuation) or another explicit remaining host above rather than
 rebuilding the four delivered subsets. Waterborne travel, vessel encounter
 transfer, broader travel and source-backed content conversions remain separate.
 
@@ -430,7 +435,34 @@ spends charges without initiative budgets or campaign-clock advancement.
 | Ground equipment keeps its exact copies | S-164 continuation after placement; reuse S-049 and existing room-copy transactions | Implemented for persistent rooms and their encounters: selected exact copies use shared room placement payloads, batched inventory removal and encounter-to-room capture at the actor's position. Preflight covers the whole transfer and pending ground capacity; contents, attachments, charges, curses and source links remain on the copy. Full-backpack, multi-copy, linked-loss, destruction/pickup, unchanged merged/worn and checkpoint recovery checks are `FormEquipmentGroundChecks` and `form_equipment_ground_flow` (with fresh-process recovery). Reversion neither recreates nor reclaims any dropped copy. Encounters without a captured persistent room refuse nonempty drops before costs; no new checkpoint or native Wild Shape conversion is claimed. |
 | One source, several tether recipients; independent object anchors | S-144 plus S-168/S-169; object anchors consume the located-world-record work | [Tether groups](#character-tether-groups) retain distinct relations under one cast and payment. Character anchors keep their existing concentration lifetime; object anchors use stable room object ID/location/plane/HP and their declared spell duration. Exact escape/rescue/cut, per-anchor movement/destruction, stale rescue and supported checkpoint recovery are verified. |
 | Item-form return, containment and vessels | S-166 verified in VS-146; S-170 verified in VS-148; S-171 verified in VS-149; S-172 verified in VS-150; S-167 verified in VS-151 | [Exact item-form return](#exact-item-form-return) declares HP reset, overflow, original destruction and legal bag/ground return, including full-inventory and blocked-return recovery. Actual capacity, admission/inspection and internal/external location are verified in [VS-148](#containment-occupancy). Internal harm/targeting and escape/rescue now use explicit eligibility and deferred release in [VS-149](#containment-internal-interactions). Moving containers and legal release are verified in [VS-150](#containment-movement-release). [VS-151](#projected-vessel-contents) carries exact cargo and real passengers through persistent-room movement, separate reversion/dismissal/destruction policies and legal retained/released endings. Inventory compartments never hold creatures. Waterborne/general travel, encounter transfer and source-backed catalog conversion remain separate. |
-| Invocation-local profile and casting changes | S-126/S-127; S-140 after S-134/S-126; S-141 adds S-154 | Bounded player HUD range/components/school/timing changes and the additional attack-choice routes are delivered in the [PR57–60 boundary](#pr57-60-validation). Continue duration/concentration/created-actor parameters, other hosts, costed profiles and weapon reach/mastery. Apply changes at the proper selection/roll/lifetime stage to one invocation, not the catalog. Duration/concentration must reach source creation and cleanup; creature changes use S-154's template. Prove qualifying and unrelated casts side by side, compatible sources, later choices and no catalog mutation. Placement is a dependency only when the consumer creates or moves something. |
+| Invocation-local profile and casting changes | S-126/S-127; S-140 after S-134/S-126; S-141 adds S-154 | Bounded player HUD range/components/school/timing changes and the additional attack-choice routes are delivered in the [PR57–60 boundary](#pr57-60-validation). The [condition lifetime continuation](#cast-lifetime-continuation) supplies captured duration/concentration for flat shared condition casts. Continue other lifetime owners/hosts, created-actor parameters, costed profiles and weapon reach/mastery. Apply changes at the proper selection/roll/lifetime stage to one invocation, not the catalog. Creature changes use S-154's template. Prove qualifying and unrelated casts side by side, compatible sources, later choices and no catalog mutation. Placement is a dependency only when the consumer creates or moves something. |
+
+<a id="cast-lifetime-continuation"></a>
+
+### Cast-local condition duration/concentration — S-141 continuation
+
+The permissioned player HUD path accepts `attack_profile.replace.duration_seconds`
+(1–86400 whole seconds) and `replace.concentration` (Boolean) for flat shared
+spells whose effects are only timed condition grants. Compatible profiles
+combine once with first-replacement precedence and no catalog mutation. Pending
+lifetime sources are rechecked before costs; cancellation/staleness preserves
+existing concentration, resources and grants. Captured source lifetimes drive
+combat ticks, campaign expiry and exact-source cleanup after later feature loss.
+
+`CastLifetimeChecks`, `cast_lifetime_flow` and its fresh-process
+`cast_lifetime_reload` cover validation, renamed definitions, unchanged unrelated
+casts, real menu/target controls, once-only payment, concentration replacement,
+elapsed full-party/player-only checkpoints and continued expiry without replay.
+Malformed duration/flag fields refuse production save preflight on both DTO paths.
+This does not add broader source/concentration cross-link tamper guarantees.
+See [attack profiles](../mechanics/attack-profiles.md#cast-local-condition-lifetimes-s-141-continuation).
+
+S-141 remains **partial**, with no accepted-count change. Source-benefit carriers
+still enforce catalog-bound lifetimes; native, ordered, area, tether, projection
+and summon owners refuse lifetime changes here. Created-actor parameters,
+additional hosts, costed profiles and source-backed catalog conversions remain
+open. Existing Extended Spell's duration calculation composes with a transformed
+condition invocation; native Metamagic player-flow migration remains separate.
 
 ### Character and object tether groups — VS-147
 
@@ -978,7 +1010,7 @@ the existing modules instead of rebuilding these bounded hosts.
 | S-138 — Combined versus Pact slot progression | Verified (VS-79) | V-029 | Calculate declared multiclass rounding and class-specific contributions; ordinary slots, Pact slots and preparation limits remain separate. | S-137, S-037 |
 | S-139 — Fixed-level/source spell uses | Verified (VS-80) | V-029 | Represent fixed-level limited permissions separately from payable slot pools; restoring/upcasting/selection obey that source's rules. | S-138, S-135 |
 | S-140 — Cast-local school/range/components/timing | PARTIAL (batch 085: player HUD casts; range/V-S removal/school/Action↔Bonus Action; no costed profiles, reactions, AI, M removal; native Metamagic not migrated) | V-030 | Transform only qualifying invocation fields after selection, preserving catalog data and unrelated casts; multiple compatible source changes apply once. | S-134, S-126 |
-| S-141 — Cast-local duration/concentration/summon parameters | Planned (follows batch 085; untouched there) | V-030 | Alter declared duration, concentration or created-actor values on that invocation; expiry and removal use its captured settings and source. | S-140, S-154 |
+| S-141 — Cast-local duration/concentration/summon parameters | PARTIAL ([condition lifetime continuation](#cast-lifetime-continuation): flat shared condition HUD casts, captured expiry and checkpoint recovery; other owners/hosts and created-actor parameters remain) | V-030 | Alter declared duration, concentration or created-actor values on that invocation; expiry and removal use its captured settings and source. | S-140, S-154 |
 | S-142 — Interruption/failure reserve and refund | Verified (VS-87) | V-031 | Apply declared commit/refund policy to the actual interrupted/failed cast and source payment; empty effect does not automatically mean refund. | S-135, S-043 |
 | S-143 — Stopping-spell success/failure cost policy | Verified (VS-89) | V-031 | Use the real stopping result to keep/refund eligible slot/use and consume/dispose exact item as declared; do not repay original target spell. | S-142, S-115 |
 | S-144 — Extra eligible recipients in one cast | Verified (VS-147; Character-anchored tether groups) | V-032 | Add declared targets while retaining one invocation, original costs and independent per-target outcomes; refused extras cannot replay the original target. | S-134, S-026, S-022 |

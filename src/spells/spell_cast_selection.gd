@@ -59,6 +59,11 @@ static func choose(cast: SpellCastContext, spell_info: Dictionary) -> bool:
 	cast.begin_targeting.call()
 	# S-140 (Batch 085): cast-local range/components/school/timing for this invocation only.
 	cast.replace_spell(AttackProfileRules.apply_cast(cast.caster, spell_info))
+	var profile_error := AttackProfileRules.cast_error(cast.caster, cast.spell)
+	if not profile_error.is_empty():
+		cast.hud.add_log(profile_error)
+		cast.clear_pending(SpellCastContext.CLEAR_ACTION | SpellCastContext.CLEAR_SPELL)
+		return false
 	if cast.spell.has(AttackProfileRules.CAST_PROFILE_KEY):
 		cast.hud.add_log("%s is changed for this casting by %s." % [str(cast.spell.get("name", "Spell")), ", ".join(cast.spell[AttackProfileRules.CAST_PROFILE_KEY].sources)])
 		for ignored in cast.spell[AttackProfileRules.CAST_PROFILE_KEY].get("ignored", []):
