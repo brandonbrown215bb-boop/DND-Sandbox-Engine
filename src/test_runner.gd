@@ -661,14 +661,15 @@ func _test_data_loader() -> void:
 	# Complete SRD 5.2.1 spell catalog assertions
 	var expected_class_spell_counts: Dictionary = {
 		# SRD list plus the existing curated PHB2024 Cloud of Daggers integration.
-		"wizard": 219,
-		"sorcerer": 139,
+		# Batch 091 (D-09): counts re-approved to SRD 5.2.1 class headers under Brandon's SRD-settles-rules rule.
+		"wizard": 220,
+		"sorcerer": 141,
 		"druid": 125,
-		"cleric": 110,
-		"bard": 136,
-		"warlock": 75,
-		"ranger": 49,
-		"paladin": 46
+		"cleric": 109,
+		"bard": 135,
+		"warlock": 73,
+		"ranger": 48,
+		"paladin": 45
 	}
 	for class_name_key in expected_class_spell_counts:
 		var list_options := DataLoader.get_spell_list_options([class_name_key])
@@ -2361,8 +2362,9 @@ func _test_spellcasting() -> void:
 	for curse_class in ["cleric", "paladin", "warlock", "wizard"]:
 		_assert("remove_curse" in DataLoader.get_character_class(curse_class).get("spell_list_ids", []), "Remove Curse is available to %s" % curse_class.capitalize())
 	_assert(guidance_check.get("guidance_bonus", 0) >= 1 and guidance_check.get("guidance_bonus", 0) <= 4 and guidance_check.get("total", 0) == guidance_check.get("natural_roll", 0) + guidance_check.get("modifier", 0) + guidance_check.get("guidance_bonus", 0) and unrelated_guidance_check.get("guidance_bonus", -1) == 0, "Guidance adds 1d4 to checks using the chosen skill only")
-	for guidance_class in ["bard", "cleric", "druid"]:
+	for guidance_class in ["cleric", "druid"]:
 		_assert("guidance" in DataLoader.get_character_class(guidance_class).get("spell_list_ids", []), "Guidance is available to %s" % guidance_class.capitalize())
+	_assert("guidance" not in DataLoader.get_character_class("bard").get("spell_list_ids", []), "Guidance is not on the SRD 5.2.1 Bard list (Divination Cantrip (Cleric, Druid))")
 	_assert(not mockery_resolution.get("saved", true) and int(mockery_resolution.get("damage", 0)) >= 1 and int(mockery_resolution.get("damage", 0)) <= 6 and mockery_effects.size() == 1 and mockery_attack.get("disadvantage", false) and not mockery_target.get("conditions", {}).has("vicious_mockery_disadvantage"), "Vicious Mockery applies Disadvantage to and consumes a monster's next attack after a failed save")
 	_assert(CombatAction.apply_spell_failed_save_effects(mockery_target, vicious_mockery, {"saved": true}).is_empty() and not mockery_attack_after_expiry.get("disadvantage", false), "Vicious Mockery has no effect on a successful save and expires at the target's turn end")
 	_assert(missed_chill_effects.is_empty() and not CombatAction.is_healing_suppressed(chill_miss_target), "Chill Touch applies no healing restriction on a miss")
