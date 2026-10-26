@@ -577,6 +577,10 @@ func _validate_semantics(data: Dictionary, content_type: String, source: String)
 		if data.has("_reaction_trigger_paid"): # Review 065: runtime-only marker set by ReactionTriggers.confirm.
 			_load_errors.append("_reaction_trigger_paid is runtime-only and cannot be declared in %s" % source)
 			valid = false
+		var teleport_error := TravelPlacementRules.spell_error(data) # Batch 066: authored teleport reach, no default.
+		if not teleport_error.is_empty():
+			_load_errors.append("%s in %s" % [teleport_error, source])
+			valid = false
 		var trigger_error := ReactionTriggers.spell_trigger_error(data)
 		if not trigger_error.is_empty():
 			_load_errors.append("%s in %s" % [trigger_error, source])
