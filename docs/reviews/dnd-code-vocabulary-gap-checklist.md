@@ -85,12 +85,12 @@ an entire V-series requirement or certify its catalog consumers.
 
 ## Concrete vocabulary checklist
 
-These are building blocks, not 101 new modules or a demand to implement every
+These are building blocks, not 103 new modules or a demand to implement every
 example. Each box covers the boundary stated in its row. Different damage types,
 die sizes, distances and reset counts are parameters unless they change execution
 semantics. Examples identify local source descriptions, not certified gameplay.
 
-All 101 parent boxes remain open where their full boundary is unfinished. The
+All 103 parent boxes remain open where their full boundary is unfinished. The
 checked VS items above record accepted smaller boundaries from retained logs.
 **Partial** includes those proved subsets as well as older paths established only
 by source inspection; only the cited subset is verified. **Uncertain** means a suitable generic path
@@ -273,14 +273,14 @@ state or execution requirements. They are grouped here to keep V-001–086 stabl
 | [ ] V-101 — SRD generic actions | Dash/Disengage/Dodge/Help/Hide/Influence/Ready/Search/Study/Utilize exist as ordinary Actions with their SRD effects and end conditions; features grant cheaper access to the same action. | Core rules audit: only feature-granted Dash/Disengage/Hide (DC 12), partial Dodge, no Ready/Search/Study/Influence. | `CombatTurnBudget`, Cunning Action branches in `combat_state.gd` | V-060, V-073 |
 
 <a id="src-01-batch-2-proposed"></a>
-### Proposed additions from SRC-01 batch 2 (not yet counted)
+### Additions from SRC-01 batch 2 (V-102/V-103)
 
-These requirements came out of the SRD clause decomposition in [SRC-01 batch 2](../planning/vocabulary-slices.md#src-01-batch-2). No checklist row or slice covers them. They stay **outside the 97-entry count** until the denominator owner accepts them; the labels are provisional and real V-IDs are assigned on acceptance. Open PRs #62/#64 already use V-098/V-099.
+These requirements came out of the SRD clause decomposition in [SRC-01 batch 2](../planning/vocabulary-slices.md#src-01-batch-2). No checklist row or slice covers them. The integrator replaced the provisional labels FEAT-B2-CRIT/FEAT-B2-MOVE with V-102/V-103 (slices S-240/S-241), after #62's V-098/V-099 and #64's V-100/V-101; they are inside the 103-entry count.
 
 | Open ID — capability | Boundary to implement and mark off | Description examples (SRD 5.2.1) | Current support / likely hook | Depends on |
 |---|---|---|---|---|
-| [ ] FEAT-B2-MOVE — Granted and forced movement with opportunity suppression | Two movements. (1) A feature-granted move of up to a declared fraction of Speed, optionally constrained (straight toward a target). (2) A forced push of a declared distance straight away from the source, with size eligibility. Both declare whether they provoke Opportunity Attacks. The granted move's relation to the normal movement budget is an explicit, source-backed policy, not assumed. Blocked paths stop at the last legal space; nothing is spent on refusal. | C-Barbarian: Instinctive Pounce p.29, Brutal Strike Forceful Blow p.29; C-Fighter: Tactical Shift p.48, Tactical Master Push p.48; C-Champion: Remarkable Athlete p.49. | Partial: native `barbarian_rules`/`fighter_rules` grid paths (class-doc checks); WRL-04 family names forced movement; S-179 (VS-102) speed host has no granted/forced path. | V-069, V-010, V-041 |
-| [ ] FEAT-B2-CRIT — Natural-roll outcome thresholds | Widen the natural-d20 range that counts as a declared outcome (Critical Hit on 19–20 / 18–20 for declared attack kinds; Death Save 18–20 treated as 20). Keep the natural value, and apply this before success/critical consequences. It is distinct from floors (V-008) and from forced outcomes (V-013). | C-Champion: Improved Critical p.49, Superior Critical p.49, Survivor Defy Death p.49. | Partial: `modify_crit_range` data on native `fighter_rules`; no shared threshold slice; death-save precedence is native. | V-008, V-013, V-010 |
+| [ ] V-102 — Natural-roll outcome thresholds | Widen the natural-d20 range that counts as a declared outcome (Critical Hit on 19–20 / 18–20 for declared attack kinds; Death Save 18–20 treated as 20). Keep the natural value, and apply this before success/critical consequences. It is distinct from floors (V-008) and from forced outcomes (V-013). | C-Champion: Improved Critical p.49, Superior Critical p.49, Survivor Defy Death p.49. | Partial: `modify_crit_range` data on native `fighter_rules`; no shared threshold slice; death-save precedence is native. | V-008, V-013, V-010 |
+| [ ] V-103 — Granted and forced movement with opportunity suppression | Two movements. (1) A feature-granted move of up to a declared fraction of Speed, optionally constrained (straight toward a target). (2) A forced push of a declared distance straight away from the source, with size eligibility. Both declare whether they provoke Opportunity Attacks. The granted move's relation to the normal movement budget is an explicit, source-backed policy, not assumed. Blocked paths stop at the last legal space; nothing is spent on refusal. | C-Barbarian: Instinctive Pounce p.29, Brutal Strike Forceful Blow p.29; C-Fighter: Tactical Shift p.48, Tactical Master Push p.48; C-Champion: Remarkable Athlete p.49. | Partial: native `barbarian_rules`/`fighter_rules` grid paths (class-doc checks); WRL-04 family names forced movement; S-179 (VS-102) speed host has no granted/forced path. | V-069, V-010, V-041 |
 
 ## Proposed implementation order
 
@@ -368,9 +368,9 @@ the complete intended rules vocabulary has been exhausted.
 ## Discovery findings and inspected domains
 
 The earlier document had 31 broad families. It now retains those IDs and adds
-**101 concrete V-series entries** (V-098/V-099 from the 2026-10-26 exploration audit; V-100/V-101 added by the 2026-10-26 [core rules audit](../mechanics/core-rules-status.md)) with examples, static support, likely hooks and
-dependencies. Most entries refine an existing family; 101 does not mean 101 wholly
-absent functions or 101 rules newly discovered in the repository. Several had
+**103 concrete V-series entries** (V-098/V-099 from the 2026-10-26 exploration audit; V-100/V-101 added by the 2026-10-26 [core rules audit](../mechanics/core-rules-status.md); V-102/V-103 from [SRC-01 batch 2](#src-01-batch-2-proposed)) with examples, static support, likely hooks and
+dependencies. Most entries refine an existing family; 103 does not mean 103 wholly
+absent functions or 103 rules newly discovered in the repository. Several had
 already appeared in the wiring map/design and now become explicit checkboxes.
 
 Requirements made explicit by fresh description reads include:

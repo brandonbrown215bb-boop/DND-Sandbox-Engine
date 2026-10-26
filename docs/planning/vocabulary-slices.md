@@ -8,7 +8,7 @@ certify converted catalog content.
 
 ## Count and scope
 
-**243 defined slices: 151 verified, 92 not yet accepted.** (S-235–S-239 added by the 2026-10-26 [core rules/conditions audit](../mechanics/core-rules-status.md).) Counts measure accepted
+**245 defined slices: 151 verified, 94 not yet accepted.** (S-240/S-241 from [SRC-01 batch 2](#src-01-batch-2); S-235–S-239 added by the 2026-10-26 [core rules/conditions audit](../mechanics/core-rules-status.md).) Counts measure accepted
 bounded implementations, not time, effort or completion of every clause in a row.
 These totals include reviewed, repaired and merged Batches 034–065 through
 2026-10-21, plus combat save-exit placement (VS-144), the bounded located source-end continuation (VS-145) and
@@ -29,14 +29,14 @@ catalog content as part of every slice.
 |---|---:|---:|---:|
 | P1 — Facts, results and grants | 42 | 34 | 8 |
 | P2 — Pools, time and effect state | 50 | 41 | 9 |
-| P3 — Rolls and decisions | 27 | 22 | 5 |
+| P3 — Rolls and decisions | 28 | 22 | 6 |
 | P4 — Damage and consequences | 27 | 20 | 7 |
 | P5 — Casting and action composition | 21 | 12 | 9 |
 | P6 — Actors and forms | 23 | 17 | 6 |
-| P7 — Space, perception and illusions | 21 | 1 | 20 |
+| P7 — Space, perception and illusions | 22 | 1 | 21 |
 | P8 — Physical items and bodies | 18 | 4 | 14 |
 | P9 — Procedures and campaign outcomes | 14 | 0 | 14 |
-| **Total** | **243** | **151** | **92** |
+| **Total** | **245** | **151** | **94** |
 
 ## How to use a row
 
@@ -1091,7 +1091,7 @@ the existing modules instead of rebuilding these bounded hosts.
 | S-229 — Location-scoped search and hidden-object discovery | Planned | V-099, V-073 | Search reveals a declared hidden object/trap only to an eligible searcher in its vicinity, per observer, once discovered persists; searching elsewhere never reveals. Source: srd.txt 712–722, 11989. | S-190, S-188 |
 | S-230 — Trap trigger/disarm and lock procedures | Planned | V-099, V-096 | Declared trap trigger/detection/disarm/effect/reset and lock key/tool-check/break routes act on the actual room object; failure costs settle once and the object state survives checkpoints. Source: srd.txt 5900–5945, 12727–12928. | S-229, S-212, S-119 |
 
-## Coverage crosswalk for all 101 parents
+## Coverage crosswalk for all 103 parents
 
 A slice can support several parents; count its S-ID once. A row here means
 the requirement has an explicit destination, not that its broad capability
@@ -1203,6 +1203,8 @@ row; its mapping below names explicit checkpoint-bearing slices.
 | V-099 — Location-scoped search, traps and locks | S-229, S-230 |
 | V-100 — SRD condition consequence table | S-235 |
 | V-101 — SRD generic actions | S-237 |
+| V-102 — Natural-roll outcome thresholds | S-240 |
+| V-103 — Granted and forced movement with opportunity suppression | S-241 |
 
 ## Source follow-up outside the capability denominator
 
@@ -1317,14 +1319,14 @@ Acquisition and advancement clauses (feat/ASI/Fighting Style/subclass/skill/mast
   - Heroic Inspiration "armed" threshold vs SRD p.8 reroll-after-rolling
   - Champion critical range "weapons only" vs SRD "weapons and Unarmed Strikes"
   - Berserker absent
-- **New, genuinely unaccounted (proposed, not counted):**
+- **New, genuinely unaccounted (integrator assigned S-240/S-241, V-102/V-103):**
 
 | Proposed slice | State | Capability | Build and acceptance finish line | After |
 |---|---|---|---|---|
-| FEAT-B2-MOVE — Granted/forced movement with OA suppression | Proposed (not counted) | [FEAT-B2-MOVE](../reviews/dnd-code-vocabulary-gap-checklist.md#src-01-batch-2-proposed) | Through the production combat grid, a fixture source grants a half-Speed move (optionally straight toward a target) and a 15-ft straight push with size eligibility. Each declares OA provocation and its budget policy. A blocked path stops at the last legal space, refusal spends nothing, and the reload state matches. Affects Instinctive Pounce, Forceful Blow, Tactical Shift, Tactical Master Push and Remarkable Athlete. | S-179, S-041, S-057 |
-| FEAT-B2-CRIT — Natural-roll outcome thresholds | Proposed (not counted) | [FEAT-B2-CRIT](../reviews/dnd-code-vocabulary-gap-checklist.md#src-01-batch-2-proposed) | A fixture source widens the critical threshold to 19–20 / 18–20 for declared attack kinds (weapons + Unarmed Strikes) and treats Death Save 18–20 as 20. The natural value stays visible, and consequences fire once in correct precedence with Advantage/rerolls. Affects Improved/Superior Critical and Survivor. | S-038, S-092, S-093 |
+| S-240 — Natural-roll outcome thresholds (P3) | Planned | [V-102](../reviews/dnd-code-vocabulary-gap-checklist.md#src-01-batch-2-proposed), V-008, V-013 | A fixture source widens the critical threshold to 19–20 / 18–20 for declared attack kinds (weapons + Unarmed Strikes) and treats Death Save 18–20 as 20. The natural value stays visible, and consequences fire once in correct precedence with Advantage/rerolls. Affects Improved/Superior Critical and Survivor. | S-038, S-092, S-093 |
+| S-241 — Granted/forced movement with OA suppression (P7) | Planned | [V-103](../reviews/dnd-code-vocabulary-gap-checklist.md#src-01-batch-2-proposed), V-069, V-064 | Through the production combat grid, a fixture source grants a half-Speed move (optionally straight toward a target) and a 15-ft straight push with size eligibility. Each declares OA provocation and its budget policy. A blocked path stops at the last legal space, refusal spends nothing, and the reload state matches. Affects Instinctive Pounce, Forceful Blow, Tactical Shift, Tactical Master Push and Remarkable Athlete. | S-179, S-041, S-057 |
 
-The registry stays at **226 defined, 151 verified, 75 not yet accepted**. FEAT-B2-MOVE/FEAT-B2-CRIT are provisional labels, not S-/V-IDs. Open PRs #62 and #64 already use S-227–S-231 and V-098/V-099 for other requirements, so the denominator owner assigns real IDs when accepting these (P7/P3) and refreshes the count tables. Overlap: #64 S-228 (Shove) and S-231 (movement fallbacks) share the forced-push and movement host with FEAT-B2-MOVE. Reconcile them rather than duplicating.
+The provisional labels FEAT-B2-CRIT and FEAT-B2-MOVE became **S-240** (P3) and **S-241** (P7), parents V-102/V-103, after #62 (S-227–S-230), #63 (S-231–S-234) and #64 (S-235–S-239). The registry is now **245 defined, 151 verified, 94 not yet accepted**. S-241 is not a duplicate of #64's movement slice: S-239 covers fallback climb/swim, crawl, stand-up and jump costs within the ordinary movement budget, and S-236's Shove is a 5-ft push from an Unarmed Strike. S-241 owns feature-granted moves outside the normal budget with OA suppression, plus the 15-ft Forceful Blow push with size eligibility. They share the S-179 movement host and S-236's forced-displacement path; reuse those hosts rather than duplicating them.
 
 **Next queue.** (1) Monk + Open Hand, (2) Rogue (Thief absent), (3) Warlock `eldritch_master` refusal plus the Fiend clauses, (4) remaining classes, (5) the 17 SRD feat bodies (needs source-backed data; acquisition with Subclass Stager).
 
@@ -1338,7 +1340,7 @@ Record discovered additions/splits and refresh the phase/count/coverage tables.
 Keep live quest/session details on the Quest Board and orchestration queue,
 rather than turning this baseline into an execution diary.
 
-Planning reconciliation checked all 101 V-IDs, all 243 unique S-IDs, every named
+Planning reconciliation checked all 103 V-IDs, all 245 unique S-IDs, every named
 slice prerequisite, and absence of prerequisite cycles. This is document
 consistency only; it is not runtime or rules-fidelity validation.
 

@@ -172,10 +172,10 @@ Loaded: 10 `native` (`fighter_rules`), 1 `executor` (Second Wind), 8 `effects`.
 | Fighter Subclass (3) | Subclass choice | ACQ | grant logged by Subclass Stager |
 | ASI (4/6/8/12/14/16, effects) | Feat / ASI | ACQ | grant logged by Subclass Stager |
 | Extra / Two / Three Extra Attacks (5/11/20, native) | 2/3/4 attacks per Attack action on your turn | ES | S-084 (VS-120); S-146 (VS-97) |
-| Tactical Shift (5, native) | On Bonus Action Second Wind, move half Speed without provoking OAs | ES / **GAP** | Native popup/movement checks. Shared: **FEAT-B2-MOVE** |
+| Tactical Shift (5, native) | On Bonus Action Second Wind, move half Speed without provoking OAs | ES / **GAP** | Native popup/movement checks. Shared: **S-241** |
 | Indomitable (9, native) | Failed save: reroll + Fighter level; must use the new roll | ES | S-105 (VS-26 mandatory-new reroll; event/choice-check host). A combat-save host is HC |
 | | 1/2/3 uses per Long Rest (levels 9/13/17) | ES | S-007 (VS-07) |
-| Tactical Master (9, native) | Replace the mastery property with Push, Sap or Slow for one attack | ES / PL | S-085 (VS-122 options); S-127 (Planned). Push displacement: **FEAT-B2-MOVE** |
+| Tactical Master (9, native) | Replace the mastery property with Push, Sap or Slow for one attack | ES / PL | S-085 (VS-122 options); S-127 (Planned). Push displacement: **S-241** |
 | Studied Attacks (13, native) | After a miss, Advantage on next attack vs that creature before end of your next turn | ES / PL | S-076 (Planned next selected attack grant); V-051 cites C-Fighter; S-030 (VS-39) |
 | Epic Boon (19, effects) | Feat choice | ACQ | grant logged by Subclass Stager. Repo Combat Prowess: SRD Boon of Combat Prowess p.88 (Peerless Aim: miss becomes hit, once per your turn): S-092 (VS-30) + S-056 (VS-54) |
 
@@ -187,14 +187,14 @@ All 6 are `native` (`fighter_rules`). Improved and Superior Critical carry `modi
 
 | Feature (lvl) | SRD clause | Class. | Slice / limit or gap |
 |---|---|---|---|
-| Improved Critical (3) | Weapon and Unarmed Strike attacks crit on 19–20 | ES / **GAP** | Native checks (weapons only). Shared natural-roll outcome threshold: **FEAT-B2-CRIT**. Repo note "applies only to weapons" vs SRD "weapons and Unarmed Strikes": SRC/ADR-0023 check needed |
+| Improved Critical (3) | Weapon and Unarmed Strike attacks crit on 19–20 | ES / **GAP** | Native checks (weapons only). Shared natural-roll outcome threshold: **S-240**. Repo note "applies only to weapons" vs SRD "weapons and Unarmed Strikes": SRC/ADR-0023 check needed |
 | Remarkable Athlete (3) | Advantage on Initiative and Str (Athletics) checks | ES | S-091 (VS-29) |
-| | Right after a Critical Hit, move half Speed without provoking OAs | ES / **GAP** | Native checks (including off-turn). **FEAT-B2-MOVE** |
+| | Right after a Critical Hit, move half Speed without provoking OAs | ES / **GAP** | Native checks (including off-turn). **S-241** |
 | Additional Fighting Style (7) | Another Fighting Style feat | ACQ | grant logged by Subclass Stager |
 | Heroic Warrior (10) | In combat, give yourself Heroic Inspiration at turn start if you lack it | ES / HC | Native; continuation of S-062 (VS-62 turn-start floor recovery) for a single-instance token host |
-| Superior Critical (15) | Crit on 18–20 | ES / **GAP** | **FEAT-B2-CRIT** (same Unarmed Strike note) |
+| Superior Critical (15) | Crit on 18–20 | ES / **GAP** | **S-240** (same Unarmed Strike note) |
 | Survivor (18) | Defy Death: Advantage on Death Saves | ES | S-091 (VS-29) |
-| | Death Save 18–20 counts as a 20 | ES / **GAP** | **FEAT-B2-CRIT**; S-226 (Planned Death Save roll choices) is adjacent |
+| | Death Save 18–20 counts as a 20 | ES / **GAP** | **S-240**; S-226 (Planned Death Save roll choices) is adjacent |
 | | Heroic Rally: at turn start, if Bloodied and ≥ 1 HP, regain 5 + Con mod | ES / HC | Native; continuation of the S-062 turn-start window plus S-024 (VS-27) predicates for a healing payload |
 
-Fighter totals: 19/19 loaded class records and 6/6 Champion records decomposed. New gaps: FEAT-B2-MOVE, FEAT-B2-CRIT.
+Fighter totals: 19/19 loaded class records and 6/6 Champion records decomposed. New gaps: S-241, S-240.
