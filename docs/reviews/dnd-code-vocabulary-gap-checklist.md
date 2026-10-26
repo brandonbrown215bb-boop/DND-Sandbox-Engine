@@ -85,12 +85,12 @@ an entire V-series requirement or certify its catalog consumers.
 
 ## Concrete vocabulary checklist
 
-These are building blocks, not 97 new modules or a demand to implement every
+These are building blocks, not 99 new modules or a demand to implement every
 example. Each box covers the boundary stated in its row. Different damage types,
 die sizes, distances and reset counts are parameters unless they change execution
 semantics. Examples identify local source descriptions, not certified gameplay.
 
-All 97 parent boxes remain open where their full boundary is unfinished. The
+All 99 parent boxes remain open where their full boundary is unfinished. The
 checked VS items above record accepted smaller boundaries from retained logs.
 **Partial** includes those proved subsets as well as older paths established only
 by source inspection; only the cited subset is verified. **Uncertain** means a suitable generic path
@@ -267,6 +267,8 @@ state or execution requirements. They are grouped here to keep V-001–086 stabl
 | [ ] V-095 — Owned maximum-HP changes | Apply/remove max-HP delta or periodic reduction with source provenance, cure boundary, floor and zero-limit death/remains policy; distinguish reducing max HP from marking damage unhealable. | M: Vampire typed damage reduces max HP; prior map: Mummy rot reductions and cure. | Partial: native max-HP attack riders; general source-owned policy uncertain (`Character`, `CombatAction`). | V-006, V-016, V-021, V-049, V-057 |
 | [ ] V-096 — Repair actual object state | Restore HP/function or join retained pieces of an existing exact object, subject to material/piece/location eligibility, without generating a fresh copy or recovering missing pieces automatically. | C-Clockwork: Cavalcade repairs damaged objects; I: Rope of Mending loses missing sections. | Partial: room object HP/state; generic repair operation uncertain (`LocalRoomRules`, `CombatObjectRules`). | V-005, V-027, V-076, V-094 |
 | [ ] V-097 — Redirect or reflect the original spell | Propose a new target for only the permitted incoming spell/step, retain original parameters or declared reflected-caster policy, and avoid new slot payment/recasting. | I: Ring of Spell Turning versus Staff of Charming; M: Tarrasque reflection. | Partial: native cast pipeline; generic causal target replacement uncertain (`SpellCast*`, `SharedStepExecutor`). | V-002, V-010, V-019, V-028, V-032 |
+| [ ] V-098 — SRD condition consequence table | Each SRD 5.2.1 condition's attack/save/check/speed/turn/concentration consequences come from one table applied to Characters and monsters alike; no extra, unsourced riders. | Core rules audit 2026-10-26: Petrified/Stunned/Unconscious auto-fail missing, Poisoned turn damage, Prone and Character-target Advantage gaps. | Partial native checks in `character.gd`, `combat_action.gd`, `spell_save_resolver.gd`; [core-rules status](../mechanics/core-rules-status.md) | V-012, V-013, V-050 |
+| [ ] V-099 — SRD generic actions | Dash/Disengage/Dodge/Help/Hide/Influence/Ready/Search/Study/Utilize exist as ordinary Actions with their SRD effects and end conditions; features grant cheaper access to the same action. | Core rules audit: only feature-granted Dash/Disengage/Hide (DC 12), partial Dodge, no Ready/Search/Study/Influence. | `CombatTurnBudget`, Cunning Action branches in `combat_state.gd` | V-060, V-073 |
 
 ## Proposed implementation order
 
@@ -354,9 +356,9 @@ the complete intended rules vocabulary has been exhausted.
 ## Discovery findings and inspected domains
 
 The earlier document had 31 broad families. It now retains those IDs and adds
-**97 concrete V-series entries** with examples, static support, likely hooks and
-dependencies. Most entries refine an existing family; 97 does not mean 97 wholly
-absent functions or 97 rules newly discovered in the repository. Several had
+**99 concrete V-series entries** (V-098/V-099 added by the 2026-10-26 [core rules audit](../mechanics/core-rules-status.md)) with examples, static support, likely hooks and
+dependencies. Most entries refine an existing family; 99 does not mean 99 wholly
+absent functions or 99 rules newly discovered in the repository. Several had
 already appeared in the wiring map/design and now become explicit checkboxes.
 
 Requirements made explicit by fresh description reads include:

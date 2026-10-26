@@ -48,7 +48,8 @@ cast transformations, combat Find Steed arrival/recovery and additional weapon
 damage-choice routes. The [reviewed boundary and original queue's open work](docs/planning/vocabulary-slices.md#pr57-60-validation)
 own their remaining scope. Continue the unresolved gameplay investigations or
 S-141 duration/concentration; do not reassign the delivered subsets. Counts stay
-151 accepted of 226 defined engine slices.
+151 accepted of 231 defined engine slices; the [core rules/conditions audit](docs/mechanics/core-rules-status.md)
+added S-227–S-231 (V-098/V-099) and maps rests, senses and Reaction budgets to existing rows.
 
 The [first Crown conversion batch](docs/planning/vocabulary-slices.md#conversion-batch-001)
 resolves ten candidates: three shared spell conversions, one already generic
