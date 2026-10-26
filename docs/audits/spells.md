@@ -948,3 +948,19 @@ Cumulative across batches. Batch tag = where the defect was recorded. For the 08
 2. Data-correction job (content lane) for the running defect table D-01 to D-80, field by field toward the SRD text.
 3. Batch 088 is done; see Final reconciliation for the next queue.
 4. Later: movement, visibility, objects, summons and utility families, where real gaps (`PROPOSED-spells-N`) are likeliest.
+
+## Batch 089: defect status (spell data corrections, PR #67)
+
+Statuses below are the only record of D-item changes. Source: SRD 5.2.1 text.
+
+| Status | Items |
+|---|---|
+| FIXED (data) | D-01, D-02, D-03, D-06, D-10, D-11, D-12, D-17, D-18, D-19, D-20, D-21, D-22, D-27, D-28, D-30, D-31, D-35, D-37, D-39, D-41, D-42, D-43, D-45, D-48, D-51, D-52, D-54, D-55, D-56, D-57, D-58, D-59, D-60, D-61, D-65, D-66, D-67, D-68, D-69, D-70, D-71, D-72, D-73, D-74, D-76, D-78, D-79, D-80 |
+| FIXED, partial (remainder noted) | D-04 lightning_bolt (area line from self; 100-ft length exceeds line max 12 hexes), D-13 slow (WIS, up to six; 40-ft Cube limit not encoded), D-14 hypnotic_pattern (30-ft cube area), D-15 fear (self, 30-ft cone), D-40 earthquake (Prone on failed save, no base damage; Concentration-break and collapse damage not encoded), D-44 gust_of_wind (self line; 10-ft width not encoded), D-46 prismatic_wall (Blinded on failed Con save, damage removed; seven layers BLOCKED), D-50 wall_of_force/wall_of_stone (target area; panels not encoded), D-62 water_breathing/teleport/plane_shift/word_of_recall (multi with base_targets) |
+| ALREADY CORRECT on main | D-32 barkskin, D-33 heroism/enhance_ability, D-38 conjure_animals, D-47 spike_growth, D-29 save part |
+| AUDIT CORRECTION | D-23: srd_additional already wins all 25 duplicate pairs through the manifest; no change. (Stale manifest entry `mage_armor` → srd_add#167 noted; harmless, out of scope.) |
+| BLOCKED (engine/vocabulary) | D-05 mass_heal (divided healing), D-07 prismatic_spray (ray table), D-08 fire_storm/divine_word (new operations), D-16 compulsion and D-75 animal_shapes ("any number" targets), D-25 magic_weapon (runtime formula + concentration hard-coded and asserted by tests), D-26 blade_ward and D-53 cloud_of_daggers (castability is a code list), D-29 beacon_of_hope target ("any number"; runtime already does this), D-34 (no effect vocabulary), D-36 regenerate (runtime approximation; data already "minute"), D-49 symbol, D-62 water_walk (native single-target grant), D-63 dream / D-64 mirage_arcane / D-77 sending (no non-numeric range vocabulary) |
+| BLOCKED (approved inventory) | D-09 class lists: the edit was made and then reverted. Logic tests assert approved per-class spell-list counts (test_runner.gd:675) and "Guidance is available to Bard". The code const CURATED_SPELL_ACCESS also grants the same spells (for example, warlock fire_bolt/magic_missile). Changing these needs approval to revise the approved counts and the code list. |
+| NOT A DATA DEFECT | D-24 telekinesis (SRD source truncation; J-item) |
+
+Test note: test_runner Command assertion changed from `["undead"]` exclusion (2014 rule) to empty exclusions, to match SRD 5.2.1.
