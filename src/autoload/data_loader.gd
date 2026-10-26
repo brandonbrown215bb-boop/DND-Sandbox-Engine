@@ -601,6 +601,7 @@ func _validate_semantics(data: Dictionary, content_type: String, source: String)
 	if data.has("last_charge_aftermath"):
 		var charge_error := LastChargeRules.validate(data["last_charge_aftermath"])
 		if charge_error.is_empty() and int(data.get("maximum_charges", 0)) <= 0: charge_error = "last_charge_aftermath requires maximum_charges"
+		if charge_error.is_empty(): charge_error = LastChargeRules.definition_error(data) # Batch 072.
 		if not charge_error.is_empty():
 			_load_errors.append("%s in %s" % [charge_error, source])
 			valid = false

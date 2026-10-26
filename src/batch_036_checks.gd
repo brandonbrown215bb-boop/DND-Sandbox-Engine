@@ -92,7 +92,7 @@ static func _last_charge(check: Callable) -> void:
 	a.inventory.spend_instance_charges(rod, 2)
 	r = a.inventory.last_charge_receipt
 	var state: Dictionary = a.inventory.get_instance(rod).state
-	check.call(r.degraded and not r.rolled and r.kept_properties == ["light"] and state.degraded and not state.magical and not ZeroHpAftermathRules._is_magic(a.inventory.get_instance(rod)), "036 S-060 degrade keeps the same copy, now nonmagical, with declared properties")
+	check.call(r.degraded and not r.rolled and r.kept_properties == [] and state.degraded and not state.magical and not ZeroHpAftermathRules._is_magic(a.inventory.get_instance(rod)), "036 S-060 degrade keeps the same copy, now nonmagical, with declared properties")
 	a.inventory.recover_daily_charges()
 	check.call(int(a.inventory.get_instance(rod).state.charges) == 0 and int(a.inventory.get_instance(w2).state.charges) > 0, "036 S-060 degraded copy does not recover; an undegraded empty copy still does")
 	var inv := a.inventory.to_dict()

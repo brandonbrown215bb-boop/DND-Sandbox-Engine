@@ -14,13 +14,13 @@
   {
     "id": "fixture:b036_spent_rod",
     "name": "Spent Rod",
-    "description": "Its last charge leaves a mundane rod that still sheds light.",
+    "description": "Its last charge leaves a mundane rod.",
     "type": "wand",
     "magical": true,
     "rarity": "uncommon",
     "maximum_charges": 2,
     "charge_recovery": {"minimum": 1, "maximum": 2, "cadence": "dawn"},
-    "last_charge_aftermath": {"outcome": "degrade", "keep_properties": ["light"]},
+    "last_charge_aftermath": {"outcome": "degrade", "keep_properties": []},
     "value": 0
   }
 ]
