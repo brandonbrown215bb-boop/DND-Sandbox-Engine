@@ -1,6 +1,6 @@
 # Batch 091 Acceptance: SRD class spell lists, D-09 (PR #69)
 
-Reviewer: Runtime Reviewer. Head reviewed: bc6729a, stacked on #68. Verdict: **ACCEPTED for the data. MERGE GATED on Brandon confirming the legacy-save break directly (below).**
+Reviewer: Runtime Reviewer. Head reviewed: bc6729a, stacked on #68. Verdict: **ACCEPTED. Legacy-save break accepted by Brandon on Oct 26 (below).**
 
 ## SRD 5.2.1 header checks (srd.txt)
 | Change | Header | Line | Result |
@@ -28,8 +28,8 @@ So list-based permissions (feats and items that use spell_permissions) would sti
 
 I fixed the records to `["wizard"]`, `["cleric","druid"]` and `["sorcerer","warlock","wizard"]`. I also updated the test_runner.gd:2282 assertion to `["wizard"]`, which answers the ~2279 question: it does affect permission and it should change. phantasmal_force has `classes: []`, which grants nothing, so I left it alone.
 
-## Legacy-save break (BRANDON MUST CONFIRM BEFORE MERGE)
-The builder says Brandon accepted this on Oct 26. The reviewer has **no direct confirmation** of that.
+## Legacy-save break (ACCEPTED BY BRANDON, OCT 26)
+Brandon confirmed directly on Oct 26 (9:14 AM CT) that the save break is accepted and #69 goes to review as is.
 
 How I reproduced it:
 - On 6e3a0af I built a level-1 Bard and chose guidance with `choose_spell_selection`, then called to_dict. saved_choices_error was "".
@@ -50,4 +50,4 @@ Affected saves: Bard with guidance; Warlock with fire_bolt or magic_missile; Ran
 - **Scenarios:** character_creation, save_load and shared_spell_flow all pass with 0 SCRIPT ERROR.
 
 ## Proposed
-Once Brandon confirms: registry D-09 FIXED, logic baseline 6416 on this stack (6418 after restacking onto the #67/#68 reviewer commits).
+With Brandon's acceptance: registry D-09 FIXED, logic baseline 6416 on this stack (6418 after restacking onto the #67/#68 reviewer commits).
