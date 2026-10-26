@@ -1,6 +1,6 @@
-# Items & Equipment audit (priority 2) — batch 1
+# Items & Equipment audit (priority 2) — batches 1–2
 
-Status: **partial**. Batch 1 is an inventory reconciliation for every SRD item, plus a clause-level breakdown of *ordinary weapons and armor* and of the *general* magic-item rules. Individual magic-item entries are **not** broken down clause by clause yet (see Coverage). This is a docs/audit file only. It changes no runtime code, content or availability.
+Status: **partial**. Batch 2 (below, after batch 1) adds the 46 refused consumables effect by effect, every SRD adventuring-gear entry, and a code/data trace of how the magic-item shells are exposed. Batch 1 is an inventory reconciliation for every SRD item, plus a clause-level breakdown of *ordinary weapons and armor* and of the *general* magic-item rules. Individual magic-item entries are **not** broken down clause by clause yet (see Coverage). This is a docs/audit file only. It changes no runtime code, content or availability.
 
 ## Provenance
 
@@ -48,11 +48,11 @@ Name-matching caveats: matching uses normalized names plus a small family map. S
 
 Of the 94 loaded records that match SRD magic items, **84 carry no rule-bearing field**. The fields checked are magical, effects, attunement, curse, charges, recovery, activation, aftermath, source_benefits, bonuses, container and links. The 84 split two ways:
 
-- **Consumable stubs (46):** the potions and oils, apart from 4 healing potions and Potion of Poison / Poison Resistance. `consume()` refuses them, so this is **safe**.
-- **Weapon / armor / shield / held-item stubs (38):** for example Oathbow (`ability: STR`, 1d8, range 30, no magic), Sun Blade, Mace of Disruption, Dwarven Thrower, Javelin of Lightning, every Dragon Scale Mail, Armor of Invulnerability, Animated Shield, and all staffs except Power and Striking. These pass the normal `can_equip` and attack paths as **plain mundane gear**. That is a fidelity problem, not a crash: the engine shows an item that does not do what its SRD text says. `identify_rules.gd` recognizes `imported_magic_*` sources, but nothing stops them from being equipped. Batch 1 did not check whether shop, loot or creation flows actually hand these out.
+- **Consumable stubs (35):** the potions and oils, apart from 4 healing potions and Potion of Poison / Poison Resistance. `consume()` refuses them, so this is **safe**. *(Batch 2 correction: batch 1 said 46 here and 38 below. 46 is the total of all refused consumables, including gear and non-SRD potions. The correct split of the 84 is 35 consumable + 49 equippable/held.)*
+- **Weapon / armor / shield / held-item stubs (49, including Hat of Many Spells as a `tool`):** for example Oathbow (`ability: STR`, 1d8, range 30, no magic), Sun Blade, Mace of Disruption, Dwarven Thrower, Javelin of Lightning, every Dragon Scale Mail, Armor of Invulnerability, Animated Shield, and all staffs except Power and Striking. These pass the normal `can_equip` and attack paths as **plain mundane gear**. That is a fidelity problem, not a crash: the engine shows an item that does not do what its SRD text says. `identify_rules.gd` recognizes `imported_magic_*` sources, but nothing stops them from being equipped. Batch 2 traced whether shop, loot or creation flows hand these out: **none do** (see B2-3).
 - Records that do carry rules: Wand of Magic Missiles (charges, dawn recovery, activation spell), Staff of Power and Staff of Striking (attunement, charges, recovery, last-charge aftermath, bonus), Ring of Protection (attunement, AC/save bonus, one-ring limit), the healing potions, and Potion of Poison / Poison Resistance.
 
-Classification: content conversion against existing hosts. Most of these need no new vocabulary, only conversion, which is out of scope here. Whether to gate the 38 equippable stubs is an availability decision for the owner. This audit makes no change.
+Classification: content conversion against existing hosts. Most of these need no new vocabulary, only conversion, which is out of scope here. Whether to gate the 49 equippable stubs is an availability decision for the owner. This audit makes no change.
 
 ## Ordinary weapons (reviewed at clause level)
 
@@ -182,29 +182,166 @@ AC values for all 13 entries match the SRD. The stealth-disadvantage flag matche
 - Depends on: PROPOSED-items-2 for range data inheritance; mastery being read from the item rather than the FighterRules id table.
 - **Done when:** a check creates a "+1 Weapon" copy over a Longsword. The copy reports 1d8 slashing, Versatile 1d10, mastery Sap and +1 to attack and damage. A Fighter with Weapon Mastery applies Sap with it. A "Mithral Armor" copy over Half Plate has no Stealth disadvantage and no Strength requirement. Both survive save/load.
 
-## Coverage
+## Batch 2 (2026-10-26): consumables, adventuring gear, shell exposure
 
-Reviewed (clause level):
-- Weapons table and properties
-- Mastery properties
-- Armor table and armor rules
-- The general magic-item rules (attunement, curses, charges, activation, stored spells, linked items, destruction)
+Same base commit, registry hash and Linux headless export as batch 1. origin/main had not moved, so no rebase was needed. Extra artifact: `.artifacts/items-audit/srd_gear_text.json`, holding 88 gear and tool descriptions split from `pdftotext -f 94 -l 100`, plus `m2.txt` (`pdftotext -f 209 -l 253`). Each SRD clause below was read from those files.
 
-Reviewed (field level, not clause by clause): the 94 loaded SRD magic records (F-1).
+### B2-1: the 46 refused consumables, effect by effect
+
+46 = 7 SRD gear + 35 SRD magic potions/oils + 4 non-SRD potions (Comprehension, Fire Breath, Greater Invisibility, Pugilism; out of scope). Every one has `effects: []`, so `consume()` refuses it and the shop's `_is_buyable_item` hides it. None of them is exposed with wrong behavior.
+
+| Item(s) | SRD clause (summary) | Reusable operation | Classification | Owner |
+|---|---|---|---|---|
+| Acid, Alchemist's Fire, Holy Water | replace one attack: throw at a target within 20 ft; DEX save, DC 8 + Dex + PB; 2d6 Acid / 1d4 Fire + Burning / 2d8 Radiant only vs Fiend or Undead; item used up | thrown-object attack replacement with a save | **genuine gap → PROPOSED-items-8** | S-126 DC profile (verified); Burning exists in combat_object_rules.gd |
+| Oil (douse creature/object) | same throw; on a failed save the target is covered; next Fire damage within 1 min +5 Fire | PROPOSED-items-8 plus a timed next-damage rider | gap (8) + already planned | S-076 next result grant (planned) |
+| Oil (pour on a space), Caltrops | Utilize: cover a 5-ft square; entry triggers (Oil once lit / Caltrops DC 15 DEX: 1 Piercing, Speed 0); 10 min to recover Caltrops | item-deployed hazard area | **genuine gap → PROPOSED-items-11** | entry scopes S-184 (planned); zone host combat_spell_zones.gd |
+| Oil (fuel) | fuel for Lamp/Lantern | existing supported | — | S-064 (`fuel_item_id` on hooded lantern) |
+| Antitoxin | Bonus Action; Advantage on saves to avoid or end Poisoned for 1 hour | timed, condition-scoped save advantage | **genuine gap → PROPOSED-items-9** | `roll_modifier` exists but no condition-scoped timed route was verified |
+| Basic Poison | Bonus Action; coat 1 weapon or 3 ammo; next Piercing/Slashing damage +1d4 Poison; lasts 1 min or until dealt | weapon-coating next-damage grant | already planned | S-076 (+ S-013 P2); ammo half needs PROPOSED-items-1 |
+| Potion of Resistance ×10, Potion of Invulnerability | Resistance to one type for 1 h / all damage for 1 min | timed self-resistance from an item | **gap → PROPOSED-items-9** | — |
+| Potion of Giant Strength ×6 | STR *becomes* 21/23/23/25/27/29 for 1 h; no effect if STR is already ≥ that score | timed score setting | **host exists, no consumable route → PROPOSED-items-9** | S-039 score setting (verified, VS-46) |
+| Potion of Climbing, Potion of Flying | Climb Speed = Speed + Advantage on climb checks / Fly Speed + hover, 1 h; fall when it ends | timed movement mode | **gap → PROPOSED-items-9**; fall on expiry already planned | S-179 modes (verified); S-181 (planned) |
+| Potion of Water Breathing | breathe underwater for 24 h | timed breathing adaptation | already planned | S-205 |
+| Potion of Heroism | 10 Temp HP for 1 h + Bless with no Concentration | Temp HP (supported) + item spell effect | conversion + **PROPOSED-items-10** | S-015 / `temporary_hp` |
+| Clairvoyance, Diminution, Growth, Gaseous Form, Speed, Mind Reading (DC 13), Oil of Etherealness, Oil of Slipperiness (Freedom of Movement 8 h, or Grease over a 10-ft square) | "gain the effect of spell X", usually with no Concentration, a fixed duration or DC, and sometimes an end clause removed (Speed: no lethargy) | item-delivered spell effect with source overrides | **genuine gap → PROPOSED-items-10** | S-134 covers *casting* from items, not "gain the effect" without casting; spells run on the shared runtime |
+| Potion of Animal Friendship | "you can cast" the level-3 version, save DC 13 | casting from an item at a fixed level and DC | existing host, conversion only | S-134, S-139 |
+| Potion of Invisibility | Invisible for 1 h; ends early on an attack roll, dealing damage, or casting a spell | condition with action-triggered early end | **gap → PROPOSED-items-9** (end triggers) | `grant_condition` supported; observer side is S-191 (planned) |
+| Philter of Love | charmed by the next creature you see within 10 min, for 1 h | observer-dependent deferred trigger | already planned (observer) + ADR-0023 judgment for "see" | S-190 |
+| Elixir of Health | cures magical contagions; ends Blinded, Deafened, Paralyzed, Poisoned | `remove_condition` ×4 | conversion only (supported type); "contagions" is a source gap (no disease model) | — |
+| Potion of Vitality | removes all Exhaustion, ends Poisoned; for 24 h Hit Point Dice heal their maximum | remove (supported) + timed HD-max modifier | conversion + **gap → PROPOSED-items-9** | — |
+| Potion of Longevity | physical age −(1d6+6), minimum 13; 10% cumulative backfire | no age model | **source gap / ADR-0023 deferred** | — |
+| Oil of Sharpness | coat a nonmagical Slashing/Piercing melee weapon or 20 ammo → +3 | magic template over a base item | gap → PROPOSED-items-7 | — |
+
+### B2-2: adventuring gear and tools, entry by entry
+
+I read the SRD text for every entry in the Tools and Adventuring Gear sections. "Conv" means the existing host covers it and only the data needs converting (out of scope here).
+
+**Tools (25 entries, 24 loaded):** every tool's Utilize DC belongs to the verified **S-028** purpose-aware tool checks, and every Craft list to **S-198/S-199** (planned). Two notes:
+- The 23 records imported from `imported_magic_tools.json` carry `effects: []`, so their Utilize benefits aren't converted (conv).
+- Only Thieves' Tools has an authored effect (`enable_check: lockpick`), and I found no production consumer of `enable_check`. Lock picking does work through local-room rules, but I didn't verify that path.
+- Gaming Set is missing (conv).
+
+**Focuses:** Arcane Focus ×5, Druidic Focus ×4, Holy Symbol and Component Pouch are existing supported through `Inventory.has_spellcasting_focus`. The Druidic Focus records have `effects: []`; I didn't verify whether the compatibility check is id-based.
+
+**Gear entries:**
+
+| Entry | Loaded | SRD rule (summary) | Classification |
+|---|---|---|---|
+| Acid, Alchemist's Fire, Antitoxin, Basic Poison, Caltrops, Holy Water, Oil | yes | see B2-1 | B2-1 |
+| Ball Bearings | yes (`tool`, no effects) | Utilize: 10-ft square; DC 10 DEX or Prone on entry; 10 min to recover | **PROPOSED-items-11** |
+| Hunting Trap | no | Utilize to set; DEX save on stepping on the plate; restrained by the trap | **PROPOSED-items-11** + S-168/S-169 escape |
+| Net | **yes, as a weapon: 1d4 bludgeoning, STR, value 1, sold in the shop** | replace an attack; DEX save or Restrained, auto-success vs Huge+; DC 10 Athletics escape; Net AC 10, 5 HP | **data divergence that is exposed** (it deals damage it shouldn't and doesn't restrain); behavior is PROPOSED-items-8 + continuation of S-168/S-169 |
+| Manacles, Chain, Rope (bind) | Rope yes; Manacles, Chain no | Utilize vs a Grappled/Incapacitated/Restrained target; DC 13 check; bound = Restrained; escape/burst DCs | continuation of verified **S-168 / S-169** (restraint relation, escape); conv |
+| Rope (knot), String | Rope yes | Utilize knot, DC 10 Sleight of Hand; burst DC 20 | S-028 conv. **Divergence:** loaded Rope grants +2 Athletics (climbing), which the SRD text doesn't say |
+| Climber's Kit | yes | Utilize anchor: can't fall more than 25 ft, or move more than 25 ft until undone (BA) | **divergence:** loaded as +2 Athletics (climbing), not in the SRD; anchor is a tether, continuation of S-168 |
+| Crowbar | yes | Advantage on Strength checks where leverage applies | **divergence:** loaded as +2 Athletics (prying); local_room_rules.gd requires a Crowbar to pry, which is supported. Advantage belongs to the S-028 roll-mode host |
+| Costume, Magnifying Glass, Perfume, Pole (vault) | Costume yes; others no | Advantage on a scoped ability check (Perfume: 1 h, Indifferent Humanoid within 5 ft) | existing host S-028 (purpose-aware), conv; Perfume's audience scope is an ADR-0023 judgment |
+| Book, Map | no | +5 to scoped Int/Wis checks when consulting an accurate one | S-028 conv; "accurate" is an ADR-0023 judgment |
+| Portable Ram | no | +4 to the Strength check to break doors; a helper gives Advantage | S-028 / local-room door rules, conv |
+| Healer's Kit | yes (no effects) | 10 uses; Utilize to stabilize at 0 HP with no Medicine check | **missing host continuation:** stabilize exists (zero_hp_aftermath_rules.gd, character.gd) but no item route; uses are covered by the S-063 charge vocabulary |
+| Lamp | yes (**no `light_source`**) | burns Oil; Bright 15 ft + Dim 30 ft | S-064 conv (the light-source host exists) |
+| Lantern, Hooded | yes (light_source) | Bright 30 + Dim 30; hood down as a BA | existing supported (S-064). Hood toggle is not represented (conv) |
+| Lantern, Bullseye | yes, **as a consumable with `vision_bonus` for 10, no fuel** | 60-ft Cone Bright + 60 Dim, burns Oil | **data divergence.** Its use path is supported, but it doesn't match the SRD; cone light → S-190 (planned) |
+| Torch | yes (light_source 20/40, 1 h) | as above; can attack as a Simple Melee weapon for 1 Fire | light existing supported (S-064); torch-as-weapon not represented (conv) |
+| Candle | no | 1 h, Bright 5 + Dim 5 | S-064 conv |
+| Tinderbox | yes (no effects) | lights a fuel source as a BA, other fires in 1 min | the lighting action cost isn't modeled; S-064 conv |
+| Backpack | yes (container 30 lb) | 30 lb within 1 cu ft | existing supported (S-196). Volume deliberately not enforced |
+| Barrel, Basket, Bottle, Bucket, Case ×2, Chest, Flask, Jug, Pot, Pouch, Quiver, Sack, Vial | no | capacity in lb, cu ft, gallons, pints or ounces, or a count (Quiver 20 Arrows) | S-196 conv; liquid capacity S-197 (planned); ammo-count capacity PROPOSED-items-1 |
+| Entertainer's, Explorer's, Priest's Pack | yes | expands into its contents | existing supported (`expand_pack_instance`) |
+| Burglar's, Diplomat's, Dungeoneer's, Scholar's Pack | no | expands into its contents | conv |
+| Rations, Waterskin | yes | malnutrition/dehydration via the Rules Glossary | `nourish` supported; exposure S-200/S-201 (planned) |
+| Bedroll, Blanket, Tent | Bedroll, Blanket yes; Tent no | auto-succeed / Advantage on extreme-cold saves; sleeps 1–2 | S-201 (planned) |
+| Block and Tackle | no | hoist 4× lift capacity | **not classified**: carrying-capacity host not located (batch 3) |
+| Grappling Hook | no | Utilize throw within 50 ft, DC 13 Acrobatics to catch; climb if roped | S-028 + S-179 climb, conv |
+| Ladder, Pole (reach), Shovel (1 h dig), Iron Spikes, Bell, Signal Whistle, Mirror, Spyglass, Ink, Ink Pen, Paper, Parchment, Clothes ×2, Robe | mixed (Bell, Mirror, Robe loaded) | descriptive, narrative or world-interaction | **ADR-0023 bounded judgment / deferred.** No discrete mechanic beyond flavor, local-room use or time cost |
+| Spell Scroll (gear table) | no | see PROPOSED-items-6 | PROPOSED-items-6 |
+
+Reconciler note: the batch-1 gear header parser missed **Spyglass** (1,000 GP, not loaded), so the corrected missing-equipment count is **46**, not 45. Iron Spikes, Chest and Portable Ram text was split by the PDF's two-column layout; I read those entries by hand where the text was recoverable (Ram) and left the rest unchecked (Spikes, Chest).
+
+### B2-3: are the 49 equippable magic-item shells handed out?
+
+I traced code and data paths only.
+- **Shop (`src/ui/shop.gd`):** `_is_buyable_item` requires `value > 0`, and all 49 shells have `value: 0`. **Not sold.** Selling isn't relevant, because a player never receives one.
+- **Loot:**
+  - The dungeon generator hard-codes `gold_100` and `potion_healing`.
+  - Dungeon `loot` lists, monster `loot_table`s and event `give_item`/`success_loot` all use explicit ids.
+  - A full-text search of every non-item JSON under the repo found **no reference** to any of the 49 ids, apart from `data/content_manifest.json` (approved overrides) and `docs/reviews/dnd-runtime-source-ownership.json`. **Not dropped.**
+- **Character creation:** it uses class `starting_equipment` (explicit ids), and none are shells. **Not granted.**
+- The only other `get_all_items()` caller in production code is the shop.
+
+Conclusion: in the current production content, the shells can't be reached through normal play. They are still reachable through authored content, mods, saves and test harnesses, because the DataLoader validates the ids as real items. The **Net** (B2-2) is the one SRD item that really is exposed with wrong behavior, since it's buyable.
+
+### Batch 2 proposed slices
+
+**PROPOSED-items-8 — Thrown-object attack replacement.**
+- Source: SRD gear entries Acid, Alchemist's Fire, Holy Water, Oil (douse) and Net: "When you take the Attack action, you can replace one of your attacks with throwing…".
+- Affects: those 5 entries; Bottle/Flask improvised throws are out of scope.
+- Reuses: the Attack-action swing count (combat_state.gd), the S-126 save-DC profile (DC 8 + Dex + PB), the Burning hazard, S-168 restraint for Net, and item-copy destruction.
+- Depends on: S-076 (planned) for Oil's next-Fire rider only.
+- **Done when:** a check shows a level-5 Fighter can spend one of 2 Attack-action swings throwing Acid at a target 20 ft away (and is refused at 25 ft). The target makes a DEX save against DC 8 + Dex + PB, takes 2d6 Acid on a failure, and the vial is removed while the second swing stays available. Holy Water deals no damage to a non-Fiend, non-Undead target. Alchemist's Fire applies Burning on a failure. A Net restrains a Medium target, automatically fails against a Huge one, and the target escapes with DC 10 Athletics.
+
+**PROPOSED-items-9 — Timed self-modifiers from consumables.**
+- Source: Antitoxin, Potion of Resistance, Invulnerability, Giant Strength, Climbing, Flying, Invisibility (end triggers) and Vitality (HD maximum).
+- Affects: 22 loaded consumables.
+- Reuses: S-039 score setting, S-179 movement modes, condition grants, S-015 source-owned expiry, and campaign/combat time (S-064).
+- Depends on: S-181 (planned) for falling when flight expires.
+- **Done when:** a check shows that after drinking Potion of Hill Giant Strength, a STR 10 character's attack and Athletics use STR 21 for exactly 1 hour, then revert to 10; a STR 22 drinker is unchanged. Fire Resistance halves Fire damage only, and only for 1 hour. Antitoxin gives Advantage on a save against Poisoned but not on another CON save. Invisibility ends when the drinker makes an attack roll. Flying grants a Fly Speed equal to Speed. Every effect survives save/load with its remaining time.
+
+**PROPOSED-items-10 — Item-delivered spell effects with source overrides.**
+- Source: the potions and oils that say "you gain the effect of the X spell" (Clairvoyance, Diminution, Growth, Gaseous Form, Speed, Mind Reading, Heroism/Bless, Etherealness, Slipperiness).
+- Affects: 9 loaded consumables, plus future wondrous items worded the same way.
+- Reuses: the shared spell runtime (ADR-0017) and the S-134 permission model.
+- Depends on: whichever of these spells the spell audit marks as supported.
+- **Done when:** a check shows Potion of Speed applies the Haste effect for 10 rounds, the drinker is not concentrating, and the effect produces no lethargy turn when it ends. Potion of Mind Reading uses save DC 13 regardless of the drinker. Diminution's duration is rolled once (1d4 hours). The effect is not cast: it uses no slot, no components, and doesn't trigger "when a creature casts a spell" reactions. A spell the runtime does not support makes the potion refuse with that reason, instead of being consumed with no effect.
+
+**PROPOSED-items-11 — Item-deployed hazard areas.**
+- Source: Caltrops, Ball Bearings, Oil (pour + ignite), Hunting Trap, and Oil of Slipperiness (Grease mode).
+- Affects: 5 entries (3 loaded).
+- Reuses: the spell-zone hosts (combat_spell_zones.gd, spell_zone_terrain.gd), the Utilize action, and S-122 placement.
+- Depends on: S-184 entry scopes (planned).
+- **Done when:** a check shows Caltrops deployed with a Utilize action on a 5-ft square within 5 ft. The first creature to enter it that turn makes a DC 15 DEX save; on a failure it takes 1 Piercing and has Speed 0 until the start of its next turn, and a second entry in the same turn doesn't trigger it again. Recovering the Caltrops takes 10 minutes and returns the item. Ball Bearings cause Prone on a failed DC 10 save across a 10-ft square. Poured Oil burns only after it is lit.
+
+### Batch 2 data divergences (conversion corrections; no proposal; not changed here)
+
+| Item | Divergence |
+|---|---|
+| Net | modeled as a damaging weapon (1d4 bludgeoning) and sold in the shop |
+| Lantern, Bullseye | consumable `vision_bonus`; no cone, no fuel |
+| Lamp | no `light_source` |
+| Crowbar | +2 Athletics instead of Advantage |
+| Rope, Climber's Kit | +2 Athletics (climbing), not in the SRD |
+| Healer's Kit | no stabilize route |
+| Thieves' Tools | `enable_check` with no consumer found |
+| Imported tools | no Utilize data |
+
+
+## Coverage (after batch 2)
+
+**Reviewed at clause level:**
+- Weapons table and properties; mastery properties; armor table and rules (batch 1).
+- General magic-item rules (batch 1).
+- All 46 refused consumables: 42 SRD ones by SRD text, 4 non-SRD ones scoped out (B2-1).
+- Every SRD Tools and Adventuring Gear entry whose text was recoverable (B2-2). Exceptions: Iron Spikes and Chest text was garbled by the PDF layout, and Block and Tackle is read but not classified.
+
+**Traced (code/data paths, not runtime-tested):** shop, loot and creation exposure of the 49 shells (B2-3).
+
+**Reviewed at field level:** the 94 loaded SRD magic records (F-1).
 
 **Not reviewed:**
-- The 192 missing magic items, entry by entry. Families were only placed against slices.
-- The 46 refused consumables, effect by effect.
-- Adventuring gear entries, one at a time (for example Hunting Trap, Manacles, Grappling Hook, Healer's Kit).
-- Tools' Utilize DCs and craftable lists.
-- Mounts and vehicles, trade goods, improvised weapons, selling, sentient items, artifacts.
-- The 67 loaded non-SRD items.
-- Whether shop, loot or creation flows expose the F-1 stubs.
+- The 192 missing magic items, entry by entry (families only).
+- The 49 equippable shells, clause by clause.
+- Ammunition and mount/vehicle tables; Saddles, Tack and Vehicles.
+- Improvised weapons, selling, lifestyle and services, trade goods.
+- Sentient items and artifacts.
+- The 67 non-SRD loaded items.
+- Carrying capacity (Block and Tackle).
+- Whether the Druidic Focus check is id-based.
+- The `skill_bonus` / `enable_check` consumers beyond a grep.
 
 ## Next queue
 
-1. Refused consumables, effect by effect: map each of the 46 to existing effect types, planned slices, or new PROPOSED items.
-2. Adventuring gear entries: Utilize actions, hazards, restraints.
-3. Missing magic items, entry by entry. Start with high-frequency families (rings, wands, boots, cloaks) and count the attunement qualifiers for PROPOSED-items-5.
-4. Check whether shop, loot or creation flows expose the F-1 equippable stubs.
-5. Run the Windows runner for the same export when it is reachable, and compare the registry hash.
+1. Batch 3: the missing magic items entry by entry. Start with rings, wands, boots and cloaks, and confirm the PROPOSED-items-5 qualifier count from full category lines.
+2. The 49 equippable shells, clause by clause (what each needs beyond PROPOSED-items-7).
+3. Fix the reconciler's gear header parse (Spyglass) and recover the Iron Spikes and Chest text from the XML.
+4. Mounts, vehicles and the Ammunition table; carrying capacity.
+5. Run the same export on the Windows runner when it is reachable and compare the registry hash.
