@@ -77,6 +77,10 @@ has no per-ID branches.
   creature has not moved). A dismissal or stale answer makes no attack, spends
   nothing, and logs `<route> is not made and nothing was spent`. It never falls
   back to the weapon's type.
+  Created-creature turns also recheck the active creature, turn, Action and
+  live controlled attack order. A successful attack spends the creature's
+  Action before hit settlement, including any hit-window menu. Light, Cleave
+  and Opportunity choices retain live reach/barrier and turn checks.
 - **Hit window:** the budget is spent when the attack is made, as before. The
   menu follows the hit through `_settle_attack_profile_hit_choice`; a dismissal
   uses the weapon's own type and logs it (the existing hit-window rule).
@@ -98,8 +102,10 @@ has no per-ID branches.
 
 A spell-scoped `attack_profile` may change one permissioned invocation's
 range, components, school or timing. `AttackProfileRules.apply_cast(caster, spell)`
-returns a transformed copy. `SpellCastSelection.choose` calls it on the player
-HUD cast path after the menu row is chosen and before targeting or payment.
+returns a transformed copy. `CombatState` calls it on the player
+HUD cast path after the permissioned command is built, before Quickened offers,
+the initial action-budget check, targeting or payment. Selection reuses that
+captured copy without applying the transformation again.
 
 - **Fields:** `replace.range_feet` (positive multiple of 5, max 5280; sets the
   hex range and drops any level-based range table), `add.range_feet` (sums;
@@ -126,6 +132,8 @@ HUD cast path after the menu row is chosen and before targeting or payment.
   refuses before payment, so a Bonus Action cast with no Bonus Action left keeps
   its slot and Action. A target outside the transformed range is refused before
   payment as well.
+  Both timing directions can begin when the original budget has been spent
+  and the transformed budget remains available.
 - **Not applicable:** range is never changed for Touch or range-0/self spells.
   Timing is never changed for reaction or longer casting times. Removing a
   component the spell doesn't have does nothing.

@@ -102,6 +102,16 @@ static func run(h: Node) -> void:
 	h._assert(bool(recovered.get("success", false)) and count == 1 and PlacementRules.legal_error(combat, at, at, "large", -1, [], {"ignore_entity": recovered.entity.character}).is_empty() and HexUtils.get_distance(Vector2i.ZERO, at) == 2, "086 live recovery re-places the single steed on the nearest space whose whole footprint fits (at=%s)" % str(at))
 	combat.hex_grid.get_tile(Vector2i(4, -1)).custom_properties["blocks_movement"] = false
 	combat.hex_grid.get_tile(Vector2i(2, 0)).custom_properties["blocks_movement"] = false
+	# Mounted recovery may share the rider's cell, but never a wall or another body.
+	PaladinRules.set_find_steed_mounted(p, true)
+	combat.hex_grid.get_tile(Vector2i(1, 0)).custom_properties["blocks_movement"] = true
+	var mounted_blocked: Dictionary = combat._add_find_steed_entity(combat.player_entities[0])
+	h._assert(not mounted_blocked.get("success", false) and not PaladinRules.find_steed_state(p).is_empty(), "086 mounted recovery refuses a wall under the body edge without losing the persistent steed")
+	combat.hex_grid.get_tile(Vector2i(1, 0)).custom_properties["blocks_movement"] = false
+	var mounted_recovered: Dictionary = combat._add_find_steed_entity(combat.player_entities[0])
+	h._assert(mounted_recovered.get("success", false) and mounted_recovered.get("entity", {}).get("hex_position", FamiliarRules.ABSENT) == Vector2i.ZERO, "086 mounted recovery permits the rider's own cell when the whole body fits")
+	PaladinRules.set_find_steed_mounted(p, false)
+	combat._add_find_steed_entity(combat.player_entities[0])
 	combat._sync_find_steeds()
 	var hp_before := int(PaladinRules.find_steed_state(p).get("current_hp", 0))
 	h._teardown_scene(combat)

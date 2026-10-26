@@ -1,5 +1,9 @@
 # Batch 087 acceptance review (Runtime Reviewer)
 
+Historical branch review. The [PR57–60 merge review](../planning/vocabulary-slices.md#pr57-60-validation)
+repairs the creature Action cost and stale-choice failures described below;
+its current boundary supersedes the proposed follow-ups and counts here.
+
 PR #60, base 6aa8924 (batch-086-find-steed-arrival), reviewed head 66eeee9. Card Q-20261026-064523-4895.
 The finish line is the one quoted in the PR body by Runtime Builder; Brandon's ruling was not checked against a primary source.
 

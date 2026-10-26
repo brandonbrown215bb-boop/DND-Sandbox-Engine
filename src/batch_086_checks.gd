@@ -12,6 +12,8 @@ static func run(check: Callable) -> void:
 	check.call(SummonArrivalRules.spec({"summoned_creature": {"kind": "x"}}).is_empty() and SummonArrivalRules.spec({}).is_empty(), "086 a spell with no declared body size has no arrival host")
 	check.call(not SummonArrivalRules.data_error({"summoned_creature": {"size": "colossal"}}).is_empty() and not SummonArrivalRules.data_error({"summoned_creature": {"size": "large", "placement": {"range_hexes": 0}}}).is_empty() and not SummonArrivalRules.data_error({"summoned_creature": {"size": "large", "placement": {"rnage": 3}}}).is_empty(), "086 load validation refuses an unknown body size, a bad range and an unknown placement key")
 	check.call(SummonArrivalRules.data_error(spell).is_empty(), "086 the shipped Find Steed record validates")
+	for policy in [{"range_hexes": 6, "no_space": "spend", "choose": true}, {"range_hexes": 6, "no_space": "refuse", "choose": false}]:
+		check.call(not SummonArrivalRules.data_error({"summoned_creature": {"size": "large", "placement": policy}}).is_empty(), "086 unsupported summoned-arrival placement policy refuses at load")
 	var grid := Batch066TravelChecks._grid(8)
 	var paladin := Batch066TravelChecks._wizard()
 	var players: Array[Dictionary] = [{"character": paladin, "hex_position": Vector2i.ZERO, "is_alive": true}]

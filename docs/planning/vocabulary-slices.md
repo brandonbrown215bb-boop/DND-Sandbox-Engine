@@ -343,12 +343,10 @@ saves. Windows results and merge repairs are recorded in the final PR descriptio
 The [dated triage](../reviews/scenario-triage-2026-10-25.md) is a baseline
 inventory, not a current all-green claim. Its remaining work is:
 
-- Repair the remaining two-monster fixture assumptions (R1); the barbarian
-  choice fixture was repaired in the stack.
-- Prove the component/focus and source-owned spell-permission fixture diagnoses
-  (R2/R3) by repairing representative fixtures and running the affected controls.
-  Do not weaken production validation to make old fixtures pass. Barkskin's
-  duplicate-record override was suspected, not established by the sweep.
+- R1 and representative R2/R3 fixture repairs are delivered in #57; see the
+  [PR57–60 boundary](#pr57-60-validation). Production component and permission
+  validation stays enforced. Barkskin's repaired fixture passes; this does not
+  establish the old sweep's suspected duplicate-record diagnosis.
 - Resolve R9: multi-target Heroism/Enhance Ability concentration cleanup, Bard
   decline-standing prompt, aura suppression exit, Identify's magic-item target,
   local-room movement modes/uphill cost, next-melee typed-grant consumption,
@@ -358,6 +356,40 @@ inventory, not a current all-green claim. Its remaining work is:
 - Startup-only Linux hangs passed their single rerun. Reproduce them on the
   supported runner before treating them as gameplay failures. Full-sweep counts
   remain tied to the dated commits and platform in the report.
+
+<a id="pr57-60-validation"></a>
+
+### PR57–60 review boundary and the original four-job queue
+
+PRs #57–60 deliver Batches 084–087 within the following boundaries. Review repairs
+are carried on #60's final stack head. These extend accepted hosts and provide a
+partial S-140 implementation; they add no whole-slice completions. Counts remain
+**151 accepted / 75 remaining**. They do not certify the whole scenario inventory
+or convert additional catalog content.
+
+| Original job | Delivered and reviewed | Open work |
+|---|---|---|
+| 1. Stale scenario fixtures (#57) | Explicit two-monster setups; legal component pouch/free-hand setup; class-owned spell choices and permissioned HUD rows, with a missing row failing instead of casting a raw record. Supported Windows checks cover the repaired representatives. No game rule was weakened. | Investigate the remaining gameplay failures below. The old Linux sweep and isolated-reload failures are historical evidence, not current Windows failures. |
+| 2. Cast-local transformations, S-126/S-140 (#58) | Permissioned player HUD casts capture range, V/S component removal, school and Action/Bonus Action changes without catalog mutation. Compatible changes apply once; both timing directions use the transformed budget even after the original budget is spent. Wand activation now copies its catalog record. See [attack profiles](../mechanics/attack-profiles.md). | S-141 duration/concentration and created-actor parameters; costed profiles; reaction, exploration, AI and item-activation hosts; Material removal and native Metamagic conversion. The profile itself is free; its cast pays once. |
+| 3. Find Steed arrival, S-121/S-122 (#59) | Chosen combat arrival checks the whole Large footprint before payment. Blocked/stale destinations and cancellation spend nothing; success pays once. Unmounted recovery chooses a legal footprint; mounted recovery permits its rider while refusing terrain/other bodies. Allowed save/load and paired fresh-process recovery retain the steed. See [placement](../mechanics/created-actors-and-placement.md). | Exploration steed occupancy remains center-based; room-stored-position fallback lacks a direct scenario; broader travel, multi-target and planar arrivals remain. Sized summoned arrivals reject automatic placement and paid no-space policies at load. A hypothetical failure after payment still retains the spent slot. |
+| 4. Additional damage-choice routes, S-127 (#60) | Activation/hit choices reach Opportunity, Light/off-hand, Nick, Cleave and legacy created-creature turn attacks. Only Nick carries an Attack-action pick. Routes retain their own budgets; stale creature actions/turns/orders refuse before damage, and successful creature attacks spend their Action before hit settlement. See [attack profiles](../mechanics/attack-profiles.md). | S-156 commanded actors, other summon/monster attacks, item-granted profiles and reach/mastery choices. Dismissing the legacy creature menu ends that automatic turn with no attack; its Action remains unspent, with no retry or automatic Dodge added. |
+
+The next fixture/gameplay investigation remains concentration cleanup for
+multi-target Heroism/Enhance Ability, Bard's decline-standing prompt, aura exit,
+Identify targeting, local-room movement modes/uphill costs, typed next-melee-hit
+grant consumption, repeated P1 damage-request settlement and Wizard free-cast
+context. These are separate from the repaired assignments; causes and current
+pass/fail status require focused supported-runner reproduction. For new engine
+work, continue S-141 or another explicit remaining host above rather than
+rebuilding the four delivered subsets. Waterborne travel, vessel encounter
+transfer, broader travel and source-backed content conversions remain separate.
+
+Every runtime continuation retains the original closing requirement: real
+input-path proof; focused independent review for shared combat/persistence;
+fresh-process recovery when durable state changes; and an updated mechanics
+contract plus slice boundary. Keep native paths until replacements cover their
+actual content. The focused reviewer found no further blockers after the timing,
+creature-budget/staleness and mounted-footprint repairs.
 
 <a id="item-projection-controls"></a>
 
@@ -398,7 +430,7 @@ spends charges without initiative budgets or campaign-clock advancement.
 | Ground equipment keeps its exact copies | S-164 continuation after placement; reuse S-049 and existing room-copy transactions | Implemented for persistent rooms and their encounters: selected exact copies use shared room placement payloads, batched inventory removal and encounter-to-room capture at the actor's position. Preflight covers the whole transfer and pending ground capacity; contents, attachments, charges, curses and source links remain on the copy. Full-backpack, multi-copy, linked-loss, destruction/pickup, unchanged merged/worn and checkpoint recovery checks are `FormEquipmentGroundChecks` and `form_equipment_ground_flow` (with fresh-process recovery). Reversion neither recreates nor reclaims any dropped copy. Encounters without a captured persistent room refuse nonempty drops before costs; no new checkpoint or native Wild Shape conversion is claimed. |
 | One source, several tether recipients; independent object anchors | S-144 plus S-168/S-169; object anchors consume the located-world-record work | [Tether groups](#character-tether-groups) retain distinct relations under one cast and payment. Character anchors keep their existing concentration lifetime; object anchors use stable room object ID/location/plane/HP and their declared spell duration. Exact escape/rescue/cut, per-anchor movement/destruction, stale rescue and supported checkpoint recovery are verified. |
 | Item-form return, containment and vessels | S-166 verified in VS-146; S-170 verified in VS-148; S-171 verified in VS-149; S-172 verified in VS-150; S-167 verified in VS-151 | [Exact item-form return](#exact-item-form-return) declares HP reset, overflow, original destruction and legal bag/ground return, including full-inventory and blocked-return recovery. Actual capacity, admission/inspection and internal/external location are verified in [VS-148](#containment-occupancy). Internal harm/targeting and escape/rescue now use explicit eligibility and deferred release in [VS-149](#containment-internal-interactions). Moving containers and legal release are verified in [VS-150](#containment-movement-release). [VS-151](#projected-vessel-contents) carries exact cargo and real passengers through persistent-room movement, separate reversion/dismissal/destruction policies and legal retained/released endings. Inventory compartments never hold creatures. Waterborne/general travel, encounter transfer and source-backed catalog conversion remain separate. |
-| Invocation-local profile and casting changes | S-126/S-127; S-140 after S-134/S-126; S-141 adds S-154 | Extend the captured attack/cast profile for supported spell attack bonuses and range, weapon reach/mastery, then school/components/timing and duration/concentration/created-actor parameters. Apply transformations at the proper selection/roll/lifetime stage to one invocation, not the catalog definition. Duration/concentration changes must reach source creation and cleanup; creature changes use S-154's template. Prove qualifying and unrelated casts side by side, compatible sources, later choices and no catalog mutation. This branch does not wait for placement unless its chosen consumer creates or moves something. |
+| Invocation-local profile and casting changes | S-126/S-127; S-140 after S-134/S-126; S-141 adds S-154 | Bounded player HUD range/components/school/timing changes and the additional attack-choice routes are delivered in the [PR57–60 boundary](#pr57-60-validation). Continue duration/concentration/created-actor parameters, other hosts, costed profiles and weapon reach/mastery. Apply changes at the proper selection/roll/lifetime stage to one invocation, not the catalog. Duration/concentration must reach source creation and cleanup; creature changes use S-154's template. Prove qualifying and unrelated casts side by side, compatible sources, later choices and no catalog mutation. Placement is a dependency only when the consumer creates or moves something. |
 
 ### Character and object tether groups — VS-147
 

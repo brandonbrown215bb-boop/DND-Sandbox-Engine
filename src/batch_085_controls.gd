@@ -54,6 +54,23 @@ static func run(h: Node) -> void:
 	h._assert(int(caster.spell_slots.get("1", 0)) == 2 and combat.turn_budget.action_available and int(target.current_hp) == 300, "085 live a Bonus-Action-transformed Magic Missile with no Bonus Action left is refused and its slot and Action are unspent (slots=%s)" % caster.spell_slots.get("1"))
 	combat.pending_action_type = ""
 	combat.pending_spell_data = {}
+	# The initial HUD budget gate must use the transformed timing too.
+	_turn(combat, caster, target)
+	combat.turn_budget.spend("magic_action")
+	await h._cast_menu_spell(combat, "magic_missile", 1)
+	h._assert(combat.pending_action_type == "spell" and combat.pending_spell_data.get("casting_time", "") == "bonus_action" and int(caster.spell_slots.get("1", 0)) == 2, "085 live an Action-to-Bonus-Action cast can begin after the Action is spent, without paying during selection")
+	await combat._on_hud_action("cancel", {})
+	# The reverse transformation must work with the Bonus Action already spent.
+	caster.known_spells.append("healing_word")
+	caster.wizard_spellbook.append("healing_word")
+	h._own_class_spells(caster)
+	caster.features.append({"id": "fixture:b085_reverse_permission", "effects": [{"type": "always_prepared_spells", "spells": ["healing_word"], "ability": "INT", "maximum_spell_level": 1}]})
+	caster.features.append({"id": "fixture:b085_reverse_timing", "type": "attack_profile", "source_instance_id": "b085:reverse", "scope": {"kind": "spell", "ids": ["healing_word"]}, "replace": {"casting_time": "action"}})
+	_turn(combat, caster, target)
+	combat.turn_budget.spend("bonus_action")
+	await h._cast_menu_spell(combat, "healing_word", 1)
+	h._assert(combat.pending_action_type == "spell" and combat.pending_spell_data.get("casting_time", "") == "action" and int(caster.spell_slots.get("1", 0)) == 2, "085 live a Bonus-Action-to-Action cast can begin after the Bonus Action is spent, without paying during selection")
+	await combat._on_hud_action("cancel", {})
 	# 2. Qualifying cast through the real menu.
 	_turn(combat, caster, target)
 	await h._cast_menu_spell(combat, "magic_missile", 1)

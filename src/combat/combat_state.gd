@@ -457,6 +457,14 @@ func _add_find_steed_entity(owner: Dictionary, requested_position: Vector2i = Ve
 	# Batch 086: every placement (cast arrival, saved room position, recovery)
 	# uses the declared body's whole footprint through PlacementRules.
 	var steed_position := requested_position
+	if begins_mounted:
+		steed_position = owner_position
+		# Only the rider and this owner's old steed may share this body.
+		# The explicit live lists still check all other creature footprints.
+		var mounted_context := {"players": player_entities.filter(func(entry): return entry.get("character") != owner_character), "ignore_entity": SummonArrivalRules.previous_body(player_entities, owner_character), "ignore_occupants": true}
+		var mounted_error := PlacementRules.legal_error(self, owner_position, owner_position, PhysicalFactsRules.get_size(steed), -1, [], mounted_context)
+		if not mounted_error.is_empty():
+			return {"success": false, "message": "The mounted steed cannot fit here: %s" % mounted_error}
 	if steed_position != FamiliarRules.ABSENT and not begins_mounted:
 		var requested_error := SummonArrivalRules.destination_error(self, player_entities, owner_character, owner_position, steed_position, steed_spell, -1)
 		if not requested_error.is_empty():
@@ -2438,6 +2446,10 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 		if not support["available"]:
 			hud.add_log(support["reason"])
 			return
+		# The permissioned invocation must have its final profile before either
+		# Quickened's offer or the first budget gate reads its casting time.
+		if action_type == "cast_spell":
+			extra_data["spell"] = AttackProfileRules.apply_cast(active_character, extra_data.get("spell", {}))
 		var quickened_spell := await SpellCastSelection.choose_quickened(_spell_cast_context(), extra_data.get("spell", {}).duplicate(true))
 		if not quickened_spell.is_empty():
 			extra_data["spell"] = quickened_spell
@@ -3129,6 +3141,10 @@ func _extra_swing_damage_choice(weapon: Dictionary, target: Dictionary, extra_in
 ## part of the Attack action (Nick); then an "attack_action" pick carries.
 ## `still_error` rechecks the route after the popup yields ("" = still valid).
 func _route_damage_choice(actor: Character, weapon: Dictionary, route_label: String, carry: bool, still_error: Callable) -> Dictionary:
+	var initial_error := str(still_error.call())
+	if not initial_error.is_empty():
+		hud.add_log("%s; the %s is not made and nothing was spent." % [initial_error, route_label])
+		return {"held": true}
 	var choice := AttackProfileRules.damage_type_choice(actor, weapon)
 	if choice.is_empty():
 		return {"decisions": {}}
@@ -5354,14 +5370,17 @@ func _finish_fighter_attack(target: Dictionary, weapon: Dictionary, result: Dict
 				# swing of the Attack action, so a pick never carries into it. Ask
 				# before the once-per-turn use is spent; a dismissal spends nothing.
 				var cleave_target: Dictionary = target
+				var cleave_turn := CombatAction.active_turn_serial
 				var cleave_choice := await _route_damage_choice(actor, cleave_weapon, "Cleave attack", false, func() -> String:
 					var live := _fighter_entity(actor)
-					if not actor.is_alive or CombatAction.is_incapacitated(actor) or _battle_ending or live.is_empty():
+					if cleave_turn != CombatAction.active_turn_serial or not actor.is_alive or CombatAction.is_incapacitated(actor) or _battle_ending or live.is_empty():
 						return "The attacker is no longer able to attack."
 					if actor.feature_uses.get("fighter_cleave_used", false):
 						return "Cleave was already used this turn."
 					if not other.get("is_alive", false) or other not in monster_entities or HexUtils.get_distance(cleave_target["hex_position"], other["hex_position"]) > 1 or not Targeting.is_in_range(live["hex_position"], other["hex_position"], int(weapon.get("range", 1))):
 						return "The second creature is no longer within reach."
+					if not Targeting.has_line_of_sight(live["hex_position"], other["hex_position"], hex_grid) or _spell_zones()._antilife_shell_blocks_melee(actor, live["hex_position"], other["hex_position"], cleave_weapon):
+						return "The second creature is no longer reachable."
 					return "")
 				if bool(cleave_choice.get("held", false)):
 					break
@@ -5474,6 +5493,8 @@ func _offer_light_attack(target: Dictionary) -> void:
 	if not nick and not turn_budget.bonus_action_available:
 		return
 	var origin: Vector2i = player_entities[current_player_idx]["hex_position"]
+	var light_actor := active_character
+	var light_turn := CombatAction.active_turn_serial
 	var candidates: Array = [target]
 	for monster in monster_entities:
 		if monster != target:
@@ -5486,15 +5507,11 @@ func _offer_light_attack(target: Dictionary) -> void:
 		# Batch 087: ask the off-hand weapon's damage-type choice before the
 		# once-per-turn use or the Bonus Action is spent. Only a Nick attack is
 		# part of the Attack action, so only it carries an "attack_action" pick.
-		var light_actor := active_character
-		var light_turn := CombatAction.active_turn_serial
 		var light_choice := await _route_damage_choice(active_character, weapon, "Light attack", nick, func() -> String:
-			if light_actor != active_character or light_turn != CombatAction.active_turn_serial or not light_actor.is_alive or CombatAction.is_incapacitated(light_actor) or _battle_ending:
-				return "The attacking turn is no longer available."
+			var target_error := _attack_choice_target_error(light_actor, light_turn, candidate, weapon)
+			if not target_error.is_empty(): return target_error
 			if light_actor.feature_uses.get("fighter_light_used", false) or (not nick and not turn_budget.bonus_action_available):
 				return "No Bonus Action remains for this attack."
-			if not candidate.get("is_alive", false) or candidate not in monster_entities or not Targeting.is_in_range(player_entities[current_player_idx]["hex_position"], candidate["hex_position"], int(weapon.get("range", 1))):
-				return "The target is no longer within the weapon's reach."
 			return "")
 		if bool(light_choice.get("held", false)):
 			return
@@ -6623,11 +6640,13 @@ func _check_opportunity_attacks_for_path(entity, entity_dict: Dictionary, path: 
 					# Batch 087: the damage-type choice is asked before the Reaction is
 					# spent. Dismissing it, or the trigger going stale while it is
 					# open, makes no attack and keeps the Reaction. Never carries.
+					var oa_turn := CombatAction.active_turn_serial
 					var oa_choice := await _route_damage_choice(char_data, weapon, "Opportunity Attack", false, func() -> String:
-						if not char_data.is_alive or CombatAction.is_incapacitated(char_data) or not p.get("reaction_available", true) or _battle_ending:
+						if oa_turn != CombatAction.active_turn_serial or p not in player_entities or not char_data.is_alive or CombatAction.blocks_opportunity_attack(char_data) or CombatAction.is_incapacitated(char_data) or not char_data.reaction_available or not p.get("reaction_available", true) or _battle_ending:
 							return "The Reaction is no longer available."
 						if not entity_dict.get("is_alive", false) or entity_dict not in monster_entities or HexUtils.get_distance(p["hex_position"], from_hex) > reach:
 							return "The target is no longer within reach."
+						if _spell_zones()._antilife_shell_blocks_melee(char_data, p["hex_position"], from_hex, weapon): return "The target is no longer reachable."
 						return "")
 					if bool(oa_choice.get("held", false)):
 						continue

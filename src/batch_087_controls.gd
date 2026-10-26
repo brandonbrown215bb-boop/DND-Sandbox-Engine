@@ -211,7 +211,7 @@ static func run(h: Node) -> void:
 	asked = await _drive(h, combat, func(): await CreatedCreatureCombat.take_turn(combat, unit), [func():
 		action_at_menu[0] = combat.turn_budget.action_available
 		return 1])
-	h._assert(asked == 1 and action_at_menu[0] and int(z1.current_hp) < 300, "087 created: the zombie's turn asks before its attack resolves (its action unspent at the menu); the Cold pick lands on the bludgeoning/necrotic-immune target (hp %d, at menu %s, after %s)" % [int(z1.current_hp), action_at_menu[0], combat.turn_budget.action_available])
+	h._assert(asked == 1 and action_at_menu[0] and int(z1.current_hp) < 300 and not combat.turn_budget.action_available, "087 created: the zombie's turn asks before its attack resolves (its action unspent at the menu); the Cold pick lands on the bludgeoning/necrotic-immune target (hp %d, at menu %s, after %s)" % [int(z1.current_hp), action_at_menu[0], combat.turn_budget.action_available])
 
 	var z2 := _target("b087_z1", Vector2i(1, 2), ["bludgeoning"])
 	_ready_turn(combat, actor, [z2])
@@ -224,6 +224,33 @@ static func run(h: Node) -> void:
 	seed(87011)
 	asked = await _drive(h, combat, func(): await CreatedCreatureCombat.take_turn(combat, unit), [-1])
 	h._assert(asked == 1 and combat.turn_budget.action_available and int(z2.current_hp) == 300 and _log(combat).contains("attack is not made and nothing was spent"), "087 created: dismissing holds the creature's attack; its action is not spent and nothing falls back to Bludgeoning")
+	combat.player_entities.erase(unit)
+	# A menu answer cannot authorize an attack after its action has gone away.
+	var z3 := _target("b087_z1", Vector2i(1, 2), [])
+	_ready_turn(combat, actor, [z3])
+	combat.player_entities.append(unit)
+	combat.current_player_idx = combat.player_entities.find(unit)
+	combat.active_character = zombie
+	combat.turn_budget.reset(zombie, combat.player_entities)
+	record["order"] = "attack"
+	record["order_target"] = "b087_z1"
+	asked = await _drive(h, combat, func(): await CreatedCreatureCombat.take_turn(combat, unit), [func():
+		combat.turn_budget.spend("action")
+		return 1])
+	h._assert(asked == 1 and int(z3.current_hp) == 300 and not combat.turn_budget.action_available, "087 created: losing the action while the choice is open holds the attack without damage")
+	combat.player_entities.erase(unit)
+	var z4 := _target("b087_z1", Vector2i(1, 2), [])
+	_ready_turn(combat, actor, [z4])
+	combat.player_entities.append(unit)
+	combat.current_player_idx = combat.player_entities.find(unit)
+	combat.active_character = zombie
+	combat.turn_budget.reset(zombie, combat.player_entities)
+	record["order"] = "attack"
+	record["order_target"] = "b087_z1"
+	asked = await _drive(h, combat, func(): await CreatedCreatureCombat.take_turn(combat, unit), [func():
+		combat.active_character = actor
+		return 1])
+	h._assert(asked == 1 and int(z4.current_hp) == 300 and combat.turn_budget.action_available, "087 created: changing the active actor while the choice is open holds the attack and preserves the action")
 	combat.player_entities.erase(unit)
 	GameManager.created_creatures.erase(record)
 	zombie_data["special_abilities"] = original_abilities
