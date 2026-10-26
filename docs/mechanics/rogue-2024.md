@@ -42,3 +42,41 @@ Thieves' Cant/tool
 tracking and subclass records remain unavailable. Weapon proficiency data is
 also broader than the 2024 Rogue's exact weapon list.
 Rules reference: [2024 Basic Rules, Rogue](https://www.dndbeyond.com/sources/dnd/br-2024/character-classes).
+
+<a id="srd-feature-inventory"></a>
+
+## SRD 5.2.1 feature inventory — 2026-10-26
+
+Static source/inventory pass, not a rules audit or gameplay proof. SRD headings were read from `SRD_CC_v5.2.1.pdf` (pages are PDF page numbers) and matched by name/level to `data/core/classes/rogue.json`. Repo status is the [feature matrix](../feature_matrix.md) exposure label / record `rules_status`. Registry slice is shown only where the slice registry names this feature or its generic consumer; `unassigned` means no documented owning slice. V-IDs are the [checklist](../reviews/dnd-code-vocabulary-gap-checklist.md) rows citing this feature as an example; they are open requirements, not owning slices. **Reviewed** means an SRD clause review recorded in the [slice registry](../planning/vocabulary-slices.md); every other row is unreviewed, whatever its `rules_status` says. Rows absent from repo data are not filled from memory.
+
+SRD subclass: **Thief** — absent from repo data.
+
+| Kind | Lvl | SRD feature / repo record | SRD | Repo ID | Repo status | V-IDs | Registry slice (documented limit) | Review |
+|---|---:|---|---|---|---|---|---|---|
+| class | 1 | Expertise | p.61 | `rogue_expertise` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| class | 1 | Sneak Attack | p.61 | `rogue_sneak_attack` | mechanics-backed / 2024-partial | — | unassigned | Unreviewed |
+| class | 1 | Thieves’ Cant | p.62 | `rogue_thieves_cant` | quarantined / reference-only | — | unassigned | Unreviewed |
+| class | 1 | Weapon Mastery | p.62 | `rogue_weapon_mastery` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| class | 2 | Cunning Action | p.62 | `rogue_cunning_action` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| class | 3 | Rogue Subclass | p.62 | `rogue_subclass` | quarantined / reference-only | — | unassigned | Unreviewed |
+| class | 3 | Steady Aim | p.62 | `rogue_steady_aim` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| class | 4 | Ability Score Improvement | p.63 | `rogue_ability_improvement_4`, `rogue_ability_improvement_8`, `rogue_ability_improvement_10`, `rogue_ability_improvement_12`, `rogue_ability_improvement_16` | mechanics-backed / 2024-supported | — | S-049/S-050/S-084/S-085/S-103/S-104 (fixture-only Origin/ASI feat acquisition; feat content, prerequisites, ability benefits, Fighting Style grants, level-19 feat path open) | Unreviewed |
+| class | 5 | Cunning Strike | p.63 | `rogue_cunning_strike` | mechanics-backed / 2024-partial | V-023 | unassigned | Unreviewed |
+| class | 5 | Uncanny Dodge | p.63 | `rogue_uncanny_dodge` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| class | 7 | Reliable Talent | p.63 | `rogue_reliable_talent` | mechanics-backed / 2024-supported | V-008 | unassigned | Unreviewed |
+| class | 7 | Evasion | p.63 | `rogue_evasion` | mechanics-backed / 2024-partial | — | unassigned | Unreviewed |
+| class | 11 | Improved Cunning Strike | p.63 | `rogue_improved_cunning_strike` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| class | 14 | Devious Strikes | p.63 | `rogue_devious_strikes` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| class | 15 | Slippery Mind | p.63 | `rogue_slippery_mind` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| class | 18 | Elusive | p.63 | `rogue_elusive` | mechanics-backed / 2024-supported | V-012 | unassigned | Unreviewed |
+| class | 19 | Epic Boon | p.63 | `rogue_epic_boon` | mechanics-backed / 2024-partial | — | S-049/S-050/S-084/S-085/S-103/S-104 (fixture-only Origin/ASI feat acquisition; feat content, prerequisites, ability benefits, Fighting Style grants, level-19 feat path open) | Unreviewed |
+| class | 20 | Stroke of Luck | p.63 | `rogue_stroke_of_luck` | mechanics-backed / 2024-partial | V-090 | unassigned | Unreviewed |
+| repo-only class | 6 | Expertise | Named inside an SRD feature body (repo split); page not resolved per clause | `rogue_expertise_6` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| repo-only class | 9 | Rogue Subclass Feature | Placeholder for subclass level; SRD subclass body not in repo | `rogue_subclass_feature_9` | quarantined / reference-only | — | unassigned | Unreviewed |
+| repo-only class | 13 | Rogue Subclass Feature | Placeholder for subclass level; SRD subclass body not in repo | `rogue_subclass_feature_13` | quarantined / reference-only | — | unassigned | Unreviewed |
+| repo-only class | 17 | Rogue Subclass Feature | Placeholder for subclass level; SRD subclass body not in repo | `rogue_subclass_feature_17` | quarantined / reference-only | — | unassigned | Unreviewed |
+| subclass | 3 | Fast Hands | p.64 | — | absent | — | unassigned | Unreviewed (absent) |
+| subclass | 3 | Second-Story Work | p.64 | — | absent | — | unassigned | Unreviewed (absent) |
+| subclass | 9 | Supreme Sneak | p.64 | — | absent | — | unassigned | Unreviewed (absent) |
+| subclass | 13 | Use Magic Device | p.64 | — | absent | — | unassigned | Unreviewed (absent) |
+| subclass | 17 | Thief’s Reflexes | p.64 | — | absent | — | unassigned | Unreviewed (absent) |

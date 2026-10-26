@@ -66,3 +66,39 @@ retain that verification limit. This audit does not schedule the next class.
 The configured review contracts were unavailable; the original implementation
 was checked solo on Windows Godot 4.7, headless. No full integration-suite or
 manual/rendered acceptance is claimed by that batch.
+
+<a id="srd-feature-inventory"></a>
+
+## SRD 5.2.1 feature inventory — 2026-10-26
+
+Static source/inventory pass, not a rules audit or gameplay proof. SRD headings were read from `SRD_CC_v5.2.1.pdf` (pages are PDF page numbers) and matched by name/level to `data/core/classes/barbarian.json`. Repo status is the [feature matrix](../feature_matrix.md) exposure label / record `rules_status`. Registry slice is shown only where the slice registry names this feature or its generic consumer; `unassigned` means no documented owning slice. V-IDs are the [checklist](../reviews/dnd-code-vocabulary-gap-checklist.md) rows citing this feature as an example; they are open requirements, not owning slices. **Reviewed** means an SRD clause review recorded in the [slice registry](../planning/vocabulary-slices.md); every other row is unreviewed, whatever its `rules_status` says. Rows absent from repo data are not filled from memory.
+
+SRD subclass: **Path of the Berserker** — absent from repo data.
+
+| Kind | Lvl | SRD feature / repo record | SRD | Repo ID | Repo status | V-IDs | Registry slice (documented limit) | Review |
+|---|---:|---|---|---|---|---|---|---|
+| class | 1 | Rage | p.28 | `barbarian_rage` | mechanics-backed / unset | V-020, V-039, V-049, V-055, V-088 | unassigned | Unreviewed |
+| class | 1 | Unarmored Defense | p.29 | `barbarian_unarmored_defense` | mechanics-backed / unset | — | S-085 (PARTIAL: first unarmored base-AC consumer only; class conversion open) | Unreviewed |
+| class | 1 | Weapon Mastery | p.29 | `barbarian_weapon_mastery` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| class | 2 | Danger Sense | p.29 | `barbarian_danger_sense` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| class | 2 | Reckless Attack | p.29 | `barbarian_reckless_attack` | mechanics-backed / unset | V-001 | unassigned | Unreviewed |
+| class | 3 | Barbarian Subclass | p.29 | `barbarian_barbarian_subclass` | quarantined / unset | — | unassigned | Unreviewed |
+| class | 3 | Primal Knowledge | p.29 | `barbarian_primal_knowledge` | mechanics-backed / unset | — | unassigned | Unreviewed |
+| class | 4 | Ability Score Improvement | p.29 | `barbarian_ability_score_improvement`, `barbarian_ability_improvement_8`, `barbarian_ability_improvement_12`, `barbarian_ability_improvement_16` | mechanics-backed / 2024-supported | — | S-049/S-050/S-084/S-085/S-103/S-104 (fixture-only Origin/ASI feat acquisition; feat content, prerequisites, ability benefits, Fighting Style grants, level-19 feat path open) | Unreviewed |
+| class | 5 | Extra Attack | p.29 | `barbarian_extra_attack` | mechanics-backed / unset | — | S-084 (PARTIAL: exclusive Extra Attack count consumer accepted; source-backed class conversion open) | Unreviewed |
+| class | 5 | Fast Movement | p.29 | `barbarian_fast_movement` | mechanics-backed / 2024-supported | — | unassigned | Reviewed 2026-10-21 Conversion Batch 001: already generic |
+| class | 7 | Feral Instinct | p.29 | `barbarian_feral_instinct` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| class | 7 | Instinctive Pounce | p.29 | `barbarian_instinctive_pounce` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| class | 9 | Brutal Strike | p.29 | `barbarian_brutal_strike` | mechanics-backed / 2024-supported | V-001, V-012 | unassigned | Unreviewed |
+| class | 11 | Relentless Rage | p.30 | `barbarian_relentless_rage` | mechanics-backed / 2024-supported | V-020, V-088 | unassigned | Unreviewed |
+| class | 13 | Improved Brutal Strike | p.30 | `barbarian_improved_brutal_strike_13` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| class | 15 | Persistent Rage | p.30 | `barbarian_persistent_rage` | mechanics-backed / 2024-supported | V-049, V-055 | unassigned | Unreviewed |
+| class | 17 | Improved Brutal Strike | p.30 | `barbarian_improved_brutal_strike_17` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| class | 18 | Indomitable Might | p.30 | `barbarian_indomitable_might` | mechanics-backed / 2024-supported | V-008 | unassigned | Unreviewed |
+| class | 19 | Epic Boon | p.30 | `barbarian_epic_boon` | mechanics-backed / 2024-supported | — | S-049/S-050/S-084/S-085/S-103/S-104 (fixture-only Origin/ASI feat acquisition; feat content, prerequisites, ability benefits, Fighting Style grants, level-19 feat path open) | Unreviewed |
+| class | 20 | Primal Champion | p.30 | `barbarian_primal_champion` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| repo-only class | 3 | Primal Path | Placeholder for subclass level; SRD subclass body not in repo | `barbarian_primal_path` | quarantined / unset | — | unassigned | Unreviewed |
+| subclass | 3 | Frenzy | p.30 | — | absent | — | unassigned | Unreviewed (absent) |
+| subclass | 6 | Mindless Rage | p.30 | — | absent | — | unassigned | Unreviewed (absent) |
+| subclass | 10 | Retaliation | p.30 | — | absent | — | unassigned | Unreviewed (absent) |
+| subclass | 14 | Intimidating Presence | p.30 | — | absent | — | unassigned | Unreviewed (absent) |

@@ -116,3 +116,32 @@ spell slot table.
 The shared spell and feature contracts are described in
 [`modding_guide.md`](../modding_guide.md). Unsupported feature records are
 preserved as reference data and omitted from player feature state.
+
+<a id="srd-feature-inventory"></a>
+
+## SRD 5.2.1 feature inventory — 2026-10-26
+
+Static source/inventory pass, not a rules audit or gameplay proof. SRD headings were read from `SRD_CC_v5.2.1.pdf` (pages are PDF page numbers) and matched by name/level to `data/core/classes/wizard.json`. Repo status is the [feature matrix](../feature_matrix.md) exposure label / record `rules_status`. Registry slice is shown only where the slice registry names this feature or its generic consumer; `unassigned` means no documented owning slice. V-IDs are the [checklist](../reviews/dnd-code-vocabulary-gap-checklist.md) rows citing this feature as an example; they are open requirements, not owning slices. **Reviewed** means an SRD clause review recorded in the [slice registry](../planning/vocabulary-slices.md); every other row is unreviewed, whatever its `rules_status` says. Rows absent from repo data are not filled from memory.
+
+SRD subclass: **Evoker** — absent from repo data.
+
+| Kind | Lvl | SRD feature / repo record | SRD | Repo ID | Repo status | V-IDs | Registry slice (documented limit) | Review |
+|---|---:|---|---|---|---|---|---|---|
+| class | 1 | Spellcasting | p.77 | `wizard_spellcasting` | mechanics-backed / 2024-partial | — | unassigned | Unreviewed |
+| class | 1 | Ritual Adept | p.78 | `wizard_ritual_adept` | mechanics-backed / 2024-supported | V-028 | unassigned | Unreviewed |
+| class | 1 | Arcane Recovery | p.78 | `wizard_arcane_recovery` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| class | 2 | Scholar | p.78 | `wizard_scholar` | mechanics-backed / 2024-partial | — | unassigned | Unreviewed |
+| class | 3 | Wizard Subclass | p.78 | `wizard_subclass` | quarantined / 2024-partial | — | unassigned | Unreviewed |
+| class | 4 | Ability Score Improvement | p.79 | `wizard_ability_improvement_4`, `wizard_ability_improvement_8`, `wizard_ability_improvement_12`, `wizard_ability_improvement_16` | mechanics-backed / 2024-supported | — | S-049/S-050/S-084/S-085/S-103/S-104 (fixture-only Origin/ASI feat acquisition; feat content, prerequisites, ability benefits, Fighting Style grants, level-19 feat path open) | Unreviewed |
+| class | 5 | Memorize Spell | p.79 | `wizard_memorize_spell` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| class | 18 | Spell Mastery | p.79 | `wizard_spell_mastery` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| class | 19 | Epic Boon | p.79 | `wizard_epic_boon` | mechanics-backed / 2024-partial | — | S-049/S-050/S-084/S-085/S-103/S-104 (fixture-only Origin/ASI feat acquisition; feat content, prerequisites, ability benefits, Fighting Style grants, level-19 feat path open) | Unreviewed |
+| class | 20 | Signature Spells | p.79 | `wizard_signature_spells` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| repo-only class | 6 | Subclass Feature | Placeholder for subclass level; SRD subclass body not in repo | `wizard_subclass_feature_6` | quarantined / 2024-partial | — | unassigned | Unreviewed |
+| repo-only class | 10 | Subclass Feature | Placeholder for subclass level; SRD subclass body not in repo | `wizard_subclass_feature_10` | quarantined / 2024-partial | — | unassigned | Unreviewed |
+| repo-only class | 14 | Subclass Feature | Placeholder for subclass level; SRD subclass body not in repo | `wizard_subclass_feature_14` | quarantined / 2024-partial | — | unassigned | Unreviewed |
+| subclass | 3 | Evocation Savant | p.82 | — | absent | — | unassigned | Unreviewed (absent) |
+| subclass | 3 | Potent Cantrip | p.82 | — | absent | V-015 | unassigned | Unreviewed (absent) |
+| subclass | 6 | Sculpt Spells | p.82 | — | absent | — | unassigned | Unreviewed (absent) |
+| subclass | 10 | Empowered Evocation | p.82 | — | absent | — | unassigned | Unreviewed (absent) |
+| subclass | 14 | Overchannel | p.82 | — | absent | V-016 | unassigned | Unreviewed (absent) |

@@ -1219,6 +1219,50 @@ A new distinct requirement gets a V-series entry or a precise refinement, then
 its own S-ID only if existing rows cannot express its finish line. Missing
 bodies do not justify closing vocabulary discovery or excluding hard mechanics.
 
+<a id="src-01-feature-inventory"></a>
+
+### SRC-01 class feature, subclass and feat inventory — 2026-10-26
+
+Static inventory against SRD 5.2.1 headings (PDF pages), for planning only. It
+adds no slice, changes no availability and reviews no clause. Per-feature rows
+live in each class audit's **SRD 5.2.1 feature inventory** section (for example
+[Fighter](../mechanics/fighter-2024.md#srd-feature-inventory)). "Reviewed" means
+an SRD clause review already recorded in this registry; only Conversion Batch
+001's Fighter Second Wind (blocked) and Barbarian Fast Movement (already generic)
+qualify. Repo `rules_status: 2024-supported` is not treated as review.
+
+| Surface | SRD 5.2.1 headings | In repo data | Absent | Reviewed | Unreviewed |
+|---|---:|---:|---:|---:|---:|
+| Class features (12 classes) | 174 | 170 + 4 subclass-choice levels | 0 | 2 | 172 |
+| SRD subclass features (12 subclasses) | 58 | 15 (Champion 6, Open Hand 4, Fiend 5) | 43 | 0 | 58 |
+| Feats (Origin 4, General 2, Fighting Style 4, Epic Boon 7) | 17 | 0 in `data/core` (fixture feats only) | 17 | 0 | 17 |
+
+Repo-only records: 32 class-feature records and 3 Open Hand placeholders have no
+matching SRD heading. Most are level placeholders (`*_subclass_feature_N`),
+ASI levels from the class tables, or splits named inside one SRD body (Monk
+Flurry/Patient Defense/Step of the Wind, Cleric Divine Spark/Turn Undead, Mystic
+Arcanum by level). Source gaps with no SRD heading found: `druid_wild_shape_uses`,
+`paladin_channel_divinity_divine_sense`, `sorcerer_metamagic_improvement_10/17`,
+`fiend_spells_3/5/7/9` (SRD has one Fiend Spells heading, p.76). Abjurer and
+Diviner subclasses (10 records) are not SRD 5.2.1 subclasses and are outside
+this authority; Bard has no `subclass_level`.
+
+Missing SRD subclasses: Berserker p.30, Lore p.35, Life p.40, Land p.46,
+Devotion pp.56–57, Hunter p.61, Thief p.64, Draconic pp.69–70, Evoker p.82.
+
+| SRD feat | Category | SRD | Repo |
+|---|---|---|---|
+| Alert, Magic Initiate, Savage Attacker, Skilled | Origin | p.87 | absent from core; S-049/S-050 acquisition is fixture-only |
+| Ability Score Improvement, Grappler | General | p.87 | absent as feats; class ASI features are records, not feat data |
+| Archery, Defense, Great Weapon Fighting, Two-Weapon Fighting | Fighting Style | pp.87–88 | absent as feats; Fighter uses native `fighter_rules` styles |
+| Boon of Combat Prowess, Dimensional Travel, Fate, Irresistible Offense, Spell Recall, the Night Spirit, Truesight | Epic Boon | p.88 | absent; class Epic Boon records have no feat catalog |
+
+Owning slices are recorded only where this registry names the feature or its
+consumer (S-084 Extra Attack, S-085 Unarmored Defense, S-049/S-050/S-084/S-085/S-103/S-104
+feat acquisition, Batch 001 Second Wind blockers, S-122 Faithful Steed arrival);
+all other rows are `unassigned`. Next step: SRD clause review per class, then
+stage the missing subclasses and the 17 feat bodies as source-backed data.
+
 ## Updating the denominator
 
 Preserve S-IDs. When a planned row is accepted, attach its new VS evidence and
