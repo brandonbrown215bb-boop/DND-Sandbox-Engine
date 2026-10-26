@@ -113,7 +113,22 @@ static func take_turn(state: CombatState, entity: Dictionary) -> void:
 			for enemy in state.monster_entities:
 				if enemy.get("is_alive", false) and HexUtils.get_distance(origin, enemy["hex_position"]) <= 1: disadvantage = true
 		var advantage := not CombatPerception.can_see_target(target, creature, destination, origin, state.hex_grid)
-		var result := CombatAction.resolve_weapon_attack(creature, target, profile, advantage, disadvantage)
+		# Batch 087: a created creature's own authored damage-type choice (data:
+		# an attack_profile among its monster special_abilities) is asked of its
+		# controller before the creature's action is spent. Never carries from
+		# the owner's Attack action. A dismissed or stale answer holds the attack.
+		var attack_origin := origin
+		var created_choice: Dictionary = await state._route_damage_choice(creature, profile, "%s attack" % creature.character_name, false, func() -> String:
+			if not creature.is_alive or CombatAction.is_incapacitated(creature) or state._battle_ending:
+				return "The creature can no longer attack."
+			if not target.get("is_alive", false) or target not in state.monster_entities or entity["hex_position"] != attack_origin or HexUtils.get_distance(attack_origin, target["hex_position"]) > reach:
+				return "The target is no longer within reach."
+			return "")
+		if bool(created_choice.get("held", false)):
+			CreatedCreatureRules.settle(state.player_entities, state.monster_entities)
+			state._update_grid_entities()
+			return
+		var result: Dictionary = await state._settle_attack_profile_hit_choice(CombatAction.resolve_weapon_attack(creature, target, profile, advantage, disadvantage, created_choice.decisions))
 		state._spend_action_cost("attack_action")
 		state.hud.add_log(str(result.get("message", "%s attacks." % creature.character_name)))
 		if int(target.get("current_hp", 0)) <= 0:

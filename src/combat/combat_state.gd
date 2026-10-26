@@ -3118,6 +3118,40 @@ func _extra_swing_damage_choice(weapon: Dictionary, target: Dictionary, extra_in
 	return {"damage_type": picked}
 
 
+## Batch 087 (S-127 continuation): the damage-type choice for an attack made
+## outside the Attack action's own swings — Opportunity Attack, Light/off-hand,
+## Cleave and created-creature attacks. Returns {"decisions": Dictionary} to
+## merge into the attack's decisions, or {"held": true} when the attack must
+## not be made. The caller asks this BEFORE spending its route budget (Reaction,
+## Bonus Action, Cleave's once-per-turn use, the creature's action), so a
+## dismissed or stale activation answer spends nothing and never silently
+## falls back to the weapon's own type. `carry` is true only when the route is
+## part of the Attack action (Nick); then an "attack_action" pick carries.
+## `still_error` rechecks the route after the popup yields ("" = still valid).
+func _route_damage_choice(actor: Character, weapon: Dictionary, route_label: String, carry: bool, still_error: Callable) -> Dictionary:
+	var choice := AttackProfileRules.damage_type_choice(actor, weapon)
+	if choice.is_empty():
+		return {"decisions": {}}
+	if carry:
+		var carried := AttackProfileRules.carried_choice(actor, weapon, attack_action_damage_choice)
+		if not carried.is_empty():
+			hud.add_log("%s: %s carries to this %s." % [str(choice.get("name", "Damage type")), carried.capitalize(), route_label], false)
+			return {"decisions": {AttackProfileRules.ALLOW_KEY: true, AttackProfileRules.DECISION_KEY: carried}}
+	if str(choice.get("window", "")) != "activation":
+		# Hit window: the resolver captures the hit and the caller settles it
+		# through _settle_attack_profile_hit_choice (dismissal is logged there).
+		return {"decisions": {AttackProfileRules.ALLOW_KEY: true}}
+	var picked := await hud.request_damage_type_choice(choice.options, "%s (%s)" % [str(choice.name), route_label])
+	var stale := "" if picked.is_empty() else AttackProfileRules.activation_choice_error(actor, weapon, choice, picked)
+	if stale.is_empty() and not picked.is_empty():
+		stale = str(still_error.call())
+	if picked.is_empty() or not stale.is_empty():
+		var reason := "damage-type choice cancelled" if picked.is_empty() else stale.trim_suffix(" nothing was spent.").trim_suffix(";")
+		hud.add_log("[color=yellow]%s: %s; the %s is not made and nothing was spent.[/color]" % [str(choice.get("name", "Damage type")), reason, route_label])
+		return {"held": true}
+	return {"decisions": {AttackProfileRules.ALLOW_KEY: true, AttackProfileRules.DECISION_KEY: picked}}
+
+
 ## Revalidate the live attacker and reach after a damage-type popup yields.
 func _attack_choice_target_error(actor: Character, turn: int, target: Dictionary, weapon: Dictionary) -> String:
 	if actor == null or actor != active_character or turn != CombatAction.active_turn_serial or not actor.is_alive or CombatAction.is_incapacitated(actor) or _battle_ending:
@@ -5315,17 +5349,33 @@ func _finish_fighter_attack(target: Dictionary, weapon: Dictionary, result: Dict
 			if HexUtils.get_distance(target["hex_position"], other["hex_position"]) > 1 or not Targeting.is_in_range(origin, other["hex_position"], int(weapon.get("range", 1))):
 				continue
 			if await hud.request_reaction(_owner_label_for_character(actor), "cleave", "Make one extra attack against %s, without a positive ability damage bonus." % other["name"], "Use Cleave?", "Attack", "Cleave"):
-				actor.feature_uses["fighter_cleave_used"] = true
 				var cleave_weapon := weapon.duplicate(true)
+				# Batch 087: Cleave is its own extra attack (SRD 5.2.1 p.89), not a
+				# swing of the Attack action, so a pick never carries into it. Ask
+				# before the once-per-turn use is spent; a dismissal spends nothing.
+				var cleave_target: Dictionary = target
+				var cleave_choice := await _route_damage_choice(actor, cleave_weapon, "Cleave attack", false, func() -> String:
+					var live := _fighter_entity(actor)
+					if not actor.is_alive or CombatAction.is_incapacitated(actor) or _battle_ending or live.is_empty():
+						return "The attacker is no longer able to attack."
+					if actor.feature_uses.get("fighter_cleave_used", false):
+						return "Cleave was already used this turn."
+					if not other.get("is_alive", false) or other not in monster_entities or HexUtils.get_distance(cleave_target["hex_position"], other["hex_position"]) > 1 or not Targeting.is_in_range(live["hex_position"], other["hex_position"], int(weapon.get("range", 1))):
+						return "The second creature is no longer within reach."
+					return "")
+				if bool(cleave_choice.get("held", false)):
+					break
+				actor.feature_uses["fighter_cleave_used"] = true
 				cleave_weapon["cleave_extra"] = true
 				cleave_weapon["attack_distance"] = HexUtils.get_distance(origin, other["hex_position"])
 				var cleave_effects := await _request_brutal_strike(actor, cleave_weapon)
 				var cleave_decisions := await _collect_attack_inspiration_decision(actor)
 				if not cleave_effects.is_empty():
 					cleave_decisions["barbarian_brutal_strike_effects"] = cleave_effects
+				cleave_decisions.merge(cleave_choice.decisions, true)
 				var cleave_packet := await _conjure_minor_elementals_damage_choice(actor, other)
 				var cleave_additional_damage := {"packets": [cleave_packet]} if not cleave_packet.is_empty() else {}
-				var cleave := CombatAction.resolve_weapon_attack(actor, other, cleave_weapon, false, false, cleave_decisions, cleave_additional_damage)
+				var cleave := await _settle_attack_profile_hit_choice(CombatAction.resolve_weapon_attack(actor, other, cleave_weapon, false, false, cleave_decisions, cleave_additional_damage))
 				await _offer_divine_smite(other, cleave_weapon, cleave, actor)
 				await _offer_weapon_damage_riders(actor, other, cleave_weapon, cleave)
 				await _offer_sneak_attack(other, cleave_weapon, cleave, actor)
@@ -5433,6 +5483,22 @@ func _offer_light_attack(target: Dictionary) -> void:
 			continue
 		if not await hud.request_reaction(_owner_label_for_character(active_character), "light_attack", "Attack %s with %s (%s). Once this turn." % [candidate.get("name", "target"), weapon.get("name", offhand_id), "part of the Attack action — Nick" if nick else "Bonus Action"], "Make the extra Light attack?", "Attack", "Light Weapon"):
 			continue
+		# Batch 087: ask the off-hand weapon's damage-type choice before the
+		# once-per-turn use or the Bonus Action is spent. Only a Nick attack is
+		# part of the Attack action, so only it carries an "attack_action" pick.
+		var light_actor := active_character
+		var light_turn := CombatAction.active_turn_serial
+		var light_choice := await _route_damage_choice(active_character, weapon, "Light attack", nick, func() -> String:
+			if light_actor != active_character or light_turn != CombatAction.active_turn_serial or not light_actor.is_alive or CombatAction.is_incapacitated(light_actor) or _battle_ending:
+				return "The attacking turn is no longer available."
+			if light_actor.feature_uses.get("fighter_light_used", false) or (not nick and not turn_budget.bonus_action_available):
+				return "No Bonus Action remains for this attack."
+			if not candidate.get("is_alive", false) or candidate not in monster_entities or not Targeting.is_in_range(player_entities[current_player_idx]["hex_position"], candidate["hex_position"], int(weapon.get("range", 1))):
+				return "The target is no longer within the weapon's reach."
+			return "")
+		if bool(light_choice.get("held", false)):
+			return
+		origin = player_entities[current_player_idx]["hex_position"]
 		active_character.feature_uses["fighter_light_used"] = true
 		if not nick:
 			_spend_action_cost("bonus_action")
@@ -5442,9 +5508,10 @@ func _offer_light_attack(target: Dictionary) -> void:
 		var light_decisions := await _collect_attack_inspiration_decision(active_character)
 		if not light_effects.is_empty():
 			light_decisions["barbarian_brutal_strike_effects"] = light_effects
+		light_decisions.merge(light_choice.decisions, true)
 		var light_packet := await _conjure_minor_elementals_damage_choice(active_character, candidate)
 		var light_additional_damage := {"packets": [light_packet]} if not light_packet.is_empty() else {}
-		var result := CombatAction.resolve_weapon_attack(active_character, candidate, weapon, false, false, light_decisions, light_additional_damage)
+		var result := await _settle_attack_profile_hit_choice(CombatAction.resolve_weapon_attack(active_character, candidate, weapon, false, false, light_decisions, light_additional_damage))
 		await _offer_divine_smite(candidate, weapon, result)
 		await _offer_sneak_attack(candidate, weapon, result)
 		hud.add_log(result.get("message", ""), false)
@@ -6553,6 +6620,17 @@ func _check_opportunity_attacks_for_path(entity, entity_dict: Dictionary, path: 
 					if not accepted:
 						hud.add_log("[color=gray]%s declines the opportunity attack.[/color]" % owner_label)
 						continue
+					# Batch 087: the damage-type choice is asked before the Reaction is
+					# spent. Dismissing it, or the trigger going stale while it is
+					# open, makes no attack and keeps the Reaction. Never carries.
+					var oa_choice := await _route_damage_choice(char_data, weapon, "Opportunity Attack", false, func() -> String:
+						if not char_data.is_alive or CombatAction.is_incapacitated(char_data) or not p.get("reaction_available", true) or _battle_ending:
+							return "The Reaction is no longer available."
+						if not entity_dict.get("is_alive", false) or entity_dict not in monster_entities or HexUtils.get_distance(p["hex_position"], from_hex) > reach:
+							return "The target is no longer within reach."
+						return "")
+					if bool(oa_choice.get("held", false)):
+						continue
 					p["reaction_available"] = false
 					char_data.reaction_available = false
 					hud.add_log("[color=yellow]%s makes an Opportunity Attack against %s![/color]" % [char_data.character_name, entity_dict["name"]])
@@ -6569,7 +6647,8 @@ func _check_opportunity_attacks_for_path(entity, entity_dict: Dictionary, path: 
 						opportunity_decisions["barbarian_brutal_strike_effects"] = opportunity_effects
 					var opportunity_packet := await _conjure_minor_elementals_damage_choice(char_data, entity_dict)
 					var opportunity_additional_damage := {"packets": [opportunity_packet]} if not opportunity_packet.is_empty() else {}
-					var result := CombatAction.resolve_weapon_attack(char_data, entity_dict, weapon, false, false, opportunity_decisions, opportunity_additional_damage)
+					opportunity_decisions.merge(oa_choice.decisions, true)
+					var result := await _settle_attack_profile_hit_choice(CombatAction.resolve_weapon_attack(char_data, entity_dict, weapon, false, false, opportunity_decisions, opportunity_additional_damage))
 					await _offer_sneak_attack(entity_dict, weapon, result, char_data)
 					await _offer_stunning_strike(entity_dict, weapon, result, char_data)
 					await _finish_fighter_attack(entity_dict, weapon, result, char_data)
