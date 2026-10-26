@@ -15,6 +15,13 @@ const ADD_KEYS := ["attack_bonus", "damage_bonus", "save_dc"]
 ## no default: data must say "activation" (before the attack is committed) or
 ## "hit" (after a final hit, before damage is rolled).
 const CHOICE_WINDOWS := ["activation", "hit"]
+## Batch 077 (#39 follow-up): how long one answer lasts. "attack" asks again
+## on every swing and the pick applies to that one attack only; "attack_action"
+## carries the pick to the remaining swings of the same Attack action. Brandon:
+## "Carry it across the Attack action only when the feature says it lasts that
+## long." A rule that omits the key is read as "attack" (the ruling's base case,
+## never a carry); any other value is refused.
+const CHOICE_DURATIONS := ["attack", "attack_action"]
 const DECISION_KEY := "attack_profile_damage_type"
 const ALLOW_KEY := "allow_attack_profile_choice"
 static var _requests := {}
@@ -41,6 +48,8 @@ static func validate_rule(rule: Dictionary) -> String:
 	if replace.has("damage_type_choices") and (not replace.damage_type_choices is Array or replace.damage_type_choices.is_empty() or replace.damage_type_choices.any(func(t): return str(t) not in DataLoader.VALID_DAMAGE_TYPES)): return "attack_profile damage_type_choices are invalid"
 	if replace.has("damage_type_choices") and str(rule.get("choice_window", "")) not in CHOICE_WINDOWS: return "attack_profile damage_type_choices need choice_window activation or hit"
 	if rule.has("choice_window") and not replace.has("damage_type_choices"): return "attack_profile choice_window needs damage_type_choices"
+	if rule.has("choice_duration") and not replace.has("damage_type_choices"): return "attack_profile choice_duration needs damage_type_choices"
+	if rule.has("choice_duration") and str(rule.choice_duration) not in CHOICE_DURATIONS: return "attack_profile choice_duration must be attack or attack_action"
 	if replace.has("damage_type_choices") and replace.has("damage_type"): return "attack_profile cannot replace both damage_type and damage_type_choices"
 	for key in ["attack_bonus", "save_dc"]:
 		if replace.has(key) and not _int(replace[key]): return "attack_profile replace.%s must be an integer" % key
@@ -114,8 +123,26 @@ static func damage_type_choice(attacker: Character, weapon_data: Dictionary) -> 
 		var replace: Dictionary = rule.get("replace", {})
 		if replace.has("damage_type"): return {}
 		if replace.has("damage_type_choices"):
-			return {"source_instance_id": str(rule.source_instance_id), "name": str(rule.get("name", rule.get("id", "Attack profile"))), "window": str(rule.choice_window), "options": replace.damage_type_choices.duplicate()}
+			return {"source_instance_id": str(rule.source_instance_id), "name": str(rule.get("name", rule.get("id", "Attack profile"))), "window": str(rule.choice_window), "duration": str(rule.get("choice_duration", "attack")), "options": replace.damage_type_choices.duplicate()}
 	return {}
+
+## Batch 077: the pick an earlier swing of this Attack action carries to the
+## next swing, or "" when the next swing must ask again. Only a rule that
+## declares choice_duration "attack_action" carries, only from the same source,
+## and only while the carried type is still one of its options.
+static func carried_choice(attacker: Character, weapon_data: Dictionary, carried: Dictionary) -> String:
+	var current := damage_type_choice(attacker, weapon_data)
+	if current.is_empty() or str(current.duration) != "attack_action": return ""
+	if str(carried.get("source_instance_id", "")) != str(current.source_instance_id): return ""
+	var chosen := str(carried.get("damage_type", ""))
+	return chosen if chosen in current.options else ""
+
+## Batch 077: the record a host keeps for the rest of the Attack action, or {}
+## when the rule lasts one attack (nothing is kept, so the next swing asks).
+static func carry_record(attacker: Character, weapon_data: Dictionary, chosen: String) -> Dictionary:
+	var current := damage_type_choice(attacker, weapon_data)
+	if chosen.is_empty() or current.is_empty() or str(current.duration) != "attack_action" or chosen not in current.options: return {}
+	return {"source_instance_id": str(current.source_instance_id), "damage_type": chosen}
 
 ## Re-check a choice made at the activation window just before the attack is
 ## committed. Returns "" when still offered, else the refusal message.

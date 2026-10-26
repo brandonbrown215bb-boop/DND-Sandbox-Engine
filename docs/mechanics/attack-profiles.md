@@ -29,13 +29,28 @@ A weapon-scoped rule may offer types instead of fixing one:
   `allow_attack_profile_choice`. `AttackProfileRules.resume_hit_choice` settles
   the request once, and a replay is refused. Dismissing the choice, or making it
   after the source has left, keeps the weapon's own type. The choice costs nothing.
-- The chosen type applies to that attack only. Nothing new is saved; the pending
+- **Duration (batch 077, #39 follow-up):** optional `choice_duration` is
+  `attack` or `attack_action`; any other value, or a duration without choices,
+  is refused. Brandon's ruling: "ask on every swing for a choice that applies to
+  one attack. Carry it across the Attack action only when the feature says it
+  lasts that long." A rule that omits the key is read as `attack` (never a
+  carry), so existing data keeps working.
+  - `attack`: every swing asks again, including each Extra Attack swing of one
+    click (activation menu before that swing; hit menu after that swing hits).
+    Each pick changes its own swing only.
+  - `attack_action`: the first pick is kept in `CombatState.attack_action_damage_choice`
+    (memory only, cleared when a new Attack action is spent or a turn starts)
+    and reused by later swings of the same Attack action, including a later
+    click. It is rechecked each swing: same source, still an option.
+  - Refusal is never silent: dismissing (or a stale answer to) a later swing's
+    activation menu holds that swing, logs it, and leaves it available for the
+    next click; a dismissed hit-window menu logs that the weapon's own type is used.
+- The chosen type applies to that attack only (unless carried as above). Nothing new is saved; the pending
   request lives in memory only, and class-owned rules are rebuilt on load.
 
 ### PARTIAL
-- Extra Attack swings in the same click use the hit window if the rule has one.
-  An activation-window choice is asked only for the first swing; later swings
-  inherit the weapon type.
+- Batch 077 closes the old first-swing-only gap: every Extra Attack swing hosts
+  its own activation or hit choice per `choice_duration`.
 - Opportunity, Light (off-hand), Cleave and created-creature attacks don't host
   the choice. They settle with the inherited type.
 - Item-granted attack profiles aren't supported, because items grant only

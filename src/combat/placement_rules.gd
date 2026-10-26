@@ -113,6 +113,7 @@ static func footprint_terrain_error(state, hex: Vector2i, size: String, context_
 	var ctx := context_overrides.duplicate()
 	ctx["players"] = []
 	ctx["monsters"] = []
+	# Skips only grid.entities; the two empty lists above cover the rest.
 	ctx["ignore_occupants"] = true
 	return legal_error(state, hex, hex, size, -1, [], ctx)
 
