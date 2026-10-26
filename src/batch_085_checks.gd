@@ -65,7 +65,7 @@ static func run(check: Callable) -> void:
 	var armor := AttackProfileRules.apply_cast(c, invocation("mage_armor"))
 	check.call(shield.casting_time == "reaction" and not shield.has("_cast_profile") and int(armor.range) == int(DataLoader.get_spell("mage_armor").range) and armor.casting_time == "action", "085 S-140 reaction timing and Touch range are never transformed")
 	# Malformed rules refuse at load.
-	for defect in ["range_zero", "range_odd", "range_str", "school", "timing", "remove_m", "remove_key", "remove_weapon", "perm_weapon", "weapon_range"]:
+	for defect in ["range_zero", "range_odd", "range_str", "school", "timing", "remove_m", "remove_key", "remove_weapon", "perm_weapon", "weapon_range", "scope_typo", "unknown_op", "replace_unknown"]:
 		var bad := {"id": "x", "type": "attack_profile", "source_instance_id": "b085:bad", "scope": {"kind": "spell", "ids": ["magic_missile"]}, "add": {"range_feet": 30}}
 		match defect:
 			"range_zero": bad["replace"] = {"range_feet": 0}
@@ -78,6 +78,9 @@ static func run(check: Callable) -> void:
 			"remove_weapon": bad.scope = {"kind": "weapon", "ids": ["longsword"]}; bad.erase("add"); bad["remove"] = {"components": ["V"]}
 			"perm_weapon": bad.scope = {"kind": "weapon", "permission_sources": ["x"]}; bad.add = {"damage_bonus": 1}
 			"weapon_range": bad.scope = {"kind": "weapon", "ids": ["longsword"]}
+			"scope_typo": bad.scope = {"kind": "spell", "school": ["abjuration"]}
+			"unknown_op": bad["multiply"] = {"range_feet": 2}
+			"replace_unknown": bad["replace"] = {"duration": "1 hour"}
 		check.call(not AttackProfileRules.validate_rule(bad).is_empty(), "085 S-140 malformed cast profile %s refuses" % defect)
 	# Profiles are source-owned features; the invocation copy is not saved state.
 	var saved := c.to_dict()

@@ -61,6 +61,8 @@ static func choose(cast: SpellCastContext, spell_info: Dictionary) -> bool:
 	cast.replace_spell(AttackProfileRules.apply_cast(cast.caster, spell_info))
 	if cast.spell.has(AttackProfileRules.CAST_PROFILE_KEY):
 		cast.hud.add_log("%s is changed for this casting by %s." % [str(cast.spell.get("name", "Spell")), ", ".join(cast.spell[AttackProfileRules.CAST_PROFILE_KEY].sources)])
+		for ignored in cast.spell[AttackProfileRules.CAST_PROFILE_KEY].get("ignored", []):
+			cast.hud.add_log("%s's %s change is ignored; an earlier source already set it." % [str(ignored.get("source", "")), str(ignored.get("field", "")).replace("_", " ")])
 	if str(cast.spell.get("id", "")) == "produce_flame":
 		var flame_choice := await cast.hud.request_produce_flame_choice(cast.produce_flame_markers.has(cast.caster.character_id))
 		if flame_choice.is_empty():

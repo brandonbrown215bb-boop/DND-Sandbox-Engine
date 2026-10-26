@@ -21,6 +21,8 @@ const REMOVABLE_COMPONENTS := ["V", "S"]
 ## long casting times are not produced or transformed.
 const CAST_TIMINGS := ["action", "bonus_action"]
 const CAST_PROFILE_KEY := "_cast_profile"
+const SCOPE_KEYS := ["kind", "ids", "properties_all", "schools", "permission_sources", "melee"]
+const RULE_KEYS := ["id", "name", "type", "description", "enabled", "level", "rules_status", "source", "notes", "srd_page", "source_instance_id", "scope", "required_condition", "replace", "add", "remove", "choice_window", "choice_duration"]
 ## S-127: a damage-type choice names the window where it is offered. There is
 ## no default: data must say "activation" (before the attack is committed) or
 ## "hit" (after a final hit, before damage is rolled).
@@ -41,6 +43,12 @@ static func validate_rule(rule: Dictionary) -> String:
 	if str(rule.get("source_instance_id", "")).is_empty(): return "attack_profile needs source_instance_id"
 	var scope: Variant = rule.get("scope", null)
 	if not scope is Dictionary or str(scope.get("kind", "")) not in ["weapon", "spell"]: return "attack_profile scope.kind must be weapon or spell"
+	# Reviewer (Batch 085): an unknown scope key (e.g. "school" for "schools") would
+	# silently widen the scope to every spell; an unknown operation would be dropped.
+	for key in scope:
+		if str(key) not in SCOPE_KEYS: return "attack_profile scope.%s is not a supported scope key" % str(key)
+	for key in rule:
+		if str(key) not in RULE_KEYS and not str(key).begins_with("_"): return "attack_profile %s is not a supported field" % str(key)
 	for key in ["ids", "properties_all", "schools", "permission_sources"]:
 		if scope.has(key) and (not scope[key] is Array or scope[key].any(func(v): return not v is String)): return "attack_profile scope.%s must be strings" % key
 	if scope.has("melee") and not scope["melee"] is bool: return "attack_profile scope.melee must be boolean"
