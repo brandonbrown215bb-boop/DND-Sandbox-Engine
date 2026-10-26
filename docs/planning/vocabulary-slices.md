@@ -8,7 +8,7 @@ certify converted catalog content.
 
 ## Count and scope
 
-**226 defined slices: 151 verified, 75 not yet accepted.** Counts measure accepted
+**230 defined slices: 151 verified, 79 not yet accepted.** Counts measure accepted
 bounded implementations, not time, effort or completion of every clause in a row.
 These totals include reviewed, repaired and merged Batches 034–065 through
 2026-10-21, plus combat save-exit placement (VS-144), the bounded located source-end continuation (VS-145) and
@@ -35,8 +35,8 @@ catalog content as part of every slice.
 | P6 — Actors and forms | 23 | 17 | 6 |
 | P7 — Space, perception and illusions | 19 | 1 | 18 |
 | P8 — Physical items and bodies | 18 | 4 | 14 |
-| P9 — Procedures and campaign outcomes | 10 | 0 | 10 |
-| **Total** | **226** | **151** | **75** |
+| P9 — Procedures and campaign outcomes | 14 | 0 | 14 |
+| **Total** | **230** | **151** | **79** |
 
 ## How to use a row
 
@@ -1081,8 +1081,12 @@ the existing modules instead of rebuilding these bounded hosts.
 | S-221 — Ordinary Wish procedure and consequences | Planned | V-083, V-086, V-028, V-031 | When selected, source-pin ordinary uses, restrictions and consequences; invoke only represented operations or legal duplicated spell permission, retaining costs/stress across the original invocation. | S-220, S-142, S-090 |
 | S-222 — Referenced procedure capability closure | Planned | V-086 | Before offer/charge, derive needed operations/facts/choice routes/referenced children from supported data; report exact missing capability rather than silently skip an unknown operation. | S-134, S-214 |
 | S-223 — Unsupported child and precise partial-support route | Planned | V-086 | Keep fully supported invocation distinct from explicit bounded approximation; actual selector/control respects child availability and no content-ID allowlist substitutes for missing behavior. | S-222 |
+| S-227 — Travel pace, rate and travel clock | Planned | V-098, V-045, V-057 | Party selects a legal pace from terrain max/road/slow-member/special-movement rules; travel advances the campaign clock by actual distance/time and applies pace check modifiers; mount boost spends a cumulative budget; reload doesn't replay travel. Source: srd.txt 712–760, 12315–12350. | S-065, S-179 |
+| S-228 — Terrain travel procedures and marching order | Planned | V-098, V-078 | Per represented terrain, roll encounter distance and run Foraging/Navigation/Search checks once per stage with marching order; outcomes without SRD bodies (yield, being lost) stay explicit unknown/campaign-authored. Source: srd.txt 737–748, 12354–12370. | S-227, S-200, S-219 |
+| S-229 — Location-scoped search and hidden-object discovery | Planned | V-099, V-073 | Search reveals a declared hidden object/trap only to an eligible searcher in its vicinity, per observer, once discovered persists; searching elsewhere never reveals. Source: srd.txt 712–722, 11989. | S-190, S-188 |
+| S-230 — Trap trigger/disarm and lock procedures | Planned | V-099, V-096 | Declared trap trigger/detection/disarm/effect/reset and lock key/tool-check/break routes act on the actual room object; failure costs settle once and the object state survives checkpoints. Source: srd.txt 5900–5945, 12727–12928. | S-229, S-212, S-119 |
 
-## Coverage crosswalk for all 97 parents
+## Coverage crosswalk for all 99 parents
 
 A slice can support several parents; count its S-ID once. A row here means
 the requirement has an explicit destination, not that its broad capability
@@ -1190,6 +1194,8 @@ row; its mapping below names explicit checkpoint-bearing slices.
 | V-095 — Owned maximum-HP changes | S-130, S-131 |
 | V-096 — Repair actual object state | S-212, S-213 |
 | V-097 — Redirect or reflect the original spell | S-132, S-133 |
+| V-098 — Overland travel pace and terrain procedures | S-227, S-228 |
+| V-099 — Location-scoped search, traps and locks | S-229, S-230 |
 
 ## Source follow-up outside the capability denominator
 
@@ -1229,7 +1235,7 @@ Record discovered additions/splits and refresh the phase/count/coverage tables.
 Keep live quest/session details on the Quest Board and orchestration queue,
 rather than turning this baseline into an execution diary.
 
-Planning reconciliation checked all 97 V-IDs, all 226 unique S-IDs, every named
+Planning reconciliation checked all 99 V-IDs, all 230 unique S-IDs, every named
 slice prerequisite, and absence of prerequisite cycles. This is document
 consistency only; it is not runtime or rules-fidelity validation.
 

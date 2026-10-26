@@ -47,8 +47,9 @@ PRs #57–60 cover the four follow-ups: stale scenario fixtures, bounded player-
 cast transformations, combat Find Steed arrival/recovery and additional weapon
 damage-choice routes. The [reviewed boundary and original queue's open work](docs/planning/vocabulary-slices.md#pr57-60-validation)
 own their remaining scope. Continue the unresolved gameplay investigations or
-S-141 duration/concentration; do not reassign the delivered subsets. Counts stay
-151 accepted of 226 defined engine slices.
+S-141 duration/concentration; do not reassign the delivered subsets. Counts are
+151 accepted of 230 defined engine slices after the [exploration audit](docs/reviews/dnd-code-vocabulary-gap-checklist.md#exploration-and-world-procedures-audit--srd-521-2026-10-26)
+added planned S-227–S-230 (travel pace/terrain, search, traps/locks).
 
 The [first Crown conversion batch](docs/planning/vocabulary-slices.md#conversion-batch-001)
 resolves ten candidates: three shared spell conversions, one already generic

@@ -267,6 +267,8 @@ state or execution requirements. They are grouped here to keep V-001–086 stabl
 | [ ] V-095 — Owned maximum-HP changes | Apply/remove max-HP delta or periodic reduction with source provenance, cure boundary, floor and zero-limit death/remains policy; distinguish reducing max HP from marking damage unhealable. | M: Vampire typed damage reduces max HP; prior map: Mummy rot reductions and cure. | Partial: native max-HP attack riders; general source-owned policy uncertain (`Character`, `CombatAction`). | V-006, V-016, V-021, V-049, V-057 |
 | [ ] V-096 — Repair actual object state | Restore HP/function or join retained pieces of an existing exact object, subject to material/piece/location eligibility, without generating a fresh copy or recovering missing pieces automatically. | C-Clockwork: Cavalcade repairs damaged objects; I: Rope of Mending loses missing sections. | Partial: room object HP/state; generic repair operation uncertain (`LocalRoomRules`, `CombatObjectRules`). | V-005, V-027, V-076, V-094 |
 | [ ] V-097 — Redirect or reflect the original spell | Propose a new target for only the permitted incoming spell/step, retain original parameters or declared reflected-caster policy, and avoid new slot payment/recasting. | I: Ring of Spell Turning versus Staff of Charming; M: Tarrasque reflection. | Partial: native cast pipeline; generic causal target replacement uncertain (`SpellCast*`, `SharedStepExecutor`). | V-002, V-010, V-019, V-028, V-032 |
+| [ ] V-098 — Overland travel pace and terrain procedures | Choose a group pace per stage from the terrain maximum (road/slow-member/special-movement adjustments), convert to distance/time, apply pace check modifiers, and run per-terrain encounter-distance, foraging, navigation and search procedures with marching order. | SRD 5.2.1 Travel Pace/Travel Terrain (srd.txt 712–760, 12315–12370). | Missing: overworld uses movement points only; no pace, travel clock or terrain DCs (`OverworldState`). | V-045, V-057, V-069, V-078 |
+| [ ] V-099 — Location-scoped search, traps and locks | Search reveals a hidden object/trap only to a searcher in its vicinity; traps declare trigger, detection, disarm and effect; locks accept key, tool check or breaking. | SRD 5.2.1 Finding Hidden Objects, Traps, Thieves' Tools/Lock (srd.txt 712–722, 12727–12928, 5900–5945). | Missing: dungeon trap rooms are authored events; no lock DC or vicinity search. | V-005, V-073, V-083, V-096 |
 
 ## Proposed implementation order
 
@@ -354,7 +356,7 @@ the complete intended rules vocabulary has been exhausted.
 ## Discovery findings and inspected domains
 
 The earlier document had 31 broad families. It now retains those IDs and adds
-**97 concrete V-series entries** with examples, static support, likely hooks and
+**99 concrete V-series entries** (V-098/V-099 from the 2026-10-26 exploration audit) with examples, static support, likely hooks and
 dependencies. Most entries refine an existing family; 97 does not mean 97 wholly
 absent functions or 97 rules newly discovered in the repository. Several had
 already appeared in the wiring map/design and now become explicit checkboxes.
@@ -403,6 +405,70 @@ constants and likely progression, inventory, room, corpse and campaign hooks.
 The static inventory itself is not runtime evidence. Registry VS boundaries cite
 only their specific production evidence; parent capabilities remain open unless
 their full rows are separately implemented and tested.
+
+## Exploration and world procedures audit — SRD 5.2.1 (2026-10-26)
+
+Static audit for travel, light/vision, hiding/searching, objects/locks, hazards,
+food/water, resting, crafting and downtime. Rules authority: `/workspace/srd.txt`
+(text of `SRD_CC_v5.2.1.pdf`); line numbers below refer to that text export.
+Two-column extraction interleaves columns, so a cited range may contain unrelated
+text. Nothing here is filled from memory; clauses not read are marked unreviewed.
+This is planning only: no runtime, data, conversion or availability changes.
+
+**Inventory capture.** Commit `ede0a3c` (main). Linux headless Godot 4.7.2
+(`--headless --script`), because the supported Windows runner was unreachable;
+this is a DataLoader/source inventory, not production gameplay validation.
+`DataLoader.get_registry_hash()` returns the sorted registry snapshot string;
+its SHA-256 is `70a83cc74e530743e90f8fadc992bd0651f56b51cb84b06cd73fcaf22187845e`.
+Load errors 0; loaded records: 14 classes, 289 items, 362 spells, 481 monsters,
+4 event tables, 1 campaign. Event/campaign step vocabulary relevant here:
+`rest` (2), `skill_check` (7), `damage` (10), `reveal_map` (3), `teleport_random` (1),
+`reduce_speed` (1), room object kinds `door`/`container`/`barrier`/`loose`/`remains`.
+Only `torch` and `lantern_hooded` carry portable-light fields. Export and log:
+`.artifacts/exploration-audit/` (ignored). Fresh counts; no historical counts reused.
+
+**Classification key.** E = existing supported (bounded; cites code/VS);
+P = planned under an existing slice; H = missing host/control/continuation of an
+accepted bounded slice; N = genuinely unaccounted reusable capability (new row
+below); G = source gap, deferred, or ADR-0023/campaign judgment.
+
+| SRD clause (srd.txt lines) | Smallest reusable behavior (trigger → choice/cost → effect/duration/end; state) | Current repo | Class | Owner |
+|---|---|---|---|---|
+| Travel Pace table and pace effects (712–760; 12315–12350) | Party chooses Fast/Normal/Slow per journey stage → distance per minute/hour/day; pace grants Disadvantage/Advantage to Perception/Survival/Stealth while travelling; persistent: chosen pace, travelled hours | Overworld hex moves use movement points (`OverworldState`); no pace, no check modifiers; outside-combat time does not advance the campaign clock (roadmap) | N | S-227 (V-098) |
+| Mounts double distance for 1 hour, then need a rest (712–725) | Mount-paced boost → cumulative 1-hour budget → recovery on Short/Long Rest | No overworld mount pace | N | S-227; reuses S-064/S-065 |
+| Good Roads, Slower Travelers, flying/ignore-Difficult-Terrain pace (12318–12338) | Max pace from terrain, raised one step by road, forced Slow if any member's Speed ≤ half; special movement overrides | Not represented | N | S-227 |
+| Extended Travel (12331–12336) | Each hour past 8 → Con save DC 10 + hours past 8 → 1 Exhaustion | Exhaustion level exists (`Character.gain_exhaustion`); no travel-hour trigger | P | S-200 (travel exposure) after S-227 |
+| Special Movement conversion, Vehicles (12337–12350; 755–760) | Speed ÷ 10 mph; vehicle speed replaces pace; ships up to 24 h/day | Not represented; vessels only as S-167 projected vessels | N / G | S-227 (rate); waterborne vessels stay with S-167 limits; vehicle tables unreviewed |
+| Travel Terrain table: Encounter Distance, Foraging DC, Navigation DC, Search DC (12354–12370) | Per predominant terrain: roll encounter distance; group Survival vs Foraging DC → food/water; Navigation DC → stay on course; Search DC → find hidden things | Terrain is a hex tile type; no foraging/navigation/search procedures. Consequence bodies of being lost/foraging yield were not found in the read range | N + G | S-228 (V-098); missing yield/lost bodies stay source gaps |
+| Marching Order (737–748) | Ordered party record outside combat → used by traps/spotting/encounter proximity | No marching order | N | S-228 (order as travel/room fact) |
+| Vision and Light: Lightly/Heavily Obscured, Bright/Dim/Darkness (630–660); Special Senses (667–675; glossary 11327, 11335, 11556, 11561, 11663, 11719, 11845, 12185, 12195) | Area illumination + obscurement per location; observer senses by range | Combat: ambient light, portable/spell light radii, Darkvision/Blindsight/Truesight checks (`CombatPerception`, `LightSourceRules`); rooms carry `ambient_light`; overworld none | E (combat, bounded) / P | S-190, S-191 (V-073) |
+| Portable light burn time | Lit copy burns remaining seconds | `LightSourceRules.tick_record` on exact copies | E | S-064 family (cumulative active time) |
+| Hiding / Hide action (676–681; 11753) | Hide action → Stealth check vs DC → Invisible-like state per observer, ends on listed triggers | Combat `hidden` condition with fixed DC and reveal on attack; not observer-relative | H | S-191 |
+| Finding Hidden Objects / Search action (712–722; 11989) | Search only in the described vicinity → Perception vs hidden DC → reveal object for that searcher; elsewhere never reveals | No location-scoped search; events use `skill_check` with authored DC | N | S-229 (V-099) |
+| Study action (12160), Influence action (11820), Social Interaction | Knowledge/attitude results | — | P / G | S-219 (V-083); outcomes campaign-authored per ADR-0023 |
+| Time-limited object interactions; Utilize action (700–711; 12293) | One free object interaction per turn; more cost Utilize | Combat action economy (not re-audited here) | Unreviewed | — |
+| What Is an Object; Breaking Objects; Object AC/HP tables (695–736; 11356–11395) | Fragile nonmagical object breaks with an action; resilient objects use AC/HP by material/size | Room/combat objects with HP/destruction (`CombatObjectRules`, `ObjectDestructionRules`, VS explicit object destruction); no material/size table default; no "break fragile object" action | H | S-119/S-120 hosts; repair S-212 |
+| Locks / Thieves' Tools (Equipment 5900–5945) | Utilize with tools → Dex check vs lock DC → unlock; key/Break alternatives | Room `door`/`container` kinds exist; lock DC/pick procedure not found | N | S-230 (V-099) |
+| Carrying Objects / Carrying Capacity (725–730; 11382–11391) | Capacity by size/Strength | Item weights doc; exact contents S-196 | P | S-196/S-197; capacity enforcement unreviewed |
+| Hazards: Burning (11435), Falling (11691), Suffocation (12156), Dehydration (11617), Malnutrition (11876) | Burning: ongoing damage until extinguished; Falling: damage per 10 ft; Suffocation: breath budget then Exhaustion; food/water daily need → Exhaustion | Falling dice on room drops/flight end (`LocalRoomRules`); `SurvivalRules.settle_day` food/water native; suffocation absent; Burning not found as generic | E (fall, food/water native, bounded) / P | S-181 (fall), S-200/S-201 (food/water), S-204/S-205 (air); Burning: P under S-068 repeat events — needs confirmation |
+| Environmental Effects: Deep Water, Extreme Cold/Heat, Frigid Water, Heavy Precipitation, High Altitude, Slippery Ice, Strong Wind, Thin Ice (12511–12556) | Per-environment trigger (hourly/minute exposure or entry) → save/check → Exhaustion, terrain, obscurement, ranged penalties | Two native string references in `PhysicalFactsRules`; no environment model | P | S-200/S-201 (exposure), S-179 (surfaces), S-190 (obscurement); environment facts on rooms/tiles need S-228 terrain record |
+| Curses, Magical Contagions (12400–12510) | Repeated saves, Exhaustion, cure ends | Curse policy for items (VS-132) | P / G | S-202, S-068; narrative curses = G (ADR-0023); clause decomposition unreviewed |
+| Fear and Mental Stress (12557–12618) | Wisdom save → Frightened / Psychic damage / prolonged effects | Conditions exist | G | Optional toolbox guidance; unreviewed |
+| Poison (12619–12726) | Contact/ingested/inhaled/injury delivery, save, damage/condition | Poison damage/condition exist; delivery kinds not modelled | P | S-197 (doses) + existing damage; unreviewed |
+| Traps (12727–12928) | Trigger, detect (Search DC), disarm (check), effect (save/damage), reset | Dungeon `TRAP` rooms resolve via `trapped_chest` event; no detect/disarm/trigger geometry | N | S-229/S-230 |
+| Resting: Short Rest (12014), Long Rest (11880–11962) | Start, eligible duration, interruption, completion benefits, once-per-24h | `RestRules` short/long completion and recovery windows | E (completion) / P | S-070/S-071 (V-048); interruption by travel/combat unverified |
+| Crafting Nonmagical Items, Brewing Potions of Healing, Scribing Spell Scrolls (6227–6260); Crafting Magic Items (13197+) | Tool/material/time cost → work progress → exact output | `WorkRules` qualified work sites (VS-137); no recipes/output | P | S-066/S-067/S-198/S-199 (V-046/V-077) |
+| Lifestyle Expenses; Food, Drink and Lodging (6129) | Daily cost → lodging/food facts | Shop exists; no daily lifestyle | G | Campaign economy, not a rules capability yet; unreviewed |
+| Downtime activities | — | — | G | **Source gap:** no Downtime section found in SRD 5.2.1 text; only rest and crafting clauses. Supplements stay separate |
+| Chases | — | — | G | **Source gap:** no Chases section found in SRD 5.2.1 text |
+
+**Coverage.** Reviewed (clauses read and decomposed): Exploration chapter 600–760,
+Travel/Travel Terrain 12315–12370, Environmental Effects headings 12511–12556,
+hazard glossary entries, Hide/Search entries, Object/Breaking Objects.
+Unreviewed (headings or location only): curses/contagions, fear, poison sample
+tables, trap sample bodies, vehicle/mount tables, crafting cost tables, Utilize/free
+interaction economy, carrying capacity enforcement. No item is called done
+beyond its cited VS boundary.
 
 ## Basis
 
