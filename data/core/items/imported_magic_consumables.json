@@ -607,7 +607,7 @@
       {
         "type": "apply_condition",
         "condition": "poisoned",
-        "duration": 600
+        "duration": 10
       }
     ],
     "value": 0
