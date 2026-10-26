@@ -70,3 +70,4 @@ Weapon attack profiles and S-127 authored damage-type choices (activation or hit
 Extra Attack count and unarmored base-AC upgrade consumers (S-084/S-085; PARTIAL) are described in [attack and AC upgrades](attack-and-ac-upgrades.md).
 Maximum-HP sources and zero-maximum death on monster records (S-130/S-131; PARTIAL) are described in [monster max-HP sources](monster-max-hp-sources.md).
 Last-charge property loss controlled by `keep_properties` (S-060/S-203; PARTIAL) is described in [last-charge property loss](last-charge-property-loss.md).
+Explicit death or destruction without damage (S-119; PARTIAL) is described in [explicit death](explicit-death.md).

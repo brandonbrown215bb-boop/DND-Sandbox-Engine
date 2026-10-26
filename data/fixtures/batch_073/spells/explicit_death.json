@@ -1,0 +1,28 @@
+[
+  {
+    "id": "fixture:b073_word_of_ending",
+    "name": "073 Word of Ending",
+    "description": "Neutral fixture (shape of SRD 5.2.1 p.154 Power Word Kill's threshold death, without its damage fallback): a living creature with 30 or fewer Hit Points dies outright; constructs and undead are not eligible. A living creature already at 0 Hit Points also dies.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "concentration": false,
+    "classes": ["wizard"],
+    "effects": [{"type": "settle_death", "policy": {"id": "b073:ending", "outcome": "death", "remains": "intact", "gear": "retained", "cause": "word_of_ending", "at_zero": "settle", "eligibility": {"max_current_hp": 30, "excluded_creature_types": ["construct", "undead"]}}}]
+  },
+  {
+    "id": "fixture:b073_unmaking",
+    "name": "073 Unmaking",
+    "description": "Neutral fixture: a living humanoid is destroyed outright with no remains; nonmagical gear is destroyed. A target already at 0 Hit Points is refused.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "concentration": false,
+    "classes": ["wizard"],
+    "effects": [{"type": "settle_death", "policy": {"id": "b073:unmaking", "outcome": "destruction", "remains": "destroyed", "gear": "destroyed_except_magic", "cause": "unmade", "at_zero": "refuse", "eligibility": {"creature_types": ["humanoid"]}}}]
+  }
+]
