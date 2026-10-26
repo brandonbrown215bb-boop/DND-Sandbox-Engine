@@ -2173,11 +2173,7 @@
         "duration": 10
       }
     ],
-    "classes": [
-      "bard",
-      "cleric",
-      "druid"
-    ],
+    "classes": ["cleric", "druid"],
     "range_kind": "touch"
   },
   {
