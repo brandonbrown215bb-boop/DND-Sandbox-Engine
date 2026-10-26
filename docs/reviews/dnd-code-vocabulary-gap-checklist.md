@@ -85,12 +85,12 @@ an entire V-series requirement or certify its catalog consumers.
 
 ## Concrete vocabulary checklist
 
-These are building blocks, not 97 new modules or a demand to implement every
+These are building blocks, not 99 new modules or a demand to implement every
 example. Each box covers the boundary stated in its row. Different damage types,
 die sizes, distances and reset counts are parameters unless they change execution
 semantics. Examples identify local source descriptions, not certified gameplay.
 
-All 97 parent boxes remain open where their full boundary is unfinished. The
+All 99 parent boxes remain open where their full boundary is unfinished. The
 checked VS items above record accepted smaller boundaries from retained logs.
 **Partial** includes those proved subsets as well as older paths established only
 by source inspection; only the cited subset is verified. **Uncertain** means a suitable generic path
@@ -357,8 +357,8 @@ the complete intended rules vocabulary has been exhausted.
 
 The earlier document had 31 broad families. It now retains those IDs and adds
 **99 concrete V-series entries** (V-098/V-099 from the 2026-10-26 exploration audit) with examples, static support, likely hooks and
-dependencies. Most entries refine an existing family; 97 does not mean 97 wholly
-absent functions or 97 rules newly discovered in the repository. Several had
+dependencies. Most entries refine an existing family; 99 does not mean 99 wholly
+absent functions or 99 rules newly discovered in the repository. Several had
 already appeared in the wiring map/design and now become explicit checkboxes.
 
 Requirements made explicit by fresh description reads include:
