@@ -394,7 +394,11 @@
     "summoned_creature": {
       "kind": "otherworldly_steed",
       "size": "large",
-      "placement": {"range_hexes": 6, "no_space": "refuse", "choose": true},
+      "placement": {
+        "range_hexes": 6,
+        "no_space": "refuse",
+        "choose": true
+      },
       "forms": [
         "horse",
         "camel",
@@ -441,7 +445,8 @@
         "fey": "fey_step",
         "fiend": "fell_glare"
       }
-    }
+    },
+    "duration": "Instantaneous"
   },
   {
     "id": "divine_smite",
@@ -469,7 +474,8 @@
       "fiend",
       "undead"
     ],
-    "bonus_damage_dice": 1
+    "bonus_damage_dice": 1,
+    "duration": "Instantaneous"
   },
   {
     "id": "mage_hand",

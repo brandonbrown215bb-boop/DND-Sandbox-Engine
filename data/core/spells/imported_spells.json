@@ -450,8 +450,6 @@
     "range": 1,
     "target": "single",
     "attack_type": "none",
-    "damage": "1d8",
-    "damage_type": "necrotic",
     "save": "WIS",
     "classes": [
       "bard",
@@ -658,7 +656,11 @@
       "S"
     ],
     "duration": "Concentration, up to 10 minutes",
-    "concentration": true
+    "concentration": true,
+    "upcast": {
+      "starting_level": 3,
+      "damage_per_level": "1d10"
+    }
   },
   {
     "id": "calm_emotions",
@@ -680,7 +682,11 @@
       "S"
     ],
     "duration": "Concentration, up to 1 minute",
-    "concentration": true
+    "concentration": true,
+    "area_radius": 4,
+    "target_creature_types": [
+      "humanoid"
+    ]
   },
   {
     "id": "charm_person",
@@ -767,7 +773,7 @@
     "school": "evocation",
     "casting_time": "action",
     "range": 18,
-    "target": "area",
+    "target": "single",
     "attack_type": "ranged_spell",
     "damage": "3d8",
     "damage_type": "fire",
@@ -782,7 +788,15 @@
     ],
     "material": "a diamond worth 50+ GP",
     "duration": "Instantaneous",
-    "concentration": false
+    "concentration": false,
+    "damage_type_options": [
+      "acid",
+      "cold",
+      "fire",
+      "lightning",
+      "poison",
+      "thunder"
+    ]
   },
   {
     "id": "clairvoyance",
@@ -791,7 +805,7 @@
     "level": 3,
     "school": "divination",
     "casting_time": "minute",
-    "range": 1,
+    "range": 1056,
     "target": "single",
     "attack_type": "none",
     "classes": [
@@ -877,9 +891,6 @@
       "V"
     ],
     "duration": "instantaneous",
-    "target_creature_type_exclusions": [
-      "undead"
-    ],
     "requires_target_sight": true,
     "effects": [
       {
@@ -1404,7 +1415,7 @@
     "target": "single",
     "attack_type": "none",
     "damage": "3d6",
-    "damage_type": "fire",
+    "damage_type": "psychic",
     "save": "WIS",
     "half_on_save": true,
     "classes": [
@@ -1543,8 +1554,6 @@
     "range": 6,
     "target": "single",
     "attack_type": "none",
-    "damage": "1d4",
-    "damage_type": "force",
     "save": "CON",
     "classes": [
       "bard",
@@ -1624,8 +1633,8 @@
       "V",
       "S"
     ],
-    "duration": "1 minute",
-    "concentration": false
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true
   },
   {
     "id": "expeditious_retreat",
@@ -1710,7 +1719,7 @@
     "level": 3,
     "school": "illusion",
     "casting_time": "action",
-    "range": 6,
+    "range": 0,
     "target": "cone",
     "attack_type": "none",
     "save": "WIS",
@@ -1729,7 +1738,8 @@
     ],
     "material": "a white feather",
     "duration": "Concentration, up to 1 minute",
-    "concentration": true
+    "concentration": true,
+    "cone_size": 6
   },
   {
     "id": "feather_fall",
@@ -1739,7 +1749,7 @@
     "school": "transmutation",
     "casting_time": "reaction",
     "range": 12,
-    "target": "single",
+    "target": "multi",
     "attack_type": "none",
     "classes": [
       "bard",
@@ -1752,7 +1762,8 @@
     ],
     "material": "a small feather or piece of down",
     "duration": "1 minute",
-    "concentration": false
+    "concentration": false,
+    "base_targets": 5
   },
   {
     "id": "feign_death",
@@ -2010,7 +2021,6 @@
     "range": 1,
     "target": "single",
     "attack_type": "none",
-    "save": "CON",
     "classes": [
       "sorcerer",
       "warlock",
@@ -2084,7 +2094,14 @@
     ],
     "material": "powdered diamond worth 200+ GP, which the spell consumes",
     "duration": "Until dispelled or triggered",
-    "concentration": false
+    "concentration": false,
+    "damage_type_options": [
+      "acid",
+      "cold",
+      "fire",
+      "lightning",
+      "thunder"
+    ]
   },
   {
     "id": "goodberry",
@@ -2204,8 +2221,8 @@
     "level": 2,
     "school": "evocation",
     "casting_time": "action",
-    "range": 12,
-    "target": "single",
+    "range": 0,
+    "target": "area",
     "attack_type": "none",
     "save": "STR",
     "classes": [
@@ -2221,7 +2238,8 @@
     ],
     "material": "a legume seed",
     "duration": "Concentration, up to 1 minute",
-    "concentration": true
+    "concentration": true,
+    "area_shape": "line"
   },
   {
     "id": "hail_of_thorns",
@@ -2249,7 +2267,6 @@
     "range": 6,
     "target": "single",
     "attack_type": "none",
-    "save": "DEX",
     "classes": [
       "sorcerer",
       "wizard"
@@ -2395,7 +2412,16 @@
     ],
     "material": "the petrified eye of a newt",
     "duration": "Concentration, up to 1 hour",
-    "concentration": true
+    "concentration": true,
+    "upcast": {
+      "starting_level": 1,
+      "concentration_seconds_by_slot_level": {
+        "2": 14400,
+        "3": 28800,
+        "4": 28800,
+        "5+": 86400
+      }
+    }
   },
   {
     "id": "hold_person",
@@ -2500,7 +2526,7 @@
     "school": "illusion",
     "casting_time": "action",
     "range": 24,
-    "target": "single",
+    "target": "area",
     "attack_type": "none",
     "save": "WIS",
     "classes": [
@@ -2515,7 +2541,15 @@
     ],
     "material": "a pinch of confetti",
     "duration": "Concentration, up to 1 minute",
-    "concentration": true
+    "concentration": true,
+    "area_shape": "cube",
+    "effects": [
+      {
+        "type": "area_selection",
+        "shape": "cube",
+        "size": 6
+      }
+    ]
   },
   {
     "id": "identify",
@@ -2709,7 +2743,7 @@
     "description": "You touch a creature and can end either one disease or one condition afflicting it. The condition can be blinded, deafened, paralyzed, or poisoned.",
     "level": 2,
     "school": "abjuration",
-    "casting_time": "action",
+    "casting_time": "bonus_action",
     "range": 1,
     "target": "single",
     "attack_type": "none",
@@ -2800,8 +2834,8 @@
     "level": 3,
     "school": "evocation",
     "casting_time": "action",
-    "range": 20,
-    "target": "single",
+    "range": 0,
+    "target": "area",
     "attack_type": "none",
     "damage": "8d6",
     "damage_type": "lightning",
@@ -2818,7 +2852,8 @@
     ],
     "material": "a bit of fur and a crystal rod",
     "duration": "Instantaneous",
-    "concentration": false
+    "concentration": false,
+    "area_shape": "line"
   },
   {
     "id": "locate_animals_or_plants",
@@ -3114,8 +3149,6 @@
     "range": 1,
     "target": "single",
     "attack_type": "none",
-    "damage": "6d6",
-    "damage_type": "force",
     "classes": [
       "cleric",
       "druid",
@@ -3391,10 +3424,12 @@
     "range": 12,
     "target": "single",
     "attack_type": "none",
-    "damage": "1d6",
-    "damage_type": "fire",
+    "damage": "2d8",
+    "damage_type": "psychic",
     "save": "INT",
-    "classes": []
+    "classes": [],
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true
   },
   {
     "id": "phantom_steed",
@@ -3477,7 +3512,7 @@
     "school": "evocation",
     "casting_time": "minute",
     "range": 6,
-    "target": "single",
+    "target": "multi",
     "attack_type": "none",
     "effects": [
       {
@@ -3493,7 +3528,9 @@
       "V"
     ],
     "duration": "Instantaneous",
-    "concentration": false
+    "concentration": false,
+    "cast_time_seconds": 600,
+    "base_targets": 5
   },
   {
     "id": "prestidigitation",
@@ -4317,9 +4354,9 @@
     "school": "transmutation",
     "casting_time": "action",
     "range": 24,
-    "target": "single",
+    "target": "multi",
     "attack_type": "none",
-    "save": "DEX",
+    "save": "WIS",
     "classes": [
       "bard",
       "sorcerer",
@@ -4332,7 +4369,8 @@
     ],
     "material": "a drop of molasses",
     "duration": "Concentration, up to 1 minute",
-    "concentration": true
+    "concentration": true,
+    "base_targets": 6
   },
   {
     "id": "spare_the_dying",
@@ -4422,8 +4460,8 @@
     "level": 3,
     "school": "transmutation",
     "casting_time": "action",
-    "range": 6,
-    "target": "single",
+    "range": 0,
+    "target": "self",
     "attack_type": "none",
     "classes": [
       "bard",
@@ -4435,7 +4473,8 @@
       "S"
     ],
     "duration": "10 minutes",
-    "concentration": false
+    "concentration": false,
+    "emanation_radius_hexes": 6
   },
   {
     "id": "spider_climb",
@@ -4608,7 +4647,11 @@
     ],
     "material": "a tart and a feather",
     "duration": "Concentration, up to 1 minute",
-    "concentration": true
+    "concentration": true,
+    "upcast": {
+      "starting_level": 1,
+      "additional_targets_per_level": 1
+    }
   },
   {
     "id": "tensers_floating_disk",
@@ -4874,7 +4917,7 @@
     "school": "transmutation",
     "casting_time": "action",
     "range": 6,
-    "target": "single",
+    "target": "multi",
     "attack_type": "none",
     "classes": [
       "druid",
@@ -4889,7 +4932,8 @@
     ],
     "material": "a short reed",
     "duration": "24 hours",
-    "concentration": false
+    "concentration": false,
+    "base_targets": 10
   },
   {
     "id": "water_walk",
@@ -4927,8 +4971,6 @@
     "range": 12,
     "target": "single",
     "attack_type": "none",
-    "damage": "2d4",
-    "damage_type": "fire",
     "save": "DEX",
     "classes": [
       "sorcerer",
@@ -4953,8 +4995,8 @@
     "range": 24,
     "target": "single",
     "attack_type": "none",
-    "damage": "3d8",
-    "damage_type": "force",
+    "damage": "4d8",
+    "damage_type": "bludgeoning",
     "save": "STR",
     "half_on_save": true,
     "classes": [
@@ -5034,7 +5076,7 @@
     "attack_type": "none",
     "save": "WIS",
     "condition_on_failed_save": "charmed",
-    "condition_duration": 10,
+    "condition_duration": 600,
     "concentration": true,
     "classes": [
       "bard",
