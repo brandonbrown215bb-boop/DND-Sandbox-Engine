@@ -56,3 +56,35 @@ Magic Missile darts, and successful Scorching Ray damage retain all their dice.
 Area spells share one settled damage roll and one Empowered cost across their
 targets. Training permits saving the available spell catalog while missing
 cantrip/prepared choices remain pending.
+
+<a id="srd-feature-inventory"></a>
+
+## SRD 5.2.1 feature inventory — 2026-10-26
+
+Static source/inventory pass, not a rules audit or gameplay proof. SRD headings were read from `SRD_CC_v5.2.1.pdf` (pages are PDF page numbers) and matched by name/level to `data/core/classes/sorcerer.json`. Repo status is the [feature matrix](../feature_matrix.md) exposure label / record `rules_status`. Registry slice is shown only where the slice registry names this feature or its generic consumer; `unassigned` means no documented owning slice. V-IDs are the [checklist](../reviews/dnd-code-vocabulary-gap-checklist.md) rows citing this feature as an example; they are open requirements, not owning slices. **Reviewed** means an SRD clause review recorded in the [slice registry](../planning/vocabulary-slices.md); every other row is unreviewed, whatever its `rules_status` says. Rows absent from repo data are not filled from memory.
+
+SRD subclass: **Draconic Sorcery** — absent from repo data.
+
+| Kind | Lvl | SRD feature / repo record | SRD | Repo ID | Repo status | V-IDs | Registry slice (documented limit) | Review |
+|---|---:|---|---|---|---|---|---|---|
+| class | 1 | Spellcasting | p.64 | `sorcerer_spellcasting` | mechanics-backed / 2024-partial | — | unassigned | Unreviewed |
+| class | 1 | Innate Sorcery | p.65 | `sorcerer_innate_sorcery` | mechanics-backed / 2024-partial | — | unassigned | Unreviewed |
+| class | 2 | Font of Magic | p.66 | `sorcerer_font_of_magic` | mechanics-backed / 2024-partial | — | unassigned | Unreviewed |
+| class | 2 | Metamagic | p.66 | `sorcerer_metamagic` | mechanics-backed / 2024-partial | V-042 | unassigned | Unreviewed |
+| class | 3 | Sorcerer Subclass | p.66 | `sorcerer_subclass` | quarantined / reference-only | — | unassigned | Unreviewed |
+| class | 4 | Ability Score Improvement | p.66 | `sorcerer_ability_improvement_4`, `sorcerer_ability_improvement_8`, `sorcerer_ability_improvement_12`, `sorcerer_ability_improvement_16` | mechanics-backed / 2024-supported | — | S-049/S-050/S-084/S-085/S-103/S-104 (fixture-only Origin/ASI feat acquisition; feat content, prerequisites, ability benefits, Fighting Style grants, level-19 feat path open) | Unreviewed |
+| class | 5 | Sorcerous Restoration | p.66 | `sorcerer_sorcerous_restoration` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| class | 7 | Sorcery Incarnate | p.66 | `sorcerer_sorcery_incarnate` | mechanics-backed / 2024-partial | — | unassigned | Unreviewed |
+| class | 19 | Epic Boon | p.66 | `sorcerer_epic_boon` | mechanics-backed / 2024-partial | — | S-049/S-050/S-084/S-085/S-103/S-104 (fixture-only Origin/ASI feat acquisition; feat content, prerequisites, ability benefits, Fighting Style grants, level-19 feat path open) | Unreviewed |
+| class | 20 | Arcane Apotheosis | p.66 | `sorcerer_arcane_apotheosis` | mechanics-backed / 2024-partial | — | unassigned | Unreviewed |
+| repo-only class | 2 | Sorcery Points | Named inside an SRD feature body (repo split); page not resolved per clause | `sorcerer_sorcery_points` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| repo-only class | 6 | Sorcerer Subclass Feature | Placeholder for subclass level; SRD subclass body not in repo | `sorcerer_subclass_feature_6` | quarantined / reference-only | — | unassigned | Unreviewed |
+| repo-only class | 10 | Metamagic Improvement | No SRD 5.2.1 heading found — source gap | `sorcerer_metamagic_improvement_10` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| repo-only class | 14 | Sorcerer Subclass Feature | Placeholder for subclass level; SRD subclass body not in repo | `sorcerer_subclass_feature_14` | quarantined / reference-only | — | unassigned | Unreviewed |
+| repo-only class | 17 | Metamagic Improvement | No SRD 5.2.1 heading found — source gap | `sorcerer_metamagic_improvement_17` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| repo-only class | 18 | Sorcerer Subclass Feature | Placeholder for subclass level; SRD subclass body not in repo | `sorcerer_subclass_feature_18` | quarantined / reference-only | — | unassigned | Unreviewed |
+| subclass | 3 | Draconic Resilience | p.69 | — | absent | — | unassigned | Unreviewed (absent) |
+| subclass | 3 | Draconic Spells | p.70 | — | absent | — | unassigned | Unreviewed (absent) |
+| subclass | 6 | Elemental Affinity | p.70 | — | absent | — | unassigned | Unreviewed (absent) |
+| subclass | 14 | Dragon Wings | p.70 | — | absent | — | unassigned | Unreviewed (absent) |
+| subclass | 18 | Dragon Companion | p.70 | — | absent | — | unassigned | Unreviewed (absent) |

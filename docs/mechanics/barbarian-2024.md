@@ -66,3 +66,88 @@ retain that verification limit. This audit does not schedule the next class.
 The configured review contracts were unavailable; the original implementation
 was checked solo on Windows Godot 4.7, headless. No full integration-suite or
 manual/rendered acceptance is claimed by that batch.
+
+<a id="srd-feature-inventory"></a>
+
+## SRD 5.2.1 feature inventory — 2026-10-26
+
+Static source/inventory pass, not a rules audit or gameplay proof. SRD headings were read from `SRD_CC_v5.2.1.pdf` (pages are PDF page numbers) and matched by name/level to `data/core/classes/barbarian.json`. Repo status is the [feature matrix](../feature_matrix.md) exposure label / record `rules_status`. Registry slice is shown only where the slice registry names this feature or its generic consumer; `unassigned` means no documented owning slice. V-IDs are the [checklist](../reviews/dnd-code-vocabulary-gap-checklist.md) rows citing this feature as an example; they are open requirements, not owning slices. **Reviewed** means an SRD clause review recorded in the [slice registry](../planning/vocabulary-slices.md); every other row is unreviewed, whatever its `rules_status` says. Rows absent from repo data are not filled from memory.
+
+SRD subclass: **Path of the Berserker** — absent from repo data.
+
+| Kind | Lvl | SRD feature / repo record | SRD | Repo ID | Repo status | V-IDs | Registry slice (documented limit) | Review |
+|---|---:|---|---|---|---|---|---|---|
+| class | 1 | Rage | p.28 | `barbarian_rage` | mechanics-backed / unset | V-020, V-039, V-049, V-055, V-088 | unassigned | Unreviewed |
+| class | 1 | Unarmored Defense | p.29 | `barbarian_unarmored_defense` | mechanics-backed / unset | — | S-085 (PARTIAL: first unarmored base-AC consumer only; class conversion open) | Unreviewed |
+| class | 1 | Weapon Mastery | p.29 | `barbarian_weapon_mastery` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| class | 2 | Danger Sense | p.29 | `barbarian_danger_sense` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| class | 2 | Reckless Attack | p.29 | `barbarian_reckless_attack` | mechanics-backed / unset | V-001 | unassigned | Unreviewed |
+| class | 3 | Barbarian Subclass | p.29 | `barbarian_barbarian_subclass` | quarantined / unset | — | unassigned | Unreviewed |
+| class | 3 | Primal Knowledge | p.29 | `barbarian_primal_knowledge` | mechanics-backed / unset | — | unassigned | Unreviewed |
+| class | 4 | Ability Score Improvement | p.29 | `barbarian_ability_score_improvement`, `barbarian_ability_improvement_8`, `barbarian_ability_improvement_12`, `barbarian_ability_improvement_16` | mechanics-backed / 2024-supported | — | S-049/S-050/S-084/S-085/S-103/S-104 (fixture-only Origin/ASI feat acquisition; feat content, prerequisites, ability benefits, Fighting Style grants, level-19 feat path open) | Unreviewed |
+| class | 5 | Extra Attack | p.29 | `barbarian_extra_attack` | mechanics-backed / unset | — | S-084 (PARTIAL: exclusive Extra Attack count consumer accepted; source-backed class conversion open) | Unreviewed |
+| class | 5 | Fast Movement | p.29 | `barbarian_fast_movement` | mechanics-backed / 2024-supported | — | unassigned | Reviewed 2026-10-21 Conversion Batch 001: already generic |
+| class | 7 | Feral Instinct | p.29 | `barbarian_feral_instinct` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| class | 7 | Instinctive Pounce | p.29 | `barbarian_instinctive_pounce` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| class | 9 | Brutal Strike | p.29 | `barbarian_brutal_strike` | mechanics-backed / 2024-supported | V-001, V-012 | unassigned | Unreviewed |
+| class | 11 | Relentless Rage | p.30 | `barbarian_relentless_rage` | mechanics-backed / 2024-supported | V-020, V-088 | unassigned | Unreviewed |
+| class | 13 | Improved Brutal Strike | p.30 | `barbarian_improved_brutal_strike_13` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| class | 15 | Persistent Rage | p.30 | `barbarian_persistent_rage` | mechanics-backed / 2024-supported | V-049, V-055 | unassigned | Unreviewed |
+| class | 17 | Improved Brutal Strike | p.30 | `barbarian_improved_brutal_strike_17` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| class | 18 | Indomitable Might | p.30 | `barbarian_indomitable_might` | mechanics-backed / 2024-supported | V-008 | unassigned | Unreviewed |
+| class | 19 | Epic Boon | p.30 | `barbarian_epic_boon` | mechanics-backed / 2024-supported | — | S-049/S-050/S-084/S-085/S-103/S-104 (fixture-only Origin/ASI feat acquisition; feat content, prerequisites, ability benefits, Fighting Style grants, level-19 feat path open) | Unreviewed |
+| class | 20 | Primal Champion | p.30 | `barbarian_primal_champion` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| repo-only class | 3 | Primal Path | Placeholder for subclass level; SRD subclass body not in repo | `barbarian_primal_path` | quarantined / unset | — | unassigned | Unreviewed |
+| subclass | 3 | Frenzy | p.30 | — | absent | — | unassigned | Unreviewed (absent) |
+| subclass | 6 | Mindless Rage | p.30 | — | absent | — | unassigned | Unreviewed (absent) |
+| subclass | 10 | Retaliation | p.30 | — | absent | — | unassigned | Unreviewed (absent) |
+| subclass | 14 | Intimidating Presence | p.30 | — | absent | — | unassigned | Unreviewed (absent) |
+
+<a id="srd-clause-decomposition-batch-2"></a>
+## SRD clause decomposition — batch 2 (2026-10-26)
+
+**Status: partial.** Static source review for planning. It does not change runtime code, content or availability. Clauses come only from `SRD_CC_v5.2.1.pdf` (PDF page = printed page). Loaded records come from the production DataLoader export: Linux headless Godot 4.7.2, `res://scenes/feature_inventory_export.tscn`, commit `0196f328f1de` (docs-only over `ede0a3c`), registry SHA-256 `70a83cc74e530743e90f8fadc992bd0651f56b51cb84b06cd73fcaf22187845e`, 0 validation failures. The supported Windows runner was not reachable from this environment, so the export is not Windows evidence. Execution is taken from the loaded record: `native` = `resolver`, `executor` = `executor: class_feature`, `effects` = data effects. Slices and limits are quoted from the [slice registry](../planning/vocabulary-slices.md); a citation does **not** prove that this clause is covered. Coverage is proven only by that slice's acceptance evidence for this feature.
+
+Classification: **ES** existing supported (class-doc production checks; shared-slice coverage unproven unless stated) · **PL** planned under an existing slice · **HC** missing host/control, or continuation of an accepted bounded slice · **GAP** genuinely unaccounted reusable capability (new planned row) · **SRC** source gap, deferral or ADR-0023 judgment · **ACQ** acquisition/advancement: grant logged by Subclass Stager (not classified here).
+
+### Barbarian (pp.28–30): 22 loaded records reviewed against SRD
+
+Loaded: 1 `executor`, 15 `effects`, 6 `native` (`barbarian_rules`). Refused by DataLoader as effectless: `barbarian_primal_path`, `barbarian_barbarian_subclass` (subclass-choice levels: ACQ). Berserker (p.30) has no loaded record, so its clauses are unreviewed (no repo host to classify).
+
+| Feature (lvl, record, exec) | SRD clause | Class. | Slice / limit or gap |
+|---|---|---|---|
+| Rage (1, `barbarian_rage`, executor) | Bonus Action entry; not while wearing Heavy armor | ES | Class-doc production checks; shared action-cost host via executor |
+| | Uses per table; regain 1 on Short Rest, all on Long Rest | ES | S-007 (VS-07: fixed Short Rest / fill Long Rest). SRD text confirmed at `srd.txt` 1749–1751 ("You regain one expended use when you finish a Short Rest, and you regain all expended uses when you finish a Long Rest"); data `short_rest_recovery: 1` (`data/core/classes/barbarian.json`) with the `src/test_runner.gd` Rage use assertion |
+| | Resistance to Bludgeoning/Piercing/Slashing | ES | Native checks; shared timed self-grant S-012 is AC-only (VS-12), so a shared resistance grant is HC |
+| | Rage damage bonus on Strength attacks, scaled by table | ES / HC | Native checks; table scaling: S-048/V-007 (VS-69 level deltas) |
+| | Advantage on Strength checks/saves | ES | S-091 (VS-29 declared Advantage policy) |
+| | No spellcasting or Concentration while raging | ES | Native checks (spell/Concentration refusal) |
+| | Lasts until end of next turn; extended by an attack roll, a forced save or a Bonus Action; 10-minute cap | ES / PL | Native upkeep clock; shared duration S-141 (Planned) |
+| | Ends on donning Heavy armor or becoming Incapacitated | ES | Native checks; shared S-072 (VS-71 action/status/equipment termination) |
+| Unarmored Defense (1, effects) | AC = 10 + Dex + Con while no armor; Shield allowed | ES | Shared armor calculation; S-085 cites Unarmored Defense (VS-122 bounded) |
+| Weapon Mastery (1, effects) | Mastery properties of chosen weapons; change on Long Rest | ACQ / PL | Choice and persistence: Subclass Stager. Use: S-085 (VS-122), S-127 (Planned) |
+| Danger Sense (2, effects) | Advantage on Dex saves unless Incapacitated | ES | S-091 (VS-29) |
+| Reckless Attack (2, effects) | First-attack choice: Advantage on own Str attacks; attacks against you have Advantage until next turn | ES | S-091 (VS-29); own-turn window S-056 (VS-54) |
+| Primal Knowledge (3, effects) | Extra skill proficiency | ACQ | grant logged by Subclass Stager |
+| | Raging: use Str for listed skill checks | ES | Native event check; shared ability replacement S-126 (VS-116 is weapon/spell-DC only), so a check-ability swap is HC |
+| ASI (4/8/12/16, effects) | Feat / ASI | ACQ | grant logged by Subclass Stager |
+| Extra Attack (5, effects) | Two attacks per Attack action | ES | S-084 (VS-120 owned parameter upgrades); S-146 (VS-97) |
+| Fast Movement (5, effects) | +10 ft Speed without Heavy armor | ES | Conversion Batch 001: already generic; S-179 (VS-102) |
+| Feral Instinct (7, effects) | Advantage on Initiative | ES | S-091 (VS-29); no live acceptance in class doc |
+| Instinctive Pounce (7, native) | Move up to half Speed as part of the Rage Bonus Action | ES / **GAP** | Native checks. Shared granted movement outside the normal budget: **S-241** |
+| Brutal Strike (9, native) | With Reckless Attack, forgo Advantage on one Str attack without Disadvantage | ES / HC | Native checks; shared forgo-Advantage option is HC on S-091 + S-085 |
+| | On hit: +1d10 damage of the weapon's type, plus one effect | ES / HC | S-084 option upgrade; typed extra damage S-013 is next-hit/fixed (VS-13), so per-hit choice is HC |
+| | Forceful Blow: push 15 ft straight away, then move half Speed straight toward the target without provoking OAs | ES / **GAP** | Native live-grid checks. Shared forced and granted movement: **S-241** |
+| | Hamstring Blow: Speed −15 ft until your next turn; most recent only | ES / HC | Native checks; S-179 speed (VS-102); non-stacking replacement S-057 (VS-55) |
+| Relentless Rage (11, native) | At 0 HP while raging, not outright death: DC 10 Con save; success sets HP to 2 × level | ES | S-117 (VS-111), S-118 (VS-112) |
+| | DC +5 per use; resets on Short/Long Rest | ES | S-118 / S-090 (VS-96) |
+| Improved Brutal Strike (13, native) | Staggering Blow: Disadvantage on next save; no OAs until your next turn | ES / PL | Native; next-save matcher S-076 (Planned); OA forbid HC |
+| | Sundering Blow: another creature's next attack gets +5 before your next turn; once per roll | ES / PL | S-076 (Planned); S-057 (VS-55) once per roll |
+| Persistent Rage (15, native) | On Initiative regain all Rage uses; once per Long Rest | ES | S-062 (VS-62 turn-start/Initiative recovery) |
+| | Rage lasts 10 min without extension, ends only on Unconscious or Heavy armor | ES | Native checks; S-072 (VS-71) |
+| Improved Brutal Strike (17, native) | 2d10 and two different effects | ES | S-084 (VS-120) |
+| Indomitable Might (18, effects) | Str check/save total below Str score: use the score | ES | S-038 (VS-45) |
+| Epic Boon (19, effects) | Feat choice | ACQ | grant logged by Subclass Stager; boon bodies are SRC-01 feats |
+| Primal Champion (20, effects) | Str and Con +4, max 25 | ES | S-048 (VS-69) |
+
+Barbarian totals: 22/22 loaded records decomposed (100% of loaded; 0 of the Berserker records, which are absent). New gap: S-241. Native-only behaviors still needing shared hosts (HC): resistance self-grant, check-ability swap, forgo-Advantage option, per-hit typed damage choice, OA prohibition.

@@ -8,7 +8,7 @@ certify converted catalog content.
 
 ## Count and scope
 
-**226 defined slices: 151 verified, 75 not yet accepted.** Counts measure accepted
+**276 defined slices: 151 verified, 125 not yet accepted.** (S-246–S-276 from the [wave 2 audit integration](#wave-2-audit-slices); S-240/S-241 from [SRC-01 batch 2](#src-01-batch-2); S-235–S-239 added by the 2026-10-26 [core rules/conditions audit](../mechanics/core-rules-status.md).) Counts measure accepted
 bounded implementations, not time, effort or completion of every clause in a row.
 These totals include reviewed, repaired and merged Batches 034–065 through
 2026-10-21, plus combat save-exit placement (VS-144), the bounded located source-end continuation (VS-145) and
@@ -27,16 +27,16 @@ catalog content as part of every slice.
 
 | Phase | Defined | Verified | Not yet accepted |
 |---|---:|---:|---:|
-| P1 — Facts, results and grants | 34 | 34 | 0 |
-| P2 — Pools, time and effect state | 50 | 41 | 9 |
-| P3 — Rolls and decisions | 27 | 22 | 5 |
-| P4 — Damage and consequences | 25 | 20 | 5 |
-| P5 — Casting and action composition | 20 | 12 | 8 |
+| P1 — Facts, results and grants | 44 | 34 | 10 |
+| P2 — Pools, time and effect state | 56 | 41 | 15 |
+| P3 — Rolls and decisions | 32 | 22 | 10 |
+| P4 — Damage and consequences | 31 | 20 | 11 |
+| P5 — Casting and action composition | 25 | 12 | 13 |
 | P6 — Actors and forms | 23 | 17 | 6 |
-| P7 — Space, perception and illusions | 19 | 1 | 18 |
-| P8 — Physical items and bodies | 18 | 4 | 14 |
-| P9 — Procedures and campaign outcomes | 10 | 0 | 10 |
-| **Total** | **226** | **151** | **75** |
+| P7 — Space, perception and illusions | 27 | 1 | 26 |
+| P8 — Physical items and bodies | 22 | 4 | 18 |
+| P9 — Procedures and campaign outcomes | 16 | 0 | 16 |
+| **Total** | **276** | **151** | **125** |
 
 ## How to use a row
 
@@ -966,6 +966,8 @@ the existing modules instead of rebuilding these bounded hosts.
 | S-131 — Maximum-HP zero death/remains policy | Verified (VS-124; Character zero-maximum death) | V-095, V-021 | Use source-specific zero-limit death/remains behavior and recovery restrictions, distinct from current-HP zero and injury-specific healing blocks. | S-130, S-119 |
 | S-132 — Redirect original incoming spell target | Planned | V-097 | Propose a legal alternate recipient for only the permitted original spell/step; retain original slot/parameters and settled earlier recipients, with no recast. | S-116, S-144 |
 | S-133 — Reflection with declared caster policy | Planned | V-097 | Reflect using stated original-versus-reflector attack/DC/ownership, preserving causal identity and limits; redirected origin/recipient alone cannot choose new stats. | S-132, S-114 |
+| S-235 — SRD condition consequence table | Planned | V-100, V-012, V-013 | One shared table drives each SRD 5.2.1 condition's attack/save/check/speed/turn/concentration consequences for Characters and monsters on the same production path; audit deviations (Poisoned turn damage, missing auto-fails, Prone/Unconscious) resolved explicitly. See [core-rules status](../mechanics/core-rules-status.md). | S-072, S-074 |
+| S-236 — Grappled condition and Grapple/Shove | Planned | V-064 | Apply source-bound Grappled (Speed 0, Disadvantage vs others, drag cost, escape, ends on Incapacitated/out of reach) and Unarmed Strike Grapple/Shove; reuse S-168 tethers without duplicating them. | S-168, S-235 |
 
 ## P5 — Casting and action composition
 
@@ -991,6 +993,7 @@ the existing modules instead of rebuilding these bounded hosts.
 | S-151 — Release stored spell once | Planned | V-084 | New holder chooses actual legal targets using stored numbers and declared ownership; release consumes only the selected stored entry and does not repay its original slot. | S-150, S-144 |
 | S-152 — Temporary preparation theft and enemy prohibition | Planned | V-087, V-057 | A qualifying failed save grants exact spell permission and denies that enemy's matching spell for the captured deadline, without storing a cast or removing others' knowledge. | S-116, S-137, S-049 |
 | S-153 — Theft expiry/source removal lifecycle | Planned | V-087 | Remove only the stolen permission/prohibition when its declared boundary ends; reload and repeated callbacks neither extend time nor revive old grants. | S-152, S-072 |
+| S-237 — SRD generic action menu | Planned | V-101, V-060 | Dash/Disengage/Dodge/Help/Hide/Influence/Ready/Search/Study/Utilize reachable as ordinary Actions with SRD effects; feature versions reuse them at their own cost; Hide uses DC 15 and location preconditions and yields Invisible. | S-160, S-191 |
 
 ## P6 — Actors and forms
 
@@ -1043,6 +1046,8 @@ the existing modules instead of rebuilding these bounded hosts.
 | S-193 — Remote borrowed senses and delivery limits | Planned | V-074 | Let eligible observers borrow a linked sensor's specified senses/communication or touch-delivery route; exit/range/source loss restores normal restrictions. | S-192, S-026 |
 | S-194 — Direction/location/identity-only disclosure | Planned | V-075 | Return only declared detection facts/nearest source/direction to the permitted observer; don't reveal the full actor sheet or concealed identity. | S-190, S-025 |
 | S-195 — Masked thought/type/material detection rules | Planned | V-075 | Honor source-specific masks, thought permission and actual material/thickness limits; unavailable knowledge remains an explicit unknown. | S-194, S-032, S-219 |
+| S-238 — Cover from actual obstruction | Planned | V-005, V-073 | Compute Half/Three-Quarters/Total cover from actual obstruction and apply it to AC, DEX saves and targeting. A spell or item source can declare which cover it ignores: Half only (e.g. Wand of the War Mage) or Half and Three-Quarters (e.g. Sacred Flame). Total cover is never ignored (wave 2 folds: core-4, spells-1, items B4-0 row 7 Wand of the War Mage; `ignore_cover_on_save` is a declared but unread field today). | S-032, S-190 |
+| S-239 — Fallback climb/swim, crawl, stand-up and jumping | Planned | V-069 | Double-cost climb/swim without a speed, crawl, half-Speed stand-up and STR-based Long/High Jump on the production movement path. An item can grant a fixed jump instead (Boots of Striding and Springing: up to 30 ft for 10 ft of movement, refused with less remaining, lost when removed; wave 2 fold of items-18). | S-179, S-235 |
 
 ## P8 — Physical items and bodies
 
@@ -1081,8 +1086,12 @@ the existing modules instead of rebuilding these bounded hosts.
 | S-221 — Ordinary Wish procedure and consequences | Planned | V-083, V-086, V-028, V-031 | When selected, source-pin ordinary uses, restrictions and consequences; invoke only represented operations or legal duplicated spell permission, retaining costs/stress across the original invocation. | S-220, S-142, S-090 |
 | S-222 — Referenced procedure capability closure | Planned | V-086 | Before offer/charge, derive needed operations/facts/choice routes/referenced children from supported data; report exact missing capability rather than silently skip an unknown operation. | S-134, S-214 |
 | S-223 — Unsupported child and precise partial-support route | Planned | V-086 | Keep fully supported invocation distinct from explicit bounded approximation; actual selector/control respects child availability and no content-ID allowlist substitutes for missing behavior. | S-222 |
+| S-227 — Travel pace, rate and travel clock | Planned | V-098, V-045, V-057 | Party selects a legal pace from terrain max/road/slow-member/special-movement rules; travel advances the campaign clock by actual distance/time and applies pace check modifiers; mount boost spends a cumulative budget; reload doesn't replay travel. Source: srd.txt 712–760, 12315–12350. | S-065, S-179 |
+| S-228 — Terrain travel procedures and marching order | Planned | V-098, V-078 | Per represented terrain, roll encounter distance and run Foraging/Navigation/Search checks once per stage with marching order; outcomes without SRD bodies (yield, being lost) stay explicit unknown/campaign-authored. Source: srd.txt 737–748, 12354–12370. | S-227, S-200, S-219 |
+| S-229 — Location-scoped search and hidden-object discovery | Planned | V-099, V-073 | Search reveals a declared hidden object/trap only to an eligible searcher in its vicinity, per observer, once discovered persists; searching elsewhere never reveals. Source: srd.txt 712–722, 11989. | S-190, S-188 |
+| S-230 — Trap trigger/disarm and lock procedures | Planned | V-099, V-096 | Declared trap trigger/detection/disarm/effect/reset and lock key/tool-check/break routes act on the actual room object; failure costs settle once and the object state survives checkpoints. Source: srd.txt 5900–5945, 12727–12928. | S-229, S-212, S-119 |
 
-## Coverage crosswalk for all 97 parents
+## Coverage crosswalk for all 103 parents
 
 A slice can support several parents; count its S-ID once. A row here means
 the requirement has an explicit destination, not that its broad capability
@@ -1095,83 +1104,83 @@ row; its mapping below names explicit checkpoint-bearing slices.
 |---|---|
 | V-001 — Typed predicates and combinations | S-001, S-004, S-024, S-025 |
 | V-002 — Actor/source relationships | S-002, S-026, S-027 |
-| V-003 — Check purpose and required sense | S-028, S-029, S-188 |
-| V-004 — Scoped action and damage history | S-008, S-030, S-031, S-056 |
-| V-005 — Physical eligibility facts | S-032, S-033 |
+| V-003 — Check purpose and required sense | S-028, S-029, S-188, S-248 |
+| V-004 — Scoped action and damage history | S-008, S-030, S-031, S-056, S-272 |
+| V-005 — Physical eligibility facts | S-032, S-033, S-238, S-250, S-251, S-266 |
 | V-006 — Numeric references to prior results | S-003, S-017, S-031, S-034, S-035 |
 | V-007 — Runtime formulas and tables | S-004, S-016, S-036, S-037, S-048, S-051 |
-| V-008 — Natural-roll versus final-total floors | S-038 |
-| V-009 — Modifier and base-stat combination | S-039, S-040, S-078 |
+| V-008 — Natural-roll versus final-total floors | S-038, S-240, S-261 |
+| V-009 — Modifier and base-stat combination | S-039, S-040, S-078, S-257, S-259 |
 | V-010 — Resolution event facts and windows | S-013, S-018, S-021, S-022, S-041, S-042 |
 | V-011 — Result predicates and cross-step gates | S-005, S-017, S-043, S-044 |
-| V-012 — Pre-roll Advantage/Disadvantage policy | S-091, S-106, S-225 |
-| V-013 — Natural result or automatic outcome replacement | S-020, S-092, S-093, S-097, S-107, S-108, S-224, S-226 |
+| V-012 — Pre-roll Advantage/Disadvantage policy | S-091, S-106, S-225, S-235, S-247, S-248, S-250, S-251 |
+| V-013 — Natural result or automatic outcome replacement | S-020, S-092, S-093, S-097, S-107, S-108, S-224, S-226, S-235, S-240, S-247, S-263 |
 | V-014 — Reevaluate a provisional result | S-018, S-021, S-022, S-023, S-076, S-094, S-095, S-096, S-097, S-224, S-225, S-226 |
 | V-015 — Save and miss consequence remapping | S-098, S-099 |
 | V-016 — Damage stages and scoped bypass | S-109, S-110 |
 | V-017 — Split or transfer damage to another actor | S-111, S-112 |
 | V-018 — Damage absorption and feedback control | S-113, S-114 |
-| V-019 — Cancel a cast or negate a recipient | S-115, S-116 |
+| V-019 — Cancel a cast or negate a recipient | S-115, S-116, S-270, S-276 |
 | V-020 — Replace a proposed zero-HP outcome | S-117, S-118 |
 | V-021 — Destruction, death and aftermath | S-119, S-120, S-131 |
 | V-022 — Outcome contingent on legal placement | S-121, S-122 |
 | V-023 — Dice-level edits and result multipliers | S-059, S-123, S-124, S-125 |
-| V-024 — Scoped attack/damage parameter replacement | S-126, S-127 |
-| V-025 — Choice acquisition, replacement and prerequisites | S-045, S-046, S-103 |
-| V-026 — Permanent progression grants | S-047, S-048 |
-| V-027 — Grants owned by exact source instances | S-006, S-012, S-013, S-015, S-046, S-047, S-049, S-050, S-134 |
-| V-028 — Casting permissions and alternative payment | S-134, S-135, S-136, S-221 |
+| V-024 — Scoped attack/damage parameter replacement | S-126, S-127, S-254, S-261 |
+| V-025 — Choice acquisition, replacement and prerequisites | S-045, S-046, S-103, S-231, S-232, S-233, S-234, S-242, S-244, S-245 |
+| V-026 — Permanent progression grants | S-047, S-048, S-231, S-234, S-243, S-244, S-262 |
+| V-027 — Grants owned by exact source instances | S-006, S-012, S-013, S-015, S-046, S-047, S-049, S-050, S-134, S-231, S-232, S-259, S-260 |
+| V-028 — Casting permissions and alternative payment | S-134, S-135, S-136, S-221, S-254 |
 | V-029 — Per-source repertoire and slot progression | S-137, S-138, S-139 |
-| V-030 — Cast-local parameter transformations | S-140, S-141 |
+| V-030 — Cast-local parameter transformations | S-140, S-141, S-254 |
 | V-031 — Cast costs based on exact outcome | S-052, S-135, S-142, S-143, S-221 |
-| V-032 — Extend targets or redirect origin for one invocation | S-144, S-145 |
-| V-033 — Replace attack/strike units | S-146, S-147 |
+| V-032 — Extend targets or redirect origin for one invocation | S-144, S-145, S-267 |
+| V-033 — Replace attack/strike units | S-146, S-147, S-256 |
 | V-034 — Nested actions and local cost overrides | S-148, S-149 |
 | V-035 — Optional payment after success or failure | S-019, S-021, S-022, S-023, S-094, S-097, S-100, S-224, S-226 |
 | V-036 — Allocate one numeric pool across recipients | S-101, S-102 |
 | V-037 — Choose modes at declared boundaries | S-085, S-103, S-104 |
-| V-038 — Source-owned numeric and dice pools | S-006, S-010, S-023, S-051, S-102 |
+| V-038 — Source-owned numeric and dice pools | S-006, S-010, S-023, S-051, S-102, S-271 |
 | V-039 — Restore one resource by spending another | S-011, S-052, S-053 |
 | V-040 — Budgeted and filtered recovery | S-054, S-055 |
-| V-041 — Use locks with explicit scope and subject | S-008, S-056, S-057, S-062, S-184 |
+| V-041 — Use locks with explicit scope and subject | S-008, S-056, S-057, S-062, S-184, S-264 |
 | V-042 — Conditional free uses and cost replacement | S-058, S-059 |
 | V-043 — Depletion and overflow consequences | S-060, S-061 |
-| V-044 — Recovery event and amount policy | S-007, S-062, S-063 |
-| V-045 — Active-use budget versus wall-clock duration | S-014, S-063, S-064, S-065 |
+| V-044 — Recovery event and amount policy | S-007, S-062, S-063, S-265 |
+| V-045 — Active-use budget versus wall-clock duration | S-014, S-063, S-064, S-065, S-227, S-252, S-257, S-260, S-264, S-275 |
 | V-046 — Work progress with deadlines and interruption | S-066, S-067 |
 | V-047 — Repeat saves, counts and staged outcomes | S-068, S-069 |
 | V-048 — Rest start, completion and benefit-only recovery | S-007, S-070, S-071 |
-| V-049 — Source-linked termination predicates | S-012, S-072, S-073 |
+| V-049 — Source-linked termination predicates | S-012, S-072, S-073, S-272 |
 | V-050 — Suppress a condition without removing it | S-074, S-075 |
 | V-051 — Consume the next matching grant | S-013, S-076, S-077 |
 | V-052 — Expiring Temporary HP and linked benefits | S-015, S-078, S-079 |
 | V-053 — Dynamic aura membership and chosen beneficiary | S-080, S-081 |
 | V-054 — Transfer a captured grant to another actor | S-079, S-082, S-083 |
 | V-055 — Modify another rule's parameters or options | S-084, S-085 |
-| V-056 — Aftermath on source end | S-014, S-086, S-087 |
-| V-057 — Durable rule state at allowed checkpoints | S-009, S-012, S-013, S-014, S-015, S-031, S-048, S-049, S-051, S-064, S-066, S-069, S-074, S-079, S-082, S-088, S-090, S-107, S-128, S-130, S-137, S-150, S-152, S-154, S-161, S-163, S-165, S-168, S-170, S-173, S-175, S-177, S-187, S-188, S-196, S-200, S-204, S-206, S-208, S-210, S-216, S-219 |
+| V-056 — Aftermath on source end | S-014, S-086, S-087, S-271 |
+| V-057 — Durable rule state at allowed checkpoints | S-009, S-012, S-013, S-014, S-015, S-031, S-048, S-049, S-051, S-064, S-066, S-069, S-074, S-079, S-082, S-088, S-090, S-107, S-128, S-130, S-137, S-150, S-152, S-154, S-161, S-163, S-165, S-168, S-170, S-173, S-175, S-177, S-187, S-188, S-196, S-200, S-204, S-206, S-208, S-210, S-216, S-219, S-227, S-242, S-243, S-275 |
 | V-058 — Parameterized actor factory | S-154, S-155 |
-| V-059 — Command authority and initiative relationship | S-147, S-156, S-157, S-158 |
-| V-060 — Extra turns and off-turn action budgets | S-159, S-160 |
+| V-059 — Command authority and initiative relationship | S-147, S-156, S-157, S-158, S-269 |
+| V-060 — Extra turns and off-turn action budgets | S-159, S-160, S-237 |
 | V-061 — Exclusive bonds and linked replacements | S-161, S-162 |
 | V-062 — Reversible actor statistics and equipment policy | S-163, S-164 |
 | V-063 — Item-to-actor/object form lifecycle | S-165, S-166, S-167 |
-| V-064 — Grapple, restraint and physical anchor relation | S-168, S-169 |
+| V-064 — Grapple, restraint and physical anchor relation | S-168, S-169, S-236, S-241, S-268 |
 | V-065 — Containment, capacity and occupant movement | S-170, S-171, S-172, S-204 |
 | V-066 — Possession and controller/host routing | S-173, S-174 |
 | V-067 — Corpse eligibility and distinct revival policies | S-129, S-175, S-176 |
 | V-068 — Destinations, planes and return-space policy | S-177, S-178 |
-| V-069 — Movement modes, surfaces and end placement | S-179, S-180, S-181 |
+| V-069 — Movement modes, surfaces and end placement | S-179, S-180, S-181, S-239, S-241, S-268, S-269 |
 | V-070 — Linked passenger and Reaction movement | S-182, S-183 |
-| V-071 — Spatial triggers and selective barriers | S-184, S-185, S-186 |
+| V-071 — Spatial triggers and selective barriers | S-184, S-185, S-186, S-258, S-273 |
 | V-072 — Nonoccupying illusions and constrained realization | S-187, S-188, S-189 |
-| V-073 — Observer-relative senses and concealment | S-190, S-191 |
+| V-073 — Observer-relative senses and concealment | S-190, S-191, S-229, S-238, S-274 |
 | V-074 — Separate perception, cast and effect origins | S-145, S-192, S-193 |
 | V-075 — Filtered detection and information permissions | S-194, S-195 |
-| V-076 — Container quantities and capacity | S-167, S-189, S-196, S-197 |
-| V-077 — Crafting and work completion transaction | S-198, S-199 |
-| V-078 — Cause-specific survival exemptions | S-200, S-201 |
-| V-079 — Curses, attunement and magic-property lifecycle | S-060, S-202, S-203 |
+| V-076 — Container quantities and capacity | S-167, S-189, S-196, S-197, S-249, S-266 |
+| V-077 — Crafting and work completion transaction | S-198, S-199, S-262 |
+| V-078 — Cause-specific survival exemptions | S-200, S-201, S-228 |
+| V-079 — Curses, attunement and magic-property lifecycle | S-060, S-202, S-203, S-253, S-255 |
 | V-080 — Weighted/random procedures and controlled selection | S-214, S-215 |
 | V-081 — Sequence position and remaining membership | S-088, S-089 |
 | V-082 — Campaign objectives and delayed rewards | S-216, S-217 |
@@ -1188,8 +1197,14 @@ row; its mapping below names explicit checkpoint-bearing slices.
 | V-093 — Physical age and age-rate changes | S-208, S-209 |
 | V-094 — Attached parts and child-copy identities | S-210, S-211, S-213 |
 | V-095 — Owned maximum-HP changes | S-130, S-131 |
-| V-096 — Repair actual object state | S-212, S-213 |
+| V-096 — Repair actual object state | S-212, S-213, S-230, S-273 |
 | V-097 — Redirect or reflect the original spell | S-132, S-133 |
+| V-098 — Overland travel pace and terrain procedures | S-227, S-228 |
+| V-099 — Location-scoped search, traps and locks | S-229, S-230 |
+| V-100 — SRD condition consequence table | S-235, S-246, S-247, S-248 |
+| V-101 — SRD generic actions | S-237 |
+| V-102 — Natural-roll outcome thresholds | S-240 |
+| V-103 — Granted and forced movement with opportunity suppression | S-241 |
 
 ## Source follow-up outside the capability denominator
 
@@ -1219,6 +1234,102 @@ A new distinct requirement gets a V-series entry or a precise refinement, then
 its own S-ID only if existing rows cannot express its finish line. Missing
 bodies do not justify closing vocabulary discovery or excluding hard mechanics.
 
+<a id="src-01-feature-inventory"></a>
+
+### SRC-01 class feature, subclass and feat inventory — 2026-10-26
+
+Static inventory against SRD 5.2.1 headings (PDF pages), for planning only. It
+adds no slice, changes no availability and reviews no clause. Per-feature rows
+live in each class audit's **SRD 5.2.1 feature inventory** section (for example
+[Fighter](../mechanics/fighter-2024.md#srd-feature-inventory)). "Reviewed" means
+an SRD clause review already recorded in this registry; only Conversion Batch
+001's Fighter Second Wind (blocked) and Barbarian Fast Movement (already generic)
+qualify. Repo `rules_status: 2024-supported` is not treated as review.
+
+| Surface | SRD 5.2.1 headings | In repo data | Absent | Reviewed | Unreviewed |
+|---|---:|---:|---:|---:|---:|
+| Class features (12 classes) | 174 | 170 + 4 subclass-choice levels | 0 | 2 | 172 |
+| SRD subclass features (12 subclasses) | 58 | 15 (Champion 6, Open Hand 4, Fiend 5) | 43 | 0 | 58 |
+| Feats (Origin 4, General 2, Fighting Style 4, Epic Boon 7) | 17 | 0 in `data/core` (fixture feats only) | 17 | 0 | 17 |
+
+Repo-only records: 32 class-feature records and 3 Open Hand placeholders have no
+matching SRD heading. Most are level placeholders (`*_subclass_feature_N`),
+ASI levels from the class tables, or splits named inside one SRD body (Monk
+Flurry/Patient Defense/Step of the Wind, Cleric Divine Spark/Turn Undead, Mystic
+Arcanum by level). Source gaps with no SRD heading found: `druid_wild_shape_uses`,
+`paladin_channel_divinity_divine_sense`, `sorcerer_metamagic_improvement_10/17`,
+`fiend_spells_3/5/7/9` (SRD has one Fiend Spells heading, p.76). Abjurer and
+Diviner subclasses (10 records) are **out-of-milestone**: not SRD 5.2.1 subclasses, kept identifiable with availability unchanged, and outside
+this authority; Bard has no `subclass_level`.
+
+Missing SRD subclasses: Berserker p.30, Lore p.35, Life p.40, Land p.46,
+Devotion pp.56–57, Hunter p.61, Thief p.64, Draconic pp.69–70, Evoker p.82.
+
+| SRD feat | Category | SRD | Repo |
+|---|---|---|---|
+| Alert, Magic Initiate, Savage Attacker, Skilled | Origin | p.87 | absent from core; S-049/S-050 acquisition is fixture-only |
+| Ability Score Improvement, Grappler | General | p.87 | absent as feats; class ASI features are records, not feat data |
+| Archery, Defense, Great Weapon Fighting, Two-Weapon Fighting | Fighting Style | pp.87–88 | absent as feats; Fighter uses native `fighter_rules` styles |
+| Boon of Combat Prowess, Dimensional Travel, Fate, Irresistible Offense, Spell Recall, the Night Spirit, Truesight | Epic Boon | p.88 | absent; class Epic Boon records have no feat catalog |
+
+Owning slices are recorded only where this registry names the feature or its
+consumer (S-084 Extra Attack, S-085 Unarmored Defense, S-049/S-050/S-084/S-085/S-103/S-104
+feat acquisition, Batch 001 Second Wind blockers, S-122 Faithful Steed arrival);
+all other rows are `unassigned`. Next step: SRD clause review per class, then
+stage the missing subclasses and the 17 feat bodies as source-backed data.
+
+<a id="src-01-batch-2"></a>
+
+### SRC-01 batch 2: DataLoader export and first clause decomposition (2026-10-26)
+
+**Partial.** Planning only. No slice state, count, content or availability changes.
+
+**Export receipt.** `res://scenes/feature_inventory_export.tscn` (`scripts/export_feature_inventory_node.gd`, a sibling of the spell inventory export) ran on Linux headless Godot 4.7.2 from the initialized production DataLoader at commit `0196f328f1de` (PR #61 head; docs-only over `ede0a3c`). Registry SHA-256 is `70a83cc74e530743e90f8fadc992bd0651f56b51cb84b06cd73fcaf22187845e`. Layers: core_imported, core_curated, mods (core + crown), 414 approved overrides, 0 validation failures. Output: `.artifacts/feature-status/runtime.json`, log `.artifacts/feature-status/export.log` (gitignored). **The supported Windows runner was not reachable**, so this is not Windows evidence.
+
+| Loaded surface | Records | Execution split | Refused by DataLoader |
+|---|---:|---|---|
+| Core-12 class features | 212 | effects 154, native 52, executor 6 | 4: `barbarian_primal_path`, `barbarian_barbarian_subclass`, `cleric_cleric_subclass`, `warlock_eldritch_master` (effectless) |
+| SRD subclasses loaded (Champion, Open Hand, Fiend) | 16 | native 11, effects 4, executor 1 | — |
+| Out-of-milestone subclasses (Abjurer, Diviner; [kept identifiable](../mechanics/wizard-2024.md#out-of-milestone-subclasses), availability unchanged) | 4 | effects 4 | — |
+| Out-of-milestone classes (Artificer 1, Mystic 0) | 1 | effects 1 | 21 (Artificer 12, Mystic 9) |
+| Feats | 0 | — | none in `data/core` |
+
+`warlock_eldritch_master` is an SRD class feature (Warlock L20) that the loader refuses. Record it as an availability observation for Warlock review; do not fix it here.
+
+**Reviewed vs unreviewed (SRD headings).** Batch 2 decomposed [Barbarian](../mechanics/barbarian-2024.md#srd-clause-decomposition-batch-2) and [Fighter and Champion](../mechanics/fighter-2024.md#srd-clause-decomposition-batch-2). [Monk](../mechanics/monk-2024.md#srd-clause-decomposition-batch-2) and [Rogue](../mechanics/rogue-2024.md#srd-clause-decomposition-batch-2) were unreviewed when batch 2 was published. Wave 2 imported their clause reviews from `audit/features` 23ac806 (see [Wave 2 audit slices](#wave-2-audit-slices)).
+
+| Surface | SRD headings | Reviewed | Unreviewed |
+|---|---:|---:|---:|
+| Class features | 174 | 35 (Barbarian 20, Fighter 15; includes the 2 from Batch 001) | 139 |
+| Subclass features | 58 | 6 (Champion) | 52 (43 absent from repo) |
+| Feats | 17 | 0 | 17 |
+
+Acquisition and advancement clauses (feat/ASI/Fighting Style/subclass/skill/mastery choices) are marked **ACQ: grant logged by Subclass Stager**; they are not classified here.
+
+**Gap classification (47 decomposed records: Barbarian 22, Fighter 19, Champion 6).**
+- Already planned under existing slices: S-076 (Studied Attacks, Staggering/Sundering next-roll matchers), S-127 (mastery use), S-141 (Rage duration), S-160 (Action Surge budget), S-226 (adjacent to Survivor).
+- Host or continuation of accepted bounded slices (HC):
+  - Rage resistance self-grant (S-012 is AC-only)
+  - Primal Knowledge check-ability swap (S-126 is weapon/spell-DC only)
+  - Brutal Strike forgo-Advantage option and per-hit typed damage (S-091/S-085, S-013)
+  - Staggering Blow OA prohibition
+  - Indomitable on a combat-save host (S-105 is event/choice checks)
+  - Heroic Warrior token and Heroic Rally healing at turn start (S-062)
+- Source/ADR-0023:
+  - Heroic Inspiration "armed" threshold vs SRD p.8 reroll-after-rolling
+  - Champion critical range "weapons only" vs SRD "weapons and Unarmed Strikes"
+  - Berserker absent
+- **New, genuinely unaccounted (integrator assigned S-240/S-241, V-102/V-103):**
+
+| Proposed slice | State | Capability | Build and acceptance finish line | After |
+|---|---|---|---|---|
+| S-240 — Natural-roll outcome thresholds (P3) | Planned | [V-102](../reviews/dnd-code-vocabulary-gap-checklist.md#src-01-batch-2-proposed), V-008, V-013 | A fixture source widens the critical threshold to 19–20 / 18–20 for declared attack kinds (weapons + Unarmed Strikes) and treats Death Save 18–20 as 20. The natural value stays visible, and consequences fire once in correct precedence with Advantage/rerolls. Affects Improved/Superior Critical and Survivor. | S-038, S-092, S-093 |
+| S-241 — Granted/forced movement with OA suppression (P7) | Planned | [V-103](../reviews/dnd-code-vocabulary-gap-checklist.md#src-01-batch-2-proposed), V-069, V-064 | Through the production combat grid, a fixture source grants a half-Speed move (optionally straight toward a target) and a 15-ft straight push with size eligibility. Each declares OA provocation and its budget policy. A blocked path stops at the last legal space, refusal spends nothing, and the reload state matches. Affects Instinctive Pounce, Forceful Blow, Tactical Shift, Tactical Master Push and Remarkable Athlete. | S-179, S-041, S-057 |
+
+The provisional labels FEAT-B2-CRIT and FEAT-B2-MOVE became **S-240** (P3) and **S-241** (P7), parents V-102/V-103, after #62 (S-227–S-230), #63 (S-231–S-234) and #64 (S-235–S-239). The registry is now **245 defined, 151 verified, 94 not yet accepted**. S-241 is not a duplicate of #64's movement slice: S-239 covers fallback climb/swim, crawl, stand-up and jump costs within the ordinary movement budget, and S-236's Shove is a 5-ft push from an Unarmed Strike. S-241 owns feature-granted moves outside the normal budget with OA suppression, plus the 15-ft Forceful Blow push with size eligibility. They share the S-179 movement host and S-236's forced-displacement path; reuse those hosts rather than duplicating them.
+
+**Next queue.** (1) Monk + Open Hand, (2) Rogue (Thief absent), (3) Warlock `eldritch_master` refusal plus the Fiend clauses, (4) remaining classes, (5) the 17 SRD feat bodies (needs source-backed data; acquisition with Subclass Stager).
+
 ## Updating the denominator
 
 Preserve S-IDs. When a planned row is accepted, attach its new VS evidence and
@@ -1229,7 +1340,7 @@ Record discovered additions/splits and refresh the phase/count/coverage tables.
 Keep live quest/session details on the Quest Board and orchestration queue,
 rather than turning this baseline into an execution diary.
 
-Planning reconciliation checked all 97 V-IDs, all 226 unique S-IDs, every named
+Planning reconciliation checked all 103 V-IDs, all 276 unique S-IDs, every named
 slice prerequisite, and absence of prerequisite cycles. This is document
 consistency only; it is not runtime or rules-fidelity validation.
 
@@ -2760,3 +2871,90 @@ formulas now fail safely without a cast context. [Focused spells: 932/0 and
 schema inventory](../../.artifacts/tests/49f742187a0f49f78de80e7212a91d3c).
 The schema check covers syntax and targeted fragments/fixtures; a full JSON
 Schema validator is unavailable. Production behavior is proved by Godot.
+
+## Progression/Acquisition slices (audit 2026-10-26)
+
+Added by the [Progression/Acquisition audit](../reviews/progression-acquisition-audit.md)
+(base `ede0a3c`, registry sha256 `70a83cc7…845e`). These rows are Planned and
+not accepted. Phase: all eight rows are **P1 — Facts, results and grants** (they
+acquire, gate and grant creation/progression facts, alongside S-045–S-050); the
+phase, count and crosswalk tables above include them. S-242–S-245 come from the
+audit's [SRD design calls](../reviews/progression-acquisition-audit.md#srd-design-calls-follow-up-2026-10-26)
+(formerly PROPOSED-chargen-1…4; IDs follow S-240/S-241 from the SRC-01 batch 2
+audit, so they are not monotonic with merge order). Feature effects belong to the Feature Auditor's rows. These rows cover
+only how features are chosen, gated, granted and saved.
+
+| Slice | Status | Parents | Scope | Depends on |
+|---|---|---|---|---|
+| S-231 — Background acquisition at creation | Planned | V-025, V-026, V-027, STA-01 | Background content type and creation step. The step grants the ability increase (+2/+1 or +1/+1/+1 from the 3 listed, cap 20), the Origin feat, 2 skills, a fixed tool or a category choice, and equipment A or GP, with receipts and saved validation (SRD p.83). | S-047, S-049, S-050 |
+| S-232 — Species and language creation choices | Planned | V-025, V-027 | Lineage, ancestry and legacy choice; spellcasting ability chosen at selection; size choice; species skill choice; Human Versatile Origin feat; Common + 2 languages (SRD p.20, pp.84–86). Character-level 3/5 grants reuse S-048 and S-139. | S-045, S-048, S-139 |
+| S-233 — Feat prerequisite kinds and repeat rules | Planned | V-025 | Class-level and named-feature prerequisites (Fighting Style, Spellcasting), the repeatable flag, and distinct-parameter repeats such as the Magic Initiate list (SRD pp.87–88). | S-049, S-050 |
+| S-234 — Multiclass entry prerequisites | Planned | V-025, V-026 | 13+ in the primary ability of the new class and every current class (all-of / any-of), checked before a class is offered, with the exact failing score reported (SRD p.24). | S-047 |
+| S-242 — Creation ability-generation methods | Planned | V-025, V-057 | Offer Standard Array (15, 14, 13, 12, 10, 8) and Random Generation (4d6 drop lowest ×6, seeded, result recorded and saved) beside the existing 27-point Point Cost; a campaign setting may restrict the offered methods (ADR-0023 residue) (SRD p.21). Formerly PROPOSED-chargen-1. | S-045 |
+| S-243 — XP award and threshold advancement | Planned | V-026, V-057 | Award XP and raise level eligibility at Character Advancement table thresholds (0–355,000) by total character level, feeding the existing level-up and `pending_levels` routes (S-048/VS-69); no milestone rule in SRD 5.2.1 (SRD p.23, p.25). Formerly PROPOSED-chargen-2. | S-048 |
+| S-244 — Higher-level character creation | Planned | V-025, V-026 | Repeat the level-up steps through the target level (subclass, HP, background, ASI/feat choices), set minimum XP for that level, and apply the tier money/magic-item rarity grant from Starting Equipment at Higher Levels; start level and actual equipment are campaign settings (ADR-0023 residue) (SRD p.19, p.24). Formerly PROPOSED-chargen-3. | S-243, S-045, S-048, S-231 |
+| S-245 — Post-level-20 bonus feats (campaign-enabled) | Planned | V-025 | When the campaign enables it, grant one feat per 30,000 XP above 355,000, any feat the level 20 character qualifies for, Epic Boons included; enabling is the GM's call (ADR-0023 residue) (SRD p.24). Formerly PROPOSED-chargen-4. | S-243, S-233 |
+
+<a id="wave-2-audit-slices"></a>
+
+## Wave 2 audit slices (integration 2026-10-26)
+
+The wave 2 integration (`audit/wave-2`, stacked on `audit/wave-1`) added these rows. The sources were the spell audit `audit/spells` 74aa034, the core rules batch 2 `audit/core-rules-2` ca99859, the item audit `audit/items` 4221f89, and the Monk and Rogue reviews only from `audit/features` 23ac806. Every row is Planned and not accepted. The phase, count and crosswalk tables above include them. No new V-IDs were needed. IDs run in order: stable sources first (core, then items), spells last. A row's phase is shown in its title.
+
+**Folds (no new ID):**
+- core-1..5 → S-235–S-239. These were already published from `audit/core-rules` c20c4d7. That branch itself is not merged.
+- Cover → **S-238**. This merges core-4, spells-1 and the item finding B4-0 row 7 (Wand of the War Mage ignores Half Cover). Its finish line now includes a source that ignores Half cover only, or Half and Three-Quarters cover; Total cover is never ignored.
+- items-18 → **S-239**. This is the item-granted fixed jump (Boots of Striding and Springing).
+- items-6, items-10 and items-14 → **S-254**. These are one item-casting host.
+- features-1 → **S-241** and features-2 → **S-240**, both from the provisional labels in `audit/features`.
+- spells-9 is narrowed to area kind and overlap detection (S-274). Its dispel/ending half is absorbed by spells-11 (S-276).
+- core-7 (save hosts) and core-8 (check hosts) stay separate because they modify different hosts.
+
+**Items-21 overlap check:** S-196 and S-197 cover exact contents and compartment mass/volume, and V-076 covers container quantities. No existing row owns STR/size carry, drag, lift or push limits. The checklist's carrying-capacity row recorded "capacity enforcement unreviewed", so S-266 is new. It does not overlap S-236's grappled drag cost.
+
+**Container correction (items 4221f89):** ContainerRules enforces `max_volume` when a compartment declares it (container_rules.gd:87). Earlier "volume not enforced" notes only mean that no loaded SRD container declares a volume limit.
+
+**Coverage by domain (reviewed vs unreviewed):**
+
+| Domain | Reviewed | Unreviewed / partial |
+|---|---|---|
+| Spells ([audit](../audits/spells.md)) | All 362 unique loaded spell IDs: 339 decomposed against SRD 5.2.1 and 23 out-of-milestone IDs identified only. Decisions D-01..D-80 recorded. | None at ID level. Runtime cast behaviour beyond the cited probes is not proven. |
+| Core rules batch 2 ([audit](../audits/core-rules-2.md)) | All of `ai_controller.gd`, the `ai_command.gd` movement gates, monster turn start and AI loop, the monster attack preamble, `FighterRules.monster_speed`, and every production d20 save/check/death-save call site. | Forced-movement commands, `_choose_offensive_spell` beyond A8, `CombatPerception` internals, the combat_action 1283 reroll, shared_step_executor spell-step saves, surprise and initiative modes, and test/harness files. The Windows runner was unreachable. |
+| Items ([audit](../audits/items.md)) | Clause level: ordinary weapons and armor, general magic-item rules, SRD gear and tools (plus Iron Spikes, Chest and Block and Tackle), ammunition/mount/vehicle tables, all 94 loaded SRD magic records (including the 49 shells), and all 192 missing SRD magic items. | The 67 non-SRD items; selling, lifestyle and trade goods; sentient items and artifacts. Partial: the Hat of Many Spells, Quarterstaff of the Acrobat, Shield of the Cavalier and Staff of the Magi tails; Cube of Force; Dancing Sword; Pearl of Power; Demon Armor scope; and the load-order winner for D-4. Data defects D-1..D-8 are reported only and not changed. |
+| Class features ([Monk](../mechanics/monk-2024.md), [Rogue](../mechanics/rogue-2024.md), [SRC-01 batch 2](#src-01-batch-2)) | Barbarian, Fighter/Champion, Monk/Warrior of the Open Hand and Rogue/Thief, at clause level. | The other 8 classes, most subclasses, and all 17 feats. |
+
+**Follow-ups (not in this integration):** the monster audit uses S-230, S-231 and V-100, which collide with published IDs. It needs renumbering before it can merge. Duplicate S-024/S-025 rows predate this wave.
+
+| Slice | Status | Parents | Finish line | After |
+|---|---|---|---|---|
+| S-246 — Monster AI and turn consumers of SRD conditions (P4) | Planned | V-100 | Monster AI, AICommand, FighterRules.monster_speed and monster turn gates read the S-235 condition table: Incapacitated/Petrified/Unconscious skip actions, every Speed-0 condition stops movement, Prone stand-up obeys Speed 0, Frightened can't approach its source, Charmed can't target its charmer, and invisible/hidden targets are not picked by exact hex. Source: [core-6](../audits/core-rules-2.md). | S-235 |
+| S-247 — Non-spell save hosts apply condition modes (P3) | Planned | V-100, V-013, V-012 | BarbarianRules.roll_monster_save_result, Character.make_saving_throw_result and the monk raw d20 saves (Topple, Push, Quivering Palm) route through one save host that auto-fails STR/DEX for Paralyzed/Stunned/Unconscious/Petrified and gives Restrained DEX Disadvantage, with roll tokens and Bless/Bane intact. Source: [core-7](../audits/core-rules-2.md). | S-235 |
+| S-248 — Non-EventResolver check hosts apply proficiency and condition modes (P3) | Planned | V-100, V-012, V-003 | EventResolver.resolve_skill_check, a new monster-check helper, both Cunning Action Hide branches, overworld ambush Stealth, monster zone escape and monster tether escape/rescue apply proficiency consistently and Poisoned/Frightened/Exhaustion check modes. Source: [core-8](../audits/core-rules-2.md). | S-235, S-237 |
+| S-249 — Ammunition consumption and recovery (P8) | Planned | V-076 | A Longbow attack with 0 arrows is refused; two attacks from 3 leave 1; one minute after combat recovers floor(half) spent; the count survives save/load. Source: [items-1](../audits/items.md). | S-196, S-197 |
+| S-250 — Weapon range bands and the Heavy predicate (P3) | Planned | V-012, V-005 | Long-range attacks roll with Disadvantage and beyond-long are refused; Heavy weapons give Disadvantage below STR 13 (melee) or DEX 13 (ranged); thrown weapons keep the wielder's ability. Source: [items-2](../audits/items.md). | S-091 |
+| S-251 — Worn-armor predicates (P1) | Planned | V-005, V-012 | Armor STR requirement Speed −10, Stealth Disadvantage and untrained-armor STR/DEX D20 Disadvantage plus casting refusal apply while worn and clear when removed. Source: [items-3](../audits/items.md). | S-028, S-091 |
+| S-252 — Don/Doff timing (P2) | Planned | V-045 | Equipping or removing armor outside combat advances campaign time by the table value; Medium/Heavy cannot be donned in combat; a Shield costs the Utilize action; the result reports time spent. Source: [items-4](../audits/items.md). | S-064 |
+| S-253 — Attunement prerequisites (P8) | Planned | V-079 | Class-qualified attunement refuses an ineligible creature with the reason, accepts an eligible one, and leaves unqualified items unchanged. Source: [items-5](../audits/items.md). | S-202 |
+| S-254 — Item-sourced spell casting with item overrides (P5) | Planned | V-028, V-024, V-030 | One item-casting host replaces the wand_of_magic_missiles ID branch: Spell Scrolls (list check, DC 10 + level read check, consumed), potion-delivered spell effects with source overrides (no Concentration, fixed DC, rolled-once duration, not a cast), and charge-spending wands/staffs/worn items with fixed DC/level, limited options and self-only targets. Source: [items-6 + items-10 + items-14](../audits/items.md). | S-134, S-126, S-139, S-006, S-060 |
+| S-255 — Magic templates over a base item (P8) | Planned | V-079 | A template (+1 Weapon, Mithral Armor) over a base item reports the merged damage, properties, mastery and bonuses or removed penalties, and survives save/load. Source: [items-7](../audits/items.md). | S-250 |
+| S-256 — Thrown-object attack replacement (P5) | Planned | V-033 | One Attack-action swing can be replaced by throwing an item (Acid, Holy Water, Alchemist's Fire) at range with a DEX save vs DC 8 + Dex + PB; the item is consumed and remaining swings stay available. Source: [items-8](../audits/items.md). | S-146, S-126, S-076 |
+| S-257 — Timed self-modifiers from consumables (P2) | Planned | V-009, V-045 | Potions set scores, grant typed Resistance or save Advantage for exactly their duration then revert; a higher existing score is unchanged. Source: [items-9](../audits/items.md). | S-039, S-015, S-064, S-181 |
+| S-258 — Item-deployed hazard areas (P7) | Planned | V-071 | Caltrops/Ball Bearings deploy with Utilize into a placed area whose first entry per turn triggers the save and consequence once; the area can be recovered. Source: [items-11](../audits/items.md). | S-184, S-122 |
+| S-259 — Passive equipped-item modifiers beyond AC and walking speed (P1) | Planned | V-027, V-009 | Equipped/attuned items grant read-at-use modifiers (saves, checks, senses, speeds, resistances) from data instead of item-ID branches (removes the Ring of Protection branch). Source: [items-12](../audits/items.md). | S-049, S-203 |
+| S-260 — Periodic elapsed-time effects from a worn item (P2) | Planned | V-045, V-027 | A worn item's interval effect (e.g. heal 1d6 every 10 minutes) fires on accumulated campaign time while worn and stops when removed. Source: [items-13](../audits/items.md). | S-064, S-049 |
+| S-261 — Weapon-copy hit and crit riders (P4) | Planned | V-024, V-008 | Weapon copies add creature-type, natural-20, charge-spend and bonus-reallocation riders (Dragon Slayer, Vicious, Defender, Flame Tongue) only when their predicate holds. Source: [items-15](../audits/items.md). | S-255, S-126, S-127 |
+| S-262 — Study items with permanent score increases (P9) | Planned | V-077, V-026 | Completing the study activity raises the score and its cap (to 30) permanently; interrupted study grants nothing; the item then goes inert for the declared period. Source: [items-16](../audits/items.md). | S-198, S-199, S-039 |
+| S-263 — Item reactions on the wielder's own save, attack-target swaps and absorption (P3) | Planned | V-013 | A failed DEX save offers the item's Reaction + charge to succeed; no Reaction or wrong ability offers nothing. Extension (4221f89): attack-target swap reactions (Arrow-Catching Shield; Shield of Missile Attraction curse), Dwarven Plate forced-movement reduction and Staff of the Magi absorption are additional affects. Source: [items-17](../audits/items.md). | S-092, S-006 |
+| S-264 — Multi-day and long cooldowns on item powers (P2) | Planned | V-041, V-045 | An item power with `uses_per: days` is refused until its day count elapses from the use time on that copy (Figurine of Wondrous Power, Horn of Valhalla, Oathbow, Manuals/Tomes); separate copies keep separate clocks; save/load keeps the refusal. Source: [items-19](../audits/items.md). | S-064, S-014 |
+| S-265 — Dice-expression charge recovery and recharge branches (P2) | Planned | V-044 | Charge recovery accepts a dice expression (Staff of Power 2d8+4 gives the 6–20 distribution over seeded dawns) and the last-charge roll can branch to a regain outcome (20 regains 1d8+2) instead of degrading. Source: [items-20](../audits/items.md). | S-006, S-063 |
+| S-266 — Carrying capacity, drag/lift/push and lift multipliers (P8) | Planned | V-076, V-005 | STR- and size-derived carry and drag/lift/push limits: over the carry limit Speed is at most 5 ft; an item can multiply the lift limit (Block and Tackle ×4); removing weight restores Speed. Mount riding stays out of scope. Source: [items-21](../audits/items.md). | S-196, S-049 |
+| S-267 — Result-triggered retarget chain (leap) (P5) | Planned | V-032 | A matching captured damage face offers a new legal target within range of the previous one with a fresh attack and damage roll, capped by slot level, no repeat creatures, refusal spends nothing. Source: [spells-2](../audits/spells.md). | S-127 |
+| S-268 — Surface state change with trapped occupants (P7) | Planned | V-069, V-064 | A water terrain cell becomes ice for a timed duration; swimmers at its surface gain a source-owned Restrained that an Athletics check ends; expiry restores water; both states survive reload. Source: [spells-3](../audits/spells.md). | S-179, S-168, S-087 |
+| S-269 — Compelled movement directive (P7) | Planned | V-069, V-059 | A source compels movement away/toward/in a direction by the safest route (Fear, Antipathy/Sympathy, Compulsion, Confusion, Command Approach/Flee), using S-241 granted-movement mechanics and stopping where no legal move remains. Source: [spells-4](../audits/spells.md). | S-241, S-179, S-183 |
+| S-270 — Guarded condition removal (P4) | Planned | V-019 | A source-owned condition guards its removal with a declared save; any removal attempt triggers it and failure leaves the condition while the remover's cost is still spent. Source: [spells-5](../audits/spells.md). | S-074, S-116 |
+| S-271 — Accumulating payload released at source end (P2) | Planned | V-056, V-038 | A damage pool grows each caster turn end and detonates once at its current location for every end reason (Concentration, expiry, failed touch save, impact). Source: [spells-6](../audits/spells.md). | S-031 |
+| S-272 — Damage-dealt budget that ends the source (P4) | Planned | V-004, V-049 | Final damage dealt adds to a budget; the source ends once the cap is reached (last hit not trimmed); halved/resisted damage counts as dealt; the budget survives save/load. Source: [spells-7](../audits/spells.md). | S-031 |
+| S-273 — Damageable barrier segments with breach residue (P7) | Planned | V-071, V-096 | Wall sections or ordered layers are addressable objects with AC/HP/damage modifiers or declared destruction triggers; damage never spills between sections; a destroyed section stops blocking and spawns its declared residue. Source: [spells-8](../audits/spells.md). | S-184 |
+| S-274 — Light/Darkness area kind and overlap detection (P7) | Planned | V-073 | Each light/Darkness area records its kind and source spell level; creating one finds overlapping opposite-kind areas and hands any at or below the threshold to the S-276 ending path. Source: [spells-9 (narrowed)](../audits/spells.md). | S-276, S-190 |
+| S-275 — Staged weather state (P9) | Planned | V-045, V-057 | Outdoor regions carry current and forecast precipitation/temperature/wind stages; a source changes one stage after its rolled delay, is refused indoors, and returns gradually when it ends. Source: [spells-10](../audits/spells.md). | S-064 |
+| S-276 — Level-gated spell ending and spell-level thresholds (P5) | Planned | V-019 | Every ongoing spell effect records its cast level; a dispel request ends effects at or below the slot-scaled threshold and rolls DC 10 + level for higher ones; effects can declare level exemptions (Globe, Imprisonment, Forcecage) and the spells-9 overlap ending routes here. Source: [spells-11](../audits/spells.md). | S-116 |
