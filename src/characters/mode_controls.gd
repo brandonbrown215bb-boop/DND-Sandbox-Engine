@@ -33,7 +33,8 @@ static func rows(actor: Character) -> Array[Dictionary]:
 	FeatureModeRules.refresh(actor)
 	var seen := {}
 	for feature in actor.features:
-		if feature.get("type", "") != "mode_choice" or seen.has(str(feature.id)): continue
+		# Batch 070: a passive Extra Attack / Unarmored Defense rule with owned exclusive upgrades is offered "Choose upgrade" only.
+		if (feature.get("type", "") != "mode_choice" and not RuleUpgradeRules.consumer_target(actor, feature)) or seen.has(str(feature.id)): continue
 		seen[str(feature.id)] = true
 		out.append(row(actor, str(feature.id)))
 	return out
@@ -45,6 +46,9 @@ static func row(actor: Character, feature_id: String) -> Dictionary:
 	var state: Dictionary = actor.feature_modes.get(feature_id, {})
 	var copy := str(feature.get("source_instance_id", ""))
 	var reason := ""
+	if feature.get("type", "") == "passive":
+		live = {"boundary": "passive", "modes": []} # Batch 070: consumer rows have no modes or uses.
+		owned = live
 	if live.is_empty():
 		reason = "merged" if not copy.is_empty() and ActorProjectionRules.merged(actor, copy) else "suppressed"
 	var r := owned if live.is_empty() else live
@@ -99,7 +103,7 @@ static func token(actor: Character, feature_id: String) -> String:
 	return JSON.stringify([actor.character_id, feature_id, not FeatureModeRules.rule(actor, feature_id).is_empty(), bool(state.get("active", false)), str(state.get("mode", "")), bool(state.get("open", true)), int(state.get("activation_serial", 0)), int(state.get("event_serial", 0)), str(state.get("window", {}).get("event", "")), int(actor.feature_uses.get(pool, 0)), alternatives(actor, feature_id)])
 
 static func label(r: Dictionary) -> String:
-	var text := "Mode: %s" % r.name
+	var text := ("Rule: %s" if r.boundary == "passive" else "Mode: %s") % r.name
 	if r.boundary == "activation": text += " (%d/%d uses)" % [r.uses, r.max_uses]
 	if r.active: text += " [%s, %ds left]" % [r.mode, r.remaining_seconds]
 	elif r.boundary == "rest" and not str(r.mode).is_empty(): text += " [%s]" % r.mode
@@ -181,6 +185,8 @@ static func apply(actor: Character, feature_id: String, kind: String, option: St
 		"alternative":
 			var parts := option.split("|")
 			var ok := RuleUpgradeRules.choose_alternative(actor, feature_id, parts[0], parts[1])
+			# Batch 070: a switched attack_count keeps this Attack action's spent swings spent.
+			if ok and budget != null and budget.has_method("reclamp_attack_units") and budget.get("active_character") == actor: budget.reclamp_attack_units()
 			return {"success": ok, "reason": "chosen" if ok else "refused"}
 	return {"success": false, "reason": "invalid"}
 

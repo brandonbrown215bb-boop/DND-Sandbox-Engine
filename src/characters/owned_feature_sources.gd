@@ -97,6 +97,7 @@ static func declared_in(data: Dictionary) -> Array:
 static func sync(actor: Character, restoring: bool = false) -> Array:
 	if actor == null or actor.inventory == null: return []
 	var records: Dictionary = actor.inventory.copies.records
+	var had_base_ac := not actor._base_ac_alternative().is_empty() # Batch 070.
 	# Read the copy ledger as-is: re-syncing mid-drop/destroy would resurrect the copy.
 	var wanted := declared(actor.race_id, actor.character_id, actor.inventory.copies.records, actor.inventory.copies.equipped.values(), FeatRules.chosen(actor.origin_feat, actor.feature_choices))
 	# Review 049 R2: an item's spent uses belong to the copy, not the wearer.
@@ -129,7 +130,8 @@ static func sync(actor: Character, restoring: bool = false) -> Array:
 	for id in actor.feature_modes.keys():
 		if not present.has(str(id)): actor.feature_modes.erase(id)
 	for key in actor.rule_alternatives.keys():
-		if not present.has(str(key).get_slice("|", 0)): actor.rule_alternatives.erase(key)
+		# Batch 070: an option whose upgrade left is no longer a choice either.
+		if not present.has(str(key).get_slice("|", 0)) or not present.has(str(actor.rule_alternatives[key])): actor.rule_alternatives.erase(key)
 	# Batch 050 (Brandon): a copy remembers its chosen option; restore it before
 	# its pool is clamped so the maximum is the copy's own.
 	for id in acquired:
@@ -137,7 +139,7 @@ static func sync(actor: Character, restoring: bool = false) -> Array:
 		var rec: Variant = records.get(copy_id) if not copy_id.is_empty() else null
 		if not rec is Dictionary or not rec.get("state", {}).get("rule_alternatives") is Dictionary: continue
 		for key in rec.state.rule_alternatives.keys():
-			if str(key).get_slice("|", 0) == str(id):
+			if str(key).get_slice("|", 0) == str(id) or str(rec.state.rule_alternatives[key]) == str(id): # Batch 070: consumer upgrade options.
 				actor.rule_alternatives[key] = rec.state.rule_alternatives[key]
 				rec.state.rule_alternatives.erase(key)
 		if rec.state.rule_alternatives.is_empty(): rec.state.erase("rule_alternatives")
@@ -156,6 +158,7 @@ static func sync(actor: Character, restoring: bool = false) -> Array:
 			if record.state.feature_uses.is_empty(): record.state.erase("feature_uses")
 		elif actor.feature_uses.has(pool) or restoring: actor.feature_uses[pool] = clampi(int(actor.feature_uses.get(pool, 0)), 0, maximum)
 		else: actor.feature_uses[pool] = maximum
+	if had_base_ac or not actor._base_ac_alternative().is_empty(): actor._recalculate_ac() # Batch 070: a base_ac alternative that arrived or left takes effect now.
 	return added
 
 ## Review 049 R1: a merged copy, or one whose "features" magic is suppressed or
@@ -200,6 +203,13 @@ static func _stamp(actor: Character, feature: Dictionary, record: Dictionary) ->
 		var chosen: Dictionary = state.get("rule_alternatives", {})
 		for key in actor.rule_alternatives:
 			if str(key).get_slice("|", 0) == fid: chosen[key] = actor.rule_alternatives[key]
+		if not chosen.is_empty(): state["rule_alternatives"] = chosen
+	elif feature.get("type", "") == "rule_upgrade":
+		# Batch 070: an upgrade of a rule the copy doesn't own (Extra Attack, base AC)
+		# remembers its chosen option on the copy, keyed by the wearer's rule.
+		var chosen: Dictionary = state.get("rule_alternatives", {})
+		for key in actor.rule_alternatives:
+			if str(actor.rule_alternatives[key]) == fid and "@" not in str(key).get_slice("|", 0): chosen[key] = fid
 		if not chosen.is_empty(): state["rule_alternatives"] = chosen
 	record["state"] = state
 

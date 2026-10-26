@@ -1,0 +1,47 @@
+[
+  {
+    "id": "fixture:b070_bracers",
+    "name": "Batch 070 Drill Bracers",
+    "description": "Neutral fixture wondrous item worn on the head slot; its exact equipped, attuned copy offers exclusive Extra Attack counts and base AC calculations. Weight unknown.",
+    "type": "wondrous",
+    "worn_slot": "head",
+    "magical": true,
+    "rarity": "rare",
+    "requires_attunement": true,
+    "value": 0,
+    "features": [
+      {
+        "id": "drill_a",
+        "name": "Triple Drill",
+        "type": "rule_upgrade",
+        "rule": "fixture:b070_extra_attack",
+        "exclusive_group": "drill",
+        "changes": {"attack_count": {"set": 2}}
+      },
+      {
+        "id": "drill_b",
+        "name": "Steady Drill",
+        "type": "rule_upgrade",
+        "rule": "fixture:b070_extra_attack",
+        "exclusive_group": "drill",
+        "changes": {"attack_count": {"set": 1}}
+      },
+      {
+        "id": "guard_a",
+        "name": "Hardened Skin",
+        "type": "rule_upgrade",
+        "rule": "fixture:b070_unarmored",
+        "exclusive_group": "base_ac",
+        "changes": {"base_ac": {"set": {"base": 13, "abilities": ["DEX"], "allows_shield": true}}}
+      },
+      {
+        "id": "guard_b",
+        "name": "Sturdy Frame",
+        "type": "rule_upgrade",
+        "rule": "fixture:b070_unarmored",
+        "exclusive_group": "base_ac",
+        "changes": {"base_ac": {"set": {"base": 10, "abilities": ["DEX", "CON"], "allows_shield": false}}}
+      }
+    ]
+  }
+]

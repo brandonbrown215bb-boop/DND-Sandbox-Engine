@@ -1493,7 +1493,15 @@ func _equipment_base_ac() -> int:
 
 	if armor_id.is_empty():
 		var unarmored_defense := get_feature_effect("unarmored_defense")
-		if not unarmored_defense.is_empty() and (bool(unarmored_defense.get("allows_shield", false)) or shield_id.is_empty()):
+		# Batch 070 (S-085): an owned base_ac alternative replaces this calculation (SRD 5.2.1 "Only One Base AC").
+		var alternative := _base_ac_alternative()
+		if not alternative.is_empty():
+			if bool(alternative.allows_shield) or shield_id.is_empty():
+				computed_base = int(alternative.base)
+				for ability in alternative.abilities: computed_base += ability_scores.get_ability_modifier(str(ability))
+			else:
+				computed_base = 10 + dex_mod
+		elif not unarmored_defense.is_empty() and (bool(unarmored_defense.get("allows_shield", false)) or shield_id.is_empty()):
 			var secondary_ability := str(unarmored_defense.get("ability", "WIS"))
 			computed_base = 10 + dex_mod + ability_scores.get_ability_modifier(secondary_ability)
 		else:
@@ -1523,6 +1531,15 @@ func _equipment_base_ac() -> int:
 	return computed_base
 
 
+## Batch 070: the chosen base_ac upgrade on the owned unarmored_defense rule, or {}.
+func _base_ac_alternative() -> Dictionary:
+	for feature in features:
+		if RuleUpgradeRules._effect_of(self, feature, "unarmored_defense").is_empty(): continue
+		var formula := RuleUpgradeRules.base_ac_formula(self, feature)
+		if not formula.is_empty(): return formula
+	return {}
+
+
 func _recalculate_ac() -> void:
 	if not inventory.get_armor().is_empty() and has_condition("mage_armor"):
 		SpellEffects.end_mage_armor_if_armored(self)
@@ -1537,7 +1554,8 @@ func get_ac() -> int:
 	var projected_ac := ActorProjectionRules.ac(self)
 	if projected_ac >= 0:
 		return SpellEffects.effective_ac(self, projected_ac) + SourceBenefitRules.total(self, "AC")
-	var ac := _equipment_base_ac() if not protection_grants.is_empty() else base_ac
+	# Batch 070: an owned base_ac upgrade (even suppressed or merged) reads live, so suppression and switches apply at once.
+	var ac := _equipment_base_ac() if not protection_grants.is_empty() or features.any(func(f): return f.get("type", "") == "rule_upgrade" and f.get("changes", {}).has("base_ac")) else base_ac
 	var protection := ProtectionRules.ac(self,ac)
 	ac = int(protection.base)
 	var armor_id := inventory.get_armor()
