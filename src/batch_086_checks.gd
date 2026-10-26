@@ -48,4 +48,20 @@ static func run(check: Callable) -> void:
 	var first: Vector2i = options[0] if not options.is_empty() else Vector2i(999, 999)
 	check.call(not options.is_empty() and HexUtils.get_distance(Vector2i.ZERO, first) == 2 and PlacementRules.legal_error(cast, first, first, "large", -1).is_empty(), "086 recovery picks the nearest space whose whole Large footprint fits (first=%s)" % str(first))
 	check.call(SummonArrivalRules.body_distance(Vector2i.ZERO, Vector2i(2, 0), "large") == 1 and SummonArrivalRules.body_distance(Vector2i.ZERO, Vector2i(1, 0), "large") == 0 and SummonArrivalRules.body_distance(Vector2i.ZERO, Vector2i(3, 0), "large") == 2, "086 mounting/dismounting reach is measured to the Large body's nearest cell, not its center")
+	# Reviewer (086): pre-payment recheck with a grid change injected after a legal validation.
+	var slots_before := int(paladin.spell_slots.get("2", 0))
+	cast.spell = spell
+	cast.player_index = 0
+	cast.spell_origin = Vector2i.ZERO
+	cast.target_coord = Vector2i(3, 0)
+	var legal_at_choice := SpellCastMovement.arrival_destination_reason(cast).is_empty()
+	grid.get_tile(Vector2i(4, 0)).custom_properties["blocks_movement"] = true
+	var refused_after := SpellCastMovement.refuse_arrival_destination(cast)
+	grid.get_tile(Vector2i(4, 0)).custom_properties["blocks_movement"] = false
+	var blocker := Character.new()
+	blocker.is_alive = true
+	players.append({"character": blocker, "hex_position": Vector2i(4, 0), "is_alive": true})
+	var refused_creature := SpellCastMovement.refuse_arrival_destination(cast)
+	players.remove_at(players.size() - 1)
+	check.call(legal_at_choice and refused_after and refused_creature and not SpellCastMovement.refuse_arrival_destination(cast) and int(paladin.spell_slots.get("2", 0)) == slots_before, "086 reviewer the pre-payment arrival recheck refuses a footprint blocked after a legal choice (wall or creature), with the slot count unchanged (slots %d->%d)" % [slots_before, int(paladin.spell_slots.get("2", 0))])
 	grid.free()
