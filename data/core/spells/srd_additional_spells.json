@@ -2820,10 +2820,7 @@
     ],
     "target": "single",
     "attack_type": "none",
-    "classes": [
-      "warlock",
-      "wizard"
-    ],
+    "classes": ["sorcerer", "warlock", "wizard"],
     "damage": "3d8",
     "damage_type": "psychic",
     "save": "WIS",
@@ -3355,11 +3352,7 @@
       "large"
     ],
     "willing_target_skips_save": true,
-    "classes": [
-      "cleric",
-      "paladin",
-      "wizard"
-    ],
+    "classes": ["wizard"],
     "material": "a glass sphere",
     "save": "DEX",
     "half_on_save": false,
