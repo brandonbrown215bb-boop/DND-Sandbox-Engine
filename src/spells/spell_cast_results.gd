@@ -648,7 +648,7 @@ static func _settle_empowered_spell(cast: SpellCastContext, target, result: Dict
 		result = CombatAction.finish_pending_spell_damage(cast.caster, req_target, result, decisions)
 		if result.has("concentration_request"):
 			result = await SpellCastResults._settle_concentration_choice(cast, target, result, decisions)
-	result = SharedSpell.apply(cast.caster, target, cast.spell, result, cast) if SharedSpell.uses(cast.spell) and not cast.spell.has("steps") else result
+	result = SharedSpell.apply(cast.caster, target, cast.spell, result, cast, decisions) if SharedSpell.uses(cast.spell) and not cast.spell.has("steps") else result
 	if not cast.spell.has("steps"):
 		for recipient in DamageLinkRules.recipient_settlements(target, result):
 			if recipient["actor"] is Character:

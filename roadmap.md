@@ -35,6 +35,14 @@ reaction triggers. Their review repairs and remaining work are tracked in the
 PRs #25–37 are merged with the review repairs and accepted within that boundary.
 Unfinished scope below does not block acceptance of the delivered subset.
 
+PRs #38–56 continue placement, attack choices, exact contents, item measurements,
+attack/AC upgrades, maximum HP, last-charge properties, explicit death/object
+destruction, work sites and linked-copy loss causes. Their [review boundary and
+remaining work](docs/planning/vocabulary-slices.md#pr38-56-validation) own acceptance
+and the unfinished hosts/content. The scenario triage also leaves existing
+fixture repairs and unresolved gameplay failures; this stack is not an all-green
+scenario certification. Reuse the delivered pieces instead of assigning them again.
+
 The [first Crown conversion batch](docs/planning/vocabulary-slices.md#conversion-batch-001)
 resolves ten candidates: three shared spell conversions, one already generic
 class feature and six blocked candidates. It enables no additional spells and

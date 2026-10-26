@@ -104,6 +104,31 @@ static func run(h: Node) -> void:
 	h._assert(asked == 2 and combat.remaining_attack_swings == 1 and not combat.turn_budget.action_available and log4.contains("this swing is held and not spent"), "077 live dismissing swing 2's choice holds that swing (logged) instead of silently attacking with the weapon's own type")
 	asked = await _click(h, combat, [1])
 	h._assert(asked == 1 and combat.remaining_attack_swings == 0 and int(t4.current_hp) < hp_after_held, "077 live the held swing asks again on the next click and the new pick lands")
+	# A target can become stale while a popup is open. Recheck actual reach,
+	# not only membership/aliveness, and retain the unspent second swing.
+	var t5 := _target("b077_moved_target", [])
+	_ready_turn(combat, fighter, t5)
+	var hp_before_stale := [-1]
+	seed(77005)
+	asked = await _click(h, combat, [1, func():
+		hp_before_stale[0] = int(t5.current_hp)
+		t5.hex_position = Vector2i(7, 0)
+		return 1])
+	h._assert(asked == 2 and combat.remaining_attack_swings == 1 and int(t5.current_hp) == hp_before_stale[0], "077 merge: moving out of reach during the second choice holds the swing without damage")
+	# Deterministic probes of the previously crashing delayed-turn boundaries.
+	var turn := CombatAction.active_turn_serial
+	h._assert(not combat._monster_ai_current(turn, t5), "077 merge: a player's turn cannot enter monster AI")
+	combat._run_monster_ai()
+	combat.active_character = null
+	combat.pending_action_type = "attack"
+	h._assert(not combat._player_highlights_current(), "077 merge: out-of-turn feedback cannot restore attack highlights without an active character")
+	await combat._flash_hex(Vector2i.ZERO, Color.RED)
+	combat.active_character = fighter
+	combat.active_combatant = {"is_player": false, "entity": t5}
+	h._assert(combat._monster_ai_current(turn, t5) and not combat._monster_ai_current(turn - 1, t5) and not combat._monster_ai_current(turn, t4), "077 merge: monster preview continuation rejects a changed turn or different monster")
+	t5["held_items"] = ["dagger"]
+	await combat._resolve_monster_command(t5, {"action": "drop"})
+	h._assert(t5.held_items.is_empty() and combat.dropped_combat_items.any(func(item): return str(item.get("instance_id", "")) == "monster:b077_moved_target:drop:%d:0" % combat.tracker.current_round), "077 merge: monster Drop uses the real current_round and preserves the dropped copy")
 	GameManager.test_mode = true
 	h._teardown_scene(combat)
 	h._exit_test()

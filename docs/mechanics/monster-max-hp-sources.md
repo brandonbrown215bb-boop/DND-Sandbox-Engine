@@ -14,13 +14,17 @@ Done means: "Monster maximum-HP effects (S-130/S-131): overlapping sources, remo
   The cast's `source_id` owns the entry; the spell record carries
   `max_hp_source = rule.id`, so `SpellEffects.remove` (concentration end,
   expiry, encounter end) removes exactly that source.
-- `combine` (optional): `"highest"` — entries with the same rule id and kind do
-  not stack; only the largest applies, earliest instance on ties (SRD 5.2.1
-  p.106, Combining Spell Effects). `"sum"` or absent — legacy stacking.
+- New definitions require `combine`: `"highest"` means entries with the same
+  declared rule id and kind do not stack; the largest request applies and the
+  newest application wins equal ties (SRD 5.2.1 p.106). `"sum"` adds sources;
+  absence retains that behavior only on the legacy runtime/save path. Display
+  names do not determine equivalence. Reductions must also state `accumulate`
+  to choose whether repeated applications of one exact source add together.
   Inactive entries keep their record (applied 0) and take over when the
   stronger one ends, so any removal order restores the correct maximum.
 - Current HP is clamped to the new maximum; removal never raises current HP
-  (only `raise_current` increases do, on apply).
+  (only `raise_current` increases do, on apply, limited to the net growth of the
+  maximum when replacing a weaker source).
 - Zero maximum (SRD 5.2.1 p.17: "A creature dies if its Hit Point maximum
   reaches 0."): a `zero_limit` source that reaches 0 sets current/temp HP 0,
   `is_alive=false` and `zero_hp_aftermath = {outcome: death, remains, cause,

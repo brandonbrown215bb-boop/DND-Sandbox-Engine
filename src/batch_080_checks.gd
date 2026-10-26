@@ -141,3 +141,8 @@ static func _saved(check: Callable) -> void:
 	inv.backpack.assign([POWER])
 	copies.restore(inv, {"inventory_id": "legacy", "next_id": 2, "records": {"legacy:1": legacy}, "backpack": ["legacy:1"], "equipped": {}})
 	check.call(int(copies.records["legacy:1"].state.get("charges", -1)) == 20, "080 legacy uncharged copy restores full (20)")
+	var host := {"instance_id": "legacy:host", "definition_id": "backpack", "state": {"contents": {"hold": [legacy.duplicate(true)]}, "attached": {"socket": {"instance_id": "legacy:spent", "definition_id": POWER, "state": {"charges": 0}}}}}
+	InventoryCopies.restore_legacy_charges(host)
+	check.call(int(host.state.contents.hold[0].state.get("charges", -1)) == 20 and int(host.state.attached.socket.state.charges) == 0, "Review: nested legacy charges initialize once without refilling a spent attached copy")
+	var ground_inv := Inventory.new()
+	check.call(ground_inv.receive_instance(legacy) and int(ground_inv.get_instance("legacy:1").state.get("charges", -1)) == 20, "Review: picking up a legacy room copy applies the same declared charge policy")

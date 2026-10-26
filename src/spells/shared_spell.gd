@@ -642,7 +642,20 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 		return _resolve_steps(cast)
 	cast.has_damage_payload = cast.spell.has("damage") or not cast.spell.get("damage_components", []).is_empty()
 	var result: Dictionary
-	if cast.spell.has("save"):
+	var fallback_policy := {}
+	if cast.spell.get("effects", []).size() == 1 and not cast.has_damage_payload and not cast.spell.has("save") and cast.spell.get("attack_type", "none") == "none":
+		for effect in cast.spell.get("effects", []):
+			if effect is Dictionary and effect.get("type", "") == "settle_death" and ZeroHpAftermathRules.fallback_applies(cast.target, effect.policy):
+				fallback_policy = effect.policy
+				break
+	if not fallback_policy.is_empty():
+		# A declared damage fallback is an ordinary spell damage occurrence. This
+		# retains optional zero-HP choices, damage links, history and typed receipts.
+		var fallback: Dictionary = fallback_policy.fallback
+		var roll := SpellDamageRolls._roll_spell_damage(cast.caster, str(fallback.damage), 1, cast.decisions)
+		var fallback_result := {"success": true, "hit": true, "damage": 0, "effect_cast": cast.effect_cast, "message": str(cast.spell["name"]) + " resolves.", "settle_death": {"applied": false, "fallback": true, "damage_pipeline": true, "policy_id": str(fallback_policy.id), "rolled": int(roll.get("final_total", 0)), "damage_type": str(fallback.damage_type)}}
+		result = SpellDamageRolls._finish_spell_damage(cast.caster, cast.target, roll, 0, 1.0, str(fallback.damage_type), cast.decisions, fallback_result, 1, [], cast.spell.get("damage_reductions", []), cast.spell.get("damage_bypasses", []))
+	elif cast.spell.has("save"):
 		result = SpellSaveResolver.resolve(cast)
 	elif cast.spell.get("attack_type", "none") != "none":
 		result = SpellAttackResolver.resolve(cast)
@@ -656,14 +669,16 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 		result = {"success": true, "hit": true, "damage": 0, "effect_cast": cast.effect_cast, "message": str(cast.spell["name"]) + " resolves."}
 	result["slot_level"] = cast.slot_level
 	result["effect_cast"] = cast.effect_cast
-	return apply(cast.caster, cast.target, cast.spell, result, cast.spatial_host)
+	return apply(cast.caster, cast.target, cast.spell, result, cast.spatial_host, cast.decisions)
 
-static func apply_custom_effects(caster: Character, target, effects: Array, result: Dictionary, slot_level: int, step_results: Array = [], adapter: Object = null, spell: Dictionary = {}, host: SpellCastContext = null) -> Dictionary:
+static func apply_custom_effects(caster: Character, target, effects: Array, result: Dictionary, slot_level: int, step_results: Array = [], adapter: Object = null, spell: Dictionary = {}, host: SpellCastContext = null, decisions: Dictionary = {}) -> Dictionary:
 	if adapter != null:
 		var context = adapter.get("cast")
 		if context != null:
 			if spell.is_empty(): spell = context.spell
 			if host == null: host = context.spatial_host
+			decisions = context.decisions
+	var effect_source := str(result.get("effect_cast", {}).get("source_id", decisions.get("damage_source_instance_id", "")))
 	var messages: Array[String] = []
 	var target_name: String = target.character_name if target is Character else str(target.get("name", "Target"))
 	var outcome := ("hit" if bool(result.get("hit", false)) else "miss") if result.has("hit") else (("success" if bool(result.get("saved", false)) else "failure") if result.has("saved") else "")
@@ -675,9 +690,9 @@ static func apply_custom_effects(caster: Character, target, effects: Array, resu
 		if not effect is Dictionary: continue
 		if effect.has("rider_by_outcome"):
 			var eligible := bool(effect["rider_by_outcome"][outcome])
-			var decisions: Array = result.get("rider_decisions", [])
-			decisions.append({"effect": str(effect.get("type", "")), "outcome": outcome, "eligible": eligible, "source": "authored_map"})
-			result["rider_decisions"] = decisions
+			var rider_decisions: Array = result.get("rider_decisions", [])
+			rider_decisions.append({"effect": str(effect.get("type", "")), "outcome": outcome, "eligible": eligible, "source": "authored_map"})
+			result["rider_decisions"] = rider_decisions
 			if not eligible: continue
 		if bool(effect.get("on_spell_hit", false)) and not result.get("hit", false): continue
 		if bool(effect.get("on_failed_save", false)) and result.get("saved", true): continue
@@ -774,19 +789,30 @@ static func apply_custom_effects(caster: Character, target, effects: Array, resu
 				if changed.get("applied", false): messages.append("%s's Hit Point maximum is now %d." % [target_name, int(changed.max_hp_after)] + (" %s dies." % target_name if bool(changed.get("zero_limit_death", false)) else ""))
 				else: messages.append("%s's Hit Point maximum is unchanged (%s)." % [target_name, str(changed.get("reason", "refused")).replace("_", " ")])
 			"settle_death":
-				var settled := ZeroHpAftermathRules.settle_explicit(target, effect.policy, str(result.get("effect_cast", {}).get("source_id", "")), caster)
+				var settled: Dictionary = result.get("settle_death", {})
+				if bool(settled.get("damage_pipeline", false)) and str(settled.get("policy_id", "")) == str(effect.policy.id):
+					# The captured fallback already settled, possibly after an owned
+					# damage choice. Never retest its now-lower HP or roll it again.
+					settled["damage"] = int(result.get("damage", 0))
+					settled["rolled"] = int(result.get("damage_roll", {}).get("final_total", settled.get("rolled", 0)))
+				else:
+					settled = ZeroHpAftermathRules.settle_explicit(target, effect.policy, effect_source, caster, decisions)
 				result["settle_death"] = settled
 				if settled.get("applied", false):
 					result["killed"] = true
 					messages.append("%s %s outright (%s)." % [target_name, "is destroyed" if str(settled.outcome) == "destruction" else "dies", str(settled.remains)])
 				elif settled.get("fallback", false):
 					# Batch 081: the policy's declared fallback damage replaced death.
-					result["damage"] = int(result.get("damage", 0)) + int(settled.damage)
-					result["killed"] = (int(target.get("current_hp", 0)) if target is Dictionary else target.current_hp) <= 0
+					if not bool(settled.get("damage_pipeline", false)):
+						result["damage"] = int(result.get("damage", 0)) + int(settled.damage)
+						var receipt: Dictionary = settled.get("receipt", {})
+						result["resolved"] = int(result.get("resolved", 0)) + int(receipt.get("resolved", 0))
+						result.get_or_add("damage_components", []).append({"type": str(settled.damage_type), "raw": int(settled.rolled), "resolved": int(receipt.get("resolved", 0)), "receipt": receipt})
+					result["killed"] = target.is_dead() if target is Character else not bool(target.get("is_alive", true))
 					messages.append("%s takes %d %s damage instead of dying." % [target_name, int(settled.damage), str(settled.damage_type)])
 				else: messages.append("%s: %s" % [target_name, str(settled.get("reason", "no effect"))])
 			"destroy_object":
-				var wrecked := ObjectDestructionRules.destroy(target, effect.policy, str(result.get("effect_cast", {}).get("source_id", "")))
+				var wrecked := ObjectDestructionRules.destroy(target, effect.policy, effect_source)
 				result["destroy_object"] = wrecked
 				if wrecked.get("applied", false): messages.append("%s is destroyed." % target_name)
 				else: messages.append("%s: %s" % [target_name, str(wrecked.get("reason", "no effect"))])
@@ -811,9 +837,9 @@ static func apply_custom_effects(caster: Character, target, effects: Array, resu
 	return result
 
 ## Applied once after attack/save and any awaited Empowered damage settlement.
-static func apply(caster: Character, target, spell: Dictionary, result: Dictionary, host: SpellCastContext = null) -> Dictionary:
+static func apply(caster: Character, target, spell: Dictionary, result: Dictionary, host: SpellCastContext = null, decisions: Dictionary = {}) -> Dictionary:
 	if result.get("recipient_negated", false) or result.get("shared_effects_applied", false) or not result.get("success", false) or result.get("sanctuary_blocked", false) or result.has("damage_request") or result.has("save_bonus_request") or result.has("weapon_attack_bonus_request") or result.has("save_exit_request"):
 		return result
 	result["shared_effects_applied"] = true
 	var effects := SpellDamageRolls.spell_effects_for_slot_level(spell, int(result.get("slot_level", spell.get("level", 0))))
-	return apply_custom_effects(caster, target, effects, result, int(result.get("slot_level", spell.get("level", 0))), [], null, spell, host)
+	return apply_custom_effects(caster, target, effects, result, int(result.get("slot_level", spell.get("level", 0))), [], null, spell, host, decisions)

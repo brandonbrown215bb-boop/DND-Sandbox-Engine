@@ -73,6 +73,12 @@ every previous check in its original order. Startup/parse/boot prerequisites
 remain, and the runner now stops immediately when one fails. Do not skip a
 compile failure to manufacture a green focused result.
 
+Batch 066–082 scenarios are registered in the Windows runner. For flows that
+write checkpoints, it automatically launches the matching `*_reload` scenario
+in a fresh process using the flow's isolated profile. Selecting a reload name
+first runs its parent flow; each pair gets its own profile. Running those reloads
+alone against a fresh or deleted profile is not a save-recovery test.
+
 The `effects` group is the small development loop for source-owned conditions,
 repeat saves, caster expiry and saved effect records. The `spells` group covers
 the older whole spell test function. Run the small group while changing the

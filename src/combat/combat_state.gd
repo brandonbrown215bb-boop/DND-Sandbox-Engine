@@ -585,15 +585,23 @@ func _flash_hex(coord: Vector2i, color: Color) -> void:
 	if hex_grid == null:
 		return
 	hex_grid.add_highlight(coord, color)
+	var feedback_turn := CombatAction.active_turn_serial
 	await get_tree().create_timer(0.12).timeout
+	if not is_instance_valid(hex_grid) or _battle_ending or feedback_turn != CombatAction.active_turn_serial:
+		return
 	hex_grid.clear_highlights()
 	# Restore any action-specific highlights for the active player.
+	if not _player_highlights_current(): return
 	if pending_action_type == "attack":
 		_highlight_attack_targets()
 	elif pending_action_type == "spell":
 		_highlight_spell_targets()
 	else:
 		_highlight_reachable()
+
+
+func _player_highlights_current() -> bool:
+	return active_character != null and not _battle_ending and bool(active_combatant.get("is_player", false)) and active_combatant.get("entity") == active_character and current_player_idx >= 0 and current_player_idx < player_entities.size()
 
 
 ## Build a human-readable intent string for a monster's planned action.
@@ -1097,8 +1105,10 @@ func _start_combat_turn() -> void:
 		hex_grid.queue_redraw()
 		_update_grid_entities()
 
+		var preview_turn := CombatAction.active_turn_serial
 		await get_tree().create_timer(1.0).timeout
-		_run_monster_ai()
+		if _monster_ai_current(preview_turn, monster):
+			_run_monster_ai()
 
 
 func _get_current_owner_index() -> int:
@@ -1187,7 +1197,15 @@ func _on_device_binding_changed(player_index: int, _device_id: int, connected: b
 			_highlight_reachable()
 
 
+func _monster_ai_current(expected_turn: int = -1, expected_monster: Dictionary = {}) -> bool:
+	if _battle_ending or active_combatant.is_empty() or bool(active_combatant.get("is_player", false)): return false
+	var actor: Variant = active_combatant.get("entity")
+	if not actor is Dictionary or not bool(actor.get("is_alive", false)): return false
+	return (expected_turn < 0 or expected_turn == CombatAction.active_turn_serial) and (expected_monster.is_empty() or is_same(actor, expected_monster))
+
+
 func _run_monster_ai() -> void:
+	if not _monster_ai_current(): return
 	ClericRules.reconcile_turning(monster_entities, player_entities)
 	var monster: Dictionary = active_combatant["entity"]
 	var monster_coord: Vector2i = monster.get("hex_position", Vector2i.ZERO)
@@ -1313,7 +1331,7 @@ func _resolve_monster_command(monster: Dictionary, command: Dictionary) -> void:
 		var held: Array = monster.get("held_items", []).duplicate()
 		for item_index in held.size():
 			var definition_id := str(held[item_index])
-			var record := {"instance_id": "monster:%s:drop:%d:%d" % [str(monster.get("id", "monster")), tracker.round_number, item_index], "definition_id": definition_id, "state": {}}
+			var record := {"instance_id": "monster:%s:drop:%d:%d" % [str(monster.get("id", "monster")), tracker.current_round, item_index], "definition_id": definition_id, "state": {}}
 			var dropped_object := CombatObjectRules.make_dropped_item(record, origin, str(monster.get("id", "")))
 			if not dropped_object.is_empty():
 				dropped_combat_items.append(dropped_object)
@@ -3071,6 +3089,8 @@ func _remember_attack_action_choice(weapon: Dictionary, chosen: String) -> void:
 ## "attack_action" pick is reused (and rechecked); a per-attack rule asks again
 ## through the same real menu. Dismissal or a stale answer holds the swing.
 func _extra_swing_damage_choice(weapon: Dictionary, target: Dictionary, extra_index: int) -> Dictionary:
+	var choice_actor := active_character
+	var choice_turn := CombatAction.active_turn_serial
 	var choice := AttackProfileRules.damage_type_choice(active_character, weapon)
 	var carried := AttackProfileRules.carried_choice(active_character, weapon, attack_action_damage_choice)
 	if not carried.is_empty():
@@ -3080,6 +3100,8 @@ func _extra_swing_damage_choice(weapon: Dictionary, target: Dictionary, extra_in
 		return {"damage_type": ""}
 	var picked := await hud.request_damage_type_choice(choice.options, "%s (Extra Attack %d)" % [str(choice.name), extra_index + 1])
 	var stale := "" if picked.is_empty() else AttackProfileRules.activation_choice_error(active_character, weapon, choice, picked)
+	if stale.is_empty() and not picked.is_empty():
+		stale = _attack_choice_target_error(choice_actor, choice_turn, target, weapon)
 	if stale.is_empty() and not picked.is_empty() and (not bool(target.get("is_alive", false)) or target not in monster_entities):
 		stale = "The target is no longer there."
 	if picked.is_empty() or not stale.is_empty():
@@ -3087,6 +3109,19 @@ func _extra_swing_damage_choice(weapon: Dictionary, target: Dictionary, extra_in
 		hud.add_log("[color=yellow]%s: %s; this swing is held and not spent.[/color]" % [str(choice.get("name", "Damage type")), reason])
 		return {"held": true}
 	return {"damage_type": picked}
+
+
+## Revalidate the live attacker and reach after a damage-type popup yields.
+func _attack_choice_target_error(actor: Character, turn: int, target: Dictionary, weapon: Dictionary) -> String:
+	if actor == null or actor != active_character or turn != CombatAction.active_turn_serial or not actor.is_alive or CombatAction.is_incapacitated(actor) or _battle_ending:
+		return "The attacking turn is no longer available."
+	if not bool(target.get("is_alive", false)) or target not in monster_entities or current_player_idx < 0 or current_player_idx >= player_entities.size():
+		return "The target is no longer there."
+	var origin: Vector2i = player_entities[current_player_idx].get("hex_position", Vector2i.ZERO)
+	var destination: Vector2i = target.get("hex_position", Vector2i.ZERO)
+	if not Targeting.is_in_range(origin, destination, int(weapon.get("range", 1))) or not Targeting.has_line_of_sight(origin, destination, hex_grid) or _spell_zones()._antilife_shell_blocks_melee(actor, origin, destination, weapon):
+		return "The target is no longer within the weapon's reach."
+	return ""
 
 
 func _resolve_player_weapon_attack(attacker: Character, target, weapon: Dictionary, advantage: bool, disadvantage: bool, decisions: Dictionary, additional_damage: Dictionary) -> Dictionary:
@@ -3730,6 +3765,8 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 		if str(profile_choice.get("window", "")) == "activation" and not carried_damage_type.is_empty():
 			activation_damage_type = carried_damage_type
 		elif str(profile_choice.get("window", "")) == "activation":
+			var choice_actor := active_character
+			var choice_turn := CombatAction.active_turn_serial
 			pending_action_type = ""
 			resolving_player_action = true
 			activation_damage_type = await hud.request_damage_type_choice(profile_choice.options, str(profile_choice.name))
@@ -3739,6 +3776,7 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 				hud.add_log("%s: damage-type choice cancelled; nothing was spent." % str(profile_choice.name))
 				return
 			var stale_choice := AttackProfileRules.activation_choice_error(active_character, weapon, profile_choice, activation_damage_type)
+			if stale_choice.is_empty(): stale_choice = _attack_choice_target_error(choice_actor, choice_turn, clicked_monster, weapon)
 			if stale_choice.is_empty() and (not bool(clicked_monster.get("is_alive", false)) or clicked_monster.get("hex_position", Vector2i.ZERO) != coord or clicked_monster not in monster_entities):
 				stale_choice = "The target is no longer there; nothing was spent."
 			if stale_choice.is_empty() and ((parent_strike and not child_actions.valid(self)) or (not parent_strike and remaining_attack_swings <= 0 and not turn_budget.can_spend("action"))):

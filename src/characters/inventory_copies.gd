@@ -78,14 +78,31 @@ func restore(inventory: RefCounted, data: Dictionary) -> void:
 		inventory_id = str(data["inventory_id"])
 		next_id = int(data["next_id"])
 		records = data["records"].duplicate(true)
-		for id in records: # Batch 080: a copy saved before its definition gained charges starts full, only where the data declares it.
-			var item := DataLoader.get_item(str(records[id].get("definition_id", "")))
-			if records[id].get("state") is Dictionary and not records[id].state.has("charges") and int(item.get("maximum_charges", 0)) > 0 and str(item.get("legacy_charge_state", "")) == "full":
-				records[id].state["charges"] = int(item.maximum_charges)
+		for record in records.values(): restore_legacy_charges(record)
 		backpack.assign(data["backpack"])
 		for slot in data["equipped"]:
 			equipped[Inventory.Slot.keys().find(slot)] = data["equipped"][slot]
 	sync(inventory)
+
+## The declared legacy charge policy follows the exact copy through containers,
+## attached parts and room pickup as well as top-level inventory restore.
+## An existing charge value, including zero, is never refilled.
+static func restore_legacy_charges(record: Dictionary) -> void:
+	var state: Variant = record.get("state")
+	if not state is Dictionary: return
+	var item := DataLoader.get_item(str(record.get("definition_id", "")))
+	if not state.has("charges") and int(item.get("maximum_charges", 0)) > 0 and str(item.get("legacy_charge_state", "")) == "full":
+		state["charges"] = int(item.maximum_charges)
+	var contents: Variant = state.get("contents", {})
+	if contents is Dictionary:
+		for children in contents.values():
+			if children is Array:
+				for child in children:
+					if child is Dictionary: restore_legacy_charges(child)
+	var attached: Variant = state.get("attached", {})
+	if attached is Dictionary:
+		for child in attached.values():
+			if child is Dictionary: restore_legacy_charges(child)
 
 static func saved_error(dto: Dictionary) -> String:
 	if not dto.has("copies"): return ""

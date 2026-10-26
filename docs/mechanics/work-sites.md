@@ -12,7 +12,7 @@ Source: SRD 5.2.1 downtime/crafting work is done in one place, with helpers pres
 `WorkRules.location(id)` reads `GameManager.active_dungeon_state`: the dungeon, the current local room and the participant's party position. No room, no position, or being contained means the location is unknown. An unknown location never satisfies proximity.
 
 ## Behaviour
-- **Start** refuses an unknown location. It records `state.work_site` = {dungeon_id, room_id, position}, the exact start cell.
+- **Start** refuses an unknown location or incapacitated worker. It records `state.work_site` = {dungeon_id, room_id, position}, the exact start cell.
 - **Join** (the Local room "Join work" control, through a confirmation menu) refuses:
   - incapacitated helpers
   - helpers whose location is unknown or in a different room
@@ -21,7 +21,8 @@ Source: SRD 5.2.1 downtime/crafting work is done in one place, with helpers pres
 - **Accrual** (`settle` from `advance_campaign_time`): positions are constant within a span, so the span start is the boundary.
   - Anyone away under `interrupt`: the declared keep/reset policy applies at the span start.
   - Anyone away under `pause`: the pause starts at the span start (`work_away_since`). The policy applies only once the absence is **past** `away_limit_seconds` (strictly greater: `now > since + away_limit_seconds`); an absence of exactly the limit is allowed and keeps progress. The clock is whole seconds, so the lapse is recorded at `since + away_limit_seconds + 1`, even inside a long jump. Otherwise the span is not credited.
-  - Return: the pause clears, and the return span itself is not credited.
+  - Return: the preceding absence is checked up to the return span's start before the pause clears. A return past the limit still interrupts at `since + limit + 1`; otherwise work resumes. The return span itself is not credited and does not extend an absence that already ended.
+- Incapacitation includes conditions such as Stunned and Paralyzed at start, join and accrual. Becoming incapacitated after joining interrupts before any more progress is credited.
 - Existing single-job, rest-interruption, helper-concentration and participant-loss checks are unchanged. Site-less work (including legacy saves) behaves as before.
 
 ## Authored policy (Batch 082, #46 ruling)
