@@ -1,6 +1,6 @@
 # Spell inventory and rules-vocabulary audit (Batch 088)
 
-**Status: PARTIAL AUDIT. Inventory is complete. Clause decomposition covers 52 of 362 unique loaded spell IDs: 50 decomposed plus 2 out-of-milestone IDs identified only, all in the immediate attack/save/healing family. The other 310 are UNREVIEWED.** This is not a complete audit. Nothing here enables, converts or certifies a spell. Accepted slice counts and checkpoint acceptance are unchanged.
+**Status: PARTIAL AUDIT. Inventory is complete. Clause decomposition covers 93 of 362 unique loaded spell IDs (25.7%): 87 decomposed, 6 out-of-milestone IDs identified only. Families covered so far: direct_resolution (52) and control (41). The other 269 are UNREVIEWED.** This is not a complete audit. Nothing here enables, converts or certifies a spell. Accepted slice counts and checkpoint acceptance are unchanged.
 
 ## Evidence boundary
 
@@ -200,16 +200,181 @@ Subclass merge: I could not show one. Each extra ID sits directly in the base `s
 - **899 vs 898:** the register's own rows already sum to 899 class memberships, matching the fresh export. The 898 figure in its prose summary is stale text, not a data difference.
 - **53 duplicate definitions:** 53 loaded IDs are defined in two or three files under `data/core/spells/`. Winners: imported_spells.json 30, core_spells.json 16, conversion_batch_002.json 4, conversion_batch_001.json 3. In all 30 imported-versus-srd_additional pairs, the legacy imported record wins over the srd_additional record. Whether each winner is the intended SRD 5.2.1 shape is unreviewed; check it per spell before any conversion.
 
+## Batch 088-3: conditions, control and forced movement (41 spells reviewed)
+
+Scope: register `primary_behavior: control` (41 IDs). 37 are in SRD 5.2.1 and decomposed. compelled_duel, crown_of_madness, friends and thorn_whip aren't in SRD 5.2.1; they're out of milestone and not decomposed. "Winner" is the loaded definition from the inventory CSV `source_file`. The shared clauses listed in 088-2 (cost, range, components, slot payment, per-target save, upcast extra targets, Concentration) apply here too: **E**.
+
+**Re-read of the rendered PDF (088-2 carry-overs), checked against page images at 80 dpi:**
+- **Prismatic Spray (p.155):** row 8 reads "**Special.** The target is struck by two rays. Roll twice, rerolling any 8." That is **P (S-215: controlled reroll/nested tables)**, on top of S-214.
+- **Divine Word (p.125):** the table ends at row 41–50 (Deafened, 1 minute). It has 4 rows, 0–20 to 41–50, and the trigger is "50 Hit Points or fewer". So the 088-2 classification was complete and nothing was cut off.
+
+| Spell | Avail | Winner | Clause decomposition → classification (owner) |
+|---|---|---|---|
+| animal_friendship | yes | imported | Beast seen, Wis or Charmed 24 h: E. Ends if caster or allies deal damage: E. 24-hour world persistence beyond the encounter: H (register limit; S-070 actor-specific duration). |
+| antipathy_sympathy | no | srd_add | 1-hour cast: E. Creature or Huge-or-smaller object target; chosen creature kind: E (S-025 fact bindings). Wis save on coming within 120 ft: P (S-184 first-approach trigger). Frightened and must move away / Charmed and must move closer, by the safest route: **G → PROPOSED-spells-4**. Can't willingly leave 5 ft: H (S-179). Damaged by the target → save: H (S-031). Save when ending turn >120 ft away: E (S-068 + S-027). Immune 1 minute after a success: H (S-014 cooldown per recipient). 10-day duration: H (S-070). |
+| bestow_curse | no | imported | Touch, Wis save. Option 1, Disadvantage on one ability's checks and saves: E (S-091 + S-036). Option 2, Disadvantage on attacks against the caster: E (S-040). Option 3, start-of-turn Wis save or forced Dodge: H (S-068 + forced-action host; S-148 child actions). Option 4, extra 1d8 Necrotic on caster's attack/spell damage: E (S-041 window + S-109). Slot-based duration/no-Concentration: P (S-141). |
+| blindness/deafness | yes | imported | E (register slice). |
+| calm_emotions | no | imported | Humanoids in a 20-ft Sphere, Cha save, choice per creature: E (S-036). Option 1, Charmed/Frightened immunity plus suppression of existing conditions: E (S-074/S-075). Option 2, Indifferent toward chosen creatures, ends on damage to it or allies it witnesses: P (S-219 attitude; S-190 witness). |
+| charm_monster, charm_person | yes | srd_add / imported | E (register). Friendly attitude: P (S-219). Target knows afterwards: J (narrative, ADR-0023). |
+| color_spray | yes | imported | 15-ft Cone, Con, Blinded until end of caster's next turn: E. |
+| command | yes | imported | 5 options (Approach, Drop, Flee, Grovel, Halt): E (native; register limit, no pickup flow: H S-164). Approach/Flee forced movement is native per-ID: see PROPOSED-spells-4. |
+| compulsion | no | srd_add | Each chosen seen creature, Wis or Charmed: E. Bonus Action each turn to name a horizontal direction: H (S-148 child action). Target must move that way by the safest route: **G → PROPOSED-spells-4**. Repeat save after moving: H (S-077 post-movement event, Planned → P). |
+| confusion | no | srd_add | 10-ft Sphere, Wis: E. No Bonus Actions/Reactions: P (S-160). Start-of-turn 1d10 behavior table: P (S-214). Row 1: random 1d4 compass direction with all movement: G → PROPOSED-spells-4. Row 7–8: melee attack on a random creature in reach: H (S-096 creature-owned attack choice). Repeat save at end of turn: E. Radius +5 ft per slot: E (area upcast). |
+| contagion | no | srd_add | Touch, Con save 11d8 Necrotic + Poisoned: E. Chosen ability has Disadvantage on saves while Poisoned: E (S-091). Three successes/failures, failure lasts 7 days: E (S-069) + H (S-070 long duration). Effects that would end Poisoned require a Con save: **G → PROPOSED-spells-5**. |
+| dissonant_whispers | no | imported | Wis 3d6 Psychic, half: E. On failure, must immediately use Reaction to move away by the safest route: P (S-183 Reaction movement) + PROPOSED-spells-4. |
+| dominate_beast / person / monster | no | srd_add / srd_add / imported | Type gate, Wis or Charmed, Advantage if fighting: E. Repeat save whenever it takes damage: H (S-031 + S-068 damage-triggered). Telepathic link on the same plane: P (S-218, S-033). Free-action commands on caster's turn: H (S-156 command authority, verified for created actors, not charmed creatures). Reaction command costs the caster's Reaction: P (S-160). Upcast Concentration duration: P (S-141). |
+| entangle | yes | imported | E (register). |
+| enthrall | no | imported | Chosen seen creatures, Wis; auto-success if fighting: E (S-092). −10 to Wisdom (Perception) and Passive Perception: E (S-028 purpose-aware checks). |
+| eyebite | no | imported | Self, one seen creature within 60 ft, choice of 3 effects: E. Magic action each turn to target another, never a creature that already succeeded against this casting: H (S-034 prior-result identity + S-148). Asleep (Unconscious, wakes on damage/shake): E (Sleep pattern). Panicked: Frightened, must Dash away; ends at ≥60 ft and out of sight: PROPOSED-spells-4 + P (S-190). Sickened: Poisoned: E. |
+| fear | no | imported | 30-ft Cone, Wis: E. Drop held items: E (Command Drop) + H (no pickup flow). Frightened, Dash away by the safest route: PROPOSED-spells-4. End-of-turn save only when out of line of sight: P (S-190). |
+| flesh_to_stone | no | srd_add | Con save; failure Restrained, success Speed 0 until caster's next turn: E. Constructs auto-succeed: E (S-092). Three-of-a-kind repeat saves to Petrified: E (S-069). Petrified becomes permanent if Concentration lasts the full duration (expiry vs broken): E (S-086 source-end reason) + H (durable condition after source end). |
+| geas | no | srd_add | 1-minute cast; auto-success if it can't understand: P (S-218). Charmed 30 days: H (S-070). 5d10 Psychic when acting directly counter to the command, at most once a day: J (S-220 campaign-authored outcome; "directly counter" is a GM judgment, ADR-0023). Suicidal command ends the spell: J. Ended by Remove Curse/Greater Restoration/Wish: H (named ending sources). Upcast durations: P (S-141). |
+| grease | yes | imported | E (register). |
+| hold_monster, hold_person | yes | conv_002 / imported | E (shared, register). |
+| hypnotic_pattern | no | imported | 30-ft Cube, only creatures that can see it: E (S-029). Charmed + Incapacitated + Speed 0: E. Ends on damage or another creature's shake action: E (Sleep pattern). |
+| irresistible_dance | no | srd_add | Success: dance in place until end of its next turn: E (Speed 0 equivalent). Failure Charmed; all movement spent dancing; Disadvantage on Dex saves and attacks; attackers have Advantage: E (S-091). An action on its turn to repeat the save: H (S-068 action-triggered repeat; Entangle/Web escape action is the existing pattern). |
+| mass_suggestion, suggestion | no | srd_add / imported | Seen targets that can hear and understand: P (S-218). Course of activity ≤25 words, must sound achievable, not obviously harmful: J (ADR-0023 narrative order). Charmed until duration ends or damage from caster/allies: E. Ends upon completing the activity: P (S-216 objective facts). Mass upcast durations: P (S-141). |
+| power_word_stun | yes | srd_add | E (register). |
+| sleep | yes | core | E (register). Exhaustion-immune / non-sleeping creatures auto-succeed: E (curated data). |
+| slow | no | imported | ≤6 chosen creatures in 40-ft Cube, Wis: E. Speed halved; −2 AC and Dex saves: E (S-179, S-095). No Reactions; action or Bonus Action, not both; one attack per Attack action: P (S-160) + E (S-146). Somatic spell 25% failure chance: H (S-142 failure/refund on a random gate). End-of-turn repeat save: E. |
+| stinking_cloud | no | imported | 20-ft Sphere, Heavily Obscured: P (S-190). Start-of-turn Con save → Poisoned until end of turn, no action/Bonus Action: P (S-184) + E. Dispersed by strong wind: H (Gust of Wind interaction). |
+| tashas_hideous_laughter (Hideous Laughter) | no | imported | Wis; Prone + Incapacitated, can't end Prone itself: E + H (stand-up refusal). End-of-turn and on-damage repeat saves, with Advantage when damage-triggered: H (S-031 + S-068 + S-091). Upcast extra targets: E. |
+| telekinesis | no | srd_add | Magic action each turn, may switch targets: H (S-148). Creature: Str save or move 30 ft, Restrained until end of next turn, suspended then falls: H (S-168) + P (S-181 fall). Object: unattended moves automatically; worn/carried needs a Str save: H (object host). Fine manipulation: J. **Extract tail cut off at a column break after "simple tool,". Re-read p.167–168 before conversion.** |
+| vicious_mockery | yes | imported | Creature seen **or heard**: P (S-190). Wis 1d6 Psychic + Disadvantage on next attack before end of its next turn: E. Cantrip Upgrade: E. |
+| web | no | imported | 20-ft Cube, Difficult Terrain: E. Lightly Obscured: P (S-190). Collapses unless anchored: J (map anchoring fact; S-032 could carry it). First entry on a turn / start of turn Dex save, Restrained: P (S-184) + E. Athletics escape action: E (S-169). 5-ft cubes burn away when exposed to fire, 2d4 Fire to creatures starting their turn in them: H (burning piece from 088-2 + S-087 child timer). |
+| compelled_duel, crown_of_madness, friends, thorn_whip | no | imported | Not in SRD 5.2.1: out of milestone, not decomposed. |
+
+### 088-3 classification summary
+
+- **E:** most save/condition/repeat-save clauses (S-068/S-069/S-091/S-092 verified).
+- **P:**
+  - S-141 upcast durations.
+  - S-160 Reaction/action budgets.
+  - S-183 Reaction movement.
+  - S-184 entry/start-of-turn triggers.
+  - S-190 sight/obscurement.
+  - S-214 behavior table.
+  - S-216 activity completion.
+  - S-218 language/hearing.
+  - S-219 attitudes.
+- **H:**
+  - Damage-triggered repeat saves (Dominate ×3, Hideous Laughter).
+  - Action-triggered repeat saves (Irresistible Dance).
+  - Commands to charmed creatures (Dominate ×3, S-156).
+  - Long durations (S-070).
+  - Forced Dodge (Bestow Curse).
+  - Object targets (Telekinesis).
+  - Somatic failure chance (Slow).
+  - Recipient immunity window (Antipathy/Sympathy).
+  - Repeat-target exclusion (Eyebite).
+- **J:**
+  - Suggestion content.
+  - Geas "directly counter" and the suicidal command.
+  - Web anchoring.
+  - Telekinesis fine control.
+  - Charm awareness.
+- **G:** 2 (below).
+
+### PROPOSED-spells-4: Compelled movement directive
+- **Source clauses:**
+  - Fear: "takes the Dash action and moves away from you by the safest route … unless there is nowhere to move".
+  - Antipathy/Sympathy: "must use its movement … to get as far away as possible / as close as possible … by the safest route".
+  - Compulsion: "must use as much of its movement as possible to move in that direction".
+  - Eyebite: Panicked.
+  - Confusion: row 1, random 1d4 direction.
+  - Dissonant Whispers: Reaction move away.
+  - Command: Approach and Flee (currently native per-ID).
+- **Affected:** the 7 spells above.
+- **Reuse:** S-027 distance; S-179 movement costs; S-158 autonomy defaults; S-183 Reaction movement; S-096 creature-owned choices.
+- **Depends on:** S-183 for the Reaction variant; S-190 for the line-of-sight end checks.
+- **Finish line:** a source-owned directive on an actor declares the anchor (source actor, point or compass direction), the sense (away, toward or fixed direction), the movement amount (all movement, Dash, or Reaction movement) and the route policy (safest/shortest, no willing provocation). Both player-controlled and AI turns obey it. "Nowhere to move" ends movement without refusal. The directive ends exactly when its source effect ends. Command Approach/Flee rebuilt on it gives identical results to the native path. All of this survives a combat save and reload.
+
+### PROPOSED-spells-5: Guarded condition removal
+- **Source clause:** Contagion: "Whenever the Poisoned target receives an effect that would end the Poisoned condition, the target must succeed on a Constitution saving throw, or the Poisoned condition doesn't end on it."
+- **Affected:** Contagion. Re-check the unreviewed families (curses, diseases) before building.
+- **Reuse:** S-074/S-075 suppression; S-116 one recipient's incoming effect negation; S-092 explicit save outcomes.
+- **Depends on:** none beyond verified slices.
+- **Finish line:** a source-owned condition marks its removal as guarded by a declared save. Any removal attempt (Lesser Restoration, a Paladin's Lay On Hands cure, a Heal-style end) triggers that save. Failure leaves that source's condition in place and reports it; the remover's own cost is still spent. Success removes it. Other sources of the same condition are unaffected.
+
+## Duplicate-definition accuracy: imported_spells.json vs srd_additional_spells.json
+
+31 IDs are defined in both files. imported_spells.json wins 30 of them; mass_healing_word is won by conversion_batch_001.json, so it falls outside the 30. I compared each against the SRD 5.2.1 header and text (casting time, range in 5-ft hexes, target/area, save, damage type, Concentration, upcast and effects). A **DEFECT** is a winner that is less accurate than the loser. Many of these spells are available through native per-ID code, which may override the record; that override is unverified, so the records are still listed.
+
+| ID | More accurate | Deciding differences (SRD 5.2.1) | Defect? |
+|---|---|---|---|
+| barkskin | srd_add | SRD Bonus Action (imported: action) | DEFECT |
+| beacon_of_hope | srd_add | no save in SRD (imported: WIS) | DEFECT |
+| blindness/deafness | srd_add | 120 ft = 24 (imported: 6); upcast targets; condition choice | DEFECT |
+| blur | srd_add | effect authored; fields otherwise equal | DEFECT (minor) |
+| cloud_of_daggers | n/a | not in SRD 5.2.1 | — |
+| conjure_animals | srd_add | 2024 pack: Dex save 3d10 Slashing (imported: plain single target). The srd_add sphere is still an approximation | DEFECT |
+| darkness | srd_add | 15-ft radius = 3 | DEFECT (minor) |
+| darkvision | srd_add | effect authored | DEFECT (minor) |
+| detect_evil_and_good | srd_add | effect authored | DEFECT (minor) |
+| detect_magic | srd_add | effect authored; neither marks Ritual | DEFECT (minor) |
+| detect_poison_and_disease | srd_add | effect authored; neither marks Ritual | DEFECT (minor) |
+| divine_favor | equal | identical fields | — |
+| enhance_ability | srd_add | imported carries a spurious 2d6 force damage; srd_add has upcast targets | DEFECT |
+| entangle | srd_add | 20-ft square area + Restrained (imported: single) | DEFECT |
+| faerie_fire | srd_add | 20-ft Cube area authored | DEFECT (minor) |
+| fog_cloud | srd_add | 20-ft radius + upcast radius | DEFECT (minor) |
+| goodberry | srd_add | Range Self (imported: 1/touch) | DEFECT |
+| grease | srd_add | 10-ft square + Prone (imported: single) | DEFECT |
+| heroism | srd_add | upcast targets | DEFECT (minor) |
+| identify | equal | identical; neither marks Ritual | — |
+| invisibility | srd_add | upcast targets + effect | DEFECT (minor) |
+| magic_weapon | **imported** | SRD Bonus Action, 1 hour, no Concentration. srd_add has action + Concentration, and its bonus map (+2 at slot 4) is wrong against SRD (+2 at slots 3–5, +3 at 6+) | — (winner more accurate) |
+| moonbeam | srd_add | 5-ft radius + upcast | DEFECT (minor) |
+| plant_growth | srd_add | 100-ft radius area | DEFECT (minor) |
+| sanctuary | **imported** | the SRD warding works through an attacker's Wis save; imported keeps WIS, srd_add blanks it | — |
+| see_invisibility | srd_add | effect authored | DEFECT (minor) |
+| shatter | srd_add | 10-ft radius + upcast | DEFECT (minor) |
+| sleet_storm | srd_add | 20-ft-radius Cylinder + Prone (Concentration loss absent in both) | DEFECT (minor) |
+| spike_growth | srd_add | **Piercing** (imported: force) + 20-ft radius | DEFECT |
+| spirit_guardians | srd_add | Range Self emanation (imported: single at 3) | DEFECT |
+
+**Totals:** 25 cases where the winner is less accurate: 12 material, 13 minor (missing area/effect/upcast fields only). 2 where the winner is more accurate (magic_weapon, sanctuary). 2 equal. 1 not in SRD.
+
+## Running defect table (data not changed)
+
+Cumulative across batches. Batch tag = where the defect was recorded. For the 088-3 duplicate-winner defects, see the table above.
+
+| # | Batch | ID | Field | Loaded (winner) | SRD 5.2.1 |
+|---|---|---|---|---|---|
+| D-01 | 088-2 | chromatic_orb | target | area | one creature |
+| D-02 | 088-2 | flame_strike | damage | 10d6 fire | 5d6 Fire + 5d6 Radiant |
+| D-03 | 088-2 | ice_storm | damage | missing cold packet | 2d10 Bludgeoning + 4d6 Cold |
+| D-04 | 088-2 | lightning_bolt | target | single | 100 ft × 5 ft Line |
+| D-05 | 088-2 | mass_heal | heal | 700 to one | 700 divided among creatures |
+| D-06 | 088-2 | prayer_of_healing | casting_time/target | minute / single | 10 minutes / up to five |
+| D-07 | 088-2 | prismatic_spray | damage | single 12d6 fire | per-target 1d8 ray table |
+| D-08 | 088-2 | fire_storm, divine_word | effects | none authored | see 088-2 rows |
+| D-09 | 088-1/2 | 7 class lists | spell_list_ids | see class table | SRD headers |
+| D-10 | 088-3 | dissonant_whispers | damage_type | fire | Psychic |
+| D-11 | 088-3 | command | target_creature_type_exclusions | undead | no type exclusion in SRD 5.2.1 |
+| D-12 | 088-3 | enthrall | duration/concentration | "1 minute", false | Concentration, up to 1 minute |
+| D-13 | 088-3 | slow | save / target | DEX / single | Wisdom / up to six in a 40-ft Cube |
+| D-14 | 088-3 | hypnotic_pattern | target | single | 30-ft Cube |
+| D-15 | 088-3 | fear | range/area | 6, cone without size | Self, 30-ft Cone |
+| D-16 | 088-3 | compulsion | target | single | each chosen creature in range |
+| D-17 | 088-3 | antipathy_sympathy | casting_time | action | 1 hour |
+| D-18 | 088-3 | dominate_monster | condition_duration | 10 rounds | Concentration, up to 1 hour |
+| D-19 | 088-3 | confusion | area | no radius/upcast | 10-ft Sphere, +5 ft per slot |
+| D-20 | 088-3 | calm_emotions | area | no radius | 20-ft Sphere, Humanoids only |
+| D-21 | 088-3 | tashas_hideous_laughter | upcast | none | +1 creature per slot |
+| D-22 | 088-3 | web, bestow_curse | damage fields | 2d4 fire / 1d8 necrotic as base damage | conditional riders only |
+| D-23 | 088-3 | 25 duplicate IDs | winner | imported_spells.json | srd_additional closer (see table) |
+
 ## Known limits of this pass
 
-- 310 of 362 IDs are unreviewed for clauses. Families in spell-status.md remain the planning grouping.
-- All 339 headers parsed from column-split text (088-2). Prismatic Spray row 8 and the end of the Divine Word table may be cut off at a column break. Re-read the PDF page before converting.
+- 269 of 362 IDs are unreviewed for clauses. Families in spell-status.md remain the planning grouping.
+- All 339 headers parsed from column-split text (088-2). Prismatic Spray row 8 and the Divine Word table were re-read on rendered pages in 088-3; both are complete. The Telekinesis tail is still cut off.
 - `get_registry_hash()` isn't a hash. I recorded a SHA-256 of it. Changing it is runtime work and out of scope.
 - No Windows supported-runner export was possible from the box.
 
 ## Recommended next queue
 
-1. Brandon runs the Windows export (`scripts/invoke_godot_case.ps1`, Scene mode) and compares it with this SHA-256 and these totals.
-2. Data-correction job (content lane) for the 7 record defects and 7 class-membership defects cited here.
-3. 088-3: timed effects (45) and control (41) families.
-4. 088-4+: persistent-areas, summons and utility families, where real gaps (`PROPOSED-spells-N`) are likeliest.
+1. Windows export: optional confirmation (not blocking these batches).
+2. Data-correction job (content lane) for the running defect table D-01 to D-23.
+3. 088-4: timed_effects (45) and persistent_areas (45) families.
+4. 088-5+: movement, visibility, objects, summons and utility families, where real gaps (`PROPOSED-spells-N`) are likeliest.
