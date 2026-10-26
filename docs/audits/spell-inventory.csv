@@ -4,19 +4,19 @@ aid,Aid,2,srd521,bard cleric druid paladin ranger,bard cleric druid paladin rang
 alarm,Alarm,1,srd521,ranger wizard,ranger wizard,data/core/spells/imported_spells.json,native,True,,unreviewed
 alter_self,Alter Self,2,srd521,sorcerer wizard,sorcerer wizard,data/core/spells/imported_spells.json,native,True,,unreviewed
 animal_friendship,Animal Friendship,1,srd521,bard druid ranger,bard druid ranger,data/core/spells/imported_spells.json,native,True,,unreviewed
-animal_messenger,Animal Messenger,2,srd521,bard druid ranger,unparsed,data/core/spells/imported_spells.json,native,True,,unreviewed
+animal_messenger,Animal Messenger,2,srd521,bard druid ranger,bard druid ranger,data/core/spells/imported_spells.json,native,True,,unreviewed
 animal_shapes,Animal Shapes,8,srd521,druid,druid,data/core/spells/srd_additional_spells.json,native,False,Casting Animal Shapes is not supported yet.,unreviewed
-animate_dead,Animate Dead,3,srd521,cleric wizard,unparsed,data/core/spells/imported_spells.json,native,True,,unreviewed
+animate_dead,Animate Dead,3,srd521,cleric wizard,cleric wizard,data/core/spells/imported_spells.json,native,True,,unreviewed
 animate_objects,Animate Objects,5,srd521,bard sorcerer wizard,bard sorcerer wizard,data/core/spells/srd_additional_spells.json,native,True,,unreviewed
 antilife_shell,Antilife Shell,5,srd521,druid,druid,data/core/spells/srd_additional_spells.json,native,True,,unreviewed
 antimagic_field,Antimagic Field,8,srd521,cleric wizard,cleric wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Antimagic Field is not supported yet.,unreviewed
-antipathy_sympathy,Antipathy/Sympathy,8,srd521,bard druid wizard,unparsed,data/core/spells/srd_additional_spells.json,native,False,Casting Antipathy/Sympathy is not supported yet.,unreviewed
+antipathy_sympathy,Antipathy/Sympathy,8,srd521,bard druid wizard,bard druid wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Antipathy/Sympathy is not supported yet.,unreviewed
 arcane_eye,Arcane Eye,4,srd521,wizard,wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Arcane Eye is not supported yet.,unreviewed
 arcane_hand,Arcane Hand,5,srd521,sorcerer wizard,sorcerer wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Arcane Hand is not supported yet.,unreviewed
 arcane_lock,Arcane Lock,2,srd521,wizard,wizard,data/core/spells/imported_spells.json,native,False,Casting Arcane Lock is not supported yet.,unreviewed
 arcane_sword,Arcane Sword,7,srd521,bard wizard,bard wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Arcane Sword is not supported yet.,unreviewed
 armor_of_agathys,Armor of Agathys,1,out_of_milestone_non_srd521,,n/a,data/core/spells/imported_spells.json,native,False,Casting Armor of Agathys is not supported yet.,unreviewed
-arms_of_hadar,Arms of Hadar,1,out_of_milestone_non_srd521,,n/a,data/core/spells/imported_spells.json,native,False,Casting Arms of Hadar is not supported yet.,unreviewed
+arms_of_hadar,Arms of Hadar,1,out_of_milestone_non_srd521,,n/a,data/core/spells/imported_spells.json,native,False,Casting Arms of Hadar is not supported yet.,088-2
 astral_projection,Astral Projection,9,srd521,cleric warlock wizard,cleric warlock wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Astral Projection is not supported yet.,unreviewed
 augury,Augury,2,srd521,cleric druid wizard,cleric druid wizard,data/core/spells/imported_spells.json,native,False,Casting Augury is not supported yet.,unreviewed
 aura_of_life,Aura of Life,4,srd521,cleric paladin,cleric paladin,data/core/spells/srd_additional_spells.json,native,True,,unreviewed
@@ -29,25 +29,25 @@ beacon_of_hope,Beacon of Hope,3,srd521,cleric,cleric,data/core/spells/imported_s
 beast_sense,Beast Sense,2,out_of_milestone_non_srd521,,n/a,data/core/spells/imported_spells.json,native,False,Casting Beast Sense is not supported yet.,unreviewed
 befuddlement,Befuddlement,8,srd521,bard druid warlock wizard,bard druid warlock wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Befuddlement is not supported yet.,unreviewed
 bestow_curse,Bestow Curse,3,srd521,bard cleric wizard,bard cleric wizard,data/core/spells/imported_spells.json,native,False,Casting Bestow Curse is not supported yet.,unreviewed
-black_tentacles,Black Tentacles,4,srd521,wizard,unparsed,data/core/spells/srd_additional_spells.json,native,True,,unreviewed
+black_tentacles,Black Tentacles,4,srd521,wizard,wizard,data/core/spells/srd_additional_spells.json,native,True,,unreviewed
 blade_barrier,Blade Barrier,6,srd521,cleric,cleric,data/core/spells/srd_additional_spells.json,native,False,Casting Blade Barrier is not supported yet.,unreviewed
 blade_ward,Blade Ward,0,out_of_milestone_non_srd521,bard sorcerer warlock wizard,n/a,data/core/spells/imported_spells.json,native,True,,unreviewed
 bless,Bless,1,srd521,cleric paladin,cleric paladin,data/core/spells/conversion_batch_001.json,shared,True,,unreviewed
-blight,Blight,4,srd521,druid sorcerer warlock wizard,unparsed,data/core/spells/srd_additional_spells.json,native,True,,unreviewed
+blight,Blight,4,srd521,druid sorcerer warlock wizard,druid sorcerer warlock wizard,data/core/spells/srd_additional_spells.json,native,True,,088-2
 blinding_smite,Blinding Smite,3,out_of_milestone_non_srd521,paladin,n/a,data/core/spells/imported_spells.json,native,False,Casting Blinding Smite is not supported yet.,unreviewed
 blindness/deafness,Blindness/Deafness,2,srd521,bard cleric sorcerer wizard,bard cleric sorcerer wizard,data/core/spells/imported_spells.json,native,True,,unreviewed
 blink,Blink,3,srd521,sorcerer wizard,sorcerer wizard,data/core/spells/imported_spells.json,native,False,Casting Blink is not supported yet.,unreviewed
 blur,Blur,2,srd521,sorcerer wizard,sorcerer wizard,data/core/spells/imported_spells.json,native,True,,unreviewed
 branding_smite,Branding Smite,2,out_of_milestone_non_srd521,,n/a,data/core/spells/imported_spells.json,native,False,Casting Branding Smite is not supported yet.,unreviewed
-burning_hands,Burning Hands,1,srd521,sorcerer wizard,sorcerer wizard,data/core/spells/core_spells.json,shared,True,,unreviewed
+burning_hands,Burning Hands,1,srd521,sorcerer wizard,sorcerer wizard,data/core/spells/core_spells.json,shared,True,,088-2
 call_lightning,Call Lightning,3,srd521,druid,druid,data/core/spells/imported_spells.json,native,False,Casting Call Lightning is not supported yet.,unreviewed
 calm_emotions,Calm Emotions,2,srd521,bard cleric,bard cleric,data/core/spells/imported_spells.json,native,False,Casting Calm Emotions is not supported yet.,unreviewed
-chain_lightning,Chain Lightning,6,srd521,sorcerer wizard,sorcerer wizard,data/core/spells/srd_additional_spells.json,native,True,,unreviewed
+chain_lightning,Chain Lightning,6,srd521,sorcerer wizard,sorcerer wizard,data/core/spells/srd_additional_spells.json,native,True,,088-2
 charm_monster,Charm Monster,4,srd521,bard druid sorcerer warlock wizard,bard druid sorcerer warlock wizard,data/core/spells/srd_additional_spells.json,native,True,,unreviewed
 charm_person,Charm Person,1,srd521,bard druid sorcerer warlock wizard,bard druid sorcerer warlock wizard,data/core/spells/imported_spells.json,native,True,,unreviewed
 chill_touch,Chill Touch,0,srd521,sorcerer warlock wizard,sorcerer warlock wizard,data/core/spells/imported_spells.json,native,True,,088-1
-chromatic_orb,Chromatic Orb,1,srd521,sorcerer wizard,sorcerer wizard,data/core/spells/imported_spells.json,native,False,Casting Chromatic Orb is not supported yet.,unreviewed
-circle_of_death,Circle of Death,6,srd521,sorcerer warlock wizard,sorcerer warlock wizard,data/core/spells/conversion_batch_002.json,shared,True,,unreviewed
+chromatic_orb,Chromatic Orb,1,srd521,sorcerer wizard,sorcerer wizard,data/core/spells/imported_spells.json,native,False,Casting Chromatic Orb is not supported yet.,088-2
+circle_of_death,Circle of Death,6,srd521,sorcerer warlock wizard,sorcerer warlock wizard,data/core/spells/conversion_batch_002.json,shared,True,,088-2
 clairvoyance,Clairvoyance,3,srd521,bard cleric sorcerer wizard,bard cleric sorcerer wizard,data/core/spells/imported_spells.json,native,False,Casting Clairvoyance is not supported yet.,unreviewed
 clone,Clone,8,srd521,wizard,wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Clone is not supported yet.,unreviewed
 cloud_of_daggers,Cloud of Daggers,2,out_of_milestone_non_srd521,bard wizard,n/a,data/core/spells/imported_spells.json,native,True,,unreviewed
@@ -59,10 +59,10 @@ commune_with_nature,Commune with Nature,5,srd521,druid ranger,druid ranger,data/
 compelled_duel,Compelled Duel,1,out_of_milestone_non_srd521,paladin,n/a,data/core/spells/imported_spells.json,native,False,Casting Compelled Duel is not supported yet.,unreviewed
 comprehend_languages,Comprehend Languages,1,srd521,bard sorcerer warlock wizard,bard sorcerer warlock wizard,data/core/spells/imported_spells.json,native,False,Casting Comprehend Languages is not supported yet.,unreviewed
 compulsion,Compulsion,4,srd521,bard,bard,data/core/spells/srd_additional_spells.json,native,False,Casting Compulsion is not supported yet.,unreviewed
-cone_of_cold,Cone of Cold,5,srd521,druid sorcerer wizard,druid sorcerer wizard,data/core/spells/wizard_spellbook_spells.json,shared,True,,unreviewed
+cone_of_cold,Cone of Cold,5,srd521,druid sorcerer wizard,druid sorcerer wizard,data/core/spells/wizard_spellbook_spells.json,shared,True,,088-2
 confusion,Confusion,4,srd521,bard druid sorcerer wizard,bard druid sorcerer wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Confusion is not supported yet.,unreviewed
 conjure_animals,Conjure Animals,3,srd521,druid ranger,druid ranger,data/core/spells/imported_spells.json,native,True,,unreviewed
-conjure_barrage,Conjure Barrage,3,out_of_milestone_non_srd521,,n/a,data/core/spells/imported_spells.json,native,False,Casting Conjure Barrage is not supported yet.,unreviewed
+conjure_barrage,Conjure Barrage,3,out_of_milestone_non_srd521,,n/a,data/core/spells/imported_spells.json,native,False,Casting Conjure Barrage is not supported yet.,088-2
 conjure_celestial,Conjure Celestial,7,srd521,cleric,cleric,data/core/spells/srd_additional_spells.json,native,True,,unreviewed
 conjure_elemental,Conjure Elemental,5,srd521,druid wizard,druid wizard,data/core/spells/srd_additional_spells.json,native,True,,unreviewed
 conjure_fey,Conjure Fey,6,srd521,druid,druid,data/core/spells/srd_additional_spells.json,native,True,,unreviewed
@@ -82,7 +82,7 @@ create_undead,Create Undead,6,srd521,cleric warlock wizard,cleric warlock wizard
 creation,Creation,5,srd521,sorcerer wizard,sorcerer wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Creation is not supported yet.,unreviewed
 crown_of_madness,Crown of Madness,2,out_of_milestone_non_srd521,bard,n/a,data/core/spells/imported_spells.json,native,False,Casting Crown of Madness is not supported yet.,unreviewed
 crusaders_mantle,Crusader's Mantle,3,out_of_milestone_non_srd521,paladin,n/a,data/core/spells/imported_spells.json,native,False,Casting Crusader's Mantle is not supported yet.,unreviewed
-cure_wounds,Cure Wounds,1,srd521,bard cleric druid paladin ranger,bard cleric druid paladin ranger,data/core/spells/conversion_batch_002.json,shared,True,,unreviewed
+cure_wounds,Cure Wounds,1,srd521,bard cleric druid paladin ranger,bard cleric druid paladin ranger,data/core/spells/conversion_batch_002.json,shared,True,,088-2
 dancing_lights,Dancing Lights,0,srd521,bard sorcerer wizard,bard sorcerer wizard,data/core/spells/imported_spells.json,native,True,,unreviewed
 darkness,Darkness,2,srd521,sorcerer warlock wizard,sorcerer warlock wizard,data/core/spells/imported_spells.json,native,True,,unreviewed
 darkvision,Darkvision,2,srd521,druid ranger sorcerer wizard,druid ranger sorcerer wizard,data/core/spells/imported_spells.json,native,True,,unreviewed
@@ -96,24 +96,24 @@ detect_poison_and_disease,Detect Poison and Disease,1,srd521,cleric druid paladi
 detect_thoughts,Detect Thoughts,2,srd521,bard sorcerer wizard,bard sorcerer wizard,data/core/spells/imported_spells.json,native,False,Casting Detect Thoughts is not supported yet.,unreviewed
 dimension_door,Dimension Door,4,srd521,bard sorcerer warlock wizard,bard sorcerer warlock wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Dimension Door is not supported yet.,unreviewed
 disguise_self,Disguise Self,1,srd521,bard sorcerer wizard,bard sorcerer wizard,data/core/spells/imported_spells.json,native,False,Casting Disguise Self is not supported yet.,unreviewed
-disintegrate,Disintegrate,6,srd521,sorcerer wizard,sorcerer wizard,data/core/spells/srd_additional_spells.json,native,True,,unreviewed
+disintegrate,Disintegrate,6,srd521,sorcerer wizard,sorcerer wizard,data/core/spells/srd_additional_spells.json,native,True,,088-2
 dispel_evil_and_good,Dispel Evil and Good,5,srd521,cleric paladin,cleric paladin,data/core/spells/srd_additional_spells.json,native,False,Casting Dispel Evil and Good is not supported yet.,unreviewed
 dispel_magic,Dispel Magic,3,srd521,bard cleric druid paladin ranger sorcerer warlock wizard,bard cleric druid paladin ranger sorcerer warlock wizard,data/core/spells/imported_spells.json,native,False,Casting Dispel Magic is not supported yet.,unreviewed
 dissonant_whispers,Dissonant Whispers,1,srd521,bard,bard,data/core/spells/imported_spells.json,native,False,Casting Dissonant Whispers is not supported yet.,unreviewed
 divination,Divination,4,srd521,cleric druid wizard,cleric druid wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Divination is not supported yet.,unreviewed
 divine_favor,Divine Favor,1,srd521,paladin,paladin,data/core/spells/imported_spells.json,native,True,,unreviewed
 divine_smite,Divine Smite,1,srd521,paladin,paladin,data/core/spells/core_spells.json,native,True,,unreviewed
-divine_word,Divine Word,7,srd521,cleric,cleric,data/core/spells/srd_additional_spells.json,native,False,Casting Divine Word is not supported yet.,unreviewed
+divine_word,Divine Word,7,srd521,cleric,cleric,data/core/spells/srd_additional_spells.json,native,False,Casting Divine Word is not supported yet.,088-2
 dominate_beast,Dominate Beast,4,srd521,druid ranger sorcerer,druid ranger sorcerer,data/core/spells/srd_additional_spells.json,native,False,Casting Dominate Beast is not supported yet.,unreviewed
 dominate_monster,Dominate Monster,8,srd521,bard sorcerer warlock wizard,bard sorcerer warlock wizard,data/core/spells/imported_spells.json,native,False,Casting Dominate Monster is not supported yet.,unreviewed
 dominate_person,Dominate Person,5,srd521,bard sorcerer wizard,bard sorcerer wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Dominate Person is not supported yet.,unreviewed
 dragons_breath,Dragon’s Breath,2,srd521,sorcerer wizard,sorcerer wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Dragon’s Breath is not supported yet.,unreviewed
 dream,Dream,5,srd521,bard warlock wizard,bard warlock wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Dream is not supported yet.,unreviewed
 druidcraft,Druidcraft,0,srd521,druid,druid,data/core/spells/imported_spells.json,native,False,Casting Druidcraft is not supported yet.,unreviewed
-earthquake,Earthquake,8,srd521,cleric druid sorcerer,unparsed,data/core/spells/srd_additional_spells.json,native,False,Casting Earthquake is not supported yet.,unreviewed
-eldritch_blast,Eldritch Blast,0,srd521,warlock,warlock,data/core/spells/imported_spells.json,native,True,,unreviewed
+earthquake,Earthquake,8,srd521,cleric druid sorcerer,cleric druid sorcerer,data/core/spells/srd_additional_spells.json,native,False,Casting Earthquake is not supported yet.,unreviewed
+eldritch_blast,Eldritch Blast,0,srd521,warlock,warlock,data/core/spells/imported_spells.json,native,True,,088-2
 elemental_weapon,Elemental Weapon,3,out_of_milestone_non_srd521,paladin,n/a,data/core/spells/imported_spells.json,native,False,Casting Elemental Weapon is not supported yet.,unreviewed
-elementalism,Elementalism,0,srd521,druid sorcerer wizard,unparsed,data/core/spells/srd_additional_spells.json,native,False,Casting Elementalism is not supported yet.,unreviewed
+elementalism,Elementalism,0,srd521,druid sorcerer wizard,druid sorcerer wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Elementalism is not supported yet.,unreviewed
 enhance_ability,Enhance Ability,2,srd521,bard cleric druid ranger sorcerer wizard,bard cleric druid ranger sorcerer wizard,data/core/spells/imported_spells.json,native,True,,unreviewed
 enlarge/reduce,Enlarge/Reduce,2,srd521,bard druid sorcerer wizard,bard druid sorcerer wizard,data/core/spells/imported_spells.json,native,False,Casting Enlarge/Reduce is not supported yet.,unreviewed
 ensnaring_strike,Ensnaring Strike,1,srd521,ranger,ranger,data/core/spells/imported_spells.json,native,False,Casting Ensnaring Strike is not supported yet.,unreviewed
@@ -133,13 +133,13 @@ find_familiar,Find Familiar,1,srd521,wizard,wizard,data/core/spells/imported_spe
 find_steed,Find Steed,2,srd521,paladin,paladin,data/core/spells/core_spells.json,native,True,,unreviewed
 find_the_path,Find the Path,6,srd521,bard cleric druid,bard cleric druid,data/core/spells/srd_additional_spells.json,native,False,Casting Find the Path is not supported yet.,unreviewed
 find_traps,Find Traps,2,srd521,cleric druid ranger,cleric druid ranger,data/core/spells/imported_spells.json,native,False,Casting Find Traps is not supported yet.,unreviewed
-finger_of_death,Finger of Death,7,srd521,sorcerer warlock wizard,sorcerer warlock wizard,data/core/spells/imported_spells.json,native,False,Casting Finger of Death is not supported yet.,unreviewed
-fire_bolt,Fire Bolt,0,srd521,sorcerer warlock wizard,sorcerer wizard,data/core/spells/core_spells.json,shared,True,,unreviewed
+finger_of_death,Finger of Death,7,srd521,sorcerer warlock wizard,sorcerer warlock wizard,data/core/spells/imported_spells.json,native,False,Casting Finger of Death is not supported yet.,088-2
+fire_bolt,Fire Bolt,0,srd521,sorcerer warlock wizard,sorcerer wizard,data/core/spells/core_spells.json,shared,True,,088-2
 fire_shield,Fire Shield,4,srd521,druid sorcerer wizard,druid sorcerer wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Fire Shield is not supported yet.,unreviewed
-fire_storm,Fire Storm,7,srd521,cleric druid sorcerer,cleric druid sorcerer,data/core/spells/srd_additional_spells.json,native,False,Casting Fire Storm is not supported yet.,unreviewed
-fireball,Fireball,3,srd521,sorcerer wizard,sorcerer wizard,data/core/spells/core_spells.json,shared,True,,unreviewed
+fire_storm,Fire Storm,7,srd521,cleric druid sorcerer,cleric druid sorcerer,data/core/spells/srd_additional_spells.json,native,False,Casting Fire Storm is not supported yet.,088-2
+fireball,Fireball,3,srd521,sorcerer wizard,sorcerer wizard,data/core/spells/core_spells.json,shared,True,,088-2
 flame_blade,Flame Blade,2,srd521,druid sorcerer,druid sorcerer,data/core/spells/imported_spells.json,native,False,Casting Flame Blade is not supported yet.,unreviewed
-flame_strike,Flame Strike,5,srd521,cleric,cleric,data/core/spells/srd_additional_spells.json,native,False,Casting Flame Strike is not supported yet.,unreviewed
+flame_strike,Flame Strike,5,srd521,cleric,cleric,data/core/spells/srd_additional_spells.json,native,False,Casting Flame Strike is not supported yet.,088-2
 flaming_sphere,Flaming Sphere,2,srd521,druid sorcerer wizard,druid sorcerer wizard,data/core/spells/imported_spells.json,native,False,Casting Flaming Sphere is not supported yet.,unreviewed
 flesh_to_stone,Flesh to Stone,6,srd521,druid sorcerer wizard,druid sorcerer wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Flesh to Stone is not supported yet.,unreviewed
 fly,Fly,3,srd521,sorcerer warlock wizard,sorcerer warlock wizard,data/core/spells/imported_spells.json,native,True,,unreviewed
@@ -148,7 +148,7 @@ forbiddance,Forbiddance,6,srd521,cleric,cleric,data/core/spells/srd_additional_s
 forcecage,Forcecage,7,srd521,bard warlock wizard,bard warlock wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Forcecage is not supported yet.,unreviewed
 foresight,Foresight,9,srd521,bard druid warlock wizard,bard druid warlock wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Foresight is not supported yet.,unreviewed
 freedom_of_movement,Freedom of Movement,4,srd521,bard cleric druid ranger,bard cleric druid ranger,data/core/spells/srd_additional_spells.json,native,True,,unreviewed
-freezing_sphere,Freezing Sphere,6,srd521,sorcerer wizard,sorcerer wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Freezing Sphere is not supported yet.,unreviewed
+freezing_sphere,Freezing Sphere,6,srd521,sorcerer wizard,sorcerer wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Freezing Sphere is not supported yet.,088-2
 friends,Friends,0,out_of_milestone_non_srd521,bard,n/a,data/core/spells/imported_spells.json,native,False,Casting Friends is not supported yet.,unreviewed
 gaseous_form,Gaseous Form,3,srd521,sorcerer warlock wizard,sorcerer warlock wizard,data/core/spells/imported_spells.json,native,False,Casting Gaseous Form is not supported yet.,unreviewed
 gate,Gate,9,srd521,cleric sorcerer warlock wizard,cleric sorcerer warlock wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Gate is not supported yet.,unreviewed
@@ -158,24 +158,24 @@ giant_insect,Giant Insect,4,srd521,druid,druid,data/core/spells/srd_additional_s
 glibness,Glibness,8,srd521,bard warlock,bard warlock,data/core/spells/srd_additional_spells.json,native,False,Casting Glibness is not supported yet.,unreviewed
 globe_of_invulnerability,Globe of Invulnerability,6,srd521,sorcerer wizard,sorcerer wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Globe of Invulnerability is not supported yet.,unreviewed
 glyph_of_warding,Glyph of Warding,3,srd521,bard cleric wizard,bard cleric wizard,data/core/spells/imported_spells.json,native,False,Casting Glyph of Warding is not supported yet.,unreviewed
-goodberry,Goodberry,1,srd521,druid ranger,unparsed,data/core/spells/imported_spells.json,native,True,,unreviewed
+goodberry,Goodberry,1,srd521,druid ranger,druid ranger,data/core/spells/imported_spells.json,native,True,,unreviewed
 grease,Grease,1,srd521,sorcerer wizard,sorcerer wizard,data/core/spells/imported_spells.json,native,True,,unreviewed
 greater_invisibility,Greater Invisibility,4,srd521,bard sorcerer wizard,bard sorcerer wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Greater Invisibility is not supported yet.,unreviewed
 greater_restoration,Greater Restoration,5,srd521,bard cleric druid paladin ranger,bard cleric druid paladin ranger,data/core/spells/srd_additional_spells.json,native,False,Casting Greater Restoration is not supported yet.,unreviewed
-guardian_of_faith,Guardian of Faith,4,srd521,cleric,unparsed,data/core/spells/srd_additional_spells.json,native,False,Casting Guardian of Faith is not supported yet.,unreviewed
+guardian_of_faith,Guardian of Faith,4,srd521,cleric,cleric,data/core/spells/srd_additional_spells.json,native,False,Casting Guardian of Faith is not supported yet.,unreviewed
 guards_and_wards,Guards and Wards,6,srd521,bard wizard,bard wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Guards and Wards is not supported yet.,unreviewed
 guidance,Guidance,0,srd521,bard cleric druid,cleric druid,data/core/spells/imported_spells.json,native,True,,unreviewed
-guiding_bolt,Guiding Bolt,1,srd521,cleric,cleric,data/core/spells/imported_spells.json,native,True,,unreviewed
+guiding_bolt,Guiding Bolt,1,srd521,cleric,cleric,data/core/spells/imported_spells.json,native,True,,088-2
 gust_of_wind,Gust of Wind,2,srd521,druid ranger sorcerer wizard,druid ranger sorcerer wizard,data/core/spells/imported_spells.json,native,False,Casting Gust of Wind is not supported yet.,unreviewed
 hail_of_thorns,Hail of Thorns,1,out_of_milestone_non_srd521,,n/a,data/core/spells/imported_spells.json,native,False,Casting Hail of Thorns is not supported yet.,unreviewed
 hallow,Hallow,5,srd521,cleric,cleric,data/core/spells/srd_additional_spells.json,native,False,Casting Hallow is not supported yet.,unreviewed
 hallucinatory_terrain,Hallucinatory Terrain,4,srd521,bard druid warlock wizard,bard druid warlock wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Hallucinatory Terrain is not supported yet.,unreviewed
-harm,Harm,6,srd521,cleric,cleric,data/core/spells/srd_additional_spells.json,native,False,Casting Harm is not supported yet.,unreviewed
+harm,Harm,6,srd521,cleric,cleric,data/core/spells/srd_additional_spells.json,native,False,Casting Harm is not supported yet.,088-2
 haste,Haste,3,srd521,sorcerer wizard,sorcerer wizard,data/core/spells/imported_spells.json,native,False,Casting Haste is not supported yet.,unreviewed
-heal,Heal,6,srd521,cleric druid,cleric druid,data/core/spells/srd_additional_spells.json,native,True,,unreviewed
-healing_word,Healing Word,1,srd521,bard cleric druid,bard cleric druid,data/core/spells/conversion_batch_002.json,shared,True,,unreviewed
+heal,Heal,6,srd521,cleric druid,cleric druid,data/core/spells/srd_additional_spells.json,native,True,,088-2
+healing_word,Healing Word,1,srd521,bard cleric druid,bard cleric druid,data/core/spells/conversion_batch_002.json,shared,True,,088-2
 heat_metal,Heat Metal,2,srd521,bard druid,bard druid,data/core/spells/imported_spells.json,native,False,Casting Heat Metal is not supported yet.,unreviewed
-hellish_rebuke,Hellish Rebuke,1,srd521,warlock,warlock,data/core/spells/imported_spells.json,native,False,Casting Hellish Rebuke is not supported yet.,unreviewed
+hellish_rebuke,Hellish Rebuke,1,srd521,warlock,warlock,data/core/spells/imported_spells.json,native,False,Casting Hellish Rebuke is not supported yet.,088-2
 heroes_feast,Heroes’ Feast,6,srd521,bard cleric druid,bard cleric druid,data/core/spells/srd_additional_spells.json,native,False,Casting Heroes’ Feast is not supported yet.,unreviewed
 heroism,Heroism,1,srd521,bard paladin,bard paladin,data/core/spells/imported_spells.json,native,True,,unreviewed
 hex,Hex,1,srd521,warlock,warlock,data/core/spells/imported_spells.json,native,False,Casting Hex is not supported yet.,unreviewed
@@ -185,13 +185,13 @@ holy_aura,Holy Aura,8,srd521,cleric,cleric,data/core/spells/srd_additional_spell
 hunger_of_hadar,Hunger of Hadar,3,out_of_milestone_non_srd521,,n/a,data/core/spells/imported_spells.json,native,False,Casting Hunger of Hadar is not supported yet.,unreviewed
 hunters_mark,Hunter's Mark,1,srd521,ranger,ranger,data/core/spells/imported_spells.json,native,False,Casting Hunter's Mark is not supported yet.,unreviewed
 hypnotic_pattern,Hypnotic Pattern,3,srd521,bard sorcerer warlock wizard,bard sorcerer warlock wizard,data/core/spells/imported_spells.json,native,False,Casting Hypnotic Pattern is not supported yet.,unreviewed
-ice_knife,Ice Knife,1,srd521,druid sorcerer wizard,druid sorcerer wizard,data/core/spells/srd_additional_spells.json,native,True,,unreviewed
-ice_storm,Ice Storm,4,srd521,druid sorcerer wizard,druid sorcerer wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Ice Storm is not supported yet.,unreviewed
+ice_knife,Ice Knife,1,srd521,druid sorcerer wizard,druid sorcerer wizard,data/core/spells/srd_additional_spells.json,native,True,,088-2
+ice_storm,Ice Storm,4,srd521,druid sorcerer wizard,druid sorcerer wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Ice Storm is not supported yet.,088-2
 identify,Identify,1,srd521,bard wizard,bard wizard,data/core/spells/imported_spells.json,native,True,,unreviewed
 illusory_script,Illusory Script,1,srd521,bard warlock wizard,bard warlock wizard,data/core/spells/imported_spells.json,native,False,Casting Illusory Script is not supported yet.,unreviewed
 imprisonment,Imprisonment,9,srd521,warlock wizard,warlock wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Imprisonment is not supported yet.,unreviewed
 incendiary_cloud,Incendiary Cloud,8,srd521,druid sorcerer wizard,druid sorcerer wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Incendiary Cloud is not supported yet.,unreviewed
-inflict_wounds,Inflict Wounds,1,srd521,cleric,cleric,data/core/spells/imported_spells.json,shared,True,,unreviewed
+inflict_wounds,Inflict Wounds,1,srd521,cleric,cleric,data/core/spells/imported_spells.json,shared,True,,088-2
 insect_plague,Insect Plague,5,srd521,cleric druid sorcerer,cleric druid sorcerer,data/core/spells/srd_additional_spells.json,native,False,Casting Insect Plague is not supported yet.,unreviewed
 instant_summons,Instant Summons,6,srd521,wizard,wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Instant Summons is not supported yet.,unreviewed
 invisibility,Invisibility,2,srd521,bard sorcerer warlock wizard,bard sorcerer warlock wizard,data/core/spells/imported_spells.json,native,True,,unreviewed
@@ -202,9 +202,9 @@ legend_lore,Legend Lore,5,srd521,bard cleric wizard,bard cleric wizard,data/core
 leomunds_tiny_hut,Leomund's Tiny Hut,3,srd521,bard wizard,bard wizard,data/core/spells/imported_spells.json,native,False,Casting Leomund's Tiny Hut is not supported yet.,unreviewed
 lesser_restoration,Lesser Restoration,2,srd521,bard cleric druid paladin ranger,bard cleric druid paladin ranger,data/core/spells/imported_spells.json,native,False,Casting Lesser Restoration is not supported yet.,unreviewed
 levitate,Levitate,2,srd521,sorcerer wizard,sorcerer wizard,data/core/spells/imported_spells.json,native,True,,unreviewed
-light,Light,0,srd521,bard cleric sorcerer wizard,unparsed,data/core/spells/core_spells.json,native,True,,unreviewed
+light,Light,0,srd521,bard cleric sorcerer wizard,bard cleric sorcerer wizard,data/core/spells/core_spells.json,native,True,,unreviewed
 lightning_arrow,Lightning Arrow,3,out_of_milestone_non_srd521,,n/a,data/core/spells/imported_spells.json,native,False,Casting Lightning Arrow is not supported yet.,unreviewed
-lightning_bolt,Lightning Bolt,3,srd521,sorcerer wizard,sorcerer wizard,data/core/spells/imported_spells.json,native,False,Casting Lightning Bolt is not supported yet.,unreviewed
+lightning_bolt,Lightning Bolt,3,srd521,sorcerer wizard,sorcerer wizard,data/core/spells/imported_spells.json,native,False,Casting Lightning Bolt is not supported yet.,088-2
 locate_animals_or_plants,Locate Animals or Plants,2,srd521,bard druid ranger,bard druid ranger,data/core/spells/imported_spells.json,native,False,Casting Locate Animals or Plants is not supported yet.,unreviewed
 locate_creature,Locate Creature,4,srd521,bard cleric druid paladin ranger wizard,bard cleric druid paladin ranger wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Locate Creature is not supported yet.,unreviewed
 locate_object,Locate Object,2,srd521,bard cleric druid paladin ranger wizard,bard cleric druid paladin ranger wizard,data/core/spells/imported_spells.json,native,False,Casting Locate Object is not supported yet.,unreviewed
@@ -213,23 +213,23 @@ mage_armor,Mage Armor,1,srd521,sorcerer wizard,sorcerer wizard,data/core/spells/
 mage_hand,Mage Hand,0,srd521,bard sorcerer warlock wizard,bard sorcerer warlock wizard,data/core/spells/core_spells.json,native,True,,unreviewed
 magic_circle,Magic Circle,3,srd521,cleric paladin warlock wizard,cleric paladin warlock wizard,data/core/spells/imported_spells.json,native,False,Casting Magic Circle is not supported yet.,unreviewed
 magic_jar,Magic Jar,6,srd521,wizard,wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Magic Jar is not supported yet.,unreviewed
-magic_missile,Magic Missile,1,srd521,sorcerer warlock wizard,sorcerer wizard,data/core/spells/core_spells.json,native,True,,unreviewed
+magic_missile,Magic Missile,1,srd521,sorcerer warlock wizard,sorcerer wizard,data/core/spells/core_spells.json,native,True,,088-2
 magic_mouth,Magic Mouth,2,srd521,bard wizard,bard wizard,data/core/spells/imported_spells.json,native,False,Casting Magic Mouth is not supported yet.,unreviewed
 magic_weapon,Magic Weapon,2,srd521,paladin ranger sorcerer wizard,paladin ranger sorcerer wizard,data/core/spells/imported_spells.json,native,True,,unreviewed
 magnificent_mansion,Magnificent Mansion,7,srd521,bard wizard,bard wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Magnificent Mansion is not supported yet.,unreviewed
 major_image,Major Image,3,srd521,bard sorcerer warlock wizard,bard sorcerer warlock wizard,data/core/spells/imported_spells.json,native,False,Casting Major Image is not supported yet.,unreviewed
-mass_cure_wounds,Mass Cure Wounds,5,srd521,bard cleric druid,bard cleric druid,data/core/spells/srd_additional_spells.json,native,True,,unreviewed
-mass_heal,Mass Heal,9,srd521,cleric,cleric,data/core/spells/srd_additional_spells.json,native,False,Casting Mass Heal is not supported yet.,unreviewed
-mass_healing_word,Mass Healing Word,3,srd521,bard cleric,bard cleric,data/core/spells/conversion_batch_001.json,shared,True,,unreviewed
+mass_cure_wounds,Mass Cure Wounds,5,srd521,bard cleric druid,bard cleric druid,data/core/spells/srd_additional_spells.json,native,True,,088-2
+mass_heal,Mass Heal,9,srd521,cleric,cleric,data/core/spells/srd_additional_spells.json,native,False,Casting Mass Heal is not supported yet.,088-2
+mass_healing_word,Mass Healing Word,3,srd521,bard cleric,bard cleric,data/core/spells/conversion_batch_001.json,shared,True,,088-2
 mass_suggestion,Mass Suggestion,6,srd521,bard sorcerer wizard,bard sorcerer wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Mass Suggestion is not supported yet.,unreviewed
 maze,Maze,8,srd521,wizard,wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Maze is not supported yet.,unreviewed
 meld_into_stone,Meld into Stone,3,srd521,cleric druid ranger,cleric druid ranger,data/core/spells/imported_spells.json,native,False,Casting Meld into Stone is not supported yet.,unreviewed
-melfs_acid_arrow,Melf's Acid Arrow,2,srd521,wizard,wizard,data/core/spells/imported_spells.json,native,True,,unreviewed
+melfs_acid_arrow,Melf's Acid Arrow,2,srd521,wizard,wizard,data/core/spells/imported_spells.json,native,True,,088-2
 mending,Mending,0,srd521,bard cleric druid sorcerer wizard,bard cleric druid sorcerer wizard,data/core/spells/imported_spells.json,native,False,Casting Mending is not supported yet.,unreviewed
 message,Message,0,srd521,bard druid sorcerer wizard,bard druid sorcerer wizard,data/core/spells/imported_spells.json,native,True,,unreviewed
-meteor_swarm,Meteor Swarm,9,srd521,sorcerer wizard,sorcerer wizard,data/core/spells/srd_additional_spells.json,native,True,,unreviewed
+meteor_swarm,Meteor Swarm,9,srd521,sorcerer wizard,sorcerer wizard,data/core/spells/srd_additional_spells.json,native,True,,088-2
 mind_blank,Mind Blank,8,srd521,bard wizard,bard wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Mind Blank is not supported yet.,unreviewed
-mind_spike,Mind Spike,2,srd521,warlock wizard,sorcerer warlock wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Mind Spike is not supported yet.,unreviewed
+mind_spike,Mind Spike,2,srd521,warlock wizard,sorcerer warlock wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Mind Spike is not supported yet.,088-2
 minor_illusion,Minor Illusion,0,srd521,bard sorcerer warlock wizard,bard sorcerer warlock wizard,data/core/spells/imported_spells.json,native,True,,unreviewed
 mirage_arcane,Mirage Arcane,7,srd521,bard druid wizard,bard druid wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Mirage Arcane is not supported yet.,unreviewed
 mirror_image,Mirror Image,2,srd521,bard sorcerer warlock wizard,bard sorcerer warlock wizard,data/core/spells/imported_spells.json,native,False,Casting Mirror Image is not supported yet.,unreviewed
@@ -239,7 +239,7 @@ modify_memory,Modify Memory,5,srd521,bard wizard,bard wizard,data/core/spells/sr
 moonbeam,Moonbeam,2,srd521,druid,druid,data/core/spells/imported_spells.json,native,True,,unreviewed
 move_earth,Move Earth,6,srd521,druid sorcerer wizard,druid sorcerer wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Move Earth is not supported yet.,unreviewed
 nondetection,Nondetection,3,srd521,bard ranger wizard,bard ranger wizard,data/core/spells/imported_spells.json,native,False,Casting Nondetection is not supported yet.,unreviewed
-nystuls_magic_aura,Nystul's Magic Aura,2,srd521,wizard,unparsed,data/core/spells/imported_spells.json,native,False,Casting Nystul's Magic Aura is not supported yet.,unreviewed
+nystuls_magic_aura,Nystul's Magic Aura,2,srd521,wizard,wizard,data/core/spells/imported_spells.json,native,False,Casting Nystul's Magic Aura is not supported yet.,unreviewed
 pass_without_trace,Pass without Trace,2,srd521,druid ranger,druid ranger,data/core/spells/imported_spells.json,native,False,Casting Pass without Trace is not supported yet.,unreviewed
 passwall,Passwall,5,srd521,wizard,wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Passwall is not supported yet.,unreviewed
 phantasmal_force,Phantasmal Force,2,srd521,bard,bard sorcerer wizard,data/core/spells/imported_spells.json,native,False,Casting Phantasmal Force is not supported yet.,unreviewed
@@ -251,14 +251,14 @@ plane_shift,Plane Shift,7,srd521,cleric druid sorcerer warlock wizard,cleric dru
 plant_growth,Plant Growth,3,srd521,bard druid ranger,bard druid ranger,data/core/spells/imported_spells.json,native,True,,unreviewed
 poison_spray,Poison Spray,0,srd521,druid sorcerer warlock wizard,druid sorcerer warlock wizard,data/core/spells/imported_spells.json,shared,True,,088-1
 polymorph,Polymorph,4,srd521,bard druid sorcerer wizard,bard druid sorcerer wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Polymorph is not supported yet.,unreviewed
-power_word_heal,Power Word Heal,9,srd521,bard cleric,unparsed,data/core/spells/imported_spells.json,native,True,,unreviewed
-power_word_kill,Power Word Kill,9,srd521,bard sorcerer warlock wizard,bard sorcerer warlock wizard,data/core/spells/imported_spells.json,shared,True,,unreviewed
+power_word_heal,Power Word Heal,9,srd521,bard cleric,bard cleric,data/core/spells/imported_spells.json,native,True,,088-2
+power_word_kill,Power Word Kill,9,srd521,bard sorcerer warlock wizard,bard sorcerer warlock wizard,data/core/spells/imported_spells.json,shared,True,,088-2
 power_word_stun,Power Word Stun,8,srd521,bard sorcerer warlock wizard,bard sorcerer warlock wizard,data/core/spells/srd_additional_spells.json,native,True,,unreviewed
-prayer_of_healing,Prayer of Healing,2,srd521,cleric paladin,cleric paladin,data/core/spells/imported_spells.json,native,False,Casting Prayer of Healing is not supported yet.,unreviewed
-prestidigitation,Prestidigitation,0,srd521,bard sorcerer warlock wizard,unparsed,data/core/spells/imported_spells.json,native,True,,unreviewed
-prismatic_spray,Prismatic Spray,7,srd521,bard sorcerer wizard,bard sorcerer wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Prismatic Spray is not supported yet.,unreviewed
+prayer_of_healing,Prayer of Healing,2,srd521,cleric paladin,cleric paladin,data/core/spells/imported_spells.json,native,False,Casting Prayer of Healing is not supported yet.,088-2
+prestidigitation,Prestidigitation,0,srd521,bard sorcerer warlock wizard,bard sorcerer warlock wizard,data/core/spells/imported_spells.json,native,True,,unreviewed
+prismatic_spray,Prismatic Spray,7,srd521,bard sorcerer wizard,bard sorcerer wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Prismatic Spray is not supported yet.,088-2
 prismatic_wall,Prismatic Wall,9,srd521,bard wizard,bard wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Prismatic Wall is not supported yet.,unreviewed
-private_sanctum,Private Sanctum,4,srd521,wizard,unparsed,data/core/spells/srd_additional_spells.json,native,False,Casting Private Sanctum is not supported yet.,unreviewed
+private_sanctum,Private Sanctum,4,srd521,wizard,wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Private Sanctum is not supported yet.,unreviewed
 produce_flame,Produce Flame,0,srd521,druid,druid,data/core/spells/imported_spells.json,native,True,,unreviewed
 programmed_illusion,Programmed Illusion,6,srd521,bard wizard,bard wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Programmed Illusion is not supported yet.,unreviewed
 project_image,Project Image,7,srd521,bard wizard,bard wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Project Image is not supported yet.,unreviewed
@@ -270,7 +270,7 @@ raise_dead,Raise Dead,5,srd521,bard cleric paladin,bard cleric paladin,data/core
 ray_of_enfeeblement,Ray of Enfeeblement,2,srd521,warlock wizard,warlock wizard,data/core/spells/imported_spells.json,native,True,,unreviewed
 ray_of_frost,Ray of Frost,0,srd521,sorcerer wizard,sorcerer wizard,data/core/spells/core_spells.json,native,True,,088-1
 ray_of_sickness,Ray of Sickness,1,srd521,sorcerer wizard,sorcerer wizard,data/core/spells/imported_spells.json,native,True,,unreviewed
-regenerate,Regenerate,7,srd521,bard cleric druid,unparsed,data/core/spells/srd_additional_spells.json,native,True,,unreviewed
+regenerate,Regenerate,7,srd521,bard cleric druid,bard cleric druid,data/core/spells/srd_additional_spells.json,native,True,,unreviewed
 reincarnate,Reincarnate,5,srd521,druid,druid,data/core/spells/srd_additional_spells.json,native,False,Casting Reincarnate is not supported yet.,unreviewed
 remove_curse,Remove Curse,3,srd521,cleric paladin warlock wizard,cleric paladin warlock wizard,data/core/spells/imported_spells.json,native,True,,unreviewed
 resilient_sphere,Otiluke's Resilient Sphere,4,srd521,cleric paladin wizard,wizard,data/core/spells/srd_additional_spells.json,native,True,,unreviewed
@@ -279,31 +279,31 @@ resurrection,Resurrection,7,srd521,bard cleric,bard cleric,data/core/spells/srd_
 reverse_gravity,Reverse Gravity,7,srd521,druid sorcerer wizard,druid sorcerer wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Reverse Gravity is not supported yet.,unreviewed
 revivify,Revivify,3,srd521,cleric druid paladin ranger,cleric druid paladin ranger,data/core/spells/imported_spells.json,native,True,,unreviewed
 rope_trick,Rope Trick,2,srd521,wizard,wizard,data/core/spells/imported_spells.json,native,False,Casting Rope Trick is not supported yet.,unreviewed
-sacred_flame,Sacred Flame,0,srd521,cleric,cleric,data/core/spells/imported_spells.json,shared,True,,unreviewed
+sacred_flame,Sacred Flame,0,srd521,cleric,cleric,data/core/spells/imported_spells.json,shared,True,,088-2
 sanctuary,Sanctuary,1,srd521,cleric,cleric,data/core/spells/imported_spells.json,native,True,,unreviewed
-scorching_ray,Scorching Ray,2,srd521,sorcerer wizard,sorcerer wizard,data/core/spells/core_spells.json,native,True,,unreviewed
-scrying,Scrying,5,srd521,bard cleric druid warlock wizard,unparsed,data/core/spells/srd_additional_spells.json,native,False,Casting Scrying is not supported yet.,unreviewed
+scorching_ray,Scorching Ray,2,srd521,sorcerer wizard,sorcerer wizard,data/core/spells/core_spells.json,native,True,,088-2
+scrying,Scrying,5,srd521,bard cleric druid warlock wizard,bard cleric druid warlock wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Scrying is not supported yet.,unreviewed
 searing_smite,Searing Smite,1,srd521,paladin,paladin,data/core/spells/imported_spells.json,native,False,Casting Searing Smite is not supported yet.,unreviewed
-secret_chest,Secret Chest,4,srd521,wizard,unparsed,data/core/spells/srd_additional_spells.json,native,False,Casting Secret Chest is not supported yet.,unreviewed
+secret_chest,Secret Chest,4,srd521,wizard,wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Secret Chest is not supported yet.,unreviewed
 see_invisibility,See Invisibility,2,srd521,bard sorcerer wizard,bard sorcerer wizard,data/core/spells/imported_spells.json,native,True,,unreviewed
 seeming,Seeming,5,srd521,bard sorcerer wizard,bard sorcerer wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Seeming is not supported yet.,unreviewed
 sending,Sending,3,srd521,bard cleric wizard,bard cleric wizard,data/core/spells/imported_spells.json,native,False,Casting Sending is not supported yet.,unreviewed
 sequester,Sequester,7,srd521,wizard,wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Sequester is not supported yet.,unreviewed
 shapechange,Shapechange,9,srd521,druid wizard,druid wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Shapechange is not supported yet.,unreviewed
-shatter,Shatter,2,srd521,bard sorcerer wizard,bard sorcerer wizard,data/core/spells/imported_spells.json,native,True,,unreviewed
+shatter,Shatter,2,srd521,bard sorcerer wizard,bard sorcerer wizard,data/core/spells/imported_spells.json,native,True,,088-2
 shield,Shield,1,srd521,sorcerer wizard,sorcerer wizard,data/core/spells/core_spells.json,native,True,,unreviewed
 shield_of_faith,Shield of Faith,1,srd521,cleric paladin,cleric paladin,data/core/spells/imported_spells.json,shared,True,,unreviewed
 shillelagh,Shillelagh,0,srd521,druid,druid,data/core/spells/imported_spells.json,native,True,,unreviewed
 shining_smite,Shining Smite,2,srd521,paladin,paladin,data/core/spells/srd_additional_spells.json,native,False,Casting Shining Smite is not supported yet.,unreviewed
-shocking_grasp,Shocking Grasp,0,srd521,sorcerer wizard,sorcerer wizard,data/core/spells/imported_spells.json,native,True,,unreviewed
+shocking_grasp,Shocking Grasp,0,srd521,sorcerer wizard,sorcerer wizard,data/core/spells/imported_spells.json,native,True,,088-2
 silence,Silence,2,srd521,bard cleric ranger,bard cleric ranger,data/core/spells/imported_spells.json,native,False,Casting Silence is not supported yet.,unreviewed
 silent_image,Silent Image,1,srd521,bard sorcerer wizard,bard sorcerer wizard,data/core/spells/imported_spells.json,native,False,Casting Silent Image is not supported yet.,unreviewed
 simulacrum,Simulacrum,7,srd521,wizard,wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Simulacrum is not supported yet.,unreviewed
 sleep,Sleep,1,srd521,bard sorcerer wizard,bard sorcerer wizard,data/core/spells/core_spells.json,native,True,,unreviewed
 sleet_storm,Sleet Storm,3,srd521,druid sorcerer wizard,druid sorcerer wizard,data/core/spells/imported_spells.json,native,True,,unreviewed
 slow,Slow,3,srd521,bard sorcerer wizard,bard sorcerer wizard,data/core/spells/imported_spells.json,native,False,Casting Slow is not supported yet.,unreviewed
-sorcerous_burst,Sorcerous Burst,0,srd521,sorcerer,sorcerer,data/core/spells/srd_additional_spells.json,native,True,,unreviewed
-spare_the_dying,Spare the Dying,0,srd521,cleric druid,cleric druid,data/core/spells/imported_spells.json,native,True,,unreviewed
+sorcerous_burst,Sorcerous Burst,0,srd521,sorcerer,sorcerer,data/core/spells/srd_additional_spells.json,native,True,,088-2
+spare_the_dying,Spare the Dying,0,srd521,cleric druid,cleric druid,data/core/spells/imported_spells.json,native,True,,088-2
 speak_with_animals,Speak with Animals,1,srd521,bard druid ranger warlock,bard druid ranger warlock,data/core/spells/imported_spells.json,native,False,Casting Speak with Animals is not supported yet.,unreviewed
 speak_with_dead,Speak with Dead,3,srd521,bard cleric wizard,bard cleric wizard,data/core/spells/imported_spells.json,native,False,Casting Speak with Dead is not supported yet.,unreviewed
 speak_with_plants,Speak with Plants,3,srd521,bard druid ranger,bard druid ranger,data/core/spells/imported_spells.json,native,False,Casting Speak with Plants is not supported yet.,unreviewed
@@ -311,15 +311,15 @@ spider_climb,Spider Climb,2,srd521,sorcerer warlock wizard,sorcerer warlock wiza
 spike_growth,Spike Growth,2,srd521,druid ranger,druid ranger,data/core/spells/imported_spells.json,native,True,,unreviewed
 spirit_guardians,Spirit Guardians,3,srd521,cleric,cleric,data/core/spells/imported_spells.json,native,True,,unreviewed
 spiritual_weapon,Spiritual Weapon,2,srd521,cleric,cleric,data/core/spells/imported_spells.json,native,False,Casting Spiritual Weapon is not supported yet.,unreviewed
-starry_wisp,Starry Wisp,0,srd521,bard druid,unparsed,data/core/spells/srd_additional_spells.json,native,True,,unreviewed
+starry_wisp,Starry Wisp,0,srd521,bard druid,bard druid,data/core/spells/srd_additional_spells.json,native,True,,088-2
 stinking_cloud,Stinking Cloud,3,srd521,bard sorcerer wizard,bard sorcerer wizard,data/core/spells/imported_spells.json,native,False,Casting Stinking Cloud is not supported yet.,unreviewed
 stone_shape,Stone Shape,4,srd521,cleric druid wizard,cleric druid wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Stone Shape is not supported yet.,unreviewed
 stoneskin,Stoneskin,4,srd521,druid ranger sorcerer wizard,druid ranger sorcerer wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Stoneskin is not supported yet.,unreviewed
 storm_of_vengeance,Storm of Vengeance,9,srd521,druid,druid,data/core/spells/srd_additional_spells.json,native,False,Casting Storm of Vengeance is not supported yet.,unreviewed
 suggestion,Suggestion,2,srd521,bard sorcerer warlock wizard,bard sorcerer warlock wizard,data/core/spells/imported_spells.json,native,False,Casting Suggestion is not supported yet.,unreviewed
-summon_dragon,Summon Dragon,5,srd521,wizard,unparsed,data/core/spells/srd_additional_spells.json,native,False,Casting Summon Dragon is not supported yet.,unreviewed
-sunbeam,Sunbeam,6,srd521,cleric druid sorcerer wizard,unparsed,data/core/spells/srd_additional_spells.json,native,False,Casting Sunbeam is not supported yet.,unreviewed
-sunburst,Sunburst,8,srd521,cleric druid sorcerer wizard,cleric druid sorcerer wizard,data/core/spells/srd_additional_spells.json,native,True,,unreviewed
+summon_dragon,Summon Dragon,5,srd521,wizard,wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Summon Dragon is not supported yet.,unreviewed
+sunbeam,Sunbeam,6,srd521,cleric druid sorcerer wizard,cleric druid sorcerer wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Sunbeam is not supported yet.,unreviewed
+sunburst,Sunburst,8,srd521,cleric druid sorcerer wizard,cleric druid sorcerer wizard,data/core/spells/srd_additional_spells.json,native,True,,088-2
 symbol,Symbol,7,srd521,bard cleric druid wizard,bard cleric druid wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Symbol is not supported yet.,unreviewed
 tashas_hideous_laughter,Tasha's Hideous Laughter,1,srd521,bard warlock wizard,bard warlock wizard,data/core/spells/imported_spells.json,native,False,Casting Tasha's Hideous Laughter is not supported yet.,unreviewed
 telekinesis,Telekinesis,5,srd521,sorcerer wizard,sorcerer wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Telekinesis is not supported yet.,unreviewed
@@ -330,7 +330,7 @@ tensers_floating_disk,Tenser's Floating Disk,1,srd521,wizard,wizard,data/core/sp
 thaumaturgy,Thaumaturgy,0,srd521,cleric,cleric,data/core/spells/imported_spells.json,native,False,Casting Thaumaturgy is not supported yet.,unreviewed
 thorn_whip,Thorn Whip,0,out_of_milestone_non_srd521,druid,n/a,data/core/spells/imported_spells.json,native,False,Casting Thorn Whip is not supported yet.,unreviewed
 thunderous_smite,Thunderous Smite,1,out_of_milestone_non_srd521,paladin,n/a,data/core/spells/imported_spells.json,native,False,Casting Thunderous Smite is not supported yet.,unreviewed
-thunderwave,Thunderwave,1,srd521,bard druid sorcerer wizard,bard druid sorcerer wizard,data/core/spells/core_spells.json,native,True,,unreviewed
+thunderwave,Thunderwave,1,srd521,bard druid sorcerer wizard,bard druid sorcerer wizard,data/core/spells/core_spells.json,native,True,,088-2
 time_stop,Time Stop,9,srd521,sorcerer wizard,sorcerer wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Time Stop is not supported yet.,unreviewed
 tongues,Tongues,3,srd521,bard cleric sorcerer warlock wizard,bard cleric sorcerer warlock wizard,data/core/spells/imported_spells.json,native,False,Casting Tongues is not supported yet.,unreviewed
 transport_via_plants,Transport via Plants,6,srd521,druid,druid,data/core/spells/srd_additional_spells.json,native,False,Casting Transport via Plants is not supported yet.,unreviewed
@@ -343,9 +343,9 @@ tsunami,Tsunami,8,srd521,druid,druid,data/core/spells/srd_additional_spells.json
 unseen_servant,Unseen Servant,1,srd521,bard warlock wizard,bard warlock wizard,data/core/spells/imported_spells.json,native,False,Casting Unseen Servant is not supported yet.,unreviewed
 vampiric_touch,Vampiric Touch,3,srd521,sorcerer warlock wizard,sorcerer warlock wizard,data/core/spells/imported_spells.json,native,False,Casting Vampiric Touch is not supported yet.,unreviewed
 vicious_mockery,Vicious Mockery,0,srd521,bard,bard,data/core/spells/imported_spells.json,native,True,,unreviewed
-vitriolic_sphere,Vitriolic Sphere,4,srd521,sorcerer wizard,sorcerer wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Vitriolic Sphere is not supported yet.,unreviewed
+vitriolic_sphere,Vitriolic Sphere,4,srd521,sorcerer wizard,sorcerer wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Vitriolic Sphere is not supported yet.,088-2
 wall_of_fire,Wall of Fire,4,srd521,druid sorcerer wizard,druid sorcerer wizard,data/core/spells/srd_additional_spells.json,native,True,,unreviewed
-wall_of_force,Wall of Force,5,srd521,wizard,unparsed,data/core/spells/srd_additional_spells.json,native,False,Casting Wall of Force is not supported yet.,unreviewed
+wall_of_force,Wall of Force,5,srd521,wizard,wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Wall of Force is not supported yet.,unreviewed
 wall_of_ice,Wall of Ice,6,srd521,wizard,wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Wall of Ice is not supported yet.,unreviewed
 wall_of_stone,Wall of Stone,5,srd521,druid sorcerer wizard,druid sorcerer wizard,data/core/spells/srd_additional_spells.json,native,False,Casting Wall of Stone is not supported yet.,unreviewed
 wall_of_thorns,Wall of Thorns,6,srd521,druid,druid,data/core/spells/srd_additional_spells.json,native,False,Casting Wall of Thorns is not supported yet.,unreviewed
