@@ -461,7 +461,7 @@ below); G = source gap, deferred, or ADR-0023/campaign judgment.
 | Time-limited object interactions; Utilize action (700–711; 12293) | One free object interaction per turn; more cost Utilize | Combat action economy (not re-audited here) | Unreviewed | — |
 | What Is an Object; Breaking Objects; Object AC/HP tables (695–736; 11356–11395) | Fragile nonmagical object breaks with an action; resilient objects use AC/HP by material/size | Room/combat objects with HP/destruction (`CombatObjectRules`, `ObjectDestructionRules`, VS explicit object destruction); no material/size table default; no "break fragile object" action | H | S-119/S-120 hosts; repair S-212 |
 | Locks / Thieves' Tools (Thieves’ Tools 5657–5659; Lock 5940–5945) | Utilize with tools → Dex check vs lock DC → unlock; key/Break alternatives | Room `door`/`container` kinds exist; lock DC/pick procedure not found | N | S-230 (V-099) |
-| Carrying Objects / Carrying Capacity (725–730; 11382–11391) | Capacity by size/Strength | Item weights doc; exact contents S-196 | P | S-196/S-197; capacity enforcement unreviewed |
+| Carrying Objects / Carrying Capacity (725–730; 11382–11391) | Capacity by size/Strength | Item weights doc; exact contents S-196 | P | S-196/S-197; STR/size carry, drag/lift/push and lift multipliers → planned S-266 (wave 2, items-21) |
 | Hazards: Burning (11435), Falling (11691), Suffocation (12156), Dehydration (11617), Malnutrition (11876) | Burning: ongoing damage until extinguished; Falling: damage per 10 ft; Suffocation: breath budget then Exhaustion; food/water daily need → Exhaustion | Falling dice on room drops/flight end (`LocalRoomRules`); `SurvivalRules.settle_day` food/water native; suffocation absent; Burning not found as generic | E (fall, food/water native, bounded) / P | S-181 (fall), S-200/S-201 (food/water), S-204/S-205 (air); Burning: P under S-068 repeat events — needs confirmation |
 | Environmental Effects: Deep Water, Extreme Cold/Heat, Frigid Water, Heavy Precipitation, High Altitude, Slippery Ice, Strong Wind, Thin Ice (12511–12556) | Per-environment trigger (hourly/minute exposure or entry) → save/check → Exhaustion, terrain, obscurement, ranged penalties | Two native string references in `PhysicalFactsRules`; no environment model | P | S-200/S-201 (exposure), S-179 (surfaces), S-190 (obscurement); environment facts on rooms/tiles need S-228 terrain record |
 | Curses, Magical Contagions (12400–12510) | Repeated saves, Exhaustion, cure ends | Curse policy for items (VS-132) | P / G | S-202, S-068; narrative curses = G (ADR-0023); clause decomposition unreviewed |
@@ -512,3 +512,42 @@ No V-row changes status.
   - `subclass_level` missing on barbarian, bard and cleric
   - legacy species set and species `ability_bonuses`
   - 0 production feats and backgrounds
+
+<a id="wave-2-audit-integration"></a>
+
+## Wave 2 audit integration (2026-10-26)
+
+The spell (74aa034), core rules batch 2 (ca99859) and item (4221f89) audits, and the Monk and Rogue reviews from `audit/features` (23ac806), add 31 planned slices, S-246–S-276. They add no new V-IDs, so the checklist still has 103 parents. The rows, folds (cover → S-238; items-18 → S-239; items-6/10/14 → S-254; features-1/2 → S-241/S-240) and the per-domain reviewed/unreviewed coverage are in [Wave 2 audit slices](../planning/vocabulary-slices.md#wave-2-audit-slices). Every parent box stays open.
+
+- **V-003** gains planned S-248
+- **V-004** gains planned S-272
+- **V-005** gains planned S-250, S-251, S-266
+- **V-008** gains planned S-261
+- **V-009** gains planned S-257, S-259
+- **V-012** gains planned S-247, S-248, S-250, S-251
+- **V-013** gains planned S-247, S-263
+- **V-019** gains planned S-270, S-276
+- **V-024** gains planned S-254, S-261
+- **V-026** gains planned S-262
+- **V-027** gains planned S-259, S-260
+- **V-028** gains planned S-254
+- **V-030** gains planned S-254
+- **V-032** gains planned S-267
+- **V-033** gains planned S-256
+- **V-038** gains planned S-271
+- **V-041** gains planned S-264
+- **V-044** gains planned S-265
+- **V-045** gains planned S-252, S-257, S-260, S-264, S-275
+- **V-049** gains planned S-272
+- **V-056** gains planned S-271
+- **V-057** gains planned S-275
+- **V-059** gains planned S-269
+- **V-064** gains planned S-268
+- **V-069** gains planned S-268, S-269
+- **V-071** gains planned S-258, S-273
+- **V-073** gains planned S-274
+- **V-076** gains planned S-249, S-266
+- **V-077** gains planned S-262
+- **V-079** gains planned S-253, S-255
+- **V-096** gains planned S-273
+- **V-100** gains planned S-246, S-247, S-248

@@ -48,7 +48,7 @@ cast transformations, combat Find Steed arrival/recovery and additional weapon
 damage-choice routes. The [reviewed boundary and original queue's open work](docs/planning/vocabulary-slices.md#pr57-60-validation)
 own their remaining scope. Continue the unresolved gameplay investigations or
 S-141 duration/concentration; do not reassign the delivered subsets. Counts are
-151 accepted of 245 defined engine slices after the [exploration audit](docs/reviews/dnd-code-vocabulary-gap-checklist.md#exploration-and-world-procedures-audit--srd-521-2026-10-26)
+151 accepted of 276 defined engine slices after the [exploration audit](docs/reviews/dnd-code-vocabulary-gap-checklist.md#exploration-and-world-procedures-audit--srd-521-2026-10-26)
 added planned S-227–S-230 (travel pace/terrain, search, traps/locks) and the
 [Progression/Acquisition audit](docs/reviews/progression-acquisition-audit.md) added planned S-231–S-234 and S-242–S-245;
 the [core rules/conditions audit](docs/mechanics/core-rules-status.md) added S-235–S-239 (V-100/V-101) and maps rests, senses and Reaction budgets to existing rows.
@@ -56,10 +56,10 @@ the [core rules/conditions audit](docs/mechanics/core-rules-status.md) added S-2
 The [SRC-01 feature inventory](docs/planning/vocabulary-slices.md#src-01-feature-inventory)
 (batch 1) and its [batch-2 DataLoader export and clause decomposition](docs/planning/vocabulary-slices.md#src-01-batch-2)
 are partial planning audits. Reviewed so far: 35 of 174 SRD class features, 6 of 58
-subclass features, 0 of 17 feats. They add two requirements:
+subclass features, 0 of 17 feats (excluding the wave 2 Monk and Rogue clause reviews, which have not been recounted). They add two requirements:
 [S-240/V-102 and S-241/V-103](docs/reviews/dnd-code-vocabulary-gap-checklist.md#src-01-batch-2-proposed)
 (natural-roll outcome thresholds; granted/forced movement), included in the
-245-slice count above.
+276-slice count above. The [wave 2 audit integration](docs/planning/vocabulary-slices.md#wave-2-audit-slices) (spells, core rules batch 2, items, and the Monk/Rogue reviews) added planned S-246–S-276 and folded cover into S-238 and item jumps into S-239. It added no new V-IDs.
 
 The [first Crown conversion batch](docs/planning/vocabulary-slices.md#conversion-batch-001)
 resolves ten candidates: three shared spell conversions, one already generic
