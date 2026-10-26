@@ -74,3 +74,32 @@ Keep the creation/preparation, turning, optional riders and Intervention checks
 when migrating these rules. Unimplemented subclass/feat/spell clauses remain
 partial as listed above. The old instruction to move directly into a Druid
 native-helper audit is retired; the shared-runtime roadmap chooses priority.
+
+<a id="srd-feature-inventory"></a>
+
+## SRD 5.2.1 feature inventory — 2026-10-26
+
+Static source/inventory pass, not a rules audit or gameplay proof. SRD headings were read from `SRD_CC_v5.2.1.pdf` (pages are PDF page numbers) and matched by name/level to `data/core/classes/cleric.json`. Repo status is the [feature matrix](../feature_matrix.md) exposure label / record `rules_status`. Registry slice is shown only where the slice registry names this feature or its generic consumer; `unassigned` means no documented owning slice. V-IDs are the [checklist](../reviews/dnd-code-vocabulary-gap-checklist.md) rows citing this feature as an example; they are open requirements, not owning slices. **Reviewed** means an SRD clause review recorded in the [slice registry](../planning/vocabulary-slices.md); every other row is unreviewed, whatever its `rules_status` says. Rows absent from repo data are not filled from memory.
+
+SRD subclass: **Life Domain** — absent from repo data.
+
+| Kind | Lvl | SRD feature / repo record | SRD | Repo ID | Repo status | V-IDs | Registry slice (documented limit) | Review |
+|---|---:|---|---|---|---|---|---|---|
+| class | 1 | Spellcasting | p.36 | `cleric_spellcasting` | mechanics-backed / unset | — | unassigned | Unreviewed |
+| class | 1 | Divine Order | p.37 | `cleric_divine_order` | mechanics-backed / unset | — | unassigned | Unreviewed |
+| class | 2 | Channel Divinity | p.37 | `cleric_channel_divinity` | mechanics-backed / unset | — | unassigned | Unreviewed |
+| class | 3 | Cleric Subclass | p.37 | `cleric_cleric_subclass` | quarantined / unset | — | unassigned | Unreviewed |
+| class | 4 | Ability Score Improvement | p.37 | `cleric_ability_score_improvement`, `cleric_ability_improvement_8`, `cleric_ability_improvement_12`, `cleric_ability_improvement_16` | mechanics-backed / 2024-supported | — | S-049/S-050/S-084/S-085/S-103/S-104 (fixture-only Origin/ASI feat acquisition; feat content, prerequisites, ability benefits, Fighting Style grants, level-19 feat path open) | Unreviewed |
+| class | 5 | Sear Undead | p.37 | `cleric_sear_undead` | mechanics-backed / unset | — | unassigned | Unreviewed |
+| class | 7 | Blessed Strikes | p.38 | `cleric_blessed_strikes` | mechanics-backed / unset | — | unassigned | Unreviewed |
+| class | 10 | Divine Intervention | p.38 | `cleric_divine_intervention` | mechanics-backed / unset | — | unassigned | Unreviewed |
+| class | 14 | Improved Blessed Strikes | p.38 | `cleric_improved_blessed_strikes` | mechanics-backed / unset | — | unassigned | Unreviewed |
+| class | 19 | Epic Boon | p.38 | `cleric_epic_boon` | mechanics-backed / unset | — | S-049/S-050/S-084/S-085/S-103/S-104 (fixture-only Origin/ASI feat acquisition; feat content, prerequisites, ability benefits, Fighting Style grants, level-19 feat path open) | Unreviewed |
+| class | 20 | Greater Divine Intervention | p.38 | `cleric_greater_divine_intervention` | mechanics-backed / unset | — | unassigned | Unreviewed |
+| repo-only class | 2 | Divine Spark | Named inside an SRD feature body (repo split); page not resolved per clause | `cleric_divine_spark` | mechanics-backed / unset | — | unassigned | Unreviewed |
+| repo-only class | 2 | Turn Undead | Named inside an SRD feature body (repo split); page not resolved per clause | `cleric_turn_undead` | mechanics-backed / unset | V-049 | unassigned | Unreviewed |
+| subclass | 3 | Life Domain Spells | p.40 | — | absent | — | unassigned | Unreviewed (absent) |
+| subclass | 3 | Disciple of Life | p.40 | — | absent | — | unassigned | Unreviewed (absent) |
+| subclass | 3 | Preserve Life | p.40 | — | absent | V-036 | unassigned | Unreviewed (absent) |
+| subclass | 6 | Blessed Healer | p.40 | — | absent | — | unassigned | Unreviewed (absent) |
+| subclass | 17 | Supreme Healing | p.40 | — | absent | — | unassigned | Unreviewed (absent) |

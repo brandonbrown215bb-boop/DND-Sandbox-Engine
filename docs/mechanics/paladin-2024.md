@@ -79,3 +79,40 @@ Divine Sense is a listed Channel Divinity option here, not a separate level-1
 feature. The 2014-only Divine Health, Martial Versatility, and Harness Divine
 Power are excluded from this 2024 base-class record. A feature description
 alone is not production support.
+
+<a id="srd-feature-inventory"></a>
+
+## SRD 5.2.1 feature inventory — 2026-10-26
+
+Static source/inventory pass, not a rules audit or gameplay proof. SRD headings were read from `SRD_CC_v5.2.1.pdf` (pages are PDF page numbers) and matched by name/level to `data/core/classes/paladin.json`. Repo status is the [feature matrix](../feature_matrix.md) exposure label / record `rules_status`. Registry slice is shown only where the slice registry names this feature or its generic consumer; `unassigned` means no documented owning slice. V-IDs are the [checklist](../reviews/dnd-code-vocabulary-gap-checklist.md) rows citing this feature as an example; they are open requirements, not owning slices. **Reviewed** means an SRD clause review recorded in the [slice registry](../planning/vocabulary-slices.md); every other row is unreviewed, whatever its `rules_status` says. Rows absent from repo data are not filled from memory.
+
+SRD subclass: **Oath of Devotion** — absent from repo data.
+
+| Kind | Lvl | SRD feature / repo record | SRD | Repo ID | Repo status | V-IDs | Registry slice (documented limit) | Review |
+|---|---:|---|---|---|---|---|---|---|
+| class | 1 | Lay On Hands | p.53 | `paladin_lay_on_hands` | mechanics-backed / unset | — | unassigned | Unreviewed |
+| class | 1 | Spellcasting | p.54 | `paladin_spellcasting` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| class | 1 | Weapon Mastery | p.54 | `paladin_weapon_mastery` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| class | 2 | Fighting Style | p.54 | `paladin_fighting_style` | mechanics-backed / 2024-supported | — | S-049/S-050/S-084/S-085/S-103/S-104 (fixture-only Origin/ASI feat acquisition; feat content, prerequisites, ability benefits, Fighting Style grants, level-19 feat path open) | Unreviewed |
+| class | 2 | Paladin’s Smite | p.54 | `paladin_paladins_smite` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| class | 3 | Channel Divinity | p.54 | `paladin_channel_divinity` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| class | 3 | Paladin Subclass | p.55 | `paladin_sacred_oath` | quarantined / reference-only | — | unassigned | Unreviewed |
+| class | 4 | Ability Score Improvement | p.55 | `paladin_ability_improvement_4`, `paladin_ability_improvement_8`, `paladin_ability_improvement_12`, `paladin_ability_improvement_16` | mechanics-backed / 2024-supported | — | S-049/S-050/S-084/S-085/S-103/S-104 (fixture-only Origin/ASI feat acquisition; feat content, prerequisites, ability benefits, Fighting Style grants, level-19 feat path open) | Unreviewed |
+| class | 5 | Extra Attack | p.55 | `paladin_extra_attack` | mechanics-backed / 2024-supported | — | S-084 (PARTIAL: exclusive Extra Attack count consumer accepted; source-backed class conversion open) | Unreviewed |
+| class | 5 | Faithful Steed | p.55 | `paladin_faithful_steed` | mechanics-backed / 2024-partial | — | S-122 continuation (Batch 086 Find Steed arrival; exploration occupancy PARTIAL) | Unreviewed |
+| class | 6 | Aura of Protection | p.55 | `paladin_aura_of_protection` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| class | 9 | Abjure Foes | p.55 | `paladin_abjure_foes` | mechanics-backed / 2024-partial | — | unassigned | Unreviewed |
+| class | 10 | Aura of Courage | p.55 | `paladin_aura_of_courage` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| class | 11 | Radiant Strikes | p.55 | `paladin_radiant_strikes` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| class | 14 | Restoring Touch | p.55 | `paladin_restoring_touch` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| class | 18 | Aura Expansion | p.55 | `paladin_aura_expansion` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| class | 19 | Epic Boon | p.55 | `paladin_epic_boon` | mechanics-backed / 2024-supported | — | S-049/S-050/S-084/S-085/S-103/S-104 (fixture-only Origin/ASI feat acquisition; feat content, prerequisites, ability benefits, Fighting Style grants, level-19 feat path open) | Unreviewed |
+| repo-only class | 3 | Channel Divinity: Divine Sense | No SRD 5.2.1 heading found — source gap | `paladin_channel_divinity_divine_sense` | mechanics-backed / 2024-partial | — | unassigned | Unreviewed |
+| repo-only class | 7 | Paladin Subclass Feature | Placeholder for subclass level; SRD subclass body not in repo | `paladin_subclass_7` | quarantined / reference-only | — | unassigned | Unreviewed |
+| repo-only class | 15 | Paladin Subclass Feature | Placeholder for subclass level; SRD subclass body not in repo | `paladin_subclass_15` | quarantined / reference-only | — | unassigned | Unreviewed |
+| repo-only class | 20 | Paladin Subclass Feature | Placeholder for subclass level; SRD subclass body not in repo | `paladin_subclass_20` | quarantined / reference-only | — | unassigned | Unreviewed |
+| subclass | 3 | Oath of Devotion Spells | p.56 | — | absent | — | unassigned | Unreviewed (absent) |
+| subclass | 3 | Sacred Weapon | p.56 | — | absent | — | unassigned | Unreviewed (absent) |
+| subclass | 7 | Aura of Devotion | p.56 | — | absent | — | unassigned | Unreviewed (absent) |
+| subclass | 15 | Smite of Protection | p.57 | — | absent | — | unassigned | Unreviewed (absent) |
+| subclass | 20 | Holy Nimbus | p.57 | — | absent | — | unassigned | Unreviewed (absent) |

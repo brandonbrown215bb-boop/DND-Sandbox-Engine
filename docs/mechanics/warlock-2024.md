@@ -67,3 +67,28 @@ via DataLoader to `data/core/subclasses/fiend_patron.json`.
 - **Persistence & Save/Reload:** Complete schema-2 lossless roundtrip serialization
   for invocations, pact weapon damage type, fiendish resilience type, arcanum choices,
   and resource uses.
+
+<a id="srd-feature-inventory"></a>
+
+## SRD 5.2.1 feature inventory — 2026-10-26
+
+Static source/inventory pass, not a rules audit or gameplay proof. SRD headings were read from `SRD_CC_v5.2.1.pdf` (pages are PDF page numbers) and matched by name/level to `data/core/classes/warlock.json` and `data/core/subclasses/fiend_patron.json`. Repo status is the [feature matrix](../feature_matrix.md) exposure label / record `rules_status`. Registry slice is shown only where the slice registry names this feature or its generic consumer; `unassigned` means no documented owning slice. V-IDs are the [checklist](../reviews/dnd-code-vocabulary-gap-checklist.md) rows citing this feature as an example; they are open requirements, not owning slices. **Reviewed** means an SRD clause review recorded in the [slice registry](../planning/vocabulary-slices.md); every other row is unreviewed, whatever its `rules_status` says. Rows absent from repo data are not filled from memory.
+
+SRD subclass: **Fiend Patron** — present as `fiend_patron`.
+
+| Kind | Lvl | SRD feature / repo record | SRD | Repo ID | Repo status | V-IDs | Registry slice (documented limit) | Review |
+|---|---:|---|---|---|---|---|---|---|
+| class | 1 | Eldritch Invocations | p.70 | `warlock_eldritch_invocations` | mechanics-backed / 2024-partial | — | unassigned | Unreviewed |
+| class | 1 | Pact Magic | p.71 | `warlock_pact_magic` | mechanics-backed / 2024-partial | — | unassigned | Unreviewed |
+| class | 2 | Magical Cunning | p.72 | `warlock_magical_cunning` | mechanics-backed / 2024-partial | — | unassigned | Unreviewed |
+| class | 3 | Warlock Subclass | p.72 | (subclass choice) | repo uses `subclass_level` = 3 | — | unassigned | Unreviewed |
+| class | 4 | Ability Score Improvement | p.72 | `warlock_ability_improvement_4`, `warlock_ability_improvement_8`, `warlock_ability_improvement_12`, `warlock_ability_improvement_16` | mechanics-backed / 2024-supported | — | S-049/S-050/S-084/S-085/S-103/S-104 (fixture-only Origin/ASI feat acquisition; feat content, prerequisites, ability benefits, Fighting Style grants, level-19 feat path open) | Unreviewed |
+| class | 9 | Contact Patron | p.72 | `warlock_contact_patron` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| class | 11 | Mystic Arcanum | p.72 | `warlock_mystic_arcanum_6`, `warlock_mystic_arcanum_7`, `warlock_mystic_arcanum_8`, `warlock_mystic_arcanum_9` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| class | 19 | Epic Boon | p.72 | `warlock_epic_boon` | mechanics-backed / 2024-partial | — | S-049/S-050/S-084/S-085/S-103/S-104 (fixture-only Origin/ASI feat acquisition; feat content, prerequisites, ability benefits, Fighting Style grants, level-19 feat path open) | Unreviewed |
+| class | 20 | Eldritch Master | p.72 | `warlock_eldritch_master` | quarantined / 2024-partial | — | unassigned | Unreviewed |
+| subclass | 3 | Dark One’s Blessing | p.76 | `fiend_dark_ones_blessing` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| subclass | 3 | Fiend Spells | p.76 | `fiend_spells_3`, `fiend_spells_5`, `fiend_spells_7`, `fiend_spells_9` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| subclass | 6 | Dark One’s Own Luck | p.76 | `fiend_dark_ones_own_luck` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| subclass | 10 | Fiendish Resilience | p.76 | `fiend_fiendish_resilience` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
+| subclass | 14 | Hurl Through Hell | p.76 | `fiend_hurl_through_hell` | mechanics-backed / 2024-supported | V-068 | unassigned | Unreviewed |
