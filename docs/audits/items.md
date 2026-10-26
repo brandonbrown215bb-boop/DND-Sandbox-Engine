@@ -395,7 +395,7 @@ Same base commit `ede0a3c`, since origin/main had not moved. The registry hash i
 
 **PROPOSED-items-12 — Passive equipped-item modifiers beyond AC and walking speed.**
 - **Source:** the "while you wear/hold" clauses above.
-- **Affects:** at least 23 of the 47 entries, plus loaded Ring of Protection.
+- **Affects:** 19 of the 47 entries, plus loaded Ring of Protection.
   - Typed Resistance and Immunity.
   - Flat saving-throw bonus.
   - Scoped ability-check Advantage, and Disadvantage for observers.
@@ -449,7 +449,7 @@ Same base commit `ede0a3c`, since origin/main had not moved. The registry hash i
 **Field level only:** the 94 loaded SRD magic records.
 
 **Not reviewed:**
-- **The 145 missing magic items in B3-3:** 120 Wondrous, 20 Weapon, 7 Rod, 5 Armor and 1 Scroll. Wondrous here excludes boots and cloaks.
+- **The 145 missing magic items in B3-3:** 112 Wondrous, 20 Weapon, 7 Rod, 5 Armor and 1 Scroll. Wondrous here excludes boots and cloaks.
 - **The 49 equippable shells,** clause by clause.
 - **Other SRD sections:** Ammunition, mounts and vehicles, improvised weapons, selling, lifestyle, trade goods, and sentient items and artifacts.
 - **The 67 non-SRD items.**
