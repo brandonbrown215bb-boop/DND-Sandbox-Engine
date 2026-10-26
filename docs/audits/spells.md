@@ -1,6 +1,6 @@
 # Spell inventory and rules-vocabulary audit (Batch 088)
 
-**Status: PARTIAL AUDIT. Inventory is complete. Clause decomposition covers 138 of 362 unique loaded spell IDs (38.1%): 128 decomposed, 10 out-of-milestone IDs identified only. Families covered so far: direct_resolution (52), control (41) and timed_effects (45). The other 224 are UNREVIEWED, including all 45 persistent_areas IDs.** This is not a complete audit. Nothing here enables, converts or certifies a spell. Accepted slice counts and checkpoint acceptance are unchanged.
+**Status: PARTIAL AUDIT. Inventory is complete. Clause decomposition covers 183 of 362 unique loaded spell IDs (50.6%): 169 decomposed, 14 out-of-milestone IDs identified only. Families covered so far: direct_resolution (52), control (41), timed_effects (45) and persistent_areas (45). The other 179 are UNREVIEWED.** This is not a complete audit. Nothing here enables, converts or certifies a spell. Accepted slice counts and checkpoint acceptance are unchanged.
 
 ## Evidence boundary
 
@@ -379,6 +379,105 @@ Scope: every ID with `primary_behavior == timed_effects` (45). 41 are in SRD 5.2
   - Mind Blank "control its mind" scope.
   - Warding Bond per-target ring material.
 
+## Open ADR-0023 questions (PENDING BRANDON)
+
+The SRD can't settle these. They stay open until Brandon decides. No slice or data change depends on them in this audit.
+
+1. **Telekinesis fine control:** what "exert fine control … such as manipulating a simple tool," permits. The SRD 5.2.1 sentence is truncated at the source (p.168, D-24).
+2. **Mind Blank scope:** whether "no spell … can … control its mind" blocks all compulsion (Command, Suggestion-like effects) or only Charmed-based control.
+3. **Warding Bond rings:** how to model the paired 50+ GP rings both creatures must wear for the duration (per-target worn material).
+
+## Batch 088-5: persistent areas (45 spells reviewed)
+
+Scope: every ID with `primary_behavior == persistent_areas` (45). 41 are in SRD 5.2.1 and decomposed; 4 are out of milestone. Long entries whose column-split extract ran past the first read (Control Water, Earthquake, Glyph of Warding, Guards and Wards, Hallow, Prismatic Wall, Symbol, Wall of Stone) were read to their end. The Prismatic Wall Indigo and Violet rows were read from `pdftotext -layout` p.155.
+
+| ID | Avail | Winner | Clauses → classification (owner) |
+|---|---|---|---|
+| antilife_shell | yes | srd_add | 10-ft Emanation blocks non-Construct/Undead passing or reaching: P (S-185). Spells and ranged/reach attacks through it: P (S-185). Ends if caster forces a creature through: H (barrier-push end check). |
+| antimagic_field | no | srd_add | No spells, Magic actions or magical effects inside: E (S-074/S-075 suppression) + H (cast refusal by location). Item properties off: E (S-203). AoEs can't extend in; no teleport/planar: H + P (S-177/S-178). Suppressed time counts against duration: E (S-074). Immune to Dispel; fields don't cancel: E. |
+| black_tentacles | yes | srd_add | 20-ft square Difficult Terrain: E (S-179). Str save 3d6 + Restrained, entry/end-turn once per turn: P (S-184) + E. Athletics escape action: E (S-169). |
+| blade_barrier | no | srd_add | Straight or ring wall: E (`line`) + H (ring shape). Three-Quarters Cover: P (PROPOSED-spells-1). Difficult Terrain: E. Dex 6d10 Force on cast, entry, end of turn, once per turn: P (S-184) + E. |
+| call_lightning | no | imported | 60-ft-radius cloud; 5-ft burst Dex 3d10: E. Magic action to repeat: H (S-148 recast-from-effect). Existing storm +1d10: J (weather fact). Upcast: E (data lacks upcast, D-37). |
+| cloudkill | yes | srd_add | 20-ft Sphere, Heavily Obscured: P (S-190). Con 5d8 on cast, area moving onto, entry, end of turn; once per turn: E (native moving area) + P (S-184). Moves 10 ft away each turn: E. Dispersed by strong wind: H. Upcast: E. |
+| conjure_animals | yes | imported | Pack, Str-save Adv within 5 ft: E. Move pack 30 ft with your move: E (native). Dex 3d10 within 10 ft, once per turn: E + P (S-184). Data target/damage missing (D-38). |
+| conjure_celestial | yes | srd_add | Cylinder, per-creature heal or Dex 6d12 choice: E. Bright Light: P (S-190). Move 30 ft with you; once per turn: E. |
+| conjure_elemental | yes | srd_add | Element choice; Dex 8d8 + Restrained if none held; start-of-turn repeat 4d8 or free: E (S-068) + E. |
+| conjure_fey | yes | srd_add | Melee spell attack 3d12+mod, Frightened with dual source: E. Bonus Action teleport 30 ft + attack: E. |
+| conjure_minor_elementals | yes | srd_add | 15-ft Emanation rider 2d8 chosen type: E (S-080). Enemy Difficult Terrain: E. |
+| conjure_woodland_beings | yes | srd_add | 10-ft Emanation Wis 5d8 Force: E. Bonus Action Disengage: E. |
+| control_water | no | srd_add | 100-ft Cube; Magic action to switch modes: H (S-148). Flood/wave/vehicles 25% capsize: H (vehicle host) + J. Part Water trench and refill over a round: H (terrain mutation + S-087). Redirect Flow: J. Whirlpool pull 10 ft, Str 2d8, Athletics escape: E + H (water-depth precondition). |
+| delayed_blast_fireball | no | srd_add | Bead at point; on spell end 20-ft Sphere Dex save for accumulated damage: E (S-086 aftermath). **+1d6 each time your turn ends:** G (PROPOSED-spells-6). Touch → Dex save, explode or throw 40 ft: H (object interaction). Flammables ignite: E. Data shape `line`, 2 points (D-39). |
+| earthquake | no | srd_add | 100-ft circle Difficult Terrain: E. Cast and end-of-turn Dex save → Prone + Concentration broken: E. 1d6 fissures 1d10×10 ft deep, fall-in save: H (terrain creation) + P (S-181). Structures take 50: H (structure HP host). Collapse within half height → Dex 12d6, Prone, buried DC 20 escape: H + E (S-169). Data puts 12d6 on the main save (D-40). |
+| flaming_sphere | no | imported | End-turn within 5 ft Dex 2d6: P (S-184). Bonus Action move 30 ft, ram into space then stop: E (moving area). Over 5-ft barriers/10-ft pits: J (map fact). Ignites flammables; light 20/20: E + P (S-190). |
+| forbiddance | no | srd_add | 40,000 sq ft ward, 1 day: H (S-070). No teleport/portals/planar entry: P (S-177/S-178) + S-185. Chosen types take 5d10 Radiant/Necrotic on entry/end turn: P (S-184). Password: P (S-218). No overlap: H. 30-day permanence: H (S-070). Data casting/target/damage (D-41). |
+| glyph_of_warding | no | imported | Hidden glyph, Perception DC to notice: P (S-188). Authored trigger with type and password filters: P (S-184) + J (free-form trigger). Explosive rune 20-ft Dex 5d8 chosen type: E. Spell glyph stores a spell: P (S-150/S-151). Broken if moved >10 ft: H. Upcast: E. Data damage type fire only (D-42). |
+| guardian_of_faith | no | srd_add | Large invulnerable occupant: H (non-actor occupant). Enemy first move within 10 ft / start turn: Dex 20 Radiant half: P (S-184). Vanishes after 60 total damage: G (PROPOSED-spells-7). 8 h: H (S-070). |
+| guards_and_wards | no | srd_add | 2,500 sq ft shaped ward, exemptions, password: H + P (S-218). Corridors fog + 50% direction reversal: P (S-190) + J. Doors Arcane Lock + illusory walls: H (object host) + P (S-189). Stairs Web regrowing in 10 min: H (S-087). Other effects (Dancing Lights, Magic Mouth, Stinking Cloud, Gust, Suggestion): H (spawn other spells' effects). Effects dispelled separately; all four → ends; 365-day permanence: H (S-070). Data casting time (D-43). |
+| gust_of_wind | no | imported | 60×10 Line from self: E (`line`). Str save push 15 ft; end-of-turn repeat: E + P (S-184). Double cost moving closer: H (directional terrain cost). Disperses gas, douses flames: H (cross-spell dispersal). Bonus Action re-aim: H (S-148). Data range/target (D-44). |
+| hallow | no | srd_add | 60-ft radius; no overlap: H. Types can't willingly enter: P (S-185). Charm/Fright/possession suspended inside: E (S-075) + P (S-173). One Extra Effect from 10 options (Courage, Darkness, Daylight, Peaceful Rest, Extradimensional Interference, Fear, Resistance, Silence, Tongues, Vulnerability): E for Courage/Fear/Resistance/Vulnerability; P (S-190) Darkness/Daylight; P (S-218) Silence/Tongues; P (S-175) Peaceful Rest; P (S-177) Extradimensional. Until dispelled: H (S-070). Data casting time (D-45). |
+| incendiary_cloud | no | srd_add | Heavily Obscured: P (S-190). Dex 10d8 on appear, move-into, entry, end turn; once per turn: E. Moves 10 ft each turn: E. Wind dispersal: H. |
+| insect_plague | no | srd_add | Lightly Obscured: P (S-190). Difficult Terrain: E. Con 4d10 on appear, first entry, end turn: P (S-184) + E. Upcast: E. |
+| magic_circle | no | imported | 10-ft Cylinder, chosen types can't willingly enter nonmagically: P (S-185). Teleport/planar entry needs Cha save: H. Disadv on attacks into it; no possession/Charm/Fright: E + P (S-173). Reverse mode: P (S-185). Upcast duration +1 h: P (S-141). |
+| moonbeam | yes | imported | 5-ft Cylinder Dim Light: P (S-190). Magic action move 60 ft: E. Con 2d10 on appear, move-into, entry, end turn: E. Shape-shifted reverts and can't shift while inside: H (S-163 forced reversion). Upcast: E. |
+| plant_growth | yes | imported | Overgrowth 100-ft Sphere, 4× movement, exclusions: E (S-179). Enrichment 8 h cast, half-mile, 365 days, double yield: P (S-199) + J. |
+| prismatic_wall | no | srd_add | Opaque wall or globe; ends if placed on a creature: P (S-186). Light 100/100: P (S-190). Designated pass-through: P (S-185). Seeing creature within 20 ft Con save or Blinded 1 min: P (S-184) + E. Seven layers, one Dex save each in order: P (S-088). Red–Blue damage: E. Indigo three-of-a-kind Con saves → Petrified: E (S-069). Violet Blinded then Wis or plane shift: P (S-177). Layer destruction by specific damage/spell, AC 10: G (PROPOSED-spells-8). Antimagic doesn't affect it; Dispel only violet: E. Data save CON on 12d6 (D-46). |
+| sleet_storm | yes | imported | Heavily Obscured: P (S-190). Flames doused: H. Difficult Terrain: E. First entry/start turn Dex → Prone + lose Concentration: P (S-184) + E. |
+| spike_growth | yes | imported | 20-ft Sphere Difficult Terrain; 2d4 per 5 ft moved: E (S-179 native). Camouflage: Search + Perception/Survival to recognize: P (S-188). Data damage type force (D-47). |
+| spirit_guardians | yes | imported | 15-ft Emanation, designated exemptions: E (S-080). Speed halved: E. Wis 3d8 Radiant/Necrotic by alignment on emanation-moves-in, entry, end turn: E + J (alignment fact). Upcast: E. |
+| storm_of_vengeance | no | srd_add | 300-ft cloud; Con save 2d6 Thunder + Deafened on appear: E. Turn-indexed schedule (acid, six bolts, hail, 5–10 cold): P (S-088). Difficult Terrain, Heavily Obscured, no ranged weapon attacks, strong wind: E + P (S-190) + H. Data half_on_save true (D-48). |
+| sunbeam | no | srd_add | Line Con 6d8 + Blinded: E. Magic action new Line: H (S-148). Sunlight 30/30: P (S-190) + H (sunlight tag). |
+| symbol | no | srd_add | Hidden glyph, trigger, broken if moved: as Glyph (P S-184/S-188, H). Activation: 60-ft Dim Light for 10 min, targets on activation/entry/end turn: P (S-184). Death/Discord/Fear/Pain/Sleep/Stunning: E (Fear's forced 30-ft move: P PROPOSED-spells-4). Data encodes Death only (D-49). |
+| tsunami | no | srd_add | 300×300×50 wall, Str 6d10: E. Moves 50 ft carrying creatures: H (S-172 moving container analogue). Height −50 ft and −1d10 per round, ends at 0: G-adjacent, held H (S-090 escalation shape). Swim only with Athletics; leaving falls: E + P (S-181). |
+| wall_of_fire | yes | srd_add | Line or ring; opaque: E + H (ring) + P (S-190). Dex 5d8 on appear; one damaging side within 10 ft end turn / entry: E (verified bounded slice). Upcast: E. |
+| wall_of_force | no | srd_add | Invisible panels/dome/globe: P (S-185) + H (shape). Pushes occupants aside: P (S-186). Nothing passes; immune to damage and Dispel; Disintegrate destroys; blocks Ethereal: P (S-185) + H. Data target single (D-50). |
+| wall_of_ice | no | srd_add | Panels/dome/globe; push aside + Dex 10d6: P (S-186) + E. AC 12, 30 HP per 10-ft section, immunities/vulnerability: G (PROPOSED-spells-8). Destroyed section → frigid air, first pass Con 5d6: G (PROPOSED-spells-8) + P (S-184). Upcast both: E. |
+| wall_of_stone | no | srd_add | Panels, push aside, enclosed creature Dex save + Reaction move: P (S-186) + P (S-183). Bridges/ramps, support rule: J (map). Panel AC 15, 30 HP per inch: G (PROPOSED-spells-8). Permanent after full-duration Concentration: H (S-086 aftermath on completed duration). |
+| wall_of_thorns | no | srd_add | Wall or circle; blocks sight: P (S-190). Dex 7d8 Piercing on appear: E. 4× movement through: E (S-179). First entry/end turn Dex 7d8 Slashing: P (S-184). Upcast: E (data lacks upcast, D-51). |
+| wind_wall | no | imported | 50-ft path wall, Str 4d8 Bludgeoning on appear: E + H (path shape). Gases kept back: H. Small fliers/gaseous can't pass: P (S-185). Ordinary projectiles miss: P (S-185). Data 3d8 Force (D-52). |
+| aura_of_vitality, cloud_of_daggers, cordon_of_arrows, hunger_of_hadar | cloud_of_daggers yes, rest no | imported | Not in SRD 5.2.1: out of milestone, not decomposed. cloud_of_daggers castable (D-53). |
+
+### 088-5 classification summary
+
+- **E:** area saves and damage, native moving areas, terrain cost, auras and emanations, repeat and counted saves (S-068/S-069), suppression (S-074/S-075/S-203).
+- **P:**
+  - S-184 entry/end-turn trigger scopes, the most common owner in this family.
+  - S-185/S-186 barriers and placement over occupants.
+  - S-190 obscurement and light.
+  - S-088 ordered procedures (Prismatic Wall layers, Storm of Vengeance turns).
+  - S-150/S-151 stored spell (Glyph of Warding).
+  - S-188 hidden glyphs and camouflage.
+  - S-173 possession; S-177/S-178 planar travel; S-181 falling; S-183 Reaction movement.
+  - S-218 passwords and Silence/Tongues; S-199 Enrichment; S-141 upcast duration.
+- **H:**
+  - Long and permanent area wards (S-070): Forbiddance, Hallow, Guards and Wards, Guardian of Faith.
+  - Ring/dome/panel/path wall shapes beyond `line` and sphere.
+  - Magic action to re-use an effect (Call Lightning, Sunbeam, Control Water; S-148).
+  - Cross-spell dispersal by strong wind (Cloudkill, Incendiary Cloud, Gust of Wind).
+  - Terrain creation and structures (Earthquake, Control Water).
+  - Non-actor invulnerable occupant (Guardian of Faith).
+  - Forced reversion in an area (Moonbeam).
+  - Moving wall carrying occupants with shrinking height (Tsunami).
+- **G:** three new placeholders, below.
+- **J:** Call Lightning "outdoors in a storm"; Control Water vehicles and flow; Flaming Sphere jump limits; Glyph free-form triggers; Guards and Wards direction confusion; Wall of Stone support; Spirit Guardians alignment.
+
+### PROPOSED-spells-6: Accumulating payload released at source end
+
+- **Need:** an effect owns a damage pool that grows by a fixed die at each end of the caster's turn and is released as one area save when the source ends, whether by Concentration loss, duration, touch failure or impact.
+- **Spells:** Delayed Blast Fireball.
+- **Finish line:** the pool starts at the slot-scaled base (12d6 + 1d6 per level above 7); each caster turn end while active adds 1d6; any end reason (Concentration break, 1-minute expiry, failed touch save, thrown bead hitting a creature or object) detonates once at the bead's current location with a 20-ft Sphere Dex save for full/half of the accumulated total; flammables ignite; a test covers each end reason and proves no double detonation. Owner: new slice beside S-086/S-087.
+
+### PROPOSED-spells-7: Damage-dealt budget that ends the source
+
+- **Need:** an effect tracks total damage it has dealt (after saves and mitigation) and ends when a cap is reached.
+- **Spells:** Guardian of Faith (60 total).
+- **Finish line:** each resolved hit adds its final damage to the budget; the effect ends immediately once total ≥ 60 (the last hit is not trimmed); budget survives save/load; a test proves half-damage saves and Resistance count only the damage actually dealt. Owner: new slice beside S-031 damage history.
+
+### PROPOSED-spells-8: Damageable barrier segments with breach residue
+
+- **Need:** a wall is made of independently targetable sections or layers with their own AC, HP, immunities/vulnerabilities or destruction condition; destroying one opens that section only, and may leave a residual area.
+- **Spells:** Wall of Ice (AC 12, 30 HP per 10-ft section, Fire vulnerability, frigid-air residue), Wall of Stone (AC 15, 30 HP per inch per panel), Prismatic Wall (ordered layers destroyed by specific damage thresholds or spells).
+- **Finish line:** each section/layer is an addressable object with AC/HP/damage modifiers or a declared destruction trigger; damage to one section never spills to another; a destroyed section stops blocking and, if declared, spawns its residue area (Wall of Ice frigid air with first-pass Con 5d6); Prismatic layers can only be destroyed in order; save/load preserves section state; tests cover each of the three spells. Owner: new slice beside S-185/S-186.
+
 ## Duplicate-definition accuracy: imported_spells.json vs srd_additional_spells.json
 
 31 IDs are defined in both files. imported_spells.json wins 30 of them; mass_healing_word is won by conversion_batch_001.json, so it falls outside the 30. I compared each against the SRD 5.2.1 header and text (casting time, range in 5-ft hexes, target/area, save, damage type, Concentration, upcast and effects). A **DEFECT** is a winner that is less accurate than the loser. Many of these spells are available through native per-ID code, which may override the record; that override is unverified, so the records are still listed.
@@ -460,10 +559,27 @@ Cumulative across batches. Batch tag = where the defect was recorded. For the 08
 | D-34 | 088-4 | mirror_image / holy_aura / foresight / mind_blank / stoneskin | effects | none | SRD effects not encoded (record only) |
 | D-35 | 088-4 | hex | upcast | none | Concentration 4 h (L2), 8 h (L3–4), 24 h (L5+) |
 | D-36 | 088-4 | regenerate | casting_time | runtime approximates 1 minute as an action (known_limit) | 1 minute |
+| D-37 | 088-5 | call_lightning | upcast | none | +1d10 per slot level above 3 |
+| D-38 | 088-5 | conjure_animals | target / damage | single / none | Large pack; Dex 3d10 Slashing |
+| D-39 | 088-5 | delayed_blast_fireball | area | `line`, 2 points | 20-ft-radius Sphere at one point |
+| D-40 | 088-5 | earthquake | damage / save | 12d6 Bludgeoning, Dex half on main save | main Dex save → Prone + Concentration broken; 12d6 only from collapse |
+| D-41 | 088-5 | forbiddance | casting_time / target / damage | minute / single / none | 10 minutes or Ritual / area / 5d10 Radiant or Necrotic |
+| D-42 | 088-5 | glyph_of_warding | damage_type | fire | Acid, Cold, Fire, Lightning or Thunder (chosen) |
+| D-43 | 088-5 | guards_and_wards | casting_time | action | 1 hour |
+| D-44 | 088-5 | gust_of_wind | range / target | 12 (60 ft) / single | Self / 60-ft×10-ft Line |
+| D-45 | 088-5 | hallow | casting_time | action | 24 hours |
+| D-46 | 088-5 | prismatic_wall | save / damage | CON half on 12d6 Fire | Con save → Blinded; layers use Dex saves, seven effects |
+| D-47 | 088-5 | spike_growth | damage_type | force | Piercing |
+| D-48 | 088-5 | storm_of_vengeance | half_on_save | true | failed save: 2d6 + Deafened; success: nothing |
+| D-49 | 088-5 | symbol | effects | Death only (10d10 Necrotic) | six selectable effects |
+| D-50 | 088-5 | wall_of_force / wall_of_stone | target | single | wall/panels |
+| D-51 | 088-5 | wall_of_thorns | upcast | none | +1d8 both damage types per level above 6 |
+| D-52 | 088-5 | wind_wall | damage | 3d8 Force | 4d8 Bludgeoning |
+| D-53 | 088-5 | cloud_of_daggers | cast_available | true | not in SRD 5.2.1 (out of milestone yet castable) |
 
 ## Known limits of this pass
 
-- 224 of 362 IDs are unreviewed for clauses. Families in spell-status.md remain the planning grouping.
+- 179 of 362 IDs are unreviewed for clauses. Families in spell-status.md remain the planning grouping.
 - All 339 headers parsed from column-split text (088-2). Prismatic Spray row 8 and the Divine Word table were re-read on rendered pages in 088-3; both are complete. The Telekinesis tail was re-read on rendered p.168 in 088-4: the SRD sentence itself stops at "simple tool," (source truncation, D-24).
 - `get_registry_hash()` isn't a hash. I recorded a SHA-256 of it. Changing it is runtime work and out of scope.
 - No Windows supported-runner export was possible from the box.
@@ -471,6 +587,6 @@ Cumulative across batches. Batch tag = where the defect was recorded. For the 08
 ## Recommended next queue
 
 1. Windows export: optional confirmation (not blocking these batches).
-2. Data-correction job (content lane) for the running defect table D-01 to D-36, field by field toward the SRD text.
-3. 088-5: persistent_areas (45), deferred from 088-4 to keep one batch inside 40–60.
-4. 088-6+: movement, visibility, objects, summons and utility families, where real gaps (`PROPOSED-spells-N`) are likeliest.
+2. Data-correction job (content lane) for the running defect table D-01 to D-53, field by field toward the SRD text.
+3. 088-6: movement_travel (31) + visibility (27) = 58.
+4. 088-7+: movement, visibility, objects, summons and utility families, where real gaps (`PROPOSED-spells-N`) are likeliest.
