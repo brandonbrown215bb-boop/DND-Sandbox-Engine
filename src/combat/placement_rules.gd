@@ -105,6 +105,17 @@ static func legal_error(state, origin: Vector2i, hex: Vector2i, size: String, ra
 		if not bool(space.get("available", false)): return str(space.get("reason", "No space."))
 	return ""
 
+## Batch 076 (#38 follow-up): terrain and map-bounds legality of EVERY cell of
+## a size-based footprint, independent of creature occupancy. Tile presence
+## (map bounds), passability/walls, room walls, plane and clearance are all
+## checked; only other creatures are left out. "" when the whole footprint fits.
+static func footprint_terrain_error(state, hex: Vector2i, size: String, context_overrides: Dictionary = {}) -> String:
+	var ctx := context_overrides.duplicate()
+	ctx["players"] = []
+	ctx["monsters"] = []
+	ctx["ignore_occupants"] = true
+	return legal_error(state, hex, hex, size, -1, [], ctx)
+
 ## Legal destinations nearest first (ties by coordinate), excluding reserved ones.
 static func candidates(state, origin: Vector2i, size: String, range_hexes: int, reserved: Array = []) -> Array[Vector2i]:
 	var out: Array[Vector2i] = []

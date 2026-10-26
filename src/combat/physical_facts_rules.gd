@@ -525,7 +525,9 @@ static func is_space_available(grid: HexGrid, position: Vector2i, size: String =
 					occupants.append(m)
 	# The grid is also a production caller's source of occupants; optional lists
 	# must not turn an occupied cell into available space.
-	for entity in grid.entities:
+	# Batch 076: a terrain-only query (PlacementRules.footprint_terrain_error)
+	# leaves creature occupancy out; every other check below still applies.
+	for entity in ([] if bool(context.get("ignore_occupants", false)) else grid.entities):
 		if entity.get("hex_position") != position: continue
 		var occupant = entity.get("character", entity.get("monster", null))
 		if occupant == null or is_same(occupant, ignore_entity): continue

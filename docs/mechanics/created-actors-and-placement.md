@@ -189,7 +189,13 @@ uses the same rules against `ContainmentRules.placement_state` (party, familiars
 steeds, created creatures and actors, objects) before `spend_spell_slot`.
 Forced movement (spell push, Push mastery, barbarian push) stops before a step
 whose full footprint is not legal; a body that already overlaps something at its
-start is not trapped by that pre-existing overlap. Find Steed arrival still checks only its
+start is not trapped by that pre-existing overlap. Batch 076 (#38 follow-up):
+that escape allowance waives creature overlap only. Terrain is never waived:
+`PlacementRules.footprint_terrain_error` checks every cell of the mover's
+size-based footprint for map bounds, passability, room walls, plane, clearance
+and blocking objects (creature occupancy excluded via the `ignore_occupants`
+context flag of `PhysicalFactsRules.is_space_available`), so a Huge creature
+cannot pass through or land in a wall because its center fits. Find Steed arrival still checks only its
 center cell (PARTIAL).
 
 Exit-before-settle (S-121, card Q-20261021-043117-1c72) is verified only for
