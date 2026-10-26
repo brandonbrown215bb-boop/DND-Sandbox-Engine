@@ -80,3 +80,8 @@ SRD subclass: **Thief** — absent from repo data.
 | subclass | 9 | Supreme Sneak | p.64 | — | absent | — | unassigned | Unreviewed (absent) |
 | subclass | 13 | Use Magic Device | p.64 | — | absent | — | unassigned | Unreviewed (absent) |
 | subclass | 17 | Thief’s Reflexes | p.64 | — | absent | — | unassigned | Unreviewed (absent) |
+
+<a id="srd-clause-decomposition-batch-2"></a>
+## SRD clause decomposition — batch 2 (2026-10-26)
+
+**Unreviewed.** Batch 2 decomposed Barbarian and Fighter/Champion only. Rogue (21 loaded class records, all `effects`; Thief subclass absent) is queued next. Its loaded records are in the DataLoader export (commit `0196f328f1de`, registry SHA-256 `70a83cc7…187845e`; see the [batch-2 receipt](../planning/vocabulary-slices.md#src-01-batch-2)). Every row in the inventory above remains unreviewed.

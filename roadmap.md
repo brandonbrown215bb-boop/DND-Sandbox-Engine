@@ -47,8 +47,19 @@ PRs #57–60 cover the four follow-ups: stale scenario fixtures, bounded player-
 cast transformations, combat Find Steed arrival/recovery and additional weapon
 damage-choice routes. The [reviewed boundary and original queue's open work](docs/planning/vocabulary-slices.md#pr57-60-validation)
 own their remaining scope. Continue the unresolved gameplay investigations or
-S-141 duration/concentration; do not reassign the delivered subsets. Counts stay
-151 accepted of 226 defined engine slices.
+S-141 duration/concentration; do not reassign the delivered subsets. Counts are
+151 accepted of 245 defined engine slices after the [exploration audit](docs/reviews/dnd-code-vocabulary-gap-checklist.md#exploration-and-world-procedures-audit--srd-521-2026-10-26)
+added planned S-227–S-230 (travel pace/terrain, search, traps/locks) and the
+[Progression/Acquisition audit](docs/reviews/progression-acquisition-audit.md) added planned S-231–S-234 and S-242–S-245;
+the [core rules/conditions audit](docs/mechanics/core-rules-status.md) added S-235–S-239 (V-100/V-101) and maps rests, senses and Reaction budgets to existing rows.
+
+The [SRC-01 feature inventory](docs/planning/vocabulary-slices.md#src-01-feature-inventory)
+(batch 1) and its [batch-2 DataLoader export and clause decomposition](docs/planning/vocabulary-slices.md#src-01-batch-2)
+are partial planning audits. Reviewed so far: 35 of 174 SRD class features, 6 of 58
+subclass features, 0 of 17 feats. They add two requirements:
+[S-240/V-102 and S-241/V-103](docs/reviews/dnd-code-vocabulary-gap-checklist.md#src-01-batch-2-proposed)
+(natural-roll outcome thresholds; granted/forced movement), included in the
+245-slice count above.
 
 The [first Crown conversion batch](docs/planning/vocabulary-slices.md#conversion-batch-001)
 resolves ten candidates: three shared spell conversions, one already generic
@@ -116,6 +127,17 @@ The standalone content editor can progress alongside runtime work using current
 contracts. Its draft exports do not imply game installation support. Keep the
 runtime/editor [ownership and handoff boundary](docs/content_pipeline.md#runtime-and-editor-handoff).
 Quest Board is optional when concurrent work needs coordination.
+
+## Progression/Acquisition follow-up
+
+The [Progression/Acquisition audit](docs/reviews/progression-acquisition-audit.md)
+suggests this queue:
+1. Content corrections: class skill and tool lists, the rogue weapon restriction and `subclass_level`.
+2. S-234 multiclass prerequisites, then production multiclass data.
+3. S-231 backgrounds.
+4. S-232 species choices and the SRD species set.
+5. S-233 feat prerequisites, then the 17 SRD feats.
+6. S-243 XP advancement, S-242 generation methods, S-244 higher-level start, then S-245 post-20 feats (campaign-enabled).
 
 ## Scope and deferred work
 
