@@ -1,6 +1,6 @@
 # Spell inventory and rules-vocabulary audit (Batch 088)
 
-**Status: PARTIAL AUDIT. Inventory is complete. Clause decomposition covers 241 of 362 unique loaded spell IDs (66.6%): 226 decomposed, 15 out-of-milestone IDs identified only. Families covered so far: direct_resolution (52), control (41), timed_effects (45), persistent_areas (45), movement_travel (31) and visibility (27). The other 121 are UNREVIEWED.** This is not a complete audit. Nothing here enables, converts or certifies a spell. Accepted slice counts and checkpoint acceptance are unchanged.
+**Status: PARTIAL AUDIT. Inventory is complete. Clause decomposition covers 285 of 362 unique loaded spell IDs (78.7%): 270 decomposed, 15 out-of-milestone IDs identified only. Families covered so far: direct_resolution (52), control (41), timed_effects (45), persistent_areas (45), movement_travel (31), visibility (27), objects (26) and social_illusions (18). The other 77 are UNREVIEWED.** This is not a complete audit. Nothing here enables, converts or certifies a spell. Accepted slice counts and checkpoint acceptance are unchanged.
 
 ## Evidence boundary
 
@@ -403,6 +403,15 @@ The SRD can't settle these. Each is parked for an ADR-0023 decision; no slice or
 | J-16 | 088-6 | Find Traps | "A trap, for the purpose of this spell, includes any object or mechanism that was created to cause damage or other danger." | 131 | Which authored hazards are tagged as traps. |
 | J-17 | 088-6 | Meld into Stone | "Minor physical damage to the stone doesn’t harm you, but its partial destruction or a change in its shape (to the extent that you no longer fit within it) expels you" | 148 | Threshold between "minor" damage and "partial destruction". |
 | J-18 | 088-6 | Magnificent Mansion | "Each servant can perform tasks that a human could perform, but they can’t attack or take any action that would directly harm another creature." | 147 | Which servant tasks produce mechanical results. |
+| J-19 | 088-5 | Flaming Sphere | "When you move the sphere, you can direct it over barriers up to 5 feet tall and jump it across pits up to 10 feet wide." | 132 | Needs barrier-height and pit-width map facts for the sphere's path. |
+| J-20 | 088-5 | Plant Growth (Enrichment) | "All plants in a half-mile radius centered on a point within range become enriched for 365 days. The plants yield twice the normal amount of food when harvested." | 153 | No harvest or crop economy exists; what the doubled yield produces. |
+| J-21 | 088-7 | Magic Mouth | "The trigger can be as general or as detailed as you like," | 146 | How far a free-form authored trigger may go (same question as J-04). |
+| J-22 | 088-7 | Programmed Illusion | "though it must be based on visual or audible phenomena that occur within 30 feet of the area." | 156 | Which observable events count as trigger phenomena. |
+| J-23 | 088-7 | Fabricate | "The quality of any fabricated objects is based on the quality of the raw materials." | 129 | How raw-material quality maps to output item quality. |
+| J-24 | 088-7 | Zone of Truth | "On a failed save, a creature can’t speak a deliberate lie while in the radius." | 175 | No dialogue-truth model; what an authored NPC line counts as a lie. |
+| J-25 | 088-7 | Modify Memory | "change its memory of the event’s details, or create a memory of some other event." | 150 | How a free-form memory edit changes authored knowledge and attitude. |
+| J-26 | 088-7 | Speak with Dead | "Answers are usually brief, cryptic, or repetitive," | 164 | Who authors the corpse's answers, and whether antagonism is decided by attitude. |
+| J-27 | 088-7 | Hallucinatory Terrain | "The tactile characteristics of the terrain are unchanged, so creatures entering the area are likely to notice the illusion." | 139 | When entering creatures notice without a Study check. |
 
 ## Batch 088-5: persistent areas (45 spells reviewed)
 
@@ -586,6 +595,75 @@ Scope: every ID with `primary_behavior` of movement_travel (31) or visibility (2
 - **Spells:** Darkness (dispels light from spells of level 2 or lower), Daylight (dispels Darkness from spells of level 3 or lower). Hallow's Darkness/Daylight options use a related "lower than this spell" rule.
 - **Finish line:** each light/Darkness area records its kind and source spell level (cast slot, per ADR choice); creating an area checks every overlapping opposite-kind area and ends those at or below the threshold through the normal source-end path (Concentration released, aftermath runs); higher-level areas are untouched; nonmagical light is never dispelled, only suppressed inside magical Darkness; tests cover equal level, one above, partial overlap and object-anchored Emanations. Owner: new slice beside S-190.
 
+## Batch 088-7: objects and social/illusions (44 spells reviewed)
+
+Scope: every ID with `primary_behavior` of objects (26) or social_illusions (18). All 44 are in SRD 5.2.1 and decomposed; none is out of milestone. Long entries were read to their end. New judgment items are parked as J-21 to J-27.
+
+| ID | Avail | Clauses → classification (owner) |
+|---|---|---|
+| alarm | yes | Ward door/window/≤20-ft Cube; touch or entry alerts: P (S-184). Designated exempt creatures: E. Audible 60 ft or mental ping within 1 mile, wakes sleeper: P (S-218) + H (sleep state). 8 h, ritual: H (S-070) + E. |
+| arcane_lock | no | Lock closed door/container; no nonmagical unlock; designated users: H (lock/door object fact). Password opens 1 min: P (S-218). 25 GP consumed: E. Until dispelled: H (S-070). Knock suppresses 10 min: P (S-203). |
+| create_food_and_water | no | 45 lb food, 30 gal water; food spoils 24 h: P (S-197 + S-200). |
+| create_or_destroy_water | yes | 10 gal create/destroy or rain/fog Cube; rain extinguishes exposed flames; fog removal: P (S-197 + S-190). Upcast gallons/Cube: E. |
+| creation | no | Shadow object ≤5-ft Cube, seen form/material: P (S-198/S-199). Material-duration table, shortest wins: P (S-214-like lookup) + H (S-070). Using it as a Material component fails the other spell: H. Upcast Cube: E. |
+| druidcraft | no | Weather sensor: G (PROPOSED-spells-10). Bloom, sensory effect: P (S-187). Light/snuff flames: P (S-190). |
+| elementalism | no | Air closes unheld doors: H (door state). Earth dust or one written word: P (S-187). Fire embers light candles; Water mist or 1 cup water: P (S-190 + S-197). |
+| fabricate | no | Raw materials → product, Large (Medium for mineral); no creatures/magic items; tool proficiency for skilled items: P (S-198/S-199) + J-23. |
+| goodberry | yes | Ten berries 24 h; Bonus Action eat: 1 HP and a day's nourishment: P (S-196 + S-200) + E. Uneaten vanish: P (S-086). |
+| heat_metal | no | Manufactured metal object in sight; 2d8 Fire to contact; Bonus Action repeat in range: E. Holder/wearer Con save or drop; else Disadv attacks/checks: E + H (worn armor can't drop). Upcast: E. |
+| identify | yes | Touch object: magic properties, Attunement, charges, ongoing spells, creating spell; creature: ongoing spells: P (S-194/S-219). 100 GP focus, ritual: E. |
+| illusory_script | no | Designated readers see true text; others unintelligible or altered meaning: P (S-218/S-219). Dispel removes both; Truesight reads: P (S-191). 10 days: H (S-070). |
+| instant_summons | no | Mark ≤10 lb object; Magic action crush sapphire → object to hand regardless of plane: P (S-177). Held by another → learn holder and location: P (S-194). |
+| knock | no | Unlock one mundane lock/stuck/bar: H (lock fact). Arcane Lock suppressed 10 min: P (S-203). Knock audible 300 ft: P (S-218 noise). |
+| mage_hand | yes | Hand within 30 ft; manipulate, open, stow, pour; Magic action move 30; ≤10 lb; no attacks: H (object interaction host). Recast ends: E. |
+| magic_mouth | no | Message ≤25 words in object; authored trigger; repeat or once: P (S-184 + S-218) + J-21. Until dispelled: H (S-070). 10 GP consumed: E. |
+| mending | no | Repair one break ≤1 ft; no magic restoration: P (S-212). |
+| move_earth | no | Reshape 40-ft dirt/sand/clay area over 10 min, new area each 10 min; not stone: P (S-179 terrain) + H (elevation map change). |
+| nystuls_magic_aura | no | Mask creature type to spells; False Aura for detection: P (S-195). 30 days daily → until dispelled: H (S-070 + counted recasts). |
+| passwall | no | 5×8×20-ft passage in wood/plaster/stone, 1 h; eject occupants at end: P (S-180 + S-181) + H (material fact). |
+| prestidigitation | yes | Options; up to three non-instantaneous active: E (S-162 group cap). Sensory, fire play, clean/soil, sensation, mark, trinket: P (S-187/S-190) + H (cosmetic object states). |
+| purify_food_and_drink | yes | Remove poison/rot in 5-ft Sphere: P (S-200). Ritual: E. |
+| secret_chest | no | Chest to Ethereal; Magic action recall/send: P (S-178 + S-196). 60 days then cumulative 5% daily end: P (S-209) + H (S-070). Replica destroyed or recast ends; chest lost on Ethereal: P (S-086). |
+| stone_shape | no | Reshape ≤Medium stone or 5-ft section; two hinges and latch: P (S-199) + H (stone material fact). |
+| tensers_floating_disk | no | Disk 500 lb, follows within 20 ft, can't cross 10-ft elevation change; overload or 100 ft ends: P (S-196 + S-172) + H (elevation fact). |
+| thaumaturgy | no | Options, three 1-minute effects at once: E (S-162). Booming Voice Adv Intimidation: E. Invisible Hand door: H (door state). Others: P (S-187/S-190). |
+| disguise_self | no | Self + gear appearance, ±1 ft, same limbs: P (S-187). Fails physical inspection; Study + Investigation vs DC: P (S-188). |
+| dream | no | Known target on same plane; messenger Incapacitated Speed 0: E. Converse in dreams while target sleeps: P (S-218) + H (sleep state). Terrifying: Wis save or no rest benefit and 3d6 Psychic on waking: H (rest-blocking). |
+| hallucinatory_terrain | no | 150-ft Cube natural terrain looks/sounds/smells different; structures unchanged: P (S-187/S-189). Tactile unchanged → notice: J-27. Study + Investigation disbelief, vague image: P (S-188). 24 h: H (S-070). |
+| major_image | no | ≤20-ft Cube image with sound/smell/temperature, no damage; Magic action move: P (S-187). Physical interaction reveals; Study check: P (S-188). Upcast 4+: permanent until dispelled: H (S-070). |
+| minor_illusion | yes | Sound or ≤5-ft image; Study check; faint once discerned: P (S-187/S-188). Recast ends: E. |
+| mirage_arcane | no | 1-mile terrain including tactile; can create Difficult Terrain: P (S-189 + S-179). Removed pieces vanish; Truesight sees true form but tactile remains: P (S-191). 10 days: H (S-070). |
+| modify_memory | no | Wis save, Adv if fighting; Charmed + Incapacitated; ends on damage/spell: E. Memory of ≤10-min event in last 24 h edited: P (S-219) + J-25. Remove Curse/Greater Restoration restores: P (S-202). Upcast window: E. |
+| phantasmal_force | no | Int save; phantasm ≤10-ft Cube perceived only by target: P (S-187 + S-190). Study check ends: P (S-188). Target treats as real; 2d8 Psychic per turn if in or within 5 ft of a harmful phantasm: P (S-189). |
+| phantasmal_killer | no | Wis save, 4d10 Psychic + Disadv; repeat end-of-turn save, damage again: E (S-068). Upcast: E. |
+| programmed_illusion | no | Dormant ≤30-ft Cube scripted 5-min performance; trigger within 30 ft: P (S-184 + S-187) + J-22. 10-min dormancy reactivation: H. Study check: P (S-188). |
+| project_image | no | Copy at seen location within 500 miles; see/hear through: P (S-187 + S-193). Damage ends; Magic action move 60: E. Study check: P (S-188). |
+| seeming | no | Chosen creatures' appearance, Cha save unwilling: P (S-187). Study check: P (S-188). 8 h: H (S-070). |
+| silent_image | no | ≤15-ft Cube visual image; Magic action move: P (S-187). Physical interaction/Study: P (S-188). |
+| speak_with_animals | no | Comprehend and talk to Beasts; Influence options; info on last day: P (S-218/S-219). Ritual: E. |
+| speak_with_dead | no | Corpse with mouth, not Undead, not within 10 days; five questions; knows only life: P (S-219) + E (S-014 lockout) + J-26. |
+| speak_with_plants | no | 30-ft Emanation plants: question on last day: P (S-219). Plant Difficult Terrain to normal or vice versa: E (S-179). Talk with Plant creatures: P (S-218). |
+| weird | no | Chosen creatures in 30-ft Sphere: Wis save, 10d10 Psychic + Frightened; end-of-turn repeat 5d10, success ends: E (S-068). |
+| zone_of_truth | no | 15-ft Sphere, entry/start-turn Cha save: P (S-184). Can't lie, caster knows result, can be evasive: P (S-218) + J-24. |
+
+### 088-7 classification summary
+
+- **E:** Option menus and active-effect caps (S-162), save/repeat-save damage (S-068), Advantage and Disadvantage riders.
+- **P:**
+  - S-187 located images and sounds; S-188 Study/Investigation discovery; S-189 tactile illusion realization (Mirage Arcane, Phantasmal Force).
+  - S-196/S-197/S-200 contents, liquids and food; S-198/S-199 crafted output (Creation, Fabricate, Stone Shape); S-212 repair (Mending).
+  - S-218/S-219 communication and knowledge (Speak with Animals/Dead/Plants, Zone of Truth, Modify Memory, Illusory Script).
+  - S-184 triggers (Alarm, Magic Mouth, Programmed Illusion); S-203 lock suppression (Knock).
+- **H:** door/lock/window object states; object interaction host for Mage Hand; sleep state (Alarm, Dream); rest-blocking (Dream); map material and elevation facts (Move Earth, Passwall, Stone Shape, Tenser's Floating Disk); long durations (S-070).
+- **G:** one new placeholder, below.
+- **J:** parked as J-21 to J-27.
+
+### PROPOSED-spells-10: Staged weather state
+
+- **Need:** a located weather fact with ordered stages for precipitation, temperature and wind (with direction), readable by spells and changeable one stage at a time after a delay.
+- **Spells:** Control Weather (change one stage per change, 1d4 × 10 min delay, gradual return), Druidcraft Weather Sensor (24-hour forecast display), Call Lightning (storm present, J-05).
+- **Finish line:** each outdoor region carries current and forecast stages from the three SRD tables (p.120); a source can request a one-stage change that applies after its rolled delay and is refused indoors; ending the source returns stages gradually; readers get the current stage and a 24-hour forecast; tests cover each table edge (no stage beyond 1 or 5), indoor refusal, delay timing and source end. The starting stage for authored regions is J-38. Owner: new slice; no existing slice covers weather.
+
 ## Duplicate-definition accuracy: imported_spells.json vs srd_additional_spells.json
 
 31 IDs are defined in both files. imported_spells.json wins 30 of them; mass_healing_word is won by conversion_batch_001.json, so it falls outside the 30. I compared each against the SRD 5.2.1 header and text (casting time, range in 5-ft hexes, target/area, save, damage type, Concentration, upcast and effects). A **DEFECT** is a winner that is less accurate than the loser. Many of these spells are available through native per-ID code, which may override the record; that override is unverified, so the records are still listed.
@@ -693,10 +771,14 @@ Cumulative across batches. Batch tag = where the defect was recorded. For the 08
 | D-60 | 088-6 | reverse_gravity | target | single | 50-ft-radius, 100-ft Cylinder |
 | D-61 | 088-6 | transport_via_plants | duration | 10 minutes | 1 minute |
 | D-62 | 088-6 | water_breathing / water_walk / teleport / plane_shift / word_of_recall | target | single | groups (10 / 10 / 9 / 9 / 6) |
+| D-63 | 088-7 | dream | range | 0 (self) | Special |
+| D-64 | 088-7 | mirage_arcane | range | 20 (100 ft) | Sight |
+| D-65 | 088-7 | phantasmal_force | duration / concentration / damage | missing / missing / 1d6 | Concentration, up to 1 minute / true / 2d8 Psychic |
+| D-66 | 088-7 | speak_with_plants | range | 6 (30 ft) | Self (30-foot Emanation) |
 
 ## Known limits of this pass
 
-- 121 of 362 IDs are unreviewed for clauses. Families in spell-status.md remain the planning grouping.
+- 77 of 362 IDs are unreviewed for clauses. Families in spell-status.md remain the planning grouping.
 - All 339 headers parsed from column-split text (088-2). Prismatic Spray row 8 and the Divine Word table were re-read on rendered pages in 088-3; both are complete. The Telekinesis tail was re-read on rendered p.168 in 088-4: the SRD sentence itself stops at "simple tool," (source truncation, D-24).
 - `get_registry_hash()` isn't a hash. I recorded a SHA-256 of it. Changing it is runtime work and out of scope.
 - No Windows supported-runner export was possible from the box.
@@ -704,6 +786,6 @@ Cumulative across batches. Batch tag = where the defect was recorded. For the 08
 ## Recommended next queue
 
 1. Windows export: optional confirmation (not blocking these batches).
-2. Data-correction job (content lane) for the running defect table D-01 to D-62, field by field toward the SRD text.
-3. 088-7: objects (26) + social_illusions (18) + summons (17) = 61, or split to stay in 40–60.
-4. 088-8+: movement, visibility, objects, summons and utility families, where real gaps (`PROPOSED-spells-N`) are likeliest.
+2. Data-correction job (content lane) for the running defect table D-01 to D-66, field by field toward the SRD text.
+3. 088-8: summons (17) plus the remaining families (body_death 16, weapon_riders 15, campaign_information 14, wards_removal 9, exceptional 6) = 77.
+4. Later: movement, visibility, objects, summons and utility families, where real gaps (`PROPOSED-spells-N`) are likeliest.
