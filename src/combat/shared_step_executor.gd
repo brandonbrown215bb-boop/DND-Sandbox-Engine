@@ -2938,5 +2938,5 @@ class SpellAdapter:
 			final_result["recipient_negated"] = true
 			final_result["hit"] = false
 		if cast.spell.has("effects"):
-			final_result = SharedSpell.apply(cast.caster, cast.target, cast.spell, final_result)
+			final_result = SharedSpell.apply(cast.caster, cast.target, cast.spell, final_result, cast.spatial_host, cast.decisions)
 		return final_result

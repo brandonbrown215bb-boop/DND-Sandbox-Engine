@@ -779,6 +779,7 @@ func receive_instance(record: Dictionary) -> bool:
 	if id.is_empty() or copies.records.has(id) or DataLoader.get_item(definition).is_empty() or not record.get("state") is Dictionary or backpack.size() >= MAX_BACKPACK_SIZE:
 		return false
 	copies.records[id] = record.duplicate(true)
+	InventoryCopies.restore_legacy_charges(copies.records[id])
 	copies.backpack.append(id)
 	backpack.append(definition)
 	return true

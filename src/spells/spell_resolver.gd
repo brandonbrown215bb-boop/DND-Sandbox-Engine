@@ -79,6 +79,11 @@ static func resolve(caster: Character, target_entity, spell_data: Dictionary, de
 	if not projection_error.is_empty(): return {"success":false,"refused":true,"message":projection_error}
 	var max_hp_error := MaxHpSourceRules.cast_error(cast.target, cast.spell)
 	if not max_hp_error.is_empty(): return {"success":false,"refused":true,"message":max_hp_error}
+	# Every resolver host, including room/direct casts, owns this pre-payment gate.
+	var death_error := ZeroHpAftermathRules.explicit_cast_error(cast.target, cast.spell)
+	if not death_error.is_empty(): return {"success":false,"refused":true,"message":death_error}
+	var object_error := ObjectDestructionRules.cast_error(cast.target, cast.spell)
+	if not object_error.is_empty(): return {"success":false,"refused":true,"message":object_error}
 	# A validated exploration ritual finishes before its new effect begins.
 	if owned_host_valid and invocation_host.ritual_seconds > 0:
 		var party: Array = PartyManager.characters.values()

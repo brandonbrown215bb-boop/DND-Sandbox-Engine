@@ -28,6 +28,7 @@ Authored room objects (no `placed:` identity) and placed copies whose values dif
 ## Declared container capacity (Batch 078)
 Brandon (#41): "stop presenting the default 20 as a real container capacity. Use declared capacities, and keep any temporary technical limit separate and labeled."
 - A room container's `capacity` (item count) is a data fact. `RoomMeasurements.declared_capacity` returns it, or `null` when undeclared. The engine no longer substitutes 20.
+- A present capacity must be a finite whole non-negative number. Malformed capacities refuse Put rather than silently becoming undeclared; zero is a valid, full container. Save validation retains the same numeric rule.
 - `RoomMeasurements.put_error` (production caller: `LocalRoomRules.interact` `put`, the room **Put** button) refuses at the declared capacity: "The container is full (declared capacity N items)."
 - `RoomMeasurements.TECHNICAL_CONTENTS_LIMIT` (20) is a separate engine bound on stored records. It applies to every container, declared or not, and is always reported as "Engine technical limit reached (20 items; not a game rule)". It is never shown as a capacity.
 - **Inspect** on a container appends `capacity N items (declared)` or `capacity undeclared; engine technical limit 20 items (not a game rule)`.

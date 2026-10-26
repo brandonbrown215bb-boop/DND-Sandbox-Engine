@@ -36,12 +36,18 @@ Done-means: "Linked-item removal causes (S-162): give, stow, drop, sale, destruc
   - `ContainerRules.put`: stow
   - `ItemProjectionRules.project`: projection
   - `destroy_instance`: destruction
+  - consumables, fuel, components, resource payments: destruction (no dedicated `consume` cause yet; deferred until content needs it)
 
 ## PARTIAL
 - A bonded copy still cannot be stowed in a carried container (the 068 refusal
   is unchanged). Stow is proven through the room-container Put.
-- Attach, component consumption and fuel use remove copies with no cause. With
-  `loss_causes` authored, they never dispose mates. Legacy rules still dispose
+- Consumption (consumables, fuel, spell components and resource payments)
+  currently passes cause `destruction` (review commit eee958b). Brandon:
+  "treating consumption as destruction is fine for now; don't add a consume
+  cause until content needs it." A dedicated `consume` cause is deferred until
+  content needs it (Batch 083).
+- Attach still removes copies with no cause (bonded copies are refused). With
+  `loss_causes` authored, it never disposes mates. Legacy rules still dispose
   on any loss.
 - Give, Place and Sell have no confirm step. The only way to cancel is to
   dismiss the menu, and a stale choice is refused when it is pressed.

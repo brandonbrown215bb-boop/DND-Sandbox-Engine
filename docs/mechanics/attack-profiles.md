@@ -45,6 +45,9 @@ A weapon-scoped rule may offer types instead of fixing one:
   - Refusal is never silent: dismissing (or a stale answer to) a later swing's
     activation menu holds that swing, logs it, and leaves it available for the
     next click; a dismissed hit-window menu logs that the weapon's own type is used.
+  - After an activation menu yields, the host rechecks the attacking turn,
+    incapacitation, live target, range, sight and melee barrier before spending
+    the swing. A second-swing target moving out of reach leaves that swing held.
 - The chosen type applies to that attack only (unless carried as above). Nothing new is saved; the pending
   request lives in memory only, and class-owned rules are rebuilt on load.
 

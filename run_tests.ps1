@@ -244,7 +244,32 @@ if ($runIntegration) {
 	$scenarios += "item_lifecycle_controls_flow"
 	$scenarios += "wave_three_foundations_flow", "owned_creature_lifecycle_flow", "batch_024_recovery_flow", "batch_024_spell_result_flow",
     "find_familiar_exploration_flow", "party_recovery_flow", "downed_area_damage_flow", "created_undead_flow", "room_created_actor_flow"
+    # These reload probes consume the preceding flow's saved checkpoint. Keep
+    # one isolated profile per pair and launch the probe in a fresh process.
+    $scenarioReloads = [ordered]@{
+        batch_067_weapon_damage_choice_flow = "batch_067_weapon_damage_choice_reload"
+        batch_068_exact_contents_flow = "batch_068_exact_contents_reload"
+        batch_069_unknown_weight_flow = "batch_069_unknown_weight_reload"
+        batch_070_attack_ac_upgrades_flow = "batch_070_attack_ac_upgrades_reload"
+        batch_071_monster_max_hp_flow = "batch_071_monster_max_hp_reload"
+        batch_072_last_charge_flow = "batch_072_last_charge_reload"
+        batch_073_explicit_death_flow = "batch_073_explicit_death_reload"
+        batch_074_work_site_flow = "batch_074_work_site_reload"
+        batch_075_linked_removal_flow = "batch_075_linked_removal_reload"
+        batch_079_max_hp_stacking_flow = "batch_079_max_hp_stacking_reload"
+        batch_080_last_charge_text_flow = "batch_080_last_charge_text_reload"
+        batch_081_declared_fallback_flow = "batch_081_declared_fallback_reload"
+        batch_082_interruption_boundary_flow = "batch_082_interruption_boundary_reload"
+    }
+    $scenarios += @($scenarioReloads.Keys)
+    $scenarios += "batch_066_travel_placement_flow", "batch_076_footprint_terrain_flow", "batch_077_per_swing_choice_flow", "batch_078_declared_capacity_flow"
     if ($Scenario.Count -gt 0) {
+        # Selecting a reload explicitly still prepares its own checkpoint.
+        $Scenario = @($Scenario | ForEach-Object {
+            $selected = $_
+            $parent = @($scenarioReloads.Keys | Where-Object { $scenarioReloads[$_] -eq $selected })
+            if ($parent.Count -gt 0) { $parent[0] } else { $selected }
+        })
         foreach ($selectedScenario in $Scenario) {
             if ($scenarios -notcontains $selectedScenario) { Write-Error "Unknown integration scenario: $selectedScenario" }
         }
@@ -263,6 +288,10 @@ if ($runIntegration) {
             $marker = "SCENARIO PASSED: $scenario"
             if (-not (Invoke-GodotCase $scenario "res://scenes/viewport_harness.tscn" $marker $scenarioTimeout @("--scenario=$scenario"))) {
                 $failed = $true
+            } elseif ($scenarioReloads.Contains([string]$scenario)) {
+                $profile = Join-Path $logDirectory "$scenario.user-data"
+                $reload = $scenarioReloads[[string]$scenario]
+                if (-not (Invoke-GodotCase -Name $reload -Scene "res://scenes/viewport_harness.tscn" -Marker "SCENARIO PASSED: $reload" -TimeoutSeconds $scenarioTimeout -ExtraArguments @("--scenario=$reload") -UserDataDirectory $profile)) { $failed = $true }
             } elseif ($scenario -eq "conversion_batch_001_flow") {
                 $profile = Join-Path $logDirectory "$scenario.user-data"
                 $previousRecovery = $env:CONVERSION_BATCH_001_RECOVER

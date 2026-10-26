@@ -32,7 +32,56 @@ static func run(check: Callable) -> void:
 	_jump(check)
 	_interrupt(check)
 	_saves(check)
+	_review_incapacitation(check)
+	_review_return_boundary(check)
 	GameManager.active_dungeon_state = prior_dungeon
+
+static func _review_incapacitation(check: Callable) -> void:
+	var a := Batch046Checks.actor("review_work_lead")
+	var h := Batch046Checks.actor("review_work_helper")
+	Batch046Checks._party([a, h])
+	_room({a.character_id: [0, 0], h.character_id: [1, 0]})
+	var kiln := Batch046Checks.add(a, KILN)
+	var refused := 0
+	for condition in ["stunned", "paralyzed", "petrified", "unconscious"]:
+		a.add_condition(condition, -1)
+		if not WorkRules.start(a, kiln).success: refused += 1
+		a.remove_condition(condition)
+	check.call(refused == 4, "Review: implied Incapacitated refuses starting work, not only joining")
+	var loom := Batch046Checks.add(a, LOOM)
+	var interrupted := 0
+	for condition in ["stunned", "paralyzed", "petrified", "unconscious"]:
+		WorkRules.start(a, loom)
+		WorkRules.join(h, a, loom)
+		WorkRules.settle(a, 60, 60)
+		h.add_condition(condition, -1)
+		var receipts := WorkRules.settle(a, 60, 120)
+		if receipts.size() == 1 and receipts[0].get("interrupted", false) and WorkRules.progress(a.inventory.get_instance(loom)) == 0: interrupted += 1
+		h.remove_condition(condition)
+	check.call(interrupted == 4, "Review: a helper incapacitated after joining interrupts before more work accrues")
+	Batch046Checks._leave([a, h])
+
+static func _review_return_boundary(check: Callable) -> void:
+	var a := Batch046Checks.actor("review_work_return")
+	var h := Batch046Checks.actor("review_work_return_helper")
+	Batch046Checks._party([a, h])
+	for away_seconds in [3600, 3601]:
+		_room({a.character_id: [0, 0], h.character_id: [1, 0]})
+		var loom := Batch046Checks.add(a, LOOM)
+		WorkRules.start(a, loom)
+		WorkRules.join(h, a, loom)
+		WorkRules.settle(a, 60, 60)
+		_place(h.character_id, [6, 0])
+		WorkRules.settle(a, 60, 120)
+		_place(h.character_id, [1, 0])
+		var receipt := WorkRules.settle(a, 60, 120 + away_seconds)
+		var record := a.inventory.get_instance(loom)
+		if away_seconds == 3600:
+			check.call(receipt.size() == 1 and receipt[0].get("resumed", false) and WorkRules.progress(record) == 60, "Review: return exactly at the away limit keeps prior progress without crediting the return span")
+			WorkRules.stop(a, loom)
+		else:
+			check.call(receipt.size() == 1 and receipt[0].get("interrupted", false) and int(receipt[0].at) == 3661 and WorkRules.progress(record) == 0, "Review: returning after the limit cannot erase an overdue interruption")
+	Batch046Checks._leave([a, h])
 
 static func _validation(check: Callable) -> void:
 	var p: Dictionary = DataLoader.get_item(LOOM).work.duplicate(true)

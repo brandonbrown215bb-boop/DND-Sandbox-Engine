@@ -6,7 +6,7 @@ SRD 5.2.1 authority: Ring of Three Wishes (p.239, "becomes nonmagical when you u
 
 ## Data
 `last_charge_aftermath: {"outcome": "degrade", "keep_properties": [...]}` on an item with `maximum_charges`.
-- `keep_properties` names `MagicPropertyRules.PROPERTIES` entries (`source_benefits`, `spell_permissions`, `incoming_negation_rule`, `attachment_sets`, `item_effects`, `features`). The loader refuses any other name, a property the definition lacks, and `keep_properties` on a `destroy` outcome.
+- `keep_properties` names `MagicPropertyRules.PROPERTIES` entries (`source_benefits`, `spell_permissions`, `incoming_negation_rule`, `attachment_sets`, `item_effects`, `features`, `weapon_bonus`). The loader refuses any other name, a property the definition lacks, and `keep_properties` on a `destroy` outcome.
 - No engine default chooses what survives. Batch 080: `degrade` must state `keep_properties` (absent is refused at load).
 - Batch 080 outcomes: `destroy`, `degrade` (with `keep_properties`), `nonmagical` (every magical property ends and the copy is no longer magical; same copy, same mundane definition; `keep_properties` refused). Any other outcome, unknown keys, or a conversion key (`becomes`, `convert_to`, `becomes_item`, `transform`) is refused with a reason naming it.
 - Batch 080: `weapon_bonus: {"attack": N, "damage": N}` (0..3, magic weapons only) is a `MagicPropertyRules.PROPERTIES` entry read by `CombatAction.resolve_weapon_attack` from the exact equipped copy through `MagicPropertyRules.active` (last-charge loss, S-203 suppression/destruction) and attunement.
@@ -25,10 +25,11 @@ No new saved fields: loss is derived from `state.degraded` plus the definition. 
 ## Items (SRD 5.2.1 p.246)
 - Staff of Power: +2 weapon bonus, +2 AC (source_benefits), 20 charges; last charge d20 on 1 → `degrade` keeping `["weapon_bonus"]` ("retains its +2 bonus to attack rolls and damage rolls but loses all other properties").
 - Staff of Striking: +3 weapon bonus, 10 charges; last charge d20 on 1 → `nonmagical` ("becomes a nonmagical Quarterstaff").
-- Both declare `legacy_charge_state: "full"`: a copy saved before they had charges loads with full charges; items without the declaration still refuse a missing charge state.
+- Both declare `legacy_charge_state: "full"`: a copy saved before they had charges loads with full charges; items without the declaration still refuse a missing charge state. This initialization also reaches contained/attached copies and room pickups. Existing charge values, including zero, are never replaced.
 
 ## PARTIAL
 - Staff of Power's +2 to saving throws and spell attack rolls, its spells, Retributive Strike and the roll-on-20 regain are not modelled; Staff of Striking's per-hit charge spend (1d6 Force per charge) is not modelled, so in play their charges are spent only through the shared payment boundary.
+- Staff of Power's Sorcerer/Warlock/Wizard attunement restriction is not enforced; the current gate only requires attunement. These records remain partial item content, not complete source-backed conversions.
 - Dawn recovery is a uniform roll between the declared minimum and maximum (6–20, 5–10), not 2d8+4 / 1d6+4.
 - With two equipped copies of the same weapon definition, the attack reads the main-hand copy first.
 - An existing attunement on a copy that becomes nonmagical is not ended (new attunement is refused).

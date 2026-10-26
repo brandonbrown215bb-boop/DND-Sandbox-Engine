@@ -17,8 +17,8 @@ extends RefCounted
 ## on_interrupt only once the absence is PAST away_limit_seconds (strictly more
 ## than the limit; an absence of exactly the limit is allowed), even inside one
 ## long clock jump. The clock is whole seconds, so the lapse lands at
-## away_since + away_limit_seconds + 1. The span in which everyone returns is
-## still away time. Batch 082 (#46 ruling): this is the item's authored per-site
+## away_since + away_limit_seconds + 1. The return span is not credited as work;
+## the preceding absence ends at its start. Batch 082: this is the authored per-site
 ## interruption policy, not a universal crafting rule; work without a site has
 ## no away/reset rule at all.
 
@@ -116,7 +116,7 @@ static func eligibility_error(actor: Character, record: Dictionary) -> String:
 	if people.is_empty() or str(people[0]) != actor.character_id: return "Someone else started this work."
 	for id in people:
 		var c := _party_member(str(id))
-		if c == null or not c.is_alive or c.current_hp <= 0 or c.has_condition("incapacitated"): return "A participant has left the work."
+		if c == null or not c.is_alive or c.current_hp <= 0 or CombatAction.is_incapacitated(c): return "A participant has left the work."
 		if bool(p.get("concentration", false)) and not c.concentrating_on.is_empty(): return "The work needs full attention; concentration on a spell breaks it."
 	if people.size() < int(p.get("participants", 1)): return "This work needs %d participants." % int(p.get("participants", 1))
 	if bool(p.get("concentration", false)) and not actor.concentrating_on.is_empty(): return "The work needs full attention; concentration on a spell breaks it."
@@ -170,7 +170,7 @@ static func join_error(helper: Character, worker: Character, id: String) -> Stri
 	if helper.character_id in people: return "Already working on it."
 	if not busy_on(helper.character_id, [helper, worker] + PartyManager.characters.values()).is_empty(): return "You are already working on something else." # Review 046 R1.
 	if people.size() >= 6: return "No room for more participants."
-	if helper.current_hp <= 0 or ["incapacitated", "unconscious", "paralyzed", "petrified", "stunned"].any(func(c): return helper.has_condition(c)): return "An incapacitated character cannot work." # Review 074 R1: implied Incapacitated counts.
+	if helper.current_hp <= 0 or CombatAction.is_incapacitated(helper): return "An incapacitated character cannot work."
 	return site_error(record, helper.character_id) # Batch 074: checked at the join, before anything changes.
 
 static func join(helper: Character, worker: Character, id: String) -> Dictionary:
@@ -286,7 +286,15 @@ static func settle(actor: Character, elapsed: int, now: int) -> Array:
 				actor.inventory.update_instance(record)
 				continue
 			if state.has("work_away_since"):
-				# The span in which everyone came back is still away time.
+				# Present positions hold at this span's start. Check the preceding
+				# absence before clearing it; the return span is never credited.
+				var limit := int(state.work_away_since) + int(site.away_limit_seconds)
+				if t > limit:
+					var lapse := _interrupt(record, "away past %d seconds" % int(site.away_limit_seconds))
+					lapse["at"] = limit + 1
+					receipts.append(lapse)
+					actor.inventory.update_instance(record)
+					continue
 				state.erase("work_away_since")
 				record["state"] = state
 				actor.inventory.update_instance(record)

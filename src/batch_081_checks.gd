@@ -49,6 +49,7 @@ static func run(check: Callable) -> void:
 	_objects(check)
 	_saves(check)
 	_review(check)
+	_merge_regressions(check)
 
 static func _validation(check: Callable) -> void:
 	var good: Dictionary = DataLoader.get_spell(PWK).duplicate(true)
@@ -174,3 +175,48 @@ static func _review(check: Callable) -> void:
 	big["temp_hp"] = 200
 	r = cast(a, big, PWK)
 	check.call(int(big.current_hp) == 101 and int(big.temp_hp) == 200 - int(r.settle_death.rolled) and int(r.get("damage", 0)) == int(r.settle_death.damage) and bool(big.is_alive), "081 review: fallback damage hits temp HP first and is counted once")
+
+
+static func _merge_regressions(check: Callable) -> void:
+	var a := caster("b081_merge_owner")
+	var too_big := Batch071Checks.monster("b081_merge_ineligible", 1000)
+	var r := cast(a, too_big, Batch073Checks.ENDING)
+	check.call(not bool(r.get("success", true)) and int(a.spell_slots["1"]) == 4 and int(too_big.current_hp) == 1000, "081 merge: the shared resolver refuses an over-limit death target before paying, outside the combat UI")
+	var magical := loose_object("b081_merge_magic", 20, true)
+	r = cast(a, CombatObjectRules.make_resolution_target(magical), UNMAKE)
+	check.call(not bool(r.get("success", true)) and int(a.spell_slots["1"]) == 4 and int(magical.hp) == 20, "081 merge: the shared resolver refuses a magical destruction target before paying")
+	var dead := Batch071Checks.monster("b081_merge_dead", 0)
+	dead["is_alive"] = false
+	r = cast(a, dead, PWK)
+	check.call(not bool(r.get("success", true)) and int(a.spell_slots["9"]) == 4, "081 merge: a dead monster refuses Power Word Kill before the direct resolver pays a slot")
+	var living := Batch031Checks._character("b081_merge_living", 140)
+	living.temp_hp = 1000
+	var history := CombatActionHistory.new()
+	history.begin_turn(a, 1)
+	r = SpellResolver.resolve(a, living, DataLoader.get_spell(PWK), false, {"combat_history": history}, [], 9)
+	var first_source := str(living.recent_damage_history.back().get("source_instance_id", ""))
+	var first_roll := int(r.settle_death.rolled)
+	check.call(first_source.begins_with("spell:power_word_kill:") and int(history.damage_measure(living, a, first_source, "raw", "combat_turn").get("value", -1)) == first_roll and r.get("damage_components", []).size() == 1 and int(r.get("resolved", 0)) == first_roll, "081 merge: fallback damage retains its exact invocation, combat history and typed receipt, including temp-HP-only damage")
+	r = SpellResolver.resolve(a, living, DataLoader.get_spell(PWK), false, {"combat_history": history}, [], 9)
+	var second_source := str(living.recent_damage_history.back().get("source_instance_id", ""))
+	check.call(second_source != first_source and living.recent_damage_history.size() == 2, "081 merge: two instant fallback casts keep separate source identities")
+	var victim := Batch031Checks._character("b081_merge_victim", 80)
+	SpellResolver.resolve(a, victim, DataLoader.get_spell(PWK))
+	check.call(str(victim.corpse_state.get("cause_source", {}).get("source_instance_id", "")).begins_with("spell:power_word_kill:"), "081 merge: explicit death also records the exact instant-cast source")
+	# A lethal fallback must offer the existing owned zero-HP continuation.
+	if DataLoader.get_character_class("fixture:b033_class").is_empty(): Batch033Checks.load_fixtures()
+	var protected := Batch031Checks._character("b081_merge_protected", 10000)
+	Batch033Checks.setup(protected)
+	protected.current_hp = 101
+	var spell := DataLoader.get_spell(PWK).duplicate(true)
+	spell.effects[0].policy.fallback.damage = "99d4+999"
+	r = SpellResolver.resolve(a, protected, spell, true, {}, [], 9)
+	var rolled := int(r.get("settle_death", {}).get("rolled", 0))
+	check.call(r.has("damage_request") and bool(r.damage_request.get("zero_hp", false)) and protected.current_hp == 101 and int(a.spell_slots["9"]) == 3, "081 merge: fallback captures its damage and offers the recipient's optional zero-HP choice before HP changes")
+	if r.has("damage_request"):
+		var replay := r.duplicate(true)
+		var settled := CombatAction.finish_pending_spell_damage(a, protected, r, {"zero_hp_source": ""})
+		settled = SharedSpell.apply(a, protected, spell, settled)
+		check.call(protected.current_hp == 0 and not protected.is_dead() and not bool(settled.get("killed", true)) and int(settled.settle_death.rolled) == rolled and int(a.spell_slots["9"]) == 3, "081 merge: declining the fallback's zero-HP choice settles the captured roll once and reports a downed Character as alive")
+		var repeated := CombatAction.finish_pending_spell_damage(a, protected, replay, {"zero_hp_source": ""})
+		check.call(not bool(repeated.get("success", true)) and protected.death_save_failures == 0 and int(a.spell_slots["9"]) == 3, "081 merge: replaying a settled fallback continuation causes no second damage or payment")

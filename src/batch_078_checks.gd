@@ -31,6 +31,12 @@ static func run(check: Callable) -> void:
 	check.call(not limit.success and str(limit.message).contains("Engine technical limit") and str(limit.message).contains("not a game rule") and not c.inventory.get_instance(d2).is_empty(), "078 the technical limit refuses with its own label, not as container capacity")
 	var big := {"id": "b078_big", "kind": "container", "capacity": 40, "contents": undeclared.contents.duplicate()}
 	check.call(RoomMeasurements.put_error(big).contains("Engine technical limit"), "078 the technical limit stays separate from a larger declared capacity")
+	check.call(not RoomMeasurements.put_error(big).contains("capacity is undeclared"), "Review: reaching the technical limit does not mislabel a declared capacity")
+	var invalid_refused := 0
+	for invalid in ["1", -1, 1.5, NAN, INF]:
+		var malformed := {"capacity": invalid, "contents": []}
+		if not RoomMeasurements.put_error(malformed).is_empty(): invalid_refused += 1
+	check.call(invalid_refused == 5 and RoomMeasurements.put_error({"capacity": 0, "contents": []}).contains("full"), "Review: malformed capacities refuse instead of becoming undeclared; capacity zero stays full")
 	check.call(not DataLoader.get_item("bell").has("weight") and RoomMeasurements.describe_item("bell").contains("Weight: unknown"), "078 the Bell's SRD '—' weight stays unknown (p.95)")
 	check.call(float(DataLoader.get_item("dagger").get("weight", -1)) == 1.0 and RoomMeasurements.describe_item("dagger").contains("Weight: 1 lb"), "078 the filled SRD Dagger weight (1 lb, p.91) is used")
 	check.call(not DataLoader.get_item("sling").has("weight") and float(DataLoader.get_item("chain_mail").get("weight", -1)) == 55.0 and float(DataLoader.get_item("dart").get("weight", -1)) == 0.25, "078 Sling '—' stays unknown; Chain Mail 55 lb and Dart 1/4 lb come from the SRD")

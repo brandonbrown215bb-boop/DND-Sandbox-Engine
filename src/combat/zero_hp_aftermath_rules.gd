@@ -260,7 +260,7 @@ static func settle_explicit(target, policy: Dictionary, source_instance_id: Stri
 		var dmg_decisions := decisions.duplicate()
 		if not source_instance_id.is_empty(): dmg_decisions["damage_source_instance_id"] = source_instance_id
 		var dealt := CombatAction.resolve_damage(target, rolled, str(policy.fallback.damage_type), dmg_decisions, false, false, source_character)
-		return {"applied": false, "fallback": true, "damage": int(dealt.get("damage", 0)), "rolled": rolled, "damage_type": str(policy.fallback.damage_type), "policy_id": str(policy.id)}
+		return {"applied": false, "fallback": true, "damage": int(dealt.get("damage", 0)), "rolled": rolled, "damage_type": str(policy.fallback.damage_type), "policy_id": str(policy.id), "receipt": dealt}
 	var at_zero: bool = (target.current_hp if target is Character else int(target.get("current_hp", 0))) <= 0
 	var cause_source := {
 		"policy_id": str(policy.id), "outcome": str(policy.outcome),
