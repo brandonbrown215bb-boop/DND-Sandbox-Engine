@@ -1,6 +1,6 @@
 # Spell inventory and rules-vocabulary audit (Batch 088)
 
-**Status: PARTIAL AUDIT. Inventory is complete. Clause decomposition covers 285 of 362 unique loaded spell IDs (78.7%): 270 decomposed, 15 out-of-milestone IDs identified only. Families covered so far: direct_resolution (52), control (41), timed_effects (45), persistent_areas (45), movement_travel (31), visibility (27), objects (26) and social_illusions (18). The other 77 are UNREVIEWED.** This is not a complete audit. Nothing here enables, converts or certifies a spell. Accepted slice counts and checkpoint acceptance are unchanged.
+**Status: INVENTORY AND CLAUSE DECOMPOSITION COMPLETE (362 of 362 unique loaded spell IDs, 100%): 339 decomposed against SRD 5.2.1, 23 out-of-milestone IDs identified only, 0 unreviewed. This is an audit, not certification: no spell is certified, no data was corrected, and spell_status.json was not regenerated. See Final reconciliation.**
 
 ## Evidence boundary
 
@@ -412,6 +412,22 @@ The SRD can't settle these. Each is parked for an ADR-0023 decision; no slice or
 | J-25 | 088-7 | Modify Memory | "change its memory of the event’s details, or create a memory of some other event." | 150 | How a free-form memory edit changes authored knowledge and attitude. |
 | J-26 | 088-7 | Speak with Dead | "Answers are usually brief, cryptic, or repetitive," | 164 | Who authors the corpse's answers, and whether antagonism is decided by attitude. |
 | J-27 | 088-7 | Hallucinatory Terrain | "The tactile characteristics of the terrain are unchanged, so creatures entering the area are likely to notice the illusion." | 139 | When entering creatures notice without a Study check. |
+| J-28 | 088-8 | Augury | "The GM chooses the omen from the Omens table." | 111 | Who picks Weal or Woe without a GM. |
+| J-29 | 088-8 | Commune | "the GM might offer a short phrase as an answer instead." | 116 | Source of deity answers and the 'unclear' boundary. |
+| J-30 | 088-8 | Contact Other Plane | "The GM answers each question with one word," | 119 | Source of answers. |
+| J-31 | 088-8 | Divination | "The GM offers a truthful reply, which might be a short phrase or cryptic rhyme." | 125 | Source of the reply. |
+| J-32 | 088-8 | Legend Lore | "brief summary of the significant lore about that famous thing, as described by the GM." | 144 | Who authors lore and decides what is 'famous'. |
+| J-33 | 088-8 | Commune with Nature | "Location of one Challenge Rating 10+ creature (GM’s choice)" | 117 | Which creature is disclosed. |
+| J-34 | 088-8 | Reincarnate | "or the GM chooses another playable species." | 158 | Whether the d10 table is always used. |
+| J-35 | 088-8 | Awaken | "The GM chooses statistics appropriate for the awakened Plant," | 112 | Which stat block an awakened plant uses. |
+| J-36 | 088-8 | Planar Ally | "though you might get a different creature anyway (GM’s choice)." | 152 | Which creature arrives, and its price and behavior. |
+| J-37 | 088-8 | Planar Binding | "If the creature is Hostile, it strives to twist your commands to achieve its own objectives." | 153 | How a bound Hostile creature twists commands. |
+| J-38 | 088-8 | Control Weather | "you change the current weather conditions, which are determined by the GM." | 120 | Starting weather stage (also J-05). |
+| J-39 | 088-8 | Contingency | "You describe that trigger when you cast the two spells." | 119 | Free-form trigger scope (also J-04/J-21). |
+| J-40 | 088-8 | Sequester | "The condition can be anything you choose, but it must occur or be visible within 1 mile of the target." | 161 | Free-form end condition. |
+| J-41 | 088-8 | Animate Dead (Create Undead analogous, p.121) | "or you can issue a general command, such as to guard a chamber or corridor." | 108 | How a general standing command resolves each turn. |
+| J-42 | 088-8 | Wish (Reshape Reality) | "The GM has great latitude in ruling what occurs in such an instance;" | 175 | Reshape Reality outcomes; only listed effects are mechanical (S-221). |
+| J-43 | 088-8 | Imprisonment | "The trigger can be as simple or as elaborate as you choose, but the GM must agree that it has a high likelihood of happening within the next decade." | 142 | How does a runtime check that an authored end trigger is likely within a decade, and which observable events can the trigger use? |
 
 ## Batch 088-5: persistent areas (45 spells reviewed)
 
@@ -664,6 +680,135 @@ Scope: every ID with `primary_behavior` of objects (26) or social_illusions (18)
 - **Spells:** Control Weather (change one stage per change, 1d4 × 10 min delay, gradual return), Druidcraft Weather Sensor (24-hour forecast display), Call Lightning (storm present, J-05).
 - **Finish line:** each outdoor region carries current and forecast stages from the three SRD tables (p.120); a source can request a one-stage change that applies after its rolled delay and is refused indoors; ending the source returns stages gradually; readers get the current stage and a 24-hour forecast; tests cover each table edge (no stage beyond 1 or 5), indoor refusal, delay timing and source end. The starting stage for authored regions is J-38. Owner: new slice; no existing slice covers weather.
 
+## Batch 088-8: summons and all remaining families (77 spells reviewed)
+
+Scope: summons (17), body_death (16), campaign_information (14), weapon_riders (15), wards_removal (9) and exceptional (6). 69 are decomposed. 8 are not in SRD 5.2.1 (milestone `out_of_milestone_non_srd521`, cast_available False) and are identified only: feign_death, blinding_smite, branding_smite, hail_of_thorns, lightning_arrow, thunderous_smite, witch_bolt, wrathful_smite. New judgment items are parked as J-28 to J-43.
+
+| ID | Avail | Clauses → classification (owner) |
+|---|---|---|
+| animate_dead | yes | Bones/corpse → Skeleton/Zombie: E (S-154). Bonus Action command within 60 ft, same command to all, Dodge default: E (S-156/S-158) + J-41. 24-h control, recast reasserts up to four: H (S-070 + reassert target). Upcast +2 creatures: E (S-155). |
+| animate_objects | yes | Objects up to ability modifier (size-weighted) → Animated Object stat block: E (S-154/S-155/S-165). Shares Initiative after yours; Bonus Action command within 500 ft: E (S-156/S-157). 0 HP reverts with carry-over: E (S-166). Upcast Slam: E. |
+| arcane_hand | no | Large hand object AC 20, HP = your max, doesn't occupy: P (S-187) + E. Bonus Action move 60 then Clenched Fist 5d8 / Forceful push / Grasping grapple + 4d6 crush / Interposing Half Cover + Difficult Terrain: E (S-168) + P (S-160) + H (cover degree, PROPOSED-spells-1). Upcast: E. |
+| arcane_sword | no | Sword; melee spell attack 4d12 + mod; Bonus Action move 30 and repeat: E (S-148). |
+| awaken | no | 8-h cast; Beast/Plant Int ≤3 or plant → Int 10 + language: P (S-154) + J-35. Charmed 30 days or until damaged, then chooses attitude: P (S-219) + H (S-070). |
+| create_undead | no | Night only: H (time-of-day fact). Up to three Ghouls: E (S-154). Bonus Action command within 120 ft: E (S-156) + J-41 analogue. 24-h reassert; upcast Ghasts/Wights/Mummies: H (S-070) + E (S-155). |
+| faithful_hound | no | Invisible-to-others intangible hound; Truesight 30: P (S-187/S-191). Barks at unpassworded Small+ within 30 ft: P (S-184 + S-218). Start-of-turn bite Dex save 4d8 Force: E. Magic action move 30; ends beyond 300 ft: E. |
+| find_familiar | yes | Familiar CR 0 Beast form as Celestial/Fey/Fiend: E (S-154). Telepathy 100 ft; Bonus Action borrow senses: P (S-193). Touch-spell delivery by Reaction: P (S-192 + S-160). Own Initiative, can't attack: E (S-157). Dismiss to pocket dimension and recall: P (S-178). One familiar only, recast changes form: E (S-162). |
+| find_steed | yes | Otherworldly Steed stat block by spell level and type: E (S-154). Controlled mount sharing Initiative; independent when you're Incapacitated: E (S-157/S-158) + H (mounted combat). Disappears at 0 HP or your death; resummon choice: E (S-162). Life Bond healing: H. |
+| giant_insect | no | Centipede/Spider/Wasp stat block by level: E (S-154). After-your-turn, verbal commands, Dodge default: E (S-156/S-157). |
+| phantom_steed | no | Riding Horse with Speed 100, 13 miles/hour; equipment vanishes 10 ft away: E (S-154) + H (overland travel pace). Ends on damage; 1-minute fade: E + P (S-086). |
+| planar_ally | no | Known entity sends Celestial/Elemental/Fiend: P (S-154) + J-36. Service bargained for payment by duration tiers: P (S-219) + H (payment negotiation host). Returns on completion or no agreement: P (S-178). |
+| planar_binding | no | Creature in range for 1-hour cast; Cha save or bound 24 h; summoning spell extended: E + P (S-141). Follows commands; Hostile twists them: J-37. Report back on completion: H. Upcast 10/30/180/366 days: H (S-070). |
+| simulacrum | no | 12-h cast; copy of Beast/Humanoid as Construct at half HP max; can't cast Simulacrum: E (S-154/S-161). Obeys, acts on your turn: E (S-157). No levels/rests; HP only by Long Rest repair at 100 GP/HP: H (paid repair). 0 HP melts; recast destroys previous: E (S-162). |
+| spiritual_weapon | no | Bonus Action; melee spell attack 1d8 + mod; Bonus Action move 20 and repeat: E (S-148). Upcast: E. |
+| summon_dragon | no | Draconic Spirit stat block by level; after-your-turn; verbal commands, Dodge default: E (S-154/S-156/S-157). |
+| unseen_servant | no | Invisible Medium force AC 10, 1 HP, Str 2, can't attack: E (S-154). Bonus Action command move 15 + interact; simple tasks; ends beyond 60 ft: E (S-156) + H (object interaction host, as Mage Hand). |
+| alter_self | yes | Aquatic Adaptation: Swim Speed + water breathing: E (S-179) + P (S-205). Change Appearance: P (S-187/S-188). Natural Weapons 1d6 Unarmed Strike with spell mod: E (S-126). Magic action swap option: E. |
+| animal_shapes | no | Any number of willing creatures → Large-or-smaller Beast CR ≤4, retaining type/HP/mental scores; Temp HP = first form's HP: E (S-163/S-164). Magic action re-form; Bonus Action end; 24 h: E + H (S-070). |
+| clone | no | 1-h cast; inert clone grows 120 days, chosen age: P (S-208) + H (S-070). Soul transfers on death if free and willing: P (S-175). Original remains can't be revived: P (S-175). |
+| feign_death | no | Not in SRD 5.2.1: out of milestone, not decomposed. |
+| gentle_repose | yes | Corpse protected from decay and Undead; days don't count toward revival limits: P (S-175 + S-064 paused time). 10 days, ritual: H (S-070) + E. |
+| imprisonment | no | Wis save, 24-h immunity on success: E (S-014). Imprisoned needs no air/food, untargetable by Divination, no teleport: P (S-195) + E. Burial / Chaining / Hedged Prison / Minimus Containment / Slumber options: P (S-170/S-178/S-185) + E. Authored end trigger: J-43. Dispel only at level 9 on prison or component: G (PROPOSED-spells-11 threshold). |
+| magic_jar | no | Soul in container; project 100 ft to return or possess Humanoid (Cha save, 24-h lockout; warded creatures immune): P (S-173/S-174) + E (S-014). Host stats swap (HP, physical scores, Speed, senses): P (S-173). Host death Cha save to return or die; container destroyed: P (S-174 + S-086). |
+| polymorph | no | Wis save; Beast CR ≤ target's CR or level; retain alignment/personality/type/HP: E (S-163). Temp HP = form HP; ends when Temp HP gone: E (S-163). Gear melds: E (S-164). |
+| raise_dead | no | 1-h cast; dead ≤10 days, not Undead: P (S-175). 1 HP, neutralize poisons, close wounds, no missing parts: P (S-176 + S-206). −4 D20 Tests, −1 per Long Rest: P (S-176). |
+| reincarnate | no | Dead Humanoid ≤10 days; new body, d10 species table: P (S-175 + S-214) + J-34. Species traits swapped, capabilities kept: H (species swap on a Character). |
+| resurrection | no | Dead ≤ a century, not old age, not Undead; full HP; restore parts: P (S-175/S-176 + S-206/S-207). −4 penalty: P (S-176). ≥365 days dead: caster can't cast and Disadv on D20 Tests until Long Rest: H (caster aftermath). |
+| revivify | yes | Died within last minute; 1 HP; not old age or missing parts: P (S-175/S-176). |
+| sequester | no | Object or willing creature Invisible, unaffected by Divination and remote viewing: P (S-191/S-195). Creature suspended (Unconscious, no aging/food/air): E + P (S-208). Authored end condition within 1 mile: J-40. Ends on damage: E. |
+| shapechange | no | Form CR ≤ your level, seen before, not Construct/Undead; retain mental scores, HP, proficiencies, Spellcasting: E (S-163). Temp HP of first form; Magic action re-form: E. Equipment drops or resizes: E (S-164). |
+| true_polymorph | no | Creature→creature, creature→object, object→creature (CR ≤9, Friendly, after your turn): E (S-163/S-165/S-154). Full-duration Concentration → until dispelled: H (concentration-completion permanence). Over an hour, object-creature control lapses: P (S-158). Wis save unwilling: E. |
+| true_resurrection | no | Dead ≤200 years, not old age; full HP; cure contagions, curses, restore parts, un-Undead: P (S-175/S-176 + S-202 + S-206/S-207). New body by name, appears within 10 ft: P (S-175) + H. |
+| animal_messenger | yes | Tiny Beast Cha save (auto-succeed if CR >0, as written): E. Travel to visited location, 25 or 50 miles/day, describe recipient, 25-word message: P (S-177 + S-218) + H (overland travel). Upcast +48 h: E (S-141). |
+| augury | no | Omen for course within 30 min from Omens table: P (S-214/S-219) + J-28. Cumulative 25% no answer after first cast per Long Rest: P (S-209). |
+| commune | no | Three yes/no questions answered correctly: P (S-219) + J-29. Cumulative 25%: P (S-209). |
+| commune_with_nature | no | 3 miles outdoors, 300 ft underground, fails in construction: H (map setting fact). Choose three facts (settlements, portals, CR 10+ creature, prevalent kind, water): P (S-194/S-219) + J-33. |
+| comprehend_languages | no | Understand heard/signed/touched written language; 1 min per page; no codes: P (S-218). |
+| contact_other_plane | no | DC 15 Int save; success: five one-word answers: P (S-219) + J-30. Failure: 6d6 Psychic and Incapacitated until Long Rest; Greater Restoration ends: E + H (until-rest condition). |
+| detect_thoughts | no | Sense Thoughts within 30 ft, blocked by stone/metal/lead: P (S-195) + H (material blocking). Read surface thought: P (S-219). Probe: Wis save; target's Arcana check action to end: E. |
+| divination | no | One question about the next 7 days; truthful reply: P (S-219) + J-31. Cumulative 25%: P (S-209). 25 GP consumed: E. |
+| find_the_path | no | Familiar location on same plane; direction, distance, and most direct path at choices: P (S-177 + S-194) + H (route graph). Fails for other plane, moving or unspecific destinations: P (S-177). |
+| legend_lore | no | Famous person/place/object → lore summary; precision by prior knowledge; not famous → fails: P (S-219) + J-32. |
+| message | yes | Whisper to creature within 120 ft and whispered reply: P (S-218). Through barriers if familiar; blocked by magical silence, 1 ft stone/metal/wood, lead: P (S-218) + H (material blocking). |
+| sending | no | 25 words to a met or described creature, any distance and plane, 5% cross-plane failure, block for 8 h: P (S-218) + E. |
+| telepathic_bond | no | Up to eight willing creatures with a language; telepathy at any distance, same plane: P (S-218). |
+| tongues | no | Understand any language; be understood by any language-user: P (S-218). |
+| befuddlement | no | Int save; 10d12 Psychic, can't cast or take Magic action; half on success: E. Repeat save every 30 days: P (S-068) + H (S-070). Ended by Greater Restoration, Heal, Wish: P (S-202-like removal list). |
+| contingency | no | Store a level ≤5 action-cast self-targeting spell with both slots spent: P (S-150/S-151). Authored trigger fires once, self only: P (S-184) + J-39. One at a time; ends if statuette not on person: E (S-162) + H (carried-component check). |
+| control_weather | no | Outdoors only, 5 miles; stage changes after 1d4 × 10 min; gradual return: G (PROPOSED-spells-10) + J-38. |
+| forcecage | no | Invisible cage (20 ft bars) or box (10 ft solid, blocks spells): P (S-185/S-186). Partial occupants pushed out: P (S-186). Teleport/planar exit needs Cha save, wastes on failure: P (S-185). Extends to Ethereal; can't be dispelled by Dispel Magic: P (S-185) + G (PROPOSED-spells-11 exemption). |
+| time_stop | no | 1d4 + 1 consecutive turns: P (S-159). Ends if you affect another creature or their gear, or move >1,000 ft: H (affect-other detection). |
+| wish | no | Duplicate any level ≤8 spell without requirements: P (S-221 + S-222). Listed effects (Object Creation, Instant Health, Resistance, Spell Immunity, Sudden Learning, Roll Redo): P (S-221) + P (S-215 Roll Redo). Reshape Reality: J-42. Stress: 1d10 Necrotic per spell level until Long Rest, Str 3 for 2d4 days, 33% lose Wish: P (S-221). |
+| blinding_smite | no | Not in SRD 5.2.1: out of milestone, not decomposed. |
+| branding_smite | no | Not in SRD 5.2.1: out of milestone, not decomposed. |
+| divine_smite | yes | Bonus Action after melee or Unarmed hit: P (S-160 + S-021). +2d8 Radiant, +1d8 vs Fiend/Undead: E (S-003). Upcast: E. |
+| dragons_breath | no | Touch willing creature; chosen damage type; Magic action 15-ft Cone Dex save 3d6: E (S-012). Upcast: E. |
+| ensnaring_strike | no | Bonus Action after weapon hit: P (S-160). Str save (Large+ Advantage) or Restrained; 1d6 Piercing each turn start; Athletics check action ends: E (S-068 + S-169). Upcast: E. |
+| flame_blade | no | Blade in free hand; Bonus Action re-evoke; Magic action melee spell attack 3d6 + mod: E. Light 10/10: P (S-190). Upcast: E. |
+| hail_of_thorns | no | Not in SRD 5.2.1: out of milestone, not decomposed. |
+| lightning_arrow | no | Not in SRD 5.2.1: out of milestone, not decomposed. |
+| searing_smite | no | Bonus Action after hit: P (S-160). +1d6 Fire; start-of-turn 1d6 then Con save to end: E (S-068). Upcast all damage: E. |
+| shining_smite | no | Bonus Action after hit: P (S-160). +2d6 Radiant; target sheds light 5 ft, attacks have Advantage, no Invisible benefit: E + P (S-190/S-191). Upcast: E. |
+| thunderous_smite | no | Not in SRD 5.2.1: out of milestone, not decomposed. |
+| true_strike | yes | One attack with the component weapon using spellcasting ability; Radiant or normal type: E (S-126). Cantrip upgrade extra Radiant: E. |
+| vampiric_touch | no | Melee spell attack 3d6 Necrotic; heal half dealt: E (S-017). Magic action repeat: E. Upcast: E. |
+| witch_bolt | no | Not in SRD 5.2.1: out of milestone, not decomposed. |
+| wrathful_smite | no | Not in SRD 5.2.1: out of milestone, not decomposed. |
+| counterspell | yes | Reaction on seeing V/S/M casting within 60 ft: P (S-160). Con save or spell dissipates; action wasted; slot not expended: E (S-142). |
+| dispel_evil_and_good | no | Disadv on attacks from five creature types: E. Break Enchantment (possession, Charmed, Frightened from those types): P (S-174) + E. Dismissal Cha save → home plane, Shadowfell or Feywild: P (S-177/S-178). |
+| dispel_magic | no | End ongoing spells of level ≤3 on a creature, object or effect; check DC 10 + level for higher; upcast raises auto threshold: G (PROPOSED-spells-11). |
+| globe_of_invulnerability | no | 10-ft immobile Emanation; spells of level ≤5 from outside have no effect inside and areas exclude it: P (S-185) + G (PROPOSED-spells-11 level threshold). Upcast threshold: E. |
+| greater_restoration | no | Remove one: 1 Exhaustion level, Charmed or Petrified, a curse including attunement, ability score reduction, HP maximum reduction: P (S-202) + E (S-129-like reduction removal). 100 GP consumed: E. |
+| lesser_restoration | no | Bonus Action touch: end Blinded, Deafened, Paralyzed or Poisoned: E. |
+| remove_curse | yes | End all curses on a creature or object; cursed item keeps curse but attunement breaks: P (S-202). |
+| resilient_sphere | yes | Large-or-smaller creature/object; Dex save if unwilling; nothing passes, immune to damage, breathable: P (S-170/S-185). Push to roll at half Speed; carried by others: P (S-172). Disintegrate destroys it: H (named-spell interaction). |
+| silence | no | 20-ft Sphere: no sound, Thunder Immunity, Deafened, no Verbal components: P (S-190 + S-218) + E. Ritual: E. |
+
+### 088-8 classification summary
+
+- **E:** created actors, commands and Dodge defaults (S-154–S-158); forms (S-163–S-166); interruption with slot refund (S-142, Counterspell); repeat saves (S-068); condition removal (Lesser and Greater Restoration).
+- **P:** revival (S-175/S-176) and age (S-208, Clone); possession (S-173/S-174, Magic Jar); copies (S-161, Simulacrum); inserted turns (S-159, Time Stop); stored spells (S-150/S-151, Contingency); Reaction budget (S-160) for smites and Counterspell; weapon post-roll riders (S-021); barriers (S-185/S-186, Forcecage, Globe, Resilient Sphere); communication and knowledge (S-218/S-219/S-220); curses (S-202); Wish (S-221).
+- **H:** time-of-day facts (Create Undead); overland travel pace (Animal Messenger, Phantom Steed); mounted combat (Find Steed); material blocking for thought and message (Detect Thoughts, Message); species swap (Reincarnate); until-rest conditions (Contact Other Plane); paid repair (Simulacrum); payment negotiation (Planar Ally); affect-other detection (Time Stop).
+- **G:** PROPOSED-spells-11 below. Control Weather uses PROPOSED-spells-10 from 088-7.
+- **J:** parked as J-28 to J-43.
+
+### PROPOSED-spells-11: Level-gated spell ending and spell-level thresholds
+
+- **Need:** a shared rule that reads the level of an ongoing spell effect and either ends it automatically (at or below a threshold) or asks for an ability check against DC 10 + that level; the same level reading also powers exemptions and thresholds.
+- **Spells:** Dispel Magic (level ≤3 auto, check above, upcast raises threshold), Globe of Invulnerability (level ≤5 from outside has no effect, upcast), Imprisonment (only a level 9 Dispel Magic on prison or component), Forcecage (can't be dispelled by Dispel Magic), and the level-limited light/Darkness overlap of PROPOSED-spells-9.
+- **Finish line:** every ongoing spell effect records its cast level; a dispel request on a creature, object or magical effect lists its effects, ends each at or below the slot-scaled threshold, and rolls the caster's spellcasting-ability check vs DC 10 + level for each one above it; effects can declare "not dispellable" or "dispellable only at level N and on target X"; Globe filters incoming spells by level and source position; tests cover threshold edges (3/4, upcast 5), each declared exemption, partial success across several effects, and the PROPOSED-spells-9 overlap. Owner: new slice; S-203 covers suppression only.
+
+## Final reconciliation (Batch 088)
+
+**Totals by batch**
+
+| Batch | Families | Reviewed | Decomposed | Out of milestone |
+|---|---|---|---|---|
+| 088-1 to 088-6 | direct_resolution, control, timed_effects, visibility and the other families named in those sections | 241 | 226 | 15 |
+| 088-7 | objects, social_illusions | 44 | 44 | 0 |
+| 088-8 | summons, body_death, campaign_information, weapon_riders, wards_removal, exceptional | 77 | 69 | 8 |
+| **Total** | | **362** | **339** | **23** |
+
+**Coverage:** 362 of 362 unique loaded IDs (100%) inventoried and decomposed or marked out of milestone. No spell is certified by this audit.
+
+**New gaps vs planned slices**
+
+- Planned slices cover most clauses: S-142, S-154–S-166 and S-202 are already verified; S-021, S-150/S-151, S-159–S-162, S-173–S-176, S-185–S-190, S-197–S-200, S-208, S-212, S-218–S-221 are planned owners.
+- 11 new gaps, none owned by a planned slice: PROPOSED-spells-1 to PROPOSED-spells-11. In 088-7 and 088-8: PROPOSED-spells-10 (staged weather state) and PROPOSED-spells-11 (level-gated spell ending and thresholds, which also absorbs the dispel side of PROPOSED-spells-9).
+- Host facts still missing (H) and repeated across batches: door/lock states, sleep and rest-blocking, long durations (S-070), map material and elevation, overland travel, mounted combat, species swap.
+
+**Defects recorded:** D-01 to D-80 (data vs SRD; recorded, not corrected). Most common in 088-8: long casting times stored as `action` (D-67 to D-73).
+
+**Parked ADR-0023 judgment items:** J-01 to J-43, each with verbatim SRD 5.2.1 clause and page.
+
+**Recommended next queue**
+
+1. Data-correction job for D-01 to D-80 (separate owner and review; then regenerate spell_status.json through its normal path).
+2. ADR-0023 decision pass on J-01 to J-43, grouping by theme: GM-authored triggers (J-21, J-22, J-39, J-40, J-43), divination answers (J-28 to J-33), summoned-creature attitude and bargaining (J-35 to J-37, J-41), illusion and terrain judgment.
+3. Import Gate integration of PROPOSED-spells-1 to PROPOSED-spells-11 into the vocabulary slice plan (by the plan's owner; this audit did not edit shared files).
+4. Host-fact slices for door/lock, sleep/rest and long durations (S-070), which unblock the most H clauses.
+5. Re-audit affected spells as each planned slice lands, starting with S-187–S-189 and S-218/S-219.
+
 ## Duplicate-definition accuracy: imported_spells.json vs srd_additional_spells.json
 
 31 IDs are defined in both files. imported_spells.json wins 30 of them; mass_healing_word is won by conversion_batch_001.json, so it falls outside the 30. I compared each against the SRD 5.2.1 header and text (casting time, range in 5-ft hexes, target/area, save, damage type, Concentration, upcast and effects). A **DEFECT** is a winner that is less accurate than the loser. Many of these spells are available through native per-ID code, which may override the record; that override is unverified, so the records are still listed.
@@ -775,10 +920,24 @@ Cumulative across batches. Batch tag = where the defect was recorded. For the 08
 | D-64 | 088-7 | mirage_arcane | range | 20 (100 ft) | Sight |
 | D-65 | 088-7 | phantasmal_force | duration / concentration / damage | missing / missing / 1d6 | Concentration, up to 1 minute / true / 2d8 Psychic |
 | D-66 | 088-7 | speak_with_plants | range | 6 (30 ft) | Self (30-foot Emanation) |
+| D-67 | 088-8 | clone | casting time | action | 1 hour |
+| D-68 | 088-8 | raise_dead | casting time | action | 1 hour |
+| D-69 | 088-8 | resurrection | casting time | action | 1 hour |
+| D-70 | 088-8 | true_resurrection | casting time | action | 1 hour |
+| D-71 | 088-8 | awaken | casting time | action | 8 hours |
+| D-72 | 088-8 | planar_binding | casting time | action | 1 hour |
+| D-73 | 088-8 | simulacrum | casting time | action | 12 hours |
+| D-74 | 088-8 | lesser_restoration | casting time | action | Bonus Action |
+| D-75 | 088-8 | animal_shapes | target | single | Any number of willing creatures |
+| D-76 | 088-8 | telepathic_bond | target | single | Up to eight willing creatures |
+| D-77 | 088-8 | sending | range | 1 | Unlimited |
+| D-78 | 088-8 | dragons_breath | target | area | One willing creature touched |
+| D-79 | 088-8 | find_steed | duration | missing | Instantaneous |
+| D-80 | 088-8 | divine_smite | duration | missing | Instantaneous |
 
 ## Known limits of this pass
 
-- 77 of 362 IDs are unreviewed for clauses. Families in spell-status.md remain the planning grouping.
+- 0 of 362 IDs are unreviewed. Decomposition is per clause, not a playtest; classifications are owner mappings, not verified behavior.
 - All 339 headers parsed from column-split text (088-2). Prismatic Spray row 8 and the Divine Word table were re-read on rendered pages in 088-3; both are complete. The Telekinesis tail was re-read on rendered p.168 in 088-4: the SRD sentence itself stops at "simple tool," (source truncation, D-24).
 - `get_registry_hash()` isn't a hash. I recorded a SHA-256 of it. Changing it is runtime work and out of scope.
 - No Windows supported-runner export was possible from the box.
@@ -786,6 +945,6 @@ Cumulative across batches. Batch tag = where the defect was recorded. For the 08
 ## Recommended next queue
 
 1. Windows export: optional confirmation (not blocking these batches).
-2. Data-correction job (content lane) for the running defect table D-01 to D-66, field by field toward the SRD text.
-3. 088-8: summons (17) plus the remaining families (body_death 16, weapon_riders 15, campaign_information 14, wards_removal 9, exceptional 6) = 77.
+2. Data-correction job (content lane) for the running defect table D-01 to D-80, field by field toward the SRD text.
+3. Batch 088 is done; see Final reconciliation for the next queue.
 4. Later: movement, visibility, objects, summons and utility families, where real gaps (`PROPOSED-spells-N`) are likeliest.
