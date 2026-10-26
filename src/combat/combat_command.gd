@@ -40,7 +40,7 @@ static func from_hud_for_character(kind: String, data: Dictionary, character: Ch
 				return null
 			command.payload["instance_id"] = instance_id
 			command.payload["charges"] = charges
-			var wand_spell := DataLoader.get_spell("magic_missile")
+			var wand_spell := DataLoader.get_spell("magic_missile").duplicate(true)
 			if wand_spell.is_empty():
 				return null
 			wand_spell["_magic_item_activation"] = true

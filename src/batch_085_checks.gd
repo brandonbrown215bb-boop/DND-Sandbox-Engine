@@ -24,6 +24,7 @@ static func invocation(id: String, source_id: String = "wizard") -> Dictionary:
 
 static func run(check: Callable) -> void:
 	load_fixtures()
+	check.call(not DataLoader.get_spell("magic_missile").has("_magic_item_activation"), "085 a wand activation earlier in the run left the catalog Magic Missile record unmarked (copy, not catalog)")
 	check.call(features().size() == 5, "085 S-140 the loader keeps all five authored cast-transform profiles (got %d)" % features().size())
 	var c := Batch031Checks._character("b085_caster", 30)
 	grant(c)
