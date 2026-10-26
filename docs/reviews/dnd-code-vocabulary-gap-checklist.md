@@ -475,3 +475,25 @@ beyond its cited VS boundary.
 
 Consolidated from [authoring contracts](../mechanics/README.md), [architecture map](../architecture/README.md), [roadmap](../../roadmap.md), [ADR-0018](../decisions/0018-shared-data-driven-rules-runtime.md), [ADR-0019](../decisions/0019-shared-ordered-execution-and-zero-hp-replacement.md), [data-to-runtime review](https://github.com/brandonbrown215bb-boop/DND-Sandbox-Engine/blob/d823423d979f7c566d7511801bd560f5dafb95ee/docs/reviews/dnd-data-runtime-gap-review.md), and [runtime wiring map](https://github.com/brandonbrown215bb-boop/DND-Sandbox-Engine/blob/d823423d979f7c566d7511801bd560f5dafb95ee/docs/reviews/dnd-runtime-wiring-map.md), then extended through the separate source reads listed above. Source references in the earlier reviews identify existing hooks; static partial/uncertain labels are not new behavior proof. No Godot launch, tests, probes or definition mutation occurred.
 
+
+## Progression/Acquisition audit findings (2026-10-26)
+
+Source: [Progression/Acquisition audit](progression-acquisition-audit.md). The
+audit covered 35 acquisition and advancement behaviors:
+- 15 Covered by Verified slices
+- 6 Covered-cap (the capability is Verified but production data doesn't use it)
+- 11 New, under Planned S-231–S-234
+- 4 owner judgment
+
+No V-row changes status.
+
+- **V-025** gains planned children S-231, S-232, S-233 and S-234: backgrounds, species/language choices, feat prerequisite kinds and repeats, and multiclass prerequisites.
+- **V-026 / V-027** gain S-231 for background grants and S-232 for species choice grants. Multiclass proficiency subsets stay with S-047. That slice is Verified, but production class data has no `permanent_progression`.
+- Content defects that need no new vocabulary:
+  - wizard and rogue skill lists
+  - rogue weapon restriction
+  - druid, rogue and monk tools
+  - cleric `shield` token
+  - `subclass_level` missing on barbarian, bard and cleric
+  - legacy species set and species `ability_bonuses`
+  - 0 production feats and backgrounds

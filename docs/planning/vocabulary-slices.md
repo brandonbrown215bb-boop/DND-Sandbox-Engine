@@ -2810,3 +2810,19 @@ formulas now fail safely without a cast context. [Focused spells: 932/0 and
 schema inventory](../../.artifacts/tests/49f742187a0f49f78de80e7212a91d3c).
 The schema check covers syntax and targeted fragments/fixtures; a full JSON
 Schema validator is unavailable. Production behavior is proved by Godot.
+
+## Progression/Acquisition slices (audit 2026-10-26)
+
+Added by the [Progression/Acquisition audit](../reviews/progression-acquisition-audit.md)
+(base `ede0a3c`, registry sha256 `70a83cc7…845e`). These rows are Planned and
+not accepted. The phase and count tables above are deliberately left unchanged
+because concurrent audit PRs are open; refresh them once all of those PRs have
+merged. Feature effects belong to the Feature Auditor's rows. These rows cover
+only how features are chosen, gated, granted and saved.
+
+| Slice | Status | Parents | Scope | Depends on |
+|---|---|---|---|---|
+| S-231 — Background acquisition at creation | Planned | V-025, V-026, V-027, STA-01 | Background content type and creation step. The step grants the ability increase (+2/+1 or +1/+1/+1 from the 3 listed, cap 20), the Origin feat, 2 skills, a fixed tool or a category choice, and equipment A or GP, with receipts and saved validation (SRD p.83). | S-047, S-049, S-050 |
+| S-232 — Species and language creation choices | Planned | V-025, V-027 | Lineage, ancestry and legacy choice; spellcasting ability chosen at selection; size choice; species skill choice; Human Versatile Origin feat; Common + 2 languages (SRD p.20, pp.84–86). Character-level 3/5 grants reuse S-048 and S-139. | S-045, S-048, S-139 |
+| S-233 — Feat prerequisite kinds and repeat rules | Planned | V-025 | Class-level and named-feature prerequisites (Fighting Style, Spellcasting), the repeatable flag, and distinct-parameter repeats such as the Magic Initiate list (SRD pp.87–88). | S-049, S-050 |
+| S-234 — Multiclass entry prerequisites | Planned | V-025, V-026 | 13+ in the primary ability of the new class and every current class (all-of / any-of), checked before a class is offered, with the exact failing score reported (SRD p.24). | S-047 |
