@@ -1,0 +1,32 @@
+[
+  {
+    "id": "fixture:b067_class",
+    "name": "Batch 067 Neutral Class",
+    "hit_die": "d10",
+    "primary_ability": "STR",
+    "saving_throw_proficiencies": ["STR", "CON"],
+    "weapon_proficiencies": ["simple", "martial"],
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:b067_declared_edge",
+          "name": "Declared Edge",
+          "type": "attack_profile",
+          "source_instance_id": "b067:declared",
+          "scope": {"kind": "weapon", "ids": ["longsword"]},
+          "choice_window": "activation",
+          "replace": {"damage_type_choices": ["radiant", "force"]}
+        },
+        {
+          "id": "fixture:b067_striking_edge",
+          "name": "Striking Edge",
+          "type": "attack_profile",
+          "source_instance_id": "b067:striking",
+          "scope": {"kind": "weapon", "ids": ["handaxe"]},
+          "choice_window": "hit",
+          "replace": {"damage_type_choices": ["cold", "lightning"]}
+        }
+      ]
+    }
+  }
+]

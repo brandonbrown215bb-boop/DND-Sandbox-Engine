@@ -11,6 +11,14 @@ extends RefCounted
 const ABILITIES := ["STR", "DEX", "CON", "INT", "WIS", "CHA"]
 const REPLACE_KEYS := ["ability", "damage_die", "damage_type", "damage_type_choices", "attack_bonus", "save_dc"]
 const ADD_KEYS := ["attack_bonus", "damage_bonus", "save_dc"]
+## S-127: a damage-type choice names the window where it is offered. There is
+## no default: data must say "activation" (before the attack is committed) or
+## "hit" (after a final hit, before damage is rolled).
+const CHOICE_WINDOWS := ["activation", "hit"]
+const DECISION_KEY := "attack_profile_damage_type"
+const ALLOW_KEY := "allow_attack_profile_choice"
+static var _requests := {}
+static var _serial := 0
 
 static func validate_rule(rule: Dictionary) -> String:
 	if str(rule.get("source_instance_id", "")).is_empty(): return "attack_profile needs source_instance_id"
@@ -31,6 +39,9 @@ static func validate_rule(rule: Dictionary) -> String:
 	if replace.has("damage_die") and not RegEx.create_from_string("^[1-9][0-9]?d(4|6|8|10|12)$").search(str(replace.damage_die)): return "attack_profile damage_die is invalid"
 	if replace.has("damage_type") and str(replace.damage_type) not in DataLoader.VALID_DAMAGE_TYPES: return "attack_profile damage_type is invalid"
 	if replace.has("damage_type_choices") and (not replace.damage_type_choices is Array or replace.damage_type_choices.is_empty() or replace.damage_type_choices.any(func(t): return str(t) not in DataLoader.VALID_DAMAGE_TYPES)): return "attack_profile damage_type_choices are invalid"
+	if replace.has("damage_type_choices") and str(rule.get("choice_window", "")) not in CHOICE_WINDOWS: return "attack_profile damage_type_choices need choice_window activation or hit"
+	if rule.has("choice_window") and not replace.has("damage_type_choices"): return "attack_profile choice_window needs damage_type_choices"
+	if replace.has("damage_type_choices") and replace.has("damage_type"): return "attack_profile cannot replace both damage_type and damage_type_choices"
 	for key in ["attack_bonus", "save_dc"]:
 		if replace.has(key) and not _int(replace[key]): return "attack_profile replace.%s must be an integer" % key
 	if str(scope.kind) == "spell" and (replace.keys().any(func(k): return k != "save_dc") or add.keys().any(func(k): return k != "save_dc")): return "spell attack_profile supports only save_dc"
@@ -82,6 +93,7 @@ static func apply_weapon(attacker: Character, weapon_data: Dictionary, decisions
 	if replaced.has("damage_type_choices"):
 		var chosen := str(decisions.get("attack_profile_damage_type", ""))
 		if chosen in replaced.damage_type_choices: profile["damage_type"] = chosen
+		else: chosen = ""
 	elif replaced.has("damage_type"):
 		profile["damage_type"] = str(replaced.damage_type)
 	if replaced.has("attack_bonus"): profile["attack_bonus_override"] = int(replaced.attack_bonus)
@@ -90,7 +102,65 @@ static func apply_weapon(attacker: Character, weapon_data: Dictionary, decisions
 		profile["attack_bonus_override"] = base + attack_add
 	if damage_add != 0: profile["damage"] = str(profile.get("damage", "1")) + ("+%d" % damage_add if damage_add > 0 else "%d" % damage_add)
 	profile["_attack_profile"] = {"sources": applied, "replaced": replaced.keys(), "attack_add": attack_add, "damage_add": damage_add}
+	if replaced.has("damage_type_choices"): profile["_attack_profile"]["damage_type_choice"] = str(decisions.get(DECISION_KEY, "")) if str(decisions.get(DECISION_KEY, "")) in replaced.damage_type_choices else ""
 	return profile
+
+## S-127: the winning damage-type choice for this actor and weapon, if any:
+## {"source_instance_id", "name", "window", "options"}. The first qualifying
+## source that replaces the type wins, exactly as apply_weapon resolves it.
+static func damage_type_choice(attacker: Character, weapon_data: Dictionary) -> Dictionary:
+	for rule in rules(attacker, "weapon"):
+		if not _weapon_qualifies(rule, weapon_data): continue
+		var replace: Dictionary = rule.get("replace", {})
+		if replace.has("damage_type"): return {}
+		if replace.has("damage_type_choices"):
+			return {"source_instance_id": str(rule.source_instance_id), "name": str(rule.get("name", rule.get("id", "Attack profile"))), "window": str(rule.choice_window), "options": replace.damage_type_choices.duplicate()}
+	return {}
+
+## Re-check a choice made at the activation window just before the attack is
+## committed. Returns "" when still offered, else the refusal message.
+static func activation_choice_error(attacker: Character, weapon_data: Dictionary, offered: Dictionary, chosen: String) -> String:
+	var current := damage_type_choice(attacker, weapon_data)
+	if current.is_empty() or str(current.source_instance_id) != str(offered.get("source_instance_id", "")) or str(current.window) != "activation": return "The damage-type choice is no longer offered; nothing was spent."
+	if chosen not in current.options: return "%s is no longer an eligible damage type; nothing was spent." % chosen.capitalize()
+	return ""
+
+## Called by the weapon resolver once a final hit is known. When the caller
+## hosts the choice (ALLOW_KEY) and a hit-window choice is undecided, the hit
+## stage is captured and a request is returned instead of rolling damage.
+static func hit_window_request(attacker: Character, weapon_data: Dictionary, decisions: Dictionary, stage: Dictionary) -> Dictionary:
+	if not bool(decisions.get(ALLOW_KEY, false)) or decisions.has(DECISION_KEY): return {}
+	var choice := damage_type_choice(attacker, weapon_data)
+	if choice.is_empty() or str(choice.window) != "hit": return {}
+	_serial += 1
+	var request_id := "attack_profile_choice:%d" % _serial
+	_requests[request_id] = {"stage": stage, "choice": choice}
+	var attack_result: Dictionary = stage.get("attack_result", {})
+	return {"hit": true, "pending": true, "attack_roll": int(attack_result.get("total", 0)), "target_ac": int(stage.get("target_ac", 0)), "attack_profile_choice_request": {"request_id": request_id, "options": choice.options.duplicate(), "source_instance_id": choice.source_instance_id, "name": choice.name}}
+
+## Settle a captured hit with the chosen type. An empty or no-longer-eligible
+## choice keeps the inherited type; the hit itself already happened and the
+## choice costs nothing. Each request settles once.
+static func resume_hit_choice(request: Dictionary, chosen: String) -> Dictionary:
+	var request_id := str(request.get("attack_profile_choice_request", {}).get("request_id", ""))
+	if not _requests.has(request_id): return {"hit": false, "refused": true, "message": "This damage-type choice was already settled."}
+	var record: Dictionary = _requests[request_id]
+	_requests.erase(request_id)
+	var stage: Dictionary = record.stage
+	var weapon_data: Dictionary = stage.weapon_data
+	var current := damage_type_choice(stage.attacker, weapon_data)
+	var applied := ""
+	if not chosen.is_empty() and not current.is_empty() and str(current.source_instance_id) == str(record.choice.source_instance_id) and chosen in current.options:
+		weapon_data["damage_type"] = chosen
+		applied = chosen
+	var profile: Dictionary = weapon_data.get("_attack_profile", {})
+	profile["damage_type_choice"] = applied
+	weapon_data["_attack_profile"] = profile
+	stage.reaction_decisions[DECISION_KEY] = applied
+	var settled: Dictionary = CombatAction._settle_weapon_attack_hit(stage)
+	settled["attack_profile_damage_type"] = applied
+	settled["attack_profile_choice_stale"] = not chosen.is_empty() and applied.is_empty()
+	return settled
 
 ## Computed spell save DC after qualifying scoped profiles.
 static func spell_dc(caster: Character, spell: Dictionary, dc: int) -> int:

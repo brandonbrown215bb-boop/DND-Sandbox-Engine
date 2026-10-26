@@ -63,3 +63,5 @@ accepts S-082/VS-63. Independent Q review accepts S-083/VS-64 for shared capture
 weapon-attack bonuses, plus S-097/S-101/S-102 as VS-65/66/67 for fixed helping
 modifiers and HP/Temporary HP allocations. See [party rules](party-intervention-and-allocation.md).
 Broader intervention operations, roll hosts and casting consumers remain open.
+
+Weapon attack profiles and S-127 authored damage-type choices (activation or hit window; PARTIAL) are described in [attack profiles](attack-profiles.md).

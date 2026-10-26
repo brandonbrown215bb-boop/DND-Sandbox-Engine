@@ -1468,6 +1468,45 @@ static func _settle_weapon_attack_context(context: Dictionary) -> Dictionary:
 		_record_attack_history(reaction_decisions, attacker, target_entity)
 		return miss
 
+	var hit_stage := {"attacker": attacker, "target_entity": target_entity, "weapon_data": weapon_data, "reaction_decisions": reaction_decisions, "additional_damage": additional_damage, "ability": ability, "attack_result": attack_result, "original_attack_result": original_attack_result, "original_target_ac": original_target_ac, "target_ac": target_ac, "magic_weapon_bonus": magic_weapon_bonus, "stroke_result": stroke_result, "sundering_bonus": sundering_bonus, "irresistible_damage": irresistible_damage, "bardic_bonus": bardic_bonus, "bardic_message": bardic_message, "bardic_die": bardic_die, "brutal_effects": brutal_effects, "selected_bonus": selected_bonus, "override_outcome": override_outcome, "is_crit": is_crit, "is_hit": is_hit, "reaction_msg": reaction_msg, "before_peerless": before_peerless, "adjustment_operation": adjustment_operation, "token_replaced": token_replaced, "adjustment_cost_paid": adjustment_cost_paid, "selected_payment_receipt": selected_payment_receipt}
+	# S-127: an authored hit-window damage-type choice pauses here, after the
+	# final hit and every pre-damage payment, and before any damage is rolled.
+	var profile_choice := AttackProfileRules.hit_window_request(attacker, weapon_data, reaction_decisions, hit_stage)
+	if not profile_choice.is_empty():
+		return profile_choice
+	return _settle_weapon_attack_hit(hit_stage)
+
+
+## Hit stage of a weapon attack: damage, riders and settlement for a final hit.
+static func _settle_weapon_attack_hit(stage: Dictionary) -> Dictionary:
+	var attacker: Character = stage["attacker"]
+	var target_entity = stage["target_entity"]
+	var weapon_data: Dictionary = stage["weapon_data"]
+	var reaction_decisions: Dictionary = stage["reaction_decisions"]
+	var additional_damage: Dictionary = stage["additional_damage"]
+	var ability: String = stage["ability"]
+	var attack_result: Dictionary = stage["attack_result"]
+	var original_attack_result: Dictionary = stage["original_attack_result"]
+	var original_target_ac: int = stage["original_target_ac"]
+	var target_ac: int = stage["target_ac"]
+	var magic_weapon_bonus: int = stage["magic_weapon_bonus"]
+	var stroke_result: Dictionary = stage["stroke_result"]
+	var sundering_bonus: bool = stage["sundering_bonus"]
+	var irresistible_damage: int = stage["irresistible_damage"]
+	var bardic_bonus: int = stage["bardic_bonus"]
+	var bardic_message: String = stage["bardic_message"]
+	var bardic_die: String = stage["bardic_die"]
+	var brutal_effects: Array[String] = stage["brutal_effects"]
+	var selected_bonus: Dictionary = stage["selected_bonus"]
+	var override_outcome: String = stage["override_outcome"]
+	var is_crit: bool = stage["is_crit"]
+	var is_hit: bool = stage["is_hit"]
+	var reaction_msg: String = stage["reaction_msg"]
+	var before_peerless: bool = stage["before_peerless"]
+	var adjustment_operation: String = stage["adjustment_operation"]
+	var token_replaced: bool = stage["token_replaced"]
+	var adjustment_cost_paid: bool = stage["adjustment_cost_paid"]
+	var selected_payment_receipt: Dictionary = stage["selected_payment_receipt"]
 	# Capture and consume a matching source-owned grant after the final hit/miss
 	# outcome, but before base damage can down the target. The snapshot travels
 	# with this synchronous resolution, so a later activation cannot be consumed
