@@ -117,6 +117,16 @@ contracts. Its draft exports do not imply game installation support. Keep the
 runtime/editor [ownership and handoff boundary](docs/content_pipeline.md#runtime-and-editor-handoff).
 Quest Board is optional when concurrent work needs coordination.
 
+## Progression/Acquisition follow-up
+
+The [Progression/Acquisition audit](docs/reviews/progression-acquisition-audit.md)
+suggests this queue:
+1. Content corrections: class skill and tool lists, the rogue weapon restriction and `subclass_level`.
+2. S-234 multiclass prerequisites, then production multiclass data.
+3. S-231 backgrounds.
+4. S-232 species choices and the SRD species set.
+5. S-233 feat prerequisites, then the 17 SRD feats.
+
 ## Scope and deferred work
 
 - SRD 5.2.1 governs the staged twelve-class milestone. Artificer, Mystic and later
