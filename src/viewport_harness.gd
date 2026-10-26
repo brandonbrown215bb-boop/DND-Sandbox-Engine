@@ -391,6 +391,8 @@ func _run_scenario(scenario: String) -> void:
 		"batch_080_last_charge_text_flow": await Batch080Controls.run(self)
 		"batch_080_last_charge_text_reload": await Batch080Controls.reload(self)
 		"batch_085_cast_transform_flow": await Batch085Controls.run(self)
+		"batch_086_find_steed_arrival_flow": await Batch086Controls.run(self)
+		"batch_086_find_steed_arrival_reload": await Batch086Controls.run_reload(self)
 		"batch_081_declared_fallback_flow": await Batch081Controls.run(self)
 		"batch_081_declared_fallback_reload": await Batch081Controls.reload(self)
 		"batch_082_interruption_boundary_flow": await Batch082Controls.run(self)
@@ -10811,12 +10813,9 @@ func test_local_room_object_flow() -> void:
 		mount_owner.level = 5
 		mount_owner.features.append({"id": "paladin_faithful_steed", "type": "passive"})
 		var mount_state_result := PaladinRules.create_find_steed_state(mount_owner, DataLoader.get_spell("find_steed"), 4, "celestial", "horse")
-		var mount_spawn := Vector2i(2, 0)
-		if mount_spawn == mount_owner_position or not combat.hex_grid.has_tile(mount_spawn) or not combat.hex_grid.is_hex_passable(mount_spawn):
-			for candidate in HexUtils.get_hexes_in_range(mount_owner_position, 1):
-				if candidate != mount_owner_position and combat.hex_grid.has_tile(candidate) and combat.hex_grid.is_hex_passable(candidate) and not combat._is_occupied_hex(candidate):
-					mount_spawn = candidate
-					break
+		# Batch 086: a Large steed needs its whole footprint clear, so take the factory's own nearest legal space.
+		var mount_spawn_options := SummonArrivalRules.recovery_candidates(combat, combat.player_entities, mount_owner, mount_owner_position, DataLoader.get_spell("find_steed"))
+		var mount_spawn: Vector2i = mount_spawn_options[0] if not mount_spawn_options.is_empty() else FamiliarRules.ABSENT
 		var summon_result := combat._add_find_steed_entity(combat.player_entities[0], mount_spawn, false) if mount_state_result.get("success", false) else {}
 		mounted_steed_entity = summon_result.get("entity", {})
 		combat.current_player_idx = 0
@@ -10859,7 +10858,7 @@ func test_local_room_object_flow() -> void:
 			await get_tree().process_frame
 		LocalRoomCombat.capture(combat.player_entities)
 		var dismounted_position: Vector2i = combat.player_entities[0].get("hex_position", Vector2i.ZERO)
-		var rider_dismounted_saved: bool = not PaladinRules.find_steed_is_mounted(mount_owner) and HexUtils.get_distance(dismounted_position, dismount_position) == 1 and mounted_steed_entity.get("hex_position", Vector2i.ZERO) == dismount_position and LocalRoomRules.coord(state["party_positions"][mount_owner.character_id]) == dismounted_position
+		var rider_dismounted_saved: bool = not PaladinRules.find_steed_is_mounted(mount_owner) and SummonArrivalRules.body_distance(dismounted_position, dismount_position, "large") == 1 and mounted_steed_entity.get("hex_position", Vector2i.ZERO) == dismount_position and LocalRoomRules.coord(state["party_positions"][mount_owner.character_id]) == dismounted_position
 		_assert(mount_button_index >= 0 and dismount_button_index >= 0 and mounted_ok and rider_destination != Vector2i(9999, 9999) and rider_transport_saved and rider_dismounted_saved, "Find Steed mount and dismount controls spend half Speed, carry rider movement with the mount, and save separate adjacent positions (buttons=%d/%d summon=%s mounted=%s pos=%s steed=%s remaining=%.1f destination=%s mounted_saved=%s dismounted_saved=%s)" % [mount_button_index, dismount_button_index, summon_result, mounted_ok, mount_position, mounted_steed_entity.get("hex_position", Vector2i.ZERO), combat.remaining_speed, rider_destination, rider_transport_saved, rider_dismounted_saved])
 		PaladinRules.dismiss_find_steed(mount_owner)
 		if not mounted_steed_entity.is_empty(): combat.player_entities.erase(mounted_steed_entity)

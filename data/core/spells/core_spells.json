@@ -393,6 +393,8 @@
     ],
     "summoned_creature": {
       "kind": "otherworldly_steed",
+      "size": "large",
+      "placement": {"range_hexes": 6, "no_space": "refuse", "choose": true},
       "forms": [
         "horse",
         "camel",

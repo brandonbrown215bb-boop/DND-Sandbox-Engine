@@ -195,8 +195,24 @@ that escape allowance waives creature overlap only. Terrain is never waived:
 size-based footprint for map bounds, passability, room walls, plane, clearance
 and blocking objects (creature occupancy excluded via the `ignore_occupants`
 context flag of `PhysicalFactsRules.is_space_available`), so a Huge creature
-cannot pass through or land in a wall because its center fits. Find Steed arrival still checks only its
-center cell (PARTIAL).
+cannot pass through or land in a wall because its center fits.
+
+Find Steed arrival (Batch 086) reads `summoned_creature.size` and
+`summoned_creature.placement` (`range_hexes`, `no_space`, `choose`) from the spell
+record; `SummonArrivalRules.destination_error` runs `PlacementRules.legal_error`
+over the whole Large footprint (terrain, map bounds, every other creature's
+footprint, including the caster), ignoring only the owner's previous steed body.
+Cost rule: a refused space is refused at target validation and again just before
+payment, so neither the level-2 slot nor the Action is spent and the cast stays
+pending for another pick; Cancel spends nothing; a space that became blocked after
+the spell was chosen is refused at confirmation. When a saved steed returns at
+combat start, a saved room position whose footprint no longer fits is discarded
+and `SummonArrivalRules.recovery_candidates` picks the nearest full-footprint
+space (`PlacementRules.candidates` with `ignore_entity`). PARTIAL: exploration-mode
+steed occupancy (`LocalRoomRules.find_steed_position`) is still center-based;
+if placement failed after payment (only possible if the grid changed between the
+pre-payment recheck and creation, which no current host does) the slot stays
+spent; multi-target and planar arrival remain for another job.
 
 Exit-before-settle (S-121, card Q-20261021-043117-1c72) is verified only for
 the combat save-exit host (`s121_exit_placement_flow`). Engulf/swallow escape

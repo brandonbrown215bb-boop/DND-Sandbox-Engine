@@ -242,12 +242,8 @@ static func validate_weapon_and_steed(cast: SpellCastContext) -> bool:
 		cast.clear_pending(SpellCastContext.CLEAR_ACTION)
 		cast.highlight_reachable.call()
 		return false
-	if str(cast.spell.get("id", "")) == "find_steed":
-		var steed_range := SpellCastTargeting._spell_target_range(cast, cast.spell)
-		if cast.target_coord == cast.spell_origin or not Targeting.is_in_range(cast.spell_origin, cast.target_coord, steed_range) or not cast.grid.has_tile(cast.target_coord) or not cast.grid.is_hex_passable(cast.target_coord) or cast.areas._is_occupied_hex(cast.caster, cast.target_coord):
-			cast.hud.add_log("[color=orange]Choose an unoccupied space within range for Find Steed.[/color]")
-			cast.highlight_reachable.call()
-			return false
+	# Batch 086: a declared sized arrival must fit its WHOLE footprint (before any cost).
+	if SpellCastMovement.refuse_arrival_destination(cast): return false
 	return true
 
 
