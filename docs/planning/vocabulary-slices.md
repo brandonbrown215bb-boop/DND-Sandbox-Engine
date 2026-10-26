@@ -2923,6 +2923,19 @@ The wave 2 integration (`audit/wave-2`, stacked on `audit/wave-1`) added these r
 | Items ([audit](../audits/items.md)) | Clause level: ordinary weapons and armor, general magic-item rules, SRD gear and tools (plus Iron Spikes, Chest and Block and Tackle), ammunition/mount/vehicle tables, all 94 loaded SRD magic records (including the 49 shells), and all 192 missing SRD magic items. | The 67 non-SRD items; selling, lifestyle and trade goods; sentient items and artifacts. Partial: the Hat of Many Spells, Quarterstaff of the Acrobat, Shield of the Cavalier and Staff of the Magi tails; Cube of Force; Dancing Sword; Pearl of Power; Demon Armor scope; and the load-order winner for D-4. Data defects D-1..D-8 are reported only and not changed. |
 | Class features ([Monk](../mechanics/monk-2024.md), [Rogue](../mechanics/rogue-2024.md), [SRC-01 batch 2](#src-01-batch-2)) | Barbarian, Fighter/Champion, Monk/Warrior of the Open Hand and Rogue/Thief, at clause level. | The other 8 classes, most subclasses, and all 17 feats. |
 
+**PR #61/#66/#70 and #67–69 review boundary (2026-10-26):** the audit
+inventories and new planned requirements are accepted as planning work; they
+add no verified slices. The Stunned correction explicitly preserves movement
+for generic Stunned/Incapacitated in S-246. Spell and item data corrections
+retain their per-defect partial/blocked status in the [spell audit](../audits/spells.md)
+and [item audit](../audits/items.md). In particular, Potion of Poison adds 4d6
+upfront damage but retains its existing 10-turn condition approximation: correct
+Poisoned consequences, the save gate and an elapsed one-hour lifetime remain
+open under S-235/S-257. Class-list corrections retain #69's disclosed refusal
+of legacy saves holding removed class spell choices; no migration or
+grandfathering is supplied. These bounded deliveries do not certify the
+catalog or complete the newly planned rows.
+
 **Follow-ups (not in this integration):** the monster audit uses S-230, S-231 and V-100, which collide with published IDs. It needs renumbering before it can merge. Duplicate S-024/S-025 rows predate this wave.
 
 | Slice | Status | Parents | Finish line | After |
