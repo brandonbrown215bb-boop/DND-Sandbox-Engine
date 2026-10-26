@@ -29,6 +29,7 @@ No new saved fields: loss is derived from `state.degraded` plus the definition. 
 
 ## PARTIAL
 - Staff of Power's +2 to saving throws and spell attack rolls, its spells, Retributive Strike and the roll-on-20 regain are not modelled; Staff of Striking's per-hit charge spend (1d6 Force per charge) is not modelled, so in play their charges are spent only through the shared payment boundary.
+- Staff of Power's Sorcerer/Warlock/Wizard attunement restriction is not enforced; the current gate only requires attunement. These records remain partial item content, not complete source-backed conversions.
 - Dawn recovery is a uniform roll between the declared minimum and maximum (6–20, 5–10), not 2d8+4 / 1d6+4.
 - With two equipped copies of the same weapon definition, the attack reads the main-hand copy first.
 - An existing attunement on a copy that becomes nonmagical is not ended (new attunement is refused).
