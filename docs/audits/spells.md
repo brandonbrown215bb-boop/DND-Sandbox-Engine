@@ -1,6 +1,6 @@
 # Spell inventory and rules-vocabulary audit (Batch 088)
 
-**Status: PARTIAL AUDIT. Inventory is complete. Clause decomposition covers 93 of 362 unique loaded spell IDs (25.7%): 87 decomposed, 6 out-of-milestone IDs identified only. Families covered so far: direct_resolution (52) and control (41). The other 269 are UNREVIEWED.** This is not a complete audit. Nothing here enables, converts or certifies a spell. Accepted slice counts and checkpoint acceptance are unchanged.
+**Status: PARTIAL AUDIT. Inventory is complete. Clause decomposition covers 138 of 362 unique loaded spell IDs (38.1%): 128 decomposed, 10 out-of-milestone IDs identified only. Families covered so far: direct_resolution (52), control (41) and timed_effects (45). The other 224 are UNREVIEWED, including all 45 persistent_areas IDs.** This is not a complete audit. Nothing here enables, converts or certifies a spell. Accepted slice counts and checkpoint acceptance are unchanged.
 
 ## Evidence boundary
 
@@ -239,7 +239,7 @@ Scope: register `primary_behavior: control` (41 IDs). 37 are in SRD 5.2.1 and de
 | slow | no | imported | ≤6 chosen creatures in 40-ft Cube, Wis: E. Speed halved; −2 AC and Dex saves: E (S-179, S-095). No Reactions; action or Bonus Action, not both; one attack per Attack action: P (S-160) + E (S-146). Somatic spell 25% failure chance: H (S-142 failure/refund on a random gate). End-of-turn repeat save: E. |
 | stinking_cloud | no | imported | 20-ft Sphere, Heavily Obscured: P (S-190). Start-of-turn Con save → Poisoned until end of turn, no action/Bonus Action: P (S-184) + E. Dispersed by strong wind: H (Gust of Wind interaction). |
 | tashas_hideous_laughter (Hideous Laughter) | no | imported | Wis; Prone + Incapacitated, can't end Prone itself: E + H (stand-up refusal). End-of-turn and on-damage repeat saves, with Advantage when damage-triggered: H (S-031 + S-068 + S-091). Upcast extra targets: E. |
-| telekinesis | no | srd_add | Magic action each turn, may switch targets: H (S-148). Creature: Str save or move 30 ft, Restrained until end of next turn, suspended then falls: H (S-168) + P (S-181 fall). Object: unattended moves automatically; worn/carried needs a Str save: H (object host). Fine manipulation: J. **Extract tail cut off at a column break after "simple tool,". Re-read p.167–168 before conversion.** |
+| telekinesis | no | srd_add | Magic action each turn, may switch targets: H (S-148). Creature: Str save or move 30 ft, Restrained until end of next turn, suspended then falls: H (S-168) + P (S-181 fall). Object: unattended moves automatically; worn/carried needs a Str save: H (object host). Fine manipulation: J. **Re-read on rendered p.168 (088-4): the published SRD 5.2.1 sentence itself ends "such as manipulating a simple tool," and the Telepathic Bond header follows. Nothing is missing from our extract; the source sentence is truncated (D-24, J).** |
 | vicious_mockery | yes | imported | Creature seen **or heard**: P (S-190). Wis 1d6 Psychic + Disadvantage on next attack before end of its next turn: E. Cantrip Upgrade: E. |
 | web | no | imported | 20-ft Cube, Difficult Terrain: E. Lightly Obscured: P (S-190). Collapses unless anchored: J (map anchoring fact; S-032 could carry it). First entry on a turn / start of turn Dex save, Restrained: P (S-184) + E. Athletics escape action: E (S-169). 5-ft cubes burn away when exposed to fire, 2d4 Fire to creatures starting their turn in them: H (burning piece from 088-2 + S-087 child timer). |
 | compelled_duel, crown_of_madness, friends, thorn_whip | no | imported | Not in SRD 5.2.1: out of milestone, not decomposed. |
@@ -295,6 +295,89 @@ Scope: register `primary_behavior: control` (41 IDs). 37 are in SRD 5.2.1 and de
 - **Reuse:** S-074/S-075 suppression; S-116 one recipient's incoming effect negation; S-092 explicit save outcomes.
 - **Depends on:** none beyond verified slices.
 - **Finish line:** a source-owned condition marks its removal as guarded by a declared save. Any removal attempt (Lesser Restoration, a Paladin's Lay On Hands cure, a Heal-style end) triggers that save. Failure leaves that source's condition in place and reports it; the remover's own cost is still spent. Success removes it. Other sources of the same condition are unaffected.
+
+## Settled decisions (recorded 088-4)
+
+- **Command, Undead exclusion:** the loaded Undead exclusion is an SRD defect (confirms D-11). SRD 5.2.1 Command has no creature-type exclusion.
+- **Duplicates:** fix field by field toward the SRD text in a later correction job. Do not pick one file wholesale. See the duplicate table and D-23.
+- **PROPOSED-spells-4 vs native Command code:** whether the slice replaces Command's native code is an implementation choice for that slice. This audit takes no position.
+
+## Batch 088-4: timed effects (45 spells reviewed)
+
+Scope: every ID with `primary_behavior == timed_effects` (45). 41 are in SRD 5.2.1 and were decomposed against the column-split extract; 4 are out of milestone. persistent_areas (45) was **not** reviewed in this batch, to keep one batch inside 40–60.
+
+| ID | Avail | Winner | Clauses → classification (owner) |
+|---|---|---|---|
+| aid | yes | imported | 3 creatures, +5 max and current HP, 8 h: E. Upcast +5/level: E. Campaign-time expiry: H (S-070). |
+| aura_of_life | yes | srd_add | 30-ft Emanation: E (S-080/S-081). Necrotic Resistance: E. HP max can't be reduced: E. Ally at 0 HP regains 1 at turn start in aura: E. |
+| bane | yes | batch_001 | Cha save, up to 3 seen, −1d4 attacks/saves: E. Upcast targets: E. |
+| barkskin | yes | imported | Bonus Action (data says action, D-32). AC floor 17: E. |
+| beacon_of_hope | yes | imported | Any number of creatures: E (data D-29). Adv on Wis saves and Death Saves: E. Max healing: E. |
+| bless | yes | batch_001 | +1d4 attacks/saves, 3 targets, upcast, Holy Symbol: E. |
+| blur | yes | imported | Disadvantage against you: E. Blindsight/Truesight exemption: P (S-190). |
+| death_ward | yes | srd_add | First drop to 0 → 1 HP, ends: E. Instant-kill-without-damage negation: E. 8 h: H (S-070). |
+| divine_favor | yes | imported | +1d4 Radiant on weapon hits, 1 min: E. |
+| enhance_ability | yes | imported | Chosen ability, Advantage on checks: E. Upcast targets with a different ability each: E/H (data lacks upcast; spurious 2d6 force, D-23 class). |
+| enlarge/reduce | no | imported | Unwilling Con save: E. Size category ±1 including gear: H (size change on a live actor; S-032 holds facts only, S-163 projection could carry it). Dropped items and thrown weapons revert: H. Str check/save Adv/Disadv: E. ±1d4 weapon/Unarmed damage, floor 1: E. Object target, not worn or carried: H (object host). |
+| expeditious_retreat | no | imported | Dash now, then Dash as Bonus Action for 10 min: H (Bonus Action action-grant; S-160 budgets). |
+| false_life | yes | imported | 2d4+4 Temp HP, +5/level: E. |
+| fire_shield | no | srd_add | Light 10/10 ft: P (S-190). Warm/chill choice → Cold/Fire Resistance: E. Melee hit from within 5 ft → 2d8 retaliation: E (S-114 settled-damage counter-effect). |
+| foresight | no | srd_add | Advantage on D20 Tests; Disadvantage against target: E. Ends if cast again: E. 8 h: H (S-070). 1-minute casting: P (S-141/S-216). |
+| glibness | no | srd_add | Replace Cha check roll with 15: E (S-038 floors). Truth-detection magic reads truthful: P (S-195 masked detection). |
+| guidance | yes | imported | Chosen skill, +1d4 to checks: E. |
+| haste | no | imported | Speed ×2, +2 AC, Dex-save Adv: E. Extra restricted action (one Attack, Dash, Disengage, Hide, Utilize): P (S-160). End lethargy: Incapacitated, Speed 0 until end of next turn: E (S-086 aftermath). Data save DEX spurious (D-28). |
+| heroes_feast | no | srd_add | 10-minute cast, 1,000 GP consumed bowl: P (S-216) + E. 1-hour meal before benefits, up to 12 partakers: H (S-067 deadline + S-086 child timer). 24 h: Poison Resistance, Frightened/Poisoned immunity, +2d10 HP max and HP: E + H (S-070). |
+| heroism | yes | imported | Frightened immunity; Temp HP = spell mod at turn start: E. Upcast targets: E (runtime) / data lacks upcast (D-33). |
+| hex | no | imported | +1d6 Necrotic on attack hits: E. Disadvantage on chosen-ability checks: E. Move curse as Bonus Action after target drops to 0: H (S-043 + S-148). Upcast Concentration lengths: P (S-141) + H (S-070); data lacks upcast (D-35). |
+| holy_aura | no | srd_add | 30-ft Emanation, chosen creatures: E (S-080). Adv on all saves, Disadv against them: E. Fiend/Undead melee hit → Con save or Blinded: E (S-114) + E. Reliquary focus: E. |
+| hunters_mark | no | imported | +1d6 Force on attack hits: E. Perception/Survival Adv to find it: E. Move mark as Bonus Action after 0 HP: H (S-043 + S-148). 8/24 h upcast: P (S-141) + H (S-070). Unavailable per known_limit. |
+| longstrider | yes | imported | +10 ft Speed, 1 h, upcast targets: E. Campaign expiry: H (S-070). |
+| mage_armor | yes | core | Base AC 13+Dex, unarmored willing, ends on donning armor: E. |
+| magic_weapon | yes | imported | Bonus Action, nonmagical weapon +1/+2/+3 for 1 h: E as vocabulary; **runtime deviates** (D-25). Ends if cast again: E. |
+| mind_blank | no | srd_add | Psychic and Charmed immunity: E. Unaffected by emotion/alignment/thought/location sensing; no spell (even Wish) gathers info, observes or controls mind: P (S-195) + J (scope of "control its mind"). 24 h: H (S-070). |
+| mirror_image | no | imported | 3 duplicates; d6 per remaining duplicate, 3+ redirects the hit and destroys one: P (S-187 non-occupying duplicate) + E (S-112 redirect). Blinded/Blindsight/Truesight attackers unaffected: P (S-190). |
+| protection_from_energy | yes | imported | Resistance to one chosen type of five: E. |
+| protection_from_evil_and_good | yes | imported | Six creature types: Disadv on attacks, no Charmed/Frightened from them: E. Possession: P (S-173). Adv on new saves vs existing effect: H (source-aware save Adv). |
+| protection_from_poison | yes | imported | End Poisoned; Adv vs Poisoned; Poison Resistance: E. |
+| ray_of_enfeeblement | yes | imported | Con save; success: Disadv on next attack before your next turn; failure: Disadv Str D20 Tests, −1d8 damage, end-of-turn repeat: E. |
+| ray_of_sickness | yes | imported | Ranged spell attack, 2d8 Poison, Poisoned to end of your next turn, upcast: E. |
+| regenerate | yes | srd_add | 4d8+15, 1 HP at turn start for 1 h: E. Regrowth after 2 min: P (S-206/S-207). 1-minute cast: P (S-216); runtime approximates (D-36). |
+| resistance | yes | imported | Chosen type of 11, reduce by 1d4, once per turn: E. |
+| sanctuary | yes | imported | Wis save or retarget/lose; areas excluded; ends on attack/spell/damage: E. |
+| shield | yes | core | Reaction on hit or Magic Missile; +5 AC incl. trigger; no MM damage: E. |
+| shield_of_faith | yes | imported | +2 AC, 10 min Concentration: E. |
+| shillelagh | yes | imported | Spell ability for attack/damage; d8 die; Force or normal type; ends if cast again or let go; die upgrade at 5/11/17: E + H (die-size override by character level). |
+| stoneskin | no | srd_add | B/P/S Resistance; 100 GP consumed: E. |
+| warding_bond | no | imported | +1 AC/saves, Resistance to all within 60 ft: E. Caster takes the same damage: H (S-111/S-112 copy, not split). Ends at caster 0 HP, >60 ft separation, or recast on either: E + H (distance watcher). Rings worn by both: J (per-target material). |
+| armor_of_agathys, blade_ward, crusaders_mantle, elemental_weapon | blade_ward yes, rest no | imported | Not in SRD 5.2.1: out of milestone, not decomposed. blade_ward castable (D-26). |
+
+### 088-4 classification summary
+
+- **E:** most clauses. Riders, AC floors, Resistance, Temp HP, Adv/Disadv, auras and repeat saves already have verified owners.
+- **P:**
+  - S-070 long and campaign durations (listed under H where the clause can't run without it).
+  - S-141 upcast durations (Hex, Hunter's Mark).
+  - S-160 restricted extra action (Haste).
+  - S-173 possession.
+  - S-187 duplicates (Mirror Image).
+  - S-190 sight and light.
+  - S-195 masked detection (Glibness, Mind Blank).
+  - S-206/S-207 regrowth.
+  - S-216 long casting times.
+- **H:**
+  - Campaign-clock expiry on 8 h/24 h effects (S-070), the commonest blocker in this family.
+  - Live size-category change (Enlarge/Reduce).
+  - Mark/curse transfer after 0 HP (Hex, Hunter's Mark).
+  - Bonus-Action Dash grant (Expeditious Retreat).
+  - Delayed group benefit (Heroes' Feast).
+  - Damage copy to caster (Warding Bond).
+  - Source-aware save Advantage (Protection from Evil and Good).
+  - Level-scaled die override (Shillelagh).
+- **G:** none. No `PROPOSED-spells-N` was added in 088-4. The closest candidate is live size change, held as H because S-163's reversible projection may carry it; the owning slice should decide.
+- **J:**
+  - Telekinesis source truncation (D-24).
+  - Mind Blank "control its mind" scope.
+  - Warding Bond per-target ring material.
 
 ## Duplicate-definition accuracy: imported_spells.json vs srd_additional_spells.json
 
@@ -364,17 +447,30 @@ Cumulative across batches. Batch tag = where the defect was recorded. For the 08
 | D-21 | 088-3 | tashas_hideous_laughter | upcast | none | +1 creature per slot |
 | D-22 | 088-3 | web, bestow_curse | damage fields | 2d4 fire / 1d8 necrotic as base damage | conditional riders only |
 | D-23 | 088-3 | 25 duplicate IDs | winner | imported_spells.json | srd_additional closer (see table) |
+| D-24 | 088-4 | telekinesis | SRD source | — | SRD 5.2.1 p.168 sentence ends "simple tool," (source truncation; J, not data) |
+| D-25 | 088-4 | magic_weapon | runtime (known_limit) | Magic Action, Concentration, +1 at slots 2–3, +2 at 4–5 | Bonus Action, no Concentration (1 hour), +2 at 3–5, +3 at 6+ |
+| D-26 | 088-4 | blade_ward | cast_available | true | not in SRD 5.2.1 (out of milestone yet castable) |
+| D-27 | 088-4 | enlarge/reduce | damage | 1d4 force base damage | no base damage; ±1d4 weapon/Unarmed rider |
+| D-28 | 088-4 | haste | save | DEX | no save (target gets Dex-save Advantage) |
+| D-29 | 088-4 | beacon_of_hope | save / target | WIS / single | no save / any number of creatures |
+| D-30 | 088-4 | heroes_feast | casting_time / target | minute / self | 10 minutes / up to twelve partakers |
+| D-31 | 088-4 | fire_shield | damage_type | fire only | Fire (warm) or Cold (chill), caster's choice |
+| D-32 | 088-4 | barkskin | casting_time | action | Bonus Action |
+| D-33 | 088-4 | heroism / enhance_ability | upcast | none | one additional target per slot level above base |
+| D-34 | 088-4 | mirror_image / holy_aura / foresight / mind_blank / stoneskin | effects | none | SRD effects not encoded (record only) |
+| D-35 | 088-4 | hex | upcast | none | Concentration 4 h (L2), 8 h (L3–4), 24 h (L5+) |
+| D-36 | 088-4 | regenerate | casting_time | runtime approximates 1 minute as an action (known_limit) | 1 minute |
 
 ## Known limits of this pass
 
-- 269 of 362 IDs are unreviewed for clauses. Families in spell-status.md remain the planning grouping.
-- All 339 headers parsed from column-split text (088-2). Prismatic Spray row 8 and the Divine Word table were re-read on rendered pages in 088-3; both are complete. The Telekinesis tail is still cut off.
+- 224 of 362 IDs are unreviewed for clauses. Families in spell-status.md remain the planning grouping.
+- All 339 headers parsed from column-split text (088-2). Prismatic Spray row 8 and the Divine Word table were re-read on rendered pages in 088-3; both are complete. The Telekinesis tail was re-read on rendered p.168 in 088-4: the SRD sentence itself stops at "simple tool," (source truncation, D-24).
 - `get_registry_hash()` isn't a hash. I recorded a SHA-256 of it. Changing it is runtime work and out of scope.
 - No Windows supported-runner export was possible from the box.
 
 ## Recommended next queue
 
 1. Windows export: optional confirmation (not blocking these batches).
-2. Data-correction job (content lane) for the running defect table D-01 to D-23.
-3. 088-4: timed_effects (45) and persistent_areas (45) families.
-4. 088-5+: movement, visibility, objects, summons and utility families, where real gaps (`PROPOSED-spells-N`) are likeliest.
+2. Data-correction job (content lane) for the running defect table D-01 to D-36, field by field toward the SRD text.
+3. 088-5: persistent_areas (45), deferred from 088-4 to keep one batch inside 40–60.
+4. 088-6+: movement, visibility, objects, summons and utility families, where real gaps (`PROPOSED-spells-N`) are likeliest.
