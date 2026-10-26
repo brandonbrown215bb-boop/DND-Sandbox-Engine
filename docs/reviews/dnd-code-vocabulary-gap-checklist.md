@@ -482,12 +482,15 @@ Source: [Progression/Acquisition audit](progression-acquisition-audit.md). The
 audit covered 35 acquisition and advancement behaviors:
 - 15 Covered by Verified slices
 - 6 Covered-cap (the capability is Verified but production data doesn't use it)
-- 11 New, under Planned S-231–S-234
-- 4 owner judgment
+- 15 New: 11 under Planned S-231–S-234, 4 under Planned S-242–S-245 (ability-generation methods, XP threshold advancement, higher-level creation, post-20 bonus feats)
+- 0 whole-row owner judgment: the 4 former judgment rows (2, 20, 22, 34) are settled by SRD 5.2.1 pp.19, 21, 23–25 per the audit's [SRD design calls](progression-acquisition-audit.md#srd-design-calls-follow-up-2026-10-26); 3 quoted ADR-0023 GM residues remain (generation-method preference, start level/equipment, enabling post-20 feats)
+
+(Covered becomes 17 after the design calls: row 2 Point Cost and row 34 level 19 Epic Boon; 36 bucket entries across 35 rows.)
 
 No V-row changes status.
 
-- **V-025** gains planned children S-231, S-232, S-233 and S-234: backgrounds, species/language choices, feat prerequisite kinds and repeats, and multiclass prerequisites.
+- **V-025** gains planned children S-231, S-232, S-233 and S-234: backgrounds, species/language choices, feat prerequisite kinds and repeats, and multiclass prerequisites; plus S-242, S-244 and S-245 (generation methods, higher-level creation, post-20 feats).
+- **V-026** also gains S-234 (multiclass entry), S-243 (XP thresholds) and S-244; **V-057** gains S-242 and S-243.
 - **V-026 / V-027** gain S-231 for background grants and S-232 for species choice grants. Multiclass proficiency subsets stay with S-047. That slice is Verified, but production class data has no `permanent_progression`.
 - Content defects that need no new vocabulary:
   - wizard and rogue skill lists

@@ -179,9 +179,9 @@ from the SRD 5.2.1 text. Page numbers are printed pages of
 the requirement. Only the clause the SRD explicitly leaves to the GM is kept as
 an ADR-0023 judgment item, quoted exactly.
 
-New requirements use `PROPOSED-chargen-N` placeholders. They aren't S-IDs yet:
-numbering and the shared registers (slices, checklist, roadmap, counts) are
-deferred to the owner's merge pass.
+New requirements were drafted as `PROPOSED-chargen-1…4` placeholders; the
+integrator assigned S-242–S-245 and updated the shared registers (slices,
+checklist, roadmap, counts).
 
 ### Row 2: ability score generation (p.21)
 
@@ -198,7 +198,7 @@ The Standard Array by Class table is a placement suggestion, not a rule.
 
 **Classification:**
 - Point Cost: Covered.
-- Standard Array and Random Generation: **new gap → PROPOSED-chargen-1** (creation ability-generation methods: method choice, array assignment, seeded 4d6-drop-lowest ×6 with the result recorded and saved). Parents V-025 and V-057.
+- Standard Array and Random Generation: **new gap → S-242 (PROPOSED-chargen-1)** (creation ability-generation methods: method choice, array assignment, seeded 4d6-drop-lowest ×6 with the result recorded and saved). Parents V-025 and V-057.
 
 **Judgment residue (ADR-0023):** "Your GM might prefer you to use a particular one." In this game that becomes a campaign setting that may restrict which methods are offered. It needs an owner default, not a rules interpretation.
 
@@ -213,7 +213,7 @@ The Standard Array by Class table is a placement suggestion, not a rule.
 - `Character.xp` is saved and loaded (character.gd:329, 2614, 2739).
 - Level gain is not driven by thresholds; no XP award-to-level route was found.
 
-**Classification:** **new gap → PROPOSED-chargen-2** (XP award and threshold advancement: award XP and raise level eligibility at table thresholds by total level, feeding the existing level-up and `pending_levels` routes, which are Covered under S-048/VS-69). Parents V-026 and V-057.
+**Classification:** **new gap → S-243 (PROPOSED-chargen-2)** (XP award and threshold advancement: award XP and raise level eligibility at table thresholds by total level, feeding the existing level-up and `pending_levels` routes, which are Covered under S-048/VS-69). Parents V-026 and V-057.
 
 **Judgment:** none. The SRD gives no GM option here. Milestone leveling is not an SRD rule, so it is not a requirement. Any non-SRD milestone mode would be an owner extension, outside this audit.
 
@@ -227,7 +227,7 @@ The Standard Array by Class table is a placement suggestion, not a rule.
 
 **Runtime:** creation produces level 1 only.
 
-**Classification:** **new gap → PROPOSED-chargen-3** (higher-level creation: repeat the level-up steps through the target level, including subclass, HP, the S-231 background and ASI/feat choices; set the minimum XP; apply the tier equipment and money). It depends on PROPOSED-chargen-2, S-045, S-048 and S-231.
+**Classification:** **new gap → S-244 (PROPOSED-chargen-3)** (higher-level creation: repeat the level-up steps through the target level, including subclass, HP, the S-231 background and ASI/feat choices; set the minimum XP; apply the tier equipment and money). It depends on S-243 (PROPOSED-chargen-2), S-045, S-048 and S-231.
 
 **Judgment residue (ADR-0023):**
 - "Your GM might start your group's characters at a level higher than 1." This is the campaign's start level (Crown currently starts at level 1).
@@ -244,7 +244,7 @@ The Standard Array by Class table is a placement suggestion, not a rule.
 
 **Classification:**
 - Level 19 Epic Boon: Covered.
-- Post-20 bonus feats: **new gap, conditional → PROPOSED-chargen-4** (one feat per 30,000 XP above 355,000; any feat the level 20 character qualifies for, Epic Boons included). Active only when the campaign enables it. Depends on PROPOSED-chargen-2 and S-233.
+- Post-20 bonus feats: **new gap, conditional → S-245 (PROPOSED-chargen-4)** (one feat per 30,000 XP above 355,000; any feat the level 20 character qualifies for, Epic Boons included). Active only when the campaign enables it. Depends on S-243 (PROPOSED-chargen-2) and S-233.
 
 **Judgment residue (ADR-0023):** "A GM can use feats as a form of advancement after characters reach level 20 … With this approach, each character gains one feat of their choice for every 30,000 XP the character earns above 355,000 XP. Epic Boon feats are especially appropriate for these bonus feats, but a player can choose any feat for which their level 20 character qualifies." (p.24) Whether the rule is enabled is the GM's call; its mechanics are fixed by the text.
 
@@ -254,7 +254,7 @@ The Standard Array by Class table is a placement suggestion, not a rule.
 |---|---|
 | Covered | 17 (adds row 2 Point Cost, row 34 level 19 Epic Boon) |
 | Covered-cap | 6 |
-| New | 15 (11 → S-231–S-234; 4 → PROPOSED-chargen-1…4 from rows 2, 20, 22, 34) |
+| New | 15 (11 → S-231–S-234; 4 → S-242–S-245 (formerly PROPOSED-chargen-1…4) from rows 2, 20, 22, 34) |
 | Judgment | 0 whole rows; 3 quoted GM residues (method preference, start level/equipment, post-20 feats) |
 
 ### Slice ID collision check (2026-10-26 08:2x CDT)
@@ -269,10 +269,10 @@ Findings:
 - #65 only mentions S-231 as a reference.
 - The local `monster-audit` worktree (`docs/monster-statblock-audit`, unpushed) holds S-230/S-231 and V-100. The parent reports that Creature Stager will renumber.
 
-Result: S-231–S-234 stay as published in #63. No new S- or V-IDs are added here; new requirements use PROPOSED-chargen-1…4.
+Result: S-231–S-234 stay as published in #63. No new V-IDs are added; the integrator assigned S-242–S-245 (formerly PROPOSED-chargen-1…4), after S-240/S-241 from the SRC-01 batch 2 audit (#65).
 
 Updated next queue, inserted after step 3:
-- PROPOSED-chargen-2 (XP)
-- PROPOSED-chargen-1 (generation methods)
-- PROPOSED-chargen-3 (higher-level start)
-- PROPOSED-chargen-4 (post-20 feats)
+- S-243 (PROPOSED-chargen-2) (XP)
+- S-242 (PROPOSED-chargen-1) (generation methods)
+- S-244 (PROPOSED-chargen-3) (higher-level start)
+- S-245 (PROPOSED-chargen-4) (post-20 feats)

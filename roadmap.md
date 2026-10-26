@@ -48,8 +48,9 @@ cast transformations, combat Find Steed arrival/recovery and additional weapon
 damage-choice routes. The [reviewed boundary and original queue's open work](docs/planning/vocabulary-slices.md#pr57-60-validation)
 own their remaining scope. Continue the unresolved gameplay investigations or
 S-141 duration/concentration; do not reassign the delivered subsets. Counts are
-151 accepted of 230 defined engine slices after the [exploration audit](docs/reviews/dnd-code-vocabulary-gap-checklist.md#exploration-and-world-procedures-audit--srd-521-2026-10-26)
-added planned S-227–S-230 (travel pace/terrain, search, traps/locks).
+151 accepted of 238 defined engine slices after the [exploration audit](docs/reviews/dnd-code-vocabulary-gap-checklist.md#exploration-and-world-procedures-audit--srd-521-2026-10-26)
+added planned S-227–S-230 (travel pace/terrain, search, traps/locks) and the
+[Progression/Acquisition audit](docs/reviews/progression-acquisition-audit.md) added planned S-231–S-234 and S-242–S-245.
 
 The [first Crown conversion batch](docs/planning/vocabulary-slices.md#conversion-batch-001)
 resolves ten candidates: three shared spell conversions, one already generic
@@ -127,6 +128,7 @@ suggests this queue:
 3. S-231 backgrounds.
 4. S-232 species choices and the SRD species set.
 5. S-233 feat prerequisites, then the 17 SRD feats.
+6. S-243 XP advancement, S-242 generation methods, S-244 higher-level start, then S-245 post-20 feats (campaign-enabled).
 
 ## Scope and deferred work
 

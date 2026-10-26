@@ -8,7 +8,7 @@ certify converted catalog content.
 
 ## Count and scope
 
-**230 defined slices: 151 verified, 79 not yet accepted.** Counts measure accepted
+**238 defined slices: 151 verified, 87 not yet accepted.** Counts measure accepted
 bounded implementations, not time, effort or completion of every clause in a row.
 These totals include reviewed, repaired and merged Batches 034–065 through
 2026-10-21, plus combat save-exit placement (VS-144), the bounded located source-end continuation (VS-145) and
@@ -27,7 +27,7 @@ catalog content as part of every slice.
 
 | Phase | Defined | Verified | Not yet accepted |
 |---|---:|---:|---:|
-| P1 — Facts, results and grants | 34 | 34 | 0 |
+| P1 — Facts, results and grants | 42 | 34 | 8 |
 | P2 — Pools, time and effect state | 50 | 41 | 9 |
 | P3 — Rolls and decisions | 27 | 22 | 5 |
 | P4 — Damage and consequences | 25 | 20 | 5 |
@@ -36,7 +36,7 @@ catalog content as part of every slice.
 | P7 — Space, perception and illusions | 19 | 1 | 18 |
 | P8 — Physical items and bodies | 18 | 4 | 14 |
 | P9 — Procedures and campaign outcomes | 14 | 0 | 14 |
-| **Total** | **230** | **151** | **79** |
+| **Total** | **238** | **151** | **87** |
 
 ## How to use a row
 
@@ -1121,9 +1121,9 @@ row; its mapping below names explicit checkpoint-bearing slices.
 | V-022 — Outcome contingent on legal placement | S-121, S-122 |
 | V-023 — Dice-level edits and result multipliers | S-059, S-123, S-124, S-125 |
 | V-024 — Scoped attack/damage parameter replacement | S-126, S-127 |
-| V-025 — Choice acquisition, replacement and prerequisites | S-045, S-046, S-103 |
-| V-026 — Permanent progression grants | S-047, S-048 |
-| V-027 — Grants owned by exact source instances | S-006, S-012, S-013, S-015, S-046, S-047, S-049, S-050, S-134 |
+| V-025 — Choice acquisition, replacement and prerequisites | S-045, S-046, S-103, S-231, S-232, S-233, S-234, S-242, S-244, S-245 |
+| V-026 — Permanent progression grants | S-047, S-048, S-231, S-234, S-243, S-244 |
+| V-027 — Grants owned by exact source instances | S-006, S-012, S-013, S-015, S-046, S-047, S-049, S-050, S-134, S-231, S-232 |
 | V-028 — Casting permissions and alternative payment | S-134, S-135, S-136, S-221 |
 | V-029 — Per-source repertoire and slot progression | S-137, S-138, S-139 |
 | V-030 — Cast-local parameter transformations | S-140, S-141 |
@@ -1153,7 +1153,7 @@ row; its mapping below names explicit checkpoint-bearing slices.
 | V-054 — Transfer a captured grant to another actor | S-079, S-082, S-083 |
 | V-055 — Modify another rule's parameters or options | S-084, S-085 |
 | V-056 — Aftermath on source end | S-014, S-086, S-087 |
-| V-057 — Durable rule state at allowed checkpoints | S-009, S-012, S-013, S-014, S-015, S-031, S-048, S-049, S-051, S-064, S-066, S-069, S-074, S-079, S-082, S-088, S-090, S-107, S-128, S-130, S-137, S-150, S-152, S-154, S-161, S-163, S-165, S-168, S-170, S-173, S-175, S-177, S-187, S-188, S-196, S-200, S-204, S-206, S-208, S-210, S-216, S-219 |
+| V-057 — Durable rule state at allowed checkpoints | S-009, S-012, S-013, S-014, S-015, S-031, S-048, S-049, S-051, S-064, S-066, S-069, S-074, S-079, S-082, S-088, S-090, S-107, S-128, S-130, S-137, S-150, S-152, S-154, S-161, S-163, S-165, S-168, S-170, S-173, S-175, S-177, S-187, S-188, S-196, S-200, S-204, S-206, S-208, S-210, S-216, S-219, S-242, S-243 |
 | V-058 — Parameterized actor factory | S-154, S-155 |
 | V-059 — Command authority and initiative relationship | S-147, S-156, S-157, S-158 |
 | V-060 — Extra turns and off-turn action budgets | S-159, S-160 |
@@ -1279,7 +1279,7 @@ Record discovered additions/splits and refresh the phase/count/coverage tables.
 Keep live quest/session details on the Quest Board and orchestration queue,
 rather than turning this baseline into an execution diary.
 
-Planning reconciliation checked all 99 V-IDs, all 230 unique S-IDs, every named
+Planning reconciliation checked all 99 V-IDs, all 238 unique S-IDs, every named
 slice prerequisite, and absence of prerequisite cycles. This is document
 consistency only; it is not runtime or rules-fidelity validation.
 
@@ -2815,9 +2815,12 @@ Schema validator is unavailable. Production behavior is proved by Godot.
 
 Added by the [Progression/Acquisition audit](../reviews/progression-acquisition-audit.md)
 (base `ede0a3c`, registry sha256 `70a83cc7…845e`). These rows are Planned and
-not accepted. The phase and count tables above are deliberately left unchanged
-because concurrent audit PRs are open; refresh them once all of those PRs have
-merged. Feature effects belong to the Feature Auditor's rows. These rows cover
+not accepted. Phase: all eight rows are **P1 — Facts, results and grants** (they
+acquire, gate and grant creation/progression facts, alongside S-045–S-050); the
+phase, count and crosswalk tables above include them. S-242–S-245 come from the
+audit's [SRD design calls](../reviews/progression-acquisition-audit.md#srd-design-calls-follow-up-2026-10-26)
+(formerly PROPOSED-chargen-1…4; IDs follow S-240/S-241 from the SRC-01 batch 2
+audit, so they are not monotonic with merge order). Feature effects belong to the Feature Auditor's rows. These rows cover
 only how features are chosen, gated, granted and saved.
 
 | Slice | Status | Parents | Scope | Depends on |
@@ -2826,3 +2829,7 @@ only how features are chosen, gated, granted and saved.
 | S-232 — Species and language creation choices | Planned | V-025, V-027 | Lineage, ancestry and legacy choice; spellcasting ability chosen at selection; size choice; species skill choice; Human Versatile Origin feat; Common + 2 languages (SRD p.20, pp.84–86). Character-level 3/5 grants reuse S-048 and S-139. | S-045, S-048, S-139 |
 | S-233 — Feat prerequisite kinds and repeat rules | Planned | V-025 | Class-level and named-feature prerequisites (Fighting Style, Spellcasting), the repeatable flag, and distinct-parameter repeats such as the Magic Initiate list (SRD pp.87–88). | S-049, S-050 |
 | S-234 — Multiclass entry prerequisites | Planned | V-025, V-026 | 13+ in the primary ability of the new class and every current class (all-of / any-of), checked before a class is offered, with the exact failing score reported (SRD p.24). | S-047 |
+| S-242 — Creation ability-generation methods | Planned | V-025, V-057 | Offer Standard Array (15, 14, 13, 12, 10, 8) and Random Generation (4d6 drop lowest ×6, seeded, result recorded and saved) beside the existing 27-point Point Cost; a campaign setting may restrict the offered methods (ADR-0023 residue) (SRD p.21). Formerly PROPOSED-chargen-1. | S-045 |
+| S-243 — XP award and threshold advancement | Planned | V-026, V-057 | Award XP and raise level eligibility at Character Advancement table thresholds (0–355,000) by total character level, feeding the existing level-up and `pending_levels` routes (S-048/VS-69); no milestone rule in SRD 5.2.1 (SRD p.23, p.25). Formerly PROPOSED-chargen-2. | S-048 |
+| S-244 — Higher-level character creation | Planned | V-025, V-026 | Repeat the level-up steps through the target level (subclass, HP, background, ASI/feat choices), set minimum XP for that level, and apply the tier money/magic-item rarity grant from Starting Equipment at Higher Levels; start level and actual equipment are campaign settings (ADR-0023 residue) (SRD p.19, p.24). Formerly PROPOSED-chargen-3. | S-243, S-045, S-048, S-231 |
+| S-245 — Post-level-20 bonus feats (campaign-enabled) | Planned | V-025 | When the campaign enables it, grant one feat per 30,000 XP above 355,000, any feat the level 20 character qualifies for, Epic Boons included; enabling is the GM's call (ADR-0023 residue) (SRD p.24). Formerly PROPOSED-chargen-4. | S-243, S-233 |
