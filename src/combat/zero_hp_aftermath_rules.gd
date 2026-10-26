@@ -169,7 +169,15 @@ static func _apply(target, policy: Dictionary, cause_source: Dictionary, decisio
 #   eligibility: {max_current_hp?, creature_types?, excluded_creature_types?}
 # Already-dead/settled bodies and non-creature targets are always refused.
 
-const EXPLICIT_KEYS := ["id", "outcome", "remains", "gear", "cause", "at_zero", "eligibility"] # successor: PARTIAL, not accepted here
+const EXPLICIT_KEYS := ["id", "outcome", "remains", "gear", "cause", "at_zero", "eligibility", "fallback"] # successor: PARTIAL, not accepted here
+# Batch 081 (#45 follow-up). Brandon: "support a declared fallback, not an
+# automatic one on every death effect." A policy MAY declare
+#   fallback: {"when": "above_max_current_hp", "damage": "<dice>", "damage_type": "<type>"}
+# A living creature that passes every other gate but has more Hit Points than
+# eligibility.max_current_hp takes that damage instead of being refused. A
+# policy without `fallback` keeps the Batch 073 refusal; nothing extra happens.
+const FALLBACK_KEYS := ["when", "damage", "damage_type"]
+const FALLBACK_WHEN := ["above_max_current_hp"]
 const ELIGIBILITY_KEYS := ["max_current_hp", "creature_types", "excluded_creature_types"]
 
 static func explicit_policy_error(policy: Variant) -> String:
@@ -189,7 +197,27 @@ static func explicit_policy_error(policy: Variant) -> String:
 	if rules.has("max_current_hp") and (not (rules.max_current_hp is int or rules.max_current_hp is float) or float(rules.max_current_hp) != floor(float(rules.max_current_hp)) or int(rules.max_current_hp) < 0): return "settle_death max_current_hp must be a whole number >= 0"
 	for key in ["creature_types", "excluded_creature_types"]:
 		if rules.has(key) and (not rules[key] is Array or rules[key].is_empty() or rules[key].any(func(v): return not v is String or str(v).is_empty())): return "settle_death %s must be nonempty strings" % key
+	if policy.has("fallback"): return fallback_error(policy)
 	return ""
+
+static func fallback_error(policy: Dictionary) -> String:
+	var fb: Variant = policy.get("fallback")
+	if not fb is Dictionary: return "settle_death fallback must be an object"
+	for key in fb:
+		if str(key) not in FALLBACK_KEYS: return "settle_death fallback has unknown field '%s'" % str(key)
+	if str(fb.get("when", "")) not in FALLBACK_WHEN: return "settle_death fallback when must be one of %s" % str(FALLBACK_WHEN)
+	if not policy.get("eligibility", {}).has("max_current_hp"): return "settle_death fallback above_max_current_hp needs eligibility.max_current_hp"
+	if not SharedStepExecutor._formula(fb.get("damage")) or fb.get("damage") is int or fb.get("damage") is float: return "settle_death fallback damage must be a dice formula"
+	if not fb.get("damage_type") is String or str(fb.damage_type) not in DataLoader.VALID_DAMAGE_TYPES: return "settle_death fallback damage_type is invalid"
+	return ""
+
+## True when the declared fallback (not death) applies to this target.
+static func fallback_applies(target, policy: Dictionary) -> bool:
+	if not policy.get("fallback") is Dictionary or str(policy.fallback.get("when", "")) != "above_max_current_hp": return false
+	var limit: Variant = policy.get("eligibility", {}).get("max_current_hp", null)
+	if limit == null: return false
+	var hp: int = int(target.get("current_hp", 0)) if target is Dictionary else (target.current_hp if target is Character else 0)
+	return hp > int(limit) and explicit_target_error(target, policy).is_empty()
 
 static func _creature_type(target) -> String:
 	if target is Dictionary: return str(target.get("creature_type", target.get("type", "")))
@@ -208,7 +236,7 @@ static func explicit_target_error(target, policy: Dictionary) -> String:
 	var kind := _creature_type(target)
 	if rules.has("creature_types") and kind not in rules.creature_types: return "%s is not an eligible creature type." % who
 	if kind in rules.get("excluded_creature_types", []): return "%s is not an eligible creature type." % who
-	if rules.has("max_current_hp") and hp > int(rules.max_current_hp): return "%s has too many Hit Points (%d > %d)." % [who, hp, int(rules.max_current_hp)]
+	if rules.has("max_current_hp") and hp > int(rules.max_current_hp) and not policy.has("fallback"): return "%s has too many Hit Points (%d > %d)." % [who, hp, int(rules.max_current_hp)]
 	if hp <= 0 and str(policy.get("at_zero", "")) == "refuse": return "%s is already at 0 Hit Points." % who
 	return ""
 
@@ -222,9 +250,17 @@ static func explicit_cast_error(target, spell: Dictionary) -> String:
 
 ## Settle once. A stale/ineligible target at resolution returns applied=false
 ## and changes nothing (no second death, remains or successor).
-static func settle_explicit(target, policy: Dictionary, source_instance_id: String, source_character: Character) -> Dictionary:
+static func settle_explicit(target, policy: Dictionary, source_instance_id: String, source_character: Character, decisions: Dictionary = {}) -> Dictionary:
 	var error := explicit_target_error(target, policy)
 	if not error.is_empty(): return {"applied": false, "reason": error}
+	if fallback_applies(target, policy):
+		# Batch 081: the declared fallback replaces death; it is ordinary damage
+		# through the shared damage boundary (resistances, temp HP, 0-HP rules).
+		var rolled := Dice.parse_dice_string(str(policy.fallback.damage))
+		var dmg_decisions := decisions.duplicate()
+		if not source_instance_id.is_empty(): dmg_decisions["damage_source_instance_id"] = source_instance_id
+		var dealt := CombatAction.resolve_damage(target, rolled, str(policy.fallback.damage_type), dmg_decisions, false, false, source_character)
+		return {"applied": false, "fallback": true, "damage": int(dealt.get("damage", 0)), "rolled": rolled, "damage_type": str(policy.fallback.damage_type), "policy_id": str(policy.id)}
 	var at_zero: bool = (target.current_hp if target is Character else int(target.get("current_hp", 0))) <= 0
 	var cause_source := {
 		"policy_id": str(policy.id), "outcome": str(policy.outcome),

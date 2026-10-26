@@ -1,0 +1,16 @@
+[
+  {
+    "id": "fixture:b081_unmake_object",
+    "name": "081 Unmake Object",
+    "description": "Neutral fixture: one nonmagical object that is not being worn or carried is destroyed outright. Creatures are not affected.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "targets_objects": true,
+    "concentration": false,
+    "classes": ["wizard"],
+    "effects": [{"type": "destroy_object", "policy": {"id": "b081:unmake_object", "cause": "unmade_object", "magical": "refuse"}}]
+  }
+]

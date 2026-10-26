@@ -90,6 +90,7 @@ func _ready() -> void:
 	_run_group("combat", func(): Batch078Checks.run(_assert))
 	_run_group("combat", func(): Batch079Checks.run(_assert))
 	_run_group("combat", func(): Batch080Checks.run(_assert))
+	_run_group("combat", func(): Batch081Checks.run(_assert))
 	_run_group("combat", func(): Batch067Checks.run(_assert))
 	_run_group("combat", func(): Batch068Checks.run(_assert))
 	_run_group("combat", func(): Batch069Checks.run(_assert))
