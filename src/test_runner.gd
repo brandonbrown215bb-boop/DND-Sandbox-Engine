@@ -662,14 +662,15 @@ func _test_data_loader() -> void:
 	# Complete SRD 5.2.1 spell catalog assertions
 	var expected_class_spell_counts: Dictionary = {
 		# SRD list plus the existing curated PHB2024 Cloud of Daggers integration.
-		"wizard": 219,
-		"sorcerer": 139,
+		# Batch 091 (D-09): counts re-approved to SRD 5.2.1 class headers under Brandon's SRD-settles-rules rule.
+		"wizard": 220,
+		"sorcerer": 141,
 		"druid": 125,
-		"cleric": 110,
-		"bard": 136,
-		"warlock": 75,
-		"ranger": 49,
-		"paladin": 46
+		"cleric": 109,
+		"bard": 135,
+		"warlock": 73,
+		"ranger": 48,
+		"paladin": 45
 	}
 	for class_name_key in expected_class_spell_counts:
 		var list_options := DataLoader.get_spell_list_options([class_name_key])
@@ -2117,7 +2118,22 @@ func _test_spellcasting() -> void:
 	_assert(color_spray.get("school", "") == "illusion" and color_spray.get("target", "") == "cone" and color_spray.get("range", -1) == 0 and color_spray.get("components", []) == ["V", "S", "M"] and color_spray.get("duration", "") == "instantaneous" and color_spray.get("save", "") == "CON" and int(color_spray.get("effects", [])[0].get("size", 0)) == 3, "Color Spray records the 15-foot Constitution-save cone, components, and instant duration")
 	_assert(not color_spray_resolution.get("saved", true) and color_spray_effects.size() == 1 and color_spray_target.has_condition("blinded") == false and color_spray_attack.get("disadvantage", false), "Color Spray Blinds a creature on a failed save and imposes attack Disadvantage")
 	_assert("color_spray" in DataLoader.get_character_class("bard").get("spell_list_ids", []) and "color_spray" in DataLoader.get_character_class("sorcerer").get("spell_list_ids", []) and "color_spray" in DataLoader.get_character_class("wizard").get("spell_list_ids", []), "Color Spray is available to Bard, Sorcerer, and Wizard")
-	_assert(command_spell.get("save", "") == "WIS" and command_spell.get("components", []) == ["V"] and command_spell.get("target_creature_type_exclusions", []) == ["undead"] and command_spell.get("upcast", {}).get("additional_targets_per_level", 0) == 1, "Command records its Wisdom save, verbal component, Undead exclusion, and extra target per upcast level")
+	_assert(command_spell.get("save", "") == "WIS" and command_spell.get("components", []) == ["V"] and command_spell.get("target_creature_type_exclusions", []).is_empty() and command_spell.get("upcast", {}).get("additional_targets_per_level", 0) == 1, "Command records its Wisdom save, verbal component, no creature-type exclusion (SRD 5.2.1), and extra target per upcast level")
+	_assert(DataLoader.get_spell("find_steed").get("duration", "") == "Instantaneous" and DataLoader.get_spell("divine_smite").get("duration", "") == "Instantaneous" and DataLoader.get_spell("lesser_restoration").get("casting_time", "") == "bonus_action" and DataLoader.get_spell("flame_strike").get("damage_components", []).size() == 2 and DataLoader.get_spell("enlarge/reduce").get("damage", "") == "", "Batch 089 spell data corrections match SRD 5.2.1 (Find Steed/Divine Smite instantaneous, Lesser Restoration bonus action, Flame Strike fire+radiant, Enlarge/Reduce no damage)")
+	_assert(DataLoader.get_item("potion_healing").get("action_cost", "") == "bonus_action" and DataLoader.get_item("potion_supreme_healing").get("action_cost", "") == "bonus_action" and DataLoader.get_item("potion_of_poison_resistance").get("effects", [1]).is_empty() and DataLoader.get_item("potion_of_poison").get("effects", []).size() == 2 and int(DataLoader.get_item("potion_of_poison").get("effects", [{}, {}])[1].get("duration", 0)) == 10, "Batch 090 item data corrections: healing potions are Bonus Actions, Poison Resistance no longer poisons, Potion of Poison keeps its bounded duration pending the condition repair")
+	var potion_duration_actor := _fresh_char("Potion Duration", "human", "fighter", {"STR": 14, "DEX": 10, "CON": 14, "INT": 8, "WIS": 10, "CHA": 10})
+	potion_duration_actor.max_hp = 100
+	potion_duration_actor.current_hp = 100
+	potion_duration_actor.inventory.add_item("potion_of_poison")
+	var potion_duration_use := potion_duration_actor.inventory.consume("potion_of_poison", potion_duration_actor)
+	_assert(potion_duration_use.get("success", false) and potion_duration_actor.has_condition("poisoned") and potion_duration_actor.current_hp >= 76 and potion_duration_actor.current_hp <= 96 and not potion_duration_actor.inventory.has_item("potion_of_poison"), "Potion of Poison consumption deals 4d6 once, applies the bounded condition and consumes the item")
+	for potion_turn in 9:
+		potion_duration_actor.tick_conditions()
+	_assert(potion_duration_actor.has_condition("poisoned") and int(potion_duration_actor.conditions.get("poisoned", 0)) == 1, "Potion of Poison keeps its existing final condition turn")
+	potion_duration_actor.tick_conditions()
+	_assert(not potion_duration_actor.has_condition("poisoned"), "Potion of Poison expires at the old boundary instead of adding 590 damaging turns")
+	_assert(DataLoader.get_item("potion_greater_healing").get("action_cost", "") == "bonus_action" and DataLoader.get_item("potion_superior_healing").get("action_cost", "") == "bonus_action" and str(DataLoader.get_item("potion_of_poison").get("effects", [{}])[0].get("damage_type", "")) == "poison" and str(DataLoader.get_item("potion_of_poison").get("effects", [{}])[0].get("value", "")) == "4d6", "Reviewer stress: Batch 090 greater/superior healing are Bonus Actions; Potion of Poison damage is 4d6 Poison")
+	_assert(DataLoader.get_spell("slow").get("save", "") == "WIS" and DataLoader.get_spell("wind_wall").get("damage_type", "") == "bludgeoning" and DataLoader.get_spell("storm_of_vengeance").get("condition_on_failed_save", "") == "deafened" and DataLoader.get_spell("earthquake").get("condition_on_failed_save", "") == "prone" and str(DataLoader.get_spell("earthquake").get("damage", "")) in ["", "<null>"] and DataLoader.get_spell("command").get("save", "") == "WIS", "Reviewer stress: Batch 089 Slow WIS, Wind Wall bludgeoning, Storm of Vengeance deafened, Earthquake prone with no base damage, Command WIS save")
 	_assert(not command_resolution.get("saved", true) and command_effects.size() == 1 and command_effects[0].get("type", "") == "command" and command_saved.get("saved", false) and CombatAction.apply_spell_failed_save_effects(command_target, command_spell, command_saved).is_empty(), "Command produces an instruction only after a failed Wisdom save")
 	for command_class in ["bard", "cleric", "paladin"]:
 		_assert("command" in DataLoader.get_character_class(command_class).get("spell_list_ids", []), "Command is available to %s" % command_class.capitalize())
@@ -2277,7 +2293,7 @@ func _test_spellcasting() -> void:
 	sphere_caster.add_condition("resilient_sphere", 3)
 	var sphere_speed := sphere_caster.get_speed()
 	var sphere_outgoing_spell := CombatAction.validate_spell_target(sphere_caster, small_sphere_target, {"id": "cure_wounds", "name": "Cure Wounds", "casting_time": "action", "range": 1, "target": "single", "components": ["V", "S"]}, 5)
-	_assert(resilient_sphere.get("name", "") == "Otiluke's Resilient Sphere" and resilient_sphere.get("rules_source", "") == "SRD5.2.1" and resilient_sphere.get("target_sizes", []).size() == 4 and resilient_sphere.get("classes", []) == ["cleric", "paladin", "wizard"] and not sphere_resolution.get("saved", true) and sphere_applied.size() == 1 and sphere_monster.get("conditions", {}).has("resilient_sphere"), "Resilient Sphere records its 2024 SRD list, eligible sizes, and failed-save enclosure")
+	_assert(resilient_sphere.get("name", "") == "Otiluke's Resilient Sphere" and resilient_sphere.get("rules_source", "") == "SRD5.2.1" and resilient_sphere.get("target_sizes", []).size() == 4 and resilient_sphere.get("classes", []) == ["wizard"] and not sphere_resolution.get("saved", true) and sphere_applied.size() == 1 and sphere_monster.get("conditions", {}).has("resilient_sphere"), "Resilient Sphere records its 2024 SRD list, eligible sizes, and failed-save enclosure")
 	_assert(int(sphere_damage.get("damage", -1)) == 0 and sphere_damage.get("blocked_by_resilient_sphere", false) and not sphere_weapon_attack.get("hit", true) and not sphere_spell_block.get("success", true) and not sphere_outgoing_spell.get("success", true), "Resilient Sphere blocks external damage and attacks, incoming spells, and spells cast outward from inside")
 	_assert(saved_sphere_resolution.get("saved", false) and not saved_sphere_monster.get("conditions", {}).has("resilient_sphere") and disintegrate_sphere.get("sphere_destroyed", false) and int(disintegrate_sphere.get("damage", -1)) == 0, "A successful save avoids enclosure, while Disintegrate ends the sphere without harming its occupant")
 	_assert(small_sphere_valid.get("success", false) and willing_sphere_applied.size() == 1 and willing_sphere_resolution.get("message", "").contains("without a saving throw") and sphere_speed == 0 and sphere_caster_speed > 0 and FighterRules.monster_speed(sphere_monster) == 0, "Resilient Sphere encloses willing Small characters without a save and stops ordinary movement for enclosed creatures")
@@ -2360,8 +2376,9 @@ func _test_spellcasting() -> void:
 	for curse_class in ["cleric", "paladin", "warlock", "wizard"]:
 		_assert("remove_curse" in DataLoader.get_character_class(curse_class).get("spell_list_ids", []), "Remove Curse is available to %s" % curse_class.capitalize())
 	_assert(guidance_check.get("guidance_bonus", 0) >= 1 and guidance_check.get("guidance_bonus", 0) <= 4 and guidance_check.get("total", 0) == guidance_check.get("natural_roll", 0) + guidance_check.get("modifier", 0) + guidance_check.get("guidance_bonus", 0) and unrelated_guidance_check.get("guidance_bonus", -1) == 0, "Guidance adds 1d4 to checks using the chosen skill only")
-	for guidance_class in ["bard", "cleric", "druid"]:
+	for guidance_class in ["cleric", "druid"]:
 		_assert("guidance" in DataLoader.get_character_class(guidance_class).get("spell_list_ids", []), "Guidance is available to %s" % guidance_class.capitalize())
+	_assert("guidance" not in DataLoader.get_character_class("bard").get("spell_list_ids", []), "Guidance is not on the SRD 5.2.1 Bard list (Divination Cantrip (Cleric, Druid))")
 	_assert(not mockery_resolution.get("saved", true) and int(mockery_resolution.get("damage", 0)) >= 1 and int(mockery_resolution.get("damage", 0)) <= 6 and mockery_effects.size() == 1 and mockery_attack.get("disadvantage", false) and not mockery_target.get("conditions", {}).has("vicious_mockery_disadvantage"), "Vicious Mockery applies Disadvantage to and consumes a monster's next attack after a failed save")
 	_assert(CombatAction.apply_spell_failed_save_effects(mockery_target, vicious_mockery, {"saved": true}).is_empty() and not mockery_attack_after_expiry.get("disadvantage", false), "Vicious Mockery has no effect on a successful save and expires at the target's turn end")
 	_assert(missed_chill_effects.is_empty() and not CombatAction.is_healing_suppressed(chill_miss_target), "Chill Touch applies no healing restriction on a miss")

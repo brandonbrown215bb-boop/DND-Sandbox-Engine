@@ -103,3 +103,34 @@ existing shared saved-choice paths. Focused checks cover level-1 spell capacity,
 both Primal Order options, and Wild Shape resource scaling and recovery. Ice
 Knife is also available as a curated level-1 spell; its attack and 5-foot
 Dexterity-save burst resolve on both hits and misses in the combat viewport.
+
+<a id="srd-feature-inventory"></a>
+
+## SRD 5.2.1 feature inventory — 2026-10-26
+
+Static source/inventory pass, not a rules audit or gameplay proof. SRD headings were read from `SRD_CC_v5.2.1.pdf` (pages are PDF page numbers) and matched by name/level to `data/core/classes/druid.json`. Repo status is the [feature matrix](../feature_matrix.md) exposure label / record `rules_status`. Registry slice is shown only where the slice registry names this feature or its generic consumer; `unassigned` means no documented owning slice. V-IDs are the [checklist](../reviews/dnd-code-vocabulary-gap-checklist.md) rows citing this feature as an example; they are open requirements, not owning slices. **Reviewed** means an SRD clause review recorded in the [slice registry](../planning/vocabulary-slices.md); every other row is unreviewed, whatever its `rules_status` says. Rows absent from repo data are not filled from memory.
+
+SRD subclass: **Circle of the Land** — absent from repo data.
+
+| Kind | Lvl | SRD feature / repo record | SRD | Repo ID | Repo status | V-IDs | Registry slice (documented limit) | Review |
+|---|---:|---|---|---|---|---|---|---|
+| class | 1 | Spellcasting | p.41 | `druid_spellcasting` | mechanics-backed / unset | — | unassigned | Unreviewed |
+| class | 1 | Druidic | p.42 | `druid_druidic` | quarantined / unset | V-083 | unassigned | Unreviewed |
+| class | 1 | Primal Order | p.42 | `druid_primal_order` | mechanics-backed / unset | — | unassigned | Unreviewed |
+| class | 2 | Wild Shape | p.42 | `druid_wild_shape` | mechanics-backed / unset | V-062 | unassigned | Unreviewed |
+| class | 2 | Wild Companion | p.43 | `druid_wild_companion` | mechanics-backed / unset | — | unassigned | Unreviewed |
+| class | 3 | Druid Subclass | p.43 | `druid_druid_circle` | quarantined / unset | — | unassigned | Unreviewed |
+| class | 4 | Ability Score Improvement | p.43 | `druid_ability_score_improvement`, `druid_ability_score_improvement_8`, `druid_ability_score_improvement_12`, `druid_ability_score_improvement_16` | mechanics-backed / 2024-supported | — | S-049/S-050/S-084/S-085/S-103/S-104 (fixture-only Origin/ASI feat acquisition; feat content, prerequisites, ability benefits, Fighting Style grants, level-19 feat path open) | Unreviewed |
+| class | 5 | Wild Resurgence | p.43 | `druid_wild_resurgence` | mechanics-backed / unset | — | unassigned | Unreviewed |
+| class | 7 | Elemental Fury | p.43 | `druid_elemental_fury` | mechanics-backed / unset | — | unassigned | Unreviewed |
+| class | 15 | Improved Elemental Fury | p.43 | `druid_improved_elemental_fury` | mechanics-backed / unset | — | unassigned | Unreviewed |
+| class | 18 | Beast Spells | p.43 | `druid_beast_spells` | mechanics-backed / unset | — | unassigned | Unreviewed |
+| class | 19 | Epic Boon | p.43 | `druid_epic_boon` | mechanics-backed / unset | — | S-049/S-050/S-084/S-085/S-103/S-104 (fixture-only Origin/ASI feat acquisition; feat content, prerequisites, ability benefits, Fighting Style grants, level-19 feat path open) | Unreviewed |
+| class | 20 | Archdruid | p.43 | `druid_archdruid` | mechanics-backed / unset | V-093 | unassigned | Unreviewed |
+| repo-only class | 2 | Wild Shape uses | No SRD 5.2.1 heading found — source gap | `druid_wild_shape_uses` | mechanics-backed / unset | — | unassigned | Unreviewed |
+| repo-only class | 20 | Nature Magician | Named inside an SRD feature body (repo split); page not resolved per clause | `druid_nature_magician` | mechanics-backed / unset | — | unassigned | Unreviewed |
+| subclass | 3 | Circle of the Land Spells | p.46 | — | absent | — | unassigned | Unreviewed (absent) |
+| subclass | 3 | Land’s Aid | p.46 | — | absent | — | unassigned | Unreviewed (absent) |
+| subclass | 6 | Natural Recovery | p.46 | — | absent | — | unassigned | Unreviewed (absent) |
+| subclass | 10 | Nature’s Ward | p.46 | — | absent | — | unassigned | Unreviewed (absent) |
+| subclass | 14 | Nature’s Sanctuary | p.46 | — | absent | — | unassigned | Unreviewed (absent) |

@@ -329,7 +329,7 @@
     "description": "As you cast the spell, choose whether it creates antipathy or sympathy, and target one creature or object that is Huge or smaller. Then specify a kind of creature, such as red dragons, goblins, or vampires. A creature of the chosen kind makes a Wisdom saving throw when it comes within 120 feet of the target. Your choice of antipathy or sympathy determines what happens to a creature when it fails that save:Antipathy. The creature has the Frightened condition. The Frightened creature must use its movement on its turns to get as far away as possible from the target, moving by the safest route.Sympathy. The creature has the Charmed condition. The Charmed creature must use its movement on its turns to get as close as possible to the target, moving by the safest route. If the creature is within 5 feet of the target, the creature can't willingly move away. If the target damages the Charmed creature, that creature can make a Wisdom saving throw to end the effect, as described below. Ending the Effect. If the Frightened or Charmed creature ends its turn more than 120 feet away from the target, the creature makes a Wisdom saving throw. On a successful save, the creature is no longer affected by the target. A creature that successfully saves against this effect is immune to it for 1 minute, after which it can be affected again.",
     "level": 8,
     "school": "enchantment",
-    "casting_time": "action",
+    "casting_time": "hour",
     "range": 12,
     "duration": "10 days",
     "concentration": false,
@@ -431,7 +431,7 @@
     "description": "You and up to eight willing creatures within range project your astral bodies into the Astral Plane (the spell ends instantly if you are already on that plane). Each target's body is left behind in a state of suspended animation; it has the Unconscious condition, doesn't need food or air, and doesn't age.A target's astral form resembles its body in almost every way, replicating its game statistics and possessions. The principal difference is the addition of a silvery cord that trails from between the shoulder blades of the astral form. The cord fades from view after 1 foot. If the cord is cut—which happens only when an effect states that it does so—the target's body and astral form both die.A target's astral form can travel through the Astral Plane. The moment an astral form leaves that plane, the target's body and possessions travel along the silver cord, causing the target to re-enter its body on the new plane.Any damage or other effects that apply to an astral form have no effect on the target's body and vice versa. If a target's body or astral form drops to 0 Hit Points, the spell ends for that target. The spell ends for all the targets if you take a Magic action to dismiss it.When the spell ends for a target who isn't dead, the target reappears in its body and exits the state of suspended animation.",
     "level": 9,
     "school": "necromancy",
-    "casting_time": "action",
+    "casting_time": "hour",
     "range": 2,
     "duration": "Until dispelled",
     "concentration": false,
@@ -440,14 +440,15 @@
       "S",
       "M"
     ],
-    "target": "single",
+    "target": "multi",
     "attack_type": "none",
     "classes": [
       "cleric",
       "warlock",
       "wizard"
     ],
-    "material": "for each of the spell's targets, one jacinth worth 1,000+ GP and one silver bar worth 100+ GP, all of which the spell consumes"
+    "material": "for each of the spell's targets, one jacinth worth 1,000+ GP and one silver bar worth 100+ GP, all of which the spell consumes",
+    "base_targets": 9
   },
   {
     "id": "aura_of_life",
@@ -480,7 +481,7 @@
     "description": "You spend the casting time tracing magical pathways within a precious gemstone, and then touch the target. The target must be either a Beast or Plant creature with an Intelligence of 3 or less or a natural plant that isn't a creature. The target gains an Intelligence of 10 and the ability to speak one language you know. If the target is a natural plant, it becomes a Plant creature and gains the ability to move its limbs, roots, vines, creepers, and so forth, and it gains senses similar to a human's. The DM chooses statistics appropriate for the awakened Plant, such as the statistics for the Awakened Shrub or Awakened Tree in the Monster Manual.The awakened target has the Charmed condition for 30 days or until you or your allies deal damage to it. When that condition ends, the awakened creature chooses its attitude toward you.",
     "level": 5,
     "school": "transmutation",
-    "casting_time": "action",
+    "casting_time": "hour",
     "range": 1,
     "duration": "Instantaneous",
     "concentration": false,
@@ -495,7 +496,8 @@
       "bard",
       "druid"
     ],
-    "material": "an agate worth 1,000+ GP, which the spell consumes"
+    "material": "an agate worth 1,000+ GP, which the spell consumes",
+    "cast_time_seconds": 28800
   },
   {
     "id": "banishment",
@@ -739,7 +741,7 @@
     "description": "You touch a creature or at least 1 cubic inch of its flesh. An inert duplicate of that creature forms inside the vessel used in the spell's casting and finishes growing after 120 days; you choose whether the finished clone is the same age as the creature or younger. The clone remains inert and endures indefinitely while its vessel remains undisturbed.If the original creature dies after the clone finishes forming, the creature's soul transfers to the clone if the soul is free and willing to return. The clone is physically identical to the original and has the same personality, memories, and abilities, but none of the original's equipment. The creature's original remains, if any, become inert and can't be revived, since the creature's soul is elsewhere.",
     "level": 8,
     "school": "necromancy",
-    "casting_time": "action",
+    "casting_time": "hour",
     "range": 1,
     "duration": "Instantaneous",
     "concentration": false,
@@ -887,7 +889,12 @@
     "material": "three nut shells",
     "save": "WIS",
     "half_on_save": false,
-    "condition_on_failed_save": "confused"
+    "condition_on_failed_save": "confused",
+    "area_radius": 2,
+    "upcast": {
+      "starting_level": 4,
+      "radius_increase_feet_per_level": 5
+    }
   },
   {
     "id": "conjure_celestial",
@@ -1301,18 +1308,18 @@
     "damage_type": "fire",
     "save": "DEX",
     "half_on_save": true,
-    "area_point_count": 2,
     "effects": [
       {
         "type": "area_selection",
-        "shape": "line",
-        "size": 12
+        "shape": "sphere",
+        "radius": 4
       }
     ],
     "upcast": {
       "starting_level": 7,
       "damage_per_level": "1d6"
-    }
+    },
+    "area_radius": 4
   },
   {
     "id": "demiplane",
@@ -1490,7 +1497,7 @@
       "S",
       "M"
     ],
-    "target": "area",
+    "target": "single_ally",
     "attack_type": "none",
     "classes": [
       "sorcerer",
@@ -1564,10 +1571,8 @@
       "sorcerer"
     ],
     "material": "a fractured rock",
-    "damage": "12d6",
-    "damage_type": "bludgeoning",
     "save": "DEX",
-    "half_on_save": true
+    "condition_on_failed_save": "prone"
   },
   {
     "id": "elementalism",
@@ -1599,7 +1604,7 @@
     "school": "conjuration",
     "casting_time": "action",
     "range": 0,
-    "duration": "8 hours",
+    "duration": "Up to 8 hours",
     "concentration": false,
     "components": [
       "V",
@@ -1709,7 +1714,11 @@
     ],
     "material": "a bit of phosphorus or a firefly",
     "damage": "2d8",
-    "damage_type": "fire"
+    "damage_type": "fire",
+    "damage_type_options": [
+      "fire",
+      "cold"
+    ]
   },
   {
     "id": "fire_storm",
@@ -1758,14 +1767,24 @@
       "cleric"
     ],
     "material": "a pinch of sulfur",
-    "damage": "10d6",
-    "damage_type": "fire",
     "save": "DEX",
     "half_on_save": true,
     "upcast": {
       "starting_level": 5,
       "damage_per_level": "1d6"
-    }
+    },
+    "area_radius": 2,
+    "area_height_feet": 40,
+    "damage_components": [
+      {
+        "damage": "5d6",
+        "damage_type": "fire"
+      },
+      {
+        "damage": "5d6",
+        "damage_type": "radiant"
+      }
+    ]
   },
   {
     "id": "flesh_to_stone",
@@ -1809,12 +1828,20 @@
       "S",
       "M"
     ],
-    "target": "single",
+    "target": "area",
     "attack_type": "none",
     "classes": [
       "cleric"
     ],
-    "material": "ruby dust worth 1,000+ GP"
+    "material": "ruby dust worth 1,000+ GP",
+    "cast_time_seconds": 600,
+    "ritual": true,
+    "damage": "5d10",
+    "damage_type": "radiant",
+    "damage_type_options": [
+      "radiant",
+      "necrotic"
+    ]
   },
   {
     "id": "forcecage",
@@ -2122,7 +2149,7 @@
     "description": "You create a ward that protects up to 2,500 square feet of floor space. The warded area can be up to 20 feet tall, and you shape it as one 50-foot square, one hundred 5-foot squares that are contiguous, or twenty-five 10-foot squares that are contiguous.When you cast this spell, you can specify individuals that are unaffected by the spell's effects. You can also specify a password that, when spoken aloud within 5 feet of the warded area, makes the speaker immune to its effects.The spell creates the effects below within the warded area. Dispel Magic has no effect on Guards and Wards itself, but each of the following effects can be dispelled. If all four are dispelled, Guards and Wards ends. If you cast the spell every day for 365 days on the same area, the spell thereafter lasts until all its effects are dispelled. Corridors. Fog fills all the warded corridors, making them Heavily Obscured. In addition, at each intersection or branching passage offering a choice of direction, there is a 50 percent chance that a creature other than you believes it is going in the opposite direction from the one it chooses. Doors. All doors in the warded area are magically locked, as if sealed by the Arcane Lock spell. In addition, you can cover up to ten doors with an illusion to make them appear as plain sections of wall. Stairs. Webs fill all stairs in the warded area from top to bottom, as in the Web spell. These strands regrow in 10 minutes if they are destroyed while Guards and Wards lasts. Other Spell Effect. Place one of the following magical effects within the warded area:Dancing Lights in four corridors, with a simple program that the lights repeat as long as Guards and Wards lastsMagic Mouth in two locationsStinking Cloud in two locations (the vapors return within 10 minutes if dispersed while Guards and Wards lasts)Gust of Wind in one corridor or room (the wind blows continuously while the spell lasts)Suggestion in one 5-foot square; any creature that enters that square receives the suggestion mentally",
     "level": 6,
     "school": "abjuration",
-    "casting_time": "action",
+    "casting_time": "hour",
     "range": 1,
     "duration": "24 hours",
     "concentration": false,
@@ -2145,7 +2172,7 @@
     "description": "You touch a point and infuse an area around it with holy or unholy power. The area can have a radius up to 60 feet, and the spell fails if the radius includes an area already under the effect of Hallow. The affected area has the following effects. Hallowed Ward. Choose any of these creature types: Aberration, Celestial, Elemental, Fey, Fiend, or Undead. Creatures of the chosen types can't willingly enter the area, and any creature that is possessed by or that has the Charmed or Frightened condition from such creatures isn't possessed, Charmed, or Frightened by them while in the area. Extra Effect. You bind an extra effect to the area from the list below:Courage. Creatures of any types you choose can't gain the Frightened condition while in the area.Darkness. Darkness fills the area. Normal light, as well as magical light created by spells of a level lower than this spell, can't illuminate the area.Daylight. Bright light fills the area. Magical Darkness created by spells of a level lower than this spell can't extinguish the light.Peaceful Rest. Dead bodies interred in the area can't be turned into Undead.Extradimensional Interference. Creatures of any types you choose can't enter or exit the area using teleportation or interplanar travel.Fear. Creatures of any types you choose have the Frightened condition while in the area.Resistance. Creatures of any types you choose have Resistance to one damage type of your choice while in the area.Silence. No sound can emanate from within the area, and no sound can reach into it.Tongues. Creatures of any types you choose can communicate with any other creature in the area even if they don't share a common language.Vulnerability. Creatures of any types you choose have Vulnerability to one damage type of your choice while in the area.",
     "level": 5,
     "school": "abjuration",
-    "casting_time": "action",
+    "casting_time": "hour",
     "range": 1,
     "duration": "Until dispelled",
     "concentration": false,
@@ -2159,7 +2186,8 @@
     "classes": [
       "cleric"
     ],
-    "material": "incense worth 1,000+ GP, which the spell consumes"
+    "material": "incense worth 1,000+ GP, which the spell consumes",
+    "cast_time_seconds": 86400
   },
   {
     "id": "hallucinatory_terrain",
@@ -2225,14 +2253,16 @@
       "S",
       "M"
     ],
-    "target": "self",
+    "target": "multi",
     "attack_type": "none",
     "classes": [
       "bard",
       "cleric",
       "druid"
     ],
-    "material": "a gem-encrusted bowl worth 1,000+ GP, which the spell consumes"
+    "material": "a gem-encrusted bowl worth 1,000+ GP, which the spell consumes",
+    "cast_time_seconds": 600,
+    "base_targets": 12
   },
   {
     "id": "hold_monster",
@@ -2326,16 +2356,24 @@
       "wizard"
     ],
     "material": "a mitten",
-    "damage": "2d10",
-    "damage_type": "bludgeoning",
     "save": "DEX",
     "half_on_save": true,
-    "splash_damage": "4d6",
-    "splash_damage_type": "cold",
     "upcast": {
       "starting_level": 4,
       "damage_per_level": "1d10"
-    }
+    },
+    "area_radius": 4,
+    "area_height_feet": 40,
+    "damage_components": [
+      {
+        "damage": "2d10",
+        "damage_type": "bludgeoning"
+      },
+      {
+        "damage": "4d6",
+        "damage_type": "cold"
+      }
+    ]
   },
   {
     "id": "imprisonment",
@@ -2782,10 +2820,7 @@
     ],
     "target": "single",
     "attack_type": "none",
-    "classes": [
-      "warlock",
-      "wizard"
-    ],
+    "classes": ["sorcerer", "warlock", "wizard"],
     "damage": "3d8",
     "damage_type": "psychic",
     "save": "WIS",
@@ -2964,7 +2999,7 @@
     "description": "You attempt to bind a Celestial, an Elemental, a Fey, or a Fiend to your service. The creature must be within range for the entire casting of the spell. (Typically, the creature is first summoned into the center of the inverted version of the Magic Circle spell to trap it while this spell is cast.) At the completion of the casting, the target must succeed on a Charisma saving throw or be bound to serve you for the duration. If the creature was summoned or created by another spell, that spell's duration is extended to match the duration of this spell.A bound creature must follow your commands to the best of its ability. You might command the creature to accompany you on an adventure, to guard a location, or to deliver a message. If the creature is Hostile, it strives to twist your commands to achieve its own objectives. If the creature carries out your commands completely before the spell ends, it travels to you to report this fact if you are on the same plane of existence. If you are on a different plane, it returns to the place where you bound it and remains there until the spell ends.",
     "level": 5,
     "school": "abjuration",
-    "casting_time": "action",
+    "casting_time": "hour",
     "range": 12,
     "duration": "24 hours",
     "concentration": false,
@@ -3001,7 +3036,7 @@
       "S",
       "M"
     ],
-    "target": "single",
+    "target": "multi",
     "attack_type": "none",
     "classes": [
       "cleric",
@@ -3010,7 +3045,8 @@
       "warlock",
       "wizard"
     ],
-    "material": "a forked, metal rod worth 250+ GP and attuned to a plane of existence"
+    "material": "a forked, metal rod worth 250+ GP and attuned to a plane of existence",
+    "base_targets": 9
   },
   {
     "id": "polymorph",
@@ -3114,10 +3150,8 @@
       "bard",
       "wizard"
     ],
-    "damage": "12d6",
-    "damage_type": "fire",
     "save": "CON",
-    "half_on_save": true
+    "condition_on_failed_save": "blinded"
   },
   {
     "id": "private_sanctum",
@@ -3193,7 +3227,7 @@
     "description": "With a touch, you revive a dead creature if it has been dead no longer than 10 days and it wasn't Undead when it died.The creature returns to life with 1 Hit Point. This spell also neutralizes any poisons that affected the creature at the time of death.This spell closes all mortal wounds, but it doesn't restore missing body parts. If the creature is lacking body parts or organs integral for its survival—its head, for instance—the spell automatically fails.Coming back from the dead is an ordeal. The target takes a -4 penalty to D20 Tests. Every time the target finishes a Long Rest, the penalty is reduced by 1 until it becomes 0.",
     "level": 5,
     "school": "necromancy",
-    "casting_time": "action",
+    "casting_time": "hour",
     "range": 1,
     "duration": "Instantaneous",
     "concentration": false,
@@ -3318,11 +3352,7 @@
       "large"
     ],
     "willing_target_skips_save": true,
-    "classes": [
-      "cleric",
-      "paladin",
-      "wizard"
-    ],
+    "classes": ["wizard"],
     "material": "a glass sphere",
     "save": "DEX",
     "half_on_save": false,
@@ -3348,7 +3378,7 @@
     "description": "With a touch, you revive a dead creature that has been dead for no more than a century, didn't die of old age, and wasn't Undead when it died.The creature returns to life with all its Hit Points. This spell also neutralizes any poisons that affected the creature at the time of death. This spell closes all mortal wounds and restores any missing body parts.Coming back from the dead is an ordeal. The target takes a -4 penalty to D20 Tests. Every time the target finishes a Long Rest, the penalty is reduced by 1 until it becomes 0.Casting this spell to revive a creature that has been dead for 365 days or longer taxes you. Until you finish a Long Rest, you can't cast spells again, and you have Disadvantage on D20 Tests.",
     "level": 7,
     "school": "necromancy",
-    "casting_time": "action",
+    "casting_time": "hour",
     "range": 1,
     "duration": "Instantaneous",
     "concentration": false,
@@ -3380,14 +3410,16 @@
       "S",
       "M"
     ],
-    "target": "single",
+    "target": "area",
     "attack_type": "none",
     "classes": [
       "druid",
       "sorcerer",
       "wizard"
     ],
-    "material": "a lodestone and iron filings"
+    "material": "a lodestone and iron filings",
+    "area_radius": 10,
+    "area_height_feet": 100
   },
   {
     "id": "scrying",
@@ -3539,7 +3571,7 @@
     "description": "You create a simulacrum of one Beast or Humanoid that is within 10 feet of you for the entire casting of the spell. You finish the casting by touching both the creature and a pile of ice or snow that is the same size as that creature, and the pile turns into the simulacrum, which is a creature. It uses the game statistics of the original creature at the time of casting, except it is a Construct, its Hit Point maximum is half as much, and it can't cast this spell.The simulacrum is Friendly to you and creatures you designate. It obeys your commands and acts on your turn in combat. The simulacrum can't gain levels, and it can't take Short or Long Rests.If the simulacrum takes damage, the only way to restore its Hit Points is to repair it as you take a Long Rest, during which you expend components worth 100 GP per Hit Point restored. The simulacrum must stay within 5 feet of you for the repair.The simulacrum lasts until it drops to 0 Hit Points, at which point it reverts to snow and melts away. If you cast this spell again, any simulacrum you created with this spell is instantly destroyed.",
     "level": 7,
     "school": "illusion",
-    "casting_time": "action",
+    "casting_time": "hour",
     "range": 1,
     "duration": "Until dispelled",
     "concentration": false,
@@ -3553,7 +3585,8 @@
     "classes": [
       "wizard"
     ],
-    "material": "powdered ruby worth 1,500+ GP, which the spell consumes"
+    "material": "powdered ruby worth 1,500+ GP, which the spell consumes",
+    "cast_time_seconds": 43200
   },
   {
     "id": "stone_shape",
@@ -3626,7 +3659,8 @@
     "damage": "2d6",
     "damage_type": "thunder",
     "save": "CON",
-    "half_on_save": true
+    "half_on_save": false,
+    "condition_on_failed_save": "deafened"
   },
   {
     "id": "summon_dragon",
@@ -3785,13 +3819,14 @@
       "S",
       "M"
     ],
-    "target": "single",
+    "target": "multi",
     "attack_type": "none",
     "classes": [
       "bard",
       "wizard"
     ],
-    "material": "two eggs"
+    "material": "two eggs",
+    "base_targets": 8
   },
   {
     "id": "teleport",
@@ -3806,13 +3841,14 @@
     "components": [
       "V"
     ],
-    "target": "single",
+    "target": "multi",
     "attack_type": "none",
     "classes": [
       "bard",
       "sorcerer",
       "wizard"
-    ]
+    ],
+    "base_targets": 9
   },
   {
     "id": "teleportation_circle",
@@ -3866,7 +3902,7 @@
     "school": "conjuration",
     "casting_time": "action",
     "range": 2,
-    "duration": "10 minutes",
+    "duration": "1 minute",
     "concentration": false,
     "components": [
       "V",
@@ -3931,7 +3967,7 @@
     "description": "You touch a creature that has been dead for no longer than 200 years and that died for any reason except old age. The creature is revived with all its Hit Points.This spell closes all wounds, neutralizes any poison, cures all magical contagions, and lifts any curses affecting the creature when it died. The spell replaces damaged or missing organs and limbs. If the creature was Undead, it is restored to its non-Undead form.The spell can provide a new body if the original no longer exists, in which case you must speak the creature's name. The creature then appears in an unoccupied space you choose within 10 feet of you.",
     "level": 9,
     "school": "necromancy",
-    "casting_time": "action",
+    "casting_time": "hour",
     "range": 1,
     "duration": "Instantaneous",
     "concentration": false,
@@ -4094,7 +4130,7 @@
       "S",
       "M"
     ],
-    "target": "single",
+    "target": "area",
     "attack_type": "none",
     "classes": [
       "wizard"
@@ -4146,7 +4182,7 @@
       "S",
       "M"
     ],
-    "target": "single",
+    "target": "area",
     "attack_type": "none",
     "classes": [
       "druid",
@@ -4179,7 +4215,11 @@
     "damage": "7d8",
     "damage_type": "piercing",
     "save": "DEX",
-    "half_on_save": true
+    "half_on_save": true,
+    "upcast": {
+      "starting_level": 6,
+      "damage_per_level": "1d8"
+    }
   },
   {
     "id": "weird",
@@ -4262,11 +4302,12 @@
     "components": [
       "V"
     ],
-    "target": "single",
+    "target": "multi",
     "attack_type": "none",
     "classes": [
       "cleric"
-    ]
+    ],
+    "base_targets": 6
   },
   {
     "id": "shatter",
