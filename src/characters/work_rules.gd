@@ -14,8 +14,13 @@ extends RefCounted
 ## joining and for every span of time that accrues; an unknown location never
 ## satisfies it. on_away "interrupt" applies on_interrupt at the start of the first
 ## span spent away; "pause" accrues nothing while anyone is away and applies
-## on_interrupt at exactly away_since + away_limit_seconds, even inside one long
-## clock jump. The span in which everyone returns is still away time.
+## on_interrupt only once the absence is PAST away_limit_seconds (strictly more
+## than the limit; an absence of exactly the limit is allowed), even inside one
+## long clock jump. The clock is whole seconds, so the lapse lands at
+## away_since + away_limit_seconds + 1. The span in which everyone returns is
+## still away time. Batch 082 (#46 ruling): this is the item's authored per-site
+## interruption policy, not a universal crafting rule; work without a site has
+## no away/reset rule at all.
 
 const DAY := 86400
 
@@ -270,9 +275,9 @@ static func settle(actor: Character, elapsed: int, now: int) -> Array:
 					continue
 				var since := int(state.get("work_away_since", t))
 				var limit := since + int(site.away_limit_seconds)
-				if now >= limit:
+				if now > limit: # "past" the authored limit: exactly the limit is allowed.
 					var lapse := _interrupt(record, "away past %d seconds: %s" % [int(site.away_limit_seconds), away])
-					lapse["at"] = limit
+					lapse["at"] = limit + 1
 					receipts.append(lapse)
 				else:
 					state["work_away_since"] = since

@@ -20,9 +20,15 @@ Source: SRD 5.2.1 downtime/crafting work is done in one place, with helpers pres
   These checks run again at confirmation. Joining has no cost, so a refusal leaves state and the clock unchanged.
 - **Accrual** (`settle` from `advance_campaign_time`): positions are constant within a span, so the span start is the boundary.
   - Anyone away under `interrupt`: the declared keep/reset policy applies at the span start.
-  - Anyone away under `pause`: the pause starts at the span start (`work_away_since`). If the absence reaches `since + away_limit_seconds`, the policy applies at exactly that instant, even inside a long jump. Otherwise the span is not credited.
+  - Anyone away under `pause`: the pause starts at the span start (`work_away_since`). The policy applies only once the absence is **past** `away_limit_seconds` (strictly greater: `now > since + away_limit_seconds`); an absence of exactly the limit is allowed and keeps progress. The clock is whole seconds, so the lapse is recorded at `since + away_limit_seconds + 1`, even inside a long jump. Otherwise the span is not credited.
   - Return: the pause clears, and the return span itself is not credited.
 - Existing single-job, rest-interruption, helper-concentration and participant-loss checks are unchanged. Site-less work (including legacy saves) behaves as before.
+
+## Authored policy (Batch 082, #46 ruling)
+Brandon's ruling: "the wording is 'past 1 hour': reset only after more than one hour; exactly one hour is allowed. Make the code, description and boundary checks agree. This is an authored interruption policy, not a universal crafting rule."
+- The threshold is the item's own `away_limit_seconds`; the engine has no default limit.
+- An item description that states the limit must say "past" that duration (the fixture loom: "an absence past 1 hour loses all progress").
+- Items without `work.site`, or with `on_away: "interrupt"`, have no away-time reset rule.
 
 ## Saves
 `work_site` and `work_away_since` are validated by `site_record_error`. Records without a site still load.

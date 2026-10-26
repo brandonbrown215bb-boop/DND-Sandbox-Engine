@@ -100,7 +100,7 @@ static func _jump(check: Callable) -> void:
 	WorkRules.settle(a, 60, 6060)
 	var jump := WorkRules.settle(a, 2 * 86400, 6060 + 2 * 86400)
 	rec = a.inventory.get_instance(loom)
-	check.call(jump.size() == 1 and jump[0].get("interrupted", false) and int(jump[0].at) == 6000 + 3600 and int(jump[0].lost_seconds) == 4800 and WorkRules.progress(rec) == 0 and not WorkRules.is_active(rec) and not rec.state.has("work_site"), "074 S-066 a two-day jump applies the reset policy at away_since + limit (at=%s), crediting none of the jump" % str(jump[0].get("at", "?") if not jump.is_empty() else "none"))
+	check.call(jump.size() == 1 and jump[0].get("interrupted", false) and int(jump[0].at) == 6000 + 3601 and int(jump[0].lost_seconds) == 4800 and WorkRules.progress(rec) == 0 and not WorkRules.is_active(rec) and not rec.state.has("work_site"), "074 S-066 a two-day jump applies the reset policy just past away_since + limit (at=%s), crediting none of the jump" % str(jump[0].get("at", "?") if not jump.is_empty() else "none"))
 	# Long jump with everyone present: the daily allowance still bounds it.
 	_place(a.character_id, [0, 0])
 	WorkRules.start(a, loom)
@@ -152,7 +152,7 @@ static func _saves(check: Callable) -> void:
 	back.from_dict(dto)
 	PartyManager.characters[a.character_id] = back
 	var lapse := WorkRules.settle(back, 7200, 7800)
-	check.call(lapse.size() == 1 and int(lapse[0].at) == 3600 and WorkRules.progress(back.inventory.get_instance(loom)) == 0, "074 S-066 reloaded away time lapses at the original away_since + limit")
+	check.call(lapse.size() == 1 and int(lapse[0].at) == 3601 and WorkRules.progress(back.inventory.get_instance(loom)) == 0, "074 S-066 reloaded away time lapses just past the original away_since + limit")
 	var defects := [
 		func(s): s.erase("work_site"),
 		func(s): s.work_site = {"dungeon_id": "d", "room_id": "", "position": [0, 0]},

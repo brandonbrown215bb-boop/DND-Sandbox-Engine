@@ -141,7 +141,7 @@ static func run(h: Node) -> void:
 		h._assert(loaded and na != null and na != a and int(na.inventory.get_instance(loom).state.get("work_away_since", -1)) == since and WorkRules.progress(na.inventory.get_instance(loom)) == kept, "074 actual real load keeps the site, the pause and the progress")
 	h._exit_test()
 
-## Fresh process: a two-day jump lapses the pause at away_since + 1 hour and resets.
+## Fresh process: a two-day jump lapses the pause just past away_since + 1 hour and resets.
 static func reload(h: Node) -> void:
 	h._enter_test("batch_074_work_site_reload")
 	Batch074Checks.load_fixtures()
@@ -153,7 +153,7 @@ static func reload(h: Node) -> void:
 		var receipts := GameManager.advance_campaign_time(2 * 86400)
 		var lapse: Array = receipts.filter(func(r): return r.get("interrupted", false) and str(r.get("instance_id", "")) == str(ids.loom))
 		var rec := na.inventory.get_instance(str(ids.loom))
-		h._assert(lapse.size() == 1 and int(lapse[0].at) == int(ids.since) + 3600 and int(lapse[0].lost_seconds) == int(ids.kept) and WorkRules.progress(rec) == 0 and not WorkRules.is_active(rec), "074 fresh process a two-day jump applies reset at exactly away_since + 1 hour, crediting none of it")
+		h._assert(lapse.size() == 1 and int(lapse[0].at) == int(ids.since) + 3601 and int(lapse[0].lost_seconds) == int(ids.kept) and WorkRules.progress(rec) == 0 and not WorkRules.is_active(rec), "074 fresh process a two-day jump applies reset just past away_since + 1 hour, crediting none of it")
 	SaveManager.delete_save(SLOT)
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(IDS))
 	h._exit_test()
