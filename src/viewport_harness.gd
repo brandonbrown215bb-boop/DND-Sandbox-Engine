@@ -35,6 +35,69 @@ func _fresh_char(name: String, race: String, klass: String, sd: Dictionary) -> C
 	c.initialize(name, race, klass, s)
 	return c
 
+## Batch 084 fixture repair (R3): since aee56c0 a class spell is castable only
+## when the character's spellcasting feature choices own it (wizards also need
+## it in the spellbook). Fixtures that list `known_spells` must also record that
+## class choice, exactly as character creation/level-up would. Rules unchanged.
+func _own_class_spells(c: Character) -> void:
+	var feature_id := c.get_spellcasting_feature_id()
+	if feature_id.is_empty():
+		return
+	var owned: Array = []
+	for spell_id in c.known_spells:
+		if str(spell_id) not in owned:
+			owned.append(str(spell_id))
+	c.feature_choices[feature_id] = owned
+
+
+## Batch 084 fixture repair (R2): since Batch 048, Somatic/Material components
+## need an available hand and Material components need a compatible focus or a
+## component pouch (SRD "Components"). Fixture casters carry a component pouch
+## and free one hand, the way a real caster would before casting. Rules unchanged.
+func _ready_spell_components(c: Character) -> void:
+	if not c.inventory.has_item("component_pouch"):
+		c.inventory.add_item("component_pouch")
+	for slot in [Inventory.Slot.OFFHAND, Inventory.Slot.SHIELD, Inventory.Slot.WEAPON]:
+		if c.inventory.available_spellcasting_hands() >= 1:
+			break
+		if not str(c.inventory.equipped.get(slot, "")).is_empty():
+			c.inventory.unequip(slot)
+
+
+## Batch 084 fixture repair (R3): the real spell menu attaches the owning
+## permission (`_source_permission_id`) that CombatCommand requires since
+## aee56c0. Fixtures pick the actual menu row instead of a raw catalog record.
+## Falls back to the raw record so a missing permission still fails visibly.
+func _menu_spell(combat: Node, spell_id: String) -> Dictionary:
+	combat.hud.update_hud(combat.active_character, combat.tracker)
+	combat.hud._show_spell_selection()
+	var found: Dictionary = {}
+	for entry in combat.hud.spells_registered:
+		if str(entry.get("id", "")) == spell_id and entry.has("_source_permission_id"):
+			found = entry.duplicate(true)
+			break
+	combat.hud._hide_spell_selection()
+	if found.is_empty():
+		print("MENU_SPELL_MISS %s ids=%s" % [spell_id, combat.hud.spells_registered.map(func(e): return str(e.get("id","")) + ("*" if e.has("_source_permission_id") else ""))])
+	return found if not found.is_empty() else DataLoader.get_spell(spell_id)
+
+
+
+func _cast_menu_spell(combat: Node, spell_id: String, slot_level: int = 0) -> void:
+	# Batch 084 R3: cast the real HUD menu entry and answer its slot popup like a player would.
+	var spell := _menu_spell(combat, spell_id)
+	var state := {"done": false}
+	var run := func():
+		await combat._on_hud_action("cast_spell", {"spell": spell})
+		state["done"] = true
+	run.call()
+	if not state["done"] and str(spell.get("_spell_payment_kind", "")) == "slot" and not GameManager.test_mode:
+		await _answer_class_popup(combat.hud, "Level %d" % maxi(slot_level, int(spell.get("level", 1))))
+	for frame in 600:
+		if state["done"]: break
+		await get_tree().process_frame
+
+
 func _setup_world() -> void:
 	var camp = DataLoader.campaigns.values()[0]
 	GameManager.active_campaign = camp
@@ -95,6 +158,7 @@ func _setup_ranger_world() -> Character:
 	var ranger := _fresh_char("Ranger Fixture", "human", "ranger",
 		{"STR": 12, "DEX": 18, "CON": 14, "INT": 10, "WIS": 16, "CHA": 8})
 	ranger.known_spells.assign(["hunters_mark"])
+	_own_class_spells(ranger) # Batch 084 R3 fixture repair
 	ranger.spell_slots["1"] = 0
 	PlayerManager.set_player_character(0, ranger)
 	PartyManager.register_player_character(0, ranger)
@@ -1292,6 +1356,7 @@ func test_cleric_creation_flow() -> void:
 func test_cleric_action_flow() -> void:
 	_enter_test("cleric_action_flow")
 	_setup_world()
+	GameManager.transition_context["monster_ids"] = ["goblin", "goblin"] # Batch 084 R1: this scenario indexes a second monster.
 	var cleric := ClericChecks.character(20)
 	cleric.character_name = "Audit Cleric"
 	var ally := BardChecks.character(5, "fighter")
@@ -1301,6 +1366,7 @@ func test_cleric_action_flow() -> void:
 	PartyManager.reset()
 	PartyManager.register_player_character(0, cleric)
 	PartyManager.register_player_character(1, ally)
+	_ready_spell_components(cleric) # Batch 084 R2: Sacred Flame/Intervention need a free hand (exposed once R1 was fixed).
 	await get_tree().process_frame
 	CharacterSheet.show_sheet(cleric)
 	await get_tree().process_frame
@@ -1450,6 +1516,7 @@ func test_cleric_action_flow() -> void:
 func test_cleric_strike_flow() -> void:
 	_enter_test("cleric_strike_flow")
 	_setup_world()
+	GameManager.transition_context["monster_ids"] = ["goblin", "goblin"] # Batch 084 R1: this scenario indexes a second monster.
 	var cleric := ClericChecks.character(14)
 	cleric.character_name = "Strike Cleric"
 	ClassProgression.choose_feature_option(cleric, "cleric_blessed_strikes", "divine_strike")
@@ -1501,6 +1568,7 @@ func test_core12_shared_rules() -> void:
 	_enter_test("core12_shared_rules")
 	for property in ["push", "cleave", "nick"]:
 		_setup_world()
+		GameManager.transition_context["monster_ids"] = ["goblin", "goblin"] # Batch 084 R1: this scenario indexes a second monster.
 		var actor := _fresh_char("Shared mastery", "human", "ranger" if property == "nick" else "barbarian", {"STR": 16, "DEX": 16, "CON": 14, "INT": 10, "WIS": 10, "CHA": 10})
 		var weapon_id := "shortsword" if property == "nick" else ("greataxe" if property == "cleave" else "pike")
 		actor.inventory.unequip(Inventory.Slot.SHIELD)
@@ -1840,6 +1908,7 @@ func test_sorcerer_subtle_spell() -> void:
 	sorcerer.level_up()
 	ClassProgression.choose_sorcerer_metamagic(sorcerer, ["subtle_spell", "extended_spell"])
 	sorcerer.known_spells.assign(["light"])
+	_own_class_spells(sorcerer) # Batch 084 R3 fixture repair
 	var counterspeller: Character = PlayerManager.get_player(1).get("character")
 	SpellPermissionChecks.grant_slot_permission(counterspeller, ["counterspell"])
 	counterspeller.spell_slots["3"] = 1
@@ -1858,7 +1927,7 @@ func test_sorcerer_subtle_spell() -> void:
 	combat.remaining_attack_swings = 0
 	combat._update_grid_entities()
 	GameManager.test_mode = false
-	combat._on_hud_action("cast_spell", {"spell": DataLoader.get_spell("light")})
+	combat._on_hud_action("cast_spell", {"spell": _menu_spell(combat, "light")})
 	var subtle_prompt_found := false
 	for _frame in range(120):
 		for child in combat.hud.get_children():
@@ -1934,6 +2003,7 @@ func test_sorcerer_subtle_spell() -> void:
 func test_spell_cast_stage_flow() -> void:
 	_enter_test("spell_cast_stage_flow")
 	_setup_world()
+	GameManager.transition_context["monster_ids"] = ["goblin", "goblin"] # Batch 084 R1: this scenario indexes a second monster.
 	var sorcerer := _fresh_char("Cast Stages Sorcerer", "human", "sorcerer", {"STR": 10, "DEX": 14, "CON": 14, "INT": 10, "WIS": 10, "CHA": 18})
 	sorcerer.level_up()
 	sorcerer.level_up()
@@ -2282,6 +2352,7 @@ func test_chain_lightning_target_identity_flow() -> void:
 	var caster := _fresh_char("Chain Identity Caster", "human", "wizard", {"STR": 8, "DEX": 14, "CON": 14, "INT": 18, "WIS": 10, "CHA": 10})
 	caster.character_id = "chain-identity-caster"
 	caster.known_spells.assign(["chain_lightning"])
+	_own_class_spells(caster) # Batch 084 R3 fixture repair
 	caster.spell_slots.clear()
 	caster.spell_slots["6"] = 1
 	caster.inventory.add_item("dagger")
@@ -2312,7 +2383,7 @@ func test_chain_lightning_target_identity_flow() -> void:
 	_assert(selected_object_id == "object:fixture:shared-door" and selected_monster_id == "monster:%s" % str(combat.monster_entities[0].get("id", "")) and selected_carried_id == "object:%s" % owned_item_id, "the targeting menu preserves exact identities for a collocated room object, creature, and carried copy")
 	_assert(SpellSupport.is_available(DataLoader.get_spell("chain_lightning")) and SpellCastTargeting.is_chain_target_selected(target_context, shared_hex, selected_object_id) and SpellCastTargeting.is_chain_target_selected(target_context, shared_hex, selected_monster_id) and SpellCastTargeting.is_chain_target_selected(carried_context, Vector2i.ZERO, selected_carried_id), "the exact target identities remain selectable for the available Chain Lightning path")
 	var slots_before: Dictionary = caster.spell_slots.duplicate(true)
-	await combat._on_hud_action("cast_spell", {"spell": DataLoader.get_spell("chain_lightning")})
+	await _cast_menu_spell(combat, "chain_lightning")
 	_assert(combat.pending_action_type == "spell" and caster.spell_slots == slots_before and combat.turn_budget.action_available, "Chain Lightning opens targeting without spending resources before target selection")
 	await combat._on_hud_action("cancel", {})
 	_teardown_scene(combat)
@@ -2328,6 +2399,7 @@ func test_chain_lightning_mixed_targets_flow() -> void:
 	caster.max_hp = 5000
 	caster.current_hp = 5000
 	caster.known_spells.assign(["chain_lightning"])
+	_own_class_spells(caster) # Batch 084 R3 fixture repair
 	caster.spell_slots["6"] = 1
 	caster.spell_slots["7"] = 1
 	caster.inventory.add_item("component_pouch")
@@ -2436,6 +2508,7 @@ func test_meteor_swarm_object_area_flow() -> void:
 	_setup_world()
 	var caster := _fresh_char("Meteor Area Caster", "human", "wizard", {"STR": 8, "DEX": 14, "CON": 14, "INT": 18, "WIS": 10, "CHA": 10})
 	caster.known_spells.assign(["meteor_swarm"])
+	_own_class_spells(caster) # Batch 084 R3 fixture repair
 	caster.spell_slots["9"] = 1
 	PlayerManager.set_player_character(0, caster)
 	PartyManager.reset()
@@ -2475,7 +2548,7 @@ func test_meteor_swarm_object_area_flow() -> void:
 	var monster_hp_before := int(meteor_creature["current_hp"])
 	_assert(SpellCastTargeting.are_legal_area_centers(centers, 4, Vector2i.ZERO, CombatAction.spell_range_in_hexes(meteor_spell, caster.level), combat.hex_grid) and unique_hex_count < separate_area_count, "Meteor Swarm accepts four distinct in-range Sphere centers and deduplicates overlapping hexes")
 	combat.turn_budget.reset(caster, combat.player_entities)
-	await combat._on_hud_action("cast_spell", {"spell": meteor_spell})
+	await _cast_menu_spell(combat, "meteor_swarm")
 	for center in centers:
 		await combat._on_hex_clicked(center)
 	_assert(caster.current_hp < caster_hp_before and int(meteor_creature["current_hp"]) < 5000 and int(eligible_a["hp"]) < 5000 and int(eligible_b["hp"]) < 5000 and bool(eligible_a.get("burning", false)), "Meteor Swarm resolves creature saves/damage and damages each eligible object on the covered hex, igniting flammable items")
@@ -2491,6 +2564,7 @@ func test_fire_area_object_ignition_flow() -> void:
 	_setup_world()
 	var caster := _fresh_char("Fire Area Caster", "human", "wizard", {"STR": 8, "DEX": 14, "CON": 14, "INT": 18, "WIS": 10, "CHA": 10})
 	caster.known_spells.assign(["fireball"])
+	_own_class_spells(caster) # Batch 084 R3 fixture repair
 	caster.inventory.add_item("component_pouch")
 	caster.spell_slots["3"] = 1
 	PlayerManager.set_player_character(0, caster)
@@ -2506,7 +2580,7 @@ func test_fire_area_object_ignition_flow() -> void:
 	combat.hex_grid.add_entity({"hex_position": Vector2i(1, 0), "world_object": fuel})
 	combat.hex_grid.add_entity({"hex_position": Vector2i(2, 0), "world_object": stone})
 	combat.turn_budget.reset(caster, combat.player_entities)
-	await combat._on_hud_action("cast_spell", {"spell": DataLoader.get_spell("fireball")})
+	await _cast_menu_spell(combat, "fireball")
 	await combat._on_hex_clicked(Vector2i(1, 0))
 	_assert(bool(fuel.get("burning", false)) and not bool(stone.get("burning", false)), "Fireball ignition marks an unattended flammable object in its area while leaving a nonflammable object unchanged")
 	_assert(int(caster.spell_slots.get("3", 0)) == 0 and not combat.turn_budget.action_available, "Fireball area ignition resolves through the real cast and spends its spell slot and Magic Action")
@@ -2515,8 +2589,9 @@ func test_fire_area_object_ignition_flow() -> void:
 	combat.hex_grid.add_entity({"hex_position": Vector2i(2, 0), "world_object": stone})
 	caster.spell_slots["1"] = 1
 	caster.known_spells.append("burning_hands")
+	_own_class_spells(caster) # Batch 084 R3 fixture repair
 	combat.turn_budget.reset(caster, combat.player_entities)
-	await combat._on_hud_action("cast_spell", {"spell": DataLoader.get_spell("burning_hands")})
+	await _cast_menu_spell(combat, "burning_hands")
 	await combat._on_hex_clicked(Vector2i(1, 0))
 	_assert(bool(fuel.get("burning", false)) and not bool(stone.get("burning", false)), "Burning Hands uses its cone footprint to ignite unattended flammable objects only")
 	_assert(int(caster.spell_slots.get("1", 0)) == 0 and not combat.turn_budget.action_available, "Burning Hands area ignition resolves through the real cast and spends its spell slot and Magic Action")
@@ -2598,6 +2673,7 @@ func test_sleep_spell_flow() -> void:
 	PartyManager.register_player_character(0, wizard)
 	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 1.5)
 	combat.current_player_idx = 0
+	_ready_spell_components(wizard) # Batch 084 R2 fixture repair
 	combat.active_character = wizard
 	combat.active_combatant = {"is_player": true, "entity": wizard}
 	combat.player_entities[0]["hex_position"] = Vector2i.ZERO
@@ -2719,6 +2795,7 @@ func test_grease_spell_flow() -> void:
 	PartyManager.register_player_character(0, wizard)
 	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 1.5)
 	combat.current_player_idx = 0
+	_ready_spell_components(wizard) # Batch 084 R2 fixture repair
 	combat.active_character = wizard
 	combat.active_combatant = {"is_player": true, "entity": wizard}
 	combat.player_entities[0]["hex_position"] = Vector2i.ZERO
@@ -3239,7 +3316,7 @@ func test_cloud_of_daggers_spell_flow() -> void:
 	combat.monster_entities.append_array([first_target, second_target])
 	combat._update_grid_entities()
 	GameManager.test_mode = false
-	await combat._on_hud_action("cast_spell", {"spell": DataLoader.get_spell("cloud_of_daggers")})
+	await _cast_menu_spell(combat, "cloud_of_daggers")
 	await combat._on_hex_clicked(Vector2i.ZERO)
 	var source_id: String = combat._cloud_of_daggers_zone_source_for_caster(wizard)
 	var zone: Dictionary = combat.active_spell_zones.get(source_id, {})
@@ -3432,6 +3509,7 @@ func test_conjure_celestial_spell_flow() -> void:
 			tile.is_revealed = true
 			combat.hex_grid.add_tile(tile)
 	combat.current_player_idx = 0
+	_ready_spell_components(cleric) # Batch 084 R2 fixture repair
 	combat.active_character = cleric
 	combat.active_combatant = {"id": "conjure_celestial_cleric", "is_player": true, "entity": cleric}
 	combat.player_entities[0]["hex_position"] = Vector2i(-5, 0)
@@ -3776,6 +3854,7 @@ func test_spirit_guardians_spell_flow() -> void:
 			tile.is_revealed = true
 			combat.hex_grid.add_tile(tile)
 	combat.current_player_idx = 0
+	_ready_spell_components(cleric) # Batch 084 R2 fixture repair
 	combat.active_character = cleric
 	combat.active_combatant = {"id": "spirit_guardians_cleric", "is_player": true, "entity": cleric}
 	combat.player_entities[0]["hex_position"] = Vector2i.ZERO
@@ -3905,6 +3984,7 @@ func test_beacon_of_hope_spell_flow() -> void:
 			tile.is_revealed = true
 			combat.hex_grid.add_tile(tile)
 	combat.current_player_idx = 0
+	_ready_spell_components(cleric) # Batch 084 R2 fixture repair
 	combat.active_character = cleric
 	combat.active_combatant = {"id": "beacon_cleric", "is_player": true, "entity": cleric}
 	combat.player_entities[0]["hex_position"] = Vector2i.ZERO
@@ -3962,6 +4042,7 @@ func test_divine_favor_spell_flow() -> void:
 	PartyManager.register_player_character(0, paladin)
 	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 1.5)
 	combat.current_player_idx = 0
+	_ready_spell_components(paladin) # Batch 084 R2 fixture repair
 	combat.active_character = paladin
 	combat.active_combatant = {"id": "divine_favor_paladin", "is_player": true, "entity": paladin}
 	combat.player_entities[0]["hex_position"] = Vector2i.ZERO
@@ -4016,6 +4097,7 @@ func test_death_ward_spell_flow() -> void:
 	PartyManager.register_player_character(1, ally)
 	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 1.5)
 	combat.current_player_idx = 0
+	_ready_spell_components(cleric) # Batch 084 R2 fixture repair
 	combat.active_character = cleric
 	combat.active_combatant = {"id": "death_ward_cleric", "is_player": true, "entity": cleric}
 	combat.player_entities[0]["hex_position"] = Vector2i.ZERO
@@ -4058,6 +4140,7 @@ func test_sanctuary_spell_flow() -> void:
 	PartyManager.register_player_character(1, ally)
 	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 1.5)
 	combat.current_player_idx = 0
+	_ready_spell_components(cleric) # Batch 084 R2 fixture repair
 	combat.active_character = cleric
 	combat.active_combatant = {"id": "sanctuary_cleric", "is_player": true, "entity": cleric}
 	combat.player_entities[0]["hex_position"] = Vector2i.ZERO
@@ -4156,6 +4239,7 @@ func test_magic_weapon_spell_flow() -> void:
 	PartyManager.register_player_character(1, ally)
 	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 1.5)
 	combat.current_player_idx = 0
+	_ready_spell_components(paladin) # Batch 084 R2 fixture repair
 	combat.active_character = paladin
 	combat.active_combatant = {"id": "magic_weapon_paladin", "is_player": true, "entity": paladin}
 	combat.player_entities[0]["hex_position"] = Vector2i.ZERO
@@ -4336,6 +4420,7 @@ func test_charm_monster_spell_flow() -> void:
 func test_faerie_fire_spell_flow() -> void:
 	_enter_test("faerie_fire_spell_flow")
 	_setup_world()
+	GameManager.transition_context["monster_ids"] = ["goblin", "goblin"] # Batch 084 R1: this scenario indexes a second monster.
 	var bard := _fresh_char("Faerie Fire Bard", "human", "bard", {"STR": 10, "DEX": 12, "CON": 14, "INT": 10, "WIS": 10, "CHA": 18})
 	bard.known_spells.assign(["faerie_fire"])
 	bard.spell_slots["1"] = 1
@@ -4680,6 +4765,7 @@ func test_darkvision_spell_flow() -> void:
 	PartyManager.register_player_character(1, ally)
 	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 1.5)
 	combat.current_player_idx = 0
+	_ready_spell_components(wizard) # Batch 084 R2 fixture repair
 	combat.active_character = wizard
 	combat.active_combatant = {"id": "darkvision_wizard", "is_player": true, "entity": wizard}
 	combat.player_entities[0]["hex_position"] = Vector2i(-1, 0)
@@ -4729,6 +4815,7 @@ func test_see_invisibility_spell_flow() -> void:
 	PartyManager.register_player_character(0, wizard)
 	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 1.5)
 	combat.current_player_idx = 0
+	_ready_spell_components(wizard) # Batch 084 R2 fixture repair
 	combat.active_character = wizard
 	combat.active_combatant = {"id": "see_invisibility_wizard", "is_player": true, "entity": wizard}
 	combat.player_entities[0]["hex_position"] = Vector2i.ZERO
@@ -4878,6 +4965,7 @@ func test_blur_spell_flow() -> void:
 func test_detect_evil_and_good_spell_flow() -> void:
 	_enter_test("detect_evil_and_good_spell_flow")
 	_setup_world()
+	GameManager.transition_context["monster_ids"] = ["goblin", "goblin"] # Batch 084 R1: this scenario indexes a second monster.
 	var cleric := _fresh_char("Sensing Cleric", "human", "cleric", {"STR": 10, "DEX": 12, "CON": 14, "INT": 10, "WIS": 18, "CHA": 10})
 	cleric.known_spells.assign(["detect_evil_and_good"])
 	cleric.spell_slots["1"] = 1
@@ -4953,6 +5041,7 @@ func test_detect_poison_and_disease_spell_flow() -> void:
 	PartyManager.register_player_character(1, poisoned_ally)
 	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 1.5)
 	combat.current_player_idx = 0
+	_ready_spell_components(cleric) # Batch 084 R2 fixture repair
 	combat.active_character = cleric
 	combat.active_combatant = {"id": "poison_sensing_cleric", "is_player": true, "entity": cleric}
 	combat.player_entities[0]["hex_position"] = Vector2i.ZERO
@@ -5083,6 +5172,7 @@ func test_goodberry_spell_flow() -> void:
 	PartyManager.register_player_character(1, ally)
 	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 1.5)
 	combat.current_player_idx = 0
+	_ready_spell_components(druid) # Batch 084 R2 fixture repair
 	combat.active_character = druid
 	combat.active_combatant = {"id": "goodberry_druid", "is_player": true, "entity": druid}
 	combat.player_entities[0]["hex_position"] = Vector2i.ZERO
@@ -5188,6 +5278,7 @@ func test_invisibility_spell_flow() -> void:
 	PartyManager.register_player_character(1, ally)
 	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 1.5)
 	combat.current_player_idx = 0
+	_ready_spell_components(wizard) # Batch 084 R2 fixture repair
 	combat.active_character = wizard
 	combat.active_combatant = {"id": "invisibility_wizard", "is_player": true, "entity": wizard}
 	combat.player_entities[0]["hex_position"] = Vector2i.ZERO
@@ -5363,6 +5454,7 @@ func test_barkskin_spell_flow() -> void:
 	PartyManager.register_player_character(0, ranger)
 	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 1.5)
 	combat.current_player_idx = 0
+	_ready_spell_components(ranger) # Batch 084 R2 fixture repair
 	combat.active_character = ranger
 	combat.active_combatant = {"is_player": true, "entity": ranger}
 	combat.player_entities[0]["hex_position"] = Vector2i.ZERO
@@ -5399,6 +5491,7 @@ func test_mage_armor_spell_flow() -> void:
 	PartyManager.register_player_character(0, wizard)
 	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 1.5)
 	combat.current_player_idx = 0
+	_ready_spell_components(wizard) # Batch 084 R2 fixture repair
 	combat.active_character = wizard
 	combat.active_combatant = {"is_player": true, "entity": wizard}
 	combat.player_entities[0]["hex_position"] = Vector2i.ZERO
@@ -5434,6 +5527,7 @@ func test_true_strike_spell_flow() -> void:
 	for _level in 4:
 		wizard.level_up()
 	wizard.known_spells.assign(["true_strike"])
+	_own_class_spells(wizard) # Batch 084 R3 fixture repair
 	wizard.inventory.equipped[Inventory.Slot.WEAPON] = "club"
 	PlayerManager.set_player_character(0, wizard)
 	PartyManager.reset()
@@ -5450,7 +5544,7 @@ func test_true_strike_spell_flow() -> void:
 	combat.monster_entities.append(target)
 	combat._update_grid_entities()
 	GameManager.test_mode = false
-	combat._on_hud_action("cast_spell", {"spell": DataLoader.get_spell("true_strike")})
+	combat._on_hud_action("cast_spell", {"spell": _menu_spell(combat, "true_strike")})
 	_assert(str(combat.pending_spell_data.get("id", "")) == "true_strike", "True Strike is selected and held in live targeting state")
 	combat.call_deferred("_on_hex_clicked", Vector2i(1, 0))
 	var damage_choice_found := false
@@ -5489,6 +5583,7 @@ func test_mass_cure_wounds_flow() -> void:
 	for _level in 8:
 		druid.level_up()
 	druid.known_spells.assign(["mass_cure_wounds"])
+	_own_class_spells(druid) # Batch 084 R3 fixture repair
 	var downed_ally: Character = PlayerManager.get_player(1).get("character")
 	downed_ally.current_hp = 0
 	downed_ally.is_alive = false
@@ -5511,7 +5606,7 @@ func test_mass_cure_wounds_flow() -> void:
 	var slot_before := int(druid.spell_slots.get("5", 0))
 	_assert(slot_before > 0, "Level 9 Druid has a fifth-level slot for Mass Cure Wounds")
 	GameManager.test_mode = false
-	combat._on_hud_action("cast_spell", {"spell": DataLoader.get_spell("mass_cure_wounds")})
+	combat._on_hud_action("cast_spell", {"spell": _menu_spell(combat, "mass_cure_wounds")})
 	for _frame in 30:
 		if str(combat.pending_spell_data.get("id", "")) == "mass_cure_wounds" and combat.pending_action_type == "spell":
 			break
@@ -5591,10 +5686,12 @@ func test_mass_healing_word_flow() -> void:
 func test_sorcerer_twinned_spell() -> void:
 	_enter_test("sorcerer_twinned_spell")
 	_setup_world()
+	GameManager.transition_context["monster_ids"] = ["goblin", "goblin"] # Batch 084 R1: this scenario indexes a second monster.
 	var sorcerer := _fresh_char("Twinned Sorcerer", "human", "sorcerer", {"STR": 8, "DEX": 14, "CON": 14, "INT": 12, "WIS": 12, "CHA": 16})
 	sorcerer.level_up()
 	ClassProgression.choose_sorcerer_metamagic(sorcerer, ["twinned_spell", "extended_spell"])
 	sorcerer.known_spells.assign(["charm_person"])
+	_own_class_spells(sorcerer) # Batch 084 R3: known spells need the class feature choice that grants permission.
 	PlayerManager.set_player_character(0, sorcerer)
 	PartyManager.reset()
 	PartyManager.register_player_character(0, sorcerer)
@@ -5613,7 +5710,8 @@ func test_sorcerer_twinned_spell() -> void:
 		combat.monster_entities[1]["creature_type"] = "humanoid"
 	combat._update_grid_entities()
 	GameManager.test_mode = false
-	combat._on_hud_action("cast_spell", {"spell": DataLoader.get_spell("charm_person")})
+	combat._on_hud_action("cast_spell", {"spell": _menu_spell(combat, "charm_person")}) # Batch 084 R3: real menu entry carries its permission.
+	await _answer_class_popup(combat.hud, "Level 1") # Batch 084 R3: the menu slot entry asks which slot to spend.
 	var twinned_prompt_found := false
 	for _frame in range(120):
 		for child in combat.hud.get_children():
@@ -5958,6 +6056,7 @@ func test_ranger_natures_veil_blindsight() -> void:
 	# test character to exercise the shared target-visibility boundary; this does
 	# not expand the Ranger's curated spell access list.
 	ranger.known_spells.assign(["charm_person"])
+	_own_class_spells(ranger) # Batch 084 R3 fixture repair
 	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 2.0)
 	combat.current_player_idx = 0
 	combat.active_character = ranger
@@ -5983,7 +6082,7 @@ func test_ranger_natures_veil_blindsight() -> void:
 	unseen_target["hex_position"] = Vector2i(7, 0)
 	_assert(not combat._spell_target_visible_to_active_character(Vector2i(7, 0), sight_spell), "Ranger cannot target an invisible creature beyond Blindsight range")
 	unseen_target["hex_position"] = Vector2i(6, 0)
-	await combat._on_hud_action("cast_spell", {"spell": sight_spell})
+	await _cast_menu_spell(combat, "charm_person")
 	_assert(combat.pending_action_type == "spell", "sight-required spell enters normal target selection")
 	await combat._on_hex_clicked(Vector2i(6, 0))
 	_assert(combat.pending_action_type.is_empty(), "Blindsight allows the live sight-required spell cast against an invisible creature")
@@ -6716,11 +6815,17 @@ func test_action_history_flow() -> void:
 	DataLoader._load_content_type("res://data/fixtures/shared_spells/spells/", "spell")
 	var ids: Array[String] = ["sandbox:action_history_neutral", "sandbox:action_history_renamed"]
 	DataLoader.classes["wizard"]["spell_list_ids"].append_array(ids)
-	var alice: Character = PlayerManager.get_player(0)["character"]
+	# Batch 084 R3: both owners must be real Wizards; relabelling the default Fighter's class_id grants no spellcasting feature.
+	var alice := _fresh_char("Alice", "human", "wizard", {"STR": 15, "DEX": 14, "CON": 13, "INT": 12, "WIS": 10, "CHA": 8})
+	PlayerManager.set_player_character(0, alice)
 	var bob: Character = PlayerManager.get_player(1)["character"]
+	PartyManager.reset()
+	PartyManager.register_player_character(0, alice)
+	PartyManager.register_player_character(1, bob)
 	for owner in [alice, bob]:
 		owner.class_id = "wizard"
 		owner.known_spells.assign(ids)
+		_own_class_spells(owner) # Batch 084 R3 fixture repair
 		owner.wizard_spellbook.assign(ids)
 		owner.spell_slots = {"1": 4}
 		owner.temp_hp = 0
@@ -6868,6 +6973,7 @@ func test_damage_history_flow() -> void:
 	for owner in [caster, target]:
 		owner.class_id = "wizard"
 		owner.known_spells.assign(ids)
+		_own_class_spells(owner) # Batch 084 R3 fixture repair
 		owner.wizard_spellbook.assign(ids)
 		owner.spell_slots = {"1": 4}
 		owner.feature_uses["damage_immunities"] = []
@@ -6939,6 +7045,7 @@ func test_result_reducer_flow() -> void:
 	for owner in [caster, target]:
 		owner.class_id = "wizard"
 		owner.known_spells.assign(ids)
+		_own_class_spells(owner) # Batch 084 R3 fixture repair
 		owner.wizard_spellbook.assign(ids)
 		owner.spell_slots = {"1": 3}
 		owner.temp_hp = 0
@@ -7047,6 +7154,7 @@ func test_result_reducer_continuation_flow() -> void:
 	var caster: Character = PlayerManager.get_player(0)["character"]
 	caster.class_id = "sorcerer"
 	caster.known_spells = [spell_id]
+	_own_class_spells(caster) # Batch 084 R3 fixture repair
 	caster.features.append({"id": "sorcerer_metamagic", "type": "passive"})
 	caster.sorcerer_metamagic_choices = ["empowered_spell"]
 	caster.feature_uses["sorcery_points"] = 3
@@ -8356,6 +8464,7 @@ func test_batch_i_review_flow() -> void:
 	DataLoader.classes["wizard"]["spell_list_ids"].append_array(ids)
 	caster.level = 3
 	caster.known_spells.assign(ids)
+	_own_class_spells(caster) # Batch 084 R3 fixture repair
 	caster.wizard_spellbook.assign(ids)
 	caster.spell_slots["1"] = 8
 	PlayerManager.reset()
@@ -8402,6 +8511,7 @@ func test_batch_i_review_flow() -> void:
 	DataLoader.spells[unavailable.id] = unavailable
 	DataLoader.classes["wizard"]["spell_list_ids"].append(unavailable.id)
 	caster.known_spells.append(unavailable.id)
+	_own_class_spells(caster) # Batch 084 R3 fixture repair
 	caster.wizard_spellbook.append(unavailable.id)
 	combat.turn_budget.reset(caster, combat.player_entities)
 	var unavailable_slots := int(caster.spell_slots["1"])
@@ -9194,6 +9304,7 @@ func test_shared_fact_predicate_flow() -> void:
 	owner.max_hp = 100
 	owner.current_hp = 25
 	owner.known_spells.assign(spell_ids)
+	_own_class_spells(owner) # Batch 084 R3 fixture repair
 	owner.wizard_spellbook = owner.known_spells.duplicate()
 	owner.spell_slots["1"] = 8
 	var ally := _fresh_char("Downed Fact Target", "human", "fighter", {"STR": 14, "DEX": 12, "CON": 14, "INT": 10, "WIS": 10, "CHA": 8})
@@ -9269,7 +9380,9 @@ func test_shared_fact_predicate_flow() -> void:
 	DataLoader.spells["sandbox:fact_window_invalid_acceptance"] = invalid
 	DataLoader.spells["sandbox:fact_window_wrong_type_acceptance"] = wrong_type
 	owner.known_spells.append("sandbox:fact_window_invalid_acceptance")
+	_own_class_spells(owner) # Batch 084 R3 fixture repair
 	owner.known_spells.append("sandbox:fact_window_wrong_type_acceptance")
+	_own_class_spells(owner) # Batch 084 R3 fixture repair
 	combat.hud._show_spell_selection()
 	var invalid_index := -1
 	var wrong_type_index := -1
@@ -9341,6 +9454,7 @@ func test_shared_distance_predicate_flow() -> void:
 	owner.max_hp = 100
 	owner.current_hp = 20
 	owner.known_spells.assign(probe_ids)
+	_own_class_spells(owner) # Batch 084 R3 fixture repair
 	owner.wizard_spellbook = probe_ids.duplicate()
 	owner.spell_slots["1"] = 8
 	var ally := _fresh_char("Distance Ally", "human", "fighter", {"STR": 14, "DEX": 12, "CON": 14, "INT": 10, "WIS": 10, "CHA": 8})
@@ -9440,6 +9554,7 @@ func test_shared_entity_binding_flow() -> void:
 	_assert(ClassProgression.choose_subclass(owner, "diviner"), "Binding cast owner has a real Diviner roll-token consumer")
 	owner.character_id = "binding-owner"
 	owner.known_spells.assign(spell_ids)
+	_own_class_spells(owner) # Batch 084 R3 fixture repair
 	owner.wizard_spellbook.assign(spell_ids)
 	owner.spell_slots["1"] = 2
 	owner.roll_tokens["diviner_portent"] = [
@@ -9544,6 +9659,7 @@ func test_s026_relationship_willingness_flow() -> void:
 		PartyManager.register_player_character(player_index, entry[1])
 	for caster in [caster_a, caster_b]:
 		caster.known_spells.assign([neutral_id, renamed_id])
+		_own_class_spells(caster) # Batch 084 R3 fixture repair
 		caster.wizard_spellbook.assign([neutral_id, renamed_id])
 		caster.spell_slots["1"] = 5
 
@@ -9791,6 +9907,7 @@ func test_shared_prior_result_identity_flow() -> void:
 	_assert(ClassProgression.choose_subclass(caster, "diviner"), "Receipt probe uses a legally selected Diviner choice host")
 	caster.character_id = "receipt-owner-before-pause"
 	caster.known_spells.assign(spell_ids)
+	_own_class_spells(caster) # Batch 084 R3 fixture repair
 	caster.wizard_spellbook.assign(spell_ids)
 	caster.spell_slots = {"1": 2}
 	caster.roll_tokens["diviner_portent"] = [
@@ -10071,6 +10188,7 @@ func test_shared_margin_hp_gate_flow() -> void:
 	caster.level_up()
 	caster.character_id = "fixture:s043_margin_gate_owner"
 	caster.known_spells.assign(spell_ids)
+	_own_class_spells(caster) # Batch 084 R3 fixture repair
 	caster.spell_slots["1"] = 10
 	caster.max_hp = 100
 	caster.current_hp = 100
@@ -11969,6 +12087,7 @@ func test_jump_spell_movement() -> void:
 		monster["reaction_available"] = false
 	combat._update_grid_entities()
 	wizard.known_spells.assign(["jump"])
+	_own_class_spells(wizard) # Batch 084 R3 fixture repair
 	wizard.spell_slots = {"1": 1, "2": 1}
 	combat.current_player_idx = 2
 	combat.active_character = wizard
@@ -17565,6 +17684,7 @@ func test_shared_spell_outcome_maps_flow() -> void:
 	var owner := _fresh_char("Outcome Map Sorcerer", "human", "sorcerer", {"STR": 10, "DEX": 10, "CON": 12, "INT": 10, "WIS": 10, "CHA": 16})
 	owner.character_id = "fixture:outcome_map_owner"
 	owner.known_spells.assign(ids)
+	_own_class_spells(owner) # Batch 084 R3 fixture repair
 	owner.spell_slots["1"] = 12
 	var defense_class: Dictionary = DataLoader.classes.get("fixture:defending_ac_adjustment_class", {})
 	var defense_feature: Dictionary = defense_class.get("features_by_level", {}).get("1", [{}])[0]
@@ -17972,6 +18092,10 @@ func _start_fixture_spell_from_picker(combat: Node, spell_id: String) -> bool:
 	for _frame in 30:
 		if combat.pending_action_type == "spell":
 			break
+		# Batch 084 R3: a slot-paid menu row asks which slot to spend; answer it like a player.
+		for child in combat.hud.get_children():
+			if child is PopupMenu and not child.is_queued_for_deletion() and child.item_count > 0 and child.get_item_text(0).begins_with("Level "):
+				child.id_pressed.emit(child.get_item_id(0))
 		await get_tree().process_frame
 	return combat.pending_action_type == "spell" and str(combat.pending_spell_data.get("id", "")) == spell_id
 
@@ -18118,6 +18242,7 @@ func test_shared_spell_attack_bonus_flow() -> void:
 		owner.level_up()
 	_assert(ClassProgression.choose_subclass(owner, "diviner"), "The spell owner uses the production Diviner subclass for a real pre-roll token choice")
 	owner.known_spells.assign(["sandbox:owned_spell_attack_neutral", "sandbox:owned_spell_attack_renamed"])
+	_own_class_spells(owner) # Batch 084 R3 fixture repair
 	owner.wizard_spellbook.assign(["sandbox:owned_spell_attack_neutral", "sandbox:owned_spell_attack_renamed"])
 	owner.spell_slots["1"] = 8
 	var wizard_class: Dictionary = DataLoader.classes.get("wizard", {})
@@ -19056,6 +19181,7 @@ func test_attack_result_adjustment_flow() -> void:
 		owner.level_up()
 	owner.inventory.equip(Inventory.Slot.WEAPON, "dagger", true)
 	owner.known_spells.assign(["sandbox:owned_spell_attack_neutral", "sandbox:owned_spell_attack_renamed"])
+	_own_class_spells(owner) # Batch 084 R3 fixture repair
 	owner.wizard_spellbook.assign(["sandbox:owned_spell_attack_neutral", "sandbox:owned_spell_attack_renamed"])
 	owner.spell_slots["1"] = 8
 	var empowered_feature := {"id": "sorcerer_metamagic", "name": "Fixture Empowered Spell", "type": "passive"}
@@ -19405,6 +19531,7 @@ func test_post_roll_die_bonus_flow() -> void:
 	owner.max_hp = 100
 	owner.current_hp = 100
 	owner.known_spells.assign(["sandbox:failed_save_bonus_area", "sandbox:failed_save_bonus_con_area", "sandbox:owned_spell_attack_neutral", "sandbox:owned_spell_attack_renamed", "sandbox:formula_die_neutral"])
+	_own_class_spells(owner) # Batch 084 R3 fixture repair
 	owner.wizard_spellbook = owner.known_spells.duplicate()
 	owner.spell_slots["1"] = 12
 	for spell_id in owner.known_spells:
@@ -20121,6 +20248,7 @@ func test_failed_save_numeric_bonus_flow() -> void:
 		owner.level_up()
 	ClassProgression.choose_subclass(owner, "diviner")
 	owner.known_spells.assign(["sandbox:failed_save_bonus_area", "sandbox:failed_save_bonus_con_area", "sandbox:steadfast_success_ordered", "sandbox:resolute_success_ordered", "sandbox:failed_save_rider_flat_dex", "sandbox:failed_save_rider_flat_con"])
+	_own_class_spells(owner) # Batch 084 R3 fixture repair
 	owner.wizard_spellbook.assign(["sandbox:failed_save_bonus_area", "sandbox:failed_save_bonus_con_area", "sandbox:steadfast_success_ordered", "sandbox:resolute_success_ordered", "sandbox:failed_save_rider_flat_dex", "sandbox:failed_save_rider_flat_con"])
 	owner.spell_slots["1"] = 2
 	owner.roll_tokens["diviner_portent"] = [
@@ -20949,6 +21077,7 @@ func test_s029_save_context_flow() -> void:
 	owner.character_id = "fixture:s029_owner"
 	while owner.level < 3: owner.level_up()
 	owner.known_spells.assign(["fixture:s029_poison_avoid", "fixture:s029_toxin_end", "fixture:s029_poison_maintain", "fixture:s029_ordinary_con"])
+	_own_class_spells(owner) # Batch 084 R3 fixture repair
 	owner.wizard_spellbook.assign(owner.known_spells)
 	owner.spell_slots["1"] = 5
 	owner.max_hp = 100
@@ -21213,6 +21342,7 @@ func test_roll_token_normal_controls_flow() -> void:
 		{"token_id": "diviner_portent:1:1", "value": 3, "feature_id": "diviner_portent", "pool_id": "diviner_portent", "die_sides": 20},
 	]
 	diviner.known_spells.assign(["fire_bolt", "burning_hands"])
+	_own_class_spells(diviner) # Batch 084 R3 fixture repair
 	diviner.wizard_spellbook.assign(["burning_hands", "magic_missile", "shield", "mage_armor", "sleep"])
 	diviner.spell_slots["1"] = 2
 
@@ -21354,6 +21484,7 @@ func test_roll_token_normal_controls_flow() -> void:
 	var original_spells := DataLoader.spells.duplicate(true)
 	DataLoader._load_content_type("res://data/fixtures/shared_spells/spells/", "spell")
 	diviner.known_spells.append("sandbox:attack_then_save")
+	_own_class_spells(diviner) # Batch 084 R3 fixture repair
 	diviner.wizard_spellbook.append("sandbox:attack_then_save")
 	diviner.roll_tokens["diviner_portent"] = [{"token_id": "ordered:20", "value": 20, "feature_id": "diviner_portent", "pool_id": "diviner_portent", "die_sides": 20}]
 	diviner.spell_slots["1"] = 2
@@ -21397,6 +21528,7 @@ func test_roll_token_normal_controls_flow() -> void:
 	_assert(int(enemy.current_hp) == hp_before_later_save and not enemy.conditions.has("poisoned"), "Later Portent succeeds without repeating attack damage or applying failed-save effects")
 	_assert(RollTokenRules.get_available_values(diviner, "diviner_portent").is_empty() and int(diviner.spell_slots["1"]) == 1, "Ordered cast spends one Portent token and one spell slot")
 	diviner.known_spells.erase("sandbox:attack_then_save")
+	_own_class_spells(diviner) # Batch 084 R3 fixture repair
 	diviner.wizard_spellbook.erase("sandbox:attack_then_save")
 	DataLoader.spells = original_spells
 
@@ -21420,6 +21552,7 @@ func test_ward_normal_controls_flow() -> void:
 		abjurer.level_up()
 	_assert(ClassProgression.choose_subclass(abjurer, "abjurer"), "Level 6 Wizard selects Abjurer subclass")
 	abjurer.known_spells.assign(["mage_armor", "protection_from_evil_and_good", "shield"])
+	_own_class_spells(abjurer) # Batch 084 R3 fixture repair
 	abjurer.wizard_spellbook.assign(["mage_armor", "protection_from_evil_and_good", "shield", "magic_missile"])
 	abjurer.spell_slots = {"1": 2, "2": 2}
 	abjurer.inventory.add_item("component_pouch")
@@ -21846,6 +21979,7 @@ func test_child_group_flow() -> void:
 	var caster: Character = PlayerManager.get_player(0).character
 	caster.class_id="wizard"
 	caster.known_spells.assign(ids)
+	_own_class_spells(caster) # Batch 084 R3 fixture repair
 	caster.wizard_spellbook.assign(ids)
 	caster.spell_slots={"1":3}
 	caster.max_hp=100
@@ -21900,6 +22034,7 @@ func test_formula_number_flow() -> void:
 	var caster: Character = PlayerManager.get_player(0).character
 	caster.class_id="wizard"
 	caster.known_spells.assign([id])
+	_own_class_spells(caster) # Batch 084 R3 fixture repair
 	caster.wizard_spellbook.assign([id])
 	caster.spell_slots={"1":4}
 	caster.max_hp=100
@@ -22012,6 +22147,7 @@ func test_class_level_table_flow() -> void:
 	caster.class_levels={"wizard":3,"cleric":5}
 	caster.proficiency_bonus=3
 	caster.known_spells.assign(ids)
+	_own_class_spells(caster) # Batch 084 R3 fixture repair
 	caster.wizard_spellbook.assign(ids)
 	caster.spell_slots={"1":4}
 	caster.max_hp=200
