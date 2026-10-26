@@ -5,7 +5,7 @@ extends RefCounted
 
 const CONDITIONS := ["blinded", "deafened", "frightened", "poisoned", "prone", "restrained", "stunned", "paralyzed", "incapacitated", "blessed", "baned", "shield_of_faith"]
 const ABILITIES := ["STR", "DEX", "CON", "INT", "WIS", "CHA"]
-const EFFECTS := ["heal", "temporary_hp", "grant_condition", "remove_condition", "area_selection", "grant_source_benefits", "grant_damage_link", "grant_damage_response", "create_actor", "actor_projection", "suppress_item_magic", "bind_tether"]
+const EFFECTS := ["heal", "temporary_hp", "grant_condition", "remove_condition", "area_selection", "grant_source_benefits", "grant_damage_link", "grant_damage_response", "create_actor", "actor_projection", "suppress_item_magic", "bind_tether", "max_hp_source"]
 const STEP_FIELDS := ["id", "type", "gate", "gate_step", "target", "shape", "radius", "size", "attack_type", "damage", "damage_type", "damage_components", "component_id", "scaling", "upcast", "save", "half_on_save", "save_context", "damage_scale_by_outcome", "damage_dice_policy", "damage_result_multiplier", "damage_reductions", "damage_bypasses", "recipient_exemption_choice", "effects", "incoming_negation", "incoming_negation_rule", "physical_requirements", "spatial_requirements"]
 const STEP_TYPES := ["attack", "save", "damage", "effect"]
 const STEP_GATES := ["always", "hit", "miss", "failed_save", "successful_save"]
@@ -125,6 +125,13 @@ static func _validate_single_effect(effect: Variant) -> String:
 		allowed.append_array(["forms", "retain", "equipment"])
 		var projection_error := ActorProjectionRules.effect_error(effect)
 		if not projection_error.is_empty(): return projection_error
+	elif kind == "max_hp_source":
+		# Batch 071 (S-130/S-131): a cast-owned maximum-HP source on any creature target.
+		if effect.size() != 2 or not effect.has("rule"): return "Maximum-HP source effects accept only type and rule."
+		allowed.append("rule")
+		var rule_error := MaxHpSourceRules.validate_rule(effect.get("rule"))
+		if not rule_error.is_empty(): return rule_error
+		if str(effect.rule.get("amount", "")) == "damage_dealt": return "Spell maximum-HP sources need a fixed amount."
 	elif kind == "grant_damage_link":
 		if effect.size() != 2: return "Damage link grants accept only type and policy."
 		allowed.append("policy")
@@ -455,7 +462,7 @@ static func content_error(spell: Dictionary) -> String:
 		if kind == "bind_tether":
 			if (str(effect.get("anchor", "character")) != "object" and not bool(spell.get("concentration", false))) or spell.get("target", "single") not in ["single", "single_enemy", "single_ally"]: return "Character tethers require concentration; object tethers need an individual creature target."
 			if int(spell.get("base_targets", 1)) > int(effect.get("capacity", 1)): return "Tether base_targets exceeds its capacity."
-		if kind in ["grant_condition", "grant_source_benefits", "grant_damage_link", "grant_damage_response", "create_actor", "actor_projection", "suppress_item_magic", "bind_tether"]: timed = true
+		if kind in ["grant_condition", "grant_source_benefits", "grant_damage_link", "grant_damage_response", "create_actor", "actor_projection", "suppress_item_magic", "bind_tether", "max_hp_source"]: timed = true
 		elif kind == "area_selection": areas += 1
 		has_payload = has_payload or kind != "area_selection"
 		if bool(effect.get("on_spell_hit", false)) and spell.get("attack_type", "none") == "none" and not spell.has("steps"): return "on_spell_hit requires attack delivery."
@@ -575,7 +582,7 @@ static func has_effect(spell: Dictionary, kind: String) -> bool:
 	return false
 
 static func manages(spell: Dictionary) -> bool:
-	return (has_effect(spell, "grant_condition") or has_effect(spell, "grant_source_benefits") or has_effect(spell, "grant_damage_link") or has_effect(spell, "grant_damage_response") or has_effect(spell, "create_actor") or has_effect(spell, "actor_projection") or has_effect(spell, "suppress_item_magic") or has_effect(spell, "bind_tether")) and content_error(spell).is_empty()
+	return (has_effect(spell, "grant_condition") or has_effect(spell, "grant_source_benefits") or has_effect(spell, "grant_damage_link") or has_effect(spell, "grant_damage_response") or has_effect(spell, "create_actor") or has_effect(spell, "actor_projection") or has_effect(spell, "suppress_item_magic") or has_effect(spell, "bind_tether") or has_effect(spell, "max_hp_source")) and content_error(spell).is_empty()
 
 static func _create_step_cast(cast: SpellResolutionContext, target, step_spell: Dictionary) -> SpellResolutionContext:
 	var step_cast := SpellResolutionContext.new()
@@ -746,6 +753,14 @@ static func apply_custom_effects(caster: Character, target, effects: Array, resu
 					result["magic_suppression"] = muted
 					if muted.get("applied", false): messages.append("%s's magic is %s on %d item%s." % [target_name, "destroyed" if muted.mode == "destroy" else "suppressed", muted.copies.size(), "" if muted.copies.size() == 1 else "s"])
 					else: messages.append("%s: %s" % [target_name, str(muted.get("reason", ""))])
+			"max_hp_source":
+				var changed := MaxHpSourceRules.grant_from_cast(target, result.get("effect_cast", {}), effect.rule)
+				result["max_hp_source"] = changed
+				var conc_targets: Variant = caster.concentrating_on.get("targets", null)
+				if changed.get("applied", false) and conc_targets is Array and str(caster.concentrating_on.get("effect_source", "")) == str(result.get("effect_cast", {}).get("source_id", "")) and not conc_targets.has(target):
+					conc_targets.append(target) # Concentration end reaches the exact monster record that holds the source.
+				if changed.get("applied", false): messages.append("%s's Hit Point maximum is now %d." % [target_name, int(changed.max_hp_after)] + (" %s dies." % target_name if bool(changed.get("zero_limit_death", false)) else ""))
+				else: messages.append("%s's Hit Point maximum is unchanged (%s)." % [target_name, str(changed.get("reason", "refused")).replace("_", " ")])
 			"grant_damage_link":
 				if DamageLinkRules.grant(target, result.get("effect_cast", {}), effect.policy):
 					messages.append("%s gains a source-owned damage link." % target_name)
