@@ -926,3 +926,18 @@ All 49 have no rule fields, so in the engine today every one behaves as its base
 4. **The 67 non-SRD items,** clause by clause.
 5. **The partial-review tails** listed above. Read the full untruncated text first.
 6. **Ask the combat and travel owners** to claim cover, mounted combat and vehicles.
+
+## Batch 090: item data defect status (stacked on Batch 089)
+
+| Item | Status | Detail |
+|---|---|---|
+| D-1 potion_of_poison_resistance | FIXED (inverted effect removed); resistance BLOCKED | The Poisoned effect is removed. The potion is now a refused stub, like the other Potions of Resistance (acid, cold and so on have `effects: []`). Granting Poison Resistance for 1 hour needs a resistance-grant consumable effect (items-9, an engine change). The only existing host, the `protection_from_poison` condition, also grants Advantage on saves against Poisoned, so it would over-grant. |
+| D-2 potion_of_poison | FIXED, partial | Added 4d6 Poison damage. The existing 10-turn Poisoned approximation is retained. The proposed 600-turn extension is deferred: the shared combat host incorrectly deals 1d4 damage every Poisoned turn, and a bare condition does not expire with campaign time. Correct Poisoned consequences (S-235), a one-hour elapsed-time lifetime (S-257) and the DC 13 Constitution save remain BLOCKED; consumable `apply_condition` has no save field. Poisoned is still applied without a save, as before. |
+| D-3 healing potions | FIXED, partial | `action_cost` is now `bonus_action` on the winning records: consumables.json potion_healing and potion_greater_healing (manifest winners), and imported potion_superior_healing #79 and potion_supreme_healing #81. Administering a potion to another creature within 5 ft is BLOCKED: consume() only targets the user (new operation). |
+| D-4 duplicate consumable IDs | AUDIT CORRECTION, no change | content_manifest.json resolves all 42 duplicate IDs. In every pair the 2024/SRD copy wins (the second record), and healing/greater healing are won by consumables.json. Load order does not decide the winner. |
+| D-5 ring_of_protection | BLOCKED | The ID-branched host (inventory.gd:538, inventory_copies.gd:145, container_rules.gd:292) needs engine work (PROPOSED-items-12). The data values (+1 AC and +1 saves) are already correct. |
+| D-6 staff_of_power | BLOCKED | The +2 to saves and spell attacks needs items-12. The spell table needs "your spell save DC": item spell_permissions require a fixed `ability`, and no production item uses them yet. Level-5 Fireball/Lightning Bolt need items-14. Retributive Strike needs items-10. The 2d8+4 recovery and regaining 1d8+2 on a 20 need items-20, because recovery is uniform min..max; 6–20 is kept as the closest range. |
+| D-7 staff_of_striking | BLOCKED | No data vocabulary exists for spending charges on a hit for damage (items-15). |
+| D-8 wand_of_magic_missiles | NOT CHANGED (behavior already present; data addition unsafe) | spell_cast_resources.gd:136–143 already rolls d20 and destroys the wand on a 1 when the last charge is spent. The spend goes through spend_instance_charges, which also settles any `last_charge_aftermath`, so adding the data would roll twice. Removing the native branch first is engine work, so this is BLOCKED until then. |
+
+Note (merge with #70): `PROPOSED-items-N` and `items-N` placeholders above map to the wave-2 S-IDs in the table "Proposed slices".

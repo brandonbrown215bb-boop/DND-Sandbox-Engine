@@ -5,7 +5,7 @@
     "name": "Potion of Healing",
     "description": "A vial of glowing red liquid. Heals 2d4 + 2 hit points.",
     "type": "consumable",
-    "action_cost": "action",
+    "action_cost": "bonus_action",
     "effects": [{"type": "heal", "value": "2d4 + 2"}],
     "value": 50
   },
@@ -14,7 +14,7 @@
     "name": "Potion of Greater Healing",
     "description": "A larger vial of potent red liquid. Heals 4d4 + 4 hit points.",
     "type": "consumable",
-    "action_cost": "action",
+    "action_cost": "bonus_action",
     "effects": [{"type": "heal", "value": "4d4 + 4"}],
     "value": 150
   },

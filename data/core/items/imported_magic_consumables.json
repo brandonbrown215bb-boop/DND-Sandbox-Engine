@@ -600,20 +600,10 @@
     "action_cost": "action",
     "effects": [
       {
-        "type": "apply_condition",
-        "condition": "poisoned",
-        "duration": 10
-      }
-    ],
-    "value": 0
-  },
-  {
-    "id": "potion_of_poison_resistance",
-    "name": "Potion of Poison Resistance",
-    "description": "{#itemEntry Potion of Resistance}",
-    "type": "consumable",
-    "action_cost": "action",
-    "effects": [
+        "type": "damage",
+        "value": "4d6",
+        "damage_type": "poison"
+      },
       {
         "type": "apply_condition",
         "condition": "poisoned",
@@ -635,6 +625,15 @@
         "duration": 10
       }
     ],
+    "value": 0
+  },
+  {
+    "id": "potion_of_poison_resistance",
+    "name": "Potion of Poison Resistance",
+    "description": "{#itemEntry Potion of Resistance}",
+    "type": "consumable",
+    "action_cost": "action",
+    "effects": [],
     "value": 0
   },
   {
@@ -755,7 +754,7 @@
     "name": "Potion of Superior Healing",
     "description": "You regain 8d4 + 8 Hit Points when you drink this potion. The potion's red liquid glimmers when agitated.",
     "type": "consumable",
-    "action_cost": "action",
+    "action_cost": "bonus_action",
     "effects": [
       {
         "type": "heal",
@@ -783,7 +782,7 @@
     "name": "Potion of Supreme Healing",
     "description": "You regain 10d4 + 20 Hit Points when you drink this potion. The potion's red liquid glimmers when agitated.",
     "type": "consumable",
-    "action_cost": "action",
+    "action_cost": "bonus_action",
     "effects": [
       {
         "type": "heal",
