@@ -322,6 +322,8 @@ func _run_scenario(scenario: String) -> void:
 		"batch_078_declared_capacity_flow": await Batch078Controls.run(self)
 		"batch_079_max_hp_stacking_flow": await Batch079Controls.run(self)
 		"batch_079_max_hp_stacking_reload": await Batch079Controls.reload(self)
+		"batch_080_last_charge_text_flow": await Batch080Controls.run(self)
+		"batch_080_last_charge_text_reload": await Batch080Controls.reload(self)
 		"batch_067_weapon_damage_choice_flow": await Batch067Controls.run(self)
 		"batch_067_weapon_damage_choice_reload": await Batch067Controls.reload(self)
 		"batch_068_exact_contents_flow": await Batch068Controls.run(self)

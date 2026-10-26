@@ -8,7 +8,8 @@ extends RefCounted
 
 ## Review 049 R1: "features" names an item copy's owned mode/upgrade rules.
 ## Review 044 R2: "item_effects" names a magic item's authored effects list (Ring of Protection's AC and save bonus).
-const PROPERTIES := ["source_benefits", "spell_permissions", "incoming_negation_rule", "attachment_sets", "item_effects", "features"]
+## Batch 080 (#44 follow-up): "weapon_bonus" names a magic weapon's authored +N to attack and damage rolls (Staff of Power/Striking, SRD p.246).
+const PROPERTIES := ["source_benefits", "spell_permissions", "incoming_negation_rule", "attachment_sets", "item_effects", "features", "weapon_bonus"]
 
 static func effect_error(effect: Dictionary) -> String:
 	if effect.keys().any(func(k): return str(k) not in ["type", "properties", "mode"]): return "Magic suppression accepts only type, properties and mode."
@@ -31,6 +32,36 @@ static func definition_has(item: Dictionary, property: String) -> bool:
 	if property == "attachment_sets": return not item.get("attachments", {}).get("sets", []).is_empty()
 	if property == "item_effects": return not item.get("effects", []).is_empty()
 	return item.has(property)
+
+## Batch 080: load-time shape of the weapon_bonus property.
+static func weapon_bonus_error(item: Dictionary) -> String:
+	if not item.has("weapon_bonus"): return ""
+	var b: Variant = item["weapon_bonus"]
+	if str(item.get("type", "")) != "weapon" or not (bool(item.get("magical", false)) or item.has("rarity")): return "weapon_bonus applies only to magic weapons"
+	if not b is Dictionary or b.size() != 2 or not b.has("attack") or not b.has("damage"): return "weapon_bonus needs exactly attack and damage"
+	for k in ["attack", "damage"]:
+		if not (b[k] is int or b[k] is float) or float(b[k]) != floorf(float(b[k])) or int(b[k]) < 0 or int(b[k]) > 3: return "weapon_bonus %s must be an integer 0..3" % k
+	return ""
+
+## Batch 080: the authored weapon bonus of the equipped exact copy used for this
+## attack, through the same active() gate as every other property (last-charge
+## loss, S-203 suppression/destruction). Also reports whether that copy is still
+## magical (a "nonmagical" last-charge outcome ends it). {} when no copy applies.
+static func weapon_copy_bonus(actor, weapon_id: String) -> Dictionary:
+	if not actor is Character or weapon_id.is_empty(): return {}
+	var inv: Inventory = actor.inventory
+	inv.copies.sync(inv)
+	for slot in [Inventory.Slot.WEAPON, Inventory.Slot.OFFHAND]:
+		var copy_id := str(inv.copies.equipped.get(slot, ""))
+		var record: Dictionary = inv.copies.records.get(copy_id, {})
+		if str(record.get("definition_id", "")) != weapon_id: continue
+		var state: Dictionary = record.get("state", {})
+		var nonmagical: bool = bool(state.get("degraded", false)) and state.get("magical", null) == false
+		var item := DataLoader.get_item(weapon_id)
+		var attuned_ok: bool = not bool(item.get("requires_attunement", false)) or str(state.get("attuned_to", "")) == actor.character_id
+		var live: bool = item.has("weapon_bonus") and weapon_bonus_error(item).is_empty() and attuned_ok and active(actor, copy_id, "weapon_bonus")
+		return {"copy_id": copy_id, "magical": not nonmagical, "attack": int(item.weapon_bonus.attack) if live else 0, "damage": int(item.weapon_bonus.damage) if live else 0}
+	return {}
 
 static func _affected(actor: Character, effect: Dictionary) -> Dictionary:
 	var inv := actor.inventory

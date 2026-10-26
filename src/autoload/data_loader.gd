@@ -598,6 +598,14 @@ func _validate_semantics(data: Dictionary, content_type: String, source: String)
 	if data.has("range") and (not (data.get("range") is int or data.get("range") is float) or float(data.get("range")) < 0):
 		_load_errors.append("Range must be a non-negative number in %s" % source)
 		valid = false
+	if content_type == "item" and data.has("weapon_bonus"): # Batch 080.
+		var bonus_error := MagicPropertyRules.weapon_bonus_error(data)
+		if not bonus_error.is_empty():
+			_load_errors.append("%s in %s" % [bonus_error, source])
+			valid = false
+	if content_type == "item" and data.has("legacy_charge_state") and (str(data["legacy_charge_state"]) != "full" or int(data.get("maximum_charges", 0)) <= 0): # Batch 080.
+		_load_errors.append("legacy_charge_state must be \"full\" on an item with maximum_charges in %s" % source)
+		valid = false
 	if data.has("last_charge_aftermath"):
 		var charge_error := LastChargeRules.validate(data["last_charge_aftermath"])
 		if charge_error.is_empty() and int(data.get("maximum_charges", 0)) <= 0: charge_error = "last_charge_aftermath requires maximum_charges"

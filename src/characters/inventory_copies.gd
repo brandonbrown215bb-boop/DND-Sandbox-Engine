@@ -78,6 +78,10 @@ func restore(inventory: RefCounted, data: Dictionary) -> void:
 		inventory_id = str(data["inventory_id"])
 		next_id = int(data["next_id"])
 		records = data["records"].duplicate(true)
+		for id in records: # Batch 080: a copy saved before its definition gained charges starts full, only where the data declares it.
+			var item := DataLoader.get_item(str(records[id].get("definition_id", "")))
+			if records[id].get("state") is Dictionary and not records[id].state.has("charges") and int(item.get("maximum_charges", 0)) > 0 and str(item.get("legacy_charge_state", "")) == "full":
+				records[id].state["charges"] = int(item.maximum_charges)
 		backpack.assign(data["backpack"])
 		for slot in data["equipped"]:
 			equipped[Inventory.Slot.keys().find(slot)] = data["equipped"][slot]
@@ -152,7 +156,7 @@ static func record_state_error(record: Dictionary) -> String:
 		var maximum := int(item.get("maximum_charges", 0))
 		if (not charges is int and not charges is float) or not is_finite(float(charges)) or float(charges) != floorf(float(charges)) or int(charges) < 0 or int(charges) > 10000 or (maximum > 0 and int(charges) > maximum):
 			return "magic item charges are invalid"
-	elif int(item.get("maximum_charges", 0)) > 0:
+	elif int(item.get("maximum_charges", 0)) > 0 and str(item.get("legacy_charge_state", "")) != "full": # Batch 080: data-declared migration only.
 		return "charged magic item is missing its charge state"
 	var pool_error := OwnedFeatureSources.record_error(record) # Review 049 R2.
 	if not pool_error.is_empty(): return pool_error
