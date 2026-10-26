@@ -461,6 +461,7 @@ below); G = source gap, deferred, or ADR-0023/campaign judgment.
 | Lifestyle Expenses; Food, Drink and Lodging (6129) | Daily cost → lodging/food facts | Shop exists; no daily lifestyle | G | Campaign economy, not a rules capability yet; unreviewed |
 | Downtime activities | — | — | G | **Source gap:** no Downtime section found in SRD 5.2.1 text; only rest and crafting clauses. Supplements stay separate |
 | Chases | — | — | G | **Source gap:** no Chases section found in SRD 5.2.1 text |
+| Foraging result; lost / navigation-failure outcome (Travel Terrain 12354–12370) | Foraging DC and Navigation DC exist; what a success yields and what happens on failure/being lost is not stated in the reviewed text | No foraging or navigation procedure | G | **Source gap (ADR-0023 judgment) — pending Brandon's confirmation, not a decided rule.** Proposed: no engine default; outcomes come only from authored campaign/content data; when none is present the engine refuses visibly. DC checks stay in S-228 (V-098) |
 
 **Coverage.** Reviewed (clauses read and decomposed): Exploration chapter 600–760,
 Travel/Travel Terrain 12315–12370, Environmental Effects headings 12511–12556,
