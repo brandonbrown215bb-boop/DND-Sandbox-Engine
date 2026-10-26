@@ -134,10 +134,10 @@ Loaded: 1 `executor`, 15 `effects`, 6 `native` (`barbarian_rules`). Refused by D
 | Extra Attack (5, effects) | Two attacks per Attack action | ES | S-084 (VS-120 owned parameter upgrades); S-146 (VS-97) |
 | Fast Movement (5, effects) | +10 ft Speed without Heavy armor | ES | Conversion Batch 001: already generic; S-179 (VS-102) |
 | Feral Instinct (7, effects) | Advantage on Initiative | ES | S-091 (VS-29); no live acceptance in class doc |
-| Instinctive Pounce (7, native) | Move up to half Speed as part of the Rage Bonus Action | ES / **GAP** | Native checks. Shared granted movement outside the normal budget: **S-227 / V-098** |
+| Instinctive Pounce (7, native) | Move up to half Speed as part of the Rage Bonus Action | ES / **GAP** | Native checks. Shared granted movement outside the normal budget: **FEAT-B2-MOVE** |
 | Brutal Strike (9, native) | With Reckless Attack, forgo Advantage on one Str attack without Disadvantage | ES / HC | Native checks; shared forgo-Advantage option is HC on S-091 + S-085 |
 | | On hit: +1d10 damage of the weapon's type, plus one effect | ES / HC | S-084 option upgrade; typed extra damage S-013 is next-hit/fixed (VS-13), so per-hit choice is HC |
-| | Forceful Blow: push 15 ft straight away, then move half Speed straight toward the target without provoking OAs | ES / **GAP** | Native live-grid checks. Shared forced and granted movement: **S-227 / V-098** |
+| | Forceful Blow: push 15 ft straight away, then move half Speed straight toward the target without provoking OAs | ES / **GAP** | Native live-grid checks. Shared forced and granted movement: **FEAT-B2-MOVE** |
 | | Hamstring Blow: Speed −15 ft until your next turn; most recent only | ES / HC | Native checks; S-179 speed (VS-102); non-stacking replacement S-057 (VS-55) |
 | Relentless Rage (11, native) | At 0 HP while raging, not outright death: DC 10 Con save; success sets HP to 2 × level | ES | S-117 (VS-111), S-118 (VS-112) |
 | | DC +5 per use; resets on Short/Long Rest | ES | S-118 / S-090 (VS-96) |
@@ -150,4 +150,4 @@ Loaded: 1 `executor`, 15 `effects`, 6 `native` (`barbarian_rules`). Refused by D
 | Epic Boon (19, effects) | Feat choice | ACQ | grant logged by Subclass Stager; boon bodies are SRC-01 feats |
 | Primal Champion (20, effects) | Str and Con +4, max 25 | ES | S-048 (VS-69) |
 
-Barbarian totals: 22/22 loaded records decomposed (100% of loaded; 0 of the Berserker records, which are absent). New gap: V-098. Native-only behaviors still needing shared hosts (HC): resistance self-grant, check-ability swap, forgo-Advantage option, per-hit typed damage choice, OA prohibition.
+Barbarian totals: 22/22 loaded records decomposed (100% of loaded; 0 of the Berserker records, which are absent). New gap: FEAT-B2-MOVE. Native-only behaviors still needing shared hosts (HC): resistance self-grant, check-ability swap, forgo-Advantage option, per-hit typed damage choice, OA prohibition.
