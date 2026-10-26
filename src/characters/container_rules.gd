@@ -172,6 +172,64 @@ static func retrieve_last(inventory: Inventory, container_id: String) -> Diction
 	if held.is_empty(): return {"success": false, "message": "That container is empty."}
 	return remove(inventory, container_id, str(held[held.size() - 1].instance_id))
 
+## S-196 exact choice (Batch 068): every carried container compartment that would
+## accept this exact copy right now. Each option names one container identity and
+## one compartment; the HUD offers them instead of the first fit.
+static func stow_options(inventory: Inventory, child_id: String) -> Array:
+	var result: Array = []
+	if inventory == null: return result
+	for host in inventory.owned_instances():
+		var host_id := str(host.instance_id)
+		if host_id == child_id: continue
+		result.append_array(compartment_options(inventory, host_id, child_id))
+	return result
+
+## Compartments of one exact container (carried or projected vessel) that accept the copy now.
+static func compartment_options(inventory: Inventory, container_id: String, child_id: String) -> Array:
+	var result: Array = []
+	if inventory == null: return result
+	var host := _record(inventory, container_id)
+	for key in compartments(str(host.get("definition_id", ""))):
+		if put_error(inventory, container_id, child_id, str(key)).is_empty():
+			result.append({"container_id": container_id, "compartment": str(key), "label": "%s — %s" % [InventoryCopies.display_name(host, maxi(1, ordinal(inventory, container_id))), str(key)]})
+	return result
+
+## S-196 exact choice: every exact copy held by this container, by compartment.
+static func content_options(inventory: Inventory, container_id: String) -> Array:
+	var result: Array = []
+	if inventory == null or not _owned(inventory, container_id): return result
+	var all: Variant = _record(inventory, container_id).get("state", {}).get("contents", {})
+	if not all is Dictionary: return result
+	for key in all:
+		var n := 0
+		for child in all[key]:
+			n += 1
+			result.append({"container_id": container_id, "compartment": str(key), "instance_id": str(child.instance_id), "label": "%s — %s" % [InventoryCopies.display_name(child, n), str(key)]})
+	return result
+
+## Take out the exact offered copy. A stale offer (the copy left that
+## compartment, or the container left the holder) is refused before anything moves.
+static func take_out(inventory: Inventory, option: Dictionary) -> Dictionary:
+	var container_id := str(option.get("container_id", ""))
+	var child_id := str(option.get("instance_id", ""))
+	if not contents(inventory, container_id, str(option.get("compartment", ""))).any(func(c): return str(c.instance_id) == child_id) or str(option.get("compartment", "")).is_empty():
+		return {"success": false, "stale": true, "message": "That copy is no longer in that compartment; nothing was moved."}
+	return remove(inventory, container_id, child_id)
+
+## Stow into the exact offered container compartment; put() revalidates everything.
+static func stow_into(inventory: Inventory, child_id: String, option: Dictionary) -> Dictionary:
+	return put(inventory, str(option.get("container_id", "")), child_id, str(option.get("compartment", "")))
+
+## The ordinal the HUD shows for a carried copy (backpack order first).
+static func ordinal(inventory: Inventory, id: String) -> int:
+	var pack := inventory.backpack_instances()
+	for i in pack.size():
+		if str(pack[i].instance_id) == id: return i + 1
+	var owned := inventory.owned_instances()
+	for i in owned.size():
+		if str(owned[i].instance_id) == id: return i + 1
+	return 0
+
 ## Ids of copies held inside an inventory DTO's containers.
 static func content_ids(inventory_dto: Dictionary) -> Array:
 	var ids: Array = []

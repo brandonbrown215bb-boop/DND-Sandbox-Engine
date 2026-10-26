@@ -29,9 +29,10 @@ the existing `dismiss_cost`, paid only on successful settlement.
 
 Cargo uses the item's existing `container.compartments`. Actual child copies
 remain in the original copy's `state.contents`, including their instance IDs,
-charges and other state. **Stow cargo** selects an exact backpack copy and uses
-the first authored compartment; **Take out cargo** returns the last child of
-the selected vessel. They reuse normal capacity checks and six-second transfer
+charges and other state. **Stow cargo** selects an exact backpack copy and, when
+two or more compartments accept it, the exact compartment; **Take out cargo**
+offers the exact held child when two or more are held (batch 068, see
+[exact contents and parts](exact-contents-and-parts.md)). They reuse normal capacity checks and six-second transfer
 costs. Projected cargo transfers require the outside owner within one hex/five
 vertical feet, on the vessel's plane, in its actual current room. Remembered
 coordinates in another room give no access. Internal occupants cannot transfer

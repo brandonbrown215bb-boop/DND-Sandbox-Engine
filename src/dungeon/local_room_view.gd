@@ -29,6 +29,8 @@ var mode_row: HFlowContainer # Batch 062
 var mode_offers: OptionButton
 var mode_popup_serial := 0
 var tether_popup_serial := 0
+var exact_choice_serial := 0 # Batch 068
+var exact_choice_menu: PopupMenu
 var containment_serial := 0
 var containment_row: HFlowContainer
 var containment_item_rows: Array = []
@@ -181,10 +183,17 @@ func start(room: Dictionary, party: Array, room_grid: HexGrid, room_hud: Dungeon
 	unattune_button = _add_button(item_action_row, "Unattune", func():
 		_result(actor().inventory.unattune_instance(_selected(items), actor().character_id)))
 	# S-196: stow the exact selected copy, or take the last stowed copy out of the selected container.
-	stow_button = _add_button(item_action_row, "Stow", func(): _result(ContainerRules.stow(actor().inventory, _selected(items))))
-	retrieve_button = _add_button(item_action_row, "Take out", func(): _result(ContainerRules.retrieve_last(actor().inventory, _selected(items))))
+	# Batch 068: with two or more eligible compartments/contents the player picks the exact one.
+	stow_button = _add_button(item_action_row, "Stow", func():
+		var child := _selected(items)
+		choose_exact("Stow in which compartment?", ContainerRules.stow_options(actor().inventory, child), func(o): return ContainerRules.stow_into(actor().inventory, child, o), func(): return ContainerRules.stow(actor().inventory, child)))
+	retrieve_button = _add_button(item_action_row, "Take out", func():
+		var host := _selected(items)
+		choose_exact("Take out which copy?", ContainerRules.content_options(actor().inventory, host), func(o): return ContainerRules.take_out(actor().inventory, o), func(): return ContainerRules.retrieve_last(actor().inventory, host)))
 	# S-210: attach the selected part to a socket, or detach the selected host's last part.
-	attach_button = _add_button(item_action_row, "Attach", func(): _result(AttachmentRules.attach_any(actor().inventory, _selected(items))))
+	attach_button = _add_button(item_action_row, "Attach", func():
+		var part := _selected(items)
+		choose_exact("Attach to which socket?", AttachmentRules.socket_options(actor().inventory, part), func(o): return AttachmentRules.attach_into(actor().inventory, part, o), func(): return AttachmentRules.attach_any(actor().inventory, part)))
 	# S-064: start or pause the selected copy's cumulative active time.
 	activate_button = _add_button(item_action_row, "Activate", func(): _result(ActiveTimeRules.activate(actor(), _selected(items), int(GameManager.campaign_elapsed_seconds))))
 	pause_button = _add_button(item_action_row, "Pause", func(): _result(ActiveTimeRules.pause(actor(), _selected(items))))
@@ -197,12 +206,46 @@ func start(room: Dictionary, party: Array, room_grid: HexGrid, room_hud: Dungeon
 	_add_button(item_action_row, "Cut tether", func(): _tether_action("strike"))
 	# S-168: escape an exact tether outside combat.
 	_add_button(item_action_row, "Escape tether", func(): _tether_action("escape"))
-	detach_button = _add_button(item_action_row, "Detach", func(): _result(AttachmentRules.detach_last(actor().inventory, _selected(items))))
+	detach_button = _add_button(item_action_row, "Detach", func():
+		var host := _selected(items)
+		choose_exact("Detach which part?", AttachmentRules.part_options(actor().inventory, host), func(o): return AttachmentRules.detach_part(actor().inventory, o), func(): return AttachmentRules.detach_last(actor().inventory, host)))
 	refresh()
 	hud.add_log("%s — select a character, then click a space to move or an object to interact. Each hex is five feet." % state.get("name", "Room"))
 
 func actor() -> Character:
 	return characters[actors.selected]
+
+## S-196/S-210 (Batch 068): offer every eligible exact option. No option runs
+## `none` (which only reports the refusal); one option applies directly; two or
+## more open a PopupMenu. Dismissing spends nothing; the pick is revalidated by
+## `apply`, and a replayed or superseded pick (serial) is ignored.
+func choose_exact(title: String, options: Array, apply: Callable, none: Callable) -> void:
+	exact_choice_serial += 1
+	var serial := exact_choice_serial
+	if options.is_empty():
+		_result(none.call())
+		return
+	if options.size() == 1:
+		_result(apply.call(options[0]))
+		return
+	var chooser := actor()
+	var menu := PopupMenu.new()
+	menu.name = "ExactChoiceMenu"
+	menu.title = title
+	for option in options: menu.add_item(str(option.get("label", "Option")))
+	panel.add_child(menu)
+	exact_choice_menu = menu
+	menu.id_pressed.connect(func(index):
+		if serial == exact_choice_serial and index >= 0 and index < options.size():
+			exact_choice_serial += 1
+			if actor() != chooser: _result({"success": false, "message": "The acting character changed; nothing was moved."})
+			else: _result(apply.call(options[index]))
+		else: hud.add_log("That choice is no longer open; nothing was moved.")
+		menu.queue_free())
+	menu.popup_hide.connect(func():
+		if exact_choice_menu == menu: exact_choice_menu = null
+		menu.queue_free())
+	menu.popup_centered(Vector2i(480, 180))
 
 func _tether_action(mode: String) -> void:
 	tether_popup_serial += 1

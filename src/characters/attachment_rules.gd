@@ -109,6 +109,41 @@ static func detach_last(inventory: Inventory, host_id: String) -> Dictionary:
 	if a.is_empty(): return {"success": false, "message": "Nothing is attached."}
 	return detach(inventory, host_id, str(a.keys()[a.size() - 1]))
 
+## S-210 exact choice (Batch 068): every carried or worn host socket that would
+## accept this exact copy right now, instead of the first fit.
+static func socket_options(inventory: Inventory, child_id: String) -> Array:
+	var result: Array = []
+	if inventory == null: return result
+	for host in inventory.owned_instances():
+		var host_id := str(host.instance_id)
+		for s in policy(str(host.definition_id)).get("sockets", []):
+			if attach_error(inventory, host_id, child_id, str(s.id)).is_empty():
+				result.append({"host_id": host_id, "socket": str(s.id), "label": "%s — %s" % [InventoryCopies.display_name(host, ContainerRules.ordinal(inventory, host_id)), str(s.id)]})
+	return result
+
+## S-210 exact choice: every exact part attached to this host, by socket.
+static func part_options(inventory: Inventory, host_id: String) -> Array:
+	var result: Array = []
+	var a := attached(inventory, host_id)
+	var n := 0
+	for socket_id in a:
+		n += 1
+		result.append({"host_id": host_id, "socket": str(socket_id), "instance_id": str(a[socket_id].get("instance_id", "")), "label": "%s — %s" % [InventoryCopies.display_name(a[socket_id], n), str(socket_id)]})
+	return result
+
+## Attach into the exact offered socket; attach() revalidates everything.
+static func attach_into(inventory: Inventory, child_id: String, option: Dictionary) -> Dictionary:
+	return attach(inventory, str(option.get("host_id", "")), child_id, str(option.get("socket", "")))
+
+## Detach the exact offered part. A stale offer (the socket now holds another
+## copy, or is empty) is refused before anything moves.
+static func detach_part(inventory: Inventory, option: Dictionary) -> Dictionary:
+	var host_id := str(option.get("host_id", ""))
+	var socket_id := str(option.get("socket", ""))
+	if inventory == null or str(attached(inventory, host_id).get(socket_id, {}).get("instance_id", "")) != str(option.get("instance_id", "")) or str(option.get("instance_id", "")).is_empty():
+		return {"success": false, "stale": true, "message": "That part is no longer in that socket; nothing was moved."}
+	return detach(inventory, host_id, socket_id)
+
 ## Completed sets on one exact host copy: [{set_id, benefits}].
 static func complete_sets(host: Dictionary) -> Array:
 	var result: Array = []
