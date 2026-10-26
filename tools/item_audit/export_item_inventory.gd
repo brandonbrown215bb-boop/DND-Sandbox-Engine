@@ -15,6 +15,7 @@ func _ready() -> void:
 	var availability: Dictionary = {}
 	for item in loader.get_all_items():
 		availability[str(item["id"])] = _availability(item)
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(destination).get_base_dir())
 	var file := FileAccess.open(destination, FileAccess.WRITE)
 	if file == null:
 		push_error("Cannot write item inventory: %s" % destination)
