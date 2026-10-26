@@ -716,27 +716,213 @@ Key:
 - *conv-check* (host named, data not tried): Efficient Quiver S-196, Figurine day-scale S-014, Pearl of Power restore_resource, Vorpal S-110 bypass, Periapt of Wound Closure death-save hook, and Robe of the Archmagi S-126 add save_dc through an item feature.
 - **narr** entries (about 20) were classified but get no engine work.
 
-## Coverage (after batch 4)
+## Batch 5 — loaded SRD magic records, the 49 shells, the data spike, gear leftovers
 
-**Reviewed at clause level:**
-- Batches 1–2: weapons, armor, general magic rules, the 46 refused consumables, and SRD gear and tools. Iron Spikes and Chest are still not reviewed, and Block and Tackle is not classified.
-- **All 192 missing SRD magic items:** 47 in B3-2 (amended by B4-0) and 145 in B4-2. The 11 B3 sub-items are resolved (B4-0). Partial or check clauses are listed in B4-5.
+origin/main is still ede0a3c, which is an ancestor of audit/items, so no rebase was needed. The registry hash is unchanged. Only production `src/` was read. "Spike" here means a read-only check of the code and validators. No content was edited, and nothing was run in-engine (no Godot binary on the box).
 
-**Field level only:** the 94 loaded SRD magic records.
+### B5-1: The 94 loaded SRD magic records
 
-**Not reviewed:**
-- the 49 equippable shells, clause by clause;
-- Ammunition, mounts and vehicles, improvised weapons, selling, lifestyle, trade goods, and sentient items and artifacts;
-- the 67 non-SRD items;
-- carrying capacity;
-- whether each named spell works in the runtime (the spell audit's domain).
+| Group | Count | Status |
+|---|---|---|
+| Records with rule fields | 10 | Clause by clause; see B5-2 |
+| Equippable shells (stub: weapon 23, armor 19, shield 6, tool 1) | 49 | Clause by clause; see B5-3 |
+| Stub consumables | 35 | Already covered by the B2 refused-consumable pass. `Inventory.consume` refuses an empty `effects` (inventory.gd:308–325). |
 
-**Proposals:** PROPOSED-items-1…18 (5 new in batch 4: 14–18), plus amendments to items-10 and items-12.
+### B5-2: The 10 records with rule fields, checked against their hosts
 
-## Next queue
+| Record | Data | SRD 5.2.1 | Verdict |
+|---|---|---|---|
+| potion_healing / greater / superior / supreme | heal 2d4+2 / 4d4+4 / 8d4+8 / 10d4+20; `action_cost: action` | the same dice. A Bonus Action to drink, or to administer to a creature within 5 ft. | **Dice OK. D-3:** the action cost is wrong (Action vs Bonus Action), and the administer-to-another clause is missing. |
+| potion_of_poison | apply_condition poisoned, duration 10 | 4d6 Poison, a CON DC 13 save, Poisoned for 1 hour | **D-2:** the damage and save are missing, and the duration is wrong (10 vs 1 hour). |
+| potion_of_poison_resistance | apply_condition **poisoned**, 10 | Potion of Resistance (Poison): Resistance for 1 hour | **D-1: the effect is inverted.** It poisons the drinker. Fix → items-9. |
+| (all 6 above) | two records share each ID in imported_magic_consumables.json (2014 and 2024 text) | — | **D-4:** duplicate IDs. Which copy wins depends on load order; confirm in DataLoader. |
+| ring_of_protection | `effects: armor_class_bonus 1, saving_throw_bonus 1` | +1 AC and saves | **Values OK, but the host is branched on the item ID** (inventory.gd:538 `magic_item_saving_bonus`, inventory_copies.gd:145, container_rules.gd:292). Nothing in production reads those `effects` types. **D-5** → generalize under items-12. |
+| staff_of_power | +2/+2 weapon_bonus, AC +2 source_benefits, 20 charges, recovery 6–20, last-charge degrade keeping weapon_bonus | also +2 saves and +2 spell attack; a 9-spell charge table; recovery **2d8+4**; on a 20 it regains 1d8+2; Retributive Strike | **weapon_bonus, AC and degrade: conv, match.** **D-6:** the saves bonus (items-12), the spell attack bonus (items-12), `spell_permissions` (S-134 conv, levelled versions → items-14) and Retributive Strike (items-10 inline) are missing. The recovery distribution is wrong → items-20. |
+| staff_of_striking | +3/+3, 10 charges, recovery 5–10, last-charge nonmagical | the same, plus spend up to 3 charges on a hit for +1d6 Force each | **Match** for the fields present. 1d6+4 equals uniform 5–10. **D-7:** the on-hit charge rider is missing → items-15. |
+| wand_of_magic_missiles | 7 charges, recovery 2–7, activation 1–3 charges | the same; crumbles on a 1 after the last charge | **The activation matches the hard-coded host.** 1d6+1 equals uniform 2–7. **D-8:** `last_charge_aftermath` (destroy on 1) is missing, although LastChargeRules hosts it (data_loader.gd:614) → conv. |
 
-1. **Batch 5:** the 94 loaded SRD magic records clause by clause (field level today). Check that loaded data matches the B4 hosts, especially `weapon_bonus`, spell_permissions charges and the wand activation.
-2. **The 49 equippable shells,** clause by clause.
-3. **Try the B4-5 conv-check items** against a data-only spike (read-only, nothing committed to content).
-4. **Recover the Iron Spikes and Chest text;** classify Block and Tackle once carrying capacity is located.
-5. **Mounts, vehicles and Ammunition;** compare the Windows-runner registry hash.
+Charge-recovery host: inventory.gd:557–564 rolls a **uniform** value from minimum to maximum. That is exact for one die plus a constant (1d6+1, 1d6+4, 1d3) and wrong for multi-die expressions (2d8+4). → PROPOSED-items-20.
+
+### B5-3: The 49 equippable shells, clause by clause
+
+All 49 have no rule fields, so in the engine today every one behaves as its base item. Hosts for the clauses:
+
+| Shell | Clauses → host |
+|---|---|
+| Animated Shield | Bonus Action hover for 1 min, hands free → S-154 (planned) / S-012; ends on Incapacitated → partial |
+| Armor of Invulnerability | B/P/S resistance → items-12; 10-min immunity 1/dawn → S-012 + mode_choice uses_per dawn (conv) |
+| Armor of Vulnerability ×3 | resistance → items-12; curse + vulnerability → S-202 (planned) + items-12 |
+| Arrow-Catching Shield | +2 AC vs ranged → items-12 (conditional AC); Reaction to become the target → items-17 extension (`on_attacked` exists; target swap is new) |
+| Dagger of Venom | +1 (weapon_bonus conv); 1/dawn coat, next hit CON DC 15 2d10 + Poisoned → items-15 + S-076 (planned) |
+| Demon Armor | +1 AC (S-049 conv); unarmed 1d8 Slashing +1 → S-126 scope kind unarmed (check); curse → S-202; Disadvantage vs demons → items-12 |
+| Dragon Scale Mail ×10 | +1 AC conv; breath-save Advantage + one resistance → items-12; dragon sense → narr |
+| Dwarven Plate | +2 AC conv; Reaction to cut forced movement by 10 ft → items-17 extension (no forced-movement event) |
+| Dwarven Thrower | +3 conv; Thrown 20/60 → items-2 + items-7; +1d8 (2d8 vs Giant) on a ranged hit → items-15; returns → items-1 |
+| Elven Chain | +1 AC conv; counts as trained → items-3 |
+| Glamoured Studded Leather | +1 AC conv; appearance → narr |
+| Hammer of Thunderbolts | +1 conv; 5 charges thrown, 30-ft CON DC 17 Stun → items-15 + items-10 inline; returns → items-1 |
+| Hat of Many Spells | focus → items-12; unknown-spell attempt + d100 → S-016 + narr-heavy; *partial-review* (text truncated past 700 chars) |
+| Javelin of Lightning | damage type → S-127 conv; Line 4d6 DEX DC 13 1/dawn → items-10 inline |
+| Mace of Disruption | +2d6 vs Fiend/Undead, destroy at ≤25 HP WIS DC 15 → items-15; light → S-187 (planned) |
+| Mace of Smiting | +1 (+3 vs Construct) → weapon_bonus + items-15 conditional; nat-20 +7/14 → items-15 |
+| Mace of Terror | 3 charges, 30-ft WIS DC 15 Frightened with flee behaviour → items-10 inline + items-14 charges; flee AI → narr/unhosted |
+| Oathbow | sworn enemy for 7 days: Advantage, no cover, +3d6 → items-15 + **items-19** (7-day cooldown); cover → unhosted (B4-0 #7) |
+| Plate Armor of Etherealness | Etherealness 1/dawn, ends on removal → S-134 + items-14 (self, end-on-unequip) |
+| Quarterstaff of the Acrobat | +2 conv; form switching → S-164; light → S-187; *partial-review* (text truncated) |
+| Scimitar of Speed | +2 conv; one Bonus Action attack per turn → unhosted for item copies (no item-granted bonus-action attack); listed under items-15 |
+| Sentinel Shield | Initiative + Perception Advantage → items-12 |
+| Shield of Missile Attraction | ranged resistance → items-12; curse redirect → S-202 + items-17 extension |
+| Shield of the Cavalier | +2 AC conv; Forceful Bash swing → items-8-like attack replacement + push (spell push host) ; *partial-review* (text truncated) |
+| Spellguard Shield | spell-save Advantage + spell attacks against you at Disadvantage → items-12 |
+| Staff of Charming | spells 1 charge → S-134 conv; reflect/resist enchantment → items-17 |
+| Staff of Fire / Frost | resistance → items-12; spell table → S-134 conv; destroy on a 1 → LastChargeRules conv |
+| Staff of Healing | Cure Wounds charges by level → items-14 (charge→level); others S-134 conv; vanish → conv |
+| Staff of Swarming Insects | 30-ft obscuring cloud → items-11 + S-187; spells → S-134 |
+| Staff of the Magi | +2 conv; spell attack +2 → items-12; spell-save Advantage → items-12; absorption → items-17 (`on_targeted_by_spell`) + S-006; Retributive Strike → items-10; *partial-review* (text truncated) |
+| Staff of the Python | becomes a snake → S-154 / S-164 |
+| Staff of the Woodlands | +2 conv; spell attack +2 → items-12; spells → S-134; Tree Form → narr |
+| Staff of Thunder and Lightning | +2 conv; five 1/dawn powers (2d6 Lightning, Stun DC 17, Lightning Bolt, Thunderclap, Thunder and Lightning) → items-15 + items-10 inline + S-134 |
+| Staff of Withering | 3 charges, +2d10 Necrotic + CON DC 15 Disadvantage for 1 h → items-15 |
+| Sun Blade | Bonus Action blade, Finesse, proficiency mapping, Radiant +2, +1d8 vs Undead, sunlight → S-164 + S-126 type replace (conv) + items-15 + S-187 |
+| Thunderous Greatclub | STR 20 floor → items-12 (S-039); +1d8 Thunder → items-15; Clap cone STR DC 15 Prone → items-10 inline |
+| Trident of Fish Command | Dominate Beast DC 15, 3 charges, Beast with a Swim Speed only → S-134 + items-14 (fixed DC, target predicate) |
+
+### B5-4: Data spike on the host-named-but-untried items from B4-5 (read-only)
+
+| Item | Host checked | Result |
+|---|---|---|
+| Efficient Quiver | S-196 ContainerRules: compartments with KEYS id, item_types, max_count, max_weight, **max_volume** (container_rules.gd:8–24, 87) | **conv.** Three compartments with count limits fit. **Correction to B4:** volume *is* validated (line 87), so "volume not enforced" in B4-2 rows 7/55/89 is wrong; it is enforced when data declares it. |
+| Figurine of Wondrous Power | item power `uses_per` is accepted only as "dawn" for item powers (feature_mode_rules.gd:64; owned_feature_sources.gd:227, 285) | **Not hosted:** N-day cooldowns are missing → **PROPOSED-items-19**. |
+| Pearl of Power | `restore_resource` is a ClassFeature effect (class_feature.gd:12, 376) | **Partial:** the effect type exists only on class features; no item carrier was verified. Stays *check*. |
+| Vorpal Sword (ignore resistance) | `resolve_damage(..., bypass_resistance, bypass_layers)` (combat_action.gd:571, 607–613) | **Host exists.** It needs an item rider to pass the flag → items-15. |
+| Periapt of Wound Closure | ZeroHpAftermathRules.pending_death_save_rule / automatic death save (character.gd:3030–3033); `stabilize()` at 3079 | **Partial host.** The automatic-outcome route exists. The item carrier and "double HD healing" need items-12. |
+| Robe of the Archmagi (+2 DC) | `attack_profile` features are validated on item data (data_loader.gd:818) and merged through OwnedFeatureSources.item_features | **conv** for the actor-wide +2 save_dc. |
+
+### B5-5: Iron Spikes, Chest, Block and Tackle, carrying capacity
+
+- **Text recovered** from SRD_CC_v5.2.1.pdf (pdftotext).
+  - **Chest (5 GP)** (p.96): "A Chest holds up to 12 cubic feet of contents." → S-196 compartment with `max_volume: 12` (conv).
+  - **Spikes, Iron (1 GP)** (p.99): "bundles of ten. As a Utilize action, you can use a blunt object, such as a Light Hammer, to hammer a spike into wood, earth, or a similar material… to jam a door shut or to then tie a Rope or Chain to the Spike." → narr (there is no door or lock model; see Chime of Opening).
+  - **Block and Tackle**: "hoist up to four times the weight you can normally lift."
+- **Carrying capacity:** the SRD table (p.~186) gives Tiny Str×7.5 / ×15, Small/Medium Str×15 / ×30, Large ×30 / ×60, Huge ×60 / ×120. Above carry weight, while dragging, lifting or pushing, Speed is at most 5 ft. **No host in production `src/`:** no Str×15 or drag/lift computation, and no encumbrance speed cap. Only container compartment `max_weight` exists. → **PROPOSED-items-21**. Block and Tackle is classified there (lift ×4).
+- **Loaded status:** none of Iron Spikes, Chest or Block and Tackle has a loaded record under any ID or name in data/core/items.
+
+### B5-6: Mounts, vehicles, ammunition (SRD pp.~99–101)
+
+- **Ammunition table:** Arrows 20 per Quiver 1 lb 1 GP; Bolts 20 per Case 1½ lb; Firearm Bullets 10 per Pouch 2 lb; Sling Bullets 20 per Pouch 1½ lb; Needles 50 per Pouch 1 lb. **No loaded ammunition records** (no arrows, bolts, bullets or needles in data/core/items) → items-1 (already proposed). The storage containers map to S-196 conv.
+- **Mounts and other animals:** carrying capacity for Camel 450, Elephant 1,320, Draft Horse 540, Riding Horse 480, Mastiff 195, Mule 420, Pony 225 and Warhorse 540 lb. **Tack and drawn vehicles:** Carriage, Cart, Chariot, Saddles, Sled, Wagon, feed and stabling. **Large vehicles:** a ship table with speed, crew, cargo, AC, HP, damage threshold and cost. **No loaded records and no mount or vehicle rules in production `src/`.** Carry capacities → items-21. Mounted combat and vehicle HP/threshold are outside the items domain and are **unhosted / not proposed here**; recommend that the combat or travel owner claim them.
+
+### B5-7: New proposed slices
+
+**PROPOSED-items-19 — Multi-day and long cooldowns on item powers.**
+- **Source:** Figurine of Wondrous Power (2–7 days, per figurine), Horn of Valhalla (7 days), Oathbow (sworn enemy until dawn 7 days later), and Manuals and Tomes (100 years).
+- **Affects:** at least 4 entries.
+- **Reuses:** item `mode_choice` powers (feature_mode_rules.gd), campaign time (S-064) and S-014 cooldowns.
+- **Adds:** `uses_per: "days"` with a `days` count, measured from the use time on the item copy.
+- **Depends on:** none.
+- **Done when:** a check shows a Bronze Griffon figurine used on day 1 is refused on days 2–5 and offered again on day 6 (5-day cooldown). A save/load on day 3 keeps the refusal. A second figurine copy has its own clock. Dawn-based item powers are unchanged.
+
+**PROPOSED-items-20 — Dice-expression charge recovery and recharge branches.**
+- **Source:** Staff of Power (2d8+4, and on a 20 it regains 1d8+2), plus every item whose recovery is more than one die (Wand of Fear 1d6+1 and similar are already exact).
+- **Affects:** at least 1 loaded item (staff_of_power) and future staffs.
+- **Reuses:** inventory.gd:557–564 recovery and LastChargeRules `roll.trigger_on`.
+- **Adds:** a `charge_recovery.dice` expression, plus an optional last-charge `on_roll` regain outcome.
+- **Depends on:** none.
+- **Done when:** a check shows that 1,000 seeded dawns on an empty Staff of Power give regained values from 6 to 20 with the 2d8+4 distribution (13 is the most common, and 6 and 20 are each about 1/64). Expending the last charge and rolling 20 regains 1d8+2 instead of degrading. Staff of Striking's 1d6+4 results are unchanged.
+
+**PROPOSED-items-21 — Carrying capacity, drag/lift/push and lift multipliers.**
+- **Source:** SRD Carrying Capacity (Str × 15 / × 30 by size), Block and Tackle (×4 lift), and mount carrying capacities.
+- **Affects:** every character and mount; Block and Tackle; 8 mount entries.
+- **Reuses:** item `weight` fields, the inventory, S-196 max_weight, the size field, and the speed modifiers in S-049.
+- **Adds:** a carry limit and a drag/lift/push limit derived from STR and size. Speed is capped at 5 ft while moving more than the carry limit, and an item can multiply the lift limit.
+- **Depends on:** none (mount riding stays out of scope).
+- **Done when:** a check shows a Medium STR 10 character carrying 150 lb moves normally. At 151 lb dragged, Speed is at most 5 ft. With a Block and Tackle, they can hoist up to 1,200 lb (4 × 300 lb lift) but not 1,201 lb. A Small STR 10 character uses the same limits as Medium. Removing items restores normal Speed.
+
+**Extension noted (no new number):** items-17 also covers attack-target swap reactions (Arrow-Catching Shield; the Shield of Missile Attraction curse), the forced-movement reduction (Dwarven Plate) and Staff of the Magi absorption. Its done-when is unchanged; these are listed as additional affects.
+
+**Corrections recorded:**
+- B4-2 rows 7, 55 and 89 ("volume not enforced") → volume *is* enforced when declared (container_rules.gd:87).
+- B4-5 conv-check items are resolved by B5-4.
+
+## Final reconciled summary (after batch 5)
+
+### Totals
+
+| Set | Count | Reviewed at clause level | Notes |
+|---|---|---|---|
+| SRD entries in the reconciler | 414 | — | srd_entries |
+| Loaded unique items | 289 | — | runtime registry 70a83cc7…845e |
+| Loaded SRD magic records | 94 | **94** (10 with rules B5-2, 49 shells B5-3, 35 consumables B2) | |
+| SRD magic items missing from data | 192 | **192** (47 B3, 145 B4) | some *partial-review* clauses, see below |
+| Ordinary weapons / armor / general magic rules | — | yes (B1) | |
+| SRD gear and tools | 88 text entries | yes (B2), plus Iron Spikes, Chest and Block and Tackle now (B5-5) | |
+| Ammunition, mounts and vehicles tables | — | yes (B5-6) | no loaded records |
+| Non-SRD loaded items | 67 | **no** | |
+
+### Data defects found (content not changed; reported only)
+
+1. **D-1** potion_of_poison_resistance applies Poisoned (inverted).
+2. **D-2** potion_of_poison is missing 4d6 damage and the DC 13 save, and its duration is wrong.
+3. **D-3** healing potions cost an Action, not a Bonus Action; the administer clause is missing.
+4. **D-4** duplicate consumable IDs (2014 and 2024) in imported_magic_consumables.json.
+5. **D-5** Ring of Protection is ID-branched in code; its `effects` are unread.
+6. **D-6** Staff of Power is missing saves, spell attack, spells, Retributive Strike and the recovery distribution.
+7. **D-7** Staff of Striking is missing its on-hit charge rider.
+8. **D-8** Wand of Magic Missiles is missing its destroy-on-1 aftermath.
+
+### Coverage: still unreviewed or partial
+
+- **Unreviewed:** the 67 non-SRD items; the selling, lifestyle and trade-goods sections; sentient items and artifacts; and whether each named spell works in the runtime (spell audit domain).
+- **Partial-review (text truncated or host unverified):**
+  - Hat of Many Spells, Quarterstaff of the Acrobat, Shield of the Cavalier and Staff of the Magi tail clauses;
+  - Cube of Force faces and Dancing Sword actor;
+  - Pearl of Power item carrier;
+  - Demon Armor unarmed scope;
+  - D-4 load-order winner.
+- **Out of domain, unhosted:** cover; mounted combat and vehicle HP; doors and locks; soul or creature storage; planar travel; Wish.
+
+### Proposals (all placeholders; no S-/V- numbers)
+
+| ID | Title | Main already-planned dependencies |
+|---|---|---|
+| items-1 | Ammunition consumption and recovery | — |
+| items-2 | Weapon range bands and the Heavy predicate | — |
+| items-3 | Worn-armor predicates | — |
+| items-4 | Don/Doff timing | S-064 |
+| items-5 | Attunement prerequisites | — |
+| items-6 | Spell Scroll use | S-134, S-060 |
+| items-7 | Magic templates over a base item | items-2 |
+| items-8 | Thrown-object attack replacement | S-076 |
+| items-9 | Timed self-modifiers from consumables | S-181 |
+| items-10 | Item-delivered spell effects (+ inline payload amendment) | spell audit |
+| items-11 | Item-deployed hazard areas | S-184 |
+| items-12 | Passive equipped-item modifiers (+ B4 scope additions) | — |
+| items-13 | Periodic elapsed-time effects | — |
+| items-14 | Generic item-activated spell casting with overrides | — |
+| items-15 | Weapon-copy hit and crit riders | items-7 |
+| items-16 | Study items with permanent score increases | S-198/S-199 |
+| items-17 | Item reactions on own save / targeting (+ B5 extension) | — |
+| items-18 | Item-granted fixed jumps | — |
+| items-19 | Multi-day item cooldowns | — |
+| items-20 | Dice-expression charge recovery | — |
+| items-21 | Carrying capacity and lift multipliers | — |
+
+### Mapping to already-planned shared slices (not proposed here)
+
+- **Created actors:** S-154 to S-158 (Bag of Tricks, elemental bowls and others, Figurines, Horn of Valhalla, Animated Shield, Dancing Sword, Staff of the Python).
+- **Illusion and detection:** S-187 to S-195 (amulets, lanterns, obscurement, light).
+- **Travel and planes:** S-177/S-178 and S-221.
+- **Curses:** S-202.
+- **Downtime and crafting:** S-198/S-199.
+- **Breathing and food:** S-200 and S-205.
+- **Other planned dependencies:** S-076 (next-hit coatings), S-181 (falling), S-184 (entry scopes) and S-226 (luck rerolls).
+- **Verified slices reused as conv:** S-006, S-012, S-014, S-016, S-039, S-049, S-060, S-064, S-068, S-092, S-109, S-110, S-116, S-126, S-127, S-134, S-139, S-140, S-164, S-168, S-179 and S-196.
+
+### Recommended next queue
+
+1. **Hand the data defects D-1 to D-8 to the content owner.** D-1 and D-2 are player-visible wrong results.
+2. **Prioritize items-12, items-14 and items-15.** They cover most of the clause volume. items-12 also removes the Ring of Protection ID branch (D-5).
+3. **Small, independent slices:** items-20 and items-19, then items-21.
+4. **The 67 non-SRD items,** clause by clause.
+5. **The partial-review tails** listed above. Read the full untruncated text first.
+6. **Ask the combat and travel owners** to claim cover, mounted combat and vehicles.
