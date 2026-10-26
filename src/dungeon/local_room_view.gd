@@ -170,7 +170,7 @@ func start(room: Dictionary, party: Array, room_grid: HexGrid, room_hud: Dungeon
 	_add_button(item_action_row, "Inspect item", func():
 		var record := actor().inventory.get_instance(_selected(items))
 		var definition := DataLoader.get_item(str(record.get("definition_id", "")))
-		hud.add_log("%s: %s" % [definition.get("name", "Item"), definition.get("description", "No details are recorded.")]))
+		hud.add_log("%s: %s %s" % [definition.get("name", "Item"), definition.get("description", "No details are recorded."), RoomMeasurements.describe_item(str(record.get("definition_id", "")))]))
 	ration_quarter_button = _add_button(item_action_row, "Eat ¼ day", func(): _result(actor().inventory.consume_ration_portion(_selected(items), actor(), 0.25)))
 	ration_half_button = _add_button(item_action_row, "Eat ½ day", func(): _result(actor().inventory.consume_ration_portion(_selected(items), actor(), 0.5)))
 	ration_full_button = _add_button(item_action_row, "Eat full day", func(): _result(actor().inventory.consume_ration_portion(_selected(items), actor(), 1.0)))

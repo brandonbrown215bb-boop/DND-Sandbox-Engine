@@ -88,7 +88,11 @@ static func _fits(compartment: Dictionary, existing: Array, definition_id: Strin
 		if not compartment.has(pair[0]): continue
 		if not item.has(pair[1]): return "This item has no recorded %s, so it cannot be measured into that compartment." % pair[1]
 		var total := float(item[pair[1]])
-		for child in existing: total += float(DataLoader.get_item(str(child.definition_id)).get(pair[1], 0.0))
+		for child in existing:
+			var held := DataLoader.get_item(str(child.definition_id))
+			# S-032/S-196: an unmeasured occupant is unknown, never weightless.
+			if not held.has(pair[1]): return "%s inside has no recorded %s, so the compartment's %s limit cannot be checked." % [held.get("name", "An item"), pair[1], pair[1]]
+			total += float(held[pair[1]])
 		if total > float(compartment[pair[0]]) + 0.00001: return "That would exceed the compartment's %s limit." % pair[1]
 	return ""
 

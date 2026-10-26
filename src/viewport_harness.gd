@@ -321,6 +321,8 @@ func _run_scenario(scenario: String) -> void:
 		"batch_067_weapon_damage_choice_reload": await Batch067Controls.reload(self)
 		"batch_068_exact_contents_flow": await Batch068Controls.run(self)
 		"batch_068_exact_contents_reload": await Batch068Controls.reload(self)
+		"batch_069_unknown_weight_flow": await Batch069Controls.run(self)
+		"batch_069_unknown_weight_reload": await Batch069Controls.reload(self)
 		"located_source_end_flow": await LocatedSourceEndControls.run(self)
 		"tether_group_flow": await TetherGroupFlow.run(self)
 		"containment_flow": await ContainmentFlow.run(self)
