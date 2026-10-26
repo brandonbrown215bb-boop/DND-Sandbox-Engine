@@ -51,3 +51,12 @@ See `docs/mechanics/attack-profiles.md` → "PARTIAL (batch 085 bound)".
 - Timing changes only between Action and Bonus Action.
 - There are no costed profiles, and native Metamagic isn't migrated.
 - S-141 is untouched.
+
+## Results
+- Each run imported twice. Logic suite: **6380 passed, 0 failed**. No SCRIPT/Parse/Compile errors.
+- These scenarios pass: `batch_085_cast_transform_flow`, `wand_magic_missiles_flow`,
+  `wand_last_charge_destruction_flow`, `spell_cast_stage_flow`, `sorcerer_subtle_spell`,
+  `batch_077_per_swing_choice_flow`, `batch_067_weapon_damage_choice_flow`.
+- `sorcerer_twinned_spell` and `wizard_capstone_cast_modes` fail, but they fail
+  with the **identical** [FAIL] lines on the base branch `batch-084-scenario-fixtures`.
+  Batch 085 didn't cause them; they need a separate fixture repair.
