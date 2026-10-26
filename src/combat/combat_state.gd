@@ -2326,14 +2326,15 @@ func _toggle_find_steed_mount() -> void:
 	var rider_position: Vector2i = rider_entity.get("hex_position", Vector2i.ZERO)
 	var steed_position: Vector2i = steed_entity.get("hex_position", Vector2i.ZERO)
 	var was_mounted := PaladinRules.find_steed_is_mounted(active_character)
-	if not was_mounted and HexUtils.get_distance(rider_position, steed_position) > 1:
+	var steed_size := PhysicalFactsRules.get_size(steed_character)
+	if not was_mounted and SummonArrivalRules.body_distance(rider_position, steed_position, steed_size) > 1:
 		hud.add_log("Move within 5 feet of your steed before mounting.")
 		return
 	var destination := rider_position
 	if was_mounted:
 		var found_space := false
-		for candidate in HexUtils.get_hexes_in_range(steed_position, 1):
-			if candidate == steed_position or not hex_grid.has_tile(candidate) or not hex_grid.is_hex_passable(candidate) or _is_occupied_hex(candidate):
+		for candidate in HexUtils.get_hexes_in_range(steed_position, SummonArrivalRules.body_distance(steed_position, steed_position, steed_size) + PlacementRules.footprint(steed_size).reduce(func(m, o): return maxi(m, HexUtils.get_distance(Vector2i.ZERO, o) + 1), 1)):
+			if SummonArrivalRules.body_distance(candidate, steed_position, steed_size) != 1 or not hex_grid.has_tile(candidate) or not hex_grid.is_hex_passable(candidate) or _is_occupied_hex(candidate):
 				continue
 			destination = candidate
 			found_space = true

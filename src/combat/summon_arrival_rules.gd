@@ -48,3 +48,11 @@ static func recovery_candidates(state, players: Array, owner: Character, origin:
 	var body: Variant = previous_body(players, owner)
 	if body != null: ctx["ignore_entity"] = body
 	return PlacementRules.candidates(state, origin, str(arrival.size), int(arrival.range_hexes), [], ctx)
+
+## Hexes between `from` and the nearest cell of a body of `size` centred on
+## `center` (0 = inside the footprint, 1 = within 5 feet of it).
+static func body_distance(from: Vector2i, center: Vector2i, size: String) -> int:
+	var best := HexUtils.get_distance(from, center)
+	for offset in PlacementRules.footprint(size):
+		best = mini(best, HexUtils.get_distance(from, center + offset))
+	return best

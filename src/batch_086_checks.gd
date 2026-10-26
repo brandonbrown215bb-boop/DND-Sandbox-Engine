@@ -47,3 +47,5 @@ static func run(check: Callable) -> void:
 	var options := SummonArrivalRules.recovery_candidates(cast, players, paladin, Vector2i.ZERO, spell)
 	var first: Vector2i = options[0] if not options.is_empty() else Vector2i(999, 999)
 	check.call(not options.is_empty() and HexUtils.get_distance(Vector2i.ZERO, first) == 2 and PlacementRules.legal_error(cast, first, first, "large", -1).is_empty(), "086 recovery picks the nearest space whose whole Large footprint fits (first=%s)" % str(first))
+	check.call(SummonArrivalRules.body_distance(Vector2i.ZERO, Vector2i(2, 0), "large") == 1 and SummonArrivalRules.body_distance(Vector2i.ZERO, Vector2i(1, 0), "large") == 0 and SummonArrivalRules.body_distance(Vector2i.ZERO, Vector2i(3, 0), "large") == 2, "086 mounting/dismounting reach is measured to the Large body's nearest cell, not its center")
+	grid.free()

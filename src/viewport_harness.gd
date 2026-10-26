@@ -10858,7 +10858,7 @@ func test_local_room_object_flow() -> void:
 			await get_tree().process_frame
 		LocalRoomCombat.capture(combat.player_entities)
 		var dismounted_position: Vector2i = combat.player_entities[0].get("hex_position", Vector2i.ZERO)
-		var rider_dismounted_saved: bool = not PaladinRules.find_steed_is_mounted(mount_owner) and HexUtils.get_distance(dismounted_position, dismount_position) == 1 and mounted_steed_entity.get("hex_position", Vector2i.ZERO) == dismount_position and LocalRoomRules.coord(state["party_positions"][mount_owner.character_id]) == dismounted_position
+		var rider_dismounted_saved: bool = not PaladinRules.find_steed_is_mounted(mount_owner) and SummonArrivalRules.body_distance(dismounted_position, dismount_position, "large") == 1 and mounted_steed_entity.get("hex_position", Vector2i.ZERO) == dismount_position and LocalRoomRules.coord(state["party_positions"][mount_owner.character_id]) == dismounted_position
 		_assert(mount_button_index >= 0 and dismount_button_index >= 0 and mounted_ok and rider_destination != Vector2i(9999, 9999) and rider_transport_saved and rider_dismounted_saved, "Find Steed mount and dismount controls spend half Speed, carry rider movement with the mount, and save separate adjacent positions (buttons=%d/%d summon=%s mounted=%s pos=%s steed=%s remaining=%.1f destination=%s mounted_saved=%s dismounted_saved=%s)" % [mount_button_index, dismount_button_index, summon_result, mounted_ok, mount_position, mounted_steed_entity.get("hex_position", Vector2i.ZERO), combat.remaining_speed, rider_destination, rider_transport_saved, rider_dismounted_saved])
 		PaladinRules.dismiss_find_steed(mount_owner)
 		if not mounted_steed_entity.is_empty(): combat.player_entities.erase(mounted_steed_entity)
