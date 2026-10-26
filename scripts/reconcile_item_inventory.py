@@ -19,6 +19,12 @@ def norm(s):
     return re.sub(r"[^a-z0-9]+", "_", s).strip("_")
 
 HEAD = re.compile(r"^(Armor|Weapon|Wondrous|Potion|Ring|Rod|Scroll|Staff|Wand)")
+def _magic_with_text():
+    items = magic_items()
+    (A / "srd_magic_text.json").write_text(json.dumps({e["name"]: e["_text"] for e in items}, indent=1, ensure_ascii=False))
+    for e in items: e.pop("_at"); e.pop("_text")
+    return items
+
 def magic_items():
     t = texts("mi.xml"); out = []; i = 0
     while i < len(t):
@@ -30,8 +36,12 @@ def magic_items():
             j = i + 1
             while j < len(t) and not t[j][1]: j += 1
             if j < len(t) and HEAD.match(t[j][1]):
-                out.append({"name": name, "category": "magic_item", "line": t[j][1]})
+                out.append({"name": name, "category": "magic_item", "line": t[j][1], "_at": j})
         i += 1
+    # Body text = every text run between this entry's type line and the next entry's heading.
+    for k, e in enumerate(out):
+        end = out[k + 1]["_at"] - 1 if k + 1 < len(out) else len(t)
+        e["_text"] = re.sub(r"\s+", " ", " ".join(s for _, s in t[e["_at"]:end] if not s.startswith("System Reference Document"))).strip()
     return out
 
 WEAPONS = "Club Dagger Greatclub Handaxe Javelin|Light Hammer|Mace Quarterstaff Sickle Spear Dart|Light Crossbow|Shortbow Sling Battleaxe Flail Glaive Greataxe Greatsword Halberd Lance Longsword Maul Morningstar Pike Rapier Scimitar Shortsword Trident Warhammer|War Pick|Whip Blowgun|Hand Crossbow|Heavy Crossbow|Longbow Musket Pistol"
@@ -45,7 +55,7 @@ def weapon_names():
 def gear():
     out = []
     for f, s in texts("eq.xml"):
-        m = re.match(r"^([A-Z][\w’' ,\-]+?) \((\d+ (?:CP|SP|GP|EP|PP)|Varies)\)$", s)
+        m = re.match(r"^([A-Z][\w’' ,\-]+?) \(([\d,]+ (?:CP|SP|GP|EP|PP)|Varies)\)$", s)
         if f == "12" and m: out.append({"name": m.group(1), "category": "equipment_entry", "cost": m.group(2)})
     return out
 
@@ -70,7 +80,7 @@ def main():
     by_norm = {}
     for i in rt["items"]:
         for k in {norm(i["id"]), norm(i["name"])}: by_norm.setdefault(k, i["id"])
-    srd = [{"name": n, "category": "weapon"} for n in weapon_names()] + [{"name": n, "category": "armor"} for n in ARMOR] + gear() + magic_items()
+    srd = [{"name": n, "category": "weapon"} for n in weapon_names()] + [{"name": n, "category": "armor"} for n in ARMOR] + gear() + _magic_with_text()
     for e in srd:
         k = norm(e["name"]); cands = [k, k + "_armor", k.replace("_armor", "")]
         if "," in e["name"] and "+" not in e["name"]:

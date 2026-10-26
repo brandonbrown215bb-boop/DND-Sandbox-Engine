@@ -315,33 +315,151 @@ Conclusion: in the current production content, the shells can't be reached throu
 | Imported tools | no Utilize data |
 
 
-## Coverage (after batch 2)
+## Batch 3 (2026-10-26): reconciler fix + missing magic items (rings, wands, boots, cloaks)
+
+Same base commit `ede0a3c`, since origin/main had not moved. The registry hash is unchanged (`70a83cc7…845e`).
+
+### B3-0: Reconciler fix
+
+- **Spyglass fix:** `gear()` now accepts thousands separators in costs (`[\d,]+`), so Spyglass (1,000 GP) is parsed.
+- **SRD entry counts:** now 105 gear/tool, 258 magic, 38 weapon and 13 armor. Missing: **46 equipment** and **192 magic**. Loaded-but-unmatched stays at 67.
+- **Unchanged sections:** I compared the weapon diffs, magic rule fields, loaded list and hash in `reconciliation.json` against the batch-2 file (with `srd_entries`/`srd_missing` removed), and they are identical.
+- **Magic item text export:** the reconciler now also writes `.artifacts/items-audit/srd_magic_text.json`, the full SRD body text for each magic item, sliced from `mi.xml` between consecutive item headings. The batch-2 `m2.txt` split truncated some entries, such as Boots of Speed and Ring of Animal Influence. Every clause below comes from this export.
+- **Known limitation:** the text follows the PDF's reading order. Page numbers and the occasional table line run into the body text, and the tables were read by hand.
+
+### B3-1: Host facts used for classification (read from code this batch)
+
+- **Equipped-item benefits (S-049, verified VS-59):** `SourceBenefitRules.benefits_error` accepts **only `AC` and `speed` (walking) additions**, from 1 to 10, gated on attunement and S-203 suppression. No passive resistance, save bonus, roll mode, non-walking speed or condition immunity can ride an equipped copy.
+- **Item-carried features:** `OwnedFeatureSources.item_features` gives an equipped, attuned copy its `features` with copy-scoped ids. Item activations therefore reuse:
+  - the class-feature vocabulary (`COMMON_SELF_EFFECTS`);
+  - exact-source pools (S-006), dawn and random recovery (S-063) and last-charge aftermath (S-060);
+  - item casting permissions (S-134 and S-139).
+  The precedent is the loaded Wand of Magic Missiles.
+- **Resistance:** `Character.resist_damage` hard-codes each source (Rage, features, Protection from Energy, and so on), plus a `feature_uses["damage_resistances"]` list that no production code writes. There's no item route.
+- **Divergence in loaded data (new):** `ring_of_protection` carries `armor_class_bonus` and `saving_throw_bonus` effects that **no production code consumes**. Its AC should come through `source_benefits` and its save bonus needs PROPOSED-items-12. It isn't exposed, because its value is 0 (B2-3).
+- **Spells:** whether each named spell works is the spell audit's domain. Below, "S-134 conversion" means the item side (permission, DC, charges, recovery) has a verified host. It doesn't mean the spell itself is supported.
+
+### B3-2: Entry-by-entry classification (47 entries: 21 rings, 12 wands, 14 boots/cloaks/slippers)
+
+"Conv" means an existing host covers it and only data needs converting. Charge pools are always S-006 and dawn recovery S-063. A last-charge 1d20 crumble roll is S-060. All of these are verified, and I don't repeat them per row unless they're the only rule.
+
+| Item | Clause → classification |
+|---|---|
+| Boots of Elvenkind | silent steps → ADR-0023 narrative; Advantage on Stealth → **PROPOSED-items-12** (passive roll mode; S-091 host has no item carrier) |
+| Boots of Levitation | cast Levitate on self at will → S-134 conv; self-only target restriction not confirmed in S-134 (**check**) |
+| Boots of Speed | BA toggle doubles Speed; OA against you at Disadvantage; 10 min total, then until Long Rest → toggle/cumulative time S-064 conv; doubling Speed and OA Disadvantage → **PROPOSED-items-12** |
+| Boots of Striding and Springing | Speed floor 30; no encumbrance or Heavy Armor speed reduction → **PROPOSED-items-12**; jump 30 ft for 10 ft of movement → **jump host not located** (unreviewed) |
+| Boots of the Winterlands | Cold Resistance → **PROPOSED-items-12**; cold tolerance → S-201 (planned); ignore ice/snow Difficult Terrain → S-179 terrain costs conv |
+| Winged Boots | 4 charges; Magic action: Fly 30 for 1 h → timed self-grant S-012 + S-179 conv (non-walking speed needs PROPOSED-items-12 payload); 30 ft/round descent on expiry → S-181 (planned) |
+| Slippers of Spider Climbing | Climb Speed = Speed, hands free → **PROPOSED-items-12** + S-179; not on slippery surfaces → S-179 surface rules conv |
+| Cloak of Arachnida | Poison Resistance → **12**; spider climb → **12** + S-179; immune to webs, webs are Difficult Terrain → **12** (source-specific exemption); Web DC 13, double area, 1/dawn → S-134/S-126 conv + area change S-141 (planned) |
+| Cloak of Displacement | attackers have Disadvantage → **12**; stops on damage until your next turn starts, suppressed at Speed 0 → S-203 suppression + S-072 termination conv |
+| Cloak of Elvenkind | Disadvantage on Perception to perceive you; Advantage on Stealth → **12** (observer-side half: S-188/S-190, planned) |
+| Cloak of Invisibility | 3 charges; Magic action: Invisible 1 h; ends on hood down or doffing → `grant_condition` + S-072 equipment termination conv; observer effects S-191 (planned) |
+| Cloak of Protection | +1 AC → S-049 conv; +1 saves → **12** |
+| Cloak of the Bat | Advantage on Stealth → **12**; Fly 40 only in Dim Light or Darkness → **12** + light predicate S-190 (planned); Polymorph into a Bat keeping Int/Wis/Cha, 1/dawn → S-134 + S-163 retained-stat projection conv |
+| Cloak of the Manta Ray | breathe underwater → S-205 (planned); Swim 60 → **12** |
+| Ring of Animal Influence | 3 charges; Animal Friendship, Fear (Beasts only), Speak with Animals at DC 13 → S-134/S-139/S-126 conv; Beast-only target filter → S-025 binding (verified) conv |
+| Ring of Djinni Summoning | summon a Friendly obedient djinni within 120 ft, Concentration up to 1 h → S-154/S-155/S-156/S-158 conv; 24 h cooldown → S-014 conv; nonmagical if the djinni dies → S-203 destruction conv |
+| Ring of Elemental Command | **Bane:** Advantage vs Elementals, they have Disadvantage vs you → **12**. **Compulsion:** DC 18 Wis, Charmed and you control its move/action → S-173 (planned). **Focus:** languages → S-218 (planned); resistance/immunity, fly + hover, swim → **12** + S-179; earth passage and shunt → S-180/S-181 (planned); breathing → S-205 (planned). **Spells:** 5 charges, DC 18, per-spell charge costs (Feather Fall 0) → S-134/S-139 conv |
+| Ring of Evasion | 3 charges; Reaction after a failed DEX save → succeed instead → S-092 explicit success conv (Reaction budget S-160 is planned for off-turn types; **check**) |
+| Ring of Feather Falling | descend 60 ft/round, no falling damage → S-181 (planned) |
+| Ring of Free Action | Difficult Terrain costs nothing extra → S-179 conv; magic can't reduce Speeds or cause Paralyzed/Restrained → **12** (source-scoped condition and speed immunity) |
+| Ring of Invisibility | Magic action: Invisible until removed, or a BA to end → `grant_condition` + S-072 conv; observer side S-191 (planned) |
+| Ring of Jumping | Jump, self only → S-134 conv (self-only: **check**) |
+| Ring of Mind Shielding | immune to thought, lie, alignment and type detection → S-195 (planned); telepathy only by permission → S-218 (planned); imperceptible toggle → ADR-0023 narrative; soul enters the ring on death → S-175 (planned) + **unreviewed** (no soul-in-item host) |
+| Ring of Regeneration | regain 1d6 HP every 10 min while at ≥1 HP → **PROPOSED-items-13**; regrow parts over 1d6+1 days → S-206/S-207 (planned) |
+| Ring of Resistance | Resistance to one gem-determined type (1d10 table) → **12**; gem variant → PROPOSED-items-7 template |
+| Ring of Shooting Stars | Dancing Lights and Light at will; Faerie Fire for 1 charge → S-134 conv. **Lightning Spheres** (2 charges, Concentration, moving spheres discharging on first approach, DC 15, damage by sphere count) → S-154 created actor + S-184 first approach (planned) + S-016 table lookup; **unreviewed** whether a moving discharge host exists. **Shooting Stars** (1–3 charges, one 15-ft cube per charge, DC 15, 5d4 Radiant) → **unreviewed** (item area-save activation host not located) |
+| Ring of Spell Storing | stores up to 5 levels with the original caster's DC, attack and slot → S-150/S-151 (planned) |
+| Ring of Spell Turning | Advantage on saves vs spells → **12**; a successful save vs a spell of level ≤7 negates it → S-116 conv; reflect a single-target spell as a Reaction, using the caster's own DC → S-133 (planned) |
+| Ring of Swimming | Swim 40 → **12** |
+| Ring of Telekinesis | cast Telekinesis → S-134 conv |
+| Ring of the Ram | 1–3 charges: ranged spell attack +7, 2d10 Force per charge and a 5-ft push per charge → fixed-attack profile S-126 conv; **forced push host not located (unreviewed)**; break an object, Str +5 per charge → S-028 + S-032 conv |
+| Ring of Three Wishes | 3 charges cast Wish → S-221 (planned); nonmagical after the last charge → S-060 conv |
+| Ring of Warmth | Cold damage −2d8 → S-109 component reduction (verified) via a **12** item carrier; unharmed at ≤0 °F → S-201 (planned) |
+| Ring of Water Walking | Water Walk on self → S-134 conv |
+| Ring of X-ray Vision | Magic action: 30-ft X-ray for 1 min, material limits → S-195 (planned); reuse before a Long Rest needs DC 15 Con or Exhaustion → S-090 history with Long Rest reset conv |
+| Wand of Binding | 7 charges; Hold Monster (5) or Hold Person (2) at DC 17 → S-134/S-139/S-126 conv |
+| Wand of Enemy Detection | 1 charge: direction (not distance) of the nearest Hostile within 60 ft for 1 min, including Invisible or hidden ones; ends if you let go → S-194 (planned) + S-072 conv |
+| Wand of Fear | Command (flee or grovel only, 1 charge) or Fear (60-ft Cone, 3) at DC 15 → S-134 conv; restricted Command options → S-085 conv (**check**) |
+| Wand of Fireballs / Lightning Bolts | ≤3 charges; level 3 plus 1 per extra charge, DC 15 → S-134/S-139 conv (charge-scaled level: **check** against S-139 upcast rules) |
+| Wand of Magic Detection | 3 charges, Detect Magic → S-134 conv |
+| Wand of Paralysis | 1 charge: DC 15 Con or Paralyzed 1 min, repeat the save each turn → S-068 conv (activation as an item feature) |
+| Wand of Polymorph / Web | Polymorph DC 15 / Web DC 13 → S-134 conv |
+| Wand of Secrets | 1 charge: points to the nearest secret door or trap within 60 ft → S-194 (planned) |
+| Wand of the War Mage +1/+2/+3 | bonus to spell attacks → S-022 flat bonus via a **12** carrier; ignore Half Cover → **cover host not located (unreviewed)**; +N variants → PROPOSED-items-7 |
+| Wand of Wonder | 1d100 effect table, DC 15, 120-ft range floor → S-214/S-215 (planned) + S-223 partial support (planned); the child spells are the spell audit's |
+
+**Batch 3 proposed slices**
+
+**PROPOSED-items-12 — Passive equipped-item modifiers beyond AC and walking speed.**
+- **Source:** the "while you wear/hold" clauses above.
+- **Affects:** at least 23 of the 47 entries, plus loaded Ring of Protection.
+  - Typed Resistance and Immunity.
+  - Flat saving-throw bonus.
+  - Scoped ability-check Advantage, and Disadvantage for observers.
+  - Attack modes against or for the wearer, and Opportunity Attack Disadvantage.
+  - Speed floor, doubling and immunity to encumbrance.
+  - Climb, swim and fly speeds and hover.
+  - Source-scoped condition and speed-reduction immunity.
+  - Spell-attack bonus.
+  - Damage reduction by dice.
+- **Reuses:**
+  - S-049/VS-59 carrier identity, attunement gating and S-203 suppression (extending `benefits_error`'s stat allowlist rather than adding a new channel).
+  - S-091 roll modes, S-109 reduction, S-022 attack bonus and S-179 modes.
+- **Depends on:** nothing planned. Observer-side clauses (Elvenkind) keep S-188/S-190 as their owners.
+- **Done when:** a check shows:
+  - An attuned, equipped Ring of Resistance (fire) halves a 10-Fire hit to 5 and leaves 10 Cold at 10.
+  - Unequipping it, or ending the attunement, restores 10 Fire.
+  - Cloak of Protection adds +1 to a DEX save and +1 AC, and two Cloaks of Protection on different characters don't affect each other.
+  - Boots of Elvenkind give Advantage on Stealth only, not Acrobatics.
+  - Ring of Swimming grants Swim 40 without changing walking Speed.
+  - Ring of Free Action prevents Hold Person's Paralyzed but not a non-magical grapple's Restrained.
+  - A save/load keeps all of this without turning it into permanent stats.
+  - Ring of Protection's loaded AC and save bonuses take effect through this route.
+
+**PROPOSED-items-13 — Periodic elapsed-time effects from a worn item.**
+- **Source:** Ring of Regeneration, "regain 1d6 Hit Points every 10 minutes if you have at least 1 Hit Point".
+- **Affects:** Ring of Regeneration. Unreviewed wondrous items are likely candidates, to be confirmed in batch 4.
+- **Reuses:** S-064 cumulative active time (verified), S-049 carrier identity, `heal`, and the campaign clock.
+- **Depends on:** none.
+- **Done when:** a check shows that a wearer at 5/30 HP heals 1d6 after exactly 10 minutes of campaign time.
+  - It heals 3×1d6 after 30 minutes, with each roll recorded once.
+  - It doesn't heal at 0 HP, or while the ring is unequipped.
+  - A save/load at minute 7 heals at minute 10, not minute 17.
+  - Combat rounds count toward the 10 minutes, at 6 s per round.
+
+### B3-3: Unreviewed magic items (145; family-level only from batch 1)
+
+- **Armor (5):** Adamantine Armor; Armor, +1, +2, or +3; Armor of Resistance; Mithral Armor; Shield, +1, +2, or +3
+- **Weapon (20):** Ammunition, +1, +2, or +3; Ammunition of Slaying; Berserker Axe; Dancing Sword; Defender; Dragon Slayer; Energy Bow; Flame Tongue; Frost Brand; Giant Slayer; Holy Avenger; Luck Blade; Nine Lives Stealer; Sword of Life Stealing; Sword of Sharpness; Sword of Wounding; Vicious Weapon; Vorpal Sword; Weapon, +1, +2, or +3; Weapon of Warning
+- **Wondrous Item (112):** Amulet of Health; Amulet of Proof against Detection and Location; Amulet of the Planes; Apparatus of the Crab; Bag of Beans; Bag of Devouring; Bag of Holding; Bag of Tricks; Bead of Force; Bead of Nourishment; Belt of Dwarvenkind; Belt of Giant Strength; Bowl of Commanding Water Elementals; Bracers of Archery; Bracers of Defense; Brazier of Commanding Fire Elementals; Brooch of Shielding; Broom of Flying; Candle of Invocation; Cape of the Mountebank; Carpet of Flying; Censer of Controlling Air Elementals; Chime of Opening; Circlet of Blasting; Crystal Ball; Crystal Ball of Mind Reading; Crystal Ball of Telepathy; Crystal Ball of True Seeing; Cube of Force; Cubic Gate; Decanter of Endless Water; Deck of Illusions; Dimensional Shackles; Dragon Orb; Dust of Disappearance; Dust of Dryness; Dust of Sneezing and Choking; Efficient Quiver; Efreeti Bottle; Elemental Gem; Eversmoking Bottle; Eyes of Charming; Eyes of Minute Seeing; Eyes of the Eagle; Feather Token; Figurine of Wondrous Power; Folding Boat; Gauntlets of Ogre Power; Gem of Brightness; Gem of Seeing; Gloves of Missile Snaring; Gloves of Swimming and Climbing; Gloves of Thievery; Goggles of Night; Handy Haversack; Hat of Disguise; Headband of Intellect; Helm of Brilliance; Helm of Comprehending Languages; Helm of Telepathy; Helm of Teleportation; Horn of Blasting; Horn of Valhalla; Horseshoes of a Zephyr; Horseshoes of Speed; Instant Fortress; Ioun Stone; Iron Bands; Iron Flask; Lantern of Revealing; Mantle of Spell Resistance; Manual of Bodily Health; Manual of Gainful Exercise; Manual of Golems; Manual of Quickness of Action; Marvelous Pigments; Medallion of Thoughts; Mirror of Life Trapping; Mysterious Deck; Necklace of Adaptation; Necklace of Fireballs; Necklace of Prayer Beads; Pearl of Power; Periapt of Health; Periapt of Proof against Poison; Periapt of Wound Closure; Pipes of Haunting; Pipes of the Sewers; Portable Hole; Robe of Eyes; Robe of Scintillating Colors; Robe of Stars; Robe of the Archmagi; Robe of Useful Items; Rope of Climbing; Rope of Entanglement; Scarab of Protection; Sending Stones; Sovereign Glue; Sphere of Annihilation; Stone of Controlling Earth Elementals; Stone of Good Luck (Luckstone); Talisman of Pure Good; Talisman of the Sphere; Talisman of Ultimate Evil; Tome of Clear Thought; Tome of Leadership and Influence; Tome of Understanding; Universal Solvent; Well of Many Worlds; Wind Fan; Wings of Flying
+- **Rod (7):** Immovable Rod; Rod of Absorption; Rod of Alertness; Rod of Lordly Might; Rod of Resurrection; Rod of Rulership; Rod of Security
+- **Scroll (1):** Spell Scroll
+
+## Coverage (after batch 3)
 
 **Reviewed at clause level:**
-- Weapons table and properties; mastery properties; armor table and rules (batch 1).
-- General magic-item rules (batch 1).
-- All 46 refused consumables: 42 SRD ones by SRD text, 4 non-SRD ones scoped out (B2-1).
-- Every SRD Tools and Adventuring Gear entry whose text was recoverable (B2-2). Exceptions: Iron Spikes and Chest text was garbled by the PDF layout, and Block and Tackle is read but not classified.
+- Batches 1–2 as listed before: weapons, armor, general magic rules, the 46 refused consumables, and SRD gear and tools. Iron Spikes and Chest are not reviewed, and Block and Tackle is not classified.
+- **47 of the 192 missing magic items**: every Ring (21), Wand (12) and Boots/Cloak/Slippers entry (14), in B3-2. Clauses marked **check** or **unreviewed** in B3-2 are the open sub-items: self-only casting, Reaction budget, Command option restriction, charge-scaled upcast, jump, forced push, cover, sphere and cube activation hosts, and soul-in-item.
 
-**Traced (code/data paths, not runtime-tested):** shop, loot and creation exposure of the 49 shells (B2-3).
+**Traced:** shell exposure (B2-3).
 
-**Reviewed at field level:** the 94 loaded SRD magic records (F-1).
+**Field level only:** the 94 loaded SRD magic records.
 
 **Not reviewed:**
-- The 192 missing magic items, entry by entry (families only).
-- The 49 equippable shells, clause by clause.
-- Ammunition and mount/vehicle tables; Saddles, Tack and Vehicles.
-- Improvised weapons, selling, lifestyle and services, trade goods.
-- Sentient items and artifacts.
-- The 67 non-SRD loaded items.
-- Carrying capacity (Block and Tackle).
-- Whether the Druidic Focus check is id-based.
-- The `skill_bonus` / `enable_check` consumers beyond a grep.
+- **The 145 missing magic items in B3-3:** 120 Wondrous, 20 Weapon, 7 Rod, 5 Armor and 1 Scroll. Wondrous here excludes boots and cloaks.
+- **The 49 equippable shells,** clause by clause.
+- **Other SRD sections:** Ammunition, mounts and vehicles, improvised weapons, selling, lifestyle, trade goods, and sentient items and artifacts.
+- **The 67 non-SRD items.**
+- **Carrying capacity.**
+- **Whether each named spell works in the runtime** (the spell audit's domain).
 
 ## Next queue
 
-1. Batch 3: the missing magic items entry by entry. Start with rings, wands, boots and cloaks, and confirm the PROPOSED-items-5 qualifier count from full category lines.
-2. The 49 equippable shells, clause by clause (what each needs beyond PROPOSED-items-7).
-3. Fix the reconciler's gear header parse (Spyglass) and recover the Iron Spikes and Chest text from the XML.
-4. Mounts, vehicles and the Ammunition table; carrying capacity.
-5. Run the same export on the Windows runner when it is reachable and compare the registry hash.
+1. **Batch 4:** continue B3-3 with the Wondrous items (bags, amulets, belts, bracers, gloves, helms, figurines, and the rest), then Rods, Weapons and Armor. Apply PROPOSED-items-12/13 where they fit before adding anything new.
+2. **Resolve the B3-2 "check" and "unreviewed" sub-items** against S-134, S-139 and S-085 code, and locate the jump, push and cover hosts.
+3. **The 49 equippable shells,** clause by clause.
+4. **Recover the Iron Spikes and Chest text,** and classify Block and Tackle once carrying capacity is located.
+5. **Mounts, vehicles and Ammunition;** compare the Windows-runner registry hash.
