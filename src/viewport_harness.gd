@@ -67,7 +67,7 @@ func _ready_spell_components(c: Character) -> void:
 ## Batch 084 fixture repair (R3): the real spell menu attaches the owning
 ## permission (`_source_permission_id`) that CombatCommand requires since
 ## aee56c0. Fixtures pick the actual menu row instead of a raw catalog record.
-## Falls back to the raw record so a missing permission still fails visibly.
+## A missing menu row fails the scenario and returns {} (no cast); no raw-record fallback.
 func _menu_spell(combat: Node, spell_id: String) -> Dictionary:
 	combat.hud.update_hud(combat.active_character, combat.tracker)
 	combat.hud._show_spell_selection()
@@ -78,8 +78,10 @@ func _menu_spell(combat: Node, spell_id: String) -> Dictionary:
 			break
 	combat.hud._hide_spell_selection()
 	if found.is_empty():
+		# Review 084: never fall back to the raw catalog record; a missing menu row fails the scenario and casts nothing.
 		print("MENU_SPELL_MISS %s ids=%s" % [spell_id, combat.hud.spells_registered.map(func(e): return str(e.get("id","")) + ("*" if e.has("_source_permission_id") else ""))])
-	return found if not found.is_empty() else DataLoader.get_spell(spell_id)
+		_assert(false, "Fixture spell %s has a permissioned row in the real spell menu" % spell_id)
+	return found
 
 
 
