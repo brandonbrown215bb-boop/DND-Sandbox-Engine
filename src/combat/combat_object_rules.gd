@@ -196,29 +196,53 @@ static func settle_destruction(object: Dictionary) -> void:
 
 
 
-static func resolve_meteor_swarm(caster: Character, object: Dictionary, spell_data: Dictionary, slot_level: int) -> Dictionary:
+static func resolve_area_object_damage(caster: Character, object: Dictionary, spell_data: Dictionary, slot_level: int) -> Dictionary:
 	if not can_take_spell_damage(object):
 		return {"success": false, "damage": 0, "message": "That object is not an eligible unattended nonmagical object."}
 	var total_damage := 0
 	var components: Array[String] = []
 	var declared: Array = spell_data.get("damage_components", [])
-	for component_index in declared.size():
-		var component: Dictionary = declared[component_index]
-		var component_spell := {"damage": str(component.get("damage", "0")), "level": int(spell_data.get("level", 0)), "upcast": component.get("upcast", spell_data.get("upcast", {}))}
-		var formula := SpellDamageRolls.spell_damage_formula(caster, component_spell, slot_level)
+	if not declared.is_empty():
+		for component_index in declared.size():
+			var component: Dictionary = declared[component_index]
+			var component_spell := {"damage": str(component.get("damage", "0")), "level": int(spell_data.get("level", 0)), "upcast": component.get("upcast", spell_data.get("upcast", {}))}
+			var formula := SpellDamageRolls.spell_damage_formula(caster, component_spell, slot_level)
+			var roll := SpellDamageRolls._roll_spell_damage(caster, formula, 1, {})
+			var amount := int(roll.get("final_total", 0))
+			if component_index == 0:
+				amount += CombatAction.spell_damage_bonus(caster, spell_data)
+			var damage_type := str(component.get("damage_type", "fire"))
+			var dealt := apply_damage(object, amount, damage_type)
+			total_damage += dealt
+			components.append("%d %s" % [dealt, damage_type.capitalize()])
+	elif spell_data.has("damage") and not str(spell_data.get("damage", "")).is_empty() and str(spell_data.get("damage", "")) != "0":
+		var formula := SpellDamageRolls.spell_damage_formula(caster, spell_data, slot_level)
 		var roll := SpellDamageRolls._roll_spell_damage(caster, formula, 1, {})
-		var amount := int(roll.get("final_total", 0))
-		if component_index == 0:
-			amount += CombatAction.spell_damage_bonus(caster, spell_data)
-		var damage_type := str(component.get("damage_type", "fire"))
+		var amount := int(roll.get("final_total", 0)) + CombatAction.spell_damage_bonus(caster, spell_data)
+		var damage_type := str(spell_data.get("damage_type", "untyped"))
 		var dealt := apply_damage(object, amount, damage_type)
 		total_damage += dealt
 		components.append("%d %s" % [dealt, damage_type.capitalize()])
-	var ignited := ignite(object)
-	var message := "%s takes %s damage." % [str(object.get("name", "The object")), " and ".join(components)]
+	var ignited := false
+	if bool(spell_data.get("ignites_objects", false)):
+		ignited = ignite(object)
+	var spell_name := str(spell_data.get("name", "The spell"))
+	var obj_name := str(object.get("name", "The object"))
+	var message := ""
+	if total_damage > 0:
+		message = "%s takes %s damage." % [obj_name, " and ".join(components)]
+	elif not components.is_empty():
+		message = "%s is undamaged by %s." % [obj_name, spell_name]
 	if ignited:
-		message += " It catches fire."
-	return {"success": true, "damage": total_damage, "ignited": ignited, "message": message}
+		if message.is_empty():
+			message = "%s catches fire." % obj_name
+		else:
+			message += " It catches fire."
+	return {"success": total_damage > 0 or ignited, "damage": total_damage, "ignited": ignited, "message": message}
+
+
+static func resolve_meteor_swarm(caster: Character, object: Dictionary, spell_data: Dictionary, slot_level: int) -> Dictionary:
+	return resolve_area_object_damage(caster, object, spell_data, slot_level)
 
 
 static func is_flammable(object: Dictionary) -> bool:
@@ -242,3 +266,150 @@ static func extinguish(object: Dictionary) -> bool:
 	object["burning"] = false
 	object.erase("burning_next_tick_seconds")
 	return true
+
+static func is_magical_locked(object: Dictionary, now_seconds: int = -1, user_id: String = "") -> bool:
+	if not object.has("magical_lock"):
+		return false
+	var mlock: Variant = object["magical_lock"]
+	if mlock is bool:
+		return bool(mlock)
+	if mlock is Dictionary:
+		if not bool(mlock.get("active", true)):
+			return false
+		var current_time := now_seconds if now_seconds >= 0 else (int(GameManager.campaign_elapsed_seconds) if GameManager != null else 0)
+		var suppressed_until := int(mlock.get("suppressed_until", 0))
+		if suppressed_until > current_time:
+			return false
+		if not user_id.is_empty():
+			if str(mlock.get("caster_id", "")) == user_id:
+				return false
+			var designated: Array = mlock.get("designated_users", [])
+			if user_id in designated:
+				return false
+		return true
+	return false
+
+
+static func effective_lock_dc(object: Dictionary, now_seconds: int = -1) -> int:
+	var base_dc := int(object.get("lock_dc", 15))
+	if is_magical_locked(object, now_seconds):
+		var bonus := 10
+		if object.get("magical_lock") is Dictionary:
+			bonus = int(object["magical_lock"].get("dc_bonus", 10))
+		return base_dc + bonus
+	return base_dc
+
+
+static func effective_break_dc(object: Dictionary, now_seconds: int = -1) -> int:
+	var base_dc := int(object.get("break_dc", object.get("lock_dc", 15)))
+	if is_magical_locked(object, now_seconds):
+		var bonus := 10
+		if object.get("magical_lock") is Dictionary:
+			bonus = int(object["magical_lock"].get("dc_bonus", 10))
+		return base_dc + bonus
+	return base_dc
+
+
+static func is_locked(object: Dictionary, now_seconds: int = -1, user_id: String = "") -> bool:
+	if bool(object.get("locked", false)):
+		return true
+	return is_magical_locked(object, now_seconds, user_id)
+
+
+static func is_passable(object: Dictionary, now_seconds: int = -1, user_id: String = "") -> bool:
+	var kind := str(object.get("kind", ""))
+	if kind not in ["door", "barrier"]:
+		return true
+	if int(object.get("hp", 1)) <= 0:
+		return true
+	if kind == "barrier":
+		return false
+	if not bool(object.get("open", false)):
+		return false
+	if bool(object.get("stuck", false)) or bool(object.get("jammed", false)) or bool(object.get("barred", false)):
+		return false
+	return true
+
+
+static func apply_knock(object: Dictionary, now_seconds: int = -1) -> Dictionary:
+	var current_time := now_seconds if now_seconds >= 0 else (int(GameManager.campaign_elapsed_seconds) if GameManager != null else 0)
+	if is_magical_locked(object, current_time):
+		if object.get("magical_lock") is Dictionary:
+			object["magical_lock"]["suppressed_until"] = current_time + 600
+		else:
+			object["magical_lock"] = {
+				"active": true,
+				"suppressed_until": current_time + 600,
+				"dc_bonus": 10
+			}
+		return {
+			"success": true,
+			"suppressed_magical_lock": true,
+			"unlocked": false,
+			"message": "The arcane lock is suppressed for 10 minutes."
+		}
+	
+	var unlocked_anything := false
+	if bool(object.get("locked", false)):
+		object["locked"] = false
+		unlocked_anything = true
+	elif bool(object.get("barred", false)):
+		object["barred"] = false
+		unlocked_anything = true
+	elif bool(object.get("stuck", false)) or bool(object.get("jammed", false)):
+		object["stuck"] = false
+		object["jammed"] = false
+		unlocked_anything = true
+	
+	return {
+		"success": true,
+		"suppressed_magical_lock": false,
+		"unlocked": unlocked_anything,
+		"message": "The obstacle is unlocked or unbarred." if unlocked_anything else "Nothing was locked."
+	}
+
+
+static func apply_arcane_lock(object: Dictionary, caster_id: String = "", password: String = "", designated_users: Array = []) -> Dictionary:
+	object["magical_lock"] = {
+		"active": true,
+		"caster_id": caster_id,
+		"password": password,
+		"designated_users": designated_users.duplicate(),
+		"dc_bonus": 10,
+		"suppressed_until": 0
+	}
+	return {"success": true, "message": "Arcane Lock applied."}
+
+
+static func bar(object: Dictionary) -> bool:
+	if bool(object.get("open", false)):
+		return false
+	object["barred"] = true
+	return true
+
+
+static func unbar(object: Dictionary) -> bool:
+	object["barred"] = false
+	return true
+
+
+static func jam(object: Dictionary) -> bool:
+	if bool(object.get("open", false)):
+		return false
+	object["stuck"] = true
+	object["jammed"] = true
+	return true
+
+
+static func unjam(object: Dictionary) -> bool:
+	object["stuck"] = false
+	object["jammed"] = false
+	return true
+
+
+static func close_unheld(object: Dictionary) -> bool:
+	if not bool(object.get("held", false)) and bool(object.get("open", false)):
+		object["open"] = false
+		return true
+	return false
+

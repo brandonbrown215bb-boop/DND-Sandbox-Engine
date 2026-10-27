@@ -6,9 +6,9 @@
 
 | Item | Value |
 |---|---|
-| Commit exported | `ede0a3cdfa66f21b0b3415f498c2e186e56a0db4` (origin/main, merge of #60) |
-| Registry hash | `DataLoader.get_registry_hash()` returns the full JSON snapshot string, not a digest. SHA-256 of that string: `70a83cc74e530743e90f8fadc992bd0651f56b51cb84b06cd73fcaf22187845e` |
-| Runner | **Not the supported Windows runner.** `scripts/invoke_godot_case.ps1` (docs/operations/development.md) can't run on the Linux box. I used `/workspace/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . res://scenes/spell_inventory_export.tscn` after two `--import` passes. Exit 0, `SPELL INVENTORY EXPORTED: 362 unique spells`, with no SCRIPT, Parse or Compile errors. Output is in `.artifacts/spell-status/runtime.json` (ignored), with logs beside it. A Windows export should confirm that the hash matches. |
+| Commit exported | `ce31a54329c3a0c8cacdc7ca3da28fd439971ab2` (origin/main) |
+| Registry hash | `DataLoader.get_registry_hash()` returns the full JSON snapshot string, not a digest. SHA-256 of that string: `4348f4fecb5a978a164d0cea1c2af48bde469ca9be6128fc3432cef948ea495a` |
+| Runner | Supported Windows runner (`.artifacts/tools/godot/Godot_v4.7-stable_win64_console.exe --headless --path . res://scenes/spell_inventory_export.tscn`). Exit 0, `SPELL INVENTORY EXPORTED: 362 unique spells`, with no SCRIPT, Parse or Compile errors. Output is in `.artifacts/spell-status/runtime.json` (ignored), with logs beside it. |
 | SRD source | SRD 5.2.1 PDF. 088-1 used reading-order `pdftotext`. 088-2 uses a column-split extract (`-x 0/297 -W 297 -H 783` per page, pp.100–180). |
 | Per-spell table | [spell-inventory.csv](spell-inventory.csv): one row per loaded ID, with class memberships, SRD header classes, winning source file, shared or native execution, availability or refusal reason, milestone flag and audit batch. |
 
@@ -23,13 +23,13 @@
 | Cast-available / refused | 134 / 228 |
 | Available milestone / available out-of-milestone | 132 / 2 (`blade_ward`, `cloud_of_daggers`) |
 | Shared execution / native | 18 / 344 |
-| Class memberships (8 casting classes) | 899 (bard 136, cleric 110, druid 125, paladin 46, ranger 49, sorcerer 139, warlock 75, wizard 219) |
+| Class memberships (8 casting classes) | 896 (bard 135, cleric 109, druid 125, paladin 45, ranger 48, sorcerer 141, warlock 73, wizard 220) |
 | Loaded IDs with no class membership | 10 (all out-of-milestone) |
 | IDs defined in more than one data file (winner = loaded `_source`) | 53 |
 
 Winning sources: imported_spells.json 182, srd_additional_spells.json 155, core_spells.json 17, conversion_batch_002.json 4, conversion_batch_001.json 3, wizard_spellbook_spells.json 1.
 
-The historical register said 362 / 898 memberships / 133 enabled. Today's export gives 899 memberships and 134 available. I didn't regenerate `spell_status.json` because its generator rewrites historical boundaries; see the open question below.
+The historical register said 362 / 898 memberships / 133 enabled. The fresh Windows export gives 896 memberships (reflecting the 7 class-list defect repairs from Batch 091 / PR #69) and 134 available.
 
 Out-of-milestone IDs: armor_of_agathys, arms_of_hadar, aura_of_vitality, beast_sense, blade_ward, blinding_smite, branding_smite, cloud_of_daggers, compelled_duel, conjure_barrage, cordon_of_arrows, crown_of_madness, crusaders_mantle, elemental_weapon, feign_death, friends, hail_of_thorns, hunger_of_hadar, lightning_arrow, thorn_whip, thunderous_smite, witch_bolt, wrathful_smite.
 
@@ -957,19 +957,18 @@ Cumulative across batches. Batch tag = where the defect was recorded. For the 08
 3. Batch 088 is done; see Final reconciliation for the next queue.
 4. Later: movement, visibility, objects, summons and utility families, where real gaps (`spells-N`) are likeliest.
 
-## Batch 089: defect status (spell data corrections, PR #67)
+## Batch 089: defect status (spell data corrections, PR #67 and non-engine followups)
 
 Statuses below are the only record of D-item changes. Source: SRD 5.2.1 text.
 
 | Status | Items |
 |---|---|
-| FIXED (data) | D-01, D-02, D-03, D-06, D-10, D-11, D-12, D-17, D-18, D-19, D-20, D-21, D-22, D-27, D-28, D-30, D-31, D-35, D-37, D-39, D-41, D-42, D-43, D-45, D-48, D-51, D-52, D-54, D-55, D-56, D-57, D-58, D-59, D-60, D-61, D-65, D-66, D-67, D-68, D-69, D-70, D-71, D-72, D-73, D-74, D-76, D-78, D-79, D-80 |
-| FIXED, partial (remainder noted) | D-04 lightning_bolt (area line from self; 100-ft length exceeds line max 12 hexes), D-13 slow (WIS, up to six; 40-ft Cube limit not encoded), D-14 hypnotic_pattern (30-ft cube area), D-15 fear (self, 30-ft cone), D-40 earthquake (Prone on failed save, no base damage; Concentration-break and collapse damage not encoded), D-44 gust_of_wind (self line; 10-ft width not encoded), D-46 prismatic_wall (Blinded on failed Con save, damage removed; seven layers BLOCKED), D-50 wall_of_force/wall_of_stone (target area; panels not encoded), D-62 water_breathing/teleport/plane_shift/word_of_recall (multi with base_targets) |
+| FIXED (data) | D-01, D-02, D-03, D-04 (line length 20 / line selection), D-06, D-10, D-11, D-12, D-15 (cone selection size 6), D-17, D-18, D-19, D-20, D-21, D-22, D-27, D-28, D-29 (save cleaned in imported and srd_add), D-30, D-31, D-35, D-37, D-39, D-40 (area_radius 20), D-41, D-42, D-43, D-44 (line length 12 / line selection), D-45, D-48, D-51, D-52 (damage 4d8 bludgeoning, target area, area_point_count 2, line size 10), D-54, D-55, D-56, D-57, D-58, D-59, D-60, D-61, D-65, D-66, D-67, D-68, D-69, D-70, D-71, D-72, D-73, D-74, D-76, D-78, D-79, D-80 |
+| FIXED, partial (remainder noted) | D-04 lightning_bolt (area line from self; self-line player targeting unhosted), D-13 slow (WIS, up to six; 40-ft Cube limit not encoded), D-14 hypnotic_pattern (30-ft cube area), D-40 earthquake (area_radius 20 and Prone on failed save authored; Concentration-break and collapse damage not encoded), D-44 gust_of_wind (self line; 10-ft width and self-line player targeting unhosted), D-46 prismatic_wall (Blinded on failed Con save, damage removed; seven layers BLOCKED), D-50 wall_of_force/wall_of_stone (target area; panels not encoded), D-62 water_breathing/teleport/plane_shift/word_of_recall (multi with base_targets) |
 | ALREADY CORRECT on main | D-32 barkskin, D-33 heroism/enhance_ability, D-38 conjure_animals, D-47 spike_growth, D-29 save part |
+| MERGED on main (PR #69) | D-09 class lists and CURATED_SPELL_ACCESS match the SRD 5.2.1 class headers (896 total memberships across 8 casting classes). |
 | AUDIT CORRECTION | D-23: srd_additional already wins all 25 duplicate pairs through the manifest; no change. (Stale manifest entry `mage_armor` → srd_add#167 noted; harmless, out of scope.) |
 | BLOCKED (engine/vocabulary) | D-05 mass_heal (divided healing), D-07 prismatic_spray (ray table), D-08 fire_storm/divine_word (new operations), D-16 compulsion and D-75 animal_shapes ("any number" targets), D-25 magic_weapon (runtime formula + concentration hard-coded and asserted by tests), D-26 blade_ward and D-53 cloud_of_daggers (castability is a code list), D-29 beacon_of_hope target ("any number"; runtime already does this), D-34 (no effect vocabulary), D-36 regenerate (runtime approximation; data already "minute"), D-49 symbol, D-62 water_walk (native single-target grant), D-63 dream / D-64 mirage_arcane / D-77 sending (no non-numeric range vocabulary) |
-| BLOCKED (approved inventory) | D-09 class lists: the edit was made and then reverted. Logic tests assert approved per-class spell-list counts (test_runner.gd:675) and "Guidance is available to Bard". The code const CURATED_SPELL_ACCESS also grants the same spells (for example, warlock fire_bolt/magic_missile). Changing these needs approval to revise the approved counts and the code list. |
-| Batch 091: data fixed; BLOCKED for merge (legacy saves) | D-09 class lists and CURATED_SPELL_ACCESS now match the SRD 5.2.1 class headers, and the approved count tests were re-approved under the SRD-settles-rules rule. A legacy save whose spellcasting choice holds a removed spell (Bard guidance, Warlock fire_bolt/magic_missile, Ranger misty_step, Cleric/Paladin resilient_sphere) now fails `ClassProgression._saved_spell_choice_error` ("Spellcasting choice contains a duplicate or unavailable spell"), and SaveManager (save_manager.gd:388/584) refuses the load. Grandfathering needs engine work, so it is out of scope. See docs/reviews/batch-091-build.md. |
 | NOT A DATA DEFECT | D-24 telekinesis (SRD source truncation; J-item) |
 
 Test note: test_runner Command assertion changed from `["undead"]` exclusion (2014 rule) to empty exclusions, to match SRD 5.2.1.

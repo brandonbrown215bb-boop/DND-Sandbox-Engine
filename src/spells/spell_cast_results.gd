@@ -181,20 +181,25 @@ static func _resolve_spell_cast_targets(cast: SpellCastContext) -> void:
 			if not owned_item.is_empty():
 				object_owner = owned_item["character"]
 				object_target = CombatObjectRules.make_owned_item(owned_item["record"], object_owner.character_id, chain_target_id.trim_prefix("object:") in object_owner.inventory.copies.equipped.values(), target_hex)
-		var fire_bolt_object_target := (bool(cast.spell.get("targets_objects", false)) or area_spell_id == "fire_bolt") and p_target == null and m_target.is_empty() and CombatObjectRules.can_take_spell_damage(object_target)
+		var is_single_target_spell := str(cast.spell.get("target", "single")) == "single"
+		var single_object_target := is_single_target_spell and bool(cast.spell.get("targets_objects", false)) and p_target == null and m_target.is_empty() and CombatObjectRules.can_take_spell_damage(object_target)
 		if area_spell_id == "chain_lightning" and (chain_target_id.begins_with("object:") or (chain_target_id.is_empty() and p_target == null and m_target.is_empty())) and CombatObjectRules.can_target(object_target):
 			await _resolve_object_target(cast, object_target, target_hex, target_index > 0)
 			if object_owner != null:
 				CombatObjectRules.sync_owned_item_object(object_owner, chain_target_id.trim_prefix("object:"), object_target)
-		elif fire_bolt_object_target:
+		elif single_object_target:
 			await _resolve_object_target(cast, object_target, target_hex)
-			if (bool(cast.spell.get("ignites_objects", false)) or area_spell_id == "fire_bolt") and bool(cast.spell.get("_last_object_hit", false)) and CombatObjectRules.ignite(object_target):
+			if bool(cast.spell.get("ignites_objects", false)) and bool(cast.spell.get("_last_object_hit", false)) and CombatObjectRules.ignite(object_target):
 				cast.hud.add_log("%s catches fire." % str(object_target.get("name", "The object")))
-		elif area_spell_id == "meteor_swarm":
+		elif not is_single_target_spell and bool(cast.spell.get("targets_objects", false)):
 			for area_object in CombatObjectRules.all_at(cast.grid, target_hex):
 				if CombatObjectRules.can_take_spell_damage(area_object):
-					await _resolve_meteor_object_target(cast, area_object)
-		elif bool(cast.spell.get("ignites_objects", false)) or area_spell_id in ["burning_hands", "fireball"]:
+					var obj_res := CombatObjectRules.resolve_area_object_damage(cast.caster, area_object, cast.spell, cast.slot_level_used)
+					if bool(obj_res.get("success", false)):
+						cast.successful = true
+						cast.damage_dealt += int(obj_res.get("damage", 0))
+						cast.hud.add_log(str(obj_res.get("message", "%s is affected." % str(area_object.get("name", "The object")))))
+		elif not is_single_target_spell and bool(cast.spell.get("ignites_objects", false)):
 			for area_object in CombatObjectRules.all_at(cast.grid, target_hex):
 				if CombatObjectRules.can_take_spell_damage(area_object) and CombatObjectRules.ignite(area_object):
 					cast.successful = true

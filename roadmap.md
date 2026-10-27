@@ -53,7 +53,7 @@ supplies captured duration/concentration for flat shared condition HUD casts;
 source-benefit/other lifetime owners and created-actor parameters remain open.
 The Heroism/Enhance Ability investigation repaired stale source-count assertions;
 their concentration benefits and cleanup work. Counts are
-151 accepted of 276 defined engine slices after the [exploration audit](docs/reviews/dnd-code-vocabulary-gap-checklist.md#exploration-and-world-procedures-audit--srd-521-2026-10-26)
+152 accepted of 276 defined engine slices after the [exploration audit](docs/reviews/dnd-code-vocabulary-gap-checklist.md#exploration-and-world-procedures-audit--srd-521-2026-10-26)
 added planned S-227–S-230 (travel pace/terrain, search, traps/locks) and the
 [Progression/Acquisition audit](docs/reviews/progression-acquisition-audit.md) added planned S-231–S-234 and S-242–S-245;
 the [core rules/conditions audit](docs/mechanics/core-rules-status.md) added S-235–S-239 (V-100/V-101) and maps rests, senses and Reaction budgets to existing rows.

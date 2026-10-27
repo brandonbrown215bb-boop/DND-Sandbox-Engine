@@ -23,11 +23,48 @@ static func is_spell_source(source_id: String) -> bool:
 	var spell_id := source_id.get_slice(":", 0)
 	return not spell_id.is_empty() and not DataLoader.get_spell(spell_id).is_empty()
 
+static func parse_duration_seconds(spell_or_duration) -> int:
+	if spell_or_duration is Dictionary:
+		if spell_or_duration.has("duration_seconds"):
+			return int(spell_or_duration["duration_seconds"])
+		return parse_duration_seconds(spell_or_duration.get("duration", 60))
+	if spell_or_duration is int or spell_or_duration is float:
+		return int(spell_or_duration)
+	if not spell_or_duration is String:
+		return 60
+	var text: String = spell_or_duration.to_lower().strip_edges()
+	if text.begins_with("concentration, up to "):
+		text = text.trim_prefix("concentration, up to ").strip_edges()
+	elif text.begins_with("concentration, "):
+		text = text.trim_prefix("concentration, ").strip_edges()
+	elif text.begins_with("up to "):
+		text = text.trim_prefix("up to ").strip_edges()
+	if text == "instantaneous":
+		return 0
+	if text.begins_with("until dispelled") or text == "special":
+		return -1
+	if text == "instantaneous or up to 1 hour":
+		return 3600
+	var parts := text.split(" ")
+	if parts.size() >= 2:
+		var count := int(parts[0])
+		var unit := parts[1]
+		if unit.begins_with("round"):
+			return count * 6
+		elif unit.begins_with("minute"):
+			return count * 60
+		elif unit.begins_with("hour"):
+			return count * 3600
+		elif unit.begins_with("day"):
+			return count * 86400
+	return 60
+
+
 static func begin_cast(caster: Character, spell: Dictionary, cast_facts: Dictionary = {}) -> Dictionary:
 	caster.spell_cast_serial += 1
 	var owner := caster_id(caster)
 	var spell_id := str(spell.get("id", ""))
-	var duration := int(spell.get("duration_seconds", 60))
+	var duration := parse_duration_seconds(spell)
 	if spell_id == "power_word_stun":
 		duration = -1
 	elif spell_id == "identify":
@@ -482,6 +519,7 @@ static func prune(target) -> void:
 		if str(record.get("spell_id", "")) == "aid" and int(record.get("aid_hp_bonus", 0)) > 0:
 			continue
 		record["conditions"] = record["conditions"].filter(func(condition): return has_grant(target, str(source), str(condition)))
+
 		if record["conditions"].is_empty() and not record.has("aid_hp_bonus") and not record.has("ac_floor"):
 			remove(target, str(source))
 

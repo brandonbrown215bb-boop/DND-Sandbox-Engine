@@ -1319,7 +1319,8 @@
       "starting_level": 7,
       "damage_per_level": "1d6"
     },
-    "area_radius": 4
+    "area_radius": 4,
+    "ignites_objects": true
   },
   {
     "id": "demiplane",
@@ -1744,7 +1745,8 @@
     "damage": "7d10",
     "damage_type": "fire",
     "save": "DEX",
-    "half_on_save": true
+    "half_on_save": true,
+    "ignites_objects": true
   },
   {
     "id": "flame_strike",
@@ -2782,7 +2784,9 @@
       }
     ],
     "save": "DEX",
-    "half_on_save": true
+    "half_on_save": true,
+    "targets_objects": true,
+    "ignites_objects": true
   },
   {
     "id": "mind_blank",
@@ -2820,7 +2824,11 @@
     ],
     "target": "single",
     "attack_type": "none",
-    "classes": ["sorcerer", "warlock", "wizard"],
+    "classes": [
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ],
     "damage": "3d8",
     "damage_type": "psychic",
     "save": "WIS",
@@ -3352,7 +3360,9 @@
       "large"
     ],
     "willing_target_skips_save": true,
-    "classes": ["wizard"],
+    "classes": [
+      "wizard"
+    ],
     "material": "a glass sphere",
     "save": "DEX",
     "half_on_save": false,
@@ -4084,7 +4094,11 @@
     "rules_status": "2024-gameplay-partial",
     "area_point_count": 2,
     "effects": [
-      {"type": "area_selection", "shape": "line", "size": 12}
+      {
+        "type": "area_selection",
+        "shape": "line",
+        "size": 12
+      }
     ],
     "description": "You create a wall of fire on a solid surface within range. You can make the wall up to 60 feet long, 20 feet high, and 1 foot thick, or a ringed wall up to 20 feet in diameter, 20 feet high, and 1 foot thick. The wall is opaque and lasts for the duration.When the wall appears, each creature in its area makes a Dexterity saving throw, taking 5d8 Fire damage on a failed save or half as much damage on a successful one.One side of the wall, selected by you when you cast this spell, deals 5d8 Fire damage to each creature that ends its turn within 10 feet of that side or inside the wall. A creature takes the same damage when it enters the wall for the first time on a turn or ends its turn there. The other side of the wall deals no damage.",
     "level": 4,
@@ -4352,7 +4366,8 @@
       "wizard"
     ],
     "rules_source": "SRD5.2.1",
-    "rules_status": "2024-gameplay-partial"
+    "rules_status": "2024-gameplay-partial",
+    "targets_objects": true
   },
   {
     "id": "blindness/deafness",

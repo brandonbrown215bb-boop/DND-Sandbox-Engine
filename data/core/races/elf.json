@@ -48,7 +48,8 @@
       "description": "Elves don't need to sleep. During rest events, you remain alert and can keep watch.",
       "effects": [
         {
-          "type": "rest_advantage"
+          "type": "rest_advantage",
+          "long_rest_duration_seconds": 14400
         }
       ]
     },

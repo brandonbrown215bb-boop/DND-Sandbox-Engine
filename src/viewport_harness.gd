@@ -48,6 +48,10 @@ func _own_class_spells(c: Character) -> void:
 		if str(spell_id) not in owned:
 			owned.append(str(spell_id))
 	c.feature_choices[feature_id] = owned
+	if c.class_id == "wizard":
+		for spell_id in owned:
+			if str(spell_id) not in c.wizard_spellbook:
+				c.wizard_spellbook.append(str(spell_id))
 
 
 ## Batch 084 fixture repair (R2): since Batch 048, Somatic/Material components
@@ -2515,6 +2519,7 @@ func test_meteor_swarm_object_area_flow() -> void:
 	_enter_test("meteor_swarm_object_area_flow")
 	_setup_world()
 	var caster := _fresh_char("Meteor Area Caster", "human", "wizard", {"STR": 8, "DEX": 14, "CON": 14, "INT": 18, "WIS": 10, "CHA": 10})
+	caster.level = 17
 	caster.known_spells.assign(["meteor_swarm"])
 	_own_class_spells(caster) # Batch 084 R3 fixture repair
 	caster.spell_slots["9"] = 1
@@ -2539,6 +2544,7 @@ func test_meteor_swarm_object_area_flow() -> void:
 	var centers: Array[Vector2i] = [Vector2i(1, 0), Vector2i(2, 0), Vector2i(0, 1), Vector2i(-1, 0)]
 	var eligible_a := {"id": "fixture:meteor-area-a", "name": "Area Chest", "kind": "container", "material": "wood", "flammable": true, "hp": 5000, "max_hp": 5000}
 	var eligible_b := {"id": "fixture:meteor-area-b", "name": "Area Table", "material": "wood", "flammable": false, "hp": 5000, "max_hp": 5000}
+	var eligible_unoccupied := {"id": "fixture:meteor-area-unoccupied", "name": "Unoccupied Crate", "material": "wood", "flammable": true, "hp": 5000, "max_hp": 5000}
 	var magical := {"id": "fixture:meteor-area-magic", "name": "Area Ring", "magical": true, "hp": 5000, "max_hp": 5000}
 	var carried := {"id": "fixture:meteor-area-carried", "name": "Area Torch", "material": "wood", "carried": true, "hp": 5000, "max_hp": 5000}
 	var overlap_hex := centers[0]
@@ -2546,6 +2552,7 @@ func test_meteor_swarm_object_area_flow() -> void:
 	combat.hex_grid.add_entity({"hex_position": overlap_hex, "world_object": eligible_b})
 	combat.hex_grid.add_entity({"hex_position": overlap_hex, "world_object": magical})
 	combat.hex_grid.add_entity({"hex_position": overlap_hex, "world_object": carried})
+	combat.hex_grid.add_entity({"hex_position": centers[1], "world_object": eligible_unoccupied})
 	var meteor_spell: Dictionary = DataLoader.get_spell("meteor_swarm")
 	var area_targets := SpellCastTargeting.union_sphere_targets(centers, int(meteor_spell.get("area_radius", 8)), combat.hex_grid)
 	var unique_hex_count := area_targets.size()
@@ -2559,7 +2566,7 @@ func test_meteor_swarm_object_area_flow() -> void:
 	await _cast_menu_spell(combat, "meteor_swarm")
 	for center in centers:
 		await combat._on_hex_clicked(center)
-	_assert(caster.current_hp < caster_hp_before and int(meteor_creature["current_hp"]) < 5000 and int(eligible_a["hp"]) < 5000 and int(eligible_b["hp"]) < 5000 and bool(eligible_a.get("burning", false)), "Meteor Swarm resolves creature saves/damage and damages each eligible object on the covered hex, igniting flammable items")
+	_assert(caster.current_hp < caster_hp_before and int(meteor_creature["current_hp"]) < 5000 and int(eligible_a["hp"]) < 5000 and int(eligible_b["hp"]) < 5000 and int(eligible_unoccupied["hp"]) < 5000 and bool(eligible_a.get("burning", false)) and bool(eligible_unoccupied.get("burning", false)), "Meteor Swarm resolves creature saves/damage and damages each eligible object on occupied and unoccupied hexes, igniting flammable items")
 	_assert(int(meteor_creature["current_hp"]) < monster_hp_before and int(magical["hp"]) == 5000 and int(carried["hp"]) == 5000 and SpellSupport.is_available(meteor_spell), "Meteor Swarm resolves monster saves and skips magical/carried objects after full target selection")
 	_assert(int(caster.spell_slots.get("9", 0)) == 0 and not combat.turn_budget.action_available, "Meteor Swarm spends one level-9 slot and one Magic Action after the four center choices")
 	_teardown_scene(combat)
@@ -2571,9 +2578,13 @@ func test_fire_area_object_ignition_flow() -> void:
 	_enter_test("fire_area_object_ignition_flow")
 	_setup_world()
 	var caster := _fresh_char("Fire Area Caster", "human", "wizard", {"STR": 8, "DEX": 14, "CON": 14, "INT": 18, "WIS": 10, "CHA": 10})
+	caster.level = 5
+	caster.max_hp = 100
+	caster.current_hp = 100
 	caster.known_spells.assign(["fireball"])
 	_own_class_spells(caster) # Batch 084 R3 fixture repair
 	caster.inventory.add_item("component_pouch")
+	_ready_spell_components(caster)
 	caster.spell_slots["3"] = 1
 	PlayerManager.set_player_character(0, caster)
 	PartyManager.reset()

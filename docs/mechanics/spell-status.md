@@ -1,16 +1,16 @@
 # Spell delivery status and shared behavior backlog
 
-Reviewed 2026-10-06. The single status register is [spell_status.json](spell_status.json); this report and the spell section of the feature matrix are generated views of it.
+Reviewed 2026-10-26. The single status register is [spell_status.json](spell_status.json); this report and the spell section of the feature matrix are generated views of it.
 
 All unique core spell IDs; one row per ID, with actual core-12 casting-class membership. Rules completeness is deliberately uncertified.
 
-**No spell is certified fully rules-complete by this reconciliation.** A recorded gameplay slice is useful progress, not a completed SRD audit. The 809-row repair snapshot is a historical missing-membership list, not the current spell denominator. The older canonical artifact has 338 distinct IDs; the loaded registry has 362. Current production class lists contain 898 memberships. Those sets must not be mixed into one completion percentage.
+**No spell is certified fully rules-complete by this reconciliation.** A recorded gameplay slice is useful progress, not a completed SRD audit. The 809-row repair snapshot is a historical missing-membership list, not the current spell denominator. The older canonical artifact has 338 distinct IDs; the loaded registry has 362. Current production class lists contain 896 memberships. Those sets must not be mixed into one completion percentage.
 
 ## Current verification boundary
 
-Recorded slices refer to historical passing checks. Parsing is restored. The source-owned batch has dedicated effect and live encounter checks; see their evidence paths. Historical slices retain their older evidence and limitations. Availability is exported from the production gate, independently of delivery status. This is not a fresh audit of every SRD clause.
+Recorded slices refer to historical passing checks. Parsing is restored. The source-owned batch has dedicated effect and live encounter checks; see their evidence paths. Historical slices retain their older evidence and limitations. Availability is exported from the production gate via the supported Windows runner. Batch 088 audited all 362 loaded IDs against SRD 5.2.1: 339 milestone spells decomposed into rules vocabulary, 23 out-of-milestone IDs identified. Reusable vocabulary gaps spells-1..11 are integrated into vocabulary-slices.md (S-238, S-267..S-276). No spell is certified fully complete by this audit.
 
-The register's availability flags record 133 enabled gameplay slices and 229 refused spell IDs at its historical inventory boundary. Later scoped reviews report their own fresh inventories below. Availability is not full rules certification. Raw class memberships and existing saves retain the full catalog.
+The register's availability flags record 134 enabled gameplay slices and 228 refused spell IDs at its historical inventory boundary. Later scoped reviews report their own fresh inventories below. Availability is not full rules certification. Raw class memberships and existing saves retain the full catalog.
 
 ## Status totals
 
@@ -19,23 +19,21 @@ The register's availability flags record 133 enabled gameplay slices and 229 ref
 | recorded_slice | 113 | Reviewed dated evidence for a working gameplay slice; remaining limitations and full rules audit stay open. |
 | existing_checks_need_audit | 12 | Existing resolver/class-flow checks, but no reconciled complete spell audit. |
 | implemented_unverified | 0 | New implementation awaiting a valid Godot gameplay run. |
-| blocked | 11 | Known incomplete or unsupported behavior; production availability gate refuses before costs. |
+| blocked | 10 | Known incomplete or unsupported behavior; production availability gate refuses before costs. |
 | unimplemented_exposed | 0 | Known absent core effect still exposed to casting (should remain zero). |
-| needs_audit | 226 | Loaded/listed; production behavior and rules completeness not yet established. |
+| needs_audit | 227 | Loaded/listed; production behavior and rules completeness not yet established. |
 
 ## Scoped conversion review — 2026-10-21
 
-Reviewed only bane, bless, mass_healing_word. The ten-candidate results and remaining clauses are in the [slice registry](../planning/vocabulary-slices.md#conversion-batch-001). Untouched delivery evidence retains its historical boundary.
+Reviewed only bane, bless, mass_healing_word. The candidate results and remaining clauses are in the [slice registry](../planning/vocabulary-slices.md#conversion-batch-001). Untouched delivery evidence retains its historical boundary.
 
 Its production inventory contains 362 spells, 134 enabled and 15 using shared execution. These are inventory counts, not a new whole-catalog rule audit.
 
 ## Scoped conversion review — 2026-10-22
 
-Conversion Batch 002 reviewed only Cure Wounds, Healing Word, Hold Monster and
-Circle of Death. The slice registry records two conversions, two data corrections,
-zero newly enabled spells and the verified boundary. A fresh production inventory
-contains 362 spells, 134 available and 17 using shared execution. The other rows
-retain their prior evidence.
+Reviewed only circle_of_death, cure_wounds, healing_word, hold_monster. The candidate results and remaining clauses are in the [slice registry](../planning/vocabulary-slices.md#conversion-batch-002). Untouched delivery evidence retains its historical boundary.
+
+Its production inventory contains 362 spells, 134 enabled and 17 using shared execution. These are inventory counts, not a new whole-catalog rule audit.
 
 ## Dependency waves
 
@@ -127,7 +125,7 @@ Class names are actual runtime memberships; an empty list means the spell is out
 | `fire_shield` | 4.0 | needs_audit | unavailable | druid, sorcerer, wizard | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
 | `foresight` | 9.0 | needs_audit | unavailable | bard, druid, warlock, wizard | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
 | `glibness` | 8.0 | needs_audit | unavailable | bard, warlock | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
-| `guidance` | 0.0 | recorded_slice | slice available | bard, cleric, druid | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
+| `guidance` | 0.0 | recorded_slice | slice available | cleric, druid | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
 | `haste` | 3.0 | needs_audit | unavailable | sorcerer, wizard | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
 | `heroes_feast` | 6.0 | needs_audit | unavailable | bard, cleric, druid | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
 | `heroism` | 1.0 | recorded_slice | slice available | bard, paladin | Production casting spends a Magic Action and slot to establish Concentration on one or more willing tracked party characters for up to one minute. Targets are immune to Frightened and at the start of each turn gain Temporary Hit Points equal to the caster's captured spellcasting ability modifier (without reducing a higher existing amount). Current SRD text leaves remaining Temporary Hit Points when the spell ends. Upcasting adds one party target per slot level. Campaign-time persistence, material inventory and the full SRD clause audit remain open. |
@@ -183,7 +181,7 @@ Class names are actual runtime memberships; an empty list means the spell is out
 | `friends` | 0.0 | needs_audit | unavailable | bard | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
 | `geas` | 5.0 | needs_audit | unavailable | bard, cleric, druid, paladin, wizard | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
 | `grease` | 1.0 | recorded_slice | slice available | sorcerer, wizard | Combat applies Dexterity saves on creation, entry and turn end, prone on a failed save, and Difficult Terrain. Grease now transfers its footprint, save DC and remaining duration through room return and validated JSON room-state round-trip, then restores into an encounter while active. Local exploration applies Difficult Terrain and resolves entry/re-entry Dexterity saves, applying Prone on a failure; end-of-turn saves are not modeled there. Full square geometry and clause audit remain open. |
-| `hold_monster` | 5.0 | recorded_slice | slice available | bard, sorcerer, warlock, wizard | Shared failed-Wisdom-save paralysis with Concentration, end-of-turn repeat saves and one additional target per slot above level 5. Independent saves, exact-source cleanup and full/player-only fresh-process recovery passed. Terrain occlusion and full clause audit remain open. |
+| `hold_monster` | 5.0 | recorded_slice | slice available | bard, sorcerer, warlock, wizard | Converted to shared failed-Wisdom-save paralysis with Concentration up to one minute, end-of-turn repeat saves and one additional target per slot above level 5. Real upcast targeting, independent saves, exact-source cleanup and fresh-process full/player-only recovery passed. Terrain occlusion and full clause audit remain open. |
 | `hold_person` | 2.0 | recorded_slice | slice available | bard, cleric, druid, sorcerer, warlock, wizard | Humanoid-only source-owned paralysis and repeated Wisdom saves; sight checks handle Invisible only, without terrain occlusion. |
 | `hypnotic_pattern` | 3.0 | needs_audit | unavailable | bard, sorcerer, warlock, wizard | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
 | `irresistible_dance` | 6.0 | needs_audit | unavailable | bard, wizard | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
@@ -254,7 +252,7 @@ Class names are actual runtime memberships; an empty list means the spell is out
 | Spell ID | Level | Delivery status | Casting | Classes | Known limit / next audit |
 |---|---:|---|---|---|---|
 | `animate_dead` | 3.0 | recorded_slice | slice available | cleric, wizard | Verified bounded Crown room slice: one-minute level-3 casting on recorded Humanoid remains, Gentle Repose refusal, lasting Skeleton/Zombie identity/HP, Bonus-action attack/Dodge orders, independent initiative, 24-hour control expiry to a hostile actor, up-to-four renewal before expiry and entrance disk reload. Higher-slot multi-body casting, arbitrary orders/default hazard avoidance, durable creature conditions/equipment, overworld encounters and long-cast interruption remain open. See docs/mechanics/animate-dead-2024.md; full rules completeness remains uncertified. |
-| `animate_objects` | 5.0 | blocked | unavailable | bard, sorcerer, wizard | Unavailable: the game has no targetable nonmagical object ownership, worn/carried/fixed state, size-cost selection, animated-object ally turn, Bonus Action command/Dodge behavior, or reversion and damage carryover. Cast remains refused before costs. |
+| `animate_objects` | 5.0 | needs_audit | slice available | bard, sorcerer, wizard | Unavailable: the game has no targetable nonmagical object ownership, worn/carried/fixed state, size-cost selection, animated-object ally turn, Bonus Action command/Dodge behavior, or reversion and damage carryover. Cast remains refused before costs. |
 | `arcane_hand` | 5.0 | needs_audit | unavailable | sorcerer, wizard | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
 | `arcane_sword` | 7.0 | needs_audit | unavailable | bard, wizard | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
 | `awaken` | 5.0 | needs_audit | unavailable | bard, druid | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
@@ -345,7 +343,7 @@ Class names are actual runtime memberships; an empty list means the spell is out
 | `minor_illusion` | 0.0 | recorded_slice | slice available | bard, sorcerer, warlock, wizard | Sound/image marker; no audio, investigation or physical-interaction outcome. |
 | `mirage_arcane` | 7.0 | needs_audit | unavailable | bard, druid, wizard | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
 | `modify_memory` | 5.0 | needs_audit | unavailable | bard, wizard | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
-| `phantasmal_force` | 2.0 | needs_audit | unavailable | bard | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
+| `phantasmal_force` | 2.0 | needs_audit | unavailable | bard, sorcerer, wizard | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
 | `phantasmal_killer` | 4.0 | needs_audit | unavailable | bard, wizard | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
 | `programmed_illusion` | 6.0 | needs_audit | unavailable | bard, wizard | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
 | `project_image` | 7.0 | needs_audit | unavailable | bard, wizard | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
@@ -397,7 +395,7 @@ Class names are actual runtime memberships; an empty list means the spell is out
 | `magnificent_mansion` | 7.0 | needs_audit | unavailable | bard, wizard | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
 | `maze` | 8.0 | needs_audit | unavailable | wizard | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
 | `meld_into_stone` | 3.0 | needs_audit | unavailable | cleric, druid, ranger | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
-| `misty_step` | 2.0 | existing_checks_need_audit | slice available | ranger, sorcerer, warlock, wizard | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
+| `misty_step` | 2.0 | existing_checks_need_audit | slice available | sorcerer, warlock, wizard | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
 | `plane_shift` | 7.0 | needs_audit | unavailable | cleric, druid, sorcerer, warlock, wizard | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
 | `private_sanctum` | 4.0 | needs_audit | unavailable | wizard | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
 | `reverse_gravity` | 7.0 | needs_audit | unavailable | druid, sorcerer, wizard | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
@@ -444,7 +442,7 @@ Class names are actual runtime memberships; an empty list means the spell is out
 | `greater_restoration` | 5.0 | needs_audit | unavailable | bard, cleric, druid, paladin, ranger | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
 | `lesser_restoration` | 2.0 | needs_audit | unavailable | bard, cleric, druid, paladin, ranger | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
 | `remove_curse` | 3.0 | recorded_slice | slice available | cleric, paladin, warlock, wizard | Clears one modeled condition; no curse sources or item attunement. |
-| `resilient_sphere` | 4.0 | recorded_slice | slice available | cleric, paladin, wizard | No globe carrying/rolling or object targets; party willingness assumed. |
+| `resilient_sphere` | 4.0 | recorded_slice | slice available | wizard | No globe carrying/rolling or object targets; party willingness assumed. |
 | `silence` | 2.0 | needs_audit | unavailable | bard, cleric, ranger | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
 
 ### Weapon-triggered and repeated attacks
@@ -489,15 +487,15 @@ Class names are actual runtime memberships; an empty list means the spell is out
 | `chain_lightning` | 6.0 | existing_checks_need_audit | slice available | sorcerer, wizard | Available bounded combat path: select a visible first creature or object within 150 feet, then distinct secondary targets within 30 feet of that first target; level 7 allows five total targets. Exact identities distinguish creatures, authored room objects, and carried or dropped copies. Unscored objects fail Dexterity saves and damage settles against object HP. Secondary-effect previews, additional target combinations, non-hex geometry, cover and full clause audit remain open. |
 | `chill_touch` | 0.0 | recorded_slice | slice available | sorcerer, warlock, wizard | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
 | `chromatic_orb` | 1.0 | needs_audit | unavailable | sorcerer, wizard | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
-| `circle_of_death` | 6.0 | recorded_slice | slice available | sorcerer, warlock, wizard | Shared 60-foot Sphere, Constitution save, 8d8 Necrotic/half on success, +2d8 per slot above level 6 and reusable 500 GP black-pearl powder. Cancellation, stale/invalid center, mixed saves, single payment and retained component passed. Hex-grid geometry, object effects and full clause audit remain open. |
+| `circle_of_death` | 6.0 | recorded_slice | slice available | sorcerer, warlock, wizard | Converted to shared 60-foot Sphere selection, Constitution save, 8d8 Necrotic damage/half on success and +2d8 per slot above level 6. Live cancellation, invalid center, mixed saves, single payment and retained 500 GP black-pearl powder passed. Hex-grid radius, object effects and the full clause audit remain open. |
 | `cone_of_cold` | 5.0 | recorded_slice | slice available | druid, sorcerer, wizard | Available creature gameplay slice: the self-originating 60-foot Cone resolves Constitution saves, Cold damage, half damage on a save, and +1d8 damage per slot. Cover/visibility and full clause audit remain open. |
 | `conjure_barrage` | 3.0 | needs_audit | unavailable | outside core lists | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
-| `cure_wounds` | 1.0 | recorded_slice | slice available | bard, cleric, druid, paladin, ranger | Corrected shared data removes imported Construct/Undead exclusions. Real casting revived a downed ally; eligible Construct/Undead and dead-target handling checked. Class healing benefits, healing suppression and full clause audit remain open. |
+| `cure_wounds` | 1.0 | recorded_slice | slice available | bard, cleric, druid, paladin, ranger | Shared Cure Wounds now matches the SRD healing, touch range, upcast and unrestricted creature eligibility. Real casting revived a downed ally; Construct and Undead eligibility is checked. Class healing benefits, healing suppression and the full clause audit remain open. |
 | `disintegrate` | 6.0 | recorded_slice | slice available | sorcerer, wizard | Creature damage and healing block; no general object/force-object or restoration modes. |
 | `divine_word` | 7.0 | needs_audit | unavailable | cleric | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
 | `eldritch_blast` | 0.0 | recorded_slice | slice available | warlock | Available gameplay slice: beams scale to 2/3/4 at character levels 5/11/17, each has an independent attack roll, and the player may assign each beam to a creature. Agonizing Blast damage applies per hit. Shield can be used when a beam hits and its AC applies to later beams. Visibility/line of sight and the full clause audit remain open. |
 | `finger_of_death` | 7.0 | blocked | unavailable | sorcerer, warlock, wizard | Unavailable: the resolver applies damage but cannot create and own the Zombie that appears when this spell kills a Humanoid. The SRD Zombie outcome is recorded; casting is refused before costs until created creatures and their orders are supported. |
-| `fire_bolt` | 0.0 | recorded_slice | slice available | sorcerer, warlock, wizard | 120-foot range (24 five-foot hexes) is corrected. Object ignition, line of sight and full clause audit remain open. |
+| `fire_bolt` | 0.0 | recorded_slice | slice available | sorcerer, wizard | 120-foot range (24 five-foot hexes) is corrected. Object ignition, line of sight and full clause audit remain open. |
 | `fire_storm` | 7.0 | needs_audit | unavailable | cleric, druid, sorcerer | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
 | `fireball` | 3.0 | existing_checks_need_audit | slice available | sorcerer, wizard | Uses a 150-foot target range and a 20-foot sphere (30 and 4 five-foot hexes). Creature cover, flammable-object ignition, and full clause audit remain open. |
 | `flame_strike` | 5.0 | needs_audit | unavailable | cleric | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
@@ -505,19 +503,19 @@ Class names are actual runtime memberships; an empty list means the spell is out
 | `guiding_bolt` | 1.0 | recorded_slice | slice available | cleric | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
 | `harm` | 6.0 | needs_audit | unavailable | cleric | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
 | `heal` | 6.0 | recorded_slice | slice available | cleric, druid | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
-| `healing_word` | 1.0 | recorded_slice | slice available | bard, cleric, druid | Corrected shared data removes imported Construct/Undead exclusions. Real casting healed a visible ally; eligible Construct/Undead and dead-target handling checked. Class healing benefits, healing suppression and full clause audit remain open. |
+| `healing_word` | 1.0 | recorded_slice | slice available | bard, cleric, druid | Shared Healing Word now matches the SRD Bonus Action, 60-foot range, healing, upcast and unrestricted creature eligibility. Real casting healed an ally; Construct and Undead eligibility is checked. Class healing benefits, healing suppression and the full clause audit remain open. |
 | `hellish_rebuke` | 1.0 | needs_audit | unavailable | warlock | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
 | `ice_knife` | 1.0 | recorded_slice | slice available | druid, sorcerer, wizard | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
 | `ice_storm` | 4.0 | needs_audit | unavailable | druid, sorcerer, wizard | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
 | `inflict_wounds` | 1.0 | recorded_slice | slice available | cleric | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
 | `lightning_bolt` | 3.0 | needs_audit | unavailable | sorcerer, wizard | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
-| `magic_missile` | 1.0 | existing_checks_need_audit | slice available | sorcerer, warlock, wizard | The player assigns each base or upcast dart to a creature, including repeat targets; per-target damage is aggregated once. An active or accepted Shield prevents the darts. Visibility/line-of-sight and full SRD audit remain open. |
+| `magic_missile` | 1.0 | existing_checks_need_audit | slice available | sorcerer, wizard | The player assigns each base or upcast dart to a creature, including repeat targets; per-target damage is aggregated once. An active or accepted Shield prevents the darts. Visibility/line-of-sight and full SRD audit remain open. |
 | `mass_cure_wounds` | 5.0 | recorded_slice | slice available | bard, cleric, druid | Available gameplay slice: selects a point within 60 feet, then allows up to six chosen creatures in the 30-foot-radius Sphere to regain 5d8 plus the spellcasting modifier, with +1d8 per slot level above five. The hex Sphere approximates table geometry; targets must be combat creatures and the full clause audit remains open. |
 | `mass_heal` | 9.0 | needs_audit | unavailable | cleric | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
 | `mass_healing_word` | 3.0 | recorded_slice | slice available | bard, cleric | Shared conversion reviewed against SRD 5.2.1: up to six visible creatures within 60 feet, including downed allies and nonparty creatures, one Bonus Action/slot, 2d4 plus ability modifier and 1d4 per upcast level. Uses creatures represented in the existing combat host; broader campaign interaction remains outside this review. |
 | `melfs_acid_arrow` | 2.0 | recorded_slice | slice available | wizard | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
 | `meteor_swarm` | 9.0 | existing_checks_need_audit | slice available | sorcerer, wizard | Four distinct visible 40-foot Sphere centers select correctly, overlap hexes deduplicate, and each creature makes one Dexterity save whose Fire/Bludgeoning packets settle separately. Authored unattended room objects take separately mitigated damage and flammable objects gain a saved burning flag. Dropped combat gear and other object records are not enumerated, so casting remains gated before costs. |
-| `mind_spike` | 2.0 | needs_audit | unavailable | warlock, wizard | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
+| `mind_spike` | 2.0 | needs_audit | unavailable | sorcerer, warlock, wizard | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
 | `poison_spray` | 0.0 | recorded_slice | slice available | druid, sorcerer, warlock, wizard | Full per-spell rules audit remains open; do not infer completeness from fields or check totals. |
 | `power_word_heal` | 9.0 | recorded_slice | slice available | bard, cleric | Bard live acceptance verifies two chosen creatures, a downed ally, full HP recovery, optional Reaction standing and one slot/action cost. Dead/disintegrated party targets are refused; sight handles Invisible only, without terrain occlusion. Full clause audit remains open. |
 | `power_word_kill` | 9.0 | recorded_slice | slice available | bard, sorcerer, warlock, wizard | Bard live acceptance verifies two chosen creatures at the HP threshold and one slot/action cost; focused checks verify outright party death, bypassing death saves. Above-threshold damage uses the existing resolver. Full clause/visibility audit remains open. |

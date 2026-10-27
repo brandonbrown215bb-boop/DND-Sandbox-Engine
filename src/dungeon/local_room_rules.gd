@@ -60,7 +60,7 @@ static func passable(state: Dictionary, position: Vector2i) -> bool:
 	if not inside: return false
 	if has_wall(state, position): return false
 	var object := object_at(state, position)
-	return object.is_empty() or str(object.get("kind", "")) not in ["door", "barrier"] or bool(object.get("open", false)) or int(object.get("hp", 1)) == 0
+	return object.is_empty() or CombatObjectRules.is_passable(object)
 
 
 static func blocks_sight(state: Dictionary, position: Vector2i) -> bool:
@@ -727,36 +727,111 @@ static func interact(state: Dictionary, id: String, action: String, character: C
 		var dealt := CombatObjectRules.apply_damage(object, int(result.get("damage", 0)), str(weapon.get("damage_type", "bludgeoning"))) if bool(result.get("hit", false)) else 0
 		return {"success": true, "seconds": 6, "message": "%s strikes %s and deals %d damage%s." % [character.character_name, str(object["name"]), dealt, "; the barrier breaks" if int(object.get("hp", 1)) == 0 else ""], "damage": dealt, "hit": bool(result.get("hit", false))}
 	var alarm_areas: Array[Dictionary] = []
-	if action in ["open", "close", "lock", "unlock", "pick_lock", "pry"]:
+	if action in ["open", "close", "lock", "unlock", "pick_lock", "pry", "force_open", "break_open", "bar", "unbar", "jam", "unjam", "close_unheld", "knock", "arcane_lock"]:
 		alarm_areas = LocalRoomAreas.touch_object(state, character.character_id, id, int(GameManager.campaign_elapsed_seconds))
 	var alarm_suffix := _alarm_alert_text(alarm_areas)
 	if action == "inspect":
 		var environment := _environment_description(object)
-		return {"success": true, "seconds": 0, "message": "%s — %s; %d/%d HP; %s, %s%s%s. %s" % [object["name"], RoomMeasurements.describe_object(object) + ("; " + RoomMeasurements.capacity_text(object) if str(object.get("kind", "")) == "container" else ""), object.get("hp", 1), object.get("max_hp", 1), "open" if object.get("open", false) else "closed", "locked" if object.get("locked", false) else "unlocked", "; burning" if object.get("burning", false) else "", "; " + environment if not environment.is_empty() else "", object.get("description", "")]}
+		var lock_state := "unlocked"
+		if CombatObjectRules.is_magical_locked(object):
+			lock_state = "magically locked"
+		elif object.get("locked", false):
+			lock_state = "locked"
+		var extras: Array[String] = []
+		if object.get("barred", false): extras.append("barred")
+		if object.get("stuck", false) or object.get("jammed", false): extras.append("stuck")
+		if object.get("held", false): extras.append("held open")
+		var extra_str := ("; " + ", ".join(extras)) if not extras.is_empty() else ""
+		return {"success": true, "seconds": 0, "message": "%s — %s; %d/%d HP; %s, %s%s%s%s. %s" % [object["name"], RoomMeasurements.describe_object(object) + ("; " + RoomMeasurements.capacity_text(object) if str(object.get("kind", "")) == "container" else ""), object.get("hp", 1), object.get("max_hp", 1), "open" if object.get("open", false) else "closed", lock_state, extra_str, "; burning" if object.get("burning", false) else "", "; " + environment if not environment.is_empty() else "", object.get("description", "")]}
 	match action:
 		"extinguish":
 			if not CombatObjectRules.extinguish(object): return failure("This object is not burning.")
 		"open", "close":
 			if str(object.get("kind", "")) not in ["door", "container"]: return failure("This object cannot be opened." + alarm_suffix)
-			if action == "open" and bool(object.get("locked", false)): return failure("It is locked." + alarm_suffix)
+			if action == "open":
+				if bool(object.get("barred", false)): return failure("It is barred." + alarm_suffix)
+				if bool(object.get("stuck", false)) or bool(object.get("jammed", false)): return failure("It is stuck." + alarm_suffix)
+				if CombatObjectRules.is_locked(object, int(GameManager.campaign_elapsed_seconds) if GameManager != null else 0, character.character_id if character != null else ""): return failure("It is locked." + alarm_suffix)
 			object["open"] = action == "open"
+		"close_unheld":
+			if str(object.get("kind", "")) not in ["door", "container"]: return failure("This object cannot be closed." + alarm_suffix)
+			if bool(object.get("held", false)): return failure("It is held open." + alarm_suffix)
+			if not bool(object.get("open", false)): return failure("It is already closed." + alarm_suffix)
+			object["open"] = false
+		"bar":
+			if str(object.get("kind", "")) not in ["door", "container"]: return failure("This object cannot be barred." + alarm_suffix)
+			if bool(object.get("open", false)): return failure("Close it before barring." + alarm_suffix)
+			if object.has("barrable") and not bool(object["barrable"]): return failure("This object cannot be barred." + alarm_suffix)
+			CombatObjectRules.bar(object)
+		"unbar":
+			if not bool(object.get("barred", false)): return failure("It is not barred." + alarm_suffix)
+			CombatObjectRules.unbar(object)
+		"jam":
+			if str(object.get("kind", "")) not in ["door", "container"]: return failure("This object cannot be jammed." + alarm_suffix)
+			if bool(object.get("open", false)): return failure("Close it before jamming." + alarm_suffix)
+			CombatObjectRules.jam(object)
+		"unjam":
+			if not bool(object.get("stuck", false)) and not bool(object.get("jammed", false)): return failure("It is not jammed." + alarm_suffix)
+			CombatObjectRules.unjam(object)
+		"force_open", "break_open":
+			if str(object.get("kind", "")) not in ["door", "container"]: return failure("This object cannot be forced open." + alarm_suffix)
+			if bool(object.get("open", false)): return failure("It is already open." + alarm_suffix)
+			var now_sec := int(GameManager.campaign_elapsed_seconds) if GameManager != null else 0
+			var break_dc := CombatObjectRules.effective_break_dc(object, now_sec)
+			var break_check := EventResolver.resolve_skill_check(character, {"ability": "STR", "skill": "Athletics", "context": "forcing_door", "dc": break_dc})
+			if not bool(break_check.get("success", false)):
+				return {"success": false, "seconds": 6, "check": break_check, "message": "Forcing check %d vs DC %d: still holds." % [int(break_check.get("total", 0)), break_dc] + alarm_suffix}
+			object["open"] = true
+			object["stuck"] = false
+			object["jammed"] = false
+			object["barred"] = false
+			object["locked"] = false
+			if object.get("magical_lock") is Dictionary:
+				object["magical_lock"]["active"] = false
+			return {"success": true, "seconds": 6, "check": break_check, "message": "%s forces %s open!" % [character.character_name, str(object["name"])] + alarm_suffix}
+		"knock":
+			if str(object.get("kind", "")) not in ["door", "container"]: return failure("This object cannot be affected by Knock." + alarm_suffix)
+			if "knock" not in character.known_spells: return failure("That character does not know Knock." + alarm_suffix)
+			var knock_spell := DataLoader.get_spell("knock")
+			var knock_spent := CombatAction.spend_spell_slot(character, knock_spell)
+			if not knock_spent.get("success", false): return failure(str(knock_spent.get("message", "No spell slot remains.")) + alarm_suffix)
+			var now_sec := int(GameManager.campaign_elapsed_seconds) if GameManager != null else 0
+			var knock_res := CombatObjectRules.apply_knock(object, now_sec)
+			return {"success": true, "seconds": 6, "message": "%s casts Knock on %s: %s" % [character.character_name, str(object["name"]), knock_res["message"]] + alarm_suffix}
+		"arcane_lock":
+			if str(object.get("kind", "")) not in ["door", "container"]: return failure("This object cannot be warded with Arcane Lock." + alarm_suffix)
+			if bool(object.get("open", false)): return failure("Close it before casting Arcane Lock." + alarm_suffix)
+			if "arcane_lock" not in character.known_spells: return failure("That character does not know Arcane Lock." + alarm_suffix)
+			var lock_spell := DataLoader.get_spell("arcane_lock")
+			var lock_spent := CombatAction.spend_spell_slot(character, lock_spell)
+			if not lock_spent.get("success", false): return failure(str(lock_spent.get("message", "No spell slot remains.")) + alarm_suffix)
+			CombatObjectRules.apply_arcane_lock(object, character.character_id)
+			return {"success": true, "seconds": 6, "message": "%s casts Arcane Lock on %s. It is magically locked." % [character.character_name, str(object["name"])] + alarm_suffix}
 		"unlock", "lock":
 			if not bool(object.get("lockable", false)): return failure("There is no lock." + alarm_suffix)
 			if action == "lock" and bool(object.get("open", false)): return failure("Close it before locking." + alarm_suffix)
 			if not character.inventory.has_item(str(object.get("key_id", ""))): return failure("The matching key must be in your backpack." + alarm_suffix)
 			object["locked"] = action == "lock"
 		"pick_lock":
-			if not object.get("locked", false): return failure("It is already unlocked." + alarm_suffix)
+			var now_sec := int(GameManager.campaign_elapsed_seconds) if GameManager != null else 0
+			if not CombatObjectRules.is_locked(object, now_sec): return failure("It is already unlocked." + alarm_suffix)
 			if not character.inventory.has_item("thieves_tools"): return failure("Thieves' Tools are required." + alarm_suffix)
-			var check := EventResolver.resolve_skill_check(character, {"ability": "DEX", "skill": "Sleight of Hand", "dc": int(object.get("lock_dc", 15))})
+			var lock_dc := CombatObjectRules.effective_lock_dc(object, now_sec)
+			var check := EventResolver.resolve_skill_check(character, {"ability": "DEX", "skill": "Sleight of Hand", "dc": lock_dc})
 			if not check["success"]: return {"success": false, "seconds": 6, "message": "Lock check %d vs DC %d: still locked." % [check["total"], check["dc"]] + alarm_suffix}
 			object["locked"] = false
+			if object.get("magical_lock") is Dictionary:
+				object["magical_lock"]["active"] = false
 		"pry":
-			if not bool(object.get("lockable", false)) or not bool(object.get("locked", false)) or bool(object.get("open", false)): return failure("There is no closed locked object to pry open." + alarm_suffix)
+			var now_sec := int(GameManager.campaign_elapsed_seconds) if GameManager != null else 0
+			if (not bool(object.get("lockable", false)) and not CombatObjectRules.is_locked(object, now_sec)) or not CombatObjectRules.is_locked(object, now_sec) or bool(object.get("open", false)): return failure("There is no closed locked object to pry open." + alarm_suffix)
 			if not character.inventory.has_item("crowbar"): return failure("A Crowbar is required to pry this object open." + alarm_suffix)
-			var pry_check := EventResolver.resolve_skill_check(character, {"ability": "STR", "skill": "Athletics", "context": "prying", "dc": int(object.get("lock_dc", 15))})
+			var lock_dc := CombatObjectRules.effective_lock_dc(object, now_sec)
+			var pry_check := EventResolver.resolve_skill_check(character, {"ability": "STR", "skill": "Athletics", "context": "prying", "dc": lock_dc})
 			if not pry_check["success"]: return {"success": false, "seconds": 6, "message": "Prying check %d vs DC %d: still locked." % [pry_check["total"], pry_check["dc"]] + alarm_suffix}
 			object["locked"] = false
+			if object.get("magical_lock") is Dictionary:
+				object["magical_lock"]["active"] = false
 			object["open"] = true
 		"take":
 			if str(object.get("kind", "")) == "loose" and bool(object.get("fixed", false)): return failure("Detach the object before picking it up.")

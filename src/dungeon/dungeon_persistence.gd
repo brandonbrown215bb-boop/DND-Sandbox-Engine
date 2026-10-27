@@ -292,13 +292,30 @@ static func local_error(state: Variant) -> String:
 			var barrier_height: Variant = object.get("height_feet", 10)
 			if (not barrier_height is int and not barrier_height is float) or not is_finite(float(barrier_height)) or float(barrier_height) != floorf(float(barrier_height)) or int(barrier_height) < 5 or int(barrier_height) > 1000 or int(barrier_height) % 5 != 0 or not bool(object.get("fixed", false)): return "barrier height or attachment is invalid"
 			if str(object.get("material", "")) not in ["stone", "wood", "iron", "glass", "ice", "other"]: return "barrier material is invalid"
-		for flag in ["open", "locked", "lockable", "fixed", "removed"]:
+		for flag in ["open", "locked", "lockable", "fixed", "removed", "stuck", "jammed", "barred", "held", "barrable"]:
 			if object.has(flag) and not object[flag] is bool: return "object flag is invalid"
 		for flag in ["food_or_drink", "magical", "dirty", "flammable", "burning"]:
 			if object.has(flag) and not object[flag] is bool: return "environment object flag is invalid"
 		if object.has("burning_next_tick_seconds"):
 			var burning_tick: Variant = object["burning_next_tick_seconds"]
 			if not object.get("burning", false) or (not burning_tick is int and not burning_tick is float) or not is_finite(float(burning_tick)) or float(burning_tick) != floorf(float(burning_tick)) or int(burning_tick) < 0: return "object burning timer is invalid"
+		if object.has("magical_lock"):
+			var mlock: Variant = object["magical_lock"]
+			if mlock is bool:
+				pass
+			elif mlock is Dictionary:
+				if mlock.has("active") and not mlock["active"] is bool: return "object magical lock is invalid"
+				if mlock.has("caster_id") and not mlock["caster_id"] is String: return "object magical lock is invalid"
+				if mlock.has("password") and not mlock["password"] is String: return "object magical lock is invalid"
+				if mlock.has("designated_users") and not mlock["designated_users"] is Array: return "object magical lock is invalid"
+				if mlock.has("suppressed_until"):
+					var sup: Variant = mlock["suppressed_until"]
+					if (not sup is int and not sup is float) or not is_finite(float(sup)) or float(sup) != floorf(float(sup)) or int(sup) < 0: return "object magical lock is invalid"
+				if mlock.has("dc_bonus"):
+					var dcb: Variant = mlock["dc_bonus"]
+					if (not dcb is int and not dcb is float) or not is_finite(float(dcb)) or float(dcb) != floorf(float(dcb)): return "object magical lock is invalid"
+			else:
+				return "object magical lock is invalid"
 		if object.has("volume_cubic_feet"):
 			if not object["volume_cubic_feet"] is int and not object["volume_cubic_feet"] is float: return "object volume is invalid"
 			if not is_finite(float(object["volume_cubic_feet"])) or float(object["volume_cubic_feet"]) < 0.0 or float(object["volume_cubic_feet"]) > 1000.0: return "object volume is invalid"
@@ -318,7 +335,7 @@ static func local_error(state: Variant) -> String:
 				if not source is String or str(source) != "sight_rot": return "object contamination source is invalid"
 			if not object.get("contamination_sources", []).is_empty() and (not bool(object.get("food_or_drink", false)) or "disease" not in object.get("contamination", [])): return "disease source lacks disease-contaminated food or drink"
 		if not object.get("contamination", []).is_empty() and not bool(object.get("food_or_drink", false)): return "non-food object has contamination"
-		for field in ["hp", "max_hp", "capacity", "lock_dc", "capacity_gallons", "armor_class", "damage_threshold"]:
+		for field in ["hp", "max_hp", "capacity", "lock_dc", "break_dc", "capacity_gallons", "armor_class", "damage_threshold"]:
 			if object.has(field):
 				if not object[field] is int and not object[field] is float: return "object number is invalid"
 				if not is_finite(float(object[field])) or float(object[field]) != floorf(float(object[field])) or int(object[field]) < 0: return "object number is invalid"

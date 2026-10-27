@@ -8,14 +8,14 @@ certify converted catalog content.
 
 ## Count and scope
 
-**276 defined slices: 151 verified, 125 not yet accepted.** (S-246–S-276 from the [wave 2 audit integration](#wave-2-audit-slices); S-240/S-241 from [SRC-01 batch 2](#src-01-batch-2); S-235–S-239 added by the 2026-10-26 [core rules/conditions audit](../mechanics/core-rules-status.md).) Counts measure accepted
+**276 defined slices: 152 verified, 124 not yet accepted.** (S-246–S-276 from the [wave 2 audit integration](#wave-2-audit-slices); S-240/S-241 from [SRC-01 batch 2](#src-01-batch-2); S-235–S-239 added by the 2026-10-26 [core rules/conditions audit](../mechanics/core-rules-status.md).) Counts measure accepted
 bounded implementations, not time, effort or completion of every clause in a row.
 These totals include reviewed, repaired and merged Batches 034–065 through
 2026-10-21, plus combat save-exit placement (VS-144), the bounded located source-end continuation (VS-145) and
 exact item-form return (VS-146), Character/object tether groups (VS-147), and
 actual containment occupancy/capacity (VS-148), internal harm/escape (VS-149),
-moving containers/legal release (VS-150), and projected vessel contents/movement
-(VS-151);
+moving containers/legal release (VS-150), projected vessel contents/movement
+(VS-151), and rest-start expiry/actor-specific duration (VS-152);
 remaining limits are recorded below.
 
 SRD 5.2.1 governs the staged core-12 target. Artificer, Mystic and later
@@ -28,7 +28,7 @@ catalog content as part of every slice.
 | Phase | Defined | Verified | Not yet accepted |
 |---|---:|---:|---:|
 | P1 — Facts, results and grants | 44 | 34 | 10 |
-| P2 — Pools, time and effect state | 56 | 41 | 15 |
+| P2 — Pools, time and effect state | 56 | 42 | 14 |
 | P3 — Rolls and decisions | 32 | 22 | 10 |
 | P4 — Damage and consequences | 31 | 20 | 11 |
 | P5 — Casting and action composition | 25 | 12 | 13 |
@@ -36,7 +36,7 @@ catalog content as part of every slice.
 | P7 — Space, perception and illusions | 27 | 1 | 26 |
 | P8 — Physical items and bodies | 22 | 4 | 18 |
 | P9 — Procedures and campaign outcomes | 16 | 0 | 16 |
-| **Total** | **276** | **151** | **125** |
+| **Total** | **276** | **152** | **124** |
 
 ## How to use a row
 
@@ -774,6 +774,13 @@ source-backed consumer is required before real vessel catalog conversion;
 neutral/renamed fixtures prove the reusable runtime only. See the
 [authoring contract](../mechanics/projected-vessels.md).
 
+<a id="vs-152"></a>
+<a id="rest-start-expiry-duration"></a>
+
+### Rest-start expiry, actor-specific duration and room object spell states — VS-152
+
+S-070 separates starting a rest (`RestRules.start_rest`), advancing elapsed duration (`advance_rest`), interrupting (`interrupt_rest`) and completing (`complete_rest`). `short_rest_started` and `long_rest_started` boundaries expire declared sources at rest start without granting rest completion benefits early. Actor-specific `long_rest_duration_seconds` (such as Elf Trance's 14,400 seconds) completes that participant's Long Rest after the declared elapsed duration while 8-hour participants remain in progress until 28,800 seconds; interrupted rests before completion grant no recovery. Local-room and combat object spell states (`magical_lock`, `continual_flame` and area object damage) persist across room transitions and checkpoint save/load.
+
 ### Assignment boundaries and completion checks
 
 - The chooser, item types/measurements, modes/source ownership and the bounded
@@ -923,7 +930,7 @@ the existing modules instead of rebuilding these bounded hosts.
 | S-067 — Work deadline and paid-material interruption | Planned | V-046 | Enforce time window and qualified hours independently; expiry/interruption loses only specified progress/material and completion fires once. | S-066 |
 | S-068 — Scheduled repeat saves | Verified (VS-94; turn/elapsed repeat saves) | V-047 | Declare target-turn or elapsed-time repetition and eligibility; each due attempt resolves once with its source/recipient and original purpose. | S-029, S-041 |
 | S-069 — Counted saves and staged conditions | Verified (VS-95; counted staged conditions) | V-047, V-057 | Count qualifying successes/margins and transition/end linked conditions by explicit routes; other cures or source removal cannot erase unrelated stages. | S-068, S-043 |
-| S-070 — Rest-start expiry and actor-specific duration | Planned | V-048 | Separate starting a rest, eligible elapsed duration, interruption and successful completion; authored Trance/duration rules don't grant benefits at start. | S-007, S-064 |
+| S-070 — Rest-start expiry and actor-specific duration | Verified ([VS-152](#vs-152); rest lifecycle, rest-start expiry, actor-specific duration and exploration spell persistence) | V-048 | Separate starting a rest, eligible elapsed duration, interruption and successful completion; authored Trance/duration rules don't grant benefits at start. | S-007, S-064 |
 | S-071 — Benefit-only recovery and Hit Dice | Planned | V-048 | Apply immediate declared rest-like benefits without falsely emitting rest completion; select actual Hit Dice/cost/amount only for eligible actors. | S-070, S-054 |
 | S-072 — Action/status/equipment/range termination | Verified (VS-71) | V-049 | End an exact source on declared attack/cast/movement/status/gear/range event, preserving sources that don't match and the actor whose event matters. | S-012, S-042, S-026 |
 | S-073 — Causal damage exceptions to termination | Verified (VS-72) | V-049 | Use settled causal source identity to exempt only specified damage; ordinary unrelated damage still ends the grant when required. | S-072, S-034 |

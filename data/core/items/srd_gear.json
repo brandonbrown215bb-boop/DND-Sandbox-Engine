@@ -177,6 +177,12 @@
         "skill": "Athletics",
         "bonus": 2,
         "context": "prying"
+      },
+      {
+        "type": "skill_bonus",
+        "skill": "Athletics",
+        "bonus": 2,
+        "context": "forcing_door"
       }
     ],
     "value": 2
@@ -385,5 +391,14 @@
     "effects": [],
     "value": 0,
     "weight": 0.1
+  },
+  {
+    "id": "portable_ram",
+    "weight": 35,
+    "name": "Portable Ram",
+    "description": "You can use a portable ram to break down doors. When doing so, you gain a +4 bonus on the Strength check. Another character can help you use the ram, giving you advantage on this check.",
+    "type": "tool",
+    "effects": [{ "type": "skill_bonus", "skill": "Athletics", "bonus": 4, "context": "forcing_door" }],
+    "value": 4
   }
 ]

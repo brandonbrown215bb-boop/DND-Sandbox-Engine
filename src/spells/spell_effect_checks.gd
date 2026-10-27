@@ -570,4 +570,98 @@ static func run(check: Callable) -> void:
 	check.call(beacon_death_save_advantage and beacon_monster_save_advantage, "Beacon rolls Death Saving Throws and monster Wisdom saves with Advantage")
 	SpellEffects.advance_time([first, beacon_target, beacon_monster], 60)
 	check.call(not SpellEffects.has_spell(beacon_target, "beacon_of_hope") and not SpellEffects.has_spell(beacon_monster, "beacon_of_hope") and first.concentrating_on.is_empty(), "Beacon's one-minute duration removes target benefits and releases concentration")
+
+	# --- S-070 / V-048 Long-duration persistence and Rest Lifecycle checks ---
+	# 1. parse_duration_seconds
+	check.call(SpellEffects.parse_duration_seconds({"duration": "8 hours"}) == 28800, "8 hours parses to 28800 seconds")
+	check.call(SpellEffects.parse_duration_seconds({"duration": "24 hours"}) == 86400, "24 hours parses to 86400 seconds")
+	check.call(SpellEffects.parse_duration_seconds({"duration": "7 days"}) == 604800, "7 days parses to 604800 seconds")
+	check.call(SpellEffects.parse_duration_seconds({"duration": "10 days"}) == 864000, "10 days parses to 864000 seconds")
+	check.call(SpellEffects.parse_duration_seconds({"duration": "30 days"}) == 2592000, "30 days parses to 2592000 seconds")
+	check.call(SpellEffects.parse_duration_seconds({"duration": "Until dispelled"}) == -1, "Until dispelled parses to -1")
+	check.call(SpellEffects.parse_duration_seconds({"duration": "Instantaneous"}) == 0, "Instantaneous parses to 0 seconds")
+
+	# 2. Prune preservation of non-condition records and cleanup of cured condition records
+	var test_actor := Character.new()
+	test_actor.character_id = "test_actor_s070"
+	test_actor.spell_effects["long_buff"] = {
+		"source_id": "long_buff",
+		"caster_id": "test_actor_s070",
+		"spell_id": "mage_armor",
+		"remaining_seconds": 28800,
+		"ac_floor": 13,
+		"conditions": []
+	}
+	test_actor.spell_effects["dispelled_buff"] = {
+		"source_id": "dispelled_buff",
+		"caster_id": "test_actor_s070",
+		"spell_id": "arcane_lock",
+		"remaining_seconds": -1,
+		"source_benefits": [{"kind": "ac", "amount": 1}],
+		"conditions": []
+	}
+	test_actor.spell_effects["cured_condition_buff"] = {
+		"source_id": "cured_condition_buff",
+		"caster_id": "test_actor_s070",
+		"spell_id": "bless",
+		"remaining_seconds": 60,
+		"conditions": []
+	}
+	SpellEffects.prune(test_actor)
+	check.call(test_actor.spell_effects.has("long_buff"), "SpellEffects.prune preserves active ac_floor record with remaining_seconds > 0")
+	check.call(test_actor.spell_effects.has("dispelled_buff"), "SpellEffects.prune preserves until-dispelled source_benefits record with remaining_seconds == -1")
+	check.call(not test_actor.spell_effects.has("cured_condition_buff"), "SpellEffects.prune removes condition spell record once its condition is gone even while duration remains")
+
+	# 3. Rest lifecycle: rest-start expiry, start_rest, advance_rest, interrupt_rest, data-driven Elven Trance
+	var elf_char := Character.new()
+	elf_char.character_id = "elf_s070"
+	elf_char.race_id = "elf"
+	elf_char.max_hp = 30
+	elf_char.current_hp = 10
+	elf_char.spell_effects["rest_start_ward"] = {
+		"source_id": "rest_start_ward",
+		"caster_id": "elf_s070",
+		"spell_id": "fixture:rest_start_ward",
+		"remaining_seconds": 3600,
+		"concentration": false,
+		"source_benefits": [{"kind": "ac", "amount": 1}],
+		"source_end_rules": [{"event": "status", "actor": "recipient", "status": "rest_started"}],
+		"conditions": []
+	}
+
+	var human_char := Character.new()
+	human_char.character_id = "human_s070"
+	human_char.race_id = "human"
+	human_char.max_hp = 30
+	human_char.current_hp = 10
+
+	check.call(RestRules.has_trance(elf_char), "Elf character has data-driven Trance duration")
+	check.call(not RestRules.has_trance(human_char), "Human character does not have Trance")
+	check.call(RestRules.required_rest_duration_seconds(elf_char, "long_rest") == 14400, "Elf long rest required duration is 14400 seconds (4 hours)")
+	check.call(RestRules.required_rest_duration_seconds(human_char, "long_rest") == 28800, "Human long rest required duration is 28800 seconds (8 hours)")
+
+	# Start rest
+	var rest_session := RestRules.start_rest("long_rest", [elf_char, human_char], {"allow_in_test": true})
+	check.call(bool(rest_session.get("success", false)), "start_rest initializes an active rest session")
+	check.call(not elf_char.spell_effects.has("rest_start_ward") and elf_char.current_hp == 10, "Starting a rest expires rest_started sources immediately without granting completion benefits at start")
+	var active_rest: Dictionary = rest_session["active_rest"]
+	check.call(str(active_rest.get("status", "")) == "in_progress", "active rest session status is in_progress")
+
+	# Advance rest to 4 hours (14400s)
+	var adv1 := RestRules.advance_rest(active_rest, 14400, {"skip_campaign_time": true})
+	check.call(adv1.get("newly_completed", []).has(elf_char), "Elf completes Long Rest at 4 hours")
+	check.call(not adv1.get("newly_completed", []).has(human_char), "Human has not yet completed Long Rest at 4 hours")
+	check.call(elf_char.current_hp == 30, "Elf receives long rest HP recovery after 4 hours")
+	check.call(human_char.current_hp == 10, "Human receives no HP recovery yet at 4 hours")
+
+	# Interrupt rest at 5 hours (18000s)
+	var interrupt_result := RestRules.interrupt_rest(active_rest, "combat")
+	check.call(bool(interrupt_result.get("interrupted", false)), "interrupt_rest marks rest session interrupted")
+	check.call(interrupt_result.get("incomplete_participants", []).has(human_char), "Human is marked incomplete on rest interruption")
+	check.call(human_char.current_hp == 10, "Interrupted human gets zero long rest benefits")
+	check.call(elf_char.current_hp == 30, "Completed elf keeps long rest benefits despite subsequent party interruption")
+
+	var elf_only_rest := RestRules.complete_long_rest([elf_char], {"allow_in_test": true, "skip_campaign_time": true})
+	check.call(int(elf_only_rest.get("elapsed_seconds", 0)) == 14400, "An all-Elf party completes a Long Rest in 4 hours (14400s)")
+
 	print("BEACON_OF_HOPE_EFFECT_CHECKS_COMPLETE")

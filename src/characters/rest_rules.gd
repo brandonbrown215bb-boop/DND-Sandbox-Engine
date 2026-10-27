@@ -197,7 +197,10 @@ static func complete_short_rest(
 		}
 	var living: Array[Character] = eligibility["participants"]
 	var notifications: Array[Dictionary] = []
-	for character in living: WorkRules.interrupt_participant(character, "short_rest")
+	for character in living:
+		WorkRules.interrupt_participant(character, "short_rest")
+		SpellEffects.publish_event(character, {"type": "status", "actor_id": SpellEffects.caster_id(character), "status": "short_rest_started"})
+		SpellEffects.publish_event(character, {"type": "status", "actor_id": SpellEffects.caster_id(character), "status": "rest_started"})
 	if GameManager != null and not bool(context.get("skip_campaign_time", false)):
 		notifications = GameManager.advance_campaign_time(SHORT_REST_SECONDS)
 	for character in living:
@@ -327,41 +330,201 @@ static func _advance_interactive_recovery_queue(notifications: Array[Dictionary]
 		done_callback.call(final_out)
 
 
-static func complete_long_rest(participants: Array, context: Dictionary = {}) -> Dictionary:
-	var eligibility := can_complete_rest("long_rest", participants, context)
+static func has_trance(character: Character) -> bool:
+	return character != null and required_rest_duration_seconds(character, "long_rest") < LONG_REST_SECONDS
+
+
+static func required_rest_duration_seconds(character: Character, rest_type: String) -> int:
+	if rest_type == "short_rest":
+		return SHORT_REST_SECONDS
+	if rest_type == "long_rest":
+		if character == null:
+			return LONG_REST_SECONDS
+		var duration := LONG_REST_SECONDS
+		var sources: Array = []
+		sources.append_array(DataLoader.get_race(character.race_id).get("traits", []))
+		sources.append_array(character.features)
+		for entry in sources:
+			if not entry is Dictionary or not bool(entry.get("enabled", true)):
+				continue
+			for effect in entry.get("effects", []) + entry.get("passive_effects", []):
+				if not effect is Dictionary:
+					continue
+				var custom_seconds := int(effect.get("long_rest_duration_seconds", 0))
+				if custom_seconds > 0:
+					duration = mini(duration, custom_seconds)
+		return duration
+	return SHORT_REST_SECONDS
+
+
+static func _apply_rest_benefits_to_character(character: Character, rest_type: String) -> Array[Dictionary]:
+	if character == null or character.is_dead():
+		return []
+	var trigger := rest_type + "_completed"
+	MaxHpSourceRules.on_event(character, trigger)
+	if rest_type == "short_rest":
+		character.short_rest()
+	elif rest_type == "long_rest":
+		character.long_rest()
+	SharedStepExecutor.reset_zero_hp_history(character, trigger)
+	return _recover_numeric_pools([character], trigger)
+
+
+static func start_rest(rest_type: String, participants: Array, context: Dictionary = {}) -> Dictionary:
+	var eligibility := can_complete_rest(rest_type, participants, context)
 	if not bool(eligibility.get("allowed", false)):
 		return {
 			"success": false,
 			"reason": str(eligibility.get("reason", "refused")),
-			"message": str(eligibility.get("message", "Long Rest refused.")),
+			"message": str(eligibility.get("message", "Rest refused.")),
 		}
 	var living: Array[Character] = eligibility["participants"]
 	for character in living:
-		WorkRules.interrupt_participant(character, "long_rest")
-		MaxHpSourceRules.on_event(character, "long_rest_completed")
-		character.long_rest()
-		SharedStepExecutor.reset_zero_hp_history(character, "long_rest_completed")
+		WorkRules.interrupt_participant(character, rest_type)
+		SpellEffects.publish_event(character, {"type": "status", "actor_id": SpellEffects.caster_id(character), "status": rest_type + "_started"})
+		SpellEffects.publish_event(character, {"type": "status", "actor_id": SpellEffects.caster_id(character), "status": "rest_started"})
+
+	_next_event_serial += 1
+	var participant_states: Dictionary = {}
+	for character in living:
+		var req := required_rest_duration_seconds(character, rest_type)
+		participant_states[character.character_id] = {
+			"character": character,
+			"required_seconds": req,
+			"completed": false,
+			"completed_at_seconds": 0,
+		}
+
+	var active_rest := {
+		"rest_id": "rest_session:%d" % _next_event_serial,
+		"rest_type": rest_type,
+		"status": "in_progress",
+		"start_campaign_seconds": GameManager.campaign_elapsed_seconds if GameManager != null else 0,
+		"elapsed_seconds": 0,
+		"participants": participant_states,
+		"living": living,
+		"context": context.duplicate(true),
+		"interrupted": false,
+		"interrupt_reason": "",
+		"completed_characters": [],
+		"pool_recoveries": [],
+	}
+	return {"success": true, "active_rest": active_rest}
+
+
+static func advance_rest(active_rest: Dictionary, elapsed_seconds: int, context: Dictionary = {}) -> Dictionary:
+	if str(active_rest.get("status", "")) != "in_progress":
+		return {"success": false, "message": "Rest session is not in progress."}
+
+	var step_seconds := maxi(0, elapsed_seconds)
+	active_rest["elapsed_seconds"] = int(active_rest.get("elapsed_seconds", 0)) + step_seconds
+	var total_elapsed: int = active_rest["elapsed_seconds"]
+
 	var notifications: Array[Dictionary] = []
-	if GameManager != null and not bool(context.get("skip_campaign_time", false)):
-		notifications = GameManager.advance_campaign_time(LONG_REST_SECONDS)
+	if GameManager != null and not bool(context.get("skip_campaign_time", false)) and not bool(active_rest.get("context", {}).get("skip_campaign_time", false)):
+		notifications = GameManager.advance_campaign_time(step_seconds)
+
+	var newly_completed: Array[Character] = []
+	var step_pool_recoveries: Array[Dictionary] = []
+	var all_pool_recoveries: Array[Dictionary] = []
+	for existing_rec in active_rest.get("pool_recoveries", []):
+		if existing_rec is Dictionary:
+			all_pool_recoveries.append(existing_rec)
+	var participant_states: Dictionary = active_rest.get("participants", {})
+	var rest_type: String = str(active_rest.get("rest_type", "short_rest"))
+
+	for cid in participant_states:
+		var p_data: Dictionary = participant_states[cid]
+		if bool(p_data.get("completed", false)):
+			continue
+		var req: int = int(p_data.get("required_seconds", SHORT_REST_SECONDS))
+		if total_elapsed >= req:
+			p_data["completed"] = true
+			p_data["completed_at_seconds"] = total_elapsed
+			var c: Character = p_data.get("character")
+			if c != null:
+				newly_completed.append(c)
+				for rec in _apply_rest_benefits_to_character(c, rest_type):
+					step_pool_recoveries.append(rec)
+					all_pool_recoveries.append(rec)
+				var comp_list: Array = active_rest.get("completed_characters", [])
+				comp_list.append(c)
+				active_rest["completed_characters"] = comp_list
+	active_rest["pool_recoveries"] = all_pool_recoveries
+
+	var all_done := true
+	for cid in participant_states:
+		if not bool(participant_states[cid].get("completed", false)):
+			all_done = false
+			break
+
+	if all_done:
+		active_rest["status"] = "completed"
+
+	return {
+		"success": true,
+		"status": active_rest["status"],
+		"elapsed_seconds": total_elapsed,
+		"newly_completed": newly_completed,
+		"pool_recoveries": step_pool_recoveries,
+		"all_completed": all_done,
+		"notifications": notifications,
+	}
+
+
+static func interrupt_rest(active_rest: Dictionary, cause: String = "combat") -> Dictionary:
+	if str(active_rest.get("status", "")) != "in_progress":
+		return {"success": false, "message": "Rest session is not in progress."}
+	active_rest["status"] = "interrupted"
+	active_rest["interrupted"] = true
+	active_rest["interrupt_reason"] = cause
+	var incomplete: Array[Character] = []
+	var participant_states: Dictionary = active_rest.get("participants", {})
+	for cid in participant_states:
+		if not bool(participant_states[cid].get("completed", false)):
+			var c: Character = participant_states[cid].get("character")
+			if c != null:
+				incomplete.append(c)
+	return {
+		"success": true,
+		"interrupted": true,
+		"cause": cause,
+		"elapsed_seconds": int(active_rest.get("elapsed_seconds", 0)),
+		"incomplete_participants": incomplete,
+		"completed_participants": active_rest.get("completed_characters", []),
+	}
+
+
+static func complete_long_rest(participants: Array, context: Dictionary = {}) -> Dictionary:
+	var start := start_rest("long_rest", participants, context)
+	if not bool(start.get("success", false)):
+		return start
+	var session: Dictionary = start["active_rest"]
+	var living: Array[Character] = session["living"]
+	var party_rest_seconds := 0
+	for c in living:
+		party_rest_seconds = maxi(party_rest_seconds, required_rest_duration_seconds(c, "long_rest"))
+	if party_rest_seconds <= 0:
+		party_rest_seconds = LONG_REST_SECONDS
+	var adv := advance_rest(session, party_rest_seconds, context)
 	_next_event_serial += 1
 	var event := {
 		"event_id": "rest_completed:%d" % _next_event_serial,
 		"rest_type": "long_rest",
 		"trigger": "long_rest_completed",
 		"source": str(context.get("source", "party_rest")),
-		"elapsed_seconds": LONG_REST_SECONDS,
-		"campaign_elapsed_seconds": GameManager.campaign_elapsed_seconds if GameManager != null else LONG_REST_SECONDS,
+		"elapsed_seconds": party_rest_seconds,
+		"campaign_elapsed_seconds": GameManager.campaign_elapsed_seconds if GameManager != null else party_rest_seconds,
 		"participants": living,
 	}
-	var pool_recoveries := _recover_numeric_pools(living, "long_rest_completed")
+	var pool_recoveries: Array[Dictionary] = session.get("pool_recoveries", [])
 	return {
 		"success": true,
 		"rest_type": "long_rest",
-		"elapsed_seconds": LONG_REST_SECONDS,
+		"elapsed_seconds": party_rest_seconds,
 		"event": event,
 		"pool_recoveries": pool_recoveries,
-		"notifications": notifications,
+		"notifications": adv.get("notifications", []),
 	}
 
 

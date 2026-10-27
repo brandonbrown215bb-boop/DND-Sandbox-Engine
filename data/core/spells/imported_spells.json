@@ -417,7 +417,7 @@
     "range": 6,
     "target": "single",
     "attack_type": "none",
-    "save": "WIS",
+    "save": "",
     "classes": [
       "cleric"
     ],
@@ -618,6 +618,7 @@
     "casting_time": "action",
     "range": 3,
     "target": "cone",
+    "cone_size": 3,
     "attack_type": "none",
     "damage": "3d6",
     "damage_type": "fire",
@@ -632,7 +633,16 @@
       "S"
     ],
     "duration": "Instantaneous",
-    "concentration": false
+    "concentration": false,
+    "execution": "shared",
+    "ignites_objects": true,
+    "effects": [
+      {
+        "type": "area_selection",
+        "shape": "cone",
+        "size": 3
+      }
+    ]
   },
   {
     "id": "call_lightning",
@@ -1739,7 +1749,14 @@
     "material": "a white feather",
     "duration": "Concentration, up to 1 minute",
     "concentration": true,
-    "cone_size": 6
+    "cone_size": 6,
+    "effects": [
+      {
+        "type": "area_selection",
+        "shape": "cone",
+        "size": 6
+      }
+    ]
   },
   {
     "id": "feather_fall",
@@ -1880,6 +1897,7 @@
     "casting_time": "action",
     "range": 30,
     "target": "area",
+    "area_radius": 4,
     "attack_type": "none",
     "damage": "8d6",
     "damage_type": "fire",
@@ -1896,7 +1914,16 @@
     ],
     "material": "a ball of bat guano and sulfur",
     "duration": "Instantaneous",
-    "concentration": false
+    "concentration": false,
+    "execution": "shared",
+    "ignites_objects": true,
+    "effects": [
+      {
+        "type": "area_selection",
+        "shape": "sphere",
+        "radius": 4
+      }
+    ]
   },
   {
     "id": "flame_blade",
@@ -2173,7 +2200,10 @@
         "duration": 10
       }
     ],
-    "classes": ["cleric", "druid"],
+    "classes": [
+      "cleric",
+      "druid"
+    ],
     "range_kind": "touch"
   },
   {
@@ -2235,7 +2265,15 @@
     "material": "a legume seed",
     "duration": "Concentration, up to 1 minute",
     "concentration": true,
-    "area_shape": "line"
+    "area_shape": "line",
+    "line_length": 12,
+    "effects": [
+      {
+        "type": "area_selection",
+        "shape": "line",
+        "size": 12
+      }
+    ]
   },
   {
     "id": "hail_of_thorns",
@@ -2347,7 +2385,11 @@
     "level": 1,
     "school": "evocation",
     "casting_time": "reaction",
-    "reaction_trigger": {"event": "on_damaged_by_creature", "range_feet": 60, "requires_sight": true},
+    "reaction_trigger": {
+      "event": "on_damaged_by_creature",
+      "range_feet": 60,
+      "requires_sight": true
+    },
     "range": 12,
     "target": "single",
     "attack_type": "none",
@@ -2849,7 +2891,15 @@
     "material": "a bit of fur and a crystal rod",
     "duration": "Instantaneous",
     "concentration": false,
-    "area_shape": "line"
+    "area_shape": "line",
+    "line_length": 20,
+    "effects": [
+      {
+        "type": "area_selection",
+        "shape": "line",
+        "size": 20
+      }
+    ]
   },
   {
     "id": "locate_animals_or_plants",
@@ -4123,7 +4173,8 @@
     ],
     "material": "a chip of mica",
     "duration": "Instantaneous",
-    "concentration": false
+    "concentration": false,
+    "targets_objects": true
   },
   {
     "id": "shield",
@@ -4989,7 +5040,15 @@
     "school": "evocation",
     "casting_time": "action",
     "range": 24,
-    "target": "single",
+    "target": "area",
+    "area_point_count": 2,
+    "effects": [
+      {
+        "type": "area_selection",
+        "shape": "line",
+        "size": 10
+      }
+    ],
     "attack_type": "none",
     "damage": "4d8",
     "damage_type": "bludgeoning",

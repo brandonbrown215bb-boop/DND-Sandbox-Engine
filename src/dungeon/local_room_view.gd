@@ -686,9 +686,15 @@ func refresh() -> void:
 			_add_button(action_row, "Close" if object.get("open", false) else "Open", func(): _interact("close" if object.get("open", false) else "open"))
 			if object.get("lockable", false):
 				_add_button(action_row, "Unlock" if object.get("locked", false) else "Lock", func(): _interact("unlock" if object.get("locked", false) else "lock"))
-				if object.get("locked", false):
-					_add_button(action_row, "Pick lock", func(): _interact("pick_lock"))
-					if actor().inventory.has_item("crowbar"): _add_button(action_row, "Pry", func(): _interact("pry"))
+			if CombatObjectRules.is_locked(object):
+				_add_button(action_row, "Pick lock", func(): _interact("pick_lock"))
+				if actor().inventory.has_item("crowbar"): _add_button(action_row, "Pry", func(): _interact("pry"))
+			if not bool(object.get("open", false)) and (CombatObjectRules.is_locked(object) or bool(object.get("barred", false)) or bool(object.get("stuck", false)) or bool(object.get("jammed", false))):
+				_add_button(action_row, "Force open", func(): _interact("force_open"))
+			if bool(object.get("barred", false)):
+				_add_button(action_row, "Unbar", func(): _interact("unbar"))
+			elif bool(object.get("barrable", false)) and not bool(object.get("open", false)):
+				_add_button(action_row, "Bar", func(): _interact("bar"))
 		if SpellEffects.goodberry_count_for_party(characters) > 0:
 			_add_button(action_row, "Eat Goodberry", func(): _result(LocalRoomRules.eat_goodberry(characters, actor())))
 		contents = OptionButton.new()

@@ -17,6 +17,9 @@ from spell_dependencies import CAPABILITIES, assign as assign_dependencies, vali
 ROOT = Path(__file__).resolve().parents[1]
 REGISTER = ROOT / "docs/mechanics/spell_status.json"
 REPORT = ROOT / "docs/mechanics/spell-status.md"
+AUDIT_CSV = ROOT / "docs/audits/spell-inventory.csv"
+
+OUT_OF_MILESTONE = set("armor_of_agathys arms_of_hadar aura_of_vitality beast_sense blade_ward blinding_smite branding_smite cloud_of_daggers compelled_duel conjure_barrage cordon_of_arrows crown_of_madness crusaders_mantle elemental_weapon feign_death friends hail_of_thorns hunger_of_hadar lightning_arrow thorn_whip thunderous_smite witch_bolt wrathful_smite".split())
 
 # Planning families, not promises that the current executor supports every member.
 # A spell can have secondary needs; primary assignment makes counts non-overlapping.
@@ -97,7 +100,7 @@ LIMITS = {
     "goodberry": "Live combat creates a saved pool of ten Goodberries that expire after 24 hours. A party member can take a Bonus Action to eat one and regain 1 Hit Point; the earliest-expiring berry is spent first. Nourishment and berry transfer are not modeled, and ordinary nonpriced Material-component ownership (mistletoe) is not enforced by the shared inventory rules. The full clause audit remains open.",
     "sunburst": "Live combat resolves its 60-foot Sphere, radiant damage with Constitution save for half, source-owned Blinded for one minute on a failed save, and end-of-turn Constitution saves that end only that cast's condition. It removes overlapping magical Darkness and preserves zones outside the Sphere. The hex map approximates Sphere geometry; cover, material-component inventory and the full clause audit remain open.",
     "meteor_swarm": "Four distinct visible 40-foot Sphere centers select correctly, overlap hexes deduplicate, and each creature makes one Dexterity save whose Fire/Bludgeoning packets settle separately. Authored unattended room objects take separately mitigated damage and flammable objects gain a saved burning flag. Dropped combat gear and other object records are not enumerated, so casting remains gated before costs.",
-    "circle_of_death": "Available creature gameplay slice: the 60-foot Sphere applies Constitution saves, Necrotic damage, half damage on a save, a 2d8-per-slot upcast and requires the carried 500 GP black-pearl powder without consuming it. Object effects, cover/visibility and full clause audit remain open.",
+    "circle_of_death": "Converted to shared 60-foot Sphere selection, Constitution save, 8d8 Necrotic damage/half on success and +2d8 per slot above level 6. Live cancellation, invalid center, mixed saves, single payment and retained 500 GP black-pearl powder passed. Hex-grid radius, object effects and the full clause audit remain open.",
     "thunderwave": "Available creature gameplay slice: the 15-foot Cube points away from the caster, failed Constitution saves take Thunder damage and are pushed 10 feet, successful saves take half damage only, and upcasting adds 1d8 per slot. Hex-grid cube geometry approximates a three-by-three footprint. Unsecured object movement and the 300-foot audible boom are not modeled; full clause audit remains open.",
     "finger_of_death": "Unavailable: the resolver applies damage but cannot create and own the Zombie that appears when this spell kills a Humanoid. The SRD Zombie outcome is recorded; casting is refused before costs until created creatures and their orders are supported.",
     "contact_other_plane": "Unavailable: the spell can prompt for or resolve the save, but does not let the caster ask up to five questions or receive answers. Question-limit metadata is recorded; casting is refused before costs until the question and answer flow exists.",
@@ -127,12 +130,14 @@ LIMITS = {
     "barkskin": "Available gameplay slice: Barkskin is a Bonus Action on a willing living party member and sets an Armor Class floor of 17 for one hour. Character and monster attack resolution honor the floor; higher AC is unchanged. Bark-like appearance and material inventory are not modeled; Barkskin uses the shared timed spell-effect and save-validation path, and the full clause audit remains open.",
     "mage_armor": "Available gameplay slice: Mage Armor sets an unarmored willing party member's base AC to 13 + Dexterity for eight hours, retains shield AC, and ends early when armor is donned. Material inventory is descriptive metadata; dismissal and the full clause audit remain open.",
 
+    "cure_wounds": "Shared Cure Wounds matches the SRD healing, touch range, upcast and unrestricted creature eligibility. Real casting revived a downed ally; Construct and Undead eligibility is checked. Class healing benefits, healing suppression and the full clause audit remain open.",
+    "healing_word": "Shared Healing Word matches the SRD Bonus Action, 60-foot range, healing, upcast and unrestricted creature eligibility. Real casting healed an ally; Construct and Undead eligibility is checked. Class healing benefits, healing suppression and the full clause audit remain open.",
     "bless": "Chosen-creature targeting, 60-second duration, source ownership and saved party expiry; costly Holy Symbol is descriptive metadata, not an enforced inventory requirement.",
     "shield_of_faith": "Source-owned AC ward on party or monsters; monster effects are intentionally discarded at encounter end.",
     "shield": "The Reaction is offered for Magic Missile and spell attacks. It spends only when a triggering attack hits, applies +5 AC against that attack and later attacks, or prevents all Magic Missile damage, and lasts until the start of the target's next turn. The full clause audit remains open.",
     "magic_missile": "The player assigns each base or upcast dart to a creature, including repeat targets; per-target damage is aggregated once. An active or accepted Shield prevents the darts. Visibility/line-of-sight and full SRD audit remain open.",
     "fireball": "Uses a 150-foot target range and a 20-foot sphere (30 and 4 five-foot hexes). Creature cover, flammable-object ignition, and full clause audit remain open.",
-    "hold_monster": "Source-owned paralysis and repeated Wisdom saves; sight checks handle Invisible only, without terrain occlusion.",
+    "hold_monster": "Converted to shared failed-Wisdom-save paralysis with Concentration up to one minute, end-of-turn repeat saves and one additional target per slot above level 5. Real upcast targeting, independent saves, exact-source cleanup and fresh-process full/player-only recovery passed. Terrain occlusion and full clause audit remain open.",
     "hold_person": "Humanoid-only source-owned paralysis and repeated Wisdom saves; sight checks handle Invisible only, without terrain occlusion.",
     "hunters_mark": "Unavailable: the exposed implementation only adds its damage through a test helper and records a 10-round mark. It does not add Force damage on every weapon or spell attack roll, grant tracking-check Advantage, move the mark after a target drops, or apply the 8/24-hour upcast durations. Correct SRD metadata is recorded; casting is refused before costs until combat and campaign-time tracking cover those effects.",
     "spare_the_dying": "Stabilizes a downed party character, persists the Stable state, and resumes death saves with one failure if damaged; range scales to 30/60/120 feet at levels 5/11/17. The game does not track the SRD's 1d4-hour recovery to 1 Hit Point or stable non-party creatures.",
@@ -231,6 +236,44 @@ def generate(runtime_path: Path, target_path: Path) -> dict:
     # A later, explicitly scoped review must survive regeneration without
     # pretending the untouched historical catalog was audited again.
     scoped_reviews = json.loads(REGISTER.read_text(encoding="utf-8")).get("scoped_reviews", []) if REGISTER.exists() else []
+    if not any(r.get("reviewed_on") == "2026-10-22" for r in scoped_reviews):
+        scoped_reviews.append({
+            "reviewed_on": "2026-10-22",
+            "ref_anchor": "conversion-batch-002",
+            "spells": {
+                "circle_of_death": {
+                    "delivery_status": "recorded_slice",
+                    "known_limit": "Converted to shared 60-foot Sphere selection, Constitution save, 8d8 Necrotic damage/half on success and +2d8 per slot above level 6. Live cancellation, invalid center, mixed saves, single payment and retained 500 GP black-pearl powder passed. Hex-grid radius, object effects and the full clause audit remain open.",
+                    "data_rules_status": "srd_5_2_1_reviewed"
+                },
+                "cure_wounds": {
+                    "delivery_status": "recorded_slice",
+                    "known_limit": "Shared Cure Wounds now matches the SRD healing, touch range, upcast and unrestricted creature eligibility. Real casting revived a downed ally; Construct and Undead eligibility is checked. Class healing benefits, healing suppression and the full clause audit remain open.",
+                    "data_rules_status": "srd_5_2_1_reviewed"
+                },
+                "healing_word": {
+                    "delivery_status": "recorded_slice",
+                    "known_limit": "Shared Healing Word now matches the SRD Bonus Action, 60-foot range, healing, upcast and unrestricted creature eligibility. Real casting healed an ally; Construct and Undead eligibility is checked. Class healing benefits, healing suppression and the full clause audit remain open.",
+                    "data_rules_status": "srd_5_2_1_reviewed"
+                },
+                "hold_monster": {
+                    "delivery_status": "recorded_slice",
+                    "known_limit": "Converted to shared failed-Wisdom-save paralysis with Concentration up to one minute, end-of-turn repeat saves and one additional target per slot above level 5. Real upcast targeting, independent saves, exact-source cleanup and fresh-process full/player-only recovery passed. Terrain occlusion and full clause audit remain open.",
+                    "data_rules_status": "srd_5_2_1_reviewed"
+                }
+            },
+            "inventory": {
+                "total": 362,
+                "available": 134,
+                "shared": 17
+            }
+        })
+    audit_rows = {}
+    if AUDIT_CSV.exists():
+        import csv
+        with open(AUDIT_CSV, "r", encoding="utf-8") as f_audit:
+            for r_audit in csv.DictReader(f_audit):
+                audit_rows[r_audit["id"]] = r_audit
     runtime = json.loads(runtime_path.read_text(encoding="utf-8"))
     spells = {s["id"]: s for s in runtime["spells"]}
     raw_ids = {s["id"] for p in (ROOT / "data/core/spells").glob("*.json") for s in json.loads(p.read_text(encoding="utf-8"))}
@@ -717,8 +760,11 @@ def generate(runtime_path: Path, target_path: Path) -> dict:
             refs += ["data/core/spells/srd_additional_spells.json", "data/core/items/srd_gear.json", "data/content_manifest.json", "src/combat/combat_hud.gd", "src/combat/combat_state.gd", "src/spells/identify_rules.gd", "src/spells/spell_effects.gd", "src/spells/spell_support.gd", "src/test_runner.gd", "src/viewport_harness.gd", "run_tests.ps1"]
         if sid == "goodberry":
             refs += ["data/core/spells/srd_additional_spells.json", "data/content_manifest.json", "src/combat/combat_command.gd", "src/combat/combat_hud.gd", "src/combat/combat_state.gd", "src/spells/spell_effects.gd", "src/spells/spell_support.gd", "src/test_runner.gd", "src/viewport_harness.gd", "run_tests.ps1"]
-        rows.append({"id": sid, "name": spell["name"], "level": spell["level"], "classes": classes, "repair_snapshot_classes": target["memberships"].get(sid, []), "delivery_status": status, "rules_completeness": "not_certified", "primary_behavior": groups.get(sid, "direct_resolution"), "data_rules_status": spell.get("rules_status", "unmarked"), "cast_available": not blocked, "cast_guard": "refuses_before_cost" if blocked else "reaction_boundary" if spell.get("casting_time") == "reaction" else "available_gameplay_slice", "declared_effects": [e.get("type", "") for e in spell.get("effects", [])], "has_damage_fields": any(spell.get(k) for k in ("damage", "damage_per_dart", "damage_per_ray")), "known_limit": LIMITS.get(sid, "Full per-spell rules audit remains open; do not infer completeness from fields or check totals."), "evidence": refs})
-    register = {"schema_version": 1, "reviewed_on": "2026-10-07", "source_fingerprint": source_fingerprint(), "runtime_registry_hash": runtime["registry_hash"], "scope": "All unique core spell IDs; one row per ID, with actual core-12 casting-class membership. Rules completeness is deliberately uncertified.", "verification_boundary": "Recorded slices refer to historical passing checks. Parsing is restored. The source-owned batch has dedicated effect and live encounter checks; see their evidence paths. Historical slices retain their older evidence and limitations. Availability is exported from the production gate, independently of delivery status. This is not a fresh audit of every SRD clause.", "status_definitions": {"recorded_slice": "Reviewed dated evidence for a working gameplay slice; remaining limitations and full rules audit stay open.", "existing_checks_need_audit": "Existing resolver/class-flow checks, but no reconciled complete spell audit.", "implemented_unverified": "New implementation awaiting a valid Godot gameplay run.", "blocked": "Known incomplete or unsupported behavior; production availability gate refuses before costs.", "unimplemented_exposed": "Known absent core effect still exposed to casting (should remain zero).", "needs_audit": "Loaded/listed; production behavior and rules completeness not yet established."}, "behavior_groups": {k: {"name": v[0], "next_shared_work": v[1]} for k, v in FAMILIES.items()}, "spells": rows}
+        audit_entry = audit_rows.get(sid, {})
+        milestone = audit_entry.get("milestone", "srd521" if sid not in OUT_OF_MILESTONE else "out_of_milestone_non_srd521")
+        audit_batch = audit_entry.get("audit_batch", "")
+        rows.append({"id": sid, "name": spell["name"], "level": spell["level"], "classes": classes, "repair_snapshot_classes": target["memberships"].get(sid, []), "delivery_status": status, "rules_completeness": "not_certified", "milestone": milestone, "audit_batch": audit_batch, "audit_ref": "docs/audits/spells.md", "primary_behavior": groups.get(sid, "direct_resolution"), "data_rules_status": spell.get("rules_status", "unmarked"), "cast_available": not blocked, "cast_guard": "refuses_before_cost" if blocked else "reaction_boundary" if spell.get("casting_time") == "reaction" else "available_gameplay_slice", "declared_effects": [e.get("type", "") for e in spell.get("effects", [])], "has_damage_fields": any(spell.get(k) for k in ("damage", "damage_per_dart", "damage_per_ray")), "known_limit": LIMITS.get(sid, "Full per-spell rules audit remains open; do not infer completeness from fields or check totals."), "evidence": refs})
+    register = {"schema_version": 1, "reviewed_on": "2026-10-26", "source_fingerprint": source_fingerprint(), "runtime_registry_hash": runtime["registry_hash"], "scope": "All unique core spell IDs; one row per ID, with actual core-12 casting-class membership. Rules completeness is deliberately uncertified.", "verification_boundary": "Recorded slices refer to historical passing checks. Parsing is restored. The source-owned batch has dedicated effect and live encounter checks; see their evidence paths. Historical slices retain their older evidence and limitations. Availability is exported from the production gate via the supported Windows runner. Batch 088 audited all 362 loaded IDs against SRD 5.2.1: 339 milestone spells decomposed into rules vocabulary, 23 out-of-milestone IDs identified. Reusable vocabulary gaps spells-1..11 are integrated into vocabulary-slices.md (S-238, S-267..S-276). No spell is certified fully complete by this audit.", "status_definitions": {"recorded_slice": "Reviewed dated evidence for a working gameplay slice; remaining limitations and full rules audit stay open.", "existing_checks_need_audit": "Existing resolver/class-flow checks, but no reconciled complete spell audit.", "implemented_unverified": "New implementation awaiting a valid Godot gameplay run.", "blocked": "Known incomplete or unsupported behavior; production availability gate refuses before costs.", "unimplemented_exposed": "Known absent core effect still exposed to casting (should remain zero).", "needs_audit": "Loaded/listed; production behavior and rules completeness not yet established."}, "behavior_groups": {k: {"name": v[0], "next_shared_work": v[1]} for k, v in FAMILIES.items()}, "spells": rows}
     register["repair_snapshot_reconciliation"] = {k: v for k, v in target.items() if k != "memberships"}
     for row in rows:
         row["dependency_plan"] = assign_dependencies(spells[row["id"]], row["primary_behavior"])
@@ -753,13 +799,14 @@ def apply_scoped_reviews(register: dict) -> None:
 def write_report(register: dict) -> None:
     rows = register["spells"]
     counts = Counter(r["delivery_status"] for r in rows)
-    lines = ["# Spell delivery status and shared behavior backlog", "", "Reviewed 2026-10-06. The single status register is [spell_status.json](spell_status.json); this report and the spell section of the feature matrix are generated views of it.", "", register["scope"], "", "**No spell is certified fully rules-complete by this reconciliation.** A recorded gameplay slice is useful progress, not a completed SRD audit. The 809-row repair snapshot is a historical missing-membership list, not the current spell denominator. The older canonical artifact has 338 distinct IDs; the loaded registry has 362. Current production class lists contain 898 memberships. Those sets must not be mixed into one completion percentage.", "", "## Current verification boundary", "", register["verification_boundary"], "", f"The register's availability flags record {sum(r['cast_available'] for r in rows)} enabled gameplay slices and {sum(not r['cast_available'] for r in rows)} refused spell IDs at its historical inventory boundary. Later scoped reviews report their own fresh inventories below. Availability is not full rules certification. Raw class memberships and existing saves retain the full catalog.", "", "## Status totals", "", "| Delivery status | Unique spells | Meaning |", "|---|---:|---|"]
+    total_classes = sum(len(r["classes"]) for r in rows)
+    lines = ["# Spell delivery status and shared behavior backlog", "", f"Reviewed {register.get('reviewed_on', '2026-10-26')}. The single status register is [spell_status.json](spell_status.json); this report and the spell section of the feature matrix are generated views of it.", "", register["scope"], "", f"**No spell is certified fully rules-complete by this reconciliation.** A recorded gameplay slice is useful progress, not a completed SRD audit. The 809-row repair snapshot is a historical missing-membership list, not the current spell denominator. The older canonical artifact has 338 distinct IDs; the loaded registry has 362. Current production class lists contain {total_classes} memberships. Those sets must not be mixed into one completion percentage.", "", "## Current verification boundary", "", register["verification_boundary"], "", f"The register's availability flags record {sum(r['cast_available'] for r in rows)} enabled gameplay slices and {sum(not r['cast_available'] for r in rows)} refused spell IDs at its historical inventory boundary. Later scoped reviews report their own fresh inventories below. Availability is not full rules certification. Raw class memberships and existing saves retain the full catalog.", "", "## Status totals", "", "| Delivery status | Unique spells | Meaning |", "|---|---:|---|"]
     for status, meaning in register["status_definitions"].items():
         lines.append(f"| {status} | {counts[status]} | {meaning} |")
     for review in register.get("scoped_reviews", []):
         inventory = review["inventory"]
         lines += ["", f"## Scoped conversion review — {review['reviewed_on']}", "",
-                  f"Reviewed only {', '.join(review['spells'])}. The ten-candidate results and remaining clauses are in the [slice registry](../planning/vocabulary-slices.md#conversion-batch-001). Untouched delivery evidence retains its historical boundary.", "",
+                  f"Reviewed only {', '.join(review['spells'])}. The candidate results and remaining clauses are in the [slice registry](../planning/vocabulary-slices.md#{review.get("ref_anchor", "conversion-batch-001")}). Untouched delivery evidence retains its historical boundary.", "",
                   f"Its production inventory contains {inventory['total']} spells, {inventory['available']} enabled and {inventory['shared']} using shared execution. These are inventory counts, not a new whole-catalog rule audit."]
     lines += ["", "## Dependency waves", "", "The [current roadmap](../../roadmap.md) controls delivery. The historical [foundation plan](spell-foundations.md) retains capability gaps and wave groupings, not a live execution order. Catalog `dependency_plan` entries retain minimum requirements and exclusions; they do not select implementation work or certify a spell. Foundation status, availability and production evidence remain separate.", "", "| Capability | Wave | Foundation status |", "|---|---:|---|"]
     for capability in register["capabilities"].values():

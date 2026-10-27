@@ -812,3 +812,166 @@ static func run(check: Callable) -> void:
 	character.current_hp = maxi(1, character.max_hp - 4)
 	var hp_before := character.current_hp
 	check.call(consumables.consume_instance(consumed, character)["success"] and consumables.get_instance(consumed).is_empty() and not consumables.get_instance(retained).is_empty() and character.current_hp > hp_before, "Using a selected duplicate potion heals and consumes only that copy")
+
+	# --- S-070 / Area Object Targeting & Door/Lock Interaction State Checks ---
+	# 1. Area object damage resolution (Shatter / Meteor Swarm)
+	var wood_crate := {
+		"id": "crate_01",
+		"kind": "container",
+		"name": "Wooden Crate",
+		"position": [0, 0],
+		"material": "wood",
+		"hp": 20,
+		"max_hp": 20,
+		"flammable": true,
+		"open": false,
+		"contents": []
+	}
+	var caster := Character.new()
+	caster.character_id = "wizard_obj_caster"
+	caster.class_id = "wizard"
+	var shatter_spell := DataLoader.get_spell("shatter")
+	var shatter_result := CombatObjectRules.resolve_area_object_damage(caster, wood_crate, shatter_spell, 2)
+	check.call(bool(shatter_result.get("success", false)) and int(shatter_result.get("damage", 0)) > 0 and wood_crate["hp"] < 20, "Shatter damages unattended nonmagical objects in area")
+
+	# Flammable ignition via Meteor Swarm
+	var flammable_table := {
+		"id": "table_01",
+		"kind": "loose",
+		"name": "Wooden Table",
+		"position": [0, 0],
+		"material": "wood",
+		"hp": 500,
+		"max_hp": 500,
+		"flammable": true,
+		"contents": []
+	}
+	var meteor_spell := DataLoader.get_spell("meteor_swarm")
+	var meteor_res := CombatObjectRules.resolve_area_object_damage(caster, flammable_table, meteor_spell, 9)
+	check.call(bool(meteor_res.get("success", false)) and bool(meteor_res.get("ignited", false)) and bool(flammable_table.get("burning", false)), "Meteor Swarm damages and ignites unattended flammable objects in area")
+
+	# 2. Door/Lock states and actions
+	var door_obj := {
+		"id": "door_test",
+		"kind": "door",
+		"name": "Dungeon Door",
+		"position": [1, 1],
+		"open": false,
+		"locked": false,
+		"stuck": false,
+		"jammed": false,
+		"barred": false,
+		"held": false,
+		"barrable": true,
+		"lock_dc": 15,
+		"break_dc": 15,
+		"contents": []
+	}
+	# Bar / Unbar
+	check.call(CombatObjectRules.bar(door_obj) and bool(door_obj.get("barred", false)), "bar sets barred flag")
+	check.call(not CombatObjectRules.is_passable(door_obj), "Barred door is not passable")
+	check.call(CombatObjectRules.unbar(door_obj) and not bool(door_obj.get("barred", false)), "unbar clears barred flag")
+
+	# Jam / Unjam
+	check.call(CombatObjectRules.jam(door_obj) and bool(door_obj.get("stuck", false)), "jam sets stuck and jammed flags")
+	check.call(not CombatObjectRules.is_passable(door_obj), "Stuck door is not passable")
+	check.call(CombatObjectRules.unjam(door_obj) and not bool(door_obj.get("stuck", false)), "unjam clears stuck flag")
+
+	# Close unheld
+	door_obj["open"] = true
+	door_obj["held"] = true
+	check.call(not CombatObjectRules.close_unheld(door_obj) and bool(door_obj["open"]), "close_unheld fails on held door")
+	door_obj["held"] = false
+	check.call(CombatObjectRules.close_unheld(door_obj) and not bool(door_obj["open"]), "close_unheld closes unheld open door")
+
+	# Arcane Lock and Knock suppression (including actual is_locked and LocalRoomRules.interact)
+	door_obj["locked"] = false
+	door_obj["open"] = false
+	CombatObjectRules.apply_arcane_lock(door_obj, "wizard_caster_id", "secret", ["ally_id"])
+	check.call(CombatObjectRules.is_magical_locked(door_obj, 100, "stranger_id") and CombatObjectRules.is_locked(door_obj, 100, "stranger_id"), "Arcane Lock locks door for strangers via is_locked")
+	check.call(not CombatObjectRules.is_magical_locked(door_obj, 100, "wizard_caster_id") and not CombatObjectRules.is_locked(door_obj, 100, "wizard_caster_id"), "Arcane Lock permits caster to bypass via is_locked")
+	check.call(not CombatObjectRules.is_magical_locked(door_obj, 100, "ally_id") and not CombatObjectRules.is_locked(door_obj, 100, "ally_id"), "Arcane Lock permits designated ally to bypass via is_locked")
+	check.call(CombatObjectRules.effective_lock_dc(door_obj, 100) == 25, "Arcane Lock adds +10 to lock DC")
+	check.call(CombatObjectRules.effective_break_dc(door_obj, 100) == 25, "Arcane Lock adds +10 to break DC")
+
+	# Apply Knock to Arcane Lock
+	var knock_arcane := CombatObjectRules.apply_knock(door_obj, 100)
+	check.call(bool(knock_arcane.get("suppressed_magical_lock", false)), "Knock suppresses Arcane Lock")
+	check.call(not CombatObjectRules.is_magical_locked(door_obj, 200, "stranger_id") and not CombatObjectRules.is_locked(door_obj, 200, "stranger_id"), "Arcane Lock is suppressed within 10 minutes for is_locked")
+	check.call(CombatObjectRules.is_magical_locked(door_obj, 800, "stranger_id") and CombatObjectRules.is_locked(door_obj, 800, "stranger_id"), "Arcane Lock reasserts after 10 minutes")
+
+	# Apply Knock to mundane locked/barred/stuck door
+	door_obj.erase("magical_lock")
+	door_obj["locked"] = true
+	var knock_mundane := CombatObjectRules.apply_knock(door_obj, 100)
+	check.call(bool(knock_mundane.get("unlocked", false)) and not bool(door_obj.get("locked", false)), "Knock unlocks mundane lock")
+
+	# 3. LocalRoomRules.interact with Arcane Lock bypass, force_open, portable ram (+4 once), crowbar (+2)
+	var room_state := {
+		"id": "room_test_doors",
+		"width": 5,
+		"height": 5,
+		"cells": [[1, 1], [1, 0]],
+		"walls": [],
+		"party_positions": {"strongman": [1, 0], "wizard_caster_id": [1, 0]},
+		"objects": [door_obj],
+		"areas": []
+	}
+	var strongman := Character.new()
+	strongman.character_id = "strongman"
+	strongman.character_name = "Thorg"
+	strongman.ability_scores.from_dict({"STR": 18, "DEX": 10, "CON": 10, "INT": 10, "WIS": 10, "CHA": 10})
+	var wizard_caster := Character.new()
+	wizard_caster.character_id = "wizard_caster_id"
+	wizard_caster.character_name = "Merlin"
+
+	# Verify caster can open Arcane Locked door via LocalRoomRules.interact while stranger cannot
+	door_obj["open"] = false
+	door_obj["locked"] = false
+	CombatObjectRules.apply_arcane_lock(door_obj, "wizard_caster_id", "", [])
+	var stranger_open := LocalRoomRules.interact(room_state, "door_test", "open", strongman)
+	var caster_open := LocalRoomRules.interact(room_state, "door_test", "open", wizard_caster)
+	check.call(not bool(stranger_open.get("success", true)) and bool(caster_open.get("success", false)) and bool(door_obj["open"]), "LocalRoomRules.interact blocks stranger on Arcane Locked door but allows caster to open it")
+	door_obj.erase("magical_lock")
+
+	# Bar door and force open with crowbar (+2 tool_bonus) and portable_ram (+4 tool_bonus, not double-counted)
+	door_obj["open"] = false
+	door_obj["barred"] = true
+	door_obj["break_dc"] = 5
+	strongman.inventory.add_item("crowbar")
+	var force_res := LocalRoomRules.interact(room_state, "door_test", "force_open", strongman)
+	check.call(bool(force_res.get("success", false)) and int(force_res.get("check", {}).get("tool_bonus", 0)) == 2 and bool(door_obj["open"]) and not bool(door_obj["barred"]), "force_open breaks through barred door with crowbar (+2 tool bonus)")
+
+	# Portable ram gives +4 tool bonus (not +8)
+	door_obj["open"] = false
+	door_obj["barred"] = true
+	strongman.inventory.add_item("portable_ram")
+	var ram_res := LocalRoomRules.interact(room_state, "door_test", "force_open", strongman)
+	check.call(bool(ram_res.get("success", false)) and int(ram_res.get("check", {}).get("tool_bonus", 0)) == 4 and int(ram_res.get("check", {}).get("modifier", 0)) == 8, "Portable Ram grants +4 tool bonus once (STR +4 + Ram +4 = +8 modifier)")
+
+	# 4. DungeonPersistence validation accepts new flags and magical_lock
+	var test_dungeon_room := state.duplicate(true)
+	test_dungeon_room["objects"].append({
+		"id": "d_validated",
+		"name": "Validated Door",
+		"kind": "door",
+		"position": [0, 0],
+		"open": false,
+		"locked": true,
+		"stuck": true,
+		"jammed": true,
+		"barred": true,
+		"held": false,
+		"barrable": true,
+		"break_dc": 20,
+		"magical_lock": {
+			"active": true,
+			"caster_id": "c1",
+			"password": "open",
+			"designated_users": ["u1"],
+			"suppressed_until": 0,
+			"dc_bonus": 10
+		},
+		"contents": []
+	})
+	check.call(DungeonPersistence.local_error(test_dungeon_room).is_empty(), "DungeonPersistence accepts stuck, jammed, barred, held, barrable, break_dc, and structured magical_lock")
