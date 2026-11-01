@@ -16,6 +16,8 @@
   "weapon_proficiencies": [
     "simple"
   ],
+  "creation_proficiency_choices": true,
+  "tool_proficiency_grants": ["herbalism_kit"],
   "skill_choices": {
     "pick": 2,
     "from": [

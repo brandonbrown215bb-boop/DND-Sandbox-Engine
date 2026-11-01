@@ -16,6 +16,27 @@ assignment and campaign restriction on both party and player records. Restore
 retains the receipt and final permanent scores without rerolling or replaying
 creation bonuses. Existing saves without a generation receipt remain valid.
 
+## Class proficiency choices at creation (Crown G2)
+
+A class opts into the ordinary creation picker with
+`"creation_proficiency_choices": true` (Bard, Cleric, Druid, Rogue, Monk).
+`skill_choices` and `tool_choices` (`{"pick": N, "from": [tool ids]}`) size the
+selectors; `"tool_proficiency_grants": [tool ids]` are fixed. Every id must be
+an item of type `tool`; a choice may not repeat a fixed grant. Druid grants
+`herbalism_kit`, Rogue `thieves_tools`, and Monk picks one Artisan's Tool or
+Musical Instrument.
+
+`tool_proficiency_sources` maps each tool id to its source ids (`class:<id>`,
+`class_choice:<id>`, `background:<id>`, `feat:<id>`, `species:<id>`).
+`ClassProgression.grant_tool_proficiency` grants once per source and lists the
+tool once however many sources own it (Rogue plus Criminal Thieves' Tools).
+Owning a tool item is not proficiency. Save preflight refuses malformed,
+duplicated or stale class sources and chosen tools without their source;
+restore replays nothing. Saves without the key, or tools without a source,
+remain valid legacy grants. Limits: SRD option-A items (Druid Herbalism Kit,
+Monk's chosen tool) are not added to inventory, full equipment packs are not
+offered, and classes without the flag keep their earlier creation.
+
 ## Feature choices
 
 `ClassProgression` owns acquisition and replacement of passive `feature_choice`

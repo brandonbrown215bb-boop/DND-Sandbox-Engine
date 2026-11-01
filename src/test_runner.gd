@@ -156,6 +156,7 @@ func _ready() -> void:
 	_run_group("effects", func(): SpellZoneChecks.run(_assert))
 	_run_group("barbarian", func(): BarbarianChecks.run(_assert))
 	_run_group("bard", func(): BardChecks.run(_assert))
+	_run_group("classes", func(): ClassToolProficiencyChecks.run(_assert))
 	_run_group("cleric", func(): ClericChecks.run(_assert))
 	_run_group("combat", _test_ai_controller)
 	_run_group("persistence", _test_inventory)

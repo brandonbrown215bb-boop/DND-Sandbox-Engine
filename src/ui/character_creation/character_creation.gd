@@ -63,6 +63,8 @@ var barbarian_starting_equipment_choice := "equipment"
 var cleric_creation_choices := {"skills": ["", ""], "tools": [], "equipment": "equipment"}
 var cleric_divine_order := ""
 var bard_creation_choices := {"skills": ["", "", ""], "tools": ["", "", ""], "instrument": "", "equipment": "equipment"}
+## G2: source-defined skill/tool picks for other classes that opt in by data.
+var class_creation_choices := {}
 
 # List of loaded data
 var races_data: Array = []
@@ -228,6 +230,7 @@ func _start_player_creation() -> void:
 	cleric_creation_choices = {"skills": ["", ""], "tools": [], "equipment": "equipment"}
 	cleric_divine_order = ""
 	bard_creation_choices = {"skills": ["", "", ""], "tools": ["", "", ""], "instrument": "", "equipment": "equipment"}
+	class_creation_choices = {}
 
 	current_step = CreationStep.RACE
 	_update_step_ui()
@@ -345,6 +348,7 @@ func _build_class_selection_ui() -> void:
 				bard_creation_choices = {"skills": ["", "", ""], "tools": ["", "", ""], "instrument": "", "equipment": "equipment"}
 				cleric_creation_choices = {"skills": ["", ""], "tools": [], "equipment": "equipment"}
 				cleric_divine_order = ""
+				class_creation_choices = {}
 			selected_class_id = id
 			_update_step_ui()
 		)
@@ -541,9 +545,23 @@ func _ability_choice_error() -> String:
 
 
 func _creation_choices() -> Dictionary:
-	var choices: Dictionary = cleric_creation_choices if selected_class_id == "cleric" else bard_creation_choices
+	var choices: Dictionary = cleric_creation_choices if selected_class_id == "cleric" else bard_creation_choices if selected_class_id == "bard" else _class_choices()
 	choices["ability_generation"] = _ability_generation_record()
 	return choices
+
+
+## Empty picks sized from the selected class's skill_choices/tool_choices.
+func _class_choices() -> Dictionary:
+	if class_creation_choices.is_empty():
+		var data := DataLoader.get_character_class(selected_class_id)
+		var skills: Array = []
+		var tools: Array = []
+		skills.resize(int(data.get("skill_choices", {}).get("pick", 0)))
+		skills.fill("")
+		tools.resize(int(data.get("tool_choices", {}).get("pick", 0)))
+		tools.fill("")
+		class_creation_choices = {"skills": skills, "tools": tools, "equipment": "equipment"}
+	return class_creation_choices
 
 
 func _creation_choice_error() -> String:
@@ -555,7 +573,7 @@ func _creation_choice_error() -> String:
 		return ""
 	if selected_class_id == "cleric" and cleric_divine_order not in ["protector", "thaumaturge"]:
 		return "Choose your Divine Order."
-	return ClassProgression.creation_choices_error(selected_class_id, selected_race_id, _creation_choices()) if selected_class_id in ["bard", "cleric"] else ""
+	return ClassProgression.creation_choices_error(selected_class_id, selected_race_id, _creation_choices()) if ClassProgression.uses_creation_choices(selected_class_id) else ""
 
 
 func _starting_gear_ids() -> Array:
@@ -639,21 +657,23 @@ func _build_class_creation_choices() -> void:
 			_check_next_step_validity()
 		)
 		equip_list.add_child(order)
-	for field in (["skills", "tools"] if selected_class_id == "bard" else ["skills"]):
+	for field in (["skills", "tools"] if int(data.get("tool_choices", {}).get("pick", 0)) > 0 else ["skills"]):
 		var heading := Label.new()
-		heading.text = "Choose %d skills" % int(data["skill_choices"]["pick"]) if field == "skills" else "Choose three instrument proficiencies"
+		heading.text = "Choose %d skills" % int(data["skill_choices"]["pick"]) if field == "skills" else "Choose three instrument proficiencies" if selected_class_id == "bard" else "Choose %d tool proficiency" % int(data["tool_choices"]["pick"])
 		equip_list.add_child(heading)
 		var values: Array = data["skill_choices" if field == "skills" else "tool_choices"]["from"]
 		for index in int(data["skill_choices" if field == "skills" else "tool_choices"]["pick"]):
 			var selector := OptionButton.new()
 			selector.name = "%s%s%d" % [selected_class_id.capitalize(),"Skill" if field == "skills" else "Tool", index + 1]
-			selector.add_item("Choose a skill" if field == "skills" else "Choose an instrument proficiency")
+			selector.add_item("Choose a skill" if field == "skills" else "Choose an instrument proficiency" if selected_class_id == "bard" else "Choose a tool proficiency")
 			selector.set_item_metadata(0, "")
 			for value in values:
 				selector.add_item(str(value) if field == "skills" else str(DataLoader.get_item(value).get("name", value)))
 				var item_index := selector.item_count - 1
 				selector.set_item_metadata(item_index, value)
 				if field == "skills" and value in DataLoader.get_race(selected_race_id).get("proficiencies", []):
+					selector.set_item_disabled(item_index, true)
+				if field == "tools" and value in data.get("tool_proficiency_grants", []):
 					selector.set_item_disabled(item_index, true)
 				if _creation_choices()[field][index] == value:
 					selector.select(item_index)
@@ -663,6 +683,8 @@ func _build_class_creation_choices() -> void:
 				_check_next_step_validity()
 			)
 			equip_list.add_child(selector)
+	if not data.has("starting_gold_alternative"):
+		return # Full equipment-pack choices are outside G2.
 	var equipment := OptionButton.new()
 	equipment.name = "%sStartingEquipment" % selected_class_id.capitalize()
 	equipment.add_item("Equipment and %d GP" % int(data["starting_gold"]))
@@ -707,7 +729,7 @@ func _build_equipment_ui() -> void:
 	# Keep class choices in this existing equipment step.
 	var cls := DataLoader.get_character_class(selected_class_id)
 	var gear_list: Array = _starting_gear_ids()
-	if selected_class_id in ["bard", "cleric"]:
+	if ClassProgression.uses_creation_choices(selected_class_id):
 		_build_class_creation_choices()
 	_build_origin_feat_choice()
 	if selected_class_id == "barbarian":
@@ -788,6 +810,10 @@ func _build_summary_ui() -> void:
 		summary_stats_label.text += "\nSkills: %s\nInstrument proficiencies: %s" % [", ".join(bard_creation_choices["skills"]), ", ".join(_instrument_names(bard_creation_choices["tools"]))]
 	if selected_class_id == "cleric":
 		summary_stats_label.text += "\nSkills: %s\nDivine Order: %s" % [", ".join(cleric_creation_choices["skills"]), cleric_divine_order.capitalize()]
+	if selected_class_id not in ["bard", "cleric"] and ClassProgression.uses_creation_choices(selected_class_id):
+		var tools: Array = class_data.get("tool_proficiency_grants", []).duplicate()
+		tools.append_array(_class_choices()["tools"])
+		summary_stats_label.text += "\nSkills: %s\nTool proficiencies: %s" % [", ".join(_class_choices()["skills"]), ", ".join(_instrument_names(tools))]
 	# Render items list
 	var equip_text := ""
 	for gear_id in selected_equipment:
@@ -830,7 +856,7 @@ func _confirm_and_save_character() -> void:
 		_update_step_ui()
 		return
 	var character := Character.new()
-	character.initialize(selected_name, selected_race_id, selected_class_id, selected_stats.duplicate_scores(), barbarian_starting_equipment_choice if selected_class_id == "barbarian" else str(_creation_choices()["equipment"]) if selected_class_id in ["bard", "cleric"] else "equipment", _creation_choices() if selected_class_id in ["bard", "cleric"] else {})
+	character.initialize(selected_name, selected_race_id, selected_class_id, selected_stats.duplicate_scores(), barbarian_starting_equipment_choice if selected_class_id == "barbarian" else str(_creation_choices()["equipment"]) if selected_class_id in ["bard", "cleric"] else "equipment", _creation_choices() if ClassProgression.uses_creation_choices(selected_class_id) else {})
 	character.creation_choices["ability_generation"] = _ability_generation_record()
 	if character.class_id != selected_class_id:
 		return
@@ -915,6 +941,15 @@ func _on_randomize_pressed() -> void:
 	if selected_class_id == "cleric":
 		cleric_creation_choices = ClassProgression.default_creation_choices("cleric", selected_race_id)
 		cleric_divine_order = ["protector", "thaumaturge"].pick_random()
+	if selected_class_id not in ["bard", "cleric"] and ClassProgression.uses_creation_choices(selected_class_id):
+		class_creation_choices = {}
+		var picks := _class_choices()
+		var skill_pool: Array = random_class.get("skill_choices", {}).get("from", []).filter(func(skill): return skill not in random_race.get("proficiencies", []))
+		skill_pool.shuffle()
+		picks["skills"] = skill_pool.slice(0, picks["skills"].size())
+		var tool_pool: Array = random_class.get("tool_choices", {}).get("from", []).filter(func(tool): return tool not in random_class.get("tool_proficiency_grants", []))
+		tool_pool.shuffle()
+		picks["tools"] = tool_pool.slice(0, picks["tools"].size())
 	# Select starting equipment
 	selected_equipment.clear()
 	var gear_list: Array = _starting_gear_ids()

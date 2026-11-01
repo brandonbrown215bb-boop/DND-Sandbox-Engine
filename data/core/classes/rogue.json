@@ -7,6 +7,8 @@
   "saving_throw_proficiencies": ["DEX", "INT"],
   "armor_proficiencies": ["light"],
   "weapon_proficiencies": ["simple", "martial"],
+  "creation_proficiency_choices": true,
+  "tool_proficiency_grants": ["thieves_tools"],
   "skill_choices": {"pick": 4, "from": ["Acrobatics", "Athletics", "Deception", "Insight", "Intimidation", "Investigation", "Perception", "Persuasion", "Sleight of Hand", "Stealth"]},
   "starting_equipment": ["leather_armor", "rapier", "shortbow", "dagger", "thieves_tools"],
   "spell_slots_by_character_level": {},
