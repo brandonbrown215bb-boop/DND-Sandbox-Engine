@@ -74,7 +74,7 @@ review in AGENTS.md.
 | Content set | Required records / choices | Current boundary |
 |---|---|---|
 | Species | Dragonborn, Dwarf, Elf, Gnome, Goliath, Halfling, Human, Orc, Tiefling; legal lineage/ancestry/legacy, size, language, skill and spellcasting choices; character-level 3/5 grants | Goliath/Orc absent; existing nine include legacy Half-Elf/Half-Orc. S-232 and source-backed data still needed. Do not delete legacy saves or their records. |
-| Backgrounds | Acolyte, Criminal, Sage, Soldier; legal ability increases, Origin feat, two skills, tool and equipment/GP choices | No production content type/creation step. S-231 plus four real definitions. |
+| Backgrounds | Acolyte, Criminal, Sage, Soldier; legal ability increases, Origin feat, two skills, tool and equipment/GP choices | No production content type/creation step. S-231 plus four real definitions. Source-pinned, non-loaded candidates: [background preparation](crown-backgrounds/README.md). |
 | Origin feats | Alert, Magic Initiate (all legal parameters), Savage Attacker, Skilled | No production feat definitions. S-233 prerequisite/parameter controls are already accepted; effects and actual grants remain work. |
 | General feats | Ability Score Improvement, Grappler | No production definitions. Include correct ability benefits and Grappler's actual grapple/attack/movement consumers; S-236/S-239 and existing acquisition/attack owners. |
 | Fighting Style feats | Archery, Defense, Great Weapon Fighting, Two-Weapon Fighting | Existing class-native/choice implementations are reuse points; actual source-owned feat grants and exact eligible attacks/equipment still need conversion/proof. |

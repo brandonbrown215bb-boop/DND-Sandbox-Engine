@@ -1,0 +1,313 @@
+{
+  "schema": "crown-background-candidate/1",
+  "status": "preparation_only_not_loaded",
+  "warning": "Not loaded by DataLoader (it reads only data/core/ and data/mods/ content-type folders, and has no background type). Not a production definition; do not copy into data/ until S-231 and the effect hosts exist.",
+  "ability_rule": {
+    "source": {
+      "pdf_page": 83,
+      "printed_page": 83
+    },
+    "quote": "A background lists three of your character’s ability scores. Increase one by 2 and another one by 1, or increase all three by 1. None of these increases can raise a score above 20.",
+    "patterns": [
+      [
+        2,
+        1
+      ],
+      [
+        1,
+        1,
+        1
+      ]
+    ],
+    "cap": 20
+  },
+  "candidates": [
+    {
+      "id": "acolyte",
+      "name": "Acolyte",
+      "source_quote": "Acolyte\nAbility Scores: Intelligence, Wisdom, Charisma\nFeat: Magic Initiate (Cleric) (see “Feats”)\nSkill Proficiencies: Insight and Religion\nTool Proficiency: Calligrapher’s Supplies\nEquipment: Choose A or B: (A) Calligrapher’s Supplies, Book (prayers), Holy Symbol, Parchment (10 sheets), Robe, 8 GP; or (B) 50 GP",
+      "ability_options": [
+        "INT",
+        "WIS",
+        "CHA"
+      ],
+      "origin_feat": {
+        "feat_id": "magic_initiate",
+        "parameter": "cleric"
+      },
+      "skills": [
+        "Insight",
+        "Religion"
+      ],
+      "tool_proficiency": {
+        "fixed": "calligraphers_supplies"
+      },
+      "equipment_options": {
+        "A": {
+          "items": [
+            {
+              "source_text": "Calligrapher’s Supplies",
+              "quantity": 1,
+              "item_id": "calligraphers_supplies"
+            },
+            {
+              "source_text": "Book (prayers)",
+              "quantity": 1,
+              "item_id": null,
+              "note": "No loaded generic Book item; topic 'prayers' must be represented (SRD p.96 Book bonus depends on topic).",
+              "topic": "prayers"
+            },
+            {
+              "source_text": "Holy Symbol",
+              "quantity": 1,
+              "item_id": "holy_symbol",
+              "note": "SRD p.97: a Holy Symbol takes one of the forms in the Holy Symbols table (Amulet, Emblem, Reliquary). Background does not name a form; loaded generic holy_symbol vs amulet/emblem/reliquary must be reconciled."
+            },
+            {
+              "source_text": "Parchment",
+              "quantity": 10,
+              "item_id": null,
+              "note": "No loaded Parchment item (SRD p.95/99, 1 SP per sheet)."
+            },
+            {
+              "source_text": "Robe",
+              "quantity": 1,
+              "item_id": "robe"
+            }
+          ],
+          "gp": 8
+        },
+        "B": {
+          "items": [],
+          "gp": 50
+        }
+      },
+      "source": {
+        "document": "SRD 5.2.1",
+        "file": "SRD_CC_v5.2.1.pdf",
+        "pdf_page": 83,
+        "printed_page": 83,
+        "section": "Character Origins > Background Descriptions"
+      }
+    },
+    {
+      "id": "criminal",
+      "name": "Criminal",
+      "source_quote": "Criminal\nAbility Scores: Dexterity, Constitution, Intelligence\nFeat: Alert (see “Feats”)\nSkill Proficiencies: Sleight of Hand and Stealth\nTool Proficiency: Thieves’ Tools\nEquipment: Choose A or B: (A) 2 Daggers, Thieves’ Tools, Crowbar, 2 Pouches, Traveler’s Clothes, 16 GP; or (B) 50 GP",
+      "ability_options": [
+        "DEX",
+        "CON",
+        "INT"
+      ],
+      "origin_feat": {
+        "feat_id": "alert",
+        "parameter": null
+      },
+      "skills": [
+        "Sleight of Hand",
+        "Stealth"
+      ],
+      "tool_proficiency": {
+        "fixed": "thieves_tools"
+      },
+      "equipment_options": {
+        "A": {
+          "items": [
+            {
+              "source_text": "Dagger",
+              "quantity": 2,
+              "item_id": "dagger"
+            },
+            {
+              "source_text": "Thieves’ Tools",
+              "quantity": 1,
+              "item_id": "thieves_tools"
+            },
+            {
+              "source_text": "Crowbar",
+              "quantity": 1,
+              "item_id": "crowbar"
+            },
+            {
+              "source_text": "Pouch",
+              "quantity": 2,
+              "item_id": null,
+              "note": "No loaded generic Pouch item (component_pouch and gold_50 'Gold Pouch' are different items)."
+            },
+            {
+              "source_text": "Traveler’s Clothes",
+              "quantity": 1,
+              "item_id": null,
+              "note": "No loaded Traveler's Clothes item (SRD p.97)."
+            }
+          ],
+          "gp": 16
+        },
+        "B": {
+          "items": [],
+          "gp": 50
+        }
+      },
+      "source": {
+        "document": "SRD 5.2.1",
+        "file": "SRD_CC_v5.2.1.pdf",
+        "pdf_page": 83,
+        "printed_page": 83,
+        "section": "Character Origins > Background Descriptions"
+      }
+    },
+    {
+      "id": "sage",
+      "name": "Sage",
+      "source_quote": "Sage\nAbility Scores: Constitution, Intelligence, Wisdom\nFeat: Magic Initiate (Wizard) (see “Feats”)\nSkill Proficiencies: Arcana and History\nTool Proficiency: Calligrapher’s Supplies\nEquipment: Choose A or B: (A) Quarterstaff, Calligrapher’s Supplies, Book (history), Parchment (8 sheets), Robe, 8 GP; or (B) 50 GP",
+      "ability_options": [
+        "CON",
+        "INT",
+        "WIS"
+      ],
+      "origin_feat": {
+        "feat_id": "magic_initiate",
+        "parameter": "wizard"
+      },
+      "skills": [
+        "Arcana",
+        "History"
+      ],
+      "tool_proficiency": {
+        "fixed": "calligraphers_supplies"
+      },
+      "equipment_options": {
+        "A": {
+          "items": [
+            {
+              "source_text": "Quarterstaff",
+              "quantity": 1,
+              "item_id": "quarterstaff"
+            },
+            {
+              "source_text": "Calligrapher’s Supplies",
+              "quantity": 1,
+              "item_id": "calligraphers_supplies"
+            },
+            {
+              "source_text": "Book (history)",
+              "quantity": 1,
+              "item_id": null,
+              "note": "No loaded generic Book item; topic 'history' must be represented.",
+              "topic": "history"
+            },
+            {
+              "source_text": "Parchment",
+              "quantity": 8,
+              "item_id": null,
+              "note": "No loaded Parchment item."
+            },
+            {
+              "source_text": "Robe",
+              "quantity": 1,
+              "item_id": "robe"
+            }
+          ],
+          "gp": 8
+        },
+        "B": {
+          "items": [],
+          "gp": 50
+        }
+      },
+      "source": {
+        "document": "SRD 5.2.1",
+        "file": "SRD_CC_v5.2.1.pdf",
+        "pdf_page": 83,
+        "printed_page": 83,
+        "section": "Character Origins > Background Descriptions"
+      }
+    },
+    {
+      "id": "soldier",
+      "name": "Soldier",
+      "source_quote": "Soldier\nAbility Scores: Strength, Dexterity, Constitution\nFeat: Savage Attacker (see “Feats”)\nSkill Proficiencies: Athletics and Intimidation\nTool Proficiency: Choose one kind of Gaming Set (see “Equipment”)\nEquipment: Choose A or B: (A) Spear, Shortbow, 20 Arrows, Gaming Set (same as above), Healer’s Kit, Quiver, Traveler’s Clothes, 14 GP; or (B) 50 GP",
+      "ability_options": [
+        "STR",
+        "DEX",
+        "CON"
+      ],
+      "origin_feat": {
+        "feat_id": "savage_attacker",
+        "parameter": null
+      },
+      "skills": [
+        "Athletics",
+        "Intimidation"
+      ],
+      "tool_proficiency": {
+        "choose_one_of": [
+          "dice_set",
+          "dragonchess_set",
+          "playing_card_set",
+          "three_dragon_ante_set"
+        ],
+        "choice_key": "gaming_set",
+        "note": "SRD p.94 Gaming Set variants: Dice, dragonchess, playing cards, three-dragon ante. None are loaded; candidate IDs are proposals."
+      },
+      "equipment_options": {
+        "A": {
+          "items": [
+            {
+              "source_text": "Spear",
+              "quantity": 1,
+              "item_id": "spear"
+            },
+            {
+              "source_text": "Shortbow",
+              "quantity": 1,
+              "item_id": "shortbow"
+            },
+            {
+              "source_text": "Arrows",
+              "quantity": 20,
+              "item_id": null,
+              "note": "No loaded Arrow ammunition item (SRD p.96: Arrows, 20 per Quiver unit)."
+            },
+            {
+              "source_text": "Gaming Set (same as above)",
+              "quantity": 1,
+              "item_id": null,
+              "note": "Must equal the chosen gaming_set proficiency; no gaming set items loaded.",
+              "same_as_choice": "gaming_set"
+            },
+            {
+              "source_text": "Healer’s Kit",
+              "quantity": 1,
+              "item_id": "healers_kit"
+            },
+            {
+              "source_text": "Quiver",
+              "quantity": 1,
+              "item_id": null,
+              "note": "No loaded Quiver item."
+            },
+            {
+              "source_text": "Traveler’s Clothes",
+              "quantity": 1,
+              "item_id": null,
+              "note": "No loaded Traveler's Clothes item."
+            }
+          ],
+          "gp": 14
+        },
+        "B": {
+          "items": [],
+          "gp": 50
+        }
+      },
+      "source": {
+        "document": "SRD 5.2.1",
+        "file": "SRD_CC_v5.2.1.pdf",
+        "pdf_page": 83,
+        "printed_page": 83,
+        "section": "Character Origins > Background Descriptions"
+      }
+    }
+  ]
+}
