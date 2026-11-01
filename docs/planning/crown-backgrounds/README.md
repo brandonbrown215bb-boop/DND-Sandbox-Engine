@@ -106,4 +106,33 @@ No rule text was missing for the four backgrounds themselves.
   0 feats, registry SHA-256
   `83c294bf99b0946754769bb51b377f5a34a343e89442a9af9739dd4e12369b31` — identical
   to the 2026-11-01 baseline in Crown parallel work, so nothing new is loaded.
+
+  **How the hash is computed.** `DataLoader.get_registry_hash()`
+  (`src/autoload/data_loader.gd`) returns `JSON.stringify` of an array of
+  `{"type", "id", "data"}` entries for the class, subclass, race, item, spell,
+  monster, event and campaign registries (IDs sorted per type; feats are not
+  included). The value above is Godot's `String.sha256_text()` of that string,
+  i.e. SHA-256 of its UTF-8 bytes, as lowercase hex. The check script lives in
+  ignored `.artifacts/`, so here it is in full; save it as
+  `.artifacts/crown-bg/registry_hash.gd` in a checkout of this branch:
+
+  ```gdscript
+  extends SceneTree
+  func _initialize() -> void:
+  	await process_frame  # let the DataLoader autoload finish loading
+  	var L = root.get_node("DataLoader")
+  	print("errors=", L.get_load_errors().size(), " feats=", L.feats.size())
+  	print("registry_sha256=", L.get_registry_hash().sha256_text())
+  	quit(0)
+  ```
+
+  Run (Linux headless Godot 4.7.2 here; the Windows runner takes the same arguments):
+
+  ```sh
+  godot --headless --path . --script res://.artifacts/crown-bg/registry_hash.gd
+  ```
+
+  Expected output: `errors=0 feats=0` and the hash above. Without
+  `await process_frame` the autoload has not finished loading and a different
+  hash is printed. Reproduced at `498b87e` (with `.gdignore`).
 - Candidate JSON parses; every non-null `item_id` resolves; nulls are listed above.
