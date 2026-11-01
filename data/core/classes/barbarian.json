@@ -4,6 +4,7 @@
   "description": "Barbarian class. Source: PHB.",
   "hit_die": "d12",
   "primary_ability": "STR",
+  "subclass_level": 3,
   "saving_throw_proficiencies": [
     "STR",
     "CON"

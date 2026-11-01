@@ -4,6 +4,7 @@
   "description": "A divine spellcaster using Wisdom. Base-class rules follow SRD 5.2.1; supported spell and feat choices remain curated.",
   "hit_die": "d8",
   "primary_ability": "WIS",
+  "subclass_level": 3,
   "saving_throw_proficiencies": [
     "WIS",
     "CHA"
@@ -11,7 +12,7 @@
   "armor_proficiencies": [
     "light",
     "medium",
-    "shield"
+    "shields"
   ],
   "weapon_proficiencies": [
     "simple"

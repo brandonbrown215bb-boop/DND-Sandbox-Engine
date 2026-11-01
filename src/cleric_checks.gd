@@ -20,7 +20,7 @@ static func monster(id: String = "undead") -> Dictionary:
 static func run(check: Callable) -> void:
 	var novice := character()
 	check.call(novice.inventory.gold == 7 and novice.inventory.get_weapon() == "mace" and novice.inventory.get_armor() == "chain_shirt" and novice.inventory.count_item("holy_symbol") == 1 and novice.inventory.count_item("priests_pack") == 1, "Cleric equipment grants the SRD loadout and seven gold")
-	check.call(novice.skill_proficiencies.has("History") and novice.skill_proficiencies.has("Insight") and "shield" in novice.armor_proficiencies, "Cleric defaults use legal class skills and Shield training")
+	check.call(novice.skill_proficiencies.has("History") and novice.skill_proficiencies.has("Insight") and "shields" in novice.armor_proficiencies, "Cleric defaults use legal class skills and Shield training")
 	var scores := AbilityScores.new()
 	scores.from_dict({"STR": 10, "DEX": 10, "CON": 10, "INT": 10, "WIS": 16, "CHA": 10})
 	var choices := {"skills": ["Medicine", "Religion"], "equipment": "gold"}
