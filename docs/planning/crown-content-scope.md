@@ -7,6 +7,11 @@ authority or an acceptance ledger. Slice status belongs in
 [vocabulary-slices.md](vocabulary-slices.md); actual spell delivery belongs in
 the [spell register](../mechanics/spell-status.md).
 
+The [2026-11-01 review and work split](crown-parallel-work.md) refreshes the
+production inventory and identifies changed claims in this dated baseline,
+including delivered Open Hand Technique and the existing multiclass entry gate.
+The scope below remains unchanged.
+
 ## Source and inventory evidence
 
 - SRD 5.2.1 is the authority. The existing

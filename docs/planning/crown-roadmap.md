@@ -97,6 +97,12 @@ and logs are ignored under `.artifacts/crown-roadmap-audit/`.
 
 ## Delivery order
 
+The [2026-11-01 review and local/Grokbot split](crown-parallel-work.md)
+refreshes the inventory above and provides bounded parallel assignments. The
+dated baseline's empty Open Hand feature and absent multiclass entry checks
+have since changed; production multiclassing and full class packages remain
+unfinished. Reuse those delivered pieces rather than implementing them again.
+
 Finish the selected slice before selecting another. **S-237 remains selected**
 until its action requirements are complete, including the represented world
 consumers below; a passing continuation does not close the slice. After that,
@@ -133,7 +139,7 @@ and movement consumers can use the same final condition semantics. See the
 |---|---|
 | S-231 | Background content type, selection and exact once-only grants: ability increases, Origin feat, skills, tool and equipment/gold. Add Acolyte, Criminal, Sage and Soldier; prevent old species ability bonuses from stacking on new background increases. Back/Random/seat reset and checkpoint validation must retain the chosen source and grants. |
 | S-232; S-045/S-048/S-139 reuse | Complete nine-species data and lineage/ancestry/legacy, size, language, skill and spellcasting-ability choices. Apply level-3/5 grants once at the correct character level. Preserve legacy saves; do not delete or silently rewrite their species. Druidic, Thieves' Cant and Ranger language grants need real language state. |
-| S-234; S-047/S-048/S-137/S-138 reuse | Add entry prerequisites, source-backed starting/multiclass proficiency subsets and production class progression declarations. Check a legal and illegal entry, total versus class level, HP, mixed slot/Pact progression, source preparation and reload without grants replaying. Crown's milestones still award total levels through 5; XP advancement is separate. |
+| S-234; S-047/S-048/S-137/S-138 reuse | Verify the existing entry prerequisite code and class overrides; S-234 remains unaccepted. Production multiclassing also needs source-backed proficiency subsets and extensions to the bounded progression host, which currently refuses subclasses, most feature kinds and secondary classes with features. Class declarations alone cannot enable it. Check legal/illegal entry, total versus class level, HP, mixed slot/Pact progression, source preparation and reload without grants replaying. Crown's milestones still award total levels through 5; XP advancement is separate. |
 | S-233/S-242 already accepted; S-049/S-050/S-084/S-085/S-103/S-104 reuse | Supply the ten in-band SRD feats and their effects, including Origin parameters, ASI/Grappler ability benefits and Fighting Style acquisition. Finish missing effect consumers rather than redoing prerequisite or generation controls. Validate level-4 choices, replacement cadence and exact ownership through real creation/training and fresh-process recovery. |
 | Content corrections using existing owners | Correct the class skills, weapon restrictions, tool grants, armor tokens, starting packages and explicit subclass levels identified above. Check actual creation/sheet output against source; possessing a Thieves' Tools item is not the Rogue tool-proficiency grant. |
 

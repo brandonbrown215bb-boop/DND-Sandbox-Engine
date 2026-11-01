@@ -25,6 +25,12 @@ in-scope content stays in Crown. Higher-level-only and unselected-content work
 stays [below](#outside-crown). Do not make the whole engine denominator a gate
 for finishing the campaign, or quietly reduce Crown's content to improve a count.
 
+The [2026-11-01 local/Grokbot split](docs/planning/crown-parallel-work.md)
+records the current production inventory and bounded PR assignments. Local work
+retains S-237; independent character acquisition work proceeds sequentially.
+Open Hand Technique and the multiclass entry-gate implementation already exist;
+their older inventory gaps must not become duplicate implementation tasks.
+
 ## Shared-engine backlog and accepted boundaries
 
 Retain the engine backlog in the [slice registry](docs/planning/vocabulary-slices.md).
@@ -178,7 +184,9 @@ level-1–5 work; this list is not a competing execution order. S-233 and S-242
 now have accepted engine boundaries, so continue their real content rather than
 rebuilding those controls:
 1. Content corrections: class skill and tool lists, the rogue weapon restriction and `subclass_level`.
-2. S-234 multiclass prerequisites, then production multiclass data.
+2. Verify the existing S-234 multiclass entry gate; then extend the bounded
+   progression host before production multiclass conversion. Class JSON opt-in
+   alone cannot supply secondary features, subclasses, resources and casting.
 3. S-231 backgrounds.
 4. S-232 species choices and the SRD species set.
 5. Production feats: ten Origin/General/Fighting Style feats for Crown; the seven Epic Boons remain broader work.
