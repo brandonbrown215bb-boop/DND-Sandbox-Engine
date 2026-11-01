@@ -83,8 +83,8 @@ SRD subclass: **Draconic Sorcery** — absent from repo data.
 | repo-only class | 14 | Sorcerer Subclass Feature | Placeholder for subclass level; SRD subclass body not in repo | `sorcerer_subclass_feature_14` | quarantined / reference-only | — | unassigned | Unreviewed |
 | repo-only class | 17 | Metamagic Improvement | No SRD 5.2.1 heading found — source gap | `sorcerer_metamagic_improvement_17` | mechanics-backed / 2024-supported | — | unassigned | Unreviewed |
 | repo-only class | 18 | Sorcerer Subclass Feature | Placeholder for subclass level; SRD subclass body not in repo | `sorcerer_subclass_feature_18` | quarantined / reference-only | — | unassigned | Unreviewed |
-| subclass | 3 | Draconic Resilience | p.69 | — | absent | — | unassigned | Unreviewed (absent) |
-| subclass | 3 | Draconic Spells | p.70 | — | absent | — | unassigned | Unreviewed (absent) |
+| subclass | 3 | Draconic Resilience | p.69 | — (candidate `draconic_sorcery_draconic_resilience`, not loaded) | absent; [prepared](../planning/preparation/draconic-sorcery.md) | V-026 | unassigned (AC fits `unarmored_defense`; per-level max-HP owner missing; Shield-training and level-up AC refresh gaps) | Source-mapped (G6), not reviewed |
+| subclass | 3 | Draconic Spells | p.70 | — (candidates `draconic_sorcery_draconic_spells_3`/`_5`, not loaded) | absent; [prepared](../planning/preparation/draconic-sorcery.md) | — | unassigned (`always_prepared_spells`, split like Fiend) | Source-mapped (G6), not reviewed |
 | subclass | 6 | Elemental Affinity | p.70 | — | absent | — | unassigned | Unreviewed (absent) |
 | subclass | 14 | Dragon Wings | p.70 | — | absent | — | unassigned | Unreviewed (absent) |
 | subclass | 18 | Dragon Companion | p.70 | — | absent | — | unassigned | Unreviewed (absent) |

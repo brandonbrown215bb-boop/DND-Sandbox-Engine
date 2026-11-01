@@ -1,0 +1,86 @@
+{
+  "preparation": {
+    "status": "candidate-not-loaded",
+    "assignment": "G6 (docs/planning/crown-parallel-work.md)",
+    "source": "SRD 5.2.1, Sorcerer Subclass: Draconic Sorcery, PDF pp.69-70",
+    "scope": "Sorcerer levels 3-5 only. Level 6+ features (Elemental Affinity, Dragon Wings, Dragon Companion) and Draconic Spells rows 7 and 9 are deliberately omitted.",
+    "loading": "This file lives outside data/core and data/mods and is never read by DataLoader. It is not acceptance, not an enabled placeholder, and must not be copied into data/core/subclasses until every entry in missing_consumers has an accepted generic owner.",
+    "source_map": "draconic-sorcery.md"
+  },
+  "missing_consumers": [
+    {
+      "clause": "Draconic Resilience: Hit Point maximum increases by 3, and by 1 whenever you gain another Sorcerer level",
+      "gap": "No feature-owned, class-level-scaled permanent max-HP grant. PermanentProgressionRules max_hp_delta is fixed-amount, opt-in permanent_progression only and rejects subclasses; MaxHpSourceRules (S-130) is a reversible fixed-amount effect host. Needs a generic once-only, saved, per-class-level grant (V-026)."
+    },
+    {
+      "clause": "Draconic Resilience: while you aren't wearing armor, base AC = 10 + DEX + CHA (Shield allowed, but its benefit needs Shield training, SRD p.92)",
+      "gap": "Existing unarmored_defense host fits the formula, but (a) Character._equipment_base_ac adds a Shield's ac_bonus without checking Shield training; (b) get_feature_effect takes the first unarmored_defense effect rather than a chosen/best base (SRD p.7 Only One Base AC); (c) Character.level_up does not call _recalculate_ac, so a level-3 grant leaves cached base_ac stale until equipment changes."
+    }
+  ],
+  "candidate": {
+    "id": "draconic_sorcery",
+    "name": "Draconic Sorcery",
+    "class_id": "sorcerer",
+    "rules_status": "reference-only",
+    "features_by_level": {
+      "3": [
+        {
+          "id": "draconic_sorcery_draconic_resilience",
+          "name": "Draconic Resilience",
+          "description": "The magic in your body manifests physical traits of your draconic gift. Your Hit Point maximum increases by 3, and it increases by 1 whenever you gain another Sorcerer level. Parts of you are also covered by dragon-like scales. While you aren't wearing armor, your base Armor Class equals 10 plus your Dexterity and Charisma modifiers.",
+          "type": "passive",
+          "effects": [
+            {
+              "type": "unarmored_defense",
+              "ability": "CHA",
+              "allows_shield": true
+            }
+          ],
+          "unmapped_clauses": [
+            "Hit Point maximum +3 at grant, +1 per later Sorcerer level (no existing owner; see missing_consumers[0])"
+          ],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "reference-only"
+        },
+        {
+          "id": "draconic_sorcery_draconic_spells_3",
+          "name": "Draconic Spells (Level 3)",
+          "description": "You always have Alter Self, Chromatic Orb, Command, and Dragon's Breath prepared.",
+          "type": "passive",
+          "effects": [
+            {
+              "type": "always_prepared_spells",
+              "spells": [
+                "alter_self",
+                "chromatic_orb",
+                "command",
+                "dragons_breath"
+              ]
+            }
+          ],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "reference-only"
+        }
+      ],
+      "5": [
+        {
+          "id": "draconic_sorcery_draconic_spells_5",
+          "name": "Draconic Spells (Level 5)",
+          "description": "You always have Fear and Fly prepared.",
+          "type": "passive",
+          "effects": [
+            {
+              "type": "always_prepared_spells",
+              "spells": [
+                "fear",
+                "fly"
+              ]
+            }
+          ],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "reference-only"
+        }
+      ]
+    }
+  }
+}
