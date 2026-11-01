@@ -63,6 +63,22 @@ level button. Confirming spends one entitlement; closing the sheet spends none.
 The button captures the ordered state, so old/double-clicked buttons cannot spend
 a later entitlement. Combat refuses confirmation.
 
+For multiclass entry, a class may declare `multiclass_prerequisite` with `all`
+and/or `any` ability lists. Classes without an override use their
+`primary_ability` as the required score. The first level in a new class checks
+that class and every current class at 13; the class list is filtered when offered
+and the same check runs again on confirmation. Existing class levels remain
+available if an ability score later drops. Refusals name the failing class,
+ability and score.
+
+`Character.award_xp(amount)` adds saved XP and exposes every crossed threshold
+through `pending_levels`; it does not apply levels automatically. The standard
+total-level thresholds are 0, 300, 900, 2,700, 6,500, 14,000, 23,000, 34,000,
+48,000, 64,000, 85,000, 100,000, 120,000, 140,000, 165,000, 195,000,
+225,000, 265,000, 305,000 and 355,000 XP for levels 1–20. Re-awarding XP
+recalculates the remaining XP-eligible levels against the current level, so the
+same threshold does not create duplicate pending levels.
+
 This bounded host replaces native starting proficiency/equipment/slot fields.
 Primary features may use the existing passive proficiency-choice contract for
 weapon, armor and skill arrays only. Other choice fields refuse at validation;
@@ -70,8 +86,10 @@ the broader direct permanent-grant fields above do not extend that choice host.
 Secondary classes currently require an empty `features_by_level`. Other native
 features, resources, subclass/casting progression and level HP rolls are outside
 this host and are refused rather than acquired partially. Existing classes
-without this contract retain their current native progression. No shipped
-class/spell/monster definition is changed.
+without this contract retain their current native progression. Four core class
+definitions now also declare their multiclass all/any ability exceptions; other
+classes use `primary_ability`. Production `permanent_progression` grants and
+catalog conversion remain separate work.
 
 Character stores ordered class history, pending levels and exact class/entry
 receipts under `permanent_progression`, beside `class_levels` and already-applied

@@ -1,0 +1,86 @@
+[
+  {
+    "id": "fixture:perception",
+    "name": "Perception fixture",
+    "hit_die": 8,
+    "primary_ability": "INT",
+    "saving_throw_proficiencies": [
+      "INT",
+      "WIS"
+    ],
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:short_dark",
+          "name": "short_dark",
+          "passive_effects": [
+            {
+              "type": "darkvision",
+              "range_feet": 10
+            }
+          ],
+          "type": "passive"
+        },
+        {
+          "id": "fixture:short_blind",
+          "name": "short_blind",
+          "passive_effects": [
+            {
+              "type": "blindsight",
+              "range_feet": 10
+            }
+          ],
+          "type": "passive"
+        },
+        {
+          "id": "fixture:short_true",
+          "name": "short_true",
+          "passive_effects": [
+            {
+              "type": "truesight",
+              "range_feet": 10
+            }
+          ],
+          "type": "passive"
+        },
+        {
+          "id": "fixture:short_tremor",
+          "name": "short_tremor",
+          "passive_effects": [
+            {
+              "type": "tremorsense",
+              "range_feet": 10
+            }
+          ],
+          "type": "passive"
+        },
+        {
+          "id": "fixture:own_dark",
+          "name": "own_dark",
+          "passive_effects": [
+            {
+              "type": "darkvision",
+              "range_feet": 30,
+              "magical": true,
+              "own_source_only": true
+            }
+          ],
+          "type": "passive"
+        },
+        {
+          "id": "fixture:one_dark",
+          "name": "one_dark",
+          "passive_effects": [
+            {
+              "type": "darkvision",
+              "range_feet": 30,
+              "magical": true,
+              "obscurement_source_id": "perception:area_a"
+            }
+          ],
+          "type": "passive"
+        }
+      ]
+    }
+  }
+]

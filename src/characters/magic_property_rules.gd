@@ -86,7 +86,7 @@ static func apply(actor: Character, cast: Dictionary, effect: Dictionary) -> Dic
 	if actor == null or not effect_error(effect).is_empty() or str(cast.get("source_id", "")).is_empty() or cast.get("caster_id", "") != actor.character_id:
 		return {"applied": false, "reason": "invalid source"}
 	var source := str(cast.source_id)
-	if actor.spell_effects.has(source): return {"applied": false, "reason": "source already applied"}
+	if (actor.spell_effects.has(source) and not SpellEffects.can_add_budget_payload(actor, cast, "magic_suppression")): return {"applied": false, "reason": "source already applied"}
 	var mode := str(effect.get("mode", "suppress"))
 	var inv := actor.inventory
 	var affected := _affected(actor, effect)
@@ -97,7 +97,7 @@ static func apply(actor: Character, cast: Dictionary, effect: Dictionary) -> Dic
 			var gone: Dictionary = record.state.get("destroyed_magic", {})
 			for p in affected[copy_id]: gone[str(p)] = {"cause": str(cast.get("spell_id", "")), "source_id": source}
 			record.state["destroyed_magic"] = gone
-	var record := cast.duplicate(true)
+	var record := SpellEffects.payload_record(actor, cast)
 	record["magic_suppression"] = {"mode": mode, "properties": effect.properties.duplicate(), "copies": affected}
 	actor.spell_effects[source] = record
 	return {"applied": true, "mode": mode, "copies": affected}

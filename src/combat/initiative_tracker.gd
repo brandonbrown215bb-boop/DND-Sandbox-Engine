@@ -19,6 +19,20 @@ var shared_groups: Dictionary = {}
 var _started_counts: Dictionary = {}
 var _shared_members: Dictionary = {}
 
+## One d20-test owner for encounter entry, late arrivals and rolled groups.
+## Groups capture the first authored member's live modes once, then keep the count.
+static func roll_result(actor, dex: int = -1, decisions: Dictionary = {}) -> Dictionary:
+	if dex < 0:
+		dex = actor.ability_scores.get_score("DEX") if actor is Character else int(actor.get("ability_scores", {}).get("DEX", 10))
+	var advantage := CombatAction.is_invisible(actor)
+	if actor is Character:
+		advantage = advantage or actor.has_feature("champion_remarkable_athlete") or actor.has_feature_effect("initiative_advantage")
+	var result := RollTokenRules.resolve_d20_test(actor, "initiative", advantage, CombatAction.is_incapacitated(actor), decisions)
+	var exhaustion: int = actor.exhaustion_level if actor is Character else int(actor.get("exhaustion_level", actor.get("conditions", {}).get("exhaustion", 0)))
+	result["modifier"] = AbilityScores.get_modifier(dex) - exhaustion * 2
+	result["total"] = int(result.get("total", 1)) + int(result.modifier)
+	return result
+
 
 ## Clear all tracked combatants.
 func clear() -> void:
@@ -82,10 +96,11 @@ func _initiative_before(a: Dictionary, b: Dictionary) -> bool:
 
 ## One source supplies one count, but every member remains a normal combatant.
 ## Rejoining a started member never replays it, even after the group was empty.
-func add_shared_combatant(id: String, name: String, entity: Character, group_id: String, count_policy: String, anchor: Dictionary, dex: int) -> void:
+func add_shared_combatant(id: String, name: String, entity: Character, group_id: String, count_policy: String, anchor: Dictionary, dex: int, representative: Character = null) -> void:
 	if combatants.any(func(c): return str(c.id) == id): return
 	if not shared_groups.has(group_id):
-		shared_groups[group_id] = {"roll": anchor.roll if count_policy == "owner" else Dice.roll(20) + AbilityScores.get_modifier(dex), "dex": anchor.dex if count_policy == "owner" else dex, "follows": str(anchor.id) if count_policy == "owner" else ""}
+		var receipt := {} if count_policy == "owner" else roll_result(representative if representative != null else entity, dex)
+		shared_groups[group_id] = {"roll": anchor.roll if count_policy == "owner" else receipt.total, "dex": anchor.dex if count_policy == "owner" else dex, "follows": str(anchor.id) if count_policy == "owner" else "", "initiative_test": receipt}
 	var group: Dictionary = shared_groups[group_id]
 	var late := int(_started_counts.get(int(group.roll), -1)) == current_round
 	if not _shared_members.has(id): _shared_members[id] = {"eligible_round": current_round + 1 if late else current_round, "started_round": -1}

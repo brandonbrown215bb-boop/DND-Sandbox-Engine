@@ -129,7 +129,7 @@ func _build_level_feat_choice(c: Character, status: Label, refresh: Callable) ->
 	var picker := OptionButton.new()
 	picker.name = "LevelFeatPicker"
 	for id in options:
-		picker.add_item(str(DataLoader.get_feat(id).get("name", id)))
+		picker.add_item(FeatRules.label(id))
 		picker.set_item_metadata(picker.item_count - 1, id)
 	row.add_child(picker)
 	var take := Button.new()
@@ -1007,7 +1007,10 @@ func _build_source_equipment(c: Character, refresh: Callable) -> void:
 			var button := Button.new()
 			button.text = "Equip %s" % str(Inventory.Slot.keys()[slot]).capitalize()
 			button.pressed.connect(func():
-				if GameManager.current_state != GameManager.GameState.COMBAT and c.inventory.equip_instance(slot, str(copy.instance_id)):
+				if GameManager.current_state != GameManager.GameState.COMBAT:
+					var result := c.inventory.equipment_control_equip(slot, str(copy.instance_id))
+					if not result.get("success", false): return
+					if int(result.get("seconds", 0)) > 0: GameManager.advance_campaign_time(int(result.seconds))
 					c._recalculate_ac()
 					refresh.call()
 			)
@@ -1020,7 +1023,9 @@ func _build_source_equipment(c: Character, refresh: Callable) -> void:
 		button.text = "Stow %s (%s)" % [item.name, copy_id]
 		button.pressed.connect(func():
 			if GameManager.current_state != GameManager.GameState.COMBAT and c.inventory.equipped_instance_id(slot) == copy_id:
-				if not c.inventory.unequip(slot).is_empty():
+				var result := c.inventory.equipment_control_unequip(slot)
+				if result.get("success", false):
+					if int(result.get("seconds", 0)) > 0: GameManager.advance_campaign_time(int(result.seconds))
 					c._recalculate_ac()
 					refresh.call()
 		)
@@ -1042,7 +1047,14 @@ func _build_permanent_level(c: Character, refresh: Callable) -> void:
 	button.name = "AcquireClassLevel"
 	button.text = "Gain class level (%d pending)" % int(c.permanent_progression.pending_levels)
 	button.disabled = choices.is_empty()
+	var refusal := Label.new()
+	refusal.name = "ProgressionRefusal"
 	button.pressed.connect(func():
-		if options.selected >= 0 and options.selected < choices.size() and PermanentProgressionRules.advance(c, choices[options.selected], captured): refresh.call()
+		if options.selected < 0 or options.selected >= choices.size(): return
+		var class_id := choices[options.selected]
+		if PermanentProgressionRules.advance(c, class_id, captured): refresh.call()
+		else:
+			refusal.text = PermanentProgressionRules.multiclass_prerequisite_error(c, class_id)
 	)
 	row.add_child(button)
+	row.add_child(refusal)

@@ -112,8 +112,12 @@ Healing targets the captured Character recipient. Loose objects use
 declared flat typed damage. The cap is **per creature for that area's lifetime**.
 Standing inside, movement within the area, crossing a boundary without an entry,
 turn start/end, appearance and teleport arrival do not add triggers. Wrong-plane
-entry does not spend the cap. Crossing/turn scopes and other hazard kinds refuse
-at definition validation.
+entry does not spend the cap. These are the legacy `entry_damage` / `entry`
+declarations. S-184 also accepts `trigger_damage` / `declared` children with
+`trigger_policies`; their source/actor/event limits, movement versus area motion,
+turn clocks and durable current/creation locations follow the
+[spatial trigger contract](physical-facts-space-and-movement.md#declared-spatial-trigger-scopes-s-184).
+Other hazard kinds still refuse at definition validation.
 
 Each successor has a child identity distinct from its ending parent. Parent
 cleanup does not remove successors; area expiry and ordinary object damage own

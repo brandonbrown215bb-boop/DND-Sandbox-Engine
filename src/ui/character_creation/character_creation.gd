@@ -48,6 +48,16 @@ var selected_name: String = ""
 var selected_race_id: String = ""
 var selected_class_id: String = ""
 var selected_stats: AbilityScores = AbilityScores.new()
+var _ability_generation_method := "point_buy"
+var _ability_generation_seed := 0
+var _ability_generation_results: Array[int] = []
+var _ability_generation_assignments: Array[String] = []
+var _stat_method_row_added := false
+var _generation_assignment_row: HBoxContainer
+var _generation_assignment_controls: Array[OptionButton] = []
+var _standard_method_button: Button
+var _random_method_button: Button
+var _point_buy_method_button: Button
 var selected_equipment: Array[String] = []
 var barbarian_starting_equipment_choice := "equipment"
 var cleric_creation_choices := {"skills": ["", ""], "tools": [], "equipment": "equipment"}
@@ -207,6 +217,12 @@ func _start_player_creation() -> void:
 	selected_race_id = ""
 	selected_class_id = ""
 	selected_stats = AbilityScores.new()
+	_ability_generation_method = "point_buy"
+	_ability_generation_seed = 0
+	_ability_generation_results.clear()
+	_ability_generation_assignments.clear()
+	selected_origin_feat = ""
+	if _generation_assignment_row != null: _generation_assignment_row.hide()
 	selected_equipment.clear()
 	barbarian_starting_equipment_choice = "equipment"
 	cleric_creation_choices = {"skills": ["", ""], "tools": [], "equipment": "equipment"}
@@ -273,11 +289,11 @@ func _check_next_step_validity() -> void:
 		CreationStep.CLASS:
 			is_valid = not selected_class_id.is_empty()
 		CreationStep.STATS:
-			is_valid = selected_stats.is_valid_point_buy()
+			is_valid = _ability_choice_error().is_empty()
 		CreationStep.EQUIPMENT:
-			is_valid = _creation_choice_error().is_empty()
+			is_valid = _ability_choice_error().is_empty() and _creation_choice_error().is_empty()
 		CreationStep.SUMMARY:
-			is_valid = _creation_choice_error().is_empty()
+			is_valid = _ability_choice_error().is_empty() and _creation_choice_error().is_empty()
 	
 	btn_next.disabled = not is_valid
 	if selected_name.strip_edges().is_empty():
@@ -346,6 +362,44 @@ func _build_stats_point_buy_ui() -> void:
 	if not _stat_row_refs.is_empty():
 		_refresh_stats_ui()
 		return
+	if not _stat_method_row_added:
+		var method_row := HBoxContainer.new()
+		_point_buy_method_button = Button.new()
+		_point_buy_method_button.text = "Point Buy"
+		_point_buy_method_button.pressed.connect(func(): _apply_point_buy_method())
+		method_row.add_child(_point_buy_method_button)
+		_standard_method_button = Button.new()
+		_standard_method_button.text = "Use Standard Array"
+		_standard_method_button.pressed.connect(func(): _apply_ability_array(AbilityScores.STANDARD_ARRAY, "standard_array", 0))
+		method_row.add_child(_standard_method_button)
+		_random_method_button = Button.new()
+		_random_method_button.text = "Roll 4d6, drop lowest"
+		_random_method_button.pressed.connect(func():
+			_ability_generation_seed = int(Time.get_unix_time_from_system()) ^ randi()
+			_ability_generation_results = AbilityScores.roll_generation(_ability_generation_seed)
+			_apply_ability_array(_ability_generation_results, "random_4d6", _ability_generation_seed)
+		)
+		method_row.add_child(_random_method_button)
+		stat_rows.add_child(method_row)
+		stat_rows.move_child(method_row, 0)
+		_generation_assignment_row = HBoxContainer.new()
+		_generation_assignment_row.visible = false
+		for result_index in 6:
+			var assignment := OptionButton.new()
+			assignment.name = "GenerationAssignment%d" % result_index
+			for ability in AbilityScores.ABILITIES: assignment.add_item(ability)
+			var assigned_ability: String = _ability_generation_assignments[result_index] if result_index < _ability_generation_assignments.size() else AbilityScores.ABILITIES[result_index]
+			assignment.select(AbilityScores.ABILITIES.find(assigned_ability))
+			assignment.item_selected.connect(func(_selected): _apply_generation_assignment())
+			_generation_assignment_controls.append(assignment)
+			_generation_assignment_row.add_child(assignment)
+		stat_rows.add_child(_generation_assignment_row)
+		stat_rows.move_child(_generation_assignment_row, 1)
+		_stat_method_row_added = true
+		var allowed_methods: Array = GameManager.active_campaign.get("ability_generation_methods", ["point_buy", "standard_array", "random_4d6"])
+		_point_buy_method_button.disabled = "point_buy" not in allowed_methods
+		_standard_method_button.disabled = "standard_array" not in allowed_methods
+		_random_method_button.disabled = "random_4d6" not in allowed_methods
 
 	var remaining_points := AbilityScores.POINT_BUY_TOTAL - selected_stats.get_point_buy_cost()
 	stat_points_label.text = "Remaining Points: %d / %d" % [remaining_points, AbilityScores.POINT_BUY_TOTAL]
@@ -391,11 +445,69 @@ func _build_stats_point_buy_ui() -> void:
 	_refresh_stats_ui()
 
 
+func _apply_ability_array(scores: Array, method: String, seed_value: int) -> void:
+	if scores.size() != 6: return
+	if method not in GameManager.active_campaign.get("ability_generation_methods", ["point_buy", "standard_array", "random_4d6"]): return
+	# The roll button passes our own results array; copy it before clearing state.
+	var captured_scores := scores.duplicate()
+	_ability_generation_method = method
+	_ability_generation_seed = seed_value
+	_ability_generation_results.clear()
+	for score in captured_scores: _ability_generation_results.append(int(score))
+	_ability_generation_assignments.clear()
+	for ability in AbilityScores.ABILITIES: _ability_generation_assignments.append(ability)
+	for index in _generation_assignment_controls.size(): _generation_assignment_controls[index].select(index)
+	_generation_assignment_row.visible = true
+	_apply_generation_assignment()
+
+
+func _apply_generation_assignment() -> void:
+	var assignments: Array = []
+	for control in _generation_assignment_controls: assignments.append(str(control.get_item_text(control.selected)))
+	_ability_generation_assignments.assign(assignments)
+	var result := AbilityScores.assign_generation(_ability_generation_results, assignments)
+	if not bool(result.get("success", false)):
+		stat_points_label.text = str(result.get("message", "Assign each generated score once."))
+		btn_next.disabled = true
+		return
+	_ability_generation_assignments.clear()
+	for ability in assignments: _ability_generation_assignments.append(str(ability))
+	for ability in AbilityScores.ABILITIES: selected_stats.set_score(ability, int(result.scores[ability]))
+	_refresh_stats_ui()
+
+
+func _ability_generation_record() -> Dictionary:
+	# Durable choices use plain arrays, matching their JSON-restored form.
+	var results: Array = []
+	results.append_array(_ability_generation_results)
+	var assignments: Array = []
+	if _ability_generation_method != "point_buy": assignments.append_array(_ability_generation_assignments)
+	return {"method": _ability_generation_method, "seed": _ability_generation_seed, "results": results, "assigned_abilities": assignments}
+
+
+func _apply_point_buy_method() -> void:
+	if "point_buy" not in GameManager.active_campaign.get("ability_generation_methods", ["point_buy", "standard_array", "random_4d6"]): return
+	_ability_generation_method = "point_buy"
+	_ability_generation_seed = 0
+	_ability_generation_results.clear()
+	_ability_generation_assignments.clear()
+	_generation_assignment_row.visible = false
+	selected_stats = AbilityScores.new()
+	_refresh_stats_ui()
+
+
 ## Update the stat row labels / disabled states in place (no rebuild), so
 ## rapid clicks on the same + / - button all register.
 func _refresh_stats_ui() -> void:
+	if _generation_assignment_row != null:
+		_generation_assignment_row.visible = _ability_generation_method != "point_buy"
+		for index in _generation_assignment_controls.size():
+			var control := _generation_assignment_controls[index]
+			var assigned: String = _ability_generation_assignments[index] if index < _ability_generation_assignments.size() else AbilityScores.ABILITIES[index]
+			control.select(AbilityScores.ABILITIES.find(assigned))
+			control.tooltip_text = "Assign score %d" % _ability_generation_results[index] if index < _ability_generation_results.size() else ""
 	var remaining_points := AbilityScores.POINT_BUY_TOTAL - selected_stats.get_point_buy_cost()
-	stat_points_label.text = "Remaining Points: %d / %d" % [remaining_points, AbilityScores.POINT_BUY_TOTAL]
+	stat_points_label.text = "Remaining Points: %d / %d" % [remaining_points, AbilityScores.POINT_BUY_TOTAL] if _ability_generation_method == "point_buy" else ("Standard Array: %s" % ", ".join(AbilityScores.ABILITIES.map(func(a): return str(selected_stats.get_score(a)))) if _ability_generation_method == "standard_array" else "Seeded rolls: %s (seed %d)" % [", ".join(_ability_generation_results.map(func(v): return str(v))), _ability_generation_seed])
 	for ability in AbilityScores.ABILITIES:
 		var refs: Dictionary = _stat_row_refs.get(ability, {})
 		if refs.is_empty():
@@ -403,17 +515,35 @@ func _refresh_stats_ui() -> void:
 		var val := selected_stats.get_score(ability)
 		var mod := AbilityScores.get_modifier(val)
 		refs["val"].text = "%d (%s)" % [val, AbilityScores.format_modifier(mod)]
-		refs["dec"].disabled = (val <= 8)
+		refs["dec"].disabled = _ability_generation_method != "point_buy" or val <= 8
 		var cost_now = AbilityScores.POINT_BUY_COSTS.get(val, 0)
 		var cost_next = AbilityScores.POINT_BUY_COSTS.get(val + 1, 999)
 		var cost_diff = cost_next - cost_now
-		refs["inc"].disabled = (val >= 15 or remaining_points < cost_diff)
+		refs["inc"].disabled = _ability_generation_method != "point_buy" or val >= 15 or remaining_points < cost_diff
 	_check_next_step_validity()
 	_refresh_spread()
+	var allowed_methods: Array = GameManager.active_campaign.get("ability_generation_methods", ["point_buy", "standard_array", "random_4d6"])
+	if _point_buy_method_button != null: _point_buy_method_button.disabled = "point_buy" not in allowed_methods
+	if _standard_method_button != null: _standard_method_button.disabled = "standard_array" not in allowed_methods
+	if _random_method_button != null: _random_method_button.disabled = "random_4d6" not in allowed_methods
+	var error := _ability_choice_error()
+	if not error.is_empty(): stat_points_label.text = error
+
+
+func _ability_choice_error() -> String:
+	if _ability_generation_method not in GameManager.active_campaign.get("ability_generation_methods", ["point_buy", "standard_array", "random_4d6"]): return "Choose an ability method permitted by this campaign."
+	if _ability_generation_method == "point_buy": return "" if selected_stats.is_valid_point_buy() else "Choose valid point-buy scores."
+	var record := _ability_generation_record()
+	var error := AbilityScores.saved_generation_error({"creation_choices": {"ability_generation": record}})
+	if not error.is_empty(): return "Assign each generated score to a different ability."
+	var assigned := AbilityScores.assign_generation(_ability_generation_results, _ability_generation_assignments)
+	return "" if assigned.get("scores", {}) == selected_stats.to_dict() else "Assign all six generated scores."
 
 
 func _creation_choices() -> Dictionary:
-	return cleric_creation_choices if selected_class_id == "cleric" else bard_creation_choices
+	var choices: Dictionary = cleric_creation_choices if selected_class_id == "cleric" else bard_creation_choices
+	choices["ability_generation"] = _ability_generation_record()
+	return choices
 
 
 func _creation_choice_error() -> String:
@@ -479,7 +609,7 @@ func _build_origin_feat_choice() -> void:
 	var picker := OptionButton.new()
 	picker.name = "OriginFeatPicker"
 	for id in options:
-		picker.add_item(str(DataLoader.get_feat(id).get("name", id)))
+		picker.add_item(FeatRules.label(id))
 		picker.set_item_metadata(picker.item_count - 1, id)
 		if id == selected_origin_feat: picker.select(picker.item_count - 1)
 	picker.item_selected.connect(func(index: int): selected_origin_feat = str(picker.get_item_metadata(index)))
@@ -691,12 +821,17 @@ func _on_next_pressed() -> void:
 
 
 func _confirm_and_save_character() -> void:
+	if not _ability_choice_error().is_empty():
+		current_step = CreationStep.STATS
+		_update_step_ui()
+		return
 	if not _creation_choice_error().is_empty():
 		current_step = CreationStep.EQUIPMENT
 		_update_step_ui()
 		return
 	var character := Character.new()
 	character.initialize(selected_name, selected_race_id, selected_class_id, selected_stats.duplicate_scores(), barbarian_starting_equipment_choice if selected_class_id == "barbarian" else str(_creation_choices()["equipment"]) if selected_class_id in ["bard", "cleric"] else "equipment", _creation_choices() if selected_class_id in ["bard", "cleric"] else {})
+	character.creation_choices["ability_generation"] = _ability_generation_record()
 	if character.class_id != selected_class_id:
 		return
 	
@@ -733,9 +868,33 @@ func _on_randomize_pressed() -> void:
 	selected_race_id = random_race["id"]
 	selected_class_id = random_class["id"]
 
-	# Distribute stats randomly but validly using standard array
-	var scores := AbilityScores.STANDARD_ARRAY.duplicate()
-	scores.shuffle()
+	# Randomize using a method permitted by this campaign.
+	var allowed_methods: Array = GameManager.active_campaign.get("ability_generation_methods", ["point_buy", "standard_array", "random_4d6"])
+	var scores: Array
+	_ability_generation_results.clear()
+	_ability_generation_assignments.clear()
+	if "standard_array" in allowed_methods:
+		_ability_generation_method = "standard_array"
+		_ability_generation_seed = 0
+		_ability_generation_results.assign(AbilityScores.STANDARD_ARRAY)
+		scores = AbilityScores.STANDARD_ARRAY.duplicate()
+		scores.shuffle()
+		for score in _ability_generation_results:
+			var ability_index := scores.find(score)
+			_ability_generation_assignments.append(AbilityScores.ABILITIES[ability_index])
+	elif "random_4d6" in allowed_methods:
+		_ability_generation_method = "random_4d6"
+		_ability_generation_seed = int(Time.get_unix_time_from_system()) ^ randi()
+		_ability_generation_results = AbilityScores.roll_generation(_ability_generation_seed)
+		scores = _ability_generation_results.duplicate()
+		for ability in AbilityScores.ABILITIES: _ability_generation_assignments.append(ability)
+	elif "point_buy" in allowed_methods:
+		_ability_generation_method = "point_buy"
+		_ability_generation_seed = 0
+		scores = [15, 14, 12, 10, 10, 8]
+		scores.shuffle()
+	else:
+		return
 	
 	selected_stats = AbilityScores.new()
 	for i in AbilityScores.ABILITIES.size():

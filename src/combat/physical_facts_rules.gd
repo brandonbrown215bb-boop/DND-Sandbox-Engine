@@ -607,8 +607,10 @@ static func get_speed_for_mode(actor, mode: String) -> int:
 			return actor.get_speed() * 5
 		return spd
 	if actor is Dictionary:
+		if CombatAction.is_speed_zero(actor):
+			return 0
 		if clean_mode == "walk":
-			return int(actor.get("speed", 0)) * 5
+			return FighterRules.monster_speed(actor) * 5
 		if clean_mode == "fly":
 			return int(actor.get("fly_speed_feet", 0))
 		if clean_mode == "climb":
@@ -662,11 +664,10 @@ static func check_surface_and_hand_requirements(actor, mode: String, surface: St
 		var fly_speed := get_speed_for_mode(actor, "fly")
 		if fly_speed <= 0:
 			return {"allowed": false, "reason": "Creature has no declared flying speed."}
-		if actor is Character:
-			if actor.has_condition("restrained") or actor.has_condition("paralyzed") or actor.has_condition("petrified") or actor.has_condition("stunned"):
-				return {"allowed": false, "reason": "Incapacitating or restraining condition prevents flying."}
-			if actor.has_condition("prone") and not has_hover(actor):
-				return {"allowed": false, "reason": "Prone creature without hover cannot fly."}
+		if CombatAction.is_incapacitated(actor) or CombatAction.is_speed_zero(actor):
+			return {"allowed": false, "reason": "Incapacitating or restraining condition prevents flying."}
+		if CombatAction.has_condition(actor, "prone") and not has_hover(actor):
+			return {"allowed": false, "reason": "Prone creature without hover cannot fly."}
 		return {"allowed": true, "reason": ""}
 
 	# 4. Climb requirements

@@ -10,7 +10,7 @@ const END_REASONS := ["short_rest", "long_rest", "zero_hp", "incapacitated"]
 const DICE := ["d4", "d6", "d8", "d10", "d12"]
 ## S-104: declared events that open a one-use window to switch the active mode.
 const SWITCH_EVENTS := ["hit", "turn_start"]
-const RULE_KEYS := ["id", "name", "type", "description", "boundary", "rest", "modes", "uses", "uses_per", "duration_seconds", "die", "targets", "end_on", "allow_reselect", "switch_events", "source_instance_id", "recharge_while", "costs", "activation_seconds", "reaction_trigger", "end_aftermath"]
+const RULE_KEYS := ["id", "name", "type", "description", "boundary", "rest", "modes", "uses", "uses_per", "cooldown_days", "duration_seconds", "die", "targets", "end_on", "allow_reselect", "switch_events", "source_instance_id", "recharge_while", "costs", "activation_seconds", "reaction_trigger", "end_aftermath"]
 const STATE_KEYS := ["mode", "open", "active", "remaining_seconds", "activation_serial", "rolled", "recipients", "event_serial", "window"]
 
 static func _int(v: Variant, lo: int, hi: int) -> bool:
@@ -29,7 +29,7 @@ static func validate_rule(f: Variant, allow_dawn: bool = false) -> String:
 	if f.boundary == "rest":
 		if f.has("end_aftermath"): return "Only self activation modes support end_aftermath"
 		if str(f.get("rest", "")) not in RESTS: return "rest mode_choice requires rest short_rest or long_rest"
-		for key in ["uses", "uses_per", "duration_seconds", "die", "targets", "end_on", "allow_reselect", "switch_events", "recharge_while", "costs", "activation_seconds", "reaction_trigger"]:
+		for key in ["uses", "uses_per", "cooldown_days", "duration_seconds", "die", "targets", "end_on", "allow_reselect", "switch_events", "recharge_while", "costs", "activation_seconds", "reaction_trigger"]:
 			if f.has(key): return "rest mode_choice cannot declare activation field '%s'" % key
 		return ""
 	if f.has("switch_events") and not switch_events_error(f.switch_events).is_empty(): return switch_events_error(f.switch_events)
@@ -59,7 +59,11 @@ static func _activation_error(f: Dictionary, allow_dawn: bool = false) -> String
 		var error := SourceEndAftermathRules.validate(f.end_aftermath)
 		if not error.is_empty(): return error
 	if f.has("rest"): return "activation mode_choice cannot declare rest"
-	if not _int(f.get("uses"), 1, 20) or str(f.get("uses_per", "")) not in (RESTS + ["dawn"] if allow_dawn else RESTS): return "activation mode_choice requires uses 1-20 and uses_per short_rest or long_rest%s" % (" or dawn" if allow_dawn else "")
+	var cadence := str(f.get("uses_per", ""))
+	if not _int(f.get("uses"), 1, 20) or cadence not in (RESTS + ["dawn", "days"] if allow_dawn else RESTS): return "activation mode_choice requires uses 1-20 and a supported recovery cadence"
+	if cadence == "days" and int(f.get("uses", 0)) != 1: return "uses_per days supports one use per cooldown interval"
+	if cadence == "days" and not _int(f.get("cooldown_days"), 1, 36525): return "uses_per days requires cooldown_days from 1 to 36525"
+	if cadence != "days" and f.has("cooldown_days"): return "cooldown_days requires uses_per days"
 	# Batch 050 fix: an item's text may make dawn recharge depend on being worn or attuned.
 	if f.has("recharge_while") and (not allow_dawn or str(f.get("uses_per", "")) != "dawn" or str(f.recharge_while) not in ["equipped", "attuned"]): return "recharge_while must be equipped or attuned on a dawn item power"
 	if not _int(f.get("duration_seconds"), 6, 86400): return "activation mode_choice requires duration_seconds 6-86400"
@@ -194,7 +198,13 @@ static func activate(actor: Character, feature_id: String, mode_id: String, reci
 	if "zero_hp" in r.get("end_on", []) and actor.current_hp <= 0: return _receipt(false, "end_condition_met")
 	# Review 052 R1: an Incapacitated creature can't act (SRD 5.2.1 Conditions); refuse before the use is spent.
 	if incapacitated(actor): return _receipt(false, "incapacitated")
+	var feature := actor.get_feature(feature_id)
+	var now := int(GameManager.campaign_elapsed_seconds)
+	var remaining := OwnedFeatureSources.day_cooldown_remaining(actor, feature, now)
+	if remaining > 0: return _receipt(false, "item_cooldown", {"remaining_seconds": remaining})
+	OwnedFeatureSources.restore_expired_day_uses(actor, feature, now)
 	if not actor.use_feature(feature_id): return _receipt(false, "no_uses")
+	OwnedFeatureSources.record_day_use(actor, feature, now)
 	var serial := int(actor.feature_modes.get(feature_id, {}).get("activation_serial", 0)) + 1
 	if r.has("end_aftermath"): serial = LocatedSourceEndRules.next_mode_serial(actor.character_id, feature_id, serial)
 	var rolled := 0

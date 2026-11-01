@@ -16,6 +16,13 @@ static func load_fixtures() -> void:
 
 static func wielder(id: String, definition: String) -> Array:
 	var c := Batch031Checks._character(id, 40)
+	if definition == POWER:
+		# The loaded staff now enforces its existing Sorcerer/Warlock/Wizard
+		# attunement prerequisite. Use a qualified wearer for the bonus checks.
+		var scores := c.ability_scores.duplicate_scores()
+		c = Character.new()
+		c.initialize(id, "human", "wizard", scores)
+		c.character_id = id
 	var copy := Batch041Checks.add_copy(c, definition)
 	c.inventory.equip_instance(Inventory.Slot.WEAPON, copy)
 	if bool(DataLoader.get_item(definition).get("requires_attunement", false)): c.inventory.attune_instance(copy, c.character_id)

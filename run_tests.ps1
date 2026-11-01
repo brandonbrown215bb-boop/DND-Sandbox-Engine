@@ -234,6 +234,11 @@ if ($runIntegration) {
 	$scenarios += "batch_064_mode_duration_flow"
 	$scenarios += "batch_065_reaction_triggers_flow"
 	$scenarios += "s121_exit_placement_flow"
+	$scenarios += "perception_flow"
+	$scenarios += "ordinary_action_flow"
+	$scenarios += "ready_action_flow"
+	$scenarios += "world_search_flow"
+	$scenarios += "condition_recovery_flow"
 	$scenarios += "located_source_end_flow"
 	$scenarios += "tether_group_flow"
 	$scenarios += "containment_flow"
@@ -247,6 +252,11 @@ if ($runIntegration) {
     # These reload probes consume the preceding flow's saved checkpoint. Keep
     # one isolated profile per pair and launch the probe in a fresh process.
     $scenarioReloads = [ordered]@{
+		crown_condition_finish_flow = "crown_condition_finish_reload"
+		condition_recovery_flow = "condition_recovery_reload"
+		spatial_trigger_flow = "spatial_trigger_reload"
+		world_search_flow = "world_search_reload"
+		quick_wins_flow = "quick_wins_reload"
         cast_lifetime_flow = "cast_lifetime_reload"
         batch_067_weapon_damage_choice_flow = "batch_067_weapon_damage_choice_reload"
         batch_068_exact_contents_flow = "batch_068_exact_contents_reload"

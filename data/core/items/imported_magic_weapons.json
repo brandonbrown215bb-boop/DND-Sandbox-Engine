@@ -457,6 +457,9 @@
     "magical": true,
     "rarity": "very rare",
     "requires_attunement": true,
+    "attunement_prerequisite": {
+      "classes_any": ["sorcerer", "warlock", "wizard"]
+    },
     "weapon_bonus": {
       "attack": 2,
       "damage": 2
@@ -469,8 +472,7 @@
     ],
     "maximum_charges": 20,
     "charge_recovery": {
-      "minimum": 6,
-      "maximum": 20,
+      "expression": "2d8+4",
       "cadence": "dawn"
     },
     "legacy_charge_state": "full",
@@ -484,7 +486,11 @@
       },
       "keep_properties": [
         "weapon_bonus"
-      ]
+      ],
+      "regain": {
+        "trigger_on": [20],
+        "expression": "1d8+2"
+      }
     }
   },
   {

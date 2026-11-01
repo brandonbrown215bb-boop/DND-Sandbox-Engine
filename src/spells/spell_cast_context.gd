@@ -11,6 +11,12 @@ const CLEAR_INTERVENTION := 4
 const CLEAR_WISH := 8
 
 var caster: Character
+## Exact encounter-held cast authority, supplied only by ReadySpellRules.
+var ready_release_token := ""
+var ready_release_guard: Callable
+var ready_action_paid := false
+var material_components_paid := false
+var ready_target_identities: Array = []
 var invocation_id := ""
 var action_id := ""
 var action_invocation_id := ""
@@ -25,6 +31,7 @@ var formula_inputs: Dictionary = {}
 var ordered_result: Dictionary = {}
 var players: Array[Dictionary] = []
 var monsters: Array[Dictionary] = []
+var spell_casters: Array = [] # Includes encounter-local monster lifetime adapters.
 var player_index := -1
 var detected_creatures: Dictionary = {}
 var detected_hazards: Dictionary = {}
@@ -93,6 +100,7 @@ var end_resilient_sphere: Callable
 var push_blocked_hexes: Callable
 var redraw_entities: Callable
 var push_combat_target: Callable
+var publish_combat_event: Callable
 
 var spell_origin := Vector2i.ZERO
 var delivery_character: Character

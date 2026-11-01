@@ -4,18 +4,23 @@ This registry owns slice IDs, requirements, prerequisites, completion status and
 verified boundaries. The [vocabulary checklist](../reviews/dnd-code-vocabulary-gap-checklist.md)
 owns broader V-series requirements and source gaps. The [roadmap](../../roadmap.md)
 chooses work; completing a bounded slice doesn't close its broader parent or
-certify converted catalog content.
+certify converted catalog content. The [Crown roadmap](crown-roadmap.md) selects
+the level-1–5 campaign work from this registry; its
+[content scope](crown-content-scope.md) identifies the required consumers.
+The [main roadmap](../../roadmap.md#outside-crown) retains work outside that band.
 
 ## Count and scope
 
-**276 defined slices: 152 verified, 124 not yet accepted.** (S-246–S-276 from the [wave 2 audit integration](#wave-2-audit-slices); S-240/S-241 from [SRC-01 batch 2](#src-01-batch-2); S-235–S-239 added by the 2026-10-26 [core rules/conditions audit](../mechanics/core-rules-status.md).) Counts measure accepted
+**276 defined slices: 163 verified, 113 not yet accepted.** (S-246–S-276 from the [wave 2 audit integration](#wave-2-audit-slices); S-240/S-241 from [SRC-01 batch 2](#src-01-batch-2); S-235–S-239 added by the 2026-10-26 [core rules/conditions audit](../mechanics/core-rules-status.md).) Counts measure accepted
 bounded implementations, not time, effort or completion of every clause in a row.
 These totals include reviewed, repaired and merged Batches 034–065 through
 2026-10-21, plus combat save-exit placement (VS-144), the bounded located source-end continuation (VS-145) and
 exact item-form return (VS-146), Character/object tether groups (VS-147), and
 actual containment occupancy/capacity (VS-148), internal harm/escape (VS-149),
 moving containers/legal release (VS-150), projected vessel contents/movement
-(VS-151), and rest-start expiry/actor-specific duration (VS-152);
+(VS-151), rest-start expiry/actor-specific duration (VS-152), and the
+[five independent quick wins](#five-quick-wins), plus observer senses/concealment
+(VS-153/VS-154) and [declared spatial trigger scopes](#spatial-trigger-scopes) (S-184);
 remaining limits are recorded below.
 
 SRD 5.2.1 governs the staged core-12 target. Artificer, Mystic and later
@@ -27,16 +32,16 @@ catalog content as part of every slice.
 
 | Phase | Defined | Verified | Not yet accepted |
 |---|---:|---:|---:|
-| P1 — Facts, results and grants | 44 | 34 | 10 |
-| P2 — Pools, time and effect state | 56 | 42 | 14 |
-| P3 — Rolls and decisions | 32 | 22 | 10 |
-| P4 — Damage and consequences | 31 | 20 | 11 |
+| P1 — Facts, results and grants | 44 | 36 | 8 |
+| P2 — Pools, time and effect state | 56 | 43 | 13 |
+| P3 — Rolls and decisions | 32 | 23 | 9 |
+| P4 — Damage and consequences | 31 | 21 | 10 |
 | P5 — Casting and action composition | 25 | 12 | 13 |
 | P6 — Actors and forms | 23 | 17 | 6 |
-| P7 — Space, perception and illusions | 27 | 1 | 26 |
+| P7 — Space, perception and illusions | 27 | 4 | 23 |
 | P8 — Physical items and bodies | 22 | 4 | 18 |
 | P9 — Procedures and campaign outcomes | 16 | 0 | 16 |
-| **Total** | **276** | **152** | **124** |
+| **Total** | **276** | **160** | **116** |
 
 ## How to use a row
 
@@ -73,10 +78,13 @@ catalog content as part of every slice.
 
 ## Current and next queue
 
-The owner selected a completion plan for the missing behavior in merged Batches
-034–046. Use the assignments below and their actual prerequisites. These are
-continuations of existing slice scope, not new S-IDs or new acceptance claims.
-The old numbered prompts and gate chains aren't queues to resume.
+The [Crown roadmap](crown-roadmap.md) selects current work by its level-1–5
+content and actual missing consumers. The retained completion plan below covers
+missing behavior in merged Batches 034–046; reuse its assignments and actual
+prerequisites where Crown needs them. These are continuations of existing slice
+scope, not new S-IDs or acceptance claims, and the entire merged-batch queue is
+not a campaign gate. Broader work remains in the main roadmap. The old numbered
+prompts and gate chains aren't queues to resume.
 
 <a id="merged-slice-completion-queue"></a>
 
@@ -165,10 +173,14 @@ owns the syntax and these limits. SRD feat work should stage complete source-bac
 candidates and list missing operations before any promotion into loaded data.
 
 Windows acceptance passed full logic and the selected 049/050/051/052, creation,
-sheet-context and action-resource flows. The normal-creation matrix still has the
-same 16 failures on unchanged main (outdated equipment/style/Artificer expectations);
-it is not certified by this acceptance. Existing PR discussions retain exact
-counts and the final regression/injection results; raw logs stay ignored.
+sheet-context and action-resource flows. That acceptance excluded 16 stale
+normal-creation matrix assertions. The 2026-10-29 repair reproduced all 16 and
+updated the pinned Barbarian/Wizard/Sorcerer/Ranger loadouts, exercised Wizard
+spellbook/preparation and Paladin/Ranger style choices through the actual sheet,
+and checked Artificer's intended absence. The Windows runner now passes the
+matrix with zero failures, including all one-through-four-player journeys and
+its nine class loadouts. This adds no slice or full integration-suite claim.
+See [testing](../testing.md) for the bounded coverage; raw logs stay ignored.
 
 ### Ready assignments using existing building blocks
 
@@ -568,7 +580,9 @@ forms do not yet declare automatic expiry timers; callers can publish the exact
 `expired` end reason. Hazards are flat typed damage
 on outside-to-inside entry with a per-creature lifetime cap; crossing, appearance,
 teleport arrival and turn scopes are not covered. Object kinds beyond `loose`
-and hazard kinds beyond `entry_damage` refuse. No catalog conversion is claimed.
+and hazard kinds beyond `entry_damage` were outside that delivery. S-184 adds
+[declared spatial damage policies](#spatial-trigger-scopes) alongside it.
+No catalog conversion is claimed.
 Waiting timers/completed children are durable; unresolved decisions do not gain
 checkpoint permission. [Authoring contract](../mechanics/source-end-rules.md#located-end-continuations).
 
@@ -780,6 +794,293 @@ neutral/renamed fixtures prove the reusable runtime only. See the
 ### Rest-start expiry, actor-specific duration and room object spell states — VS-152
 
 S-070 separates starting a rest (`RestRules.start_rest`), advancing elapsed duration (`advance_rest`), interrupting (`interrupt_rest`) and completing (`complete_rest`). `short_rest_started` and `long_rest_started` boundaries expire declared sources at rest start without granting rest completion benefits early. Actor-specific `long_rest_duration_seconds` (such as Elf Trance's 14,400 seconds) completes that participant's Long Rest after the declared elapsed duration while 8-hour participants remain in progress until 28,800 seconds; interrupted rests before completion grant no recovery. Local-room and combat object spell states (`magical_lock`, `continual_flame` and area object damage) persist across room transitions and checkpoint save/load.
+
+<a id="ordinary-action-continuation"></a>
+
+### Ordinary combat action continuation — S-237
+
+S-237 is **in progress**, not accepted; accepted slice counts do not change.
+The [ordinary action contract](../mechanics/ordinary-actions.md) owns supported
+syntax and behavior. The combat Actions chooser supplies ordinary Dash,
+Disengage, complete Dodge, bounded legal Hide, Ready, Help an attack, Help to
+stabilize, proficient skill/tool Help and bounded creature Search. Rogue/Monk
+variants reuse the same effects at
+their declared costs. A loaded renamed Cunning Action consumer uses the same
+command/picker path. Dodge now survives own turn-end, expires before next-start
+effects, uses defender sight, and grants DEX-save Advantage through Character
+and monster owners; disabling conditions/effective Speed 0 end it permanently.
+
+`ordinary_action_flow` exercises the actual chooser and clicks, partial-movement
+Dash, canonical/repeated costs, Dodge timing/visibility/Character and monster
+saves, disabling/cured conditions and numeric speed recovery, visible/obscured
+Hide, renamed loaded feature commands, recorded discovery, Help cancellation,
+stale budget/target payment, exact consumption/expiry, Medicine stabilization
+and teardown. Permissioned renamed quiet/Verbal spell casts prove Hide endings
+and independent Invisibility preservation; actual sight queries cover glow
+suppression. Existing condition recovery checks now use an in-grid hiding
+place; their immobile-turn assertion checks the actual initiative owner.
+Created-actor scheduling retains its once-only turn proof while correctly
+expecting Restrained to end Dodge. No durable state or new checkpoint is added.
+
+The Ready continuation captures a perceivable trigger and action/movement,
+offers the exact owner's Reaction after it completes, revalidates live choices,
+expires before next owner start and preserves the interrupted actor's budgets.
+Spell Ready pays/casts now, holds temporary Concentration and releases once
+through existing spell owners. Production-path neutral/renamed spells prove
+last-slot release; the actual cantrip source/payment chooser, native projectiles
+and point markers exercise reused owners.
+Cancelled release retains paid energy, consumed components are not required or
+paid again, and marker release preserves later Invisibility/Sanctuary sources.
+Restricted extra Actions cannot fund spell Ready. Self-observed movement still
+triggers while Blinded. Held state clears on concentration loss/teardown.
+
+Proficient Help uses the actual owned-proficiency chooser and adjacent ally
+click. Its next matching live skill/tool check consumes the exact benefit;
+unrelated checks preserve it, conditions compose, and the helper's actual next
+turn expires unused assistance. Both participants and physical assistance must
+remain live at the check. Verbal/world assistance is not implied by this host.
+
+Windows Godot 4.7 verification: full logic **6,619 passed, zero failed**;
+`ready_action_flow`, `ordinary_action_flow`, `crown_condition_finish_flow` and
+its fresh-process reload, `condition_recovery_flow` and its fresh-process reload,
+`perception_flow`, `monk_action_flow`, `combat_light_visibility_flow` and
+`mixed_mechanics_encounter` passed. The mixed marker controls now select the
+actual initiative owner rather than seeding only stale player pointers.
+Focused spell/combat/condition
+logic also passed **3,576 checks** after the Ready/Help repairs. One focused
+independent reviewer checked costs, expiry, sight, source cleanup and paid-spell
+continuations; concrete findings were repaired. This work also fixed actual
+spell reconciliation dropping retained monster concentration after a player
+cast by supplying both kinds of caster to the existing source owner.
+
+The item/feature and object continuation adds completed-action producers after
+successful paid item, equipment, feature, targeted feature, mode/projection,
+order and marker operations. Paid child parents publish on completion or
+forfeiture, not while choosing their first child. Escape/rescue and Sleep
+assistance publish after their actual attempt. Refused/unpaid choices do not
+invent activity. Generic and native created-creature turn hosts publish after
+an actual Action.
+
+Combat Utilize now selects a visible reachable room object, its physical
+operation and any exact item, then calls `LocalRoomRules.interact` with the live
+combat origin and ability-check context. It changes real doors/contents/fire,
+refreshes board geometry and charges one Action for an actual attempt, including
+a failed roll. Stale object/room identities, moved cells, unavailable budgets,
+plane/altitude/reach violations, cancellations and tool/inventory refusals do
+not pay. Readied Utilize uses the same owner with its own Reaction; co-located
+creatures cannot replace the selected object's identity. Existing room
+persistence retains the object changes; no checkpoint is added.
+
+Continuation verification (Windows Godot 4.7, 2026-10-30): combat/condition/spell
+logic **3,576 passed, zero failed**; class logic **1,704 passed, zero failed**.
+Expanded `ready_action_flow`, `ordinary_action_flow`, `batch_028_actions_flow`,
+both HUD mode-control/cost flows, `item_lifecycle_controls_flow` and its fresh
+process, `monk_action_flow`, and `condition_recovery_flow` with its fresh-process
+reload passed. The expanded Ready flow proves actual object/item choices,
+failed tool attempts consuming Help and an Action, stale identities/budgets/
+turns/reach, combat-only origins without party-map pollution, and cancelled/
+completed readied Utilize. One focused independent reviewer checked producer
+timing, payment and live identities; concrete findings were repaired. The
+broader grouped-spell probe `child_group_flow` still fails before its casts
+start (no slot payment/effects); that separate existing triage item is not
+repaired or certified by this continuation.
+
+The represented-noise continuation adds authored `interaction_noise` to actual
+combat room-object operations, reusing the delivered Utilize and Ready controls.
+Paid failed attempts produce sound; refusals/cancellations do not. Loud sound
+ends only Hide even with no Ready owner. Whisper sound retains Hide and cannot
+trigger the existing loud-sound Ready option. Same-plane hearing uses an
+inclusive authored distance and actual sound-blocking room walls/closed doors,
+including visually transparent glass. Observer positions/hearing eligibility
+are captured at emission, so nested readied opening/closing cannot rewrite who
+heard the earlier sound. Response legality and Reaction ownership stay live.
+Creature Search and Verbal-cast sound reuse the bounded hearing query. Crown's
+Temple door and Offering chest declare forcing/prying sounds for new rooms;
+existing saved records are not rewritten. No new checkpoint or durable runtime
+state is added. The [ordinary action contract](../mechanics/ordinary-actions.md#represented-sound)
+owns the syntax and hearing-policy limits.
+
+Noise continuation verification (Windows Godot 4.7, 2026-10-30):
+`run_tests.ps1 -Suite all -Scenario ready_action_flow,ordinary_action_flow,perception_flow`
+passed full logic **6,629 checks, zero failed** and all three gameplay flows.
+The expanded Ready flow proves renamed loaded object sounds, loud failed
+attempts, silent refusals/cancellation, independent Invisibility, Deafened and
+Blinded listeners, whisper exclusion and both nested door-response hearing
+snapshots. Perception logic covers range boundaries, glass/sound obstruction,
+plane inheritance and malformed declarations. One focused independent reviewer
+identified and checked repairs to whisper matching, completion origin capture
+and retroactive hearing; the final source and gameplay logs had no blocking
+findings. This verifies the bounded noise continuation, not all of S-237.
+
+<a id="room-search-continuation"></a>
+
+**Room Search continuation (S-237; bounded S-229 prerequisite).** The room
+Search control selects one represented space and resolves actual visual
+Perception, changing the exact object's per-observer discovery and existing
+interaction/target offers. Real vicinity, plane, sight, light/senses and room
+fog/Darkness guard discovery. An attempt costs the existing six-second world
+Action interval; cancellation, unavailable sight and invalid/stale choices cost
+nothing. Unpaid map choices cannot overlap Search. Known objects use the existing
+Take/Utilize/cast paths; unknown ones remain physical objects for collision and
+untargeted areas. Full-party and player-only entrance checkpoints preserve exact
+observer identities, contents and clock without replay. Invalid/duplicate/orphaned
+discovery records refuse before load; legacy rooms need no migration. The
+[ordinary action contract](../mechanics/ordinary-actions.md#room-search-and-object-discovery)
+owns syntax and policy limits. This is engine vocabulary proven by loaded neutral
+objects and actual controls, not catalog conversion or completion of S-229/S-237.
+
+World Search verification (Windows Godot 4.7): full logic **6,651 passed, zero
+failed**. `world_search_flow` and its automatic fresh-process reload passed,
+along with `ready_action_flow`, `ordinary_action_flow`, `perception_flow` and
+`batch_081_declared_fallback_flow` with its fresh-process reload. A final targeted
+Search/reload run additionally verifies required-exit chooser takeover and
+clears both character managers, dungeon state and clock before loading each
+checkpoint form. Independent review identified and checked repairs to hidden
+spell/containment/remains offers, preserved raw objects, exact chain identity,
+room obscurement, actual special-sense checks and overlapping map choices. No
+blocking review findings remain. Existing save checkpoints and accepted slice
+counts are unchanged.
+
+**Next work and blockers:**
+
+- Keep S-237 selected for represented cover/noise, world Search/Help, Study and
+  Influence. Reuse the delivered Ready and room-object Utilize controls rather
+  than assigning them again. Additional tool tasks or item deployment still
+  need their actual world effects.
+- Ready supports completed ordinary actions and monster turns, weapon attacks,
+  spell casts, represented movement/teleport hosts and the paid player controls
+  above; arbitrary prose triggers are not interpreted. Sound currently covers
+  Verbal casting and declared paid room-object operations with represented
+  sound rays; other noise producers remain open.
+- Check Help covers adjacent physical assistance in live encounter checks.
+  World checks and verbal assistance need actual proximity/communication and
+  action/time hosts; a stored general Advantage is not a substitute.
+- Reuse the delivered visual room-object Search and per-observer checkpoint
+  recovery. Remaining Search consumers include other senses/skills, passive or
+  shared discovery, overworld searching and actual trap procedures. Study and
+  Influence still need their own represented facts and outcomes.
+- Three-Quarters Cover Hide needs S-238's represented cover. Sound louder than
+  a whisper now has the bounded producer/hearing host above; additional action,
+  item and spell noise producers, sound propagation around corners, room/overworld
+  Hide and broad hearing stay open with S-188/S-229; hidden-object Search now has
+  the bounded visual room host above.
+- Study needs represented knowledge (S-219); Influence needs authored requests,
+  attitudes, desires and actual willing/unwilling/hesitant outcomes (S-188).
+  Utilize beyond the represented room operations and existing Shield/item
+  controls needs the actual object interaction/tool task. Do not implement
+  these as a roll plus a fake success flag.
+
+<a id="srd-condition-and-roll-host-spine"></a>
+
+### Condition and roll-host recovery - Crown complete; S-247 retains level-17 follow-up
+
+The 2026-10-29 continuation completes the Crown condition/roll-host work using
+`CombatAction.CONDITION_RULES` and the existing shared roll/lifetime owners.
+S-235, S-246 and S-248 are accepted. S-247's reachable level-3 Open Hand
+consumers now finish its Crown portion; the full slice remains partial only for
+level-17 Quivering Palm's action and production-save proof, outside Crown.
+
+Verified through `condition_recovery_flow` and its automatically paired
+fresh-process `condition_recovery_reload` on the supported Windows Godot runner:
+
+- Actual player HUD/turn budgets refuse Actions and Bonus Actions while generic
+  Stunned/Incapacitated retain movement. Restrained/Grappled retain an action
+  turn at Speed 0; the old whole-turn skip prevented attacks, spells and escape.
+  Immobile incapacitated actors end their unusable turn. Poisoned has no invented
+  turn damage. Both live actor kinds use Petrified poison immunity/resistance.
+- Actual HUD Invisibility, Darkness and Dancing Lights casts end immediately on
+  Incapacitated through the live owner: exact recipient sources, zone/obscurement
+  and lights are removed. Independent grants survive. Healing/damage preserve
+  explicit sleep/Prone except where the source declares its own ending.
+- Live room owners also end managed concentration and preserve movement under
+  generic Stunned/Incapacitated. Entering a room already Unconscious drops the
+  exact held copy. An active-room save is refused; an allowed entrance checkpoint
+  and fresh process restore the ground copy once and retain independent sleep/
+  Prone sources without serializing the transient scene handler.
+- S-246: actual aggressive/defensive AI turns cover the movement/action gates and
+  conscious Prone standing versus Speed 0. Actual encounter intent/commands cover
+  multiple exact charm/fear sources, colon-containing actor identities, unseen
+  fear-source mode removal, unknown Hidden versus known Invisible locations,
+  Blinded spell refusal and special senses. Existing S-190/S-191 perception is
+  reused. An accepted command becoming illegal during a real save chooser is
+  refused before slot/Inspiration/damage settlement. Attacks/spells refresh live
+  facts after choices; Opportunity Attacks recheck before paying the Reaction.
+  Defensive retreat no longer proposes an out-of-range melee attack. Monster
+  spell projections preserve declared permissions, stable identity and distinct
+  cast serials; two real casts spend one slot each.
+- S-247 delivered boundary: Character/monster/spell STR/DEX auto-failures emit no
+  dice for Paralyzed, Stunned, Unconscious and Petrified. Actual HUD and monster
+  spell paths bypass eligible roll tokens and optional Inspiration choices.
+  Restrained DEX Disadvantage cancels once against Advantage; monster save
+  receipts retain the mode, base modifier and signed Bless/Bane dice. Existing
+  logic checks also protect Indomitable/Disciplined Survivor non-expenditure.
+- S-248: both existing Cunning Hide branches use actual proficiency/expertise,
+  Exhaustion and Poisoned modes, spend once, and refuse repeat submissions.
+  Actual camp-rest ambush, monster zone/tether escape/rescue and Character tether
+  escape use the shared check owners. Tether outcomes retain their captured
+  check. Social charm supports either actor kind as the actual target. Existing
+  check/token tests retain replacement receipts; this does not add S-224 menus.
+
+`crown_condition_finish_flow` and its paired fresh-process reload additionally
+verify the remaining Crown consumers:
+
+- S-235 initiative uses `InitiativeTracker.roll_result` for encounter actors,
+  familiars, late-created own turns and rolled shared groups. Invisible and
+  Incapacitated modes cancel once and Exhaustion applies once. A rolled group
+  uses its first authored member's live modes/DEX even when another joins first
+  or that first member is downed. Its captured count survives empty/rebuilt
+  groups without rerolling; owner-count and after-owner policies still inherit.
+- Offensive monster casts retain one transient Character lifetime adapter per
+  actual monster. All encounter reconciliation sees those owners; shared
+  payload application, exact-source replacement, expiry and Incapacitated/death
+  cleanup use the existing owners. Actual HUD Darkness/Dancing Lights followed
+  by massive Character death also clean through the live owner immediately.
+  Mixed typed packets in one damage occurrence
+  produce one concentration save, including temp-HP-only damage; prevention
+  produces none. The real Portent chooser serializes later damage, refuses turn
+  advancement and pays one token once. Mixed Flurry/concentration prompts
+  settle in order without overlapping dialogs. Monster sources end before encounter
+  capture/party checkpoints; fresh-process recovery has no orphaned NPC source.
+  This completes the existing single/multi-target monster cast host; it does not
+  add AI area/marker spell selection or a second monster spell interpreter.
+- S-247 Open Hand is executable level-3 subclass data. Actual Flurry hits offer
+  Addle, Topple or up-to-15-foot Push without another Focus/Bonus Action payment.
+  Topple/Push use shared saves, no-roll automatic failures and captured
+  Restrained/Bless/Bane receipts. Addle blocks only Opportunity Attacks until
+  target start. Prone persists through a Grappled target's turn. Push uses legal
+  forced movement with no Opportunity Attacks, stops at blockers, and retains
+  the paid remaining strike for retargeting when out of reach. Stale choices
+  cannot add consequences or repeat payment; a renamed JSON feature loads and
+  runs through the same HUD route. An allowed checkpoint/fresh process restores
+  acquired Open Hand and remaining Focus without replay.
+
+Remaining scope is explicit:
+
+- **S-247 remains partial only outside Crown:** level-17 Quivering Palm is still
+  disabled and lacks its actual action/save proof. Keep it in the standard roadmap.
+- A full 200-object room retains equipped gear and reports an unrepresentable
+  drop rather than losing a copy or making an invalid checkpoint.
+- S-236 owns full Grapple/Shove; S-237 owns legal Hide/DC 15 and ordinary action
+  controls; S-239 owns voluntary standing/crawling/jumping. Current conscious
+  turn-start standing spends half movement. None is silently accepted here.
+
+The final selected condition/combat/spell/class/check-context/persistence and
+Barbarian/Bard/Cleric logic run passed 5,697 checks. The independent reviewer
+ran the supported conditions checks separately: 62 passed, zero failed.
+`core12_audit_repairs`, `spell_effect_lifetime`,
+`combat_ai_loop`, `monk_action_flow`, `perception_flow`, `entangle_spell_flow`,
+`tether_group_flow` and its recovery probes passed. The historical mixed
+encounter's 22 failures were reproduced, then its stale spell permissions and
+post-conversion double-healing assertions were repaired. Its final Shield test
+also tried to attack with the Fighter it had just disintegrated: the new refusal
+is correct, and a live attacker now tests Shield. The mixed encounter and Ranger
+Blindsight scenario pass; the latter now has an explicit fixture spell permission.
+One independent reviewer checked source identity, stale choices, mode ownership,
+cleanup and checkpoint behavior. Their massive-death cleanup and mixed-dialog
+findings were reproduced through actual HUD paths and fixed. The old Monk
+action fixture now starts a real new turn, clearing its previous paid Flurry
+sequence along with the budget; resetting only its budget was stale. Raw logs
+remain in ignored test artifacts.
 
 ### Assignment boundaries and completion checks
 
@@ -1005,7 +1306,7 @@ the existing modules instead of rebuilding these bounded hosts.
 | S-131 — Maximum-HP zero death/remains policy | Verified (VS-124; Character zero-maximum death) | V-095, V-021 | Use source-specific zero-limit death/remains behavior and recovery restrictions, distinct from current-HP zero and injury-specific healing blocks. | S-130, S-119 |
 | S-132 — Redirect original incoming spell target | Planned | V-097 | Propose a legal alternate recipient for only the permitted original spell/step; retain original slot/parameters and settled earlier recipients, with no recast. | S-116, S-144 |
 | S-133 — Reflection with declared caster policy | Planned | V-097 | Reflect using stated original-versus-reflector attack/DC/ownership, preserving causal identity and limits; redirected origin/recipient alone cannot choose new stats. | S-132, S-114 |
-| S-235 — SRD condition consequence table | Planned | V-100, V-012, V-013 | One shared table drives each SRD 5.2.1 condition's attack/save/check/speed/turn/concentration consequences for Characters and monsters on the same production path; audit deviations (Poisoned turn damage, missing auto-fails, Prone/Unconscious) resolved explicitly. See [core-rules status](../mechanics/core-rules-status.md). | S-072, S-074 |
+| S-235 — SRD condition consequence table | Accepted 2026-10-29 ([verified boundary](#srd-condition-and-roll-host-spine)) | V-100, V-012, V-013 | One shared table drives each SRD 5.2.1 condition's attack/save/check/speed/turn/concentration consequences for Characters and monsters on the same production path; audit deviations (Poisoned turn damage, missing auto-fails, Prone/Unconscious) resolved explicitly. See [core-rules status](../mechanics/core-rules-status.md). | S-072, S-074 |
 | S-236 — Grappled condition and Grapple/Shove | Planned | V-064 | Apply source-bound Grappled (Speed 0, Disadvantage vs others, drag cost, escape, ends on Incapacitated/out of reach) and Unarmed Strike Grapple/Shove; reuse S-168 tethers without duplicating them. | S-168, S-235 |
 
 ## P5 — Casting and action composition
@@ -1032,7 +1333,7 @@ the existing modules instead of rebuilding these bounded hosts.
 | S-151 — Release stored spell once | Planned | V-084 | New holder chooses actual legal targets using stored numbers and declared ownership; release consumes only the selected stored entry and does not repay its original slot. | S-150, S-144 |
 | S-152 — Temporary preparation theft and enemy prohibition | Planned | V-087, V-057 | A qualifying failed save grants exact spell permission and denies that enemy's matching spell for the captured deadline, without storing a cast or removing others' knowledge. | S-116, S-137, S-049 |
 | S-153 — Theft expiry/source removal lifecycle | Planned | V-087 | Remove only the stolen permission/prohibition when its declared boundary ends; reload and repeated callbacks neither extend time nor revive old grants. | S-152, S-072 |
-| S-237 — SRD generic action menu | Planned | V-101, V-060 | Dash/Disengage/Dodge/Help/Hide/Influence/Ready/Search/Study/Utilize reachable as ordinary Actions with SRD effects; feature versions reuse them at their own cost; Hide uses DC 15 and location preconditions and yields Invisible. | S-160, S-191 |
+| S-237 — SRD generic action menu | In progress ([ordinary combat boundary](#ordinary-action-continuation)) | V-101, V-060 | Dash/Disengage/Dodge/Help/Hide/Influence/Ready/Search/Study/Utilize reachable as ordinary Actions with SRD effects; feature versions reuse them at their own cost; Hide uses DC 15 and location preconditions and yields Invisible. | S-160, S-191 |
 
 ## P6 — Actors and forms
 
@@ -1073,14 +1374,14 @@ the existing modules instead of rebuilding these bounded hosts.
 | S-181 — Expired flight/fall/descent/shunt | Planned | V-069 | When movement permission ends, use actual position and declared controlled descent/fall/shunt; legal end placement precedes final consequences. | S-180, S-072, S-121 |
 | S-182 — Linked willing passenger movement | Planned | V-070 | Select legal willing passengers and actual destinations within source limits; move one group once, retain carried identities and declared opportunity suppression. | S-179, S-026, S-121 |
 | S-183 — Each beneficiary's Reaction movement | Planned | V-070 | Offer each eligible actor its own movement choice and Reaction cost; declined/used budgets and destinations remain independent through sequential choices. | S-182, S-083 |
-| S-184 — Entry/crossing/turn/first-approach trigger scopes | Planned | V-071, V-041 | Distinguish actual entry/crossing/start/end/first approach and source/actor scope; moving the area and moving an actor are not always the same trigger. | S-179, S-057, S-042 |
+| S-184 — Entry/crossing/turn/first-approach trigger scopes | Verified ([boundary](#spatial-trigger-scopes)) | V-071, V-041 | Distinguish actual entry/crossing/start/end/first approach and source/actor scope; moving the area and moving an actor are not always the same trigger. | S-179, S-057, S-042 |
 | S-185 — Selective actor/effect barriers | Planned | V-071 | Block only declared actor types/effects across a real boundary with source exceptions; rejected movement/cast doesn't partially cross or settle payload. | S-184, S-032, S-098 |
 | S-186 — Barrier placement over existing occupants | Planned | V-071 | Apply declared displacement/termination/pass-through when creating or moving a barrier over occupants; preserve legal destination, source and prior budgets. | S-185, S-121 |
 | S-187 — Located nonoccupying image/sound/duplicate | Planned | V-072, V-057 | Create source-owned image/sound with location and identity but no creature occupancy/HP unless specified; ending it retains final origin for declared aftermath. | S-049, S-184 |
 | S-188 — Per-observer suspicion/investigation/discovery | Planned | V-072, V-083, V-003, V-057 | Use declared context and Intelligence-influenced investigation, then the selected rule's actual discovery/interaction test; retain each observer's knowledge separately. | S-187, S-029, S-190, S-219 |
 | S-189 — Constrained temporary illusion realization | Planned | V-072, V-076 | Realize an eligible represented object/bridge with actual collision and explicit harm/condition restrictions; duration/source end removes only that created object. | S-188, S-212, S-087 |
-| S-190 — Observer-specific senses/light/obstruction | Planned | V-073 | Evaluate actual observer range/type/light/obstruction and source-specific vision exception; knowing a location isn't automatically seeing the creature. | S-029, S-032 |
-| S-191 — Observer-relative concealment and invisible targets | Planned | V-073 | Apply Darkvision/Tremorsense/source-Darkness exceptions to eligible observers and targeting/rolls; one observer's discovery doesn't reveal it for everyone. | S-190, S-091 |
+| S-190 — Observer-specific senses/light/obstruction | Verified (VS-153, [boundary](#observer-senses-and-concealment)) | V-073 | Evaluate actual observer range/type/light/obstruction and source-specific vision exception; knowing a location isn't automatically seeing the creature. | S-029, S-032 |
+| S-191 — Observer-relative concealment and invisible targets | Verified (VS-154, [boundary](#observer-senses-and-concealment)) | V-073 | Apply Darkvision/Tremorsense/source-Darkness exceptions to eligible observers and targeting/rolls; one observer's discovery doesn't reveal it for everyone. | S-190, S-091 |
 | S-192 — Independent perception/cast/effect origins | Planned | V-074 | Bind actual actor/sensor/illusion/object to only the authorized origin, retaining the real caster's senses when required; no origin implies shared omniscience. | S-190, S-049 |
 | S-193 — Remote borrowed senses and delivery limits | Planned | V-074 | Let eligible observers borrow a linked sensor's specified senses/communication or touch-delivery route; exit/range/source loss restores normal restrictions. | S-192, S-026 |
 | S-194 — Direction/location/identity-only disclosure | Planned | V-075 | Return only declared detection facts/nearest source/direction to the permitted observer; don't reveal the full actor sheet or concealed identity. | S-190, S-025 |
@@ -1127,7 +1428,7 @@ the existing modules instead of rebuilding these bounded hosts.
 | S-223 — Unsupported child and precise partial-support route | Planned | V-086 | Keep fully supported invocation distinct from explicit bounded approximation; actual selector/control respects child availability and no content-ID allowlist substitutes for missing behavior. | S-222 |
 | S-227 — Travel pace, rate and travel clock | Planned | V-098, V-045, V-057 | Party selects a legal pace from terrain max/road/slow-member/special-movement rules; travel advances the campaign clock by actual distance/time and applies pace check modifiers; mount boost spends a cumulative budget; reload doesn't replay travel. Source: srd.txt 712–760, 12315–12350. | S-065, S-179 |
 | S-228 — Terrain travel procedures and marching order | Planned | V-098, V-078 | Per represented terrain, roll encounter distance and run Foraging/Navigation/Search checks once per stage with marching order; outcomes without SRD bodies (yield, being lost) stay explicit unknown/campaign-authored. Source: srd.txt 737–748, 12354–12370. | S-227, S-200, S-219 |
-| S-229 — Location-scoped search and hidden-object discovery | Planned | V-099, V-073 | Search reveals a declared hidden object/trap only to an eligible searcher in its vicinity, per observer, once discovered persists; searching elsewhere never reveals. Source: srd.txt 712–722, 11989. | S-190, S-188 |
+| S-229 — Location-scoped search and hidden-object discovery | In progress; bounded [visual room-object Search](#room-search-continuation), unaccepted | V-099, V-073 | Search reveals a declared hidden object/trap only to an eligible searcher in its vicinity, per observer, once discovered persists; searching elsewhere never reveals. Source: srd.txt 712–722, 11989. | S-190, S-188 |
 | S-230 — Trap trigger/disarm and lock procedures | Planned | V-099, V-096 | Declared trap trigger/detection/disarm/effect/reset and lock key/tool-check/break routes act on the actual room object; failure costs settle once and the object state survives checkpoints. Source: srd.txt 5900–5945, 12727–12928. | S-229, S-212, S-119 |
 
 ## Coverage crosswalk for all 103 parents
@@ -2914,8 +3215,7 @@ Schema validator is unavailable. Production behavior is proved by Godot.
 ## Progression/Acquisition slices (audit 2026-10-26)
 
 Added by the [Progression/Acquisition audit](../reviews/progression-acquisition-audit.md)
-(base `ede0a3c`, registry sha256 `70a83cc7…845e`). These rows are Planned and
-not accepted. Phase: all eight rows are **P1 — Facts, results and grants** (they
+(base `ede0a3c`, registry sha256 `70a83cc7…845e`). These rows were added as Planned; current acceptance is shown below. Phase: all eight rows are **P1 — Facts, results and grants** (they
 acquire, gate and grant creation/progression facts, alongside S-045–S-050); the
 phase, count and crosswalk tables above include them. S-242–S-245 come from the
 audit's [SRD design calls](../reviews/progression-acquisition-audit.md#srd-design-calls-follow-up-2026-10-26)
@@ -2927,9 +3227,9 @@ only how features are chosen, gated, granted and saved.
 |---|---|---|---|---|
 | S-231 — Background acquisition at creation | Planned | V-025, V-026, V-027, STA-01 | Background content type and creation step. The step grants the ability increase (+2/+1 or +1/+1/+1 from the 3 listed, cap 20), the Origin feat, 2 skills, a fixed tool or a category choice, and equipment A or GP, with receipts and saved validation (SRD p.83). | S-047, S-049, S-050 |
 | S-232 — Species and language creation choices | Planned | V-025, V-027 | Lineage, ancestry and legacy choice; spellcasting ability chosen at selection; size choice; species skill choice; Human Versatile Origin feat; Common + 2 languages (SRD p.20, pp.84–86). Character-level 3/5 grants reuse S-048 and S-139. | S-045, S-048, S-139 |
-| S-233 — Feat prerequisite kinds and repeat rules | Planned | V-025 | Class-level and named-feature prerequisites (Fighting Style, Spellcasting), the repeatable flag, and distinct-parameter repeats such as the Magic Initiate list (SRD pp.87–88). | S-049, S-050 |
+| S-233 — Feat prerequisite kinds and repeat rules | Verified ([boundary](#five-quick-wins)) | V-025 | Class-level and named-feature prerequisites (Fighting Style, Spellcasting), the repeatable flag, and distinct-parameter repeats such as the Magic Initiate list (SRD pp.87–88). | S-049, S-050 |
 | S-234 — Multiclass entry prerequisites | Planned | V-025, V-026 | 13+ in the primary ability of the new class and every current class (all-of / any-of), checked before a class is offered, with the exact failing score reported (SRD p.24). | S-047 |
-| S-242 — Creation ability-generation methods | Planned | V-025, V-057 | Offer Standard Array (15, 14, 13, 12, 10, 8) and Random Generation (4d6 drop lowest ×6, seeded, result recorded and saved) beside the existing 27-point Point Cost; a campaign setting may restrict the offered methods (ADR-0023 residue) (SRD p.21). Formerly PROPOSED-chargen-1. | S-045 |
+| S-242 — Creation ability-generation methods | Verified ([boundary](#five-quick-wins)) | V-025, V-057 | Offer Standard Array (15, 14, 13, 12, 10, 8) and Random Generation (4d6 drop lowest ×6, seeded, result recorded and saved) beside the existing 27-point Point Cost; a campaign setting may restrict the offered methods (ADR-0023 residue) (SRD p.21). Formerly PROPOSED-chargen-1. | S-045 |
 | S-243 — XP award and threshold advancement | Planned | V-026, V-057 | Award XP and raise level eligibility at Character Advancement table thresholds (0–355,000) by total character level, feeding the existing level-up and `pending_levels` routes (S-048/VS-69); no milestone rule in SRD 5.2.1 (SRD p.23, p.25). Formerly PROPOSED-chargen-2. | S-048 |
 | S-244 — Higher-level character creation | Planned | V-025, V-026 | Repeat the level-up steps through the target level (subclass, HP, background, ASI/feat choices), set minimum XP for that level, and apply the tier money/magic-item rarity grant from Starting Equipment at Higher Levels; start level and actual equipment are campaign settings (ADR-0023 residue) (SRD p.19, p.24). Formerly PROPOSED-chargen-3. | S-243, S-045, S-048, S-231 |
 | S-245 — Post-level-20 bonus feats (campaign-enabled) | Planned | V-025 | When the campaign enables it, grant one feat per 30,000 XP above 355,000, any feat the level 20 character qualifies for, Epic Boons included; enabling is the GM's call (ADR-0023 residue) (SRD p.24). Formerly PROPOSED-chargen-4. | S-243, S-233 |
@@ -2938,7 +3238,7 @@ only how features are chosen, gated, granted and saved.
 
 ## Wave 2 audit slices (integration 2026-10-26)
 
-The wave 2 integration (`audit/wave-2`, stacked on `audit/wave-1`) added these rows. The sources were the spell audit `audit/spells` 74aa034, the core rules batch 2 `audit/core-rules-2` ca99859, the item audit `audit/items` 4221f89, and the Monk and Rogue reviews only from `audit/features` 23ac806. Every row is Planned and not accepted. The phase, count and crosswalk tables above include them. No new V-IDs were needed. IDs run in order: stable sources first (core, then items), spells last. A row's phase is shown in its title.
+The wave 2 integration (`audit/wave-2`, stacked on `audit/wave-1`) added these rows. The sources were the spell audit `audit/spells` 74aa034, the core rules batch 2 `audit/core-rules-2` ca99859, the item audit `audit/items` 4221f89, and the Monk and Rogue reviews only from `audit/features` 23ac806. These rows were added as Planned; current acceptance is shown below. The phase, count and crosswalk tables above include them. No new V-IDs were needed. IDs run in order: stable sources first (core, then items), spells last. A row's phase is shown in its title.
 
 **Folds (no new ID):**
 - core-1..5 → S-235–S-239. These were already published from `audit/core-rules` c20c4d7. That branch itself is not merged.
@@ -2979,13 +3279,13 @@ catalog or complete the newly planned rows.
 
 | Slice | Status | Parents | Finish line | After |
 |---|---|---|---|---|
-| S-246 — Monster AI and turn consumers of SRD conditions (P4) | Planned | V-100 | Monster AI, AICommand, FighterRules.monster_speed and monster turn gates read the S-235 condition table: Incapacitated/Petrified/Unconscious skip actions, every Speed-0 condition stops movement, generic Stunned/Incapacitated alone preserve movement while refusing actions/Bonus Actions/Reactions, Prone stand-up obeys Speed 0, Frightened can't approach its source, Charmed can't target its charmer, and invisible/hidden targets are not picked by exact hex. Source: [core-6](../audits/core-rules-2.md). | S-235 |
-| S-247 — Non-spell save hosts apply condition modes (P3) | Planned | V-100, V-013, V-012 | BarbarianRules.roll_monster_save_result, Character.make_saving_throw_result and the monk raw d20 saves (Topple, Push, Quivering Palm) route through one save host that auto-fails STR/DEX for Paralyzed/Stunned/Unconscious/Petrified and gives Restrained DEX Disadvantage, with roll tokens and Bless/Bane intact. Source: [core-7](../audits/core-rules-2.md). | S-235 |
-| S-248 — Non-EventResolver check hosts apply proficiency and condition modes (P3) | Planned | V-100, V-012, V-003 | EventResolver.resolve_skill_check, a new monster-check helper, both Cunning Action Hide branches, overworld ambush Stealth, monster zone escape and monster tether escape/rescue apply proficiency consistently and Poisoned/Frightened/Exhaustion check modes. Source: [core-8](../audits/core-rules-2.md). | S-235, S-237 |
+| S-246 — Monster AI and turn consumers of SRD conditions (P4) | Accepted 2026-10-29 ([verified boundary](#srd-condition-and-roll-host-spine)) | V-100 | Monster AI, AICommand, FighterRules.monster_speed and monster turn gates read the S-235 condition table: Incapacitated/Petrified/Unconscious skip actions, every Speed-0 condition stops movement, generic Stunned/Incapacitated alone preserve movement while refusing actions/Bonus Actions/Reactions, Prone stand-up obeys Speed 0, Frightened can't approach its source, Charmed can't target its charmer, and unknown Hidden targets require discovery while known Invisible locations remain legal ordinary attack targets. Source: [core-6](../audits/core-rules-2.md). | S-235 |
+| S-247 — Non-spell save hosts apply condition modes (P3) | Crown portion complete; partial only for level-17 Quivering Palm ([boundary](#srd-condition-and-roll-host-spine)); unaccepted | V-100, V-013, V-012 | BarbarianRules.roll_monster_save_result, Character.make_saving_throw_result and the monk raw d20 saves (Topple, Push, Quivering Palm) route through one save host that auto-fails STR/DEX for Paralyzed/Stunned/Unconscious/Petrified and gives Restrained DEX Disadvantage, with roll tokens and Bless/Bane intact. Source: [core-7](../audits/core-rules-2.md). | S-235 |
+| S-248 — Non-EventResolver check hosts apply proficiency and condition modes (P3) | Accepted 2026-10-29 ([verified boundary](#srd-condition-and-roll-host-spine)) | V-100, V-012, V-003 | EventResolver.resolve_skill_check, a new monster-check helper, both Cunning Action Hide branches, overworld ambush Stealth, monster zone escape and monster tether escape/rescue apply proficiency consistently and Poisoned/Frightened/Exhaustion check modes. Source: [core-8](../audits/core-rules-2.md). | S-235, S-237 |
 | S-249 — Ammunition consumption and recovery (P8) | Planned | V-076 | A Longbow attack with 0 arrows is refused; two attacks from 3 leave 1; one minute after combat recovers floor(half) spent; the count survives save/load. Source: [items-1](../audits/items.md). | S-196, S-197 |
-| S-250 — Weapon range bands and the Heavy predicate (P3) | Planned | V-012, V-005 | Long-range attacks roll with Disadvantage and beyond-long are refused; Heavy weapons give Disadvantage below STR 13 (melee) or DEX 13 (ranged); thrown weapons keep the wielder's ability. Source: [items-2](../audits/items.md). | S-091 |
+| S-250 — Weapon range bands and the Heavy predicate (P3) | Verified ([boundary](#five-quick-wins)) | V-012, V-005 | Long-range attacks roll with Disadvantage and beyond-long are refused; Heavy weapons give Disadvantage below STR 13 (melee) or DEX 13 (ranged); thrown weapons keep the wielder's ability. Source: [items-2](../audits/items.md). | S-091 |
 | S-251 — Worn-armor predicates (P1) | Planned | V-005, V-012 | Armor STR requirement Speed −10, Stealth Disadvantage and untrained-armor STR/DEX D20 Disadvantage plus casting refusal apply while worn and clear when removed. Source: [items-3](../audits/items.md). | S-028, S-091 |
-| S-252 — Don/Doff timing (P2) | Planned | V-045 | Equipping or removing armor outside combat advances campaign time by the table value; Medium/Heavy cannot be donned in combat; a Shield costs the Utilize action; the result reports time spent. Source: [items-4](../audits/items.md). | S-064 |
+| S-252 — Don/Doff timing (P2) | Verified ([boundary](#five-quick-wins)) | V-045 | Equipping or removing armor outside combat advances campaign time by the table value; Medium/Heavy cannot be donned in combat; a Shield costs the Utilize action; the result reports time spent. Source: [items-4](../audits/items.md). | S-064 |
 | S-253 — Attunement prerequisites (P8) | Planned | V-079 | Class-qualified attunement refuses an ineligible creature with the reason, accepts an eligible one, and leaves unqualified items unchanged. Source: [items-5](../audits/items.md). | S-202 |
 | S-254 — Item-sourced spell casting with item overrides (P5) | Planned | V-028, V-024, V-030 | One item-casting host replaces the wand_of_magic_missiles ID branch: Spell Scrolls (list check, DC 10 + level read check, consumed), potion-delivered spell effects with source overrides (no Concentration, fixed DC, rolled-once duration, not a cast), and charge-spending wands/staffs/worn items with fixed DC/level, limited options and self-only targets. Source: [items-6 + items-10 + items-14](../audits/items.md). | S-134, S-126, S-139, S-006, S-060 |
 | S-255 — Magic templates over a base item (P8) | Planned | V-079 | A template (+1 Weapon, Mithral Armor) over a base item reports the merged damage, properties, mastery and bonuses or removed penalties, and survives save/load. Source: [items-7](../audits/items.md). | S-250 |
@@ -3005,8 +3305,155 @@ catalog or complete the newly planned rows.
 | S-269 — Compelled movement directive (P7) | Planned | V-069, V-059 | A source compels movement away/toward/in a direction by the safest route (Fear, Antipathy/Sympathy, Compulsion, Confusion, Command Approach/Flee), using S-241 granted-movement mechanics and stopping where no legal move remains. Source: [spells-4](../audits/spells.md). | S-241, S-179, S-183 |
 | S-270 — Guarded condition removal (P4) | Planned | V-019 | A source-owned condition guards its removal with a declared save; any removal attempt triggers it and failure leaves the condition while the remover's cost is still spent. Source: [spells-5](../audits/spells.md). | S-074, S-116 |
 | S-271 — Accumulating payload released at source end (P2) | Planned | V-056, V-038 | A damage pool grows each caster turn end and detonates once at its current location for every end reason (Concentration, expiry, failed touch save, impact). Source: [spells-6](../audits/spells.md). | S-031 |
-| S-272 — Damage-dealt budget that ends the source (P4) | Planned | V-004, V-049 | Final damage dealt adds to a budget; the source ends once the cap is reached (last hit not trimmed); halved/resisted damage counts as dealt; the budget survives save/load. Source: [spells-7](../audits/spells.md). | S-031 |
+| S-272 — Damage-dealt budget that ends the source (P4) | Verified ([boundary](#five-quick-wins)) | V-004, V-049 | Final damage dealt adds to a budget; the source ends once the cap is reached (last hit not trimmed); halved/resisted damage counts as dealt; the budget survives save/load. Source: [spells-7](../audits/spells.md). | S-031 |
 | S-273 — Damageable barrier segments with breach residue (P7) | Planned | V-071, V-096 | Wall sections or ordered layers are addressable objects with AC/HP/damage modifiers or declared destruction triggers; damage never spills between sections; a destroyed section stops blocking and spawns its declared residue. Source: [spells-8](../audits/spells.md). | S-184 |
 | S-274 — Light/Darkness area kind and overlap detection (P7) | Planned | V-073 | Each light/Darkness area records its kind and source spell level; creating one finds overlapping opposite-kind areas and hands any at or below the threshold to the S-276 ending path. Source: [spells-9 (narrowed)](../audits/spells.md). | S-276, S-190 |
 | S-275 — Staged weather state (P9) | Planned | V-045, V-057 | Outdoor regions carry current and forecast precipitation/temperature/wind stages; a source changes one stage after its rolled delay, is refused indoors, and returns gradually when it ends. Source: [spells-10](../audits/spells.md). | S-064 |
 | S-276 — Level-gated spell ending and spell-level thresholds (P5) | Planned | V-019 | Every ongoing spell effect records its cast level; a dispel request ends effects at or below the slot-scaled threshold and rolls DC 10 + level for higher ones; effects can declare level exemptions (Globe, Imprisonment, Forcecage) and the spells-9 overlap ending routes here. Source: [spells-11](../audits/spells.md). | S-116 |
+
+<a id="five-quick-wins"></a>
+
+## Five independent quick wins — S-250/S-242/S-233/S-252/S-272
+
+Verified 2026-10-28 through the production loader, rules, controls and allowed
+checkpoints. `QuickWinsChecks` runs in the classes group; `quick_wins_flow` and
+its automatic fresh-process `quick_wins_reload` cover the live paths. The
+supported Windows run `run_tests.ps1 -Suite all -Scenario quick_wins_flow`
+passes full logic and both scenarios. One focused independent review found
+and checked repairs to target-range wiring, budget retention, payload merging,
+ordered occurrence termination and independent counter-damage accounting.
+
+| Slice | Verified boundary |
+|---|---|
+| S-250 | Authored normal/long bands drive player and AI targeting and execution rechecks. Normal range and Heavy's STR/DEX 13 thresholds are inclusive; long range adds Disadvantage and beyond maximum refuses before payment. Thrown weapons preserve STR/finesse ability selection. |
+| S-242 | Actual creation controls offer Point Buy, Standard Array and seeded 4d6-drop-lowest; assignments, campaign restrictions, Back/Random and seat reset retain valid state. Standard Array assignments and a seeded random receipt recover without rerolling from both full-party and player-only checkpoints. Restrictions also check party-only generation receipts. Legacy saves may omit the receipt. |
+| S-233 | Class-level and named-feature requirements gate the feat chooser and saved choices. Named ownership is rebuilt from real sources. Origin and improvement controls retain distinct parameters, reject repeating the same parameter, and recover through both checkpoint forms. |
+| S-252 | Actual room Equip/Unequip advances campaign time and reports it; armor replacement includes doff plus don. Combat refuses Medium/Heavy donning. The Shield equipment button spends one Action, and repeated clicks cannot reuse it. Completed equipment/time survives reload. Multi-turn combat armor donning is not added. |
+| S-272 | Shared spell sources retain exact saved damage counters even without another payload. Saves, resistance, immunity, linked damage and counter-damage use settled amounts; all packets of the final occurrence resolve before source ending, and later ordered occurrences stop. Payloads preserve the counter. Both checkpoints recover 50/60 and end after an untrimmed 20-damage hit at 70; malformed or stripped budgets refuse. |
+
+These are engine completions, not catalog conversions. Magic Initiate's spell
+acquisition and Guardian of Faith's spatial trigger remain separate. The
+[creation-matrix repair](#pr20-24-validation) changes no slice acceptance or
+repeatable-feat restrictions on mode/upgrade payloads. Authoring syntax
+lives in [attack profiles](../mechanics/attack-profiles.md),
+[progression choices](../mechanics/progression-choices.md),
+[equipment timing](../mechanics/equipment-timing.md) and
+[shared spells](../mechanics/shared-spells.md#damage-history-s-031).
+
+
+## Observer senses and concealment
+
+- [x] **VS-153 — Observer-specific senses/light/obstruction (`S-190`, bounded,
+  2026-10-28).** `CombatPerception` reuses the existing hex LOS raster and
+  ambient/carried-light owners, adding per-source intervening fog/Darkness.
+  Same-target observers differ by their actual Darkvision, Blindsight,
+  Truesight, Blinded state, range and darkness exception. Loaded passive sense
+  declarations and selected native Devil's Sight work without definition-ID
+  branches; owner-only and exact-area exceptions never bypass an unrelated
+  overlapping source. Live source removal restores obstruction, including
+  renamed represented area records, without erasing unrelated native grants.
+  Weapon/shared-spell/projectile rolls, monster projections, AI spell choice
+  and command validation share those facts. Named sensory requirements read
+  the recipient and actual caster participant/live monster source rather than
+  an effect origin. Wall LOS also blocks portable illumination.
+- [x] **VS-154 — Observer-relative concealment and invisible targets (`S-191`,
+  bounded, 2026-10-28).** Known Invisible locations permit ordinary attacks and
+  non-sight creature spells with the actual unseen roll modes; unknown Hidden
+  occupied hexes refuse selection and stale commands. Sight-required spells
+  and Opportunity Attacks still require actual sight. Blindsight supplies sight;
+  Tremorsense only supplies location on the same represented contact surface,
+  within range, with airborne targets/observers excluded. Discovery receipts
+  belong to one observer, survive loss of sight as location knowledge, and
+  invalidate on a new Hide or production movement (including away and back).
+  Target highlighting/clicks, active-player token disclosure and the board's
+  retained observer during monster turns respect that separation. Weapon,
+  shared-spell and projectile attacks reveal Hidden attackers after capturing
+  their roll; later rays re-evaluate sight. Legal area points remain legal over
+  concealed occupants, which still receive the area effect.
+
+**Checks:** supported Windows runner bootstrap/parse/boot, full logic (6,619
+assertions, zero failures) and `perception_flow`/`portable_light_source_combat_flow`.
+The new flow uses actual Attack controls, permissioned neutral/renamed shared
+spells, a sight-required area, native Darkness/True Strike and Opportunity Attack
+movement. Native `monk_action_flow`, `darkness_spell_flow`, `fog_cloud_spell_flow`,
+`see_invisibility_spell_flow`, `true_seeing_spell_flow` and
+`batch_087_choice_routes_flow` also pass. `PerceptionChecks` adds differing
+observers, range/obstruction, exact/overlapping sources, special-sense source
+loss, live monster sensory requirements and AI selection/stale-intent checks.
+One focused independent source review supplied reproducible caller defects;
+those were repaired. Its final follow-up became unavailable at its tool usage
+limit; final execution checks were performed by the implementer.
+
+**Exact limits:** this is combat's represented five-foot hex world, not general
+hearing, three-dimensional sensing or universal fog-of-war metadata privacy.
+Ordinary non-Hidden roster occupants retain the existing known-location
+convention. Discovery is encounter-local, not checkpoint/save state. Tremorsense
+uses authored tile `contact_surface_id` (default ground) and live altitude;
+unrepresented wall/ceiling/liquid contacts are not inferred. Darkness exceptions
+are the documented passive/selected Character declarations; arbitrary new
+conditional-concealment content and catalog conversion are not certified.
+Native direct calls without a spatial host retain bounded endpoint/sense
+behavior. General Hide/Search and guessed-square controls, cover, remote-sensor
+controls/origin work, illusion investigation and light/Darkness cancellation
+thresholds remain separate slices. Existing native consumers remain in place.
+
+A comparison run of the older `ranger_natures_veil_blindsight` and
+`s029_save_context_flow` scenarios matched the same two and thirty failed
+assertions respectively on an isolated reconstruction of the starting workspace.
+They are excluded from this acceptance; no green result is claimed for either
+scenario. Syntax and host
+contracts live in [perception](../mechanics/perception.md).
+
+<a id="spatial-trigger-scopes"></a>
+## Declared spatial trigger scopes — S-184
+
+Data-defined source/policy/actor limits now distinguish entry, crossing in either
+direction, first movement within a radius, turn start/end, and an area newly
+covering a stationary actor. Policies explicitly share or separate their events,
+and reset per event, any initiative turn, affected actor turn, source-owner turn
+or exact-source lifetime. Room actor/source clocks persist across encounter
+entry/exit; new encounters do not impersonate a new turn for an actor who has
+not started one. Encounter monsters have distinct trigger identities even when
+their native runtime IDs repeat.
+
+`SpatialTriggerRules` reserves exact event receipts before consequences or
+awaited concentration. Accepted movement and real start/end boundaries carry
+stable identities, including boundaries with no area yet present. Replayed
+callbacks cannot acquire a later turn or retro-trigger a newly created source.
+Area-motion recipients and clocks are captured before the first awaited choice.
+Cleanup invalidates pending delivery for that source only. Source-end room-area
+choices create their child once and retain the parent slot receipt; moved
+children retain immutable creation origin and separately validated current center.
+
+**Production evidence:** the supported Windows runner passes
+`spatial_trigger_flow` and its automatic fresh-process `spatial_trigger_reload`.
+Loaded neutral consumers exercise real room spell casts and resumed/stale child
+choices, room movement/End Turn, combat clicks, actual null-target AI movement,
+tactical destination controls and Misty Step arrival. Checks distinguish actor
+motion from area motion, repeated entry, independent sources/actors, all declared
+reset boundaries, lethal intermediate-step interruption, suspended concentration,
+source cleanup and two recipients interrupted during area movement. The allowed
+entrance checkpoint preserves exact area IDs/receipts and moved centers; a fresh
+process proves that new movement and a different encounter's `monster_0` do not
+collide with old receipts. Effects-group regressions cover pending/duplicate
+delivery, expiry, malformed clocks/limits and room/combat clock continuity.
+Acceptance review also repaired concentration accounting through full/partial
+Temporary HP absorption and added room movement/turn concentration checks.
+Regressions verify settled resisted damage, immunity and exact-source cleanup;
+an independent reviewer reproduced the repaired combat and room paths.
+The existing `batch_066_travel_placement_flow`, `located_source_end_flow` with
+its recovery probe, and `wave_three_foundations_flow` protect reused production
+teleport, source-end/save and forced-movement paths. One focused independent
+review supplied the replay/identity/caller regressions and verified the final run.
+
+**Remaining limits:** represented two-dimensional center/radius areas with fixed
+typed damage consumers; this is reusable trigger vocabulary, not full spell
+conversion. General saving-throw/condition/choice payload authoring, automatic
+appearance events, arbitrary wall-edge/segment geometry, selective barriers,
+destructible wall sections, passenger/follower movement, required-save-exit
+relocation and broader travel hosts remain separate. Ordinary combat movement
+retains its existing whole-route budget reservation on interruption. Native
+catalog zone resolvers remain in place and are not recertified by this slice.
+No new checkpoint or mid-combat save permission is added. The executable syntax
+and SRD distinctions live in the
+[physical-space contract](../mechanics/physical-facts-space-and-movement.md#declared-spatial-trigger-scopes-s-184).

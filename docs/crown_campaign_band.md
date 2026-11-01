@@ -7,6 +7,12 @@ objective completion, and provisional completion screen in one process.
 
 Source: `data/core/campaigns/the_lost_crown.json`.
 
+The [Crown roadmap](planning/crown-roadmap.md) selects the engine/content work
+needed to finish this band. Its [content scope](planning/crown-content-scope.md)
+pins the class, spell and reachable-world boundary; the
+[main roadmap](../roadmap.md#outside-crown) retains broader work. This campaign
+inventory and the existing smoke check do not certify those rules packages.
+
 | Contract | Current inventory |
 |---|---|
 | Campaign | The Lost Crown (`the_lost_crown`) |

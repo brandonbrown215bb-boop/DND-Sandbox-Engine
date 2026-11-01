@@ -176,17 +176,61 @@ static func record_error(record: Dictionary) -> String:
 	if state.has("rule_alternatives"):
 		var alt_error := _alternatives_error(record, state.rule_alternatives)
 		if not alt_error.is_empty(): return alt_error
-	if not state.has("feature_uses"): return ""
-	var held: Variant = state.feature_uses
-	if not held is Dictionary or held.is_empty() or held.size() > MAX_FEATURES: return "item feature uses are malformed"
 	var item := DataLoader.get_item(str(record.get("definition_id", "")))
 	var pools := {}
 	for feature in item_features(item, str(record.get("instance_id", ""))):
-		if feature.type == "mode_choice" and feature.get("boundary", "") == "activation": pools[str(feature.get("resource_id", feature.id))] = true
-	for pool in held:
-		var n: Variant = held[pool]
-		if not pools.has(str(pool)) or not (n is int or n is float) or not is_finite(float(n)) or float(n) != floorf(float(n)) or int(n) < 0 or int(n) > 100: return "item feature uses name an unowned pool or an invalid count"
+		if feature.type == "mode_choice" and feature.get("boundary", "") == "activation": pools[str(feature.get("resource_id", feature.id))] = feature
+	if state.has("feature_uses"):
+		var held: Variant = state.feature_uses
+		if not held is Dictionary or held.is_empty() or held.size() > MAX_FEATURES: return "item feature uses are malformed"
+		for pool in held:
+			var n: Variant = held[pool]
+			if not pools.has(str(pool)) or not (n is int or n is float) or not is_finite(float(n)) or float(n) != floorf(float(n)) or int(n) < 0 or int(n) > 100: return "item feature uses name an unowned pool or an invalid count"
+	if state.has("feature_cooldowns"):
+		var cooldowns: Variant = state.feature_cooldowns
+		if not cooldowns is Dictionary or cooldowns.is_empty() or cooldowns.size() > MAX_FEATURES: return "item feature cooldowns are malformed"
+		for pool in cooldowns:
+			var feature: Dictionary = pools.get(str(pool), {})
+			var ready_at: Variant = cooldowns[pool]
+			if feature.is_empty() or str(feature.get("uses_per", "")) != "days" or not (ready_at is int or ready_at is float) or not is_finite(float(ready_at)) or float(ready_at) != floorf(float(ready_at)) or int(ready_at) < 1 or float(ready_at) > 9007199254740991.0: return "item feature cooldown does not match a valid day-recovered power"
 	return ""
+
+static func day_cooldown_remaining(actor: Character, feature: Dictionary, now: int) -> int:
+	if actor == null or str(feature.get("uses_per", "")) != "days": return 0
+	var copy_id := str(feature.get("source_instance_id", ""))
+	var record: Dictionary = actor.inventory.copies.records.get(copy_id, {})
+	var pool := str(feature.get("resource_id", feature.get("id", "")))
+	var ready_at := int(record.get("state", {}).get("feature_cooldowns", {}).get(pool, 0))
+	return maxi(0, ready_at - now)
+
+static func restore_expired_day_uses(actor: Character, feature: Dictionary, now: int) -> void:
+	if actor == null or str(feature.get("uses_per", "")) != "days" or day_cooldown_remaining(actor, feature, now) > 0: return
+	var copy_id := str(feature.get("source_instance_id", ""))
+	if copy_id.is_empty(): return
+	var record: Dictionary = actor.inventory.copies.records.get(copy_id, {}).duplicate(true)
+	if record.is_empty(): return
+	var pool := str(feature.get("resource_id", feature.get("id", "")))
+	var state: Dictionary = record.get("state", {})
+	var cooldowns: Dictionary = state.get("feature_cooldowns", {})
+	if not cooldowns.has(pool): return
+	cooldowns.erase(pool)
+	if cooldowns.is_empty(): state.erase("feature_cooldowns")
+	else: state["feature_cooldowns"] = cooldowns
+	actor.inventory.update_instance({"instance_id": copy_id, "definition_id": record.get("definition_id", ""), "state": state})
+	actor.feature_uses[pool] = maxi(0, int(RuleUpgradeRules.owned_view(func(): return actor.get_feature_max_uses(pool))))
+
+static func record_day_use(actor: Character, feature: Dictionary, now: int) -> void:
+	if actor == null or str(feature.get("uses_per", "")) != "days": return
+	var copy_id := str(feature.get("source_instance_id", ""))
+	if copy_id.is_empty(): return
+	var record: Dictionary = actor.inventory.copies.records.get(copy_id, {}).duplicate(true)
+	if record.is_empty(): return
+	var pool := str(feature.get("resource_id", feature.get("id", "")))
+	var state: Dictionary = record.get("state", {})
+	var cooldowns: Dictionary = state.get("feature_cooldowns", {})
+	cooldowns[pool] = now + int(feature.cooldown_days) * 86400
+	state["feature_cooldowns"] = cooldowns
+	actor.inventory.update_instance({"instance_id": copy_id, "definition_id": record.get("definition_id", ""), "state": state})
 
 ## Write a leaving (or no longer owned) copy's pool and chosen alternative on
 ## its record so they travel with that exact copy (Batch 050 bugs 1 and the

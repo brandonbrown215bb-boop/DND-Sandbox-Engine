@@ -608,15 +608,59 @@ func _validate_semantics(data: Dictionary, content_type: String, source: String)
 		if not bonus_error.is_empty():
 			_load_errors.append("%s in %s" % [bonus_error, source])
 			valid = false
+	if content_type == "item" and (data.has("normal_range_feet") or data.has("long_range_feet")):
+		var normal_range: Variant = data.get("normal_range_feet", null)
+		var long_range: Variant = data.get("long_range_feet", null)
+		if str(data.get("type", "")) != "weapon" or not (normal_range is int or normal_range is float) or not (long_range is int or long_range is float) or float(normal_range) <= 0.0 or float(long_range) < float(normal_range) or float(normal_range) != floorf(float(normal_range)) or float(long_range) != floorf(float(long_range)):
+			_load_errors.append("Weapon normal_range_feet and long_range_feet must be positive whole feet with long range at least normal range in %s" % source)
+			valid = false
 	if content_type == "item" and data.has("legacy_charge_state") and (str(data["legacy_charge_state"]) != "full" or int(data.get("maximum_charges", 0)) <= 0): # Batch 080.
 		_load_errors.append("legacy_charge_state must be \"full\" on an item with maximum_charges in %s" % source)
 		valid = false
+	if content_type == "item" and data.has("attunement_prerequisite"):
+		var prerequisite: Variant = data["attunement_prerequisite"]
+		var prerequisite_error := ""
+		if not bool(data.get("requires_attunement", false)):
+			prerequisite_error = "attunement_prerequisite requires requires_attunement"
+		elif not prerequisite is Dictionary or prerequisite.is_empty():
+			prerequisite_error = "attunement_prerequisite must be a non-empty object"
+		elif prerequisite.keys().any(func(key): return str(key) not in ["classes_any", "spellcaster"]):
+			prerequisite_error = "attunement_prerequisite has an unknown field"
+		elif prerequisite.has("classes_any") and (not prerequisite.classes_any is Array or prerequisite.classes_any.is_empty() or prerequisite.classes_any.any(func(id): return not id is String or get_character_class(str(id)).is_empty())):
+			prerequisite_error = "attunement_prerequisite classes_any must name known classes"
+		elif prerequisite.has("spellcaster") and prerequisite.spellcaster != true:
+			prerequisite_error = "attunement_prerequisite spellcaster must be true"
+		elif not prerequisite.has("classes_any") and not prerequisite.get("spellcaster", false):
+			prerequisite_error = "attunement_prerequisite must declare a supported requirement"
+		if not prerequisite_error.is_empty():
+			_load_errors.append("%s in %s" % [prerequisite_error, source])
+			valid = false
+	if content_type == "class" and data.has("multiclass_prerequisite"):
+		var class_prerequisite: Variant = data["multiclass_prerequisite"]
+		var class_prerequisite_error := ""
+		if not class_prerequisite is Dictionary or class_prerequisite.is_empty() or class_prerequisite.keys().any(func(key): return str(key) not in ["all", "any"]):
+			class_prerequisite_error = "multiclass_prerequisite must contain only all/any ability lists"
+		else:
+			for kind in ["all", "any"]:
+				if class_prerequisite.has(kind) and (not class_prerequisite[kind] is Array or class_prerequisite[kind].any(func(ability): return not ability is String or ability not in VALID_ABILITIES)):
+					class_prerequisite_error = "multiclass_prerequisite %s must list valid abilities" % kind
+					break
+			if class_prerequisite_error.is_empty() and class_prerequisite.get("all", []).is_empty() and class_prerequisite.get("any", []).is_empty():
+				class_prerequisite_error = "multiclass_prerequisite must require at least one ability"
+		if not class_prerequisite_error.is_empty():
+			_load_errors.append("%s in %s" % [class_prerequisite_error, source])
+			valid = false
 	if data.has("last_charge_aftermath"):
 		var charge_error := LastChargeRules.validate(data["last_charge_aftermath"])
 		if charge_error.is_empty() and int(data.get("maximum_charges", 0)) <= 0: charge_error = "last_charge_aftermath requires maximum_charges"
 		if charge_error.is_empty(): charge_error = LastChargeRules.definition_error(data) # Batch 072.
 		if not charge_error.is_empty():
 			_load_errors.append("%s in %s" % [charge_error, source])
+			valid = false
+	if content_type == "item" and data.has("charge_recovery"):
+		var recovery_error := LastChargeRules.charge_recovery_error(data["charge_recovery"], data)
+		if not recovery_error.is_empty():
+			_load_errors.append("%s in %s" % [recovery_error, source])
 			valid = false
 	if content_type == "item" and data.has("container"):
 		var container_error := ContainerRules.policy_error(data["container"])
@@ -920,7 +964,8 @@ func _feature_content_error(feature: Dictionary) -> String:
 		if resolver == "warlock_rules" and feature.get("id", "") in ["fiend_dark_ones_blessing", "fiend_dark_ones_own_luck", "fiend_fiendish_resilience", "fiend_hurl_through_hell"]:
 			return ""
 		return "" if resolver == "fighter_rules" and feature.get("id", "") in implemented else "Resolver has no registered behavior for this feature"
-	var supported := ["heal_self", "grant_extra_action", "extra_attack", "modify_crit_range", "asi", "ability_score_increase", "skill_proficiency_choice", "skill_expertise_choice", "jack_of_all_trades", "short_rest_recharge", "initiative_resource_recovery", "resource_from_spell_slot", "spellcasting", "spell_list_expansion", "always_prepared_spells", "spell_free_cast", "concentration_protection", "spell_damage_dice_override", "attack_advantage_against_condition", "saving_throw_proficiency", "protection_aura", "saving_throw_aura", "aura_radius_expansion", "condition_immunity_aura", "additional_spell_target", "countercharm", "epic_boon_choice", "feature_choice", "grant_condition", "stat_modifier", "unarmored_defense", "reckless_attack", "monk_bonus_action", "martial_arts", "unarmed_attack", "monk_focus", "unarmored_movement", "speed_bonus", "initiative_advantage", "saving_throw_advantage", "ability_check_override", "ability_check_advantage", "ability_check_floor", "weapon_mastery", "weapon_damage_rider", "uncanny_metabolism", "reaction", "stunning_strike", "empowered_strikes", "evasion", "heightened_focus", "self_restoration", "fleet_step", "deflect_energy", "disciplined_survivor", "perfect_focus", "superior_defense", "divine_smite", "defense_style", "archery", "lay_on_hands", "divine_sense", "abjure_foes", "bardic_inspiration", "favored_foe", "sneak_attack", "cunning_strike", "cunning_action", "recover_spell_slots", "pact_magic", "pact_magic_recovery", "sorcery_points", "sorcerer_font_of_magic", "innate_sorcery", "metamagic", "metamagic_choices", "sorcery_incarnate", "arcane_apotheosis", "blindsight", "wizard_ritual_casting", "wizard_memorize_spell", "wizard_spell_mastery", "wizard_signature_spells", "elusive", "rogue_steady_aim", "stroke_of_luck", "give_item", "source_benefits"]
+	var supported := ["hit_options", "heal_self", "grant_extra_action", "extra_attack", "modify_crit_range", "asi", "ability_score_increase", "skill_proficiency_choice", "skill_expertise_choice", "jack_of_all_trades", "short_rest_recharge", "initiative_resource_recovery", "resource_from_spell_slot", "spellcasting", "spell_list_expansion", "always_prepared_spells", "spell_free_cast", "concentration_protection", "spell_damage_dice_override", "attack_advantage_against_condition", "saving_throw_proficiency", "protection_aura", "saving_throw_aura", "aura_radius_expansion", "condition_immunity_aura", "additional_spell_target", "countercharm", "epic_boon_choice", "feature_choice", "grant_condition", "stat_modifier", "unarmored_defense", "reckless_attack", "monk_bonus_action", "martial_arts", "unarmed_attack", "monk_focus", "unarmored_movement", "speed_bonus", "initiative_advantage", "saving_throw_advantage", "ability_check_override", "ability_check_advantage", "ability_check_floor", "weapon_mastery", "weapon_damage_rider", "uncanny_metabolism", "reaction", "stunning_strike", "empowered_strikes", "evasion", "heightened_focus", "self_restoration", "fleet_step", "deflect_energy", "disciplined_survivor", "perfect_focus", "superior_defense", "divine_smite", "defense_style", "archery", "lay_on_hands", "divine_sense", "abjure_foes", "bardic_inspiration", "favored_foe", "sneak_attack", "cunning_strike", "cunning_action", "recover_spell_slots", "pact_magic", "pact_magic_recovery", "sorcery_points", "sorcerer_font_of_magic", "innate_sorcery", "metamagic", "metamagic_choices", "sorcery_incarnate", "arcane_apotheosis", "blindsight", "wizard_ritual_casting", "wizard_memorize_spell", "wizard_spell_mastery", "wizard_signature_spells", "elusive", "rogue_steady_aim", "stroke_of_luck", "give_item", "source_benefits"]
+	supported.append_array(["darkvision", "truesight", "tremorsense"])
 	supported.append("check_floor")
 	supported.append_array(["warlock_invocations", "warlock_mystic_arcanum", "concentration_save_advantage", "dark_ones_blessing", "dark_ones_own_luck", "fiendish_resilience", "hurl_through_hell", "roll_token_pool", "roll_token_pool_upgrade", "damage_ward_pool", "damage_ward_projection", "rest_slot_recovery", "failed_save_numeric_bonus", "failed_save_outcome_override", "roll_outcome_override", "weapon_attack_numeric_bonus", "attack_total_adjustment", "defending_ac_adjustment", "ability_check_numeric_bonus", "ability_check_mandatory_reroll", "ability_check_roll_mode", "ability_check_roll_mode_policy", "recipient_damage_map", "incoming_spell_negation"])
 	var effects: Array = feature.get("effects", []).duplicate()
@@ -931,10 +976,18 @@ func _feature_content_error(feature: Dictionary) -> String:
 	var ability_check_bonus_filters: Array[String] = []
 	var ability_check_reroll_filters: Array[String] = []
 	for effect in effects:
+		if effect is Dictionary and effect.get("type") == "hit_options":
+			if feature.get("type") != "passive": return "Hit options require a passive feature."
+			var hit_error := CombatHitOptions.content_error(effect)
+			if not hit_error.is_empty(): return hit_error
 		if not effect is Dictionary or effect.get("type", "") not in supported:
 			return "Unknown or unimplemented effect operation"
 		if effect.get("type", "") in ["asi", "ability_score_increase", "skill_proficiency_choice", "skill_expertise_choice", "jack_of_all_trades", "short_rest_recharge", "initiative_resource_recovery", "resource_from_spell_slot", "spellcasting", "spell_list_expansion", "always_prepared_spells", "concentration_protection", "spell_damage_dice_override", "attack_advantage_against_condition", "saving_throw_proficiency", "protection_aura", "saving_throw_aura", "aura_radius_expansion", "condition_immunity_aura", "additional_spell_target", "countercharm", "epic_boon_choice", "feature_choice", "modify_crit_range", "extra_attack", "speed_bonus", "initiative_advantage", "saving_throw_advantage", "ability_check_override", "ability_check_advantage", "ability_check_floor", "ability_check_roll_mode", "ability_check_roll_mode_policy", "weapon_mastery", "blindsight", "wizard_ritual_casting", "wizard_memorize_spell", "wizard_spell_mastery", "wizard_signature_spells", "sorcerer_font_of_magic", "roll_token_pool", "roll_token_pool_upgrade", "damage_ward_pool", "damage_ward_projection", "failed_save_numeric_bonus", "weapon_attack_numeric_bonus", "attack_total_adjustment", "defending_ac_adjustment", "incoming_spell_negation"] and feature.get("type", "") != "passive":
 			return "This class progression effect requires a passive feature"
+		if effect.get("type", "") in ["darkvision", "truesight", "tremorsense", "blindsight"]:
+			if feature.get("type", "") != "passive": return "Senses require a passive feature"
+			var sense_error := CombatPerception.sense_effect_error(effect)
+			if not sense_error.is_empty(): return sense_error
 		if effect.get("type", "") == "incoming_spell_negation":
 			var rule: Dictionary = effect.duplicate(true)
 			rule.erase("type")
@@ -1762,6 +1815,10 @@ func _validate_cross_references() -> void:
 
 	for campaign_id in campaigns:
 		var campaign: Dictionary = campaigns[campaign_id]
+		if campaign.has("ability_generation_methods"):
+			var generation_methods: Variant = campaign.get("ability_generation_methods")
+			if not generation_methods is Array or generation_methods.is_empty() or generation_methods.any(func(method): return not method is String or str(method) not in ["point_buy", "standard_array", "random_4d6"]):
+				_load_errors.append("Campaign '%s' has invalid ability_generation_methods" % campaign_id)
 		for goal in campaign.get("win_condition", {}).get("goals", []):
 			var goal_type := str(goal.get("type", ""))
 			var goal_id := str(goal.get("item_id", goal.get("monster_id", "")))

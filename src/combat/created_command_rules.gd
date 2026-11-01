@@ -171,6 +171,7 @@ static func command_error(state, owner: Character, actor_id: String, order: Stri
 	if order == "attack":
 		var target := _target(state, target_id)
 		if target.is_empty(): return "Choose a living enemy."
+		if state is CombatState and (not Targeting.has_line_of_sight(entity.hex_position, target.hex_position, state.hex_grid) or not CombatPerception.can_locate_target(actor, target, entity.hex_position, target.hex_position, state.hex_grid)): return "That creature cannot locate or reach the enemy."
 		var reach := int(_template(owner, actor).get("attack", {}).get("range", 1))
 		if HexUtils.get_distance(entity.hex_position, target.hex_position) > reach: return "%s can't reach that enemy." % actor.character_name
 	return ""
@@ -193,15 +194,16 @@ static func issue(state, owner: Character, actor_id: String, order: String, targ
 	_commanded[actor_id] = CombatAction.active_turn_serial
 	if initiative(owner, actor) != "owner_turn":
 		_orders[actor_id] = {"order": order, "target_id": target_id}
-		return {"success": true, "message": "%s will %s on its own turn." % [actor.character_name, order]}
+		return {"success": true, "message": "%s will %s on its own turn." % [actor.character_name, order], "cost_kind":CombatTurnBudget.budget_kind(price)}
 	if order == "dodge":
 		actor.add_condition("dodging", 2)
-		return {"success": true, "message": "%s takes the Dodge action." % actor.character_name}
-	return {"success": true, "message": _attack(state, owner, actor, _target(state, target_id))}
+		return {"success": true, "message": "%s takes the Dodge action." % actor.character_name, "cost_kind":CombatTurnBudget.budget_kind(price)}
+	return {"success": true, "message": _attack(state, owner, actor, _target(state, target_id)), "cost_kind":CombatTurnBudget.budget_kind(price)}
 
 static func _attack(state, owner: Character, actor: Character, target: Dictionary) -> String:
 	var profile := CreatedActorRules.attack_profile(owner, actor)
-	var result := CombatAction.resolve_weapon_attack(actor, target, profile, false, CombatAction.has_condition(target, "dodging"))
+	var decisions := CombatPerception.weapon_decisions(state.hex_grid, actor, target) if state is CombatState else {}
+	var result := CombatAction.resolve_weapon_attack(actor, target, profile, false, false, decisions)
 	if int(target.get("current_hp", 0)) <= 0:
 		target["is_alive"] = false
 		if state.tracker != null: state.tracker.remove_combatant(str(target.get("id", "")))
@@ -212,6 +214,7 @@ static func _reachable(state, owner: Character, actor: Character, target_id: Str
 	var target := _target(state, target_id)
 	var entity := _entity(state, actor.character_id)
 	if target.is_empty() or entity.is_empty(): return {}
+	if state is CombatState and (not Targeting.has_line_of_sight(entity.hex_position, target.hex_position, state.hex_grid) or not CombatPerception.can_locate_target(actor, target, entity.hex_position, target.hex_position, state.hex_grid)): return {}
 	var reach := int(_template(owner, actor).get("attack", {}).get("range", 1))
 	return target if HexUtils.get_distance(entity.hex_position, target.hex_position) <= reach else {}
 
@@ -223,6 +226,7 @@ static func act(state, owner: Character, actor: Character, what: String) -> Stri
 		var best := {}
 		for m in state.monster_entities:
 			if not m.get("is_alive", false) or entity.is_empty(): continue
+			if state is CombatState and (not Targeting.has_line_of_sight(entity.hex_position, m.hex_position, state.hex_grid) or not CombatPerception.can_locate_target(actor, m, entity.hex_position, m.hex_position, state.hex_grid)): continue
 			if best.is_empty() or HexUtils.get_distance(entity.hex_position, m.hex_position) < HexUtils.get_distance(entity.hex_position, best.hex_position): best = m
 		if not best.is_empty() and not _reachable(state, owner, actor, str(best.id)).is_empty():
 			return _attack(state, owner, actor, best)
@@ -281,11 +285,15 @@ static func join_initiative(state, owner: Character, actor: Character) -> void:
 		var first: Dictionary = record.created_actors.actors[0]
 		var template := CreatedActorRules._template(spell, str(first.get("template_id", record.created_actors.get("template_id", ""))))
 		dex = int(template.ability_scores.DEX)
-		tracker.add_shared_combatant(actor.character_id, actor.character_name, actor, source, count_policy, anchor, dex)
+		var representative := actor
+		for member: Character in CreatedActorRules.actors(owner):
+			if member.character_id == str(first.get("actor_id", "")): representative = member; break
+		tracker.add_shared_combatant(actor.character_id, actor.character_name, actor, source, count_policy, anchor, dex, representative)
 		return
 	if mode == "own":
-		var roll := Dice.roll(20) + AbilityScores.get_modifier(dex)
-		tracker.add_combatant(actor.character_id, actor.character_name, true, actor, roll, dex)
+		var receipt := InitiativeTracker.roll_result(actor)
+		tracker.add_combatant(actor.character_id, actor.character_name, true, actor, int(receipt.total), dex)
+		tracker.combatants[-1]["initiative_test"] = receipt
 		tracker.sort_initiative_preserving_active()
 		return
 	var at := -1

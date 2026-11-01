@@ -18,6 +18,7 @@ var action_history := CombatActionHistory.new()
 # Tactical entities state
 # Maps entity_id -> position (Vector2i)
 var player_entities: Array[Dictionary] = [] # Elements same as PlayerManager.players
+var ready_actions := ReadyActionRules.new()
 var last_reaction_trigger_receipts: Array[Dictionary] = [] # Batch 065: receipts of the last fired reaction trigger.
 var monster_entities: Array[Dictionary] = [] # Keys: name, monster_id, current_hp, max_hp, armor_class, speed, attacks, hex_position, color, is_alive
 var dropped_combat_items: Array[Dictionary] = []
@@ -47,6 +48,8 @@ var _movement_speed_shortfall := 0.0
 var _movement_speed_owner: Character
 var _movement_speed_snapshot := 0.0
 var active_movement_mode := "walk"
+## The shared board retains its last player observer during monster turns.
+var perception_viewer: Character
 var extra_movement_speed_hexes := 0.0
 var player_moved_this_turn: bool = false
 var rogue_steady_aim_armed: bool = false
@@ -67,6 +70,8 @@ var pending_command_target_ids: Array[String] = []
 var pending_feature_data: Dictionary = {}
 var fighter_move_choices: Dictionary = {}
 var fighter_move_waiting := false
+var fighter_move_straight := false
+var fighter_move_resolving := false
 var fighter_move_done := false
 var fighter_move_entity: Dictionary = {}
 var remaining_attack_swings := 0
@@ -79,6 +84,7 @@ var attack_action_damage_choice := {}
 var attack_unit_substitution: Dictionary = {}
 var child_actions := CombatChildActions.new()
 var remaining_flurry_swings := 0
+var paid_unarmed_grant: Dictionary = {}
 var strike_unit_parent := "attack"
 var _cast_in_progress := false
 var light_attack_weapon: Dictionary = {}
@@ -92,6 +98,10 @@ var last_monster_weapon_attack_result: Dictionary = {}
 var _battle_ending := false
 ## Initiative stays encounter-local, but recall does not reroll the same familiar.
 var familiar_initiative: Dictionary = {}
+# Transient adapters retain the existing Character spell lifetime owner for NPCs.
+var monster_spellcasters: Dictionary = {}
+var _monster_concentration_damage: Dictionary = {}
+var _monster_concentration_flushing := false
 
 # Last computed enemy intent preview text (drawn above monster tokens).
 var _intent_preview: String = ""
@@ -143,6 +153,7 @@ func _ready() -> void:
 		tile.is_visible = true
 		hex_grid.add_tile(tile)
 
+	hex_grid.perception_participants = player_entities
 	LocalRoomCombat.bind_grid(hex_grid)
 	var room_illumination := str(LocalRoomCombat.room().get("ambient_light", "bright"))
 	var encounter_illumination := str(GameManager.transition_context.get("ambient_light", room_illumination))
@@ -188,7 +199,7 @@ func _on_sheet_pressed() -> void:
 	CharacterSheet.show_sheet(active_character)
 
 
-func _update_grid_entities() -> void:
+func _update_grid_entities(observer_override: Character = null) -> void:
 	LocalRoomCombat.bind_grid(hex_grid)
 	ItemProjectionRules.refresh(self)
 	ClericRules.reconcile_turning(monster_entities, player_entities)
@@ -201,6 +212,11 @@ func _update_grid_entities() -> void:
 	if hex_grid == null:
 		return
 	hex_grid.clear_entities()
+	if observer_override != null: perception_viewer = observer_override
+	elif active_character != null and current_player_idx >= 0 and current_player_idx < player_entities.size(): perception_viewer = active_character
+	if perception_viewer == null and not player_entities.is_empty(): perception_viewer = player_entities[0].get("character")
+	hex_grid.perception_observer = perception_viewer
+	var viewer_position: Variant = CombatPerception._position(perception_viewer, hex_grid)
 	var active_character_id := active_character.character_id if active_character != null else ""
 	hud.light_marker_active = light_spell_markers.has(active_character_id)
 	hud.mage_hand_active = mage_hand_markers.has(active_character_id)
@@ -247,6 +263,7 @@ func _update_grid_entities() -> void:
 	# Add monsters
 	for m in monster_entities:
 		if m.get("is_alive", true):
+			if perception_viewer != null and viewer_position is Vector2i and not CombatPerception.can_locate_target(perception_viewer, m, viewer_position, m["hex_position"], hex_grid): continue
 			hex_grid.add_entity({
 				"hex_position": m.get("hex_position", Vector2i.ZERO),
 				"color": m.get("color", Color.RED),
@@ -416,8 +433,8 @@ func _add_wild_companion_entity(owner: Dictionary, add_to_initiative: bool, requ
 		var dex := familiar.ability_scores.get_score("DEX")
 		var initiative: Dictionary = familiar_initiative.get(combat_id, {})
 		if initiative.is_empty():
-			var fam_init_d20 := RollTokenRules.resolve_d20_test(familiar, "initiative", false, false, {})
-			initiative = {"roll": int(fam_init_d20.get("total", 1)) + AbilityScores.get_modifier(dex), "dex": dex}
+			var fam_init_d20 := InitiativeTracker.roll_result(familiar)
+			initiative = {"roll": int(fam_init_d20.total), "dex": dex, "initiative_test": fam_init_d20}
 			familiar_initiative[combat_id] = initiative
 		tracker.add_combatant(combat_id, familiar.character_name, true, familiar, int(initiative["roll"]), int(initiative["dex"]))
 		tracker.sort_initiative_preserving_active()
@@ -806,12 +823,10 @@ func _roll_initiative_and_start() -> void:
 					dex = int(owner_combatant.get("dex", dex))
 					break
 		else:
-			var initiative_advantage := char_data.has_feature("champion_remarkable_athlete") or char_data.has_feature_effect("initiative_advantage")
 			var char_init_seeded: Dictionary = seeded_init_map.get(char_data.character_id, {}) if seeded_init_map.get(char_data.character_id) is Dictionary else {}
 			var init_decisions := await _collect_roll_token_decision(char_data, "initiative", "Initiative roll", char_init_seeded)
-			var init_d20 := RollTokenRules.resolve_d20_test(char_data, "initiative", initiative_advantage, false, init_decisions)
-			var roll = int(init_d20.get("total", 1)) - char_data.exhaustion_level * 2
-			total = roll + mod
+			var init_d20 := InitiativeTracker.roll_result(char_data, dex, init_decisions)
+			total = int(init_d20.total)
 			await _recover_combat_pools(char_data, "initiative_rolled", 0)
 			if not is_inside_tree(): return
 		var owner_index := int(p.get("owner_player_index", -1))
@@ -835,12 +850,9 @@ func _roll_initiative_and_start() -> void:
 		var m_id := str(m.get("id", ""))
 		var m_init_seeded: Dictionary = seeded_init_map.get(m_id, {}) if seeded_init_map.get(m_id) is Dictionary else {}
 		var m_init_decisions := await _collect_roll_token_decision(m, "initiative", "Initiative roll", m_init_seeded)
-		var m_init_d20 := RollTokenRules.resolve_d20_test(m, "initiative", false, false, m_init_decisions)
-		var roll = int(m_init_d20.get("total", 1))
-		var monster_scores: Dictionary = m.get("ability_scores", {})
-		var dex = int(monster_scores.get("DEX", 10))
-		var mod = AbilityScores.get_modifier(dex)
-		var total = roll + mod
+		var m_init_d20 := InitiativeTracker.roll_result(m, -1, m_init_decisions)
+		var dex := int(m.get("ability_scores", {}).get("DEX", 10))
+		var total := int(m_init_d20.total)
 
 		tracker.add_combatant(
 			m["id"],
@@ -864,7 +876,15 @@ func _roll_initiative_and_start() -> void:
 
 
 func _start_combat_turn() -> void:
+	await _settle_monster_concentration()
 	if _pool_recovery_pending: return
+	for participant in player_entities:
+		var participant_character: Character = participant.get("character")
+		if participant_character != null:
+			participant_character.condition_consequence_handler = _on_character_condition_consequence
+	for monster in monster_entities:
+		monster["_condition_consequence_handler"] = _on_monster_condition_consequence
+		monster["_damage_consequence_handler"] = _on_monster_damage
 	CreatedCreatureCombat.reconcile(self)
 	tracker.mark_turn_started()
 	if tracker.get_active().get("scheduling_only", false):
@@ -872,6 +892,7 @@ func _start_combat_turn() -> void:
 		return
 	var next_entity: Variant = tracker.get_active().get("entity")
 	action_history.begin_turn(next_entity, tracker.current_round)
+	_spell_zones().begin_trigger_turn(_spell_zones()._trigger_actor_id(next_entity))
 	CombatAction.advance_combat_turn(next_entity if next_entity is Character else null, tracker.current_round)
 	if next_entity is Character:
 		CombatAction.start_bounded_owner_turn_interval(next_entity)
@@ -894,6 +915,9 @@ func _start_combat_turn() -> void:
 	if is_player:
 		# Player Turn
 		active_character = active_combatant["entity"]
+		ready_actions.clear_owner(active_character)
+		CheckHelpRules.start_turn(active_character, player_entities.map(func(entry): return entry.get("character")))
+		OrdinaryActionRules.start_turn(active_character, monster_entities)
 		CreatedCommandRules.start_owner_turn(self, active_character)
 		# This hit restriction ends when the target's next turn begins.
 		CombatAction.clear_shocking_grasp(active_character)
@@ -985,35 +1009,25 @@ func _start_combat_turn() -> void:
 			return
 
 
-		# Process turn-start condition effects (like poison)
-		if active_character.has_condition("poisoned"):
-			var dmg := Dice.roll(4) # 1d4 poison damage
-			var actual := int(CombatAction.resolve_damage(active_character, dmg, "poison")["damage"])
-			hud.add_log("[color=red]%s took %d poison damage from being poisoned![/color]" % [active_character.character_name, actual])
-			var ppos: Vector2i = player_entities[current_player_idx]["hex_position"]
-			_spawn_floating_text(ppos, "-%d" % actual, Color(0.3, 1.0, 0.3))
-			_flash_hex(ppos, Color(0.3, 1.0, 0.3, 0.5))
-			if not active_character.is_alive:
-				hud.add_log("[color=red]%s was knocked out by poison![/color]" % active_character.character_name)
-				await get_tree().create_timer(1.0).timeout
-				_end_active_turn()
-				return
 		if not active_character.combat_command.is_empty():
 			await _resolve_character_command(active_character, player_entities[current_player_idx], active_character.combat_command)
 			_end_active_turn()
 			return
 
-		# Check turn-blocking conditions
-		if active_character.has_condition("stunned") or active_character.has_condition("paralyzed"):
-			var blocked_condition := "Paralyzed" if active_character.has_condition("paralyzed") else "Stunned"
+		# Skip only an actor that has neither movement nor actions. Restrained
+		# and Grappled still need a live turn to attack, cast, or escape.
+		if CombatAction.is_speed_zero(active_character) and CombatAction.is_incapacitated(active_character):
+			var blocked_condition := "Unconscious" if active_character.has_condition("unconscious") else ("Paralyzed" if active_character.has_condition("paralyzed") else ("Petrified" if active_character.has_condition("petrified") else ("Restrained" if active_character.has_condition("restrained") else "Grappled")))
 			hud.add_log("[color=orange]%s is %s and skips their turn.[/color]" % [active_character.character_name, blocked_condition])
 			await get_tree().create_timer(1.0).timeout
 			_end_active_turn()
 			return
 
 		var speed_val := _movement_speed_feet("walk", active_character) / 5.0
-		if active_character.has_condition("prone"):
+		if active_character.has_condition("prone") and not CombatAction.is_incapacitated(active_character) and speed_val > 0:
+			active_character.remove_condition("prone")
 			speed_val /= 2.0
+			hud.add_log("%s stands from Prone, spending half its movement." % active_character.character_name)
 		remaining_speed = speed_val
 		active_movement_mode = "walk"
 		hud.set_movement_modes(active_character, active_movement_mode, _movement_speed_overrides(active_character))
@@ -1021,11 +1035,13 @@ func _start_combat_turn() -> void:
 		if player_entities[current_player_idx].get("is_created_actor", false): # Batch 056 S-157: its own turn and budget.
 			var created_line := CreatedCommandRules.take_turn(self, player_entities[current_player_idx])
 			if not created_line.is_empty(): hud.add_log(created_line)
+			if turn_budget.has_acted_this_turn: await _completed_player_action()
 			await get_tree().process_frame
 			_end_active_turn()
 			return
 		if player_entities[current_player_idx].get("is_created_creature", false):
 			await CreatedCreatureCombat.take_turn(self, player_entities[current_player_idx])
+			if turn_budget.has_acted_this_turn: await _completed_player_action()
 			_end_active_turn()
 			return
 		var controlled_entity: Dictionary = player_entities[current_player_idx]
@@ -1034,6 +1050,7 @@ func _start_combat_turn() -> void:
 			active_character.add_condition("dodging", 2)
 			_spend_action_cost("action")
 			hud.add_log("%s takes Dodge while its owner cannot command it." % active_character.character_name)
+			await _completed_player_action()
 			await get_tree().create_timer(0.01).timeout
 			_end_active_turn()
 			return
@@ -1070,33 +1087,26 @@ func _start_combat_turn() -> void:
 	else:
 		# Monster Turn
 		var monster: Dictionary = active_combatant["entity"]
+		OrdinaryActionRules.start_turn(monster, player_entities)
 		monster["reaction_available"] = true
 		CombatAction.clear_shocking_grasp(monster)
+		if monster_spellcasters.has(str(monster.id)):
+			_tick_spell_effect_boundary(_make_monster_spellcaster(monster), "start")
 		await _resolve_spell_zone_start_turn(monster, monster.get("hex_position", Vector2i.ZERO))
 		_apply_regenerate_turn_start(monster)
 		
-		# Process turn-start condition effects (like poison)
+		# Process turn-start condition effects
 		var monster_conditions: Dictionary = monster.get("conditions", {})
 		var command: Dictionary = monster.get("combat_command", {})
-		if monster_conditions.has("prone") and str(command.get("action", "")) != "grovel":
+		if monster_conditions.has("prone") and str(command.get("action", "")) != "grovel" and not CombatAction.is_incapacitated(monster) and FighterRules.monster_speed(monster) > 0:
 			monster_conditions.erase("prone")
+			monster.get("condition_sources", {}).erase("prone")
 			monster["fighter_stood_up"] = true
 			hud.add_log("%s stands from Prone, spending half its movement." % monster["name"])
-		if monster_conditions.has("poisoned"):
-			var dmg := Dice.roll(4)
-			var actual := int(CombatAction.resolve_damage(monster, dmg, "poison")["damage"])
-			hud.add_log("[color=red]%s took %d poison damage from being poisoned![/color]" % [monster["name"], actual])
-			if monster["current_hp"] <= 0:
-				monster["is_alive"] = false
-				hud.add_log("[color=green]%s was defeated by poison![/color]" % monster["name"])
-				tracker.remove_combatant(monster["id"])
-				await get_tree().create_timer(1.0).timeout
-				_end_active_turn()
-				return
 
-		# Check stunned condition
-		if monster_conditions.has("stunned") or monster_conditions.has("paralyzed") or monster.get("stunning_strike_stunned", false):
-			var blocked_monster_condition := "Paralyzed" if monster_conditions.has("paralyzed") else "Stunned"
+		# Check Speed-0 incapacitating conditions
+		if CombatAction.is_incapacitated(monster) and FighterRules.monster_speed(monster) <= 0:
+			var blocked_monster_condition := "Paralyzed" if monster_conditions.has("paralyzed") else ("Petrified" if monster_conditions.has("petrified") else ("Unconscious" if monster_conditions.has("unconscious") else "Stunned"))
 			hud.add_log("[color=orange]%s is %s and skips their turn.[/color]" % [monster["name"], blocked_monster_condition])
 			await get_tree().create_timer(1.0).timeout
 			_end_active_turn()
@@ -1111,7 +1121,7 @@ func _start_combat_turn() -> void:
 		# Compute the monster's planned action from current state and surface it
 		# above the token so the player can read what's coming.
 		var monster_coord: Vector2i = monster.get("hex_position", Vector2i.ZERO)
-		var intent := AIController.get_monster_action(monster, monster_coord, hex_grid, player_entities)
+		var intent := AIController.get_monster_action(monster, monster_coord, hex_grid, player_entities, _all_live_combat_entities())
 		monster["intent"] = intent
 		_intent_preview = _describe_intent(monster, intent)
 		monster["intent_text"] = _intent_preview
@@ -1131,6 +1141,77 @@ func _get_current_owner_index() -> int:
 	return int(player_entities[current_player_idx].get("owner_player_index", -1))
 
 
+func _all_live_combat_entities() -> Array:
+	var actors: Array = []
+	for player in player_entities:
+		var character: Character = player.get("character")
+		if character != null and character.is_alive:
+			actors.append(player)
+	for monster in monster_entities:
+		if bool(monster.get("is_alive", false)):
+			actors.append(monster)
+	return actors
+
+
+func _ability_check_context(actor, social_target = null) -> Dictionary:
+	var actor_id := CombatAction.actor_id(actor)
+	var actor_position := Vector2i.ZERO
+	for participant in _all_live_combat_entities():
+		if CombatAction.actor_id(participant) == actor_id:
+			actor_position = participant.get("hex_position", Vector2i.ZERO)
+			break
+	var context := {"participants": _all_live_combat_entities(), "actor_position": actor_position, "grid": hex_grid}
+	if social_target is Character or social_target is Dictionary:
+		context["social_target"] = social_target
+	return context
+
+
+func _path_breaks_fear(actor, path: Array, candidates: Array) -> bool:
+	if actor == null or path.size() < 2:
+		return false
+	var previous: Vector2i = path[0]
+	for step_index in range(1, path.size()):
+		var next_position: Vector2i = path[step_index]
+		if CombatAction.frightened_forbids_movement_closer(actor, previous, next_position, candidates):
+			return true
+		previous = next_position
+	return false
+
+
+func _on_character_condition_consequence(character: Character, consequence: String) -> void:
+	if consequence == "incapacitated" and character != null and not character.concentrating_on.is_empty():
+		_end_concentration(character)
+	if consequence == "unconscious" and character != null:
+		for participant in player_entities:
+			if participant.get("character") != character:
+				continue
+			var origin: Vector2i = participant.get("hex_position", Vector2i.ZERO)
+			for slot in [Inventory.Slot.WEAPON, Inventory.Slot.SHIELD, Inventory.Slot.OFFHAND]:
+				var item_copy := character.inventory.drop_equipped_instance(slot)
+				var dropped_object := CombatObjectRules.make_dropped_item(item_copy, origin, character.character_id)
+				if not dropped_object.is_empty():
+					dropped_combat_items.append(dropped_object)
+			_update_grid_entities()
+			break
+
+
+func _on_monster_condition_consequence(monster: Dictionary, consequence: String) -> void:
+	if consequence == "incapacitated" and monster_spellcasters.has(str(monster.get("id", ""))):
+		_end_concentration(_make_monster_spellcaster(monster))
+	if consequence != "unconscious" or monster.is_empty():
+		return
+	var origin: Vector2i = monster.get("hex_position", Vector2i.ZERO)
+	var held: Array = monster.get("held_items", []).duplicate()
+	for item_index in held.size():
+		var definition_id := str(held[item_index])
+		var record := {"instance_id": "monster:%s:drop:%d:%d" % [str(monster.get("id", "monster")), tracker.current_round, item_index], "definition_id": definition_id, "state": {}}
+		var dropped_object := CombatObjectRules.make_dropped_item(record, origin, str(monster.get("id", "")))
+		if not dropped_object.is_empty():
+			dropped_combat_items.append(dropped_object)
+	monster["held_items"] = []
+	_update_grid_entities()
+
+
 func _wait_for_owner_rebind(owner_index: int, before_turn_setup: bool) -> void:
 	_waiting_for_owner_rebind = true
 	_rebind_wait_before_turn_setup = before_turn_setup
@@ -1142,6 +1223,12 @@ func _wait_for_owner_rebind(owner_index: int, before_turn_setup: bool) -> void:
 
 func _resolve_character_command(character: Character, entity: Dictionary, command: Dictionary) -> void:
 	var action := str(command.get("action", "halt"))
+	if CombatAction.is_incapacitated(character) and action not in ["approach", "flee", "halt"]:
+		hud.add_log("%s is Incapacitated and cannot take that action." % character.character_name)
+		return
+	if CombatAction.is_speed_zero(character) and action in ["approach", "flee"]:
+		hud.add_log("%s cannot move with Speed 0." % character.character_name)
+		return
 	var origin: Vector2i = entity.get("hex_position", Vector2i.ZERO)
 	if action == "grovel":
 		character.add_condition("prone", 2)
@@ -1174,6 +1261,8 @@ func _resolve_character_command(character: Character, entity: Dictionary, comman
 		var candidate: Vector2i = candidate_value
 		if candidate == origin or _is_occupied_hex(candidate):
 			continue
+		if character.has_condition("frightened") and CombatAction.frightened_forbids_movement_closer(character, origin, candidate, _all_live_combat_entities()):
+			continue
 		var distance := HexUtils.get_distance(candidate, caster_coord)
 		var better := distance < best_distance if action == "approach" else distance > best_distance
 		if better and (action != "approach" or distance > 0):
@@ -1181,6 +1270,9 @@ func _resolve_character_command(character: Character, entity: Dictionary, comman
 			destination = candidate
 	if destination != origin:
 		var path := _player_path(origin, destination, character)
+		if character.has_condition("frightened") and _path_breaks_fear(character, path, _all_live_combat_entities()):
+			hud.add_log("%s cannot willingly move closer to the source of their fear." % character.character_name)
+			return
 		await _check_opportunity_attacks_for_path(character, entity, path, false)
 	hud.add_log("%s %s and ends their turn." % [character.character_name, "approaches" if action == "approach" else "flees"])
 
@@ -1219,42 +1311,42 @@ func _monster_ai_current(expected_turn: int = -1, expected_monster: Dictionary =
 
 
 func _run_monster_ai() -> void:
+	await _settle_monster_concentration()
 	if not _monster_ai_current(): return
 	ClericRules.reconcile_turning(monster_entities, player_entities)
 	var monster: Dictionary = active_combatant["entity"]
 	var monster_coord: Vector2i = monster.get("hex_position", Vector2i.ZERO)
 	var monster_conditions: Dictionary = monster.get("conditions", {})
-	if monster_conditions.has("unconscious"):
-		hud.add_log("%s is Unconscious and skips its turn." % monster.get("name", "The target"))
+	if CombatAction.is_incapacitated(monster) and FighterRules.monster_speed(monster) <= 0:
+		var blocked_label := "Unconscious" if monster_conditions.has("unconscious") else ("Paralyzed" if monster_conditions.has("paralyzed") else ("Petrified" if monster_conditions.has("petrified") else "Incapacitated"))
+		hud.add_log("%s is %s and skips its turn." % [monster.get("name", "The target"), blocked_label])
 		_update_grid_entities()
 		await get_tree().create_timer(1.0).timeout
 		_end_active_turn()
 		return
 	var forced_command: Dictionary = monster.get("combat_command", {})
-	if not forced_command.is_empty():
+	if not forced_command.is_empty() and not CombatAction.is_incapacitated(monster):
 		await _resolve_monster_command(monster, forced_command)
 		_update_grid_entities()
 		await get_tree().create_timer(1.0).timeout
 		_end_active_turn()
 		return
-	if monster_conditions.has("incapacitated"):
-		if monster.has("turn_undead_origin"):
-			await _move_turned_undead_away(monster)
-		else:
-			hud.add_log("%s is Incapacitated or Unconscious and skips its turn." % monster.get("name", "Undead"))
+	if monster_conditions.has("incapacitated") and monster.has("turn_undead_origin"):
+		await _move_turned_undead_away(monster)
 		_update_grid_entities()
 		await get_tree().create_timer(1.0).timeout
 		_end_active_turn()
 		return
-	if _try_monster_escape_tether(monster) or _try_monster_rescue_tether(monster) or _try_monster_escape_restrained_zone(monster):
+	if not CombatAction.is_incapacitated(monster) and (_try_monster_escape_tether(monster) or _try_monster_rescue_tether(monster) or _try_monster_escape_restrained_zone(monster)):
 		_update_grid_entities()
 		await get_tree().create_timer(1.0).timeout
 		_end_active_turn()
 		return
 	
 	# Get AI decision
-	var decision := AIController.get_monster_action(monster, monster_coord, hex_grid, player_entities)
-	var command := AICommand.from_decision(decision, monster, player_entities, hex_grid)
+	var fear_candidates := _all_live_combat_entities()
+	var decision := AIController.get_monster_action(monster, monster_coord, hex_grid, player_entities, fear_candidates)
+	var command := AICommand.from_decision(decision, monster, player_entities, hex_grid, fear_candidates)
 	if command == null:
 		hud.add_log("%s holds: invalid AI action was rejected." % monster["name"])
 		_update_grid_entities()
@@ -1272,7 +1364,7 @@ func _run_monster_ai() -> void:
 	match action_str:
 		"move":
 			var dest: Vector2i = command.move_to()
-			if PaladinRules.abjure_foes_forbids_movement_closer(monster, dest, player_entities):
+			if CombatAction.frightened_forbids_movement_closer(monster, monster_coord, dest, fear_candidates):
 				hud.add_log("%s cannot move closer to the source of its fear." % monster.get("name", "The creature"))
 			else:
 				var path := [monster_coord, dest]
@@ -1288,7 +1380,7 @@ func _run_monster_ai() -> void:
 		"move_attack":
 			# Move
 			var dest: Vector2i = command.move_to()
-			if PaladinRules.abjure_foes_forbids_movement_closer(monster, dest, player_entities):
+			if CombatAction.frightened_forbids_movement_closer(monster, monster_coord, dest, fear_candidates):
 				hud.add_log("%s cannot move closer to the source of its fear." % monster.get("name", "The creature"))
 			else:
 				var path := [monster_coord, dest]
@@ -1297,11 +1389,19 @@ func _run_monster_ai() -> void:
 					# Attack
 					var target_name: String = command.target_id()
 					var attack_idx: int = command.attack_idx()
-					hud.add_log("%s moved and attacked!" % monster["name"])
-					await _execute_monster_attack(monster, target_name, attack_idx)
+					if command.can_execute_attack(monster, player_entities, hex_grid, monster.get("hex_position", monster_coord)):
+						hud.add_log("%s moved and attacked!" % monster["name"])
+						await _execute_monster_attack(monster, target_name, attack_idx)
+					else:
+						hud.add_log("%s's attack target is no longer legal after the movement reactions." % monster["name"])
 		_:
-			hud.add_log("%s dodges." % monster["name"])
+			if CombatAction.is_incapacitated(monster):
+				hud.add_log("%s is Incapacitated and takes no action." % monster["name"])
+			else:
+				CombatAction.apply_condition(monster, "dodging", 2)
+				hud.add_log("%s dodges." % monster["name"])
 
+	await ready_actions.publish(self, {"type":"action", "actor":monster, "position":monster.get("hex_position", Vector2i.ZERO)})
 	_update_grid_entities()
 	await get_tree().create_timer(1.2).timeout
 	_end_active_turn()
@@ -1310,7 +1410,7 @@ func _run_monster_ai() -> void:
 func _move_turned_undead_away(monster: Dictionary) -> void:
 	var origin: Vector2i = monster.get("hex_position", Vector2i.ZERO)
 	var source: Vector2i = monster.get("turn_undead_origin", origin)
-	var reachable: Dictionary = _enemy_reachable(origin, float(monster.get("speed", 6)), monster)
+	var reachable: Dictionary = _enemy_reachable(origin, float(FighterRules.monster_speed(monster)), monster)
 	var destination := origin
 	var best_distance := HexUtils.get_distance(origin, source)
 	for candidate in reachable:
@@ -1335,6 +1435,12 @@ func _resolve_monster_command(monster: Dictionary, command: Dictionary) -> void:
 		hud.add_log("%s cannot move through the Resilient Sphere." % monster.get("name", "The creature"))
 		return
 	var action := str(command.get("action", "halt"))
+	if CombatAction.is_incapacitated(monster) and action not in ["approach", "flee", "halt"]:
+		hud.add_log("%s is Incapacitated and cannot take that action." % monster.get("name", "The creature"))
+		return
+	if CombatAction.is_speed_zero(monster) and action in ["approach", "flee"]:
+		hud.add_log("%s cannot move with Speed 0." % monster.get("name", "The creature"))
+		return
 	var name := str(monster.get("name", "The target"))
 	var origin: Vector2i = monster.get("hex_position", Vector2i.ZERO)
 	if action == "grovel":
@@ -1363,7 +1469,7 @@ func _resolve_monster_command(monster: Dictionary, command: Dictionary) -> void:
 		if caster != null and (caster.character_id == caster_id or str(caster.get_instance_id()) == caster_id):
 			caster_coord = player.get("hex_position", Vector2i.ZERO)
 			break
-	var monster_speed := 0.0 if monster.get("conditions", {}).has("restrained") else float(monster.get("speed", 6))
+	var monster_speed := float(FighterRules.monster_speed(monster))
 	var movement_budget := monster_speed * 2.0 if action == "flee" else monster_speed
 	var reachable: Dictionary = _enemy_reachable(origin, movement_budget, monster)
 	var destination := origin
@@ -1379,6 +1485,9 @@ func _resolve_monster_command(monster: Dictionary, command: Dictionary) -> void:
 			destination = candidate
 	if destination != origin:
 		var path := _enemy_path(origin, destination, monster)
+		if CombatAction.has_condition(monster, "frightened") and _path_breaks_fear(monster, path, _all_live_combat_entities()):
+			hud.add_log("%s cannot willingly move closer to a source of its fear." % name)
+			return
 		await _check_opportunity_attacks_for_path(null, monster, path, true)
 	if action == "approach" and HexUtils.get_distance(monster.get("hex_position", origin), caster_coord) <= 1:
 		hud.add_log("%s approaches the caster and ends its turn." % name)
@@ -1391,7 +1500,7 @@ func _try_monster_escape_tether(monster: Dictionary) -> bool:
 	var captors: Array = player_entities.map(func(p): return p.get("character"))
 	var bindings := TetherRules.binding(monster, captors)
 	if bindings.is_empty(): return false
-	var r := TetherRules.escape(monster, captors, 0, str(bindings[0].relation))
+	var r := TetherRules.escape(monster, captors, 0, str(bindings[0].relation), _ability_check_context(monster))
 	hud.add_log("[color=%s]%s[/color]" % ["green" if r.get("success", false) else "orange", str(r.get("message", ""))])
 	return true
 
@@ -1407,7 +1516,7 @@ func _try_monster_rescue_tether(monster: Dictionary) -> bool:
 			for binding in TetherRules.binding(ally, captors):
 				var relation := str(binding.relation)
 				if not TetherRules.rescue_error(monster, ally, captors, mode, relation).is_empty(): continue
-				var r := TetherRules.rescue(monster, ally, captors, mode, relation)
+				var r := TetherRules.rescue(monster, ally, captors, mode, relation, 0, _ability_check_context(monster, ally))
 				hud.add_log("[color=%s]%s[/color]" % ["green" if r.get("success", false) else "orange", str(r.get("message", ""))])
 				return true
 	return false
@@ -1440,8 +1549,9 @@ func _try_rescue_tether(character: Character, coord: Vector2i, player_pos: Vecto
 	# Checklist (a): refuse before the Action is spent.
 	if character != active_character or not TetherRules.rescue_error(character, ally, captors, mode, relation).is_empty() or not _can_spend_action_cost("action") or not _tether_rescue_adjacent(character, ally): return true
 	_spend_action_cost("action")
-	var r := TetherRules.rescue(character, ally, captors, mode, relation)
+	var r := TetherRules.rescue(character, ally, captors, mode, relation, 0, _ability_check_context(character, ally))
 	hud.add_log("[color=%s]%s[/color]" % ["green" if r.get("success", false) else "orange", str(r.get("message", ""))])
+	await _completed_player_action(character)
 	hud.update_hud(active_character, tracker)
 	_highlight_reachable()
 	return true
@@ -1475,8 +1585,9 @@ func _try_escape_tether(character: Character) -> bool:
 	if relation not in options: return true
 	if character != active_character or not _can_spend_action_cost("action") or not TetherRules.binding(character, captors).any(func(b): return str(b.relation) == relation): return true
 	_spend_action_cost("action")
-	var r := TetherRules.escape(character, captors, 0, relation)
+	var r := TetherRules.escape(character, captors, 0, relation, _ability_check_context(character))
 	hud.add_log("[color=%s]%s[/color]" % ["green" if r.get("success", false) else "orange", str(r.get("message", ""))])
+	await _completed_player_action(character)
 	hud.update_hud(active_character, tracker)
 	_highlight_reachable()
 	return true
@@ -1492,14 +1603,9 @@ func _try_monster_escape_restrained_zone(monster: Dictionary) -> bool:
 		if zone.is_empty():
 			CombatAction.remove_condition_source(monster, source_id, ["restrained"])
 			continue
-		var ability_scores: Dictionary = monster.get("ability_scores", {})
-		var strength_modifier := AbilityScores.get_modifier(int(ability_scores.get("STR", 10)))
-		var athletics_modifier := strength_modifier
-		var skills: Variant = monster.get("skills", {})
-		if skills is Dictionary:
-			athletics_modifier = int(skills.get("Athletics", strength_modifier))
-		var total := Dice.roll(20) + athletics_modifier
 		var dc := int(zone.get("save_dc", 10))
+		var escape_check := EventResolver.resolve_monster_ability_check(monster, "STR", "Athletics", dc, 0, {}, _ability_check_context(monster))
+		var total := int(escape_check.get("total", 0))
 		if total >= dc:
 			CombatAction.remove_condition_source(monster, source_id, ["restrained"])
 			var restrained_targets: Array = zone.get("restrained_targets", [])
@@ -1513,7 +1619,10 @@ func _try_monster_escape_restrained_zone(monster: Dictionary) -> bool:
 
 
 func _execute_monster_attack(monster: Dictionary, target_player_name: String, attack_idx: int) -> void:
-	var attack_data: Dictionary = monster["attacks"][attack_idx]
+	var intent := AICommand.new("attack", {"target_id":target_player_name, "attack_idx":attack_idx})
+	var attack_turn := CombatAction.active_turn_serial
+	if not intent.is_valid(monster, player_entities, hex_grid, _all_live_combat_entities()): return
+	var attack_data: Dictionary = monster["attacks"][attack_idx].duplicate(true)
 	
 	# Find target player char and position
 	var target_char: Character = null
@@ -1524,8 +1633,11 @@ func _execute_monster_attack(monster: Dictionary, target_player_name: String, at
 			target_pos = p["hex_position"]
 			break
 
-	if target_char == null: return
+	if target_char == null or not target_char.is_alive or CombatAction.is_incapacitated(monster) or attack_idx < 0 or attack_idx >= monster.get("attacks", []).size(): return
 	var monster_origin: Vector2i = monster.get("hex_position", Vector2i.ZERO)
+	if CombatAction.is_charmed_by(monster, target_char) or not CombatAction.can_locate_target(monster, target_char, monster_origin, target_pos, hex_grid) or HexUtils.get_distance(monster_origin, target_pos) > CombatAction.weapon_range_hexes(attack_data):
+		hud.add_log("%s's attack target is no longer legal." % str(monster.get("name", "The creature")))
+		return
 	if _spell_zones()._antilife_shell_blocks_melee(monster, monster_origin, target_pos, attack_data):
 		hud.add_log("Antilife Shell prevents %s's melee attack from reaching through its barrier." % str(monster.get("name", "The creature")))
 		return
@@ -1534,42 +1646,14 @@ func _execute_monster_attack(monster: Dictionary, target_player_name: String, at
 		return
 
 	# Determine advantage & disadvantage based on conditions
+	var dist := HexUtils.get_distance(monster_origin, target_pos)
+	attack_data["attack_distance"] = dist
 	var has_advantage := false
-	var has_disadvantage: bool = target_char.has_condition("dodging") or bool(monster.get("conditions", {}).has("restrained"))
-	var attack_distance_feet := HexUtils.get_distance(monster.get("hex_position", Vector2i.ZERO), target_pos) * 5
-	if not CombatPerception.can_see_target(monster, target_char, monster_origin, target_pos, hex_grid):
-		has_disadvantage = true
-	var monster_perceives_invisible := CombatAction.can_perceive_invisible(monster, attack_distance_feet)
-	if CombatAction.is_invisible(target_char) and not monster_perceives_invisible:
-		has_disadvantage = true
-	if CombatAction.is_invisible(monster) and not CombatAction.can_perceive_invisible(target_char, attack_distance_feet):
-		has_advantage = true
-	
-	# Monster conditions (blinded/poisoned)
-	var monster_conditions: Dictionary = monster.get("conditions", {})
-	if monster_conditions.has("blinded") or monster_conditions.has("poisoned"):
-		has_disadvantage = true
-	var abjure_source_position: Variant = PaladinRules.abjure_foes_source_position(monster, player_entities)
-	if monster_conditions.has("frightened") and abjure_source_position is Vector2i and Targeting.has_line_of_sight(monster_origin, abjure_source_position, hex_grid):
-		has_disadvantage = true
+	var has_disadvantage := false
+	var attack_visibility := {"grid": hex_grid, "caster_position": monster_origin, "target_position": target_pos, "observer": monster}
 
-	# Target conditions (blinded or prone)
-	if target_char.has_condition("blinded"):
-		has_advantage = true
-	if target_char.has_condition("reckless_attack"):
-		has_advantage = true
-	if target_char.has_condition("restrained"):
-		has_advantage = true
-	if target_char.has_condition("prone"):
-		var dist := HexUtils.get_distance(monster.get("hex_position", Vector2i.ZERO), target_pos)
-		if dist == 1:
-				has_advantage = true
-		else:
-				has_disadvantage = true
-
-	if not monster.get("fighter_sap_sources", []).is_empty():
-		has_disadvantage = true
-		monster.erase("fighter_sap_sources")
+	# Monster attacker conditions
+	var fear_in_sight := CombatAction.is_frightened_source_in_sight(monster, monster_origin, _all_live_combat_entities(), hex_grid)
 	await _fire_reaction_trigger(target_char, "on_attacked", monster, target_pos, monster_origin)
 	if not bool(monster.get("is_alive", false)) or int(monster.get("current_hp", 0)) <= 0:
 		_check_battle_end_conditions()
@@ -1583,14 +1667,28 @@ func _execute_monster_attack(monster: Dictionary, target_player_name: String, at
 			if str(rule.source_instance_id) == selected:
 				reaction_decisions["zero_hp_choice"] = {"rule": rule, "live_rule": zero_live[zero_options.find(rule)], "target": target_char, "used": false}
 
+	reaction_decisions["weapon_visibility"] = attack_visibility
+	reaction_decisions["perception_handles_blindness"] = true
 	reaction_decisions["players"] = player_entities
 	reaction_decisions["monsters"] = monster_entities
+	reaction_decisions["frightened_source_out_of_sight"] = not fear_in_sight
 	reaction_decisions["damage_source_actor_id"] = str(monster.get("id", ""))
 	reaction_decisions["damage_source_instance_id"] = str(monster.get("id", ""))
 
 	# Roll attack
 	var monster_attacker := _make_temp_monster_character(monster)
 	reaction_decisions.merge(await _collect_roll_token_decision(monster_attacker, "attack", "%s attack roll against %s" % [str(monster.get("name", "Monster")), target_char.character_name], reaction_decisions), true)
+	if attack_turn != CombatAction.active_turn_serial or not intent.is_valid(monster, player_entities, hex_grid, _all_live_combat_entities()): return
+	# Choices may change the attacker as well as its target. Project live state.
+	monster_attacker = _make_temp_monster_character(monster)
+	monster_origin = monster.get("hex_position", Vector2i.ZERO)
+	target_pos = AICommand._target_position(target_player_name, player_entities)
+	attack_data["attack_distance"] = HexUtils.get_distance(monster_origin, target_pos)
+	reaction_decisions["weapon_visibility"] = {"grid":hex_grid, "caster_position":monster_origin, "target_position":target_pos, "observer":monster}
+	reaction_decisions["frightened_source_out_of_sight"] = not CombatAction.is_frightened_source_in_sight(monster, monster_origin, _all_live_combat_entities(), hex_grid)
+	# The shared resolver owns all live condition and perception modes.
+	has_disadvantage = not monster.get("fighter_sap_sources", []).is_empty()
+	monster.erase("fighter_sap_sources")
 	var result := CombatAction.resolve_weapon_attack(
 		monster_attacker,
 		target_char,
@@ -1603,7 +1701,7 @@ func _execute_monster_attack(monster: Dictionary, target_player_name: String, at
 	if result.has("attack_roll"):
 		# The AI's selected command can still fail target/LOS/movement checks.
 		# Record only a real roll, using the monster rather than its temporary
-		# Character projection (which has no stable actor ID).
+		# Character projection.
 		action_history.record_action(monster)
 		action_history.record_attack(monster, target_char)
 		SpellEffects.consume_spell(monster, "invisibility")
@@ -1678,13 +1776,27 @@ func _execute_monster_attack(monster: Dictionary, target_player_name: String, at
 		var conc_damage := int(result.get("resolved", result.get("damage", 0))) + rider_resolved
 		if result.get("hit", false) and conc_damage > 0:
 			await _check_concentration_save(target_char, conc_damage)
+	await ready_actions.publish(self, {"type":"attack", "actor":monster, "position":monster.get("hex_position", Vector2i.ZERO)})
 
 
 func _make_monster_spellcaster(monster: Dictionary) -> Character:
-	var caster := _make_temp_monster_character(monster)
+	var id := str(monster.get("id", ""))
+	var caster: Character = monster_spellcasters.get(id)
+	if caster == null:
+		caster = _make_temp_monster_character(monster)
+		caster.spell_slots = monster.get("spell_slots", {}).duplicate(true)
+		monster_spellcasters[id] = caster
+		monster["spell_effects"] = caster.spell_effects
+	caster.current_hp = int(monster.get("current_hp", 0))
+	caster.max_hp = int(monster.get("max_hp", caster.current_hp))
+	caster.is_alive = bool(monster.get("is_alive", true))
+	caster.conditions = monster.get("conditions", {})
+	caster.condition_sources = monster.get("condition_sources", {})
+	caster.exhaustion_level = int(monster.get("exhaustion_level", caster.conditions.get("exhaustion", 0)))
 	caster.class_id = "wizard"
 	caster.level = maxi(1, int(monster.get("spellcaster_level", 8)))
 	var monster_save_bonuses: Dictionary = monster.get("saving_throw_bonuses", {})
+	caster.modifiers.clear()
 	for ability in ["STR", "DEX", "CON", "INT", "WIS", "CHA"]:
 		if monster_save_bonuses.has(ability):
 			var ability_score := int(monster.get("ability_scores", {}).get(ability, 10))
@@ -1694,11 +1806,15 @@ func _make_monster_spellcaster(monster: Dictionary) -> Character:
 		var spell_id := str(known.get("id", ""))
 		if not spell_id.is_empty():
 			caster.known_spells.append(spell_id)
-	caster.spell_slots = monster.get("spell_slots", {}).duplicate(true)
+	caster.features.clear()
+	caster.features.append({"id":"monster:spellcasting", "name":"Spellcasting", "type":"passive", "effects":[{"type":"always_prepared_spells", "spells":caster.known_spells.duplicate(), "ability":str(monster.get("spellcasting_ability", "INT"))}]})
 	return caster
 
 
 func _execute_monster_spell(monster: Dictionary, target_player_name: String, spell_id: String) -> void:
+	var intent := AICommand.new("cast_spell", {"target_id":target_player_name, "spell_id":spell_id})
+	var cast_turn := CombatAction.active_turn_serial
+	if not intent.is_valid(monster, player_entities, hex_grid, _all_live_combat_entities()): return
 	var target_char: Character = null
 	var target_pos := Vector2i.ZERO
 	for p in player_entities:
@@ -1709,32 +1825,61 @@ func _execute_monster_spell(monster: Dictionary, target_player_name: String, spe
 	if target_char == null or not target_char.is_alive:
 		return
 	var spell_data: Dictionary = DataLoader.get_spell(spell_id)
+	spell_data = spell_data.duplicate(true)
 	if bool(spell_data.get("requires_target_sight", false)) and not CombatPerception.can_see_target(monster, target_char, monster.get("hex_position", Vector2i.ZERO), target_pos, hex_grid):
 		hud.add_log("%s cannot see a target for %s." % [str(monster.get("name", "The creature")), str(spell_data.get("name", "the spell"))])
 		return
 	var caster := _make_monster_spellcaster(monster)
+	caster.spell_slots = monster.get("spell_slots", {}).duplicate(true)
 	var counterspell_context := await _collect_counterspell_decisions(caster, spell_data, monster.get("hex_position", Vector2i.ZERO), monster)
 	var countercharm_context := await _collect_countercharm_decisions(target_char, target_pos, spell_data)
 	var inspiration_context := await _collect_bardic_inspiration_save_decision(target_char, spell_data)
-	var stroke_context := await _collect_stroke_of_luck_save_decision(target_char, str(spell_data.get("name", "this spell"))) if CombatAction.spell_requires_saving_throw(spell_data) else {}
+	var auto_failed_save := CombatAction.save_auto_fails(target_char, str(spell_data.get("save", "DEX")))
+	var stroke_context := await _collect_stroke_of_luck_save_decision(target_char, str(spell_data.get("name", "this spell"))) if CombatAction.spell_requires_saving_throw(spell_data) and not auto_failed_save else {}
 	var spell_reaction_decisions: Dictionary = counterspell_context.get("decisions", {}).duplicate()
+	spell_reaction_decisions["spell_visibility"] = {"grid": hex_grid, "caster_position": monster.get("hex_position", Vector2i.ZERO), "target_position": target_pos, "observer": monster}
 	spell_reaction_decisions.merge(countercharm_context.get("decisions", {}), true)
 	spell_reaction_decisions.merge(inspiration_context, true)
 	spell_reaction_decisions.merge(stroke_context, true)
 	spell_reaction_decisions.merge(await _collect_spell_shield_decision(target_char, spell_data, spell_reaction_decisions), true)
-	if CombatAction.spell_requires_saving_throw(spell_data):
+	if CombatAction.spell_requires_saving_throw(spell_data) and not auto_failed_save:
 		spell_reaction_decisions.merge(await _collect_roll_token_decision(target_char, "save", "%s saving throw against %s" % [str(spell_data.get("save", "Spell")), str(spell_data.get("name", "spell"))], spell_reaction_decisions), true)
 	elif str(spell_data.get("attack_type", "none")) != "none":
 		spell_reaction_decisions.merge(await _collect_roll_token_decision(caster, "attack", "%s spell attack against %s" % [str(spell_data.get("name", "Spell")), target_char.character_name], spell_reaction_decisions), true)
 	if spell_data.has("damage") or spell_data.has("damage_per_dart") or spell_data.has("damage_per_ray"):
 		spell_reaction_decisions.merge(await _collect_projected_ward_decision(target_char, spell_reaction_decisions), true)
+	if cast_turn != CombatAction.active_turn_serial or not intent.is_valid(monster, player_entities, hex_grid, _all_live_combat_entities()): return
+	caster = _make_monster_spellcaster(monster)
+	caster.spell_slots = monster.get("spell_slots", {}).duplicate(true)
+	target_pos = AICommand._target_position(target_player_name, player_entities)
+	spell_reaction_decisions["spell_visibility"] = {"grid":hex_grid, "caster_position":monster.get("hex_position", Vector2i.ZERO), "target_position":target_pos, "observer":monster}
 	var spell_reaction_observers: Array = counterspell_context.get("observers", []).duplicate()
 	spell_reaction_observers.append_array(countercharm_context.get("observers", []))
 	var spell_target_distance := HexUtils.get_distance(monster.get("hex_position", Vector2i.ZERO), target_pos) * 5
-	var result := CombatAction.resolve_spell(caster, target_char, spell_data, true, spell_reaction_decisions, spell_reaction_observers, 0, spell_target_distance)
+	var validation := CombatAction.validate_spell_target(caster, target_char, spell_data, spell_target_distance, spell_reaction_decisions)
+	if not validation.get("success", false): return
+	var payment := CombatAction.spend_spell_slot(caster, spell_data) if int(spell_data.get("level", 0)) > 0 else {"success":true, "slot_level":0}
+	if not payment.get("success", false): return
+	var host := _spell_cast_context()
+	host.caster = caster; host.spell = spell_data; host.spell_origin = monster.get("hex_position", Vector2i.ZERO)
+	host.target_coord = target_pos; host.targets = [target_pos]; host.owner_label = caster.character_name
+	host.slot_level_used = int(payment.get("slot_level", 0))
+	host.incoming_slot_spent = host.slot_level_used > 0 and not bool(payment.get("slot_recalled", false))
+	host.incoming_slot_pool_id = str(payment.get("slot_pool_id", "ordinary"))
+	host.counterspell_decisions = spell_reaction_decisions
+	# Use the same captured source and replacement-concentration preparation as HUD casts.
+	await SpellCastReactions._prepare_spell_cast_effects(host)
+	var result := CombatAction.resolve_spell(caster, target_char, host.spell, false, spell_reaction_decisions, spell_reaction_observers, host.slot_level_used, spell_target_distance, host)
+	result = await SpellCastResults._settle_empowered_spell(host, target_char, result, spell_reaction_decisions)
+	if result.get("success", false):
+		if not caster.concentrating_on.is_empty(): caster.concentrating_on["targets"].append(target_char)
+		await SpellEffectApplication.apply(host, target_char, {}, host.spell, host.spell_origin, target_pos, result)
+	elif bool(host.spell.get("concentration", false)):
+		_end_concentration(caster)
 	if bool(result.get("success", false)) or bool(result.get("countered", false)):
 		action_history.record_action(monster)
 	monster["spell_slots"] = caster.spell_slots.duplicate(true)
+	monster["spell_cast_serial"] = caster.spell_cast_serial
 	hud.add_log(result.get("message", "%s's spell failed." % monster.get("name", "Monster")))
 	if spell_reaction_decisions.has("counterspell_saved_by"):
 		hud.add_log("[color=yellow]%s resists Counterspell; the spell continues.[/color]" % str(spell_reaction_decisions["counterspell_saved_by"]))
@@ -1748,6 +1893,80 @@ func _execute_monster_spell(monster: Dictionary, target_player_name: String, spe
 			await _check_concentration_save(target_char, resolved_damage)
 	if not target_char.is_alive:
 		hud.add_log("[color=red]%s was knocked out by %s's spell![/color]" % [target_char.character_name, monster.get("name", "Monster")])
+	SpellEffects.reconcile(_spell_casters(), _spell_effect_targets())
+	if result.get("success", false) or result.get("countered", false):
+		await ready_actions.publish(self, {"type":"cast", "actor":monster, "position":monster.get("hex_position", Vector2i.ZERO), "components":spell_data.get("components", [])})
+
+
+func _on_monster_damage(monster: Dictionary, receipt: Dictionary, occurrence: int) -> void:
+	var owner: Character = monster_spellcasters.get(str(monster.get("id", "")))
+	if owner == null or owner.concentrating_on.is_empty(): return
+	owner = _make_monster_spellcaster(monster)
+	if not owner.is_alive or owner.current_hp <= 0 or CombatAction.is_incapacitated(monster):
+		_end_concentration(owner)
+		return
+	var amount := int(receipt.get("resolved", 0))
+	if amount <= 0: return
+	var source := str(owner.concentrating_on.get("effect_source", ""))
+	var key := JSON.stringify([owner.character_id, source, occurrence])
+	if not _monster_concentration_damage.has(key):
+		_monster_concentration_damage[key] = {"monster":monster, "owner":owner, "source":source, "damage":0}
+		_flush_monster_concentration_damage.call_deferred()
+	_monster_concentration_damage[key].damage += amount
+
+
+## Deferred until the synchronous damage occurrence has settled all its packets.
+## Exact-source receipts prevent damage to an old spell from testing a replacement.
+func _flush_monster_concentration_damage() -> void:
+	if _monster_concentration_flushing: return
+	_monster_concentration_flushing = true
+	while not _monster_concentration_damage.is_empty() and is_inside_tree():
+		var key: String = _monster_concentration_damage.keys()[0]
+		var entry: Dictionary = _monster_concentration_damage[key]
+		var monster: Dictionary = entry.monster
+		var owner := _make_monster_spellcaster(monster)
+		if str(owner.concentrating_on.get("effect_source", "")) != str(entry.source):
+			_monster_concentration_damage.erase(key)
+			continue
+		if not owner.is_alive or owner.current_hp <= 0 or CombatAction.is_incapacitated(monster):
+			_end_concentration(owner)
+			_monster_concentration_damage.erase(key)
+			continue
+		# A different resolution may already own a chooser. Never open another
+		# modal over it; post-hit callers settle this queue before their next choice.
+		while is_inside_tree() and hud.get_children().any(func(child): return child is Window and child.visible and not child.is_queued_for_deletion()):
+			await get_tree().process_frame
+		if not is_inside_tree(): break
+		if str(owner.concentrating_on.get("effect_source", "")) != str(entry.source):
+			_monster_concentration_damage.erase(key)
+			continue
+		var decisions := await _collect_roll_token_decision(monster, "monster_save", "CON concentration save")
+		_monster_concentration_damage.erase(key)
+		if str(owner.concentrating_on.get("effect_source", "")) != str(entry.source): continue
+		if not bool(monster.get("is_alive", true)) or CombatAction.is_incapacitated(monster):
+			_end_concentration(owner)
+			continue
+		var dc := mini(30, maxi(10, int(entry.damage) / 2))
+		var save := BarbarianRules.roll_monster_save_result(monster, "CON", null, false, false, decisions)
+		save.merge({"dc":dc, "damage":int(entry.damage), "effect_source":entry.source, "success":int(save.total) >= dc})
+		monster["last_concentration_save"] = save
+		if not save.success: _end_concentration(owner)
+	_monster_concentration_flushing = false
+
+
+func _settle_monster_concentration() -> void:
+	if not _monster_concentration_flushing and not _monster_concentration_damage.is_empty(): _flush_monster_concentration_damage()
+	while _monster_concentration_flushing and is_inside_tree(): await get_tree().process_frame
+
+
+func _end_monster_spell_sources() -> void:
+	_monster_concentration_damage.clear()
+	for owner: Character in monster_spellcasters.values():
+		_end_concentration(owner)
+		for target in _spell_effect_targets() + [owner]:
+			for source in SpellEffects.records(target).keys():
+				if str(SpellEffects.records(target)[source].get("caster_id", "")) == owner.character_id:
+					SpellEffects.remove(target, str(source))
 
 
 func _collect_countercharm_decisions(target: Character, target_position: Vector2i, spell_data: Dictionary) -> Dictionary:
@@ -1777,6 +1996,7 @@ func _collect_bardic_inspiration_save_decision(target: Character, spell_data: Di
 	if target == null or not target.feature_uses.has("bardic_inspiration_die"):
 		return {}
 	var spell_has_save := CombatAction.spell_requires_saving_throw(spell_data)
+	if spell_has_save and CombatAction.save_auto_fails(target, str(spell_data.get("save", "DEX"))): return {}
 	var has_relentless_rage_damage := target.has_feature("barbarian_relentless_rage") and target.has_condition("raging") and (spell_data.has("damage") or spell_data.has("damage_per_dart") or spell_data.has("damage_per_ray"))
 	if not spell_has_save and not has_relentless_rage_damage:
 		return {}
@@ -1920,6 +2140,7 @@ func _fire_reaction_trigger(reactor: Character, kind: String, source: Variant, r
 
 
 func _offer_stunning_strike(target: Dictionary, weapon: Dictionary, hit_result: Dictionary, caster: Character = null) -> void:
+	await _settle_monster_concentration()
 	if caster == null:
 		caster = active_character
 	if caster == null or not hit_result.get("hit", false) or int(target.get("current_hp", 0)) <= 0 or not caster.has_feature("monk_stunning_strike") or caster.get_focus_points() < 1 or int(caster.feature_uses.get("stunning_strike_used", 0)) > 0:
@@ -1931,6 +2152,41 @@ func _offer_stunning_strike(target: Dictionary, weapon: Dictionary, hit_result: 
 		var result := CombatAction.resolve_stunning_strike(caster, target, stun_decisions)
 		hud.add_log(result.get("message", "Stunning Strike unavailable."))
 		hud.update_hud(active_character, tracker)
+
+
+func _offer_hit_options(actor: Character, target: Dictionary, hit: Dictionary, attack_tag: String) -> void:
+	await _settle_monster_concentration()
+	if not bool(hit.get("hit", false)) or hit.get("hit_options_offered", false) or int(target.get("current_hp", 0)) <= 0: return
+	hit["hit_options_offered"] = true # Claim before the first suspension; cancel cannot reopen the hit.
+	var turn := CombatAction.active_turn_serial
+	for effect in CombatHitOptions.offers(actor, attack_tag):
+		var choices: Array[String] = [""]
+		var labels := {"":"Decline"}
+		for option in effect.options:
+			choices.append(str(option.id)); labels[str(option.id)] = str(option.name)
+		var chosen := await hud.request_hit_option("Choose a hit effect for " + str(target.get("name", "the target")), choices, labels)
+		var option: Dictionary = {}
+		for candidate in effect.options:
+			if candidate.id == chosen: option = candidate
+		if option.is_empty(): continue
+		var distance := 0
+		if option.operation == "push":
+			var distances: Array[String] = []
+			var distance_labels := {}
+			for feet in range(0, int(option.max_distance_feet) + 1, 5):
+				distances.append(str(feet)); distance_labels[str(feet)] = "%d feet" % feet
+			distance = int(await hud.request_hit_option("Push distance", distances, distance_labels))
+			if distance <= 0: continue
+		var decisions := {}
+		if option.has("save") and not CombatAction.save_auto_fails(target, str(option.save)):
+			decisions = await _collect_roll_token_decision(target, "monster_save", str(option.save) + " save against " + str(option.name))
+		if turn != CombatAction.active_turn_serial or actor != active_character or not actor.is_alive or CombatAction.is_incapacitated(actor) or int(target.get("current_hp", 0)) <= 0 or CombatAction.is_charmed_by(actor, target) or not monster_entities.any(func(m): return is_same(m, target)) or effect not in CombatHitOptions.offers(actor, attack_tag): return
+		var source := "hit:%s:%d:%d:%s" % [actor.character_id, turn, int(hit.get("weapon_rider_roll_id", 0)), str(effect.get("source_instance_id", ""))]
+		var result := CombatHitOptions.settle(actor, target, effect, option, source, decisions)
+		hit["hit_option"] = result
+		if bool(result.applied) and option.operation == "push":
+			result["distance_feet"] = await _push_combat_target(target, _fighter_entity(actor).hex_position, distance / 5, false)
+		hud.add_log("%s: %s." % [str(option.name), "applied" if result.applied else "target saves"])
 
 
 func _offer_deflect_redirect(monk: Character, origin: Vector2i, attack: Dictionary, result: Dictionary) -> void:
@@ -2008,14 +2264,16 @@ func _collect_counterspell_decisions(caster: Character, spell_data: Dictionary =
 static func _make_temp_monster_character(m: Dictionary) -> Character:
 	var c := Character.new()
 	c.character_name = m["name"]
+	c.character_id = str(m.get("id", ""))
+	c.spell_cast_serial = int(m.get("spell_cast_serial", 0))
 	c.creature_type = str(m.get("creature_type", ""))
 	c.feature_uses["is_monster_actor"] = true
 	c.feature_uses["monster_source"] = m
-	var senses: Dictionary = m.get("senses", {})
-	c.feature_uses["monster_blindsight_range_feet"] = int(m.get("blindsight_range_feet", senses.get("blindsight", 0)))
+	c.feature_uses["monster_blindsight_range_feet"] = CombatPerception._sense_range(m, "blindsight")
 	c.feature_uses["creature_blindsight_range_feet"] = c.feature_uses["monster_blindsight_range_feet"]
-	c.feature_uses["monster_truesight_range_feet"] = int(m.get("truesight_range_feet", senses.get("truesight", 0)))
-	c.darkvision_feet = int(m.get("darkvision_range_feet", senses.get("darkvision", 0)))
+	c.feature_uses["monster_truesight_range_feet"] = CombatPerception._sense_range(m, "truesight")
+	c.feature_uses["monster_tremorsense_range_feet"] = CombatPerception._sense_range(m, "tremorsense")
+	c.darkvision_feet = CombatPerception._darkvision_range_feet(m)
 	c.darkvision = c.darkvision_feet > 0
 	c.speed = int(m.get("speed", 6))
 	c.set_movement_speed_feet("fly", int(m.get("fly_speed_feet", 0)))
@@ -2023,16 +2281,10 @@ static func _make_temp_monster_character(m: Dictionary) -> Character:
 	c.ability_scores.from_dict(m.get("ability_scores", {}))
 	c.proficiency_bonus = int(m.get("proficiency_bonus", 2))
 	var conditions: Dictionary = m.get("conditions", {})
-	if conditions.has("vicious_mockery_disadvantage"):
-		c.add_condition("vicious_mockery_disadvantage", int(conditions["vicious_mockery_disadvantage"]))
-	if conditions.has("ray_of_enfeeblement"):
-		c.add_condition("ray_of_enfeeblement", int(conditions["ray_of_enfeeblement"]))
-	if conditions.has("blessed"):
-		c.add_condition("blessed", int(conditions["blessed"]))
-	if conditions.has("baned"):
-		c.add_condition("baned", int(conditions["baned"]))
-	if conditions.has("resilient_sphere"):
-		c.add_condition("resilient_sphere", int(conditions["resilient_sphere"]))
+	c.conditions = conditions.duplicate(true)
+	c.condition_sources = m.get("condition_sources", {}).duplicate(true)
+	c.spell_effects = m.get("spell_effects", {}).duplicate(true)
+	c.exhaustion_level = int(m.get("exhaustion_level", conditions.get("exhaustion", 0)))
 	return c
 
 
@@ -2194,6 +2446,11 @@ func _highlight_reachable() -> void:
 	hud.set_movement_modes(active_character, active_movement_mode, _movement_speed_overrides(active_character))
 	var pos: Vector2i = player_entities[current_player_idx]["hex_position"]
 	var reachable := _player_reachable(pos, remaining_speed, active_character)
+	if active_character.has_condition("frightened"):
+		for candidate in reachable.keys().duplicate():
+			var fear_path := _player_path(pos, candidate, active_character)
+			if _path_breaks_fear(active_character, fear_path, _all_live_combat_entities()):
+				reachable.erase(candidate)
 	
 	# Don't draw A* route on active player hex
 	var highlights := {}
@@ -2419,6 +2676,13 @@ func _spell_jump_move_cost(origin: Vector2i, destination: Vector2i, reachable: D
 # --- Action handlers ---
 
 func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
+	if not ready_actions.selection.is_empty():
+		if action_type == "cancel": ready_actions.cancel_selection()
+		return
+	if ready_actions.delivering:
+		if action_type == "cancel": ready_actions.cancel_selection()
+		return
+	if _monster_concentration_flushing or not _monster_concentration_damage.is_empty(): return
 	if _pool_recovery_pending or _cast_in_progress: return
 	if not child_actions.frame.is_empty():
 		if action_type == "cancel" and not resolving_player_action:
@@ -2430,6 +2694,7 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 		if action_type == "cancel":
 			fighter_move_done = true
 		return
+	if not active_combatant.get("is_player", false) or not is_same(active_combatant.get("entity"), active_character): return
 	if resolving_player_action or current_player_idx < 0:
 		return
 	var command := CombatCommand.from_hud_for_character(action_type, extra_data, active_character)
@@ -2438,7 +2703,7 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 		return
 	action_type = command.action_type
 	extra_data = command.payload
-	if active_character.class_id == "familiar" and action_type not in ["move", "dodge", "end_turn", "cancel", "use_feature"]:
+	if active_character.class_id == "familiar" and action_type not in ["move", "dodge", "ordinary_action", "end_turn", "cancel", "use_feature"]:
 		hud.add_log("A familiar can move, Dodge, or take another non-attack action.")
 		return
 	if action_type in ["cast_spell", "activate_magic_item"] and active_character != null:
@@ -2456,6 +2721,7 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 	if action_type == "command_created_actor": # Batch 055 S-156: the command itself charges the declared cost once.
 		var commanded := CreatedCommandRules.issue(self, active_character, str(extra_data.get("actor_id", "")), str(extra_data.get("order", "")), str(extra_data.get("target_id", "")))
 		hud.add_log(str(commanded.message))
+		if commanded.success and str(commanded.get("cost_kind", "free")) in ["action", "magic_action", "bonus_action"]: await _completed_player_action()
 		if commanded.success: _check_battle_end_conditions()
 		hud.update_hud(active_character, tracker)
 		return
@@ -2483,6 +2749,12 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 	hud.hide_hint()
 
 	match action_type:
+		"toggle_shield":
+			var shield_result := _toggle_shield_from_equipment_control()
+			hud.add_log(str(shield_result.get("message", "Equipment unchanged.")))
+			if shield_result.get("success", false): await _completed_player_action()
+			hud.update_hud(active_character, tracker)
+			return
 		"cancel":
 			_cancel_pending_action()
 			return
@@ -2492,6 +2764,7 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 				if result.grant.use_cost != "reaction": action_history.record_action(active_character)
 				for entry in player_entities:
 					if entry.get("character") == active_character: entry["reaction_available"] = active_character.reaction_available
+				if str(result.grant.use_cost) not in ["free", "none"]: await _completed_player_action()
 				hud.add_log(result.message)
 				print("CAPTURED GIFT USE: " + JSON.stringify(result))
 			hud.update_hud(active_character, tracker)
@@ -2535,6 +2808,7 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 		"font_of_magic_create":
 			var creation := SorcererRules.create_spell_slot(active_character, int(extra_data.get("slot_level", 0)), turn_budget)
 			hud.add_log(str(creation.get("message", "Font of Magic could not create a slot.")))
+			if creation.get("success", false): await _completed_player_action()
 			hud.update_hud(active_character, tracker)
 			return
 		"move_dancing_lights":
@@ -2605,6 +2879,7 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 				return
 			active_character.add_condition("disengaging", 1)
 			hud.add_log("[color=green]%s uses Conjure Woodland Beings: Disengage.[/color]" % active_character.character_name)
+			await _completed_player_action()
 			hud.update_hud(active_character, tracker)
 			return
 		"dismiss_light":
@@ -2612,6 +2887,7 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 			hud.add_log("The magical light fades.")
 			_spend_action_cost("action")
 			_update_grid_entities()
+			await _completed_player_action()
 			hud.update_hud(active_character, tracker)
 			_highlight_reachable()
 			return
@@ -2626,6 +2902,7 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 				var school: String = str(aura.get("school", ""))
 				var school_text := (" (%s)" % school.capitalize()) if not school.is_empty() else ""
 				hud.add_log("[color=cyan]%s aura: %s%s.[/color]" % [str(aura.get("name", "Magic")), str(aura.get("location", "nearby")), school_text])
+			await _completed_player_action()
 			hud.update_hud(active_character, tracker)
 			_highlight_reachable()
 			return
@@ -2644,6 +2921,7 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 			mage_hand_markers.erase(active_character.character_id)
 			_spend_action_cost("magic_action")
 			hud.add_log("The spectral hand vanishes.")
+			await _completed_player_action()
 			hud.update_hud(active_character, tracker)
 			_update_grid_entities()
 			_highlight_reachable()
@@ -2673,6 +2951,7 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 				if result.get("success", false):
 					_consume_strike_units(attack_substitution_units)
 					hud.add_log("%s replaces %d strike units." % [feature.get("name", "Healing"), attack_substitution_units])
+					await _completed_player_action()
 					hud.update_hud(active_character, tracker)
 				return
 			if feature.has("resource_pool") and feature["resource_pool"].has("die_size"):
@@ -2685,7 +2964,9 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 					pending_action_type = "created_creature_order"
 					hud.add_log("Choose an enemy. All controlled Undead within 60 feet receive the same attack order.")
 				else:
-					hud.add_log(str(CreatedCreatureCombat.issue(self, "guard")["message"]))
+					var issued := CreatedCreatureCombat.issue(self, "guard")
+					hud.add_log(str(issued.message))
+					if issued.success: await _completed_player_action()
 					hud.update_hud(active_character, tracker)
 				return
 			if str(feature.get("resolver", "")) == "paladin_rules" and str(feature.get("id", "")) == "paladin_abjure_foes":
@@ -2711,6 +2992,7 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 						selected_targets.append(monster)
 				for result in PaladinRules.resolve_abjure_foes(active_character, selected_targets, origin):
 					hud.add_log(str(result.get("message", "Abjure Foes resolves.")))
+				await _completed_player_action()
 				hud.update_hud(active_character, tracker)
 				_update_grid_entities()
 				_highlight_reachable()
@@ -2737,6 +3019,7 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 				active_character.familiar_senses_position = sense_entity["hex_position"]
 				_spend_action_cost("bonus_action")
 				hud.add_log("You perceive through your familiar until the start of your next turn, including its special senses.")
+				await _completed_player_action()
 				hud.update_hud(active_character, tracker)
 				return
 			if str(feature.get("id", "")) in ["familiar_dismiss", "familiar_recall", "familiar_release"]:
@@ -2764,6 +3047,7 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 					hud.add_log("Your familiar is released; another summon requires a new resource.")
 				_spend_action_cost("magic_action")
 				_update_grid_entities()
+				await _completed_player_action()
 				hud.update_hud(active_character, tracker)
 				_highlight_reachable()
 				return
@@ -2783,6 +3067,7 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 				_add_wild_companion_entity(player_entities[current_player_idx], true, familiar_destination)
 				_spend_action_cost("magic_action")
 				hud.add_log(str(companion_result.get("message", "Wild Companion summoned.")))
+				await _completed_player_action()
 				hud.update_hud(active_character, tracker)
 				_highlight_reachable()
 				return
@@ -2816,6 +3101,7 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 					if DruidRules.revert(active_character):
 						_spend_action_cost("bonus_action")
 						hud.add_log("%s returns to normal form." % active_character.character_name)
+					else: return
 				else:
 					var shape_result := DruidRules.transform(active_character, form_id)
 					if not shape_result.get("success", false):
@@ -2823,6 +3109,7 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 						return
 					_spend_action_cost("bonus_action")
 					hud.add_log("%s becomes a %s and gains %d Temporary Hit Points." % [active_character.character_name, str(shape_result["form"].get("name", "Beast")), active_character.level])
+				await _completed_player_action()
 				hud.update_hud(active_character, tracker)
 				_highlight_reachable()
 				return
@@ -2893,6 +3180,7 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 				if recharge.get("success", false):
 					_spend_action_cost("bonus_action")
 					hud.add_log("[color=cyan]%s[/color]" % str(recharge.get("message", "Ward recharged.")))
+					await _completed_player_action()
 				else:
 					hud.add_log("[color=orange]%s[/color]" % str(recharge.get("message", "Unable to recharge ward.")))
 				hud.update_hud(active_character, tracker)
@@ -2918,23 +3206,24 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 					hud.add_log("Not enough Focus.")
 					return
 				pending_action_type = "unarmed_attack"
-				pending_feature_data = feature
+				pending_feature_data = paid_unarmed_grant if remaining_flurry_swings > 0 else feature
 				var unarmed_label := "Flurry of Blows" if feature.get("id", "") == "monk_flurry_of_blows" else "Bonus Unarmed Strike"
 				hud.add_log("%s: select an adjacent enemy." % unarmed_label)
 				_highlight_unarmed_targets()
 				return
-			_execute_class_feature(feature)
+			await _execute_class_feature(feature)
 		"use_item":
 			var item: Dictionary = extra_data.get("item", {})
-			_execute_item(item, attack_substitution_units if use_attack_substitution else 0)
+			await _execute_item(item, attack_substitution_units if use_attack_substitution else 0)
 		"eat_goodberry":
-			_execute_goodberry()
+			await _execute_goodberry()
 		"dodge":
-			pending_action_type = ""
-			active_character.add_condition("dodging", 1)
-			hud.add_log("%s is dodging (Attacks against them have disadvantage)." % active_character.character_name)
-			_spend_action_cost("action")
-			_highlight_reachable()
+			await _execute_ordinary_action("dodge")
+		"ordinary_action":
+			await _execute_ordinary_action(str(extra_data.action), extra_data)
+		"ready_action":
+			var ready_result := await ready_actions.begin(self, active_character, extra_data.trigger, extra_data.response)
+			if not ready_result.success: hud.add_log(ready_result.message)
 		"end_turn":
 			_end_active_turn()
 
@@ -2942,6 +3231,189 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 ## Cancel any in-progress targeting (attack/spell) and return to movement.
 ## Bound to the HUD Cancel button and the Esc key so the player is never
 ## trapped in targeting mode with no way back to movement.
+func _choose_ready_action() -> void:
+	var actor := active_character
+	var turn := CombatAction.active_turn_serial
+	var triggers: Array[String] = ["movement", "attack", "cast", "action", "sound"]
+	var labels := {"movement":"After movement", "attack":"After an attack", "cast":"After a perceptible spell cast", "action":"After an action", "sound":"After a loud sound"}
+	var trigger_kind := await hud._request_popup_choice("Ready: choose a perceivable trigger", triggers, labels)
+	if trigger_kind.is_empty() or active_character != actor or turn != CombatAction.active_turn_serial: return
+	var sides: Array[String] = ["enemy", "ally", "any", "exact"]
+	labels = {"enemy":"An enemy", "ally":"An ally (including me)", "any":"Any creature", "exact":"One chosen creature"}
+	var side := await hud._request_popup_choice("Ready: who causes the trigger?", sides, labels)
+	if side.is_empty() or active_character != actor or turn != CombatAction.active_turn_serial: return
+	var trigger := {"event":trigger_kind, "side":"any" if side == "exact" else side}
+	if side == "exact":
+		var ids: Array[String] = []
+		labels = {}
+		var actor_origin: Vector2i = ready_actions.owner_entity(self, actor).hex_position
+		for entry in _all_live_combat_entities():
+			var subject = entry.get("character", entry)
+			if not CombatPerception.can_locate_target(actor, subject, actor_origin, entry.hex_position, hex_grid): continue
+			var id := CombatAction.actor_id(subject)
+			if id.is_empty(): continue
+			ids.append(id); labels[id] = subject.character_name if subject is Character else str(subject.get("name", id))
+		var id := await hud._request_popup_choice("Ready: choose the exact creature", ids, labels)
+		if id.is_empty() or active_character != actor or turn != CombatAction.active_turn_serial: return
+		trigger["actor_id"] = id
+	if trigger_kind in ["movement", "sound"]:
+		var places: Array[String] = ["any", "near", "space"]
+		labels = {"any":"Anywhere I can perceive", "near":"Within 5 feet of me", "space":"At a chosen board space"}
+		var place := await hud._request_popup_choice("Ready: where does it happen?", places, labels)
+		if place.is_empty() or active_character != actor or turn != CombatAction.active_turn_serial: return
+		if place == "near": trigger["within_hexes"] = 1
+		if place == "space":
+			var setup := {"actor":actor, "turn":turn, "generation":ready_actions.generation}
+			var coord: Variant = await ready_actions.pick(self, setup, hex_grid.tiles.keys(), "Choose the Ready trigger space.", true)
+			if coord == null: return
+			trigger["at_hex"] = [coord.x, coord.y]
+	var responses: Array[String] = ["attack", "move"]
+	if actor.class_id == "familiar": responses.erase("attack")
+	labels = {"attack":"Attack once", "move":"Move up to my Speed", "spell":"Cast and hold a spell (Concentration)"}
+	for action in OrdinaryActionRules.ACTIONS:
+		if action == "ready": continue
+		if action == "help_check" and CheckHelpRules.options(actor).is_empty(): continue
+		responses.append(action)
+		labels[action] = OrdinaryActionRules.LABELS[action]
+	if not SpellPermissionRules.spell_ids(actor).is_empty(): responses.append("spell")
+	var response_kind := await hud._request_popup_choice("Ready: choose a response", responses, labels)
+	if response_kind.is_empty() or active_character != actor or turn != CombatAction.active_turn_serial: return
+	var response := {"kind":response_kind} if response_kind in ["attack", "move", "spell"] else {"kind":"ordinary", "action":response_kind}
+	if response_kind == "help_check":
+		var owned := CheckHelpRules.options(actor)
+		var options: Array[String] = []
+		labels = {}
+		for index in owned.size():
+			options.append(str(index)); labels[str(index)] = "%s (%s)" % [owned[index].name, owned[index].kind]
+		var selected := await hud._request_popup_choice("Ready Help: choose your proficiency", options, labels)
+		if selected.is_empty() or active_character != actor or turn != CombatAction.active_turn_serial: return
+		response["proficiency_kind"] = owned[int(selected)].kind
+		response["proficiency"] = owned[int(selected)].name
+	if response_kind == "spell":
+		var options: Array[String] = []
+		labels = {}
+		for id in SpellPermissionRules.spell_ids(actor):
+			var definition := DataLoader.get_spell(str(id))
+			if definition.get("casting_time", "action") != "action" or not str(definition.get("trigger", "")).is_empty() or not SpellSupport.availability(definition).available: continue
+			if SpellPermissionRules.payment_choices(actor, str(id)).is_empty(): continue
+			options.append(str(id)); labels[str(id)] = str(definition.get("name", id))
+		var spell_id := await hud._request_popup_choice("Ready: choose the spell to cast now", options, labels)
+		if spell_id.is_empty() or active_character != actor or turn != CombatAction.active_turn_serial: return
+		var selected := await hud.request_spell_payment(actor, spell_id)
+		var command := CombatCommand.from_hud_for_character("cast_spell", {"spell":selected}, actor)
+		if command == null: return
+		response["spell"] = command.payload.spell
+	if active_character != actor or turn != CombatAction.active_turn_serial: return
+	var result := await ready_actions.begin(self, actor, trigger, response)
+	if not result.success: hud.add_log(str(result.message))
+
+
+func _prepare_readied_spell(actor: Character, spell: Dictionary, token: String) -> Dictionary:
+	return await ReadySpellRules.prepare(self, actor, spell, token)
+
+
+func _release_readied_spell(record: Dictionary) -> Dictionary:
+	return await ReadySpellRules.release(self, record)
+
+
+func _execute_ordinary_action(action: String, parameters: Dictionary = {}) -> void:
+	if action == "ready":
+		await _choose_ready_action()
+		return
+	if action not in OrdinaryActionRules.ACTIONS or not _can_spend_action_cost("action"): return
+	if action == "utilize":
+		var targets := CombatUtilizeRules.targets(self, active_character)
+		if targets.is_empty():
+			hud.add_log("No visible room object is within reach.")
+			return
+		pending_action_type = "ordinary_utilize"
+		pending_feature_data = {"actor":active_character, "turn":CombatAction.active_turn_serial, "room":LocalRoomCombat.room(), "targets":targets}
+		var highlights := {}
+		for position in targets: highlights[position] = HexHighlight.HIGHLIGHT_COLORS[HexHighlight.HighlightType.SPELL]
+		hex_grid.set_highlights(highlights)
+		hud.add_log("Utilize: select a highlighted room object within 5 feet.")
+		return
+	if action in ["help_attack", "stabilize", "help_check"]:
+		if action == "help_check":
+			if not CheckHelpRules.owns(active_character, str(parameters.get("proficiency_kind", "")), str(parameters.get("proficiency", ""))): return
+			pending_feature_data = parameters.duplicate(true)
+		pending_action_type = "ordinary_" + action
+		hud.add_log("Select an enemy within 5 feet." if action == "help_attack" else "Select an ally within 5 feet for check assistance." if action == "help_check" else "Select a dying ally within 5 feet.")
+		if action == "help_attack": _highlight_familiar_help_targets()
+		return
+	if action == "hide":
+		var error := OrdinaryActionRules.hide_error(active_character, player_entities[current_player_idx].hex_position, monster_entities, hex_grid)
+		if not error.is_empty():
+			hud.add_log(error)
+			return
+	if not _spend_action_cost("action"): return
+	pending_action_type = ""
+	_apply_ordinary_effect(action)
+	await ready_actions.publish(self, {"type":"action", "actor":active_character, "position":player_entities[current_player_idx].hex_position})
+	hud.update_hud(active_character, tracker)
+	_update_grid_entities()
+	_highlight_reachable()
+
+
+func _apply_ordinary_effect(action: String) -> void:
+	match action:
+		"dash": _grant_extra_movement_speed()
+		"disengage": active_character.add_condition("disengaging", 1)
+		"dodge":
+			active_character.add_condition("dodging", 2)
+		"hide":
+			var check := OrdinaryActionRules.hide(active_character, _ability_check_context(active_character))
+			hud.add_log("Hide: Stealth %d vs DC 15 — %s." % [int(check.total), "hidden" if check.success else "failed"])
+		"search":
+			var result := OrdinaryActionRules.search(active_character, player_entities[current_player_idx].hex_position, monster_entities, hex_grid, _ability_check_context(active_character))
+			hud.add_log("Search: Perception %d; found %d hidden creature(s)." % [int(result.check.total), int(result.found)])
+	if action in ["dash", "disengage", "dodge"]:
+		hud.add_log("%s takes %s." % [active_character.character_name, OrdinaryActionRules.LABELS[action]])
+
+
+## Call only after a paid item/feature operation has finished its choices and effects.
+func _completed_player_action(actor: Character = null, noise: Dictionary = {}) -> void:
+	if actor == null: actor = active_character
+	var entity := ready_actions.owner_entity(self, actor)
+	if entity.is_empty() or not is_inside_tree() or _battle_ending: return
+	var position: Vector2i = entity.hex_position
+	if not noise.is_empty(): await ready_actions.publish(self, {"type":"sound", "actor":actor, "position":position, "noise":noise})
+	await ready_actions.publish(self, {"type":"action", "actor":actor, "position":position})
+
+
+func _utilize_object_clicked(coord: Vector2i) -> void:
+	var request := pending_feature_data
+	var actor: Character = request.get("actor")
+	var object: Dictionary = request.get("targets", {}).get(coord, {})
+	if object.is_empty(): return
+	if not CombatUtilizeRules.error(self, actor, request.room, object, coord).is_empty(): return
+	var current := func() -> bool:
+		return is_inside_tree() and not _battle_ending and active_character == actor and CombatAction.active_turn_serial == request.turn and is_same(LocalRoomCombat.room(), request.room) and _can_spend_action_cost("action")
+	resolving_player_action = true
+	var result := await CombatUtilizeRules.request(self, actor, object, current, func(): return _spend_action_cost("action"))
+	resolving_player_action = false
+	if not is_inside_tree(): return
+	if pending_action_type == "ordinary_utilize":
+		pending_action_type = ""
+		pending_feature_data = {}
+	if result.has("message"): hud.add_log(result.message)
+	if result.get("status") == "resolved": await _completed_player_action(actor, result.get("noise", {}))
+	hud.update_hud(active_character, tracker)
+	_highlight_reachable()
+
+
+func _clear_ordinary_battle_effects() -> void:
+	ready_actions.clear()
+	for player in player_entities:
+		var actor: Character = player.get("character")
+		if actor == null: continue
+		CombatAction.remove_condition_source(actor, OrdinaryActionRules.HIDE_SOURCE, ["hidden"])
+		actor.combat_hide_dc = 0
+		actor.combat_check_help.clear()
+		actor.remove_condition("dodging")
+		actor.remove_condition("disengaging")
+
+
 func _cancel_pending_action() -> void:
 	if not child_actions.frame.is_empty():
 		pending_action_type = ""
@@ -2985,7 +3457,7 @@ func _highlight_attack_targets() -> void:
 	
 	var pos: Vector2i = player_entities[current_player_idx]["hex_position"]
 	var weapon := DruidRules.current_attack_profile(active_character) if DruidRules.is_shaped(active_character) else DataLoader.get_item(active_character.inventory.get_weapon())
-	var max_range := int(weapon.get("range", 1))
+	var max_range := CombatAction.weapon_range_hexes(weapon)
 
 	var highlights := {}
 	# Show the weapon's reach as a ring of highlighted hexes (P1 readability),
@@ -2999,7 +3471,7 @@ func _highlight_attack_targets() -> void:
 	for m in monster_entities:
 		if not m["is_alive"]: continue
 		var m_pos: Vector2i = m["hex_position"]
-		if Targeting.is_in_range(pos, m_pos, max_range) and Targeting.has_line_of_sight(pos, m_pos, hex_grid):
+		if Targeting.is_in_range(pos, m_pos, max_range) and Targeting.has_line_of_sight(pos, m_pos, hex_grid) and CombatPerception.can_locate_target(active_character, m, pos, m_pos, hex_grid):
 			highlights[m_pos] = HexHighlight.HIGHLIGHT_COLORS[HexHighlight.HighlightType.ATTACK]
 
 	hex_grid.set_highlights(highlights)
@@ -3063,12 +3535,14 @@ func _request_weapon_damage_rider_choices(character: Character) -> Dictionary:
 	return choices
 
 
-func _offer_potent_spellcasting_vitality(spell: Dictionary, damage_dealt: int) -> void:
-	if damage_dealt <= 0 or int(spell.get("level", -1)) != 0 or not active_character.has_feature("cleric_improved_blessed_strikes") or str(spell.get("id", "")) not in DataLoader.get_character_class("cleric").get("spell_list_ids", []):
+func _offer_potent_spellcasting_vitality(spell: Dictionary, damage_dealt: int, caster_override: Character = null) -> void:
+	var spellcaster := caster_override if caster_override != null else active_character
+	await _settle_monster_concentration()
+	if damage_dealt <= 0 or int(spell.get("level", -1)) != 0 or not spellcaster.has_feature("cleric_improved_blessed_strikes") or str(spell.get("id", "")) not in DataLoader.get_character_class("cleric").get("spell_list_ids", []):
 		return
-	if not ClassProgression.selected_feature_effects_of_type(active_character, "spell_cast_temporary_hp").any(func(effect): return bool(effect.get("requires_damage", false))):
+	if not ClassProgression.selected_feature_effects_of_type(spellcaster, "spell_cast_temporary_hp").any(func(effect): return bool(effect.get("requires_damage", false))):
 		return
-	var origin: Vector2i = player_entities[current_player_idx]["hex_position"]
+	var origin: Vector2i = ready_actions.owner_entity(self, spellcaster).get("hex_position", Vector2i.ZERO)
 	var candidates: Array[Dictionary] = []
 	for player in player_entities:
 		var character: Character = player.get("character")
@@ -3085,6 +3559,7 @@ func _offer_potent_spellcasting_vitality(spell: Dictionary, damage_dealt: int) -
 			break
 
 func _offer_weapon_damage_riders(actor: Character, target: Dictionary, weapon: Dictionary, result: Dictionary) -> void:
+	await _settle_monster_concentration()
 	if not result.get("hit", false) or str(weapon.get("type", "")) != "weapon":
 		return
 	var choices := await _request_weapon_damage_rider_choices(actor)
@@ -3176,7 +3651,7 @@ func _attack_choice_target_error(actor: Character, turn: int, target: Dictionary
 		return "The target is no longer there."
 	var origin: Vector2i = player_entities[current_player_idx].get("hex_position", Vector2i.ZERO)
 	var destination: Vector2i = target.get("hex_position", Vector2i.ZERO)
-	if not Targeting.is_in_range(origin, destination, int(weapon.get("range", 1))) or not Targeting.has_line_of_sight(origin, destination, hex_grid) or _spell_zones()._antilife_shell_blocks_melee(actor, origin, destination, weapon):
+	if not CombatPerception.can_locate_target(actor, target, origin, destination, hex_grid) or not Targeting.is_in_range(origin, destination, CombatAction.weapon_range_hexes(weapon)) or not Targeting.has_line_of_sight(origin, destination, hex_grid) or _spell_zones()._antilife_shell_blocks_melee(actor, origin, destination, weapon):
 		return "The target is no longer within the weapon's reach."
 	return ""
 
@@ -3204,7 +3679,7 @@ func _settle_attack_profile_hit_choice(result: Dictionary) -> Dictionary:
 
 
 func _resolve_player_weapon_attack_roll(attacker: Character, target, weapon: Dictionary, advantage: bool, disadvantage: bool, decisions: Dictionary, additional_damage: Dictionary) -> Dictionary:
-	var attack_decisions := decisions.duplicate(true)
+	var attack_decisions := CombatPerception.weapon_decisions(hex_grid, attacker, target, decisions)
 	attack_decisions["combat_history"] = action_history
 	if child_actions.current("strike"):
 		attack_decisions["parent_action"] = {"invocation_id":child_actions.frame.invocation, "action_id":child_actions.frame.feature.child_actions.classification, "source_id":child_actions.frame.feature.id}
@@ -3412,12 +3887,15 @@ func _highlight_unarmed_targets() -> void:
 		if not monster.get("is_alive", false):
 			continue
 		var target_hex: Vector2i = monster.get("hex_position", Vector2i.ZERO)
-		if Targeting.is_in_range(origin, target_hex, 1):
+		if Targeting.is_in_range(origin, target_hex, 1) and Targeting.has_line_of_sight(origin, target_hex, hex_grid) and CombatPerception.can_locate_target(active_character, monster, origin, target_hex, hex_grid):
 			highlights[target_hex] = HexHighlight.HIGHLIGHT_COLORS[HexHighlight.HighlightType.ATTACK]
 	hex_grid.set_highlights(highlights)
 
 
 func _on_hex_clicked(coord: Vector2i) -> void:
+	if ready_actions.choose_hex(coord): return
+	if ready_actions.delivering: return
+	if _monster_concentration_flushing or not _monster_concentration_damage.is_empty(): return
 	if _pool_recovery_pending or _cast_in_progress: return
 	if not child_actions.frame.is_empty() and not child_actions.valid(self):
 		child_actions.clear()
@@ -3432,12 +3910,27 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 		pending_action_type = ""
 	_sync_changed_movement_speed()
 	if fighter_move_waiting:
+		if fighter_move_done or fighter_move_resolving: return
 		if coord in fighter_move_choices:
 			var entity: Dictionary = fighter_move_entity
-			var movement_result := CombatAction.resolve_movement_step(entity, entity["hex_position"], coord)
-			if movement_result.get("success", false): _publish_source_range_events()
+			fighter_move_resolving = true
+			var origin: Vector2i = entity.hex_position
+			var path := HexUtils.hex_line(origin, coord) if fighter_move_straight else HexUtils.find_path(origin, coord, func(hex): return hex_grid.is_hex_passable(hex) and (hex == origin or not _fighter_hex_occupied(hex)), hex_grid.get_hex_cost)
+			var actor: Character = entity.get("character")
+			for index in range(1, path.size()):
+				if not CombatAction.resolve_movement_step(entity, path[index - 1], path[index]).get("success", false): break
+				_publish_source_range_events()
+				_sync_mounted_steed_position(actor, path[index])
+				if await _apply_room_fall_damage(actor, path[index - 1], path[index]): break
+				await _resolve_spell_zone_entries(actor, path[index - 1], path[index])
+				await _resolve_spell_zone_movement(actor, path[index])
+				await ready_actions.publish(self, {"type":"movement", "actor":actor, "position":path[index], "from":path[index - 1]})
+				if entity.get("hex_position") != path[index]: break
+				if not actor.is_alive: break
+			fighter_move_resolving = false
 			fighter_move_done = true
 		return
+	if not active_combatant.get("is_player", false) or not is_same(active_combatant.get("entity"), active_character): return
 	if current_player_idx == -1 or resolving_player_action: return # Not player turn
 
 	var player_pos: Vector2i = player_entities[current_player_idx]["hex_position"]
@@ -3447,16 +3940,21 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 			if target.get("is_alive", false) and target["hex_position"] == coord: target_id = str(target["id"]); break
 		var order_result := CreatedCreatureCombat.issue(self, "attack", target_id)
 		hud.add_log(str(order_result["message"]))
-		if order_result.get("success", false): pending_action_type = ""
+		if order_result.get("success", false):
+			pending_action_type = ""
+			await _completed_player_action()
 		hud.update_hud(active_character, tracker)
 		return
 	if pending_action_type.is_empty() and coord == player_pos and _try_freedom_of_movement_escape(active_character):
 		return
-	if pending_action_type.is_empty() and coord == player_pos and (await _try_escape_tether(active_character) or _try_escape_restrained_zone(active_character)):
+	if pending_action_type.is_empty() and coord == player_pos and (await _try_escape_tether(active_character) or await _try_escape_restrained_zone(active_character)):
 		return
 	if pending_action_type.is_empty() and await _try_rescue_tether(active_character, coord, player_pos):
 		return
-	if pending_action_type.is_empty() and _try_shake_sleeping_creature(coord, player_pos):
+	if pending_action_type.is_empty() and await _try_shake_sleeping_creature(coord, player_pos):
+		return
+	if pending_action_type == "ordinary_utilize":
+		await _utilize_object_clicked(coord)
 		return
 	if pending_action_type == "dancing_lights_move":
 		var owner_id := active_character.character_id
@@ -3476,6 +3974,7 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 		_spend_action_cost("bonus_action")
 		pending_action_type = ""
 		hud.add_log("[color=cyan]The Dancing Lights drift to their new position.[/color]")
+		await _completed_player_action()
 		hud.update_hud(active_character, tracker)
 		_update_grid_entities()
 		_highlight_reachable()
@@ -3497,6 +3996,7 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 		pending_action_type = ""
 		hud.add_log("[color=cyan]You move the Moonbeam Cylinder to its new center.[/color]")
 		await _resolve_moonbeam_area_movement(zone, old_coords, new_coords)
+		await _completed_player_action()
 		hud.update_hud(active_character, tracker)
 		_update_grid_entities()
 		_highlight_reachable()
@@ -3516,6 +4016,7 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 		pending_action_type = ""
 		hud.add_log("[color=cyan]You teleport the Cloud of Daggers Cube to its new space.[/color]")
 		await _resolve_cloud_of_daggers_area_movement(zone, old_coords, new_coords)
+		await _completed_player_action()
 		hud.update_hud(active_character, tracker)
 		_update_grid_entities()
 		_highlight_reachable()
@@ -3614,6 +4115,7 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 			var fey_target = _conjure_fey_target_by_id(target_id)
 			if fey_target != null:
 				await _resolve_conjure_fey_attack(zone, fey_target)
+		await _completed_player_action()
 		hud.update_hud(active_character, tracker)
 		_update_grid_entities()
 		_highlight_reachable()
@@ -3630,6 +4132,7 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 		_spend_action_cost("magic_action")
 		pending_action_type = ""
 		hud.add_log("[color=violet]You control the Mage Hand to its new space.[/color]")
+		await _completed_player_action()
 		hud.update_hud(active_character, tracker)
 		_update_grid_entities()
 		_highlight_reachable()
@@ -3656,9 +4159,9 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 				selected_ally = candidate
 				break
 		if feature_id == "otherworldly_steed_slam":
-			if selected_monster.is_empty() or not Targeting.is_in_range(player_pos, coord, 1):
+			if selected_monster.is_empty() or not Targeting.is_in_range(steed_entity["hex_position"], coord, 1) or not Targeting.has_line_of_sight(steed_entity["hex_position"], coord, hex_grid) or not CombatPerception.can_locate_target(steed, selected_monster, steed_entity["hex_position"], coord, hex_grid):
 				return
-			var slam := PaladinRules.resolve_steed_slam(owner, steed, selected_monster, str(steed_entity.get("steed_creature_type", "celestial")), int(steed_entity.get("steed_spell_level", 2)))
+			var slam := PaladinRules.resolve_steed_slam(owner, steed, selected_monster, str(steed_entity.get("steed_creature_type", "celestial")), int(steed_entity.get("steed_spell_level", 2)), CombatPerception.weapon_decisions(hex_grid, steed, selected_monster))
 			hud.add_log(str(slam.get("message", "Otherworldly Slam failed.")))
 			if int(selected_monster.get("current_hp", 0)) <= 0:
 				selected_monster["is_alive"] = false
@@ -3709,24 +4212,62 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 			_spend_action_cost("bonus_action")
 		pending_action_type = ""
 		pending_feature_data = {}
+		await _completed_player_action()
 		hud.update_hud(active_character, tracker)
 		_update_grid_entities()
 		_check_battle_end_conditions()
 		_highlight_reachable()
 		return
-	if pending_action_type == "familiar_help":
+	if pending_action_type == "ordinary_help_check":
+		if not _can_spend_action_cost("action") or HexUtils.get_distance(player_pos, coord) > 1 or not Targeting.has_line_of_sight(player_pos, coord, hex_grid): return
+		var kind := str(pending_feature_data.get("proficiency_kind", ""))
+		var proficiency := str(pending_feature_data.get("proficiency", ""))
+		if not CheckHelpRules.owns(active_character, kind, proficiency): return
+		for player in player_entities:
+			var recipient: Character = player.get("character")
+			if recipient == null or recipient == active_character or recipient.is_dead() or player.get("hex_position") != coord: continue
+			if not _spend_action_cost("action"): return
+			CheckHelpRules.grant(active_character, recipient, kind, proficiency)
+			pending_action_type = ""
+			pending_feature_data = {}
+			hud.add_log("%s assists %s's next %s check before the helper's next turn." % [active_character.character_name, recipient.character_name, proficiency])
+			await ready_actions.publish(self, {"type":"action", "actor":active_character, "position":player_pos})
+			if not is_inside_tree() or _battle_ending: return
+			hud.update_hud(active_character, tracker)
+			_highlight_reachable()
+			return
+		return
+	if pending_action_type == "ordinary_stabilize":
+		if not _can_spend_action_cost("action") or not Targeting.is_in_range(player_pos, coord, 1) or not Targeting.has_line_of_sight(player_pos, coord, hex_grid): return
+		for player in player_entities:
+			var target: Character = player.get("character")
+			if target == null or target == active_character or not target.is_downed() or target.is_stable or player.get("hex_position") != coord: continue
+			_spend_action_cost("action")
+			pending_action_type = ""
+			var check := EventResolver.resolve_skill_check(active_character, {"ability":"WIS", "skill":"Medicine", "dc":10}, {}, _ability_check_context(active_character))
+			if check.success: target.stabilize()
+			hud.add_log("Help: Medicine %d vs DC 10 — %s." % [int(check.total), "stabilized" if check.success else "failed"])
+			await ready_actions.publish(self, {"type":"action", "actor":active_character, "position":player_pos})
+			if not is_inside_tree() or _battle_ending: return
+			hud.update_hud(active_character, tracker)
+			_update_grid_entities()
+			_highlight_reachable()
+			return
+		return
+	if pending_action_type in ["familiar_help", "ordinary_help_attack"]:
 		var help_target: Dictionary = {}
 		for monster in monster_entities:
 			if monster.get("is_alive", false) and monster.get("hex_position", Vector2i.ZERO) == coord:
 				help_target = monster
 				break
-		if help_target.is_empty() or not Targeting.is_in_range(player_pos, coord, 1):
+		if help_target.is_empty() or not Targeting.is_in_range(player_pos, coord, 1) or not _can_spend_action_cost("action") or not CombatPerception.can_locate_target(active_character, help_target, player_pos, coord, hex_grid) or not Targeting.has_line_of_sight(player_pos, coord, hex_grid):
 			return
-		var familiar_id := str(player_entities[current_player_idx].get("combat_id", ""))
-		help_target["familiar_helped_by"] = familiar_id
+		help_target["familiar_helped_by"] = CombatAction.actor_id(active_character)
 		pending_action_type = ""
 		_spend_action_cost("action")
 		hud.add_log("%s helps against %s. The next ally attack against it has Advantage." % [active_character.character_name, str(help_target.get("name", "the target"))])
+		await ready_actions.publish(self, {"type":"action", "actor":active_character, "position":player_pos})
+		if not is_inside_tree() or _battle_ending: return
 		hud.update_hud(active_character, tracker)
 		_highlight_reachable()
 		return
@@ -3745,7 +4286,7 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 					break
 		if target == null or not Targeting.is_in_range(player_pos, coord, 6):
 			return
-		if active_character.has_condition("blinded") or not CombatAction.spell_target_is_visible_to(active_character, target, {"requires_target_sight": true}, HexUtils.get_distance(player_pos, coord) * 5):
+		if not CombatPerception.can_see_target(active_character, target, player_pos, coord, hex_grid):
 			hud.add_log("Divine Spark needs a creature you can see.")
 			return
 		resolving_player_action = true
@@ -3753,6 +4294,7 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 		resolving_player_action = false
 		if choice.is_empty():
 			return
+		if not CombatPerception.can_see_target(active_character, target, player_pos, coord, hex_grid): return
 		var feature_id := str(pending_feature_data.get("id", ""))
 		if not ClericRules.channel_divinity_error(active_character).is_empty() or not turn_budget.can_spend("magic_action") or not active_character.use_feature(feature_id):
 			hud.add_log("No Channel Divinity use or Magic action remains.")
@@ -3767,6 +4309,7 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 			tracker.remove_combatant(str(target.get("id", "")))
 		pending_feature_data = {}
 		_update_grid_entities()
+		await _completed_player_action()
 		hud.update_hud(active_character, tracker)
 		_check_battle_end_conditions()
 		_highlight_reachable()
@@ -3782,7 +4325,13 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 
 		if clicked_monster.is_empty():
 			return # No valid monster selected
+		if CombatAction.is_charmed_by(active_character, clicked_monster):
+			hud.add_log("[color=yellow]%s cannot attack their charmer; nothing was spent.[/color]" % active_character.character_name)
+			return
 		var attacker_position: Vector2i = player_entities[current_player_idx].get("hex_position", Vector2i.ZERO)
+		if not CombatPerception.can_locate_target(active_character, clicked_monster, attacker_position, coord, hex_grid):
+			hud.add_log("That creature's location is unknown to this attacker.")
+			return
 		if not Targeting.has_line_of_sight(attacker_position, coord, hex_grid):
 			hud.add_log("A wall or closed door blocks the attacker's sight.")
 			return
@@ -3791,7 +4340,7 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 		var weapon := DruidRules.current_attack_profile(active_character) if DruidRules.is_shaped(active_character) else DataLoader.get_item(active_character.inventory.get_weapon())
 		if weapon.is_empty():
 			weapon = CombatAction.unarmed_attack_profile(active_character)
-		var max_range := int(weapon.get("range", 1))
+		var max_range := CombatAction.weapon_range_hexes(weapon)
 		var atk_dist := HexUtils.get_distance(player_pos, coord)
 		if not Targeting.is_in_range(player_pos, coord, max_range):
 			var w_name: String = str(weapon.get("name", weapon.get("id", "unarmed"))) if not weapon.is_empty() else "unarmed"
@@ -3841,6 +4390,9 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 			if not stale_choice.is_empty():
 				hud.add_log("[color=yellow]%s[/color]" % stale_choice)
 				return
+		if CombatAction.is_charmed_by(active_character, clicked_monster):
+			hud.add_log("[color=yellow]%s cannot attack their charmer; nothing was spent.[/color]" % active_character.character_name)
+			return
 		weapon["attack_distance"] = atk_dist
 		pending_action_type = ""
 		resolving_player_action = true
@@ -3863,43 +4415,33 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 		# Determine advantage/disadvantage based on conditions
 		var has_advantage := false
 		var has_disadvantage := false
-		var attack_distance_feet := atk_dist * 5
-		if not CombatPerception.can_see_target(active_character, clicked_monster, attacker_position, coord, hex_grid):
-			has_disadvantage = true
-		var target_perceives_invisible := CombatAction.can_perceive_invisible(clicked_monster, attack_distance_feet)
-		if CombatAction.is_invisible(clicked_monster) and not CombatAction.can_perceive_invisible(active_character, attack_distance_feet):
-			has_disadvantage = true
-		if CombatAction.is_invisible(active_character) and not target_perceives_invisible:
-			has_advantage = true
-		var attack_reaction_decisions: Dictionary = {AttackProfileRules.ALLOW_KEY: true}
+		var attack_visibility := {"grid": hex_grid, "caster_position": attacker_position, "target_position": coord}
+		var perception := CombatPerception.attack_visibility(active_character, clicked_monster, atk_dist * 5, {"weapon_visibility": attack_visibility})
+		has_advantage = bool(perception.advantage)
+		has_disadvantage = bool(perception.disadvantage)
+		var attack_reaction_decisions: Dictionary = {AttackProfileRules.ALLOW_KEY: true, "weapon_visibility": attack_visibility, "perception_handles_blindness": true}
 		if not activation_damage_type.is_empty():
 			attack_reaction_decisions[AttackProfileRules.DECISION_KEY] = activation_damage_type
 		elif not carried_damage_type.is_empty():
 			attack_reaction_decisions[AttackProfileRules.DECISION_KEY] = carried_damage_type
 		
 		# Attacker conditions
-		if active_character.has_condition("blinded") or active_character.has_condition("poisoned"):
+		if active_character.has_condition("frightened"):
+			var all_fear_actors: Array = []
+			all_fear_actors.append_array(monster_entities)
+			all_fear_actors.append_array(player_entities)
+			attack_reaction_decisions["frightened_source_out_of_sight"] = not CombatAction.is_frightened_source_in_sight(active_character, player_pos, _all_live_combat_entities(), hex_grid)
+		if CombatAction.attacker_has_condition_disadvantage(active_character, str(weapon.get("ability", "STR")), attack_reaction_decisions):
 			has_disadvantage = true
-		if active_character.has_condition("hidden"):
-			has_advantage = true
-			active_character.remove_condition("hidden") # Reveal after attacking
-			hud.add_log("[color=green]%s attacks with Advantage from hiding![/color]" % active_character.character_name)
 		if DruidRules.pack_tactics_advantage(active_character, clicked_monster, player_entities):
 			has_advantage = true
-		if not str(clicked_monster.get("familiar_helped_by", "")).is_empty():
-			has_advantage = true
-			clicked_monster.erase("familiar_helped_by")
 
-		# Target conditions (blinded or prone)
-		var monster_conditions: Dictionary = clicked_monster.get("conditions", {})
-		if monster_conditions.has("blinded"):
+		# Target conditions
+		var dist := HexUtils.get_distance(player_pos, coord)
+		if CombatAction.attack_target_grants_advantage(clicked_monster, dist, true):
 			has_advantage = true
-		if monster_conditions.has("prone"):
-			var dist := HexUtils.get_distance(player_pos, coord)
-			if dist == 1:
-				has_advantage = true
-			else:
-				has_disadvantage = true
+		if CombatAction.attack_target_imposes_disadvantage(clicked_monster, dist, bool(CombatPerception.attack_visibility(active_character, clicked_monster, dist * 5, attack_reaction_decisions).target_sees_attacker)):
+			has_disadvantage = true
 
 		# Reckless Attack exposes the barbarian to advantage until their next
 		# turn, while the activating attack itself gains advantage below.
@@ -4033,6 +4575,7 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 			_highlight_attack_targets()
 		else:
 			_highlight_reachable()
+		await ready_actions.publish(self, {"type":"attack", "actor":active_character, "position":player_pos})
 
 	elif pending_action_type == "lay_on_hands":
 		var lay_target: Character = null
@@ -4060,6 +4603,7 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 			_spend_action_cost("bonus_action")
 			pending_action_type = ""
 			pending_feature_data = {}
+			await _completed_player_action()
 			hud.update_hud(active_character, tracker)
 			_check_battle_end_conditions()
 			_highlight_reachable()
@@ -4081,6 +4625,7 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 			_spend_action_cost("bonus_action")
 			pending_action_type = ""
 			pending_feature_data = {}
+			await _completed_player_action()
 			hud.update_hud(active_character, tracker)
 			_highlight_reachable()
 	elif pending_action_type == "unarmed_attack":
@@ -4089,7 +4634,7 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 			if monster.get("is_alive", false) and monster.get("hex_position", Vector2i.ZERO) == coord:
 				unarmed_target = monster
 				break
-		if unarmed_target.is_empty() or not Targeting.is_in_range(player_pos, coord, 1):
+		if unarmed_target.is_empty() or not Targeting.is_in_range(player_pos, coord, 1) or not Targeting.has_line_of_sight(player_pos, coord, hex_grid) or not CombatPerception.can_locate_target(active_character, unarmed_target, player_pos, coord, hex_grid):
 			return
 		var feature_id := str(pending_feature_data.get("id", ""))
 		var focus_cost := int(pending_feature_data.get("focus_cost", 0))
@@ -4101,19 +4646,27 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 			_spend_action_cost("bonus_action")
 			if active_character.has_feature("monk_fleet_step"): _grant_extra_movement_speed()
 			remaining_flurry_swings = 3 if feature_id == "monk_flurry_of_blows" and active_character.has_feature("monk_heightened_focus") else 2 if feature_id == "monk_flurry_of_blows" else 1
+			paid_unarmed_grant = pending_feature_data.duplicate(true)
 		strike_unit_parent = "flurry"
 		pending_action_type = ""
 		pending_feature_data = {}
 		resolving_player_action = true
 		var unarmed_results: Array[Dictionary] = []
+		var attack_tag := ""
+		for effect in paid_unarmed_grant.get("effects", []):
+			if effect.get("type") == "unarmed_attack": attack_tag = str(effect.get("attack_tag", ""))
+		var striking_actor := active_character
+		var striking_turn := CombatAction.active_turn_serial
 		var strike_count := 1 if _has_attack_substitutions() else remaining_flurry_swings
 		for strike in strike_count:
-			if int(unarmed_target.get("current_hp", 0)) <= 0:
+			var origin := _fighter_entity(striking_actor)
+			if striking_turn != CombatAction.active_turn_serial or active_character != striking_actor or CombatAction.is_incapacitated(striking_actor) or not striking_actor.is_alive or int(unarmed_target.get("current_hp", 0)) <= 0 or origin.is_empty() or not Targeting.is_in_range(origin.hex_position, unarmed_target.hex_position, 1) or not Targeting.has_line_of_sight(origin.hex_position, unarmed_target.hex_position, hex_grid) or not CombatPerception.can_locate_target(striking_actor, unarmed_target, origin.hex_position, unarmed_target.hex_position, hex_grid):
 				break
 			remaining_flurry_swings -= 1
-			var result := CombatAction.resolve_unarmed_attack(active_character, unarmed_target)
+			var result := CombatAction.resolve_unarmed_attack(active_character, unarmed_target, CombatPerception.weapon_decisions(hex_grid, active_character, unarmed_target))
 			await _offer_divine_smite(unarmed_target, {"id": "unarmed_strike"}, result)
 			unarmed_results.append(result)
+			await _offer_hit_options(striking_actor, unarmed_target, result, attack_tag)
 			await _offer_stunning_strike(unarmed_target, {"id": "unarmed_strike"}, result)
 		for strike_index in unarmed_results.size():
 			hud.add_log("%s" % unarmed_results[strike_index].get("message", "Unarmed Strike missed."))
@@ -4125,6 +4678,9 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 		pending_action_type = ""
 		pending_feature_data = {}
 		resolving_player_action = false
+		if not unarmed_results.is_empty():
+			await ready_actions.publish(self, {"type":"attack", "actor":striking_actor, "position":_fighter_entity(striking_actor).get("hex_position", player_pos)})
+			if remaining_flurry_swings <= 0: await _completed_player_action(striking_actor)
 		hud.update_hud(active_character, tracker)
 		_check_battle_end_conditions()
 		_highlight_reachable()
@@ -4233,10 +4789,13 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 		var jump_cost := _spell_jump_move_cost(player_pos, coord, reachable)
 		var use_spell_jump := jump_cost >= 0.0
 		if (reachable.has(coord) or use_spell_jump) and coord != player_pos:
+			var prospective_path: Array[Vector2i] = HexUtils.hex_line(player_pos, coord) if use_spell_jump else _player_path(player_pos, coord, active_character)
+			if active_character.has_condition("frightened") and _path_breaks_fear(active_character, prospective_path, _all_live_combat_entities()):
+				return
 			active_character.feature_uses.erase("find_steed_just_mounted_this_turn")
 			player_moved_this_turn = true
 			resolving_player_action = true
-			var path: Array[Vector2i] = HexUtils.hex_line(player_pos, coord) if use_spell_jump else _player_path(player_pos, coord, active_character)
+			var path: Array[Vector2i] = prospective_path
 			var cost: float = jump_cost if use_spell_jump else float(reachable[coord])
 			remaining_speed -= cost
 			if use_spell_jump:
@@ -4256,12 +4815,16 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 						break
 					await _resolve_spell_zone_entries(active_character, path[path_index - 1], path[path_index])
 					await _resolve_spell_zone_movement(active_character, path[path_index])
+					await ready_actions.publish(self, {"type":"movement", "actor":active_character, "position":path[path_index], "from":path[path_index - 1]})
+					if player_entities[current_player_idx].get("hex_position") != path[path_index]: break
+					if not active_character.is_alive: break
 			else:
 				# Teleport normally if disengaged or path too short
 				CombatAction.resolve_movement_step(player_entities[current_player_idx], player_pos, coord)
 				_publish_source_range_events()
 				_sync_mounted_steed_position(active_character, coord)
 				await _resolve_spell_zone_entries(active_character, player_pos, coord)
+				await ready_actions.publish(self, {"type":"movement", "actor":active_character, "position":coord, "from":player_pos})
 			
 			if active_character.is_alive:
 				hud.add_log("%s leapt, spending 10 feet of movement." % active_character.character_name if use_spell_jump else "%s moved." % active_character.character_name)
@@ -4311,6 +4874,8 @@ func _execute_player_spell(target_coord: Vector2i, additional_target_coord: Vect
 	cast.damage_receipts.clear()
 	await _execute_selected_spell(cast)
 	last_spell_damage_receipts = cast.damage_receipts.duplicate(true)
+	if cast.successful or cast.interrupted:
+		await ready_actions.publish(self, {"type":"cast", "actor":actor, "position":ready_actions.owner_entity(self, actor).get("hex_position", Vector2i.ZERO), "components":cast.spell.get("components", [])})
 	_cast_in_progress = false
 	resolving_player_action = false
 	if parent_cast:
@@ -4393,11 +4958,11 @@ func _publish_source_range_events() -> void:
 			SpellEffects.publish_event(target, {"type": "range", "actor_id": target_id, "distance_feet": distance_feet, "range_source_id": str(source)})
 
 
-func _spell_cast_context(target_coord: Vector2i = Vector2i.ZERO, additional_target_coord: Vector2i = Vector2i(9999, 9999), extra_target_coords: Array[Vector2i] = [], chain_target_ids: Array[String] = []) -> SpellCastContext:
+func _spell_cast_context(target_coord: Vector2i = Vector2i.ZERO, additional_target_coord: Vector2i = Vector2i(9999, 9999), extra_target_coords: Array[Vector2i] = [], chain_target_ids: Array[String] = [], caster_override: Character = null, spell_override: Dictionary = {}) -> SpellCastContext:
 	var cast := SpellCastContext.new()
 	cast.action_id = str(pending_spell_data.get("_parent_action_id", "magic"))
-	cast.caster = active_character
-	cast.spell = pending_spell_data
+	cast.caster = caster_override if caster_override != null else active_character
+	cast.spell = spell_override.duplicate(true) if caster_override != null else pending_spell_data
 	cast.target_coord = target_coord
 	cast.additional_target_coord = additional_target_coord
 	cast.extra_target_coords = extra_target_coords
@@ -4405,7 +4970,11 @@ func _spell_cast_context(target_coord: Vector2i = Vector2i.ZERO, additional_targ
 	cast.ground_items = dropped_combat_items
 	cast.players = player_entities
 	cast.monsters = monster_entities
+	cast.spell_casters = _spell_casters()
 	cast.player_index = current_player_idx
+	if caster_override != null:
+		for index in player_entities.size():
+			if player_entities[index].get("character") == caster_override: cast.player_index = index
 	cast.grid = hex_grid
 	cast.hud = hud
 	cast.tracker = tracker
@@ -4415,7 +4984,7 @@ func _spell_cast_context(target_coord: Vector2i = Vector2i.ZERO, additional_targ
 	cast.prestidigitation_effects = prestidigitation_effects
 	cast.divine_intervention = pending_divine_intervention
 	cast.divine_intervention_wish = pending_divine_intervention_wish
-	cast.owner_label = _owner_label_for_character(active_character) if active_character != null else ""
+	cast.owner_label = _owner_label_for_character(cast.caster) if cast.caster != null else ""
 	cast.can_spend = _can_spend_action_cost
 	cast.highlight_reachable = _highlight_reachable
 	cast.reset_pending = _reset_pending_spell_cast
@@ -4462,6 +5031,7 @@ func _spell_cast_context(target_coord: Vector2i = Vector2i.ZERO, additional_targ
 	cast.push_blocked_hexes = _spell_push_blocked_hexes
 	cast.redraw_entities = _update_grid_entities
 	cast.push_combat_target = _push_combat_target
+	cast.publish_combat_event = func(event: Dictionary): await ready_actions.publish(self, event)
 	return cast
 
 
@@ -4660,6 +5230,8 @@ func _tick_spell_healing_suppression(caster: Character) -> void:
 
 
 func _end_active_turn() -> void:
+	ready_actions.end_turn()
+	await _settle_monster_concentration()
 	if _pool_recovery_pending: return
 	_waiting_for_owner_rebind = false
 	_rebind_wait_before_turn_setup = false
@@ -4713,6 +5285,8 @@ func _end_active_turn() -> void:
 		_resolve_condition_spell_repeat_saves(monster)
 		await _resolve_spell_zone_end_turn(monster, monster.get("hex_position", Vector2i.ZERO))
 		SpellEffects.reconcile(_spell_casters(), _spell_effect_targets())
+		if monster_spellcasters.has(str(monster.id)):
+			_tick_spell_effect_boundary(_make_monster_spellcaster(monster), "end")
 		CombatState.tick_monster_condition_durations(monster)
 		monster.erase("combat_command")
 		if not CombatAction.has_condition_source(monster, "rogue_cunning_poison"):
@@ -4751,8 +5325,9 @@ func _start_created_actor_interval() -> void:
 	hex_grid.clear_highlights()
 	hud.update_hud(null, tracker)
 	action_history.begin_scheduled_interval(tracker.current_round)
-	CombatAction.advance_combat_turn(null, tracker.current_round)
 	var owner: Character = active_combatant.entity
+	_spell_zones().begin_trigger_turn(owner.character_id)
+	CombatAction.advance_combat_turn(null, tracker.current_round)
 	CreatedCommandRules.tick_sources(self, owner, "start")
 	SpellEffects.reconcile(_spell_casters(), _spell_effect_targets())
 	CreatedCommandRules.start_owner_turn(self, owner)
@@ -4918,6 +5493,7 @@ func _check_battle_end_conditions() -> bool:
 
 
 func _end_battle(result: String) -> void:
+	_end_monster_spell_sources()
 	CreatedCreatureCombat.capture(self)
 	_cleanup_dead_familiars()
 	_sync_find_steeds()
@@ -4947,6 +5523,7 @@ func _end_battle(result: String) -> void:
 
 
 func _clear_monk_battle_effects() -> void:
+	_clear_ordinary_battle_effects()
 	for player in player_entities:
 		var member: Character = player.get("character")
 		if member != null and member.feature_uses.has("monk_patient_dodge"):
@@ -4955,6 +5532,8 @@ func _clear_monk_battle_effects() -> void:
 
 
 func _exit_tree() -> void:
+	_clear_ordinary_battle_effects()
+	_end_monster_spell_sources()
 	child_actions.clear()
 	aura_choice_generation += 1
 	temporary_hp_grants.clear()
@@ -4965,10 +5544,14 @@ func _exit_tree() -> void:
 	for entity in player_entities:
 		var character: Character = entity.get("character")
 		if character != null:
+			character.condition_consequence_handler = Callable()
 			# Combat owns these positions; range-only auras cannot outlive it.
 			character.aura_source_memberships.clear()
 			character.familiar_senses = null
 			ProtectionRules.cancel_choice(character)
+	for monster in monster_entities:
+		monster.erase("_condition_consequence_handler")
+		monster.erase("_damage_consequence_handler")
 	CombatAction.active_turn_actor_id = 0
 	_clear_monk_battle_effects()
 	_clear_delayed_spell_damage()
@@ -4996,7 +5579,7 @@ func _clear_delayed_spell_damage() -> void:
 func _refresh_paladin_divine_sense(paladin: Character) -> void:
 	if paladin == null or paladin.class_id != "paladin" or not paladin.feature_uses.has("paladin_divine_sense_expires_round"):
 		return
-	if paladin.has_condition("incapacitated") or tracker.current_round >= int(paladin.feature_uses.get("paladin_divine_sense_expires_round", 0)):
+	if CombatAction.is_incapacitated(paladin) or tracker.current_round >= int(paladin.feature_uses.get("paladin_divine_sense_expires_round", 0)):
 		paladin.feature_uses.erase("paladin_divine_sense_targets")
 		paladin.feature_uses.erase("paladin_divine_sense_expires_round")
 		return
@@ -5027,6 +5610,7 @@ func _execute_class_feature(feature: Dictionary) -> void:
 		rogue_steady_aim_armed = true
 		remaining_speed = 0
 		hud.add_log("%s steadies their aim. Speed is 0 until the end of the turn; the next attack has Advantage." % active_character.character_name)
+		if str(feature.get("action_cost", "action")) not in ["free", "none"]: await _completed_player_action()
 		hud.update_hud(active_character, tracker)
 		_highlight_reachable()
 		return
@@ -5051,10 +5635,17 @@ func _execute_class_feature(feature: Dictionary) -> void:
 			resolving_player_action = false
 		if feature.get("action_cost", "") == "bonus_action" and active_character.has_feature("monk_fleet_step"):
 			_grant_extra_movement_speed()
+		if str(feature.get("action_cost", "action")) not in ["free", "none"]: await _completed_player_action()
 		hud.update_hud(active_character, tracker)
 		_highlight_reachable()
 		return
 	var f_id: String = feature.get("id", "")
+	var requested_hide: bool = str(feature.get("selected_action", "")) == "hide" or feature.get("effects", []).any(func(e): return e.get("type", "") == "cunning_hide")
+	if requested_hide:
+		var error := OrdinaryActionRules.hide_error(active_character, player_entities[current_player_idx].hex_position, monster_entities, hex_grid)
+		if not error.is_empty():
+			hud.add_log(error)
+			return
 	for effect in feature.get("effects", []):
 		if effect is Dictionary and str(effect.get("type", "")) == "rest_slot_recovery":
 			hud.add_log("%s can only be used when finishing a Short Rest." % str(feature.get("name", f_id)))
@@ -5091,70 +5682,50 @@ func _execute_class_feature(feature: Dictionary) -> void:
 		match type:
 			"monk_bonus_action":
 				if monk_choice.begins_with("dash"):
-					_grant_extra_movement_speed()
+					_apply_ordinary_effect("dash")
 				if "disengage" in monk_choice:
-					active_character.add_condition("disengaging", 1)
+					_apply_ordinary_effect("disengage")
 				if monk_choice == "disengage_dodge":
-					active_character.add_condition("dodging", 2)
+					_apply_ordinary_effect("dodge")
 					active_character.feature_uses["monk_patient_dodge"] = true
 					if active_character.has_feature("monk_heightened_focus"):
 						var temp_hp := Dice.parse_dice_string(active_character.get_martial_arts_die()) + Dice.parse_dice_string(active_character.get_martial_arts_die())
 						active_character.temp_hp = maxi(active_character.temp_hp, temp_hp)
 						hud.add_log("Heightened Focus grants %d Temporary Hit Points." % temp_hp)
 				if active_character.has_feature("monk_fleet_step") and f_id == "monk_patient_defense":
-					_grant_extra_movement_speed()
+					_apply_ordinary_effect("dash")
 					hud.add_log("Fleet Step grants Step of the Wind dash movement.")
 				hud.add_log("%s: %s (%d Focus remaining)." % [feature.get("name", f_id), monk_choice.replace("_", " + "), active_character.get_focus_points()])
 			"grant_extra_action":
 				turn_budget.grant_surge_action()
 				hud.add_log("[color=green]%s gains an additional action this turn![/color]" % active_character.character_name)
 			"cunning_dash":
-				_grant_extra_movement_speed()
+				_apply_ordinary_effect("dash")
 				hud.add_log("[color=green]%s uses Cunning Action: Dash! Speed doubled to %.1f.[/color]" % [active_character.character_name, remaining_speed])
 			"cunning_disengage":
-				active_character.add_condition("disengaging", 1)
+				_apply_ordinary_effect("disengage")
 				hud.add_log("[color=green]%s uses Cunning Action: Disengage! Opportunity attacks against them are disabled this turn.[/color]" % active_character.character_name)
 			"cunning_hide":
-				# Roll stealth check vs passive perception of monsters (or standard DC)
-				var roll := Dice.roll(20)
-				var dex_mod := active_character.ability_scores.get_ability_modifier("DEX")
-				var stealth_bonus := dex_mod
-				if "Stealth" in active_character.skill_proficiencies:
-					stealth_bonus += active_character.proficiency_bonus
-				var total := roll + stealth_bonus
-				
-				# Check vs typical passive perception (e.g. DC 12)
-				var dc := 12
-				var success := total >= dc
-				if success:
-					active_character.add_condition("hidden", 1)
-					hud.add_log("[color=green]%s uses Cunning Action: Hide! Stealth check: %d (Roll %d + %d bonus) vs DC %d. SUCCESS! They are now hidden.[/color]" % [active_character.character_name, total, roll, stealth_bonus, dc])
-				else:
-					hud.add_log("[color=yellow]%s uses Cunning Action: Hide! Stealth check: %d (Roll %d + %d bonus) vs DC %d. FAILED! They failed to hide.[/color]" % [active_character.character_name, total, roll, stealth_bonus, dc])
+				_apply_ordinary_effect("hide")
 			"cunning_action":
 				var selected_action := str(feature.get("selected_action", "dash"))
 				match selected_action:
 					"dash":
-						_grant_extra_movement_speed()
+						_apply_ordinary_effect("dash")
 						hud.add_log("[color=green]%s uses Cunning Action: Dash! Speed doubled to %.1f.[/color]" % [active_character.character_name, remaining_speed])
 					"disengage":
-						active_character.add_condition("disengaging", 1)
+						_apply_ordinary_effect("disengage")
 						hud.add_log("[color=green]%s uses Cunning Action: Disengage![/color]" % active_character.character_name)
 					"hide":
-						var hide_roll := Dice.roll(20) + active_character.ability_scores.get_ability_modifier("DEX")
-						if hide_roll >= 12:
-							active_character.add_condition("hidden", 1)
-							hud.add_log("[color=green]%s uses Cunning Action: Hide! Stealth check %d vs DC 12 succeeded.[/color]" % [active_character.character_name, hide_roll])
-						else:
-							hud.add_log("[color=yellow]%s uses Cunning Action: Hide! Stealth check %d vs DC 12 failed.[/color]" % [active_character.character_name, hide_roll])
+						_apply_ordinary_effect("hide")
 			"step_of_the_wind":
 				var step_action := str(feature.get("selected_action", "dash"))
 				match step_action:
 					"dash":
-						_grant_extra_movement_speed()
+						_apply_ordinary_effect("dash")
 						hud.add_log("[color=green]%s uses Step of the Wind: Dash! Speed doubled to %.1f.[/color]" % [active_character.character_name, remaining_speed])
 					"disengage":
-						active_character.add_condition("disengaging", 1)
+						_apply_ordinary_effect("disengage")
 						hud.add_log("[color=green]%s uses Step of the Wind: Disengage![/color]" % active_character.character_name)
 			"divine_sense":
 				var sense_origin: Vector2i = player_entities[current_player_idx].get("hex_position", Vector2i.ZERO)
@@ -5174,6 +5745,7 @@ func _execute_class_feature(feature: Dictionary) -> void:
 		resolving_player_action = true
 		await _offer_fighter_movement("Tactical Shift")
 		resolving_player_action = false
+	if cost_type not in ["free", "none"]: await _completed_player_action()
 	hud.update_hud(active_character, tracker)
 	_highlight_reachable()
 
@@ -5211,6 +5783,7 @@ func _execute_cleric_turn_undead(feature: Dictionary) -> void:
 		for monster in monster_entities:
 			if str(monster.get("id", "")) == str(result.get("target_id", "")) and not monster.get("is_alive", false):
 				tracker.remove_combatant(str(monster["id"]))
+	await _completed_player_action()
 	_update_grid_entities()
 	hud.update_hud(active_character, tracker)
 	_check_battle_end_conditions()
@@ -5232,6 +5805,7 @@ func _execute_item(item: Dictionary, substitution_units: int = 0) -> void:
 	else: _spend_action_cost(cost_type)
 	for effect_result in result.get("results", []):
 		hud.add_log(effect_result.get("message", ""))
+	await _completed_player_action()
 	hud.update_hud(active_character, tracker)
 	_highlight_reachable()
 
@@ -5240,12 +5814,13 @@ func _execute_goodberry() -> void:
 	if not _can_spend_action_cost("bonus_action"):
 		hud.add_log("You have no Bonus Action available to eat a Goodberry.")
 		return
-	if not SpellEffects.consume_goodberry_from_party(_spell_casters()):
+	if not SpellEffects.consume_goodberry_from_party(_spell_casters().filter(func(c): return not c.feature_uses.get("is_monster_actor", false))):
 		hud.add_log("No Goodberries remain.")
 		return
 	var restored := active_character.heal(1)
 	_spend_action_cost("bonus_action")
-	hud.add_log("%s eats a Goodberry and regains %d Hit Point%s (%d remaining in the party)." % [active_character.character_name, restored, "" if restored == 1 else "s", SpellEffects.goodberry_count_for_party(_spell_casters())])
+	hud.add_log("%s eats a Goodberry and regains %d Hit Point%s (%d remaining in the party)." % [active_character.character_name, restored, "" if restored == 1 else "s", SpellEffects.goodberry_count_for_party(_spell_casters().filter(func(c): return not c.feature_uses.get("is_monster_actor", false)))])
+	await _completed_player_action()
 	hud.update_hud(active_character, tracker)
 	_highlight_reachable()
 
@@ -5294,6 +5869,7 @@ func _offer_fighter_movement(label: String, actor: Character = null, toward: Var
 	if not await hud.request_reaction(_owner_label_for_character(actor), "fighter_movement", detail, "Use %s movement?" % label, "Choose Destination", label):
 		return
 	fighter_move_choices = choices
+	fighter_move_straight = toward != null
 	fighter_move_entity = entity
 	fighter_move_done = false
 	fighter_move_waiting = true
@@ -5319,6 +5895,7 @@ func _collect_attack_inspiration_decision(actor: Character) -> Dictionary:
 
 
 func _offer_power_word_heal_stand(target, spell: Dictionary) -> void:
+	await _settle_monster_concentration()
 	if str(spell.get("id", "")) != "power_word_heal" or not CombatAction.has_condition(target, "prone") or CombatAction.is_incapacitated(target):
 		return
 	if target is Character:
@@ -5360,9 +5937,9 @@ func _finish_fighter_attack(target: Dictionary, weapon: Dictionary, result: Dict
 	if result.get("hit", false) and result.get("mastery", "") == "cleave" and not actor.feature_uses.get("fighter_cleave_used", false):
 		var origin: Vector2i = entity["hex_position"]
 		for other in monster_entities:
-			if other == target or not other.get("is_alive", false):
+			if other == target or not other.get("is_alive", false) or not CombatPerception.can_locate_target(actor, other, origin, other["hex_position"], hex_grid) or not Targeting.has_line_of_sight(origin, other["hex_position"], hex_grid):
 				continue
-			if HexUtils.get_distance(target["hex_position"], other["hex_position"]) > 1 or not Targeting.is_in_range(origin, other["hex_position"], int(weapon.get("range", 1))):
+			if HexUtils.get_distance(target["hex_position"], other["hex_position"]) > 1 or not Targeting.is_in_range(origin, other["hex_position"], CombatAction.weapon_range_hexes(weapon)):
 				continue
 			if await hud.request_reaction(_owner_label_for_character(actor), "cleave", "Make one extra attack against %s, without a positive ability damage bonus." % other["name"], "Use Cleave?", "Attack", "Cleave"):
 				var cleave_weapon := weapon.duplicate(true)
@@ -5377,7 +5954,7 @@ func _finish_fighter_attack(target: Dictionary, weapon: Dictionary, result: Dict
 						return "The attacker is no longer able to attack."
 					if actor.feature_uses.get("fighter_cleave_used", false):
 						return "Cleave was already used this turn."
-					if not other.get("is_alive", false) or other not in monster_entities or HexUtils.get_distance(cleave_target["hex_position"], other["hex_position"]) > 1 or not Targeting.is_in_range(live["hex_position"], other["hex_position"], int(weapon.get("range", 1))):
+					if not other.get("is_alive", false) or other not in monster_entities or HexUtils.get_distance(cleave_target["hex_position"], other["hex_position"]) > 1 or not Targeting.is_in_range(live["hex_position"], other["hex_position"], CombatAction.weapon_range_hexes(weapon)):
 						return "The second creature is no longer within reach."
 					if not Targeting.has_line_of_sight(live["hex_position"], other["hex_position"], hex_grid) or _spell_zones()._antilife_shell_blocks_melee(actor, live["hex_position"], other["hex_position"], cleave_weapon):
 						return "The second creature is no longer reachable."
@@ -5394,7 +5971,7 @@ func _finish_fighter_attack(target: Dictionary, weapon: Dictionary, result: Dict
 				cleave_decisions.merge(cleave_choice.decisions, true)
 				var cleave_packet := await _conjure_minor_elementals_damage_choice(actor, other)
 				var cleave_additional_damage := {"packets": [cleave_packet]} if not cleave_packet.is_empty() else {}
-				var cleave := await _settle_attack_profile_hit_choice(CombatAction.resolve_weapon_attack(actor, other, cleave_weapon, false, false, cleave_decisions, cleave_additional_damage))
+				var cleave := await _settle_attack_profile_hit_choice(CombatAction.resolve_weapon_attack(actor, other, cleave_weapon, false, false, CombatPerception.weapon_decisions(hex_grid, actor, other, cleave_decisions), cleave_additional_damage))
 				await _offer_divine_smite(other, cleave_weapon, cleave, actor)
 				await _offer_weapon_damage_riders(actor, other, cleave_weapon, cleave)
 				await _offer_sneak_attack(other, cleave_weapon, cleave, actor)
@@ -5428,7 +6005,7 @@ func _push_combat_target(target, origin: Vector2i, distance: int = 2, size_limit
 		# Review 066 R1: an illegal start still never enters terrain the footprint cannot occupy.
 		if TravelPlacementRules.forced_step_blocked(self, from_hex, to_hex, pushed_size, pushed_actor):
 			break
-		entity["hex_position"] = to_hex
+		CombatAction.resolve_movement_step(entity, from_hex, to_hex)
 		if target is Character:
 			await _apply_room_fall_damage(target, from_hex, to_hex)
 		else:
@@ -5436,6 +6013,8 @@ func _push_combat_target(target, origin: Vector2i, distance: int = 2, size_limit
 		if (target is Character and not target.is_alive) or (target is Dictionary and not bool(target.get("is_alive", true))): break
 		await _resolve_spell_zone_entries(target, from_hex, to_hex)
 		await _resolve_spell_zone_movement(target, to_hex)
+		await ready_actions.publish(self, {"type":"movement", "actor":target, "position":to_hex, "from":from_hex})
+		if entity.get("hex_position") != to_hex: break
 		if (target is Character and not target.is_alive) or (target is Dictionary and not bool(target.get("is_alive", true))): break
 	_update_grid_entities()
 	return HexUtils.get_distance(start, entity["hex_position"]) * 5
@@ -5451,7 +6030,7 @@ func _apply_forced_movement_fall_damage(target: Dictionary, from_hex: Vector2i, 
 	var damage := 0
 	for _die in LocalRoomRules.fall_dice_for_drop(drop_feet):
 		damage += Dice.roll(6)
-	target["current_hp"] = maxi(0, int(target.get("current_hp", 0)) - damage)
+	CombatAction.resolve_damage(target, damage, "bludgeoning")
 	hud.add_log("%s is pushed %d feet down and takes %d falling damage." % [target.get("name", "The creature"), drop_feet, damage])
 	if int(target["current_hp"]) <= 0 and bool(target.get("is_alive", true)):
 		target["is_alive"] = false
@@ -5500,7 +6079,7 @@ func _offer_light_attack(target: Dictionary) -> void:
 		if monster != target:
 			candidates.append(monster)
 	for candidate in candidates:
-		if not candidate.get("is_alive", false) or not Targeting.is_in_range(origin, candidate["hex_position"], int(weapon.get("range", 1))):
+		if not candidate.get("is_alive", false) or not CombatPerception.can_locate_target(active_character, candidate, origin, candidate["hex_position"], hex_grid) or not Targeting.has_line_of_sight(origin, candidate["hex_position"], hex_grid) or not Targeting.is_in_range(origin, candidate["hex_position"], CombatAction.weapon_range_hexes(weapon)):
 			continue
 		if not await hud.request_reaction(_owner_label_for_character(active_character), "light_attack", "Attack %s with %s (%s). Once this turn." % [candidate.get("name", "target"), weapon.get("name", offhand_id), "part of the Attack action — Nick" if nick else "Bonus Action"], "Make the extra Light attack?", "Attack", "Light Weapon"):
 			continue
@@ -5528,7 +6107,7 @@ func _offer_light_attack(target: Dictionary) -> void:
 		light_decisions.merge(light_choice.decisions, true)
 		var light_packet := await _conjure_minor_elementals_damage_choice(active_character, candidate)
 		var light_additional_damage := {"packets": [light_packet]} if not light_packet.is_empty() else {}
-		var result := await _settle_attack_profile_hit_choice(CombatAction.resolve_weapon_attack(active_character, candidate, weapon, false, false, light_decisions, light_additional_damage))
+		var result := await _settle_attack_profile_hit_choice(CombatAction.resolve_weapon_attack(active_character, candidate, weapon, false, false, CombatPerception.weapon_decisions(hex_grid, active_character, candidate, light_decisions), light_additional_damage))
 		await _offer_divine_smite(candidate, weapon, result)
 		await _offer_sneak_attack(candidate, weapon, result)
 		hud.add_log(result.get("message", ""), false)
@@ -5583,7 +6162,27 @@ func _trigger_enemy_defeat_features(defeated_target: Dictionary, killer_characte
 				hud.add_log("[color=purple]%s gains %d temporary Hit Points from Dark One's Blessing.[/color]" % [c.character_name, gained])
 
 
+func _toggle_shield_from_equipment_control() -> Dictionary:
+	if active_character == null: return {"success": false, "message": "No active character."}
+	var result: Dictionary
+	if not active_character.inventory.get_equipped(Inventory.Slot.SHIELD).is_empty():
+		result = active_character.inventory.equipment_control_unequip(Inventory.Slot.SHIELD, self)
+	else:
+		var shield_id := ""
+		for copy in active_character.inventory.backpack_instances():
+			if str(DataLoader.get_item(str(copy.get("definition_id", ""))).get("type", "")) == "shield":
+				shield_id = str(copy.get("instance_id", ""))
+				break
+		if shield_id.is_empty(): return {"success": false, "message": "No Shield is available to don."}
+		result = active_character.inventory.equipment_control_equip(Inventory.Slot.SHIELD, shield_id, self)
+	if bool(result.get("success", false)):
+		active_character._recalculate_ac()
+		if result.get("seconds", 0) > 0: GameManager.advance_campaign_time(int(result.seconds))
+	return result
+
+
 func _action_cost_for_command(action_type: String, extra_data: Dictionary) -> String:
+	if action_type == "toggle_shield": return "action"
 	if action_type == "use_item": return str(DataLoader.get_item(str(extra_data.get("item", {}).get("id", ""))).get("action_cost", "action"))
 	if action_type == "toggle_find_steed_mount":
 		return "free"
@@ -5613,7 +6212,7 @@ func _action_cost_for_command(action_type: String, extra_data: Dictionary) -> St
 	if action_type == "cast_spell":
 		var spell_cost := str(extra_data.get("spell", {}).get("casting_time", "action"))
 		return "bonus_action" if spell_cost == "bonus_action" else "magic_action"
-	if action_type in ["attack", "dodge"]:
+	if action_type in ["attack", "dodge", "ordinary_action", "ready_action"]:
 		return "action"
 	return "free"
 
@@ -5631,6 +6230,7 @@ func _can_spend_action_cost(cost_type: String) -> bool:
 func _reset_turn_action_economy() -> void:
 	child_actions.clear()
 	remaining_flurry_swings = 0
+	paid_unarmed_grant = {}
 	strike_unit_parent = "attack"
 	attack_unit_substitution = {}
 	turn_budget.reset(active_character, player_entities)
@@ -5695,6 +6295,7 @@ func _has_attack_substitutions() -> bool:
 
 
 func _offer_divine_smite(target, weapon: Dictionary, result: Dictionary, actor: Character = null) -> void:
+	await _settle_monster_concentration()
 	if actor == null:
 		actor = active_character
 	if result.has("divine_smite") or actor != active_character or _battle_ending or not turn_budget.can_spend("bonus_action") or not result.get("hit", false):
@@ -5738,6 +6339,7 @@ func _offer_divine_smite(target, weapon: Dictionary, result: Dictionary, actor: 
 
 
 func _offer_sneak_attack(target: Dictionary, weapon: Dictionary, result: Dictionary, actor: Character = null, has_advantage: bool = false, has_disadvantage: bool = false) -> void:
+	await _settle_monster_concentration()
 	if actor == null:
 		actor = active_character
 	# Use the resolver's final attack context, including conditions and cancellations.
@@ -5896,7 +6498,10 @@ func _spell_effect_targets() -> Array:
 	return _spell_zones()._spell_effect_targets()
 
 func _spell_casters() -> Array:
-	return player_entities.map(func(player): return player.get("character")).filter(func(caster): return caster != null)
+	var casters := player_entities.map(func(player): return player.get("character")).filter(func(caster): return caster != null)
+	for monster in monster_entities:
+		if monster_spellcasters.has(str(monster.id)): casters.append(_make_monster_spellcaster(monster))
+	return casters
 
 func _resolve_condition_spell_repeat_saves(target) -> void:
 	SpellEncounterLifecycle._resolve_condition_spell_repeat_saves(_spell_cast_context(), target)
@@ -6133,21 +6738,22 @@ func _conjure_minor_elementals_spell_attack_choices(caster: Character, target, s
 	return await SpellZoneConjurations._conjure_minor_elementals_spell_attack_choices(_spell_zones(), caster, target, spell_data)
 
 
-func _player_movement_cost(coord: Vector2i, character: Character) -> float:
-	var ignores_difficult_terrain := (character != null and SpellEffects.has_spell(character, "freedom_of_movement")) or (active_movement_mode == "fly")
+func _player_movement_cost(coord: Vector2i, character: Character, movement_mode: String = "") -> float:
+	var mode := active_movement_mode if movement_mode.is_empty() else movement_mode
+	var ignores_difficult_terrain := (character != null and SpellEffects.has_spell(character, "freedom_of_movement")) or (mode == "fly")
 	var cost := hex_grid.get_hex_cost(coord, ignores_difficult_terrain)
 	var room := LocalRoomCombat.room()
 	var surface := _movement_surface_at(coord)
-	if active_movement_mode == "fly":
+	if mode == "fly":
 		cost = 1.0
 	elif LocalRoomRules.requires_surface_traversal(surface):
 		cost = 1.0 + (1.0 if not ignores_difficult_terrain and hex_grid.is_difficult_terrain(coord) else 0.0)
 	if not room.is_empty():
-		if LocalRoomRules.has_wall(room, coord) and active_movement_mode == "climb":
+		if LocalRoomRules.has_wall(room, coord) and mode == "climb":
 			cost += float(LocalRoomRules.wall_height_feet(room, coord)) / 5.0
-	if active_movement_mode == "climb" and character != null and character.movement_speed_feet("climb") <= 0 and not SpellEffects.has_spell(character, "spider_climb"):
+	if mode == "climb" and character != null and character.movement_speed_feet("climb") <= 0 and not SpellEffects.has_spell(character, "spider_climb"):
 		cost += 1.0
-	if active_movement_mode == "swim" and character != null and character.movement_speed_feet("swim") <= 0 and not (character != null and SpellEffects.has_spell(character, "freedom_of_movement")):
+	if mode == "swim" and character != null and character.movement_speed_feet("swim") <= 0 and not (character != null and SpellEffects.has_spell(character, "freedom_of_movement")):
 		cost += 1.0
 	if not ignores_difficult_terrain and _spirit_guardians_movement_slowed(character, coord):
 		cost *= 2.0
@@ -6161,26 +6767,27 @@ func _movement_surface_at(coord: Vector2i) -> String:
 	return "ground"
 
 
-func _player_step_movement_cost(from_hex: Vector2i, to_hex: Vector2i, character: Character) -> float:
+func _player_step_movement_cost(from_hex: Vector2i, to_hex: Vector2i, character: Character, movement_mode: String = "") -> float:
+	var mode := active_movement_mode if movement_mode.is_empty() else movement_mode
 	if _spell_zones()._antilife_shell_blocks_crossing(character, from_hex, to_hex):
 		return 9999.0
-	var cost := _player_movement_cost(to_hex, character)
+	var cost := _player_movement_cost(to_hex, character, movement_mode)
 	var room := LocalRoomCombat.room()
-	if not room.is_empty() and active_movement_mode == "walk":
+	if not room.is_empty() and mode == "walk":
 		var rise_feet := LocalRoomRules.elevation_feet(room, to_hex) - LocalRoomRules.elevation_feet(room, from_hex)
 		if rise_feet > 0:
 			cost += float(rise_feet) / 5.0
 	return cost
 
 
-func _apply_room_fall_damage(target, from_hex: Vector2i, to_hex: Vector2i) -> bool:
+func _apply_room_fall_damage(target, from_hex: Vector2i, to_hex: Vector2i, movement_mode: String = "") -> bool:
 	var room := LocalRoomCombat.room()
 	if room.is_empty():
 		return false
 	var height_change := LocalRoomRules.elevation_feet(room, to_hex) - LocalRoomRules.elevation_feet(room, from_hex)
 	if height_change > -10:
 		return false
-	var can_fly := active_movement_mode == "fly" if target is Character and target == active_character else int(target.get("fly_speed_feet", 0)) > 0 if target is Dictionary else false
+	var can_fly := (movement_mode == "fly" if not movement_mode.is_empty() else active_movement_mode == "fly") if target is Character and (target == active_character or not movement_mode.is_empty()) else int(target.get("fly_speed_feet", 0)) > 0 if target is Dictionary else false
 	if can_fly:
 		return false
 	var dice_count := LocalRoomRules.fall_dice_for_drop(-height_change)
@@ -6208,7 +6815,8 @@ func _apply_room_fall_damage(target, from_hex: Vector2i, to_hex: Vector2i) -> bo
 	return false
 
 
-func _player_can_enter(coord: Vector2i, character: Character) -> bool:
+func _player_can_enter(coord: Vector2i, character: Character, movement_mode: String = "") -> bool:
+	var mode := active_movement_mode if movement_mode.is_empty() else movement_mode
 	if hex_grid == null or not hex_grid.has_tile(coord): return false
 	for player in player_entities:
 		var occupant: Character = player.get("character")
@@ -6220,39 +6828,41 @@ func _player_can_enter(coord: Vector2i, character: Character) -> bool:
 	var room := LocalRoomCombat.room()
 	var surface := _movement_surface_at(coord)
 	if character != null:
-		var req := PhysicalFactsRules.check_surface_and_hand_requirements(character, active_movement_mode, surface)
+		var req := PhysicalFactsRules.check_surface_and_hand_requirements(character, mode, surface)
 		if not req.allowed:
 			return false
 	if room.is_empty():
 		if bool(hex_grid.tiles[coord].custom_properties.get("blocks_movement", false)): return false
-		if surface == "water": return active_movement_mode in ["fly", "swim"] or SpellEffects.has_spell(character, "water_walk") or character.has_condition("water_walk")
+		if surface == "water": return mode in ["fly", "swim"] or SpellEffects.has_spell(character, "water_walk") or character.has_condition("water_walk")
 		return hex_grid.is_hex_passable(coord)
-	var current_position: Vector2i = player_entities[current_player_idx].get("hex_position", Vector2i.ZERO)
-	var current_altitude := int(player_entities[current_player_idx].get("altitude_feet", LocalRoomRules.elevation_feet(room, current_position)))
-	if active_movement_mode != "fly" and current_altitude > LocalRoomRules.elevation_feet(room, current_position):
+	var movement_entity := ready_actions.owner_entity(self, character)
+	if movement_entity.is_empty(): return false
+	var current_position: Vector2i = movement_entity.get("hex_position", Vector2i.ZERO)
+	var current_altitude := int(movement_entity.get("altitude_feet", LocalRoomRules.elevation_feet(room, current_position)))
+	if mode != "fly" and current_altitude > LocalRoomRules.elevation_feet(room, current_position):
 		return false
 	if LocalRoomRules.requires_surface_traversal(surface):
-		var can_surface_traverse := active_movement_mode == "fly" or (surface == "water" and active_movement_mode == "swim") or SpellEffects.has_spell(character, "water_walk")
+		var can_surface_traverse := mode == "fly" or (surface == "water" and mode == "swim") or SpellEffects.has_spell(character, "water_walk")
 		if not can_surface_traverse: return false
 	if LocalRoomRules.has_wall(room, coord):
-		if active_movement_mode == "fly":
-			var wall_altitude := int(player_entities[current_player_idx].get("altitude_feet", LocalRoomRules.elevation_feet(room, coord)))
+		if mode == "fly":
+			var wall_altitude := int(movement_entity.get("altitude_feet", LocalRoomRules.elevation_feet(room, coord)))
 			return wall_altitude >= LocalRoomRules.elevation_feet(room, coord) + LocalRoomRules.wall_height_feet(room, coord) and wall_altitude + 5 <= LocalRoomRules.ceiling_feet(room, coord)
-		if active_movement_mode == "climb":
+		if mode == "climb":
 			return LocalRoomRules.wall_height_feet(room, coord) <= _movement_speed_feet("climb", character)
 		return false
-	if active_movement_mode == "fly":
-		var flight_altitude := int(player_entities[current_player_idx].get("altitude_feet", 0))
+	if mode == "fly":
+		var flight_altitude := int(movement_entity.get("altitude_feet", 0))
 		if flight_altitude < LocalRoomRules.elevation_feet(room, coord) or flight_altitude + 5 > LocalRoomRules.ceiling_feet(room, coord): return false
 	return hex_grid.is_hex_passable(coord)
 
 
-func _player_reachable(origin: Vector2i, movement_budget: float, character: Character) -> Dictionary:
-	return HexUtils.get_reachable(origin, movement_budget, func(coord: Vector2i): return _player_can_enter(coord, character), func(coord: Vector2i) -> float: return _player_movement_cost(coord, character), func(from_hex: Vector2i, to_hex: Vector2i): return _player_step_movement_cost(from_hex, to_hex, character))
+func _player_reachable(origin: Vector2i, movement_budget: float, character: Character, movement_mode: String = "") -> Dictionary:
+	return HexUtils.get_reachable(origin, movement_budget, func(coord: Vector2i): return _player_can_enter(coord, character, movement_mode), func(coord: Vector2i) -> float: return _player_movement_cost(coord, character, movement_mode), func(from_hex: Vector2i, to_hex: Vector2i): return _player_step_movement_cost(from_hex, to_hex, character, movement_mode))
 
 
-func _player_path(origin: Vector2i, destination: Vector2i, character: Character) -> Array[Vector2i]:
-	return HexUtils.find_path(origin, destination, func(coord: Vector2i): return _player_can_enter(coord, character), func(coord: Vector2i) -> float: return _player_movement_cost(coord, character), 100, func(from_hex: Vector2i, to_hex: Vector2i): return _player_step_movement_cost(from_hex, to_hex, character))
+func _player_path(origin: Vector2i, destination: Vector2i, character: Character, movement_mode: String = "") -> Array[Vector2i]:
+	return HexUtils.find_path(origin, destination, func(coord: Vector2i): return _player_can_enter(coord, character, movement_mode), func(coord: Vector2i) -> float: return _player_movement_cost(coord, character, movement_mode), 100, func(from_hex: Vector2i, to_hex: Vector2i): return _player_step_movement_cost(from_hex, to_hex, character, movement_mode))
 
 
 func _enemy_movement_cost(coord: Vector2i, mover_id: String = "") -> float:
@@ -6484,7 +7094,7 @@ func _try_escape_restrained_zone(character: Character) -> bool:
 		if zone.is_empty():
 			CombatAction.remove_condition_source(character, source_id, ["restrained"])
 			continue
-		var result := EventResolver.resolve_skill_check(character, {"ability": "STR", "skill": "Athletics", "dc": int(zone.get("save_dc", 10)), "use_primal_knowledge": false})
+		var result := EventResolver.resolve_skill_check(character, {"ability": "STR", "skill": "Athletics", "dc": int(zone.get("save_dc", 10)), "use_primal_knowledge": false}, {}, _ability_check_context(character))
 		_spend_action_cost("action")
 		if bool(result.get("success", false)):
 			CombatAction.remove_condition_source(character, source_id, ["restrained"])
@@ -6494,6 +7104,7 @@ func _try_escape_restrained_zone(character: Character) -> bool:
 			hud.add_log("[color=green]%s breaks free of %s with Strength (Athletics) (%d vs DC %d).[/color]" % [character.character_name, str(zone.get("spell_id", "the restraint")).capitalize().replace("_", " "), int(result.get("total", 0)), int(result.get("dc", 0))])
 		else:
 			hud.add_log("[color=orange]%s fails the Strength (Athletics) check to escape %s (%d vs DC %d).[/color]" % [character.character_name, str(zone.get("spell_id", "the restraint")).capitalize().replace("_", " "), int(result.get("total", 0)), int(result.get("dc", 0))])
+		await _completed_player_action(character)
 		hud.update_hud(active_character, tracker)
 		_highlight_reachable()
 		return true
@@ -6521,7 +7132,9 @@ func _try_freedom_of_movement_escape(character: Character) -> bool:
 
 
 func _try_shake_sleeping_creature(coord: Vector2i, player_pos: Vector2i) -> bool:
-	return SpellEncounterLifecycle._try_shake_sleeping_creature(_spell_cast_context(), coord, player_pos)
+	var shook := SpellEncounterLifecycle._try_shake_sleeping_creature(_spell_cast_context(), coord, player_pos)
+	if shook: await _completed_player_action()
+	return shook
 
 
 
@@ -6598,8 +7211,10 @@ func _lowest_available_spell_slot(character: Character, max_level: int) -> int:
 	return 0
 
 
-func _check_opportunity_attacks_for_path(entity, entity_dict: Dictionary, path: Array, is_entity_monster: bool):
+func _check_opportunity_attacks_for_path(entity, entity_dict: Dictionary, path: Array, is_entity_monster: bool, movement_mode: String = ""):
+	var mode := active_movement_mode if movement_mode.is_empty() else movement_mode
 	if path.size() < 2: return []
+	if entity == null and is_entity_monster: entity = entity_dict
 	var zone_entry_results: Array[Dictionary] = []
 	
 	for k in range(path.size() - 1):
@@ -6620,7 +7235,7 @@ func _check_opportunity_attacks_for_path(entity, entity_dict: Dictionary, path: 
 				var char_data: Character = p["character"]
 				if char_data == null or not char_data.is_alive: continue
 				if not p.get("reaction_available", true): continue
-				if char_data.has_condition("stunned") or CombatAction.blocks_opportunity_attack(char_data): continue
+				if CombatAction.is_incapacitated(char_data) or CombatAction.is_charmed_by(char_data, entity_dict) or CombatAction.blocks_opportunity_attack(char_data): continue
 				
 				# Check if player was adjacent at from_hex and is no longer adjacent at to_hex
 				var weapon := DataLoader.get_item(char_data.inventory.get_weapon()).duplicate(true)
@@ -6631,8 +7246,9 @@ func _check_opportunity_attacks_for_path(entity, entity_dict: Dictionary, path: 
 				var reach := 2 if "reach" in weapon.get("properties", []) else 1
 				var dist_from := HexUtils.get_distance(p["hex_position"], from_hex)
 				var dist_to := HexUtils.get_distance(p["hex_position"], to_hex)
-				if dist_from <= reach and dist_to > reach:
+				if dist_from <= reach and dist_to > reach and CombatPerception.can_see_target(char_data, entity_dict, p["hex_position"], from_hex, hex_grid):
 					var owner_label := _owner_label_for_character(char_data)
+					var oa_turn := CombatAction.active_turn_serial
 					var accepted := await hud.request_reaction(owner_label, "opportunity_attack", "Make a weapon attack against %s before it leaves your reach." % entity_dict["name"])
 					if not accepted:
 						hud.add_log("[color=gray]%s declines the opportunity attack.[/color]" % owner_label)
@@ -6640,19 +7256,17 @@ func _check_opportunity_attacks_for_path(entity, entity_dict: Dictionary, path: 
 					# Batch 087: the damage-type choice is asked before the Reaction is
 					# spent. Dismissing it, or the trigger going stale while it is
 					# open, makes no attack and keeps the Reaction. Never carries.
-					var oa_turn := CombatAction.active_turn_serial
-					var oa_choice := await _route_damage_choice(char_data, weapon, "Opportunity Attack", false, func() -> String:
+					var oa_error := func() -> String:
 						if oa_turn != CombatAction.active_turn_serial or p not in player_entities or not char_data.is_alive or CombatAction.blocks_opportunity_attack(char_data) or CombatAction.is_incapacitated(char_data) or not char_data.reaction_available or not p.get("reaction_available", true) or _battle_ending:
 							return "The Reaction is no longer available."
 						if not entity_dict.get("is_alive", false) or entity_dict not in monster_entities or HexUtils.get_distance(p["hex_position"], from_hex) > reach:
 							return "The target is no longer within reach."
-						if _spell_zones()._antilife_shell_blocks_melee(char_data, p["hex_position"], from_hex, weapon): return "The target is no longer reachable."
-						return "")
+						if entity_dict.get("hex_position") not in [from_hex, to_hex]: return "The target has moved elsewhere."
+						if CombatAction.is_charmed_by(char_data, entity_dict) or not CombatPerception.can_see_target(char_data, entity_dict, p["hex_position"], from_hex, hex_grid) or _spell_zones()._antilife_shell_blocks_melee(char_data, p["hex_position"], from_hex, weapon): return "The target is no longer visible and reachable."
+						return ""
+					var oa_choice := await _route_damage_choice(char_data, weapon, "Opportunity Attack", false, oa_error)
 					if bool(oa_choice.get("held", false)):
 						continue
-					p["reaction_available"] = false
-					char_data.reaction_available = false
-					hud.add_log("[color=yellow]%s makes an Opportunity Attack against %s![/color]" % [char_data.character_name, entity_dict["name"]])
 					
 					# Resolve before leaving reach. A positional mastery can interrupt
 					# the proposed path, so do not overwrite its settled destination.
@@ -6667,7 +7281,13 @@ func _check_opportunity_attacks_for_path(entity, entity_dict: Dictionary, path: 
 					var opportunity_packet := await _conjure_minor_elementals_damage_choice(char_data, entity_dict)
 					var opportunity_additional_damage := {"packets": [opportunity_packet]} if not opportunity_packet.is_empty() else {}
 					opportunity_decisions.merge(oa_choice.decisions, true)
-					var result := await _settle_attack_profile_hit_choice(CombatAction.resolve_weapon_attack(char_data, entity_dict, weapon, false, false, opportunity_decisions, opportunity_additional_damage))
+					if not str(oa_error.call()).is_empty():
+						if entity_dict.get("hex_position") == from_hex: entity_dict["hex_position"] = to_hex
+						continue
+					p["reaction_available"] = false
+					char_data.reaction_available = false
+					hud.add_log("[color=yellow]%s makes an Opportunity Attack against %s![/color]" % [char_data.character_name, entity_dict["name"]])
+					var result := await _settle_attack_profile_hit_choice(CombatAction.resolve_weapon_attack(char_data, entity_dict, weapon, false, false, CombatPerception.weapon_decisions(hex_grid, char_data, entity_dict, opportunity_decisions, p["hex_position"], from_hex), opportunity_additional_damage))
 					await _offer_sneak_attack(entity_dict, weapon, result, char_data)
 					await _offer_stunning_strike(entity_dict, weapon, result, char_data)
 					await _finish_fighter_attack(entity_dict, weapon, result, char_data)
@@ -6687,24 +7307,29 @@ func _check_opportunity_attacks_for_path(entity, entity_dict: Dictionary, path: 
 		else:
 			# Player is moving. Check monsters who can make opportunity attacks.
 			for m in monster_entities:
-				if entity is Character and (entity.has_feature("agile") or (entity.has_feature("flyby") and active_movement_mode == "fly")): continue
+				if entity is Character and entity.has_condition("disengaging"): continue
+				if entity is Character and (entity.has_feature("agile") or (entity.has_feature("flyby") and mode == "fly")): continue
 				if not m["is_alive"]: continue
 				if not m.get("reaction_available", true): continue
-				if m.get("conditions", {}).has("stunned") or CombatAction.blocks_opportunity_attack(m) or m.get("stunning_strike_stunned", false) or m.has("barbarian_no_opportunity_owner"): continue
+				if CombatAction.is_incapacitated(m) or CombatAction.is_charmed_by(m, entity) or CombatAction.blocks_opportunity_attack(m) or m.has("barbarian_no_opportunity_owner"): continue
 				
 				# Check if monster was adjacent at from_hex and is no longer adjacent at to_hex
 				var dist_from := HexUtils.get_distance(m["hex_position"], from_hex)
 				var dist_to := HexUtils.get_distance(m["hex_position"], to_hex)
-				if dist_from == 1 and dist_to > 1:
+				if dist_from == 1 and dist_to > 1 and CombatPerception.can_see_target(m, entity, m["hex_position"], from_hex, hex_grid):
 					var attack_data: Dictionary = m.get("attacks", [{}])[0]
 					if _spell_zones()._antilife_shell_blocks_melee(m, m["hex_position"], from_hex, attack_data):
 						continue
-					m["reaction_available"] = false
-					hud.add_log("[color=red]%s makes an Opportunity Attack against %s![/color]" % [m["name"], entity.character_name])
+					var oa_turn := CombatAction.active_turn_serial
 					var reaction_decisions := await _collect_reaction_decisions(entity)
 					var monster_attacker := _make_temp_monster_character(m)
 					reaction_decisions.merge(await _collect_roll_token_decision(monster_attacker, "attack", "%s Opportunity Attack roll against %s" % [str(m.get("name", "Monster")), entity.character_name], reaction_decisions), true)
-					var result := CombatAction.resolve_weapon_attack(monster_attacker, entity, attack_data, false, false, reaction_decisions)
+					if oa_turn != CombatAction.active_turn_serial or _battle_ending or m not in monster_entities or not m.get("is_alive", false) or CombatAction.is_incapacitated(m) or CombatAction.blocks_opportunity_attack(m) or CombatAction.is_charmed_by(m, entity) or not m.get("reaction_available", true) or not entity.is_alive: continue
+					if HexUtils.get_distance(m["hex_position"], from_hex) > 1 or entity_dict.get("hex_position") != to_hex or not CombatPerception.can_see_target(m, entity, m["hex_position"], from_hex, hex_grid) or _spell_zones()._antilife_shell_blocks_melee(m, m["hex_position"], from_hex, attack_data): continue
+					monster_attacker = _make_temp_monster_character(m)
+					m["reaction_available"] = false
+					hud.add_log("[color=red]%s makes an Opportunity Attack against %s![/color]" % [m["name"], entity.character_name])
+					var result := CombatAction.resolve_weapon_attack(monster_attacker, entity, attack_data, false, false, CombatPerception.weapon_decisions(hex_grid, m, entity, reaction_decisions, m["hex_position"], from_hex))
 					if result.has("attack_roll"):
 						SpellEffects.consume_spell(m, "invisibility")
 					_sync_consumed_monster_attack_conditions(m, monster_attacker)
@@ -6718,10 +7343,13 @@ func _check_opportunity_attacks_for_path(entity, entity_dict: Dictionary, path: 
 						_end_concentration(entity)
 						return
 		var actual_hex: Vector2i = entity_dict.get("hex_position", from_hex)
-		if actual_hex != from_hex and await _apply_room_fall_damage(entity, from_hex, actual_hex):
+		if actual_hex != from_hex and await _apply_room_fall_damage(entity, from_hex, actual_hex, mode):
 			return zone_entry_results
 		zone_entry_results.append_array(await _resolve_spell_zone_entries(entity, from_hex, actual_hex))
 		zone_entry_results.append_array(await _resolve_spell_zone_movement(entity, actual_hex))
+		await ready_actions.publish(self, {"type":"movement", "actor":entity, "position":actual_hex, "from":from_hex})
+		if entity_dict.get("hex_position") != actual_hex: return zone_entry_results
+		if (entity is Character and not entity.is_alive) or (entity is Dictionary and not entity.get("is_alive", true)): return zone_entry_results
 	return zone_entry_results
 
 
@@ -6797,6 +7425,7 @@ func _execute_temporary_hp_grant(feature: Dictionary) -> void:
 	resolving_player_action = false
 	if last_temporary_hp_grant.get("success", false) and not last_temporary_hp_grant.get("declined", false):
 		if feature.action_cost != "free": action_history.record_action(supplier)
+		if feature.action_cost != "free": await _completed_player_action(supplier)
 		hud.add_log("%s replaces Temporary HP from %s." % [recipient.character_name, supplier.character_name])
 	else: hud.add_log("Temporary HP kept, canceled or no longer available.")
 	hud.update_hud(active_character, tracker)
@@ -6900,6 +7529,7 @@ func _execute_party_allocation(feature: Dictionary) -> void:
 	else:
 		hud.add_log("Allocation canceled or no longer available.%s" % [" Revealed roll is forfeited." if spec.mode == "rolled_total" else ""])
 	print("PARTY ALLOCATION: " + JSON.stringify(last_party_allocation))
+	if (last_party_allocation.get("success", false) or spec.mode == "rolled_total") and feature.action_cost != "free": await _completed_player_action(actor)
 	hud.update_hud(active_character, tracker)
 	_highlight_reachable()
 
@@ -6947,6 +7577,7 @@ func _execute_captured_grant_transfer(feature: Dictionary) -> void:
 	resolving_player_action = false
 	if result.get("success", false) and not result.get("declined", false):
 		if feature.action_cost != "free": action_history.record_action(giver)
+		if feature.action_cost != "free": await _completed_player_action(giver)
 		hud.add_log(str(result.message))
 		print("CAPTURED GIFT TRANSFER: " + JSON.stringify(result))
 	else:

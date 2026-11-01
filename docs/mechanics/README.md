@@ -31,6 +31,7 @@ behavior before reopening a finding or claiming broader support.
 | Character-anchored tether groups, exact escape/rescue and source cleanup | [Tethers](tethers.md) |
 | Recipient Temporary HP and chosen/lingering protections (VS-84/85/86 accepted) | [Temporary HP and entry protections](temporary-hp-and-entry-protections.md) |
 | Source-owned condition suppression and moving combat auras (VS-73/74/75 accepted) | [Condition suppression and auras](condition-suppression-and-auras.md) |
+| Ordinary combat actions and their remaining hosts | [Ordinary actions](ordinary-actions.md) |
 | Purpose-aware event skill-check context and owned tools | [Check context](purpose-aware-check-context.md) |
 | Exact item/cast/progression AC and speed benefits (VS-59/60) | [Source carriers](source-benefit-carriers.md) |
 | Starting/multiclass grants and permanent level gains (VS-68/69 accepted) | [Permanent progression](permanent-progression.md) |
@@ -45,7 +46,7 @@ behavior before reopening a finding or claiming broader support.
 | Combined ordinary/Pact slot pools, fixed-level uses and ritual-only access (Batch 022 accepted) | [Slot and ritual casting](spell-slots-and-ritual-casting.md) |
 | Attack/Flurry substitution and paid child continuations (Batch 028 accepted) | [Attack unit substitution](attack-unit-substitution.md) |
 | Cast interruption, cancellation, stopping-costs, and recipient negation (Batch 029 accepted) | [Cast interruption and settlement](cast-interruption-and-settlement.md) |
-| Physical size/mass/material facts, plane/space queries, and speeds/surface movement (Batch 030 built; awaiting review) | [Physical facts, space and movement](physical-facts-space-and-movement.md) |
+| Physical facts, plane/space queries, speeds/surface movement and declared spatial trigger scopes | [Physical facts, space and movement](physical-facts-space-and-movement.md) |
 | Shared source-owned numeric pools (bounded numeric, recovery, dice and fixed exchanges accepted) | [Resource pools](shared-resource-pools.md) |
 | Generated per-spell availability and gaps | [Spell status](spell-status.md) |
 | World dependency gaps | [Foundations](spell-foundations.md), [Wave 4 checklist](spell-foundations.md#wave-4--creatures-bodies-forms-and-social-interaction) |
@@ -65,7 +66,11 @@ weapon-attack bonuses, plus S-097/S-101/S-102 as VS-65/66/67 for fixed helping
 modifiers and HP/Temporary HP allocations. See [party rules](party-intervention-and-allocation.md).
 Broader intervention operations, roll hosts and casting consumers remain open.
 
+Observer senses, light/obstruction and known Invisible versus Hidden targets are described in [perception](perception.md).
+
 Weapon attack profiles and S-127 authored damage-type choices (activation or hit window; PARTIAL) are described in [attack profiles](attack-profiles.md).
+
+Armor don/doff time and the Shield combat Action are described in [equipment timing](equipment-timing.md).
 
 Extra Attack count and unarmored base-AC upgrade consumers (S-084/S-085; PARTIAL) are described in [attack and AC upgrades](attack-and-ac-upgrades.md).
 Maximum-HP sources and zero-maximum death on monster records (S-130/S-131; PARTIAL) are described in [monster max-HP sources](monster-max-hp-sources.md).

@@ -101,31 +101,8 @@ static func apply_perfect_focus(monk: Character) -> bool:
 
 ## Resolve Open Hand Technique (Level 3):
 ## Applies Addle, Push (STR save vs DC), or Topple (DEX save vs DC).
-static func resolve_open_hand_technique(monk: Character, target: Dictionary, option: String) -> Dictionary:
-	if monk == null or not monk.has_feature("monk_open_hand_technique") or int(target.get("current_hp", 0)) <= 0:
-		return {"success": false}
-	var dc := 8 + monk.proficiency_bonus + monk.ability_scores.get_ability_modifier("WIS")
-	var scores: Dictionary = target.get("ability_scores", {})
-	match option:
-		"addle":
-			target["can_opportunity_attack"] = false
-			return {"success": true, "effect": "addle", "message": "Open Hand Technique (Addle): %s cannot make Opportunity Attacks." % target.get("name", "Target")}
-		"topple":
-			var dex_bonus := int(target.get("saving_throw_bonuses", {}).get("DEX", AbilityScores.get_modifier(int(scores.get("DEX", 10)))))
-			var roll := Dice.roll(20) + dex_bonus
-			if roll < dc:
-				var conditions: Dictionary = target.get("conditions", {})
-				conditions["prone"] = 1
-				target["conditions"] = conditions
-				return {"success": true, "effect": "topple", "saved": false, "message": "Open Hand Technique (Topple): %s failed DEX save (%d vs DC %d) and is knocked Prone." % [target.get("name", "Target"), roll, dc]}
-			return {"success": true, "effect": "topple", "saved": true, "message": "Open Hand Technique (Topple): %s succeeded DEX save (%d vs DC %d)." % [target.get("name", "Target"), roll, dc]}
-		"push":
-			var str_bonus := int(target.get("saving_throw_bonuses", {}).get("STR", AbilityScores.get_modifier(int(scores.get("STR", 10)))))
-			var roll := Dice.roll(20) + str_bonus
-			if roll < dc:
-				return {"success": true, "effect": "push", "saved": false, "distance": 2, "message": "Open Hand Technique (Push): %s failed STR save (%d vs DC %d) and is pushed 10 ft." % [target.get("name", "Target"), roll, dc]}
-			return {"success": true, "effect": "push", "saved": true, "message": "Open Hand Technique (Push): %s succeeded STR save (%d vs DC %d)." % [target.get("name", "Target"), roll, dc]}
-	return {"success": false}
+static func resolve_open_hand_technique(_monk: Character, _target: Dictionary, _option: String) -> Dictionary:
+	return {"success":false, "message":"Hit options require a settled Flurry hit through combat."}
 
 
 ## Resolve Quivering Palm (Level 17):
@@ -135,9 +112,8 @@ static func resolve_quivering_palm(attacker: Character, target: Dictionary) -> D
 		return {"success": false, "message": "Quivering Palm is unavailable or requires 4 Focus."}
 	attacker.spend_focus_points(4)
 	var dc := 8 + attacker.proficiency_bonus + attacker.ability_scores.get_ability_modifier("WIS")
-	var scores: Dictionary = target.get("ability_scores", {})
-	var bonus := int(target.get("saving_throw_bonuses", {}).get("CON", AbilityScores.get_modifier(int(scores.get("CON", 10)))))
-	var roll := Dice.roll(20) + bonus
+	var save_receipt := BarbarianRules.roll_monster_save_result(target, "CON", attacker)
+	var roll := int(save_receipt.get("total", 0))
 	var failed := roll < dc
 	var base_dmg := Dice.parse_dice_string("10d12")
 	var actual_dmg := base_dmg if failed else int(floor(float(base_dmg) / 2.0))
@@ -148,5 +124,6 @@ static func resolve_quivering_palm(attacker: Character, target: Dictionary) -> D
 		"damage": dealt,
 		"damage_type": "force",
 		"failed": failed,
+		"save": save_receipt,
 		"message": "Quivering Palm: %s %s CON save (%d vs DC %d), taking %d force damage." % [target.get("name", "Target"), outcome, roll, dc, dealt]
 	}

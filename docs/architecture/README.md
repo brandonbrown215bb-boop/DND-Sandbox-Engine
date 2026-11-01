@@ -28,11 +28,13 @@ owner; supported definitions must work without registering their identity.
 | Boundary | Existing owner and responsibility |
 |---|---|
 | Encounter and turn flow | `CombatState` coordinates input, bindings, initiative and cast sequence; `CombatTurnBudget` owns action quantities. |
+| Ordinary actions | `OrdinaryActionRules` supplies reusable action effects; `CheckHelpRules` owns transient proficiency assistance; `ReadyActionRules` delivers held responses on completed perceivable triggers and `ReadySpellRules` retains paid casting state. See [ordinary actions](../mechanics/ordinary-actions.md). |
 | Spell controls | `SpellCast*` modules own selection, validation, choices, resources, targeting, movement, reactions, results and areas. See the [module map](../../src/spells/README.md). |
 | Shared spell programs | `SharedSpell` validates flat payloads; `SharedStepExecutor` executes ordered operations and per-target gates. Flat payloads use automatic, attack or save delivery; mixed attack/save programs use ordered steps. |
 | Damage and aftermath | `CombatAction` settles typed weapon and spell damage, reductions, Temporary HP, HP loss, concentration and defeat. Derived damage must not replay parent attacks or payments. |
 | Damage links/responses | `DamageLinkRules` distributes one post-reduction occurrence across fixed source-owned recipients; `DamageResponseRules` validates incoming replacements and settled counters. Root/source/depth receipts bound feedback. |
 | Child actions | `CombatChildActions` owns transient paid-parent identity, child quantities, chooser state and once-only receipts; ordinary strike/spell/movement paths execute the children. |
+| Combat object Utilize | `CombatUtilizeRules` validates live encounter object choices and delivers physical interactions to `LocalRoomRules.interact`; the existing room object and inventory owners retain their mutations. |
 | Timed sources and events | `SpellEffects` owns cast identity, clocks and cleanup; `SpellEncounterLifecycle` owns repeat-save scheduling. `source_end_rules` consumes canonical attack, cast, movement, status, equipment, range and damage events. |
 | Areas | `CombatSpellZones` owns spatial/turn triggers; terrain and conjuration modules retain native policies for unmigrated content. `LocalRoomSharedSpells` reuses shared execution for bounded exploration casts. |
 | Progression | `ClassProgression` owns choices and dependencies; `ClassTraining` revalidates confirmation. `PermanentProgressionRules` owns opt-in starting/multiclass and permanent grant receipts. |
@@ -113,8 +115,10 @@ validates transfer destinations before removing sources.
 GameManager owns campaign time. Completed combat rounds advance six seconds;
 exploration, travel, casting and rests declare durations. Source-owned effects
 and room areas expire on that clock, including unloaded snapshots.
-`CombatPerception` supplies modeled illumination, senses and wall LOS. Exact
-volumes, cover and unmodeled observers remain gaps. Room/combat floor, altitude
+`CombatPerception` supplies observer-specific illumination, senses, source-owned
+obscuration, wall LOS and encounter-local location discovery. Combat targeting,
+roll modes and AI share those queries; see [perception](../mechanics/perception.md).
+Exact volumes, cover, general hearing and unmodeled observers remain gaps. Room/combat floor, altitude
 and movement modes do not certify every spell, footprint or form.
 
 Owned familiar/steed records retain identity, HP and lifetime independently of

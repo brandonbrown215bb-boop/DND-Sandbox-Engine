@@ -371,8 +371,6 @@ static func can_see_roller(owner: Character, roller, context: Dictionary = {}) -
 		return false
 	if roller is Character and roller == owner:
 		return true
-	if context.has("roller_visible"):
-		return bool(context["roller_visible"])
 	var grid: HexGrid = context.get("grid") as HexGrid
 	if grid == null and context.get("spell_visibility") is Dictionary:
 		grid = context["spell_visibility"].get("grid") as HexGrid
@@ -380,15 +378,8 @@ static func can_see_roller(owner: Character, roller, context: Dictionary = {}) -
 	var roller_pos: Variant = _resolve_actor_position(vis_target, context, "roller_position")
 	if grid != null and owner_pos is Vector2i and roller_pos is Vector2i:
 		return CombatPerception.can_see_target(owner, vis_target, owner_pos, roller_pos, grid)
-	if owner.has_condition("blinded"):
-		var distance_feet := int(context.get("distance_feet", 5))
-		if not CombatPerception._has_blindsight(owner, distance_feet) and not CombatPerception._has_truesight(owner, distance_feet):
-			return false
-	if CombatAction.is_invisible(vis_target):
-		var distance_feet := int(context.get("distance_feet", 5))
-		if not CombatAction.can_perceive_invisible(owner, distance_feet):
-			return false
-	return true
+	if context.has("roller_visible") and not bool(context["roller_visible"]): return false
+	return CombatPerception._can_see(owner, vis_target, Vector2i.ZERO, Vector2i.ZERO, null, maxi(0, int(context.get("distance_feet", 5))))
 
 
 static func _resolve_actor_position(actor, context: Dictionary, explicit_key: String) -> Variant:

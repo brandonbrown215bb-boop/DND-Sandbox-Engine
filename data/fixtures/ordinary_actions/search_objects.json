@@ -1,0 +1,5 @@
+[
+  {"id":"fixture:concealed_cache", "name":"Concealed cache", "kind":"loose", "position":[-1,0], "hp":5, "max_hp":5, "discovery":{"dc":15,"range_feet":5}, "contents":["potion_healing"]},
+  {"id":"fixture:renamed_cache", "name":"Remote cache", "kind":"loose", "position":[2,1], "hp":5, "max_hp":5, "discovery":{"dc":15,"range_feet":5}, "contents":["potion_healing"]},
+  {"id":"fixture:secret_door", "name":"Concealed door", "kind":"door", "position":[1,-1], "hp":10, "max_hp":10, "open":false, "locked":false, "discovery":{"dc":15,"range_feet":5}, "contents":[]}
+]

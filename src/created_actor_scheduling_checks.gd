@@ -50,7 +50,7 @@ static func _removal(check: Callable, spell: String, phase: String) -> void:
 		if spell == WARDENS:
 			var acted := CreatedCommandRules.apply_defaults(battle, owner)
 			check.call(acted.size() == (1 if phase == "during" else 2) and made.all(func(a): return int(a.conditions.restrained) == 2), "Scheduling %s removal ticks each owner-turn actor once and never repeats a paid order" % phase)
-			if phase == "during": check.call(paid.success and CombatAction.active_turn_serial == serial and int(made[0].conditions.dodging) == 1, "Scheduling interrupted command retains its original serial and single Dodge")
+			if phase == "during": check.call(paid.success and CombatAction.active_turn_serial == serial and not made[0].has_condition("dodging"), "Scheduling interrupted command retains its original serial; Speed 0 has ended Dodge")
 		battle.tracker.next_turn()
 	if spell == Batch056Checks.HOUNDS:
 		var seen := []

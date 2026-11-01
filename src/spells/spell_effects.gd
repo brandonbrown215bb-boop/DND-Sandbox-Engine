@@ -85,7 +85,10 @@ static func begin_cast(caster: Character, spell: Dictionary, cast_facts: Diction
 		if spell.has("repeat_save_stages"): record["repeat_save_stages"] = spell["repeat_save_stages"].duplicate(true)
 		if spell.has("repeat_save_dc_progression"): record["repeat_save_dc_progression"] = spell["repeat_save_dc_progression"].duplicate(true)
 	var rules: Variant = spell.get("source_end_rules", [])
-	if rules is Array and not rules.is_empty(): record["source_end_rules"] = rules.duplicate(true)
+	if rules is Array and not rules.is_empty():
+		record["source_end_rules"] = rules.duplicate(true)
+		if rules.any(func(rule): return rule is Dictionary and rule.has("damage_budget")):
+			record["damage_budget_total"] = 0
 	var aftermath: Variant = spell.get("end_aftermath", [])
 	if aftermath is Array and not aftermath.is_empty(): record["end_aftermath"] = aftermath.duplicate(true)
 	if not cast_facts.is_empty(): record["cast_facts"] = cast_facts.duplicate(true)
@@ -290,6 +293,8 @@ static func publish_event(target, event: Dictionary) -> Array[Dictionary]:
 	var ended: Array[Dictionary] = []
 	if target == null or str(event.get("type", "")).is_empty(): return ended
 	if str(event.get("type", "")) == "cast" and not bool(event.get("completed", false)): return ended
+	if event.get("type", "") == "movement" and event.get("from") != event.get("to"):
+		CombatPerception.invalidate_hidden_location(target)
 	var canonical_event := event.duplicate(true)
 	canonical_event["subject_id"] = caster_id(target) if target is Character else str(target.get("id", "")) if target is Dictionary else ""
 	for source in records(target).keys().duplicate():
@@ -299,6 +304,54 @@ static func publish_event(target, event: Dictionary) -> Array[Dictionary]:
 		var reason := str(event.get("type", "event"))
 		var end_event := remove(target, str(source), reason, canonical_event)
 		if not end_event.is_empty(): ended.append(end_event)
+	return ended
+
+
+## Count final damage for the exact source record. The settled hit remains full;
+## reaching the authored cap ends the source after that hit.
+static func damage_budget_cap(definition: Dictionary) -> int:
+	var rules: Variant = definition.get("source_end_rules", [])
+	if not rules is Array: return 0
+	for rule in rules:
+		if rule is Dictionary and str(rule.get("event", "")) == "damage" and rule.has("damage_budget"): return int(rule.damage_budget)
+	return 0
+
+## A retained budget can acquire another payload without resetting its counter.
+static func can_add_budget_payload(actor: Character, cast: Dictionary, payload: String) -> bool:
+	var record: Dictionary = actor.spell_effects.get(str(cast.get("source_id", "")), {})
+	return record.has("damage_budget_total") and not record.has(payload) and record.get("caster_id") == cast.get("caster_id") and record.get("spell_id") == cast.get("spell_id")
+
+static func payload_record(actor: Character, cast: Dictionary) -> Dictionary:
+	return actor.spell_effects.get(str(cast.get("source_id", "")), cast).duplicate(true)
+
+static func start_damage_budget(caster: Character, cast: Dictionary) -> void:
+	if damage_budget_cap(cast) <= 0: return
+	var source := str(cast.get("source_id", ""))
+	if not source.is_empty() and not caster.spell_effects.has(source): caster.spell_effects[source] = cast.duplicate(true)
+
+static func record_damage_budget(source, source_instance_id: String, amount: int, target_actor_id: String = "", recipients: Array = []) -> Array[Dictionary]:
+	var ended: Array[Dictionary] = []
+	if source == null or source_instance_id.is_empty() or amount <= 0: return ended
+	var record: Dictionary = records(source).get(source_instance_id, {})
+	if record.is_empty(): return ended
+	var cap := 0
+	for rule in record.get("source_end_rules", []):
+		if rule is Dictionary and str(rule.get("event", "")) == "damage" and rule.has("damage_budget"):
+			cap = int(rule.get("damage_budget", 0))
+			break
+	if cap <= 0: return ended
+	record["damage_budget_total"] = int(record.get("damage_budget_total", 0)) + amount
+	if source is Dictionary: source["spell_effects"] = records(source)
+	if int(record["damage_budget_total"]) >= cap:
+		var event := remove(source, source_instance_id, "damage_budget", {"source_instance_id": source_instance_id, "target_actor_id": target_actor_id, "damage_budget_total": int(record["damage_budget_total"]), "damage_budget_cap": cap})
+		if not event.is_empty(): ended.append(event)
+		var linked := recipients.duplicate()
+		linked.append_array(PartyManager.characters.values())
+		if source is Character:
+			linked.append_array(source.concentrating_on.get("targets", []))
+			if str(source.concentrating_on.get("effect_source", "")) == source_instance_id: source.concentrating_on.clear()
+		for recipient in linked:
+			if recipient != null and not is_same(recipient, source): remove(recipient, source_instance_id, "damage_budget", {"source_instance_id": source_instance_id})
 	return ended
 
 static func _matching_end_rule(record: Dictionary, event: Dictionary) -> Dictionary:
@@ -319,6 +372,7 @@ static func _matching_end_rule(record: Dictionary, event: Dictionary) -> Diction
 		if rule.has("state") and str(rule.get("state", "")) != str(event.get("state", "")): continue
 		if rule.has("paid_slot_level") and int(rule.get("paid_slot_level", -1)) != int(event.get("paid_slot_level", -1)): continue
 		if rule.has("maximum_range_feet") and (not event.has("distance_feet") or int(event.get("distance_feet", -1)) <= int(rule.get("maximum_range_feet", -1))): continue
+		if rule.has("damage_budget") and int(record.get("damage_budget_total", 0)) < int(rule.get("damage_budget", 0)): continue
 		var except_source := str(rule.get("except_source_id", ""))
 		if except_source == "this_source": except_source = str(record.get("source_id", ""))
 		if str(event.get("type", "")) == "damage" and not except_source.is_empty() and except_source == str(event.get("source_instance_id", "")): continue
@@ -492,6 +546,9 @@ static func end_concentration(caster: Character, targets: Array) -> bool:
 	var source := str(caster.concentrating_on.get("effect_source", ""))
 	if source.is_empty():
 		return false
+	if caster.spell_effects.has(source) and not bool(caster.spell_effects[source].get("concentration", true)):
+		caster.concentrating_on.clear()
+		return true
 	var recipients := targets.duplicate()
 	for target in caster.concentrating_on.get("targets", []):
 		if target not in recipients: recipients.append(target)
@@ -506,7 +563,7 @@ static func end_concentration(caster: Character, targets: Array) -> bool:
 static func prune(target) -> void:
 	for source in records(target).keys():
 		var record: Dictionary = records(target)[source]
-		if record.has("source_benefits") or record.has("damage_link") or record.has("damage_response") or record.has("created_actors") or record.has("projection") or record.has("magic_suppression") or record.has("max_hp_source"):
+		if record.has("damage_budget_total") or record.has("source_benefits") or record.has("damage_link") or record.has("damage_response") or record.has("created_actors") or record.has("projection") or record.has("magic_suppression") or record.has("max_hp_source"):
 			continue # These exact source records own non-condition behavior.
 		if str(record.get("spell_id", "")) in ["beacon_of_hope", "divine_favor", "death_ward", "sanctuary", "heroism", "magic_weapon", "enhance_ability"]:
 			continue # This benefit is represented by the source record, not a condition.
@@ -532,6 +589,9 @@ static func reconcile(casters: Array, targets: Array) -> void:
 		for source in records(target).keys():
 			var record: Dictionary = records(target)[source]
 			var owner: Character = owners.get(str(record["caster_id"]))
+			if record.has("damage_budget_total") and owner != null and not owner.spell_effects.has(source):
+				remove(target, str(source))
+				continue
 			if bool(record["concentration"]) and (owner == null or str(owner.concentrating_on.get("effect_source", "")) != source):
 				remove(target, str(source))
 	for caster: Character in casters:

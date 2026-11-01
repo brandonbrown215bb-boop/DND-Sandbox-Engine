@@ -114,7 +114,7 @@ AC values for all 13 entries match the SRD. The stealth-disadvantage flag matche
 | Clause | Classification | Owner |
 |---|---|---|
 | Attunement: 1 hour, max 3 items, one copy at a time | existing supported | inventory.gd `attune_instance`; S-202 (VS-132) |
-| Attunement prerequisites ("by a Wizard", "by a Spellcaster", and others) | **genuine gap → S-253 (items-5)** | no prerequisite field or check |
+| Attunement prerequisites ("by a Wizard", "by a Spellcaster", and others) | **genuine gap → S-253 (items-5)** | Engine now validates optional `attunement_prerequisite` data (`classes_any`, `spellcaster`) before attunement commits; Staff of Power declares its Sorcerer/Warlock/Wizard requirement. Remaining catalog conversion and verification stay open. |
 | Curses: attunement can't be ended, removed by Remove Curse | existing supported | S-202 (VS-132), `break_cursed_item_attunements` |
 | Charges, dawn/dusk recovery | existing supported | S-063 (VS-93) |
 | Last-charge aftermath / destroyed item | existing supported | S-060 (VS-118) |
@@ -741,7 +741,7 @@ origin/main is still ede0a3c, which is an ancestor of audit/items, so no rebase 
 | staff_of_striking | +3/+3, 10 charges, recovery 5–10, last-charge nonmagical | the same, plus spend up to 3 charges on a hit for +1d6 Force each | **Match** for the fields present. 1d6+4 equals uniform 5–10. **D-7:** the on-hit charge rider is missing → items-15. |
 | wand_of_magic_missiles | 7 charges, recovery 2–7, activation 1–3 charges | the same; crumbles on a 1 after the last charge | **The activation matches the hard-coded host.** 1d6+1 equals uniform 2–7. **D-8:** `last_charge_aftermath` (destroy on 1) is missing, although LastChargeRules hosts it (data_loader.gd:614) → conv. |
 
-Charge-recovery host: inventory.gd:557–564 rolls a **uniform** value from minimum to maximum. That is exact for one die plus a constant (1d6+1, 1d6+4, 1d3) and wrong for multi-die expressions (2d8+4). → S-265 (items-20).
+Charge-recovery host: inventory.gd accepts either a dice `expression` or the existing uniform minimum/maximum endpoints. Staff of Power now uses 2d8+4; S-265 adds its separate 20-face regain branch. → S-265 (items-20).
 
 ### B5-3: The 49 equippable shells, clause by clause
 
@@ -792,7 +792,7 @@ All 49 have no rule fields, so in the engine today every one behaves as its base
 | Item | Host checked | Result |
 |---|---|---|
 | Efficient Quiver | S-196 ContainerRules: compartments with KEYS id, item_types, max_count, max_weight, **max_volume** (container_rules.gd:8–24, 87) | **conv.** Three compartments with count limits fit. **Correction to B4:** volume *is* validated (line 87), so "volume not enforced" in B4-2 rows 7/55/89 is wrong; it is enforced when data declares it. |
-| Figurine of Wondrous Power | item power `uses_per` is accepted only as "dawn" for item powers (feature_mode_rules.gd:64; owned_feature_sources.gd:227, 285) | **Not hosted:** N-day cooldowns are missing → **S-264 (items-19)**. |
+| Figurine of Wondrous Power | item power `uses_per` supports `days` with an exact-copy deadline (`cooldown_days`) alongside dawn/recovery uses | Engine capability added for declared day intervals; this does not convert the figurine catalog powers. Verification remains open → **S-264 (items-19)**. |
 | Pearl of Power | `restore_resource` is a ClassFeature effect (class_feature.gd:12, 376) | **Partial:** the effect type exists only on class features; no item carrier was verified. Stays *check*. |
 | Vorpal Sword (ignore resistance) | `resolve_damage(..., bypass_resistance, bypass_layers)` (combat_action.gd:571, 607–613) | **Host exists.** It needs an item rider to pass the flag → items-15. |
 | Periapt of Wound Closure | ZeroHpAftermathRules.pending_death_save_rule / automatic death save (character.gd:3030–3033); `stabilize()` at 3079 | **Partial host.** The automatic-outcome route exists. The item carrier and "double HD healing" need items-12. |

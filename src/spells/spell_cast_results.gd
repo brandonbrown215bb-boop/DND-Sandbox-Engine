@@ -174,7 +174,7 @@ static func _resolve_spell_cast_targets(cast: SpellCastContext) -> void:
 			await _resolve_player_target(cast, p_target, target_hex, area_spell_id == "chain_lightning" and target_index > 0)
 		elif not m_target.is_empty():
 			await _resolve_monster_target(cast, m_target, target_hex, area_spell_id == "chain_lightning" and target_index > 0)
-		var object_target: Dictionary = CombatObjectRules.by_key(cast.grid, target_hex, chain_target_id.trim_prefix("object:")) if chain_target_id.begins_with("object:") else CombatObjectRules.at(cast.grid, target_hex)
+		var object_target: Dictionary = CombatObjectRules.by_key(cast.grid, target_hex, chain_target_id.trim_prefix("object:"), cast.caster) if chain_target_id.begins_with("object:") else CombatObjectRules.at(cast.grid, target_hex, cast.caster)
 		var object_owner: Character = null
 		if area_spell_id == "chain_lightning" and chain_target_id.begins_with("object:") and object_target.is_empty():
 			var owned_item := CombatObjectRules.owned_item_record_at(cast.players, target_hex, chain_target_id.trim_prefix("object:"))
@@ -248,7 +248,7 @@ static func _resolve_player_target(cast: SpellCastContext, p_target: Character, 
 	target_spell_decisions["hud"] = cast.hud
 	target_spell_decisions["tracker"] = cast.tracker
 	target_spell_decisions["trigger_enemy_defeat_features"] = cast.trigger_enemy_defeat_features
-	if CombatAction.spell_requires_saving_throw(cast.spell):
+	if CombatAction.spell_requires_saving_throw(cast.spell) and not CombatAction.save_auto_fails(p_target, str(cast.spell.get("save", "DEX"))):
 		target_spell_decisions.merge(await cast.collect_stroke_of_luck_save_decision.call(p_target, str(cast.spell.get("name", "this spell"))), true)
 	if not SorcererRules.is_careful_spell_target(cast.caster, cast.spell, p_target, cast.counterspell_decisions.get("metamagic:careful_targets", [])):
 		target_spell_decisions.merge(await cast.collect_bardic_inspiration_save_decision.call(p_target, cast.spell), true)
@@ -264,7 +264,7 @@ static func _resolve_player_target(cast: SpellCastContext, p_target: Character, 
 			target_spell_decisions[counterspell_key] = false
 	target_spell_decisions.merge(await cast.collect_spell_shield_decision.call(p_target, cast.spell, target_spell_decisions), true)
 	if cast.collect_roll_token_decision.is_valid():
-		if CombatAction.spell_requires_saving_throw(cast.spell):
+		if CombatAction.spell_requires_saving_throw(cast.spell) and not CombatAction.save_auto_fails(p_target, str(cast.spell.get("save", "DEX"))):
 			target_spell_decisions.merge(await cast.collect_roll_token_decision.call(p_target, "save", "%s saving throw against %s" % [str(cast.spell.get("save", "Spell")), str(cast.spell.get("name", "spell"))], target_spell_decisions), true)
 		elif str(cast.spell.get("attack_type", "none")) != "none":
 			target_spell_decisions.merge(await cast.collect_roll_token_decision.call(cast.caster, "attack", "%s spell attack against %s" % [str(cast.spell.get("name", "Spell")), p_target.character_name], target_spell_decisions), true)
@@ -326,13 +326,6 @@ static func _resolve_player_target(cast: SpellCastContext, p_target: Character, 
 		var bonus_dice := CombatAction.true_strike_bonus_damage(cast.caster.level)
 		var strike_advantage := not CombatPerception.can_see_target(p_target, cast.caster, target_hex, cast.players[cast.player_index]["hex_position"], cast.grid)
 		var strike_disadvantage := not CombatPerception.can_see_target(cast.caster, p_target, cast.players[cast.player_index]["hex_position"], target_hex, cast.grid)
-		if CombatAction.is_invisible(p_target) and not CombatAction.can_perceive_invisible(cast.caster, strike_distance * 5):
-			strike_disadvantage = true
-		if CombatAction.is_invisible(cast.caster) and not CombatAction.can_perceive_invisible(p_target, strike_distance * 5):
-			strike_advantage = true
-		if cast.caster.has_condition("hidden"):
-			strike_advantage = true
-			cast.caster.remove_condition("hidden")
 		var strike_additional_damage := {"formula": bonus_dice, "type": "radiant", "label": "True Strike Radiant"} if not bonus_dice.is_empty() else {}
 		var fey_damage_packet := await SpellZoneConjurations._conjure_minor_elementals_damage_choice(cast.areas, cast.caster, p_target)
 		if not fey_damage_packet.is_empty():
@@ -385,7 +378,7 @@ static func _resolve_monster_target(cast: SpellCastContext, m_target: Dictionary
 	target_spell_decisions["cast_context"] = cast
 	target_spell_decisions["hud"] = cast.hud
 	if cast.collect_roll_token_decision.is_valid():
-		if CombatAction.spell_requires_saving_throw(cast.spell):
+		if CombatAction.spell_requires_saving_throw(cast.spell) and not CombatAction.save_auto_fails(m_target, str(cast.spell.get("save", "DEX"))):
 			target_spell_decisions.merge(await cast.collect_roll_token_decision.call(m_target, "monster_save", "%s saving throw against %s" % [str(cast.spell.get("save", "Spell")), str(cast.spell.get("name", "spell"))], target_spell_decisions), true)
 		elif str(cast.spell.get("attack_type", "none")) != "none":
 			target_spell_decisions.merge(await cast.collect_roll_token_decision.call(cast.caster, "attack", "%s spell attack against %s" % [str(cast.spell.get("name", "Spell")), str(m_target.get("name", "target"))], target_spell_decisions), true)
@@ -433,17 +426,11 @@ static func _resolve_monster_target(cast: SpellCastContext, m_target: Dictionary
 		var strike_distance := HexUtils.get_distance(cast.players[cast.player_index].get("hex_position", Vector2i.ZERO), target_hex)
 		true_strike_profile["attack_distance"] = strike_distance
 		var strike_reactions := SpellCastResults._spell_decisions_for_target(cast, cast.counterspell_decisions, false)
+		strike_reactions["spell_visibility"] = {"grid":cast.grid, "caster_position":cast.players[cast.player_index]["hex_position"], "target_position":target_hex}
 		strike_reactions.merge(await cast.collect_attack_inspiration_decision.call(cast.caster), true)
 		var bonus_dice := CombatAction.true_strike_bonus_damage(cast.caster.level)
 		var strike_advantage := not CombatPerception.can_see_target(m_target, cast.caster, target_hex, cast.players[cast.player_index]["hex_position"], cast.grid)
 		var strike_disadvantage := not CombatPerception.can_see_target(cast.caster, m_target, cast.players[cast.player_index]["hex_position"], target_hex, cast.grid)
-		if CombatAction.is_invisible(m_target) and not CombatAction.can_perceive_invisible(cast.caster, strike_distance * 5):
-			strike_disadvantage = true
-		if CombatAction.is_invisible(cast.caster) and not CombatAction.can_perceive_invisible(m_target, strike_distance * 5):
-			strike_advantage = true
-		if cast.caster.has_condition("hidden"):
-			strike_advantage = true
-			cast.caster.remove_condition("hidden")
 		var strike_additional_damage := {"formula": bonus_dice, "type": "radiant", "label": "True Strike Radiant"} if not bonus_dice.is_empty() else {}
 		var fey_damage_packet := await SpellZoneConjurations._conjure_minor_elementals_damage_choice(cast.areas, cast.caster, m_target)
 		if not fey_damage_packet.is_empty():
@@ -507,7 +494,7 @@ static func _finish_spell_cast(cast: SpellCastContext) -> void:
 	CastInterruptionRules.settle_host(cast)
 	if cast.counterspell_decisions.has("counterspell_saved_by"):
 		cast.hud.add_log("[color=yellow]%s resists Counterspell; the spell continues.[/color]" % str(cast.counterspell_decisions["counterspell_saved_by"]))
-	if not cast.interrupted and cast.incoming_slot_spent and cast.slot_level_used >= 1:
+	if cast.ready_release_token.is_empty() and not cast.interrupted and cast.incoming_slot_spent and cast.slot_level_used >= 1:
 		for ward_ev in WardRules.on_slot_spell_cast(cast.caster, cast.spell, cast.slot_level_used):
 			if cast.hud != null and not str(ward_ev.get("message", "")).is_empty():
 				cast.hud.add_log("[color=cyan]%s[/color]" % str(ward_ev["message"]))

@@ -4,6 +4,7 @@
   "description": "Ranger class. 2024 SRD 5.2.1 progression; spell options remain curated.",
   "hit_die": "d10",
   "primary_ability": "DEX",
+  "multiclass_prerequisite": {"all": ["DEX", "WIS"]},
   "saving_throw_proficiencies": [
     "STR",
     "DEX"

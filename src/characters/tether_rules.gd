@@ -282,7 +282,8 @@ static func binding(victim, captors: Array) -> Array:
 
 ## Escape one exact tether with the victim's best declared check; other restraints remain.
 ## The selection names an exact relation; omission is allowed only when unambiguous.
-static func escape(victim, captors: Array, roll: int = 0, source: String = "") -> Dictionary:
+static func escape(victim, captors: Array, roll: int = 0, source: String = "", authored_context: Dictionary = {}) -> Dictionary:
+	if CombatAction.is_incapacitated(victim): return {"attempted":false, "success":false, "message":"An incapacitated creature cannot escape."}
 	var bound := binding(victim, captors)
 	if not source.is_empty(): bound = bound.filter(func(b): return str(b.relation) == source)
 	elif bound.size() > 1: return {"attempted": false, "message": "Choose the exact tether to escape."}
@@ -292,25 +293,27 @@ static func escape(victim, captors: Array, roll: int = 0, source: String = "") -
 	var used := ""
 	for ability in entry.tether.escape:
 		var mod := 0
-		if victim is Character: mod = victim.ability_scores.get_ability_modifier(str(ability))
+		if victim is Character:
+			mod = victim.get_skill_check_modifier(ESCAPES[ability], victim.get_skill_check_ability(str(ability), ESCAPES[ability], false))
 		else:
-			mod = AbilityScores.get_modifier(int(victim.get("ability_scores", {}).get(str(ability), 10)))
-			var skills: Variant = victim.get("skills", {})
-			if skills is Dictionary: mod = int(skills.get(ESCAPES[ability], mod))
+			mod = EventResolver.monster_ability_check_modifier(victim, str(ability), ESCAPES[ability])
 		if mod > best:
 			best = mod
 			used = str(ability)
 	var dc := int(entry.tether.dc)
 	var total := 0
+	var check: Dictionary
 	if victim is Character:
-		var check := EventResolver.resolve_skill_check(victim, {"ability": used, "skill": ESCAPES[used], "dc": dc, "use_primal_knowledge": false})
+		check = EventResolver.resolve_skill_check(victim, {"ability": used, "skill": ESCAPES[used], "dc": dc, "use_primal_knowledge": false}, {}, authored_context)
 		total = int(check.get("total", 0))
-	else: total = (roll if roll > 0 else Dice.roll(20)) + best
+	else:
+		check = EventResolver.resolve_monster_ability_check(victim, used, ESCAPES[used], dc, roll, {}, authored_context)
+		total = int(check.get("total", 0))
 	var freed := total >= dc
 	if freed:
 		if entry.has("object"): _release_object_anchor(entry.object, entry.relation, victim)
 		else: _release(entry.captor, entry.relation, victim)
-	return {"attempted": true, "success": freed, "total": total, "dc": dc, "ability": used, "source_id": entry.source, "relation_id": entry.relation, "message": "%s %s the tether with %s (%s) (%d vs DC %d)." % [_name(victim), "breaks free of" if freed else "fails to escape", used, ESCAPES[used], total, dc]}
+	return {"attempted": true, "success": freed, "check": check, "total": total, "dc": dc, "ability": used, "source_id": entry.source, "relation_id": entry.relation, "message": "%s %s the tether with %s (%s) (%d vs DC %d)." % [_name(victim), "breaks free of" if freed else "fails to escape", used, ESCAPES[used], total, dc]}
 
 ## S-169: the exact tether another creature may free the victim from, by mode.
 static func _rescuable(rescuer, victim, captors: Array, mode: String, source: String) -> Array:
@@ -323,7 +326,7 @@ static func _rescuable(rescuer, victim, captors: Array, mode: String, source: St
 static func rescue_error(rescuer, victim, captors: Array, mode: String, source: String = "") -> String:
 	if mode not in ["check", "strike"]: return "Choose to pull free or to cut the tether."
 	if rescuer == null or victim == null or victim_id(rescuer) == victim_id(victim): return "Choose another creature to free."
-	if rescuer is Character and not rescuer.is_alive or rescuer is Dictionary and not bool(rescuer.get("is_alive", true)): return "An incapacitated creature cannot help."
+	if CombatAction.is_incapacitated(rescuer) or (rescuer is Character and not rescuer.is_alive) or (rescuer is Dictionary and not bool(rescuer.get("is_alive", true))): return "An incapacitated creature cannot help."
 	if binding(victim, captors).is_empty(): return "Nothing tethers them."
 	if source.is_empty() and _rescuable(rescuer, victim, captors, mode, source).size() > 1: return "Choose the exact tether to rescue."
 	if _rescuable(rescuer, victim, captors, mode, source).is_empty(): return "That tether cannot be cut." if mode == "strike" else "That tether cannot be pulled free from outside."
@@ -345,7 +348,7 @@ static func _strike_formula(rescuer) -> Dictionary:
 ## Route a rescue to the exact tether: "check" pulls it free with the rescuer's best
 ## declared ability; "strike" deals the rescuer's melee damage to the tether's own hp.
 ## Only that tether ends; other restraints and tethers on the victim stay.
-static func rescue(rescuer, victim, captors: Array, mode: String, source: String = "", roll: int = 0) -> Dictionary:
+static func rescue(rescuer, victim, captors: Array, mode: String, source: String = "", roll: int = 0, authored_context: Dictionary = {}) -> Dictionary:
 	var error := rescue_error(rescuer, victim, captors, mode, source)
 	if not error.is_empty(): return {"success": false, "attempted": false, "message": error}
 	var entry: Dictionary = _rescuable(rescuer, victim, captors, mode, source)[0]
@@ -365,23 +368,22 @@ static func rescue(rescuer, victim, captors: Array, mode: String, source: String
 	var used := ""
 	for ability in _effect(DataLoader.get_spell(str(entry.tether.spell_id))).rescue:
 		var mod := 0
-		if rescuer is Character: mod = rescuer.ability_scores.get_ability_modifier(str(ability))
+		if rescuer is Character:
+			mod = rescuer.get_skill_check_modifier(ESCAPES[ability], rescuer.get_skill_check_ability(str(ability), ESCAPES[ability], false))
 		else:
-			mod = AbilityScores.get_modifier(int(rescuer.get("ability_scores", {}).get(str(ability), 10)))
-			var skills: Variant = rescuer.get("skills", {})
-			if skills is Dictionary: mod = int(skills.get(ESCAPES[ability], mod))
+			mod = EventResolver.monster_ability_check_modifier(rescuer, str(ability), ESCAPES[ability])
 		if mod > best:
 			best = mod
 			used = str(ability)
 	var dc := int(entry.tether.dc)
 	var total := 0
-	if rescuer is Character: total = int(EventResolver.resolve_skill_check(rescuer, {"ability": used, "skill": ESCAPES[used], "dc": dc, "use_primal_knowledge": false}).get("total", 0))
-	else: total = (roll if roll > 0 else Dice.roll(20)) + best
+	var check := EventResolver.resolve_skill_check(rescuer, {"ability": used, "skill": ESCAPES[used], "dc": dc, "use_primal_knowledge": false}, {}, authored_context) if rescuer is Character else EventResolver.resolve_monster_ability_check(rescuer, used, ESCAPES[used], dc, roll, {}, authored_context)
+	total = int(check.get("total", 0))
 	var freed := total >= dc
 	if freed:
 		if entry.has("object"): _release_object_anchor(entry.object, src, victim)
 		else: _release(captor, src, victim)
-	return {"success": freed, "attempted": true, "seconds": 6, "total": total, "dc": dc, "ability": used, "source_id": entry.source, "relation_id": src, "message": "%s %s %s from the tether with %s (%s) (%d vs DC %d)." % [_name(rescuer), "pulls" if freed else "fails to pull", _name(victim), used, ESCAPES[used], total, dc]}
+	return {"success": freed, "attempted": true, "check": check, "seconds": 6, "total": total, "dc": dc, "ability": used, "source_id": entry.source, "relation_id": src, "message": "%s %s %s from the tether with %s (%s) (%d vs DC %d)." % [_name(rescuer), "pulls" if freed else "fails to pull", _name(victim), used, ESCAPES[used], total, dc]}
 
 static func _name(target) -> String:
 	return target.character_name if target is Character else str(target.get("name", "The creature"))

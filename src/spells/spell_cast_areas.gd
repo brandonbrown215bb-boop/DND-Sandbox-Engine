@@ -19,7 +19,7 @@ static func _create_spell_cast_areas(cast: SpellCastContext) -> void:
 		cast.successful = true
 	if str(cast.spell.get("id", "")) == "black_tentacles" and not cast.interrupted:
 		cast.successful = true
-	SpellEffects.reconcile(cast.players.map(func(player): return player.get("character")).filter(func(caster): return caster != null), cast.areas._spell_effect_targets())
+	SpellEffects.reconcile(SpellEncounterLifecycle._casters(cast), cast.areas._spell_effect_targets())
 	if str(cast.spell.get("id", "")) == "grease" and cast.successful:
 		SpellZoneTerrain._create_grease_zone(cast.areas, cast.caster, cast.target_coord)
 	if str(cast.spell.get("id", "")) == "spike_growth" and cast.successful:

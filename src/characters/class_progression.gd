@@ -49,6 +49,10 @@ static func saved_creation_error(dto: Dictionary) -> String:
 		return "Creation choices are not an object"
 	if choices.is_empty():
 		return ""
+	# Generation is recorded for every class; native skill/equipment choices
+	# remain optional in saves that only acquired the generation receipt.
+	if choices.size() == 1 and choices.has("ability_generation") and str(dto.get("class_id", "")) not in ["bard", "cleric"]:
+		return ""
 	var error := creation_choices_error(str(dto.get("class_id", "")), str(dto.get("race_id", "")), choices)
 	if not error.is_empty():
 		return error
@@ -971,6 +975,8 @@ static func restore_legacy_choices(c: Character, dto: Dictionary) -> void:
 		c.feature_choices[ids[index]] = []
 
 static func saved_choices_error(dto: Dictionary) -> String:
+	var ability_generation_error := AbilityScores.saved_generation_error(dto)
+	if not ability_generation_error.is_empty(): return ability_generation_error
 	var feat_error := FeatRules.saved_error(dto) # Batch 051: origin and level-up feats.
 	if not feat_error.is_empty():
 		return feat_error

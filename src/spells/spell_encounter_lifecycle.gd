@@ -116,7 +116,7 @@ static func _resolve_condition_spell_repeat_saves(cast: SpellCastContext, target
 				cast.hud.add_log("%s fails the second Wisdom save against Sleep (%d vs DC %d) and becomes Unconscious." % [target_name, int(result["total"]), int(result["save_dc"])])
 			else:
 				cast.hud.add_log("%s %s the repeat save against %s (%d vs DC %d)." % [target_name, "succeeds on" if result["saved"] else "fails", str(result["spell_id"]), int(result["total"]), int(result["save_dc"])])
-	SpellEffects.reconcile(cast.players.map(func(player): return player.get("character")).filter(func(caster): return caster != null), cast.areas._spell_effect_targets())
+	SpellEffects.reconcile(_casters(cast), cast.areas._spell_effect_targets())
 
 
 static func _end_concentration(cast: SpellCastContext, caster: Character) -> void:
@@ -211,7 +211,7 @@ static func _end_resilient_sphere_for_target(cast: SpellCastContext, target) -> 
 
 static func _check_concentration_save(cast: SpellCastContext, character: Character, damage_taken: int) -> void:
 	if damage_taken <= 0 or character == null or character.concentrating_on.is_empty(): return
-	if not character.is_alive or character.current_hp <= 0 or character.has_condition("incapacitated") or character.has_condition("unconscious"):
+	if not character.is_alive or character.current_hp <= 0 or CombatAction.is_incapacitated(character):
 		SpellEncounterLifecycle._end_concentration(cast, character)
 		return
 	var concentration_spell_id := str(character.concentrating_on.get("spell_id", ""))
@@ -354,7 +354,7 @@ static func _try_shake_sleeping_creature(cast: SpellCastContext, coord: Vector2i
 	if sleep_source.is_empty():
 		return false
 	SpellEffects.remove(target, sleep_source)
-	SpellEffects.reconcile(cast.players.map(func(player): return player.get("character")).filter(func(caster): return caster != null), cast.areas._spell_effect_targets())
+	SpellEffects.reconcile(_casters(cast), cast.areas._spell_effect_targets())
 	cast.spend_action_cost.call("action")
 	cast.hud.add_log("%s uses an action to shake %s awake, ending Sleep." % [cast.caster.character_name, target.character_name if target is Character else str(target.get("name", "the creature"))])
 	cast.hud.update_hud(cast.caster, cast.tracker)
@@ -409,3 +409,6 @@ static func _resolve_hold_monster_repeat_save(cast: SpellCastContext, target) ->
 				SpellEncounterLifecycle._end_concentration(cast, caster)
 		else:
 			cast.hud.add_log("[color=purple]%s fails its Wisdom save and remains Paralyzed by Hold Monster (%d vs DC %d).[/color]" % [target_name, int(repeat_save.get("total", 0)), int(repeat_save.get("save_dc", 0))])
+
+static func _casters(cast: SpellCastContext) -> Array:
+	return cast.spell_casters if not cast.spell_casters.is_empty() else cast.players.map(func(player): return player.get("character")).filter(func(caster): return caster != null)

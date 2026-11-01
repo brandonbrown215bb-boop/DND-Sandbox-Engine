@@ -432,6 +432,7 @@ static func _weapon_attack_numeric_bonus(check: Callable) -> void:
 	primal_restored.from_dict(JSON.parse_string(JSON.stringify(primal_saved)))
 	check.call(primal_restored.feature_choices == primal_barbarian.feature_choices and "Survival" in primal_restored.skill_proficiencies and "Nature" in primal_restored.skill_proficiencies, "Primal Knowledge choices and proficiencies survive save reconstruction")
 	var brutal_barbarian := _character("barbarian", 17)
+	brutal_barbarian.ability_scores.strength = 16 # Qualify for the Heavy greataxe used by this Brutal Strike check.
 	CombatAction.advance_combat_turn(brutal_barbarian)
 	brutal_barbarian.add_condition("reckless_attack", 2)
 	var brutal_target := {"id": "brutal-target", "name": "Brutal Target", "size": "medium", "current_hp": 500, "speed": 6, "armor_class": -100, "is_alive": true, "ability_scores": {"STR": 10, "DEX": 10, "CON": 10}}
@@ -449,6 +450,7 @@ static func _weapon_attack_numeric_bonus(check: Callable) -> void:
 	check.call(brutal_target["speed"] == 6 and not brutal_target.has("barbarian_no_opportunity_owner"), "Barbarian turn boundary restores Hamstring speed and ends Staggering restrictions")
 	var improved_target := {"id": "stagger-target", "name": "Stagger Target", "current_hp": 500, "speed": 6, "armor_class": -100, "is_alive": true, "ability_scores": {"STR": 10, "DEX": 10, "CON": 10}}
 	var improved_barbarian := _character("barbarian", 13)
+	improved_barbarian.ability_scores.strength = 16
 	CombatAction.advance_combat_turn(improved_barbarian)
 	improved_barbarian.add_condition("reckless_attack", 2)
 	var stagger_result := CombatAction.resolve_weapon_attack(improved_barbarian, improved_target, DataLoader.get_item("greataxe"), false, false, {"barbarian_brutal_strike_effects": ["staggering"]})

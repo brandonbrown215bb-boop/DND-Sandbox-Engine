@@ -4,6 +4,10 @@
 class_name Character
 extends RefCounted
 
+## Encounter owner installs this transient hook so gaining Incapacitated can
+## clean scene-owned concentration state without storing scene objects in saves.
+var condition_consequence_handler: Callable
+
 static func saved_campaign_modifier_error(data: Dictionary, campaign_seconds: int) -> String:
 	var modifiers: Variant = data.get("modifiers", [])
 	if not modifiers is Array:
@@ -366,6 +370,10 @@ var timed_temporary_hp_current_grant_id: String = ""
 var healing_suppression_sources: Dictionary = {}
 ## Transient combat-only command imposed by the Command spell.
 var combat_command: Dictionary = {}
+## Encounter-only Hide check; never a saved discovery permission.
+var combat_hide_dc: int = 0
+## Encounter-local pending assistance. No references enter the save DTO.
+var combat_check_help: Array = []
 ## Skill selected for the transient Guidance spell effect.
 var guidance_skill: String = ""
 var resistance_damage_type: String = ""
@@ -538,7 +546,7 @@ var pact_weapon_damage_type: String = ""
 
 ## Effective movement speed after timed modifiers.
 func get_speed(ignore_restrained: bool = false) -> int:
-	if has_condition("resilient_sphere") or has_condition("paralyzed") or (has_condition("restrained") and not ignore_restrained) or has_condition("stunned") or has_condition("power_word_stun_speed_zero"):
+	if CombatAction.is_speed_zero(self, ignore_restrained):
 		return 0
 	if DruidRules.is_shaped(self):
 		var form := DruidRules.current_form(self)
@@ -1206,6 +1214,11 @@ func initialize(p_name: String, p_race_id: String, p_class_id: String, scores: A
 	_recalculate_ac()
 
 
+## Award XP and expose newly reached class-level thresholds to the existing picker.
+func award_xp(amount: int) -> Dictionary:
+	return PermanentProgressionRules.award_xp(self, amount)
+
+
 ## Level up this character (milestone-based).
 func level_up() -> void:
 	if PermanentProgressionRules.enabled(class_id):
@@ -1654,6 +1667,8 @@ func take_damage(amount: int, accepted_relentless_rage_inspiration: bool = false
 			CorpseRules.mark_dead(self, "massive_damage" if hp_damage >= hp_before_damage + max_hp else "death_saves")
 	if current_hp <= 0 and not is_alive and has_meta("created_source_id"):
 		CreatedActorRules.end_actor(self, "death", damage_facts.get("decisions", {}).get("_damage_cause", {}) if damage_facts.get("decisions", {}) is Dictionary else {})
+	if is_downed():
+		_apply_condition_consequences()
 
 	return hp_damage
 
@@ -1663,6 +1678,7 @@ func take_damage(amount: int, accepted_relentless_rage_inspiration: bool = false
 func resist_damage(amount: int, damage_type: String) -> int:
 	if amount <= 0:
 		return 0
+	var petrified_resistance := has_condition("petrified")
 	var raging_resistance := has_condition("raging") and damage_type in ["bludgeoning", "piercing", "slashing"]
 	var superior_resistance := has_condition("superior_defense") and damage_type != "force"
 	var fiend_resistance := has_feature("fiend_fiendish_resilience") and damage_type != "force" and (fiendish_resilience_type == damage_type or (fiendish_resilience_type.is_empty() and damage_type == "fire"))
@@ -1670,7 +1686,7 @@ func resist_damage(amount: int, damage_type: String) -> int:
 	var poison_spell_resistance := has_condition("protection_from_poison") and damage_type == "poison"
 	var aura_of_life_resistance := damage_type == "necrotic" and not aura_of_life_sources.is_empty()
 	var custom_resistance: bool = (feature_uses.get("damage_resistances", []) is Array) and (damage_type in (feature_uses.get("damage_resistances", []) as Array))
-	return int(floor(float(amount) / 2.0)) if raging_resistance or superior_resistance or fiend_resistance or spell_resistance or poison_spell_resistance or aura_of_life_resistance or custom_resistance else amount
+	return int(floor(float(amount) / 2.0)) if petrified_resistance or raging_resistance or superior_resistance or fiend_resistance or spell_resistance or poison_spell_resistance or aura_of_life_resistance or custom_resistance else amount
 
 
 ## Heal HP.
@@ -1681,6 +1697,8 @@ func heal(amount: int) -> int:
 	current_hp += actual
 	if current_hp > 0:
 		is_alive = true
+		# Zero-HP unconsciousness is derived by has_condition. Explicit grants
+		# (such as Sleep) retain their own ending rules when HP is restored.
 	if current_hp > 0:
 		death_save_successes = 0
 		death_save_failures = 0
@@ -1728,20 +1746,45 @@ func make_saving_throw(ability: String, advantage: bool = false, disadvantage: b
 ## Return the d20 and non-d20 modifiers so a failed D20 Test can be replaced
 ## without losing proficiency, bonuses, or feature floors.
 func make_saving_throw_result(ability: String, advantage: bool = false, disadvantage: bool = false, decisions: Dictionary = {}) -> Dictionary:
+	var base_mod := ability_scores.get_ability_modifier(ability)
+	if is_proficient_in_save(ability):
+		base_mod += proficiency_bonus
+	base_mod += AuraRules.saving_throw_bonus(self)
+	base_mod += TemporaryHPRules.bonus(self, "save_bonus") + AuraProtectionRules.bonus(self, "save_bonus")
+	base_mod += inventory.magic_item_saving_bonus(character_id)
+	base_mod += get_modifier("roll", "save")
+	base_mod += get_modifier("roll", "save:%s" % ability.to_upper())
+	base_mod -= exhaustion_level * 2
+	if CombatAction.save_auto_fails(self, ability):
+		return {
+			"natural": 1,
+			"natural_roll": 1,
+			"rolls": [1],
+			"kept": [true],
+			"roll_mode": "auto_fail",
+			"roll_details": {"total": 1, "rolls": [1], "kept": [true], "auto_failed": true},
+			"modifier": base_mod,
+			"base_modifier": base_mod,
+			"check_bonus_dice": [],
+			"bane_penalty": 0,
+			"raw_total": -99,
+			"total": -99,
+			"auto_failed": true,
+			"automatically_fails": true,
+			"success": false,
+			"ability": ability.to_upper(),
+			"floor_applied": false,
+			"roll_token_replaced": false,
+			"replaced_by_roll_token": false,
+		}
 	advantage = advantage or _has_saving_throw_advantage(ability)
-	if ability.to_upper() == "STR" and has_condition("ray_of_enfeeblement"):
-		disadvantage = true
+	disadvantage = disadvantage or CombatAction.save_has_disadvantage(self, ability)
 	if ability.to_upper() == "CON" and not concentrating_on.is_empty() and WarlockRules.has_invocation(self, "eldritch_mind"):
 		advantage = true
 	var d20_details: Dictionary = RollTokenRules.resolve_d20_test(self, "save", advantage, disadvantage, decisions)
 	var roll := int(d20_details.get("total", 1))
 
-	var mod := ability_scores.get_ability_modifier(ability)
-	if is_proficient_in_save(ability):
-		mod += proficiency_bonus
-	mod += AuraRules.saving_throw_bonus(self)
-	mod += TemporaryHPRules.bonus(self, "save_bonus") + AuraProtectionRules.bonus(self, "save_bonus")
-	mod += inventory.magic_item_saving_bonus(character_id)
+	var mod := base_mod
 	var captured_bonus_dice: Array[Dictionary] = []
 	if has_condition("blessed"):
 		var bless_details := Dice.roll_single_details(4, self)
@@ -1753,9 +1796,6 @@ func make_saving_throw_result(ability: String, advantage: bool = false, disadvan
 	if bane_penalty > 0:
 		captured_bonus_dice.append({"source": "bane", "sides": 4, "value": bane_penalty, "sign": -1, "included_in_modifier": false, "applied_before_total_floor": false, "roll": bane_details.duplicate(true)})
 	mod -= bane_penalty
-	mod += get_modifier("roll", "save")
-	mod += get_modifier("roll", "save:%s" % ability.to_upper())
-	mod -= exhaustion_level * 2
 	var captured_bonus_modifier := 0
 	for bonus_die in captured_bonus_dice:
 		captured_bonus_modifier += int(bonus_die.get("value", 0)) * int(bonus_die.get("sign", 1))
@@ -1791,6 +1831,7 @@ func make_saving_throw_result(ability: String, advantage: bool = false, disadvan
 
 
 func _has_saving_throw_advantage(ability: String) -> bool:
+	if CombatAction.save_has_advantage(self, ability): return true
 	if ability.to_upper() == "WIS" and SpellEffects.has_spell(self, "beacon_of_hope"):
 		return true
 	if ability.to_upper() == "STR" and bool(feature_uses.get("conjure_animals_strength_advantage", false)):
@@ -1833,10 +1874,8 @@ func get_attack_style_bonus(weapon_data: Dictionary = {}) -> int:
 
 ## Make an attack roll. Returns {"roll": int, "is_crit": bool, "is_miss": bool}.
 func make_attack_roll(ability: String = "STR", advantage: bool = false, disadvantage: bool = false, weapon_data: Dictionary = {}, decisions: Dictionary = {}) -> Dictionary:
-	if has_condition("blinded") or has_condition("poisoned") or (ability.to_upper() == "STR" and has_condition("ray_of_enfeeblement")):
-		disadvantage = true
 	var mockery_disadvantage := has_condition("vicious_mockery_disadvantage")
-	if mockery_disadvantage:
+	if CombatAction.attacker_has_condition_disadvantage(self, ability, decisions):
 		disadvantage = true
 
 	var d20_details := RollTokenRules.resolve_d20_test(self, "attack", advantage, disadvantage, decisions)
@@ -2078,6 +2117,10 @@ func long_rest() -> void:
 	current_hp = max_hp
 	is_alive = true
 	temp_hp = 0
+	conditions.erase("prone")
+	conditions.erase("unconscious")
+	condition_sources.erase("prone")
+	condition_sources.erase("unconscious")
 	modifiers.clear()
 
 
@@ -2154,6 +2197,9 @@ func _sync_sorcery_points(level_up_resource: bool = false) -> void:
 		feature_uses["sorcery_points"] = maximum
 
 
+## Transient Hide generation; discovery receipts never survive another Hide.
+var concealment_revision := 0
+
 ## Add a condition with a duration (in turns).
 func add_condition(condition_name: String, duration: int, source: String = "") -> void:
 	if CombatAction.is_immune_to_condition(self, condition_name):
@@ -2162,16 +2208,17 @@ func add_condition(condition_name: String, duration: int, source: String = "") -
 		return
 	if condition_name.is_empty():
 		return
-	var requested_duration := maxi(1, duration)
+	if condition_name == "hidden": concealment_revision += 1
+	var requested_duration := -1 if duration == -1 else maxi(1, duration)
 	var remaining_duration := int(conditions.get(condition_name, 0))
 	# Reapplying an effect must not make an existing condition expire sooner.
-	conditions[condition_name] = maxi(remaining_duration, requested_duration)
+	conditions[condition_name] = -1 if requested_duration == -1 or remaining_duration == -1 else maxi(remaining_duration, requested_duration)
 	if not source.is_empty() or condition_sources.has(condition_name):
 		var grants: Dictionary = condition_sources.get(condition_name, {})
 		if grants.is_empty() and remaining_duration > 0:
 			grants["ordinary"] = remaining_duration
 		var source_id := source if not source.is_empty() else "ordinary"
-		grants[source_id] = maxi(int(grants.get(source_id, 0)), requested_duration)
+		grants[source_id] = -1 if requested_duration == -1 or int(grants.get(source_id, 0)) == -1 else maxi(int(grants.get(source_id, 0)), requested_duration)
 		condition_sources[condition_name] = grants
 		conditions[condition_name] = int(grants.values().max())
 	if condition_name in ["incapacitated", "unconscious", "paralyzed", "petrified", "stunned"]:
@@ -2179,10 +2226,25 @@ func add_condition(condition_name: String, duration: int, source: String = "") -
 		DruidRules.revert_for_incapacitation(self)
 		if has_condition("raging") and (not has_feature("barbarian_persistent_rage") or condition_name == "unconscious"):
 			end_rage()
+	_apply_condition_consequences()
+
+
+func _apply_condition_consequences() -> void:
+	CombatAction.end_invalid_dodge(self)
+	if CombatAction.is_incapacitated(self):
+		if condition_consequence_handler.is_valid():
+			condition_consequence_handler.call(self, "incapacitated")
+		elif not concentrating_on.is_empty():
+			# Outside encounters the source owner also clears saved room areas.
+			SpellEffects.end_concentration(self, PartyManager.characters.values())
+	if has_condition("unconscious") and condition_consequence_handler.is_valid():
+		condition_consequence_handler.call(self, "unconscious")
 
 
 ## Remove a condition.
 func remove_condition(condition_name: String) -> void:
+	if condition_name != "dodging": CombatAction.end_invalid_dodge(self)
+	if condition_name == "hidden": combat_hide_dc = 0
 	if condition_name == "exhaustion":
 		return
 	var had_condition := conditions.has(condition_name)
@@ -2239,6 +2301,7 @@ func add_modifier(kind: String, key: String, amount: int, duration: int) -> void
 		"amount": amount,
 		"remaining_turns": maxi(1, duration),
 	})
+	CombatAction.end_invalid_dodge(self)
 
 
 ## Add a source-owned numeric modifier that expires on the campaign clock.
@@ -2524,6 +2587,7 @@ func get_modifier(kind: String, key: String) -> int:
 
 ## Reduce timed numeric modifiers by one turn and remove expired entries.
 func tick_modifiers() -> void:
+	CombatAction.end_invalid_dodge(self)
 	var remaining: Array[Dictionary] = []
 	for modifier in modifiers:
 		var next := modifier.duplicate(true)
@@ -2549,6 +2613,8 @@ func is_downed() -> bool:
 func has_condition(condition_name: String) -> bool:
 	if condition_name == "incapacitated" and current_hp <= 0: return true
 	if condition_name == "unconscious" and is_downed(): return true
+	if condition_name == "prone" and (is_downed() or ("unconscious" in conditions and not AuraRules.suppresses_condition(self, "unconscious"))) and not CombatAction.is_immune_to_condition(self, "prone"):
+		return not AuraRules.suppresses_condition(self, "prone")
 	if condition_name == "exhaustion":
 		return exhaustion_level > 0 and not AuraRules.suppresses_condition(self, condition_name)
 	return condition_name in conditions and not AuraRules.suppresses_condition(self, condition_name)
@@ -2769,6 +2835,14 @@ func from_dict(data: Dictionary) -> void:
 	skill_proficiencies.clear()
 	tool_proficiencies.assign(data.get("tool_proficiencies", []))
 	creation_choices = data.get("creation_choices", {}).duplicate(true)
+	if creation_choices.has("ability_generation") and AbilityScores.saved_generation_error(data).is_empty():
+		# JSON numbers arrive as floats. Restore the recorded integers without
+		# rerolling, keeping creation choices equal across disk round-trips.
+		var generation: Dictionary = creation_choices["ability_generation"]
+		generation["seed"] = int(generation["seed"])
+		var generated_results: Array = []
+		for score in generation["results"]: generated_results.append(int(score))
+		generation["results"] = generated_results
 	origin_feat = str(data.get("origin_feat", "")) if data.get("origin_feat", "") is String and FeatRules.saved_error(data).is_empty() else ""
 	for val in data.get("skill_proficiencies", []):
 		skill_proficiencies.append(str(val))
@@ -2996,7 +3070,7 @@ func saving_throw_test_to_dc(ability: String, dc: int, advantage: bool = false, 
 	last_save_note = ""
 	var result := make_saving_throw_result(ability, advantage, disadvantage, decisions)
 	var total := int(result.get("total", 0))
-	if total < dc and has_feature("fighter_indomitable") and fighter_training.get("auto_indomitable", true) and use_feature("fighter_indomitable"):
+	if not bool(result.get("auto_failed", false)) and total < dc and has_feature("fighter_indomitable") and fighter_training.get("auto_indomitable", true) and use_feature("fighter_indomitable"):
 		var initial_replaced := bool(result.get("roll_token_replaced", false))
 		var initial_token_id := str(result.get("roll_token_id", ""))
 		result = make_saving_throw_result(ability, advantage, disadvantage)
@@ -3009,7 +3083,7 @@ func saving_throw_test_to_dc(ability: String, dc: int, advantage: bool = false, 
 			result["initial_roll_token_id"] = initial_token_id
 		total = int(result["total"])
 		last_save_note = "Indomitable reroll +%d: %d vs DC %d." % [level, total, dc]
-	if total < dc and has_feature("monk_disciplined_survivor") and spend_focus_points(1):
+	if not bool(result.get("auto_failed", false)) and total < dc and has_feature("monk_disciplined_survivor") and spend_focus_points(1):
 		var initial_replaced := bool(result.get("roll_token_replaced", false))
 		var initial_token_id := str(result.get("roll_token_id", ""))
 		result = make_saving_throw_result(ability, advantage, disadvantage)
@@ -3020,7 +3094,7 @@ func saving_throw_test_to_dc(ability: String, dc: int, advantage: bool = false, 
 			result["initial_roll_token_id"] = initial_token_id
 	result["total"] = total
 	result["dc"] = dc
-	result["success"] = total >= dc
+	result["success"] = not bool(result.get("auto_failed", false)) and total >= dc
 	return result
 
 

@@ -2,6 +2,11 @@
 class_name SpellAttackResolver
 extends RefCounted
 
+static func _attack_distance_hexes(cast: SpellResolutionContext) -> int:
+	var spell_attack_distance := maxi(0, cast.distance_feet)
+	return maxi(1, int(ceil(float(spell_attack_distance) / 5.0))) if cast.distance_feet >= 0 else int(cast.spell.get("range", 1))
+
+
 static func resolve(cast: SpellResolutionContext) -> Dictionary:
 	# Standard spell attack roll
 	var tracks_resolution_windows := SharedSpell.uses(cast.spell)
@@ -10,27 +15,23 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 		SpellDamageRolls.record_resolution_window(cast, "before_roll")
 	var spell_stat := SpellPermissionRules.selected_ability(cast.spell, cast.caster.get_spellcasting_ability())
 	var spell_attack_distance := maxi(0, cast.distance_feet)
-	var fog_obscures_attack := CombatAction.has_condition(cast.caster, "fog_cloud_obscured") or CombatAction.has_condition(cast.target, "fog_cloud_obscured") or CombatAction.has_condition(cast.caster, "darkness_obscured") or CombatAction.has_condition(cast.target, "darkness_obscured")
-	var spell_attack_advantage := FighterRules.attack_advantage(cast.caster, cast.target) or CombatAction.has_condition(cast.target, "restrained") or SpellEffects.has_spell(cast.target, "faerie_fire") or fog_obscures_attack or cast.caster.has_condition("innate_sorcery") or CombatAction.is_unconscious(cast.target) or CombatAction.is_paralyzed(cast.target)
+	var spell_attack_hexes := _attack_distance_hexes(cast)
+	var perception := CombatPerception.attack_visibility(cast.caster, cast.target, spell_attack_distance, cast.decisions)
+	cast.decisions["perception_handles_blindness"] = true
+	var spell_attack_advantage := FighterRules.attack_advantage(cast.caster, cast.target) or CombatAction.attack_target_grants_advantage(cast.target, spell_attack_hexes, true) or SpellEffects.has_spell(cast.target, "faerie_fire") or cast.caster.has_condition("innate_sorcery") or bool(perception.advantage)
 	spell_attack_advantage = spell_attack_advantage or CombatAction.has_condition(cast.target, "reckless_attack")
-	spell_attack_advantage = spell_attack_advantage or (CombatAction.is_invisible(cast.caster) and not CombatAction.can_perceive_invisible(cast.target, spell_attack_distance))
-	var spell_attack_disadvantage := (CombatAction.is_invisible(cast.target) and not CombatAction.can_perceive_invisible(cast.caster, spell_attack_distance)) or (SpellEffects.has_spell(cast.target, "blur") and not CombatAction.can_perceive_blur(cast.caster, spell_attack_distance)) or fog_obscures_attack or cast.caster.has_condition("restrained")
-	var visibility: Dictionary = cast.decisions.get("spell_visibility", {})
-	var grid: HexGrid = visibility.get("grid")
-	if grid != null:
-		var origin: Vector2i = visibility["caster_position"]
-		var target_position: Vector2i = visibility["target_position"]
-		spell_attack_disadvantage = spell_attack_disadvantage or not CombatPerception.can_see_target(cast.caster, cast.target, origin, target_position, grid)
-		if not (cast.target is Dictionary and bool(cast.target.get("is_object", false))):
-			spell_attack_advantage = spell_attack_advantage or not CombatPerception.can_see_target(cast.target, cast.caster, target_position, origin, grid)
+	var spell_attack_disadvantage := bool(perception.disadvantage) or (SpellEffects.has_spell(cast.target, "blur") and not CombatAction.can_perceive_blur(cast.caster, spell_attack_distance)) or CombatAction.attack_target_imposes_disadvantage(cast.target, spell_attack_hexes, bool(perception.target_sees_attacker)) or CombatAction.attacker_has_condition_disadvantage(cast.caster, spell_stat, cast.decisions)
 	if cast.caster.get_creature_type() in CombatAction.protected_creature_types_for_target(cast.target):
 		spell_attack_disadvantage = true
 	if (cast.target is Character and cast.target.has_condition("guiding_bolt")) or (cast.target is Dictionary and cast.target.get("conditions", {}).has("guiding_bolt")):
 		spell_attack_advantage = true
 		CombatAction.consume_guiding_bolt_advantage(cast.target)
-	var helped_attack := CombatAction.consume_attack_help(cast.target)
+	var helped_attack := CombatAction.consume_attack_help(cast.target, cast.caster)
 	spell_attack_advantage = spell_attack_advantage or helped_attack
+	if cast.target is Character and cast.target.has_feature("rogue_elusive") and not CombatAction.is_incapacitated(cast.target):
+		spell_attack_advantage = false
 	var attack_result := cast.caster.make_attack_roll(spell_stat, spell_attack_advantage, spell_attack_disadvantage, {}, cast.decisions)
+	CombatAction.reveal_hidden_attacker(cast.caster)
 	
 	var target_ac := 10
 	if cast.target is Character:
@@ -47,7 +48,7 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 		var seeking_cost_decisions := {"metamagic:arcane_apotheosis": bool(cast.decisions.get("metamagic:arcane_apotheosis", false))}
 		if SorcererRules.spend_metamagic_cost(cast.caster, 1, seeking_cost_decisions):
 			seeking_spell_used = true
-			attack_result = cast.caster.make_attack_roll(spell_stat, spell_attack_advantage, spell_attack_disadvantage)
+			attack_result = cast.caster.make_attack_roll(spell_stat, spell_attack_advantage, spell_attack_disadvantage, {}, cast.decisions)
 			CombatAction.apply_blade_ward_attack_penalty(cast.target, cast.caster, attack_result)
 			is_crit = bool(attack_result["is_crit"])
 			is_hit = is_crit or (not attack_result["is_miss"] and attack_result["total"] >= target_ac)
@@ -65,7 +66,7 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 	if attack_inspiration.get("used", false):
 		is_hit = bool(attack_inspiration["success"])
 		reaction_msg += str(attack_inspiration.get("message", "")) + "\n"
-	if is_hit and (CombatAction.is_unconscious(cast.target) or CombatAction.is_paralyzed(cast.target)) and int(cast.spell.get("range", 6)) <= 1:
+	if is_hit and (CombatAction.is_unconscious(cast.target) or CombatAction.is_paralyzed(cast.target)) and spell_attack_hexes <= 1:
 		is_crit = true
 		attack_result["is_crit"] = true
 	if tracks_resolution_windows:
@@ -132,6 +133,7 @@ static func resume_numeric_bonus(record: Dictionary, selected: Dictionary) -> Di
 
 static func _finish_attack(cast: SpellResolutionContext, attack_result: Dictionary, original_target_ac: int, spell_attack_advantage: bool, spell_attack_disadvantage: bool, reaction_msg: String, seeking_spell_used: bool, stroke_of_luck_used: bool, selected_bonus: Dictionary) -> Dictionary:
 	var tracks_resolution_windows := SharedSpell.uses(cast.spell)
+	var spell_attack_hexes := _attack_distance_hexes(cast)
 	cast.decisions["_shared_component_id"] = str(cast.spell.get("component_id", "%s:1" % str(cast.spell.get("damage_type", "fire"))))
 	var original_attack_result: Dictionary = attack_result.duplicate(true)
 	var target_ac := original_target_ac
@@ -145,7 +147,7 @@ static func _finish_attack(cast: SpellResolutionContext, attack_result: Dictiona
 	# Settle native reactions from the numeric roll before applying the explicit
 	# outcome. In particular, a forced miss must not consume Peerless Aim.
 	var is_hit: bool = is_crit or (not bool(attack_result.get("is_miss", false)) and int(attack_result.get("total", 0)) >= target_ac)
-	if is_hit and (CombatAction.is_unconscious(cast.target) or CombatAction.is_paralyzed(cast.target)) and int(cast.spell.get("range", 6)) <= 1:
+	if is_hit and (CombatAction.is_unconscious(cast.target) or CombatAction.is_paralyzed(cast.target)) and spell_attack_hexes <= 1:
 		is_crit = true
 		attack_result["is_crit"] = true
 	# Shield can be cast even when the triggering attack is a critical hit;
@@ -168,7 +170,7 @@ static func _finish_attack(cast: SpellResolutionContext, attack_result: Dictiona
 		if not is_hit:
 			is_crit = false
 			attack_result["is_crit"] = false
-		elif (CombatAction.is_unconscious(cast.target) or CombatAction.is_paralyzed(cast.target)) and int(cast.spell.get("range", 6)) <= 1:
+		elif (CombatAction.is_unconscious(cast.target) or CombatAction.is_paralyzed(cast.target)) and spell_attack_hexes <= 1:
 			is_crit = true
 			attack_result["is_crit"] = true
 	var adjustment_operation := str(selected_bonus.get("resolution", ""))
@@ -310,11 +312,11 @@ static func _finish_attack(cast: SpellResolutionContext, attack_result: Dictiona
 	var damage_scale := authored_scale
 
 	# Uncanny Dodge halves the settled roll, including any selected rerolls.
-	if cast.target is Character and cast.target.reaction_available and (cast.target.has_feature("uncanny_dodge") or cast.target.has_feature("rogue_uncanny_dodge")) and CombatAction._reaction_accepted("uncanny_dodge", cast.decisions):
+	if cast.target is Character and cast.target.reaction_available and not CombatAction.is_incapacitated(cast.target) and (cast.target.has_feature("uncanny_dodge") or cast.target.has_feature("rogue_uncanny_dodge")) and CombatAction._reaction_accepted("uncanny_dodge", cast.decisions):
 		cast.target.reaction_available = false
 		damage_scale *= 0.5
 		reaction_msg += "[color=cyan]%s uses Uncanny Dodge as a reaction to halve incoming damage![/color]\n" % cast.target.character_name
-	var attack_critical := bool(attack_result["is_crit"]) or ((CombatAction.is_unconscious(cast.target) or CombatAction.is_paralyzed(cast.target)) and int(cast.spell.get("range", 6)) <= 1)
+	var attack_critical := bool(attack_result["is_crit"]) or ((CombatAction.is_unconscious(cast.target) or CombatAction.is_paralyzed(cast.target)) and spell_attack_hexes <= 1)
 	cast.decisions["damage_result_multiplier"] = cast.spell.get("damage_result_multiplier", {})
 	var attack_damage_packets := CombatAction._roll_attack_damage_packets(cast.caster, cast.spell.get("_conjure_minor_elementals_bonus_packets", []), [attack_critical])
 	cast.decisions["damage_is_critical"] = attack_critical

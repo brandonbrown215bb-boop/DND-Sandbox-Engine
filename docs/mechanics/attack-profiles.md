@@ -1,5 +1,18 @@
 # Attack profiles and weapon damage-type choices
 
+## Weapon range bands and Heavy (S-250)
+
+Weapon definitions may provide `normal_range_feet` and `long_range_feet` as
+positive whole-foot values. The combat attack resolves board distance in feet:
+past normal range it adds Disadvantage; past long range it refuses the attack
+before rolling. Player targeting, stale-target checks, follow-up attacks, True
+Strike targeting and AI use the declared maximum rather than the legacy `range`
+field. Weapons without bands retain `range`/`thrown_range` in hexes. Bands are
+authored data; this slice does not convert the entire weapon catalog.
+`Heavy` weapons impose Disadvantage when the wielder has less than Strength 13
+for melee weapons or Dexterity 13 for ranged weapons. The normal finesse and
+thrown-weapon ability selection still runs independently.
+
 `AttackProfileRules` (`src/combat/attack_profile_rules.gd`) reads `attack_profile`
 features from the actor. S-126 (Batch 035) added scoped replacement of ability,
 damage die and damage type. The first qualifying source's `replace` wins.

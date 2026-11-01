@@ -542,7 +542,8 @@
       "minimum_level": 1,
       "effects": [
         {
-          "type": "blindsight",
+          "type": "darkvision",
+          "magical": true,
           "range_feet": 120
         }
       ]

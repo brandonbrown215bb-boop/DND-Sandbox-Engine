@@ -44,15 +44,24 @@ static func start_bounded_owner_turn_interval(actor: Character) -> void:
 ## Invisibility affects attacks only when the opposing creature cannot perceive
 ## the invisible creature. Occupied hexes remain legal targets in this game;
 ## an unperceived target imposes the normal attack disadvantage.
-static func is_invisible(entity) -> bool:
+static func is_invisible(entity, include_hidden: bool = true) -> bool:
 	if SpellEffects.has_spell(entity, "faerie_fire"):
 		return false
 	if entity is Character:
-		return entity.has_condition("invisible") and not entity.has_condition("starry_wisp")
+		return (entity.has_condition("invisible") or (include_hidden and entity.has_condition("hidden"))) and not entity.has_condition("starry_wisp")
 	if entity is Dictionary:
 		var conditions: Dictionary = entity.get("conditions", {})
-		return conditions.has("invisible") and not conditions.has("starry_wisp")
+		return (conditions.has("invisible") or (include_hidden and conditions.has("hidden"))) and not conditions.has("starry_wisp")
 	return false
+
+
+static func reveal_hidden_attacker(attacker: Character) -> void:
+	if attacker.has_condition("hidden"): attacker.remove_condition("hidden")
+	var actual: Variant = attacker.feature_uses.get("monster_source")
+	if actual is Dictionary and has_condition(actual, "hidden"):
+		actual.get("conditions", {}).erase("hidden")
+		actual.get("condition_sources", {}).erase("hidden")
+		SpellEffects.publish_event(actual, {"type":"status", "actor_id":actor_id(actual), "status":"hidden", "state":"removed"})
 
 
 static func is_unconscious(entity) -> bool:
@@ -63,12 +72,283 @@ static func is_unconscious(entity) -> bool:
 	return false
 
 
+## Shared SRD consequences queried by the same generic consumers for a
+## Character or a monster dictionary. Non-SRD markers stay in the same query
+## owners, but are deliberately not listed as SRD condition definitions.
+const CONDITION_RULES := {
+	"blinded": {"attack_disadvantage": true, "attacks_against_advantage": true, "sight_check_auto_fail": true},
+	"charmed": {"cannot_attack_source": true, "cannot_damage_source": true, "source_social_advantage": true},
+	"deafened": {"hearing_check_auto_fail": true},
+	"frightened": {"attack_disadvantage_in_sight": true, "check_disadvantage_in_sight": true, "cannot_approach_source": true},
+	"grappled": {"speed_zero": true},
+	"incapacitated": {"incapacitated": true, "ends_concentration": true},
+	"invisible": {"attacks_against_disadvantage": true, "attacks_advantage": true},
+	"paralyzed": {"incapacitated": true, "speed_zero": true, "save_auto_fail_str_dex": true, "attacks_against_advantage": true, "nearby_hit_critical": true},
+	"petrified": {"incapacitated": true, "speed_zero": true, "save_auto_fail_str_dex": true, "attacks_against_advantage": true, "all_damage_resistance": true, "poison_immunity": true},
+	"poisoned": {"attack_disadvantage": true, "check_disadvantage": true},
+	"prone": {"attack_disadvantage": true, "nearby_attacks_against_advantage": true, "distant_attacks_against_disadvantage": true},
+	"restrained": {"speed_zero": true, "attack_disadvantage": true, "attacks_against_advantage": true, "dex_save_disadvantage": true},
+	"stunned": {"incapacitated": true, "save_auto_fail_str_dex": true, "attacks_against_advantage": true},
+	"unconscious": {"incapacitated": true, "speed_zero": true, "save_auto_fail_str_dex": true, "attacks_against_advantage": true, "nearby_hit_critical": true, "prone": true, "drop_held_items": true},
+	"exhaustion": {"check_penalty_per_level": -2, "attack_penalty_per_level": -2, "save_penalty_per_level": -2, "speed_penalty_per_level": -5},
+}
+
+static func condition_rule(condition: String, consequence: String) -> bool:
+	return bool(CONDITION_RULES.get(condition, {}).get(consequence, false))
+
+static func conditions_with_consequence(entity, consequence: String) -> Array[String]:
+	var matches: Array[String] = []
+	for condition in CONDITION_RULES:
+		if condition_rule(str(condition), consequence) and has_condition(entity, str(condition)):
+			matches.append(str(condition))
+	return matches
+
+
 static func is_incapacitated(entity) -> bool:
-	for condition in ["incapacitated", "paralyzed", "petrified", "stunned", "unconscious"]:
-		if entity is Character and entity.has_condition(condition):
+	return not conditions_with_consequence(entity, "incapacitated").is_empty()
+
+
+static func is_speed_zero(entity, ignore_restrained: bool = false) -> bool:
+	for condition in CONDITION_RULES:
+		if ignore_restrained and condition == "restrained":
+			continue
+		if condition_rule(str(condition), "speed_zero") and has_condition(entity, str(condition)):
 			return true
-		if entity is Dictionary and entity.get("conditions", {}).has(condition):
+	if has_condition(entity, "resilient_sphere") or has_condition(entity, "power_word_stun_speed_zero"):
+		return true
+	return false
+
+
+static func save_auto_fails(entity, ability: String) -> bool:
+	if ability.to_upper() not in ["STR", "DEX"]:
+		return false
+	return not conditions_with_consequence(entity, "save_auto_fail_str_dex").is_empty()
+
+
+## Dodge ends when lost; curing the disabling condition cannot restore it.
+static func end_invalid_dodge(entity) -> void:
+	if not has_condition(entity, "dodging"): return
+	var speed: int = entity.get_speed() if entity is Character else FighterRules.monster_speed(entity)
+	if not is_incapacitated(entity) and speed > 0: return
+	if entity is Character: entity.remove_condition("dodging")
+	else:
+		entity.get("conditions", {}).erase("dodging")
+		entity.get("condition_sources", {}).erase("dodging")
+
+
+static func dodge_active(entity) -> bool:
+	end_invalid_dodge(entity)
+	return has_condition(entity, "dodging")
+
+
+static func save_has_advantage(entity, ability: String) -> bool:
+	return ability.to_upper() == "DEX" and dodge_active(entity)
+
+
+static func save_has_disadvantage(entity, ability: String) -> bool:
+	var upper := ability.to_upper()
+	if upper == "DEX" and condition_rule("restrained", "dex_save_disadvantage") and has_condition(entity, "restrained"):
+		return true
+	if upper == "STR" and has_condition(entity, "ray_of_enfeeblement"):
+		return true
+	return false
+
+
+static func attack_target_grants_advantage(target_entity, attack_distance_hexes: int = 1, perception_handles_blindness: bool = false) -> bool:
+	for condition in conditions_with_consequence(target_entity, "attacks_against_advantage"):
+		if condition == "blinded" and perception_handles_blindness: continue
+		if has_condition(target_entity, condition):
 			return true
+	if has_condition(target_entity, "prone") and attack_distance_hexes <= 1:
+		return true
+	return false
+
+
+static func attack_target_imposes_disadvantage(target_entity, attack_distance_hexes: int = 1, sees_attacker: bool = true) -> bool:
+	if has_condition(target_entity, "prone") and attack_distance_hexes > 1:
+		return true
+	if dodge_active(target_entity) and sees_attacker:
+		return true
+	return false
+
+
+static func attacker_has_condition_disadvantage(attacker, ability: String = "", decisions: Dictionary = {}) -> bool:
+	for condition in conditions_with_consequence(attacker, "attack_disadvantage"):
+		if condition == "blinded" and bool(decisions.get("perception_handles_blindness", false)): continue
+		if has_condition(attacker, condition):
+			return true
+	if has_condition(attacker, "frightened") and not bool(decisions.get("frightened_source_out_of_sight", false)):
+		return true
+	if ability.to_upper() == "STR" and has_condition(attacker, "ray_of_enfeeblement"):
+		return true
+	if has_condition(attacker, "vicious_mockery_disadvantage"):
+		return true
+	return false
+
+
+static func actor_id(entity) -> String:
+	if entity is Character:
+		return SpellEffects.caster_id(entity)
+	if entity is Dictionary:
+		if entity.get("character") is Character:
+			return actor_id(entity["character"])
+		return str(entity.get("character_id", entity.get("id", ""))).strip_edges()
+	return ""
+
+
+static func _append_unique_id(out: Array[String], value: String) -> void:
+	var trimmed := value.strip_edges()
+	if not trimmed.is_empty() and trimmed not in ["ordinary", "turn_undead", "abjure_foes"] and trimmed not in out:
+		out.append(trimmed)
+
+
+static func charmer_ids(entity) -> Array[String]:
+	var ids: Array[String] = []
+	if entity == null:
+		return ids
+	if entity is Dictionary:
+		for raw_id in entity.get("animal_friendship_caster_ids", []):
+			_append_unique_id(ids, str(raw_id))
+	if not has_condition(entity, "charmed"):
+		return ids
+	if entity is Dictionary:
+		_append_unique_id(ids, str(entity.get("charmer_id", "")))
+		for raw_id in entity.get("charmer_ids", []):
+			_append_unique_id(ids, str(raw_id))
+	elif entity is Character:
+		_append_unique_id(ids, str(entity.feature_uses.get("charmer_id", "")))
+		var charmer_list: Variant = entity.feature_uses.get("charmer_ids", [])
+		if charmer_list is Array:
+			for raw_id in charmer_list:
+				_append_unique_id(ids, str(raw_id))
+	for record in SpellEffects.records(entity).values():
+		if record is Dictionary and "charmed" in record.get("conditions", []):
+			_append_unique_id(ids, str(record.get("caster_id", "")))
+	var sources: Dictionary = entity.condition_sources if entity is Character else entity.get("condition_sources", {}) if entity is Dictionary else {}
+	var charm_grants: Variant = sources.get("charmed", {})
+	if charm_grants is Dictionary:
+		for source_key in charm_grants.keys():
+			var key_str := str(source_key)
+			_append_unique_id(ids, condition_source_actor_id(entity, key_str))
+	return ids
+
+
+static func is_charmed_by(entity, target_actor_or_id) -> bool:
+	var charmers := charmer_ids(entity)
+	if charmers.is_empty():
+		return false
+	if target_actor_or_id is String:
+		return str(target_actor_or_id).strip_edges() in charmers
+	var tid := actor_id(target_actor_or_id)
+	if not tid.is_empty() and tid in charmers:
+		return true
+	if target_actor_or_id is Character and not target_actor_or_id.character_name.is_empty() and target_actor_or_id.character_name in charmers:
+		return true
+	if target_actor_or_id is Dictionary:
+		var inner_char: Variant = target_actor_or_id.get("character")
+		if inner_char is Character and (inner_char.character_id in charmers or inner_char.character_name in charmers):
+			return true
+		var name_str := str(target_actor_or_id.get("name", "")).strip_edges()
+		if not name_str.is_empty() and name_str in charmers:
+			return true
+	return false
+
+
+static func frightened_source_ids(entity) -> Array[String]:
+	var ids: Array[String] = []
+	if not has_condition(entity, "frightened"):
+		return ids
+	if entity is Dictionary:
+		_append_unique_id(ids, str(entity.get(PaladinRules.ABJURE_FOES_CASTER_ID, "")))
+		_append_unique_id(ids, str(entity.get("frightened_source_id", "")))
+		for raw_id in entity.get("frightened_source_ids", []):
+			_append_unique_id(ids, str(raw_id))
+	elif entity is Character:
+		_append_unique_id(ids, str(entity.feature_uses.get("frightened_source_id", "")))
+		var source_list: Variant = entity.feature_uses.get("frightened_source_ids", [])
+		if source_list is Array:
+			for raw_id in source_list:
+				_append_unique_id(ids, str(raw_id))
+	for record in SpellEffects.records(entity).values():
+		if record is Dictionary and "frightened" in record.get("conditions", []):
+			_append_unique_id(ids, str(record.get("caster_id", "")))
+	var sources: Dictionary = entity.condition_sources if entity is Character else entity.get("condition_sources", {}) if entity is Dictionary else {}
+	var fear_grants: Variant = sources.get("frightened", {})
+	if fear_grants is Dictionary:
+		for source_key in fear_grants.keys():
+			var key_str := str(source_key)
+			_append_unique_id(ids, condition_source_actor_id(entity, key_str))
+	return ids
+
+
+## Managed grants carry their actor identity explicitly. Only old native spell
+## grants encode it in the key; a raw actor ID may itself contain colons.
+static func condition_source_actor_id(entity, source: String) -> String:
+	if entity is Dictionary and entity.get("turn_undead_casters", {}).has(source):
+		return str(entity.turn_undead_casters[source])
+	var record: Dictionary = SpellEffects.records(entity).get(source, {})
+	if not record.is_empty(): return str(record.get("caster_id", ""))
+	if source.begins_with("spell:"):
+		var serial_at := source.rfind(":")
+		return source.substr(6, serial_at - 6) if serial_at > 6 else ""
+	var prefix := source.get_slice(":", 0)
+	if ":" in source and not DataLoader.get_spell(prefix).is_empty():
+		return source.substr(prefix.length() + 1)
+	return source
+
+
+static func frightened_source_positions(entity, candidate_entities: Array) -> Array[Vector2i]:
+	var positions: Array[Vector2i] = []
+	if not has_condition(entity, "frightened"):
+		return positions
+	if entity is Dictionary and entity.get("frightened_source_position") is Vector2i:
+		positions.append(entity["frightened_source_position"])
+	var source_ids := frightened_source_ids(entity)
+	if source_ids.is_empty():
+		return positions
+	for candidate in candidate_entities:
+		if not candidate is Dictionary:
+			continue
+		var candidate_char: Variant = candidate.get("character")
+		var is_alive: bool = candidate_char.is_alive if candidate_char is Character else bool(candidate.get("is_alive", true))
+		if not is_alive:
+			continue
+		var cid := actor_id(candidate)
+		var cname: String = str(candidate_char.character_name) if candidate_char is Character else str(candidate.get("name", ""))
+		var raw_id := str(candidate.get("id", ""))
+		if (not cid.is_empty() and cid in source_ids) or (not cname.is_empty() and cname in source_ids) or (not raw_id.is_empty() and raw_id in source_ids):
+			var pos: Variant = candidate.get("hex_position")
+			if pos is Vector2i and pos not in positions:
+				positions.append(pos)
+	return positions
+
+
+static func frightened_forbids_movement_closer(entity, origin: Vector2i, destination: Vector2i, candidate_entities: Array) -> bool:
+	for source_pos in frightened_source_positions(entity, candidate_entities):
+		if HexUtils.get_distance(destination, source_pos) < HexUtils.get_distance(origin, source_pos):
+			return true
+	return false
+
+
+static func is_frightened_source_in_sight(entity, origin: Vector2i, candidate_entities: Array, grid: HexGrid = null) -> bool:
+	if not has_condition(entity, "frightened"):
+		return false
+	var source_ids := frightened_source_ids(entity)
+	if frightened_source_positions(entity, candidate_entities).is_empty():
+		return source_ids.is_empty()
+	for candidate in candidate_entities:
+		if not candidate is Dictionary:
+			continue
+		var actor: Variant = candidate.get("character", candidate)
+		var pos: Variant = candidate.get("hex_position")
+		if not pos is Vector2i:
+			continue
+		var ids := [actor_id(candidate), str(candidate.get("name", "")), str(candidate.get("id", ""))]
+		if actor is Character:
+			ids.append(actor.character_name)
+		for id in ids:
+			if str(id) in source_ids and (grid == null or is_visible_source_to(entity, actor, origin, pos, grid)):
+				return true
 	return false
 
 
@@ -76,13 +356,28 @@ static func has_condition(entity, condition: String) -> bool:
 	if entity is Character:
 		return entity.has_condition(condition)
 	if entity is Dictionary:
-		return entity.get("conditions", {}).has(condition)
+		var conds: Dictionary = entity.get("conditions", {})
+		if condition == "prone" and conds.has("unconscious") and not is_immune_to_condition(entity, "prone"):
+			return true
+		return conds.has(condition)
 	return false
+
+
+static func is_visible_source_to(entity, source, origin: Vector2i, source_coord: Vector2i, grid: HexGrid) -> bool:
+	if entity == null or source == null or grid == null:
+		return false
+	return CombatPerception.can_see_target(entity, source, origin, source_coord, grid)
+
+
+static func can_locate_target(observer, target, origin: Vector2i, target_coord: Vector2i, grid: HexGrid) -> bool:
+	return CombatPerception.can_locate_target(observer, target, origin, target_coord, grid)
 
 
 static func is_immune_to_condition(entity, condition: String) -> bool:
 	if entity == null or condition.is_empty():
 		return false
+	if condition == "poisoned" and has_condition(entity, "petrified"):
+		return true
 	if entity is Dictionary:
 		return condition in entity.get("condition_immunities", [])
 	if entity is not Character:
@@ -188,38 +483,13 @@ static func resolve_condition_spell_repeat_save(target, source: String) -> Dicti
 
 
 static func can_perceive_invisible(entity, distance_feet: int) -> bool:
-	if entity != null and SpellEffects.has_spell(entity, "see_invisibility"):
-		return true
-	if entity != null and SpellEffects.has_spell(entity, "true_seeing"):
-		return distance_feet >= 0 and distance_feet <= 120
-	if entity is Character:
-		for effect in ClassProgression.selected_feature_effects_of_type(entity, "blindsight"):
-			if distance_feet <= int(effect.get("range_feet", 0)):
-				return true
-	elif entity is Dictionary:
-		var senses: Dictionary = entity.get("senses", {})
-		var range_feet := int(entity.get("blindsight_range_feet", senses.get("blindsight", 0)))
-		return distance_feet <= range_feet
-	return false
+	if entity == null or distance_feet < 0: return false
+	if CombatPerception._has_blindsight(entity, distance_feet): return true
+	return not has_condition(entity, "blinded") and (CombatPerception._has_truesight(entity, distance_feet) or SpellEffects.has_spell(entity, "see_invisibility"))
 
 
 static func can_perceive_blur(entity, distance_feet: int) -> bool:
-	if entity == null:
-		return false
-	if SpellEffects.has_spell(entity, "true_seeing") and distance_feet >= 0 and distance_feet <= 120:
-		return true
-	var blindsight_range := 0
-	var truesight_range := 0
-	if entity is Character:
-		blindsight_range = int(entity.feature_uses.get("monster_blindsight_range_feet", 0))
-		truesight_range = int(entity.feature_uses.get("monster_truesight_range_feet", 0))
-		for effect in ClassProgression.selected_feature_effects_of_type(entity, "blindsight"):
-			blindsight_range = maxi(blindsight_range, int(effect.get("range_feet", 0)))
-	elif entity is Dictionary:
-		var senses: Dictionary = entity.get("senses", {})
-		blindsight_range = int(entity.get("blindsight_range_feet", senses.get("blindsight", 0)))
-		truesight_range = int(entity.get("truesight_range_feet", senses.get("truesight", 0)))
-	return distance_feet >= 0 and distance_feet <= maxi(blindsight_range, truesight_range)
+	return CombatPerception._has_blindsight(entity, distance_feet) or (not has_condition(entity, "blinded") and CombatPerception._has_truesight(entity, distance_feet))
 
 
 static func spell_target_is_visible_to(caster: Character, target, spell_data: Dictionary, distance_feet: int) -> bool:
@@ -240,12 +510,15 @@ static func spell_range_in_hexes(spell_data: Dictionary, character_level: int) -
 ## Apply one already-validated movement step for either a player or monster.
 ## Path legality and opportunity attacks stay with CombatState, while this
 ## boundary owns the shared position mutation and result shape.
-static func resolve_movement_step(entity_dict: Dictionary, from_hex: Vector2i, to_hex: Vector2i) -> Dictionary:
+static func resolve_movement_step(entity_dict: Dictionary, from_hex: Vector2i, to_hex: Vector2i, movement_kind: String = "movement") -> Dictionary:
 	if entity_dict.is_empty() or not entity_dict.has("hex_position"):
 		return {"success": false, "from": from_hex, "to": to_hex, "message": "Movement needs a positioned entity."}
 	if entity_dict["hex_position"] != from_hex:
 		return {"success": false, "from": from_hex, "to": to_hex, "message": "Movement path is stale."}
 	entity_dict["hex_position"] = to_hex
+	entity_dict["_spatial_movement_event"] = SpatialTriggerRules.next_event()
+	entity_dict["_spatial_movement_from"] = from_hex
+	entity_dict["_spatial_movement_kind"] = movement_kind
 	var mover: Variant = entity_dict.get("character", null)
 	if mover is Character:
 		SpellEffects.publish_event(mover, {"type": "movement", "actor_id": SpellEffects.caster_id(mover), "from": [from_hex.x, from_hex.y], "to": [to_hex.x, to_hex.y], "distance_feet": HexUtils.get_distance(from_hex, to_hex) * 5})
@@ -269,7 +542,8 @@ static func apply_condition(target, condition: String, duration: int, source: St
 		target.add_condition(condition, duration, source)
 	elif target is Dictionary and condition == "frightened" and SpellEffects.has_spell(target, "heroism"):
 		return
-	elif target is Dictionary and condition not in target.get("condition_immunities", []):
+	elif target is Dictionary and not is_immune_to_condition(target, condition):
+		if condition == "hidden": target["concealment_revision"] = int(target.get("concealment_revision", 0)) + 1
 		var conditions: Dictionary = target.get("conditions", {})
 		var sources: Dictionary = target.get("condition_sources", {})
 		if not source.is_empty() or sources.has(condition):
@@ -277,13 +551,22 @@ static func apply_condition(target, condition: String, duration: int, source: St
 			if grants.is_empty() and conditions.has(condition):
 				grants["ordinary"] = int(conditions[condition])
 			var source_id := source if not source.is_empty() else "ordinary"
-			grants[source_id] = maxi(int(grants.get(source_id, 0)), duration)
+			var previous := int(grants.get(source_id, duration))
+			grants[source_id] = -1 if duration == -1 or previous == -1 else maxi(previous, duration)
 			sources[condition] = grants
 			target["condition_sources"] = sources
 			conditions[condition] = int(grants.values().max())
 		else:
 			conditions[condition] = maxi(int(conditions.get(condition, 0)), duration)
 		target["conditions"] = conditions
+		end_invalid_dodge(target)
+		if is_incapacitated(target):
+			var incapacitated_hook: Variant = target.get("_condition_consequence_handler")
+			if incapacitated_hook is Callable and incapacitated_hook.is_valid(): incapacitated_hook.call(target, "incapacitated")
+		if condition == "unconscious":
+			var consequence_hook: Variant = target.get("_condition_consequence_handler")
+			if consequence_hook is Callable and consequence_hook.is_valid():
+				consequence_hook.call(target, "unconscious")
 	if has_condition(target, condition):
 		var subject_id := SpellEffects.caster_id(target) if target is Character else str(target.get("id", "")) if target is Dictionary else ""
 		SpellEffects.publish_event(target, {"type": "status", "actor_id": subject_id, "status": condition, "state": "applied", "source_instance_id": source})
@@ -417,6 +700,7 @@ static func consume_guiding_bolt_advantage(target) -> bool:
 
 
 static func blocks_opportunity_attack(target) -> bool:
+	if has_condition(target, "opportunity_attack_blocked"): return true
 	if target is Character:
 		return target.has_condition("shocking_grasp")
 	if target is Dictionary:
@@ -425,8 +709,9 @@ static func blocks_opportunity_attack(target) -> bool:
 
 
 ## Help applies to the next actual attack roll, including spell attacks.
-static func consume_attack_help(target) -> bool:
+static func consume_attack_help(target, attacker: Character = null) -> bool:
 	if not target is Dictionary or str(target.get("familiar_helped_by", "")).is_empty(): return false
+	if attacker != null and str(target.familiar_helped_by) == actor_id(attacker): return false
 	target.erase("familiar_helped_by")
 	return true
 
@@ -453,6 +738,11 @@ static func apply_blade_ward_attack_penalty(target, attacker: Character, attack_
 
 
 static func clear_shocking_grasp(target) -> void:
+	# Exact target-start grants are independent of other copies of the condition.
+	if target is Dictionary:
+		for ending in target.get("target_start_conditions", []):
+			remove_condition_source(target, str(ending.source), [str(ending.condition)])
+		target.erase("target_start_conditions")
 	if target is Character:
 		target.remove_condition("shocking_grasp")
 	elif target is Dictionary:
@@ -473,6 +763,7 @@ static func has_condition_source(target: Dictionary, source: String) -> bool:
 
 
 static func remove_condition_source(target, source: String, condition_names: Array) -> void:
+	end_invalid_dodge(target)
 	var sources: Dictionary = target.condition_sources if target is Character else target.get("condition_sources", {})
 	var conditions: Dictionary = target.conditions if target is Character else target.get("conditions", {})
 	for condition in condition_names:
@@ -551,6 +842,8 @@ static func tick_condition_sources(target) -> void:
 static func is_immune_to_damage(target, damage_type: String) -> bool:
 	if target == null or damage_type.is_empty():
 		return false
+	if damage_type == "poison" and has_condition(target, "petrified"):
+		return true
 	if target is Dictionary:
 		return damage_type in target.get("damage_immunities", [])
 	if target is not Character:
@@ -610,7 +903,7 @@ static func resolve_damage(target, amount: int, damage_type: String, reaction_de
 		if (target.class_id == "created_creature" and damage_type == "bludgeoning" and str(target.feature_uses.get("created_form_id", "")) == "skeleton") or (char_vulns is Array and damage_type in char_vulns):
 			resolved *= 2
 	elif target is Dictionary:
-		if not bypass_resistance and not bypass_layers.has("resistance") and (damage_type in target.get("damage_resistances", []) or str(target.get("protection_from_energy_type", "")) == damage_type or (damage_type == "poison" and target.get("conditions", {}).has("protection_from_poison")) or (damage_type == "necrotic" and not target.get("aura_of_life_sources", []).is_empty())):
+		if not bypass_resistance and not bypass_layers.has("resistance") and (has_condition(target, "petrified") or damage_type in target.get("damage_resistances", []) or str(target.get("protection_from_energy_type", "")) == damage_type or (damage_type == "poison" and target.get("conditions", {}).has("protection_from_poison")) or (damage_type == "necrotic" and not target.get("aura_of_life_sources", []).is_empty())):
 			resolved = int(floor(float(resolved) / 2.0))
 		if damage_type in target.get("damage_vulnerabilities", []):
 			resolved *= 2
@@ -694,11 +987,10 @@ static func resolve_damage(target, amount: int, damage_type: String, reaction_de
 			var damage_cause := {"actor_id": source_character.character_id, "source_instance_id": str(reaction_decisions.get("damage_source_instance_id", source_character.character_id))}
 			SpellEffects.consume_spell(source_character, "sanctuary", "damage", damage_cause)
 			SpellEffects.consume_spell(source_character, "invisibility", "damage", damage_cause)
-	if resolved > 0 and target is Dictionary and has_condition_source(target, RogueRules.CUNNING_KNOCKOUT_SOURCE):
+	if resolved > 0 and ((target is Dictionary and has_condition_source(target, RogueRules.CUNNING_KNOCKOUT_SOURCE)) or (target is Character and target.condition_sources.get("unconscious", {}).has(RogueRules.CUNNING_KNOCKOUT_SOURCE))):
 		remove_condition_source(target, RogueRules.CUNNING_KNOCKOUT_SOURCE, ["unconscious"])
-		target.erase("rogue_cunning_knock_out_dc")
-	elif resolved > 0 and target is Character and target.has_condition("unconscious"):
-		target.remove_condition("unconscious")
+		if target is Dictionary: target.erase("rogue_cunning_knock_out_dc")
+		else: target.feature_uses.erase("rogue_cunning_knock_out_dc")
 	# Temporary HP still counts as taking damage, even with no HP loss.
 	if resolved > 0:
 		if not preserve_turning:
@@ -751,8 +1043,21 @@ static func resolve_damage(target, amount: int, damage_type: String, reaction_de
 	receipt["replacement_absorbed"] = int(incoming_replacement.replaced) + int(resolved_replacement.replaced)
 	receipt["absorbed"] += int(receipt["replacement_absorbed"])
 	_record_settled_damage_history(target, source_character, receipt, reaction_decisions)
+	if not bool(reaction_decisions.get("_defer_damage_budget", false)):
+		settle_damage_budget(source_character, target, int(receipt.get("resolved", 0)), reaction_decisions)
 	_finalize_damage_responses(target, source_character, damage_type, receipt, reaction_decisions, damage_occurrence_id)
+	if target is Dictionary:
+		var damage_hook: Variant = target.get("_damage_consequence_handler")
+		if damage_hook is Callable and damage_hook.is_valid(): damage_hook.call(target, receipt, damage_occurrence_id)
 	return receipt
+
+
+static func settle_damage_budget(source_character: Character, target, amount: int, reaction_decisions: Dictionary) -> void:
+	var budget_recipients: Array = [target]
+	for entity in reaction_decisions.get("players", []):
+		if entity is Dictionary and entity.get("character") is Character: budget_recipients.append(entity.character)
+	budget_recipients.append_array(reaction_decisions.get("monsters", []))
+	SpellEffects.record_damage_budget(source_character, str(reaction_decisions.get("damage_source_instance_id", "")), amount, target.character_id if target is Character else str(target.get("id", "")) if target is Dictionary else "", budget_recipients)
 
 
 static func _finalize_damage_responses(target, source_character: Character, damage_type: String, receipt: Dictionary, reaction_decisions: Dictionary, damage_occurrence_id: int) -> void:
@@ -853,10 +1158,10 @@ static func resolve_lay_on_hands(caster: Character, target: Character, requested
 
 
 ## Resolve a monk bonus unarmed strike through the normal weapon attack boundary.
-static func resolve_unarmed_attack(attacker: Character, target_entity) -> Dictionary:
+static func resolve_unarmed_attack(attacker: Character, target_entity, decisions: Dictionary = {}) -> Dictionary:
 	if attacker == null or target_entity == null:
 		return {"hit": false, "damage": 0, "message": "Unarmed Strike needs a valid target."}
-	return resolve_weapon_attack(attacker, target_entity, unarmed_attack_profile(attacker))
+	return resolve_weapon_attack(attacker, target_entity, unarmed_attack_profile(attacker), false, false, decisions)
 
 
 static func unarmed_attack_profile(attacker: Character) -> Dictionary:
@@ -1129,10 +1434,44 @@ static func true_strike_bonus_damage(character_level: int) -> String:
 	return ""
 
 
+## Authored bands override the old single hex range for all targeting hosts.
+## Melee weapons with Thrown keep their melee reach and ability at close range.
+static func weapon_range_hexes(weapon: Dictionary) -> int:
+	if int(weapon.get("long_range_feet", 0)) > 0:
+		return int(weapon.long_range_feet) / 5
+	return maxi(int(weapon.get("range", 1)), int(weapon.get("thrown_range", 0)))
+
+
 static func resolve_weapon_attack(attacker: Character, target_entity, weapon_data: Dictionary, advantage: bool = false, disadvantage: bool = false, reaction_decisions: Dictionary = {}, additional_damage: Dictionary = {}) -> Dictionary:
+	if attacker == null or is_incapacitated(attacker):
+		return {"success":false, "hit":false, "refused":true, "damage":0, "message":"An Incapacitated creature cannot attack."}
+	var visibility: Dictionary = reaction_decisions.get("spell_visibility", reaction_decisions.get("weapon_visibility", {}))
+	var grid: HexGrid = visibility.get("grid")
+	if grid != null:
+		var observer: Variant = visibility.get("observer", attacker)
+		var origin: Vector2i = visibility["caster_position"]
+		var destination: Vector2i = visibility["target_position"]
+		if not Targeting.has_line_of_sight(origin, destination, grid) or not CombatPerception.can_locate_target(observer, target_entity, origin, destination, grid):
+			return {"hit": false, "refused": true, "message": "The target's location is unknown or obstructed."}
+		weapon_data = weapon_data.duplicate(true)
+		weapon_data["attack_distance"] = HexUtils.get_distance(origin, destination)
 	var containment_error := ContainmentRules.target_error(attacker, target_entity, weapon_data)
 	if not containment_error.is_empty(): return {"success": false, "hit": false, "damage": 0, "message": containment_error}
+	if is_charmed_by(attacker, target_entity):
+		return {"success": false, "hit": false, "damage": 0, "charmed_blocked": true, "message": "%s cannot attack their charmer." % attacker.character_name}
 	weapon_data = weapon_data.duplicate(true)
+	# S-250: authored range bands are in feet. Existing fixtures that only carry
+	# a hex range keep their old behavior; production ranged weapons can declare
+	# both bands without converting feet to board cells in the catalog.
+	var distance_hexes := int(weapon_data.get("attack_distance", weapon_data.get("range", 1)))
+	var distance_feet := int(weapon_data.get("attack_distance_feet", distance_hexes * 5))
+	var normal_range := int(weapon_data.get("normal_range_feet", 0))
+	var long_range := int(weapon_data.get("long_range_feet", 0))
+	if normal_range > 0 and long_range > 0:
+		if distance_feet > long_range:
+			return {"success": false, "hit": false, "damage": 0, "message": "That target is beyond this weapon's maximum range."}
+		if distance_feet > normal_range:
+			disadvantage = true
 	if has_condition(attacker, "resilient_sphere") or has_condition(target_entity, "resilient_sphere"):
 		return {"hit": false, "damage": 0, "blocked_by_resilient_sphere": true, "message": "The attack cannot pass through Resilient Sphere."}
 	var magic_weapon_bonus := SpellEffects.magic_weapon_bonus(attacker, str(weapon_data.get("id", "")))
@@ -1170,6 +1509,12 @@ static func resolve_weapon_attack(attacker: Character, target_entity, weapon_dat
 			var die := "1d10" if str(weapon_data.get("id", "")) in ["longsword", "battleaxe", "warhammer", "war_pick", "trident"] else "1d8"
 			damage = damage.replace(damage.split("+")[0].strip_edges(), die)
 		weapon_data["damage"] = damage
+		# Heavy weapons are harder to use when the relevant physical ability is
+		# below 13. Thrown attacks keep the weapon's normal ability selection.
+		if "heavy" in properties:
+			var heavy_ability := "DEX" if "ranged" in properties else "STR"
+			if attacker.ability_scores.get_score(heavy_ability) < 13:
+				disadvantage = true
 	if attacker.class_id == "warlock" and WarlockRules.has_invocation(attacker, "pact_of_the_blade") and str(weapon_data.get("type", "")) == "weapon" and int(weapon_data.get("range", 1)) <= 1 and str(weapon_data.get("id", "")) in [attacker.inventory.get_weapon(), attacker.inventory.get_equipped(Inventory.Slot.OFFHAND)]:
 		weapon_data["ability"] = "CHA"
 	if attacker.can_use_martial_arts() and (attacker.is_monk_weapon(weapon_data) or weapon_data.get("id", "") == "unarmed_strike"):
@@ -1190,45 +1535,42 @@ static func resolve_weapon_attack(attacker: Character, target_entity, weapon_dat
 		var formula := str(weapon_data.get("damage", "1"))
 		if "d" in formula.to_lower() and not ["STR", "DEX", "CON", "INT", "WIS", "CHA"].any(func(token): return token in formula.to_upper()):
 			weapon_data["damage"] = formula + "+" + str(weapon_data.get("ability", "STR"))
+	var attack_distance_hexes := int(weapon_data.get("attack_distance", weapon_data.get("range", 1)))
 	if target_entity is Dictionary and target_entity.has("stunning_strike_advantage"):
 		advantage = true
 		target_entity.erase("stunning_strike_advantage")
-	if target_entity is Dictionary and target_entity.get("conditions", {}).has("stunned"):
+	if attack_target_grants_advantage(target_entity, attack_distance_hexes, true):
 		advantage = true
 	if has_condition(target_entity, "reckless_attack"):
 		advantage = true
 	if (target_entity is Character and target_entity.has_condition("guiding_bolt")) or (target_entity is Dictionary and target_entity.get("conditions", {}).has("guiding_bolt")):
 		advantage = true
 		consume_guiding_bolt_advantage(target_entity)
-	if is_unconscious(target_entity) or is_paralyzed(target_entity):
-		advantage = true
-	if target_entity is Dictionary and target_entity.get("conditions", {}).has("prone"):
-		if int(weapon_data.get("attack_distance", weapon_data.get("range", 1))) <= 1:
-			advantage = true
-		else:
-			disadvantage = true
-	var fog_obscures_attack := has_condition(attacker, "fog_cloud_obscured") or has_condition(target_entity, "fog_cloud_obscured") or has_condition(attacker, "darkness_obscured") or has_condition(target_entity, "darkness_obscured")
-	var attack_distance_feet := maxi(0, int(weapon_data.get("attack_distance", weapon_data.get("range", 1))) * 5)
-	var invisible_attack_advantage := is_invisible(attacker) and not can_perceive_invisible(target_entity, attack_distance_feet)
-	var unseen_target_disadvantage := is_invisible(target_entity) and not can_perceive_invisible(attacker, attack_distance_feet)
+	var attack_distance_feet := maxi(0, attack_distance_hexes * 5)
+	var perception := CombatPerception.attack_visibility(attacker, target_entity, attack_distance_feet, reaction_decisions)
+	if attack_target_imposes_disadvantage(target_entity, attack_distance_hexes, bool(perception.target_sees_attacker)): disadvantage = true
+	reaction_decisions = reaction_decisions.duplicate()
+	reaction_decisions["perception_handles_blindness"] = true
+	var invisible_attack_advantage := bool(perception.advantage)
+	var unseen_target_disadvantage := bool(perception.disadvantage)
 	var blur_target_disadvantage := SpellEffects.has_spell(target_entity, "blur") and not can_perceive_blur(attacker, attack_distance_feet)
 	var ability: String = weapon_data.get("ability", "STR")
 	if ability == "STR" and attacker.has_condition("reckless_attack"):
 		advantage = true
-	advantage = FighterRules.attack_advantage(attacker, target_entity) or has_condition(target_entity, "restrained") or SpellEffects.has_spell(target_entity, "faerie_fire") or fog_obscures_attack or invisible_attack_advantage or advantage
+	advantage = FighterRules.attack_advantage(attacker, target_entity) or SpellEffects.has_spell(target_entity, "faerie_fire") or invisible_attack_advantage or advantage
 	if target_entity is Dictionary:
 		var target_conditions: Dictionary = target_entity.get("conditions", {})
 		for feature in attacker.features:
 			for effect in attacker._feature_effects(feature):
 				if effect.get("type", "") == "attack_advantage_against_condition" and target_conditions.has(str(effect.get("condition", ""))):
 					advantage = true
-	if target_entity is Character and target_entity.has_feature("rogue_elusive") and not target_entity.has_condition("incapacitated"):
+	if target_entity is Character and target_entity.has_feature("rogue_elusive") and not is_incapacitated(target_entity):
 		# Elusive cancels Advantage sources against the Rogue unless incapacitated.
 		advantage = false
 	var brutal_effects: Array[String] = []
 	# These penalties are applied by make_attack_roll too; eligibility must see
 	# them before it commits the one Brutal Strike attack, even for direct callers.
-	disadvantage = disadvantage or attacker.has_condition("blinded") or fog_obscures_attack or unseen_target_disadvantage or blur_target_disadvantage or attacker.has_condition("poisoned") or attacker.has_condition("restrained") or attacker.has_condition("vicious_mockery_disadvantage") or (ability == "STR" and attacker.has_condition("ray_of_enfeeblement"))
+	disadvantage = disadvantage or attacker_has_condition_disadvantage(attacker, ability, reaction_decisions) or unseen_target_disadvantage or blur_target_disadvantage
 	var requested_brutal: Variant = reaction_decisions.get("barbarian_brutal_strike_effects", [])
 	if requested_brutal is Array:
 		for effect in requested_brutal:
@@ -1249,9 +1591,10 @@ static func resolve_weapon_attack(attacker: Character, target_entity, weapon_dat
 		target_ac = SpellEffects.effective_ac(target_entity, int(target_entity.get("armor_class", 10)) + (2 if has_condition(target_entity, "shield_of_faith") else 0))
 
 	# Roll attack
-	var helped_attack := consume_attack_help(target_entity)
+	var helped_attack := consume_attack_help(target_entity, attacker)
 	advantage = advantage or helped_attack
 	var attack_result := attacker.make_attack_roll(ability, advantage, disadvantage, weapon_data, reaction_decisions)
+	reveal_hidden_attacker(attacker)
 	SpellEffects.consume_spell(attacker, "invisibility", "attack", {"actor_id": attacker.character_id, "action": "attack"})
 	if magic_weapon_bonus > 0:
 		attack_result["total"] = int(attack_result.get("total", 0)) + magic_weapon_bonus
@@ -2037,7 +2380,7 @@ static func resolve_hurl_through_hell(attacker: Character, target_entity) -> Dic
 
 ## Validate the entity selected for a spell before spending a slot or action.
 ## Self and ally-only spells must not silently resolve against an invalid target.
-static func validate_spell_target(caster: Character, target_entity, spell_data: Dictionary, distance_feet: int = -1) -> Dictionary:
+static func validate_spell_target(caster: Character, target_entity, spell_data: Dictionary, distance_feet: int = -1, decisions: Dictionary = {}) -> Dictionary:
 	if caster == null or spell_data.is_empty():
 		return {"success": false, "message": "Spell needs a valid caster and spell record."}
 	var containment_error := ContainmentRules.target_error(caster, target_entity, spell_data)
@@ -2080,10 +2423,23 @@ static func validate_spell_target(caster: Character, target_entity, spell_data: 
 			excluded_target_type = str(target_entity.get("creature_type", ""))
 		if excluded_target_type in excluded_creature_types:
 			return {"success": false, "message": "%s has no effect on %s." % [spell_data.get("name", "This spell"), excluded_target_type + "s"]}
-	if not spell_target_is_visible_to(caster, target_entity, spell_data, distance_feet):
+	var visibility: Dictionary = decisions.get("spell_visibility", {})
+	var grid: HexGrid = visibility.get("grid")
+	if grid != null and target_type in ["single", "single_ally", "multi"]:
+		var observer: Variant = visibility.get("observer", caster)
+		var here: Vector2i = visibility.get("caster_position", Vector2i.ZERO)
+		var there: Vector2i = visibility.get("target_position", Vector2i.ZERO)
+		if not Targeting.has_line_of_sight(here, there, grid) or not CombatPerception.can_locate_target(observer, target_entity, here, there, grid):
+			return {"success": false, "message": "The target's location is unknown or obstructed."}
+		if bool(spell_data.get("requires_target_sight", false)) and not CombatPerception.can_see_target(observer, target_entity, here, there, grid):
+			return {"success": false, "message": "%s requires a target you can see." % spell_data.get("name", "This spell")}
+	elif target_type in ["single", "single_ally", "multi"] and not spell_target_is_visible_to(caster, target_entity, spell_data, distance_feet):
 		return {"success": false, "message": "%s requires a target you can see." % spell_data.get("name", "This spell")}
 	var spell_id := str(spell_data.get("id", ""))
 	var target_is_caster := is_same_character(target_entity, caster)
+	var attacks_or_damages: bool = SpellCastReactions._spell_has_attack(spell_data) or SpellCastReactions._spell_has_damage_payload(spell_data) or not spell_data.get("damage_components", []).is_empty()
+	if not target_is_caster and attacks_or_damages and is_charmed_by(caster, target_entity):
+		return {"success": false, "charmed_blocked": true, "message": "%s cannot attack or damage their charmer." % caster.character_name}
 	var damage_prevention_bypass := SharedSpell.allows_damage_prevention_bypass(spell_data)
 	if ((has_condition(target_entity, "resilient_sphere") and not target_is_caster and spell_id != "disintegrate") or (has_condition(caster, "resilient_sphere") and not target_is_caster)) and not damage_prevention_bypass:
 		return {"success": false, "message": "Resilient Sphere blocks the spell's effect across its barrier."}

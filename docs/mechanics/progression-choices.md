@@ -1,5 +1,23 @@
 # Progression feature choices
 
+## Ability generation (S-242)
+
+Creation offers `point_buy`, `standard_array` (15, 14, 13, 12, 10, 8), and
+`random_4d6` (six seeded rolls of 4d6, dropping the lowest die). Campaign
+`ability_generation_methods` can restrict that list; omitted means all three.
+The player assigns each generated result to one distinct ability. Back, Random
+and the next player keep controls consistent; duplicate assignments and a
+prohibited method block confirmation.
+
+`creation_choices.ability_generation` records `method`, `seed`, `results` and
+`assigned_abilities`. Standard Array uses seed 0; point buy uses seed 0 with
+empty result/assignment arrays. Save preflight verifies the generated values,
+assignment and campaign restriction on both party and player records. Restore
+retains the receipt and final permanent scores without rerolling or replaying
+creation bonuses. Existing saves without a generation receipt remain valid.
+
+## Feature choices
+
 `ClassProgression` owns acquisition and replacement of passive `feature_choice`
 options. `ClassTraining` provides the out-of-combat selectors and revalidates the
 current character when a button is pressed. This is the bounded S-045/S-046
@@ -7,6 +25,23 @@ host; rest modes and native multiclass acquisition remain separate. Batch L adds
 [item/cast/progression AC and speed carriers](source-benefit-carriers.md), with independent acceptance pending.
 
 ## Definition
+
+### Feat eligibility and repeats (S-233)
+
+Feat `prerequisite` supports the existing `level` and `abilities_any` rules,
+plus `class_levels` (a map from class ID to minimum class level) and
+`features_any` (a list of named feature IDs, where owning any one qualifies).
+Save preflight applies the same class and feature checks. A repeatable feat may
+declare `repeatable_parameter_options`, a list of distinct choices; the saved
+choice retains the selected parameter so taking another parameter is distinct
+while taking the same parameter twice is refused.
+Both the Origin picker and the level-up picker offer those parameters. The
+stored Origin value is `feat_id|parameter`; improvement entries use
+`feat:feat_id|parameter`. Plain existing feat IDs remain valid. Named-feature
+save checks rebuild actual class/subclass/species/feat/equipment ownership;
+an arbitrary `features` entry in a save cannot grant eligibility. Repeatable
+feats still cannot declare mode/upgrade features with colliding feature IDs;
+selection support does not supply Magic Initiate's spell mechanics.
 
 A feature declares at least two uniquely named/identified `options`, each with
 supported effect records. `count` (or `pick`) defaults to one. Supplied counts

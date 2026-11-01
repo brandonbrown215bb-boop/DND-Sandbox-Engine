@@ -28,11 +28,12 @@ No new saved fields: loss is derived from `state.degraded` plus the definition. 
 - Both declare `legacy_charge_state: "full"`: a copy saved before they had charges loads with full charges; items without the declaration still refuse a missing charge state. This initialization also reaches contained/attached copies and room pickups. Existing charge values, including zero, are never replaced.
 
 ## PARTIAL
-- Staff of Power's +2 to saving throws and spell attack rolls, its spells, Retributive Strike and the roll-on-20 regain are not modelled; Staff of Striking's per-hit charge spend (1d6 Force per charge) is not modelled, so in play their charges are spent only through the shared payment boundary.
-- Staff of Power's Sorcerer/Warlock/Wizard attunement restriction is not enforced; the current gate only requires attunement. These records remain partial item content, not complete source-backed conversions.
-- Dawn recovery is a uniform roll between the declared minimum and maximum (6–20, 5–10), not 2d8+4 / 1d6+4.
+- Staff of Power's +2 to saving throws and spell attack rolls, its spells and Retributive Strike are not modelled; Staff of Striking's per-hit charge spend (1d6 Force per charge) is not modelled, so in play their charges are spent only through the shared payment boundary.
+- New attunements enforce an optional data-defined `attunement_prerequisite` (any listed class and/or spellcaster); Staff of Power declares Sorcerer, Warlock or Wizard. These records remain partial item content, not complete source-backed conversions.
+- Charge recovery accepts a dice expression or the existing uniform endpoints. Staff of Power now recovers 2d8+4 at dawn and its d20 result of 20 restores 1d8+2; Staff of Striking still uses the older uniform 5–10 data instead of its 1d6+4 rule.
+- Item activation modes may declare `uses_per: "days"` with `cooldown_days`; the exact copy stores its ready time, and later uses are refused until the interval has elapsed. This does not convert the SRD items that need those powers.
 - With two equipped copies of the same weapon definition, the attack reads the main-hand copy first.
 - An existing attunement on a copy that becomes nonmagical is not ended (new attunement is refused).
-- Roll-on-20 regains (Staff of Power) and non-`degrade` multi-outcome tables are not modelled.
+- Other multi-outcome last-charge tables remain unsupported.
 - Projection with last-charge aftermath remains refused (unchanged).
 - The native wand cast path is preserved unchanged; it is not yet converted.

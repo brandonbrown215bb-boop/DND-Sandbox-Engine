@@ -2459,7 +2459,7 @@ class SpellAdapter:
 
 		# Concentration save per occurrence for concentrating Characters:
 		if s_target is Character and not s_target.concentrating_on.is_empty():
-			if bool(recipient.get("knocked_out", false)) or not s_target.is_alive or s_target.current_hp <= 0 or s_target.has_condition("incapacitated") or s_target.has_condition("unconscious"):
+			if bool(recipient.get("knocked_out", false)) or not s_target.is_alive or s_target.current_hp <= 0 or CombatAction.is_incapacitated(s_target):
 				SpellEncounterLifecycle._end_concentration(cast_ctx, s_target)
 				outcome_entry["occurrence_settled"] = true
 				return {}
@@ -2657,6 +2657,7 @@ class SpellAdapter:
 		return [cast.target]
 
 	func is_target_eligible(step: Dictionary, t) -> bool:
+		if SpellEffects.damage_budget_cap(cast.spell) > 0 and not cast.caster.spell_effects.has(cast.source_instance_id): return false
 		if t is Character:
 			if t.is_dead() and not step.has("revive"):
 				return false

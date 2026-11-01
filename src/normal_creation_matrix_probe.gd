@@ -42,15 +42,14 @@ func _run() -> void:
 	for player_count in range(1, PlayerManager.MAX_PLAYERS + 1):
 		await _run_player_count(player_count)
 	await _run_class_equipment_smoke("Fighter", ["chain_mail", "shield", "longsword"])
-	await _run_class_equipment_smoke("Barbarian", ["chain_mail", "shield", "longsword"])
+	await _run_class_equipment_smoke("Barbarian", ["greataxe", "handaxe", "handaxe", "handaxe", "handaxe", "explorers_pack"])
 	await _run_class_equipment_smoke("Rogue", ["leather_armor", "rapier", "shortbow", "dagger", "thieves_tools"])
-	await _run_class_equipment_smoke("Wizard", ["leather_armor", "dagger"], ["fire_bolt", "magic_missile"])
+	await _run_class_equipment_smoke("Wizard", ["dagger", "spellbook"], ["fire_bolt", "magic_missile"])
 	await _run_class_equipment_smoke("Warlock", ["leather_armor", "dagger"])
-	await _run_class_equipment_smoke("Sorcerer", ["leather_armor", "dagger"])
+	await _run_class_equipment_smoke("Sorcerer", ["spear", "dagger", "dagger"])
 	await _run_class_equipment_smoke("Cleric", ["chain_shirt", "shield", "mace", "holy_symbol", "priests_pack"], ["guidance", "sacred_flame", "bless", "cure_wounds"])
 	await _run_class_equipment_smoke("Paladin", ["chain_mail", "shield", "longsword"])
-	await _run_class_equipment_smoke("Ranger", ["leather_armor", "shield", "longbow"])
-	await _run_class_equipment_smoke("Artificer", ["leather_armor", "shield", "tinkers_tools"])
+	await _run_class_equipment_smoke("Ranger", ["leather_armor", "longbow", "shortsword"])
 
 	print("--------------------------------------------------")
 	if failures.is_empty():
@@ -167,6 +166,8 @@ func _run_class_equipment_smoke(target_class: String, expected_equipment: Array[
 	creation.btn_next.pressed.emit()
 	await get_tree().process_frame
 	var class_button := _find_card_button(creation.class_grid, target_class)
+	if target_class == "Fighter":
+		_check(_find_card_button(creation.class_grid, "Artificer") == null, "core-12 creation excludes Artificer")
 	_check(class_button != null, "%s smoke can select %s through the class UI" % [target_class, target_class])
 	if class_button == null:
 		return
@@ -202,13 +203,11 @@ func _run_class_equipment_smoke(target_class: String, expected_equipment: Array[
 		_check(character.inventory.get_equipped(Inventory.Slot.SHIELD) == "shield", "normal Fighter equips a shield")
 		_check(character.inventory.get_weapon() == "longsword", "normal Fighter equips a longsword")
 	elif target_class == "Barbarian":
-		_check(character.inventory.get_armor() == "chain_mail", "normal Barbarian equips chain mail")
-		_check(character.inventory.get_equipped(Inventory.Slot.SHIELD) == "shield", "normal Barbarian equips a shield")
-		_check(character.inventory.get_weapon() == "longsword", "normal Barbarian equips a longsword")
-		character.inventory.unequip(Inventory.Slot.BODY)
-		character._recalculate_ac()
-		var expected_unarmored_ac := 10 + character.ability_scores.get_ability_modifier("DEX") + character.ability_scores.get_ability_modifier("CON") + 2
-		_check(character.has_feature("barbarian_unarmored_defense") and character.get_ac() == expected_unarmored_ac, "normal Barbarian uses shield-compatible Unarmored Defense after armor removal")
+		_check(character.inventory.get_armor().is_empty(), "normal Barbarian starts unarmored")
+		_check(character.inventory.get_weapon() == "greataxe", "normal Barbarian equips a greataxe")
+		_check(character.inventory.count_item("handaxe") == 4 and character.inventory.has_item("explorers_pack") and character.inventory.gold == 15, "normal Barbarian carries four Handaxes, an Explorer's Pack and 15 GP")
+		var expected_unarmored_ac := 10 + character.ability_scores.get_ability_modifier("DEX") + character.ability_scores.get_ability_modifier("CON")
+		_check(character.has_feature("barbarian_unarmored_defense") and character.get_ac() == expected_unarmored_ac, "normal Barbarian starts with Unarmored Defense")
 	elif target_class == "Rogue":
 		_check(character.inventory.get_armor() == "leather_armor", "normal Rogue equips leather armor")
 		_check(character.inventory.get_weapon() == "rapier", "normal Rogue equips a rapier")
@@ -216,16 +215,26 @@ func _run_class_equipment_smoke(target_class: String, expected_equipment: Array[
 		_check(character.inventory.has_item("dagger"), "normal Rogue carries a dagger")
 		_check(character.inventory.has_item("thieves_tools"), "normal Rogue carries thieves' tools")
 	elif target_class == "Wizard":
-		_check(character.inventory.get_armor() == "leather_armor", "normal Wizard equips leather armor")
+		_check(character.inventory.get_armor().is_empty(), "normal Wizard starts unarmored")
 		_check(character.inventory.get_weapon() == "dagger", "normal Wizard equips a dagger")
+		_check(character.inventory.has_item("spellbook"), "normal Wizard carries a spellbook")
+		_check(character.wizard_spellbook_pending == 6 and character.spell_choices_pending and "magic_missile" not in character.known_spells, "normal Wizard waits for spellbook and preparation choices")
+		CharacterSheet.show_sheet(character)
+		await get_tree().process_frame
+		_check(_choose_sheet_spells("Record 6 spells in spellbook", "Learn Wizard spell ", ["magic_missile"]), "normal Wizard records starter spells through the sheet")
+		await get_tree().process_frame
+		_check(character.wizard_spellbook.size() == 6 and character.wizard_spellbook_pending == 0, "normal Wizard records six distinct starter spells")
+		_check(_choose_sheet_spells("Choose spells", "", expected_spells), "normal Wizard chooses cantrips and prepared spells through the sheet")
+		await get_tree().process_frame
+		CharacterSheet.close_sheet()
 	elif target_class == "Warlock":
 		_check(character.inventory.get_armor() == "leather_armor", "normal Warlock equips leather armor")
 		_check(character.inventory.get_weapon() == "dagger", "normal Warlock equips a dagger")
 		character.level_up()
 		_check(character.has_feature("warlock_magical_cunning") and character.get_feature("warlock_magical_cunning").get("type", "") == "active", "normal Warlock gains Magical Cunning at level 2")
 	elif target_class == "Sorcerer":
-		_check(character.inventory.get_armor() == "leather_armor", "normal Sorcerer equips leather armor")
-		_check(character.inventory.get_weapon() == "dagger", "normal Sorcerer equips a dagger")
+		_check(character.inventory.get_armor().is_empty(), "normal Sorcerer starts unarmored")
+		_check(character.inventory.get_weapon() == "spear" and character.inventory.count_item("dagger") == 2, "normal Sorcerer equips a spear and carries two Daggers")
 		var normal_sorcerer_dc := character.get_spell_save_dc()
 		character.use_feature("sorcerer_innate_sorcery")
 		var innate_effects: Array = character.get_feature("sorcerer_innate_sorcery").get("effects", [])
@@ -239,21 +248,75 @@ func _run_class_equipment_smoke(target_class: String, expected_equipment: Array[
 		_check(character.inventory.get_equipped(Inventory.Slot.SHIELD) == "shield", "normal Paladin equips a shield")
 		_check(character.inventory.get_weapon() == "longsword", "normal Paladin equips a longsword")
 		character.level_up()
-		_check(character.has_feature("paladin_fighting_style") and character.get_ac() == 19, "normal Paladin gains armored Defense Fighting Style AC at level 2")
+		_check(character.has_feature("paladin_fighting_style") and character.get_ac() == 18 and not character.feature_choices.has("paladin_fighting_style"), "normal Paladin waits for a level-2 Fighting Style choice")
+		await _choose_sheet_style(character, "defense")
+		_check(character.feature_choices.get("paladin_fighting_style", []) == ["defense"] and character.get_ac() == 19, "normal Paladin gains Defense AC after choosing it")
 	elif target_class == "Ranger":
 		_check(character.inventory.get_armor() == "leather_armor", "normal Ranger equips leather armor")
-		_check(character.inventory.get_equipped(Inventory.Slot.SHIELD) == "shield", "normal Ranger equips a shield")
+		_check(character.inventory.get_equipped(Inventory.Slot.SHIELD).is_empty() and character.inventory.has_item("shortsword"), "normal Ranger carries a shortsword and has no starting shield")
 		_check(character.inventory.get_weapon() == "longbow", "normal Ranger equips a longbow")
 		character.level_up()
-		_check(character.has_feature("ranger_fighting_style") and character.get_attack_style_bonus(DataLoader.get_item("longbow")) == 2, "normal Ranger gains ranged Archery attack bonus at level 2")
-	elif target_class == "Artificer":
-		_check(character.inventory.get_armor() == "leather_armor", "normal Artificer equips leather armor")
-		_check(character.inventory.get_equipped(Inventory.Slot.SHIELD) == "shield", "normal Artificer equips a shield")
-		_check(character.inventory.has_item("tinkers_tools"), "normal Artificer carries Tinker's Tools")
-		var bearings_before := character.inventory.count_item("ball_bearings")
-		var tinker_result := ClassFeature.execute(character, character.get_feature("artificer_tinker's_magic"))
-		_check(tinker_result.get("success", false) and character.inventory.count_item("ball_bearings") == bearings_before + 1, "normal Artificer creates Ball Bearings through Tinker's Magic")
+		_check(character.has_feature("ranger_fighting_style") and character.get_attack_style_bonus(DataLoader.get_item("longbow")) == 0 and not character.feature_choices.has("ranger_fighting_style"), "normal Ranger waits for a level-2 Fighting Style choice")
+		await _choose_sheet_style(character, "archery")
+		_check(character.feature_choices.get("ranger_fighting_style", []) == ["archery"] and character.get_attack_style_bonus(DataLoader.get_item("longbow")) == 2, "normal Ranger gains Archery after choosing it")
 	for spell_id in expected_spells:
 		_check(character.known_spells.has(spell_id), "normal %s acquires %s" % [target_class, spell_id])
 	if not expected_spells.is_empty():
 		_check(int(character.spell_slots.get("1", 0)) > 0, "normal %s receives level-1 spell slots" % target_class)
+
+
+func _choose_sheet_style(character: Character, option_id: String) -> void:
+	CharacterSheet.show_sheet(character)
+	await get_tree().process_frame
+	var chosen := false
+	for button in CharacterSheet._content.find_children("*", "Button", true, false):
+		if button.text != "Fighting Style: choose an option":
+			continue
+		var selector := button.get_parent().get_child(0) as OptionButton
+		for index in selector.item_count:
+			if selector.get_item_metadata(index) == option_id:
+				selector.select(index)
+				selector.item_selected.emit(index)
+				button.pressed.emit()
+				chosen = true
+				break
+		break
+	_check(chosen, "normal %s selects %s through the sheet" % [character.class_id, option_id])
+	await get_tree().process_frame
+	CharacterSheet.close_sheet()
+
+
+## Fill the real spell controls with distinct legal options, preferring the
+## pinned spells this smoke checks. No direct mutation of Character choices.
+func _choose_sheet_spells(button_text: String, row_prefix: String, preferred: Array[String]) -> bool:
+	for button in CharacterSheet._content.find_children("*", "Button", true, false):
+		if button.text != button_text:
+			continue
+		var selected: Array[String] = []
+		for row in button.get_parent().get_children():
+			if row.get_child_count() < 2 or not row.get_child(0) is Label or not row.get_child(1) is OptionButton:
+				continue
+			var label: String = row.get_child(0).text
+			if not (label.begins_with(row_prefix) if not row_prefix.is_empty() else label.begins_with("Cantrip ") or label.begins_with("Prepared ")):
+				continue
+			var selector := row.get_child(1) as OptionButton
+			var candidate := -1
+			for id in preferred:
+				if id in selected: continue
+				for index in selector.item_count:
+					if selector.get_item_metadata(index) == id and not selector.is_item_disabled(index):
+						candidate = index
+						break
+				if candidate >= 0: break
+			if candidate < 0:
+				for index in selector.item_count:
+					if str(selector.get_item_metadata(index)) not in selected and not selector.is_item_disabled(index):
+						candidate = index
+						break
+			if candidate < 0: return false
+			selector.select(candidate)
+			selected.append(str(selector.get_item_metadata(candidate)))
+		if selected.is_empty(): return false
+		button.pressed.emit()
+		return true
+	return false

@@ -155,6 +155,7 @@ static func counters(target, origin, damage_type: String, settled: Dictionary, d
 			child["damage_is_critical"] = false
 			child["damage_source_actor_id"] = actor_id(target)
 			child["damage_source_instance_id"] = str(option.source)
+			child.erase("_defer_damage_budget") # This counter has its own source and occurrence.
 			child["_damage_origin"] = target
 			var result := CombatAction.resolve_damage(recipient, amount, str(policy.response_type), child, false, false, target if target is Character else null, WardRules.next_damage_occurrence_id())
 			receipt["damage_receipt"] = result

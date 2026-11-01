@@ -154,6 +154,8 @@ static func _apply(target, policy: Dictionary, cause_source: Dictionary, decisio
 		target["current_hp"] = 0
 		target["temp_hp"] = 0 # Batch 073 review: a dead record keeps no temporary HP (matches 071 zero-limit death).
 		target["is_alive"] = false
+		var consequence: Variant = target.get("_condition_consequence_handler")
+		if consequence is Callable and consequence.is_valid(): consequence.call(target, "incapacitated")
 		target["zero_hp_aftermath"] = {"outcome": str(policy.outcome), "remains": str(policy.remains), "cause": str(policy.cause), "cause_source": cause_source.duplicate(true)}
 		receipt["identity"] = str(target.get("id", ""))
 	var successor := AftermathSuccessorRules.settle(target, policy, decisions, str(cause_source.get("actor_id", "")))

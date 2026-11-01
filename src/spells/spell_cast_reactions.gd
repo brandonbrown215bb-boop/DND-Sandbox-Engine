@@ -61,7 +61,7 @@ static func _collect_spell_cast_reactions(cast: SpellCastContext) -> void:
 	cast.counterspell_pending = true
 
 
-static func _prepare_spell_cast_effects(cast: SpellCastContext) -> void:
+static func choose_preparation_options(cast: SpellCastContext) -> void:
 	await _choose_authored_recipient_exemptions(cast)
 	if bool(cast.reaction_decisions.get("metamagic:empowered", false)):
 		cast.counterspell_decisions["defer_empowered"] = true
@@ -124,16 +124,16 @@ static func _prepare_spell_cast_effects(cast: SpellCastContext) -> void:
 			else:
 				cast.hud.add_log("[color=orange]Extended Spell could not spend a Sorcery Point.[/color]")
 
-	if not bool(cast.spell.get("_ignore_material_components", false)) and bool(cast.spell.get("material_component_consumed", false)) and not cast.component_item_id.is_empty():
-		if not cast.component_instance_id.is_empty():
-			cast.caster.inventory.take_instance(cast.component_instance_id, "destruction")
-		else:
-			cast.caster.inventory.remove_item(cast.component_item_id)
-		cast.hud.add_log("%s consumes %s." % [cast.spell.get("name", "The spell"), DataLoader.get_item(cast.component_item_id).get("name", cast.component_item_id)])
+
+
+static func _prepare_spell_cast_effects(cast: SpellCastContext) -> void:
+	if cast.ready_release_token.is_empty(): await choose_preparation_options(cast)
+	SpellCastResources.commit_material_components(cast)
 
 	# If spell requires concentration, handle existing concentration
 	if SpellEffects.manages(cast.spell):
 		cast.spell["_effect_cast"] = SpellEffects.begin_cast(cast.caster, cast.spell)
+		SpellEffects.start_damage_budget(cast.caster, cast.spell["_effect_cast"])
 	var identify_casting := str(cast.spell.get("id", "")) == "identify"
 	if identify_casting:
 		cast.spell["_effect_cast"]["concentration"] = true

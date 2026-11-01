@@ -18,7 +18,7 @@ static func children_error(entry: Dictionary) -> String:
 		if not child is Dictionary or not child.get("id") is String or str(child.id).is_empty() or ids.has(child.id): return "Aftermath children need distinct ids"
 		ids[child.id] = true
 		if child.get("type") not in CHILD_TYPES: return "Unsupported source-end child producer/type"
-		var fields := ["id", "type", "choose", "amount"] if child.type == "heal" else ["id", "type", "choose", "kind", "name", "hp"] if child.type == "room_object" else ["id", "type", "choose", "kind", "amount", "damage_type", "radius_hexes", "duration_seconds", "trigger_limit", "trigger_scope"]
+		var fields := ["id", "type", "choose", "amount"] if child.type == "heal" else ["id", "type", "choose", "kind", "name", "hp"] if child.type == "room_object" else ["id", "type", "choose", "kind", "amount", "damage_type", "radius_hexes", "duration_seconds", "trigger_limit", "trigger_scope", "trigger_policies"]
 		for key in child:
 			if key not in fields: return "Unsupported source-end child field: %s" % key
 		if child.has("choose") and not child.choose is bool: return "Child choose must be boolean"
@@ -28,7 +28,11 @@ static func children_error(entry: Dictionary) -> String:
 			"room_object":
 				if child.get("kind") != "loose" or not child.get("name") is String or str(child.name).is_empty() or not SourceEndAftermathRules._int(child.get("hp"), 1, 1000): return "Only loose room-object successors are supported"
 			"room_area":
-				if child.get("kind") != "entry_damage" or child.get("trigger_scope") != "entry": return "Only entry-scoped damage hazards are supported"
+				if child.has("trigger_policies"):
+					if child.get("kind") != "trigger_damage" or child.get("trigger_scope") != "declared": return "Declared spatial damage needs trigger_damage/declared"
+					var error := SpatialTriggerRules.policies_error(child.trigger_policies)
+					if not error.is_empty(): return error
+				elif child.get("kind") != "entry_damage" or child.get("trigger_scope") != "entry": return "Only entry-scoped or declared spatial damage hazards are supported"
 				if not SourceEndAftermathRules._int(child.get("amount"), 1, 1000) or child.get("damage_type") not in DataLoader.VALID_DAMAGE_TYPES: return "Invalid hazard damage"
 				if not SourceEndAftermathRules._int(child.get("radius_hexes"), 0, 20) or not SourceEndAftermathRules._int(child.get("duration_seconds"), 1, 86400) or not SourceEndAftermathRules._int(child.get("trigger_limit"), 1, 100): return "Invalid hazard limits"
 	return ""
@@ -213,9 +217,10 @@ static func _world_links_error(room: Dictionary) -> String:
 				if child.type == "room_object":
 					if object.get("kind") != child.kind or object.get("name") != child.name or object.get("max_hp") != child.hp or LocalRoomRules.coord(object.get("position", [])) != LocalRoomRules.coord(loc.position): return "source-end object differs from its child"
 				elif child.type == "room_area":
-					for key in ["amount", "damage_type", "radius_hexes", "trigger_limit", "trigger_scope"]:
+					for key in ["amount", "damage_type", "radius_hexes", "trigger_limit", "trigger_scope", "trigger_policies"]:
 						if object.get(key) != child.get(key): return "source-end hazard differs from its child"
-					if object.get("hazard_kind") != child.kind or LocalRoomRules.coord(object.get("center", [])) != LocalRoomRules.coord(loc.position): return "source-end hazard location/kind differs"
+					var origin: Variant = object.get("created_center") if child.has("trigger_policies") else object.get("center")
+					if object.get("hazard_kind") != child.kind or not DungeonPersistence.coordinate(origin) or LocalRoomRules.coord(origin) != LocalRoomRules.coord(loc.position): return "source-end hazard location/kind differs"
 				else: return "source-end successor has no world child"
 				found = true
 		if not found: return "source-end successor has no settled child receipt"

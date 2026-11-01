@@ -2027,7 +2027,7 @@ static func _s029_cast_host(caster: Character, target: Character, spell: Diction
 			var tile := HexTile.new()
 			tile.coord = Vector2i(x, y)
 			host.grid.add_tile(tile)
-	host.players = [{"character": target, "hex_position": host.target_coord}]
+	host.players = [{"character": target, "hex_position": host.target_coord}, {"character": caster, "hex_position": Vector2i.ZERO}]
 	host.owner_label_for_character = func(_owner): return "Save Owner"
 	return host
 

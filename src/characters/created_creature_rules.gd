@@ -70,7 +70,7 @@ static func animate(room: Dictionary, caster: Character, party: Array, body_id: 
 	var spell := DataLoader.get_spell("animate_dead")
 	var error := LocalRoomRules._room_spell_caster_error(caster, spell)
 	if not error.is_empty(): return LocalRoomRules.failure(error)
-	var object := LocalRoomRules.get_object(room, body_id)
+	var object := LocalRoomRules.get_object(room, body_id, caster)
 	var body_character: Character = null
 	for member in party:
 		if str(member.corpse_state.get("corpse_id", "")) == body_id: body_character = member

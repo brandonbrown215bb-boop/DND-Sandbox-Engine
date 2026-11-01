@@ -516,7 +516,7 @@ static func can_project_ward(owner: Character, target, pool_id: String = "", con
 
 	if context.has("target_visible") and not bool(context.get("target_visible", true)):
 		return {"eligible": false, "reason": "target_not_visible"}
-	if owner.has_condition("blinded"):
+	if owner.has_condition("blinded") and not CombatPerception._has_blindsight(owner, distance_feet):
 		return {"eligible": false, "reason": "owner_blinded"}
 	var grid: HexGrid = context.get("grid") if context.get("grid") is HexGrid else null
 	if grid != null and owner_pos is Vector2i and target_pos is Vector2i:
@@ -524,7 +524,7 @@ static func can_project_ward(owner: Character, target, pool_id: String = "", con
 			return {"eligible": false, "reason": "no_line_of_sight"}
 	else:
 		var check_dist := maxi(0, distance_feet)
-		if CombatAction.is_invisible(target) and not CombatAction.can_perceive_invisible(owner, check_dist):
+		if not CombatPerception._can_see(owner, target, Vector2i.ZERO, Vector2i.ZERO, null, check_dist):
 			return {"eligible": false, "reason": "target_invisible"}
 
 	return {

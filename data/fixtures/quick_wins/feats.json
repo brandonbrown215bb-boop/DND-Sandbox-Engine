@@ -1,0 +1,5 @@
+[
+  {"id":"fixture:distinct_origin","name":"Distinct Origin","category":"origin","repeatable":true,"repeatable_parameter_options":["arcane","divine","primal"],"features":[]},
+  {"id":"fixture:trained_feat","name":"Trained Feat","category":"general","prerequisite":{"class_levels":{"fighter":4},"features_any":["fighter_second_wind"]},"features":[]},
+  {"id":"fixture:watch_feat","name":"Watch Feat","category":"general","prerequisite":{"features_any":["fixture:b051_vigil_watch"]},"features":[]}
+]

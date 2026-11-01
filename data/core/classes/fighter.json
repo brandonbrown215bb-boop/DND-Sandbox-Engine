@@ -4,6 +4,7 @@
   "description": "SRD 5.2.1 Fighter with Champion progression, levels 1-20.",
   "hit_die": "d10",
   "primary_ability": "STR",
+  "multiclass_prerequisite": {"any": ["STR", "DEX"]},
   "saving_throw_proficiencies": [
     "STR",
     "CON"

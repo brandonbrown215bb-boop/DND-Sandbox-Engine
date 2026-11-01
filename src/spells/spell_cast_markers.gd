@@ -21,7 +21,7 @@ static func _resolve_spell_cast_markers(cast: SpellCastContext) -> bool:
 
 
 static func _cast_prestidigitation(cast: SpellCastContext) -> bool:
-	var prestidigitation_cast := CombatAction.resolve_spell(cast.caster, cast.caster, cast.spell, false, cast.counterspell_decisions, cast.counterspell_observers, cast.slot_level_used, 0)
+	var prestidigitation_cast := CombatAction.resolve_spell(cast.caster, cast.caster, cast.spell, false, cast.counterspell_decisions, cast.counterspell_observers, cast.slot_level_used, 0, cast)
 	if prestidigitation_cast.get("success", false):
 		var effect_type := str(cast.spell.get("_prestidigitation_effect_type", ""))
 		var effect := PrestidigitationRules.create_effect(cast.target_coord, cast.caster.character_id, cast.caster.character_name, effect_type, str(cast.spell.get("_prestidigitation_description", "")), cast.tracker.current_round)
@@ -48,7 +48,7 @@ static func _cast_prestidigitation(cast: SpellCastContext) -> bool:
 
 
 static func _cast_produce_flame(cast: SpellCastContext) -> bool:
-	var flame_cast := CombatAction.resolve_spell(cast.caster, cast.caster, cast.spell, false, cast.counterspell_decisions, cast.counterspell_observers, cast.slot_level_used, 0)
+	var flame_cast := CombatAction.resolve_spell(cast.caster, cast.caster, cast.spell, false, cast.counterspell_decisions, cast.counterspell_observers, cast.slot_level_used, 0, cast)
 	if flame_cast.get("success", false):
 		var flame_origin: Vector2i = cast.players[cast.player_index].get("hex_position", Vector2i.ZERO)
 		cast.produce_flame_markers[cast.caster.character_id] = ProduceFlameRules.create_flame(cast.caster.character_id, cast.caster.character_name, flame_origin, cast.tracker.current_round)
@@ -67,7 +67,7 @@ static func _cast_produce_flame(cast: SpellCastContext) -> bool:
 
 
 static func _cast_minor_illusion(cast: SpellCastContext) -> bool:
-	var illusion_cast := CombatAction.resolve_spell(cast.caster, cast.caster, cast.spell, false, cast.counterspell_decisions, cast.counterspell_observers, cast.slot_level_used, 0)
+	var illusion_cast := CombatAction.resolve_spell(cast.caster, cast.caster, cast.spell, false, cast.counterspell_decisions, cast.counterspell_observers, cast.slot_level_used, 0, cast)
 	if illusion_cast.get("success", false):
 		var illusion := MinorIllusionRules.create_illusion(
 			cast.target_coord,
@@ -105,7 +105,7 @@ static func _cast_message(cast: SpellCastContext) -> bool:
 	if message_target == null:
 		cast.hud.add_log("[color=orange]The Message target is no longer available.")
 	else:
-		var cast_result := CombatAction.resolve_spell(cast.caster, message_target, cast.spell, false, cast.counterspell_decisions, cast.counterspell_observers, cast.slot_level_used, HexUtils.get_distance(cast.spell_origin, cast.target_coord) * 5)
+		var cast_result := CombatAction.resolve_spell(cast.caster, message_target, cast.spell, false, cast.counterspell_decisions, cast.counterspell_observers, cast.slot_level_used, HexUtils.get_distance(cast.spell_origin, cast.target_coord) * 5, cast)
 		if cast_result.get("success", false):
 			var exchange: Dictionary = await cast.hud.request_message_exchange(
 				cast.caster.character_name,
@@ -133,7 +133,7 @@ static func _cast_mage_hand(cast: SpellCastContext) -> bool:
 		cast.hud.add_log("[color=orange]Choose a point within 30 feet for Mage Hand.[/color]")
 		cast.highlight_reachable.call()
 		return true
-	var cast_result := CombatAction.resolve_spell(cast.caster, cast.caster, cast.spell, false, cast.counterspell_decisions, cast.counterspell_observers, cast.slot_level_used, 0)
+	var cast_result := CombatAction.resolve_spell(cast.caster, cast.caster, cast.spell, false, cast.counterspell_decisions, cast.counterspell_observers, cast.slot_level_used, 0, cast)
 	cast.hud.add_log(str(cast_result.get("message", "Mage Hand fails to resolve.")))
 	if cast_result.get("success", false):
 		cast.mage_hand_markers[cast.caster.character_id] = MageHandRules.create_hand(cast.target_coord, cast.caster.character_id, cast.caster.character_name, cast.tracker.current_round)
@@ -150,7 +150,7 @@ static func _cast_mage_hand(cast: SpellCastContext) -> bool:
 
 
 static func _cast_light(cast: SpellCastContext) -> bool:
-	var cast_result := CombatAction.resolve_spell(cast.caster, cast.caster, cast.spell, false, cast.counterspell_decisions, cast.counterspell_observers, cast.slot_level_used, 0)
+	var cast_result := CombatAction.resolve_spell(cast.caster, cast.caster, cast.spell, false, cast.counterspell_decisions, cast.counterspell_observers, cast.slot_level_used, 0, cast)
 	cast.hud.add_log(str(cast_result.get("message", "Light fails to resolve.")))
 	if cast_result.get("success", false):
 		if SpellZoneTerrain.light_is_dispersed_by_darkness(cast.areas.active_spell_zones, cast.target_coord, LightRules.DIM_RADIUS_HEXES):
@@ -171,7 +171,7 @@ static func _cast_light(cast: SpellCastContext) -> bool:
 
 
 static func _cast_dancing_lights(cast: SpellCastContext) -> bool:
-	var cast_result := CombatAction.resolve_spell(cast.caster, cast.caster, cast.spell, false, cast.counterspell_decisions, cast.counterspell_observers, cast.slot_level_used, 0)
+	var cast_result := CombatAction.resolve_spell(cast.caster, cast.caster, cast.spell, false, cast.counterspell_decisions, cast.counterspell_observers, cast.slot_level_used, 0, cast)
 	cast.hud.add_log(str(cast_result.get("message", "Dancing Lights fails to resolve.")))
 	if cast_result.get("success", false):
 		if not cast.caster.concentrating_on.is_empty():

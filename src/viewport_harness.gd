@@ -439,6 +439,19 @@ func _run_scenario(scenario: String) -> void:
 		"action_history_flow": await test_action_history_flow()
 		"damage_history_flow": await test_damage_history_flow()
 		"class_level_table_flow": await test_class_level_table_flow()
+		"perception_flow": await PerceptionFlow.run(self)
+		"ordinary_action_flow": await OrdinaryActionFlow.run(self)
+		"ready_action_flow": await ReadyActionFlow.run(self)
+		"world_search_flow": await WorldSearchFlow.run(self)
+		"world_search_reload": await WorldSearchFlow.reload(self)
+		"condition_recovery_flow": await ConditionRecoveryFlow.run(self)
+		"crown_condition_finish_flow": await CrownConditionFinishFlow.run(self)
+		"crown_condition_finish_reload": await CrownConditionFinishFlow.reload(self)
+		"condition_recovery_reload": await ConditionRecoveryFlow.reload(self)
+		"quick_wins_flow": await QuickWinsFlow.run(self)
+		"quick_wins_reload": await QuickWinsFlow.run_reload(self)
+		"spatial_trigger_flow": await SpatialTriggerFlow.run(self)
+		"spatial_trigger_reload": await SpatialTriggerFlow.run_reload(self)
 		"formula_number_flow": await test_formula_number_flow()
 		"child_group_flow": await test_child_group_flow()
 		"result_reducer_flow": await test_result_reducer_flow()
@@ -1076,7 +1089,10 @@ func test_bard_creation_flow() -> void:
 		_assert(SaveManager.save_game("bard_creation"), "Bard creation saves through the actual disk boundary")
 		_assert(SaveManager.load_game("bard_creation"), "Bard creation loads through the actual disk boundary")
 		var loaded: Character = PlayerManager.get_player(0).get("character")
-		_assert(loaded.creation_choices == created.creation_choices and loaded.tool_proficiencies == created.tool_proficiencies and loaded.inventory.to_dict() == created.inventory.to_dict() and PartyManager.characters.get(loaded.character_id) == loaded, "Disk reload preserves Bard choices, exact inventory and canonical identity without replaying grants")
+		_assert(loaded.creation_choices == created.creation_choices, "Disk reload preserves Bard creation choices: before=%s after=%s" % [str(created.creation_choices), str(loaded.creation_choices)])
+		_assert(loaded.tool_proficiencies == created.tool_proficiencies, "Disk reload preserves Bard tool proficiencies")
+		_assert(loaded.inventory.to_dict() == created.inventory.to_dict(), "Disk reload preserves exact Bard inventory without replaying grants")
+		_assert(PartyManager.characters.get(loaded.character_id) == loaded, "Disk reload preserves canonical Bard party identity")
 		var malformed: Dictionary = SaveManager._read_save("bard_creation")
 		malformed["players"][0]["character"]["tool_proficiencies"] = ["lute", "lute", "viol"]
 		_assert(not SaveManager._validate_save_data(malformed).is_empty() and PlayerManager.get_player(0).get("character") == loaded, "Malformed instrument proficiency is refused before live party mutation")
@@ -1689,6 +1705,40 @@ func test_core12_audit_repairs() -> void:
 	target["max_hp"] = 10000
 	target["armor_class"] = -100
 	target["is_alive"] = true
+	rogue.character_id = "s235_live_rogue"
+	rogue.inventory.unequip(Inventory.Slot.WEAPON)
+	rogue.inventory.equip(Inventory.Slot.WEAPON, "rapier", true)
+	rogue.add_condition("stunned", 2)
+	await _start_class_fixture_turn(combat, rogue)
+	_assert(combat.current_player_idx == 1 and combat.remaining_speed > 0 and not combat._can_spend_action_cost("action") and not combat._can_spend_action_cost("bonus_action") and combat.hud.btn_attack.disabled and combat.hud.btn_spell.disabled and not combat.hud.btn_end_turn.disabled, "Stunned player gets a live movement turn while the HUD and budgets refuse actions")
+	var move_start: Vector2i = combat.player_entities[1]["hex_position"]
+	var reachable: Dictionary = combat._player_reachable(move_start, combat.remaining_speed, rogue)
+	for monster_index in combat.monster_entities.size():
+		combat.monster_entities[monster_index]["hex_position"] = Vector2i(6 + monster_index, 5)
+	var move_dest := Vector2i(-1, 0)
+	combat.pending_action_type = ""
+	combat.child_actions.clear()
+	if move_dest != Vector2i(999, 999):
+		await combat._on_hex_clicked(move_dest)
+	_assert(reachable.has(move_dest) and combat.player_entities[1]["hex_position"] == move_dest and combat.turn_budget.action_available and not combat._can_spend_action_cost("action"), "Stunned character moves through the real HUD hex path without gaining an Action")
+	rogue.remove_condition("stunned")
+	rogue.add_condition("unconscious", 2)
+	combat.turn_budget.reset(rogue, combat.player_entities)
+	combat.hud.update_hud(rogue, combat.tracker)
+	_assert(rogue.current_hp > 0 and CombatAction.is_incapacitated(rogue) and not combat._can_spend_action_cost("action") and not combat._can_spend_action_cost("bonus_action"), "HP-positive Unconscious refuses both real player action budgets")
+	rogue.remove_condition("unconscious")
+	combat.hud.update_hud(rogue, combat.tracker)
+	combat.hud.set_controls_disabled(false)
+	combat.player_entities[1]["hex_position"] = Vector2i.ZERO
+	for monster_index in combat.monster_entities.size():
+		combat.monster_entities[monster_index]["hex_position"] = Vector2i(1 + monster_index, 0)
+	combat._update_grid_entities()
+	rogue.inventory.equip(Inventory.Slot.WEAPON, "rapier", true)
+	rogue.add_condition("unconscious", 2)
+	_assert(str(rogue.inventory.get_equipped(Inventory.Slot.WEAPON)).is_empty() and not combat.dropped_combat_items.is_empty(), "Unconscious condition drops the held weapon into the live combat item ledger")
+	rogue.heal(1)
+	_assert(rogue.has_condition("unconscious") and rogue.has_condition("prone"), "Healing preserves explicit Unconscious and its derived Prone until that effect ends")
+	rogue.remove_condition("unconscious")
 	_assert(combat._is_sneak_attack_valid(rogue, target["hex_position"], false, false, DataLoader.get_item("rapier")), "a conscious adjacent ally qualifies a Finesse attack")
 	ally.add_condition("incapacitated", 1)
 	_assert(not combat._is_sneak_attack_valid(rogue, target["hex_position"], false, false, DataLoader.get_item("rapier")), "an incapacitated adjacent ally cannot enable Sneak Attack")
@@ -6077,10 +6127,11 @@ func test_ranger_natures_veil_blindsight() -> void:
 	var ranger := _setup_ranger_world()
 	while ranger.level < 18:
 		ranger.level_up()
-	# Charm Person is the current sight-tagged spell record. Add it only to this
+	# A fixture source grants Charm Person to this
 	# test character to exercise the shared target-visibility boundary; this does
 	# not expand the Ranger's curated spell access list.
 	ranger.known_spells.assign(["charm_person"])
+	SpellPermissionChecks.grant_slot_permission(ranger, ["charm_person"])
 	_own_class_spells(ranger) # Batch 084 R3 fixture repair
 	var combat: Node = await _spawn_scene("res://scenes/combat.tscn", 2.0)
 	combat.current_player_idx = 0
@@ -6594,7 +6645,8 @@ func test_monk_action_flow() -> void:
 			monk.level_up()
 			monk.level_up()
 			monk.short_rest()
-			combat.turn_budget.reset(monk, combat.player_entities)
+			# A new turn clears the old paid Flurry sequence as well as its budget.
+			await _start_class_fixture_turn(combat, monk)
 			monk.feature_uses["monk_bonus_unarmed_strike"] = 1
 			target["is_alive"] = true
 			target["current_hp"] = 1000
@@ -15411,6 +15463,18 @@ func test_spell_effect_lifetime() -> void:
 	var bless_recipients: Array = cleric.concentrating_on.get("targets", [])
 	_assert(int(cleric.spell_slots["1"]) == 3 and not combat.turn_budget.action_available, "A multi-target cast spends one slot and one action")
 	_assert(bless_recipients.size() == 2 and fighter in bless_recipients and combat.player_entities[1]["character"] in bless_recipients and cleric.spell_effects.has(bless_source), "Concentration retains both other recipients and the caster's own source without a self-reference")
+	cleric.add_condition("stunned", 2, "test:effective_incapacitation")
+	_assert(cleric.concentrating_on.is_empty() and not fighter.has_condition("blessed") and not combat.player_entities[1]["character"].has_condition("blessed") and not cleric.has_condition("blessed") and not cleric.spell_effects.has(bless_source), "Effective incapacitation ends live Bless concentration and removes its recipient conditions and source immediately")
+	cleric.remove_condition("stunned")
+	combat.turn_budget.reset(cleric, combat.player_entities)
+	combat.hud.update_hud(cleric, combat.tracker)
+	combat.hud._show_spell_selection()
+	combat.hud._on_spell_selected(bless_index)
+	combat.pending_spell_data["_selected_spell_slot_level"] = 1
+	await combat._on_hex_clicked(positions[0])
+	await combat._on_hex_clicked(positions[1])
+	await combat._on_hex_clicked(positions[3])
+	_assert(cleric.has_condition("blessed") and fighter.has_condition("blessed") and combat.player_entities[1]["character"].has_condition("blessed"), "HUD can establish a fresh Bless concentration after incapacitation cleanup")
 	combat.turn_budget.reset(cleric, combat.player_entities)
 	combat.pending_spell_data = DataLoader.get_spell("shield_of_faith").duplicate(true)
 	combat.pending_action_type = "spell"
@@ -15556,6 +15620,12 @@ func test_mixed_mechanics_encounter() -> void:
 	var rogue: Character = by_class["rogue"]["character"]
 	var wizard: Character = by_class["wizard"]["character"]
 	var cleric: Character = by_class["cleric"]["character"]
+	# This is an interaction fixture, including deliberately cross-class casts.
+	# Give those casts an explicit source rather than bypassing spell permission.
+	SpellPermissionChecks.grant_slot_permission(wizard, ["fireball", "sorcerous_burst", "poison_spray", "false_life", "chill_touch", "acid_splash", "color_spray", "vicious_mockery", "command", "guidance", "resistance", "shillelagh", "longstrider", "animal_friendship", "animal_messenger", "dancing_lights", "light", "mage_hand", "message", "minor_illusion", "prestidigitation", "produce_flame", "protection_from_energy", "protection_from_evil_and_good", "protection_from_poison", "ray_of_sickness", "ray_of_enfeeblement", "regenerate", "remove_curse", "blade_ward", "shocking_grasp", "ice_knife", "melfs_acid_arrow", "disintegrate", "shield"])
+	SpellPermissionChecks.grant_slot_permission(cleric, ["cure_wounds", "healing_word", "sacred_flame", "bless", "shield_of_faith", "guiding_bolt", "inflict_wounds"])
+	_ready_spell_components(wizard)
+	_ready_spell_components(cleric)
 	rogue.level_up()
 	var target: Dictionary = combat.monster_entities[0]
 	target["current_hp"] = 100
@@ -15588,16 +15658,12 @@ func test_mixed_mechanics_encounter() -> void:
 	var hp_before_heal := fighter.current_hp
 	var cure_wounds: Dictionary = DataLoader.get_spell("cure_wounds")
 	var heal_cast := CombatAction.resolve_spell(cleric, fighter, cure_wounds, true)
-	var healed_amount := 0
-	for effect in CombatAction.spell_effects_for_slot_level(cure_wounds, int(heal_cast.get("slot_level", 1))):
-		for result in EventResolver.apply_effects(fighter, [effect], cleric):
-			healed_amount += int(result.get("amount", 0))
+	var healed_amount := int(heal_cast.get("healing", 0))
 	_assert(heal_cast.get("success", false) and healed_amount > 0 and fighter.current_hp > hp_before_heal, "mixed encounter resolves production Cure Wounds healing")
 	fighter.current_hp = 1
 	var healing_word: Dictionary = DataLoader.get_spell("healing_word")
 	var healing_word_cast := CombatAction.resolve_spell(cleric, fighter, healing_word, false, {}, [], 3, 30)
-	var healing_word_results := EventResolver.apply_effects(fighter, CombatAction.spell_effects_for_slot_level(healing_word, 3), cleric)
-	_assert(healing_word_cast.get("success", false) and healing_word_results.size() == 1 and int(healing_word_results[0].get("amount", 0)) >= 9 and fighter.current_hp > 1, "mixed encounter resolves upcast Healing Word with the Cleric's Wisdom modifier")
+	_assert(healing_word_cast.get("success", false) and int(healing_word_cast.get("healing", 0)) >= 9 and fighter.current_hp > 1, "mixed encounter resolves upcast Healing Word with the Cleric's Wisdom modifier")
 	var sacred_flame: Dictionary = DataLoader.get_spell("sacred_flame")
 	target["current_hp"] = 100
 	target["max_hp"] = 100
@@ -15905,9 +15971,8 @@ func test_mixed_mechanics_encounter() -> void:
 	shocked_monster["challenge_rating"] = old_messenger_cr
 	shocked_monster["can_fly"] = old_messenger_can_fly
 	shocked_monster["saving_throw_bonuses"] = animal_friendship_old_saves
-	combat.current_player_idx = int(by_class["wizard"].get("player_id", 0))
-	combat.active_character = wizard
-	combat.turn_budget.reset(wizard, combat.player_entities)
+	# HUD controls require the actual initiative owner, not stale player pointers.
+	_p_focus(combat, wizard)
 	combat.pending_spell_data = DataLoader.get_spell("dancing_lights").duplicate(true)
 	combat.pending_action_type = "spell"
 	var dancing_lights_anchor: Vector2i = shocked_monster["hex_position"]
@@ -16390,10 +16455,12 @@ func test_mixed_mechanics_encounter() -> void:
 		SpellPermissionChecks.grant_slot_permission(wizard, ["shield"])
 	wizard.base_ac = 10
 	var reaction_weapon := {"ability": "STR", "damage": "1", "damage_type": "bludgeoning", "range": 1}
+	var dead_attack := CombatAction.resolve_weapon_attack(fighter, wizard, reaction_weapon, false, false, {"shield":true})
+	_assert(dead_attack.get("refused", false) and wizard.reaction_available, "mixed encounter refuses the disintegrated attacker's stale attack without spending the target's Shield")
 	for _attempt in 50:
 		if not wizard.reaction_available:
 			break
-		CombatAction.resolve_weapon_attack(fighter, wizard, reaction_weapon, false, false, {"shield": true})
+		CombatAction.resolve_weapon_attack(rogue, wizard, reaction_weapon, false, false, {"shield": true})
 	_assert(not wizard.reaction_available and int(wizard.spell_slots.get("1", 0)) == 0 and wizard.has_condition("shield"), "mixed encounter consumes the owning wizard Shield reaction")
 
 	combat._end_concentration(cleric)

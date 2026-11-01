@@ -223,7 +223,7 @@ static func find_steed_features(state: Dictionary) -> Array[Dictionary]:
 	return features
 
 
-static func resolve_steed_slam(owner: Character, steed: Character, target: Dictionary, creature_type: String, spell_level: int) -> Dictionary:
+static func resolve_steed_slam(owner: Character, steed: Character, target: Dictionary, creature_type: String, spell_level: int, decisions: Dictionary = {}) -> Dictionary:
 	if owner == null or steed == null or target.is_empty():
 		return {"success": false, "message": "Otherworldly Slam needs a living target."}
 	var damage_type := "radiant" if creature_type == "celestial" else ("psychic" if creature_type == "fey" else "fire")
@@ -238,7 +238,7 @@ static func resolve_steed_slam(owner: Character, steed: Character, target: Dicti
 		"range": 1,
 		"attack_distance": 1,
 	}
-	return CombatAction.resolve_weapon_attack(steed, target, weapon)
+	return CombatAction.resolve_weapon_attack(steed, target, weapon, false, false, decisions)
 
 
 static func mark_find_steed_ability_used(owner: Character) -> bool:

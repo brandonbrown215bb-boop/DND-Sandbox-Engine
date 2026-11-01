@@ -146,6 +146,24 @@ static func local_error(state: Variant) -> String:
 		for id in altitude_modes:
 			if not state["party_positions"].has(id) or not altitude_modes[id] is String or str(altitude_modes[id]) not in ["ground", "fly", "levitate"]: return "local party altitude mode is invalid"
 	var areas_value: Variant = state.get("areas", [])
+	for field in ["area_turn_serial", "area_event_serial", "area_encounter_serial"]:
+		if state.has(field) and not SourceEndAftermathRules._int(state[field], 0, 2147483647): return "Invalid spatial room clock"
+	if state.has("area_actor_turns"):
+		if not state.area_actor_turns is Dictionary or state.area_actor_turns.size() > 100: return "Invalid spatial actor clocks"
+		for actor_id in state.area_actor_turns:
+			var token: Variant = state.area_actor_turns[actor_id]
+			if not actor_id is String or actor_id.is_empty() or not token is String or not token.begins_with("room:%s:" % state.id): return "Invalid spatial actor clock"
+			var serial: String = token.trim_prefix("room:%s:" % state.id)
+			if not serial.is_valid_int() or int(serial) < 1 or int(serial) > int(state.get("area_turn_serial", 0)): return "Invalid spatial actor turn"
+	if state.has("area_boundary_events"):
+		if not state.area_boundary_events is Dictionary or state.area_boundary_events.size() > 10000: return "Invalid spatial boundary events"
+		for key in state.area_boundary_events:
+			var parts: Variant = JSON.parse_string(str(key))
+			var event: Variant = state.area_boundary_events[key]
+			var prefix := "room:%s:move:" % state.id
+			if not parts is Array or parts.size() != 3 or not parts.all(func(part): return part is String and not part.is_empty()) or parts[2] not in ["start_turn", "end_turn"] or not event is String or not event.begins_with(prefix): return "Invalid spatial boundary event"
+			var serial: String = event.trim_prefix(prefix)
+			if not serial.is_valid_int() or int(serial) < 1 or int(serial) > int(state.get("area_event_serial", 0)): return "Invalid spatial boundary event serial"
 	if not areas_value is Array or areas_value.size() > 500: return "local room areas are malformed"
 	var area_ids: Dictionary = {}
 	var alarm_warded_object_ids: Dictionary = {}
@@ -153,6 +171,10 @@ static func local_error(state: Variant) -> String:
 	for area in areas_value:
 		if not area is Dictionary or not area.get("id") is String or str(area["id"]).is_empty() or area_ids.has(area["id"]): return "local area identity is invalid"
 		area_ids[area["id"]] = true
+		if area.has("trigger_policies"):
+			var trigger_error := SpatialTriggerRules.state_error(area)
+			if not trigger_error.is_empty(): return trigger_error
+			if not SourceEndAftermathRules._int(area.get("created_room_event_serial"), 0, int(state.get("area_event_serial", 0))) or area.get("created_room_event_prefix") != "room:%s:move:" % state.id: return "Invalid spatial creation boundary"
 		if not area.get("spell_id") is String or str(area["spell_id"]).is_empty() or not area.get("caster_id") is String or str(area["caster_id"]).is_empty(): return "local area source is invalid"
 		if not coordinate(area.get("center")) or not cells.has(LocalRoomRules.coord(area["center"])): return "local area center is outside the room"
 		for field in ["radius_hexes", "expires_at_seconds", "trigger_limit"]:
@@ -282,6 +304,8 @@ static func local_error(state: Variant) -> String:
 	var item_records := {}
 	for object in state["objects"]:
 		if not object is Dictionary or not object.get("id") is String or str(object["id"]).is_empty() or objects.has(object["id"]) or not object.get("name") is String: return "object identity is invalid"
+		var discovery_error := LocalRoomSearchRules.object_error(object)
+		if not discovery_error.is_empty(): return discovery_error
 		if object.has("tethers") and (not object["tethers"] is Dictionary or object["tethers"].size() > 32): return "object tethers are malformed"
 		objects[object["id"]] = true
 		if str(object.get("kind", "")) not in ["door", "container", "loose", "barrier", "remains"] or not coordinate(object.get("position")) or not cells.has(LocalRoomRules.coord(object["position"])): return "object location or kind is invalid"

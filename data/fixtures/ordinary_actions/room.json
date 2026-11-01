@@ -1,0 +1,9 @@
+{
+  "id": "fixture:ordinary_action_room",
+  "ambient_light": "bright",
+  "objects": [
+    {"id":"fixture:door", "name":"Fixture door", "kind":"door", "position":[1,0], "hp":20, "max_hp":20, "open":false, "locked":false, "lockable":true, "lock_dc":99, "break_dc":99, "interaction_noise":{"force_open":{"volume":"loud", "range_feet":60}, "pry":{"volume":"loud", "range_feet":60}}, "contents":[]},
+    {"id":"fixture:chest", "name":"Fixture chest", "kind":"container", "position":[0,1], "hp":20, "max_hp":20, "open":true, "contents":[{"instance_id":"fixture:chest:potion", "definition_id":"potion_healing", "state":{}}]},
+    {"id":"fixture:loose", "name":"Fixture ground item", "kind":"loose", "position":[0,0], "hp":1, "max_hp":1, "contents":[{"instance_id":"fixture:ground:potion", "definition_id":"potion_healing", "state":{}}]}
+  ]
+}

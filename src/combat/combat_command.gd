@@ -4,7 +4,7 @@
 class_name CombatCommand
 extends RefCounted
 
-const TYPES := ["command_created_actor", "choose_aura_protection", "use_captured_grant", "dismiss_source_benefit", "attack", "cast_spell", "activate_magic_item", "use_feature", "use_item", "eat_goodberry", "font_of_magic_convert", "font_of_magic_create", "toggle_find_steed_mount", "move_dancing_lights", "move_moonbeam", "move_cloud_of_daggers", "move_conjure_animals", "move_conjure_celestial", "move_conjure_fey", "conjure_woodland_beings_disengage", "dismiss_light", "dismiss_timed_numeric_modifier", "choose_protection", "detect_magic_inspect", "control_mage_hand", "dismiss_mage_hand", "dodge", "end_turn", "cancel", "move"]
+const TYPES := ["ready_action", "ordinary_action", "command_created_actor", "choose_aura_protection", "use_captured_grant", "dismiss_source_benefit", "attack", "cast_spell", "activate_magic_item", "use_feature", "use_item", "eat_goodberry", "font_of_magic_convert", "font_of_magic_create", "toggle_find_steed_mount", "toggle_shield", "move_dancing_lights", "move_moonbeam", "move_cloud_of_daggers", "move_conjure_animals", "move_conjure_celestial", "move_conjure_fey", "conjure_woodland_beings_disengage", "dismiss_light", "dismiss_timed_numeric_modifier", "choose_protection", "detect_magic_inspect", "control_mage_hand", "dismiss_mage_hand", "dodge", "end_turn", "cancel", "move"]
 
 var action_type: String
 var payload: Dictionary
@@ -32,6 +32,25 @@ static func from_hud_for_character(kind: String, data: Dictionary, character: Ch
 	if command == null or character == null:
 		return null
 	match command.action_type:
+		"ready_action":
+			var response: Dictionary = command.payload.get("response", {}).duplicate(true)
+			if response.get("kind", "") == "spell":
+				var cast_command := from_hud_for_character("cast_spell", {"spell":response.get("spell", {})}, character)
+				if cast_command == null: return null
+				response = {"kind":"spell", "spell":cast_command.payload.spell}
+			if response.get("kind", "") == "ordinary" and response.get("action", "") == "help_check":
+				if not CheckHelpRules.owns(character, str(response.get("proficiency_kind", "")), str(response.get("proficiency", ""))): return null
+			command.payload = {"trigger":command.payload.trigger, "response":response}
+		"ordinary_action":
+			if str(command.payload.get("action", "")) not in OrdinaryActionRules.ACTIONS: return null
+			var ordinary := {"action":str(command.payload.action)}
+			if ordinary.action == "help_check":
+				var help_kind := str(command.payload.get("proficiency_kind", ""))
+				var name := str(command.payload.get("proficiency", ""))
+				if not CheckHelpRules.owns(character, help_kind, name): return null
+				ordinary["proficiency_kind"] = help_kind
+				ordinary["proficiency"] = name
+			command.payload = ordinary
 		"activate_magic_item":
 			var instance_id := str(command.payload.get("instance_id", ""))
 			var charges := int(command.payload.get("charges", 0))
@@ -215,6 +234,10 @@ func is_valid() -> bool:
 	if action_type not in TYPES:
 		return false
 	match action_type:
+		"ready_action":
+			return payload.get("trigger") is Dictionary and payload.get("response") is Dictionary and ReadyActionRules.trigger_error(payload.trigger).is_empty() and payload.response.get("kind", "") in ReadyActionRules.RESPONSES
+		"ordinary_action":
+			return str(payload.get("action", "")) in OrdinaryActionRules.ACTIONS
 		"cast_spell":
 			return payload.get("spell", {}) is Dictionary and not payload.get("spell", {}).is_empty()
 		"use_feature":

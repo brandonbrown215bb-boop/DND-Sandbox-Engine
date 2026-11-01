@@ -2,18 +2,19 @@
 class_name CombatObjectRules
 extends RefCounted
 
-static func at(grid: HexGrid, position: Vector2i) -> Dictionary:
-	var objects := all_at(grid, position)
+static func at(grid: HexGrid, position: Vector2i, observer = null) -> Dictionary:
+	var objects := all_at(grid, position, observer)
 	return objects[0] if not objects.is_empty() else {}
 
 
-static func all_at(grid: HexGrid, position: Vector2i) -> Array[Dictionary]:
+static func all_at(grid: HexGrid, position: Vector2i, observer = null) -> Array[Dictionary]:
 	var objects: Array[Dictionary] = []
 	if grid == null:
 		return objects
 	for entity in grid.entities:
 		if entity.get("world_object") is Dictionary and entity.get("hex_position", Vector2i.ZERO) == position:
 			var object: Dictionary = entity["world_object"]
+			if observer != null and not LocalRoomSearchRules.known(object, observer): continue
 			if not bool(object.get("removed", false)) and int(object.get("hp", 1)) > 0:
 				objects.append(object)
 	return objects
@@ -24,8 +25,8 @@ static func target_key(object: Dictionary) -> String:
 	return instance_id if not instance_id.is_empty() else str(object.get("id", ""))
 
 
-static func by_key(grid: HexGrid, position: Vector2i, key: String) -> Dictionary:
-	for object in all_at(grid, position):
+static func by_key(grid: HexGrid, position: Vector2i, key: String, observer = null) -> Dictionary:
+	for object in all_at(grid, position, observer):
 		if target_key(object) == key:
 			return object
 	return {}

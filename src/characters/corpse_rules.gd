@@ -32,6 +32,10 @@ static func mark_dead(character: Character, cause: String, remains: String = "in
 	character.stable_recovery_at_seconds = 0
 	character.end_rage()
 	DruidRules.revert_for_incapacitation(character)
+	# The live scene owns zones/lights as well as recipient records. Let it
+	# consume the concentration metadata before the scene-independent fallback.
+	if character.condition_consequence_handler.is_valid():
+		character.condition_consequence_handler.call(character, "incapacitated")
 	SpellEffects.end_concentration(character, character.concentrating_on.get("targets", []))
 	character.concentrating_on.clear()
 	for record in character.inventory.owned_instances():

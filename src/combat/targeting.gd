@@ -12,8 +12,16 @@ static func is_in_range(attacker_coord: Vector2i, target_coord: Vector2i, max_ra
 
 ## True when no intermediate grid tile blocks sight between two axial hexes.
 static func has_line_of_sight(origin: Vector2i, target: Vector2i, hex_grid: HexGrid) -> bool:
-	if origin == target or hex_grid == null:
-		return true
+	if hex_grid == null: return true
+	for coord in line_cells(origin, target):
+		if coord == origin or coord == target: continue
+		if hex_grid.has_tile(coord) and bool(hex_grid.get_tile(coord).custom_properties.get("blocks_sight", false)):
+			return false
+	return true
+
+
+static func line_cells(origin: Vector2i, target: Vector2i) -> Array[Vector2i]:
+	var cells: Array[Vector2i] = [origin]
 	var distance := HexUtils.get_distance(origin, target)
 	for step in range(1, distance):
 		var fraction := float(step) / float(distance)
@@ -31,9 +39,9 @@ static func has_line_of_sight(origin: Vector2i, target: Vector2i, hex_grid: HexG
 		elif y_error > z_error:
 			rounded_y = -rounded_x - rounded_z
 		var tile_coord := Vector2i(rounded_x, rounded_y)
-		if hex_grid.has_tile(tile_coord) and bool(hex_grid.get_tile(tile_coord).custom_properties.get("blocks_sight", false)):
-			return false
-	return true
+		cells.append(tile_coord)
+	if target != origin: cells.append(target)
+	return cells
 
 
 ## Retrieve all targets in a sphere AoE around a center hex.

@@ -1,0 +1,498 @@
+[
+  {
+    "id": "fixture:spatial_threshold",
+    "name": "Spatial Threshold",
+    "description": "Neutral S-184 trigger consumer.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "duration_seconds": 6,
+    "classes": [
+      "wizard"
+    ],
+    "effects": [
+      {
+        "type": "grant_condition",
+        "condition": "blessed"
+      }
+    ],
+    "end_aftermath": [
+      {
+        "id": "release",
+        "reasons": [
+          "dismissed"
+        ],
+        "cancel_policy": "stop",
+        "children": [
+          {
+            "id": "threshold",
+            "type": "room_area",
+            "kind": "trigger_damage",
+            "trigger_scope": "declared",
+            "amount": 3,
+            "damage_type": "force",
+            "radius_hexes": 0,
+            "duration_seconds": 600,
+            "trigger_limit": 100,
+            "choose": true,
+            "trigger_policies": [
+              {
+                "id": "contact",
+                "events": [
+                  "entry",
+                  "end_turn"
+                ],
+                "boundary": "turn",
+                "limit": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "fixture:spatial_passage",
+    "name": "Spatial Passage",
+    "description": "Neutral S-184 trigger consumer.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "duration_seconds": 6,
+    "classes": [
+      "wizard"
+    ],
+    "effects": [
+      {
+        "type": "grant_condition",
+        "condition": "blessed"
+      }
+    ],
+    "end_aftermath": [
+      {
+        "id": "release",
+        "reasons": [
+          "dismissed"
+        ],
+        "cancel_policy": "stop",
+        "children": [
+          {
+            "id": "passage",
+            "type": "room_area",
+            "kind": "trigger_damage",
+            "trigger_scope": "declared",
+            "amount": 3,
+            "damage_type": "force",
+            "radius_hexes": 0,
+            "duration_seconds": 600,
+            "trigger_limit": 100,
+            "choose": true,
+            "trigger_policies": [
+              {
+                "id": "pass",
+                "events": [
+                  "crossing"
+                ],
+                "boundary": "event",
+                "limit": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "fixture:spatial_nearby",
+    "name": "Spatial Nearby",
+    "description": "Neutral S-184 trigger consumer.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "duration_seconds": 6,
+    "classes": [
+      "wizard"
+    ],
+    "effects": [
+      {
+        "type": "grant_condition",
+        "condition": "blessed"
+      }
+    ],
+    "end_aftermath": [
+      {
+        "id": "release",
+        "reasons": [
+          "dismissed"
+        ],
+        "cancel_policy": "stop",
+        "children": [
+          {
+            "id": "nearby",
+            "type": "room_area",
+            "kind": "trigger_damage",
+            "trigger_scope": "declared",
+            "amount": 3,
+            "damage_type": "force",
+            "radius_hexes": 1,
+            "duration_seconds": 600,
+            "trigger_limit": 100,
+            "choose": true,
+            "trigger_policies": [
+              {
+                "id": "approach",
+                "events": [
+                  "first_approach"
+                ],
+                "boundary": "turn",
+                "limit": 1
+              },
+              {
+                "id": "start",
+                "events": [
+                  "start_turn"
+                ],
+                "boundary": "turn",
+                "limit": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "fixture:spatial_sweep",
+    "name": "Spatial Sweep",
+    "description": "Neutral S-184 trigger consumer.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "duration_seconds": 6,
+    "classes": [
+      "wizard"
+    ],
+    "effects": [
+      {
+        "type": "grant_condition",
+        "condition": "blessed"
+      }
+    ],
+    "end_aftermath": [
+      {
+        "id": "release",
+        "reasons": [
+          "dismissed"
+        ],
+        "cancel_policy": "stop",
+        "children": [
+          {
+            "id": "sweep",
+            "type": "room_area",
+            "kind": "trigger_damage",
+            "trigger_scope": "declared",
+            "amount": 3,
+            "damage_type": "force",
+            "radius_hexes": 0,
+            "duration_seconds": 600,
+            "trigger_limit": 100,
+            "choose": true,
+            "trigger_policies": [
+              {
+                "id": "contact",
+                "events": [
+                  "entry",
+                  "area_enter",
+                  "end_turn"
+                ],
+                "boundary": "turn",
+                "limit": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "fixture:spatial_actor_clock",
+    "name": "Spatial Actor Clock",
+    "description": "Neutral S-184 trigger consumer.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "duration_seconds": 6,
+    "classes": [
+      "wizard"
+    ],
+    "effects": [
+      {
+        "type": "grant_condition",
+        "condition": "blessed"
+      }
+    ],
+    "end_aftermath": [
+      {
+        "id": "release",
+        "reasons": [
+          "dismissed"
+        ],
+        "cancel_policy": "stop",
+        "children": [
+          {
+            "id": "actor_clock",
+            "type": "room_area",
+            "kind": "trigger_damage",
+            "trigger_scope": "declared",
+            "amount": 3,
+            "damage_type": "force",
+            "radius_hexes": 0,
+            "duration_seconds": 600,
+            "trigger_limit": 100,
+            "choose": true,
+            "trigger_policies": [
+              {
+                "id": "contact",
+                "events": [
+                  "entry"
+                ],
+                "boundary": "actor_turn",
+                "limit": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "fixture:spatial_source_clock",
+    "name": "Spatial Source Clock",
+    "description": "Neutral S-184 trigger consumer.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "duration_seconds": 6,
+    "classes": [
+      "wizard"
+    ],
+    "effects": [
+      {
+        "type": "grant_condition",
+        "condition": "blessed"
+      }
+    ],
+    "end_aftermath": [
+      {
+        "id": "release",
+        "reasons": [
+          "dismissed"
+        ],
+        "cancel_policy": "stop",
+        "children": [
+          {
+            "id": "source_clock",
+            "type": "room_area",
+            "kind": "trigger_damage",
+            "trigger_scope": "declared",
+            "amount": 3,
+            "damage_type": "force",
+            "radius_hexes": 0,
+            "duration_seconds": 600,
+            "trigger_limit": 100,
+            "choose": true,
+            "trigger_policies": [
+              {
+                "id": "contact",
+                "events": [
+                  "entry"
+                ],
+                "boundary": "source_turn",
+                "limit": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "fixture:spatial_lifetime",
+    "name": "Spatial Lifetime",
+    "description": "Neutral S-184 trigger consumer.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "duration_seconds": 6,
+    "classes": [
+      "wizard"
+    ],
+    "effects": [
+      {
+        "type": "grant_condition",
+        "condition": "blessed"
+      }
+    ],
+    "end_aftermath": [
+      {
+        "id": "release",
+        "reasons": [
+          "dismissed"
+        ],
+        "cancel_policy": "stop",
+        "children": [
+          {
+            "id": "lifetime",
+            "type": "room_area",
+            "kind": "trigger_damage",
+            "trigger_scope": "declared",
+            "amount": 3,
+            "damage_type": "force",
+            "radius_hexes": 0,
+            "duration_seconds": 600,
+            "trigger_limit": 100,
+            "choose": true,
+            "trigger_policies": [
+              {
+                "id": "contact",
+                "events": [
+                  "entry"
+                ],
+                "boundary": "lifetime",
+                "limit": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "fixture:spatial_every_entry",
+    "name": "Spatial Every Entry",
+    "description": "Neutral S-184 trigger consumer.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "duration_seconds": 6,
+    "classes": [
+      "wizard"
+    ],
+    "effects": [
+      {
+        "type": "grant_condition",
+        "condition": "blessed"
+      }
+    ],
+    "end_aftermath": [
+      {
+        "id": "release",
+        "reasons": [
+          "dismissed"
+        ],
+        "cancel_policy": "stop",
+        "children": [
+          {
+            "id": "every_entry",
+            "type": "room_area",
+            "kind": "trigger_damage",
+            "trigger_scope": "declared",
+            "amount": 3,
+            "damage_type": "force",
+            "radius_hexes": 0,
+            "duration_seconds": 600,
+            "trigger_limit": 100,
+            "choose": true,
+            "trigger_policies": [
+              {
+                "id": "contact",
+                "events": [
+                  "entry"
+                ],
+                "boundary": "event",
+                "limit": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "fixture:spatial_start_end",
+    "name": "Spatial Start End",
+    "description": "Neutral S-184 trigger consumer.",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "duration_seconds": 6,
+    "classes": [
+      "wizard"
+    ],
+    "effects": [
+      {
+        "type": "grant_condition",
+        "condition": "blessed"
+      }
+    ],
+    "end_aftermath": [
+      {
+        "id": "release",
+        "reasons": [
+          "dismissed"
+        ],
+        "cancel_policy": "stop",
+        "children": [
+          {
+            "id": "start_end",
+            "type": "room_area",
+            "kind": "trigger_damage",
+            "trigger_scope": "declared",
+            "amount": 3,
+            "damage_type": "force",
+            "radius_hexes": 0,
+            "duration_seconds": 600,
+            "trigger_limit": 100,
+            "choose": true,
+            "trigger_policies": [
+              {
+                "id": "start",
+                "events": [
+                  "start_turn"
+                ],
+                "boundary": "turn",
+                "limit": 1
+              },
+              {
+                "id": "end",
+                "events": [
+                  "end_turn"
+                ],
+                "boundary": "turn",
+                "limit": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

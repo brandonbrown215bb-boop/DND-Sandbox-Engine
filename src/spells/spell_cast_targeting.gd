@@ -157,7 +157,7 @@ static func _spell_target_range(cast: SpellCastContext, spell_data: Dictionary) 
 	if str(spell_data.get("id", "")) == "true_strike" and cast.caster != null:
 		var equipped_weapon := DataLoader.get_item(cast.caster.inventory.get_weapon())
 		if not equipped_weapon.is_empty():
-			return maxi(1, int(equipped_weapon.get("range", 1)))
+			return maxi(1, CombatAction.weapon_range_hexes(equipped_weapon))
 	var max_range := CombatAction.spell_range_in_hexes(spell_data, cast.caster.level if cast.caster != null else 1)
 	if max_range == 0:
 		for effect in spell_data.get("effects", []):
@@ -265,17 +265,17 @@ static func _spell_target_visible_to_active_character(cast: SpellCastContext, co
 	var origin: Vector2i = cast.players[cast.player_index].get("hex_position", Vector2i.ZERO)
 	if not Targeting.has_line_of_sight(origin, coord, cast.grid):
 		return false
-	if not bool(spell_data.get("requires_target_sight", false)):
-		return true
-	var distance_feet := HexUtils.get_distance(origin, coord) * 5
+	var requires_sight := bool(spell_data.get("requires_target_sight", false))
+	if str(spell_data.get("target", "single")) not in ["single", "single_ally", "multi"]:
+		return not requires_sight or CombatPerception.can_see_target(cast.caster, null, origin, coord, cast.grid)
 	for player in cast.players:
 		var character: Character = player.get("character")
 		if player.get("hex_position", Vector2i.ZERO) == coord and character != null and (character.is_alive or can_target_downed(character, spell_data)):
-			return CombatPerception.can_see_target(cast.caster, character, origin, coord, cast.grid) and CombatAction.spell_target_is_visible_to(cast.caster, character, spell_data, distance_feet)
+			return CombatPerception.can_see_target(cast.caster, character, origin, coord, cast.grid) if requires_sight else CombatPerception.can_locate_target(cast.caster, character, origin, coord, cast.grid)
 	for monster in cast.monsters:
 		if monster.get("hex_position", Vector2i.ZERO) == coord and monster.get("is_alive", false):
-			return CombatPerception.can_see_target(cast.caster, monster, origin, coord, cast.grid) and CombatAction.spell_target_is_visible_to(cast.caster, monster, spell_data, distance_feet)
-	return CombatPerception.can_see_target(cast.caster, null, origin, coord, cast.grid)
+			return CombatPerception.can_see_target(cast.caster, monster, origin, coord, cast.grid) if requires_sight else CombatPerception.can_locate_target(cast.caster, monster, origin, coord, cast.grid)
+	return not requires_sight or CombatPerception.can_see_target(cast.caster, null, origin, coord, cast.grid)
 
 
 static func _has_spell_creature_at(cast: SpellCastContext, coord: Vector2i, spell: Dictionary) -> bool:
@@ -296,7 +296,7 @@ static func _has_spell_target_at(cast: SpellCastContext, coord: Vector2i, spell:
 	if str(spell.get("id", "")) == "chain_lightning":
 		object_target_available = not SpellCastTargeting.chain_target_options(cast, coord).is_empty()
 	elif bool(spell.get("targets_objects", false)) or str(spell.get("id", "")) == "fire_bolt":
-		for object in CombatObjectRules.all_at(cast.grid, coord):
+		for object in CombatObjectRules.all_at(cast.grid, coord, cast.caster):
 			if CombatObjectRules.can_take_spell_damage(object):
 				object_target_available = true
 				break
@@ -315,7 +315,7 @@ static func chain_target_options(cast: SpellCastContext, coord: Vector2i) -> Arr
 		if not monster.get("is_alive", false) or monster.get("hex_position", Vector2i.ZERO) != coord:
 			continue
 		options.append({"id": "monster:%s" % str(monster.get("id", "")), "label": str(monster.get("name", "Creature")), "kind": "creature"})
-	for object in CombatObjectRules.all_at(cast.grid, coord):
+	for object in CombatObjectRules.all_at(cast.grid, coord, cast.caster):
 		if CombatObjectRules.can_target(object):
 			options.append({"id": "object:%s" % CombatObjectRules.target_key(object), "label": str(object.get("name", "Object")), "kind": "object"})
 	for player in cast.players:
@@ -359,7 +359,7 @@ static func is_chain_target_selected(cast: SpellCastContext, coord: Vector2i, ta
 		return false
 	if target_id.begins_with("object:"):
 		var object_key := target_id.trim_prefix("object:")
-		if CombatObjectRules.can_target(CombatObjectRules.by_key(cast.grid, coord, object_key)):
+		if CombatObjectRules.can_target(CombatObjectRules.by_key(cast.grid, coord, object_key, cast.caster)):
 			return true
 		var owned := CombatObjectRules.owned_item_record_at(cast.players, coord, object_key)
 		if not owned.is_empty():

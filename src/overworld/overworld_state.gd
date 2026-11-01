@@ -411,8 +411,17 @@ func _execute_rest_command(command: PlayerCommand) -> void:
 	# Ambush check: the most stealthy party member tries to keep the camp quiet.
 	var dc := _compute_ambush_dc()
 	var best_stealth := _party_best_stealth_mod()
-	var roll := Dice.roll(20)
-	var total := roll + best_stealth
+	var best_char := _party_best_stealth_character()
+	var roll := 0
+	var total := 0
+	if best_char != null:
+		var stealth_check := EventResolver.resolve_skill_check(best_char, {"ability": "DEX", "skill": "Stealth", "dc": dc})
+		roll = int(stealth_check.get("roll", 0))
+		best_stealth = int(stealth_check.get("modifier", best_stealth))
+		total = int(stealth_check.get("total", roll + best_stealth))
+	else:
+		hud.add_log("Nobody is able to keep watch over the camp.")
+		return
 	hud.add_log("[color=yellow]Stealth check: %d (rolled %d + %d) vs DC %d.[/color]" % [total, roll, best_stealth, dc])
 
 	if total >= dc:
@@ -437,22 +446,28 @@ func _compute_ambush_dc() -> int:
 	return 12 + maxi(0, party_size - 1)
 
 
-## Best party Stealth bonus (DEX mod + proficiency if Stealth-trained), over
+## Best party Stealth bonus (DEX mod + proficiency/expertise if Stealth-trained), over
 ## all alive characters. Used as the static part of the ambush Stealth check.
 func _party_best_stealth_mod() -> int:
-	var best := -99
+	var best_char := _party_best_stealth_character()
+	if best_char == null:
+		return 0
+	return best_char.get_skill_check_modifier("Stealth", best_char.get_skill_check_ability("DEX", "Stealth"))
+
+
+func _party_best_stealth_character() -> Character:
+	var best := -999
+	var best_char: Character = null
 	var count := PlayerManager.get_player_count()
 	for i in count:
 		var char_data: Character = PlayerManager.get_player(i).get("character")
 		if char_data == null or not char_data.is_alive:
 			continue
-		var mod := char_data.ability_scores.get_ability_modifier("DEX")
-		if "STEALTH" in char_data.skill_proficiencies:
-			mod += char_data.proficiency_bonus
-		best = maxi(best, mod)
-	if best == -99:
-		best = 0
-	return best
+		var mod := char_data.get_skill_check_modifier("Stealth", char_data.get_skill_check_ability("DEX", "Stealth"))
+		if mod > best:
+			best = mod
+			best_char = char_data
+	return best_char
 
 
 func _get_party_characters() -> Array[Character]:

@@ -113,7 +113,7 @@ static func apply(owner: Character, offer: Dictionary, host, origin: Vector2i, p
 		if not host is Dictionary: host._update_grid_entities()
 	var price := cost(policy, kind)
 	if not budget is ModeControls.OutsideCombat and price != "none": budget._spend_action_cost(CombatTurnBudget.budget_kind(price))
-	return {"success": true, "message": "Activation paid; no space, so no form was created." if no_space else "Exact item projected." if kind == "project" else "Exact form dismissed.", "seconds": 0}
+	return {"success": true, "message": "Activation paid; no space, so no form was created." if no_space else "Exact item projected." if kind == "project" else "Exact form dismissed.", "seconds": 0, "cost_kind":CombatTurnBudget.budget_kind(price) if not budget is ModeControls.OutsideCombat else "free"}
 
 static func fail(message: String) -> Dictionary:
 	return {"success": false, "message": message, "seconds": 0}

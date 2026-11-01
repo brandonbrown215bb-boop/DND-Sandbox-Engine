@@ -14,6 +14,7 @@ static func refresh(view: LocalRoomView) -> void:
 	view.created_row.add_child(view.created_targets)
 	var targets: Array[Dictionary] = []
 	for object in view.state["objects"]:
+		if not LocalRoomSearchRules.known(object, view.actor()): continue
 		if str(object.get("kind", "")) == "remains" and not bool(object.get("removed", false)):
 			targets.append({"id": object["id"], "text": str(object["name"]), "kind": "body"})
 	for member in view.characters:
@@ -83,6 +84,7 @@ static func begin_creation(view: LocalRoomView, spell_id: String) -> void:
 		view._result(LocalRoomRules.failure("This spell has no supported creature choices."))
 		return
 	view.pending_room_creation = {"spell_id": spell_id, "template_id": str(options[0].id), "count": 1, "selected": [], "options": options, "choosing_factory": true}
+	view.pending_search.clear()
 	_add_creation_controls(view)
 
 static func _add_creation_controls(view: LocalRoomView) -> void:
@@ -291,6 +293,7 @@ static func _material_cast(view: LocalRoomView, spell: Dictionary, _effect: Dict
 		var position := LocalRoomRules.coord(view.state.get("party_positions", {}).get(member.character_id, [9999, 9999]))
 		cast.players.append({"character": member, "hex_position": position, "is_alive": member.is_alive, "creature_type": member.creature_type, "size": member.get_creature_size()})
 	for object in view.state.get("objects", []):
+		if not LocalRoomSearchRules.known(object, view.actor()): continue
 		if str(object.get("kind", "")) != "remains" or bool(object.get("removed", false)): continue
 		var ref: Dictionary = object.duplicate(false)
 		ref.merge({"id": str(object.id), "hex_position": LocalRoomRules.coord(object.position), "is_alive": false, "creature_type": str(object.get("creature_type", "humanoid")), "size": str(object.get("size", "medium")), "material_used": bool(object.get("material_used", false)), "_local_room_object": object}, true)
@@ -310,7 +313,7 @@ static func preserve(room: Dictionary, caster: Character, id: String) -> Diction
 	var spell := DataLoader.get_spell("gentle_repose")
 	var error := LocalRoomRules._room_spell_caster_error(caster, spell)
 	if not error.is_empty(): return LocalRoomRules.failure(error)
-	var body := LocalRoomRules.get_object(room, id)
+	var body := LocalRoomRules.get_object(room, id, caster)
 	if body.is_empty() or str(body.get("kind", "")) != "remains" or bool(body.get("removed", false)) or body.get("remains") == "destroyed": return LocalRoomRules.failure("Choose available recorded remains.")
 	var origin := LocalRoomRules.coord(room["party_positions"][caster.character_id])
 	var position := LocalRoomRules.coord(body["position"])

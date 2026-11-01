@@ -93,8 +93,11 @@ func start(host: Node, feature: Dictionary) -> void:
 	await choose(host)
 
 func choose(host: Node) -> void:
-	if not valid(host) or frame.remaining.is_empty():
+	if not valid(host):
 		clear()
+		return
+	if frame.remaining.is_empty():
+		await finish(host)
 		return
 	var invocation := str(frame.invocation)
 	frame.choosing = true
@@ -112,7 +115,7 @@ func choose(host: Node) -> void:
 		return
 	frame.choosing = false
 	if selected.is_empty():
-		clear() # Closing the chooser ends the paid parent; never restarts it.
+		await finish(host) # Closing the chooser ends the paid parent; never restarts it.
 		return
 	for child in frame.remaining:
 		if str(child.id) == selected:
@@ -177,13 +180,22 @@ func complete(host: Node) -> void:
 
 func cancel(host: Node) -> void:
 	if frame.is_empty(): return
-	if not valid(host) or frame.feature.child_actions.cancel_policy == "stop":
+	if not valid(host):
 		clear()
+	elif frame.feature.child_actions.cancel_policy == "stop":
+		await finish(host)
 	else:
 		cancel_continuation(frame, "skip")
 		host.pending_action_type = ""
 		host.pending_spell_data = {}
 		await choose(host)
+
+func finish(host: Node) -> void:
+	if frame.is_empty(): return
+	var actor: Character = frame.actor
+	var paid := str(frame.feature.get("action_cost", "action")) not in ["free", "none"]
+	clear()
+	if paid: await host._completed_player_action(actor)
 
 func clear() -> void:
 	frame.clear()

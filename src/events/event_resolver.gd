@@ -24,10 +24,50 @@ static func resolve_skill_check(character: Character, check_data: Dictionary, de
 	var skill := str(check_data.get("skill", ""))
 	var ability: String = character.get_skill_check_ability(str(check_data.get("ability", "STR")), skill, bool(check_data.get("use_primal_knowledge", true)))
 	var dc: int = int(check_data.get("dc", 10))
+	var ordinary_help := CheckHelpRules.consume(character, check_data, authored_context)
 	var familiar_help := bool(check_data.get("request_familiar_help", false)) and FamiliarRules.skill_help_available(character, check_data)
-
-	var mode_receipt := ability_check_roll_mode(character, ability, skill, authored_context, familiar_help)
-	var advantage := bool(mode_receipt.get("advantage", false))
+	var requires_sight := bool(check_data.get("requires_sight", authored_context.get("requires_sight", false))) or str(check_data.get("sense", authored_context.get("sense", ""))).to_lower() == "sight"
+	var requires_hearing := bool(check_data.get("requires_hearing", authored_context.get("requires_hearing", false))) or str(check_data.get("sense", authored_context.get("sense", ""))).to_lower() == "hearing"
+	var sight_unavailable := requires_sight and character.has_condition("blinded")
+	if requires_sight and authored_context.get("grid") is HexGrid and authored_context.get("actor_position") is Vector2i and authored_context.get("sight_target_position") is Vector2i:
+		sight_unavailable = not CombatPerception.can_see_target(character, null, authored_context.actor_position, authored_context.sight_target_position, authored_context.grid)
+	if sight_unavailable or (requires_hearing and character.has_condition("deafened")):
+		var auto_fail_mod := character.get_skill_check_modifier(skill, ability)
+		return {
+			"success": false,
+			"auto_failed": true,
+			"automatically_fails": true,
+			"roll": 1,
+			"natural_roll": 1,
+			"raw_natural_roll": 1,
+			"total": -99,
+			"modifier": auto_fail_mod,
+			"base_modifier": auto_fail_mod,
+			"dc": dc,
+			"ability": ability,
+			"actor_id": character.character_id,
+			"familiar_help": false,
+			"ordinary_help_sources":ordinary_help.sources,
+			"advantage": false,
+			"disadvantage": false,
+			"roll_mode": "auto_fail",
+			"rolls": [1],
+			"kept": [true],
+			"roll_token_replaced": false,
+			"replaced_by_roll_token": false,
+		}
+	var mode_context := authored_context.duplicate(true)
+	var participants: Array = mode_context.get("participants", [])
+	var actor_position: Variant = mode_context.get("actor_position", Vector2i.ZERO)
+	var grid: Variant = mode_context.get("grid")
+	if character.has_condition("frightened") and grid is HexGrid and actor_position is Vector2i:
+		mode_context["frightened_source_out_of_sight"] = not CombatAction.is_frightened_source_in_sight(character, actor_position, participants, grid)
+	else:
+		mode_context["frightened_source_out_of_sight"] = false
+	var social_target: Variant = mode_context.get("social_target")
+	mode_context["target_charmed_by_actor"] = (social_target is Character or social_target is Dictionary) and CombatAction.is_charmed_by(social_target, character)
+	var mode_receipt := ability_check_roll_mode(character, ability, skill, mode_context, familiar_help)
+	var advantage := bool(mode_receipt.get("advantage", false)) or bool(ordinary_help.advantage)
 	var disadvantage := bool(mode_receipt.get("disadvantage", false))
 	var merged_decisions := check_data.duplicate(true)
 	merged_decisions.merge(decisions, true)
@@ -77,6 +117,7 @@ static func resolve_skill_check(character: Character, check_data: Dictionary, de
 		"context_tool_source": context_tool,
 		"actor_id": character.character_id,
 		"familiar_help": familiar_help,
+		"ordinary_help_sources":ordinary_help.sources,
 		"advantage": advantage and not disadvantage,
 		"disadvantage": disadvantage and not advantage,
 		"roll_mode": "advantage" if advantage and not disadvantage else ("disadvantage" if disadvantage and not advantage else "normal"),
@@ -126,6 +167,9 @@ static func ability_check_roll_mode(character: Character, ability: String, skill
 	var contributors: Array[Dictionary] = []
 	var has_advantage := familiar_help
 	var has_disadvantage := ability.to_upper() == "STR" and character != null and character.has_condition("ray_of_enfeeblement")
+	if skill == "Perception" and context.get("sense") == "sight" and bool(context.get("lightly_obscured", false)):
+		has_disadvantage = true
+		contributors.append({"source_kind":"world", "source_id":"lightly_obscured", "mode":"disadvantage", "status":"active"})
 	if familiar_help:
 		contributors.append({"source_kind": "native", "source_id": "familiar_help", "mode": "advantage", "status": "active"})
 	if character != null and character.has_ability_check_advantage(ability):
@@ -134,8 +178,17 @@ static func ability_check_roll_mode(character: Character, ability: String, skill
 	if character != null and character.has_feature("champion_remarkable_athlete") and ability.to_upper() == "STR" and skill == "Athletics":
 		has_advantage = true
 		contributors.append({"source_kind": "native", "source_id": "champion_remarkable_athlete", "mode": "advantage", "status": "active"})
+	if bool(context.get("target_charmed_by_actor", false)) and (ability.to_upper() == "CHA" or skill in ["Persuasion", "Deception", "Intimidation", "Performance"]):
+		has_advantage = true
+		contributors.append({"source_kind": "native", "source_id": "charmed_social", "mode": "advantage", "status": "active"})
 	if has_disadvantage:
 		contributors.append({"source_kind": "native", "source_id": "ray_of_enfeeblement", "mode": "disadvantage", "status": "active"})
+	if character != null and CombatAction.condition_rule("poisoned", "check_disadvantage") and character.has_condition("poisoned"):
+		has_disadvantage = true
+		contributors.append({"source_kind": "native", "source_id": "poisoned", "mode": "disadvantage", "status": "active"})
+	if character != null and CombatAction.condition_rule("frightened", "check_disadvantage_in_sight") and character.has_condition("frightened") and not bool(context.get("frightened_source_out_of_sight", false)):
+		has_disadvantage = true
+		contributors.append({"source_kind": "native", "source_id": "frightened", "mode": "disadvantage", "status": "active"})
 	for grant in grants:
 		var suppressors: Array[Dictionary] = []
 		for policy in policies:
@@ -162,6 +215,94 @@ static func ability_check_roll_mode(character: Character, ability: String, skill
 
 static func _roll_mode_effect_matches(effect: Dictionary, ability: String, skill: String, context: Dictionary) -> bool:
 	return str(effect.get("domain", "")) == "event_skill_check" and str(effect.get("ability", "")).to_upper() == ability.to_upper() and str(effect.get("skill", "")) == skill and ability_check_context_matches(effect, context)
+
+
+static func monster_ability_check_modifier(monster: Dictionary, ability: String, skill: String = "") -> int:
+	var clean_ability := ability.to_upper()
+	var scores: Dictionary = monster.get("ability_scores", {})
+	var mod := AbilityScores.get_modifier(int(scores.get(clean_ability, 10)))
+	var skills: Variant = monster.get("skills", {})
+	if skills is Dictionary and not skill.is_empty():
+		if skills.has(skill):
+			mod = int(skills[skill])
+		else:
+			var target_lower := skill.to_lower()
+			for key in skills:
+				if str(key).to_lower() == target_lower:
+					mod = int(skills[key])
+					break
+	var exhaustion := int(monster.get("exhaustion_level", monster.get("conditions", {}).get("exhaustion", 0)))
+	mod -= exhaustion * 2
+	return mod
+
+
+static func resolve_monster_ability_check(monster: Dictionary, ability: String, skill: String = "", dc: int = 0, roll_override: int = 0, decisions: Dictionary = {}, authored_context: Dictionary = {}) -> Dictionary:
+	var clean_ability := ability.to_upper()
+	var mod := monster_ability_check_modifier(monster, clean_ability, skill)
+	var requires_sight := bool(decisions.get("requires_sight", false)) or str(decisions.get("sense", "")).to_lower() == "sight"
+	var requires_hearing := bool(decisions.get("requires_hearing", false)) or str(decisions.get("sense", "")).to_lower() == "hearing"
+	if (requires_sight and CombatAction.has_condition(monster, "blinded")) or (requires_hearing and CombatAction.has_condition(monster, "deafened")):
+		return {
+			"success": false,
+			"auto_failed": true,
+			"automatically_fails": true,
+			"roll": 1,
+			"natural_roll": 1,
+			"total": -99,
+			"modifier": mod,
+			"dc": dc,
+			"ability": clean_ability,
+			"skill": skill,
+			"advantage": false,
+			"disadvantage": false,
+			"roll_mode": "auto_fail",
+			"rolls": [1],
+			"kept": [true],
+			"roll_token_replaced": false,
+		}
+	var participants: Array = authored_context.get("participants", [])
+	var actor_position: Variant = authored_context.get("actor_position", Vector2i.ZERO)
+	var grid: Variant = authored_context.get("grid")
+	var fear_out_of_sight := grid is HexGrid and actor_position is Vector2i and not CombatAction.is_frightened_source_in_sight(monster, actor_position, participants, grid)
+	var social_target: Variant = authored_context.get("social_target")
+	var advantage := (SpellEffects.has_spell(monster, "enhance_ability") and str(monster.get("enhance_ability_stat", "")).to_upper() == clean_ability) or ((social_target is Character or social_target is Dictionary) and CombatAction.is_charmed_by(social_target, monster) and (clean_ability == "CHA" or skill in ["Persuasion", "Deception", "Intimidation", "Performance"]))
+	var disadvantage := (CombatAction.condition_rule("poisoned", "check_disadvantage") and CombatAction.has_condition(monster, "poisoned")) or (CombatAction.condition_rule("frightened", "check_disadvantage_in_sight") and CombatAction.has_condition(monster, "frightened") and not fear_out_of_sight) or (clean_ability == "STR" and CombatAction.has_condition(monster, "ray_of_enfeeblement"))
+	var d20_details: Dictionary = {}
+	var natural_roll := 1
+	if roll_override > 0:
+		natural_roll = roll_override
+		d20_details = {"total": natural_roll, "rolls": [natural_roll], "kept": [true], "replaced": false}
+	else:
+		d20_details = RollTokenRules.resolve_d20_test(monster, "ability_check", advantage, disadvantage, decisions)
+		natural_roll = int(d20_details.get("total", 1))
+	var total := natural_roll + mod
+	var bonus_dice: Array[Dictionary] = []
+	if CombatAction.has_condition(monster, "guidance") and str(monster.get("guidance_skill", "")) == skill:
+		var die := Dice.roll_single_details(4)
+		total += int(die.total)
+		bonus_dice.append({"source":"guidance", "sides":4, "value":int(die.total), "sign":1, "included_in_modifier":false, "roll":die})
+	return {
+		"success": total >= dc,
+		"roll": natural_roll,
+		"natural_roll": natural_roll,
+		"total": total,
+		"modifier": mod,
+		"base_modifier": mod,
+		"check_bonus_dice": bonus_dice,
+		"roll_details": d20_details.duplicate(true),
+		"dc": dc,
+		"ability": clean_ability,
+		"skill": skill,
+		"advantage": advantage and not disadvantage,
+		"disadvantage": disadvantage and not advantage,
+		"roll_mode": "advantage" if advantage and not disadvantage else ("disadvantage" if disadvantage and not advantage else "normal"),
+		"rolls": d20_details.get("rolls", [natural_roll]),
+		"kept": d20_details.get("kept", [true]),
+		"roll_token_replaced": bool(d20_details.get("replaced", false)),
+		"roll_token_id": str(d20_details.get("roll_token_id", "")),
+		"roll_token_value": int(d20_details.get("roll_token_value", 0)),
+		"roll_token_error": str(d20_details.get("roll_token_error", "")),
+	}
 
 
 ## Reroll only the captured d20 and explicitly selected bonus dice. This does

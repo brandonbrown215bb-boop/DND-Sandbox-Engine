@@ -42,15 +42,20 @@ static func resolve(caster: Character, target_entity, spell_data: Dictionary, de
 	if not damage_policy_error.is_empty():
 		return {"success": false, "refused": true, "message": damage_policy_error}
 	var ongoing_zone_trigger := bool(cast.spell.get("_ongoing_zone_trigger", false))
+	var reused_source: Dictionary = cast.spell.get("_effect_cast", {})
+	if SpellEffects.damage_budget_cap(cast.spell) > 0 and not reused_source.is_empty():
+		var active_source: Dictionary = caster.spell_effects.get(str(reused_source.get("source_id", "")), {})
+		if active_source.is_empty() or str(active_source.get("spell_id", "")) != cast.spell_definition_id or str(active_source.get("caster_id", "")) != SpellEffects.caster_id(caster):
+			return {"success": false, "refused": true, "message": "That damage source has ended or belongs to another caster."}
 	for input_id in cast.spell.get("formula_inputs", {}):
 		if not SpellFormulaInputs.read(cast, str(input_id)).get("success", false):
 			return {"success":false,"refused":true,"message":"Formula input was not captured by this cast."}
 	if cast.caster.has_condition("raging") and not ongoing_zone_trigger:
 		return {"success": false, "message": "You cannot cast spells while raging."}
-	if not ongoing_zone_trigger and not DruidRules.can_cast_spell(cast.caster, cast.spell):
+	if not ongoing_zone_trigger and not (owned_host_valid and not invocation_host.ready_release_token.is_empty()) and not DruidRules.can_cast_spell(cast.caster, cast.spell):
 		return {"success": false, "message": "You cannot cast this spell while using Wild Shape."}
 	if not ongoing_zone_trigger:
-		var target_validation := CombatAction.validate_spell_target(cast.caster, cast.target, cast.spell, cast.distance_feet)
+		var target_validation := CombatAction.validate_spell_target(cast.caster, cast.target, cast.spell, cast.distance_feet, cast.decisions)
 		if not target_validation.get("success", false):
 			return target_validation
 	if str(cast.spell.get("id", "")) == "spare_the_dying":
@@ -118,7 +123,8 @@ static func resolve(caster: Character, target_entity, spell_data: Dictionary, de
 		cast.incoming_slot_key = str(invocation_host.slot_level_used)
 		cast.incoming_slot_pool_id = invocation_host.incoming_slot_pool_id
 	CastInterruptionRules.reserve_cast_payment(cast, cast.spell)
-	if not ongoing_zone_trigger:
+	if not ongoing_zone_trigger and not (owned_host_valid and not invocation_host.ready_release_token.is_empty()):
+		if "V" in cast.spell.get("components", []): CombatAction.reveal_hidden_attacker(cast.caster)
 		SpellEffects.consume_spell(cast.caster, "sanctuary", "cast", {"actor_id": SpellEffects.caster_id(cast.caster), "spell_id": str(cast.spell.get("id", ""))})
 		if str(cast.spell.get("id", "")) != "invisibility":
 			SpellEffects.consume_spell(cast.caster, "invisibility", "cast", {"actor_id": SpellEffects.caster_id(cast.caster), "spell_id": str(cast.spell.get("id", ""))})
@@ -129,6 +135,9 @@ static func resolve(caster: Character, target_entity, spell_data: Dictionary, de
 		source_created_for_cast = true
 	cast.source_definition_id = cast.spell_definition_id
 	cast.source_instance_id = str(cast.effect_cast.get("source_id", "")) if owned_host_valid or source_created_for_cast else ""
+	if SpellEffects.damage_budget_cap(cast.spell) > 0 and not reused_source.is_empty():
+		cast.effect_cast = caster.spell_effects[str(reused_source.source_id)]
+		cast.source_instance_id = str(cast.effect_cast.source_id)
 	cast.source_owner_id = SpellEffects.caster_id(caster) if caster != null else ""
 	if not cast.source_instance_id.is_empty():
 		cast.decisions["damage_source_instance_id"] = cast.source_instance_id
@@ -146,8 +155,10 @@ static func resolve(caster: Character, target_entity, spell_data: Dictionary, de
 		if cast.decisions.has(key):
 			reaction_decisions[key] = cast.decisions[key]
 	if not interruption.is_empty():
+		if SpellEffects.damage_budget_cap(cast.spell) > 0: SpellEffects.remove(caster, cast.source_instance_id, "interrupted")
 		if owned_host_valid and bool(interruption.get("incoming_spell_slot_refunded", false)): invocation_host.incoming_slot_spent = false
 		return interruption
+	if source_created_for_cast: SpellEffects.start_damage_budget(caster, cast.effect_cast)
 	var flat_step := {"type":"save" if cast.spell.has("save") else "attack" if cast.spell.get("attack_type", "none") != "none" else "damage" if cast.spell.has("damage") else "effect"}
 	if not cast.spell.has("steps") and cast.target != null and CastInterruptionRules.is_recipient_negated(cast, cast.target, flat_step):
 		if not caller_owns_settlement: CastInterruptionRules.settle_cast_outcome(cast, "negated")

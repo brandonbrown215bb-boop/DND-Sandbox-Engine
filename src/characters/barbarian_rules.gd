@@ -157,21 +157,48 @@ static func roll_monster_save_result(target: Dictionary, ability: String, source
 		maintain_rage(source)
 	var scores: Dictionary = target.get("ability_scores", {})
 	var bonus := int(target.get("saving_throw_bonuses", {}).get(ability, AbilityScores.get_modifier(int(scores.get(ability, 10)))))
-	var beacon_advantage := advantage or (SpellEffects.has_spell(target, "beacon_of_hope") and ability.to_upper() == "WIS")
-	var staggered_disadvantage := disadvantage or consume_staggered_save(target)
+	var exhaustion := int(target.get("exhaustion_level", target.get("conditions", {}).get("exhaustion", 0)))
+	bonus -= exhaustion * 2
+	if CombatAction.save_auto_fails(target, ability):
+		return {
+			"natural": 1,
+			"natural_roll": 1,
+			"rolls": [1],
+			"kept": [true],
+			"roll_mode": "auto_fail",
+			"base_modifier": bonus,
+			"check_bonus_dice": [],
+			"modifier": bonus,
+			"total": -99,
+			"ability": ability.to_upper(),
+			"auto_failed": true,
+			"automatically_fails": true,
+			"roll_token_replaced": false,
+		}
+	var beacon_advantage := CombatAction.save_has_advantage(target, ability) or advantage or (SpellEffects.has_spell(target, "beacon_of_hope") and ability.to_upper() == "WIS")
+	var staggered_disadvantage := disadvantage or consume_staggered_save(target) or CombatAction.save_has_disadvantage(target, ability)
 	var d20_details := RollTokenRules.resolve_d20_test(target, "monster_save", beacon_advantage, staggered_disadvantage, decisions)
 	var roll := int(d20_details.get("total", 1))
 	var natural_roll := roll
+	var bonus_dice: Array[Dictionary] = []
 	if target.get("conditions", {}).has("blessed"):
-		roll += Dice.roll(4)
+		var die := Dice.roll_single_details(4)
+		roll += int(die.total)
+		bonus_dice.append({"source":"bless", "sides":4, "value":int(die.total), "sign":1, "included_in_modifier":false, "roll":die})
 	if target.get("conditions", {}).has("baned"):
-		roll -= Dice.roll(4)
+		var die := Dice.roll_single_details(4)
+		roll -= int(die.total)
+		bonus_dice.append({"source":"bane", "sides":4, "value":int(die.total), "sign":-1, "included_in_modifier":false, "roll":die})
 	var total := roll + bonus
 	var out := {
 		"natural_roll": natural_roll,
 		"rolls": d20_details.get("rolls", [natural_roll]),
 		"kept": d20_details.get("kept", [true]),
-		"modifier": bonus,
+		"modifier": bonus + roll - natural_roll,
+		"base_modifier": bonus,
+		"check_bonus_dice": bonus_dice,
+		"roll_mode": "advantage" if beacon_advantage and not staggered_disadvantage else ("disadvantage" if staggered_disadvantage and not beacon_advantage else "normal"),
+		"roll_details": d20_details.duplicate(true),
 		"total": total,
 		"ability": ability.to_upper(),
 		"roll_token_replaced": bool(d20_details.get("replaced", false)),

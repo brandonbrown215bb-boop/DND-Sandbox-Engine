@@ -36,15 +36,15 @@ static func _resolve_spell_cast_movement(cast: SpellCastContext) -> bool:
 		# Batch 066: rechecked before commit_spell_resource; this guard never pays twice.
 		if SpellCastMovement.refuse_teleport_destination(cast):
 			return true
-		cast.players[cast.player_index]["hex_position"] = cast.target_coord
+		CombatAction.resolve_movement_step(cast.players[cast.player_index], origin, cast.target_coord, "teleport")
 		cast.successful = true
-		SpellEffects.publish_event(cast.caster, {"type": "movement", "actor_id": SpellEffects.caster_id(cast.caster), "from": [origin.x, origin.y], "to": [cast.target_coord.x, cast.target_coord.y], "distance_feet": HexUtils.get_distance(origin, cast.target_coord) * 5})
-		if cast.publish_source_range_events.is_valid(): cast.publish_source_range_events.call()
-		await cast.areas._resolve_spell_zone_entries(cast.caster, origin, cast.target_coord)
-		cast.hud.add_log("[color=cyan]%s teleports from %s to %s.[/color]" % [cast.caster.character_name, origin, cast.target_coord])
+		cast.teleport_settled = true
 		var teleport_cost := str(cast.spell.get("casting_time", "action"))
 		cast.spend_action_cost.call("bonus_action" if teleport_cost == "bonus_action" else "magic_action")
-		cast.teleport_settled = true # Batch 066: one arrival per cast invocation.
+		if cast.publish_source_range_events.is_valid(): cast.publish_source_range_events.call()
+		await cast.areas._resolve_spell_zone_entries(cast.caster, origin, cast.target_coord)
+		if cast.publish_combat_event.is_valid(): await cast.publish_combat_event.call({"type":"movement", "actor":cast.caster, "position":cast.target_coord, "from":origin, "kind":"teleport"})
+		cast.hud.add_log("[color=cyan]%s teleports from %s to %s.[/color]" % [cast.caster.character_name, origin, cast.target_coord])
 		cast.clear_pending(SpellCastContext.CLEAR_ACTION)
 		cast.clear_pending(SpellCastContext.CLEAR_INTERVENTION)
 		cast.clear_pending(SpellCastContext.CLEAR_WISH)

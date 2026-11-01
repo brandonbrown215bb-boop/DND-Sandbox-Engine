@@ -1,0 +1,3 @@
+[
+  {"id":"fixture:search_spark", "name":"Search spark", "execution":"shared", "level":1, "casting_time":"action", "range":12, "target":"single", "attack_type":"ranged_spell", "damage":"1", "damage_type":"fire", "targets_objects":true, "classes":["wizard"]}
+]

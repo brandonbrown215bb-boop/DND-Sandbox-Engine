@@ -1,0 +1,173 @@
+[
+  {
+    "id": "fixture:budget_light",
+    "name": "Budget Light",
+    "execution": "shared",
+    "level": 0,
+    "casting_time": "action",
+    "range": 12,
+    "target": "single",
+    "attack_type": "none",
+    "damage": "20",
+    "damage_type": "radiant",
+    "duration": "1 minute",
+    "source_end_rules": [
+      {
+        "event": "damage",
+        "damage_budget": 60
+      }
+    ],
+    "effects": []
+  },
+  {
+    "id": "fixture:budget_light_renamed",
+    "name": "Renamed Budget Light",
+    "execution": "shared",
+    "level": 0,
+    "casting_time": "action",
+    "range": 12,
+    "target": "single",
+    "attack_type": "none",
+    "damage": "20",
+    "damage_type": "radiant",
+    "save": "DEX",
+    "half_on_save": true,
+    "duration": "1 minute",
+    "source_end_rules": [
+      {
+        "event": "damage",
+        "damage_budget": 60
+      }
+    ],
+    "effects": []
+  },
+  {
+    "id": "fixture:budget_ordered",
+    "name": "Ordered Budget",
+    "execution": "shared",
+    "level": 0,
+    "casting_time": "action",
+    "range": 12,
+    "target": "single",
+    "duration_seconds": 60,
+    "source_end_rules": [
+      {
+        "event": "damage",
+        "damage_budget": 10
+      }
+    ],
+    "steps": [
+      {
+        "id": "first",
+        "type": "save",
+        "damage_components": [
+          {
+            "id": "fire",
+            "damage": "15",
+            "damage_type": "fire"
+          },
+          {
+            "id": "cold",
+            "damage": "15",
+            "damage_type": "cold"
+          }
+        ],
+        "save": "DEX",
+        "half_on_save": false
+      },
+      {
+        "id": "later",
+        "type": "damage",
+        "damage": "20",
+        "damage_type": "radiant"
+      }
+    ]
+  },
+  {
+    "id": "fixture:budget_benefit",
+    "name": "Budget Benefit",
+    "execution": "shared",
+    "level": 0,
+    "casting_time": "action",
+    "range": 0,
+    "target": "self",
+    "duration_seconds": 60,
+    "source_end_rules": [
+      {
+        "event": "damage",
+        "damage_budget": 20
+      }
+    ],
+    "effects": [
+      {
+        "type": "grant_source_benefits",
+        "benefits": [
+          {
+            "stat": "AC",
+            "amount": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "fixture:budget_fire",
+    "name": "Budget Fire",
+    "execution": "shared",
+    "level": 0,
+    "casting_time": "action",
+    "range": 12,
+    "target": "single",
+    "attack_type": "none",
+    "damage": "20",
+    "damage_type": "fire",
+    "duration": "1 minute",
+    "source_end_rules": [
+      {
+        "event": "damage",
+        "damage_budget": 60
+      }
+    ],
+    "effects": []
+  },
+  {
+    "id": "fixture:budget_mirror",
+    "name": "Budget Mirror",
+    "description": "Bounded damage response vocabulary fixture.",
+    "execution": "shared",
+    "level": 0,
+    "casting_time": "action",
+    "range": 0,
+    "target": "self",
+    "effects": [
+      {
+        "type": "grant_damage_response",
+        "policy": {
+          "kind": "counter_damage",
+          "damage_type": "fire",
+          "stage": "settled",
+          "measure": "resolved",
+          "numerator": 1,
+          "denominator": 1,
+          "rounding": "floor",
+          "recipient": "origin",
+          "feedback": "once_per_source_per_root",
+          "max_depth": 4,
+          "response_type": "fire"
+        }
+      }
+    ],
+    "duration": "1 minute",
+    "duration_seconds": 60,
+    "concentration": false,
+    "classes": [
+      "wizard"
+    ],
+    "source_end_rules": [
+      {
+        "event": "damage",
+        "damage_budget": 10
+      }
+    ]
+  }
+]

@@ -82,6 +82,7 @@ static func take_turn(state: CombatState, entity: Dictionary) -> void:
 	if str(record.get("order", "guard")) == "attack":
 		for candidate in state.monster_entities:
 			if candidate["id"] == str(record.get("order_target", "")) and candidate.get("is_alive", false): target = candidate; break
+	if not target.is_empty() and not CombatPerception.can_locate_target(creature, target, entity["hex_position"], target["hex_position"], state.hex_grid): target = {}
 	if target.is_empty():
 		record["order"] = "guard"
 		record["order_target"] = ""
@@ -108,7 +109,7 @@ static func take_turn(state: CombatState, entity: Dictionary) -> void:
 		var distance := HexUtils.get_distance(origin, destination)
 		var profile := CreatedCreatureRules.attack_profile(record, distance > 1)
 		profile["attack_distance"] = distance
-		var disadvantage := CombatAction.has_condition(target, "dodging") or not CombatPerception.can_see_target(creature, target, origin, destination, state.hex_grid) or distance > int(profile["range"])
+		var disadvantage := not CombatPerception.can_see_target(creature, target, origin, destination, state.hex_grid) or distance > int(profile["range"])
 		if "ranged" in profile["properties"]:
 			for enemy in state.monster_entities:
 				if enemy.get("is_alive", false) and HexUtils.get_distance(origin, enemy["hex_position"]) <= 1: disadvantage = true
@@ -130,7 +131,7 @@ static func take_turn(state: CombatState, entity: Dictionary) -> void:
 				return "The creature's attack order is no longer available."
 			if not target.get("is_alive", false) or target not in state.monster_entities or entity["hex_position"] != attack_origin or HexUtils.get_distance(attack_origin, target["hex_position"]) > reach:
 				return "The target is no longer within reach."
-			if not Targeting.has_line_of_sight(attack_origin, target["hex_position"], state.hex_grid) or state._spell_zones()._antilife_shell_blocks_melee(creature, attack_origin, target["hex_position"], profile):
+			if not CombatPerception.can_locate_target(creature, target, attack_origin, target["hex_position"], state.hex_grid) or not Targeting.has_line_of_sight(attack_origin, target["hex_position"], state.hex_grid) or state._spell_zones()._antilife_shell_blocks_melee(creature, attack_origin, target["hex_position"], profile):
 				return "The target is no longer reachable."
 			return "")
 		if bool(created_choice.get("held", false)):
@@ -138,6 +139,7 @@ static func take_turn(state: CombatState, entity: Dictionary) -> void:
 			state._update_grid_entities()
 			return
 		if not state._spend_action_cost("action"): return
+		created_choice.decisions["weapon_visibility"] = {"grid": state.hex_grid, "caster_position": origin, "target_position": destination}
 		var result: Dictionary = await state._settle_attack_profile_hit_choice(CombatAction.resolve_weapon_attack(creature, target, profile, advantage, disadvantage, created_choice.decisions))
 		state.hud.add_log(str(result.get("message", "%s attacks." % creature.character_name)))
 		if int(target.get("current_hp", 0)) <= 0:

@@ -270,6 +270,13 @@ once on the owner's turn, then recheck control/owner state and target reach on
 the creature's turn; lost authority invokes the declared fallback. Pending
 orders are transient and not saved.
 
+All newly rolled initiative uses `InitiativeTracker.roll_result`: Invisible
+Advantage, Incapacitated Disadvantage and Exhaustion apply once, including late
+`own` arrivals and familiars. A rolled group uses the first authored member's
+live conditions/DEX even when another joins first or the first is downed. The
+captured group receipt/count survives removal/rejoining; later condition changes
+do not reroll it. Inherited owner counts do not make another test.
+
 `shared_count` gives each exact cast source a group. `initiative_group: owner`
 uses the owner's count and places its members after the owner and legacy
 after-owner actors. `initiative_group: roll` rolls d20 + DEX once per source per

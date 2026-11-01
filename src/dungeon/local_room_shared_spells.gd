@@ -40,7 +40,7 @@ static func cast_creation(state: Dictionary, caster: Character, spell: Dictionar
 
 static func cast_object(state: Dictionary, caster: Character, spell_id: String, object_id: String, party: Array, grid: HexGrid) -> Dictionary:
 	var spell := DataLoader.get_spell(spell_id).duplicate(true)
-	var object := LocalRoomRules.get_object(state, object_id)
+	var object := LocalRoomRules.get_object(state, object_id, caster)
 	var boundary_error := ContainmentRules.target_error(caster, object, spell, state, party)
 	if not boundary_error.is_empty(): return LocalRoomRules.failure(boundary_error)
 	if not object_spell(spell) or not CombatObjectRules.can_take_spell_damage(object, true):

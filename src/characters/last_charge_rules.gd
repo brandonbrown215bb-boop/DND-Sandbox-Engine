@@ -26,18 +26,43 @@ extends RefCounted
 const OUTCOMES := ["destroy", "degrade", "nonmagical"]
 const CONVERSION_KEYS := ["becomes", "convert_to", "becomes_item", "transform"]
 
+static func valid_charge_expression(expression: Variant) -> bool:
+	if not expression is String: return false
+	var regex := RegEx.new()
+	regex.compile("^[1-9][0-9]?d(4|6|8|10|12|20)(\\+[0-9]{1,3})?$")
+	return regex.search(str(expression).strip_edges().to_lower().replace(" ", "")) != null
+
+static func charge_recovery_error(value: Variant, item: Dictionary) -> String:
+	if not value is Dictionary or value.keys().any(func(key): return str(key) not in ["minimum", "maximum", "expression", "cadence"]): return "charge_recovery must declare a supported amount and cadence"
+	if str(value.get("cadence", "")) != "dawn": return "charge_recovery cadence must be dawn"
+	if int(item.get("maximum_charges", 0)) <= 0: return "charge_recovery requires maximum_charges"
+	if value.has("expression"):
+		if value.has("minimum") or value.has("maximum") or not valid_charge_expression(value.expression): return "charge_recovery expression must be a supported dice expression and cannot mix with endpoints"
+	elif not value.has_all(["minimum", "maximum"]) or not _whole(value.minimum, 0) or not _whole(value.maximum, int(value.minimum)) or int(value.maximum) > 10000:
+		return "charge_recovery requires valid minimum and maximum endpoints or an expression"
+	return ""
+
+static func _whole(value: Variant, minimum: int) -> bool:
+	return (value is int or value is float) and is_finite(float(value)) and float(value) == floorf(float(value)) and int(value) >= minimum
+
 static func validate(policy: Variant) -> String:
 	if not policy is Dictionary: return "last_charge_aftermath must be an object"
 	for key in CONVERSION_KEYS:
 		if policy.has(key): return "last_charge_aftermath conversion into another item ('%s') is unsupported; declare destroy, degrade with keep_properties, or nonmagical" % key
 	if str(policy.get("outcome", "")) not in OUTCOMES: return "last_charge_aftermath outcome '%s' is unsupported; declare destroy, degrade or nonmagical" % str(policy.get("outcome", ""))
-	if policy.keys().any(func(k): return str(k) not in ["outcome", "roll", "keep_properties"]): return "last_charge_aftermath accepts only outcome, roll and keep_properties"
+	if policy.keys().any(func(k): return str(k) not in ["outcome", "roll", "keep_properties", "regain"]): return "last_charge_aftermath accepts only outcome, roll, keep_properties and regain"
 	if str(policy.outcome) == "degrade" and not policy.has("keep_properties"): return "last_charge_aftermath degrade must state keep_properties (no default)"
 	if policy.has("roll"):
 		var roll: Variant = policy["roll"]
 		if not roll is Dictionary or int(roll.get("die", 0)) not in [4, 6, 8, 10, 12, 20, 100] or not roll.get("trigger_on", null) is Array or roll.trigger_on.is_empty(): return "last_charge_aftermath roll is invalid"
 		for face in roll.trigger_on:
 			if not (face is int or face is float) or int(face) < 1 or int(face) > int(roll.die): return "last_charge_aftermath trigger face is invalid"
+	if policy.has("regain"):
+		var regain: Variant = policy.regain
+		if str(policy.get("outcome", "")) != "degrade" or not regain is Dictionary or regain.keys().any(func(key): return str(key) not in ["trigger_on", "expression"]): return "last_charge_aftermath regain branch is invalid"
+		if not regain.get("trigger_on", null) is Array or regain.trigger_on.is_empty() or not valid_charge_expression(regain.get("expression", "")): return "last_charge_aftermath regain branch requires trigger_on and a dice expression"
+		for face in regain.trigger_on:
+			if not (face is int or face is float) or not policy.has("roll") or int(face) < 1 or int(face) > int(policy.roll.die) or face in policy.roll.trigger_on: return "last_charge_aftermath regain trigger is invalid or overlaps another outcome"
 	if policy.has("keep_properties") and (not policy["keep_properties"] is Array or policy["keep_properties"].any(func(v): return not v is String)): return "last_charge_aftermath keep_properties must be strings"
 	return ""
 
@@ -88,8 +113,21 @@ static func settle(inventory: RefCounted, instance_id: String, charges_before: i
 		var face := forced_roll if forced_roll > 0 else Dice.roll(int(policy.roll.die))
 		receipt.rolled = true
 		receipt["roll"] = face
-		receipt.triggered = policy.roll.trigger_on.any(func(f): return int(f) == face)
+		var regain: Dictionary = policy.get("regain", {})
+		var regain_triggered: bool = regain.get("trigger_on", []).any(func(f): return int(f) == face)
+		receipt.triggered = regain_triggered or policy.roll.trigger_on.any(func(f): return int(f) == face)
 	if not receipt.triggered: return receipt
+	if receipt.rolled and policy.has("regain") and policy.regain.trigger_on.any(func(f): return int(f) == int(receipt.roll)):
+		var recovered := Dice.parse_dice_string(str(policy.regain.expression))
+		var state: Dictionary = record.get("state", {}).duplicate(true)
+		var maximum := int(DataLoader.get_item(definition_id).get("maximum_charges", 0))
+		var new_charges := mini(maximum, recovered)
+		state["charges"] = new_charges
+		record["state"] = state
+		inventory.copies.records[instance_id] = record
+		receipt["outcome"] = "regain"
+		receipt["regained"] = new_charges
+		return receipt
 	if str(policy.outcome) == "destroy":
 		receipt["destroyed"] = not inventory.destroy_instance(instance_id).is_empty()
 	else: # degrade or nonmagical: same copy, mundane definition untouched.

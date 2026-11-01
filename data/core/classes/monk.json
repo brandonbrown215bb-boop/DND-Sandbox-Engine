@@ -4,6 +4,7 @@
   "description": "SRD 5.2.1 Monk with partial levels 1-20 mechanics. Unsupported terrain, falling, Open Hand Technique, Quivering Palm and Epic Boon choices remain unavailable.",
   "hit_die": "d8",
   "primary_ability": "DEX",
+  "multiclass_prerequisite": {"all": ["DEX", "WIS"]},
   "saving_throw_proficiencies": [
     "STR",
     "DEX"
@@ -147,7 +148,8 @@
         "effects": [
           {
             "type": "unarmed_attack",
-            "count": 2
+            "count": 2,
+            "attack_tag": "flurry"
           }
         ],
         "action_cost": "bonus_action",

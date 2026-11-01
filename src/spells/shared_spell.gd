@@ -55,7 +55,7 @@ static func healing_reroll_policy_error(value: Variant) -> String:
 	return ""
 
 const SOURCE_END_EVENTS := ["attack", "cast", "movement", "status", "equipment", "range", "damage"]
-const SOURCE_END_RULE_FIELDS := ["event", "actor", "school", "spell_id", "action", "status", "equipment", "state", "paid_slot_level", "maximum_range_feet", "except_source_id"]
+const SOURCE_END_RULE_FIELDS := ["event", "actor", "school", "spell_id", "action", "status", "equipment", "state", "paid_slot_level", "maximum_range_feet", "except_source_id", "damage_budget"]
 
 static func save_context_error(value: Variant) -> String:
 	if not value is Dictionary or value.size() != 3:
@@ -501,6 +501,7 @@ static func repeat_save_stages_error(value: Variant) -> String:
 
 static func source_end_rules_error(value: Variant) -> String:
 	if not value is Array or value.size() > 16: return "source_end_rules must be an array of at most 16 rules."
+	var damage_budget_count := 0
 	for rule in value:
 		if not rule is Dictionary or str(rule.get("event", "")) not in SOURCE_END_EVENTS: return "Each source end rule requires a supported event."
 		for field in rule:
@@ -510,12 +511,17 @@ static func source_end_rules_error(value: Variant) -> String:
 			if rule.has(field) and (not rule[field] is String or str(rule[field]).is_empty()): return "Source end rule '%s' must be a non-empty string." % field
 		if rule.has("paid_slot_level") and not _integer(rule["paid_slot_level"], 0, 9): return "Source end rule paid_slot_level must be 0-9."
 		if rule.has("maximum_range_feet") and not _integer(rule["maximum_range_feet"], 0, 10000): return "Source end rule maximum_range_feet must be 0-10000."
+		if rule.has("damage_budget"):
+			damage_budget_count += 1
+			if damage_budget_count > 1 or not _integer(rule["damage_budget"], 1, 2000000): return "A source may declare one positive integer damage_budget."
+			if rule.size() != 2: return "damage_budget rules support only event and damage_budget."
 		if rule.has("except_source_id") and (str(rule.get("event", "")) != "damage" or (str(rule["except_source_id"]) != "this_source" and not str(rule["except_source_id"]).begins_with("spell:"))): return "except_source_id is a damage-only exact source exception."
 		if (rule.has("school") or rule.has("spell_id") or rule.has("paid_slot_level")) and str(rule.get("event", "")) != "cast": return "School, spell_id and paid_slot_level filters require a cast event."
 		if rule.has("action") and str(rule.get("event", "")) != "attack": return "The action filter requires an attack event."
 		if rule.has("status") and str(rule.get("event", "")) != "status": return "The status filter requires a status event."
 		if (rule.has("equipment") or rule.has("state")) and str(rule.get("event", "")) != "equipment": return "Equipment and state filters require an equipment event."
 		if rule.has("maximum_range_feet") and str(rule.get("event", "")) != "range": return "maximum_range_feet requires a range event."
+		if rule.has("damage_budget") and str(rule.get("event", "")) != "damage": return "damage_budget requires a damage event."
 	return ""
 
 
@@ -594,7 +600,7 @@ static func has_effect(spell: Dictionary, kind: String) -> bool:
 	return false
 
 static func manages(spell: Dictionary) -> bool:
-	return (has_effect(spell, "grant_condition") or has_effect(spell, "grant_source_benefits") or has_effect(spell, "grant_damage_link") or has_effect(spell, "grant_damage_response") or has_effect(spell, "create_actor") or has_effect(spell, "actor_projection") or has_effect(spell, "suppress_item_magic") or has_effect(spell, "bind_tether") or has_effect(spell, "max_hp_source")) and content_error(spell).is_empty()
+	return (SpellEffects.damage_budget_cap(spell) > 0 or has_effect(spell, "grant_condition") or has_effect(spell, "grant_source_benefits") or has_effect(spell, "grant_damage_link") or has_effect(spell, "grant_damage_response") or has_effect(spell, "create_actor") or has_effect(spell, "actor_projection") or has_effect(spell, "suppress_item_magic") or has_effect(spell, "bind_tether") or has_effect(spell, "max_hp_source")) and content_error(spell).is_empty()
 
 static func _create_step_cast(cast: SpellResolutionContext, target, step_spell: Dictionary) -> SpellResolutionContext:
 	var step_cast := SpellResolutionContext.new()
@@ -679,6 +685,8 @@ static func apply_custom_effects(caster: Character, target, effects: Array, resu
 			if host == null: host = context.spatial_host
 			decisions = context.decisions
 	var effect_source := str(result.get("effect_cast", {}).get("source_id", decisions.get("damage_source_instance_id", "")))
+	# The final hit may have ended this source before its persistent grants run.
+	if SpellEffects.damage_budget_cap(spell) > 0 and not caster.spell_effects.has(effect_source): return result
 	var messages: Array[String] = []
 	var target_name: String = target.character_name if target is Character else str(target.get("name", "Target"))
 	var outcome := ("hit" if bool(result.get("hit", false)) else "miss") if result.has("hit") else (("success" if bool(result.get("saved", false)) else "failure") if result.has("saved") else "")

@@ -46,6 +46,7 @@ func _ready() -> void:
 	_run_group("classes", func(): FighterChecks.run(_assert))
 	_run_group("combat", _test_dice_parser)
 	_run_group("combat", _test_combat_action)
+	_run_group("combat", func(): PerceptionChecks.run(_assert))
 	_run_group("combat", func(): PlaytestFixChecks.weapon_damage(_assert))
 	_run_group("combat", func(): PlaytestFixChecks.phase_one_wiring(_assert))
 	_run_group("combat", func(): Batch031Checks.run(_assert))
@@ -59,6 +60,7 @@ func _ready() -> void:
 	_run_group("combat", func(): await Review087Checks.run(_assert))
 	_run_group("combat", func(): Batch036Checks.run(_assert))
 	_run_group("effects", func(): LocatedSourceEndChecks.run(_assert))
+	_run_group("effects", func(): SpatialTriggerFlow.logic(_assert))
 	_run_group("combat", func(): Batch037Checks.run(_assert))
 	_run_group("combat", func(): Batch038Checks.run(_assert))
 	_run_group("combat", func(): Batch039Checks.run(_assert))
@@ -174,11 +176,13 @@ func _ready() -> void:
 	_run_group("world", _test_hexutils)
 	_run_group("world", _test_dungeon_lifecycle)
 	_run_group("world", func(): LocalRoomChecks.run(_assert))
+	_run_group("world", func(): WorldSearchFlow.logic(_assert))
 	_run_group("persistence", _test_activity_history)
 	_run_group("persistence", _test_save_load)
 	_run_group("persistence", func(): PlaytestFixChecks.saved_coordinates(_assert))
 	_run_group("ui", _test_widgets)
 	_run_group("classes", func(): ClassFeatureChecks.run(_assert))
+	_run_group("classes", func(): QuickWinsChecks.run(_assert))
 	# Release the real per-turn attack cache before the scene harness exits.
 	CombatAction.reset_bounded_owner_turn_rider_locks()
 	SpellDamageRolls.clear_pending_requests()
@@ -534,9 +538,9 @@ func _test_monk_2024() -> void:
 	foe["is_alive"] = true
 	foe["saving_throw_bonuses"] = {"DEX": -10}
 	var open_hand_addle := MonkRules.resolve_open_hand_technique(monk, foe, "addle")
-	_assert(not open_hand_addle.get("success", false), "unwired Open Hand Technique remains unavailable")
+	_assert(not open_hand_addle.get("success", false), "Open Hand helper refuses an unowned hit")
 	var open_hand_topple := MonkRules.resolve_open_hand_technique(monk, foe, "topple")
-	_assert(not open_hand_topple.get("success", false), "unavailable Open Hand helper cannot apply Topple")
+	_assert(not open_hand_topple.get("success", false), "Open Hand helper cannot apply Topple without a settled Flurry hit")
 
 	# Serialization round trip at Level 20
 	var monk_dict := monk.to_dict()
@@ -1860,7 +1864,7 @@ func _test_spellcasting() -> void:
 	stunned_target["current_hp"] = 150
 	stunned_target["saving_throw_bonuses"] = {"CON": 1000}
 	var stun_result := CombatAction.resolve_spell(stun_caster, stunned_target, power_word_stun, false, {}, [], 8, 60)
-	_assert(stun_result.get("success", false) and not stun_result.has("saved") and CombatAction.has_condition(stunned_target, "stunned") and FighterRules.monster_speed(stunned_target) == 0, "Power Word Stun applies Stunned at 150 HP without an initial save and sets Speed to 0")
+	_assert(stun_result.get("success", false) and not stun_result.has("saved") and CombatAction.has_condition(stunned_target, "stunned") and FighterRules.monster_speed(stunned_target) > 0, "Power Word Stun applies Stunned at 150 HP without an initial save while preserving Speed under SRD 5.2.1")
 	var stun_source := str(stun_result.get("effect_cast", {}).get("source_id", ""))
 	SpellEffects.tick_boundary([stunned_target], SpellEffects.caster_id(stun_caster), "end")
 	CombatAction.tick_condition_sources(stunned_target)
@@ -2992,6 +2996,8 @@ func _test_black_tentacles_spell() -> void:
 	_assert(area.size() == 19 and Vector2i.ZERO in area, "The 20-foot square uses the documented radius-two hex approximation")
 	var caster: Character = _fresh_char("Tentacle Wizard", "human", "wizard", {"STR": 8, "DEX": 10, "CON": 10, "INT": 20, "WIS": 10, "CHA": 10})
 	var target: Character = _fresh_char("Tentacle Target", "human", "fighter", {"STR": 3, "DEX": 10, "CON": 10, "INT": 10, "WIS": 10, "CHA": 10})
+	target.max_hp = 50
+	target.current_hp = 50
 	target.add_modifier("roll", "save:STR", -1000, 1)
 	var failed_save := CombatAction.resolve_spell(caster, target, black_tentacles, false, {}, [], 4, 0)
 	_assert(not bool(failed_save.get("saved", true)) and int(failed_save.get("damage", 0)) > 0, "A failed Black Tentacles save deals 3d6 Bludgeoning damage")
@@ -3265,6 +3271,13 @@ func _test_ai_controller() -> void:
 	_assert(bad_attack == null, "AI command rejects an unavailable monster attack")
 	var bad_move := AICommand.from_decision({"action": "move", "move_to": Vector2i(-3, 0)}, mon_aggr, players1, grid)
 	_assert(bad_move == null, "AI command rejects a non-adjacent movement shortcut")
+	players1[0]["hex_position"] = Vector2i(2, 0)
+	var stale_attack := AICommand.from_decision({"action": "attack", "target_id": pchar1.character_name, "attack_idx": 0}, mon_aggr, players1, grid)
+	var saved_target_hp := pchar1.current_hp
+	pchar1.current_hp = 0
+	_assert(stale_attack != null and not stale_attack.can_execute_attack(mon_aggr, players1, grid, mon_aggr.get("hex_position", Vector2i.ZERO)), "S-246: A command rechecks target HP after an awaited movement reaction")
+	pchar1.current_hp = saved_target_hp
+	players1[0]["hex_position"] = Vector2i(-3, 0)
 	var lich := _monster_inst("lich_king")
 	lich["hex_position"] = Vector2i(0, 0)
 	var lich_players := [{"character": pchar1, "hex_position": Vector2i(3, 0), "is_alive": true}]
@@ -3304,6 +3317,46 @@ func _test_ai_controller() -> void:
 	# no players alive -> none
 	var d4: Dictionary = AIController.get_monster_action(mon_aggr, mon_aggr["hex_position"], grid, [])
 	_assert(d4["action"] == "none", "no alive players -> action 'none'")
+
+	# S-246: Monster AI & AICommand condition spine
+	var stunned_goblin := _monster_inst("goblin")
+	stunned_goblin["conditions"] = {"stunned": 2}
+	stunned_goblin["hex_position"] = Vector2i(3, 0)
+	var stunned_ai := AIController.get_monster_action(stunned_goblin, stunned_goblin["hex_position"], grid, players1)
+	_assert(FighterRules.monster_speed(stunned_goblin) > 0 and stunned_ai.get("action", "") == "move" and AICommand.from_decision(stunned_ai, stunned_goblin, players1, grid) != null and AICommand.from_decision({"action": "attack", "target_id": pchar1.character_name, "attack_idx": 0}, stunned_goblin, players1, grid) == null, "S-246: Stunned monster preserves Speed and movement while AI/AICommand refuse attacks and spells")
+	var petrified_goblin := _monster_inst("goblin")
+	petrified_goblin["conditions"] = {"petrified": 2}
+	petrified_goblin["hex_position"] = Vector2i(3, 0)
+	_assert(FighterRules.monster_speed(petrified_goblin) == 0 and AIController.get_monster_action(petrified_goblin, petrified_goblin["hex_position"], grid, players1).get("action", "") == "none" and AICommand.from_decision({"action": "move", "move_to": Vector2i(2, 0)}, petrified_goblin, players1, grid) == null, "S-246: Petrified monster has Speed 0 and refuses both movement and actions")
+	var grappled_goblin := _monster_inst("goblin")
+	grappled_goblin["conditions"] = {"grappled": 2}
+	grappled_goblin["hex_position"] = Vector2i(3, 0)
+	_assert(FighterRules.monster_speed(grappled_goblin) == 0 and AICommand.from_decision({"action": "move", "move_to": Vector2i(2, 0)}, grappled_goblin, players1, grid) == null, "S-246: Grappled monster has Speed 0 and cannot move")
+	var feared_goblin := _monster_inst("goblin")
+	pchar1.character_id = "fear_source_hero"
+	feared_goblin["conditions"] = {"frightened": 2}
+	feared_goblin["condition_sources"] = {"frightened": {"fear_source_hero": 2}}
+	feared_goblin["hex_position"] = Vector2i(2, 0)
+	var fear_players := [{"character": pchar1, "hex_position": Vector2i(0, 0), "is_alive": true}]
+	_assert(AICommand.from_decision({"action": "move", "move_to": Vector2i(1, 0)}, feared_goblin, fear_players, grid) == null and AICommand.from_decision({"action": "move", "move_to": Vector2i(3, 0)}, feared_goblin, fear_players, grid) != null, "S-246: Generic Frightened monster cannot willingly move closer to its fear source")
+	var monster_fear_source := _monster_inst("goblin")
+	monster_fear_source["id"] = "fear_source_monster"
+	monster_fear_source["hex_position"] = Vector2i(1, 0)
+	feared_goblin["condition_sources"] = {"frightened": {"fear_source_monster": 2}}
+	var all_fear_candidates := fear_players + [monster_fear_source]
+	_assert(AICommand.from_decision({"action": "move", "move_to": Vector2i(1, 0)}, feared_goblin, fear_players, grid, all_fear_candidates) == null and CombatAction.frightened_forbids_movement_closer(feared_goblin, Vector2i(2, 0), Vector2i(1, 0), all_fear_candidates), "S-246: Monster fear source is resolved by exact live id and blocks the closer step")
+	var fear_source_decision := AIController.get_monster_action(feared_goblin, Vector2i(2, 0), grid, fear_players, all_fear_candidates)
+	_assert(not (fear_source_decision.get("action", "") in ["move", "move_attack"] and fear_source_decision.get("move_to", Vector2i.ZERO) == Vector2i(1, 0)), "S-246: Aggressive AI movement honors a live monster fear source")
+	var unseen_hero: Character = _fresh_char("Unseen Hero", "human", "rogue", {"DEX": 16})
+	unseen_hero.add_condition("hidden", 1)
+	var hidden_only_players := [{"character": unseen_hero, "hex_position": Vector2i(1, 0), "is_alive": true}]
+	_assert(AIController.get_monster_action(mon_aggr, Vector2i.ZERO, grid, hidden_only_players).get("action", "") == "none", "S-246: Monster without special senses does not target a Hidden character by exact hex")
+	var truesight_goblin := mon_aggr.duplicate(true)
+	truesight_goblin["senses"] = {"truesight": 30}
+	_assert(AIController.get_monster_action(truesight_goblin, Vector2i.ZERO, grid, hidden_only_players).get("action", "") == "attack", "Truesight sees a Hidden creature on an unobstructed lit hex within range")
+	unseen_hero.remove_condition("hidden")
+	unseen_hero.add_condition("invisible", 2)
+	_assert(AIController.get_monster_action(truesight_goblin, Vector2i.ZERO, grid, hidden_only_players).get("action", "") == "attack", "Monster AI retains an Invisible target seen through native Truesight")
 	grid.free()
 
 func _test_inventory() -> void:
@@ -3432,6 +3485,118 @@ func _test_conditions() -> void:
 	slowed_monster["conditions"] = {"speed_reduced": 1}
 	CombatState.tick_monster_condition_durations(slowed_monster)
 	_assert(not slowed_monster["conditions"].has("speed_reduced") and int(slowed_monster["speed"]) == 6 and not slowed_monster.has("speed_before_spell_slow"), "monster spell slow expires on its turn and restores the prior speed")
+
+	# S-235, S-247, S-248: Shared SRD 5.2.1 Condition & Roll Host Spine
+	var cond_char: Character = _fresh_char("SRD Cond", "human", "fighter", {"STR": 14, "DEX": 14, "CON": 14, "INT": 10, "WIS": 10, "CHA": 12})
+	cond_char.character_id = "srd_cond_char"
+	cond_char.add_condition("stunned", 2)
+	_assert(cond_char.get_speed() > 0 and CombatAction.is_incapacitated(cond_char), "S-235: Stunned includes Incapacitated without setting Character Speed to 0")
+	var stun_str_save := cond_char.saving_throw_test_to_dc("STR", 5)
+	var stun_dex_save := cond_char.saving_throw_test_to_dc("DEX", 5)
+	_assert(bool(stun_str_save.get("auto_failed", false)) and not bool(stun_str_save.get("success", true)) and bool(stun_dex_save.get("auto_failed", false)), "S-235/S-247: Stunned Character auto-fails STR and DEX saving throws")
+	var token_diviner: Character = ClassFeatureChecks._character("wizard", 3)
+	ClassProgression.choose_subclass(token_diviner, "diviner")
+	var available_diviner_tokens := RollTokenRules.available_tokens(token_diviner, "diviner_portent")
+	var token_before := available_diviner_tokens.size()
+	var token_id := str(available_diviner_tokens[0].get("token_id", "")) if not available_diviner_tokens.is_empty() else ""
+	var auto_fail_with_token := cond_char.make_saving_throw_result("DEX", false, false, {"roll_token_replacement": {"owner": token_diviner, "pool_id": "diviner_portent", "token_id": token_id}})
+	_assert(bool(auto_fail_with_token.get("auto_failed", false)) and not bool(auto_fail_with_token.get("roll_token_replaced", false)) and RollTokenRules.available_tokens(token_diviner, "diviner_portent").size() == token_before, "S-247: Automatic failure bypasses roll-token replacement without spending its token")
+	var disciplined_monk: Character = ClassFeatureChecks._character("monk", 14)
+	disciplined_monk.add_condition("stunned", 2)
+	var focus_before_auto_fail := disciplined_monk.get_focus_points()
+	var monk_auto_fail := disciplined_monk.saving_throw_test_to_dc("DEX", 5)
+	_assert(bool(monk_auto_fail.get("auto_failed", false)) and not bool(monk_auto_fail.get("disciplined_survivor_used", false)) and disciplined_monk.get_focus_points() == focus_before_auto_fail, "S-247: Automatic failure does not trigger or spend Disciplined Survivor's optional reroll")
+	cond_char.remove_condition("stunned")
+	cond_char.add_condition("grappled", 2)
+	_assert(cond_char.get_speed() == 0, "S-235: Grappled reduces Character Speed to 0")
+	cond_char.remove_condition("grappled")
+	cond_char.add_condition("restrained", 2)
+	var restrained_dex := cond_char.make_saving_throw_result("DEX")
+	var restrained_advantage_canceled := cond_char.make_saving_throw_result("DEX", true, false)
+	_assert(str(restrained_dex.get("roll_mode", "")) == "disadvantage" and str(restrained_advantage_canceled.get("roll_mode", "")) == "normal", "S-247: Restrained imposes DEX Disadvantage and cancels against Advantage")
+	cond_char.remove_condition("restrained")
+	cond_char.add_condition("petrified", 2)
+	_assert(cond_char.get_speed() == 0 and CombatAction.is_incapacitated(cond_char) and CombatAction.save_auto_fails(cond_char, "STR") and CombatAction.save_auto_fails(cond_char, "DEX"), "S-235: Petrified sets Speed 0, incapacitates, and auto-fails STR/DEX saves")
+	cond_char.add_condition("poisoned", 2)
+	_assert(not cond_char.has_condition("poisoned") and CombatAction.is_immune_to_damage(cond_char, "poison") and cond_char.resist_damage(10, "slashing") == 5, "S-235: Petrified grants immunity to Poisoned/poison damage and resistance to all damage")
+	cond_char.remove_condition("petrified")
+	cond_char.add_condition("unconscious", 2)
+	_assert(cond_char.has_condition("prone") and cond_char.get_speed() == 0, "S-235: Applying Unconscious also applies Prone and sets Speed to 0")
+	cond_char.remove_condition("unconscious")
+	cond_char.remove_condition("prone")
+	cond_char.add_condition("unconscious", 2, "fixture:magical_slumber")
+	_assert(cond_char.heal(1) == 0 and cond_char.has_condition("unconscious") and cond_char.condition_sources.get("unconscious", {}).has("fixture:magical_slumber"), "Healing at full HP does not remove source-owned Unconscious")
+	cond_char.current_hp -= 1
+	_assert(cond_char.heal(1) == 1 and cond_char.has_condition("unconscious"), "Restoring HP does not wake a source-owned magical slumber")
+	cond_char.remove_condition("unconscious")
+
+	var charmer_enemy := _monster_inst("goblin")
+	charmer_enemy["id"] = "charmer_goblin"
+	cond_char.add_condition("charmed", 2, "charmer_goblin")
+	var charmed_attack := CombatAction.resolve_weapon_attack(cond_char, charmer_enemy, {"id": "longsword", "name": "Longsword", "damage": "1d8", "damage_type": "slashing", "ability": "STR", "type": "weapon", "range": 1})
+	var charmed_spell_check := CombatAction.validate_spell_target(cond_char, charmer_enemy, DataLoader.get_spell("fire_bolt"), 30)
+	_assert(bool(charmed_attack.get("charmed_blocked", false)) and bool(charmed_spell_check.get("charmed_blocked", false)), "S-235: Charmed prevents attacking or damaging the charmer")
+	var charmed_heal_check := CombatAction.validate_spell_target(cond_char, charmer_enemy, DataLoader.get_spell("cure_wounds"), 5)
+	var charmed_buff_check := CombatAction.validate_spell_target(cond_char, charmer_enemy, DataLoader.get_spell("bless"), 5)
+	_assert(bool(charmed_heal_check.get("success", false)) and bool(charmed_buff_check.get("success", false)), "Charmed still permits healing and buffing the charmer")
+	cond_char.remove_condition("charmed")
+
+	cond_char.add_condition("blinded", 2)
+	var blind_sight_check := EventResolver.resolve_skill_check(cond_char, {"ability": "WIS", "skill": "Perception", "dc": 5, "requires_sight": true})
+	_assert(bool(blind_sight_check.get("auto_failed", false)) and not bool(blind_sight_check.get("success", true)), "S-235/S-248: Blinded auto-fails ability checks that require sight")
+	cond_char.remove_condition("blinded")
+	cond_char.add_condition("deafened", 2)
+	var deaf_hearing_check := EventResolver.resolve_skill_check(cond_char, {"ability": "WIS", "skill": "Perception", "dc": 5, "requires_hearing": true})
+	_assert(bool(deaf_hearing_check.get("auto_failed", false)) and not bool(deaf_hearing_check.get("success", true)), "S-235/S-248: Deafened auto-fails ability checks that require hearing")
+	cond_char.remove_condition("deafened")
+
+	cond_char.add_condition("poisoned", 2)
+	var poisoned_check := EventResolver.resolve_skill_check(cond_char, {"ability": "DEX", "skill": "Stealth", "dc": 10})
+	_assert(bool(poisoned_check.get("disadvantage", false)) and str(poisoned_check.get("roll_mode", "")) == "disadvantage", "S-235/S-248: Poisoned imposes Disadvantage on ability checks")
+	cond_char.remove_condition("poisoned")
+	cond_char.add_condition("frightened", 2)
+	var fear_grid := _build_grid(5)
+	var fear_source := _fresh_char("Fear Source", "human", "fighter", {"STR": 10})
+	fear_source.character_id = "fear_source_live"
+	cond_char.add_condition("frightened", 2, fear_source.character_id)
+	var fear_participants := [{"character": fear_source, "hex_position": Vector2i.ZERO, "is_alive": true}]
+	var fear_context := {"participants": fear_participants, "actor_position": Vector2i(3, 0), "grid": fear_grid}
+	var fear_in_sight_check := EventResolver.resolve_skill_check(cond_char, {"ability": "WIS", "skill": "Perception", "dc": 10}, {}, fear_context)
+	fear_source.add_condition("invisible", 2)
+	var fear_out_of_sight_check := EventResolver.resolve_skill_check(cond_char, {"ability": "WIS", "skill": "Perception", "dc": 10}, {}, fear_context)
+	_assert(bool(fear_in_sight_check.get("disadvantage", false)) and not bool(fear_out_of_sight_check.get("disadvantage", false)), "S-235/S-248: Frightened imposes Disadvantage on ability checks only while the fear source is in sight")
+	fear_grid.free()
+	cond_char.remove_condition("frightened")
+	var social_target := _fresh_char("Social Target", "human", "fighter", {"CHA": 10})
+	social_target.add_condition("charmed", 2, cond_char.character_id)
+	var social_charmed_check := EventResolver.resolve_skill_check(cond_char, {"ability": "CHA", "skill": "Persuasion", "dc": 10}, {}, {"social_target": social_target})
+	_assert(bool(social_charmed_check.get("advantage", false)), "S-235/S-248: Charmer has Advantage on social CHA ability checks against the charmed creature")
+
+	var save_mon := _monster_inst("goblin")
+	save_mon["saving_throw_bonuses"] = {"STR": 50, "DEX": 50}
+	save_mon["conditions"] = {"paralyzed": 2}
+	var mon_para_save := BarbarianRules.roll_monster_save_result(save_mon, "DEX")
+	_assert(bool(mon_para_save.get("auto_failed", false)) and int(mon_para_save.get("total", 0)) < 0, "S-247: Monster save helper auto-fails STR/DEX saves when Paralyzed/Stunned/Unconscious/Petrified")
+	var mon_check_actor := _monster_inst("goblin")
+	mon_check_actor["skills"] = {"Athletics": 6}
+	mon_check_actor["conditions"] = {"poisoned": 2, "exhaustion": 2}
+	var mon_check_res := EventResolver.resolve_monster_ability_check(mon_check_actor, "STR", "Athletics", 10)
+	_assert(int(mon_check_res.get("modifier", 0)) == 2 and bool(mon_check_res.get("disadvantage", false)), "S-248: Monster ability check helper applies skill bonus, exhaustion penalty, and Poisoned Disadvantage")
+
+	var recovered_char: Character = _fresh_char("Recovered Hero", "human", "fighter", {"CON": 14})
+	recovered_char.take_damage(recovered_char.current_hp)
+	_assert(recovered_char.has_condition("prone"), "A downed character is treated as Prone")
+	recovered_char.heal(1)
+	_assert(not recovered_char.has_condition("prone"), "Healing from zero does not strand the character in the unfinished 999-turn Prone state")
+	for distance in [0, 5, 10]:
+		var attack_cast := SpellResolutionContext.new()
+		attack_cast.caster = cond_char
+		attack_cast.target = {"id": "fixture:distance_target", "name": "Distance target", "current_hp": 1000, "max_hp": 1000, "conditions": {"paralyzed": 2}, "is_alive": true}
+		attack_cast.spell = {"id": "fixture:distance_spell", "name": "Distance spell", "range": 24, "attack_type": "ranged_spell", "damage": "1d6", "damage_type": "fire"}
+		attack_cast.distance_feet = distance
+		var attack_result := {"natural": 10, "total": 20, "modifier": 10, "is_crit": false, "is_miss": false}
+		var finished := SpellAttackResolver._finish_attack(attack_cast, attack_result, 10, true, false, "", false, false, {})
+		_assert(bool(finished.get("hit", false)) and bool(finished.get("crit", false)) == (distance <= 5), "Spell attack completion uses actual distance for paralysis critical hits (%d feet)" % distance)
 
 func _test_character_serialization() -> void:
 	print("\n[Group] Character serialization")

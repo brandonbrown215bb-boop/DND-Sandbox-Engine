@@ -13,6 +13,133 @@ var monster_entities: Array[Dictionary] = []
 var light_spell_markers: Dictionary = {}
 var produce_flame_markers: Dictionary = {}
 var dancing_light_sets: Dictionary = {}
+var trigger_actor_turns: Dictionary = {}
+var trigger_epoch := ""
+var trigger_turn_events: Dictionary = {}
+var trigger_started_turns: Dictionary = {}
+
+func begin_trigger_turn(actor_id: String) -> void:
+	var turn := str(_trigger_clocks().turn)
+	if trigger_started_turns.has(turn): return
+	trigger_started_turns[turn] = true
+	var room := LocalRoomCombat.room()
+	if room.is_empty(): trigger_actor_turns[actor_id] = turn
+	else:
+		room["area_turn_serial"] = int(room.get("area_turn_serial", 0)) + 1
+		var actors: Dictionary = room.get("area_actor_turns", {})
+		actors[actor_id] = "room:%s:%d" % [room.get("id", ""), room.area_turn_serial]
+		room["area_actor_turns"] = actors
+	_turn_boundary_event(actor_id, "start_turn")
+
+func _turn_boundary_event(actor_id: String, event: String) -> String:
+	var key := JSON.stringify([_trigger_clocks().turn, actor_id, event])
+	if not trigger_turn_events.has(key): trigger_turn_events[key] = trigger_epoch + SpatialTriggerRules.next_event()
+	return str(trigger_turn_events[key])
+
+func _trigger_clocks() -> Dictionary:
+	if trigger_epoch.is_empty():
+		var room := LocalRoomCombat.room()
+		if room.is_empty(): trigger_epoch = "combat:%d:" % get_instance_id()
+		else:
+			room["area_encounter_serial"] = int(room.get("area_encounter_serial", 0)) + 1
+			trigger_epoch = "room:%s:combat:%d:" % [room.get("id", ""), room.area_encounter_serial]
+	var prefix := trigger_epoch
+	var room := LocalRoomCombat.room()
+	return {"turn": prefix + _current_spell_trigger_turn(), "actors": room.get("area_actor_turns", {}) if not room.is_empty() else trigger_actor_turns, "initial_actor": "room:%s:initial" % room.get("id", "") if not room.is_empty() else prefix + "initial"}
+
+## Generic world hook; the same declaration can be a source-end room child.
+func add_trigger_area(source_id: String, caster_id: String, declaration: Dictionary, center: Vector2i) -> Dictionary:
+	var error := LocatedSourceEndRules.children_error({"id": "area", "cancel_policy": "stop", "children": [declaration]})
+	if not error.is_empty() or declaration.get("type") != "room_area" or not declaration.has("trigger_policies") or source_id.is_empty() or caster_id.is_empty() or hex_grid == null or not hex_grid.has_tile(center): return {"success": false, "reason": error if not error.is_empty() else "Invalid trigger area"}
+	if active_spell_zones.has(source_id): return {"success": false, "reason": "Source already owns an area"}
+	var area := declaration.duplicate(true)
+	SpatialTriggerRules.mark_created(area)
+	area.merge({"id": source_id, "source_id": source_id, "caster_id": caster_id, "definition_id": str(declaration.id), "spell_id": "", "hazard_kind": "trigger_damage", "center": center, "coords": Targeting.get_sphere_targets(center, int(declaration.radius_hexes), hex_grid), "rounds_remaining": maxi(1, int(ceil(float(declaration.duration_seconds) / 6.0))), "plane": PhysicalFactsRules.get_plane(LocalRoomCombat.room())}, true)
+	active_spell_zones[source_id] = area
+	return {"success": true, "area": area}
+
+func _movement_event(target, from_hex: Vector2i, to_hex: Vector2i) -> String:
+	var entity: Dictionary = target if target is Dictionary else {}
+	if target is Character:
+		for player in player_entities:
+			if player.get("character") == target: entity = player; break
+	if entity.get("hex_position") != to_hex or entity.get("_spatial_movement_from") != from_hex: return ""
+	var event := str(entity.get("_spatial_movement_event", ""))
+	_trigger_clocks()
+	return trigger_epoch + event if not event.is_empty() else ""
+
+func _trigger_actor_id(target) -> String:
+	if target is Character: return target.character_id
+	if not target is Dictionary or str(target.get("id", "")).is_empty(): return ""
+	_trigger_clocks()
+	# Encounter monsters reuse display/runtime IDs such as monster_0. They are new actors.
+	return trigger_epoch + str(target.id)
+
+func _claim_trigger_areas(target, from_hex: Vector2i, to_hex: Vector2i, event: String, event_id: String) -> Array[Dictionary]:
+	var deliveries: Array[Dictionary] = []
+	for area in active_spell_zones.values():
+		if not area.has("trigger_policies") or area.get("plane") != PhysicalFactsRules.get_plane(target, {"plane": PhysicalFactsRules.get_plane(LocalRoomCombat.room())}): continue
+		var coords: Array = area.get("coords", [])
+		var events := SpatialTriggerRules.movement_events(from_hex in coords, to_hex in coords) if event == "movement" else [event] if to_hex in coords else []
+		if event == "movement" and _movement_kind(target) == "teleport": events = ["entry"] if from_hex not in coords and to_hex in coords else []
+		deliveries.append_array(SpatialTriggerRules.claim(area, _trigger_actor_id(target), events, event_id, _trigger_clocks()))
+	return deliveries
+
+func _movement_kind(target) -> String:
+	if target is Dictionary: return str(target.get("_spatial_movement_kind", "movement"))
+	for entity in player_entities:
+		if entity.get("character") == target: return str(entity.get("_spatial_movement_kind", "movement"))
+	return "movement"
+
+func _resolve_trigger_deliveries(target, deliveries: Array[Dictionary]) -> Array[Dictionary]:
+	var results: Array[Dictionary] = []
+	for delivery in deliveries:
+		var outcome := LocalRoomAreas.resolve_aftermath_entry(delivery, target)
+		if outcome.is_empty(): continue
+		results.append(outcome)
+		var damage := int(outcome.resolved)
+		hud.add_log("%s takes %d %s damage (%s)." % [target.character_name if target is Character else str(target.get("name", "The creature")), damage, str(outcome.damage_type), str(outcome.trigger_event)])
+		if target is Character:
+			if int(outcome.get("resolved", 0)) > 0: await check_concentration.call(target, int(outcome.resolved))
+			if not target.is_alive: end_concentration.call(target)
+		elif int(target.get("current_hp", 0)) <= 0 and target.get("is_alive", true):
+			target["is_alive"] = false
+			tracker.remove_combatant(str(target.get("id", "")))
+			enemy_defeated.call(target, null)
+	return results
+
+func move_trigger_area(source_id: String, destination: Vector2i) -> Array[Dictionary]:
+	var results: Array[Dictionary] = []
+	var area: Dictionary = active_spell_zones.get(source_id, {})
+	if not area.has("trigger_policies") or area.get("center") == destination or not hex_grid.has_tile(destination): return results
+	var old_coords: Array = area.coords.duplicate()
+	area.center = destination
+	area.coords = Targeting.get_sphere_targets(destination, int(area.radius_hexes), hex_grid)
+	var event_id := SpatialTriggerRules.next_event()
+	var pending: Array = []
+	var clocks := _trigger_clocks()
+	for target in _spell_effect_targets():
+		var position := _spell_zone_target_hex(target)
+		if position in old_coords or position not in area.coords or area.get("plane") != PhysicalFactsRules.get_plane(target, {"plane": PhysicalFactsRules.get_plane(LocalRoomCombat.room())}): continue
+		pending.append({"target": target, "deliveries": SpatialTriggerRules.claim(area, _trigger_actor_id(target), ["area_enter"], event_id, clocks)})
+	for row in pending:
+		results.append_array(await _resolve_trigger_deliveries(row.target, row.deliveries))
+	return results
+
+func move_room_trigger_area(source_id: String, destination: Vector2i) -> Array[Dictionary]:
+	var actors: Array = []
+	for target in _spell_effect_targets():
+		actors.append({"id": _trigger_actor_id(target), "position": _spell_zone_target_hex(target), "plane": PhysicalFactsRules.get_plane(target, {"plane": PhysicalFactsRules.get_plane(LocalRoomCombat.room())})})
+	var deliveries := LocalRoomAreas.move_area(LocalRoomCombat.room(), source_id, destination, actors, _trigger_clocks())
+	var results: Array[Dictionary] = []
+	for target in _spell_effect_targets():
+		var actor_id := _trigger_actor_id(target)
+		var selected: Array[Dictionary] = []
+		for delivery in deliveries:
+			var receipt: Array = JSON.parse_string(delivery._trigger_receipt)
+			if receipt[1] == actor_id: selected.append(delivery)
+		results.append_array(await _resolve_trigger_deliveries(target, selected))
+	return results
 
 # Combat owns prompts, reactions, defeat rewards and redraws. Awaited callbacks
 # preserve their existing order around the shared CombatAction resolver.
@@ -28,6 +155,7 @@ var highlight_reachable: Callable
 func bind_encounter(grid: HexGrid, combat_hud: CombatHUD, initiative: InitiativeTracker, players: Array[Dictionary], monsters: Array[Dictionary]) -> void:
 	LocatedSourceEndRules.combat_areas = weakref(self)
 	hex_grid = grid
+	if grid != null: grid.perception_participants = players
 	hud = combat_hud
 	tracker = initiative
 	player_entities = players
@@ -274,7 +402,19 @@ func _resolve_conjure_animals_area_movement(zone: Dictionary, old_coords: Array,
 	return results
 
 
+func _sync_obscurement_areas(native_spell: String, kind: String) -> void:
+	if hex_grid == null: return
+	for source in hex_grid.obscurement_sources.keys():
+		if hex_grid.obscurement_sources[source].get("kind", "") == kind and not active_spell_zones.has(source):
+			hex_grid.obscurement_sources.erase(source)
+	for source in active_spell_zones:
+		var zone: Dictionary = active_spell_zones[source]
+		if zone.get("obscurement_kind", "") == kind or zone.get("spell_id", "") == native_spell:
+			hex_grid.obscurement_sources[source] = {"kind": kind, "coords": zone.get("coords", []), "caster_id": zone.get("caster_id", "")}
+
+
 func _refresh_fog_cloud_conditions() -> void:
+	_sync_obscurement_areas("fog_cloud", "fog")
 	var targets := _spell_effect_targets()
 	for target in targets:
 		for source_id_value in active_spell_zones.keys():
@@ -293,6 +433,7 @@ func _refresh_fog_cloud_conditions() -> void:
 
 
 func _refresh_darkness_conditions() -> void:
+	_sync_obscurement_areas("darkness", "magical_darkness")
 	var targets := _spell_effect_targets()
 	for target in targets:
 		for source_id_value in active_spell_zones.keys():
@@ -391,6 +532,7 @@ func _position_for_spell_target(target) -> Vector2i:
 
 func _remove_spell_zone(source_id: String) -> void:
 	var zone: Dictionary = active_spell_zones.get(source_id, {})
+	zone["_trigger_ended"] = true
 	if str(zone.get("spell_id", "")) == "black_tentacles":
 		for target in zone.get("restrained_targets", []):
 			CombatAction.remove_condition_source(target, source_id, ["restrained"])
@@ -404,6 +546,11 @@ func _remove_spell_zone(source_id: String) -> void:
 		var caster := _spell_zone_caster(zone)
 		if caster != null:
 			caster.feature_uses.erase("conjure_woodland_beings_disengage_source_id")
+	for target in _spell_effect_targets():
+		for condition in ["fog_cloud_obscured", "darkness_obscured"]:
+			if _has_spell_condition_source(target, source_id, condition):
+				CombatAction.remove_condition_source(target, source_id, [condition])
+	hex_grid.obscurement_sources.erase(source_id)
 	active_spell_zones.erase(source_id)
 	hex_grid.remove_difficult_terrain(source_id)
 	hex_grid.remove_movement_cost_override(source_id)
@@ -523,17 +670,23 @@ func _resolve_spell_zone_entries(target, from_hex: Vector2i, to_hex: Vector2i) -
 	var results: Array[Dictionary] = []
 	if from_hex == to_hex:
 		return results
+	var movement_event := _movement_event(target, from_hex, to_hex)
+	var declared := _claim_trigger_areas(target, from_hex, to_hex, "movement", movement_event)
+	var room_areas := LocalRoomCombat.enter_room_areas(target, from_hex, to_hex, movement_event, _trigger_clocks(), _movement_kind(target), _trigger_actor_id(target))
 	var heat := await _resolve_room_surface_heat(target, to_hex)
 	if not heat.is_empty(): results.append(heat)
-	var room_areas := LocalRoomCombat.enter_room_areas(target, from_hex, to_hex)
+	results.append_array(await _resolve_trigger_deliveries(target, declared))
 	for area in room_areas:
+		if area.has("trigger_policies"):
+			results.append_array(await _resolve_trigger_deliveries(target, [area]))
+			continue
 		var aftermath := LocalRoomAreas.resolve_aftermath_entry(area, target)
 		if aftermath.is_empty(): continue
 		results.append(aftermath)
-		var damage := int(aftermath.get("damage", 0))
+		var damage := int(aftermath.get("resolved", 0))
 		hud.add_log("%s takes %d %s damage entering %s." % [target.character_name if target is Character else str(target.get("name", "The creature")), damage, str(aftermath.damage_type).capitalize(), str(area.hazard_kind)])
 		if target is Character:
-			if damage > 0: await check_concentration.call(target, damage)
+			if int(aftermath.get("resolved", 0)) > 0: await check_concentration.call(target, int(aftermath.resolved))
 			if not target.is_alive: end_concentration.call(target)
 		elif int(target.get("current_hp", 0)) <= 0:
 			tracker.remove_combatant(str(target.get("id", "")))
@@ -650,6 +803,11 @@ func _resolve_spell_zone_path(target, path: Array) -> Array[Dictionary]:
 
 func _resolve_spell_zone_end_turn(target, coord: Vector2i) -> Array[Dictionary]:
 	var results: Array[Dictionary] = []
+	var event_id := _turn_boundary_event(_trigger_actor_id(target), "end_turn")
+	var declared := _claim_trigger_areas(target, coord, coord, "end_turn", event_id)
+	var room_deliveries := LocalRoomAreas.turn_event(LocalRoomCombat.room(), _trigger_actor_id(target), coord, "end_turn", _trigger_clocks(), PhysicalFactsRules.get_plane(target, {"plane": PhysicalFactsRules.get_plane(LocalRoomCombat.room())}), event_id)
+	results.append_array(await _resolve_trigger_deliveries(target, declared))
+	results.append_array(await _resolve_trigger_deliveries(target, room_deliveries))
 	var heat := await _resolve_room_surface_heat(target, coord)
 	if not heat.is_empty(): results.append(heat)
 	for zone in active_spell_zones.values():
@@ -707,6 +865,11 @@ func _resolve_room_surface_heat(target, position: Vector2i) -> Dictionary:
 
 func _resolve_spell_zone_start_turn(target, coord: Vector2i) -> Array[Dictionary]:
 	var results: Array[Dictionary] = []
+	var event_id := _turn_boundary_event(_trigger_actor_id(target), "start_turn")
+	var declared := _claim_trigger_areas(target, coord, coord, "start_turn", event_id)
+	var room_deliveries := LocalRoomAreas.turn_event(LocalRoomCombat.room(), _trigger_actor_id(target), coord, "start_turn", _trigger_clocks(), PhysicalFactsRules.get_plane(target, {"plane": PhysicalFactsRules.get_plane(LocalRoomCombat.room())}), event_id)
+	results.append_array(await _resolve_trigger_deliveries(target, declared))
+	results.append_array(await _resolve_trigger_deliveries(target, room_deliveries))
 	for source_id_value in active_spell_zones.keys().duplicate():
 		var zone: Dictionary = active_spell_zones.get(str(source_id_value), {})
 		if str(zone.get("spell_id", "")) == "sleet_storm" and coord in zone.get("coords", []):

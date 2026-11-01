@@ -31,7 +31,7 @@ static func preflight(room: Dictionary, caster: Character, ids: Array[String], o
 	var used := 0
 	var seen: Array[String] = []
 	for id in ids:
-		var object := LocalRoomRules.get_object(room, id)
+		var object := LocalRoomRules.get_object(room, id, caster)
 		if id in seen or not eligible(object): return "Choose distinct nonmagical, unfixed, unattended objects up to Huge size. Containers with item copies are not supported yet."
 		seen.append(id)
 		used += weight(object)

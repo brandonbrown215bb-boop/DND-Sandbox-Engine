@@ -1,0 +1,69 @@
+[
+  {
+    "id": "fixture:ordinary_actions",
+    "name": "Ordinary action fixture",
+    "hit_die": 8,
+    "primary_ability": "DEX",
+    "saving_throw_proficiencies": [
+      "DEX"
+    ],
+    "features_by_level": {
+      "1": [
+        {
+          "id": "fixture:renamed_quick_movement",
+          "name": "Quick movement",
+          "type": "active",
+          "action_cost": "bonus_action",
+          "uses": 1,
+          "uses_per": "turn",
+          "options": [
+            "dash",
+            "disengage",
+            "hide"
+          ],
+          "effects": [
+            {
+              "type": "cunning_action"
+            }
+          ]
+        },
+        {
+          "id": "fixture:readied_edge",
+          "name": "Readied edge",
+          "type": "attack_profile",
+          "source_instance_id": "fixture:readied_edge",
+          "scope": {
+            "kind": "weapon",
+            "ids": [
+              "shortbow"
+            ]
+          },
+          "add": {
+            "attack_bonus": 2,
+            "damage_bonus": 2
+          }
+        },
+        {
+          "id": "fixture:paired_steps",
+          "name": "Paired steps",
+          "type": "active",
+          "executor": "class_feature",
+          "action_cost": "action",
+          "uses": 1,
+          "uses_per": "turn",
+          "child_actions": {
+            "classification": "movement",
+            "cancel_policy": "stop",
+            "children": [
+              {
+                "id": "step",
+                "kind": "move",
+                "distance": 1
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+]

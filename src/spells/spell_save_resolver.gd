@@ -56,12 +56,12 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 	elif cast.target is Dictionary:
 		target_creature_type = str(cast.target.get("creature_type", ""))
 	var target_save_disadvantage: bool = target_creature_type in cast.spell.get("save_disadvantage_creature_types", [])
-	target_save_disadvantage = target_save_disadvantage or (save_ability == "DEX" and CombatAction.has_condition(cast.target, "restrained"))
-	var paralyzed_save_auto_fail := CombatAction.is_paralyzed(cast.target) and save_ability in ["STR", "DEX"]
+	target_save_disadvantage = target_save_disadvantage or CombatAction.save_has_disadvantage(cast.target, save_ability)
+	var condition_save_auto_fail := CombatAction.save_auto_fails(cast.target, save_ability)
 	var object_without_ability_scores: bool = cast.target is Dictionary and bool(cast.target.get("is_object", false)) and not cast.target.has("ability_scores")
-	var automatically_fails: bool = not contact_patron_saved and (target_creature_type in auto_fail_creature_types or paralyzed_save_auto_fail or (save_ability in ["STR", "DEX"] and object_without_ability_scores))
+	var automatically_fails: bool = not contact_patron_saved and (target_creature_type in auto_fail_creature_types or condition_save_auto_fail or (save_ability in ["STR", "DEX"] and object_without_ability_scores))
 	var heightened := bool(cached_post_roll_flags.get("heightened", false)) if not cached_save_test.is_empty() else bool(cast.decisions.get("metamagic:heightened", false)) and not automatically_fails and not careful_saved and not contact_patron_saved and cast.caster.class_id == "sorcerer" and "heightened_spell" in cast.caster.sorcerer_metamagic_choices and str(cast.spell.get("target", "")) == "single"
-	if cached_save_test.is_empty() and heightened and not SorcererRules.spend_metamagic_cost(cast.caster, 2, cast.decisions):
+	if cached_save_test.is_empty() and heightened and not bool(cast.decisions.get("metamagic:heightened_paid", false)) and not SorcererRules.spend_metamagic_cost(cast.caster, 2, cast.decisions):
 		heightened = false
 	if not cached_save_test.is_empty():
 		pass
@@ -69,7 +69,7 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 		save_test = {"total": save_dc, "success": true}
 		save_roll = save_dc
 	elif automatically_fails:
-		save_test = {"total": -1000, "success": false}
+		save_test = {"total": -1000, "success": false, "auto_failed": true}
 		save_roll = -1000
 	elif willing_target_no_save:
 		save_test = {"total": 0, "success": false}
@@ -79,12 +79,8 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 		save_roll = int(save_test.get("total", 0))
 	elif cast.target is Dictionary:
 		# Monster stats
-		var save_has_advantage: bool = target_save_advantage and not target_save_disadvantage and not heightened
-		var save_has_disadvantage: bool = (target_save_disadvantage or heightened) and not target_save_advantage
-		save_test = BarbarianRules.roll_monster_save_result(cast.target, save_ability, null, save_has_advantage, save_has_disadvantage, cast.decisions)
+		save_test = BarbarianRules.roll_monster_save_result(cast.target, save_ability, null, target_save_advantage, target_save_disadvantage or heightened, cast.decisions)
 		save_roll = int(save_test.get("total", 0))
-		if save_ability in ["STR", "DEX"] and cast.target.get("conditions", {}).has("stunned"):
-			save_roll = -1000
 	# Monster saves do not always include their DC in the roll receipt. Capture it
 	# here so any suspended exit choice resumes with the exact original check.
 	if has_numeric_save(save_test):

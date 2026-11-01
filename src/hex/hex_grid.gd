@@ -39,6 +39,12 @@ var outline_width := 2.0
 var entities: Array[Dictionary] = []
 var selected_object_id := ""
 
+## Encounter-local perception state, keyed by exact source / observer identity.
+var obscurement_sources: Dictionary = {}
+var observer_locations: Dictionary = {}
+var perception_participants: Array[Dictionary] = []
+var perception_observer: Character
+
 ## Source-keyed areas that add one movement point to each affected hex.
 var difficult_terrain_sources: Dictionary = {}
 
@@ -156,6 +162,7 @@ func _draw() -> void:
 			continue
 		var has_actor: bool = actors_by_coord.has(coord) and not actors_by_coord[coord].is_empty()
 		var object: Dictionary = entity["world_object"]
+		if not object_visible(object): continue
 		var position := HexUtils.hex_to_pixel(coord)
 		var marker := Rect2(position - Vector2(17, 15), Vector2(34, 30))
 		var marker_color: Color = Color(0.62, 0.43, 0.22) if object.get("locked", false) else Color(0.8, 0.7, 0.4)
@@ -347,6 +354,10 @@ func get_tile(coord: Vector2i) -> HexTile:
 
 
 ## Check if a coordinate has a tile.
+func object_visible(object: Dictionary) -> bool:
+	return LocalRoomSearchRules.known(object, perception_observer)
+
+
 func has_tile(coord: Vector2i) -> bool:
 	return coord in tiles
 

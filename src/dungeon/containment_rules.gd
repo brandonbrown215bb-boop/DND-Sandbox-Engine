@@ -280,6 +280,7 @@ static func check_error(room: Dictionary, party: Array, actor: Character, kind: 
 	if row.has("release_pending"): return "Release settlement is already deferred; no further check or cost is needed."
 	var container = entity(room, party, row.container_kind, row.container_id)
 	var occupant = entity(room, party, kind, id)
+	if mode == "rescue" and ((row.container_kind == "object" and not LocalRoomSearchRules.known(container, actor)) or (kind == "object" and not LocalRoomSearchRules.known(occupant, actor))): return "Choose known bodies for rescue."
 	if not _container_active(room, container, row.container_kind, row.container_id) or not _present(room, occupant, kind, id, false): return "That exact body is no longer eligible."
 	var declaration := policy(container)
 	if int(declaration.get("expires_at_seconds", 2147483647)) <= int(GameManager.campaign_elapsed_seconds): return "That containment has expired."
@@ -419,6 +420,7 @@ static func admission_error(room: Dictionary, party: Array, actor: Character, ck
 	if not relation(room, "character", actor.character_id).is_empty(): return "An internal occupant cannot admit bodies from outside."
 	var container = entity(room, party, ck, cid)
 	var occupant = entity(room, party, ok, oid)
+	if (ck == "object" and not LocalRoomSearchRules.known(container, actor)) or (ok == "object" and not LocalRoomSearchRules.known(occupant, actor)): return "Choose known bodies for admission."
 	if occupant is Character and occupant.has_meta("projected_item_id"): return "Projected vessels cannot be admitted as occupants."
 	for pair in [[ck, cid], [ok, oid]]:
 		var matches: Array = (party + VesselProjectionRules.actors(party)).filter(func(c): return c is Character and c.character_id == pair[1]) if pair[0] == "character" else room.get("objects", []).filter(func(o): return o is Dictionary and o.get("id") == pair[1])

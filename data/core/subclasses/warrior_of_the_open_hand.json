@@ -8,17 +8,41 @@
       {
         "id": "monk_open_hand_technique",
         "name": "Open Hand Technique",
-        "description": "Whenever you hit a creature with an attack granted by your Flurry of Blows, you can impose Addle (prevents Opportunity Attacks), Push (push 10 ft away on failed STR save), or Topple (knock Prone on failed DEX save).",
+        "description": "After each Flurry of Blows hit, optionally Addle (no Opportunity Attacks until target turn start), Push up to 15 ft on a failed STR save, or Topple on a failed DEX save.",
         "type": "passive",
         "effects": [
           {
-            "type": "open_hand_technique"
+            "type": "hit_options",
+            "attack_tag": "flurry",
+            "dc_ability": "WIS",
+            "options": [
+              {
+                "id": "addle",
+                "name": "Addle",
+                "operation": "grant_condition",
+                "condition": "opportunity_attack_blocked",
+                "expiry": "target_start"
+              },
+              {
+                "id": "push",
+                "name": "Push",
+                "save": "STR",
+                "operation": "push",
+                "max_distance_feet": 15
+              },
+              {
+                "id": "topple",
+                "name": "Topple",
+                "save": "DEX",
+                "operation": "grant_condition",
+                "condition": "prone"
+              }
+            ]
           }
         ],
-        "resolver": "monk_rules",
         "rules_source": "dnd-2024-srd-5.2.1",
-        "rules_status": "reference-only",
-        "enabled": false
+        "rules_status": "2024-supported",
+        "enabled": true
       }
     ],
     "6": [

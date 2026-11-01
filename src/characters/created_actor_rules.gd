@@ -144,7 +144,7 @@ static func _forbidden(feature: Dictionary) -> bool:
 ## Called by the shared create_actor effect on the self-cast owner.
 static func create(owner: Character, cast: Dictionary, template: Dictionary, slot_level: int, spell: Dictionary, chosen_count: int = -1, chosen_mix: Dictionary = {}) -> Dictionary:
 	var source := str(cast.get("source_id", ""))
-	if owner == null or source.is_empty() or owner.spell_effects.has(source) or cast.get("caster_id", "") != owner.character_id or not template_error(template).is_empty(): return {"created": false}
+	if owner == null or source.is_empty() or (owner.spell_effects.has(source) and not SpellEffects.can_add_budget_payload(owner, cast, "created_actors")) or cast.get("caster_id", "") != owner.character_id or not template_error(template).is_empty(): return {"created": false}
 	if spell.is_empty(): spell = DataLoader.get_spell(str(cast.get("spell_id", "")))
 	# S-155: only a declared template or option may be created.
 	if _template(spell, str(template.get("id", ""))).is_empty(): return {"created": false, "reason": "not_permitted"}
@@ -154,7 +154,7 @@ static func create(owner: Character, cast: Dictionary, template: Dictionary, slo
 	var count: int = allowed[-1] if chosen_count < 0 else chosen_count
 	if count not in allowed: return {"created": false, "reason": "count_not_permitted"}
 	var maximum := value(template.max_hp, level)
-	var record := cast.duplicate(true)
+	var record := SpellEffects.payload_record(owner, cast)
 	record["created_actors"] = {"level": level, "actors": []}
 	if str(template.id) != str(_template(spell).id): record.created_actors["template_id"] = str(template.id)
 	var command := CreatedCommandRules.policy(template)
@@ -170,7 +170,7 @@ static func _create_mixed(owner: Character, cast: Dictionary, _slot_level: int, 
 	var effect := _effect(spell)
 	var reason := mix_choice_error(effect, mix, level)
 	if not reason.is_empty(): return {"created": false, "reason": reason}
-	var record := cast.duplicate(true)
+	var record := SpellEffects.payload_record(owner, cast)
 	record["created_actors"] = {"level": level, "actors": []}
 	var made_kinds := {}
 	for t in templates(effect):

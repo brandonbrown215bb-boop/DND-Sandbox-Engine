@@ -2,7 +2,90 @@
 
 Audit of the core rules in scope (action economy; Hide/Search/Invisible/obscurement; grappling; cover; light and obscurement; movement; falling; concentration; 0 HP, Death Saves and stabilizing; rests; Exhaustion), plus all 15 SRD conditions. Measured against SRD 5.2.1 *Playing the Game* (pp. 5–19) and the *Rules Glossary* (pp. 176–192).
 
-This is an **audit only**. Runtime behaviour, content and availability are unchanged. Supplement rules stay out of scope.
+The original audit below is a historical snapshot. Current runtime changes
+are summarized next. Supplement rules stay out of scope.
+
+## Current condition implementation (2026-10-29)
+
+The audit tables below retain their original commit/probe evidence, rather than
+claiming new results for clauses that have not been exercised. The current
+`CombatAction.CONDITION_RULES` table supplies shared condition consequences to
+generic Character/monster queries. Character and monster saves now use the same
+auto-failure and save-mode checks. The spell adapter passes uncanceled modes to
+that owner; it must not cancel Restrained against Advantage and then add the
+condition a second time. Monster save receipts retain the d20 mode, base modifier
+and separate signed Bless/Bane dice. Automatic failures bypass dice, roll-token
+replacement and optional save bonuses/rerolls. The actual Open Hand Flurry hit chooser now routes Topple/Push through this
+owner, retaining automatic outcomes, Restrained modes and captured Bless/Bane.
+Quivering Palm remains unavailable at level 17 and unproven through a player action. Character checks and the monster-check helper apply
+condition modes, and combat escape/check callers provide live participant
+context for fear visibility, including both existing Cunning Hide branches.
+Social charm Advantage uses the actual target of either actor kind. Charm/fear
+use the source record's complete caster ID (including colons); native Turn Undead
+uses its existing caster metadata. Removing one source preserves other sources.
+Incapacitated ends concentration through the live CombatState or room owner;
+outside a scene, managed concentration uses SpellEffects and its saved room-area
+cleanup. CorpseRules also consults the live owner before its fallback so massive
+death cleans zones/lights immediately, before concentration metadata is cleared. Unconscious drops exact held equipment copies through the live combat
+or persistent-room owner, including entry into a room already Unconscious. It derives Prone without
+installing a second lasting prone flag. Player turns preserve movement for
+Stunned/generic Incapacitated while the HUD and turn budget refuse Actions and
+Bonus Actions. Restrained/Grappled retain their action turn at Speed 0; only an
+actor with neither movement nor actions skips its unusable turn. Room movement
+also preserves generic Stunned/Incapacitated movement and checks fear sources
+along the selected route. Poisoned no longer inflicts unconditional turn-start damage.
+Healing removes the derived zero-HP unconsciousness by restoring HP; it does
+not remove explicit source-owned Unconscious grants such as magical sleep, or
+independent Prone grants. Damage ends only the sources whose ending rule allows
+it, including the existing Cunning Strike knockout source.
+
+AI commands revalidate live action, movement, perception, source and target facts
+after choices. Ordinary monster attacks let the shared resolver own live modes;
+spells refresh live positions before settling. Opportunity Attacks recheck sight,
+reach and eligibility before spending the Reaction. Monster spell projections
+retain the monster's stable identity, declared spell permissions and cast serial;
+separate casts must not reuse one source ID. Defensive AI selects a usable ranged
+profile or retreats without proposing an out-of-range melee attack.
+
+Hide, ambush, zone and tether checks use EventResolver rather than raw d20s.
+Monster checks retain mode/die/token receipts; tether escape/rescue return their
+captured check as well as the outcome. Proficiency/expertise and Exhaustion enter
+the modifier once. This does not expose new optional check-choice menus (S-224).
+
+`InitiativeTracker.roll_result` is the shared initiative d20 owner for both actor
+kinds, late-created actors, familiars and rolled source groups. It applies live
+Invisible/Incapacitated modes and Exhaustion once. Rolled groups use the first
+authored member as the representative even if a different member joins first;
+owner-count/after-owner groups inherit a count without another test. Captured
+rolled counts survive empty/rebuilt groups without rerolling new conditions.
+
+Offensive monster casting retains one encounter-local Character adapter for
+source lifetime, with the monster's actual identity and shared source records.
+Reconciliation includes those owners; slot payment is retained across refresh.
+The existing cast preparation/application and lifetime owners handle source
+replacement, recipient expiry and Incapacitated/death cleanup. Typed damage
+queues concentration by exact owner/source/damage occurrence, aggregating mixed
+packets (including temp HP) into one shared save. Zero resolved damage has no
+save; lethal damage ends concentration immediately. Pending replacement choices
+serialize further damage and block new actions/turn advance; stale old-source
+choices cannot pay a token or affect a replacement. All monster-owned payloads
+end before encounter capture/party saves. These adapters and queues are never
+serialized. This extends the existing single/multi-target monster host; AI
+area/marker spell selection is separate from this condition work.
+
+The Crown condition/roll-host work is complete. S-247 retains only inaccessible
+level-17 Quivering Palm on the standard roadmap. Ordinary Prone crawling and
+voluntary standing remain S-239; current conscious turn-start standing spends
+half movement. A full 200-object room retains equipped gear and reports that
+the drop cannot be represented, rather than losing the copy or creating an
+invalid save. The [slice recovery boundary](../planning/vocabulary-slices.md#srd-condition-and-roll-host-spine)
+owns acceptance, exact verification and limits.
+
+Observer-relative sight/location, combat concealment and source-specific darkness
+exceptions now use the [perception contract](perception.md). The original
+Invisible/obscurement findings below are historical; the S-190/S-191 registry
+boundary records current proof. Encounter initiative uses Invisible Advantage;
+ordinary Hide/Search and cover remain separate.
 
 ## Evidence boundary
 
@@ -59,8 +142,8 @@ Coverage: **reviewed** = every row in the tables below (15 conditions, 11 rule a
 | Area | SRD clauses decomposed | Engine owner and behaviour | Class |
 |---|---|---|---|
 | Action economy | One Action, Bonus Action (only if granted), one Reaction per round (reset on own turn), movement split around actions, one free object interaction | `CombatTurnBudget` reset/spend (OK). Reaction reset on own turn (OK). Off-turn and type-limited budgets **PLAN S-160/V-060**; extra turns S-159. | OK / PLAN |
-| SRD actions (Attack, Dash, Disengage, Dodge, Help, Hide, Influence, Magic, Ready, Search, Study, Utilize) | Each action's effect, cost and end condition | The player command list has attack, cast, use_item (≈Utilize, Magic) and dodge. **Dash, Disengage and Hide exist only via Cunning Action / Step of the Wind / monk features.** Help is only a fixed familiar/helper modifier (S-097). No Ready, Search, Study or Influence action. Dodge grants attack Disadvantage only: no DEX-save Advantage and no end on Incapacitated/Speed 0. | GAP S-237 (V-101) |
-| Hide / Search / hidden | Hide: DC 15 Stealth while Heavily Obscured or behind ¾/Total cover, out of sight; success = Invisible condition until found, sound or attack; Search = Wisdom check | Cunning Action Hide rolls vs a fixed **DC 12** (`combat_state.gd` 5120–5146) and sets a `hidden` flag. Attacking or casting removes the flag. The flag grants no Invisible benefits and has no location precondition. No Search action. | DEV/GAP S-237; PLAN S-188, S-191 |
+| SRD actions (Attack, Dash, Disengage, Dodge, Help, Hide, Influence, Magic, Ready, Search, Study, Utilize) | Each action's effect, cost and end condition | The [ordinary action continuation](ordinary-actions.md) supplies ordinary Dash/Disengage/Dodge, bounded legal Hide/creature Search and attack/stabilization Help. Class movement/defense versions reuse the effects. Dodge has owner-start expiry, defender sight, DEX-save Advantage and permanent loss on Incapacitated/effective Speed 0. Ready, proficient-check Help and broader world actions remain open. | GAP S-237 (V-101) |
+| Hide / Search / hidden | Hide: DC 15 Stealth while Heavily Obscured or behind ¾/Total cover, out of sight; success = Invisible condition until found, sound or attack; Search = Wisdom check | Ordinary and Cunning Action Hide share DC 15, live heavy obscurement/Total Cover and enemy sight checks, Invisible benefits, a captured discovery DC and attack/Verbal-cast endings. Bounded creature Search uses actual Perception. Three-Quarters Cover, noise producers and room/overworld/hidden-object Search remain open; see [ordinary actions](ordinary-actions.md). | DEV/GAP S-237; PLAN S-188, S-191 |
 | Light and obscurement | Lightly Obscured = Disadvantage on sight Perception; Heavily = Blinded; bright/dim/darkness; Darkvision | Fog Cloud and Darkness are modelled as attack Advantage+Disadvantage tags (`fog_cloud_obscured`/`darkness_obscured`). There is no general light-level or observer model. | PLAN S-190, S-191 (V-073) |
 | Cover | Half +2 AC/DEX saves; ¾ +5; Total can't be targeted | **No cover owner found** in combat, hex or character code. | GAP S-238 |
 | Speed and movement types | Walk/climb/swim/fly/burrow speeds; difficult terrain +1 ft per ft; mode switching | `physical_facts_rules.gd` modes and terrain (VS-102). Burrow and phasing **PLAN S-180**. | OK (S-179) / PLAN |

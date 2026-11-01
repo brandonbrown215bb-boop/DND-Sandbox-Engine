@@ -46,22 +46,16 @@ static func _resolve_scorching_ray(caster: Character, target_entity, spell_data:
 	var details := {"formula": damage_dice, "dice_terms": [], "modifiers": [], "final_total": 0}
 	var stroke_of_luck_used := false
 	var shield_used := false
-	var visibility: Dictionary = reaction_decisions.get("spell_visibility", {})
-	var grid: HexGrid = visibility.get("grid")
-	var unseen_target := CombatAction.is_invisible(target_entity) and not CombatAction.can_perceive_invisible(caster, maxi(0, distance_feet))
-	var unseen_caster := CombatAction.is_invisible(caster) and not CombatAction.can_perceive_invisible(target_entity, maxi(0, distance_feet))
-	if grid != null:
-		var origin: Vector2i = visibility["caster_position"]
-		var target_position: Vector2i = visibility["target_position"]
-		unseen_target = not CombatPerception.can_see_target(caster, target_entity, origin, target_position, grid)
-		unseen_caster = not CombatPerception.can_see_target(target_entity, caster, target_position, origin, grid)
+	reaction_decisions = reaction_decisions.duplicate()
+	reaction_decisions["perception_handles_blindness"] = true
 	for ray_index in ray_count:
-		var ray_fog_obscures_attack := CombatAction.has_condition(caster, "fog_cloud_obscured") or CombatAction.has_condition(target_entity, "fog_cloud_obscured") or CombatAction.has_condition(caster, "darkness_obscured") or CombatAction.has_condition(target_entity, "darkness_obscured")
-		var spell_attack_advantage := FighterRules.attack_advantage(caster, target_entity) or SpellEffects.has_spell(target_entity, "faerie_fire") or ray_fog_obscures_attack or caster.has_condition("innate_sorcery") or CombatAction.is_unconscious(target_entity) or CombatAction.is_paralyzed(target_entity) or unseen_caster
-		var spell_attack_disadvantage := (caster.get_creature_type() in CombatAction.protected_creature_types_for_target(target_entity)) or (SpellEffects.has_spell(target_entity, "blur") and not CombatAction.can_perceive_blur(caster, maxi(0, distance_feet))) or ray_fog_obscures_attack or unseen_target
-		var helped_attack := CombatAction.consume_attack_help(target_entity)
+		var perception := CombatPerception.attack_visibility(caster, target_entity, maxi(0, distance_feet), reaction_decisions)
+		var spell_attack_advantage := FighterRules.attack_advantage(caster, target_entity) or SpellEffects.has_spell(target_entity, "faerie_fire") or caster.has_condition("innate_sorcery") or CombatAction.attack_target_grants_advantage(target_entity, maxi(0, distance_feet) / 5, true) or bool(perception.advantage)
+		var spell_attack_disadvantage := CombatAction.attack_target_imposes_disadvantage(target_entity, maxi(0, distance_feet) / 5, bool(perception.target_sees_attacker)) or (caster.get_creature_type() in CombatAction.protected_creature_types_for_target(target_entity)) or (SpellEffects.has_spell(target_entity, "blur") and not CombatAction.can_perceive_blur(caster, maxi(0, distance_feet))) or bool(perception.disadvantage) or CombatAction.attacker_has_condition_disadvantage(caster, SpellPermissionRules.selected_ability(spell_data, caster.get_spellcasting_ability()), reaction_decisions)
+		var helped_attack := CombatAction.consume_attack_help(target_entity, caster)
 		spell_attack_advantage = spell_attack_advantage or helped_attack
-		var attack_result := caster.make_attack_roll(SpellPermissionRules.selected_ability(spell_data, caster.get_spellcasting_ability()), spell_attack_advantage, spell_attack_disadvantage)
+		var attack_result := caster.make_attack_roll(SpellPermissionRules.selected_ability(spell_data, caster.get_spellcasting_ability()), spell_attack_advantage, spell_attack_disadvantage, {}, reaction_decisions)
+		CombatAction.reveal_hidden_attacker(caster)
 		var hit: bool = bool(attack_result.get("is_crit", false)) or (not attack_result.get("is_miss", false) and int(attack_result.get("total", 0)) >= target_ac)
 		if not hit and not stroke_of_luck_used and bool(reaction_decisions.get("stroke_of_luck", false)) and caster.has_feature("rogue_stroke_of_luck"):
 			var stroke_result := RogueRules.apply_stroke_of_luck_to_attack(caster, attack_result, true)

@@ -89,7 +89,7 @@ static func validate_actor(cast: SpellCastContext) -> bool:
 		cast.clear_pending(SpellCastContext.CLEAR_WISH)
 		cast.highlight_reachable.call()
 		return false
-	if not bool(cast.spell.get("_magic_item_activation", false)) and cast.spell.has("_source_permission_id"):
+	if cast.ready_release_token.is_empty() and not bool(cast.spell.get("_magic_item_activation", false)) and cast.spell.has("_source_permission_id"):
 		var current_permissions := SpellPermissionRules.for_spell(cast.caster, cast.spell)
 		var selected_permission_id := str(cast.spell.get("_source_permission_id", ""))
 		var permission_found := false
@@ -181,33 +181,34 @@ static func validate_actor(cast: SpellCastContext) -> bool:
 			cast.highlight_reachable.call()
 			return false
 		cast.spell["_magic_weapon_id"] = weapon_id
-	if not DruidRules.can_cast_spells(cast.caster):
-		cast.hud.add_log("You cannot cast spells while using Wild Shape.")
-		cast.clear_pending(SpellCastContext.CLEAR_ACTION)
-		cast.clear_pending(SpellCastContext.CLEAR_SPELL)
-		cast.clear_pending(SpellCastContext.CLEAR_INTERVENTION)
-		cast.clear_pending(SpellCastContext.CLEAR_WISH)
-		cast.highlight_reachable.call()
-		return false
-	var projection_error := ActorProjectionRules.cast_error(cast.caster, cast.spell, cast) if ActorProjectionRules.can_cast_spells(cast.caster) else "You cannot cast spells in this form."
-	if not projection_error.is_empty():
-		cast.hud.add_log(projection_error)
-		cast.clear_pending(SpellCastContext.CLEAR_ACTION)
-		cast.clear_pending(SpellCastContext.CLEAR_SPELL)
-		cast.clear_pending(SpellCastContext.CLEAR_INTERVENTION)
-		cast.clear_pending(SpellCastContext.CLEAR_WISH)
-		cast.highlight_reachable.call()
-		return false
-	if not DruidRules.can_cast_spell(cast.caster, cast.spell):
-		cast.hud.add_log("This spell has a costly or consumed Material component and cannot be cast in Beast form.")
-		cast.clear_pending(SpellCastContext.CLEAR_ACTION)
-		cast.clear_pending(SpellCastContext.CLEAR_SPELL)
-		cast.clear_pending(SpellCastContext.CLEAR_INTERVENTION)
-		cast.clear_pending(SpellCastContext.CLEAR_WISH)
-		cast.highlight_reachable.call()
-		return false
-	if DruidRules.ignores_free_material_components(cast.caster, cast.spell) and "M" in cast.spell.get("components", []):
-		cast.spell["_ignore_material_components"] = true
+	if cast.ready_release_token.is_empty():
+		if not DruidRules.can_cast_spells(cast.caster):
+			cast.hud.add_log("You cannot cast spells while using Wild Shape.")
+			cast.clear_pending(SpellCastContext.CLEAR_ACTION)
+			cast.clear_pending(SpellCastContext.CLEAR_SPELL)
+			cast.clear_pending(SpellCastContext.CLEAR_INTERVENTION)
+			cast.clear_pending(SpellCastContext.CLEAR_WISH)
+			cast.highlight_reachable.call()
+			return false
+		var projection_error := ActorProjectionRules.cast_error(cast.caster, cast.spell, cast) if ActorProjectionRules.can_cast_spells(cast.caster) else "You cannot cast spells in this form."
+		if not projection_error.is_empty():
+			cast.hud.add_log(projection_error)
+			cast.clear_pending(SpellCastContext.CLEAR_ACTION)
+			cast.clear_pending(SpellCastContext.CLEAR_SPELL)
+			cast.clear_pending(SpellCastContext.CLEAR_INTERVENTION)
+			cast.clear_pending(SpellCastContext.CLEAR_WISH)
+			cast.highlight_reachable.call()
+			return false
+		if not DruidRules.can_cast_spell(cast.caster, cast.spell):
+			cast.hud.add_log("This spell has a costly or consumed Material component and cannot be cast in Beast form.")
+			cast.clear_pending(SpellCastContext.CLEAR_ACTION)
+			cast.clear_pending(SpellCastContext.CLEAR_SPELL)
+			cast.clear_pending(SpellCastContext.CLEAR_INTERVENTION)
+			cast.clear_pending(SpellCastContext.CLEAR_WISH)
+			cast.highlight_reachable.call()
+			return false
+		if DruidRules.ignores_free_material_components(cast.caster, cast.spell) and "M" in cast.spell.get("components", []):
+			cast.spell["_ignore_material_components"] = true
 	var required_budget := "bonus_action" if cast.spell.get("casting_time", "action") == "bonus_action" else "magic_action"
 	if not cast.can_spend.call(required_budget):
 		cast.hud.add_log("Action Surge cannot grant a Magic action.")
@@ -396,24 +397,25 @@ static func validate_creatures_and_components(cast: SpellCastContext) -> bool:
 			cast.hud.add_log("[color=orange]%s: Space unavailable (%s).[/color]" % [cast.spell.get("name", "This spell"), space_eval.reason])
 			cast.highlight_reachable.call()
 			return false
-	cast.component_item_id = str(cast.spell.get("material_component_item_id", cast.spell.get("consumed_material_item_id", "")))
-	cast.component_instance_id = cast.caster.inventory.required_spell_component_instance(cast.spell)
-	var component_cost := int(cast.spell.get("material_component_cost", 0))
-	if not bool(cast.spell.get("_magic_item_activation", false)) and not cast.caster.inventory.has_required_spell_component(cast.spell, cast.caster.class_id):
-		var component_message := "an available hand and a compatible focus or component pouch" if "M" in cast.spell.get("components", []) and component_cost <= 0 and not bool(cast.spell.get("material_component_consumed", false)) else "its Material component%s (%d GP or more)" % [" (consumed)" if bool(cast.spell.get("material_component_consumed", false)) else "", component_cost]
-		if cast.caster.inventory.available_spellcasting_hands() < 1 and ("S" in cast.spell.get("components", []) or "M" in cast.spell.get("components", [])):
-			component_message = "a free hand for spell components"
-		cast.hud.add_log("%s requires %s." % [cast.spell.get("name", "This spell"), component_message])
-		cast.clear_pending(SpellCastContext.CLEAR_ACTION)
-		cast.clear_pending(SpellCastContext.CLEAR_SPELL)
-		cast.clear_pending(SpellCastContext.CLEAR_INTERVENTION)
-		cast.clear_pending(SpellCastContext.CLEAR_WISH)
-		cast.highlight_reachable.call()
-		return false
-	cast.component_copy_validated = false
-	if not cast.component_instance_id.is_empty():
-		var component_copy: Dictionary = cast.caster.inventory.copies.records.get(cast.component_instance_id, {})
-		cast.component_copy_validated = str(component_copy.get("instance_id", "")) == cast.component_instance_id and str(component_copy.get("definition_id", "")) == cast.component_item_id
+	if not cast.material_components_paid:
+		cast.component_item_id = str(cast.spell.get("material_component_item_id", cast.spell.get("consumed_material_item_id", "")))
+		cast.component_instance_id = cast.caster.inventory.required_spell_component_instance(cast.spell)
+		var component_cost := int(cast.spell.get("material_component_cost", 0))
+		if not cast.material_components_paid and not bool(cast.spell.get("_magic_item_activation", false)) and not cast.caster.inventory.has_required_spell_component(cast.spell, cast.caster.class_id):
+			var component_message := "an available hand and a compatible focus or component pouch" if "M" in cast.spell.get("components", []) and component_cost <= 0 and not bool(cast.spell.get("material_component_consumed", false)) else "its Material component%s (%d GP or more)" % [" (consumed)" if bool(cast.spell.get("material_component_consumed", false)) else "", component_cost]
+			if cast.caster.inventory.available_spellcasting_hands() < 1 and ("S" in cast.spell.get("components", []) or "M" in cast.spell.get("components", [])):
+				component_message = "a free hand for spell components"
+			cast.hud.add_log("%s requires %s." % [cast.spell.get("name", "This spell"), component_message])
+			cast.clear_pending(SpellCastContext.CLEAR_ACTION)
+			cast.clear_pending(SpellCastContext.CLEAR_SPELL)
+			cast.clear_pending(SpellCastContext.CLEAR_INTERVENTION)
+			cast.clear_pending(SpellCastContext.CLEAR_WISH)
+			cast.highlight_reachable.call()
+			return false
+		cast.component_copy_validated = false
+		if not cast.component_instance_id.is_empty():
+			var component_copy: Dictionary = cast.caster.inventory.copies.records.get(cast.component_instance_id, {})
+			cast.component_copy_validated = str(component_copy.get("instance_id", "")) == cast.component_instance_id and str(component_copy.get("definition_id", "")) == cast.component_item_id
 	var excluded_creature_types: Array = cast.spell.get("target_creature_type_exclusions", [])
 	if not excluded_creature_types.is_empty():
 		var excluded_target_coords: Array[Vector2i] = [cast.target_coord]
@@ -515,7 +517,7 @@ static func _physical_target(cast: SpellCastContext, coord: Vector2i, index: int
 	var selected_id := cast.chain_target_ids[index] if index < cast.chain_target_ids.size() else ""
 	if selected_id.begins_with("object:"):
 		var key := selected_id.trim_prefix("object:")
-		var object := CombatObjectRules.by_key(cast.grid, coord, key)
+		var object := CombatObjectRules.by_key(cast.grid, coord, key, cast.caster)
 		if not object.is_empty(): return object
 		var owned := CombatObjectRules.owned_item_record_at(cast.players, coord, key)
 		if not owned.is_empty():
@@ -526,4 +528,4 @@ static func _physical_target(cast: SpellCastContext, coord: Vector2i, index: int
 		if actor != null and actor.is_alive and player.get("hex_position") == coord and (selected_id.is_empty() or selected_id == "player:" + actor.character_id): return actor
 	for monster in cast.monsters:
 		if monster.get("is_alive", false) and monster.get("hex_position") == coord and (selected_id.is_empty() or selected_id == "monster:" + str(monster.get("id", ""))): return monster
-	return CombatObjectRules.at(cast.grid, coord) if selected_id.is_empty() else null
+	return CombatObjectRules.at(cast.grid, coord, cast.caster) if selected_id.is_empty() else null

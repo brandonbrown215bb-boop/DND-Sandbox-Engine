@@ -111,7 +111,7 @@ static func cast_error(caster, spell: Dictionary, host: SpellCastContext = null)
 ## Called by the shared actor_projection effect on the self-cast actor.
 static func apply(actor: Character, cast: Dictionary, effect: Dictionary, slot_level: int, spell: Dictionary, form_id: String, equipment_policy: String = "", host: SpellCastContext = null) -> Dictionary:
 	var source := str(cast.get("source_id", ""))
-	if actor == null or source.is_empty() or actor.spell_effects.has(source) or not effect_error(effect).is_empty(): return {"projected": false, "reason": "invalid projection"}
+	if actor == null or source.is_empty() or (actor.spell_effects.has(source) and not SpellEffects.can_add_budget_payload(actor, cast, "projection")) or not effect_error(effect).is_empty(): return {"projected": false, "reason": "invalid projection"}
 	if is_projected(actor) or DruidRules.is_shaped(actor): return {"projected": false, "reason": "already in another form"}
 	if form_id.is_empty() and effect.forms.size() == 1: form_id = str(effect.forms[0].id)
 	var form := _form(effect, form_id)
@@ -125,7 +125,7 @@ static func apply(actor: Character, cast: Dictionary, effect: Dictionary, slot_l
 	if spell.is_empty(): spell = DataLoader.get_spell(str(cast.get("spell_id", "")))
 	var level := maxi(0, slot_level - int(spell.get("level", 0)))
 	var granted := CreatedActorRules.value(form.temp_hp, level)
-	var record := cast.duplicate(true)
+	var record := SpellEffects.payload_record(actor, cast)
 	record["projection"] = {"form_id": form_id, "level": level, "original": {"ability_scores": actor.ability_scores.to_dict(), "speed": actor.speed}, "granted_temp_hp": granted, "suppressed_features": []}
 	record.projection["temporary_hp_owned"] = granted > actor.temp_hp
 	var scores := AbilityScores.new()

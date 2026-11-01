@@ -719,7 +719,11 @@
               "locked": true,
               "lockable": true,
               "key_id": "ashvale_brass_key",
-              "lock_dc": 15
+              "lock_dc": 15,
+              "interaction_noise": {
+                "force_open": {"volume": "loud", "range_feet": 60},
+                "pry": {"volume": "loud", "range_feet": 60}
+              }
             },
             {
               "id": "chest",
@@ -744,6 +748,10 @@
               "lockable": true,
               "key_id": "ashvale_brass_key",
               "lock_dc": 15,
+              "interaction_noise": {
+                "force_open": {"volume": "loud", "range_feet": 60},
+                "pry": {"volume": "loud", "range_feet": 60}
+              },
               "capacity": 10
             },
             {

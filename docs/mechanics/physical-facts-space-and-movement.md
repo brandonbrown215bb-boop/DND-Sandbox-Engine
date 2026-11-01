@@ -148,3 +148,118 @@ Containment admission uses the same size/plane facts. Internal bodies report no
 external position through `PhysicalFactsRules.get_location`; their container
 identity and separately queried external origin are retained. Internal bodies
 do not reserve their remembered entry cell. See [containment](containment.md).
+
+## Declared spatial trigger scopes (S-184)
+
+`SpatialTriggerRules` supplies source-owned policy limits and delivery receipts.
+`CombatSpellZones` and `LocalRoomAreas` consume them for declared damage areas;
+native catalog zones retain their existing resolvers. A source-end `room_area`
+child can now declare this executable data:
+
+```json
+{
+  "id": "embers",
+  "type": "room_area",
+  "kind": "trigger_damage",
+  "trigger_scope": "declared",
+  "amount": 3,
+  "damage_type": "fire",
+  "radius_hexes": 1,
+  "duration_seconds": 120,
+  "trigger_limit": 100,
+  "trigger_policies": [
+    {
+      "id": "contact",
+      "events": ["entry", "end_turn"],
+      "boundary": "turn",
+      "limit": 1
+    }
+  ]
+}
+```
+
+`trigger_limit` remains required by the room-area producer's legacy shape;
+declared areas use each policy's `limit` and `boundary` instead of that lifetime
+counter. Policy IDs must be distinct within a source. All events listed in one
+policy share its limit; separate policies have separate limits and deliveries.
+
+| Event | Actual observation |
+|---|---|
+| `entry` | Actor changes from outside to inside the represented area. Teleport arrival can enter; cells between its endpoints do not trigger. |
+| `crossing` | An actual movement step changes inside/outside membership in either direction. Teleports do not cross intervening space. |
+| `first_approach` | First actual move to an inside cell within the declared turn/lifetime allowance, including movement that starts inside. Area movement and teleport arrival do not count. |
+| `start_turn`, `end_turn` | The affected actor starts/ends its turn inside. Merely refreshing membership does not emit a turn event. |
+| `area_enter` | Explicit area movement newly covers a stationary actor. It never borrows `entry`, `crossing` or `first_approach`. |
+
+| Boundary | When that exact source/policy/actor allowance renews |
+|---|---|
+| `event` | A new accepted movement/area-motion/turn event; duplicate callbacks remain the same event. |
+| `turn` | Next initiative turn, regardless of whose turn it is. |
+| `actor_turn` | Next turn of the affected actor. Other actors' turns leave it spent. |
+| `source_turn` | Next turn of the area's `caster_id`, including its retained scheduling-only owner interval. |
+| `lifetime` | Never within this exact source. A new source owns a new allowance. |
+
+Combat uses encounter identity plus initiative round/active actor for the turn
+boundary. Repeated start callbacks cannot invent another turn. Represented
+rooms persist an encounter serial so a fresh process cannot reuse old combat
+movement receipts. Character IDs stay stable; encounter monsters receive an
+encounter-qualified trigger identity, so a later encounter's `monster_0` cannot
+inherit another monster's lifetime limit. Actor/source-owner clocks remain with
+the room across encounter entry/exit and advance only when that actor actually
+starts a turn. Room exploration advances declared clocks through its actual
+**End Turn** control: end triggers use the old interval, then that actor starts
+the next interval. Campaign seconds and movement clicks alone do not reset it.
+
+Accepted combat movement steps carry their own event identity. The area reserves
+its source/policy/actor/event receipt and allowance before damage or any awaited
+concentration prompt. Combat and room recipients, geometry and clocks for that
+event are captured before the first await. Repeated delivery, replay after a turn
+reset, and cleanup during a suspended callback cannot deliver it twice. Source
+removal/expiry invalidates queued deliveries; it leaves other sources intact.
+Events predating creation cannot become entries into the newly created source.
+Start/end boundary events are captured even if no area is present, so a newly
+created area cannot retroactively consume a repeated callback for a passed turn.
+
+The combat factory `add_trigger_area` accepts the same validated child declaration
+under an exact source ID. `move_trigger_area` moves such an encounter area;
+`move_room_trigger_area` delivers motion of an existing room area to the encounter's
+live participants. `LocalRoomAreas.move_area` is the synchronous room hook. These
+are represented circular areas with a center and radius. Moving a room child
+preserves its captured `created_center` separately from its legal current center.
+Source-end choices retain the existing parent slot and child receipts; a resumed
+or stale answer cannot recreate the area or repay its cast.
+
+Hazard outcomes retain HP loss as `damage` and damage taken after resistance,
+immunity and wards as `resolved`. Concentration uses `resolved`, including
+damage absorbed by Temporary HP. Combat uses its existing reaction prompts;
+room movement, turn and area-motion deliveries use the same concentration
+rules synchronously, without optional reaction prompts. A failed check cleans
+the exact concentration source and its recipients.
+
+Durable room records retain policy receipts, counters and clocks at existing
+allowed checkpoints. Pending deliveries and malformed clocks/ledgers refuse
+checkpoint loading/saving; this adds no mid-combat save permission. Runtime
+contexts and delivery wrappers are not saved. Combat movement still reserves
+the accepted route's normal movement allowance before interruptions; lethal
+hazards stop the route at the actual entered cell, without replay/refunding the
+reserved route. Room movement charges the steps actually taken.
+
+The SRD distinctions are taken from
+[SRD 5.2.1](https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf):
+Guardian of Faith p.137 (first nearby movement versus turn start), Black Tentacles
+p.113 (entry/end and one save per turn), Cloudkill p.116 (area movement separately
+from entry), Web p.174 (first entry versus turn start), Wall of Fire p.172 (first
+entry plus a separate end trigger), and Wall of Ice pp.172–173 (passing through
+residue). These clauses motivate distinct policies; they do not certify those
+whole spells. Antipathy/Sympathy pp.109–110 retains its separate creature-kind,
+forced movement and temporary-immunity requirements.
+
+Verified behavior and production checks belong in the
+[S-184 boundary](../planning/vocabulary-slices.md#spatial-trigger-scopes).
+This delivery supplies fixed typed damage consumers and the reusable claim/settle
+boundary. General save/condition/choice payload authoring, automatic appearance
+events, arbitrary wall-edge/segment geometry, selective barriers, destructible
+sections, passenger/follower movement, required-save-exit relocation, broader
+travel hosts and catalog conversion remain separate. `appearance` is rejected
+as an unsupported policy event. Existing native spell behavior is not converted
+or recertified by these declarations.

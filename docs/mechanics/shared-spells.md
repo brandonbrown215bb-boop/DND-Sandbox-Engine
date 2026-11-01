@@ -384,6 +384,22 @@ cast continuation.
 
 ### Damage history (S-031)
 
+An ongoing shared spell can declare
+`source_end_rules: [{"event": "damage", "damage_budget": 60}]`.
+The budget rule takes only those two fields. Casting retains an exact owner
+record on the caster even for a damage-only spell; it also composes with
+existing source benefits and other source payloads. Reusing that active
+`_effect_cast` continues its counter; a new cast has a separate counter, and
+an ended source refuses reuse.
+
+The saved owner record accumulates settled `resolved` damage after saves,
+resistance, immunity and ward absorption. All typed packets of the hit that
+crosses the cap settle in full before ending the source and its linked grants.
+Later ordered occurrences/targets no longer execute. The counter and declared
+budget are required on checkpoints; recipient records must retain their exact
+owner. This does not implement Guardian of Faith's spatial trigger or convert
+its catalog record.
+
 Damage-history facts compare numeric quantities against the actual caster's
 stable actor ID and this cast's exact damage-source instance ID. A managed
 effect uses its saved source instance; an instant cast uses its captured
@@ -1657,3 +1673,12 @@ Both effect and container must permit the route before resources or a source
 are spent; outside area recipients exclude internal bodies. See
 [containment](containment.md#authored-internal-harm-targeting-and-checks-s-171)
 for syntax and the current flat-target/deferred-release boundary.
+
+### Observer sight and known locations
+
+Creature targeting and attack/projectile rolls use [CombatPerception](perception.md)
+with the actual observer and live spatial context. Non-sight spells may target
+a known Invisible location; Hidden locations require observer-specific discovery.
+Sight-required points/areas validate the space, not each concealed occupant.
+Failed-save `required_sense` rechecks from the recipient to the actual caster
+participant; an effect or delivery origin does not supply that sight.

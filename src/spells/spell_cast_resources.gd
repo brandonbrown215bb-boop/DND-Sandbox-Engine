@@ -3,6 +3,8 @@ class_name SpellCastResources
 extends RefCounted
 
 static func revalidate_selection(cast: SpellCastContext) -> bool:
+	if not cast.ready_release_token.is_empty():
+		return cast.ready_release_guard.is_valid() and cast.ready_release_guard.call()
 	var profile_error := AttackProfileRules.cast_error(cast.caster, cast.spell)
 	if not profile_error.is_empty():
 		cast.hud.add_log(profile_error)
@@ -237,7 +239,17 @@ static func commit_spell_resource(cast: SpellCastContext) -> bool:
 	if bool(cast.spell.get("_metamagic_quickened", false)):
 		cast.caster.feature_uses["sorcerer_quickened_spell_cast_this_turn"] = true
 	cast.payment_receipt = CastInterruptionRules.payment_receipt(cast.caster, cast.spell, {"slot_level":cast.slot_level_used,"slot_pool_id":cast.incoming_slot_pool_id,"slot_recalled":not cast.incoming_slot_spent} if cast.incoming_slot_spent or cast.spell.get("_spell_payment_kind", "") == "slot" else {}, payment_permission)
+	if "V" in cast.spell.get("components", []): CombatAction.reveal_hidden_attacker(cast.caster)
 	FamiliarSpellDelivery.commit(cast)
 	return true
 
 
+
+## Cast-time Material payment, shared by normal casting and Ready's held cast.
+static func commit_material_components(cast: SpellCastContext) -> void:
+	if cast.material_components_paid: return
+	cast.material_components_paid = true
+	if bool(cast.spell.get("_ignore_material_components", false)) or not bool(cast.spell.get("material_component_consumed", false)) or cast.component_item_id.is_empty(): return
+	if not cast.component_instance_id.is_empty(): cast.caster.inventory.take_instance(cast.component_instance_id, "destruction")
+	else: cast.caster.inventory.remove_item(cast.component_item_id)
+	cast.hud.add_log("%s consumes %s." % [cast.spell.get("name", "The spell"), DataLoader.get_item(cast.component_item_id).get("name", cast.component_item_id)])

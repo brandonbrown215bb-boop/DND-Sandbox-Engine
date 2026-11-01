@@ -219,7 +219,7 @@ static func selected_permission(character: Character, spell: Dictionary) -> Dict
 		if permission.id == id: return permission
 	return {}
 
-## Reactions choose the same explicit permission/payment as normal casts.
+## Ready and reactions choose the same explicit permission/payment as normal casts.
 static func payment_choices(character: Character, spell_id: String) -> Array[Dictionary]:
 	var choices: Array[Dictionary] = []
 	var spell_level := int(DataLoader.get_spell(spell_id).get("level", 0))
@@ -227,7 +227,9 @@ static func payment_choices(character: Character, spell_id: String) -> Array[Dic
 		var base := DataLoader.get_spell(spell_id).duplicate(true)
 		base.merge({"_source_permission_id":permission.id,"_source_permissions":[permission],"_spellcasting_ability":permission.ability}, true)
 		var payments: Array[Dictionary] = []
-		if permission.slot_payment_allowed:
+		if spell_level == 0 and int(permission.get("charge_cost", 0)) == 0:
+			payments.append({"_spell_payment_kind":""})
+		if spell_level > 0 and permission.slot_payment_allowed:
 			for slot in SpellSlotRules.pool_rows(character):
 				if int(slot.remaining) >= 0 and int(slot.level) >= int(spell_level) and int(slot.remaining) > 0:
 					payments.append({"_spell_payment_kind":"slot","_selected_spell_slot_level":int(slot.level),"_spell_slot_pool_id":str(slot.pool_id)})

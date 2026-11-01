@@ -1,0 +1,14 @@
+[
+  {
+    "id": "fixture:quiet_repair", "name": "Quiet repair", "execution": "shared",
+    "level": 0, "casting_time": "action", "range": 0, "target": "self",
+    "attack_type": "none", "components": ["S"], "classes": ["wizard"],
+    "effects": [{"type": "heal", "value": 1}]
+  },
+  {
+    "id": "fixture:spoken_repair", "name": "Spoken repair", "execution": "shared",
+    "level": 0, "casting_time": "action", "range": 0, "target": "self",
+    "attack_type": "none", "components": ["V"], "classes": ["wizard"],
+    "effects": [{"type": "heal", "value": 1}]
+  }
+]

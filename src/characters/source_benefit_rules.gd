@@ -80,8 +80,8 @@ static func dismiss(actor: Character, source: String) -> bool:
 static func grant(actor: Character, cast: Dictionary, benefits: Array) -> bool:
 	if actor == null or cast.get("caster_id", "") != actor.character_id or not benefits_error(benefits).is_empty() or str(cast.get("source_id", "")).is_empty(): return false
 	var source := str(cast.source_id)
-	if actor.spell_effects.has(source): return false
-	var record := cast.duplicate(true)
+	if (actor.spell_effects.has(source) and not SpellEffects.can_add_budget_payload(actor, cast, "source_benefits")): return false
+	var record := SpellEffects.payload_record(actor, cast)
 	record["source_benefits"] = benefits.duplicate(true)
 	var concentration := {"effect_source":source, "spell_id":str(cast.get("spell_id", ""))} if bool(cast.get("concentration", false)) else {}
 	if not saved_cast_error({"character_id":actor.character_id, "spell_cast_serial":actor.spell_cast_serial, "spell_effects":{source:record}, "spell_concentration":concentration}).is_empty(): return false

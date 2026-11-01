@@ -51,6 +51,19 @@ event-table context from caller metadata. Other purpose-sensitive checks,
 sensory requirements, post-roll choices and rerolls remain outside this
 boundary. The broader check and reroll work remains separately scheduled.
 
+## Spatial sight for ability checks
+
+The visual room Search host supplies runtime `grid`, `actor_position` and
+`sight_target_position` facts to `EventResolver.resolve_skill_check`. For a sight
+check, the shared host rechecks actual `CombatPerception` availability at those
+positions. This permits actual in-range Blindsight or borrowed familiar sight
+while the body's eyes are Blinded; a Boolean availability flag is not accepted
+as proof. Sight checks without that spatial host retain their ordinary Blinded
+automatic failure. Runtime `sense: sight` plus computed `lightly_obscured` adds
+Disadvantage only to Perception and composes with other modes. These are spatial
+host facts, not new event-table task/purpose declarations. See
+[room Search](ordinary-actions.md#room-search-and-object-discovery).
+
 ## Shared-spell save cause and sensory eligibility (S-029)
 
 The supported save host is a shared spell's flat save or ordered `save` step.

@@ -151,6 +151,54 @@ static func format_modifier(mod: int) -> String:
 	return "%d" % mod
 
 
+## S-242: produce the six recorded 4d6-drop-lowest results from a stable seed.
+static func roll_generation(seed_value: int) -> Array[int]:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = seed_value
+	var results: Array[int] = []
+	for _index in 6:
+		var dice: Array[int] = [rng.randi_range(1, 6), rng.randi_range(1, 6), rng.randi_range(1, 6), rng.randi_range(1, 6)]
+		dice.sort()
+		results.append(dice[1] + dice[2] + dice[3])
+	return results
+
+
+static func assign_generation(scores: Array, assignments: Array) -> Dictionary:
+	if scores.size() != 6 or assignments.size() != 6: return {"success": false, "message": "Assign all six generated scores."}
+	var used := {}
+	var result := {}
+	for index in 6:
+		var ability := str(assignments[index])
+		var score: Variant = scores[index]
+		if ability not in ABILITIES or used.has(ability) or not (score is int or score is float) or not is_finite(float(score)) or float(score) != floorf(float(score)) or int(score) < 3 or int(score) > 18:
+			return {"success": false, "message": "Each score must be assigned once to a valid ability."}
+		used[ability] = true
+		result[ability] = int(score)
+	return {"success": true, "scores": result}
+
+
+static func saved_generation_error(data: Dictionary) -> String:
+	var creation: Variant = data.get("creation_choices", {})
+	if not creation is Dictionary: return "Saved creation choices are invalid."
+	if not creation.has("ability_generation"): return ""
+	var generation: Variant = creation.get("ability_generation")
+	if not generation is Dictionary: return "Saved ability generation is invalid."
+	var method := str(generation.get("method", ""))
+	var seed_value: Variant = generation.get("seed", null)
+	var results: Variant = generation.get("results", null)
+	var assigned: Variant = generation.get("assigned_abilities", [])
+	if method == "point_buy":
+		return "" if seed_value == 0 and results is Array and results.is_empty() and assigned is Array and assigned.is_empty() else "Saved point-buy generation is invalid."
+	if not (seed_value is int or seed_value is float) or not is_finite(float(seed_value)) or absf(float(seed_value)) > 9007199254740991.0 or float(seed_value) != floorf(float(seed_value)) or not results is Array or results.size() != 6 or not assigned is Array or assigned.size() != 6:
+		return "Saved ability-generation result is malformed."
+	var expected: Array = STANDARD_ARRAY if method == "standard_array" and int(seed_value) == 0 else roll_generation(int(seed_value)) if method == "random_4d6" else []
+	if not assign_generation(results, assigned).get("success", false): return "Saved ability-generation assignment is invalid."
+	if expected.is_empty(): return "Saved ability-generation method is invalid."
+	for index in 6:
+		if int(results[index]) != int(expected[index]): return "Saved ability-generation result does not match its method and seed."
+	return ""
+
+
 ## Create a copy of these ability scores.
 func duplicate_scores() -> AbilityScores:
 	var copy := AbilityScores.new()

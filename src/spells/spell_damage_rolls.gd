@@ -284,22 +284,28 @@ static func publish_resolution_windows(cast: SpellResolutionContext, result: Dic
 
 
 static func _save_target_position(cast: SpellResolutionContext, target: Character) -> Variant:
-	if cast == null or cast.spatial_host == null:
-		return null
-	for participant in cast.spatial_host.players:
-		if participant.get("character") == target and participant.get("hex_position") is Vector2i:
-			return participant["hex_position"]
-	return null
+	if cast == null: return null
+	if cast.spatial_host != null:
+		for participant in cast.spatial_host.players:
+			if participant.get("character") == target and participant.get("hex_position") is Vector2i:
+				return participant["hex_position"]
+	var visibility: Dictionary = cast.decisions.get("spell_visibility", {})
+	var grid: HexGrid = cast.spatial_host.grid if cast.spatial_host != null else visibility.get("grid")
+	var actual: Variant = target.feature_uses.get("monster_source", target)
+	return CombatPerception._position(actual, grid)
 
 
 static func _required_sense_available(target: Character, cast: SpellResolutionContext, sense: String) -> bool:
 	if sense.is_empty(): return true
-	if cast == null or cast.spatial_host == null or cast.caster == null:
-		return false
+	if cast == null or cast.caster == null: return false
+	var visibility: Dictionary = cast.decisions.get("spell_visibility", {})
+	var grid: HexGrid = cast.spatial_host.grid if cast.spatial_host != null else visibility.get("grid")
+	if grid == null: return false
 	var target_position: Variant = _save_target_position(cast, target)
-	if target_position == null or cast.spatial_host.grid == null:
-		return false
-	return CombatPerception.has_required_sense(target, cast.caster, target_position, cast.spatial_host.spell_origin, cast.spatial_host.grid, sense)
+	var caster_position: Variant = _save_target_position(cast, cast.caster)
+	if target_position == null or caster_position == null: return false
+	var actual_caster: Variant = cast.caster.feature_uses.get("monster_source", cast.caster)
+	return CombatPerception.has_required_sense(target, actual_caster, target_position, caster_position, grid, sense)
 
 
 static func save_context_receipt(cast: SpellResolutionContext) -> Dictionary:
@@ -1889,6 +1895,10 @@ static func _finish_spell_damage(caster: Character, target, details: Dictionary,
 	var damage_occurrence_id := WardRules.next_damage_occurrence_id()
 	decisions = DamageResponseRules.begin(decisions, damage_occurrence_id, caster)
 	var primary_policy: Dictionary = policy_components[0]
+	# One hit can contain several typed packets. End its source only after the
+	# entire occurrence settles, so reaching the cap cannot alter later packets.
+	decisions = decisions.duplicate()
+	decisions["_defer_damage_budget"] = true
 	var primary_dmg_res := CombatAction.resolve_damage(target, int(primary_policy.get("settlement_raw", amount)), damage_type, decisions, false, false, caster, damage_occurrence_id, primary_policy.get("bypass_layers", []), amount, int(primary_policy.get("reduction_prevented", 0)))
 	var actual: int = int(primary_dmg_res.get("damage", 0))
 	var resolved: int = int(primary_dmg_res.get("resolved", 0))
@@ -1971,6 +1981,7 @@ static func _finish_spell_damage(caster: Character, target, details: Dictionary,
 				ward_messages.append(str(packet_result["ward_message"]))
 		temp_hp_absorbed += int(packet_result.get("temp_hp_absorbed", 0))
 		additional_components.append({"label": str(packet.get("label", "Additional damage")), "value": packet_damage, "type": packet_type, "formula": str(packet.get("formula", "")), "roll": packet_details})
+	CombatAction.settle_damage_budget(caster, target, resolved, decisions)
 	var hp_after: int = target.current_hp if target is Character else int(target.get("current_hp", 0))
 	var temp_hp_after: int = target.temp_hp if target is Character else int(target.get("temp_hp", 0))
 	var is_alive_after: bool = target.is_alive if target is Character else bool(target.get("is_alive", true))

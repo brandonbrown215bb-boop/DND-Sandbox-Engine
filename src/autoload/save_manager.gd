@@ -465,6 +465,10 @@ func _validate_save_data(data: Dictionary) -> String:
 	var source_end_error := LocatedSourceEndRules.saved_producers_error(animated_rooms)
 	if not source_end_error.is_empty(): return source_end_error
 	for member_data in clock_characters:
+		var generation_record: Dictionary = member_data.get("creation_choices", {}).get("ability_generation", {})
+		if not generation_record.is_empty():
+			var campaign_methods: Array = DataLoader.get_campaign(str(data.get("campaign_id", ""))).get("ability_generation_methods", ["point_buy", "standard_array", "random_4d6"])
+			if str(generation_record.get("method", "")) not in campaign_methods: return "Saved ability-generation method is not allowed by this campaign."
 		var corpse_clock_error := CorpseRules.saved_clock_error(member_data, int(campaign_ledger.get("campaign_elapsed_seconds", 0)))
 		if not corpse_clock_error.is_empty(): return corpse_clock_error
 	return ""

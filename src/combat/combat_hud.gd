@@ -60,11 +60,13 @@ var movement_mode_picker: OptionButton
 var flight_altitude_label: Label
 var flight_up_button: Button
 var flight_down_button: Button
+var shield_equipment_button: Button
+var ordinary_actions_button: Button
 var _active_reroll_keep_menu: PopupMenu
 
 
 static func decision_prompt_labels(owner_label: String, reaction_id: String, ok_title: String = "", window_title: String = "") -> Dictionary:
-	var real_reactions := ["uncanny_dodge", "shield", "counterspell", "opportunity_attack", "deflect_attacks"]
+	var real_reactions := ["uncanny_dodge", "shield", "counterspell", "opportunity_attack", "deflect_attacks", "ready_action"]
 	if window_title.is_empty():
 		window_title = ("Reaction — %s" if reaction_id in real_reactions else "Optional Feature — %s") % owner_label
 	if ok_title.is_empty():
@@ -105,12 +107,60 @@ func request_reaction(owner_label: String, reaction_id: String, detail: String, 
 	return bool(decision["accepted"])
 
 
+func _request_check_help(owner: Character, turn: int) -> void:
+	var options: Array[String] = []
+	var labels := {}
+	var owned := CheckHelpRules.options(owner)
+	for index in owned.size():
+		options.append(str(index)); labels[str(index)] = "%s (%s)" % [owned[index].name, owned[index].kind]
+	var picked := await _request_popup_choice("Help: choose one of your proficiencies", options, labels)
+	if picked.is_empty() or active_character != owner or turn != CombatAction.active_turn_serial: return
+	var choice: Dictionary = owned[int(picked)]
+	action_selected.emit("ordinary_action", {"action":"help_check", "proficiency_kind":choice.kind, "proficiency":choice.name})
+
+
+func _show_ordinary_actions() -> void:
+	if active_character == null: return
+	var owner := active_character
+	var turn := CombatAction.active_turn_serial
+	var menu := PopupMenu.new()
+	menu.name = "OrdinaryActionsMenu"
+	for action in OrdinaryActionRules.ACTIONS:
+		menu.add_item(str(OrdinaryActionRules.LABELS[action]) + " (Action)")
+		menu.set_item_disabled(menu.item_count - 1, turn_budget != null and not turn_budget.can_spend("action"))
+		if action == "help_check" and CheckHelpRules.options(owner).is_empty(): menu.set_item_disabled(menu.item_count - 1, true)
+		if action == "search": menu.set_item_tooltip(menu.item_count - 1, "Listen for hidden creatures within 60 feet along clear rays; roll Perception against their Hide checks.")
+	menu.id_pressed.connect(func(index: int):
+		if owner != active_character or turn != CombatAction.active_turn_serial: return
+		if OrdinaryActionRules.ACTIONS[index] == "help_check":
+			_request_check_help(owner, turn)
+		else:
+			action_selected.emit("ordinary_action", {"action":OrdinaryActionRules.ACTIONS[index]})
+	)
+	menu.popup_hide.connect(menu.queue_free)
+	add_child(menu)
+	menu.popup_centered()
+
+
 func _ready() -> void:
 	# Connect base buttons
 	btn_attack.pressed.connect(func(): action_selected.emit("attack", {}))
 	btn_dodge.pressed.connect(func(): action_selected.emit("dodge", {}))
 	btn_end_turn.pressed.connect(func(): action_selected.emit("end_turn", {}))
 	btn_cancel.pressed.connect(_cancel_selection)
+	var action_grid := _resolve_node("ActionDock/DockBox/ActionMenu/Margin/GridContainer") as GridContainer
+	if action_grid != null:
+		ordinary_actions_button = Button.new()
+		ordinary_actions_button.name = "OrdinaryActionsButton"
+		ordinary_actions_button.text = "Actions"
+		ordinary_actions_button.pressed.connect(_show_ordinary_actions)
+		action_grid.add_child(ordinary_actions_button)
+		shield_equipment_button = Button.new()
+		shield_equipment_button.name = "EquipmentShieldButton"
+		shield_equipment_button.text = "Don Shield"
+		shield_equipment_button.tooltip_text = "Don or doff a Shield with the Utilize Action."
+		shield_equipment_button.pressed.connect(func(): action_selected.emit("toggle_shield", {}))
+		action_grid.add_child(shield_equipment_button)
 
 	# Connect spell panel
 	btn_spell.pressed.connect(_show_spell_selection)
@@ -258,10 +308,12 @@ func request_divine_smite(character: Character, owner_label: String, target_name
 ## Enable or disable character controls.
 ## (log_text, clear_logs(), add_log() inherited from BaseHUD.)
 func set_controls_disabled(disabled: bool) -> void:
-	btn_attack.disabled = disabled
-	btn_spell.disabled = disabled
-	btn_features.disabled = disabled
-	btn_dodge.disabled = disabled
+	var action_blocked := active_character != null and CombatAction.is_incapacitated(active_character)
+	btn_attack.disabled = disabled or action_blocked
+	btn_spell.disabled = disabled or action_blocked
+	btn_features.disabled = disabled or action_blocked
+	btn_dodge.disabled = disabled or action_blocked
+	if ordinary_actions_button != null: ordinary_actions_button.disabled = disabled or action_blocked
 	btn_end_turn.disabled = disabled
 	if movement_mode_picker != null:
 		movement_mode_picker.disabled = disabled
@@ -356,6 +408,19 @@ func set_mode(m: Mode) -> void:
 func update_hud(active_char: Character, tracker: InitiativeTracker) -> void:
 	if active_character != active_char: _mode_popup_serial += 1
 	active_character = active_char
+	if ordinary_actions_button != null:
+		ordinary_actions_button.disabled = active_char == null or CombatAction.is_incapacitated(active_char) or (turn_budget != null and not turn_budget.can_spend("action"))
+	if shield_equipment_button != null:
+		var equipped_shield := not active_char.inventory.get_equipped(Inventory.Slot.SHIELD).is_empty() if active_char != null else false
+		var available_shield := equipped_shield
+		if active_char != null and not available_shield:
+			for copy in active_char.inventory.backpack_instances():
+				if str(DataLoader.get_item(str(copy.get("definition_id", ""))).get("type", "")) == "shield":
+					available_shield = true
+					break
+		shield_equipment_button.visible = active_char != null and available_shield
+		shield_equipment_button.text = "Doff Shield" if equipped_shield else "Don Shield"
+		shield_equipment_button.disabled = active_char == null or CombatAction.is_incapacitated(active_char)
 	if get_node_or_null("Root") is VttShell:
 		$Root.active_character = active_char
 		$Root.refresh_party()
@@ -376,6 +441,11 @@ func update_hud(active_char: Character, tracker: InitiativeTracker) -> void:
 	btn_attack.tooltip_text = "Familiars cannot make weapon attacks." if btn_attack.disabled else "Choose a target for your equipped weapon."
 	if not btn_attack.disabled:
 		btn_attack.tooltip_text = weapon_info.text + "\nChoose a target for your equipped weapon."
+	if active_char != null and CombatAction.is_incapacitated(active_char):
+		btn_attack.disabled = true
+		btn_spell.disabled = true
+		btn_features.disabled = true
+		btn_dodge.disabled = true
 
 	if active_char != null:
 		# Disable features button if character has no active features
@@ -977,6 +1047,7 @@ func _on_feature_selected(index: int) -> void:
 	if index < 0 or index >= features_registered.size(): return
 	if feature_list.is_item_disabled(index): return
 	var feature_owner := active_character
+	var feature_turn := CombatAction.active_turn_serial
 	var feature := features_registered[index]
 	_hide_feature_selection()
 	if str(feature.get("id", "")) == "item_lifecycle_control":
@@ -1145,13 +1216,13 @@ func _on_feature_selected(index: int) -> void:
 			return
 		feature = feature.duplicate(true)
 		feature["selected_action"] = selected_option
-	elif feature.get("id", "") == "rogue_cunning_action":
-		var selected_action := await request_movement_bonus_action(feature.get("id", "") == "rogue_cunning_action")
+	elif feature.get("effects", []).any(func(e): return e.get("type", "") == "cunning_action"):
+		var selected_action := await request_movement_bonus_action(true)
 		if selected_action.is_empty():
 			return
 		feature = feature.duplicate(true)
 		feature["selected_action"] = selected_action
-	if active_character == feature_owner:
+	if active_character == feature_owner and feature_turn == CombatAction.active_turn_serial:
 		action_selected.emit("use_feature", {"feature": feature})
 
 
@@ -1338,6 +1409,7 @@ func request_spell_payment(character: Character, spell_id: String) -> Dictionary
 		var id := str(index)
 		ids.append(id)
 		var payment := str(row._spell_payment_kind).replace("_", " ")
+		if payment.is_empty(): payment = "Cantrip"
 		if payment == "slot": payment = "%s level %d slot" % ["Pact Magic" if row.get("_spell_slot_pool_id", "ordinary") == "pact" else "Ordinary", int(row._selected_spell_slot_level)]
 		labels[id] = "%s (%s) — %s" % [permission.get("label", "Spell"), permission.ability, payment]
 	var selected := ids[0] if ids.size() == 1 or GameManager.test_mode else await _request_popup_choice("%s: choose a source and payment" % DataLoader.get_spell(spell_id).get("name", spell_id), ids, labels)
@@ -1694,6 +1766,8 @@ func request_item_lifecycle(owner: Character, offer: Dictionary) -> void:
 	item_lifecycle_serial += 1
 	var result := await ItemLifecycleUI.request(self, owner, offer, item_lifecycle_serial)
 	add_log(str(result.message))
+	if result.get("success", false) and str(result.get("cost_kind", "free")) in ["action", "magic_action", "bonus_action"]:
+		await get_parent()._completed_player_action(owner)
 	if active_character != null: update_hud(active_character, get_parent().tracker)
 
 ## Batch 052: Cancel plus exactly the offered options. Cancel, closing the popup,
@@ -1727,11 +1801,18 @@ func request_mode_control(owner: Character, offer: Dictionary) -> Dictionary:
 	if result.success:
 		add_log("%s: %s %s." % [row.name, ModeControls.kind_label(kind).to_lower(), picked.replace("|", ": ")])
 		_update_sidebar_stats()
+		if str(result.get("cost_kind", "free")) in ["action", "magic_action", "bonus_action"]:
+			await get_parent()._completed_player_action(owner)
 	elif result.reason == "stale":
 		add_log("That choice is no longer current; nothing was spent.")
 	else:
 		add_log("%s refused (%s); nothing was spent." % [row.name, result.reason])
 	return result
+
+
+func request_hit_option(prompt: String, options: Array[String], labels: Dictionary) -> String:
+	if GameManager.test_mode: return ""
+	return await _request_popup_choice(prompt, options, labels)
 
 
 func _request_popup_choice(prompt: String, options: Array[String], labels: Dictionary) -> String:

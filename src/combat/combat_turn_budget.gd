@@ -10,6 +10,7 @@ var has_acted_this_turn: bool = false
 var action_available: bool = true
 var bonus_action_available: bool = true
 var surge_actions: int = 0
+var budget_actor: Character
 
 
 ## Restore the active player's action, bonus-action, and reaction budget.
@@ -18,6 +19,7 @@ func reset(active_character: Character = null, player_entities: Array = []) -> v
 	action_available = true
 	bonus_action_available = true
 	surge_actions = 0
+	budget_actor = active_character
 	CombatAction.advance_combat_turn(active_character)
 	if active_character == null:
 		return
@@ -50,6 +52,8 @@ func can_use_turn_feature(character: Character, pool_id: String) -> bool:
 
 
 func can_spend(cost_type: String) -> bool:
+	if budget_actor != null and CombatAction.is_incapacitated(budget_actor) and cost_type in ["action", "magic_action", "bonus_action"]:
+		return false
 	match cost_type:
 		"action":
 			return action_available or surge_actions > 0

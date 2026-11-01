@@ -3,6 +3,7 @@ class_name PermanentProgressionRules
 extends RefCounted
 
 const PROFICIENCIES := ["skill_proficiencies", "tool_proficiencies", "weapon_proficiencies", "armor_proficiencies", "saving_throw_proficiencies"]
+const XP_THRESHOLDS := [0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000, 64000, 85000, 100000, 120000, 140000, 165000, 195000, 225000, 265000, 305000, 355000]
 
 static func definition_error(data: Dictionary, resolve_references: bool = true) -> String:
 	if not data.has("permanent_progression"): return ""
@@ -137,14 +138,59 @@ static func request_level(c: Character) -> bool:
 	c.permanent_progression.pending_levels += 1
 	return true
 
+
+static func award_xp(c: Character, amount: int) -> Dictionary:
+	if c == null or amount <= 0 or not enabled(c.class_id) or c.xp < 0 or not saved_error(c.to_dict()).is_empty():
+		return {"success": false, "message": "XP could not be awarded to this character."}
+	var before := c.xp
+	c.xp = mini(2147483647, c.xp + amount)
+	var threshold_level := level_for_xp(c.xp)
+	var eligible_pending := maxi(0, mini(20, threshold_level) - c.level)
+	var old_pending := int(c.permanent_progression.get("pending_levels", 0))
+	c.permanent_progression.pending_levels = mini(20 - c.level, maxi(old_pending, eligible_pending))
+	return {"success": true, "xp_awarded": c.xp - before, "xp_total": c.xp, "threshold_level": threshold_level, "pending_levels": int(c.permanent_progression.pending_levels)}
+
+
+static func level_for_xp(total_xp: int) -> int:
+	var result := 1
+	for index in XP_THRESHOLDS.size():
+		if total_xp < int(XP_THRESHOLDS[index]): break
+		result = index + 1
+	return result
+
 static func available_classes(c: Character) -> Array[String]:
 	var out: Array[String] = []
 	if c == null or not enabled(c.class_id): return out
+	var current_classes: Dictionary = c.class_levels if not c.class_levels.is_empty() else {c.class_id: 1}
 	for id in DataLoader.classes:
 		var data := DataLoader.get_character_class(id)
-		if enabled(id) and definition_error(data).is_empty() and (id == c.class_id or data.get("features_by_level", {}).is_empty()): out.append(id)
+		var already_acquired := current_classes.has(id)
+		var entry_error := "" if already_acquired else multiclass_prerequisite_error(c, id)
+		if enabled(id) and definition_error(data).is_empty() and entry_error.is_empty() and (already_acquired or data.get("features_by_level", {}).is_empty()): out.append(id)
 	out.sort()
 	return out
+
+
+## Requirement for adding a new class. Existing class levels remain eligible if
+## a score later falls; the gate applies when the first level is entered.
+static func multiclass_prerequisite_error(c: Character, proposed_class_id: String) -> String:
+	if c == null or c.class_levels.has(proposed_class_id) or (c.class_levels.is_empty() and c.class_id == proposed_class_id): return ""
+	var current_classes: Array = c.class_levels.keys() if not c.class_levels.is_empty() else [c.class_id]
+	var classes: Array = [proposed_class_id]
+	for current_id in current_classes:
+		if str(current_id) not in classes: classes.append(str(current_id))
+	for class_id in classes:
+		var data := DataLoader.get_character_class(str(class_id))
+		var requirement: Dictionary = data.get("multiclass_prerequisite", {"all": [str(data.get("primary_ability", ""))]})
+		for ability in requirement.get("all", []):
+			var score := c.ability_scores.get_permanent_score(str(ability))
+			if score < 13: return "%s requires %s 13 (current score %d)." % [str(data.get("name", class_id)), str(ability), score]
+		var any_abilities: Array = requirement.get("any", [])
+		if not any_abilities.is_empty() and not any_abilities.any(func(ability): return c.ability_scores.get_permanent_score(str(ability)) >= 13):
+			var scores: Array[String] = []
+			for ability in any_abilities: scores.append("%s %d" % [str(ability), c.ability_scores.get_permanent_score(str(ability))])
+			return "%s requires one of these scores to be 13: %s." % [str(data.get("name", class_id)), ", ".join(scores)]
+	return ""
 
 static func advance(c: Character, class_id: String, captured_state: Dictionary) -> bool:
 	if c == null or GameManager.current_state == GameManager.GameState.COMBAT or c.permanent_progression != captured_state or not saved_error(c.to_dict()).is_empty(): return false

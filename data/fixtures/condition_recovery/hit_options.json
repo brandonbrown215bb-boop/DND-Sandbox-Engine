@@ -1,0 +1,48 @@
+{
+  "id": "fixture:renamed_hit_subclass",
+  "name": "Renamed hit subclass",
+  "class_id": "monk",
+  "features_by_level": {
+    "3": [
+      {
+        "id": "fixture:renamed_hit_consequences",
+        "name": "Renamed hit consequences",
+        "description": "After each Flurry of Blows hit, optionally Addle (no Opportunity Attacks until target turn start), Push up to 15 ft on a failed STR save, or Topple on a failed DEX save.",
+        "type": "passive",
+        "effects": [
+          {
+            "type": "hit_options",
+            "attack_tag": "flurry",
+            "dc_ability": "WIS",
+            "options": [
+              {
+                "id": "addle",
+                "name": "Addle",
+                "operation": "grant_condition",
+                "condition": "opportunity_attack_blocked",
+                "expiry": "target_start"
+              },
+              {
+                "id": "push",
+                "name": "Push",
+                "save": "STR",
+                "operation": "push",
+                "max_distance_feet": 15
+              },
+              {
+                "id": "topple",
+                "name": "Topple",
+                "save": "DEX",
+                "operation": "grant_condition",
+                "condition": "prone"
+              }
+            ]
+          }
+        ],
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-supported",
+        "enabled": true
+      }
+    ]
+  }
+}

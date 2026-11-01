@@ -12,6 +12,7 @@ static func bind_grid(grid: HexGrid) -> void:
 		grid.tiles[position].custom_properties["surface"] = LocalRoomRules.surface_at(state, position)
 		grid.tiles[position].custom_properties["blocks_movement"] = not LocalRoomRules.passable(state, position)
 		grid.tiles[position].custom_properties["blocks_sight"] = LocalRoomRules.blocks_sight(state, position)
+		grid.tiles[position].custom_properties["blocks_sound"] = LocalRoomRules.blocks_sound(state, position)
 		grid.tiles[position].custom_properties["elevation_feet"] = LocalRoomRules.elevation_feet(state, position)
 		grid.tiles[position].custom_properties["ceiling_feet"] = LocalRoomRules.ceiling_feet(state, position)
 		if LocalRoomRules.has_wall(state, position):
@@ -26,7 +27,7 @@ static func add_objects(grid: HexGrid) -> void:
 
 ## Room-owned wards remain active while an encounter uses the room's grid.
 ## The creature ID is stable for party members and encounter-stable for monsters.
-static func enter_room_areas(target, from_hex: Vector2i, to_hex: Vector2i) -> Array[Dictionary]:
+static func enter_room_areas(target, from_hex: Vector2i, to_hex: Vector2i, event_id: String = "", clocks: Dictionary = {}, movement_kind: String = "movement", trigger_actor_id: String = "") -> Array[Dictionary]:
 	var state := room()
 	if state.is_empty(): return []
 	var creature_id: String = ""
@@ -34,7 +35,7 @@ static func enter_room_areas(target, from_hex: Vector2i, to_hex: Vector2i) -> Ar
 		creature_id = target.character_id
 	elif target is Dictionary:
 		creature_id = str(target.get("id", ""))
-	return LocalRoomAreas.enter(state, creature_id, from_hex, to_hex, int(GameManager.campaign_elapsed_seconds), PhysicalFactsRules.get_plane(target, {"plane": PhysicalFactsRules.get_plane(state)}))
+	return LocalRoomAreas.enter(state, creature_id, from_hex, to_hex, int(GameManager.campaign_elapsed_seconds), PhysicalFactsRules.get_plane(target, {"plane": PhysicalFactsRules.get_plane(state)}), event_id, clocks, movement_kind, trigger_actor_id)
 
 static func capture(players: Array, ground_items: Array = []) -> void:
 	var state := room()

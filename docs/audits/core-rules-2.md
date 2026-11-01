@@ -1,5 +1,16 @@
 # Core rules audit, batch 2: conditions in monster AI and non-EventResolver check/save hosts (SRD 5.2.1)
 
+Current S-246–S-248 implementation is partial and unaccepted; see the
+[recovery boundary](../planning/vocabulary-slices.md#srd-condition-and-roll-host-spine).
+The source requirements below remain the finish lines, not completion claims.
+Recovery now routes monster AI movement/attack choices through live fear and
+perception checks; requires Blindsight to locate Hidden targets; allows an
+ordinary attack against a known Invisible hex with Disadvantage; validates
+post-reaction move-attack targets; routes Monk save features through the shared
+monster save result; and supplies actual encounter participants to combat check
+hosts. The audit evidence below is the original snapshot and is not a current
+acceptance receipt.
+
 - **Commit audited:** `ede0a3cdfa66f21b0b3415f498c2e186e56a0db4` (origin/main, "Merge pull request #60")
 - **Registry hash:** sha256(`str(DataLoader.get_registry_hash())`) = `70a83cc74e530743e90f8fadc992bd0651f56b51cb84b06cd73fcaf22187845e`
 - **Loader:** 14 classes, 9 races, 289 items, 362 spells, 481 monsters, 0 validation failures

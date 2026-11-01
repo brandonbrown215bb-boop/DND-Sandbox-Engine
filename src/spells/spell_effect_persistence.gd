@@ -38,11 +38,22 @@ static func saved_state_error(dto: Dictionary) -> String:
 		var spell_id := str(record.get("spell_id", ""))
 		if str(record.get("source_id", "")) != source or str(record.get("caster_id", "")).is_empty() or (not SpellEffects.manages(DataLoader.get_spell(spell_id)) and spell_id not in SpellEffects.PERSISTED_AREA_MARKER_SPELLS):
 			return "invalid saved spell effect identity"
-		if record.has("source_end_rules"):
+		if record.has("source_end_rules") or SpellEffects.damage_budget_cap(DataLoader.get_spell(spell_id)) > 0:
 			var definition := DataLoader.get_spell(spell_id)
 			var end_rules_error := SharedSpell.source_end_rules_error(record.get("source_end_rules"))
-			if not SharedSpell.uses(definition) or not definition.has("source_end_rules") or record["source_end_rules"] != definition["source_end_rules"] or not end_rules_error.is_empty():
+			if not SharedSpell.uses(definition) or not definition.has("source_end_rules") or record.get("source_end_rules") != definition["source_end_rules"] or not end_rules_error.is_empty():
 				return "invalid saved spell source end rules"
+		var damage_budget_cap := 0
+		for end_rule in record.get("source_end_rules", []):
+			if end_rule is Dictionary and end_rule.has("damage_budget"):
+				damage_budget_cap = int(end_rule.get("damage_budget", 0))
+				break
+		if damage_budget_cap > 0:
+			var damage_total: Variant = record.get("damage_budget_total", null)
+			if not (damage_total is int or damage_total is float) or not is_finite(float(damage_total)) or float(damage_total) != floor(float(damage_total)) or int(damage_total) < 0 or int(damage_total) >= damage_budget_cap:
+				return "invalid saved damage budget"
+		elif record.has("damage_budget_total"):
+			return "unexpected saved damage budget"
 		# Legacy records captured before the field existed may omit it.
 		if record.has("end_aftermath") and (record["end_aftermath"] != DataLoader.get_spell(spell_id).get("end_aftermath", null) or not SourceEndAftermathRules.validate(record["end_aftermath"]).is_empty()):
 			return "invalid saved spell end aftermath"
@@ -117,7 +128,7 @@ static func saved_state_error(dto: Dictionary) -> String:
 			if not created_error.is_empty(): return created_error
 		for transient in ["_damage_cause", "countereffect_receipts", "replacement_receipts", "_response_depth"]:
 			if record.has(transient): return "transient damage response state cannot be saved"
-		if not (save_dc is int or save_dc is float) or not is_finite(float(save_dc)) or float(save_dc) != floor(float(save_dc)) or int(save_dc) < 0 or int(save_dc) > 100 or not record.get("concentration", null) is bool or (record["conditions"].is_empty() and not valid_aid_record and not valid_barkskin_record and not valid_goodberry_record and not valid_identify_record and not valid_area_marker_record and not record.has("source_benefits") and not record.has("created_actors") and not record.has("projection") and not record.has("magic_suppression") and not record.has("max_hp_source") and not valid_damage_link and not valid_response):
+		if not (save_dc is int or save_dc is float) or not is_finite(float(save_dc)) or float(save_dc) != floor(float(save_dc)) or int(save_dc) < 0 or int(save_dc) > 100 or not record.get("concentration", null) is bool or (record["conditions"].is_empty() and not valid_aid_record and not valid_barkskin_record and not valid_goodberry_record and not valid_identify_record and not valid_area_marker_record and not record.has("source_benefits") and not record.has("created_actors") and not record.has("projection") and not record.has("magic_suppression") and not record.has("max_hp_source") and not valid_damage_link and not valid_response and damage_budget_cap <= 0):
 			return "invalid saved spell effect rules"
 		if record.has("aid_hp_bonus") and (not valid_aid_record or str(record.get("spell_id", "")) != "aid"):
 			return "invalid saved Aid bonus"
@@ -176,6 +187,7 @@ static func saved_party_error(characters: Dictionary, save_data: Dictionary = {}
 		for source in dto.get("spell_effects", {}):
 			var record: Dictionary = dto["spell_effects"][source]
 			var owner := str(record["caster_id"])
+			if record.has("damage_budget_total") and not characters.get(owner, {}).get("spell_effects", {}).has(source): return "saved damage budget lacks its exact owner"
 			var object_tether := str(source).begins_with("object_tether:%s:" % owner)
 			if not characters.has(owner) or (not str(source).begins_with("spell:%s:" % owner) and not object_tether):
 				return "saved spell effect references a missing caster"

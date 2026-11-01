@@ -9,7 +9,7 @@ static func refresh(view: LocalRoomView) -> void:
 	var bodies: Array = []
 	for actor in view.characters + VesselProjectionRules.actors(view.characters): bodies.append({"kind": "character", "id": actor.character_id, "label": actor.character_name})
 	for object in view.state.get("objects", []):
-		if not bool(object.get("removed", false)): bodies.append({"kind": "object", "id": str(object.id), "label": str(object.name)})
+		if not bool(object.get("removed", false)) and LocalRoomSearchRules.known(object, view.actor()): bodies.append({"kind": "object", "id": str(object.id), "label": str(object.name)})
 	var containers := OptionButton.new()
 	containers.name = "ContainmentContainers"
 	var candidates := OptionButton.new()
@@ -43,11 +43,13 @@ static func refresh(view: LocalRoomView) -> void:
 		var target = ContainmentRules.entity(view.state, view.characters, body.kind, body.id)
 		if target is Character and target.has_meta("projected_item_id"):
 			view.pending_anchor_move_id = body.id
+			view.pending_search.clear()
 			view.pending_anchor_move_choice = {"vessel": target, "room": view.state, "actor": view.actor(), "serial": view.containment_serial, "position": ContainmentRules.location(view.state, "character", body.id, view.characters), "rows": view.state.get("containment_occupants", []).duplicate(true)}
 			view.hud.add_log("Choose a reachable room hex for " + body.id)
 			return
 		if body.kind != "object": view.hud.add_log("Select the creature actor and click its destination to move it."); return
 		view.pending_anchor_move_id = body.id
+		view.pending_search.clear()
 		view.pending_anchor_move_choice = movement_choice(view, ContainmentRules.entity(view.state, view.characters, body.kind, body.id))
 		view.hud.add_log("Choose a legal room hex for " + body.id))
 	view._add_button(view.containment_row, "Finish pending release", func():

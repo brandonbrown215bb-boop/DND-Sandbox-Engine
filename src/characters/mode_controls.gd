@@ -68,6 +68,13 @@ static func row(actor: Character, feature_id: String) -> Dictionary:
 		var pool := str(feature.get("resource_id", feature_id))
 		out.uses = int(actor.feature_uses.get(pool, 0))
 		out.max_uses = maxi(0, actor.get_feature_max_uses(pool))
+		if not out.active and str(feature.get("uses_per", "")) == "days":
+			var remaining := OwnedFeatureSources.day_cooldown_remaining(actor, feature, int(GameManager.campaign_elapsed_seconds))
+			if remaining > 0:
+				out.available = false
+				out.reason = "item cooldown: %d seconds remain" % remaining
+			elif out.uses <= 0:
+				out.uses = out.max_uses
 	out["actions"] = actions(out, r)
 	return out
 
@@ -100,7 +107,8 @@ static func token(actor: Character, feature_id: String) -> String:
 	var feature := actor.get_feature(feature_id)
 	var state: Dictionary = actor.feature_modes.get(feature_id, {})
 	var pool := str(feature.get("resource_id", feature_id))
-	return JSON.stringify([actor.character_id, feature_id, not FeatureModeRules.rule(actor, feature_id).is_empty(), bool(state.get("active", false)), str(state.get("mode", "")), bool(state.get("open", true)), int(state.get("activation_serial", 0)), int(state.get("event_serial", 0)), str(state.get("window", {}).get("event", "")), int(actor.feature_uses.get(pool, 0)), alternatives(actor, feature_id)])
+	var cooldown_remaining := OwnedFeatureSources.day_cooldown_remaining(actor, feature, int(GameManager.campaign_elapsed_seconds))
+	return JSON.stringify([actor.character_id, feature_id, not FeatureModeRules.rule(actor, feature_id).is_empty(), bool(state.get("active", false)), str(state.get("mode", "")), bool(state.get("open", true)), int(state.get("activation_serial", 0)), int(state.get("event_serial", 0)), str(state.get("window", {}).get("event", "")), int(actor.feature_uses.get(pool, 0)), cooldown_remaining, alternatives(actor, feature_id)])
 
 static func label(r: Dictionary) -> String:
 	var text := ("Rule: %s" if r.boundary == "passive" else "Mode: %s") % r.name

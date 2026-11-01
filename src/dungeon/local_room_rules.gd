@@ -34,9 +34,9 @@ static func create(definition: Dictionary, characters: Array) -> Dictionary:
 		object["contents"] = contents
 	return state
 
-static func get_object(state: Dictionary, id: String) -> Dictionary:
+static func get_object(state: Dictionary, id: String, observer = null) -> Dictionary:
 	for object in state.get("objects", []):
-		if str(object.get("id", "")) == id: return object
+		if str(object.get("id", "")) == id and (observer == null or LocalRoomSearchRules.known(object, observer)): return object
 	return {}
 
 ## Successor owns a new identity; ending the parent again cannot remove it.
@@ -66,6 +66,12 @@ static func passable(state: Dictionary, position: Vector2i) -> bool:
 static func blocks_sight(state: Dictionary, position: Vector2i) -> bool:
 	if has_wall(state, position):
 		return wall_height_feet(state, position) >= 10 and wall_material(state, position) != "glass"
+	var object := object_at(state, position)
+	return not object.is_empty() and str(object.get("kind", "")) == "door" and not bool(object.get("open", false))
+
+
+static func blocks_sound(state: Dictionary, position: Vector2i) -> bool:
+	if has_wall(state, position): return true
 	var object := object_at(state, position)
 	return not object.is_empty() and str(object.get("kind", "")) == "door" and not bool(object.get("open", false))
 
@@ -310,7 +316,7 @@ static func requires_surface_traversal(surface: String) -> bool:
 
 static func move(state: Dictionary, character: Character, destination: Vector2i, grid: HexGrid, mode: String = "walk", party: Array = []) -> Dictionary:
 	if character != null and not ContainmentRules.relation(state, "character", character.character_id).is_empty(): return failure("Internal occupants cannot move independently.")
-	if character == null or not character.is_alive or CombatAction.is_incapacitated(character): return failure("That character cannot move.")
+	if character == null or not character.is_alive or CombatAction.is_speed_zero(character): return failure("That character cannot move.")
 	var projected := character.has_meta("projected_item_id")
 	if projected and mode != "walk": return failure("Projected vessels currently use ground movement.")
 	var positions: Dictionary = state.get("created_actor_positions", {}) if projected else state["party_positions"]
@@ -374,6 +380,13 @@ static func move(state: Dictionary, character: Character, destination: Vector2i,
 		return cost
 	var path := HexUtils.find_path(origin, destination, can_enter, movement_cost)
 	if path.size() < 2: return failure("Choose a reachable space within Speed.")
+	var fear_candidates: Array = []
+	for member in party:
+		if member is Character and state.party_positions.has(member.character_id):
+			fear_candidates.append({"character":member, "hex_position":coord(state.party_positions[member.character_id])})
+	for step in range(1, path.size()):
+		if CombatAction.frightened_forbids_movement_closer(character, path[step - 1], path[step], fear_candidates):
+			return failure("You cannot willingly move closer to a source of your fear.")
 	var movement_cost_feet := 0
 	for step in range(1, path.size()):
 		var height_change := elevation_feet(state, path[step]) - elevation_feet(state, path[step - 1])
@@ -391,6 +404,7 @@ static func move(state: Dictionary, character: Character, destination: Vector2i,
 	var entered: Array[Dictionary] = []
 	var spike_growth_outcomes: Array[Dictionary] = []
 	var heat_outcomes: Array[Dictionary] = []
+	var spatial_outcomes: Array[Dictionary] = []
 	var actual_cost_feet := 0
 	for step in range(1, path.size()):
 		var step_position: Vector2i = path[step]
@@ -413,9 +427,16 @@ static func move(state: Dictionary, character: Character, destination: Vector2i,
 		if not heat.is_empty(): heat_outcomes.append(heat)
 		if not character.is_alive: break
 		LocalRoomAreas.leave(state, character, path[step - 1], step_position)
-		entered.append_array(LocalRoomAreas.enter(state, character.character_id, path[step - 1], step_position, int(GameManager.campaign_elapsed_seconds), PhysicalFactsRules.get_plane(character, {"plane": PhysicalFactsRules.get_plane(state)})))
+		var step_areas := LocalRoomAreas.enter(state, character.character_id, path[step - 1], step_position, int(GameManager.campaign_elapsed_seconds), PhysicalFactsRules.get_plane(character, {"plane": PhysicalFactsRules.get_plane(state)}), LocalRoomAreas.next_movement_event(state))
+		# Declared hazards settle at the actual step so a lethal entry stops the route.
+		for area in step_areas:
+			if area.has("trigger_policies"):
+				var outcome := _resolve_aftermath_entry(area, character)
+				if not outcome.is_empty(): spatial_outcomes.append(outcome)
+			else: entered.append(area)
+		if not character.is_alive: break
 		for area in state.get("areas", []):
-			if not area is Dictionary or str(area.get("spell_id", "")) != "spike_growth" or not LocalRoomAreas.contains(area, step_position):
+			if not area is Dictionary or area.has("trigger_policies") or str(area.get("spell_id", "")) != "spike_growth" or not LocalRoomAreas.contains(area, step_position):
 				continue
 			var caster := _party_character(party, str(area.get("caster_id", "")))
 			var damage_formula := str(area.get("damage_formula", "2d4"))
@@ -431,7 +452,7 @@ static func move(state: Dictionary, character: Character, destination: Vector2i,
 	if not entered.is_empty():
 		message += " Crosses %s." % ", ".join(entered.map(func(area): return str(area.get("spell_id", "an area")).replace("_", " ")))
 		message += _alarm_alert_text(entered)
-	return {"success": true, "seconds": 6, "message": message, "entered_areas": entered, "spike_growth_outcomes": spike_growth_outcomes, "heat_outcomes": heat_outcomes, "movement_cost_feet": movement_cost_feet, "fall_damage": fall_damage}
+	return {"success": true, "seconds": 6, "message": message, "entered_areas": entered, "spike_growth_outcomes": spike_growth_outcomes, "heat_outcomes": heat_outcomes, "spatial_outcomes": spatial_outcomes, "movement_cost_feet": movement_cost_feet, "fall_damage": fall_damage}
 
 
 ## Authored heat is separate from surface traversal: Water Walk doesn't
@@ -464,9 +485,18 @@ static func _ensure_party_altitudes(state: Dictionary) -> void:
 			state["party_altitude_modes"][id] = "ground"
 
 
+static func _resolve_aftermath_entry(area: Dictionary, character: Character) -> Dictionary:
+	var outcome := LocalRoomAreas.resolve_aftermath_entry(area, character)
+	if not outcome.is_empty():
+		# The room has no reaction prompt. The existing null-context path settles
+		# synchronously and retains concentration protection and source cleanup.
+		SpellEncounterLifecycle._check_concentration_save(null, character, int(outcome.get("resolved", 0)))
+	return outcome
+
+
 static func resolve_area_entries(areas: Array, character: Character) -> Array[Dictionary]:
 	var results: Array[Dictionary] = []
-	if character == null or not character.is_alive:
+	if character == null:
 		return results
 	var resolved_tentacle_area_ids: Dictionary = {}
 	for area in areas:
@@ -474,9 +504,10 @@ static func resolve_area_entries(areas: Array, character: Character) -> Array[Di
 			continue
 		var spell_id := str(area.get("spell_id", ""))
 		var area_id := str(area.get("id", ""))
-		if area.get("hazard_kind", "") == "entry_damage":
-			var hazard := LocalRoomAreas.resolve_aftermath_entry(area, character)
+		if area.get("hazard_kind", "") in ["entry_damage", "trigger_damage"]:
+			var hazard := _resolve_aftermath_entry(area, character)
 			if not hazard.is_empty(): results.append(hazard)
+		elif not character.is_alive: continue
 		elif spell_id == "grease":
 			if resolved_tentacle_area_ids.has(area_id):
 				continue
@@ -516,6 +547,16 @@ static func end_local_turn(state: Dictionary, character: Character) -> Dictionar
 	if character == null or not character.is_alive or CombatAction.is_incapacitated(character):
 		return failure("That character cannot end a turn here.")
 	var outcomes := end_turn_area_saves(state, character)
+	var clocks := LocalRoomAreas.turn_clocks(state)
+	var position := coord(state["party_positions"][character.character_id])
+	var plane := PhysicalFactsRules.get_plane(character, {"plane": PhysicalFactsRules.get_plane(state)})
+	outcomes.append_array(resolve_area_entries(LocalRoomAreas.turn_event(state, character.character_id, position, "end_turn", clocks, plane), character))
+	# Exploration has an explicit End Turn control. Movement/campaign seconds do not reset it.
+	state["area_turn_serial"] = int(state.get("area_turn_serial", 0)) + 1
+	var actors: Dictionary = state.get("area_actor_turns", {})
+	actors[character.character_id] = "room:%s:%d" % [state.get("id", ""), state.area_turn_serial]
+	state["area_actor_turns"] = actors
+	outcomes.append_array(resolve_area_entries(LocalRoomAreas.turn_event(state, character.character_id, position, "start_turn", {}, plane), character))
 	var heat := resolve_surface_heat(state, character, coord(state["party_positions"][character.character_id]), altitude_feet(state, character.character_id))
 	if not heat.is_empty(): outcomes.append(heat)
 	return {"success": true, "seconds": 6, "message": "%s ends a turn." % character.character_name, "end_turn_outcomes": outcomes}
@@ -583,7 +624,7 @@ static func end_turn_area_saves(state: Dictionary, character: Character) -> Arra
 	var position := coord(state["party_positions"][character.character_id])
 	var turn_index := int(floor(float(GameManager.campaign_elapsed_seconds) / 6.0))
 	for area in state.get("areas", []):
-		if not area is Dictionary or str(area.get("spell_id", "")) not in ["cloud_of_daggers", "black_tentacles", "grease", "sleet_storm", "moonbeam", "wall_of_fire"] or not LocalRoomAreas.contains(area, position):
+		if not area is Dictionary or area.has("trigger_policies") or str(area.get("spell_id", "")) not in ["cloud_of_daggers", "black_tentacles", "grease", "sleet_storm", "moonbeam", "wall_of_fire"] or not LocalRoomAreas.contains(area, position):
 			continue
 		var checked_turns: Dictionary = area.get("check_turn_by_character", {})
 		var trigger_id := "%s:end" % character.character_id if str(area.get("spell_id", "")) == "wall_of_fire" else character.character_id
@@ -706,12 +747,12 @@ static func _resolve_black_tentacles_save(area: Dictionary, character: Character
 	return {"spell_id": "black_tentacles", "save_total": int(save.get("total", 0)), "save_dc": dc, "saved": not failed, "damage": damage, "condition": "restrained" if failed and character.has_condition("restrained") else ""}
 
 
-static func interact(state: Dictionary, id: String, action: String, character: Character, instance_id: String = "") -> Dictionary:
+static func interact(state: Dictionary, id: String, action: String, character: Character, instance_id: String = "", check_context: Dictionary = {}) -> Dictionary:
 	if ContainmentRules.involved(state, "object", id) or (character != null and not ContainmentRules.relation(state, "character", character.character_id).is_empty()): return failure("Internal interaction and occupied container changes require release support.")
-	var object := get_object(state, id)
+	var object := get_object(state, id, character)
 	if object.is_empty() or bool(object.get("removed", false)): return failure("Object is no longer here.")
 	if character == null or not character.is_alive or CombatAction.is_incapacitated(character): return failure("That character cannot interact.")
-	var origin := coord(state.get("party_positions", {}).get(character.character_id, [-999, -999]))
+	var origin: Vector2i = check_context.get("actor_position", coord(state.get("party_positions", {}).get(character.character_id, [-999, -999])))
 	if HexUtils.get_distance(origin, coord(object["position"])) > 1: return failure("Move next to the object first.")
 	if action == "strike":
 		var weapon := DataLoader.get_item(character.inventory.get_weapon())
@@ -778,7 +819,7 @@ static func interact(state: Dictionary, id: String, action: String, character: C
 			if bool(object.get("open", false)): return failure("It is already open." + alarm_suffix)
 			var now_sec := int(GameManager.campaign_elapsed_seconds) if GameManager != null else 0
 			var break_dc := CombatObjectRules.effective_break_dc(object, now_sec)
-			var break_check := EventResolver.resolve_skill_check(character, {"ability": "STR", "skill": "Athletics", "context": "forcing_door", "dc": break_dc})
+			var break_check := EventResolver.resolve_skill_check(character, {"ability": "STR", "skill": "Athletics", "context": "forcing_door", "dc": break_dc}, {}, check_context)
 			if not bool(break_check.get("success", false)):
 				return {"success": false, "seconds": 6, "check": break_check, "message": "Forcing check %d vs DC %d: still holds." % [int(break_check.get("total", 0)), break_dc] + alarm_suffix}
 			object["open"] = true
@@ -817,7 +858,7 @@ static func interact(state: Dictionary, id: String, action: String, character: C
 			if not CombatObjectRules.is_locked(object, now_sec): return failure("It is already unlocked." + alarm_suffix)
 			if not character.inventory.has_item("thieves_tools"): return failure("Thieves' Tools are required." + alarm_suffix)
 			var lock_dc := CombatObjectRules.effective_lock_dc(object, now_sec)
-			var check := EventResolver.resolve_skill_check(character, {"ability": "DEX", "skill": "Sleight of Hand", "dc": lock_dc})
+			var check := EventResolver.resolve_skill_check(character, {"ability": "DEX", "skill": "Sleight of Hand", "tool_id":"thieves_tools", "dc": lock_dc}, {}, check_context)
 			if not check["success"]: return {"success": false, "seconds": 6, "message": "Lock check %d vs DC %d: still locked." % [check["total"], check["dc"]] + alarm_suffix}
 			object["locked"] = false
 			if object.get("magical_lock") is Dictionary:
@@ -827,7 +868,7 @@ static func interact(state: Dictionary, id: String, action: String, character: C
 			if (not bool(object.get("lockable", false)) and not CombatObjectRules.is_locked(object, now_sec)) or not CombatObjectRules.is_locked(object, now_sec) or bool(object.get("open", false)): return failure("There is no closed locked object to pry open." + alarm_suffix)
 			if not character.inventory.has_item("crowbar"): return failure("A Crowbar is required to pry this object open." + alarm_suffix)
 			var lock_dc := CombatObjectRules.effective_lock_dc(object, now_sec)
-			var pry_check := EventResolver.resolve_skill_check(character, {"ability": "STR", "skill": "Athletics", "context": "prying", "dc": lock_dc})
+			var pry_check := EventResolver.resolve_skill_check(character, {"ability": "STR", "skill": "Athletics", "context": "prying", "dc": lock_dc}, {}, check_context)
 			if not pry_check["success"]: return {"success": false, "seconds": 6, "message": "Prying check %d vs DC %d: still locked." % [pry_check["total"], pry_check["dc"]] + alarm_suffix}
 			object["locked"] = false
 			if object.get("magical_lock") is Dictionary:
@@ -870,7 +911,7 @@ static func fire_bolt_object(state: Dictionary, id: String, character: Character
 	var spell := DataLoader.get_spell("fire_bolt")
 	var caster_error := _room_spell_caster_error(character, spell)
 	if not caster_error.is_empty(): return failure(caster_error)
-	var object := get_object(state, id)
+	var object := get_object(state, id, character)
 	if not CombatObjectRules.can_take_spell_damage(object): return failure("Choose an unattended nonmagical object.")
 	var origin := coord(state.get("party_positions", {}).get(character.character_id, [-999, -999]))
 	var position := coord(object["position"])
@@ -887,7 +928,7 @@ static func fire_bolt_object(state: Dictionary, id: String, character: Character
 
 
 static func cast_alarm(state: Dictionary, id: String, alert_mode: String, character: Character, party: Array, ritual: bool = false) -> Dictionary:
-	var door := get_object(state, id)
+	var door := get_object(state, id, character)
 	if door.is_empty() or bool(door.get("removed", false)) or str(door.get("kind", "")) != "door":
 		return failure("Alarm can be placed on a door in this room.")
 	if alert_mode not in ["audible", "mental"]: return failure("Choose an audible or mental Alarm.")
@@ -931,7 +972,7 @@ static func cast_alarm(state: Dictionary, id: String, alert_mode: String, charac
 
 
 static func purify_food_and_drink(state: Dictionary, id: String, character: Character) -> Dictionary:
-	var center_object := get_object(state, id)
+	var center_object := get_object(state, id, character)
 	if center_object.is_empty() or bool(center_object.get("removed", false)):
 		return failure("That food or drink is no longer here.")
 	if character == null or not character.is_alive or CombatAction.is_incapacitated(character):
@@ -972,7 +1013,7 @@ static func purify_food_and_drink(state: Dictionary, id: String, character: Char
 
 
 static func create_or_destroy_water(state: Dictionary, id: String, mode: String, character: Character) -> Dictionary:
-	var container := get_object(state, id)
+	var container := get_object(state, id, character)
 	if container.is_empty() or bool(container.get("removed", false)):
 		return failure("That water container is no longer here.")
 	if mode not in ["create", "destroy"] or str(container.get("kind", "")) != "container" or not bool(container.get("food_or_drink", false)) or bool(container.get("magical", false)):
@@ -1129,7 +1170,7 @@ static func _party_character(party: Array, character_id: String) -> Character:
 
 
 static func eat_food(state: Dictionary, id: String, character: Character, pounds: float = 1.0) -> Dictionary:
-	var object := get_object(state, id)
+	var object := get_object(state, id, character)
 	if object.is_empty() or bool(object.get("removed", false)) or not bool(object.get("food_or_drink", false)) or bool(object.get("magical", false)):
 		return failure("Choose present, nonmagical food.")
 	if not object.get("contamination", []).is_empty(): return failure("The food is contaminated; purify it first.")
@@ -1144,7 +1185,7 @@ static func eat_food(state: Dictionary, id: String, character: Character, pounds
 
 
 static func drink_water(state: Dictionary, id: String, character: Character, gallons: float = 1.0) -> Dictionary:
-	var object := get_object(state, id)
+	var object := get_object(state, id, character)
 	if object.is_empty() or bool(object.get("removed", false)) or not bool(object.get("food_or_drink", false)) or bool(object.get("magical", false)):
 		return failure("Choose a present, nonmagical water source.")
 	var contamination: Array = object.get("contamination", [])
@@ -1193,7 +1234,7 @@ static func eat_goodberry(casters: Array, character: Character) -> Dictionary:
 
 
 static func prestidigitation(state: Dictionary, id: String, mode: String, character: Character) -> Dictionary:
-	var object := get_object(state, id)
+	var object := get_object(state, id, character)
 	if object.is_empty() or bool(object.get("removed", false)) or bool(object.get("magical", false)):
 		return failure("Choose a present, nonmagical object.")
 	if mode not in ["clean", "soil", "warm", "cool"]:

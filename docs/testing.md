@@ -3,6 +3,84 @@
 The supported engine baseline is Godot 4.7.x on Windows. Provide a portable
 executable through `GODOT_BIN` or pass its path to the PowerShell runner.
 
+`spatial_trigger_flow` uses loaded neutral declarations through room casts and
+source-end choices, room movement/End Turn, combat movement clicks, actual AI,
+tactical movement and teleport arrival. Its paired `spatial_trigger_reload`
+checks the allowed checkpoint in a fresh process. `SpatialTriggerFlow.logic`
+runs in `effects` for malformed state, pending/duplicate delivery, expiry and
+actor/source intervals across room/encounter transitions. The demonstrated
+boundary and remaining limits live in
+[S-184](planning/vocabulary-slices.md#spatial-trigger-scopes).
+
+`quick_wins_flow` covers S-242 creation method/assignment controls and seat
+reset, S-233 Origin and improvement parameters, S-250 actual ranged targeting,
+and S-252 room armor time and combat Shield Action controls. Its automatic
+`quick_wins_reload` probe restores both full-party and player-only checkpoints
+in a fresh process and completes an S-272 50/60 source with an untrimmed
+20-damage hit. `QuickWinsChecks` (classes group) covers prerequisite/save
+agreement, Heavy thresholds, save/resistance accounting and ordered-source
+ending with multiple damage packets.
+
+`PerceptionChecks` (combat group) and `perception_flow` cover observer-specific
+sight versus known locations, loaded/renamed sensory consumers, source cleanup,
+Hidden target refusal and actual weapon/spell controls. The native portable
+light, darkness/fog, sight-spell and attack-choice scenarios protect reused
+paths. Their exact S-190/S-191 acceptance boundary and exclusions live in the
+[slice registry](planning/vocabulary-slices.md#observer-senses-and-concealment).
+
+`condition_recovery_flow` exercises actual condition-aware HUD turns, AI under
+both behaviours, source-specific charm/fear, Hidden versus known Invisible,
+stale monster choices, automatic save failures, concentration recipients/zones/
+light, both Hide branches, camp ambush and zone/tether escape/rescue checks.
+Its automatically paired `condition_recovery_reload` restores source-owned
+sleep/Prone and the exact room equipment drop from an allowed entrance checkpoint
+in a fresh process. It also verifies that an active-room save is still refused.
+The [recovery boundary](planning/vocabulary-slices.md#srd-condition-and-roll-host-spine)
+records its exact verified boundary.
+`crown_condition_finish_flow` additionally covers late-created/rolled-group
+initiative, retained monster concentration/replacement/expiry, aggregated damage
+and a held real Portent chooser, actual Open Hand hit choices/Push retargeting,
+stale choices, and renamed loaded JSON. Its automatically paired
+`crown_condition_finish_reload` restores acquired Open Hand and remaining Focus
+from an allowed checkpoint without orphaned monster sources. Level-17 Quivering
+Palm remains outside Crown and is not claimed by these checks.
+
+`ordinary_action_flow` covers the S-237 Actions chooser, costs and stale targeting,
+Dodge timing/sight/saves/permanent loss, ordinary and renamed feature Hide,
+captured creature discovery, attack Help, Medicine stabilization and the actual
+owned-proficiency Help chooser, matching check consumption and helper expiry.
+`ready_action_flow` exercises completed movement triggers, owning Reaction
+prompts, ignored/cancelled responses, single attacks with loaded upgrades,
+off-turn movement, renamed shared spells, native projectiles, cast-now payments,
+consumed materials, cancelled spell retry, the cantrip source/payment chooser,
+native point markers, concentration
+loss, restricted extra Actions and teardown. Interrupted actor budgets must
+remain unchanged. Its `OrdinaryWorldActionFlow` continuation covers paid item
+and renamed feature triggers, paid-parent chooser/forfeiture timing, refused-item
+silence, actual object/operation/item choices, door geometry, exact transfers,
+failed tool attempts and matching Help,
+cancelled/stale budgets, moved/replaced/removed objects, altitude/plane limits,
+combat-only origins without new party-map entries, and cancelled/completed
+readied Utilize of an object sharing a creature's cell. These add no save
+checkpoint or new durable state. Their exact partial boundary and follow-ups live
+in [S-237](planning/vocabulary-slices.md#ordinary-action-continuation).
+Its noise continuation also covers paid failed loud attempts, cancelled and
+missing-tool silence, invalid declarations, preserved independent Invisibility,
+Deafened/Blinded listeners, whisper exclusion, and actual readied door Open/Close
+responses that cannot change who heard the earlier sound. `PerceptionChecks`
+checks authored range boundaries, sound versus sight obstruction (including
+glass), plane isolation and malformed noise declarations.
+
+`world_search_flow` covers the room Search button and selected-space click,
+cancellation/character changes, switching unpaid teleport/Search choices, real
+clock costs, actual object discovery/Take, per-observer selectors, and native
+fog/Darkness sight. Its automatically paired `world_search_reload` restores both
+full-party and player-only checkpoints in a fresh process, checks unchanged
+clock/exact copies and reopens actual observer-specific room controls. The
+world logic group includes `WorldSearchFlow.logic` for malformed/legacy discovery,
+wrong-space/range/plane/failure behavior, raw physical versus direct-target
+queries, forged chain identities, lighting and Blinded/Blindsight checks.
+
 ## Proportionate spell validation
 
 `cast_lifetime_flow` exercises cast-local duration/concentration changes on
@@ -238,7 +316,7 @@ The current integration scenario manifest is:
 | `item_lifecycle_controls_flow` | Actual room/combat exact-copy Bond/Release and Project/Dismiss controls, identical names, cancellation, stale ownership/attunement/form, occupied space, authored actions/charges/no-space policy, full-inventory return with nested contents and fresh-process checkpoint recovery |
 | `batch_052_hud_mode_controls_flow` | Production combat mode/upgrade popup controls, cancel/superseded/previous-turn answers, exact-copy suppression and safe save/load |
 | `character_creation` | Character-creation scene boot and legal choices |
-| `normal_creation_matrix` | Production main-menu player-count controls and character creation for one through four local players, including stable seat ownership and empty companion slots |
+| `normal_creation_matrix` | Production main-menu creation for one through four local players, stable seat ownership and empty companion slots; nine pinned class loadouts; Wizard spellbook/preparation and level-2 Paladin/Ranger style choices through the sheet; Artificer excluded from the picker |
 | `shop` | Shop scene, inventory, purchase, and sell wiring |
 | `save_load` | Save/load round trip and cleanup of the test slot |
 | `scripts/validate_crown_fresh_relaunch.ps1` | Separate-process Crown overworld safe-save recovery for party ownership, objective, cleared dungeon, reward ledger, and available state |
@@ -250,6 +328,14 @@ The current integration scenario manifest is:
 | `character_sheet` | Character sheet opens, renders sections, and closes |
 | `character_sheet_contexts` | The real Character Sheet button opens the correct character from overworld, dungeon, and combat HUDs |
 | `character_value_audit` | Representative race/class values survive initialization, level-up, save/load, runtime HP mutation, and Character Sheet rendering |
+
+The creation matrix pins supported loadouts rather than deriving expectations
+from the same class data it exercises. Its former 16 failures were obsolete
+expectations: Barbarian gear/AC (5), Wizard gear/unselected spell (3), Sorcerer
+gear (3), automatic Paladin style (1), Ranger gear/automatic style (3), and
+Artificer exposure (1). Wizard spells and Paladin/Ranger styles now require the
+actual sheet choices before their effects are asserted. This is bounded creation
+coverage, not an SRD audit of every class loadout or full integration acceptance.
 
 The logic runner verifies its registered check scripts and requires the
 `CHECK SCRIPT GATE` marker. Both logic and viewport harnesses count runtime

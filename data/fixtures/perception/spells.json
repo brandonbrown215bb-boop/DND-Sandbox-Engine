@@ -1,0 +1,78 @@
+[
+  {
+    "id": "fixture:sight_bolt",
+    "name": "Sight Bolt",
+    "execution": "shared",
+    "level": 0,
+    "casting_time": "action",
+    "range": 12,
+    "target": "single",
+    "attack_type": "ranged_spell",
+    "damage": "1",
+    "damage_type": "force",
+    "requires_target_sight": true,
+    "effects": [],
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "fixture:renamed_sight_bolt",
+    "name": "Renamed Sight Bolt",
+    "execution": "shared",
+    "level": 0,
+    "casting_time": "action",
+    "range": 12,
+    "target": "single",
+    "attack_type": "ranged_spell",
+    "damage": "1",
+    "damage_type": "force",
+    "requires_target_sight": true,
+    "effects": [],
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "fixture:known_bolt",
+    "name": "Known Bolt",
+    "execution": "shared",
+    "level": 0,
+    "casting_time": "action",
+    "range": 12,
+    "target": "single",
+    "attack_type": "ranged_spell",
+    "damage": "1",
+    "damage_type": "force",
+    "requires_target_sight": false,
+    "effects": [],
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "fixture:renamed_sight_burst",
+    "name": "Renamed Sight Burst",
+    "execution": "shared",
+    "level": 1,
+    "classes": [
+      "wizard"
+    ],
+    "casting_time": "action",
+    "range": 12,
+    "target": "area",
+    "attack_type": "none",
+    "requires_target_sight": true,
+    "damage": "1",
+    "damage_type": "force",
+    "save": "DEX",
+    "half_on_save": false,
+    "effects": [
+      {
+        "type": "area_selection",
+        "shape": "sphere",
+        "radius": 1
+      }
+    ]
+  }
+]

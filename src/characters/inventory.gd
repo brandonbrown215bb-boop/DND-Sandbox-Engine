@@ -458,6 +458,10 @@ func attune_instance(instance_id: String, character_id: String) -> Dictionary:
 	var item := DataLoader.get_item(str(record.get("definition_id", "")))
 	if not bool(item.get("requires_attunement", false)):
 		return {"success": false, "message": "This item does not require attunement."}
+	var wearer: Variant = owner_character_ref.get_ref() if owner_character_ref != null else null
+	var prerequisite_error := _attunement_prerequisite_error(item, wearer)
+	if not prerequisite_error.is_empty():
+		return {"success": false, "message": prerequisite_error}
 	var state: Dictionary = record.get("state", {})
 	if bool(state.get("degraded", false)) and state.get("magical", null) == false: # Review 072: a copy whose last charge ended all its magic is no longer a magic item.
 		return {"success": false, "message": "That copy has lost its magic."}
@@ -484,6 +488,26 @@ func attune_instance(instance_id: String, character_id: String) -> Dictionary:
 	copies.records[instance_id] = record
 	_sync_owned_features()
 	return {"success": true, "message": "Attunement takes 1 hour. %s is attuned." % item.get("name", "The item"), "seconds": 3600}
+
+
+static func _attunement_prerequisite_error(item: Dictionary, wearer: Variant) -> String:
+	var requirement: Variant = item.get("attunement_prerequisite", {})
+	if not requirement is Dictionary or requirement.is_empty():
+		return ""
+	if wearer == null or not wearer is Character:
+		return "The item's attunement prerequisite can't be checked for this wearer."
+	var class_levels: Dictionary = wearer.class_levels if wearer.class_levels is Dictionary and not wearer.class_levels.is_empty() else {wearer.class_id: 1}
+	var any_classes: Array = requirement.get("classes_any", [])
+	if not any_classes.is_empty() and not any_classes.any(func(class_id): return int(class_levels.get(str(class_id), 0)) > 0):
+		var names: Array[String] = []
+		for class_id in any_classes:
+			var name := str(DataLoader.get_character_class(str(class_id)).get("name", str(class_id).capitalize()))
+			if name not in names: names.append(name)
+		var choices := " or ".join(names) if names.size() < 2 else "%s, or %s" % [", ".join(names.slice(0, names.size() - 1)), names[-1]]
+		return "This item requires a %s to attune it." % choices if names.size() == 1 else "This item requires one of these classes: %s." % choices
+	if bool(requirement.get("spellcaster", false)) and str(wearer.get_spellcasting_feature_id()).is_empty():
+		return "This item can be attuned to only by a spellcaster."
+	return ""
 
 
 func unattune_instance(instance_id: String, character_id: String, break_curse: bool = false) -> Dictionary:
@@ -561,7 +585,7 @@ func recover_daily_charges() -> void:
 		if bool(state.get("degraded", false)):
 			continue
 		var maximum := int(item.get("maximum_charges", 0))
-		var amount := Dice.roll(int(recovery.get("maximum", 0)) - int(recovery.get("minimum", 0)) + 1) + int(recovery.get("minimum", 0)) - 1
+		var amount := Dice.parse_dice_string(str(recovery.expression)) if recovery.has("expression") else Dice.roll(int(recovery.get("maximum", 0)) - int(recovery.get("minimum", 0)) + 1) + int(recovery.get("minimum", 0)) - 1
 		state["charges"] = mini(maximum, int(state.get("charges", 0)) + amount)
 		record["state"] = state
 		copies.records[instance_id] = record
@@ -833,6 +857,46 @@ func equip_instance(slot: Slot, id: String) -> bool:
 	equipped[slot] = definition
 	_publish_equipment_change(definition, "equipped", id)
 	return true
+
+
+static func armor_change_seconds(item: Dictionary, donning: bool) -> int:
+	if str(item.get("type", "")) == "shield": return 6
+	if str(item.get("type", "")) != "armor": return 0
+	var armor_type := str(item.get("armor_type", "light"))
+	if donning:
+		return {"light": 60, "medium": 300, "heavy": 600}.get(armor_type, 0)
+	return {"light": 60, "medium": 60, "heavy": 300}.get(armor_type, 0)
+
+
+func equipment_control_equip(slot: Slot, id: String, combat_state = null) -> Dictionary:
+	var record := get_instance(id)
+	var item := DataLoader.get_item(str(record.get("definition_id", "")))
+	if item.is_empty() or not can_equip(slot, str(record.get("definition_id", ""))): return {"success": false, "seconds": 0, "message": "That item cannot use this slot."}
+	var is_combat := combat_state != null
+	var armor_type := str(item.get("armor_type", ""))
+	if is_combat and str(item.get("type", "")) == "armor" and armor_type in ["medium", "heavy"]:
+		return {"success": false, "seconds": 0, "message": "You cannot don Medium or Heavy armor during combat."}
+	var is_shield := str(item.get("type", "")) == "shield"
+	if is_shield and is_combat and not combat_state._can_spend_action_cost("action"):
+		return {"success": false, "seconds": 0, "message": "No Action is available to don a Shield."}
+	var previous := DataLoader.get_item(get_equipped(slot))
+	var seconds := (0 if is_shield and is_combat else armor_change_seconds(previous, false) + armor_change_seconds(item, true))
+	if not equip_instance(slot, id): return {"success": false, "seconds": 0, "message": "The equipment changed before it could be donned."}
+	if is_shield and is_combat: combat_state._spend_action_cost("action")
+	return {"success": true, "seconds": seconds, "message": "Equipped %s%s." % [str(item.get("name", "item")), " (Action spent)" if is_shield and is_combat else " (%d seconds)" % seconds if seconds > 0 else ""]}
+
+
+func equipment_control_unequip(slot: Slot, combat_state = null) -> Dictionary:
+	var item := DataLoader.get_item(get_equipped(slot))
+	if item.is_empty(): return {"success": false, "seconds": 0, "message": "Nothing is equipped in that slot."}
+	var is_combat := combat_state != null
+	var is_shield := str(item.get("type", "")) == "shield"
+	if is_shield and is_combat and not combat_state._can_spend_action_cost("action"):
+		return {"success": false, "seconds": 0, "message": "No Action is available to doff a Shield."}
+	var seconds := 0 if is_shield and is_combat else armor_change_seconds(item, false)
+	if unequip(slot).is_empty(): return {"success": false, "seconds": 0, "message": "That item could not be removed; equipment unchanged."}
+	if is_shield and is_combat: combat_state._spend_action_cost("action")
+	return {"success": true, "seconds": seconds, "message": "Unequipped %s%s." % [str(item.get("name", "item")), " (Action spent)" if is_shield and is_combat else " (%d seconds)" % seconds if seconds > 0 else ""]}
 
 
 func consume_instance(id: String, target: Character) -> Dictionary:
