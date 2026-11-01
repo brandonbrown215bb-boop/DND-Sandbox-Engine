@@ -15,13 +15,13 @@
   "skill_choices": {
     "pick": 2,
     "from": [
-      "Athletics",
-      "Acrobatics",
-      "Insight",
-      "Perception",
-      "History",
       "Arcana",
-      "Stealth"
+      "History",
+      "Insight",
+      "Investigation",
+      "Medicine",
+      "Nature",
+      "Religion"
     ]
   },
   "starting_equipment": [

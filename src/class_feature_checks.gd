@@ -24,6 +24,7 @@ static func run(check: Callable) -> void:
 	_shared_rules_regressions(check)
 	_rogue_rules(check)
 	_warlock_rules(check)
+	_crown_class_metadata(check)
 
 
 static func _weapon_attack_numeric_bonus(check: Callable) -> void:
@@ -2201,3 +2202,29 @@ static func _shared_combat_use_limits(check: Callable) -> void:
 	CombatAction.start_bounded_owner_turn_interval(interval_actor)
 	var next_owner_interval := CombatAction.resolve_weapon_damage_riders(interval_actor, interval_target, {}, {"type": "weapon", "range": 1})
 	check.call(next_owner_interval.size() == 2 and int(ResourcePoolRules.availability(interval_actor, interval_source).get("current", -1)) == 1 and int(ResourcePoolRules.availability(interval_actor, independent_source).get("current", -1)) == 0, "The owner's next turn start resets both exact-source interval locks while preserving their separate spent quantities")
+
+
+## Crown G1: SRD 5.2.1 Core Traits metadata and level-3 subclass declarations for classes without subclass records.
+static func _crown_class_metadata(check: Callable) -> void:
+	check.call(DataLoader.get_character_class("wizard")["skill_choices"]["from"] == ["Arcana", "History", "Insight", "Investigation", "Medicine", "Nature", "Religion"], "G1: Wizard skill choices match SRD 5.2.1 Core Traits")
+	check.call(DataLoader.get_character_class("rogue")["skill_choices"]["from"] == ["Acrobatics", "Athletics", "Deception", "Insight", "Intimidation", "Investigation", "Perception", "Persuasion", "Sleight of Hand", "Stealth"], "G1: Rogue skill choices match SRD 5.2.1 Core Traits")
+	check.call(DataLoader.get_character_class("cleric")["armor_proficiencies"] == ["light", "medium", "shields"], "G1: Cleric armor training uses the shared shields token")
+	for id in ["barbarian", "bard", "cleric"]:
+		var data := DataLoader.get_character_class(id)
+		check.call(data.has("subclass_level") and int(data["subclass_level"]) == 3, "G1: %s declares its level-3 subclass choice" % id)
+		check.call(DataLoader.get_subclasses_for_class(id).is_empty(), "G1: %s still has no loaded subclass records" % id)
+		var c := _character(id, 3)
+		check.call(c.level == 3 and c.subclass_id.is_empty(), "G1: level-3 %s reaches level 3 with no subclass and no crash" % id)
+		var before := c.to_dict().duplicate(true)
+		check.call(not ClassProgression.choose_subclass(c, "champion") and c.to_dict() == before, "G1: level-3 %s cleanly refuses another class's subclass without changing state" % id)
+		var panel := ClassTraining.new()
+		panel.configure(c, func(): pass)
+		var offers_subclass := false
+		var stack: Array[Node] = [panel]
+		while not stack.is_empty():
+			var node: Node = stack.pop_back()
+			if node is Button and (node as Button).text == "Choose subclass":
+				offers_subclass = true
+			stack.append_array(node.get_children())
+		check.call(not offers_subclass and c.to_dict() == before, "G1: level-3 %s progression panel shows no empty subclass picker" % id)
+		panel.free()

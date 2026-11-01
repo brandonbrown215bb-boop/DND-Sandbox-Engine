@@ -4,6 +4,7 @@
   "description": "Bard class. Source: PHB.",
   "hit_die": "d8",
   "primary_ability": "CHA",
+  "subclass_level": 3,
   "saving_throw_proficiencies": [
     "DEX",
     "CHA"
