@@ -224,6 +224,7 @@ func _start_player_creation() -> void:
 	_ability_generation_results.clear()
 	_ability_generation_assignments.clear()
 	selected_origin_feat = ""
+	origin_feat_picks = []
 	if _generation_assignment_row != null: _generation_assignment_row.hide()
 	selected_equipment.clear()
 	barbarian_starting_equipment_choice = "equipment"
@@ -565,6 +566,11 @@ func _class_choices() -> Dictionary:
 
 
 func _creation_choice_error() -> String:
+	var error := _class_choice_error()
+	return error if not error.is_empty() else _origin_feat_error()
+
+
+func _class_choice_error() -> String:
 	if PermanentProgressionRules.enabled(selected_class_id):
 		var error := PermanentProgressionRules.definition_error(DataLoader.get_character_class(selected_class_id))
 		if not error.is_empty(): return error
@@ -609,29 +615,98 @@ func _instrument_names(ids: Array) -> Array[String]:
 
 
 ## Batch 051: Origin feat (SRD 5.2.1 p.83), offered when Origin feats are loaded.
+## G4: no feat is preselected (there is no background step yet), and a feat with
+## proficiency_choices (Skilled, p.87) shows one picker per pick.
 var selected_origin_feat := ""
+var origin_feat_picks: Array = []
+
+func _origin_feat_probe() -> Character:
+	# Reviewer: build the probe exactly as Confirm builds the character, so every
+	# creation grant (e.g. the Fighter's Athletics/Perception) is already held.
+	var probe := Character.new()
+	if selected_stats == null or selected_race_id.is_empty() or selected_class_id.is_empty() or (PermanentProgressionRules.enabled(selected_class_id) and not _class_choice_error().is_empty()):
+		probe.level = 1
+		probe.race_id = selected_race_id
+		probe.ability_scores = selected_stats.duplicate_scores() if selected_stats != null else AbilityScores.new()
+		for skill in DataLoader.get_race(selected_race_id).get("proficiencies", []): probe.skill_proficiencies.append(str(skill))
+		return probe
+	probe.initialize(selected_name, selected_race_id, selected_class_id, selected_stats.duplicate_scores(), barbarian_starting_equipment_choice if selected_class_id == "barbarian" else str(_creation_choices()["equipment"]) if selected_class_id in ["bard", "cleric"] else "equipment", _creation_choices() if ClassProgression.uses_creation_choices(selected_class_id) else {})
+	if selected_class_id == "cleric": ClassProgression.choose_feature_option(probe, "cleric_divine_order", cleric_divine_order)
+	return probe
+
+func _origin_feat_pick_dict() -> Dictionary:
+	var choice: Dictionary = DataLoader.get_feat(str(FeatRules.selection(selected_origin_feat).feat_id)).get("proficiency_choices", {}) if not selected_origin_feat.is_empty() else {}
+	var picks := {"skills": [], "tools": []}
+	for value in origin_feat_picks:
+		if str(value) in choice.get("skills", []): picks.skills.append(str(value))
+		else: picks.tools.append(str(value))
+	if choice.is_empty(): return {}
+	return picks
+
+func _origin_feat_error() -> String:
+	if selected_origin_feat.is_empty(): return ""
+	var choice: Dictionary = DataLoader.get_feat(str(FeatRules.selection(selected_origin_feat).feat_id)).get("proficiency_choices", {})
+	if choice.is_empty(): return ""
+	if origin_feat_picks.size() != int(choice.pick) or origin_feat_picks.has(""): return "Choose %d skills or tools for your Origin feat." % int(choice.pick)
+	return FeatRules.proficiency_picks_error(_origin_feat_probe(), str(FeatRules.selection(selected_origin_feat).feat_id), _origin_feat_pick_dict())
 
 func _build_origin_feat_choice() -> void:
-	var probe := Character.new()
-	probe.level = 1
-	probe.race_id = selected_race_id
-	probe.ability_scores = selected_stats.duplicate_scores() if selected_stats != null else AbilityScores.new()
+	var probe := _origin_feat_probe()
 	var options := FeatRules.options(probe, "origin")
 	if options.is_empty():
 		selected_origin_feat = ""
+		origin_feat_picks = []
 		return
-	if selected_origin_feat not in options: selected_origin_feat = options[0]
+	if selected_origin_feat not in options:
+		selected_origin_feat = ""
+		origin_feat_picks = []
 	var heading := Label.new()
 	heading.text = "Choose your Origin feat"
 	equip_list.add_child(heading)
 	var picker := OptionButton.new()
 	picker.name = "OriginFeatPicker"
+	picker.add_item("No Origin feat")
+	picker.set_item_metadata(0, "")
 	for id in options:
 		picker.add_item(FeatRules.label(id))
 		picker.set_item_metadata(picker.item_count - 1, id)
 		if id == selected_origin_feat: picker.select(picker.item_count - 1)
-	picker.item_selected.connect(func(index: int): selected_origin_feat = str(picker.get_item_metadata(index)))
+	picker.item_selected.connect(func(index: int):
+		var chosen := str(picker.get_item_metadata(index))
+		if chosen != selected_origin_feat: origin_feat_picks = []
+		selected_origin_feat = chosen
+		_build_equipment_ui()
+		_check_next_step_validity()
+	)
 	equip_list.add_child(picker)
+	var choice: Dictionary = DataLoader.get_feat(str(FeatRules.selection(selected_origin_feat).feat_id)).get("proficiency_choices", {}) if not selected_origin_feat.is_empty() else {}
+	if choice.is_empty(): return
+	if origin_feat_picks.size() != int(choice.pick):
+		origin_feat_picks = []
+		for _i in int(choice.pick): origin_feat_picks.append("")
+	var status := Label.new()
+	status.name = "OriginFeatProficiencyStatus"
+	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	status.text = _origin_feat_error()
+	equip_list.add_child(status)
+	for index in int(choice.pick):
+		var selector := OptionButton.new()
+		selector.name = "OriginFeatProficiency%d" % (index + 1)
+		selector.add_item("Choose a skill or tool")
+		selector.set_item_metadata(0, "")
+		for value in choice.get("skills", []) + choice.get("tools", []):
+			var is_skill: bool = value in choice.get("skills", [])
+			selector.add_item(str(value) if is_skill else str(DataLoader.get_item(str(value)).get("name", value)))
+			var item_index := selector.item_count - 1
+			selector.set_item_metadata(item_index, str(value))
+			if str(value) in (probe.skill_proficiencies if is_skill else probe.tool_proficiencies): selector.set_item_disabled(item_index, true)
+			if origin_feat_picks[index] == str(value): selector.select(item_index)
+		selector.item_selected.connect(func(item_index: int):
+			origin_feat_picks[index] = str(selector.get_item_metadata(item_index))
+			status.text = _origin_feat_error()
+			_check_next_step_validity()
+		)
+		equip_list.add_child(selector)
 
 
 func _build_class_creation_choices() -> void:
@@ -719,6 +794,7 @@ func _build_class_creation_choices() -> void:
 func _build_equipment_ui() -> void:
 	# Clear list
 	for child in equip_list.get_children():
+		equip_list.remove_child(child) # G4: rebuilt pickers keep their names.
 		child.queue_free()
 	if PermanentProgressionRules.enabled(selected_class_id) and not _creation_choice_error().is_empty():
 		var status := Label.new()
@@ -863,7 +939,7 @@ func _confirm_and_save_character() -> void:
 	
 	if selected_class_id == "cleric":
 		ClassProgression.choose_feature_option(character, "cleric_divine_order", cleric_divine_order)
-	if not selected_origin_feat.is_empty() and not FeatRules.choose_origin(character, selected_origin_feat).success:
+	if not selected_origin_feat.is_empty() and not FeatRules.choose_origin(character, selected_origin_feat, _origin_feat_pick_dict()).success:
 		current_step = CreationStep.EQUIPMENT # Refused before the character joins the party.
 		_update_step_ui()
 		return

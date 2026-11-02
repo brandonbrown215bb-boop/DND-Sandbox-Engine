@@ -39,6 +39,33 @@ choices from the chosen-source rule on every later save. Limits: SRD option-A it
 Monk's chosen tool) are not added to inventory, full equipment packs are not
 offered, and classes without the flag keep their earlier creation.
 
+### Feat proficiency choices (Skilled, Crown G4)
+
+A feat may declare `"proficiency_choices": {"pick": N, "skills": [...],
+"tools": [...]}` (pick 1-20; skills from the loader's skill list; tools must be
+items of type `tool`; entries distinct; no other keys). Any combination of
+exactly `pick` distinct entries is legal. Core `data/core/feats/skilled.json`
+is SRD 5.2.1 p.87 Skilled: an Origin feat, `repeatable`, `features: []`,
+pick 3 from all 18 skills and the 33 SRD Artisan's Tools, Other Tools and
+Musical Instruments that have item records (Gaming Sets have none yet).
+
+Each acquisition is its own instance: `origin` for the creation Origin feat, or
+the Ability Score Improvement feature id it replaced. `FeatRules.choose_origin`
+and `choose_level_feat` take the picks (`{"skills": [], "tools": []}`) and
+refuse, all-or-nothing and before anything is spent, missing/short/oversized,
+duplicate, off-list or already-held picks (from any source). Skills are added
+once; tools go through `grant_tool_proficiency` with source
+`feat:<feat_id>@<instance>`. `Character.feat_proficiency_choices` records
+`{instance: {"feat_id", "skills", "tools"}}`; restore replays nothing. Removing
+another source keeps a skill a feat instance owns. Save preflight refuses a
+chosen proficiency-choice feat without its record, a record for an instance that
+does not hold that feat, wrong counts or off-list picks, a skill or tool picked
+by two instances, a pick that is not held or a tool without its instance source,
+and any `feat:` tool source no record owns. Saves from before G4 (no key) load
+as `{}`. Creation preselects no Origin feat (there is no background step yet)
+and shows `OriginFeatProficiency1..N`; the level-up sheet shows
+`LevelFeatProficiency1..N` beside `LevelFeatPicker`.
+
 ## Feature choices
 
 `ClassProgression` owns acquisition and replacement of passive `feature_choice`

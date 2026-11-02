@@ -273,6 +273,7 @@ if ($runIntegration) {
         batch_082_interruption_boundary_flow = "batch_082_interruption_boundary_reload"
         batch_086_find_steed_arrival_flow = "batch_086_find_steed_arrival_reload"
         class_proficiency_creation_flow = "class_proficiency_creation_reload"
+        skilled_feat_creation_flow = "skilled_feat_creation_reload"
     }
     $scenarios += @($scenarioReloads.Keys)
     $scenarios += "batch_066_travel_placement_flow", "batch_076_footprint_terrain_flow", "batch_077_per_swing_choice_flow", "batch_078_declared_capacity_flow"
