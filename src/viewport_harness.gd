@@ -5880,6 +5880,11 @@ func test_combat() -> void:
 		var pchar: Character = p0["character"]
 		combat.current_player_idx = 0
 		combat.active_character = pchar
+		# Clicks are honoured only for the real active combatant, so make
+		# Alice's tracker entry active rather than forging active_character.
+		for entry in combat.tracker.combatants:
+			if is_same(entry.get("entity"), pchar): combat.active_combatant = entry
+		_assert(is_same(combat.active_combatant.get("entity"), pchar), "range check runs on Alice's own turn")
 		combat.turn_budget.has_acted_this_turn = false
 		combat.pending_action_type = "attack"
 		p0["hex_position"] = Vector2i.ZERO
