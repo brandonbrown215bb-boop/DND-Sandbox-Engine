@@ -17,6 +17,19 @@ static func run(h: Node) -> void:
 	PlayerManager.add_player("Skilled seat")
 	GameManager.current_state = GameManager.GameState.CHARACTER_CREATION
 	var creation: Node = await h._spawn_scene("res://scenes/ui/character_creation.tscn", 0.2)
+	# Reviewer: the Fighter's automatic Athletics is held before Confirm, so the
+	# creation picker must refuse it instead of bouncing Confirm silently.
+	creation.selected_name = "G4 Skilled Fighter"
+	creation.selected_race_id = "human"
+	creation.selected_class_id = "fighter"
+	creation.current_step = creation.CreationStep.EQUIPMENT
+	creation.selected_origin_feat = "skilled"
+	creation.origin_feat_picks = ["Athletics", "Insight", "Stealth"]
+	creation._update_step_ui()
+	await h.get_tree().process_frame
+	h._assert(not creation._origin_feat_error().is_empty() and creation.btn_next.disabled, "G4 a Fighter cannot pick its automatic Athletics for Skilled at creation")
+	creation.selected_origin_feat = ""
+	creation.origin_feat_picks = []
 	creation.selected_name = "G4 Skilled Monk"
 	creation.selected_race_id = "human"
 	creation.selected_class_id = "monk"

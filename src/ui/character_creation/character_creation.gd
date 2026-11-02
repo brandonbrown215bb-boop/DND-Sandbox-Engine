@@ -621,19 +621,17 @@ var selected_origin_feat := ""
 var origin_feat_picks: Array = []
 
 func _origin_feat_probe() -> Character:
+	# Reviewer: build the probe exactly as Confirm builds the character, so every
+	# creation grant (e.g. the Fighter's Athletics/Perception) is already held.
 	var probe := Character.new()
-	probe.level = 1
-	probe.race_id = selected_race_id
-	probe.ability_scores = selected_stats.duplicate_scores() if selected_stats != null else AbilityScores.new()
-	for skill in DataLoader.get_race(selected_race_id).get("proficiencies", []): probe.skill_proficiencies.append(str(skill))
-	var data := DataLoader.get_character_class(selected_class_id)
-	for tool in data.get("tool_proficiency_grants", []): probe.tool_proficiencies.append(str(tool))
-	if ClassProgression.uses_creation_choices(selected_class_id):
-		var choices := _creation_choices()
-		for skill in choices.get("skills", []):
-			if not str(skill).is_empty(): probe.skill_proficiencies.append(str(skill))
-		for tool in choices.get("tools", []):
-			if not str(tool).is_empty(): probe.tool_proficiencies.append(str(tool))
+	if selected_stats == null or selected_race_id.is_empty() or selected_class_id.is_empty() or (PermanentProgressionRules.enabled(selected_class_id) and not _class_choice_error().is_empty()):
+		probe.level = 1
+		probe.race_id = selected_race_id
+		probe.ability_scores = selected_stats.duplicate_scores() if selected_stats != null else AbilityScores.new()
+		for skill in DataLoader.get_race(selected_race_id).get("proficiencies", []): probe.skill_proficiencies.append(str(skill))
+		return probe
+	probe.initialize(selected_name, selected_race_id, selected_class_id, selected_stats.duplicate_scores(), barbarian_starting_equipment_choice if selected_class_id == "barbarian" else str(_creation_choices()["equipment"]) if selected_class_id in ["bard", "cleric"] else "equipment", _creation_choices() if ClassProgression.uses_creation_choices(selected_class_id) else {})
+	if selected_class_id == "cleric": ClassProgression.choose_feature_option(probe, "cleric_divine_order", cleric_divine_order)
 	return probe
 
 func _origin_feat_pick_dict() -> Dictionary:
