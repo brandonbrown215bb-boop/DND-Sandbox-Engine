@@ -35,12 +35,14 @@ static func run(check: Callable) -> void:
 	_neutral(check)
 	_fighter_training(check)
 	_held_tool(check)
+	_gaming_sets(check)
+	_missing_feat_tool(check)
 
 static func _definition(check: Callable) -> void:
 	var feat := DataLoader.get_feat(SKILLED)
 	var choice: Dictionary = feat.get("proficiency_choices", {})
 	var tools_real: bool = choice.get("tools", []).all(func(t): return DataLoader.get_item(str(t)).get("type", "") == "tool")
-	check.call(feat.get("category", "") == "origin" and bool(feat.get("repeatable", false)) and feat.get("features", [1]).is_empty() and int(choice.get("pick", 0)) == 3 and choice.skills.size() == DataLoader.VALID_SKILLS.size() and choice.tools.size() == 33 and tools_real, "G4 core Skilled is a repeatable Origin feat: 3 picks from all 18 skills and 33 SRD tool records")
+	check.call(feat.get("category", "") == "origin" and bool(feat.get("repeatable", false)) and feat.get("features", [1]).is_empty() and int(choice.get("pick", 0)) == 3 and choice.skills.size() == DataLoader.VALID_SKILLS.size() and choice.tools.size() == 37 and tools_real, "G4 core Skilled is a repeatable Origin feat: 3 picks from all 18 skills and 37 SRD tool records (incl. 4 Gaming Sets)")
 	var base := {"id": "g4p", "name": "P", "category": "origin", "repeatable": true, "features": []}
 	var bad := []
 	for pc in [{"pick": 0, "skills": ["Arcana"]}, {"pick": 2, "skills": ["Arcana"]}, {"pick": 1, "skills": ["Flying"]}, {"pick": 1, "skills": ["Arcana", "Arcana"]}, {"pick": 1, "skills": ["Arcana"], "extra": 1}, {"pick": 1, "tools": [3]}, "three"]:
@@ -162,3 +164,45 @@ static func _held_tool(check: Callable) -> void:
 	ClassProgression.grant_tool_proficiency(c, "flute", "background:g4_probe")
 	var refused := FeatRules.choose_origin(c, SKILLED, {"skills": _free_skills(c, 2), "tools": ["flute"]})
 	check.call(not refused.success and c.origin_feat.is_empty() and c.tool_proficiency_sources.get("flute", []) == ["background:g4_probe"], "G4 Skilled refuses a tool already held from another source")
+
+## PR B: SRD 5.2.1 Gaming Set variants (Other Tools) are ordinary tool picks.
+const GAMING_SETS := ["dice_set", "dragonchess_set", "playing_card_set", "three_dragon_ante_set"]
+
+static func _gaming_sets(check: Callable) -> void:
+	var tools: Array = DataLoader.get_feat(SKILLED).proficiency_choices.tools
+	check.call(GAMING_SETS.all(func(t): return t in tools and DataLoader.get_item(t).get("type", "") == "tool" and str(DataLoader.get_item(t).get("name", "")).begins_with("Gaming Set (") and not DataLoader.get_item(t).has("weight")), "Skilled offers all four SRD Gaming Set variants as tool records; SRD weight '—' stays unknown (no weight key)")
+	var c := fresh("gs_build")
+	var origin := FeatRules.choose_origin(c, SKILLED, {"skills": _free_skills(c, 1), "tools": ["dice_set", "dragonchess_set"]})
+	check.call(origin.success and c.tool_proficiencies.count("dice_set") == 1 and c.tool_proficiency_sources.get("dice_set", []) == ["feat:skilled@origin"] and c.inventory.count_item("dice_set") == 0 and CheckHelpRules.owns(c, "tool", "dice_set"), "Origin Skilled grants a Gaming Set once, owned by feat:skilled@origin, with no item")
+	while c.level < 4: c.level_up()
+	var pending := ClassProgression.pending_improvements(c)
+	var before := c.tool_proficiency_sources.duplicate(true)
+	var dup := [FeatRules.choose_level_feat(c, SKILLED, {"skills": _free_skills(c, 1), "tools": ["dice_set", "playing_card_set"]}), FeatRules.choose_level_feat(c, SKILLED, {"skills": _free_skills(c, 1), "tools": ["playing_card_set", "playing_card_set"]})]
+	check.call(dup.all(func(r): return not r.success) and c.tool_proficiency_sources == before and ClassProgression.pending_improvements(c) == pending, "A repeat Skilled refuses an already-held or doubled Gaming Set all-or-nothing")
+	var took := FeatRules.choose_level_feat(c, SKILLED, {"skills": [], "tools": ["playing_card_set", "three_dragon_ante_set", "lute"]})
+	var asi := str(pending[0]) if not pending.is_empty() else ""
+	check.call(took.success and c.tool_proficiency_sources.get("three_dragon_ante_set", []) == ["feat:skilled@" + asi] and GAMING_SETS.all(func(t): return c.tool_proficiencies.count(t) == 1), "The level-4 Skilled instance grants the other two Gaming Sets; all four held exactly once")
+	var dto: Dictionary = JSON.parse_string(JSON.stringify(c.to_dict()))
+	var back := Character.new()
+	back.from_dict(dto)
+	var twice := Character.new()
+	twice.from_dict(JSON.parse_string(JSON.stringify(back.to_dict())))
+	check.call(ClassProgression.saved_choices_error(dto).is_empty() and twice.tool_proficiencies == c.tool_proficiencies and twice.tool_proficiency_sources == c.tool_proficiency_sources and twice.feat_proficiency_choices == c.feat_proficiency_choices, "Gaming Set picks survive two save/reload round trips unchanged")
+	var stolen := dto.duplicate(true)
+	stolen.tool_proficiency_sources["dice_set"] = ["feat:skilled@" + asi]
+	check.call(not ClassProgression.saved_choices_error(stolen).is_empty(), "A save that moves a Gaming Set to the other Skilled instance is refused")
+
+## Reviewer G4 follow-up: the loader refuses a feat naming a missing or non-tool item.
+static func _missing_feat_tool(check: Callable) -> void:
+	var results := {}
+	for tool_id in ["fixture:no_such_tool", "rations", "dice_set"]:
+		var id := "fixture:g4_tool_probe"
+		DataLoader.feats[id] = {"id": id, "name": "Probe", "category": "origin", "features": [], "proficiency_choices": {"pick": 1, "tools": [tool_id]}}
+		var before := DataLoader._load_errors.size()
+		DataLoader._validate_cross_references()
+		var added: Array = DataLoader._load_errors.slice(before)
+		DataLoader._load_errors.resize(before)
+		DataLoader.feats.erase(id)
+		results[tool_id] = added.has("Feat '%s' references missing tool '%s'" % [id, tool_id])
+	check.call(not DataLoader.feats.has("fixture:g4_tool_probe"), "Loader tool probe leaves no probe feat behind")
+	check.call(results["fixture:no_such_tool"] and results["rations"] and not results["dice_set"], "Loader refuses a feat tool choice that is missing or not a tool, and accepts a Gaming Set: %s" % str(results))
