@@ -36,9 +36,22 @@ duplicated or stale class sources and chosen tools without their source;
 restore replays nothing. Saves without the key, or tools without a source,
 remain valid legacy grants: restore records a pre-G2 save's tools in
 `legacy_tool_proficiencies`, which is saved and exempts those retained creation
-choices from the chosen-source rule on every later save. Limits: SRD option-A items (Druid Herbalism Kit,
-Monk's chosen tool) are not added to inventory, full equipment packs are not
+choices from the chosen-source rule on every later save. Limits: full equipment packs are not
 offered, and classes without the flag keep their earlier creation.
+
+Class tool items (SRD 5.2.1 Starting Equipment, `srd.txt` 2500-2504 Druid,
+2972-2978 Monk): option A goes through the ordinary `starting_equipment` path.
+Druid lists `herbalism_kit` with `starting_gold` 9; Monk declares
+`starting_equipment_includes_tool_choice: true`, and the one generic
+`ClassProgression.creation_starting_equipment` adds one copy of each already
+validated `tools` choice (any class may use the declaration; no class or item
+ID branch). Both declare `starting_gold_alternative` 50 (option B), which gives
+no items. The item copy is inventory only; proficiency still comes from
+`tool_proficiency_sources`. Items are granted once at Confirm (`initialize`
+refuses a character whose class is already set) and are never re-added on
+restore, so older saves keep their inventory without retroactive kits. Not
+delivered: Druid Sickle, Druidic Focus (Quarterstaff), Explorer's Pack; Monk
+Explorer's Pack.
 
 PR C class skills (SRD 5.2.1 Core Traits; `srd.txt` lines): Barbarian 2 of 6
 (1735-1737), Fighter 2 of 9 (2844-2848), Paladin 2 of 6 (3177-3181), Ranger 3

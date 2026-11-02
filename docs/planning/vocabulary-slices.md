@@ -3468,8 +3468,14 @@ plus its fresh-process reload, `normal_creation_matrix`). All twelve SRD classes
 now offer their declared class skill picks; Fighter's picks and native training
 share the same two slots. The supported Windows `class_skill_selection_flow`
 runs both creation passes and a fresh-process reload for the seven newly opted-in
-classes. **Remaining limits:** option-A starting items for those tools and full
-equipment packs. Syntax lives in
+classes. Druid option A now grants one Herbalism Kit and 9 GP; Monk option A
+grants one copy of its selected tool and 11 GP through a generic class-data
+declaration. Both offer a 50 GP option B with no items. The
+`class_tool_items_flow` and fresh-process reload cover exact item copies,
+separate proficiency ownership, both checkpoint forms and old saves without
+retroactive grants. **Remaining limits:** full equipment packs, including Druid's
+Sickle, Quarterstaff focus and Explorer's Pack, and Monk's Explorer's Pack.
+Syntax lives in
 [progression choices](../mechanics/progression-choices.md#class-proficiency-choices-at-creation-crown-g2).
 
 ## Skilled Origin feat — Crown G4

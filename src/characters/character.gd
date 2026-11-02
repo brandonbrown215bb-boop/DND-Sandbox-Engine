@@ -1102,6 +1102,7 @@ func use_uncanny_metabolism() -> Dictionary:
 ## Initialize a character from race and class data.
 func initialize(p_name: String, p_race_id: String, p_class_id: String, scores: AbilityScores, starting_equipment_choice: String = "equipment", selected_creation_choices: Dictionary = {}) -> void:
 	if not permanent_progression.is_empty(): return # Creation is not a repeatable acquisition.
+	if not class_id.is_empty(): return # Confirmed creation (and its starting items) is granted once per character.
 	var managed := PermanentProgressionRules.enabled(p_class_id)
 	if managed:
 		var definition := DataLoader.get_character_class(p_class_id)
@@ -1185,13 +1186,13 @@ func initialize(p_name: String, p_race_id: String, p_class_id: String, scores: A
 		ClassProgression.grant_creation_tools(self, choices)
 
 	# Starting equipment
-	var starting_equipment: Array = [] if managed else class_data.get("starting_equipment", []).duplicate()
+	var starting_equipment: Array = [] if managed else ClassProgression.creation_starting_equipment(class_id, choices if not choices.is_empty() else {"equipment": "equipment"})
 	if not managed and class_id == "bard":
 		starting_equipment.append(str(choices.get("instrument", "lute")))
 	if not managed and class_id == "barbarian" and starting_equipment_choice == "gold":
 		inventory.gold = 75
-	elif not managed and class_id in ["bard", "cleric"] and starting_equipment_choice == "gold":
-		inventory.gold = int(class_data.get("starting_gold_alternative", 90))
+	elif not managed and not choices.is_empty() and starting_equipment_choice == "gold" and class_data.has("starting_gold_alternative"):
+		inventory.gold = int(class_data["starting_gold_alternative"])
 	else:
 		inventory.add_starting_equipment(starting_equipment)
 		inventory.gold = 0 if managed else int(class_data.get("starting_gold", 0))

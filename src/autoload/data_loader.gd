@@ -663,6 +663,8 @@ func _validate_semantics(data: Dictionary, content_type: String, source: String)
 				tool_error = "tool_choices must declare pick and from"
 			elif int(choice.pick) < 1 or int(choice.pick) > choice.from.size() or choice.from.any(func(id): return not id is String or id.is_empty() or id in grants) or choice.from.size() != _unique_count(choice.from):
 				tool_error = "tool_choices must pick from distinct tool ids not already granted"
+		if tool_error.is_empty() and data.has("starting_equipment_includes_tool_choice") and (not data["starting_equipment_includes_tool_choice"] is bool or (data["starting_equipment_includes_tool_choice"] and not data.has("tool_choices"))):
+			tool_error = "starting_equipment_includes_tool_choice must be a boolean and requires tool_choices"
 		if not tool_error.is_empty():
 			_load_errors.append("%s in %s" % [tool_error, source])
 			valid = false

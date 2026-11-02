@@ -1,0 +1,2356 @@
+{
+	"active_dungeon_state": {},
+	"active_player_index": 0,
+	"activity_history": {
+		"next_sequence": 1,
+		"records": [],
+		"schema_version": 1
+	},
+	"campaign_id": "the_lost_crown",
+	"campaign_ledger": {
+		"animal_messenger_deliveries": [],
+		"campaign_completed": false,
+		"campaign_elapsed_seconds": 0,
+		"claimed_rewards": [],
+		"cleared_dungeons": [],
+		"completed_milestones": [],
+		"created_creatures": [],
+		"dismissed_companions": [],
+		"dungeon_snapshots": {},
+		"next_animal_messenger_id": 1,
+		"next_created_creature_id": 1,
+		"recruited_companions": [],
+		"visited_overworld_locations": []
+	},
+	"current_round": 1,
+	"current_state": 2,
+	"defeated_monsters": [],
+	"game_version": "crown-2024-partial",
+	"party": {
+		"characters": {
+			"aldric_cleric": {
+				"ability_scores": {
+					"CHA": 10,
+					"CON": 14,
+					"DEX": 10,
+					"INT": 10,
+					"STR": 12,
+					"WIS": 16
+				},
+				"armor_proficiencies": [
+					"light",
+					"medium",
+					"shields"
+				],
+				"aura_entry_receipts": {},
+				"aura_protection_selections": {},
+				"barbarian_relentless_rage_enabled": true,
+				"base_ac": 15,
+				"body_death_serial": 0,
+				"body_missing_parts": [],
+				"campaign_modifier_cooldowns": [],
+				"captured_grants": [],
+				"character_id": "aldric_cleric",
+				"class_id": "cleric",
+				"class_levels": {},
+				"cleric_cantrip_replacement_available": false,
+				"cleric_preparation_free_change": false,
+				"cleric_spells_trained": false,
+				"condition_sources": {},
+				"conditions": {},
+				"containment": {},
+				"corpse_state": {},
+				"creation_choices": {
+					"equipment": "equipment",
+					"instrument": "lute",
+					"skills": [
+						"History",
+						"Insight"
+					],
+					"tools": []
+				},
+				"crit_range": 20,
+				"current_hp": 10,
+				"damage_wards": {
+					"pools": {},
+					"version": 1
+				},
+				"darkvision": true,
+				"darkvision_feet": 120,
+				"days_without_food": 0,
+				"death_save_failures": 0,
+				"death_save_successes": 0,
+				"disintegrated": false,
+				"exclusive_bonds": {},
+				"exhaustion_level": 0,
+				"exhaustion_recovery_blockers": [],
+				"extra_attacks": 0,
+				"feat_proficiency_choices": {},
+				"feature_choices": {
+					"cleric_spellcasting": [
+						"guidance",
+						"sacred_flame",
+						"bless",
+						"cure_wounds",
+						"guiding_bolt",
+						"shield_of_faith"
+					]
+				},
+				"feature_modes": {},
+				"feature_uses": {},
+				"fiendish_resilience_type": "",
+				"fighter_training": {},
+				"food_eaten_today_pounds": 0.0,
+				"grant_transfer_serial": 0,
+				"heroic_inspiration": false,
+				"hydration_until_seconds": 0,
+				"inventory": {
+					"backpack": [
+						"holy_symbol",
+						"priests_pack"
+					],
+					"copies": {
+						"backpack": [
+							"bag_1793648711.99243_-9223370794602591574:4",
+							"bag_1793648711.99243_-9223370794602591574:5"
+						],
+						"equipped": {
+							"BODY": "bag_1793648711.99243_-9223370794602591574:1",
+							"SHIELD": "bag_1793648711.99243_-9223370794602591574:2",
+							"WEAPON": "bag_1793648711.99243_-9223370794602591574:3"
+						},
+						"inventory_id": "bag_1793648711.99243_-9223370794602591574",
+						"next_id": 6,
+						"records": {
+							"bag_1793648711.99243_-9223370794602591574:1": {
+								"definition_id": "chain_shirt",
+								"instance_id": "bag_1793648711.99243_-9223370794602591574:1",
+								"state": {}
+							},
+							"bag_1793648711.99243_-9223370794602591574:2": {
+								"definition_id": "shield",
+								"instance_id": "bag_1793648711.99243_-9223370794602591574:2",
+								"state": {}
+							},
+							"bag_1793648711.99243_-9223370794602591574:3": {
+								"definition_id": "mace",
+								"instance_id": "bag_1793648711.99243_-9223370794602591574:3",
+								"state": {}
+							},
+							"bag_1793648711.99243_-9223370794602591574:4": {
+								"definition_id": "holy_symbol",
+								"instance_id": "bag_1793648711.99243_-9223370794602591574:4",
+								"state": {}
+							},
+							"bag_1793648711.99243_-9223370794602591574:5": {
+								"definition_id": "priests_pack",
+								"instance_id": "bag_1793648711.99243_-9223370794602591574:5",
+								"state": {}
+							}
+						}
+					},
+					"equipped": {
+						"BODY": "chain_shirt",
+						"SHIELD": "shield",
+						"WEAPON": "mace"
+					},
+					"gold": 7
+				},
+				"is_alive": true,
+				"is_stable": false,
+				"item_curses": {},
+				"item_projections": {},
+				"known_spells": [
+					"guidance",
+					"sacred_flame",
+					"bless",
+					"cure_wounds",
+					"guiding_bolt",
+					"shield_of_faith"
+				],
+				"legacy_tool_proficiencies": [],
+				"level": 1,
+				"linked_temporary_hp": {},
+				"max_hp": 10,
+				"max_hp_sources": {},
+				"modifiers": [],
+				"movement_speeds_feet": {
+					"climb": 0,
+					"fly": 0,
+					"swim": 0
+				},
+				"name": "Aldric",
+				"next_weapon_hit_grant_serial": 0,
+				"next_weapon_hit_grants": [],
+				"nourishment_until_seconds": 0,
+				"numeric_resource_pools": {},
+				"origin_feat": "",
+				"pact_spell_slots": {},
+				"pact_weapon_damage_type": "",
+				"permanent_progression": {},
+				"proficiency_bonus": 2,
+				"protection_grants": [],
+				"protection_selections": {},
+				"protection_serial": 0,
+				"race_id": "dwarf",
+				"recent_damage_history": [],
+				"revival_willing": true,
+				"roll_token_generation_serial": 0,
+				"roll_tokens": {},
+				"rule_alternatives": {},
+				"saving_throw_proficiencies": [
+					"WIS",
+					"CHA"
+				],
+				"skill_proficiencies": [
+					"History",
+					"Insight"
+				],
+				"sorcerer_metamagic_choices": [],
+				"sorcerer_metamagic_pending": 0,
+				"sorcerer_metamagic_replacement_available": false,
+				"speed": 6,
+				"spell_cast_serial": 0,
+				"spell_choices_pending": true,
+				"spell_concentration": {},
+				"spell_effects": {},
+				"spell_repertoire_state": {},
+				"spell_slots": {
+					"1": 2
+				},
+				"stable_recovery_at_seconds": 0,
+				"subclass_id": "",
+				"temp_hp": 0,
+				"temporary_hp_supply_serial": 0,
+				"tethers": {},
+				"timed_modifier_grant_serial": 0,
+				"timed_temporary_hp_current_grant_id": "",
+				"timed_temporary_hp_grant_serial": 0,
+				"timed_temporary_hp_grants": [],
+				"tool_proficiencies": [],
+				"tool_proficiency_sources": {},
+				"traits": [
+					{
+						"description": "You have {@sense Darkvision} with a range of 120 feet.",
+						"effects": [],
+						"id": "dwarf_darkvision",
+						"name": "Darkvision"
+					},
+					{
+						"description": "You have Resistance to Poison damage. You also have Advantage on saving throws you make to avoid or end the Poisoned condition.",
+						"effects": [],
+						"id": "dwarf_dwarven_resilience",
+						"name": "Dwarven Resilience"
+					},
+					{
+						"description": "Your Hit Points Point maximum increases by 1, and it increases by 1 again whenever you gain a level.",
+						"effects": [],
+						"id": "dwarf_dwarven_toughness",
+						"name": "Dwarven Toughness"
+					},
+					{
+						"description": "As a Bonus Action, you gain {@sense Tremorsense} with a range of 60 feet for 10 minutes. You must be on a stone surface or touching a stone surface to use this {@sense Tremorsense}. The stone can be natural or worked. You can use this Bonus Action a number of times equal to your Proficiency Bonus, and you regain all expended uses when you finish a Long Rest.",
+						"effects": [],
+						"id": "dwarf_stonecunning",
+						"name": "Stonecunning"
+					}
+				],
+				"transferred_die_serials": {},
+				"warlock_arcanum_pending_levels": [],
+				"warlock_arcanum_replacement_available": false,
+				"warlock_arcanum_uses": {},
+				"warlock_invocation_pending": 0,
+				"warlock_invocation_replacement_available": false,
+				"warlock_invocations": [],
+				"warlock_mystic_arcanum": {},
+				"water_drank_today_gallons": 0.0,
+				"weapon_masteries": [],
+				"weapon_proficiencies": [
+					"simple"
+				],
+				"wild_shape_state": {},
+				"willingness": "unknown",
+				"wizard_mastery_replacement_available": false,
+				"wizard_memorize_spell_pending": false,
+				"wizard_preparation_free_change": false,
+				"wizard_signature_spells": [],
+				"wizard_spell_mastery": {},
+				"wizard_spellbook": [],
+				"wizard_spellbook_pending": 0,
+				"xp": 0,
+				"zero_hp_attempt_serial": 0,
+				"zero_hp_history": {}
+			},
+			"mira_ranger": {
+				"ability_scores": {
+					"CHA": 10,
+					"CON": 12,
+					"DEX": 18,
+					"INT": 11,
+					"STR": 10,
+					"WIS": 14
+				},
+				"armor_proficiencies": [
+					"light",
+					"medium",
+					"shields"
+				],
+				"aura_entry_receipts": {},
+				"aura_protection_selections": {},
+				"barbarian_relentless_rage_enabled": true,
+				"base_ac": 15,
+				"body_death_serial": 0,
+				"body_missing_parts": [],
+				"campaign_modifier_cooldowns": [],
+				"captured_grants": [],
+				"character_id": "mira_ranger",
+				"class_id": "ranger",
+				"class_levels": {},
+				"cleric_cantrip_replacement_available": false,
+				"cleric_preparation_free_change": false,
+				"cleric_spells_trained": false,
+				"condition_sources": {},
+				"conditions": {},
+				"containment": {},
+				"corpse_state": {},
+				"creation_choices": {
+					"equipment": "equipment",
+					"instrument": "lute",
+					"skills": [
+						"Animal Handling",
+						"Athletics",
+						"Insight"
+					],
+					"tools": []
+				},
+				"crit_range": 20,
+				"current_hp": 11,
+				"damage_wards": {
+					"pools": {},
+					"version": 1
+				},
+				"darkvision": true,
+				"darkvision_feet": 60,
+				"days_without_food": 0,
+				"death_save_failures": 0,
+				"death_save_successes": 0,
+				"disintegrated": false,
+				"exclusive_bonds": {},
+				"exhaustion_level": 0,
+				"exhaustion_recovery_blockers": [],
+				"extra_attacks": 0,
+				"feat_proficiency_choices": {},
+				"feature_choices": {
+					"ranger_spellcasting": []
+				},
+				"feature_modes": {},
+				"feature_uses": {
+					"free_spell_cast:ranger_favored_enemy": 2
+				},
+				"fiendish_resilience_type": "",
+				"fighter_training": {},
+				"food_eaten_today_pounds": 0.0,
+				"grant_transfer_serial": 0,
+				"heroic_inspiration": false,
+				"hydration_until_seconds": 0,
+				"inventory": {
+					"backpack": [
+						"shortsword"
+					],
+					"copies": {
+						"backpack": [
+							"bag_1793648711.99334_-9223370794216715616:3"
+						],
+						"equipped": {
+							"BODY": "bag_1793648711.99334_-9223370794216715616:1",
+							"WEAPON": "bag_1793648711.99334_-9223370794216715616:2"
+						},
+						"inventory_id": "bag_1793648711.99334_-9223370794216715616",
+						"next_id": 4,
+						"records": {
+							"bag_1793648711.99334_-9223370794216715616:1": {
+								"definition_id": "leather_armor",
+								"instance_id": "bag_1793648711.99334_-9223370794216715616:1",
+								"state": {}
+							},
+							"bag_1793648711.99334_-9223370794216715616:2": {
+								"definition_id": "longbow",
+								"instance_id": "bag_1793648711.99334_-9223370794216715616:2",
+								"state": {}
+							},
+							"bag_1793648711.99334_-9223370794216715616:3": {
+								"definition_id": "shortsword",
+								"instance_id": "bag_1793648711.99334_-9223370794216715616:3",
+								"state": {}
+							}
+						}
+					},
+					"equipped": {
+						"BODY": "leather_armor",
+						"WEAPON": "longbow"
+					},
+					"gold": 0
+				},
+				"is_alive": true,
+				"is_stable": false,
+				"item_curses": {},
+				"item_projections": {},
+				"known_spells": [
+					"hunters_mark"
+				],
+				"legacy_tool_proficiencies": [],
+				"level": 1,
+				"linked_temporary_hp": {},
+				"max_hp": 11,
+				"max_hp_sources": {},
+				"modifiers": [],
+				"movement_speeds_feet": {
+					"climb": 0,
+					"fly": 0,
+					"swim": 0
+				},
+				"name": "Mira",
+				"next_weapon_hit_grant_serial": 0,
+				"next_weapon_hit_grants": [],
+				"nourishment_until_seconds": 0,
+				"numeric_resource_pools": {},
+				"origin_feat": "",
+				"pact_spell_slots": {},
+				"pact_weapon_damage_type": "",
+				"permanent_progression": {},
+				"proficiency_bonus": 2,
+				"protection_grants": [],
+				"protection_selections": {},
+				"protection_serial": 0,
+				"race_id": "elf",
+				"recent_damage_history": [],
+				"revival_willing": true,
+				"roll_token_generation_serial": 0,
+				"roll_tokens": {},
+				"rule_alternatives": {},
+				"saving_throw_proficiencies": [
+					"STR",
+					"DEX"
+				],
+				"skill_proficiencies": [
+					"Perception",
+					"Animal Handling",
+					"Athletics",
+					"Insight"
+				],
+				"sorcerer_metamagic_choices": [],
+				"sorcerer_metamagic_pending": 0,
+				"sorcerer_metamagic_replacement_available": false,
+				"speed": 6,
+				"spell_cast_serial": 0,
+				"spell_choices_pending": true,
+				"spell_concentration": {},
+				"spell_effects": {},
+				"spell_repertoire_state": {},
+				"spell_slots": {
+					"1": 2
+				},
+				"stable_recovery_at_seconds": 0,
+				"subclass_id": "",
+				"temp_hp": 0,
+				"temporary_hp_supply_serial": 0,
+				"tethers": {},
+				"timed_modifier_grant_serial": 0,
+				"timed_temporary_hp_current_grant_id": "",
+				"timed_temporary_hp_grant_serial": 0,
+				"timed_temporary_hp_grants": [],
+				"tool_proficiencies": [],
+				"tool_proficiency_sources": {},
+				"traits": [
+					{
+						"description": "You can see in dim light within 60 feet as if it were bright light. Grants +1 vision range on the overworld.",
+						"effects": [
+							{
+								"type": "vision_bonus",
+								"value": 1.0
+							}
+						],
+						"id": "darkvision",
+						"name": "Darkvision"
+					},
+					{
+						"description": "You have advantage on saving throws against being charmed, and magic can't put you to sleep.",
+						"effects": [
+							{
+								"condition": "charmed",
+								"type": "save_advantage"
+							},
+							{
+								"condition": "magical_sleep",
+								"type": "immunity"
+							}
+						],
+						"id": "fey_ancestry",
+						"name": "Fey Ancestry"
+					},
+					{
+						"description": "Elves don't need to sleep. During rest events, you remain alert and can keep watch.",
+						"effects": [
+							{
+								"long_rest_duration_seconds": 14400.0,
+								"type": "rest_advantage"
+							}
+						],
+						"id": "trance",
+						"name": "Trance"
+					},
+					{
+						"description": "You have proficiency with longswords, shortswords, shortbows, and longbows.",
+						"effects": [
+							{
+								"type": "weapon_proficiency",
+								"weapons": [
+									"longsword",
+									"shortsword",
+									"shortbow",
+									"longbow"
+								]
+							}
+						],
+						"id": "elf_weapon_training",
+						"name": "Elf Weapon Training"
+					}
+				],
+				"transferred_die_serials": {},
+				"warlock_arcanum_pending_levels": [],
+				"warlock_arcanum_replacement_available": false,
+				"warlock_arcanum_uses": {},
+				"warlock_invocation_pending": 0,
+				"warlock_invocation_replacement_available": false,
+				"warlock_invocations": [],
+				"warlock_mystic_arcanum": {},
+				"water_drank_today_gallons": 0.0,
+				"weapon_masteries": [],
+				"weapon_proficiencies": [
+					"simple",
+					"martial",
+					"longsword",
+					"shortsword",
+					"shortbow",
+					"longbow"
+				],
+				"wild_shape_state": {},
+				"willingness": "unknown",
+				"wizard_mastery_replacement_available": false,
+				"wizard_memorize_spell_pending": false,
+				"wizard_preparation_free_change": false,
+				"wizard_signature_spells": [],
+				"wizard_spell_mastery": {},
+				"wizard_spellbook": [],
+				"wizard_spellbook_pending": 0,
+				"xp": 0,
+				"zero_hp_attempt_serial": 0,
+				"zero_hp_history": {}
+			},
+			"player_0_monk": {
+				"ability_scores": {
+					"CHA": 11,
+					"CON": 11,
+					"DEX": 11,
+					"INT": 11,
+					"STR": 11,
+					"WIS": 11
+				},
+				"armor_proficiencies": [],
+				"aura_entry_receipts": {},
+				"aura_protection_selections": {},
+				"barbarian_relentless_rage_enabled": true,
+				"base_ac": 10,
+				"body_death_serial": 0,
+				"body_missing_parts": [],
+				"campaign_modifier_cooldowns": [],
+				"captured_grants": [],
+				"character_id": "player_0_monk",
+				"class_id": "monk",
+				"class_levels": {},
+				"cleric_cantrip_replacement_available": false,
+				"cleric_preparation_free_change": false,
+				"cleric_spells_trained": false,
+				"condition_sources": {},
+				"conditions": {},
+				"containment": {},
+				"corpse_state": {},
+				"creation_choices": {
+					"ability_generation": {
+						"assigned_abilities": [],
+						"method": "point_buy",
+						"results": [],
+						"seed": 0
+					},
+					"equipment": "equipment",
+					"skills": [
+						"Athletics",
+						"Stealth"
+					],
+					"tools": [
+						"flute"
+					]
+				},
+				"crit_range": 20,
+				"current_hp": 8,
+				"damage_wards": {
+					"pools": {},
+					"version": 1
+				},
+				"darkvision": false,
+				"darkvision_feet": 0,
+				"days_without_food": 0,
+				"death_save_failures": 0,
+				"death_save_successes": 0,
+				"disintegrated": false,
+				"exclusive_bonds": {},
+				"exhaustion_level": 0,
+				"exhaustion_recovery_blockers": [],
+				"extra_attacks": 0,
+				"feat_proficiency_choices": {},
+				"feature_choices": {},
+				"feature_modes": {},
+				"feature_uses": {
+					"monk_bonus_unarmed_strike": 1
+				},
+				"fiendish_resilience_type": "",
+				"fighter_training": {},
+				"food_eaten_today_pounds": 0.0,
+				"grant_transfer_serial": 0,
+				"heroic_inspiration": false,
+				"hydration_until_seconds": 0,
+				"inventory": {
+					"backpack": [
+						"dagger",
+						"dagger",
+						"dagger",
+						"dagger",
+						"dagger"
+					],
+					"copies": {
+						"backpack": [
+							"bag_1793648711.9422_-9223370800776607340:2",
+							"bag_1793648711.9422_-9223370800776607340:3",
+							"bag_1793648711.9422_-9223370800776607340:4",
+							"bag_1793648711.9422_-9223370800776607340:5",
+							"bag_1793648711.9422_-9223370800776607340:6"
+						],
+						"equipped": {
+							"WEAPON": "bag_1793648711.9422_-9223370800776607340:1"
+						},
+						"inventory_id": "bag_1793648711.9422_-9223370800776607340",
+						"next_id": 7,
+						"records": {
+							"bag_1793648711.9422_-9223370800776607340:1": {
+								"definition_id": "spear",
+								"instance_id": "bag_1793648711.9422_-9223370800776607340:1",
+								"state": {}
+							},
+							"bag_1793648711.9422_-9223370800776607340:2": {
+								"definition_id": "dagger",
+								"instance_id": "bag_1793648711.9422_-9223370800776607340:2",
+								"state": {}
+							},
+							"bag_1793648711.9422_-9223370800776607340:3": {
+								"definition_id": "dagger",
+								"instance_id": "bag_1793648711.9422_-9223370800776607340:3",
+								"state": {}
+							},
+							"bag_1793648711.9422_-9223370800776607340:4": {
+								"definition_id": "dagger",
+								"instance_id": "bag_1793648711.9422_-9223370800776607340:4",
+								"state": {}
+							},
+							"bag_1793648711.9422_-9223370800776607340:5": {
+								"definition_id": "dagger",
+								"instance_id": "bag_1793648711.9422_-9223370800776607340:5",
+								"state": {}
+							},
+							"bag_1793648711.9422_-9223370800776607340:6": {
+								"definition_id": "dagger",
+								"instance_id": "bag_1793648711.9422_-9223370800776607340:6",
+								"state": {}
+							}
+						}
+					},
+					"equipped": {
+						"WEAPON": "spear"
+					},
+					"gold": 11
+				},
+				"is_alive": true,
+				"is_stable": false,
+				"item_curses": {},
+				"item_projections": {},
+				"known_spells": [],
+				"legacy_tool_proficiencies": [],
+				"level": 1,
+				"linked_temporary_hp": {},
+				"max_hp": 8,
+				"max_hp_sources": {},
+				"modifiers": [],
+				"movement_speeds_feet": {
+					"climb": 0,
+					"fly": 0,
+					"swim": 0
+				},
+				"name": "G2 Monk",
+				"next_weapon_hit_grant_serial": 0,
+				"next_weapon_hit_grants": [],
+				"nourishment_until_seconds": 0,
+				"numeric_resource_pools": {},
+				"origin_feat": "",
+				"pact_spell_slots": {},
+				"pact_weapon_damage_type": "",
+				"permanent_progression": {},
+				"proficiency_bonus": 2,
+				"protection_grants": [],
+				"protection_selections": {},
+				"protection_serial": 0,
+				"race_id": "human",
+				"recent_damage_history": [],
+				"revival_willing": true,
+				"roll_token_generation_serial": 0,
+				"roll_tokens": {},
+				"rule_alternatives": {},
+				"saving_throw_proficiencies": [
+					"STR",
+					"DEX"
+				],
+				"skill_proficiencies": [
+					"Athletics",
+					"Stealth"
+				],
+				"sorcerer_metamagic_choices": [],
+				"sorcerer_metamagic_pending": 0,
+				"sorcerer_metamagic_replacement_available": false,
+				"speed": 6,
+				"spell_cast_serial": 0,
+				"spell_choices_pending": false,
+				"spell_concentration": {},
+				"spell_effects": {},
+				"spell_repertoire_state": {},
+				"spell_slots": {},
+				"stable_recovery_at_seconds": 0,
+				"subclass_id": "",
+				"temp_hp": 0,
+				"temporary_hp_supply_serial": 0,
+				"tethers": {},
+				"timed_modifier_grant_serial": 0,
+				"timed_temporary_hp_current_grant_id": "",
+				"timed_temporary_hp_grant_serial": 0,
+				"timed_temporary_hp_grants": [],
+				"tool_proficiencies": [
+					"flute"
+				],
+				"tool_proficiency_sources": {
+					"flute": [
+						"class_choice:monk"
+					]
+				},
+				"traits": [
+					{
+						"description": "+1 to all ability scores. Gain proficiency in one extra skill of your choice.",
+						"effects": [
+							{
+								"count": 1.0,
+								"type": "bonus_skill_proficiency"
+							}
+						],
+						"id": "human_versatility",
+						"name": "Versatile"
+					}
+				],
+				"transferred_die_serials": {},
+				"warlock_arcanum_pending_levels": [],
+				"warlock_arcanum_replacement_available": false,
+				"warlock_arcanum_uses": {},
+				"warlock_invocation_pending": 0,
+				"warlock_invocation_replacement_available": false,
+				"warlock_invocations": [],
+				"warlock_mystic_arcanum": {},
+				"water_drank_today_gallons": 0.0,
+				"weapon_masteries": [],
+				"weapon_proficiencies": [
+					"simple",
+					"martial_light"
+				],
+				"wild_shape_state": {},
+				"willingness": "unknown",
+				"wizard_mastery_replacement_available": false,
+				"wizard_memorize_spell_pending": false,
+				"wizard_preparation_free_change": false,
+				"wizard_signature_spells": [],
+				"wizard_spell_mastery": {},
+				"wizard_spellbook": [],
+				"wizard_spellbook_pending": 0,
+				"xp": 0,
+				"zero_hp_attempt_serial": 0,
+				"zero_hp_history": {}
+			},
+			"player_1_druid": {
+				"ability_scores": {
+					"CHA": 11,
+					"CON": 11,
+					"DEX": 11,
+					"INT": 11,
+					"STR": 11,
+					"WIS": 11
+				},
+				"armor_proficiencies": [
+					"light",
+					"shields"
+				],
+				"aura_entry_receipts": {},
+				"aura_protection_selections": {},
+				"barbarian_relentless_rage_enabled": true,
+				"base_ac": 13,
+				"body_death_serial": 0,
+				"body_missing_parts": [],
+				"campaign_modifier_cooldowns": [],
+				"captured_grants": [],
+				"character_id": "player_1_druid",
+				"class_id": "druid",
+				"class_levels": {},
+				"cleric_cantrip_replacement_available": false,
+				"cleric_preparation_free_change": false,
+				"cleric_spells_trained": false,
+				"condition_sources": {},
+				"conditions": {},
+				"containment": {},
+				"corpse_state": {},
+				"creation_choices": {
+					"ability_generation": {
+						"assigned_abilities": [],
+						"method": "point_buy",
+						"results": [],
+						"seed": 0
+					},
+					"equipment": "equipment",
+					"skills": [
+						"Medicine",
+						"Nature"
+					],
+					"tools": []
+				},
+				"crit_range": 20,
+				"current_hp": 8,
+				"damage_wards": {
+					"pools": {},
+					"version": 1
+				},
+				"darkvision": false,
+				"darkvision_feet": 0,
+				"days_without_food": 0,
+				"death_save_failures": 0,
+				"death_save_successes": 0,
+				"disintegrated": false,
+				"exclusive_bonds": {},
+				"exhaustion_level": 0,
+				"exhaustion_recovery_blockers": [],
+				"extra_attacks": 0,
+				"feat_proficiency_choices": {},
+				"feature_choices": {
+					"druid_spellcasting": [
+						"produce_flame",
+						"animal_friendship",
+						"cure_wounds",
+						"entangle",
+						"goodberry"
+					]
+				},
+				"feature_modes": {},
+				"feature_uses": {},
+				"fiendish_resilience_type": "",
+				"fighter_training": {},
+				"food_eaten_today_pounds": 0.0,
+				"grant_transfer_serial": 0,
+				"heroic_inspiration": false,
+				"hydration_until_seconds": 0,
+				"inventory": {
+					"backpack": [],
+					"copies": {
+						"backpack": [],
+						"equipped": {
+							"BODY": "bag_1793648711.97551_-9223370795726665922:1",
+							"SHIELD": "bag_1793648711.97551_-9223370795726665922:2"
+						},
+						"inventory_id": "bag_1793648711.97551_-9223370795726665922",
+						"next_id": 3,
+						"records": {
+							"bag_1793648711.97551_-9223370795726665922:1": {
+								"definition_id": "leather_armor",
+								"instance_id": "bag_1793648711.97551_-9223370795726665922:1",
+								"state": {}
+							},
+							"bag_1793648711.97551_-9223370795726665922:2": {
+								"definition_id": "shield",
+								"instance_id": "bag_1793648711.97551_-9223370795726665922:2",
+								"state": {}
+							}
+						}
+					},
+					"equipped": {
+						"BODY": "leather_armor",
+						"SHIELD": "shield"
+					},
+					"gold": 0
+				},
+				"is_alive": true,
+				"is_stable": false,
+				"item_curses": {},
+				"item_projections": {},
+				"known_spells": [
+					"produce_flame",
+					"animal_friendship",
+					"cure_wounds",
+					"entangle",
+					"goodberry"
+				],
+				"legacy_tool_proficiencies": [],
+				"level": 1,
+				"linked_temporary_hp": {},
+				"max_hp": 8,
+				"max_hp_sources": {},
+				"modifiers": [],
+				"movement_speeds_feet": {
+					"climb": 0,
+					"fly": 0,
+					"swim": 0
+				},
+				"name": "G2 Druid",
+				"next_weapon_hit_grant_serial": 0,
+				"next_weapon_hit_grants": [],
+				"nourishment_until_seconds": 0,
+				"numeric_resource_pools": {},
+				"origin_feat": "",
+				"pact_spell_slots": {},
+				"pact_weapon_damage_type": "",
+				"permanent_progression": {},
+				"proficiency_bonus": 2,
+				"protection_grants": [],
+				"protection_selections": {},
+				"protection_serial": 0,
+				"race_id": "human",
+				"recent_damage_history": [],
+				"revival_willing": true,
+				"roll_token_generation_serial": 0,
+				"roll_tokens": {},
+				"rule_alternatives": {},
+				"saving_throw_proficiencies": [
+					"INT",
+					"WIS"
+				],
+				"skill_proficiencies": [
+					"Medicine",
+					"Nature"
+				],
+				"sorcerer_metamagic_choices": [],
+				"sorcerer_metamagic_pending": 0,
+				"sorcerer_metamagic_replacement_available": false,
+				"speed": 6,
+				"spell_cast_serial": 0,
+				"spell_choices_pending": true,
+				"spell_concentration": {},
+				"spell_effects": {},
+				"spell_repertoire_state": {},
+				"spell_slots": {
+					"1": 2
+				},
+				"stable_recovery_at_seconds": 0,
+				"subclass_id": "",
+				"temp_hp": 0,
+				"temporary_hp_supply_serial": 0,
+				"tethers": {},
+				"timed_modifier_grant_serial": 0,
+				"timed_temporary_hp_current_grant_id": "",
+				"timed_temporary_hp_grant_serial": 0,
+				"timed_temporary_hp_grants": [],
+				"tool_proficiencies": [
+					"herbalism_kit"
+				],
+				"tool_proficiency_sources": {
+					"herbalism_kit": [
+						"class:druid"
+					]
+				},
+				"traits": [
+					{
+						"description": "+1 to all ability scores. Gain proficiency in one extra skill of your choice.",
+						"effects": [
+							{
+								"count": 1.0,
+								"type": "bonus_skill_proficiency"
+							}
+						],
+						"id": "human_versatility",
+						"name": "Versatile"
+					}
+				],
+				"transferred_die_serials": {},
+				"warlock_arcanum_pending_levels": [],
+				"warlock_arcanum_replacement_available": false,
+				"warlock_arcanum_uses": {},
+				"warlock_invocation_pending": 0,
+				"warlock_invocation_replacement_available": false,
+				"warlock_invocations": [],
+				"warlock_mystic_arcanum": {},
+				"water_drank_today_gallons": 0.0,
+				"weapon_masteries": [],
+				"weapon_proficiencies": [
+					"simple"
+				],
+				"wild_shape_state": {},
+				"willingness": "unknown",
+				"wizard_mastery_replacement_available": false,
+				"wizard_memorize_spell_pending": false,
+				"wizard_preparation_free_change": false,
+				"wizard_signature_spells": [],
+				"wizard_spell_mastery": {},
+				"wizard_spellbook": [],
+				"wizard_spellbook_pending": 0,
+				"xp": 0,
+				"zero_hp_attempt_serial": 0,
+				"zero_hp_history": {}
+			},
+			"player_2_rogue": {
+				"ability_scores": {
+					"CHA": 15,
+					"CON": 8,
+					"DEX": 13,
+					"INT": 12,
+					"STR": 14,
+					"WIS": 10
+				},
+				"armor_proficiencies": [
+					"light"
+				],
+				"aura_entry_receipts": {},
+				"aura_protection_selections": {},
+				"barbarian_relentless_rage_enabled": true,
+				"base_ac": 12,
+				"body_death_serial": 0,
+				"body_missing_parts": [],
+				"campaign_modifier_cooldowns": [],
+				"captured_grants": [],
+				"character_id": "player_2_rogue",
+				"class_id": "rogue",
+				"class_levels": {},
+				"cleric_cantrip_replacement_available": false,
+				"cleric_preparation_free_change": false,
+				"cleric_spells_trained": false,
+				"condition_sources": {},
+				"conditions": {},
+				"containment": {},
+				"corpse_state": {},
+				"creation_choices": {
+					"ability_generation": {
+						"assigned_abilities": [
+							"CHA",
+							"STR",
+							"DEX",
+							"INT",
+							"WIS",
+							"CON"
+						],
+						"method": "standard_array",
+						"results": [
+							15,
+							14,
+							13,
+							12,
+							10,
+							8
+						],
+						"seed": 0
+					},
+					"equipment": "equipment",
+					"skills": [
+						"Athletics",
+						"Insight",
+						"Acrobatics",
+						"Investigation"
+					],
+					"tools": []
+				},
+				"crit_range": 20,
+				"current_hp": 7,
+				"damage_wards": {
+					"pools": {},
+					"version": 1
+				},
+				"darkvision": true,
+				"darkvision_feet": 60,
+				"days_without_food": 0,
+				"death_save_failures": 0,
+				"death_save_successes": 0,
+				"disintegrated": false,
+				"exclusive_bonds": {},
+				"exhaustion_level": 0,
+				"exhaustion_recovery_blockers": [],
+				"extra_attacks": 0,
+				"feat_proficiency_choices": {},
+				"feature_choices": {},
+				"feature_modes": {},
+				"feature_uses": {},
+				"fiendish_resilience_type": "",
+				"fighter_training": {},
+				"food_eaten_today_pounds": 0.0,
+				"grant_transfer_serial": 0,
+				"heroic_inspiration": false,
+				"hydration_until_seconds": 0,
+				"inventory": {
+					"backpack": [
+						"shortbow",
+						"dagger",
+						"thieves_tools"
+					],
+					"copies": {
+						"backpack": [
+							"bag_1793648711.99179_-9223370794787140940:3",
+							"bag_1793648711.99179_-9223370794787140940:4",
+							"bag_1793648711.99179_-9223370794787140940:5"
+						],
+						"equipped": {
+							"BODY": "bag_1793648711.99179_-9223370794787140940:1",
+							"WEAPON": "bag_1793648711.99179_-9223370794787140940:2"
+						},
+						"inventory_id": "bag_1793648711.99179_-9223370794787140940",
+						"next_id": 6,
+						"records": {
+							"bag_1793648711.99179_-9223370794787140940:1": {
+								"definition_id": "leather_armor",
+								"instance_id": "bag_1793648711.99179_-9223370794787140940:1",
+								"state": {}
+							},
+							"bag_1793648711.99179_-9223370794787140940:2": {
+								"definition_id": "rapier",
+								"instance_id": "bag_1793648711.99179_-9223370794787140940:2",
+								"state": {}
+							},
+							"bag_1793648711.99179_-9223370794787140940:3": {
+								"definition_id": "shortbow",
+								"instance_id": "bag_1793648711.99179_-9223370794787140940:3",
+								"state": {}
+							},
+							"bag_1793648711.99179_-9223370794787140940:4": {
+								"definition_id": "dagger",
+								"instance_id": "bag_1793648711.99179_-9223370794787140940:4",
+								"state": {}
+							},
+							"bag_1793648711.99179_-9223370794787140940:5": {
+								"definition_id": "thieves_tools",
+								"instance_id": "bag_1793648711.99179_-9223370794787140940:5",
+								"state": {}
+							}
+						}
+					},
+					"equipped": {
+						"BODY": "leather_armor",
+						"WEAPON": "rapier"
+					},
+					"gold": 0
+				},
+				"is_alive": true,
+				"is_stable": false,
+				"item_curses": {},
+				"item_projections": {},
+				"known_spells": [],
+				"legacy_tool_proficiencies": [],
+				"level": 1,
+				"linked_temporary_hp": {},
+				"max_hp": 7,
+				"max_hp_sources": {},
+				"modifiers": [],
+				"movement_speeds_feet": {
+					"climb": 0,
+					"fly": 0,
+					"swim": 0
+				},
+				"name": "Varis Windrider",
+				"next_weapon_hit_grant_serial": 0,
+				"next_weapon_hit_grants": [],
+				"nourishment_until_seconds": 0,
+				"numeric_resource_pools": {},
+				"origin_feat": "",
+				"pact_spell_slots": {},
+				"pact_weapon_damage_type": "",
+				"permanent_progression": {},
+				"proficiency_bonus": 2,
+				"protection_grants": [],
+				"protection_selections": {},
+				"protection_serial": 0,
+				"race_id": "dragonborn",
+				"recent_damage_history": [],
+				"revival_willing": true,
+				"roll_token_generation_serial": 0,
+				"roll_tokens": {},
+				"rule_alternatives": {},
+				"saving_throw_proficiencies": [
+					"DEX",
+					"INT"
+				],
+				"skill_proficiencies": [
+					"Athletics",
+					"Insight",
+					"Acrobatics",
+					"Investigation"
+				],
+				"sorcerer_metamagic_choices": [],
+				"sorcerer_metamagic_pending": 0,
+				"sorcerer_metamagic_replacement_available": false,
+				"speed": 6,
+				"spell_cast_serial": 0,
+				"spell_choices_pending": false,
+				"spell_concentration": {},
+				"spell_effects": {},
+				"spell_repertoire_state": {},
+				"spell_slots": {},
+				"stable_recovery_at_seconds": 0,
+				"subclass_id": "",
+				"temp_hp": 0,
+				"temporary_hp_supply_serial": 0,
+				"tethers": {},
+				"timed_modifier_grant_serial": 0,
+				"timed_temporary_hp_current_grant_id": "",
+				"timed_temporary_hp_grant_serial": 0,
+				"timed_temporary_hp_grants": [],
+				"tool_proficiencies": [
+					"thieves_tools"
+				],
+				"tool_proficiency_sources": {
+					"thieves_tools": [
+						"class:rogue"
+					]
+				},
+				"traits": [
+					{
+						"description": "Your lineage stems from a dragon progenitor. Choose the kind of dragon from the Draconic Ancestors table. Your choice affects your Breath Weapon and Damage Resistance traits as well as your appearance. {'type': 'table', 'caption': 'Draconic Ancestors', 'colLabels': ['Dragon', 'Damage Type'], 'colStyles': ['col-6', 'col-6'], 'rows': [['Black', 'Acid'], ['Blue', 'Lightning'], ['Brass', 'Fire'], ['Bronze', 'Lightning'], ['Copper', 'Acid'], ['Gold', 'Fire'], ['Green', 'Poison'], ['Red', 'Fire'], ['Silver', 'Cold'], ['White', 'Cold']]}",
+						"effects": [],
+						"id": "dragonborn_draconic_ancestry",
+						"name": "Draconic Ancestry"
+					},
+					{
+						"description": "When you take the {@action Attack} action on your turn, you can replace one of your attacks with an exhalation of magical energy in either a 15-foot Cone [Area of Effect] or a 30-foot Line [Area of Effect] that is 5 feet wide (choose the shape each time). Each creature in that area must make a Dexterity saving throw (8 plus your Constitution modifier and Proficiency Bonus). On a failed save, a creature takes 1d10 damage of the type determined by your Draconic Ancestry trait. On a successful save, a creature takes half as much damage. This damage increases by 1d10 when you reach character levels 5 (2d10), 11 (3d10), and 17 (4d10). You can use this Breath Weapon a number of times equal to your Proficiency Bonus, and you regain all expended uses when you finish a Long Rest.",
+						"effects": [],
+						"id": "dragonborn_breath_weapon",
+						"name": "Breath Weapon"
+					},
+					{
+						"description": "You have Resistance to the damage type determined by your Draconic Ancestry trait.",
+						"effects": [],
+						"id": "dragonborn_damage_resistance",
+						"name": "Damage Resistance"
+					},
+					{
+						"description": "You have {@sense Darkvision} with a range of 60 feet.",
+						"effects": [],
+						"id": "dragonborn_darkvision",
+						"name": "Darkvision"
+					},
+					{
+						"description": "When you reach character level 5, you can channel draconic magic to give yourself temporary flight. As a Bonus Action, you sprout spectral wings on your back that last for 10 minutes or until you retract the wings (no action required) or have the Incapacitated condition. During that time, you have a Fly Speed equal to your Speed. Your wings appear to be made of the same energy as your Breath Weapon. Once you use this trait, you can't use it again until you finish a Long Rest.",
+						"effects": [],
+						"id": "dragonborn_draconic_flight",
+						"name": "Draconic Flight"
+					}
+				],
+				"transferred_die_serials": {},
+				"warlock_arcanum_pending_levels": [],
+				"warlock_arcanum_replacement_available": false,
+				"warlock_arcanum_uses": {},
+				"warlock_invocation_pending": 0,
+				"warlock_invocation_replacement_available": false,
+				"warlock_invocations": [],
+				"warlock_mystic_arcanum": {},
+				"water_drank_today_gallons": 0.0,
+				"weapon_masteries": [],
+				"weapon_proficiencies": [
+					"simple",
+					"martial"
+				],
+				"wild_shape_state": {},
+				"willingness": "unknown",
+				"wizard_mastery_replacement_available": false,
+				"wizard_memorize_spell_pending": false,
+				"wizard_preparation_free_change": false,
+				"wizard_signature_spells": [],
+				"wizard_spell_mastery": {},
+				"wizard_spellbook": [],
+				"wizard_spellbook_pending": 0,
+				"xp": 0,
+				"zero_hp_attempt_serial": 0,
+				"zero_hp_history": {}
+			},
+			"rowan_rogue": {
+				"ability_scores": {
+					"CHA": 13,
+					"CON": 13,
+					"DEX": 17,
+					"INT": 15,
+					"STR": 11,
+					"WIS": 11
+				},
+				"armor_proficiencies": [
+					"light"
+				],
+				"aura_entry_receipts": {},
+				"aura_protection_selections": {},
+				"barbarian_relentless_rage_enabled": true,
+				"base_ac": 14,
+				"body_death_serial": 0,
+				"body_missing_parts": [],
+				"campaign_modifier_cooldowns": [],
+				"captured_grants": [],
+				"character_id": "rowan_rogue",
+				"class_id": "rogue",
+				"class_levels": {},
+				"cleric_cantrip_replacement_available": false,
+				"cleric_preparation_free_change": false,
+				"cleric_spells_trained": false,
+				"condition_sources": {},
+				"conditions": {},
+				"containment": {},
+				"corpse_state": {},
+				"creation_choices": {
+					"equipment": "equipment",
+					"instrument": "lute",
+					"skills": [
+						"Acrobatics",
+						"Athletics",
+						"Deception",
+						"Insight"
+					],
+					"tools": []
+				},
+				"crit_range": 20,
+				"current_hp": 9,
+				"damage_wards": {
+					"pools": {},
+					"version": 1
+				},
+				"darkvision": false,
+				"darkvision_feet": 0,
+				"days_without_food": 0,
+				"death_save_failures": 0,
+				"death_save_successes": 0,
+				"disintegrated": false,
+				"exclusive_bonds": {},
+				"exhaustion_level": 0,
+				"exhaustion_recovery_blockers": [],
+				"extra_attacks": 0,
+				"feat_proficiency_choices": {},
+				"feature_choices": {},
+				"feature_modes": {},
+				"feature_uses": {},
+				"fiendish_resilience_type": "",
+				"fighter_training": {},
+				"food_eaten_today_pounds": 0.0,
+				"grant_transfer_serial": 0,
+				"heroic_inspiration": false,
+				"hydration_until_seconds": 0,
+				"inventory": {
+					"backpack": [
+						"shortbow",
+						"dagger",
+						"thieves_tools"
+					],
+					"copies": {
+						"backpack": [
+							"bag_1793648711.99393_-9223370794032166250:3",
+							"bag_1793648711.99393_-9223370794032166250:4",
+							"bag_1793648711.99393_-9223370794032166250:5"
+						],
+						"equipped": {
+							"BODY": "bag_1793648711.99393_-9223370794032166250:1",
+							"WEAPON": "bag_1793648711.99393_-9223370794032166250:2"
+						},
+						"inventory_id": "bag_1793648711.99393_-9223370794032166250",
+						"next_id": 6,
+						"records": {
+							"bag_1793648711.99393_-9223370794032166250:1": {
+								"definition_id": "leather_armor",
+								"instance_id": "bag_1793648711.99393_-9223370794032166250:1",
+								"state": {}
+							},
+							"bag_1793648711.99393_-9223370794032166250:2": {
+								"definition_id": "rapier",
+								"instance_id": "bag_1793648711.99393_-9223370794032166250:2",
+								"state": {}
+							},
+							"bag_1793648711.99393_-9223370794032166250:3": {
+								"definition_id": "shortbow",
+								"instance_id": "bag_1793648711.99393_-9223370794032166250:3",
+								"state": {}
+							},
+							"bag_1793648711.99393_-9223370794032166250:4": {
+								"definition_id": "dagger",
+								"instance_id": "bag_1793648711.99393_-9223370794032166250:4",
+								"state": {}
+							},
+							"bag_1793648711.99393_-9223370794032166250:5": {
+								"definition_id": "thieves_tools",
+								"instance_id": "bag_1793648711.99393_-9223370794032166250:5",
+								"state": {}
+							}
+						}
+					},
+					"equipped": {
+						"BODY": "leather_armor",
+						"WEAPON": "rapier"
+					},
+					"gold": 0
+				},
+				"is_alive": true,
+				"is_stable": false,
+				"item_curses": {},
+				"item_projections": {},
+				"known_spells": [],
+				"legacy_tool_proficiencies": [],
+				"level": 1,
+				"linked_temporary_hp": {},
+				"max_hp": 9,
+				"max_hp_sources": {},
+				"modifiers": [],
+				"movement_speeds_feet": {
+					"climb": 0,
+					"fly": 0,
+					"swim": 0
+				},
+				"name": "Rowan",
+				"next_weapon_hit_grant_serial": 0,
+				"next_weapon_hit_grants": [],
+				"nourishment_until_seconds": 0,
+				"numeric_resource_pools": {},
+				"origin_feat": "",
+				"pact_spell_slots": {},
+				"pact_weapon_damage_type": "",
+				"permanent_progression": {},
+				"proficiency_bonus": 2,
+				"protection_grants": [],
+				"protection_selections": {},
+				"protection_serial": 0,
+				"race_id": "human",
+				"recent_damage_history": [],
+				"revival_willing": true,
+				"roll_token_generation_serial": 0,
+				"roll_tokens": {},
+				"rule_alternatives": {},
+				"saving_throw_proficiencies": [
+					"DEX",
+					"INT"
+				],
+				"skill_proficiencies": [
+					"Acrobatics",
+					"Athletics",
+					"Deception",
+					"Insight"
+				],
+				"sorcerer_metamagic_choices": [],
+				"sorcerer_metamagic_pending": 0,
+				"sorcerer_metamagic_replacement_available": false,
+				"speed": 6,
+				"spell_cast_serial": 0,
+				"spell_choices_pending": false,
+				"spell_concentration": {},
+				"spell_effects": {},
+				"spell_repertoire_state": {},
+				"spell_slots": {},
+				"stable_recovery_at_seconds": 0,
+				"subclass_id": "",
+				"temp_hp": 0,
+				"temporary_hp_supply_serial": 0,
+				"tethers": {},
+				"timed_modifier_grant_serial": 0,
+				"timed_temporary_hp_current_grant_id": "",
+				"timed_temporary_hp_grant_serial": 0,
+				"timed_temporary_hp_grants": [],
+				"tool_proficiencies": [
+					"thieves_tools"
+				],
+				"tool_proficiency_sources": {
+					"thieves_tools": [
+						"class:rogue"
+					]
+				},
+				"traits": [
+					{
+						"description": "+1 to all ability scores. Gain proficiency in one extra skill of your choice.",
+						"effects": [
+							{
+								"count": 1.0,
+								"type": "bonus_skill_proficiency"
+							}
+						],
+						"id": "human_versatility",
+						"name": "Versatile"
+					}
+				],
+				"transferred_die_serials": {},
+				"warlock_arcanum_pending_levels": [],
+				"warlock_arcanum_replacement_available": false,
+				"warlock_arcanum_uses": {},
+				"warlock_invocation_pending": 0,
+				"warlock_invocation_replacement_available": false,
+				"warlock_invocations": [],
+				"warlock_mystic_arcanum": {},
+				"water_drank_today_gallons": 0.0,
+				"weapon_masteries": [],
+				"weapon_proficiencies": [
+					"simple",
+					"martial"
+				],
+				"wild_shape_state": {},
+				"willingness": "unknown",
+				"wizard_mastery_replacement_available": false,
+				"wizard_memorize_spell_pending": false,
+				"wizard_preparation_free_change": false,
+				"wizard_signature_spells": [],
+				"wizard_spell_mastery": {},
+				"wizard_spellbook": [],
+				"wizard_spellbook_pending": 0,
+				"xp": 0,
+				"zero_hp_attempt_serial": 0,
+				"zero_hp_history": {}
+			}
+		},
+		"companion_roster": {
+			"aldric": {
+				"character_id": "aldric_cleric",
+				"state": "available"
+			},
+			"mira": {
+				"character_id": "mira_ranger",
+				"state": "available"
+			},
+			"rowan": {
+				"character_id": "rowan_rogue",
+				"state": "available"
+			}
+		},
+		"leader_slot_id": "slot_0",
+		"party_slots": [
+			{
+				"character_id": "player_0_monk",
+				"is_companion": false,
+				"occupied": true,
+				"slot_id": "slot_0"
+			},
+			{
+				"character_id": "player_1_druid",
+				"is_companion": false,
+				"occupied": true,
+				"slot_id": "slot_1"
+			},
+			{
+				"character_id": "player_2_rogue",
+				"is_companion": false,
+				"occupied": true,
+				"slot_id": "slot_2"
+			},
+			{
+				"character_id": "",
+				"is_companion": false,
+				"occupied": false,
+				"slot_id": "slot_3"
+			}
+		]
+	},
+	"players": [
+		{
+			"assigned_slot_ids": [
+				"slot_0"
+			],
+			"character": {
+				"ability_scores": {
+					"CHA": 11,
+					"CON": 11,
+					"DEX": 11,
+					"INT": 11,
+					"STR": 11,
+					"WIS": 11
+				},
+				"armor_proficiencies": [],
+				"aura_entry_receipts": {},
+				"aura_protection_selections": {},
+				"barbarian_relentless_rage_enabled": true,
+				"base_ac": 10,
+				"body_death_serial": 0,
+				"body_missing_parts": [],
+				"campaign_modifier_cooldowns": [],
+				"captured_grants": [],
+				"character_id": "player_0_monk",
+				"class_id": "monk",
+				"class_levels": {},
+				"cleric_cantrip_replacement_available": false,
+				"cleric_preparation_free_change": false,
+				"cleric_spells_trained": false,
+				"condition_sources": {},
+				"conditions": {},
+				"containment": {},
+				"corpse_state": {},
+				"creation_choices": {
+					"ability_generation": {
+						"assigned_abilities": [],
+						"method": "point_buy",
+						"results": [],
+						"seed": 0
+					},
+					"equipment": "equipment",
+					"skills": [
+						"Athletics",
+						"Stealth"
+					],
+					"tools": [
+						"flute"
+					]
+				},
+				"crit_range": 20,
+				"current_hp": 8,
+				"damage_wards": {
+					"pools": {},
+					"version": 1
+				},
+				"darkvision": false,
+				"darkvision_feet": 0,
+				"days_without_food": 0,
+				"death_save_failures": 0,
+				"death_save_successes": 0,
+				"disintegrated": false,
+				"exclusive_bonds": {},
+				"exhaustion_level": 0,
+				"exhaustion_recovery_blockers": [],
+				"extra_attacks": 0,
+				"feat_proficiency_choices": {},
+				"feature_choices": {},
+				"feature_modes": {},
+				"feature_uses": {
+					"monk_bonus_unarmed_strike": 1
+				},
+				"fiendish_resilience_type": "",
+				"fighter_training": {},
+				"food_eaten_today_pounds": 0.0,
+				"grant_transfer_serial": 0,
+				"heroic_inspiration": false,
+				"hydration_until_seconds": 0,
+				"inventory": {
+					"backpack": [
+						"dagger",
+						"dagger",
+						"dagger",
+						"dagger",
+						"dagger"
+					],
+					"copies": {
+						"backpack": [
+							"bag_1793648711.9422_-9223370800776607340:2",
+							"bag_1793648711.9422_-9223370800776607340:3",
+							"bag_1793648711.9422_-9223370800776607340:4",
+							"bag_1793648711.9422_-9223370800776607340:5",
+							"bag_1793648711.9422_-9223370800776607340:6"
+						],
+						"equipped": {
+							"WEAPON": "bag_1793648711.9422_-9223370800776607340:1"
+						},
+						"inventory_id": "bag_1793648711.9422_-9223370800776607340",
+						"next_id": 7,
+						"records": {
+							"bag_1793648711.9422_-9223370800776607340:1": {
+								"definition_id": "spear",
+								"instance_id": "bag_1793648711.9422_-9223370800776607340:1",
+								"state": {}
+							},
+							"bag_1793648711.9422_-9223370800776607340:2": {
+								"definition_id": "dagger",
+								"instance_id": "bag_1793648711.9422_-9223370800776607340:2",
+								"state": {}
+							},
+							"bag_1793648711.9422_-9223370800776607340:3": {
+								"definition_id": "dagger",
+								"instance_id": "bag_1793648711.9422_-9223370800776607340:3",
+								"state": {}
+							},
+							"bag_1793648711.9422_-9223370800776607340:4": {
+								"definition_id": "dagger",
+								"instance_id": "bag_1793648711.9422_-9223370800776607340:4",
+								"state": {}
+							},
+							"bag_1793648711.9422_-9223370800776607340:5": {
+								"definition_id": "dagger",
+								"instance_id": "bag_1793648711.9422_-9223370800776607340:5",
+								"state": {}
+							},
+							"bag_1793648711.9422_-9223370800776607340:6": {
+								"definition_id": "dagger",
+								"instance_id": "bag_1793648711.9422_-9223370800776607340:6",
+								"state": {}
+							}
+						}
+					},
+					"equipped": {
+						"WEAPON": "spear"
+					},
+					"gold": 11
+				},
+				"is_alive": true,
+				"is_stable": false,
+				"item_curses": {},
+				"item_projections": {},
+				"known_spells": [],
+				"legacy_tool_proficiencies": [],
+				"level": 1,
+				"linked_temporary_hp": {},
+				"max_hp": 8,
+				"max_hp_sources": {},
+				"modifiers": [],
+				"movement_speeds_feet": {
+					"climb": 0,
+					"fly": 0,
+					"swim": 0
+				},
+				"name": "G2 Monk",
+				"next_weapon_hit_grant_serial": 0,
+				"next_weapon_hit_grants": [],
+				"nourishment_until_seconds": 0,
+				"numeric_resource_pools": {},
+				"origin_feat": "",
+				"pact_spell_slots": {},
+				"pact_weapon_damage_type": "",
+				"permanent_progression": {},
+				"proficiency_bonus": 2,
+				"protection_grants": [],
+				"protection_selections": {},
+				"protection_serial": 0,
+				"race_id": "human",
+				"recent_damage_history": [],
+				"revival_willing": true,
+				"roll_token_generation_serial": 0,
+				"roll_tokens": {},
+				"rule_alternatives": {},
+				"saving_throw_proficiencies": [
+					"STR",
+					"DEX"
+				],
+				"skill_proficiencies": [
+					"Athletics",
+					"Stealth"
+				],
+				"sorcerer_metamagic_choices": [],
+				"sorcerer_metamagic_pending": 0,
+				"sorcerer_metamagic_replacement_available": false,
+				"speed": 6,
+				"spell_cast_serial": 0,
+				"spell_choices_pending": false,
+				"spell_concentration": {},
+				"spell_effects": {},
+				"spell_repertoire_state": {},
+				"spell_slots": {},
+				"stable_recovery_at_seconds": 0,
+				"subclass_id": "",
+				"temp_hp": 0,
+				"temporary_hp_supply_serial": 0,
+				"tethers": {},
+				"timed_modifier_grant_serial": 0,
+				"timed_temporary_hp_current_grant_id": "",
+				"timed_temporary_hp_grant_serial": 0,
+				"timed_temporary_hp_grants": [],
+				"tool_proficiencies": [
+					"flute"
+				],
+				"tool_proficiency_sources": {
+					"flute": [
+						"class_choice:monk"
+					]
+				},
+				"traits": [
+					{
+						"description": "+1 to all ability scores. Gain proficiency in one extra skill of your choice.",
+						"effects": [
+							{
+								"count": 1.0,
+								"type": "bonus_skill_proficiency"
+							}
+						],
+						"id": "human_versatility",
+						"name": "Versatile"
+					}
+				],
+				"transferred_die_serials": {},
+				"warlock_arcanum_pending_levels": [],
+				"warlock_arcanum_replacement_available": false,
+				"warlock_arcanum_uses": {},
+				"warlock_invocation_pending": 0,
+				"warlock_invocation_replacement_available": false,
+				"warlock_invocations": [],
+				"warlock_mystic_arcanum": {},
+				"water_drank_today_gallons": 0.0,
+				"weapon_masteries": [],
+				"weapon_proficiencies": [
+					"simple",
+					"martial_light"
+				],
+				"wild_shape_state": {},
+				"willingness": "unknown",
+				"wizard_mastery_replacement_available": false,
+				"wizard_memorize_spell_pending": false,
+				"wizard_preparation_free_change": false,
+				"wizard_signature_spells": [],
+				"wizard_spell_mastery": {},
+				"wizard_spellbook": [],
+				"wizard_spellbook_pending": 0,
+				"xp": 0,
+				"zero_hp_attempt_serial": 0,
+				"zero_hp_history": {}
+			},
+			"color": "4d99f2ff",
+			"display_name": "Monk seat",
+			"hex_position": [
+				0,
+				0
+			],
+			"input_mode": "shared",
+			"is_alive": true,
+			"joined": true,
+			"name": "Monk seat",
+			"session_id": "seat_0"
+		},
+		{
+			"assigned_slot_ids": [
+				"slot_1"
+			],
+			"character": {
+				"ability_scores": {
+					"CHA": 11,
+					"CON": 11,
+					"DEX": 11,
+					"INT": 11,
+					"STR": 11,
+					"WIS": 11
+				},
+				"armor_proficiencies": [
+					"light",
+					"shields"
+				],
+				"aura_entry_receipts": {},
+				"aura_protection_selections": {},
+				"barbarian_relentless_rage_enabled": true,
+				"base_ac": 13,
+				"body_death_serial": 0,
+				"body_missing_parts": [],
+				"campaign_modifier_cooldowns": [],
+				"captured_grants": [],
+				"character_id": "player_1_druid",
+				"class_id": "druid",
+				"class_levels": {},
+				"cleric_cantrip_replacement_available": false,
+				"cleric_preparation_free_change": false,
+				"cleric_spells_trained": false,
+				"condition_sources": {},
+				"conditions": {},
+				"containment": {},
+				"corpse_state": {},
+				"creation_choices": {
+					"ability_generation": {
+						"assigned_abilities": [],
+						"method": "point_buy",
+						"results": [],
+						"seed": 0
+					},
+					"equipment": "equipment",
+					"skills": [
+						"Medicine",
+						"Nature"
+					],
+					"tools": []
+				},
+				"crit_range": 20,
+				"current_hp": 8,
+				"damage_wards": {
+					"pools": {},
+					"version": 1
+				},
+				"darkvision": false,
+				"darkvision_feet": 0,
+				"days_without_food": 0,
+				"death_save_failures": 0,
+				"death_save_successes": 0,
+				"disintegrated": false,
+				"exclusive_bonds": {},
+				"exhaustion_level": 0,
+				"exhaustion_recovery_blockers": [],
+				"extra_attacks": 0,
+				"feat_proficiency_choices": {},
+				"feature_choices": {
+					"druid_spellcasting": [
+						"produce_flame",
+						"animal_friendship",
+						"cure_wounds",
+						"entangle",
+						"goodberry"
+					]
+				},
+				"feature_modes": {},
+				"feature_uses": {},
+				"fiendish_resilience_type": "",
+				"fighter_training": {},
+				"food_eaten_today_pounds": 0.0,
+				"grant_transfer_serial": 0,
+				"heroic_inspiration": false,
+				"hydration_until_seconds": 0,
+				"inventory": {
+					"backpack": [],
+					"copies": {
+						"backpack": [],
+						"equipped": {
+							"BODY": "bag_1793648711.97551_-9223370795726665922:1",
+							"SHIELD": "bag_1793648711.97551_-9223370795726665922:2"
+						},
+						"inventory_id": "bag_1793648711.97551_-9223370795726665922",
+						"next_id": 3,
+						"records": {
+							"bag_1793648711.97551_-9223370795726665922:1": {
+								"definition_id": "leather_armor",
+								"instance_id": "bag_1793648711.97551_-9223370795726665922:1",
+								"state": {}
+							},
+							"bag_1793648711.97551_-9223370795726665922:2": {
+								"definition_id": "shield",
+								"instance_id": "bag_1793648711.97551_-9223370795726665922:2",
+								"state": {}
+							}
+						}
+					},
+					"equipped": {
+						"BODY": "leather_armor",
+						"SHIELD": "shield"
+					},
+					"gold": 0
+				},
+				"is_alive": true,
+				"is_stable": false,
+				"item_curses": {},
+				"item_projections": {},
+				"known_spells": [
+					"produce_flame",
+					"animal_friendship",
+					"cure_wounds",
+					"entangle",
+					"goodberry"
+				],
+				"legacy_tool_proficiencies": [],
+				"level": 1,
+				"linked_temporary_hp": {},
+				"max_hp": 8,
+				"max_hp_sources": {},
+				"modifiers": [],
+				"movement_speeds_feet": {
+					"climb": 0,
+					"fly": 0,
+					"swim": 0
+				},
+				"name": "G2 Druid",
+				"next_weapon_hit_grant_serial": 0,
+				"next_weapon_hit_grants": [],
+				"nourishment_until_seconds": 0,
+				"numeric_resource_pools": {},
+				"origin_feat": "",
+				"pact_spell_slots": {},
+				"pact_weapon_damage_type": "",
+				"permanent_progression": {},
+				"proficiency_bonus": 2,
+				"protection_grants": [],
+				"protection_selections": {},
+				"protection_serial": 0,
+				"race_id": "human",
+				"recent_damage_history": [],
+				"revival_willing": true,
+				"roll_token_generation_serial": 0,
+				"roll_tokens": {},
+				"rule_alternatives": {},
+				"saving_throw_proficiencies": [
+					"INT",
+					"WIS"
+				],
+				"skill_proficiencies": [
+					"Medicine",
+					"Nature"
+				],
+				"sorcerer_metamagic_choices": [],
+				"sorcerer_metamagic_pending": 0,
+				"sorcerer_metamagic_replacement_available": false,
+				"speed": 6,
+				"spell_cast_serial": 0,
+				"spell_choices_pending": true,
+				"spell_concentration": {},
+				"spell_effects": {},
+				"spell_repertoire_state": {},
+				"spell_slots": {
+					"1": 2
+				},
+				"stable_recovery_at_seconds": 0,
+				"subclass_id": "",
+				"temp_hp": 0,
+				"temporary_hp_supply_serial": 0,
+				"tethers": {},
+				"timed_modifier_grant_serial": 0,
+				"timed_temporary_hp_current_grant_id": "",
+				"timed_temporary_hp_grant_serial": 0,
+				"timed_temporary_hp_grants": [],
+				"tool_proficiencies": [
+					"herbalism_kit"
+				],
+				"tool_proficiency_sources": {
+					"herbalism_kit": [
+						"class:druid"
+					]
+				},
+				"traits": [
+					{
+						"description": "+1 to all ability scores. Gain proficiency in one extra skill of your choice.",
+						"effects": [
+							{
+								"count": 1.0,
+								"type": "bonus_skill_proficiency"
+							}
+						],
+						"id": "human_versatility",
+						"name": "Versatile"
+					}
+				],
+				"transferred_die_serials": {},
+				"warlock_arcanum_pending_levels": [],
+				"warlock_arcanum_replacement_available": false,
+				"warlock_arcanum_uses": {},
+				"warlock_invocation_pending": 0,
+				"warlock_invocation_replacement_available": false,
+				"warlock_invocations": [],
+				"warlock_mystic_arcanum": {},
+				"water_drank_today_gallons": 0.0,
+				"weapon_masteries": [],
+				"weapon_proficiencies": [
+					"simple"
+				],
+				"wild_shape_state": {},
+				"willingness": "unknown",
+				"wizard_mastery_replacement_available": false,
+				"wizard_memorize_spell_pending": false,
+				"wizard_preparation_free_change": false,
+				"wizard_signature_spells": [],
+				"wizard_spell_mastery": {},
+				"wizard_spellbook": [],
+				"wizard_spellbook_pending": 0,
+				"xp": 0,
+				"zero_hp_attempt_serial": 0,
+				"zero_hp_history": {}
+			},
+			"color": "e65959ff",
+			"display_name": "Druid seat",
+			"hex_position": [
+				0,
+				0
+			],
+			"input_mode": "shared",
+			"is_alive": true,
+			"joined": true,
+			"name": "Druid seat",
+			"session_id": "seat_1"
+		},
+		{
+			"assigned_slot_ids": [
+				"slot_2"
+			],
+			"character": {
+				"ability_scores": {
+					"CHA": 15,
+					"CON": 8,
+					"DEX": 13,
+					"INT": 12,
+					"STR": 14,
+					"WIS": 10
+				},
+				"armor_proficiencies": [
+					"light"
+				],
+				"aura_entry_receipts": {},
+				"aura_protection_selections": {},
+				"barbarian_relentless_rage_enabled": true,
+				"base_ac": 12,
+				"body_death_serial": 0,
+				"body_missing_parts": [],
+				"campaign_modifier_cooldowns": [],
+				"captured_grants": [],
+				"character_id": "player_2_rogue",
+				"class_id": "rogue",
+				"class_levels": {},
+				"cleric_cantrip_replacement_available": false,
+				"cleric_preparation_free_change": false,
+				"cleric_spells_trained": false,
+				"condition_sources": {},
+				"conditions": {},
+				"containment": {},
+				"corpse_state": {},
+				"creation_choices": {
+					"ability_generation": {
+						"assigned_abilities": [
+							"CHA",
+							"STR",
+							"DEX",
+							"INT",
+							"WIS",
+							"CON"
+						],
+						"method": "standard_array",
+						"results": [
+							15,
+							14,
+							13,
+							12,
+							10,
+							8
+						],
+						"seed": 0
+					},
+					"equipment": "equipment",
+					"skills": [
+						"Athletics",
+						"Insight",
+						"Acrobatics",
+						"Investigation"
+					],
+					"tools": []
+				},
+				"crit_range": 20,
+				"current_hp": 7,
+				"damage_wards": {
+					"pools": {},
+					"version": 1
+				},
+				"darkvision": true,
+				"darkvision_feet": 60,
+				"days_without_food": 0,
+				"death_save_failures": 0,
+				"death_save_successes": 0,
+				"disintegrated": false,
+				"exclusive_bonds": {},
+				"exhaustion_level": 0,
+				"exhaustion_recovery_blockers": [],
+				"extra_attacks": 0,
+				"feat_proficiency_choices": {},
+				"feature_choices": {},
+				"feature_modes": {},
+				"feature_uses": {},
+				"fiendish_resilience_type": "",
+				"fighter_training": {},
+				"food_eaten_today_pounds": 0.0,
+				"grant_transfer_serial": 0,
+				"heroic_inspiration": false,
+				"hydration_until_seconds": 0,
+				"inventory": {
+					"backpack": [
+						"shortbow",
+						"dagger",
+						"thieves_tools"
+					],
+					"copies": {
+						"backpack": [
+							"bag_1793648711.99179_-9223370794787140940:3",
+							"bag_1793648711.99179_-9223370794787140940:4",
+							"bag_1793648711.99179_-9223370794787140940:5"
+						],
+						"equipped": {
+							"BODY": "bag_1793648711.99179_-9223370794787140940:1",
+							"WEAPON": "bag_1793648711.99179_-9223370794787140940:2"
+						},
+						"inventory_id": "bag_1793648711.99179_-9223370794787140940",
+						"next_id": 6,
+						"records": {
+							"bag_1793648711.99179_-9223370794787140940:1": {
+								"definition_id": "leather_armor",
+								"instance_id": "bag_1793648711.99179_-9223370794787140940:1",
+								"state": {}
+							},
+							"bag_1793648711.99179_-9223370794787140940:2": {
+								"definition_id": "rapier",
+								"instance_id": "bag_1793648711.99179_-9223370794787140940:2",
+								"state": {}
+							},
+							"bag_1793648711.99179_-9223370794787140940:3": {
+								"definition_id": "shortbow",
+								"instance_id": "bag_1793648711.99179_-9223370794787140940:3",
+								"state": {}
+							},
+							"bag_1793648711.99179_-9223370794787140940:4": {
+								"definition_id": "dagger",
+								"instance_id": "bag_1793648711.99179_-9223370794787140940:4",
+								"state": {}
+							},
+							"bag_1793648711.99179_-9223370794787140940:5": {
+								"definition_id": "thieves_tools",
+								"instance_id": "bag_1793648711.99179_-9223370794787140940:5",
+								"state": {}
+							}
+						}
+					},
+					"equipped": {
+						"BODY": "leather_armor",
+						"WEAPON": "rapier"
+					},
+					"gold": 0
+				},
+				"is_alive": true,
+				"is_stable": false,
+				"item_curses": {},
+				"item_projections": {},
+				"known_spells": [],
+				"legacy_tool_proficiencies": [],
+				"level": 1,
+				"linked_temporary_hp": {},
+				"max_hp": 7,
+				"max_hp_sources": {},
+				"modifiers": [],
+				"movement_speeds_feet": {
+					"climb": 0,
+					"fly": 0,
+					"swim": 0
+				},
+				"name": "Varis Windrider",
+				"next_weapon_hit_grant_serial": 0,
+				"next_weapon_hit_grants": [],
+				"nourishment_until_seconds": 0,
+				"numeric_resource_pools": {},
+				"origin_feat": "",
+				"pact_spell_slots": {},
+				"pact_weapon_damage_type": "",
+				"permanent_progression": {},
+				"proficiency_bonus": 2,
+				"protection_grants": [],
+				"protection_selections": {},
+				"protection_serial": 0,
+				"race_id": "dragonborn",
+				"recent_damage_history": [],
+				"revival_willing": true,
+				"roll_token_generation_serial": 0,
+				"roll_tokens": {},
+				"rule_alternatives": {},
+				"saving_throw_proficiencies": [
+					"DEX",
+					"INT"
+				],
+				"skill_proficiencies": [
+					"Athletics",
+					"Insight",
+					"Acrobatics",
+					"Investigation"
+				],
+				"sorcerer_metamagic_choices": [],
+				"sorcerer_metamagic_pending": 0,
+				"sorcerer_metamagic_replacement_available": false,
+				"speed": 6,
+				"spell_cast_serial": 0,
+				"spell_choices_pending": false,
+				"spell_concentration": {},
+				"spell_effects": {},
+				"spell_repertoire_state": {},
+				"spell_slots": {},
+				"stable_recovery_at_seconds": 0,
+				"subclass_id": "",
+				"temp_hp": 0,
+				"temporary_hp_supply_serial": 0,
+				"tethers": {},
+				"timed_modifier_grant_serial": 0,
+				"timed_temporary_hp_current_grant_id": "",
+				"timed_temporary_hp_grant_serial": 0,
+				"timed_temporary_hp_grants": [],
+				"tool_proficiencies": [
+					"thieves_tools"
+				],
+				"tool_proficiency_sources": {
+					"thieves_tools": [
+						"class:rogue"
+					]
+				},
+				"traits": [
+					{
+						"description": "Your lineage stems from a dragon progenitor. Choose the kind of dragon from the Draconic Ancestors table. Your choice affects your Breath Weapon and Damage Resistance traits as well as your appearance. {'type': 'table', 'caption': 'Draconic Ancestors', 'colLabels': ['Dragon', 'Damage Type'], 'colStyles': ['col-6', 'col-6'], 'rows': [['Black', 'Acid'], ['Blue', 'Lightning'], ['Brass', 'Fire'], ['Bronze', 'Lightning'], ['Copper', 'Acid'], ['Gold', 'Fire'], ['Green', 'Poison'], ['Red', 'Fire'], ['Silver', 'Cold'], ['White', 'Cold']]}",
+						"effects": [],
+						"id": "dragonborn_draconic_ancestry",
+						"name": "Draconic Ancestry"
+					},
+					{
+						"description": "When you take the {@action Attack} action on your turn, you can replace one of your attacks with an exhalation of magical energy in either a 15-foot Cone [Area of Effect] or a 30-foot Line [Area of Effect] that is 5 feet wide (choose the shape each time). Each creature in that area must make a Dexterity saving throw (8 plus your Constitution modifier and Proficiency Bonus). On a failed save, a creature takes 1d10 damage of the type determined by your Draconic Ancestry trait. On a successful save, a creature takes half as much damage. This damage increases by 1d10 when you reach character levels 5 (2d10), 11 (3d10), and 17 (4d10). You can use this Breath Weapon a number of times equal to your Proficiency Bonus, and you regain all expended uses when you finish a Long Rest.",
+						"effects": [],
+						"id": "dragonborn_breath_weapon",
+						"name": "Breath Weapon"
+					},
+					{
+						"description": "You have Resistance to the damage type determined by your Draconic Ancestry trait.",
+						"effects": [],
+						"id": "dragonborn_damage_resistance",
+						"name": "Damage Resistance"
+					},
+					{
+						"description": "You have {@sense Darkvision} with a range of 60 feet.",
+						"effects": [],
+						"id": "dragonborn_darkvision",
+						"name": "Darkvision"
+					},
+					{
+						"description": "When you reach character level 5, you can channel draconic magic to give yourself temporary flight. As a Bonus Action, you sprout spectral wings on your back that last for 10 minutes or until you retract the wings (no action required) or have the Incapacitated condition. During that time, you have a Fly Speed equal to your Speed. Your wings appear to be made of the same energy as your Breath Weapon. Once you use this trait, you can't use it again until you finish a Long Rest.",
+						"effects": [],
+						"id": "dragonborn_draconic_flight",
+						"name": "Draconic Flight"
+					}
+				],
+				"transferred_die_serials": {},
+				"warlock_arcanum_pending_levels": [],
+				"warlock_arcanum_replacement_available": false,
+				"warlock_arcanum_uses": {},
+				"warlock_invocation_pending": 0,
+				"warlock_invocation_replacement_available": false,
+				"warlock_invocations": [],
+				"warlock_mystic_arcanum": {},
+				"water_drank_today_gallons": 0.0,
+				"weapon_masteries": [],
+				"weapon_proficiencies": [
+					"simple",
+					"martial"
+				],
+				"wild_shape_state": {},
+				"willingness": "unknown",
+				"wizard_mastery_replacement_available": false,
+				"wizard_memorize_spell_pending": false,
+				"wizard_preparation_free_change": false,
+				"wizard_signature_spells": [],
+				"wizard_spell_mastery": {},
+				"wizard_spellbook": [],
+				"wizard_spellbook_pending": 0,
+				"xp": 0,
+				"zero_hp_attempt_serial": 0,
+				"zero_hp_history": {}
+			},
+			"color": "59cc66ff",
+			"display_name": "Random seat",
+			"hex_position": [
+				0,
+				0
+			],
+			"input_mode": "shared",
+			"is_alive": true,
+			"joined": true,
+			"name": "Random seat",
+			"session_id": "seat_2"
+		}
+	],
+	"ruleset_id": "dnd-2024-srd-5.2.1",
+	"saved_at": {
+		"day": 2,
+		"dst": false,
+		"hour": 13,
+		"minute": 45,
+		"month": 11,
+		"second": 12,
+		"weekday": 1,
+		"year": 2026
+	},
+	"schema_version": 2
+}

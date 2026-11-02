@@ -36,6 +36,8 @@
     "dagger"
   ],
   "starting_gold": 11,
+  "starting_gold_alternative": 50,
+  "starting_equipment_includes_tool_choice": true,
   "rules_source": "dnd-2024-srd-5.2.1",
   "rules_status": "2024-partial",
   "support_status": "full",
