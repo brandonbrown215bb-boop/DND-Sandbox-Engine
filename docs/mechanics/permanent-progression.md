@@ -71,6 +71,17 @@ and the same check runs again on confirmation. Existing class levels remain
 available if an ability score later drops. Refusals name the failing class,
 ability and score.
 
+Evidence (G3): `src/crown_multiclass_entry_checks.gd` drives this gate through
+loaded neutral classes in `data/fixtures/crown_g3/`. Scores of 12 refuse and 13
+pass for the default primary ability, `any` and `all`; every acquired class is
+checked again for a third class. Projected scores (a timed `set` protection) do
+not qualify; only permanent scores count. A class offered and then made stale by
+a score drop refuses on Confirm, and the panel shows the exact refusal, without
+spending the level, HP or receipts. Acquired classes stay offered after scores
+drop, including after a checkpoint restore, and a forged history refuses.
+Malformed `multiclass_prerequisite` declarations refuse at load. No production
+class declares `permanent_progression`, so players cannot reach this gate yet.
+
 `Character.award_xp(amount)` adds saved XP and exposes every crossed threshold
 through `pending_levels`; it does not apply levels automatically. The standard
 total-level thresholds are 0, 300, 900, 2,700, 6,500, 14,000, 23,000, 34,000,
