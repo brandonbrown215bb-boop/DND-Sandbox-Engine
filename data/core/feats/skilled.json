@@ -6,7 +6,7 @@
     "repeatable": true,
     "description": "You gain proficiency in any combination of three skills or tools of your choice. Repeatable: you can take this feat more than once.",
     "source": "SRD 5.2.1 p.87 Origin Feats: Skilled",
-    "source_note": "Tools are the SRD 5.2.1 Artisan's Tools, Other Tools and Musical Instruments that have item records; Gaming Sets have no item record yet.",
+    "source_note": "Tools are the SRD 5.2.1 Artisan's Tools, Other Tools (including each Gaming Set variant: dice, dragonchess, playing cards, three-dragon ante) and Musical Instruments.",
     "proficiency_choices": {
       "pick": 3,
       "skills": [
@@ -62,7 +62,11 @@
         "lyre",
         "pan_flute",
         "shawm",
-        "viol"
+        "viol",
+        "dice_set",
+        "dragonchess_set",
+        "playing_card_set",
+        "three_dragon_ante_set"
       ]
     },
     "features": []

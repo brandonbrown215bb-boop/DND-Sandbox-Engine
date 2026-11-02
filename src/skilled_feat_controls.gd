@@ -6,7 +6,7 @@ extends RefCounted
 
 const SLOT := "skilled_feat_creation"
 const IDS := "user://skilled_feat_creation_ids.txt"
-const ORIGIN_PICKS := ["Insight", "Stealth", "thieves_tools"]
+const ORIGIN_PICKS := ["Insight", "Stealth", "dice_set"]
 const MONK_SKILLS := ["Athletics", "Acrobatics"]
 
 static func run(h: Node) -> void:
@@ -63,7 +63,7 @@ static func run(h: Node) -> void:
 	creation.btn_next.pressed.emit()
 	await h.get_tree().process_frame
 	var c: Character = PlayerManager.get_player(0).get("character")
-	h._assert(c != null and c.origin_feat == "skilled" and c.skill_proficiencies.count("Insight") == 1 and c.skill_proficiencies.count("Stealth") == 1 and c.tool_proficiency_sources.get("thieves_tools", []) == ["feat:skilled@origin"] and c.tool_proficiency_sources.get("flute", []) == ["class_choice:monk"] and c.inventory.count_item("thieves_tools") == 0, "G4 Confirm grants the Skilled picks once, owned by the Origin instance, with no item")
+	h._assert(c != null and c.origin_feat == "skilled" and c.skill_proficiencies.count("Insight") == 1 and c.skill_proficiencies.count("Stealth") == 1 and c.tool_proficiency_sources.get("dice_set", []) == ["feat:skilled@origin"] and c.tool_proficiencies.count("dice_set") == 1 and c.tool_proficiency_sources.get("flute", []) == ["class_choice:monk"] and c.inventory.count_item("dice_set") == 0, "G4 Confirm grants the Skilled picks (incl. the Dice Gaming Set) once, owned by the Origin instance, with no item")
 	h._teardown_scene(creation)
 	if c == null:
 		h._exit_test()
@@ -98,6 +98,14 @@ static func run(h: Node) -> void:
 		take.pressed.emit()
 		await h.get_tree().process_frame
 		h._assert(ClassProgression.pending_improvements(c) == pending and "Perception" not in c.skill_proficiencies, "G4 a repeat that re-picks an owned skill (Stealth) is refused without partial grants")
+		values = ["Perception", "History", "dice_set"]
+		for i in 3:
+			for node in CharacterSheet._content.find_children("LevelFeatProficiency%d" % (i + 1), "OptionButton", true, false):
+				for j in node.item_count:
+					if str(node.get_item_metadata(j)) == values[i]: node.select(j)
+		take.pressed.emit()
+		await h.get_tree().process_frame
+		h._assert(ClassProgression.pending_improvements(c) == pending and "Perception" not in c.skill_proficiencies and c.tool_proficiency_sources.get("dice_set", []) == ["feat:skilled@origin"], "A repeat that re-picks the held Dice Gaming Set is refused without partial grants")
 		CharacterSheet.close_sheet()
 		CharacterSheet.show_sheet(c)
 		await h.get_tree().process_frame
@@ -107,7 +115,7 @@ static func run(h: Node) -> void:
 			if str(level_picker.get_item_metadata(i)) == "skilled": skilled_index = i
 		level_picker.select(skilled_index)
 		level_picker.item_selected.emit(skilled_index)
-		values = ["Perception", "History", "lute"]
+		values = ["Perception", "History", "playing_card_set"]
 		for i in 3:
 			for node in CharacterSheet._content.find_children("LevelFeatProficiency%d" % (i + 1), "OptionButton", true, false):
 				for j in node.item_count:
@@ -115,14 +123,14 @@ static func run(h: Node) -> void:
 		take.pressed.emit()
 		await h.get_tree().process_frame
 	var asi := str(pending[0]) if not pending.is_empty() else ""
-	h._assert(ClassProgression.pending_improvements(c).is_empty() and c.feat_proficiency_choices.get(asi, {}).get("skills", []) == ["Perception", "History"] and c.tool_proficiency_sources.get("lute", []) == ["feat:skilled@" + asi], "G4 Take feat instead records the second Skilled as its own instance (%s)" % asi)
+	h._assert(ClassProgression.pending_improvements(c).is_empty() and c.feat_proficiency_choices.get(asi, {}).get("skills", []) == ["Perception", "History"] and c.tool_proficiency_sources.get("playing_card_set", []) == ["feat:skilled@" + asi], "G4 Take feat instead records the second Skilled as its own instance (%s)" % asi)
 	CharacterSheet.close_sheet()
 	h._assert(SaveManager.save_game(SLOT), "G4 two-instance Skilled party saves through the disk boundary")
 	var tampered: Dictionary = SaveManager._read_save(SLOT)
 	tampered["party"]["characters"][c.character_id]["feat_proficiency_choices"].erase(asi)
 	h._assert(not SaveManager._validate_save_data(tampered).is_empty(), "G4 a save missing one Skilled instance's picks is refused")
 	tampered = SaveManager._read_save(SLOT)
-	tampered["players"][0]["character"]["tool_proficiency_sources"]["lute"] = ["feat:skilled@origin"]
+	tampered["players"][0]["character"]["tool_proficiency_sources"]["playing_card_set"] = ["feat:skilled@origin"]
 	h._assert(not SaveManager._validate_save_data(tampered).is_empty(), "G4 a save that moves a pick to the other instance is refused")
 	var f := FileAccess.open(IDS, FileAccess.WRITE)
 	f.store_string("|".join([c.character_id, asi, JSON.stringify(c.skill_proficiencies), JSON.stringify(c.tool_proficiency_sources)]))
@@ -138,7 +146,7 @@ static func reload(h: Node) -> void:
 		h._exit_test()
 		return
 	var c: Character = PartyManager.characters.get(p[0], null)
-	h._assert(c != null and JSON.stringify(c.skill_proficiencies) == p[2] and JSON.stringify(c.tool_proficiency_sources) == p[3] and c.feat_proficiency_choices.size() == 2 and c.feat_proficiency_choices[p[1]].tools == ["lute"] and ClassProgression.pending_improvements(c).is_empty(), "G4 fresh process keeps both Skilled instances and owners without replay")
+	h._assert(c != null and JSON.stringify(c.skill_proficiencies) == p[2] and JSON.stringify(c.tool_proficiency_sources) == p[3] and c.feat_proficiency_choices.size() == 2 and c.feat_proficiency_choices[p[1]].tools == ["playing_card_set"] and c.feat_proficiency_choices.origin.tools == ["dice_set"] and ClassProgression.pending_improvements(c).is_empty(), "G4 fresh process keeps both Skilled instances and owners without replay")
 	h._assert(SaveManager.save_game(SLOT) and SaveManager.load_game(SLOT), "G4 fresh process saves and loads again")
 	var again: Character = PartyManager.characters.get(p[0], null)
 	h._assert(again != null and JSON.stringify(again.skill_proficiencies) == p[2] and JSON.stringify(again.tool_proficiency_sources) == p[3], "G4 second round trip is unchanged")
