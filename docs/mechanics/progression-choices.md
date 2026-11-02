@@ -33,7 +33,9 @@ tool once however many sources own it (Rogue plus Criminal Thieves' Tools).
 Owning a tool item is not proficiency. Save preflight refuses malformed,
 duplicated or stale class sources and chosen tools without their source;
 restore replays nothing. Saves without the key, or tools without a source,
-remain valid legacy grants. Limits: SRD option-A items (Druid Herbalism Kit,
+remain valid legacy grants: restore records a pre-G2 save's tools in
+`legacy_tool_proficiencies`, which is saved and exempts those retained creation
+choices from the chosen-source rule on every later save. Limits: SRD option-A items (Druid Herbalism Kit,
 Monk's chosen tool) are not added to inventory, full equipment packs are not
 offered, and classes without the flag keep their earlier creation.
 

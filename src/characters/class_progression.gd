@@ -51,8 +51,14 @@ static func grant_creation_tools(c: Character, choices: Dictionary) -> void:
 ## Saved ownership must name real tools, known source kinds, and agree with the
 ## saved list and class data. Tools without a source are represented legacy grants.
 static func saved_tool_sources_error(dto: Dictionary, tools: Array) -> String:
+	var legacy: Variant = dto.get("legacy_tool_proficiencies", [])
+	if not legacy is Array:
+		return "Legacy tool proficiencies are not a list"
+	for tool in legacy:
+		if not tool is String or tool not in tools or legacy.count(tool) != 1:
+			return "Legacy tool proficiency is invalid or duplicated"
 	if not dto.has("tool_proficiency_sources"):
-		return ""
+		return "" if legacy.is_empty() else "Legacy tool proficiencies require a sources map"
 	var sources: Variant = dto["tool_proficiency_sources"]
 	if not sources is Dictionary:
 		return "Tool proficiency sources are not an object"
@@ -80,6 +86,8 @@ static func saved_tool_sources_error(dto: Dictionary, tools: Array) -> String:
 			elif tool_source_kind(source) in ["class", "class_choice"]:
 				return "Tool proficiency source names another class"
 	for tool in chosen:
+		if tool in legacy:
+			continue # Represented pre-G2 grant; ownership was never recorded.
 		if "class_choice:%s" % class_id not in sources.get(tool, []):
 			return "Saved creation tool proficiency source is missing"
 	return ""

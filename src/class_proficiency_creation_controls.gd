@@ -5,6 +5,8 @@ extends RefCounted
 
 const SLOT := "class_proficiency_creation"
 const IDS := "user://class_proficiency_creation_ids.txt"
+const LEGACY_SLOTS := {"class_proficiency_legacy_player": false, "class_proficiency_legacy_party": true}
+const BARD_CHOICES := {"skills": ["Performance", "Persuasion", "Stealth"], "tools": ["lute", "flute", "viol"], "instrument": "drum", "equipment": "equipment"}
 
 
 static func run(h: Node) -> void:
@@ -66,7 +68,37 @@ static func run(h: Node) -> void:
 	var f := FileAccess.open(IDS, FileAccess.WRITE)
 	f.store_string("|".join([monk.character_id, druid.character_id, rogue.character_id, JSON.stringify(monk.inventory.to_dict()), str(rogue.inventory.count_item("thieves_tools"))]))
 	f.close()
+	await _legacy_bard_saves(h)
 	h._exit_test()
+
+
+## PR #74 review repro: a pre-G2 Bard (choices + instrument proficiencies, no
+## sources key) must load and then save again, player-only and full party.
+static func _legacy_bard_saves(h: Node) -> void:
+	for slot in LEGACY_SLOTS:
+		PlayerManager.reset()
+		PartyManager.reset()
+		PlayerManager.add_player("Legacy Bard seat")
+		var bard := Character.new()
+		bard.initialize("Legacy Bard", "elf", "bard", AbilityScores.new(), "equipment", BARD_CHOICES)
+		PlayerManager.set_player_character(0, bard)
+		PartyManager.register_player_character(0, bard)
+		h._assert(SaveManager.save_game(slot), "%s: seed save written" % slot)
+		var data: Dictionary = SaveManager._read_save(slot)
+		var records: Array = [data["players"][0]["character"]]
+		if LEGACY_SLOTS[slot]:
+			records.append(data["party"]["characters"][bard.character_id])
+		for record in records:
+			record.erase("tool_proficiency_sources")
+			record.erase("legacy_tool_proficiencies")
+		var file := FileAccess.open(SaveManager.SAVE_DIR + slot + ".sav", FileAccess.WRITE)
+		file.store_string(JSON.stringify(data))
+		file.close()
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(SaveManager.SAVE_DIR + slot + ".sav.bak"))
+		h._assert(SaveManager.load_game(slot), "%s: pre-G2 Bard save loads" % slot)
+		var loaded: Character = PlayerManager.get_player(0).get("character")
+		h._assert(loaded != null and loaded.creation_choices == BARD_CHOICES and loaded.tool_proficiencies == ["lute", "flute", "viol"] and (loaded.tool_proficiency_sources.is_empty() if LEGACY_SLOTS[slot] else true) and loaded.inventory.count_item("drum") == 1, "%s: retained choices and instruments, no replayed grants" % slot)
+		h._assert(SaveManager.save_game(slot), "%s: loaded legacy Bard saves again" % slot)
 
 
 static func reload(h: Node) -> void:
@@ -92,6 +124,12 @@ static func reload(h: Node) -> void:
 		CharacterSheet.close_sheet()
 	SaveManager.delete_save(SLOT)
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(IDS))
+	for slot in LEGACY_SLOTS:
+		h._assert(SaveManager.load_game(slot), "%s fresh process: re-saved legacy Bard loads" % slot)
+		var bard: Character = PlayerManager.get_player(0).get("character")
+		h._assert(bard != null and bard.creation_choices == BARD_CHOICES and bard.tool_proficiencies == ["lute", "flute", "viol"] and (bard.tool_proficiency_sources.is_empty() if LEGACY_SLOTS[slot] else true) and bard.inventory.count_item("drum") == 1, "%s fresh process: instruments retained without replay" % slot)
+		h._assert(SaveManager.save_game(slot), "%s fresh process: saves again" % slot)
+		SaveManager.delete_save(slot)
 	h._exit_test()
 
 

@@ -52,6 +52,26 @@ static func run(check: Callable) -> void:
 	restored.from_dict(legacy)
 	check.call(ClassProgression.saved_choices_error(legacy).is_empty() and restored.tool_proficiencies.is_empty() and restored.tool_proficiency_sources.is_empty(), "Legacy Druid saves load without a retroactive Herbalism grant")
 
+	# Reviewer repro (PR #74): pre-G2 Bard DTO keeps choices and instrument
+	# proficiencies but has no sources key; load -> save must still validate.
+	var bard_choices := {"skills": ["Performance", "Persuasion", "Stealth"], "tools": ["lute", "flute", "viol"], "instrument": "drum", "equipment": "equipment"}
+	var bard := Character.new()
+	bard.initialize("Legacy Bard", "elf", "bard", AbilityScores.new(), "equipment", bard_choices)
+	var old_bard := bard.to_dict()
+	old_bard.erase("tool_proficiency_sources")
+	check.call(ClassProgression.saved_choices_error(old_bard).is_empty(), "Pre-G2 Bard save with retained instrument choices passes preflight")
+	var loaded_bard := Character.new()
+	loaded_bard.from_dict(JSON.parse_string(JSON.stringify(old_bard)))
+	var resaved := loaded_bard.to_dict()
+	check.call(ClassProgression.saved_choices_error(resaved).is_empty(), "Loaded pre-G2 Bard save validates again on its next save: %s" % ClassProgression.saved_choices_error(resaved))
+	check.call(loaded_bard.tool_proficiencies == ["lute", "flute", "viol"] and loaded_bard.creation_choices == bard_choices and loaded_bard.tool_proficiency_sources.is_empty() and loaded_bard.inventory.to_dict() == bard.inventory.to_dict(), "Legacy Bard grants are retained without replay or invented sources")
+	var reloaded := Character.new()
+	reloaded.from_dict(JSON.parse_string(JSON.stringify(resaved)))
+	check.call(ClassProgression.saved_choices_error(reloaded.to_dict()).is_empty() and reloaded.tool_proficiencies == loaded_bard.tool_proficiencies, "Legacy Bard survives a second save/reload cycle")
+	var forged := bard.to_dict()
+	forged["tool_proficiency_sources"] = {"lute": ["class_choice:bard"], "flute": ["class_choice:bard"]}
+	check.call(not ClassProgression.saved_choices_error(forged).is_empty(), "A post-G2 save missing a chosen tool's source is still refused")
+
 
 static func make(class_id: String) -> Character:
 	var c := Character.new()
