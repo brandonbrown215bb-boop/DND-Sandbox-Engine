@@ -594,13 +594,20 @@ func _starting_gear_ids() -> Array:
 				if grant.type == "equipment_grant":
 					for _copy in int(grant.quantity): gear.append(grant.item_id)
 		return gear
-	var mode := str(_creation_choices()["equipment"]) if selected_class_id in ["bard", "cleric"] else barbarian_starting_equipment_choice
-	if selected_class_id in ["bard", "barbarian", "cleric"] and mode == "gold":
+	if _equipment_mode() == "gold":
 		return []
-	var gear: Array = DataLoader.get_character_class(selected_class_id).get("starting_equipment", []).duplicate()
+	var gear: Array = ClassProgression.creation_starting_equipment(selected_class_id, _creation_choices() if ClassProgression.uses_creation_choices(selected_class_id) else {})
 	if selected_class_id == "bard" and not str(bard_creation_choices["instrument"]).is_empty():
 		gear.append(str(bard_creation_choices["instrument"]))
 	return gear
+
+
+## Equipment-versus-GP option: Barbarian keeps its own selector; other
+## creation-choice classes read the generic class-data choice.
+func _equipment_mode() -> String:
+	if selected_class_id == "barbarian":
+		return barbarian_starting_equipment_choice
+	return str(_creation_choices()["equipment"]) if ClassProgression.uses_creation_choices(selected_class_id) else "equipment"
 
 
 func _starting_gold() -> int:
@@ -633,7 +640,7 @@ func _origin_feat_probe() -> Character:
 		probe.ability_scores = selected_stats.duplicate_scores() if selected_stats != null else AbilityScores.new()
 		for skill in DataLoader.get_race(selected_race_id).get("proficiencies", []): probe.skill_proficiencies.append(str(skill))
 		return probe
-	probe.initialize(selected_name, selected_race_id, selected_class_id, selected_stats.duplicate_scores(), barbarian_starting_equipment_choice if selected_class_id == "barbarian" else str(_creation_choices()["equipment"]) if selected_class_id in ["bard", "cleric"] else "equipment", _creation_choices() if ClassProgression.uses_creation_choices(selected_class_id) else {})
+	probe.initialize(selected_name, selected_race_id, selected_class_id, selected_stats.duplicate_scores(), _equipment_mode(), _creation_choices() if ClassProgression.uses_creation_choices(selected_class_id) else {})
 	if selected_class_id == "cleric": ClassProgression.choose_feature_option(probe, "cleric_divine_order", cleric_divine_order)
 	return probe
 
@@ -901,7 +908,7 @@ func _build_summary_ui() -> void:
 	summary_equip_label.text = equip_text
 	if PermanentProgressionRules.enabled(selected_class_id) and not _creation_choice_error().is_empty():
 		summary_equip_label.text += _creation_choice_error()
-	if selected_class_id in ["barbarian", "bard", "cleric"]:
+	if selected_class_id == "barbarian" or ClassProgression.uses_creation_choices(selected_class_id):
 		summary_equip_label.text += "Gold: %d GP" % _starting_gold()
 
 
@@ -935,7 +942,7 @@ func _confirm_and_save_character() -> void:
 		_update_step_ui()
 		return
 	var character := Character.new()
-	character.initialize(selected_name, selected_race_id, selected_class_id, selected_stats.duplicate_scores(), barbarian_starting_equipment_choice if selected_class_id == "barbarian" else str(_creation_choices()["equipment"]) if selected_class_id in ["bard", "cleric"] else "equipment", _creation_choices() if ClassProgression.uses_creation_choices(selected_class_id) else {})
+	character.initialize(selected_name, selected_race_id, selected_class_id, selected_stats.duplicate_scores(), _equipment_mode(), _creation_choices() if ClassProgression.uses_creation_choices(selected_class_id) else {})
 	character.creation_choices["ability_generation"] = _ability_generation_record()
 	if character.class_id != selected_class_id:
 		return

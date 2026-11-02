@@ -36,7 +36,7 @@ static func run(h: Node) -> void:
 	creation.btn_next.pressed.emit()
 	await h.get_tree().process_frame
 	var monk: Character = PlayerManager.get_player(0).get("character")
-	h._assert(monk != null and monk.tool_proficiency_sources == {"flute": ["class_choice:monk"]} and monk.inventory.count_item("flute") == 0 and monk.skill_proficiencies.has("Stealth"), "Monk Confirm grants the chosen tool proficiency once, without the item")
+	h._assert(monk != null and monk.tool_proficiency_sources == {"flute": ["class_choice:monk"]} and monk.inventory.count_item("flute") == 1 and monk.skill_proficiencies.has("Stealth"), "Monk Confirm grants the chosen tool proficiency once, with one copy of the item")
 	h._assert(creation.current_player_idx == 1 and creation.class_creation_choices.is_empty(), "The next seat starts with fresh class choices")
 	await _to_equipment(h, creation, "G2 Druid", "druid")
 	h._assert(creation.equip_list.get_node_or_null("DruidTool1") == null, "Druid has no tool picker; Herbalism Kit is fixed")

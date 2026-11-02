@@ -29,6 +29,21 @@ static func uses_creation_choices(class_id: String) -> bool:
 	return DataLoader.get_character_class(class_id).get("creation_proficiency_choices", false) == true
 
 
+## Option-A starting items from class data. A gold-only choice gives no items.
+## `starting_equipment_includes_tool_choice` adds one copy of each already
+## validated chosen tool (SRD Monk: "Artisan's Tools or Musical Instrument
+## chosen for the tool proficiency above"). Items never grant proficiency.
+static func creation_starting_equipment(class_id: String, choices: Dictionary) -> Array:
+	var data := DataLoader.get_character_class(class_id)
+	if str(choices.get("equipment", "equipment")) == "gold":
+		return []
+	var gear: Array = data.get("starting_equipment", []).duplicate()
+	if data.get("starting_equipment_includes_tool_choice", false) == true:
+		for tool in choices.get("tools", []):
+			gear.append(str(tool))
+	return gear
+
+
 ## Source-owned tool proficiency. Each source grants a tool once; a tool held by
 ## several sources (Rogue and Criminal Thieves' Tools) is listed once.
 ## Owning the item is not proficiency; only this grant adds proficiency.

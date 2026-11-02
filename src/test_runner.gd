@@ -157,6 +157,7 @@ func _ready() -> void:
 	_run_group("barbarian", func(): BarbarianChecks.run(_assert))
 	_run_group("bard", func(): BardChecks.run(_assert))
 	_run_group("classes", func(): ClassToolProficiencyChecks.run(_assert))
+	_run_group("classes", func(): ClassToolItemChecks.run(_assert))
 	_run_group("classes", func(): SkilledFeatChecks.run(_assert)) # G4
 	_run_group("classes", func(): ClassSkillSelectionChecks.run(_assert)) # PR C
 	_run_group("cleric", func(): ClericChecks.run(_assert))

@@ -5,7 +5,7 @@ extends RefCounted
 static func run(check: Callable) -> void:
 	var druid := make("druid")
 	check.call(druid.tool_proficiencies == ["herbalism_kit"] and druid.tool_proficiency_sources == {"herbalism_kit": ["class:druid"]}, "Druid creation grants Herbalism Kit proficiency owned by the Druid class")
-	check.call(druid.inventory.count_item("herbalism_kit") == 0 and CheckHelpRules.owns(druid, "tool", "herbalism_kit"), "Druid proficiency does not require or create the kit item and is usable for Help")
+	check.call(druid.inventory.count_item("herbalism_kit") == 1 and druid.inventory.gold == 9 and CheckHelpRules.owns(druid, "tool", "herbalism_kit"), "Druid option A gives one Herbalism Kit copy and 9 GP; the proficiency stays class-owned and usable for Help")
 	var rogue := make("rogue")
 	check.call(rogue.tool_proficiencies == ["thieves_tools"] and rogue.tool_proficiency_sources == {"thieves_tools": ["class:rogue"]} and rogue.skill_proficiencies.size() >= 4, "Rogue creation grants chosen skills and class-owned Thieves' Tools")
 	check.call(not ClassProgression.grant_tool_proficiency(rogue, "thieves_tools", "class:rogue"), "Repeating the same source grant is refused")
@@ -18,7 +18,7 @@ static func run(check: Callable) -> void:
 	monk_choices["tools"] = ["flute"]
 	var monk := Character.new()
 	monk.initialize("Monk", "human", "monk", AbilityScores.new(), "equipment", monk_choices)
-	check.call(monk.tool_proficiencies == ["flute"] and monk.tool_proficiency_sources == {"flute": ["class_choice:monk"]} and monk.inventory.count_item("flute") == 0, "Monk chooses one instrument proficiency without receiving the item")
+	check.call(monk.tool_proficiencies == ["flute"] and monk.tool_proficiency_sources == {"flute": ["class_choice:monk"]} and monk.inventory.count_item("flute") == 1, "Monk option A gives one copy of the chosen instrument alongside its class_choice proficiency")
 	var bad := monk_choices.duplicate(true)
 	bad["tools"] = ["flute", "lute"]
 	check.call(not ClassProgression.creation_choices_error("monk", "human", bad).is_empty(), "Monk must choose exactly one tool")
