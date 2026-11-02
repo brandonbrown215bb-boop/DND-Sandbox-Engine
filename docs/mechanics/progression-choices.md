@@ -51,7 +51,7 @@ no items. The item copy is inventory only; proficiency still comes from
 refuses a character whose class is already set) and are never re-added on
 restore, so older saves keep their inventory without retroactive kits. Not
 delivered: Druid Sickle, Druidic Focus (Quarterstaff), Explorer's Pack; Monk
-Explorer's Pack (data still holds 5 Daggers and a Spear only).
+Explorer's Pack.
 
 PR C class skills (SRD 5.2.1 Core Traits; `srd.txt` lines): Barbarian 2 of 6
 (1735-1737), Fighter 2 of 9 (2844-2848), Paladin 2 of 6 (3177-3181), Ranger 3
