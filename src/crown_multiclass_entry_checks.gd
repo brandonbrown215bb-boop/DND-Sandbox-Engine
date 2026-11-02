@@ -87,6 +87,17 @@ static func _permanent_versus_projected(check: Callable) -> void:
 	check.call(projected and c.ability_scores.get_score("STR") == 18 and c.ability_scores.get_permanent_score("STR") == 12, "G3 projection raises current STR while permanent STR stays 12")
 	var before := c.to_dict().duplicate(true)
 	check.call("fixture:g3_str" not in PermanentProgressionRules.available_classes(c) and not confirm(c, "fixture:g3_str") and c.to_dict() == before, "G3 projected score does not satisfy the entry gate")
+	# Review: actor projection replaces the live AbilityScores with form scores,
+	# so get_permanent_score reads the form. The gate must read the originals.
+	Batch040Checks.load_fixtures()
+	var shifted := actor({"STR":12})
+	var shift_ok: bool = Batch040Checks.shift(shifted, 2, "b040_hound").get("projection", {}).get("projected", false)
+	before = shifted.to_dict().duplicate(true)
+	check.call(shift_ok and shifted.ability_scores.get_permanent_score("STR") == 16 and "fixture:g3_str" not in PermanentProgressionRules.available_classes(shifted) and not confirm(shifted, "fixture:g3_str") and shifted.to_dict() == before, "G3 an actor projected into a STR 16 form with own STR 12 is refused")
+	var weak := actor({"STR":13})
+	weak.wild_shape_state = {"original_ability_scores": weak.ability_scores.to_dict()}
+	weak.ability_scores.set_score("STR", 8)
+	check.call("fixture:g3_str" in PermanentProgressionRules.available_classes(weak), "G3 a shaped actor's own STR 13 still qualifies under a weaker form")
 
 static func _stale_and_costs(check: Callable) -> void:
 	# Offered, then the score drops before confirmation: re-checked on confirm.

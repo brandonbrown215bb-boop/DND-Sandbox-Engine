@@ -183,14 +183,24 @@ static func multiclass_prerequisite_error(c: Character, proposed_class_id: Strin
 		var data := DataLoader.get_character_class(str(class_id))
 		var requirement: Dictionary = data.get("multiclass_prerequisite", {"all": [str(data.get("primary_ability", ""))]})
 		for ability in requirement.get("all", []):
-			var score := c.ability_scores.get_permanent_score(str(ability))
+			var score := entry_score(c, str(ability))
 			if score < 13: return "%s requires %s 13 (current score %d)." % [str(data.get("name", class_id)), str(ability), score]
 		var any_abilities: Array = requirement.get("any", [])
-		if not any_abilities.is_empty() and not any_abilities.any(func(ability): return c.ability_scores.get_permanent_score(str(ability)) >= 13):
+		if not any_abilities.is_empty() and not any_abilities.any(func(ability): return entry_score(c, str(ability)) >= 13):
 			var scores: Array[String] = []
-			for ability in any_abilities: scores.append("%s %d" % [str(ability), c.ability_scores.get_permanent_score(str(ability))])
+			for ability in any_abilities: scores.append("%s %d" % [str(ability), entry_score(c, str(ability))])
 			return "%s requires one of these scores to be 13: %s." % [str(data.get("name", class_id)), ", ".join(scores)]
 	return ""
+
+## The actor's own permanent score. Actor projection and Wild Shape replace the
+## live AbilityScores object with form scores; the entry gate reads the
+## recorded originals instead (SRD 5.2.1 multiclassing uses your own scores).
+static func entry_score(c: Character, ability: String) -> int:
+	var key := ability.to_upper().left(3)
+	var projection := ActorProjectionRules.active(c)
+	var original: Variant = projection.record.projection.get("original", {}).get("ability_scores", {}) if not projection.is_empty() else c.wild_shape_state.get("original_ability_scores", {})
+	if original is Dictionary and original.has(key): return int(original[key])
+	return c.ability_scores.get_permanent_score(key)
 
 static func advance(c: Character, class_id: String, captured_state: Dictionary) -> bool:
 	if c == null or GameManager.current_state == GameManager.GameState.COMBAT or c.permanent_progression != captured_state or not saved_error(c.to_dict()).is_empty(): return false
