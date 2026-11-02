@@ -7,6 +7,9 @@ extends Node
 var failures: Array[String] = []
 
 
+## PR C: SRD Core Traits picks for the newly flagged classes.
+const CLASS_SKILL_PICKS := {"Barbarian": ["Athletics", "Survival"], "Paladin": ["Insight", "Religion"], "Ranger": ["Nature", "Stealth", "Survival"], "Sorcerer": ["Arcana", "Deception"], "Warlock": ["Arcana", "Investigation"], "Wizard": ["Arcana", "History"]}
+
 func _ready() -> void:
 	if OS.get_environment("RUN_NORMAL_CREATION_MATRIX") != "1":
 		return
@@ -183,6 +186,9 @@ func _run_class_equipment_smoke(target_class: String, expected_equipment: Array[
 		picks = [["ClericDivineOrder", "protector"], ["ClericSkill1", "Medicine"], ["ClericSkill2", "Religion"]]
 	elif target_class == "Rogue":
 		picks = [["RogueSkill1", "Acrobatics"], ["RogueSkill2", "Deception"], ["RogueSkill3", "Investigation"], ["RogueSkill4", "Stealth"]]
+	elif CLASS_SKILL_PICKS.has(target_class):
+		for index in CLASS_SKILL_PICKS[target_class].size():
+			picks.append(["%sSkill%d" % [target_class, index + 1], CLASS_SKILL_PICKS[target_class][index]])
 	if not picks.is_empty():
 		for pair in picks:
 			var selector: OptionButton = creation.equip_list.get_node(pair[0])
@@ -203,10 +209,14 @@ func _run_class_equipment_smoke(target_class: String, expected_equipment: Array[
 	_check(character != null and character.class_id == target_class.to_lower(), "normal creation saves a %s character" % target_class)
 	if character == null:
 		return
+	if CLASS_SKILL_PICKS.has(target_class):
+		var chosen: Array = CLASS_SKILL_PICKS[target_class]
+		_check(character.creation_choices.get("skills", []) == chosen and chosen.all(func(skill): return character.skill_proficiencies.count(skill) == 1), "normal %s owns its selected class skills once" % target_class)
 	if target_class == "Fighter":
 		_check(character.inventory.get_armor() == "chain_mail", "normal Fighter equips chain mail")
 		_check(character.inventory.get_equipped(Inventory.Slot.SHIELD) == "shield", "normal Fighter equips a shield")
 		_check(character.inventory.get_weapon() == "longsword", "normal Fighter equips a longsword")
+		_check(character.fighter_training.get("skills", []).size() == 2 and character.creation_choices.get("skills", []) == character.fighter_training.get("skills", []), "normal Fighter keeps its preselected training skills as the class picks")
 	elif target_class == "Barbarian":
 		_check(character.inventory.get_armor().is_empty(), "normal Barbarian starts unarmored")
 		_check(character.inventory.get_weapon() == "greataxe", "normal Barbarian equips a greataxe")

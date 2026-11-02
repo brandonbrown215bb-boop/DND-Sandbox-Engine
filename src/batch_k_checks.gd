@@ -234,7 +234,7 @@ static func _repair_regressions(check: Callable, neutral: Dictionary) -> void:
 	fighter_record.features_by_level["1"].append(skill_feature)
 	DataLoader.classes["fighter"] = fighter_record
 	c = actor("fighter")
-	check.call("Athletics" in c.fighter_training.skills and c.creation_choices.is_empty(), "K3: Fighter training independently owns Athletics")
+	check.call("Athletics" in c.fighter_training.skills and c.creation_choices.get("skills", []) == c.fighter_training.skills, "K3: Fighter training independently owns Athletics")
 	check.call(ClassProgression.choose_feature_option(c, "fixture:k_boon", "k_blade") and ClassProgression.replace_feature_option(c, "fixture:k_boon", "k_blade", "k_tome"), "K3: overlapping skill choice acquired and replaced")
 	check.call("Athletics" in c.skill_proficiencies and "Perception" in c.skill_proficiencies, "K3: replacement preserves both Fighter training skills")
 	check.call(SaveManager._validate_save_data(full_save(c)).is_empty(), "K3: preserved Fighter full save remains valid")

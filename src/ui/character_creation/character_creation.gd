@@ -559,6 +559,9 @@ func _class_choices() -> Dictionary:
 		var tools: Array = []
 		skills.resize(int(data.get("skill_choices", {}).get("pick", 0)))
 		skills.fill("")
+		var preset := ClassProgression.preset_creation_skills(selected_class_id, selected_race_id)
+		for index in mini(preset.size(), skills.size()):
+			skills[index] = preset[index]
 		tools.resize(int(data.get("tool_choices", {}).get("pick", 0)))
 		tools.fill("")
 		class_creation_choices = {"skills": skills, "tools": tools, "equipment": "equipment"}
@@ -758,8 +761,8 @@ func _build_class_creation_choices() -> void:
 				_check_next_step_validity()
 			)
 			equip_list.add_child(selector)
-	if not data.has("starting_gold_alternative"):
-		return # Full equipment-pack choices are outside G2.
+	if not data.has("starting_gold_alternative") or selected_class_id == "barbarian":
+		return # Full equipment-pack choices are outside G2; Barbarian keeps its own A/B selector.
 	var equipment := OptionButton.new()
 	equipment.name = "%sStartingEquipment" % selected_class_id.capitalize()
 	equipment.add_item("Equipment and %d GP" % int(data["starting_gold"]))
