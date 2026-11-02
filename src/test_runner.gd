@@ -186,7 +186,7 @@ func _ready() -> void:
 	_run_group("ui", _test_widgets)
 	_run_group("classes", func(): ClassFeatureChecks.run(_assert))
 	_run_group("classes", func(): QuickWinsChecks.run(_assert))
-	_run_group("saves", func(): VerificationRepairsChecks.run(_assert))
+	_run_group("persistence", func(): VerificationRepairsChecks.run(_assert))
 	# Release the real per-turn attack cache before the scene harness exits.
 	CombatAction.reset_bounded_owner_turn_rider_locks()
 	SpellDamageRolls.clear_pending_requests()
