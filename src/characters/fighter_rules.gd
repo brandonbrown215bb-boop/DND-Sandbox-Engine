@@ -107,9 +107,11 @@ static func choose_skills(c: Character, first: String, second: String) -> bool:
 	var legal: Array = DataLoader.get_character_class("fighter").get("skill_choices", {}).get("from", [])
 	if c.class_id != "fighter" or not c.fighter_training.get("creation", false) or first == second or first not in legal or second not in legal:
 		return false
+	if FeatRules.owns_skill(c, first) or FeatRules.owns_skill(c, second):
+		return false # G4: a feat instance (Skilled) already owns that skill.
 	var racial: Array = DataLoader.get_race(c.race_id).get("proficiencies", [])
 	for old in c.fighter_training.get("skills", []):
-		if old not in racial:
+		if old not in racial and not FeatRules.owns_skill(c, str(old)):
 			c.skill_proficiencies.erase(str(old))
 	for skill in [first, second]:
 		if skill not in c.skill_proficiencies:

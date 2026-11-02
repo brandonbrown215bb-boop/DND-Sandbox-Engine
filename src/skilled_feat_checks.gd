@@ -33,6 +33,8 @@ static func run(check: Callable) -> void:
 	_reload(check)
 	_tamper(check)
 	_neutral(check)
+	_fighter_training(check)
+	_held_tool(check)
 
 static func _definition(check: Callable) -> void:
 	var feat := DataLoader.get_feat(SKILLED)
@@ -121,6 +123,7 @@ static func _tamper(check: Callable) -> void:
 		if key != "origin": asi = key
 	var cases := {}
 	var d := dto.duplicate(true); d.feat_proficiency_choices.erase(asi); cases["missing instance"] = d
+	d = dto.duplicate(true); d.feat_proficiency_choices.erase("origin"); cases["missing skills-only origin record"] = d
 	d = dto.duplicate(true); d.feat_proficiency_choices["fixture:ghost"] = d.feat_proficiency_choices[asi].duplicate(true); cases["unearned instance"] = d
 	d = dto.duplicate(true); d.feat_proficiency_choices[asi].tools.pop_back(); cases["short picks"] = d
 	d = dto.duplicate(true); d.feat_proficiency_choices[asi].skills = [d.feat_proficiency_choices.origin.skills[0]]; cases["skill picked twice"] = d
@@ -143,3 +146,19 @@ static func _neutral(check: Callable) -> void:
 	var back := Character.new()
 	back.from_dict(dto)
 	check.call(not refused.success and ok.success and c.tool_proficiency_sources.get("smiths_tools", []) == ["feat:%s@origin" % DRILLED] and ClassProgression.saved_choices_error(dto).is_empty() and back.feat_proficiency_choices == c.feat_proficiency_choices, "G4 a renamed neutral fixture feat (pick 2, own list) uses the same generic path and reloads")
+
+## Reviewer: the pre-combat Fighter skill swap must not take or drop a feat's pick.
+static func _fighter_training(check: Callable) -> void:
+	var c := Character.new()
+	c.initialize("G4 Fighter", "human", "fighter", AbilityScores.new(), "equipment", {})
+	var took := FeatRules.choose_origin(c, SKILLED, {"skills": ["History", "Insight", "Stealth"], "tools": []})
+	var refused: bool = not FighterRules.choose_skills(c, "History", "Survival") and c.fighter_training.skills == ["Athletics", "Perception"]
+	var swapped: bool = FighterRules.choose_skills(c, "Survival", "Intimidation") and FighterRules.choose_skills(c, "Athletics", "Perception")
+	check.call(took.success and refused and swapped and "History" in c.skill_proficiencies and "Survival" not in c.skill_proficiencies and FeatRules.saved_error(c.to_dict()).is_empty(), "Fighter creation skill swaps neither reuse nor strip a Skilled pick, and the save stays valid")
+
+## Reviewer: a tool already held from another source is refused like a held skill.
+static func _held_tool(check: Callable) -> void:
+	var c := fresh("g4_held_tool")
+	ClassProgression.grant_tool_proficiency(c, "flute", "background:g4_probe")
+	var refused := FeatRules.choose_origin(c, SKILLED, {"skills": _free_skills(c, 2), "tools": ["flute"]})
+	check.call(not refused.success and c.origin_feat.is_empty() and c.tool_proficiency_sources.get("flute", []) == ["background:g4_probe"], "G4 Skilled refuses a tool already held from another source")
