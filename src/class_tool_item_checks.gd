@@ -29,6 +29,19 @@ static func run(check: Callable) -> void:
 	var after_drop := Character.new()
 	after_drop.from_dict(dropped)
 	check.call(after_drop.inventory.count_item("smiths_tools") == 0 and after_drop.tool_proficiencies == ["smiths_tools"], "A save without the item (old save or item sold) is not regranted on load; proficiency is independent")
+	# Review: the loader refuses a malformed declaration.
+	var no_choices := DataLoader.get_character_class("monk").duplicate(true)
+	no_choices["id"] = "fixture:tool_item_no_choices"
+	no_choices.erase("tool_choices")
+	var not_bool := DataLoader.get_character_class("monk").duplicate(true)
+	not_bool["id"] = "fixture:tool_item_not_bool"
+	not_bool["starting_equipment_includes_tool_choice"] = "yes"
+	var errors_before: int = DataLoader._load_errors.size()
+	var accepted_a: bool = DataLoader._validate_semantics(no_choices, "class", "tool item review")
+	var accepted_b: bool = DataLoader._validate_semantics(not_bool, "class", "tool item review")
+	var added: Array = DataLoader._load_errors.slice(errors_before)
+	DataLoader._load_errors.resize(errors_before)
+	check.call(not accepted_a and not accepted_b and added.filter(func(e): return "starting_equipment_includes_tool_choice" in str(e)).size() == 2, "The loader refuses a tool-item declaration without tool_choices or as a non-boolean (%s)" % str(added))
 	# Neutral renamed class: same declaration, no class-ID branch.
 	var neutral := DataLoader.get_character_class("monk").duplicate(true)
 	neutral["id"] = "tool_item_probe"
