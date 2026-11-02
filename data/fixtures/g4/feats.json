@@ -1,0 +1,12 @@
+[
+  {
+    "id": "fixture:g4_drilled",
+    "name": "Drilled Hands",
+    "category": "origin",
+    "repeatable": true,
+    "description": "Neutral G4 fixture: two picks from a short renamed list.",
+    "source": "G4 test fixture (renamed neutral data, not SRD content)",
+    "proficiency_choices": {"pick": 2, "skills": ["Athletics", "Survival"], "tools": ["smiths_tools", "flute"]},
+    "features": []
+  }
+]

@@ -509,6 +509,8 @@ static func _revoke_feature_option_grants(c: Character, feature_id: String, old_
 				keep = true
 			if not keep and c.class_id == "fighter" and s_str in c.fighter_training.get("skills", []):
 				keep = true
+			if not keep and FeatRules.owns_skill(c, s_str):
+				keep = true # G4: a feat instance (Skilled) also owns this skill.
 			if not keep:
 				for feature_id_check in skill_choice_ids(c):
 					if s_str in c.feature_choices.get(feature_id_check, []):

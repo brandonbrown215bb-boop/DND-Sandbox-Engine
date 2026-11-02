@@ -1790,6 +1790,10 @@ func _validate_cross_references() -> void:
 	for class_data in classes.values():
 		var progression_error := PermanentProgressionRules.definition_error(class_data)
 		if not progression_error.is_empty(): _load_errors.append(progression_error)
+	for feat_id in feats: # G4: feat proficiency choices must offer real tool records.
+		for tool_id in feats[feat_id].get("proficiency_choices", {}).get("tools", []):
+			if get_item(str(tool_id)).get("type", "") != "tool":
+				_load_errors.append("Feat '%s' references missing tool '%s'" % [feat_id, tool_id])
 	for id in subclasses:
 		var parent := str(subclasses[id].get("class_id", ""))
 		if not classes.has(parent):

@@ -3468,3 +3468,16 @@ plus its fresh-process reload, `normal_creation_matrix`). **Remaining limits:**
 option-A starting items for those tools, full equipment packs, and creation
 skill pickers for classes without `creation_proficiency_choices`. Syntax lives in
 [progression choices](../mechanics/progression-choices.md#class-proficiency-choices-at-creation-crown-g2).
+
+## Skilled Origin feat — Crown G4
+
+**Status:** verified subset. Core Skilled (SRD 5.2.1 p.87) is chosen at
+creation and again at an Ability Score Improvement; each instance owns its three
+skill/tool picks as `feat:skilled@<instance>`, refusals leave nothing spent, and
+saves round-trip without replay (logic group `classes` `SkilledFeatChecks`,
+`skilled_feat_creation_flow` plus its fresh-process reload, `quick_wins_flow`,
+`normal_creation_matrix`). Neutral fixture `data/fixtures/g4/feats.json` (pick 2)
+uses the same path. **Remaining limits:** Gaming Sets (no item records),
+background-granted Origin feats, and a Skilled pick that a later source also
+grants is not re-offered. Syntax lives in
+[progression choices](../mechanics/progression-choices.md#feat-proficiency-choices-skilled-crown-g4).

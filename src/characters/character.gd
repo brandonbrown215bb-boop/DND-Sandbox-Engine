@@ -403,6 +403,9 @@ var tool_proficiency_sources: Dictionary = {}
 ## Tools restored from a pre-G2 save (no sources key); kept as represented
 ## legacy grants so later saves stay valid without replaying acquisition.
 var legacy_tool_proficiencies: Array = []
+## G4: feat instance ("origin" or an ASI feature id) -> {"feat_id", "skills", "tools"}
+## chosen through a feat's proficiency_choices (Skilled). Restore replays nothing.
+var feat_proficiency_choices: Dictionary = {}
 var creation_choices: Dictionary = {}
 ## Batch 051: the Origin feat chosen at creation (SRD 5.2.1 p.83).
 var origin_feat: String = ""
@@ -1177,6 +1180,7 @@ func initialize(p_name: String, p_race_id: String, p_class_id: String, scores: A
 	tool_proficiencies.clear()
 	tool_proficiency_sources.clear()
 	legacy_tool_proficiencies.clear()
+	feat_proficiency_choices.clear()
 	if not managed:
 		ClassProgression.grant_creation_tools(self, choices)
 
@@ -2711,6 +2715,7 @@ func to_dict() -> Dictionary:
 		"tool_proficiencies": tool_proficiencies.duplicate(),
 		"tool_proficiency_sources": tool_proficiency_sources.duplicate(true),
 		"legacy_tool_proficiencies": legacy_tool_proficiencies.duplicate(),
+		"feat_proficiency_choices": feat_proficiency_choices.duplicate(true),
 		"creation_choices": creation_choices.duplicate(true),
 		"origin_feat": origin_feat,
 		"weapon_proficiencies": weapon_proficiencies,
@@ -2861,6 +2866,7 @@ func from_dict(data: Dictionary) -> void:
 		for score in generation["results"]: generated_results.append(int(score))
 		generation["results"] = generated_results
 	origin_feat = str(data.get("origin_feat", "")) if data.get("origin_feat", "") is String and FeatRules.saved_error(data).is_empty() else ""
+	feat_proficiency_choices = data.get("feat_proficiency_choices", {}).duplicate(true) if data.get("feat_proficiency_choices", {}) is Dictionary and FeatRules.saved_error(data).is_empty() else {}
 	for val in data.get("skill_proficiencies", []):
 		skill_proficiencies.append(str(val))
 
