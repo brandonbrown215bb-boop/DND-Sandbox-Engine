@@ -12,6 +12,87 @@ static func default_creation_choices(class_id: String, race_id: String) -> Dicti
 	return {"skills": skills.slice(0, int(data.get("skill_choices", {}).get("pick", 0))), "tools": data.get("tool_choices", {}).get("from", []).slice(0, int(data.get("tool_choices", {}).get("pick", 0))), "instrument": "lute", "equipment": "equipment"}
 
 
+## G2: classes whose data opts into the ordinary creation proficiency picker.
+static func uses_creation_choices(class_id: String) -> bool:
+	return DataLoader.get_character_class(class_id).get("creation_proficiency_choices", false) == true
+
+
+## Source-owned tool proficiency. Each source grants a tool once; a tool held by
+## several sources (Rogue and Criminal Thieves' Tools) is listed once.
+## Owning the item is not proficiency; only this grant adds proficiency.
+static func grant_tool_proficiency(c: Character, tool_id: String, source_id: String) -> bool:
+	if c == null or tool_id.is_empty() or tool_source_kind(source_id).is_empty() or DataLoader.get_item(tool_id).get("type", "") != "tool":
+		return false
+	var sources: Array = c.tool_proficiency_sources.get(tool_id, [])
+	if source_id in sources:
+		return false
+	sources.append(source_id)
+	c.tool_proficiency_sources[tool_id] = sources
+	if tool_id not in c.tool_proficiencies:
+		c.tool_proficiencies.append(tool_id)
+	return true
+
+
+const TOOL_SOURCE_KINDS := ["class", "class_choice", "background", "feat", "species"]
+
+static func tool_source_kind(source_id: String) -> String:
+	var parts := source_id.split(":", false, 1)
+	return parts[0] if parts.size() == 2 and parts[0] in TOOL_SOURCE_KINDS else ""
+
+
+## Creation-time class tool grants: fixed class tools plus the chosen ones.
+static func grant_creation_tools(c: Character, choices: Dictionary) -> void:
+	for tool in DataLoader.get_character_class(c.class_id).get("tool_proficiency_grants", []):
+		grant_tool_proficiency(c, str(tool), "class:%s" % c.class_id)
+	for tool in choices.get("tools", []):
+		grant_tool_proficiency(c, str(tool), "class_choice:%s" % c.class_id)
+
+
+## Saved ownership must name real tools, known source kinds, and agree with the
+## saved list and class data. Tools without a source are represented legacy grants.
+static func saved_tool_sources_error(dto: Dictionary, tools: Array) -> String:
+	var legacy: Variant = dto.get("legacy_tool_proficiencies", [])
+	if not legacy is Array:
+		return "Legacy tool proficiencies are not a list"
+	for tool in legacy:
+		if not tool is String or tool not in tools or legacy.count(tool) != 1:
+			return "Legacy tool proficiency is invalid or duplicated"
+	if not dto.has("tool_proficiency_sources"):
+		return "" if legacy.is_empty() else "Legacy tool proficiencies require a sources map"
+	var sources: Variant = dto["tool_proficiency_sources"]
+	if not sources is Dictionary:
+		return "Tool proficiency sources are not an object"
+	var class_id := str(dto.get("class_id", ""))
+	var choices: Variant = dto.get("creation_choices", {})
+	var chosen: Array = choices.get("tools", []) if choices is Dictionary and choices.get("tools", []) is Array else []
+	var fixed: Array = DataLoader.get_character_class(class_id).get("tool_proficiency_grants", [])
+	for tool in sources:
+		if not tool is String or tool not in tools:
+			return "Tool proficiency source names a tool the character lacks"
+		var list: Variant = sources[tool]
+		if not list is Array or list.is_empty():
+			return "Tool proficiency sources must be a non-empty list"
+		var seen := []
+		for source in list:
+			if not source is String or source in seen or tool_source_kind(source).is_empty():
+				return "Tool proficiency source is invalid or duplicated"
+			seen.append(source)
+			if source == "class:%s" % class_id:
+				if tool not in fixed:
+					return "Class tool proficiency source is stale"
+			elif source == "class_choice:%s" % class_id:
+				if tool not in chosen:
+					return "Chosen tool proficiency source is stale"
+			elif tool_source_kind(source) in ["class", "class_choice"]:
+				return "Tool proficiency source names another class"
+	for tool in chosen:
+		if tool in legacy:
+			continue # Represented pre-G2 grant; ownership was never recorded.
+		if "class_choice:%s" % class_id not in sources.get(tool, []):
+			return "Saved creation tool proficiency source is missing"
+	return ""
+
+
 static func creation_choices_error(class_id: String, race_id: String, choices: Dictionary) -> String:
 	var data := DataLoader.get_character_class(class_id)
 	for pair in [["skills", "skill_choices"], ["tools", "tool_choices"]]:
@@ -25,8 +106,10 @@ static func creation_choices_error(class_id: String, race_id: String, choices: D
 				return "Choose distinct valid %s." % pair[0]
 			if pair[0] == "skills" and value in DataLoader.get_race(race_id).get("proficiencies", []):
 				return "Choose a skill your species does not already provide."
+			if pair[0] == "tools" and value in data.get("tool_proficiency_grants", []):
+				return "Choose a tool your class does not already provide."
 			seen.append(value)
-	if choices.get("equipment", "") not in ["equipment", "gold"]:
+	if choices.get("equipment", "") not in (["equipment", "gold"] if data.has("starting_gold_alternative") else ["equipment"]):
 		return "Choose equipment or starting gold."
 	if class_id == "bard" and choices.get("equipment", "") == "equipment" and choices.get("instrument", "") not in data.get("tool_choices", {}).get("from", []):
 		return "Choose a starting Musical Instrument."
@@ -42,6 +125,9 @@ static func saved_creation_error(dto: Dictionary) -> String:
 		if not tool is String or tool.is_empty() or tool in seen or DataLoader.get_item(tool).get("type", "") != "tool":
 			return "Tool proficiency is invalid"
 		seen.append(tool)
+	var sources_error := saved_tool_sources_error(dto, tools)
+	if not sources_error.is_empty():
+		return sources_error
 	if not dto.has("creation_choices"):
 		return ""
 	var choices: Variant = dto["creation_choices"]

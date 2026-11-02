@@ -3457,3 +3457,14 @@ catalog zone resolvers remain in place and are not recertified by this slice.
 No new checkpoint or mid-combat save permission is added. The executable syntax
 and SRD distinctions live in the
 [physical-space contract](../mechanics/physical-facts-space-and-movement.md#declared-spatial-trigger-scopes-s-184).
+
+## Class proficiency at creation — Crown G2
+
+**Status:** verified subset. Druid Herbalism Kit, Rogue Thieves' Tools and the
+Monk Artisan's Tool/Musical Instrument choice are granted through ordinary
+creation with per-source ownership, once-only grants, stale-source preflight and
+no replay on reload (logic group `classes`, `class_proficiency_creation_flow`
+plus its fresh-process reload, `normal_creation_matrix`). **Remaining limits:**
+option-A starting items for those tools, full equipment packs, and creation
+skill pickers for classes without `creation_proficiency_choices`. Syntax lives in
+[progression choices](../mechanics/progression-choices.md#class-proficiency-choices-at-creation-crown-g2).

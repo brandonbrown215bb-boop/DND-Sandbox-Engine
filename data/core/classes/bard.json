@@ -15,6 +15,7 @@
   "weapon_proficiencies": [
     "simple"
   ],
+  "creation_proficiency_choices": true,
   "skill_choices": {
     "pick": 3,
     "from": [

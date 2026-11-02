@@ -398,6 +398,11 @@ var proficiency_bonus: int = 2
 var saving_throw_proficiencies: Array[String] = []
 var skill_proficiencies: Array[String] = []
 var tool_proficiencies: Array[String] = []
+## G2: tool_id -> source ids that own the proficiency (absent for legacy grants).
+var tool_proficiency_sources: Dictionary = {}
+## Tools restored from a pre-G2 save (no sources key); kept as represented
+## legacy grants so later saves stay valid without replaying acquisition.
+var legacy_tool_proficiencies: Array = []
 var creation_choices: Dictionary = {}
 ## Batch 051: the Origin feat chosen at creation (SRD 5.2.1 p.83).
 var origin_feat: String = ""
@@ -1101,7 +1106,7 @@ func initialize(p_name: String, p_race_id: String, p_class_id: String, scores: A
 		var initial := PermanentProgressionRules.expected_receipts([p_class_id])
 		if not PermanentProgressionRules.can_fit(self, initial): return
 	var choices := selected_creation_choices.duplicate(true)
-	if not managed and p_class_id in ["bard", "cleric"]:
+	if not managed and ClassProgression.uses_creation_choices(p_class_id):
 		if choices.is_empty():
 			choices = ClassProgression.default_creation_choices(p_class_id, p_race_id)
 		choices["equipment"] = starting_equipment_choice
@@ -1168,7 +1173,12 @@ func initialize(p_name: String, p_race_id: String, p_class_id: String, scores: A
 		for skill in choices.get("skills", []):
 			if str(skill) not in skill_proficiencies:
 				skill_proficiencies.append(str(skill))
-		tool_proficiencies.assign(choices.get("tools", []))
+
+	tool_proficiencies.clear()
+	tool_proficiency_sources.clear()
+	legacy_tool_proficiencies.clear()
+	if not managed:
+		ClassProgression.grant_creation_tools(self, choices)
 
 	# Starting equipment
 	var starting_equipment: Array = [] if managed else class_data.get("starting_equipment", []).duplicate()
@@ -2699,6 +2709,8 @@ func to_dict() -> Dictionary:
 		"saving_throw_proficiencies": saving_throw_proficiencies,
 		"skill_proficiencies": skill_proficiencies,
 		"tool_proficiencies": tool_proficiencies.duplicate(),
+		"tool_proficiency_sources": tool_proficiency_sources.duplicate(true),
+		"legacy_tool_proficiencies": legacy_tool_proficiencies.duplicate(),
 		"creation_choices": creation_choices.duplicate(true),
 		"origin_feat": origin_feat,
 		"weapon_proficiencies": weapon_proficiencies,
@@ -2834,6 +2846,11 @@ func from_dict(data: Dictionary) -> void:
 
 	skill_proficiencies.clear()
 	tool_proficiencies.assign(data.get("tool_proficiencies", []))
+	tool_proficiency_sources = data.get("tool_proficiency_sources", {}).duplicate(true) if data.get("tool_proficiency_sources", {}) is Dictionary else {}
+	if not data.has("tool_proficiency_sources"):
+		legacy_tool_proficiencies = tool_proficiencies.duplicate()
+	else:
+		legacy_tool_proficiencies = data.get("legacy_tool_proficiencies", []).duplicate() if data.get("legacy_tool_proficiencies", []) is Array else []
 	creation_choices = data.get("creation_choices", {}).duplicate(true)
 	if creation_choices.has("ability_generation") and AbilityScores.saved_generation_error(data).is_empty():
 		# JSON numbers arrive as floats. Restore the recorded integers without

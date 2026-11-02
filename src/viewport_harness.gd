@@ -486,6 +486,8 @@ func _run_scenario(scenario: String) -> void:
 		"bard_action_flow": await test_bard_action_flow()
 		"bard_creation_flow": await test_bard_creation_flow()
 		"cleric_creation_flow": await test_cleric_creation_flow()
+		"class_proficiency_creation_flow": await ClassProficiencyCreationControls.run(self)
+		"class_proficiency_creation_reload": await ClassProficiencyCreationControls.reload(self)
 		"cleric_action_flow": await test_cleric_action_flow()
 		"cleric_strike_flow": await test_cleric_strike_flow()
 		"core12_shared_rules": await test_core12_shared_rules()
