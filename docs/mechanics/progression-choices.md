@@ -60,8 +60,12 @@ A feat may declare `"proficiency_choices": {"pick": N, "skills": [...],
 items of type `tool`; entries distinct; no other keys). Any combination of
 exactly `pick` distinct entries is legal. Core `data/core/feats/skilled.json`
 is SRD 5.2.1 p.87 Skilled: an Origin feat, `repeatable`, `features: []`,
-pick 3 from all 18 skills and the 33 SRD Artisan's Tools, Other Tools and
-Musical Instruments that have item records (Gaming Sets have none yet).
+pick 3 from all 18 skills and the 37 SRD Artisan's Tools, Other Tools and
+Musical Instruments, including Dice, Dragonchess, Playing Cards and
+Three-Dragon Ante Gaming Sets. Gaming Set weight is unspecified in the SRD;
+their item records omit `weight` rather than treating them as weightless.
+These records support proficiency choices; their described Utilize tasks
+are not implemented by this acquisition work.
 
 Each acquisition is its own instance: `origin` for the creation Origin feat, or
 the Ability Score Improvement feature id it replaced. `FeatRules.choose_origin`
