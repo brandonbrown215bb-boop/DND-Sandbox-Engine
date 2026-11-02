@@ -170,7 +170,7 @@ const GAMING_SETS := ["dice_set", "dragonchess_set", "playing_card_set", "three_
 
 static func _gaming_sets(check: Callable) -> void:
 	var tools: Array = DataLoader.get_feat(SKILLED).proficiency_choices.tools
-	check.call(GAMING_SETS.all(func(t): return t in tools and DataLoader.get_item(t).get("type", "") == "tool" and str(DataLoader.get_item(t).get("name", "")).begins_with("Gaming Set (")), "Skilled offers all four SRD Gaming Set variants as tool records")
+	check.call(GAMING_SETS.all(func(t): return t in tools and DataLoader.get_item(t).get("type", "") == "tool" and str(DataLoader.get_item(t).get("name", "")).begins_with("Gaming Set (") and not DataLoader.get_item(t).has("weight")), "Skilled offers all four SRD Gaming Set variants as tool records; SRD weight '—' stays unknown (no weight key)")
 	var c := fresh("gs_build")
 	var origin := FeatRules.choose_origin(c, SKILLED, {"skills": _free_skills(c, 1), "tools": ["dice_set", "dragonchess_set"]})
 	check.call(origin.success and c.tool_proficiencies.count("dice_set") == 1 and c.tool_proficiency_sources.get("dice_set", []) == ["feat:skilled@origin"] and c.inventory.count_item("dice_set") == 0 and CheckHelpRules.owns(c, "tool", "dice_set"), "Origin Skilled grants a Gaming Set once, owned by feat:skilled@origin, with no item")
@@ -204,4 +204,5 @@ static func _missing_feat_tool(check: Callable) -> void:
 		DataLoader._load_errors.resize(before)
 		DataLoader.feats.erase(id)
 		results[tool_id] = added.has("Feat '%s' references missing tool '%s'" % [id, tool_id])
+	check.call(not DataLoader.feats.has("fixture:g4_tool_probe"), "Loader tool probe leaves no probe feat behind")
 	check.call(results["fixture:no_such_tool"] and results["rations"] and not results["dice_set"], "Loader refuses a feat tool choice that is missing or not a tool, and accepts a Gaming Set: %s" % str(results))

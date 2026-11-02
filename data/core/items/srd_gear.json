@@ -371,7 +371,6 @@
   },
   {
     "id": "dice_set",
-    "weight": 0,
     "name": "Gaming Set (Dice)",
     "description": "A gaming set. Ability: Wisdom. Utilize: Discern whether someone is cheating (DC 10), or win the game (DC 20).",
     "type": "tool",
@@ -380,7 +379,6 @@
   },
   {
     "id": "dragonchess_set",
-    "weight": 0,
     "name": "Gaming Set (Dragonchess)",
     "description": "A gaming set. Ability: Wisdom. Utilize: Discern whether someone is cheating (DC 10), or win the game (DC 20).",
     "type": "tool",
@@ -389,7 +387,6 @@
   },
   {
     "id": "playing_card_set",
-    "weight": 0,
     "name": "Gaming Set (Playing Cards)",
     "description": "A gaming set. Ability: Wisdom. Utilize: Discern whether someone is cheating (DC 10), or win the game (DC 20).",
     "type": "tool",
@@ -398,7 +395,6 @@
   },
   {
     "id": "three_dragon_ante_set",
-    "weight": 0,
     "name": "Gaming Set (Three-Dragon Ante)",
     "description": "A gaming set. Ability: Wisdom. Utilize: Discern whether someone is cheating (DC 10), or win the game (DC 20).",
     "type": "tool",
