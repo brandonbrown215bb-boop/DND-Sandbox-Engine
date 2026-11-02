@@ -3464,9 +3464,12 @@ and SRD distinctions live in the
 Monk Artisan's Tool/Musical Instrument choice are granted through ordinary
 creation with per-source ownership, once-only grants, stale-source preflight and
 no replay on reload (logic group `classes`, `class_proficiency_creation_flow`
-plus its fresh-process reload, `normal_creation_matrix`). **Remaining limits:**
-option-A starting items for those tools, full equipment packs, and creation
-skill pickers for classes without `creation_proficiency_choices`. Syntax lives in
+plus its fresh-process reload, `normal_creation_matrix`). All twelve SRD classes
+now offer their declared class skill picks; Fighter's picks and native training
+share the same two slots. The supported Windows `class_skill_selection_flow`
+runs both creation passes and a fresh-process reload for the seven newly opted-in
+classes. **Remaining limits:** option-A starting items for those tools and full
+equipment packs. Syntax lives in
 [progression choices](../mechanics/progression-choices.md#class-proficiency-choices-at-creation-crown-g2).
 
 ## Skilled Origin feat — Crown G4
@@ -3477,7 +3480,9 @@ skill/tool picks as `feat:skilled@<instance>`, refusals leave nothing spent, and
 saves round-trip without replay (logic group `classes` `SkilledFeatChecks`,
 `skilled_feat_creation_flow` plus its fresh-process reload, `quick_wins_flow`,
 `normal_creation_matrix`). Neutral fixture `data/fixtures/g4/feats.json` (pick 2)
-uses the same path. **Remaining limits:** Gaming Sets (no item records),
-background-granted Origin feats, and a Skilled pick that a later source also
+uses the same path. Skilled includes all four SRD Gaming Set variants among its
+37 tool choices; the supported Windows creation/reload pair verifies separate
+Dice and Playing Cards acquisitions and their exact owners. **Remaining limits:**
+Gaming Set Utilize tasks, background-granted Origin feats, and a Skilled pick that a later source also
 grants is not re-offered. Syntax lives in
 [progression choices](../mechanics/progression-choices.md#feat-proficiency-choices-skilled-crown-g4).
