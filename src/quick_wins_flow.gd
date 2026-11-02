@@ -137,8 +137,15 @@ static func combat_controls(h: Node, c: Character) -> void:
 	enemy.current_hp = 200; enemy.max_hp = 200
 	combat._update_grid_entities()
 	combat.hud.btn_attack.pressed.emit()
+	var log_before: int = combat.hud.log_text.text.length()
 	await combat._on_hex_clicked(enemy.hex_position)
-	h._assert(not combat._can_spend_action_cost("action") and enemy.current_hp < 200, "S250 actual Attack targeting accepts a long-range target despite legacy range 1")
+	# Acceptance and hit are separate facts. 30 ft is past the bow's 20 ft
+	# normal range, so the roll has Disadvantage and a natural 1 on the kept
+	# die misses even AC -100 (~10% of runs). Acceptance must not depend on it.
+	var attack_log: String = combat.hud.log_text.text.substr(log_before)
+	var hit := attack_log.contains("Hit!")
+	h._assert(not combat._can_spend_action_cost("action") and not attack_log.contains("out of range") and (hit or attack_log.contains("Miss!")), "S250 actual Attack targeting accepts a long-range target despite legacy range 1")
+	h._assert((enemy.current_hp < 200) == hit, "S250 accepted long-range attack deals damage exactly when it hits")
 	combat._reset_turn_action_economy()
 	enemy.hex_position = Vector2i(13, 0)
 	combat._update_grid_entities()

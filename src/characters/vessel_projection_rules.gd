@@ -127,7 +127,16 @@ static func saved_error(save: Dictionary) -> String:
 	if not active.is_empty(): dungeons[active.dungeon_id] = active
 	var owners: Dictionary = save.get("party", {}).get("characters", {}).duplicate(true)
 	for player in save.get("players", []):
-		if player.get("character") is Dictionary and not owners.has(str(player.character.get("character_id", ""))): owners[str(player.character.character_id)] = player.character
+		if not player is Dictionary or not player.get("character") is Dictionary: continue
+		var seat: Dictionary = player.character
+		var seat_id := str(seat.get("character_id", ""))
+		# Legacy seat DTOs may omit character_id; the loader resolves them through
+		# party slots. Such a copy cannot own a vessel, because nothing could link
+		# the projected actor back to it, so refuse that case instead of throwing.
+		if seat_id.is_empty():
+			if seat.get("item_projections", {}) is Dictionary and not seat.get("item_projections", {}).is_empty(): return "A seat character with projected items has no character_id."
+			continue
+		if not owners.has(seat_id): owners[seat_id] = seat
 	var vessels := {}
 	for owner in owners.values():
 		for record in owner.get("item_projections", {}).values():
