@@ -19,7 +19,8 @@ creation bonuses. Existing saves without a generation receipt remain valid.
 ## Class proficiency choices at creation (Crown G2)
 
 A class opts into the ordinary creation picker with
-`"creation_proficiency_choices": true` (Bard, Cleric, Druid, Rogue, Monk).
+`"creation_proficiency_choices": true` (Bard, Cleric, Druid, Rogue, Monk, and
+since PR C Barbarian, Fighter, Paladin, Ranger, Sorcerer, Warlock, Wizard).
 `skill_choices` and `tool_choices` (`{"pick": N, "from": [tool ids]}`) size the
 selectors; `"tool_proficiency_grants": [tool ids]` are fixed. Every id must be
 an item of type `tool`; a choice may not repeat a fixed grant. Druid grants
@@ -39,6 +40,19 @@ choices from the chosen-source rule on every later save. Limits: SRD option-A it
 Monk's chosen tool) are not added to inventory, full equipment packs are not
 offered, and classes without the flag keep their earlier creation.
 
+PR C class skills (SRD 5.2.1 Core Traits; `srd.txt` lines): Barbarian 2 of 6
+(1735-1737), Fighter 2 of 9 (2844-2848), Paladin 2 of 6 (3177-3181), Ranger 3
+of 8 (3417-3420), Sorcerer 2 of 6 (3818-3822), Warlock 2 of 7 (4187-4190),
+Wizard 2 of 7 (4604-4606). A pick may not repeat a species skill; Skilled
+refuses skills the class picks already granted. Barbarian keeps its own A/B
+selector (`starting_gold_alternative: 75`, SRD 1741-1745). The Fighter's two
+picks *are* its training skills: the picker preselects Athletics and Perception
+(minus species skills), Confirm passes the picks to `FighterRules.choose_skills`,
+a pre-combat swap updates `creation_choices.skills`, refuses species-held and
+(G4) Skilled-owned skills, and save preflight refuses picks that disagree with
+training. Saves made before PR C (creation choices holding only the
+generation receipt) stay valid with no class skills invented.
+
 ### Feat proficiency choices (Skilled, Crown G4)
 
 A feat may declare `"proficiency_choices": {"pick": N, "skills": [...],
@@ -46,8 +60,12 @@ A feat may declare `"proficiency_choices": {"pick": N, "skills": [...],
 items of type `tool`; entries distinct; no other keys). Any combination of
 exactly `pick` distinct entries is legal. Core `data/core/feats/skilled.json`
 is SRD 5.2.1 p.87 Skilled: an Origin feat, `repeatable`, `features: []`,
-pick 3 from all 18 skills and the 33 SRD Artisan's Tools, Other Tools and
-Musical Instruments that have item records (Gaming Sets have none yet).
+pick 3 from all 18 skills and the 37 SRD Artisan's Tools, Other Tools and
+Musical Instruments, including Dice, Dragonchess, Playing Cards and
+Three-Dragon Ante Gaming Sets. Gaming Set weight is unspecified in the SRD;
+their item records omit `weight` rather than treating them as weightless.
+These records support proficiency choices; their described Utilize tasks
+are not implemented by this acquisition work.
 
 Each acquisition is its own instance: `origin` for the creation Origin feat, or
 the Ability Score Improvement feature id it replaced. `FeatRules.choose_origin`

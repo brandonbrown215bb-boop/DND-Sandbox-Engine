@@ -276,12 +276,14 @@ if ($runIntegration) {
         skilled_feat_creation_flow = "skilled_feat_creation_reload"
     }
     $scenarios += @($scenarioReloads.Keys)
+    $scenarios += "class_skill_selection_flow"
     $scenarios += "batch_066_travel_placement_flow", "batch_076_footprint_terrain_flow", "batch_077_per_swing_choice_flow", "batch_078_declared_capacity_flow"
     $scenarios += "batch_085_cast_transform_flow", "batch_087_choice_routes_flow"
     if ($Scenario.Count -gt 0) {
         # Selecting a reload explicitly still prepares its own checkpoint.
         $Scenario = @($Scenario | ForEach-Object {
             $selected = $_
+            if ($selected -in @("class_skill_selection_flow_b", "class_skill_selection_reload")) { $selected = "class_skill_selection_flow" }
             $parent = @($scenarioReloads.Keys | Where-Object { $scenarioReloads[$_] -eq $selected })
             if ($parent.Count -gt 0) { $parent[0] } else { $selected }
         })
@@ -303,6 +305,16 @@ if ($runIntegration) {
             $marker = "SCENARIO PASSED: $scenario"
             if (-not (Invoke-GodotCase $scenario "res://scenes/viewport_harness.tscn" $marker $scenarioTimeout @("--scenario=$scenario"))) {
                 $failed = $true
+            } elseif ($scenario -eq "class_skill_selection_flow") {
+                # Both creation passes must share one disposable profile before recovery.
+                $profile = Join-Path $logDirectory "$scenario.user-data"
+                $passB = "class_skill_selection_flow_b"
+                if (-not (Invoke-GodotCase -Name $passB -Scene "res://scenes/viewport_harness.tscn" -Marker "SCENARIO PASSED: $passB" -TimeoutSeconds $scenarioTimeout -ExtraArguments @("--scenario=$passB") -UserDataDirectory $profile)) {
+                    $failed = $true
+                } else {
+                    $reload = "class_skill_selection_reload"
+                    if (-not (Invoke-GodotCase -Name $reload -Scene "res://scenes/viewport_harness.tscn" -Marker "SCENARIO PASSED: $reload" -TimeoutSeconds $scenarioTimeout -ExtraArguments @("--scenario=$reload") -UserDataDirectory $profile)) { $failed = $true }
+                }
             } elseif ($scenarioReloads.Contains([string]$scenario)) {
                 $profile = Join-Path $logDirectory "$scenario.user-data"
                 $reload = $scenarioReloads[[string]$scenario]

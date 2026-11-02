@@ -6,10 +6,22 @@ extends RefCounted
 ## Creation choices use class data; older saves without them retain their state.
 static func default_creation_choices(class_id: String, race_id: String) -> Dictionary:
 	var data := DataLoader.get_character_class(class_id)
-	var skills: Array = data.get("skill_choices", {}).get("from", []).duplicate()
+	var skills: Array = preset_creation_skills(class_id, race_id)
 	var racial: Array = DataLoader.get_race(race_id).get("proficiencies", [])
-	skills = skills.filter(func(skill): return skill not in racial)
+	for skill in data.get("skill_choices", {}).get("from", []):
+		if skill not in racial and skill not in skills:
+			skills.append(skill)
 	return {"skills": skills.slice(0, int(data.get("skill_choices", {}).get("pick", 0))), "tools": data.get("tool_choices", {}).get("from", []).slice(0, int(data.get("tool_choices", {}).get("pick", 0))), "instrument": "lute", "equipment": "equipment"}
+
+
+## PR C: picks shown preselected at creation. Fighter keeps its automatic
+## training skills (Athletics, Perception) as the default class picks; any the
+## species already provides are left blank. Other classes start blank.
+static func preset_creation_skills(class_id: String, race_id: String) -> Array:
+	if class_id != "fighter":
+		return []
+	var racial: Array = DataLoader.get_race(race_id).get("proficiencies", [])
+	return FighterRules.DEFAULT_SKILLS.filter(func(skill): return skill not in racial)
 
 
 ## G2: classes whose data opts into the ordinary creation proficiency picker.

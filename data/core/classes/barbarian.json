@@ -18,6 +18,7 @@
     "simple",
     "martial"
   ],
+  "creation_proficiency_choices": true,
   "skill_choices": {
     "pick": 2,
     "from": [
@@ -38,6 +39,7 @@
     "explorers_pack"
   ],
   "starting_gold": 15,
+  "starting_gold_alternative": 75,
   "spell_slots_by_level": {},
   "cantrips_known": [],
   "spells_known_by_level": {

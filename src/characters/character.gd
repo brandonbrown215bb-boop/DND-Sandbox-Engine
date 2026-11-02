@@ -1211,7 +1211,8 @@ func initialize(p_name: String, p_race_id: String, p_class_id: String, scores: A
 	if managed: PermanentProgressionRules.initialize(self)
 	if not managed: FighterRules.initialize_training(self)
 	if not managed and class_id == "fighter":
-		FighterRules.choose_skills(self, "Athletics", "Perception")
+		var fighter_picks: Array = choices.get("skills", FighterRules.DEFAULT_SKILLS)
+		FighterRules.choose_skills(self, str(fighter_picks[0]), str(fighter_picks[1]))
 	# Unlock level 1 features
 	_unlock_features_for_level(1)
 	OwnedFeatureSources.sync(self) # Batch 049: species and species-granted feat features.

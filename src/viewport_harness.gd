@@ -490,6 +490,9 @@ func _run_scenario(scenario: String) -> void:
 		"class_proficiency_creation_reload": await ClassProficiencyCreationControls.reload(self)
 		"skilled_feat_creation_flow": await SkilledFeatControls.run(self)
 		"skilled_feat_creation_reload": await SkilledFeatControls.reload(self)
+		"class_skill_selection_flow": await ClassSkillSelectionControls.run(self)
+		"class_skill_selection_flow_b": await ClassSkillSelectionControls.run_b(self)
+		"class_skill_selection_reload": await ClassSkillSelectionControls.reload(self)
 		"cleric_action_flow": await test_cleric_action_flow()
 		"cleric_strike_flow": await test_cleric_strike_flow()
 		"core12_shared_rules": await test_core12_shared_rules()
@@ -1000,12 +1003,14 @@ func test_barbarian_choice_flow() -> void:
 		option.select(starting_choice)
 		option.item_selected.emit(starting_choice)
 		await get_tree().process_frame
+		_select_creation_choice(creation.equip_list.get_node("BarbarianSkill1"), "Athletics") # PR C class picks
+		_select_creation_choice(creation.equip_list.get_node("BarbarianSkill2"), "Survival")
 		creation.current_step = creation.CreationStep.SUMMARY
 		creation._update_step_ui()
 		_assert(creation.summary_equip_label.text.contains("Gold: %d GP" % (15 if starting_choice == 0 else 75)), "Creation summary shows the selected starting cash")
 		creation.btn_next.pressed.emit()
 		var created: Character = PlayerManager.get_player(0).get("character")
-		_assert(created != null and created.inventory.gold == (15 if starting_choice == 0 else 75) and (created.inventory.count_item("explorers_pack") == 1 if starting_choice == 0 else created.inventory.backpack.is_empty() and created.inventory.equipped.is_empty()), "Actual Confirm grants the chosen equipment or cash")
+		_assert(created != null and created.inventory.gold == (15 if starting_choice == 0 else 75) and created.creation_choices.get("skills", []) == ["Athletics", "Survival"] and (created.inventory.count_item("explorers_pack") == 1 if starting_choice == 0 else created.inventory.backpack.is_empty() and created.inventory.equipped.is_empty()), "Actual Confirm grants the chosen equipment or cash")
 		_teardown_scene(creation)
 	_exit_test()
 
