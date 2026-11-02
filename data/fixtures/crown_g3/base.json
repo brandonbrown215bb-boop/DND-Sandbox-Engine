@@ -1,0 +1,14 @@
+{
+  "id": "fixture:g3_base",
+  "name": "G3 base",
+  "description": "Neutral multiclass entry gate consumer.",
+  "hit_die": "d8",
+  "primary_ability": "INT",
+  "permanent_progression": {
+    "starting": [],
+    "multiclass": [],
+    "level_hit_points": 5,
+    "levels": []
+  },
+  "features_by_level": {}
+}
