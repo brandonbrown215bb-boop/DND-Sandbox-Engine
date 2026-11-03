@@ -145,6 +145,8 @@ static func _focus_checks(check: Callable, druid: Character) -> void:
 	check.call(inv.has_required_spell_component(cure, "druid") and inv.has_required_spell_component(_spell("produce_flame"), "druid"), "Shield plus held focus casts V, S Cure Wounds and Produce Flame: the focus hand performs Somatic (SRD Material: same hand)")
 	var repose := _spell("gentle_repose")
 	check.call(bool(repose.get("material_component_consumed", false)) and int(repose.get("material_component_cost", 0)) <= 0 and not inv.has_required_spell_component(repose, "druid"), "A held focus does not replace an unpriced consumed material (Gentle Repose copper): guard on consumption, not only price")
+	var priced := {"id": "priced_focus_probe", "components": ["V", "S", "M"], "material_component_cost": 100, "material_component_consumed": false}
+	check.call(not inv.has_required_spell_component(priced, "druid"), "A held focus does not replace a priced, unconsumed material: guard on price, not only consumption")
 	check.call(inv.held_spellcasting_focus("ranger") == FOCUS and inv.held_spellcasting_focus("wizard").is_empty() and not inv.has_required_spell_component(water_walk, "wizard"), "Ranger may use the Druidic Focus; a Wizard holding it has no compatible focus")
 	var diamond := Character.new()
 	diamond.initialize("Diamond Druid", "human", "druid", AbilityScores.new(), "equipment", ClassProgression.default_creation_choices("druid", "human"))
