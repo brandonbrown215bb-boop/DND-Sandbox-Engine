@@ -9,6 +9,11 @@ const OLD_SLOT := "class_tool_items_oldmain"
 const OLD_PLAYERS_SLOT := "class_tool_items_oldmain_players"
 const OLD_FIXTURE := "res://data/fixtures/tool_items/main_897d994_party.sav"
 const IDS := "user://class_tool_items_ids.txt"
+## Real party save written by main 382ca63 (#80 tool items, no Explorer's Packs).
+const PRE_PACK_FIXTURE := "res://data/fixtures/tool_items/main_382ca63_party.sav"
+const PRE_PACK_SLOT := "class_tool_items_prepack"
+const PRE_PACK_PLAYERS_SLOT := "class_tool_items_prepack_players"
+const PRE_PACK_IDS := "user://class_tool_items_prepack_ids.txt"
 
 
 static func run(h: Node) -> void:
@@ -33,7 +38,7 @@ static func run(h: Node) -> void:
 	druid_equipment.select(1)
 	druid_equipment.item_selected.emit(1)
 	creation.btn_next.pressed.emit()
-	h._assert(creation.current_step == creation.CreationStep.SUMMARY and not creation.summary_equip_label.text.contains("Herbalism") and creation.summary_equip_label.text.contains("50 GP") and creation.summary_stats_label.text.contains("Herbalism"), "Druid gold-only review lists no kit but keeps Herbalism proficiency")
+	h._assert(creation.current_step == creation.CreationStep.SUMMARY and not creation.summary_equip_label.text.contains("Herbalism") and not creation.summary_equip_label.text.contains("Sickle") and not creation.summary_equip_label.text.contains("Explorer") and creation.summary_equip_label.text.contains("50 GP") and creation.summary_stats_label.text.contains("Herbalism"), "Druid gold-only review lists no kit but keeps Herbalism proficiency")
 	creation.btn_back.pressed.emit()
 	await h.get_tree().process_frame
 	druid_equipment = creation.equip_list.get_node("DruidStartingEquipment")
@@ -41,11 +46,11 @@ static func run(h: Node) -> void:
 	druid_equipment.select(0)
 	druid_equipment.item_selected.emit(0)
 	creation.btn_next.pressed.emit()
-	h._assert(creation.summary_equip_label.text.count("Herbalism Kit") == 1 and creation.summary_equip_label.text.contains("9 GP"), "Cancelling gold restores one Herbalism Kit and 9 GP in review")
+	h._assert(creation.summary_equip_label.text.count("Herbalism Kit") == 1 and creation.summary_equip_label.text.count("Explorer's Pack") == 1 and not creation.summary_equip_label.text.contains("Quarterstaff") and creation.summary_equip_label.text.contains("9 GP"), "Cancelling gold restores one Herbalism Kit, Explorer's Pack and 9 GP in review")
 	creation.btn_next.pressed.emit()
 	await h.get_tree().process_frame
 	var druid: Character = PlayerManager.get_player(0).get("character")
-	h._assert(druid != null and druid.inventory.count_item("herbalism_kit") == 1 and druid.inventory.gold == 9 and druid.tool_proficiency_sources == {"herbalism_kit": ["class:druid"]} and druid.creation_choices.get("equipment", "") == "equipment", "Druid Confirm grants one kit copy, 9 GP and separate class-owned proficiency")
+	h._assert(druid != null and ClassToolItemChecks.owned(druid) == ClassToolItemChecks.DRUID_A and druid.inventory.gold == 9 and druid.tool_proficiency_sources == {"herbalism_kit": ["class:druid"]} and druid.creation_choices.get("equipment", "") == "equipment", "Druid Confirm grants one kit copy, 9 GP and separate class-owned proficiency")
 	h._assert(creation.current_player_idx == 1 and creation.class_creation_choices.is_empty(), "Seat reset: the next seat starts with no class or equipment choices")
 	# Monk 1: picks Smith's Tools, Back, switches to Lyre.
 	await _to_equipment(h, creation, "Tool Monk Lyre", "monk")
@@ -70,7 +75,7 @@ static func run(h: Node) -> void:
 	creation.btn_next.pressed.emit()
 	await h.get_tree().process_frame
 	var lyre: Character = PlayerManager.get_player(1).get("character")
-	h._assert(lyre != null and lyre.inventory.count_item("lyre") == 1 and lyre.inventory.count_item("smiths_tools") == 0 and lyre.tool_proficiency_sources == {"lyre": ["class_choice:monk"]} and lyre.inventory.gold == 11, "Monk Confirm grants exactly one Lyre and its proficiency")
+	h._assert(lyre != null and ClassToolItemChecks.owned(lyre) == {"spear": 1, "dagger": 5, "lyre": 1, "explorers_pack": 1} and lyre.tool_proficiency_sources == {"lyre": ["class_choice:monk"]} and lyre.inventory.gold == 11, "Monk Confirm grants exactly one Lyre and its proficiency")
 	# Monk 2: Smith's Tools.
 	await _to_equipment(h, creation, "Tool Monk Smith", "monk")
 	for pair in [["MonkSkill1", "Acrobatics"], ["MonkSkill2", "Insight"], ["MonkTool1", "smiths_tools"]]:
@@ -79,7 +84,7 @@ static func run(h: Node) -> void:
 	creation.btn_next.pressed.emit()
 	await h.get_tree().process_frame
 	var smith: Character = PlayerManager.get_player(2).get("character")
-	h._assert(smith != null and smith.inventory.count_item("smiths_tools") == 1 and smith.inventory.count_item("lyre") == 0 and smith.tool_proficiency_sources == {"smiths_tools": ["class_choice:monk"]}, "A second Monk tool (Smith's Tools) is granted as its own single item")
+	h._assert(smith != null and ClassToolItemChecks.owned(smith) == {"spear": 1, "dagger": 5, "smiths_tools": 1, "explorers_pack": 1} and smith.tool_proficiency_sources == {"smiths_tools": ["class_choice:monk"]}, "A second Monk tool (Smith's Tools) is granted as its own single item")
 	# Random Monk.
 	creation.classes_data = [DataLoader.get_character_class("monk")]
 	creation.btn_rand.pressed.emit()
@@ -88,10 +93,14 @@ static func run(h: Node) -> void:
 	creation.btn_next.pressed.emit()
 	await h.get_tree().process_frame
 	var rand: Character = PlayerManager.get_player(3).get("character")
-	h._assert(rand != null and rand.inventory.count_item(random_tool) == 1 and rand.tool_proficiency_sources == {random_tool: ["class_choice:monk"]}, "Random Monk Confirm grants the displayed tool item once")
+	h._assert(rand != null and ClassToolItemChecks.owned(rand) == {"spear": 1, "dagger": 5, random_tool: 1, "explorers_pack": 1} and rand.tool_proficiency_sources == {random_tool: ["class_choice:monk"]}, "Random Monk Confirm grants the displayed tool item once")
 	var before := JSON.stringify(smith.inventory.to_dict())
 	smith.initialize("Again", "human", "monk", AbilityScores.new(), "equipment", ClassProgression.default_creation_choices("monk", "human"))
 	h._assert(JSON.stringify(smith.inventory.to_dict()) == before and smith.character_name == "Tool Monk Smith", "Repeat creation on a confirmed character is refused with no second item")
+	var pack_id := ""
+	for record in smith.inventory.backpack_instances():
+		if str(record.definition_id) == "explorers_pack": pack_id = str(record.instance_id)
+	h._assert(smith.inventory.expand_pack_instance(pack_id).get("success", false) and ClassToolItemChecks.owned(smith).get("torch", 0) == 10 and ClassToolItemChecks.owned(smith).get("rations", 0) == 10 and not ClassToolItemChecks.owned(smith).has("explorers_pack"), "The confirmed Monk's Explorer's Pack expands through the pack control before saving")
 	h._teardown_scene(creation)
 	GameManager.current_state = GameManager.GameState.OVERWORLD
 	GameManager.game_in_progress = true
@@ -100,6 +109,7 @@ static func run(h: Node) -> void:
 	players.erase("party")
 	h._assert(SaveManager._validate_save_data(players).is_empty() and _write(PLAYERS_SLOT, JSON.stringify(players)), "Player-only tool-item save validates and is written")
 	_seed_old_main(h)
+	_seed_pre_pack(h)
 	var f := FileAccess.open(IDS, FileAccess.WRITE)
 	var ids := []
 	for c in [druid, lyre, smith, rand]:
@@ -121,8 +131,42 @@ static func _seed_old_main(h: Node) -> void:
 		h._assert(SaveManager.load_game(slot), "%s: old-main save loads" % slot)
 		var monk: Character = PlayerManager.get_player(0).get("character")
 		var druid: Character = PlayerManager.get_player(1).get("character")
-		h._assert(monk != null and druid != null and monk.inventory.count_item("flute") == 0 and druid.inventory.count_item("herbalism_kit") == 0 and monk.tool_proficiencies == ["flute"] and druid.tool_proficiencies == ["herbalism_kit"], "%s: no retroactive tool items; proficiencies kept" % slot)
+		h._assert(monk != null and druid != null and monk.inventory.count_item("flute") == 0 and druid.inventory.count_item("herbalism_kit") == 0 and not ClassToolItemChecks.owned(druid).has("sickle") and not ClassToolItemChecks.owned(druid).has("explorers_pack") and not ClassToolItemChecks.owned(monk).has("explorers_pack") and monk.tool_proficiencies == ["flute"] and druid.tool_proficiencies == ["herbalism_kit"], "%s: no retroactive tool items; proficiencies kept" % slot)
 		h._assert(SaveManager.save_game(slot), "%s: old-main save re-saves" % slot)
+
+
+static func _inventories() -> Dictionary:
+	var result := {}
+	for p in PlayerManager.get_player_count():
+		var c: Character = PlayerManager.get_player(p).get("character")
+		if c != null: result[c.character_id] = JSON.stringify(c.inventory.to_dict())
+	return result
+
+
+static func _no_pack() -> bool:
+	for p in PlayerManager.get_player_count():
+		var c: Character = PlayerManager.get_player(p).get("character")
+		if c == null or ClassToolItemChecks.owned(c).has("explorers_pack") or ClassToolItemChecks.owned(c).has("sickle"): return false
+	return PlayerManager.get_player_count() == 4
+
+
+## Main 382ca63 saves: load, save; the fresh process reloads and saves again.
+static func _seed_pre_pack(h: Node) -> void:
+	var text := FileAccess.get_file_as_string(PRE_PACK_FIXTURE)
+	var data: Variant = JSON.parse_string(text)
+	h._assert(data is Dictionary and _write(PRE_PACK_SLOT, text), "382ca63 fixture save is copied in")
+	if not data is Dictionary: return
+	data.erase("party")
+	h._assert(_write(PRE_PACK_PLAYERS_SLOT, JSON.stringify(data)), "382ca63 player-only save is derived")
+	var seen := {}
+	for slot in [PRE_PACK_SLOT, PRE_PACK_PLAYERS_SLOT]:
+		h._assert(SaveManager.load_game(slot), "%s: 382ca63 save loads" % slot)
+		h._assert(_no_pack(), "%s: no retroactive Explorer's Pack on load" % slot)
+		seen = _inventories()
+		h._assert(SaveManager.save_game(slot), "%s: 382ca63 save re-saves" % slot)
+	var f := FileAccess.open(PRE_PACK_IDS, FileAccess.WRITE)
+	f.store_string(JSON.stringify(seen))
+	f.close()
 
 
 static func reload(h: Node) -> void:
@@ -148,9 +192,16 @@ static func reload(h: Node) -> void:
 		h._assert(SaveManager.load_game(slot), "%s: fresh process loads the re-saved old-main save" % slot)
 		var monk: Character = PlayerManager.get_player(0).get("character")
 		var druid: Character = PlayerManager.get_player(1).get("character")
-		h._assert(monk != null and druid != null and monk.inventory.count_item("flute") == 0 and druid.inventory.count_item("herbalism_kit") == 0 and monk.tool_proficiency_sources == {"flute": ["class_choice:monk"]}, "%s fresh process: still no retroactive items" % slot)
+		h._assert(monk != null and druid != null and monk.inventory.count_item("flute") == 0 and druid.inventory.count_item("herbalism_kit") == 0 and not ClassToolItemChecks.owned(druid).has("sickle") and not ClassToolItemChecks.owned(druid).has("explorers_pack") and not ClassToolItemChecks.owned(monk).has("explorers_pack") and monk.tool_proficiency_sources == {"flute": ["class_choice:monk"]}, "%s fresh process: still no retroactive items" % slot)
 		h._assert(SaveManager.save_game(slot), "%s fresh process: saves again" % slot)
 		SaveManager.delete_save(slot)
+	var pre: Variant = JSON.parse_string(FileAccess.get_file_as_string(PRE_PACK_IDS))
+	for slot in [PRE_PACK_SLOT, PRE_PACK_PLAYERS_SLOT]:
+		h._assert(SaveManager.load_game(slot), "%s: fresh process loads the re-saved 382ca63 save" % slot)
+		h._assert(_no_pack() and pre is Dictionary and _inventories() == pre, "%s fresh process: exact inventories, still no retroactive pack" % slot)
+		h._assert(SaveManager.save_game(slot) and SaveManager.load_game(slot) and _inventories() == pre, "%s fresh process: saves again unchanged" % slot)
+		SaveManager.delete_save(slot)
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(PRE_PACK_IDS))
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(IDS))
 	h._exit_test()
 

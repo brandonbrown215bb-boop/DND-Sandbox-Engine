@@ -49,9 +49,13 @@ ID branch). Both declare `starting_gold_alternative` 50 (option B), which gives
 no items. The item copy is inventory only; proficiency still comes from
 `tool_proficiency_sources`. Items are granted once at Confirm (`initialize`
 refuses a character whose class is already set) and are never re-added on
-restore, so older saves keep their inventory without retroactive kits. Not
-delivered: Druid Sickle, Druidic Focus (Quarterstaff), Explorer's Pack; Monk
-Explorer's Pack.
+restore, so older saves keep their inventory without retroactive kits.
+Option A also lists one `explorers_pack` for Druid and Monk through the same
+`starting_equipment` path; it is one pack copy whose existing `pack_contents`
+expand through `Inventory.expand_pack_instance` (Backpack, Bedroll, 2 Oil, 10
+Rations, Rope, Tinderbox, 10 Torches, Waterskin; `srd.txt` 5839-5842). Not
+delivered: Druid Sickle and Druidic Focus (Quarterstaff); see
+[the evidence](../reviews/class-tool-items.md#explorers-pack-follow-up).
 
 PR C class skills (SRD 5.2.1 Core Traits; `srd.txt` lines): Barbarian 2 of 6
 (1735-1737), Fighter 2 of 9 (2844-2848), Paladin 2 of 6 (3177-3181), Ranger 3

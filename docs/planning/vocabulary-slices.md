@@ -3846,8 +3846,13 @@ grants one copy of its selected tool and 11 GP through a generic class-data
 declaration. Both offer a 50 GP option B with no items. The
 `class_tool_items_flow` and fresh-process reload cover exact item copies,
 separate proficiency ownership, both checkpoint forms and old saves without
-retroactive grants. **Remaining limits:** full equipment packs, including Druid's
-Sickle, Quarterstaff focus and Explorer's Pack, and Monk's Explorer's Pack.
+retroactive grants. Druid and Monk option A now also grant one Explorer's Pack
+whose contents expand through the existing pack control; 382ca63 saves get no
+retroactive pack. **Remaining limits:** Druid's Sickle (auto-equipped with the
+Shield it leaves no free spellcasting hand; blocked on an out-of-lane dungeon
+fixture and a starting-equip decision) and Druidic Focus (Quarterstaff) (no
+item is both a Quarterstaff and a Druidic Focus; the focus consumer is item-ID
+based and backpack-only).
 Syntax lives in
 [progression choices](../mechanics/progression-choices.md#class-proficiency-choices-at-creation-crown-g2).
 
