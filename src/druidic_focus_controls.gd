@@ -73,7 +73,7 @@ static func run(h: Node) -> void:
 	h._teardown_scene(dungeon)
 	# Combat: real spell menu.
 	var fighter := _druid(h, "focus_combat_druid")
-	fighter.known_spells.assign(["thunderwave", "ice_knife"])
+	fighter.known_spells.assign(["produce_flame", "cure_wounds", "ice_knife"])
 	h._own_class_spells(fighter)
 	PlayerManager.set_player_character(0, fighter)
 	PartyManager.reset()
@@ -81,16 +81,39 @@ static func run(h: Node) -> void:
 	GameManager.current_state = GameManager.GameState.COMBAT
 	var combat: Node = await h._spawn_scene("res://scenes/combat.tscn", 1.5)
 	fighter.spell_slots["1"] = 2
+	fighter.current_hp = 1
 	var target := Batch085Controls._target("focus_dummy", Vector2i(2, 0))
+	# Sickle plus Shield through the equipment control: V, S Cure Wounds refused before payment.
 	Batch085Controls._turn(combat, fighter, target)
-	await h._cast_menu_spell(combat, "thunderwave", 1)
+	var focus_id := fighter.inventory.equipped_instance_id(Inventory.Slot.WEAPON)
+	var sickle_id := ""
+	for record in fighter.inventory.backpack_instances():
+		if str(record.definition_id) == "sickle": sickle_id = str(record.instance_id)
+	h._assert(fighter.inventory.equipment_control_equip(Inventory.Slot.WEAPON, sickle_id, combat).get("success", false), "Combat equipment control swaps in the Sickle")
+	await h._cast_menu_spell(combat, "cure_wounds", 1)
 	for _i in 3:
 		if combat.pending_action_type.is_empty(): break
-		await combat._on_hex_clicked(target.hex_position)
+		await combat._on_hex_clicked(Vector2i.ZERO)
 	await Batch085Controls._settle(h, combat)
-	h._assert(int(fighter.spell_slots.get("1", 0)) == 2 and combat.turn_budget.action_available and int(target.current_hp) == 300, "Combat menu refuses Somatic-only Thunderwave with Shield plus focus; slot and Action unspent")
+	h._assert(int(fighter.spell_slots.get("1", 0)) == 2 and combat.turn_budget.action_available and fighter.current_hp == 1, "Sickle plus Shield refuses Cure Wounds before payment; slot and Action unspent")
 	combat.pending_action_type = ""
 	combat.pending_spell_data = {}
+	h._assert(fighter.inventory.equipment_control_equip(Inventory.Slot.WEAPON, focus_id, combat).get("success", false) and fighter.inventory.get_weapon() == FOCUS, "Combat equipment control re-holds the same focus copy")
+	# Default option-A loadout (Shield + focus): Produce Flame (Bonus Action) and Cure Wounds (Action, one slot).
+	Batch085Controls._turn(combat, fighter, target)
+	await h._cast_menu_spell(combat, "produce_flame", 0)
+	for _i in 3:
+		if combat.pending_action_type.is_empty(): break
+		await combat._on_hex_clicked(Vector2i.ZERO)
+	await Batch085Controls._settle(h, combat)
+	h._assert(combat.produce_flame_markers.has(fighter.character_id) and not combat.turn_budget.bonus_action_available and combat.turn_budget.action_available and int(fighter.spell_slots.get("1", 0)) == 2, "Shield plus focus casts Produce Flame: Bonus Action spent once, no slot")
+	await h._cast_menu_spell(combat, "cure_wounds", 1)
+	for _i in 3:
+		if combat.pending_action_type.is_empty(): break
+		await combat._on_hex_clicked(Vector2i.ZERO)
+	await Batch085Controls._settle(h, combat)
+	h._assert(fighter.current_hp > 1 and int(fighter.spell_slots.get("1", 0)) == 1 and not combat.turn_budget.action_available, "Shield plus focus casts Cure Wounds: one slot and the Action spent, HP restored (hp=%d)" % fighter.current_hp)
+	fighter.spell_slots["1"] = 2
 	Batch085Controls._turn(combat, fighter, target)
 	await h._cast_menu_spell(combat, "ice_knife", 1)
 	h._assert(combat.pending_action_type == "spell" and int(fighter.spell_slots.get("1", 0)) == 2, "Combat menu accepts Ice Knife (S, M) through the held focus without paying during selection")

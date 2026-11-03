@@ -142,7 +142,9 @@ static func _focus_checks(check: Callable, druid: Character) -> void:
 	var focus_item := DataLoader.get_item(FOCUS)
 	check.call(str(focus_item.get("type", "")) == "weapon" and focus_item.get("damage", "") == "1d6" and "versatile" in focus_item.get("properties", []) and focus_item.get("versatile_damage", "") == "1d8" and int(focus_item.get("value", 0)) == 5 and float(focus_item.get("weight", 0)) == 4.0, "The Druidic Focus (Quarterstaff) is a declared Quarterstaff weapon (1d6 Bludgeoning, Versatile 1d8, 4 lb.) at the Wooden staff focus cost of 5 GP")
 	check.call(inv.available_spellcasting_hands() == 0 and inv.held_spellcasting_focus("druid") == FOCUS and inv.has_required_spell_component(water_walk, "druid"), "Shield plus the held Druidic Focus casts a V/S/M spell: the focus hand performs Material and Somatic")
-	check.call(not inv.has_required_spell_component(cure, "druid"), "Shield plus held focus refuses a Somatic-only (V, S) spell: it still needs a free hand")
+	check.call(inv.has_required_spell_component(cure, "druid") and inv.has_required_spell_component(_spell("produce_flame"), "druid"), "Shield plus held focus casts V, S Cure Wounds and Produce Flame: the focus hand performs Somatic (SRD Material: same hand)")
+	var repose := _spell("gentle_repose")
+	check.call(bool(repose.get("material_component_consumed", false)) and int(repose.get("material_component_cost", 0)) <= 0 and not inv.has_required_spell_component(repose, "druid"), "A held focus does not replace an unpriced consumed material (Gentle Repose copper): guard on consumption, not only price")
 	check.call(inv.held_spellcasting_focus("ranger") == FOCUS and inv.held_spellcasting_focus("wizard").is_empty() and not inv.has_required_spell_component(water_walk, "wizard"), "Ranger may use the Druidic Focus; a Wizard holding it has no compatible focus")
 	var diamond := Character.new()
 	diamond.initialize("Diamond Druid", "human", "druid", AbilityScores.new(), "equipment", ClassProgression.default_creation_choices("druid", "human"))
@@ -156,7 +158,7 @@ static func _focus_checks(check: Callable, druid: Character) -> void:
 	for record in inv.backpack_instances():
 		if str(record.definition_id) == "sickle": sickle_id = str(record.instance_id)
 	var equipped_sickle: Dictionary = inv.equipment_control_equip(Inventory.Slot.WEAPON, sickle_id)
-	check.call(equipped_sickle.get("success", false) and inv.get_weapon() == "sickle" and inv.backpack.has(FOCUS) and inv.held_spellcasting_focus("druid").is_empty() and not inv.has_required_spell_component(water_walk, "druid"), "Sickle plus Shield keeps the hand refusal; the stowed focus is carried, not held")
+	check.call(equipped_sickle.get("success", false) and inv.get_weapon() == "sickle" and inv.backpack.has(FOCUS) and inv.held_spellcasting_focus("druid").is_empty() and not inv.has_required_spell_component(water_walk, "druid") and not inv.has_required_spell_component(cure, "druid"), "Sickle plus Shield keeps the hand refusal; the stowed focus is carried, not held")
 	inv.equipment_control_unequip(Inventory.Slot.SHIELD)
 	check.call(inv.available_spellcasting_hands() == 1 and not inv.has_required_spell_component(water_walk, "druid"), "A free hand with the focus only in the backpack still has no held focus (no pouch)")
 	var focus_id := ""
@@ -172,7 +174,7 @@ static func _focus_checks(check: Callable, druid: Character) -> void:
 	plain.inventory.add_item("shield")
 	plain.inventory.equip(Inventory.Slot.WEAPON, "quarterstaff")
 	plain.inventory.equip(Inventory.Slot.SHIELD, "shield")
-	check.call(plain.inventory.held_spellcasting_focus("druid").is_empty() and not plain.inventory.has_required_spell_component(water_walk, "druid"), "An ordinary Quarterstaff is not a focus: Quarterstaff plus Shield is refused")
+	check.call(plain.inventory.held_spellcasting_focus("druid").is_empty() and not plain.inventory.has_required_spell_component(water_walk, "druid") and not plain.inventory.has_required_spell_component(cure, "druid"), "An ordinary Quarterstaff is not a focus: Quarterstaff plus Shield is refused")
 	# Neutral renamed item and class: same declarations, no ID branch or registration.
 	var item_probe := focus_item.duplicate(true)
 	item_probe["id"] = "focus_probe_staff"
@@ -184,9 +186,9 @@ static func _focus_checks(check: Callable, druid: Character) -> void:
 	DataLoader.classes["focus_probe_class"] = class_probe
 	var probe := Character.new()
 	probe.initialize("Focus Probe", "human", "focus_probe_class", AbilityScores.new(), "equipment", ClassProgression.default_creation_choices("focus_probe_class", "human"))
-	check.call(probe.inventory.get_weapon() == "focus_probe_staff" and probe.inventory.backpack.has("sickle") and probe.inventory.has_required_spell_component(water_walk, "focus_probe_class") and not probe.inventory.has_required_spell_component(cure, "focus_probe_class"), "A neutral renamed focus item and class work through the same declarations")
+	check.call(probe.inventory.get_weapon() == "focus_probe_staff" and probe.inventory.backpack.has("sickle") and probe.inventory.has_required_spell_component(water_walk, "focus_probe_class") and probe.inventory.has_required_spell_component(cure, "focus_probe_class"), "A neutral renamed focus item and class work through the same declarations")
 	class_probe.erase("spellcasting_focus_kinds")
-	check.call(not probe.inventory.has_required_spell_component(water_walk, "focus_probe_class"), "Without the class focus-kind declaration the renamed staff is only a weapon")
+	check.call(not probe.inventory.has_required_spell_component(water_walk, "focus_probe_class") and not probe.inventory.has_required_spell_component(cure, "focus_probe_class"), "Without the class focus-kind declaration the renamed staff is only a weapon")
 	DataLoader.classes.erase("focus_probe_class")
 	DataLoader.items.erase("focus_probe_staff")
 	var bad_item := focus_item.duplicate(true)

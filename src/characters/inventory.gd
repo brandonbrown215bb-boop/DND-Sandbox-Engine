@@ -310,10 +310,13 @@ func has_required_spell_component(spell_data: Dictionary, class_id: String = "")
 		return str(weapon.get("type", "")) == "weapon" and int(weapon.get("value", 0)) > 0
 	var consumed := bool(spell_data.get("material_component_consumed", false))
 	var minimum_value := int(spell_data.get("material_component_cost", 0))
-	if has_material and not consumed and minimum_value <= 0 and not held_spellcasting_focus(class_id).is_empty():
-		# SRD 5.2.1 Material (M): the hand holding the Spellcasting Focus can
-		# also perform the Somatic components. Priced or consumed materials and
-		# Somatic-only spells keep their normal free-hand and copy rules.
+	var exact_material := has_material and (consumed or minimum_value > 0)
+	if (has_material or has_somatic) and not exact_material and not held_spellcasting_focus(class_id).is_empty():
+		# SRD 5.2.1 Material (M): a held Spellcasting Focus can be used in place
+		# of the materials, and the hand that uses it "can be the same hand used
+		# to perform Somatic components" - so the equipped focus hand covers the
+		# Somatic and focus-replaceable Material parts. Priced or consumed
+		# materials keep their exact-copy and free-hand rules below.
 		return true
 	var needs_hand := has_material or has_somatic
 	if needs_hand and available_spellcasting_hands() < 1:

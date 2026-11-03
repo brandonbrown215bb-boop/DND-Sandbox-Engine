@@ -59,10 +59,12 @@ declares `"spellcasting_focus_kind": "druidic"`) listed before `sickle`, so the
 existing placement holds the focus as first weapon beside the Shield and
 carries the Sickle. A class declares `"spellcasting_focus_kinds": [...]` (Druid
 and Ranger: `["druidic"]`); `Inventory.held_spellcasting_focus` accepts only a
-matching item equipped in the Weapon or Off-hand slot, and that hand covers the
-Material and Somatic parts of a spell with a non-costly, non-consumed material.
-Somatic-only spells still need a free hand; priced/consumed materials keep
-their exact-copy rule; a stowed focus is not held. See
+matching item equipped in the Weapon or Off-hand slot, and that hand covers
+Somatic components and non-costly, non-consumed Material components (SRD
+Material: the same hand may perform Somatic). Priced/consumed materials keep
+their exact-copy and free-hand rules; a stowed focus or plain weapon does not
+count. Known limit: the focus isn't yet recognized as a Quarterstaff for
+Shillelagh or Topple. See
 [the evidence](../reviews/druidic-focus-sickle.md).
 
 PR C class skills (SRD 5.2.1 Core Traits; `srd.txt` lines): Barbarian 2 of 6
