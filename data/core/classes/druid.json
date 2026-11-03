@@ -34,8 +34,13 @@
   "starting_equipment": [
     "leather_armor",
     "shield",
+    "druidic_focus_quarterstaff",
+    "sickle",
     "explorers_pack",
     "herbalism_kit"
+  ],
+  "spellcasting_focus_kinds": [
+    "druidic"
   ],
   "starting_gold": 9,
   "starting_gold_alternative": 50,

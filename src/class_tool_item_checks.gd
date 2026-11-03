@@ -69,7 +69,8 @@ static func owned(c: Character) -> Dictionary:
 	return counts
 
 
-const DRUID_A := {"leather_armor": 1, "shield": 1, "explorers_pack": 1, "herbalism_kit": 1}
+const DRUID_A := {"leather_armor": 1, "shield": 1, "druidic_focus_quarterstaff": 1, "sickle": 1, "explorers_pack": 1, "herbalism_kit": 1}
+const FOCUS := "druidic_focus_quarterstaff"
 const PACK := {"backpack": 1, "bedroll": 1, "oil_flask": 2, "rations": 10, "rope": 1, "tinderbox": 1, "torch": 10, "waterskin": 1}
 
 
@@ -80,7 +81,8 @@ static func _package_checks(check: Callable) -> void:
 	var druid := Character.new()
 	druid.initialize("Package Druid", "human", "druid", AbilityScores.new(), "equipment", dc)
 	check.call(owned(druid) == DRUID_A and druid.inventory.gold == 9, "Druid option A owns exactly Leather Armor, Shield, one Explorer's Pack, one Herbalism Kit and 9 GP (%s)" % str(owned(druid)))
-	check.call(not owned(druid).has("quarterstaff") and not owned(druid).has("wooden_staff") and not druid.inventory.has_spellcasting_focus("druid"), "No ordinary Quarterstaff or stand-in Wooden Staff is granted as the unsupported Druidic Focus (Quarterstaff)")
+	check.call(not owned(druid).has("quarterstaff") and not owned(druid).has("wooden_staff") and druid.inventory.get_weapon() == FOCUS and druid.inventory.get_equipped(Inventory.Slot.SHIELD) == "shield" and druid.inventory.backpack.count("sickle") == 1, "Druid A holds the real Druidic Focus (Quarterstaff) as first weapon beside the Shield and carries the later Sickle; no ordinary Quarterstaff or Wooden Staff stand-in")
+	_focus_checks(check, druid)
 	var smith := _monk("smiths_tools", "equipment")
 	check.call(owned(smith) == {"spear": 1, "dagger": 5, "smiths_tools": 1, "explorers_pack": 1} and smith.inventory.gold == 11, "Monk option A owns exactly Spear, 5 Daggers, the chosen tool, one Explorer's Pack and 11 GP (%s)" % str(owned(smith)))
 	var gold_monk := _monk("lyre", "gold")
@@ -122,3 +124,83 @@ static func _monk(tool: String, mode: String) -> Character:
 	var c := Character.new()
 	c.initialize("Monk " + tool, "human", "monk", AbilityScores.new(), mode, choices)
 	return c
+
+
+static func _spell(id: String) -> Dictionary:
+	return DataLoader.get_spell(id)
+
+
+## SRD 5.2.1 Druidic Focus (srd.txt 5877-5887), Quarterstaff (5478 table),
+## Somatic/Material (6382-6407): the held focus's hand can perform Somatic
+## components; Somatic-only spells still need a free hand; priced/consumed
+## materials keep their exact-copy rules; carried gear is not held.
+static func _focus_checks(check: Callable, druid: Character) -> void:
+	var inv: Inventory = druid.inventory
+	var water_walk := _spell("water_walk")
+	var cure := _spell("cure_wounds")
+	var revivify := _spell("revivify")
+	var focus_item := DataLoader.get_item(FOCUS)
+	check.call(str(focus_item.get("type", "")) == "weapon" and focus_item.get("damage", "") == "1d6" and "versatile" in focus_item.get("properties", []) and focus_item.get("versatile_damage", "") == "1d8" and int(focus_item.get("value", 0)) == 5 and float(focus_item.get("weight", 0)) == 4.0, "The Druidic Focus (Quarterstaff) is a declared Quarterstaff weapon (1d6 Bludgeoning, Versatile 1d8, 4 lb.) at the Wooden staff focus cost of 5 GP")
+	check.call(inv.available_spellcasting_hands() == 0 and inv.held_spellcasting_focus("druid") == FOCUS and inv.has_required_spell_component(water_walk, "druid"), "Shield plus the held Druidic Focus casts a V/S/M spell: the focus hand performs Material and Somatic")
+	check.call(not inv.has_required_spell_component(cure, "druid"), "Shield plus held focus refuses a Somatic-only (V, S) spell: it still needs a free hand")
+	check.call(inv.held_spellcasting_focus("ranger") == FOCUS and inv.held_spellcasting_focus("wizard").is_empty() and not inv.has_required_spell_component(water_walk, "wizard"), "Ranger may use the Druidic Focus; a Wizard holding it has no compatible focus")
+	var diamond := Character.new()
+	diamond.initialize("Diamond Druid", "human", "druid", AbilityScores.new(), "equipment", ClassProgression.default_creation_choices("druid", "human"))
+	check.call(not diamond.inventory.has_required_spell_component(revivify, "druid"), "A held focus does not replace Revivify's priced, consumed diamond")
+	diamond.inventory.add_item("diamond_300gp")
+	check.call(not diamond.inventory.has_required_spell_component(revivify, "druid"), "With the exact diamond but Shield plus focus held, Revivify still needs a free hand to access it")
+	diamond.inventory.equipment_control_unequip(Inventory.Slot.SHIELD)
+	check.call(diamond.inventory.has_required_spell_component(revivify, "druid") and not diamond.inventory.required_spell_component_instance(revivify).is_empty(), "Stowing the Shield frees a hand; Revivify then uses the exact diamond copy")
+	# Equip the Sickle through the real control: the focus goes to the backpack and is no longer held.
+	var sickle_id := ""
+	for record in inv.backpack_instances():
+		if str(record.definition_id) == "sickle": sickle_id = str(record.instance_id)
+	var equipped_sickle: Dictionary = inv.equipment_control_equip(Inventory.Slot.WEAPON, sickle_id)
+	check.call(equipped_sickle.get("success", false) and inv.get_weapon() == "sickle" and inv.backpack.has(FOCUS) and inv.held_spellcasting_focus("druid").is_empty() and not inv.has_required_spell_component(water_walk, "druid"), "Sickle plus Shield keeps the hand refusal; the stowed focus is carried, not held")
+	inv.equipment_control_unequip(Inventory.Slot.SHIELD)
+	check.call(inv.available_spellcasting_hands() == 1 and not inv.has_required_spell_component(water_walk, "druid"), "A free hand with the focus only in the backpack still has no held focus (no pouch)")
+	var focus_id := ""
+	for record in inv.backpack_instances():
+		if str(record.definition_id) == FOCUS: focus_id = str(record.instance_id)
+	var shield_id := ""
+	for record in inv.backpack_instances():
+		if str(record.definition_id) == "shield": shield_id = str(record.instance_id)
+	check.call(inv.equipment_control_equip(Inventory.Slot.WEAPON, focus_id).get("success", false) and inv.equipment_control_equip(Inventory.Slot.SHIELD, shield_id).get("success", false) and inv.has_required_spell_component(water_walk, "druid") and owned(druid) == DRUID_A, "Re-equipping the focus and Shield restores legal focus casting with the exact same owned copies")
+	var plain := Character.new()
+	plain.initialize("Plain Staff Druid", "human", "druid", AbilityScores.new(), "gold", {})
+	plain.inventory.add_item("quarterstaff")
+	plain.inventory.add_item("shield")
+	plain.inventory.equip(Inventory.Slot.WEAPON, "quarterstaff")
+	plain.inventory.equip(Inventory.Slot.SHIELD, "shield")
+	check.call(plain.inventory.held_spellcasting_focus("druid").is_empty() and not plain.inventory.has_required_spell_component(water_walk, "druid"), "An ordinary Quarterstaff is not a focus: Quarterstaff plus Shield is refused")
+	# Neutral renamed item and class: same declarations, no ID branch or registration.
+	var item_probe := focus_item.duplicate(true)
+	item_probe["id"] = "focus_probe_staff"
+	item_probe["name"] = "Focus Probe Staff"
+	DataLoader.items["focus_probe_staff"] = item_probe
+	var class_probe := DataLoader.get_character_class("druid").duplicate(true)
+	class_probe["id"] = "focus_probe_class"
+	class_probe["starting_equipment"] = ["shield", "focus_probe_staff", "sickle"]
+	DataLoader.classes["focus_probe_class"] = class_probe
+	var probe := Character.new()
+	probe.initialize("Focus Probe", "human", "focus_probe_class", AbilityScores.new(), "equipment", ClassProgression.default_creation_choices("focus_probe_class", "human"))
+	check.call(probe.inventory.get_weapon() == "focus_probe_staff" and probe.inventory.backpack.has("sickle") and probe.inventory.has_required_spell_component(water_walk, "focus_probe_class") and not probe.inventory.has_required_spell_component(cure, "focus_probe_class"), "A neutral renamed focus item and class work through the same declarations")
+	class_probe.erase("spellcasting_focus_kinds")
+	check.call(not probe.inventory.has_required_spell_component(water_walk, "focus_probe_class"), "Without the class focus-kind declaration the renamed staff is only a weapon")
+	DataLoader.classes.erase("focus_probe_class")
+	DataLoader.items.erase("focus_probe_staff")
+	var bad_item := focus_item.duplicate(true)
+	bad_item["id"] = "fixture:bad_focus_kind"
+	bad_item["type"] = "tool"
+	var bad_class := DataLoader.get_character_class("druid").duplicate(true)
+	bad_class["id"] = "fixture:bad_focus_kinds"
+	bad_class["spellcasting_focus_kinds"] = "druidic"
+	var errors_before: int = DataLoader._load_errors.size()
+	var ok_a: bool = DataLoader._validate_content(bad_item, "item", "focus review")
+	var ok_b: bool = DataLoader._validate_content(bad_class, "class", "focus review")
+	var added: Array = DataLoader._load_errors.slice(errors_before)
+	DataLoader._load_errors.resize(errors_before)
+	check.call(not ok_a and not ok_b and added.filter(func(e): return "spellcasting_focus_kind" in str(e)).size() == 2, "The loader refuses a focus kind on a non-weapon item and a non-list class focus declaration (%s)" % str(added))
+	var restored := Character.new()
+	restored.from_dict(druid.to_dict())
+	check.call(owned(restored) == DRUID_A and restored.inventory.get_weapon() == FOCUS and restored.inventory.has_required_spell_component(water_walk, "druid"), "Restore keeps the held focus copy and its casting role without replay")

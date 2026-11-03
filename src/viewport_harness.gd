@@ -496,6 +496,7 @@ func _run_scenario(scenario: String) -> void:
 		"skilled_feat_creation_reload": await SkilledFeatControls.reload(self)
 		"class_tool_items_flow": await ClassToolItemControls.run(self)
 		"class_tool_items_reload": await ClassToolItemControls.reload(self)
+		"druidic_focus_cast_flow": await DruidicFocusControls.run(self)
 		"class_skill_selection_flow": await ClassSkillSelectionControls.run(self)
 		"class_skill_selection_flow_b": await ClassSkillSelectionControls.run_b(self)
 		"class_skill_selection_reload": await ClassSkillSelectionControls.reload(self)
@@ -3001,6 +3002,8 @@ func test_entangle_spell_flow() -> void:
 	_setup_world()
 	# Keep the save failure deterministic while still resolving it through the live casting path.
 	var druid := _fresh_char("Entangle Druid", "human", "druid", {"STR": 10, "DEX": 12, "CON": 14, "INT": 10, "WIS": 30, "CHA": 10})
+	# Druidic Focus fixture repair: option A now holds Shield + focus, so this V,S spell needs a hand freed via the normal stow.
+	_ready_spell_components(druid)
 	var captive := _fresh_char("Entangle Captive", "human", "fighter", {"STR": 3, "DEX": 12, "CON": 14, "INT": 10, "WIS": 10, "CHA": 10})
 	druid.known_spells.assign(["entangle"])
 	druid.spell_slots["1"] = 1
@@ -3518,6 +3521,8 @@ func test_conjure_animals_spell_flow() -> void:
 	_enter_test("conjure_animals_spell_flow")
 	_setup_world()
 	var druid := _fresh_char("Conjure Animals Druid", "human", "druid", {"STR": 10, "DEX": 12, "CON": 14, "INT": 10, "WIS": 16, "CHA": 10})
+	# Druidic Focus fixture repair: option A now holds Shield + focus, so this V,S spell needs a hand freed via the normal stow.
+	_ready_spell_components(druid)
 	druid.known_spells.assign(["conjure_animals"])
 	druid.spell_slots["3"] = 1
 	PlayerManager.set_player_character(0, druid)
@@ -3714,6 +3719,8 @@ func test_conjure_fey_spell_flow() -> void:
 	_enter_test("conjure_fey_spell_flow")
 	_setup_world()
 	var druid := _fresh_char("Conjure Fey Druid", "human", "druid", {"STR": 10, "DEX": 12, "CON": 14, "INT": 10, "WIS": 30, "CHA": 10})
+	# Druidic Focus fixture repair: option A now holds Shield + focus, so this V,S spell needs a hand freed via the normal stow.
+	_ready_spell_components(druid)
 	druid.known_spells.assign(["conjure_fey"])
 	druid.spell_slots["6"] = 1
 	PlayerManager.set_player_character(0, druid)
@@ -3854,6 +3861,8 @@ func test_conjure_woodland_beings_spell_flow() -> void:
 	_enter_test("conjure_woodland_beings_spell_flow")
 	_setup_world()
 	var druid := _fresh_char("Woodland Beings Druid", "human", "druid", {"STR": 10, "DEX": 12, "CON": 14, "INT": 10, "WIS": 18, "CHA": 10})
+	# Druidic Focus fixture repair: option A now holds Shield + focus, so this V,S spell needs a hand freed via the normal stow.
+	_ready_spell_components(druid)
 	druid.known_spells.assign(["conjure_woodland_beings"])
 	druid.spell_slots["5"] = 1
 	PlayerManager.set_player_character(0, druid)
@@ -4725,6 +4734,8 @@ func test_antilife_shell_spell_flow() -> void:
 	_enter_test("antilife_shell_spell_flow")
 	_setup_world()
 	var druid := _fresh_char("Shell Druid", "human", "druid", {"STR": 10, "DEX": 12, "CON": 14, "INT": 10, "WIS": 18, "CHA": 10})
+	# Druidic Focus fixture repair: option A now holds Shield + focus, so this V,S spell needs a hand freed via the normal stow.
+	_ready_spell_components(druid)
 	druid.known_spells.assign(["antilife_shell"])
 	druid.spell_slots["5"] = 1
 	PlayerManager.set_player_character(0, druid)
@@ -5489,6 +5500,8 @@ func test_plant_growth_spell_flow() -> void:
 	_enter_test("plant_growth_spell_flow")
 	_setup_world()
 	var druid := _fresh_char("Plant Growth Druid", "human", "druid", {"STR": 10, "DEX": 12, "CON": 14, "INT": 10, "WIS": 18, "CHA": 10})
+	# Druidic Focus fixture repair: option A now holds Shield + focus, so this V,S spell needs a hand freed via the normal stow.
+	_ready_spell_components(druid)
 	druid.known_spells.assign(["plant_growth"])
 	druid.spell_slots["3"] = 1
 	PlayerManager.set_player_character(0, druid)
@@ -5670,6 +5683,8 @@ func test_mass_cure_wounds_flow() -> void:
 	_enter_test("mass_cure_wounds_flow")
 	_setup_world()
 	var druid := _fresh_char("Mass Cure Druid", "human", "druid", {"STR": 10, "DEX": 12, "CON": 14, "INT": 10, "WIS": 18, "CHA": 10})
+	# Druidic Focus fixture repair: option A now holds Shield + focus, so this V,S spell needs a hand freed via the normal stow.
+	_ready_spell_components(druid)
 	for _level in 8:
 		druid.level_up()
 	druid.known_spells.assign(["mass_cure_wounds"])
@@ -16658,6 +16673,8 @@ func test_owned_creature_lifecycle_flow() -> void:
 	GameManager.active_dungeon_state.clear()
 	GameManager.game_in_progress = true
 	var druid := _fresh_char("Crown Druid", "human", "druid", {"STR": 10, "DEX": 14, "CON": 14, "INT": 10, "WIS": 16, "CHA": 10})
+	# Druidic Focus fixture repair: option A now holds Shield + focus, so this V,S spell needs a hand freed via the normal stow.
+	_ready_spell_components(druid)
 	druid.level_up()
 	var paladin := _fresh_char("Crown Paladin", "human", "paladin", {"STR": 16, "DEX": 10, "CON": 14, "INT": 10, "WIS": 10, "CHA": 16})
 	for _level in 4: paladin.level_up()

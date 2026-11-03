@@ -503,6 +503,9 @@ func _validate_content(data: Dictionary, content_type: String, source: String) -
 		if not measure_error.is_empty():
 			_load_errors.append("%s in %s" % [measure_error, source])
 			return false
+	if content_type == "item" and data.has("spellcasting_focus_kind") and (not data["spellcasting_focus_kind"] is String or str(data["spellcasting_focus_kind"]).is_empty() or str(data.get("type", "")) != "weapon"):
+		_load_errors.append("spellcasting_focus_kind must be a non-empty string on a weapon item in %s" % source)
+		return false
 	if content_type == "item":
 		var context_effect_error := _check_context_item_effect_error(data)
 		if not context_effect_error.is_empty():
@@ -677,6 +680,8 @@ func _validate_semantics(data: Dictionary, content_type: String, source: String)
 				tool_error = "tool_choices must pick from distinct tool ids not already granted"
 		if tool_error.is_empty() and data.has("starting_equipment_includes_tool_choice") and (not data["starting_equipment_includes_tool_choice"] is bool or (data["starting_equipment_includes_tool_choice"] and not data.has("tool_choices"))):
 			tool_error = "starting_equipment_includes_tool_choice must be a boolean and requires tool_choices"
+		if tool_error.is_empty() and data.has("spellcasting_focus_kinds") and (not data["spellcasting_focus_kinds"] is Array or data["spellcasting_focus_kinds"].any(func(k): return not k is String or k.is_empty())):
+			tool_error = "spellcasting_focus_kinds must list non-empty focus kind strings"
 		if not tool_error.is_empty():
 			_load_errors.append("%s in %s" % [tool_error, source])
 			valid = false

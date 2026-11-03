@@ -283,6 +283,7 @@ if ($runIntegration) {
     $scenarios += "class_skill_selection_flow"
     $scenarios += "batch_066_travel_placement_flow", "batch_076_footprint_terrain_flow", "batch_077_per_swing_choice_flow", "batch_078_declared_capacity_flow"
     $scenarios += "batch_085_cast_transform_flow", "batch_087_choice_routes_flow"
+    $scenarios += "druidic_focus_cast_flow"
     if ($Scenario.Count -gt 0) {
         # Selecting a reload explicitly still prepares its own checkpoint.
         $Scenario = @($Scenario | ForEach-Object {

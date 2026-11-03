@@ -53,9 +53,17 @@ restore, so older saves keep their inventory without retroactive kits.
 Option A also lists one `explorers_pack` for Druid and Monk through the same
 `starting_equipment` path; it is one pack copy whose existing `pack_contents`
 expand through `Inventory.expand_pack_instance` (Backpack, Bedroll, 2 Oil, 10
-Rations, Rope, Tinderbox, 10 Torches, Waterskin; `srd.txt` 5839-5842). Not
-delivered: Druid Sickle and Druidic Focus (Quarterstaff); see
-[the evidence](../reviews/class-tool-items.md#explorers-pack-follow-up).
+Rations, Rope, Tinderbox, 10 Torches, Waterskin; `srd.txt` 5839-5842). Druid
+option A also owns `druidic_focus_quarterstaff` (a Quarterstaff weapon that
+declares `"spellcasting_focus_kind": "druidic"`) listed before `sickle`, so the
+existing placement holds the focus as first weapon beside the Shield and
+carries the Sickle. A class declares `"spellcasting_focus_kinds": [...]` (Druid
+and Ranger: `["druidic"]`); `Inventory.held_spellcasting_focus` accepts only a
+matching item equipped in the Weapon or Off-hand slot, and that hand covers the
+Material and Somatic parts of a spell with a non-costly, non-consumed material.
+Somatic-only spells still need a free hand; priced/consumed materials keep
+their exact-copy rule; a stowed focus is not held. See
+[the evidence](../reviews/druidic-focus-sickle.md).
 
 PR C class skills (SRD 5.2.1 Core Traits; `srd.txt` lines): Barbarian 2 of 6
 (1735-1737), Fighter 2 of 9 (2844-2848), Paladin 2 of 6 (3177-3181), Ranger 3

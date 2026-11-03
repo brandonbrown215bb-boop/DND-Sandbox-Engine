@@ -14,6 +14,11 @@ const PRE_PACK_FIXTURE := "res://data/fixtures/tool_items/main_382ca63_party.sav
 const PRE_PACK_SLOT := "class_tool_items_prepack"
 const PRE_PACK_PLAYERS_SLOT := "class_tool_items_prepack_players"
 const PRE_PACK_IDS := "user://class_tool_items_prepack_ids.txt"
+## Real party save written by main de3891d (#81 packs, Druid without focus or Sickle).
+const PRE_FOCUS_FIXTURE := "res://data/fixtures/tool_items/main_de3891d_party.sav"
+const PRE_FOCUS_SLOT := "class_tool_items_prefocus"
+const PRE_FOCUS_PLAYERS_SLOT := "class_tool_items_prefocus_players"
+const PRE_FOCUS_IDS := "user://class_tool_items_prefocus_ids.txt"
 
 
 static func run(h: Node) -> void:
@@ -46,11 +51,12 @@ static func run(h: Node) -> void:
 	druid_equipment.select(0)
 	druid_equipment.item_selected.emit(0)
 	creation.btn_next.pressed.emit()
-	h._assert(creation.summary_equip_label.text.count("Herbalism Kit") == 1 and creation.summary_equip_label.text.count("Explorer's Pack") == 1 and not creation.summary_equip_label.text.contains("Quarterstaff") and creation.summary_equip_label.text.contains("9 GP"), "Cancelling gold restores one Herbalism Kit, Explorer's Pack and 9 GP in review")
+	h._assert(creation.summary_equip_label.text.count("Herbalism Kit") == 1 and creation.summary_equip_label.text.count("Explorer's Pack") == 1 and creation.summary_equip_label.text.count("Druidic Focus (Quarterstaff)") == 1 and creation.summary_equip_label.text.count("Sickle") == 1 and not creation.summary_equip_label.text.contains("- Quarterstaff") and creation.summary_equip_label.text.contains("9 GP"), "Cancelling gold restores one Druidic Focus (Quarterstaff), Sickle, Herbalism Kit, Explorer's Pack and 9 GP in review")
 	creation.btn_next.pressed.emit()
 	await h.get_tree().process_frame
 	var druid: Character = PlayerManager.get_player(0).get("character")
 	h._assert(druid != null and ClassToolItemChecks.owned(druid) == ClassToolItemChecks.DRUID_A and druid.inventory.gold == 9 and druid.tool_proficiency_sources == {"herbalism_kit": ["class:druid"]} and druid.creation_choices.get("equipment", "") == "equipment", "Druid Confirm grants one kit copy, 9 GP and separate class-owned proficiency")
+	h._assert(druid != null and druid.inventory.get_weapon() == ClassToolItemChecks.FOCUS and druid.inventory.get_equipped(Inventory.Slot.SHIELD) == "shield" and druid.inventory.backpack.count("sickle") == 1 and druid.inventory.has_required_spell_component(DataLoader.get_spell("water_walk"), "druid"), "Druid Confirm holds the focus beside the Shield (legal focus casting) and carries the Sickle")
 	h._assert(creation.current_player_idx == 1 and creation.class_creation_choices.is_empty(), "Seat reset: the next seat starts with no class or equipment choices")
 	# Monk 1: picks Smith's Tools, Back, switches to Lyre.
 	await _to_equipment(h, creation, "Tool Monk Lyre", "monk")
@@ -110,6 +116,7 @@ static func run(h: Node) -> void:
 	h._assert(SaveManager._validate_save_data(players).is_empty() and _write(PLAYERS_SLOT, JSON.stringify(players)), "Player-only tool-item save validates and is written")
 	_seed_old_main(h)
 	_seed_pre_pack(h)
+	_seed_pre_focus(h)
 	var f := FileAccess.open(IDS, FileAccess.WRITE)
 	var ids := []
 	for c in [druid, lyre, smith, rand]:
@@ -169,6 +176,32 @@ static func _seed_pre_pack(h: Node) -> void:
 	f.close()
 
 
+static func _no_focus() -> bool:
+	for p in PlayerManager.get_player_count():
+		var c: Character = PlayerManager.get_player(p).get("character")
+		if c == null or ClassToolItemChecks.owned(c).has(ClassToolItemChecks.FOCUS) or ClassToolItemChecks.owned(c).has("sickle"): return false
+	return PlayerManager.get_player_count() == 4
+
+
+## Main de3891d saves: load, save; the fresh process reloads and saves again.
+static func _seed_pre_focus(h: Node) -> void:
+	var text := FileAccess.get_file_as_string(PRE_FOCUS_FIXTURE)
+	var data: Variant = JSON.parse_string(text)
+	h._assert(data is Dictionary and _write(PRE_FOCUS_SLOT, text), "de3891d fixture save is copied in")
+	if not data is Dictionary: return
+	data.erase("party")
+	h._assert(_write(PRE_FOCUS_PLAYERS_SLOT, JSON.stringify(data)), "de3891d player-only save is derived")
+	var seen := {}
+	for slot in [PRE_FOCUS_SLOT, PRE_FOCUS_PLAYERS_SLOT]:
+		h._assert(SaveManager.load_game(slot), "%s: de3891d save loads" % slot)
+		h._assert(_no_focus(), "%s: no retroactive Druidic Focus or Sickle on load" % slot)
+		seen = _inventories()
+		h._assert(SaveManager.save_game(slot), "%s: de3891d save re-saves" % slot)
+	var f := FileAccess.open(PRE_FOCUS_IDS, FileAccess.WRITE)
+	f.store_string(JSON.stringify(seen))
+	f.close()
+
+
 static func reload(h: Node) -> void:
 	h._enter_test("class_tool_items_reload")
 	var expected := {}
@@ -201,6 +234,13 @@ static func reload(h: Node) -> void:
 		h._assert(_no_pack() and pre is Dictionary and _inventories() == pre, "%s fresh process: exact inventories, still no retroactive pack" % slot)
 		h._assert(SaveManager.save_game(slot) and SaveManager.load_game(slot) and _inventories() == pre, "%s fresh process: saves again unchanged" % slot)
 		SaveManager.delete_save(slot)
+	var pre_focus: Variant = JSON.parse_string(FileAccess.get_file_as_string(PRE_FOCUS_IDS))
+	for slot in [PRE_FOCUS_SLOT, PRE_FOCUS_PLAYERS_SLOT]:
+		h._assert(SaveManager.load_game(slot), "%s: fresh process loads the re-saved de3891d save" % slot)
+		h._assert(_no_focus() and pre_focus is Dictionary and _inventories() == pre_focus, "%s fresh process: exact inventories, still no retroactive focus or Sickle" % slot)
+		h._assert(SaveManager.save_game(slot) and SaveManager.load_game(slot) and _inventories() == pre_focus, "%s fresh process: saves again unchanged" % slot)
+		SaveManager.delete_save(slot)
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(PRE_FOCUS_IDS))
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(PRE_PACK_IDS))
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(IDS))
 	h._exit_test()

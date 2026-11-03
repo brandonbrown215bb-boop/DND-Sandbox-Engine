@@ -181,6 +181,23 @@ func _is_compatible_spellcasting_focus(item_id: String, class_id: String) -> boo
 	return false
 
 
+## Return the equipped (held) weapon-slot item whose data declares a
+## `spellcasting_focus_kind` that the class's `spellcasting_focus_kinds` list
+## accepts. Carried or stowed copies are not held and never count here.
+func held_spellcasting_focus(class_id: String) -> String:
+	var kinds: Variant = DataLoader.get_character_class(class_id).get("spellcasting_focus_kinds", [])
+	if not kinds is Array or kinds.is_empty():
+		return ""
+	for slot in [Slot.WEAPON, Slot.OFFHAND]:
+		var item_id := str(equipped.get(slot, ""))
+		if item_id.is_empty():
+			continue
+		var kind := str(DataLoader.get_item(item_id).get("spellcasting_focus_kind", ""))
+		if not kind.is_empty() and kind in kinds:
+			return item_id
+	return ""
+
+
 ## Spell components and a spellcasting focus or pouch need one usable hand.
 ## Equipped weapons and a shield occupy their normal hands; a two-handed
 ## weapon occupies both. The cast can be attempted only when a hand is free.
@@ -291,11 +308,16 @@ func has_required_spell_component(spell_data: Dictionary, class_id: String = "")
 		# performs the Somatic component. Proficiency is checked by cast validation.
 		var weapon := DataLoader.get_item(get_weapon())
 		return str(weapon.get("type", "")) == "weapon" and int(weapon.get("value", 0)) > 0
+	var consumed := bool(spell_data.get("material_component_consumed", false))
+	var minimum_value := int(spell_data.get("material_component_cost", 0))
+	if has_material and not consumed and minimum_value <= 0 and not held_spellcasting_focus(class_id).is_empty():
+		# SRD 5.2.1 Material (M): the hand holding the Spellcasting Focus can
+		# also perform the Somatic components. Priced or consumed materials and
+		# Somatic-only spells keep their normal free-hand and copy rules.
+		return true
 	var needs_hand := has_material or has_somatic
 	if needs_hand and available_spellcasting_hands() < 1:
 		return false
-	var consumed := bool(spell_data.get("material_component_consumed", false))
-	var minimum_value := int(spell_data.get("material_component_cost", 0))
 	if has_material and (consumed or minimum_value > 0):
 		return not required_spell_component_instance(spell_data).is_empty()
 	if has_material and not has_spellcasting_focus(class_id):

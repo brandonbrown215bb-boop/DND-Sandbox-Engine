@@ -32,6 +32,9 @@
       "Survival"
     ]
   },
+  "spellcasting_focus_kinds": [
+    "druidic"
+  ],
   "starting_equipment": [
     "leather_armor",
     "longbow",
