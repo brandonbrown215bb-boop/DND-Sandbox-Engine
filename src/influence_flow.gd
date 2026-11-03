@@ -139,7 +139,8 @@ static func run(h: Node) -> void:
 	actor.ability_scores.wisdom = 50
 	actor.known_languages.assign(["Common"])
 	h._assert(InfluenceRules.definition_error(DataLoader.get_monster("fixture:gesture_sentry")).is_empty(), "OA-11 loaded spoken Persuasion/Deception approaches remain source-data validated")
-	helper.skill_proficiencies.assign(["Intimidation", "Performance"])
+	for skill in ["Intimidation", "Performance"]:
+		if skill not in helper.skill_proficiencies: helper.skill_proficiencies.append(skill)
 	await attempt(h, state, actor, monster, [])
 	h._assert(state.turn_budget.can_spend("action") and not gate.open and room.get("influence_attempts", []).is_empty(), "S237 cancelled Influence request pays nothing and makes no social outcome")
 	await attempt(h, state, actor, monster, ["Open the gate"], func(): state.turn_budget.spend("action"))

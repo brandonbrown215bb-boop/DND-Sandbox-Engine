@@ -136,7 +136,8 @@ static func logic(check: Callable) -> void:
 static func _world_help_and_hearing(check: Callable) -> void:
 	var actor := PerceptionChecks.actor("room_recipient")
 	var helper := PerceptionChecks.actor("room_helper")
-	helper.skill_proficiencies.assign(["Perception", "Athletics", "Medicine"])
+	for skill in ["Perception", "Athletics", "Medicine"]:
+		if skill not in helper.skill_proficiencies: helper.skill_proficiencies.append(skill)
 	helper.tool_proficiencies.assign(["Thieves' Tools"])
 	actor.ability_scores.wisdom = 50
 	var party := [actor, helper]
@@ -362,7 +363,8 @@ static func _room_controls(h: Node, view: LocalRoomView) -> void:
 	var helper := view.characters[1] as Character
 	view.state.party_positions[actor.character_id] = [1,1]
 	view.state.party_positions[helper.character_id] = [2,1]
-	helper.skill_proficiencies.assign(["Perception", "Athletics", "Medicine"])
+	for skill in ["Perception", "Athletics", "Medicine"]:
+		if skill not in helper.skill_proficiencies: helper.skill_proficiencies.append(skill)
 	select_actor(view, 1)
 	for index in view.help_choices.item_count:
 		if view.help_choices.get_item_metadata(index).name == "Perception": view.help_choices.select(index)

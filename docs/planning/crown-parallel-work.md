@@ -12,6 +12,36 @@ supersede this snapshot's instruction to finish all S-237 before selecting
 movement/Hit Dice. The dated inventory below is not refreshed by that planning
 change; delivered cover/Study/Influence continuations live in the registry.
 
+## Integrated work — 2026-11-03
+
+The local Crown ordinary-action continuations are reconciled with merged main
+through PR #80. G1–G4 and their follow-ups landed in #72 and #74–80; G5/G6
+preparation landed in #71/#73. The queue below is historical assignment scope,
+not a list to start again. S-234 remains unaccepted and production multiclassing
+is still unavailable. Skilled is real loaded content; the old zero-feat inventory
+below is a dated baseline. Backgrounds and Draconic remain preparation only.
+
+OA-01–OA-13 have verified bounded implementations in the
+[slice registry](vocabulary-slices.md#ordinary-action-work-packages), as does
+native Thunderwave sound on ordinary player Actions and Ready release.
+S-237/S-238 remain incomplete; do not restart OA-01 or send the whole umbrellas
+as one assignment. Independent movement and Hit Dice work can proceed.
+
+Next work is split by actual consumers:
+
+- Grokbot: complete the remaining Druid/Monk starting-equipment clauses through
+  existing item, pack and focus contracts. Keep this to one reviewed PR; do not
+  expand into every class package or background acquisition.
+- Luna via Ziva: S-071's actual Hit Dice pools, Short Rest spending/healing and
+  Long Rest recovery, including mixed class die sizes and allowed reload. The
+  benefit-only/Prayer of Healing continuation remains explicitly separate until
+  its own production host is demonstrated; this assignment alone cannot accept
+  all S-071.
+
+Both lanes must preserve exact ownership and legacy saves. Grokbot owns the
+selected equipment acquisition sections; Luna owns rest/Hit Dice sections.
+Character, loader, checks and registry edits must stay within those sections.
+
 ## Current position
 
 The engine has substantial reusable behavior, but the complete Crown package is
@@ -60,8 +90,7 @@ Two stale claims must not turn into duplicate work:
 ## Local lane — select one bounded assignment
 
 Use the registry's [S-237/S-238 work packages](vocabulary-slices.md#ordinary-action-work-packages)
-and their [chat prompts](ordinary-action-chat-prompts.md). Start with OA-01's
-review of the delivered cover boundary; then choose one ready capability or
+and their [chat prompts](ordinary-action-chat-prompts.md). OA-01–OA-13 are verified within their registry boundaries; choose one ready capability or
 independent Crown assignment by actual prerequisites. Movement/Grapple/Shove,
 Hit Dice and character/content work need not wait for all S-237/S-238.
 The registry retains the parent requirements and their unassigned follow-ups;

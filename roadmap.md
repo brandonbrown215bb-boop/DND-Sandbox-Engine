@@ -20,7 +20,7 @@ records delivered combat actions, Ready, room Utilize/Search/Help, object Study,
 gesture Influence and represented hearing/noise. S-237/S-238 remain incomplete
 requirement umbrellas. Work now selects one
 [bounded assignment](docs/planning/vocabulary-slices.md#ordinary-action-work-packages),
-starting with OA-01's review of the already-delivered flat-grid cover boundary.
+using the verified OA-01–OA-13 boundaries to select the next missing consumer.
 [Prompts for separate chats](docs/planning/ordinary-action-chat-prompts.md)
 cover the next sound, Search, communication, Help, Study and Influence assignments.
 Independent movement, Hit Dice and character/content work may proceed when its
@@ -34,6 +34,12 @@ prerequisites, acceptance and verified limits. A new gap required by named
 in-scope content stays in Crown. Higher-level-only and unselected-content work
 stays [below](#outside-crown). Do not make the whole engine denominator a gate
 for finishing the campaign, or quietly reduce Crown's content to improve a count.
+
+The [2026-11-03 integration update](docs/planning/crown-parallel-work.md#integrated-work--2026-11-03)
+records merged acquisition work through PR #80, delivered OA-01–OA-13 and the
+next equipment/Hit Dice split. Backgrounds and Draconic remain preparation;
+production multiclassing remains unavailable. The older inventory and G1–G6
+assignment descriptions are historical scope, not a fresh queue.
 
 The [2026-11-01 local/Grokbot split](docs/planning/crown-parallel-work.md)
 records the dated production inventory and bounded PR assignments. Its local

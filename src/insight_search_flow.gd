@@ -90,17 +90,21 @@ static func run(h: Node) -> void:
 	var help_menu: PopupMenu = combat.hud.get_node("OrdinaryActionsMenu")
 	help_menu.id_pressed.emit(OrdinaryActionRules.ACTIONS.find("help_check")); help_menu.hide()
 	var picked_help := false
+	var picked_mode := false
 	for _frame in 120:
 		await h.get_tree().process_frame
 		for child in combat.hud.get_children():
 			if not child is PopupMenu or not child.visible or not str(child.title).begins_with("Help:"): continue
-			for index in child.item_count:
-				if child.get_item_text(index) == "Insight (skill)":
-					child.id_pressed.emit(child.get_item_id(index)); child.hide(); picked_help = true; break
-		if picked_help: break
+			if child.title == "Help: choose assistance method":
+				child.id_pressed.emit(child.get_item_id(0)); child.hide(); picked_mode = true
+			else:
+				for index in child.item_count:
+					if child.get_item_text(index) == "Insight (skill)":
+						child.id_pressed.emit(child.get_item_id(index)); child.hide(); picked_help = true; break
+		if picked_help and picked_mode: break
 	await h.get_tree().process_frame
 	await combat._on_hex_clicked(combat.player_entities[0].hex_position)
-	h._assert(picked_help and not combat.turn_budget.can_spend("action") and actor.combat_check_help.size() == 1, "OA-06 matching Help: Insight is granted through actual Actions and owned-proficiency controls")
+	h._assert(picked_help and picked_mode and not combat.turn_budget.can_spend("action") and actor.combat_check_help.size() == 1, "OA-06 matching Help: Insight is granted through actual Actions, owned-proficiency and assistance-method controls")
 	# Distinct observer and creature; deterministic success consumes that exact matching help.
 	combat.player_entities[0].hex_position = Vector2i(-1, 0)
 	monster.hex_position = Vector2i(0, 0)

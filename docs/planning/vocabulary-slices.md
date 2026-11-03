@@ -1224,6 +1224,22 @@ or out of Crown if scoped content later requires it.
 
 **Native Thunderwave Ready effect-sound verification (Windows Godot 4.7.2, 2026-11-02).** The source-pinned caster-origin boom now completes through the production Ready declaration/release host without making other native sound hosts legal. `ready_action_flow` proves declaration-time Action/slot payment and distinct Verbal sound, 65-foot effect-sound hearing beyond the Verbal range, no boom or Reaction payment on cancelled/stale selection, one paid release, Counterspell interruption/refund with the separate Verbal event, concentration-loss dissipation and owner-turn expiry. `ordinary_action_flow` retains direct-resolver and forged Ready-context refusals and verifies the ordinary Thunderwave host. Supported Windows runner bootstrap, 472-script parse gate, boot gate, `ready_action_flow`, and `ordinary_action_flow` passed. Independent shared-combat review found no concrete blocker. This bounded source/host verification does not accept S-237 or S-238 and changes neither parent count.
 
+**Combined-tree verification (2026-11-03).** Reconciled the local OA-01–OA-13,
+cover and native Thunderwave Action/Ready continuations with merged main through
+PR #80. Windows Godot 4.7 full logic passed 6,924 checks; ordinary/Ready actions,
+room spell sound, class/tool/Skilled creation and their reloads, the 1–4-player
+creation matrix, Quick Wins/reload, save/load and combat passed. The initial
+Search/Influence fixtures erased newly owned class skills, and the Insight Help
+fixture skipped the new assistance-method choice. They now preserve class
+skills and complete the actual controls. A focused independent review also
+found missing language/recollection validation on canonical party characters;
+the same existing validators now cover those records, with seven malformed,
+valid and legacy-absent-field regressions. The final persistence/world run passed
+663 checks; world Search and Influence plus both fresh-process reloads, and
+Insight Search, all passed without script errors. No save restriction or combat
+rule was relaxed, parent slice accepted, or count changed. Raw logs remain in
+ignored `.artifacts/reconcile-2026-11-03/`.
+
 #### Requirements retained outside these assignments
 
 Completing OA-01–OA-13 does not by itself finish S-237/S-238. The following

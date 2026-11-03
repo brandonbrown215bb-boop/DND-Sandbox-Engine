@@ -64,6 +64,9 @@ obstacles. Hearing a voice alone does not prove comprehension. The 30-foot
 communication range is explicit local-host policy, not a universal SRD range.
 Language facts use the existing character save DTO and preflight; legacy saves
 with no field keep an empty, unknown language list.
+Preflight checks both player copies and canonical party characters, including
+companions; malformed or duplicate language/recollection facts refuse the save
+before restore rather than becoming knowledge or silently disappearing.
 
 ### Verbal Help
 

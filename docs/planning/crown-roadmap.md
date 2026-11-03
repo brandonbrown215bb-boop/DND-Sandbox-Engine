@@ -95,6 +95,17 @@ and logs are ignored under `.artifacts/crown-roadmap-audit/`.
   See the actual scenarios in [the harness](../../src/viewport_harness.gd) and
   [relaunch preparation](../../src/crown_fresh_relaunch_probe.gd).
 
+## Current integration — 2026-11-03
+
+Merged main through PR #80 now supplies the G1–G4 acquisition work and its
+follow-ups, including real Skilled, class skill/tool choices and Druid/Monk tool
+items; G5/G6 remain non-loaded preparation. The baseline above is historical.
+Production multiclassing, complete equipment packages, backgrounds/species and
+full class/subclass content remain unfinished. OA-01–OA-13 and Thunderwave's
+bounded player Action/Ready sound are delivered; S-237/S-238 remain open.
+See the [current lane split](crown-parallel-work.md#integrated-work--2026-11-03)
+and the registry for their exact limits. Do not reassign completed packages.
+
 ## Delivery order
 
 The [2026-11-01 review and local/Grokbot split](crown-parallel-work.md)
@@ -106,8 +117,7 @@ unfinished. Reuse those delivered pieces rather than implementing them again.
 Finish the selected bounded assignment before expanding it. **S-237/S-238 are
 requirement umbrellas, not one execution assignment.** Use their
 [work packages](vocabulary-slices.md#ordinary-action-work-packages) and
-[separate-chat prompts](ordinary-action-chat-prompts.md), starting with OA-01's
-review of represented cover. Independent movement, Hit Dice, character and
+[separate-chat prompts](ordinary-action-chat-prompts.md), using the verified OA-01–OA-13 boundaries to select the next missing consumer. Independent movement, Hit Dice, character and
 content work can proceed when their actual prerequisites are ready; the whole
 ordinary-action umbrella is not a gate. A completed package does not accept its
 parent slice or waive the registry's retained requirements. Prioritize subsequent

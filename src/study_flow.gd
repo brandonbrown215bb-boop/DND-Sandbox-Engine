@@ -16,7 +16,8 @@ static func logic(check: Callable) -> void:
 	actor.ability_scores.intelligence = 50
 	actor.known_languages.assign(["Common"])
 	helper.known_languages.assign(["Common"])
-	helper.skill_proficiencies.assign(["Arcana"])
+	for skill in ["Arcana"]:
+		if skill not in helper.skill_proficiencies: helper.skill_proficiencies.append(skill)
 	var definition: Dictionary = recollections()
 	definition["id"] = "study-room"
 	definition["name"] = "Study room"
@@ -114,7 +115,8 @@ static func room_controls(h: Node, view: LocalRoomView) -> void:
 	view.state.objects.append_array(loaded.objects)
 	view.state.party_positions[actor.character_id] = [0,0]
 	view.state.party_positions[helper.character_id] = [1,0]
-	helper.skill_proficiencies.assign(["Arcana"])
+	for skill in ["Arcana"]:
+		if skill not in helper.skill_proficiencies: helper.skill_proficiencies.append(skill)
 	actor.known_languages.assign(["Common"])
 	helper.known_languages.assign(["Common"])
 	WorldSearchFlow.select_actor(view, 1)
@@ -176,7 +178,8 @@ static func combat(h: Node, state: CombatState, actor: Character, helper: Charac
 	state.player_entities[0].hex_position = Vector2i.ZERO
 	state.player_entities[1].hex_position = Vector2i(-1,0)
 	actor.ability_scores.intelligence = 50
-	helper.skill_proficiencies.assign(["Arcana"])
+	for skill in ["Arcana"]:
+		if skill not in helper.skill_proficiencies: helper.skill_proficiencies.append(skill)
 	state._update_grid_entities()
 	await combat_study(h, state, actor, [])
 	h._assert(state.turn_budget.can_spend("action") and StudyRules.answers(room, actor).is_empty(), "S237 cancelled combat Study spends nothing and learns nothing")

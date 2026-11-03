@@ -580,6 +580,10 @@ func _validate_party_data(data: Dictionary, campaign_seconds: int = 0) -> String
 		if not corpse_error.is_empty(): return corpse_error
 		var willingness_error := Character.saved_willingness_error(character_data)
 		if not willingness_error.is_empty(): return willingness_error
+		var language_error := CommunicationRules.saved_languages_error(character_data)
+		if not language_error.is_empty(): return language_error
+		var recollection_error := StudyRules.saved_recollections_error(character_data)
+		if not recollection_error.is_empty(): return recollection_error
 		var familiar_error := FamiliarRules.saved_error(character_data)
 		if not familiar_error.is_empty(): return familiar_error
 		var steed_error := PaladinRules.saved_steed_error(character_data)
