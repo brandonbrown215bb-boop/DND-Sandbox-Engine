@@ -5,6 +5,10 @@ static func player_attack(h: Node, combat: Node, actor: Character, monster: Dict
 	for i in combat.player_entities.size():
 		if combat.player_entities[i].character == actor: combat.current_player_idx = i
 	combat.active_character = actor
+	# Clicks are honoured only for the real active combatant; use the actor's tracker entry.
+	for entry in combat.tracker.combatants:
+		if is_same(entry.get("entity"), actor): combat.active_combatant = entry
+	h._assert(is_same(combat.active_combatant.get("entity"), actor), "035 player attack runs on the actor's own turn")
 	combat.turn_budget.has_acted_this_turn = false
 	combat.turn_budget.action_available = true
 	combat.remaining_attack_swings = 0

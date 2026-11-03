@@ -11,6 +11,7 @@ static func run(check: Callable) -> void:
 	BatchPChecks.run(check)
 	BatchQChecks.run(check)
 	Batch018Checks.run(check)
+	CrownMulticlassEntryChecks.run(check)
 	_weapon_attack_numeric_bonus(check)
 	_shared_numeric_pool(check)
 	_shared_numeric_breakpoint_formula(check)

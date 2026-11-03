@@ -662,6 +662,24 @@ func _validate_semantics(data: Dictionary, content_type: String, source: String)
 		if not class_prerequisite_error.is_empty():
 			_load_errors.append("%s in %s" % [class_prerequisite_error, source])
 			valid = false
+	if content_type == "class": # G2: class tool grants/choices and the creation picker opt-in.
+		var tool_error := ""
+		if data.has("creation_proficiency_choices") and not data["creation_proficiency_choices"] is bool:
+			tool_error = "creation_proficiency_choices must be a boolean"
+		var grants: Variant = data.get("tool_proficiency_grants", [])
+		if tool_error.is_empty() and (not grants is Array or grants.any(func(id): return not id is String or id.is_empty()) or grants.size() != _unique_count(grants)):
+			tool_error = "tool_proficiency_grants must list distinct tool ids"
+		if tool_error.is_empty() and data.has("tool_choices"):
+			var choice: Variant = data["tool_choices"]
+			if not choice is Dictionary or not choice.get("from", null) is Array or not (choice.get("pick", null) is int or choice.get("pick", null) is float):
+				tool_error = "tool_choices must declare pick and from"
+			elif int(choice.pick) < 1 or int(choice.pick) > choice.from.size() or choice.from.any(func(id): return not id is String or id.is_empty() or id in grants) or choice.from.size() != _unique_count(choice.from):
+				tool_error = "tool_choices must pick from distinct tool ids not already granted"
+		if tool_error.is_empty() and data.has("starting_equipment_includes_tool_choice") and (not data["starting_equipment_includes_tool_choice"] is bool or (data["starting_equipment_includes_tool_choice"] and not data.has("tool_choices"))):
+			tool_error = "starting_equipment_includes_tool_choice must be a boolean and requires tool_choices"
+		if not tool_error.is_empty():
+			_load_errors.append("%s in %s" % [tool_error, source])
+			valid = false
 	if data.has("last_charge_aftermath"):
 		var charge_error := LastChargeRules.validate(data["last_charge_aftermath"])
 		if charge_error.is_empty() and int(data.get("maximum_charges", 0)) <= 0: charge_error = "last_charge_aftermath requires maximum_charges"
@@ -1786,6 +1804,10 @@ func _validate_cross_references() -> void:
 	for class_data in classes.values():
 		var progression_error := PermanentProgressionRules.definition_error(class_data)
 		if not progression_error.is_empty(): _load_errors.append(progression_error)
+	for feat_id in feats: # G4: feat proficiency choices must offer real tool records.
+		for tool_id in feats[feat_id].get("proficiency_choices", {}).get("tools", []):
+			if get_item(str(tool_id)).get("type", "") != "tool":
+				_load_errors.append("Feat '%s' references missing tool '%s'" % [feat_id, tool_id])
 	for id in subclasses:
 		var parent := str(subclasses[id].get("class_id", ""))
 		if not classes.has(parent):
@@ -1800,6 +1822,10 @@ func _validate_cross_references() -> void:
 		if not legacy_id.is_empty() and subclasses.get(legacy_id, {}).get("class_id", "") != class_id:
 			_load_errors.append("Class '%s' references missing or mismatched legacy subclass '%s'" % [class_id, legacy_id])
 		_validate_feature_resources(class_data)
+		var class_tools: Array = class_data.get("tool_proficiency_grants", []) + class_data.get("tool_choices", {}).get("from", [])
+		for tool_id in class_tools: # G2: grants and choices must resolve to tool records.
+			if get_item(str(tool_id)).get("type", "") != "tool":
+				_load_errors.append("Class '%s' references missing tool '%s'" % [class_id, tool_id])
 		for feature_level in class_data.get("features_by_level", {}):
 			for feature in class_data["features_by_level"][feature_level]:
 				for effect in feature.get("effects", []) + feature.get("passive_effects", []):
@@ -2231,3 +2257,9 @@ func _sorted_values(registry: Dictionary) -> Array:
 
 func reload() -> void:
 	load_all_data()
+
+
+static func _unique_count(values: Array) -> int:
+	var seen := {}
+	for value in values: seen[value] = true
+	return seen.size()

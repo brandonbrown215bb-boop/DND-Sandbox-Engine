@@ -156,6 +156,10 @@ func _ready() -> void:
 	_run_group("effects", func(): SpellZoneChecks.run(_assert))
 	_run_group("barbarian", func(): BarbarianChecks.run(_assert))
 	_run_group("bard", func(): BardChecks.run(_assert))
+	_run_group("classes", func(): ClassToolProficiencyChecks.run(_assert))
+	_run_group("classes", func(): ClassToolItemChecks.run(_assert))
+	_run_group("classes", func(): SkilledFeatChecks.run(_assert)) # G4
+	_run_group("classes", func(): ClassSkillSelectionChecks.run(_assert)) # PR C
 	_run_group("cleric", func(): ClericChecks.run(_assert))
 	_run_group("combat", _test_ai_controller)
 	_run_group("persistence", _test_inventory)
@@ -183,6 +187,7 @@ func _ready() -> void:
 	_run_group("ui", _test_widgets)
 	_run_group("classes", func(): ClassFeatureChecks.run(_assert))
 	_run_group("classes", func(): QuickWinsChecks.run(_assert))
+	_run_group("persistence", func(): VerificationRepairsChecks.run(_assert))
 	# Release the real per-turn attack cache before the scene harness exits.
 	CombatAction.reset_bounded_owner_turn_rider_locks()
 	SpellDamageRolls.clear_pending_requests()

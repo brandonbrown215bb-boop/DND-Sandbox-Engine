@@ -1,5 +1,11 @@
 # Testing
 
+`class_skill_selection_flow` runs both creation passes and
+`class_skill_selection_reload` in separate processes sharing one disposable
+profile. Selecting either `class_skill_selection_flow_b` or
+`class_skill_selection_reload` runs the complete sequence, so recovery always
+has all seven characters and both checkpoints to inspect.
+
 The supported engine baseline is Godot 4.7.x on Windows. Provide a portable
 executable through `GODOT_BIN` or pass its path to the PowerShell runner.
 

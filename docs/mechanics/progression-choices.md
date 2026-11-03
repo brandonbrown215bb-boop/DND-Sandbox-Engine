@@ -16,6 +16,87 @@ assignment and campaign restriction on both party and player records. Restore
 retains the receipt and final permanent scores without rerolling or replaying
 creation bonuses. Existing saves without a generation receipt remain valid.
 
+## Class proficiency choices at creation (Crown G2)
+
+A class opts into the ordinary creation picker with
+`"creation_proficiency_choices": true` (Bard, Cleric, Druid, Rogue, Monk, and
+since PR C Barbarian, Fighter, Paladin, Ranger, Sorcerer, Warlock, Wizard).
+`skill_choices` and `tool_choices` (`{"pick": N, "from": [tool ids]}`) size the
+selectors; `"tool_proficiency_grants": [tool ids]` are fixed. Every id must be
+an item of type `tool`; a choice may not repeat a fixed grant. Druid grants
+`herbalism_kit`, Rogue `thieves_tools`, and Monk picks one Artisan's Tool or
+Musical Instrument.
+
+`tool_proficiency_sources` maps each tool id to its source ids (`class:<id>`,
+`class_choice:<id>`, `background:<id>`, `feat:<id>`, `species:<id>`).
+`ClassProgression.grant_tool_proficiency` grants once per source and lists the
+tool once however many sources own it (Rogue plus Criminal Thieves' Tools).
+Owning a tool item is not proficiency. Save preflight refuses malformed,
+duplicated or stale class sources and chosen tools without their source;
+restore replays nothing. Saves without the key, or tools without a source,
+remain valid legacy grants: restore records a pre-G2 save's tools in
+`legacy_tool_proficiencies`, which is saved and exempts those retained creation
+choices from the chosen-source rule on every later save. Limits: full equipment packs are not
+offered, and classes without the flag keep their earlier creation.
+
+Class tool items (SRD 5.2.1 Starting Equipment, `srd.txt` 2500-2504 Druid,
+2972-2978 Monk): option A goes through the ordinary `starting_equipment` path.
+Druid lists `herbalism_kit` with `starting_gold` 9; Monk declares
+`starting_equipment_includes_tool_choice: true`, and the one generic
+`ClassProgression.creation_starting_equipment` adds one copy of each already
+validated `tools` choice (any class may use the declaration; no class or item
+ID branch). Both declare `starting_gold_alternative` 50 (option B), which gives
+no items. The item copy is inventory only; proficiency still comes from
+`tool_proficiency_sources`. Items are granted once at Confirm (`initialize`
+refuses a character whose class is already set) and are never re-added on
+restore, so older saves keep their inventory without retroactive kits. Not
+delivered: Druid Sickle, Druidic Focus (Quarterstaff), Explorer's Pack; Monk
+Explorer's Pack.
+
+PR C class skills (SRD 5.2.1 Core Traits; `srd.txt` lines): Barbarian 2 of 6
+(1735-1737), Fighter 2 of 9 (2844-2848), Paladin 2 of 6 (3177-3181), Ranger 3
+of 8 (3417-3420), Sorcerer 2 of 6 (3818-3822), Warlock 2 of 7 (4187-4190),
+Wizard 2 of 7 (4604-4606). A pick may not repeat a species skill; Skilled
+refuses skills the class picks already granted. Barbarian keeps its own A/B
+selector (`starting_gold_alternative: 75`, SRD 1741-1745). The Fighter's two
+picks *are* its training skills: the picker preselects Athletics and Perception
+(minus species skills), Confirm passes the picks to `FighterRules.choose_skills`,
+a pre-combat swap updates `creation_choices.skills`, refuses species-held and
+(G4) Skilled-owned skills, and save preflight refuses picks that disagree with
+training. Saves made before PR C (creation choices holding only the
+generation receipt) stay valid with no class skills invented.
+
+### Feat proficiency choices (Skilled, Crown G4)
+
+A feat may declare `"proficiency_choices": {"pick": N, "skills": [...],
+"tools": [...]}` (pick 1-20; skills from the loader's skill list; tools must be
+items of type `tool`; entries distinct; no other keys). Any combination of
+exactly `pick` distinct entries is legal. Core `data/core/feats/skilled.json`
+is SRD 5.2.1 p.87 Skilled: an Origin feat, `repeatable`, `features: []`,
+pick 3 from all 18 skills and the 37 SRD Artisan's Tools, Other Tools and
+Musical Instruments, including Dice, Dragonchess, Playing Cards and
+Three-Dragon Ante Gaming Sets. Gaming Set weight is unspecified in the SRD;
+their item records omit `weight` rather than treating them as weightless.
+These records support proficiency choices; their described Utilize tasks
+are not implemented by this acquisition work.
+
+Each acquisition is its own instance: `origin` for the creation Origin feat, or
+the Ability Score Improvement feature id it replaced. `FeatRules.choose_origin`
+and `choose_level_feat` take the picks (`{"skills": [], "tools": []}`) and
+refuse, all-or-nothing and before anything is spent, missing/short/oversized,
+duplicate, off-list or already-held picks (from any source). Skills are added
+once; tools go through `grant_tool_proficiency` with source
+`feat:<feat_id>@<instance>`. `Character.feat_proficiency_choices` records
+`{instance: {"feat_id", "skills", "tools"}}`; restore replays nothing. Removing
+another source keeps a skill a feat instance owns. Save preflight refuses a
+chosen proficiency-choice feat without its record, a record for an instance that
+does not hold that feat, wrong counts or off-list picks, a skill or tool picked
+by two instances, a pick that is not held or a tool without its instance source,
+and any `feat:` tool source no record owns. Saves from before G4 (no key) load
+as `{}`. Creation preselects no Origin feat (there is no background step yet)
+and shows `OriginFeatProficiency1..N`; the level-up sheet shows
+`LevelFeatProficiency1..N` beside `LevelFeatPicker`.
+
 ## Feature choices
 
 `ClassProgression` owns acquisition and replacement of passive `feature_choice`

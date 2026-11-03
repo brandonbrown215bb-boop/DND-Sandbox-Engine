@@ -132,11 +132,44 @@ func _build_level_feat_choice(c: Character, status: Label, refresh: Callable) ->
 		picker.add_item(FeatRules.label(id))
 		picker.set_item_metadata(picker.item_count - 1, id)
 	row.add_child(picker)
+	# G4: a feat with proficiency_choices (Skilled) shows one picker per pick.
+	var picks_box := VBoxContainer.new()
+	picks_box.name = "LevelFeatProficiencies"
+	add_child(picks_box)
+	var build_picks := func():
+		for child in picks_box.get_children():
+			picks_box.remove_child(child)
+			child.queue_free()
+		var choice: Dictionary = DataLoader.get_feat(str(FeatRules.selection(str(picker.get_item_metadata(picker.selected))).feat_id)).get("proficiency_choices", {})
+		for index in int(choice.get("pick", 0)):
+			var selector := OptionButton.new()
+			selector.name = "LevelFeatProficiency%d" % (index + 1)
+			selector.add_item("Choose a skill or tool")
+			selector.set_item_metadata(0, "")
+			for value in choice.get("skills", []) + choice.get("tools", []):
+				var is_skill: bool = value in choice.get("skills", [])
+				selector.add_item(str(value) if is_skill else str(DataLoader.get_item(str(value)).get("name", value)))
+				selector.set_item_metadata(selector.item_count - 1, str(value))
+				if str(value) in (c.skill_proficiencies if is_skill else c.tool_proficiencies): selector.set_item_disabled(selector.item_count - 1, true)
+			picks_box.add_child(selector)
+	build_picks.call()
+	picker.item_selected.connect(func(_index: int): build_picks.call())
 	var take := Button.new()
 	take.name = "LevelFeatTake"
 	take.text = "Take feat instead"
 	take.pressed.connect(func():
-		var result := FeatRules.choose_level_feat(c, str(picker.get_item_metadata(picker.selected)))
+		var chosen := str(picker.get_item_metadata(picker.selected))
+		var choice: Dictionary = DataLoader.get_feat(str(FeatRules.selection(chosen).feat_id)).get("proficiency_choices", {})
+		var picks := {}
+		if not choice.is_empty():
+			picks = {"skills": [], "tools": []}
+			for selector in picks_box.get_children():
+				var value := str(selector.get_item_metadata(selector.selected)) if selector is OptionButton and selector.selected >= 0 else ""
+				if value.is_empty():
+					status.text = "Choose %d skills or tools for %s. Your improvement is still available." % [int(choice.pick), FeatRules.label(chosen)]
+					return
+				picks["skills" if value in choice.get("skills", []) else "tools"].append(value)
+		var result := FeatRules.choose_level_feat(c, chosen, picks)
 		if result.success:
 			refresh.call()
 		else:

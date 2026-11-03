@@ -400,6 +400,14 @@ var known_recollections: Dictionary = {}
 var saving_throw_proficiencies: Array[String] = []
 var skill_proficiencies: Array[String] = []
 var tool_proficiencies: Array[String] = []
+## G2: tool_id -> source ids that own the proficiency (absent for legacy grants).
+var tool_proficiency_sources: Dictionary = {}
+## Tools restored from a pre-G2 save (no sources key); kept as represented
+## legacy grants so later saves stay valid without replaying acquisition.
+var legacy_tool_proficiencies: Array = []
+## G4: feat instance ("origin" or an ASI feature id) -> {"feat_id", "skills", "tools"}
+## chosen through a feat's proficiency_choices (Skilled). Restore replays nothing.
+var feat_proficiency_choices: Dictionary = {}
 var creation_choices: Dictionary = {}
 ## Batch 051: the Origin feat chosen at creation (SRD 5.2.1 p.83).
 var origin_feat: String = ""
@@ -1096,6 +1104,7 @@ func use_uncanny_metabolism() -> Dictionary:
 ## Initialize a character from race and class data.
 func initialize(p_name: String, p_race_id: String, p_class_id: String, scores: AbilityScores, starting_equipment_choice: String = "equipment", selected_creation_choices: Dictionary = {}) -> void:
 	if not permanent_progression.is_empty(): return # Creation is not a repeatable acquisition.
+	if not class_id.is_empty(): return # Confirmed creation (and its starting items) is granted once per character.
 	var managed := PermanentProgressionRules.enabled(p_class_id)
 	if managed:
 		var definition := DataLoader.get_character_class(p_class_id)
@@ -1103,7 +1112,7 @@ func initialize(p_name: String, p_race_id: String, p_class_id: String, scores: A
 		var initial := PermanentProgressionRules.expected_receipts([p_class_id])
 		if not PermanentProgressionRules.can_fit(self, initial): return
 	var choices := selected_creation_choices.duplicate(true)
-	if not managed and p_class_id in ["bard", "cleric"]:
+	if not managed and ClassProgression.uses_creation_choices(p_class_id):
 		if choices.is_empty():
 			choices = ClassProgression.default_creation_choices(p_class_id, p_race_id)
 		choices["equipment"] = starting_equipment_choice
@@ -1170,16 +1179,22 @@ func initialize(p_name: String, p_race_id: String, p_class_id: String, scores: A
 		for skill in choices.get("skills", []):
 			if str(skill) not in skill_proficiencies:
 				skill_proficiencies.append(str(skill))
-		tool_proficiencies.assign(choices.get("tools", []))
+
+	tool_proficiencies.clear()
+	tool_proficiency_sources.clear()
+	legacy_tool_proficiencies.clear()
+	feat_proficiency_choices.clear()
+	if not managed:
+		ClassProgression.grant_creation_tools(self, choices)
 
 	# Starting equipment
-	var starting_equipment: Array = [] if managed else class_data.get("starting_equipment", []).duplicate()
+	var starting_equipment: Array = [] if managed else ClassProgression.creation_starting_equipment(class_id, choices if not choices.is_empty() else {"equipment": "equipment"})
 	if not managed and class_id == "bard":
 		starting_equipment.append(str(choices.get("instrument", "lute")))
 	if not managed and class_id == "barbarian" and starting_equipment_choice == "gold":
 		inventory.gold = 75
-	elif not managed and class_id in ["bard", "cleric"] and starting_equipment_choice == "gold":
-		inventory.gold = int(class_data.get("starting_gold_alternative", 90))
+	elif not managed and not choices.is_empty() and starting_equipment_choice == "gold" and class_data.has("starting_gold_alternative"):
+		inventory.gold = int(class_data["starting_gold_alternative"])
 	else:
 		inventory.add_starting_equipment(starting_equipment)
 		inventory.gold = 0 if managed else int(class_data.get("starting_gold", 0))
@@ -1199,7 +1214,8 @@ func initialize(p_name: String, p_race_id: String, p_class_id: String, scores: A
 	if managed: PermanentProgressionRules.initialize(self)
 	if not managed: FighterRules.initialize_training(self)
 	if not managed and class_id == "fighter":
-		FighterRules.choose_skills(self, "Athletics", "Perception")
+		var fighter_picks: Array = choices.get("skills", FighterRules.DEFAULT_SKILLS)
+		FighterRules.choose_skills(self, str(fighter_picks[0]), str(fighter_picks[1]))
 	# Unlock level 1 features
 	_unlock_features_for_level(1)
 	OwnedFeatureSources.sync(self) # Batch 049: species and species-granted feat features.
@@ -2704,6 +2720,9 @@ func to_dict() -> Dictionary:
 		"known_languages": known_languages.duplicate(),
 		"known_recollections": known_recollections.duplicate(true),
 		"tool_proficiencies": tool_proficiencies.duplicate(),
+		"tool_proficiency_sources": tool_proficiency_sources.duplicate(true),
+		"legacy_tool_proficiencies": legacy_tool_proficiencies.duplicate(),
+		"feat_proficiency_choices": feat_proficiency_choices.duplicate(true),
 		"creation_choices": creation_choices.duplicate(true),
 		"origin_feat": origin_feat,
 		"weapon_proficiencies": weapon_proficiencies,
@@ -2843,6 +2862,11 @@ func from_dict(data: Dictionary) -> void:
 		known_languages.append(str(language))
 	known_recollections = data.get("known_recollections", {}).duplicate(true) if data.get("known_recollections", {}) is Dictionary else {}
 	tool_proficiencies.assign(data.get("tool_proficiencies", []))
+	tool_proficiency_sources = data.get("tool_proficiency_sources", {}).duplicate(true) if data.get("tool_proficiency_sources", {}) is Dictionary else {}
+	if not data.has("tool_proficiency_sources"):
+		legacy_tool_proficiencies = tool_proficiencies.duplicate()
+	else:
+		legacy_tool_proficiencies = data.get("legacy_tool_proficiencies", []).duplicate() if data.get("legacy_tool_proficiencies", []) is Array else []
 	creation_choices = data.get("creation_choices", {}).duplicate(true)
 	if creation_choices.has("ability_generation") and AbilityScores.saved_generation_error(data).is_empty():
 		# JSON numbers arrive as floats. Restore the recorded integers without
@@ -2853,6 +2877,7 @@ func from_dict(data: Dictionary) -> void:
 		for score in generation["results"]: generated_results.append(int(score))
 		generation["results"] = generated_results
 	origin_feat = str(data.get("origin_feat", "")) if data.get("origin_feat", "") is String and FeatRules.saved_error(data).is_empty() else ""
+	feat_proficiency_choices = data.get("feat_proficiency_choices", {}).duplicate(true) if data.get("feat_proficiency_choices", {}) is Dictionary and FeatRules.saved_error(data).is_empty() else {}
 	for val in data.get("skill_proficiencies", []):
 		skill_proficiencies.append(str(val))
 

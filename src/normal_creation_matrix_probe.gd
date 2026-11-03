@@ -7,6 +7,9 @@ extends Node
 var failures: Array[String] = []
 
 
+## PR C: SRD Core Traits picks for the newly flagged classes.
+const CLASS_SKILL_PICKS := {"Barbarian": ["Athletics", "Survival"], "Paladin": ["Insight", "Religion"], "Ranger": ["Nature", "Stealth", "Survival"], "Sorcerer": ["Arcana", "Deception"], "Warlock": ["Arcana", "Investigation"], "Wizard": ["Arcana", "History"]}
+
 func _ready() -> void:
 	if OS.get_environment("RUN_NORMAL_CREATION_MATRIX") != "1":
 		return
@@ -178,8 +181,16 @@ func _run_class_equipment_smoke(target_class: String, expected_equipment: Array[
 	creation.btn_next.pressed.emit()
 	await get_tree().process_frame
 
+	var picks := []
 	if target_class == "Cleric":
-		for pair in [["ClericDivineOrder", "protector"], ["ClericSkill1", "Medicine"], ["ClericSkill2", "Religion"]]:
+		picks = [["ClericDivineOrder", "protector"], ["ClericSkill1", "Medicine"], ["ClericSkill2", "Religion"]]
+	elif target_class == "Rogue":
+		picks = [["RogueSkill1", "Acrobatics"], ["RogueSkill2", "Deception"], ["RogueSkill3", "Investigation"], ["RogueSkill4", "Stealth"]]
+	elif CLASS_SKILL_PICKS.has(target_class):
+		for index in CLASS_SKILL_PICKS[target_class].size():
+			picks.append(["%sSkill%d" % [target_class, index + 1], CLASS_SKILL_PICKS[target_class][index]])
+	if not picks.is_empty():
+		for pair in picks:
 			var selector: OptionButton = creation.equip_list.get_node(pair[0])
 			for index in selector.item_count:
 				if selector.get_item_metadata(index) == pair[1]:
@@ -198,10 +209,14 @@ func _run_class_equipment_smoke(target_class: String, expected_equipment: Array[
 	_check(character != null and character.class_id == target_class.to_lower(), "normal creation saves a %s character" % target_class)
 	if character == null:
 		return
+	if CLASS_SKILL_PICKS.has(target_class):
+		var chosen: Array = CLASS_SKILL_PICKS[target_class]
+		_check(character.creation_choices.get("skills", []) == chosen and chosen.all(func(skill): return character.skill_proficiencies.count(skill) == 1), "normal %s owns its selected class skills once" % target_class)
 	if target_class == "Fighter":
 		_check(character.inventory.get_armor() == "chain_mail", "normal Fighter equips chain mail")
 		_check(character.inventory.get_equipped(Inventory.Slot.SHIELD) == "shield", "normal Fighter equips a shield")
 		_check(character.inventory.get_weapon() == "longsword", "normal Fighter equips a longsword")
+		_check(character.fighter_training.get("skills", []).size() == 2 and character.creation_choices.get("skills", []) == character.fighter_training.get("skills", []), "normal Fighter keeps its preselected training skills as the class picks")
 	elif target_class == "Barbarian":
 		_check(character.inventory.get_armor().is_empty(), "normal Barbarian starts unarmored")
 		_check(character.inventory.get_weapon() == "greataxe", "normal Barbarian equips a greataxe")
@@ -214,6 +229,7 @@ func _run_class_equipment_smoke(target_class: String, expected_equipment: Array[
 		_check(character.inventory.has_item("shortbow"), "normal Rogue carries a shortbow")
 		_check(character.inventory.has_item("dagger"), "normal Rogue carries a dagger")
 		_check(character.inventory.has_item("thieves_tools"), "normal Rogue carries thieves' tools")
+		_check(character.tool_proficiency_sources.get("thieves_tools", []) == ["class:rogue"] and character.skill_proficiencies.has("Stealth") and character.skill_proficiencies.has("Investigation"), "normal Rogue owns selected skills and class Thieves' Tools proficiency")
 	elif target_class == "Wizard":
 		_check(character.inventory.get_armor().is_empty(), "normal Wizard starts unarmored")
 		_check(character.inventory.get_weapon() == "dagger", "normal Wizard equips a dagger")

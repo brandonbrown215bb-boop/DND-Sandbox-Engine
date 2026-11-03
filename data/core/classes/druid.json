@@ -16,6 +16,8 @@
   "weapon_proficiencies": [
     "simple"
   ],
+  "creation_proficiency_choices": true,
+  "tool_proficiency_grants": ["herbalism_kit"],
   "skill_choices": {
     "pick": 2,
     "from": [
@@ -31,8 +33,11 @@
   },
   "starting_equipment": [
     "leather_armor",
-    "shield"
+    "shield",
+    "herbalism_kit"
   ],
+  "starting_gold": 9,
+  "starting_gold_alternative": 50,
   "spell_list_ids": [
     "aid",
     "animal_friendship",

@@ -1,0 +1,20 @@
+{
+  "id": "fixture:g3_all",
+  "name": "G3 all",
+  "description": "Neutral multiclass entry gate consumer.",
+  "hit_die": "d8",
+  "primary_ability": "DEX",
+  "multiclass_prerequisite": {
+    "all": [
+      "DEX",
+      "WIS"
+    ]
+  },
+  "permanent_progression": {
+    "starting": [],
+    "multiclass": [],
+    "level_hit_points": 5,
+    "levels": []
+  },
+  "features_by_level": {}
+}

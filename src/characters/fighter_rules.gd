@@ -17,6 +17,10 @@ const MASTERIES := {
 	"blowgun": "vex", "hand_crossbow": "vex", "heavy_crossbow": "push", "longbow": "slow",
 }
 
+## Automatic Fighter training skills; with the G2 picker they are the
+## preselected class picks (SRD 5.2.1 Core Fighter Traits: choose 2).
+const DEFAULT_SKILLS := ["Athletics", "Perception"]
+
 static func mastery_capacity(level: int) -> int:
 	return 6 if level >= 16 else (5 if level >= 10 else (4 if level >= 4 else 3))
 
@@ -67,13 +71,19 @@ static func saved_training_error(dto: Dictionary) -> String:
 			return "Invalid Fighter preference"
 	if training.get("tactical_master", "weapon") not in ["weapon", "push", "sap", "slow"]:
 		return "Invalid Tactical Master choice"
+	# PR C: recorded class picks are the training skills (the same two SRD slots).
+	var choices: Variant = dto.get("creation_choices", {})
+	if choices is Dictionary and choices.has("skills"):
+		var picks: Variant = choices["skills"]
+		if not picks is Array or picks.size() != 2 or training.get("skills", []).size() != 2 or picks.any(func(skill): return skill not in training.get("skills", [])):
+			return "Fighter class skill picks disagree with Fighter training"
 	return ""
 
 static func initialize_training(c: Character) -> void:
 	if c.class_id != "fighter":
 		return
 	if c.fighter_training.is_empty():
-		c.fighter_training = {"styles": ["defense"], "masteries": ["longsword", "greatsword", "longbow"], "asi_spent": 0, "boon": "", "style_swap": true, "mastery_swaps": 3, "auto_indomitable": true, "auto_inspiration": false, "auto_peerless": true, "creation": true, "skills": ["Athletics", "Perception"]}
+		c.fighter_training = {"styles": ["defense"], "masteries": ["longsword", "greatsword", "longbow"], "asi_spent": 0, "boon": "", "style_swap": true, "mastery_swaps": 3, "auto_indomitable": true, "auto_inspiration": false, "auto_peerless": true, "creation": true, "skills": DEFAULT_SKILLS.duplicate()}
 	for field in ["asi_spent", "mastery_swaps"]:
 		c.fighter_training[field] = int(c.fighter_training.get(field, 0))
 
@@ -107,14 +117,20 @@ static func choose_skills(c: Character, first: String, second: String) -> bool:
 	var legal: Array = DataLoader.get_character_class("fighter").get("skill_choices", {}).get("from", [])
 	if c.class_id != "fighter" or not c.fighter_training.get("creation", false) or first == second or first not in legal or second not in legal:
 		return false
+	if FeatRules.owns_skill(c, first) or FeatRules.owns_skill(c, second):
+		return false # G4: a feat instance (Skilled) already owns that skill.
 	var racial: Array = DataLoader.get_race(c.race_id).get("proficiencies", [])
+	if c.creation_choices.has("skills") and (first in racial or second in racial):
+		return false # PR C: a recorded class pick may not duplicate a species skill.
 	for old in c.fighter_training.get("skills", []):
-		if old not in racial:
+		if old not in racial and not FeatRules.owns_skill(c, str(old)):
 			c.skill_proficiencies.erase(str(old))
 	for skill in [first, second]:
 		if skill not in c.skill_proficiencies:
 			c.skill_proficiencies.append(skill)
 	c.fighter_training["skills"] = [first, second]
+	if c.creation_choices.has("skills"):
+		c.creation_choices["skills"] = [first, second] # PR C: class picks follow the swap.
 	return true
 
 static func has_style(c: Character, style: String) -> bool:

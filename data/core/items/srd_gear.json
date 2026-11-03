@@ -370,6 +370,38 @@
     "value": 30
   },
   {
+    "id": "dice_set",
+    "name": "Gaming Set (Dice)",
+    "description": "A gaming set. Ability: Wisdom. Utilize: Discern whether someone is cheating (DC 10), or win the game (DC 20).",
+    "type": "tool",
+    "effects": [],
+    "value": 0.1
+  },
+  {
+    "id": "dragonchess_set",
+    "name": "Gaming Set (Dragonchess)",
+    "description": "A gaming set. Ability: Wisdom. Utilize: Discern whether someone is cheating (DC 10), or win the game (DC 20).",
+    "type": "tool",
+    "effects": [],
+    "value": 1
+  },
+  {
+    "id": "playing_card_set",
+    "name": "Gaming Set (Playing Cards)",
+    "description": "A gaming set. Ability: Wisdom. Utilize: Discern whether someone is cheating (DC 10), or win the game (DC 20).",
+    "type": "tool",
+    "effects": [],
+    "value": 0.5
+  },
+  {
+    "id": "three_dragon_ante_set",
+    "name": "Gaming Set (Three-Dragon Ante)",
+    "description": "A gaming set. Ability: Wisdom. Utilize: Discern whether someone is cheating (DC 10), or win the game (DC 20).",
+    "type": "tool",
+    "effects": [],
+    "value": 1
+  },
+  {
     "id": "mushroom_powder_25gp",
     "name": "Mushroom Powder (25+ GP)",
     "description": "Consumed Material component for True Seeing.",

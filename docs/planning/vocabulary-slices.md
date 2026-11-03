@@ -3585,7 +3585,7 @@ only how features are chosen, gated, granted and saved.
 | S-231 — Background acquisition at creation | Planned | V-025, V-026, V-027, STA-01 | Background content type and creation step. The step grants the ability increase (+2/+1 or +1/+1/+1 from the 3 listed, cap 20), the Origin feat, 2 skills, a fixed tool or a category choice, and equipment A or GP, with receipts and saved validation (SRD p.83). | S-047, S-049, S-050 |
 | S-232 — Species and language creation choices | Planned | V-025, V-027 | Lineage, ancestry and legacy choice; spellcasting ability chosen at selection; size choice; species skill choice; Human Versatile Origin feat; Common + 2 languages (SRD p.20, pp.84–86). Character-level 3/5 grants reuse S-048 and S-139. | S-045, S-048, S-139 |
 | S-233 — Feat prerequisite kinds and repeat rules | Verified ([boundary](#five-quick-wins)) | V-025 | Class-level and named-feature prerequisites (Fighting Style, Spellcasting), the repeatable flag, and distinct-parameter repeats such as the Magic Initiate list (SRD pp.87–88). | S-049, S-050 |
-| S-234 — Multiclass entry prerequisites | Planned | V-025, V-026 | 13+ in the primary ability of the new class and every current class (all-of / any-of), checked before a class is offered, with the exact failing score reported (SRD p.24). | S-047 |
+| S-234 — Multiclass entry prerequisites | Planned | V-025, V-026 | 13+ in the primary ability of the new class and every current class (all-of / any-of), checked before a class is offered, with the exact failing score reported (SRD p.24). G3 evidence (`CrownMulticlassEntryChecks`, neutral loaded fixtures): offer list, actual confirm, Class Progression panel, all/any, 12/13, permanent vs projected, stale confirm without cost, acquired class after a score drop, malformed declarations, checkpoint history. Not accepted: unreachable in production until a real class opts into `permanent_progression`. | S-047 |
 | S-242 — Creation ability-generation methods | Verified ([boundary](#five-quick-wins)) | V-025, V-057 | Offer Standard Array (15, 14, 13, 12, 10, 8) and Random Generation (4d6 drop lowest ×6, seeded, result recorded and saved) beside the existing 27-point Point Cost; a campaign setting may restrict the offered methods (ADR-0023 residue) (SRD p.21). Formerly PROPOSED-chargen-1. | S-045 |
 | S-243 — XP award and threshold advancement | Planned | V-026, V-057 | Award XP and raise level eligibility at Character Advancement table thresholds (0–355,000) by total character level, feeding the existing level-up and `pending_levels` routes (S-048/VS-69); no milestone rule in SRD 5.2.1 (SRD p.23, p.25). Formerly PROPOSED-chargen-2. | S-048 |
 | S-244 — Higher-level character creation | Planned | V-025, V-026 | Repeat the level-up steps through the target level (subclass, HP, background, ASI/feat choices), set minimum XP for that level, and apply the tier money/magic-item rarity grant from Starting Equipment at Higher Levels; start level and actual equipment are campaign settings (ADR-0023 residue) (SRD p.19, p.24). Formerly PROPOSED-chargen-3. | S-243, S-045, S-048, S-231 |
@@ -3814,3 +3814,38 @@ catalog zone resolvers remain in place and are not recertified by this slice.
 No new checkpoint or mid-combat save permission is added. The executable syntax
 and SRD distinctions live in the
 [physical-space contract](../mechanics/physical-facts-space-and-movement.md#declared-spatial-trigger-scopes-s-184).
+
+## Class proficiency at creation — Crown G2
+
+**Status:** verified subset. Druid Herbalism Kit, Rogue Thieves' Tools and the
+Monk Artisan's Tool/Musical Instrument choice are granted through ordinary
+creation with per-source ownership, once-only grants, stale-source preflight and
+no replay on reload (logic group `classes`, `class_proficiency_creation_flow`
+plus its fresh-process reload, `normal_creation_matrix`). All twelve SRD classes
+now offer their declared class skill picks; Fighter's picks and native training
+share the same two slots. The supported Windows `class_skill_selection_flow`
+runs both creation passes and a fresh-process reload for the seven newly opted-in
+classes. Druid option A now grants one Herbalism Kit and 9 GP; Monk option A
+grants one copy of its selected tool and 11 GP through a generic class-data
+declaration. Both offer a 50 GP option B with no items. The
+`class_tool_items_flow` and fresh-process reload cover exact item copies,
+separate proficiency ownership, both checkpoint forms and old saves without
+retroactive grants. **Remaining limits:** full equipment packs, including Druid's
+Sickle, Quarterstaff focus and Explorer's Pack, and Monk's Explorer's Pack.
+Syntax lives in
+[progression choices](../mechanics/progression-choices.md#class-proficiency-choices-at-creation-crown-g2).
+
+## Skilled Origin feat — Crown G4
+
+**Status:** verified subset. Core Skilled (SRD 5.2.1 p.87) is chosen at
+creation and again at an Ability Score Improvement; each instance owns its three
+skill/tool picks as `feat:skilled@<instance>`, refusals leave nothing spent, and
+saves round-trip without replay (logic group `classes` `SkilledFeatChecks`,
+`skilled_feat_creation_flow` plus its fresh-process reload, `quick_wins_flow`,
+`normal_creation_matrix`). Neutral fixture `data/fixtures/g4/feats.json` (pick 2)
+uses the same path. Skilled includes all four SRD Gaming Set variants among its
+37 tool choices; the supported Windows creation/reload pair verifies separate
+Dice and Playing Cards acquisitions and their exact owners. **Remaining limits:**
+Gaming Set Utilize tasks, background-granted Origin feats, and a Skilled pick that a later source also
+grants is not re-offered. Syntax lives in
+[progression choices](../mechanics/progression-choices.md#feat-proficiency-choices-skilled-crown-g4).

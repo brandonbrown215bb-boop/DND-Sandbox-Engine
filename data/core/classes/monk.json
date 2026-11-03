@@ -14,6 +14,8 @@
     "simple",
     "martial_light"
   ],
+  "creation_proficiency_choices": true,
+  "tool_choices": {"pick": 1, "from": ["alchemists_supplies", "brewers_supplies", "calligraphers_supplies", "carpenters_tools", "cartographers_tools", "cobblers_tools", "cooks_utensils", "glassblowers_tools", "jewelers_tools", "leatherworkers_tools", "masons_tools", "painters_supplies", "potters_tools", "smiths_tools", "tinkers_tools", "weavers_tools", "woodcarvers_tools", "bagpipes", "drum", "dulcimer", "flute", "horn", "lute", "lyre", "pan_flute", "shawm", "viol"]},
   "skill_choices": {
     "pick": 2,
     "from": [
@@ -34,6 +36,8 @@
     "dagger"
   ],
   "starting_gold": 11,
+  "starting_gold_alternative": 50,
+  "starting_equipment_includes_tool_choice": true,
   "rules_source": "dnd-2024-srd-5.2.1",
   "rules_status": "2024-partial",
   "support_status": "full",

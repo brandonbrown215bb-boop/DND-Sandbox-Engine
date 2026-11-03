@@ -121,9 +121,10 @@ static func run(check: Callable) -> void:
 	saved = created.to_dict()
 	saved.erase("creation_choices")
 	saved.erase("tool_proficiencies")
+	saved.erase("tool_proficiency_sources")
 	var old_inventory: Dictionary = saved["inventory"].duplicate(true)
 	restored.from_dict(saved)
-	check.call(ClassProgression.saved_choices_error(saved).is_empty() and restored.tool_proficiencies.is_empty() and restored.creation_choices.is_empty() and restored.inventory.to_dict() == old_inventory, "Older Bard saves retain their inventory and do not acquire new instruments or cash on reload")
+	check.call(ClassProgression.saved_choices_error(saved).is_empty() and restored.tool_proficiencies.is_empty() and restored.tool_proficiency_sources.is_empty() and restored.creation_choices.is_empty() and restored.inventory.to_dict() == old_inventory, "Older Bard saves retain their inventory and do not acquire new instruments or cash on reload")
 
 static func character(target_level: int, class_id: String = "bard") -> Character:
 	var scores := AbilityScores.new()
