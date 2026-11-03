@@ -107,6 +107,7 @@ static func run(check: Callable) -> void:
 	_ai(check, g)
 	_sensory_consumer(check, g, ordinary, blind)
 	_noise(check)
+	_cover(check)
 	g.free()
 
 
@@ -134,11 +135,20 @@ static func _noise(check: Callable) -> void:
 	listener.feature_uses.erase("plane")
 	g.get_tile(Vector2i(1, 0)).custom_properties["blocks_sound"] = true
 	check.call(not CombatNoiseRules.can_hear(listener, here, there, g, sound, source), "S237 a represented sound barrier blocks even a visually clear ray")
+	sound.range_feet = 14
+	check.call(not CombatNoiseRules.can_hear(listener, here, there, g, sound, source), "S237 sound route around a blocking wall uses its longer path distance")
+	sound.range_feet = 15
+	check.call(CombatNoiseRules.can_hear(listener, here, there, g, sound, source), "S237 sound reaches around a wall through the shortest open hex route")
+	sound.range_feet = 10
 	g.get_tile(Vector2i(1, 0)).custom_properties["blocks_sound"] = false
 	g.get_tile(Vector2i(1, 0)).custom_properties["blocks_sight"] = true
 	check.call(CombatNoiseRules.can_hear(listener, here, there, g, sound, source), "S237 explicitly sound-permeable visual obstruction does not block hearing")
 	g.get_tile(there).custom_properties["blocks_sound"] = true
 	check.call(not CombatNoiseRules.can_hear(listener, here, there, g, sound, source), "S237 sound at a blocked endpoint cannot bypass a closed door")
+	g.get_tile(there).custom_properties["blocks_sound"] = false
+	g.get_tile(here).custom_properties["blocks_sound"] = true
+	check.call(not CombatNoiseRules.can_hear(listener, here, there, g, sound, source), "S237 sound cannot escape a sound-blocked source tile")
+	g.get_tile(here).custom_properties["blocks_sound"] = false
 	check.call(not CombatNoiseRules.error({"volume":"loud", "range_feet":0}).is_empty() and not CombatNoiseRules.error({"volume":"shout", "range_feet":60}).is_empty() and not CombatNoiseRules.error({"volume":"loud", "range_feet":60, "success":true}).is_empty(), "S237 invalid or invented sound declarations refuse")
 	var room := {"walls":[[1, 0]], "wall_details":[{"position":[1, 0], "material":"glass"}], "objects":[]}
 	check.call(not LocalRoomRules.blocks_sight(room, Vector2i(1, 0)) and LocalRoomRules.blocks_sound(room, Vector2i(1, 0)), "S237 actual glass wall passes sight while blocking this sound ray")
@@ -282,3 +292,100 @@ static func _devil_sight(check: Callable, g: HexGrid, victim: Dictionary) -> voi
 	warlock.warlock_invocations.clear()
 	check.call(not CombatPerception.can_see_target(warlock, victim, Vector2i.ZERO, victim.hex_position, g), "S190 removing selected invocation removes its darkness exception")
 	g.obscurement_sources.clear()
+
+
+static func _cover(check: Callable) -> void:
+	var g := grid()
+	var caster := actor("cover_caster")
+	var victim := target()
+	victim.armor_class = 10
+	victim.ability_scores = {"DEX":10, "WIS":10}
+	var decisions := spatial(g)
+	var obstacle: Dictionary = g.get_tile(Vector2i(1, 0)).custom_properties
+	var weapon := {"id":"renamed_cover_weapon", "name":"Cover profile", "damage":"1", "range":2, "attack_distance":2, "damage_type":"force", "ability":"INT"}
+	var baseline := CombatAction.resolve_weapon_attack(caster, victim, weapon, false, false, decisions)
+	check.call(baseline.get("target_ac", 0) == 10, "S238 clear ray preserves original AC")
+	for token in ["half", "three_quarters"]:
+		obstacle.cover = token
+		var bonus := 2 if token == "half" else 5
+		var hit := CombatAction.resolve_weapon_attack(caster, victim, weapon, false, false, decisions)
+		check.call(hit.get("target_ac", 0) == 10 + bonus, "S238 physical " + token + " adds actual weapon AC")
+		var attack := CombatAction.resolve_spell(caster, victim, DataLoader.get_spell("fixture:known_bolt"), false, decisions, [], 0, 10)
+		check.call(attack.get("target_ac", 0) == 10 + bonus, "S238 renamed shared attack uses actual cover AC: " + token)
+		var partial := CombatAction.resolve_spell(caster, victim, DataLoader.get_spell("fixture:cover_half"), false, decisions, [], 0, 10)
+		check.call(partial.get("target_ac", 0) == (10 if token == "half" else 15), "S238 Half-only source exemption retains Three-Quarters")
+		var save := CombatAction.resolve_spell(caster, victim, DataLoader.get_spell("fixture:cover_save"), false, decisions, [], 0, 10)
+		check.call(save.get("save_modifier", -1) == bonus and save.save_total == save.save_test.total, "S238 monster DEX save captures cover exactly once: " + token)
+		var flame := CombatAction.resolve_spell(caster, victim, DataLoader.get_spell("sacred_flame"), false, decisions, [], 0, 10)
+		check.call(flame.get("success", false) and flame.get("save_modifier", -1) == 0, "S238 real Sacred Flame ignores partial-cover save bonus: " + token)
+	var defender := actor("cover_defender")
+	var save_decisions := decisions.duplicate()
+	save_decisions.cover_source = DataLoader.get_spell("fixture:cover_save")
+	var dex := defender.make_saving_throw_result("DEX", false, false, save_decisions)
+	var wis := defender.make_saving_throw_result("WIS", false, false, save_decisions)
+	check.call(dex.modifier == defender.ability_scores.get_ability_modifier("DEX") + 5 and wis.modifier == defender.ability_scores.get_ability_modifier("WIS") + defender.proficiency_bonus, "S238 central Character save bonus affects DEX only")
+	defender.add_condition("stunned", 10)
+	check.call(defender.make_saving_throw_result("DEX", false, false, save_decisions).auto_failed, "S238 cover never rescues an automatic failed save")
+	defender.remove_condition("stunned")
+	obstacle.cover = "total"
+	var area := SpellCastContext.new()
+	area.grid = g
+	area.players = [{"character":caster, "hex_position":Vector2i.ZERO}]
+	area.player_index = 0
+	area.caster = caster
+	area.spell = DataLoader.get_spell("fixture:renamed_sight_burst").duplicate(true)
+	area.spell.area_point_count = 2
+	area.target_type = "area"
+	area.target_coord = Vector2i.ZERO
+	area.area_selection = {"shape":"sphere", "radius":2}
+	area.command_selection = [Vector2i(8, 0)]
+	var other_plane := target()
+	other_plane.hex_position = Vector2i.ZERO; other_plane.plane = "ethereal"
+	g.cover_participants = [other_plane]
+	check.call(CoverRules.blocks_target(CoverRules.effect_origin(area, Vector2i(2, 0)), Vector2i(2, 0), g), "S238 a distant nonoverlapping sphere cannot bypass another sphere's Total Cover")
+	check.call(CoverRules.degree(Vector2i.ZERO, Vector2i(2, 0), g) == 3, "S238 an unrelated Ethereal occupant cannot change a Material effect origin's plane")
+	g.cover_participants.clear()
+	var fighter := actor("cover_reroll")
+	fighter.features.append({"id":"fighter_indomitable", "uses":1})
+	fighter.feature_uses.fighter_indomitable = 1
+	obstacle.cover = "three_quarters"
+	var reroll := fighter.saving_throw_test_to_dc("DEX", 1000, false, false, save_decisions)
+	check.call(reroll.get("indomitable_used", false) and reroll.modifier == 5 + fighter.level and fighter.feature_uses.fighter_indomitable == 0, "S238 Indomitable reroll preserves cover exactly once without replaying its cost")
+	var captured := CombatAction.resolve_spell(caster, victim, DataLoader.get_spell("fixture:cover_save"), false, decisions, [], 0, 10)
+	obstacle.erase("cover")
+	var resumed := SpellResolutionContext.new()
+	resumed.caster = caster; resumed.target = victim; resumed.spell = DataLoader.get_spell("fixture:cover_save")
+	resumed.decisions = decisions.duplicate()
+	resumed.decisions.failed_save_numeric_bonus_tests = {"direct:perception_target:fixture:cover_save:DEX":captured.save_test.duplicate(true)}
+	var saved := SpellSaveResolver.resolve(resumed)
+	check.call(saved.save_total == captured.save_total and saved.save_modifier == 5, "S238 suspended save retains captured cover after live obstruction changes without reroll or double addition")
+	obstacle.cover = "total"
+	check.call(Targeting.has_line_of_sight(Vector2i.ZERO, Vector2i(2, 0), g) and not Targeting.has_line_of_effect(Vector2i.ZERO, Vector2i(2, 0), g), "S238 transparent Total Cover preserves sight and blocks physical targeting")
+	check.call(CombatAction.resolve_weapon_attack(caster, victim, weapon, false, false, decisions).get("refused", false), "S238 actual weapon resolver refuses transparent Total Cover")
+	for id in ["sacred_flame", "fixture:cover_half", "fixture:known_bolt"]:
+		check.call(not CombatAction.resolve_spell(caster, victim, DataLoader.get_spell(id), false, decisions, [], 0, 10).get("success", true), "S238 spell/exemption cannot bypass Total Cover: " + id)
+	obstacle.cover = "typo"
+	check.call(CoverRules.blocks_target(Vector2i.ZERO, Vector2i(2, 0), g), "S238 malformed obstruction fails closed")
+	obstacle.erase("cover")
+	var middle := target()
+	middle.hex_position = Vector2i(1, 0)
+	g.cover_participants = [middle]
+	check.call(CoverRules.degree(Vector2i.ZERO, Vector2i(2, 0), g) == 1, "S238 actual intervening creature supplies Half Cover")
+	middle.plane = "ethereal"
+	check.call(CoverRules.degree(Vector2i.ZERO, Vector2i(2, 0), g) == 0, "S238 an intervening creature on another plane grants no physical cover")
+	middle.erase("plane")
+	obstacle.cover = "three_quarters"
+	check.call(CoverRules.degree(Vector2i.ZERO, Vector2i(2, 0), g) == 2, "S238 overlapping cover uses strongest degree without adding")
+	obstacle.erase("cover"); middle.is_alive = false
+	check.call(CoverRules.degree(Vector2i.ZERO, Vector2i(2, 0), g) == 0, "S238 removed creature no longer grants cover")
+	var room := {"walls":[[1, 0]], "wall_details":[{"position":[1, 0], "material":"glass"}], "objects":[]}
+	check.call(CoverRules.room_degree(room, Vector2i(1, 0)) == "total" and not LocalRoomRules.blocks_sight(room, Vector2i(1, 0)), "S238 actual glass wall is physical Total Cover")
+	room.walls.clear()
+	room.objects = [{"id":"first", "position":[1, 0], "hp":10}, {"id":"screen", "position":[1, 0], "hp":10, "cover":"three_quarters"}]
+	check.call(CoverRules.room_degree(room, Vector2i(1, 0)) == "three_quarters", "S238 all exact objects at a cell contribute obstruction")
+	room.objects[1].removed = true
+	check.call(CoverRules.room_degree(room, Vector2i(1, 0)) == "none", "S238 removed room cover disappears")
+	var malformed := DataLoader.get_spell("fixture:cover_half").duplicate(true)
+	malformed.ignore_cover = ["total"]
+	check.call(not SharedSpell.content_error(malformed).is_empty(), "S238 loaded source cannot declare a Total-cover exemption")
+	g.free()

@@ -1,0 +1,26 @@
+[
+  {
+    "id": "fixture:room_target_resonance",
+    "name": "Room target resonance",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "classes": ["wizard"],
+    "effects": [{"type": "heal", "value": "2"}],
+    "effect_noise": {"volume": "loud", "range_feet": 60, "origin": "target"}
+  },
+  {
+    "id": "fixture:room_resonance",
+    "name": "Room resonance",
+    "execution": "shared",
+    "level": 1,
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "classes": ["wizard"],
+    "effects": [{"type": "heal", "value": "2"}],
+    "effect_noise": {"volume": "loud", "range_feet": 60}
+  }
+]

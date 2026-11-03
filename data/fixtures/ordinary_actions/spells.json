@@ -10,5 +10,73 @@
     "level": 0, "casting_time": "action", "range": 0, "target": "self",
     "attack_type": "none", "components": ["V"], "classes": ["wizard"],
     "effects": [{"type": "heal", "value": 1}]
+  },
+  {
+    "id": "fixture:resonant_repair", "name": "Resonant repair", "execution": "shared",
+    "level": 1, "casting_time": "action", "range": 0, "target": "self",
+    "attack_type": "none", "components": [], "classes": ["wizard"],
+    "effect_noise": {"volume": "loud", "range_feet": 300},
+    "steps": [
+      {"id": "first", "type": "effect", "effects": [{"type": "heal", "value": 1}]},
+      {"id": "second", "type": "effect", "effects": [{"type": "heal", "value": 1}]}
+    ]
+  },
+  {
+    "id": "fixture:empty_boom", "name": "Empty boom", "execution": "shared",
+    "level": 1, "casting_time": "action", "range": 6, "target": "area",
+    "attack_type": "none", "components": [], "classes": ["wizard"],
+    "effect_noise": {"volume": "loud", "range_feet": 300},
+    "damage": "1", "damage_type": "thunder",
+    "effects": [{"type": "area_selection", "shape": "sphere", "radius": 1}]
+  },
+  {
+    "id": "fixture:resonant_bolt", "name": "Resonant bolt", "execution": "shared",
+    "level": 1, "casting_time": "action", "range": 6, "target": "single",
+    "attack_type": "ranged_spell", "components": [], "classes": ["wizard"],
+    "effect_noise": {"volume": "loud", "range_feet": 300, "origin": "target"},
+    "damage": "1", "damage_type": "thunder"
+  },
+  {
+    "id": "fixture:monster_target_resonance", "name": "Monster target resonance", "execution": "shared",
+    "level": 1, "casting_time": "action", "range": 12, "target": "single",
+    "attack_type": "none", "components": [], "classes": ["wizard"],
+    "effect_noise": {"volume": "loud", "range_feet": 300, "origin": "target"},
+    "effects": [{"type": "heal", "value": 1}]
+  },
+  {
+    "id": "fixture:monster_resonance", "name": "Monster resonance", "execution": "shared",
+    "level": 1, "casting_time": "action", "range": 12, "target": "single",
+    "attack_type": "ranged_spell", "components": [], "classes": ["wizard"],
+    "effect_noise": {"volume": "loud", "range_feet": 300},
+    "damage": "1", "damage_type": "thunder"
+  },
+  {
+    "id": "fixture:monster_countered_verbal", "name": "Monster countered verbal", "execution": "shared",
+    "level": 1, "casting_time": "action", "range": 12, "target": "single",
+    "attack_type": "ranged_spell", "components": ["V"], "classes": ["wizard"],
+    "effect_noise": {"volume": "loud", "range_feet": 300},
+    "damage": "1", "damage_type": "thunder"
+  },
+  {
+    "id": "fixture:monster_empty_resonance", "name": "Monster empty resonance", "execution": "shared",
+    "level": 1, "casting_time": "action", "range": 12, "target": "area",
+    "attack_type": "none", "components": ["V"], "classes": ["wizard"],
+    "effect_noise": {"volume": "loud", "range_feet": 300},
+    "effects": [{"type": "area_selection", "shape": "sphere", "radius": 1}],
+    "damage": "1", "damage_type": "thunder", "save": "DEX"
+  },
+  {
+    "id": "fixture:target_resonance", "name": "Target resonance", "execution": "shared",
+    "level": 1, "casting_time": "action", "range": 6, "target": "single_ally",
+    "attack_type": "none", "components": [], "classes": ["wizard"],
+    "effect_noise": {"volume": "loud", "range_feet": 300, "origin": "target"},
+    "effects": [{"type": "heal", "value": 1}]
+  },
+  {
+    "id": "fixture:whisper_repair", "name": "Whisper repair", "execution": "shared",
+    "level": 0, "casting_time": "action", "range": 0, "target": "self",
+    "attack_type": "none", "components": ["S"], "classes": ["wizard"],
+    "effect_noise": {"volume": "whisper", "range_feet": 5},
+    "effects": [{"type": "heal", "value": 1}]
   }
 ]

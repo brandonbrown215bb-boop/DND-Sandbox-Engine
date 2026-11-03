@@ -578,4 +578,5 @@ func _local_encounter() -> void:
 		return
 	var room: Room = rooms[party_position]
 	_begin_room_combat(room)
+	CheckHelpRules.clear_room(local_view.characters)
 	GameManager.enter_combat([] if bool(state.get("encounter_cleared", false)) else state["encounter_monsters"], false, GameManager.GameState.DUNGEON, "road", state)

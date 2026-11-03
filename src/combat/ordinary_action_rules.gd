@@ -2,8 +2,8 @@
 class_name OrdinaryActionRules
 extends RefCounted
 
-const ACTIONS := ["help_check", "ready", "dash", "disengage", "dodge", "hide", "help_attack", "stabilize", "search", "utilize"]
-const LABELS := {"help_check":"Help a skill/tool check", "ready":"Ready", "dash":"Dash", "disengage":"Disengage", "dodge":"Dodge", "hide":"Hide", "help_attack":"Help an attack", "stabilize":"Help: stabilize", "search":"Search for hidden creatures", "utilize":"Utilize a room object"}
+const ACTIONS := ["help_check", "ready", "dash", "disengage", "dodge", "hide", "help_attack", "stabilize", "search", "utilize", "study", "influence"]
+const LABELS := {"help_check":"Help a skill/tool check", "ready":"Ready", "dash":"Dash", "disengage":"Disengage", "dodge":"Dodge", "hide":"Hide", "help_attack":"Help an attack", "stabilize":"Help: stabilize", "search":"Search", "utilize":"Utilize a room object", "study":"Study a room source", "influence":"Influence a creature"}
 const HIDE_SOURCE := "ordinary_action:hide"
 
 
@@ -22,13 +22,13 @@ static func hide_error(actor, origin: Vector2i, enemies: Array, grid: HexGrid) -
 	var obscured := CombatAction.has_condition(actor, "fog_cloud_obscured") or CombatAction.has_condition(actor, "darkness_obscured") or CombatPerception.illumination_level_at(grid, origin) == "dark"
 	for area in grid.obscurement_sources.values():
 		if origin in area.get("coords", []): obscured = true
-	# Existing sight-blocking geometry represents Total Cover. Partial cover is S-238.
+	# Only actual intervening Three-Quarters/Total Cover supplies this location gate.
 	var behind_cover := false
 	for enemy in enemies:
 		var subject = enemy.get("character", enemy)
 		if not _alive(subject): continue
 		var position: Vector2i = enemy.get("hex_position", Vector2i.ZERO)
-		if not Targeting.has_line_of_sight(position, origin, grid): behind_cover = true
+		if CoverRules.degree(position, origin, grid) >= 2: behind_cover = true
 		if CombatPerception.can_see_before_hide(subject, actor, position, origin, grid):
 			return "You must be out of every enemy's sight to Hide."
 	if not obscured and not behind_cover: return "Hide requires heavy obscurement or Three-Quarters/Total Cover."

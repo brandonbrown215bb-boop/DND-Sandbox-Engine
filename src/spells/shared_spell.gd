@@ -9,7 +9,7 @@ const EFFECTS := ["heal", "temporary_hp", "grant_condition", "remove_condition",
 const STEP_FIELDS := ["id", "type", "gate", "gate_step", "target", "shape", "radius", "size", "attack_type", "damage", "damage_type", "damage_components", "component_id", "scaling", "upcast", "save", "half_on_save", "save_context", "damage_scale_by_outcome", "damage_dice_policy", "damage_result_multiplier", "damage_reductions", "damage_bypasses", "recipient_exemption_choice", "effects", "incoming_negation", "incoming_negation_rule", "physical_requirements", "spatial_requirements"]
 const STEP_TYPES := ["attack", "save", "damage", "effect"]
 const STEP_GATES := ["always", "hit", "miss", "failed_save", "successful_save"]
-const FIELDS := ["containment_targeting", "id", "name", "description", "execution", "level", "casting_time", "range", "range_kind", "range_by_character_level_feet", "target", "base_targets", "attack_type", "damage", "damage_type", "component_id", "scaling", "upcast", "save", "half_on_save", "save_exit_placement", "save_context", "damage_scale_by_outcome", "damage_dice_policy", "damage_result_multiplier", "damage_reductions", "damage_bypasses", "recipient_exemption_choice", "attack_unit_substitution", "requires_target_sight", "target_creature_types", "target_creature_type_exclusions", "target_sizes", "ignore_cover_on_save", "effects", "concentration", "duration", "duration_seconds", "repeat_save", "repeat_save_schedule", "repeat_save_interval_seconds", "repeat_save_stages", "repeat_save_dc_progression", "targets_objects", "ignites_objects", "area_radius", "cone_size", "end_on_target_damage", "end_on_any_damage", "end_on_party_damage", "source_end_rules", "components", "material", "material_component_item_id", "material_component_cost", "material_component_consumed", "consumed_material_item_id", "ritual", "rules_source", "rules_status", "school", "classes", "source", "trigger", "steps", "formula_inputs", "interruption_policy", "failure_policy", "empty_effect_policy", "cast_settlement", "cancellation_rule", "stopping_cost_policy", "incoming_negation_rule", "physical_requirements", "spatial_requirements", "zero_hp_aftermath", "end_aftermath", "reaction_trigger"] # Batch 065: reaction_trigger is validated by ReactionTriggers.spell_trigger_error.
+const FIELDS := ["containment_targeting", "id", "name", "description", "execution", "level", "casting_time", "range", "range_kind", "range_by_character_level_feet", "target", "base_targets", "attack_type", "damage", "damage_type", "component_id", "scaling", "upcast", "save", "half_on_save", "save_exit_placement", "save_context", "damage_scale_by_outcome", "damage_dice_policy", "damage_result_multiplier", "damage_reductions", "damage_bypasses", "recipient_exemption_choice", "attack_unit_substitution", "requires_target_sight", "target_creature_types", "target_creature_type_exclusions", "target_sizes", "ignore_cover_on_save", "ignore_cover", "effects", "concentration", "duration", "duration_seconds", "repeat_save", "repeat_save_schedule", "repeat_save_interval_seconds", "repeat_save_stages", "repeat_save_dc_progression", "targets_objects", "ignites_objects", "area_radius", "cone_size", "end_on_target_damage", "end_on_any_damage", "end_on_party_damage", "source_end_rules", "components", "material", "material_component_item_id", "material_component_cost", "material_component_consumed", "consumed_material_item_id", "ritual", "rules_source", "rules_status", "school", "classes", "source", "trigger", "steps", "formula_inputs", "interruption_policy", "failure_policy", "empty_effect_policy", "cast_settlement", "cancellation_rule", "stopping_cost_policy", "incoming_negation_rule", "physical_requirements", "spatial_requirements", "zero_hp_aftermath", "end_aftermath", "reaction_trigger", "effect_noise"] # Batch 065: reaction_trigger is validated by ReactionTriggers.spell_trigger_error.
 
 static func damage_dice_policy_error(value: Variant) -> String:
 	if not value is Dictionary or value.is_empty():
@@ -258,6 +258,14 @@ static func _steps_error(spell: Dictionary) -> String:
 	return ""
 
 static func content_error(spell: Dictionary) -> String:
+	if spell.has("effect_noise"):
+		var noise_error := CombatNoiseRules.error(spell.effect_noise)
+		if not noise_error.is_empty(): return noise_error
+		if spell.effect_noise.has("origin") and spell.effect_noise.origin not in ["caster", "target"]: return "Spell effect sound origin must be caster or target."
+		if spell.effect_noise.get("origin", "caster") == "target" and str(spell.get("target", "single")) not in ["single", "single_ally"]: return "Target-origin spell sound needs one selected target."
+		if spell.get("casting_time", "action") == "reaction": return "Reaction spell effect sound needs a supported completion host."
+	var cover_error := CoverRules.exemption_error(spell)
+	if not cover_error.is_empty(): return cover_error
 	if spell.has("containment_targeting"):
 		var containment_error := ContainmentRules.targeting_error(spell.containment_targeting)
 		if not containment_error.is_empty(): return containment_error
@@ -332,7 +340,7 @@ static func content_error(spell: Dictionary) -> String:
 		var substitution: Variant = spell["attack_unit_substitution"]
 		if spell.get("casting_time", "action") != "action" or not substitution is Dictionary or substitution.size() != 1 or not _integer(substitution.get("units", null), 1, 2):
 			return "attack_unit_substitution requires an Action spell and an object containing units 1 or 2."
-	if spell.get("target", "single") not in ["single", "self", "multi", "area", "cone"]:
+	if spell.get("target", "single") not in ["single", "single_ally", "self", "multi", "area", "cone"]:
 		return "Unsupported shared target selector."
 	if spell.has("steps"):
 		if spell.has("damage_reductions") or spell.has("damage_bypasses"):

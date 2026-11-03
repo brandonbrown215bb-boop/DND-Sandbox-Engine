@@ -64,6 +64,9 @@ the next successful save removes the backup after commit.
 
 ## Beckett: live Godot access
 
+For creating a fresh Luna conversation inside the running Ziva editor without
+computer use, see [Ziva sessions](ziva-sessions.md).
+
 The Beckett addon is not enabled by default. If local editor tooling is needed,
 enable the addon in a developer-only project copy; do not commit that setting
 into the friend-facing project configuration.

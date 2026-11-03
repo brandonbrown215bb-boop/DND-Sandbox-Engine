@@ -47,6 +47,8 @@ static func snapshots_error(snapshots: Variant, campaign: Dictionary) -> String:
 
 static func local_error(state: Variant) -> String:
 	if not state is Dictionary or not state.get("cells") is Array or state["cells"].is_empty() or state["cells"].size() > 500: return "local room cells are malformed"
+	var recollection_error: String = StudyRules.recollection_error(state)
+	if not recollection_error.is_empty(): return recollection_error
 	if not state.get("id") is String or str(state["id"]).is_empty() or not state.get("name") is String or not state.get("encounter_cleared") is bool or not state.get("encounter_monsters") is Array: return "local room identity or encounter is malformed"
 	if state.has("ceiling_feet"):
 		var room_ceiling: Variant = state["ceiling_feet"]
@@ -54,6 +56,10 @@ static func local_error(state: Variant) -> String:
 		if not is_finite(float(room_ceiling)) or float(room_ceiling) != floorf(float(room_ceiling)) or int(room_ceiling) < 5 or int(room_ceiling) > 1000 or int(room_ceiling) % 5 != 0: return "local ceiling height is invalid"
 	for monster in state["encounter_monsters"]:
 		if not monster is String or DataLoader.get_monster(monster).is_empty(): return "local encounter references unknown content"
+	var influence_error := InfluenceRules.ledger_error(state)
+	if not influence_error.is_empty(): return influence_error
+	var insight_search_error := InsightSearchRules.ledger_error(state)
+	if not insight_search_error.is_empty(): return insight_search_error
 	var cells: Dictionary = {}
 	for position in state["cells"]:
 		if not coordinate(position) or cells.has(LocalRoomRules.coord(position)): return "local room has invalid or duplicate cells"
@@ -306,6 +312,8 @@ static func local_error(state: Variant) -> String:
 		if not object is Dictionary or not object.get("id") is String or str(object["id"]).is_empty() or objects.has(object["id"]) or not object.get("name") is String: return "object identity is invalid"
 		var discovery_error := LocalRoomSearchRules.object_error(object)
 		if not discovery_error.is_empty(): return discovery_error
+		var study_error := StudyRules.object_error(object)
+		if not study_error.is_empty(): return study_error
 		if object.has("tethers") and (not object["tethers"] is Dictionary or object["tethers"].size() > 32): return "object tethers are malformed"
 		objects[object["id"]] = true
 		if str(object.get("kind", "")) not in ["door", "container", "loose", "barrier", "remains"] or not coordinate(object.get("position")) or not cells.has(LocalRoomRules.coord(object["position"])): return "object location or kind is invalid"

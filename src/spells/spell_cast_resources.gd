@@ -3,6 +3,28 @@ class_name SpellCastResources
 extends RefCounted
 
 static func revalidate_selection(cast: SpellCastContext) -> bool:
+	# Recheck after asynchronous choices, before any resource or held Reaction.
+	var noise_error := CombatNoiseRules.spell_host_error(cast.spell, cast)
+	if not noise_error.is_empty():
+		cast.hud.add_log(noise_error)
+		cast.clear_pending(SpellCastContext.CLEAR_ACTION | SpellCastContext.CLEAR_SPELL)
+		return false
+	var noise_source_error := CombatNoiseRules.capture_target_origin(cast)
+	if not noise_source_error.is_empty():
+		cast.hud.add_log(noise_source_error)
+		cast.clear_pending(SpellCastContext.CLEAR_ACTION | SpellCastContext.CLEAR_SPELL)
+		return false
+	LocalRoomCombat.bind_grid(cast.grid)
+	var coords: Array = [cast.target_coord]
+	coords.append_array(cast.command_selection)
+	if cast.additional_target_coord != Vector2i(9999, 9999): coords.append(cast.additional_target_coord)
+	var caster_position: Vector2i = cast.players[cast.player_index].get("hex_position", Vector2i.ZERO)
+	var origin := FamiliarSpellDelivery.origin(cast.caster, cast.players, cast.spell, caster_position)
+	for coord in coords:
+		if CoverRules.blocks_target(origin, coord, cast.grid):
+			cast.hud.add_log("Total Cover blocks this spell target.")
+			cast.clear_pending(SpellCastContext.CLEAR_ACTION | SpellCastContext.CLEAR_SPELL)
+			return false
 	if not cast.ready_release_token.is_empty():
 		return cast.ready_release_guard.is_valid() and cast.ready_release_guard.call()
 	var profile_error := AttackProfileRules.cast_error(cast.caster, cast.spell)

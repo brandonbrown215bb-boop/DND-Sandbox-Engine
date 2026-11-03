@@ -8,11 +8,13 @@ static func room() -> Dictionary:
 static func bind_grid(grid: HexGrid) -> void:
 	var state := room()
 	if state.is_empty(): return
+	grid.cover_plane = PhysicalFactsRules.get_plane(state)
 	for position in grid.tiles:
 		grid.tiles[position].custom_properties["surface"] = LocalRoomRules.surface_at(state, position)
 		grid.tiles[position].custom_properties["blocks_movement"] = not LocalRoomRules.passable(state, position)
 		grid.tiles[position].custom_properties["blocks_sight"] = LocalRoomRules.blocks_sight(state, position)
 		grid.tiles[position].custom_properties["blocks_sound"] = LocalRoomRules.blocks_sound(state, position)
+		grid.tiles[position].custom_properties["cover"] = CoverRules.room_degree(state, position)
 		grid.tiles[position].custom_properties["elevation_feet"] = LocalRoomRules.elevation_feet(state, position)
 		grid.tiles[position].custom_properties["ceiling_feet"] = LocalRoomRules.ceiling_feet(state, position)
 		if LocalRoomRules.has_wall(state, position):

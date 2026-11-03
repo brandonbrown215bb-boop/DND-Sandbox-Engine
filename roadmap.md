@@ -14,10 +14,20 @@ the [Crown roadmap](docs/planning/crown-roadmap.md). Its
 [content scope](docs/planning/crown-content-scope.md) pins the twelve SRD classes
 and their in-band subclass packages, species/backgrounds/feats, 183 level-0–3
 SRD spells, and Crown's reachable world consumers. The Crown condition/roll-host portion of S-235/S-246–S-248 is complete.
-S-247 retains only level-17 Quivering Palm outside Crown. The [S-237 ordinary combat continuation](docs/planning/vocabulary-slices.md#ordinary-action-continuation) now supplies the bounded movement/defense, Hide/discovery, Ready, paid player-control triggers, room-object Utilize, declared object noise and attack/stabilization/proficient-check Help controls. Its [visual room-object Search](docs/planning/vocabulary-slices.md#room-search-continuation) adds actual per-observer discovery and checkpoint recovery. S-237 remains selected for represented cover, remaining noise/world Search, world Help, Study and Influence; finish it before selecting movement,
-Hit Dice and character/content work in that queue. A working native path stays
-until its shared replacement covers the content; it does not finish the shared
-engine migration by itself.
+S-247 retains only level-17 Quivering Palm outside Crown. The
+[S-237 ordinary action continuation](docs/planning/vocabulary-slices.md#ordinary-action-continuation)
+records delivered combat actions, Ready, room Utilize/Search/Help, object Study,
+gesture Influence and represented hearing/noise. S-237/S-238 remain incomplete
+requirement umbrellas. Work now selects one
+[bounded assignment](docs/planning/vocabulary-slices.md#ordinary-action-work-packages),
+starting with OA-01's review of the already-delivered flat-grid cover boundary.
+[Prompts for separate chats](docs/planning/ordinary-action-chat-prompts.md)
+cover the next sound, Search, communication, Help, Study and Influence assignments.
+Independent movement, Hit Dice and character/content work may proceed when its
+actual prerequisites are ready; completing all S-237/S-238 is not their gate.
+The registry preserves the remaining requirements outside these assignments.
+A working native path stays until its shared replacement covers the content;
+it does not finish the shared engine migration by itself.
 
 Crown's roadmap selects work; the slice registry still owns requirements,
 prerequisites, acceptance and verified limits. A new gap required by named
@@ -26,8 +36,9 @@ stays [below](#outside-crown). Do not make the whole engine denominator a gate
 for finishing the campaign, or quietly reduce Crown's content to improve a count.
 
 The [2026-11-01 local/Grokbot split](docs/planning/crown-parallel-work.md)
-records the current production inventory and bounded PR assignments. Local work
-retains S-237; independent character acquisition work proceeds sequentially.
+records the dated production inventory and bounded PR assignments. Its local
+S-237 sequencing is superseded by the bounded assignments above; independent
+character acquisition work still proceeds sequentially in its own shared files.
 Open Hand Technique and the multiclass entry-gate implementation already exist;
 their older inventory gaps must not become duplicate implementation tasks.
 

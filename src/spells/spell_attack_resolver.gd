@@ -38,6 +38,7 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 		target_ac = cast.target.get_ac()
 	elif cast.target is Dictionary:
 		target_ac = SpellEffects.effective_ac(cast.target, int(cast.target.get("armor_class", 10)) + (2 if CombatAction.has_condition(cast.target, "shield_of_faith") else 0))
+	target_ac += CoverRules.bonus(cast.decisions, cast.spell)
 	CombatAction.apply_blade_ward_attack_penalty(cast.target, cast.caster, attack_result)
 
 	var is_crit := bool(attack_result["is_crit"])
@@ -157,7 +158,7 @@ static func _finish_attack(cast: SpellResolutionContext, attack_result: Dictiona
 		if not shield_payment.is_empty():
 			cast.target.add_condition("shield", 1)
 			var ward_events: Array = shield_payment.get("ward_events", [])
-			target_ac = cast.target.get_ac()
+			target_ac = cast.target.get_ac() + CoverRules.bonus(cast.decisions, cast.spell)
 			is_hit = is_crit or attack_result["total"] >= target_ac
 			reaction_msg = "[color=cyan]%s casts Shield as a reaction! AC increases to %d.[/color]\n" % [cast.target.character_name, target_ac]
 			for ward_ev in ward_events:
@@ -231,7 +232,7 @@ static func _finish_attack(cast: SpellResolutionContext, attack_result: Dictiona
 			var miss_damage_details := SpellDamageRolls._roll_spell_damage(cast.caster, miss_damage_str, 1, cast.decisions, cast.spell.get("damage_dice_policy", {}))
 			var miss_base := {
 				"success": true, "hit": false, "slot_level": cast.slot_level,
-				"attack_roll": int(attack_result.get("total", 0)),
+				"target_ac": target_ac, "attack_roll": int(attack_result.get("total", 0)),
 				"attack_advantage": spell_attack_advantage,
 				"attack_disadvantage": spell_attack_disadvantage,
 				"metamagic_used": seeking_spell_used, "stroke_of_luck_used": stroke_of_luck_used,
@@ -258,7 +259,7 @@ static func _finish_attack(cast: SpellResolutionContext, attack_result: Dictiona
 			var miss_scale := SharedSpell.authored_damage_scale(cast.spell, "miss", float(cast.spell.get("miss_damage_scale", 0.0)))
 			SharedSpell.record_damage_scale(miss_base, cast.spell, "miss", miss_scale)
 			return SpellDamageRolls._finish_spell_damage(cast.caster, cast.target, miss_damage_details, CombatAction.spell_damage_bonus(cast.caster, cast.spell), miss_scale, str(cast.spell.get("damage_type", "fire")), cast.decisions, miss_base, 1, [], cast.spell.get("damage_reductions", []), cast.spell.get("damage_bypasses", []))
-		var miss_out := {"success": true, "hit": false, "slot_level": cast.slot_level, "attack_roll": attack_result["total"], "attack_advantage": spell_attack_advantage, "attack_disadvantage": spell_attack_disadvantage, "metamagic_used": seeking_spell_used, "stroke_of_luck_used": stroke_of_luck_used, "roll_token_replaced": token_replaced, "message": reaction_msg + "Spell missed! Ranged spell attack %d vs AC %d" % [attack_result["total"], target_ac]}
+		var miss_out := {"success": true, "hit": false, "slot_level": cast.slot_level, "target_ac": target_ac, "attack_roll": attack_result["total"], "attack_advantage": spell_attack_advantage, "attack_disadvantage": spell_attack_disadvantage, "metamagic_used": seeking_spell_used, "stroke_of_luck_used": stroke_of_luck_used, "roll_token_replaced": token_replaced, "message": reaction_msg + "Spell missed! Ranged spell attack %d vs AC %d" % [attack_result["total"], target_ac]}
 		for field in numeric_margin_fields: miss_out[field] = numeric_margin_fields[field]
 		if not selected_bonus.is_empty():
 			miss_out["selected_payment"] = selected_payment_receipt.duplicate(true)
@@ -322,7 +323,7 @@ static func _finish_attack(cast: SpellResolutionContext, attack_result: Dictiona
 	cast.decisions["damage_is_critical"] = attack_critical
 	cast.decisions["critical"] = attack_critical
 	var hit_base := {
-		"success": true, "hit": true, "slot_level": cast.slot_level, "attack_roll": attack_result["total"], "attack_advantage": spell_attack_advantage, "attack_disadvantage": spell_attack_disadvantage, "metamagic_used": seeking_spell_used,
+		"success": true, "hit": true, "slot_level": cast.slot_level, "target_ac": target_ac, "attack_roll": attack_result["total"], "attack_advantage": spell_attack_advantage, "attack_disadvantage": spell_attack_disadvantage, "metamagic_used": seeking_spell_used,
 		"crit": attack_critical,
 		"critical": attack_critical,
 		"stroke_of_luck_used": stroke_of_luck_used,

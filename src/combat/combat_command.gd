@@ -40,6 +40,8 @@ static func from_hud_for_character(kind: String, data: Dictionary, character: Ch
 				response = {"kind":"spell", "spell":cast_command.payload.spell}
 			if response.get("kind", "") == "ordinary" and response.get("action", "") == "help_check":
 				if not CheckHelpRules.owns(character, str(response.get("proficiency_kind", "")), str(response.get("proficiency", ""))): return null
+				if response.get("help_mode", "physical") not in ["physical", "verbal"]: return null
+				response["help_mode"] = str(response.get("help_mode", "physical"))
 			command.payload = {"trigger":command.payload.trigger, "response":response}
 		"ordinary_action":
 			if str(command.payload.get("action", "")) not in OrdinaryActionRules.ACTIONS: return null
@@ -50,6 +52,9 @@ static func from_hud_for_character(kind: String, data: Dictionary, character: Ch
 				if not CheckHelpRules.owns(character, help_kind, name): return null
 				ordinary["proficiency_kind"] = help_kind
 				ordinary["proficiency"] = name
+				var help_mode := str(command.payload.get("help_mode", "physical"))
+				if help_mode not in ["physical", "verbal"]: return null
+				ordinary["help_mode"] = help_mode
 			command.payload = ordinary
 		"activate_magic_item":
 			var instance_id := str(command.payload.get("instance_id", ""))

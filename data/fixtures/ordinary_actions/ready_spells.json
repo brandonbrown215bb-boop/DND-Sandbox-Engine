@@ -14,8 +14,9 @@
   {
     "id": "fixture:material_held_bolt", "name": "Material held bolt", "execution": "shared",
     "level": 1, "casting_time": "action", "range": 12, "target": "single",
-    "attack_type": "ranged_spell", "damage": "1", "damage_type": "force",
-    "components": ["V", "S", "M"], "classes": ["wizard"], "effects": [],
+    "attack_type": "none",
+    "components": ["S", "M"], "classes": ["wizard"], "effects": [{"type":"heal", "value":1}],
+    "effect_noise": {"volume":"loud", "range_feet":300, "origin":"target"},
     "material_component_item_id": "diamond_300gp",
     "material_component_cost": 300, "material_component_consumed": true
   }

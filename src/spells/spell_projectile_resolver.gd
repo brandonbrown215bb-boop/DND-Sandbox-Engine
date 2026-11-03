@@ -40,6 +40,7 @@ static func _resolve_scorching_ray(caster: Character, target_entity, spell_data:
 		target_ac = target_entity.get_ac()
 	elif target_entity is Dictionary:
 		target_ac = SpellEffects.effective_ac(target_entity, int(target_entity.get("armor_class", 10)) + (2 if CombatAction.has_condition(target_entity, "shield_of_faith") else 0))
+	target_ac += CoverRules.bonus(reaction_decisions, spell_data)
 	var hits := 0
 	var bonus_packets: Array[Dictionary] = []
 	var bonus_choices: Array = spell_data.get("_conjure_minor_elementals_bonus_packets", [])
@@ -70,7 +71,7 @@ static func _resolve_scorching_ray(caster: Character, target_entity, spell_data:
 		var shield_payment := SpellPermissionRules.spend_reaction(target_entity, "shield", reaction_decisions) if hit and not shield_used and target_entity is Character and target_entity.reaction_available and CombatAction._reaction_accepted("shield", reaction_decisions) else {}
 		if not shield_payment.is_empty():
 			target_entity.add_condition("shield", 1)
-			target_ac = target_entity.get_ac()
+			target_ac = target_entity.get_ac() + CoverRules.bonus(reaction_decisions, spell_data)
 			shield_used = true
 			hit = bool(attack_result.get("is_crit", false)) or int(attack_result.get("total", 0)) >= target_ac
 		if not hit:

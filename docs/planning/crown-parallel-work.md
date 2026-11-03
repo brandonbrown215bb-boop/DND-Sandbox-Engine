@@ -5,6 +5,13 @@ Grokbot work; it does not change the [Crown finish line](crown-roadmap.md), sele
 a replacement roadmap, or accept engine slices. Recheck the base before starting
 an assignment. GitHub showed no open PRs or issues during this review.
 
+**Local sequencing update (2026-11-01):** the owner split S-237/S-238 into
+[bounded work packages](vocabulary-slices.md#ordinary-action-work-packages) with
+[prompts for separate chats](ordinary-action-chat-prompts.md). Those assignments
+supersede this snapshot's instruction to finish all S-237 before selecting
+movement/Hit Dice. The dated inventory below is not refreshed by that planning
+change; delivered cover/Study/Influence continuations live in the registry.
+
 ## Current position
 
 The engine has substantial reusable behavior, but the complete Crown package is
@@ -50,20 +57,15 @@ Two stale claims must not turn into duplicate work:
   slot fields and most feature kinds; secondary classes with features are refused.
   Adding declarations to twelve JSON files cannot solve that.
 
-## Local lane — keep S-237 selected
+## Local lane — select one bounded assignment
 
-1. Supply S-238's represented cover as the prerequisite for S-237's remaining
-   Hide branch: Half/Three-Quarters/Total cover, targeting, AC and DEX saves,
-   source-declared exemptions and Total-cover refusal. Prove renamed consumers
-   and the actual Sacred Flame exemption without bypassing Total cover.
-2. Finish world Help and the remaining Search/noise consumers with actual
-   proximity, communication, senses, location and time. Reuse the completed
-   visual room Search and paid action/noise hosts.
-3. Finish Study and Influence against represented Crown knowledge, requests,
-   attitudes and actual outcomes. Build only the needed S-219/S-188 prerequisites;
-   a roll that merely writes a success flag does not deliver these actions.
-4. Close S-237 only at its full recorded boundary. Then select the ready
-   movement/Grapple/Shove and Hit Dice continuations in the Crown queue.
+Use the registry's [S-237/S-238 work packages](vocabulary-slices.md#ordinary-action-work-packages)
+and their [chat prompts](ordinary-action-chat-prompts.md). Start with OA-01's
+review of the delivered cover boundary; then choose one ready capability or
+independent Crown assignment by actual prerequisites. Movement/Grapple/Shove,
+Hit Dice and character/content work need not wait for all S-237/S-238.
+The registry retains the parent requirements and their unassigned follow-ups;
+this sequencing change accepts no slices and drops no Crown-required behavior.
 
 Local owns combat, targeting/perception, room Search/interactions, world/event
 effects and their input checks. Keep `combat_state.gd`, `combat_action.gd`,

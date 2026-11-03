@@ -1,0 +1,16 @@
+[
+  {
+    "id":"fixture:survey_stone", "name":"Survey stone", "kind":"loose", "position":[0,1], "hp":10, "max_hp":10, "contents":[],
+    "study":[
+      {"id":"spiral", "question":"What does the spiral mean?", "skill":"Arcana", "dc":15, "answer":"The spiral marks a ward against flame.", "verbal_help":true},
+      {"id":"age", "question":"Who carved this stone?", "skill":"History", "dc":1000, "answer":"The stone was carved by the northern surveyors."},
+      {"id":"seam", "question":"How is the seam arranged?", "skill":"Investigation", "dc":15, "answer":"The seam runs behind the bronze pin."},
+      {"id":"lichen", "question":"What is growing on the stone?", "skill":"Nature", "dc":15, "answer":"The pale lichen grows only in damp shade."},
+      {"id":"rite", "question":"Which rite uses this symbol?", "skill":"Religion", "dc":15, "answer":"The symbol belongs to the lantern vigil."}
+    ]
+  },
+  {
+    "id":"fixture:renamed_stone", "name":"Renamed survey stone", "kind":"loose", "position":[0,1], "hp":10, "max_hp":10, "contents":[],
+    "study":[{"id":"spiral", "question":"What does the spiral mean?", "skill":"Arcana", "dc":15, "answer":"The spiral on this stone marks a water channel."}]
+  }
+]

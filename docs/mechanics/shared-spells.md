@@ -38,6 +38,13 @@ Existing saved condition/source records need no conversion.
 
 ## Ordinary authoring example
 
+Player combat Action/Bonus Action spells can declare
+`"effect_noise": {"volume":"loud", "range_feet":300}` for one caster-origin
+sound after effect completion. Add `"origin":"target"` for the exact single
+selected creature/object. Verbal components remain separate. See the
+[sound contract](ordinary-actions.md#spell-effect-sound) for validation,
+readied release, unsupported-host refusal and remaining limits.
+
 ```json
 {
   "id": "my_mod:ember",

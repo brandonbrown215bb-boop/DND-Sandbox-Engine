@@ -20,6 +20,11 @@ static func has_line_of_sight(origin: Vector2i, target: Vector2i, hex_grid: HexG
 	return true
 
 
+## Physical targetability remains separate from seeing through glass.
+static func has_line_of_effect(origin: Vector2i, target: Vector2i, hex_grid: HexGrid) -> bool:
+	return not CoverRules.blocks_target(origin, target, hex_grid) and has_line_of_sight(origin, target, hex_grid)
+
+
 static func line_cells(origin: Vector2i, target: Vector2i) -> Array[Vector2i]:
 	var cells: Array[Vector2i] = [origin]
 	var distance := HexUtils.get_distance(origin, target)

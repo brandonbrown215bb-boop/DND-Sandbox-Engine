@@ -47,8 +47,17 @@ Palm remains outside Crown and is not claimed by these checks.
 
 `ordinary_action_flow` covers the S-237 Actions chooser, costs and stale targeting,
 Dodge timing/sight/saves/permanent loss, ordinary and renamed feature Hide,
-captured creature discovery, attack Help, Medicine stabilization and the actual
-owned-proficiency Help chooser, matching check consumption and helper expiry.
+captured creature discovery, and the Search approach popup's cancellation and
+explicit Perception selection, as well as attack Help, Medicine stabilization and
+the actual owned-proficiency Help chooser, matching check consumption and helper expiry.
+Its spell-noise continuation drives loaded componentless ordered effects,
+whisper/loud Hide behavior, one actual sound-triggered Reaction, held/released
+last-slot casting, an empty-area boom, a loaded renamed monster shared-spell miss
+through the ordinary AI cast executor, one eligible sound Ready owner and
+target-origin monster/direct-host refusal without payment. The monster path
+emits after slot/Action settlement through the same hearing/Ready owner.
+Malformed sound declarations and unsupported Reaction sound
+are rejected. This does not certify catalog noise or the remaining S-237 scope.
 `ready_action_flow` exercises completed movement triggers, owning Reaction
 prompts, ignored/cancelled responses, single attacks with loaded upgrades,
 off-turn movement, renamed shared spells, native projectiles, cast-now payments,
@@ -68,8 +77,23 @@ Its noise continuation also covers paid failed loud attempts, cancelled and
 missing-tool silence, invalid declarations, preserved independent Invisibility,
 Deafened/Blinded listeners, whisper exclusion, and actual readied door Open/Close
 responses that cannot change who heard the earlier sound. `PerceptionChecks`
-checks authored range boundaries, sound versus sight obstruction (including
-glass), plane isolation and malformed noise declarations.
+checks authored range boundaries, shortest open routes around sound obstacles,
+route-distance limits, blocked source/destination tiles, sound versus sight
+obstruction (including glass), plane isolation and malformed noise declarations.
+
+`PerceptionChecks._cover` adds physical obstruction versus sight, strongest-degree
+AC/DEX-save bonuses, renamed source exemptions, actual Sacred Flame, automatic
+failure, feature rerolls/captured-save continuation, other-plane creatures and
+multi-sphere origin boundaries. `ordinary_action_flow` additionally covers real
+Three-Quarters Cover Hide with the independent unseen requirement, refused
+ordinary attacks/cantrip/slotted casts before payment, the actual monster
+attack host's Half/Three-Quarters AC bonuses, clear-ray AC and Total Cover
+refusal before receipt/damage, the real player Guiding Bolt cast's clear-ray hit,
+partial-cover misses and Total Cover pre-payment refusal, plus real Dexterity-save
+spell casts where Half/Three-Quarters Cover flip the outcome and Sacred Flame
+ignores partial cover, plus a live area-cast fixture that checks selected effect
+origin and origin-cell exclusion. Cover remains bounded to
+the flat-ray/standing profile documented in [ordinary actions](mechanics/ordinary-actions.md#represented-combat-cover).
 
 `world_search_flow` covers the room Search button and selected-space click,
 cancellation/character changes, switching unpaid teleport/Search choices, real
@@ -80,6 +104,45 @@ clock/exact copies and reopens actual observer-specific room controls. The
 world logic group includes `WorldSearchFlow.logic` for malformed/legacy discovery,
 wrong-space/range/plane/failure behavior, raw physical versus direct-target
 queries, forged chain identities, lighting and Blinded/Blindsight checks.
+OA-05/OA-07 extend that same production flow with Medicine and Survival selectors,
+authored renamed remains/track clues, matching skill Help, failure secrecy, wrong-
+space and stale-source refusal, access guards and private recovery from both
+existing checkpoint forms.
+`insight_search_flow` uses the combat Actions → Search control on loaded fixtures
+and verifies the live exact-creature target, success/failure disclosure, matching
+Insight Help, exact-choice and target cancellation, stale/access/payment guards,
+observer-specific room receipt/Character Inspector Field Notes (absent from the
+shared Chronicle), malformed receipt validation, and plain-state room serialization.
+It does not create or exercise a combat save checkpoint; Ready remains outside OA-06.
+`StudyFlow` adds authored-question logic, room Study/Knowledge controls and
+ordinary/readied combat Study, including matching Help, failures, free recall,
+cancelled/stale question and source choices, same-cell exact-source identity,
+unknown answers and malformed receipts. The existing fresh-process
+`world_search_reload` also verifies learned and failed questions separately for
+each observer through both checkpoint forms. These checks cover observation
+questions, not full Study, language, creature lore or Influence.
+
+`influence_flow` drives loaded monster spawning, real Actions/target/request/
+gesture controls, unpaid cancellation and stale choices, Willing/Unwilling/
+Hesitant behavior, matching Help, actual door geometry, invalid/actual NPC
+operation sound, authored plane/free hands, retry refusal, readied cancellation
+and completion, and a later door change that fulfillment cannot replay. Its
+automatically paired `influence_reload` restores full-party and player-only
+entrance checkpoints in a fresh process and recreates the encounter before
+testing saved retry and fulfillment guards. `InfluenceFlow.logic` checks actual
+attitude/condition/charmer roll modes, Wisdom Animal Handling, DC floors, exact
+actor/deadline rules, unsupported operations/language skills and malformed
+receipt identities. This is the bounded gesture host in
+[ordinary actions](mechanics/ordinary-actions.md#influence-through-represented-gestures),
+not general social interaction or language support.
+
+The room Help/hearing continuation uses actual proficiency/recipient controls,
+Help and Listen/Search buttons, a Blinded searcher, failed loud Force open and
+matching skill Help consumption. Recovery retains audible-object discovery for
+its exact observer in both checkpoint forms while unused Help is absent.
+`WorldSearchFlow.logic` also checks tool-ID Help, unrelated/stale/expired
+assistance, Deafened failure, sound obstruction/range/plane, mismatched sensing,
+invalid declarations, paid failed sounds and vertical reach refusal.
 
 ## Proportionate spell validation
 

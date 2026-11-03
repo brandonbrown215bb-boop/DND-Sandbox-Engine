@@ -224,6 +224,7 @@
     "casting_time": "action",
     "range": 0,
     "target": "area",
+    "components": ["V", "S"],
     "rules_source": "SRD5.2.1",
     "rules_status": "2024-gameplay-partial",
     "save": "CON",
@@ -245,7 +246,8 @@
         "distance": 2,
         "on_failed_save": true
       }
-    ]
+    ],
+    "effect_noise": {"volume":"loud", "range_feet":300, "origin":"caster"}
   },
   {
     "id": "misty_step",

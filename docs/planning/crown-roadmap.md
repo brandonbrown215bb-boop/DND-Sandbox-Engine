@@ -103,10 +103,15 @@ dated baseline's empty Open Hand feature and absent multiclass entry checks
 have since changed; production multiclassing and full class packages remain
 unfinished. Reuse those delivered pieces rather than implementing them again.
 
-Finish the selected slice before selecting another. **S-237 remains selected**
-until its action requirements are complete, including the represented world
-consumers below; a passing continuation does not close the slice. After that,
-prioritize ready slices by the amount of scoped Crown content they unblock.
+Finish the selected bounded assignment before expanding it. **S-237/S-238 are
+requirement umbrellas, not one execution assignment.** Use their
+[work packages](vocabulary-slices.md#ordinary-action-work-packages) and
+[separate-chat prompts](ordinary-action-chat-prompts.md), starting with OA-01's
+review of represented cover. Independent movement, Hit Dice, character and
+content work can proceed when their actual prerequisites are ready; the whole
+ordinary-action umbrella is not a gate. A completed package does not accept its
+parent slice or waive the registry's retained requirements. Prioritize subsequent
+ready assignments by the amount of scoped Crown content they unblock.
 Build the prerequisites required by that slice without turning unrelated parts
 of a prerequisite's broader scope into a second assignment.
 
@@ -121,9 +126,9 @@ finish before completing an independent background or equipment improvement.
 | Existing slices | Missing Crown behavior and next check |
 |---|---|
 | S-235, S-246–S-248 | Crown portion complete: shared conditions, late-created/group initiative, retained monster concentration, AI/check hosts and reachable level-3 Open Hand Topple/Push saves are verified through production flows and checkpoint recovery. S-235/S-246/S-248 are accepted; S-247 retains only level-17 Quivering Palm outside Crown. See the registry for exact boundaries. |
-| S-237; relevant S-160 action/Reaction budgets | [Ordinary combat continuation](vocabulary-slices.md#ordinary-action-continuation) supplies Dash/Disengage/Dodge, bounded legal Hide/creature Search, Ready with paid player-control triggers, room-object Utilize and attack/stabilization/proficient-check Help, with class effect reuse. Reuse the delivered [visual room-object Search](vocabulary-slices.md#room-search-continuation) with per-observer discovery and checkpoint recovery. Keep S-237 selected for represented cover, remaining noise/world Search, world Help, Study and Influence. Reuse the delivered Ready and room-object Utilize controls rather than assigning them again. Additional tool tasks or item deployment still need their actual world effects. An extra restricted action must not become a general Action or Reaction. Search and social actions consume steps 5/6's represented facts, not fake success flags. |
+| S-237; relevant S-160 action/Reaction budgets | Reuse the delivered [ordinary actions/Ready/Utilize](vocabulary-slices.md#ordinary-action-continuation), [room Search/Help](vocabulary-slices.md#room-search-continuation), [object Study](../mechanics/ordinary-actions.md#study-and-authored-knowledge) and [gesture Influence](../mechanics/ordinary-actions.md#influence-through-represented-gestures). Select one [bounded work package](vocabulary-slices.md#ordinary-action-work-packages) for additional sound hosts, individual Search tasks, communication, verbal Help, recollection Study or spoken encounter Influence. The same registry section retains world NPCs, further knowledge/Search/noise and actual tool/item effects separately. An extra restricted action must not become a general Action or Reaction. Search and social actions consume steps 5/6's represented facts and real outcomes. Completing the parent umbrella is not a prerequisite for independent rows. |
 | S-236, S-239, S-241 | Grapple/Shove, exact escape/drag/end conditions, fallback climb/swim, crawl, voluntary stand, jumping and declared granted/forced movement. Check Champion's critical-hit movement, Fighter Tactical Shift, Rogue Withdraw with legal paths, correct budgets and declared Opportunity Attack policy. Open Hand Push now reuses the existing forced-movement owner for up to 15 feet without Opportunity Attacks; that narrow consumer does not accept all S-241 movement. Ordinary movement/terrain S-179 and exact tethers S-168/S-169 already exist. |
-| S-238 | Apply actual Half/Three-Quarters/Total cover to targeting, AC and DEX saves; test spell-specific exemptions such as Sacred Flame without bypassing Total cover. S-190/S-191 already supply bounded senses/concealment. |
+| S-238 | OA-01 reviews/repairs the delivered standing flat-grid obstruction host and its targeting, AC, DEX-save, exemption and Hide consumers. Reuse existing evidence; further posture/aperture/elevation geometry remains explicit work in the registry, not an automatic expansion of this assignment. S-190/S-191 already supply bounded senses/concealment. |
 | S-071, reusing S-070 | Add actual Hit Dice pools, selection, healing and Long Rest recovery, including mixed class die sizes and allowed reload. Separate Prayer of Healing's rest-like benefits from a false elapsed/completed rest event; its ten-minute casting, interruption and daily recipient limit also need their actual hosts (S-066/S-067/S-014 continuation). Rest lifecycle/actor duration is already accepted. |
 | S-096, S-224, S-226 and accepted roll owners | Finish only the needed off-turn attack, noncombat check, Death Save and Concentration choice routes. Compare with the existing S-093/S-094 and captured-roll/payment machinery. A declined, stale or ineligible choice must not spend resources, roll again or duplicate the consequence. |
 

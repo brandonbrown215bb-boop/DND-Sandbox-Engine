@@ -43,6 +43,9 @@ var selected_object_id := ""
 var obscurement_sources: Dictionary = {}
 var observer_locations: Dictionary = {}
 var perception_participants: Array[Dictionary] = []
+## Live creature records, including undiscovered monsters (render visibility is irrelevant).
+var cover_participants: Array = []
+var cover_plane := "material"
 var perception_observer: Character
 
 ## Source-keyed areas that add one movement point to each affected hex.

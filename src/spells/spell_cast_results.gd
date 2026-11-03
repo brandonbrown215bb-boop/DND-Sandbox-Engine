@@ -523,6 +523,7 @@ static func _finish_spell_cast(cast: SpellCastContext) -> void:
 	cast.clear_pending(SpellCastContext.CLEAR_INTERVENTION)
 	cast.clear_pending(SpellCastContext.CLEAR_WISH)
 	cast.finish_targeting.call()
+	await CombatNoiseRules.publish_spell_effect(cast)
 	cast.check_battle_end_conditions.call()
 	cast.highlight_reachable.call()
 

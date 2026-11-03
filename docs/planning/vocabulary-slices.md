@@ -800,6 +800,9 @@ S-070 separates starting a rest (`RestRules.start_rest`), advancing elapsed dura
 ### Ordinary combat action continuation — S-237
 
 S-237 is **in progress**, not accepted; accepted slice counts do not change.
+S-237/S-238 are requirement umbrellas, not single execution assignments. Select
+one [work package](#ordinary-action-work-packages); completion of the whole
+umbrella is not a prerequisite for independent Crown work.
 The [ordinary action contract](../mechanics/ordinary-actions.md) owns supported
 syntax and behavior. The combat Actions chooser supplies ordinary Dash,
 Disengage, complete Dodge, bounded legal Hide, Ready, Help an attack, Help to
@@ -941,34 +944,388 @@ room obscurement, actual special-sense checks and overlapping map choices. No
 blocking review findings remain. Existing save checkpoints and accepted slice
 counts are unchanged.
 
-**Next work and blockers:**
+**Cover prerequisite (S-238; in progress, unaccepted).** The local continuation
+adds one obstruction query for represented Half/Three-Quarters/Total Cover,
+separate from sight. Actual player and monster weapon/shared spell AC, Dexterity
+saves, direct spell/weapon target gates, area origins and the existing Hide gate
+consume it.
+Glass retains sight while refusing physical targeting; declared partial-cover
+exemptions and Sacred Flame's save-only exception never bypass Total Cover.
+The [mechanics contract](../mechanics/ordinary-actions.md#represented-combat-cover)
+owns syntax and the bounded standing/flat-ray assumptions. No accepted count or
+save checkpoint changes. Windows Godot 4.7 passed bootstrap, the 464-script
+parse gate, boot, all 6,682 logic checks and `ordinary_action_flow`; the focused
+spells/combat/conditions run and `ready_action_flow`, `perception_flow` and
+`find_familiar_exploration_flow` also passed. Independent review checked physical
+versus sight ownership, pre-payment refusal, familiar origins, multiple spheres,
+planes, Shield and captured/rerolled saves; its blocking findings were repaired.
+Raw runs remain ignored under `.artifacts/tests/`. Full S-238/S-237 acceptance
+remains open; this does not certify general three-dimensional cover or the
+complete Crown campaign.
 
-- Keep S-237 selected for represented cover/noise, world Search/Help, Study and
-  Influence. Reuse the delivered Ready and room-object Utilize controls rather
-  than assigning them again. Additional tool tasks or item deployment still
-  need their actual world effects.
+**Room Help/hearing/noise continuation (S-237; bounded S-229 support).** Room
+controls now grant proficient physical check Help to a live adjacent ally and
+consume it through actual room Search or object checks. The room clock bounds
+unused assistance to the next six-second action interval after Help completes;
+room exit and encounter entry clear it. It is not save state. Look/Listen Search
+selects an authored visual or ongoing audible clue; hearing uses the same-plane
+sound route, authored range and real Deafened state rather than sight.
+Discoveries retain exact per-observer checkpoint receipts. The ordinary
+room object controls also emit declared operation sounds after actual paid
+attempts, including failed checks, with actual party-listener receipts. Missing
+tools, vertical/horizontal reach, plane and malformed-sound refusals pay nothing
+and emit nothing. Loaded renamed objects prove the generic declaration path.
+The [ordinary action contract](../mechanics/ordinary-actions.md#room-help) owns
+world timing, [hearing discovery](../mechanics/ordinary-actions.md#hearing-search)
+and the precise remaining limits. This does not accept S-229/S-237/S-238 or
+change accepted counts or checkpoint permissions.
+
+Continuation verification (Windows Godot 4.7, 2026-11-01): supported runner
+bootstrap, 464-script parse gate, boot and full logic **6,697 passed, zero
+failed**; `world_search_flow`, its fresh-process `world_search_reload`,
+`ordinary_action_flow` and `ready_action_flow` passed. Actual controls prove
+unpaid selection, Help/Search/failed-object costs, matching consumption, hearing
+while Blinded and exact observer recovery through both checkpoint forms.
+Focused independent source review checked stale assistance, plane/containment,
+sensing, payment and lifecycle boundaries; its vertical-reach finding was
+repaired and regression checked. Local documentation links and diff whitespace
+checks pass. Raw logs remain ignored under `.artifacts/tests/`.
+
+**Spell effect noise continuation (S-237; bounded combat producer).** Loaded
+renamed shared spells can declare `effect_noise` independently of casting
+components. The existing sound owner emits one sound after effect stages and
+Action settlement, including ordered steps, misses, empty areas and readied
+releases. Origin defaults compatibly to the caster; OA-02 adds an exact selected
+single target/object origin with captured identity, position and plane. Ordinary
+casts capture before slot payment; Ready captures the release-time source
+before spending the Ready Reaction. The actor remains the caster for Ready
+matching. A source creature's loud sound
+ends its Hide, while a remote target-origin sound leaves caster Hide alone.
+Holding or losing energy, cancellation and interruption emit no effect sound.
+Unsupported direct, room, monster, native and Reaction hosts refuse before
+payment. The [authoring contract](../mechanics/ordinary-actions.md#spell-effect-sound)
+pins Knock as the target-origin rule example; Knock itself is not converted.
+No catalog conversion, new checkpoint or broader S-237/S-238 acceptance is
+claimed.
+
+Verification (Windows Godot 4.7, 2026-11-01): supported runner bootstrap,
+464-script parse gate, boot and full logic **6,697 passed, zero failed**;
+`ordinary_action_flow` and `ready_action_flow` passed. Actual controls prove
+ordered componentless effects, preserved independent condition Invisibility,
+whisper exclusion, one owning sound Reaction, held/released last-slot payment,
+and a paid empty-area boom. A valid monster intent and a direct resolver call
+refuse the unsupported sound host without slot loss or effects. Focused
+independent review found and verified repairs for monster prepayment, empty-area
+completion and caster/familiar origin. Local documentation links, JSON structure
+and diff whitespace checks pass; logs remain under ignored `.artifacts/tests/`.
+
+**OA-02 verification (Windows Godot 4.7, 2026-11-01):** supported runner
+bootstrap, 468-script parse gate, boot, `ordinary_action_flow` and
+`ready_action_flow` passed. Neutral fixtures prove ordinary target-origin
+completion, Ready hold/cancel/release, exact player/object source capture and
+stale-source refusal, range/route/plane/Deafened hearing, source-owned Hide
+ending, and one location-matched sound Reaction. Knock is cited as the rule
+requirement and remains unconverted.
+
+**OA-03 verification (Windows Godot 4.7, 2026-11-02):** supported runner
+bootstrap, 472-script parse gate, boot and `ordinary_action_flow` passed. The
+actual monster cast path proves a loaded renamed single-target miss, once-only
+payment/emission and eligible Ready delivery; AI's bounded empty-Sphere command
+completes once, ends the monster's Hide and delivers one sound Reaction. A
+populated area refuses before payment; moving a living target into the area while
+a real Counterspell prompt is open makes the resumed command stale and refuses
+before slot, Action receipt, sound or Reaction cost. An actual Counterspell
+interrupts a Verbal declared-noise monster cast: the incoming slot is refunded,
+no effect damage occurs, the Counterspell Reaction is spent, and the separate
+Verbal event reaches its owning Ready Reaction. One focused independent review
+checked the new combat path; its stale-area concern was tested and resolved by
+the existing live-intent revalidation. Populated/non-Sphere/complex area effects
+remain explicitly refused before payment; OA-03 does not certify all monster
+spellcasting or complete S-237/S-238.
+
+**OA-13 verification (Windows Godot 4.7, 2026-11-02):** supported runner
+bootstrap, 472-script parse gate, boot and `ordinary_action_flow` passed. A
+renamed shared single-target nonattack monster spell captures the exact hidden
+target after intent/reaction revalidation and before slot payment; actual
+completion pays one slot and Action, emits one target-origin sound, removes only
+target Hide, preserves monster Hide, and triggers exactly one eligible sound
+Ready. A focused independent review found no concrete blocker. Other monster
+spell target shapes and sound hosts remain outside this verification boundary.
+
+**OA-04 verification (Windows Godot 4.7, 2026-11-01):** supported runner
+bootstrap, 469-script parse gate, boot and `room_spell_noise_flow` passed. The
+actual room Cast controls load and cast a renamed shared spell; cancellation
+and cross-plane refusal leave slot/time/sound untouched. The completed cast
+pays one slot and six seconds once, returns both party listener IDs, ends Hide
+while preserving independent Invisibility, and survives the allowed entrance
+checkpoint without replay. Focused room-route checks cover a wall with an open
+alternate route, a fully blocked route, another plane, Deafened and Silence.
+The fixture adds no room spell eligibility or durable sound state. Thunderwave
+remains only the source-pinned 300-foot sound example, not converted content.
+
+**OA-12 verification (Windows Godot 4.7, 2026-11-02):** supported runner
+bootstrap, 472-script parse gate, boot and `room_spell_noise_flow` passed. A
+renamed shared spell through the actual room Cast controls captures the selected
+party target, heals it, emits from its exact position, reports the actual party
+listeners, ends only target Hide while preserving caster Hide and target
+Invisibility, and charges one additional slot and six-second interval. The
+allowed checkpoint retains both settled casts without replay. Room target-origin
+objects and other room sound producers remain unsupported. Independent source
+review found no concrete blocker.
+
+**Authored observation Study continuation (S-237; bounded S-219 prerequisite).**
+`StudyRules` now resolves one authored question on an exact visible room object
+through a shared Intelligence knowledge check. The room Study/Knowledge controls,
+combat Actions menu and readied ordinary response use the same question and
+observer receipts. Matching proficient check Help applies to the actual roll;
+failed attempts pay, unknown/cancelled/stale requests do not, and already known
+answers are free recall. Co-located objects retain exact-source selection.
+The existing allowed checkpoint carries per-source/question/observer knowledge
+through both full-party and player-only recovery, including failed-answer
+non-disclosure. The [Study contract](../mechanics/ordinary-actions.md#study-and-authored-knowledge)
+owns syntax, observation/timing limits and remaining hosts. This is engine
+fixture proof, not Crown knowledge conversion or S-219/S-237/S-238 acceptance.
+
+Verification (Windows Godot 4.7, 2026-11-01): supported runner bootstrap,
+466-script parse gate, boot and world logic **494 passed, zero failed**;
+`world_search_flow`, fresh-process `world_search_reload` and `ready_action_flow`
+passed. Actual controls verify matching Help, room/combat costs, failed-answer
+non-disclosure, free recall, stale question/budget/cell refusal, same-cell exact
+sources and cancelled/completed readied Study. Both checkpoint forms restore
+each observer's learned answers without repeating rolls/time; malformed receipts
+refuse preflight. Independent review's stale-cell and overflowing-knowledge
+findings were repaired; save validation also loads without a combat-controller
+type dependency. Local documentation links, fixture structure and diff whitespace
+checks pass. Raw logs remain ignored under `.artifacts/tests/`.
+
+**Gesture Influence continuation (S-237; bounded S-218/S-219 prerequisites).**
+Loaded monster definitions can declare exact requests, motivations and
+Willing/Unwilling/Hesitant gesture approaches with real open/close room-object
+outcomes. Ordinary Actions and readied responses use actual encounter creatures,
+source-pinned room slots, live physical/sight guards, shared ability checks,
+attitudes, exact-charmer Advantage and proficient physical Help. No language
+understanding or arbitrary obedience is inferred. Persistent per-actor failed
+approaches retain their 24-hour retry; fulfillment is once per source/request
+and cannot replay object changes across re-entry or checkpoints. The
+[Influence contract](../mechanics/ordinary-actions.md#influence-through-represented-gestures)
+owns syntax and exact scope. No catalog conversion or S-237/S-238 acceptance is
+claimed.
+
+Verification (Windows Godot 4.7, 2026-11-01): supported runner bootstrap,
+468-script parse gate, boot and world logic **508 passed, zero failed**;
+`influence_flow` and fresh-process `influence_reload` passed. Actual production
+spawn/menu/target/request/gesture controls prove willing/refusing/rolled outcomes,
+once-only Action/Reaction, matching Help, stale choices, real door geometry and
+NPC sound with an owning Ready reaction. Both full-party and player-only
+checkpoints recreate the encounter and retain the failed retry, fulfilled
+request, later door state and clock without replay. `ready_action_flow` also
+passed after the ordinary/Ready dispatch additions. Independent review's object
+sound, numeric receipt identity and dropped spawn plane/hand findings were
+repaired and regression checked. Local documentation links, fixture structure
+and diff whitespace checks pass; logs remain ignored under `.artifacts/tests/`.
+
+**Sound-route continuation (S-237; bounded combat/room hearing).** Declared
+combat and room sounds reach listeners by the shortest open route through
+adjacent represented hexes, with each step counting as five feet of authored
+range. Missing cells and `blocks_sound` (falling back to `blocks_sight`) stop
+routes; an open route can go around a wall. Same-plane, Deafened/Silence,
+blocked source/destination, Hide-ending and emission-time listener snapshot
+rules remain in force. This is flat and unattenuated; elevation, attenuation
+and additional sound producers remain open. No save state or catalog conversion
+changes.
+
+Verification (Windows Godot 4.7): supported runner bootstrap, 468-script parse
+gate, boot, combat logic **2,145 passed, zero failed**, and
+`perception_flow`, `ordinary_action_flow` and `ready_action_flow` passed. The
+Ready listener-snapshot fixture uses a complete wall partition with one door
+gap, so a readied door response cannot change who heard the earlier sound.
+Independent review checked route range and endpoint semantics and caught the
+blocked-origin edge case; its regression passes. No S-237/S-238 acceptance or
+accepted-count change is claimed.
+
+<a id="ordinary-action-work-packages"></a>
+
+#### Separate S-237/S-238 work packages
+
+Owner-directed split, 2026-11-01. These OA labels identify execution assignments,
+not additional S-IDs or counted completions. The existing production evidence
+above remains valid within its recorded boundaries. No new behavior or whole
+slice acceptance is claimed by this planning change. The full S-237/S-238 rows
+and accepted counts remain unchanged.
+
+Start with OA-01's review of the delivered cover boundary. After that, choose
+the package needed by the next Crown consumer, or an independent ready Crown
+assignment such as movement or Hit Dice. Finish the selected package's explicit
+behavior/checks before expanding it. Unfinished umbrella requirements do not
+hold unrelated work hostage. Dependencies below are actual prerequisites;
+table order is not an additional dependency. Shared-file work stays sequential.
+
+Copy-paste prompts and common finishing instructions live in
+[ordinary-action-chat-prompts.md](ordinary-action-chat-prompts.md).
+Status and verified boundaries belong here, not in the prompt file.
+
+| Package | State | Finite finish line | Depends on |
+|---|---|---|---|
+| OA-01 — Represented cover review | Verified 2026-11-01; standing flat-grid boundary only | Existing standing flat-grid host verified across its documented consumers, with live room-door cover refresh added to production-flow proof. Missing geometry stays separately open; this does not accept all S-238. | Delivered cover host |
+| OA-02 — Target-origin combat spell sound | Verified 2026-11-01 | Target-origin operation through ordinary/readied player shared completion; exact source capture/refusal before ordinary slot or Ready Reaction payment, once-only emission, source-owned Hide ending, represented hearing boundaries and one owning sound Reaction. Neutral fixtures verify the operation; Knock remains unconverted. | Delivered player spell sound/Ready |
+| OA-03 — Monster spell sound | Verified 2026-11-02; empty Sphere only | Existing caster-origin effect sound through the ordinary monster shared-spell path; loaded renamed single-target miss, eligible-only Ready delivery, target-origin prepayment refusal, once-only empty-Sphere completion, caster Hide ending, occupied-area prepayment refusal, and stale occupancy after a real Counterspell choice are covered. A real Counterspell interrupts a Verbal effect-noise cast, refunds its spell slot once and preserves the separate Verbal sound/Ready event. Populated/non-Sphere/complex monster areas remain unsupported and refuse before payment; other origins/hosts remain outside this package. | Existing monster spell, sound and Ready owners |
+| OA-04 — Room spell sound | Verified 2026-11-01 | Caster-origin effect sound through already-legal local-room shared casts; actual party receipts, once-only payment/time, room geometry/plane/deafness/Silence, Hide ending and allowed checkpoint recovery verified. Spell eligibility is unchanged. | Delivered room cast and sound owners |
+| OA-05 — Medicine room Search | Verified 2026-11-01; authored remains cause-of-death clue only | One declared cause-of-death clue through room Search, actual Wisdom (Medicine), source/access guards, observer disclosure and both allowed checkpoint recoveries. No general diagnosis or injury simulation. | Delivered room Search/check/discovery owners |
+| OA-06 — Insight creature Search | Verified; narrow authored-source extension | One declared intent/emotion clue on an exact live encounter creature through ordinary combat Search, actual Wisdom (Insight), matched Help, and observer-scoped room receipt. The clue appears in the searcher's Field Notes, not the shared Chronicle. Actual controls cover success/failure, exact chooser cancellation, stale/access refusal and once-only Action settlement. | Delivered creature Search/check and room-persistence owners |
+| OA-07 — Survival room Search | Verified 2026-11-02; authored track clues only | One declared track clue through the actual room Search control, Wisdom (Survival), exact source-space/vicinity, observer disclosure and allowed checkpoint recovery; no generated tracks or movement/travel implementation. | Delivered room Search/check/discovery owners |
+| OA-08 — Local spoken communication | Verified 2026-11-02; local represented speech only | Shared declared language, eligible living speaker/listener, Silenced/Deafened, same plane, authored 30-foot host range and represented sound route; character language knowledge round-trips through full-party/player-only saves. No inferred language or automatic comprehension. | Delivered character, hearing and checkpoint owners |
+| OA-09 — Local verbal Help | Verified 2026-11-02; authored useful local checks only | Existing room/combat Help controls offer opted-in verbal assistance; proficiency, next matching check, once-only Advantage, expiry/payment, communication revalidation, unrelated/expired/unheard/ununderstood assistance and condition composition verified. Physical Help remains intact. | OA-08; delivered local Help |
+| OA-10 — Authored recollection Study | Verified 2026-11-02; one authored memory host | Source-independent room Study question through actual Study/Knowledge controls, Intelligence check, observer-specific answer, failure non-disclosure, unknown-ID refusal, free recall and full-party/player-only recovery without replay. | Delivered Study/check/knowledge owners |
+| OA-11 — Spoken encounter Influence | Verified 2026-11-02; existing encounter requests/outcomes only | Spoken Persuasion/Deception through ordinary and readied controls, with shared-language eligibility, authored willingness/hesitation, sound/Reaction, real open/close outcomes, once-only payment, retry and completed-request checkpoint guards. Gesture Influence remains intact. | OA-08; delivered gesture Influence/Ready |
+| OA-12 — Room target-origin spell sound | Verified 2026-11-02; exact party-creature targets only | Actual local-room shared Cast controls capture one exact selected party creature before slot payment; sound uses its position/plane, reports actual listeners, ends only source Hide, preserves independent Invisibility, and remains once-only with existing room time/payment. Room object target origins remain refused before payment. | OA-04 room cast and delivered target-origin sound owner |
+| OA-13 — Monster target-origin spell sound | Verified 2026-11-02; ordinary single-target shared creature spells only | Monster Action cast captures/revalidates the exact living target after Reaction-choice awaits and before slot payment; completion preserves the monster as Ready actor, emits once from the selected target/plane, ends target Hide without ending monster Hide, and delivers one sound Ready. Other monster target types/hosts remain unsupported. | OA-03 monster shared Action completion and target-origin sound owner |
+
+Ready means selected scope can be started against the known reuse points, not
+that an unimplemented contract is already proven. If current source exposes a
+missing prerequisite, record it exactly and leave the affected package open.
+Do not turn it into a larger assignment or silently omit required behavior.
+
+**OA-05 verification (2026-11-01).** SRD 5.2.1 Search says the Action makes a
+Wisdom check to discern something not obvious and maps Medicine to a creature's
+ailment or cause of death ([Rules Glossary, p. 187](https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf#page=187)). The room Medicine selector uses that actual check and matching shared Help, pays six seconds once, keeps a failed clue undisclosed, and reveals the authored text only to the observer on success. Production controls cover an exact renamed remains source, wrong-space refusal-to-discover, stale source identity before payment, plane/containment/vicinity guards, and no new active-room checkpoint. `world_search_flow` and its automatic fresh-process `world_search_reload` restore the clue and exact observer receipt through both existing checkpoint forms without rolling or charging again; the other observer's Knowledge panel remains empty. No S-229/S-237/S-238 parent acceptance or count changed.
+
+**OA-06 verification.** The SRD 5.2.1 Search clause calls for a Wisdom check to
+discern something not obvious; the Insight skill covers reading intent/emotion
+([Rules Glossary, p. 187](https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf#page=187); skill rules, pp. 181–183). `insight_search_flow` drives the actual combat Actions → Search and exact-creature controls. It verifies authored-clue-only success, failure non-disclosure, observer-scoped room receipt and Character Inspector Field Notes (not shared Chronicle), co-located exact identity, matching owned Insight Help, chooser and target cancellation, moved-target stale refusal, missing-clue/copied/dead/other-plane/out-of-range source refusal, failed final Action settlement, serialized room state, and malformed/duplicate/unknown-observer checkpoint receipt validation. Success/failure attempts settle one ordinary Action; refused/cancelled choices settle none. The existing hidden-creature Perception Search remains separate, and this does not add a Ready route or combat save. Room receipts are validated by `DungeonPersistence`; no fresh-process recovery proof or new checkpoint is claimed here. OA-06 does not accept S-237/S-238 or change counts.
+
+**OA-01 verification (2026-11-01).** The production cover receipt above covers
+strongest-degree obstruction, intervening creatures, weapon/shared-spell AC,
+DEX saves, source exemptions, Sacred Flame, area origins, captured/rerolled
+saves, transparent Total Cover, direct-target refusal before payment, and the
+cover-dependent Hide gate. The `ready_action_flow` room continuation now also
+proves that the real Utilize Open/Close controls clear and restore Total Cover
+on the live combat ray. Source pins: SRD 5.2.1 [p. 15](https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf#page=15)
+(Cover and strongest degree), [p. 159](https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf#page=159)
+(Sacred Flame's save exception), [p. 178](https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf#page=178)
+(area-origin blockage), [p. 183](https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf#page=183)
+(Hide gate), and [p. 251](https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf#page=251)
+(Wand of the War Mage's Half Cover exception). No behavior or accepted S-238
+count changed.
+
+Still open under S-238:
+
+- **Posture:** no posture-dependent body silhouette or cover calculation.
+- **Diagonal apertures:** no edge/aperture geometry; the host checks its flat
+  hex ray through represented cells.
+- **Elevation:** no vertical or general 3D cover calculation.
+
+The Crown roadmap/content review found no named Crown consumer requiring those
+three geometry extensions. That demand remains unknown; none is marked finished
+or out of Crown if scoped content later requires it.
+
+**OA-07 verification (2026-11-02).** SRD 5.2.1 Search is a Wisdom check to discern something not obvious and its Search table assigns Survival to finding tracks ([Rules Glossary, p. 187](https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf#page=187); Survival skill, pp. 182–183). The room Search control uses an actual Wisdom (Survival) check for a declared clue on one exact room-source space. The production flow verifies failure secrecy, wrong-space refusal-to-disclose, exact observer receipt, matching Survival Help, cancellation, stale declaration refusal before payment, and recovery through full-party and player-only entrance checkpoints. Plane and containment access are checked in the shared logic flow; the recovered clue remains private to its observer. Source facts disclose tracks only; movement does not generate trails and Search does not locate quarry or move the party. The six-second action and authored vicinity are room-host policy. No S-229/S-237/S-238 parent acceptance or count changed.
+
+**OA-08–OA-11 verification (2026-11-02).** OA-08 verifies language overlap separately from audibility, living speaker/listener and condition eligibility, same-plane/range/sound-route limits, and character language recovery. OA-09 verifies opted-in verbal Help through current room/combat consumers, including matching/once-only Advantage, expiry, eligibility revalidation, unrelated/inaudible/ununderstood assistance and conditions; physical Help remains available. OA-10 verifies one source-independent recollection through actual room Study/Knowledge controls, including Intelligence resolution, failed-answer secrecy, unknown questions, free recall, observer ownership and both allowed checkpoint forms. OA-11 verifies ordinary spoken Persuasion and readied spoken Deception through actual combat controls, including a hesitant check success, an unwilling spoken refusal, real gate effects, spoken noise/Ready response, unshared-language refusal, existing gesture routes, retry guards and fresh-process no-replay recovery. Checks: world logic group (543 passed, 0 failed); `world_search_flow` and `world_search_reload` (0 failed each); `influence_flow` and `influence_reload` (0 failed each). A subsequent `ordinary_action_flow` run exposed that its Hide/Search fixture opened a new Search-approach popup but asserted before selecting Perception; production Search was not at fault. The fixture now explicitly cancels that popup once (asserting no Action payment or Hide removal), then selects Perception through the popup and verifies actual discovery. Supported Windows runner bootstrap, parse gate (472 scripts), boot gate and `ordinary_action_flow` pass. This fixture repair does not accept S-237/S-238 or change their counts; the separate OA-03, OA-12 and OA-13 sound verification is recorded above.
+
+**Native Thunderwave Ready effect-sound verification (Windows Godot 4.7.2, 2026-11-02).** The source-pinned caster-origin boom now completes through the production Ready declaration/release host without making other native sound hosts legal. `ready_action_flow` proves declaration-time Action/slot payment and distinct Verbal sound, 65-foot effect-sound hearing beyond the Verbal range, no boom or Reaction payment on cancelled/stale selection, one paid release, Counterspell interruption/refund with the separate Verbal event, concentration-loss dissipation and owner-turn expiry. `ordinary_action_flow` retains direct-resolver and forged Ready-context refusals and verifies the ordinary Thunderwave host. Supported Windows runner bootstrap, 472-script parse gate, boot gate, `ready_action_flow`, and `ordinary_action_flow` passed. Independent shared-combat review found no concrete blocker. This bounded source/host verification does not accept S-237 or S-238 and changes neither parent count.
+
+#### Requirements retained outside these assignments
+
+Completing OA-01–OA-13 does not by itself finish S-237/S-238. The following
+requirements remain visible. Select one concrete consumer/host and finite proof
+when scheduling a follow-up; these rows are not catch-all implementation prompts.
+Unimplemented Crown-required behavior stays in Crown, including newly exposed
+gaps. Do not infer that it is optional merely because it is not in OA-01–OA-13.
+
+| Retained work | Owner / scheduling boundary |
+|---|---|
+| Posture, diagonal apertures and elevation/3D cover; remaining source/obstacle consumers | S-238. OA-01 records the verified flat-grid boundary and known consumers; the live monster weapon-attack consumer is also verified below. Further geometry needs its own explicit assignment, not an automatic expansion of that review. Open policy questions: which posture states change a target/obstacle silhouette and by what rule; what exact hex-edge/aperture contact counts as obstruction and how multiple rays combine; how vertical separation/elevation, obstacle height and target height combine into each cover degree for direct and area effects. SRD cover clauses do not specify this engine geometry; do not infer answers from the current standing flat-grid host. |
+| Target-origin room/monster sound; Reaction, direct and remaining native spell sound hosts | S-237 sound continuation. OA-02, OA-03, OA-12 and OA-13 cover player combat, monster caster-origin/empty-Sphere, room party-creature target-origin, and monster single-target creature target-origin hosts. The source-pinned native Thunderwave caster-origin sound is supported on ordinary player combat Magic Actions and verified Ready releases only; cancellation, stale selection, expiry, concentration loss and Counterspell interruption emit no effect boom. Room object target-origin, other monster/native hosts, Reaction and direct-resolver effect-sound hosts remain open and must refuse before payment until supported. |
+| Attack, item, feature and movement sound producers; attenuation/elevation and broader hearing | S-237 with S-188/S-229 where applicable. Each producer family or propagation rule requires its own source-backed declaration/consumer and proof; no universal noise radius is inferred. |
+| Passive discovery, sharing, room/overworld Hide and broader Search/control hosts | S-237/S-229; overworld stages also S-227/S-228. OA-05–OA-07 deliver only their named tasks/hosts. Preserve sense/location/observer guards and actual consequences. |
+| Actual trap trigger/disarm/reset and lock/tool procedures | S-230; S-229 supplies discovery. Discovering a clue does not disarm a trap. Select the actual room-object procedure separately. |
+| Overworld/event Help and other useful assistance routes | S-237 with their actual check/time/location hosts. OA-09 covers existing local checks only; no banked generic Advantage. |
+| Written comprehension, creature/spell knowledge, illusion investigation, research, sharing and overworld knowledge | S-219/S-188/S-218 as applicable; S-237 Study consumers remain open. OA-10 is only authored room recollection. Each further knowledge source/control needs its actual fact and observer outcome. |
+| Noncombat room/overworld NPC identities and Influence controls, additional requests/outcomes, suspicion and investigation | S-218/S-219/S-188 with S-237. OA-08/OA-11 do not create these hosts. First select an exact represented actor/host and consequence; general dialogue/obedience is not a prerequisite for the bounded combat requests. |
+| Tool tasks, usable-item deployment and remaining Utilize effects | S-237 with S-256/S-258/S-230 or the actual item/world owner. Reuse existing room Utilize and Shield/item controls; supply the selected task's real effect separately. |
+| Source-backed catalog conversion and remaining native replacement | The selected class/spell/item/campaign content task. Engine fixtures can finish an OA assignment; they do not certify the real content or authorize removal of still-needed native paths. |
+
+**Retained behavior and limits from the delivered continuations:**
+
+- Reuse the delivered Ready, room Search/Help and room-object Utilize controls
+  rather than assigning them again. Additional tool tasks or item deployment
+  still need their actual world effects.
 - Ready supports completed ordinary actions and monster turns, weapon attacks,
   spell casts, represented movement/teleport hosts and the paid player controls
   above; arbitrary prose triggers are not interpreted. Sound currently covers
-  Verbal casting and declared paid room-object operations with represented
-  sound rays; other noise producers remain open.
-- Check Help covers adjacent physical assistance in live encounter checks.
-  World checks and verbal assistance need actual proximity/communication and
-  action/time hosts; a stored general Advantage is not a substitute.
-- Reuse the delivered visual room-object Search and per-observer checkpoint
-  recovery. Remaining Search consumers include other senses/skills, passive or
-  shared discovery, overworld searching and actual trap procedures. Study and
-  Influence still need their own represented facts and outcomes.
-- Three-Quarters Cover Hide needs S-238's represented cover. Sound louder than
+  Verbal casting, declared paid room-object operations, player shared combat
+  spell effects, Thunderwave's source-pinned native caster-origin effect sound on
+  its ordinary player Action host, the bounded monster caster-origin/empty-Sphere
+  and single-creature target-origin hosts, and local-room caster/party-target
+  shared casts with represented routes around obstacles; other noise producers
+  remain open.
+- **Thunderwave native sound continuation (S-237; one source-backed producer).**
+  The core spell declares the SRD's loud 300-foot caster-origin boom as data.
+  Its ordinary player combat Action publishes through the existing effect-sound
+  completion owner after its native Cube effect and Action settlement. An actual
+  Ready listener at 65 feet distinguishes the effect from the separate 60-foot
+  Verbal casting sound. Direct resolver and Ready-spell hosts refuse before
+  payment; room, monster and Reaction native hosts remain unsupported. This does
+  not migrate Thunderwave to the shared spell executor or convert other spells.
+  Windows Godot 4.7: bootstrap, 472-script parse gate, boot and
+  `ordinary_action_flow` passed; the live flow verifies the selected Cube hit,
+  once-only slot/Action payment, long-range Ready delivery, direct/Ready refusal
+  and restoration of fixture state. Independent source review found no concrete
+  blocker. S-237/S-238 remain open and counts do not change.
+- **S-238 monster weapon attack consumer (2026-11-02).** The live
+  `ordinary_action_flow` now drives `_execute_monster_attack` and its shared
+  weapon resolver against the exact Character target. On one represented ray it
+  verifies Half Cover +2 AC, Three-Quarters Cover +5, the clear-ray baseline,
+  and Total Cover refusal before Action-history receipt or damage. It also casts
+  an ordinary DEX-save spell through the live spell menu: scripted DC 14 saves
+  flip to success with +2/+5 partial cover, while actual Sacred Flame fails the
+  same Half-Cover test because its source exemption removes that bonus. The
+  monster scripted miss isolates the AC comparison. A real player Guiding Bolt
+  cast also hits on the clear ray, misses behind both partial-cover degrees at a
+  deterministic roll, and refuses Total Cover before slot/Action payment. A
+  loaded area-spell fixture also verifies selected effect-origin cover and that
+  the selected origin cell itself is not intervening cover. This does not certify
+  hit/damage outcomes for every monster profile or expand geometry. The supported
+  Windows Godot 4.7 bootstrap, 472-script parse gate, boot gate and complete
+  `ordinary_action_flow` passed (0 failed). S-238 remains open for posture,
+  diagonal apertures, elevation/3D and other unproven consumers; counts do not
+  change.
+- Check Help covers adjacent physical assistance in live encounter and room
+  Search/object/Study checks and combat gesture Influence. Other world checks and verbal assistance need actual
+  proximity/communication and action/time hosts; a stored general Advantage is
+  not a substitute.
+- Reuse delivered visual/hearing room-object Search and per-observer checkpoint
+  recovery. Remaining Search consumers include other skills, passive or
+  shared discovery, overworld searching and actual trap procedures. Reuse the
+  delivered observation Study questions for represented object information;
+  broader knowledge and spoken/world Influence still need their own facts and outcomes.
+- Three-Quarters Cover Hide now uses the bounded S-238 flat-ray obstruction host
+  together with actual unseen eligibility. Full three-dimensional cover remains
+  open. Sound louder than
   a whisper now has the bounded producer/hearing host above; additional action,
-  item and spell noise producers, sound propagation around corners, room/overworld
+  item and spell noise producers, sound attenuation/elevation, room/overworld
   Hide and broad hearing stay open with S-188/S-229; hidden-object Search now has
   the bounded visual room host above.
-- Study needs represented knowledge (S-219); Influence needs authored requests,
-  attitudes, desires and actual willing/unwilling/hesitant outcomes (S-188).
+- Study now has bounded authored object knowledge (S-219); memory, language,
+  creature/spell/illusion and other world knowledge hosts remain open. Reuse the
+  delivered gesture requests, attitudes and actual object outcomes for bounded
+  Influence. Spoken/language and world NPC hosts, additional request outcomes,
+  per-observer suspicion and investigation remain open (S-188/S-218/S-219).
   Utilize beyond the represented room operations and existing Shield/item
   controls needs the actual object interaction/tool task. Do not implement
   these as a roll plus a fake success flag.
+- **Next S-237 selection boundary (2026-11-02).** After the Thunderwave sound
+  producer, a focused source/host inventory found no second ready sound producer
+  or passive-discovery consumer with both an exact source-backed declaration and
+  an existing production completion host. The remaining Search tasks listed in
+  the OA rows are complete; a new passive host would need an explicit observation
+  boundary and consequence. The staged data's other explicit audible spell case,
+  Thunderous Smite, has no supported attack-on-hit executor to attach its sound
+  to; do not add a spell-ID hook or invent a generic weapon radius. Existing
+  attack/item/feature/movement sound families still need an exact source-backed
+  producer. Overworld/event Help and Hide lack represented location/time hosts.
+  Resume when one actual host/consumer and its rule boundary are selected; this
+  does not accept S-237/S-238 or mark remaining requirements optional.
 
 <a id="srd-condition-and-roll-host-spine"></a>
 
@@ -1386,7 +1743,7 @@ the existing modules instead of rebuilding these bounded hosts.
 | S-193 — Remote borrowed senses and delivery limits | Planned | V-074 | Let eligible observers borrow a linked sensor's specified senses/communication or touch-delivery route; exit/range/source loss restores normal restrictions. | S-192, S-026 |
 | S-194 — Direction/location/identity-only disclosure | Planned | V-075 | Return only declared detection facts/nearest source/direction to the permitted observer; don't reveal the full actor sheet or concealed identity. | S-190, S-025 |
 | S-195 — Masked thought/type/material detection rules | Planned | V-075 | Honor source-specific masks, thought permission and actual material/thickness limits; unavailable knowledge remains an explicit unknown. | S-194, S-032, S-219 |
-| S-238 — Cover from actual obstruction | Planned | V-005, V-073 | Compute Half/Three-Quarters/Total cover from actual obstruction and apply it to AC, DEX saves and targeting. A spell or item source can declare which cover it ignores: Half only (e.g. Wand of the War Mage) or Half and Three-Quarters (e.g. Sacred Flame). Total cover is never ignored (wave 2 folds: core-4, spells-1, items B4-0 row 7 Wand of the War Mage; `ignore_cover_on_save` is a declared but unread field today). | S-032, S-190 |
+| S-238 — Cover from actual obstruction | In progress; bounded flat-ray host, unaccepted | V-005, V-073 | Compute Half/Three-Quarters/Total cover from actual obstruction and apply it to AC, DEX saves and targeting. A spell or item source can declare which cover it ignores: Half only (e.g. Wand of the War Mage) or Half and Three-Quarters (e.g. Sacred Flame). Total cover is never ignored (wave 2 folds: core-4, spells-1, items B4-0 row 7 Wand of the War Mage; the bounded flat-ray host now reads `ignore_cover_on_save`; full geometric acceptance remains open). | S-032, S-190 |
 | S-239 — Fallback climb/swim, crawl, stand-up and jumping | Planned | V-069 | Double-cost climb/swim without a speed, crawl, half-Speed stand-up and STR-based Long/High Jump on the production movement path. An item can grant a fixed jump instead (Boots of Striding and Springing: up to 30 ft for 10 ft of movement, refused with less remaining, lost when removed; wave 2 fold of items-18). | S-179, S-235 |
 
 ## P8 — Physical items and bodies
@@ -1420,15 +1777,15 @@ the existing modules instead of rebuilding these bounded hosts.
 | S-215 — Controlled reroll/choose and nested tables | Planned | V-080 | Apply declared reroll/choose/forbidden-result/no-recursion policy with retained rolled choices; nested outcomes don't replay parent costs or settled children. | S-214, S-106 |
 | S-216 — Real objective facts and once-only rewards | Planned | V-082, V-057 | Query actual collection/defeat/exploration progress and commit source-owned milestone/reward only after matching completion, retaining receipt across reload. | S-030, S-049, S-048 |
 | S-217 — Child encounter/event completion continuation | Planned | V-082 | Bind pending reward to the actual spawned child event/encounter and original objective; leaving/repeating/canceling does not issue early/duplicate rewards. | S-216, S-149 |
-| S-218 — Sender/listener/language and bounded communication | Planned | V-083 | Represent actual language/sender/listener and permitted communication range/type; telepathy or a message does not automatically grant knowledge or obedience. | S-026, S-193 |
-| S-219 — Authored knowledge/attitude and explicit unknown | Planned | V-083, V-057 | Store declared per-actor knowledge/attitude/outcome facts and explicit campaign/owner judgment with source/permission; unrepresented questions remain unknown, with no universal GM system required. | S-025, S-218 |
+| S-218 — Sender/listener/language and bounded communication | In progress; bounded [gesture Influence](#ordinary-action-continuation), unaccepted | V-083 | Represent actual language/sender/listener and permitted communication range/type; telepathy or a message does not automatically grant knowledge or obedience. | S-026, S-193 |
+| S-219 — Authored knowledge/attitude and explicit unknown | In progress; bounded [object Study and gesture Influence](#ordinary-action-continuation), unaccepted | V-083, V-057 | Store declared per-actor knowledge/attitude/outcome facts and explicit campaign/owner judgment with source/permission; unrepresented questions remain unknown, with no universal GM system required. | S-025, S-218 |
 | S-220 — Executable campaign-authored special outcome | Planned | V-083, V-086 | Select only available authored requirements/costs/effects and execute them once; unknown/unavailable special outcome keeps ordinary supported actions available. | S-219, S-222, S-149 |
 | S-221 — Ordinary Wish procedure and consequences | Planned | V-083, V-086, V-028, V-031 | When selected, source-pin ordinary uses, restrictions and consequences; invoke only represented operations or legal duplicated spell permission, retaining costs/stress across the original invocation. | S-220, S-142, S-090 |
 | S-222 — Referenced procedure capability closure | Planned | V-086 | Before offer/charge, derive needed operations/facts/choice routes/referenced children from supported data; report exact missing capability rather than silently skip an unknown operation. | S-134, S-214 |
 | S-223 — Unsupported child and precise partial-support route | Planned | V-086 | Keep fully supported invocation distinct from explicit bounded approximation; actual selector/control respects child availability and no content-ID allowlist substitutes for missing behavior. | S-222 |
 | S-227 — Travel pace, rate and travel clock | Planned | V-098, V-045, V-057 | Party selects a legal pace from terrain max/road/slow-member/special-movement rules; travel advances the campaign clock by actual distance/time and applies pace check modifiers; mount boost spends a cumulative budget; reload doesn't replay travel. Source: srd.txt 712–760, 12315–12350. | S-065, S-179 |
 | S-228 — Terrain travel procedures and marching order | Planned | V-098, V-078 | Per represented terrain, roll encounter distance and run Foraging/Navigation/Search checks once per stage with marching order; outcomes without SRD bodies (yield, being lost) stay explicit unknown/campaign-authored. Source: srd.txt 737–748, 12354–12370. | S-227, S-200, S-219 |
-| S-229 — Location-scoped search and hidden-object discovery | In progress; bounded [visual room-object Search](#room-search-continuation), unaccepted | V-099, V-073 | Search reveals a declared hidden object/trap only to an eligible searcher in its vicinity, per observer, once discovered persists; searching elsewhere never reveals. Source: srd.txt 712–722, 11989. | S-190, S-188 |
+| S-229 — Location-scoped search and hidden-object discovery | In progress; bounded [visual/hearing room-object Search](#room-search-continuation), unaccepted | V-099, V-073 | Search reveals a declared hidden object/trap only to an eligible searcher in its vicinity, per observer, once discovered persists; searching elsewhere never reveals. Source: srd.txt 712–722, 11989. | S-190, S-188 |
 | S-230 — Trap trigger/disarm and lock procedures | Planned | V-099, V-096 | Declared trap trigger/detection/disarm/effect/reset and lock key/tool-check/break routes act on the actual room object; failure costs settle once and the object state survives checkpoints. Source: srd.txt 5900–5945, 12727–12928. | S-229, S-212, S-119 |
 
 ## Coverage crosswalk for all 103 parents

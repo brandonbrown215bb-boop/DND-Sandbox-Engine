@@ -74,5 +74,65 @@
         "radius": 1
       }
     ]
+  },
+  {
+    "id": "fixture:cover_save",
+    "name": "Cover Save",
+    "execution": "shared",
+    "level": 0,
+    "casting_time": "action",
+    "range": 12,
+    "target": "single",
+    "attack_type": "none",
+    "damage": "1",
+    "damage_type": "force",
+    "effects": [],
+    "classes": [
+      "wizard"
+    ],
+    "save": "DEX"
+  },
+  {
+    "id": "fixture:cover_half",
+    "name": "Cover Half",
+    "execution": "shared",
+    "level": 0,
+    "casting_time": "action",
+    "range": 12,
+    "target": "single",
+    "attack_type": "ranged_spell",
+    "damage": "1",
+    "damage_type": "force",
+    "effects": [],
+    "classes": [
+      "wizard"
+    ],
+    "ignore_cover": [
+      "half"
+    ]
+  },
+  {
+    "id": "fixture:cover_area",
+    "name": "Cover Area",
+    "execution": "shared",
+    "level": 0,
+    "casting_time": "action",
+    "range": 12,
+    "target": "area",
+    "attack_type": "none",
+    "damage": "1",
+    "damage_type": "force",
+    "save": "DEX",
+    "half_on_save": false,
+    "classes": [
+      "wizard"
+    ],
+    "effects": [
+      {
+        "type": "area_selection",
+        "shape": "sphere",
+        "radius": 2
+      }
+    ]
   }
 ]

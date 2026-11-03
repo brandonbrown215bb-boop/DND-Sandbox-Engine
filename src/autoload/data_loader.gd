@@ -533,6 +533,18 @@ func _validate_content(data: Dictionary, content_type: String, source: String) -
 	if content_type == "spell":
 		_curate_spell_effects(data)
 	if content_type == "monster":
+		var language_error := CommunicationRules.definition_languages_error(data)
+		if not language_error.is_empty():
+			_load_errors.append("%s in %s" % [language_error, source])
+			return false
+		var influence_error := InfluenceRules.definition_error(data)
+		if not influence_error.is_empty():
+			_load_errors.append("%s in %s" % [influence_error, source])
+			return false
+		var insight_search_error := InsightSearchRules.definition_error(data)
+		if not insight_search_error.is_empty():
+			_load_errors.append("%s in %s" % [insight_search_error, source])
+			return false
 		_curate_monster_data(data)
 	if content_type == "item" and data.get("type", "") == "weapon":
 		FighterRules.curate_weapon(data)

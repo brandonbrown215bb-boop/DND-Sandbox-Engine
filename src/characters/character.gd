@@ -395,6 +395,8 @@ var movement_speeds_feet: Dictionary = {"climb": 0, "swim": 0, "fly": 0}
 var proficiency_bonus: int = 2
 
 ## Proficiencies.
+var known_languages: Array[String] = []
+var known_recollections: Dictionary = {}
 var saving_throw_proficiencies: Array[String] = []
 var skill_proficiencies: Array[String] = []
 var tool_proficiencies: Array[String] = []
@@ -1749,6 +1751,7 @@ func make_saving_throw_result(ability: String, advantage: bool = false, disadvan
 	var base_mod := ability_scores.get_ability_modifier(ability)
 	if is_proficient_in_save(ability):
 		base_mod += proficiency_bonus
+	base_mod += CoverRules.save_bonus(ability, decisions)
 	base_mod += AuraRules.saving_throw_bonus(self)
 	base_mod += TemporaryHPRules.bonus(self, "save_bonus") + AuraProtectionRules.bonus(self, "save_bonus")
 	base_mod += inventory.magic_item_saving_bonus(character_id)
@@ -2698,6 +2701,8 @@ func to_dict() -> Dictionary:
 		"proficiency_bonus": proficiency_bonus,
 		"saving_throw_proficiencies": saving_throw_proficiencies,
 		"skill_proficiencies": skill_proficiencies,
+		"known_languages": known_languages.duplicate(),
+		"known_recollections": known_recollections.duplicate(true),
 		"tool_proficiencies": tool_proficiencies.duplicate(),
 		"creation_choices": creation_choices.duplicate(true),
 		"origin_feat": origin_feat,
@@ -2833,6 +2838,10 @@ func from_dict(data: Dictionary) -> void:
 		saving_throw_proficiencies.append(str(val))
 
 	skill_proficiencies.clear()
+	known_languages.clear()
+	for language in data.get("known_languages", []):
+		known_languages.append(str(language))
+	known_recollections = data.get("known_recollections", {}).duplicate(true) if data.get("known_recollections", {}) is Dictionary else {}
 	tool_proficiencies.assign(data.get("tool_proficiencies", []))
 	creation_choices = data.get("creation_choices", {}).duplicate(true)
 	if creation_choices.has("ability_generation") and AbilityScores.saved_generation_error(data).is_empty():
@@ -3073,7 +3082,7 @@ func saving_throw_test_to_dc(ability: String, dc: int, advantage: bool = false, 
 	if not bool(result.get("auto_failed", false)) and total < dc and has_feature("fighter_indomitable") and fighter_training.get("auto_indomitable", true) and use_feature("fighter_indomitable"):
 		var initial_replaced := bool(result.get("roll_token_replaced", false))
 		var initial_token_id := str(result.get("roll_token_id", ""))
-		result = make_saving_throw_result(ability, advantage, disadvantage)
+		result = make_saving_throw_result(ability, advantage, disadvantage, {"cover_source": decisions.cover_source, "spell_visibility": decisions.get("spell_visibility", {})} if decisions.has("cover_source") else {})
 		result["modifier"] = int(result.get("modifier", 0)) + level
 		result["total"] = int(result.get("total", 0)) + level
 		result["raw_total"] = int(result.get("raw_total", 0)) + level
@@ -3086,7 +3095,7 @@ func saving_throw_test_to_dc(ability: String, dc: int, advantage: bool = false, 
 	if not bool(result.get("auto_failed", false)) and total < dc and has_feature("monk_disciplined_survivor") and spend_focus_points(1):
 		var initial_replaced := bool(result.get("roll_token_replaced", false))
 		var initial_token_id := str(result.get("roll_token_id", ""))
-		result = make_saving_throw_result(ability, advantage, disadvantage)
+		result = make_saving_throw_result(ability, advantage, disadvantage, {"cover_source": decisions.cover_source, "spell_visibility": decisions.get("spell_visibility", {})} if decisions.has("cover_source") else {})
 		total = int(result.get("total", 0))
 		result["disciplined_survivor_used"] = true
 		if initial_replaced:

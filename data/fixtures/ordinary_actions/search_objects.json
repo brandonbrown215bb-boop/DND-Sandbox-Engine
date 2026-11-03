@@ -1,5 +1,8 @@
 [
   {"id":"fixture:concealed_cache", "name":"Concealed cache", "kind":"loose", "position":[-1,0], "hp":5, "max_hp":5, "discovery":{"dc":15,"range_feet":5}, "contents":["potion_healing"]},
   {"id":"fixture:renamed_cache", "name":"Remote cache", "kind":"loose", "position":[2,1], "hp":5, "max_hp":5, "discovery":{"dc":15,"range_feet":5}, "contents":["potion_healing"]},
-  {"id":"fixture:secret_door", "name":"Concealed door", "kind":"door", "position":[1,-1], "hp":10, "max_hp":10, "open":false, "locked":false, "discovery":{"dc":15,"range_feet":5}, "contents":[]}
+  {"id":"fixture:secret_door", "name":"Concealed door", "kind":"door", "position":[1,-1], "hp":10, "max_hp":10, "open":false, "locked":false, "discovery":{"dc":15,"range_feet":5}, "contents":[]},
+  {"id":"fixture:renamed_rattle", "name":"Concealed rattling box", "kind":"container", "position":[1,0], "hp":10, "max_hp":10, "open":false, "locked":true, "lockable":true, "break_dc":1000, "discovery":{"dc":15,"range_feet":30,"sense":"hearing","noise":{"volume":"whisper","range_feet":10}}, "interaction_noise":{"force_open":{"volume":"loud","range_feet":30}}, "contents":[]},
+  {"id":"fixture:renamed_remains", "name":"Recent remains", "kind":"remains", "position":[0,0], "hp":10, "max_hp":10, "remains":"intact", "body_creature_type":"humanoid", "size":"Medium", "preserved_until":0, "medical_search":{"dc":15,"range_feet":60,"kind":"cause_of_death","recent_until_seconds":99999999,"information":"A narrow puncture wound caused the death."}, "contents":[]},
+  {"id":"fixture:renamed_tracks", "name":"Unfamiliar tracks", "kind":"loose", "position":[1,0], "hp":1, "max_hp":1, "tracks_search":{"dc":15,"range_feet":5,"kind":"tracks","information":"Fresh bootprints head toward the eastern passage."}, "contents":[]}
 ]

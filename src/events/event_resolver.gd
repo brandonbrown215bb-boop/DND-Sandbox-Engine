@@ -178,7 +178,7 @@ static func ability_check_roll_mode(character: Character, ability: String, skill
 	if character != null and character.has_feature("champion_remarkable_athlete") and ability.to_upper() == "STR" and skill == "Athletics":
 		has_advantage = true
 		contributors.append({"source_kind": "native", "source_id": "champion_remarkable_athlete", "mode": "advantage", "status": "active"})
-	if bool(context.get("target_charmed_by_actor", false)) and (ability.to_upper() == "CHA" or skill in ["Persuasion", "Deception", "Intimidation", "Performance"]):
+	if bool(context.get("target_charmed_by_actor", false)) and (bool(context.get("influence_action", false)) or ability.to_upper() == "CHA" or skill in ["Persuasion", "Deception", "Intimidation", "Performance"]):
 		has_advantage = true
 		contributors.append({"source_kind": "native", "source_id": "charmed_social", "mode": "advantage", "status": "active"})
 	if has_disadvantage:
@@ -186,6 +186,13 @@ static func ability_check_roll_mode(character: Character, ability: String, skill
 	if character != null and CombatAction.condition_rule("poisoned", "check_disadvantage") and character.has_condition("poisoned"):
 		has_disadvantage = true
 		contributors.append({"source_kind": "native", "source_id": "poisoned", "mode": "disadvantage", "status": "active"})
+	if bool(context.get("influence_action", false)):
+		if context.get("influence_attitude") == "friendly":
+			has_advantage = true
+			contributors.append({"source_kind":"world", "source_id":"friendly_attitude", "mode":"advantage", "status":"active"})
+		elif context.get("influence_attitude") == "hostile":
+			has_disadvantage = true
+			contributors.append({"source_kind":"world", "source_id":"hostile_attitude", "mode":"disadvantage", "status":"active"})
 	if character != null and CombatAction.condition_rule("frightened", "check_disadvantage_in_sight") and character.has_condition("frightened") and not bool(context.get("frightened_source_out_of_sight", false)):
 		has_disadvantage = true
 		contributors.append({"source_kind": "native", "source_id": "frightened", "mode": "disadvantage", "status": "active"})

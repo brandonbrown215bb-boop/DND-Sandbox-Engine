@@ -15,6 +15,8 @@ var caster: Character
 var ready_release_token := ""
 var ready_release_guard: Callable
 var ready_action_paid := false
+## Exact native effect-sound host supplied only by ReadySpellRules.
+var ready_sound_host := false
 var material_components_paid := false
 var ready_target_identities: Array = []
 var invocation_id := ""
@@ -135,6 +137,12 @@ var damage_dealt := 0
 var damage_receipts: Array[Dictionary] = []
 ## Published only after the cast and its area effects have settled.
 var completed_cast_facts: Dictionary = {}
+var effect_noise_published := false
+var effect_noise_source_id := ""
+var effect_noise_source_kind := ""
+var effect_noise_source_position := Vector2i.ZERO
+var effect_noise_source_plane := ""
+var effect_noise_source: Variant
 var area_source_id := ""
 var restrained_targets: Array = []
 var initial_targets: Dictionary = {}

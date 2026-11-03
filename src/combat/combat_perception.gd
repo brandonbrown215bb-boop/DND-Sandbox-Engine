@@ -144,7 +144,7 @@ static func weapon_decisions(grid: HexGrid, observer, target, decisions: Diction
 	if origin == null: origin = _position(actual, grid)
 	if destination == null: destination = _position(target, grid)
 	if grid != null and origin is Vector2i and destination is Vector2i:
-		result["weapon_visibility"] = {"grid":grid, "caster_position":origin, "target_position":destination, "observer":actual}
+		result["weapon_visibility"] = {"grid":grid, "caster_position":origin, "target_position":destination, "observer":actual, "effect_plane":PhysicalFactsRules.get_plane(actual, {"plane":grid.cover_plane})}
 	return result
 
 

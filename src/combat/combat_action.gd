@@ -1451,7 +1451,7 @@ static func resolve_weapon_attack(attacker: Character, target_entity, weapon_dat
 		var observer: Variant = visibility.get("observer", attacker)
 		var origin: Vector2i = visibility["caster_position"]
 		var destination: Vector2i = visibility["target_position"]
-		if not Targeting.has_line_of_sight(origin, destination, grid) or not CombatPerception.can_locate_target(observer, target_entity, origin, destination, grid):
+		if CoverRules.blocks_target(origin, destination, grid) or not Targeting.has_line_of_sight(origin, destination, grid) or not CombatPerception.can_locate_target(observer, target_entity, origin, destination, grid):
 			return {"hit": false, "refused": true, "message": "The target's location is unknown or obstructed."}
 		weapon_data = weapon_data.duplicate(true)
 		weapon_data["attack_distance"] = HexUtils.get_distance(origin, destination)
@@ -1590,6 +1590,8 @@ static func resolve_weapon_attack(attacker: Character, target_entity, weapon_dat
 	elif target_entity is Dictionary:
 		target_ac = SpellEffects.effective_ac(target_entity, int(target_entity.get("armor_class", 10)) + (2 if has_condition(target_entity, "shield_of_faith") else 0))
 
+	target_ac += CoverRules.bonus(reaction_decisions, weapon_data)
+
 	# Roll attack
 	var helped_attack := consume_attack_help(target_entity, attacker)
 	advantage = advantage or helped_attack
@@ -1722,7 +1724,7 @@ static func _settle_weapon_attack_context(context: Dictionary) -> Dictionary:
 		var shield_payment := SpellPermissionRules.spend_reaction(target_entity, "shield", reaction_decisions) if target_entity.reaction_available and _reaction_accepted("shield", reaction_decisions) else {}
 		if not shield_payment.is_empty():
 			target_entity.add_condition("shield", 1)
-			target_ac = target_entity.get_ac()
+			target_ac = target_entity.get_ac() + CoverRules.bonus(reaction_decisions, weapon_data)
 			is_hit = attack_result["total"] >= target_ac
 			reaction_msg = "[color=cyan]%s casts Shield as a reaction! AC increases to %d.[/color]\n" % [target_entity.character_name, target_ac]
 			var shield_ward: Array = shield_payment.get("ward_events", [])
@@ -2429,7 +2431,8 @@ static func validate_spell_target(caster: Character, target_entity, spell_data: 
 		var observer: Variant = visibility.get("observer", caster)
 		var here: Vector2i = visibility.get("caster_position", Vector2i.ZERO)
 		var there: Vector2i = visibility.get("target_position", Vector2i.ZERO)
-		if not Targeting.has_line_of_sight(here, there, grid) or not CombatPerception.can_locate_target(observer, target_entity, here, there, grid):
+		var effect_origin: Vector2i = visibility.get("effect_origin", here)
+		if not Targeting.has_line_of_effect(effect_origin, there, grid) or not CombatPerception.can_locate_target(observer, target_entity, here, there, grid):
 			return {"success": false, "message": "The target's location is unknown or obstructed."}
 		if bool(spell_data.get("requires_target_sight", false)) and not CombatPerception.can_see_target(observer, target_entity, here, there, grid):
 			return {"success": false, "message": "%s requires a target you can see." % spell_data.get("name", "This spell")}

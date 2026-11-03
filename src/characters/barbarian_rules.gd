@@ -158,6 +158,7 @@ static func roll_monster_save_result(target: Dictionary, ability: String, source
 	var scores: Dictionary = target.get("ability_scores", {})
 	var bonus := int(target.get("saving_throw_bonuses", {}).get(ability, AbilityScores.get_modifier(int(scores.get(ability, 10)))))
 	var exhaustion := int(target.get("exhaustion_level", target.get("conditions", {}).get("exhaustion", 0)))
+	bonus += CoverRules.save_bonus(ability, decisions)
 	bonus -= exhaustion * 2
 	if CombatAction.save_auto_fails(target, ability):
 		return {

@@ -27,7 +27,7 @@ static func cast_with_save_exit(state: Dictionary, caster: Character, spell_id: 
 	var decisions: Dictionary = receipt.get("decisions", {})
 	result = await SpellCastResults._settle_save_exit(host, target, spell, decisions, [], host.slot_level_used, int(receipt.get("distance", 0)), result)
 	if result.get("success", false):
-		_finish_room_cast(state, caster, spell, target, party, str(receipt.get("component", "")), str(receipt.get("previous_spell", "")), str(receipt.get("previous_source", "")), result)
+		_finish_room_cast(state, caster, spell, target, party, str(receipt.get("component", "")), str(receipt.get("previous_spell", "")), str(receipt.get("previous_source", "")), result, host)
 	return result
 
 ## Existing room spell settlement with the combat factory's transient selections.
@@ -94,23 +94,33 @@ static func _cast(state: Dictionary, caster: Character, spell: Dictionary, targe
 	host.spell = spell
 	host.ground_room = state
 	host.grid = grid
+	host.spell_origin = origin
+	host.target_coord = destination
+	host.target_type = str(spell.get("target", "single"))
+	host.effect_noise_source_position = origin
+	host.effect_noise_source_plane = str(from.plane)
 	host.choose_save_exit = choose_save_exit
 	for member: Character in party:
 		if not ContainmentRules.relation(state, "character", member.character_id).is_empty(): continue
 		var member_position: Variant = positions.get(member.character_id, null)
 		if member_position is Array and member_position.size() >= 2:
 			host.players.append({"character": member, "hex_position": LocalRoomRules.coord(member_position), "is_alive": member.is_alive})
+	var target_noise_error := CombatNoiseRules.capture_target_origin(host)
+	if not target_noise_error.is_empty(): return LocalRoomRules.failure(target_noise_error)
+	if not CombatNoiseRules.spell_host_error(spell, host).is_empty(): return LocalRoomRules.failure(CombatNoiseRules.spell_host_error(spell, host))
+	if str(spell.get("effect_noise", {}).get("origin", "caster")) == "target" and host.effect_noise_source != target:
+		return LocalRoomRules.failure("Room target-origin sound must use the exact selected target.")
 	var decisions := {"cast_context": host, "grid": grid, "players": host.players, "monsters": host.monsters}
 	var result := CombatAction.resolve_spell(caster, target, spell, true, decisions, [], 0, distance, host)
 	if result.has("save_exit_request"):
 		result["_room_exit_receipt"] = {"host": host, "decisions": decisions, "distance": distance, "component": component, "previous_spell": previous_spell, "previous_source": previous_source}
 		return result
 	if not result.get("success", false): return result
-	_finish_room_cast(state, caster, spell, target, party, component, previous_spell, previous_source, result)
+	_finish_room_cast(state, caster, spell, target, party, component, previous_spell, previous_source, result, host)
 	return result
 
 
-static func _finish_room_cast(state: Dictionary, caster: Character, spell: Dictionary, target, party: Array, component: String, previous_spell: String, previous_source: String, result: Dictionary) -> void:
+static func _finish_room_cast(state: Dictionary, caster: Character, spell: Dictionary, target, party: Array, component: String, previous_spell: String, previous_source: String, result: Dictionary, cast: SpellCastContext) -> void:
 	if bool(spell.get("material_component_consumed", false)) and not component.is_empty(): caster.inventory.take_instance(component, "destruction")
 	if bool(spell.get("concentration", false)):
 		LocalRoomAreas.remove_concentration(state, caster.character_id, previous_spell, previous_source)
@@ -118,3 +128,4 @@ static func _finish_room_cast(state: Dictionary, caster: Character, spell: Dicti
 		caster.concentrating_on = {"spell_id": spell["id"], "effect_source": result["effect_cast"]["source_id"], "targets": [target]}
 	SpellEffects.reconcile(party, party)
 	result["seconds"] = 6
+	CombatNoiseRules.publish_room_spell_effect(state, caster, party, cast.grid, spell, cast, result)

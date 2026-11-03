@@ -8,6 +8,7 @@ static func context(state: CombatState, actor: Character, spell: Dictionary) -> 
 	cast.divine_intervention = false
 	cast.divine_intervention_wish = false
 	cast.action_id = "ready"
+	cast.ready_sound_host = true
 	var cast_ref: WeakRef = weakref(cast)
 	cast.reset_pending = func(_flags: int): pass
 	cast.publish_spell = func(value: Dictionary):
@@ -197,6 +198,10 @@ static func release(state: CombatState, record: Dictionary) -> Dictionary:
 	# deliberately not tested again: the last slot/use can already be spent.
 	if not await SpellCastPreparation.validate_and_choose(cast) or not await SpellCastPreparation.choose_target_options(cast): return {"status":"refused"}
 	if not targets_still_valid(state, cast): return {"status":"stale"}
+	var sound_source_error := CombatNoiseRules.capture_target_origin(cast)
+	if not sound_source_error.is_empty():
+		state.hud.add_log(sound_source_error)
+		return {"status":"stale"}
 	if subject != null and str(cast.spell.get("target", "single")) not in ["area", "cone", "point", "self"]:
 		var current_position: Variant = CombatPerception._position(subject, state.hex_grid)
 		if current_position != coord: return {"status":"stale"}

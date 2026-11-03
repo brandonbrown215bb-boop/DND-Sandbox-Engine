@@ -1,0 +1,333 @@
+[
+  {
+    "id": "fixture:gesture_sentry",
+    "name": "Gesture sentry",
+    "hit_points": "100",
+    "armor_class": 10,
+    "speed": 6,
+    "creature_type": "humanoid",
+    "size": "medium",
+    "languages": ["Common", "Goblin"],
+    "ability_scores": {
+      "STR": 10,
+      "DEX": 1,
+      "CON": 10,
+      "INT": 18,
+      "WIS": 10,
+      "CHA": 10
+    },
+    "attacks": [],
+    "insight_search": {
+      "dc": 12,
+      "kind": "intent_emotion",
+      "information": "Its gaze keeps returning to the sealed gate; it is anxious to protect someone behind it."
+    },
+    "influence": {
+      "attitude": "indifferent",
+      "manipulates_objects": true,
+      "requests": [
+        {
+          "id": "gate",
+          "label": "Open the gate",
+          "outcome": {
+            "object_id": "fixture:influence_gate",
+            "action": "open"
+          },
+          "approaches": [
+            {
+              "id": "greeting",
+              "label": "Offer the ritual greeting",
+              "skill": "Performance",
+              "disposition": "willing",
+              "reason": "The creature enjoys the greeting and wants to welcome its performer."
+            },
+            {
+              "id": "threat",
+              "label": "Make a threatening gesture",
+              "skill": "Intimidation",
+              "disposition": "hesitant",
+              "reason": "The creature fears an assault but still values its post."
+            },
+            {
+              "id": "mockery",
+              "label": "Mock the oath",
+              "skill": "Performance",
+              "disposition": "unwilling",
+              "reason": "Abandoning the post for mockery is repugnant to the creature."
+            }
+          ]
+        },
+        {
+          "id": "close_gate",
+          "label": "Close the gate",
+          "outcome": {
+            "object_id": "fixture:influence_gate",
+            "action": "close"
+          },
+          "approaches": [
+            {
+              "id": "greeting",
+              "label": "Offer the ritual greeting",
+              "skill": "Performance",
+              "disposition": "willing",
+              "reason": "The creature enjoys the greeting and wants to welcome its performer."
+            },
+            {
+              "id": "threat",
+              "label": "Make a threatening gesture",
+              "skill": "Intimidation",
+              "disposition": "hesitant",
+              "reason": "The creature fears an assault but still values its post."
+            },
+            {
+              "id": "mockery",
+              "label": "Mock the oath",
+              "skill": "Performance",
+              "disposition": "unwilling",
+              "reason": "Abandoning the post for mockery is repugnant to the creature."
+            }
+          ]
+        },
+        {
+          "id": "latch",
+          "label": "Open the latch box",
+          "outcome": {
+            "object_id": "fixture:influence_latch",
+            "action": "open"
+          },
+          "approaches": [
+            {
+              "id": "greeting",
+              "label": "Offer the ritual greeting",
+              "skill": "Performance",
+              "disposition": "willing",
+              "reason": "The creature enjoys the greeting and wants to welcome its performer."
+            },
+            {
+              "id": "threat",
+              "label": "Make a threatening gesture",
+              "skill": "Intimidation",
+              "disposition": "hesitant",
+              "reason": "The creature fears an assault but still values its post."
+            },
+            {
+              "id": "mockery",
+              "label": "Mock the oath",
+              "skill": "Performance",
+              "disposition": "unwilling",
+              "reason": "Abandoning the post for mockery is repugnant to the creature."
+            }
+          ]
+        }
+      ]
+    },
+    "ai_behavior": "aggressive"
+  },
+  {
+    "id": "fixture:renamed_gesture_sentry",
+    "name": "Renamed gesture sentry",
+    "hit_points": "100",
+    "armor_class": 10,
+    "speed": 6,
+    "creature_type": "humanoid",
+    "size": "medium",
+    "ability_scores": {
+      "STR": 10,
+      "DEX": 1,
+      "CON": 10,
+      "INT": 18,
+      "WIS": 10,
+      "CHA": 10
+    },
+    "attacks": [],
+    "insight_search": {
+      "dc": 30,
+      "kind": "intent_emotion",
+      "information": "Its hands hover near its weapon; it expects violence, but has not decided to strike."
+    },
+    "influence": {
+      "attitude": "indifferent",
+      "manipulates_objects": true,
+      "requests": [
+        {
+          "id": "gate",
+          "label": "Open the gate",
+          "outcome": {
+            "object_id": "fixture:influence_gate",
+            "action": "open"
+          },
+          "approaches": [
+            {
+              "id": "greeting",
+              "label": "Offer the ritual greeting",
+              "skill": "Performance",
+              "disposition": "willing",
+              "reason": "The creature enjoys the greeting and wants to welcome its performer."
+            },
+            {
+              "id": "threat",
+              "label": "Make a threatening gesture",
+              "skill": "Intimidation",
+              "disposition": "hesitant",
+              "reason": "The creature fears an assault but still values its post."
+            },
+            {
+              "id": "mockery",
+              "label": "Mock the oath",
+              "skill": "Performance",
+              "disposition": "unwilling",
+              "reason": "Abandoning the post for mockery is repugnant to the creature."
+            }
+          ]
+        },
+        {
+          "id": "close_gate",
+          "label": "Close the gate",
+          "outcome": {
+            "object_id": "fixture:influence_gate",
+            "action": "close"
+          },
+          "approaches": [
+            {
+              "id": "greeting",
+              "label": "Offer the ritual greeting",
+              "skill": "Performance",
+              "disposition": "willing",
+              "reason": "The creature enjoys the greeting and wants to welcome its performer."
+            },
+            {
+              "id": "threat",
+              "label": "Make a threatening gesture",
+              "skill": "Intimidation",
+              "disposition": "hesitant",
+              "reason": "The creature fears an assault but still values its post."
+            },
+            {
+              "id": "mockery",
+              "label": "Mock the oath",
+              "skill": "Performance",
+              "disposition": "unwilling",
+              "reason": "Abandoning the post for mockery is repugnant to the creature."
+            }
+          ]
+        },
+        {
+          "id": "latch",
+          "label": "Open the latch box",
+          "outcome": {
+            "object_id": "fixture:influence_latch",
+            "action": "open"
+          },
+          "approaches": [
+            {
+              "id": "greeting",
+              "label": "Offer the ritual greeting",
+              "skill": "Performance",
+              "disposition": "willing",
+              "reason": "The creature enjoys the greeting and wants to welcome its performer."
+            },
+            {
+              "id": "threat",
+              "label": "Make a threatening gesture",
+              "skill": "Intimidation",
+              "disposition": "hesitant",
+              "reason": "The creature fears an assault but still values its post."
+            },
+            {
+              "id": "mockery",
+              "label": "Mock the oath",
+              "skill": "Performance",
+              "disposition": "unwilling",
+              "reason": "Abandoning the post for mockery is repugnant to the creature."
+            }
+          ]
+        }
+      ]
+    },
+    "plane": "ethereal",
+    "free_hands": 0,
+    "ai_behavior": "aggressive"
+  },
+  {
+    "id": "fixture:lever_monstrosity",
+    "name": "Lever monstrosity",
+    "hit_points": "100",
+    "armor_class": 10,
+    "speed": 6,
+    "creature_type": "monstrosity",
+    "size": "medium",
+    "languages": ["Common"],
+    "ability_scores": {
+      "STR": 10,
+      "DEX": 1,
+      "CON": 10,
+      "INT": 18,
+      "WIS": 10,
+      "CHA": 10
+    },
+    "attacks": [],
+    "insight_search": {
+      "dc": 20,
+      "kind": "intent_emotion",
+      "information": "It is guarding the latch because it fears punishment if the gate remains closed."
+    },
+    "influence": {
+      "attitude": "indifferent",
+      "manipulates_objects": true,
+      "requests": [
+        {
+          "id": "gate",
+          "label": "Open the gate",
+          "outcome": {
+            "object_id": "fixture:influence_gate",
+            "action": "open"
+          },
+          "approaches": [
+            {
+              "id": "coax",
+              "label": "Offer a calming gesture",
+              "skill": "Animal Handling",
+              "disposition": "hesitant",
+              "reason": "The creature is trained to work the latch but is wary of strangers."
+            }
+          ]
+        },
+        {
+          "id": "close_gate",
+          "label": "Close the gate",
+          "outcome": {
+            "object_id": "fixture:influence_gate",
+            "action": "close"
+          },
+          "approaches": [
+            {
+              "id": "coax",
+              "label": "Offer a calming gesture",
+              "skill": "Animal Handling",
+              "disposition": "hesitant",
+              "reason": "The creature is trained to work the latch but is wary of strangers."
+            }
+          ]
+        },
+        {
+          "id": "latch",
+          "label": "Open the latch box",
+          "outcome": {
+            "object_id": "fixture:influence_latch",
+            "action": "open"
+          },
+          "approaches": [
+            {
+              "id": "coax",
+              "label": "Offer a calming gesture",
+              "skill": "Animal Handling",
+              "disposition": "hesitant",
+              "reason": "The creature is trained to work the latch but is wary of strangers."
+            }
+          ]
+        }
+      ]
+    },
+    "ai_behavior": "aggressive"
+  }
+]

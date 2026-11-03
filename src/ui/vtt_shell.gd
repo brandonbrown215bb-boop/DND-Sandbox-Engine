@@ -359,6 +359,7 @@ func _show_inspector(character: Character) -> void:
 	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	box.add_child(title)
 	var info := Label.new()
+	info.name = "CharacterInfo"
 	info.size.x = 176
 	var visible_conditions: Array[String] = []
 	for condition in character.conditions:
@@ -367,6 +368,9 @@ func _show_inspector(character: Character) -> void:
 	info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	if character.get_max_focus_points() > 0:
 		info.text += "\nFocus %d / %d" % [character.get_focus_points(), character.get_max_focus_points()]
+	if _combat_scene != null:
+		var private_clues: Array[String] = InsightSearchRules.observer_information(LocalRoomCombat.room(), character)
+		if not private_clues.is_empty(): info.text += "\n\nInsight field notes\n" + "\n".join(private_clues)
 	box.add_child(info)
 	var sheet := Button.new()
 	sheet.text = "Character sheet"

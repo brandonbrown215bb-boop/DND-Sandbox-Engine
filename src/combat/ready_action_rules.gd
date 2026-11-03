@@ -53,7 +53,10 @@ func begin(state: CombatState, actor: Character, trigger: Dictionary, response: 
 	if response.get("kind", "") not in RESPONSES: return {"success":false, "message":"Choose a supported Ready response."}
 	if response.kind == "spell" and not state.turn_budget.can_spend("magic_action"): return {"success":false, "message":"Readying a spell casts it now; a restricted extra action cannot supply that casting."}
 	if response.kind == "ordinary" and str(response.get("action", "")) not in OrdinaryActionRules.ACTIONS.filter(func(a): return a != "ready"): return {"success":false, "message":"That ordinary action cannot be held."}
-	if response.kind == "ordinary" and response.get("action", "") == "help_check" and not CheckHelpRules.owns(actor, str(response.get("proficiency_kind", "")), str(response.get("proficiency", ""))): return {"success":false, "message":"Help needs one of your actual proficiencies."}
+	if response.kind == "ordinary" and response.get("action", "") == "help_check":
+		if not CheckHelpRules.owns(actor, str(response.get("proficiency_kind", "")), str(response.get("proficiency", ""))): return {"success":false, "message":"Help needs one of your actual proficiencies."}
+		if response.get("help_mode", "physical") not in ["physical", "verbal"]: return {"success":false, "message":"Choose physical or verbal Help."}
+		response["help_mode"] = str(response.get("help_mode", "physical"))
 	if response.kind == "attack" and actor.class_id == "familiar": return {"success":false, "message":"A familiar cannot Ready an attack."}
 	if trigger.has("at_hex") and not state.hex_grid.has_tile(Vector2i(trigger.at_hex[0], trigger.at_hex[1])): return {"success":false, "message":"The trigger space is not on this board."}
 	var turn := CombatAction.active_turn_serial
@@ -252,6 +255,7 @@ func weapon(state: CombatState, record: Dictionary) -> Dictionary:
 
 
 func attack_targets(state: CombatState, record: Dictionary, profile: Dictionary) -> Array:
+	LocalRoomCombat.bind_grid(state.hex_grid)
 	var coords := []
 	if profile.is_empty(): return coords
 	var actor: Character = record.actor
@@ -261,7 +265,7 @@ func attack_targets(state: CombatState, record: Dictionary, profile: Dictionary)
 	for enemy in state.monster_entities:
 		var position: Vector2i = enemy.hex_position
 		if not enemy.get("is_alive", false) or CombatAction.is_charmed_by(actor, enemy): continue
-		if HexUtils.get_distance(origin, position) > reach or not Targeting.has_line_of_sight(origin, position, state.hex_grid): continue
+		if HexUtils.get_distance(origin, position) > reach or not Targeting.has_line_of_effect(origin, position, state.hex_grid): continue
 		if not CombatPerception.can_locate_target(actor, enemy, origin, position, state.hex_grid): continue
 		if state._spell_zones()._antilife_shell_blocks_melee(actor, origin, position, profile): continue
 		coords.append(position)
@@ -331,13 +335,20 @@ func release_movement(state: CombatState, record: Dictionary) -> Dictionary:
 func release_ordinary(state: CombatState, record: Dictionary) -> Dictionary:
 	var actor: Character = record.actor
 	var action := str(record.response.action)
-	if action == "utilize":
-		var targets := CombatUtilizeRules.targets(state, actor)
-		var position: Variant = await pick(state, record, targets.keys(), "%s: select the room object for readied Utilize." % actor.character_name)
+	if action in ["utilize", "study", "influence"]:
+		var targets := StudyRules.combat_targets(state, actor) if action == "study" else CombatUtilizeRules.targets(state, actor)
+		if action == "influence": targets = InfluenceRules.targets(state, actor)
+		var position: Variant = await pick(state, record, targets.keys(), "%s: select the room source for readied %s." % [actor.character_name, action.capitalize()])
 		if position == null: return {"status":"ignored"}
-		var object: Dictionary = targets.get(position, {})
-		if not valid(state, record) or object.is_empty() or not CombatUtilizeRules.error(state, actor, LocalRoomCombat.room(), object, position).is_empty(): return {"status":"stale"}
-		var result := await CombatUtilizeRules.request(state, actor, object, func(): return valid(state, record), func(): return pay_reaction(state, record))
+		var selected: Variant = targets.get(position, {} if action == "utilize" else [])
+		if not valid(state, record) or selected.is_empty(): return {"status":"stale"}
+		if action == "utilize" and not CombatUtilizeRules.error(state, actor, LocalRoomCombat.room(), selected, position).is_empty(): return {"status":"stale"}
+		var current := func(): return valid(state, record)
+		var pay := func(): return pay_reaction(state, record)
+		var result: Dictionary
+		if action == "influence": result = await InfluenceRules.request(state, actor, selected, position, current, pay)
+		elif action == "study": result = await StudyRules.combat_request(state, actor, selected, position, current, pay)
+		else: result = await CombatUtilizeRules.request(state, actor, selected, current, pay)
 		if result.has("message"): state.hud.add_log(result.message)
 		if result.get("status") == "resolved": await state._completed_player_action(actor, result.get("noise", {}))
 		return result
@@ -345,14 +356,19 @@ func release_ordinary(state: CombatState, record: Dictionary) -> Dictionary:
 	var coord: Variant = null
 	var selected_target: Variant = null
 	if action in ["help_attack", "stabilize", "help_check"]:
-		var coords := attack_targets(state, record, {"range":1}) if action == "help_attack" else state.player_entities.filter(func(p): return p.get("character") != actor and not p.character.is_dead() and (action == "help_check" or (p.character.is_downed() and not p.character.is_stable)) and HexUtils.get_distance(origin, p.hex_position) <= 1).map(func(p): return p.hex_position)
+		var verbal_help: bool = action == "help_check" and str(record.response.get("help_mode", "physical")) == "verbal"
+		var target_range: int = 6 if verbal_help else 1
+		var coords: Array = attack_targets(state, record, {"range":1}) if action == "help_attack" else state.player_entities.filter(func(p): return p.get("character") != actor and not p.character.is_dead() and (action == "help_check" or (p.character.is_downed() and not p.character.is_stable)) and HexUtils.get_distance(origin, p.hex_position) <= target_range).map(func(p): return p.hex_position)
 		coord = await pick(state, record, coords, "%s: select the readied Help target." % actor.character_name)
 		if coord == null: return {"status":"ignored"}
 		selected_target = picked_subject
 	if not valid(state, record): return {"status":"stale"}
 	origin = owner_entity(state, actor).hex_position
 	if action in ["help_attack", "stabilize", "help_check"]:
-		if HexUtils.get_distance(origin, coord) > 1 or not Targeting.has_line_of_sight(origin, coord, state.hex_grid): return {"status":"stale"}
+		var verbal_help: bool = action == "help_check" and str(record.response.get("help_mode", "physical")) == "verbal"
+		if verbal_help:
+			if not CommunicationRules.eligibility_error(actor, selected_target, origin, coord, state.hex_grid, LocalRoomCombat.room()).is_empty(): return {"status":"stale"}
+		elif HexUtils.get_distance(origin, coord) > 1 or not Targeting.has_line_of_effect(origin, coord, state.hex_grid): return {"status":"stale"}
 		if action == "help_attack":
 			if not selected_target is Dictionary or not state.monster_entities.any(func(enemy): return is_same(enemy, selected_target)) or selected_target.get("hex_position") != coord or not selected_target.get("is_alive", false) or not CombatPerception.can_locate_target(actor, selected_target, origin, coord, state.hex_grid): return {"status":"stale"}
 		else:
@@ -376,7 +392,9 @@ func release_ordinary(state: CombatState, record: Dictionary) -> Dictionary:
 		"search": OrdinaryActionRules.search(actor, origin, state.monster_entities, state.hex_grid, state._ability_check_context(actor))
 		"help_attack":
 			selected_target["familiar_helped_by"] = actor.character_id
-		"help_check": CheckHelpRules.grant(actor, selected_target, str(record.response.proficiency_kind), str(record.response.proficiency))
+		"help_check":
+			if str(record.response.get("help_mode", "physical")) == "verbal": CheckHelpRules.grant_verbal(actor, selected_target, str(record.response.proficiency_kind), str(record.response.proficiency), origin, coord, state.hex_grid, LocalRoomCombat.room())
+			else: CheckHelpRules.grant(actor, selected_target, str(record.response.proficiency_kind), str(record.response.proficiency))
 		"stabilize":
 			var check := EventResolver.resolve_skill_check(actor, {"ability":"WIS", "skill":"Medicine", "dc":10}, {}, state._ability_check_context(actor))
 			if check.success: selected_target.stabilize()

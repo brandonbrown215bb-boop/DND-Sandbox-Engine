@@ -9,6 +9,9 @@ static func resolve(caster: Character, target_entity, spell_data: Dictionary, de
 	cast.spell = spell_data
 	cast.spell_definition_id = str(spell_data.get("id", ""))
 	cast.decisions = reaction_decisions.duplicate()
+	if cast.decisions.has("spell_visibility"):
+		cast.decisions["spell_visibility"] = cast.decisions.spell_visibility.duplicate()
+		cast.decisions.spell_visibility["effect_plane"] = CoverRules.source_plane(caster, cast.decisions.spell_visibility.get("grid"))
 	cast.observers = reaction_observers
 	cast.distance_feet = distance_feet
 	var invocation_host := owned_cast_context
@@ -16,6 +19,9 @@ static func resolve(caster: Character, target_entity, spell_data: Dictionary, de
 	if invocation_host != null and invocation_host.caster == caster and str(invocation_host.spell.get("id", "")) == cast.spell_definition_id:
 		owned_host_valid = true
 		cast.spatial_host = invocation_host
+		if cast.decisions.has("spell_visibility"):
+			cast.decisions["spell_visibility"] = cast.decisions.spell_visibility.duplicate()
+			cast.decisions.spell_visibility["effect_origin"] = invocation_host.spell_origin
 		cast.invocation_id = invocation_host.invocation_id
 		cast.action_id = invocation_host.action_id
 		cast.action_invocation_id = invocation_host.action_invocation_id
@@ -30,6 +36,8 @@ static func resolve(caster: Character, target_entity, spell_data: Dictionary, de
 	var support := SpellSupport.availability(cast.spell)
 	if not support["available"]:
 		return {"success": false, "unavailable": true, "message": support["reason"]}
+	var noise_error := CombatNoiseRules.spell_host_error(cast.spell, invocation_host if owned_host_valid else null)
+	if not noise_error.is_empty(): return {"success":false, "refused":true, "message":noise_error}
 	var aftermath_host_error := LocatedSourceEndRules.host_error(target_entity, cast.spell.get("end_aftermath", []))
 	if not aftermath_host_error.is_empty(): return {"success": false, "refused": true, "message": aftermath_host_error}
 	for effect in cast.spell.get("effects", []):

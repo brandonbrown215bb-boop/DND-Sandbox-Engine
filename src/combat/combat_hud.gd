@@ -116,7 +116,11 @@ func _request_check_help(owner: Character, turn: int) -> void:
 	var picked := await _request_popup_choice("Help: choose one of your proficiencies", options, labels)
 	if picked.is_empty() or active_character != owner or turn != CombatAction.active_turn_serial: return
 	var choice: Dictionary = owned[int(picked)]
-	action_selected.emit("ordinary_action", {"action":"help_check", "proficiency_kind":choice.kind, "proficiency":choice.name})
+	var modes: Array[String] = ["physical", "verbal"]
+	var mode_labels := {"physical":"Physical help", "verbal":"Verbal help"}
+	var mode := await _request_popup_choice("Help: choose assistance method", modes, mode_labels)
+	if mode.is_empty() or active_character != owner or turn != CombatAction.active_turn_serial: return
+	action_selected.emit("ordinary_action", {"action":"help_check", "proficiency_kind":choice.kind, "proficiency":choice.name, "help_mode":mode})
 
 
 func _show_ordinary_actions() -> void:
@@ -129,7 +133,7 @@ func _show_ordinary_actions() -> void:
 		menu.add_item(str(OrdinaryActionRules.LABELS[action]) + " (Action)")
 		menu.set_item_disabled(menu.item_count - 1, turn_budget != null and not turn_budget.can_spend("action"))
 		if action == "help_check" and CheckHelpRules.options(owner).is_empty(): menu.set_item_disabled(menu.item_count - 1, true)
-		if action == "search": menu.set_item_tooltip(menu.item_count - 1, "Listen for hidden creatures within 60 feet along clear rays; roll Perception against their Hide checks.")
+		if action == "search": menu.set_item_tooltip(menu.item_count - 1, "Choose Perception to find hidden creatures or Insight to read an authored intent/emotion clue.")
 	menu.id_pressed.connect(func(index: int):
 		if owner != active_character or turn != CombatAction.active_turn_serial: return
 		if OrdinaryActionRules.ACTIONS[index] == "help_check":

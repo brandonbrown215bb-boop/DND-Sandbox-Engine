@@ -10,6 +10,7 @@ var characters: Array
 var grid: HexGrid
 var hud: DungeonHUD
 var flush: Callable
+var last_action_result: Dictionary = {}
 var panel: VBoxContainer
 var actors: OptionButton
 var movement_modes: OptionButton
@@ -61,6 +62,14 @@ var save_exit_serial := 0
 var save_exit_cancel_button: Button
 var search_button: Button
 var pending_search: Dictionary = {}
+var search_sense: OptionButton
+var help_choices: OptionButton
+var help_recipients: OptionButton
+var help_modes: OptionButton
+var help_button: Button
+var study_topics: OptionButton
+var study_button: Button
+var knowledge: RichTextLabel
 
 func start(room: Dictionary, party: Array, room_grid: HexGrid, room_hud: DungeonHUD, save_callback: Callable) -> void:
 	state = room
@@ -105,6 +114,43 @@ func start(room: Dictionary, party: Array, room_grid: HexGrid, room_hud: Dungeon
 	party_row.add_child(movement_modes)
 	search_button = _add_button(party_row, "Search", _begin_search)
 	search_button.name = "RoomSearch"
+	search_sense = OptionButton.new()
+	search_sense.name = "RoomSearchSense"
+	search_sense.add_item("Look"); search_sense.set_item_metadata(0, "sight")
+	search_sense.add_item("Listen"); search_sense.set_item_metadata(1, "hearing")
+	search_sense.add_item("Medicine"); search_sense.set_item_metadata(2, "medicine")
+	search_sense.add_item("Survival"); search_sense.set_item_metadata(3, "survival")
+	party_row.add_child(search_sense)
+	search_sense.item_selected.connect(func(_index): pending_search.clear(); refresh())
+	var help_row := HFlowContainer.new()
+	panel.add_child(help_row)
+	help_choices = OptionButton.new()
+	help_choices.name = "RoomHelpProficiency"
+	help_row.add_child(help_choices)
+	help_recipients = OptionButton.new()
+	help_recipients.name = "RoomHelpRecipient"
+	for member in characters:
+		help_recipients.add_item(member.character_name)
+		help_recipients.set_item_metadata(help_recipients.item_count - 1, member)
+	help_row.add_child(help_recipients)
+	help_modes = OptionButton.new()
+	help_modes.name = "RoomHelpMode"
+	help_modes.add_item("Physical")
+	help_modes.set_item_metadata(0, "physical")
+	help_modes.add_item("Verbal")
+	help_modes.set_item_metadata(1, "verbal")
+	help_row.add_child(help_modes)
+	help_button = _add_button(help_row, "Help a check", func():
+		if help_choices.selected < 0: return
+		var choice: Dictionary = help_choices.get_item_metadata(help_choices.selected)
+		pending_search.clear()
+		pending_teleport_spell = ""
+		pending_water_area_mode = ""
+		pending_anchor_move_id = ""
+		pending_anchor_move_choice = {}
+		pending_room_creation.clear()
+		_result(CheckHelpRules.grant_room(state, actor(), help_recipients.get_item_metadata(help_recipients.selected), choice.kind, choice.name, characters, grid, str(help_modes.get_item_metadata(help_modes.selected)) == "verbal")))
+	help_button.name = "RoomHelp"
 	movement_modes.item_selected.connect(func(_index): refresh())
 	_add_button(party_row, "Room map", func():
 		if not ContainmentRules.relation(state, "character", actor().character_id).is_empty(): hud.add_log("An internal occupant cannot use the room exit.")
@@ -118,6 +164,25 @@ func start(room: Dictionary, party: Array, room_grid: HexGrid, room_hud: Dungeon
 	objects.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	party_row.add_child(objects)
 	objects.item_selected.connect(func(_index): refresh())
+	var study_row := HFlowContainer.new()
+	panel.add_child(study_row)
+	study_topics = OptionButton.new()
+	study_topics.name = "RoomStudyTopics"
+	study_topics.custom_minimum_size.x = 160
+	study_topics.fit_to_longest_item = false
+	study_topics.clip_text = true
+	study_row.add_child(study_topics)
+	study_button = _add_button(study_row, "Study", _study)
+	study_button.name = "RoomStudy"
+	knowledge = RichTextLabel.new()
+	knowledge.name = "RoomKnowledge"
+	knowledge.bbcode_enabled = false
+	knowledge.fit_content = false
+	knowledge.scroll_active = true
+	knowledge.custom_minimum_size.y = 72
+	knowledge.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	knowledge.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	panel.add_child(knowledge)
 	containment_row = HFlowContainer.new()
 	containment_row.name = "RoomContainment"
 	panel.add_child(containment_row)
@@ -357,7 +422,25 @@ func click(position: Vector2i) -> void:
 		var request := pending_search
 		pending_search = {}
 		if not is_same(request.actor, actor()) or not is_same(request.room, state): refresh(); return
-		_result(LocalRoomSearchRules.search(state, actor(), position, grid, characters))
+		if str(request.sense) in ["medicine", "survival"]:
+			var source_field := "medical_search" if str(request.sense) == "medicine" else "tracks_search"
+			var snapshots: Array = request.get("clue_sources", [])
+			for snapshot in snapshots:
+				if LocalRoomRules.coord(snapshot.position) != position: continue
+				var live := LocalRoomRules.get_object(state, str(snapshot.id))
+				var stale := live.is_empty()
+				if not stale:
+					stale = LocalRoomRules.coord(live.position) != position or live.get(source_field, {}) != snapshot.get(source_field, {})
+					stale = stale or bool(live.get("removed", false)) or int(live.get("hp", 1)) <= 0
+					if str(request.sense) == "medicine":
+						stale = stale or str(live.get("remains", "destroyed")) == "destroyed"
+						stale = stale or int(GameManager.campaign_elapsed_seconds) > int(snapshot.medical_search.get("recent_until_seconds", -1))
+					stale = stale or not ContainmentRules.relation(state, "object", str(live.id)).is_empty()
+					stale = stale or PhysicalFactsRules.get_plane(live, state) != PhysicalFactsRules.get_plane(actor(), state)
+				if stale:
+					_result(LocalRoomRules.failure("That Search clue source is stale. Choose Search again."))
+					return
+		_result(LocalRoomSearchRules.search(state, actor(), position, grid, characters, str(request.sense)))
 		return
 	if not pending_anchor_move_id.is_empty():
 		if pending_anchor_move_choice.has("vessel"):
@@ -477,6 +560,8 @@ func refresh() -> void:
 		tile.custom_properties["blocks_movement"] = not LocalRoomRules.passable(state, tile.coord)
 		tile.custom_properties["surface"] = LocalRoomRules.surface_at(state, tile.coord)
 		tile.custom_properties["blocks_sight"] = LocalRoomRules.blocks_sight(state, tile.coord)
+		tile.custom_properties["blocks_sound"] = LocalRoomRules.blocks_sound(state, tile.coord)
+		tile.custom_properties["cover"] = CoverRules.room_degree(state, tile.coord)
 		tile.custom_properties["ambient_illumination"] = state.get("ambient_light", "bright")
 		tile.custom_properties["elevation_feet"] = LocalRoomRules.elevation_feet(state, tile.coord)
 		tile.custom_properties["ceiling_feet"] = LocalRoomRules.ceiling_feet(state, tile.coord)
@@ -539,6 +624,38 @@ func refresh() -> void:
 	# Shared spells revalidate containment crossings; encounter transfer still needs S-172.
 	var occupied := ContainmentRules.active(state)
 	search_button.disabled = occupied or not actor().is_alive or CombatAction.is_incapacitated(actor()) or not pending_save_exit.is_empty()
+	var previous_help: Variant = help_choices.get_item_metadata(help_choices.selected) if help_choices.selected >= 0 else {}
+	help_choices.clear()
+	for choice in CheckHelpRules.options(actor()):
+		help_choices.add_item(str(choice.name))
+		help_choices.set_item_metadata(help_choices.item_count - 1, choice)
+		if choice == previous_help: help_choices.select(help_choices.item_count - 1)
+	help_button.disabled = search_button.disabled or help_choices.item_count == 0
+	var previous_topic := _selected(study_topics)
+	study_topics.clear()
+	var study_source := LocalRoomRules.get_object(state, _selected(objects), actor())
+	if StudyRules.object_error(study_source).is_empty():
+		for topic in study_source.get("study", []):
+			study_topics.add_item("%s (%s)" % [str(topic.question), str(topic.skill)])
+			study_topics.set_item_metadata(study_topics.item_count - 1, str(topic.id))
+			if str(topic.id) == previous_topic: study_topics.select(study_topics.item_count - 1)
+	for topic in StudyRules.recollection_topics(state):
+		var recollection_id := "recollection:%s" % str(topic.id)
+		study_topics.add_item("Recall: %s (%s)" % [str(topic.question), str(topic.skill)])
+		study_topics.set_item_metadata(study_topics.item_count - 1, recollection_id)
+		if recollection_id == previous_topic: study_topics.select(study_topics.item_count - 1)
+	study_button.disabled = search_button.disabled or study_topics.item_count == 0
+	study_topics.tooltip_text = study_topics.get_item_text(study_topics.selected) if study_topics.selected >= 0 else "Unknown: this source has no authored Study questions."
+	var learned := StudyRules.answers(state, actor())
+	var medical_learned: Array[String] = []
+	var track_clues: Array[String] = []
+	for object in state.get("objects", []):
+		if actor().character_id in object.get("medical_discovered_by", []): medical_learned.append(str(object.medical_search.information))
+		if actor().character_id in object.get("tracks_discovered_by", []): track_clues.append(str(object.tracks_search.information))
+	var knowledge_lines := learned.duplicate()
+	knowledge_lines.append_array(medical_learned)
+	knowledge_lines.append_array(track_clues)
+	knowledge.text = "Knowledge: " + "\n".join(knowledge_lines) if not knowledge_lines.is_empty() else "Knowledge: no answers learned here."
 	for row in [familiar_summon_row, familiar_presence_row, body_row, created_row, mode_row, item_lifecycle_row, aftermath_row] + containment_item_rows: row.visible = not occupied
 	if occupied and ContainmentRules.relation(state, "character", actor().character_id).is_empty() and not VesselProjectionRules.actors([actor()]).is_empty(): item_lifecycle_row.show()
 	_refresh_shared_spells()
@@ -754,7 +871,22 @@ func refresh() -> void:
 	grid.queue_redraw()
 
 func _interact(action: String, instance_id: String = "") -> void:
-	_result(LocalRoomRules.interact(state, _selected(objects), action, actor(), instance_id))
+	_result(CombatNoiseRules.room_interact(state, actor(), characters, grid, _selected(objects), action, instance_id))
+
+
+func _study() -> void:
+	if study_button.disabled: return
+	pending_search.clear()
+	pending_teleport_spell = ""
+	pending_water_area_mode = ""
+	pending_anchor_move_id = ""
+	pending_anchor_move_choice = {}
+	pending_room_creation.clear()
+	var topic_id := _selected(study_topics)
+	if topic_id.begins_with("recollection:"):
+		_result(StudyRules.room_recollection(state, actor(), topic_id.trim_prefix("recollection:"), grid, characters))
+	else:
+		_result(StudyRules.room_study(state, actor(), _selected(objects), topic_id, grid, characters))
 
 
 func _begin_search() -> void:
@@ -769,7 +901,16 @@ func _begin_search() -> void:
 	pending_anchor_move_choice = {}
 	pending_room_creation.clear()
 	refresh()
-	pending_search = {"actor":actor(), "room":state}
+	var sense := str(search_sense.get_item_metadata(search_sense.selected))
+	var clue_sources: Array = []
+	var source_field := "medical_search" if sense == "medicine" else "tracks_search"
+	if sense in ["medicine", "survival"]:
+		for object in state.get("objects", []):
+			if object.has(source_field):
+				var snapshot: Dictionary = {"id":str(object.id), "position":object.position.duplicate()}
+				snapshot[source_field] = object[source_field].duplicate(true)
+				clue_sources.append(snapshot)
+	pending_search = {"actor":actor(), "room":state, "sense":sense, "clue_sources":clue_sources}
 	var origin := LocalRoomRules.coord(state.party_positions[actor().character_id])
 	var highlights := {}
 	for position in grid.tiles:
@@ -856,6 +997,7 @@ func _refresh_shared_spells() -> void:
 
 
 func _result(result: Dictionary) -> void:
+	last_action_result = result
 	var acting_body: Character = result.get("acting_body", actor())
 	for outcome in result.get("spatial_outcomes", []) + result.get("end_turn_outcomes", []).filter(func(value): return value.get("hazard_kind", "") == "trigger_damage"):
 		hud.add_log("%s takes %d %s damage (%s)." % [acting_body.character_name, int(outcome.get("resolved", outcome.damage)), str(outcome.damage_type), str(outcome.trigger_event)])
@@ -929,6 +1071,7 @@ func _refresh_source_end_children() -> void:
 
 func stop() -> void:
 	pending_search.clear()
+	CheckHelpRules.clear_room(characters)
 	for character: Character in characters:
 		if character.condition_consequence_handler == _on_condition_consequence:
 			character.condition_consequence_handler = Callable()

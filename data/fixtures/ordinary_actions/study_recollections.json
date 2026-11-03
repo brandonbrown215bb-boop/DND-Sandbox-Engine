@@ -1,0 +1,18 @@
+{
+  "id":"study-fixture",
+  "name":"Study room memory",
+  "cells":[[0,0],[0,1],[1,0],[2,0]],
+  "walls":[],
+  "exits":[[0,0]],
+  "party_spawns":[[0,0],[1,0]],
+  "monster_spawns":[],
+  "encounter_monsters":[],
+  "objects":[],
+  "recollections":[
+    {"id":"old_oath", "question":"What promise did the wardens make?", "skill":"Arcana", "dc":15, "answer":"They promised to keep the northern road open.", "verbal_help":true},
+    {"id":"failed_memory", "question":"Who first named the hidden valley?", "skill":"History", "dc":1000, "answer":"A cartographer named Ilyra."},
+    {"id":"guarded_memory", "question":"What mark did the scouts hear about?", "skill":"Arcana", "dc":1000, "answer":"A blue crescent marks the hidden cache.", "verbal_help":true},
+    {"id":"unrelated_memory", "question":"Which plant did the scouts report?", "skill":"History", "dc":1000, "answer":"Silverleaf grows near the stream."},
+    {"id":"expired_memory", "question":"What symbol is on the old map?", "skill":"Arcana", "dc":1000, "answer":"A black star marks the buried road.", "verbal_help":true}
+  ]
+}

@@ -27,7 +27,7 @@ static func get_monster_action(monster: Dictionary, monster_coord: Vector2i, hex
 			continue
 		var p_coord: Vector2i = p.get("hex_position", Vector2i.ZERO)
 		var dist := HexUtils.get_distance(monster_coord, p_coord)
-		if not Targeting.has_line_of_sight(monster_coord, p_coord, hex_grid) or not CombatPerception.can_locate_target(monster, char_data, monster_coord, p_coord, hex_grid):
+		if not Targeting.has_line_of_effect(monster_coord, p_coord, hex_grid) or not CombatPerception.can_locate_target(monster, char_data, monster_coord, p_coord, hex_grid):
 			continue
 		if dist < min_dist:
 			min_dist = dist

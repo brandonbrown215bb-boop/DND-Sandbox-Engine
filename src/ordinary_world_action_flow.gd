@@ -88,15 +88,17 @@ static func run(h: Node, combat: CombatState, actor: Character, other: Character
 	var door := LocalRoomRules.get_object(room, "fixture:door")
 	var chest := LocalRoomRules.get_object(room, "fixture:chest")
 	combat._update_grid_entities()
+	var actor_position: Vector2i = combat.player_entities[0].hex_position
+	h._assert(CoverRules.blocks_target(actor_position, enemy.hex_position, combat.hex_grid), "S238 closed room door supplies Total Cover on the actual combat ray")
 	var result := await utilize(h, combat, actor, Vector2i(1, 0), ["Open"])
-	h._assert(door.open and not combat.turn_budget.can_spend("action") and result.menus == 1 and combat.hex_grid.is_hex_passable(Vector2i(1, 0)), "S237 Utilize opens exact persistent room door and refreshes real movement blocking with one canonical Action")
+	h._assert(door.open and not combat.turn_budget.can_spend("action") and result.menus == 1 and combat.hex_grid.is_hex_passable(Vector2i(1, 0)) and not CoverRules.blocks_target(actor_position, enemy.hex_position, combat.hex_grid), "S237/S238 Utilize opens exact persistent room door and refreshes movement and physical targeting with one canonical Action")
 	result = await utilize(h, combat, actor, Vector2i(1, 0), [])
 	h._assert(door.open and combat.turn_budget.can_spend("action"), "S237 cancelling object operation costs nothing")
 	var nonparty: Character = combat.player_entities[2].character
 	var nonparty_position: Vector2i = combat.player_entities[2].hex_position
 	combat.player_entities[2].hex_position = Vector2i.ZERO
 	result = await utilize(h, combat, nonparty, Vector2i(1, 0), ["Close"])
-	h._assert(not door.open and not room.party_positions.has(nonparty.character_id), "S237 combat-only participants use live origin without entering the durable party-position map")
+	h._assert(not door.open and not room.party_positions.has(nonparty.character_id) and CoverRules.blocks_target(actor_position, enemy.hex_position, combat.hex_grid), "S237/S238 closing the exact room door restores Total Cover without persisting a combat-only participant")
 	combat.player_entities[2].hex_position = nonparty_position
 	result = await utilize(h, combat, actor, Vector2i(0, 1), ["Take", "*"])
 	h._assert(not actor.inventory.get_instance("fixture:chest:potion").is_empty() and chest.contents.is_empty() and not combat.turn_budget.can_spend("action"), "S237 Utilize transfers the exact room item once")
@@ -162,6 +164,7 @@ static func run(h: Node, combat: CombatState, actor: Character, other: Character
 	h._p_focus(combat, other)
 	result = await choices(h, combat, func(): await combat._on_hud_action("ordinary_action", {"action":"dash"}), ["Take", "*"], Callable(), Vector2i.ZERO)
 	h._assert(result.prompts == 1 and not actor.reaction_available and not actor.inventory.get_instance("fixture:ground:potion").is_empty() and not combat.turn_budget.can_spend("action") and combat.remaining_speed > before, "S237 readied Utilize takes a real co-located object with one owning Reaction and preserves the interrupted Dash")
+	await StudyFlow.combat(h, combat, actor, other)
 	GameManager.transition_context["local_room"] = old_room
 
 
@@ -222,12 +225,20 @@ static func sound_snapshot(h: Node, combat: CombatState, source: Character, firs
 	var second: Character = combat.player_entities[2].character
 	var saved_first: Vector2i = combat.player_entities[1].hex_position
 	var saved_second: Vector2i = combat.player_entities[2].hex_position
+	var room := LocalRoomCombat.room()
+	var had_walls := room.has("walls")
+	var saved_walls: Array = room.get("walls", []).duplicate(true)
+	room["walls"] = saved_walls.duplicate(true)
 	combat.player_entities[1].hex_position = Vector2i(0, 1)
 	combat.player_entities[2].hex_position = Vector2i(2, 0)
+	# Make a complete represented partition so the test remains about the
+	# listener snapshot even after sound can route around isolated obstacles.
+	for cell in combat.hex_grid.tiles.keys():
+		if cell.x == 1 and cell != Vector2i(1, 0): room.walls.append([cell.x, cell.y])
 	door.locked = false
 	var trigger := {"event":"sound", "side":"ally", "actor_id":source.character_id}
-	# First response opens a closed door; the second owner never heard that
-	# earlier sound, even though the geometry now has an open ray.
+	# First response opens the one gap; the second owner never heard the earlier
+	# sound, even though the geometry now has an open route.
 	door.open = false
 	combat._update_grid_entities()
 	await ReadyActionFlow.declare(h, combat, first, {"kind":"ordinary", "action":"utilize"}, trigger)
@@ -253,6 +264,8 @@ static func sound_snapshot(h: Node, combat: CombatState, source: Character, firs
 	var record := source.inventory.remove_exact("fixture:chest:potion", "stow")
 	if not record.is_empty(): chest.contents.append(record)
 	chest.erase("interaction_noise")
+	if had_walls: room["walls"] = saved_walls
+	else: room.erase("walls")
 	combat.player_entities[1].hex_position = saved_first
 	combat.player_entities[2].hex_position = saved_second
 	combat._update_grid_entities()

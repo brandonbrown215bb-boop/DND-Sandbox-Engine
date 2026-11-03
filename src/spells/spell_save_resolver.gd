@@ -14,6 +14,11 @@ static func _consume_dice_policy(remaining: Dictionary, details: Dictionary) -> 
 			remaining[field] = maxi(0, int(remaining[field]) - int(applied.get("removed" if field == "remove" else "maximized", 0)))
 
 static func resolve(cast: SpellResolutionContext) -> Dictionary:
+	cast.decisions["cover_source"] = cast.spell
+	if cast.spatial_host != null:
+		var spatial: Dictionary = cast.decisions.get("spell_visibility", {}).duplicate()
+		spatial["effect_origin"] = CoverRules.effect_origin(cast.spatial_host, spatial.get("target_position", Vector2i.ZERO))
+		cast.decisions["spell_visibility"] = spatial
 	var save_ability: String = cast.spell.get("save", "DEX")
 	var save_dc := 15 if str(cast.spell.get("id", "")) == "contact_other_plane" else int(cast.spell.get("_save_dc_override", SpellPermissionRules.save_dc(cast.caster, cast.spell)))
 	var contact_patron_saved := str(cast.spell.get("id", "")) == "contact_other_plane" and cast.caster.has_feature("warlock_contact_patron")

@@ -40,7 +40,7 @@ static func validate(cast: SpellCastContext) -> bool:
 	if cast.additional_target_coord != FamiliarRules.ABSENT:
 		targets.append(cast.additional_target_coord)
 	for target in targets:
-		if not cast.grid.has_tile(target) or not Targeting.is_in_range(origin_hex, target, 1) or not Targeting.has_line_of_sight(origin_hex, target, cast.grid):
+		if not cast.grid.has_tile(target) or not Targeting.is_in_range(origin_hex, target, 1) or not Targeting.has_line_of_effect(origin_hex, target, cast.grid):
 			cast.hud.add_log("The familiar must be able to touch each target within 5 feet; no resource was spent.")
 			return false
 	cast.delivery_character = entity["character"]

@@ -53,6 +53,9 @@ static func collect_targets(cast: SpellCastContext) -> void:
 		elif cast.additional_target_coord != Vector2i(9999, 9999) and SpellCastTargeting._valid_additional_spell_target(cast, cast.target_coord, cast.additional_target_coord, cast.spell):
 			cast.targets.append(cast.additional_target_coord)
 
+	if cast.target_type in ["area", "cone"] or str(cast.spell.get("target", "")) == "cone":
+		cast.targets = cast.targets.filter(func(cell): return not CoverRules.blocks_target(CoverRules.effect_origin(cast, cell), cell, cast.grid))
+
 	if str(cast.spell.get("id", "")) == "beacon_of_hope":
 		var beacon_candidates: Array[Dictionary] = []
 		var beacon_origin: Vector2i = cast.players[cast.player_index].get("hex_position", Vector2i.ZERO)
@@ -263,7 +266,8 @@ static func _creature_at_coord_matches_types(cast: SpellCastContext, coord: Vect
 
 static func _spell_target_visible_to_active_character(cast: SpellCastContext, coord: Vector2i, spell_data: Dictionary) -> bool:
 	var origin: Vector2i = cast.players[cast.player_index].get("hex_position", Vector2i.ZERO)
-	if not Targeting.has_line_of_sight(origin, coord, cast.grid):
+	var delivery_origin := FamiliarSpellDelivery.origin(cast.caster, cast.players, spell_data, origin)
+	if not Targeting.has_line_of_effect(delivery_origin, coord, cast.grid):
 		return false
 	var requires_sight := bool(spell_data.get("requires_target_sight", false))
 	if str(spell_data.get("target", "single")) not in ["single", "single_ally", "multi"]:
