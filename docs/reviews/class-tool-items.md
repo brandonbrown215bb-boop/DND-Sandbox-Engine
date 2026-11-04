@@ -108,3 +108,7 @@ Checks (Linux Godot 4.7.2 headless, sequential):
 - Also passing: class_proficiency_creation_flow/reload,
   class_skill_selection_flow/_b/reload, normal_creation_matrix (1-4 players),
   monk_action_flow, and the 16-scenario integration suite.
+
+## Druidic Focus and Sickle follow-up
+
+Delivered on base de3891d; see [druidic-focus-sickle.md](druidic-focus-sickle.md).

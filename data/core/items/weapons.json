@@ -648,5 +648,23 @@
     "ability": "DEX",
     "range": 6,
     "value": 250
+  },
+  {
+    "id": "druidic_focus_quarterstaff",
+    "weight": 4,
+    "name": "Druidic Focus (Quarterstaff)",
+    "description": "A wooden staff carved to channel primal magic. It is also a Quarterstaff, and a Druid or Ranger holding it can use it as a Spellcasting Focus.",
+    "type": "weapon",
+    "weapon_type": "simple",
+    "damage": "1d6",
+    "damage_type": "bludgeoning",
+    "properties": [
+      "versatile"
+    ],
+    "versatile_damage": "1d8",
+    "ability": "STR",
+    "range": 1,
+    "value": 5,
+    "spellcasting_focus_kind": "druidic"
   }
 ]
