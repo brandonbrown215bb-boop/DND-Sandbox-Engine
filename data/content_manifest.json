@@ -40,6 +40,14 @@
   "overrides": [
     {
       "type": "spell",
+      "id": "chromatic_orb",
+      "winner": "res://data/core/spells/crown_sc_04_support_01.json#1",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#30"
+      ]
+    },
+    {
+      "type": "spell",
       "id": "sorcerous_burst",
       "winner": "res://data/core/spells/crown_sc_03_support_05.json#1",
       "replaces": [

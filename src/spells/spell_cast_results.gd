@@ -214,6 +214,8 @@ static func _resolve_spell_cast_targets(cast: SpellCastContext) -> void:
 					cast.hud.add_log("%s catches fire." % str(area_object.get("name", "A flammable object")))
 		if cast.interrupted:
 			break
+	if cast.spell.has("leap_on_matching_dice") and not cast.interrupted and cast.targets.size() == 1:
+		await _resolve_matching_dice_leaps(cast, cast.targets[0])
 	var object_push: Dictionary = cast.spell.get("area_object_push", {})
 	if not object_push.is_empty() and not cast.interrupted and cast.grid != null:
 		var blocked: Array[Vector2i] = []
@@ -353,6 +355,7 @@ static func _resolve_player_target(cast: SpellCastContext, p_target: Character, 
 		res["message"] = cast_message + " " + str(strike_result.get("message", "The attack misses."))
 		cast.publish_true_strike_activity.call({"id": p_target.character_id, "name": p_target.character_name}, true_strike_profile, strike_result)
 	res = await SpellCastResults._settle_empowered_spell(cast, p_target, res, target_spell_decisions)
+	cast.last_target_result = res
 	if res.has("damage_components"): cast.damage_receipts.append_array(res["damage_components"].duplicate(true))
 	if int(res.get("damage", 0)) > 0:
 		ClericRules.clear_turning_after_damage(p_target)
@@ -459,6 +462,7 @@ static func _resolve_monster_target(cast: SpellCastContext, m_target: Dictionary
 		res["message"] = cast_message + " " + str(strike_result.get("message", "The attack misses."))
 		cast.publish_true_strike_activity.call(m_target, true_strike_profile, strike_result)
 	res = await SpellCastResults._settle_empowered_spell(cast, m_target, res, target_spell_decisions)
+	cast.last_target_result = res
 	if res.has("damage_components"): cast.damage_receipts.append_array(res["damage_components"].duplicate(true))
 	if int(res.get("damage", 0)) > 0:
 		ClericRules.clear_turning_after_damage(m_target)
@@ -563,6 +567,88 @@ static func _publish_completed_cast(cast: SpellCastContext) -> void:
 		SpellEffects.publish_event(actor, cast.completed_cast_facts)
 	for monster in cast.monsters:
 		SpellEffects.publish_event(monster, cast.completed_cast_facts)
+
+
+## Shared `leap_on_matching_dice`: when a hit's damage roll shows the same face on two or
+## more dice of the spell's damage die, the effect leaps to a new creature of the caster's
+## choice within `range` hexes of the last target, with a new attack and damage roll. Leaps are
+## capped by `max_leaps` ("slot_level" = level of the slot expended) and each creature can be
+## targeted only once per casting.
+static func _resolve_matching_dice_leaps(cast: SpellCastContext, first_hex: Vector2i) -> void:
+	var rule: Dictionary = cast.spell["leap_on_matching_dice"]
+	var max_leaps := cast.slot_level_used if str(rule.get("max_leaps", "slot_level")) == "slot_level" else int(rule.get("max_leaps", 0))
+	var leap_range := int(rule.get("range", 6))
+	var sides := SharedSpell.damage_die_sides(cast.spell)
+	var targeted: Array = []
+	var first := leap_creature_at(cast, first_hex)
+	if first.is_empty(): return
+	targeted.append(first.target)
+	var from_hex := first_hex
+	var leaps := 0
+	var interrupted_before := cast.interrupted
+	while leaps < max_leaps and bool(cast.last_target_result.get("hit", false)) and has_matching_faces(cast.last_target_result.get("damage_roll", {}), sides):
+		var candidates: Array[Dictionary] = []
+		for entry in leap_candidates(cast, from_hex, leap_range, targeted):
+			candidates.append({"id": entry.id, "label": entry.label, "kind": "creature"})
+		if candidates.is_empty():
+			cast.hud.add_log("%s has no new creature within %d feet to leap to." % [str(cast.spell.get("name", "The spell")), leap_range * 5])
+			break
+		var chosen_id := await cast.hud.request_spell_leap_target_choice(str(cast.spell.get("name", "Spell")), candidates, str(cast.spell.get("_test_leap_target_ids", [])[leaps]) if leaps < cast.spell.get("_test_leap_target_ids", []).size() else "")
+		var chosen: Dictionary = {}
+		for entry in leap_candidates(cast, from_hex, leap_range, targeted):
+			if entry.id == chosen_id: chosen = entry
+		if chosen.is_empty(): break
+		leaps += 1
+		targeted.append(chosen.target)
+		cast.last_target_result = {}
+		cast.hud.add_log("[color=cyan]%s leaps to %s (leap %d of %d).[/color]" % [str(cast.spell.get("name", "The spell")), chosen.label, leaps, max_leaps])
+		if chosen.target is Character:
+			await _resolve_player_target(cast, chosen.target, chosen.hex, true)
+		else:
+			await _resolve_monster_target(cast, chosen.target, chosen.hex, true)
+		cast.interrupted = interrupted_before
+		from_hex = chosen.hex
+	cast.spell["_leap_count"] = leaps
+
+
+static func leap_creature_at(cast: SpellCastContext, coord: Vector2i) -> Dictionary:
+	for player in cast.players:
+		var character: Character = player.get("character")
+		if character != null and character.is_alive and player.get("hex_position", Vector2i.ZERO) == coord:
+			return {"id": "player:%s" % (character.character_id if not character.character_id.is_empty() else "runtime_%d" % character.get_instance_id()), "label": character.character_name, "target": character, "hex": coord}
+	for monster in cast.monsters:
+		if monster.get("is_alive", false) and monster.get("hex_position", Vector2i.ZERO) == coord:
+			return {"id": "monster:%s" % str(monster.get("id", "")), "label": str(monster.get("name", "Creature")), "target": monster, "hex": coord}
+	return {}
+
+
+## Living creatures within `range_hexes` of `from_hex` that this casting has not targeted yet.
+static func leap_candidates(cast: SpellCastContext, from_hex: Vector2i, range_hexes: int, targeted: Array) -> Array[Dictionary]:
+	var found: Array[Dictionary] = []
+	var hexes: Array[Vector2i] = []
+	for player in cast.players: hexes.append(player.get("hex_position", Vector2i.ZERO))
+	for monster in cast.monsters: hexes.append(monster.get("hex_position", Vector2i.ZERO))
+	for coord in hexes:
+		if HexUtils.get_distance(from_hex, coord) > range_hexes: continue
+		var entry := leap_creature_at(cast, coord)
+		if entry.is_empty() or targeted.any(func(t): return is_same(t, entry.target)) or found.any(func(f): return f.id == entry.id): continue
+		found.append(entry)
+	return found
+
+
+## True when two or more kept dice with `sides` faces in a damage roll show the same number.
+static func has_matching_faces(details: Dictionary, sides: int) -> bool:
+	var seen := {}
+	for term in details.get("dice_terms", []):
+		if int(term.get("sides", 0)) != sides: continue
+		var kept: Array = term.get("kept", [])
+		var results: Array = term.get("results", [])
+		for index in results.size():
+			if index < kept.size() and not bool(kept[index]): continue
+			var face := int(results[index])
+			if seen.has(face): return true
+			seen[face] = true
+	return false
 
 
 static func _resolve_ice_knife_splash(cast: SpellCastContext, center: Vector2i, spell_data: Dictionary, slot_level: int, cast_decisions: Dictionary) -> void:
