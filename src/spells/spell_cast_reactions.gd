@@ -154,10 +154,6 @@ static func _prepare_spell_cast_effects(cast: SpellCastContext) -> void:
 		elif str(cast.spell.get("id", "")) == "protection_from_evil_and_good":
 			cast.caster.concentrating_on["duration_rounds_remaining"] = 200 if bool(cast.spell.get("_metamagic_extended", false)) else 100
 			cast.caster.concentrating_on["duration_started_round"] = cast.tracker.current_round
-		elif str(cast.spell.get("id", "")) == "ray_of_enfeeblement":
-			cast.caster.concentrating_on["duration_rounds_remaining"] = 10
-			cast.caster.concentrating_on["duration_started_round"] = cast.tracker.current_round
-			cast.caster.concentrating_on["save_dc"] = SpellPermissionRules.save_dc(cast.caster, cast.spell)
 		elif str(cast.spell.get("id", "")) == "resilient_sphere":
 			cast.caster.concentrating_on["duration_rounds_remaining"] = 20 if bool(cast.spell.get("_metamagic_extended", false)) else 10
 			cast.caster.concentrating_on["duration_started_round"] = cast.tracker.current_round

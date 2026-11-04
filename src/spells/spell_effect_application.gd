@@ -89,11 +89,6 @@ static func _apply_spell_specific(cast: SpellCastContext, p_target: Character = 
 		elif not m_target.is_empty() and m_target.get("conditions", {}).has("cursed"):
 			m_target.get("conditions", {}).erase("cursed")
 			cast.hud.add_log("[color=cyan]%s's curse ends.[/color]" % m_target.get("name", "The target"))
-	if str(spell_data.get("id", "")) == "ray_of_enfeeblement" and resolution.get("success", false) and resolution.get("saved", false):
-		cast.end_concentration.call(cast.caster)
-		var saved_ray_cast: Dictionary = resolution.get("effect_cast", {}).duplicate(true)
-		saved_ray_cast["concentration"] = false
-		SpellEffects.grant(p_target if p_target != null else m_target, saved_ray_cast, "vicious_mockery_disadvantage", "start", 6)
 	if str(spell_data.get("id", "")) == "protection_from_poison" and resolution.get("success", false):
 		if p_target != null:
 			if p_target.has_condition("poisoned"):

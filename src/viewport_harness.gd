@@ -580,6 +580,7 @@ func _run_scenario(scenario: String) -> void:
 		"crown_sc_05_support_01_flow": await CrownSc05Support01Flow.run(self)
 		"crown_sc_05_support_02_flow": await CrownSc05Support02Flow.run(self)
 		"crown_sc_06_flow": await CrownSc06Flow.run(self)
+		"crown_sc_07_support_01_flow": await CrownSc07Support01Flow.run(self)
 		"sorcerer_twinned_spell": await test_sorcerer_twinned_spell()
 		"overworld": await test_overworld()
 		"companion_lifecycle": await test_companion_lifecycle()
@@ -16241,18 +16242,20 @@ func test_mixed_mechanics_encounter() -> void:
 	var enfeeblement_saves_before: Dictionary = shocked_monster.get("saving_throw_bonuses", {}).duplicate(true)
 	var enfeeblement_conditions_before: Dictionary = shocked_monster.get("conditions", {}).duplicate(true)
 	shocked_monster["saving_throw_bonuses"] = {"CON": -100}
-	shocked_monster.get("conditions", {}).erase("ray_of_enfeeblement")
+	shocked_monster.get("conditions", {}).erase("enfeebled")
 	wizard.spell_slots["2"] = 8
 	combat.turn_budget.reset(wizard, combat.player_entities)
 	combat.pending_spell_data = DataLoader.get_spell("ray_of_enfeeblement").duplicate(true)
 	combat.pending_action_type = "spell"
 	await combat._execute_player_spell(shocked_monster.get("hex_position", Vector2i.ZERO))
-	var enfeeblement_applied: bool = shocked_monster.get("conditions", {}).has("ray_of_enfeeblement") and wizard.concentrating_on.get("spell_id", "") == "ray_of_enfeeblement"
+	var enfeeblement_applied: bool = shocked_monster.get("conditions", {}).has("enfeebled") and wizard.concentrating_on.get("spell_id", "") == "ray_of_enfeeblement"
 	combat._resolve_ray_of_enfeeblement_repeat_save(shocked_monster)
-	var enfeeblement_repeat_fail_preserves: bool = shocked_monster.get("conditions", {}).has("ray_of_enfeeblement")
+	var enfeeblement_repeat_fail_preserves: bool = shocked_monster.get("conditions", {}).has("enfeebled")
 	shocked_monster["saving_throw_bonuses"] = {"CON": 100}
+	# Shared repeat saves are claimed once per target turn; advance to the target's next turn end.
+	CombatAction.active_turn_serial += 1
 	combat._resolve_ray_of_enfeeblement_repeat_save(shocked_monster)
-	var enfeeblement_repeat_success_ends: bool = not shocked_monster.get("conditions", {}).has("ray_of_enfeeblement")
+	var enfeeblement_repeat_success_ends: bool = not shocked_monster.get("conditions", {}).has("enfeebled")
 	combat._end_concentration(wizard)
 	shocked_monster["saving_throw_bonuses"] = enfeeblement_saves_before
 	shocked_monster["conditions"] = enfeeblement_conditions_before
@@ -16261,7 +16264,7 @@ func test_mixed_mechanics_encounter() -> void:
 	combat.pending_spell_data = DataLoader.get_spell("ray_of_enfeeblement").duplicate(true)
 	combat.pending_action_type = "spell"
 	await combat._execute_player_spell(shocked_monster.get("hex_position", Vector2i.ZERO))
-	var enfeeblement_initial_save_ends: bool = shocked_monster.get("conditions", {}).has("vicious_mockery_disadvantage") and wizard.concentrating_on.is_empty()
+	var enfeeblement_initial_save_ends: bool = shocked_monster.get("conditions", {}).has("next_attack_disadvantage") and not shocked_monster.get("conditions", {}).has("enfeebled")
 	shocked_monster["conditions"] = enfeeblement_conditions_before
 	shocked_monster["saving_throw_bonuses"] = enfeeblement_saves_before
 	wizard.spell_slots = enfeeblement_slots_before

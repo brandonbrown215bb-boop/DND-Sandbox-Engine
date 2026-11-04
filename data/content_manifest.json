@@ -1440,6 +1440,14 @@
     },
     {
       "type": "spell",
+      "id": "ray_of_enfeeblement",
+      "winner": "res://data/core/spells/crown_sc_07.json#1",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#147"
+      ]
+    },
+    {
+      "type": "spell",
       "id": "sleep",
       "winner": "res://data/core/spells/crown_sc_06.json#1",
       "replaces": [

@@ -3,7 +3,7 @@
 class_name SharedSpell
 extends RefCounted
 
-const CONDITIONS := ["blinded", "deafened", "frightened", "poisoned", "prone", "restrained", "stunned", "paralyzed", "incapacitated", "blessed", "baned", "shield_of_faith", "speed_reduced", "healing_prevented", "opportunity_attack_blocked", "next_attack_disadvantage", "invisibility_suppressed", "charmed", "blurred", "outlined", "unconscious", "speed_zero"]
+const CONDITIONS := ["blinded", "deafened", "frightened", "poisoned", "prone", "restrained", "stunned", "paralyzed", "incapacitated", "blessed", "baned", "shield_of_faith", "speed_reduced", "healing_prevented", "opportunity_attack_blocked", "next_attack_disadvantage", "invisibility_suppressed", "charmed", "blurred", "outlined", "unconscious", "speed_zero", "enfeebled"]
 ## Conditions whose consumer reads an authored magnitude (hexes) from the source record.
 const AMOUNT_CONDITIONS := {"speed_reduced": [1, 12]}
 const ABILITIES := ["STR", "DEX", "CON", "INT", "WIS", "CHA"]

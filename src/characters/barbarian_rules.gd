@@ -97,9 +97,11 @@ static func attempt_relentless_rage(character: Character, accepted_bardic_inspir
 static func brutal_strike_eligible(character: Character, weapon: Dictionary, disadvantage: bool = false) -> bool:
 	if character == null or CombatAction.active_turn_actor_id != character.get_instance_id() or disadvantage:
 		return false
-	for condition in ["blinded", "poisoned", "vicious_mockery_disadvantage", "ray_of_enfeeblement"]:
+	for condition in ["blinded", "poisoned", "vicious_mockery_disadvantage"]:
 		if character.has_condition(condition):
 			return false
+	if not CombatAction.conditions_with_consequence(character, "str_d20_disadvantage").is_empty():
+		return false
 	return character.has_feature("barbarian_brutal_strike") and character.has_condition("reckless_attack") and str(weapon.get("ability", "STR")) == "STR" and int(character.feature_uses.get("barbarian_brutal_strike_used_this_turn", 0)) == 0
 
 

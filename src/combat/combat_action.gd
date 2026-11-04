@@ -92,13 +92,20 @@ const CONDITION_RULES := {
 	"unconscious": {"incapacitated": true, "speed_zero": true, "save_auto_fail_str_dex": true, "attacks_against_advantage": true, "nearby_hit_critical": true, "prone": true, "drop_held_items": true},
 	"exhaustion": {"check_penalty_per_level": -2, "attack_penalty_per_level": -2, "save_penalty_per_level": -2, "speed_penalty_per_level": -5},
 }
+## Non-SRD spell-effect markers queried through the same consequence owners.
+## "ray_of_enfeeblement" is the legacy marker name kept so older saves keep
+## their penalties; new shared definitions grant the neutral "enfeebled".
+const MARKER_RULES := {
+	"enfeebled": {"str_d20_disadvantage": true, "damage_roll_penalty_d8": true},
+	"ray_of_enfeeblement": {"str_d20_disadvantage": true, "damage_roll_penalty_d8": true},
+}
 
 static func condition_rule(condition: String, consequence: String) -> bool:
-	return bool(CONDITION_RULES.get(condition, {}).get(consequence, false))
+	return bool(CONDITION_RULES.get(condition, MARKER_RULES.get(condition, {})).get(consequence, false))
 
 static func conditions_with_consequence(entity, consequence: String) -> Array[String]:
 	var matches: Array[String] = []
-	for condition in CONDITION_RULES:
+	for condition in CONDITION_RULES.keys() + MARKER_RULES.keys():
 		if condition_rule(str(condition), consequence) and has_condition(entity, str(condition)):
 			matches.append(str(condition))
 	return matches
@@ -149,7 +156,7 @@ static func save_has_disadvantage(entity, ability: String) -> bool:
 	var upper := ability.to_upper()
 	if upper == "DEX" and condition_rule("restrained", "dex_save_disadvantage") and has_condition(entity, "restrained"):
 		return true
-	if upper == "STR" and has_condition(entity, "ray_of_enfeeblement"):
+	if upper == "STR" and not conditions_with_consequence(entity, "str_d20_disadvantage").is_empty():
 		return true
 	return false
 
@@ -179,7 +186,7 @@ static func attacker_has_condition_disadvantage(attacker, ability: String = "", 
 			return true
 	if has_condition(attacker, "frightened") and not bool(decisions.get("frightened_source_out_of_sight", false)):
 		return true
-	if ability.to_upper() == "STR" and has_condition(attacker, "ray_of_enfeeblement"):
+	if ability.to_upper() == "STR" and not conditions_with_consequence(attacker, "str_d20_disadvantage").is_empty():
 		return true
 	if has_condition(attacker, "vicious_mockery_disadvantage") or has_condition(attacker, "next_attack_disadvantage"):
 		return true
@@ -1073,7 +1080,7 @@ static func _finalize_damage_responses(target, source_character: Character, dama
 
 
 static func damage_source_penalty(amount: int, source: Character) -> int:
-	return mini(maxi(0, amount), Dice.roll(8, source)) if amount > 0 and source != null and source.has_condition("ray_of_enfeeblement") else 0
+	return mini(maxi(0, amount), Dice.roll(8, source)) if amount > 0 and source != null and not conditions_with_consequence(source, "damage_roll_penalty_d8").is_empty() else 0
 
 
 static func _record_settled_damage_history(target, source: Character, receipt: Dictionary, decisions: Dictionary) -> void:
