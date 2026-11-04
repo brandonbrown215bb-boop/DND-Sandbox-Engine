@@ -43,7 +43,7 @@ static func condition_dim_light_radius_hexes(entity: Dictionary) -> int:
 	var creature = entity.get("character", entity.get("monster", entity))
 	var radius := 0
 	for condition in CONDITION_DIM_LIGHT_HEXES:
-		var has: bool = creature.has_condition(condition) if creature is Character else (creature is Dictionary and creature.get("conditions", {}).has(condition))
+		var has: bool = creature.has_condition(condition) if creature is Character else (creature is Dictionary and CombatAction.has_condition(creature, condition))
 		if has: radius = maxi(radius, int(CONDITION_DIM_LIGHT_HEXES[condition]))
 	return radius
 

@@ -148,10 +148,18 @@ static func outcome_error(state, room: Dictionary, monster: Dictionary, object: 
 ## Profile attitude, read as Indifferent while a Hostile creature carries an
 ## attitude_indifferent marker; the profile is never rewritten, so the
 ## original attitude returns as soon as the marker ends.
-static func effective_attitude(monster: Dictionary) -> String:
+## A source record's attitude_scope_ids limits it to those creatures (toward_id).
+static func effective_attitude(monster: Dictionary, toward_id: String = "") -> String:
 	var attitude := str(monster.get("influence", {}).get("attitude", "indifferent"))
-	if attitude == "hostile" and not CombatAction.conditions_with_consequence(monster, "attitude_indifferent").is_empty():
-		return "indifferent"
+	if attitude != "hostile": return attitude
+	for marker in CombatAction.conditions_with_consequence(monster, "attitude_indifferent"):
+		var recorded := false
+		for record in SpellEffects.records(monster).values():
+			if not record is Dictionary or marker not in record.get("conditions", []): continue
+			recorded = true
+			var scope: Variant = record.get("attitude_scope_ids", null)
+			if not scope is Array or toward_id in scope: return "indifferent"
+		if not recorded: return "indifferent"
 	return attitude
 
 
@@ -159,7 +167,7 @@ static func roll(actor: Character, monster: Dictionary, approach: Dictionary, co
 	var actual := context.duplicate()
 	actual["social_target"] = monster
 	actual["influence_action"] = true
-	actual["influence_attitude"] = effective_attitude(monster)
+	actual["influence_attitude"] = effective_attitude(monster, actor.character_id)
 	return EventResolver.resolve_skill_check(actor, {"ability":SKILLS[approach.skill], "skill":str(approach.skill), "dc":maxi(15, int(monster.get("ability_scores", {}).get("INT", 10)))}, {}, actual)
 
 

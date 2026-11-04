@@ -121,6 +121,7 @@
           "calmed",
           "calmed_indifferent"
         ],
+        "choice_per_target": true,
         "on_failed_save": true
       }
     ],

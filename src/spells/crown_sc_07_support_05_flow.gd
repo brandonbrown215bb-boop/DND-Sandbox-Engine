@@ -79,15 +79,35 @@ static func _player_casts(h) -> void:
 	GameManager.test_mode = false
 	combat.turn_budget.action_available = true
 	ConversionBatch002Flow._select(h, combat, bard, "calm_emotions", 2)
+	for _frame in 60:
+		var level_menu: PopupMenu = null
+		for child in combat.hud.get_children():
+			if child is PopupMenu and child.visible and child.item_count > 0 and child.get_item_text(0).begins_with("Level"): level_menu = child
+		if level_menu != null:
+			level_menu.id_pressed.emit(level_menu.get_item_id(0))
+			break
+		await h.get_tree().process_frame
+	await h.get_tree().process_frame
 	combat._on_hex_clicked(Vector2i(3, 0))
 	var menu: PopupMenu = null
 	for _frame in 120:
 		for child in combat.hud.get_children():
 			if child is PopupMenu and child.visible: menu = child
+		if menu != null and menu.get_item_text(0).begins_with("Level"):
+			menu.id_pressed.emit(menu.get_item_id(0))
+			menu = null
 		if menu != null: break
 		await h.get_tree().process_frame
 	h._assert(menu != null and menu.item_count == 2 and menu.get_item_text(0) == "Calmed" and menu.get_item_text(1) == "Calmed Indifferent", P + "the player is offered both Calm Emotions options")
 	if menu != null: menu.id_pressed.emit(0)
+	# Since support 06 the option is asked per creature in the Sphere (the Bard is in it too).
+	var answered := [menu]
+	for _frame in 120:
+		for child in combat.hud.get_children():
+			if child is PopupMenu and child.visible and child not in answered:
+				answered.append(child)
+				child.id_pressed.emit(0)
+		await h.get_tree().process_frame
 	await ConversionBatch002Flow._wait_resolution(h, combat)
 	h._assert(CombatAction.has_condition(scared, "calmed") and not CombatAction.has_condition(scared, "frightened") and not CombatAction.has_condition(wolf, "calmed") and str(bard.concentrating_on.get("spell_id", "")) == "calm_emotions" and int(bard.spell_slots["2"]) == 1, P + "picker + option prompt + area click: the Humanoid fails, is calmed and its Frightened is suppressed; the beast is skipped (%s | %s | %s)" % [str(scared.conditions), str(bard.concentrating_on.get("spell_id", "")), combat.hud.log_text.text.right(500)])
 	SpellEffects.end_concentration(bard, [scared, wolf])

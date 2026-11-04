@@ -119,6 +119,7 @@ var _rebind_wait_before_turn_setup := false
 
 
 func _ready() -> void:
+	DamageWitnessRules.bind(self)
 	hud.turn_budget = turn_budget
 	# Connect HUD action selectors
 	hud.action_selected.connect(_on_hud_action)
@@ -5698,6 +5699,7 @@ func _clear_monk_battle_effects() -> void:
 
 
 func _exit_tree() -> void:
+	DamageWitnessRules.unbind(self)
 	_clear_ordinary_battle_effects()
 	_end_monster_spell_sources()
 	child_actions.clear()
