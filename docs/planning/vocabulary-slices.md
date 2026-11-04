@@ -3848,11 +3848,14 @@ declaration. Both offer a 50 GP option B with no items. The
 separate proficiency ownership, both checkpoint forms and old saves without
 retroactive grants. Druid and Monk option A now also grant one Explorer's Pack
 whose contents expand through the existing pack control; 382ca63 saves get no
-retroactive pack. **Remaining limits:** Druid's Sickle (auto-equipped with the
-Shield it leaves no free spellcasting hand; blocked on an out-of-lane dungeon
-fixture and a starting-equip decision) and Druidic Focus (Quarterstaff) (no
-item is both a Quarterstaff and a Druidic Focus; the focus consumer is item-ID
-based and backpack-only).
+retroactive pack. Druid option A now also owns the Druidic Focus
+(Quarterstaff) as a real weapon/focus held beside the Shield and a carried
+Sickle (generic item `spellcasting_focus_kind` + class
+`spellcasting_focus_kinds`; held-focus hand covers Material+Somatic);
+de3891d saves get neither retroactively
+([evidence](../reviews/druidic-focus-sickle.md)). **Remaining limits:**
+Shillelagh and Fighter Weapon Mastery key on item IDs (`quarterstaff`), so they
+do not yet recognise the focus staff.
 Syntax lives in
 [progression choices](../mechanics/progression-choices.md#class-proficiency-choices-at-creation-crown-g2).
 
