@@ -277,15 +277,12 @@ static func _resolve_player_target(cast: SpellCastContext, p_target: Character, 
 		target_spell_data["condition_on_failed_save"] = ""
 	if str(cast.spell.get("id", "")) == "black_tentacles":
 		target_spell_data["condition_on_failed_save"] = ""
-	if str(cast.spell.get("id", "")) == "true_strike":
+	if not SharedSpell.weapon_attack_effect(cast.spell).is_empty():
 		target_spell_data["range"] = SpellCastTargeting._spell_target_range(cast, cast.spell)
-	if str(cast.spell.get("id", "")) in ["magic_missile", "scorching_ray", "eldritch_blast"]:
+	if SpellProjectileResolver.is_projectile(cast.spell):
 		var target_key := "%d,%d" % [target_hex.x, target_hex.y]
 		var assigned_count := int(cast.spell.get("_projectile_target_counts", {}).get(target_key, SpellCastTargeting._spell_projectile_total(cast, cast.spell)))
-		if str(cast.spell.get("id", "")) == "magic_missile":
-			target_spell_data["_magic_missile_darts_for_target"] = assigned_count
-		else:
-			target_spell_data["_scorching_ray_count_for_target"] = assigned_count
+		target_spell_data["_projectile_count_for_target"] = assigned_count
 	if str(target_spell_data.get("attack_type", "none")) != "none":
 		target_spell_data["_conjure_minor_elementals_bonus_packets"] = await SpellZoneConjurations._conjure_minor_elementals_spell_attack_choices(cast.areas, cast.caster, p_target, target_spell_data)
 	var res := CombatAction.resolve_spell(cast.caster, p_target, target_spell_data, false, target_spell_decisions, target_observers, cast.slot_level_used, spell_target_distance, cast)
@@ -390,15 +387,12 @@ static func _resolve_monster_target(cast: SpellCastContext, m_target: Dictionary
 		target_spell_data["condition_on_failed_save"] = ""
 	if str(cast.spell.get("id", "")) == "black_tentacles":
 		target_spell_data["condition_on_failed_save"] = ""
-	if str(cast.spell.get("id", "")) == "true_strike":
+	if not SharedSpell.weapon_attack_effect(cast.spell).is_empty():
 		target_spell_data["range"] = SpellCastTargeting._spell_target_range(cast, cast.spell)
-	if str(cast.spell.get("id", "")) in ["magic_missile", "scorching_ray", "eldritch_blast"]:
+	if SpellProjectileResolver.is_projectile(cast.spell):
 		var target_key := "%d,%d" % [target_hex.x, target_hex.y]
 		var assigned_count := int(cast.spell.get("_projectile_target_counts", {}).get(target_key, SpellCastTargeting._spell_projectile_total(cast, cast.spell)))
-		if str(cast.spell.get("id", "")) == "magic_missile":
-			target_spell_data["_magic_missile_darts_for_target"] = assigned_count
-		else:
-			target_spell_data["_scorching_ray_count_for_target"] = assigned_count
+		target_spell_data["_projectile_count_for_target"] = assigned_count
 	if str(target_spell_data.get("attack_type", "none")) != "none":
 		target_spell_data["_conjure_minor_elementals_bonus_packets"] = await SpellZoneConjurations._conjure_minor_elementals_spell_attack_choices(cast.areas, cast.caster, m_target, target_spell_data)
 	var res := CombatAction.resolve_spell(cast.caster, m_target, target_spell_data, false, target_spell_decisions, cast.counterspell_observers if cast.counterspell_pending else [], cast.slot_level_used, spell_target_distance, cast)

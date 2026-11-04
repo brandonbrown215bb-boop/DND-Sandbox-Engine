@@ -303,7 +303,7 @@ func has_required_spell_component(spell_data: Dictionary, class_id: String = "")
 	var ignore_material := bool(spell_data.get("_ignore_material_components", false))
 	var has_material := "M" in components and not ignore_material
 	var has_somatic := "S" in components
-	if has_material and str(spell_data.get("id", "")) == "true_strike":
+	if has_material and not SharedSpell.weapon_attack_effect(spell_data).is_empty():
 		# The equipped weapon is this spell's Material component; its hand also
 		# performs the Somatic component. Proficiency is checked by cast validation.
 		var weapon := DataLoader.get_item(get_weapon())

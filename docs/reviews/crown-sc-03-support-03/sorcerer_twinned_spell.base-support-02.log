@@ -1,0 +1,34 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+WARNING: [DataLoader] Rejected 25 unsupported effectless feature records; they remain unavailable until curated.
+     at: push_warning (core/variant/variant_utility.cpp:1033)
+     GDScript backtrace (most recent call first):
+         [0] load_all_data (res://src/autoload/data_loader.gd:276)
+         [1] _ready (res://src/autoload/data_loader.gd:252)
+[DataLoader] Loaded: 14 classes, 9 races, 294 items, 362 spells, 481 monsters, 4 event tables, 1 campaigns
+[DataLoader] Layers: core_imported, core_curated, mods | packs: core, crown | approved overrides: 420 | validation failures: 0
+==================================================
+ Rook's Headless Viewport Harness (per-beat)
+==================================================
+
+[TEST] sorcerer_twinned_spell
+[Character] Twinned Sorcerer leveled up to 2! (+8 HP, now 16)
+[ok]   combat fixture provides two creatures for Twinned Spell
+[ok]   real spell selection offers Twinned Spell when an upcast adds a target
+[ok]   accepting Twinned Spell enables the required second target
+[ok]   first humanoid becomes the primary Charm Person target
+[FAIL] [sorcerer_twinned_spell] selecting a second humanoid resolves the twinned cast
+[FAIL] [sorcerer_twinned_spell] Twinned Spell spends one Sorcery Point
+[FAIL] [sorcerer_twinned_spell] Twinned Spell still spends one level-1 spell slot
+[FAIL] [sorcerer_twinned_spell] Twinned Spell spends the Magic action
+[FAIL] [sorcerer_twinned_spell] both selected creatures receive an independent Wisdom save
+--------------------------------------------------
+ VIEWPORT RESULTS: 5 failed (1 tests run)
+ FAILED TESTS: sorcerer_twinned_spell
+   - [sorcerer_twinned_spell] selecting a second humanoid resolves the twinned cast
+   - [sorcerer_twinned_spell] Twinned Spell spends one Sorcery Point
+   - [sorcerer_twinned_spell] Twinned Spell still spends one level-1 spell slot
+   - [sorcerer_twinned_spell] Twinned Spell spends the Magic action
+   - [sorcerer_twinned_spell] both selected creatures receive an independent Wisdom save
+VIEWPORT TESTS FAILED
+SCENARIO FAILED: sorcerer_twinned_spell

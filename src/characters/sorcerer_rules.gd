@@ -194,7 +194,7 @@ static func transmuted_damage_options(damage_type: String) -> Array[String]:
 
 
 static func apply_transmuted_damage_type(spell_data: Dictionary, selected_type: String) -> bool:
-	if not (spell_data.has("damage") or spell_data.has("damage_per_dart") or spell_data.has("damage_per_ray")):
+	if not (spell_data.has("damage") or SpellProjectileResolver.is_projectile(spell_data)):
 		return false
 	if selected_type not in transmuted_damage_options(str(spell_data.get("damage_type", ""))):
 		return false

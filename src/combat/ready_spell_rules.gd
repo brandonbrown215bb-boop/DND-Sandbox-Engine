@@ -130,7 +130,7 @@ static func select_additional_targets(state: CombatState, record: Dictionary, ca
 	var primary_subject = state.ready_actions.picked_subject
 	var identities := [{"subject":primary_subject, "coord":first}]
 	var point_count := int(cast.spell.get("area_point_count", 1))
-	var projectiles := cast.spell.has("dart_count") or cast.spell.has("damage_per_ray")
+	var projectiles := SpellProjectileResolver.is_projectile(cast.spell)
 	var required := point_count if point_count > 1 else SpellCastTargeting._spell_projectile_total(cast, cast.spell) if projectiles else 1
 	if required > 1:
 		cast.command_selection.assign([first])

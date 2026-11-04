@@ -1754,6 +1754,12 @@ func _find_override(content_type: String, id: String, existing: String, candidat
 func _merge_missing_fields(winner: Dictionary, fallback: Dictionary) -> Dictionary:
 	var merged := winner.duplicate(true)
 	for key in fallback:
+		# A shared-execution winner is validated against SharedSpell.FIELDS, so a
+		# replaced native record may only backfill fields that schema accepts.
+		if str(winner.get("execution", "")) == "shared" and key not in SharedSpell.FIELDS and not str(key).begins_with("_"):
+			continue
+		if winner.has("projectiles") and str(key) in SpellProjectileResolver.OWNED_FIELDS:
+			continue
 		if key not in merged or key in ["_source", "_source_record"]:
 			merged[key] = fallback[key]
 	return merged

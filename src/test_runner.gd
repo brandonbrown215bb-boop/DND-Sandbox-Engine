@@ -690,7 +690,7 @@ func _test_data_loader() -> void:
 		_assert(not sample_spell.is_empty() and sample_spell.has("level") and sample_spell.has("school") and sample_spell.has("casting_time"), "Iconic SRD spell '%s' is present with full attributes" % sample_spell_id)
 
 	var eldritch_blast: Dictionary = DataLoader.get_spell("eldritch_blast")
-	_assert(eldritch_blast.get("rules_source", "") == "SRD5.2.1" and eldritch_blast.get("beam_count_by_level", {}).get("17", 0) == 4 and eldritch_blast.get("damage_per_ray", "") == "1d10" and SpellSupport.is_available(eldritch_blast), "Eldritch Blast records its per-beam damage and is available with per-beam targeting")
+	_assert(SharedSpell.uses(eldritch_blast) and int(eldritch_blast.get("projectiles", {}).get("count_by_character_level", {}).get("17", 0)) == 4 and eldritch_blast.get("projectiles", {}).get("damage", "") == "1d10" and SpellSupport.is_available(eldritch_blast), "Eldritch Blast records its per-beam damage and is available with per-beam targeting")
 	var spare_the_dying: Dictionary = DataLoader.get_spell("spare_the_dying")
 	_assert(spare_the_dying.get("rules_source", "") == "SRD 5.2.1" and int(spare_the_dying.get("range", 0)) == 3 and spare_the_dying.get("range_by_character_level_feet", {}).get("17", 0) == 120 and SpellSupport.is_available(spare_the_dying), "Spare the Dying records its 2024 range and cantrip upgrades and is available")
 	_assert([CombatAction.spell_range_in_hexes(spare_the_dying, 1), CombatAction.spell_range_in_hexes(spare_the_dying, 5), CombatAction.spell_range_in_hexes(spare_the_dying, 11), CombatAction.spell_range_in_hexes(spare_the_dying, 17)] == [3, 6, 12, 24], "Spare the Dying range doubles at character levels 5, 11, and 17")
@@ -1811,7 +1811,7 @@ func _test_spellcasting() -> void:
 	var mid_spell_ids := ["misty_step", "scorching_ray", "fireball", "counterspell"]
 	for spell_id in mid_spell_ids:
 		var mid_spell: Dictionary = DataLoader.get_spell(spell_id)
-		var mid_resolution_payload: bool = not mid_spell.get("effects", []).is_empty() or mid_spell.has("damage") or mid_spell.has("damage_per_dart") or mid_spell.has("damage_per_ray") or mid_spell.has("save") or str(mid_spell.get("attack_type", "none")) != "none"
+		var mid_resolution_payload: bool = not mid_spell.get("effects", []).is_empty() or mid_spell.has("damage") or SpellProjectileResolver.is_projectile(mid_spell) or mid_spell.has("save") or str(mid_spell.get("attack_type", "none")) != "none"
 		_assert(not mid_spell.is_empty(), "%s is present in the curated level-2/3 spell cohort" % spell_id)
 		_assert(int(mid_spell.get("level", -1)) in [2, 3], "%s remains a level-2/3 spell" % spell_id)
 		_assert(str(mid_spell.get("casting_time", "")) in DataLoader.VALID_SPELL_CASTING_TIMES and int(mid_spell.get("range", -1)) >= 0, "%s has a valid casting time and range" % spell_id)
@@ -1826,7 +1826,7 @@ func _test_spellcasting() -> void:
 	var early_spell_ids := ["fire_bolt", "ray_of_frost", "starry_wisp", "magic_missile", "shield", "mage_armor", "sleep", "bless", "cure_wounds", "thunderwave", "hunters_mark"]
 	for spell_id in early_spell_ids:
 		var early_spell: Dictionary = DataLoader.get_spell(spell_id)
-		var has_resolution_payload: bool = not early_spell.get("effects", []).is_empty() or early_spell.has("damage") or early_spell.has("damage_per_dart") or early_spell.has("damage_per_ray") or early_spell.has("save") or str(early_spell.get("attack_type", "none")) != "none"
+		var has_resolution_payload: bool = not early_spell.get("effects", []).is_empty() or early_spell.has("damage") or SpellProjectileResolver.is_projectile(early_spell) or early_spell.has("save") or str(early_spell.get("attack_type", "none")) != "none"
 		_assert(not early_spell.is_empty(), "%s is present in the curated early-spell cohort" % spell_id)
 		_assert(str(early_spell.get("casting_time", "")) in DataLoader.VALID_SPELL_CASTING_TIMES and int(early_spell.get("range", -1)) >= 0, "%s has a valid casting time and range" % spell_id)
 		_assert(str(early_spell.get("target", "")) in DataLoader.VALID_SPELL_TARGETS, "%s has a valid target contract" % spell_id)

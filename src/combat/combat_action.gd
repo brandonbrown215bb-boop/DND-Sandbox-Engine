@@ -2824,7 +2824,7 @@ static func _spell_effect_save_dc(target, spell_id: String, fallback: int) -> in
 static func _spell_directly_damages_target(spell_data: Dictionary) -> bool:
 	if str(spell_data.get("attack_type", "none")) != "none":
 		return true
-	if spell_data.has("damage_per_dart") or spell_data.has("damage_per_ray"):
+	if SpellProjectileResolver.is_projectile(spell_data):
 		return true
 	return spell_data.has("damage") and not str(spell_data.get("damage_type", "")).is_empty()
 
