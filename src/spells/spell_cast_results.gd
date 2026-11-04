@@ -314,25 +314,27 @@ static func _resolve_player_target(cast: SpellCastContext, p_target: Character, 
 			cast.hud.add_log("[color=purple]%s is Restrained by Entangle.[/color]" % p_target.character_name)
 	if str(cast.spell.get("id", "")) == "black_tentacles" and not bool(res.get("saved", true)):
 		SpellZoneTerrain._apply_black_tentacles_restrained(cast.areas, p_target, cast.area_source_id, cast.restrained_targets)
-	if str(cast.spell.get("id", "")) == "true_strike" and bool(res.get("success", false)):
+	if not SharedSpell.weapon_attack_effect(cast.spell).is_empty() and bool(res.get("success", false)):
 		var true_strike_profile: Dictionary = DataLoader.get_item(str(cast.spell.get("_true_strike_weapon_id", ""))).duplicate(true)
 		true_strike_profile["ability"] = SpellPermissionRules.selected_ability(cast.spell, cast.caster.get_spellcasting_ability())
 		true_strike_profile["_true_strike"] = true
+		true_strike_profile["_spell_name"] = str(cast.spell.get("name", "Spell"))
 		true_strike_profile["damage_type"] = str(cast.spell.get("_true_strike_damage_type", true_strike_profile.get("damage_type", "bludgeoning")))
 		var strike_distance := HexUtils.get_distance(cast.players[cast.player_index].get("hex_position", Vector2i.ZERO), target_hex)
 		true_strike_profile["attack_distance"] = strike_distance
 		target_spell_decisions.merge(await cast.collect_attack_inspiration_decision.call(cast.caster), true)
 		target_spell_decisions.merge(await cast.collect_reaction_decisions.call(p_target), true)
-		var bonus_dice := CombatAction.true_strike_bonus_damage(cast.caster.level)
+		var bonus_effect := SharedSpell.weapon_attack_effect(cast.spell)
+		var bonus_dice := SharedSpell.weapon_attack_extra_formula(bonus_effect, cast.caster.level)
 		var strike_advantage := not CombatPerception.can_see_target(p_target, cast.caster, target_hex, cast.players[cast.player_index]["hex_position"], cast.grid)
 		var strike_disadvantage := not CombatPerception.can_see_target(cast.caster, p_target, cast.players[cast.player_index]["hex_position"], target_hex, cast.grid)
-		var strike_additional_damage := {"formula": bonus_dice, "type": "radiant", "label": "True Strike Radiant"} if not bonus_dice.is_empty() else {}
+		var strike_additional_damage := {"formula": bonus_dice, "type": str(bonus_effect.get("extra_damage", {}).get("type", "radiant")), "label": "%s %s" % [str(cast.spell.get("name", "Spell")), str(bonus_effect.get("extra_damage", {}).get("type", "radiant")).capitalize()]} if not bonus_dice.is_empty() else {}
 		var fey_damage_packet := await SpellZoneConjurations._conjure_minor_elementals_damage_choice(cast.areas, cast.caster, p_target)
 		if not fey_damage_packet.is_empty():
 			strike_additional_damage["packets"] = [fey_damage_packet]
 		var strike_result := CombatAction.resolve_weapon_attack(cast.caster, p_target, true_strike_profile, strike_advantage, strike_disadvantage, target_spell_decisions, strike_additional_damage)
 		await cast.offer_divine_smite.call(p_target, true_strike_profile, strike_result, cast.caster)
-		var cast_message := str(res.get("message", "True Strike resolves."))
+		var cast_message := str(res.get("message", "%s resolves." % str(cast.spell.get("name", "The spell"))))
 		res.merge(strike_result, true)
 		res["success"] = true
 		res["message"] = cast_message + " " + str(strike_result.get("message", "The attack misses."))
@@ -418,20 +420,22 @@ static func _resolve_monster_target(cast: SpellCastContext, m_target: Dictionary
 			cast.hud.add_log("[color=purple]%s is Restrained by Entangle.[/color]" % str(m_target.get("name", "The creature")))
 	if str(cast.spell.get("id", "")) == "black_tentacles" and not bool(res.get("saved", true)):
 		SpellZoneTerrain._apply_black_tentacles_restrained(cast.areas, m_target, cast.area_source_id, cast.restrained_targets)
-	if str(cast.spell.get("id", "")) == "true_strike" and bool(res.get("success", false)):
+	if not SharedSpell.weapon_attack_effect(cast.spell).is_empty() and bool(res.get("success", false)):
 		var true_strike_profile: Dictionary = DataLoader.get_item(str(cast.spell.get("_true_strike_weapon_id", ""))).duplicate(true)
 		true_strike_profile["ability"] = SpellPermissionRules.selected_ability(cast.spell, cast.caster.get_spellcasting_ability())
 		true_strike_profile["_true_strike"] = true
+		true_strike_profile["_spell_name"] = str(cast.spell.get("name", "Spell"))
 		true_strike_profile["damage_type"] = str(cast.spell.get("_true_strike_damage_type", true_strike_profile.get("damage_type", "bludgeoning")))
 		var strike_distance := HexUtils.get_distance(cast.players[cast.player_index].get("hex_position", Vector2i.ZERO), target_hex)
 		true_strike_profile["attack_distance"] = strike_distance
 		var strike_reactions := SpellCastResults._spell_decisions_for_target(cast, cast.counterspell_decisions, false)
 		strike_reactions["spell_visibility"] = {"grid":cast.grid, "caster_position":cast.players[cast.player_index]["hex_position"], "target_position":target_hex}
 		strike_reactions.merge(await cast.collect_attack_inspiration_decision.call(cast.caster), true)
-		var bonus_dice := CombatAction.true_strike_bonus_damage(cast.caster.level)
+		var bonus_effect := SharedSpell.weapon_attack_effect(cast.spell)
+		var bonus_dice := SharedSpell.weapon_attack_extra_formula(bonus_effect, cast.caster.level)
 		var strike_advantage := not CombatPerception.can_see_target(m_target, cast.caster, target_hex, cast.players[cast.player_index]["hex_position"], cast.grid)
 		var strike_disadvantage := not CombatPerception.can_see_target(cast.caster, m_target, cast.players[cast.player_index]["hex_position"], target_hex, cast.grid)
-		var strike_additional_damage := {"formula": bonus_dice, "type": "radiant", "label": "True Strike Radiant"} if not bonus_dice.is_empty() else {}
+		var strike_additional_damage := {"formula": bonus_dice, "type": str(bonus_effect.get("extra_damage", {}).get("type", "radiant")), "label": "%s %s" % [str(cast.spell.get("name", "Spell")), str(bonus_effect.get("extra_damage", {}).get("type", "radiant")).capitalize()]} if not bonus_dice.is_empty() else {}
 		var fey_damage_packet := await SpellZoneConjurations._conjure_minor_elementals_damage_choice(cast.areas, cast.caster, m_target)
 		if not fey_damage_packet.is_empty():
 			strike_additional_damage["packets"] = [fey_damage_packet]
@@ -439,7 +443,7 @@ static func _resolve_monster_target(cast: SpellCastContext, m_target: Dictionary
 		await cast.offer_divine_smite.call(m_target, true_strike_profile, strike_result, cast.caster)
 		await cast.offer_sneak_attack.call(m_target, true_strike_profile, strike_result, cast.caster, strike_advantage, strike_disadvantage)
 		await cast.offer_weapon_damage_riders.call(cast.caster, m_target, true_strike_profile, strike_result)
-		var cast_message := str(res.get("message", "True Strike resolves."))
+		var cast_message := str(res.get("message", "%s resolves." % str(cast.spell.get("name", "The spell"))))
 		res.merge(strike_result, true)
 		res["success"] = true
 		res["message"] = cast_message + " " + str(strike_result.get("message", "The attack misses."))

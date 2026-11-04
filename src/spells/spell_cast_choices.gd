@@ -121,15 +121,20 @@ static func choose_utility_options(cast: SpellCastContext) -> bool:
 			cast.highlight_reachable.call()
 			return false
 		cast.spell["_alter_self_natural_damage_type"] = natural_damage_type
-	if str(cast.spell.get("id", "")) == "true_strike":
+	var weapon_attack := SharedSpell.weapon_attack_effect(cast.spell)
+	if not weapon_attack.is_empty():
 		var strike_weapon: Dictionary = DataLoader.get_item(str(cast.spell.get("_true_strike_weapon_id", "")))
 		var normal_damage_type := str(strike_weapon.get("damage_type", "bludgeoning"))
-		var strike_damage_options: Array = [normal_damage_type]
-		if normal_damage_type != "radiant":
-			strike_damage_options.append("radiant")
-		var selected_strike_type := await cast.hud.request_damage_type_choice(strike_damage_options, "True Strike")
-		if selected_strike_type not in [normal_damage_type, "radiant"]:
-			cast.hud.add_log("Choose the True Strike attack's damage type.")
+		var strike_damage_options: Array = []
+		for option in weapon_attack.get("damage_type_options", ["weapon"]):
+			var resolved_option := normal_damage_type if str(option) == "weapon" else str(option)
+			if resolved_option not in strike_damage_options:
+				strike_damage_options.append(resolved_option)
+		var selected_strike_type := normal_damage_type
+		if strike_damage_options.size() > 1:
+			selected_strike_type = await cast.hud.request_damage_type_choice(strike_damage_options, str(cast.spell.get("name", "Spell")))
+		if selected_strike_type not in strike_damage_options:
+			cast.hud.add_log("Choose the %s attack's damage type." % str(cast.spell.get("name", "spell")))
 			cast.highlight_reachable.call()
 			return false
 		cast.spell["_true_strike_damage_type"] = selected_strike_type

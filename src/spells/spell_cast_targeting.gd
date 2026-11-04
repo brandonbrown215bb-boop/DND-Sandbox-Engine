@@ -159,7 +159,7 @@ static func collect_targets(cast: SpellCastContext) -> void:
 
 
 static func _spell_target_range(cast: SpellCastContext, spell_data: Dictionary) -> int:
-	if str(spell_data.get("id", "")) == "true_strike" and cast.caster != null:
+	if not SharedSpell.weapon_attack_effect(spell_data).is_empty() and cast.caster != null:
 		var equipped_weapon := DataLoader.get_item(cast.caster.inventory.get_weapon())
 		if not equipped_weapon.is_empty():
 			return maxi(1, CombatAction.weapon_range_hexes(equipped_weapon))

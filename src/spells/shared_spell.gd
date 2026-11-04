@@ -18,7 +18,7 @@ static func condition_expiry_error(expiry) -> String:
 	if not _integer(expiry["turns"], 1, 10): return "Condition expiry turns must be an integer from 1 to 10."
 	return ""
 
-const EFFECTS := ["heal", "temporary_hp", "grant_condition", "remove_condition", "area_selection", "grant_source_benefits", "grant_damage_link", "grant_damage_response", "create_actor", "actor_projection", "suppress_item_magic", "bind_tether", "max_hp_source", "settle_death", "destroy_object"]
+const EFFECTS := ["heal", "temporary_hp", "grant_condition", "remove_condition", "area_selection", "grant_source_benefits", "grant_damage_link", "grant_damage_response", "create_actor", "actor_projection", "suppress_item_magic", "bind_tether", "max_hp_source", "settle_death", "destroy_object", "weapon_attack"]
 const STEP_FIELDS := ["id", "type", "gate", "gate_step", "target", "shape", "radius", "size", "attack_type", "damage", "damage_type", "damage_components", "component_id", "scaling", "upcast", "save", "half_on_save", "save_context", "damage_scale_by_outcome", "damage_dice_policy", "damage_result_multiplier", "damage_reductions", "damage_bypasses", "recipient_exemption_choice", "effects", "incoming_negation", "incoming_negation_rule", "physical_requirements", "spatial_requirements"]
 const STEP_TYPES := ["attack", "save", "damage", "effect"]
 const STEP_GATES := ["always", "hit", "miss", "failed_save", "successful_save"]
@@ -105,6 +105,17 @@ static func _validate_single_effect(effect: Variant) -> String:
 			var multiplier_error := damage_multiplier_error(effect["result_multiplier"])
 			if not multiplier_error.is_empty(): return multiplier_error
 			if effect["result_multiplier"].has("exclude_critical"): return "Healing result multipliers cannot declare exclude_critical."
+	elif kind == "weapon_attack":
+		allowed.append_array(["ability", "weapon", "damage_type_options", "extra_damage"])
+		if str(effect.get("ability", "")) != "spellcasting": return "Shared weapon attacks currently support only the spellcasting ability."
+		if str(effect.get("weapon", "")) != "equipped_proficient_material": return "Shared weapon attacks require weapon equipped_proficient_material."
+		var type_options: Variant = effect.get("damage_type_options", ["weapon"])
+		if not type_options is Array or type_options.is_empty() or not type_options.all(func(value): return value is String and not str(value).is_empty()) or "weapon" not in type_options: return "Shared weapon attack damage_type_options must be strings including weapon."
+		if effect.has("extra_damage"):
+			var extra: Variant = effect["extra_damage"]
+			if not extra is Dictionary or str(extra.get("type", "")).is_empty() or not extra.get("by_character_level") is Dictionary or extra["by_character_level"].is_empty(): return "Shared weapon attack extra_damage needs type and by_character_level."
+			for level_key in extra["by_character_level"]:
+				if not str(level_key).is_valid_int() or not _formula(extra["by_character_level"][level_key]): return "Shared weapon attack extra_damage bands need integer levels and dice formulas."
 	elif kind == "grant_source_benefits":
 		if effect.size() != 2: return "Source benefit grants accept only type and benefits."
 		allowed.append("benefits")
@@ -620,6 +631,27 @@ static func _dice_formula(value: String) -> bool:
 	var expression := RegEx.new()
 	expression.compile("^[1-9][0-9]?d(4|6|8|10|12|20)$")
 	return expression.search(value.replace(" ", "")) != null
+
+## Generic weapon-attack payload (for example a cantrip that swings the
+## material-component weapon with the caster's spellcasting ability).
+static func weapon_attack_effect(spell: Dictionary) -> Dictionary:
+	if not uses(spell): return {}
+	for effect in spell.get("effects", []):
+		if effect is Dictionary and str(effect.get("type", "")) == "weapon_attack": return effect
+	return {}
+
+
+static func weapon_attack_extra_formula(effect: Dictionary, character_level: int) -> String:
+	var bands: Dictionary = effect.get("extra_damage", {}).get("by_character_level", {})
+	var best_level := -1
+	var formula := ""
+	for level_key in bands:
+		var threshold := int(str(level_key))
+		if character_level >= threshold and threshold > best_level:
+			best_level = threshold
+			formula = str(bands[level_key])
+	return formula
+
 
 static func has_effect(spell: Dictionary, kind: String) -> bool:
 	if not uses(spell): return false
