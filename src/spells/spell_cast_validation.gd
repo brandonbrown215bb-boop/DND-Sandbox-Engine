@@ -226,15 +226,15 @@ static func validate_weapon_and_steed(cast: SpellCastContext) -> bool:
 		cast.hud.add_log("[color=orange]Shillelagh needs a Club or Quarterstaff equipped in your weapon hand.[/color]")
 		cast.highlight_reachable.call()
 		return false
-	if str(cast.spell.get("id", "")) == "true_strike":
+	if not SharedSpell.weapon_attack_effect(cast.spell).is_empty():
 		var true_strike_weapon_id := cast.caster.inventory.get_weapon()
 		var true_strike_weapon := DataLoader.get_item(true_strike_weapon_id)
 		if true_strike_weapon.is_empty() or str(true_strike_weapon.get("type", "")) != "weapon" or not cast.caster.is_proficient_with_weapon(true_strike_weapon) or int(true_strike_weapon.get("value", 0)) <= 0:
-			cast.hud.add_log("[color=orange]True Strike requires an equipped weapon you are proficient with, worth at least 1 CP.[/color]")
+			cast.hud.add_log("[color=orange]%s requires an equipped weapon you are proficient with, worth at least 1 CP.[/color]" % str(cast.spell.get("name", "This spell")))
 			cast.highlight_reachable.call()
 			return false
 		if not SpellCastTargeting._creature_at_coord_matches_types(cast, cast.target_coord, ["humanoid", "beast", "aberration", "celestial", "construct", "dragon", "elemental", "fey", "fiend", "giant", "monstrosity", "ooze", "plant", "undead"]):
-			cast.hud.add_log("[color=orange]True Strike needs a living creature as the weapon attack target.[/color]")
+			cast.hud.add_log("[color=orange]%s needs a creature as the weapon attack target.[/color]" % str(cast.spell.get("name", "This spell")))
 			cast.highlight_reachable.call()
 			return false
 		cast.spell["_true_strike_weapon_id"] = true_strike_weapon_id

@@ -3038,9 +3038,10 @@
     {
       "type": "spell",
       "id": "true_strike",
-      "winner": "res://data/core/spells/core_spells.json#18",
+      "winner": "res://data/core/spells/crown_sc_03_support_02.json#1",
       "replaces": [
-        "res://data/core/spells/imported_spells.json#187"
+        "res://data/core/spells/imported_spells.json#187",
+        "res://data/core/spells/core_spells.json#18"
       ]
     },
     {

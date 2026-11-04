@@ -6298,7 +6298,7 @@ func _publish_true_strike_activity(target: Dictionary, weapon: Dictionary, resul
 	if draft.is_empty():
 		return
 	draft["kind"] = "spell_attack"
-	draft["title"] = "True Strike — " + str(weapon.get("name", "Weapon"))
+	draft["title"] = str(weapon.get("_spell_name", "Spell")) + " — " + str(weapon.get("name", "Weapon"))
 	ActivityHistory.publish(draft)
 
 

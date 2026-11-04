@@ -1,0 +1,48 @@
+[
+  {
+    "id": "true_strike",
+    "name": "True Strike",
+    "description": "You make one attack with the weapon used to cast the spell. The attack and its damage use your spellcasting ability instead of Strength or Dexterity. If the attack deals damage, choose Radiant or the weapon's normal damage type. The target then takes 1d6 Radiant damage, increasing to 2d6 at character level 11 and 3d6 at character level 17.",
+    "level": 0,
+    "school": "divination",
+    "casting_time": "action",
+    "classes": [
+      "bard",
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ],
+    "components": [
+      "S",
+      "M"
+    ],
+    "material": "a weapon with which you have proficiency and that is worth 1+ CP",
+    "rules_source": "SRD 5.2.1",
+    "execution": "shared",
+    "range": 0,
+    "target": "single",
+    "attack_type": "none",
+    "duration": "instantaneous",
+    "concentration": false,
+    "effects": [
+      {
+        "type": "weapon_attack",
+        "ability": "spellcasting",
+        "weapon": "equipped_proficient_material",
+        "damage_type_options": [
+          "weapon",
+          "radiant"
+        ],
+        "extra_damage": {
+          "type": "radiant",
+          "by_character_level": {
+            "5": "1d6",
+            "11": "2d6",
+            "17": "3d6"
+          }
+        }
+      }
+    ],
+    "rules_status": "2024-gameplay"
+  }
+]
