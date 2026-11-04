@@ -22,7 +22,7 @@ static func saved_state_error(dto: Dictionary) -> String:
 		for source in sources[condition]:
 			var value: Variant = sources[condition][source]
 			var permanent_sight_rot: bool = condition == "blinded" and str(source) == "disease:sight_rot" and (value is int or value is float) and float(value) == -1.0
-			if not source is String or not (value is int or value is float) or not is_finite(float(value)) or float(value) != floor(float(value)) or (int(value) <= 0 and not permanent_sight_rot):
+			if not source is String or not (value is int or value is float) or not is_finite(float(value)) or float(value) != floor(float(value)) or (int(value) <= 0 and not permanent_sight_rot and not _until_dispelled_source(state, source, value)):
 				return "invalid saved condition source duration"
 	var serial: Variant = dto.get("spell_cast_serial", 0)
 	if not (serial is int or serial is float) or not is_finite(float(serial)) or float(serial) != floor(float(serial)) or int(serial) < 0:
@@ -59,6 +59,10 @@ static func saved_state_error(dto: Dictionary) -> String:
 			return "invalid saved spell end aftermath"
 		var remaining: Variant = record.get("remaining_seconds", null)
 		var indefinite_power_word_stun := str(record.get("spell_id", "")) == "power_word_stun" and (remaining is int or remaining is float) and float(remaining) == -1.0
+		# A higher-slot tier authored as -1 lasts until dispelled; older saves never carry the flag.
+		if record.has("until_dispelled") and (not record["until_dispelled"] is bool or not bool(record["until_dispelled"]) or not (remaining is int or remaining is float) or float(remaining) != -1.0 or not DataLoader.get_spell(spell_id).get("duration_by_slot", []).any(func(tier): return tier is Dictionary and int(tier.get("duration_seconds", 0)) == -1)):
+			return "invalid saved until-dispelled duration"
+		indefinite_power_word_stun = indefinite_power_word_stun or bool(record.get("until_dispelled", false))
 		if not (remaining is int or remaining is float) or not is_finite(float(remaining)) or float(remaining) != floor(float(remaining)) or (int(remaining) <= 0 and not indefinite_power_word_stun) or int(remaining) > 172800:
 			return "invalid saved spell effect duration"
 		var saved_phase := str(record.get("expiry_phase", ""))
@@ -245,3 +249,10 @@ static func _declares_condition(definition: Dictionary, condition: String) -> bo
 	return false
 
 
+
+
+## An until-dispelled spell source keeps its granted conditions at duration -1.
+static func _until_dispelled_source(state, source, value) -> bool:
+	if not state is Dictionary or not (value is int or value is float) or float(value) != -1.0: return false
+	var record: Variant = state.get(source, {})
+	return record is Dictionary and record.get("until_dispelled", false) is bool and bool(record.get("until_dispelled", false))
