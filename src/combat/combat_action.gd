@@ -48,10 +48,10 @@ static func is_invisible(entity, include_hidden: bool = true) -> bool:
 	if SpellEffects.has_spell(entity, "faerie_fire"):
 		return false
 	if entity is Character:
-		return (entity.has_condition("invisible") or (include_hidden and entity.has_condition("hidden"))) and not entity.has_condition("starry_wisp")
+		return (entity.has_condition("invisible") or (include_hidden and entity.has_condition("hidden"))) and not entity.has_condition("starry_wisp") and not entity.has_condition("invisibility_suppressed")
 	if entity is Dictionary:
 		var conditions: Dictionary = entity.get("conditions", {})
-		return (conditions.has("invisible") or (include_hidden and conditions.has("hidden"))) and not conditions.has("starry_wisp")
+		return (conditions.has("invisible") or (include_hidden and conditions.has("hidden"))) and not conditions.has("starry_wisp") and not conditions.has("invisibility_suppressed")
 	return false
 
 
@@ -181,7 +181,7 @@ static func attacker_has_condition_disadvantage(attacker, ability: String = "", 
 		return true
 	if ability.to_upper() == "STR" and has_condition(attacker, "ray_of_enfeeblement"):
 		return true
-	if has_condition(attacker, "vicious_mockery_disadvantage"):
+	if has_condition(attacker, "vicious_mockery_disadvantage") or has_condition(attacker, "next_attack_disadvantage"):
 		return true
 	return false
 
@@ -648,6 +648,7 @@ static func protected_creature_types_for_target(target) -> Array:
 
 ## True while a hit spell effect prevents this target from regaining Hit Points.
 static func is_healing_suppressed(target) -> bool:
+	if has_condition(target, "healing_prevented"): return true
 	if target is Character:
 		return not target.healing_suppression_sources.is_empty()
 	if target is Dictionary:

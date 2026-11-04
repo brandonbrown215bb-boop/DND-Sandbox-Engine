@@ -3,11 +3,13 @@
 class_name SharedSpell
 extends RefCounted
 
-const CONDITIONS := ["blinded", "deafened", "frightened", "poisoned", "prone", "restrained", "stunned", "paralyzed", "incapacitated", "blessed", "baned", "shield_of_faith"]
+const CONDITIONS := ["blinded", "deafened", "frightened", "poisoned", "prone", "restrained", "stunned", "paralyzed", "incapacitated", "blessed", "baned", "shield_of_faith", "speed_reduced", "healing_prevented", "opportunity_attack_blocked", "next_attack_disadvantage", "invisibility_suppressed"]
+## Conditions whose consumer reads an authored magnitude (hexes) from the source record.
+const AMOUNT_CONDITIONS := {"speed_reduced": [1, 12]}
 const ABILITIES := ["STR", "DEX", "CON", "INT", "WIS", "CHA"]
 ## Optional grant_condition expiry: a caster-owned turn boundary plus a count of
 ## the caster's turns, e.g. "until the end of your next turn" is caster_turn_end/2.
-const CONDITION_EXPIRY_BOUNDARIES := {"caster_turn_start": "start", "caster_turn_end": "end"}
+const CONDITION_EXPIRY_BOUNDARIES := {"caster_turn_start": "start", "caster_turn_end": "end", "target_turn_start": "recipient_start", "target_turn_end": "recipient_end"}
 
 static func condition_expiry_error(expiry) -> String:
 	if not expiry is Dictionary or expiry.size() != 2 or not expiry.has("boundary") or not expiry.has("turns"):
@@ -172,6 +174,10 @@ static func _validate_single_effect(effect: Variant) -> String:
 			allowed.append("expiry")
 			var expiry_error := condition_expiry_error(effect["expiry"])
 			if not expiry_error.is_empty(): return expiry_error
+		var amount_range: Array = AMOUNT_CONDITIONS.get(str(effect.get("condition", "")), [])
+		if kind == "grant_condition" and not amount_range.is_empty():
+			allowed.append("amount")
+			if not _integer(effect.get("amount"), int(amount_range[0]), int(amount_range[1])): return "Shared %s requires an integer amount %d..%d." % [effect.condition, amount_range[0], amount_range[1]]
 	else:
 		allowed.append_array(["shape", "radius", "size"])
 		if effect.get("shape", "") == "line":
@@ -864,6 +870,7 @@ static func apply_custom_effects(caster: Character, target, effects: Array, resu
 					SpellEffects.grant(target, result.get("effect_cast", {}), str(effect["condition"]), CONDITION_EXPIRY_BOUNDARIES[str(expiry["boundary"])], int(expiry["turns"]) * 6)
 				else:
 					SpellEffects.grant(target, result.get("effect_cast", {}), str(effect["condition"]))
+				if effect.has("amount"): SpellEffects.set_condition_amount(target, result.get("effect_cast", {}), str(effect["condition"]), int(effect["amount"]))
 				if CombatAction.has_condition(target, str(effect["condition"])): messages.append("%s is %s." % [target_name, effect["condition"]])
 			"remove_condition":
 				if target is Character: target.remove_condition(str(effect["condition"]))
