@@ -2009,9 +2009,9 @@ func _test_spellcasting() -> void:
 		color_spray_resolution = CombatAction.resolve_spell(mockery_caster, color_spray_target, color_spray)
 		if not bool(color_spray_resolution.get("saved", true)):
 			break
-	var color_spray_effects := CombatAction.apply_spell_failed_save_effects(color_spray_target, color_spray, color_spray_resolution)
+	# SC-05 support 01: shared Color Spray grants Blinded inside resolve_spell with a caster end-of-turn expiry.
+	var color_spray_blinded := color_spray_target.has_condition("blinded")
 	var color_spray_attack := color_spray_target.make_attack_roll()
-	color_spray_target.tick_conditions()
 	var command_spell: Dictionary = DataLoader.get_spell("command")
 	var command_target := _monster_inst("goblin")
 	command_target["saving_throw_bonuses"] = {"WIS": -100}
@@ -2131,7 +2131,7 @@ func _test_spellcasting() -> void:
 	_assert("acid_splash" in DataLoader.get_character_class("sorcerer").get("spell_list_ids", []) and "acid_splash" in DataLoader.get_character_class("wizard").get("spell_list_ids", []), "Acid Splash is available to Sorcerer and Wizard")
 	_assert(CombatAction.spell_damage_formula(scaling_caster, acid_splash) == "2d6", "Acid Splash receives its level-5 cantrip upgrade")
 	_assert(color_spray.get("school", "") == "illusion" and color_spray.get("target", "") == "cone" and color_spray.get("range", -1) == 0 and color_spray.get("components", []) == ["V", "S", "M"] and color_spray.get("duration", "") == "instantaneous" and color_spray.get("save", "") == "CON" and int(color_spray.get("effects", [])[0].get("size", 0)) == 3, "Color Spray records the 15-foot Constitution-save cone, components, and instant duration")
-	_assert(not color_spray_resolution.get("saved", true) and color_spray_effects.size() == 1 and color_spray_target.has_condition("blinded") == false and color_spray_attack.get("disadvantage", false), "Color Spray Blinds a creature on a failed save and imposes attack Disadvantage")
+	_assert(not color_spray_resolution.get("saved", true) and color_spray_blinded and color_spray_attack.get("disadvantage", false), "Color Spray Blinds a creature on a failed save and imposes attack Disadvantage")
 	_assert("color_spray" in DataLoader.get_character_class("bard").get("spell_list_ids", []) and "color_spray" in DataLoader.get_character_class("sorcerer").get("spell_list_ids", []) and "color_spray" in DataLoader.get_character_class("wizard").get("spell_list_ids", []), "Color Spray is available to Bard, Sorcerer, and Wizard")
 	_assert(command_spell.get("save", "") == "WIS" and command_spell.get("components", []) == ["V"] and command_spell.get("target_creature_type_exclusions", []).is_empty() and command_spell.get("upcast", {}).get("additional_targets_per_level", 0) == 1, "Command records its Wisdom save, verbal component, no creature-type exclusion (SRD 5.2.1), and extra target per upcast level")
 	_assert(DataLoader.get_spell("find_steed").get("duration", "") == "Instantaneous" and DataLoader.get_spell("divine_smite").get("duration", "") == "Instantaneous" and DataLoader.get_spell("lesser_restoration").get("casting_time", "") == "bonus_action" and DataLoader.get_spell("flame_strike").get("damage_components", []).size() == 2 and DataLoader.get_spell("enlarge/reduce").get("damage", "") == "", "Batch 089 spell data corrections match SRD 5.2.1 (Find Steed/Divine Smite instantaneous, Lesser Restoration bonus action, Flame Strike fire+radiant, Enlarge/Reduce no damage)")
