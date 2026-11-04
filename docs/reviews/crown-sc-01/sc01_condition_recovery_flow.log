@@ -1,0 +1,60 @@
+[ok]   S247 generic Character/monster and spell auto-failure emits no dice: stunned DEX
+[ok]   S247 generic Character/monster and spell auto-failure emits no dice: unconscious STR
+[ok]   S247 generic Character/monster and spell auto-failure emits no dice: unconscious DEX
+[ok]   S247 generic Character/monster and spell auto-failure emits no dice: petrified STR
+[ok]   S247 generic Character/monster and spell auto-failure emits no dice: petrified DEX
+[ok]   S247 actual save target has an eligible visible party roll-token owner
+[ok]   S247 actual HUD save cast resolves automatic failure without rolling a d20 (action=false dice=[{ "type": "multiple", "count": 1, "sides": 8, "rolls": [2], "kept": [true], "total": 2 }] log=(Player) ===[/color]
+Miss! Attack roll 7 vs AC 19
+Miss! Attack roll 15 vs AC 19
+Fighter Fixture failed DEX save (DC 10) taking 11 radiant damage.
+Spell missed! Ranged spell attack 12 vs AC 19
+Spell Hit! Dealing 9 poison damage. Fighter Fixture is poisoned.
+Fighter Fixture failed CHA save (DC 10). Fighter Fixture is baned.
+[color=yellow]Goblin 1's concentration ends.[/color]
+Casting Sacred Flame. Select target hex.
+Goblin 1 automatically fails the DEX save as a Humanoid, taking 2 radiant damage.
+)
+[ok]   S247 automatic HUD save does not spend an eligible roll token
+[ok]   S247 actual monster spell automatic save bypasses optional chooser, Inspiration and roll tokens
+[ok]   S248 Hide fixture has a legal place: 
+[ok]   S248 real Cunning Hide branch uses poisoned check owner and pays once: cunning_hide
+[ok]   S248 Hide captures actual proficiency, expertise and Exhaustion arithmetic: cunning_hide
+[ok]   S248 repeated Hide submission cannot roll or pay again: cunning_hide
+[ok]   S248 Hide fixture has a legal place: 
+[ok]   S248 real Cunning Hide branch uses poisoned check owner and pays once: cunning_action
+[ok]   S248 Hide captures actual proficiency, expertise and Exhaustion arithmetic: cunning_action
+[ok]   S248 repeated Hide submission cannot roll or pay again: cunning_action
+[ok]   S248 actual monster zone escape rolls Poisoned Disadvantage
+[ok]   S248 executable cord fixture loads through production DataLoader
+[ok]   S248 actual monster tether escape applies Poisoned modes
+[ok]   S248 monster tether escape includes stat-block skill and Exhaustion exactly once
+[ok]   S248 actual monster tether rescue uses condition-aware check rather than a raw d20
+[ok]   S248 actual Character tether escape applies modes and spends one Action without rerolling a repeated submission
+[OverworldMap] Successfully loaded 43 tiles from campaign The Lost Crown
+[OverworldMap] Placed Player 1 at start tile: (0, 0)
+[OverworldMap] Placed Player 2 at start tile: (0, 0)
+[ok]   S248 production rest ambush uses the same proficient/expert/Exhaustion modifier as the selected watcher's check
+[DungeonGenerator] Procedurally built dungeon with 5 rooms.
+[Character] Alice leveled up to 2! (+3 HP, now 15)
+[GameManager] Alice leveled up!
+[Character] Bob leveled up to 2! (+3 HP, now 11)
+[GameManager] Bob leveled up!
+[ok]   S235 entering actual room asleep drops the exact held copy into durable ground
+WARNING: [SaveManager] Save rejected: the party is inside an active dungeon; return to its entrance checkpoint
+     at: push_warning (core/variant/variant_utility.cpp:1033)
+     GDScript backtrace (most recent call first):
+         [0] save_game (res://src/autoload/save_manager.gd:27)
+         [1] checkpoint (res://src/condition_recovery_flow.gd:471)
+         [2] _spawn_scene (res://src/viewport_harness.gd:195)
+[ok]   S235 active-room save remains refused at the existing checkpoint boundary
+[ok]   S235 actual room owner immediately cleans incapacitated source recipients: stunned
+[ok]   S235 actual room click preserves generic incapacitated movement: stunned
+[ok]   S235 actual room owner immediately cleans incapacitated source recipients: incapacitated
+[ok]   S235 actual room click preserves generic incapacitated movement: incapacitated
+[SaveManager] Successfully saved game to user://saves/dnd2024/condition_recovery.sav
+[ok]   S235 allowed entrance checkpoint preserves exact dropped gear, sleep and independent Prone
+--------------------------------------------------
+ VIEWPORT RESULTS: 0 failed (1 tests run)
+VIEWPORT TESTS PASSED
+SCENARIO PASSED: condition_recovery_flow

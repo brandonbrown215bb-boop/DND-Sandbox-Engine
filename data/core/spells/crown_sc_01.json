@@ -1,0 +1,44 @@
+[
+  {
+    "id": "ray_of_sickness",
+    "name": "Ray of Sickness",
+    "description": "You shoot a greenish ray at a creature within range. Make a ranged spell attack against the target. On a hit, the target takes 2d8 Poison damage and has the Poisoned condition until the end of your next turn. When you cast this spell using a higher-level spell slot, the damage increases by 1d8 for each slot level above 1.",
+    "level": 1,
+    "school": "necromancy",
+    "casting_time": "action",
+    "range": 6,
+    "target": "single",
+    "attack_type": "ranged_spell",
+    "damage": "2d8",
+    "damage_type": "poison",
+    "upcast": {
+      "starting_level": 1,
+      "damage_per_level": "1d8"
+    },
+    "classes": [
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Instantaneous",
+    "concentration": false,
+    "rules_source": "SRD5.2.1",
+    "rules_status": "2024-gameplay-partial",
+    "duration_seconds": 12,
+    "effects": [
+      {
+        "type": "grant_condition",
+        "condition": "poisoned",
+        "on_spell_hit": true,
+        "expiry": {
+          "boundary": "caster_turn_end",
+          "turns": 2
+        }
+      }
+    ],
+    "execution": "shared"
+  }
+]

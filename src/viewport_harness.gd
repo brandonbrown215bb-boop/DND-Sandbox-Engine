@@ -566,6 +566,7 @@ func _run_scenario(scenario: String) -> void:
 		"mass_healing_word_flow": await test_mass_healing_word_flow()
 		"conversion_batch_001_flow": await ConversionBatch001Flow.run(self)
 		"conversion_batch_002_flow": await ConversionBatch002Flow.run(self)
+		"crown_sc_01_flow": await CrownSc01Flow.run(self)
 		"sorcerer_twinned_spell": await test_sorcerer_twinned_spell()
 		"overworld": await test_overworld()
 		"companion_lifecycle": await test_companion_lifecycle()
@@ -16196,6 +16197,10 @@ func test_mixed_mechanics_encounter() -> void:
 	var ray_target_hp_before := int(shocked_monster.get("current_hp", 0))
 	var ray_target_max_hp_before := int(shocked_monster.get("max_hp", 0))
 	var ray_target_ac_before := int(shocked_monster.get("armor_class", 10))
+	# SRD 5.2.1 Ray of Sickness reaches 30 feet (6 hexes); stand the target within it.
+	var ray_target_hex_before: Vector2i = shocked_monster.get("hex_position", Vector2i.ZERO)
+	shocked_monster["hex_position"] = combat.player_entities[combat.current_player_idx].get("hex_position", Vector2i.ZERO) + Vector2i(1, 0)
+	combat._update_grid_entities()
 	shocked_monster["current_hp"] = 500
 	shocked_monster["max_hp"] = 500
 	shocked_monster["armor_class"] = 0
@@ -16212,6 +16217,8 @@ func test_mixed_mechanics_encounter() -> void:
 	shocked_monster["current_hp"] = ray_target_hp_before
 	shocked_monster["max_hp"] = ray_target_max_hp_before
 	shocked_monster["armor_class"] = ray_target_ac_before
+	shocked_monster["hex_position"] = ray_target_hex_before
+	combat._update_grid_entities()
 	shocked_monster.get("conditions", {}).erase("poisoned")
 	wizard.spell_slots = ray_slots_before
 	_assert(ray_hit_applied_poison, "Mixed encounter casts Ray of Sickness as a ranged attack and applies Poisoned only on a hit")

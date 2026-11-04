@@ -1,0 +1,60 @@
+[ok]   B1R2 Production: Step 1 executed against reduced AC 13 and hit; no double damage (10 HP remaining)
+[ok]   B1R2 Production: ConfirmationDialog is visibly open in HUD on accept
+[ok]   B1R2 Production: Defense AC 15 maintained while popup awaits
+[ok]   B1R2 Production: Ally damaged once by Step 0 (20 HP remaining)
+[ok]   B1R2 Production: Verified popup was open and inspected before accept
+[ok]   B1R2 Production: Accepting Stroke of Luck maintains concentration on Shield of Faith
+[ok]   B1R2 Production: Defense AC 15 maintained
+[ok]   B1R2 Production: Step 1 missed against retained AC 15; HP suffered only Step 0 damage (20 HP remaining)
+[ok]   B1R2 Production: While popup awaits, TempHP absorbed 10 and HP loss was 14 (16 HP remaining)
+[ok]   B1R2 Production: TempHP concentration popup was opened and declined
+[ok]   B1R2 Production: Resolved damage 24 drove DC 12 save, ending concentration
+[ok]   B1R2 Production Chain: Ally initial AC is 15 with Shield of Faith
+[ok]   B1R2 Production Chain: First popup is visibly open for Stroke of Luck
+[ok]   B1R2 Production Chain: First popup title indicates Stroke of Luck for ally
+[ok]   B1R2 Production Chain: Shield of Faith and AC 15 retained while Stroke popup awaits
+[ok]   B1R2 Production Chain: Ally suffered Step 0 damage (20 HP remaining); Step 1 not executed while Stroke popup awaits
+[ok]   B1R2 Production Chain: Second popup is visibly open for Bardic Inspiration
+[ok]   B1R2 Production Chain: Second popup title indicates Bardic Inspiration for ally
+[ok]   B1R2 Production Chain: Shield of Faith and AC 15 retained while Bardic popup awaits
+[ok]   B1R2 Production Chain: Step 1 still waiting while Bardic popup awaits (20 HP remaining)
+[ok]   B1R2 Production Chain: Declined Stroke was not consumed
+[ok]   B1R2 Production Chain: Verified Stroke popup was opened and declined
+[ok]   B1R2 Production Chain: Verified Bardic popup was opened and accepted
+[ok]   B1R2 Production Chain: Accepting Bardic Inspiration maintained concentration on Shield of Faith
+[ok]   B1R2 Production Chain: Defense AC 15 maintained
+[ok]   B1R2 Production Chain: Stroke of Luck was not consumed
+[ok]   B1R2 Production Chain: Bardic Inspiration die was consumed
+[ok]   B1R2 Production Chain: Step 1 attack missed against retained AC 15; exactly 1 damage occurrence (20 HP remaining)
+[SaveManager] Successfully saved game to user://saves/dnd2024/shared_spell_flow.sav
+[SaveManager] Test mode: restored save state without scene transition
+[ok]   New-ID timed effects and concentration round-trip through the safe disk-save boundary
+[ok]   Reload restores new-ID effect ownership and live target references
+WARNING: [SaveManager] Save 'shared_spell_flow' rejected: Wizard spellbook contains an invalid or duplicate spell
+     at: push_warning (core/variant/variant_utility.cpp:1033)
+     GDScript backtrace (most recent call first):
+         [0] load_game (res://src/autoload/save_manager.gd:143)
+         [1] test_shared_spell_flow (res://src/viewport_harness.gd:12652)
+         [2] _execute_player_spell (res://src/combat/combat_state.gd:5050)
+         [3] _execute_selected_spell (res://src/combat/combat_state.gd:5079)
+         [4] _resolve_spell_cast_targets (res://src/combat/combat_state.gd:5247)
+         [5] _resolve_spell_cast_targets (res://src/spells/spell_cast_results.gd:116)
+         [6] _resolve_stepped_spell_cast (res://src/spells/spell_cast_results.gd:893)
+         [7] _settle_ordered_choices (res://src/spells/spell_cast_results.gd:819)
+         [8] _settle_concentration_choice (res://src/spells/spell_cast_results.gd:678)
+         [9] request_reaction (res://src/combat/combat_hud.gd:107)
+[ok]   Missing mod content rejects reload before replacing the live party
+[ok]   A reloaded JSON effect expires and releases concentration through the common clock
+[DungeonGenerator] Procedurally built dungeon with 5 rooms.
+[Character] JSON Wizard leveled up to 2! (+5 HP, now 13)
+[GameManager] JSON Wizard leveled up!
+[Character] JSON Ally leveled up to 2! (+9 HP, now 39)
+[GameManager] JSON Ally leveled up!
+[ok]   Shared spells have an authored exploration room
+[ok]   Exploration discovers JSON spells in a shared spell/target control
+[ok]   The real exploration Cast control applies a new-ID spell and spends its slot once (slots={ "1": 2 } concentration={ "spell_id": "sandbox:resolve", "effect_source": "spell:player_0_wizard:6", "targets": [<RefCounted#-9223370567069987994>] })
+SHARED_SPELL_LIVE_FLOW_CHECKS_COMPLETE
+--------------------------------------------------
+ VIEWPORT RESULTS: 0 failed (1 tests run)
+VIEWPORT TESTS PASSED
+SCENARIO PASSED: shared_spell_flow

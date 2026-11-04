@@ -5,6 +5,17 @@ extends RefCounted
 
 const CONDITIONS := ["blinded", "deafened", "frightened", "poisoned", "prone", "restrained", "stunned", "paralyzed", "incapacitated", "blessed", "baned", "shield_of_faith"]
 const ABILITIES := ["STR", "DEX", "CON", "INT", "WIS", "CHA"]
+## Optional grant_condition expiry: a caster-owned turn boundary plus a count of
+## the caster's turns, e.g. "until the end of your next turn" is caster_turn_end/2.
+const CONDITION_EXPIRY_BOUNDARIES := {"caster_turn_start": "start", "caster_turn_end": "end"}
+
+static func condition_expiry_error(expiry) -> String:
+	if not expiry is Dictionary or expiry.size() != 2 or not expiry.has("boundary") or not expiry.has("turns"):
+		return "Condition expiry requires exactly boundary and turns."
+	if str(expiry["boundary"]) not in CONDITION_EXPIRY_BOUNDARIES: return "Unsupported condition expiry boundary."
+	if not _integer(expiry["turns"], 1, 10): return "Condition expiry turns must be an integer from 1 to 10."
+	return ""
+
 const EFFECTS := ["heal", "temporary_hp", "grant_condition", "remove_condition", "area_selection", "grant_source_benefits", "grant_damage_link", "grant_damage_response", "create_actor", "actor_projection", "suppress_item_magic", "bind_tether", "max_hp_source", "settle_death", "destroy_object"]
 const STEP_FIELDS := ["id", "type", "gate", "gate_step", "target", "shape", "radius", "size", "attack_type", "damage", "damage_type", "damage_components", "component_id", "scaling", "upcast", "save", "half_on_save", "save_context", "damage_scale_by_outcome", "damage_dice_policy", "damage_result_multiplier", "damage_reductions", "damage_bypasses", "recipient_exemption_choice", "effects", "incoming_negation", "incoming_negation_rule", "physical_requirements", "spatial_requirements"]
 const STEP_TYPES := ["attack", "save", "damage", "effect"]
@@ -157,6 +168,10 @@ static func _validate_single_effect(effect: Variant) -> String:
 	elif kind in ["grant_condition", "remove_condition"]:
 		allowed.append("condition")
 		if effect.get("condition", "") not in CONDITIONS: return "Unsupported shared condition."
+		if kind == "grant_condition" and effect.has("expiry"):
+			allowed.append("expiry")
+			var expiry_error := condition_expiry_error(effect["expiry"])
+			if not expiry_error.is_empty(): return expiry_error
 	else:
 		allowed.append_array(["shape", "radius", "size"])
 		if effect.get("shape", "") not in ["sphere", "cone", "cube"]: return "Unsupported shared area shape."
@@ -839,7 +854,11 @@ static func apply_custom_effects(caster: Character, target, effects: Array, resu
 				if DamageResponseRules.grant(target, result.get("effect_cast", {}), effect.policy):
 					messages.append("%s gains a source-owned damage response." % target_name)
 			"grant_condition":
-				SpellEffects.grant(target, result.get("effect_cast", {}), str(effect["condition"]))
+				if effect.has("expiry"):
+					var expiry: Dictionary = effect["expiry"]
+					SpellEffects.grant(target, result.get("effect_cast", {}), str(effect["condition"]), CONDITION_EXPIRY_BOUNDARIES[str(expiry["boundary"])], int(expiry["turns"]) * 6)
+				else:
+					SpellEffects.grant(target, result.get("effect_cast", {}), str(effect["condition"]))
 				if CombatAction.has_condition(target, str(effect["condition"])): messages.append("%s is %s." % [target_name, effect["condition"]])
 			"remove_condition":
 				if target is Character: target.remove_condition(str(effect["condition"]))

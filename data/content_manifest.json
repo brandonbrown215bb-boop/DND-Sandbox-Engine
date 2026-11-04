@@ -3321,6 +3321,14 @@
     },
     {
       "type": "spell",
+      "id": "ray_of_sickness",
+      "winner": "res://data/core/spells/crown_sc_01.json#1",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#149"
+      ]
+    },
+    {
+      "type": "spell",
       "id": "cure_wounds",
       "winner": "res://data/core/spells/conversion_batch_002.json#1",
       "replaces": [
