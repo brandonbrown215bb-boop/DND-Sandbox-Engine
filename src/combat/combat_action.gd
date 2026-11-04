@@ -962,6 +962,17 @@ static func is_immune_to_damage(target, damage_type: String) -> bool:
 
 ## One typed settlement path; reductions/saves resolve before calling it.
 ## CombatState keeps concentration prompts and positional/death presentation.
+## Damage origin tags carried in reaction decisions. Only the primary settlement of
+## an attack-roll hit or of a spell's damage is tagged; riders, packets, hazards,
+## falls, items and features stay untagged.
+const DAMAGE_ORIGIN_ATTACK_HIT := "attack_hit"
+const DAMAGE_ORIGIN_SPELL := "spell"
+
+static func with_damage_origin(decisions: Dictionary, origin: String) -> Dictionary:
+	var tagged := decisions.duplicate()
+	tagged["damage_origin"] = origin
+	return tagged
+
 static func resolve_damage(target, amount: int, damage_type: String, reaction_decisions: Dictionary = {}, bypass_resistance: bool = false, preserve_turning: bool = false, source_character: Character = null, damage_occurrence_id: int = 0, bypass_layers: Array = [], original_raw_amount: int = -1, reduction_prevented: int = 0) -> Dictionary:
 	if damage_occurrence_id <= 0: damage_occurrence_id = WardRules.next_damage_occurrence_id()
 	reaction_decisions = DamageResponseRules.begin(reaction_decisions, damage_occurrence_id, source_character)
@@ -1153,7 +1164,7 @@ static func resolve_damage(target, amount: int, damage_type: String, reaction_de
 	# Marker riders: the marked target takes extra damage when the marker's source deals it damage.
 	if resolved > 0 and not bool(reaction_decisions.get("_marker_rider_child", false)) and not bool(reaction_decisions.get("_damage_link_child", false)) and not bool(reaction_decisions.get("_damage_response_child", false)):
 		var rider_receipts: Array = []
-		for rider in marker_damage_riders(target, source_character):
+		for rider in (marker_damage_riders(target, source_character) if str(reaction_decisions.get("damage_origin", "")) in [DAMAGE_ORIGIN_ATTACK_HIT, DAMAGE_ORIGIN_SPELL] else []):
 			var still_alive: bool = target.is_alive if target is Character else bool(target.get("is_alive", true))
 			if not still_alive: break
 			var rider_amount := Dice.parse_dice_string(str(rider.dice), {}, source_character)
@@ -1536,7 +1547,7 @@ static func resolve_hunters_mark_damage(attacker: Character, target_entity: Dict
 			if effect.get("type", "") == "spell_damage_dice_override" and str(effect.get("spell_id", "")) == "hunters_mark":
 				dice = str(effect.get("dice", dice))
 	var rolled := Dice.parse_dice_string(dice)
-	var actual := int(resolve_damage(target_entity, rolled, "force", {}, false, false, attacker)["damage"])
+	var actual := int(resolve_damage(target_entity, rolled, "force", with_damage_origin({}, DAMAGE_ORIGIN_SPELL), false, false, attacker)["damage"])
 	return {"success": true, "damage": actual, "dice": dice, "damage_type": "force", "message": "Hunter's Mark deals +%d %s force damage." % [actual, dice]}
 
 
@@ -2124,7 +2135,7 @@ static func _settle_weapon_attack_hit(stage: Dictionary) -> Dictionary:
 		weapon_damage_decisions["zero_hp_aftermath_carrier"] = AftermathSuccessorRules.carrier_for_weapon(weapon_data)
 	var damage_occurrence_id := WardRules.next_damage_occurrence_id()
 	weapon_damage_decisions = DamageResponseRules.begin(weapon_damage_decisions, damage_occurrence_id, attacker)
-	var weapon_settlement := resolve_damage(target_entity, weapon_component_after_reactions, damage_type, weapon_damage_decisions, bypass_weapon_resistance, false, attacker, damage_occurrence_id)
+	var weapon_settlement := resolve_damage(target_entity, weapon_component_after_reactions, damage_type, with_damage_origin(weapon_damage_decisions, DAMAGE_ORIGIN_ATTACK_HIT), bypass_weapon_resistance, false, attacker, damage_occurrence_id)
 	var additional_settlements: Array[Dictionary] = []
 	var additional_actual_dealt := 0
 	var additional_resolved := 0
@@ -2479,7 +2490,7 @@ static func resolve_divine_smite(caster: Character, target_entity, slot_level: i
 		dice_count *= 2
 	var damage_detail := Dice.parse_dice_details("%dd8" % dice_count)
 	var rolled_damage := int(damage_detail["final_total"])
-	var settlement := resolve_damage(target_entity, rolled_damage, damage_type, {}, false, false, caster)
+	var settlement := resolve_damage(target_entity, rolled_damage, damage_type, with_damage_origin({}, DAMAGE_ORIGIN_SPELL), false, false, caster)
 	var actual := int(settlement["damage"])
 	var resolved := int(settlement["resolved"])
 	damage_detail["rolled_total"] = rolled_damage

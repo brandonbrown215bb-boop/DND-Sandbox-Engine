@@ -56,10 +56,10 @@ static func _renamed_checks(h) -> void:
 	s = hex.duplicate(true); s["_chosen_condition"] = "cursed_necrotic"
 	CombatAction.resolve_spell(caster, c, s, false, {}, [], 3, 5)
 	var hp0 := int(c.current_hp)
-	var mine := CombatAction.resolve_damage(c, 5, "fire", {}, false, false, caster)
+	var mine := CombatAction.resolve_damage(c, 5, "fire", CombatAction.with_damage_origin({}, CombatAction.DAMAGE_ORIGIN_SPELL), false, false, caster)
 	var riders: Array = mine.get("marker_rider_receipts", [])
 	var hp1 := int(c.current_hp)
-	var theirs := CombatAction.resolve_damage(c, 5, "fire", {}, false, false, other)
+	var theirs := CombatAction.resolve_damage(c, 5, "fire", CombatAction.with_damage_origin({}, CombatAction.DAMAGE_ORIGIN_SPELL), false, false, other)
 	h._assert(riders.size() == 1 and str(riders[0].get("damage_type", riders[0].get("type", ""))) == "necrotic" and hp0 - hp1 >= 6 and hp0 - hp1 <= 13 and theirs.get("marker_rider_receipts", []).is_empty() and hp1 - int(c.current_hp) == 5, P + "renamed option 4: the caster's damage adds 1d8 Necrotic once; another creature's damage does not (%s)" % str(riders))
 	var d := _target("crown-sc07s8-d", Vector2i(-1, 0))
 	s = hex.duplicate(true); s["_chosen_condition"] = "cursed_dodge"
@@ -158,7 +158,7 @@ static func _player_casts(h) -> void:
 	var r5 := _rec(bleeder)
 	h._assert(bleeder.conditions.has("cursed_necrotic") and int(r5.get("remaining_seconds", 0)) == 28800 and not bool(r5.get("concentration", true)) and int(wizard.spell_slots.get("5", 1)) == 0 and dodger.conditions.has("cursed_dodge") and CrownSc07Support01Flow._source(dodger) == str(wizard.concentrating_on.get("effect_source", "")), P + "player upcast at level 5: 8-hour curse without Concentration; the level-3 concentration curse is untouched (%s)" % str(r5))
 	var hp0 := int(bleeder.current_hp)
-	var dmg := CombatAction.resolve_damage(bleeder, 3, "fire", {}, false, false, wizard)
+	var dmg := CombatAction.resolve_damage(bleeder, 3, "fire", CombatAction.with_damage_origin({}, CombatAction.DAMAGE_ORIGIN_SPELL), false, false, wizard)
 	h._assert(dmg.get("marker_rider_receipts", []).size() == 1 and hp0 - int(bleeder.current_hp) >= 4, P + "the player's damage to the cursed creature adds 1d8 Necrotic")
 	SpellEffects.end_concentration(wizard, [dodger, bleeder])
 	wizard.concentrating_on = {}
