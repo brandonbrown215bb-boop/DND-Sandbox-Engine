@@ -3321,6 +3321,14 @@
     },
     {
       "type": "spell",
+      "id": "lightning_bolt",
+      "winner": "res://data/core/spells/crown_sc_03.json#1",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#113"
+      ]
+    },
+    {
+      "type": "spell",
       "id": "ice_knife",
       "winner": "res://data/core/spells/crown_sc_02.json#1",
       "replaces": [

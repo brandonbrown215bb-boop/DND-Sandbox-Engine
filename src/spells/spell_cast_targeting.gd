@@ -24,6 +24,8 @@ static func collect_targets(cast: SpellCastContext) -> void:
 			cast.targets = union_sphere_targets(area_centers, radius, cast.grid)
 		else:
 			match str(cast.area_selection.get("shape", "sphere")):
+				"line" when str(cast.area_selection.get("origin", "")) == "self":
+					cast.targets = Targeting.get_self_line_targets(origin, cast.target_coord, int(cast.area_selection.get("size", 1)), cast.grid)
 				"line":
 					cast.targets = HexUtils.hex_line(area_centers[0], area_centers[1]) if area_centers.size() == 2 and HexUtils.get_distance(area_centers[0], area_centers[1]) <= int(cast.area_selection.get("size", 12)) else []
 				"point":
@@ -166,6 +168,8 @@ static func _spell_target_range(cast: SpellCastContext, spell_data: Dictionary) 
 		for effect in spell_data.get("effects", []):
 			if str(effect.get("type", "")) == "area_selection" and str(effect.get("shape", "")) in ["cone", "cube"]:
 				return 1 # Select one adjacent hex to indicate direction; range metamagic does not expand a self-originating area.
+			if str(effect.get("type", "")) == "area_selection" and str(effect.get("shape", "")) == "line" and str(effect.get("origin", "")) == "self":
+				return maxi(1, int(effect.get("size", 1))) # Any hex along the intended line sets its direction.
 	if bool(spell_data.get("_metamagic_distant", false)):
 		max_range = SorcererRules.distant_spell_range(max_range)
 	if cast.caster != null:

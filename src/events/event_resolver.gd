@@ -478,6 +478,11 @@ static func resolve_area_selection(effect: Dictionary) -> Dictionary:
 		return {"success": false, "type": "area_selection", "message": "Unsupported area shape: %s" % shape}
 	if shape == "point":
 		return {"success": true, "type": "area_selection", "shape": shape, "persistent": false, "message": "Selected one point."}
+	if shape == "line" and str(effect.get("origin", "")) == "self":
+		var self_length := int(effect.get("size", 0))
+		if self_length < 1 or self_length > 40:
+			return {"success": false, "type": "area_selection", "message": "Line length must be between 1 and 40 hexes."}
+		return {"success": true, "type": "area_selection", "shape": shape, "origin": "self", "size": self_length, "persistent": false, "message": "Selected a line %d hexes long from the caster." % self_length}
 	if shape == "line":
 		var length := int(effect.get("size", 0))
 		if length < 1 or length > 12:

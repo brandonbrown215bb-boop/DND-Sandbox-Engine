@@ -174,7 +174,12 @@ static func _validate_single_effect(effect: Variant) -> String:
 			if not expiry_error.is_empty(): return expiry_error
 	else:
 		allowed.append_array(["shape", "radius", "size"])
-		if effect.get("shape", "") not in ["sphere", "cone", "cube"]: return "Unsupported shared area shape."
+		if effect.get("shape", "") == "line":
+			# A caster-originating line (e.g. a 100-foot bolt): length in hexes, one hex wide.
+			allowed.append("origin")
+			if effect.get("origin", "") != "self": return "Shared line areas must originate from self."
+			if not _integer(effect.get("size"), 1, 40): return "Shared line areas require a length of 1..40 hexes."
+		elif effect.get("shape", "") not in ["sphere", "cone", "cube"]: return "Unsupported shared area shape."
 		var geometry_key := "radius" if effect["shape"] == "sphere" else "size"
 		if not _integer(effect.get(geometry_key), 1, 100): return "Shared areas require the shape's radius/size in hexes."
 	for key in effect:
