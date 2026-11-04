@@ -2088,7 +2088,13 @@ func _test_spellcasting() -> void:
 	for charm_seed in range(1, 80):
 		seed(charm_seed)
 		var advantaged_charm_target := {"id": "advantaged_charm_target", "name": "Guard", "creature_type": "humanoid", "current_hp": 30, "max_hp": 30, "is_alive": true, "conditions": {}, "saving_throw_bonuses": {"WIS": 0}}
-		var advantaged_charm_result := CombatAction.resolve_spell(charm_person_caster, advantaged_charm_target, charm_person_spell, false, {}, [], 1, 30)
+		var charm_fight_host := SpellCastContext.new()
+		charm_fight_host.caster = charm_person_caster
+		charm_fight_host.spell = charm_person_spell
+		charm_fight_host.tracker = InitiativeTracker.new()
+		charm_fight_host.tracker.add_combatant(CombatAction.actor_id(charm_person_caster), "Caster", true, charm_person_caster, 10, 10)
+		charm_fight_host.tracker.add_combatant("advantaged_charm_target", "Guard", false, advantaged_charm_target, 5, 10)
+		var advantaged_charm_result := CombatAction.resolve_spell(charm_person_caster, advantaged_charm_target, charm_person_spell, false, {}, [], 1, 30, charm_fight_host)
 		seed(charm_seed)
 		var normal_charm_target := {"id": "normal_charm_target", "name": "Guard", "creature_type": "humanoid", "current_hp": 30, "max_hp": 30, "is_alive": true, "conditions": {}, "saving_throw_bonuses": {"WIS": 0}}
 		var normal_charm_result := CombatAction.resolve_spell(charm_person_caster, normal_charm_target, plain_charm_person, false, {}, [], 1, 30)
@@ -2173,6 +2179,17 @@ func _test_spellcasting() -> void:
 	_assert(not party_damage_target.get("conditions", {}).has("charmed") and party_damage_target.get("animal_friendship_caster_ids", []).is_empty() and unrelated_damage_target.get("conditions", {}).has("charmed"), "Party damage ends Animal Friendship, while damage from a non-party attacker does not")
 	_assert(charm_person_spell.get("duration_seconds", 0) == 3600 and charm_person_spell.get("end_on_party_damage", false) and charm_person_spell.get("save_advantage_if_fighting_target", false) and charm_person_spell.get("upcast", {}).get("additional_targets_per_level", 0) == 1 and charm_monster_spell.get("end_on_target_damage", false) and charm_monster_spell.get("upcast", {}).get("additional_targets_per_level", 0) == 1 and charm_monster_maximum_targets == 3, "Charm Person and Charm Monster record 2024 duration, fighting-save Advantage, damage break and upcast target counts")
 	_assert(charm_save_advantage_seen, "A creature fighting the party has Advantage on its Charm Person save")
+	var calm_seen_advantage := false
+	for charm_seed in range(1, 80):
+		seed(charm_seed)
+		var calm_target := {"id": "calm_charm_target", "name": "Guard", "creature_type": "humanoid", "current_hp": 30, "max_hp": 30, "is_alive": true, "conditions": {}, "saving_throw_bonuses": {"WIS": 0}}
+		var calm_result := CombatAction.resolve_spell(charm_person_caster, calm_target, charm_person_spell, false, {}, [], 1, 30)
+		seed(charm_seed)
+		var calm_plain := {"id": "calm_plain_target", "name": "Guard", "creature_type": "humanoid", "current_hp": 30, "max_hp": 30, "is_alive": true, "conditions": {}, "saving_throw_bonuses": {"WIS": 0}}
+		var calm_plain_result := CombatAction.resolve_spell(charm_person_caster, calm_plain, plain_charm_person, false, {}, [], 1, 30)
+		if calm_result.get("saved", false) != calm_plain_result.get("saved", false):
+			calm_seen_advantage = true
+	_assert(not calm_seen_advantage, "Outside combat nobody is fighting the target, so Charm Person grants no save Advantage")
 	_assert(SpellSupport.is_available(charm_monster_spell) and not charm_monster_resolution.get("saved", true) and charm_monster_condition_applied and not charmed_creature.get("conditions", {}).has("charmed") and not SpellEffects.has_spell(charmed_creature, "charm_monster"), "Charm Monster is available, applies a source-owned Charmed condition and ends it when the party damages the target")
 	_assert(not charm_person_resolution.get("saved", true) and charm_person_condition_applied and not charmed_humanoid.get("conditions", {}).has("charmed") and not SpellEffects.has_spell(charmed_humanoid, "charm_person"), "Charm Person applies a source-owned Charmed condition and ends it when the party damages the target")
 	_assert(not charmed_character.has_condition("charmed") and not SpellEffects.has_spell(charmed_character, "charm_person"), "Charm Person also ends on damage when its target is a player character")

@@ -80,6 +80,22 @@ static func _renamed_checks(h) -> void:
 		CombatAction.resolve_spell(caster, person, lull, false, {}, [], 1, 2)
 		if person.conditions.has("charmed"): break
 	h._assert(person.conditions.has("charmed") and CombatAction.is_charmed_by(person, caster), P + "renamed Humanoid charm grants Charmed by the caster")
+	# SRD "if you or your allies are fighting it": opposing initiative sides, not monster-ness.
+	var fight := SpellResolutionContext.new()
+	fight.caster = caster
+	fight.spatial_host = SpellCastContext.new()
+	fight.spatial_host.tracker = InitiativeTracker.new()
+	var foe := _humanoid("crown-sc05s2-foe", Vector2i(4, 0), {})
+	var bystander := _humanoid("crown-sc05s2-bystander", Vector2i(4, 1), {})
+	var befriended := _humanoid("crown-sc05s2-friend", Vector2i(4, 2), {})
+	befriended["influence"] = {"attitude": "friendly"}
+	var party_ally := ConversionBatch002Checks.actor("crown-sc05s2-party", "fighter", 1)
+	h._assert(not SpellSaveResolver.is_fighting_caster_side(fight, foe), P + "with no initiative running, nobody is fighting the target")
+	fight.spatial_host.tracker.add_combatant(CombatAction.actor_id(caster), "caster", true, caster, 10, 10)
+	fight.spatial_host.tracker.add_combatant(CombatAction.actor_id(party_ally), "ally", true, party_ally, 9, 10)
+	fight.spatial_host.tracker.add_combatant(str(foe.id), "foe", false, foe, 8, 10)
+	fight.spatial_host.tracker.add_combatant(str(befriended.id), "friend", false, befriended, 7, 10)
+	h._assert(SpellSaveResolver.is_fighting_caster_side(fight, foe) and not SpellSaveResolver.is_fighting_caster_side(fight, bystander) and not SpellSaveResolver.is_fighting_caster_side(fight, befriended) and not SpellSaveResolver.is_fighting_caster_side(fight, party_ally), P + "fighting = an opposing-side initiative combatant; bystanders, friendly-attitude creatures and the caster's allies are not fighting")
 	CombatAction._end_damage_broken_spell_effects(person, true)
 	h._assert(not person.conditions.has("charmed"), P + "damage from the caster's side ends the charm")
 	CrownSc01Support01Flow._forget(str(lull.id))
@@ -185,6 +201,14 @@ static func _player_casts(h) -> void:
 			ok = true
 			break
 	h._assert(ok and CombatAction.is_charmed_by(person, wizard), P + "picker + hex click: the Humanoid is Charmed by the caster")
+	# The Humanoid joins initiative as the opposing side (as a rolled encounter monster would).
+	combat.tracker.add_combatant(str(person.id), str(person.name), false, person, 1, 10)
+	var live := SpellResolutionContext.new()
+	live.caster = wizard
+	live.spatial_host = SpellCastContext.new()
+	live.spatial_host.tracker = combat.tracker
+	h._assert(SpellSaveResolver.is_fighting_caster_side(live, person), P + "in the live encounter the opposing Humanoid counts as fighting the caster's side (Charm Person save Advantage)")
+	combat.tracker.remove_combatant(str(person.id))
 	GameManager.test_mode = true
 	h._teardown_scene(combat)
 	# Faerie Fire 20-foot Cube from the bard, in its own encounter (directed by an adjacent hex click).
