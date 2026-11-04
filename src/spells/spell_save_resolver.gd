@@ -53,7 +53,7 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 		poison_save_advantage = cast.target.has_condition("protection_from_poison") and CombatAction.spell_grants_condition(cast.spell, "poisoned")
 	elif cast.target is Dictionary:
 		poison_save_advantage = cast.target.get("conditions", {}).has("protection_from_poison") and CombatAction.spell_grants_condition(cast.spell, "poisoned")
-	var target_save_advantage := poison_save_advantage or (cast.target is Dictionary and bool(cast.spell.get("save_advantage_if_fighting_target", false)))
+	var target_save_advantage := poison_save_advantage or (bool(cast.spell.get("save_advantage_if_fighting_target", false)) and is_fighting_caster_side(cast, cast.target))
 	var auto_fail_creature_types: Array = cast.spell.get("auto_fail_save_creature_types", [])
 	var target_creature_type := ""
 	if cast.target is Character:
@@ -367,3 +367,33 @@ static func _recipient_damage_exemption(cast: SpellResolutionContext) -> Diction
 	return {"selection_id": str(selection.get("selection_id", "")), "spell_definition_id": str(cast.spell.get("id", "")), "caster_id": cast.caster.character_id, "recipient_id": recipient_id, "stage": "after_save_before_damage", "save_unchanged": true, "riders_unchanged": true, "scale": 0.0}
 
 
+
+
+## SRD "if you or your allies are fighting it": the target is an active
+## initiative combatant on the side opposed to the caster, and is not a
+## friendly (Influence attitude) creature. Outside initiative nobody is fighting.
+static func is_fighting_caster_side(cast, target) -> bool:
+	if cast == null or target == null or cast.spatial_host == null or cast.spatial_host.tracker == null:
+		return false
+	var tracker = cast.spatial_host.tracker
+	var target_entry := _combatant_for(tracker, target)
+	var caster_entry := _combatant_for(tracker, cast.caster)
+	if target_entry.is_empty() or caster_entry.is_empty():
+		return false
+	if bool(target_entry.get("is_player", false)) == bool(caster_entry.get("is_player", false)):
+		return false
+	if target is Dictionary:
+		if not bool(target.get("is_alive", true)) or str(target.get("influence", {}).get("attitude", "")) == "friendly":
+			return false
+	return true
+
+
+static func _combatant_for(tracker, creature) -> Dictionary:
+	var creature_id := str(CombatAction.actor_id(creature))
+	for entry in tracker.combatants:
+		if entry.get("scheduling_only", false):
+			continue
+		var entity = entry.get("entity")
+		if is_same(entity, creature) or (entity is Dictionary and (is_same(entity.get("monster"), creature) or is_same(entity.get("character"), creature))) or (not creature_id.is_empty() and str(entry.get("id", "")) == creature_id):
+			return entry
+	return {}
