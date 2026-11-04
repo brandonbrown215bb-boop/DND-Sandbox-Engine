@@ -1,0 +1,27 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+WARNING: [DataLoader] Rejected 25 unsupported effectless feature records; they remain unavailable until curated.
+     at: push_warning (core/variant/variant_utility.cpp:1033)
+     GDScript backtrace (most recent call first):
+         [0] load_all_data (res://src/autoload/data_loader.gd:276)
+         [1] _ready (res://src/autoload/data_loader.gd:252)
+[DataLoader] Loaded: 14 classes, 9 races, 295 items, 362 spells, 481 monsters, 4 event tables, 1 campaigns
+[DataLoader] Layers: core_imported, core_curated, mods | packs: core, crown | approved overrides: 431 | validation failures: 0
+==================================================
+ Rook's Headless Viewport Harness (per-beat)
+==================================================
+
+[TEST] crown_sc_07_support_08_flow
+[SaveManager] Test mode: restored save state without scene transition
+[ok]   SC-07 s8: a fresh process loads the checkpoint
+[ok]   SC-07 s8: fresh-process recovery keeps the until-dispelled curse and its effect ({ "caster_id": "crown-sc07s8-saver", "concentration": false, "conditions": ["cursed_str"], "end_on_any_damage": false, "end_on_target_damage": false, "expiry_phase": "start", "recipient_id": "crown-sc07s8-saver", "remaining_seconds": -1.0, "save_dc": 12.0, "source_id": "spell:crown-sc07s8-saver:1", "spell_id": "bestow_curse", "until_dispelled": true })
+[ok]   SC-07 s8: fresh-process recovery keeps the Concentration curse and its source-scoped attack Disadvantage ({ "caster_id": "crown-sc07s8-saver", "concentration": true, "conditions": ["cursed_attack_source"], "end_on_any_damage": false, "end_on_target_damage": false, "expiry_phase": "start", "recipient_id": "crown-sc07s8-ally", "remaining_seconds": 600.0, "save_dc": 12.0, "source_id": "spell:crown-sc07s8-saver:2", "spell_id": "bestow_curse" } | { "cursed_attack_source": 100.0 } | { "effect_source": "spell:crown-sc07s8-saver:2", "spell_id": "bestow_curse", "targets": [<RefCounted#-9223370718081710590>] })
+[SaveManager] Test mode: restored save state without scene transition
+[SaveManager] Successfully saved game to user://saves/dnd2024/crown_sc_07_support_06_resaved8.sav
+[SaveManager] Test mode: restored save state without scene transition
+[ok]   SC-07 s8: old-.sav round trip: a pre-until_dispelled checkpoint loads, re-saves and reloads
+CROWN_SC_07_SUPPORT_08_FRESH_PROCESS_PASSED
+--------------------------------------------------
+ VIEWPORT RESULTS: 0 failed (1 tests run)
+VIEWPORT TESTS PASSED
+SCENARIO PASSED: crown_sc_07_support_08_flow

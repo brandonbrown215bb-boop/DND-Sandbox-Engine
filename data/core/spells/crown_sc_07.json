@@ -132,5 +132,71 @@
     "execution": "shared",
     "rules_source": "SRD5.2.1",
     "rules_status": "2024-gameplay"
+  },
+  {
+    "id": "bestow_curse",
+    "name": "Bestow Curse",
+    "description": "You touch a creature, which must succeed on a Wisdom saving throw or become cursed for the duration. Until the curse ends, the target suffers one of the following effects of your choice: choose one ability, and the target has Disadvantage on ability checks and saving throws made with that ability; the target has Disadvantage on attack rolls against you; in combat, the target must succeed on a Wisdom saving throw at the start of each of its turns or be forced to take the Dodge action on that turn; or if you deal damage to the target with an attack roll or a spell, the target takes an extra 1d8 Necrotic damage. Using a Higher-Level Spell Slot: with a level 4 slot you can maintain Concentration for up to 10 minutes. With a level 5+ slot the spell doesn't require Concentration, and the duration becomes 8 hours (level 5-6) or 24 hours (level 7-8). With a level 9 slot the spell lasts until dispelled.",
+    "level": 3,
+    "school": "necromancy",
+    "casting_time": "action",
+    "range": 1,
+    "target": "single",
+    "attack_type": "none",
+    "save": "WIS",
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Concentration, up to 1 minute",
+    "duration_seconds": 60,
+    "concentration": true,
+    "duration_by_slot": [
+      {
+        "min_slot": 4,
+        "duration_seconds": 600,
+        "concentration": true
+      },
+      {
+        "min_slot": 5,
+        "duration_seconds": 28800,
+        "concentration": false
+      },
+      {
+        "min_slot": 7,
+        "duration_seconds": 86400,
+        "concentration": false
+      },
+      {
+        "min_slot": 9,
+        "duration_seconds": -1,
+        "concentration": false
+      }
+    ],
+    "effects": [
+      {
+        "type": "grant_condition",
+        "condition_options": [
+          "cursed_str",
+          "cursed_dex",
+          "cursed_con",
+          "cursed_int",
+          "cursed_wis",
+          "cursed_cha",
+          "cursed_attack_source",
+          "cursed_dodge",
+          "cursed_necrotic"
+        ],
+        "on_failed_save": true
+      }
+    ],
+    "classes": [
+      "bard",
+      "cleric",
+      "wizard"
+    ],
+    "execution": "shared",
+    "rules_source": "SRD5.2.1",
+    "rules_status": "2024-gameplay"
   }
 ]

@@ -3,7 +3,7 @@
 class_name SharedSpell
 extends RefCounted
 
-const CONDITIONS := ["blinded", "deafened", "frightened", "poisoned", "prone", "restrained", "stunned", "paralyzed", "incapacitated", "blessed", "baned", "shield_of_faith", "speed_reduced", "healing_prevented", "opportunity_attack_blocked", "next_attack_disadvantage", "invisibility_suppressed", "charmed", "blurred", "outlined", "unconscious", "speed_zero", "enfeebled", "enthralled", "calmed", "calmed_indifferent"]
+const CONDITIONS := ["blinded", "deafened", "frightened", "poisoned", "prone", "restrained", "stunned", "paralyzed", "incapacitated", "blessed", "baned", "shield_of_faith", "speed_reduced", "healing_prevented", "opportunity_attack_blocked", "next_attack_disadvantage", "invisibility_suppressed", "charmed", "blurred", "outlined", "unconscious", "speed_zero", "enfeebled", "enthralled", "calmed", "calmed_indifferent", "cursed_str", "cursed_dex", "cursed_con", "cursed_int", "cursed_wis", "cursed_cha", "cursed_attack_source", "cursed_dodge", "cursed_necrotic"]
 ## Conditions whose consumer reads an authored magnitude (hexes) from the source record.
 const AMOUNT_CONDITIONS := {"speed_reduced": [1, 12]}
 const ABILITIES := ["STR", "DEX", "CON", "INT", "WIS", "CHA"]
@@ -22,7 +22,7 @@ const EFFECTS := ["heal", "temporary_hp", "grant_condition", "remove_condition",
 const STEP_FIELDS := ["id", "type", "gate", "gate_step", "target", "shape", "radius", "size", "attack_type", "damage", "damage_type", "damage_components", "component_id", "scaling", "upcast", "save", "half_on_save", "save_context", "damage_scale_by_outcome", "damage_dice_policy", "damage_result_multiplier", "damage_reductions", "damage_bypasses", "recipient_exemption_choice", "effects", "incoming_negation", "incoming_negation_rule", "physical_requirements", "spatial_requirements"]
 const STEP_TYPES := ["attack", "save", "damage", "effect"]
 const STEP_GATES := ["always", "hit", "miss", "failed_save", "successful_save"]
-const FIELDS := ["containment_targeting", "id", "name", "description", "execution", "level", "casting_time", "range", "range_kind", "range_by_character_level_feet", "target", "base_targets", "attack_type", "damage", "damage_type", "component_id", "scaling", "upcast", "save", "half_on_save", "save_exit_placement", "save_context", "damage_scale_by_outcome", "damage_dice_policy", "damage_result_multiplier", "damage_reductions", "damage_bypasses", "recipient_exemption_choice", "attack_unit_substitution", "requires_target_sight", "target_creature_types", "target_creature_type_exclusions", "target_sizes", "ignore_cover_on_save", "ignore_cover", "effects", "concentration", "duration", "duration_seconds", "repeat_save", "repeat_save_schedule", "repeat_save_interval_seconds", "repeat_save_stages", "repeat_save_dc_progression", "targets_objects", "ignites_objects", "area_radius", "cone_size", "end_on_target_damage", "end_on_any_damage", "end_on_party_damage", "source_end_rules", "components", "material", "material_component_item_id", "material_component_cost", "material_component_consumed", "consumed_material_item_id", "ritual", "rules_source", "rules_status", "school", "classes", "source", "trigger", "steps", "formula_inputs", "interruption_policy", "failure_policy", "empty_effect_policy", "cast_settlement", "cancellation_rule", "stopping_cost_policy", "incoming_negation_rule", "physical_requirements", "spatial_requirements", "zero_hp_aftermath", "end_aftermath", "reaction_trigger", "effect_noise", "projectiles", "delayed_damage", "damage_type_options", "exploding_dice", "save_disadvantage_creature_types", "area_object_push", "leap_on_matching_dice", "save_advantage_if_fighting_target", "area_creature_choice", "save_auto_success_traits", "end_on_shake_action", "area_save_requires_sight"] # Batch 065: reaction_trigger is validated by ReactionTriggers.spell_trigger_error.
+const FIELDS := ["containment_targeting", "id", "name", "description", "execution", "level", "casting_time", "range", "range_kind", "range_by_character_level_feet", "target", "base_targets", "attack_type", "damage", "damage_type", "component_id", "scaling", "upcast", "save", "half_on_save", "save_exit_placement", "save_context", "damage_scale_by_outcome", "damage_dice_policy", "damage_result_multiplier", "damage_reductions", "damage_bypasses", "recipient_exemption_choice", "attack_unit_substitution", "requires_target_sight", "target_creature_types", "target_creature_type_exclusions", "target_sizes", "ignore_cover_on_save", "ignore_cover", "effects", "concentration", "duration", "duration_seconds", "repeat_save", "repeat_save_schedule", "repeat_save_interval_seconds", "repeat_save_stages", "repeat_save_dc_progression", "targets_objects", "ignites_objects", "area_radius", "cone_size", "end_on_target_damage", "end_on_any_damage", "end_on_party_damage", "source_end_rules", "components", "material", "material_component_item_id", "material_component_cost", "material_component_consumed", "consumed_material_item_id", "ritual", "rules_source", "rules_status", "school", "classes", "source", "trigger", "steps", "formula_inputs", "interruption_policy", "failure_policy", "empty_effect_policy", "cast_settlement", "cancellation_rule", "stopping_cost_policy", "incoming_negation_rule", "physical_requirements", "spatial_requirements", "zero_hp_aftermath", "end_aftermath", "reaction_trigger", "effect_noise", "projectiles", "delayed_damage", "damage_type_options", "exploding_dice", "save_disadvantage_creature_types", "area_object_push", "leap_on_matching_dice", "save_advantage_if_fighting_target", "area_creature_choice", "save_auto_success_traits", "end_on_shake_action", "area_save_requires_sight", "duration_by_slot"] # Batch 065: reaction_trigger is validated by ReactionTriggers.spell_trigger_error.
 
 static func damage_dice_policy_error(value: Variant) -> String:
 	if not value is Dictionary or value.is_empty():
@@ -229,7 +229,7 @@ static func _validate_single_effect(effect: Variant) -> String:
 		if kind == "grant_condition" and effect.has("condition_options"):
 			allowed.append("condition_options")
 			var options: Variant = effect["condition_options"]
-			if effect.has("condition") or not options is Array or options.size() < 2 or options.size() > 8: return "condition_options needs two to eight conditions and replaces condition."
+			if effect.has("condition") or not options is Array or options.size() < 2 or options.size() > 9: return "condition_options needs two to nine conditions and replaces condition."
 			var seen_options := []
 			for option in options:
 				if not option is String or option in seen_options or option not in CONDITIONS or AMOUNT_CONDITIONS.has(option): return "condition_options entries must be distinct supported conditions without amounts."
@@ -549,6 +549,9 @@ static func content_error(spell: Dictionary) -> String:
 			return "Shared '%s' must be Boolean." % key
 	if spell.has("duration_seconds") and not _integer(spell["duration_seconds"], 1, 86400):
 		return "Shared duration_seconds must be 1-86400."
+	if spell.has("duration_by_slot"):
+		var slot_error := duration_by_slot_error(spell)
+		if not slot_error.is_empty(): return slot_error
 	if spell.has("repeat_save") and spell["repeat_save"] not in ABILITIES:
 		return "Shared repeat_save requires an ability."
 	if spell.has("repeat_save_schedule") and str(spell["repeat_save_schedule"]) not in ["target_turn_end", "elapsed_seconds"]:
@@ -639,6 +642,57 @@ static func content_error(spell: Dictionary) -> String:
 	if timed and not spell.has("duration_seconds"): return "Condition grants require duration_seconds."
 	if (bool(spell.get("concentration", false)) or spell.has("repeat_save")) and not timed: return "Concentration/repeat saves require a timed condition grant."
 	return ""
+
+## Higher-slot duration tiers: [{min_slot, duration_seconds (-1 = until dispelled), concentration}],
+## ascending min_slot above the spell's level. The highest tier at or below the slot applies.
+static func duration_by_slot_error(spell: Dictionary) -> String:
+	var tiers: Variant = spell.get("duration_by_slot")
+	if not tiers is Array or tiers.is_empty() or tiers.size() > 9: return "duration_by_slot requires one through nine tiers."
+	var previous := int(spell.get("level", 0))
+	for tier in tiers:
+		if not tier is Dictionary: return "Each duration_by_slot tier must be an object."
+		for field in tier:
+			if str(field) not in ["min_slot", "duration_seconds", "concentration"]: return "Unsupported duration_by_slot field '%s'." % str(field)
+		if not _integer(tier.get("min_slot", null), previous + 1, 9): return "duration_by_slot min_slot must ascend above the spell level, up to 9."
+		previous = int(tier["min_slot"])
+		var seconds: Variant = tier.get("duration_seconds", null)
+		if not ((seconds is int or seconds is float) and float(seconds) == floor(float(seconds)) and (int(seconds) == -1 or (int(seconds) >= 1 and int(seconds) <= 172800))): return "duration_by_slot duration_seconds must be -1 or 1-172800."
+		if not tier.get("concentration", null) is bool: return "duration_by_slot concentration must be Boolean."
+	return ""
+
+## The tier for a slot level, or {} when the base duration applies.
+static func duration_tier_for_slot(spell: Dictionary, slot_level: int) -> Dictionary:
+	var chosen: Dictionary = {}
+	for tier in spell.get("duration_by_slot", []):
+		if tier is Dictionary and slot_level >= int(tier.get("min_slot", 99)): chosen = tier
+	return chosen
+
+## Applies a slot tier to a new source record (direct CombatAction.resolve_spell callers).
+static func apply_slot_duration_to_record(record: Dictionary, spell: Dictionary, slot_level: int) -> void:
+	var tier := duration_tier_for_slot(spell, slot_level)
+	if tier.is_empty() or record.is_empty(): return
+	record["concentration"] = bool(tier["concentration"])
+	if int(tier["duration_seconds"]) == -1:
+		record["remaining_seconds"] = -1
+		record["until_dispelled"] = true
+	else:
+		record["remaining_seconds"] = int(tier["duration_seconds"])
+		record.erase("until_dispelled")
+
+## Applies a slot tier to a per-cast spell copy (duration, concentration, until-dispelled flag).
+static func apply_slot_duration(spell: Dictionary, slot_level: int) -> Dictionary:
+	var tier := duration_tier_for_slot(spell, slot_level)
+	if tier.is_empty(): return tier
+	spell["concentration"] = bool(tier["concentration"])
+	var seconds := int(tier["duration_seconds"])
+	if seconds == -1:
+		spell["_until_dispelled"] = true
+		spell["duration_seconds"] = 86400 # Placeholder for timers; the record carries until_dispelled.
+	else:
+		spell["duration_seconds"] = seconds
+	spell["_duration_tier_min_slot"] = int(tier["min_slot"])
+	return tier
+
 
 static func repeat_save_stages_error(value: Variant) -> String:
 	if not value is Array or value.is_empty() or value.size() > 8:

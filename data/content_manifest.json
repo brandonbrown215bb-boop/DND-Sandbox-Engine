@@ -1464,6 +1464,14 @@
     },
     {
       "type": "spell",
+      "id": "bestow_curse",
+      "winner": "res://data/core/spells/crown_sc_07.json#4",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#17"
+      ]
+    },
+    {
+      "type": "spell",
       "id": "sleep",
       "winner": "res://data/core/spells/crown_sc_06.json#1",
       "replaces": [

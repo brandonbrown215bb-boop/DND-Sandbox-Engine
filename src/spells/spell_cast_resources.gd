@@ -256,6 +256,9 @@ static func commit_spell_resource(cast: SpellCastContext) -> bool:
 		if bool(cast.spell.get("_metamagic_extended", false)) and black_tentacles_duration_rounds > 0:
 			black_tentacles_duration_rounds = mini(black_tentacles_duration_rounds * 2, 14400)
 		cast.spell["_black_tentacles_duration_rounds"] = black_tentacles_duration_rounds
+	if SharedSpell.uses(cast.spell) and cast.spell.has("duration_by_slot"):
+		var slot_tier := SharedSpell.apply_slot_duration(cast.spell, cast.slot_level_used)
+		if not slot_tier.is_empty(): cast.hud.add_log("Level %d slot: %s." % [cast.slot_level_used, "lasts until dispelled, no Concentration" if int(slot_tier.duration_seconds) == -1 else "%d minutes%s" % [int(slot_tier.duration_seconds) / 60, ", Concentration" if bool(slot_tier.concentration) else ", no Concentration"]])
 	if cast.spell_level > 0:
 		SorcererRules.mark_spell_cast_this_turn(cast.caster, cast.spell)
 	if bool(cast.spell.get("_metamagic_quickened", false)):

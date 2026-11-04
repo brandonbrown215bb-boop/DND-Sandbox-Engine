@@ -56,6 +56,7 @@ var rogue_steady_aim_armed: bool = false
 var turn_budget: CombatTurnBudget = CombatTurnBudget.new()
 
 # Targeting action mode
+var last_turn_start_marker_save: Dictionary = {}
 var pending_action_type: String = "" # "attack", "spell", "lay_on_hands", "bardic_inspiration", "unarmed_attack"
 var resolving_player_action := false
 var pool_recovery := CombatPoolRecovery.new()
@@ -1040,6 +1041,7 @@ func _start_combat_turn() -> void:
 		active_movement_mode = "walk"
 		hud.set_movement_modes(active_character, active_movement_mode, _movement_speed_overrides(active_character))
 		_reset_turn_action_economy()
+		_apply_turn_start_marker_save(active_character)
 		if player_entities[current_player_idx].get("is_created_actor", false): # Batch 056 S-157: its own turn and budget.
 			var created_line := CreatedCommandRules.take_turn(self, player_entities[current_player_idx])
 			if not created_line.is_empty(): hud.add_log(created_line)
@@ -1102,6 +1104,7 @@ func _start_combat_turn() -> void:
 			_tick_spell_effect_boundary(_make_monster_spellcaster(monster), "start")
 		await _resolve_spell_zone_start_turn(monster, monster.get("hex_position", Vector2i.ZERO))
 		_apply_regenerate_turn_start(monster)
+		_apply_turn_start_marker_save(monster)
 		
 		# Process turn-start condition effects
 		var monster_conditions: Dictionary = monster.get("conditions", {})
@@ -1141,6 +1144,28 @@ func _start_combat_turn() -> void:
 		await get_tree().create_timer(1.0).timeout
 		if _monster_ai_current(preview_turn, monster):
 			_run_monster_ai()
+
+
+## Turn-start marker saves (e.g. a curse): a failed save forces the Dodge action this turn.
+func _apply_turn_start_marker_save(entity) -> Dictionary:
+	if entity is Dictionary: entity.erase("forced_dodge_turn")
+	var downed: bool = entity is Character and entity.is_downed()
+	if downed or CombatAction.is_incapacitated(entity): return {}
+	var result := CombatAction.resolve_turn_start_marker_save(entity)
+	if result.is_empty(): return result
+	var label: String = entity.character_name if entity is Character else str(entity.get("name", "The creature"))
+	if bool(result.get("forced_dodge", false)):
+		if entity is Character:
+			entity.add_condition("dodging", 2)
+			_spend_action_cost("action")
+		else:
+			CombatAction.apply_condition(entity, "dodging", 2)
+			entity["forced_dodge_turn"] = true
+		hud.add_log("%s fails a %s save (%d vs DC %d) and must take the Dodge action this turn." % [label, str(result.ability), int(result.total), int(result.dc)])
+	else:
+		hud.add_log("%s succeeds on a %s save (%d vs DC %d) and acts normally." % [label, str(result.ability), int(result.total), int(result.dc)])
+	last_turn_start_marker_save = result.duplicate()
+	return result
 
 
 func _get_current_owner_index() -> int:
@@ -1368,6 +1393,9 @@ func _run_monster_ai() -> void:
 	if monster.has(PaladinRules.ABJURE_FOES_MARKER) and action_str == "move_attack":
 		# Abjure Foes permits movement or an action on the turn, not both.
 		action_str = "move"
+	if bool(monster.get("forced_dodge_turn", false)) and action_str != "move":
+		# A turn-start marker save failed: its action is the Dodge action; it may still move.
+		action_str = "move" if action_str == "move_attack" else "forced_dodge"
 
 	match action_str:
 		"move":
@@ -4598,7 +4626,7 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 			all_fear_actors.append_array(monster_entities)
 			all_fear_actors.append_array(player_entities)
 			attack_reaction_decisions["frightened_source_out_of_sight"] = not CombatAction.is_frightened_source_in_sight(active_character, player_pos, _all_live_combat_entities(), hex_grid)
-		if CombatAction.attacker_has_condition_disadvantage(active_character, str(weapon.get("ability", "STR")), attack_reaction_decisions):
+		if CombatAction.attacker_has_condition_disadvantage(active_character, str(weapon.get("ability", "STR")), attack_reaction_decisions) or CombatAction.attack_disadvantage_against(active_character, clicked_monster):
 			has_disadvantage = true
 		if DruidRules.pack_tactics_advantage(active_character, clicked_monster, player_entities):
 			has_advantage = true

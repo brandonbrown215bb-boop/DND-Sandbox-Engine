@@ -91,6 +91,9 @@ static func begin_cast(caster: Character, spell: Dictionary, cast_facts: Diction
 			record["damage_budget_total"] = 0
 	var aftermath: Variant = spell.get("end_aftermath", [])
 	if aftermath is Array and not aftermath.is_empty(): record["end_aftermath"] = aftermath.duplicate(true)
+	if bool(spell.get("_until_dispelled", false)):
+		record["remaining_seconds"] = -1
+		record["until_dispelled"] = true
 	if not cast_facts.is_empty(): record["cast_facts"] = cast_facts.duplicate(true)
 	return record
 
@@ -110,7 +113,7 @@ static func grant(target, cast: Dictionary, condition: String, expiry_phase: Str
 	if condition not in grants:
 		grants.append(condition)
 	record["conditions"] = grants
-	CombatAction.apply_condition(target, condition, maxi(1, int(ceil(float(record["remaining_seconds"]) / 6.0))), source)
+	CombatAction.apply_condition(target, condition, -1 if bool(record.get("until_dispelled", false)) else maxi(1, int(ceil(float(record["remaining_seconds"]) / 6.0))), source)
 	# An immune target must not acquire a timer or become a concentration target.
 	if not has_grant(target, source, condition):
 		return

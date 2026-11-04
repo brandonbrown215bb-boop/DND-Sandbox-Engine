@@ -141,6 +141,8 @@ static func resolve(caster: Character, target_entity, spell_data: Dictionary, de
 	if SpellEffects.manages(cast.spell) and cast.effect_cast.is_empty():
 		cast.effect_cast = SpellEffects.begin_cast(cast.caster, cast.spell)
 		source_created_for_cast = true
+		if SharedSpell.uses(cast.spell) and cast.spell.has("duration_by_slot"):
+			SharedSpell.apply_slot_duration_to_record(cast.effect_cast, cast.spell, cast.slot_level)
 	cast.source_definition_id = cast.spell_definition_id
 	cast.source_instance_id = str(cast.effect_cast.get("source_id", "")) if owned_host_valid or source_created_for_cast else ""
 	if SpellEffects.damage_budget_cap(cast.spell) > 0 and not reused_source.is_empty():

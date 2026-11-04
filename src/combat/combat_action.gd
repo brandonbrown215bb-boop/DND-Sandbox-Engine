@@ -104,7 +104,71 @@ const MARKER_RULES := {
 	# makes a Hostile Influence attitude read Indifferent and ends on damage.
 	"calmed": {"suppress_charmed": true, "suppress_frightened": true},
 	"calmed_indifferent": {"attitude_indifferent": true, "ends_on_damage": true, "ends_on_seen_ally_damage": true},
+	# Curse-style markers. check_save_disadvantage_<abl>: Disadvantage on that
+	# ability's checks and saves. attack_disadvantage_vs_source: Disadvantage on
+	# attacks against the record's caster. turn_start_save_or_dodge: a save at
+	# the start of each turn in combat or take the Dodge action. source_damage_rider:
+	# the record's caster adds rider dice (MARKER_RIDERS) when it deals damage.
+	"cursed_str": {"check_save_disadvantage_str": true},
+	"cursed_dex": {"check_save_disadvantage_dex": true},
+	"cursed_con": {"check_save_disadvantage_con": true},
+	"cursed_int": {"check_save_disadvantage_int": true},
+	"cursed_wis": {"check_save_disadvantage_wis": true},
+	"cursed_cha": {"check_save_disadvantage_cha": true},
+	"cursed_attack_source": {"attack_disadvantage_vs_source": true},
+	"cursed_dodge": {"turn_start_save_or_dodge": true},
+	"cursed_necrotic": {"source_damage_rider": true},
 }
+
+## Data for markers carrying source_damage_rider / turn_start_save_or_dodge.
+const MARKER_RIDERS := {"cursed_necrotic": {"dice": "1d8", "damage_type": "necrotic"}}
+const MARKER_TURN_SAVES := {"cursed_dodge": {"ability": "WIS"}}
+
+## Caster ids of the spell records that granted a marker with this consequence.
+static func marker_source_ids(entity, consequence: String) -> Array[String]:
+	var ids: Array[String] = []
+	if entity == null: return ids
+	for condition in conditions_with_consequence(entity, consequence):
+		for record in SpellEffects.records(entity).values():
+			if record is Dictionary and condition in record.get("conditions", []):
+				var owner := str(record.get("caster_id", ""))
+				if not owner.is_empty() and owner not in ids: ids.append(owner)
+	return ids
+
+## True when a marker gives the attacker Disadvantage on attacks against this target.
+static func attack_disadvantage_against(attacker, target) -> bool:
+	if attacker == null or target == null: return false
+	var target_id := actor_id(target)
+	return not target_id.is_empty() and target_id in marker_source_ids(attacker, "attack_disadvantage_vs_source")
+
+## Disadvantage on ability checks of this ability from check_save_disadvantage markers.
+static func check_has_marker_disadvantage(entity, ability: String) -> bool:
+	return not ability.is_empty() and not conditions_with_consequence(entity, "check_save_disadvantage_" + ability.to_lower()).is_empty()
+
+## Rider damage owed when source deals damage to a marked target: [{dice, damage_type, condition}].
+static func marker_damage_riders(target, source_character: Character) -> Array[Dictionary]:
+	var riders: Array[Dictionary] = []
+	if target == null or source_character == null: return riders
+	var source_id := SpellEffects.caster_id(source_character)
+	for condition in conditions_with_consequence(target, "source_damage_rider"):
+		for record in SpellEffects.records(target).values():
+			if record is Dictionary and condition in record.get("conditions", []) and str(record.get("caster_id", "")) == source_id and MARKER_RIDERS.has(condition):
+				var rider: Dictionary = MARKER_RIDERS[condition].duplicate()
+				rider["condition"] = condition
+				riders.append(rider)
+				break
+	return riders
+
+## Start-of-turn marker save in combat. Returns {forced_dodge, saved, total, dc, condition} or {} when none applies.
+static func resolve_turn_start_marker_save(entity) -> Dictionary:
+	for condition in conditions_with_consequence(entity, "turn_start_save_or_dodge"):
+		for record in SpellEffects.records(entity).values():
+			if record is Dictionary and condition in record.get("conditions", []):
+				var ability := str(MARKER_TURN_SAVES.get(condition, {}).get("ability", "WIS"))
+				var dc := int(record.get("save_dc", 10))
+				var total: int = int(entity.saving_throw_test_to_dc(ability, dc).get("total", 0)) if entity is Character else BarbarianRules.roll_monster_save(entity, ability)
+				return {"forced_dodge": total < dc, "saved": total >= dc, "total": total, "dc": dc, "ability": ability, "condition": condition}
+	return {}
 
 ## True when a marker on the entity suppresses (and grants immunity to) the
 ## condition. Reads raw marker storage so suppression never recurses.
@@ -180,6 +244,8 @@ static func save_has_disadvantage(entity, ability: String) -> bool:
 		return true
 	if upper == "STR" and not conditions_with_consequence(entity, "str_d20_disadvantage").is_empty():
 		return true
+	if check_has_marker_disadvantage(entity, upper):
+		return true
 	return false
 
 
@@ -211,6 +277,9 @@ static func attacker_has_condition_disadvantage(attacker, ability: String = "", 
 	if ability.to_upper() == "STR" and not conditions_with_consequence(attacker, "str_d20_disadvantage").is_empty():
 		return true
 	if has_condition(attacker, "vicious_mockery_disadvantage") or has_condition(attacker, "next_attack_disadvantage"):
+		return true
+	var attack_target_id := str(decisions.get("attack_target_id", ""))
+	if not attack_target_id.is_empty() and attack_target_id in marker_source_ids(attacker, "attack_disadvantage_vs_source"):
 		return true
 	return false
 
@@ -1081,6 +1150,19 @@ static func resolve_damage(target, amount: int, damage_type: String, reaction_de
 	if target is Dictionary:
 		var damage_hook: Variant = target.get("_damage_consequence_handler")
 		if damage_hook is Callable and damage_hook.is_valid(): damage_hook.call(target, receipt, damage_occurrence_id)
+	# Marker riders: the marked target takes extra damage when the marker's source deals it damage.
+	if resolved > 0 and not bool(reaction_decisions.get("_marker_rider_child", false)) and not bool(reaction_decisions.get("_damage_link_child", false)) and not bool(reaction_decisions.get("_damage_response_child", false)):
+		var rider_receipts: Array = []
+		for rider in marker_damage_riders(target, source_character):
+			var still_alive: bool = target.is_alive if target is Character else bool(target.get("is_alive", true))
+			if not still_alive: break
+			var rider_amount := Dice.parse_dice_string(str(rider.dice), {}, source_character)
+			var rider_receipt := resolve_damage(target, rider_amount, str(rider.damage_type), {"_marker_rider_child": true}, false, preserve_turning, source_character)
+			rider_receipt["rider_condition"] = str(rider.condition)
+			rider_receipt["rider_amount"] = rider_amount
+			rider_receipt["damage_type"] = str(rider.damage_type)
+			rider_receipts.append(rider_receipt)
+		if not rider_receipts.is_empty(): receipt["marker_rider_receipts"] = rider_receipts
 	return receipt
 
 
@@ -1597,6 +1679,7 @@ static func resolve_weapon_attack(attacker: Character, target_entity, weapon_dat
 	if attack_target_imposes_disadvantage(target_entity, attack_distance_hexes, bool(perception.target_sees_attacker)): disadvantage = true
 	reaction_decisions = reaction_decisions.duplicate()
 	reaction_decisions["perception_handles_blindness"] = true
+	reaction_decisions["attack_target_id"] = actor_id(target_entity)
 	var invisible_attack_advantage := bool(perception.advantage)
 	var unseen_target_disadvantage := bool(perception.disadvantage)
 	var blur_target_disadvantage := is_blurred_against(target_entity, attacker, attack_distance_feet)
