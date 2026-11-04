@@ -1991,10 +1991,13 @@ func _test_spellcasting() -> void:
 	CombatState.tick_monster_condition_durations(mockery_expired_without_attack)
 	var mockery_expired_attacker := CombatState._make_temp_monster_character(mockery_expired_without_attack)
 	var mockery_attack_after_expiry := mockery_expired_attacker.make_attack_roll()
-	var chill_miss_target: Character = _fresh_char("Chill Touch Miss Target", "human", "fighter", {"DEX": 8})
-	chill_miss_target.base_ac = 1000
+	# A natural 20 still hits AC 1000 and resolve_spell applies the restriction on that hit,
+	# so each attempt uses a fresh target and only a target that was actually missed is kept.
+	var chill_miss_target: Character = null
 	var chill_miss: Dictionary = {}
 	for _attempt in 40:
+		chill_miss_target = _fresh_char("Chill Touch Miss Target", "human", "fighter", {"DEX": 8})
+		chill_miss_target.base_ac = 1000
 		chill_miss = CombatAction.resolve_spell(chill_caster, chill_miss_target, chill_touch)
 		if not bool(chill_miss.get("hit", true)):
 			break
@@ -2415,7 +2418,7 @@ func _test_spellcasting() -> void:
 	_assert("guidance" not in DataLoader.get_character_class("bard").get("spell_list_ids", []), "Guidance is not on the SRD 5.2.1 Bard list (Divination Cantrip (Cleric, Druid))")
 	_assert(not mockery_resolution.get("saved", true) and int(mockery_resolution.get("damage", 0)) >= 1 and int(mockery_resolution.get("damage", 0)) <= 6 and mockery_effects.size() == 1 and mockery_attack.get("disadvantage", false) and not mockery_target.get("conditions", {}).has("vicious_mockery_disadvantage"), "Vicious Mockery applies Disadvantage to and consumes a monster's next attack after a failed save")
 	_assert(CombatAction.apply_spell_failed_save_effects(mockery_target, vicious_mockery, {"saved": true}).is_empty() and not mockery_attack_after_expiry.get("disadvantage", false), "Vicious Mockery has no effect on a successful save and expires at the target's turn end")
-	_assert(missed_chill_effects.is_empty() and not CombatAction.is_healing_suppressed(chill_miss_target), "Chill Touch applies no healing restriction on a miss")
+	_assert(not bool(chill_miss.get("hit", true)) and missed_chill_effects.is_empty() and not CombatAction.is_healing_suppressed(chill_miss_target), "Chill Touch applies no healing restriction on a miss")
 	for chill_class in ["sorcerer", "warlock", "wizard"]:
 		_assert("chill_touch" in DataLoader.get_character_class(chill_class).get("spell_list_ids", []), "Chill Touch is available to %s" % chill_class.capitalize())
 	var starry_target := _monster_inst("goblin")
