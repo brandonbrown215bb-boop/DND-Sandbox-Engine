@@ -122,6 +122,9 @@ static func _resolve_spell_cast_targets(cast: SpellCastContext) -> void:
 	if area_spell_id in ["entangle", "black_tentacles", "sleet_storm", "wall_of_fire", "cloudkill", "conjure_animals", "conjure_celestial", "conjure_elemental", "conjure_fey", "conjure_minor_elementals", "conjure_woodland_beings", "spirit_guardians", "aura_of_life", "antilife_shell", "moonbeam"]:
 		cast.areas._spell_zone_serial += 1
 		cast.area_source_id = "%s:%s:%d" % [area_spell_id, cast.caster.character_id, cast.areas._spell_zone_serial]
+	# Each creature in an area is affected once, even if forced movement during this cast
+	# carries it onto a hex that is resolved later (e.g. a push along a cube).
+	var resolved_area_creatures: Array = []
 	for target_index in cast.targets.size():
 		var target_hex: Vector2i = cast.targets[target_index]
 		if str(cast.spell.get("id", "")) in ["conjure_woodland_beings", "spirit_guardians", "aura_of_life", "antilife_shell"]:
@@ -170,6 +173,11 @@ static func _resolve_spell_cast_targets(cast: SpellCastContext) -> void:
 				continue
 		elif str(cast.spell.get("id", "")) == "conjure_animals":
 			continue
+		if chain_target_id.is_empty():
+			if p_target != null and resolved_area_creatures.any(func(x): return is_same(x, p_target)): p_target = null
+			if not m_target.is_empty() and resolved_area_creatures.any(func(x): return is_same(x, m_target)): m_target = {}
+			if p_target != null: resolved_area_creatures.append(p_target)
+			elif not m_target.is_empty(): resolved_area_creatures.append(m_target)
 		if p_target != null:
 			await _resolve_player_target(cast, p_target, target_hex, area_spell_id == "chain_lightning" and target_index > 0)
 		elif not m_target.is_empty():
@@ -206,6 +214,14 @@ static func _resolve_spell_cast_targets(cast: SpellCastContext) -> void:
 					cast.hud.add_log("%s catches fire." % str(area_object.get("name", "A flammable object")))
 		if cast.interrupted:
 			break
+	var object_push: Dictionary = cast.spell.get("area_object_push", {})
+	if not object_push.is_empty() and not cast.interrupted and cast.grid != null:
+		var blocked: Array[Vector2i] = []
+		for p in cast.players: blocked.append(p.get("hex_position", Vector2i.ZERO))
+		for m in cast.monsters: blocked.append(m.get("hex_position", Vector2i.ZERO))
+		for moved in CombatObjectRules.push_area_objects(cast.grid, cast.targets, cast.spell_origin, int(object_push.get("distance", 0)), blocked):
+			cast.successful = true
+			cast.hud.add_log("[color=cyan]%s is pushed %d feet away.[/color]" % [str(moved.object.get("name", "An object")), HexUtils.get_distance(moved.from, moved.to) * 5])
 
 
 static func _resolve_object_target(cast: SpellCastContext, object: Dictionary, target_hex: Vector2i, ignore_spell_range: bool = false) -> void:

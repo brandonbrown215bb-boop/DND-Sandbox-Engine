@@ -315,7 +315,7 @@ static func spell_noise(h: Node, combat: CombatState) -> void:
 	h._p_focus(combat, caster)
 	OrdinaryActionRules.hide(caster, combat._ability_check_context(caster))
 	await h._cast_menu_spell(combat, "fixture:empty_boom", 1)
-	await ReadyActionFlow.answer(h, combat, func(): await combat._on_hex_clicked(Vector2i(0, 5)), null)
+	await ReadyActionFlow.answer(h, combat, func(): await combat._on_hex_clicked(_empty_area_center(combat, caster, 6, 1)), null)
 	h._assert(not caster.has_condition("hidden") and caster.spell_slots["1"] == 1 and not listener.reaction_available and not combat.turn_budget.can_spend("action"), "S237 paid empty-area spell still emits its declared sound and triggers Ready")
 	# OA-13 target-origin monster sound uses the actual target as source while
 	# retaining the monster as the cast/Ready actor.
@@ -486,7 +486,9 @@ static func spell_noise(h: Node, combat: CombatState) -> void:
 	hp = caster.current_hp
 	var refused := CombatAction.resolve_spell(caster, caster, definition, true)
 	h._assert(not refused.success and refused.get("refused", false) and caster.spell_slots["1"] == 1 and caster.current_hp == hp, "S237 direct unsupported shared sound host refuses before slot or healing")
-	var native_spell := DataLoader.get_spell("thunderwave")
+	# Thunderwave is shared data now (SC-03 support 07); keep proving the native host rule on a native-shaped copy.
+	var native_spell := DataLoader.get_spell("thunderwave").duplicate(true)
+	native_spell.erase("execution")
 	var native_direct := CombatAction.resolve_spell(caster, caster, native_spell, true)
 	h._assert(not native_direct.success and native_direct.get("refused", false) and caster.spell_slots["1"] == 1, "S237 native Thunderwave sound refuses a direct resolver host before slot payment")
 	var native_ready_context := combat._spell_cast_context(Vector2i.ZERO, Vector2i(9999, 9999), [], [], caster, native_spell)
@@ -503,6 +505,17 @@ static func spell_noise(h: Node, combat: CombatState) -> void:
 	OrdinaryActionRules.remove_hidden(caster)
 
 
+
+
+## An on-map hex within range whose area holds no creature (an empty, legal area center).
+static func _empty_area_center(combat: CombatState, caster: Character, range_hexes: int, radius: int) -> Vector2i:
+	var origin: Vector2i = combat._fighter_entity(caster).hex_position
+	var occupied: Array[Vector2i] = []
+	for e in combat.player_entities + combat.monster_entities: occupied.append(e.hex_position)
+	for coord in combat.hex_grid.tiles:
+		if Targeting.is_in_range(origin, coord, range_hexes) and occupied.all(func(o): return HexUtils.get_distance(o, coord) > radius):
+			return coord
+	return Vector2i(0, 5)
 
 
 static func thunderwave_noise(h: Node, combat: CombatState, caster: Character) -> void:

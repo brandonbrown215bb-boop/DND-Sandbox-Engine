@@ -18,11 +18,11 @@ static func condition_expiry_error(expiry) -> String:
 	if not _integer(expiry["turns"], 1, 10): return "Condition expiry turns must be an integer from 1 to 10."
 	return ""
 
-const EFFECTS := ["heal", "temporary_hp", "grant_condition", "remove_condition", "area_selection", "grant_source_benefits", "grant_damage_link", "grant_damage_response", "create_actor", "actor_projection", "suppress_item_magic", "bind_tether", "max_hp_source", "settle_death", "destroy_object", "weapon_attack"]
+const EFFECTS := ["heal", "temporary_hp", "grant_condition", "remove_condition", "area_selection", "grant_source_benefits", "grant_damage_link", "grant_damage_response", "create_actor", "actor_projection", "suppress_item_magic", "bind_tether", "max_hp_source", "settle_death", "destroy_object", "weapon_attack", "push"]
 const STEP_FIELDS := ["id", "type", "gate", "gate_step", "target", "shape", "radius", "size", "attack_type", "damage", "damage_type", "damage_components", "component_id", "scaling", "upcast", "save", "half_on_save", "save_context", "damage_scale_by_outcome", "damage_dice_policy", "damage_result_multiplier", "damage_reductions", "damage_bypasses", "recipient_exemption_choice", "effects", "incoming_negation", "incoming_negation_rule", "physical_requirements", "spatial_requirements"]
 const STEP_TYPES := ["attack", "save", "damage", "effect"]
 const STEP_GATES := ["always", "hit", "miss", "failed_save", "successful_save"]
-const FIELDS := ["containment_targeting", "id", "name", "description", "execution", "level", "casting_time", "range", "range_kind", "range_by_character_level_feet", "target", "base_targets", "attack_type", "damage", "damage_type", "component_id", "scaling", "upcast", "save", "half_on_save", "save_exit_placement", "save_context", "damage_scale_by_outcome", "damage_dice_policy", "damage_result_multiplier", "damage_reductions", "damage_bypasses", "recipient_exemption_choice", "attack_unit_substitution", "requires_target_sight", "target_creature_types", "target_creature_type_exclusions", "target_sizes", "ignore_cover_on_save", "ignore_cover", "effects", "concentration", "duration", "duration_seconds", "repeat_save", "repeat_save_schedule", "repeat_save_interval_seconds", "repeat_save_stages", "repeat_save_dc_progression", "targets_objects", "ignites_objects", "area_radius", "cone_size", "end_on_target_damage", "end_on_any_damage", "end_on_party_damage", "source_end_rules", "components", "material", "material_component_item_id", "material_component_cost", "material_component_consumed", "consumed_material_item_id", "ritual", "rules_source", "rules_status", "school", "classes", "source", "trigger", "steps", "formula_inputs", "interruption_policy", "failure_policy", "empty_effect_policy", "cast_settlement", "cancellation_rule", "stopping_cost_policy", "incoming_negation_rule", "physical_requirements", "spatial_requirements", "zero_hp_aftermath", "end_aftermath", "reaction_trigger", "effect_noise", "projectiles", "delayed_damage", "damage_type_options", "exploding_dice", "save_disadvantage_creature_types"] # Batch 065: reaction_trigger is validated by ReactionTriggers.spell_trigger_error.
+const FIELDS := ["containment_targeting", "id", "name", "description", "execution", "level", "casting_time", "range", "range_kind", "range_by_character_level_feet", "target", "base_targets", "attack_type", "damage", "damage_type", "component_id", "scaling", "upcast", "save", "half_on_save", "save_exit_placement", "save_context", "damage_scale_by_outcome", "damage_dice_policy", "damage_result_multiplier", "damage_reductions", "damage_bypasses", "recipient_exemption_choice", "attack_unit_substitution", "requires_target_sight", "target_creature_types", "target_creature_type_exclusions", "target_sizes", "ignore_cover_on_save", "ignore_cover", "effects", "concentration", "duration", "duration_seconds", "repeat_save", "repeat_save_schedule", "repeat_save_interval_seconds", "repeat_save_stages", "repeat_save_dc_progression", "targets_objects", "ignites_objects", "area_radius", "cone_size", "end_on_target_damage", "end_on_any_damage", "end_on_party_damage", "source_end_rules", "components", "material", "material_component_item_id", "material_component_cost", "material_component_consumed", "consumed_material_item_id", "ritual", "rules_source", "rules_status", "school", "classes", "source", "trigger", "steps", "formula_inputs", "interruption_policy", "failure_policy", "empty_effect_policy", "cast_settlement", "cancellation_rule", "stopping_cost_policy", "incoming_negation_rule", "physical_requirements", "spatial_requirements", "zero_hp_aftermath", "end_aftermath", "reaction_trigger", "effect_noise", "projectiles", "delayed_damage", "damage_type_options", "exploding_dice", "save_disadvantage_creature_types", "area_object_push"] # Batch 065: reaction_trigger is validated by ReactionTriggers.spell_trigger_error.
 
 static func damage_dice_policy_error(value: Variant) -> String:
 	if not value is Dictionary or value.is_empty():
@@ -105,6 +105,10 @@ static func _validate_single_effect(effect: Variant) -> String:
 			var multiplier_error := damage_multiplier_error(effect["result_multiplier"])
 			if not multiplier_error.is_empty(): return multiplier_error
 			if effect["result_multiplier"].has("exclude_critical"): return "Healing result multipliers cannot declare exclude_critical."
+	elif kind == "push":
+		# Forced movement away from the spell origin (SpellEffectApplication._apply_push), in hexes.
+		allowed.append("distance")
+		if not _integer(effect.get("distance"), 1, 24): return "Shared push requires an integer distance of 1..24 hexes."
 	elif kind == "weapon_attack":
 		allowed.append_array(["ability", "weapon", "damage_type_options", "extra_damage"])
 		if str(effect.get("ability", "")) != "spellcasting": return "Shared weapon attacks currently support only the spellcasting ability."
@@ -446,6 +450,10 @@ static func content_error(spell: Dictionary) -> String:
 	if spell.has("damage_type_options") or spell.has("exploding_dice"):
 		var choice_error := damage_choice_error(spell)
 		if not choice_error.is_empty(): return choice_error
+	if spell.has("area_object_push"):
+		var push: Variant = spell["area_object_push"]
+		if str(spell.get("target", "single")) != "area" or not push is Dictionary or push.keys().any(func(k): return str(k) not in ["distance", "scope"]): return "area_object_push requires an area spell and only distance/scope fields."
+		if not _integer(push.get("distance"), 1, 24) or str(push.get("scope", "")) != "unsecured": return "area_object_push requires scope unsecured and an integer distance of 1..24 hexes."
 	if spell.has("save_disadvantage_creature_types"):
 		var types: Variant = spell["save_disadvantage_creature_types"]
 		if not spell.has("save") or not types is Array or types.is_empty(): return "save_disadvantage_creature_types requires a saving throw and a nonempty creature-type list."

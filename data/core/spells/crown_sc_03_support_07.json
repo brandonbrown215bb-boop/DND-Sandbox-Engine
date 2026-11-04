@@ -1,0 +1,28 @@
+[
+  {
+    "id": "thunderwave",
+    "name": "Thunderwave",
+    "description": "You unleash a wave of thunderous energy. Each creature in a 15-foot Cube originating from you makes a Constitution saving throw. On a failed save, a creature takes 2d8 Thunder damage and is pushed 10 feet away from you. On a successful save, a creature takes half as much damage only. In addition, unsecured objects that are entirely within the Cube are pushed 10 feet away from you, and a thunderous boom is audible within 300 feet. Using a Higher-Level Spell Slot. The damage increases by 1d8 for each spell slot level above 1.",
+    "execution": "shared",
+    "level": 1,
+    "school": "evocation",
+    "casting_time": "action",
+    "range": 0,
+    "classes": ["bard", "druid", "sorcerer", "wizard"],
+    "components": ["V", "S"],
+    "duration": "instantaneous",
+    "concentration": false,
+    "rules_source": "SRD5.2.1",
+    "rules_status": "2024-gameplay",
+    "target": "area",
+    "attack_type": "none",
+    "save": "CON",
+    "half_on_save": true,
+    "damage": "2d8",
+    "damage_type": "thunder",
+    "upcast": {"starting_level": 1, "damage_per_level": "1d8"},
+    "effects": [{"type": "area_selection", "shape": "cube", "size": 3}, {"type": "push", "distance": 2, "on_failed_save": true}],
+    "area_object_push": {"distance": 2, "scope": "unsecured"},
+    "effect_noise": {"volume": "loud", "range_feet": 300, "origin": "caster"}
+  }
+]

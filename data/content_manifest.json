@@ -1425,9 +1425,10 @@
     {
       "type": "spell",
       "id": "thunderwave",
-      "winner": "res://data/core/spells/core_spells.json#9",
+      "winner": "res://data/core/spells/crown_sc_03_support_07.json#1",
       "replaces": [
-        "res://data/core/spells/imported_spells.json#185"
+        "res://data/core/spells/imported_spells.json#185",
+        "res://data/core/spells/core_spells.json#9"
       ]
     },
     {
