@@ -201,6 +201,7 @@ if ($runIntegration) {
 	$scenarios += "batch_035_profile_max_hp_flow"
 	$scenarios += "conversion_batch_001_flow"
 	$scenarios += "conversion_batch_002_flow"
+	$scenarios += "crown_sc_01_flow"
 	$scenarios += "batch_036_end_and_charge_flow"
 	$scenarios += "batch_037_mode_upgrade_flow"
 	$scenarios += "batch_038_switch_option_flow"
@@ -341,6 +342,13 @@ if ($runIntegration) {
                         if (-not (Invoke-GodotCase -Name "${scenario}_fresh_${recoveryMode}" -Scene "res://scenes/viewport_harness.tscn" -Marker $recoveryMarker -TimeoutSeconds $scenarioTimeout -ExtraArguments @("--scenario=$scenario") -UserDataDirectory $profile)) { $failed = $true }
                     }
                 } finally { $env:CONVERSION_BATCH_002_RECOVER = $previousRecovery }
+            } elseif ($scenario -eq "crown_sc_01_flow") {
+                $profile = Join-Path $logDirectory "$scenario.user-data"
+                $previousRecovery = $env:CROWN_SC_01_RECOVER
+                try {
+                    $env:CROWN_SC_01_RECOVER = "1"
+                    if (-not (Invoke-GodotCase -Name "${scenario}_fresh_process" -Scene "res://scenes/viewport_harness.tscn" -Marker "CROWN_SC_01_FRESH_PROCESS_PASSED" -TimeoutSeconds $scenarioTimeout -ExtraArguments @("--scenario=$scenario") -UserDataDirectory $profile)) { $failed = $true }
+                } finally { $env:CROWN_SC_01_RECOVER = $previousRecovery }
             } elseif ($scenario -eq "containment_release_flow") {
                 $profile = Join-Path $logDirectory "$scenario.user-data"
                 if (-not (Invoke-GodotCase -Name "${scenario}_fresh_process" -Scene "res://scenes/containment_release_recovery_probe.tscn" -Marker "CONTAINMENT RELEASE FRESH-PROCESS RECOVERY PASSED" -TimeoutSeconds $scenarioTimeout -UserDataDirectory $profile)) { $failed = $true }

@@ -1,0 +1,28 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+WARNING: [DataLoader] Rejected 25 unsupported effectless feature records; they remain unavailable until curated.
+     at: push_warning (core/variant/variant_utility.cpp:1033)
+     GDScript backtrace (most recent call first):
+         [0] load_all_data (res://src/autoload/data_loader.gd:276)
+         [1] _ready (res://src/autoload/data_loader.gd:252)
+[DataLoader] Loaded: 14 classes, 9 races, 294 items, 362 spells, 481 monsters, 4 event tables, 1 campaigns
+[DataLoader] Layers: core_imported, core_curated, mods | packs: core, crown | approved overrides: 415 | validation failures: 0
+==================================================
+ Rook's Headless Viewport Harness (per-beat)
+==================================================
+[TEST] save_load
+[SaveManager] Successfully saved game to user://saves/dnd2024/harness_test_slot.sav
+[ok]   SaveManager.save_game returned true
+[ok]   save slot present after save
+[SaveManager] Test mode: restored save state without scene transition
+[ok]   SaveManager.load_game returned true
+[ok]   load restored defeated_monsters
+[ok]   load restored player count
+[ok]   load restored player character
+[ok]   load restored character name
+[SaveManager] Deleted save slot: harness_test_slot
+[ok]   SaveManager.delete_save returned true
+[ok]   save slot gone after delete
+--------------------------------------------------
+ VIEWPORT RESULTS: 0 failed (1 tests run)
+VIEWPORT TESTS PASSED
+SCENARIO PASSED: save_load
