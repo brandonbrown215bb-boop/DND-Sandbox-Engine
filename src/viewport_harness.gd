@@ -574,6 +574,7 @@ func _run_scenario(scenario: String) -> void:
 		"crown_sc_03_support_03_flow": await CrownSc03Support03Flow.run(self)
 		"crown_sc_03_support_04_flow": await CrownSc03Support04Flow.run(self)
 		"crown_sc_03_support_05_flow": await CrownSc03Support05Flow.run(self)
+		"crown_sc_03_support_06_flow": await CrownSc03Support06Flow.run(self)
 		"sorcerer_twinned_spell": await test_sorcerer_twinned_spell()
 		"overworld": await test_overworld()
 		"companion_lifecycle": await test_companion_lifecycle()
