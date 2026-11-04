@@ -86,6 +86,7 @@ static func resolve_skill_check(character: Character, check_data: Dictionary, de
 	var context_tool: Dictionary = character.inventory.skill_check_context_bonus(ability, skill, check_context)
 	var contextual_tool_bonus := int(context_tool.get("bonus", 0))
 	var modifier := character.get_skill_check_modifier(skill, ability) + tool_bonus + contextual_tool_bonus
+	if skill == "Perception": modifier += CombatAction.perception_penalty(character)
 	var base_modifier := modifier
 	var total := roll + modifier
 	var guidance_bonus := 0
@@ -166,7 +167,10 @@ static func ability_check_roll_mode(character: Character, ability: String, skill
 					policies.append(contribution)
 	var contributors: Array[Dictionary] = []
 	var has_advantage := familiar_help
-	var has_disadvantage := ability.to_upper() == "STR" and character != null and character.has_condition("ray_of_enfeeblement")
+	var str_markers: Array[String] = []
+	if ability.to_upper() == "STR" and character != null:
+		str_markers = CombatAction.conditions_with_consequence(character, "str_d20_disadvantage")
+	var has_disadvantage := not str_markers.is_empty() or (character != null and CombatAction.check_has_marker_disadvantage(character, ability))
 	if skill == "Perception" and context.get("sense") == "sight" and bool(context.get("lightly_obscured", false)):
 		has_disadvantage = true
 		contributors.append({"source_kind":"world", "source_id":"lightly_obscured", "mode":"disadvantage", "status":"active"})
@@ -181,8 +185,8 @@ static func ability_check_roll_mode(character: Character, ability: String, skill
 	if bool(context.get("target_charmed_by_actor", false)) and (bool(context.get("influence_action", false)) or ability.to_upper() == "CHA" or skill in ["Persuasion", "Deception", "Intimidation", "Performance"]):
 		has_advantage = true
 		contributors.append({"source_kind": "native", "source_id": "charmed_social", "mode": "advantage", "status": "active"})
-	if has_disadvantage:
-		contributors.append({"source_kind": "native", "source_id": "ray_of_enfeeblement", "mode": "disadvantage", "status": "active"})
+	if not str_markers.is_empty():
+		contributors.append({"source_kind": "native", "source_id": str_markers[0], "mode": "disadvantage", "status": "active"})
 	if character != null and CombatAction.condition_rule("poisoned", "check_disadvantage") and character.has_condition("poisoned"):
 		has_disadvantage = true
 		contributors.append({"source_kind": "native", "source_id": "poisoned", "mode": "disadvantage", "status": "active"})
@@ -240,7 +244,16 @@ static func monster_ability_check_modifier(monster: Dictionary, ability: String,
 					break
 	var exhaustion := int(monster.get("exhaustion_level", monster.get("conditions", {}).get("exhaustion", 0)))
 	mod -= exhaustion * 2
+	if skill.to_lower() == "perception": mod += CombatAction.perception_penalty(monster)
 	return mod
+
+
+## Passive Perception = 10 + Wisdom (Perception) modifier, including the
+## generic perception penalty consequence. Character or monster Dictionary.
+static func passive_perception(entity) -> int:
+	if entity is Character:
+		return 10 + entity.get_skill_check_modifier("Perception", "WIS") + CombatAction.perception_penalty(entity)
+	return 10 + monster_ability_check_modifier(entity, "WIS", "Perception")
 
 
 static func resolve_monster_ability_check(monster: Dictionary, ability: String, skill: String = "", dc: int = 0, roll_override: int = 0, decisions: Dictionary = {}, authored_context: Dictionary = {}) -> Dictionary:
@@ -273,7 +286,7 @@ static func resolve_monster_ability_check(monster: Dictionary, ability: String, 
 	var fear_out_of_sight := grid is HexGrid and actor_position is Vector2i and not CombatAction.is_frightened_source_in_sight(monster, actor_position, participants, grid)
 	var social_target: Variant = authored_context.get("social_target")
 	var advantage := (SpellEffects.has_spell(monster, "enhance_ability") and str(monster.get("enhance_ability_stat", "")).to_upper() == clean_ability) or ((social_target is Character or social_target is Dictionary) and CombatAction.is_charmed_by(social_target, monster) and (clean_ability == "CHA" or skill in ["Persuasion", "Deception", "Intimidation", "Performance"]))
-	var disadvantage := (CombatAction.condition_rule("poisoned", "check_disadvantage") and CombatAction.has_condition(monster, "poisoned")) or (CombatAction.condition_rule("frightened", "check_disadvantage_in_sight") and CombatAction.has_condition(monster, "frightened") and not fear_out_of_sight) or (clean_ability == "STR" and CombatAction.has_condition(monster, "ray_of_enfeeblement"))
+	var disadvantage := (CombatAction.condition_rule("poisoned", "check_disadvantage") and CombatAction.has_condition(monster, "poisoned")) or (CombatAction.condition_rule("frightened", "check_disadvantage_in_sight") and CombatAction.has_condition(monster, "frightened") and not fear_out_of_sight) or (clean_ability == "STR" and not CombatAction.conditions_with_consequence(monster, "str_d20_disadvantage").is_empty()) or CombatAction.check_has_marker_disadvantage(monster, clean_ability)
 	var d20_details: Dictionary = {}
 	var natural_roll := 1
 	if roll_override > 0:
@@ -478,6 +491,11 @@ static func resolve_area_selection(effect: Dictionary) -> Dictionary:
 		return {"success": false, "type": "area_selection", "message": "Unsupported area shape: %s" % shape}
 	if shape == "point":
 		return {"success": true, "type": "area_selection", "shape": shape, "persistent": false, "message": "Selected one point."}
+	if shape == "line" and str(effect.get("origin", "")) == "self":
+		var self_length := int(effect.get("size", 0))
+		if self_length < 1 or self_length > 40:
+			return {"success": false, "type": "area_selection", "message": "Line length must be between 1 and 40 hexes."}
+		return {"success": true, "type": "area_selection", "shape": shape, "origin": "self", "size": self_length, "persistent": false, "message": "Selected a line %d hexes long from the caster." % self_length}
 	if shape == "line":
 		var length := int(effect.get("size", 0))
 		if length < 1 or length > 12:

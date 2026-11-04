@@ -1,0 +1,264 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+WARNING: [DataLoader] Rejected 25 unsupported effectless feature records; they remain unavailable until curated.
+     at: push_warning (core/variant/variant_utility.cpp:1033)
+     GDScript backtrace (most recent call first):
+         [0] load_all_data (res://src/autoload/data_loader.gd:276)
+         [1] _ready (res://src/autoload/data_loader.gd:252)
+[DataLoader] Loaded: 14 classes, 9 races, 294 items, 362 spells, 481 monsters, 4 event tables, 1 campaigns
+[DataLoader] Layers: core_imported, core_curated, mods | packs: core, crown | approved overrides: 421 | validation failures: 0
+==================================================
+ Rook's Headless Viewport Harness (per-beat)
+==================================================
+
+[TEST] ready_action_flow
+[Character] Fighter Fixture leveled up to 2! (+11 HP, now 23)
+[Character] Fighter Fixture leveled up to 3! (+5 HP, now 28)
+[Character] Fighter Fixture leveled up to 4! (+6 HP, now 34)
+[Character] Fighter Fixture leveled up to 5! (+7 HP, now 41)
+[ok]   S237 fixture equips legal ranged Ready weapon with Shield removed
+[ok]   S237 Ready costs the owner's Action now and reserves no extra Reaction
+[ok]   S237 actual completed trigger and owning Reaction prompt settle
+[ok]   S237 readied Attack resolves one strike and spends/consumes its exact Reaction once
+[ok]   S237 off-turn attack leaves interrupted actor, Action, Bonus Action, movement and Extra Attack budget unchanged
+[ok]   S237 loaded additive weapon profile applies only once to readied attack: 1d6+2+DEX
+[ok]   S237 Ready costs the owner's Action now and reserves no extra Reaction
+[ok]   S237 actual completed trigger and owning Reaction prompt settle
+[ok]   S237 declining a completed trigger keeps Ready and Reaction
+[ok]   S237 actual completed trigger and owning Reaction prompt settle
+[ok]   S237 cancelling readied targeting ignores this trigger without payment
+[ok]   S237 Ready costs the owner's Action now and reserves no extra Reaction
+[ok]   S237 actual completed trigger and owning Reaction prompt settle
+[ok]   S237 readied movement uses its owner's Speed without borrowing interrupted movement
+[ok]   S237 loaded renamed held spell has production cast permission
+[ok]   S237 Ready costs the owner's Action now and reserves no extra Reaction
+[ok]   S237 Ready spends last slot now and holds even a non-Concentration spell with exact Concentration token
+[ok]   S237 actual completed trigger and owning Reaction prompt settle
+[ok]   S237 actual readied spell releases after trigger without re-paying last slot or retaining hold: fixture:held_bolt
+[ok]   S237 loaded renamed held spell has production cast permission
+[ok]   S237 Ready costs the owner's Action now and reserves no extra Reaction
+[ok]   S237 Ready spends last slot now and holds even a non-Concentration spell with exact Concentration token
+[ok]   S237 actual completed trigger and owning Reaction prompt settle
+[ok]   S237 actual readied spell releases after trigger without re-paying last slot or retaining hold: fixture:renamed_held_bolt
+[ok]   S237 Ready costs the owner's Action now and reserves no extra Reaction
+[ok]   S237 actual completed trigger and owning Reaction prompt settle
+[ok]   S237 actual readied native Magic Missile assigns all three projectiles and pays its last slot once
+[ok]   S237 restricted extra Action cannot become a cast-now spell or an unpaid future Magic action through Ready
+[ok]   S237 Ready costs the owner's Action now and reserves no extra Reaction
+[ok]   S237 Incapacitated dissipates held energy without refund
+[ok]   S237 missing consumed component refuses Ready before Action or slot payment
+[ok]   S237 Ready costs the owner's Action now and reserves no extra Reaction
+[ok]   S237 Ready consumes the exact material copy at casting time
+[ok]   S237 actual completed trigger and owning Reaction prompt settle
+[ok]   OA02 cancelled target-origin release preserves held energy and caster Hide
+[ok]   S237 actual completed trigger and owning Reaction prompt settle
+[ok]   OA02 successful readied release emits once from the exact target and keeps caster Hide
+[ok]   S237 actual source/payment chooser offers owned cantrips without a slot
+[ok]   S237 Ready costs the owner's Action now and reserves no extra Reaction
+[ok]   S237 fixture grants new spell sources after Ready casting
+[ok]   S237 actual completed trigger and owning Reaction prompt settle
+[ok]   S237 readied point spell creates its actual marker on an empty legal hex
+[ok]   S237 releasing a held marker does not repeat cast cleanup on newly acquired Invisibility or Sanctuary
+[ok]   S237 Ready costs the owner's Action now and reserves no extra Reaction
+[ok]   S237 Ready costs the owner's Action now and reserves no extra Reaction
+[ok]   S237 Ready costs the owner's Action now and reserves no extra Reaction
+[ok]   S237 native Thunderwave Ready pays its last slot and Action at declaration, not effect release
+[ok]   S237 Ready Thunderwave's separate Verbal event is audible to the close listener, while the 65-foot listener holds through the 60-foot cast sound
+[ok]   S237 actual completed trigger and owning Reaction prompt settle
+[ok]   S237 cancelling a native area-release target preserves paid Thunderwave and emits no effect sound
+[ok]   S237 stale live Thunderwave release selection pays no Reaction, resolves no effect, emits no boom and retains the held spell
+[ok]   S237 actual completed trigger and owning Reaction prompt settle
+[ok]   S237 actual readied native Thunderwave resolves its Cube and does not repay its declaration slot or Action: hp=9986/10000 slot=0 action=true/true concentration={  }
+[ok]   S237 only the released 300-foot effect boom reaches the Ready listener 65 feet away
+[ok]   S237 Ready costs the owner's Action now and reserves no extra Reaction
+[ok]   S237 Ready costs the owner's Action now and reserves no extra Reaction
+[ok]   S237 counterspell fixture owns the production Reaction-spell permission
+[ok]   S237 actual Counterspell interrupts Thunderwave Ready and its separate Verbal sound still resolves
+[ok]   S237 Counterspell refunds the interrupted Ready spell slot, keeps the casting Action spent, spends only its own Reaction, and leaves no Thunderwave energy or 300-foot sound
+[ok]   S237 Ready costs the owner's Action now and reserves no extra Reaction
+[ok]   S237 lost concentration invalidates native Thunderwave without refund or effect sound
+[ok]   S237 Ready costs the owner's Action now and reserves no extra Reaction
+[ok]   S237 next-owner-turn expiry dissipates native Thunderwave without refund or effect sound
+[ok]   S237 stale previous-player pointers cannot Ready during actual monster turn
+[ok]   S237 Ready costs the owner's Action now and reserves no extra Reaction
+[ok]   S237 actual completed trigger and owning Reaction prompt settle
+[ok]   S237 self-triggered readied Dash grants actual movement only, without refilling Action or Reaction
+[ok]   S237 unused readied Dash allowance expires with triggering turn
+[ok]   S237 Ready costs the owner's Action now and reserves no extra Reaction
+[ok]   S237 actual next owner turn expires held action before start effects
+[ok]   S237 Ready costs the owner's Action now and reserves no extra Reaction
+[ok]   S237 actual completed trigger and owning Reaction prompt settle
+[ok]   S237 readied Disengage is active for triggering turn
+[ok]   S237 readied Disengage ends with triggering turn, before owner's next turn
+[ok]   S237 Ready costs the owner's Action now and reserves no extra Reaction
+[ok]   S237 actual completed trigger and owning Reaction prompt settle
+[ok]   S237 completed consumable effect publishes Ready after real item and Action payment
+[ok]   S237 Ready costs the owner's Action now and reserves no extra Reaction
+[ok]   S237 actual completed trigger and owning Reaction prompt settle
+[ok]   S237 renamed paid feature triggers after Dash without borrowing interrupted budgets
+[ok]   S237 Ready costs the owner's Action now and reserves no extra Reaction
+[ok]   S237 refused item produces no fictitious completed action
+[ok]   S237 Ready costs the owner's Action now and reserves no extra Reaction
+[ok]   S237 selects an actually offered interaction: *
+[ok]   S237 actual object/feature choices complete without a stuck continuation
+[ok]   S237 paying a parent and choosing its first child does not prematurely trigger Ready
+[ok]   S237 actual completed trigger and owning Reaction prompt settle
+[ok]   S237 forfeiting the paid parent completes its event once without refunding the interrupted Action
+[ok]   S238 closed room door supplies Total Cover on the actual combat ray
+[ok]   S237 Utilize object selection is reachable and unpaid
+[ok]   S237 selects an actually offered interaction: Open
+[ok]   S237 actual object/feature choices complete without a stuck continuation
+[ok]   S237/S238 Utilize opens exact persistent room door and refreshes movement and physical targeting with one canonical Action
+[ok]   S237 Utilize object selection is reachable and unpaid
+[ok]   S237 selects an actually offered interaction: 
+[ok]   S237 actual object/feature choices complete without a stuck continuation
+[ok]   S237 cancelling object operation costs nothing
+[ok]   S237 Utilize object selection is reachable and unpaid
+[ok]   S237 selects an actually offered interaction: Close
+[ok]   S237 actual object/feature choices complete without a stuck continuation
+[ok]   S237/S238 closing the exact room door restores Total Cover without persisting a combat-only participant
+[ok]   S237 Utilize object selection is reachable and unpaid
+[ok]   S237 selects an actually offered interaction: Take
+[ok]   S237 selects an actually offered interaction: *
+[ok]   S237 actual object/feature choices complete without a stuck continuation
+[ok]   S237 Utilize transfers the exact room item once
+[ok]   S237 Utilize object selection is reachable and unpaid
+[ok]   S237 selects an actually offered interaction: Put
+[ok]   S237 selects an actually offered interaction: Potion of Healing · 3
+[ok]   S237 actual object/feature choices complete without a stuck continuation
+[ok]   S237 actual Put chooser stows the selected exact copy with one Action
+[ok]   S237 replay without Action cannot mutate the room
+[ok]   S237 Utilize object selection is reachable and unpaid
+[ok]   S237 selects an actually offered interaction: Pick lock
+[ok]   S237 actual object/feature choices complete without a stuck continuation
+[ok]   S237 missing tool refuses without Action payment
+[ok]   S237 fixture grants an actual owned matching Help source
+[ok]   S237 Utilize object selection is reachable and unpaid
+[ok]   S237 selects an actually offered interaction: Pick lock
+[ok]   S237 actual object/feature choices complete without a stuck continuation
+[ok]   S237 failed live tool attempt spends its Action while leaving the actual lock intact
+[ok]   S237 actual object check consumes matching spatial Help: []
+[ok]   S237 Utilize object selection is reachable and unpaid
+[ok]   S237 selects an actually offered interaction: Force open
+[ok]   S237 actual object/feature choices complete without a stuck continuation
+[ok]   S237 failed authored loud attempt ends Hide without any Ready owner and preserves independent Invisibility
+[ok]   S237 Ready costs the owner's Action now and reserves no extra Reaction
+[ok]   S237 Utilize object selection is reachable and unpaid
+[ok]   S237 selects an actually offered interaction: 
+[ok]   S237 actual object/feature choices complete without a stuck continuation
+[ok]   S237 cancelled loud-operation chooser stays silent and preserves Hide/Action/Ready
+[ok]   S237 Utilize object selection is reachable and unpaid
+[ok]   S237 selects an actually offered interaction: Pry
+[ok]   S237 actual object/feature choices complete without a stuck continuation
+[ok]   S237 missing-tool refusal makes no sound and preserves Hide/Action/Ready
+[ok]   S237 Utilize object selection is reachable and unpaid
+[ok]   S237 selects an actually offered interaction: Force open
+[ok]   S237 actual object/feature choices complete without a stuck continuation
+[ok]   S237 invalid noise declaration refuses before object mutation, roll or cost
+[ok]   S237 Utilize object selection is reachable and unpaid
+[ok]   S237 selects an actually offered interaction: Force open
+[ok]   S237 actual object/feature choices complete without a stuck continuation
+[ok]   S237 actual loud attempt ends Hide but cannot trigger a Deafened Ready owner
+[ok]   S237 Utilize object selection is reachable and unpaid
+[ok]   S237 selects an actually offered interaction: Force open
+[ok]   S237 actual object/feature choices complete without a stuck continuation
+[ok]   S237 actual paid loud failure triggers one owning Reaction despite Invisibility/Blinded without borrowing interrupted budget
+[ok]   S237 Ready costs the owner's Action now and reserves no extra Reaction
+[ok]   S237 Utilize object selection is reachable and unpaid
+[ok]   S237 selects an actually offered interaction: Force open
+[ok]   S237 actual object/feature choices complete without a stuck continuation
+[ok]   S237 authored whisper retains Hide and cannot trigger loud-sound Ready while the actual attempt and Action settle
+[ok]   S237 Ready costs the owner's Action now and reserves no extra Reaction
+[ok]   S237 Ready costs the owner's Action now and reserves no extra Reaction
+[ok]   S237 selects an actually offered interaction: Force open
+[ok]   S237 selects an actually offered interaction: Open
+[ok]   S237 actual object/feature choices complete without a stuck continuation
+[ok]   S237 opening a door in an earlier Ready response cannot make a blocked sound retroactively audible
+[ok]   S237 Ready costs the owner's Action now and reserves no extra Reaction
+[ok]   S237 Ready costs the owner's Action now and reserves no extra Reaction
+[ok]   S237 selects an actually offered interaction: Take
+[ok]   S237 selects an actually offered interaction: *
+[ok]   S237 selects an actually offered interaction: Close
+[ok]   S237 actual object/feature choices complete without a stuck continuation
+[ok]   S237 closing a door in an earlier Ready response cannot erase a sound already heard
+[ok]   S237 Utilize object selection is reachable and unpaid
+[ok]   S237 selects an actually offered interaction: Open
+[ok]   S237 actual object/feature choices complete without a stuck continuation
+[ok]   S237 lost Action during operation choice cannot change object
+[ok]   S237 Utilize object selection is reachable and unpaid
+[ok]   S237 selects an actually offered interaction: Open
+[ok]   S237 actual object/feature choices complete without a stuck continuation
+[ok]   S237 lost proximity during operation choice refuses before payment
+[ok]   S237 Utilize object selection is reachable and unpaid
+[ok]   S237 selects an actually offered interaction: Open
+[ok]   S237 actual object/feature choices complete without a stuck continuation
+[ok]   S237 changed owner/turn cannot finish an old object choice or charge the new owner
+[ok]   S237 Utilize object selection is reachable and unpaid
+[ok]   S237 selects an actually offered interaction: Open
+[ok]   S237 actual object/feature choices complete without a stuck continuation
+[ok]   S237 removed object refuses before payment
+[ok]   S237 old highlighted cell cannot operate a moved object
+[ok]   S237 Utilize object selection is reachable and unpaid
+[ok]   S237 selects an actually offered interaction: Open
+[ok]   S237 actual object/feature choices complete without a stuck continuation
+[ok]   S237 replacement with same authored object ID cannot inherit a stale choice
+[ok]   S237 flying above an object cannot interact across vertical reach
+[ok]   S237 object interactions cannot cross planes
+[ok]   S237 Ready costs the owner's Action now and reserves no extra Reaction
+[ok]   S237 selects an actually offered interaction: 
+[ok]   S237 actual object/feature choices complete without a stuck continuation
+[ok]   S237 cancelling readied Utilize preserves held response and owning Reaction
+[ok]   S237 selects an actually offered interaction: Take
+[ok]   S237 selects an actually offered interaction: *
+[ok]   S237 actual object/feature choices complete without a stuck continuation
+[ok]   S237 readied Utilize takes a real co-located object with one owning Reaction and preserves the interrupted Dash
+[ok]   S237 actual Actions button opens chooser
+[ok]   S237 actual Actions menu reaches unpaid Study source selection
+[ok]   S237 selects an actually offered interaction: 
+[ok]   S237 actual object/feature choices complete without a stuck continuation
+[ok]   S237 cancelled combat Study spends nothing and learns nothing
+[ok]   S237 actual Actions button opens chooser
+[ok]   S237 a source moved to another reachable cell cannot be studied through its stale highlighted cell
+[ok]   S237 actual Actions button opens chooser
+[ok]   S237 actual Actions menu reaches unpaid Study source selection
+[ok]   S237 selects an actually offered interaction: What does the spiral mean? (Arcana)
+[ok]   S237 actual object/feature choices complete without a stuck continuation
+[ok]   S237 lost Action during question choice cannot grant knowledge
+[ok]   S237 actual Actions button opens chooser
+[ok]   S237 actual Actions menu reaches unpaid Study source selection
+[ok]   S237 selects an actually offered interaction: What does the spiral mean? (Arcana)
+[ok]   S237 actual object/feature choices complete without a stuck continuation
+[ok]   S237 changed authored question during the chooser refuses before cost or result
+[ok]   S237 actual Actions button opens chooser
+[ok]   S237 actual Actions menu reaches unpaid Study source selection
+[ok]   S237 selects an actually offered interaction: Who carved this stone? (History)
+[ok]   S237 actual object/feature choices complete without a stuck continuation
+[ok]   S237 actual failed combat Study spends its ordinary Action
+[ok]   S237 actual Actions button opens chooser
+[ok]   S237 actual Actions menu reaches unpaid Study source selection
+[ok]   S237 selects an actually offered interaction: What does the spiral mean? (Arcana)
+[ok]   S237 actual object/feature choices complete without a stuck continuation
+[ok]   S237 actual combat Study consumes matching Help, learns the exact answer and pays once
+[ok]   S237 actual Actions button opens chooser
+[ok]   S237 actual Actions menu reaches unpaid Study source selection
+[ok]   S237 selects an actually offered interaction: What does the spiral mean? (Arcana)
+[ok]   S237 actual object/feature choices complete without a stuck continuation
+[ok]   S237 known combat answer is recalled without rolling or Action payment
+[ok]   S237 actual Actions button opens chooser
+[ok]   S237 actual Actions menu reaches unpaid Study source selection
+[ok]   S237 selects an actually offered interaction: Renamed survey stone
+[ok]   S237 selects an actually offered interaction: What does the spiral mean? (Arcana)
+[ok]   S237 actual object/feature choices complete without a stuck continuation
+[ok]   S237 actual same-cell exact-source chooser resolves renamed data without borrowing another object's answer
+[ok]   S237 Ready costs the owner's Action now and reserves no extra Reaction
+[ok]   S237 selects an actually offered interaction: 
+[ok]   S237 actual object/feature choices complete without a stuck continuation
+[ok]   S237 cancelled readied Study question preserves held response and Reaction
+[ok]   S237 selects an actually offered interaction: How is the seam arranged? (Investigation)
+[ok]   S237 actual object/feature choices complete without a stuck continuation
+[ok]   S237 actual readied Study learns once using its owner's Reaction while preserving the triggering actor's spent Action
+[ok]   S237 encounter teardown clears held actions/energy without durable state
+--------------------------------------------------
+ VIEWPORT RESULTS: 0 failed (1 tests run)
+VIEWPORT TESTS PASSED
+SCENARIO PASSED: ready_action_flow

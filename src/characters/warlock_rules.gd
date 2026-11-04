@@ -28,7 +28,7 @@ static func _known_damage_cantrips(c: Character, attack_roll_only: bool = false)
 	var result: Array[String] = []
 	for spell_id in c.known_spells:
 		var spell := DataLoader.get_spell(spell_id)
-		if int(spell.get("level", -1)) != 0 or not spell.has("damage"):
+		if int(spell.get("level", -1)) != 0 or not (spell.has("damage") or SpellProjectileResolver.is_projectile(spell)):
 			continue
 		if attack_roll_only and str(spell.get("attack_type", "none")) not in ["ranged_spell", "melee_spell"]:
 			continue

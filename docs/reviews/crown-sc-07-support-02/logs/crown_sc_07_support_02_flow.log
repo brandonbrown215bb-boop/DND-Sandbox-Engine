@@ -1,0 +1,47 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+WARNING: [DataLoader] Rejected 25 unsupported effectless feature records; they remain unavailable until curated.
+     at: push_warning (core/variant/variant_utility.cpp:1033)
+     GDScript backtrace (most recent call first):
+         [0] load_all_data (res://src/autoload/data_loader.gd:276)
+         [1] _ready (res://src/autoload/data_loader.gd:252)
+[DataLoader] Loaded: 14 classes, 9 races, 295 items, 362 spells, 481 monsters, 4 event tables, 1 campaigns
+[DataLoader] Layers: core_imported, core_curated, mods | packs: core, crown | approved overrides: 428 | validation failures: 0
+==================================================
+ Rook's Headless Viewport Harness (per-beat)
+==================================================
+
+[TEST] crown_sc_07_support_02_flow
+[ok]   SC-07 s2: only EventResolver rolls ability-check d20 tests, so every Strength check reads the shared consequence (offenders: [])
+[Character] crown-sc07s2-renamed leveled up to 2! (+4 HP, now 12)
+[Character] crown-sc07s2-renamed leveled up to 3! (+4 HP, now 16)
+[Character] crown-sc07s2-renamed leveled up to 4! (+4 HP, now 20)
+[Character] crown-sc07s2-renamed leveled up to 5! (+4 HP, now 24)
+[ok]   SC-01 support 01: renamed ray_of_enfeeblement passes the production loader as shared data
+[ok]   SC-07 s2: control: unaffected Strength checks roll normally
+[ok]   SC-07 s2: the renamed neutral ray enfeebles a Character and a monster through CombatAction.resolve_spell
+[ok]   SC-07 s2: an enfeebled Character rolls Strength (Athletics) and raw Strength checks at Disadvantage, Dexterity normally
+[ok]   SC-07 s2: the check receipt names the enfeebled marker as the Disadvantage source
+[ok]   SC-07 s2: an enfeebled monster rolls Strength checks at Disadvantage, Dexterity normally
+[ok]   SC-07 s2: legacy ray_of_enfeeblement markers from older saves impose the same Strength check Disadvantage
+[Character] crown-sc07s2-lock leveled up to 2! (+6 HP, now 16)
+[Character] crown-sc07s2-lock leveled up to 3! (+4 HP, now 20)
+[ok]   SC-07 s2: the Warlock selects Ray of Enfeeblement through class selection
+[ok]   SC-07 s2: control: the live monster zone escape rolls normally before the ray
+[ok]   Conversion 001: ray_of_enfeeblement is available through the real spell picker
+[ok]   SC-07 s2: picker + hex click enfeebles the restrained monster
+[ok]   SC-07 s2: the live monster restraint escape (Strength (Athletics)) rolls at Disadvantage
+[ok]   SC-07 s2: the ally is enfeebled through the production resolver
+[ok]   SC-07 s2: the live Character restraint escape spends the action and rolls Strength (Athletics) at Disadvantage
+[Character] crown-sc07s2-saver leveled up to 2! (+6 HP, now 14)
+[Character] crown-sc07s2-saver leveled up to 3! (+5 HP, now 19)
+[Character] crown-sc07s2-saver leveled up to 4! (+4 HP, now 23)
+[Character] crown-sc07s2-saver leveled up to 5! (+3 HP, now 26)
+[ok]   SC-07 s2: the party carries an enfeebled record
+[SaveManager] Successfully saved game to user://saves/dnd2024/crown_sc_07_support_02.sav
+[ok]   SC-07 s2: the record saves and passes preflight
+CROWN_SC_07_SUPPORT_02_CHECKPOINT_READY
+--------------------------------------------------
+ VIEWPORT RESULTS: 0 failed (1 tests run)
+VIEWPORT TESTS PASSED
+SCENARIO PASSED: crown_sc_07_support_02_flow

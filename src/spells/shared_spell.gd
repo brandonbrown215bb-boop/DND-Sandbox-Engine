@@ -3,13 +3,26 @@
 class_name SharedSpell
 extends RefCounted
 
-const CONDITIONS := ["blinded", "deafened", "frightened", "poisoned", "prone", "restrained", "stunned", "paralyzed", "incapacitated", "blessed", "baned", "shield_of_faith"]
+const CONDITIONS := ["blinded", "deafened", "frightened", "poisoned", "prone", "restrained", "stunned", "paralyzed", "incapacitated", "blessed", "baned", "shield_of_faith", "speed_reduced", "healing_prevented", "opportunity_attack_blocked", "next_attack_disadvantage", "invisibility_suppressed", "charmed", "blurred", "outlined", "unconscious", "speed_zero", "enfeebled", "enthralled", "calmed", "calmed_indifferent", "cursed_str", "cursed_dex", "cursed_con", "cursed_int", "cursed_wis", "cursed_cha", "cursed_attack_source", "cursed_dodge", "cursed_necrotic"]
+## Conditions whose consumer reads an authored magnitude (hexes) from the source record.
+const AMOUNT_CONDITIONS := {"speed_reduced": [1, 12]}
 const ABILITIES := ["STR", "DEX", "CON", "INT", "WIS", "CHA"]
-const EFFECTS := ["heal", "temporary_hp", "grant_condition", "remove_condition", "area_selection", "grant_source_benefits", "grant_damage_link", "grant_damage_response", "create_actor", "actor_projection", "suppress_item_magic", "bind_tether", "max_hp_source", "settle_death", "destroy_object"]
+## Optional grant_condition expiry: a caster-owned turn boundary plus a count of
+## the caster's turns, e.g. "until the end of your next turn" is caster_turn_end/2.
+const CONDITION_EXPIRY_BOUNDARIES := {"caster_turn_start": "start", "caster_turn_end": "end", "target_turn_start": "recipient_start", "target_turn_end": "recipient_end"}
+
+static func condition_expiry_error(expiry) -> String:
+	if not expiry is Dictionary or expiry.size() != 2 or not expiry.has("boundary") or not expiry.has("turns"):
+		return "Condition expiry requires exactly boundary and turns."
+	if str(expiry["boundary"]) not in CONDITION_EXPIRY_BOUNDARIES: return "Unsupported condition expiry boundary."
+	if not _integer(expiry["turns"], 1, 10): return "Condition expiry turns must be an integer from 1 to 10."
+	return ""
+
+const EFFECTS := ["heal", "temporary_hp", "grant_condition", "remove_condition", "area_selection", "grant_source_benefits", "grant_damage_link", "grant_damage_response", "create_actor", "actor_projection", "suppress_item_magic", "bind_tether", "max_hp_source", "settle_death", "destroy_object", "weapon_attack", "push"]
 const STEP_FIELDS := ["id", "type", "gate", "gate_step", "target", "shape", "radius", "size", "attack_type", "damage", "damage_type", "damage_components", "component_id", "scaling", "upcast", "save", "half_on_save", "save_context", "damage_scale_by_outcome", "damage_dice_policy", "damage_result_multiplier", "damage_reductions", "damage_bypasses", "recipient_exemption_choice", "effects", "incoming_negation", "incoming_negation_rule", "physical_requirements", "spatial_requirements"]
 const STEP_TYPES := ["attack", "save", "damage", "effect"]
 const STEP_GATES := ["always", "hit", "miss", "failed_save", "successful_save"]
-const FIELDS := ["containment_targeting", "id", "name", "description", "execution", "level", "casting_time", "range", "range_kind", "range_by_character_level_feet", "target", "base_targets", "attack_type", "damage", "damage_type", "component_id", "scaling", "upcast", "save", "half_on_save", "save_exit_placement", "save_context", "damage_scale_by_outcome", "damage_dice_policy", "damage_result_multiplier", "damage_reductions", "damage_bypasses", "recipient_exemption_choice", "attack_unit_substitution", "requires_target_sight", "target_creature_types", "target_creature_type_exclusions", "target_sizes", "ignore_cover_on_save", "ignore_cover", "effects", "concentration", "duration", "duration_seconds", "repeat_save", "repeat_save_schedule", "repeat_save_interval_seconds", "repeat_save_stages", "repeat_save_dc_progression", "targets_objects", "ignites_objects", "area_radius", "cone_size", "end_on_target_damage", "end_on_any_damage", "end_on_party_damage", "source_end_rules", "components", "material", "material_component_item_id", "material_component_cost", "material_component_consumed", "consumed_material_item_id", "ritual", "rules_source", "rules_status", "school", "classes", "source", "trigger", "steps", "formula_inputs", "interruption_policy", "failure_policy", "empty_effect_policy", "cast_settlement", "cancellation_rule", "stopping_cost_policy", "incoming_negation_rule", "physical_requirements", "spatial_requirements", "zero_hp_aftermath", "end_aftermath", "reaction_trigger", "effect_noise"] # Batch 065: reaction_trigger is validated by ReactionTriggers.spell_trigger_error.
+const FIELDS := ["containment_targeting", "id", "name", "description", "execution", "level", "casting_time", "range", "range_kind", "range_by_character_level_feet", "target", "base_targets", "attack_type", "damage", "damage_type", "component_id", "scaling", "upcast", "save", "half_on_save", "save_exit_placement", "save_context", "damage_scale_by_outcome", "damage_dice_policy", "damage_result_multiplier", "damage_reductions", "damage_bypasses", "recipient_exemption_choice", "attack_unit_substitution", "requires_target_sight", "target_creature_types", "target_creature_type_exclusions", "target_sizes", "ignore_cover_on_save", "ignore_cover", "effects", "concentration", "duration", "duration_seconds", "repeat_save", "repeat_save_schedule", "repeat_save_interval_seconds", "repeat_save_stages", "repeat_save_dc_progression", "targets_objects", "ignites_objects", "area_radius", "cone_size", "end_on_target_damage", "end_on_any_damage", "end_on_party_damage", "source_end_rules", "components", "material", "material_component_item_id", "material_component_cost", "material_component_consumed", "consumed_material_item_id", "ritual", "rules_source", "rules_status", "school", "classes", "source", "trigger", "steps", "formula_inputs", "interruption_policy", "failure_policy", "empty_effect_policy", "cast_settlement", "cancellation_rule", "stopping_cost_policy", "incoming_negation_rule", "physical_requirements", "spatial_requirements", "zero_hp_aftermath", "end_aftermath", "reaction_trigger", "effect_noise", "projectiles", "delayed_damage", "damage_type_options", "exploding_dice", "save_disadvantage_creature_types", "area_object_push", "leap_on_matching_dice", "save_advantage_if_fighting_target", "area_creature_choice", "save_auto_success_traits", "end_on_shake_action", "area_save_requires_sight", "duration_by_slot"] # Batch 065: reaction_trigger is validated by ReactionTriggers.spell_trigger_error.
 
 static func damage_dice_policy_error(value: Variant) -> String:
 	if not value is Dictionary or value.is_empty():
@@ -54,6 +67,18 @@ static func healing_reroll_policy_error(value: Variant) -> String:
 			return "Healing reroll cost requires an exact source_instance_id and amount from 1 through 100."
 	return ""
 
+## Generic creature traits that make a save automatically succeed
+## (e.g. creatures that don't sleep or are immune to Exhaustion vs. magical sleep).
+## "fighting_caster_side": the target is an opposed initiative combatant of the
+## caster (SpellSaveResolver.is_fighting_caster_side); needs the cast context.
+const SAVE_AUTO_SUCCESS_TRAITS := ["magical_sleep_immunity", "fighting_caster_side"]
+
+static func save_auto_success(spell: Dictionary, target, cast = null) -> bool:
+	for trait_id in spell.get("save_auto_success_traits", []):
+		if str(trait_id) == "magical_sleep_immunity" and CombatAction.is_immune_to_magical_sleep(target): return true
+		if str(trait_id) == "fighting_caster_side" and cast != null and SpellSaveResolver.is_fighting_caster_side(cast, target): return true
+	return false
+
 const SOURCE_END_EVENTS := ["attack", "cast", "movement", "status", "equipment", "range", "damage"]
 const SOURCE_END_RULE_FIELDS := ["event", "actor", "school", "spell_id", "action", "status", "equipment", "state", "paid_slot_level", "maximum_range_feet", "except_source_id", "damage_budget"]
 
@@ -65,6 +90,35 @@ static func save_context_error(value: Variant) -> String:
 		if not token is String or not str(token).is_valid_identifier() or str(token) != str(token).to_lower():
 			return "save_context.%s must be a lowercase identifier." % field
 	return ""
+
+## The condition a grant_condition effect applies: its fixed condition, or the
+## cast's validated pick from condition_options ("" when no legal pick exists).
+## A per-target pick in spell._chosen_conditions (keyed by target id) wins.
+static func chosen_condition(effect: Dictionary, spell: Dictionary, target = null) -> String:
+	if not effect.has("condition_options"): return str(effect.get("condition", ""))
+	var pick := str(spell.get("_chosen_condition", ""))
+	var target_id := str(target.character_id) if target is Character else (str(target.get("id", "")) if target is Dictionary else "")
+	var per_target: Variant = spell.get("_chosen_conditions", {})
+	if per_target is Dictionary and not target_id.is_empty() and per_target.has(target_id): pick = str(per_target[target_id])
+	return pick if pick in effect["condition_options"] else ""
+
+## Options asked once per affected creature (choice_per_target) instead of once per cast.
+static func per_target_condition_choices(spell: Dictionary) -> Array:
+	var out := []
+	for effect in spell.get("effects", []):
+		if effect is Dictionary and str(effect.get("type", "")) == "grant_condition" and bool(effect.get("choice_per_target", false)) and effect.get("condition_options") is Array:
+			for option in effect["condition_options"]:
+				if option not in out: out.append(option)
+	return out
+
+## Every caster-choosable condition authored on a spell's grant effects, in order.
+static func condition_choices(spell: Dictionary) -> Array:
+	var out := []
+	for effect in spell.get("effects", []):
+		if effect is Dictionary and str(effect.get("type", "")) == "grant_condition" and effect.get("condition_options") is Array:
+			for option in effect["condition_options"]:
+				if option not in out: out.append(option)
+	return out
 
 static func uses(spell: Dictionary) -> bool:
 	return spell.get("execution", "") == "shared"
@@ -92,6 +146,21 @@ static func _validate_single_effect(effect: Variant) -> String:
 			var multiplier_error := damage_multiplier_error(effect["result_multiplier"])
 			if not multiplier_error.is_empty(): return multiplier_error
 			if effect["result_multiplier"].has("exclude_critical"): return "Healing result multipliers cannot declare exclude_critical."
+	elif kind == "push":
+		# Forced movement away from the spell origin (SpellEffectApplication._apply_push), in hexes.
+		allowed.append("distance")
+		if not _integer(effect.get("distance"), 1, 24): return "Shared push requires an integer distance of 1..24 hexes."
+	elif kind == "weapon_attack":
+		allowed.append_array(["ability", "weapon", "damage_type_options", "extra_damage"])
+		if str(effect.get("ability", "")) != "spellcasting": return "Shared weapon attacks currently support only the spellcasting ability."
+		if str(effect.get("weapon", "")) != "equipped_proficient_material": return "Shared weapon attacks require weapon equipped_proficient_material."
+		var type_options: Variant = effect.get("damage_type_options", ["weapon"])
+		if not type_options is Array or type_options.is_empty() or not type_options.all(func(value): return value is String and not str(value).is_empty()) or "weapon" not in type_options: return "Shared weapon attack damage_type_options must be strings including weapon."
+		if effect.has("extra_damage"):
+			var extra: Variant = effect["extra_damage"]
+			if not extra is Dictionary or str(extra.get("type", "")).is_empty() or not extra.get("by_character_level") is Dictionary or extra["by_character_level"].is_empty(): return "Shared weapon attack extra_damage needs type and by_character_level."
+			for level_key in extra["by_character_level"]:
+				if not str(level_key).is_valid_int() or not _formula(extra["by_character_level"][level_key]): return "Shared weapon attack extra_damage bands need integer levels and dice formulas."
 	elif kind == "grant_source_benefits":
 		if effect.size() != 2: return "Source benefit grants accept only type and benefits."
 		allowed.append("benefits")
@@ -155,12 +224,44 @@ static func _validate_single_effect(effect: Variant) -> String:
 		var response_error := DamageResponseRules.policy_error(effect.get("policy"))
 		if not response_error.is_empty(): return response_error
 	elif kind in ["grant_condition", "remove_condition"]:
-		allowed.append("condition")
-		if effect.get("condition", "") not in CONDITIONS: return "Unsupported shared condition."
+		# A caster-chosen condition (e.g. Blinded or Deafened) is authored as condition_options
+		# instead of condition; the cast stores the pick in spell._chosen_condition.
+		if kind == "grant_condition" and effect.has("condition_options"):
+			allowed.append("condition_options")
+			var options: Variant = effect["condition_options"]
+			if effect.has("condition") or not options is Array or options.size() < 2 or options.size() > 9: return "condition_options needs two to nine conditions and replaces condition."
+			var seen_options := []
+			for option in options:
+				if not option is String or option in seen_options or option not in CONDITIONS or AMOUNT_CONDITIONS.has(option): return "condition_options entries must be distinct supported conditions without amounts."
+				seen_options.append(option)
+			# choice_per_target: area casts ask once per affected creature after the area resolves.
+			if effect.has("choice_per_target"):
+				allowed.append("choice_per_target")
+				if not effect["choice_per_target"] is bool: return "choice_per_target must be a boolean."
+		else:
+			allowed.append("condition")
+			if effect.get("condition", "") not in CONDITIONS: return "Unsupported shared condition."
+		if kind == "grant_condition" and effect.has("expiry"):
+			allowed.append("expiry")
+			var expiry_error := condition_expiry_error(effect["expiry"])
+			if not expiry_error.is_empty(): return expiry_error
+		var amount_range: Array = AMOUNT_CONDITIONS.get(str(effect.get("condition", "")), [])
+		if kind == "grant_condition" and not amount_range.is_empty():
+			allowed.append("amount")
+			if not _integer(effect.get("amount"), int(amount_range[0]), int(amount_range[1])): return "Shared %s requires an integer amount %d..%d." % [effect.condition, amount_range[0], amount_range[1]]
 	else:
 		allowed.append_array(["shape", "radius", "size"])
-		if effect.get("shape", "") not in ["sphere", "cone", "cube"]: return "Unsupported shared area shape."
-		var geometry_key := "radius" if effect["shape"] == "sphere" else "size"
+		if effect.get("shape", "") == "line":
+			# A caster-originating line (e.g. a 100-foot bolt): length in hexes, one hex wide.
+			allowed.append("origin")
+			if effect.get("origin", "") != "self": return "Shared line areas must originate from self."
+			if not _integer(effect.get("size"), 1, 40): return "Shared line areas require a length of 1..40 hexes."
+		elif effect.get("shape", "") == "square":
+			# A cube anchored on a point within range (its footprint in feet), not caster-adjacent.
+			allowed.erase("size"); allowed.erase("radius"); allowed.append("size_feet")
+			if not _integer(effect.get("size_feet"), 5, 60) or int(effect["size_feet"]) % 5 != 0: return "Shared square areas require size_feet 5..60 in 5-foot steps."
+		elif effect.get("shape", "") not in ["sphere", "cone", "cube"]: return "Unsupported shared area shape."
+		var geometry_key := "radius" if effect["shape"] == "sphere" else "size_feet" if effect["shape"] == "square" else "size"
 		if not _integer(effect.get(geometry_key), 1, 100): return "Shared areas require the shape's radius/size in hexes."
 	for key in effect:
 		if key not in allowed: return "Unsupported field '%s' for shared %s." % [key, kind]
@@ -256,6 +357,12 @@ static func _steps_error(spell: Dictionary) -> String:
 	if has_condition_grant and not spell.has("duration_seconds"):
 		return "Condition grants require duration_seconds."
 	return ""
+
+## Sides of the spell's base damage die ("3d8" -> 8), or 0 when the damage has no die.
+static func damage_die_sides(spell: Dictionary) -> int:
+	var found := RegEx.create_from_string("\\d*d(\\d+)").search(str(spell.get("damage", "")))
+	return int(found.get_string(1)) if found != null else 0
+
 
 static func content_error(spell: Dictionary) -> String:
 	if spell.has("effect_noise"):
@@ -394,17 +501,57 @@ static func content_error(spell: Dictionary) -> String:
 			var policy_ids: Array[String] = [str(spell.get("component_id", "%s:1" % str(spell.get("damage_type", ""))))]
 			var damage_policy_error := SharedStepExecutor.validate_damage_policy(spell.get("damage_reductions", []), spell.get("damage_bypasses", []), policy_ids)
 			if not damage_policy_error.is_empty(): return damage_policy_error
-		if spell.get("attack_type", "none") != "none" and not spell.has("damage"):
+		if spell.get("attack_type", "none") != "none" and not spell.has("damage") and not spell.has("projectiles"):
 			return "Shared attack spells require a damage payload."
+	if spell.has("projectiles"):
+		var projectile_error := SpellProjectileResolver.block_error(spell["projectiles"], int(spell.get("level", 0)))
+		if not projectile_error.is_empty(): return projectile_error
+		if spell.has("damage") or spell.has("steps") or spell.has("save") or spell.has("scaling") or spell.has("upcast") or not spell.get("effects", []).is_empty(): return "Projectile spells carry their damage, count and scaling inside projectiles."
+		if str(spell.get("damage_type", "")).is_empty(): return "Projectile spells need a damage_type."
+		var wants_attack := str(spell["projectiles"].get("delivery", "")) == "spell_attack"
+		if wants_attack != (str(spell.get("attack_type", "none")) in ["ranged_spell", "melee_spell"]): return "Projectile delivery must match attack_type."
+	if spell.has("delayed_damage"):
+		var delayed_error := delayed_damage_error(spell)
+		if not delayed_error.is_empty(): return delayed_error
+	if spell.has("damage_type_options") or spell.has("exploding_dice"):
+		var choice_error := damage_choice_error(spell)
+		if not choice_error.is_empty(): return choice_error
+	if spell.has("area_object_push"):
+		var push: Variant = spell["area_object_push"]
+		if str(spell.get("target", "single")) != "area" or not push is Dictionary or push.keys().any(func(k): return str(k) not in ["distance", "scope"]): return "area_object_push requires an area spell and only distance/scope fields."
+		if not _integer(push.get("distance"), 1, 24) or str(push.get("scope", "")) != "unsecured": return "area_object_push requires scope unsecured and an integer distance of 1..24 hexes."
+	if spell.has("leap_on_matching_dice"):
+		var leap: Variant = spell["leap_on_matching_dice"]
+		if str(spell.get("target", "single")) != "single" or str(spell.get("attack_type", "none")) not in ["ranged_spell", "melee_spell"] or damage_die_sides(spell) <= 0: return "leap_on_matching_dice requires a single-target spell attack with a damage die."
+		if not leap is Dictionary or leap.keys().any(func(k): return str(k) not in ["range", "max_leaps"]): return "leap_on_matching_dice only allows range/max_leaps fields."
+		if not _integer(leap.get("range"), 1, 60): return "leap_on_matching_dice range must be an integer of 1..60 hexes."
+		var max_leaps: Variant = leap.get("max_leaps", "slot_level")
+		if not (str(max_leaps) == "slot_level" and max_leaps is String) and not _integer(max_leaps, 1, 9): return "leap_on_matching_dice max_leaps must be slot_level or an integer of 1..9."
+	if spell.has("save_disadvantage_creature_types"):
+		var types: Variant = spell["save_disadvantage_creature_types"]
+		if not spell.has("save") or not types is Array or types.is_empty(): return "save_disadvantage_creature_types requires a saving throw and a nonempty creature-type list."
+		var seen_types := []
+		for creature_type in types:
+			if not creature_type is String or creature_type in seen_types or creature_type not in CreatedActorRules.CREATURE_TYPES: return "save_disadvantage_creature_types entries must be distinct known creature types."
+			seen_types.append(creature_type)
 	# These need dedicated handlers; a shared label must never enable a no-op.
-	for key in ["damage_per_dart", "damage_per_ray", "damage_components", "summoned_creature", "delayed_damage", "condition_on_failed_save", "area_point_count"]:
+	for key in ["damage_per_dart", "damage_per_ray", "damage_components", "summoned_creature", "condition_on_failed_save", "area_point_count"]:
 		if spell.has(key):
 			return "Shared spells do not support '%s'; use a dedicated handler." % key
-	for key in ["concentration", "half_on_save", "requires_target_sight", "targets_objects", "ignites_objects", "end_on_target_damage", "end_on_any_damage", "end_on_party_damage", "ritual", "material_component_consumed", "ignore_cover_on_save"]:
+	if spell.has("save_auto_success_traits"):
+		var traits: Variant = spell["save_auto_success_traits"]
+		if not traits is Array or traits.is_empty() or not spell.has("save"): return "save_auto_success_traits requires a save and a nonempty trait list."
+		for trait_id in traits:
+			if str(trait_id) not in SAVE_AUTO_SUCCESS_TRAITS: return "Unsupported save auto-success trait '%s'." % str(trait_id)
+	if (spell.get("area_creature_choice", false) is bool and spell.get("area_creature_choice", false) or spell.get("area_save_requires_sight", false) is bool and spell.get("area_save_requires_sight", false)) and str(spell.get("target", "")) != "area": return "Area creature choice and area sight gates require an area spell."
+	for key in ["concentration", "half_on_save", "requires_target_sight", "targets_objects", "ignites_objects", "end_on_target_damage", "end_on_any_damage", "end_on_party_damage", "ritual", "material_component_consumed", "ignore_cover_on_save", "save_advantage_if_fighting_target", "area_creature_choice", "end_on_shake_action", "area_save_requires_sight"]:
 		if spell.has(key) and not spell[key] is bool:
 			return "Shared '%s' must be Boolean." % key
 	if spell.has("duration_seconds") and not _integer(spell["duration_seconds"], 1, 86400):
 		return "Shared duration_seconds must be 1-86400."
+	if spell.has("duration_by_slot"):
+		var slot_error := duration_by_slot_error(spell)
+		if not slot_error.is_empty(): return slot_error
 	if spell.has("repeat_save") and spell["repeat_save"] not in ABILITIES:
 		return "Shared repeat_save requires an ability."
 	if spell.has("repeat_save_schedule") and str(spell["repeat_save_schedule"]) not in ["target_turn_end", "elapsed_seconds"]:
@@ -464,7 +611,7 @@ static func content_error(spell: Dictionary) -> String:
 	for key in ["target_creature_types", "target_creature_type_exclusions", "target_sizes", "components"]:
 		if spell.has(key) and (not spell[key] is Array or not spell[key].all(func(value): return value is String)):
 			return "Shared '%s' must be an array of strings." % key
-	var has_payload: bool = spell.has("damage") or spell.has("steps") or spell.has("cancellation_rule") or spell.has("stopping_cost_policy") or spell.has("incoming_negation_rule") or spell.has("physical_requirements") or spell.has("spatial_requirements") or (str(spell.get("empty_effect_policy", "")) in ["commit", "refund"])
+	var has_payload: bool = spell.has("projectiles") or spell.has("damage") or spell.has("steps") or spell.has("cancellation_rule") or spell.has("stopping_cost_policy") or spell.has("incoming_negation_rule") or spell.has("physical_requirements") or spell.has("spatial_requirements") or (str(spell.get("empty_effect_policy", "")) in ["commit", "refund"])
 	var timed := false
 	var areas := 0
 	for effect in spell.get("effects", []):
@@ -496,13 +643,70 @@ static func content_error(spell: Dictionary) -> String:
 	if (bool(spell.get("concentration", false)) or spell.has("repeat_save")) and not timed: return "Concentration/repeat saves require a timed condition grant."
 	return ""
 
+## Higher-slot duration tiers: [{min_slot, duration_seconds (-1 = until dispelled), concentration}],
+## ascending min_slot above the spell's level. The highest tier at or below the slot applies.
+static func duration_by_slot_error(spell: Dictionary) -> String:
+	var tiers: Variant = spell.get("duration_by_slot")
+	if not tiers is Array or tiers.is_empty() or tiers.size() > 9: return "duration_by_slot requires one through nine tiers."
+	var previous := int(spell.get("level", 0))
+	for tier in tiers:
+		if not tier is Dictionary: return "Each duration_by_slot tier must be an object."
+		for field in tier:
+			if str(field) not in ["min_slot", "duration_seconds", "concentration"]: return "Unsupported duration_by_slot field '%s'." % str(field)
+		if not _integer(tier.get("min_slot", null), previous + 1, 9): return "duration_by_slot min_slot must ascend above the spell level, up to 9."
+		previous = int(tier["min_slot"])
+		var seconds: Variant = tier.get("duration_seconds", null)
+		if not ((seconds is int or seconds is float) and float(seconds) == floor(float(seconds)) and (int(seconds) == -1 or (int(seconds) >= 1 and int(seconds) <= 172800))): return "duration_by_slot duration_seconds must be -1 or 1-172800."
+		if not tier.get("concentration", null) is bool: return "duration_by_slot concentration must be Boolean."
+	return ""
+
+## The tier for a slot level, or {} when the base duration applies.
+static func duration_tier_for_slot(spell: Dictionary, slot_level: int) -> Dictionary:
+	var chosen: Dictionary = {}
+	for tier in spell.get("duration_by_slot", []):
+		if tier is Dictionary and slot_level >= int(tier.get("min_slot", 99)): chosen = tier
+	return chosen
+
+## Applies a slot tier to a new source record (direct CombatAction.resolve_spell callers).
+static func apply_slot_duration_to_record(record: Dictionary, spell: Dictionary, slot_level: int) -> void:
+	var tier := duration_tier_for_slot(spell, slot_level)
+	if tier.is_empty() or record.is_empty(): return
+	record["concentration"] = bool(tier["concentration"])
+	if int(tier["duration_seconds"]) == -1:
+		record["remaining_seconds"] = -1
+		record["until_dispelled"] = true
+	else:
+		record["remaining_seconds"] = int(tier["duration_seconds"])
+		record.erase("until_dispelled")
+
+## Applies a slot tier to a per-cast spell copy (duration, concentration, until-dispelled flag).
+static func apply_slot_duration(spell: Dictionary, slot_level: int) -> Dictionary:
+	var tier := duration_tier_for_slot(spell, slot_level)
+	if tier.is_empty(): return tier
+	spell["concentration"] = bool(tier["concentration"])
+	var seconds := int(tier["duration_seconds"])
+	if seconds == -1:
+		spell["_until_dispelled"] = true
+		spell["duration_seconds"] = 86400 # Placeholder for timers; the record carries until_dispelled.
+	else:
+		spell["duration_seconds"] = seconds
+	spell["_duration_tier_min_slot"] = int(tier["min_slot"])
+	return tier
+
+
 static func repeat_save_stages_error(value: Variant) -> String:
 	if not value is Array or value.is_empty() or value.size() > 8:
 		return "Repeat-save stages require one through eight stage records."
 	for stage in value:
 		if not stage is Dictionary or stage.is_empty(): return "Each repeat-save stage must be an object."
 		for field in stage:
-			if str(field) not in ["condition", "successes_required", "minimum_margin", "on_failure", "reset_successes_on_failure"]: return "Unsupported repeat-save stage field '%s'." % str(field)
+			if str(field) not in ["condition", "successes_required", "minimum_margin", "on_failure", "on_success", "reset_successes_on_failure", "final"]: return "Unsupported repeat-save stage field '%s'." % str(field)
+		# A final stage asks for no further saves; it lasts until the source ends.
+		if stage.has("final") and (not stage["final"] is bool or (bool(stage["final"]) and (stage.has("successes_required") or stage.has("on_failure") or stage.has("on_success") or stage.has("minimum_margin")))): return "A final repeat-save stage declares only its condition."
+		if bool(stage.get("final", false)):
+			if str(stage.get("condition", "")) not in CONDITIONS: return "Repeat-save stage requires a supported condition."
+			continue
+		if str(stage.get("on_success", "advance")) not in ["advance", "end"]: return "Repeat-save stage on_success must be advance or end."
 		if str(stage.get("condition", "")) not in CONDITIONS or not _integer(stage.get("successes_required", null), 1, 20) or not _integer(stage.get("minimum_margin", 0), 0, 100) or str(stage.get("on_failure", "stay")) not in ["stay", "advance", "end"] or (stage.has("reset_successes_on_failure") and not stage["reset_successes_on_failure"] is bool):
 			return "Repeat-save stage requires a supported condition, success count, margin and failure route."
 	return ""
@@ -594,6 +798,27 @@ static func _dice_formula(value: String) -> bool:
 	var expression := RegEx.new()
 	expression.compile("^[1-9][0-9]?d(4|6|8|10|12|20)$")
 	return expression.search(value.replace(" ", "")) != null
+
+## Generic weapon-attack payload (for example a cantrip that swings the
+## material-component weapon with the caster's spellcasting ability).
+static func weapon_attack_effect(spell: Dictionary) -> Dictionary:
+	if not uses(spell): return {}
+	for effect in spell.get("effects", []):
+		if effect is Dictionary and str(effect.get("type", "")) == "weapon_attack": return effect
+	return {}
+
+
+static func weapon_attack_extra_formula(effect: Dictionary, character_level: int) -> String:
+	var bands: Dictionary = effect.get("extra_damage", {}).get("by_character_level", {})
+	var best_level := -1
+	var formula := ""
+	for level_key in bands:
+		var threshold := int(str(level_key))
+		if character_level >= threshold and threshold > best_level:
+			best_level = threshold
+			formula = str(bands[level_key])
+	return formula
+
 
 static func has_effect(spell: Dictionary, kind: String) -> bool:
 	if not uses(spell): return false
@@ -839,8 +1064,22 @@ static func apply_custom_effects(caster: Character, target, effects: Array, resu
 				if DamageResponseRules.grant(target, result.get("effect_cast", {}), effect.policy):
 					messages.append("%s gains a source-owned damage response." % target_name)
 			"grant_condition":
-				SpellEffects.grant(target, result.get("effect_cast", {}), str(effect["condition"]))
-				if CombatAction.has_condition(target, str(effect["condition"])): messages.append("%s is %s." % [target_name, effect["condition"]])
+				var granted_condition := chosen_condition(effect, spell, target)
+				if granted_condition.is_empty():
+					messages.append("No condition was chosen for %s." % target_name)
+					continue
+				if effect.has("expiry"):
+					var expiry: Dictionary = effect["expiry"]
+					SpellEffects.grant(target, result.get("effect_cast", {}), granted_condition, CONDITION_EXPIRY_BOUNDARIES[str(expiry["boundary"])], int(expiry["turns"]) * 6)
+				else:
+					SpellEffects.grant(target, result.get("effect_cast", {}), granted_condition)
+				if effect.has("amount"): SpellEffects.set_condition_amount(target, result.get("effect_cast", {}), granted_condition, int(effect["amount"]))
+				# "Indifferent about creatures of your choice": the caster's chosen ids ride on the source record.
+				var scope: Variant = spell.get("_attitude_scope_ids", null)
+				if scope is Array and CombatAction.condition_rule(granted_condition, "attitude_indifferent"):
+					var scoped_record: Dictionary = SpellEffects.records(target).get(str(result.get("effect_cast", {}).get("source_id", "")), {})
+					if not scoped_record.is_empty(): scoped_record["attitude_scope_ids"] = scope.duplicate()
+				if CombatAction.has_condition(target, granted_condition): messages.append("%s is %s." % [target_name, granted_condition])
 			"remove_condition":
 				if target is Character: target.remove_condition(str(effect["condition"]))
 				else:
@@ -859,3 +1098,46 @@ static func apply(caster: Character, target, spell: Dictionary, result: Dictiona
 	result["shared_effects_applied"] = true
 	var effects := SpellDamageRolls.spell_effects_for_slot_level(spell, int(result.get("slot_level", spell.get("level", 0))))
 	return apply_custom_effects(caster, target, effects, result, int(result.get("slot_level", spell.get("level", 0))), [], null, spell, host, decisions)
+
+
+const DELAYED_DAMAGE_TRIGGERS := ["end_of_target_next_turn"]
+
+
+## Delayed damage: a hit schedules a second roll on the target (SRD Acid Arrow). Scales with upcast.damage_per_level like the initial damage; misses never schedule it.
+static func delayed_damage_error(spell: Dictionary) -> String:
+	var delayed: Variant = spell.get("delayed_damage")
+	if not delayed is Dictionary: return "delayed_damage must be an object."
+	for key in delayed:
+		if key not in ["damage", "damage_type", "trigger"]: return "Unsupported delayed_damage field '%s'." % key
+	if str(spell.get("attack_type", "none")) not in ["ranged_spell", "melee_spell"] or not spell.has("damage") or spell.has("steps") or spell.has("projectiles"):
+		return "delayed_damage requires a single spell attack with a damage payload."
+	if not delayed.get("damage") is String or not _dice_formula(delayed["damage"]): return "delayed_damage.damage must be a plain dice expression."
+	if str(delayed.get("damage_type", "")) not in DataLoader.VALID_DAMAGE_TYPES: return "delayed_damage needs a valid damage_type."
+	if str(delayed.get("trigger", "")) not in DELAYED_DAMAGE_TRIGGERS: return "Unsupported delayed_damage trigger."
+	return ""
+
+
+## Caster-chosen damage type (picked at cast time by SpellCastChoices) and exploding
+## damage dice (SRD Sorcerous Burst): a die of `sides` that rolls its maximum adds
+## another, up to `max_extra` extra dice per cast. Single spell attacks only.
+static func damage_choice_error(spell: Dictionary) -> String:
+	if str(spell.get("attack_type", "none")) not in ["ranged_spell", "melee_spell"] or not spell.has("damage") or spell.has("steps") or spell.has("projectiles"):
+		return "damage_type_options and exploding_dice require a single spell attack with a damage payload."
+	if spell.has("damage_type_options"):
+		var options: Variant = spell["damage_type_options"]
+		if not options is Array or options.size() < 2: return "damage_type_options needs at least two damage types."
+		var seen := []
+		for option in options:
+			if not option is String or option in seen or option not in DataLoader.VALID_DAMAGE_TYPES or option == "none": return "damage_type_options entries must be distinct valid damage types."
+			seen.append(option)
+		if str(spell.get("damage_type", "")) not in options: return "damage_type must be one of damage_type_options."
+	if spell.has("exploding_dice"):
+		var policy: Variant = spell["exploding_dice"]
+		if not policy is Dictionary: return "exploding_dice must be an object."
+		for key in policy:
+			if key not in ["sides", "max_extra"]: return "Unsupported exploding_dice field '%s'." % key
+		if not _integer(policy.get("sides"), 2, 100) or not int(policy["sides"]) in [4, 6, 8, 10, 12, 20]: return "exploding_dice.sides must be a standard die size."
+		if not str(spell["damage"]).replace(" ", "").contains("d%d" % int(policy["sides"])): return "exploding_dice.sides must match the damage dice."
+		var limit: Variant = policy.get("max_extra")
+		if not (limit is String and limit == "spellcasting_modifier") and not _integer(limit, 0, 20): return "exploding_dice.max_extra must be 'spellcasting_modifier' or an integer."
+	return ""

@@ -1,0 +1,96 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+WARNING: [DataLoader] Rejected 25 unsupported effectless feature records; they remain unavailable until curated.
+     at: push_warning (core/variant/variant_utility.cpp:1033)
+     GDScript backtrace (most recent call first):
+         [0] load_all_data (res://src/autoload/data_loader.gd:276)
+         [1] _ready (res://src/autoload/data_loader.gd:252)
+[DataLoader] Loaded: 14 classes, 9 races, 294 items, 362 spells, 481 monsters, 4 event tables, 1 campaigns
+[DataLoader] Layers: core_imported, core_curated, mods | packs: core, crown | approved overrides: 422 | validation failures: 0
+==================================================
+ Rook's Headless Viewport Harness (per-beat)
+==================================================
+
+[TEST] mixed_mechanics_encounter
+[ok]   mixed encounter uses the four-member production cohort
+[ok]   mixed encounter has a production monster target
+[Character] Rogue Fixture leveled up to 2! (+2 HP, now 11)
+[ok]   mixed encounter resolves a production martial attack
+[ok]   mixed encounter spends a bonus action through production Cunning Action
+[ok]   mixed encounter resolves production Cure Wounds healing
+[ok]   mixed encounter resolves upcast Healing Word with the Cleric's Wisdom modifier
+[ok]   mixed encounter resolves a 60-foot Sacred Flame and applies Radiant damage after the target fails its Dexterity save
+[ok]   mixed encounter applies source-owned Bless to chosen creatures
+[Character] Wizard Fixture leveled up to 2! (+7 HP, now 15)
+[Character] Wizard Fixture leveled up to 3! (+6 HP, now 21)
+[ok]   mixed encounter resolves a production save spell over a sphere area
+[ok]   mixed encounter resolves Sorcerous Burst using the damage type selected through the combat prompt
+[ok]   mixed encounter does not apply Sorcerous Burst damage after a missed ranged spell attack
+[ok]   mixed encounter resolves Poison Spray against a target 30 feet away and applies scaled poison damage on a hit
+[ok]   mixed encounter casts False Life through the self-target spell path and grants its rolled temporary HP
+[ok]   mixed encounter Chill Touch lands a melee spell attack and blocks the target from regaining Hit Points
+[ok]   mixed encounter targets Acid Splash's 5-foot Sphere and applies its failed Dexterity-save damage
+[ok]   mixed encounter resolves Color Spray over the production 15-foot cone and applies Blinded after a failed Constitution save
+[ok]   mixed encounter applies Vicious Mockery's failed-save Disadvantage to a monster's next attack and consumes it
+[ok]   mixed encounter casts Command through CombatState and records Halt after a failed Wisdom save
+[ok]   Command Halt consumes the target's turn without movement
+[ok]   Command Grovel makes the target Prone
+[ok]   Command Drop removes held items from the target and leaves them at its hex
+[ok]   Command Approach moves toward the caster and stops within 5 feet
+[ok]   Command Flee uses the target's fastest movement away from the caster
+[ok]   mixed encounter casts Guidance and adds its die only to checks using the chosen skill
+[ok]   Guidance ends cleanly when the caster loses concentration
+[ok]   mixed encounter casts Resistance and reduces only its first matching damage instance before the next turn
+[ok]   Resistance ends cleanly when the caster loses concentration
+[ok]   mixed encounter casts Shillelagh on the held Quarterstaff
+[ok]   Shillelagh weapon attack uses the spellcasting ability and Force damage: { "hit": true, "crit": false, "stroke_of_luck_used": false, "roll_token_replaced": false, "damage": 12, "resolved": 12, "ward_absorbed": 0, "ward_remaining_hp": 0, "ward_projected": false, "damage_type": "force", "deflected": false, "attack_roll": 24, "target_ac": -100, "bardic_bonus": 0, "bardic_die": "", "activity_roll": { "formula": "2d20kh1 +4 +2", "dice_terms": [{ "count": 2, "sides": 20, "results": [11, 18], "kept": [false, true], "label": "d20", "subtotal": 18 }], "modifiers": [{ "label": "WIS", "value": 4 }, { "label": "Proficiency", "value": 2 }], "natural_total": 18, "advantage": true, "disadvantage": false, "final_total": 24, "comparison": { "kind": "armor_class", "target": -100, "margin": 124, "result": "hit" } }, "activity_damage": { "formula": "1d8+WIS", "dice_terms": [{ "count": 1, "sides": 8, "results": [8], "kept": [true], "label": "d8", "subtotal": 8 }], "modifiers": [{ "label": "WIS", "value": 4 }], "final_total": 12, "damage_dice_policy": {  }, "rolled_total": 12, "resolved_total": 12, "applied": 12, "type": "force", "mitigation": [] }, "damage_components": [{ "label": "Force damage", "value": 12, "type": "force", "receipt": { "damage": 12, "raw": 12, "prevented": 0, "reduction_prevented": 0, "bypassed_layers": [], "absorbed": 0, "hp_loss": 12, "resolved": 12, "ward_absorbed": 0, "ward_pool_id": "", "ward_owner_id": "", "ward_remaining_hp": 0, "ward_projected": false, "ward_message": "", "temp_hp_absorbed": 0, "hp_before": 96, "hp_after": 84, "temp_hp_before": 0, "temp_hp_after": 0, "is_alive_before": true, "is_alive_after": true, "knocked_out": false, "critical": false, "damage_is_critical": false, "source_roll_penalty": 0, "resistance_spell_reduction": 0, "death_ward_prevented": false, "undead_fortitude_saved": false, "zero_hp_replacement_saved": false, "zero_hp_receipt": {  }, "zero_hp_aftermath": {  }, "replacement_receipts": [], "replacement_absorbed": 0, "root_occurrence_id": 16, "damage_occurrence_id": 16, "countereffect_receipts": [] } }], "consumed_next_hit_grant": {  }, "message": "Hit! (24 vs AC -100) Dealing 12 force damage.", "weapon_rider_roll_id": 2, "mastery": "", "can_divine_smite": false, "divine_smite_eligible": false, "mode_switch_windows": [] }
+[ok]   Shillelagh ends when the character attacks with a different weapon
+[ok]   mixed encounter upcasts Longstrider through combat and grants +10 feet to both selected creatures
+[ok]   Animal Friendship charms a Beast through combat and records its caster: { "conditions": { "healing_prevented": 2, "blinded": 1, "prone": 2, "charmed": 14400 }, "sources": { "healing_prevented": { "spell:player_2_wizard:5": 2 }, "charmed": { "spell:player_2_wizard:7": 14400 } }, "effects": { "spell:player_2_wizard:5": { "source_id": "spell:player_2_wizard:5", "caster_id": "player_2_wizard", "spell_id": "chill_touch", "remaining_seconds": 12, "expiry_phase": "end", "save_dc": 14, "concentration": false, "end_on_target_damage": false, "end_on_any_damage": false, "conditions": ["healing_prevented"], "recipient_id": "monster_0" }, "spell:player_2_wizard:7": { "source_id": "spell:player_2_wizard:7", "caster_id": "player_2_wizard", "spell_id": "animal_friendship", "remaining_seconds": 86400, "expiry_phase": "start", "save_dc": 14, "concentration": false, "end_on_target_damage": true, "end_on_any_damage": false, "conditions": ["charmed"], "recipient_id": "monster_0" } }, "casters": ["player_2_wizard"] }
+[ok]   a party weapon hit ends Animal Friendship and clears its caster restriction
+[ok]   Animal Messenger spends its chosen higher slot and action, then records the destination, message, and extended duration
+[ok]   Animal Messenger preserves its in-transit save and delivers after two walking days
+[ok]   A nonzero-CR Tiny Beast automatically succeeds without an order or visited destination
+[ok]   Mixed encounter casts four Dancing Lights and moves them as a Bonus Action
+[ok]   Dancing Lights show their markers and remove them when concentration ends
+[ok]   Mixed encounter casts and dismisses Light (marker=[-3, -1] rounds=600 tokens=1 action=false)
+[ok]   Mixed encounter Mage Hand (tokens=1 hand=[-4, 0] dest=(-4, 0) action=false)
+[ok]   Mixed encounter dismisses Mage Hand with a Magic action
+[ok]   Mixed encounter sends Message to a party character with a Magic action and keeps whisper text out of the Chronicle
+[ok]   Mixed encounter casts and recasts Minor Illusion at points, shows one marker, and spends a Magic action
+[ok]   Mixed encounter tracks three persistent Prestidigitation marks and prevents a fourth without spending an action
+[ok]   Mixed encounter creates a persistent, light-emitting Produce Flame that follows its caster, then hurls it as a Magic action attack within 60 feet
+[ok]   Mixed encounter chooses Acid resistance for a willing touched ally, halves acid damage once, and clears protection when concentration ends (resolved=6 before=acid targets=1 concentration=)
+[ok]   Mixed encounter rejects a missing Holy Water component without spending action or slot, then consumes it to ward against Fiends until concentration ends
+[ok]   Mixed encounter neutralizes Poisoned, grants timed protection and halves Poison damage
+[ok]   Mixed encounter casts Ray of Sickness as a ranged attack and applies Poisoned only on a hit
+[ok]   Mixed encounter casts Ray of Enfeeblement through the production picker and resolves its failed, repeat-save and initial-success outcomes
+[ok]   Mixed encounter casts Regenerate through the production picker, heals immediately and restores 1 HP at turn start (cast=true hp=10 condition=true tick=true hp_after_tick=2)
+[ok]   Mixed encounter casts Remove Curse through the production picker and clears a curse from a Character and a monster
+[ok]   mixed encounter casts Blade Ward and applies its 1d4 penalty in the incoming weapon attack resolver
+[FAIL] [mixed_mechanics_encounter] mixed encounter's hit Shocking Grasp blocks the marked monster's Opportunity Attack as an ally moves away
+[ok]   mixed encounter applies Ice Knife's upcast cold burst to the struck hex and an adjacent creature after a miss
+[ok]   mixed encounter also applies Ice Knife's burst after the piercing attack hits
+[ok]   mixed encounter casts Shield of Faith as a Bonus Action and applies concentration-bound +2 AC
+[ok]   mixed encounter Guiding Bolt cast marks on hit, grants Advantage to the next attack, and consumes the mark
+[ok]   mixed encounter casts Inflict Wounds through the production target-selection and saving-throw path
+[ok]   mixed encounter queues Melf's Acid Arrow's upcast delayed damage for the target's next turn end
+[Character] Wizard Fixture leveled up to 4! (+6 HP, now 27)
+[Character] Wizard Fixture leveled up to 5! (+5 HP, now 32)
+[Character] Wizard Fixture leveled up to 6! (+7 HP, now 39)
+[Character] Wizard Fixture leveled up to 7! (+8 HP, now 47)
+[Character] Wizard Fixture leveled up to 8! (+6 HP, now 53)
+[Character] Wizard Fixture leveled up to 9! (+3 HP, now 56)
+[Character] Wizard Fixture leveled up to 10! (+7 HP, now 63)
+[Character] Wizard Fixture leveled up to 11! (+4 HP, now 67)
+[ok]   mixed encounter marks a creature killed by Disintegrate and blocks ordinary healing
+[ok]   mixed encounter refuses the disintegrated attacker's stale attack without spending the target's Shield
+[ok]   mixed encounter consumes the owning wizard Shield reaction
+[ok]   mixed encounter concentration cleanup removes its applied conditions
+[mixed] martial=true bonus_action=true reaction=true concentration=true healing=true save=true area=true
+--------------------------------------------------
+ VIEWPORT RESULTS: 1 failed (1 tests run)
+ FAILED TESTS: mixed_mechanics_encounter
+   - [mixed_mechanics_encounter] mixed encounter's hit Shocking Grasp blocks the marked monster's Opportunity Attack as an ally moves away
+VIEWPORT TESTS FAILED
+SCENARIO FAILED: mixed_mechanics_encounter

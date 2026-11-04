@@ -115,25 +115,44 @@ static func _roll_spell_damage(caster: Character, formula: String, repetitions: 
 	return details
 
 
-static func _roll_sorcerous_burst_damage(caster: Character, formula: String, explode_on: int, ability: String) -> Dictionary:
+## Exploding damage dice policy from data: shared `exploding_dice`, or the legacy
+## `explode_on_max` + `maximum_bonus_dice_ability` keys. Empty when the spell has none.
+static func exploding_policy(caster: Character, spell: Dictionary) -> Dictionary:
+	if spell.get("exploding_dice") is Dictionary:
+		var policy: Dictionary = spell["exploding_dice"]
+		var limit: Variant = policy.get("max_extra", 0)
+		var extra := caster.ability_scores.get_ability_modifier(caster.get_spellcasting_ability()) if str(limit) == "spellcasting_modifier" else int(limit)
+		return {"sides": int(policy.get("sides", 8)), "on": int(policy.get("sides", 8)), "limit": maxi(0, extra)}
+	if spell.has("explode_on_max"):
+		return {"sides": 8, "on": int(spell["explode_on_max"]), "limit": maxi(0, caster.ability_scores.get_ability_modifier(str(spell.get("maximum_bonus_dice_ability", "CHA"))))}
+	return {}
+
+
+static func _roll_exploding_damage(caster: Character, formula: String, policy: Dictionary) -> Dictionary:
 	var details := Dice.parse_dice_details(formula, {}, caster)
-	details["_sorcerous_burst_explode_on"] = explode_on
-	details["_sorcerous_burst_extra_limit"] = maxi(0, caster.ability_scores.get_ability_modifier(ability))
-	details["_sorcerous_burst_extra_rolled"] = 0
-	details["_sorcerous_burst_triggered"] = []
-	return SpellDamageRolls._resolve_sorcerous_burst_explosions(caster, details)
+	details["_explode_sides"] = int(policy.get("sides", 8))
+	details["_explode_on"] = int(policy.get("on", 8))
+	details["_explode_extra_limit"] = int(policy.get("limit", 0))
+	details["_explode_extra_rolled"] = 0
+	details["_explode_triggered"] = []
+	return SpellDamageRolls._resolve_exploding_dice(caster, details)
 
 
-static func _resolve_sorcerous_burst_explosions(caster: Character, details: Dictionary) -> Dictionary:
-	if not details.has("_sorcerous_burst_explode_on"):
+static func _roll_sorcerous_burst_damage(caster: Character, formula: String, explode_on: int, ability: String) -> Dictionary:
+	return _roll_exploding_damage(caster, formula, {"sides": 8, "on": explode_on, "limit": maxi(0, caster.ability_scores.get_ability_modifier(ability))})
+
+
+static func _resolve_exploding_dice(caster: Character, details: Dictionary) -> Dictionary:
+	if not details.has("_explode_on"):
 		return details
-	var explode_on := int(details["_sorcerous_burst_explode_on"])
-	var extra_limit := int(details["_sorcerous_burst_extra_limit"])
-	var extra_rolled := int(details["_sorcerous_burst_extra_rolled"])
-	var triggered: Array = details["_sorcerous_burst_triggered"]
+	var sides := int(details.get("_explode_sides", 8))
+	var explode_on := int(details["_explode_on"])
+	var extra_limit := int(details["_explode_extra_limit"])
+	var extra_rolled := int(details["_explode_extra_rolled"])
+	var triggered: Array = details["_explode_triggered"]
 	for term_index in details.get("dice_terms", []).size():
 		var term: Dictionary = details["dice_terms"][term_index]
-		if int(term.get("sides", 0)) != 8 or str(term.get("label", "")).begins_with("-"):
+		if int(term.get("sides", 0)) != sides or str(term.get("label", "")).begins_with("-"):
 			continue
 		var index := 0
 		while index < term.get("results", []).size() and extra_rolled < extra_limit:
@@ -143,7 +162,7 @@ static func _resolve_sorcerous_burst_explosions(caster: Character, details: Dict
 				triggered.append(trigger_key)
 				var should_explode := true
 				while should_explode and extra_rolled < extra_limit:
-					var roll := Dice.roll_single_details(8, caster)
+					var roll := Dice.roll_single_details(sides, caster)
 					var result := int(roll["total"])
 					var added_index: int = term["results"].size()
 					term["results"].append_array(roll["rolls"])
@@ -159,7 +178,7 @@ static func _resolve_sorcerous_burst_explosions(caster: Character, details: Dict
 					else:
 						should_explode = false
 			index += 1
-	details["_sorcerous_burst_extra_rolled"] = extra_rolled
+	details["_explode_extra_rolled"] = extra_rolled
 	return details
 
 
@@ -1844,7 +1863,7 @@ static func _finish_spell_damage(caster: Character, target, details: Dictionary,
 		return result
 	var metamagic := SpellDamageRolls._apply_empowered_spell(caster, details, decisions)
 	details = metamagic["details"]
-	details = SpellDamageRolls._resolve_sorcerous_burst_explosions(caster, details)
+	details = SpellDamageRolls._resolve_exploding_dice(caster, details)
 	# Reuse the owned damage continuation: damage dice are captured, while HP,
 	# save RNG, history and source payment have not yet settled.
 	var zero_options := SharedStepExecutor.zero_hp_options(target)
@@ -1899,7 +1918,7 @@ static func _finish_spell_damage(caster: Character, target, details: Dictionary,
 	# entire occurrence settles, so reaching the cap cannot alter later packets.
 	decisions = decisions.duplicate()
 	decisions["_defer_damage_budget"] = true
-	var primary_dmg_res := CombatAction.resolve_damage(target, int(primary_policy.get("settlement_raw", amount)), damage_type, decisions, false, false, caster, damage_occurrence_id, primary_policy.get("bypass_layers", []), amount, int(primary_policy.get("reduction_prevented", 0)))
+	var primary_dmg_res := CombatAction.resolve_damage(target, int(primary_policy.get("settlement_raw", amount)), damage_type, CombatAction.with_damage_origin(decisions, CombatAction.DAMAGE_ORIGIN_SPELL), false, false, caster, damage_occurrence_id, primary_policy.get("bypass_layers", []), amount, int(primary_policy.get("reduction_prevented", 0)))
 	var actual: int = int(primary_dmg_res.get("damage", 0))
 	var resolved: int = int(primary_dmg_res.get("resolved", 0))
 	var ward_absorbed: int = int(primary_dmg_res.get("ward_absorbed", 0))
@@ -2231,3 +2250,7 @@ static func settle_pending_concentration_request(caster: Character, target, resu
 		"dc": dc,
 		"save_test": save_test
 	}
+
+
+static func _resolve_sorcerous_burst_explosions(caster: Character, details: Dictionary) -> Dictionary:
+	return _resolve_exploding_dice(caster, details)

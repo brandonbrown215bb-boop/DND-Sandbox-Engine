@@ -22,7 +22,7 @@ static func saved_state_error(dto: Dictionary) -> String:
 		for source in sources[condition]:
 			var value: Variant = sources[condition][source]
 			var permanent_sight_rot: bool = condition == "blinded" and str(source) == "disease:sight_rot" and (value is int or value is float) and float(value) == -1.0
-			if not source is String or not (value is int or value is float) or not is_finite(float(value)) or float(value) != floor(float(value)) or (int(value) <= 0 and not permanent_sight_rot):
+			if not source is String or not (value is int or value is float) or not is_finite(float(value)) or float(value) != floor(float(value)) or (int(value) <= 0 and not permanent_sight_rot and not _until_dispelled_source(state, source, value)):
 				return "invalid saved condition source duration"
 	var serial: Variant = dto.get("spell_cast_serial", 0)
 	if not (serial is int or serial is float) or not is_finite(float(serial)) or float(serial) != floor(float(serial)) or int(serial) < 0:
@@ -59,10 +59,25 @@ static func saved_state_error(dto: Dictionary) -> String:
 			return "invalid saved spell end aftermath"
 		var remaining: Variant = record.get("remaining_seconds", null)
 		var indefinite_power_word_stun := str(record.get("spell_id", "")) == "power_word_stun" and (remaining is int or remaining is float) and float(remaining) == -1.0
+		# A higher-slot tier authored as -1 lasts until dispelled; older saves never carry the flag.
+		if record.has("until_dispelled") and (not record["until_dispelled"] is bool or not bool(record["until_dispelled"]) or not (remaining is int or remaining is float) or float(remaining) != -1.0 or not DataLoader.get_spell(spell_id).get("duration_by_slot", []).any(func(tier): return tier is Dictionary and int(tier.get("duration_seconds", 0)) == -1)):
+			return "invalid saved until-dispelled duration"
+		indefinite_power_word_stun = indefinite_power_word_stun or bool(record.get("until_dispelled", false))
 		if not (remaining is int or remaining is float) or not is_finite(float(remaining)) or float(remaining) != floor(float(remaining)) or (int(remaining) <= 0 and not indefinite_power_word_stun) or int(remaining) > 172800:
 			return "invalid saved spell effect duration"
-		if str(record.get("expiry_phase", "")) not in ["start", "end"] or not record.get("conditions", null) is Array:
+		var saved_phase := str(record.get("expiry_phase", ""))
+		var recipient_phase := saved_phase in ["recipient_start", "recipient_end"] and not str(record.get("recipient_id", "")).is_empty()
+		if (saved_phase not in ["start", "end"] and not recipient_phase) or not record.get("conditions", null) is Array:
 			return "invalid saved spell effect boundary"
+		# Optional authored magnitudes (absent in older saves) must match a granted amount condition.
+		if record.has("condition_amounts"):
+			var saved_amounts: Variant = record["condition_amounts"]
+			if not saved_amounts is Dictionary: return "invalid saved condition amounts"
+			for amount_condition in saved_amounts:
+				var amount_range: Array = SharedSpell.AMOUNT_CONDITIONS.get(str(amount_condition), [])
+				var amount_value: Variant = saved_amounts[amount_condition]
+				if amount_range.is_empty() or amount_condition not in record["conditions"] or not (amount_value is int or amount_value is float) or float(amount_value) != floor(float(amount_value)) or int(amount_value) < int(amount_range[0]) or int(amount_value) > int(amount_range[1]):
+					return "invalid saved condition amounts"
 		var save_dc: Variant = record.get("save_dc", null)
 		var repeat_definition := DataLoader.get_spell(spell_id)
 		# Only old, unstaged default-turn definitions may omit history entirely.
@@ -80,7 +95,7 @@ static func saved_state_error(dto: Dictionary) -> String:
 			var is_integer := func(value): return (value is int or value is float) and is_finite(float(value)) and float(value) == floor(float(value))
 			var expected_context: Dictionary = definition.get("save_context", {})
 			var expected_purpose := str(expected_context.get("purpose_id", "repeat_save"))
-			if not SharedSpell.uses(definition) or not definition.has("repeat_save") or schedule not in ["target_turn_end", "elapsed_seconds"] or schedule != str(definition.get("repeat_save_schedule", "target_turn_end")) or not is_integer.call(attempts) or int(attempts) < 0 or int(attempts) > 100000 or not is_integer.call(adjustment) or int(adjustment) < 0 or int(adjustment) > 100 or not is_integer.call(stage_index) or not is_integer.call(stage_successes) or str(record.get("recipient_id", "")) != str(dto.get("character_id", "")) or record.get("repeat_save_context", {}) != expected_context or str(record.get("repeat_save_purpose", "")) != expected_purpose:
+			if not SharedSpell.uses(definition) or not definition.has("repeat_save") or schedule not in ["target_turn_end", "elapsed_seconds"] or schedule != str(definition.get("repeat_save_schedule", "target_turn_end")) or not is_integer.call(attempts) or int(attempts) < 0 or int(attempts) > 100000 or not is_integer.call(adjustment) or int(adjustment) < 0 or int(adjustment) > 100 or not is_integer.call(stage_index) or not is_integer.call(stage_successes) or str(record.get("recipient_id", "")) != str(dto.get("character_id", dto.get("id", ""))) or record.get("repeat_save_context", {}) != expected_context or str(record.get("repeat_save_purpose", "")) != expected_purpose:
 				return "invalid saved repeat-save state"
 			if schedule == "elapsed_seconds":
 				var next_at: Variant = record.get("repeat_save_next_at_seconds", null)
@@ -145,7 +160,7 @@ static func saved_state_error(dto: Dictionary) -> String:
 			var declares_condition := false
 			if SharedSpell.uses(definition):
 				for eff in definition.get("effects", []):
-					if eff is Dictionary and eff.get("type", "") in ["grant_condition", "bind_tether"] and eff.get("condition", "") == condition: # S-168 tethers grant their declared condition.
+					if eff is Dictionary and eff.get("type", "") in ["grant_condition", "bind_tether"] and (eff.get("condition", "") == condition or condition in eff.get("condition_options", [])): # S-168 tethers grant their declared condition.
 						declares_condition = true
 						break
 				if not declares_condition:
@@ -198,3 +213,10 @@ static func saved_party_error(characters: Dictionary, save_data: Dictionary = {}
 	return ""
 
 
+
+
+## An until-dispelled spell source keeps its granted conditions at duration -1.
+static func _until_dispelled_source(state, source, value) -> bool:
+	if not state is Dictionary or not (value is int or value is float) or float(value) != -1.0: return false
+	var record: Variant = state.get(source, {})
+	return record is Dictionary and record.get("until_dispelled", false) is bool and bool(record.get("until_dispelled", false))

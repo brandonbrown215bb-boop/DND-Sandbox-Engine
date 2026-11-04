@@ -56,6 +56,7 @@ var rogue_steady_aim_armed: bool = false
 var turn_budget: CombatTurnBudget = CombatTurnBudget.new()
 
 # Targeting action mode
+var last_turn_start_marker_save: Dictionary = {}
 var pending_action_type: String = "" # "attack", "spell", "lay_on_hands", "bardic_inspiration", "unarmed_attack"
 var resolving_player_action := false
 var pool_recovery := CombatPoolRecovery.new()
@@ -119,6 +120,7 @@ var _rebind_wait_before_turn_setup := false
 
 
 func _ready() -> void:
+	DamageWitnessRules.bind(self)
 	hud.turn_budget = turn_budget
 	# Connect HUD action selectors
 	hud.action_selected.connect(_on_hud_action)
@@ -1039,6 +1041,7 @@ func _start_combat_turn() -> void:
 		active_movement_mode = "walk"
 		hud.set_movement_modes(active_character, active_movement_mode, _movement_speed_overrides(active_character))
 		_reset_turn_action_economy()
+		_apply_turn_start_marker_save(active_character)
 		if player_entities[current_player_idx].get("is_created_actor", false): # Batch 056 S-157: its own turn and budget.
 			var created_line := CreatedCommandRules.take_turn(self, player_entities[current_player_idx])
 			if not created_line.is_empty(): hud.add_log(created_line)
@@ -1101,6 +1104,7 @@ func _start_combat_turn() -> void:
 			_tick_spell_effect_boundary(_make_monster_spellcaster(monster), "start")
 		await _resolve_spell_zone_start_turn(monster, monster.get("hex_position", Vector2i.ZERO))
 		_apply_regenerate_turn_start(monster)
+		_apply_turn_start_marker_save(monster)
 		
 		# Process turn-start condition effects
 		var monster_conditions: Dictionary = monster.get("conditions", {})
@@ -1140,6 +1144,28 @@ func _start_combat_turn() -> void:
 		await get_tree().create_timer(1.0).timeout
 		if _monster_ai_current(preview_turn, monster):
 			_run_monster_ai()
+
+
+## Turn-start marker saves (e.g. a curse): a failed save forces the Dodge action this turn.
+func _apply_turn_start_marker_save(entity) -> Dictionary:
+	if entity is Dictionary: entity.erase("forced_dodge_turn")
+	var downed: bool = entity is Character and entity.is_downed()
+	if downed or CombatAction.is_incapacitated(entity): return {}
+	var result := CombatAction.resolve_turn_start_marker_save(entity)
+	if result.is_empty(): return result
+	var label: String = entity.character_name if entity is Character else str(entity.get("name", "The creature"))
+	if bool(result.get("forced_dodge", false)):
+		if entity is Character:
+			entity.add_condition("dodging", 2)
+			_spend_action_cost("action")
+		else:
+			CombatAction.apply_condition(entity, "dodging", 2)
+			entity["forced_dodge_turn"] = true
+		hud.add_log("%s fails a %s save (%d vs DC %d) and must take the Dodge action this turn." % [label, str(result.ability), int(result.total), int(result.dc)])
+	else:
+		hud.add_log("%s succeeds on a %s save (%d vs DC %d) and acts normally." % [label, str(result.ability), int(result.total), int(result.dc)])
+	last_turn_start_marker_save = result.duplicate()
+	return result
 
 
 func _get_current_owner_index() -> int:
@@ -1367,6 +1393,9 @@ func _run_monster_ai() -> void:
 	if monster.has(PaladinRules.ABJURE_FOES_MARKER) and action_str == "move_attack":
 		# Abjure Foes permits movement or an action on the turn, not both.
 		action_str = "move"
+	if bool(monster.get("forced_dodge_turn", false)) and action_str != "move":
+		# A turn-start marker save failed: its action is the Dodge action; it may still move.
+		action_str = "move" if action_str == "move_attack" else "forced_dodge"
 
 	match action_str:
 		"move":
@@ -1868,7 +1897,7 @@ func _execute_monster_spell(monster: Dictionary, target_player_name: String, spe
 		spell_reaction_decisions.merge(await _collect_roll_token_decision(target_char, "save", "%s saving throw against %s" % [str(spell_data.get("save", "Spell")), str(spell_data.get("name", "spell"))], spell_reaction_decisions), true)
 	elif str(spell_data.get("attack_type", "none")) != "none":
 		spell_reaction_decisions.merge(await _collect_roll_token_decision(caster, "attack", "%s spell attack against %s" % [str(spell_data.get("name", "Spell")), target_char.character_name], spell_reaction_decisions), true)
-	if spell_data.has("damage") or spell_data.has("damage_per_dart") or spell_data.has("damage_per_ray"):
+	if spell_data.has("damage") or SpellProjectileResolver.is_projectile(spell_data):
 		spell_reaction_decisions.merge(await _collect_projected_ward_decision(target_char, spell_reaction_decisions), true)
 	if cast_turn != CombatAction.active_turn_serial or not intent.is_valid(monster, player_entities, hex_grid, _all_live_combat_entities()): return
 	caster = _make_monster_spellcaster(monster)
@@ -2098,7 +2127,7 @@ func _collect_bardic_inspiration_save_decision(target: Character, spell_data: Di
 		return {}
 	var spell_has_save := CombatAction.spell_requires_saving_throw(spell_data)
 	if spell_has_save and CombatAction.save_auto_fails(target, str(spell_data.get("save", "DEX"))): return {}
-	var has_relentless_rage_damage := target.has_feature("barbarian_relentless_rage") and target.has_condition("raging") and (spell_data.has("damage") or spell_data.has("damage_per_dart") or spell_data.has("damage_per_ray"))
+	var has_relentless_rage_damage := target.has_feature("barbarian_relentless_rage") and target.has_condition("raging") and (spell_data.has("damage") or SpellProjectileResolver.is_projectile(spell_data))
 	if not spell_has_save and not has_relentless_rage_damage:
 		return {}
 	var die := str(target.feature_uses.get("bardic_inspiration_die", "1d6"))
@@ -2529,6 +2558,8 @@ func _collect_projected_ward_decision(target: Character, seeded_decisions: Dicti
 
 
 static func _sync_consumed_monster_attack_conditions(monster: Dictionary, attacker: Character) -> void:
+	if not attacker.has_condition("next_attack_disadvantage") and monster.get("conditions", {}).has("next_attack_disadvantage"):
+		SpellEffects.consume_condition(monster, "next_attack_disadvantage")
 	if attacker.has_condition("vicious_mockery_disadvantage"):
 		return
 	var conditions: Dictionary = monster.get("conditions", {})
@@ -4595,7 +4626,7 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 			all_fear_actors.append_array(monster_entities)
 			all_fear_actors.append_array(player_entities)
 			attack_reaction_decisions["frightened_source_out_of_sight"] = not CombatAction.is_frightened_source_in_sight(active_character, player_pos, _all_live_combat_entities(), hex_grid)
-		if CombatAction.attacker_has_condition_disadvantage(active_character, str(weapon.get("ability", "STR")), attack_reaction_decisions):
+		if CombatAction.attacker_has_condition_disadvantage(active_character, str(weapon.get("ability", "STR")), attack_reaction_decisions) or CombatAction.attack_disadvantage_against(active_character, clicked_monster):
 			has_disadvantage = true
 		if DruidRules.pack_tactics_advantage(active_character, clicked_monster, player_entities):
 			has_advantage = true
@@ -4866,13 +4897,13 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 			pending_command_target_coords.clear()
 			await _execute_player_spell(area_centers[0], Vector2i(9999, 9999), area_centers)
 			return
-		if str(pending_spell_data.get("id", "")) in ["magic_missile", "scorching_ray", "eldritch_blast"]:
+		if SpellProjectileResolver.is_projectile(pending_spell_data):
 			if not _has_spell_creature_at(coord, pending_spell_data):
 				return
 			pending_command_target_coords.append(coord)
 			var projectile_total := _spell_projectile_total(pending_spell_data)
 			if pending_command_target_coords.size() < projectile_total:
-				var projectile_name := "dart" if str(pending_spell_data.get("id", "")) == "magic_missile" else "beam" if str(pending_spell_data.get("id", "")) == "eldritch_blast" else "ray"
+				var projectile_name := SpellProjectileResolver.noun(pending_spell_data)
 				hud.add_log("Choose a creature for %s %s %d of %d. You may select the same creature again." % [str(pending_spell_data.get("name", "Spell")), projectile_name, pending_command_target_coords.size() + 1, projectile_total])
 				hud.show_hint("%s: %d %s(s) remaining. Click a creature; you may choose the same creature again. Esc/Cancel to back out." % [pending_spell_data.get("name", "Spell"), projectile_total - pending_command_target_coords.size(), projectile_name])
 				return
@@ -5281,8 +5312,8 @@ func _collect_spell_shield_decision(target: Character, spell_data: Dictionary, e
 			return {}
 	var spell_id := str(spell_data.get("id", ""))
 	var attack_type := str(spell_data.get("attack_type", "none"))
-	if spell_id == "magic_missile":
-		return await _choose_shield_payment(target, await hud.request_reaction(_owner_label_for_character(target), "shield", "Magic Missile targets you. Shield prevents all its damage and adds +5 AC until your next turn."))
+	if SpellProjectileResolver.shield_negates(spell_data):
+		return await _choose_shield_payment(target, await hud.request_reaction(_owner_label_for_character(target), "shield", str(spell_data.get("name", "This spell")) + " targets you. Shield prevents all its damage and adds +5 AC until your next turn."))
 	if attack_type not in ["ranged_spell", "melee_spell"]:
 		return {}
 	var spell_name := str(spell_data.get("name", "This spell"))
@@ -5696,6 +5727,7 @@ func _clear_monk_battle_effects() -> void:
 
 
 func _exit_tree() -> void:
+	DamageWitnessRules.unbind(self)
 	_clear_ordinary_battle_effects()
 	_end_monster_spell_sources()
 	child_actions.clear()
@@ -6296,7 +6328,7 @@ func _publish_true_strike_activity(target: Dictionary, weapon: Dictionary, resul
 	if draft.is_empty():
 		return
 	draft["kind"] = "spell_attack"
-	draft["title"] = "True Strike — " + str(weapon.get("name", "Weapon"))
+	draft["title"] = str(weapon.get("_spell_name", "Spell")) + " — " + str(weapon.get("name", "Weapon"))
 	ActivityHistory.publish(draft)
 
 

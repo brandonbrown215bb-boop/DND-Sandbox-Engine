@@ -226,15 +226,15 @@ static func validate_weapon_and_steed(cast: SpellCastContext) -> bool:
 		cast.hud.add_log("[color=orange]Shillelagh needs a Club or Quarterstaff equipped in your weapon hand.[/color]")
 		cast.highlight_reachable.call()
 		return false
-	if str(cast.spell.get("id", "")) == "true_strike":
+	if not SharedSpell.weapon_attack_effect(cast.spell).is_empty():
 		var true_strike_weapon_id := cast.caster.inventory.get_weapon()
 		var true_strike_weapon := DataLoader.get_item(true_strike_weapon_id)
 		if true_strike_weapon.is_empty() or str(true_strike_weapon.get("type", "")) != "weapon" or not cast.caster.is_proficient_with_weapon(true_strike_weapon) or int(true_strike_weapon.get("value", 0)) <= 0:
-			cast.hud.add_log("[color=orange]True Strike requires an equipped weapon you are proficient with, worth at least 1 CP.[/color]")
+			cast.hud.add_log("[color=orange]%s requires an equipped weapon you are proficient with, worth at least 1 CP.[/color]" % str(cast.spell.get("name", "This spell")))
 			cast.highlight_reachable.call()
 			return false
 		if not SpellCastTargeting._creature_at_coord_matches_types(cast, cast.target_coord, ["humanoid", "beast", "aberration", "celestial", "construct", "dragon", "elemental", "fey", "fiend", "giant", "monstrosity", "ooze", "plant", "undead"]):
-			cast.hud.add_log("[color=orange]True Strike needs a living creature as the weapon attack target.[/color]")
+			cast.hud.add_log("[color=orange]%s needs a creature as the weapon attack target.[/color]" % str(cast.spell.get("name", "This spell")))
 			cast.highlight_reachable.call()
 			return false
 		cast.spell["_true_strike_weapon_id"] = true_strike_weapon_id
@@ -284,7 +284,7 @@ static func validate_creatures_and_components(cast: SpellCastContext) -> bool:
 			cast.highlight_reachable.call()
 			return false
 	cast.command_selection = []
-	if str(cast.spell.get("id", "")) in ["command", "longstrider", "magic_missile", "scorching_ray", "eldritch_blast"] or int(cast.spell.get("area_point_count", 1)) > 1 or SpellCastTargeting._spell_upcast_maximum_targets(cast, cast.spell) > 1:
+	if str(cast.spell.get("id", "")) in ["command", "longstrider"] or SpellProjectileResolver.is_projectile(cast.spell) or int(cast.spell.get("area_point_count", 1)) > 1 or SpellCastTargeting._spell_upcast_maximum_targets(cast, cast.spell) > 1:
 		cast.command_selection.append_array(cast.extra_target_coords)
 	if str(cast.spell.get("id", "")) == "chain_lightning":
 		var chain_targets: Array[Vector2i] = cast.command_selection.duplicate()
@@ -308,7 +308,7 @@ static func validate_creatures_and_components(cast: SpellCastContext) -> bool:
 				cast.highlight_reachable.call()
 				return false
 	var required_creature_types: Array = cast.spell.get("target_creature_types", [])
-	if SpellEffects.manages(cast.spell) or (SharedSpell.uses(cast.spell) and SpellCastTargeting._spell_upcast_maximum_targets(cast, cast.spell) > 1):
+	if (SpellEffects.manages(cast.spell) and not SharedSpell.has_effect(cast.spell, "area_selection")) or (SharedSpell.uses(cast.spell) and SpellCastTargeting._spell_upcast_maximum_targets(cast, cast.spell) > 1):
 		var selected: Array[Vector2i] = cast.command_selection.duplicate()
 		if cast.target_coord not in selected:
 			selected.append(cast.target_coord)
@@ -458,6 +458,11 @@ static func validate_area(cast: SpellCastContext) -> bool:
 		cast.hud.add_log("[color=orange]%s[/color]" % cast.area_selection.get("message", "Invalid area selection."))
 		cast.highlight_reachable.call()
 		return false
+	# A point-centered area must be centered on a real map tile; refuse before any payment.
+	if cast.target_type == "area" and str(cast.area_selection.get("origin", "")) != "self" and cast.grid != null and not cast.grid.has_tile(cast.target_coord):
+		cast.hud.add_log("[color=orange]Choose a point on the map for the center of %s.[/color]" % str(cast.spell.get("name", "this spell")))
+		cast.highlight_reachable.call()
+		return false
 	var area_point_count := int(cast.spell.get("area_point_count", 1))
 	if area_point_count > 1:
 		var centers: Array[Vector2i] = [cast.target_coord]
@@ -473,6 +478,11 @@ static func validate_area(cast: SpellCastContext) -> bool:
 		var line_valid := line_selection and centers.size() == 2 and cast.grid.has_tile(centers[0]) and cast.grid.has_tile(centers[1]) and Targeting.is_in_range(cast.spell_origin, centers[0], point_range) and Targeting.is_in_range(cast.spell_origin, centers[1], point_range) and HexUtils.get_distance(centers[0], centers[1]) <= int(cast.area_selection.get("size", 12))
 		if (line_selection and not line_valid) or (not line_selection and not SpellCastTargeting.are_legal_area_centers(centers, area_point_count, cast.spell_origin, point_range, cast.grid)):
 			cast.hud.add_log("Choose %d distinct legal centers within %d feet." % [area_point_count, point_range * 5])
+			cast.highlight_reachable.call()
+			return false
+	if str(cast.area_selection.get("shape", "")) == "line" and str(cast.area_selection.get("origin", "")) == "self":
+		if not cast.grid.has_tile(cast.target_coord) or cast.target_coord == cast.spell_origin:
+			cast.hud.add_log("Choose a hex to set the direction of %s." % str(cast.spell.get("name", "this spell")))
 			cast.highlight_reachable.call()
 			return false
 	if str(cast.area_selection.get("shape", "")) in ["cone", "cube"]:

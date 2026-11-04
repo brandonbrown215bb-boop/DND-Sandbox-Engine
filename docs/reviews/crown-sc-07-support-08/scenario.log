@@ -1,0 +1,72 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+WARNING: [DataLoader] Rejected 25 unsupported effectless feature records; they remain unavailable until curated.
+     at: push_warning (core/variant/variant_utility.cpp:1033)
+     GDScript backtrace (most recent call first):
+         [0] load_all_data (res://src/autoload/data_loader.gd:276)
+         [1] _ready (res://src/autoload/data_loader.gd:252)
+[DataLoader] Loaded: 14 classes, 9 races, 295 items, 362 spells, 481 monsters, 4 event tables, 1 campaigns
+[DataLoader] Layers: core_imported, core_curated, mods | packs: core, crown | approved overrides: 431 | validation failures: 0
+==================================================
+ Rook's Headless Viewport Harness (per-beat)
+==================================================
+
+[TEST] crown_sc_07_support_08_flow
+[ok]   SC-07 s8: Bestow Curse loads through the shared contract with nine authored curse options
+[ok]   SC-07 s8: slot tiers: 3 base (Concentration 1 min), 4 = 10 min Conc, 5-6 = 8 h, 7-8 = 24 h, 9 = until dispelled; 5+ drop Concentration
+[ok]   SC-07 s8: a tier at the spell level, a non-Boolean concentration and an invalid duration are rejected
+[Character] crown-sc07s8-renamed leveled up to 2! (+3 HP, now 11)
+[Character] crown-sc07s8-renamed leveled up to 3! (+4 HP, now 15)
+[Character] crown-sc07s8-renamed leveled up to 4! (+5 HP, now 20)
+[Character] crown-sc07s8-renamed leveled up to 5! (+3 HP, now 23)
+[Character] crown-sc07s8-renamed leveled up to 6! (+5 HP, now 28)
+[Character] crown-sc07s8-renamed leveled up to 7! (+5 HP, now 33)
+[Character] crown-sc07s8-renamed leveled up to 8! (+5 HP, now 38)
+[Character] crown-sc07s8-renamed leveled up to 9! (+3 HP, now 41)
+[ok]   SC-01 support 01: renamed bestow_curse passes the production loader as shared data
+[ok]   SC-07 s8: renamed option 1: Disadvantage on the chosen ability's checks and saves only
+[ok]   SC-07 s8: renamed option 2: Disadvantage on attack rolls against the caster only
+[ok]   SC-07 s8: renamed option 4: the caster's damage adds 1d8 Necrotic once; another creature's damage does not ([{ "damage": 6, "raw": 6, "prevented": 0, "reduction_prevented": 0, "bypassed_layers": [], "absorbed": 0, "hp_loss": 6, "resolved": 6, "ward_absorbed": 0, "ward_pool_id": "", "ward_owner_id": "", "ward_remaining_hp": 0, "ward_projected": false, "ward_message": "", "temp_hp_absorbed": 0, "hp_before": 995, "hp_after": 989, "temp_hp_before": 0, "temp_hp_after": 0, "is_alive_before": true, "is_alive_after": true, "knocked_out": false, "critical": false, "damage_is_critical": false, "source_roll_penalty": 0, "resistance_spell_reduction": 0, "death_ward_prevented": false, "undead_fortitude_saved": false, "zero_hp_replacement_saved": false, "zero_hp_receipt": {  }, "zero_hp_aftermath": {  }, "replacement_receipts": [], "replacement_absorbed": 0, "root_occurrence_id": 5, "damage_occurrence_id": 5, "countereffect_receipts": [], "rider_condition": "cursed_necrotic", "rider_amount": 6, "damage_type": "necrotic" }])
+[ok]   SC-07 s8: renamed option 3: a failed turn-start WIS save forces the Dodge action; uncursed creatures roll nothing ({ "forced_dodge": true, "saved": false, "total": -996, "dc": 16, "ability": "WIS", "condition": "cursed_dodge" })
+[ok]   SC-07 s8: renamed slot tiers: level 3 = 60 s, level 5 = 8 h without Concentration, level 9 = until dispelled ({ "source_id": "spell:crown-sc07s8-renamed:5", "caster_id": "crown-sc07s8-renamed", "spell_id": "crown_sc_07_support_08:neutral_hex", "remaining_seconds": 28800, "expiry_phase": "start", "save_dc": 16, "concentration": false, "end_on_target_damage": false, "end_on_any_damage": false, "conditions": ["cursed_con"], "recipient_id": "crown-sc07s8-e" } | { "source_id": "spell:crown-sc07s8-renamed:6", "caster_id": "crown-sc07s8-renamed", "spell_id": "crown_sc_07_support_08:neutral_hex", "remaining_seconds": -1, "expiry_phase": "start", "save_dc": 16, "concentration": false, "end_on_target_damage": false, "end_on_any_damage": false, "conditions": ["cursed_cha"], "until_dispelled": true, "recipient_id": "crown-sc07s8-f" })
+[ok]   SC-07 s8: an until-dispelled curse is still in place
+[ok]   SC-07 s8: removing the source (Remove Curse / dispel) ends the marker
+[Character] crown-sc07s8-wizard leveled up to 2! (+3 HP, now 13)
+[Character] crown-sc07s8-wizard leveled up to 3! (+9 HP, now 22)
+[Character] crown-sc07s8-wizard leveled up to 4! (+9 HP, now 31)
+[Character] crown-sc07s8-wizard leveled up to 5! (+5 HP, now 36)
+[Character] crown-sc07s8-wizard leveled up to 6! (+8 HP, now 44)
+[Character] crown-sc07s8-wizard leveled up to 7! (+8 HP, now 52)
+[Character] crown-sc07s8-wizard leveled up to 8! (+7 HP, now 59)
+[Character] crown-sc07s8-wizard leveled up to 9! (+4 HP, now 63)
+[ok]   SC-07 s8: a level-9 Cleric prepares Bestow Curse
+[ok]   Conversion 001: bestow_curse is available through the real spell picker
+[ok]   SC-07 s8: player cast at level 3: Level popup, target click, nine-option curse menu; the Dodge curse lands with Concentration (Cursed Str;Cursed Dex;Cursed Con;Cursed Int;Cursed Wis;Cursed Cha;Cursed Attack Source;Cursed Dodge;Cursed Necrotic; | [color=red]=== Turn: Goblin 1 (Monster) ===[/color]
+Miss! Attack roll 7 vs AC 16
+Casting Bestow Curse. Select target hex.
+crown-sc07s8-wizard expended a level 3 spell slot.
+crown-sc07s8-dodger failed WIS save (DC 15). crown-sc07s8-dodger is cursed_dodge.
+)
+[ok]   SC-07 s8: at the cursed creature's turn start the failed WIS save forces the Dodge action ({ "forced_dodge": true, "saved": false, "total": -992, "dc": 15, "ability": "WIS", "condition": "cursed_dodge" })
+[ok]   Conversion 001: bestow_curse is available through the real spell picker
+[ok]   SC-07 s8: player upcast at level 5: 8-hour curse without Concentration; the level-3 concentration curse is untouched ({ "source_id": "spell:crown-sc07s8-wizard:2", "caster_id": "crown-sc07s8-wizard", "spell_id": "bestow_curse", "remaining_seconds": 28800, "expiry_phase": "start", "save_dc": 15, "concentration": false, "end_on_target_damage": false, "end_on_any_damage": false, "conditions": ["cursed_necrotic"], "recipient_id": "crown-sc07s8-bleeder" })
+[ok]   SC-07 s8: the player's damage to the cursed creature adds 1d8 Necrotic
+[ok]   SC-07 s8: ending Concentration ends only the level-3 curse
+[Character] crown-sc07s8-saver leveled up to 2! (+8 HP, now 16)
+[Character] crown-sc07s8-saver leveled up to 3! (+3 HP, now 19)
+[Character] crown-sc07s8-saver leveled up to 4! (+7 HP, now 26)
+[Character] crown-sc07s8-saver leveled up to 5! (+6 HP, now 32)
+[Character] crown-sc07s8-saver leveled up to 6! (+8 HP, now 40)
+[Character] crown-sc07s8-saver leveled up to 7! (+5 HP, now 45)
+[Character] crown-sc07s8-saver leveled up to 8! (+8 HP, now 53)
+[Character] crown-sc07s8-saver leveled up to 9! (+3 HP, now 56)
+[ok]   SC-07 s8: the caster carries an until-dispelled curse and a party member a 10-minute Concentration curse
+[SaveManager] Successfully saved game to user://saves/dnd2024/crown_sc_07_support_08.sav
+[SaveManager] Test mode: restored save state without scene transition
+[ok]   SC-07 s8: both curses save, pass preflight and reload
+[ok]   SC-07 s8: preflight rejects an until_dispelled record whose remaining time is not -1
+CROWN_SC_07_SUPPORT_08_CHECKPOINT_READY
+--------------------------------------------------
+ VIEWPORT RESULTS: 0 failed (1 tests run)
+VIEWPORT TESTS PASSED
+SCENARIO PASSED: crown_sc_07_support_08_flow

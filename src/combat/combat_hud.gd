@@ -537,7 +537,8 @@ func _update_sidebar_stats() -> void:
 	if not active_character.conditions.is_empty():
 		text += "Conditions:\n"
 		for cond in active_character.conditions:
-			text += "- %s (%d turns)\n" % [cond, active_character.conditions[cond]]
+			var suppressed := " (suppressed)" if CombatAction.marker_suppresses(active_character, str(cond)) else ""
+			text += "- %s (%d turns)%s\n" % [cond, active_character.conditions[cond], suppressed]
 
 	info_label.text = text
 
@@ -1949,6 +1950,23 @@ func request_chain_lightning_target_choice(candidates: Array[Dictionary], seeded
 	if ids.size() == 1 or GameManager.test_mode:
 		return ids[0]
 	return await _request_popup_choice("Chain Lightning: choose a creature or object", ids, labels)
+
+
+## Generic leap-target prompt for spells whose effect moves to a new creature mid-cast.
+func request_spell_leap_target_choice(spell_name: String, candidates: Array[Dictionary], seeded_target_id: String = "") -> String:
+	var ids: Array[String] = []
+	var labels: Dictionary = {}
+	for candidate in candidates:
+		var candidate_id := str(candidate.get("id", ""))
+		if candidate_id.is_empty(): continue
+		ids.append(candidate_id)
+		labels[candidate_id] = str(candidate.get("label", "Creature"))
+	if ids.is_empty(): return ""
+	if not seeded_target_id.is_empty():
+		return seeded_target_id if seeded_target_id in ids else ""
+	if ids.size() == 1 or GameManager.test_mode:
+		return ids[0]
+	return await _request_popup_choice("%s leaps: choose a creature" % spell_name, ids, labels)
 
 
 func request_enhance_ability_choice(target_name: String, seeded_choice: String = "") -> String:

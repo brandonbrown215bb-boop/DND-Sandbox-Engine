@@ -567,6 +567,27 @@ func _run_scenario(scenario: String) -> void:
 		"mass_healing_word_flow": await test_mass_healing_word_flow()
 		"conversion_batch_001_flow": await ConversionBatch001Flow.run(self)
 		"conversion_batch_002_flow": await ConversionBatch002Flow.run(self)
+		"crown_sc_01_flow": await CrownSc01Flow.run(self)
+		"crown_sc_02_flow": await CrownSc02Flow.run(self)
+		"crown_sc_03_flow": await CrownSc03Flow.run(self)
+		"crown_sc_01_support_01_flow": await CrownSc01Support01Flow.run(self)
+		"crown_sc_03_support_02_flow": await CrownSc03Support02Flow.run(self)
+		"crown_sc_03_support_03_flow": await CrownSc03Support03Flow.run(self)
+		"crown_sc_03_support_04_flow": await CrownSc03Support04Flow.run(self)
+		"crown_sc_03_support_05_flow": await CrownSc03Support05Flow.run(self)
+		"crown_sc_03_support_06_flow": await CrownSc03Support06Flow.run(self)
+		"crown_sc_03_support_07_flow": await CrownSc03Support07Flow.run(self)
+		"crown_sc_04_support_01_flow": await CrownSc04Support01Flow.run(self)
+		"crown_sc_05_support_01_flow": await CrownSc05Support01Flow.run(self)
+		"crown_sc_05_support_02_flow": await CrownSc05Support02Flow.run(self)
+		"crown_sc_06_flow": await CrownSc06Flow.run(self)
+		"crown_sc_07_support_01_flow": await CrownSc07Support01Flow.run(self)
+		"crown_sc_07_support_02_flow": await CrownSc07Support02Flow.run(self)
+		"crown_sc_07_support_04_flow": await CrownSc07Support04Flow.run(self)
+		"crown_sc_07_support_05_flow": await CrownSc07Support05Flow.run(self)
+		"crown_sc_07_support_06_flow": await CrownSc07Support06Flow.run(self)
+		"crown_sc_07_support_08_flow": await CrownSc07Support08Flow.run(self)
+		"crown_sc_07_support_09_flow": await CrownSc07Support09Flow.run(self)
 		"sorcerer_twinned_spell": await test_sorcerer_twinned_spell()
 		"overworld": await test_overworld()
 		"companion_lifecycle": await test_companion_lifecycle()
@@ -16197,6 +16218,10 @@ func test_mixed_mechanics_encounter() -> void:
 	var ray_target_hp_before := int(shocked_monster.get("current_hp", 0))
 	var ray_target_max_hp_before := int(shocked_monster.get("max_hp", 0))
 	var ray_target_ac_before := int(shocked_monster.get("armor_class", 10))
+	# SRD 5.2.1 Ray of Sickness reaches 30 feet (6 hexes); stand the target within it.
+	var ray_target_hex_before: Vector2i = shocked_monster.get("hex_position", Vector2i.ZERO)
+	shocked_monster["hex_position"] = combat.player_entities[combat.current_player_idx].get("hex_position", Vector2i.ZERO) + Vector2i(1, 0)
+	combat._update_grid_entities()
 	shocked_monster["current_hp"] = 500
 	shocked_monster["max_hp"] = 500
 	shocked_monster["armor_class"] = 0
@@ -16213,6 +16238,8 @@ func test_mixed_mechanics_encounter() -> void:
 	shocked_monster["current_hp"] = ray_target_hp_before
 	shocked_monster["max_hp"] = ray_target_max_hp_before
 	shocked_monster["armor_class"] = ray_target_ac_before
+	shocked_monster["hex_position"] = ray_target_hex_before
+	combat._update_grid_entities()
 	shocked_monster.get("conditions", {}).erase("poisoned")
 	wizard.spell_slots = ray_slots_before
 	_assert(ray_hit_applied_poison, "Mixed encounter casts Ray of Sickness as a ranged attack and applies Poisoned only on a hit")
@@ -16222,18 +16249,20 @@ func test_mixed_mechanics_encounter() -> void:
 	var enfeeblement_saves_before: Dictionary = shocked_monster.get("saving_throw_bonuses", {}).duplicate(true)
 	var enfeeblement_conditions_before: Dictionary = shocked_monster.get("conditions", {}).duplicate(true)
 	shocked_monster["saving_throw_bonuses"] = {"CON": -100}
-	shocked_monster.get("conditions", {}).erase("ray_of_enfeeblement")
+	shocked_monster.get("conditions", {}).erase("enfeebled")
 	wizard.spell_slots["2"] = 8
 	combat.turn_budget.reset(wizard, combat.player_entities)
 	combat.pending_spell_data = DataLoader.get_spell("ray_of_enfeeblement").duplicate(true)
 	combat.pending_action_type = "spell"
 	await combat._execute_player_spell(shocked_monster.get("hex_position", Vector2i.ZERO))
-	var enfeeblement_applied: bool = shocked_monster.get("conditions", {}).has("ray_of_enfeeblement") and wizard.concentrating_on.get("spell_id", "") == "ray_of_enfeeblement"
+	var enfeeblement_applied: bool = shocked_monster.get("conditions", {}).has("enfeebled") and wizard.concentrating_on.get("spell_id", "") == "ray_of_enfeeblement"
 	combat._resolve_ray_of_enfeeblement_repeat_save(shocked_monster)
-	var enfeeblement_repeat_fail_preserves: bool = shocked_monster.get("conditions", {}).has("ray_of_enfeeblement")
+	var enfeeblement_repeat_fail_preserves: bool = shocked_monster.get("conditions", {}).has("enfeebled")
 	shocked_monster["saving_throw_bonuses"] = {"CON": 100}
+	# Shared repeat saves are claimed once per target turn; advance to the target's next turn end.
+	CombatAction.active_turn_serial += 1
 	combat._resolve_ray_of_enfeeblement_repeat_save(shocked_monster)
-	var enfeeblement_repeat_success_ends: bool = not shocked_monster.get("conditions", {}).has("ray_of_enfeeblement")
+	var enfeeblement_repeat_success_ends: bool = not shocked_monster.get("conditions", {}).has("enfeebled")
 	combat._end_concentration(wizard)
 	shocked_monster["saving_throw_bonuses"] = enfeeblement_saves_before
 	shocked_monster["conditions"] = enfeeblement_conditions_before
@@ -16242,7 +16271,7 @@ func test_mixed_mechanics_encounter() -> void:
 	combat.pending_spell_data = DataLoader.get_spell("ray_of_enfeeblement").duplicate(true)
 	combat.pending_action_type = "spell"
 	await combat._execute_player_spell(shocked_monster.get("hex_position", Vector2i.ZERO))
-	var enfeeblement_initial_save_ends: bool = shocked_monster.get("conditions", {}).has("vicious_mockery_disadvantage") and wizard.concentrating_on.is_empty()
+	var enfeeblement_initial_save_ends: bool = shocked_monster.get("conditions", {}).has("next_attack_disadvantage") and not shocked_monster.get("conditions", {}).has("enfeebled")
 	shocked_monster["conditions"] = enfeeblement_conditions_before
 	shocked_monster["saving_throw_bonuses"] = enfeeblement_saves_before
 	wizard.spell_slots = enfeeblement_slots_before
@@ -16321,6 +16350,13 @@ func test_mixed_mechanics_encounter() -> void:
 		wizard.known_spells.append("shocking_grasp")
 	combat.pending_spell_data = DataLoader.get_spell("shocking_grasp").duplicate(true)
 	combat.pending_action_type = "spell"
+	# Shocking Grasp is a touch spell: the shared path enforces range, so the target must
+	# stand next to the Wizard at cast time (the native path never checked this).
+	for adjacent_hex in HexUtils.get_neighbors(by_class["wizard"]["hex_position"]):
+		if combat.hex_grid.has_tile(adjacent_hex) and combat.hex_grid.is_hex_passable(adjacent_hex) and not combat.player_entities.any(func(entity): return entity["hex_position"] == adjacent_hex) and not combat.monster_entities.any(func(entity): return entity != shocked_monster and entity["hex_position"] == adjacent_hex):
+			shocked_monster["hex_position"] = adjacent_hex
+			break
+	combat._update_grid_entities()
 	var shock_cast_attempts := 0
 	while not CombatAction.blocks_opportunity_attack(shocked_monster) and shock_cast_attempts < 40:
 		if shock_cast_attempts > 0:
@@ -16365,28 +16401,26 @@ func test_mixed_mechanics_encounter() -> void:
 	combat.active_character = wizard
 	var ice_spell: Dictionary = DataLoader.get_spell("ice_knife")
 	var ice_distance := HexUtils.get_distance(combat.player_entities[combat.current_player_idx]["hex_position"], ice_center) * 5
-	var missed_ice_attack: Dictionary = {}
-	for _attempt in 40:
-		missed_ice_attack = CombatAction.resolve_spell(wizard, ice_target, ice_spell, false, {}, [], 2, ice_distance)
-		if not bool(missed_ice_attack.get("hit", true)):
-			break
 	var ice_center_hp := int(ice_target["current_hp"])
 	var nearby_hp := int(nearby_target["current_hp"])
-	if missed_ice_attack.get("success", false) and not missed_ice_attack.get("hit", true):
-		await combat._resolve_ice_knife_splash(ice_center, ice_spell, 2, {})
+	ice_target["ability_scores"] = {"DEX": -100}
+	nearby_target["ability_scores"] = {"DEX": -100}
+	var missed_ice_attack: Dictionary = {}
+	for _attempt in 40:
+		missed_ice_attack = CombatAction.resolve_spell(wizard, ice_target, ice_spell, false, {"area_targets": [ice_target, nearby_target]}, [], 2, ice_distance)
+		if not bool(missed_ice_attack.get("hit", true)):
+			break
 	_assert(missed_ice_attack.get("success", false) and not missed_ice_attack.get("hit", true) and int(ice_target["current_hp"]) < ice_center_hp and int(nearby_target["current_hp"]) < nearby_hp, "mixed encounter applies Ice Knife's upcast cold burst to the struck hex and an adjacent creature after a miss")
 	ice_target["current_hp"] = 100
 	nearby_target["current_hp"] = 100
 	ice_target["armor_class"] = -100
+	ice_center_hp = 100
+	nearby_hp = 100
 	var hit_ice_attack: Dictionary = {}
 	for _attempt in 40:
-		hit_ice_attack = CombatAction.resolve_spell(wizard, ice_target, ice_spell, false, {}, [], 1, ice_distance)
+		hit_ice_attack = CombatAction.resolve_spell(wizard, ice_target, ice_spell, false, {"area_targets": [ice_target, nearby_target]}, [], 1, ice_distance)
 		if bool(hit_ice_attack.get("hit", false)):
 			break
-	ice_center_hp = int(ice_target["current_hp"])
-	nearby_hp = int(nearby_target["current_hp"])
-	if hit_ice_attack.get("success", false) and hit_ice_attack.get("hit", false):
-		await combat._resolve_ice_knife_splash(ice_center, ice_spell, 1, {})
 	_assert(hit_ice_attack.get("success", false) and hit_ice_attack.get("hit", false) and int(ice_target["current_hp"]) < ice_center_hp and int(nearby_target["current_hp"]) < nearby_hp, "mixed encounter also applies Ice Knife's burst after the piercing attack hits")
 	combat.current_player_idx = int(by_class["cleric"].get("player_id", 3))
 	combat.active_character = cleric

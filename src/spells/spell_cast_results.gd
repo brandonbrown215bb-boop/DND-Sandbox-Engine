@@ -122,6 +122,9 @@ static func _resolve_spell_cast_targets(cast: SpellCastContext) -> void:
 	if area_spell_id in ["entangle", "black_tentacles", "sleet_storm", "wall_of_fire", "cloudkill", "conjure_animals", "conjure_celestial", "conjure_elemental", "conjure_fey", "conjure_minor_elementals", "conjure_woodland_beings", "spirit_guardians", "aura_of_life", "antilife_shell", "moonbeam"]:
 		cast.areas._spell_zone_serial += 1
 		cast.area_source_id = "%s:%s:%d" % [area_spell_id, cast.caster.character_id, cast.areas._spell_zone_serial]
+	# Each creature in an area is affected once, even if forced movement during this cast
+	# carries it onto a hex that is resolved later (e.g. a push along a cube).
+	var resolved_area_creatures: Array = []
 	for target_index in cast.targets.size():
 		var target_hex: Vector2i = cast.targets[target_index]
 		if str(cast.spell.get("id", "")) in ["conjure_woodland_beings", "spirit_guardians", "aura_of_life", "antilife_shell"]:
@@ -170,6 +173,11 @@ static func _resolve_spell_cast_targets(cast: SpellCastContext) -> void:
 				continue
 		elif str(cast.spell.get("id", "")) == "conjure_animals":
 			continue
+		if chain_target_id.is_empty():
+			if p_target != null and resolved_area_creatures.any(func(x): return is_same(x, p_target)): p_target = null
+			if not m_target.is_empty() and resolved_area_creatures.any(func(x): return is_same(x, m_target)): m_target = {}
+			if p_target != null: resolved_area_creatures.append(p_target)
+			elif not m_target.is_empty(): resolved_area_creatures.append(m_target)
 		if p_target != null:
 			await _resolve_player_target(cast, p_target, target_hex, area_spell_id == "chain_lightning" and target_index > 0)
 		elif not m_target.is_empty():
@@ -206,6 +214,16 @@ static func _resolve_spell_cast_targets(cast: SpellCastContext) -> void:
 					cast.hud.add_log("%s catches fire." % str(area_object.get("name", "A flammable object")))
 		if cast.interrupted:
 			break
+	if cast.spell.has("leap_on_matching_dice") and not cast.interrupted and cast.targets.size() == 1:
+		await _resolve_matching_dice_leaps(cast, cast.targets[0])
+	var object_push: Dictionary = cast.spell.get("area_object_push", {})
+	if not object_push.is_empty() and not cast.interrupted and cast.grid != null:
+		var blocked: Array[Vector2i] = []
+		for p in cast.players: blocked.append(p.get("hex_position", Vector2i.ZERO))
+		for m in cast.monsters: blocked.append(m.get("hex_position", Vector2i.ZERO))
+		for moved in CombatObjectRules.push_area_objects(cast.grid, cast.targets, cast.spell_origin, int(object_push.get("distance", 0)), blocked):
+			cast.successful = true
+			cast.hud.add_log("[color=cyan]%s is pushed %d feet away.[/color]" % [str(moved.object.get("name", "An object")), HexUtils.get_distance(moved.from, moved.to) * 5])
 
 
 static func _resolve_object_target(cast: SpellCastContext, object: Dictionary, target_hex: Vector2i, ignore_spell_range: bool = false) -> void:
@@ -277,15 +295,12 @@ static func _resolve_player_target(cast: SpellCastContext, p_target: Character, 
 		target_spell_data["condition_on_failed_save"] = ""
 	if str(cast.spell.get("id", "")) == "black_tentacles":
 		target_spell_data["condition_on_failed_save"] = ""
-	if str(cast.spell.get("id", "")) == "true_strike":
+	if not SharedSpell.weapon_attack_effect(cast.spell).is_empty():
 		target_spell_data["range"] = SpellCastTargeting._spell_target_range(cast, cast.spell)
-	if str(cast.spell.get("id", "")) in ["magic_missile", "scorching_ray", "eldritch_blast"]:
+	if SpellProjectileResolver.is_projectile(cast.spell):
 		var target_key := "%d,%d" % [target_hex.x, target_hex.y]
 		var assigned_count := int(cast.spell.get("_projectile_target_counts", {}).get(target_key, SpellCastTargeting._spell_projectile_total(cast, cast.spell)))
-		if str(cast.spell.get("id", "")) == "magic_missile":
-			target_spell_data["_magic_missile_darts_for_target"] = assigned_count
-		else:
-			target_spell_data["_scorching_ray_count_for_target"] = assigned_count
+		target_spell_data["_projectile_count_for_target"] = assigned_count
 	if str(target_spell_data.get("attack_type", "none")) != "none":
 		target_spell_data["_conjure_minor_elementals_bonus_packets"] = await SpellZoneConjurations._conjure_minor_elementals_spell_attack_choices(cast.areas, cast.caster, p_target, target_spell_data)
 	var res := CombatAction.resolve_spell(cast.caster, p_target, target_spell_data, false, target_spell_decisions, target_observers, cast.slot_level_used, spell_target_distance, cast)
@@ -314,30 +329,33 @@ static func _resolve_player_target(cast: SpellCastContext, p_target: Character, 
 			cast.hud.add_log("[color=purple]%s is Restrained by Entangle.[/color]" % p_target.character_name)
 	if str(cast.spell.get("id", "")) == "black_tentacles" and not bool(res.get("saved", true)):
 		SpellZoneTerrain._apply_black_tentacles_restrained(cast.areas, p_target, cast.area_source_id, cast.restrained_targets)
-	if str(cast.spell.get("id", "")) == "true_strike" and bool(res.get("success", false)):
+	if not SharedSpell.weapon_attack_effect(cast.spell).is_empty() and bool(res.get("success", false)):
 		var true_strike_profile: Dictionary = DataLoader.get_item(str(cast.spell.get("_true_strike_weapon_id", ""))).duplicate(true)
 		true_strike_profile["ability"] = SpellPermissionRules.selected_ability(cast.spell, cast.caster.get_spellcasting_ability())
 		true_strike_profile["_true_strike"] = true
+		true_strike_profile["_spell_name"] = str(cast.spell.get("name", "Spell"))
 		true_strike_profile["damage_type"] = str(cast.spell.get("_true_strike_damage_type", true_strike_profile.get("damage_type", "bludgeoning")))
 		var strike_distance := HexUtils.get_distance(cast.players[cast.player_index].get("hex_position", Vector2i.ZERO), target_hex)
 		true_strike_profile["attack_distance"] = strike_distance
 		target_spell_decisions.merge(await cast.collect_attack_inspiration_decision.call(cast.caster), true)
 		target_spell_decisions.merge(await cast.collect_reaction_decisions.call(p_target), true)
-		var bonus_dice := CombatAction.true_strike_bonus_damage(cast.caster.level)
+		var bonus_effect := SharedSpell.weapon_attack_effect(cast.spell)
+		var bonus_dice := SharedSpell.weapon_attack_extra_formula(bonus_effect, cast.caster.level)
 		var strike_advantage := not CombatPerception.can_see_target(p_target, cast.caster, target_hex, cast.players[cast.player_index]["hex_position"], cast.grid)
 		var strike_disadvantage := not CombatPerception.can_see_target(cast.caster, p_target, cast.players[cast.player_index]["hex_position"], target_hex, cast.grid)
-		var strike_additional_damage := {"formula": bonus_dice, "type": "radiant", "label": "True Strike Radiant"} if not bonus_dice.is_empty() else {}
+		var strike_additional_damage := {"formula": bonus_dice, "type": str(bonus_effect.get("extra_damage", {}).get("type", "radiant")), "label": "%s %s" % [str(cast.spell.get("name", "Spell")), str(bonus_effect.get("extra_damage", {}).get("type", "radiant")).capitalize()]} if not bonus_dice.is_empty() else {}
 		var fey_damage_packet := await SpellZoneConjurations._conjure_minor_elementals_damage_choice(cast.areas, cast.caster, p_target)
 		if not fey_damage_packet.is_empty():
 			strike_additional_damage["packets"] = [fey_damage_packet]
 		var strike_result := CombatAction.resolve_weapon_attack(cast.caster, p_target, true_strike_profile, strike_advantage, strike_disadvantage, target_spell_decisions, strike_additional_damage)
 		await cast.offer_divine_smite.call(p_target, true_strike_profile, strike_result, cast.caster)
-		var cast_message := str(res.get("message", "True Strike resolves."))
+		var cast_message := str(res.get("message", "%s resolves." % str(cast.spell.get("name", "The spell"))))
 		res.merge(strike_result, true)
 		res["success"] = true
 		res["message"] = cast_message + " " + str(strike_result.get("message", "The attack misses."))
 		cast.publish_true_strike_activity.call({"id": p_target.character_id, "name": p_target.character_name}, true_strike_profile, strike_result)
 	res = await SpellCastResults._settle_empowered_spell(cast, p_target, res, target_spell_decisions)
+	cast.last_target_result = res
 	if res.has("damage_components"): cast.damage_receipts.append_array(res["damage_components"].duplicate(true))
 	if int(res.get("damage", 0)) > 0:
 		ClericRules.clear_turning_after_damage(p_target)
@@ -388,15 +406,12 @@ static func _resolve_monster_target(cast: SpellCastContext, m_target: Dictionary
 		target_spell_data["condition_on_failed_save"] = ""
 	if str(cast.spell.get("id", "")) == "black_tentacles":
 		target_spell_data["condition_on_failed_save"] = ""
-	if str(cast.spell.get("id", "")) == "true_strike":
+	if not SharedSpell.weapon_attack_effect(cast.spell).is_empty():
 		target_spell_data["range"] = SpellCastTargeting._spell_target_range(cast, cast.spell)
-	if str(cast.spell.get("id", "")) in ["magic_missile", "scorching_ray", "eldritch_blast"]:
+	if SpellProjectileResolver.is_projectile(cast.spell):
 		var target_key := "%d,%d" % [target_hex.x, target_hex.y]
 		var assigned_count := int(cast.spell.get("_projectile_target_counts", {}).get(target_key, SpellCastTargeting._spell_projectile_total(cast, cast.spell)))
-		if str(cast.spell.get("id", "")) == "magic_missile":
-			target_spell_data["_magic_missile_darts_for_target"] = assigned_count
-		else:
-			target_spell_data["_scorching_ray_count_for_target"] = assigned_count
+		target_spell_data["_projectile_count_for_target"] = assigned_count
 	if str(target_spell_data.get("attack_type", "none")) != "none":
 		target_spell_data["_conjure_minor_elementals_bonus_packets"] = await SpellZoneConjurations._conjure_minor_elementals_spell_attack_choices(cast.areas, cast.caster, m_target, target_spell_data)
 	var res := CombatAction.resolve_spell(cast.caster, m_target, target_spell_data, false, target_spell_decisions, cast.counterspell_observers if cast.counterspell_pending else [], cast.slot_level_used, spell_target_distance, cast)
@@ -418,20 +433,22 @@ static func _resolve_monster_target(cast: SpellCastContext, m_target: Dictionary
 			cast.hud.add_log("[color=purple]%s is Restrained by Entangle.[/color]" % str(m_target.get("name", "The creature")))
 	if str(cast.spell.get("id", "")) == "black_tentacles" and not bool(res.get("saved", true)):
 		SpellZoneTerrain._apply_black_tentacles_restrained(cast.areas, m_target, cast.area_source_id, cast.restrained_targets)
-	if str(cast.spell.get("id", "")) == "true_strike" and bool(res.get("success", false)):
+	if not SharedSpell.weapon_attack_effect(cast.spell).is_empty() and bool(res.get("success", false)):
 		var true_strike_profile: Dictionary = DataLoader.get_item(str(cast.spell.get("_true_strike_weapon_id", ""))).duplicate(true)
 		true_strike_profile["ability"] = SpellPermissionRules.selected_ability(cast.spell, cast.caster.get_spellcasting_ability())
 		true_strike_profile["_true_strike"] = true
+		true_strike_profile["_spell_name"] = str(cast.spell.get("name", "Spell"))
 		true_strike_profile["damage_type"] = str(cast.spell.get("_true_strike_damage_type", true_strike_profile.get("damage_type", "bludgeoning")))
 		var strike_distance := HexUtils.get_distance(cast.players[cast.player_index].get("hex_position", Vector2i.ZERO), target_hex)
 		true_strike_profile["attack_distance"] = strike_distance
 		var strike_reactions := SpellCastResults._spell_decisions_for_target(cast, cast.counterspell_decisions, false)
 		strike_reactions["spell_visibility"] = {"grid":cast.grid, "caster_position":cast.players[cast.player_index]["hex_position"], "target_position":target_hex}
 		strike_reactions.merge(await cast.collect_attack_inspiration_decision.call(cast.caster), true)
-		var bonus_dice := CombatAction.true_strike_bonus_damage(cast.caster.level)
+		var bonus_effect := SharedSpell.weapon_attack_effect(cast.spell)
+		var bonus_dice := SharedSpell.weapon_attack_extra_formula(bonus_effect, cast.caster.level)
 		var strike_advantage := not CombatPerception.can_see_target(m_target, cast.caster, target_hex, cast.players[cast.player_index]["hex_position"], cast.grid)
 		var strike_disadvantage := not CombatPerception.can_see_target(cast.caster, m_target, cast.players[cast.player_index]["hex_position"], target_hex, cast.grid)
-		var strike_additional_damage := {"formula": bonus_dice, "type": "radiant", "label": "True Strike Radiant"} if not bonus_dice.is_empty() else {}
+		var strike_additional_damage := {"formula": bonus_dice, "type": str(bonus_effect.get("extra_damage", {}).get("type", "radiant")), "label": "%s %s" % [str(cast.spell.get("name", "Spell")), str(bonus_effect.get("extra_damage", {}).get("type", "radiant")).capitalize()]} if not bonus_dice.is_empty() else {}
 		var fey_damage_packet := await SpellZoneConjurations._conjure_minor_elementals_damage_choice(cast.areas, cast.caster, m_target)
 		if not fey_damage_packet.is_empty():
 			strike_additional_damage["packets"] = [fey_damage_packet]
@@ -439,12 +456,13 @@ static func _resolve_monster_target(cast: SpellCastContext, m_target: Dictionary
 		await cast.offer_divine_smite.call(m_target, true_strike_profile, strike_result, cast.caster)
 		await cast.offer_sneak_attack.call(m_target, true_strike_profile, strike_result, cast.caster, strike_advantage, strike_disadvantage)
 		await cast.offer_weapon_damage_riders.call(cast.caster, m_target, true_strike_profile, strike_result)
-		var cast_message := str(res.get("message", "True Strike resolves."))
+		var cast_message := str(res.get("message", "%s resolves." % str(cast.spell.get("name", "The spell"))))
 		res.merge(strike_result, true)
 		res["success"] = true
 		res["message"] = cast_message + " " + str(strike_result.get("message", "The attack misses."))
 		cast.publish_true_strike_activity.call(m_target, true_strike_profile, strike_result)
 	res = await SpellCastResults._settle_empowered_spell(cast, m_target, res, target_spell_decisions)
+	cast.last_target_result = res
 	if res.has("damage_components"): cast.damage_receipts.append_array(res["damage_components"].duplicate(true))
 	if int(res.get("damage", 0)) > 0:
 		ClericRules.clear_turning_after_damage(m_target)
@@ -549,6 +567,88 @@ static func _publish_completed_cast(cast: SpellCastContext) -> void:
 		SpellEffects.publish_event(actor, cast.completed_cast_facts)
 	for monster in cast.monsters:
 		SpellEffects.publish_event(monster, cast.completed_cast_facts)
+
+
+## Shared `leap_on_matching_dice`: when a hit's damage roll shows the same face on two or
+## more dice of the spell's damage die, the effect leaps to a new creature of the caster's
+## choice within `range` hexes of the last target, with a new attack and damage roll. Leaps are
+## capped by `max_leaps` ("slot_level" = level of the slot expended) and each creature can be
+## targeted only once per casting.
+static func _resolve_matching_dice_leaps(cast: SpellCastContext, first_hex: Vector2i) -> void:
+	var rule: Dictionary = cast.spell["leap_on_matching_dice"]
+	var max_leaps := cast.slot_level_used if str(rule.get("max_leaps", "slot_level")) == "slot_level" else int(rule.get("max_leaps", 0))
+	var leap_range := int(rule.get("range", 6))
+	var sides := SharedSpell.damage_die_sides(cast.spell)
+	var targeted: Array = []
+	var first := leap_creature_at(cast, first_hex)
+	if first.is_empty(): return
+	targeted.append(first.target)
+	var from_hex := first_hex
+	var leaps := 0
+	var interrupted_before := cast.interrupted
+	while leaps < max_leaps and bool(cast.last_target_result.get("hit", false)) and has_matching_faces(cast.last_target_result.get("damage_roll", {}), sides):
+		var candidates: Array[Dictionary] = []
+		for entry in leap_candidates(cast, from_hex, leap_range, targeted):
+			candidates.append({"id": entry.id, "label": entry.label, "kind": "creature"})
+		if candidates.is_empty():
+			cast.hud.add_log("%s has no new creature within %d feet to leap to." % [str(cast.spell.get("name", "The spell")), leap_range * 5])
+			break
+		var chosen_id := await cast.hud.request_spell_leap_target_choice(str(cast.spell.get("name", "Spell")), candidates, str(cast.spell.get("_test_leap_target_ids", [])[leaps]) if leaps < cast.spell.get("_test_leap_target_ids", []).size() else "")
+		var chosen: Dictionary = {}
+		for entry in leap_candidates(cast, from_hex, leap_range, targeted):
+			if entry.id == chosen_id: chosen = entry
+		if chosen.is_empty(): break
+		leaps += 1
+		targeted.append(chosen.target)
+		cast.last_target_result = {}
+		cast.hud.add_log("[color=cyan]%s leaps to %s (leap %d of %d).[/color]" % [str(cast.spell.get("name", "The spell")), chosen.label, leaps, max_leaps])
+		if chosen.target is Character:
+			await _resolve_player_target(cast, chosen.target, chosen.hex, true)
+		else:
+			await _resolve_monster_target(cast, chosen.target, chosen.hex, true)
+		cast.interrupted = interrupted_before
+		from_hex = chosen.hex
+	cast.spell["_leap_count"] = leaps
+
+
+static func leap_creature_at(cast: SpellCastContext, coord: Vector2i) -> Dictionary:
+	for player in cast.players:
+		var character: Character = player.get("character")
+		if character != null and character.is_alive and player.get("hex_position", Vector2i.ZERO) == coord:
+			return {"id": "player:%s" % (character.character_id if not character.character_id.is_empty() else "runtime_%d" % character.get_instance_id()), "label": character.character_name, "target": character, "hex": coord}
+	for monster in cast.monsters:
+		if monster.get("is_alive", false) and monster.get("hex_position", Vector2i.ZERO) == coord:
+			return {"id": "monster:%s" % str(monster.get("id", "")), "label": str(monster.get("name", "Creature")), "target": monster, "hex": coord}
+	return {}
+
+
+## Living creatures within `range_hexes` of `from_hex` that this casting has not targeted yet.
+static func leap_candidates(cast: SpellCastContext, from_hex: Vector2i, range_hexes: int, targeted: Array) -> Array[Dictionary]:
+	var found: Array[Dictionary] = []
+	var hexes: Array[Vector2i] = []
+	for player in cast.players: hexes.append(player.get("hex_position", Vector2i.ZERO))
+	for monster in cast.monsters: hexes.append(monster.get("hex_position", Vector2i.ZERO))
+	for coord in hexes:
+		if HexUtils.get_distance(from_hex, coord) > range_hexes: continue
+		var entry := leap_creature_at(cast, coord)
+		if entry.is_empty() or targeted.any(func(t): return is_same(t, entry.target)) or found.any(func(f): return f.id == entry.id): continue
+		found.append(entry)
+	return found
+
+
+## True when two or more kept dice with `sides` faces in a damage roll show the same number.
+static func has_matching_faces(details: Dictionary, sides: int) -> bool:
+	var seen := {}
+	for term in details.get("dice_terms", []):
+		if int(term.get("sides", 0)) != sides: continue
+		var kept: Array = term.get("kept", [])
+		var results: Array = term.get("results", [])
+		for index in results.size():
+			if index < kept.size() and not bool(kept[index]): continue
+			var face := int(results[index])
+			if seen.has(face): return true
+			seen[face] = true
+	return false
 
 
 static func _resolve_ice_knife_splash(cast: SpellCastContext, center: Vector2i, spell_data: Dictionary, slot_level: int, cast_decisions: Dictionary) -> void:

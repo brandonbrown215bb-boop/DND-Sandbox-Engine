@@ -141,6 +141,8 @@ static func resolve(caster: Character, target_entity, spell_data: Dictionary, de
 	if SpellEffects.manages(cast.spell) and cast.effect_cast.is_empty():
 		cast.effect_cast = SpellEffects.begin_cast(cast.caster, cast.spell)
 		source_created_for_cast = true
+		if SharedSpell.uses(cast.spell) and cast.spell.has("duration_by_slot"):
+			SharedSpell.apply_slot_duration_to_record(cast.effect_cast, cast.spell, cast.slot_level)
 	cast.source_definition_id = cast.spell_definition_id
 	cast.source_instance_id = str(cast.effect_cast.get("source_id", "")) if owned_host_valid or source_created_for_cast else ""
 	if SpellEffects.damage_budget_cap(cast.spell) > 0 and not reused_source.is_empty():
@@ -180,8 +182,6 @@ static func resolve(caster: Character, target_entity, spell_data: Dictionary, de
 			return special
 	if str(cast.spell.get("id", "")) == "power_word_stun":
 		return SpellControlResolver.power_word_stun(cast)
-	if str(cast.spell.get("id", "")) == "sleep":
-		return SpellControlResolver.sleep(cast)
 	if str(cast.spell.get("id", "")) == "revivify":
 		return CorpseRules.revive(cast.target, int(GameManager.campaign_elapsed_seconds))
 	if str(cast.spell.get("id", "")) == "gentle_repose":
@@ -214,6 +214,14 @@ static func resolve(caster: Character, target_entity, spell_data: Dictionary, de
 		var sanctuary_save := int(cast.caster.saving_throw_test_to_dc("WIS", sanctuary_dc, false, false, cast.decisions).get("total", 0))
 		if sanctuary_save < sanctuary_dc:
 			return {"success": true, "hit": false, "damage": 0, "sanctuary_blocked": true, "saved": true, "sanctuary_save_total": sanctuary_save, "sanctuary_save_dc": sanctuary_dc, "slot_level": cast.slot_level, "effect_cast": cast.effect_cast, "message": "%s fails the Wisdom save against Sanctuary; the spell has no effect on that creature." % cast.caster.character_name}
+	if SharedSpell.uses(cast.spell) and cast.spell.get("projectiles") is Dictionary:
+		var projectile_spell := SpellProjectileResolver.view(cast.spell)
+		var projectile_result := SpellProjectileResolver._resolve_magic_missile(cast.caster, cast.target, projectile_spell, cast.decisions, cast.slot_level) if projectile_spell.has("damage_per_dart") else SpellProjectileResolver._resolve_scorching_ray(cast.caster, cast.target, projectile_spell, cast.decisions, cast.slot_level, cast.distance_feet)
+		projectile_result["slot_level"] = cast.slot_level
+		projectile_result["effect_cast"] = cast.effect_cast
+		if not caller_owns_settlement:
+			projectile_result["cast_settlement"] = CastInterruptionRules.settle_cast_outcome(cast, CastInterruptionRules.result_outcome(cast.spell, projectile_result))
+		return projectile_result
 	if SharedSpell.uses(cast.spell):
 		var result := SharedSpell.resolve(cast)
 		if not caller_owns_settlement and not result.has("damage_request") and not result.has("save_bonus_request") and not result.has("weapon_attack_bonus_request") and not result.has("concentration_request") and not result.has("save_exit_request"):
@@ -226,7 +234,7 @@ static func resolve(caster: Character, target_entity, spell_data: Dictionary, de
 		return SpellProjectileResolver._resolve_magic_missile(cast.caster, cast.target, cast.spell, cast.decisions, cast.slot_level)
 	if cast.spell.has("damage_per_ray"):
 		return SpellProjectileResolver._resolve_scorching_ray(cast.caster, cast.target, cast.spell, cast.decisions, cast.slot_level, cast.distance_feet)
-	cast.has_damage_payload = cast.spell.has("damage") or cast.spell.has("damage_per_dart") or cast.spell.has("damage_per_ray") or not cast.spell.get("damage_components", []).is_empty()
+	cast.has_damage_payload = cast.spell.has("damage") or SpellProjectileResolver.is_projectile(cast.spell) or not cast.spell.get("damage_components", []).is_empty()
 	if not cast.has_damage_payload and not CombatAction.spell_requires_saving_throw(cast.spell) and str(cast.spell.get("attack_type", "none")) == "none":
 		return {"success": true, "hit": true, "damage": 0, "slot_level": cast.slot_level, "effect_cast": cast.effect_cast, "message": "%s resolves without a damage roll." % cast.spell.get("name", "Spell")}
 

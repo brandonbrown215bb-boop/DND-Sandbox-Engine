@@ -39,6 +39,78 @@
   ],
   "overrides": [
     {
+      "type": "spell",
+      "id": "charm_person",
+      "winner": "res://data/core/spells/crown_sc_05_support_02.json#3",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#28"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "color_spray",
+      "winner": "res://data/core/spells/crown_sc_05_support_01.json#1",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#33"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "chromatic_orb",
+      "winner": "res://data/core/spells/crown_sc_04_support_01.json#1",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#30"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "sorcerous_burst",
+      "winner": "res://data/core/spells/crown_sc_03_support_05.json#1",
+      "replaces": [
+        "res://data/core/spells/srd_additional_spells.json#1"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "melfs_acid_arrow",
+      "winner": "res://data/core/spells/crown_sc_03_support_04.json#1",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#126"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "eldritch_blast",
+      "winner": "res://data/core/spells/crown_sc_03_support_03.json#3",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#60"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "vicious_mockery",
+      "winner": "res://data/core/spells/crown_sc_01_support_01.json#4",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#190"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "shocking_grasp",
+      "winner": "res://data/core/spells/crown_sc_01_support_01.json#3",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#164"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "chill_touch",
+      "winner": "res://data/core/spells/crown_sc_01_support_01.json#2",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#29"
+      ]
+    },
+    {
       "type": "item",
       "id": "alchemists_supplies",
       "winner": "res://data/core/items/imported_magic_tools.json#2",
@@ -1317,9 +1389,10 @@
     {
       "type": "spell",
       "id": "magic_missile",
-      "winner": "res://data/core/spells/core_spells.json#4",
+      "winner": "res://data/core/spells/crown_sc_03_support_03.json#1",
       "replaces": [
-        "res://data/core/spells/imported_spells.json#120"
+        "res://data/core/spells/imported_spells.json#120",
+        "res://data/core/spells/core_spells.json#4"
       ]
     },
     {
@@ -1333,25 +1406,28 @@
     {
       "type": "spell",
       "id": "ray_of_frost",
-      "winner": "res://data/core/spells/core_spells.json#2",
+      "winner": "res://data/core/spells/crown_sc_01_support_01.json#1",
       "replaces": [
-        "res://data/core/spells/imported_spells.json#148"
+        "res://data/core/spells/imported_spells.json#148",
+        "res://data/core/spells/core_spells.json#2"
       ]
     },
     {
       "type": "spell",
       "id": "scorching_ray",
-      "winner": "res://data/core/spells/core_spells.json#11",
+      "winner": "res://data/core/spells/crown_sc_03_support_03.json#2",
       "replaces": [
-        "res://data/core/spells/imported_spells.json#156"
+        "res://data/core/spells/imported_spells.json#156",
+        "res://data/core/spells/core_spells.json#11"
       ]
     },
     {
       "type": "spell",
       "id": "shatter",
-      "winner": "res://data/core/spells/srd_additional_spells.json#159",
+      "winner": "res://data/core/spells/crown_sc_03_support_06.json#1",
       "replaces": [
-        "res://data/core/spells/imported_spells.json#160"
+        "res://data/core/spells/imported_spells.json#160",
+        "res://data/core/spells/srd_additional_spells.json#159"
       ]
     },
     {
@@ -1364,18 +1440,52 @@
     },
     {
       "type": "spell",
-      "id": "sleep",
-      "winner": "res://data/core/spells/core_spells.json#8",
+      "id": "ray_of_enfeeblement",
+      "winner": "res://data/core/spells/crown_sc_07.json#1",
       "replaces": [
+        "res://data/core/spells/imported_spells.json#147"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "calm_emotions",
+      "winner": "res://data/core/spells/crown_sc_07.json#3",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#27"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "enthrall",
+      "winner": "res://data/core/spells/crown_sc_07.json#2",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#66"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "bestow_curse",
+      "winner": "res://data/core/spells/crown_sc_07.json#4",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#17"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "sleep",
+      "winner": "res://data/core/spells/crown_sc_06.json#1",
+      "replaces": [
+        "res://data/core/spells/core_spells.json#8",
         "res://data/core/spells/imported_spells.json#167"
       ]
     },
     {
       "type": "spell",
       "id": "thunderwave",
-      "winner": "res://data/core/spells/core_spells.json#9",
+      "winner": "res://data/core/spells/crown_sc_03_support_07.json#1",
       "replaces": [
-        "res://data/core/spells/imported_spells.json#185"
+        "res://data/core/spells/imported_spells.json#185",
+        "res://data/core/spells/core_spells.json#9"
       ]
     },
     {
@@ -3013,9 +3123,10 @@
     {
       "type": "spell",
       "id": "true_strike",
-      "winner": "res://data/core/spells/core_spells.json#18",
+      "winner": "res://data/core/spells/crown_sc_03_support_02.json#1",
       "replaces": [
-        "res://data/core/spells/imported_spells.json#187"
+        "res://data/core/spells/imported_spells.json#187",
+        "res://data/core/spells/core_spells.json#18"
       ]
     },
     {
@@ -3030,9 +3141,10 @@
     {
       "type": "spell",
       "id": "blindness/deafness",
-      "winner": "res://data/core/spells/srd_additional_spells.json#160",
+      "winner": "res://data/core/spells/crown_sc_05_support_02.json#1",
       "replaces": [
-        "res://data/core/spells/imported_spells.json#21"
+        "res://data/core/spells/imported_spells.json#21",
+        "res://data/core/spells/srd_additional_spells.json#160"
       ]
     },
     {
@@ -3180,9 +3292,10 @@
     {
       "type": "spell",
       "id": "faerie_fire",
-      "winner": "res://data/core/spells/srd_additional_spells.json#177",
+      "winner": "res://data/core/spells/crown_sc_05_support_02.json#4",
       "replaces": [
-        "res://data/core/spells/imported_spells.json#68"
+        "res://data/core/spells/imported_spells.json#68",
+        "res://data/core/spells/srd_additional_spells.json#177"
       ]
     },
     {
@@ -3242,9 +3355,10 @@
     {
       "type": "spell",
       "id": "blur",
-      "winner": "res://data/core/spells/srd_additional_spells.json#184",
+      "winner": "res://data/core/spells/crown_sc_05_support_02.json#2",
       "replaces": [
-        "res://data/core/spells/imported_spells.json#23"
+        "res://data/core/spells/imported_spells.json#23",
+        "res://data/core/spells/srd_additional_spells.json#184"
       ]
     },
     {
@@ -3321,6 +3435,30 @@
     },
     {
       "type": "spell",
+      "id": "lightning_bolt",
+      "winner": "res://data/core/spells/crown_sc_03.json#1",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#113"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "ice_knife",
+      "winner": "res://data/core/spells/crown_sc_02.json#1",
+      "replaces": [
+        "res://data/core/spells/srd_additional_spells.json#3"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "ray_of_sickness",
+      "winner": "res://data/core/spells/crown_sc_01.json#1",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#149"
+      ]
+    },
+    {
+      "type": "spell",
       "id": "cure_wounds",
       "winner": "res://data/core/spells/conversion_batch_002.json#1",
       "replaces": [
@@ -3349,6 +3487,14 @@
       "winner": "res://data/core/spells/conversion_batch_002.json#4",
       "replaces": [
         "res://data/core/spells/srd_additional_spells.json#24"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "hypnotic_pattern",
+      "winner": "res://data/core/spells/crown_sc_06.json#2",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#101"
       ]
     }
   ]

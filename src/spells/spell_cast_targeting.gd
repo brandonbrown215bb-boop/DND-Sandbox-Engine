@@ -24,6 +24,8 @@ static func collect_targets(cast: SpellCastContext) -> void:
 			cast.targets = union_sphere_targets(area_centers, radius, cast.grid)
 		else:
 			match str(cast.area_selection.get("shape", "sphere")):
+				"line" when str(cast.area_selection.get("origin", "")) == "self":
+					cast.targets = Targeting.get_self_line_targets(origin, cast.target_coord, int(cast.area_selection.get("size", 1)), cast.grid)
 				"line":
 					cast.targets = HexUtils.hex_line(area_centers[0], area_centers[1]) if area_centers.size() == 2 and HexUtils.get_distance(area_centers[0], area_centers[1]) <= int(cast.area_selection.get("size", 12)) else []
 				"point":
@@ -38,7 +40,7 @@ static func collect_targets(cast: SpellCastContext) -> void:
 					cast.targets = Targeting.get_sphere_targets(cast.target_coord, radius, cast.grid)
 	else:
 		cast.targets = [cast.target_coord]
-		if str(cast.spell.get("id", "")) in ["magic_missile", "scorching_ray", "eldritch_blast"] and not cast.command_selection.is_empty():
+		if SpellProjectileResolver.is_projectile(cast.spell) and not cast.command_selection.is_empty():
 			var projectile_target_counts: Dictionary = {}
 			var unique_projectile_targets: Array[Vector2i] = []
 			for projectile_target in cast.command_selection:
@@ -98,29 +100,64 @@ static func collect_targets(cast: SpellCastContext) -> void:
 		# The pack's appearance is not a damaging movement trigger.
 		cast.targets.clear()
 
-	if str(cast.spell.get("id", "")) == "sleep":
-		var sleep_targets: Array[Vector2i] = []
+	# "Each creature in the area who can see it": the creature at each cell must
+	# be able to see the area's anchor point (light, Blinded, obscurement, cover).
+	if bool(cast.spell.get("area_save_requires_sight", false)):
+		var sighted_cells: Array[Vector2i] = []
 		for target_hex in cast.targets:
-			var sleep_target = null
-			for player_entity in cast.players:
-				var candidate: Character = player_entity.get("character")
-				if player_entity.get("hex_position", Vector2i.ZERO) == target_hex and candidate != null and candidate.is_alive:
-					sleep_target = candidate
-					break
-			if sleep_target == null:
-				for monster_entity in cast.monsters:
-					if monster_entity.get("hex_position", Vector2i.ZERO) == target_hex and monster_entity.get("is_alive", false):
-						sleep_target = monster_entity
-						break
-			if sleep_target == null:
+			var viewer = _creature_entity_at(cast, target_hex)
+			if viewer == null or CombatPerception.can_see_target(viewer, null, target_hex, cast.target_coord, cast.grid):
+				sighted_cells.append(target_hex)
+			else:
+				cast.hud.add_log("%s can't see %s and is unaffected." % [_creature_name(viewer), str(cast.spell.get("name", "the spell"))])
+		cast.targets = sighted_cells
+
+	# "Each creature of your choice in the area": ask per creature.
+	if bool(cast.spell.get("area_creature_choice", false)):
+		var chosen_targets: Array[Vector2i] = []
+		var spell_name := str(cast.spell.get("name", "Spell"))
+		for target_hex in cast.targets:
+			var area_creature = _creature_entity_at(cast, target_hex)
+			if area_creature == null:
 				continue
-			var sleep_name: String = sleep_target.character_name if sleep_target is Character else str(sleep_target.get("name", "Creature"))
+			var creature_name := _creature_name(area_creature)
 			cast.set_resolving.call(true)
-			var include_target := await cast.hud.request_reaction(cast.owner_label, "sleep_target:%s" % sleep_name, "Include %s in Sleep's targets?" % sleep_name, "Each creature in the Sphere makes a Wisdom save only if you choose it.", "Include", "Sleep Targets")
+			var include_target := await cast.hud.request_reaction(cast.owner_label, "area_creature_choice:%s:%s" % [str(cast.spell.get("id", "")), creature_name], "Include %s in %s's targets?" % [creature_name, spell_name], "Only creatures you choose in the area are affected.", "Include", "%s Targets" % spell_name)
 			cast.set_resolving.call(false)
 			if include_target:
-				sleep_targets.append(target_hex)
-		cast.targets = sleep_targets
+				chosen_targets.append(target_hex)
+		cast.targets = chosen_targets
+
+	# choice_per_target: "choose for each creature" once the area's creatures are known.
+	var per_target_options: Array = SharedSpell.per_target_condition_choices(cast.spell) if SharedSpell.uses(cast.spell) else []
+	if not per_target_options.is_empty():
+		var picks := {}
+		var spell_label := str(cast.spell.get("name", "Spell"))
+		var any_scoped := false
+		for target_hex in cast.targets:
+			if not SpellCastTargeting._has_spell_creature_at(cast, target_hex, cast.spell):
+				continue
+			var picked_creature = _creature_entity_at(cast, target_hex)
+			if picked_creature == null:
+				continue
+			var picked_id := SpellEffects.caster_id(picked_creature) if picked_creature is Character else str(picked_creature.get("id", ""))
+			cast.set_resolving.call(true)
+			var pick := await cast.hud.request_damage_type_choice(per_target_options, "%s: %s" % [spell_label, _creature_name(picked_creature)])
+			cast.set_resolving.call(false)
+			if pick not in per_target_options: pick = str(per_target_options[0])
+			picks[picked_id] = pick
+			if CombatAction.condition_rule(pick, "attitude_indifferent"): any_scoped = true
+		cast.spell["_chosen_conditions"] = picks
+		if any_scoped:
+			var scope_ids: Array = []
+			for player_entity in cast.players:
+				var scoped: Character = player_entity.get("character")
+				if scoped == null: continue
+				cast.set_resolving.call(true)
+				var include := await cast.hud.request_reaction(cast.owner_label, "attitude_scope:%s:%s" % [str(cast.spell.get("id", "")), scoped.character_name], "Make the affected creatures Indifferent toward %s?" % scoped.character_name, "Only creatures you choose are covered.", "Include", "%s Indifference" % spell_label)
+				cast.set_resolving.call(false)
+				if include: scope_ids.append(scoped.character_id)
+			cast.spell["_attitude_scope_ids"] = scope_ids
 
 	if str(cast.spell.get("id", "")) == "mass_cure_wounds":
 		var selected_heal_targets: Array[Vector2i] = []
@@ -156,8 +193,23 @@ static func collect_targets(cast: SpellCastContext) -> void:
 		cast.targets.clear()
 
 
+static func _creature_entity_at(cast: SpellCastContext, coord: Vector2i):
+	for player_entity in cast.players:
+		var candidate: Character = player_entity.get("character")
+		if player_entity.get("hex_position", Vector2i.ZERO) == coord and candidate != null and candidate.is_alive:
+			return candidate
+	for monster_entity in cast.monsters:
+		if monster_entity.get("hex_position", Vector2i.ZERO) == coord and monster_entity.get("is_alive", false):
+			return monster_entity
+	return null
+
+
+static func _creature_name(entity) -> String:
+	return entity.character_name if entity is Character else str(entity.get("name", "Creature"))
+
+
 static func _spell_target_range(cast: SpellCastContext, spell_data: Dictionary) -> int:
-	if str(spell_data.get("id", "")) == "true_strike" and cast.caster != null:
+	if not SharedSpell.weapon_attack_effect(spell_data).is_empty() and cast.caster != null:
 		var equipped_weapon := DataLoader.get_item(cast.caster.inventory.get_weapon())
 		if not equipped_weapon.is_empty():
 			return maxi(1, CombatAction.weapon_range_hexes(equipped_weapon))
@@ -166,6 +218,8 @@ static func _spell_target_range(cast: SpellCastContext, spell_data: Dictionary) 
 		for effect in spell_data.get("effects", []):
 			if str(effect.get("type", "")) == "area_selection" and str(effect.get("shape", "")) in ["cone", "cube"]:
 				return 1 # Select one adjacent hex to indicate direction; range metamagic does not expand a self-originating area.
+			if str(effect.get("type", "")) == "area_selection" and str(effect.get("shape", "")) == "line" and str(effect.get("origin", "")) == "self":
+				return maxi(1, int(effect.get("size", 1))) # Any hex along the intended line sets its direction.
 	if bool(spell_data.get("_metamagic_distant", false)):
 		max_range = SorcererRules.distant_spell_range(max_range)
 	if cast.caster != null:
@@ -207,6 +261,7 @@ static func _magic_missile_dart_total(cast: SpellCastContext, spell_data: Dictio
 
 
 static func _spell_projectile_total(cast: SpellCastContext, spell_data: Dictionary) -> int:
+	spell_data = SpellProjectileResolver.view(spell_data) if spell_data.get("projectiles") is Dictionary else spell_data
 	if spell_data.has("damage_per_ray"):
 		return CombatAction.scorching_ray_count(cast.caster, spell_data, int(spell_data.get("_selected_spell_slot_level", spell_data.get("level", 2))))
 	return SpellCastTargeting._magic_missile_dart_total(cast, spell_data)
@@ -446,7 +501,7 @@ static func _creature_at_coord_has_condition(cast: SpellCastContext, coord: Vect
 		if character != null and character.is_alive and player.get("hex_position", Vector2i.ZERO) == coord and character.has_condition(condition):
 			return true
 	for monster in cast.monsters:
-		if monster.get("hex_position", Vector2i.ZERO) == coord and monster.get("is_alive", false) and monster.get("conditions", {}).has(condition):
+		if monster.get("hex_position", Vector2i.ZERO) == coord and monster.get("is_alive", false) and CombatAction.has_condition(monster, condition):
 			return true
 	return false
 

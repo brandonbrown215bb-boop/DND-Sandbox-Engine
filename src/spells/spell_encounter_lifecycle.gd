@@ -112,10 +112,7 @@ static func _resolve_condition_spell_repeat_saves(cast: SpellCastContext, target
 		var result := CombatAction.resolve_condition_spell_repeat_save(target, source_id)
 		if result.get("success", false) and cast != null and cast.hud != null:
 			var target_name: String = target.character_name if target is Character else str(target.get("name", "The target"))
-			if str(result["spell_id"]) == "sleep" and str(result.get("condition", "")) == "unconscious":
-				cast.hud.add_log("%s fails the second Wisdom save against Sleep (%d vs DC %d) and becomes Unconscious." % [target_name, int(result["total"]), int(result["save_dc"])])
-			else:
-				cast.hud.add_log("%s %s the repeat save against %s (%d vs DC %d)." % [target_name, "succeeds on" if result["saved"] else "fails", str(result["spell_id"]), int(result["total"]), int(result["save_dc"])])
+			cast.hud.add_log("%s %s the repeat save against %s (%d vs DC %d)." % [target_name, "succeeds on" if result["saved"] else "fails", str(result["spell_id"]), int(result["total"]), int(result["save_dc"])])
 	SpellEffects.reconcile(_casters(cast), cast.areas._spell_effect_targets())
 
 
@@ -345,18 +342,20 @@ static func _try_shake_sleeping_creature(cast: SpellCastContext, coord: Vector2i
 				break
 	if target == null:
 		return false
+	# Any source whose spell ends when someone else spends an action to shake the creature.
 	var sleep_source := ""
 	for source in SpellEffects.records(target):
 		var record: Dictionary = SpellEffects.records(target)[source]
-		if str(record.get("spell_id", "")) == "sleep" and ("incapacitated" in record.get("conditions", []) or "unconscious" in record.get("conditions", [])):
+		if not (target is Character and target == cast.caster) and bool(DataLoader.get_spell(str(record.get("spell_id", ""))).get("end_on_shake_action", false)) and not record.get("conditions", []).is_empty():
 			sleep_source = str(source)
 			break
 	if sleep_source.is_empty():
 		return false
+	var shaken_spell_name := str(DataLoader.get_spell(str(SpellEffects.records(target)[sleep_source].get("spell_id", ""))).get("name", "the spell"))
 	SpellEffects.remove(target, sleep_source)
 	SpellEffects.reconcile(_casters(cast), cast.areas._spell_effect_targets())
 	cast.spend_action_cost.call("action")
-	cast.hud.add_log("%s uses an action to shake %s awake, ending Sleep." % [cast.caster.character_name, target.character_name if target is Character else str(target.get("name", "the creature"))])
+	cast.hud.add_log("%s uses an action to shake %s, ending %s." % [cast.caster.character_name, target.character_name if target is Character else str(target.get("name", "the creature")), shaken_spell_name])
 	cast.hud.update_hud(cast.caster, cast.tracker)
 	cast.redraw_entities.call()
 	cast.highlight_reachable.call()

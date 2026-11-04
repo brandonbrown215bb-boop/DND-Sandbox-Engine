@@ -15,8 +15,15 @@ static func run(h: Node) -> void:
 	CombatAction.apply_condition(enemy, "restrained", 100, "fixture:snare")
 	var cast := SpellResolutionContext.new()
 	cast.caster = c; cast.target = enemy; cast.spell = spell
+	# SC-05 support 03 made "fighting" mean opposed initiative combatants, so
+	# the fixture must cast through the live combat host (not a host-less cast).
+	var unhosted := SpellSaveResolver.resolve(cast)
+	h._assert(unhosted.get("save_test", {}).get("rolls", []).size() == 2, "S247 host-less cast is not fighting: Restrained Disadvantage stands alone")
+	var host := SpellCastContext.new()
+	host.caster = c; host.spell = spell; host.tracker = combat.tracker
+	cast.spatial_host = host
 	var result := SpellSaveResolver.resolve(cast)
-	h._assert(result.get("save_test", {}).get("rolls", []).size() == 1, "S247 spell and generic save owners cancel Restrained against Advantage once")
+	h._assert(SpellSaveResolver.is_fighting_caster_side(cast, enemy) and result.get("save_test", {}).get("rolls", []).size() == 1, "S247 spell and generic save owners cancel Restrained against Advantage once")
 	CombatAction.apply_condition(enemy, "blessed", 100)
 	CombatAction.apply_condition(enemy, "baned", 100)
 	var receipt := BarbarianRules.roll_monster_save_result(enemy, "DEX")

@@ -1,0 +1,59 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+WARNING: [DataLoader] Rejected 25 unsupported effectless feature records; they remain unavailable until curated.
+     at: push_warning (core/variant/variant_utility.cpp:1033)
+     GDScript backtrace (most recent call first):
+         [0] load_all_data (res://src/autoload/data_loader.gd:276)
+         [1] _ready (res://src/autoload/data_loader.gd:252)
+[DataLoader] Loaded: 14 classes, 9 races, 294 items, 362 spells, 481 monsters, 4 event tables, 1 campaigns
+[DataLoader] Layers: core_imported, core_curated, mods | packs: core, crown | approved overrides: 421 | validation failures: 0
+==================================================
+ Rook's Headless Viewport Harness (per-beat)
+==================================================
+
+[TEST] crown_condition_finish_flow
+[Character] monk leveled up to 2! (+10 HP, now 20)
+[Character] monk leveled up to 3! (+10 HP, now 30)
+[Character] wizard leveled up to 2! (+4 HP, now 12)
+[Character] wizard leveled up to 3! (+8 HP, now 20)
+[ok]   S235 production late-created own initiative uses shared modes and Exhaustion: invisible
+[ok]   S235 production late-created own initiative uses shared modes and Exhaustion: incapacitated
+[ok]   S235 production late-created own initiative uses shared modes and Exhaustion: both
+[ok]   S235 reversed shared-group arrival uses first authored member's modes even downed
+[ok]   S235 emptied/rebuilt group keeps one captured count without rerolling new conditions
+[ok]   Crown acquired Open Hand level-3 feature has executable hit options
+[ok]   S247 actual Flurry settles hit choices with one Focus/Bonus Action payment
+[ok]   S247 production Topple auto-fails Stunned DEX without a save die
+[ok]   S235 actual Grappled monster turn preserves source-owned Topple through skipped standing and turn end
+[ok]   S247 actual Flurry settles hit choices with one Focus/Bonus Action payment
+[ok]   S247 actual Push auto-fails STR and moves 15 feet; next paid strike cannot hit out of reach
+[ok]   Crown resumes remaining paid Flurry strike without repaying and applies Addle
+[ok]   Crown Addle ends at actual target-start cleanup and leaves ordinary Reactions available
+[ok]   S247 actual Flurry settles hit choices with one Focus/Bonus Action payment
+[ok]   S247 stale hit choice after Incapacitated has no consequence, repeat strike or extra cost
+[ok]   S247 actual Flurry settles hit choices with one Focus/Bonus Action payment
+[ok]   ADR0018 renamed JSON hit-option feature loads and works through actual HUD Flurry without registration
+[ok]   S247 actual Flurry settles hit choices with one Focus/Bonus Action payment
+[ok]   S247 actual Monk Topple uses Restrained mode and captured Bless/Bane dice from shared save owner
+[ok]   S235 actual HUD establishes concentration before massive death: darkness
+[ok]   S235 massive Character death immediately cleans live zone/light through actual owner: darkness
+[ok]   S235 actual HUD establishes concentration before massive death: dancing_lights
+[ok]   S235 massive Character death immediately cleans live zone/light through actual owner: dancing_lights
+[ok]   S235 real monster concentration cast retains source and pays one slot
+[ok]   S235 second concentration cast replaces exact previous source with one new payment
+[ok]   S235 mixed typed packets into temp HP produce one captured concentration save at aggregate DC
+[ok]   S235 prevented damage has no concentration roll
+[ok]   S235 actual monster concentration opens eligible party replacement chooser
+[ok]   S235 held concentration chooser serializes new damage and refuses turn advancement
+[ok]   S235 concentration choices settle queued occurrences once with one token cost and no raced turn
+[ok]   S235/S247 actual Flurry hit choices and concentration replacements serialize without overlapping dialogs or duplicate payment
+[ok]   S235 actual HUD spell damage checks retained monster concentration without refunding monster slots
+[ok]   S235 monster owner clock expires recipient payload and concentration
+[ok]   S235 lethal damage immediately ends monster concentration without rolling
+[ok]   S235 encounter exit clears monster payloads before a party checkpoint
+[SaveManager] Successfully saved game to user://saves/dnd2024/crown_condition_finish.sav
+[ok]   Crown allowed checkpoint saves Open Hand progression and remaining Focus after encounter cleanup
+--------------------------------------------------
+ VIEWPORT RESULTS: 0 failed (1 tests run)
+VIEWPORT TESTS PASSED
+SCENARIO PASSED: crown_condition_finish_flow

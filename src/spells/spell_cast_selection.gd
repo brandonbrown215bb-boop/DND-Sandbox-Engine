@@ -137,7 +137,7 @@ static func choose(cast: SpellCastContext, spell_info: Dictionary) -> bool:
 				cast.spell["_metamagic_distant_free"] = distant_free_available
 	var original_damage_type := str(cast.spell.get("damage_type", ""))
 	var transmuted_options := SorcererRules.transmuted_damage_options(original_damage_type)
-	var has_spell_damage := cast.spell.has("damage") or cast.spell.has("damage_per_dart") or cast.spell.has("damage_per_ray")
+	var has_spell_damage := cast.spell.has("damage") or SpellProjectileResolver.is_projectile(cast.spell)
 	var transmute_combo_allowed := (not bool(cast.spell.get("_metamagic_distant", false)) or cast.caster.has_condition("innate_sorcery")) and quickened_combo_allowed and (not bool(cast.spell.get("_metamagic_twinned", false)) or cast.caster.has_condition("innate_sorcery"))
 	var transmuted_free_available := cast.caster.has_feature("sorcerer_arcane_apotheosis") and cast.caster.has_condition("innate_sorcery") and not bool(cast.caster.feature_uses.get("sorcerer_arcane_apotheosis_used_this_turn", false)) and not bool(cast.spell.get("_metamagic_distant_free", false)) and not bool(cast.spell.get("_metamagic_quickened_free", false)) and not bool(cast.spell.get("_metamagic_twinned_free", false))
 	if not bool(cast.spell.get("_produce_flame_hurl", false)) and cast.caster.class_id == "sorcerer" and cast.caster.has_feature("sorcerer_metamagic") and "transmuted_spell" in cast.caster.sorcerer_metamagic_choices and not transmuted_options.is_empty() and has_spell_damage and transmute_combo_allowed and (SorcererRules.remaining_metamagic_points(cast.caster, cast.spell) >= 1 or transmuted_free_available):
@@ -150,7 +150,7 @@ static func choose(cast: SpellCastContext, spell_info: Dictionary) -> bool:
 				cast.spell["_metamagic_original_damage_type"] = original_damage_type
 	var seeking_prior_count := int(bool(cast.spell.get("_metamagic_distant", false))) + int(bool(cast.spell.get("_metamagic_transmuted", false))) + int(bool(cast.spell.get("_metamagic_twinned", false)))
 	var seeking_free_available := cast.caster.has_feature("sorcerer_arcane_apotheosis") and cast.caster.has_condition("innate_sorcery") and not bool(cast.caster.feature_uses.get("sorcerer_arcane_apotheosis_used_this_turn", false)) and not bool(cast.spell.get("_metamagic_distant_free", false)) and not bool(cast.spell.get("_metamagic_transmuted_free", false)) and not bool(cast.spell.get("_metamagic_quickened_free", false)) and not bool(cast.spell.get("_metamagic_twinned_free", false))
-	var seeking_is_spell_attack := str(cast.spell.get("attack_type", "none")) in ["ranged_spell", "melee_spell"] and not cast.spell.has("damage_per_dart") and not cast.spell.has("damage_per_ray")
+	var seeking_is_spell_attack := str(cast.spell.get("attack_type", "none")) in ["ranged_spell", "melee_spell"] and not SpellProjectileResolver.is_projectile(cast.spell)
 	if not bool(cast.spell.get("_produce_flame_hurl", false)) and cast.caster.class_id == "sorcerer" and cast.caster.has_feature("sorcerer_metamagic") and "seeking_spell" in cast.caster.sorcerer_metamagic_choices and seeking_is_spell_attack and seeking_prior_count < 2 and (not bool(cast.spell.get("_metamagic_twinned", false)) or cast.caster.has_condition("innate_sorcery")) and (SorcererRules.remaining_metamagic_points(cast.caster, cast.spell) >= 1 or seeking_free_available):
 		var seeking_prompt := "Use Arcane Apotheosis if this spell attack misses?" if seeking_free_available else "Spend 1 Sorcery Point only if this spell attack misses?"
 		if await cast.hud.request_reaction(cast.owner_label, "metamagic:seeking", seeking_prompt, "Use Seeking Spell?", "Reroll a Miss", "Seeking Spell — %s" % cast.owner_label):
@@ -178,7 +178,7 @@ static func choose(cast: SpellCastContext, spell_info: Dictionary) -> bool:
 		cast.spell["_familiar_delivery"] = await cast.hud.request_reaction(cast.owner_label, "familiar:touch_delivery", "Your familiar can deliver this Touch spell within 5 feet of itself, using its Reaction. You spend the spell's normal action and resources.", "Deliver through familiar?", "Use familiar", "Touch delivery")
 	cast.hud.add_log("Casting %s. Select target hex." % spell_name)
 	var count := SpellCastTargeting._spell_projectile_total(cast, cast.spell)
-	if str(cast.spell.get("id", "")) in ["magic_missile", "scorching_ray", "eldritch_blast"]:
+	if SpellProjectileResolver.is_projectile(cast.spell):
 		cast.hud.show_hint("%s: %d projectiles remaining. Click a creature for each; you may choose the same creature again. Esc/Cancel to back out." % [spell_name, count])
 	else:
 		cast.hud.show_hint("%s: click a highlighted target. Esc/Cancel to back out." % spell_name)

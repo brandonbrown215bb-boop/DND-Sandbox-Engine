@@ -1,0 +1,10 @@
+mixed_mechanics_encounter: SCENARIO PASSED: mixed_mechanics_encounter
+crown_sc_03_support_05_flow: SCENARIO PASSED: crown_sc_03_support_05_flow
+crown_sc_03_support_07_flow: SCENARIO PASSED: crown_sc_03_support_07_flow
+ordinary_action_flow: SCENARIO PASSED: ordinary_action_flow
+conversion_batch_001_flow: [FAIL] [conversion_batch_001_flow] Conversion 001: upcast Bless accepts one already-downed creature and pays once
+conversion_batch_001_flow: [FAIL] [conversion_batch_001_flow] 1 SCRIPT ERROR(s) during the scenario aborted harness code; first: Invalid access to property or key 'targets' on a base object of type 'Dictionary'. (res://src/spells/spell_cast_results.gd:381 in _resolve_player_target)
+conversion_batch_001_flow:  FAILED TESTS: conversion_batch_001_flow
+conversion_batch_001_flow: VIEWPORT TESTS FAILED
+conversion_batch_001_flow: SCENARIO FAILED: conversion_batch_001_flow
+base f2baf33 (no SC-04 changes): SCENARIO FAILED: conversion_batch_001_flow
