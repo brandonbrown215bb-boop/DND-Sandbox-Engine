@@ -7,6 +7,14 @@ the [slice registry](vocabulary-slices.md) still owns S-IDs, prerequisites,
 acceptance and verified limits. This document selects the relevant part of a
 slice; it does not create a second acceptance count.
 
+**Spell execution queue (2026-11-04):** the
+[Grokbot conversion stack](crown-spell-conversion-queue.md) assigns all 169
+remaining native spells (81 refused, 88 enabled) to 46 stackable PRs, with
+missing generic support and actual-content checks included. Start with the
+32-spell damage/condition sweep and keep stacking without review/merge waits,
+as explicitly directed by the owner. The queue is an assignment plan, not a
+readiness certification or a replacement for the finish line below.
+
 ## Scope and finish line
 
 - The existing Crown campaign: level 1 start, level 5 cap, one to four local

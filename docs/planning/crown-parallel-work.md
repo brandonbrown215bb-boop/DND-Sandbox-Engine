@@ -5,6 +5,24 @@ Grokbot work; it does not change the [Crown finish line](crown-roadmap.md), sele
 a replacement roadmap, or accept engine slices. Recheck the base before starting
 an assignment. GitHub showed no open PRs or issues during this review.
 
+## Current Grokbot assignment — 2026-11-04
+
+Use the [complete Crown spell conversion stack](crown-spell-conversion-queue.md)
+and its [169-spell assignment CSV](crown-spell-conversion-queue.csv): 81 refused
+and 88 enabled-native spells, assigned exactly once across 46 ordered PRs.
+Start SC-01, open the PR, branch the next assignment from its tip, and keep
+stacking. **No review, approval, owner sign-off, merge or remote-CI wait gates
+the next PR.** This explicit owner direction supersedes the historical
+one-reviewed-PR-at-a-time Grokbot instructions below for this spell stack.
+Relevant local checks and complete source-backed behavior remain required;
+the queue includes missing generic operations and world hooks before conversion.
+Each assignment owns its exact spells, support work and production proof.
+
+The dated G1-G6 descriptions below retain historical scope. Main through PR #81
+includes Druid/Monk Explorer's Packs; Sickle and Druidic Focus follow-ups are
+separate equipment work. Local uncommitted Hit Dice work is not a remote
+prerequisite until integrated. Use current remote code and preserve other lanes.
+
 **Local sequencing update (2026-11-01):** the owner split S-237/S-238 into
 [bounded work packages](vocabulary-slices.md#ordinary-action-work-packages) with
 [prompts for separate chats](ordinary-action-chat-prompts.md). Those assignments
@@ -110,6 +128,9 @@ command pickers, ownership controls, condition quartet and room Search are not
 new assignments.
 
 ## Grokbot lane — one bounded PR at a time
+
+Historical G1-G6 lane. The current spell stack above follows the owner's
+2026-11-04 continuous-stacking direction instead of this review/merge cadence.
 
 Use the following assignments in order. Start from the latest integrated main;
 do not build a large unreviewed stack. Each PR description states the resulting

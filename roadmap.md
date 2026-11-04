@@ -9,6 +9,13 @@ retains vocabulary-first delivery, current save priorities, and Wish/illusion po
 
 ## Current work
 
+The [2026-11-04 Crown spell conversion queue](docs/planning/crown-spell-conversion-queue.md)
+assigns all 169 remaining native spells to 46 ordered, stackable Grokbot PRs.
+It includes missing reusable operations, source-backed data and production
+checks. The owner directs continuous stacking without review, approval or
+merge waits; the historical sequential Grokbot review cadence does not gate
+this queue. Character/world work and the full Crown finish line remain below.
+
 Finish the level-1–5 rules engine and real content needed by The Lost Crown using
 the [Crown roadmap](docs/planning/crown-roadmap.md). Its
 [content scope](docs/planning/crown-content-scope.md) pins the twelve SRD classes
