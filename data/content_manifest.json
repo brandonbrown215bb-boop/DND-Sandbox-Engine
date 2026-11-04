@@ -40,6 +40,14 @@
   "overrides": [
     {
       "type": "spell",
+      "id": "charm_person",
+      "winner": "res://data/core/spells/crown_sc_05_support_02.json#3",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#28"
+      ]
+    },
+    {
+      "type": "spell",
       "id": "color_spray",
       "winner": "res://data/core/spells/crown_sc_05_support_01.json#1",
       "replaces": [
@@ -3100,9 +3108,10 @@
     {
       "type": "spell",
       "id": "blindness/deafness",
-      "winner": "res://data/core/spells/srd_additional_spells.json#160",
+      "winner": "res://data/core/spells/crown_sc_05_support_02.json#1",
       "replaces": [
-        "res://data/core/spells/imported_spells.json#21"
+        "res://data/core/spells/imported_spells.json#21",
+        "res://data/core/spells/srd_additional_spells.json#160"
       ]
     },
     {
@@ -3250,9 +3259,10 @@
     {
       "type": "spell",
       "id": "faerie_fire",
-      "winner": "res://data/core/spells/srd_additional_spells.json#177",
+      "winner": "res://data/core/spells/crown_sc_05_support_02.json#4",
       "replaces": [
-        "res://data/core/spells/imported_spells.json#68"
+        "res://data/core/spells/imported_spells.json#68",
+        "res://data/core/spells/srd_additional_spells.json#177"
       ]
     },
     {
@@ -3312,9 +3322,10 @@
     {
       "type": "spell",
       "id": "blur",
-      "winner": "res://data/core/spells/srd_additional_spells.json#184",
+      "winner": "res://data/core/spells/crown_sc_05_support_02.json#2",
       "replaces": [
-        "res://data/core/spells/imported_spells.json#23"
+        "res://data/core/spells/imported_spells.json#23",
+        "res://data/core/spells/srd_additional_spells.json#184"
       ]
     },
     {

@@ -49,7 +49,7 @@ static func _apply_spell_specific(cast: SpellCastContext, p_target: Character = 
 		if detector != null and not detect_cast.is_empty():
 			SpellEffects.grant(detector, detect_cast, "detect_evil_and_good")
 			cast.refresh_creature_senses.call()
-	if str(spell_data.get("id", "")) == "blur" and bool(resolution.get("success", false)):
+	if str(spell_data.get("id", "")) == "blur" and not SharedSpell.uses(spell_data) and bool(resolution.get("success", false)):
 		var blurred_target = p_target if p_target != null else m_target
 		if blurred_target != null:
 			SpellEffects.grant(blurred_target, resolution.get("effect_cast", spell_data.get("_effect_cast", {})), "blurred")

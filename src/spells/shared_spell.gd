@@ -3,7 +3,7 @@
 class_name SharedSpell
 extends RefCounted
 
-const CONDITIONS := ["blinded", "deafened", "frightened", "poisoned", "prone", "restrained", "stunned", "paralyzed", "incapacitated", "blessed", "baned", "shield_of_faith", "speed_reduced", "healing_prevented", "opportunity_attack_blocked", "next_attack_disadvantage", "invisibility_suppressed"]
+const CONDITIONS := ["blinded", "deafened", "frightened", "poisoned", "prone", "restrained", "stunned", "paralyzed", "incapacitated", "blessed", "baned", "shield_of_faith", "speed_reduced", "healing_prevented", "opportunity_attack_blocked", "next_attack_disadvantage", "invisibility_suppressed", "charmed", "blurred", "outlined"]
 ## Conditions whose consumer reads an authored magnitude (hexes) from the source record.
 const AMOUNT_CONDITIONS := {"speed_reduced": [1, 12]}
 const ABILITIES := ["STR", "DEX", "CON", "INT", "WIS", "CHA"]
@@ -22,7 +22,7 @@ const EFFECTS := ["heal", "temporary_hp", "grant_condition", "remove_condition",
 const STEP_FIELDS := ["id", "type", "gate", "gate_step", "target", "shape", "radius", "size", "attack_type", "damage", "damage_type", "damage_components", "component_id", "scaling", "upcast", "save", "half_on_save", "save_context", "damage_scale_by_outcome", "damage_dice_policy", "damage_result_multiplier", "damage_reductions", "damage_bypasses", "recipient_exemption_choice", "effects", "incoming_negation", "incoming_negation_rule", "physical_requirements", "spatial_requirements"]
 const STEP_TYPES := ["attack", "save", "damage", "effect"]
 const STEP_GATES := ["always", "hit", "miss", "failed_save", "successful_save"]
-const FIELDS := ["containment_targeting", "id", "name", "description", "execution", "level", "casting_time", "range", "range_kind", "range_by_character_level_feet", "target", "base_targets", "attack_type", "damage", "damage_type", "component_id", "scaling", "upcast", "save", "half_on_save", "save_exit_placement", "save_context", "damage_scale_by_outcome", "damage_dice_policy", "damage_result_multiplier", "damage_reductions", "damage_bypasses", "recipient_exemption_choice", "attack_unit_substitution", "requires_target_sight", "target_creature_types", "target_creature_type_exclusions", "target_sizes", "ignore_cover_on_save", "ignore_cover", "effects", "concentration", "duration", "duration_seconds", "repeat_save", "repeat_save_schedule", "repeat_save_interval_seconds", "repeat_save_stages", "repeat_save_dc_progression", "targets_objects", "ignites_objects", "area_radius", "cone_size", "end_on_target_damage", "end_on_any_damage", "end_on_party_damage", "source_end_rules", "components", "material", "material_component_item_id", "material_component_cost", "material_component_consumed", "consumed_material_item_id", "ritual", "rules_source", "rules_status", "school", "classes", "source", "trigger", "steps", "formula_inputs", "interruption_policy", "failure_policy", "empty_effect_policy", "cast_settlement", "cancellation_rule", "stopping_cost_policy", "incoming_negation_rule", "physical_requirements", "spatial_requirements", "zero_hp_aftermath", "end_aftermath", "reaction_trigger", "effect_noise", "projectiles", "delayed_damage", "damage_type_options", "exploding_dice", "save_disadvantage_creature_types", "area_object_push", "leap_on_matching_dice"] # Batch 065: reaction_trigger is validated by ReactionTriggers.spell_trigger_error.
+const FIELDS := ["containment_targeting", "id", "name", "description", "execution", "level", "casting_time", "range", "range_kind", "range_by_character_level_feet", "target", "base_targets", "attack_type", "damage", "damage_type", "component_id", "scaling", "upcast", "save", "half_on_save", "save_exit_placement", "save_context", "damage_scale_by_outcome", "damage_dice_policy", "damage_result_multiplier", "damage_reductions", "damage_bypasses", "recipient_exemption_choice", "attack_unit_substitution", "requires_target_sight", "target_creature_types", "target_creature_type_exclusions", "target_sizes", "ignore_cover_on_save", "ignore_cover", "effects", "concentration", "duration", "duration_seconds", "repeat_save", "repeat_save_schedule", "repeat_save_interval_seconds", "repeat_save_stages", "repeat_save_dc_progression", "targets_objects", "ignites_objects", "area_radius", "cone_size", "end_on_target_damage", "end_on_any_damage", "end_on_party_damage", "source_end_rules", "components", "material", "material_component_item_id", "material_component_cost", "material_component_consumed", "consumed_material_item_id", "ritual", "rules_source", "rules_status", "school", "classes", "source", "trigger", "steps", "formula_inputs", "interruption_policy", "failure_policy", "empty_effect_policy", "cast_settlement", "cancellation_rule", "stopping_cost_policy", "incoming_negation_rule", "physical_requirements", "spatial_requirements", "zero_hp_aftermath", "end_aftermath", "reaction_trigger", "effect_noise", "projectiles", "delayed_damage", "damage_type_options", "exploding_dice", "save_disadvantage_creature_types", "area_object_push", "leap_on_matching_dice", "save_advantage_if_fighting_target"] # Batch 065: reaction_trigger is validated by ReactionTriggers.spell_trigger_error.
 
 static func damage_dice_policy_error(value: Variant) -> String:
 	if not value is Dictionary or value.is_empty():
@@ -78,6 +78,22 @@ static func save_context_error(value: Variant) -> String:
 		if not token is String or not str(token).is_valid_identifier() or str(token) != str(token).to_lower():
 			return "save_context.%s must be a lowercase identifier." % field
 	return ""
+
+## The condition a grant_condition effect applies: its fixed condition, or the
+## cast's validated pick from condition_options ("" when no legal pick exists).
+static func chosen_condition(effect: Dictionary, spell: Dictionary) -> String:
+	if not effect.has("condition_options"): return str(effect.get("condition", ""))
+	var pick := str(spell.get("_chosen_condition", ""))
+	return pick if pick in effect["condition_options"] else ""
+
+## Every caster-choosable condition authored on a spell's grant effects, in order.
+static func condition_choices(spell: Dictionary) -> Array:
+	var out := []
+	for effect in spell.get("effects", []):
+		if effect is Dictionary and str(effect.get("type", "")) == "grant_condition" and effect.get("condition_options") is Array:
+			for option in effect["condition_options"]:
+				if option not in out: out.append(option)
+	return out
 
 static func uses(spell: Dictionary) -> bool:
 	return spell.get("execution", "") == "shared"
@@ -183,8 +199,19 @@ static func _validate_single_effect(effect: Variant) -> String:
 		var response_error := DamageResponseRules.policy_error(effect.get("policy"))
 		if not response_error.is_empty(): return response_error
 	elif kind in ["grant_condition", "remove_condition"]:
-		allowed.append("condition")
-		if effect.get("condition", "") not in CONDITIONS: return "Unsupported shared condition."
+		# A caster-chosen condition (e.g. Blinded or Deafened) is authored as condition_options
+		# instead of condition; the cast stores the pick in spell._chosen_condition.
+		if kind == "grant_condition" and effect.has("condition_options"):
+			allowed.append("condition_options")
+			var options: Variant = effect["condition_options"]
+			if effect.has("condition") or not options is Array or options.size() < 2 or options.size() > 8: return "condition_options needs two to eight conditions and replaces condition."
+			var seen_options := []
+			for option in options:
+				if not option is String or option in seen_options or option not in CONDITIONS or AMOUNT_CONDITIONS.has(option): return "condition_options entries must be distinct supported conditions without amounts."
+				seen_options.append(option)
+		else:
+			allowed.append("condition")
+			if effect.get("condition", "") not in CONDITIONS: return "Unsupported shared condition."
 		if kind == "grant_condition" and effect.has("expiry"):
 			allowed.append("expiry")
 			var expiry_error := condition_expiry_error(effect["expiry"])
@@ -478,7 +505,7 @@ static func content_error(spell: Dictionary) -> String:
 	for key in ["damage_per_dart", "damage_per_ray", "damage_components", "summoned_creature", "condition_on_failed_save", "area_point_count"]:
 		if spell.has(key):
 			return "Shared spells do not support '%s'; use a dedicated handler." % key
-	for key in ["concentration", "half_on_save", "requires_target_sight", "targets_objects", "ignites_objects", "end_on_target_damage", "end_on_any_damage", "end_on_party_damage", "ritual", "material_component_consumed", "ignore_cover_on_save"]:
+	for key in ["concentration", "half_on_save", "requires_target_sight", "targets_objects", "ignites_objects", "end_on_target_damage", "end_on_any_damage", "end_on_party_damage", "ritual", "material_component_consumed", "ignore_cover_on_save", "save_advantage_if_fighting_target"]:
 		if spell.has(key) and not spell[key] is bool:
 			return "Shared '%s' must be Boolean." % key
 	if spell.has("duration_seconds") and not _integer(spell["duration_seconds"], 1, 86400):
@@ -938,13 +965,17 @@ static func apply_custom_effects(caster: Character, target, effects: Array, resu
 				if DamageResponseRules.grant(target, result.get("effect_cast", {}), effect.policy):
 					messages.append("%s gains a source-owned damage response." % target_name)
 			"grant_condition":
+				var granted_condition := chosen_condition(effect, spell)
+				if granted_condition.is_empty():
+					messages.append("No condition was chosen for %s." % target_name)
+					continue
 				if effect.has("expiry"):
 					var expiry: Dictionary = effect["expiry"]
-					SpellEffects.grant(target, result.get("effect_cast", {}), str(effect["condition"]), CONDITION_EXPIRY_BOUNDARIES[str(expiry["boundary"])], int(expiry["turns"]) * 6)
+					SpellEffects.grant(target, result.get("effect_cast", {}), granted_condition, CONDITION_EXPIRY_BOUNDARIES[str(expiry["boundary"])], int(expiry["turns"]) * 6)
 				else:
-					SpellEffects.grant(target, result.get("effect_cast", {}), str(effect["condition"]))
-				if effect.has("amount"): SpellEffects.set_condition_amount(target, result.get("effect_cast", {}), str(effect["condition"]), int(effect["amount"]))
-				if CombatAction.has_condition(target, str(effect["condition"])): messages.append("%s is %s." % [target_name, effect["condition"]])
+					SpellEffects.grant(target, result.get("effect_cast", {}), granted_condition)
+				if effect.has("amount"): SpellEffects.set_condition_amount(target, result.get("effect_cast", {}), granted_condition, int(effect["amount"]))
+				if CombatAction.has_condition(target, granted_condition): messages.append("%s is %s." % [target_name, granted_condition])
 			"remove_condition":
 				if target is Character: target.remove_condition(str(effect["condition"]))
 				else:

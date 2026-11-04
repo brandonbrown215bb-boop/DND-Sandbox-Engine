@@ -308,7 +308,7 @@ static func validate_creatures_and_components(cast: SpellCastContext) -> bool:
 				cast.highlight_reachable.call()
 				return false
 	var required_creature_types: Array = cast.spell.get("target_creature_types", [])
-	if SpellEffects.manages(cast.spell) or (SharedSpell.uses(cast.spell) and SpellCastTargeting._spell_upcast_maximum_targets(cast, cast.spell) > 1):
+	if (SpellEffects.manages(cast.spell) and not SharedSpell.has_effect(cast.spell, "area_selection")) or (SharedSpell.uses(cast.spell) and SpellCastTargeting._spell_upcast_maximum_targets(cast, cast.spell) > 1):
 		var selected: Array[Vector2i] = cast.command_selection.duplicate()
 		if cast.target_coord not in selected:
 			selected.append(cast.target_coord)

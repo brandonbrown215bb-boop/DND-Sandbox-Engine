@@ -192,14 +192,15 @@ static func choose_orders_and_types(cast: SpellCastContext) -> bool:
 			cast.highlight_reachable.call()
 			return false
 		cast.spell["damage_type"] = selected_damage_type
-	var condition_options: Array = cast.spell.get("condition_options", [])
+	var condition_options: Array = SharedSpell.condition_choices(cast.spell) if SharedSpell.uses(cast.spell) else cast.spell.get("condition_options", [])
 	if not condition_options.is_empty():
 		var selected_condition := await cast.hud.request_damage_type_choice(condition_options, str(cast.spell.get("name", "Spell")))
 		if selected_condition not in condition_options:
 			cast.hud.add_log("Choose a condition for %s." % str(cast.spell.get("name", "the spell")))
 			cast.highlight_reachable.call()
 			return false
-		cast.spell["condition_on_failed_save"] = selected_condition
+		if SharedSpell.uses(cast.spell): cast.spell["_chosen_condition"] = selected_condition
+		else: cast.spell["condition_on_failed_save"] = selected_condition
 	return true
 
 

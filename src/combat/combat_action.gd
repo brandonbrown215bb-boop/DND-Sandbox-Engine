@@ -45,7 +45,7 @@ static func start_bounded_owner_turn_interval(actor: Character) -> void:
 ## the invisible creature. Occupied hexes remain legal targets in this game;
 ## an unperceived target imposes the normal attack disadvantage.
 static func is_invisible(entity, include_hidden: bool = true) -> bool:
-	if SpellEffects.has_spell(entity, "faerie_fire"):
+	if SpellEffects.has_spell(entity, "faerie_fire") or has_condition(entity, "outlined"):
 		return false
 	if entity is Character:
 		return (entity.has_condition("invisible") or (include_hidden and entity.has_condition("hidden"))) and not entity.has_condition("starry_wisp") and not entity.has_condition("invisibility_suppressed")
@@ -486,6 +486,19 @@ static func can_perceive_invisible(entity, distance_feet: int) -> bool:
 	if entity == null or distance_feet < 0: return false
 	if CombatPerception._has_blindsight(entity, distance_feet): return true
 	return not has_condition(entity, "blinded") and (CombatPerception._has_truesight(entity, distance_feet) or SpellEffects.has_spell(entity, "see_invisibility"))
+
+
+## Shared "blurred" condition (or a legacy Blur record): attacks against the
+## bearer have Disadvantage unless the attacker perceives it by Blindsight/Truesight.
+static func is_blurred_against(target, attacker, distance_feet: int) -> bool:
+	return (SpellEffects.has_spell(target, "blur") or has_condition(target, "blurred")) and not can_perceive_blur(attacker, distance_feet)
+
+
+## Shared "outlined" condition (or a legacy Faerie Fire record): attacks against
+## the bearer have Advantage when the attacker can see (is not Blinded).
+static func is_outlined_for(target, attacker) -> bool:
+	if not (SpellEffects.has_spell(target, "faerie_fire") or has_condition(target, "outlined")): return false
+	return attacker == null or not has_condition(attacker, "blinded")
 
 
 static func can_perceive_blur(entity, distance_feet: int) -> bool:
@@ -1255,7 +1268,7 @@ static func spell_grants_condition(spell_data: Dictionary, condition: String) ->
 	if str(spell_data.get("condition_on_failed_save", "")) == condition:
 		return true
 	for effect in spell_data.get("effects", []):
-		if effect is Dictionary and str(effect.get("type", "")) == "grant_condition" and str(effect.get("condition", "")) == condition and bool(effect.get("on_failed_save", false)):
+		if effect is Dictionary and str(effect.get("type", "")) == "grant_condition" and (str(effect.get("condition", "")) == condition or condition in effect.get("condition_options", [])) and bool(effect.get("on_failed_save", false)):
 			return true
 	return false
 
@@ -1554,11 +1567,11 @@ static func resolve_weapon_attack(attacker: Character, target_entity, weapon_dat
 	reaction_decisions["perception_handles_blindness"] = true
 	var invisible_attack_advantage := bool(perception.advantage)
 	var unseen_target_disadvantage := bool(perception.disadvantage)
-	var blur_target_disadvantage := SpellEffects.has_spell(target_entity, "blur") and not can_perceive_blur(attacker, attack_distance_feet)
+	var blur_target_disadvantage := is_blurred_against(target_entity, attacker, attack_distance_feet)
 	var ability: String = weapon_data.get("ability", "STR")
 	if ability == "STR" and attacker.has_condition("reckless_attack"):
 		advantage = true
-	advantage = FighterRules.attack_advantage(attacker, target_entity) or SpellEffects.has_spell(target_entity, "faerie_fire") or invisible_attack_advantage or advantage
+	advantage = FighterRules.attack_advantage(attacker, target_entity) or is_outlined_for(target_entity, attacker) or invisible_attack_advantage or advantage
 	if target_entity is Dictionary:
 		var target_conditions: Dictionary = target_entity.get("conditions", {})
 		for feature in attacker.features:
