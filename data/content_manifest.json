@@ -1400,9 +1400,10 @@
     {
       "type": "spell",
       "id": "shatter",
-      "winner": "res://data/core/spells/srd_additional_spells.json#159",
+      "winner": "res://data/core/spells/crown_sc_03_support_06.json#1",
       "replaces": [
-        "res://data/core/spells/imported_spells.json#160"
+        "res://data/core/spells/imported_spells.json#160",
+        "res://data/core/spells/srd_additional_spells.json#159"
       ]
     },
     {
