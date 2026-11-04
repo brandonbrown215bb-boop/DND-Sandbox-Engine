@@ -1,0 +1,52 @@
+[
+  {
+    "id": "ray_of_enfeeblement",
+    "name": "Ray of Enfeeblement",
+    "description": "A beam of enervating energy shoots from you toward a creature within range. The target must make a Constitution saving throw. On a successful save, the target has Disadvantage on the next attack roll it makes until the start of your next turn. On a failed save, the target has Disadvantage on Strength-based D20 Tests for the duration. During that time, it also subtracts 1d8 from all its damage rolls. The target repeats the save at the end of each of its turns, ending the spell on a success.",
+    "level": 2,
+    "school": "necromancy",
+    "casting_time": "action",
+    "range": 12,
+    "target": "single",
+    "attack_type": "none",
+    "save": "CON",
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Concentration, up to 1 minute",
+    "duration_seconds": 60,
+    "concentration": true,
+    "repeat_save": "CON",
+    "repeat_save_schedule": "target_turn_end",
+    "effects": [
+      {
+        "type": "grant_condition",
+        "condition": "enfeebled",
+        "rider_by_outcome": {
+          "success": false,
+          "failure": true
+        }
+      },
+      {
+        "type": "grant_condition",
+        "condition": "next_attack_disadvantage",
+        "rider_by_outcome": {
+          "success": true,
+          "failure": false
+        },
+        "expiry": {
+          "boundary": "caster_turn_start",
+          "turns": 1
+        }
+      }
+    ],
+    "classes": [
+      "warlock",
+      "wizard"
+    ],
+    "execution": "shared",
+    "rules_source": "SRD5.2.1",
+    "rules_status": "2024-gameplay"
+  }
+]

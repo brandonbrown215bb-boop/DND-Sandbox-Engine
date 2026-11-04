@@ -3,7 +3,7 @@
 class_name SpellEffects
 extends RefCounted
 
-const MANAGED_SPELLS := ["bless", "bane", "jump", "fly", "levitate", "spider_climb", "freedom_of_movement", "water_walk", "aid", "alter_self", "barkskin", "mage_armor", "hold_monster", "ray_of_sickness", "ray_of_enfeeblement", "animal_friendship", "charm_person", "charm_monster", "power_word_stun", "blindness/deafness", "sunburst", "beacon_of_hope", "divine_favor", "death_ward", "sanctuary", "heroism", "magic_weapon", "enhance_ability", "faerie_fire", "invisibility", "darkvision", "see_invisibility", "true_seeing", "detect_magic", "blur", "detect_evil_and_good", "detect_poison_and_disease", "identify", "goodberry"]
+const MANAGED_SPELLS := ["bless", "bane", "jump", "fly", "levitate", "spider_climb", "freedom_of_movement", "water_walk", "aid", "alter_self", "barkskin", "mage_armor", "hold_monster", "ray_of_sickness", "animal_friendship", "charm_person", "charm_monster", "power_word_stun", "blindness/deafness", "sunburst", "beacon_of_hope", "divine_favor", "death_ward", "sanctuary", "heroism", "magic_weapon", "enhance_ability", "faerie_fire", "invisibility", "darkvision", "see_invisibility", "true_seeing", "detect_magic", "blur", "detect_evil_and_good", "detect_poison_and_disease", "identify", "goodberry"]
 const PERSISTED_AREA_MARKER_SPELLS := ["fog_cloud", "darkness", "black_tentacles", "antilife_shell", "spike_growth", "entangle", "cloud_of_daggers", "sleet_storm", "moonbeam", "wall_of_fire", "animate_objects"]
 static var _source_end_events: Array[Dictionary] = []
 static var _repeat_save_turn_locks: Dictionary = {}

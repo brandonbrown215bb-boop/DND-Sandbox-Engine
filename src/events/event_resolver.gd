@@ -166,7 +166,10 @@ static func ability_check_roll_mode(character: Character, ability: String, skill
 					policies.append(contribution)
 	var contributors: Array[Dictionary] = []
 	var has_advantage := familiar_help
-	var has_disadvantage := ability.to_upper() == "STR" and character != null and character.has_condition("ray_of_enfeeblement")
+	var str_markers: Array[String] = []
+	if ability.to_upper() == "STR" and character != null:
+		str_markers = CombatAction.conditions_with_consequence(character, "str_d20_disadvantage")
+	var has_disadvantage := not str_markers.is_empty()
 	if skill == "Perception" and context.get("sense") == "sight" and bool(context.get("lightly_obscured", false)):
 		has_disadvantage = true
 		contributors.append({"source_kind":"world", "source_id":"lightly_obscured", "mode":"disadvantage", "status":"active"})
@@ -181,8 +184,8 @@ static func ability_check_roll_mode(character: Character, ability: String, skill
 	if bool(context.get("target_charmed_by_actor", false)) and (bool(context.get("influence_action", false)) or ability.to_upper() == "CHA" or skill in ["Persuasion", "Deception", "Intimidation", "Performance"]):
 		has_advantage = true
 		contributors.append({"source_kind": "native", "source_id": "charmed_social", "mode": "advantage", "status": "active"})
-	if has_disadvantage:
-		contributors.append({"source_kind": "native", "source_id": "ray_of_enfeeblement", "mode": "disadvantage", "status": "active"})
+	if not str_markers.is_empty():
+		contributors.append({"source_kind": "native", "source_id": str_markers[0], "mode": "disadvantage", "status": "active"})
 	if character != null and CombatAction.condition_rule("poisoned", "check_disadvantage") and character.has_condition("poisoned"):
 		has_disadvantage = true
 		contributors.append({"source_kind": "native", "source_id": "poisoned", "mode": "disadvantage", "status": "active"})
@@ -273,7 +276,7 @@ static func resolve_monster_ability_check(monster: Dictionary, ability: String, 
 	var fear_out_of_sight := grid is HexGrid and actor_position is Vector2i and not CombatAction.is_frightened_source_in_sight(monster, actor_position, participants, grid)
 	var social_target: Variant = authored_context.get("social_target")
 	var advantage := (SpellEffects.has_spell(monster, "enhance_ability") and str(monster.get("enhance_ability_stat", "")).to_upper() == clean_ability) or ((social_target is Character or social_target is Dictionary) and CombatAction.is_charmed_by(social_target, monster) and (clean_ability == "CHA" or skill in ["Persuasion", "Deception", "Intimidation", "Performance"]))
-	var disadvantage := (CombatAction.condition_rule("poisoned", "check_disadvantage") and CombatAction.has_condition(monster, "poisoned")) or (CombatAction.condition_rule("frightened", "check_disadvantage_in_sight") and CombatAction.has_condition(monster, "frightened") and not fear_out_of_sight) or (clean_ability == "STR" and CombatAction.has_condition(monster, "ray_of_enfeeblement"))
+	var disadvantage := (CombatAction.condition_rule("poisoned", "check_disadvantage") and CombatAction.has_condition(monster, "poisoned")) or (CombatAction.condition_rule("frightened", "check_disadvantage_in_sight") and CombatAction.has_condition(monster, "frightened") and not fear_out_of_sight) or (clean_ability == "STR" and not CombatAction.conditions_with_consequence(monster, "str_d20_disadvantage").is_empty())
 	var d20_details: Dictionary = {}
 	var natural_roll := 1
 	if roll_override > 0:
