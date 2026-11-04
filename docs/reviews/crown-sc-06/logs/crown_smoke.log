@@ -1,0 +1,55 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+WARNING: [DataLoader] Rejected 25 unsupported effectless feature records; they remain unavailable until curated.
+     at: push_warning (core/variant/variant_utility.cpp:1033)
+     GDScript backtrace (most recent call first):
+         [0] load_all_data (res://src/autoload/data_loader.gd:276)
+         [1] _ready (res://src/autoload/data_loader.gd:252)
+[DataLoader] Loaded: 14 classes, 9 races, 295 items, 362 spells, 481 monsters, 4 event tables, 1 campaigns
+[DataLoader] Layers: core_imported, core_curated, mods | packs: core, crown | approved overrides: 427 | validation failures: 0
+==================================================
+ Rook's Headless Viewport Harness (per-beat)
+==================================================
+
+[TEST] crown_smoke
+[ok]   Crown smoke recruits Aldric
+[ok]   Crown smoke recruits Mira
+[ok]   Crown smoke starts with a full four-member party
+[OverworldMap] Successfully loaded 43 tiles from campaign The Lost Crown
+[OverworldMap] Placed Player 1 at start tile: (0, 0)
+[OverworldMap] Placed Player 2 at start tile: (0, 0)
+[ok]   Crown smoke displays the primary objective
+[ok]   Crown smoke moves the authoritative party position
+[DungeonGenerator] Procedurally built dungeon with 5 rooms.
+[Character] Alice leveled up to 2! (+3 HP, now 15)
+[GameManager] Alice leveled up!
+[Character] Bob leveled up to 2! (+5 HP, now 13)
+[GameManager] Bob leveled up!
+[Character] Aldric leveled up to 2! (+4 HP, now 14)
+[GameManager] Aldric leveled up!
+[Character] Mira leveled up to 2! (+4 HP, now 15)
+[GameManager] Mira leveled up!
+[ok]   Crown smoke enters the deterministic first dungeon
+[ok]   Crown smoke records dungeon entry milestone
+[ok]   Crown smoke finds the generated boss room
+[ok]   Crown smoke keeps the boss unresolved during combat
+[ok]   Crown smoke resolves the boss only after victory
+[ok]   Crown smoke records the resolved dungeon clear
+[ok]   Crown smoke keeps dungeon clear idempotent
+[DungeonGenerator] Procedurally built dungeon with 5 rooms.
+[ok]   Crown smoke re-entry preserves cleared dungeon state without rewards
+[ok]   Crown smoke presents a production event
+[ok]   Crown smoke carries the full party into the finale encounter
+[ok]   Crown smoke uses the production Lich King encounter
+[ok]   Crown smoke preserves the production Lich King spell list and slots
+[ok]   Crown smoke preserves boss defenses and reward metadata
+[ok]   Crown monster condition immunity blocks an incoming paralyze effect
+[CombatState] Test mode: skipping post-battle scene transition
+[ok]   Crown smoke resolves the production finale combat loop
+[ok]   Crown smoke registers the Lich King defeat from CombatState
+[ok]   Crown smoke reaches the campaign win condition
+[ok]   Crown smoke presents the provisional completion screen
+--------------------------------------------------
+ VIEWPORT RESULTS: 0 failed (1 tests run)
+VIEWPORT TESTS PASSED
+SCENARIO PASSED: crown_smoke

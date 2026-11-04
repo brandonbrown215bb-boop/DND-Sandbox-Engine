@@ -3,7 +3,7 @@
 class_name SpellEffects
 extends RefCounted
 
-const MANAGED_SPELLS := ["bless", "bane", "jump", "fly", "levitate", "spider_climb", "freedom_of_movement", "water_walk", "aid", "alter_self", "barkskin", "mage_armor", "hold_monster", "ray_of_sickness", "ray_of_enfeeblement", "animal_friendship", "charm_person", "charm_monster", "power_word_stun", "sleep", "blindness/deafness", "sunburst", "beacon_of_hope", "divine_favor", "death_ward", "sanctuary", "heroism", "magic_weapon", "enhance_ability", "faerie_fire", "invisibility", "darkvision", "see_invisibility", "true_seeing", "detect_magic", "blur", "detect_evil_and_good", "detect_poison_and_disease", "identify", "goodberry"]
+const MANAGED_SPELLS := ["bless", "bane", "jump", "fly", "levitate", "spider_climb", "freedom_of_movement", "water_walk", "aid", "alter_self", "barkskin", "mage_armor", "hold_monster", "ray_of_sickness", "ray_of_enfeeblement", "animal_friendship", "charm_person", "charm_monster", "power_word_stun", "blindness/deafness", "sunburst", "beacon_of_hope", "divine_favor", "death_ward", "sanctuary", "heroism", "magic_weapon", "enhance_ability", "faerie_fire", "invisibility", "darkvision", "see_invisibility", "true_seeing", "detect_magic", "blur", "detect_evil_and_good", "detect_poison_and_disease", "identify", "goodberry"]
 const PERSISTED_AREA_MARKER_SPELLS := ["fog_cloud", "darkness", "black_tentacles", "antilife_shell", "spike_growth", "entangle", "cloud_of_daggers", "sleet_storm", "moonbeam", "wall_of_fire", "animate_objects"]
 static var _source_end_events: Array[Dictionary] = []
 static var _repeat_save_turn_locks: Dictionary = {}
@@ -417,9 +417,16 @@ static func repeat_save_schedule(target, source: String) -> String:
 	if not SharedSpell.uses(spell) or not spell.has("repeat_save"): return ""
 	return str(record.get("repeat_save_schedule", spell.get("repeat_save_schedule", "target_turn_end")))
 
+## A final repeat-save stage (e.g. a second failure's lasting condition) asks for no more saves.
+static func repeat_save_stage_final(target, source: String) -> bool:
+	var record: Dictionary = records(target).get(source, {})
+	var stages: Array = record.get("repeat_save_stages", [])
+	return not stages.is_empty() and bool(stages[clampi(int(record.get("repeat_save_stage_index", 0)), 0, stages.size() - 1)].get("final", false))
+
 static func repeat_save_due(target, source: String, schedule: String, now_seconds: int = -1) -> bool:
 	if repeat_save_schedule(target, source) != schedule: return false
 	var record: Dictionary = records(target).get(source, {})
+	if repeat_save_stage_final(target, source): return false
 	if schedule == "target_turn_end": return true
 	if schedule == "elapsed_seconds": return now_seconds >= 0 and now_seconds >= int(record.get("repeat_save_next_at_seconds", 2147483647))
 	return false
@@ -452,12 +459,13 @@ static func record_shared_repeat_save(target, source: String, saved: bool, total
 	if not stages.is_empty():
 		var stage_index := clampi(int(record.get("repeat_save_stage_index", 0)), 0, stages.size() - 1)
 		var stage: Dictionary = stages[stage_index]
+		if bool(stage.get("final", false)): return {"success": false}
 		var margin := total - dc
 		var route := "stay"
 		if saved and margin >= int(stage.get("minimum_margin", 0)):
 			var qualified := int(record.get("repeat_save_stage_successes", 0)) + 1
 			record["repeat_save_stage_successes"] = qualified
-			if qualified >= int(stage.get("successes_required", 1)): route = "advance"
+			if qualified >= int(stage.get("successes_required", 1)): route = str(stage.get("on_success", "advance"))
 		elif not saved:
 			route = str(stage.get("on_failure", "stay"))
 			if bool(stage.get("reset_successes_on_failure", false)): record["repeat_save_stage_successes"] = 0

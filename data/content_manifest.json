@@ -1441,8 +1441,9 @@
     {
       "type": "spell",
       "id": "sleep",
-      "winner": "res://data/core/spells/core_spells.json#8",
+      "winner": "res://data/core/spells/crown_sc_06.json#1",
       "replaces": [
+        "res://data/core/spells/core_spells.json#8",
         "res://data/core/spells/imported_spells.json#167"
       ]
     },
@@ -3454,6 +3455,14 @@
       "winner": "res://data/core/spells/conversion_batch_002.json#4",
       "replaces": [
         "res://data/core/spells/srd_additional_spells.json#24"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "hypnotic_pattern",
+      "winner": "res://data/core/spells/crown_sc_06.json#2",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#101"
       ]
     }
   ]

@@ -2579,7 +2579,7 @@ func _test_spellcasting() -> void:
 	var counterspell_data: Dictionary = DataLoader.get_spell("counterspell")
 	var sleep_data: Dictionary = DataLoader.get_spell("sleep")
 	_assert(int(fire_bolt_data.get("range", 0)) == 24 and int(ray_of_frost_data.get("range", 0)) == 12 and int(light_data.get("range", 0)) == 1 and int(scorching_ray_data.get("range", 0)) == 24 and int(counterspell_data.get("range", 0)) == 12, "Curated spell ranges match 120-foot, 60-foot, and touch ranges on five-foot hexes")
-	_assert(SpellSupport.is_available(sleep_data) and SpellEffects.manages(sleep_data) and sleep_data.get("save", "") == "WIS" and int(sleep_data.get("area_radius", 0)) == 1 and bool(sleep_data.get("concentration", false)) and bool(sleep_data.get("end_on_any_damage", false)), "Sleep is available with its 2024 Wisdom save, five-foot sphere, concentration, and damage-break metadata")
+	_assert(SpellSupport.is_available(sleep_data) and SpellEffects.manages(sleep_data) and sleep_data.get("save", "") == "WIS" and SharedSpell.uses(sleep_data) and int(sleep_data.get("effects", [{}])[0].get("radius", 0)) == 1 and bool(sleep_data.get("concentration", false)) and bool(sleep_data.get("end_on_any_damage", false)), "Sleep is available with its 2024 Wisdom save, five-foot sphere, concentration, and damage-break metadata")
 	var one_ray_spell := scorching_ray_data.duplicate(true)
 	one_ray_spell["_scorching_ray_count_for_target"] = 1
 	var two_ray_spell := scorching_ray_data.duplicate(true)

@@ -100,29 +100,33 @@ static func collect_targets(cast: SpellCastContext) -> void:
 		# The pack's appearance is not a damaging movement trigger.
 		cast.targets.clear()
 
-	if str(cast.spell.get("id", "")) == "sleep":
-		var sleep_targets: Array[Vector2i] = []
+	# "Each creature in the area who can see it": the creature at each cell must
+	# be able to see the area's anchor point (light, Blinded, obscurement, cover).
+	if bool(cast.spell.get("area_save_requires_sight", false)):
+		var sighted_cells: Array[Vector2i] = []
 		for target_hex in cast.targets:
-			var sleep_target = null
-			for player_entity in cast.players:
-				var candidate: Character = player_entity.get("character")
-				if player_entity.get("hex_position", Vector2i.ZERO) == target_hex and candidate != null and candidate.is_alive:
-					sleep_target = candidate
-					break
-			if sleep_target == null:
-				for monster_entity in cast.monsters:
-					if monster_entity.get("hex_position", Vector2i.ZERO) == target_hex and monster_entity.get("is_alive", false):
-						sleep_target = monster_entity
-						break
-			if sleep_target == null:
+			var viewer = _creature_entity_at(cast, target_hex)
+			if viewer == null or CombatPerception.can_see_target(viewer, null, target_hex, cast.target_coord, cast.grid):
+				sighted_cells.append(target_hex)
+			else:
+				cast.hud.add_log("%s can't see %s and is unaffected." % [_creature_name(viewer), str(cast.spell.get("name", "the spell"))])
+		cast.targets = sighted_cells
+
+	# "Each creature of your choice in the area": ask per creature.
+	if bool(cast.spell.get("area_creature_choice", false)):
+		var chosen_targets: Array[Vector2i] = []
+		var spell_name := str(cast.spell.get("name", "Spell"))
+		for target_hex in cast.targets:
+			var area_creature = _creature_entity_at(cast, target_hex)
+			if area_creature == null:
 				continue
-			var sleep_name: String = sleep_target.character_name if sleep_target is Character else str(sleep_target.get("name", "Creature"))
+			var creature_name := _creature_name(area_creature)
 			cast.set_resolving.call(true)
-			var include_target := await cast.hud.request_reaction(cast.owner_label, "sleep_target:%s" % sleep_name, "Include %s in Sleep's targets?" % sleep_name, "Each creature in the Sphere makes a Wisdom save only if you choose it.", "Include", "Sleep Targets")
+			var include_target := await cast.hud.request_reaction(cast.owner_label, "area_creature_choice:%s:%s" % [str(cast.spell.get("id", "")), creature_name], "Include %s in %s's targets?" % [creature_name, spell_name], "Only creatures you choose in the area are affected.", "Include", "%s Targets" % spell_name)
 			cast.set_resolving.call(false)
 			if include_target:
-				sleep_targets.append(target_hex)
-		cast.targets = sleep_targets
+				chosen_targets.append(target_hex)
+		cast.targets = chosen_targets
 
 	if str(cast.spell.get("id", "")) == "mass_cure_wounds":
 		var selected_heal_targets: Array[Vector2i] = []
@@ -156,6 +160,21 @@ static func collect_targets(cast: SpellCastContext) -> void:
 	# later movement through the persistent zone.
 	if str(cast.spell.get("id", "")) == "spike_growth":
 		cast.targets.clear()
+
+
+static func _creature_entity_at(cast: SpellCastContext, coord: Vector2i):
+	for player_entity in cast.players:
+		var candidate: Character = player_entity.get("character")
+		if player_entity.get("hex_position", Vector2i.ZERO) == coord and candidate != null and candidate.is_alive:
+			return candidate
+	for monster_entity in cast.monsters:
+		if monster_entity.get("hex_position", Vector2i.ZERO) == coord and monster_entity.get("is_alive", false):
+			return monster_entity
+	return null
+
+
+static func _creature_name(entity) -> String:
+	return entity.character_name if entity is Character else str(entity.get("name", "Creature"))
 
 
 static func _spell_target_range(cast: SpellCastContext, spell_data: Dictionary) -> int:

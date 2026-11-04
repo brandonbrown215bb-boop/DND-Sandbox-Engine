@@ -114,7 +114,7 @@ static func is_speed_zero(entity, ignore_restrained: bool = false) -> bool:
 			continue
 		if condition_rule(str(condition), "speed_zero") and has_condition(entity, str(condition)):
 			return true
-	if has_condition(entity, "resilient_sphere") or has_condition(entity, "power_word_stun_speed_zero"):
+	if has_condition(entity, "resilient_sphere") or has_condition(entity, "power_word_stun_speed_zero") or has_condition(entity, "speed_zero"):
 		return true
 	return false
 
@@ -444,7 +444,7 @@ static func resolve_condition_spell_repeat_save(target, source: String) -> Dicti
 	var spell_id := str(record.get("spell_id", ""))
 	var shared_spell := DataLoader.get_spell(spell_id)
 	if SharedSpell.uses(shared_spell):
-		if not shared_spell.has("repeat_save") or record.get("conditions", []).is_empty():
+		if not shared_spell.has("repeat_save") or record.get("conditions", []).is_empty() or SpellEffects.repeat_save_stage_final(target, source):
 			return {"success": false}
 		var shared_dc := int(record["save_dc"]) + int(record.get("repeat_save_dc_adjustment", 0))
 		var shared_ability := str(shared_spell["repeat_save"])
@@ -452,9 +452,7 @@ static func resolve_condition_spell_repeat_save(target, source: String) -> Dicti
 		var shared_saved := shared_total >= shared_dc
 		var progress := SpellEffects.record_shared_repeat_save(target, source, shared_saved, shared_total, shared_dc)
 		return {"success": true, "saved": shared_saved, "total": shared_total, "save_dc": shared_dc, "spell_id": spell_id, "source_id": source, "caster_id": str(record.get("caster_id", "")), "recipient_id": str(record.get("recipient_id", SpellEffects.caster_id(target) if target is Character else target.get("id", ""))), "purpose_id": str(record.get("repeat_save_purpose", "repeat_save")), "save_context": record.get("repeat_save_context", {}).duplicate(true), "attempt": int(progress.get("attempt", 0)), "stage_index": int(progress.get("stage_index", -1)), "stage_successes": int(progress.get("stage_successes", 0)), "dc_adjustment": int(progress.get("dc_adjustment", 0)), "ended": bool(progress.get("ended", false))}
-	if spell_id not in ["hold_person", "hold_monster", "ray_of_enfeeblement", "power_word_stun", "sleep", "blindness/deafness", "sunburst"] or (spell_id not in ["power_word_stun", "sleep", "blindness/deafness", "sunburst"] and not bool(record.get("concentration", false))):
-		return {"success": false}
-	if spell_id == "sleep" and "incapacitated" not in record.get("conditions", []):
+	if spell_id not in ["hold_person", "hold_monster", "ray_of_enfeeblement", "power_word_stun", "blindness/deafness", "sunburst"] or (spell_id not in ["power_word_stun", "blindness/deafness", "sunburst"] and not bool(record.get("concentration", false))):
 		return {"success": false}
 	var ability := str(DataLoader.get_spell(spell_id).get("repeat_save_ability", DataLoader.get_spell(spell_id).get("save", "WIS")))
 	var dc := int(record["save_dc"])
@@ -468,18 +466,7 @@ static func resolve_condition_spell_repeat_save(target, source: String) -> Dicti
 		# turns; a caster-owned round timer could expire before that creature acts.
 		SpellEffects._advance(target, source, 6)
 		return {"success": true, "saved": false, "total": total, "save_dc": dc, "spell_id": spell_id}
-	if spell_id == "sleep":
-		var updated_record := record.duplicate(true)
-		var conditions: Array = updated_record.get("conditions", []).duplicate()
-		conditions.erase("incapacitated")
-		updated_record["conditions"] = conditions
-		remove_condition_source(target, source, ["incapacitated"])
-		var records := SpellEffects.records(target)
-		records[source] = updated_record
-		if target is Dictionary:
-			target["spell_effects"] = records
-		SpellEffects.grant(target, updated_record, "unconscious", "start")
-	return {"success": true, "saved": false, "total": total, "save_dc": dc, "spell_id": spell_id, "condition": "unconscious" if spell_id == "sleep" else ""}
+	return {"success": true, "saved": false, "total": total, "save_dc": dc, "spell_id": spell_id}
 
 
 static func can_perceive_invisible(entity, distance_feet: int) -> bool:
