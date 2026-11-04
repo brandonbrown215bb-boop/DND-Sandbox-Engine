@@ -1919,7 +1919,7 @@ static func _finish_spell_damage(caster: Character, target, details: Dictionary,
 	# entire occurrence settles, so reaching the cap cannot alter later packets.
 	decisions = decisions.duplicate()
 	decisions["_defer_damage_budget"] = true
-	var primary_dmg_res := CombatAction.resolve_damage(target, int(primary_policy.get("settlement_raw", amount)), damage_type, decisions, false, false, caster, damage_occurrence_id, primary_policy.get("bypass_layers", []), amount, int(primary_policy.get("reduction_prevented", 0)))
+	var primary_dmg_res := CombatAction.resolve_damage(target, int(primary_policy.get("settlement_raw", amount)), damage_type, CombatAction.with_damage_origin(decisions, CombatAction.DAMAGE_ORIGIN_SPELL), false, false, caster, damage_occurrence_id, primary_policy.get("bypass_layers", []), amount, int(primary_policy.get("reduction_prevented", 0)))
 	var actual: int = int(primary_dmg_res.get("damage", 0))
 	var resolved: int = int(primary_dmg_res.get("resolved", 0))
 	var ward_absorbed: int = int(primary_dmg_res.get("ward_absorbed", 0))

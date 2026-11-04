@@ -777,7 +777,7 @@ func _resolve_spell_zone_movement(target, to_hex: Vector2i) -> Array[Dictionary]
 			continue
 		var damage_details := Dice.parse_dice_details(str(zone.get("damage_formula", "2d4")), {}, caster)
 		var amount := int(damage_details.get("final_total", 0))
-		var damage_result := CombatAction.resolve_damage(target, amount, "piercing", {}, false, false, caster)
+		var damage_result := CombatAction.resolve_damage(target, amount, "piercing", CombatAction.with_damage_origin({}, CombatAction.DAMAGE_ORIGIN_SPELL), false, false, caster)
 		var damage_taken := int(damage_result.get("resolved", 0))
 		var target_name: String = target.character_name if target is Character else str(target.get("name", "The creature"))
 		hud.add_log("[color=red]%s takes %d Piercing damage from Spike Growth (%s).[/color]" % [target_name, int(damage_result.get("damage", 0)), str(zone.get("damage_formula", "2d4"))])
