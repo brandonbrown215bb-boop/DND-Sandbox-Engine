@@ -1962,7 +1962,9 @@ func _test_spellcasting() -> void:
 	SpellEffects.tick_boundary([chill_target], SpellEffects.caster_id(chill_caster), "end")
 	var chill_recovered := chill_target.heal(10)
 	var chill_dict_target := _monster_inst("goblin")
-	chill_dict_target["current_hp"] = maxi(1, int(chill_dict_target.get("max_hp", 10)) - 10)
+	# Deterministic: enough HP that the Chill Touch hit can never kill the target.
+	chill_dict_target["max_hp"] = 200
+	chill_dict_target["current_hp"] = 150
 	var chill_dict_hp := int(chill_dict_target["current_hp"])
 	chill_dict_target["armor_class"] = 1
 	chill_dict_target["id"] = "chill_dict_goblin"
