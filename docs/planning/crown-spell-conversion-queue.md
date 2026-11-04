@@ -99,8 +99,14 @@ close earlier blockers. The CSV above is the current per-spell handoff.
 ### Verification and retained investigations
 
 Windows Godot 4.7: full logic **6,987 passed, 0 failed** on the accepted combined
-runtime. Focused source/control/recovery results are recorded when the merge
-finishes. Raw logs and the independent review probes stay in ignored artifacts.
+runtime. The SC-01–SC-07 focused production-control cases and registered
+fresh-process recovery paths passed, including the corrected cancellation,
+reaction-arrival and legacy Calm Emotions save checks. Druid focus casting,
+equipment save/reload, normal character creation, the downed-target Bless flow
+and fresh recovery, condition recovery, ordinary actions, the mixed-mechanics
+encounter and Crown smoke all passed. Independent combat/persistence review
+approved the accepted boundary; #105–106 retain the concrete findings above.
+Raw logs and the independent review probes stay in ignored artifacts.
 The broader `spell_effect_lifetime` scenario has 11 failures reproduced on the
 unchanged pre-stack base; it is not an all-green campaign or lifetime certificate.
 Existing higher-level/other-content investigations remain in their named backlog.
