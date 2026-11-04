@@ -7,6 +7,7 @@ static func apply(cast: SpellCastContext, p_target: Character = null, m_target: 
 	if SharedSpell.uses(spell_data):
 		SharedSpell.apply(cast.caster, p_target if p_target != null else m_target, spell_data, resolution, cast)
 		_schedule_delayed_damage(cast, p_target, m_target, spell_data, resolution)
+		await _apply_push(cast, p_target, m_target, spell_data, origin, target_coord, resolution) # shared `push` effect (gated by on_failed_save)
 		await _apply_repelling_blast(cast, m_target, spell_data, origin, resolution)
 		return
 	_apply_spell_specific(cast, p_target, m_target, spell_data, origin, resolution)

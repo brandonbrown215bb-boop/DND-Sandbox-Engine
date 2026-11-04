@@ -1,0 +1,61 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+WARNING: [DataLoader] Rejected 25 unsupported effectless feature records; they remain unavailable until curated.
+     at: push_warning (core/variant/variant_utility.cpp:1033)
+     GDScript backtrace (most recent call first):
+         [0] load_all_data (res://src/autoload/data_loader.gd:276)
+         [1] _ready (res://src/autoload/data_loader.gd:252)
+[DataLoader] Loaded: 14 classes, 9 races, 294 items, 362 spells, 481 monsters, 4 event tables, 1 campaigns
+[DataLoader] Layers: core_imported, core_curated, mods | packs: core, crown | approved overrides: 423 | validation failures: 0
+==================================================
+ Rook's Headless Viewport Harness (per-beat)
+==================================================
+
+[TEST] crown_sc_03_support_07_flow
+[ok]   SC-03 support 07: Thunderwave is shared data (CON save, cube from self, push 10 ft, object push 10 ft, 300-ft boom)
+[ok]   SC-03 support 07: shared push { "type": "push" } is rejected
+[ok]   SC-03 support 07: shared push { "type": "push", "distance": 0 } is rejected
+[ok]   SC-03 support 07: shared push { "type": "push", "distance": 2, "foo": 1 } is rejected
+[ok]   SC-03 support 07: area_object_push { "distance": 2 } is rejected
+[ok]   SC-03 support 07: area_object_push { "distance": 0, "scope": "unsecured" } is rejected
+[ok]   SC-03 support 07: area_object_push { "distance": 2, "scope": "all" } is rejected
+[ok]   SC-03 support 07: area_object_push { "distance": 2, "scope": "unsecured", "x": 1 } is rejected
+[ok]   SC-03 support 07: area_object_push on a non-area spell is rejected
+[Character] crown-sc03s7-contract leveled up to 2! (+8 HP, now 16)
+[Character] crown-sc03s7-contract leveled up to 3! (+4 HP, now 20)
+[Character] crown-sc03s7-contract leveled up to 4! (+7 HP, now 27)
+[Character] crown-sc03s7-contract leveled up to 5! (+7 HP, now 34)
+[ok]   SC-03 support 07: a 2nd-level slot adds 1d8
+[ok]   SC-03 support 07: unsecured = not fixed, not worn/carried, and fits entirely in one hex
+[ok]   SC-01 support 01: renamed thunderwave passes the production loader as shared data
+[ok]   SC-03 support 07: a renamed push/object-push cube spell loads and validates with no ID registration
+[Character] crown-sc03s7-renamed leveled up to 2! (+5 HP, now 13)
+[Character] crown-sc03s7-renamed leveled up to 3! (+4 HP, now 17)
+[Character] crown-sc03s7-renamed leveled up to 4! (+8 HP, now 25)
+[Character] crown-sc03s7-renamed leveled up to 5! (+8 HP, now 33)
+[ok]   SC-03 support 07: renamed: CombatAction.resolve_spell applies the authored 2d6 cold (or half) (5)
+[Character] crown-sc03s7-offmap leveled up to 2! (+7 HP, now 15)
+[Character] crown-sc03s7-offmap leveled up to 3! (+5 HP, now 20)
+[Character] crown-sc03s7-offmap leveled up to 4! (+4 HP, now 24)
+[Character] crown-sc03s7-offmap leveled up to 5! (+6 HP, now 30)
+[ok]   SC-03 support 07: Wizard records shatter in its spellbook and prepares it through ordinary class selection
+[ok]   SC-03 support 07: (5,0) is in Shatter range but has no map tile
+[ok]   Conversion 001: shatter is available through the real spell picker
+[ok]   SC-03 support 07: off-map area center refused before the slot is spent
+[ok]   SC-03 support 07: refused cast keeps the action and deals nothing
+[ok]   SC-03 support 07: refusal is logged
+[Character] crown-sc03s7-wizard leveled up to 2! (+7 HP, now 15)
+[Character] crown-sc03s7-wizard leveled up to 3! (+7 HP, now 22)
+[Character] crown-sc03s7-wizard leveled up to 4! (+5 HP, now 27)
+[Character] crown-sc03s7-wizard leveled up to 5! (+7 HP, now 34)
+[ok]   SC-03 support 07: Wizard records thunderwave in its spellbook and prepares it through ordinary class selection
+[ok]   Conversion 001: thunderwave is available through the real spell picker
+[ok]   SC-03 support 07: the pushed creature is resolved once even though the push carries it across later cube hexes
+[ok]   SC-03 support 07: picker + adjacent-hex click spends one 1st-level slot
+[ok]   SC-03 support 07: failed save: 2d8 thunder and pushed 10 ft away; success: half and not pushed (dmg 10, pushed 10 ft)
+[ok]   SC-03 support 07: the unsecured crate in the cube is pushed 10 ft away from the caster ([4, -3])
+[ok]   SC-03 support 07: a fixed object in the cube is not pushed
+--------------------------------------------------
+ VIEWPORT RESULTS: 0 failed (1 tests run)
+VIEWPORT TESTS PASSED
+SCENARIO PASSED: crown_sc_03_support_07_flow

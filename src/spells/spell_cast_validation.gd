@@ -458,6 +458,11 @@ static func validate_area(cast: SpellCastContext) -> bool:
 		cast.hud.add_log("[color=orange]%s[/color]" % cast.area_selection.get("message", "Invalid area selection."))
 		cast.highlight_reachable.call()
 		return false
+	# A point-centered area must be centered on a real map tile; refuse before any payment.
+	if cast.target_type == "area" and str(cast.area_selection.get("origin", "")) != "self" and cast.grid != null and not cast.grid.has_tile(cast.target_coord):
+		cast.hud.add_log("[color=orange]Choose a point on the map for the center of %s.[/color]" % str(cast.spell.get("name", "this spell")))
+		cast.highlight_reachable.call()
+		return false
 	var area_point_count := int(cast.spell.get("area_point_count", 1))
 	if area_point_count > 1:
 		var centers: Array[Vector2i] = [cast.target_coord]
