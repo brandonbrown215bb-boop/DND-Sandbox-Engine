@@ -211,6 +211,10 @@ static func advance(c: Character, class_id: String, captured_state: Dictionary) 
 	if not can_fit(c, expected_receipts(history)): return false
 	c.level += 1
 	c.class_levels[class_id] = int(c.class_levels.get(class_id, 0)) + 1
+	if not HitDiceRules.add_class_level(c, class_id):
+		c.level -= 1
+		c.class_levels[class_id] = int(c.class_levels[class_id]) - 1
+		return false
 	c.permanent_progression.history.append(class_id)
 	c.permanent_progression.pending_levels -= 1
 	c.proficiency_bonus = 2 + int((c.level-1)/4)

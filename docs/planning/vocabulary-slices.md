@@ -795,6 +795,26 @@ neutral/renamed fixtures prove the reusable runtime only. See the
 
 S-070 separates starting a rest (`RestRules.start_rest`), advancing elapsed duration (`advance_rest`), interrupting (`interrupt_rest`) and completing (`complete_rest`). `short_rest_started` and `long_rest_started` boundaries expire declared sources at rest start without granting rest completion benefits early. Actor-specific `long_rest_duration_seconds` (such as Elf Trance's 14,400 seconds) completes that participant's Long Rest after the declared elapsed duration while 8-hour participants remain in progress until 28,800 seconds; interrupted rests before completion grant no recovery. Local-room and combat object spell states (`magical_lock`, `continual_flame` and area object damage) persist across room transitions and checkpoint save/load.
 
+#### S-071 Hit Dice subset — verified, S-071 remains open
+
+The Hit Dice part only is implemented: actual acquired class levels own class-keyed
+pools using loaded `hit_die` data, mixed sizes stay separate, creation/level-up adds
+only new entitled dice, actual completed Short Rest controls permit sequential
+selected-die roll + Constitution healing (minimum 1) or Stop, and completed Long
+Rest restores **all spent dice** under the SRD 5.2.1 Long Rest benefit. Eligibility,
+rest completion/interruption, stale selection refusal and exact allowed-checkpoint
+validation/recovery use the existing shared owners. The loaded
+`fixture:steady_spark_class` checks data-driven die sizing rather than class-ID
+registration. Legacy saves without this field retain historic levels only as
+untracked/unspendable dice until an actual completed Long Rest establishes those
+acquired dice as fully recovered tracked pools. Neither load nor recovery guesses
+prior expenditure or replays old grants.
+
+This does **not** accept S-071. Prayer of Healing's benefit-only recovery,
+ten-minute casting, interruption, daily recipient cap, and all other benefit-only
+spell hosts remain explicit continuations. Their benefits must not emit a false
+rest completion. See the [core rules status](../mechanics/core-rules-status.md#rest-and-hit-dice-implementation-boundary-2026-11-03).
+
 <a id="ordinary-action-continuation"></a>
 
 ### Ordinary combat action continuation — S-237

@@ -246,6 +246,7 @@ static func _repair_regressions(check: Callable, neutral: Dictionary) -> void:
 	c = actor(record.id)
 	c.level = 2
 	c.class_levels = {str(record.id):1, "fighter":1}
+	HitDiceRules.add_class_level(c, "fighter")
 	check.call(ClassProgression.choose_feature_options(c, "fixture:k_invocations", ["k_armor_of_shadows", "k_agonizing_blast"]), "K4: represented secondary class permits acquisition")
 	check.call(SaveManager._validate_save_data(full_save(c)).is_empty(), "K4: secondary class eligibility agrees with full-save preflight")
 	restored = Character.new()

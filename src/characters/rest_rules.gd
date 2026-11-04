@@ -9,6 +9,10 @@ const SUPPORTED_BUDGET_FORMULAS := ["half_class_level_ceil", "class_level", "fla
 
 static var _active_rest_choice_modal: Control = null
 static var _active_recovery_modal: Control = null
+static var _active_hit_dice_modal: Control = null
+static var _hit_dice_queue: Array[Character] = []
+static var _hit_dice_actor_index: int = 0
+static var _hit_dice_epoch: int = 0
 static var _active_recovery_window: Dictionary = {}
 static var _pending_recovery_queue: Array[Dictionary] = []
 static var _pending_recovery_results: Array[Dictionary] = []
@@ -24,6 +28,8 @@ static func is_rest_window_open() -> bool:
 	if _active_rest_choice_modal != null and is_instance_valid(_active_rest_choice_modal):
 		return true
 	if _active_recovery_modal != null and is_instance_valid(_active_recovery_modal):
+		return true
+	if _active_hit_dice_modal != null and is_instance_valid(_active_hit_dice_modal):
 		return true
 	if not _active_recovery_window.is_empty() and not bool(_active_recovery_window.get("settled", true)):
 		return true
@@ -55,6 +61,12 @@ static func reset_windows() -> void:
 	if _active_recovery_modal != null and is_instance_valid(_active_recovery_modal):
 		_active_recovery_modal.queue_free()
 	_active_recovery_modal = null
+	if _active_hit_dice_modal != null and is_instance_valid(_active_hit_dice_modal):
+		_active_hit_dice_modal.queue_free()
+	_active_hit_dice_modal = null
+	_hit_dice_queue.clear()
+	_hit_dice_actor_index = 0
+	_hit_dice_epoch += 1
 	_active_recovery_window.clear()
 	_pending_recovery_queue.clear()
 	_pending_recovery_results.clear()
@@ -181,6 +193,132 @@ static func open_rest_choice_dialog(host_parent: Node, on_selected: Callable, co
 	return {"opened": true, "modal": overlay}
 
 
+static func begin_hit_dice_spending(participants: Array, host_parent: Node) -> void:
+	if host_parent == null or not is_instance_valid(host_parent):
+		return
+	_hit_dice_queue.clear()
+	for character in eligible_participants(participants):
+		if character.current_hp >= character.max_hp:
+			continue
+		var has_dice := false
+		for class_id in character.hit_dice_pools:
+			if HitDiceRules.remaining_pool(character, str(class_id)) > 0:
+				has_dice = true
+				break
+		if has_dice:
+			_hit_dice_queue.append(character)
+	_hit_dice_actor_index = 0
+	_hit_dice_epoch += 1
+	_show_hit_dice_actor(host_parent, _hit_dice_epoch)
+
+
+static func _show_hit_dice_actor(host_parent: Node, epoch: int) -> void:
+	if epoch != _hit_dice_epoch or host_parent == null or not is_instance_valid(host_parent):
+		return
+	while _hit_dice_actor_index < _hit_dice_queue.size():
+		var actor: Character = _hit_dice_queue[_hit_dice_actor_index]
+		if actor != null and not actor.is_dead() and actor.current_hp > 0 and actor.current_hp < actor.max_hp:
+			var available := false
+			for class_id in actor.hit_dice_pools:
+				if HitDiceRules.remaining_pool(actor, str(class_id)) > 0:
+					available = true
+					break
+			if available:
+				_open_hit_dice_actor_modal(host_parent, actor, epoch)
+				return
+		_hit_dice_actor_index += 1
+	_finish_hit_dice_queue()
+
+
+static func _open_hit_dice_actor_modal(host_parent: Node, actor: Character, epoch: int) -> void:
+	if _active_hit_dice_modal != null and is_instance_valid(_active_hit_dice_modal):
+		_active_hit_dice_modal.queue_free()
+	var overlay := ColorRect.new()
+	overlay.name = "HitDiceRecoveryModalOverlay"
+	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	overlay.color = Color(0.0, 0.0, 0.0, 0.72)
+	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	var center := CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	overlay.add_child(center)
+	var panel := PanelContainer.new()
+	panel.custom_minimum_size = Vector2(420, 220)
+	center.add_child(panel)
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 8)
+	panel.add_child(box)
+	var title := Label.new()
+	title.text = "%s — Spend Hit Dice" % actor.character_name
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	box.add_child(title)
+	var hp_label := Label.new()
+	hp_label.text = "HP %d / %d. Choose a die to roll, or stop." % [actor.current_hp, actor.max_hp]
+	box.add_child(hp_label)
+	var spend_buttons: Dictionary = {}
+	for class_id_variant in actor.hit_dice_pools.keys():
+		var class_id := str(class_id_variant)
+		var count := HitDiceRules.remaining_pool(actor, class_id)
+		if count <= 0:
+			continue
+		var pool: Dictionary = actor.hit_dice_pools[class_id]
+		var button := Button.new()
+		button.name = "SpendHitDie_%s" % class_id
+		button.text = "Spend %s d%d Hit Die (%d remaining)" % [str(DataLoader.get_character_class(class_id).get("name", class_id)), int(pool.die_size), count]
+		box.add_child(button)
+		spend_buttons[class_id] = button
+		var selected_class_id := class_id
+		button.pressed.connect(func() -> void:
+			if _active_hit_dice_modal != overlay or epoch != _hit_dice_epoch or _hit_dice_actor_index >= _hit_dice_queue.size() or _hit_dice_queue[_hit_dice_actor_index] != actor:
+				return
+			if actor.is_dead() or actor.current_hp <= 0 or actor.current_hp >= actor.max_hp:
+				_hit_dice_actor_index += 1
+				_active_hit_dice_modal = null
+				overlay.queue_free()
+				_show_hit_dice_actor(host_parent, epoch)
+				return
+			var result := HitDiceRules.spend(actor, selected_class_id)
+			if result.get("success", false):
+				if host_parent.has_method("add_log"):
+					host_parent.call("add_log", "[color=cyan]%s spends a d%d Hit Die and regains %d HP (%d rolled + CON).[/color]" % [actor.character_name, int(result.die_size), int(result.healing), int(result.roll)])
+				if actor.current_hp >= actor.max_hp:
+					_hit_dice_actor_index += 1
+				if _active_hit_dice_modal == overlay:
+					_active_hit_dice_modal = null
+				overlay.queue_free()
+				_show_hit_dice_actor(host_parent, epoch)
+			else:
+				_active_hit_dice_modal = null
+				overlay.queue_free()
+				_show_hit_dice_actor(host_parent, epoch)
+		)
+		if not overlay.has_meta("first_spend_button"):
+			overlay.set_meta("first_spend_button", button)
+	overlay.set_meta("spend_buttons", spend_buttons)
+	var stop := Button.new()
+	stop.name = "StopSpendingHitDice"
+	stop.text = "Stop Spending Dice"
+	box.add_child(stop)
+	overlay.set_meta("stop_button", stop)
+	_active_hit_dice_modal = overlay
+	host_parent.add_child(overlay)
+	stop.pressed.connect(func() -> void:
+		if _active_hit_dice_modal != overlay or epoch != _hit_dice_epoch:
+			return
+		_hit_dice_actor_index += 1
+		_active_hit_dice_modal = null
+		overlay.queue_free()
+		_show_hit_dice_actor(host_parent, epoch)
+	)
+
+
+static func _finish_hit_dice_queue() -> void:
+	if _active_hit_dice_modal != null and is_instance_valid(_active_hit_dice_modal):
+		_active_hit_dice_modal.queue_free()
+	_active_hit_dice_modal = null
+	_hit_dice_queue.clear()
+	_hit_dice_actor_index = 0
+
+
 static func complete_short_rest(
 	participants: Array,
 	context: Dictionary = {},
@@ -195,18 +333,15 @@ static func complete_short_rest(
 			"reason": str(eligibility.get("reason", "refused")),
 			"message": str(eligibility.get("message", "Short Rest refused.")),
 		}
+	var start := start_rest("short_rest", eligibility["participants"], context)
+	if not bool(start.get("success", false)):
+		return start
+	var session: Dictionary = start["active_rest"]
+	var elapsed := advance_rest(session, SHORT_REST_SECONDS, context)
+	if not bool(elapsed.get("success", false)) or str(session.get("status", "")) != "completed":
+		return {"success": false, "reason": "rest_not_completed", "message": "Short Rest did not complete."}
 	var living: Array[Character] = eligibility["participants"]
-	var notifications: Array[Dictionary] = []
-	for character in living:
-		WorkRules.interrupt_participant(character, "short_rest")
-		SpellEffects.publish_event(character, {"type": "status", "actor_id": SpellEffects.caster_id(character), "status": "short_rest_started"})
-		SpellEffects.publish_event(character, {"type": "status", "actor_id": SpellEffects.caster_id(character), "status": "rest_started"})
-	if GameManager != null and not bool(context.get("skip_campaign_time", false)):
-		notifications = GameManager.advance_campaign_time(SHORT_REST_SECONDS)
-	for character in living:
-		MaxHpSourceRules.on_event(character, "short_rest_completed")
-		character.short_rest()
-		SharedStepExecutor.reset_zero_hp_history(character, "short_rest_completed")
+	var notifications: Array[Dictionary] = elapsed.get("notifications", [])
 
 	_next_event_serial += 1
 	var event := {
@@ -218,7 +353,7 @@ static func complete_short_rest(
 		"campaign_elapsed_seconds": GameManager.campaign_elapsed_seconds if GameManager != null else SHORT_REST_SECONDS,
 		"participants": living,
 	}
-	var pool_recoveries := _recover_numeric_pools(living, "short_rest_completed")
+	var pool_recoveries: Array[Dictionary] = elapsed.get("pool_recoveries", [])
 
 	var candidates: Array[Dictionary] = []
 	for character in living:
@@ -237,6 +372,8 @@ static func complete_short_rest(
 			"notifications": notifications,
 			"pending_recovery": false,
 		}
+		if host_parent != null and is_instance_valid(host_parent):
+			begin_hit_dice_spending(living, host_parent)
 		if on_finished.is_valid():
 			on_finished.call(empty_out)
 		return empty_out
@@ -260,6 +397,8 @@ static func complete_short_rest(
 			"notifications": notifications,
 			"pending_recovery": false,
 		}
+		if host_parent != null and is_instance_valid(host_parent):
+			begin_hit_dice_spending(living, host_parent)
 		if on_finished.is_valid():
 			on_finished.call(sync_out)
 		return sync_out
@@ -313,6 +452,7 @@ static func _advance_interactive_recovery_queue(notifications: Array[Dictionary]
 			_open_slot_recovery_modal(_pending_recovery_host, _active_recovery_window, notifications)
 			return
 	var done_callback := _pending_recovery_finished
+	var recovery_host := _pending_recovery_host
 	var final_out := {
 		"success": true,
 		"rest_type": "short_rest",
@@ -326,6 +466,9 @@ static func _advance_interactive_recovery_queue(notifications: Array[Dictionary]
 	_pending_recovery_host = null
 	_pending_recovery_finished = Callable()
 	_pending_pool_recoveries.clear()
+	var completed_party: Array = _pending_rest_event.get("participants", [])
+	if recovery_host != null and is_instance_valid(recovery_host):
+		begin_hit_dice_spending(completed_party, recovery_host)
 	if done_callback.is_valid():
 		done_callback.call(final_out)
 
@@ -365,7 +508,7 @@ static func _apply_rest_benefits_to_character(character: Character, rest_type: S
 	if rest_type == "short_rest":
 		character.short_rest()
 	elif rest_type == "long_rest":
-		character.long_rest()
+		character.long_rest(true)
 	SharedStepExecutor.reset_zero_hp_history(character, trigger)
 	return _recover_numeric_pools([character], trigger)
 
@@ -388,7 +531,10 @@ static func start_rest(rest_type: String, participants: Array, context: Dictiona
 	var participant_states: Dictionary = {}
 	for character in living:
 		var req := required_rest_duration_seconds(character, rest_type)
-		participant_states[character.character_id] = {
+		var participant_key := character.character_id
+		if participant_key.is_empty() or participant_states.has(participant_key):
+			participant_key = "rest_actor:%d" % character.get_instance_id()
+		participant_states[participant_key] = {
 			"character": character,
 			"required_seconds": req,
 			"completed": false,

@@ -299,6 +299,8 @@ var race_id: String = ""
 var class_id: String = ""
 ## Explicit represented allocation. Empty retains existing single-class state.
 var class_levels: Dictionary = {}
+## Class-keyed exact Hit Dice pools; absent in legacy saves means unknown and unavailable.
+var hit_dice_pools: Dictionary = {}
 var subclass_id: String = ""
 ## Stable improvement entitlements; saved totals are never replayed on reload.
 var feature_choices: Dictionary = {}
@@ -1122,6 +1124,8 @@ func initialize(p_name: String, p_race_id: String, p_class_id: String, scores: A
 	character_name = p_name
 	race_id = p_race_id
 	class_id = p_class_id
+	hit_dice_pools.clear()
+	HitDiceRules.add_class_level(self, class_id)
 	ability_scores = scores
 	level = 1
 
@@ -1247,6 +1251,8 @@ func level_up() -> void:
 		return
 	var previous_focus_maximum := get_max_focus_points()
 	if level >= 20:
+		return
+	if not HitDiceRules.add_class_level(self, class_id):
 		return
 	var previous_maxima := {}
 	for feature in features:
@@ -2070,8 +2076,10 @@ func short_rest() -> void:
 
 
 ## Restore long-rest resources and the character's normal between-encounter state.
-func long_rest() -> void:
+func long_rest(recover_hit_dice: bool = false) -> void:
 	if is_dead() or current_hp <= 0: return
+	if recover_hit_dice:
+		HitDiceRules.recover_long_rest(self)
 	SpellRepertoireRules.long_rest(self)
 	BardicInspirationRules.advance_time(self, 28800)
 	if exhaustion_level > 0 and exhaustion_recovery_blockers.is_empty():
@@ -2681,6 +2689,7 @@ func to_dict() -> Dictionary:
 		"race_id": race_id,
 		"class_id": class_id,
 		"class_levels": class_levels.duplicate(true),
+		"hit_dice_pools": hit_dice_pools.duplicate(true),
 		"permanent_progression": permanent_progression.duplicate(true),
 		"subclass_id": subclass_id,
 		"feature_choices": feature_choices.duplicate(true),
@@ -2823,7 +2832,14 @@ func from_dict(data: Dictionary) -> void:
 	class_id = data.get("class_id", "")
 	permanent_progression = data.get("permanent_progression", {}).duplicate(true)
 	class_levels = data.get("class_levels", {}).duplicate(true) if data.get("class_levels", {}) is Dictionary else {"_invalid": -1}
-	level = clampi(int(data.get("level", 1)), 1, 20)
+	if data.has("hit_dice_pools"):
+		hit_dice_pools = data.get("hit_dice_pools", {}).duplicate(true) if data.get("hit_dice_pools", {}) is Dictionary else {"_invalid": -1}
+		if not HitDiceRules.saved_state_error(data).is_empty():
+			hit_dice_pools = {"_invalid": -1}
+	else:
+		hit_dice_pools = HitDiceRules.legacy_untracked_pools(data)
+	var saved_character_level: Variant = data.get("level", 1)
+	level = int(saved_character_level) if _saved_integer(saved_character_level, 1, 20) else 1
 	subclass_id = str(data.get("subclass_id", DataLoader.get_character_class(class_id).get("legacy_subclass", "") if level >= int(DataLoader.get_character_class(class_id).get("subclass_level", 3)) else ""))
 	feature_choices = data.get("feature_choices", {}).duplicate(true)
 	xp = int(data.get("xp", 0))
