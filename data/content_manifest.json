@@ -40,6 +40,14 @@
   "overrides": [
     {
       "type": "spell",
+      "id": "color_spray",
+      "winner": "res://data/core/spells/crown_sc_05_support_01.json#1",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#33"
+      ]
+    },
+    {
+      "type": "spell",
       "id": "chromatic_orb",
       "winner": "res://data/core/spells/crown_sc_04_support_01.json#1",
       "replaces": [
