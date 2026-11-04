@@ -22,7 +22,7 @@ const EFFECTS := ["heal", "temporary_hp", "grant_condition", "remove_condition",
 const STEP_FIELDS := ["id", "type", "gate", "gate_step", "target", "shape", "radius", "size", "attack_type", "damage", "damage_type", "damage_components", "component_id", "scaling", "upcast", "save", "half_on_save", "save_context", "damage_scale_by_outcome", "damage_dice_policy", "damage_result_multiplier", "damage_reductions", "damage_bypasses", "recipient_exemption_choice", "effects", "incoming_negation", "incoming_negation_rule", "physical_requirements", "spatial_requirements"]
 const STEP_TYPES := ["attack", "save", "damage", "effect"]
 const STEP_GATES := ["always", "hit", "miss", "failed_save", "successful_save"]
-const FIELDS := ["containment_targeting", "id", "name", "description", "execution", "level", "casting_time", "range", "range_kind", "range_by_character_level_feet", "target", "base_targets", "attack_type", "damage", "damage_type", "component_id", "scaling", "upcast", "save", "half_on_save", "save_exit_placement", "save_context", "damage_scale_by_outcome", "damage_dice_policy", "damage_result_multiplier", "damage_reductions", "damage_bypasses", "recipient_exemption_choice", "attack_unit_substitution", "requires_target_sight", "target_creature_types", "target_creature_type_exclusions", "target_sizes", "ignore_cover_on_save", "ignore_cover", "effects", "concentration", "duration", "duration_seconds", "repeat_save", "repeat_save_schedule", "repeat_save_interval_seconds", "repeat_save_stages", "repeat_save_dc_progression", "targets_objects", "ignites_objects", "area_radius", "cone_size", "end_on_target_damage", "end_on_any_damage", "end_on_party_damage", "source_end_rules", "components", "material", "material_component_item_id", "material_component_cost", "material_component_consumed", "consumed_material_item_id", "ritual", "rules_source", "rules_status", "school", "classes", "source", "trigger", "steps", "formula_inputs", "interruption_policy", "failure_policy", "empty_effect_policy", "cast_settlement", "cancellation_rule", "stopping_cost_policy", "incoming_negation_rule", "physical_requirements", "spatial_requirements", "zero_hp_aftermath", "end_aftermath", "reaction_trigger", "effect_noise", "projectiles"] # Batch 065: reaction_trigger is validated by ReactionTriggers.spell_trigger_error.
+const FIELDS := ["containment_targeting", "id", "name", "description", "execution", "level", "casting_time", "range", "range_kind", "range_by_character_level_feet", "target", "base_targets", "attack_type", "damage", "damage_type", "component_id", "scaling", "upcast", "save", "half_on_save", "save_exit_placement", "save_context", "damage_scale_by_outcome", "damage_dice_policy", "damage_result_multiplier", "damage_reductions", "damage_bypasses", "recipient_exemption_choice", "attack_unit_substitution", "requires_target_sight", "target_creature_types", "target_creature_type_exclusions", "target_sizes", "ignore_cover_on_save", "ignore_cover", "effects", "concentration", "duration", "duration_seconds", "repeat_save", "repeat_save_schedule", "repeat_save_interval_seconds", "repeat_save_stages", "repeat_save_dc_progression", "targets_objects", "ignites_objects", "area_radius", "cone_size", "end_on_target_damage", "end_on_any_damage", "end_on_party_damage", "source_end_rules", "components", "material", "material_component_item_id", "material_component_cost", "material_component_consumed", "consumed_material_item_id", "ritual", "rules_source", "rules_status", "school", "classes", "source", "trigger", "steps", "formula_inputs", "interruption_policy", "failure_policy", "empty_effect_policy", "cast_settlement", "cancellation_rule", "stopping_cost_policy", "incoming_negation_rule", "physical_requirements", "spatial_requirements", "zero_hp_aftermath", "end_aftermath", "reaction_trigger", "effect_noise", "projectiles", "delayed_damage"] # Batch 065: reaction_trigger is validated by ReactionTriggers.spell_trigger_error.
 
 static func damage_dice_policy_error(value: Variant) -> String:
 	if not value is Dictionary or value.is_empty():
@@ -440,8 +440,11 @@ static func content_error(spell: Dictionary) -> String:
 		if str(spell.get("damage_type", "")).is_empty(): return "Projectile spells need a damage_type."
 		var wants_attack := str(spell["projectiles"].get("delivery", "")) == "spell_attack"
 		if wants_attack != (str(spell.get("attack_type", "none")) in ["ranged_spell", "melee_spell"]): return "Projectile delivery must match attack_type."
+	if spell.has("delayed_damage"):
+		var delayed_error := delayed_damage_error(spell)
+		if not delayed_error.is_empty(): return delayed_error
 	# These need dedicated handlers; a shared label must never enable a no-op.
-	for key in ["damage_per_dart", "damage_per_ray", "damage_components", "summoned_creature", "delayed_damage", "condition_on_failed_save", "area_point_count"]:
+	for key in ["damage_per_dart", "damage_per_ray", "damage_components", "summoned_creature", "condition_on_failed_save", "area_point_count"]:
 		if spell.has(key):
 			return "Shared spells do not support '%s'; use a dedicated handler." % key
 	for key in ["concentration", "half_on_save", "requires_target_sight", "targets_objects", "ignites_objects", "end_on_target_damage", "end_on_any_damage", "end_on_party_damage", "ritual", "material_component_consumed", "ignore_cover_on_save"]:
@@ -929,3 +932,20 @@ static func apply(caster: Character, target, spell: Dictionary, result: Dictiona
 	result["shared_effects_applied"] = true
 	var effects := SpellDamageRolls.spell_effects_for_slot_level(spell, int(result.get("slot_level", spell.get("level", 0))))
 	return apply_custom_effects(caster, target, effects, result, int(result.get("slot_level", spell.get("level", 0))), [], null, spell, host, decisions)
+
+
+const DELAYED_DAMAGE_TRIGGERS := ["end_of_target_next_turn"]
+
+
+## Delayed damage: a hit schedules a second roll on the target (SRD Acid Arrow). Scales with upcast.damage_per_level like the initial damage; misses never schedule it.
+static func delayed_damage_error(spell: Dictionary) -> String:
+	var delayed: Variant = spell.get("delayed_damage")
+	if not delayed is Dictionary: return "delayed_damage must be an object."
+	for key in delayed:
+		if key not in ["damage", "damage_type", "trigger"]: return "Unsupported delayed_damage field '%s'." % key
+	if str(spell.get("attack_type", "none")) not in ["ranged_spell", "melee_spell"] or not spell.has("damage") or spell.has("steps") or spell.has("projectiles"):
+		return "delayed_damage requires a single spell attack with a damage payload."
+	if not delayed.get("damage") is String or not _dice_formula(delayed["damage"]): return "delayed_damage.damage must be a plain dice expression."
+	if str(delayed.get("damage_type", "")) not in DataLoader.VALID_DAMAGE_TYPES: return "delayed_damage needs a valid damage_type."
+	if str(delayed.get("trigger", "")) not in DELAYED_DAMAGE_TRIGGERS: return "Unsupported delayed_damage trigger."
+	return ""
