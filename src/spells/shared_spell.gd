@@ -22,7 +22,7 @@ const EFFECTS := ["heal", "temporary_hp", "grant_condition", "remove_condition",
 const STEP_FIELDS := ["id", "type", "gate", "gate_step", "target", "shape", "radius", "size", "attack_type", "damage", "damage_type", "damage_components", "component_id", "scaling", "upcast", "save", "half_on_save", "save_context", "damage_scale_by_outcome", "damage_dice_policy", "damage_result_multiplier", "damage_reductions", "damage_bypasses", "recipient_exemption_choice", "effects", "incoming_negation", "incoming_negation_rule", "physical_requirements", "spatial_requirements"]
 const STEP_TYPES := ["attack", "save", "damage", "effect"]
 const STEP_GATES := ["always", "hit", "miss", "failed_save", "successful_save"]
-const FIELDS := ["containment_targeting", "id", "name", "description", "execution", "level", "casting_time", "range", "range_kind", "range_by_character_level_feet", "target", "base_targets", "attack_type", "damage", "damage_type", "component_id", "scaling", "upcast", "save", "half_on_save", "save_exit_placement", "save_context", "damage_scale_by_outcome", "damage_dice_policy", "damage_result_multiplier", "damage_reductions", "damage_bypasses", "recipient_exemption_choice", "attack_unit_substitution", "requires_target_sight", "target_creature_types", "target_creature_type_exclusions", "target_sizes", "ignore_cover_on_save", "ignore_cover", "effects", "concentration", "duration", "duration_seconds", "repeat_save", "repeat_save_schedule", "repeat_save_interval_seconds", "repeat_save_stages", "repeat_save_dc_progression", "targets_objects", "ignites_objects", "area_radius", "cone_size", "end_on_target_damage", "end_on_any_damage", "end_on_party_damage", "source_end_rules", "components", "material", "material_component_item_id", "material_component_cost", "material_component_consumed", "consumed_material_item_id", "ritual", "rules_source", "rules_status", "school", "classes", "source", "trigger", "steps", "formula_inputs", "interruption_policy", "failure_policy", "empty_effect_policy", "cast_settlement", "cancellation_rule", "stopping_cost_policy", "incoming_negation_rule", "physical_requirements", "spatial_requirements", "zero_hp_aftermath", "end_aftermath", "reaction_trigger", "effect_noise"] # Batch 065: reaction_trigger is validated by ReactionTriggers.spell_trigger_error.
+const FIELDS := ["containment_targeting", "id", "name", "description", "execution", "level", "casting_time", "range", "range_kind", "range_by_character_level_feet", "target", "base_targets", "attack_type", "damage", "damage_type", "component_id", "scaling", "upcast", "save", "half_on_save", "save_exit_placement", "save_context", "damage_scale_by_outcome", "damage_dice_policy", "damage_result_multiplier", "damage_reductions", "damage_bypasses", "recipient_exemption_choice", "attack_unit_substitution", "requires_target_sight", "target_creature_types", "target_creature_type_exclusions", "target_sizes", "ignore_cover_on_save", "ignore_cover", "effects", "concentration", "duration", "duration_seconds", "repeat_save", "repeat_save_schedule", "repeat_save_interval_seconds", "repeat_save_stages", "repeat_save_dc_progression", "targets_objects", "ignites_objects", "area_radius", "cone_size", "end_on_target_damage", "end_on_any_damage", "end_on_party_damage", "source_end_rules", "components", "material", "material_component_item_id", "material_component_cost", "material_component_consumed", "consumed_material_item_id", "ritual", "rules_source", "rules_status", "school", "classes", "source", "trigger", "steps", "formula_inputs", "interruption_policy", "failure_policy", "empty_effect_policy", "cast_settlement", "cancellation_rule", "stopping_cost_policy", "incoming_negation_rule", "physical_requirements", "spatial_requirements", "zero_hp_aftermath", "end_aftermath", "reaction_trigger", "effect_noise", "projectiles"] # Batch 065: reaction_trigger is validated by ReactionTriggers.spell_trigger_error.
 
 static func damage_dice_policy_error(value: Variant) -> String:
 	if not value is Dictionary or value.is_empty():
@@ -431,8 +431,15 @@ static func content_error(spell: Dictionary) -> String:
 			var policy_ids: Array[String] = [str(spell.get("component_id", "%s:1" % str(spell.get("damage_type", ""))))]
 			var damage_policy_error := SharedStepExecutor.validate_damage_policy(spell.get("damage_reductions", []), spell.get("damage_bypasses", []), policy_ids)
 			if not damage_policy_error.is_empty(): return damage_policy_error
-		if spell.get("attack_type", "none") != "none" and not spell.has("damage"):
+		if spell.get("attack_type", "none") != "none" and not spell.has("damage") and not spell.has("projectiles"):
 			return "Shared attack spells require a damage payload."
+	if spell.has("projectiles"):
+		var projectile_error := SpellProjectileResolver.block_error(spell["projectiles"], int(spell.get("level", 0)))
+		if not projectile_error.is_empty(): return projectile_error
+		if spell.has("damage") or spell.has("steps") or spell.has("save") or spell.has("scaling") or spell.has("upcast") or not spell.get("effects", []).is_empty(): return "Projectile spells carry their damage, count and scaling inside projectiles."
+		if str(spell.get("damage_type", "")).is_empty(): return "Projectile spells need a damage_type."
+		var wants_attack := str(spell["projectiles"].get("delivery", "")) == "spell_attack"
+		if wants_attack != (str(spell.get("attack_type", "none")) in ["ranged_spell", "melee_spell"]): return "Projectile delivery must match attack_type."
 	# These need dedicated handlers; a shared label must never enable a no-op.
 	for key in ["damage_per_dart", "damage_per_ray", "damage_components", "summoned_creature", "delayed_damage", "condition_on_failed_save", "area_point_count"]:
 		if spell.has(key):
@@ -501,7 +508,7 @@ static func content_error(spell: Dictionary) -> String:
 	for key in ["target_creature_types", "target_creature_type_exclusions", "target_sizes", "components"]:
 		if spell.has(key) and (not spell[key] is Array or not spell[key].all(func(value): return value is String)):
 			return "Shared '%s' must be an array of strings." % key
-	var has_payload: bool = spell.has("damage") or spell.has("steps") or spell.has("cancellation_rule") or spell.has("stopping_cost_policy") or spell.has("incoming_negation_rule") or spell.has("physical_requirements") or spell.has("spatial_requirements") or (str(spell.get("empty_effect_policy", "")) in ["commit", "refund"])
+	var has_payload: bool = spell.has("projectiles") or spell.has("damage") or spell.has("steps") or spell.has("cancellation_rule") or spell.has("stopping_cost_policy") or spell.has("incoming_negation_rule") or spell.has("physical_requirements") or spell.has("spatial_requirements") or (str(spell.get("empty_effect_policy", "")) in ["commit", "refund"])
 	var timed := false
 	var areas := 0
 	for effect in spell.get("effects", []):

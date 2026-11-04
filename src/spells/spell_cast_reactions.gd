@@ -238,7 +238,7 @@ static func _choose_authored_recipient_exemptions(cast: SpellCastContext) -> voi
 
 
 static func _spell_has_damage_payload(spell_data: Dictionary) -> bool:
-	if spell_data.has("damage") or spell_data.has("damage_per_dart") or spell_data.has("damage_per_ray"):
+	if spell_data.has("damage") or SpellProjectileResolver.is_projectile(spell_data):
 		return true
 	for step in spell_data.get("steps", []):
 		if step is Dictionary and step.has("damage"):
@@ -247,7 +247,7 @@ static func _spell_has_damage_payload(spell_data: Dictionary) -> bool:
 
 
 static func _spell_has_attack(spell_data: Dictionary) -> bool:
-	if str(spell_data.get("attack_type", "none")) in ["ranged_spell", "melee_spell"] or spell_data.has("damage_per_ray"):
+	if str(spell_data.get("attack_type", "none")) in ["ranged_spell", "melee_spell"] or SpellProjectileResolver.view(spell_data).has("damage_per_ray"):
 		return true
 	for step in spell_data.get("steps", []):
 		if step is Dictionary and (step.get("type", "") == "attack" or str(step.get("attack_type", "none")) in ["ranged_spell", "melee_spell"]):

@@ -1216,7 +1216,7 @@ static func saved_choices_error(dto: Dictionary) -> String:
 				return "Warlock invocation is missing or its level prerequisite is unmet"
 			if bool(option.get("choose_damage_cantrip", false)):
 				var cantrip := DataLoader.get_spell(parts[1]) if parts.size() == 2 else {}
-				if parts.size() != 2 or parts[1] not in known_spell_ids or int(cantrip.get("level", -1)) != 0 or not cantrip.has("damage") or (bool(option.get("requires_attack_roll", false)) and str(cantrip.get("attack_type", "none")) not in ["ranged_spell", "melee_spell"]):
+				if parts.size() != 2 or parts[1] not in known_spell_ids or int(cantrip.get("level", -1)) != 0 or not (cantrip.has("damage") or SpellProjectileResolver.is_projectile(cantrip)) or (bool(option.get("requires_attack_roll", false)) and str(cantrip.get("attack_type", "none")) not in ["ranged_spell", "melee_spell"]):
 					return "Warlock invocation requires an eligible known damage cantrip"
 			elif parts.size() != 1:
 				return "Warlock invocation contains an unexpected option parameter"

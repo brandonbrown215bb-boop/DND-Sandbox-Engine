@@ -205,7 +205,7 @@ static func _choose_offensive_spell(monster: Dictionary, distance: int, target_v
 			continue
 		if str(spell_data.get("target", "single")) not in ["single", "multi"]:
 			continue
-		if not spell_data.has("damage") and not spell_data.has("damage_per_dart") and not spell_data.has("damage_per_ray") and str(spell_data.get("attack_type", "none")) == "none":
+		if not spell_data.has("damage") and not SpellProjectileResolver.is_projectile(spell_data) and str(spell_data.get("attack_type", "none")) == "none":
 			continue
 		if distance > int(spell_data.get("range", 0)):
 			continue

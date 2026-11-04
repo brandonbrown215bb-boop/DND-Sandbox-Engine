@@ -2,16 +2,83 @@
 class_name SpellProjectileResolver
 extends RefCounted
 
+const DELIVERIES := ["automatic", "spell_attack"]
+## Fields a projectiles block owns; a replaced native record must not backfill them.
+const OWNED_FIELDS := ["damage", "scaling", "upcast", "save", "steps"]
+
+## Shared data authors one generic `projectiles` block; native records keep their
+## legacy per-dart/per-ray keys. Both resolve through the same allocation code.
+static func is_projectile(spell_data: Dictionary) -> bool:
+	return spell_data.get("projectiles") is Dictionary or spell_data.has("damage_per_dart") or spell_data.has("damage_per_ray")
+
+
+static func view(spell_data: Dictionary) -> Dictionary:
+	var block: Variant = spell_data.get("projectiles")
+	if not block is Dictionary:
+		return spell_data if is_projectile(spell_data) else {}
+	var out := spell_data.duplicate(true)
+	out.erase("projectiles")
+	out["_projectile_noun"] = str(block.get("noun", ""))
+	out["_shield_negates"] = bool(block.get("shield_negates", false))
+	var extra := int(block.get("extra_per_slot_level", 0))
+	if str(block.get("delivery", "")) == "automatic":
+		out["damage_per_dart"] = str(block.get("damage", "1"))
+		out["dart_count"] = int(block.get("count", 1))
+		out["upcast"] = {"extra_darts_per_level": extra}
+	else:
+		out["damage_per_ray"] = str(block.get("damage", "1"))
+		out["ray_count"] = int(block.get("count", 1))
+		out["upcast"] = {"extra_rays_per_level": extra}
+		if block.has("count_by_character_level"):
+			out["beam_count_by_level"] = block["count_by_character_level"].duplicate(true)
+	return out
+
+
+static func noun(spell_data: Dictionary) -> String:
+	var block: Variant = spell_data.get("projectiles")
+	if block is Dictionary and not str(block.get("noun", "")).is_empty():
+		return str(block["noun"])
+	return "dart" if spell_data.has("damage_per_dart") else "ray"
+
+
+static func shield_negates(spell_data: Dictionary) -> bool:
+	var block: Variant = spell_data.get("projectiles")
+	return block is Dictionary and bool(block.get("shield_negates", false))
+
+
+static func block_error(block: Variant, level: int) -> String:
+	if not block is Dictionary: return "Shared projectiles must be an object."
+	for key in block:
+		if str(key) not in ["noun", "delivery", "damage", "count", "count_by_character_level", "extra_per_slot_level", "shield_negates"]:
+			return "Unsupported projectile field '%s'." % key
+	if str(block.get("delivery", "")) not in DELIVERIES: return "Projectile delivery must be automatic or spell_attack."
+	if str(block.get("noun", "")).is_empty(): return "Projectiles need a noun."
+	var damage := str(block.get("damage", ""))
+	if not SharedSpell._formula(damage.replace(" ", "")): return "Projectiles need a damage formula."
+	if not block.get("count") is int and not (block.get("count") is float and float(block["count"]) == floorf(float(block["count"]))): return "Projectile count must be an integer."
+	if int(block["count"]) < 1 or int(block["count"]) > 20: return "Projectile count must be 1-20."
+	if int(block.get("extra_per_slot_level", 0)) < 0: return "extra_per_slot_level cannot be negative."
+	if block.has("shield_negates") and not block["shield_negates"] is bool: return "shield_negates must be Boolean."
+	if block.has("count_by_character_level"):
+		if level != 0 or str(block["delivery"]) != "spell_attack": return "Character-level projectile counts are for attack cantrips."
+		if not block["count_by_character_level"] is Dictionary or block["count_by_character_level"].is_empty(): return "count_by_character_level must be a nonempty object."
+		for threshold in block["count_by_character_level"]:
+			if not str(threshold).is_valid_int() or int(block["count_by_character_level"][threshold]) < 1: return "Projectile level bands need integer levels and counts."
+	if level == 0 and int(block.get("extra_per_slot_level", 0)) != 0: return "Cantrip projectiles cannot add per slot level."
+	return ""
+
 static func _resolve_magic_missile(caster: Character, target_entity, spell_data: Dictionary, reaction_decisions: Dictionary = {}, slot_level: int = 0) -> Dictionary:
 	var dart_count := SpellProjectileResolver.magic_missile_dart_count(spell_data, slot_level)
-	if target_entity is Character:
+	var spell_name := str(spell_data.get("name", "Magic Missile"))
+	# Legacy native dart records keep their historical Shield rule; shared records opt in by data.
+	if target_entity is Character and bool(spell_data.get("_shield_negates", true)):
 		if target_entity.has_condition("shield"):
-			return {"success": true, "hit": true, "damage": 0, "dart_count": dart_count, "shield_blocked": true, "message": "%s takes no damage from Magic Missile because Shield blocks it." % target_entity.character_name}
+			return {"success": true, "hit": true, "damage": 0, "dart_count": dart_count, "shield_blocked": true, "message": "%s takes no damage from %s because Shield blocks it." % [target_entity.character_name, spell_name]}
 		var shield_payment := SpellPermissionRules.spend_reaction(target_entity, "shield", reaction_decisions) if target_entity.reaction_available and CombatAction._reaction_accepted("shield", reaction_decisions) else {}
 		if not shield_payment.is_empty():
 			target_entity.add_condition("shield", 1)
 			var ward_events: Array = shield_payment.get("ward_events", [])
-			var shield_msg := "%s casts Shield as a Reaction and takes no damage from Magic Missile." % target_entity.character_name
+			var shield_msg := "%s casts Shield as a Reaction and takes no damage from %s." % [target_entity.character_name, spell_name]
 			for ward_ev in ward_events:
 				if not str(ward_ev.get("message", "")).is_empty():
 					shield_msg += " " + str(ward_ev["message"])
@@ -20,16 +87,17 @@ static func _resolve_magic_missile(caster: Character, target_entity, spell_data:
 	var details := SpellDamageRolls._roll_spell_damage(caster, damage_per_dart, dart_count, reaction_decisions)
 	return SpellDamageRolls._finish_spell_damage(caster, target_entity, details, 0, 1.0, str(spell_data.get("damage_type", "force")), reaction_decisions, {
 		"success": true, "hit": true, "dart_count": dart_count,
-		"message": "%s hits automatically with %d darts for {damage} %s damage." % [spell_data.get("name", "Magic Missile"), dart_count, spell_data.get("damage_type", "force")]
+		"message": "%s hits automatically with %d %ss for {damage} %s damage." % [spell_data.get("name", "Magic Missile"), dart_count, str(spell_data.get("_projectile_noun", "dart")), spell_data.get("damage_type", "force")]
 	})
 
 
 static func magic_missile_dart_count(spell_data: Dictionary, slot_level: int = 0) -> int:
+	spell_data = view(spell_data) if spell_data.get("projectiles") is Dictionary else spell_data
 	var dart_count := int(spell_data.get("dart_count", 3))
 	var base_level := int(spell_data.get("level", 1))
 	var upcast: Dictionary = spell_data.get("upcast", {})
 	dart_count += maxi(0, slot_level - base_level) * int(upcast.get("extra_darts_per_level", 0))
-	return clampi(int(spell_data.get("_magic_missile_darts_for_target", dart_count)), 1, dart_count)
+	return clampi(int(spell_data.get("_projectile_count_for_target", spell_data.get("_magic_missile_darts_for_target", dart_count))), 1, dart_count)
 
 
 static func _resolve_scorching_ray(caster: Character, target_entity, spell_data: Dictionary, reaction_decisions: Dictionary, slot_level: int = 0, distance_feet: int = -1) -> Dictionary:
@@ -88,7 +156,7 @@ static func _resolve_scorching_ray(caster: Character, target_entity, spell_data:
 				if not bonus_formula.is_empty():
 					bonus_packets.append({"details": SpellDamageRolls._roll_spell_damage(caster, bonus_formula, 2 if ray_is_crit else 1, {}), "type": str(choice.get("type", "acid")), "label": str(choice.get("label", "Conjure Minor Elementals")), "formula": bonus_formula})
 	if hits == 0:
-		return {"success": true, "hit": false, "damage": 0, "ray_count": ray_count, "shield_used": shield_used, "message": "%s misses all %d rays.%s" % [spell_data.get("name", "Scorching Ray"), ray_count, " Shield raises the target's AC for subsequent attacks." if shield_used else ""]}
+		return {"success": true, "hit": false, "damage": 0, "ray_count": ray_count, "shield_used": shield_used, "message": "%s misses all %d %ss.%s" % [spell_data.get("name", "Scorching Ray"), ray_count, str(spell_data.get("_projectile_noun", "ray")), " Shield raises the target's AC for subsequent attacks." if shield_used else ""]}
 	var beam_bonus := CombatAction.spell_damage_bonus(caster, spell_data) if not spell_data.get("beam_count_by_level", {}).is_empty() else 0
 	if beam_bonus > 0 and hits > 1:
 		details["final_total"] = int(details["final_total"]) + beam_bonus * (hits - 1)
@@ -96,22 +164,23 @@ static func _resolve_scorching_ray(caster: Character, target_entity, spell_data:
 	return SpellDamageRolls._finish_spell_damage(caster, target_entity, details, beam_bonus, 1.0, str(spell_data.get("damage_type", "fire")), reaction_decisions, {
 		"success": true, "hit": true, "ray_count": ray_count, "rays_hit": hits,
 		"stroke_of_luck_used": stroke_of_luck_used, "shield_used": shield_used,
-		"message": "%s hits with %d of %d rays for {damage} %s damage.%s%s" % [spell_data.get("name", "Scorching Ray"), hits, ray_count, spell_data.get("damage_type", "fire"), " Stroke of Luck turns the first missed ray's attack into a 20." if stroke_of_luck_used else "", " Shield raises the target's AC for subsequent attacks." if shield_used else ""]
+		"message": "%s hits with %d of %d %ss for {damage} %s damage.%s%s" % [spell_data.get("name", "Scorching Ray"), hits, ray_count, str(spell_data.get("_projectile_noun", "ray")), spell_data.get("damage_type", "fire"), " Stroke of Luck turns the first missed ray's attack into a 20." if stroke_of_luck_used else "", " Shield raises the target's AC for subsequent attacks." if shield_used else ""]
 	}, 1, bonus_packets)
 
 
 static func scorching_ray_count(caster: Character, spell_data: Dictionary, slot_level: int = 0) -> int:
+	spell_data = view(spell_data) if spell_data.get("projectiles") is Dictionary else spell_data
 	var beam_levels: Dictionary = spell_data.get("beam_count_by_level", {})
 	if not beam_levels.is_empty():
 		var beams := 1
 		for threshold in beam_levels:
 			if str(threshold).is_valid_int() and caster != null and caster.level >= int(threshold):
 				beams = maxi(beams, int(beam_levels[threshold]))
-		return clampi(int(spell_data.get("_scorching_ray_count_for_target", beams)), 1, beams)
+		return clampi(int(spell_data.get("_projectile_count_for_target", spell_data.get("_scorching_ray_count_for_target", beams))), 1, beams)
 	var ray_count := int(spell_data.get("ray_count", 3))
 	var base_level := int(spell_data.get("level", 2))
 	var upcast: Dictionary = spell_data.get("upcast", {})
 	ray_count += maxi(0, slot_level - base_level) * int(upcast.get("extra_rays_per_level", 0))
-	return clampi(int(spell_data.get("_scorching_ray_count_for_target", ray_count)), 1, ray_count)
+	return clampi(int(spell_data.get("_projectile_count_for_target", spell_data.get("_scorching_ray_count_for_target", ray_count))), 1, ray_count)
 
 

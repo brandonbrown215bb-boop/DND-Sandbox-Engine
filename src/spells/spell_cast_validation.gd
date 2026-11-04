@@ -284,7 +284,7 @@ static func validate_creatures_and_components(cast: SpellCastContext) -> bool:
 			cast.highlight_reachable.call()
 			return false
 	cast.command_selection = []
-	if str(cast.spell.get("id", "")) in ["command", "longstrider", "magic_missile", "scorching_ray", "eldritch_blast"] or int(cast.spell.get("area_point_count", 1)) > 1 or SpellCastTargeting._spell_upcast_maximum_targets(cast, cast.spell) > 1:
+	if str(cast.spell.get("id", "")) in ["command", "longstrider"] or SpellProjectileResolver.is_projectile(cast.spell) or int(cast.spell.get("area_point_count", 1)) > 1 or SpellCastTargeting._spell_upcast_maximum_targets(cast, cast.spell) > 1:
 		cast.command_selection.append_array(cast.extra_target_coords)
 	if str(cast.spell.get("id", "")) == "chain_lightning":
 		var chain_targets: Array[Vector2i] = cast.command_selection.duplicate()

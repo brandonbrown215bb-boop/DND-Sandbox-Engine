@@ -40,7 +40,7 @@ static func collect_targets(cast: SpellCastContext) -> void:
 					cast.targets = Targeting.get_sphere_targets(cast.target_coord, radius, cast.grid)
 	else:
 		cast.targets = [cast.target_coord]
-		if str(cast.spell.get("id", "")) in ["magic_missile", "scorching_ray", "eldritch_blast"] and not cast.command_selection.is_empty():
+		if SpellProjectileResolver.is_projectile(cast.spell) and not cast.command_selection.is_empty():
 			var projectile_target_counts: Dictionary = {}
 			var unique_projectile_targets: Array[Vector2i] = []
 			for projectile_target in cast.command_selection:
@@ -211,6 +211,7 @@ static func _magic_missile_dart_total(cast: SpellCastContext, spell_data: Dictio
 
 
 static func _spell_projectile_total(cast: SpellCastContext, spell_data: Dictionary) -> int:
+	spell_data = SpellProjectileResolver.view(spell_data) if spell_data.get("projectiles") is Dictionary else spell_data
 	if spell_data.has("damage_per_ray"):
 		return CombatAction.scorching_ray_count(cast.caster, spell_data, int(spell_data.get("_selected_spell_slot_level", spell_data.get("level", 2))))
 	return SpellCastTargeting._magic_missile_dart_total(cast, spell_data)
