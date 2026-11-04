@@ -45,12 +45,47 @@ static func run(check: Callable) -> void:
 			var source := str(result.get("effect_cast", {}).get("source_id", ""))
 			check.call(not source.is_empty() and SpellEffects.records(recipient).size() == 1, "Conversion 001: %s applies one source, without a native second grant" % id)
 			SpellEffects.remove(recipient, source)
+		if id == "bless": _grant_callbacks(check, renamed)
 		DataLoader.spells.erase(renamed.id)
 		DataLoader._registered_sources.get("spell", {}).erase(renamed.id)
 	_death_saves(check)
 	_sources(check)
 	_class_consumers(check)
 	print("CONVERSION_BATCH_001_CHECKS_COMPLETE")
+
+static func _grant_callbacks(check: Callable, spell: Dictionary) -> void:
+	var caster := actor("conversion-callback-caster")
+	var target := actor("conversion-callback-downed", "fighter")
+	target.current_hp = 0
+	target.is_alive = false
+	var cast := SpellEffects.begin_cast(caster, spell)
+	var source := str(cast.source_id)
+	caster.concentrating_on = {"spell_id": spell.id, "effect_source": source, "targets": []}
+	target.condition_consequence_handler = func(_actor, consequence):
+		if consequence == "unconscious": SpellEffects.reconcile([caster], [caster, target])
+	SpellEffects.grant(target, cast, "blessed")
+	check.call(target.has_condition("blessed") and target.spell_effects.has(source) and str(caster.concentrating_on.get("effect_source", "")) == source and target in caster.concentrating_on.get("targets", []), "Conversion 001: a downed recipient's synchronous refresh retains the renamed spell's source and concentration")
+	target.condition_consequence_handler = Callable()
+	SpellEffects.end_concentration(caster, [target])
+
+	var immune := {"id": "conversion-callback-immune", "conditions": {}, "condition_sources": {}, "spell_effects": {}, "condition_immunities": ["blessed"]}
+	SpellEffects.grant(immune, cast, "blessed")
+	check.call(immune.spell_effects.is_empty() and immune.conditions.is_empty(), "Conversion 001: an immune recipient retains no speculative condition timer")
+	immune.condition_immunities = ["poisoned"]
+	SpellEffects.grant(immune, cast, "blessed")
+	var before: Dictionary = immune.spell_effects.duplicate(true)
+	SpellEffects.grant(immune, cast, "poisoned")
+	check.call(immune.spell_effects == before and CombatAction.has_condition(immune, "blessed") and not CombatAction.has_condition(immune, "poisoned"), "Conversion 001: a refused sibling grant preserves the exact existing source")
+	SpellEffects.remove(immune, source)
+
+	var self_cast := SpellEffects.begin_cast(caster, spell)
+	var self_source := str(self_cast.source_id)
+	caster.concentrating_on = {"spell_id": spell.id, "effect_source": self_source, "targets": []}
+	caster.condition_consequence_handler = func(_actor, consequence):
+		if consequence == "incapacitated": SpellEffects.end_concentration(caster, [caster])
+	SpellEffects.grant(caster, self_cast, "incapacitated")
+	check.call(caster.concentrating_on.is_empty() and not caster.spell_effects.has(self_source) and not caster.has_condition("incapacitated"), "Conversion 001: a condition callback can end its own source without grant restoring it afterward")
+	caster.condition_consequence_handler = Callable()
 
 static func _death_saves(check: Callable) -> void:
 	for natural in [1, 9, 20]:

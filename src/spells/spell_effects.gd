@@ -104,7 +104,8 @@ static func grant(target, cast: Dictionary, condition: String, expiry_phase: Str
 	if target == null or condition.is_empty():
 		return
 	var source := str(cast["source_id"])
-	var record: Dictionary = records(target).get(source, cast.duplicate(true))
+	var previous: Dictionary = records(target).get(source, {})
+	var record: Dictionary = previous.duplicate(true) if not previous.is_empty() else cast.duplicate(true)
 	record["recipient_id"] = caster_id(target) if target is Character else str(target.get("id", "")) if target is Dictionary else ""
 	record["expiry_phase"] = expiry_phase
 	if seconds >= 0:
@@ -113,17 +114,23 @@ static func grant(target, cast: Dictionary, condition: String, expiry_phase: Str
 	if condition not in grants:
 		grants.append(condition)
 	record["conditions"] = grants
-	CombatAction.apply_condition(target, condition, -1 if bool(record.get("until_dispelled", false)) else maxi(1, int(ceil(float(record["remaining_seconds"]) / 6.0))), source)
-	# An immune target must not acquire a timer or become a concentration target.
-	if not has_grant(target, source, condition):
-		return
-	if not CombatAction.has_condition(target, condition):
-		CombatAction.remove_condition_source(target, source, [condition])
-		return
+	# Applying a condition can synchronously refresh combat and reconcile sources
+	# (including when the recipient was already unconscious). Publish the source
+	# first so that refresh sees its exact grant instead of empty Concentration.
 	var all_records := records(target)
 	all_records[source] = record
 	if target is Dictionary:
 		target["spell_effects"] = all_records
+	CombatAction.apply_condition(target, condition, -1 if bool(record.get("until_dispelled", false)) else maxi(1, int(ceil(float(record["remaining_seconds"]) / 6.0))), source)
+	if not has_grant(target, source, condition) or not CombatAction.has_condition(target, condition):
+		if has_grant(target, source, condition):
+			CombatAction.remove_condition_source(target, source, [condition])
+		# Refusal must leave no speculative timer or discard an existing sibling.
+		# A callback may have legitimately removed/replaced this source; retain that
+		# decision rather than restoring it after concentration has ended.
+		if is_same(records(target).get(source), record):
+			if previous.is_empty(): records(target).erase(source)
+			else: records(target)[source] = previous
 
 static func grant_aid(target: Character, cast: Dictionary, amount: int) -> bool:
 	return SpellEffectBenefits.grant_aid(target, cast, amount)
