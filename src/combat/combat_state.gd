@@ -2529,6 +2529,8 @@ func _collect_projected_ward_decision(target: Character, seeded_decisions: Dicti
 
 
 static func _sync_consumed_monster_attack_conditions(monster: Dictionary, attacker: Character) -> void:
+	if not attacker.has_condition("next_attack_disadvantage") and monster.get("conditions", {}).has("next_attack_disadvantage"):
+		SpellEffects.consume_condition(monster, "next_attack_disadvantage")
 	if attacker.has_condition("vicious_mockery_disadvantage"):
 		return
 	var conditions: Dictionary = monster.get("conditions", {})

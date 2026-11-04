@@ -488,6 +488,37 @@ static func tick_boundary(targets: Array, owner: String, phase: String) -> void:
 			var record: Dictionary = records(target)[source]
 			if str(record["caster_id"]) == owner and str(record["expiry_phase"]) == phase:
 				_advance(target, str(source), 6)
+			# Recipient-relative expiry ("until the start/end of its next turn").
+			elif str(record.get("recipient_id", "")) == owner and str(record["expiry_phase"]) == "recipient_" + phase and records(target).has(source):
+				_advance(target, str(source), 6)
+
+## Authored magnitude for a source-owned condition (e.g. speed_reduced hexes).
+static func set_condition_amount(target, cast: Dictionary, condition: String, amount: int) -> void:
+	var source := str(cast.get("source_id", ""))
+	if not records(target).has(source) or not has_grant(target, source, condition): return
+	var amounts: Dictionary = records(target)[source].get("condition_amounts", {})
+	amounts[condition] = amount
+	records(target)[source]["condition_amounts"] = amounts
+
+## Sum of live granted magnitudes; sources of the same spell do not stack (largest wins per spell).
+static func condition_amount(target, condition: String) -> int:
+	if target == null: return 0
+	var by_spell := {}
+	for source in records(target):
+		var record: Dictionary = records(target)[source]
+		if not has_grant(target, str(source), condition): continue
+		var key := str(record.get("spell_id", source))
+		by_spell[key] = maxi(int(by_spell.get(key, 0)), int(record.get("condition_amounts", {}).get(condition, 0)))
+	var total := 0
+	for value in by_spell.values(): total += int(value)
+	return total
+
+## Consume every source of a once-only condition after its triggering roll.
+static func consume_condition(target, condition: String) -> void:
+	for source in records(target).keys():
+		if has_grant(target, str(source), condition):
+			CombatAction.remove_condition_source(target, str(source), [condition])
+	prune(target)
 
 static func advance_time(targets: Array, elapsed_seconds: int) -> void:
 	if elapsed_seconds <= 0:

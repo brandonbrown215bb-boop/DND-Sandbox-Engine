@@ -37,7 +37,7 @@ static func _renamed_check(h) -> void:
 	var renamed := DataLoader.get_spell(RENAMED_ID)
 	h._assert(DataLoader.get_load_errors().is_empty() and SharedSpell.uses(renamed) and SharedSpell.content_error(renamed).is_empty(), "SC-01: renamed Ray of Sickness passes the production loader as shared data")
 	var bad := definition.duplicate(true)
-	bad.effects[0].expiry = {"boundary": "target_turn_start", "turns": 1}
+	bad.effects[0].expiry = {"boundary": "target_turn_middle", "turns": 1}
 	h._assert(not SharedSpell.content_error(bad).is_empty(), "SC-01: an unsupported expiry boundary is rejected before play")
 	bad.effects[0].expiry = {"boundary": "caster_turn_end", "turns": 0}
 	h._assert(not SharedSpell.content_error(bad).is_empty(), "SC-01: a zero-turn expiry is rejected before play")

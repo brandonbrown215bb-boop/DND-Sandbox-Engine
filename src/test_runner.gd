@@ -1951,19 +1951,25 @@ func _test_spellcasting() -> void:
 		if bool(chill_result.get("hit", false)):
 			break
 	var chill_source_id := str(chill_caster.get_instance_id())
-	var chill_applied := CombatAction.apply_spell_hit_effects(chill_target, chill_touch, chill_result, chill_source_id)
+	# Chill Touch is a shared-contract spell: resolve_spell grants healing_prevented on hit.
+	var chill_applied := [1] if SpellEffects.has_spell(chill_target, "chill_touch") and CombatAction.has_condition(chill_target, "healing_prevented") else []
 	chill_target.current_hp = 50
 	var chill_hp_after_hit := chill_target.current_hp
 	var chill_event_healing := EventResolver.apply_effects(chill_target, [{"type": "heal", "value": 10}], chill_caster)
 	var chill_hp_after_blocked_heal := chill_target.current_hp
-	CombatAction.tick_healing_suppression_for_source(chill_target, chill_source_id)
+	SpellEffects.tick_boundary([chill_target], SpellEffects.caster_id(chill_caster), "end")
 	var chill_still_blocked := chill_target.heal(10) == 0
-	CombatAction.tick_healing_suppression_for_source(chill_target, chill_source_id)
+	SpellEffects.tick_boundary([chill_target], SpellEffects.caster_id(chill_caster), "end")
 	var chill_recovered := chill_target.heal(10)
 	var chill_dict_target := _monster_inst("goblin")
 	chill_dict_target["current_hp"] = maxi(1, int(chill_dict_target.get("max_hp", 10)) - 10)
 	var chill_dict_hp := int(chill_dict_target["current_hp"])
-	CombatAction.apply_spell_hit_effects(chill_dict_target, chill_touch, {"hit": true}, chill_source_id)
+	chill_dict_target["armor_class"] = 1
+	chill_dict_target["id"] = "chill_dict_goblin"
+	for _attempt in 40:
+		if bool(CombatAction.resolve_spell(chill_caster, chill_dict_target, chill_touch, false, {}, [], 0, 5).get("hit", false)):
+			break
+	chill_dict_target["current_hp"] = chill_dict_hp
 	var chill_dict_cleric: Character = _fresh_char("Chill Touch Healer", "human", "cleric", {"WIS": 16})
 	var chill_dict_spark := ClericRules.resolve_divine_spark(chill_dict_cleric, chill_dict_target, "heal")
 	var vicious_mockery := DataLoader.get_spell("vicious_mockery")
@@ -1974,7 +1980,7 @@ func _test_spellcasting() -> void:
 		mockery_resolution = CombatAction.resolve_spell(mockery_caster, mockery_target, vicious_mockery)
 		if not bool(mockery_resolution.get("saved", true)):
 			break
-	var mockery_effects := CombatAction.apply_spell_failed_save_effects(mockery_target, vicious_mockery, mockery_resolution)
+	var mockery_effects := [1] if CombatAction.has_condition(mockery_target, "next_attack_disadvantage") else []
 	var mockery_monster_attacker := CombatState._make_temp_monster_character(mockery_target)
 	var mockery_attack := mockery_monster_attacker.make_attack_roll()
 	CombatState._sync_consumed_monster_attack_conditions(mockery_target, mockery_monster_attacker)
@@ -2436,8 +2442,19 @@ func _test_spellcasting() -> void:
 		_assert("healing_word" in DataLoader.get_character_class(healing_class).get("spells_known_by_level", {}).get("1", []) and "healing_word" in DataLoader.get_character_class(healing_class).get("spell_list_ids", []), "Healing Word is available to %s" % healing_class.capitalize())
 	var shocking_grasp: Dictionary = DataLoader.get_spell("shocking_grasp")
 	var shocked_target := _monster_inst("goblin")
-	var missed_shock_effects := CombatAction.apply_spell_hit_effects(shocked_target, shocking_grasp, {"hit": false})
-	var hit_shock_effects := CombatAction.apply_spell_hit_effects(shocked_target, shocking_grasp, {"hit": true})
+	shocked_target["id"] = "shocked_goblin"
+	var shock_caster: Character = _fresh_char("Shock Caster", "human", "wizard", {"INT": 16})
+	shocked_target["armor_class"] = 1000
+	for _attempt in 5:
+		CombatAction.resolve_spell(shock_caster, shocked_target, shocking_grasp, false, {}, [], 0, 1)
+	var missed_shock_effects := [1] if CombatAction.blocks_opportunity_attack(shocked_target) else []
+	shocked_target["armor_class"] = 1
+	for _attempt in 40:
+		if bool(CombatAction.resolve_spell(shock_caster, shocked_target, shocking_grasp, false, {}, [], 0, 1).get("hit", false)):
+			break
+	var hit_shock_effects := [1] if CombatAction.blocks_opportunity_attack(shocked_target) else []
+	SpellEffects.tick_boundary([shocked_target], SpellEffects.caster_id(shock_caster), "start")
+	var shock_survives_caster_turn := CombatAction.blocks_opportunity_attack(shocked_target)
 	var level_eleven_caster: Character = _fresh_char("Level Eleven Caster", "human", "wizard", {"INT": 16})
 	for _level in 10:
 		level_eleven_caster.level_up()
@@ -2447,8 +2464,8 @@ func _test_spellcasting() -> void:
 		level_seventeen_caster.level_up()
 	_assert(CombatAction.spell_damage_formula(level_seventeen_caster, sacred_flame) == "4d8" and CombatAction.spell_damage_formula(level_seventeen_caster, DataLoader.get_spell("chill_touch")) == "4d10" and CombatAction.spell_damage_formula(level_seventeen_caster, vicious_mockery) == "4d6" and CombatAction.spell_damage_formula(level_seventeen_caster, acid_splash) == "4d6", "Sacred Flame, Chill Touch, Vicious Mockery, and Acid Splash receive their level-17 cantrip upgrades")
 	_assert(shocking_grasp.get("attack_type", "") == "melee_spell" and shocking_grasp.get("components", []) == ["V", "S"] and CombatAction.spell_damage_formula(scaling_caster, shocking_grasp) == "2d8" and CombatAction.spell_damage_formula(level_eleven_caster, shocking_grasp) == "3d8" and missed_shock_effects.is_empty() and hit_shock_effects.size() == 1 and CombatAction.blocks_opportunity_attack(shocked_target), "Shocking Grasp uses melee spell attack and official cantrip scaling, blocking Opportunity Attacks only after a hit")
-	CombatAction.clear_shocking_grasp(shocked_target)
-	_assert(not CombatAction.blocks_opportunity_attack(shocked_target), "Shocking Grasp's Opportunity Attack restriction clears at the start of the target's next turn")
+	SpellEffects.tick_boundary([shocked_target], "shocked_goblin", "start")
+	_assert(shock_survives_caster_turn and not CombatAction.blocks_opportunity_attack(shocked_target), "Shocking Grasp's Opportunity Attack restriction clears at the start of the target's next turn")
 	for shock_class in ["sorcerer", "wizard"]:
 		_assert("shocking_grasp" in DataLoader.get_character_class(shock_class).get("spell_list_ids", []), "Shocking Grasp counts as a %s cantrip" % shock_class.capitalize())
 	var blight_spell := DataLoader.get_spell("blight")
@@ -2630,8 +2647,15 @@ func _test_spellcasting() -> void:
 	var cure_cast := CombatAction.resolve_spell(caster2, wounded, cure, false)
 	var cure_results := EventResolver.apply_effects(wounded, cure.get("effects", []))
 	_assert(cure_cast.get("success", false) and not cure_results.is_empty() and wounded.current_hp > 1, "Cure Wounds uses the production effect-only path to heal an ally")
-	var ray_effects := EventResolver.apply_effects(wounded, DataLoader.get_spell("ray_of_frost").get("effects", []))
-	_assert(not ray_effects.is_empty() and wounded.get_modifier("stat", "speed") < 0, "Ray of Frost production effect applies a timed speed reduction")
+	var frost_ray_target: Character = _fresh_char("Ray Target", "human", "fighter", {"CON": 14})
+	frost_ray_target.max_hp = 200
+	frost_ray_target.current_hp = 200
+	frost_ray_target.base_ac = 1
+	var frost_ray_speed_before := frost_ray_target.get_speed()
+	for _attempt in 40:
+		if bool(CombatAction.resolve_spell(caster2, frost_ray_target, DataLoader.get_spell("ray_of_frost"), false, {}, [], 0, 12).get("hit", false)):
+			break
+	_assert(frost_ray_target.get_speed() == frost_ray_speed_before - 2 and CombatAction.has_condition(frost_ray_target, "speed_reduced"), "Ray of Frost production effect applies a timed speed reduction")
 	var pact_warlock: Character = _fresh_char("Pact Caster", "human", "warlock",
 		{"STR": 8, "DEX": 14, "CON": 12, "INT": 10, "WIS": 10, "CHA": 16})
 	var pact_target: Dictionary = _monster_inst("goblin")

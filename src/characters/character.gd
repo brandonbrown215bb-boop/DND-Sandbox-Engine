@@ -579,7 +579,7 @@ func get_speed(ignore_restrained: bool = false) -> int:
 				if int(key) <= level and int(key) > threshold:
 					threshold = int(key)
 			movement_bonus += int(table[str(threshold)]) if threshold > 0 else int(effect.get("bonus", 0))
-	return maxi(0, speed + movement_bonus + SourceBenefitRules.total(self, "speed") + get_modifier("stat", "speed") - exhaustion_level)
+	return maxi(0, speed + movement_bonus + SourceBenefitRules.total(self, "speed") + get_modifier("stat", "speed") - exhaustion_level - SpellEffects.condition_amount(self, "speed_reduced"))
 
 
 func movement_speed_feet(mode: String = "walk", ignore_restrained: bool = false) -> int:
@@ -1709,7 +1709,7 @@ func resist_damage(amount: int, damage_type: String) -> int:
 
 ## Heal HP.
 func heal(amount: int) -> int:
-	if amount <= 0 or is_dead() or not healing_suppression_sources.is_empty():
+	if amount <= 0 or is_dead() or not healing_suppression_sources.is_empty() or has_condition("healing_prevented"):
 		return 0
 	var actual := mini(amount, max_hp - current_hp)
 	current_hp += actual
@@ -1894,6 +1894,7 @@ func get_attack_style_bonus(weapon_data: Dictionary = {}) -> int:
 ## Make an attack roll. Returns {"roll": int, "is_crit": bool, "is_miss": bool}.
 func make_attack_roll(ability: String = "STR", advantage: bool = false, disadvantage: bool = false, weapon_data: Dictionary = {}, decisions: Dictionary = {}) -> Dictionary:
 	var mockery_disadvantage := has_condition("vicious_mockery_disadvantage")
+	var next_attack_disadvantage := has_condition("next_attack_disadvantage")
 	if CombatAction.attacker_has_condition_disadvantage(self, ability, decisions):
 		disadvantage = true
 
@@ -1903,6 +1904,8 @@ func make_attack_roll(ability: String = "STR", advantage: bool = false, disadvan
 	var roll_kept: Array = d20_details.get("kept", [true]).duplicate()
 	if mockery_disadvantage:
 		remove_condition("vicious_mockery_disadvantage")
+	if next_attack_disadvantage:
+		SpellEffects.consume_condition(self, "next_attack_disadvantage")
 
 	var ability_modifier := ability_scores.get_ability_modifier(ability)
 	var mod := int(weapon_data.get("attack_bonus_override", ability_modifier + proficiency_bonus))

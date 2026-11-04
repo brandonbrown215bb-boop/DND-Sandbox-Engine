@@ -39,6 +39,30 @@
   ],
   "overrides": [
     {
+      "type": "spell",
+      "id": "vicious_mockery",
+      "winner": "res://data/core/spells/crown_sc_01_support_01.json#4",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#190"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "shocking_grasp",
+      "winner": "res://data/core/spells/crown_sc_01_support_01.json#3",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#164"
+      ]
+    },
+    {
+      "type": "spell",
+      "id": "chill_touch",
+      "winner": "res://data/core/spells/crown_sc_01_support_01.json#2",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#29"
+      ]
+    },
+    {
       "type": "item",
       "id": "alchemists_supplies",
       "winner": "res://data/core/items/imported_magic_tools.json#2",
@@ -1333,9 +1357,10 @@
     {
       "type": "spell",
       "id": "ray_of_frost",
-      "winner": "res://data/core/spells/core_spells.json#2",
+      "winner": "res://data/core/spells/crown_sc_01_support_01.json#1",
       "replaces": [
-        "res://data/core/spells/imported_spells.json#148"
+        "res://data/core/spells/imported_spells.json#148",
+        "res://data/core/spells/core_spells.json#2"
       ]
     },
     {
