@@ -845,6 +845,11 @@ the broader parent requirements remain open.
 
 ## Conditions, lifetime and other supported fields
 
+Condition grants publish their exact source record before applying the condition:
+an already-unconscious recipient can immediately refresh combat and reconcile
+concentration. Refused grants retain no new timer and preserve existing sibling
+grants; callbacks that legitimately end or replace the source are not undone.
+
 Conditions currently supported by this contract are Blinded, Deafened,
 Frightened, Poisoned, Prone, Restrained, Stunned, Paralyzed, Incapacitated, and
 the existing `blessed`, `baned` and `shield_of_faith` benefits. Their lowercase
