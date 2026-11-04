@@ -1,0 +1,34 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+WARNING: [DataLoader] Rejected 25 unsupported effectless feature records; they remain unavailable until curated.
+     at: push_warning (core/variant/variant_utility.cpp:1033)
+     GDScript backtrace (most recent call first):
+         [0] load_all_data (res://src/autoload/data_loader.gd:276)
+         [1] _ready (res://src/autoload/data_loader.gd:252)
+[DataLoader] Loaded: 14 classes, 9 races, 295 items, 362 spells, 481 monsters, 4 event tables, 1 campaigns
+[DataLoader] Layers: core_imported, core_curated, mods | packs: core, crown | approved overrides: 427 | validation failures: 0
+==================================================
+ Rook's Headless Viewport Harness (per-beat)
+==================================================
+
+[TEST] crown_sc_05_support_01_flow
+[ok]   SC-05 support 01: Color Spray is shared SRD 5.2.1 data (15-ft Cone, Con save, V/S/M, Bard/Sorcerer/Wizard)
+[ok]   SC-01 support 01: renamed color_spray passes the production loader as shared data
+[Character] crown-sc05s1-renamed leveled up to 2! (+4 HP, now 12)
+[Character] crown-sc05s1-renamed leveled up to 3! (+4 HP, now 16)
+[Character] crown-sc05s1-renamed leveled up to 4! (+3 HP, now 19)
+[Character] crown-sc05s1-renamed leveled up to 5! (+4 HP, now 23)
+[ok]   SC-05 support 01: renamed cone grants Blinded until the end of the caster's next turn through CombatAction.resolve_spell with no ID registration
+[ok]   SC-05 support 01: the old imported 'duration' field on grant_condition is still rejected
+[ok]   SC-05 support 01: Sorcerer learns Color Spray through ordinary class selection
+[ok]   Conversion 001: color_spray is available through the real spell picker
+[ok]   SC-05 support 01: picker + cone click: a failed Con save Blinds the creature until the end of the caster's next turn
+[ok]   SC-05 support 01: a Blinded-immune creature in the Cone gains nothing
+[ok]   SC-05 support 01: a creature 30 feet away is outside the 15-foot Cone
+[ok]   SC-05 support 01: the Blinded creature's attack rolls have Disadvantage
+[ok]   SC-05 support 01: Blinded survives the target's turn and the end of the casting turn
+[ok]   SC-05 support 01: Blinded ends at the end of the caster's next turn
+--------------------------------------------------
+ VIEWPORT RESULTS: 0 failed (1 tests run)
+VIEWPORT TESTS PASSED
+SCENARIO PASSED: crown_sc_05_support_01_flow

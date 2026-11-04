@@ -3,7 +3,7 @@
 class_name SharedSpell
 extends RefCounted
 
-const CONDITIONS := ["blinded", "deafened", "frightened", "poisoned", "prone", "restrained", "stunned", "paralyzed", "incapacitated", "blessed", "baned", "shield_of_faith", "speed_reduced", "healing_prevented", "opportunity_attack_blocked", "next_attack_disadvantage", "invisibility_suppressed", "charmed", "blurred", "outlined"]
+const CONDITIONS := ["blinded", "deafened", "frightened", "poisoned", "prone", "restrained", "stunned", "paralyzed", "incapacitated", "blessed", "baned", "shield_of_faith", "speed_reduced", "healing_prevented", "opportunity_attack_blocked", "next_attack_disadvantage", "invisibility_suppressed", "charmed", "blurred", "outlined", "unconscious", "speed_zero"]
 ## Conditions whose consumer reads an authored magnitude (hexes) from the source record.
 const AMOUNT_CONDITIONS := {"speed_reduced": [1, 12]}
 const ABILITIES := ["STR", "DEX", "CON", "INT", "WIS", "CHA"]
@@ -22,7 +22,7 @@ const EFFECTS := ["heal", "temporary_hp", "grant_condition", "remove_condition",
 const STEP_FIELDS := ["id", "type", "gate", "gate_step", "target", "shape", "radius", "size", "attack_type", "damage", "damage_type", "damage_components", "component_id", "scaling", "upcast", "save", "half_on_save", "save_context", "damage_scale_by_outcome", "damage_dice_policy", "damage_result_multiplier", "damage_reductions", "damage_bypasses", "recipient_exemption_choice", "effects", "incoming_negation", "incoming_negation_rule", "physical_requirements", "spatial_requirements"]
 const STEP_TYPES := ["attack", "save", "damage", "effect"]
 const STEP_GATES := ["always", "hit", "miss", "failed_save", "successful_save"]
-const FIELDS := ["containment_targeting", "id", "name", "description", "execution", "level", "casting_time", "range", "range_kind", "range_by_character_level_feet", "target", "base_targets", "attack_type", "damage", "damage_type", "component_id", "scaling", "upcast", "save", "half_on_save", "save_exit_placement", "save_context", "damage_scale_by_outcome", "damage_dice_policy", "damage_result_multiplier", "damage_reductions", "damage_bypasses", "recipient_exemption_choice", "attack_unit_substitution", "requires_target_sight", "target_creature_types", "target_creature_type_exclusions", "target_sizes", "ignore_cover_on_save", "ignore_cover", "effects", "concentration", "duration", "duration_seconds", "repeat_save", "repeat_save_schedule", "repeat_save_interval_seconds", "repeat_save_stages", "repeat_save_dc_progression", "targets_objects", "ignites_objects", "area_radius", "cone_size", "end_on_target_damage", "end_on_any_damage", "end_on_party_damage", "source_end_rules", "components", "material", "material_component_item_id", "material_component_cost", "material_component_consumed", "consumed_material_item_id", "ritual", "rules_source", "rules_status", "school", "classes", "source", "trigger", "steps", "formula_inputs", "interruption_policy", "failure_policy", "empty_effect_policy", "cast_settlement", "cancellation_rule", "stopping_cost_policy", "incoming_negation_rule", "physical_requirements", "spatial_requirements", "zero_hp_aftermath", "end_aftermath", "reaction_trigger", "effect_noise", "projectiles", "delayed_damage", "damage_type_options", "exploding_dice", "save_disadvantage_creature_types", "area_object_push", "leap_on_matching_dice", "save_advantage_if_fighting_target"] # Batch 065: reaction_trigger is validated by ReactionTriggers.spell_trigger_error.
+const FIELDS := ["containment_targeting", "id", "name", "description", "execution", "level", "casting_time", "range", "range_kind", "range_by_character_level_feet", "target", "base_targets", "attack_type", "damage", "damage_type", "component_id", "scaling", "upcast", "save", "half_on_save", "save_exit_placement", "save_context", "damage_scale_by_outcome", "damage_dice_policy", "damage_result_multiplier", "damage_reductions", "damage_bypasses", "recipient_exemption_choice", "attack_unit_substitution", "requires_target_sight", "target_creature_types", "target_creature_type_exclusions", "target_sizes", "ignore_cover_on_save", "ignore_cover", "effects", "concentration", "duration", "duration_seconds", "repeat_save", "repeat_save_schedule", "repeat_save_interval_seconds", "repeat_save_stages", "repeat_save_dc_progression", "targets_objects", "ignites_objects", "area_radius", "cone_size", "end_on_target_damage", "end_on_any_damage", "end_on_party_damage", "source_end_rules", "components", "material", "material_component_item_id", "material_component_cost", "material_component_consumed", "consumed_material_item_id", "ritual", "rules_source", "rules_status", "school", "classes", "source", "trigger", "steps", "formula_inputs", "interruption_policy", "failure_policy", "empty_effect_policy", "cast_settlement", "cancellation_rule", "stopping_cost_policy", "incoming_negation_rule", "physical_requirements", "spatial_requirements", "zero_hp_aftermath", "end_aftermath", "reaction_trigger", "effect_noise", "projectiles", "delayed_damage", "damage_type_options", "exploding_dice", "save_disadvantage_creature_types", "area_object_push", "leap_on_matching_dice", "save_advantage_if_fighting_target", "area_creature_choice", "save_auto_success_traits", "end_on_shake_action", "area_save_requires_sight"] # Batch 065: reaction_trigger is validated by ReactionTriggers.spell_trigger_error.
 
 static func damage_dice_policy_error(value: Variant) -> String:
 	if not value is Dictionary or value.is_empty():
@@ -66,6 +66,15 @@ static func healing_reroll_policy_error(value: Variant) -> String:
 		if not cost is Dictionary or cost.size() != 2 or not cost.has("source_instance_id") or not cost.has("amount") or not cost["source_instance_id"] is String or str(cost["source_instance_id"]).is_empty() or not _integer(cost["amount"], 1, 100):
 			return "Healing reroll cost requires an exact source_instance_id and amount from 1 through 100."
 	return ""
+
+## Generic creature traits that make a save automatically succeed
+## (e.g. creatures that don't sleep or are immune to Exhaustion vs. magical sleep).
+const SAVE_AUTO_SUCCESS_TRAITS := ["magical_sleep_immunity"]
+
+static func save_auto_success(spell: Dictionary, target) -> bool:
+	for trait_id in spell.get("save_auto_success_traits", []):
+		if str(trait_id) == "magical_sleep_immunity" and CombatAction.is_immune_to_magical_sleep(target): return true
+	return false
 
 const SOURCE_END_EVENTS := ["attack", "cast", "movement", "status", "equipment", "range", "damage"]
 const SOURCE_END_RULE_FIELDS := ["event", "actor", "school", "spell_id", "action", "status", "equipment", "state", "paid_slot_level", "maximum_range_feet", "except_source_id", "damage_budget"]
@@ -227,8 +236,12 @@ static func _validate_single_effect(effect: Variant) -> String:
 			allowed.append("origin")
 			if effect.get("origin", "") != "self": return "Shared line areas must originate from self."
 			if not _integer(effect.get("size"), 1, 40): return "Shared line areas require a length of 1..40 hexes."
+		elif effect.get("shape", "") == "square":
+			# A cube anchored on a point within range (its footprint in feet), not caster-adjacent.
+			allowed.erase("size"); allowed.erase("radius"); allowed.append("size_feet")
+			if not _integer(effect.get("size_feet"), 5, 60) or int(effect["size_feet"]) % 5 != 0: return "Shared square areas require size_feet 5..60 in 5-foot steps."
 		elif effect.get("shape", "") not in ["sphere", "cone", "cube"]: return "Unsupported shared area shape."
-		var geometry_key := "radius" if effect["shape"] == "sphere" else "size"
+		var geometry_key := "radius" if effect["shape"] == "sphere" else "size_feet" if effect["shape"] == "square" else "size"
 		if not _integer(effect.get(geometry_key), 1, 100): return "Shared areas require the shape's radius/size in hexes."
 	for key in effect:
 		if key not in allowed: return "Unsupported field '%s' for shared %s." % [key, kind]
@@ -505,7 +518,13 @@ static func content_error(spell: Dictionary) -> String:
 	for key in ["damage_per_dart", "damage_per_ray", "damage_components", "summoned_creature", "condition_on_failed_save", "area_point_count"]:
 		if spell.has(key):
 			return "Shared spells do not support '%s'; use a dedicated handler." % key
-	for key in ["concentration", "half_on_save", "requires_target_sight", "targets_objects", "ignites_objects", "end_on_target_damage", "end_on_any_damage", "end_on_party_damage", "ritual", "material_component_consumed", "ignore_cover_on_save", "save_advantage_if_fighting_target"]:
+	if spell.has("save_auto_success_traits"):
+		var traits: Variant = spell["save_auto_success_traits"]
+		if not traits is Array or traits.is_empty() or not spell.has("save"): return "save_auto_success_traits requires a save and a nonempty trait list."
+		for trait_id in traits:
+			if str(trait_id) not in SAVE_AUTO_SUCCESS_TRAITS: return "Unsupported save auto-success trait '%s'." % str(trait_id)
+	if (spell.get("area_creature_choice", false) is bool and spell.get("area_creature_choice", false) or spell.get("area_save_requires_sight", false) is bool and spell.get("area_save_requires_sight", false)) and str(spell.get("target", "")) != "area": return "Area creature choice and area sight gates require an area spell."
+	for key in ["concentration", "half_on_save", "requires_target_sight", "targets_objects", "ignites_objects", "end_on_target_damage", "end_on_any_damage", "end_on_party_damage", "ritual", "material_component_consumed", "ignore_cover_on_save", "save_advantage_if_fighting_target", "area_creature_choice", "end_on_shake_action", "area_save_requires_sight"]:
 		if spell.has(key) and not spell[key] is bool:
 			return "Shared '%s' must be Boolean." % key
 	if spell.has("duration_seconds") and not _integer(spell["duration_seconds"], 1, 86400):
@@ -607,7 +626,13 @@ static func repeat_save_stages_error(value: Variant) -> String:
 	for stage in value:
 		if not stage is Dictionary or stage.is_empty(): return "Each repeat-save stage must be an object."
 		for field in stage:
-			if str(field) not in ["condition", "successes_required", "minimum_margin", "on_failure", "reset_successes_on_failure"]: return "Unsupported repeat-save stage field '%s'." % str(field)
+			if str(field) not in ["condition", "successes_required", "minimum_margin", "on_failure", "on_success", "reset_successes_on_failure", "final"]: return "Unsupported repeat-save stage field '%s'." % str(field)
+		# A final stage asks for no further saves; it lasts until the source ends.
+		if stage.has("final") and (not stage["final"] is bool or (bool(stage["final"]) and (stage.has("successes_required") or stage.has("on_failure") or stage.has("on_success") or stage.has("minimum_margin")))): return "A final repeat-save stage declares only its condition."
+		if bool(stage.get("final", false)):
+			if str(stage.get("condition", "")) not in CONDITIONS: return "Repeat-save stage requires a supported condition."
+			continue
+		if str(stage.get("on_success", "advance")) not in ["advance", "end"]: return "Repeat-save stage on_success must be advance or end."
 		if str(stage.get("condition", "")) not in CONDITIONS or not _integer(stage.get("successes_required", null), 1, 20) or not _integer(stage.get("minimum_margin", 0), 0, 100) or str(stage.get("on_failure", "stay")) not in ["stay", "advance", "end"] or (stage.has("reset_successes_on_failure") and not stage["reset_successes_on_failure"] is bool):
 			return "Repeat-save stage requires a supported condition, success count, margin and failure route."
 	return ""

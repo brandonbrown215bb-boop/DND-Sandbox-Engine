@@ -180,8 +180,6 @@ static func resolve(caster: Character, target_entity, spell_data: Dictionary, de
 			return special
 	if str(cast.spell.get("id", "")) == "power_word_stun":
 		return SpellControlResolver.power_word_stun(cast)
-	if str(cast.spell.get("id", "")) == "sleep":
-		return SpellControlResolver.sleep(cast)
 	if str(cast.spell.get("id", "")) == "revivify":
 		return CorpseRules.revive(cast.target, int(GameManager.campaign_elapsed_seconds))
 	if str(cast.spell.get("id", "")) == "gentle_repose":
