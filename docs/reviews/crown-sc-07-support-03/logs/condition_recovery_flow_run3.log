@@ -1,0 +1,155 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+WARNING: [DataLoader] Rejected 25 unsupported effectless feature records; they remain unavailable until curated.
+     at: push_warning (core/variant/variant_utility.cpp:1033)
+     GDScript backtrace (most recent call first):
+         [0] load_all_data (res://src/autoload/data_loader.gd:276)
+         [1] _ready (res://src/autoload/data_loader.gd:252)
+[DataLoader] Loaded: 14 classes, 9 races, 295 items, 362 spells, 481 monsters, 4 event tables, 1 campaigns
+[DataLoader] Layers: core_imported, core_curated, mods | packs: core, crown | approved overrides: 428 | validation failures: 0
+==================================================
+ Rook's Headless Viewport Harness (per-beat)
+==================================================
+
+[TEST] condition_recovery_flow
+[ok]   S247 host-less cast is not fighting: Restrained Disadvantage stands alone
+[ok]   S247 spell and generic save owners cancel Restrained against Advantage once
+[ok]   S247 monster save captures modes and both Bless/Bane dice with reconstructible arithmetic
+[ok]   S248 Character charmer gains social Advantage against actual monster
+[ok]   S248 monster charmer gains social Advantage against actual Character
+[ok]   S235 zero-HP damage immediately cleans concentration through actual encounter owner
+[Character] Rogue Fixture leveled up to 2! (+3 HP, now 12)
+[ok]   S235 actual turn and HUD action refusal: incapacitated
+[ok]   S235 actual turn movement: incapacitated
+[ok]   S235 refused feature spends no uses or Bonus Action: incapacitated
+[ok]   S235 actual turn and HUD action refusal: stunned
+[ok]   S235 actual turn movement: stunned
+[ok]   S235 refused feature spends no uses or Bonus Action: stunned
+[ok]   S235 immobile Incapacitated actor ends unusable production turn: petrified
+[ok]   S235 immobile Incapacitated actor ends unusable production turn: paralyzed
+[ok]   S235 immobile Incapacitated actor ends unusable production turn: unconscious
+[ok]   S235 actual turn and HUD action refusal: restrained
+[ok]   S235 actual turn movement: restrained
+[ok]   S235 actual turn and HUD action refusal: grappled
+[ok]   S235 actual turn movement: grappled
+[ok]   S235 healing zero HP preserves explicit sleep/Prone and never duplicates held-item drops
+[ok]   S235 damage ends only sources that declare waking on damage
+[ok]   S235 removing sleep removes derived Prone while the independent Prone source remains
+[ok]   S235 Poisoned does not deal invented damage at production turn start
+[ok]   S235 live shared damage owner applies Petrified poison immunity and resistance: player_1_rogue
+[ok]   S235 live shared damage owner applies Petrified poison immunity and resistance: monster_0
+[Character] Wizard Fixture leveled up to 2! (+3 HP, now 11)
+[Character] Wizard Fixture leveled up to 3! (+6 HP, now 17)
+[Character] Wizard Fixture leveled up to 4! (+3 HP, now 20)
+[Character] Wizard Fixture leveled up to 5! (+6 HP, now 26)
+[ok]   S235 actual HUD cast begins concentration: invisibility
+[ok]   S235 Incapacitated immediately ends recipients, zone or lights through live owner: invisibility
+[ok]   S235 concentration cleanup preserves another Invisible source
+[ok]   S235 actual HUD cast begins concentration: darkness
+[ok]   S235 Incapacitated immediately ends recipients, zone or lights through live owner: darkness
+[ok]   S235 actual HUD cast begins concentration: dancing_lights
+[ok]   S235 Incapacitated immediately ends recipients, zone or lights through live owner: dancing_lights
+[ok]   S246 production AI movement/action condition aggressive: incapacitated
+[ok]   S246 production AI movement/action condition aggressive: stunned
+[ok]   S246 production AI movement/action condition aggressive: petrified
+[ok]   S246 production AI movement/action condition aggressive: paralyzed
+[ok]   S246 production AI movement/action condition aggressive: unconscious
+[ok]   S246 production AI movement/action condition aggressive: restrained
+[ok]   S246 production AI movement/action condition aggressive: grappled
+[ok]   S246 actual monster turn stands only with usable Speed: aggressive held=false
+[ok]   S246 actual monster turn stands only with usable Speed: aggressive held=true
+[ok]   S246 production AI movement/action condition defensive: incapacitated
+[ok]   S246 production AI movement/action condition defensive: stunned
+[ok]   S246 production AI movement/action condition defensive: petrified
+[ok]   S246 production AI movement/action condition defensive: paralyzed
+[ok]   S246 production AI movement/action condition defensive: unconscious
+[ok]   S246 production AI movement/action condition defensive: restrained
+[ok]   S246 production AI movement/action condition defensive: grappled
+[ok]   S246 actual monster turn stands only with usable Speed: defensive held=false
+[ok]   S246 actual monster turn stands only with usable Speed: defensive held=true
+[ok]   S246 accepted attack becomes stale when its actual target charms the attacker
+[ok]   S235 actual actor owns simultaneous charm: party:actual:source
+[ok]   S235 actual actor owns simultaneous charm: player_1_rogue
+[ok]   S235 colon-containing actual identity cannot invent a second charmer
+[ok]   S246 either real simultaneous fear source prevents approach
+[ok]   S246 either real simultaneous fear source prevents approach
+[ok]   S235 ending one source preserves exactly the other charm/fear owner
+[ok]   S246 real monster attack has fear Disadvantage while remaining source is visible
+[ok]   S246 real monster attack loses fear Disadvantage when actual source becomes unseen
+[ok]   S246 AI cannot choose an unknown Hidden location: aggressive
+[ok]   S246 AI can attack known Invisible location: aggressive
+[ok]   S246 Blinded AI refuses a sight-requiring spell: aggressive
+[ok]   S246 special sense supplies actual sight while Blinded: aggressive
+[ok]   S246 AI cannot choose an unknown Hidden location: defensive
+[ok]   S246 AI can attack known Invisible location: defensive
+[ok]   S246 Blinded AI refuses a sight-requiring spell: defensive
+[ok]   S246 special sense supplies actual sight while Blinded: defensive
+[ok]   S246 actual monster spell opens the target's optional save choice
+[ok]   S246 becoming Incapacitated during the actual save chooser refuses stale spell before slot, die or damage
+[ok]   S246 a dead monster's stale spell is refused before payment or target effects
+[ok]   S246 actual monster cast uses its declared spell permission and stable actor identity
+[ok]   S246 separate real monster casts retain distinct source serials and pay exactly one slot each
+[ok]   S235 actual monster cast retains its concentration owner and recipient payload
+[ok]   S235 monster Incapacitated immediately ends only its actual source
+[ok]   S247 generic Character/monster and spell auto-failure emits no dice: paralyzed STR
+[ok]   S247 generic Character/monster and spell auto-failure emits no dice: paralyzed DEX
+[ok]   S247 generic Character/monster and spell auto-failure emits no dice: stunned STR
+[ok]   S247 generic Character/monster and spell auto-failure emits no dice: stunned DEX
+[ok]   S247 generic Character/monster and spell auto-failure emits no dice: unconscious STR
+[ok]   S247 generic Character/monster and spell auto-failure emits no dice: unconscious DEX
+[ok]   S247 generic Character/monster and spell auto-failure emits no dice: petrified STR
+[ok]   S247 generic Character/monster and spell auto-failure emits no dice: petrified DEX
+[ok]   S247 actual save target has an eligible visible party roll-token owner
+[ok]   S247 actual HUD save cast resolves automatic failure without rolling a d20 (action=false dice=[{ "type": "multiple", "count": 1, "sides": 8, "rolls": [7], "kept": [true], "total": 7 }] log=C 19) Dealing 3 slashing damage.
+Hit! (20 vs AC 19) Dealing 3 slashing damage.
+Fighter Fixture failed DEX save (DC 10) taking 11 radiant damage.
+Spell missed! Ranged spell attack 12 vs AC 19
+Spell Hit! Dealing 16 poison damage. Fighter Fixture is poisoned.
+Fighter Fixture failed CHA save (DC 10). Fighter Fixture is baned.
+[color=yellow]Goblin 1's concentration ends.[/color]
+Casting Sacred Flame. Select target hex.
+Goblin 1 automatically fails the DEX save as a Humanoid, taking 7 radiant damage.
+)
+[ok]   S247 automatic HUD save does not spend an eligible roll token
+[ok]   S247 actual monster spell automatic save bypasses optional chooser, Inspiration and roll tokens
+[ok]   S248 Hide fixture has a legal place: 
+[ok]   S248 real Cunning Hide branch uses poisoned check owner and pays once: cunning_hide
+[ok]   S248 Hide captures actual proficiency, expertise and Exhaustion arithmetic: cunning_hide
+[ok]   S248 repeated Hide submission cannot roll or pay again: cunning_hide
+[ok]   S248 Hide fixture has a legal place: 
+[ok]   S248 real Cunning Hide branch uses poisoned check owner and pays once: cunning_action
+[ok]   S248 Hide captures actual proficiency, expertise and Exhaustion arithmetic: cunning_action
+[ok]   S248 repeated Hide submission cannot roll or pay again: cunning_action
+[ok]   S248 actual monster zone escape rolls Poisoned Disadvantage
+[ok]   S248 executable cord fixture loads through production DataLoader
+[ok]   S248 actual monster tether escape applies Poisoned modes
+[ok]   S248 monster tether escape includes stat-block skill and Exhaustion exactly once
+[ok]   S248 actual monster tether rescue uses condition-aware check rather than a raw d20
+[ok]   S248 actual Character tether escape applies modes and spends one Action without rerolling a repeated submission
+[OverworldMap] Successfully loaded 43 tiles from campaign The Lost Crown
+[OverworldMap] Placed Player 1 at start tile: (0, 0)
+[OverworldMap] Placed Player 2 at start tile: (0, 0)
+[ok]   S248 production rest ambush uses the same proficient/expert/Exhaustion modifier as the selected watcher's check
+[DungeonGenerator] Procedurally built dungeon with 5 rooms.
+[Character] Alice leveled up to 2! (+3 HP, now 15)
+[GameManager] Alice leveled up!
+[Character] Bob leveled up to 2! (+5 HP, now 13)
+[GameManager] Bob leveled up!
+[ok]   S235 entering actual room asleep drops the exact held copy into durable ground
+WARNING: [SaveManager] Save rejected: the party is inside an active dungeon; return to its entrance checkpoint
+     at: push_warning (core/variant/variant_utility.cpp:1033)
+     GDScript backtrace (most recent call first):
+         [0] save_game (res://src/autoload/save_manager.gd:27)
+         [1] checkpoint (res://src/condition_recovery_flow.gd:478)
+         [2] _spawn_scene (res://src/viewport_harness.gd:195)
+[ok]   S235 active-room save remains refused at the existing checkpoint boundary
+[ok]   S235 actual room owner immediately cleans incapacitated source recipients: stunned
+[ok]   S235 actual room click preserves generic incapacitated movement: stunned
+[ok]   S235 actual room owner immediately cleans incapacitated source recipients: incapacitated
+[ok]   S235 actual room click preserves generic incapacitated movement: incapacitated
+[SaveManager] Successfully saved game to user://saves/dnd2024/condition_recovery.sav
+[ok]   S235 allowed entrance checkpoint preserves exact dropped gear, sleep and independent Prone
+--------------------------------------------------
+ VIEWPORT RESULTS: 0 failed (1 tests run)
+VIEWPORT TESTS PASSED
+SCENARIO PASSED: condition_recovery_flow
