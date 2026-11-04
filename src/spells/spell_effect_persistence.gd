@@ -65,15 +65,31 @@ static func saved_state_error(dto: Dictionary) -> String:
 		var recipient_phase := saved_phase in ["recipient_start", "recipient_end"] and not str(record.get("recipient_id", "")).is_empty()
 		if (saved_phase not in ["start", "end"] and not recipient_phase) or not record.get("conditions", null) is Array:
 			return "invalid saved spell effect boundary"
-		# Optional authored magnitudes (absent in older saves) must match a granted amount condition.
+		# A saved magnitude is an authored benefit, not a free value in the global range.
 		if record.has("condition_amounts"):
 			var saved_amounts: Variant = record["condition_amounts"]
 			if not saved_amounts is Dictionary: return "invalid saved condition amounts"
 			for amount_condition in saved_amounts:
 				var amount_range: Array = SharedSpell.AMOUNT_CONDITIONS.get(str(amount_condition), [])
 				var amount_value: Variant = saved_amounts[amount_condition]
-				if amount_range.is_empty() or amount_condition not in record["conditions"] or not (amount_value is int or amount_value is float) or float(amount_value) != floor(float(amount_value)) or int(amount_value) < int(amount_range[0]) or int(amount_value) > int(amount_range[1]):
+				if amount_range.is_empty() or amount_condition not in record["conditions"] or not (amount_value is int or amount_value is float) or not is_finite(float(amount_value)) or float(amount_value) != floor(float(amount_value)) or int(amount_value) < int(amount_range[0]) or int(amount_value) > int(amount_range[1]) or not _declares_condition_amount(DataLoader.get_spell(spell_id), str(amount_condition), int(amount_value)):
 					return "invalid saved condition amounts"
+		for condition in record["conditions"]:
+			if SharedSpell.AMOUNT_CONDITIONS.has(str(condition)) and not record.get("condition_amounts", {}).has(condition):
+				return "missing saved condition amount"
+		if record.has("attitude_scope_ids"):
+			var scope: Variant = record["attitude_scope_ids"]
+			if not scope is Array or scope.size() > 100:
+				return "invalid saved attitude scope"
+			var scoped_condition := false
+			for condition in record["conditions"]:
+				if CombatAction.condition_rule(str(condition), "attitude_indifferent") and _declares_condition(DataLoader.get_spell(spell_id), str(condition)): scoped_condition = true
+			if not scoped_condition: return "undeclared saved attitude scope"
+			var seen_scope := {}
+			for id in scope:
+				if not id is String or id.is_empty() or id != id.strip_edges() or id.length() > 512 or id.contains("\n") or id.contains("\r") or id.contains("\t") or seen_scope.has(id):
+					return "invalid saved attitude scope"
+				seen_scope[id] = true
 		var save_dc: Variant = record.get("save_dc", null)
 		var repeat_definition := DataLoader.get_spell(spell_id)
 		# Only old, unstaged default-turn definitions may omit history entirely.
@@ -207,5 +223,25 @@ static func saved_party_error(characters: Dictionary, save_data: Dictionary = {}
 				return "saved spell effect has an invalid cast identity"
 			if object_tether and save_data.is_empty(): return "saved object tether lacks its room record"
 	return ""
+
+
+static func _declares_condition_amount(definition: Dictionary, condition: String, amount: int) -> bool:
+	var effects: Array = definition.get("effects", []).duplicate()
+	for step in definition.get("steps", []):
+		if step is Dictionary: effects.append_array(step.get("effects", []))
+	for effect in effects:
+		if effect is Dictionary and str(effect.get("type", "")) == "grant_condition" and str(effect.get("condition", "")) == condition and effect.get("amount") == amount:
+			return true
+	return false
+
+
+static func _declares_condition(definition: Dictionary, condition: String) -> bool:
+	var effects: Array = definition.get("effects", []).duplicate()
+	for step in definition.get("steps", []):
+		if step is Dictionary: effects.append_array(step.get("effects", []))
+	for effect in effects:
+		if effect is Dictionary and str(effect.get("type", "")) == "grant_condition" and (str(effect.get("condition", "")) == condition or condition in effect.get("condition_options", [])):
+			return true
+	return false
 
 

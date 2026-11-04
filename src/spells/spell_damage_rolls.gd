@@ -121,7 +121,8 @@ static func exploding_policy(caster: Character, spell: Dictionary) -> Dictionary
 	if spell.get("exploding_dice") is Dictionary:
 		var policy: Dictionary = spell["exploding_dice"]
 		var limit: Variant = policy.get("max_extra", 0)
-		var extra := caster.ability_scores.get_ability_modifier(caster.get_spellcasting_ability()) if str(limit) == "spellcasting_modifier" else int(limit)
+		var ability := SpellPermissionRules.selected_ability(spell, caster.get_spellcasting_ability())
+		var extra := caster.ability_scores.get_ability_modifier(ability) if str(limit) == "spellcasting_modifier" else int(limit)
 		return {"sides": int(policy.get("sides", 8)), "on": int(policy.get("sides", 8)), "limit": maxi(0, extra)}
 	if spell.has("explode_on_max"):
 		return {"sides": 8, "on": int(spell["explode_on_max"]), "limit": maxi(0, caster.ability_scores.get_ability_modifier(str(spell.get("maximum_bonus_dice_ability", "CHA"))))}

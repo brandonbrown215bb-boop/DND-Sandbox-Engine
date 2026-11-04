@@ -1,6 +1,6 @@
-## SC-07 support 06: Calm Emotions completed.
+## SC-07 support 06: Calm Emotions, common-scope implementation.
 ## New generic pieces: grant_condition choice_per_target (ask per affected
-## creature after the area resolves); attitude_scope_ids on the source record
+## creature before payment); attitude_scope_ids on the source record
 ## (InfluenceRules.effective_attitude(monster, toward_id)); the
 ## ends_on_seen_ally_damage consequence via DamageWitnessRules (same-side
 ## creatures that can see a damaged ally); raw conditions readers routed through
@@ -13,6 +13,7 @@ const SLOT := "crown_sc_07_support_06"
 const OLD_SLOT := "crown_sc_07_support_05"
 
 static func _contract_checks(h) -> void:
+	_persistence_contract_checks(h)
 	var spell := DataLoader.get_spell("calm_emotions")
 	h._assert(SharedSpell.content_error(spell).is_empty() and SharedSpell.per_target_condition_choices(spell) == ["calmed", "calmed_indifferent"] and CombatAction.condition_rule("calmed_indifferent", "ends_on_seen_ally_damage"), P + "Calm Emotions authors choice_per_target and option 2 carries ends_on_seen_ally_damage")
 	var bad := spell.duplicate(true)
@@ -39,6 +40,41 @@ static func _renamed_checks(h) -> void:
 	h._assert(ended.is_empty(), P + "with no grid no witness is assumed")
 	CrownSc01Support01Flow._forget(str(hush.id))
 
+static func _persistence_contract_checks(h) -> void:
+	var caster := ConversionBatch002Checks.actor("crown-persistence-review-caster", "cleric", 5)
+	var target := ConversionBatch002Checks.actor("crown-persistence-review-target", "fighter", 5)
+	var frost_cast := SpellEffects.begin_cast(caster, DataLoader.get_spell("ray_of_frost"))
+	var frost_source := str(frost_cast.source_id)
+	SpellEffects.grant(target, frost_cast, "speed_reduced")
+	SpellEffects.set_condition_amount(target, frost_cast, "speed_reduced", 2)
+	var valid := target.to_dict()
+	var changed := valid.duplicate(true)
+	changed.spell_effects[frost_source].condition_amounts.speed_reduced = 12
+	var missing := valid.duplicate(true)
+	missing.spell_effects[frost_source].erase("condition_amounts")
+	h._assert(SpellEffectPersistence.saved_state_error(valid).is_empty() and not SpellEffectPersistence.saved_state_error(changed).is_empty() and not SpellEffectPersistence.saved_state_error(missing).is_empty(), P + "persistence: authored magnitudes survive restore; changed or erased amounts refuse")
+	changed = valid.duplicate(true)
+	changed.spell_effects[frost_source].attitude_scope_ids = [caster.character_id]
+	h._assert(not SpellEffectPersistence.saved_state_error(changed).is_empty(), P + "persistence: an unrelated condition cannot carry an attitude scope")
+	SpellEffects.remove(target, frost_source)
+
+	var calm_cast := SpellEffects.begin_cast(caster, DataLoader.get_spell("calm_emotions"))
+	var calm_source := str(calm_cast.source_id)
+	SpellEffects.grant(target, calm_cast, "calmed_indifferent")
+	target.spell_effects[calm_source]["attitude_scope_ids"] = [caster.character_id]
+	valid = target.to_dict()
+	var legacy := valid.duplicate(true)
+	legacy.spell_effects[calm_source].erase("attitude_scope_ids")
+	h._assert(SpellEffectPersistence.saved_state_error(valid).is_empty() and SpellEffectPersistence.saved_state_error(legacy).is_empty(), P + "persistence: exact scoped and pre-scope legacy records remain readable")
+	var malformed_refused := true
+	for scope in [123, [caster.character_id, caster.character_id], [123], [""]]:
+		changed = valid.duplicate(true)
+		changed.spell_effects[calm_source].attitude_scope_ids = scope
+		malformed_refused = malformed_refused and not SpellEffectPersistence.saved_state_error(changed).is_empty()
+	h._assert(malformed_refused, P + "persistence: malformed, duplicate and empty scope ids refuse before restore")
+	SpellEffects.remove(target, calm_source)
+
+
 static func _find_popup(combat) -> PopupMenu:
 	for child in combat.hud.get_children():
 		if child is PopupMenu and child.visible: return child
@@ -48,6 +84,10 @@ static func _find_dialog(combat) -> ConfirmationDialog:
 	for child in combat.hud.get_children():
 		if child is ConfirmationDialog and child.visible: return child
 	return null
+
+static func _collect_late_targets(cast: SpellCastContext, state: Dictionary) -> void:
+	await SpellCastTargeting.collect_targets(cast)
+	state["done"] = true
 
 static func _player_casts(h) -> void:
 	var bard := ConversionBatch002Checks.actor("crown-sc07s6-bard", "bard", 1)
@@ -72,19 +112,25 @@ static func _player_casts(h) -> void:
 	GameManager.test_mode = false
 	combat.turn_budget.action_available = true
 	ConversionBatch002Flow._select(h, combat, bard, "calm_emotions", 2)
+	await h.get_tree().process_frame
+	combat._on_hex_clicked(Vector2i(3, 0))
+	var cancel_menu: PopupMenu = null
 	for _frame in 60:
-		var level_menu: PopupMenu = null
-		for child in combat.hud.get_children():
-			if child is PopupMenu and child.visible and child.item_count > 0 and child.get_item_text(0).begins_with("Level"): level_menu = child
-		if level_menu != null:
-			level_menu.id_pressed.emit(level_menu.get_item_id(0))
-			break
+		cancel_menu = _find_popup(combat)
+		if cancel_menu != null and cancel_menu.get_item_text(0).begins_with("Level"):
+			cancel_menu.id_pressed.emit(cancel_menu.get_item_id(0))
+			cancel_menu = null
+		elif cancel_menu != null: break
 		await h.get_tree().process_frame
+	if cancel_menu != null: cancel_menu.hide()
+	await ConversionBatch002Flow._wait_resolution(h, combat)
+	h._assert(cancel_menu != null and int(bard.spell_slots["2"]) == 2 and combat.turn_budget.action_available and bard.concentrating_on.is_empty() and not CombatAction.has_condition(scared, "calmed"), P + "cancelling a required recipient option spends no slot or Action and grants nothing (menu=%s slots=%s action=%s concentration=%s log=%s)" % [str(cancel_menu != null), str(bard.spell_slots), str(combat.turn_budget.action_available), str(bard.concentrating_on), combat.hud.log_text.text.right(600)])
+	ConversionBatch002Flow._select(h, combat, bard, "calm_emotions", 2)
 	await h.get_tree().process_frame
 	combat._on_hex_clicked(Vector2i(3, 0))
 	var titles := []
 	var picks := [0, 0, 1] # area order: the Bard (in the Sphere), scared, angry
-	var scope_seen := false
+	var scope_count := 0
 	var handled := []
 	for _frame in 600:
 		var menu := _find_popup(combat)
@@ -100,13 +146,35 @@ static func _player_casts(h) -> void:
 		var dialog := _find_dialog(combat)
 		if dialog != null and dialog not in handled and dialog.dialog_text.contains("Indifferent toward"):
 			handled.append(dialog)
-			scope_seen = true
+			scope_count += 1
 			dialog.confirmed.emit()
-		if picks.is_empty() and scope_seen: break
+		if picks.is_empty() and scope_count == 3: break
 		await h.get_tree().process_frame
 	await ConversionBatch002Flow._wait_resolution(h, combat)
-	h._assert(titles.size() == 3 and scope_seen, P + "after the area click the player picks an option per creature, then the creatures Indifference covers (%s)" % str(titles))
+	h._assert(titles.size() == 3 and scope_count == 3, P + "before payment the player picks each recipient option and can scope Indifference toward party and nonparty creatures (%s)" % str(titles))
 	h._assert(CombatAction.has_condition(scared, "calmed") and not CombatAction.has_condition(scared, "frightened") and CombatAction.has_condition(angry, "calmed_indifferent") and not CombatAction.has_condition(angry, "calmed") and InfluenceRules.effective_attitude(angry, bard.character_id) == "indifferent" and InfluenceRules.effective_attitude(angry, "someone-else") == "hostile", P + "each creature got its own option; indifference is scoped to the chosen party member (%s | %s | %s)" % [str(scared.conditions), str(angry.conditions), combat.hud.log_text.text.right(600)])
+	h._assert(InfluenceRules.effective_attitude(angry, str(scared.id)) == "indifferent" and int(bard.spell_slots["2"]) == 1 and not combat.turn_budget.action_available, P + "a chosen nonparty creature is covered and all choices settle one slot and Action")
+	var late := CrownSc07Support05Flow._humanoid("crown-sc07s6-late", Vector2i(2, 1), -1000)
+	combat.monster_entities.append(late)
+	var late_cast: SpellCastContext = combat._spell_cast_context(Vector2i(3, 0))
+	late_cast.spell = DataLoader.get_spell("calm_emotions").duplicate(true)
+	late_cast.target_type = "area"
+	late_cast.area_selection = {"shape": "sphere", "radius": 4}
+	late_cast.spell["_chosen_conditions"] = {bard.character_id: "calmed", str(scared.id): "calmed", str(angry.id): "calmed_indifferent"}
+	late_cast.spell["_condition_choices_ready"] = true
+	late_cast.spell["_attitude_choices_ready"] = true
+	var late_state := {"done": false}
+	_collect_late_targets(late_cast, late_state)
+	var late_menu: PopupMenu = null
+	for _frame in 60:
+		late_menu = _find_popup(combat)
+		if late_menu != null: break
+		await h.get_tree().process_frame
+	if late_menu != null: late_menu.id_pressed.emit(0)
+	for _frame in 60:
+		if bool(late_state.done): break
+		await h.get_tree().process_frame
+	h._assert(late_menu != null and bool(late_state.done) and late_cast.spell.get("_chosen_conditions", {}).get(str(late.id)) == "calmed" and Vector2i(2, 1) in late_cast.targets and int(bard.spell_slots["2"]) == 1, P + "an eligible creature arriving during reactions gets its own explicit choice without omission or a second payment")
 	CombatAction.apply_condition(angry, "blinded", 10, "test_blind")
 	CombatAction.resolve_damage(scared, 2, "fire", {}, false, false, bard)
 	h._assert(CombatAction.has_condition(angry, "calmed_indifferent") and CombatAction.has_condition(scared, "calmed"), P + "a Blinded ally can't see the damage, so option 2 holds; option 1 is not ended by damage")

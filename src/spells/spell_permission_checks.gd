@@ -178,6 +178,7 @@ static func actor() -> Character:
 	c.character_id = "fixture_hero"
 	c.level = 2
 	c.class_levels = {"fixture:021_a":1, "fixture:021_b":1}
+	HitDiceRules.add_class_level(c, "fixture:021_b") # This fixture authors the second class directly.
 	return c
 
 static func _run_repertoires(check: Callable) -> void:

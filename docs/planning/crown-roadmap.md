@@ -17,6 +17,10 @@ readiness certification or a replacement for the finish line below.
 
 ## Scope and finish line
 
+The [2026-11-04 usage cutoff](crown-spell-conversion-queue.md#resume-here--grokbot-usage-cutoff-2026-11-04)
+records progress through reviewed PR #104 and unfinished Bestow Curse #105–106.
+SC-08 onward remains unstarted; earlier partial consumers remain named in the CSV.
+
 - The existing Crown campaign: level 1 start, level 5 cap, one to four local
   players, four stable party slots, existing companions, map, three dungeons,
   milestones, encounters, shops, objectives and supported save checkpoints.

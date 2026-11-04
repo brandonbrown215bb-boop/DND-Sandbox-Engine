@@ -1919,7 +1919,8 @@ func _test_spellcasting() -> void:
 	_assert(not sorcerous_burst.is_empty() and sorcerous_burst.get("components", []) == ["V", "S"] and sorcerous_burst.get("duration", "") == "instantaneous" and sorcerous_burst.get("damage_type_options", []).size() == 7, "Sorcerous Burst records its components, instant duration, and seven selectable damage types")
 	_assert("sorcerous_burst" in DataLoader.get_character_class("sorcerer").get("cantrips_known", []) and "sorcerous_burst" in DataLoader.get_character_class("sorcerer").get("spell_list_ids", []), "Sorcerous Burst is eligible and learnable as a Sorcerer cantrip")
 	_assert(CombatAction.spell_damage_formula(burst_caster, sorcerous_burst) == "2d8", "Sorcerous Burst receives its level-5 cantrip scaling")
-	_assert(burst_result.get("success", false) and burst_result.get("hit", false) and burst_result.get("damage_type", "acid") == "acid" and burst_die_count >= 2 and burst_die_count <= 6, "Sorcerous Burst resolves a typed hit and caps its exploding damage dice at the Sorcerer's +4 Charisma modifier")
+	var burst_base_count := 4 if bool(burst_result.get("critical", false)) else 2
+	_assert(burst_result.get("success", false) and burst_result.get("hit", false) and burst_result.get("damage_type", "acid") == "acid" and burst_die_count >= burst_base_count and burst_die_count <= burst_base_count + 4, "Sorcerous Burst resolves a typed hit and caps extra dice at +4 after normal or critical base dice")
 	var poison_spray: Dictionary = DataLoader.get_spell("poison_spray")
 	var poison_target := _monster_inst("goblin")
 	poison_target["armor_class"] = -100

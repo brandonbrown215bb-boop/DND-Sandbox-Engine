@@ -7,6 +7,12 @@ an assignment. GitHub showed no open PRs or issues during this review.
 
 ## Current Grokbot assignment — 2026-11-04
 
+**Usage cutoff:** see the [reviewed handoff](crown-spell-conversion-queue.md#resume-here--grokbot-usage-cutoff-2026-11-04).
+The reviewed stack reaches #104; #105–106 need curse damage/duration repairs.
+The integrated stack includes the earlier Hit Dice commit and #82 equipment work.
+Luna's origins work remains in its separate worktree. The dated instructions below
+to start SC-01 and keep Hit Dice local describe the original dispatch only.
+
 Use the [complete Crown spell conversion stack](crown-spell-conversion-queue.md)
 and its [169-spell assignment CSV](crown-spell-conversion-queue.csv): 81 refused
 and 88 enabled-native spells, assigned exactly once across 46 ordered PRs.

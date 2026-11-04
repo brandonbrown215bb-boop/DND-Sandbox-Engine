@@ -15,6 +15,9 @@ static func _cast(h, combat, caster: Character, slot: int, hex: Vector2i, label:
 	caster.spell_slots[str(slot)] = 4
 	combat.turn_budget.action_available = true
 	ConversionBatch002Flow._select(h, combat, caster, "ice_knife", slot)
+	# Exercise a normal hit/miss against the selected AC, never a natural-20
+	# critical that would add Piercing damage to the intended miss fixture.
+	FighterChecks._seed_die(20, 10)
 	await combat._on_hex_clicked(hex)
 	await ConversionBatch002Flow._wait_resolution(h, combat)
 	var ok: bool = int(caster.spell_slots[str(slot)]) == 3 and not combat.turn_budget.action_available
@@ -101,12 +104,9 @@ static func run(h) -> void:
 	_reset(all)
 
 	# Upcast slot 3: cold is 4d6 on the missed target (4..24) and the formula scales only the cold.
-	# A natural 20 always hits even AC 1000 and adds piercing; recast so only a missed shard is measured.
-	for _attempt in 5:
-		_reset(all)
-		ok = await _cast(h, combat, caster, 3, Vector2i(0, 3), "upcast cast")
-		miss_loss = 1000 - int(miss_t.current_hp)
-		if miss_loss <= 24: break
+	_reset(all)
+	ok = await _cast(h, combat, caster, 3, Vector2i(0, 3), "upcast cast")
+	miss_loss = 1000 - int(miss_t.current_hp)
 	h._assert(ok and miss_loss >= 4 and miss_loss <= 24, "SC-02: a level-3 slot raises the Cold burst to 4d6")
 	h._teardown_scene(combat)
 	print("CROWN_SC_02_PASSED")

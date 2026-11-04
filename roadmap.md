@@ -9,6 +9,10 @@ retains vocabulary-first delivery, current save priorities, and Wish/illusion po
 
 ## Current work
 
+The [Grokbot usage cutoff](docs/planning/crown-spell-conversion-queue.md#resume-here--grokbot-usage-cutoff-2026-11-04)
+records the reviewed stack through #104, the held Bestow Curse PRs #105–106,
+and the exact per-spell next actions. Resume there rather than restarting SC-01.
+
 The [2026-11-04 Crown spell conversion queue](docs/planning/crown-spell-conversion-queue.md)
 assigns all 169 remaining native spells to 46 ordered, stackable Grokbot PRs.
 It includes missing reusable operations, source-backed data and production

@@ -214,6 +214,12 @@ if ($runIntegration) {
 	$scenarios += "crown_sc_04_support_01_flow"
 	$scenarios += "crown_sc_05_support_01_flow"
 	$scenarios += "crown_sc_05_support_02_flow"
+    $crownRecovery = @{}
+    foreach ($crownCase in @("crown_sc_01_support_01_flow", "crown_sc_05_support_02_flow", "crown_sc_06_flow", "crown_sc_07_support_01_flow", "crown_sc_07_support_02_flow", "crown_sc_07_support_04_flow", "crown_sc_07_support_05_flow", "crown_sc_07_support_06_flow")) {
+        $crownRecovery[$crownCase] = $crownCase.Substring(0, $crownCase.Length - 5).ToUpper() + "_RECOVER"
+    }
+    $scenarios += @($crownRecovery.Keys | Sort-Object)
+    $crownLegacyChain = @("crown_sc_07_support_05_flow", "crown_sc_07_support_06_flow")
 	$scenarios += "batch_036_end_and_charge_flow"
 	$scenarios += "batch_037_mode_upgrade_flow"
 	$scenarios += "batch_038_switch_option_flow"
@@ -297,10 +303,13 @@ if ($runIntegration) {
     $scenarios += "batch_066_travel_placement_flow", "batch_076_footprint_terrain_flow", "batch_077_per_swing_choice_flow", "batch_078_declared_capacity_flow"
     $scenarios += "batch_085_cast_transform_flow", "batch_087_choice_routes_flow"
     $scenarios += "druidic_focus_cast_flow"
+    $scenarios = @($scenarios | Select-Object -Unique)
     if ($Scenario.Count -gt 0) {
         # Selecting a reload explicitly still prepares its own checkpoint.
         $Scenario = @($Scenario | ForEach-Object {
             $selected = $_
+            $legacyIndex = [Array]::IndexOf($crownLegacyChain, $selected)
+            if ($legacyIndex -gt 0) { $crownLegacyChain[0..($legacyIndex - 1)] }
             if ($selected -in @("class_skill_selection_flow_b", "class_skill_selection_reload")) { $selected = "class_skill_selection_flow" }
             $parent = @($scenarioReloads.Keys | Where-Object { $scenarioReloads[$_] -eq $selected })
             if ($parent.Count -gt 0) { $parent[0] } else { $selected }
@@ -321,8 +330,18 @@ if ($runIntegration) {
             }
         } else {
             $marker = "SCENARIO PASSED: $scenario"
-            if (-not (Invoke-GodotCase $scenario "res://scenes/viewport_harness.tscn" $marker $scenarioTimeout @("--scenario=$scenario"))) {
+            $caseProfile = Join-Path $logDirectory "$scenario.user-data"
+            if ($scenario -in $crownLegacyChain) { $caseProfile = Join-Path $logDirectory "crown_sc_07_legacy.user-data" }
+            if (-not (Invoke-GodotCase $scenario "res://scenes/viewport_harness.tscn" $marker $scenarioTimeout @("--scenario=$scenario") -UserDataDirectory $caseProfile)) {
                 $failed = $true
+            } elseif ($crownRecovery.ContainsKey([string]$scenario)) {
+                $recoveryVariable = $crownRecovery[[string]$scenario]
+                $previousRecovery = [Environment]::GetEnvironmentVariable($recoveryVariable, "Process")
+                try {
+                    [Environment]::SetEnvironmentVariable($recoveryVariable, "1", "Process")
+                    $recoveryMarker = $recoveryVariable.Replace("_RECOVER", "_FRESH_PROCESS_PASSED")
+                    if (-not (Invoke-GodotCase -Name "${scenario}_fresh_process" -Scene "res://scenes/viewport_harness.tscn" -Marker $recoveryMarker -TimeoutSeconds $scenarioTimeout -ExtraArguments @("--scenario=$scenario") -UserDataDirectory $caseProfile)) { $failed = $true }
+                } finally { [Environment]::SetEnvironmentVariable($recoveryVariable, $previousRecovery, "Process") }
             } elseif ($scenario -eq "class_skill_selection_flow") {
                 # Both creation passes must share one disposable profile before recovery.
                 $profile = Join-Path $logDirectory "$scenario.user-data"

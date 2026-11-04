@@ -41,4 +41,12 @@ static func validate_and_choose(cast: SpellCastContext) -> bool:
 
 
 static func choose_target_options(cast: SpellCastContext) -> bool:
-	return await SpellCastChoices.choose_target_options(cast)
+	if not await SpellCastChoices.choose_target_options(cast): return false
+	if not SharedSpell.per_target_condition_choices(cast.spell).is_empty():
+		# Required recipient choices belong before committing the slot and Action.
+		await SpellCastTargeting.collect_targets(cast)
+		if bool(cast.spell.get("_condition_choice_cancelled", false)):
+			cast.clear_pending(SpellCastContext.CLEAR_ACTION | SpellCastContext.CLEAR_SPELL)
+			cast.highlight_reachable.call()
+			return false
+	return true

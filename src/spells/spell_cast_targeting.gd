@@ -131,7 +131,8 @@ static func collect_targets(cast: SpellCastContext) -> void:
 	# choice_per_target: "choose for each creature" once the area's creatures are known.
 	var per_target_options: Array = SharedSpell.per_target_condition_choices(cast.spell) if SharedSpell.uses(cast.spell) else []
 	if not per_target_options.is_empty():
-		var picks := {}
+		var picks: Dictionary = cast.spell.get("_chosen_conditions", {}).duplicate(true)
+		var committed_choices := bool(cast.spell.get("_condition_choices_ready", false))
 		var spell_label := str(cast.spell.get("name", "Spell"))
 		var any_scoped := false
 		for target_hex in cast.targets:
@@ -141,23 +142,42 @@ static func collect_targets(cast: SpellCastContext) -> void:
 			if picked_creature == null:
 				continue
 			var picked_id := SpellEffects.caster_id(picked_creature) if picked_creature is Character else str(picked_creature.get("id", ""))
+			if picks.has(picked_id):
+				if CombatAction.condition_rule(str(picks[picked_id]), "attitude_indifferent"): any_scoped = true
+				continue
 			cast.set_resolving.call(true)
 			var pick := await cast.hud.request_damage_type_choice(per_target_options, "%s: %s" % [spell_label, _creature_name(picked_creature)])
+			# A reaction can move another eligible creature into an already-paid
+			# area. It still needs an explicit effect choice; dismissing that late
+			# menu cannot silently exclude it or choose an effect on the player's behalf.
+			while pick not in per_target_options and committed_choices:
+				pick = await cast.hud.request_damage_type_choice(per_target_options, "%s: choose an effect for %s" % [spell_label, _creature_name(picked_creature)])
 			cast.set_resolving.call(false)
-			if pick not in per_target_options: pick = str(per_target_options[0])
+			if pick not in per_target_options:
+				cast.spell["_condition_choice_cancelled"] = true
+				cast.targets.clear()
+				return
 			picks[picked_id] = pick
 			if CombatAction.condition_rule(pick, "attitude_indifferent"): any_scoped = true
 		cast.spell["_chosen_conditions"] = picks
-		if any_scoped:
+		if any_scoped and not bool(cast.spell.get("_attitude_choices_ready", false)):
 			var scope_ids: Array = []
+			var scope_candidates: Array = []
 			for player_entity in cast.players:
 				var scoped: Character = player_entity.get("character")
 				if scoped == null: continue
+				scope_candidates.append({"id": SpellEffects.caster_id(scoped), "name": scoped.character_name})
+			for monster in cast.monsters:
+				if bool(monster.get("is_alive", false)):
+					scope_candidates.append({"id": str(monster.get("id", "")), "name": str(monster.get("name", "Creature"))})
+			for scoped in scope_candidates:
 				cast.set_resolving.call(true)
-				var include := await cast.hud.request_reaction(cast.owner_label, "attitude_scope:%s:%s" % [str(cast.spell.get("id", "")), scoped.character_name], "Make the affected creatures Indifferent toward %s?" % scoped.character_name, "Only creatures you choose are covered.", "Include", "%s Indifference" % spell_label)
+				var include := await cast.hud.request_reaction(cast.owner_label, "attitude_scope:%s:%s" % [str(cast.spell.get("id", "")), str(scoped.id)], "Make the affected creatures Indifferent toward %s?" % str(scoped.name), "Only creatures you choose are covered.", "Include", "%s Indifference" % spell_label)
 				cast.set_resolving.call(false)
-				if include: scope_ids.append(scoped.character_id)
+				if include and not str(scoped.id).is_empty() and scoped.id not in scope_ids: scope_ids.append(scoped.id)
 			cast.spell["_attitude_scope_ids"] = scope_ids
+			cast.spell["_attitude_choices_ready"] = true
+		cast.spell["_condition_choices_ready"] = true
 
 	if str(cast.spell.get("id", "")) == "mass_cure_wounds":
 		var selected_heal_targets: Array[Vector2i] = []
