@@ -40,6 +40,14 @@
   "overrides": [
     {
       "type": "spell",
+      "id": "sorcerous_burst",
+      "winner": "res://data/core/spells/crown_sc_03_support_05.json#1",
+      "replaces": [
+        "res://data/core/spells/srd_additional_spells.json#1"
+      ]
+    },
+    {
+      "type": "spell",
       "id": "melfs_acid_arrow",
       "winner": "res://data/core/spells/crown_sc_03_support_04.json#1",
       "replaces": [

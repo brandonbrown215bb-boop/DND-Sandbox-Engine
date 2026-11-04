@@ -306,9 +306,9 @@ static func _finish_attack(cast: SpellResolutionContext, attack_result: Dictiona
 		SpellDamageRolls.record_resolution_window(cast, "pre_damage", hit_window_fields)
 	var damage_str := SpellDamageRolls.spell_damage_formula(cast.caster, cast.spell, cast.slot_level)
 	var damage_type: String = cast.spell.get("damage_type", "fire")
-	var is_sorcerous_burst := str(cast.spell.get("id", "")) == "sorcerous_burst"
+	var exploding := SpellDamageRolls.exploding_policy(cast.caster, cast.spell)
 	var rolled_damage_formula := "%s + %s" % [damage_str, damage_str] if bool(attack_result["is_crit"]) else damage_str
-	var damage_details := SpellDamageRolls._roll_sorcerous_burst_damage(cast.caster, rolled_damage_formula, int(cast.spell.get("explode_on_max", 8)), str(cast.spell.get("maximum_bonus_dice_ability", "CHA"))) if is_sorcerous_burst else SpellDamageRolls._roll_spell_damage(cast.caster, damage_str, 2 if attack_result["is_crit"] else 1, cast.decisions, cast.spell.get("damage_dice_policy", {}))
+	var damage_details := SpellDamageRolls._roll_exploding_damage(cast.caster, rolled_damage_formula, exploding) if not exploding.is_empty() else SpellDamageRolls._roll_spell_damage(cast.caster, damage_str, 2 if attack_result["is_crit"] else 1, cast.decisions, cast.spell.get("damage_dice_policy", {}))
 	var authored_scale := SharedSpell.authored_damage_scale(cast.spell, "hit", 1.0)
 	var damage_scale := authored_scale
 
