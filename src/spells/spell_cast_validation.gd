@@ -475,6 +475,11 @@ static func validate_area(cast: SpellCastContext) -> bool:
 			cast.hud.add_log("Choose %d distinct legal centers within %d feet." % [area_point_count, point_range * 5])
 			cast.highlight_reachable.call()
 			return false
+	if str(cast.area_selection.get("shape", "")) == "line" and str(cast.area_selection.get("origin", "")) == "self":
+		if not cast.grid.has_tile(cast.target_coord) or cast.target_coord == cast.spell_origin:
+			cast.hud.add_log("Choose a hex to set the direction of %s." % str(cast.spell.get("name", "this spell")))
+			cast.highlight_reachable.call()
+			return false
 	if str(cast.area_selection.get("shape", "")) in ["cone", "cube"]:
 		if not cast.grid.has_tile(cast.target_coord) or not Targeting.is_in_range(cast.spell_origin, cast.target_coord, 1) or cast.target_coord == cast.spell_origin:
 			cast.hud.add_log("Choose an adjacent hex to set the direction of %s." % str(cast.spell.get("name", "this spell")))
