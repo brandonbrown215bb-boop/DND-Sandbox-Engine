@@ -102,6 +102,15 @@ static func chosen_condition(effect: Dictionary, spell: Dictionary, target = nul
 	if per_target is Dictionary and not target_id.is_empty() and per_target.has(target_id): pick = str(per_target[target_id])
 	return pick if pick in effect["condition_options"] else ""
 
+## Options asked once per affected creature (choice_per_target) instead of once per cast.
+static func per_target_condition_choices(spell: Dictionary) -> Array:
+	var out := []
+	for effect in spell.get("effects", []):
+		if effect is Dictionary and str(effect.get("type", "")) == "grant_condition" and bool(effect.get("choice_per_target", false)) and effect.get("condition_options") is Array:
+			for option in effect["condition_options"]:
+				if option not in out: out.append(option)
+	return out
+
 ## Every caster-choosable condition authored on a spell's grant effects, in order.
 static func condition_choices(spell: Dictionary) -> Array:
 	var out := []
@@ -225,6 +234,10 @@ static func _validate_single_effect(effect: Variant) -> String:
 			for option in options:
 				if not option is String or option in seen_options or option not in CONDITIONS or AMOUNT_CONDITIONS.has(option): return "condition_options entries must be distinct supported conditions without amounts."
 				seen_options.append(option)
+			# choice_per_target: area casts ask once per affected creature after the area resolves.
+			if effect.has("choice_per_target"):
+				allowed.append("choice_per_target")
+				if not effect["choice_per_target"] is bool: return "choice_per_target must be a boolean."
 		else:
 			allowed.append("condition")
 			if effect.get("condition", "") not in CONDITIONS: return "Unsupported shared condition."
@@ -1007,6 +1020,11 @@ static func apply_custom_effects(caster: Character, target, effects: Array, resu
 				else:
 					SpellEffects.grant(target, result.get("effect_cast", {}), granted_condition)
 				if effect.has("amount"): SpellEffects.set_condition_amount(target, result.get("effect_cast", {}), granted_condition, int(effect["amount"]))
+				# "Indifferent about creatures of your choice": the caster's chosen ids ride on the source record.
+				var scope: Variant = spell.get("_attitude_scope_ids", null)
+				if scope is Array and CombatAction.condition_rule(granted_condition, "attitude_indifferent"):
+					var scoped_record: Dictionary = SpellEffects.records(target).get(str(result.get("effect_cast", {}).get("source_id", "")), {})
+					if not scoped_record.is_empty(): scoped_record["attitude_scope_ids"] = scope.duplicate()
 				if CombatAction.has_condition(target, granted_condition): messages.append("%s is %s." % [target_name, granted_condition])
 			"remove_condition":
 				if target is Character: target.remove_condition(str(effect["condition"]))

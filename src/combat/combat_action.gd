@@ -103,7 +103,7 @@ const MARKER_RULES := {
 	# condition and blocks new ones while the marker lasts; attitude_indifferent
 	# makes a Hostile Influence attitude read Indifferent and ends on damage.
 	"calmed": {"suppress_charmed": true, "suppress_frightened": true},
-	"calmed_indifferent": {"attitude_indifferent": true, "ends_on_damage": true},
+	"calmed_indifferent": {"attitude_indifferent": true, "ends_on_damage": true, "ends_on_seen_ally_damage": true},
 }
 
 ## True when a marker on the entity suppresses (and grants immunity to) the
@@ -233,7 +233,7 @@ static func _append_unique_id(out: Array[String], value: String) -> void:
 
 static func charmer_ids(entity) -> Array[String]:
 	var ids: Array[String] = []
-	if entity == null:
+	if entity == null or marker_suppresses(entity, "charmed"):
 		return ids
 	if entity is Dictionary:
 		for raw_id in entity.get("animal_friendship_caster_ids", []):
@@ -1129,6 +1129,18 @@ static func resolve_zero_hp_replacement(target, hp_before: int, damage: int, dam
 	return SharedStepExecutor.resolve_zero_hp_replacement(target, hp_before, damage, damage_type, critical, decisions)
 
 
+## Remove every marker carrying the consequence from the entity (all its grants).
+static func end_markers_with(target, consequence: String) -> Array[String]:
+	var ended := conditions_with_consequence(target, consequence)
+	for marker in ended:
+		var marker_sources: Dictionary = (target.condition_sources if target is Character else target.get("condition_sources", {})).get(marker, {})
+		var marker_ids: Array = marker_sources.keys()
+		if marker_ids.is_empty(): marker_ids = ["ordinary"]
+		for marker_source in marker_ids:
+			remove_condition_source(target, str(marker_source), [marker])
+	return ended
+
+
 static func _end_damage_broken_spell_effects(target, party_damage: bool = true, cause: Dictionary = {}) -> void:
 	if target == null:
 		return
@@ -1139,12 +1151,8 @@ static func _end_damage_broken_spell_effects(target, party_damage: bool = true, 
 			continue
 		if bool(record.get("end_on_any_damage", false)) or (party_damage and bool(record.get("end_on_target_damage", false))):
 			SpellEffects.remove(target, str(source), "damage", cause)
-	for marker in conditions_with_consequence(target, "ends_on_damage"):
-		var marker_sources: Dictionary = (target.condition_sources if target is Character else target.get("condition_sources", {})).get(marker, {})
-		var marker_ids: Array = marker_sources.keys()
-		if marker_ids.is_empty(): marker_ids = ["ordinary"]
-		for marker_source in marker_ids:
-			remove_condition_source(target, str(marker_source), [marker])
+	end_markers_with(target, "ends_on_damage")
+	DamageWitnessRules.on_damage(target)
 	if not party_damage or not target is Dictionary:
 		return
 	var sources: Dictionary = target.get("condition_sources", {}).get("charmed", {})

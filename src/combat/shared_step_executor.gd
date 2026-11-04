@@ -622,6 +622,7 @@ static func _participant_side(actor, players: Array, monsters: Array) -> String:
 static func _target_has_source_condition(target, giver, condition: String) -> Dictionary:
 	var giver_id := SpellEffects.caster_id(giver) if giver is Character else str(giver.get("id", "")) if giver is Dictionary else ""
 	if giver_id.is_empty(): return {"available": false}
+	if CombatAction.marker_suppresses(target, condition): return {"available": true, "value": false}
 	var conditions: Dictionary = target.condition_sources if target is Character else target.get("condition_sources", {}) if target is Dictionary else {}
 	var effects: Dictionary = target.spell_effects if target is Character else target.get("spell_effects", {}) if target is Dictionary else {}
 	var grants: Variant = conditions.get(condition, {})
@@ -1370,7 +1371,7 @@ static func zero_hp_source_eligible(target, rule: Dictionary) -> bool:
 	if not condition.is_empty():
 		if target is Character:
 			if not target.has_condition(condition): return false
-		elif not target.get("conditions", {}).has(condition): return false
+		elif not CombatAction.has_condition(target, condition): return false
 	if rule.has("payment"):
 		if not target is Character: return false
 		if target.numeric_resource_pools.get(str(rule.payment.source_instance_id), {}).has("die_size"): return false

@@ -193,6 +193,8 @@ static func choose_orders_and_types(cast: SpellCastContext) -> bool:
 			return false
 		cast.spell["damage_type"] = selected_damage_type
 	var condition_options: Array = SharedSpell.condition_choices(cast.spell) if SharedSpell.uses(cast.spell) else cast.spell.get("condition_options", [])
+	if SharedSpell.uses(cast.spell) and not SharedSpell.per_target_condition_choices(cast.spell).is_empty():
+		condition_options = [] # Asked per creature once the area resolves (SpellCastTargeting).
 	if not condition_options.is_empty():
 		var selected_condition := await cast.hud.request_damage_type_choice(condition_options, str(cast.spell.get("name", "Spell")))
 		if selected_condition not in condition_options:

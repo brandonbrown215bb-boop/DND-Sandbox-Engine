@@ -128,6 +128,37 @@ static func collect_targets(cast: SpellCastContext) -> void:
 				chosen_targets.append(target_hex)
 		cast.targets = chosen_targets
 
+	# choice_per_target: "choose for each creature" once the area's creatures are known.
+	var per_target_options: Array = SharedSpell.per_target_condition_choices(cast.spell) if SharedSpell.uses(cast.spell) else []
+	if not per_target_options.is_empty():
+		var picks := {}
+		var spell_label := str(cast.spell.get("name", "Spell"))
+		var any_scoped := false
+		for target_hex in cast.targets:
+			if not SpellCastTargeting._has_spell_creature_at(cast, target_hex, cast.spell):
+				continue
+			var picked_creature = _creature_entity_at(cast, target_hex)
+			if picked_creature == null:
+				continue
+			var picked_id := SpellEffects.caster_id(picked_creature) if picked_creature is Character else str(picked_creature.get("id", ""))
+			cast.set_resolving.call(true)
+			var pick := await cast.hud.request_damage_type_choice(per_target_options, "%s: %s" % [spell_label, _creature_name(picked_creature)])
+			cast.set_resolving.call(false)
+			if pick not in per_target_options: pick = str(per_target_options[0])
+			picks[picked_id] = pick
+			if CombatAction.condition_rule(pick, "attitude_indifferent"): any_scoped = true
+		cast.spell["_chosen_conditions"] = picks
+		if any_scoped:
+			var scope_ids: Array = []
+			for player_entity in cast.players:
+				var scoped: Character = player_entity.get("character")
+				if scoped == null: continue
+				cast.set_resolving.call(true)
+				var include := await cast.hud.request_reaction(cast.owner_label, "attitude_scope:%s:%s" % [str(cast.spell.get("id", "")), scoped.character_name], "Make the affected creatures Indifferent toward %s?" % scoped.character_name, "Only creatures you choose are covered.", "Include", "%s Indifference" % spell_label)
+				cast.set_resolving.call(false)
+				if include: scope_ids.append(scoped.character_id)
+			cast.spell["_attitude_scope_ids"] = scope_ids
+
 	if str(cast.spell.get("id", "")) == "mass_cure_wounds":
 		var selected_heal_targets: Array[Vector2i] = []
 		var included_count := 0
@@ -470,7 +501,7 @@ static func _creature_at_coord_has_condition(cast: SpellCastContext, coord: Vect
 		if character != null and character.is_alive and player.get("hex_position", Vector2i.ZERO) == coord and character.has_condition(condition):
 			return true
 	for monster in cast.monsters:
-		if monster.get("hex_position", Vector2i.ZERO) == coord and monster.get("is_alive", false) and monster.get("conditions", {}).has(condition):
+		if monster.get("hex_position", Vector2i.ZERO) == coord and monster.get("is_alive", false) and CombatAction.has_condition(monster, condition):
 			return true
 	return false
 

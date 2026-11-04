@@ -537,7 +537,8 @@ func _update_sidebar_stats() -> void:
 	if not active_character.conditions.is_empty():
 		text += "Conditions:\n"
 		for cond in active_character.conditions:
-			text += "- %s (%d turns)\n" % [cond, active_character.conditions[cond]]
+			var suppressed := " (suppressed)" if CombatAction.marker_suppresses(active_character, str(cond)) else ""
+			text += "- %s (%d turns)%s\n" % [cond, active_character.conditions[cond], suppressed]
 
 	info_label.text = text
 
