@@ -37,6 +37,13 @@ static func _cast_until(h, combat, caster: Character, id: String, hex: Vector2i,
 		if stop.call(): return true
 	return false
 
+## A natural 20 still hits AC 1000; clear that hit and keep casting so only a true miss stops the loop.
+static func _frost_miss_stop(target: Dictionary) -> bool:
+	if int(target.current_hp) == 1000: return true
+	target.current_hp = 1000
+	target.spell_effects.clear()
+	return false
+
 static func _only_source(target) -> String:
 	var found := ""
 	for key in SpellEffects.records(target): found = str(key)
@@ -161,7 +168,7 @@ static func run(h) -> void:
 	var bid := SpellEffects.caster_id(bard)
 
 	# Ray of Frost: hit reduces Speed by 10 ft until the start of the caster's next turn; miss does nothing.
-	var missed := await _cast_until(h, combat, sorcerer, "ray_of_frost", Vector2i(3, -1), func(): return int(frost_miss.current_hp) == 1000, "Ray of Frost miss")
+	var missed := await _cast_until(h, combat, sorcerer, "ray_of_frost", Vector2i(3, -1), _frost_miss_stop.bind(frost_miss), "Ray of Frost miss")
 	h._assert(missed and frost_miss.spell_effects.is_empty() and FighterRules.monster_speed(frost_miss) == 6, P + "a missed Ray of Frost deals no damage and leaves Speed unchanged")
 	var hit := await _cast_until(h, combat, sorcerer, "ray_of_frost", Vector2i(3, 0), func(): return int(frost_target.current_hp) < 1000, "Ray of Frost hit")
 	h._assert(hit and 1000 - int(frost_target.current_hp) <= 8 and FighterRules.monster_speed(frost_target) == 4, P + "Ray of Frost deals 1d8 Cold and reduces Speed by 10 feet")

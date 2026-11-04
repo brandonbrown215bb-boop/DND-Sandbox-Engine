@@ -26,7 +26,7 @@ static func illumination_level_at(grid: HexGrid, position: Vector2i) -> String:
 	for source in grid.entities if grid != null else []:
 		var distance := HexUtils.get_distance(source.get("hex_position", Vector2i.ZERO), position)
 		var bright_radius := int(source.get("bright_light_radius_hexes", 0))
-		var dim_radius := int(source.get("dim_light_radius_hexes", 0))
+		var dim_radius := maxi(int(source.get("dim_light_radius_hexes", 0)), condition_dim_light_radius_hexes(source))
 		if not Targeting.has_line_of_sight(source.get("hex_position", Vector2i.ZERO), position, grid):
 			continue
 		if bright_radius > 0 and distance <= bright_radius:
@@ -34,6 +34,18 @@ static func illumination_level_at(grid: HexGrid, position: Vector2i) -> String:
 		if dim_radius > 0 and distance <= dim_radius:
 			level = "dim"
 	return level
+
+
+## Conditions that make a creature shed light (Faerie Fire's Outlined: Dim Light in a 10-foot radius).
+const CONDITION_DIM_LIGHT_HEXES := {"outlined": 2}
+
+static func condition_dim_light_radius_hexes(entity: Dictionary) -> int:
+	var creature = entity.get("character", entity.get("monster", entity))
+	var radius := 0
+	for condition in CONDITION_DIM_LIGHT_HEXES:
+		var has: bool = creature.has_condition(condition) if creature is Character else (creature is Dictionary and creature.get("conditions", {}).has(condition))
+		if has: radius = maxi(radius, int(CONDITION_DIM_LIGHT_HEXES[condition]))
+	return radius
 
 
 static func can_see_target(observer, target, observer_position: Vector2i, target_position: Vector2i, grid: HexGrid) -> bool:

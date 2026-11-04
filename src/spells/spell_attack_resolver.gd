@@ -18,9 +18,9 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 	var spell_attack_hexes := _attack_distance_hexes(cast)
 	var perception := CombatPerception.attack_visibility(cast.caster, cast.target, spell_attack_distance, cast.decisions)
 	cast.decisions["perception_handles_blindness"] = true
-	var spell_attack_advantage := FighterRules.attack_advantage(cast.caster, cast.target) or CombatAction.attack_target_grants_advantage(cast.target, spell_attack_hexes, true) or SpellEffects.has_spell(cast.target, "faerie_fire") or cast.caster.has_condition("innate_sorcery") or bool(perception.advantage)
+	var spell_attack_advantage := FighterRules.attack_advantage(cast.caster, cast.target) or CombatAction.attack_target_grants_advantage(cast.target, spell_attack_hexes, true) or CombatAction.is_outlined_for(cast.target, cast.caster) or cast.caster.has_condition("innate_sorcery") or bool(perception.advantage)
 	spell_attack_advantage = spell_attack_advantage or CombatAction.has_condition(cast.target, "reckless_attack")
-	var spell_attack_disadvantage := bool(perception.disadvantage) or (SpellEffects.has_spell(cast.target, "blur") and not CombatAction.can_perceive_blur(cast.caster, spell_attack_distance)) or CombatAction.attack_target_imposes_disadvantage(cast.target, spell_attack_hexes, bool(perception.target_sees_attacker)) or CombatAction.attacker_has_condition_disadvantage(cast.caster, spell_stat, cast.decisions)
+	var spell_attack_disadvantage := bool(perception.disadvantage) or CombatAction.is_blurred_against(cast.target, cast.caster, spell_attack_distance) or CombatAction.attack_target_imposes_disadvantage(cast.target, spell_attack_hexes, bool(perception.target_sees_attacker)) or CombatAction.attacker_has_condition_disadvantage(cast.caster, spell_stat, cast.decisions)
 	if cast.caster.get_creature_type() in CombatAction.protected_creature_types_for_target(cast.target):
 		spell_attack_disadvantage = true
 	if (cast.target is Character and cast.target.has_condition("guiding_bolt")) or (cast.target is Dictionary and cast.target.get("conditions", {}).has("guiding_bolt")):

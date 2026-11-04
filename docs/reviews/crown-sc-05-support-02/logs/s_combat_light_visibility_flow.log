@@ -1,0 +1,38 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+WARNING: [DataLoader] Rejected 25 unsupported effectless feature records; they remain unavailable until curated.
+     at: push_warning (core/variant/variant_utility.cpp:1033)
+     GDScript backtrace (most recent call first):
+         [0] load_all_data (res://src/autoload/data_loader.gd:276)
+         [1] _ready (res://src/autoload/data_loader.gd:252)
+[DataLoader] Loaded: 14 classes, 9 races, 295 items, 362 spells, 481 monsters, 4 event tables, 1 campaigns
+[DataLoader] Layers: core_imported, core_curated, mods | packs: core, crown | approved overrides: 426 | validation failures: 0
+==================================================
+ Rook's Headless Viewport Harness (per-beat)
+==================================================
+
+[TEST] combat_light_visibility_flow
+[ok]   A sight-required spell cannot target a creature beyond all light in an unlit encounter
+[ok]   The selected exact Torch copy lights successfully in inventory
+[ok]   A lit Torch lets the caster see a creature inside its 40-foot Dim Light radius for a sight-required spell
+[ok]   A creature one hex beyond a Torch's Dim Light radius remains unseen for sight-required targeting
+[ok]   A mundane Torch does not reveal a target inside magical Darkness
+[ok]   Innate 120-foot Dwarf Darkvision sees naturally dark space only within its stated range
+[ok]   The Darkvision spell sees natural darkness through 150 feet and stops beyond its range
+[ok]   Adjacent unlit entities do not illuminate themselves or enable sight in natural darkness
+[ok]   A distant illuminated target is visible across intervening natural darkness
+[ok]   A source's Dim Light does not downgrade existing ambient Bright Light
+[ok]   True Seeing cannot reveal a darkened target through a wall or closed door
+[ok]   True Seeing reveals the same darkened target after its sight path opens
+[ok]   A known Invisible target remains legal for Fire Bolt and its spell attack has Disadvantage
+[ok]   Magic Missile and Healing Word retain their explicit sight prerequisites
+[ok]   The actual Fire Bolt cast against a known unseen target resolves and spends only its Magic Action
+[ok]   A sight-required cast refuses the same Invisible target without spending resources
+[ok]   A Blinded caster can actually cast Mage Armor on themselves and spends its slot and Magic Action once
+[ok]   Fire Bolt applies natural-darkness Disadvantage when the target's Darkvision can see the caster
+[ok]   When neither creature can see the other, unseen attacker Advantage and unseen target Disadvantage cancel
+[ok]   A spell without a sight prerequisite still refuses an intervening wall
+--------------------------------------------------
+ VIEWPORT RESULTS: 0 failed (1 tests run)
+VIEWPORT TESTS PASSED
+SCENARIO PASSED: combat_light_visibility_flow

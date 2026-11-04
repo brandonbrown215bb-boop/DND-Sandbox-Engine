@@ -29,12 +29,12 @@ static func _monster(id: String, save_bonus: int, immunities: Array = []) -> Dic
 static func run(check: Callable) -> void:
 	var spell: Dictionary = DataLoader.get_spell("blindness/deafness")
 	check.call(SpellSupport.is_available(spell) and SpellEffects.manages(spell) and str(spell.get("school", "")) == "transmutation" and int(spell.get("range", 0)) == 24 and spell.get("classes", []) == ["bard", "cleric", "sorcerer", "wizard"], "Blindness/Deafness loads the curated SRD level-2 record and is available to its four classes")
-	check.call(spell.get("condition_options", []) == ["blinded", "deafened"] and str(spell.get("repeat_save_ability", "")) == "CON" and int(spell.get("duration_seconds", 0)) == 60 and not bool(spell.get("concentration", true)), "Blindness/Deafness records both condition choices, minute duration, and non-concentration repeat saves")
+	check.call(SharedSpell.condition_choices(spell) == ["blinded", "deafened"] and str(spell.get("repeat_save", "")) == "CON" and int(spell.get("duration_seconds", 0)) == 60 and not bool(spell.get("concentration", true)), "Blindness/Deafness records both condition choices, minute duration, and non-concentration repeat saves")
 
 	var caster := _caster("blindness-caster")
 	var target := _monster("blindness-target", -1000)
 	var blinded_spell := spell.duplicate(true)
-	blinded_spell["condition_on_failed_save"] = "blinded"
+	blinded_spell["_chosen_condition"] = "blinded"
 	var first_cast := CombatAction.resolve_spell(caster, target, blinded_spell, false, {}, [], 2, 30)
 	var source := str(first_cast.get("effect_cast", {}).get("source_id", ""))
 	var first_record: Dictionary = SpellEffects.records(target).get(source, {})
@@ -47,7 +47,7 @@ static func run(check: Callable) -> void:
 
 	var deaf_target := _monster("deafness-target", -1000)
 	var deafened_spell := spell.duplicate(true)
-	deafened_spell["condition_on_failed_save"] = "deafened"
+	deafened_spell["_chosen_condition"] = "deafened"
 	var deaf_cast := CombatAction.resolve_spell(caster, deaf_target, deafened_spell, false, {}, [], 2, 30)
 	check.call(not bool(deaf_cast.get("saved", true)) and CombatAction.has_condition(deaf_target, "deafened") and not CombatAction.has_condition(deaf_target, "blinded"), "The alternate spell choice applies Deafened rather than Blinded")
 
