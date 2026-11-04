@@ -132,6 +132,8 @@ var counterspell_decisions: Dictionary = {}
 var counterspell_pending := true
 var successful := false
 var interrupted := false
+## Settled result of the most recent creature target, for post-hit rules such as matching-dice leaps.
+var last_target_result: Dictionary = {}
 var damage_dealt := 0
 ## Transient receipts for every original and linked damage recipient in this cast.
 var damage_receipts: Array[Dictionary] = []

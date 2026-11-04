@@ -1,0 +1,62 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+WARNING: [DataLoader] Rejected 25 unsupported effectless feature records; they remain unavailable until curated.
+     at: push_warning (core/variant/variant_utility.cpp:1033)
+     GDScript backtrace (most recent call first):
+         [0] load_all_data (res://src/autoload/data_loader.gd:276)
+         [1] _ready (res://src/autoload/data_loader.gd:252)
+[DataLoader] Loaded: 14 classes, 9 races, 295 items, 362 spells, 481 monsters, 4 event tables, 1 campaigns
+[DataLoader] Layers: core_imported, core_curated, mods | packs: core, crown | approved overrides: 424 | validation failures: 0
+==================================================
+ Rook's Headless Viewport Harness (per-beat)
+==================================================
+
+[TEST] crown_sc_04_support_01_flow
+[ok]   SC-04 support 01: Chromatic Orb is shared data (3d8, six damage types, 30-ft leap, leaps = slot level)
+[ok]   SC-04 support 01: the 50+ GP diamond is a costed Material component
+[ok]   SC-04 support 01: leap_on_matching_dice { "range": 0 } is rejected
+[ok]   SC-04 support 01: leap_on_matching_dice { "range": 6, "max_leaps": 0 } is rejected
+[ok]   SC-04 support 01: leap_on_matching_dice { "range": 6, "max_leaps": "caster_level" } is rejected
+[ok]   SC-04 support 01: leap_on_matching_dice { "range": 6, "x": 1 } is rejected
+[ok]   SC-04 support 01: leap_on_matching_dice 6 is rejected
+[ok]   SC-04 support 01: a leap without a spell attack is rejected
+[ok]   SC-04 support 01: matching faces: two equal d8s match; distinct faces or other dice do not
+[ok]   SC-04 support 01: a discarded (rerolled) die does not count toward a match
+[Character] crown-sc04s1-contract leveled up to 2! (+6 HP, now 14)
+[Character] crown-sc04s1-contract leveled up to 3! (+6 HP, now 20)
+[Character] crown-sc04s1-contract leveled up to 4! (+6 HP, now 26)
+[Character] crown-sc04s1-contract leveled up to 5! (+4 HP, now 30)
+[ok]   SC-04 support 01: a 2nd-level slot adds 1d8
+[ok]   SC-04 support 01: without a 50 GP diamond a focus/pouch does not satisfy the Material component
+[ok]   SC-01 support 01: renamed chromatic_orb passes the production loader as shared data
+[ok]   SC-04 support 01: a renamed leap spell (d6 matches, fixed 1 leap) loads and validates with no ID registration
+[Character] crown-sc04s1-renamed leveled up to 2! (+5 HP, now 13)
+[Character] crown-sc04s1-renamed leveled up to 3! (+3 HP, now 16)
+[Character] crown-sc04s1-renamed leveled up to 4! (+8 HP, now 24)
+[Character] crown-sc04s1-renamed leveled up to 5! (+6 HP, now 30)
+[ok]   SC-04 support 01: renamed: CombatAction.resolve_spell hits for the authored 2d6 cold and reports its dice (5)
+[Character] crown-sc04s1-wizard leveled up to 2! (+5 HP, now 13)
+[Character] crown-sc04s1-wizard leveled up to 3! (+5 HP, now 18)
+[Character] crown-sc04s1-wizard leveled up to 4! (+5 HP, now 23)
+[Character] crown-sc04s1-wizard leveled up to 5! (+5 HP, now 28)
+[ok]   SC-04 support 01: Wizard records Chromatic Orb in its spellbook and prepares it through ordinary class selection
+[ok]   Conversion 001: chromatic_orb is available through the real spell picker
+[ok]   SC-04 support 01: without a 50 GP diamond the player cast is refused and no slot is spent
+[ok]   Conversion 001: chromatic_orb is available through the real spell picker
+[ok]   Conversion 001: chromatic_orb is available through the real spell picker
+[ok]   Conversion 001: chromatic_orb is available through the real spell picker
+[ok]   Conversion 001: chromatic_orb is available through the real spell picker
+[ok]   Conversion 001: chromatic_orb is available through the real spell picker
+[ok]   Conversion 001: chromatic_orb is available through the real spell picker
+[ok]   Conversion 001: chromatic_orb is available through the real spell picker
+[ok]   Conversion 001: chromatic_orb is available through the real spell picker
+[ok]   Conversion 001: chromatic_orb is available through the real spell picker
+[ok]   Conversion 001: chromatic_orb is available through the real spell picker
+[ok]   SC-04 support 01: picker + damage-type popup + hex click: one slot per cast, leaps only after a hit, never above the slot level, never back to the first target ([])
+[ok]   SC-04 support 01: the chosen Fire orb hits the clicked creature (9 hits)
+[ok]   SC-04 support 01: matching d8 faces leapt through player casting on both a 1st- and 2nd-level slot (L1 2, L2 6)
+[ok]   SC-04 support 01: the diamond is not consumed
+--------------------------------------------------
+ VIEWPORT RESULTS: 0 failed (1 tests run)
+VIEWPORT TESTS PASSED
+SCENARIO PASSED: crown_sc_04_support_01_flow

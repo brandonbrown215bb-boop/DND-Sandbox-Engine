@@ -1,0 +1,10 @@
+[
+  {
+    "id": "diamond_50gp",
+    "name": "Diamond (50 GP)",
+    "description": "A diamond worth 50 GP, the reusable Material component of Chromatic Orb.",
+    "type": "spell_component",
+    "weight": 0.01,
+    "value": 50
+  }
+]
