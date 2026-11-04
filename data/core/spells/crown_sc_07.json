@@ -86,5 +86,50 @@
     "execution": "shared",
     "rules_source": "SRD5.2.1",
     "rules_status": "2024-gameplay"
+  },
+  {
+    "id": "calm_emotions",
+    "name": "Calm Emotions",
+    "description": "Each Humanoid in a 20-foot-radius Sphere centered on a point you choose within range must succeed on a Charisma saving throw or be affected by one of the following effects (choose for each creature): the creature has Immunity to the Charmed and Frightened conditions until the spell ends, and any of those conditions it already has are suppressed; or the creature becomes Indifferent about creatures of your choice that it's Hostile toward until the spell ends, which ends early if the target takes damage or witnesses its allies taking damage. When the spell ends, the creature's attitude returns to normal.",
+    "level": 2,
+    "school": "enchantment",
+    "casting_time": "action",
+    "range": 12,
+    "target": "area",
+    "area_radius": 4,
+    "attack_type": "none",
+    "save": "CHA",
+    "target_creature_types": [
+      "humanoid"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "Concentration, up to 1 minute",
+    "duration_seconds": 60,
+    "concentration": true,
+    "effects": [
+      {
+        "type": "area_selection",
+        "shape": "sphere",
+        "radius": 4
+      },
+      {
+        "type": "grant_condition",
+        "condition_options": [
+          "calmed",
+          "calmed_indifferent"
+        ],
+        "on_failed_save": true
+      }
+    ],
+    "classes": [
+      "bard",
+      "cleric"
+    ],
+    "execution": "shared",
+    "rules_source": "SRD5.2.1",
+    "rules_status": "2024-gameplay"
   }
 ]

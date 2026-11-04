@@ -3,7 +3,7 @@
 class_name SharedSpell
 extends RefCounted
 
-const CONDITIONS := ["blinded", "deafened", "frightened", "poisoned", "prone", "restrained", "stunned", "paralyzed", "incapacitated", "blessed", "baned", "shield_of_faith", "speed_reduced", "healing_prevented", "opportunity_attack_blocked", "next_attack_disadvantage", "invisibility_suppressed", "charmed", "blurred", "outlined", "unconscious", "speed_zero", "enfeebled", "enthralled"]
+const CONDITIONS := ["blinded", "deafened", "frightened", "poisoned", "prone", "restrained", "stunned", "paralyzed", "incapacitated", "blessed", "baned", "shield_of_faith", "speed_reduced", "healing_prevented", "opportunity_attack_blocked", "next_attack_disadvantage", "invisibility_suppressed", "charmed", "blurred", "outlined", "unconscious", "speed_zero", "enfeebled", "enthralled", "calmed", "calmed_indifferent"]
 ## Conditions whose consumer reads an authored magnitude (hexes) from the source record.
 const AMOUNT_CONDITIONS := {"speed_reduced": [1, 12]}
 const ABILITIES := ["STR", "DEX", "CON", "INT", "WIS", "CHA"]
@@ -93,9 +93,13 @@ static func save_context_error(value: Variant) -> String:
 
 ## The condition a grant_condition effect applies: its fixed condition, or the
 ## cast's validated pick from condition_options ("" when no legal pick exists).
-static func chosen_condition(effect: Dictionary, spell: Dictionary) -> String:
+## A per-target pick in spell._chosen_conditions (keyed by target id) wins.
+static func chosen_condition(effect: Dictionary, spell: Dictionary, target = null) -> String:
 	if not effect.has("condition_options"): return str(effect.get("condition", ""))
 	var pick := str(spell.get("_chosen_condition", ""))
+	var target_id := str(target.character_id) if target is Character else (str(target.get("id", "")) if target is Dictionary else "")
+	var per_target: Variant = spell.get("_chosen_conditions", {})
+	if per_target is Dictionary and not target_id.is_empty() and per_target.has(target_id): pick = str(per_target[target_id])
 	return pick if pick in effect["condition_options"] else ""
 
 ## Every caster-choosable condition authored on a spell's grant effects, in order.
@@ -993,7 +997,7 @@ static func apply_custom_effects(caster: Character, target, effects: Array, resu
 				if DamageResponseRules.grant(target, result.get("effect_cast", {}), effect.policy):
 					messages.append("%s gains a source-owned damage response." % target_name)
 			"grant_condition":
-				var granted_condition := chosen_condition(effect, spell)
+				var granted_condition := chosen_condition(effect, spell, target)
 				if granted_condition.is_empty():
 					messages.append("No condition was chosen for %s." % target_name)
 					continue

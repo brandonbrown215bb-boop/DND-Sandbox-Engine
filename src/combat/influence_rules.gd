@@ -145,11 +145,21 @@ static func outcome_error(state, room: Dictionary, monster: Dictionary, object: 
 	return ""
 
 
+## Profile attitude, read as Indifferent while a Hostile creature carries an
+## attitude_indifferent marker; the profile is never rewritten, so the
+## original attitude returns as soon as the marker ends.
+static func effective_attitude(monster: Dictionary) -> String:
+	var attitude := str(monster.get("influence", {}).get("attitude", "indifferent"))
+	if attitude == "hostile" and not CombatAction.conditions_with_consequence(monster, "attitude_indifferent").is_empty():
+		return "indifferent"
+	return attitude
+
+
 static func roll(actor: Character, monster: Dictionary, approach: Dictionary, context: Dictionary) -> Dictionary:
 	var actual := context.duplicate()
 	actual["social_target"] = monster
 	actual["influence_action"] = true
-	actual["influence_attitude"] = monster.influence.get("attitude", "indifferent")
+	actual["influence_attitude"] = effective_attitude(monster)
 	return EventResolver.resolve_skill_check(actor, {"ability":SKILLS[approach.skill], "skill":str(approach.skill), "dc":maxi(15, int(monster.get("ability_scores", {}).get("INT", 10)))}, {}, actual)
 
 

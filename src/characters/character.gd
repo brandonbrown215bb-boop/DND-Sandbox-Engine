@@ -2639,7 +2639,7 @@ func has_condition(condition_name: String) -> bool:
 		return not AuraRules.suppresses_condition(self, "prone")
 	if condition_name == "exhaustion":
 		return exhaustion_level > 0 and not AuraRules.suppresses_condition(self, condition_name)
-	return condition_name in conditions and not AuraRules.suppresses_condition(self, condition_name)
+	return condition_name in conditions and not AuraRules.suppresses_condition(self, condition_name) and not CombatAction.marker_suppresses(self, condition_name)
 
 
 ## Check if the character has a feature by ID.

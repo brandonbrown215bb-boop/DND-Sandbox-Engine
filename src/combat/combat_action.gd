@@ -99,7 +99,23 @@ const MARKER_RULES := {
 	"enfeebled": {"str_d20_disadvantage": true, "damage_roll_penalty_d8": true},
 	"ray_of_enfeeblement": {"str_d20_disadvantage": true, "damage_roll_penalty_d8": true},
 	"enthralled": {"perception_penalty_10": true},
+	# Calm-style markers: suppress_<condition> both suppresses an existing
+	# condition and blocks new ones while the marker lasts; attitude_indifferent
+	# makes a Hostile Influence attitude read Indifferent and ends on damage.
+	"calmed": {"suppress_charmed": true, "suppress_frightened": true},
+	"calmed_indifferent": {"attitude_indifferent": true, "ends_on_damage": true},
 }
+
+## True when a marker on the entity suppresses (and grants immunity to) the
+## condition. Reads raw marker storage so suppression never recurses.
+static func marker_suppresses(entity, condition: String) -> bool:
+	if entity == null or condition.is_empty() or MARKER_RULES.has(condition):
+		return false
+	var raw: Dictionary = entity.conditions if entity is Character else (entity.get("conditions", {}) if entity is Dictionary else {})
+	for marker in MARKER_RULES:
+		if raw.has(marker) and bool(MARKER_RULES[marker].get("suppress_" + condition, false)):
+			return true
+	return false
 
 ## Flat penalty to Wisdom (Perception) checks and Passive Perception from
 ## any condition/marker carrying the perception_penalty_10 consequence (not stacking).
@@ -371,8 +387,8 @@ static func has_condition(entity, condition: String) -> bool:
 	if entity is Dictionary:
 		var conds: Dictionary = entity.get("conditions", {})
 		if condition == "prone" and conds.has("unconscious") and not is_immune_to_condition(entity, "prone"):
-			return true
-		return conds.has(condition)
+			return not marker_suppresses(entity, "prone")
+		return conds.has(condition) and not marker_suppresses(entity, condition)
 	return false
 
 
@@ -390,6 +406,8 @@ static func is_immune_to_condition(entity, condition: String) -> bool:
 	if entity == null or condition.is_empty():
 		return false
 	if condition == "poisoned" and has_condition(entity, "petrified"):
+		return true
+	if marker_suppresses(entity, condition):
 		return true
 	if entity is Dictionary:
 		return condition in entity.get("condition_immunities", [])
@@ -1121,6 +1139,12 @@ static func _end_damage_broken_spell_effects(target, party_damage: bool = true, 
 			continue
 		if bool(record.get("end_on_any_damage", false)) or (party_damage and bool(record.get("end_on_target_damage", false))):
 			SpellEffects.remove(target, str(source), "damage", cause)
+	for marker in conditions_with_consequence(target, "ends_on_damage"):
+		var marker_sources: Dictionary = (target.condition_sources if target is Character else target.get("condition_sources", {})).get(marker, {})
+		var marker_ids: Array = marker_sources.keys()
+		if marker_ids.is_empty(): marker_ids = ["ordinary"]
+		for marker_source in marker_ids:
+			remove_condition_source(target, str(marker_source), [marker])
 	if not party_damage or not target is Dictionary:
 		return
 	var sources: Dictionary = target.get("condition_sources", {}).get("charmed", {})
