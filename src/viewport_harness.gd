@@ -567,6 +567,7 @@ func _run_scenario(scenario: String) -> void:
 		"conversion_batch_001_flow": await ConversionBatch001Flow.run(self)
 		"conversion_batch_002_flow": await ConversionBatch002Flow.run(self)
 		"crown_sc_01_flow": await CrownSc01Flow.run(self)
+		"crown_sc_02_flow": await CrownSc02Flow.run(self)
 		"sorcerer_twinned_spell": await test_sorcerer_twinned_spell()
 		"overworld": await test_overworld()
 		"companion_lifecycle": await test_companion_lifecycle()
@@ -16371,28 +16372,26 @@ func test_mixed_mechanics_encounter() -> void:
 	combat.active_character = wizard
 	var ice_spell: Dictionary = DataLoader.get_spell("ice_knife")
 	var ice_distance := HexUtils.get_distance(combat.player_entities[combat.current_player_idx]["hex_position"], ice_center) * 5
-	var missed_ice_attack: Dictionary = {}
-	for _attempt in 40:
-		missed_ice_attack = CombatAction.resolve_spell(wizard, ice_target, ice_spell, false, {}, [], 2, ice_distance)
-		if not bool(missed_ice_attack.get("hit", true)):
-			break
 	var ice_center_hp := int(ice_target["current_hp"])
 	var nearby_hp := int(nearby_target["current_hp"])
-	if missed_ice_attack.get("success", false) and not missed_ice_attack.get("hit", true):
-		await combat._resolve_ice_knife_splash(ice_center, ice_spell, 2, {})
+	ice_target["ability_scores"] = {"DEX": -100}
+	nearby_target["ability_scores"] = {"DEX": -100}
+	var missed_ice_attack: Dictionary = {}
+	for _attempt in 40:
+		missed_ice_attack = CombatAction.resolve_spell(wizard, ice_target, ice_spell, false, {"area_targets": [ice_target, nearby_target]}, [], 2, ice_distance)
+		if not bool(missed_ice_attack.get("hit", true)):
+			break
 	_assert(missed_ice_attack.get("success", false) and not missed_ice_attack.get("hit", true) and int(ice_target["current_hp"]) < ice_center_hp and int(nearby_target["current_hp"]) < nearby_hp, "mixed encounter applies Ice Knife's upcast cold burst to the struck hex and an adjacent creature after a miss")
 	ice_target["current_hp"] = 100
 	nearby_target["current_hp"] = 100
 	ice_target["armor_class"] = -100
+	ice_center_hp = 100
+	nearby_hp = 100
 	var hit_ice_attack: Dictionary = {}
 	for _attempt in 40:
-		hit_ice_attack = CombatAction.resolve_spell(wizard, ice_target, ice_spell, false, {}, [], 1, ice_distance)
+		hit_ice_attack = CombatAction.resolve_spell(wizard, ice_target, ice_spell, false, {"area_targets": [ice_target, nearby_target]}, [], 1, ice_distance)
 		if bool(hit_ice_attack.get("hit", false)):
 			break
-	ice_center_hp = int(ice_target["current_hp"])
-	nearby_hp = int(nearby_target["current_hp"])
-	if hit_ice_attack.get("success", false) and hit_ice_attack.get("hit", false):
-		await combat._resolve_ice_knife_splash(ice_center, ice_spell, 1, {})
 	_assert(hit_ice_attack.get("success", false) and hit_ice_attack.get("hit", false) and int(ice_target["current_hp"]) < ice_center_hp and int(nearby_target["current_hp"]) < nearby_hp, "mixed encounter also applies Ice Knife's burst after the piercing attack hits")
 	combat.current_player_idx = int(by_class["cleric"].get("player_id", 3))
 	combat.active_character = cleric

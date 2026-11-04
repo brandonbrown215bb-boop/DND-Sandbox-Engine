@@ -202,6 +202,7 @@ if ($runIntegration) {
 	$scenarios += "conversion_batch_001_flow"
 	$scenarios += "conversion_batch_002_flow"
 	$scenarios += "crown_sc_01_flow"
+	$scenarios += "crown_sc_02_flow"
 	$scenarios += "batch_036_end_and_charge_flow"
 	$scenarios += "batch_037_mode_upgrade_flow"
 	$scenarios += "batch_038_switch_option_flow"

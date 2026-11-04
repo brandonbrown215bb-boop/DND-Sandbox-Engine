@@ -2490,7 +2490,8 @@ func _test_spellcasting() -> void:
 		var false_life_class_data: Dictionary = DataLoader.get_character_class(false_life_class)
 		_assert("false_life" in false_life_class_data.get("spells_known_by_level", {}).get("1", []) and "false_life" in false_life_class_data.get("spell_list_ids", []), "False Life is learnable by %s" % false_life_class.capitalize())
 	var ice_knife: Dictionary = DataLoader.get_spell("ice_knife")
-	_assert(not ice_knife.is_empty() and ice_knife.get("attack_type", "") == "ranged_spell" and ice_knife.get("splash_save", "") == "DEX" and ice_knife.get("splash_radius", 0) == 1 and ice_knife.get("components", []) == ["S", "M"], "Ice Knife records its piercing attack, 5-foot burst, saving throw, and components")
+	var ice_steps: Array = ice_knife.get("steps", [])
+	_assert(SharedSpell.uses(ice_knife) and ice_steps.size() == 2 and ice_steps[0].get("type") == "attack" and ice_steps[0].get("attack_type") == "ranged_spell" and ice_steps[0].get("damage_type") == "piercing" and ice_steps[1].get("save") == "DEX" and ice_steps[1].get("target") == "area" and int(ice_steps[1].get("radius", 0)) == 1 and ice_knife.get("components", []) == ["S", "M"], "Ice Knife records its piercing attack, 5-foot burst, saving throw, and components")
 	for spell_class in ["druid", "sorcerer", "wizard"]:
 		var class_data: Dictionary = DataLoader.get_character_class(spell_class)
 		_assert("ice_knife" in class_data.get("spells_known_by_level", {}).get("1", []) and "ice_knife" in class_data.get("spell_list_ids", []), "Ice Knife is available to %s and participates in its class spell rules" % spell_class.capitalize())
@@ -2500,17 +2501,12 @@ func _test_spellcasting() -> void:
 		_assert("blight" in DataLoader.get_character_class(spell_class).get("spell_list_ids", []), "Blight counts as a %s spell for class features" % spell_class.capitalize())
 	for spell_class in ["cleric", "druid"]:
 		_assert("heal" in DataLoader.get_character_class(spell_class).get("spell_list_ids", []), "Heal counts as a %s spell for class features" % spell_class.capitalize())
-	var ice_splash := ice_knife.duplicate(true)
-	ice_splash["attack_type"] = "none"
-	ice_splash["damage"] = ice_knife.get("splash_damage", "2d6")
-	ice_splash["damage_type"] = ice_knife.get("splash_damage_type", "cold")
-	ice_splash["save"] = ice_knife.get("splash_save", "DEX")
-	ice_splash["half_on_save"] = true
-	ice_splash["upcast"]["damage_per_level"] = ice_splash["upcast"]["splash_damage_per_level"]
 	var ice_target := _monster_inst("goblin")
 	ice_target["current_hp"] = 100
-	var ice_splash_result := CombatAction.resolve_spell(scaling_caster, ice_target, ice_splash, false, {}, [], 2, 30)
-	_assert(ice_splash_result.get("success", false) and CombatAction.spell_damage_formula(scaling_caster, ice_splash, 2) == "2d6 + 1d6" and int(ice_splash_result.get("damage", -1)) >= 0 and int(ice_splash_result.get("damage", -1)) <= 18, "Ice Knife burst uses a Dexterity save, halves on success, and adds 1d6 when upcast")
+	ice_target["armor_class"] = 1000
+	ice_target["ability_scores"] = {"DEX": 100}
+	var ice_saved := CombatAction.resolve_spell(scaling_caster, ice_target, ice_knife, false, {"area_targets": [ice_target]}, [], 2, 30)
+	_assert(ice_saved.get("success", false) and int(ice_target["current_hp"]) == 100 and CombatAction.spell_damage_formula(scaling_caster, ice_steps[1], 2) == "2d6 + 1d6", "Ice Knife burst uses a Dexterity save, deals nothing on success, and adds 1d6 when upcast")
 	var acid_arrow: Dictionary = DataLoader.get_spell("melfs_acid_arrow")
 	var acid_arrow_access: Dictionary = DataLoader.get_character_class("wizard")
 	_assert(not acid_arrow.is_empty() and acid_arrow.get("components", []) == ["V", "S", "M"] and acid_arrow.get("duration", "") == "instantaneous" and "melfs_acid_arrow" in acid_arrow_access.get("spells_known_by_level", {}).get("2", []) and "melfs_acid_arrow" in acid_arrow_access.get("spell_list_ids", []), "Melf's Acid Arrow has SRD components and is a Wizard level-2 spell")
