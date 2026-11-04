@@ -1448,6 +1448,14 @@
     },
     {
       "type": "spell",
+      "id": "calm_emotions",
+      "winner": "res://data/core/spells/crown_sc_07.json#3",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#27"
+      ]
+    },
+    {
+      "type": "spell",
       "id": "enthrall",
       "winner": "res://data/core/spells/crown_sc_07.json#2",
       "replaces": [
