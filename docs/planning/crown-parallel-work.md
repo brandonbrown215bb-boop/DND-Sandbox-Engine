@@ -14,8 +14,8 @@ Luna's origins work remains in its separate worktree. The dated instructions bel
 to start SC-01 and keep Hit Dice local describe the original dispatch only.
 
 Use the [complete Crown spell conversion stack](crown-spell-conversion-queue.md)
-and its [169-spell assignment CSV](crown-spell-conversion-queue.csv): 81 refused
-and 88 enabled-native spells, assigned exactly once across 46 ordered PRs.
+and its [169-spell assignment CSV](crown-spell-conversion-queue.csv): originally
+81 refused and 88 enabled-native spells, assigned exactly once across 46 ordered PRs.
 Start SC-01, open the PR, branch the next assignment from its tip, and keep
 stacking. **No review, approval, owner sign-off, merge or remote-CI wait gates
 the next PR.** This explicit owner direction supersedes the historical

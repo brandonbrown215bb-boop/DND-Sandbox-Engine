@@ -1,9 +1,9 @@
 # Crown spell conversion: Grokbot stacking queue
 
 Owner direction: **2026-11-04**. This is the complete remaining **169-spell**
-conversion queue for Crown's pinned 183 SRD level-0-3 spells, divided into
-**46 ordered PR assignments**. It includes 81 refused spells and 88 enabled
-native spells. Each spell has one owning assignment in the
+conversion queue at dispatch for Crown's pinned 183 SRD level-0-3 spells, divided
+into **46 ordered PR assignments**. Its original inventory was 81 refused spells
+and 88 enabled native spells; current delivery status is below. Each spell has one owning assignment in the
 [machine-readable queue](crown-spell-conversion-queue.csv).
 The [Crown roadmap](crown-roadmap.md) still owns the campaign finish line;
 [content scope](crown-content-scope.md#spell-inventory) owns the 183 IDs;

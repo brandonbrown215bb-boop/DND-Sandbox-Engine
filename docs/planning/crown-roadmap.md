@@ -9,7 +9,7 @@ slice; it does not create a second acceptance count.
 
 **Spell execution queue (2026-11-04):** the
 [Grokbot conversion stack](crown-spell-conversion-queue.md) assigns all 169
-remaining native spells (81 refused, 88 enabled) to 46 stackable PRs, with
+native spells at dispatch (81 refused, 88 enabled) to 46 stackable PRs, with
 missing generic support and actual-content checks included. Start with the
 32-spell damage/condition sweep and keep stacking without review/merge waits,
 as explicitly directed by the owner. The queue is an assignment plan, not a
