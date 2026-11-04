@@ -574,6 +574,7 @@ func _run_scenario(scenario: String) -> void:
 		"crown_sc_03_support_02_flow": await CrownSc03Support02Flow.run(self)
 		"crown_sc_03_support_03_flow": await CrownSc03Support03Flow.run(self)
 		"crown_sc_03_support_04_flow": await CrownSc03Support04Flow.run(self)
+		"crown_sc_03_support_05_flow": await CrownSc03Support05Flow.run(self)
 		"sorcerer_twinned_spell": await test_sorcerer_twinned_spell()
 		"overworld": await test_overworld()
 		"companion_lifecycle": await test_companion_lifecycle()
@@ -16334,6 +16335,13 @@ func test_mixed_mechanics_encounter() -> void:
 		wizard.known_spells.append("shocking_grasp")
 	combat.pending_spell_data = DataLoader.get_spell("shocking_grasp").duplicate(true)
 	combat.pending_action_type = "spell"
+	# Shocking Grasp is a touch spell: the shared path enforces range, so the target must
+	# stand next to the Wizard at cast time (the native path never checked this).
+	for adjacent_hex in HexUtils.get_neighbors(by_class["wizard"]["hex_position"]):
+		if combat.hex_grid.has_tile(adjacent_hex) and combat.hex_grid.is_hex_passable(adjacent_hex) and not combat.player_entities.any(func(entity): return entity["hex_position"] == adjacent_hex) and not combat.monster_entities.any(func(entity): return entity != shocked_monster and entity["hex_position"] == adjacent_hex):
+			shocked_monster["hex_position"] = adjacent_hex
+			break
+	combat._update_grid_entities()
 	var shock_cast_attempts := 0
 	while not CombatAction.blocks_opportunity_attack(shocked_monster) and shock_cast_attempts < 40:
 		if shock_cast_attempts > 0:

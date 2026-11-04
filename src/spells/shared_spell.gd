@@ -22,7 +22,7 @@ const EFFECTS := ["heal", "temporary_hp", "grant_condition", "remove_condition",
 const STEP_FIELDS := ["id", "type", "gate", "gate_step", "target", "shape", "radius", "size", "attack_type", "damage", "damage_type", "damage_components", "component_id", "scaling", "upcast", "save", "half_on_save", "save_context", "damage_scale_by_outcome", "damage_dice_policy", "damage_result_multiplier", "damage_reductions", "damage_bypasses", "recipient_exemption_choice", "effects", "incoming_negation", "incoming_negation_rule", "physical_requirements", "spatial_requirements"]
 const STEP_TYPES := ["attack", "save", "damage", "effect"]
 const STEP_GATES := ["always", "hit", "miss", "failed_save", "successful_save"]
-const FIELDS := ["containment_targeting", "id", "name", "description", "execution", "level", "casting_time", "range", "range_kind", "range_by_character_level_feet", "target", "base_targets", "attack_type", "damage", "damage_type", "component_id", "scaling", "upcast", "save", "half_on_save", "save_exit_placement", "save_context", "damage_scale_by_outcome", "damage_dice_policy", "damage_result_multiplier", "damage_reductions", "damage_bypasses", "recipient_exemption_choice", "attack_unit_substitution", "requires_target_sight", "target_creature_types", "target_creature_type_exclusions", "target_sizes", "ignore_cover_on_save", "ignore_cover", "effects", "concentration", "duration", "duration_seconds", "repeat_save", "repeat_save_schedule", "repeat_save_interval_seconds", "repeat_save_stages", "repeat_save_dc_progression", "targets_objects", "ignites_objects", "area_radius", "cone_size", "end_on_target_damage", "end_on_any_damage", "end_on_party_damage", "source_end_rules", "components", "material", "material_component_item_id", "material_component_cost", "material_component_consumed", "consumed_material_item_id", "ritual", "rules_source", "rules_status", "school", "classes", "source", "trigger", "steps", "formula_inputs", "interruption_policy", "failure_policy", "empty_effect_policy", "cast_settlement", "cancellation_rule", "stopping_cost_policy", "incoming_negation_rule", "physical_requirements", "spatial_requirements", "zero_hp_aftermath", "end_aftermath", "reaction_trigger", "effect_noise", "projectiles", "delayed_damage"] # Batch 065: reaction_trigger is validated by ReactionTriggers.spell_trigger_error.
+const FIELDS := ["containment_targeting", "id", "name", "description", "execution", "level", "casting_time", "range", "range_kind", "range_by_character_level_feet", "target", "base_targets", "attack_type", "damage", "damage_type", "component_id", "scaling", "upcast", "save", "half_on_save", "save_exit_placement", "save_context", "damage_scale_by_outcome", "damage_dice_policy", "damage_result_multiplier", "damage_reductions", "damage_bypasses", "recipient_exemption_choice", "attack_unit_substitution", "requires_target_sight", "target_creature_types", "target_creature_type_exclusions", "target_sizes", "ignore_cover_on_save", "ignore_cover", "effects", "concentration", "duration", "duration_seconds", "repeat_save", "repeat_save_schedule", "repeat_save_interval_seconds", "repeat_save_stages", "repeat_save_dc_progression", "targets_objects", "ignites_objects", "area_radius", "cone_size", "end_on_target_damage", "end_on_any_damage", "end_on_party_damage", "source_end_rules", "components", "material", "material_component_item_id", "material_component_cost", "material_component_consumed", "consumed_material_item_id", "ritual", "rules_source", "rules_status", "school", "classes", "source", "trigger", "steps", "formula_inputs", "interruption_policy", "failure_policy", "empty_effect_policy", "cast_settlement", "cancellation_rule", "stopping_cost_policy", "incoming_negation_rule", "physical_requirements", "spatial_requirements", "zero_hp_aftermath", "end_aftermath", "reaction_trigger", "effect_noise", "projectiles", "delayed_damage", "damage_type_options", "exploding_dice"] # Batch 065: reaction_trigger is validated by ReactionTriggers.spell_trigger_error.
 
 static func damage_dice_policy_error(value: Variant) -> String:
 	if not value is Dictionary or value.is_empty():
@@ -443,6 +443,9 @@ static func content_error(spell: Dictionary) -> String:
 	if spell.has("delayed_damage"):
 		var delayed_error := delayed_damage_error(spell)
 		if not delayed_error.is_empty(): return delayed_error
+	if spell.has("damage_type_options") or spell.has("exploding_dice"):
+		var choice_error := damage_choice_error(spell)
+		if not choice_error.is_empty(): return choice_error
 	# These need dedicated handlers; a shared label must never enable a no-op.
 	for key in ["damage_per_dart", "damage_per_ray", "damage_components", "summoned_creature", "condition_on_failed_save", "area_point_count"]:
 		if spell.has(key):
@@ -948,4 +951,30 @@ static func delayed_damage_error(spell: Dictionary) -> String:
 	if not delayed.get("damage") is String or not _dice_formula(delayed["damage"]): return "delayed_damage.damage must be a plain dice expression."
 	if str(delayed.get("damage_type", "")) not in DataLoader.VALID_DAMAGE_TYPES: return "delayed_damage needs a valid damage_type."
 	if str(delayed.get("trigger", "")) not in DELAYED_DAMAGE_TRIGGERS: return "Unsupported delayed_damage trigger."
+	return ""
+
+
+## Caster-chosen damage type (picked at cast time by SpellCastChoices) and exploding
+## damage dice (SRD Sorcerous Burst): a die of `sides` that rolls its maximum adds
+## another, up to `max_extra` extra dice per cast. Single spell attacks only.
+static func damage_choice_error(spell: Dictionary) -> String:
+	if str(spell.get("attack_type", "none")) not in ["ranged_spell", "melee_spell"] or not spell.has("damage") or spell.has("steps") or spell.has("projectiles"):
+		return "damage_type_options and exploding_dice require a single spell attack with a damage payload."
+	if spell.has("damage_type_options"):
+		var options: Variant = spell["damage_type_options"]
+		if not options is Array or options.size() < 2: return "damage_type_options needs at least two damage types."
+		var seen := []
+		for option in options:
+			if not option is String or option in seen or option not in DataLoader.VALID_DAMAGE_TYPES or option == "none": return "damage_type_options entries must be distinct valid damage types."
+			seen.append(option)
+		if str(spell.get("damage_type", "")) not in options: return "damage_type must be one of damage_type_options."
+	if spell.has("exploding_dice"):
+		var policy: Variant = spell["exploding_dice"]
+		if not policy is Dictionary: return "exploding_dice must be an object."
+		for key in policy:
+			if key not in ["sides", "max_extra"]: return "Unsupported exploding_dice field '%s'." % key
+		if not _integer(policy.get("sides"), 2, 100) or not int(policy["sides"]) in [4, 6, 8, 10, 12, 20]: return "exploding_dice.sides must be a standard die size."
+		if not str(spell["damage"]).replace(" ", "").contains("d%d" % int(policy["sides"])): return "exploding_dice.sides must match the damage dice."
+		var limit: Variant = policy.get("max_extra")
+		if not (limit is String and limit == "spellcasting_modifier") and not _integer(limit, 0, 20): return "exploding_dice.max_extra must be 'spellcasting_modifier' or an integer."
 	return ""
