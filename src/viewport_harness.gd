@@ -21862,7 +21862,13 @@ func test_short_rest_arcane_recovery_normal_controls_flow() -> void:
 	fighter.initialize("Garrick Vanguard", "human", "fighter", f_scores)
 	while fighter.level < 3:
 		fighter.level_up()
+	var fixture_class_id := "fixture:steady_spark_class"
+	DataLoader._load_json_file("res://data/fixtures/shared_numeric_pool.json", "class")
+	fighter.class_levels = {"fighter": 3, fixture_class_id: 1}
+	fighter.level = 4
+	HitDiceRules.add_class_level(fighter, fixture_class_id)
 	fighter.feature_uses["fighter_second_wind"] = 1
+	fighter.current_hp = 1
 
 	PlayerManager.set_player_character(0, wiz)
 	PlayerManager.set_player_character(1, fighter)
@@ -21926,7 +21932,21 @@ func test_short_rest_arcane_recovery_normal_controls_flow() -> void:
 
 	btn_confirm.pressed.emit()
 	await get_tree().process_frame
-	_assert(RestRules.get_active_recovery_modal() == null and not RestRules.is_rest_window_open(), "Confirming Arcane Recovery closes the modal and settles the recovery window")
+	var hit_dice_modal := RestRules._active_hit_dice_modal
+	_assert(hit_dice_modal != null and hit_dice_modal.visible, "Completed Short Rest opens the actual Hit Dice choice for the injured living Fighter")
+	var spend_buttons: Dictionary = hit_dice_modal.get_meta("spend_buttons")
+	var fixture_die_button := spend_buttons.get("fixture:steady_spark_class") as Button
+	var fixture_dice_before := HitDiceRules.remaining_pool(fighter, "fixture:steady_spark_class")
+	var fighter_dice_before := HitDiceRules.remaining_pool(fighter, "fighter")
+	var fighter_hp_before := fighter.current_hp
+	fixture_die_button.pressed.emit()
+	await get_tree().process_frame
+	_assert(HitDiceRules.remaining_pool(fighter, "fixture:steady_spark_class") == fixture_dice_before - 1 and HitDiceRules.remaining_pool(fighter, "fighter") == fighter_dice_before and fighter.current_hp > fighter_hp_before, "Actual Short Rest control spends exactly one selected renamed-class d8 and preserves the Fighter pool")
+	var repeat_hit_dice_modal := RestRules._active_hit_dice_modal
+	if repeat_hit_dice_modal != null:
+		(repeat_hit_dice_modal.get_meta("stop_button") as Button).pressed.emit()
+		await get_tree().process_frame
+	_assert(RestRules.get_active_recovery_modal() == null and not RestRules.is_rest_window_open(), "Stopping Hit Dice spending closes the chooser without spending another die")
 	_assert(int(wiz.spell_slots.get("2", 0)) == 2 and int(wiz.spell_slots.get("1", 0)) == 2 and int(wiz.feature_uses.get("wizard_arcane_recovery", -1)) == 0, "Confirming 1xL2 restores the level 2 slot, leaves level 1 slots at 2, and spends the once-per-Long-Rest Arcane Recovery use")
 
 	# 4. Second Short Rest before Long Rest does not re-open Arcane Recovery
@@ -21936,6 +21956,9 @@ func test_short_rest_arcane_recovery_normal_controls_flow() -> void:
 	(choice_modal.get_meta("btn_short_rest") as Button).pressed.emit()
 	await get_tree().process_frame
 	_assert(GameManager.campaign_elapsed_seconds == time_before + 7200 and RestRules.get_active_recovery_modal() == null, "Second Short Rest before a Long Rest advances another 3600s without re-opening Arcane Recovery")
+	if RestRules._active_hit_dice_modal != null:
+		(RestRules._active_hit_dice_modal.get_meta("stop_button") as Button).pressed.emit()
+		await get_tree().process_frame
 
 	_teardown_scene(overworld)
 

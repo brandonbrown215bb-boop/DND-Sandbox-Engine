@@ -24,6 +24,11 @@ static func _contract_checks(h) -> void:
 	h._assert(not SharedSpell.content_error(save_bad).is_empty(), P + "damage choice/exploding dice without a spell attack is rejected")
 	var sorc := ConversionBatch002Checks.actor("crown-sc03s5-contract", "sorcerer", 5)
 	h._assert(SpellDamageRolls.exploding_policy(sorc, sb) == {"sides": 8, "on": 8, "limit": 3}, P + "a CHA 16 sorcerer may add at most 3 extra d8s")
+	var granted := sb.duplicate(true)
+	granted["_source_permission_id"] = "fixture:wisdom_source"
+	granted["_source_permissions"] = [{"id": "fixture:wisdom_source", "ability": "WIS"}]
+	sorc.ability_scores.wisdom = 12
+	h._assert(int(SpellDamageRolls.exploding_policy(sorc, granted).get("limit", -1)) == 1, P + "a spell granted with Wisdom uses that source's +1 modifier for its explosion cap")
 
 static func _renamed_checks(h) -> void:
 	var spell := CrownSc01Support01Flow._renamed(h, "sorcerous_burst", "crown_sc_03_support_05:neutral_spark")

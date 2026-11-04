@@ -81,6 +81,38 @@ the drop cannot be represented, rather than losing the copy or creating an
 invalid save. The [slice recovery boundary](../planning/vocabulary-slices.md#srd-condition-and-roll-host-spine)
 owns acceptance, exact verification and limits.
 
+## Rest and Hit Dice implementation boundary (2026-11-03)
+
+SRD 5.2.1 Hit Dice, Short Rest and Long Rest clauses are checked against the
+provided PDF/extract in `.artifacts/rules-authority/`. New characters receive one
+Hit Die per acquired class level, keyed by class identity and the loaded class's
+`hit_die`; separate classes stay separate even when die sizes match. Level
+acquisition adds one new die only. The actual completed Short Rest control offers
+an injured living party member one selected remaining class die at a time, rolls
+through `Dice`, adds Constitution, applies the source minimum of 1 HP, and offers
+Stop before any further expenditure. Rest completion and the existing lifecycle
+own the gate; interrupted/cancelled/stale/refused paths don't spend a die. Hit Die
+recovery is granted only by RestRules' completed Long Rest callback, not by direct
+resource-reset calls. A completed Long Rest restores all spent Hit Dice, as the 2024
+SRD clause says.
+
+Hit Dice DTOs retain class ownership, die size, tracked total, spent and explicit
+untracked legacy count. Save preflight validates the raw die-size value as a bounded
+integer before conversion, and rejects class/size/capacity mismatches through both
+player and party save paths before replacement; direct Character loading also
+quarantines malformed pool payloads. An older save with no Hit Dice field has no
+trustworthy historical expenditure: its previously acquired dice are retained as
+untracked and cannot be spent before a completed Long Rest. That Long Rest converts
+the supported acquired count into a fully recovered tracked pool, without guessing
+the old spent count; loading alone never replays class grants. Subsequent acquired
+levels append only new tracked dice. Unknown class die definitions remain untracked;
+preflight rejects tracked zero-sided pools and spending refuses unavailable dice
+before rolling, healing or changing the pool.
+
+This verifies only the Hit Dice/rest subset of S-071. Prayer of Healing's
+benefit-only recovery, its ten-minute casting, interruption, and daily recipient
+cap remain open, as do other benefit-only spell hosts. It does not accept S-071.
+
 Observer-relative sight/location, combat concealment and source-specific darkness
 exceptions now use the [perception contract](perception.md). The original
 Invisible/obscurement findings below are historical; the S-190/S-191 registry

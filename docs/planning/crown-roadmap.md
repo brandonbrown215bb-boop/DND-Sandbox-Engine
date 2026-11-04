@@ -9,13 +9,17 @@ slice; it does not create a second acceptance count.
 
 **Spell execution queue (2026-11-04):** the
 [Grokbot conversion stack](crown-spell-conversion-queue.md) assigns all 169
-remaining native spells (81 refused, 88 enabled) to 46 stackable PRs, with
+native spells at dispatch (81 refused, 88 enabled) to 46 stackable PRs, with
 missing generic support and actual-content checks included. Start with the
 32-spell damage/condition sweep and keep stacking without review/merge waits,
 as explicitly directed by the owner. The queue is an assignment plan, not a
 readiness certification or a replacement for the finish line below.
 
 ## Scope and finish line
+
+The [2026-11-04 usage cutoff](crown-spell-conversion-queue.md#resume-here--grokbot-usage-cutoff-2026-11-04)
+records progress through reviewed PR #104 and unfinished Bestow Curse #105–106.
+SC-08 onward remains unstarted; earlier partial consumers remain named in the CSV.
 
 - The existing Crown campaign: level 1 start, level 5 cap, one to four local
   players, four stable party slots, existing companions, map, three dungeons,

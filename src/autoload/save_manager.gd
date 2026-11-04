@@ -340,6 +340,8 @@ func _validate_save_data(data: Dictionary) -> String:
 			if not progression_error.is_empty(): return progression_error
 			var allocation_error := Character.saved_class_levels_error(character_data)
 			if not allocation_error.is_empty(): return allocation_error
+			var hit_dice_error := HitDiceRules.saved_state_error(character_data)
+			if not hit_dice_error.is_empty(): return hit_dice_error
 			var pact_slots_error := Character.saved_pact_spell_slots_error(character_data)
 			if not pact_slots_error.is_empty(): return pact_slots_error
 			var gift_error := CapturedGrantRules.saved_error(character_data, saved_campaign_seconds)
@@ -544,6 +546,8 @@ func _validate_party_data(data: Dictionary, campaign_seconds: int = 0) -> String
 		if not progression_error.is_empty(): return progression_error
 		var allocation_error := Character.saved_class_levels_error(character_data)
 		if not allocation_error.is_empty(): return allocation_error
+		var hit_dice_error := HitDiceRules.saved_state_error(character_data)
+		if not hit_dice_error.is_empty(): return hit_dice_error
 		var pact_slots_error := Character.saved_pact_spell_slots_error(character_data)
 		if not pact_slots_error.is_empty(): return pact_slots_error
 		var survival_error := SurvivalRules.saved_state_error(character_data)

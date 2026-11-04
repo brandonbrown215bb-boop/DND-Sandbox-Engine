@@ -36,6 +36,37 @@ checks the modified failure and applies only the final roll's modifier dice.
 Automatic Death Save outcomes and broader roll-choice support are unchanged.
 Existing saved condition/source records need no conversion.
 
+## Crown conversion support through SC-07
+
+The [conversion queue](../planning/crown-spell-conversion-queue.md#resume-here--grokbot-usage-cutoff-2026-11-04)
+owns per-spell readiness and the unfinished consumers. Reusable definitions and
+their production-control fixtures are paired in `data/core/spells/crown_sc_*.json`
+and `src/spells/crown_sc_*_flow.gd`. Supported additions include source-owned
+condition expiry, `weapon_attack` steps, split `projectiles`, `delayed_damage`,
+`damage_type_options`, bounded `exploding_dice`, `leap_on_matching_dice`,
+creature-type save Disadvantage, area object damage and push, condition choices,
+staged repeat saves, and condition suppression/attitude consequences. These are
+bounded operations, not blanket support for every clause in those spell families.
+
+`grant_condition.expiry` stores an exact caster/target turn boundary and count.
+Condition magnitudes remain tied to their authored grant amount across restore;
+missing or altered required amounts refuse save preflight. A new source record
+is registered before condition callbacks run, so a downed recipient cannot make
+concentration reconciliation erase the source halfway through application.
+
+`exploding_dice.max_extra: "spellcasting_modifier"` reads the selected casting
+source's ability. Critical base dice and bounded extra explosion dice are counted
+separately. Required recipient condition choices happen before slot/Action
+payment; Cancel spends neither. After reaction processing, previously chosen
+recipients retain their choices and newly eligible recipients receive a prompt.
+
+Calm Emotions currently stores one cast-wide `attitude_scope_ids` selection,
+including living nonparty creatures. It does not offer a different scope for
+each affected recipient. Saved scopes require the corresponding authored
+attitude marker and unique nonempty string IDs; pre-scope legacy records remain
+readable. Bestow Curse's extra-damage/duration extensions in #105–106 are held
+outside this accepted runtime pending the repairs recorded in the queue.
+
 ## Ordinary authoring example
 
 Player combat Action/Bonus Action spells can declare
@@ -844,6 +875,11 @@ those completed boundaries as VS-01–05 in the
 the broader parent requirements remain open.
 
 ## Conditions, lifetime and other supported fields
+
+Condition grants publish their exact source record before applying the condition:
+an already-unconscious recipient can immediately refresh combat and reconcile
+concentration. Refused grants retain no new timer and preserve existing sibling
+grants; callbacks that legitimately end or replace the source are not undone.
 
 Conditions currently supported by this contract are Blinded, Deafened,
 Frightened, Poisoned, Prone, Restrained, Stunned, Paralyzed, Incapacitated, and

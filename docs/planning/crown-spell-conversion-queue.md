@@ -1,14 +1,120 @@
 # Crown spell conversion: Grokbot stacking queue
 
 Owner direction: **2026-11-04**. This is the complete remaining **169-spell**
-conversion queue for Crown's pinned 183 SRD level-0-3 spells, divided into
-**46 ordered PR assignments**. It includes 81 refused spells and 88 enabled
-native spells. Each spell has one owning assignment in the
+conversion queue at dispatch for Crown's pinned 183 SRD level-0-3 spells, divided
+into **46 ordered PR assignments**. Its original inventory was 81 refused spells
+and 88 enabled native spells; current delivery status is below. Each spell has one owning assignment in the
 [machine-readable queue](crown-spell-conversion-queue.csv).
 The [Crown roadmap](crown-roadmap.md) still owns the campaign finish line;
 [content scope](crown-content-scope.md#spell-inventory) owns the 183 IDs;
 [slice registry](vocabulary-slices.md) owns engine acceptance. This queue does
 not reduce content scope or accept any engine slice/spell.
+
+## Resume here — Grokbot usage cutoff, 2026-11-04
+
+**Producer stopped at PR #106, SC-07 support 09**, branch
+`codex/crown-spells-sc-07-support-09`, head
+`24617a46ae4d250e55f23804bd5ead4f0e4e9e9a`. There are no SC-08 or later
+implementation PRs in this handoff. The last work corrected which damage routes
+can trigger Bestow Curse's Necrotic rider.
+
+**Reviewed merge boundary: PRs #82–#104. PRs #105–#106 remain open.**
+The last two are not approved: the curse's extra damage is not doubled on a
+critical hit and is omitted from returned attack/spell damage totals, so
+concentration/aftermath and logs miss it. Its newly introduced until-dispelled
+save policy also needs to bind to the actual paid slot, not merely the existence
+of some indefinite tier. Keep these as unfinished engine work, not a converted
+spell. `bestow_curse` remains refused in accepted main.
+
+The accepted stack includes the earlier local Hit Dice commit `423ada68`, with
+its S-071 subset still open for Prayer of Healing; it does not incorporate Luna's
+separate origins worktree. The integrated Bless crash repair registers a source
+before synchronous condition callbacks can reconcile it. Additional review
+repairs bind saved magnitudes/scopes, honor the selected spellcasting ability
+for exploding dice, move required recipient choices before payment, retain new
+eligible arrivals during reactions and allow nonparty indifference scope choices.
+The Windows runner now owns the SC-06/07 and separate-process recovery paths.
+
+The 169 migration rows now contain **21 converted, 4 partial, 3 blocked and
+141 queued**. These are bounded delivery labels, not full SRD certification.
+Sorcerous Burst's missing object consumer and Calm Emotions' common-only scope
+are explicitly partial after review. The 14 already-shared baseline definitions
+remain separate, with their existing limits.
+
+### Exact next work
+
+1. Repair/rebase the held [#105](https://github.com/brandonbrown215bb-boop/DND-Sandbox-Engine/pull/105)
+   and [#106](https://github.com/brandonbrown215bb-boop/DND-Sandbox-Engine/pull/106)
+   on current main. Use actual extra typed damage packets in one occurrence,
+   not an invisible child damage call after the parent receipt has settled.
+   Prove critical/noncritical weapon hits, spell attacks and save spells,
+   mitigation, zero-HP and concentration consequences, one payment and no
+   recursive rider. Capture and validate the actual duration-tier slot, retaining
+   pre-tier finite legacy records without inventing a paid slot.
+2. Finish earlier retained consumers: Starry Wisp light; Vicious Mockery heard
+   targeting; Eldritch Blast and Sorcerous Burst objects; Faerie Fire objects and
+   exact observer sight; Calm Emotions' separate per-recipient scope if required.
+   Their exact `next_action` and last PR are in the CSV. Reuse the delivered
+   operations; do not repeat the first three conversion PRs.
+3. Continue SC-08 (`slow`, `tashas_hideous_laughter`), then SC-09 and subsequent
+   numbered assignments. Independent ready work can proceed while a named
+   earlier consumer is being repaired. Keep stacking without waiting for review
+   or merge, as originally directed; the review hold here applies to the two
+   already-inspected unsafe PRs, not to the whole queue.
+
+### PR inventory at cutoff
+
+Each spell PR was stacked on the preceding spell branch; #82 was independent.
+PR titles and their original counts are historical snapshots: later support PRs
+close earlier blockers. The CSV above is the current per-spell handoff.
+
+| PR | Head at cutoff | Work | Review result |
+|---|---|---|---|
+| [#82](https://github.com/brandonbrown215bb-boop/DND-Sandbox-Engine/pull/82) | `5c004c94` | Druid option A: real Druidic Focus (Quarterstaff) weapon/focus and Sickle | Accepted within recorded boundary |
+| [#83](https://github.com/brandonbrown215bb-boop/DND-Sandbox-Engine/pull/83) | `891242ec` | SC-01: caster-turn condition expiry; Ray of Sickness converted, 6 attack cantrips blocked | Accepted within recorded boundary |
+| [#84](https://github.com/brandonbrown215bb-boop/DND-Sandbox-Engine/pull/84) | `3549d25c` | SC-02: Ice Knife shared steps; block 5 multi-target/delayed spells | Accepted within recorded boundary |
+| [#85](https://github.com/brandonbrown215bb-boop/DND-Sandbox-Engine/pull/85) | `d2f22acf` | SC-03: Lightning Bolt via generic self-origin line; Shatter/Thunderwave blocked | Accepted within recorded boundary |
+| [#86](https://github.com/brandonbrown215bb-boop/DND-Sandbox-Engine/pull/86) | `0b6361ac` | SC-03-support-01: generic source-owned conditions; convert Ray of Frost, Chill Touch, Shocking Grasp (+Vicious Mockery mechanics) | Accepted within recorded boundary |
+| [#87](https://github.com/brandonbrown215bb-boop/DND-Sandbox-Engine/pull/87) | `a6db36e5` | SC-03-support-02: generic shared weapon_attack payload (True Strike) | Accepted within recorded boundary |
+| [#88](https://github.com/brandonbrown215bb-boop/DND-Sandbox-Engine/pull/88) | `32ebfa1d` | SC-03 support 03: shared projectiles payload (multi-target split) | Accepted within recorded boundary |
+| [#89](https://github.com/brandonbrown215bb-boop/DND-Sandbox-Engine/pull/89) | `513e9df7` | SC-03 support 04: shared delayed_damage (Melf's Acid Arrow) | Accepted within recorded boundary |
+| [#90](https://github.com/brandonbrown215bb-boop/DND-Sandbox-Engine/pull/90) | `8e669747` | SC-03 support 05: shared damage-type choice + exploding dice (Sorcerous Burst) | Accepted within recorded boundary |
+| [#91](https://github.com/brandonbrown215bb-boop/DND-Sandbox-Engine/pull/91) | `ed30c5f0` | SC-03 support 06: creature-type save Disadvantage + area object damage (Shatter) | Accepted within recorded boundary |
+| [#92](https://github.com/brandonbrown215bb-boop/DND-Sandbox-Engine/pull/92) | `f2baf330` | SC-03 support 07: shared push + unsecured-object push + off-map pre-payment refusal (Thunderwave) | Accepted within recorded boundary |
+| [#93](https://github.com/brandonbrown215bb-boop/DND-Sandbox-Engine/pull/93) | `82e1b47c` | SC-04 support 01: shared matching-dice leap + costed diamond (Chromatic Orb) | Accepted within recorded boundary |
+| [#94](https://github.com/brandonbrown215bb-boop/DND-Sandbox-Engine/pull/94) | `e2211e7e` | SC-05 support 01: shared Color Spray (cone save + caster-turn Blinded expiry) | Accepted within recorded boundary |
+| [#95](https://github.com/brandonbrown215bb-boop/DND-Sandbox-Engine/pull/95) | `cf7ef227` | SC-05 support 02: Blindness/Deafness, Blur, Charm Person, Faerie Fire (partial) | Accepted within recorded boundary |
+| [#96](https://github.com/brandonbrown215bb-boop/DND-Sandbox-Engine/pull/96) | `3853fe22` | SC-05 support 03: SRD-faithful Charm Person fighting check | Accepted within recorded boundary |
+| [#97](https://github.com/brandonbrown215bb-boop/DND-Sandbox-Engine/pull/97) | `e8995722` | SC-06 Sleep + Hypnotic Pattern (shared staged repeat saves, area choice, sight-gated saves) | Accepted within recorded boundary |
+| [#98](https://github.com/brandonbrown215bb-boop/DND-Sandbox-Engine/pull/98) | `4b0ab22d` | SC-07 support 01: Ray of Enfeeblement (generic enfeebled marker) | Accepted within recorded boundary |
+| [#99](https://github.com/brandonbrown215bb-boop/DND-Sandbox-Engine/pull/99) | `4dbf1159` | SC-07 support 02: combat Strength checks read the shared enfeebled consequence | Accepted within recorded boundary |
+| [#100](https://github.com/brandonbrown215bb-boop/DND-Sandbox-Engine/pull/100) | `415aab98` | SC-07 support 03: fix S247 Restrained/Advantage fixture (regression from #96) | Accepted within recorded boundary |
+| [#101](https://github.com/brandonbrown215bb-boop/DND-Sandbox-Engine/pull/101) | `ae207f1d` | SC-07 support 04: Enthrall (generic perception penalty + fighting auto-success) | Accepted within recorded boundary |
+| [#102](https://github.com/brandonbrown215bb-boop/DND-Sandbox-Engine/pull/102) | `e542fdbb` | SC-07 support 05: Calm Emotions (partial) | Accepted within recorded boundary |
+| [#103](https://github.com/brandonbrown215bb-boop/DND-Sandbox-Engine/pull/103) | `23d49fa1` | SC-07 support 06: Calm Emotions (converted) | Accepted within recorded boundary |
+| [#104](https://github.com/brandonbrown215bb-boop/DND-Sandbox-Engine/pull/104) | `928aa9ba` | SC-07 support 07: deterministic Chill Touch miss check | Accepted within recorded boundary |
+| [#105](https://github.com/brandonbrown215bb-boop/DND-Sandbox-Engine/pull/105) | `4cd5411c` | SC-07 support 08: Bestow Curse (converted) | Held: curse damage/tier follow-up |
+| [#106](https://github.com/brandonbrown215bb-boop/DND-Sandbox-Engine/pull/106) | `24617a46` | SC-07 support 09: Bestow Curse rider limited to attack-roll hits and spell damage | Held: curse damage/tier follow-up |
+
+### Verification and retained investigations
+
+Windows Godot 4.7: full logic **6,987 passed, 0 failed** on the accepted combined
+runtime. The SC-01–SC-07 focused production-control cases and registered
+fresh-process recovery paths passed, including the corrected cancellation,
+reaction-arrival and legacy Calm Emotions save checks. Druid focus casting,
+equipment save/reload, normal character creation, the downed-target Bless flow
+and fresh recovery, condition recovery, ordinary actions, the mixed-mechanics
+encounter and Crown smoke all passed. Independent combat/persistence review
+approved the accepted boundary; #105–106 retain the concrete findings above.
+Raw logs and the independent review probes stay in ignored artifacts.
+The broader `spell_effect_lifetime` scenario has 11 failures reproduced on the
+unchanged pre-stack base; it is not an all-green campaign or lifetime certificate.
+Existing higher-level/other-content investigations remain in their named backlog.
+The retained Druid focus limitation is Shillelagh/Topple/base-weapon recognition;
+the focused equipment PR supplies the real item and held-focus component path.
+
+The fresh-stack instructions below explain the original branch scheme. For a
+resumed run, start from this section and current main instead of restarting SC-01.
 
 ## Start here: stack continuously
 

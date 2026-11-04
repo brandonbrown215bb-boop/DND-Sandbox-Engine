@@ -26,6 +26,7 @@ static func run(check: Callable) -> void:
 	_rogue_rules(check)
 	_warlock_rules(check)
 	_crown_class_metadata(check)
+	_hit_dice_rules(check)
 
 
 static func _weapon_attack_numeric_bonus(check: Callable) -> void:
@@ -1524,6 +1525,150 @@ static func _rest_and_slot_recovery_rules(check: Callable) -> void:
 		"Second consumer fixture:leyline_font executes through the shared RestRules path with flat budget 3 and max slot level 3"
 	)
 	RestRules.reset_windows()
+
+
+static func _hit_dice_rules(check: Callable) -> void:
+	DataLoader._load_json_file("res://data/fixtures/shared_numeric_pool.json", "class")
+	var fixture_class_id := "fixture:steady_spark_class"
+	var fixture_class: Dictionary = DataLoader.get_character_class(fixture_class_id)
+	var fixture_sides := HitDiceRules.class_hit_die_sides(fixture_class_id)
+	var mixed := _character("fighter", 1)
+	mixed.class_levels = {"fighter": 1, fixture_class_id: 1}
+	mixed.level = 2
+	var fixture_acquired := HitDiceRules.add_class_level(mixed, fixture_class_id)
+	for _fighter_level in 2:
+		HitDiceRules.add_class_level(mixed, "fighter")
+	for _fixture_level in 1:
+		HitDiceRules.add_class_level(mixed, fixture_class_id)
+	mixed.class_levels = {"fighter": 3, fixture_class_id: 2}
+	mixed.level = 5
+	check.call(not fixture_class.is_empty() and fixture_sides > 0 and fixture_acquired and int(mixed.hit_dice_pools[fixture_class_id].die_size) == fixture_sides and int(mixed.hit_dice_pools.fighter.total) + int(mixed.hit_dice_pools[fixture_class_id].total) == 5, "Level-5 mixed Hit Dice use the loaded fixture class's die size and retain each class pool by identity")
+	var fighter_remaining := HitDiceRules.remaining_pool(mixed, "fighter")
+	var fixture_remaining := HitDiceRules.remaining_pool(mixed, fixture_class_id)
+	mixed.current_hp = 1
+	var spent := HitDiceRules.spend(mixed, fixture_class_id)
+	check.call(spent.get("success", false) and int(spent.die_size) == fixture_sides and int(mixed.hit_dice_pools[fixture_class_id].spent) == 1 and HitDiceRules.remaining_pool(mixed, "fighter") == fighter_remaining and HitDiceRules.remaining_pool(mixed, fixture_class_id) == fixture_remaining - 1 and mixed.current_hp > 1, "Short Rest Hit Die spend rolls and heals with CON while consuming only the selected class die once")
+	var interrupted_actor := _character("fighter", 1)
+	interrupted_actor.current_hp = 1
+	var started := RestRules.start_rest("short_rest", [interrupted_actor], {"allow_in_test": true, "skip_campaign_time": true})
+	var interrupted: Dictionary = started.get("active_rest", {})
+	var interrupted_out := RestRules.interrupt_rest(interrupted, "test_damage")
+	check.call(interrupted_out.get("interrupted", false) and HitDiceRules.remaining_pool(interrupted_actor, "fighter") == 1 and not RestRules.advance_rest(interrupted, 3600, {"skip_campaign_time": true}).get("success", true), "Interrupted Short Rest grants no Hit Dice selection or expenditure")
+	var mixed_dto := mixed.to_dict().duplicate(true)
+	check.call(HitDiceRules.saved_state_error(mixed_dto).is_empty(), "Mixed class Hit Dice DTO validates with exact loaded class ownership")
+	var reloaded := Character.new()
+	reloaded.from_dict(JSON.parse_string(JSON.stringify(mixed_dto)))
+	check.call(int(reloaded.hit_dice_pools.fighter.total) == int(mixed.hit_dice_pools.fighter.total) and int(reloaded.hit_dice_pools[fixture_class_id].die_size) == fixture_sides and int(reloaded.hit_dice_pools[fixture_class_id].spent) == 1 and HitDiceRules.saved_state_error(reloaded.to_dict()).is_empty(), "Allowed character recovery preserves exact mixed die sizes and spent counts")
+	var malformed := mixed_dto.duplicate(true)
+	malformed.hit_dice_pools[fixture_class_id].die_size = 12 if fixture_sides != 12 else 4
+	check.call(not HitDiceRules.saved_state_error(malformed).is_empty(), "Saved Hit Dice reject a pool with a die size inconsistent with loaded class data")
+	malformed = mixed_dto.duplicate(true)
+	malformed.hit_dice_pools[fixture_class_id].die_size = float(fixture_sides) + 0.5
+	check.call(not HitDiceRules.saved_state_error(malformed).is_empty(), "Saved Hit Dice reject fractional die sizes before conversion")
+	malformed = mixed_dto.duplicate(true)
+	malformed.hit_dice_pools[fixture_class_id].die_size = "not-a-die"
+	check.call(not HitDiceRules.saved_state_error(malformed).is_empty(), "Saved Hit Dice reject malformed string die sizes cleanly")
+	malformed = mixed_dto.duplicate(true)
+	malformed.hit_dice_pools[fixture_class_id].spent = 3
+	check.call(not HitDiceRules.saved_state_error(malformed).is_empty(), "Saved Hit Dice reject spent count above the class pool capacity")
+	malformed = mixed_dto.duplicate(true)
+	malformed.hit_dice_pools.erase(fixture_class_id)
+	malformed.hit_dice_pools["wizard"] = {"class_id":"wizard", "die_size":6, "total":1, "spent":0, "untracked":0}
+	check.call(not HitDiceRules.saved_state_error(malformed).is_empty(), "Saved Hit Dice reject wrong-class pool ownership even when the die size happens to be valid")
+	var player_fractional_save := BatchKChecks.full_save(mixed)
+	player_fractional_save["players"][0]["character"]["hit_dice_pools"][fixture_class_id]["die_size"] = float(fixture_sides) + 0.5
+	check.call(not SaveManager._validate_save_data(player_fractional_save).is_empty(), "Player save preflight rejects fractional Hit Die sizes")
+	var player_malformed_save := BatchKChecks.full_save(mixed)
+	player_malformed_save["players"][0]["character"]["hit_dice_pools"][fixture_class_id]["die_size"] = {"unexpected": true}
+	check.call(not SaveManager._validate_save_data(player_malformed_save).is_empty(), "Player save preflight rejects malformed Hit Die sizes cleanly")
+	var party_fractional_save := BatchKChecks.full_save(mixed)
+	party_fractional_save["players"][0]["character"] = null
+	party_fractional_save["party"]["characters"]["fixture_hero"]["hit_dice_pools"][fixture_class_id]["die_size"] = float(fixture_sides) + 0.5
+	check.call(not SaveManager._validate_save_data(party_fractional_save).is_empty(), "Party save preflight rejects fractional Hit Die sizes")
+	var party_malformed_save := BatchKChecks.full_save(mixed)
+	party_malformed_save["players"][0]["character"] = null
+	party_malformed_save["party"]["characters"]["fixture_hero"]["hit_dice_pools"][fixture_class_id]["die_size"] = "d8"
+	check.call(not SaveManager._validate_save_data(party_malformed_save).is_empty(), "Party save preflight rejects malformed Hit Die sizes cleanly")
+	var malformed_loaded := Character.new()
+	var fractional_dto := mixed_dto.duplicate(true)
+	fractional_dto.hit_dice_pools[fixture_class_id].die_size = float(fixture_sides) + 0.5
+	malformed_loaded.from_dict(fractional_dto)
+	check.call(malformed_loaded.hit_dice_pools.has("_invalid") and HitDiceRules.remaining_pool(malformed_loaded, fixture_class_id) == 0, "Direct Character load quarantines a malformed Hit Dice DTO before it can be spent")
+	var malformed_fallback_dto := mixed_dto.duplicate(true)
+	malformed_fallback_dto["class_levels"] = {}
+	malformed_fallback_dto["level"] = {"not": "a number"}
+	check.call(not HitDiceRules.saved_state_error(malformed_fallback_dto).is_empty(), "Malformed fallback level is rejected before integer conversion")
+	var invalid_allocation := Character.new()
+	invalid_allocation.class_id = "fighter"
+	invalid_allocation.level = 1
+	invalid_allocation.class_levels = {"fighter": "not-a-level"}
+	check.call(not HitDiceRules.initialize_acquired_levels(invalid_allocation) and invalid_allocation.hit_dice_pools.is_empty(), "Hit Dice acquisition refuses malformed class allocations before integer conversion")
+	var unknown_class_actor := Character.new()
+	check.call(not HitDiceRules.add_class_level(unknown_class_actor, "fixture:unknown_hit_die_class"), "Hit Dice acquisition refuses an unknown class definition")
+	var class_record_before := DataLoader.get_character_class(fixture_class_id).duplicate(true)
+	var class_record_without_die := class_record_before.duplicate(true)
+	class_record_without_die["hit_die"] = "malformed"
+	DataLoader.classes[fixture_class_id] = class_record_without_die
+	var full_untracked_actor := Character.new()
+	full_untracked_actor.hit_dice_pools[fixture_class_id] = {"class_id": fixture_class_id, "die_size": 0, "total": 0, "spent": 0, "untracked": 20}
+	check.call(not HitDiceRules.add_class_level(full_untracked_actor, fixture_class_id) and int(full_untracked_actor.hit_dice_pools[fixture_class_id].untracked) == 20, "Unavailable Hit Dice acquisition refuses to exceed the 20-die pool bound")
+	DataLoader.classes[fixture_class_id] = class_record_before
+	var leveled := _character("fighter", 1)
+	leveled.level_up()
+	check.call(leveled.level == 2 and int(leveled.hit_dice_pools.fighter.total) == 2 and int(leveled.hit_dice_pools.fighter.spent) == 0, "Class level acquisition appends exactly one unspent Hit Die without replaying existing dice")
+	var legacy := mixed_dto.duplicate(true)
+	legacy.erase("hit_dice_pools")
+	var legacy_loaded := Character.new()
+	legacy_loaded.from_dict(legacy)
+	check.call(HitDiceRules.saved_state_error(legacy).is_empty() and HitDiceRules.remaining_pool(legacy_loaded, "fighter") == 0 and int(legacy_loaded.hit_dice_pools.fighter.untracked) == 3, "Legacy save without Hit Dice does not replay grants or invent spendable historical dice")
+	legacy_loaded.long_rest()
+	check.call(int(legacy_loaded.hit_dice_pools.fighter.untracked) == 3 and int(legacy_loaded.hit_dice_pools.fighter.total) == 0, "Direct resource reset is not treated as completed-rest Hit Dice recovery")
+	var legacy_started := RestRules.start_rest("long_rest", [legacy_loaded], {"allow_in_test": true, "skip_campaign_time": true})
+	var legacy_session: Dictionary = legacy_started.get("active_rest", {})
+	var legacy_partial := RestRules.advance_rest(legacy_session, 100, {"skip_campaign_time": true})
+	RestRules.interrupt_rest(legacy_session, "test_damage")
+	check.call(not legacy_partial.get("complete", false) and int(legacy_loaded.hit_dice_pools.fighter.untracked) == 3 and int(legacy_loaded.hit_dice_pools.fighter.total) == 0, "Incomplete or interrupted Long Rest leaves legacy Hit Dice unavailable")
+	var legacy_rest := RestRules.complete_long_rest([legacy_loaded], {"allow_in_test": true, "skip_campaign_time": true})
+	var legacy_round_trip := Character.new()
+	legacy_round_trip.from_dict(JSON.parse_string(JSON.stringify(legacy_loaded.to_dict())))
+	check.call(legacy_rest.get("success", false) and int(legacy_loaded.hit_dice_pools.fighter.total) == 3 and int(legacy_loaded.hit_dice_pools.fighter.untracked) == 0 and int(legacy_loaded.hit_dice_pools.fighter.spent) == 0 and int(legacy_round_trip.hit_dice_pools.fighter.total) == 3 and int(legacy_round_trip.hit_dice_pools[fixture_class_id].total) == 2, "Completed Long Rest establishes fully recovered legacy pools without guessing expenditure or replaying grants on reload")
+	var malformed_legacy := legacy.duplicate(true)
+	malformed_legacy["class_levels"] = {"fighter": "bad-count"}
+	var malformed_legacy_loaded := Character.new()
+	malformed_legacy_loaded.from_dict(malformed_legacy)
+	check.call(malformed_legacy_loaded.hit_dice_pools.has("_invalid"), "Legacy load quarantines malformed class allocations instead of dropping or coercing them")
+	var unknown_die_class := class_record_before.duplicate(true)
+	unknown_die_class["hit_die"] = "malformed"
+	DataLoader.classes[fixture_class_id] = unknown_die_class
+	var unknown_die_legacy := Character.new()
+	unknown_die_legacy.from_dict(legacy)
+	RestRules.complete_long_rest([unknown_die_legacy], {"allow_in_test": true, "skip_campaign_time": true})
+	check.call(int(unknown_die_legacy.hit_dice_pools[fixture_class_id].untracked) == 2 and int(unknown_die_legacy.hit_dice_pools[fixture_class_id].total) == 0, "Completed Long Rest does not promote dice with an unavailable class die definition")
+	var zero_die_dto := unknown_die_legacy.to_dict()
+	zero_die_dto.hit_dice_pools[fixture_class_id].total = 1
+	zero_die_dto.hit_dice_pools[fixture_class_id].untracked = 1
+	check.call(not HitDiceRules.saved_state_error(zero_die_dto).is_empty(), "Save validation refuses spendable dice when the loaded class die is unavailable")
+	var zero_die_restored := Character.new()
+	zero_die_restored.from_dict(zero_die_dto)
+	check.call(zero_die_restored.hit_dice_pools.has("_invalid"), "Restore quarantines a forged spendable zero-sided class die")
+	unknown_die_legacy.hit_dice_pools[fixture_class_id] = zero_die_dto.hit_dice_pools[fixture_class_id].duplicate(true)
+	unknown_die_legacy.current_hp = 1
+	var zero_die_before := unknown_die_legacy.hit_dice_pools.duplicate(true)
+	var zero_die_rolls: Array = []
+	var observe_zero_die := func(event: Dictionary): zero_die_rolls.append(event)
+	Dice.dice_rolled.connect(observe_zero_die)
+	var zero_die_result := HitDiceRules.spend(unknown_die_legacy, fixture_class_id)
+	Dice.dice_rolled.disconnect(observe_zero_die)
+	check.call(not zero_die_result.get("success", false) and zero_die_rolls.is_empty() and unknown_die_legacy.current_hp == 1 and unknown_die_legacy.hit_dice_pools == zero_die_before, "Spending an unavailable class die refuses before RNG, healing or pool mutation")
+	DataLoader.classes[fixture_class_id] = class_record_before
+	var before_recovery := 0
+	for class_id in mixed.hit_dice_pools:
+		before_recovery += int(mixed.hit_dice_pools[class_id].spent)
+	var long_result := RestRules.complete_long_rest([mixed], {"allow_in_test": true, "skip_campaign_time": true})
+	var after_recovery := 0
+	for class_id in mixed.hit_dice_pools:
+		after_recovery += int(mixed.hit_dice_pools[class_id].spent)
+	check.call(long_result.get("success", false) and after_recovery == 0 and before_recovery == 1, "Completed 2024 Long Rest restores every spent Hit Die without changing class ownership")
 
 
 static func _character(id: String, target_level: int) -> Character:

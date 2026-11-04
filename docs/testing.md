@@ -1,5 +1,11 @@
 # Testing
 
+The Crown SC-06/SC-07 scenarios and earlier source-condition flows are registered
+in the Windows runner with their separate-process recovery flags. Selecting
+`crown_sc_07_support_06_flow` automatically runs the earlier support-05 producer
+in one disposable profile, so its legacy
+record-shape recovery checks never depend on another developer's `user://` files.
+
 `class_skill_selection_flow` runs both creation passes and
 `class_skill_selection_reload` in separate processes sharing one disposable
 profile. Selecting either `class_skill_selection_flow_b` or

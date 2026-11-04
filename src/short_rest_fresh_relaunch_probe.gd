@@ -66,6 +66,7 @@ func _prepare() -> void:
 	wizard.spell_slots["2"] = 2 # max 3 -> 1 missing
 	wizard.spell_slots["3"] = 1 # max 2 -> 1 missing
 	wizard.wizard_memorize_spell_pending = false
+	wizard.current_hp = 1
 
 	player_manager.set_player_character(0, wizard)
 	party_manager.reset()
@@ -90,6 +91,10 @@ func _prepare() -> void:
 	if int(wizard.feature_uses.get("wizard_arcane_recovery", -1)) != 0:
 		_fail("Arcane Recovery feature use was not consumed")
 		return
+	var spent_hit_die := HitDiceRules.spend(wizard, "wizard")
+	if not bool(spent_hit_die.get("success", false)) or int(wizard.hit_dice_pools.wizard.spent) != 1:
+		_fail("Short Rest did not spend exactly one Wizard Hit Die")
+		return
 
 	var choice_err := ClassProgression.saved_choices_error(wizard.to_dict())
 	if not choice_err.is_empty():
@@ -108,6 +113,8 @@ func _prepare() -> void:
 		"spell_slots": wizard.spell_slots.duplicate(true),
 		"arcane_recovery_uses": int(wizard.feature_uses.get("wizard_arcane_recovery", -1)),
 		"memorize_spell_pending": wizard.wizard_memorize_spell_pending,
+		"hit_dice_pools": wizard.hit_dice_pools.duplicate(true),
+		"current_hp": wizard.current_hp,
 	}
 	var manifest_file := FileAccess.open(MANIFEST_PATH, FileAccess.WRITE)
 	if manifest_file == null:
@@ -162,6 +169,9 @@ func _recover() -> void:
 	if not wizard.wizard_memorize_spell_pending:
 		_fail("expected wizard_memorize_spell_pending = true to survive reload after level 5 Short Rest")
 		return
+	if int(wizard.hit_dice_pools.wizard.total) != 5 or int(wizard.hit_dice_pools.wizard.spent) != 1 or int(wizard.current_hp) != int(manifest.get("current_hp", -1)):
+		_fail("fresh process changed the exact Wizard Hit Die pool, spent count, or post-healing HP")
+		return
 
 	# Verify a second Short Rest in the recovered process does not offer Arcane Recovery again
 	var second_short := RestRules.complete_short_rest([wizard])
@@ -172,10 +182,10 @@ func _recover() -> void:
 		_fail("second Short Rest in recovered process did not advance campaign_elapsed_seconds to 8200")
 		return
 
-	# Verify Long Rest restores Arcane Recovery use and full slots
-	wizard.long_rest()
-	if int(wizard.feature_uses.get("wizard_arcane_recovery", 0)) != 1 or int(wizard.spell_slots.get("3", 0)) != 2:
-		_fail("Long Rest in recovered process did not restore Arcane Recovery use and level 3 slots")
+	# Verify completed Long Rest restores Arcane Recovery use, full slots and Hit Dice.
+	var long_rest_result := RestRules.complete_long_rest([wizard], {"allow_in_test": true, "skip_campaign_time": true})
+	if not long_rest_result.get("success", false) or int(wizard.feature_uses.get("wizard_arcane_recovery", 0)) != 1 or int(wizard.spell_slots.get("3", 0)) != 2 or int(wizard.hit_dice_pools.wizard.spent) != 0:
+		_fail("Long Rest in recovered process did not restore Arcane Recovery use, level 3 slots, and all spent Hit Dice")
 		return
 
 	save_manager.delete_save(SLOT)
