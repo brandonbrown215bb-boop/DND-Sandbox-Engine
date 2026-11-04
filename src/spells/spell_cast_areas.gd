@@ -88,7 +88,8 @@ static func _create_spell_cast_areas(cast: SpellCastContext) -> void:
 		SpellZoneTerrain._create_moonbeam_zone(cast.areas, cast.caster, cast.target_coord, cast.slot_level_used, cast.targets, cast.area_source_id, cast.shape_locked_targets)
 	if str(cast.spell.get("id", "")) == "plant_growth" and cast.successful:
 		SpellZoneTerrain._create_plant_growth_zone(cast.areas, cast.caster, cast.target_coord)
-	if str(cast.spell.get("id", "")) == "ice_knife" and cast.successful:
+	# Shared step definitions own their burst; only the legacy splash shape uses this resolver.
+	if str(cast.spell.get("id", "")) == "ice_knife" and cast.successful and not SharedSpell.uses(cast.spell):
 		SpellCastResults._resolve_ice_knife_splash(cast, cast.target_coord, cast.spell, cast.slot_level_used, cast.counterspell_decisions)
 	for id in cast.areas.active_spell_zones:
 		if id in prior_zones: continue

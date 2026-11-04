@@ -3321,6 +3321,14 @@
     },
     {
       "type": "spell",
+      "id": "ice_knife",
+      "winner": "res://data/core/spells/crown_sc_02.json#1",
+      "replaces": [
+        "res://data/core/spells/srd_additional_spells.json#3"
+      ]
+    },
+    {
+      "type": "spell",
       "id": "ray_of_sickness",
       "winner": "res://data/core/spells/crown_sc_01.json#1",
       "replaces": [
