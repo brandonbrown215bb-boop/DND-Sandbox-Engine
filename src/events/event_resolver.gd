@@ -86,6 +86,7 @@ static func resolve_skill_check(character: Character, check_data: Dictionary, de
 	var context_tool: Dictionary = character.inventory.skill_check_context_bonus(ability, skill, check_context)
 	var contextual_tool_bonus := int(context_tool.get("bonus", 0))
 	var modifier := character.get_skill_check_modifier(skill, ability) + tool_bonus + contextual_tool_bonus
+	if skill == "Perception": modifier += CombatAction.perception_penalty(character)
 	var base_modifier := modifier
 	var total := roll + modifier
 	var guidance_bonus := 0
@@ -243,7 +244,16 @@ static func monster_ability_check_modifier(monster: Dictionary, ability: String,
 					break
 	var exhaustion := int(monster.get("exhaustion_level", monster.get("conditions", {}).get("exhaustion", 0)))
 	mod -= exhaustion * 2
+	if skill.to_lower() == "perception": mod += CombatAction.perception_penalty(monster)
 	return mod
+
+
+## Passive Perception = 10 + Wisdom (Perception) modifier, including the
+## generic perception penalty consequence. Character or monster Dictionary.
+static func passive_perception(entity) -> int:
+	if entity is Character:
+		return 10 + entity.get_skill_check_modifier("Perception", "WIS") + CombatAction.perception_penalty(entity)
+	return 10 + monster_ability_check_modifier(entity, "WIS", "Perception")
 
 
 static func resolve_monster_ability_check(monster: Dictionary, ability: String, skill: String = "", dc: int = 0, roll_override: int = 0, decisions: Dictionary = {}, authored_context: Dictionary = {}) -> Dictionary:

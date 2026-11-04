@@ -3,7 +3,7 @@
 class_name SharedSpell
 extends RefCounted
 
-const CONDITIONS := ["blinded", "deafened", "frightened", "poisoned", "prone", "restrained", "stunned", "paralyzed", "incapacitated", "blessed", "baned", "shield_of_faith", "speed_reduced", "healing_prevented", "opportunity_attack_blocked", "next_attack_disadvantage", "invisibility_suppressed", "charmed", "blurred", "outlined", "unconscious", "speed_zero", "enfeebled"]
+const CONDITIONS := ["blinded", "deafened", "frightened", "poisoned", "prone", "restrained", "stunned", "paralyzed", "incapacitated", "blessed", "baned", "shield_of_faith", "speed_reduced", "healing_prevented", "opportunity_attack_blocked", "next_attack_disadvantage", "invisibility_suppressed", "charmed", "blurred", "outlined", "unconscious", "speed_zero", "enfeebled", "enthralled"]
 ## Conditions whose consumer reads an authored magnitude (hexes) from the source record.
 const AMOUNT_CONDITIONS := {"speed_reduced": [1, 12]}
 const ABILITIES := ["STR", "DEX", "CON", "INT", "WIS", "CHA"]
@@ -69,11 +69,14 @@ static func healing_reroll_policy_error(value: Variant) -> String:
 
 ## Generic creature traits that make a save automatically succeed
 ## (e.g. creatures that don't sleep or are immune to Exhaustion vs. magical sleep).
-const SAVE_AUTO_SUCCESS_TRAITS := ["magical_sleep_immunity"]
+## "fighting_caster_side": the target is an opposed initiative combatant of the
+## caster (SpellSaveResolver.is_fighting_caster_side); needs the cast context.
+const SAVE_AUTO_SUCCESS_TRAITS := ["magical_sleep_immunity", "fighting_caster_side"]
 
-static func save_auto_success(spell: Dictionary, target) -> bool:
+static func save_auto_success(spell: Dictionary, target, cast = null) -> bool:
 	for trait_id in spell.get("save_auto_success_traits", []):
 		if str(trait_id) == "magical_sleep_immunity" and CombatAction.is_immune_to_magical_sleep(target): return true
+		if str(trait_id) == "fighting_caster_side" and cast != null and SpellSaveResolver.is_fighting_caster_side(cast, target): return true
 	return false
 
 const SOURCE_END_EVENTS := ["attack", "cast", "movement", "status", "equipment", "range", "damage"]
