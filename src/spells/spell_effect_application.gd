@@ -6,6 +6,8 @@ static func apply(cast: SpellCastContext, p_target: Character = null, m_target: 
 	if bool(resolution.get("recipient_negated", false)): return
 	if SharedSpell.uses(spell_data):
 		SharedSpell.apply(cast.caster, p_target if p_target != null else m_target, spell_data, resolution, cast)
+		_schedule_delayed_damage(cast, p_target, m_target, spell_data, resolution)
+		await _apply_push(cast, p_target, m_target, spell_data, origin, target_coord, resolution) # shared `push` effect (gated by on_failed_save)
 		await _apply_repelling_blast(cast, m_target, spell_data, origin, resolution)
 		return
 	_apply_spell_specific(cast, p_target, m_target, spell_data, origin, resolution)
@@ -47,7 +49,7 @@ static func _apply_spell_specific(cast: SpellCastContext, p_target: Character = 
 		if detector != null and not detect_cast.is_empty():
 			SpellEffects.grant(detector, detect_cast, "detect_evil_and_good")
 			cast.refresh_creature_senses.call()
-	if str(spell_data.get("id", "")) == "blur" and bool(resolution.get("success", false)):
+	if str(spell_data.get("id", "")) == "blur" and not SharedSpell.uses(spell_data) and bool(resolution.get("success", false)):
 		var blurred_target = p_target if p_target != null else m_target
 		if blurred_target != null:
 			SpellEffects.grant(blurred_target, resolution.get("effect_cast", spell_data.get("_effect_cast", {})), "blurred")
@@ -87,11 +89,6 @@ static func _apply_spell_specific(cast: SpellCastContext, p_target: Character = 
 		elif not m_target.is_empty() and m_target.get("conditions", {}).has("cursed"):
 			m_target.get("conditions", {}).erase("cursed")
 			cast.hud.add_log("[color=cyan]%s's curse ends.[/color]" % m_target.get("name", "The target"))
-	if str(spell_data.get("id", "")) == "ray_of_enfeeblement" and resolution.get("success", false) and resolution.get("saved", false):
-		cast.end_concentration.call(cast.caster)
-		var saved_ray_cast: Dictionary = resolution.get("effect_cast", {}).duplicate(true)
-		saved_ray_cast["concentration"] = false
-		SpellEffects.grant(p_target if p_target != null else m_target, saved_ray_cast, "vicious_mockery_disadvantage", "start", 6)
 	if str(spell_data.get("id", "")) == "protection_from_poison" and resolution.get("success", false):
 		if p_target != null:
 			if p_target.has_condition("poisoned"):
@@ -126,15 +123,7 @@ static func cure_sight_rot(target: Character) -> bool:
 
 static func _apply_hit_and_save_effects(cast: SpellCastContext, p_target: Character = null, m_target: Dictionary = {}, spell_data: Dictionary = {}, resolution: Dictionary = {}) -> void:
 	var spell_target = p_target if p_target != null else m_target
-	var delayed_damage := CombatAction.spell_delayed_damage_for_resolution(cast.caster, spell_data, resolution)
-	if not delayed_damage.is_empty():
-		if p_target != null:
-			p_target.delayed_spell_damage.append(delayed_damage)
-		elif not m_target.is_empty():
-			var delayed_effects: Array = m_target.get("delayed_spell_damage", [])
-			delayed_effects.append(delayed_damage)
-			m_target["delayed_spell_damage"] = delayed_effects
-		cast.hud.add_log("[color=cyan]%s is set to take %s %s damage at the end of its next turn.[/color]" % [p_target.character_name if p_target != null else m_target.get("name", "Target"), delayed_damage.get("formula", "0"), delayed_damage.get("damage_type", "acid")])
+	_schedule_delayed_damage(cast, p_target, m_target, spell_data, resolution)
 	var spell_source_id := str(cast.caster.get_instance_id()) if cast.caster != null else ""
 	for applied in CombatAction.apply_spell_hit_effects(spell_target, spell_data, resolution, spell_source_id):
 		var target_name := p_target.character_name if p_target != null else str(m_target.get("name", "Target"))
@@ -300,3 +289,15 @@ static func _apply_repelling_blast(cast: SpellCastContext, m_target: Dictionary 
 		if WarlockRules.has_repelling_blast(cast.caster, str(spell_data.get("id", ""))):
 			var feet: int = await cast.push_combat_target.call(m_target, origin, 2)
 			cast.hud.add_log("[color=cyan]Repelling Blast pushes %s %d feet away.[/color]" % [m_target.get("name", "Target"), feet])
+
+
+static func _schedule_delayed_damage(cast: SpellCastContext, p_target: Character, m_target: Dictionary, spell_data: Dictionary, resolution: Dictionary) -> void:
+	var delayed_damage := CombatAction.spell_delayed_damage_for_resolution(cast.caster, spell_data, resolution)
+	if not delayed_damage.is_empty():
+		if p_target != null:
+			p_target.delayed_spell_damage.append(delayed_damage)
+		elif not m_target.is_empty():
+			var delayed_effects: Array = m_target.get("delayed_spell_damage", [])
+			delayed_effects.append(delayed_damage)
+			m_target["delayed_spell_damage"] = delayed_effects
+		cast.hud.add_log("[color=cyan]%s is set to take %s %s damage at the end of its next turn.[/color]" % [p_target.character_name if p_target != null else m_target.get("name", "Target"), delayed_damage.get("formula", "0"), delayed_damage.get("damage_type", "acid")])

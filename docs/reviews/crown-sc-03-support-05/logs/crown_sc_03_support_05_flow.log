@@ -1,0 +1,56 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+WARNING: [DataLoader] Rejected 25 unsupported effectless feature records; they remain unavailable until curated.
+     at: push_warning (core/variant/variant_utility.cpp:1033)
+     GDScript backtrace (most recent call first):
+         [0] load_all_data (res://src/autoload/data_loader.gd:276)
+         [1] _ready (res://src/autoload/data_loader.gd:252)
+[DataLoader] Loaded: 14 classes, 9 races, 294 items, 362 spells, 481 monsters, 4 event tables, 1 campaigns
+[DataLoader] Layers: core_imported, core_curated, mods | packs: core, crown | approved overrides: 423 | validation failures: 0
+==================================================
+ Rook's Headless Viewport Harness (per-beat)
+==================================================
+
+[TEST] crown_sc_03_support_05_flow
+[ok]   SC-03 support 05: Sorcerous Burst is shared data (7 damage types, d8s explode up to the spellcasting modifier, 120 ft)
+[ok]   SC-03 support 05: damage_type_options = ["acid"] is rejected
+[ok]   SC-03 support 05: damage_type_options = ["acid", "acid"] is rejected
+[ok]   SC-03 support 05: damage_type_options = ["acid", "plasma"] is rejected
+[ok]   SC-03 support 05: damage_type_options = ["cold", "fire"] is rejected
+[ok]   SC-03 support 05: exploding_dice = { "sides": 6, "max_extra": 1 } is rejected
+[ok]   SC-03 support 05: exploding_dice = { "sides": 8, "max_extra": "lots" } is rejected
+[ok]   SC-03 support 05: exploding_dice = { "sides": 8, "max_extra": 1, "bogus": 1 } is rejected
+[ok]   SC-03 support 05: damage choice/exploding dice without a spell attack is rejected
+[Character] crown-sc03s5-contract leveled up to 2! (+5 HP, now 13)
+[Character] crown-sc03s5-contract leveled up to 3! (+7 HP, now 20)
+[Character] crown-sc03s5-contract leveled up to 4! (+4 HP, now 24)
+[Character] crown-sc03s5-contract leveled up to 5! (+4 HP, now 28)
+[ok]   SC-03 support 05: a CHA 16 sorcerer may add at most 3 extra d8s
+[ok]   SC-01 support 01: renamed sorcerous_burst passes the production loader as shared data
+[ok]   SC-03 support 05: a renamed choice/exploding spell with other authored numbers validates with no ID registration
+[Character] crown-sc03s5-renamed leveled up to 2! (+3 HP, now 11)
+[Character] crown-sc03s5-renamed leveled up to 3! (+3 HP, now 14)
+[Character] crown-sc03s5-renamed leveled up to 4! (+5 HP, now 19)
+[Character] crown-sc03s5-renamed leveled up to 5! (+7 HP, now 26)
+[ok]   SC-03 support 05: renamed 1d6 explodes on a 6 (saw 15) but never past 2 extra dice (<= 18), dealing the chosen cold type
+[ok]   SC-03 support 05: max_extra 0 never adds dice
+[Character] crown-sc03s5-sorc leveled up to 2! (+5 HP, now 13)
+[Character] crown-sc03s5-sorc leveled up to 3! (+6 HP, now 19)
+[Character] crown-sc03s5-sorc leveled up to 4! (+7 HP, now 26)
+[Character] crown-sc03s5-sorc leveled up to 5! (+7 HP, now 33)
+[ok]   SC-03 support 05: Sorcerer learns Sorcerous Burst through ordinary class selection
+[ok]   Conversion 001: sorcerous_burst is available through the real spell picker
+[ok]   Conversion 001: sorcerous_burst is available through the real spell picker
+[ok]   Conversion 001: sorcerous_burst is available through the real spell picker
+[ok]   Conversion 001: sorcerous_burst is available through the real spell picker
+[ok]   SC-03 support 05: picker + damage-type popup + hex click: Sorcerous Burst hits for 2d8 psychic at level 5 (4 hits)
+[ok]   SC-03 support 05: a rolled 8 adds an extra d8 through player casting (observed > 16 damage, or 25+ hits without one)
+[Character] crown-sc03s5-ref leveled up to 2! (+7 HP, now 15)
+[Character] crown-sc03s5-ref leveled up to 3! (+3 HP, now 18)
+[Character] crown-sc03s5-ref leveled up to 4! (+8 HP, now 26)
+[Character] crown-sc03s5-ref leveled up to 5! (+5 HP, now 31)
+[ok]   SC-03 support 05: the cantrip spends no spell slot
+--------------------------------------------------
+ VIEWPORT RESULTS: 0 failed (1 tests run)
+VIEWPORT TESTS PASSED
+SCENARIO PASSED: crown_sc_03_support_05_flow

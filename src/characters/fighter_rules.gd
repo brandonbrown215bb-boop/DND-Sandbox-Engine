@@ -370,5 +370,5 @@ static func monster_speed(monster: Dictionary) -> int:
 	if CombatAction.is_speed_zero(monster):
 		return 0
 	var exhaustion := int(monster.get("exhaustion_level", monster.get("conditions", {}).get("exhaustion", 0)))
-	var speed := maxi(0, int(monster.get("speed", 6)) - exhaustion - (2 if not monster.get("fighter_slow_sources", []).is_empty() else 0))
+	var speed := maxi(0, int(monster.get("speed", 6)) - exhaustion - (2 if not monster.get("fighter_slow_sources", []).is_empty() else 0) - SpellEffects.condition_amount(monster, "speed_reduced"))
 	return int(floor(float(speed) / 2.0)) if monster.get("fighter_stood_up", false) else speed

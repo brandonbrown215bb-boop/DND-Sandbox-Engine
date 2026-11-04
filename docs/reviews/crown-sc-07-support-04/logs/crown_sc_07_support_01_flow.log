@@ -1,0 +1,63 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+WARNING: [DataLoader] Rejected 25 unsupported effectless feature records; they remain unavailable until curated.
+     at: push_warning (core/variant/variant_utility.cpp:1033)
+     GDScript backtrace (most recent call first):
+         [0] load_all_data (res://src/autoload/data_loader.gd:276)
+         [1] _ready (res://src/autoload/data_loader.gd:252)
+[DataLoader] Loaded: 14 classes, 9 races, 295 items, 362 spells, 481 monsters, 4 event tables, 1 campaigns
+[DataLoader] Layers: core_imported, core_curated, mods | packs: core, crown | approved overrides: 429 | validation failures: 0
+==================================================
+ Rook's Headless Viewport Harness (per-beat)
+==================================================
+
+[TEST] crown_sc_07_support_01_flow
+[ok]   SC-07 s1: Ray of Enfeeblement is shared data (60 ft, Con save, concentration, end-of-turn Con repeat)
+[ok]   SC-07 s1: the enfeebled marker (and the legacy alias) carry both consequences
+[ok]   SC-07 s1: an unknown granted condition is rejected
+[ok]   SC-07 s1: an incomplete outcome map is rejected
+[Character] crown-sc07s1-renamed leveled up to 2! (+7 HP, now 15)
+[Character] crown-sc07s1-renamed leveled up to 3! (+4 HP, now 19)
+[Character] crown-sc07s1-renamed leveled up to 4! (+4 HP, now 23)
+[Character] crown-sc07s1-renamed leveled up to 5! (+4 HP, now 27)
+[ok]   SC-01 support 01: renamed ray_of_enfeeblement passes the production loader as shared data
+[ok]   SC-07 s1: renamed ray: a failed Con save grants enfeebled through CombatAction.resolve_spell
+[ok]   SC-07 s1: enfeebled imposes Disadvantage on Strength saves only
+[ok]   SC-07 s1: enfeebled imposes Disadvantage on Strength attack rolls only
+[Character] crown-sc07s1-hero leveled up to 2! (+10 HP, now 22)
+[Character] crown-sc07s1-hero leveled up to 3! (+5 HP, now 27)
+[ok]   SC-07 s1: an enfeebled Character rolls Strength attacks at Disadvantage and subtracts 1d8 from its damage (20 -> 16)
+[ok]   SC-07 s1: an enfeebled Character's Strength save is rolled at Disadvantage
+[ok]   SC-07 s1: a failed end-of-turn repeat save keeps the effect
+[ok]   SC-07 s1: a successful repeat save ends the spell on the target
+[ok]   SC-07 s1: a successful save grants only Disadvantage on the next attack roll
+[ok]   SC-07 s1: the success rider survives the caster's turn end
+[ok]   SC-07 s1: the success rider expires at the start of the caster's next turn
+[Character] crown-sc07s1-lock leveled up to 2! (+7 HP, now 17)
+[Character] crown-sc07s1-lock leveled up to 3! (+9 HP, now 26)
+[ok]   SC-07 s1: a Warlock reaches level 3 and selects Ray of Enfeeblement through ordinary class selection
+[ok]   Conversion 001: ray_of_enfeeblement is available through the real spell picker
+[ok]   SC-07 s1: picker + hex click: the failed save enfeebles the target under concentration (ed]=== Turn: Goblin 1 (Monster) ===[/color]
+Miss! Attack roll 10 vs AC 12
+crown-sc07s1-lock expended a level 2 spell slot.
+crown-sc07s1-brute failed CON save (DC 13). crown-sc07s1-brute is enfeebled.
+)
+[ok]   SC-07 s1: the enfeebled monster's live 20-damage attack is reduced by 1d8 (lost 18)
+[ok]   SC-07 s1: the live target's successful end-of-turn save ends the effect
+[ok]   Conversion 001: ray_of_enfeeblement is available through the real spell picker
+[ok]   SC-07 s1: picker + hex click: a successful save leaves only next-attack Disadvantage
+[Character] crown-sc07s1-saver leveled up to 2! (+3 HP, now 11)
+[Character] crown-sc07s1-saver leveled up to 3! (+6 HP, now 17)
+[Character] crown-sc07s1-saver leveled up to 4! (+5 HP, now 22)
+[Character] crown-sc07s1-saver leveled up to 5! (+6 HP, now 28)
+[ok]   SC-07 s1: the party carries an enfeebled record
+[SaveManager] Successfully saved game to user://saves/dnd2024/crown_sc_07_support_01.sav
+[ok]   SC-07 s1: the record saves at the overworld checkpoint
+[ok]   SC-07 s1: the DTO passes production save preflight
+[SaveManager] Test mode: restored save state without scene transition
+[ok]   SC-07 s1: the checkpoint reloads through SaveManager
+CROWN_SC_07_SUPPORT_01_CHECKPOINT_READY
+--------------------------------------------------
+ VIEWPORT RESULTS: 0 failed (1 tests run)
+VIEWPORT TESTS PASSED
+SCENARIO PASSED: crown_sc_07_support_01_flow

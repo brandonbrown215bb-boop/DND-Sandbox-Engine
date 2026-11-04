@@ -1,0 +1,166 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+WARNING: [DataLoader] Rejected 25 unsupported effectless feature records; they remain unavailable until curated.
+     at: push_warning (core/variant/variant_utility.cpp:1033)
+     GDScript backtrace (most recent call first):
+         [0] load_all_data (res://src/autoload/data_loader.gd:276)
+         [1] _ready (res://src/autoload/data_loader.gd:252)
+[DataLoader] Loaded: 14 classes, 9 races, 294 items, 362 spells, 481 monsters, 4 event tables, 1 campaigns
+[DataLoader] Layers: core_imported, core_curated, mods | packs: core, crown | approved overrides: 423 | validation failures: 0
+==================================================
+ Rook's Headless Viewport Harness (per-beat)
+==================================================
+
+[TEST] ordinary_action_flow
+[ok]   S237 actual Actions button opens chooser
+[ok]   S237 ordinary Dash adds current Speed after partial movement and spends only Action
+[ok]   S237 repeated/forged ordinary Dash cannot grant free movement
+[ok]   S237 actual Actions button opens chooser
+[ok]   S237 ordinary Disengage uses existing Opportunity Attack exclusion
+[ok]   S237 Disengage ends this turn
+[ok]   S237 existing Dodge button keeps protection after own end-turn
+[ok]   S237 Dodge grants Advantage only to DEX saves at central Character owner
+[ok]   S237 Dodge works against a seen attacker
+[ok]   S237 Dodge does not penalize an unseen attacker
+[ok]   S237 Dodge ends at start of next owner turn
+[ok]   S237 Dodge cannot resume after disabling condition is removed: stunned
+[ok]   S237 Dodge cannot resume after disabling condition is removed: grappled
+[ok]   S237 Dodge cannot resume after disabling condition is removed: restrained
+[ok]   S237 numeric Speed 0 ends Dodge
+[ok]   S237 expiring numeric Speed 0 cannot restore Dodge
+[ok]   S237 generic monster save receives Dodge DEX Advantage
+[ok]   S237 monster Dodge does not resume after escape
+[ok]   S237 actual Actions button opens chooser
+[ok]   S237 visible Hide refuses before Action or roll
+[ok]   S237 renamed loaded feature is offered through actual feature menu
+[ok]   S237 renamed feature menu offers ordinary movement without feature-ID dispatch
+[ok]   S237 renamed loaded bonus Hide uses same legality gate before cost
+[ok]   S237 actual Actions button opens chooser
+[ok]   S237 concealed ordinary Hide grants Invisible and captures discovery DC
+[ok]   S237 successful Hide survives own end-turn
+[ok]   S237 renamed loaded feature shares Hide effect at its declared Bonus Action cost
+[ok]   S237 actual Actions button opens chooser
+[ok]   S237 existing Hidden does not make visible re-Hide legal
+[ok]   S237 making an attack ends Hide and its captured DC
+[ok]   S237 actual Actions button opens chooser
+[ok]   S237 cancelling the Search approach chooser preserves the Action and Hidden target
+[ok]   S237 actual Actions button opens chooser
+[ok]   S237 actual Search finds Hidden using recorded Perception DC and ends its Hide
+[ok]   S237 actual permissioned non-Verbal nonattack cast retains Hide
+[ok]   S237 glowing Hidden target loses Invisible benefits for actual sight query
+[ok]   S237 actual Verbal cast ends only Hide and preserves independent Invisibility
+[ok]   S237 loaded componentless ordered effect emits loud sound after real effects and once-only slot/Action payment without Ready
+[ok]   S237 loud effect sound preserves independent condition Invisibility
+[ok]   S237 Ready costs the owner's Action now and reserves no extra Reaction
+[ok]   S237 actual completed trigger and owning Reaction prompt settle
+[ok]   OA02 ordinary shared cast resolves and pays once against its selected target
+[ok]   OA02 remote target-origin boom keeps the caster Hidden
+[ok]   OA02 target-origin sound triggers one location-matched owning Ready Reaction
+[ok]   OA02 loud target-source sound ends that creature's Hide without ending the caster's Hide
+[ok]   OA02 target-origin sound reaches a distinct adjacent listener at its inclusive range
+[ok]   OA02 target-origin sound respects authored range
+[ok]   OA02 target-origin sound respects a blocked route
+[ok]   OA02 target-origin sound excludes a Deafened listener
+[ok]   OA02 target-origin sound does not cross planes
+[ok]   OA02 exact target source is captured by ordinary pre-payment revalidation
+[ok]   OA02 moved selected target is refused before spell payment
+[ok]   OA02 exact selected object is captured through the ordinary pre-payment validator
+[ok]   OA02 replaced selected object is refused before spell payment
+[ok]   OA02 loud target-origin sound ends a hidden monster source's Hide and records its location
+[ok]   S237 Ready costs the owner's Action now and reserves no extra Reaction
+[ok]   S237 whisper spell effect retains Hide and cannot trigger loud-sound Ready
+[ok]   S237 actual completed trigger and owning Reaction prompt settle
+[ok]   S237 ordered spell sound triggers exactly one actual owning Reaction after both effects
+[ok]   S237 effect sound spell has an actual Ready source/payment choice
+[ok]   S237 Ready costs the owner's Action now and reserves no extra Reaction
+[ok]   S237 Ready pays last slot now but a held componentless spell emits no effect sound
+[ok]   S237 actual completed trigger and owning Reaction prompt settle
+[ok]   S237 actual held release emits effect sound and ends Hide without paying the last slot again
+[ok]   S237 Ready costs the owner's Action now and reserves no extra Reaction
+[ok]   S237 actual completed trigger and owning Reaction prompt settle
+[ok]   S237 paid empty-area spell still emits its declared sound and triggers Ready
+[ok]   OA13 target-origin sound declaration reaches the existing valid monster intent
+[ok]   S237 Ready costs the owner's Action now and reserves no extra Reaction
+[ok]   S237 actual completed trigger and owning Reaction prompt settle
+[ok]   OA13 target-origin monster cast pays one slot, records the Action and completes its declared sound producer
+[ok]   OA13 loud target-origin monster sound ends the exact selected target's Hide
+[ok]   OA13 target-origin sound does not end the casting monster's Hide
+[ok]   OA13 target-origin monster sound reaches the owning Ready Reaction exactly once
+[ok]   OA03 AI chooses the loaded renamed caster-origin monster spell through its real command validator
+[ok]   S237 Ready costs the owner's Action now and reserves no extra Reaction
+[ok]   S237 Ready costs the owner's Action now and reserves no extra Reaction
+[ok]   S237 actual completed trigger and owning Reaction prompt settle
+[ok]   OA03 real monster attack miss pays one slot, records one Action, emits once after completion and triggers one eligible sound Ready owner
+[ok]   OA03 sound reaches only the eligible listener and leaves the Deafened/off-plane owner's Reaction and held Ready untouched
+[ok]   OA03 emitted caster-origin sound reaches the eligible listener but excludes Deafened and other-plane listeners
+[ok]   OA03 AI command validates a loaded shared empty-Sphere monster cast without recipient IDs
+[ok]   OA03 populated monster area intent is refused before slot payment or Action receipt
+[ok]   S237 Ready costs the owner's Action now and reserves no extra Reaction
+[ok]   S237 actual completed trigger and owning Reaction prompt settle
+[ok]   OA03 actual empty monster Sphere pays once, completes once, ends caster Hide and delivers one caster-origin sound Ready Reaction
+[ok]   OA03 occupied area after Counterspell window is stale-refused before slot, Action receipt, sound or reaction payment
+[ok]   S237 Ready costs the owner's Action now and reserves no extra Reaction
+[ok]   OA03 actual Counterspell interrupts monster effect before damage, refunds the cast slot once and spends the owner's Reaction
+[ok]   OA03 interrupted Verbal cast still publishes one separate sound to its eligible Ready owner
+[ok]   S237 direct unsupported shared sound host refuses before slot or healing
+[ok]   S237 native Thunderwave sound refuses a direct resolver host before slot payment
+[ok]   S237 native Thunderwave sound refuses a Ready-shaped context without ReadySpellRules host authority before payment
+[ok]   S237 malformed or unsupported sound origin refuses content validation
+[ok]   S237 malformed or unsupported sound origin refuses content validation
+[ok]   S237 malformed or unsupported sound origin refuses content validation
+[ok]   S237 unimplemented reaction sound host refuses content validation
+[ok]   S237 test selects a native Thunderwave direction whose Cube contains the target
+[ok]   S237 Ready costs the owner's Action now and reserves no extra Reaction
+[ok]   S237 actual completed trigger and owning Reaction prompt settle
+[ok]   S237 source-pinned Thunderwave resolves the selected native Cube and emits its boom after once-only slot/Action settlement
+[ok]   S237 Thunderwave's 300-foot effect sound reaches a Ready listener 65 feet away, beyond the separate 60-foot Verbal sound
+[ok]   S237 actual Actions button opens chooser
+[ok]   S237 cancelled Help has no cost or benefit
+[ok]   S237 actual Actions button opens chooser
+[ok]   S237 stale Help selection cannot grant benefit after Action is gone
+[ok]   S237 actual Actions button opens chooser
+[ok]   S237 actual Help target click pays once for exact enemy
+[ok]   S237 helper cannot consume own Help
+[ok]   S237 ally consumes Help only once
+[ok]   S237 actual Actions button opens chooser
+[ok]   S237 unused Help expires at helper's next turn start
+[ok]   S237 actual Actions button opens chooser
+[ok]   S237 actual Help Medicine stabilizes adjacent dying ally without healing
+[ok]   S237 unowned Help proficiency refuses before targeting or cost
+[ok]   S237 actual Help proficiency/method choosers and exact ally click grant physical next-check assistance once
+[ok]   S237 unrelated ability check cannot consume selected proficiency Help
+[ok]   S237 actual shared proficient check consumes exact Help source and grants Advantage
+[ok]   S237 a later matching check cannot reuse spent Help
+[ok]   S237 tool Help matches the actual tool check rather than becoming general Advantage
+[ok]   S237 Help Advantage composes with Poisoned Disadvantage on one captured check
+[ok]   S237 actual helper turn start expires unused exact-proficiency assistance
+[ok]   OA-09 actual combat Help menus grant language-eligible verbal Advantage on an authored eligible Study check
+[ok]   OA-09 unshared combat languages refuse verbal Help before payment or grant
+[ok]   S237 actual Actions button opens chooser
+[ok]   S238 unseen actor still cannot Hide with only Half Cover
+[ok]   S237 actual Actions button opens chooser
+[ok]   S238 actual Hide uses Three-Quarters Cover plus unseen gate and one Action
+[ok]   S237 actual Actions button opens chooser
+[ok]   S238 Three-Quarters Cover alone cannot bypass an enemy's actual sight
+[ok]   S238 ordinary Attack refuses transparent Total Cover before payment
+[ok]   S238 actual Sacred Flame picker cannot bypass Total Cover or spend an Action
+[ok]   S238 actual slotted cast refuses Total Cover without slot or Action
+[ok]   S238 actual monster attack resolver adds Half Cover to its target AC without changing outcomes on a natural miss
+[ok]   S238 actual monster attack resolver adds Three-Quarters Cover to its target AC
+[ok]   S238 the same monster attack resolves at normal AC when its physical ray is clear
+[ok]   S238 actual monster attack through Total Cover is refused before attack receipt or damage
+[ok]   S238 actual ordinary spell cast applies Half Cover to a Dexterity save and changes its outcome
+[ok]   S238 actual ordinary spell cast applies Three-Quarters Cover to a Dexterity save and changes its outcome
+[ok]   S238 actual Sacred Flame Dex save ignores Half Cover despite sight through the obstacle
+[ok]   S238 ordinary player spell attack hits the same target when its physical ray is clear
+[ok]   S238 ordinary player spell attack misses after Half Cover raises target AC
+[ok]   S238 ordinary player spell attack misses after Three-Quarters Cover raises target AC
+[ok]   S238 ordinary player spell attack through Total Cover refuses before slot or Action payment
+[ok]   S238 actual area spell's clear effect-origin ray leaves a DC 14 Dexterity save failed
+[ok]   S238 actual area spell uses its selected origin and applies the intervening Half Cover save bonus
+[ok]   S238 area effect origin excludes the selected origin cell itself from intervening cover
+[ok]   S237 encounter teardown clears ordinary transient state
+--------------------------------------------------
+ VIEWPORT RESULTS: 0 failed (1 tests run)
+VIEWPORT TESTS PASSED
+SCENARIO PASSED: ordinary_action_flow

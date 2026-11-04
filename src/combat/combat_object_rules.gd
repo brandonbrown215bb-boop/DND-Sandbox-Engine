@@ -414,3 +414,35 @@ static func close_unheld(object: Dictionary) -> bool:
 		return true
 	return false
 
+
+
+## Unsecured = present, nonmagical-agnostic, not fixed, not worn or carried, and small enough
+## to sit entirely inside one hex of an area (Tiny/Small/Medium or unknown size).
+static func is_unsecured_single_hex(object: Dictionary) -> bool:
+	if bool(object.get("removed", false)) or int(object.get("hp", 1)) <= 0: return false
+	if bool(object.get("fixed", false)) or bool(object.get("secured", false)): return false
+	if bool(object.get("worn", false)) or bool(object.get("carried", false)) or not str(object.get("worn_by", "")).is_empty() or not str(object.get("carried_by", "")).is_empty(): return false
+	return str(object.get("size", "medium")).to_lower() in ["tiny", "small", "medium", "t", "s", "m"]
+
+
+## Pushes every unsecured object found on the area hexes straight away from origin.
+## Returns [{object, from, to}] for each object that moved. Creature hexes block.
+static func push_area_objects(grid: HexGrid, area_hexes: Array, origin: Vector2i, distance: int, blocked: Array[Vector2i] = []) -> Array:
+	var moved: Array = []
+	var seen: Array = []
+	var queued: Array = []
+	for hex in area_hexes:
+		for object in all_at(grid, hex):
+			if object in seen: continue
+			seen.append(object)
+			if is_unsecured_single_hex(object): queued.append([object, hex])
+	for entry in queued:
+		var object: Dictionary = entry[0]
+		var start: Vector2i = entry[1]
+		var to := Targeting.get_pushed_position(start, origin, distance, grid, blocked)
+		if to == start: continue
+		object["position"] = [to.x, to.y]
+		for entity in grid.entities:
+			if entity.get("world_object") is Dictionary and is_same(entity["world_object"], object): entity["hex_position"] = to
+		moved.append({"object": object, "from": start, "to": to})
+	return moved

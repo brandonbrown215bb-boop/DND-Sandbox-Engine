@@ -3,7 +3,7 @@
 class_name SpellEffects
 extends RefCounted
 
-const MANAGED_SPELLS := ["bless", "bane", "jump", "fly", "levitate", "spider_climb", "freedom_of_movement", "water_walk", "aid", "alter_self", "barkskin", "mage_armor", "hold_monster", "ray_of_sickness", "ray_of_enfeeblement", "animal_friendship", "charm_person", "charm_monster", "power_word_stun", "sleep", "blindness/deafness", "sunburst", "beacon_of_hope", "divine_favor", "death_ward", "sanctuary", "heroism", "magic_weapon", "enhance_ability", "faerie_fire", "invisibility", "darkvision", "see_invisibility", "true_seeing", "detect_magic", "blur", "detect_evil_and_good", "detect_poison_and_disease", "identify", "goodberry"]
+const MANAGED_SPELLS := ["bless", "bane", "jump", "fly", "levitate", "spider_climb", "freedom_of_movement", "water_walk", "aid", "alter_self", "barkskin", "mage_armor", "hold_monster", "ray_of_sickness", "animal_friendship", "charm_person", "charm_monster", "power_word_stun", "blindness/deafness", "sunburst", "beacon_of_hope", "divine_favor", "death_ward", "sanctuary", "heroism", "magic_weapon", "enhance_ability", "faerie_fire", "invisibility", "darkvision", "see_invisibility", "true_seeing", "detect_magic", "blur", "detect_evil_and_good", "detect_poison_and_disease", "identify", "goodberry"]
 const PERSISTED_AREA_MARKER_SPELLS := ["fog_cloud", "darkness", "black_tentacles", "antilife_shell", "spike_growth", "entangle", "cloud_of_daggers", "sleet_storm", "moonbeam", "wall_of_fire", "animate_objects"]
 static var _source_end_events: Array[Dictionary] = []
 static var _repeat_save_turn_locks: Dictionary = {}
@@ -417,9 +417,16 @@ static func repeat_save_schedule(target, source: String) -> String:
 	if not SharedSpell.uses(spell) or not spell.has("repeat_save"): return ""
 	return str(record.get("repeat_save_schedule", spell.get("repeat_save_schedule", "target_turn_end")))
 
+## A final repeat-save stage (e.g. a second failure's lasting condition) asks for no more saves.
+static func repeat_save_stage_final(target, source: String) -> bool:
+	var record: Dictionary = records(target).get(source, {})
+	var stages: Array = record.get("repeat_save_stages", [])
+	return not stages.is_empty() and bool(stages[clampi(int(record.get("repeat_save_stage_index", 0)), 0, stages.size() - 1)].get("final", false))
+
 static func repeat_save_due(target, source: String, schedule: String, now_seconds: int = -1) -> bool:
 	if repeat_save_schedule(target, source) != schedule: return false
 	var record: Dictionary = records(target).get(source, {})
+	if repeat_save_stage_final(target, source): return false
 	if schedule == "target_turn_end": return true
 	if schedule == "elapsed_seconds": return now_seconds >= 0 and now_seconds >= int(record.get("repeat_save_next_at_seconds", 2147483647))
 	return false
@@ -452,12 +459,13 @@ static func record_shared_repeat_save(target, source: String, saved: bool, total
 	if not stages.is_empty():
 		var stage_index := clampi(int(record.get("repeat_save_stage_index", 0)), 0, stages.size() - 1)
 		var stage: Dictionary = stages[stage_index]
+		if bool(stage.get("final", false)): return {"success": false}
 		var margin := total - dc
 		var route := "stay"
 		if saved and margin >= int(stage.get("minimum_margin", 0)):
 			var qualified := int(record.get("repeat_save_stage_successes", 0)) + 1
 			record["repeat_save_stage_successes"] = qualified
-			if qualified >= int(stage.get("successes_required", 1)): route = "advance"
+			if qualified >= int(stage.get("successes_required", 1)): route = str(stage.get("on_success", "advance"))
 		elif not saved:
 			route = str(stage.get("on_failure", "stay"))
 			if bool(stage.get("reset_successes_on_failure", false)): record["repeat_save_stage_successes"] = 0
@@ -488,6 +496,37 @@ static func tick_boundary(targets: Array, owner: String, phase: String) -> void:
 			var record: Dictionary = records(target)[source]
 			if str(record["caster_id"]) == owner and str(record["expiry_phase"]) == phase:
 				_advance(target, str(source), 6)
+			# Recipient-relative expiry ("until the start/end of its next turn").
+			elif str(record.get("recipient_id", "")) == owner and str(record["expiry_phase"]) == "recipient_" + phase and records(target).has(source):
+				_advance(target, str(source), 6)
+
+## Authored magnitude for a source-owned condition (e.g. speed_reduced hexes).
+static func set_condition_amount(target, cast: Dictionary, condition: String, amount: int) -> void:
+	var source := str(cast.get("source_id", ""))
+	if not records(target).has(source) or not has_grant(target, source, condition): return
+	var amounts: Dictionary = records(target)[source].get("condition_amounts", {})
+	amounts[condition] = amount
+	records(target)[source]["condition_amounts"] = amounts
+
+## Sum of live granted magnitudes; sources of the same spell do not stack (largest wins per spell).
+static func condition_amount(target, condition: String) -> int:
+	if target == null: return 0
+	var by_spell := {}
+	for source in records(target):
+		var record: Dictionary = records(target)[source]
+		if not has_grant(target, str(source), condition): continue
+		var key := str(record.get("spell_id", source))
+		by_spell[key] = maxi(int(by_spell.get(key, 0)), int(record.get("condition_amounts", {}).get(condition, 0)))
+	var total := 0
+	for value in by_spell.values(): total += int(value)
+	return total
+
+## Consume every source of a once-only condition after its triggering roll.
+static func consume_condition(target, condition: String) -> void:
+	for source in records(target).keys():
+		if has_grant(target, str(source), condition):
+			CombatAction.remove_condition_source(target, str(source), [condition])
+	prune(target)
 
 static func advance_time(targets: Array, elapsed_seconds: int) -> void:
 	if elapsed_seconds <= 0:

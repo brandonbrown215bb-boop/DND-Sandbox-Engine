@@ -45,13 +45,13 @@ static func start_bounded_owner_turn_interval(actor: Character) -> void:
 ## the invisible creature. Occupied hexes remain legal targets in this game;
 ## an unperceived target imposes the normal attack disadvantage.
 static func is_invisible(entity, include_hidden: bool = true) -> bool:
-	if SpellEffects.has_spell(entity, "faerie_fire"):
+	if SpellEffects.has_spell(entity, "faerie_fire") or has_condition(entity, "outlined"):
 		return false
 	if entity is Character:
-		return (entity.has_condition("invisible") or (include_hidden and entity.has_condition("hidden"))) and not entity.has_condition("starry_wisp")
+		return (entity.has_condition("invisible") or (include_hidden and entity.has_condition("hidden"))) and not entity.has_condition("starry_wisp") and not entity.has_condition("invisibility_suppressed")
 	if entity is Dictionary:
 		var conditions: Dictionary = entity.get("conditions", {})
-		return (conditions.has("invisible") or (include_hidden and conditions.has("hidden"))) and not conditions.has("starry_wisp")
+		return (conditions.has("invisible") or (include_hidden and conditions.has("hidden"))) and not conditions.has("starry_wisp") and not conditions.has("invisibility_suppressed")
 	return false
 
 
@@ -92,13 +92,42 @@ const CONDITION_RULES := {
 	"unconscious": {"incapacitated": true, "speed_zero": true, "save_auto_fail_str_dex": true, "attacks_against_advantage": true, "nearby_hit_critical": true, "prone": true, "drop_held_items": true},
 	"exhaustion": {"check_penalty_per_level": -2, "attack_penalty_per_level": -2, "save_penalty_per_level": -2, "speed_penalty_per_level": -5},
 }
+## Non-SRD spell-effect markers queried through the same consequence owners.
+## "ray_of_enfeeblement" is the legacy marker name kept so older saves keep
+## their penalties; new shared definitions grant the neutral "enfeebled".
+const MARKER_RULES := {
+	"enfeebled": {"str_d20_disadvantage": true, "damage_roll_penalty_d8": true},
+	"ray_of_enfeeblement": {"str_d20_disadvantage": true, "damage_roll_penalty_d8": true},
+	"enthralled": {"perception_penalty_10": true},
+	# Calm-style markers: suppress_<condition> both suppresses an existing
+	# condition and blocks new ones while the marker lasts; attitude_indifferent
+	# makes a Hostile Influence attitude read Indifferent and ends on damage.
+	"calmed": {"suppress_charmed": true, "suppress_frightened": true},
+	"calmed_indifferent": {"attitude_indifferent": true, "ends_on_damage": true, "ends_on_seen_ally_damage": true},
+}
+
+## True when a marker on the entity suppresses (and grants immunity to) the
+## condition. Reads raw marker storage so suppression never recurses.
+static func marker_suppresses(entity, condition: String) -> bool:
+	if entity == null or condition.is_empty() or MARKER_RULES.has(condition):
+		return false
+	var raw: Dictionary = entity.conditions if entity is Character else (entity.get("conditions", {}) if entity is Dictionary else {})
+	for marker in MARKER_RULES:
+		if raw.has(marker) and bool(MARKER_RULES[marker].get("suppress_" + condition, false)):
+			return true
+	return false
+
+## Flat penalty to Wisdom (Perception) checks and Passive Perception from
+## any condition/marker carrying the perception_penalty_10 consequence (not stacking).
+static func perception_penalty(entity) -> int:
+	return -10 if not conditions_with_consequence(entity, "perception_penalty_10").is_empty() else 0
 
 static func condition_rule(condition: String, consequence: String) -> bool:
-	return bool(CONDITION_RULES.get(condition, {}).get(consequence, false))
+	return bool(CONDITION_RULES.get(condition, MARKER_RULES.get(condition, {})).get(consequence, false))
 
 static func conditions_with_consequence(entity, consequence: String) -> Array[String]:
 	var matches: Array[String] = []
-	for condition in CONDITION_RULES:
+	for condition in CONDITION_RULES.keys() + MARKER_RULES.keys():
 		if condition_rule(str(condition), consequence) and has_condition(entity, str(condition)):
 			matches.append(str(condition))
 	return matches
@@ -114,7 +143,7 @@ static func is_speed_zero(entity, ignore_restrained: bool = false) -> bool:
 			continue
 		if condition_rule(str(condition), "speed_zero") and has_condition(entity, str(condition)):
 			return true
-	if has_condition(entity, "resilient_sphere") or has_condition(entity, "power_word_stun_speed_zero"):
+	if has_condition(entity, "resilient_sphere") or has_condition(entity, "power_word_stun_speed_zero") or has_condition(entity, "speed_zero"):
 		return true
 	return false
 
@@ -149,7 +178,7 @@ static func save_has_disadvantage(entity, ability: String) -> bool:
 	var upper := ability.to_upper()
 	if upper == "DEX" and condition_rule("restrained", "dex_save_disadvantage") and has_condition(entity, "restrained"):
 		return true
-	if upper == "STR" and has_condition(entity, "ray_of_enfeeblement"):
+	if upper == "STR" and not conditions_with_consequence(entity, "str_d20_disadvantage").is_empty():
 		return true
 	return false
 
@@ -179,9 +208,9 @@ static func attacker_has_condition_disadvantage(attacker, ability: String = "", 
 			return true
 	if has_condition(attacker, "frightened") and not bool(decisions.get("frightened_source_out_of_sight", false)):
 		return true
-	if ability.to_upper() == "STR" and has_condition(attacker, "ray_of_enfeeblement"):
+	if ability.to_upper() == "STR" and not conditions_with_consequence(attacker, "str_d20_disadvantage").is_empty():
 		return true
-	if has_condition(attacker, "vicious_mockery_disadvantage"):
+	if has_condition(attacker, "vicious_mockery_disadvantage") or has_condition(attacker, "next_attack_disadvantage"):
 		return true
 	return false
 
@@ -204,7 +233,7 @@ static func _append_unique_id(out: Array[String], value: String) -> void:
 
 static func charmer_ids(entity) -> Array[String]:
 	var ids: Array[String] = []
-	if entity == null:
+	if entity == null or marker_suppresses(entity, "charmed"):
 		return ids
 	if entity is Dictionary:
 		for raw_id in entity.get("animal_friendship_caster_ids", []):
@@ -358,8 +387,8 @@ static func has_condition(entity, condition: String) -> bool:
 	if entity is Dictionary:
 		var conds: Dictionary = entity.get("conditions", {})
 		if condition == "prone" and conds.has("unconscious") and not is_immune_to_condition(entity, "prone"):
-			return true
-		return conds.has(condition)
+			return not marker_suppresses(entity, "prone")
+		return conds.has(condition) and not marker_suppresses(entity, condition)
 	return false
 
 
@@ -377,6 +406,8 @@ static func is_immune_to_condition(entity, condition: String) -> bool:
 	if entity == null or condition.is_empty():
 		return false
 	if condition == "poisoned" and has_condition(entity, "petrified"):
+		return true
+	if marker_suppresses(entity, condition):
 		return true
 	if entity is Dictionary:
 		return condition in entity.get("condition_immunities", [])
@@ -444,7 +475,7 @@ static func resolve_condition_spell_repeat_save(target, source: String) -> Dicti
 	var spell_id := str(record.get("spell_id", ""))
 	var shared_spell := DataLoader.get_spell(spell_id)
 	if SharedSpell.uses(shared_spell):
-		if not shared_spell.has("repeat_save") or record.get("conditions", []).is_empty():
+		if not shared_spell.has("repeat_save") or record.get("conditions", []).is_empty() or SpellEffects.repeat_save_stage_final(target, source):
 			return {"success": false}
 		var shared_dc := int(record["save_dc"]) + int(record.get("repeat_save_dc_adjustment", 0))
 		var shared_ability := str(shared_spell["repeat_save"])
@@ -452,9 +483,7 @@ static func resolve_condition_spell_repeat_save(target, source: String) -> Dicti
 		var shared_saved := shared_total >= shared_dc
 		var progress := SpellEffects.record_shared_repeat_save(target, source, shared_saved, shared_total, shared_dc)
 		return {"success": true, "saved": shared_saved, "total": shared_total, "save_dc": shared_dc, "spell_id": spell_id, "source_id": source, "caster_id": str(record.get("caster_id", "")), "recipient_id": str(record.get("recipient_id", SpellEffects.caster_id(target) if target is Character else target.get("id", ""))), "purpose_id": str(record.get("repeat_save_purpose", "repeat_save")), "save_context": record.get("repeat_save_context", {}).duplicate(true), "attempt": int(progress.get("attempt", 0)), "stage_index": int(progress.get("stage_index", -1)), "stage_successes": int(progress.get("stage_successes", 0)), "dc_adjustment": int(progress.get("dc_adjustment", 0)), "ended": bool(progress.get("ended", false))}
-	if spell_id not in ["hold_person", "hold_monster", "ray_of_enfeeblement", "power_word_stun", "sleep", "blindness/deafness", "sunburst"] or (spell_id not in ["power_word_stun", "sleep", "blindness/deafness", "sunburst"] and not bool(record.get("concentration", false))):
-		return {"success": false}
-	if spell_id == "sleep" and "incapacitated" not in record.get("conditions", []):
+	if spell_id not in ["hold_person", "hold_monster", "ray_of_enfeeblement", "power_word_stun", "blindness/deafness", "sunburst"] or (spell_id not in ["power_word_stun", "blindness/deafness", "sunburst"] and not bool(record.get("concentration", false))):
 		return {"success": false}
 	var ability := str(DataLoader.get_spell(spell_id).get("repeat_save_ability", DataLoader.get_spell(spell_id).get("save", "WIS")))
 	var dc := int(record["save_dc"])
@@ -468,24 +497,26 @@ static func resolve_condition_spell_repeat_save(target, source: String) -> Dicti
 		# turns; a caster-owned round timer could expire before that creature acts.
 		SpellEffects._advance(target, source, 6)
 		return {"success": true, "saved": false, "total": total, "save_dc": dc, "spell_id": spell_id}
-	if spell_id == "sleep":
-		var updated_record := record.duplicate(true)
-		var conditions: Array = updated_record.get("conditions", []).duplicate()
-		conditions.erase("incapacitated")
-		updated_record["conditions"] = conditions
-		remove_condition_source(target, source, ["incapacitated"])
-		var records := SpellEffects.records(target)
-		records[source] = updated_record
-		if target is Dictionary:
-			target["spell_effects"] = records
-		SpellEffects.grant(target, updated_record, "unconscious", "start")
-	return {"success": true, "saved": false, "total": total, "save_dc": dc, "spell_id": spell_id, "condition": "unconscious" if spell_id == "sleep" else ""}
+	return {"success": true, "saved": false, "total": total, "save_dc": dc, "spell_id": spell_id}
 
 
 static func can_perceive_invisible(entity, distance_feet: int) -> bool:
 	if entity == null or distance_feet < 0: return false
 	if CombatPerception._has_blindsight(entity, distance_feet): return true
 	return not has_condition(entity, "blinded") and (CombatPerception._has_truesight(entity, distance_feet) or SpellEffects.has_spell(entity, "see_invisibility"))
+
+
+## Shared "blurred" condition (or a legacy Blur record): attacks against the
+## bearer have Disadvantage unless the attacker perceives it by Blindsight/Truesight.
+static func is_blurred_against(target, attacker, distance_feet: int) -> bool:
+	return (SpellEffects.has_spell(target, "blur") or has_condition(target, "blurred")) and not can_perceive_blur(attacker, distance_feet)
+
+
+## Shared "outlined" condition (or a legacy Faerie Fire record): attacks against
+## the bearer have Advantage when the attacker can see (is not Blinded).
+static func is_outlined_for(target, attacker) -> bool:
+	if not (SpellEffects.has_spell(target, "faerie_fire") or has_condition(target, "outlined")): return false
+	return attacker == null or not has_condition(attacker, "blinded")
 
 
 static func can_perceive_blur(entity, distance_feet: int) -> bool:
@@ -648,6 +679,7 @@ static func protected_creature_types_for_target(target) -> Array:
 
 ## True while a hit spell effect prevents this target from regaining Hit Points.
 static func is_healing_suppressed(target) -> bool:
+	if has_condition(target, "healing_prevented"): return true
 	if target is Character:
 		return not target.healing_suppression_sources.is_empty()
 	if target is Dictionary:
@@ -1072,7 +1104,7 @@ static func _finalize_damage_responses(target, source_character: Character, dama
 
 
 static func damage_source_penalty(amount: int, source: Character) -> int:
-	return mini(maxi(0, amount), Dice.roll(8, source)) if amount > 0 and source != null and source.has_condition("ray_of_enfeeblement") else 0
+	return mini(maxi(0, amount), Dice.roll(8, source)) if amount > 0 and source != null and not conditions_with_consequence(source, "damage_roll_penalty_d8").is_empty() else 0
 
 
 static func _record_settled_damage_history(target, source: Character, receipt: Dictionary, decisions: Dictionary) -> void:
@@ -1097,6 +1129,18 @@ static func resolve_zero_hp_replacement(target, hp_before: int, damage: int, dam
 	return SharedStepExecutor.resolve_zero_hp_replacement(target, hp_before, damage, damage_type, critical, decisions)
 
 
+## Remove every marker carrying the consequence from the entity (all its grants).
+static func end_markers_with(target, consequence: String) -> Array[String]:
+	var ended := conditions_with_consequence(target, consequence)
+	for marker in ended:
+		var marker_sources: Dictionary = (target.condition_sources if target is Character else target.get("condition_sources", {})).get(marker, {})
+		var marker_ids: Array = marker_sources.keys()
+		if marker_ids.is_empty(): marker_ids = ["ordinary"]
+		for marker_source in marker_ids:
+			remove_condition_source(target, str(marker_source), [marker])
+	return ended
+
+
 static func _end_damage_broken_spell_effects(target, party_damage: bool = true, cause: Dictionary = {}) -> void:
 	if target == null:
 		return
@@ -1107,6 +1151,8 @@ static func _end_damage_broken_spell_effects(target, party_damage: bool = true, 
 			continue
 		if bool(record.get("end_on_any_damage", false)) or (party_damage and bool(record.get("end_on_target_damage", false))):
 			SpellEffects.remove(target, str(source), "damage", cause)
+	end_markers_with(target, "ends_on_damage")
+	DamageWitnessRules.on_damage(target)
 	if not party_damage or not target is Dictionary:
 		return
 	var sources: Dictionary = target.get("condition_sources", {}).get("charmed", {})
@@ -1254,7 +1300,7 @@ static func spell_grants_condition(spell_data: Dictionary, condition: String) ->
 	if str(spell_data.get("condition_on_failed_save", "")) == condition:
 		return true
 	for effect in spell_data.get("effects", []):
-		if effect is Dictionary and str(effect.get("type", "")) == "grant_condition" and str(effect.get("condition", "")) == condition and bool(effect.get("on_failed_save", false)):
+		if effect is Dictionary and str(effect.get("type", "")) == "grant_condition" and (str(effect.get("condition", "")) == condition or condition in effect.get("condition_options", [])) and bool(effect.get("on_failed_save", false)):
 			return true
 	return false
 
@@ -1553,11 +1599,11 @@ static func resolve_weapon_attack(attacker: Character, target_entity, weapon_dat
 	reaction_decisions["perception_handles_blindness"] = true
 	var invisible_attack_advantage := bool(perception.advantage)
 	var unseen_target_disadvantage := bool(perception.disadvantage)
-	var blur_target_disadvantage := SpellEffects.has_spell(target_entity, "blur") and not can_perceive_blur(attacker, attack_distance_feet)
+	var blur_target_disadvantage := is_blurred_against(target_entity, attacker, attack_distance_feet)
 	var ability: String = weapon_data.get("ability", "STR")
 	if ability == "STR" and attacker.has_condition("reckless_attack"):
 		advantage = true
-	advantage = FighterRules.attack_advantage(attacker, target_entity) or SpellEffects.has_spell(target_entity, "faerie_fire") or invisible_attack_advantage or advantage
+	advantage = FighterRules.attack_advantage(attacker, target_entity) or is_outlined_for(target_entity, attacker) or invisible_attack_advantage or advantage
 	if target_entity is Dictionary:
 		var target_conditions: Dictionary = target_entity.get("conditions", {})
 		for feature in attacker.features:
@@ -2823,7 +2869,7 @@ static func _spell_effect_save_dc(target, spell_id: String, fallback: int) -> in
 static func _spell_directly_damages_target(spell_data: Dictionary) -> bool:
 	if str(spell_data.get("attack_type", "none")) != "none":
 		return true
-	if spell_data.has("damage_per_dart") or spell_data.has("damage_per_ray"):
+	if SpellProjectileResolver.is_projectile(spell_data):
 		return true
 	return spell_data.has("damage") and not str(spell_data.get("damage_type", "")).is_empty()
 

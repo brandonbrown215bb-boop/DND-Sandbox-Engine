@@ -18,9 +18,9 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 	var spell_attack_hexes := _attack_distance_hexes(cast)
 	var perception := CombatPerception.attack_visibility(cast.caster, cast.target, spell_attack_distance, cast.decisions)
 	cast.decisions["perception_handles_blindness"] = true
-	var spell_attack_advantage := FighterRules.attack_advantage(cast.caster, cast.target) or CombatAction.attack_target_grants_advantage(cast.target, spell_attack_hexes, true) or SpellEffects.has_spell(cast.target, "faerie_fire") or cast.caster.has_condition("innate_sorcery") or bool(perception.advantage)
+	var spell_attack_advantage := FighterRules.attack_advantage(cast.caster, cast.target) or CombatAction.attack_target_grants_advantage(cast.target, spell_attack_hexes, true) or CombatAction.is_outlined_for(cast.target, cast.caster) or cast.caster.has_condition("innate_sorcery") or bool(perception.advantage)
 	spell_attack_advantage = spell_attack_advantage or CombatAction.has_condition(cast.target, "reckless_attack")
-	var spell_attack_disadvantage := bool(perception.disadvantage) or (SpellEffects.has_spell(cast.target, "blur") and not CombatAction.can_perceive_blur(cast.caster, spell_attack_distance)) or CombatAction.attack_target_imposes_disadvantage(cast.target, spell_attack_hexes, bool(perception.target_sees_attacker)) or CombatAction.attacker_has_condition_disadvantage(cast.caster, spell_stat, cast.decisions)
+	var spell_attack_disadvantage := bool(perception.disadvantage) or CombatAction.is_blurred_against(cast.target, cast.caster, spell_attack_distance) or CombatAction.attack_target_imposes_disadvantage(cast.target, spell_attack_hexes, bool(perception.target_sees_attacker)) or CombatAction.attacker_has_condition_disadvantage(cast.caster, spell_stat, cast.decisions)
 	if cast.caster.get_creature_type() in CombatAction.protected_creature_types_for_target(cast.target):
 		spell_attack_disadvantage = true
 	if (cast.target is Character and cast.target.has_condition("guiding_bolt")) or (cast.target is Dictionary and cast.target.get("conditions", {}).has("guiding_bolt")):
@@ -306,9 +306,9 @@ static func _finish_attack(cast: SpellResolutionContext, attack_result: Dictiona
 		SpellDamageRolls.record_resolution_window(cast, "pre_damage", hit_window_fields)
 	var damage_str := SpellDamageRolls.spell_damage_formula(cast.caster, cast.spell, cast.slot_level)
 	var damage_type: String = cast.spell.get("damage_type", "fire")
-	var is_sorcerous_burst := str(cast.spell.get("id", "")) == "sorcerous_burst"
+	var exploding := SpellDamageRolls.exploding_policy(cast.caster, cast.spell)
 	var rolled_damage_formula := "%s + %s" % [damage_str, damage_str] if bool(attack_result["is_crit"]) else damage_str
-	var damage_details := SpellDamageRolls._roll_sorcerous_burst_damage(cast.caster, rolled_damage_formula, int(cast.spell.get("explode_on_max", 8)), str(cast.spell.get("maximum_bonus_dice_ability", "CHA"))) if is_sorcerous_burst else SpellDamageRolls._roll_spell_damage(cast.caster, damage_str, 2 if attack_result["is_crit"] else 1, cast.decisions, cast.spell.get("damage_dice_policy", {}))
+	var damage_details := SpellDamageRolls._roll_exploding_damage(cast.caster, rolled_damage_formula, exploding) if not exploding.is_empty() else SpellDamageRolls._roll_spell_damage(cast.caster, damage_str, 2 if attack_result["is_crit"] else 1, cast.decisions, cast.spell.get("damage_dice_policy", {}))
 	var authored_scale := SharedSpell.authored_damage_scale(cast.spell, "hit", 1.0)
 	var damage_scale := authored_scale
 

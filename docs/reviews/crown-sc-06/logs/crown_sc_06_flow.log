@@ -1,0 +1,66 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+WARNING: [DataLoader] Rejected 25 unsupported effectless feature records; they remain unavailable until curated.
+     at: push_warning (core/variant/variant_utility.cpp:1033)
+     GDScript backtrace (most recent call first):
+         [0] load_all_data (res://src/autoload/data_loader.gd:276)
+         [1] _ready (res://src/autoload/data_loader.gd:252)
+[DataLoader] Loaded: 14 classes, 9 races, 295 items, 362 spells, 481 monsters, 4 event tables, 1 campaigns
+[DataLoader] Layers: core_imported, core_curated, mods | packs: core, crown | approved overrides: 427 | validation failures: 0
+==================================================
+ Rook's Headless Viewport Harness (per-beat)
+==================================================
+
+[TEST] crown_sc_06_flow
+[ok]   SC-06: Sleep is shared data (60 ft, 5-ft Sphere, chosen creatures, Wis save, Incapacitated then Unconscious, trait auto-success)
+[ok]   SC-06: Hypnotic Pattern is shared data (120 ft, 30-ft area, sight-gated Wis save, Charmed/Incapacitated/Speed 0)
+[ok]   SC-06: an unknown auto-success trait is rejected
+[ok]   SC-06: a non-Boolean area_creature_choice is rejected
+[ok]   SC-06: a final stage that still asks for saves is rejected
+[ok]   SC-06: an unknown on_success route is rejected
+[ok]   SC-06: area_save_requires_sight without an area is rejected
+[Character] crown-sc06-renamed leveled up to 2! (+4 HP, now 12)
+[Character] crown-sc06-renamed leveled up to 3! (+7 HP, now 19)
+[Character] crown-sc06-renamed leveled up to 4! (+3 HP, now 22)
+[Character] crown-sc06-renamed leveled up to 5! (+5 HP, now 27)
+[ok]   SC-01 support 01: renamed sleep passes the production loader as shared data
+[ok]   SC-06: renamed staged spell: a failed save grants Incapacitated through CombatAction.resolve_spell
+[ok]   SC-06: a second failed save advances to the final Unconscious stage
+[ok]   SC-06: the final stage asks for no more saves
+[ok]   SC-06: damage ends the final stage
+[ok]   SC-06: a successful first repeat save ends the spell (on_success end)
+[ok]   SC-06: a creature with the magical-sleep trait automatically succeeds
+[ok]   SC-01 support 01: renamed hypnotic_pattern passes the production loader as shared data
+[ok]   SC-06: renamed pattern: one source grants Charmed, Incapacitated and Speed 0
+[ok]   SC-06: any damage ends all three conditions
+[Character] crown-sc06-wiz leveled up to 2! (+4 HP, now 12)
+[Character] crown-sc06-wiz leveled up to 3! (+5 HP, now 17)
+[Character] crown-sc06-wiz leveled up to 4! (+3 HP, now 20)
+[Character] crown-sc06-wiz leveled up to 5! (+5 HP, now 25)
+[ok]   SC-06: Sorcerer learns Sleep at level 1 and adds Hypnotic Pattern at level 5 through ordinary class selection
+[ok]   Conversion 001: sleep is available through the real spell picker
+[ok]   SC-06: picker + hex click + per-creature choice: only the chosen creature is put to sleep ([color=yellow]=== Turn: crown-sc06-wiz (Player) ===[/color]
+crown-sc06-wiz expended a level 1 spell slot.
+crown-sc06-chosen failed WIS save (DC 14). crown-sc06-chosen is incapacitated.
+)
+[ok]   SC-06: the live target fails its second save and falls Unconscious
+[ok]   Conversion 001: hypnotic_pattern is available through the real spell picker
+[ok]   SC-06: picker + hex click: sighted creatures in the area are Charmed, Incapacitated and at Speed 0; a Blinded creature is unaffected (rown-sc06-chosen is incapacitated. crown-sc06-chosen is speed_zero.
+crown-sc06-spared failed WIS save (DC 14). crown-sc06-spared is charmed. crown-sc06-spared is charmed. crown-sc06-spared is incapacitated. crown-sc06-spared is speed_zero.
+)
+[ok]   SC-06: an adjacent creature spends its action to shake one target free; others stay mesmerized
+[Character] crown-sc06-saver leveled up to 2! (+8 HP, now 16)
+[Character] crown-sc06-saver leveled up to 3! (+8 HP, now 24)
+[Character] crown-sc06-saver leveled up to 4! (+5 HP, now 29)
+[Character] crown-sc06-saver leveled up to 5! (+7 HP, now 36)
+[ok]   SC-06: the party carries a final-stage (Unconscious) Sleep record
+[SaveManager] Successfully saved game to user://saves/dnd2024/crown_sc_06.sav
+[ok]   SC-06: the record saves at the overworld checkpoint
+[ok]   SC-06: the DTO passes production save preflight
+[SaveManager] Test mode: restored save state without scene transition
+[ok]   SC-06: the checkpoint reloads through SaveManager
+CROWN_SC_06_CHECKPOINT_READY
+--------------------------------------------------
+ VIEWPORT RESULTS: 0 failed (1 tests run)
+VIEWPORT TESTS PASSED
+SCENARIO PASSED: crown_sc_06_flow

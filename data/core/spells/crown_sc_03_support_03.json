@@ -1,0 +1,104 @@
+[
+  {
+    "id": "magic_missile",
+    "name": "Magic Missile",
+    "description": "You create three glowing darts of magical force. Each dart hits a creature of your choice that you can see within range. A dart deals 1d4 + 1 force damage to its target. The darts all strike simultaneously, and you can direct them to hit one creature or several.",
+    "execution": "shared",
+    "level": 1,
+    "school": "evocation",
+    "casting_time": "action",
+    "range": 24,
+    "classes": [
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "instantaneous",
+    "concentration": false,
+    "rules_source": "SRD 5.2.1",
+    "rules_status": "2024-gameplay",
+    "target": "single",
+    "attack_type": "none",
+    "requires_target_sight": true,
+    "damage_type": "force",
+    "projectiles": {
+      "noun": "dart",
+      "delivery": "automatic",
+      "damage": "1d4+1",
+      "count": 3,
+      "extra_per_slot_level": 1,
+      "shield_negates": true
+    }
+  },
+  {
+    "id": "scorching_ray",
+    "name": "Scorching Ray",
+    "description": "You create three rays of fire and hurl them at targets within range. You can hurl them at one target or several. Make a ranged spell attack for each ray. On a hit, the target takes 2d6 fire damage.",
+    "execution": "shared",
+    "level": 2,
+    "school": "evocation",
+    "casting_time": "action",
+    "range": 24,
+    "classes": [
+      "sorcerer",
+      "wizard"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "instantaneous",
+    "concentration": false,
+    "rules_source": "SRD 5.2.1",
+    "rules_status": "2024-gameplay",
+    "target": "single",
+    "attack_type": "ranged_spell",
+    "damage_type": "fire",
+    "projectiles": {
+      "noun": "ray",
+      "delivery": "spell_attack",
+      "damage": "2d6",
+      "count": 3,
+      "extra_per_slot_level": 1
+    }
+  },
+  {
+    "id": "eldritch_blast",
+    "name": "Eldritch Blast",
+    "description": "You hurl a beam of crackling energy. Make a ranged spell attack against one creature or object in range. On a hit, the target takes 1d10 Force damage. The spell creates two beams at character level 5, three at level 11, and four at level 17. You can direct the beams at the same target or different ones, making a separate attack roll for each beam.",
+    "execution": "shared",
+    "level": 0,
+    "school": "evocation",
+    "casting_time": "action",
+    "range": 24,
+    "classes": [
+      "warlock"
+    ],
+    "components": [
+      "V",
+      "S"
+    ],
+    "duration": "instantaneous",
+    "concentration": false,
+    "rules_source": "SRD 5.2.1",
+    "rules_status": "2024-gameplay",
+    "target": "single",
+    "attack_type": "ranged_spell",
+    "damage_type": "force",
+    "projectiles": {
+      "noun": "beam",
+      "delivery": "spell_attack",
+      "damage": "1d10",
+      "count": 1,
+      "count_by_character_level": {
+        "1": 1,
+        "5": 2,
+        "11": 3,
+        "17": 4
+      }
+    }
+  }
+]

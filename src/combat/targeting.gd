@@ -50,6 +50,22 @@ static func line_cells(origin: Vector2i, target: Vector2i) -> Array[Vector2i]:
 
 
 ## Retrieve all targets in a sphere AoE around a center hex.
+## Hexes of a one-hex-wide line `length` hexes long from `origin` toward `toward`.
+## The origin hex is excluded; the line stops before a sight-blocking (total cover) tile.
+static func get_self_line_targets(origin: Vector2i, toward: Vector2i, length: int, hex_grid: HexGrid) -> Array[Vector2i]:
+	var out: Array[Vector2i] = []
+	var dist := HexUtils.get_distance(origin, toward)
+	if dist == 0 or length < 1: return out
+	var scale := int(ceil(float(length) / float(dist))) + 1
+	var far := origin + (toward - origin) * scale
+	for cell in HexUtils.hex_line(origin, far):
+		if cell == origin: continue
+		if out.size() >= length: break
+		if hex_grid != null and hex_grid.has_tile(cell) and bool(hex_grid.get_tile(cell).custom_properties.get("blocks_sight", false)): break
+		if hex_grid == null or hex_grid.has_tile(cell): out.append(cell)
+	return out
+
+
 static func get_sphere_targets(center: Vector2i, radius: int, hex_grid: HexGrid) -> Array[Vector2i]:
 	var affected_hexes := HexUtils.get_hexes_in_range(center, radius)
 	var targets: Array[Vector2i] = []

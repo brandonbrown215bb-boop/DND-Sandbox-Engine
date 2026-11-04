@@ -538,7 +538,7 @@ static func _conjure_minor_elementals_spell_attack_choices(zones: CombatSpellZon
 	var choices: Array[Dictionary] = []
 	if not zones._conjure_minor_elementals_applies_to_target(caster, target):
 		return choices
-	var count := int(spell_data.get("_scorching_ray_count_for_target", 1)) if spell_data.has("damage_per_ray") else 1
+	var count := int(spell_data.get("_projectile_count_for_target", spell_data.get("_scorching_ray_count_for_target", 1))) if SpellProjectileResolver.view(spell_data).has("damage_per_ray") else 1
 	var source_id := zones._conjure_minor_elementals_zone_source_for_caster(caster)
 	var zone: Dictionary = zones.active_spell_zones.get(source_id, {})
 	for _attack in maxi(1, count):

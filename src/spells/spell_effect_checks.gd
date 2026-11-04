@@ -431,7 +431,7 @@ static func run(check: Callable) -> void:
 	SpellEffects.end_concentration(first, [bane_target])
 	check.call(not CombatAction.has_condition(bane_target, "baned") and SpellEffects.records(bane_target).is_empty(), "Ending Bane concentration releases the condition")
 	var sleep_spell := DataLoader.get_spell("sleep")
-	check.call(SpellSupport.is_available(sleep_spell) and SpellEffects.manages(sleep_spell) and bool(sleep_spell.get("end_on_any_damage", false)) and sleep_spell.get("repeat_save_ability", "") == "WIS", "Sleep is available with Wisdom repeat saves and ends on any damage")
+	check.call(SpellSupport.is_available(sleep_spell) and SpellEffects.manages(sleep_spell) and bool(sleep_spell.get("end_on_any_damage", false)) and str(sleep_spell.get("repeat_save", "")) == "WIS", "Sleep is available with Wisdom repeat saves and ends on any damage")
 	var sleeper := {"id": "sleep-target", "name": "Sleep target", "is_alive": true, "current_hp": 20, "max_hp": 20, "armor_class": 10, "creature_type": "humanoid", "conditions": {}, "condition_sources": {}, "spell_effects": {}, "saving_throw_bonuses": {"WIS": -100}}
 	var sleep_cast := SpellEffects.begin_cast(first, sleep_spell)
 	first.concentrating_on = {"spell_id": "sleep", "effect_source": sleep_cast["source_id"], "targets": [sleeper]}
@@ -440,7 +440,7 @@ static func run(check: Callable) -> void:
 	var sleep_result := CombatAction.resolve_spell(first, sleeper, prepared_sleep, false, {}, [], 1, 5)
 	check.call(sleep_result.get("success", false) and not sleep_result.get("saved", true) and CombatAction.has_condition(sleeper, "incapacitated") and SpellEffects.has_spell(sleeper, "sleep"), "A failed Sleep Wisdom save applies source-owned Incapacitated")
 	var sleep_repeat := CombatAction.resolve_condition_spell_repeat_save(sleeper, str(sleep_cast["source_id"]))
-	check.call(sleep_repeat.get("success", false) and not sleep_repeat.get("saved", true) and sleep_repeat.get("condition", "") == "unconscious" and not CombatAction.has_condition(sleeper, "incapacitated") and CombatAction.has_condition(sleeper, "unconscious"), "A second failed Sleep save changes Incapacitated to Unconscious")
+	check.call(sleep_repeat.get("success", false) and not sleep_repeat.get("saved", true) and not CombatAction.has_condition(sleeper, "incapacitated") and CombatAction.has_condition(sleeper, "unconscious"), "A second failed Sleep save changes Incapacitated to Unconscious")
 	check.call(not CombatAction.resolve_condition_spell_repeat_save(sleeper, str(sleep_cast["source_id"])).get("success", false), "Sleep does not ask for another save after the target becomes Unconscious")
 	var sleeper_saved: Dictionary = JSON.parse_string(JSON.stringify(sleeper))
 	check.call(SpellEffects.saved_state_error(sleeper_saved).is_empty(), "Sleep's concentration effect remains valid in a save")

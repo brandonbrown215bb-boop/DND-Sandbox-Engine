@@ -22,6 +22,7 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 	var save_ability: String = cast.spell.get("save", "DEX")
 	var save_dc := 15 if str(cast.spell.get("id", "")) == "contact_other_plane" else int(cast.spell.get("_save_dc_override", SpellPermissionRules.save_dc(cast.caster, cast.spell)))
 	var contact_patron_saved := str(cast.spell.get("id", "")) == "contact_other_plane" and cast.caster.has_feature("warlock_contact_patron")
+	var trait_auto_saved := SharedSpell.uses(cast.spell) and SharedSpell.save_auto_success(cast.spell, cast.target, cast)
 	var willing_target_no_save := bool(cast.spell.get("willing_target_skips_save", false)) and cast.target is Character
 	var careful_saved := not willing_target_no_save and SorcererRules.is_careful_spell_target(cast.caster, cast.spell, cast.target, cast.decisions.get("metamagic:careful_targets", []))
 	var save_test: Dictionary = {}
@@ -53,7 +54,7 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 		poison_save_advantage = cast.target.has_condition("protection_from_poison") and CombatAction.spell_grants_condition(cast.spell, "poisoned")
 	elif cast.target is Dictionary:
 		poison_save_advantage = cast.target.get("conditions", {}).has("protection_from_poison") and CombatAction.spell_grants_condition(cast.spell, "poisoned")
-	var target_save_advantage := poison_save_advantage or (cast.target is Dictionary and bool(cast.spell.get("save_advantage_if_fighting_target", false)))
+	var target_save_advantage := poison_save_advantage or (bool(cast.spell.get("save_advantage_if_fighting_target", false)) and is_fighting_caster_side(cast, cast.target))
 	var auto_fail_creature_types: Array = cast.spell.get("auto_fail_save_creature_types", [])
 	var target_creature_type := ""
 	if cast.target is Character:
@@ -64,14 +65,14 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 	target_save_disadvantage = target_save_disadvantage or CombatAction.save_has_disadvantage(cast.target, save_ability)
 	var condition_save_auto_fail := CombatAction.save_auto_fails(cast.target, save_ability)
 	var object_without_ability_scores: bool = cast.target is Dictionary and bool(cast.target.get("is_object", false)) and not cast.target.has("ability_scores")
-	var automatically_fails: bool = not contact_patron_saved and (target_creature_type in auto_fail_creature_types or condition_save_auto_fail or (save_ability in ["STR", "DEX"] and object_without_ability_scores))
+	var automatically_fails: bool = not contact_patron_saved and not trait_auto_saved and (target_creature_type in auto_fail_creature_types or condition_save_auto_fail or (save_ability in ["STR", "DEX"] and object_without_ability_scores))
 	var heightened := bool(cached_post_roll_flags.get("heightened", false)) if not cached_save_test.is_empty() else bool(cast.decisions.get("metamagic:heightened", false)) and not automatically_fails and not careful_saved and not contact_patron_saved and cast.caster.class_id == "sorcerer" and "heightened_spell" in cast.caster.sorcerer_metamagic_choices and str(cast.spell.get("target", "")) == "single"
 	if cached_save_test.is_empty() and heightened and not bool(cast.decisions.get("metamagic:heightened_paid", false)) and not SorcererRules.spend_metamagic_cost(cast.caster, 2, cast.decisions):
 		heightened = false
 	if not cached_save_test.is_empty():
 		pass
-	elif contact_patron_saved:
-		save_test = {"total": save_dc, "success": true}
+	elif contact_patron_saved or trait_auto_saved:
+		save_test = {"total": save_dc, "success": true, "auto_success": trait_auto_saved}
 		save_roll = save_dc
 	elif automatically_fails:
 		save_test = {"total": -1000, "success": false, "auto_failed": true}
@@ -97,7 +98,7 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 		save_test["save_context"] = save_context_receipt.duplicate(true)
 
 	var outcome_override := str(save_test.get("outcome_override", ""))
-	var saved := outcome_override == "success" or (outcome_override != "failure" and (contact_patron_saved or careful_saved or (not willing_target_no_save and save_roll >= save_dc)))
+	var saved := outcome_override == "success" or (outcome_override != "failure" and (contact_patron_saved or trait_auto_saved or careful_saved or (not willing_target_no_save and save_roll >= save_dc)))
 	var target_name: String = cast.target.character_name if cast.target is Character else str(cast.target.get("name", "Target"))
 	var countercharm_used := bool(cached_post_roll_flags.get("countercharm_used", false))
 	var inflicted_condition := str(cast.spell.get("condition_on_failed_save", ""))
@@ -250,6 +251,8 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 			msg = "%s succeeded on %s save (DC %d)." % [target_name, save_ability, save_dc]
 		else:
 			msg = "%s failed %s save (DC %d)." % [target_name, save_ability, save_dc]
+	if trait_auto_saved:
+		msg = "%s automatically succeeds on the %s save against %s." % [target_name, save_ability, str(cast.spell.get("name", "the spell"))]
 	if countercharm_used:
 		msg += " Countercharm rerolled the save with Advantage."
 	if bardic_inspiration_used:
@@ -269,7 +272,7 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 		else:
 			msg += " %s adds +%d after the failed save." % [str(save_test.get("post_roll_bonus_source", "A source")), int(save_test.get("post_roll_bonus", 0))]
 	var effective_save_disadvantage: bool = (target_save_disadvantage or heightened) and not target_save_advantage
-	var base_res := {"success": true, "saved": saved, "save_total": save_roll, "save_dc": save_dc, "save_disadvantage": effective_save_disadvantage, "effect_cast": cast.effect_cast, "condition": inflicted_condition if not saved and not SharedSpell.uses(cast.spell) else "", "condition_source": "animal_friendship:%s" % cast.caster.character_id if str(cast.spell.get("id", "")) == "animal_friendship" else "", "caster_creature_type": cast.caster.creature_type, "countercharm_used": countercharm_used, "bardic_inspiration_used": bardic_inspiration_used, "stroke_of_luck_used": stroke_of_luck_used, "metamagic_used": careful_saved, "roll_token_replaced": bool(save_test.get("roll_token_replaced", false)), "message": msg}
+	var base_res := {"success": true, "saved": saved, "automatic_save": trait_auto_saved, "save_total": save_roll, "save_dc": save_dc, "save_disadvantage": effective_save_disadvantage, "effect_cast": cast.effect_cast, "condition": inflicted_condition if not saved and not SharedSpell.uses(cast.spell) else "", "condition_source": "animal_friendship:%s" % cast.caster.character_id if str(cast.spell.get("id", "")) == "animal_friendship" else "", "caster_creature_type": cast.caster.creature_type, "countercharm_used": countercharm_used, "bardic_inspiration_used": bardic_inspiration_used, "stroke_of_luck_used": stroke_of_luck_used, "metamagic_used": careful_saved, "roll_token_replaced": bool(save_test.get("roll_token_replaced", false)), "message": msg}
 	base_res["save_test"] = save_test.duplicate(true)
 	if not save_context_receipt.is_empty():
 		base_res["save_context"] = save_context_receipt.duplicate(true)
@@ -367,3 +370,33 @@ static func _recipient_damage_exemption(cast: SpellResolutionContext) -> Diction
 	return {"selection_id": str(selection.get("selection_id", "")), "spell_definition_id": str(cast.spell.get("id", "")), "caster_id": cast.caster.character_id, "recipient_id": recipient_id, "stage": "after_save_before_damage", "save_unchanged": true, "riders_unchanged": true, "scale": 0.0}
 
 
+
+
+## SRD "if you or your allies are fighting it": the target is an active
+## initiative combatant on the side opposed to the caster, and is not a
+## friendly (Influence attitude) creature. Outside initiative nobody is fighting.
+static func is_fighting_caster_side(cast, target) -> bool:
+	if cast == null or target == null or cast.spatial_host == null or cast.spatial_host.tracker == null:
+		return false
+	var tracker = cast.spatial_host.tracker
+	var target_entry := _combatant_for(tracker, target)
+	var caster_entry := _combatant_for(tracker, cast.caster)
+	if target_entry.is_empty() or caster_entry.is_empty():
+		return false
+	if bool(target_entry.get("is_player", false)) == bool(caster_entry.get("is_player", false)):
+		return false
+	if target is Dictionary:
+		if not bool(target.get("is_alive", true)) or str(target.get("influence", {}).get("attitude", "")) == "friendly":
+			return false
+	return true
+
+
+static func _combatant_for(tracker, creature) -> Dictionary:
+	var creature_id := str(CombatAction.actor_id(creature))
+	for entry in tracker.combatants:
+		if entry.get("scheduling_only", false):
+			continue
+		var entity = entry.get("entity")
+		if is_same(entity, creature) or (entity is Dictionary and (is_same(entity.get("monster"), creature) or is_same(entity.get("character"), creature))) or (not creature_id.is_empty() and str(entry.get("id", "")) == creature_id):
+			return entry
+	return {}

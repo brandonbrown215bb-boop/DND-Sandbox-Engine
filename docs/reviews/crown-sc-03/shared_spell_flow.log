@@ -1,0 +1,123 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+WARNING: [DataLoader] Rejected 25 unsupported effectless feature records; they remain unavailable until curated.
+     at: push_warning (core/variant/variant_utility.cpp:1033)
+     GDScript backtrace (most recent call first):
+         [0] load_all_data (res://src/autoload/data_loader.gd:276)
+         [1] _ready (res://src/autoload/data_loader.gd:252)
+[DataLoader] Loaded: 14 classes, 9 races, 294 items, 362 spells, 481 monsters, 4 event tables, 1 campaigns
+[DataLoader] Layers: core_imported, core_curated, mods | packs: core, crown | approved overrides: 417 | validation failures: 0
+==================================================
+ Rook's Headless Viewport Harness (per-beat)
+==================================================
+
+[TEST] shared_spell_flow
+[ok]   JSON-only spells can be learned through ordinary Wizard spellbook choices
+[ok]   JSON-only spells can be prepared through production class choices
+[ok]   A new namespaced spell appears enabled in the real spell picker
+[ok]   Cancelling a JSON spell's targeting spends no resources
+[ok]   HUD casting grants a new-ID timed effect, establishes concentration and spends exactly one slot and Magic Action
+[ok]   New-ID concentration ends through the actual combat cleanup
+[ok]   A composed new-ID multi-target healing spell selects a downed ally, applies effects once and spends only its Bonus Action
+[ok]   New-ID spherical save spells share geometry, damage and one cast-wide resource cost
+[ok]   New-ID repeat saves run through the encounter lifecycle
+[ok]   Production encounter generates an owned pending damage request before exit
+WARNING: [CombatAction] finish_pending_spell_damage refused: Unknown or missing request ID.
+     at: push_warning (core/variant/variant_utility.cpp:1033)
+     GDScript backtrace (most recent call first):
+         [0] finish_pending_spell_damage (res://src/combat/combat_action.gd:2879)
+         [1] test_shared_spell_flow (res://src/viewport_harness.gd:12330)
+[ok]   Callback after genuine scene-tree exit teardown refuses before HP, SP, or grant mutation
+[ok]   Reopened encounter generates a fresh pending damage request
+[ok]   Reopened encounter request gets a fresh non-aliasing nonce/ID
+WARNING: [CombatAction] finish_pending_spell_damage refused: Target does not match request target.
+     at: push_warning (core/variant/variant_utility.cpp:1033)
+     GDScript backtrace (most recent call first):
+         [0] finish_pending_spell_damage (res://src/combat/combat_action.gd:2879)
+         [1] test_shared_spell_flow (res://src/viewport_harness.gd:12359)
+         [2] _spawn_scene (res://src/viewport_harness.gd:195)
+[ok]   Reopened encounter refuses forged dictionary target even with identical fields
+WARNING: [CombatAction] finish_pending_spell_damage refused: Unknown or missing request ID.
+     at: push_warning (core/variant/variant_utility.cpp:1033)
+     GDScript backtrace (most recent call first):
+         [0] finish_pending_spell_damage (res://src/combat/combat_action.gd:2879)
+         [1] test_shared_spell_flow (res://src/viewport_harness.gd:12362)
+         [2] _spawn_scene (res://src/viewport_harness.gd:195)
+[ok]   Old pre-exit callback still refuses in reopened encounter without mutating fresh targets or SP
+[ok]   Reopened encounter request settles cleanly, mutates target and costs exactly one SP
+[ok]   Normal host refusal with missing grid preserves Action
+[ok]   Normal host refusal with missing grid preserves spell slots
+[ok]   Normal host refusal with missing grid preserves HP
+[ok]   Normal host refusal with missing grid preserves Sanctuary and Invisibility
+[ok]   Normal host refusal with missing grid deliberately resets pending state
+[ok]   Normal host refusal with missing participants preserves Action
+[ok]   Normal host refusal with missing participants preserves spell slots
+[ok]   Normal host refusal with missing participants deliberately resets pending state
+[ok]   Cancellation before commitment resets pending action and preserves resources
+[ok]   B1R2 Production: Ally initial AC is 15 with Shield of Faith
+[ok]   B1R2 Production: ConfirmationDialog is visibly open in HUD
+[ok]   B1R2 Production: Defense AC 15 and Shield of Faith retained while popup awaits
+[ok]   B1R2 Production: Step 1 not executed while popup awaits; ally HP damaged once by Step 0 (20 HP remaining)
+[ok]   B1R2 Production: Verified popup was open and inspected before decline
+[ok]   B1R2 Production: Declining Stroke of Luck ends concentration and removes Shield of Faith
+[ok]   B1R2 Production: Ally defense dropped to AC 13
+[ok]   B1R2 Production: Step 1 executed against reduced AC 13 and hit; no double damage (10 HP remaining)
+[ok]   B1R2 Production: ConfirmationDialog is visibly open in HUD on accept
+[ok]   B1R2 Production: Defense AC 15 maintained while popup awaits
+[ok]   B1R2 Production: Ally damaged once by Step 0 (20 HP remaining)
+[ok]   B1R2 Production: Verified popup was open and inspected before accept
+[ok]   B1R2 Production: Accepting Stroke of Luck maintains concentration on Shield of Faith
+[ok]   B1R2 Production: Defense AC 15 maintained
+[ok]   B1R2 Production: Step 1 missed against retained AC 15; HP suffered only Step 0 damage (20 HP remaining)
+[ok]   B1R2 Production: While popup awaits, TempHP absorbed 10 and HP loss was 14 (16 HP remaining)
+[ok]   B1R2 Production: TempHP concentration popup was opened and declined
+[ok]   B1R2 Production: Resolved damage 24 drove DC 12 save, ending concentration
+[ok]   B1R2 Production Chain: Ally initial AC is 15 with Shield of Faith
+[ok]   B1R2 Production Chain: First popup is visibly open for Stroke of Luck
+[ok]   B1R2 Production Chain: First popup title indicates Stroke of Luck for ally
+[ok]   B1R2 Production Chain: Shield of Faith and AC 15 retained while Stroke popup awaits
+[ok]   B1R2 Production Chain: Ally suffered Step 0 damage (20 HP remaining); Step 1 not executed while Stroke popup awaits
+[ok]   B1R2 Production Chain: Second popup is visibly open for Bardic Inspiration
+[ok]   B1R2 Production Chain: Second popup title indicates Bardic Inspiration for ally
+[ok]   B1R2 Production Chain: Shield of Faith and AC 15 retained while Bardic popup awaits
+[ok]   B1R2 Production Chain: Step 1 still waiting while Bardic popup awaits (20 HP remaining)
+[ok]   B1R2 Production Chain: Declined Stroke was not consumed
+[ok]   B1R2 Production Chain: Verified Stroke popup was opened and declined
+[ok]   B1R2 Production Chain: Verified Bardic popup was opened and accepted
+[ok]   B1R2 Production Chain: Accepting Bardic Inspiration maintained concentration on Shield of Faith
+[ok]   B1R2 Production Chain: Defense AC 15 maintained
+[ok]   B1R2 Production Chain: Stroke of Luck was not consumed
+[ok]   B1R2 Production Chain: Bardic Inspiration die was consumed
+[ok]   B1R2 Production Chain: Step 1 attack missed against retained AC 15; exactly 1 damage occurrence (20 HP remaining)
+[SaveManager] Successfully saved game to user://saves/dnd2024/shared_spell_flow.sav
+[SaveManager] Test mode: restored save state without scene transition
+[ok]   New-ID timed effects and concentration round-trip through the safe disk-save boundary
+[ok]   Reload restores new-ID effect ownership and live target references
+WARNING: [SaveManager] Save 'shared_spell_flow' rejected: Wizard spellbook contains an invalid or duplicate spell
+     at: push_warning (core/variant/variant_utility.cpp:1033)
+     GDScript backtrace (most recent call first):
+         [0] load_game (res://src/autoload/save_manager.gd:143)
+         [1] test_shared_spell_flow (res://src/viewport_harness.gd:12654)
+         [2] _execute_player_spell (res://src/combat/combat_state.gd:5050)
+         [3] _execute_selected_spell (res://src/combat/combat_state.gd:5079)
+         [4] _resolve_spell_cast_targets (res://src/combat/combat_state.gd:5247)
+         [5] _resolve_spell_cast_targets (res://src/spells/spell_cast_results.gd:116)
+         [6] _resolve_stepped_spell_cast (res://src/spells/spell_cast_results.gd:893)
+         [7] _settle_ordered_choices (res://src/spells/spell_cast_results.gd:819)
+         [8] _settle_concentration_choice (res://src/spells/spell_cast_results.gd:678)
+         [9] request_reaction (res://src/combat/combat_hud.gd:107)
+[ok]   Missing mod content rejects reload before replacing the live party
+[ok]   A reloaded JSON effect expires and releases concentration through the common clock
+[DungeonGenerator] Procedurally built dungeon with 5 rooms.
+[Character] JSON Wizard leveled up to 2! (+5 HP, now 13)
+[GameManager] JSON Wizard leveled up!
+[Character] JSON Ally leveled up to 2! (+9 HP, now 39)
+[GameManager] JSON Ally leveled up!
+[ok]   Shared spells have an authored exploration room
+[ok]   Exploration discovers JSON spells in a shared spell/target control
+[ok]   The real exploration Cast control applies a new-ID spell and spends its slot once (slots={ "1": 2 } concentration={ "spell_id": "sandbox:resolve", "effect_source": "spell:player_0_wizard:6", "targets": [<RefCounted#-9223370627518297216>] })
+SHARED_SPELL_LIVE_FLOW_CHECKS_COMPLETE
+--------------------------------------------------
+ VIEWPORT RESULTS: 0 failed (1 tests run)
+VIEWPORT TESTS PASSED
+SCENARIO PASSED: shared_spell_flow

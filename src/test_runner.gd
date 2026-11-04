@@ -690,7 +690,7 @@ func _test_data_loader() -> void:
 		_assert(not sample_spell.is_empty() and sample_spell.has("level") and sample_spell.has("school") and sample_spell.has("casting_time"), "Iconic SRD spell '%s' is present with full attributes" % sample_spell_id)
 
 	var eldritch_blast: Dictionary = DataLoader.get_spell("eldritch_blast")
-	_assert(eldritch_blast.get("rules_source", "") == "SRD5.2.1" and eldritch_blast.get("beam_count_by_level", {}).get("17", 0) == 4 and eldritch_blast.get("damage_per_ray", "") == "1d10" and SpellSupport.is_available(eldritch_blast), "Eldritch Blast records its per-beam damage and is available with per-beam targeting")
+	_assert(SharedSpell.uses(eldritch_blast) and int(eldritch_blast.get("projectiles", {}).get("count_by_character_level", {}).get("17", 0)) == 4 and eldritch_blast.get("projectiles", {}).get("damage", "") == "1d10" and SpellSupport.is_available(eldritch_blast), "Eldritch Blast records its per-beam damage and is available with per-beam targeting")
 	var spare_the_dying: Dictionary = DataLoader.get_spell("spare_the_dying")
 	_assert(spare_the_dying.get("rules_source", "") == "SRD 5.2.1" and int(spare_the_dying.get("range", 0)) == 3 and spare_the_dying.get("range_by_character_level_feet", {}).get("17", 0) == 120 and SpellSupport.is_available(spare_the_dying), "Spare the Dying records its 2024 range and cantrip upgrades and is available")
 	_assert([CombatAction.spell_range_in_hexes(spare_the_dying, 1), CombatAction.spell_range_in_hexes(spare_the_dying, 5), CombatAction.spell_range_in_hexes(spare_the_dying, 11), CombatAction.spell_range_in_hexes(spare_the_dying, 17)] == [3, 6, 12, 24], "Spare the Dying range doubles at character levels 5, 11, and 17")
@@ -1500,7 +1500,7 @@ func _test_combat_action() -> void:
 	var charmed_target: Character = _fresh_char("Charm Target", "human", "fighter",
 		{"STR": 10, "DEX": 10, "CON": 10, "INT": 10, "WIS": 1, "CHA": 10})
 	var charm_save_result := CombatAction.resolve_spell(countercharm_bard, charmed_target, DataLoader.get_spell("charm_person"), false, {"countercharm:%s" % countercharm_bard.character_name: true}, [countercharm_bard])
-	_assert(charm_save_result.get("countercharm_used", false) and charm_save_result.get("condition", "") == "charmed" and charmed_target.has_condition("charmed") and not countercharm_bard.reaction_available, "Countercharm rerolls a failed Charm Person save with Advantage and spends the Bard's Reaction")
+	_assert(charm_save_result.get("countercharm_used", false) and charmed_target.has_condition("charmed") and not countercharm_bard.reaction_available, "Countercharm rerolls a failed Charm Person save with Advantage and spends the Bard's Reaction")
 	_assert(charm_save_result.get("damage", -1) == 0, "A non-damaging charm spell does not invent damage dice")
 	var inspired_ally: Character = _fresh_char("Inspired Ally", "human", "fighter",
 		{"STR": 16, "DEX": 12, "CON": 14, "INT": 10, "WIS": 10, "CHA": 8})
@@ -1811,7 +1811,7 @@ func _test_spellcasting() -> void:
 	var mid_spell_ids := ["misty_step", "scorching_ray", "fireball", "counterspell"]
 	for spell_id in mid_spell_ids:
 		var mid_spell: Dictionary = DataLoader.get_spell(spell_id)
-		var mid_resolution_payload: bool = not mid_spell.get("effects", []).is_empty() or mid_spell.has("damage") or mid_spell.has("damage_per_dart") or mid_spell.has("damage_per_ray") or mid_spell.has("save") or str(mid_spell.get("attack_type", "none")) != "none"
+		var mid_resolution_payload: bool = not mid_spell.get("effects", []).is_empty() or mid_spell.has("damage") or SpellProjectileResolver.is_projectile(mid_spell) or mid_spell.has("save") or str(mid_spell.get("attack_type", "none")) != "none"
 		_assert(not mid_spell.is_empty(), "%s is present in the curated level-2/3 spell cohort" % spell_id)
 		_assert(int(mid_spell.get("level", -1)) in [2, 3], "%s remains a level-2/3 spell" % spell_id)
 		_assert(str(mid_spell.get("casting_time", "")) in DataLoader.VALID_SPELL_CASTING_TIMES and int(mid_spell.get("range", -1)) >= 0, "%s has a valid casting time and range" % spell_id)
@@ -1826,7 +1826,7 @@ func _test_spellcasting() -> void:
 	var early_spell_ids := ["fire_bolt", "ray_of_frost", "starry_wisp", "magic_missile", "shield", "mage_armor", "sleep", "bless", "cure_wounds", "thunderwave", "hunters_mark"]
 	for spell_id in early_spell_ids:
 		var early_spell: Dictionary = DataLoader.get_spell(spell_id)
-		var has_resolution_payload: bool = not early_spell.get("effects", []).is_empty() or early_spell.has("damage") or early_spell.has("damage_per_dart") or early_spell.has("damage_per_ray") or early_spell.has("save") or str(early_spell.get("attack_type", "none")) != "none"
+		var has_resolution_payload: bool = not early_spell.get("effects", []).is_empty() or early_spell.has("damage") or SpellProjectileResolver.is_projectile(early_spell) or early_spell.has("save") or str(early_spell.get("attack_type", "none")) != "none"
 		_assert(not early_spell.is_empty(), "%s is present in the curated early-spell cohort" % spell_id)
 		_assert(str(early_spell.get("casting_time", "")) in DataLoader.VALID_SPELL_CASTING_TIMES and int(early_spell.get("range", -1)) >= 0, "%s has a valid casting time and range" % spell_id)
 		_assert(str(early_spell.get("target", "")) in DataLoader.VALID_SPELL_TARGETS, "%s has a valid target contract" % spell_id)
@@ -1951,19 +1951,27 @@ func _test_spellcasting() -> void:
 		if bool(chill_result.get("hit", false)):
 			break
 	var chill_source_id := str(chill_caster.get_instance_id())
-	var chill_applied := CombatAction.apply_spell_hit_effects(chill_target, chill_touch, chill_result, chill_source_id)
+	# Chill Touch is a shared-contract spell: resolve_spell grants healing_prevented on hit.
+	var chill_applied := [1] if SpellEffects.has_spell(chill_target, "chill_touch") and CombatAction.has_condition(chill_target, "healing_prevented") else []
 	chill_target.current_hp = 50
 	var chill_hp_after_hit := chill_target.current_hp
 	var chill_event_healing := EventResolver.apply_effects(chill_target, [{"type": "heal", "value": 10}], chill_caster)
 	var chill_hp_after_blocked_heal := chill_target.current_hp
-	CombatAction.tick_healing_suppression_for_source(chill_target, chill_source_id)
+	SpellEffects.tick_boundary([chill_target], SpellEffects.caster_id(chill_caster), "end")
 	var chill_still_blocked := chill_target.heal(10) == 0
-	CombatAction.tick_healing_suppression_for_source(chill_target, chill_source_id)
+	SpellEffects.tick_boundary([chill_target], SpellEffects.caster_id(chill_caster), "end")
 	var chill_recovered := chill_target.heal(10)
 	var chill_dict_target := _monster_inst("goblin")
-	chill_dict_target["current_hp"] = maxi(1, int(chill_dict_target.get("max_hp", 10)) - 10)
+	# Deterministic: enough HP that the Chill Touch hit can never kill the target.
+	chill_dict_target["max_hp"] = 200
+	chill_dict_target["current_hp"] = 150
 	var chill_dict_hp := int(chill_dict_target["current_hp"])
-	CombatAction.apply_spell_hit_effects(chill_dict_target, chill_touch, {"hit": true}, chill_source_id)
+	chill_dict_target["armor_class"] = 1
+	chill_dict_target["id"] = "chill_dict_goblin"
+	for _attempt in 40:
+		if bool(CombatAction.resolve_spell(chill_caster, chill_dict_target, chill_touch, false, {}, [], 0, 5).get("hit", false)):
+			break
+	chill_dict_target["current_hp"] = chill_dict_hp
 	var chill_dict_cleric: Character = _fresh_char("Chill Touch Healer", "human", "cleric", {"WIS": 16})
 	var chill_dict_spark := ClericRules.resolve_divine_spark(chill_dict_cleric, chill_dict_target, "heal")
 	var vicious_mockery := DataLoader.get_spell("vicious_mockery")
@@ -1974,7 +1982,7 @@ func _test_spellcasting() -> void:
 		mockery_resolution = CombatAction.resolve_spell(mockery_caster, mockery_target, vicious_mockery)
 		if not bool(mockery_resolution.get("saved", true)):
 			break
-	var mockery_effects := CombatAction.apply_spell_failed_save_effects(mockery_target, vicious_mockery, mockery_resolution)
+	var mockery_effects := [1] if CombatAction.has_condition(mockery_target, "next_attack_disadvantage") else []
 	var mockery_monster_attacker := CombatState._make_temp_monster_character(mockery_target)
 	var mockery_attack := mockery_monster_attacker.make_attack_roll()
 	CombatState._sync_consumed_monster_attack_conditions(mockery_target, mockery_monster_attacker)
@@ -1983,10 +1991,13 @@ func _test_spellcasting() -> void:
 	CombatState.tick_monster_condition_durations(mockery_expired_without_attack)
 	var mockery_expired_attacker := CombatState._make_temp_monster_character(mockery_expired_without_attack)
 	var mockery_attack_after_expiry := mockery_expired_attacker.make_attack_roll()
-	var chill_miss_target: Character = _fresh_char("Chill Touch Miss Target", "human", "fighter", {"DEX": 8})
-	chill_miss_target.base_ac = 1000
+	# A natural 20 still hits AC 1000 and resolve_spell applies the restriction on that hit,
+	# so each attempt uses a fresh target and only a target that was actually missed is kept.
+	var chill_miss_target: Character = null
 	var chill_miss: Dictionary = {}
 	for _attempt in 40:
+		chill_miss_target = _fresh_char("Chill Touch Miss Target", "human", "fighter", {"DEX": 8})
+		chill_miss_target.base_ac = 1000
 		chill_miss = CombatAction.resolve_spell(chill_caster, chill_miss_target, chill_touch)
 		if not bool(chill_miss.get("hit", true)):
 			break
@@ -2003,9 +2014,9 @@ func _test_spellcasting() -> void:
 		color_spray_resolution = CombatAction.resolve_spell(mockery_caster, color_spray_target, color_spray)
 		if not bool(color_spray_resolution.get("saved", true)):
 			break
-	var color_spray_effects := CombatAction.apply_spell_failed_save_effects(color_spray_target, color_spray, color_spray_resolution)
+	# SC-05 support 01: shared Color Spray grants Blinded inside resolve_spell with a caster end-of-turn expiry.
+	var color_spray_blinded := color_spray_target.has_condition("blinded")
 	var color_spray_attack := color_spray_target.make_attack_roll()
-	color_spray_target.tick_conditions()
 	var command_spell: Dictionary = DataLoader.get_spell("command")
 	var command_target := _monster_inst("goblin")
 	command_target["saving_throw_bonuses"] = {"WIS": -100}
@@ -2082,7 +2093,13 @@ func _test_spellcasting() -> void:
 	for charm_seed in range(1, 80):
 		seed(charm_seed)
 		var advantaged_charm_target := {"id": "advantaged_charm_target", "name": "Guard", "creature_type": "humanoid", "current_hp": 30, "max_hp": 30, "is_alive": true, "conditions": {}, "saving_throw_bonuses": {"WIS": 0}}
-		var advantaged_charm_result := CombatAction.resolve_spell(charm_person_caster, advantaged_charm_target, charm_person_spell, false, {}, [], 1, 30)
+		var charm_fight_host := SpellCastContext.new()
+		charm_fight_host.caster = charm_person_caster
+		charm_fight_host.spell = charm_person_spell
+		charm_fight_host.tracker = InitiativeTracker.new()
+		charm_fight_host.tracker.add_combatant(CombatAction.actor_id(charm_person_caster), "Caster", true, charm_person_caster, 10, 10)
+		charm_fight_host.tracker.add_combatant("advantaged_charm_target", "Guard", false, advantaged_charm_target, 5, 10)
+		var advantaged_charm_result := CombatAction.resolve_spell(charm_person_caster, advantaged_charm_target, charm_person_spell, false, {}, [], 1, 30, charm_fight_host)
 		seed(charm_seed)
 		var normal_charm_target := {"id": "normal_charm_target", "name": "Guard", "creature_type": "humanoid", "current_hp": 30, "max_hp": 30, "is_alive": true, "conditions": {}, "saving_throw_bonuses": {"WIS": 0}}
 		var normal_charm_result := CombatAction.resolve_spell(charm_person_caster, normal_charm_target, plain_charm_person, false, {}, [], 1, 30)
@@ -2125,7 +2142,7 @@ func _test_spellcasting() -> void:
 	_assert("acid_splash" in DataLoader.get_character_class("sorcerer").get("spell_list_ids", []) and "acid_splash" in DataLoader.get_character_class("wizard").get("spell_list_ids", []), "Acid Splash is available to Sorcerer and Wizard")
 	_assert(CombatAction.spell_damage_formula(scaling_caster, acid_splash) == "2d6", "Acid Splash receives its level-5 cantrip upgrade")
 	_assert(color_spray.get("school", "") == "illusion" and color_spray.get("target", "") == "cone" and color_spray.get("range", -1) == 0 and color_spray.get("components", []) == ["V", "S", "M"] and color_spray.get("duration", "") == "instantaneous" and color_spray.get("save", "") == "CON" and int(color_spray.get("effects", [])[0].get("size", 0)) == 3, "Color Spray records the 15-foot Constitution-save cone, components, and instant duration")
-	_assert(not color_spray_resolution.get("saved", true) and color_spray_effects.size() == 1 and color_spray_target.has_condition("blinded") == false and color_spray_attack.get("disadvantage", false), "Color Spray Blinds a creature on a failed save and imposes attack Disadvantage")
+	_assert(not color_spray_resolution.get("saved", true) and color_spray_blinded and color_spray_attack.get("disadvantage", false), "Color Spray Blinds a creature on a failed save and imposes attack Disadvantage")
 	_assert("color_spray" in DataLoader.get_character_class("bard").get("spell_list_ids", []) and "color_spray" in DataLoader.get_character_class("sorcerer").get("spell_list_ids", []) and "color_spray" in DataLoader.get_character_class("wizard").get("spell_list_ids", []), "Color Spray is available to Bard, Sorcerer, and Wizard")
 	_assert(command_spell.get("save", "") == "WIS" and command_spell.get("components", []) == ["V"] and command_spell.get("target_creature_type_exclusions", []).is_empty() and command_spell.get("upcast", {}).get("additional_targets_per_level", 0) == 1, "Command records its Wisdom save, verbal component, no creature-type exclusion (SRD 5.2.1), and extra target per upcast level")
 	_assert(DataLoader.get_spell("find_steed").get("duration", "") == "Instantaneous" and DataLoader.get_spell("divine_smite").get("duration", "") == "Instantaneous" and DataLoader.get_spell("lesser_restoration").get("casting_time", "") == "bonus_action" and DataLoader.get_spell("flame_strike").get("damage_components", []).size() == 2 and DataLoader.get_spell("enlarge/reduce").get("damage", "") == "", "Batch 089 spell data corrections match SRD 5.2.1 (Find Steed/Divine Smite instantaneous, Lesser Restoration bonus action, Flame Strike fire+radiant, Enlarge/Reduce no damage)")
@@ -2165,8 +2182,19 @@ func _test_spellcasting() -> void:
 	_assert(animal_friendship_validation.get("success", false) and not animal_friendship_rejection.get("success", true) and animal_friendship_maximum_targets == 3, "Animal Friendship accepts Beasts only and a level-3 slot selects three targets")
 	_assert(not animal_friendship_resolution.get("saved", true) and friendly_beast.get("conditions", {}).has("charmed") and friendly_beast.get("condition_sources", {}).get("charmed", {}).has(animal_friendship_resolution.get("effect_cast", {}).get("source_id", "")) and not str(animal_friendship_resolution.get("message", "")).contains("damage"), "Animal Friendship charms a Beast that fails its Wisdom save and reports no damage")
 	_assert(not party_damage_target.get("conditions", {}).has("charmed") and party_damage_target.get("animal_friendship_caster_ids", []).is_empty() and unrelated_damage_target.get("conditions", {}).has("charmed"), "Party damage ends Animal Friendship, while damage from a non-party attacker does not")
-	_assert(charm_person_spell.get("duration_seconds", 0) == 3600 and charm_person_spell.get("end_on_target_damage", false) and charm_person_spell.get("save_advantage_if_fighting_target", false) and charm_person_spell.get("upcast", {}).get("additional_targets_per_level", 0) == 1 and charm_monster_spell.get("end_on_target_damage", false) and charm_monster_spell.get("upcast", {}).get("additional_targets_per_level", 0) == 1 and charm_monster_maximum_targets == 3, "Charm Person and Charm Monster record 2024 duration, fighting-save Advantage, damage break and upcast target counts")
+	_assert(charm_person_spell.get("duration_seconds", 0) == 3600 and charm_person_spell.get("end_on_party_damage", false) and charm_person_spell.get("save_advantage_if_fighting_target", false) and charm_person_spell.get("upcast", {}).get("additional_targets_per_level", 0) == 1 and charm_monster_spell.get("end_on_target_damage", false) and charm_monster_spell.get("upcast", {}).get("additional_targets_per_level", 0) == 1 and charm_monster_maximum_targets == 3, "Charm Person and Charm Monster record 2024 duration, fighting-save Advantage, damage break and upcast target counts")
 	_assert(charm_save_advantage_seen, "A creature fighting the party has Advantage on its Charm Person save")
+	var calm_seen_advantage := false
+	for charm_seed in range(1, 80):
+		seed(charm_seed)
+		var calm_target := {"id": "calm_charm_target", "name": "Guard", "creature_type": "humanoid", "current_hp": 30, "max_hp": 30, "is_alive": true, "conditions": {}, "saving_throw_bonuses": {"WIS": 0}}
+		var calm_result := CombatAction.resolve_spell(charm_person_caster, calm_target, charm_person_spell, false, {}, [], 1, 30)
+		seed(charm_seed)
+		var calm_plain := {"id": "calm_plain_target", "name": "Guard", "creature_type": "humanoid", "current_hp": 30, "max_hp": 30, "is_alive": true, "conditions": {}, "saving_throw_bonuses": {"WIS": 0}}
+		var calm_plain_result := CombatAction.resolve_spell(charm_person_caster, calm_plain, plain_charm_person, false, {}, [], 1, 30)
+		if calm_result.get("saved", false) != calm_plain_result.get("saved", false):
+			calm_seen_advantage = true
+	_assert(not calm_seen_advantage, "Outside combat nobody is fighting the target, so Charm Person grants no save Advantage")
 	_assert(SpellSupport.is_available(charm_monster_spell) and not charm_monster_resolution.get("saved", true) and charm_monster_condition_applied and not charmed_creature.get("conditions", {}).has("charmed") and not SpellEffects.has_spell(charmed_creature, "charm_monster"), "Charm Monster is available, applies a source-owned Charmed condition and ends it when the party damages the target")
 	_assert(not charm_person_resolution.get("saved", true) and charm_person_condition_applied and not charmed_humanoid.get("conditions", {}).has("charmed") and not SpellEffects.has_spell(charmed_humanoid, "charm_person"), "Charm Person applies a source-owned Charmed condition and ends it when the party damages the target")
 	_assert(not charmed_character.has_condition("charmed") and not SpellEffects.has_spell(charmed_character, "charm_person"), "Charm Person also ends on damage when its target is a player character")
@@ -2369,7 +2397,7 @@ func _test_spellcasting() -> void:
 	enfeebled_monster_attacker.add_condition("ray_of_enfeeblement", 10)
 	var monster_damage_target := {"id": "enfeeblement_monster_target", "current_hp": 30, "max_hp": 30, "is_alive": true, "conditions": {}, "damage_resistances": [], "damage_immunities": []}
 	var monster_enfeebled_damage := CombatAction.resolve_damage(monster_damage_target, 20, "force", {}, false, false, enfeebled_monster_attacker)
-	_assert(ray_enfeeblement.get("school", "") == "necromancy" and ray_enfeeblement.get("repeat_save", "") == "CON" and ray_enfeeblement.get("damage_roll_penalty", "") == "1d8" and enfeebled_attack.get("disadvantage", false) and not dexterous_attack.get("disadvantage", false) and int(enfeebled_damage.get("resolved", -1)) >= 12 and int(enfeebled_damage.get("resolved", -1)) <= 19 and int(monster_enfeebled_damage.get("resolved", -1)) >= 12 and int(monster_enfeebled_damage.get("resolved", -1)) <= 19, "Ray of Enfeeblement applies Disadvantage to Strength attacks and reduces its target's Character and monster damage rolls")
+	_assert(ray_enfeeblement.get("school", "") == "necromancy" and ray_enfeeblement.get("repeat_save", "") == "CON" and str(ray_enfeeblement.get("effects", [{}])[0].get("condition", "")) == "enfeebled" and enfeebled_attack.get("disadvantage", false) and not dexterous_attack.get("disadvantage", false) and int(enfeebled_damage.get("resolved", -1)) >= 12 and int(enfeebled_damage.get("resolved", -1)) <= 19 and int(monster_enfeebled_damage.get("resolved", -1)) >= 12 and int(monster_enfeebled_damage.get("resolved", -1)) <= 19, "Ray of Enfeeblement applies Disadvantage to Strength attacks and reduces its target's Character and monster damage rolls")
 	var regenerate: Dictionary = DataLoader.get_spell("regenerate")
 	var regenerate_caster := _fresh_char("Regeneration Caster", "human", "cleric", {"STR": 10, "DEX": 10, "CON": 12, "INT": 10, "WIS": 16, "CHA": 10})
 	var regenerate_target := _fresh_char("Regeneration Target", "human", "fighter", {"STR": 16, "DEX": 10, "CON": 14, "INT": 10, "WIS": 10, "CHA": 10})
@@ -2390,7 +2418,7 @@ func _test_spellcasting() -> void:
 	_assert("guidance" not in DataLoader.get_character_class("bard").get("spell_list_ids", []), "Guidance is not on the SRD 5.2.1 Bard list (Divination Cantrip (Cleric, Druid))")
 	_assert(not mockery_resolution.get("saved", true) and int(mockery_resolution.get("damage", 0)) >= 1 and int(mockery_resolution.get("damage", 0)) <= 6 and mockery_effects.size() == 1 and mockery_attack.get("disadvantage", false) and not mockery_target.get("conditions", {}).has("vicious_mockery_disadvantage"), "Vicious Mockery applies Disadvantage to and consumes a monster's next attack after a failed save")
 	_assert(CombatAction.apply_spell_failed_save_effects(mockery_target, vicious_mockery, {"saved": true}).is_empty() and not mockery_attack_after_expiry.get("disadvantage", false), "Vicious Mockery has no effect on a successful save and expires at the target's turn end")
-	_assert(missed_chill_effects.is_empty() and not CombatAction.is_healing_suppressed(chill_miss_target), "Chill Touch applies no healing restriction on a miss")
+	_assert(not bool(chill_miss.get("hit", true)) and missed_chill_effects.is_empty() and not CombatAction.is_healing_suppressed(chill_miss_target), "Chill Touch applies no healing restriction on a miss")
 	for chill_class in ["sorcerer", "warlock", "wizard"]:
 		_assert("chill_touch" in DataLoader.get_character_class(chill_class).get("spell_list_ids", []), "Chill Touch is available to %s" % chill_class.capitalize())
 	var starry_target := _monster_inst("goblin")
@@ -2436,8 +2464,19 @@ func _test_spellcasting() -> void:
 		_assert("healing_word" in DataLoader.get_character_class(healing_class).get("spells_known_by_level", {}).get("1", []) and "healing_word" in DataLoader.get_character_class(healing_class).get("spell_list_ids", []), "Healing Word is available to %s" % healing_class.capitalize())
 	var shocking_grasp: Dictionary = DataLoader.get_spell("shocking_grasp")
 	var shocked_target := _monster_inst("goblin")
-	var missed_shock_effects := CombatAction.apply_spell_hit_effects(shocked_target, shocking_grasp, {"hit": false})
-	var hit_shock_effects := CombatAction.apply_spell_hit_effects(shocked_target, shocking_grasp, {"hit": true})
+	shocked_target["id"] = "shocked_goblin"
+	var shock_caster: Character = _fresh_char("Shock Caster", "human", "wizard", {"INT": 16})
+	shocked_target["armor_class"] = 1000
+	for _attempt in 5:
+		CombatAction.resolve_spell(shock_caster, shocked_target, shocking_grasp, false, {}, [], 0, 1)
+	var missed_shock_effects := [1] if CombatAction.blocks_opportunity_attack(shocked_target) else []
+	shocked_target["armor_class"] = 1
+	for _attempt in 40:
+		if bool(CombatAction.resolve_spell(shock_caster, shocked_target, shocking_grasp, false, {}, [], 0, 1).get("hit", false)):
+			break
+	var hit_shock_effects := [1] if CombatAction.blocks_opportunity_attack(shocked_target) else []
+	SpellEffects.tick_boundary([shocked_target], SpellEffects.caster_id(shock_caster), "start")
+	var shock_survives_caster_turn := CombatAction.blocks_opportunity_attack(shocked_target)
 	var level_eleven_caster: Character = _fresh_char("Level Eleven Caster", "human", "wizard", {"INT": 16})
 	for _level in 10:
 		level_eleven_caster.level_up()
@@ -2447,8 +2486,8 @@ func _test_spellcasting() -> void:
 		level_seventeen_caster.level_up()
 	_assert(CombatAction.spell_damage_formula(level_seventeen_caster, sacred_flame) == "4d8" and CombatAction.spell_damage_formula(level_seventeen_caster, DataLoader.get_spell("chill_touch")) == "4d10" and CombatAction.spell_damage_formula(level_seventeen_caster, vicious_mockery) == "4d6" and CombatAction.spell_damage_formula(level_seventeen_caster, acid_splash) == "4d6", "Sacred Flame, Chill Touch, Vicious Mockery, and Acid Splash receive their level-17 cantrip upgrades")
 	_assert(shocking_grasp.get("attack_type", "") == "melee_spell" and shocking_grasp.get("components", []) == ["V", "S"] and CombatAction.spell_damage_formula(scaling_caster, shocking_grasp) == "2d8" and CombatAction.spell_damage_formula(level_eleven_caster, shocking_grasp) == "3d8" and missed_shock_effects.is_empty() and hit_shock_effects.size() == 1 and CombatAction.blocks_opportunity_attack(shocked_target), "Shocking Grasp uses melee spell attack and official cantrip scaling, blocking Opportunity Attacks only after a hit")
-	CombatAction.clear_shocking_grasp(shocked_target)
-	_assert(not CombatAction.blocks_opportunity_attack(shocked_target), "Shocking Grasp's Opportunity Attack restriction clears at the start of the target's next turn")
+	SpellEffects.tick_boundary([shocked_target], "shocked_goblin", "start")
+	_assert(shock_survives_caster_turn and not CombatAction.blocks_opportunity_attack(shocked_target), "Shocking Grasp's Opportunity Attack restriction clears at the start of the target's next turn")
 	for shock_class in ["sorcerer", "wizard"]:
 		_assert("shocking_grasp" in DataLoader.get_character_class(shock_class).get("spell_list_ids", []), "Shocking Grasp counts as a %s cantrip" % shock_class.capitalize())
 	var blight_spell := DataLoader.get_spell("blight")
@@ -2490,7 +2529,8 @@ func _test_spellcasting() -> void:
 		var false_life_class_data: Dictionary = DataLoader.get_character_class(false_life_class)
 		_assert("false_life" in false_life_class_data.get("spells_known_by_level", {}).get("1", []) and "false_life" in false_life_class_data.get("spell_list_ids", []), "False Life is learnable by %s" % false_life_class.capitalize())
 	var ice_knife: Dictionary = DataLoader.get_spell("ice_knife")
-	_assert(not ice_knife.is_empty() and ice_knife.get("attack_type", "") == "ranged_spell" and ice_knife.get("splash_save", "") == "DEX" and ice_knife.get("splash_radius", 0) == 1 and ice_knife.get("components", []) == ["S", "M"], "Ice Knife records its piercing attack, 5-foot burst, saving throw, and components")
+	var ice_steps: Array = ice_knife.get("steps", [])
+	_assert(SharedSpell.uses(ice_knife) and ice_steps.size() == 2 and ice_steps[0].get("type") == "attack" and ice_steps[0].get("attack_type") == "ranged_spell" and ice_steps[0].get("damage_type") == "piercing" and ice_steps[1].get("save") == "DEX" and ice_steps[1].get("target") == "area" and int(ice_steps[1].get("radius", 0)) == 1 and ice_knife.get("components", []) == ["S", "M"], "Ice Knife records its piercing attack, 5-foot burst, saving throw, and components")
 	for spell_class in ["druid", "sorcerer", "wizard"]:
 		var class_data: Dictionary = DataLoader.get_character_class(spell_class)
 		_assert("ice_knife" in class_data.get("spells_known_by_level", {}).get("1", []) and "ice_knife" in class_data.get("spell_list_ids", []), "Ice Knife is available to %s and participates in its class spell rules" % spell_class.capitalize())
@@ -2500,17 +2540,12 @@ func _test_spellcasting() -> void:
 		_assert("blight" in DataLoader.get_character_class(spell_class).get("spell_list_ids", []), "Blight counts as a %s spell for class features" % spell_class.capitalize())
 	for spell_class in ["cleric", "druid"]:
 		_assert("heal" in DataLoader.get_character_class(spell_class).get("spell_list_ids", []), "Heal counts as a %s spell for class features" % spell_class.capitalize())
-	var ice_splash := ice_knife.duplicate(true)
-	ice_splash["attack_type"] = "none"
-	ice_splash["damage"] = ice_knife.get("splash_damage", "2d6")
-	ice_splash["damage_type"] = ice_knife.get("splash_damage_type", "cold")
-	ice_splash["save"] = ice_knife.get("splash_save", "DEX")
-	ice_splash["half_on_save"] = true
-	ice_splash["upcast"]["damage_per_level"] = ice_splash["upcast"]["splash_damage_per_level"]
 	var ice_target := _monster_inst("goblin")
 	ice_target["current_hp"] = 100
-	var ice_splash_result := CombatAction.resolve_spell(scaling_caster, ice_target, ice_splash, false, {}, [], 2, 30)
-	_assert(ice_splash_result.get("success", false) and CombatAction.spell_damage_formula(scaling_caster, ice_splash, 2) == "2d6 + 1d6" and int(ice_splash_result.get("damage", -1)) >= 0 and int(ice_splash_result.get("damage", -1)) <= 18, "Ice Knife burst uses a Dexterity save, halves on success, and adds 1d6 when upcast")
+	ice_target["armor_class"] = 1000
+	ice_target["ability_scores"] = {"DEX": 100}
+	var ice_saved := CombatAction.resolve_spell(scaling_caster, ice_target, ice_knife, false, {"area_targets": [ice_target]}, [], 2, 30)
+	_assert(ice_saved.get("success", false) and int(ice_target["current_hp"]) == 100 and CombatAction.spell_damage_formula(scaling_caster, ice_steps[1], 2) == "2d6 + 1d6", "Ice Knife burst uses a Dexterity save, deals nothing on success, and adds 1d6 when upcast")
 	var acid_arrow: Dictionary = DataLoader.get_spell("melfs_acid_arrow")
 	var acid_arrow_access: Dictionary = DataLoader.get_character_class("wizard")
 	_assert(not acid_arrow.is_empty() and acid_arrow.get("components", []) == ["V", "S", "M"] and acid_arrow.get("duration", "") == "instantaneous" and "melfs_acid_arrow" in acid_arrow_access.get("spells_known_by_level", {}).get("2", []) and "melfs_acid_arrow" in acid_arrow_access.get("spell_list_ids", []), "Melf's Acid Arrow has SRD components and is a Wizard level-2 spell")
@@ -2549,7 +2584,7 @@ func _test_spellcasting() -> void:
 	var counterspell_data: Dictionary = DataLoader.get_spell("counterspell")
 	var sleep_data: Dictionary = DataLoader.get_spell("sleep")
 	_assert(int(fire_bolt_data.get("range", 0)) == 24 and int(ray_of_frost_data.get("range", 0)) == 12 and int(light_data.get("range", 0)) == 1 and int(scorching_ray_data.get("range", 0)) == 24 and int(counterspell_data.get("range", 0)) == 12, "Curated spell ranges match 120-foot, 60-foot, and touch ranges on five-foot hexes")
-	_assert(SpellSupport.is_available(sleep_data) and SpellEffects.manages(sleep_data) and sleep_data.get("save", "") == "WIS" and int(sleep_data.get("area_radius", 0)) == 1 and bool(sleep_data.get("concentration", false)) and bool(sleep_data.get("end_on_any_damage", false)), "Sleep is available with its 2024 Wisdom save, five-foot sphere, concentration, and damage-break metadata")
+	_assert(SpellSupport.is_available(sleep_data) and SpellEffects.manages(sleep_data) and sleep_data.get("save", "") == "WIS" and SharedSpell.uses(sleep_data) and int(sleep_data.get("effects", [{}])[0].get("radius", 0)) == 1 and bool(sleep_data.get("concentration", false)) and bool(sleep_data.get("end_on_any_damage", false)), "Sleep is available with its 2024 Wisdom save, five-foot sphere, concentration, and damage-break metadata")
 	var one_ray_spell := scorching_ray_data.duplicate(true)
 	one_ray_spell["_scorching_ray_count_for_target"] = 1
 	var two_ray_spell := scorching_ray_data.duplicate(true)
@@ -2634,8 +2669,15 @@ func _test_spellcasting() -> void:
 	var cure_cast := CombatAction.resolve_spell(caster2, wounded, cure, false)
 	var cure_results := EventResolver.apply_effects(wounded, cure.get("effects", []))
 	_assert(cure_cast.get("success", false) and not cure_results.is_empty() and wounded.current_hp > 1, "Cure Wounds uses the production effect-only path to heal an ally")
-	var ray_effects := EventResolver.apply_effects(wounded, DataLoader.get_spell("ray_of_frost").get("effects", []))
-	_assert(not ray_effects.is_empty() and wounded.get_modifier("stat", "speed") < 0, "Ray of Frost production effect applies a timed speed reduction")
+	var frost_ray_target: Character = _fresh_char("Ray Target", "human", "fighter", {"CON": 14})
+	frost_ray_target.max_hp = 200
+	frost_ray_target.current_hp = 200
+	frost_ray_target.base_ac = 1
+	var frost_ray_speed_before := frost_ray_target.get_speed()
+	for _attempt in 40:
+		if bool(CombatAction.resolve_spell(caster2, frost_ray_target, DataLoader.get_spell("ray_of_frost"), false, {}, [], 0, 12).get("hit", false)):
+			break
+	_assert(frost_ray_target.get_speed() == frost_ray_speed_before - 2 and CombatAction.has_condition(frost_ray_target, "speed_reduced"), "Ray of Frost production effect applies a timed speed reduction")
 	var pact_warlock: Character = _fresh_char("Pact Caster", "human", "warlock",
 		{"STR": 8, "DEX": 14, "CON": 12, "INT": 10, "WIS": 10, "CHA": 16})
 	var pact_target: Dictionary = _monster_inst("goblin")

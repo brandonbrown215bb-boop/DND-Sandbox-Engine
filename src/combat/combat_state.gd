@@ -119,6 +119,7 @@ var _rebind_wait_before_turn_setup := false
 
 
 func _ready() -> void:
+	DamageWitnessRules.bind(self)
 	hud.turn_budget = turn_budget
 	# Connect HUD action selectors
 	hud.action_selected.connect(_on_hud_action)
@@ -1868,7 +1869,7 @@ func _execute_monster_spell(monster: Dictionary, target_player_name: String, spe
 		spell_reaction_decisions.merge(await _collect_roll_token_decision(target_char, "save", "%s saving throw against %s" % [str(spell_data.get("save", "Spell")), str(spell_data.get("name", "spell"))], spell_reaction_decisions), true)
 	elif str(spell_data.get("attack_type", "none")) != "none":
 		spell_reaction_decisions.merge(await _collect_roll_token_decision(caster, "attack", "%s spell attack against %s" % [str(spell_data.get("name", "Spell")), target_char.character_name], spell_reaction_decisions), true)
-	if spell_data.has("damage") or spell_data.has("damage_per_dart") or spell_data.has("damage_per_ray"):
+	if spell_data.has("damage") or SpellProjectileResolver.is_projectile(spell_data):
 		spell_reaction_decisions.merge(await _collect_projected_ward_decision(target_char, spell_reaction_decisions), true)
 	if cast_turn != CombatAction.active_turn_serial or not intent.is_valid(monster, player_entities, hex_grid, _all_live_combat_entities()): return
 	caster = _make_monster_spellcaster(monster)
@@ -2098,7 +2099,7 @@ func _collect_bardic_inspiration_save_decision(target: Character, spell_data: Di
 		return {}
 	var spell_has_save := CombatAction.spell_requires_saving_throw(spell_data)
 	if spell_has_save and CombatAction.save_auto_fails(target, str(spell_data.get("save", "DEX"))): return {}
-	var has_relentless_rage_damage := target.has_feature("barbarian_relentless_rage") and target.has_condition("raging") and (spell_data.has("damage") or spell_data.has("damage_per_dart") or spell_data.has("damage_per_ray"))
+	var has_relentless_rage_damage := target.has_feature("barbarian_relentless_rage") and target.has_condition("raging") and (spell_data.has("damage") or SpellProjectileResolver.is_projectile(spell_data))
 	if not spell_has_save and not has_relentless_rage_damage:
 		return {}
 	var die := str(target.feature_uses.get("bardic_inspiration_die", "1d6"))
@@ -2529,6 +2530,8 @@ func _collect_projected_ward_decision(target: Character, seeded_decisions: Dicti
 
 
 static func _sync_consumed_monster_attack_conditions(monster: Dictionary, attacker: Character) -> void:
+	if not attacker.has_condition("next_attack_disadvantage") and monster.get("conditions", {}).has("next_attack_disadvantage"):
+		SpellEffects.consume_condition(monster, "next_attack_disadvantage")
 	if attacker.has_condition("vicious_mockery_disadvantage"):
 		return
 	var conditions: Dictionary = monster.get("conditions", {})
@@ -4866,13 +4869,13 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 			pending_command_target_coords.clear()
 			await _execute_player_spell(area_centers[0], Vector2i(9999, 9999), area_centers)
 			return
-		if str(pending_spell_data.get("id", "")) in ["magic_missile", "scorching_ray", "eldritch_blast"]:
+		if SpellProjectileResolver.is_projectile(pending_spell_data):
 			if not _has_spell_creature_at(coord, pending_spell_data):
 				return
 			pending_command_target_coords.append(coord)
 			var projectile_total := _spell_projectile_total(pending_spell_data)
 			if pending_command_target_coords.size() < projectile_total:
-				var projectile_name := "dart" if str(pending_spell_data.get("id", "")) == "magic_missile" else "beam" if str(pending_spell_data.get("id", "")) == "eldritch_blast" else "ray"
+				var projectile_name := SpellProjectileResolver.noun(pending_spell_data)
 				hud.add_log("Choose a creature for %s %s %d of %d. You may select the same creature again." % [str(pending_spell_data.get("name", "Spell")), projectile_name, pending_command_target_coords.size() + 1, projectile_total])
 				hud.show_hint("%s: %d %s(s) remaining. Click a creature; you may choose the same creature again. Esc/Cancel to back out." % [pending_spell_data.get("name", "Spell"), projectile_total - pending_command_target_coords.size(), projectile_name])
 				return
@@ -5281,8 +5284,8 @@ func _collect_spell_shield_decision(target: Character, spell_data: Dictionary, e
 			return {}
 	var spell_id := str(spell_data.get("id", ""))
 	var attack_type := str(spell_data.get("attack_type", "none"))
-	if spell_id == "magic_missile":
-		return await _choose_shield_payment(target, await hud.request_reaction(_owner_label_for_character(target), "shield", "Magic Missile targets you. Shield prevents all its damage and adds +5 AC until your next turn."))
+	if SpellProjectileResolver.shield_negates(spell_data):
+		return await _choose_shield_payment(target, await hud.request_reaction(_owner_label_for_character(target), "shield", str(spell_data.get("name", "This spell")) + " targets you. Shield prevents all its damage and adds +5 AC until your next turn."))
 	if attack_type not in ["ranged_spell", "melee_spell"]:
 		return {}
 	var spell_name := str(spell_data.get("name", "This spell"))
@@ -5696,6 +5699,7 @@ func _clear_monk_battle_effects() -> void:
 
 
 func _exit_tree() -> void:
+	DamageWitnessRules.unbind(self)
 	_clear_ordinary_battle_effects()
 	_end_monster_spell_sources()
 	child_actions.clear()
@@ -6296,7 +6300,7 @@ func _publish_true_strike_activity(target: Dictionary, weapon: Dictionary, resul
 	if draft.is_empty():
 		return
 	draft["kind"] = "spell_attack"
-	draft["title"] = "True Strike — " + str(weapon.get("name", "Weapon"))
+	draft["title"] = str(weapon.get("_spell_name", "Spell")) + " — " + str(weapon.get("name", "Weapon"))
 	ActivityHistory.publish(draft)
 
 
