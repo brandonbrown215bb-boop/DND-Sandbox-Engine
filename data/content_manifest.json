@@ -1448,6 +1448,14 @@
     },
     {
       "type": "spell",
+      "id": "enthrall",
+      "winner": "res://data/core/spells/crown_sc_07.json#2",
+      "replaces": [
+        "res://data/core/spells/imported_spells.json#66"
+      ]
+    },
+    {
+      "type": "spell",
       "id": "sleep",
       "winner": "res://data/core/spells/crown_sc_06.json#1",
       "replaces": [

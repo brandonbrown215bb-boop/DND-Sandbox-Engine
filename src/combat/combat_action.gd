@@ -98,7 +98,13 @@ const CONDITION_RULES := {
 const MARKER_RULES := {
 	"enfeebled": {"str_d20_disadvantage": true, "damage_roll_penalty_d8": true},
 	"ray_of_enfeeblement": {"str_d20_disadvantage": true, "damage_roll_penalty_d8": true},
+	"enthralled": {"perception_penalty_10": true},
 }
+
+## Flat penalty to Wisdom (Perception) checks and Passive Perception from
+## any condition/marker carrying the perception_penalty_10 consequence (not stacking).
+static func perception_penalty(entity) -> int:
+	return -10 if not conditions_with_consequence(entity, "perception_penalty_10").is_empty() else 0
 
 static func condition_rule(condition: String, consequence: String) -> bool:
 	return bool(CONDITION_RULES.get(condition, MARKER_RULES.get(condition, {})).get(consequence, false))

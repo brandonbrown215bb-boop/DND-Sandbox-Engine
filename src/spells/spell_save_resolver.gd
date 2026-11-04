@@ -22,7 +22,7 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 	var save_ability: String = cast.spell.get("save", "DEX")
 	var save_dc := 15 if str(cast.spell.get("id", "")) == "contact_other_plane" else int(cast.spell.get("_save_dc_override", SpellPermissionRules.save_dc(cast.caster, cast.spell)))
 	var contact_patron_saved := str(cast.spell.get("id", "")) == "contact_other_plane" and cast.caster.has_feature("warlock_contact_patron")
-	var trait_auto_saved := SharedSpell.uses(cast.spell) and SharedSpell.save_auto_success(cast.spell, cast.target)
+	var trait_auto_saved := SharedSpell.uses(cast.spell) and SharedSpell.save_auto_success(cast.spell, cast.target, cast)
 	var willing_target_no_save := bool(cast.spell.get("willing_target_skips_save", false)) and cast.target is Character
 	var careful_saved := not willing_target_no_save and SorcererRules.is_careful_spell_target(cast.caster, cast.spell, cast.target, cast.decisions.get("metamagic:careful_targets", []))
 	var save_test: Dictionary = {}
