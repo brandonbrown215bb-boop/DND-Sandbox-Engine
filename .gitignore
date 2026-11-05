@@ -39,6 +39,9 @@ venv/
 !/.codegraph/.gitignore
 /.obsidian/workspace*.json
 
+# Local Ziva editor installation (includes platform binaries).
+/addons/ziva_agent/
+
 # Local environment settings; templates may be committed
 .env
 .env.*
@@ -64,6 +67,9 @@ dogfood-output/gate1-*/
 
 # Godot import descriptors generated while viewing documentation images
 /docs/**/*.import
+
+# Godot translation resources generated from planning CSVs.
+/docs/planning/*.translation
 
 # Embedded external repo (codegraph tooling) — not part of the game
 codegraph_setup/
