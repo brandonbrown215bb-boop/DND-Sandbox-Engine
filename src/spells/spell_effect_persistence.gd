@@ -59,12 +59,14 @@ static func saved_state_error(dto: Dictionary) -> String:
 			return "invalid saved spell end aftermath"
 		var remaining: Variant = record.get("remaining_seconds", null)
 		var indefinite_power_word_stun := str(record.get("spell_id", "")) == "power_word_stun" and (remaining is int or remaining is float) and float(remaining) == -1.0
-		# A higher-slot tier authored as -1 lasts until dispelled; older saves never carry the flag.
-		if record.has("until_dispelled") and (not record["until_dispelled"] is bool or not bool(record["until_dispelled"]) or not (remaining is int or remaining is float) or float(remaining) != -1.0 or not DataLoader.get_spell(spell_id).get("duration_by_slot", []).any(func(tier): return tier is Dictionary and int(tier.get("duration_seconds", 0)) == -1)):
+		# until_dispelled only appears with the paid slot whose tier lasts until dispelled.
+		if record.has("until_dispelled") and (not record["until_dispelled"] is bool or not bool(record["until_dispelled"]) or not (remaining is int or remaining is float) or float(remaining) != -1.0):
 			return "invalid saved until-dispelled duration"
 		indefinite_power_word_stun = indefinite_power_word_stun or bool(record.get("until_dispelled", false))
 		if not (remaining is int or remaining is float) or not is_finite(float(remaining)) or float(remaining) != floor(float(remaining)) or (int(remaining) <= 0 and not indefinite_power_word_stun) or int(remaining) > 172800:
 			return "invalid saved spell effect duration"
+		var slot_duration_error := _slot_duration_error(record, DataLoader.get_spell(spell_id))
+		if not slot_duration_error.is_empty(): return slot_duration_error
 		var saved_phase := str(record.get("expiry_phase", ""))
 		var recipient_phase := saved_phase in ["recipient_start", "recipient_end"] and not str(record.get("recipient_id", "")).is_empty()
 		if (saved_phase not in ["start", "end"] and not recipient_phase) or not record.get("conditions", null) is Array:
@@ -250,6 +252,27 @@ static func _declares_condition(definition: Dictionary, condition: String) -> bo
 
 
 
+
+## A duration_by_slot source binds duration, Concentration and until_dispelled to
+## the tier of the slot it actually paid. Pre-tier finite records carry no slot
+## and keep the old validation; an until_dispelled record must name its slot.
+static func _slot_duration_error(record: Dictionary, definition: Dictionary) -> String:
+	if not record.has("duration_slot_level"):
+		return "invalid saved until-dispelled duration" if record.has("until_dispelled") else ""
+	var slot: Variant = record["duration_slot_level"]
+	if not definition.has("duration_by_slot") or not (slot is int or slot is float) or float(slot) != floor(float(slot)) or int(slot) < int(definition.get("level", 1)) or int(slot) > 9:
+		return "invalid saved duration slot"
+	var tier := SharedSpell.duration_tier_for_slot(definition, int(slot))
+	var seconds := int(tier.get("duration_seconds", SpellEffects.parse_duration_seconds(definition)))
+	if record.get("concentration", false) != bool(tier.get("concentration", definition.get("concentration", false))):
+		return "saved Concentration does not match its paid slot"
+	var remaining := float(record.get("remaining_seconds", 0))
+	if seconds == -1:
+		return "" if record.get("until_dispelled") == true and remaining == -1.0 else "saved duration does not match its paid slot"
+	# Extended Spell may double a finite duration, up to 24 hours.
+	if record.has("until_dispelled") or remaining > maxi(seconds, mini(seconds * 2, 86400)):
+		return "saved duration does not match its paid slot"
+	return ""
 
 ## An until-dispelled spell source keeps its granted conditions at duration -1.
 static func _until_dispelled_source(state, source, value) -> bool:

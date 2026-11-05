@@ -1894,6 +1894,10 @@ static func _finish_spell_damage(caster: Character, target, details: Dictionary,
 			adjusted["applied"] = true
 			multiplier_receipt = adjusted
 			amount = int(adjusted["value"])
+	# Marker riders (a curse's extra damage) join this occurrence once, after deferrals, so a
+	# continuation never rerolls them. They keep their own amount: no save scale or multiplier.
+	additional_damage_packets = additional_damage_packets.duplicate()
+	additional_damage_packets.append_array(CombatAction.marker_rider_packets(target, caster, bool(decisions.get("damage_is_critical", decisions.get("critical", false)))))
 	var primary_component_id := str(decisions.get("_shared_component_id", "%s:1" % damage_type))
 	var policy_components: Array[Dictionary] = [{"component_id": primary_component_id, "type": damage_type, "raw": amount}]
 	var packet_component_ids: Array[String] = []
@@ -1901,8 +1905,9 @@ static func _finish_spell_damage(caster: Character, target, details: Dictionary,
 		var packet_details: Dictionary = packet.get("details", {})
 		if packet_details.is_empty(): continue
 		var packet_type := str(packet.get("type", "acid"))
-		var packet_amount := int(floor(float(int(packet_details.get("final_total", 0))) * scale))
-		if multiplier is Dictionary and not multiplier.is_empty() and not (bool(multiplier.get("exclude_critical", false)) and bool(decisions.get("damage_is_critical", decisions.get("critical", false)))):
+		var unscaled := bool(packet.get("unscaled", false))
+		var packet_amount := int(packet_details.get("final_total", 0)) if unscaled else int(floor(float(int(packet_details.get("final_total", 0))) * scale))
+		if not unscaled and multiplier is Dictionary and not multiplier.is_empty() and not (bool(multiplier.get("exclude_critical", false)) and bool(decisions.get("damage_is_critical", decisions.get("critical", false)))):
 			packet_amount = int(Dice.apply_damage_multiplier(packet_amount, int(multiplier.get("numerator", 1)), int(multiplier.get("denominator", 1)), str(multiplier.get("rounding", "floor"))).get("value", packet_amount))
 		var packet_id := str(packet.get("component_id", "%s:%d" % [packet_type, policy_components.size() + 1]))
 		packet_component_ids.append(packet_id)
@@ -1919,7 +1924,7 @@ static func _finish_spell_damage(caster: Character, target, details: Dictionary,
 	# entire occurrence settles, so reaching the cap cannot alter later packets.
 	decisions = decisions.duplicate()
 	decisions["_defer_damage_budget"] = true
-	var primary_dmg_res := CombatAction.resolve_damage(target, int(primary_policy.get("settlement_raw", amount)), damage_type, CombatAction.with_damage_origin(decisions, CombatAction.DAMAGE_ORIGIN_SPELL), false, false, caster, damage_occurrence_id, primary_policy.get("bypass_layers", []), amount, int(primary_policy.get("reduction_prevented", 0)))
+	var primary_dmg_res := CombatAction.resolve_damage(target, int(primary_policy.get("settlement_raw", amount)), damage_type, decisions, false, false, caster, damage_occurrence_id, primary_policy.get("bypass_layers", []), amount, int(primary_policy.get("reduction_prevented", 0)))
 	var actual: int = int(primary_dmg_res.get("damage", 0))
 	var resolved: int = int(primary_dmg_res.get("resolved", 0))
 	var ward_absorbed: int = int(primary_dmg_res.get("ward_absorbed", 0))
@@ -1963,6 +1968,7 @@ static func _finish_spell_damage(caster: Character, target, details: Dictionary,
 		var packet_policy: Dictionary = policy_components[policy_component_index]
 		var packet_amount := int(packet_policy["raw"])
 		policy_component_index += 1
+		if bool(packet.get("requires_prior_damage", false)) and resolved <= 0: continue
 		var packet_result := CombatAction.resolve_damage(target, int(packet_policy.get("settlement_raw", packet_amount)), packet_type, decisions, false, false, caster, damage_occurrence_id, packet_policy.get("bypass_layers", []), packet_amount, int(packet_policy.get("reduction_prevented", 0)))
 		var packet_damage := int(packet_result.get("damage", 0))
 		damage_components.append({

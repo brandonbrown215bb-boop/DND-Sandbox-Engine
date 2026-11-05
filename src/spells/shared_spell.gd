@@ -669,8 +669,10 @@ static func duration_tier_for_slot(spell: Dictionary, slot_level: int) -> Dictio
 
 ## Applies a slot tier to a new source record (direct CombatAction.resolve_spell callers).
 static func apply_slot_duration_to_record(record: Dictionary, spell: Dictionary, slot_level: int) -> void:
+	if record.is_empty(): return
+	record["duration_slot_level"] = slot_level
 	var tier := duration_tier_for_slot(spell, slot_level)
-	if tier.is_empty() or record.is_empty(): return
+	if tier.is_empty(): return
 	record["concentration"] = bool(tier["concentration"])
 	if int(tier["duration_seconds"]) == -1:
 		record["remaining_seconds"] = -1
@@ -681,6 +683,7 @@ static func apply_slot_duration_to_record(record: Dictionary, spell: Dictionary,
 
 ## Applies a slot tier to a per-cast spell copy (duration, concentration, until-dispelled flag).
 static func apply_slot_duration(spell: Dictionary, slot_level: int) -> Dictionary:
+	spell["_duration_slot_level"] = slot_level
 	var tier := duration_tier_for_slot(spell, slot_level)
 	if tier.is_empty(): return tier
 	spell["concentration"] = bool(tier["concentration"])

@@ -121,7 +121,7 @@ const MARKER_RULES := {
 }
 
 ## Data for markers carrying source_damage_rider / turn_start_save_or_dodge.
-const MARKER_RIDERS := {"cursed_necrotic": {"dice": "1d8", "damage_type": "necrotic"}}
+const MARKER_RIDERS := {"cursed_necrotic": {"dice": "1d8", "damage_type": "necrotic", "label": "Curse"}}
 const MARKER_TURN_SAVES := {"cursed_dodge": {"ability": "WIS"}}
 
 ## Caster ids of the spell records that granted a marker with this consequence.
@@ -145,7 +145,46 @@ static func attack_disadvantage_against(attacker, target) -> bool:
 static func check_has_marker_disadvantage(entity, ability: String) -> bool:
 	return not ability.is_empty() and not conditions_with_consequence(entity, "check_save_disadvantage_" + ability.to_lower()).is_empty()
 
-## Rider damage owed when source deals damage to a marked target: [{dice, damage_type, condition}].
+## Rider packets for an attack-roll hit or spell damage occurrence, rolled once.
+## A critical hit doubles the rider dice. Callers settle them in the same damage
+## occurrence after the primary damage, and only when it already dealt damage.
+static func marker_rider_packets(target, source_character: Character, critical: bool = false) -> Array[Dictionary]:
+	var packets: Array[Dictionary] = []
+	for rider in marker_damage_riders(target, source_character):
+		var formula := str(rider.dice)
+		var detail := Dice.parse_dice_details(formula, {}, source_character)
+		if critical:
+			var critical_detail := Dice.parse_dice_details(formula, {}, source_character)
+			detail["final_total"] = int(detail.get("final_total", 0)) + int(critical_detail.get("final_total", 0))
+			for term in critical_detail.get("dice_terms", []):
+				var labeled: Dictionary = term.duplicate(true)
+				labeled["label"] = "Critical %s" % str(labeled.get("label", "damage die"))
+				detail["dice_terms"].append(labeled)
+		packets.append({"details": detail, "formula": formula, "type": str(rider.damage_type), "label": str(rider.label), "component_id": "marker_rider:%s" % str(rider.condition), "marker_condition": str(rider.condition), "requires_prior_damage": true, "unscaled": true})
+	return packets
+
+## Direct spell damage outside SpellDamageRolls (zone ticks): the primary packet
+## and any marker rider packets the caster owes, settled in one occurrence.
+static func resolve_spell_damage_occurrence(target, amount: int, damage_type: String, caster: Character) -> Dictionary:
+	var occurrence_id := WardRules.next_damage_occurrence_id()
+	var decisions := DamageResponseRules.begin({}, occurrence_id, caster)
+	var receipt := resolve_damage(target, amount, damage_type, decisions, false, false, caster, occurrence_id)
+	var rider_receipts: Array = []
+	for packet in marker_rider_packets(target, caster):
+		if int(receipt.get("resolved", 0)) <= 0: break
+		var rider := resolve_damage(target, int(packet.details.get("final_total", 0)), str(packet.type), decisions, false, false, caster, occurrence_id)
+		rider["label"] = str(packet.label)
+		rider["damage_type"] = str(packet.type)
+		rider_receipts.append(rider)
+		for key in ["damage", "raw", "resolved", "hp_loss", "absorbed", "temp_hp_absorbed", "ward_absorbed"]:
+			receipt[key] = int(receipt.get(key, 0)) + int(rider.get(key, 0))
+		for key in ["hp_after", "temp_hp_after", "is_alive_after"]:
+			receipt[key] = rider.get(key, receipt.get(key))
+		receipt["knocked_out"] = bool(receipt.get("knocked_out", false)) or bool(rider.get("knocked_out", false))
+	if not rider_receipts.is_empty(): receipt["marker_rider_receipts"] = rider_receipts
+	return receipt
+
+## Rider damage owed when source deals damage to a marked target: [{dice, damage_type, label, condition}].
 static func marker_damage_riders(target, source_character: Character) -> Array[Dictionary]:
 	var riders: Array[Dictionary] = []
 	if target == null or source_character == null: return riders
@@ -962,17 +1001,6 @@ static func is_immune_to_damage(target, damage_type: String) -> bool:
 
 ## One typed settlement path; reductions/saves resolve before calling it.
 ## CombatState keeps concentration prompts and positional/death presentation.
-## Damage origin tags carried in reaction decisions. Only the primary settlement of
-## an attack-roll hit or of a spell's damage is tagged; riders, packets, hazards,
-## falls, items and features stay untagged.
-const DAMAGE_ORIGIN_ATTACK_HIT := "attack_hit"
-const DAMAGE_ORIGIN_SPELL := "spell"
-
-static func with_damage_origin(decisions: Dictionary, origin: String) -> Dictionary:
-	var tagged := decisions.duplicate()
-	tagged["damage_origin"] = origin
-	return tagged
-
 static func resolve_damage(target, amount: int, damage_type: String, reaction_decisions: Dictionary = {}, bypass_resistance: bool = false, preserve_turning: bool = false, source_character: Character = null, damage_occurrence_id: int = 0, bypass_layers: Array = [], original_raw_amount: int = -1, reduction_prevented: int = 0) -> Dictionary:
 	if damage_occurrence_id <= 0: damage_occurrence_id = WardRules.next_damage_occurrence_id()
 	reaction_decisions = DamageResponseRules.begin(reaction_decisions, damage_occurrence_id, source_character)
@@ -1161,19 +1189,6 @@ static func resolve_damage(target, amount: int, damage_type: String, reaction_de
 	if target is Dictionary:
 		var damage_hook: Variant = target.get("_damage_consequence_handler")
 		if damage_hook is Callable and damage_hook.is_valid(): damage_hook.call(target, receipt, damage_occurrence_id)
-	# Marker riders: the marked target takes extra damage when the marker's source deals it damage.
-	if resolved > 0 and not bool(reaction_decisions.get("_marker_rider_child", false)) and not bool(reaction_decisions.get("_damage_link_child", false)) and not bool(reaction_decisions.get("_damage_response_child", false)):
-		var rider_receipts: Array = []
-		for rider in (marker_damage_riders(target, source_character) if str(reaction_decisions.get("damage_origin", "")) in [DAMAGE_ORIGIN_ATTACK_HIT, DAMAGE_ORIGIN_SPELL] else []):
-			var still_alive: bool = target.is_alive if target is Character else bool(target.get("is_alive", true))
-			if not still_alive: break
-			var rider_amount := Dice.parse_dice_string(str(rider.dice), {}, source_character)
-			var rider_receipt := resolve_damage(target, rider_amount, str(rider.damage_type), {"_marker_rider_child": true}, false, preserve_turning, source_character)
-			rider_receipt["rider_condition"] = str(rider.condition)
-			rider_receipt["rider_amount"] = rider_amount
-			rider_receipt["damage_type"] = str(rider.damage_type)
-			rider_receipts.append(rider_receipt)
-		if not rider_receipts.is_empty(): receipt["marker_rider_receipts"] = rider_receipts
 	return receipt
 
 
@@ -1547,7 +1562,7 @@ static func resolve_hunters_mark_damage(attacker: Character, target_entity: Dict
 			if effect.get("type", "") == "spell_damage_dice_override" and str(effect.get("spell_id", "")) == "hunters_mark":
 				dice = str(effect.get("dice", dice))
 	var rolled := Dice.parse_dice_string(dice)
-	var actual := int(resolve_damage(target_entity, rolled, "force", with_damage_origin({}, DAMAGE_ORIGIN_SPELL), false, false, attacker)["damage"])
+	var actual := int(resolve_damage(target_entity, rolled, "force", {}, false, false, attacker)["damage"])
 	return {"success": true, "damage": actual, "dice": dice, "damage_type": "force", "message": "Hunter's Mark deals +%d %s force damage." % [actual, dice]}
 
 
@@ -2034,6 +2049,9 @@ static func _settle_weapon_attack_hit(stage: Dictionary) -> Dictionary:
 		packet_inputs.append({"fixed_amount": int(next_hit_grant.get("amount", 2)), "type": str(next_hit_grant.get("damage_type", "fire")), "label": "Next melee hit"})
 	if str(weapon_data.get("type", "")) == "weapon" and SpellEffects.has_spell(attacker, "divine_favor"):
 		packet_inputs.append({"formula": "1d4", "type": "radiant", "label": "Divine Favor"})
+	# Marker riders (a curse's extra damage) are hit packets: doubled on a crit, settled last.
+	for rider in marker_damage_riders(target_entity, attacker):
+		packet_inputs.append({"formula": str(rider.dice), "type": str(rider.damage_type), "label": str(rider.label), "marker_condition": str(rider.condition), "requires_prior_damage": true})
 	var additional_damage_roll := 0
 	for packet_value in packet_inputs:
 		var packet: Dictionary = packet_value
@@ -2135,7 +2153,7 @@ static func _settle_weapon_attack_hit(stage: Dictionary) -> Dictionary:
 		weapon_damage_decisions["zero_hp_aftermath_carrier"] = AftermathSuccessorRules.carrier_for_weapon(weapon_data)
 	var damage_occurrence_id := WardRules.next_damage_occurrence_id()
 	weapon_damage_decisions = DamageResponseRules.begin(weapon_damage_decisions, damage_occurrence_id, attacker)
-	var weapon_settlement := resolve_damage(target_entity, weapon_component_after_reactions, damage_type, with_damage_origin(weapon_damage_decisions, DAMAGE_ORIGIN_ATTACK_HIT), bypass_weapon_resistance, false, attacker, damage_occurrence_id)
+	var weapon_settlement := resolve_damage(target_entity, weapon_component_after_reactions, damage_type, weapon_damage_decisions, bypass_weapon_resistance, false, attacker, damage_occurrence_id)
 	var additional_settlements: Array[Dictionary] = []
 	var additional_actual_dealt := 0
 	var additional_resolved := 0
@@ -2147,7 +2165,8 @@ static func _settle_weapon_attack_hit(stage: Dictionary) -> Dictionary:
 		var component := mini(int(entry["roll"]), remaining_additional_after_reactions)
 		remaining_additional_after_reactions -= component
 		var settlement: Dictionary = {"resolved": 0, "damage": 0}
-		if component > 0 and not str(packet.get("type", "")).is_empty():
+		var dealt_damage_so_far := int(weapon_settlement.get("resolved", 0)) + additional_resolved > 0
+		if component > 0 and not str(packet.get("type", "")).is_empty() and (dealt_damage_so_far or not bool(packet.get("requires_prior_damage", false))):
 			settlement = resolve_damage(target_entity, component, str(packet["type"]), weapon_damage_decisions, false, false, attacker, damage_occurrence_id)
 		additional_settlements.append(settlement)
 		additional_actual_dealt += int(settlement.get("damage", 0))
@@ -2490,7 +2509,7 @@ static func resolve_divine_smite(caster: Character, target_entity, slot_level: i
 		dice_count *= 2
 	var damage_detail := Dice.parse_dice_details("%dd8" % dice_count)
 	var rolled_damage := int(damage_detail["final_total"])
-	var settlement := resolve_damage(target_entity, rolled_damage, damage_type, with_damage_origin({}, DAMAGE_ORIGIN_SPELL), false, false, caster)
+	var settlement := resolve_damage(target_entity, rolled_damage, damage_type, {}, false, false, caster)
 	var actual := int(settlement["damage"])
 	var resolved := int(settlement["resolved"])
 	damage_detail["rolled_total"] = rolled_damage

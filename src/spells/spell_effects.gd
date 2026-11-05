@@ -91,6 +91,7 @@ static func begin_cast(caster: Character, spell: Dictionary, cast_facts: Diction
 			record["damage_budget_total"] = 0
 	var aftermath: Variant = spell.get("end_aftermath", [])
 	if aftermath is Array and not aftermath.is_empty(): record["end_aftermath"] = aftermath.duplicate(true)
+	if spell.has("_duration_slot_level"): record["duration_slot_level"] = int(spell["_duration_slot_level"])
 	if bool(spell.get("_until_dispelled", false)):
 		record["remaining_seconds"] = -1
 		record["until_dispelled"] = true

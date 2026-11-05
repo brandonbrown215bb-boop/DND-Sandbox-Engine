@@ -629,7 +629,7 @@ static func _resolve_wall_of_fire_damage(zones: CombatSpellZones, target, zone: 
 		return {}
 	var formula := str(zone.get("damage_formula", "5d8"))
 	var amount := int(Dice.parse_dice_details(formula, {}, caster).get("final_total", 0))
-	var damage_result := CombatAction.resolve_damage(target, amount, "fire", CombatAction.with_damage_origin({}, CombatAction.DAMAGE_ORIGIN_SPELL), false, false, caster)
+	var damage_result := CombatAction.resolve_spell_damage_occurrence(target, amount, "fire", caster)
 	var target_name: String = target.character_name if target is Character else str(target.get("name", "The creature"))
 	var dealt := int(damage_result.get("damage", 0))
 	var damage_taken := int(damage_result.get("resolved", 0))
@@ -660,7 +660,7 @@ static func _resolve_cloud_of_daggers_damage(zones: CombatSpellZones, target, zo
 		return {}
 	var formula := str(zone.get("damage_formula", "4d4"))
 	var amount := int(Dice.parse_dice_details(formula, {}, caster).get("final_total", 0))
-	var damage_result := CombatAction.resolve_damage(target, amount, "slashing", CombatAction.with_damage_origin({}, CombatAction.DAMAGE_ORIGIN_SPELL), false, false, caster)
+	var damage_result := CombatAction.resolve_spell_damage_occurrence(target, amount, "slashing", caster)
 	var target_name: String = target.character_name if target is Character else str(target.get("name", "The creature"))
 	var dealt := int(damage_result.get("damage", 0))
 	zones.hud.add_log("[color=red]%s takes %d Slashing damage from Cloud of Daggers (%s).[/color]" % [target_name, dealt, formula])

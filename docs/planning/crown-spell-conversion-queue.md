@@ -26,6 +26,12 @@ save policy also needs to bind to the actual paid slot, not merely the existence
 of some indefinite tier. Keep these as unfinished engine work, not a converted
 spell. `bestow_curse` remains refused in accepted main.
 
+**Update 2026-11-05:** branch `codex/crown-spells-sc-07-support-10` rebases
+#105–#106 onto main and repairs both findings: the curse damage is a typed packet
+inside the hit/spell occurrence, and saves record and check the paid slot. It
+supersedes #105–#106. Bestow Curse is now `partial` (row limits in the CSV), so
+the rows count **21 converted, 5 partial, 2 blocked and 141 queued** once merged.
+
 The accepted stack includes the earlier local Hit Dice commit `423ada68`, with
 its S-071 subset still open for Prayer of Healing; it does not incorporate Luna's
 separate origins worktree. The integrated Bless crash repair registers a source
@@ -43,14 +49,10 @@ remain separate, with their existing limits.
 
 ### Exact next work
 
-1. Repair/rebase the held [#105](https://github.com/brandonbrown215bb-boop/DND-Sandbox-Engine/pull/105)
-   and [#106](https://github.com/brandonbrown215bb-boop/DND-Sandbox-Engine/pull/106)
-   on current main. Use actual extra typed damage packets in one occurrence,
-   not an invisible child damage call after the parent receipt has settled.
-   Prove critical/noncritical weapon hits, spell attacks and save spells,
-   mitigation, zero-HP and concentration consequences, one payment and no
-   recursive rider. Capture and validate the actual duration-tier slot, retaining
-   pre-tier finite legacy records without inventing a paid slot.
+1. Done on `codex/crown-spells-sc-07-support-10` (see the update above and
+   `docs/reviews/crown-sc-07-support-10/`); review and merge it, then close
+   [#105](https://github.com/brandonbrown215bb-boop/DND-Sandbox-Engine/pull/105)
+   and [#106](https://github.com/brandonbrown215bb-boop/DND-Sandbox-Engine/pull/106).
 2. Finish earlier retained consumers: Starry Wisp light; Vicious Mockery heard
    targeting; Eldritch Blast and Sorcerous Burst objects; Faerie Fire objects and
    exact observer sight; Calm Emotions' separate per-recipient scope if required.

@@ -56,11 +56,13 @@ static func _renamed_checks(h) -> void:
 	s = hex.duplicate(true); s["_chosen_condition"] = "cursed_necrotic"
 	CombatAction.resolve_spell(caster, c, s, false, {}, [], 3, 5)
 	var hp0 := int(c.current_hp)
-	var mine := CombatAction.resolve_damage(c, 5, "fire", CombatAction.with_damage_origin({}, CombatAction.DAMAGE_ORIGIN_SPELL), false, false, caster)
+	c["current_hp"] = 100
+	hp0 = 100
+	var mine := CombatAction.resolve_spell_damage_occurrence(c, 5, "fire", caster)
 	var riders: Array = mine.get("marker_rider_receipts", [])
 	var hp1 := int(c.current_hp)
-	var theirs := CombatAction.resolve_damage(c, 5, "fire", CombatAction.with_damage_origin({}, CombatAction.DAMAGE_ORIGIN_SPELL), false, false, other)
-	h._assert(riders.size() == 1 and str(riders[0].get("damage_type", riders[0].get("type", ""))) == "necrotic" and hp0 - hp1 >= 6 and hp0 - hp1 <= 13 and theirs.get("marker_rider_receipts", []).is_empty() and hp1 - int(c.current_hp) == 5, P + "renamed option 4: the caster's damage adds 1d8 Necrotic once; another creature's damage does not (%s)" % str(riders))
+	var theirs := CombatAction.resolve_spell_damage_occurrence(c, 5, "fire", other)
+	h._assert(riders.size() == 1 and str(riders[0].get("damage_type", "")) == "necrotic" and hp0 - hp1 >= 6 and hp0 - hp1 <= 13 and int(mine.damage) == hp0 - hp1 and not theirs.has("marker_rider_receipts") and hp1 - int(c.current_hp) == 5, P + "renamed option 4: the caster's spell damage adds 1d8 Necrotic once, in its total; another creature's damage does not (%s)" % str(riders))
 	var d := _target("crown-sc07s8-d", Vector2i(-1, 0))
 	s = hex.duplicate(true); s["_chosen_condition"] = "cursed_dodge"
 	CombatAction.resolve_spell(caster, d, s, false, {}, [], 3, 5)
@@ -158,8 +160,8 @@ static func _player_casts(h) -> void:
 	var r5 := _rec(bleeder)
 	h._assert(bleeder.conditions.has("cursed_necrotic") and int(r5.get("remaining_seconds", 0)) == 28800 and not bool(r5.get("concentration", true)) and int(wizard.spell_slots.get("5", 1)) == 0 and dodger.conditions.has("cursed_dodge") and CrownSc07Support01Flow._source(dodger) == str(wizard.concentrating_on.get("effect_source", "")), P + "player upcast at level 5: 8-hour curse without Concentration; the level-3 concentration curse is untouched (%s)" % str(r5))
 	var hp0 := int(bleeder.current_hp)
-	var dmg := CombatAction.resolve_damage(bleeder, 3, "fire", CombatAction.with_damage_origin({}, CombatAction.DAMAGE_ORIGIN_SPELL), false, false, wizard)
-	h._assert(dmg.get("marker_rider_receipts", []).size() == 1 and hp0 - int(bleeder.current_hp) >= 4, P + "the player's damage to the cursed creature adds 1d8 Necrotic")
+	var dmg := CombatAction.resolve_spell_damage_occurrence(bleeder, 3, "fire", wizard)
+	h._assert(dmg.get("marker_rider_receipts", []).size() == 1 and hp0 - int(bleeder.current_hp) >= 4, P + "the player's spell damage to the cursed creature adds 1d8 Necrotic")
 	SpellEffects.end_concentration(wizard, [dodger, bleeder])
 	wizard.concentrating_on = {}
 	h._assert(not dodger.conditions.has("cursed_dodge") and bleeder.conditions.has("cursed_necrotic"), P + "ending Concentration ends only the level-3 curse")
@@ -200,7 +202,35 @@ static func _checkpoint(h) -> void:
 			entry["remaining_seconds"] = 30
 			tampered_ok = true
 	h._assert(tampered_ok and not SaveManager._validate_save_data(tampered).is_empty(), P + "preflight rejects an until_dispelled record whose remaining time is not -1")
+	var saved_slots := []
+	for entry in _find_records(SaveManager._read_save(SLOT)):
+		if str(entry.get("spell_id", "")) == "bestow_curse" and int(entry.get("duration_slot_level", 0)) not in saved_slots: saved_slots.append(int(entry.get("duration_slot_level", 0)))
+	saved_slots.sort()
+	h._assert(saved_slots == [4, 9], P + "each saved curse records the slot it paid (%s)" % str(saved_slots))
+	# The until-dispelled flag must match the paid slot's tier, not merely exist on the spell.
+	for label in ["slot 9 relabelled as slot 5", "slot 9 without its slot", "slot 4 claiming until dispelled", "slot 4 dropping Concentration", "slot 4 lasting 8 hours"]:
+		var bad := SaveManager._read_save(SLOT)
+		for entry in _find_records(bad):
+			if str(entry.get("spell_id", "")) == "bestow_curse": _tamper(entry, label)
+		h._assert(not SaveManager._validate_save_data(bad).is_empty(), P + "preflight rejects %s" % label)
+	var legacy := SaveManager._read_save(SLOT)
+	for entry in _find_records(legacy):
+		if int(entry.get("duration_slot_level", 0)) == 4: entry.erase("duration_slot_level")
+	h._assert(SaveManager._validate_save_data(legacy).is_empty(), P + "a pre-tier finite record without a slot still loads (no slot is invented)")
 	print("CROWN_SC_07_SUPPORT_08_CHECKPOINT_READY")
+
+static func _tamper(entry: Dictionary, label: String) -> void:
+	var slot9 := bool(entry.get("until_dispelled", false))
+	var slot4 := int(entry.get("duration_slot_level", 0)) == 4
+	match label:
+		"slot 9 relabelled as slot 5": if slot9: entry["duration_slot_level"] = 5
+		"slot 9 without its slot": if slot9: entry.erase("duration_slot_level")
+		"slot 4 claiming until dispelled":
+			if slot4:
+				entry["until_dispelled"] = true
+				entry["remaining_seconds"] = -1
+		"slot 4 dropping Concentration": if slot4: entry["concentration"] = false
+		"slot 4 lasting 8 hours": if slot4: entry["remaining_seconds"] = 28800
 
 static func _find_records(node) -> Array:
 	var out := []

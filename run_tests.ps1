@@ -215,11 +215,12 @@ if ($runIntegration) {
 	$scenarios += "crown_sc_05_support_01_flow"
 	$scenarios += "crown_sc_05_support_02_flow"
     $crownRecovery = @{}
-    foreach ($crownCase in @("crown_sc_01_support_01_flow", "crown_sc_05_support_02_flow", "crown_sc_06_flow", "crown_sc_07_support_01_flow", "crown_sc_07_support_02_flow", "crown_sc_07_support_04_flow", "crown_sc_07_support_05_flow", "crown_sc_07_support_06_flow")) {
+    foreach ($crownCase in @("crown_sc_01_support_01_flow", "crown_sc_05_support_02_flow", "crown_sc_06_flow", "crown_sc_07_support_01_flow", "crown_sc_07_support_02_flow", "crown_sc_07_support_04_flow", "crown_sc_07_support_05_flow", "crown_sc_07_support_06_flow", "crown_sc_07_support_08_flow")) {
         $crownRecovery[$crownCase] = $crownCase.Substring(0, $crownCase.Length - 5).ToUpper() + "_RECOVER"
     }
     $scenarios += @($crownRecovery.Keys | Sort-Object)
-    $crownLegacyChain = @("crown_sc_07_support_05_flow", "crown_sc_07_support_06_flow")
+    $crownLegacyChain = @("crown_sc_07_support_05_flow", "crown_sc_07_support_06_flow", "crown_sc_07_support_08_flow")
+    $scenarios += "crown_sc_07_support_09_flow"
 	$scenarios += "batch_036_end_and_charge_flow"
 	$scenarios += "batch_037_mode_upgrade_flow"
 	$scenarios += "batch_038_switch_option_flow"
